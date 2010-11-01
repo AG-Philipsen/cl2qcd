@@ -11,7 +11,7 @@ LIBS = -lm
 
 INCLUDES =
 
-OBJECTS = operations.o gaugeobservables.o testing.o geometry.o
+OBJECTS = operations.o gaugeobservables.o testing.o geometry.o input.o
 
 main: $(PROGRAM).cpp $(GLOBALS) $(OBJECTS)
 	$(CXX) -o ${PROGNAME} $(CXXFLAGS) $(PROGRAM).cpp ${OBJECTS} $(LDFLAGS) $(LIBS)

@@ -9,6 +9,7 @@
 #include "geometry.h"
 #include "testing.h"
 #include "gaugeobservables.h"
+#include "input.h"
 
 using namespace std;
 
@@ -17,13 +18,23 @@ void print_hello(char* name){
   return;
 }
 
-void print_info(){
+void print_info(inputparameters* params){
+  printf("*********************************************\n");
+  printf("Compile time parameters:\n");
   printf("NSPACE:  %d\n",NSPACE);
   printf("NTIME:   %d\n",NTIME);
   printf("NDIM:    %d\n",NDIM);
   printf("NCOLOR:  %d\n",NC);
   printf("NSPIN:   %d\n",NSPIN);
-  printf("+ input parameters read...\n");
+  printf("\n");
+  printf("Run time parameters:\n");
+  printf("kappa = %f\n",(*params).get_kappa());
+  printf("mu    = %f\n",(*params).get_mu());
+  printf("beta  = %f\n",(*params).get_beta());
+  printf("CGmax = %d\n",(*params).get_cgmax());
+  printf("*********************************************\n");
+  printf("\n");
+
   return;
 }
 
@@ -33,10 +44,16 @@ int main(int argc, char* argv[]) {
 
   print_hello(progname);
 
+  char* inputfile = argv[1];
+
   //read input to variables
 
-  print_info();
+  inputparameters parameters;
+  parameters.readfile(inputfile);
 
+  print_info(&parameters);
+
+  //do stuff with the gauge field
   hmc_gaugefield gaugefield;
   set_gaugefield_cold(&gaugefield);
   printf("plaquette: %f\n",plaquette(&gaugefield));
