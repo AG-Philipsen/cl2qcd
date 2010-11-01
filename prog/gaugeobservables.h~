@@ -1,0 +1,13 @@
+#ifndef _GAUGEOBSERVABLESH_
+#define _GAUGEOBSERVABLESH_
+#include "globals.h"
+#include "types.h"
+#include "hmcerrs.h"
+#include "operations.h"
+#include "geometry.h"
+
+hmc_float plaquette(hmc_full_gaugefield * field, hmc_float* tplaq, hmc_float* splaq);
+hmc_float plaquette(hmc_full_gaugefield * field);
+hmc_complex polyakov(hmc_full_gaugefield * field);
+
+#endif

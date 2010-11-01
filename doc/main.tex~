@@ -1,0 +1,76 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\title{Project documentation:\\
+       \textbf{HMC with OpenCL for hybrid manycore systems}
+}
+
+\author{Matthias Bach \and Christopher Pinke \and Lars Zeidlewicz}
+
+\date{\today}
+
+\bibliographystyle{unsrt}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+We want to write a complete HMC simulation programme with Wilson-type quarks (twisted mass action) using OpenCL for a hybrid structure consisting of CPUs and GPUs.
+\end{abstract}
+
+\tableofcontents
+
+\section{General thoughts -- structure}
+This will be a lot of work\ldots
+
+So far, I've implemented the types for spinor, su3matrix and their fields on the lattice. The su3matrix so far is stored in matrix format, i.e. 18 doubles. That should be improved early on. The spinors are also full-spinors. However, I guess we should use half-spinor projections.
+
+There are plaquette and Polyakov functions which work for a free gauge field. They should be tested against exisiting configs.
+
+We could really need an interface to read xml-configs from the tmQCD code by Carsten (that way, we would also have ILDG format...)
+
+\section{Algorithm}
+HMC+CG(BiCGStab?)+eoprec+massprec
+
+\section{Memory layout}
+
+\section{Program files}
+\subsection{hmc.cpp}
+main program, calls everything else
+\subsection{globals.h}
+Global definitions, by now: lattice layout.
+\subsection{hmcerrs.h}
+It might be a good idea to have our own error handling. This is the start...
+\subsection{types.h}
+Provides types: hmc\_complex, hmc\_float, hmc\_full\_spinor, hmc\_full\_spinor\_field, hmc\_full\_su3matrix, hmc\_full\_gaugefield
+\subsection{operations.h operations.cpp}
+local and global operations on the types defined in types.h. 
+\subsection{gaugeobservables.h gaugeobservables.cpp}
+plaquette and Polyakov functions
+\subsection{geometry.h geometry.cpp}
+map from (x,y,z) basis to one int (nspace)
+
+naming scheme: direction 1 = x; direction 2 = y; direction 3 = z; direction 0 = t
+
+important: (x,y,z) are always used together and it should be possible to use a different number of space dimensions (defined in globals.h). t is always apart.
+
+\subsection{testing.h testing.cpp}
+test functions
+
+
+\section{Hybrid strategy}
+
+\section{Some readings}
+\subsection{OpenCL}
+where to find the specs and docs
+\subsection{Other GPU-HMCs}
+\begin{itemize}
+\item Bonati, Cossu, D'Elia, Di Giacomo, Staggered fermions simulations on GPUs~\cite{Bonati:2010qu}
+\end{itemize}
+
+
+\bibliography{literature}
+
+
+\end{document}
