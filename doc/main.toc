@@ -9,7 +9,8 @@
 \contentsline {subsection}{\numberline {4.5}operations.h operations.cpp}{2}
 \contentsline {subsection}{\numberline {4.6}gaugeobservables.h gaugeobservables.cpp}{2}
 \contentsline {subsection}{\numberline {4.7}geometry.h geometry.cpp}{3}
-\contentsline {subsection}{\numberline {4.8}testing.h testing.cpp}{3}
+\contentsline {subsection}{\numberline {4.8}input.h input.cpp}{3}
+\contentsline {subsection}{\numberline {4.9}testing.h testing.cpp}{3}
 \contentsline {section}{\numberline {5}Hybrid strategy}{3}
 \contentsline {section}{\numberline {6}Some readings}{3}
 \contentsline {subsection}{\numberline {6.1}OpenCL}{3}

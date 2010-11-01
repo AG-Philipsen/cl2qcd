@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=latex 2010.8.25)  29 OCT 2010 11:50
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=latex 2010.8.25)  1 NOV 2010 17:27
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -280,18 +280,18 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 [1
 
 ]
-Overfull \hbox (43.9867pt too wide) in paragraph at lines 46--47
+Overfull \hbox (43.9867pt too wide) in paragraph at lines 48--49
 \T1/cmr/m/n/10.95 Provides types: hmc_complex, hmc_float, hmc_full_spinor, hmc_
 full_spinor_field,
  []
 
 [2]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 69.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 75.
  (/usr/share/texmf-texlive/tex/latex/base/omscmr.fd
 File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 69.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 75.
  (./main.bbl) [3]
 (./main.aux) ) 
 Here is how much of TeX's memory you used:
@@ -303,4 +303,4 @@ Here is how much of TeX's memory you used:
  36 hyphenation exceptions out of 8191
  23i,6n,19p,304b,187s stack positions out of 5000i,500n,10000p,200000b,50000s
 
-Output written on main.dvi (3 pages, 7336 bytes).
+Output written on main.dvi (3 pages, 7832 bytes).

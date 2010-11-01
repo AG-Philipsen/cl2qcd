@@ -30,6 +30,8 @@ There are plaquette and Polyakov functions which work for a free gauge field. Th
 
 We could really need an interface to read xml-configs from the tmQCD code by Carsten (that way, we would also have ILDG format...)
 
+Now there is an input-file reader interface
+
 \section{Algorithm}
 HMC+CG(BiCGStab?)+eoprec+massprec
 
@@ -54,6 +56,10 @@ map from (x,y,z) basis to one int (nspace)
 naming scheme: direction 1 = x; direction 2 = y; direction 3 = z; direction 0 = t
 
 important: (x,y,z) are always used together and it should be possible to use a different number of space dimensions (defined in globals.h). t is always apart.
+
+\subsection{input.h input.cpp}
+provides class inputparameters which reads all input stuff from a given input file
+
 
 \subsection{testing.h testing.cpp}
 test functions
