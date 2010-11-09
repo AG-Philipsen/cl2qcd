@@ -18,7 +18,7 @@ hmc_error inputparameters::readfile(char* ifn){
   while (infile.good()) {
     std::string line;
     infile>>line;
-    if(line.find("#")!=std::string::npos) break; //allow comments
+    if(line.find("#")!=std::string::npos) continue; //allow comments
     if(line.find("kappa")!=std::string::npos) val_assign(&kappa,line);
     if(line.find("Kappa")!=std::string::npos) val_assign(&kappa,line);
     if(line.find("mu")!=std::string::npos) val_assign(&mu,line);
