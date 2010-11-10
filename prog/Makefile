@@ -4,7 +4,8 @@ PROGNAME = hmc
 GLOBALS=globals.h types.h hmcerrs.h testing.h
 
 CXX = g++
-CXXFLAGS = -Wall -pedantic
+CXXFLAGS = -Wall -pedantic -D_RECONSTRUCT_TWELVE_
+#CXXFLAGS = -Wall -pedantic
 
 LDFLAGS =
 LIBS = -lm 

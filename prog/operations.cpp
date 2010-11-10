@@ -23,6 +23,13 @@ hmc_complex complexadd(hmc_complex *a, hmc_complex *b){
   return res;
 }
 
+hmc_complex complexsubtract(hmc_complex *a, hmc_complex *b){
+  hmc_complex res;
+  res.re = (*a).re - (*b).re;
+  res.im = (*a).im - (*b).im;
+  return res;
+}
+
 hmc_error complexaccumulate(hmc_complex *inout, hmc_complex *incr){
   (*inout).re += (*incr).re;
   (*inout).im += (*incr).im;
@@ -126,15 +133,31 @@ hmc_complex global_trace_su3(hmc_gaugefield * field, int mu) {
 //operations that contain explicit SU(3) indices!!!
 
 hmc_error copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in){
+#ifdef _RECONSTRUCT_TWELVE_
+  for(int n=0; n<NC*(NC-1); n++) {
+    (*out)[n] = (*in)[n];
+  }
+#else
   for(int a=0; a<NC; a++) {
     for(int b=0; b<NC; b++) {
       (*out)[a][b] = (*in)[a][b];
     }
   }
+#endif
   return HMC_SUCCESS;
 }
 
 hmc_error unit_su3matrix(hmc_su3matrix * u){
+#ifdef _RECONSTRUCT_TWELVE_
+  for(int n=0; n<NC*(NC-1); n++) {
+    if( n%NC == 0) {
+      (*u)[n].re = hmc_one_f;
+    } else {
+      (*u)[n].re = 0;
+    }
+    (*u)[n].im = 0;
+  }
+#else
   for(int a=0; a<NC; a++) {
     for(int b=0; b<NC; b++) {
       if(a!=b) {
@@ -145,10 +168,43 @@ hmc_error unit_su3matrix(hmc_su3matrix * u){
       (*u)[a][b].im = 0;
     }
   }
+#endif
   return HMC_SUCCESS;
 }
 
+#ifdef _RECONSTRUCT_TWELVE_
+hmc_complex reconstruct_su3(hmc_su3matrix *in, int ncomp){
+  int jplusone = (ncomp+1)%NC;
+  int jplustwo = (ncomp+2)%NC;
+  hmc_complex first = complexmult(&((*in)[(NC-1)*jplusone]),&((*in)[1+(NC-1)*jplustwo]));
+  hmc_complex second = complexmult(&((*in)[(NC-1)*jplustwo]),&((*in)[1+(NC-1)*jplusone]));
+  hmc_complex result = complexsubtract(&first,&second);
+  return complexconj(&result);
+}
+#endif
+
+
 hmc_error multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matrix *q){
+#ifdef _RECONSTRUCT_TWELVE_
+  for(int n=0; n<NC*(NC-1); n++) {
+      (*out)[n].re=0;
+      (*out)[n].im=0;
+      for(int j=0;j<NC;j++) {
+	int k = (int)(n/(NC-1));
+	int i = n - (NC-1)*k;
+	int np = i + (NC-1)*j;
+	hmc_complex qcomponent;
+	if(j==2) {
+	  int nq = j + (NC-1)*k;
+	  qcomponent = (*q)[nq];
+	} else {
+	  qcomponent = reconstruct_su3(q,k);
+	}
+	hmc_complex tmp = complexmult(&(*p)[np],&qcomponent);
+	complexaccumulate(&(*out)[n],&tmp);
+      }
+    }
+#else
   for(int i=0; i<NC; i++) {
     for(int k=0; k<NC; k++) {
       (*out)[i][k].re=0;
@@ -159,11 +215,28 @@ hmc_error multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matr
       }
     }
   }
+#endif
   return HMC_SUCCESS;
 }
 
 
 hmc_error adjoin_su3matrix(hmc_su3matrix * mat){
+#ifdef _RECONSTRUCT_TWELVE_
+  hmc_su3matrix tmp;
+  copy_su3matrix(&tmp, mat);
+  for(int n=0; n<NC*(NC-1); n++) {
+    int j = (int)(n/(NC-1));
+    int i = n - (NC-1)*j;
+    hmc_complex element;
+    if ( j==2 ) {
+      element = reconstruct_su3(&tmp,i);
+    } else {
+      int nnew = j + (NC-1)*i;
+      element = tmp[nnew];
+    }
+    (*mat)[n] = complexconj(&element);
+  }
+#else
   hmc_su3matrix tmp;
   copy_su3matrix(&tmp, mat);
   for(int a=0; a<NC; a++) {
@@ -171,31 +244,45 @@ hmc_error adjoin_su3matrix(hmc_su3matrix * mat){
       (*mat)[a][b] = complexconj(&(tmp[b][a]));
     }
   }
+#endif
   return HMC_SUCCESS;
 }
 
 hmc_complex trace_su3matrix(hmc_su3matrix * mat){
   hmc_complex trace;
+#ifdef _RECONSTRUCT_TWELVE_
+  trace = reconstruct_su3(mat,NC-1);
+  for(int n=0; n<(NC-1); n++) complexaccumulate(&trace,&((*mat)[NC*n]));
+#else
   trace.re=0;
   trace.im=0;
   for(int a=0; a<NC; a++) complexaccumulate(&trace,&((*mat)[a][a]));;
+#endif
   return trace;
 }
 
 hmc_error get_su3matrix(hmc_su3matrix * out, hmc_gaugefield * in, int spacepos, int timepos, int mu) {
+#ifdef _RECONSTRUCT_TWELVE_
+  for(int n=0; n<NC*(NC-1); n++) (*out)[n] = (*in)[n][mu][spacepos][timepos];
+#else
   for(int a=0; a<NC; a++) {
     for(int b=0; b<NC; b++) {
       (*out)[a][b] = (*in)[a][b][mu][spacepos][timepos];
     }
   }
+#endif
   return HMC_SUCCESS;
 }
 
 hmc_error put_su3matrix(hmc_gaugefield * field, hmc_su3matrix * in, int spacepos, int timepos, int mu) {
+#ifdef _RECONSTRUCT_TWELVE_
+  for(int n=0; n<NC*(NC-1); n++) (*field)[n][mu][spacepos][timepos] = (*in)[n];
+#else
   for(int a=0; a<NC; a++) {
     for(int b=0; b<NC; b++) {
       (*field)[a][b][mu][spacepos][timepos] = (*in)[a][b];
     }
   }
+#endif
   return HMC_SUCCESS;
 }

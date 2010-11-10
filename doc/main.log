@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=latex 2010.8.25)  1 NOV 2010 17:27
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=latex 2010.8.25)  10 NOV 2010 19:31
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -248,59 +248,142 @@ Package: fontenc 2005/09/27 v1.99g Standard LaTeX package
 (/usr/share/texmf-texlive/tex/latex/base/t1enc.def
 File: t1enc.def 2005/09/27 v1.99g Standard LaTeX file
 LaTeX Font Info:    Redeclaring font encoding T1 on input line 43.
-)) (./main.aux)
+))
+(/usr/share/texmf-texlive/tex/latex/amsmath/amsmath.sty
+Package: amsmath 2000/07/18 v2.13 AMS math features
+\@mathmargin=\skip43
+
+For additional information on amsmath, use the `?' option.
+(/usr/share/texmf-texlive/tex/latex/amsmath/amstext.sty
+Package: amstext 2000/06/29 v2.01
+
+(/usr/share/texmf-texlive/tex/latex/amsmath/amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0
+\@emptytoks=\toks16
+\ex@=\dimen103
+))
+(/usr/share/texmf-texlive/tex/latex/amsmath/amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d
+\pmbraise@=\dimen104
+)
+(/usr/share/texmf-texlive/tex/latex/amsmath/amsopn.sty
+Package: amsopn 1999/12/14 v2.01 operator names
+)
+\inf@bad=\count87
+LaTeX Info: Redefining \frac on input line 211.
+\uproot@=\count88
+\leftroot@=\count89
+LaTeX Info: Redefining \overline on input line 307.
+\classnum@=\count90
+\DOTSCASE@=\count91
+LaTeX Info: Redefining \ldots on input line 379.
+LaTeX Info: Redefining \dots on input line 382.
+LaTeX Info: Redefining \cdots on input line 467.
+\Mathstrutbox@=\box26
+\strutbox@=\box27
+\big@size=\dimen105
+LaTeX Font Info:    Redeclaring font encoding OML on input line 567.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 568.
+\macc@depth=\count92
+\c@MaxMatrixCols=\count93
+\dotsspace@=\muskip10
+\c@parentequation=\count94
+\dspbrk@lvl=\count95
+\tag@help=\toks17
+\row@=\count96
+\column@=\count97
+\maxfields@=\count98
+\andhelp@=\toks18
+\eqnshift@=\dimen106
+\alignsep@=\dimen107
+\tagshift@=\dimen108
+\tagwidth@=\dimen109
+\totwidth@=\dimen110
+\lineht@=\dimen111
+\@envbody=\toks19
+\multlinegap=\skip44
+\multlinetaggap=\skip45
+\mathdisplay@stack=\toks20
+LaTeX Info: Redefining \[ on input line 2666.
+LaTeX Info: Redefining \] on input line 2667.
+) (./main.aux
+(./algorithm.aux) (./compileroptions.aux) (./hybridstrategy.aux))
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <12> on input line 17.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 17.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 17.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 18.
+LaTeX Font Info:    ... okay on input line 18.
  (./main.toc
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <10.95> on input line 5.
-)
+LaTeX Font Info:    Try loading font information for T1+cmtt on input line 5.
+
+(/usr/share/texmf-texlive/tex/latex/base/t1cmtt.fd
+File: t1cmtt.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+))
 \tf@toc=\write3
 \openout3 = `main.toc'.
 
+ [1
 
-[1
+] [2]
+\openout2 = `algorithm.aux'.
+
+ (./algorithm.tex)
+[3
+
+] [4
 
 ]
-Overfull \hbox (43.9867pt too wide) in paragraph at lines 48--49
+\openout2 = `compileroptions.aux'.
+
+ (./compileroptions.tex
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <12> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 2.
+) [5
+
+] (./hmcerrs.tex) (./globals.tex)
+(./hmcerrs.tex) (./types.tex) (./operations.tex
+Overfull \hbox (43.9867pt too wide) in paragraph at lines 2--1
 \T1/cmr/m/n/10.95 Provides types: hmc_complex, hmc_float, hmc_full_spinor, hmc_
 full_spinor_field,
  []
 
-[2]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 75.
- (/usr/share/texmf-texlive/tex/latex/base/omscmr.fd
+) (./gaugeobservables.tex) (./geometry.tex) (./input.tex) (./testing.tex)
+[6
+
+]
+\openout2 = `hybridstrategy.aux'.
+
+ (./hybridstrategy.tex) [7
+
+]
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 63.
+
+(/usr/share/texmf-texlive/tex/latex/base/omscmr.fd
 File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 75.
- (./main.bbl) [3]
-(./main.aux) ) 
-Here is how much of TeX's memory you used:
- 686 strings out of 495001
- 6344 string characters out of 1180516
- 53606 words of memory out of 3000000
- 3922 multiletter control sequences out of 15000+50000
- 15700 words of font info for 37 fonts, out of 3000000 for 9000
- 36 hyphenation exceptions out of 8191
- 23i,6n,19p,304b,187s stack positions out of 5000i,500n,10000p,200000b,50000s
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 63.
+ (./main.bbl) [8
 
-Output written on main.dvi (3 pages, 7832 bytes).
+]
+(./main.aux (./algorithm.aux) (./compileroptions.aux) (./hybridstrategy.aux)) )
+ 
+Here is how much of TeX's memory you used:
+ 1363 strings out of 495001
+ 14403 string characters out of 1180516
+ 64231 words of memory out of 3000000
+ 4528 multiletter control sequences out of 15000+50000
+ 18755 words of font info for 45 fonts, out of 3000000 for 9000
+ 36 hyphenation exceptions out of 8191
+ 27i,7n,23p,382b,189s stack positions out of 5000i,500n,10000p,200000b,50000s
+
+Output written on main.dvi (8 pages, 10412 bytes).

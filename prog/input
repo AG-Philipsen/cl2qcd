@@ -1,6 +1,6 @@
 kappa=.15
 mu=4
-cgmax=15
+#cgmax=15
 cgmax=20
 beta=4.05
 #cgmax=3

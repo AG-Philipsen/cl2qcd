@@ -3,6 +3,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 
+\usepackage{amsmath}
+
 \title{Project documentation:\\
        \textbf{HMC with OpenCL for hybrid manycore systems}
 }
@@ -32,40 +34,26 @@ We could really need an interface to read xml-configs from the tmQCD code by Car
 
 Now there is an input-file reader interface
 
-\section{Algorithm}
-HMC+CG(BiCGStab?)+eoprec+massprec
+%\section{Algorithm}
+\include{algorithm}
 
-\section{Memory layout}
+\section{input/output}
+
+\include{compileroptions}
 
 \section{Program files}
-\subsection{hmc.cpp}
-main program, calls everything else
-\subsection{globals.h}
-Global definitions, by now: lattice layout.
-\subsection{hmcerrs.h}
-It might be a good idea to have our own error handling. This is the start...
-\subsection{types.h}
-Provides types: hmc\_complex, hmc\_float, hmc\_full\_spinor, hmc\_full\_spinor\_field, hmc\_su3matrix, hmc\_gaugefield
-\subsection{operations.h operations.cpp}
-local and global operations on the types defined in types.h. 
-\subsection{gaugeobservables.h gaugeobservables.cpp}
-plaquette and Polyakov functions
-\subsection{geometry.h geometry.cpp}
-map from (x,y,z) basis to one int (nspace)
+\input{hmcerrs}
+\input{globals}
+\input{hmcerrs}
+\input{types}
+\input{operations}
+\input{gaugeobservables}
+\input{geometry}
+\input{input}
+\input{testing}
 
-naming scheme: direction 1 = x; direction 2 = y; direction 3 = z; direction 0 = t
-
-important: (x,y,z) are always used together and it should be possible to use a different number of space dimensions (defined in globals.h). t is always apart.
-
-\subsection{input.h input.cpp}
-provides class inputparameters which reads all input stuff from a given input file
-
-
-\subsection{testing.h testing.cpp}
-test functions
-
-
-\section{Hybrid strategy}
+%\section{Hybrid strategy}
+\include{hybridstrategy}
 
 \section{Some readings}
 \subsection{OpenCL}

@@ -1,5 +1,11 @@
 \begin{thebibliography}{1}
 
+\bibitem{Clark:2009wm}
+M.~A. Clark, R.~Babich, K.~Barros, R.~C. Brower, and C.~Rebbi.
+\newblock {Solving Lattice QCD systems of equations using mixed precision
+  solvers on GPUs}.
+\newblock {\em Comput. Phys. Commun.}, 181:1517--1528, 2010.
+
 \bibitem{Bonati:2010qu}
 Claudio Bonati, Guido Cossu, Massimo D'Elia, and Adriano Di~Giacomo.
 \newblock {Staggered fermions simulations on GPUs}.

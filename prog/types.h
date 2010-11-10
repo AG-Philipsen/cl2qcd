@@ -17,8 +17,14 @@ typedef hmc_complex hmc_full_spinor [NSPIN*NC];
 typedef hmc_complex hmc_full_spinor_field [NSPIN*NC][VOLSPACE][NTIME];
 
 //define a gauge field: gauge[su3][mu][coord3d][coord_time]
+#ifdef _RECONSTRUCT_TWELVE_
+typedef hmc_complex hmc_su3matrix [NC*(NC-1)];
+typedef hmc_complex hmc_gaugefield [NC*(NC-1)][NDIM][VOLSPACE][NTIME];
+#else
 typedef hmc_complex hmc_su3matrix [NC][NC];
 typedef hmc_complex hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME];
+#endif
+
 
 
 #endif

@@ -59,6 +59,10 @@ int main(int argc, char* argv[]) {
   printf("plaquette: %f\n",plaquette(&gaugefield));
   printf("Polyakov loop: (%f,%f)\n",polyakov(&gaugefield).re,polyakov(&gaugefield).im);
 
+
+  testing_su3mat();
+
+  testing_gaugefield();
   //init everything
 
   //perform updates

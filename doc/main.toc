@@ -1,17 +1,19 @@
 \contentsline {section}{\numberline {1}General thoughts -- structure}{2}
-\contentsline {section}{\numberline {2}Algorithm}{2}
-\contentsline {section}{\numberline {3}Memory layout}{2}
-\contentsline {section}{\numberline {4}Program files}{2}
-\contentsline {subsection}{\numberline {4.1}hmc.cpp}{2}
-\contentsline {subsection}{\numberline {4.2}globals.h}{2}
-\contentsline {subsection}{\numberline {4.3}hmcerrs.h}{2}
-\contentsline {subsection}{\numberline {4.4}types.h}{2}
-\contentsline {subsection}{\numberline {4.5}operations.h operations.cpp}{2}
-\contentsline {subsection}{\numberline {4.6}gaugeobservables.h gaugeobservables.cpp}{2}
-\contentsline {subsection}{\numberline {4.7}geometry.h geometry.cpp}{3}
-\contentsline {subsection}{\numberline {4.8}input.h input.cpp}{3}
-\contentsline {subsection}{\numberline {4.9}testing.h testing.cpp}{3}
-\contentsline {section}{\numberline {5}Hybrid strategy}{3}
-\contentsline {section}{\numberline {6}Some readings}{3}
-\contentsline {subsection}{\numberline {6.1}OpenCL}{3}
-\contentsline {subsection}{\numberline {6.2}Other GPU-HMCs}{3}
+\contentsline {section}{\numberline {2}Algorithm}{3}
+\contentsline {section}{\numberline {3}input/output}{4}
+\contentsline {section}{\numberline {4}Compiler options}{5}
+\contentsline {subsection}{\numberline {4.1}\texttt {RECONSTRUCT\_TWELVE}}{5}
+\contentsline {section}{\numberline {5}Program files}{6}
+\contentsline {subsection}{\numberline {5.1}hmcerrs.h}{6}
+\contentsline {subsection}{\numberline {5.2}globals.h}{6}
+\contentsline {subsection}{\numberline {5.3}hmcerrs.h}{6}
+\contentsline {subsection}{\numberline {5.4}types.h}{6}
+\contentsline {subsection}{\numberline {5.5}operations.h operations.cpp}{6}
+\contentsline {subsection}{\numberline {5.6}gaugeobservables.h gaugeobservables.cpp}{6}
+\contentsline {subsection}{\numberline {5.7}geometry.h geometry.cpp}{6}
+\contentsline {subsection}{\numberline {5.8}input.h input.cpp}{6}
+\contentsline {subsection}{\numberline {5.9}testing.h testing.cpp}{6}
+\contentsline {section}{\numberline {6}hybrid strategy}{7}
+\contentsline {section}{\numberline {7}Some readings}{8}
+\contentsline {subsection}{\numberline {7.1}OpenCL}{8}
+\contentsline {subsection}{\numberline {7.2}Other GPU-HMCs}{8}

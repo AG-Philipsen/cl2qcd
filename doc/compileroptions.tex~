@@ -1,0 +1,3 @@
+\section{Compiler options}
+\subsection{RECONSTRUCT_TWELVE}
+If this is defined, SU(3) matrices are stored using 12 hmc_floats. They represent the first two rows of the matrix. The last row is reconstructed~\cite{Clark:2009wm}.

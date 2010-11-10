@@ -23,32 +23,65 @@ void testing_spinor() {
   return;
 }
 
-void print_su3mat(hmc_su3matrix A){
-  for(int a = 0; a<NC; a++) printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",A[a][0].re,A[a][0].im,A[a][1].re,A[a][1].im,A[a][2].re,A[a][2].im);
+void print_su3mat(hmc_su3matrix* A){
+#ifdef _RECONSTRUCT_TWELVE_
+  printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[0].re,(*A)[0].im,(*A)[2].re,(*A)[2].im,(*A)[4].re,(*A)[4].im);
+  printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[1].re,(*A)[1].im,(*A)[3].re,(*A)[3].im,(*A)[5].re,(*A)[5].im);
+  hmc_complex ca = reconstruct_su3(A,0);
+  hmc_complex cb = reconstruct_su3(A,1);
+  hmc_complex cc = reconstruct_su3(A,2);
+  printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",ca.re,ca.im,cb.re,cb.im,cc.re,cc.im);
+#else
+  for(int a = 0; a<NC; a++) 
+  printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[a][0].re,(*A)[a][0].im,(*A)[a][1].re,(*A)[a][1].im,(*A)[a][2].re,(*A)[a][2].im);
+#endif
   return;
 }
 
 void testing_su3mat(){
   hmc_su3matrix A;
+#ifdef _RECONSTRUCT_TWELVE_
   for(int a=0; a<NC; a++) {
-    for(int b=0; b<NC; b++) {
-      A[a][b].re = a;
-      A[a][b].im = b;
+    for(int b=0; b<NC-1; b++) {
+      int n = b + a*(NC-1);
+      A[n].re = b;
+      A[n].im = a;
     }
   }
-  print_su3mat(A);
+  print_su3mat(&A);
 
   hmc_complex trace = trace_su3matrix(&A);
   printf("trace: (%f,%f)\n",trace.re,trace.im);
 
   printf("adjoint:\n");
   adjoin_su3matrix(&A);
-  print_su3mat(A);
+  print_su3mat(&A);
   trace = trace_su3matrix(&A);
   printf("trace: (%f,%f)\n",trace.re,trace.im);
 
   unit_su3matrix(&A);
-  print_su3mat(A);
+  print_su3mat(&A);
+#else
+  for(int a=0; a<NC; a++) {
+    for(int b=0; b<NC; b++) {
+      A[a][b].re = a;
+      A[a][b].im = b;
+    }
+  }
+  print_su3mat(&A);
+
+  hmc_complex trace = trace_su3matrix(&A);
+  printf("trace: (%f,%f)\n",trace.re,trace.im);
+
+  printf("adjoint:\n");
+  adjoin_su3matrix(&A);
+  print_su3mat(&A);
+  trace = trace_su3matrix(&A);
+  printf("trace: (%f,%f)\n",trace.re,trace.im);
+
+  unit_su3matrix(&A);
+  print_su3mat(&A);
+#endif
 return;
 }
 
