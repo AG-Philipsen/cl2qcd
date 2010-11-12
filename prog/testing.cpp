@@ -155,3 +155,94 @@ void testing_geometry(){
 
   return;
 }
+
+
+void testing_su3matrix(hmc_gaugefield * in, int spacepos, int timepos){
+  hmc_su3matrix test;
+  hmc_complex trace, det;
+
+  for(int mu=0; mu<NDIM; mu++) {
+    get_su3matrix(&test, in, spacepos, timepos, mu);
+    trace = trace_su3matrix(&test);
+    //printf("trace mu = %d:  (%f,%f)\n",mu,trace.re,trace.im);
+  }
+
+  for(int mu=0; mu<NDIM; mu++) {
+    get_su3matrix(&test, in, spacepos, timepos, mu);
+    det = det_su3matrix(&test);
+    if(det.re < 0.99) printf("det mu = %d:  (%f,%f)\n",mu,det.re,det.im);
+    if(det.re > 1.01) printf("det mu = %d:  (%f,%f)\n",mu,det.re,det.im);
+  }
+
+  return;
+}
+
+void testing_matrix_ops(hmc_gaugefield * in){
+  int spacepos = 23, timepos = 3;
+  hmc_su3matrix test, test2, unity, naiv;
+printf("\n\ntestmatrix:\n");
+  get_su3matrix(&test, in, spacepos, timepos, 2); 
+print_su3mat(&test);
+printf("\nadjoined:\n");
+  get_su3matrix(&test2, in, spacepos, timepos, 2);
+  adjoin_su3matrix(&test2);
+print_su3mat(&test2);
+printf("\n multiplication: mat * adj(mat)\n");
+    multiply_su3matrices(&naiv, &test, &test2);
+    print_su3mat(&naiv);
+
+printf("\naccumulate mat and adj(mat) \n");
+  accumulate_su3matrix_prod(&test2, &test);
+print_su3mat(&test2);
+
+printf("\ncopy that into some other matrix\n");
+  copy_su3matrix( &unity, &test2);
+  print_su3mat(&unity);
+  
+printf("\n");
+  return;
+}
+
+void testing_adjoin(hmc_gaugefield * in, int spacepos, int timepos){
+  hmc_su3matrix test, test2, unity;
+  hmc_complex trace, det;
+
+  for(int mu=0; mu<NDIM; mu++) {
+    get_su3matrix(&test, in, spacepos, timepos, mu);
+    get_su3matrix(&test2, in, spacepos, timepos, mu);
+    adjoin_su3matrix(&test2);
+    trace = trace_su3matrix(&test2);
+    det = det_su3matrix(&test2);
+    printf("trace mu = %d:  (%f,%f)\n",mu,trace.re,trace.im);
+    printf("det mu = %d:  (%f,%f)\n",mu,det.re,det.im);
+    multiply_su3matrices(&unity, &test, &test2);
+    print_su3mat(&unity);
+  }
+
+  return;
+}
+
+
+void testing_det_global(hmc_gaugefield * in){
+  int cter = 0, cter2 = 0;
+  hmc_complex det;
+  hmc_su3matrix test;
+  for (int t = 0; t < NTIME; t++){
+    for (int pos = 0; pos< VOLSPACE; pos++){
+     for (int mu = 0; mu < NDIM; mu++){
+       get_su3matrix(&test, in, pos, t, mu);
+       det = det_su3matrix(&test);
+       if(det.re < 0.9999999) cter++;
+       if(det.re > 1.0000001) cter++;
+       if(det.im < -0.0000001) cter++;
+       if(det.im > 0.0000001) cter++;
+       adjoin_su3matrix(&test);
+       det = det_su3matrix(&test);
+       if(det.re < 0.9999999) {cter2++;}
+       if(det.re > 1.0000001) {cter2++;}
+       if(det.im < -0.0000001) {cter2++;}
+       if(det.im > 0.0000001) {cter2++;}
+  }}}
+  printf("there were %i wrong matrices and %i wrong adjoint matrices\n" ,cter, cter2);
+return;
+}

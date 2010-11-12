@@ -8,7 +8,7 @@
 //it could be a good idea to define Nt and Ns at compile time
 //usually you stick to one volume for quite a while anyways...
 #define NSPACE 4
-#define NTIME 2
+#define NTIME 4
 int const VOLSPACE  = NSPACE*NSPACE*NSPACE;
 int const VOL4D = VOLSPACE*NTIME;
 

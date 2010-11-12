@@ -77,3 +77,77 @@ hmc_complex polyakov(hmc_gaugefield * field){
   res.im /= static_cast<hmc_float>(NC*VOLSPACE);
   return res;
 }
+
+hmc_complex polyakov_x(hmc_gaugefield * field){
+  int const tdir = 1; 
+  int pos;
+  hmc_complex res;
+  res.re=0;
+  res.im=0;
+  for(int n=0; n<NSPACE*NSPACE; n++) {
+    for(int t=0; t<NTIME; t++) {
+    hmc_su3matrix prod;
+    unit_su3matrix(&prod);
+    for(int x=0; x<NSPACE; x++) {
+      pos = x + n*NSPACE*NSPACE;
+      hmc_su3matrix tmp;
+      get_su3matrix(&tmp,field,pos,t,tdir);
+      accumulate_su3matrix_prod(&prod,&tmp);
+    }
+    hmc_complex tmpcomplex = trace_su3matrix(&prod);
+    complexaccumulate(&res,&tmpcomplex);
+  }}
+  res.re /= static_cast<hmc_float>(NC*VOLSPACE);
+  res.im /= static_cast<hmc_float>(NC*VOLSPACE);
+  return res;
+}
+
+hmc_complex polyakov_y(hmc_gaugefield * field){
+  int const tdir = 2; 
+  int pos;
+  hmc_complex res;
+  res.re=0;
+  res.im=0;
+  for(int x=0; x<NSPACE; x++) {
+    for(int z=0; z<NSPACE; z++) {
+    for(int t=0; t<NTIME; t++) {
+    hmc_su3matrix prod;
+    unit_su3matrix(&prod);
+    for(int y=0; y<NSPACE; y++) {
+      pos = x + y*NSPACE + z*NSPACE*NSPACE;
+      hmc_su3matrix tmp;
+      get_su3matrix(&tmp,field,pos,t,tdir);
+      accumulate_su3matrix_prod(&prod,&tmp);
+    }
+    hmc_complex tmpcomplex = trace_su3matrix(&prod);
+    complexaccumulate(&res,&tmpcomplex);
+  }}}
+  res.re /= static_cast<hmc_float>(NC*VOLSPACE);
+  res.im /= static_cast<hmc_float>(NC*VOLSPACE);
+  return res;
+}
+
+hmc_complex polyakov_z(hmc_gaugefield * field){
+  int const tdir = 3; 
+  int pos;
+  hmc_complex res;
+  res.re=0;
+  res.im=0;
+  for(int n=0; n<NSPACE*NSPACE; n++) {
+    for(int t=0; t<NTIME; t++) {
+    hmc_su3matrix prod;
+    unit_su3matrix(&prod);
+    for(int z=0; z<NSPACE; z++) {
+      pos = n + z*NSPACE*NSPACE;
+      hmc_su3matrix tmp;
+      get_su3matrix(&tmp,field,pos,t,tdir);
+      accumulate_su3matrix_prod(&prod,&tmp);
+    }
+    hmc_complex tmpcomplex = trace_su3matrix(&prod);
+    complexaccumulate(&res,&tmpcomplex);
+  }}
+  res.re /= static_cast<hmc_float>(NC*VOLSPACE);
+  res.im /= static_cast<hmc_float>(NC*VOLSPACE);
+  return res;
+}
+

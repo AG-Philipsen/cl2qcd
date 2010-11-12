@@ -100,6 +100,61 @@ hmc_error set_gaugefield_cold(hmc_gaugefield * field) {
   return HMC_SUCCESS;
 }
 
+hmc_error set_gaugefield_source(hmc_gaugefield * gaugefield, hmc_float * gaugefield_tmp, int check){
+  //little check if arrays are big enough
+  if (VOL4D*NDIM*NC*NC*2 != check){
+    std::cout << "error in setting gaugefield to source values!! "<< std::endl << "Check global settings!!" << std::endl << std::endl;
+    return HMC_STDERR;
+  }
+
+  int cter=0;
+  //our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
+  for (int t = 0; t<NTIME; t++){
+  //if the alg is known to be correct, the next three for-loops could also be changed to one
+    for (int i = 0; i<NSPACE; i++){
+      for (int j = 0; j<NSPACE; j++){
+        for (int k = 0; k<NSPACE; k++){
+          for (int l = 0; l<NDIM; l++){
+            //topology right?? What is the fastest index?? It should be colour, than dirac, than spatial, then time
+            int spacepos = k + j*NSPACE + i*NSPACE*NSPACE;
+            int globalpos = l + spacepos*NDIM + t*VOLSPACE*NDIM;
+#ifdef _RECONSTRUCT_TWELVE_
+            for (int m = 0; m<NC; m++){
+              for (int n = 0; n<NC; n++){
+		int ncindex = n + (NC-1)*m;
+		//ildg-std: [NT][NZ][NY][NX][NDIMENSION][NCOLOR][NCOLOR][2]
+		//which is stored in one single array here
+		//skip NC*NC*2 cmplx numbers
+		int pos = 2*n + 2*m*NC + globalpos*NC*NC*2;
+		if(n<NC-1) {
+		  (*gaugefield)[ncindex][(l+1)%NDIM][spacepos][t].re = gaugefield_tmp[pos];
+		  (*gaugefield)[ncindex][(l+1)%NDIM][spacepos][t].im = gaugefield_tmp[pos + 1];
+		}
+		cter++;
+	      }}
+#else
+            for (int m = 0; m<NC; m++){
+              for (int n = 0; n<NC; n++){
+                //ildg-std: [NT][NZ][NY][NX][NDIMENSION][NCOLOR][NCOLOR][2]
+                //which is stored in one single array here
+                //skip NC*NC*2 cmplx numbers
+                int pos = 2*n + 2*m*NC + globalpos*NC*NC*2;
+                (*gaugefield)[n][m][(l+1)%NDIM][spacepos][t].re = gaugefield_tmp[pos];
+                (*gaugefield)[n][m][(l+1)%NDIM][spacepos][t].im = gaugefield_tmp[pos + 1];
+                cter++;
+	      }}
+#endif
+  }}}}}
+
+  if(cter*2 != check) {
+    std::cout << "error in setting gaugefield to source values! there were " << cter*2 << " vals set and not " << check << std::endl;
+    return HMC_STDERR;
+  }
+
+  return HMC_SUCCESS;
+}
+
+
 hmc_error adjoin_su3(hmc_gaugefield * in, hmc_gaugefield * out){
   for(int t=0; t<NTIME; t++) {
     for(int n=0; n<VOLSPACE; n++) {
@@ -131,6 +186,87 @@ hmc_complex global_trace_su3(hmc_gaugefield * field, int mu) {
 
 
 //operations that contain explicit SU(3) indices!!!
+
+hmc_complex det_su3matrix(hmc_su3matrix * U){
+#ifdef _RECONSTRUCT_TWELVE_
+  hmc_complex det;
+  det.re=0;
+  det.im=0;
+  hmc_complex subdet;
+  subdet.re=0;
+  subdet.im=0;
+  hmc_complex tmp1;
+  hmc_complex tmp2;
+  hmc_complex tmp3;
+  tmp1 = complexmult( &(*U)[0], &(*U)[3] );
+  tmp2 = reconstruct_su3(U,2);
+  tmp3 = complexmult( &tmp1, &tmp2 );
+  complexaccumulate(&det,&tmp3);
+
+  tmp1 = complexmult( &(*U)[2], &(*U)[5] );
+  tmp2 = reconstruct_su3(U,0);
+  tmp3 = complexmult( &tmp1, &tmp2 );
+  complexaccumulate(&det,&tmp3);
+
+  tmp1 = complexmult( &(*U)[4], &(*U)[1] );
+  tmp2 = reconstruct_su3(U,1);
+  tmp3 = complexmult( &tmp1, &tmp2 );
+  complexaccumulate(&det,&tmp3);
+
+  tmp1 = complexmult( &(*U)[3], &(*U)[4] );
+  tmp2 = reconstruct_su3(U,0);
+  tmp3 = complexmult( &tmp1, &tmp2 );
+  complexaccumulate(&subdet,&tmp3);
+
+  tmp1 = complexmult( &(*U)[5], &(*U)[0] );
+  tmp2 = reconstruct_su3(U,1);
+  tmp3 = complexmult( &tmp1, &tmp2 );
+  complexaccumulate(&subdet,&tmp3);
+
+  tmp1 = complexmult( &(*U)[1], &(*U)[2] );
+  tmp2 = reconstruct_su3(U,2);
+  tmp3 = complexmult( &tmp1, &tmp2 );
+  complexaccumulate(&subdet,&tmp3);
+
+  det.re -= subdet.re;
+  det.im -= subdet.im;
+
+#else
+  hmc_complex det, det1, det2, det3, det4, det5, det6, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6;
+  det.re=0;
+  det.im=0;
+  tmp1 = complexmult( &(*U)[1][1], &(*U)[2][2] );
+  det1 = complexmult( &(*U)[0][0] , &tmp1);
+  tmp2 = complexmult( &(*U)[1][2], &(*U)[2][0] );
+  det2 = complexmult( &(*U)[0][1] , &tmp2);
+  tmp3 = complexmult( &(*U)[1][0], &(*U)[2][1] );
+  det3 = complexmult( &(*U)[0][2] , &tmp3);
+  tmp4 = complexmult( &(*U)[1][1], &(*U)[2][0] );
+  det4 = complexmult( &(*U)[0][2] , &tmp4);
+  tmp5 = complexmult( &(*U)[1][0], &(*U)[2][2] );
+  det5 = complexmult( &(*U)[0][1] , &tmp5);
+  tmp6 = complexmult( &(*U)[1][2], &(*U)[2][1] );
+  det6 = complexmult( &(*U)[0][0] , &tmp6);
+
+det.re = det1.re + det2.re + det3.re - det4.re - det5.re - det6.re;
+det.im = det1.im + det2.im + det3.im - det4.im - det5.im - det6.im;
+
+
+//LZ: what is that?
+ /*
+U[0]*U[4]*U[8] + U[1]*U[5]*U[6] + U[2]*U[3]*U[7] - U[2]*U[4]*U[6] - U[1]*U[3]*U[8] - U[0]*U[5]*U[7]
+
+(*U)[0][0]*(*U)[1][1]*(*U)[2][2]
+(*U)[0][1]*(*U)[1][2]*(*U)[2][0] + 
+(*U)[0][2]*(*U)[1][0]*(*U)[2][1] - 
+(*U)[0][2]*(*U)[1][1]*(*U)[2][0] - 
+(*U)[0][1]*(*U)[1][0]*(*U)[2][2] - 
+(*U)[0][0]*(*U)[1][2]*(*U)[2][1];*/
+
+#endif
+  return det;
+}
+
 
 hmc_error copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in){
 #ifdef _RECONSTRUCT_TWELVE_
