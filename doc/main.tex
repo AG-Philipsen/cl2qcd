@@ -32,7 +32,7 @@ There are plaquette and Polyakov functions which work for a free gauge field. Th
 
 We could really need an interface to read xml-configs from the tmQCD code by Carsten (that way, we would also have ILDG format...)
 
-Now there is an input-file reader interface
+There is now an interface to read xml-configs from the tmLQCD code. But up to now, the program has a different geometry than ILDG format has. 
 
 %\section{Algorithm}
 \include{algorithm}
@@ -44,18 +44,20 @@ Now there is an input-file reader interface
 \section{Program files}
 \input{hmcerrs}
 \input{globals}
-\input{hmcerrs}
 \input{types}
 \input{operations}
 \input{gaugeobservables}
 \input{geometry}
 \input{input}
+\input{readgauge}
 \input{testing}
 
 %\section{Hybrid strategy}
 \include{hybridstrategy}
 
 \section{Some readings}
+\subsection{ILDG}
+here one can find infos about ILDG: http://ildg.sasr.edu.au/Plone
 \subsection{OpenCL}
 where to find the specs and docs
 \subsection{Other GPU-HMCs}

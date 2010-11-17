@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=latex 2010.8.25)  10 NOV 2010 19:31
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=latex 2010.8.25)  12 NOV 2010 10:10
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -350,40 +350,46 @@ LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <12> not available
 ) [5
 
 ] (./hmcerrs.tex) (./globals.tex)
-(./hmcerrs.tex) (./types.tex) (./operations.tex
+(./types.tex) (./operations.tex
 Overfull \hbox (43.9867pt too wide) in paragraph at lines 2--1
 \T1/cmr/m/n/10.95 Provides types: hmc_complex, hmc_float, hmc_full_spinor, hmc_
 full_spinor_field,
  []
 
-) (./gaugeobservables.tex) (./geometry.tex) (./input.tex) (./testing.tex)
+) (./gaugeobservables.tex) (./geometry.tex) (./input.tex) (./readgauge.tex
 [6
 
 ]
+Overfull \hbox (5.69516pt too wide) in paragraph at lines 8--9
+[]\T1/cmr/m/n/10.95 The read-ing of the metain-foram-tions was specif-i-cally t
+ested for two tmlqcd-
+ []
+
+) (./testing.tex) [7]
 \openout2 = `hybridstrategy.aux'.
 
- (./hybridstrategy.tex) [7
+ (./hybridstrategy.tex) [8
 
 ]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 63.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 65.
 
 (/usr/share/texmf-texlive/tex/latex/base/omscmr.fd
 File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 63.
- (./main.bbl) [8
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 65.
+ (./main.bbl) [9
 
 ]
 (./main.aux (./algorithm.aux) (./compileroptions.aux) (./hybridstrategy.aux)) )
  
 Here is how much of TeX's memory you used:
- 1363 strings out of 495001
- 14403 string characters out of 1180516
+ 1364 strings out of 495001
+ 14416 string characters out of 1180516
  64231 words of memory out of 3000000
  4528 multiletter control sequences out of 15000+50000
  18755 words of font info for 45 fonts, out of 3000000 for 9000
  36 hyphenation exceptions out of 8191
- 27i,7n,23p,382b,189s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 27i,7n,23p,489b,189s stack positions out of 5000i,500n,10000p,200000b,50000s
 
-Output written on main.dvi (8 pages, 10412 bytes).
+Output written on main.dvi (9 pages, 12784 bytes).

@@ -1,0 +1,5 @@
+
+\subsection{readgauge.h readgauge.cpp}
+
+Provides class sourcefileparameters which reads all from a given tmlqcd file.
+

@@ -1,0 +1,15 @@
+#ifndef _INPUTH_
+#define _INPUTH_
+
+class inputparameters {
+ public:
+  inputparameters(){};
+ private:
+  double kappa;
+  double beta;
+  double mu;
+  int cgmax;
+}
+
+
+#endif

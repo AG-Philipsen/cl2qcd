@@ -115,18 +115,17 @@ hmc_error set_gaugefield_source(hmc_gaugefield * gaugefield, hmc_float * gaugefi
       for (int j = 0; j<NSPACE; j++){
         for (int k = 0; k<NSPACE; k++){
           for (int l = 0; l<NDIM; l++){
-            //topology right?? What is the fastest index?? It should be colour, than dirac, than spatial, then time
             int spacepos = k + j*NSPACE + i*NSPACE*NSPACE;
             int globalpos = l + spacepos*NDIM + t*VOLSPACE*NDIM;
 #ifdef _RECONSTRUCT_TWELVE_
             for (int m = 0; m<NC; m++){
               for (int n = 0; n<NC; n++){
-		int ncindex = n + (NC-1)*m;
+		int ncindex = m + (NC-1)*n;
 		//ildg-std: [NT][NZ][NY][NX][NDIMENSION][NCOLOR][NCOLOR][2]
 		//which is stored in one single array here
 		//skip NC*NC*2 cmplx numbers
 		int pos = 2*n + 2*m*NC + globalpos*NC*NC*2;
-		if(n<NC-1) {
+		if(m<NC-1) {
 		  (*gaugefield)[ncindex][(l+1)%NDIM][spacepos][t].re = gaugefield_tmp[pos];
 		  (*gaugefield)[ncindex][(l+1)%NDIM][spacepos][t].im = gaugefield_tmp[pos + 1];
 		}
@@ -139,8 +138,8 @@ hmc_error set_gaugefield_source(hmc_gaugefield * gaugefield, hmc_float * gaugefi
                 //which is stored in one single array here
                 //skip NC*NC*2 cmplx numbers
                 int pos = 2*n + 2*m*NC + globalpos*NC*NC*2;
-                (*gaugefield)[n][m][(l+1)%NDIM][spacepos][t].re = gaugefield_tmp[pos];
-                (*gaugefield)[n][m][(l+1)%NDIM][spacepos][t].im = gaugefield_tmp[pos + 1];
+                (*gaugefield)[m][n][(l+1)%NDIM][spacepos][t].re = gaugefield_tmp[pos];
+                (*gaugefield)[m][n][(l+1)%NDIM][spacepos][t].im = gaugefield_tmp[pos + 1];
                 cter++;
 	      }}
 #endif
@@ -331,10 +330,10 @@ hmc_error multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matr
 	int np = i + (NC-1)*j;
 	hmc_complex qcomponent;
 	if(j==2) {
+	  qcomponent = reconstruct_su3(q,k);
+	} else {
 	  int nq = j + (NC-1)*k;
 	  qcomponent = (*q)[nq];
-	} else {
-	  qcomponent = reconstruct_su3(q,k);
 	}
 	hmc_complex tmp = complexmult(&(*p)[np],&qcomponent);
 	complexaccumulate(&(*out)[n],&tmp);

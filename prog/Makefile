@@ -6,8 +6,8 @@ GLOBALS=globals.h types.h hmcerrs.h testing.h
 #CP:
 #to supress deprecated warnings in the tmlqcd read functions: -Wno-write-strings
 CXX = g++
-#CXXFLAGS = -Wall -pedantic $(xml2-config --cflags) $(xml2-config --libs) -Wno-write-strings
-CXXFLAGS = -Wall -pedantic -Wno-write-strings -D_RECONSTRUCT_TWELVE_
+CXXFLAGS = -Wall -pedantic $(xml2-config --cflags) $(xml2-config --libs) -Wno-write-strings
+#CXXFLAGS = -Wall -pedantic -Wno-write-strings -D_RECONSTRUCT_TWELVE_
 
 #LDFLAGS = -L/home/pinke/lime/lime/lib
 LDFLAGS = -L/home/zeidlewicz/bin/lime/lime-lib/lib

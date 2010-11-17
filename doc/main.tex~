@@ -3,6 +3,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 
+\usepackage{amsmath}
+
 \title{Project documentation:\\
        \textbf{HMC with OpenCL for hybrid manycore systems}
 }
@@ -30,38 +32,33 @@ There are plaquette and Polyakov functions which work for a free gauge field. Th
 
 We could really need an interface to read xml-configs from the tmQCD code by Carsten (that way, we would also have ILDG format...)
 
-\section{Algorithm}
-HMC+CG(BiCGStab?)+eoprec+massprec
+There is now an interface to read xml-configs from the tmLQCD code. But up to now, the program has a different geometry than ILDG format has. 
 
-\section{Memory layout}
+%\section{Algorithm}
+\include{algorithm}
+
+\section{input/output}
+
+\include{compileroptions}
 
 \section{Program files}
-\subsection{hmc.cpp}
-main program, calls everything else
-\subsection{globals.h}
-Global definitions, by now: lattice layout.
-\subsection{hmcerrs.h}
-It might be a good idea to have our own error handling. This is the start...
-\subsection{types.h}
-Provides types: hmc\_complex, hmc\_float, hmc\_full\_spinor, hmc\_full\_spinor\_field, hmc\_full\_su3matrix, hmc\_full\_gaugefield
-\subsection{operations.h operations.cpp}
-local and global operations on the types defined in types.h. 
-\subsection{gaugeobservables.h gaugeobservables.cpp}
-plaquette and Polyakov functions
-\subsection{geometry.h geometry.cpp}
-map from (x,y,z) basis to one int (nspace)
+\input{hmcerrs}
+\input{globals}
+\input{hmcerrs}
+\input{types}
+\input{operations}
+\input{gaugeobservables}
+\input{geometry}
+\input{input}
+\input{readgauge}
+\input{testing}
 
-naming scheme: direction 1 = x; direction 2 = y; direction 3 = z; direction 0 = t
-
-important: (x,y,z) are always used together and it should be possible to use a different number of space dimensions (defined in globals.h). t is always apart.
-
-\subsection{testing.h testing.cpp}
-test functions
-
-
-\section{Hybrid strategy}
+%\section{Hybrid strategy}
+\include{hybridstrategy}
 
 \section{Some readings}
+\subsection{ILDG}
+here one can find infos about ILDG: http://ildg.sasr.edu.au/Plone
 \subsection{OpenCL}
 where to find the specs and docs
 \subsection{Other GPU-HMCs}

@@ -104,6 +104,9 @@ int main(int argc, char* argv[]) {
   printf("Polyakov loop in x: (%f,%f)\n",polyakov_x(gaugefield).re,polyakov_x(gaugefield).im);
   printf("Polyakov loop in y: (%f,%f)\n",polyakov_y(gaugefield).re,polyakov_y(gaugefield).im);
   printf("Polyakov loop in z: (%f,%f)\n",polyakov_z(gaugefield).re,polyakov_z(gaugefield).im);
+  printf("Polyakov loop in x: (%f,%f)\n",spatial_polyakov(gaugefield,1).re,spatial_polyakov(gaugefield,1).im);
+  printf("Polyakov loop in y: (%f,%f)\n",spatial_polyakov(gaugefield,2).re,spatial_polyakov(gaugefield,2).im);
+  printf("Polyakov loop in z: (%f,%f)\n",spatial_polyakov(gaugefield,3).re,spatial_polyakov(gaugefield,3).im);
 
   //init everything
 
