@@ -80,6 +80,7 @@ hmc_complex polyakov(hmc_gaugefield * field){
 
 
 //!! not tested
+/*
 hmc_complex spatial_polyakov(hmc_gaugefield* field, int dir){
   //assuming dir=1,2, or 3
   hmc_su3matrix prod[NSPACE*NSPACE*NTIME];
@@ -105,6 +106,39 @@ hmc_complex spatial_polyakov(hmc_gaugefield* field, int dir){
   for(int n=0; n<NSPACE*NSPACE*NTIME; n++) {
     hmc_complex tmpcomplex = trace_su3matrix(&prod[n]);
     complexaccumulate(&res,&tmpcomplex);
+  }
+  res.re /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
+  res.im /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
+  return res;
+}
+*/
+hmc_complex spatial_polyakov(hmc_gaugefield* field, int dir){
+  //assuming dir=1,2, or 3
+  hmc_complex res;
+  res.re=0;
+  res.im=0;
+  for(int x1=0; x1<NSPACE; x1++) {
+    for(int x2=0; x2<NSPACE; x2++) {
+      for(int t=0; t<NTIME; t++) {
+	hmc_su3matrix prod;
+	unit_su3matrix(&prod);
+	for(int xpol=0; xpol<NSPACE; xpol++) {
+	  hmc_su3matrix tmp;
+	  int coord[NDIM];
+	  coord[0]=t;
+	  coord[dir]=xpol;
+	  int next = (dir%(NDIM-1)) + 1;
+	  coord[next]=x1;
+	  int nnext = (next%(NDIM-1)) + 1;
+	  coord[nnext]=x2;
+	  int pos = get_nspace(coord);
+	  get_su3matrix(&tmp,field,pos,t,dir);
+	  accumulate_su3matrix_prod(&prod,&tmp);
+	}
+	hmc_complex tmpcomplex = trace_su3matrix(&prod);
+	complexaccumulate(&res,&tmpcomplex);
+      }
+    }
   }
   res.re /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
   res.im /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
