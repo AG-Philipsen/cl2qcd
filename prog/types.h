@@ -12,6 +12,10 @@ struct hmc_complex {
   hmc_float im;
 };
 
+hmc_complex const hmc_complex_one = {1., 0.};
+hmc_complex const hmc_complex_zero = {0., 0.};
+hmc_complex const hmc_complex_i = {0., 1.};
+
 //define a spinor field:  spinor[spin-color][coord3d][coord_time]
 typedef hmc_complex hmc_full_spinor [NSPIN*NC];
 typedef hmc_complex hmc_full_spinor_field [NSPIN*NC][VOLSPACE][NTIME];
@@ -24,7 +28,5 @@ typedef hmc_complex hmc_gaugefield [NC*(NC-1)][NDIM][VOLSPACE][NTIME];
 typedef hmc_complex hmc_su3matrix [NC][NC];
 typedef hmc_complex hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME];
 #endif
-
-
 
 #endif

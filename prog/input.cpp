@@ -7,6 +7,8 @@ hmc_error inputparameters::set_defaults(){
   cgmax = 1000;
   prec = 64;
   readsource = 0;
+  thermalizationsteps = 1000;
+  heatbathsteps = 1000;
   //sourcefile = "\0";
   return HMC_SUCCESS;
 }
@@ -35,6 +37,8 @@ hmc_error inputparameters::readfile(char* ifn){
     if(line.find("Prec")!=std::string::npos) val_assign(&prec,line);
     if(line.find("readsource")!=std::string::npos) val_assign(&readsource,line);
     if(line.find("sourcefile")!=std::string::npos) val_assign(&sourcefile,line);
+    if(line.find("thermalizationsteps")!=std::string::npos) val_assign(&thermalizationsteps,line);
+    if(line.find("heatbathsteps")!=std::string::npos) val_assign(&heatbathsteps,line);
   }
   return HMC_SUCCESS;
 }
@@ -78,6 +82,14 @@ int inputparameters::get_cgmax(){
 
 int inputparameters::get_prec(){
   return prec;
+}
+
+int inputparameters::get_thermalizationsteps(){
+  return thermalizationsteps;
+}
+
+int inputparameters::get_heatbathsteps(){
+  return heatbathsteps;
 }
 
 int inputparameters::get_readsource(){

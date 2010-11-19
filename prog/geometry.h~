@@ -15,5 +15,5 @@ int get_nspace(int* coord);
 int get_spacecoord(int nspace, int dir);
 
 int get_neighbor(int nspace, int dir);
-int get_lower_neighbor(int nspace, int dir);
+
 #endif

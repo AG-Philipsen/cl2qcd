@@ -18,7 +18,3 @@ const unsigned long long int seed = 500000;
 #define PI 	3.14159265358979
 
 #endif
-
-#ifdef _OPENMP
-# include <omp.h>
-#endif

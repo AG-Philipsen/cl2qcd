@@ -11,6 +11,12 @@
 #include "gaugeobservables.h"
 #include "input.h"
 #include "readgauge.h"
+#include "random.h"
+#include "update.h"
+#include "timer.h"
+
+// global random number thing
+Ran myran;
 
 using namespace std;
 
@@ -34,6 +40,8 @@ void print_info(inputparameters* params){
   printf("beta  = %f\n",(*params).get_beta());
   printf("CGmax = %d\n",(*params).get_cgmax());
   printf("prec = \t%d\n",(*params).get_prec());
+  printf("thermsteps = \t%d\n",(*params).get_thermalizationsteps());
+  printf("heatbathsteps = %d\n",(*params).get_heatbathsteps());
   printf("\n");
   if ((*params).get_readsource()) {
     printf("sourcefile = ");
@@ -70,6 +78,8 @@ void print_info_source(sourcefileparameters* params){
 
 int main(int argc, char* argv[]) {
 
+  Timer timer;
+  int time_measurements[10];
   char* progname = argv[0];
   print_hello(progname);
 
@@ -81,25 +91,57 @@ int main(int argc, char* argv[]) {
   hmc_gaugefield * gaugefield;
   gaugefield = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Initialitation
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////
   int err;
   if(parameters.get_readsource()){
+    timer.reset();
     //tmp gauge field
     hmc_float * gaugefield_tmp;
     gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float)*NDIM*NC*NC*NTIME*VOLSPACE);
     err = parameters_source.readsourcefile(&(parameters.sourcefile)[0], parameters.get_prec(), &gaugefield_tmp);
     err = set_gaugefield_source(gaugefield, gaugefield_tmp, parameters_source.num_entries_source);
     free(gaugefield_tmp);
+    time_measurements[0] = (int) timer.getTime();
   }
   else{
+    timer.reset();
     set_gaugefield_cold(gaugefield);
+    time_measurements[0] = (int) timer.getTime();
   }
+  
   print_info(&parameters);
-  if (parameters.get_readsource()){
+  if (parameters.get_readsource() && err == 0){
     print_info_source(&parameters_source);
   }
+  else if (parameters.get_readsource() && err != 0){
+    printf("error in setting vals from source!!! check global settings!!!\n\n");
+  }
 
-  //do stuff with the gauge field
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Thermalization
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  if(!parameters.get_readsource()){
+    timer.reset();
+    cout << endl << "perform thermalization" << endl;
+    for (int i = 0; i<parameters.get_thermalizationsteps(); i++){
+      heatbath_update (gaugefield, parameters.get_beta());
+    }
+    time_measurements[1] = (int) timer.getTime();
+  }
+  else
+    time_measurements[1] = 0;
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Test-Measurements
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  printf("stuff..\n");
+  
+  timer.reset();
   printf("plaquette: %f\n",plaquette(gaugefield));
+  time_measurements[2] = (int) timer.getTimeAndReset();
+  
   printf("Polyakov loop in t: (%f,%f)\n",polyakov(gaugefield).re,polyakov(gaugefield).im);
   printf("Polyakov loop in x: (%f,%f)\n",polyakov_x(gaugefield).re,polyakov_x(gaugefield).im);
   printf("Polyakov loop in y: (%f,%f)\n",polyakov_y(gaugefield).re,polyakov_y(gaugefield).im);
@@ -107,12 +149,42 @@ int main(int argc, char* argv[]) {
   printf("Polyakov loop in x: (%f,%f)\n",spatial_polyakov(gaugefield,1).re,spatial_polyakov(gaugefield,1).im);
   printf("Polyakov loop in y: (%f,%f)\n",spatial_polyakov(gaugefield,2).re,spatial_polyakov(gaugefield,2).im);
   printf("Polyakov loop in z: (%f,%f)\n",spatial_polyakov(gaugefield,3).re,spatial_polyakov(gaugefield,3).im);
+  
+  time_measurements[3] = (int) timer.getTimeAndReset();
 
-  //init everything
-
-  //perform updates
-
-  //output stuff
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Gaugefield-updates
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  printf("\nheatbath...\n");
+  timer.reset();
+  for (int i = 0; i<parameters.get_heatbathsteps(); i++){
+      heatbath_update (gaugefield, parameters.get_beta());
+      heatbath_overrelax (gaugefield, parameters.get_beta());
+  }
+  time_measurements[4] = (int) timer.getTimeAndReset();
+  printf("now the stuff is..\n");
+  printf("plaquette: %f\n",plaquette(gaugefield));
+  printf("Polyakov loop in t: (%f,%f)\n",polyakov(gaugefield).re,polyakov(gaugefield).im);
+  printf("Polyakov loop in x: (%f,%f)\n",polyakov_x(gaugefield).re,polyakov_x(gaugefield).im);
+  printf("Polyakov loop in y: (%f,%f)\n",polyakov_y(gaugefield).re,polyakov_y(gaugefield).im);
+  printf("Polyakov loop in z: (%f,%f)\n",polyakov_z(gaugefield).re,polyakov_z(gaugefield).im);
+  
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Output
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  cout << endl << "Time (mus): " << endl << endl;
+  if (parameters.get_readsource()){
+    cout  << "reading sourcefile:\t" << time_measurements[0] << endl;
+  }
+  else cout  << "Initialitation:\t" << time_measurements[0] << endl;
+  if(!parameters.get_readsource())
+    cout  << "thermalization:\t" << time_measurements[1] << endl;
+  cout  << "average plaquette:\t" << time_measurements[2] << endl;
+  cout  << "average polyakovloop:\t" << time_measurements[3]/7 << endl;
+  cout  << "average updating took:\t" << time_measurements[4]/parameters.get_heatbathsteps()/2 + time_measurements[1]/parameters.get_thermalizationsteps() << endl << endl;
+  
 
   return HMC_SUCCESS;
 }

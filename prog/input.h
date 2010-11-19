@@ -22,6 +22,8 @@ class inputparameters {
   int get_cgmax();
   int get_prec();
   int get_readsource();
+  int get_thermalizationsteps();
+  int get_heatbathsteps();
   void display_sourcefile();
   //CP
   //this is out of laziness
@@ -33,6 +35,8 @@ class inputparameters {
   int cgmax;
   int prec;
   int readsource;
+  int thermalizationsteps;
+  int heatbathsteps;
   void val_assign(hmc_float* out, std::string line);
   void val_assign(int * out, std::string line);
   void val_assign(std::string * out, std::string line);

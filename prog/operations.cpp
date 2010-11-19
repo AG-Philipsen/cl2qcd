@@ -250,18 +250,6 @@ hmc_complex det_su3matrix(hmc_su3matrix * U){
 det.re = det1.re + det2.re + det3.re - det4.re - det5.re - det6.re;
 det.im = det1.im + det2.im + det3.im - det4.im - det5.im - det6.im;
 
-
-//LZ: what is that?
- /*
-U[0]*U[4]*U[8] + U[1]*U[5]*U[6] + U[2]*U[3]*U[7] - U[2]*U[4]*U[6] - U[1]*U[3]*U[8] - U[0]*U[5]*U[7]
-
-(*U)[0][0]*(*U)[1][1]*(*U)[2][2]
-(*U)[0][1]*(*U)[1][2]*(*U)[2][0] + 
-(*U)[0][2]*(*U)[1][0]*(*U)[2][1] - 
-(*U)[0][2]*(*U)[1][1]*(*U)[2][0] - 
-(*U)[0][1]*(*U)[1][0]*(*U)[2][2] - 
-(*U)[0][0]*(*U)[1][2]*(*U)[2][1];*/
-
 #endif
   return det;
 }
@@ -276,6 +264,23 @@ hmc_error copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in){
   for(int a=0; a<NC; a++) {
     for(int b=0; b<NC; b++) {
       (*out)[a][b] = (*in)[a][b];
+    }
+  }
+#endif
+  return HMC_SUCCESS;
+}
+
+hmc_error zero_su3matrix(hmc_su3matrix * u){
+#ifdef _RECONSTRUCT_TWELVE_
+  for(int n=0; n<NC*(NC-1); n++) {
+    (*u)[n].re = 0;
+    (*u)[n].im = 0;
+  }
+#else
+  for(int a=0; a<NC; a++) {
+    for(int b=0; b<NC; b++) {
+      (*u)[a][b].re = 0;
+      (*u)[a][b].im = 0;
     }
   }
 #endif
@@ -348,6 +353,23 @@ hmc_error multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matr
 	hmc_complex tmp = complexmult(&(*p)[i][j],&(*q)[j][k]);
 	complexaccumulate(&(*out)[i][k],&tmp);
       }
+    }
+  }
+#endif
+  return HMC_SUCCESS;
+}
+
+hmc_error accumulate_su3matrices_add(hmc_su3matrix *p, hmc_su3matrix *q){
+#ifdef _RECONSTRUCT_TWELVE_
+  for(int n=0; n<NC*(NC-1); n++) {
+    complexaccumulate(&(*p)[n], &(*q)[n]);
+  }
+  
+#else
+
+  for(int i=0; i<NC; i++) {
+    for(int k=0; k<NC; k++) {
+      complexaccumulate(&(*p)[i][k],&(*q)[i][k]);
     }
   }
 #endif

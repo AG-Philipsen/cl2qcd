@@ -17,6 +17,7 @@ hmc_complex trace_su3matrix(hmc_su3matrix * mat);
 hmc_complex det_su3matrix(hmc_su3matrix * U);
 hmc_error copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in);
 hmc_error unit_su3matrix(hmc_su3matrix * u);
+hmc_error zero_su3matrix(hmc_su3matrix * u);
 hmc_error accumulate_su3matrix_prod(hmc_su3matrix *acc, hmc_su3matrix *multiplicator);
 hmc_error multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matrix *q);
 #ifdef _RECONSTRUCT_TWELVE_
@@ -39,6 +40,8 @@ hmc_error put_su3matrix(hmc_gaugefield * field, hmc_su3matrix * in, int spacepos
 
 hmc_error adjoin_su3(hmc_gaugefield * in, hmc_gaugefield * out);
 hmc_complex global_trace_su3(hmc_gaugefield * field, int mu);
+
+hmc_error accumulate_su3matrices_add(hmc_su3matrix *p, hmc_su3matrix *q);
 
 
 #endif
