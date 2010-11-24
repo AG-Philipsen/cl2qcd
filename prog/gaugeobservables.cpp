@@ -79,39 +79,7 @@ hmc_complex polyakov(hmc_gaugefield * field){
 }
 
 
-//!! not tested
-/*
-hmc_complex spatial_polyakov(hmc_gaugefield* field, int dir){
-  //assuming dir=1,2, or 3
-  hmc_su3matrix prod[NSPACE*NSPACE*NTIME];
-  for(int n=0; n<NSPACE*NSPACE*NTIME; n++) unit_su3matrix(&prod[n]);
-  for(int pos=0; pos<VOLSPACE; pos++) {
-    for(int t=0; t<NTIME; t++) {
-      hmc_su3matrix tmp;
-      get_su3matrix(&tmp,field,pos,t,dir);
-      int nextdir = dir + 1;
-      if(nextdir == 4) nextdir = 1;
-      int nextnextdir = dir + 2;
-      if(nextnextdir == 4) nextnextdir = 1;
-      if(nextnextdir == 5) nextnextdir = 2;
-      int xorth_1 = get_spacecoord(pos,nextdir);
-      int xorth_2 = get_spacecoord(pos,nextnextdir);
-      int n = t + NTIME*xorth_1 + NTIME*NSPACE*xorth_2;
-      accumulate_su3matrix_prod(&prod[n],&tmp);
-    }
-  }
-  hmc_complex res;
-  res.re=0;
-  res.im=0;
-  for(int n=0; n<NSPACE*NSPACE*NTIME; n++) {
-    hmc_complex tmpcomplex = trace_su3matrix(&prod[n]);
-    complexaccumulate(&res,&tmpcomplex);
-  }
-  res.re /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
-  res.im /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
-  return res;
-}
-*/
+//!!not tested
 hmc_complex spatial_polyakov(hmc_gaugefield* field, int dir){
   //assuming dir=1,2, or 3
   hmc_complex res;
@@ -157,7 +125,7 @@ hmc_complex polyakov_x(hmc_gaugefield * field){
     hmc_su3matrix prod;
     unit_su3matrix(&prod);
     for(int x=0; x<NSPACE; x++) {
-      pos = x + n;
+      pos = x + NSPACE*n;
       hmc_su3matrix tmp;
       get_su3matrix(&tmp,field,pos,t,tdir);
       accumulate_su3matrix_prod(&prod,&tmp);

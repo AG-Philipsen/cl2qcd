@@ -10,15 +10,11 @@
 extern Ran myran;
 
 
-const int su2_entries = 4;
-
-// global random number thing
-
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha);
 
-void reduction (hmc_complex dest[su2_entries], hmc_su3matrix src, const int rand);
-
-void extend (hmc_su3matrix dest, const int random, hmc_complex src[su2_entries]);
+// void reduction (hmc_complex dest[su2_entries], hmc_su3matrix src, const int rand);
+// 
+// void extend (hmc_su3matrix dest, const int random, hmc_complex src[su2_entries]);
 
 void calc_staple(hmc_gaugefield * field, hmc_su3matrix * dest, const int pos, const int t, const int mu_in);
 

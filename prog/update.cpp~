@@ -321,18 +321,18 @@ void heatbath_overrelax (hmc_gaugefield * gaugefield, const hmc_float beta){
 }
 
 void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float beta){
-  int pos, mu, t, i, j, k, l, m, big;
+  int pos, mu, t, i, j, k, l, m;
   //iterate through the sites
-  for (big = 0; big < NDIM; big ++){
+  for (mu = 0; mu < NDIM; mu ++){
     //update even sites
     #pragma omp for private (pos, i, j, k, l, m)
     for (l = 0; l<NSPACE; l++){
       for (k = 0; k<NSPACE; k++){
         for (j = 0; j< NSPACE/2; j++){
-          for (m = 0; m<NTIME; m++){
+          for (t = 0; t<NTIME; t++){
           //!! CP:
           //!! this implementation is very costly
-          pos =  int((k+l)%2)*(1 + 2*m - int (2*m/NTIME)) + int((k+1+l)%2)*(2*m + int (2*m/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*big;
+          pos =  int((k+l)%2)*(1 + 2*t - int (2*t/NTIME)) + int((k+1+l)%2)*(2*t + int (2*t/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*mu;
 
           hmc_su3matrix staplematrix, U, W;
           hmc_complex w [su2_entries];
@@ -412,7 +412,7 @@ void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float 
           for (m = 0; m<NTIME; m++){
           //!! CP:
           //!! this implementation is very costly
-          pos =  int((k+l+1)%2)*(1 + 2*m - int (2*m/NTIME)) + int((k+l)%2)*(2*m + int (2*m/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*big;
+          pos =  int((k+l+1)%2)*(1 + 2*m - int (2*m/NTIME)) + int((k+l)%2)*(2*m + int (2*m/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*mu;
 
           hmc_su3matrix staplematrix, U, W;
           hmc_complex w [su2_entries];
@@ -485,18 +485,18 @@ void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float 
 }
 
 void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield, const hmc_float beta){
-  int pos, mu, t, i, j, k, l, m, big;
+  int pos, mu, t, i, j, k, l;
   //iterate through the sites
-  for (big = 0; big < NDIM; big ++){
+  for (mu = 0; mu < NDIM; mu ++){
     //update even sites
-    #pragma omp for private (pos, i, j, k, l, m)
+    #pragma omp for private (pos, i, j, k, l)
     for (l = 0; l<NSPACE; l++){
       for (k = 0; k<NSPACE; k++){
         for (j = 0; j< NSPACE/2; j++){
-          for (m = 0; m<NTIME; m++){
+          for (t = 0; t<NTIME; t++){
           //!! CP:
           //!! this implementation is very costly
-          pos =  int((k+l)%2)*(1 + 2*m - int (2*m/NTIME)) + int((k+1+l)%2)*(2*m + int (2*m/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*big;
+          pos =  int((k+l)%2)*(1 + 2*t - int (2*t/NTIME)) + int((k+1+l)%2)*(2*t + int (2*t/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*mu;
 
           hmc_su3matrix staplematrix, U, W;
           hmc_complex w [su2_entries];
@@ -559,14 +559,14 @@ void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield, const hmc_flo
     #pragma omp barrier
 
     //update odd sites
-    #pragma omp for private (pos, i, j, k, l, m)
+    #pragma omp for private (pos, i, j, k, l)
     for (l = 0; l<NSPACE; l++){
       for (k = 0; k<NSPACE; k++){
         for (j = 0; j< NSPACE/2; j++){
-          for (m = 0; m<NTIME; m++){
+          for (t = 0; t<NTIME; t++){
           //!! CP:
           //!! this implementation is very costly
-          pos =  int((k+l+1)%2)*(1 + 2*m - int (2*m/NTIME)) + int((k+l)%2)*(2*m + int (2*m/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*big;
+          pos =  int((k+l+1)%2)*(1 + 2*t - int (2*t/NTIME)) + int((k+l)%2)*(2*t + int (2*t/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*mu;
 
           hmc_su3matrix staplematrix, U, W;
           hmc_complex w [su2_entries];

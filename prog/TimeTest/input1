@@ -2,12 +2,12 @@ kappa=.15
 mu=4
 cgmax=15
 cgmax=20
-beta=6.00
+beta=2.00
 #cgmax=3
 prec=64
 readsource=0
-thermalizationsteps=100
-heatbathsteps=100
+thermalizationsteps=10
+heatbathsteps=10
 sourcefile=conf.0759
 sourcefile=conf.save
 

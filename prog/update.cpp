@@ -1,75 +1,75 @@
 #include "update.h"
 
-//CP:
-//?? perhaps work with cases??
-void reduction (hmc_complex dest[su2_entries], hmc_su3matrix src, const int rand)
-{
-  if(rand == 1)
-  {
-    dest[0] = src[0][0];
-    dest[1] = src[0][1];
-    dest[2] = src[1][0];
-    dest[3] = src[1][1];
-  }
-  else if (rand==2)
-  {
-    dest[0] = src[1][1];
-    dest[1] = src[1][2];
-    dest[2] = src[2][1];
-    dest[3] = src[2][2];
-  }
-  else if (rand==3)
-  {
-    dest[0] = src[0][0];
-    dest[1] = src[0][2];
-    dest[2] = src[2][0];
-    dest[3] = src[2][2];
-  }
-  else
-    std::cout<<"error at reduction, rand not 1,2,3"<<std::endl;
-}
-
-// return an SU2 matrix (std basis) extended to SU3 (std basis)
-void extend (hmc_su3matrix * dest, const int random, hmc_complex src[su2_entries])
-{
-  if (random == 1){
-    (*dest)[0][0] = src[0];
-    (*dest)[0][1] = src[1];
-    (*dest)[0][2] = hmc_complex_zero;
-    (*dest)[1][0] = src[2];
-    (*dest)[1][1] = src[3];
-    (*dest)[1][2] = hmc_complex_zero;
-    (*dest)[2][0] = hmc_complex_zero;
-    (*dest)[2][1] = hmc_complex_zero;
-    (*dest)[2][2] = hmc_complex_one;
-  }
-  else if (random == 2){
-    (*dest)[0][0] = hmc_complex_one;
-    (*dest)[0][1] = hmc_complex_zero;
-    (*dest)[0][2] = hmc_complex_zero;
-    (*dest)[1][0] = hmc_complex_zero;
-    (*dest)[1][1] = src[0];
-    (*dest)[1][2] = src[1];
-    (*dest)[2][0] = hmc_complex_zero;
-    (*dest)[2][1] = src[2];
-    (*dest)[2][2] = src[3];
-  }
-  else if (random == 3){
-    (*dest)[0][0] = src[0];
-    (*dest)[0][1] = hmc_complex_zero;
-    (*dest)[0][2] = src[1];
-    (*dest)[1][0] = hmc_complex_zero;
-    (*dest)[1][1] = hmc_complex_one;
-    (*dest)[1][2] = hmc_complex_zero;
-    (*dest)[2][0] = src[2];
-    (*dest)[2][1] = hmc_complex_zero;
-    (*dest)[2][2] = src[3];
-  }
-  else
-    std::cout<<"error at extend, random not 1,2,3"<<std::endl;
-}
-
-
+// //CP:
+// //?? perhaps work with cases??
+// void reduction (hmc_complex dest[su2_entries], hmc_su3matrix src, const int rand)
+// {
+//   if(rand == 1)
+//   {
+//     dest[0] = src[0][0];
+//     dest[1] = src[0][1];
+//     dest[2] = src[1][0];
+//     dest[3] = src[1][1];
+//   }
+//   else if (rand==2)
+//   {
+//     dest[0] = src[1][1];
+//     dest[1] = src[1][2];
+//     dest[2] = src[2][1];
+//     dest[3] = src[2][2];
+//   }
+//   else if (rand==3)
+//   {
+//     dest[0] = src[0][0];
+//     dest[1] = src[0][2];
+//     dest[2] = src[2][0];
+//     dest[3] = src[2][2];
+//   }
+//   else
+//     std::cout<<"error at reduction, rand not 1,2,3"<<std::endl;
+// }
+// 
+// // return an SU2 matrix (std basis) extended to SU3 (std basis)
+// void extend (hmc_su3matrix * dest, const int random, hmc_complex src[su2_entries])
+// {
+//   if (random == 1){
+//     (*dest)[0][0] = src[0];
+//     (*dest)[0][1] = src[1];
+//     (*dest)[0][2] = hmc_complex_zero;
+//     (*dest)[1][0] = src[2];
+//     (*dest)[1][1] = src[3];
+//     (*dest)[1][2] = hmc_complex_zero;
+//     (*dest)[2][0] = hmc_complex_zero;
+//     (*dest)[2][1] = hmc_complex_zero;
+//     (*dest)[2][2] = hmc_complex_one;
+//   }
+//   else if (random == 2){
+//     (*dest)[0][0] = hmc_complex_one;
+//     (*dest)[0][1] = hmc_complex_zero;
+//     (*dest)[0][2] = hmc_complex_zero;
+//     (*dest)[1][0] = hmc_complex_zero;
+//     (*dest)[1][1] = src[0];
+//     (*dest)[1][2] = src[1];
+//     (*dest)[2][0] = hmc_complex_zero;
+//     (*dest)[2][1] = src[2];
+//     (*dest)[2][2] = src[3];
+//   }
+//   else if (random == 3){
+//     (*dest)[0][0] = src[0];
+//     (*dest)[0][1] = hmc_complex_zero;
+//     (*dest)[0][2] = src[1];
+//     (*dest)[1][0] = hmc_complex_zero;
+//     (*dest)[1][1] = hmc_complex_one;
+//     (*dest)[1][2] = hmc_complex_zero;
+//     (*dest)[2][0] = src[2];
+//     (*dest)[2][1] = hmc_complex_zero;
+//     (*dest)[2][2] = src[3];
+//   }
+//   else
+//     std::cout<<"error at extend, random not 1,2,3"<<std::endl;
+// }
+// 
+// 
 
 
 // Construct new SU2 matrix using improved alg by Kennedy Pendleton
@@ -321,18 +321,18 @@ void heatbath_overrelax (hmc_gaugefield * gaugefield, const hmc_float beta){
 }
 
 void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float beta){
-  int pos, mu, t, i, j, k, l, m, big;
+  int pos, mu, t, i, j, k, l, m;
   //iterate through the sites
-  for (big = 0; big < NDIM; big ++){
+  for (mu = 0; mu < NDIM; mu ++){
     //update even sites
     #pragma omp for private (pos, i, j, k, l, m)
     for (l = 0; l<NSPACE; l++){
       for (k = 0; k<NSPACE; k++){
         for (j = 0; j< NSPACE/2; j++){
-          for (m = 0; m<NTIME; m++){
+          for (t = 0; t<NTIME; t++){
           //!! CP:
           //!! this implementation is very costly
-          pos =  int((k+l)%2)*(1 + 2*m - int (2*m/NTIME)) + int((k+1+l)%2)*(2*m + int (2*m/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*big;
+          pos =  int((k+l)%2)*(1 + 2*t - int (2*t/NTIME)) + int((k+1+l)%2)*(2*t + int (2*t/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*mu;
 
           hmc_su3matrix staplematrix, U, W;
           hmc_complex w [su2_entries];
@@ -412,7 +412,7 @@ void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float 
           for (m = 0; m<NTIME; m++){
           //!! CP:
           //!! this implementation is very costly
-          pos =  int((k+l+1)%2)*(1 + 2*m - int (2*m/NTIME)) + int((k+l)%2)*(2*m + int (2*m/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*big;
+          pos =  int((k+l+1)%2)*(1 + 2*m - int (2*m/NTIME)) + int((k+l)%2)*(2*m + int (2*m/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*mu;
 
           hmc_su3matrix staplematrix, U, W;
           hmc_complex w [su2_entries];
@@ -485,18 +485,18 @@ void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float 
 }
 
 void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield, const hmc_float beta){
-  int pos, mu, t, i, j, k, l, m, big;
+  int pos, mu, t, i, j, k, l;
   //iterate through the sites
-  for (big = 0; big < NDIM; big ++){
+  for (mu = 0; mu < NDIM; mu ++){
     //update even sites
-    #pragma omp for private (pos, i, j, k, l, m)
+    #pragma omp for private (pos, i, j, k, l)
     for (l = 0; l<NSPACE; l++){
       for (k = 0; k<NSPACE; k++){
         for (j = 0; j< NSPACE/2; j++){
-          for (m = 0; m<NTIME; m++){
+          for (t = 0; t<NTIME; t++){
           //!! CP:
           //!! this implementation is very costly
-          pos =  int((k+l)%2)*(1 + 2*m - int (2*m/NTIME)) + int((k+1+l)%2)*(2*m + int (2*m/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*big;
+          pos =  int((k+l)%2)*(1 + 2*t - int (2*t/NTIME)) + int((k+1+l)%2)*(2*t + int (2*t/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*mu;
 
           hmc_su3matrix staplematrix, U, W;
           hmc_complex w [su2_entries];
@@ -559,14 +559,14 @@ void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield, const hmc_flo
     #pragma omp barrier
 
     //update odd sites
-    #pragma omp for private (pos, i, j, k, l, m)
+    #pragma omp for private (pos, i, j, k, l)
     for (l = 0; l<NSPACE; l++){
       for (k = 0; k<NSPACE; k++){
         for (j = 0; j< NSPACE/2; j++){
-          for (m = 0; m<NTIME; m++){
+          for (t = 0; t<NTIME; t++){
           //!! CP:
           //!! this implementation is very costly
-          pos =  int((k+l+1)%2)*(1 + 2*m - int (2*m/NTIME)) + int((k+l)%2)*(2*m + int (2*m/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*big;
+          pos =  int((k+l+1)%2)*(1 + 2*t - int (2*t/NTIME)) + int((k+l)%2)*(2*t + int (2*t/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*mu;
 
           hmc_su3matrix staplematrix, U, W;
           hmc_complex w [su2_entries];

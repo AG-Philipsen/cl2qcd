@@ -10,10 +10,6 @@
 extern Ran myran;
 
 
-const int su2_entries = 4;
-
-// global random number thing
-
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha);
 
 void reduction (hmc_complex dest[su2_entries], hmc_su3matrix src, const int rand);
@@ -27,5 +23,7 @@ void heatbath_update (hmc_gaugefield * gaugefield, const hmc_float beta);
 void heatbath_overrelax (hmc_gaugefield * gaugefield, const hmc_float beta);
 
 void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float beta);
+
+void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield, const hmc_float beta);
 
 #endif

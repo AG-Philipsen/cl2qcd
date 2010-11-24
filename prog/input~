@@ -5,8 +5,9 @@ cgmax=20
 beta=6.00
 #cgmax=3
 prec=64
-readsource=1
-thermalizationsteps=500
+readsource=0
+thermalizationsteps=10
+heatbathsteps=5
 sourcefile=conf.0759
 sourcefile=conf.save
 

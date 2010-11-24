@@ -11,7 +11,6 @@
 //     strcpy(buffer2, buffer.c_str());
 //     fwrite(buffer2, 1, sizeof(char)*nbytes, tmp);
 //   changed the use of tmpnam to some fixed filename
-
 void extrInfo_hmc_float(const char * in1, const char * in2, int len1, int len2, hmc_float * dest){
   char * tmp = new char[len2-len1-3+1];
   strncpy(tmp, &in1[len1+3], len2-len1-3);

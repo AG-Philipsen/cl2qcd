@@ -1,13 +1,13 @@
 #include "gaugeobservables.h"
 #include <cstdio>
 
-hmc_float plaquette(hmc_full_gaugefield * field){
+hmc_float plaquette(hmc_gaugefield * field){
   hmc_float tdummy;
   hmc_float sdummy;
   return plaquette(field,&tdummy,&sdummy);
 }
 
-hmc_float plaquette(hmc_full_gaugefield * field, hmc_float* tplaq, hmc_float* splaq){
+hmc_float plaquette(hmc_gaugefield * field, hmc_float* tplaq, hmc_float* splaq){
   hmc_float plaq=0;
   *tplaq=0;
   *splaq=0;
@@ -15,24 +15,24 @@ hmc_float plaquette(hmc_full_gaugefield * field, hmc_float* tplaq, hmc_float* sp
     for(int n=0;n<VOLSPACE;n++) {
       for(int mu=0; mu<NDIM; mu++) {
 	for(int nu=0;nu<mu; nu++) {
-	  hmc_full_su3matrix tmp;
-	  hmc_full_su3matrix prod;
+	  hmc_su3matrix tmp;
+	  hmc_su3matrix prod;
 	  //u_mu(x)
 	  get_su3matrix(&prod,field,n,t,mu);
 	  //u_nu(x+mu)
 	  if(mu==0) {
-	    int newt = (t+mu)%NTIME; //(haha)
-	    get_su3matrix(&tmp,field,n,newt,mu);
+	    int newt = (t+1)%NTIME; //(haha)
+	    get_su3matrix(&tmp,field,n,newt,nu);
 	  } else {
-	    get_su3matrix(&tmp,field,get_neighbor(n,mu),t,mu);
+	    get_su3matrix(&tmp,field,get_neighbor(n,mu),t,nu);
 	  }
 	  accumulate_su3matrix_prod(&prod,&tmp);
 	  //adjoint(u_mu(x+nu))
 	  if(nu==0) {
-	    int newt = (t+nu)%NTIME;
-	    get_su3matrix(&tmp,field,n,newt,nu);
+	    int newt = (t+1)%NTIME;
+	    get_su3matrix(&tmp,field,n,newt,mu);
 	  } else {
-	    get_su3matrix(&tmp,field,get_neighbor(n,nu),t,nu);
+	    get_su3matrix(&tmp,field,get_neighbor(n,nu),t,mu);
 	  }
 	  adjoin_su3matrix(&tmp);
 	  accumulate_su3matrix_prod(&prod,&tmp);
@@ -57,16 +57,16 @@ hmc_float plaquette(hmc_full_gaugefield * field, hmc_float* tplaq, hmc_float* sp
 }
 
 
-hmc_complex polyakov(hmc_full_gaugefield * field){
+hmc_complex polyakov(hmc_gaugefield * field){
   int const tdir = 0;
   hmc_complex res;
   res.re=0;
   res.im=0;
   for(int n=0; n<VOLSPACE; n++) {
-    hmc_full_su3matrix prod;
+    hmc_su3matrix prod;
     unit_su3matrix(&prod);
     for(int t=0; t<NTIME; t++) {
-      hmc_full_su3matrix tmp;
+      hmc_su3matrix tmp;
       get_su3matrix(&tmp,field,n,t,tdir);
       accumulate_su3matrix_prod(&prod,&tmp);
     }
@@ -77,3 +77,147 @@ hmc_complex polyakov(hmc_full_gaugefield * field){
   res.im /= static_cast<hmc_float>(NC*VOLSPACE);
   return res;
 }
+
+
+//!! not tested
+/*
+hmc_complex spatial_polyakov(hmc_gaugefield* field, int dir){
+  //assuming dir=1,2, or 3
+  hmc_su3matrix prod[NSPACE*NSPACE*NTIME];
+  for(int n=0; n<NSPACE*NSPACE*NTIME; n++) unit_su3matrix(&prod[n]);
+  for(int pos=0; pos<VOLSPACE; pos++) {
+    for(int t=0; t<NTIME; t++) {
+      hmc_su3matrix tmp;
+      get_su3matrix(&tmp,field,pos,t,dir);
+      int nextdir = dir + 1;
+      if(nextdir == 4) nextdir = 1;
+      int nextnextdir = dir + 2;
+      if(nextnextdir == 4) nextnextdir = 1;
+      if(nextnextdir == 5) nextnextdir = 2;
+      int xorth_1 = get_spacecoord(pos,nextdir);
+      int xorth_2 = get_spacecoord(pos,nextnextdir);
+      int n = t + NTIME*xorth_1 + NTIME*NSPACE*xorth_2;
+      accumulate_su3matrix_prod(&prod[n],&tmp);
+    }
+  }
+  hmc_complex res;
+  res.re=0;
+  res.im=0;
+  for(int n=0; n<NSPACE*NSPACE*NTIME; n++) {
+    hmc_complex tmpcomplex = trace_su3matrix(&prod[n]);
+    complexaccumulate(&res,&tmpcomplex);
+  }
+  res.re /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
+  res.im /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
+  return res;
+}
+*/
+hmc_complex spatial_polyakov(hmc_gaugefield* field, int dir){
+  //assuming dir=1,2, or 3
+  hmc_complex res;
+  res.re=0;
+  res.im=0;
+  for(int x1=0; x1<NSPACE; x1++) {
+    for(int x2=0; x2<NSPACE; x2++) {
+      for(int t=0; t<NTIME; t++) {
+	hmc_su3matrix prod;
+	unit_su3matrix(&prod);
+	for(int xpol=0; xpol<NSPACE; xpol++) {
+	  hmc_su3matrix tmp;
+	  int coord[NDIM];
+	  coord[0]=t;
+	  coord[dir]=xpol;
+	  int next = (dir%(NDIM-1)) + 1;
+	  coord[next]=x1;
+	  int nnext = (next%(NDIM-1)) + 1;
+	  coord[nnext]=x2;
+	  int pos = get_nspace(coord);
+	  get_su3matrix(&tmp,field,pos,t,dir);
+	  accumulate_su3matrix_prod(&prod,&tmp);
+	}
+	hmc_complex tmpcomplex = trace_su3matrix(&prod);
+	complexaccumulate(&res,&tmpcomplex);
+      }
+    }
+  }
+  res.re /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
+  res.im /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
+  return res;
+}
+
+//!! not tested
+hmc_complex polyakov_x(hmc_gaugefield * field){
+  int const tdir = 1; 
+  int pos;
+  hmc_complex res;
+  res.re=0;
+  res.im=0;
+  for(int n=0; n<NSPACE*NSPACE; n++) {
+    for(int t=0; t<NTIME; t++) {
+    hmc_su3matrix prod;
+    unit_su3matrix(&prod);
+    for(int x=0; x<NSPACE; x++) {
+      pos = x + NSPACE*NSPACE*n;
+      hmc_su3matrix tmp;
+      get_su3matrix(&tmp,field,pos,t,tdir);
+      accumulate_su3matrix_prod(&prod,&tmp);
+    }
+    hmc_complex tmpcomplex = trace_su3matrix(&prod);
+    complexaccumulate(&res,&tmpcomplex);
+  }}
+  res.re /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
+  res.im /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
+  return res;
+}
+
+//!! not tested
+hmc_complex polyakov_y(hmc_gaugefield * field){
+  int const tdir = 2; 
+  int pos;
+  hmc_complex res;
+  res.re=0;
+  res.im=0;
+  for(int x=0; x<NSPACE; x++) {
+    for(int z=0; z<NSPACE; z++) {
+    for(int t=0; t<NTIME; t++) {
+    hmc_su3matrix prod;
+    unit_su3matrix(&prod);
+    for(int y=0; y<NSPACE; y++) {
+      pos = x + y*NSPACE + z*NSPACE*NSPACE;
+      hmc_su3matrix tmp;
+      get_su3matrix(&tmp,field,pos,t,tdir);
+      accumulate_su3matrix_prod(&prod,&tmp);
+    }
+    hmc_complex tmpcomplex = trace_su3matrix(&prod);
+    complexaccumulate(&res,&tmpcomplex);
+  }}}
+  res.re /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
+  res.im /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
+  return res;
+}
+
+//!! not tested
+hmc_complex polyakov_z(hmc_gaugefield * field){
+  int const tdir = 3; 
+  int pos;
+  hmc_complex res;
+  res.re=0;
+  res.im=0;
+  for(int n=0; n<NSPACE*NSPACE; n++) {
+    for(int t=0; t<NTIME; t++) {
+    hmc_su3matrix prod;
+    unit_su3matrix(&prod);
+    for(int z=0; z<NSPACE; z++) {
+      pos = n + z*NSPACE*NSPACE;
+      hmc_su3matrix tmp;
+      get_su3matrix(&tmp,field,pos,t,tdir);
+      accumulate_su3matrix_prod(&prod,&tmp);
+    }
+    hmc_complex tmpcomplex = trace_su3matrix(&prod);
+    complexaccumulate(&res,&tmpcomplex);
+  }}
+  res.re /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
+  res.im /= static_cast<hmc_float>(NC*NSPACE*NSPACE*NTIME);
+  return res;
+}
+

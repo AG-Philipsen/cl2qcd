@@ -43,5 +43,8 @@ hmc_complex global_trace_su3(hmc_gaugefield * field, int mu);
 
 hmc_error accumulate_su3matrices_add(hmc_su3matrix *p, hmc_su3matrix *q);
 
+void reduction (hmc_complex dest[su2_entries], hmc_su3matrix src, const int rand);
+
+void extend (hmc_su3matrix * dest, const int random, hmc_complex src[su2_entries]);
 
 #endif
