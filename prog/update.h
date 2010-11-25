@@ -1,6 +1,6 @@
 #ifndef _UPDATEH_
 #define _UPDATEH_
-#include "globals.h"
+#include "globaldefs.h"
 #include "types.h"
 #include "hmcerrs.h"
 #include "operations.h"
@@ -16,7 +16,8 @@ void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha);
 // 
 // void extend (hmc_su3matrix dest, const int random, hmc_complex src[su2_entries]);
 
-void calc_staple(hmc_gaugefield * field, hmc_su3matrix * dest, const int pos, const int t, const int mu_in);
+// void calc_staple(hmc_gaugefield * field, hmc_su3matrix * dest, const int pos, const int t, const int mu_in);
+void calc_staple(hmc_gaugefield * field, hmc_staplematrix * dest, const int pos, const int t, const int mu_in);
 
 void heatbath_update (hmc_gaugefield * gaugefield, const hmc_float beta);
 

@@ -1,6 +1,6 @@
 #ifndef _GAUGEOBSERVABLESH_
 #define _GAUGEOBSERVABLESH_
-#include "globals.h"
+#include "globaldefs.h"
 #include "types.h"
 #include "hmcerrs.h"
 #include "operations.h"

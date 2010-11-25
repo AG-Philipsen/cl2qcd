@@ -5,13 +5,16 @@
 #include <cstdio>
 
 #include "hmcerrs.h"
-#include "globals.h"
+#include "globaldefs.h"
 #include "types.h"
 #include "operations.h"
 #include "geometry.h"
 
 typedef unsigned long long int Ullong;
 typedef unsigned int Uint;
+
+//Seed for Random
+const unsigned long long int seed = 500000;
 
 //mod. NR-version
 

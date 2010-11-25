@@ -22,20 +22,13 @@ txt1 = """#ifndef _GLOBALSH_
 #define NSPACE """
 
 txt2 = """
-int const VOLSPACE  = NSPACE*NSPACE*NSPACE;
-int const VOL4D = VOLSPACE*NTIME;
+#define VOLSPACE NSPACE*NSPACE*NSPACE
+#define VOL4D VOLSPACE*NTIME
 
-//Seed for Random
-const unsigned long long int seed = 500000;
-
-const int su2_entries = 4;
+#define su2_entries 4
 
 #define PI 	3.14159265358979
 
-#endif
-
-#ifdef _OPENMP
-# include <omp.h>
 #endif
 """
 bla = os.getcwd()
@@ -44,8 +37,8 @@ bla = os.getcwd()
 
 for i in range (0, res2):
  os.system('make clean')
- os.remove('./globals.h')
- f = open('./globals.h', 'w')
+ os.remove('./globaldefs.h')
+ f = open('./globaldefs.h', 'w')
  f.write(txt1)
  f.write(str((i+1)*4) + '\n#define NTIME ' + str((i+1)*4))
  f.write(txt2)

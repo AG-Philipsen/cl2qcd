@@ -25,15 +25,31 @@ void testing_spinor() {
 
 void print_su3mat(hmc_su3matrix* A){
 #ifdef _RECONSTRUCT_TWELVE_
-  printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[0].re,(*A)[0].im,(*A)[2].re,(*A)[2].im,(*A)[4].re,(*A)[4].im);
+  printf("\n| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[0].re,(*A)[0].im,(*A)[2].re,(*A)[2].im,(*A)[4].re,(*A)[4].im);
   printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[1].re,(*A)[1].im,(*A)[3].re,(*A)[3].im,(*A)[5].re,(*A)[5].im);
   hmc_complex ca = reconstruct_su3(A,0);
   hmc_complex cb = reconstruct_su3(A,1);
   hmc_complex cc = reconstruct_su3(A,2);
   printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",ca.re,ca.im,cb.re,cb.im,cc.re,cc.im);
 #else
+  printf("\n");
+  for(int a = 0; a<NC; a++) {
+  printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[a][0].re,(*A)[a][0].im,(*A)[a][1].re,(*A)[a][1].im,(*A)[a][2].re,(*A)[a][2].im);}
+  printf("\n");
+#endif
+  return;
+}
+
+void print_staplemat(hmc_staplematrix* A){
+#ifdef _RECONSTRUCT_TWELVE_
+  printf("\n| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[0].re,(*A)[0].im,(*A)[2].re,(*A)[2].im,(*A)[4].re,(*A)[4].im);
+  printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[1].re,(*A)[1].im,(*A)[3].re,(*A)[3].im,(*A)[5].re,(*A)[5].im);
+  printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[6].re,(*A)[6].im,(*A)[7].re,(*A)[7].im,(*A)[8].re,(*A)[8].im);
+#else
+  printf("\n");
   for(int a = 0; a<NC; a++) 
   printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[a][0].re,(*A)[a][0].im,(*A)[a][1].re,(*A)[a][1].im,(*A)[a][2].re,(*A)[a][2].im);
+  printf("\n");
 #endif
   return;
 }

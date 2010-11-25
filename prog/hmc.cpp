@@ -1,91 +1,15 @@
-#include <cstdlib>
-#include <cmath>
-#include <cstdio>
-#include <string>
-#include <boost/lexical_cast.hpp>
-
-#include "globals.h"
-#include "hmcerrs.h"
-#include "types.h"
-#include "operations.h"
-#include "geometry.h"
-#include "testing.h"
-#include "gaugeobservables.h"
-#include "input.h"
-#include "readgauge.h"
-#include "random.h"
-#include "update.h"
-#include "timer.h"
-
-// global random number thing
-Ran myran;
-
-using namespace std;
-
-void print_hello(char* name){
-  printf("\n%s says: \"when I'm grown up, I will be a complete HMC simulation...\"\n\n",name);
-  return;
-}
-
-void print_info(inputparameters* params){
-  printf("**********************************************************\n");
-  printf("Compile time parameters:\n");
-  printf("NSPACE:  %d\n",NSPACE);
-  printf("NTIME:   %d\n",NTIME);
-  printf("NDIM:    %d\n",NDIM);
-  printf("NCOLOR:  %d\n",NC);
-  printf("NSPIN:   %d\n",NSPIN);
-  printf("\n");
-  printf("Run time parameters:\n");
-  printf("kappa = %f\n",(*params).get_kappa());
-  printf("mu    = %f\n",(*params).get_mu());
-  printf("beta  = %f\n",(*params).get_beta());
-  printf("CGmax = %d\n",(*params).get_cgmax());
-  printf("prec = \t%d\n",(*params).get_prec());
-  printf("thermsteps = \t%d\n",(*params).get_thermalizationsteps());
-  printf("heatbathsteps = %d\n",(*params).get_heatbathsteps());
-  printf("\n");
-  if ((*params).get_readsource()) {
-    printf("sourcefile = ");
-    (*params).display_sourcefile();
-    printf("\n");
-  }
-  else {
-    printf("no sourcefile\n");
-  }
-  printf("**********************************************************\n");
-  printf("\n");
-  return;
-}
-
-
-void print_info_source(sourcefileparameters* params){
-  printf("**********************************************************\n");
-  printf("Sourcefile parameters: (list not complete)\n");
-  printf("field:  %s\n",(*params).field_source);
-  printf("LX:  \t%d\n",(*params).lx_source);
-  printf("LY:  \t%d\n",(*params).ly_source);
-  printf("LZ:  \t%d\n",(*params).lz_source);
-  printf("LT:  \t%d\n",(*params).lt_source);
-  printf("entries: %d\n", (*params).num_entries_source);
-  printf("beta:  \t%f\n",(*params).beta_source);
-  printf("mu:  \t%f\n",(*params).mu_source);
-  printf("kappa:  %f\n",(*params).kappa_source);
-  printf("mubar:  %f\n",(*params).mubar_source);
-  printf("plaq: \t%f\n",(*params).plaquettevalue_source);
-  printf("**********************************************************\n");
-  printf("\n");
-  return;
-}
+#include "hmc.h"
 
 int main(int argc, char* argv[]) {
+
+  //   init_opencl();
+  // return 0;
 
   Timer timer;
   int time_measurements[10];
   for (int i = 0; i<10; i++){
     time_measurements[i] = 0;
   }
-
   char* progname = argv[0];
   print_hello(progname);
 
@@ -98,7 +22,7 @@ int main(int argc, char* argv[]) {
   gaugefield = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Initialisation
+  // Initialization
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   int err;
   if(parameters.get_readsource()){
@@ -129,16 +53,15 @@ int main(int argc, char* argv[]) {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Thermalization
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  timer.reset();
   if(!parameters.get_readsource()){
-    timer.reset();
     cout << endl << "perform thermalization" << endl;
     for (int i = 0; i<parameters.get_thermalizationsteps(); i++){
-      heatbath_update (gaugefield, parameters.get_beta());
+      heatbath_update (gaugefield, parameters.get_beta());cout << i << " " << endl;
     }
-    time_measurements[1] = (int) timer.getTime();
+    
   }
-  else
-    time_measurements[1] = 0;
+  time_measurements[1] = (int) timer.getTime();
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Test-Measurements
@@ -180,7 +103,7 @@ int main(int argc, char* argv[]) {
   for (int i = 0; i<parameters.get_heatbathsteps(); i++){
       heatbath_update (gaugefield, parameters.get_beta());
       time_measurements[4] += (int) timer.getTimeAndReset();
-//       heatbath_overrelax (gaugefield, parameters.get_beta());
+//        heatbath_overrelax (gaugefield, parameters.get_beta());
   }
   
   for (int i = 0; i<parameters.get_heatbathsteps(); i++){
@@ -248,7 +171,7 @@ int main(int argc, char* argv[]) {
   	, (float) (time_measurements[4] + time_measurements[1])*100/totaltime);
   printf("**************************************************************\n");
  
-  //same some data to file
+  //save some data to file
   ofstream out;
   string filename = ("time_");
   string space = ("_");
@@ -268,12 +191,12 @@ int main(int argc, char* argv[]) {
     out.close();
   }
   else cout << "Unable to open file for output" << endl;
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // free variables
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// free variables
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
   free (gaugefield);
-  
+
   
   return HMC_SUCCESS;
 }

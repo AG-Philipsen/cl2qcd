@@ -270,9 +270,41 @@ hmc_error copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in){
   return HMC_SUCCESS;
 }
 
+hmc_error copy_staplematrix(hmc_staplematrix *out, hmc_staplematrix *in){
+#ifdef _RECONSTRUCT_TWELVE_
+  for(int n=0; n<NC*NC; n++) {
+    (*out)[n] = (*in)[n];
+  }
+#else
+  for(int a=0; a<NC; a++) {
+    for(int b=0; b<NC; b++) {
+      (*out)[a][b] = (*in)[a][b];
+    }
+  }
+#endif
+  return HMC_SUCCESS;
+}
+
 hmc_error zero_su3matrix(hmc_su3matrix * u){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*(NC-1); n++) {
+    (*u)[n].re = 0;
+    (*u)[n].im = 0;
+  }
+#else
+  for(int a=0; a<NC; a++) {
+    for(int b=0; b<NC; b++) {
+      (*u)[a][b].re = 0;
+      (*u)[a][b].im = 0;
+    }
+  }
+#endif
+  return HMC_SUCCESS;
+}
+
+hmc_error zero_staplematrix(hmc_staplematrix * u){
+#ifdef _RECONSTRUCT_TWELVE_
+  for(int n=0; n<NC*NC; n++) {
     (*u)[n].re = 0;
     (*u)[n].im = 0;
   }
@@ -359,12 +391,84 @@ hmc_error multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matr
   return HMC_SUCCESS;
 }
 
-hmc_error accumulate_su3matrices_add(hmc_su3matrix *p, hmc_su3matrix *q){
+hmc_error multiply_staplematrix(hmc_staplematrix *out, hmc_su3matrix *p, hmc_staplematrix *q){
+#ifdef _RECONSTRUCT_TWELVE_
+  for(int n=0; n<NC*(NC-1); n++) {
+      (*out)[n].re=0;
+      (*out)[n].im=0;
+      for(int j=0;j<NC;j++) {
+	int k = (int)(n/(NC-1));
+	int i = n - (NC-1)*k;
+	int np = i + (NC-1)*j;
+	hmc_complex qcomponent;
+	if(j==2) {
+// 	  qcomponent = reconstruct_su3(q,k);
+          qcomponent = (*q)[NC*(NC-1)+k];
+	} else {
+	  int nq = j + (NC-1)*k;
+	  qcomponent = (*q)[nq];
+	}
+	hmc_complex tmp = complexmult(&(*p)[np],&qcomponent);
+	complexaccumulate(&(*out)[n],&tmp);
+      }
+    }
+    //the left components:
+    hmc_complex X = reconstruct_su3(p,0);
+    hmc_complex Y = reconstruct_su3(p,1);
+    hmc_complex Z = reconstruct_su3(p,2);
+    hmc_complex tmp;
+    ((*out)[6]).re=0;
+    ((*out)[6]).im=0;
+    ((*out)[7]).re=0;
+    ((*out)[7]).im=0;
+    ((*out)[8]).re=0;
+    ((*out)[8]).im=0;
+    
+    tmp = complexmult(&X,&(*q)[0]);
+    complexaccumulate(&(*out)[6],&tmp);
+    tmp = complexmult(&Y,&(*q)[1]);
+    complexaccumulate(&(*out)[6],&tmp);
+    tmp = complexmult(&Z,&(*q)[6]);
+    complexaccumulate(&(*out)[6],&tmp);
+
+    tmp = complexmult(&X,&(*q)[2]);
+    complexaccumulate(&(*out)[7],&tmp);
+    tmp = complexmult(&Y,&(*q)[3]);
+    complexaccumulate(&(*out)[7],&tmp);
+    tmp = complexmult(&Z,&(*q)[7]);
+    complexaccumulate(&(*out)[7],&tmp);
+
+    tmp = complexmult(&X,&(*q)[4]);
+    complexaccumulate(&(*out)[8],&tmp);
+    tmp = complexmult(&Y,&(*q)[5]);
+    complexaccumulate(&(*out)[8],&tmp);
+    tmp = complexmult(&Z,&(*q)[8]);
+    complexaccumulate(&(*out)[8],&tmp);
+    
+#else
+  for(int i=0; i<NC; i++) {
+    for(int k=0; k<NC; k++) {
+      (*out)[i][k].re=0;
+      (*out)[i][k].im=0;
+      for(int j=0;j<NC;j++) {
+	hmc_complex tmp = complexmult(&(*p)[i][j],&(*q)[j][k]);
+	complexaccumulate(&(*out)[i][k],&tmp);
+      }
+    }
+  }
+#endif
+  return HMC_SUCCESS;
+}
+
+hmc_error accumulate_su3matrices_add(hmc_staplematrix *p, hmc_su3matrix *q){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*(NC-1); n++) {
     complexaccumulate(&(*p)[n], &(*q)[n]);
   }
-  
+  for(int n=NC*(NC-1);  n<NC*NC; n++) {
+    hmc_complex tmp = reconstruct_su3(q, n-NC*(NC-1)); 
+    complexaccumulate(&(*p)[n], &(tmp));
+  }  
 #else
 
   for(int i=0; i<NC; i++) {
@@ -447,33 +551,30 @@ hmc_error put_su3matrix(hmc_gaugefield * field, hmc_su3matrix * in, int spacepos
 
 //CP:
 //?? perhaps work with cases??
-void reduction (hmc_complex dest[su2_entries], hmc_su3matrix src, const int rand){
+void reduction (hmc_complex dest[su2_entries], hmc_staplematrix src, const int rand){
 #ifdef _RECONSTRUCT_TWELVE_
-
   if(rand == 1)
-  {
-    dest[0] = src[0];
-    dest[1] = src[1];
-    dest[2] = src[3];
-    dest[3] = src[4];
-  }
-  else if (rand==2)
-  {
-    dest[0] = src[4];
-    dest[1] = src[5];
-    dest[2] = reconstruct_su3((hmc_su3matrix*)src, 1);
-    dest[3] = reconstruct_su3((hmc_su3matrix*)src, 2);
-  }
+  { 
+    dest[0] = src[0]; 
+    dest[1] = src[2]; 
+    dest[2] = src[1]; 
+    dest[3] = src[3]; 
+  } 
+  else if (rand==2) 
+  { 
+    dest[0] = src[3]; 
+    dest[1] = src[5]; 
+    dest[2] = src[7];
+    dest[3] = src[8];
+  } 
   else if (rand==3)
-  {
-    dest[0] = src[0];
-    dest[1] = src[2];
-    dest[2] = reconstruct_su3((hmc_su3matrix*)src, 0);
-    dest[3] = reconstruct_su3((hmc_su3matrix*)src, 2);
-  }
-  else
-    std::cout<<"error at reduction, rand not 1,2,3"<<std::endl;
-
+  { 
+    dest[0] = src[0]; 
+    dest[1] = src[4]; 
+    dest[2] = src[6];
+    dest[3] = src[8];
+  } 
+  else std::cout<<"error at reduction, rand not 1,2,3"<<std::endl; 
 #else
   if(rand == 1)
   {
@@ -506,26 +607,26 @@ void extend (hmc_su3matrix * dest, const int random, hmc_complex src[su2_entries
 #ifdef _RECONSTRUCT_TWELVE_
   if (random == 1){
     (*dest)[0] = src[0];
-    (*dest)[1] = src[1];
-    (*dest)[2] = hmc_complex_zero;
-    (*dest)[3] = src[2];
-    (*dest)[4] = src[3];
+    (*dest)[2] = src[1];
+    (*dest)[4] = hmc_complex_zero;
+    (*dest)[1] = src[2];
+    (*dest)[3] = src[3];
     (*dest)[5] = hmc_complex_zero;
   }
   else if (random == 2){
     (*dest)[0] = hmc_complex_one;
-    (*dest)[1] = hmc_complex_zero;
     (*dest)[2] = hmc_complex_zero;
-    (*dest)[3] = hmc_complex_zero;
-    (*dest)[4] = src[0];
+    (*dest)[4] = hmc_complex_zero;
+    (*dest)[1] = hmc_complex_zero;
+    (*dest)[3] = src[0];
     (*dest)[5] = src[1];
   }
   else if (random == 3){
     (*dest)[0] = src[0];
+    (*dest)[2] = hmc_complex_zero;
+    (*dest)[4] = src[1];
     (*dest)[1] = hmc_complex_zero;
-    (*dest)[2] = src[1];
-    (*dest)[3] = hmc_complex_zero;
-    (*dest)[4] = hmc_complex_one;
+    (*dest)[3] = hmc_complex_one;
     (*dest)[5] = hmc_complex_zero;
   }
   else

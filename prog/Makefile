@@ -1,31 +1,41 @@
 PROGRAM = hmc
 PROGNAME = hmc
 
-GLOBALS=globals.h types.h hmcerrs.h
-
-#CP:
-#to supress deprecated warnings in the tmlqcd read functions: -Wno-write-strings
 CXX = g++
-#CXXFLAGS = -Wall -pedantic $(xml2-config --cflags) $(xml2-config --libs) -std=gnu++0x -fopenmp
-CXXFLAGS = -Wall -pedantic $(xml2-config --cflags) $(xml2-config --libs) -std=gnu++0x -fopenmp -D_RECONSTRUCT_TWELVE_
 
-#LDFLAGS = -L/home/pinke/lime/lime/lib
-LDFLAGS = -L/home/zeidlewicz/bin/lime/lime-lib/lib
-LIBS = -lm -llime -lxml2
+DEFS=-D_RECONSTRUCT_TWELVE_
+#DEFS=-D_RECONSTRUCT_TWELVE_ -D_OPENMP
 
 #INCLUDES = -I/home/pinke/lime/lime/include -I/usr/include/libxml2
-INCLUDES = -I/home/zeidlewicz/bin/lime/lime-lib/include -I/usr/include/libxml2
+INCLUDES = -I/home/zeidlewicz/bin/lime/lime-lib/include -I/usr/include/libxml2 -I/home/zeidlewicz/bin/ati-stream-sdk-v2.2-lnx64/include/
 
-OBJECTS = operations.o gaugeobservables.o testing.o geometry.o input.o readgauge.o random.o update.o timer.o
+#LDFLAGS = -L/home/pinke/lime/lime/lib
+LDFLAGS = -L/home/zeidlewicz/bin/lime/lime-lib/lib -I/home/zeidlewicz/bin/ati-stream-sdk-v2.2-lnx64/lib/x86_64/
 
-main: $(PROGRAM).cpp $(GLOBALS) $(OBJECTS) 
+LIBS = -lm -llime -lxml2 -lOpenCL
+
+CXXFLAGS = -Wall -pedantic $(xml2-config --cflags) $(xml2-config --libs) -std=gnu++0x -fopenmp $(DEFS)
+
+GLOBALS=globaldefs.h types.h hmcerrs.h
+
+OBJECTS = operations.o \
+	gaugeobservables.o \
+	testing.o \
+	geometry.o \
+	input.o \
+	readgauge.o \
+	random.o \
+	update.o \
+	timer.o \
+	opencl.o
+
+main: $(PROGRAM).cpp $(GLOBALS) $(PROGRAM).h $(OBJECTS)
 	$(CXX) -o ${PROGNAME} $(CXXFLAGS) $(PROGRAM).cpp ${OBJECTS} $(LDFLAGS) $(LIBS) $(INCLUDES) 
 
 %.o: %.cpp %.h $(GLOBALS)
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES)  $<
-#	$(CXX) -c $(CXXFLAGS) $(INCLUDES) $(LDFLAGS) $(LIBS) $<
 
 clean:
-	rm -f hmc *.o
+	rm -f $(PROGNAME) *.o
 
 .PHONY: all clean

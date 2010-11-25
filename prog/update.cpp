@@ -1,90 +1,18 @@
 #include "update.h"
-
-// //CP:
-// //?? perhaps work with cases??
-// void reduction (hmc_complex dest[su2_entries], hmc_su3matrix src, const int rand)
-// {
-//   if(rand == 1)
-//   {
-//     dest[0] = src[0][0];
-//     dest[1] = src[0][1];
-//     dest[2] = src[1][0];
-//     dest[3] = src[1][1];
-//   }
-//   else if (rand==2)
-//   {
-//     dest[0] = src[1][1];
-//     dest[1] = src[1][2];
-//     dest[2] = src[2][1];
-//     dest[3] = src[2][2];
-//   }
-//   else if (rand==3)
-//   {
-//     dest[0] = src[0][0];
-//     dest[1] = src[0][2];
-//     dest[2] = src[2][0];
-//     dest[3] = src[2][2];
-//   }
-//   else
-//     std::cout<<"error at reduction, rand not 1,2,3"<<std::endl;
-// }
-// 
-// // return an SU2 matrix (std basis) extended to SU3 (std basis)
-// void extend (hmc_su3matrix * dest, const int random, hmc_complex src[su2_entries])
-// {
-//   if (random == 1){
-//     (*dest)[0][0] = src[0];
-//     (*dest)[0][1] = src[1];
-//     (*dest)[0][2] = hmc_complex_zero;
-//     (*dest)[1][0] = src[2];
-//     (*dest)[1][1] = src[3];
-//     (*dest)[1][2] = hmc_complex_zero;
-//     (*dest)[2][0] = hmc_complex_zero;
-//     (*dest)[2][1] = hmc_complex_zero;
-//     (*dest)[2][2] = hmc_complex_one;
-//   }
-//   else if (random == 2){
-//     (*dest)[0][0] = hmc_complex_one;
-//     (*dest)[0][1] = hmc_complex_zero;
-//     (*dest)[0][2] = hmc_complex_zero;
-//     (*dest)[1][0] = hmc_complex_zero;
-//     (*dest)[1][1] = src[0];
-//     (*dest)[1][2] = src[1];
-//     (*dest)[2][0] = hmc_complex_zero;
-//     (*dest)[2][1] = src[2];
-//     (*dest)[2][2] = src[3];
-//   }
-//   else if (random == 3){
-//     (*dest)[0][0] = src[0];
-//     (*dest)[0][1] = hmc_complex_zero;
-//     (*dest)[0][2] = src[1];
-//     (*dest)[1][0] = hmc_complex_zero;
-//     (*dest)[1][1] = hmc_complex_one;
-//     (*dest)[1][2] = hmc_complex_zero;
-//     (*dest)[2][0] = src[2];
-//     (*dest)[2][1] = hmc_complex_zero;
-//     (*dest)[2][2] = src[3];
-//   }
-//   else
-//     std::cout<<"error at extend, random not 1,2,3"<<std::endl;
-// }
-// 
-// 
-
-
+#include "testing.h"
 // Construct new SU2 matrix using improved alg by Kennedy Pendleton
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha)
 {
   hmc_float delta;
   hmc_float a0 ;
-  hmc_float eta ;
+  hmc_float eta ; int cter = 0;
   do
   {
     delta = -log(myran.doub())/alpha*pow(cos(2. * PI * myran.doub()), 2.) -log(myran.doub())/alpha;
     a0 = 1.-delta;
     eta = myran.doub();
-  }
-   while ( (1.-0.5*delta) < eta*eta); 
+    cter ++;
+  }while ( (1.-0.5*delta) < eta*eta); 
   hmc_float phi = 2.*PI*myran.doub();
   hmc_float theta = asin(2.*myran.doub() - 1.);
   dst[0] = a0;
@@ -93,12 +21,13 @@ void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha)
   dst[3] = sqrt(1.-a0 * a0)*sin(theta);
 }
 
-void calc_staple(hmc_gaugefield * field, hmc_su3matrix * dest, const int pos, const int t, const int mu_in){
-  hmc_su3matrix tmp, prod, dummy;
+// void calc_staple(hmc_gaugefield * field, hmc_su3matrix * dest, const int pos, const int t, const int mu_in){
+void calc_staple(hmc_gaugefield * field, hmc_staplematrix * dest, const int pos, const int t, const int mu_in){
+  hmc_su3matrix prod, prod2, tmp;
+  hmc_staplematrix dummy;
   int nu, newpos, newt;
   
-  zero_su3matrix(&dummy);
-  
+  zero_staplematrix(&dummy);
   //iterate through the three directions other than mu
   for(int i = 1; i<NDIM; i++){
     zero_su3matrix(&prod);
@@ -126,9 +55,6 @@ void calc_staple(hmc_gaugefield * field, hmc_su3matrix * dest, const int pos, co
     adjoin_su3matrix(&tmp);
     accumulate_su3matrix_prod(&prod,&tmp);  
    
-    accumulate_su3matrices_add(&dummy, &prod);
-    
-
     //second staple
     //adjoint (u_nu(x+mu-nu))
     //newpos is "pos-nu" (spatial)
@@ -144,7 +70,7 @@ void calc_staple(hmc_gaugefield * field, hmc_su3matrix * dest, const int pos, co
 	get_su3matrix(&tmp,field,get_neighbor(newpos,mu_in),t,nu);
     }
     adjoin_su3matrix(&tmp);
-    copy_su3matrix(&prod, &tmp);
+    copy_su3matrix(&prod2, &tmp);
     //adjoint(u_mu(x-nu))
     if(mu_in==0) {
       get_su3matrix(&tmp,field,newpos,t,mu_in);
@@ -157,7 +83,7 @@ void calc_staple(hmc_gaugefield * field, hmc_su3matrix * dest, const int pos, co
 	get_su3matrix(&tmp,field,newpos,t,mu_in);
     }
     adjoin_su3matrix(&tmp);
-    accumulate_su3matrix_prod(&prod,&tmp);
+    accumulate_su3matrix_prod(&prod2,&tmp);
     //adjoint(u_nu(x-nu))
     if(mu_in==0) {
       get_su3matrix(&tmp,field,newpos,t,nu);
@@ -169,35 +95,35 @@ void calc_staple(hmc_gaugefield * field, hmc_su3matrix * dest, const int pos, co
     else{
 	get_su3matrix(&tmp,field,newpos,t,nu);
     }
-    accumulate_su3matrix_prod(&prod,&tmp); 
-    
-    accumulate_su3matrices_add(&dummy, &prod);
-  }
+    accumulate_su3matrix_prod(&prod2,&tmp); 
 
-  copy_su3matrix(dest, &dummy);
+    accumulate_su3matrices_add(&dummy, &prod);
+    accumulate_su3matrices_add(&dummy, &prod2);
+  }
+  copy_staplematrix(dest, &dummy);
 }
 
 void heatbath_update (hmc_gaugefield * gaugefield, const hmc_float beta){
-  int pos, mu, t;
+  int pos, mu, t; 
   //iterate through the sites
   for(t=0; t<NTIME; t++){
     for(pos=0;pos<VOLSPACE;pos++){
       for(mu = 0; mu<NDIM; mu++){
-      hmc_su3matrix staplematrix, U, W;
+      hmc_su3matrix U;
+      hmc_staplematrix W,  staplematrix;
+      
       hmc_complex w [su2_entries];
       hmc_float w_pauli[su2_entries], k, r_pauli[su2_entries];
       int order[3]; 
       random_1_2_3(order);
-      
       //old U
       get_su3matrix(&U, gaugefield, pos, t, mu);
-    
+      
       calc_staple(gaugefield, &staplematrix, pos, t, mu);
-
       for(int i=0; i<3; i++)
       {
         //Produkt aus U und staple, saved in W
-        multiply_su3matrices(&W, &U, &staplematrix);
+        multiply_staplematrix(&W, &U, &staplematrix);
         //Reduktion auf SU(2) submatrix
         reduction (w, W, order[i]);
         //Darstellung von W in Paulibasis
@@ -205,15 +131,14 @@ void heatbath_update (hmc_gaugefield * gaugefield, const hmc_float beta){
         w_pauli[1] = 0.5*(w[1].im + w[2].im);
         w_pauli[2] = 0.5*(w[1].re - w[2].re);
         w_pauli[3] = 0.5*(w[0].im - w[3].im);
-      
-      
+
         //Berechnung der Normierung k, entspricht Determinante in normaler Basis
         k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
         w_pauli[0] = hmc_float(1)/k * w_pauli[0];
         w_pauli[1] = hmc_float(-1)/k * w_pauli[1];
         w_pauli[2] = hmc_float(-1)/k * w_pauli[2];
         w_pauli[3] = hmc_float(-1)/k * w_pauli[3];
-      
+	
         //beta' = 2Beta/Nc*k
         hmc_float beta_neu =  2.*beta / hmc_float(NC)*k;
       
@@ -246,12 +171,11 @@ void heatbath_update (hmc_gaugefield * gaugefield, const hmc_float beta){
         extend (&extW, order[i], w);
 	
 	multiply_su3matrices(&tmp, &extW, &U);
+
 	copy_su3matrix(&U, &tmp);
       }
-    
       put_su3matrix(gaugefield, &U, pos, t, mu);
   }}}
-
 }
 
 void heatbath_overrelax (hmc_gaugefield * gaugefield, const hmc_float beta){
@@ -260,29 +184,31 @@ void heatbath_overrelax (hmc_gaugefield * gaugefield, const hmc_float beta){
   for(t=0; t<NTIME; t++){
     for(pos=0;pos<VOLSPACE;pos++){
       for(mu = 0; mu<NDIM; mu++){
-      hmc_su3matrix staplematrix, U, W;
+      hmc_su3matrix U;
+      hmc_staplematrix W,  staplematrix;
       hmc_complex w [su2_entries];
-      hmc_float w_pauli[su2_entries], k, r_pauli[su2_entries];
+      hmc_float w_pauli[su2_entries], k;
       int order[3]; 
       random_1_2_3(order);
       
       //old U
       get_su3matrix(&U, gaugefield, pos, t, mu);
-    
+  
       calc_staple(gaugefield, &staplematrix, pos, t, mu);
-
+    
       for(int i=0; i<3; i++)
       {
         //Produkt aus U und staple, saved in W
-        multiply_su3matrices(&W, &U, &staplematrix);
-        //Reduktion auf SU(2) submatrix
+        multiply_staplematrix(&W, &U, &staplematrix);
+	
+	//Reduktion auf SU(2) submatrix
         reduction (w, W, order[i]);
+	
         //Darstellung von W in Paulibasis
         w_pauli[0] = 0.5*(w[0].re + w[3].re);
         w_pauli[1] = 0.5*(w[1].im + w[2].im);
         w_pauli[2] = 0.5*(w[1].re - w[2].re);
         w_pauli[3] = 0.5*(w[0].im - w[3].im);
-      
      
         //Berechnung der Normierung k, entspricht Determinante in normaler Basis
         k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
@@ -298,15 +224,15 @@ void heatbath_overrelax (hmc_gaugefield * gaugefield, const hmc_float beta){
         w_pauli[3] = 2.*a[0]*a[3];
       
         //go back to a su2 matrix in standard basis
-        w[0].re = r_pauli[0];
-        w[0].im = r_pauli[3];
-        w[1].re = r_pauli[2];
-        w[1].im = r_pauli[1];
-        w[2].re = -r_pauli[2];
-        w[2].im = r_pauli[1];
-        w[3].re = r_pauli[0];
-        w[3].im = -r_pauli[3];
-  
+        w[0].re = w_pauli[0];
+        w[0].im = w_pauli[3];
+        w[1].re = w_pauli[2];
+        w[1].im = w_pauli[1];
+        w[2].re = -w_pauli[2];
+        w[2].im = w_pauli[1];
+        w[3].re = w_pauli[0];
+        w[3].im = -w_pauli[3];
+	
         //extend to SU3
         hmc_su3matrix extW, tmp;
         extend (&extW, order[i], w);
@@ -314,41 +240,41 @@ void heatbath_overrelax (hmc_gaugefield * gaugefield, const hmc_float beta){
 	multiply_su3matrices(&tmp, &extW, &U);
 	copy_su3matrix(&U, &tmp);
       }
-    
       put_su3matrix(gaugefield, &U, pos, t, mu);
   }}}
-
 }
 
 void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float beta){
-  int pos, mu, t, i, j, k, l, m;
+  int pos, mu, t, i, x, y, z;
   //iterate through the sites
   for (mu = 0; mu < NDIM; mu ++){
     //update even sites
-    #pragma omp for private (pos, i, j, k, l, m)
-    for (l = 0; l<NSPACE; l++){
-      for (k = 0; k<NSPACE; k++){
-        for (j = 0; j< NSPACE/2; j++){
-          for (t = 0; t<NTIME; t++){
-          //!! CP:
-          //!! this implementation is very costly
-          pos =  int((k+l)%2)*(1 + 2*t - int (2*t/NTIME)) + int((k+1+l)%2)*(2*t + int (2*t/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*mu;
-
-          hmc_su3matrix staplematrix, U, W;
+    #pragma omp for private (pos, i, x, y, z, t)
+    for (t = 0; t<NTIME; t++){
+      for (x = 0; x<NSPACE; x++){
+        for (y = 0; y<NSPACE/2; y++){
+          for (z = 0; z< NSPACE; z++){ 
+	
+	  //!! the formula should be:
+	  //!!  mu + NDIM*( int((x+t)%2)*(1 + 2*z - int (2*z/NSPACE)) + int((x+1+t)%2)*(2*z + int (2*z/NSPACE)) + 2*NSPACE*y + NSPACE*NSPACE*x ) + NDIM*VOLSPACE*h;
+	  //!!from which one gets:
+	  pos = int((x+t)%2)*(1 + 2*z - int (2*z/NSPACE)) + int((x+1+t)%2)*(2*z + int (2*z/NSPACE)) + 2*NSPACE*y + NSPACE*NSPACE*x;
+	
+	  hmc_su3matrix U;
+          hmc_staplematrix W,  staplematrix;
+      
           hmc_complex w [su2_entries];
           hmc_float w_pauli[su2_entries], k, r_pauli[su2_entries];
           int order[3]; 
           random_1_2_3(order);
-      
           //old U
           get_su3matrix(&U, gaugefield, pos, t, mu);
-    
+          
           calc_staple(gaugefield, &staplematrix, pos, t, mu);
-
           for(i=0; i<3; i++)
           {
             //Produkt aus U und staple, saved in W
-            multiply_su3matrices(&W, &U, &staplematrix);
+            multiply_staplematrix(&W, &U, &staplematrix);
             //Reduktion auf SU(2) submatrix
             reduction (w, W, order[i]);
             //Darstellung von W in Paulibasis
@@ -356,15 +282,14 @@ void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float 
             w_pauli[1] = 0.5*(w[1].im + w[2].im);
             w_pauli[2] = 0.5*(w[1].re - w[2].re);
             w_pauli[3] = 0.5*(w[0].im - w[3].im);
-      
-      
+
             //Berechnung der Normierung k, entspricht Determinante in normaler Basis
             k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
             w_pauli[0] = hmc_float(1)/k * w_pauli[0];
             w_pauli[1] = hmc_float(-1)/k * w_pauli[1];
             w_pauli[2] = hmc_float(-1)/k * w_pauli[2];
             w_pauli[3] = hmc_float(-1)/k * w_pauli[3];
-      
+	
             //beta' = 2Beta/Nc*k
             hmc_float beta_neu =  2.*beta / hmc_float(NC)*k;
       
@@ -380,7 +305,7 @@ void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float 
             r_pauli[1] = su2_tmp[1];
             r_pauli[2] = su2_tmp[2];
             r_pauli[3] = su2_tmp[3];
-     
+
             //go back to a su2 matrix in standard basis
             w[0].re = r_pauli[0];
             w[0].im = r_pauli[3];
@@ -394,41 +319,43 @@ void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float 
             //extend to SU3
             hmc_su3matrix extW, tmp;
             extend (&extW, order[i], w);
-   
-            multiply_su3matrices(&tmp, &extW, &U);
-            copy_su3matrix(&U, &tmp);
+	
+	    multiply_su3matrices(&tmp, &extW, &U);
+
+	    copy_su3matrix(&U, &tmp);
           }
-    
-      put_su3matrix(gaugefield, &U, pos, t, mu);
+          put_su3matrix(gaugefield, &U, pos, t, mu); 
     }}}}
     //make sure all even sites are done
     #pragma omp barrier
 
     //update odd sites
-    #pragma omp for private (pos, i, j, k, l, m)
-    for (l = 0; l<NSPACE; l++){
-      for (k = 0; k<NSPACE; k++){
-        for (j = 0; j< NSPACE/2; j++){
-          for (m = 0; m<NTIME; m++){
-          //!! CP:
-          //!! this implementation is very costly
-          pos =  int((k+l+1)%2)*(1 + 2*m - int (2*m/NTIME)) + int((k+l)%2)*(2*m + int (2*m/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*mu;
+    #pragma omp for private (pos, i, x, y, z, t)
+    for (t = 0; t<NTIME; t++){
+      for (x = 0; x<NSPACE; x++){
+        for (y = 0; y<NSPACE/2; y++){
+          for (z = 0; z< NSPACE; z++){ 
+	
+	  //!! the formula should be:
+	  //!!  mu + NDIM*( int((x+t+1)%2)*(1 + 2*z - int (2*z/NSPACE)) + int((x+t)%2)*(2*z + int (2*z/NSPACE)) + 2*NSPACE*y + NSPACE*NSPACE*x ) + NDIM*VOLSPACE*h;
+	  //!!from which one gets:
+	  pos = int((x+t)%2)*(1 + 2*z - int (2*z/NSPACE)) + int((x+1+t)%2)*(2*z + int (2*z/NSPACE)) + 2*NSPACE*y + NSPACE*NSPACE*x;
 
-          hmc_su3matrix staplematrix, U, W;
+          hmc_su3matrix U;
+          hmc_staplematrix W,  staplematrix;
+      
           hmc_complex w [su2_entries];
           hmc_float w_pauli[su2_entries], k, r_pauli[su2_entries];
           int order[3]; 
           random_1_2_3(order);
-      
           //old U
           get_su3matrix(&U, gaugefield, pos, t, mu);
-    
+          
           calc_staple(gaugefield, &staplematrix, pos, t, mu);
-
           for(i=0; i<3; i++)
           {
             //Produkt aus U und staple, saved in W
-            multiply_su3matrices(&W, &U, &staplematrix);
+            multiply_staplematrix(&W, &U, &staplematrix);
             //Reduktion auf SU(2) submatrix
             reduction (w, W, order[i]);
             //Darstellung von W in Paulibasis
@@ -436,15 +363,14 @@ void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float 
             w_pauli[1] = 0.5*(w[1].im + w[2].im);
             w_pauli[2] = 0.5*(w[1].re - w[2].re);
             w_pauli[3] = 0.5*(w[0].im - w[3].im);
-      
-      
+
             //Berechnung der Normierung k, entspricht Determinante in normaler Basis
             k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
             w_pauli[0] = hmc_float(1)/k * w_pauli[0];
             w_pauli[1] = hmc_float(-1)/k * w_pauli[1];
             w_pauli[2] = hmc_float(-1)/k * w_pauli[2];
             w_pauli[3] = hmc_float(-1)/k * w_pauli[3];
-      
+	
             //beta' = 2Beta/Nc*k
             hmc_float beta_neu =  2.*beta / hmc_float(NC)*k;
       
@@ -460,7 +386,7 @@ void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float 
             r_pauli[1] = su2_tmp[1];
             r_pauli[2] = su2_tmp[2];
             r_pauli[3] = su2_tmp[3];
-     
+
             //go back to a su2 matrix in standard basis
             w[0].re = r_pauli[0];
             w[0].im = r_pauli[3];
@@ -474,54 +400,58 @@ void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float 
             //extend to SU3
             hmc_su3matrix extW, tmp;
             extend (&extW, order[i], w);
-   
-            multiply_su3matrices(&tmp, &extW, &U);
-            copy_su3matrix(&U, &tmp);
+	
+	    multiply_su3matrices(&tmp, &extW, &U);
+
+	    copy_su3matrix(&U, &tmp);
           }
-    
-      put_su3matrix(gaugefield, &U, pos, t, mu);
+          put_su3matrix(gaugefield, &U, pos, t, mu); 
     }}}}
   }
 }
 
 void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield, const hmc_float beta){
-  int pos, mu, t, i, j, k, l;
+  int pos, i, mu, t, x, y, z;
   //iterate through the sites
   for (mu = 0; mu < NDIM; mu ++){
     //update even sites
-    #pragma omp for private (pos, i, j, k, l)
-    for (l = 0; l<NSPACE; l++){
-      for (k = 0; k<NSPACE; k++){
-        for (j = 0; j< NSPACE/2; j++){
-          for (t = 0; t<NTIME; t++){
-          //!! CP:
-          //!! this implementation is very costly
-          pos =  int((k+l)%2)*(1 + 2*t - int (2*t/NTIME)) + int((k+1+l)%2)*(2*t + int (2*t/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*mu;
+    #pragma omp for private (pos, i, x, y, z, t)
+    for (t = 0; t<NTIME; t++){
+      for (x = 0; x<NSPACE; x++){
+        for (y = 0; y<NSPACE/2; y++){
+          for (z = 0; z< NSPACE; z++){ 
+	
+	  //!! the formula should be:
+	  //!!  mu + NDIM*( int((x+t)%2)*(1 + 2*z - int (2*z/NSPACE)) + int((x+1+t)%2)*(2*z + int (2*z/NSPACE)) + 2*NSPACE*y + NSPACE*NSPACE*x ) + NDIM*VOLSPACE*h;
+	  //!!from which one gets:
+	  pos = int((x+t)%2)*(1 + 2*z - int (2*z/NSPACE)) + int((x+1+t)%2)*(2*z + int (2*z/NSPACE)) + 2*NSPACE*y + NSPACE*NSPACE*x;
 
-          hmc_su3matrix staplematrix, U, W;
+          hmc_su3matrix U;
+          hmc_staplematrix W,  staplematrix;
           hmc_complex w [su2_entries];
-          hmc_float w_pauli[su2_entries], k, r_pauli[su2_entries];
+          hmc_float w_pauli[su2_entries], k;
           int order[3]; 
           random_1_2_3(order);
       
           //old U
           get_su3matrix(&U, gaugefield, pos, t, mu);
-    
+  
           calc_staple(gaugefield, &staplematrix, pos, t, mu);
-
+    
           for(i=0; i<3; i++)
           {
             //Produkt aus U und staple, saved in W
-            multiply_su3matrices(&W, &U, &staplematrix);
-            //Reduktion auf SU(2) submatrix
+            multiply_staplematrix(&W, &U, &staplematrix);
+	
+	    //Reduktion auf SU(2) submatrix
             reduction (w, W, order[i]);
+	
             //Darstellung von W in Paulibasis
             w_pauli[0] = 0.5*(w[0].re + w[3].re);
             w_pauli[1] = 0.5*(w[1].im + w[2].im);
             w_pauli[2] = 0.5*(w[1].re - w[2].re);
             w_pauli[3] = 0.5*(w[0].im - w[3].im);
-      
-      
+     
             //Berechnung der Normierung k, entspricht Determinante in normaler Basis
             k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
             hmc_float a[su2_entries];
@@ -534,96 +464,98 @@ void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield, const hmc_flo
             w_pauli[1] = 2.*a[0]*a[1];
             w_pauli[2] = 2.*a[0]*a[2];
             w_pauli[3] = 2.*a[0]*a[3];
-     
+      
             //go back to a su2 matrix in standard basis
-            w[0].re = r_pauli[0];
-            w[0].im = r_pauli[3];
-            w[1].re = r_pauli[2];
-            w[1].im = r_pauli[1];
-            w[2].re = -r_pauli[2];
-            w[2].im = r_pauli[1];
-            w[3].re = r_pauli[0];
-            w[3].im = -r_pauli[3];
-  
+            w[0].re = w_pauli[0];
+            w[0].im = w_pauli[3];
+            w[1].re = w_pauli[2];
+            w[1].im = w_pauli[1];
+            w[2].re = -w_pauli[2];
+            w[2].im = w_pauli[1];
+            w[3].re = w_pauli[0];
+            w[3].im = -w_pauli[3];
+	
             //extend to SU3
             hmc_su3matrix extW, tmp;
             extend (&extW, order[i], w);
-   
-            multiply_su3matrices(&tmp, &extW, &U);
-            copy_su3matrix(&U, &tmp);
+	
+	    multiply_su3matrices(&tmp, &extW, &U);
+	    copy_su3matrix(&U, &tmp);
           }
-    
-      put_su3matrix(gaugefield, &U, pos, t, mu);
+          put_su3matrix(gaugefield, &U, pos, t, mu);
     }}}}
     //make sure all even sites are done
     #pragma omp barrier
 
     //update odd sites
-    #pragma omp for private (pos, i, j, k, l)
-    for (l = 0; l<NSPACE; l++){
-      for (k = 0; k<NSPACE; k++){
-        for (j = 0; j< NSPACE/2; j++){
-          for (t = 0; t<NTIME; t++){
-          //!! CP:
-          //!! this implementation is very costly
-          pos =  int((k+l+1)%2)*(1 + 2*t - int (2*t/NTIME)) + int((k+l)%2)*(2*t + int (2*t/NTIME)) + 2*NTIME*j + NTIME*NSPACE*k + NTIME*NSPACE*NSPACE*l + VOL4D*mu;
+    #pragma omp for private (pos, i, x, y, z, t)
+    for (t = 0; t<NTIME; t++){
+      for (x = 0; x<NSPACE; x++){
+        for (y = 0; y<NSPACE/2; y++){
+          for (z = 0; z< NSPACE; z++){ 
+	
+	  //!! the formula should be:
+	  //!!  mu + NDIM*( int((x+t+1)%2)*(1 + 2*z - int (2*z/NSPACE)) + int((x+t)%2)*(2*z + int (2*z/NSPACE)) + 2*NSPACE*y + NSPACE*NSPACE*x ) + NDIM*VOLSPACE*h;
+	  //!!from which one gets:
+	  pos = int((x+t)%2)*(1 + 2*z - int (2*z/NSPACE)) + int((x+1+t)%2)*(2*z + int (2*z/NSPACE)) + 2*NSPACE*y + NSPACE*NSPACE*x;
 
-          hmc_su3matrix staplematrix, U, W;
-          hmc_complex w [su2_entries];
-          hmc_float w_pauli[su2_entries], k, r_pauli[su2_entries];
-          int order[3]; 
-          random_1_2_3(order);
+           hmc_su3matrix U;
+           hmc_staplematrix W,  staplematrix;
+           hmc_complex w [su2_entries];
+           hmc_float w_pauli[su2_entries], k;
+           int order[3]; 
+           random_1_2_3(order);
       
-          //old U
-          get_su3matrix(&U, gaugefield, pos, t, mu);
-    
-          calc_staple(gaugefield, &staplematrix, pos, t, mu);
-
-          for(i=0; i<3; i++)
-          {
-            //Produkt aus U und staple, saved in W
-            multiply_su3matrices(&W, &U, &staplematrix);
-            //Reduktion auf SU(2) submatrix
-            reduction (w, W, order[i]);
-            //Darstellung von W in Paulibasis
-            w_pauli[0] = 0.5*(w[0].re + w[3].re);
-            w_pauli[1] = 0.5*(w[1].im + w[2].im);
-            w_pauli[2] = 0.5*(w[1].re - w[2].re);
-            w_pauli[3] = 0.5*(w[0].im - w[3].im);
-      
-            //Berechnung der Normierung k, entspricht Determinante in normaler Basis
-            k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
-            hmc_float a[su2_entries];
-            a[0] = hmc_float(1)/k * w_pauli[0];
-            a[1] = hmc_float(-1)/k * w_pauli[1];
-            a[2] = hmc_float(-1)/k * w_pauli[2];
-            a[3] = hmc_float(-1)/k * w_pauli[3];
-            //Square a and save in w
-            w_pauli[0] = a[0]*a[0] - a[1]*a[1] - a[2]*a[2] - a[3]*a[3];
-            w_pauli[1] = 2.*a[0]*a[1];
-            w_pauli[2] = 2.*a[0]*a[2];
-            w_pauli[3] = 2.*a[0]*a[3];
-    
-    
-            //go back to a su2 matrix in standard basis
-            w[0].re = r_pauli[0];
-            w[0].im = r_pauli[3];
-            w[1].re = r_pauli[2];
-            w[1].im = r_pauli[1];
-            w[2].re = -r_pauli[2];
-            w[2].im = r_pauli[1];
-            w[3].re = r_pauli[0];
-            w[3].im = -r_pauli[3];
-  
-            //extend to SU3
-            hmc_su3matrix extW, tmp;
-            extend (&extW, order[i], w);
+           //old U
+           get_su3matrix(&U, gaugefield, pos, t, mu);
    
-            multiply_su3matrices(&tmp, &extW, &U);
-            copy_su3matrix(&U, &tmp);
-          }
+           calc_staple(gaugefield, &staplematrix, pos, t, mu);
     
-      put_su3matrix(gaugefield, &U, pos, t, mu);
+           for(i=0; i<3; i++)
+           {
+             //Produkt aus U und staple, saved in W
+             multiply_staplematrix(&W, &U, &staplematrix);
+	 
+  	     //Reduktion auf SU(2) submatrix
+             reduction (w, W, order[i]);
+	
+             //Darstellung von W in Paulibasis
+             w_pauli[0] = 0.5*(w[0].re + w[3].re);
+             w_pauli[1] = 0.5*(w[1].im + w[2].im);
+             w_pauli[2] = 0.5*(w[1].re - w[2].re);
+             w_pauli[3] = 0.5*(w[0].im - w[3].im);
+     
+             //Berechnung der Normierung k, entspricht Determinante in normaler Basis
+             k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
+             hmc_float a[su2_entries];
+             a[0] = hmc_float(1)/k * w_pauli[0];
+             a[1] = hmc_float(-1)/k * w_pauli[1];
+             a[2] = hmc_float(-1)/k * w_pauli[2];
+             a[3] = hmc_float(-1)/k * w_pauli[3];
+             //Square a and save in w
+             w_pauli[0] = a[0]*a[0] - a[1]*a[1] - a[2]*a[2] - a[3]*a[3];
+             w_pauli[1] = 2.*a[0]*a[1];
+             w_pauli[2] = 2.*a[0]*a[2];
+             w_pauli[3] = 2.*a[0]*a[3];
+       
+             //go back to a su2 matrix in standard basis
+             w[0].re = w_pauli[0];
+             w[0].im = w_pauli[3];
+             w[1].re = w_pauli[2];
+             w[1].im = w_pauli[1];
+             w[2].re = -w_pauli[2];
+             w[2].im = w_pauli[1];
+             w[3].re = w_pauli[0];
+             w[3].im = -w_pauli[3];
+	
+             //extend to SU3
+             hmc_su3matrix extW, tmp;
+             extend (&extW, order[i], w);
+	
+ 	     multiply_su3matrices(&tmp, &extW, &U);
+ 	     copy_su3matrix(&U, &tmp);
+          }
+          put_su3matrix(gaugefield, &U, pos, t, mu);
     }}}}
   }
 }

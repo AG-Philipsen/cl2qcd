@@ -1,7 +1,7 @@
 #ifndef _OPERATIONSH_
 #define _OPERATIONSH_
 #include <iostream>
-#include "globals.h"
+#include "globaldefs.h"
 #include "types.h"
 #include "hmcerrs.h"
 
@@ -16,10 +16,13 @@ hmc_error adjoin_su3matrix(hmc_su3matrix * mat);
 hmc_complex trace_su3matrix(hmc_su3matrix * mat);
 hmc_complex det_su3matrix(hmc_su3matrix * U);
 hmc_error copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in);
+hmc_error copy_staplematrix(hmc_staplematrix *out, hmc_staplematrix *in);
 hmc_error unit_su3matrix(hmc_su3matrix * u);
 hmc_error zero_su3matrix(hmc_su3matrix * u);
+hmc_error zero_staplematrix(hmc_staplematrix * u);
 hmc_error accumulate_su3matrix_prod(hmc_su3matrix *acc, hmc_su3matrix *multiplicator);
 hmc_error multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matrix *q);
+hmc_error multiply_staplematrix(hmc_staplematrix *out, hmc_su3matrix *p, hmc_staplematrix *q);
 #ifdef _RECONSTRUCT_TWELVE_
 hmc_complex reconstruct_su3(hmc_su3matrix *in, int ncomp);
 #endif
@@ -41,9 +44,9 @@ hmc_error put_su3matrix(hmc_gaugefield * field, hmc_su3matrix * in, int spacepos
 hmc_error adjoin_su3(hmc_gaugefield * in, hmc_gaugefield * out);
 hmc_complex global_trace_su3(hmc_gaugefield * field, int mu);
 
-hmc_error accumulate_su3matrices_add(hmc_su3matrix *p, hmc_su3matrix *q);
+hmc_error accumulate_su3matrices_add(hmc_staplematrix *p, hmc_su3matrix *q);
 
-void reduction (hmc_complex dest[su2_entries], hmc_su3matrix src, const int rand);
+void reduction (hmc_complex dest[su2_entries], hmc_staplematrix src, const int rand);
 
 void extend (hmc_su3matrix * dest, const int random, hmc_complex src[su2_entries]);
 

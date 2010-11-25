@@ -1,7 +1,7 @@
 #ifndef _GEOMETRYH_
 #define _GEOMETRYH_
 
-#include "globals.h"
+#include "globaldefs.h"
 #include "cstdlib"
 #include "cmath"
 
