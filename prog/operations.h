@@ -18,6 +18,7 @@ hmc_complex det_su3matrix(hmc_su3matrix * U);
 hmc_error copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in);
 hmc_error copy_staplematrix(hmc_staplematrix *out, hmc_staplematrix *in);
 hmc_error unit_su3matrix(hmc_su3matrix * u);
+hmc_error random_su3matrix(hmc_su3matrix * u);
 hmc_error zero_su3matrix(hmc_su3matrix * u);
 hmc_error zero_staplematrix(hmc_staplematrix * u);
 hmc_error accumulate_su3matrix_prod(hmc_su3matrix *acc, hmc_su3matrix *multiplicator);
@@ -36,6 +37,7 @@ hmc_error fill_with_one(hmc_full_spinor_field *field, int spacepos, int timepos,
 
 //gaugefield and su3 operations, global and local
 hmc_error set_gaugefield_cold(hmc_gaugefield * field);
+hmc_error set_gaugefield_hot(hmc_gaugefield * field);
 hmc_error set_gaugefield_source(hmc_gaugefield * gaugefield, hmc_float * gaugefield_tmp, int check);
 
 hmc_error get_su3matrix(hmc_su3matrix* out, hmc_gaugefield * in, int spacepos, int timepos, int mu);

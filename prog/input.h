@@ -8,7 +8,7 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
-#include <string>
+#include <cstring>
 using namespace std;
 
 class inputparameters {
@@ -21,7 +21,7 @@ class inputparameters {
   hmc_float get_mu();
   int get_cgmax();
   int get_prec();
-  int get_readsource();
+  int get_startcondition();
   int get_thermalizationsteps();
   int get_heatbathsteps();
   void display_sourcefile();
@@ -34,11 +34,12 @@ class inputparameters {
   hmc_float mu;
   int cgmax;
   int prec;
-  int readsource;
+  int startcondition;
   int thermalizationsteps;
   int heatbathsteps;
   void val_assign(hmc_float* out, std::string line);
   void val_assign(int * out, std::string line);
+  void cond_assign(int * out, std::string line);
   void val_assign(std::string * out, std::string line);
 };
 

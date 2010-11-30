@@ -6,7 +6,8 @@
 #include <cmath>
 #include <cstdio>
 #include <string>
-#include <boost/lexical_cast.hpp>
+#include <vector>
+#include <iostream>
 
 #include "globaldefs.h"
 #include "hmcerrs.h"
@@ -15,33 +16,32 @@
 #include "geometry.h"
 #include "testing.h"
 #include "gaugeobservables.h"
+#include "gaugefieldoperations.h"
 #include "input.h"
 #include "readgauge.h"
 #include "random.h"
 #include "update.h"
-#include "timer.h"
-
-#include <CL/cl.hpp>
+#include "use_timer.h"
 #include "opencl.h"
+#include <CL/cl.hpp>
 
 #ifdef _OPENMP
 # include <omp.h>
 #endif
+
+string const version = "0.1";
 
 using namespace std;
 
 // global random number thing
 Ran myran;
 
-// opencl global vars
-cl_device_type wanted_device=CL_DEVICE_TYPE_GPU; 
-cl_context context;
-cl_command_queue cmdqueue;
-cl_program clprogram;
-string cl_kernels_file = "opencl_kernels.cl";
+// opencl: give a list of all kernel-files
+vector<string> const cl_kernels_file = {"opencl_operations_kernels.cl","opencl_gaugeobservables_kernels.cl"};
 
 void print_hello(char* name){
-  printf("\n%s says: \"when I'm grown up, I will be a complete HMC simulation...\"\n\n",name);
+  //  printf("\n%s says: \"when I'm grown up, I will be a complete HMC simulation...\"\n\n",name);
+  std::cout<<"This is hmc program "<<name<<", version "<<version<<"."<<endl;
   return;
 }
 
@@ -63,7 +63,7 @@ void print_info(inputparameters* params){
   printf("thermsteps = \t%d\n",(*params).get_thermalizationsteps());
   printf("heatbathsteps = %d\n",(*params).get_heatbathsteps());
   printf("\n");
-  if ((*params).get_readsource()) {
+  if ((*params).get_startcondition()) {
     printf("sourcefile = ");
     (*params).display_sourcefile();
     printf("\n");
@@ -75,26 +75,5 @@ void print_info(inputparameters* params){
   printf("\n");
   return;
 }
-
-
-void print_info_source(sourcefileparameters* params){
-  printf("**********************************************************\n");
-  printf("Sourcefile parameters: (list not complete)\n");
-  printf("field:  %s\n",(*params).field_source);
-  printf("LX:  \t%d\n",(*params).lx_source);
-  printf("LY:  \t%d\n",(*params).ly_source);
-  printf("LZ:  \t%d\n",(*params).lz_source);
-  printf("LT:  \t%d\n",(*params).lt_source);
-  printf("entries: %d\n", (*params).num_entries_source);
-  printf("beta:  \t%f\n",(*params).beta_source);
-  printf("mu:  \t%f\n",(*params).mu_source);
-  printf("kappa:  %f\n",(*params).kappa_source);
-  printf("mubar:  %f\n",(*params).mubar_source);
-  printf("plaq: \t%f\n",(*params).plaquettevalue_source);
-  printf("**********************************************************\n");
-  printf("\n");
-  return;
-}
-
 
 #endif

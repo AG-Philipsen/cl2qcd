@@ -100,6 +100,19 @@ hmc_error set_gaugefield_cold(hmc_gaugefield * field) {
   return HMC_SUCCESS;
 }
 
+hmc_error set_gaugefield_hot(hmc_gaugefield * field) {
+  for(int t=0; t<NTIME; t++) {
+    for(int n=0; n<VOLSPACE; n++) {
+      for(int mu=0; mu<NDIM; mu++) {
+	hmc_su3matrix tmp;
+	random_su3matrix(&tmp);
+	put_su3matrix(field, &tmp, n, t, mu);
+      }
+    }
+  }
+  return HMC_SUCCESS;
+}
+
 hmc_error set_gaugefield_source(hmc_gaugefield * gaugefield, hmc_float * gaugefield_tmp, int check){
   //little check if arrays are big enough
   if (VOL4D*NDIM*NC*NC*2 != check){
@@ -341,6 +354,12 @@ hmc_error unit_su3matrix(hmc_su3matrix * u){
     }
   }
 #endif
+  return HMC_SUCCESS;
+}
+
+hmc_error random_su3matrix(hmc_su3matrix * u){
+  printf("random su3matrix needs to be implemented...\n");
+  exit(HMC_UNDEFINEDERROR);
   return HMC_SUCCESS;
 }
 

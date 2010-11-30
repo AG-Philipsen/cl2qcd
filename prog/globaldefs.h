@@ -16,4 +16,9 @@
 
 #define PI 	3.14159265358979
 
+//startconditions:
+#define START_FROM_SOURCE 2
+#define COLD_START 0
+#define HOT_START 1
+
 #endif
