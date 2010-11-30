@@ -6,7 +6,6 @@ int main(int argc, char* argv[]) {
   print_hello(progname);
 
   opencl gpu(CL_DEVICE_TYPE_GPU);
-  //  return 0;
 
   char* inputfile = argv[1];
   inputparameters parameters;
@@ -26,6 +25,17 @@ int main(int argc, char* argv[]) {
 
   init_gaugefield(gaugefield,&parameters,&timer);
 
+
+  //LZ: test opencl implementation -- in future, we will need timer measurements here...
+  print_gaugeobservables(gaugefield);
+
+  gpu.copy_gaugefield_to_device(gaugefield);
+  gpu.run_heatbath(10,parameters.get_beta());
+  gpu.get_gaugefield_from_device(gaugefield);
+
+  print_gaugeobservables(gaugefield);
+
+  return 0;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Thermalization
@@ -70,7 +80,7 @@ int main(int argc, char* argv[]) {
   }
   
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Gaugefield-updates in thermalized system
+  // Gaugefield-updates in thermalized system on CPU
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   printf("\nheatbath...\n");

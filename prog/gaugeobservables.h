@@ -6,6 +6,8 @@
 #include "operations.h"
 #include "geometry.h"
 
+void print_gaugeobservables(hmc_gaugefield* field);
+
 hmc_float plaquette(hmc_gaugefield * field, hmc_float* tplaq, hmc_float* splaq);
 hmc_float plaquette(hmc_gaugefield * field);
 hmc_complex polyakov(hmc_gaugefield * field);

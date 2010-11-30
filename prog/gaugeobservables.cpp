@@ -1,6 +1,15 @@
 #include "gaugeobservables.h"
 #include <cstdio>
 
+void print_gaugeobservables(hmc_gaugefield* field){
+  hmc_float tplaq=0;
+  hmc_float splaq=0;
+  hmc_float plaq = plaquette(field,&tplaq,&splaq);
+  hmc_complex pol = polyakov(field);
+  printf("%f\t%f\t%f\t%f\t%f\n",plaq,tplaq,splaq,pol.re,pol.im);
+  return;
+}
+
 hmc_float plaquette(hmc_gaugefield * field){
   hmc_float tdummy;
   hmc_float sdummy;

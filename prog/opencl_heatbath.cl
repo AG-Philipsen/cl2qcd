@@ -3,4 +3,3 @@
 __kernel void heatbath(__global hmc_gaugefield* gaugefield, hmc_float beta, int nsteps){
 nsteps++;
 }
-void part2(){}void part1(){}

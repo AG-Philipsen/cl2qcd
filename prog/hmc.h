@@ -36,8 +36,6 @@ using namespace std;
 // global random number thing
 Ran myran;
 
-// opencl: give a list of all kernel-files
-vector<string> const cl_kernels_file = {"opencl_operations_kernels.cl","opencl_gaugeobservables_kernels.cl"};
 
 void print_hello(char* name){
   //  printf("\n%s says: \"when I'm grown up, I will be a complete HMC simulation...\"\n\n",name);
