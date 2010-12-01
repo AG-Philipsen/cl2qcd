@@ -4,7 +4,8 @@ PROGNAME = hmc.v$(VERSION)
 
 CXX = g++
 
-DEFS=-D_RECONSTRUCT_TWELVE_ -DSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
+#DEFS=-D_RECONSTRUCT_TWELVE_ -DSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
+DEFS=-DSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
 #DEFS=-D_RECONSTRUCT_TWELVE_ -D_OPENMP -DSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
 
 #INCLUDES = -I/home/pinke/lime/lime/include -I/usr/include/libxml2
@@ -36,6 +37,10 @@ main: $(PROGRAM).cpp $(GLOBALS) $(PROGRAM).h $(OBJECTS)
 	$(CXX) -o ${PROGNAME} $(CXXFLAGS) $(PROGRAM).cpp ${OBJECTS} $(LDFLAGS) $(LIBS) $(INCLUDES) 
 
 gaugefieldoperations.o: gaugefieldoperations.cpp gaugefieldoperations.h $(GLOBALS) use_timer.o operations.o readgauge.o input.o
+	$(CXX) -c $(CXXFLAGS) $(INCLUDES) $<
+
+opencl.o: opencl.cpp opencl.h $(GLOBALS) operations.o
+	$(CXX) -c $(CXXFLAGS) $(INCLUDES) $<
 
 use_timer.o: use_timer.cpp use_timer.h $(GLOBALS) timer.o
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) $<

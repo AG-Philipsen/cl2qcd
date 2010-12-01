@@ -9,6 +9,7 @@
 #include <sstream>
 #include <CL/cl.h>
 
+#include "operations.h"
 #include "globaldefs.h"
 #include "hmcerrs.h"
 #include "types.h"

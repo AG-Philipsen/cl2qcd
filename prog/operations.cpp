@@ -87,6 +87,67 @@ hmc_error fill_with_one(hmc_full_spinor_field *field, int spacepos, int timepos,
 
 //gaugefield operations
 
+hmc_error copy_to_ocl_format(hmc_ocl_gaugefield* host_gaugefield,hmc_gaugefield* gaugefield){
+  for(int spacepos=0; spacepos<NSPACE*NSPACE*NSPACE; spacepos++) {
+    for(int t=0; t<NTIME; t++) {
+      for(int mu=0; mu<NDIM; mu++) {
+	hmc_su3matrix tmp;
+	get_su3matrix(&tmp, gaugefield, spacepos, t, mu);
+	for(int b=0; b<NC; b++) {
+#ifdef _RECONSTRUCT_TWELVE_
+	  for(int a=0; a<NC-1; a++) {
+	    int n = a + (NC-1)*b;
+	    host_gaugefield[ocl_gaugefield_element(0,a,b,mu,spacepos,t)] = tmp[n].re;
+	    host_gaugefield[ocl_gaugefield_element(1,a,b,mu,spacepos,t)] = tmp[n].im;
+	  }
+#else
+	  for(int a=0; a<NC; a++) {
+	    host_gaugefield[ocl_gaugefield_element(0,a,b,mu,spacepos,t)] = tmp[a][b].re;
+	    host_gaugefield[ocl_gaugefield_element(1,a,b,mu,spacepos,t)] = tmp[a][b].im;
+	  }
+#endif
+	}
+      }
+    }
+  }
+  return HMC_SUCCESS;
+}
+
+hmc_error copy_from_ocl_format(hmc_gaugefield* gaugefield,hmc_ocl_gaugefield* host_gaugefield){
+  for(int spacepos=0; spacepos<NSPACE*NSPACE*NSPACE; spacepos++) {
+    for(int t=0; t<NTIME; t++) {
+      for(int mu=0; mu<NDIM; mu++) {
+	hmc_su3matrix tmp;
+	for(int b=0; b<NC; b++) {
+#ifdef _RECONSTRUCT_TWELVE_
+	  for(int a=0; a<NC-1; a++) {
+	    int n = a + (NC-1)*b;
+	    tmp[n].re = host_gaugefield[ocl_gaugefield_element(0,a,b,mu,spacepos,t)];
+	    tmp[n].im = host_gaugefield[ocl_gaugefield_element(1,a,b,mu,spacepos,t)];
+	  }
+#else
+	  for(int a=0; a<NC; a++) {
+	    tmp[a][b].re = host_gaugefield[ocl_gaugefield_element(0,a,b,mu,spacepos,t)];
+	    tmp[a][b].im = host_gaugefield[ocl_gaugefield_element(1,a,b,mu,spacepos,t)];
+	  }
+#endif
+	  put_su3matrix(gaugefield, &tmp, spacepos, t, mu);
+	}
+      }
+    }
+  }
+  return HMC_SUCCESS;
+}
+ 
+
+int ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t){
+#ifdef _RECONSTRUCT_TWELVE_
+  return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*t+2*NC*(NC-1)*NDIM*NTIME*spacepos;
+#else
+  return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*t+2*NC*NC*NDIM*NTIME*spacepos;
+#endif
+}
+
 hmc_error set_gaugefield_cold(hmc_gaugefield * field) {
   for(int t=0; t<NTIME; t++) {
     for(int n=0; n<VOLSPACE; n++) {
@@ -260,8 +321,8 @@ hmc_complex det_su3matrix(hmc_su3matrix * U){
   tmp6 = complexmult( &(*U)[1][2], &(*U)[2][1] );
   det6 = complexmult( &(*U)[0][0] , &tmp6);
 
-det.re = det1.re + det2.re + det3.re - det4.re - det5.re - det6.re;
-det.im = det1.im + det2.im + det3.im - det4.im - det5.im - det6.im;
+  det.re = det1.re + det2.re + det3.re - det4.re - det5.re - det6.re;
+  det.im = det1.im + det2.im + det3.im - det4.im - det5.im - det6.im;
 
 #endif
   return det;

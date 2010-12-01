@@ -170,23 +170,39 @@ hmc_error opencl::init(cl_device_type wanted_device_type){
   return HMC_SUCCESS;
 }
 
-hmc_error opencl::copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield){
+hmc_error opencl::copy_gaugefield_to_device(hmc_gaugefield* gaugefield){
   cout<<"Copy gaugefield to device..."<<endl;
+
+  hmc_ocl_gaugefield* host_gaugefield =  (hmc_ocl_gaugefield*) malloc(sizeof(hmc_gaugefield));
+
+  copy_to_ocl_format(host_gaugefield,gaugefield);
+
   int clerr = clEnqueueWriteBuffer(queue,clmem_gaugefield,CL_TRUE,0,sizeof(hmc_gaugefield),host_gaugefield,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
+		     
+  free(host_gaugefield);
+
   return HMC_SUCCESS;
 }
 
-hmc_error opencl::get_gaugefield_from_device(hmc_gaugefield* host_gaugefield){
+hmc_error opencl::get_gaugefield_from_device(hmc_gaugefield* gaugefield){
   cout<<"Get gaugefield from device..."<<endl;
+
+  hmc_ocl_gaugefield* host_gaugefield =  (hmc_ocl_gaugefield*) malloc(sizeof(hmc_gaugefield));
+
   int clerr = clEnqueueReadBuffer(queue,clmem_gaugefield,CL_TRUE,0,sizeof(hmc_gaugefield),host_gaugefield,0,NULL,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
+
+  copy_from_ocl_format(gaugefield,host_gaugefield);
+
+  free(host_gaugefield);
+
   return HMC_SUCCESS;
 }
 
