@@ -21,17 +21,17 @@ std::vector<std::string> const cl_kernels_file = {"opencl_heatbath.cl","opencl_o
 class opencl {
  public:
   opencl(cl_device_type wanted){init(wanted);};
-  ~opencl(){finalize_opencl();};
+  ~opencl(){finalize();};
   hmc_error init(cl_device_type wanted_device_type);
   hmc_error copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield);
   hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield);
   hmc_error run_heatbath(int nsteps, double beta);
+  hmc_error finalize();
  private:
   int isinit;
   cl_context context;
   cl_command_queue queue;
   cl_program clprogram;
-  hmc_error finalize_opencl();
   cl_mem clmem_gaugefield;
   cl_kernel heatbath;
 };

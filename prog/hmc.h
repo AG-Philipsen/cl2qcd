@@ -23,7 +23,7 @@
 #include "update.h"
 #include "use_timer.h"
 #include "opencl.h"
-#include <CL/cl.hpp>
+#include <CL/cl.h>
 
 #ifdef _OPENMP
 # include <omp.h>

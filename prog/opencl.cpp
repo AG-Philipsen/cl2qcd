@@ -98,6 +98,9 @@ hmc_error opencl::init(cl_device_type wanted_device_type){
     delete [] kernelssource;    
   }
 
+  string end = "\n//EOF";
+  sourcecode.append(end.c_str(),end.size()+1);
+
   // print complete source code to file
   ofstream kernelsout;
   kernelsout.open("cl_kernelsource.cl");
@@ -110,7 +113,7 @@ hmc_error opencl::init(cl_device_type wanted_device_type){
 
   cout<<"Create program..."<<endl;
   size_t sourcesize = sourcecode.size()+1;
-  char* source = new char[sourcecode.size()];
+  char* source = new char[sourcesize];
   strcpy(source,sourcecode.c_str());
   clprogram = clCreateProgramWithSource(context,1,(const char**)&source,&sourcesize,&clerr);
   delete [] source;
@@ -216,7 +219,7 @@ hmc_error opencl::run_heatbath(int nsteps, double beta){
   return HMC_SUCCESS;
 }
 
-hmc_error opencl::finalize_opencl(){
+hmc_error opencl::finalize(){
   if(isinit==1) {
   if(clFlush(queue)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clFinish(queue)!=CL_SUCCESS) exit(HMC_OCLERROR);
