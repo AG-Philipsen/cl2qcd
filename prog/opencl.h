@@ -15,7 +15,7 @@
 #include "types.h"
 
 //give a list of all kernel-files
-std::vector<std::string> const cl_kernels_file = {"opencl_heatbath.cl","opencl_operations_kernels.cl","opencl_gaugeobservables_kernels.cl"};
+std::vector<std::string> const cl_kernels_file = {"opencl_header.cl","operations_kernels.cl","opencl_heatbath"};
 
 
 

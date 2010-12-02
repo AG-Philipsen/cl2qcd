@@ -128,6 +128,9 @@ hmc_error opencl::init(cl_device_type wanted_device_type){
 #ifdef _RECONSTRUCT_TWELVE_
   collect_options<<" -D_RECONSTRUCT_TWELVE_";
 #endif
+#ifdef _USEDOUBLEPREC_
+  collect_options<<" -D_USEDOUBLEPREC";
+#endif
   collect_options<<" -I"<<SOURCEDIR;
   string buildoptions = collect_options.str();
   cout<<"\tbuild options:";

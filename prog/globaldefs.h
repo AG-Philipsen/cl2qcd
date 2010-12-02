@@ -5,7 +5,7 @@
 #define NSPIN 4
 #define NDIM 4
 
-#ifndef _INKENREL_
+#ifndef _INKERNEL_
 //this should not be read by kernel at runtime
 //NTIME and NSPACE must be fixed at compile time
 
@@ -18,13 +18,13 @@
 
 #define su2_entries 4
 
-#define PI 	3.14159265358979
-
 //startconditions:
 #define START_FROM_SOURCE 2
 #define COLD_START 0
 #define HOT_START 1
 
 #endif //_INKERNEL_
+
+#define PI 	3.14159265358979
 
 #endif

@@ -4,7 +4,7 @@ PROGNAME = hmc.v$(VERSION)
 
 CXX = g++
 
-#DEFS=-D_RECONSTRUCT_TWELVE_ -DSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
+#DEFS=-D_USEDOUBLEPREC_ -D_RECONSTRUCT_TWELVE_ -DSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
 DEFS=-DSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
 #DEFS=-D_RECONSTRUCT_TWELVE_ -D_OPENMP -DSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
 

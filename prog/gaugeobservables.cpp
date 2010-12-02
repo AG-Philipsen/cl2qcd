@@ -61,7 +61,7 @@ hmc_float plaquette(hmc_gaugefield * field, hmc_float* tplaq, hmc_float* splaq){
     }
   }
   *tplaq /= static_cast<hmc_float>(VOL4D*NC*(NDIM-1));
-  *splaq /= 2.0 / static_cast<hmc_float>(VOL4D*NC*(NDIM-1)*(NDIM-2));
+  *splaq /= static_cast<hmc_float>(VOL4D*NC*(NDIM-1)*(NDIM-2))/2. ;
   return plaq*2.0/static_cast<hmc_float>(VOL4D*NDIM*(NDIM-1)*NC);
 }
 

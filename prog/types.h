@@ -4,7 +4,12 @@
 #include "globaldefs.h"
 
 //typedef double hmc_float;
+#ifdef _USEDOUBLEPREC_
+typedef double hmc_float;
+#else
 typedef float hmc_float;
+#endif
+
 
 #ifdef _INKERNEL_
 __constant hmc_float hmc_one_f = 1.0f;
