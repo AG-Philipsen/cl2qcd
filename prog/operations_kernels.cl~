@@ -1,1 +1,51 @@
-void buh(){}
+int inline ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t){
+#ifdef _RECONSTRUCT_TWELVE_
+  return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*t+2*NC*(NC-1)*NDIM*NTIME*spacepos;
+#else
+  return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*t+2*NC*NC*NDIM*NTIME*spacepos;
+#endif
+}
+
+int inline ocl_su3matrix_element(int c, int a, int b){
+#ifdef _RECONSTRUCT_TWELVE_
+  return c + 2*a + 2*(NC-1)*b;
+#else
+  return c + 2*a + 2*NC*b;
+#endif
+}
+
+void get_su3matrix(__local hmc_ocl_su3matrix* out, __global hmc_ocl_gaugefield * in, int spacepos, int timepos, int mu){
+#ifdef _RECONSTRUCT_TWELVE_
+  for(int a=0; a<NC-1; a++) {
+#else
+    for(int a=0; a<NC; a++) {
+#endif
+      for(int b=0; b<NC; b++) { 
+	out[ocl_su3matrix_element(0,a,b)] = in[ocl_gaugefield_element(0,a,b,mu,spacepos,timepos)];
+	out[ocl_su3matrix_element(1,a,b)] = in[ocl_gaugefield_element(1,a,b,mu,spacepos,timepos)];
+      }
+#ifdef _RECONSTRUCT_TWELVE_
+    }
+#else
+  }
+#endif
+  return;
+}
+
+void put_su3matrix(__global hmc_ocl_gaugefield * field, __local hmc_ocl_su3matrix * in, int spacepos, int timepos, int mu){
+#ifdef _RECONSTRUCT_TWELVE_
+  for(int a=0; a<NC-1; a++) {
+#else
+    for(int a=0; a<NC; a++) {
+#endif
+      for(int b=0; b<NC; b++) { 
+	field[ocl_gaugefield_element(0,a,b,mu,spacepos,timepos)] = in[ocl_su3matrix_element(0,a,b)];
+	field[ocl_gaugefield_element(1,a,b,mu,spacepos,timepos)] = in[ocl_su3matrix_element(1,a,b)];
+      }
+#ifdef _RECONSTRUCT_TWELVE_
+    }
+#else
+  }
+#endif
+  return;
+}

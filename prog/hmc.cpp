@@ -30,7 +30,8 @@ int main(int argc, char* argv[]) {
   print_gaugeobservables(gaugefield);
 
   gpu.copy_gaugefield_to_device(gaugefield);
-  gpu.run_heatbath(10,parameters.get_beta());
+  //  gpu.run_heatbath(10,parameters.get_beta());
+  gpu.testing();
   gpu.get_gaugefield_from_device(gaugefield);
 
   print_gaugeobservables(gaugefield);

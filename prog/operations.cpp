@@ -87,6 +87,14 @@ hmc_error fill_with_one(hmc_full_spinor_field *field, int spacepos, int timepos,
 
 //gaugefield operations
 
+int inline ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t){
+#ifdef _RECONSTRUCT_TWELVE_
+  return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*t+2*NC*(NC-1)*NDIM*NTIME*spacepos;
+#else
+  return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*t+2*NC*NC*NDIM*NTIME*spacepos;
+#endif
+}
+
 hmc_error copy_to_ocl_format(hmc_ocl_gaugefield* host_gaugefield,hmc_gaugefield* gaugefield){
   for(int spacepos=0; spacepos<NSPACE*NSPACE*NSPACE; spacepos++) {
     for(int t=0; t<NTIME; t++) {
@@ -140,13 +148,7 @@ hmc_error copy_from_ocl_format(hmc_gaugefield* gaugefield,hmc_ocl_gaugefield* ho
 }
  
 
-int ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t){
-#ifdef _RECONSTRUCT_TWELVE_
-  return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*t+2*NC*(NC-1)*NDIM*NTIME*spacepos;
-#else
-  return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*t+2*NC*NC*NDIM*NTIME*spacepos;
-#endif
-}
+
 
 hmc_error set_gaugefield_cold(hmc_gaugefield * field) {
   for(int t=0; t<NTIME; t++) {

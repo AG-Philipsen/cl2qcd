@@ -16,8 +16,6 @@
 #define VOLSPACE NSPACE*NSPACE*NSPACE
 #define VOL4D VOLSPACE*NTIME
 
-#define su2_entries 4
-
 //startconditions:
 #define START_FROM_SOURCE 2
 #define COLD_START 0
@@ -26,5 +24,7 @@
 #endif //_INKERNEL_
 
 #define PI 	3.14159265358979
+
+#define su2_entries 4
 
 #endif

@@ -1,0 +1,20 @@
+__kernel void test(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int nsteps,__global hmc_float* check){
+  int id = get_global_id(0);
+  if(id==0) {
+  for(int spacepos = 0; spacepos < VOLSPACE; spacepos++) {
+    for(int mu = 0; mu<NDIM; mu++) {
+      for(int t=0; t<NTIME; t++) {
+	hmc_ocl_su3matrix tmp[SU3SIZE];
+	get_su3matrix(tmp,gaugefield,spacepos,t,mu);
+	hmc_ocl_su3matrix tmp2[SU3SIZE];
+	copy_su3matrix(tmp2,tmp);
+	//	unit_su3matrix(tmp2);
+	//	zero_su3matrix(tmp2);
+	put_su3matrix(gaugefield,tmp2,spacepos,t,mu);
+      }
+    }
+  }
+  }
+  *check = 0;
+  return;
+}

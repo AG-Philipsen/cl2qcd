@@ -15,7 +15,7 @@
 #include "types.h"
 
 //give a list of all kernel-files
-std::vector<std::string> const cl_kernels_file = {"opencl_header.cl","operations_kernels.cl","opencl_heatbath"};
+std::vector<std::string> const cl_kernels_file = {"opencl_header.cl","operations_kernels.cl","opencl_heatbath.cl","testing_kernel.cl"};
 
 
 
@@ -27,6 +27,7 @@ class opencl {
   hmc_error copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield);
   hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield);
   hmc_error run_heatbath(int nsteps, double beta);
+  hmc_error testing();
   hmc_error finalize();
  private:
   int isinit;

@@ -6,20 +6,20 @@
 #include "hmcerrs.h"
 
 //local operations
-hmc_complex complexconj(hmc_complex *in);
-hmc_complex complexmult(hmc_complex *a, hmc_complex *b);
+hmc_complex complexconj(hmc_complex *in); 
+hmc_complex complexmult(hmc_complex *a, hmc_complex *b); 
 hmc_complex complexadd(hmc_complex *a, hmc_complex *b);
-hmc_complex complexsubtract(hmc_complex *a, hmc_complex *b);
-hmc_error complexaccumulate(hmc_complex *inout, hmc_complex *incr);
+hmc_complex complexsubtract(hmc_complex *a, hmc_complex *b); 
+hmc_error complexaccumulate(hmc_complex *inout, hmc_complex *incr); 
 
 hmc_error adjoin_su3matrix(hmc_su3matrix * mat);
 hmc_complex trace_su3matrix(hmc_su3matrix * mat);
 hmc_complex det_su3matrix(hmc_su3matrix * U);
-hmc_error copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in);
+hmc_error copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in); 
 hmc_error copy_staplematrix(hmc_staplematrix *out, hmc_staplematrix *in);
-hmc_error unit_su3matrix(hmc_su3matrix * u);
+hmc_error unit_su3matrix(hmc_su3matrix * u); 
 hmc_error random_su3matrix(hmc_su3matrix * u);
-hmc_error zero_su3matrix(hmc_su3matrix * u);
+hmc_error zero_su3matrix(hmc_su3matrix * u); 
 hmc_error zero_staplematrix(hmc_staplematrix * u);
 hmc_error accumulate_su3matrix_prod(hmc_su3matrix *acc, hmc_su3matrix *multiplicator);
 hmc_error multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matrix *q);
@@ -44,8 +44,8 @@ hmc_error copy_to_ocl_format(hmc_ocl_gaugefield* host_gaugefield,hmc_gaugefield*
 hmc_error copy_from_ocl_format(hmc_gaugefield* gaugefield,hmc_ocl_gaugefield* host_gaugefield);
 int ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t);
 
-hmc_error get_su3matrix(hmc_su3matrix* out, hmc_gaugefield * in, int spacepos, int timepos, int mu);
-hmc_error put_su3matrix(hmc_gaugefield * field, hmc_su3matrix * in, int spacepos, int timepos, int mu);
+hmc_error get_su3matrix(hmc_su3matrix* out, hmc_gaugefield * in, int spacepos, int timepos, int mu); //cl
+hmc_error put_su3matrix(hmc_gaugefield * field, hmc_su3matrix * in, int spacepos, int timepos, int mu); //cl
 
 hmc_error adjoin_su3(hmc_gaugefield * in, hmc_gaugefield * out);
 hmc_complex global_trace_su3(hmc_gaugefield * field, int mu);

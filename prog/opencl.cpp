@@ -124,7 +124,7 @@ hmc_error opencl::init(cl_device_type wanted_device_type){
 
   cout<<"Build program..."<<endl;
   stringstream collect_options;
-  collect_options<<"-D_INKERNEL_ -DNSPACE="<<NSPACE<<" -DNTIME="<<NTIME;
+  collect_options<<"-D_INKERNEL_ -DNSPACE="<<NSPACE<<" -DNTIME="<<NTIME<<" -DVOLSPACE="<<VOLSPACE;
 #ifdef _RECONSTRUCT_TWELVE_
   collect_options<<" -D_RECONSTRUCT_TWELVE_";
 #endif
@@ -234,6 +234,92 @@ hmc_error opencl::run_heatbath(int nsteps, double beta){
     cout<<"clEnqueueNDRangeKernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
+
+  return HMC_SUCCESS;
+}
+
+hmc_error opencl::testing(){
+  cl_int clerr=CL_SUCCESS;
+
+  cout<<"Create test kernel..."<<endl;
+  cl_kernel testkernel = clCreateKernel(clprogram,"test",&clerr);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  int nsteps = 10;
+  hmc_float beta = 4.2;
+
+  const size_t local_work_size  = VOLSPACE/2;
+  const size_t global_work_size = local_work_size;
+
+
+  hmc_float check=1;
+  cl_mem clmem_check = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_float),0,&clerr);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"testing: create clmem_check-buffer failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueWriteBuffer(queue,clmem_check,CL_TRUE,0,sizeof(hmc_float),&check,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+
+  hmc_ocl_gaugefield* gfout = (hmc_ocl_gaugefield*) malloc(sizeof(hmc_gaugefield));
+  cl_mem clmem_gfout = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_gaugefield),0,&clerr);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"testing: create clmem_check-buffer failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+
+  clerr = clSetKernelArg(testkernel,0,sizeof(cl_mem),&clmem_gaugefield); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(testkernel,1,sizeof(hmc_float),&beta);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(testkernel,2,sizeof(int),&nsteps);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(testkernel,3,sizeof(cl_mem),&clmem_check);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(testkernel,4,sizeof(cl_mem),&clmem_gfout);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueNDRangeKernel(queue,testkernel,1,0,&local_work_size,&global_work_size,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clEnqueueNDRangeKernel failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+
+  clerr = clEnqueueReadBuffer(queue,clmem_check,CL_TRUE,0,sizeof(hmc_float),&check,0,NULL,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueReadBuffer(queue,clmem_gfout,CL_TRUE,0,sizeof(hmc_gaugefield),gfout,0,NULL,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+
+  cout<<"check result: "<<check<<endl;
+  if(clReleaseMemObject(clmem_check)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_gfout)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  
+  free(gfout);
 
   return HMC_SUCCESS;
 }

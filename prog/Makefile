@@ -5,8 +5,9 @@ PROGNAME = hmc.v$(VERSION)
 CXX = g++
 
 #DEFS=-D_USEDOUBLEPREC_ -D_RECONSTRUCT_TWELVE_ -DSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
-DEFS=-DSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
+#DEFS=-DSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
 #DEFS=-D_RECONSTRUCT_TWELVE_ -D_OPENMP -DSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
+DEFS=-D_RECONSTRUCT_TWELVE_ -DSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
 
 #INCLUDES = -I/home/pinke/lime/lime/include -I/usr/include/libxml2
 INCLUDES = -I/home/zeidlewicz/bin/lime/lime-lib/include -I/usr/include/libxml2 -I/home/zeidlewicz/bin/ati-stream-sdk-v2.2-lnx64/include/
