@@ -1,0 +1,117 @@
+\subsection{\file{globaldefs.h}}
+Definitions in \file{globaldefs.h} should be available programme-wide.
+\begin{itemize}
+\item \define{NC}=3
+\item \define{NSPIN}=4
+\item \define{NDIM}=4
+\item \define{NSPACE}, \define{NTIME}: The spatial and temporal extent is defined at compile time in order to have fixed for-loop lengths. These two definitions are passed to the OpenCL kernels with their compile-time values.
+\item \define{VOLSPACE} = \define{NPACE*NSPACE*NSPACE}
+\item \define{VOL4D} = \define{VOLSPACE*NTIME}
+\item \define{PI} = 3.14159265358979
+\item \define{su2\_entries} = 4
+\item \define{START\_FROM\_SOURCE}=2, \define{COLD\_START}=0, \define{HOT\_START}=1
+\end{itemize}
+
+\subsection{\file{hmcerrs.h}}
+\file{hmcerrs.h} defines the error codes as \verb+typedef int hmc_error+:
+\begin{itemize}
+\item \define{HMC\_SUCCESS}
+\item \define{HMC\_STDERR}
+\item \define{HMC\_FILEERROR}
+\item \define{HMC\_OCLERROR}
+\item \define{HMC\_XMLERROR}
+\item \define{HMC\_UNDEFINEDERROR}
+\end{itemize}
+
+\subsection{\file{types.h}}
+\file{types.h} contains typdefs. There are differences between host and kernel code. For both, the basic floating point type is \ctype{hmc\_float}
+\begin{verbatim}
+#ifdef _USEDOUBLEPREC_
+typedef double hmc_float;
+#else
+typedef float hmc_float;
+#endif
+\end{verbatim}
+With this type \ctype{hmc\_one\_f}=1 is a global constant. For both host and kernel, there is a complex type \ctype{hmc\_complex} with members \ctype{re} and \ctype{im} for real and imaginary part that is based on \ctype{hmc\_float}. \ctype{hmc\_complex\_one}, \ctype{hmc\_complex\_zero}, \ctype{hmc\_complex\_i} are available. All according complex operations are defined in \file{operations.h}.
+\subsubsection{Spinor types}
+Spinor types have only been defined in the C++ part so far:
+\begin{verbatim}
+typedef hmc_complex hmc_full_spinor [NSPIN*NC];
+typedef hmc_complex hmc_full_spinor_field [NSPIN*NC][VOLSPACE][NTIME];
+\end{verbatim}
+All according operations are defined in \file{operations.h}.
+\subsubsection{Gaugefield and matrix types}
+There is \ctype{hmc\_su3matrix} which is used as fundamental data type for SU(3) matrices. Depending on the switch \define{\_RECONSRUCT\_TWELVE\_} it is an array of length \verb+NC*(NC-1)+ or a field with \verb+[NC][NC]+ components.
+\ctype{hmc\_staplematrix} is an array of length \verb+NC*NC+ (for reconstruct twelve) or simply a new name for \ctype{hmc\_su3matrix} if all 18 components are stored anyways. The gaugefield ist stored as
+\begin{verbatim}
+#ifdef _RECONSTRUCT_TWELVE_
+typedef hmc_complex hmc_gaugefield [NC*(NC-1)][NDIM][VOLSPACE][NTIME];
+#else
+typedef hmc_complex hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME];
+#endif
+\end{verbatim}
+All according operations are defined in \file{operations.h}.
+
+On device, the typedefs are as follows:
+\begin{verbatim}
+typedef hmc_complex hmc_ocl_su3matrix;
+typedef hmc_complex hmc_ocl_staplematrix;
+typedef hmc_float hmc_ocl_gaugefield;
+\end{verbatim}
+Thus, the necessary array length has to be allocated each time. Operations are given in \file{operations\_kernels.cl}.
+
+\subsection{Operations}
+Local and global operations on the types defined in \file{types.h} are contained in \file{operations.h} and \file{operations.cpp}. There are operations on complex types (conjugation, multiplication,\ldots), matrix types (adjoin, trace, determinant,\ldots), spinor types, and gaugefield types.
+
+Besides arithmetic operations there are gaugefield functions to initialise cold and hot start as well as start from source. Furthermore interfaces to get and put SU(3) matrix elements of a gaugefield are provided and functions that copy a gaugefield from hmc type to ocl type.
+
+\subsection{Gaugeobservables}
+\file{gaugeobservables.h} and \file{gaugeobservables.cpp} provide
+\begin{verbatim}
+void print_gaugeobservables(hmc_gaugefield* field);
+
+hmc_float plaquette(hmc_gaugefield * field, hmc_float* tplaq, hmc_float* splaq);
+hmc_float plaquette(hmc_gaugefield * field);
+hmc_complex polyakov(hmc_gaugefield * field);
+hmc_complex spatial_polyakov(hmc_gaugefield * field, int dir);
+hmc_complex polyakov_x(hmc_gaugefield * field);
+hmc_complex polyakov_y(hmc_gaugefield * field);
+hmc_complex polyakov_z(hmc_gaugefield * field);
+\end{verbatim}
+The print function prints plaquette, temporal and spatial plaquette, real and imaginary part of Polyakov loop to standard out. The spatial polyakov loop functions give consistent results but have not been checked against independent results. The same is true for the spatial and timelike plaquettes.
+
+\file{gaugefieldoperations.h} and \file{gaugefieldoperations.cpp} provide
+\begin{verbatim}
+void print_info_source(sourcefileparameters* params);
+
+hmc_error init_gaugefield(hmc_gaugefield* gaugefield, inputparameters* parameters, usetimer* timer);
+\end{verbatim}
+The print function prints xml-info from an input source file to standard out. \function{init\_gaugefield} initialises a (previously allocated) gaugefield according to the start condition. Note the use of timer which needs to be improved.
+
+
+\subsection{Usetimer}
+\file{usetimer.h} defines an ugly wrapper around a timer class defined in \file{timer.h}. We need to improve this\ldots
+
+\subsection{Geometry}
+\file{geometry.h} and \file{geometry.cpp} provide a mapping from from $(x,y,z)$ to one int nspace. The naming scheme is as follows:\\
+direction 1 = x; direction 2 = y; direction 3 = z; direction 0 = t\\
+Important: $(x,y,z)$ are always used together and it should be possible to use a different number of space dimensions (defined in \file{globals.h}). $t$ is always apart.
+\begin{verbatim}
+//switch between (x,y,z) <-> nspace=0,...,VOLSPACE-1
+int get_nspace(int* coord);
+int get_spacecoord(int nspace, int dir);
+
+int get_neighbor(int nspace, int dir);
+int get_lower_neighbor(int nspace, int dir);
+\end{verbatim}
+
+\subsection{Update}
+{\bf information on heatbath update should be inserted by Christopher}
+
+\subsection{Opencl}
+\file{opencl.h} and \file{opencl.cpp} provide a class \function{opencl} which can be used to initialise an OpenCL device and call the heatbath kernel. The kernels are in \file{\_kernels.cl} files (e.\,g.\ \file{operations\_kernels.cl}). There is a testing kernel which can be called with the according test member function of the OpenCL class. 
+
+The kernel files that should be read in to build the OpenCL \function{clprogram} are listed in the \ctype{string} vector \function{cl\_kernels\_file}. When the programme is built, the complete source code is also written to the file \file{cl\_kernelsource.cl} which is meant to allow for debugging.
+
+\subsection{Testing}
+\file{testing.h} and \file{testing.cpp} provide a playground for testing. Just have a look\ldots

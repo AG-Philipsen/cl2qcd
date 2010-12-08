@@ -1,13 +1,10 @@
 This is BibTeX, Version 0.99c (TeX Live 2009/Debian)
 The top-level auxiliary file: main.aux
 The style file: unsrt.bst
-A level-1 auxiliary file: algorithm.aux
-A level-1 auxiliary file: compileroptions.aux
-A level-1 auxiliary file: hybridstrategy.aux
 Database file #1: literature.bib
 You've used 2 entries,
             1791 wiz_defined-function locations,
-            461 strings with 3938 characters,
+            458 strings with 3888 characters,
 and the built_in function-call counts, 475 in all, are:
 = -- 35
 > -- 31

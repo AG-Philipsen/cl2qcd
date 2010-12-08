@@ -3,17 +3,25 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 
+\usepackage{rotating}
+
 \usepackage{amsmath}
 
 \title{Project documentation:\\
        \textbf{HMC with OpenCL for hybrid manycore systems}
 }
 
-\author{Matthias Bach \and Christopher Pinke \and Lars Zeidlewicz}
+\author{Christopher Pinke \and Lars Zeidlewicz}
 
 \date{\today}
 
 \bibliographystyle{unsrt}
+
+\newcommand{\file}[1]{\texttt{#1}}
+\newcommand{\define}[1]{\texttt{#1}}
+\newcommand{\ctype}[1]{\texttt{#1}}
+\newcommand{\function}[1]{\texttt{#1}}
+\newcommand{\url}[1]{\texttt{#1}}
 
 \begin{document}
 \maketitle
@@ -23,46 +31,42 @@ We want to write a complete HMC simulation programme with Wilson-type quarks (tw
 
 \tableofcontents
 
+\newpage
+
 \section{General thoughts -- structure}
 This will be a lot of work\ldots
 
-So far, I've implemented the types for spinor, su3matrix and their fields on the lattice. The su3matrix so far is stored in matrix format, i.e. 18 doubles. That should be improved early on. The spinors are also full-spinors. However, I guess we should use half-spinor projections.
+Basically, the programme splits into two main parts: host-code and device-code. Host-code is standard C++ and provides the OpenCL-interface and master code for the OpenCL kernels. Furthermore, in the end, it is planned to have a completely working CPU-HMC, too. Since it is meant to run on a single node, the use of OpenMP is intended. The CPU-HMC might be needed to implement the hybrid approach in a later step.
 
-There are plaquette and Polyakov functions which work for a free gauge field. They should be tested against exisiting configs.
+The device code is the collection of all OpenCL-kernels. This should finally constitute a complete HMC. For now, we target at a heatbath implementation. The pure gauge heatbath will provide a good testing ground for a) benchmarks (and performance optimisation), b) the hybrid strategy. At this stage, we also want to learn what the optimal communication between host and device is, i.\,e. when do we need to transfer what information.
 
-We could really need an interface to read xml-configs from the tmQCD code by Carsten (that way, we would also have ILDG format...)
+Data types for the C++ host and OpenCL device codes are not the same. Therefore, the C++ code also needs to provide transfer functions. For the gaugefield and SU($N_c$) types this should be finished. For the spinor part, since its not needed yet, no OpenCL types have been defined so far.
 
-There is now an interface to read xml-configs from the tmLQCD code. But up to now, the program has a different geometry than ILDG format has. 
+On the host, there are plaquette and Polyakov functions that have been tested against existing configuration files. It is an open question whether we want to have those measurements on the device, too. The alternative would be to measure the gauge observables only when the gaugefield is transferred back to the host.
 
-%\section{Algorithm}
-\include{algorithm}
+ILDG format configurations (as from Carsten Urbach's {\bf reference\_has\_to\_be\_added\_by\_Lars} code) can be read. We still need the according functions to write a config to a file.
 
-\section{input/output}
+\section{Algorithm}
+\input{algorithm}
 
-\include{compileroptions}
+\section{Options and I/O}
+\input{inputoutput}
 
-\section{Program files}
-\input{hmcerrs}
-\input{globals}
-\input{types}
-\input{operations}
-\input{gaugeobservables}
-\input{geometry}
-\input{input}
-\input{readgauge}
-\input{testing}
+\section{Functions and constants}
+\input{programcomponents}
 
-%\section{Hybrid strategy}
-\include{hybridstrategy}
+\section{Hybrid strategy}
+\input{hybridstrategy}
 
 \section{Some readings}
 \subsection{ILDG}
-here one can find infos about ILDG: http://ildg.sasr.edu.au/Plone
+Here one can find infos about ILDG: \url{http://ildg.sasr.edu.au/Plone}
 \subsection{OpenCL}
-where to find the specs and docs
+To get the OpenCL specifications visit \url{http://www.khronos.org/opencl}.
 \subsection{Other GPU-HMCs}
 \begin{itemize}
 \item Bonati, Cossu, D'Elia, Di Giacomo, Staggered fermions simulations on GPUs~\cite{Bonati:2010qu}
+\item {\bf Christopher and Lars: complete this list with all references we know\ldots}
 \end{itemize}
 
 

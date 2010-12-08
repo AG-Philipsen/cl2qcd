@@ -6,8 +6,8 @@ hmc_error inputparameters::set_defaults(){
   mu = 0.006;
   cgmax = 1000;
   prec = 64;
-  startcondition = 0;
-  thermalizationsteps = 1000;
+  startcondition = COLD;
+  thermalizationsteps = 0;
   heatbathsteps = 1000;
   //sourcefile = "\0";
   return HMC_SUCCESS;
