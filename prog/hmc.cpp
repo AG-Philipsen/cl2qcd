@@ -5,145 +5,92 @@ int main(int argc, char* argv[]) {
   char* progname = argv[0];
   print_hello(progname);
 
-  opencl gpu(CL_DEVICE_TYPE_GPU);
-
   char* inputfile = argv[1];
   inputparameters parameters;
   parameters.readfile(inputfile);
   print_info(&parameters);
 
-  usetimer timer(&parameters);
-  timer.start();
-
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Initialization
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  
+
+
+  stringstream gaugeout_name;
+  gaugeout_name<<"gaugeobservables_beta"<<parameters.get_beta();
+    
   sourcefileparameters parameters_source;
   hmc_gaugefield * gaugefield;
   gaugefield = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+  ildg_gaugefield * gaugefield_buf;
+  gaugefield_buf = (ildg_gaugefield*) malloc(sizeof(ildg_gaugefield));
+  int gaugefield_buf_size = sizeof(ildg_gaugefield)/sizeof(hmc_float);
+  hmc_rndarray rndarray;
 
-  init_gaugefield(gaugefield,&parameters,&timer);
+  init_gaugefield(gaugefield,&parameters,&inittime);
+  heatbath_update (gaugefield, parameters.get_beta());
+  
+  //this needs optimization
+  const size_t local_work_size  = VOL4D/2;
+  const size_t global_work_size = local_work_size;
+  //one should define a definite number of threads and use this here
+  init_random_seeds(rnd, rndarray, VOL4D/2, &inittime);
 
+//   opencl gpu(CL_DEVICE_TYPE_GPU, &inittime);
 
-  //LZ: test opencl implementation -- in future, we will need timer measurements here...
-  print_gaugeobservables(gaugefield);
+  cout << "initial values of observables:\n\t" ;
+  print_gaugeobservables(gaugefield, &polytime, &plaqtime);
 
-  gpu.copy_gaugefield_to_device(gaugefield);
-  //  gpu.run_heatbath(10,parameters.get_beta());
-  gpu.testing();
-  gpu.get_gaugefield_from_device(gaugefield);
+//   gpu.copy_gaugefield_to_device(gaugefield, &copytime);
+//   gpu.copy_rndarray_to_device(rndarray, &copytime);
 
-  print_gaugeobservables(gaugefield);
-
-
-  gpu.finalize();
-
-  return 0;
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Thermalization
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  timer.reset();
-  if(!parameters.get_startcondition()==START_FROM_SOURCE){
-    cout << endl << "perform thermalization" << endl;
-    for (int i = 0; i<parameters.get_thermalizationsteps(); i++){
-      heatbath_update (gaugefield, parameters.get_beta());cout << i << " " << endl;
+//   gpu.testing();
+  
+  //this has go into a function later
+  int nsteps = parameters.get_heatbathsteps(), writeout=1;
+  
+  cout<<"perform "<<nsteps<<" heatbath steps on OpenCL device..."<<endl;
+  for(int i = 0; i<nsteps; i++){
+//     gpu.run_heatbath(parameters.get_beta(), local_work_size, global_work_size, &updatetime);
+//     gpu.run_overrelax(parameters.get_beta(), local_work_size, global_work_size, &overrelaxtime);
+     if(((i+1)%writeout)== 0) {
+//        gpu.gaugeobservables(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
+       print_gaugeobservables(plaq, tplaq, splaq, pol, i, gaugeout_name.str());
     }
-    
   }
-  timer.measurements(1);
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Test-Measurements
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  printf("Initial measurements...\n");
+//   gpu.get_gaugefield_from_device(gaugefield, &copytime);
+
+  print_gaugeobservables(gaugefield, &polytime, &plaqtime);
   
-  timer.reset();
-  printf("plaquette: %f\n",plaquette(gaugefield));
-  timer.getTimeAndReset(2);
-  
-  printf("Polyakov loop in t: (%f,%f)\n",polyakov(gaugefield).re,polyakov(gaugefield).im);
-  printf("Polyakov loop in x: (%f,%f)\n",polyakov_x(gaugefield).re,polyakov_x(gaugefield).im);
-  printf("Polyakov loop in y: (%f,%f)\n",polyakov_y(gaugefield).re,polyakov_y(gaugefield).im);
-  printf("Polyakov loop in z: (%f,%f)\n",polyakov_z(gaugefield).re,polyakov_z(gaugefield).im);
-  
-  timer.getTimeAndReset(3);
-  
-  //Testing
-  for (int i = 0; i<parameters.get_heatbathsteps()/2-1; i++){
-    plaquette(gaugefield);
-    timer.add(2);
-  
-    polyakov(gaugefield);
-    polyakov_x(gaugefield);
-    polyakov_y(gaugefield);
-    polyakov_z(gaugefield);
-    
-    timer.add(3);
-  }
-  
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Gaugefield-updates in thermalized system on CPU
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  
-  printf("\nheatbath...\n");
-  timer.zero(4);
-  timer.zero(5);
-  timer.reset();
-  for (int i = 0; i<parameters.get_heatbathsteps(); i++){
-      heatbath_update (gaugefield, parameters.get_beta());
-      //      printf("%d %f %f\n",i,plaquette(gaugefield),polyakov(gaugefield).re);
-      timer.add(4);
-//        heatbath_overrelax (gaugefield, parameters.get_beta());
-  }
-  
-  for (int i = 0; i<parameters.get_heatbathsteps(); i++){
-      heatbath_overrelax (gaugefield, parameters.get_beta());
-      timer.add(5);
-  }
-  
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // More measurements
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
-  printf("now the stuff is..\n");  
-  
-  timer.reset();
-  printf("plaquette: %f\n",plaquette(gaugefield));
-  timer.add(2);
-  
-  printf("Polyakov loop in t: (%f,%f)\n",polyakov(gaugefield).re,polyakov(gaugefield).im);
-  printf("Polyakov loop in x: (%f,%f)\n",polyakov_x(gaugefield).re,polyakov_x(gaugefield).im);
-  printf("Polyakov loop in y: (%f,%f)\n",polyakov_y(gaugefield).re,polyakov_y(gaugefield).im);
-  printf("Polyakov loop in z: (%f,%f)\n",polyakov_z(gaugefield).re,polyakov_z(gaugefield).im);
-  
-  timer.add(3);
-  
-    //Testing
-  for (int i = 0; i<parameters.get_heatbathsteps()/2-1; i++){
-    plaquette(gaugefield);
-    timer.add(2);
-  
-    polyakov(gaugefield);
-    polyakov_x(gaugefield);
-    polyakov_y(gaugefield);
-    polyakov_z(gaugefield);
-    
-    timer.add(3);
-  }  
-  
+  totaltime.add();
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Output
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  timer.output();
- 
+  //these are not yes used...
+  hmc_float c2_rec = 0, epsilonbar = 0, mubar = 0;
+  //this is only in the makefile??
+  const char * version = "0.1";
+  string outputfile ("conf.");
+  outputfile.append(parameters.sourcefilenumber);
+  
+  copy_gaugefield_to_ildg_format(gaugefield_buf, gaugefield);
+
+  plaq = plaquette(gaugefield, &tplaq, &splaq);
+  pol = polyakov(gaugefield);
+  print_gaugeobservables(plaq, tplaq, splaq, pol, nsteps);
+  
+  write_gaugefield ( gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NSPACE, parameters.get_prec(), nsteps, plaq, parameters.get_beta(), parameters.get_kappa(), parameters.get_mu(), c2_rec, epsilonbar, mubar, version, outputfile.c_str());
+
+  time_output(&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // free variables
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   free(gaugefield);
-
+  free(gaugefield_buf);
+//   gpu.finalize();
+  
   return HMC_SUCCESS;
 }

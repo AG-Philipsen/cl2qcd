@@ -12,16 +12,17 @@
 #include "globaldefs.h"
 #include "hmcerrs.h"
 #include "types.h"
-#include "operations.h"
-#include "geometry.h"
-#include "testing.h"
-#include "gaugeobservables.h"
-#include "gaugefieldoperations.h"
-#include "input.h"
-#include "readgauge.h"
-#include "random.h"
-#include "update.h"
-#include "use_timer.h"
+#include "host_operations.h"
+#include "host_geometry.h"
+#include "host_testing.h"
+#include "host_gaugeobservables.h"
+#include "host_gaugefieldoperations.h"
+#include "host_input.h"
+#include "host_readgauge.h"
+#include "host_random.h"
+#include "host_update_heatbath.h"
+#include "host_use_timer.h"
+#include "host_writegaugefield.h"
 #include "opencl.h"
 #include <CL/cl.h>
 
@@ -33,12 +34,22 @@ string const version = "0.1";
 
 using namespace std;
 
-// global random number thing
-Ran myran;
+// global random number generator
+Random rnd (seed);
 
+usetimer totaltime;
+usetimer inittime;
+usetimer polytime;
+usetimer plaqtime;
+usetimer updatetime;
+usetimer overrelaxtime;
+usetimer copytime;
+
+//to save gaugeobservables
+hmc_float plaq, splaq, tplaq;
+hmc_complex pol;
 
 void print_hello(char* name){
-  //  printf("\n%s says: \"when I'm grown up, I will be a complete HMC simulation...\"\n\n",name);
   std::cout<<"This is hmc program "<<name<<", version "<<version<<"."<<endl;
   return;
 }
@@ -61,13 +72,16 @@ void print_info(inputparameters* params){
   printf("thermsteps = \t%d\n",(*params).get_thermalizationsteps());
   printf("heatbathsteps = %d\n",(*params).get_heatbathsteps());
   printf("\n");
-  if ((*params).get_startcondition()) {
+  if ((*params).get_startcondition()==START_FROM_SOURCE) {
     printf("sourcefile = ");
     (*params).display_sourcefile();
     printf("\n");
   }
-  else {
-    printf("no sourcefile\n");
+  if ((*params).get_startcondition()==COLD_START) {
+    printf("make cold start\n");
+  }
+  if ((*params).get_startcondition()==HOT_START) {
+    printf("make hot start\n");
   }
   printf("**********************************************************\n");
   printf("\n");

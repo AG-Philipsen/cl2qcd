@@ -2,6 +2,9 @@
 #define _TYPESH_
 
 #include "globaldefs.h"
+#ifndef _INKERNEL_
+#include <CL/cl.h>
+#endif
 
 //typedef double hmc_float;
 #ifdef _USEDOUBLEPREC_
@@ -29,6 +32,11 @@ struct hmc_complex {
 };
 #endif
 
+#ifndef _INKERNEL_
+typedef cl_uint4 hmc_ocl_ran;
+typedef hmc_ocl_ran hmc_rndarray[VOL4D/2];
+#endif
+
 
 #ifdef _INKERNEL_
 __constant hmc_complex hmc_complex_one={1., 0.};
@@ -50,10 +58,12 @@ typedef hmc_complex hmc_full_spinor_field [NSPIN*NC][VOLSPACE][NTIME];
 typedef hmc_complex hmc_su3matrix [NC*(NC-1)];
 typedef hmc_complex hmc_staplematrix [NC*NC];
 typedef hmc_complex hmc_gaugefield [NC*(NC-1)][NDIM][VOLSPACE][NTIME];
+typedef hmc_float ildg_gaugefield[2*NC*(NC-1)*NDIM*VOLSPACE*NTIME];
 #else
 typedef hmc_complex hmc_su3matrix [NC][NC];
 typedef hmc_su3matrix hmc_staplematrix;
 typedef hmc_complex hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME];
+typedef hmc_float ildg_gaugefield[2*NC*NC*NDIM*VOLSPACE*NTIME];
 #endif
 
 #endif // ifndef _INKERNEL_

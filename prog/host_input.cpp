@@ -1,4 +1,4 @@
-#include "input.h"
+#include "host_input.h"
 
 hmc_error inputparameters::set_defaults(){
   kappa = 0.125;
@@ -10,6 +10,7 @@ hmc_error inputparameters::set_defaults(){
   thermalizationsteps = 0;
   heatbathsteps = 1000;
   //sourcefile = "\0";
+  sourcefilenumber = "00000";
   return HMC_SUCCESS;
 }
 
@@ -37,7 +38,10 @@ hmc_error inputparameters::readfile(char* ifn){
     if(line.find("Prec")!=std::string::npos) val_assign(&prec,line);
     if(line.find("readsource")!=std::string::npos) cond_assign(&startcondition,line);
     if(line.find("startcondition")!=std::string::npos) cond_assign(&startcondition,line);
-    if(line.find("sourcefile")!=std::string::npos) val_assign(&sourcefile,line);
+    if(line.find("sourcefile")!=std::string::npos){
+      val_assign(&sourcefile,line);
+      sourcefilenumber_assign(&sourcefilenumber);
+    }
     if(line.find("thermalizationsteps")!=std::string::npos) val_assign(&thermalizationsteps,line);
     if(line.find("heatbathsteps")!=std::string::npos) val_assign(&heatbathsteps,line);
   }
@@ -56,6 +60,21 @@ void inputparameters::val_assign(int * out, std::string line) {
   std::string value=line.substr(pos+1);
   (*out) = atoi(value.c_str());
   return;
+}
+
+void inputparameters::sourcefilenumber_assign(std::string * out){
+  //it is supposed that the file is called conf.xxxxx 
+  size_t length;
+  char buffer[20];
+  string str ("Test string...");
+  length=sourcefile.copy(buffer,5,5);
+  buffer[length]='\0';
+  //atoi should neglect any letters left in the string
+  int tmp = atoi(buffer);
+  char buffer2[20];
+  //there is no check if the number is bigger than 99999!!
+  sprintf(buffer2, "%.5i", tmp+1);
+  (*out) = buffer2;
 }
 
 void inputparameters::cond_assign(int * out, std::string line) {
@@ -121,4 +140,8 @@ int inputparameters::get_startcondition(){
 
 void inputparameters::display_sourcefile(){
   cout << sourcefile;
+}
+
+void inputparameters::display_sourcefilenumber(){
+  cout << sourcefilenumber;
 }
