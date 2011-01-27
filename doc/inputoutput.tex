@@ -17,6 +17,9 @@ The list of options and variables is given in table~\ref{tab:options}.
 \verb+startcondition+ & start condition                & hot, cold, continue          & cold \\
 \verb+thermalizationsteps+ & thermalisation steps      & $0\le\texttt{thermalizationsteps}<\infty$ & 0 \\
 \verb+heatbathsteps+  & heatbath steps                 & $0<\texttt{heatbathsteps}<\infty$ & 1000 \\
+\verb+writefrequency+  & frequency to write gaugeobs.  & $1<\texttt{writefrequency}<\infty$ & 1 \\
+\verb+saveconfigs+  & if to save gauge configs at all  & true, yes; false, no & FALSE \\
+\verb+savefrequency+  & frequency to save gauge files  & $0<\texttt{savefrequency}<\infty$ & 100 \\
 \verb+sourcefile+  & name of gauge config file         & string                       &  not defined
 \end{tabular}
 \caption{List of all possible options and variables that can be passed to the programme in the input file.} \label{tab:options}

@@ -50,3 +50,27 @@ void print_info_source(sourcefileparameters* params){
   printf("\n");
   return;
 }
+
+
+hmc_error save_gaugefield(hmc_gaugefield* gaugefield, inputparameters* parameters, int number){
+
+  ildg_gaugefield * gaugefield_buf;
+  gaugefield_buf = (ildg_gaugefield*) malloc(sizeof(ildg_gaugefield));
+  int gaugefield_buf_size = sizeof(ildg_gaugefield)/sizeof(hmc_float);
+
+  //these are not yet used...
+  hmc_float c2_rec = 0, epsilonbar = 0, mubar = 0;
+
+  string outputfile ("conf.");
+  outputfile.append((*parameters).sourcefilenumber);
+  
+  copy_gaugefield_to_ildg_format(gaugefield_buf, gaugefield);
+
+  hmc_float plaq=plaquette(gaugefield);
+
+  write_gaugefield ( gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NSPACE, (*parameters).get_prec(), number, plaq, (*parameters).get_beta(), (*parameters).get_kappa(), (*parameters).get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
+
+  free(gaugefield_buf);
+
+  return HMC_SUCCESS;
+}

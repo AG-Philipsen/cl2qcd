@@ -21,6 +21,9 @@
 #define COLD_START 0
 #define HOT_START 1
 
+#define TRUE 1
+#define FALSE 0
+
 #endif //_INKERNEL_
 
 #define PI 	3.14159265358979

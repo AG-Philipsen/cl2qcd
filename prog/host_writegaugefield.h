@@ -24,7 +24,6 @@ extern "C" {
 
 #define ENDIAN (htons(1) == 1)
 
-
 hmc_error make_binary_data_single(hmc_float * array, char * out, const int array_size, const int num_entries);
 
 hmc_error make_binary_data_double(hmc_float * array, char * out, const int array_size, const int num_entries);

@@ -11,6 +11,7 @@ hmc_error inputparameters::set_defaults(){
   heatbathsteps = 1000;
   writefrequency = 1;
   savefrequency = 100;
+  saveconfigs = FALSE;
   //sourcefile = "\0";
   sourcefilenumber = "00000";
   return HMC_SUCCESS;
@@ -38,6 +39,7 @@ hmc_error inputparameters::readfile(char* ifn){
     if(line.find("Cgmax")!=std::string::npos) val_assign(&cgmax,line);
     if(line.find("writefrequency")!=std::string::npos) val_assign(&writefrequency,line);
     if(line.find("savefrequency")!=std::string::npos) val_assign(&savefrequency,line);
+    if(line.find("saveconfigs")!=std::string::npos) savecond_assign(&saveconfigs,line);
     if(line.find("prec")!=std::string::npos) val_assign(&prec,line);
     if(line.find("Prec")!=std::string::npos) val_assign(&prec,line);
     if(line.find("readsource")!=std::string::npos) cond_assign(&startcondition,line);
@@ -103,6 +105,45 @@ void inputparameters::cond_assign(int * out, std::string line) {
   return;
 }
 
+
+void inputparameters::savecond_assign(int * out, std::string line) {
+  if(std::strstr(line.c_str(),"yes")!=NULL) {
+    (*out)=TRUE;
+    return;
+  }
+  if(std::strstr(line.c_str(),"true")!=NULL) {
+    (*out)=TRUE;
+    return;
+  }
+  if(std::strstr(line.c_str(),"TRUE")!=NULL) {
+    (*out)=TRUE;
+    return;
+  }
+  if(std::strstr(line.c_str(),"True")!=NULL) {
+    (*out)=TRUE;
+    return;
+  }
+  if(std::strstr(line.c_str(),"no")!=NULL) {
+    (*out)=FALSE;
+    return;
+  }
+  if(std::strstr(line.c_str(),"false")!=NULL) {
+    (*out)=FALSE;
+    return;
+  }
+  if(std::strstr(line.c_str(),"FALSE")!=NULL) {
+    (*out)=FALSE;
+    return;
+  }
+  if(std::strstr(line.c_str(),"False")!=NULL) {
+    (*out)=FALSE;
+    return;
+  }
+  printf("invalid save condition\n");
+  exit(HMC_STDERR);
+  return;
+}
+
 void inputparameters::val_assign(std::string * out, std::string line) {
   size_t pos = line.find("=");
   std::string value=line.substr(pos+1);
@@ -148,6 +189,10 @@ int inputparameters::get_savefrequency(){
 
 int inputparameters::get_startcondition(){
   return startcondition;
+}
+
+int inputparameters::get_saveconfigs(){
+  return saveconfigs;
 }
 
 void inputparameters::display_sourcefile(){
