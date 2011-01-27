@@ -23,7 +23,7 @@ class inputparameters {
   int get_prec();
   int get_startcondition();
   int get_thermalizationsteps();
-  int get_heatbathsteps();
+  int get_savefrequency();
   void display_sourcefile();
   //CP
   //this is out of laziness
@@ -37,6 +37,8 @@ class inputparameters {
   int startcondition;
   int thermalizationsteps;
   int heatbathsteps;
+  int writefrequency;
+  int savefrequency;
   void val_assign(hmc_float* out, std::string line);
   void val_assign(int * out, std::string line);
   void cond_assign(int * out, std::string line);

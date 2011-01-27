@@ -9,6 +9,8 @@ hmc_error inputparameters::set_defaults(){
   startcondition = COLD_START;
   thermalizationsteps = 0;
   heatbathsteps = 1000;
+  writefrequency = 1;
+  savefrequency = 100;
   //sourcefile = "\0";
   sourcefilenumber = "00000";
   return HMC_SUCCESS;
@@ -34,6 +36,8 @@ hmc_error inputparameters::readfile(char* ifn){
     if(line.find("cgmax")!=std::string::npos) val_assign(&cgmax,line);
     if(line.find("CGmax")!=std::string::npos) val_assign(&cgmax,line);
     if(line.find("Cgmax")!=std::string::npos) val_assign(&cgmax,line);
+    if(line.find("writefrequency")!=std::string::npos) val_assign(&writefrequency,line);
+    if(line.find("savefrequency")!=std::string::npos) val_assign(&savefrequency,line);
     if(line.find("prec")!=std::string::npos) val_assign(&prec,line);
     if(line.find("Prec")!=std::string::npos) val_assign(&prec,line);
     if(line.find("readsource")!=std::string::npos) cond_assign(&startcondition,line);
@@ -132,6 +136,14 @@ int inputparameters::get_thermalizationsteps(){
 
 int inputparameters::get_heatbathsteps(){
   return heatbathsteps;
+}
+
+int inputparameters::get_writefrequency(){
+  return writefrequency;
+}
+
+int inputparameters::get_savefrequency(){
+  return savefrequency;
 }
 
 int inputparameters::get_startcondition(){

@@ -78,10 +78,10 @@ void print_info(inputparameters* params){
     printf("\n");
   }
   if ((*params).get_startcondition()==COLD_START) {
-    printf("make cold start\n");
+    printf("cold start\n");
   }
   if ((*params).get_startcondition()==HOT_START) {
-    printf("make hot start\n");
+    printf("hot start\n");
   }
   printf("**********************************************************\n");
   printf("\n");

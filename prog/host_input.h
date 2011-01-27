@@ -24,6 +24,8 @@ class inputparameters {
   int get_startcondition();
   int get_thermalizationsteps();
   int get_heatbathsteps();
+  int get_heatbathsteps();
+  int get_writefrequency();
   void display_sourcefile();
   void display_sourcefilenumber();
   //CP

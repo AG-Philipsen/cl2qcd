@@ -4,13 +4,13 @@ PROGNAME = hmc.v$(VERSION)
 
 CXX = g++
 
-LIMEPATH=/home/pinke/lime/lime
-OCLSOURCEDIR="\"/home/pinke/hmc/prog"\"
-ATISDKPATH=/home/pinke/PHD/OpenCL/ati-stream-sdk-v2.3-lnx64
-#OCLSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
-#LIMEPATH=/home/zeidlewicz/bin/lime/lime-lib
+#LIMEPATH=/home/pinke/lime/lime
+#OCLSOURCEDIR="\"/home/pinke/hmc/prog"\"
+#ATISDKPATH=/home/pinke/PHD/OpenCL/ati-stream-sdk-v2.3-lnx64
+OCLSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
+LIMEPATH=/home/zeidlewicz/bin/lime/lime-lib
 XMLPATH=/usr/include/libxml2
-#ATISDKPATH=/home/zeidlewicz/bin/ati-stream-sdk-v2.3-lnx64
+ATISDKPATH=/home/zeidlewicz/bin/ati-stream-sdk-v2.3-lnx64
 
 #gpu-dev01:
 #OCLSOURCEDIR="\"/home/pinke/hmc_working"\"
@@ -18,7 +18,7 @@ XMLPATH=/usr/include/libxml2
 #XMLPATH=/home/pinke/libxml2/libxml2
 #ATISDKPATH=/home/pinke/ati-stream-sdk-v2.3-lnx64
 
-DEFDOUBLE=-D_USEDOUBLEPREC_
+#DEFDOUBLE=-D_USEDOUBLEPREC_
 #DEFREC=-D_RECONSTRUCT_TWELVE_
 #DEFOMP=-D_OPENMP
 

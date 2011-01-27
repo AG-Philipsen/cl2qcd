@@ -9,6 +9,7 @@ hmc_error inputparameters::set_defaults(){
   startcondition = COLD_START;
   thermalizationsteps = 0;
   heatbathsteps = 1000;
+
   //sourcefile = "\0";
   return HMC_SUCCESS;
 }
@@ -114,6 +115,9 @@ int inputparameters::get_thermalizationsteps(){
 int inputparameters::get_heatbathsteps(){
   return heatbathsteps;
 }
+                     
+
+
 
 int inputparameters::get_startcondition(){
   return startcondition;
