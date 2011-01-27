@@ -24,7 +24,7 @@ class inputparameters {
   int get_startcondition();
   int get_thermalizationsteps();
   int get_heatbathsteps();
-  int get_heatbathsteps();
+  int get_savefrequency();
   int get_writefrequency();
   void display_sourcefile();
   void display_sourcefilenumber();
@@ -41,6 +41,8 @@ class inputparameters {
   int startcondition;
   int thermalizationsteps;
   int heatbathsteps;
+  int savefrequency;
+  int writefrequency;
   void val_assign(hmc_float* out, std::string line);
   void val_assign(int * out, std::string line);
   void sourcefilenumber_assign(std::string * out);
