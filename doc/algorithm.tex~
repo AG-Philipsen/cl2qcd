@@ -1,4 +1,4 @@
 In this section we describe the algorithm that is implemented in the programme. Ultimatively, we want to have an HMC with CG-solver (or maybe BiCGStab), even-odd preconditioning, leap-frog integration and possibly mass preconditioning {\bf references\_to\_be\_given\_by\_Lars}. That seems to be the standard choice of algorithm.
 
 \subsection{Heatbath}
-Right now only the heatbath algorithm is implemented. It corresponds to the standard description for SU(3) Gauge theories following Cabibbo \& Marinari \cite{Cabibbo:1982} and Creutz \cite{Creutz:1980}.
+Right now only the heatbath algorithm is implemented. It corresponds to the standard description for SU(3) Gauge theories following Cabibbo & Marinari \cite{Cabibbo:1982} and Creutz \cite{Creutz:1980}.

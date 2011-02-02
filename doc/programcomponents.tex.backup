@@ -60,11 +60,9 @@ typedef hmc_float hmc_ocl_gaugefield;
 \end{verbatim}
 Thus, the necessary array length has to be allocated each time. Operations are given in \file{opencl\_operations.cl}.
 
-For the output file, there is a type \ctype{ildg\_gaugefield}, which is just a big array of \ctype{hmc\_floats}. \ctype{hmc\_gaugefield} can be converted into this format to ensure combatibility.
-
 \subsubsection{Random number types}
 
-For the random numbers on the device there is the type \ctype{hmc\_ocl\_ran}, which is just a \ctype{cl\_uint4}. Additionally there is a type \ctype{rndarra}, which is an array of \ctype{hmc\_ocl\_ran} with \ctype{VOL4D/2} entries. It is meant to store one random number for each thread.
+For the random numbers on the device there is the type clu\_taus\_state, which is just a cl\_uint4. Additionally there is a type rndarray, which is an array of clu\_taus\_states with VOL4D/2 entries. It is meant to store one random number for each thread.
 
 
 \subsection{Operations}
@@ -122,37 +120,6 @@ int get_neighbor(int nspace, int dir);
 int get_lower_neighbor(int nspace, int dir);
 \end{verbatim}
 
-However, there is an important difference between host and opencl-device: the gaugefield on the device is one big array of hmc\_floats! That is why one has to define an ordering there. It is done according to 
-\begin{itemize}
- \item spatial position = x + y*NSPACE + z*NSPACE*NSPACE
- \item site position = pos + VOLSPACE*t
- \item link-index = mu + NDIM*site
-\end{itemize}
-
-For example, to acces one specific element while being on the device can be done through the function
-
-\begin{verbatim}
-int inline ocl_gaugefield_element(int c, int a, int b, int mu, 
-                          int spacepos, int t){
-#ifdef _RECONSTRUCT_TWELVE_
-  return c + 2*a + 2*(NC-1)*b + 2*NC*(NC-1)*mu + 2*NC*(NC-1)*NDIM*spacepos +
-                          2*NC*(NC-1)*NDIM*VOLSPACE*t;
-#else
-  return c + 2*a + 2*NC*b + 2*NC*NC*mu+2*NC*NC*NDIM*spacepos + 
-                          2*NC*NC*NDIM*VOLSPACE*t;
-#endif
-}
-\end{verbatim}
-with c being the complex index. On the host, this would simply be 
-\begin{verbatim}
-             gaugefield[a][b][mu][spacepos][t].re(.im)
-\end{verbatim}
-or
-\begin{verbatim}
-             gaugefield[a + NC*b][mu][spacepos][t],
-\end{verbatim}
-respectivly.
-
 \subsection{Update}
 In \file{host\_update\_heatbath.h} and \file{host\_update\_heatbath.cpp} the heatbath and overrelaxing algorithms for the gaugefield are given in standard and checkerboard version, where the latter can be used with OpenMP (and perhaps needs one final test). Additionally there is the routine to calculate the staple of a given link.
 
@@ -171,7 +138,7 @@ void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield,
 
 \subsection{Random}
 
-The files \file{host\_random.h} and \file{host\_random.cpp} provide a LCG random number generator for the host taken from Numerical Recipes \cite{NR} called \ctype{Random} which can be initialised with a seed that is currently set to be 50000. For the heatbath one needs a random order of 1,2 and 3 as well as random SU(2)-matrices, which is implemented here according to Kennedy \& Pendleton \cite{Kennedy:1985}. Also, there is the init-function for a random-array that is used as the seed-array for the random-numbers on the device.
+The files \file{host\_random.h} and \file{host\_random.cpp} provide a random number generator for the host taken from Numerical Recipes (cite) called Random which can be initialised with a seed that is currently set to be 50000. For the heatbath one needs a random order of 1,2 and 3 as well as random SU(2)-matrices, which is implemented here according to Kennedy \& Pendleton \cite{Kennedy:1985}. Also, there is the init-function for a random-array that is used as the seed-array for the random-numbers on the device.
 
 \begin{verbatim}
 void random_1_2_3 (int rand[3]);
@@ -180,7 +147,6 @@ void init_random_seeds(Random random, clu_taus_state * hmc_rndarray,
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha);
 \end{verbatim}
 
-On the device there is the function \file{ocl\_new\_ran} that provides a LCG PRNG for each thread (thanks to Matthias Bach).
 
 \subsection{Opencl}
 \file{opencl.h} and \file{opencl.cpp} provide a class \function{opencl} which can be used to initialise an OpenCL device and call the heatbath kernel. The kernels needed for the OpenCL-Implementaton are give in \file{opencl\_xxx.cl} files (e.\,g.\ \file{opencl\_operations.cl}). There is a testing kernel which can be called with the according test member function of the OpenCL class. Also, equivalent functions to basically every function defined on the host (except input- and output-operations) can be found in these files.

@@ -71,8 +71,8 @@ Despite the possibiliy to write a gauge-configuration to a file (see above), a t
 	Plaquette in space-direction
 	Real(Polyakovloop)
 	Im(Polyakovloop)
-	Abs(Polyakovloop).
+	Abs(Polyakovloop)
 \end{verbatim}
-Here, the observables are saved with a precision of 15.
+
 
 

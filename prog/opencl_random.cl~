@@ -27,7 +27,6 @@ inline float ocl_new_ran( __global hmc_ocl_ran* state )
 	return res;
 }
 
-
 int random_int( int range, __global hmc_ocl_ran* taus_state )
 {
 	return convert_int( ocl_new_ran( taus_state ) * range );

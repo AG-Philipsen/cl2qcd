@@ -1,0 +1,26 @@
+@Article{Bonati:2010qu,
+     author    = "Bonati, Claudio and Cossu, Guido and D'Elia, Massimo and Di
+                  Giacomo, Adriano",
+     title     = "{Staggered fermions simulations on GPUs}",
+journal = "PoS(Lat2010)???",
+     year      = "2010",
+     eprint    = "1010.5433",
+     archivePrefix = "arXiv",
+     primaryClass  =  "hep-lat",
+     SLACcitation  = "%%CITATION = 1010.5433;%%"
+}
+@Article{Clark:2009wm,
+     author    = "Clark, M. A. and Babich, R. and Barros, K. and Brower, R.
+                  C. and Rebbi, C.",
+     title     = "{Solving Lattice QCD systems of equations using mixed
+                  precision solvers on GPUs}",
+     journal   = "Comput. Phys. Commun.",
+     volume    = "181",
+     year      = "2010",
+     pages     = "1517-1528",
+     eprint    = "0911.3191",
+     archivePrefix = "arXiv",
+     primaryClass  =  "hep-lat",
+     doi       = "10.1016/j.cpc.2010.05.002",
+     SLACcitation  = "%%CITATION = 0911.3191;%%"
+}

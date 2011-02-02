@@ -1,4 +1,21 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
+
+\bibitem{Jansen:2009xp}
+K.~Jansen and C.~Urbach.
+\newblock {tmLQCD: A Program suite to simulate Wilson Twisted mass Lattice
+  QCD}.
+\newblock {\em Comput.Phys.Commun.}, 180:2717--2738, 2009.
+
+\bibitem{Cabibbo:1982}
+Nicola Cabibbo and Enzo Marinari.
+\newblock {A new Method for updating SU(N) Matrices in Computer Simulations of
+  Gauge Theories}.
+\newblock {\em Physical Letters, Volume 119B, number 4,5,6}, 1982.
+
+\bibitem{Creutz:1980}
+Michael Creutz.
+\newblock {Monte Carlo Study of quantized SU(2) gauge theory}.
+\newblock {\em Physical Review D, Volume 21, Number 8}, 1980.
 
 \bibitem{Clark:2009wm}
 M.~A. Clark, R.~Babich, K.~Barros, R.~C. Brower, and C.~Rebbi.
@@ -6,9 +23,87 @@ M.~A. Clark, R.~Babich, K.~Barros, R.~C. Brower, and C.~Rebbi.
   solvers on GPUs}.
 \newblock {\em Comput. Phys. Commun.}, 181:1517--1528, 2010.
 
+\bibitem{NR}
+W.~H. Teukolsky, S.~A. Vetterling, W.~T. Press, and B.~P. Flannery.
+\newblock {\em Numerical Recipes. The Art of Scientific Computing.}
+\newblock Cambridge University Press, Cambridge, 3. auflage edition, 2007.
+
+\bibitem{Kennedy:1985}
+A.~D. Kennedy and B.~J. Pendleton.
+\newblock {Improved Heatbath Method for Monte Carlo Calculations in Lattice
+  Gauge Theories}.
+\newblock {\em Physical Letters, Volume 156B, number 5,6}, 1985.
+
+\bibitem{Egri:2006zm}
+Gyozo~I. Egri, Zoltan Fodor, Christian Hoelbling, Sandor~D. Katz, Daniel
+  Nogradi, et~al.
+\newblock {Lattice QCD as a video game}.
+\newblock {\em Comput.Phys.Commun.}, 177:631--639, 2007.
+
+\bibitem{Demchik:2009ni}
+Vadim Demchik and Alexei Strelchenko.
+\newblock {Monte Carlo simulations on Graphics Processing Units}.
+\newblock 2009.
+
+\bibitem{Demchik:2010}
+Vadim" "Demchik.
+\newblock Pseudo-random number generators for monte carlo simulations on
+  graphics processing units.
+\newblock 2010.
+
+\bibitem{Cardoso:2010me}
+Nuno Cardoso and Pedro Bicudo.
+\newblock {Lattice SU(2) on GPU's}.
+\newblock 2010.
+\newblock * Temporary entry *.
+
+\bibitem{Clark:2009qp}
+M.A. Clark.
+\newblock {QCD on GPUs: cost effective supercomputing}.
+\newblock {\em PoS}, LAT2009:003, 2009.
+
+\bibitem{Hayakawa:2010gm}
+M.~Hayakawa, K.-I. Ishikawa, Y.~Osaki, S.~Takeda, S.~Uno, et~al.
+\newblock {Improving many flavor QCD simulations using multiple GPUs}.
+\newblock 2010.
+
+\bibitem{Chiu:2009wh}
+Ting-Wai Chiu et~al.
+\newblock {TWQCD's dynamical DWF project}.
+\newblock {\em PoS}, LAT2009:034, 2009.
+
 \bibitem{Bonati:2010qu}
 Claudio Bonati, Guido Cossu, Massimo D'Elia, and Adriano Di~Giacomo.
 \newblock {Staggered fermions simulations on GPUs}.
 \newblock {\em PoS(Lat2010)???}, 2010.
+
+\bibitem{Kim:2010br}
+Hyung-Jin Kim and Weonjong Lee.
+\newblock {Multi GPU Performance of Conjugate Gradient Algorithm with Staggered
+  Fermions}.
+\newblock {\em PoS}, LAT2010:028, 2010.
+\newblock * Temporary entry *.
+
+\bibitem{Walk:2010ut}
+Bjoern Walk, Hartmut Wittig, Egor Dranischnikow, and Elmar Schomer.
+\newblock {Implementation of the Neuberger-Dirac operator on GPUs}.
+\newblock 2010.
+\newblock * Temporary entry *.
+
+\bibitem{DBLP:journals/corr/abs-1004-0023}
+"Kamran Karimi, Neil~G. Dickson, and Firas Hamze".
+\newblock "high-performance physics simulations using multi-core cpus and
+  gpgpus in a volunteer computing context".
+\newblock {\em CoRR}, abs/1004.0023, 2010.
+
+\bibitem{DBLP:journals/corr/abs-1005-2581}
+"Kamran Karimi, Neil~G. Dickson, and Firas Hamze".
+\newblock A performance comparison of cuda and opencl.
+\newblock {\em CoRR}, abs/1005.2581, 2010.
+
+\bibitem{osaki:2010}
+Yusuke Osaki and Ken-Ichi Ishikawa.
+\newblock Domain decomposition method on gpu.
+\newblock 2010.
 
 \end{thebibliography}

@@ -60,19 +60,3 @@ The reconstruction of the elements $c_\text{ncomp}$ of the matrix \ctype{in} is 
 \define{\_INKERNEL\_} allows to check whether OpenCL kernel code or C++ host code is meant to be compiled (some \file{globalheaders.h} and \file{types.h} are included by both of them).
 \end{itemize}
 
-\subsection{Output}
-
-Despite the possibiliy to write a gauge-configuration to a file (see above), a time-measurement is saved by default into the file \file{time\_measurement\_0/1}, where 1 and 0 is used in the case of \file{RECONSTRUCT\_TWELVE} or not, respectivley. Furthermore, in \file{host\_gaugeobservables} there is a function to print out gaugeobservables into a file. This is done in the following order:
-
-\begin{verbatim}
-	Iteration number
-	Plaquette
-	Plaquette in time-direction
-	Plaquette in space-direction
-	Real(Polyakovloop)
-	Im(Polyakovloop)
-	Abs(Polyakovloop).
-\end{verbatim}
-Here, the observables are saved with a precision of 15.
-
-

@@ -1,8 +1,8 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=latex 2010.8.25)  12 NOV 2010 10:10
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2010.8.25)  2 FEB 2011 11:36
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**main
+**main.tex
 (./main.tex
 LaTeX2e <2009/09/24>
 Babel <v3.8l> and hyphenation patterns for english, usenglishmax, dumylang, noh
@@ -249,9 +249,46 @@ Package: fontenc 2005/09/27 v1.99g Standard LaTeX package
 File: t1enc.def 2005/09/27 v1.99g Standard LaTeX file
 LaTeX Font Info:    Redeclaring font encoding T1 on input line 43.
 ))
+(/usr/share/texmf-texlive/tex/latex/rotating/rotating.sty
+Package: rotating 2009/03/28 v2.16a rotated objects in LaTeX
+
+(/usr/share/texmf-texlive/tex/latex/graphics/graphicx.sty
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texmf-texlive/tex/latex/graphics/keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks16
+)
+(/usr/share/texmf-texlive/tex/latex/graphics/graphics.sty
+Package: graphics 2009/02/05 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+
+(/usr/share/texmf-texlive/tex/latex/graphics/trig.sty
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+(/etc/texmf/tex/latex/config/graphics.cfg
+File: graphics.cfg 2009/08/28 v1.8 graphics configuration of TeX Live
+)
+Package graphics Info: Driver file: pdftex.def on input line 91.
+
+(/usr/share/texmf-texlive/tex/latex/pdftex-def/pdftex.def
+File: pdftex.def 2009/08/25 v0.04m Graphics/color for pdfTeX
+\Gread@gobject=\count87
+))
+\Gin@req@height=\dimen103
+\Gin@req@width=\dimen104
+)
+(/usr/share/texmf-texlive/tex/latex/base/ifthen.sty
+Package: ifthen 2001/05/26 v1.1c Standard LaTeX ifthen package (DPC)
+)
+\c@r@tfl@t=\count88
+\rotFPtop=\skip43
+\rotFPbot=\skip44
+\rot@float@box=\box26
+\rot@mess@toks=\toks17
+)
 (/usr/share/texmf-texlive/tex/latex/amsmath/amsmath.sty
 Package: amsmath 2000/07/18 v2.13 AMS math features
-\@mathmargin=\skip43
+\@mathmargin=\skip45
 
 For additional information on amsmath, use the `?' option.
 (/usr/share/texmf-texlive/tex/latex/amsmath/amstext.sty
@@ -259,137 +296,260 @@ Package: amstext 2000/06/29 v2.01
 
 (/usr/share/texmf-texlive/tex/latex/amsmath/amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0
-\@emptytoks=\toks16
-\ex@=\dimen103
+\@emptytoks=\toks18
+\ex@=\dimen105
 ))
 (/usr/share/texmf-texlive/tex/latex/amsmath/amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d
-\pmbraise@=\dimen104
+\pmbraise@=\dimen106
 )
 (/usr/share/texmf-texlive/tex/latex/amsmath/amsopn.sty
 Package: amsopn 1999/12/14 v2.01 operator names
 )
-\inf@bad=\count87
+\inf@bad=\count89
 LaTeX Info: Redefining \frac on input line 211.
-\uproot@=\count88
-\leftroot@=\count89
+\uproot@=\count90
+\leftroot@=\count91
 LaTeX Info: Redefining \overline on input line 307.
-\classnum@=\count90
-\DOTSCASE@=\count91
+\classnum@=\count92
+\DOTSCASE@=\count93
 LaTeX Info: Redefining \ldots on input line 379.
 LaTeX Info: Redefining \dots on input line 382.
 LaTeX Info: Redefining \cdots on input line 467.
-\Mathstrutbox@=\box26
-\strutbox@=\box27
-\big@size=\dimen105
+\Mathstrutbox@=\box27
+\strutbox@=\box28
+\big@size=\dimen107
 LaTeX Font Info:    Redeclaring font encoding OML on input line 567.
 LaTeX Font Info:    Redeclaring font encoding OMS on input line 568.
-\macc@depth=\count92
-\c@MaxMatrixCols=\count93
+\macc@depth=\count94
+\c@MaxMatrixCols=\count95
 \dotsspace@=\muskip10
-\c@parentequation=\count94
-\dspbrk@lvl=\count95
-\tag@help=\toks17
-\row@=\count96
-\column@=\count97
-\maxfields@=\count98
-\andhelp@=\toks18
-\eqnshift@=\dimen106
-\alignsep@=\dimen107
-\tagshift@=\dimen108
-\tagwidth@=\dimen109
-\totwidth@=\dimen110
-\lineht@=\dimen111
-\@envbody=\toks19
-\multlinegap=\skip44
-\multlinetaggap=\skip45
-\mathdisplay@stack=\toks20
+\c@parentequation=\count96
+\dspbrk@lvl=\count97
+\tag@help=\toks19
+\row@=\count98
+\column@=\count99
+\maxfields@=\count100
+\andhelp@=\toks20
+\eqnshift@=\dimen108
+\alignsep@=\dimen109
+\tagshift@=\dimen110
+\tagwidth@=\dimen111
+\totwidth@=\dimen112
+\lineht@=\dimen113
+\@envbody=\toks21
+\multlinegap=\skip46
+\multlinetaggap=\skip47
+\mathdisplay@stack=\toks22
 LaTeX Info: Redefining \[ on input line 2666.
 LaTeX Info: Redefining \] on input line 2667.
-) (./main.aux
-(./algorithm.aux) (./compileroptions.aux) (./hybridstrategy.aux))
+) (./main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
- (./main.toc
-LaTeX Font Info:    Try loading font information for T1+cmtt on input line 5.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 26.
+LaTeX Font Info:    ... okay on input line 26.
 
-(/usr/share/texmf-texlive/tex/latex/base/t1cmtt.fd
+(/usr/share/texmf/tex/context/base/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count101
+\scratchdimen=\dimen114
+\scratchbox=\box29
+\nofMPsegments=\count102
+\nofMParguments=\count103
+\everyMPshowfont=\toks23
+\MPscratchCnt=\count104
+\MPscratchDim=\dimen115
+\MPnumerator=\count105
+\everyMPtoPDFconversion=\toks24
+) (./main.toc
+LaTeX Font Info:    Try loading font information for T1+cmtt on input line 8.
+ (/usr/share/texmf-texlive/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 1999/05/25 v2.5h Standard LaTeX font definitions
-))
+) [1
+
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}])
 \tf@toc=\write3
 \openout3 = `main.toc'.
 
- [1
-
-] [2]
-\openout2 = `algorithm.aux'.
-
- (./algorithm.tex)
-[3
-
-] [4
-
-]
-\openout2 = `compileroptions.aux'.
-
- (./compileroptions.tex
-LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <12> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 2.
-) [5
-
-] (./hmcerrs.tex) (./globals.tex)
-(./types.tex) (./operations.tex
-Overfull \hbox (43.9867pt too wide) in paragraph at lines 2--1
-\T1/cmr/m/n/10.95 Provides types: hmc_complex, hmc_float, hmc_full_spinor, hmc_
-full_spinor_field,
- []
-
-) (./gaugeobservables.tex) (./geometry.tex) (./input.tex) (./readgauge.tex
-[6
-
-]
-Overfull \hbox (5.69516pt too wide) in paragraph at lines 8--9
+ [2] (./algorithm.tex)
+(./inputoutput.tex [3]
+Overfull \hbox (5.69516pt too wide) in paragraph at lines 31--32
 []\T1/cmr/m/n/10.95 The read-ing of the metain-foram-tions was specif-i-cally t
 ested for two tmlqcd-
  []
 
-) (./testing.tex) [7]
-\openout2 = `hybridstrategy.aux'.
-
- (./hybridstrategy.tex) [8
-
-]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 65.
-
-(/usr/share/texmf-texlive/tex/latex/base/omscmr.fd
+[4] [5]
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 39.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 60.
+ (/usr/share/texmf-texlive/tex/latex/base/omscmr.fd
 File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 65.
- (./main.bbl) [9
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 60.
+ [6])
+(./programcomponents.tex
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <12> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 1.
+ [7]
+Overfull \hbox (36.08597pt too wide) in paragraph at lines 41--41
+[]\T1/cmtt/m/n/10.95 typedef hmc_complex hmc_full_spinor_field [NSPIN*NC][VOLSP
+ACE][NTIME];[] 
+ []
 
-]
-(./main.aux (./algorithm.aux) (./compileroptions.aux) (./hybridstrategy.aux)) )
- 
+
+Overfull \hbox (36.08597pt too wide) in paragraph at lines 52--52
+[]\T1/cmtt/m/n/10.95 typedef hmc_complex hmc_gaugefield [NC*(NC-1)][NDIM][VOLSP
+ACE][NTIME];[] 
+ []
+
+[8]
+Overfull \hbox (19.11086pt too wide) in paragraph at lines 52--52
+[]\T1/cmtt/m/n/10.95 typedef hmc_complex hmc_gaugefield [NC][NC][NDIM][VOLSPACE
+][NTIME];[] 
+ []
+
+
+Overfull \hbox (19.11086pt too wide) in paragraph at lines 96--96
+[]\T1/cmtt/m/n/10.95 void print_gaugeobservables(hmc_gaugefield* field, usetime
+r* timer,[] 
+ []
+
+
+Overfull \hbox (19.11086pt too wide) in paragraph at lines 96--96
+[]\T1/cmtt/m/n/10.95 void print_gaugeobservables(hmc_gaugefield* field, usetime
+r* timer,[] 
+ []
+
+
+Overfull \hbox (19.11086pt too wide) in paragraph at lines 96--96
+[]\T1/cmtt/m/n/10.95 void print_gaugeobservables(hmc_gaugefield* field, usetime
+r* timer,[] 
+ []
+
+
+Overfull \hbox (53.06108pt too wide) in paragraph at lines 96--96
+[]                          \T1/cmtt/m/n/10.95 usetimer * timer2, int iter, std
+::string file);[] 
+ []
+
+[9]
+Overfull \hbox (36.08597pt too wide) in paragraph at lines 96--96
+[]                          \T1/cmtt/m/n/10.95 hmc_float splaq, hmc_complex pol
+, int iter);[] 
+ []
+
+
+Overfull \hbox (30.4276pt too wide) in paragraph at lines 96--96
+[]                          \T1/cmtt/m/n/10.95 hmc_float splaq, hmc_complex pol
+, int iter,[] 
+ []
+
+
+Overfull \hbox (47.40271pt too wide) in paragraph at lines 105--105
+[]                          \T1/cmtt/m/n/10.95 inputparameters* parameters, use
+timer* timer);[] 
+ []
+
+[10]
+Overfull \hbox (70.0362pt too wide) in paragraph at lines 145--145
+[]  \T1/cmtt/m/n/10.95 return c + 2*a + 2*(NC-1)*b + 2*NC*(NC-1)*mu + 2*NC*(NC-
+1)*NDIM*spacepos +[] 
+ []
+
+
+Overfull \hbox (7.79411pt too wide) in paragraph at lines 170--170
+[]\T1/cmtt/m/n/10.95 void calc_staple(hmc_gaugefield * field, hmc_staplematrix 
+* dest,[] 
+ []
+
+[11]
+Overfull \hbox (13.45248pt too wide) in paragraph at lines 170--170
+[]\T1/cmtt/m/n/10.95 void heatbath_overrelax_checkerboard (hmc_gaugefield * gau
+gefield,[] 
+ []
+
+
+Overfull \hbox (24.76923pt too wide) in paragraph at lines 181--181
+[]\T1/cmtt/m/n/10.95 void init_random_seeds(Random random, clu_taus_state * hmc
+_rndarray,[] 
+ []
+
+
+Overfull \hbox (19.11086pt too wide) in paragraph at lines 181--181
+[]\T1/cmtt/m/n/10.95 void SU2Update(hmc_float dst [su2_entries], const hmc_floa
+t alpha);[] 
+ []
+
+
+Overfull \hbox (1.51245pt too wide) in paragraph at lines 188--189
+\T1/cmr/m/n/10.95 built, the com-plete source code is also writ-ten to the file
+ \T1/cmtt/m/n/10.95 cl_kernelsource.cl
+ []
+
+[12]) (./hybridstrategy.tex)
+Overfull \hbox (96.46123pt too wide) in paragraph at lines 75--76
+\T1/cmr/m/n/10.95 To get gen-eral CUDA in-for-ma-tions visit \T1/cmtt/m/n/10.95
+ http://www.nvidia.com/object/cuda_home_new.html\T1/cmr/m/n/10.95 . 
+ []
+
+[13]
+Overfull \hbox (11.59138pt too wide) in paragraph at lines 85--86
+[]\T1/cmr/m/n/10.95 Walk, Wit-tig, Dranis-chnikow, Schomer,Implementation of th
+e Neuberger-
+ []
+
+(./main.bbl [14]
+Underfull \hbox (badness 1635) in paragraph at lines 88--92
+[]\T1/cmr/m/n/10.95 Bjoern Walk, Hart-mut Wit-tig, Egor Dranis-chnikow, and El-
+mar
+ []
+
+
+Underfull \hbox (badness 1215) in paragraph at lines 94--98
+[]\T1/cmr/m/n/10.95 "Kamran Karimi, Neil G. Dick-son, and Fi-ras Hamze".  "high
+-
+ []
+
+) [15] (./main.aux) ) 
 Here is how much of TeX's memory you used:
- 1364 strings out of 495001
- 14416 string characters out of 1180516
- 64231 words of memory out of 3000000
- 4528 multiletter control sequences out of 15000+50000
- 18755 words of font info for 45 fonts, out of 3000000 for 9000
+ 2136 strings out of 495000
+ 24400 string characters out of 1180493
+ 79103 words of memory out of 3000000
+ 5301 multiletter control sequences out of 15000+50000
+ 19381 words of font info for 47 fonts, out of 3000000 for 9000
  36 hyphenation exceptions out of 8191
- 27i,7n,23p,489b,189s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 32i,14n,21p,735b,335s stack positions out of 5000i,500n,10000p,200000b,50000s
+ </home/pinke/.texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1
+200.600pk> </home/pinke/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0800.600pk> 
+</home/pinke/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecti1095.600pk> </home/pink
+e/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1200.600pk> </home/pinke/.texmf-va
+r/fonts/pk/ljfour/jknappen/ec/ectt1095.600pk> </home/pinke/.texmf-var/fonts/pk/
+ljfour/jknappen/ec/ecrm1095.600pk> </home/pinke/.texmf-var/fonts/pk/ljfour/jkna
+ppen/ec/ecbx1095.600pk> </home/pinke/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecb
+x1440.600pk> </home/pinke/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1000.600pk
+> </home/pinke/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1000.600pk> </home/pi
+nke/.texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1200.600pk> </home/pinke/.texmf-
+var/fonts/pk/ljfour/jknappen/ec/ecbx1728.600pk> </home/pinke/.texmf-var/fonts/p
+k/ljfour/jknappen/ec/ecrm1728.600pk></usr/share/texmf-texlive/fonts/type1/publi
+c/amsfonts/cm/cmex10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/
+cm/cmmi10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi8.pf
+b></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/shar
+e/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texmf-texli
+ve/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
+Output written on main.pdf (15 pages, 240816 bytes).
+PDF statistics:
+ 582 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 500000)
+ 1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
-Output written on main.dvi (9 pages, 12784 bytes).

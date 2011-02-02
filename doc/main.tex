@@ -44,7 +44,7 @@ Data types for the C++ host and OpenCL device codes are not the same. Therefore,
 
 On the host, there are plaquette and Polyakov functions that have been tested against existing configuration files. It is an open question whether we want to have those measurements on the device, too. The alternative would be to measure the gauge observables only when the gaugefield is transferred back to the host.
 
-ILDG format configurations (as from Carsten Urbach's {\bf reference\_has\_to\_be\_added\_by\_Lars} code) can be read. We still need the according functions to write a config to a file.
+ILDG format configurations (as from Carsten Urbach's code \cite{Jansen:2009xp}) can be read. We still need the according functions to write a config to a file.
 
 \section{Algorithm}
 \input{algorithm}
@@ -61,12 +61,30 @@ ILDG format configurations (as from Carsten Urbach's {\bf reference\_has\_to\_be
 \section{Some readings}
 \subsection{ILDG}
 Here one can find infos about ILDG: \url{http://ildg.sasr.edu.au/Plone}
-\subsection{OpenCL}
+
+\subsection{LQCD using OpenCL}
 To get the OpenCL specifications visit \url{http://www.khronos.org/opencl}.
-\subsection{Other GPU-HMCs}
+
 \begin{itemize}
+\item With OpenGL: Egri et al., Lattice QCD as a video game \cite{Egri:2006zm} (classic)
+\item Demchik and Strelchenko, SU(2) Monte Carlo \cite{Demchik:2009ni}
+\item Demchik, Random Numbers on GPUs with OpenCL \cite{Demchik:2010}
+\end{itemize}
+
+\subsection{LQCD using CUDA}
+To get general CUDA informations visit \url{http://www.nvidia.com/object/cuda\_home\_new.html}.
+
+\begin{itemize}
+\item Cardoso and Bicudo, Lattice SU(2) on GPUs \cite{Cardoso:2010me}
+\item Clark et al., Solving Lattice QCD systems of equations using mixed precision solvers on GPUs \cite{Clark:2009wm}
+\item Clark, QCD on GPUs: cost effective supercomputing \cite{Clark:2009qp}
+\item Hayakawa et al., Improving many flavor QCD simulations using multiple GPUs \cite{Hayakawa:2010gm}
+\item TWQCD Collaboration: TWQCD's dynamical DWF project \cite{Chiu:2009wh}
 \item Bonati, Cossu, D'Elia, Di Giacomo, Staggered fermions simulations on GPUs~\cite{Bonati:2010qu}
-\item {\bf Christopher and Lars: complete this list with all references we know\ldots}
+\item Kim and Lee, Multi GPU Performance of Conjugate Gradient Algorithm with Staggered Fermions \cite{Kim:2010br}
+\item Walk, Wittig, Dranischnikow, Schomer,Implementation of the Neuberger-Dirac operator on GPUs \cite{Walk:2010ut}
+\item Karimi et al., High-Performance Physics Simulations Using Multi-Core CPUs and GPGPUs in a Volunteer Computing Context \cite{DBLP:journals/corr/abs-1004-0023}, A Performance Comparison of CUDA and OpenCL \cite{DBLP:journals/corr/abs-1005-2581}
+\item Osaki and Ishikawa, Domain Decomposition on GPU: \cite{osaki:2010}
 \end{itemize}
 
 

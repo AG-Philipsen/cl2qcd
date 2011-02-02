@@ -171,7 +171,7 @@ void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield,
 
 \subsection{Random}
 
-The files \file{host\_random.h} and \file{host\_random.cpp} provide a LCG random number generator for the host taken from Numerical Recipes \cite{NR} called \ctype{Random} which can be initialised with a seed that is currently set to be 50000. For the heatbath one needs a random order of 1,2 and 3 as well as random SU(2)-matrices, which is implemented here according to Kennedy \& Pendleton \cite{Kennedy:1985}. Also, there is the init-function for a random-array that is used as the seed-array for the random-numbers on the device.
+The files \file{host\_random.h} and \file{host\_random.cpp} provide a random number generator for the host taken from Numerical Recipes \cite{NR} called \ctype{Random} which can be initialised with a seed that is currently set to be 50000. For the heatbath one needs a random order of 1,2 and 3 as well as random SU(2)-matrices, which is implemented here according to Kennedy \& Pendleton \cite{Kennedy:1985}. Also, there is the init-function for a random-array that is used as the seed-array for the random-numbers on the device.
 
 \begin{verbatim}
 void random_1_2_3 (int rand[3]);

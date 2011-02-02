@@ -27,15 +27,15 @@ void init_random_seeds(Random random, hmc_ocl_ran * out, const int NUM, usetimer
   for(int i = 0; i<NUM; i++){
     do{
       dummy = random.int64();
-    } while(dummy < 128);
+    } while(dummy < 128)
     (out[i]).x = dummy;
     do{
       dummy = random.int64();
-    } while(dummy < 128);
+    } while(dummy < 128)
     (out[i]).y = dummy;
     do{
       dummy = random.int64();
-    } while(dummy < 128);
+    } while(dummy < 128)
     (out[i]).z = dummy;    
     dummy = random.int64();
     (out[i]).w = dummy;    

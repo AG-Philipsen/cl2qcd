@@ -177,10 +177,3 @@ journal = "PoS(Lat2010)???",
   year      = {2010},
   ee        = {http://arxiv.org/abs/1011.3318},
 }
-@BOOK{NR,
-  title = {Numerical Recipes. The Art of Scientific Computing.},
-  publisher = {Cambridge University Press, Cambridge},
-  year = {2007},
-  author = {W. H. Teukolsky and S. A. Vetterling and W. T. Press and B. P. Flannery},
-  edition = {3. Auflage}
-}
