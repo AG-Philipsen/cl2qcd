@@ -1,0 +1,10 @@
+doc/*.toc
+doc/*.aux
+doc/*.bbl
+doc/*.dvi
+doc/main.pdf
+doc/*.ps
+
+prog/hmc.v0.1
+
+prog/gaugeobservables_beta*

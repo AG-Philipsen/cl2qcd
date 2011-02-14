@@ -3,7 +3,6 @@ VERSION=0.1
 PROGNAME = hmc.v$(VERSION)
 
 CXX = g++
-
 LIMEPATH=/home/pinke/lime/lime
 OCLSOURCEDIR="\"/home/pinke/hmc/prog"\"
 ATISDKPATH=/home/pinke/PHD/OpenCL/ati-stream-sdk-v2.3-lnx64
@@ -18,7 +17,7 @@ XMLPATH=/usr/include/libxml2
 #XMLPATH=/home/pinke/libxml2/libxml2
 #ATISDKPATH=/home/pinke/ati-stream-sdk-v2.3-lnx64
 
-DEFDOUBLE=-D_USEDOUBLEPREC_
+#DEFDOUBLE=-D_USEDOUBLEPREC_
 #DEFREC=-D_RECONSTRUCT_TWELVE_
 #DEFOMP=-D_OPENMP
 
@@ -56,7 +55,7 @@ OBJECTS = host_operations.o \
 main: $(PROGRAM).cpp $(GLOBALS) $(PROGRAM).h $(OBJECTS)
 	$(CXX) -o ${PROGNAME} $(CXXFLAGS) $(PROGRAM).cpp ${OBJECTS} $(LDFLAGS) $(LIBS) $(INCLUDES) 
 
-host_gaugefieldoperations.o: host_gaugefieldoperations.cpp host_gaugefieldoperations.h $(GLOBALS) host_use_timer.o host_operations.o host_readgauge.o host_input.o
+host_gaugefieldoperations.o: host_gaugefieldoperations.cpp host_gaugefieldoperations.h $(GLOBALS) host_use_timer.o host_operations.o host_readgauge.o host_input.o host_gaugeobservables.o
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) $<
 
 opencl.o: opencl.cpp opencl.h $(GLOBALS) host_operations.o

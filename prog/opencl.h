@@ -14,6 +14,8 @@
 #include "hmcerrs.h"
 #include "types.h"
 #include "host_use_timer.h"
+#include "host_testing.h"
+#include "host_random.h"
 
 //give a list of all kernel-files
 std::vector<std::string> const cl_kernels_file = {"opencl_header.cl","opencl_operations.cl", "opencl_geometry.cl",  "opencl_random.cl", "opencl_testing.cl", "opencl_update_heatbath.cl", "opencl_gaugeobservables.cl" };
@@ -48,12 +50,15 @@ class opencl {
   cl_mem clmem_random_field_int;
   cl_mem clmem_random_field_float;
   cl_mem clmem_random_field_su2;
-  cl_mem clmem_A;
-  cl_mem clmem_B;
   cl_mem clmem_plaq;
   cl_mem clmem_splaq;
   cl_mem clmem_tplaq;
   cl_mem clmem_polyakov;
+  cl_mem clmem_heatbath_test_link_in;
+  cl_mem clmem_heatbath_test_staple_in;
+  cl_mem clmem_heatbath_test_link_out;
+  cl_mem clmem_heatbath_test_rnd_array;
+  cl_mem clmem_heatbath_test_cter;
 };
 
 #endif

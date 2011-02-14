@@ -33,7 +33,9 @@ struct hmc_complex {
 #endif
 
 #ifndef _INKERNEL_
-typedef cl_uint4 hmc_ocl_ran;
+//CP: old random thing
+// typedef cl_uint4 hmc_ocl_ran;
+typedef cl_ulong4 hmc_ocl_ran;
 typedef hmc_ocl_ran hmc_rndarray[VOL4D/2];
 #endif
 

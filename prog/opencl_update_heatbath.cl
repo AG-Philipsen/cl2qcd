@@ -86,6 +86,32 @@ void calc_staple(__global hmc_ocl_gaugefield* field,__private hmc_ocl_staplematr
   copy_staplematrix(dest, dummy);
 }
 
+//CP: if one wants to make the code serial again one should wrap this around the algorithms... (you have to rename the arg mu to mu_in)
+/* 
+int t, pos;
+int id = get_global_id(0);
+get_even_site(id, &pos, &t);
+int VOL4D = VOLSPACE*NTIME;
+if(id > 0) return;
+else{
+
+if(id == 0 && mu_in == 0){
+int mu;
+  for(t=0; t<NTIME; t++){
+    for(pos=0;pos<VOLSPACE;pos++){
+      for(mu = 0; mu<NDIM; mu++){
+.
+.
+.
+      }
+    }
+  }
+}
+}
+
+*/
+
+
 __kernel void heatbath_even(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd){
   //it is assumed that there are VOL4D/2 threads
   int t, pos;
@@ -124,6 +150,7 @@ __kernel void heatbath_even(__global hmc_ocl_gaugefield* gaugefield, const hmc_f
     hmc_float beta_neu =  2.*beta / NC*k;
     SU2Update(r_pauli, beta_neu, &rnd[id]);
     
+    /*
     w[0].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
     w[0].im = (w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
     w[1].re = (w_pauli[0]*r_pauli[2] - w_pauli[2]*r_pauli[0] + r_pauli[3]*w_pauli[1] - r_pauli[1]*w_pauli[3] )/k;
@@ -132,6 +159,35 @@ __kernel void heatbath_even(__global hmc_ocl_gaugefield* gaugefield, const hmc_f
     w[2].im = (w_pauli[0]*r_pauli[1] - w_pauli[1]*r_pauli[0] + r_pauli[2]*w_pauli[3] - r_pauli[3]*w_pauli[2] )/k;
     w[3].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
     w[3].im = -(w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
+    */
+    
+    //old:
+        w_pauli[0] = w_pauli[0]/k;
+        w_pauli[1] = -w_pauli[1]/k;
+        w_pauli[2] = -w_pauli[2]/k;
+        w_pauli[3] = -w_pauli[3]/k;
+    	
+	hmc_float su2_tmp[su2_entries];
+        su2_tmp[0] = r_pauli[0]*w_pauli[0] - r_pauli[1]*w_pauli[1] - r_pauli[2]*w_pauli[2] - r_pauli[3]*w_pauli[3] ;
+        su2_tmp[1] = w_pauli[0]*r_pauli[1] + w_pauli[1]*r_pauli[0] - r_pauli[2]*w_pauli[3] + r_pauli[3]*w_pauli[2] ;
+        su2_tmp[2] = w_pauli[0]*r_pauli[2] + w_pauli[2]*r_pauli[0] - r_pauli[3]*w_pauli[1] + r_pauli[1]*w_pauli[3] ;
+        su2_tmp[3] = w_pauli[0]*r_pauli[3] + w_pauli[3]*r_pauli[0] - r_pauli[1]*w_pauli[2] + r_pauli[2]*w_pauli[1] ;
+        r_pauli[0] = su2_tmp[0];      
+        r_pauli[1] = su2_tmp[1];
+        r_pauli[2] = su2_tmp[2];
+        r_pauli[3] = su2_tmp[3];
+
+      
+        //go back to a su2 matrix in standard basis
+        w[0].re = r_pauli[0];
+        w[0].im = r_pauli[3];
+        w[1].re = r_pauli[2];
+        w[1].im = r_pauli[1];
+        w[2].re = -r_pauli[2];
+        w[2].im = r_pauli[1];
+        w[3].re = r_pauli[0];
+        w[3].im = -r_pauli[3];
+    
     
     hmc_ocl_su3matrix extW[SU3SIZE]; 
     extend (extW, order[i], w); 
@@ -183,6 +239,7 @@ __kernel void heatbath_odd(__global hmc_ocl_gaugefield* gaugefield, const hmc_fl
     hmc_float beta_neu =  2.*beta / NC*k;
     SU2Update(r_pauli, beta_neu, &rnd[id]);
     
+    /*
     w[0].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
     w[0].im = (w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
     w[1].re = (w_pauli[0]*r_pauli[2] - w_pauli[2]*r_pauli[0] + r_pauli[3]*w_pauli[1] - r_pauli[1]*w_pauli[3] )/k;
@@ -191,6 +248,36 @@ __kernel void heatbath_odd(__global hmc_ocl_gaugefield* gaugefield, const hmc_fl
     w[2].im = (w_pauli[0]*r_pauli[1] - w_pauli[1]*r_pauli[0] + r_pauli[2]*w_pauli[3] - r_pauli[3]*w_pauli[2] )/k;
     w[3].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
     w[3].im = -(w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
+    */
+    
+        //old:
+        w_pauli[0] = w_pauli[0]/k;
+        w_pauli[1] = -w_pauli[1]/k;
+        w_pauli[2] = -w_pauli[2]/k;
+        w_pauli[3] = -w_pauli[3]/k;
+	
+    	hmc_float su2_tmp[su2_entries];
+        su2_tmp[0] = r_pauli[0]*w_pauli[0] - r_pauli[1]*w_pauli[1] - r_pauli[2]*w_pauli[2] - r_pauli[3]*w_pauli[3] ;
+        su2_tmp[1] = w_pauli[0]*r_pauli[1] + w_pauli[1]*r_pauli[0] - r_pauli[2]*w_pauli[3] + r_pauli[3]*w_pauli[2] ;
+        su2_tmp[2] = w_pauli[0]*r_pauli[2] + w_pauli[2]*r_pauli[0] - r_pauli[3]*w_pauli[1] + r_pauli[1]*w_pauli[3] ;
+        su2_tmp[3] = w_pauli[0]*r_pauli[3] + w_pauli[3]*r_pauli[0] - r_pauli[1]*w_pauli[2] + r_pauli[2]*w_pauli[1] ;
+        r_pauli[0] = su2_tmp[0];      
+        r_pauli[1] = su2_tmp[1];
+        r_pauli[2] = su2_tmp[2];
+        r_pauli[3] = su2_tmp[3];
+
+      
+        //go back to a su2 matrix in standard basis
+        w[0].re = r_pauli[0];
+        w[0].im = r_pauli[3];
+        w[1].re = r_pauli[2];
+        w[1].im = r_pauli[1];
+        w[2].re = -r_pauli[2];
+        w[2].im = r_pauli[1];
+        w[3].re = r_pauli[0];
+        w[3].im = -r_pauli[3];
+    
+    
     
     hmc_ocl_su3matrix extW[SU3SIZE]; 
     extend (extW, order[i], w); 

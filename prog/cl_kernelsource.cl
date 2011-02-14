@@ -723,7 +723,8 @@ int get_lower_neighbor(const int nspace, int const dir) {
   coord[dir] = (coord[dir] - 1 + NSPACE)%NSPACE;
   return get_nspace(coord);
 }
-
+//CP: old generator
+/*
 typedef uint4 hmc_ocl_ran;
 
 inline unsigned _ocl_taus_step( unsigned *z, int S1, int S2, int S3, unsigned M)
@@ -751,6 +752,50 @@ inline float ocl_new_ran( __global hmc_ocl_ran* state )
 	*state = (hmc_ocl_ran)(x,y,z,w);
 	return res;
 }
+*/
+
+//CP: new one
+
+/**
+ * RNG state for the NR3
+ */
+// typedef ulong4 nr3_state;
+typedef ulong4 hmc_ocl_ran;
+
+
+/**
+ * Calculate the next random number as described in NR3
+ */
+// inline ulong nr3_int64( nr3_state * state ) {
+inline ulong nr3_int64(__global hmc_ocl_ran * state ) {
+	(*state).x = (*state).x * 2862933555777941757L + 7046029254386353087L;
+	(*state).y ^= (*state).y >> 17; (*state).y ^= (*state).y << 31; (*state).y ^= (*state).y >> 8;
+	(*state).z = 4294957665U*((*state).z & 0xffffffff) + ((*state).z >> 32);
+	ulong tmp = (*state).x ^ ((*state).x << 21); tmp ^= tmp >> 35; tmp ^= tmp << 4;
+	return (tmp + (*state).y) ^ (*state).z;
+}
+
+/**
+ * Calculate the next random number and return as float
+ * FIXME this conversion is probably broken
+ */
+// inline float nr3_float( nr3_state * state )
+inline float ocl_new_ran(__global hmc_ocl_ran * state )
+{
+	return 5.42101086242752217E-20f * nr3_int64( state );
+}
+
+/**
+ * Calculate the next random number and return as int32
+ */
+// inline uint nr3_int32( nr3_state * state )
+inline uint nr3_int32(__global hmc_ocl_ran * state )
+{
+	return (uint) nr3_int64( state );
+}
+
+
+
 
 int random_int( int range, __global hmc_ocl_ran* taus_state )
 {

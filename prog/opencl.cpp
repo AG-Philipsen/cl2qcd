@@ -562,6 +562,8 @@ hmc_error opencl::gaugeobservables(const size_t local_work_size, const size_t gl
 hmc_error opencl::testing(){
   cl_int clerr=CL_SUCCESS;
 
+  cout<<"Begin testing OpenCL functions"<<endl;
+  
   cout<<"Create test kernel..."<<endl;
   cl_kernel testkernel = clCreateKernel(clprogram,"test",&clerr);
   if(clerr!=CL_SUCCESS) {
@@ -573,14 +575,11 @@ hmc_error opencl::testing(){
 
   const size_t local_work_size  = VOL4D/2;
   const size_t global_work_size = local_work_size;
-
-
+ 
+  //CP: random number test
   hmc_float check=1;
   int size_1 = 3*1000;
   int size_2 = 3000;
-  
-  clmem_A = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_complex)*9, 0, &clerr);
-  clmem_B = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_complex)*9, 0, &clerr);
   
   clmem_random_field_int = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(int)*size_1,0,&clerr);
   if(clerr!=CL_SUCCESS) {
@@ -607,6 +606,120 @@ hmc_error opencl::testing(){
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
+  
+  
+  //CP: heatbath test (no reconstruct_twelve!!): set input matrices taken from a host_configuration
+  hmc_su3matrix host_heatbath_link;
+  (host_heatbath_link[0][0]).re = -0.349937;
+  (host_heatbath_link[0][0]).im = -0.474231;
+  (host_heatbath_link[0][1]).re = 0.301203;
+  (host_heatbath_link[0][1]).im = -0.515532;
+  (host_heatbath_link[0][2]).re = 0.544024;
+  (host_heatbath_link[0][2]).im = -0.013786;
+  (host_heatbath_link[1][0]).re = -0.789803;
+  (host_heatbath_link[1][0]).im = -0.009681;
+  (host_heatbath_link[1][1]).re = 0.047851;
+  (host_heatbath_link[1][1]).im = 0.474619;
+  (host_heatbath_link[1][2]).re = -0.083667;
+  (host_heatbath_link[1][2]).im = 0.376251;  
+  (host_heatbath_link[2][0]).re = 0.136194;
+  (host_heatbath_link[2][0]).im = 0.101084 ;  
+  (host_heatbath_link[2][1]).re = -0.637513;
+  (host_heatbath_link[2][1]).im = -0.097608;  
+  (host_heatbath_link[2][2]).re = 0.451216;
+  (host_heatbath_link[2][2]).im = 0.593032;  
+
+  hmc_staplematrix host_heatbath_staple;
+  (host_heatbath_staple[0][0]).re = -0.043457;
+  (host_heatbath_staple[0][0]).im = 2.350362;
+  (host_heatbath_staple[0][1]).re = -2.827883;
+  (host_heatbath_staple[0][1]).im = -0.147794;
+  (host_heatbath_staple[0][2]).re = 0.239220;
+  (host_heatbath_staple[0][2]).im = -0.353712;
+  (host_heatbath_staple[1][0]).re = 2.094735;
+  (host_heatbath_staple[1][0]).im = 2.500042;
+  (host_heatbath_staple[1][1]).re = 0.274546;
+  (host_heatbath_staple[1][1]).im = -2.518978;
+  (host_heatbath_staple[1][2]).re = -1.411352;
+  (host_heatbath_staple[1][2]).im = -0.568307;  
+  (host_heatbath_staple[2][0]).re = 1.217603;
+  (host_heatbath_staple[2][0]).im = 0.463087;  
+  (host_heatbath_staple[2][1]).re = -0.337425;
+  (host_heatbath_staple[2][1]).im = -0.909408;  
+  (host_heatbath_staple[2][2]).re = 2.763673;
+  (host_heatbath_staple[2][2]).im = -2.460356; 
+  
+  //set up rnd-array 
+  int heatbath_rnd_array_size = 1e4;
+  hmc_float * heatbath_rnd_array = (hmc_float*) malloc(sizeof(hmc_float)*heatbath_rnd_array_size);
+  
+  Random ran(50000);
+  for (int i = 0; i<heatbath_rnd_array_size; i++){
+    heatbath_rnd_array[i] = ran.doub();    
+  }
+  
+  hmc_su3matrix host_heatbath_out;
+  int heatbath_host_cter;
+  //CP: there are 3 different possiblities to test the heatbath, with more or less random numbers
+//   testing_heatbath_norandommat_no123(&host_heatbath_link, &host_heatbath_staple, &host_heatbath_out, 4.2);
+//   testing_heatbath_no123(&host_heatbath_link, &host_heatbath_staple, &host_heatbath_out, 4.2, heatbath_rnd_array, &heatbath_host_cter);
+   testing_heatbath(&host_heatbath_link, &host_heatbath_staple, &host_heatbath_out, 4.2, heatbath_rnd_array, &heatbath_host_cter);
+   
+  clmem_heatbath_test_link_in = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_complex)*9, 0, &clerr);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clmem_heatbath_test_staple_in = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_complex)*9, 0, &clerr);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clmem_heatbath_test_link_out = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_complex)*9, 0, &clerr);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clmem_heatbath_test_rnd_array = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float)*heatbath_rnd_array_size, 0, &clerr);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clmem_heatbath_test_cter = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(int), 0, &clerr);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  
+  hmc_complex tmp[9], tmp2[9];
+  int i, j;
+  for(i=0; i<NC; i++){
+    for(j=0; j<NC; j++){
+      tmp[j*NC+i].re = host_heatbath_link[i][j].re;
+      tmp[j*NC+i].im = host_heatbath_link[i][j].im;
+      tmp2[j*NC+i].re = host_heatbath_staple[i][j].re;
+      tmp2[j*NC+i].im = host_heatbath_staple[i][j].im;     
+      
+  }}
+  
+  clerr = clEnqueueWriteBuffer(queue,clmem_heatbath_test_link_in,CL_TRUE,0,sizeof(hmc_complex)*9,&tmp,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueWriteBuffer(queue,clmem_heatbath_test_staple_in,CL_TRUE,0,sizeof(hmc_complex)*9,&tmp2,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueWriteBuffer(queue,clmem_heatbath_test_rnd_array,CL_TRUE,0,sizeof(hmc_float)*heatbath_rnd_array_size,heatbath_rnd_array,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }  
+ 
+  
+  //CP: Stuff
 
   hmc_ocl_gaugefield* gfout = (hmc_ocl_gaugefield*) malloc(sizeof(hmc_gaugefield));
   cl_mem clmem_gfout = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_gaugefield),0,&clerr);
@@ -614,6 +727,8 @@ hmc_error opencl::testing(){
     cout<<"testing: create clmem_check-buffer failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
+  
+  //CP: set kernel arguments
   
   clerr = clSetKernelArg(testkernel,0,sizeof(cl_mem),&clmem_gaugefield); 
   if(clerr!=CL_SUCCESS) {
@@ -670,59 +785,39 @@ hmc_error opencl::testing(){
     cout<<"clSetKernelArg 10 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(testkernel,11,sizeof(cl_mem),&clmem_A);
+  clerr = clSetKernelArg(testkernel,11,sizeof(cl_mem),&clmem_heatbath_test_link_in);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 11 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(testkernel,12,sizeof(cl_mem),&clmem_B);
+  clerr = clSetKernelArg(testkernel,12,sizeof(cl_mem),&clmem_heatbath_test_staple_in);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 12 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  
+  clerr = clSetKernelArg(testkernel,13,sizeof(cl_mem),&clmem_heatbath_test_link_out);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 13 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(testkernel,14,sizeof(cl_mem),&clmem_heatbath_test_rnd_array);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 14 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(testkernel,15,sizeof(cl_mem),&clmem_heatbath_test_cter);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 15 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  cout << "Enqueue kernel.." << endl;
   clerr = clEnqueueNDRangeKernel(queue,testkernel,1,0,&local_work_size,&global_work_size,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"clEnqueueNDRangeKernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-
-  /*
-  clerr = clEnqueueReadBuffer(queue,clmem_check,CL_TRUE,0,sizeof(hmc_float),&check,0,NULL,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clEnqueueReadBuffer(queue,clmem_gfout,CL_TRUE,0,sizeof(hmc_gaugefield),gfout,0,NULL,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  
-  hmc_complex result[9], input[9];
-  clerr = clEnqueueReadBuffer(queue,clmem_A,CL_TRUE,0,sizeof(hmc_complex)*9,&result,0,NULL,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... 3 failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clEnqueueReadBuffer(queue,clmem_B,CL_TRUE,0,sizeof(hmc_complex)*9,&input,0,NULL,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... 3 failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  
-  cout << "input test matrix: "<< endl;
-  for(int i = 0; i<NC; i++){
-    for(int j = 0; j<NC; j++){
-      cout << "\t(" << (input[j + NC*i]).re << "," << (input[j + NC*i]).im << ")";
-    }cout << endl;}cout << endl;
-  
-  cout << "result of one overrelaxing step: "<< endl;
-  for(int i = 0; i<NC; i++){
-    for(int j = 0; j<NC; j++){
-      cout << "\t(" << (result[j + NC*i]).re << "," << (result[j + NC*i]).im << ")";
-    }cout << endl;}cout << endl;
-  */
+ 
+  //CP: random number test
   int * random_int = (int*) malloc(sizeof(int)*size_1);
   float * random_float = (float*) malloc(sizeof(float)*size_2);
   hmc_float su2mat[4];
@@ -743,8 +838,11 @@ hmc_error opencl::testing(){
     exit(HMC_OCLERROR);
   }
   
+  
+  //print result of test from LZ
   cout<<"\ttest functions: result: "<<check<<endl;
   
+  //CP: print results from random number test
   cout << "\ttest random 1,2,3 (2 - 1/3*average of "<<size_1/3 << " per array position)" <<endl;
   float rnd_check_int_1 = 0;
   float rnd_check_int_2 = 0;
@@ -770,12 +868,43 @@ hmc_error opencl::testing(){
   cout << "\t" << su2mat[0] << "  " << su2mat[1] << "  " << su2mat[2] << "  " << su2mat[3] << endl;
   cout << "\t1 - det is: " << 1. - (su2mat[0]*su2mat[0]+ su2mat[1]*su2mat[1] + su2mat[2]*su2mat[2] + su2mat[3]*su2mat[3]) << endl;
 
+  
+  //CP: heatbath_test
+  clerr = clEnqueueReadBuffer(queue,clmem_heatbath_test_link_out,CL_TRUE,0,sizeof(hmc_complex)*9,tmp,0,NULL,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  int heatbath_device_cter;
+  clerr = clEnqueueReadBuffer(queue,clmem_heatbath_test_cter,CL_TRUE,0,sizeof(int),&heatbath_device_cter,0,NULL,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  cout << "\tresult of heatbath test: "<< endl;
+  for(i = 0; i<NC; i++){
+    for(j = 0; j<NC; j++){
+      cout << "\t(" << (host_heatbath_out[i][j]).re - (tmp[i + NC*j]).re << ","  << 
+              (host_heatbath_out[i][j]).im  - (tmp[i + NC*j]).im << ")";
+    }cout << endl;}cout << endl;
+  cout << "\thost code needed " << heatbath_host_cter << " random numbers" << endl;
+  cout << "\tdevice code needed " << heatbath_host_cter - heatbath_device_cter << " more random numbers than host code" << endl;
+  
+  
+  //CP: finish
   if(clReleaseMemObject(clmem_check)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_gfout)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_random_field_float)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_random_field_int)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_random_field_su2)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_heatbath_test_link_in)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_heatbath_test_staple_in)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_heatbath_test_link_out)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_heatbath_test_cter)!=CL_SUCCESS) exit(HMC_OCLERROR);
 
   free(gfout);
+  
+  printf("opencl testing finished\n");
   return HMC_SUCCESS;
 }
 
@@ -798,11 +927,6 @@ hmc_error opencl::finalize(){
   if(clReleaseMemObject(clmem_gaugefield)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_rndarray)!=CL_SUCCESS) exit(HMC_OCLERROR);
 
-  if(clReleaseMemObject(clmem_random_field_int)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  if(clReleaseMemObject(clmem_random_field_float)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  if(clReleaseMemObject(clmem_random_field_su2)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  if(clReleaseMemObject(clmem_A)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  if(clReleaseMemObject(clmem_B)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_plaq)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_tplaq)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_splaq)!=CL_SUCCESS) exit(HMC_OCLERROR);
