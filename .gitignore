@@ -1,3 +1,9 @@
+**/*~
+**/*.backup
+**/*.swp
+**/*.o
+**/*.a
+
 doc/*.toc
 doc/*.aux
 doc/*.bbl
