@@ -1,0 +1,27 @@
+OpenCL being initialized...
+Number of platforms:    1
+Choose platform number: 0
+	CL_PLATFORM_NAME:     NVIDIA CUDA
+	CL_PLATFORM_VENDOR:   NVIDIA Corporation
+	CL_PLATFORM_VERSION:  OpenCL 1.0 CUDA 3.0.1
+
+	Available devices: 1
+		CL_DEVICE_NAME:    GeForce 8600 GT
+		CL_DEVICE_VENDOR:  NVIDIA Corporation
+		CL_DEVICE_TYPE:    GPU
+		CL_DEVICE_VERSION: OpenCL 1.0 CUDA
+Choose device number:   0
+Create context...
+Create command queue...
+Read kernel source from file: opencl_operations_kernels.cl
+Read kernel source from file: opencl_gaugeobservables_kernels.cl
+Create program...
+Build program...
+	build options:	-D_INKERNEL_ -D_RECONSTRUCT_TWELVE_ -I/home/zeidlewicz/hmc/hmc/prog
+Build Log:
+
+: Retrieving binary for 'anonymous_jit_identity', for gpu='sm_11', usage mode=''
+: Considering profile 'compute_10' for gpu='sm_11' in 'anonymous_jit_identity'
+: Control flags for 'anonymous_jit_identity' disable search path
+: Ptx binary found for 'anonymous_jit_identity', architecture='compute_10'
+: Ptx compilation for 'anonymous_jit_identity', for gpu='sm_11', ocg options=''

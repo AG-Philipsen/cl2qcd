@@ -1,0 +1,17 @@
+kappa=.125
+mu=0.6
+cgmax=1000
+beta=6.00
+#cgmax=3
+prec=64
+readsource=cold
+thermalizationsteps=1
+heatbathsteps=1
+sourcefile=conf.0759
+sourcefile=conf.save
+
+
+
+# 4^4file:
+#Plaquette: 0.622595987170167
+#Polyakov: ( 0.33429953286717 , 0.00320710054320905 )

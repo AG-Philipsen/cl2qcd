@@ -1,0 +1,9 @@
+kappa=.125
+mu=.5
+beta=6
+cgmax=1000
+prec=64
+startcondition=cold
+sourcefile=conf.save
+thermalization=5
+heatbathsteps=1000
