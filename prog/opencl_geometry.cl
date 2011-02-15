@@ -43,3 +43,20 @@ int get_lower_neighbor(const int nspace, int const dir) {
   coord[dir] = (coord[dir] - 1 + NSPACE)%NSPACE;
   return get_nspace(coord);
 }
+
+int get_n_eoprec(int timepos, int spacepos){
+  return (int)((timepos+NTIME*spacepos)/2);
+}
+
+int get_nspace_from_eoprecindex(int n, int which){
+  if(which==EVEN) return nspace_from_even_index[n];
+  if(which==ODD) return nspace_from_odd_index[n];
+  return -99;
+}
+
+int get_ntime_from_eoprecindex(int n, int which){
+  if(which==EVEN) return ntime_from_even_index[n];
+  if(which==ODD) return ntime_from_odd_index[n];
+  return -99;
+}
+

@@ -15,11 +15,14 @@
 #define STAPLEMATRIXSIZE NC*NC
 #endif
 
+#define SPINORSIZE NSPIN*NC
+#define HALFSPINORSIZE NSPIN/2*NC
+#define SPINORFIELDSIZE SPINORSIZE*NTIME*VOLSPACE
+#define EOPREC_SPINORFIELDSIZE SPINORSIZE*NTIME*VOLSPACE/2
 
-#ifdef _USEDOUBLEPREC_
-hmc_float const projectioneps = 10.e-12;
-#else
-hmc_float const projectioneps = 10.e-6;
-#endif
+#define VOL4D VOLSPACE*NTIME
 
-
+int* nspace_from_even_index;
+int* ntime_from_even_index;
+int* nspace_from_odd_index;
+int* ntime_from_odd_index;

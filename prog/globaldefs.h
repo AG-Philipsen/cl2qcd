@@ -11,10 +11,15 @@
 
 //it could be a good idea to define Nt and Ns at compile time
 //usually you stick to one volume for quite a while anyways...
-#define NSPACE 4
+#define NSPACE 12
 #define NTIME 4
 #define VOLSPACE NSPACE*NSPACE*NSPACE
 #define VOL4D VOLSPACE*NTIME
+
+#define SPINORSIZE NSPIN*NC
+#define HALFSPINORSIZE NSPIN/2*NC
+#define SPINORFIELDSIZE SPINORSIZE*NTIME*VOLSPACE
+#define EOPREC_SPINORFIELDSIZE SPINORSIZE*NTIME*VOLSPACE/2
 
 //startconditions:
 #define START_FROM_SOURCE 2
@@ -23,8 +28,16 @@
 
 #endif //_INKERNEL_
 
+//EVEN ODD
+#define EVEN 0
+#define ODD 1
+
+#define TRUE 1
+#define FALSE 0
+
 #define PI 	3.14159265358979
 
 #define su2_entries 4
+
 
 #endif

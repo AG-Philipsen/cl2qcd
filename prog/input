@@ -7,10 +7,10 @@ beta=6.00
 prec=64
 readsource=cold
 thermalizationsteps=1
-heatbathsteps=1
+heatbathsteps=10
 sourcefile=conf.0759
 sourcefile=conf.save
-
+writefrequency=2
 
 
 # 4^4file:

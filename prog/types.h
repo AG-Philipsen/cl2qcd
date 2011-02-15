@@ -33,7 +33,9 @@ struct hmc_complex {
 #endif
 
 #ifndef _INKERNEL_
-typedef cl_uint4 hmc_ocl_ran;
+//CP: old random thing
+// typedef cl_uint4 hmc_ocl_ran;
+typedef cl_ulong4 hmc_ocl_ran;
 typedef hmc_ocl_ran hmc_rndarray[VOL4D/2];
 #endif
 
@@ -41,9 +43,11 @@ typedef hmc_ocl_ran hmc_rndarray[VOL4D/2];
 #ifdef _INKERNEL_
 __constant hmc_complex hmc_complex_one={1., 0.};
 __constant hmc_complex hmc_complex_zero = {0., 0.};
+__constant hmc_complex const hmc_complex_minusone = {-1., 0.};
 __constant hmc_complex hmc_complex_i = {0., 1.};
 #else
 hmc_complex const hmc_complex_one = {1., 0.};
+hmc_complex const hmc_complex_minusone = {-1., 0.};
 hmc_complex const hmc_complex_zero = {0., 0.};
 hmc_complex const hmc_complex_i = {0., 1.};
 #endif
@@ -72,5 +76,26 @@ typedef hmc_float hmc_ocl_spinor;
 typedef hmc_complex hmc_ocl_su3matrix;
 typedef hmc_complex hmc_ocl_staplematrix;
 typedef hmc_float hmc_ocl_gaugefield;
+
+//define a spinor field:  spinor_field[spin-color*coord3d*coord_time]
+typedef hmc_complex hmc_color_vector;
+typedef hmc_complex hmc_spinor;
+typedef hmc_complex hmc_spinor_field;
+typedef hmc_complex hmc_eoprec_spinor_field;
+
+
+#ifdef _USEDOUBLEPREC_
+hmc_float const projectioneps = 10.e-12;
+int const iter_refresh = 10;
+double const epssquare=1e-14;
+int const use_eo = 1;
+#else
+hmc_float const projectioneps = 10.e-6;
+int const iter_refresh = 10;
+double const epssquare=1e-12;
+int const use_eo = 1;
+#endif
+
+
 
 #endif

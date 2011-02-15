@@ -29,7 +29,7 @@ hmc_error make_binary_data_single(ildg_gaugefield * array, char * out, const int
     }
   }
   
-  delete[] buf_tmp;
+  delete [] buf_tmp;
   return HMC_SUCCESS;
 }
 

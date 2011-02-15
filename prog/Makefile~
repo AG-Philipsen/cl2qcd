@@ -3,7 +3,7 @@ VERSION=0.1
 PROGNAME = hmc.v$(VERSION)
 
 CXX = g++
-
+HMCPATH=/home/pinke/hmc/prog
 LIMEPATH=/home/pinke/lime/lime
 OCLSOURCEDIR="\"/home/pinke/hmc/prog"\"
 ATISDKPATH=/home/pinke/PHD/OpenCL/ati-stream-sdk-v2.3-lnx64
@@ -19,7 +19,7 @@ XMLPATH=/usr/include/libxml2
 #ATISDKPATH=/home/pinke/ati-stream-sdk-v2.3-lnx64
 
 DEFDOUBLE=-D_USEDOUBLEPREC_
-DEFREC=-D_RECONSTRUCT_TWELVE_
+#DEFREC=-D_RECONSTRUCT_TWELVE_
 #DEFOMP=-D_OPENMP
 
 LIMEINCDIR=$(LIMEPATH)/include 
@@ -31,7 +31,7 @@ XMLINCDIR=$(XMLPATH)
 #XMLINCDIR=$(XMLPATH)/include/libxml2
 XMLLIBDIR=$(XMLPATH)/lib
 DEFS=$(DEFDOUBLE) $(DEFREC) $(DEFOMP) -DSOURCEDIR=$(OCLSOURCEDIR)
-INCLUDES = -I$(LIMEINCDIR) -I$(XMLINCDIR) -I$(ATISDKINCDIR)
+INCLUDES = -I$(LIMEINCDIR) -I$(XMLINCDIR) -I$(ATISDKINCDIR) -I$(HMCPATH)/host_operations
 LDFLAGS = -L$(LIMELIBDIR) -L$(ATISDKLIBDIR) -L$(XMLLIBDIR)
 LIBS = -lm -llime -lxml2 -lOpenCL -fopenmp
 
@@ -39,7 +39,9 @@ CXXFLAGS = -Wall -pedantic -std=gnu++0x $(DEFS)
 
 GLOBALS=globaldefs.h types.h hmcerrs.h
 
-OBJECTS = host_operations.o \
+OBJECTS = host_operations_complex.o \
+	host_operations_gaugefield.o \
+	host_operations_spinor.o \
 	host_gaugeobservables.o \
 	host_testing.o \
 	host_geometry.o \
@@ -51,12 +53,15 @@ OBJECTS = host_operations.o \
 	opencl.o \
 	host_use_timer.o \
 	host_gaugefieldoperations.o \
-	host_writegaugefield.o
+	host_writegaugefield.o \
+	host_solver.o \
+	host_fermionobservables.o
+
 
 main: $(PROGRAM).cpp $(GLOBALS) $(PROGRAM).h $(OBJECTS)
 	$(CXX) -o ${PROGNAME} $(CXXFLAGS) $(PROGRAM).cpp ${OBJECTS} $(LDFLAGS) $(LIBS) $(INCLUDES) 
 
-host_gaugefieldoperations.o: host_gaugefieldoperations.cpp host_gaugefieldoperations.h $(GLOBALS) host_use_timer.o host_operations.o host_readgauge.o host_input.o
+host_gaugefieldoperations.o: host_gaugefieldoperations.cpp host_gaugefieldoperations.h $(GLOBALS) host_use_timer.o host_operations.o host_readgauge.o host_input.o host_gaugeobservables.o host_operations_complex.o
 	$(CXX) -c $(CXXFLAGS) $(INCLUDES) $<
 
 opencl.o: opencl.cpp opencl.h $(GLOBALS) host_operations.o

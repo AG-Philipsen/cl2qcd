@@ -45,6 +45,12 @@ usetimer updatetime;
 usetimer overrelaxtime;
 usetimer copytime;
 
+int* nspace_from_even_index;
+int* ntime_from_even_index;
+int* nspace_from_odd_index;
+int* ntime_from_odd_index;
+
+
 //to save gaugeobservables
 hmc_float plaq, splaq, tplaq;
 hmc_complex pol;
@@ -78,10 +84,10 @@ void print_info(inputparameters* params){
     printf("\n");
   }
   if ((*params).get_startcondition()==COLD_START) {
-    printf("make cold start\n");
+    printf("cold start\n");
   }
   if ((*params).get_startcondition()==HOT_START) {
-    printf("make hot start\n");
+    printf("hot start\n");
   }
   printf("**********************************************************\n");
   printf("\n");
