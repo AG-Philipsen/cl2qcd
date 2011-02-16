@@ -14,5 +14,5 @@ doc/*.ps
 prog/hmc.v0.1
 
 prog/gaugeobservables_beta*
-prog/conf.*
+prog/conf.?????
 prog/cl_kernelsource.cl
