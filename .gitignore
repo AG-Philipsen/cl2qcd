@@ -16,3 +16,5 @@ prog/hmc.v0.1
 prog/gaugeobservables_beta*
 prog/conf.?????
 prog/cl_kernelsource.cl
+prog/time_measurement_0
+prog/time_measurement_1
