@@ -1,5 +1,7 @@
 #include "host_geometry.h"
 
+
+
 int get_neighbor(int nspace, int dir) {
   int coord[NDIM];
   coord[0]=0;

@@ -1320,7 +1320,7 @@ hmc_error create_point_source(hmc_spinor_field* b, int i, int spacepos, int time
   return HMC_SUCCESS;
 }
 
-hmc_error create_point_source_eoprec(hmc_eoprec_spinor_field* be,hmc_eoprec_spinor_field* bo,int i,int spacepos,int timepos,hmc_float kappa, hmc_float mu, hmc_float theta, hmc_gaugefield* gaugefield){
+hmc_error create_point_source_eoprec(hmc_eoprec_spinor_field* be,hmc_eoprec_spinor_field* bo,int i,int spacepos,int timepos,hmc_float kappa, hmc_float mu hmc_float theta, hmc_gaugefield* gaugefield){
   hmc_spinor_field source[SPINORFIELDSIZE];
   set_zero_spinor(source);
 

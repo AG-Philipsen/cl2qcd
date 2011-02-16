@@ -5,11 +5,13 @@
 #include <cstring>
 #include <iostream>
 
-#include "host_operations.h"
-#include "host_geometry.h"
 #include "globaldefs.h"
 #include "hmcerrs.h"
 #include "types.h"
+#include "host_geometry.h"
+#include "host_operations_complex.h"
+#include "host_operations_gaugefield.h"
+#include "host_operations_spinor.h"
 
 extern int const iter_refresh;
 extern double const epssquare;
@@ -19,7 +21,8 @@ extern int const use_eo;
 hmc_error solver(hmc_spinor_field* in, hmc_spinor_field* out, hmc_spinor_field* b, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, int cgmax);
 
 hmc_error bicgstab(hmc_spinor_field* inout,hmc_spinor_field* source,hmc_gaugefield* gaugefield,hmc_float kappa,hmc_float mu, hmc_float theta, int cgmax);
-
+hmc_error bicgstab_eoprec(hmc_eoprec_spinor_field* out,hmc_eoprec_spinor_field* in,hmc_eoprec_spinor_field* source,hmc_gaugefield* gaugefield,hmc_float kappa,hmc_float mu, hmc_float theta,int cgmax);
+  
 //normal matrix
 hmc_error M(hmc_spinor_field* in, hmc_spinor_field* out, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta);
 hmc_error dslash(hmc_spinor_field* in, hmc_spinor_field* out, hmc_gaugefield* gaugefield, hmc_float theta);

@@ -467,7 +467,7 @@ void saxpy(hmc_spinor_field * x, hmc_spinor_field * y, hmc_complex * alpha, hmc_
 }
 
 void saxpy_eoprec(hmc_eoprec_spinor_field * x, hmc_eoprec_spinor_field * y, hmc_complex * alpha, hmc_eoprec_spinor_field * out){
-  for (int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
+  for (int n=0; n<<EOPREC_SPINORFIELDSIZE; n++) {
     hmc_complex tmp1 = complexmult(alpha,&x[n]);
     ((out)[n]).re = -(tmp1).re + y[n].re;
     ((out)[n]).im = -(tmp1).im + y[n].im;

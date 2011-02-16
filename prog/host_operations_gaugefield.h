@@ -27,13 +27,11 @@ hmc_complex reconstruct_su3(hmc_su3matrix *in, int ncomp);
 
 hmc_error set_gaugefield_cold(hmc_gaugefield * field);
 hmc_error set_gaugefield_hot(hmc_gaugefield * field);
+
 hmc_error copy_gaugefield_from_ildg_format(hmc_gaugefield * gaugefield, hmc_float * gaugefield_tmp, int check);
 hmc_error copy_gaugefield_to_ildg_format(ildg_gaugefield * dest, hmc_gaugefield * source);
-
 hmc_error copy_to_ocl_format(hmc_ocl_gaugefield* host_gaugefield,hmc_gaugefield* gaugefield);
 hmc_error copy_from_ocl_format(hmc_gaugefield* gaugefield,hmc_ocl_gaugefield* host_gaugefield);
-int ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t);
-int ocl_gaugefield_matrixelement(int c, int a, int b);
 
 hmc_error get_su3matrix(hmc_su3matrix* out, hmc_gaugefield * in, int spacepos, int timepos, int mu); //cl
 hmc_error put_su3matrix(hmc_gaugefield * field, hmc_su3matrix * in, int spacepos, int timepos, int mu); //cl

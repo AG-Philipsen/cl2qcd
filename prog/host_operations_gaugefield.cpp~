@@ -3,6 +3,31 @@
 
 //gaugefield operations
 
+// int inline ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t){
+// #ifdef _RECONSTRUCT_TWELVE_
+//   return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*t+2*NC*(NC-1)*NDIM*NTIME*spacepos;
+// #else
+//   return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*t+2*NC*NC*NDIM*NTIME*spacepos;
+// #endif
+// }
+
+//site = pos + VOLSPACE*t =  x + y*NSPACE + z*NSPACE*NSPACE + VOLSPACE*t
+//idx = mu + NDIM*site
+int inline ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t){
+#ifdef _RECONSTRUCT_TWELVE_
+  return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*spacepos+2*NC*(NC-1)*NDIM*VOLSPACE*t;
+#else
+  return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*spacepos+2*NC*NC*NDIM*VOLSPACE*t;
+#endif
+}
+
+// int inline ocl_gaugefield_matrixelement(int c, int a, int b){
+// #ifdef _RECONSTRUCT_TWELVE_  
+//   return c + 2*a + 2*(NC-1)*b;
+// #else  
+//   return c + 2*a + 2*(NC)*b;
+// #endif
+// }
 
 hmc_error copy_to_ocl_format(hmc_ocl_gaugefield* host_gaugefield,hmc_gaugefield* gaugefield){
   for(int spacepos=0; spacepos<NSPACE*NSPACE*NSPACE; spacepos++) {

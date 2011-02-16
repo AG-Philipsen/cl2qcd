@@ -218,7 +218,7 @@ hmc_error bicgstab_eoprec(hmc_eoprec_spinor_field* out,hmc_eoprec_spinor_field* 
     if(resid<epssquare) {
       hmc_eoprec_spinor_field* aux = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
       Aee(out,aux,gaugefield,kappa,mu, theta);
-      saxpy_eoprec(aux, source, &one, aux);
+      saxpy(aux, source, &one, aux);
       hmc_float trueresid = global_squarenorm_eoprec(aux);
       printf("true residue squared: %e\n",trueresid);
 
