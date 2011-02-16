@@ -17,9 +17,9 @@
 
 
 #ifdef _USEDOUBLEPREC_
-hmc_float const projectioneps = 10.e-12;
+__constant hmc_float const projectioneps = 10.e-12;
 #else
-hmc_float const projectioneps = 10.e-6;
+__constant hmc_float const projectioneps = 10.e-6;
 #endif
 
 
