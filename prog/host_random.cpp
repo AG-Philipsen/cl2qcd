@@ -88,7 +88,7 @@ void init_random_seeds(Random random, hmc_ocl_ran * out, const int NUM, usetimer
   nr3_init_state( &initializer, 50000 );
   for(int i = 0; i<NUM; i++){
     while( (dummy = nr3_int64(&initializer) ) >= 4101842887655102017L ) { };
-		nr3_init_state( &out[i], nr3_int64(&initializer) );
+		nr3_init_state( &out[i], dummy );
   }
    
   (*timer).add();
