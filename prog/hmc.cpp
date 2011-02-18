@@ -26,8 +26,8 @@ int main(int argc, char* argv[]) {
   init_gaugefield(gaugefield,&parameters,&inittime);
   
   //this needs optimization
-  const size_t local_work_size  = VOL4D/2;
-  const size_t global_work_size = local_work_size;
+  const size_t global_work_size = VOL4D/2;
+  const size_t local_work_size  = 0;
   //one should define a definite number of threads and use this here
   init_random_seeds(rnd, rndarray, VOL4D/2, &inittime);
 

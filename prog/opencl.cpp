@@ -27,7 +27,7 @@ hmc_error opencl::init(cl_device_type wanted_device_type, usetimer* timer){
 
   cl_uint num_devices;
   cl_device_id device;
-  clerr = clGetDeviceIDs(platform,wanted_device_type,NULL,NULL,&num_devices);
+  clerr = clGetDeviceIDs(platform,wanted_device_type,0,NULL,&num_devices);
   if(num_devices==1) {
     cout<<"\t"<<num_devices<<" device of wanted type has been found."<<endl;
   } else {
@@ -304,6 +304,8 @@ hmc_error opencl::copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* tim
 hmc_error opencl::run_heatbath(double beta, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
   cl_int clerr=CL_SUCCESS;
   (*timer).reset();
+
+  const size_t * local_work_size_p = (local_work_size == 0) ? 0 : &local_work_size;
   
   hmc_float tmp = (hmc_float) beta;
   
@@ -329,7 +331,7 @@ hmc_error opencl::run_heatbath(double beta, const size_t local_work_size, const 
       cout<<"clSetKernelArg failed, aborting..."<<endl;
       exit(HMC_OCLERROR);
     }
-    clerr = clEnqueueNDRangeKernel(queue,heatbath_even,1,0,&local_work_size,&global_work_size,0,0,NULL);
+    clerr = clEnqueueNDRangeKernel(queue,heatbath_even,1,0,&global_work_size,local_work_size_p,0,0,NULL);
     if(clerr!=CL_SUCCESS) {
       cout<<"clEnqueueNDRangeKernel failed, aborting..."<<endl;
       exit(HMC_OCLERROR);
@@ -358,7 +360,7 @@ hmc_error opencl::run_heatbath(double beta, const size_t local_work_size, const 
       cout<<"clSetKernelArg failed, aborting..."<<endl;
       exit(HMC_OCLERROR);
     }
-    clerr = clEnqueueNDRangeKernel(queue,heatbath_odd,1,0,&local_work_size,&global_work_size,0,0,NULL);
+    clerr = clEnqueueNDRangeKernel(queue,heatbath_odd,1,0,&global_work_size,local_work_size_p,0,0,NULL);
     if(clerr!=CL_SUCCESS) {
       cout<<"clEnqueueNDRangeKernel failed, aborting..."<<endl;
       exit(HMC_OCLERROR);
@@ -373,6 +375,8 @@ hmc_error opencl::run_overrelax(double beta, const size_t local_work_size, const
   
   (*timer).reset();
   
+  const size_t * local_work_size_p = (local_work_size == 0) ? 0 : &local_work_size;
+
   hmc_float tmp = (hmc_float) beta;
   
   //cout << "overrelaxing even links" << endl;
@@ -397,7 +401,7 @@ hmc_error opencl::run_overrelax(double beta, const size_t local_work_size, const
       cout<<"clSetKernelArg4 failed, aborting..."<<endl;
       exit(HMC_OCLERROR);
     }
-    clerr = clEnqueueNDRangeKernel(queue,overrelax_even,1,0,&local_work_size,&global_work_size,0,0,NULL);
+    clerr = clEnqueueNDRangeKernel(queue,overrelax_even,1,0,&global_work_size,local_work_size_p,0,0,NULL);
     if(clerr!=CL_SUCCESS) {
       cout<<"clEnqueueNDRangeKernel failed, aborting..." << clerr <<endl;
       exit(HMC_OCLERROR);
@@ -427,7 +431,7 @@ hmc_error opencl::run_overrelax(double beta, const size_t local_work_size, const
       cout<<"clSetKernelArg8 failed, aborting..."<<endl;
       exit(HMC_OCLERROR);
     }
-    clerr = clEnqueueNDRangeKernel(queue,overrelax_odd,1,0,&local_work_size,&global_work_size,0,0,NULL);
+    clerr = clEnqueueNDRangeKernel(queue,overrelax_odd,1,0,&global_work_size,local_work_size_p,0,0,NULL);
     if(clerr!=CL_SUCCESS) {
       cout<<"clEnqueueNDRangeKernel failed, aborting..."<<endl;
       exit(HMC_OCLERROR);
@@ -443,6 +447,9 @@ hmc_error opencl::gaugeobservables(const size_t local_work_size, const size_t gl
   
   hmc_float plaq = 0, splaq = 0, tplaq = 0;
   hmc_complex pol = hmc_complex_zero;
+
+  // FIXME
+  const size_t * local_work_size_p = (local_work_size == 0) ? 0 : &local_work_size;
 
   //set device-values to zero for new measurement
   clerr = clEnqueueWriteBuffer(queue,clmem_plaq,CL_TRUE,0,sizeof(hmc_float),&plaq,0,0,NULL);
@@ -488,7 +495,7 @@ hmc_error opencl::gaugeobservables(const size_t local_work_size, const size_t gl
     exit(HMC_OCLERROR);
   }
   (*timer1).reset();
-  clerr = clEnqueueNDRangeKernel(queue,plaquette,1,0,&local_work_size,&global_work_size,0,0,NULL);
+  clerr = clEnqueueNDRangeKernel(queue,plaquette,1,0,&global_work_size,local_work_size_p,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
       cout<<"clEnqueueNDRangeKernel failed, aborting..." << clerr <<endl;
       exit(HMC_OCLERROR);
@@ -508,7 +515,7 @@ hmc_error opencl::gaugeobservables(const size_t local_work_size, const size_t gl
     exit(HMC_OCLERROR);
   }
   (*timer2).reset();
-  clerr = clEnqueueNDRangeKernel(queue,polyakov,1,0,&local_work_size,&global_work_size,0,0,NULL);
+  clerr = clEnqueueNDRangeKernel(queue,polyakov,1,0,&global_work_size,local_work_size_p,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"clEnqueueNDRangeKernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -573,8 +580,9 @@ hmc_error opencl::testing(){
   int nsteps = 10;
   hmc_float beta = 4.2;
 
-  const size_t local_work_size  = VOL4D/2;
-  const size_t global_work_size = local_work_size;
+  const size_t local_work_size  = 0;
+  const size_t global_work_size = VOL4D/2;
+  const size_t * local_work_size_p = (local_work_size == 0) ? 0 : &local_work_size;
  
   //CP: random number test
   hmc_float check=1;
@@ -811,7 +819,7 @@ hmc_error opencl::testing(){
     exit(HMC_OCLERROR);
   }
   cout << "Enqueue kernel.." << endl;
-  clerr = clEnqueueNDRangeKernel(queue,testkernel,1,0,&local_work_size,&global_work_size,0,0,NULL);
+  clerr = clEnqueueNDRangeKernel(queue,testkernel,1,0,&global_work_size,local_work_size_p,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"clEnqueueNDRangeKernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
