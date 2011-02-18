@@ -3,6 +3,15 @@ __kernel void plaquette(__global hmc_ocl_gaugefield * field,__global hmc_float *
   int t, pos;
   int id = get_global_id(0);
 
+  // this is an ugly workaround 'cuz there is no atomic_add for floats
+  // FIXME replace by proper parallel reduction
+  if( id > 0 )
+	return;
+  (*plaq_out) = 0.0f;
+  (*splaq) = 0.0f;
+  (*tplaq) = 0.0f;
+  for( id = 0; id < get_global_size(0); ++id ) {
+
   hmc_float plaq=0;
   hmc_float splaq_tmp=0;
   hmc_float tplaq_tmp=0;
@@ -80,6 +89,7 @@ __kernel void plaquette(__global hmc_ocl_gaugefield * field,__global hmc_float *
   (*splaq) += splaq_tmp;
   (*tplaq) += tplaq_tmp;
 
+  }
 }
 
 
@@ -88,6 +98,14 @@ __kernel void polyakov(__global hmc_ocl_gaugefield * field, __global hmc_complex
   int pos, t;
   int id = get_global_id(0);
    
+  // this is an ugly workaround 'cuz there is no atomic_add for floats
+  // FIXME replace by proper parallel reduction
+  if( id > 0 )
+	return;
+  (*out).re = 0.0f;
+  (*out).im = 0.0f;
+  for( id = 0; id < get_global_size(0); ++id ) {
+
   hmc_ocl_su3matrix prod[SU3SIZE];
   hmc_ocl_su3matrix tmp[SU3SIZE];
   unit_su3matrix(prod);
@@ -113,5 +131,7 @@ __kernel void polyakov(__global hmc_ocl_gaugefield * field, __global hmc_complex
     (*out).re += tmpcomplex.re;
     (*out).im += tmpcomplex.im;
   }
-  else return;
+  else continue; //return;
+
+  }
 }
