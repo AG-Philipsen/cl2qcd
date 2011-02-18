@@ -72,9 +72,10 @@ inline uint nr3_int32(__global hmc_ocl_ran * state )
 
 
 
-int random_int( int range, __global hmc_ocl_ran* taus_state )
+int random_int( int range, __global hmc_ocl_ran* state )
 {
-	return convert_int( ocl_new_ran( taus_state ) * range );
+	//return convert_int( ocl_new_ran( state ) * range );
+	return (nr3_int64( state ) % range);
 }
 
 //returns 1,2,3 in a random way
