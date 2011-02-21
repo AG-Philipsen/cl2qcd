@@ -113,285 +113,294 @@ int mu;
 
 
 __kernel void heatbath_even(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd){
-  //it is assumed that there are VOL4D/2 threads
-  int t, pos;
-  int id = get_global_id(0);
-  get_even_site(id, &pos, &t);
-  
-  hmc_ocl_su3matrix U[SU3SIZE];
-  hmc_ocl_staplematrix W[STAPLEMATRIXSIZE];
-  hmc_ocl_staplematrix staplematrix[STAPLEMATRIXSIZE];
-  
-  hmc_complex w [su2_entries];
-  hmc_float w_pauli[su2_entries], k, r_pauli[su2_entries];
-  int order[3]; 
-  random_1_2_3(order, &rnd[id]);
-  get_su3matrix(U, gaugefield, pos, t, mu);
-  
-  hmc_complex det = det_su3matrix(U);
-  hmc_complex detadj = complexconj(&det);
-  hmc_complex detsqnorm = complexmult(&det, &detadj);
-  if( (detsqnorm.re - hmc_one_f) <= projectioneps)
-    project_su3(U);
+	int t, pos;
 
-  calc_staple(gaugefield, staplematrix, pos, t, mu);
+	for( int id = get_global_id(0); id < VOL4D/2; id += get_global_size(0) )
+	{
+		get_even_site(id, &pos, &t);
 
-  for(int i=0; i<3; i++)
-  {
-    multiply_staplematrix(W, U, staplematrix); 
-    reduction(w, W, order[i]);
+		hmc_ocl_su3matrix U[SU3SIZE];
+		hmc_ocl_staplematrix W[STAPLEMATRIXSIZE];
+		hmc_ocl_staplematrix staplematrix[STAPLEMATRIXSIZE];
 
-    w_pauli[0] = 0.5*(w[0].re + w[3].re);
-    w_pauli[1] = 0.5*(w[1].im + w[2].im);
-    w_pauli[2] = 0.5*(w[1].re - w[2].re);
-    w_pauli[3] = 0.5*(w[0].im - w[3].im);
-    k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
+		hmc_complex w [su2_entries];
+		hmc_float w_pauli[su2_entries], k, r_pauli[su2_entries];
+		int order[3];
+		random_1_2_3(order, &rnd[id]);
+		get_su3matrix(U, gaugefield, pos, t, mu);
 
-    hmc_float beta_neu =  2.*beta / NC*k;
-    SU2Update(r_pauli, beta_neu, &rnd[id]);
-    
-    /*
-    w[0].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
-    w[0].im = (w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
-    w[1].re = (w_pauli[0]*r_pauli[2] - w_pauli[2]*r_pauli[0] + r_pauli[3]*w_pauli[1] - r_pauli[1]*w_pauli[3] )/k;
-    w[1].im = (w_pauli[0]*r_pauli[1] - w_pauli[1]*r_pauli[0] + r_pauli[2]*w_pauli[3] - r_pauli[3]*w_pauli[2] )/k;
-    w[2].re = -(w_pauli[0]*r_pauli[2] - w_pauli[2]*r_pauli[0] + r_pauli[3]*w_pauli[1] - r_pauli[1]*w_pauli[3] )/k;
-    w[2].im = (w_pauli[0]*r_pauli[1] - w_pauli[1]*r_pauli[0] + r_pauli[2]*w_pauli[3] - r_pauli[3]*w_pauli[2] )/k;
-    w[3].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
-    w[3].im = -(w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
-    */
-    
-    //old:
-        w_pauli[0] = w_pauli[0]/k;
-        w_pauli[1] = -w_pauli[1]/k;
-        w_pauli[2] = -w_pauli[2]/k;
-        w_pauli[3] = -w_pauli[3]/k;
-    	
-	hmc_float su2_tmp[su2_entries];
-        su2_tmp[0] = r_pauli[0]*w_pauli[0] - r_pauli[1]*w_pauli[1] - r_pauli[2]*w_pauli[2] - r_pauli[3]*w_pauli[3] ;
-        su2_tmp[1] = w_pauli[0]*r_pauli[1] + w_pauli[1]*r_pauli[0] - r_pauli[2]*w_pauli[3] + r_pauli[3]*w_pauli[2] ;
-        su2_tmp[2] = w_pauli[0]*r_pauli[2] + w_pauli[2]*r_pauli[0] - r_pauli[3]*w_pauli[1] + r_pauli[1]*w_pauli[3] ;
-        su2_tmp[3] = w_pauli[0]*r_pauli[3] + w_pauli[3]*r_pauli[0] - r_pauli[1]*w_pauli[2] + r_pauli[2]*w_pauli[1] ;
-        r_pauli[0] = su2_tmp[0];      
-        r_pauli[1] = su2_tmp[1];
-        r_pauli[2] = su2_tmp[2];
-        r_pauli[3] = su2_tmp[3];
+		hmc_complex det = det_su3matrix(U);
+		hmc_complex detadj = complexconj(&det);
+		hmc_complex detsqnorm = complexmult(&det, &detadj);
+		if( (detsqnorm.re - hmc_one_f) <= projectioneps)
+			project_su3(U);
 
-      
-        //go back to a su2 matrix in standard basis
-        w[0].re = r_pauli[0];
-        w[0].im = r_pauli[3];
-        w[1].re = r_pauli[2];
-        w[1].im = r_pauli[1];
-        w[2].re = -r_pauli[2];
-        w[2].im = r_pauli[1];
-        w[3].re = r_pauli[0];
-        w[3].im = -r_pauli[3];
-    
-    
-    hmc_ocl_su3matrix extW[SU3SIZE]; 
-    extend (extW, order[i], w); 
-    //perhaps one can define another acc-func here and save one copying step
-    accumulate_su3matrix_prod(extW, U);
-    copy_su3matrix(U, extW);
-  }
-  put_su3matrix(gaugefield, U, pos, t, mu);
+		calc_staple(gaugefield, staplematrix, pos, t, mu);
 
-  return;
+		for(int i=0; i<3; i++)
+		{
+			multiply_staplematrix(W, U, staplematrix);
+			reduction(w, W, order[i]);
+
+			w_pauli[0] = 0.5*(w[0].re + w[3].re);
+			w_pauli[1] = 0.5*(w[1].im + w[2].im);
+			w_pauli[2] = 0.5*(w[1].re - w[2].re);
+			w_pauli[3] = 0.5*(w[0].im - w[3].im);
+			k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
+
+			hmc_float beta_neu =  2.*beta / NC*k;
+			SU2Update(r_pauli, beta_neu, &rnd[id]);
+
+			/*
+			   w[0].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
+			   w[0].im = (w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
+			   w[1].re = (w_pauli[0]*r_pauli[2] - w_pauli[2]*r_pauli[0] + r_pauli[3]*w_pauli[1] - r_pauli[1]*w_pauli[3] )/k;
+			   w[1].im = (w_pauli[0]*r_pauli[1] - w_pauli[1]*r_pauli[0] + r_pauli[2]*w_pauli[3] - r_pauli[3]*w_pauli[2] )/k;
+			   w[2].re = -(w_pauli[0]*r_pauli[2] - w_pauli[2]*r_pauli[0] + r_pauli[3]*w_pauli[1] - r_pauli[1]*w_pauli[3] )/k;
+			   w[2].im = (w_pauli[0]*r_pauli[1] - w_pauli[1]*r_pauli[0] + r_pauli[2]*w_pauli[3] - r_pauli[3]*w_pauli[2] )/k;
+			   w[3].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
+			   w[3].im = -(w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
+			 */
+
+			//old:
+			w_pauli[0] = w_pauli[0]/k;
+			w_pauli[1] = -w_pauli[1]/k;
+			w_pauli[2] = -w_pauli[2]/k;
+			w_pauli[3] = -w_pauli[3]/k;
+
+			hmc_float su2_tmp[su2_entries];
+			su2_tmp[0] = r_pauli[0]*w_pauli[0] - r_pauli[1]*w_pauli[1] - r_pauli[2]*w_pauli[2] - r_pauli[3]*w_pauli[3] ;
+			su2_tmp[1] = w_pauli[0]*r_pauli[1] + w_pauli[1]*r_pauli[0] - r_pauli[2]*w_pauli[3] + r_pauli[3]*w_pauli[2] ;
+			su2_tmp[2] = w_pauli[0]*r_pauli[2] + w_pauli[2]*r_pauli[0] - r_pauli[3]*w_pauli[1] + r_pauli[1]*w_pauli[3] ;
+			su2_tmp[3] = w_pauli[0]*r_pauli[3] + w_pauli[3]*r_pauli[0] - r_pauli[1]*w_pauli[2] + r_pauli[2]*w_pauli[1] ;
+			r_pauli[0] = su2_tmp[0];
+			r_pauli[1] = su2_tmp[1];
+			r_pauli[2] = su2_tmp[2];
+			r_pauli[3] = su2_tmp[3];
+
+
+			//go back to a su2 matrix in standard basis
+			w[0].re = r_pauli[0];
+			w[0].im = r_pauli[3];
+			w[1].re = r_pauli[2];
+			w[1].im = r_pauli[1];
+			w[2].re = -r_pauli[2];
+			w[2].im = r_pauli[1];
+			w[3].re = r_pauli[0];
+			w[3].im = -r_pauli[3];
+
+
+			hmc_ocl_su3matrix extW[SU3SIZE];
+			extend (extW, order[i], w);
+			//perhaps one can define another acc-func here and save one copying step
+			accumulate_su3matrix_prod(extW, U);
+			copy_su3matrix(U, extW);
+		}
+		put_su3matrix(gaugefield, U, pos, t, mu);
+	}
+
+	return;
 }
 
 __kernel void heatbath_odd(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd){
 
-  int t, pos;
-  int id = get_global_id(0);
-  get_odd_site(id, &pos, &t);
-  
-  hmc_ocl_su3matrix U[SU3SIZE];
-  hmc_ocl_staplematrix W[STAPLEMATRIXSIZE];
-  hmc_ocl_staplematrix staplematrix[STAPLEMATRIXSIZE];
-  
-  hmc_complex w [su2_entries];
-  hmc_float w_pauli[su2_entries], k, r_pauli[su2_entries];
-  int order[3]; 
-  random_1_2_3(order, &rnd[id]);
-  //old U
-  get_su3matrix(U, gaugefield, pos, t, mu);
-     
-  hmc_complex det = det_su3matrix(U);
-  hmc_complex detadj = complexconj(&det);
-  hmc_complex detsqnorm = complexmult(&det, &detadj);
-  if( (detsqnorm.re - hmc_one_f) <= projectioneps)
-    project_su3(U);
+	int t, pos;
 
-  calc_staple(gaugefield, staplematrix, pos, t, mu);
+	for( int id = get_global_id(0); id < VOL4D/2; id += get_global_size(0) )
+	{
+		get_odd_site(id, &pos, &t);
 
-  for(int i=0; i<3; i++)
-  {
-    multiply_staplematrix(W, U, staplematrix); 
-    reduction(w, W, order[i]);
+		hmc_ocl_su3matrix U[SU3SIZE];
+		hmc_ocl_staplematrix W[STAPLEMATRIXSIZE];
+		hmc_ocl_staplematrix staplematrix[STAPLEMATRIXSIZE];
 
-    w_pauli[0] = 0.5*(w[0].re + w[3].re);
-    w_pauli[1] = 0.5*(w[1].im + w[2].im);
-    w_pauli[2] = 0.5*(w[1].re - w[2].re);
-    w_pauli[3] = 0.5*(w[0].im - w[3].im);
-    k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
+		hmc_complex w [su2_entries];
+		hmc_float w_pauli[su2_entries], k, r_pauli[su2_entries];
+		int order[3];
+		random_1_2_3(order, &rnd[id]);
+		//old U
+		get_su3matrix(U, gaugefield, pos, t, mu);
 
-    hmc_float beta_neu =  2.*beta / NC*k;
-    SU2Update(r_pauli, beta_neu, &rnd[id]);
-    
-    /*
-    w[0].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
-    w[0].im = (w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
-    w[1].re = (w_pauli[0]*r_pauli[2] - w_pauli[2]*r_pauli[0] + r_pauli[3]*w_pauli[1] - r_pauli[1]*w_pauli[3] )/k;
-    w[1].im = (w_pauli[0]*r_pauli[1] - w_pauli[1]*r_pauli[0] + r_pauli[2]*w_pauli[3] - r_pauli[3]*w_pauli[2] )/k;
-    w[2].re = -(w_pauli[0]*r_pauli[2] - w_pauli[2]*r_pauli[0] + r_pauli[3]*w_pauli[1] - r_pauli[1]*w_pauli[3] )/k;
-    w[2].im = (w_pauli[0]*r_pauli[1] - w_pauli[1]*r_pauli[0] + r_pauli[2]*w_pauli[3] - r_pauli[3]*w_pauli[2] )/k;
-    w[3].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
-    w[3].im = -(w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
-    */
-    
-        //old:
-        w_pauli[0] = w_pauli[0]/k;
-        w_pauli[1] = -w_pauli[1]/k;
-        w_pauli[2] = -w_pauli[2]/k;
-        w_pauli[3] = -w_pauli[3]/k;
-	
-    	hmc_float su2_tmp[su2_entries];
-        su2_tmp[0] = r_pauli[0]*w_pauli[0] - r_pauli[1]*w_pauli[1] - r_pauli[2]*w_pauli[2] - r_pauli[3]*w_pauli[3] ;
-        su2_tmp[1] = w_pauli[0]*r_pauli[1] + w_pauli[1]*r_pauli[0] - r_pauli[2]*w_pauli[3] + r_pauli[3]*w_pauli[2] ;
-        su2_tmp[2] = w_pauli[0]*r_pauli[2] + w_pauli[2]*r_pauli[0] - r_pauli[3]*w_pauli[1] + r_pauli[1]*w_pauli[3] ;
-        su2_tmp[3] = w_pauli[0]*r_pauli[3] + w_pauli[3]*r_pauli[0] - r_pauli[1]*w_pauli[2] + r_pauli[2]*w_pauli[1] ;
-        r_pauli[0] = su2_tmp[0];      
-        r_pauli[1] = su2_tmp[1];
-        r_pauli[2] = su2_tmp[2];
-        r_pauli[3] = su2_tmp[3];
+		hmc_complex det = det_su3matrix(U);
+		hmc_complex detadj = complexconj(&det);
+		hmc_complex detsqnorm = complexmult(&det, &detadj);
+		if( (detsqnorm.re - hmc_one_f) <= projectioneps)
+			project_su3(U);
 
-      
-        //go back to a su2 matrix in standard basis
-        w[0].re = r_pauli[0];
-        w[0].im = r_pauli[3];
-        w[1].re = r_pauli[2];
-        w[1].im = r_pauli[1];
-        w[2].re = -r_pauli[2];
-        w[2].im = r_pauli[1];
-        w[3].re = r_pauli[0];
-        w[3].im = -r_pauli[3];
-    
-    
-    
-    hmc_ocl_su3matrix extW[SU3SIZE]; 
-    extend (extW, order[i], w); 
-    //perhaps one can define another acc-func here and save one copying step
-    accumulate_su3matrix_prod(extW, U);
-    copy_su3matrix(U, extW);
-  }
-  put_su3matrix(gaugefield, U, pos, t, mu);
+		calc_staple(gaugefield, staplematrix, pos, t, mu);
 
-  return;
+		for(int i=0; i<3; i++)
+		{
+			multiply_staplematrix(W, U, staplematrix);
+			reduction(w, W, order[i]);
+
+			w_pauli[0] = 0.5*(w[0].re + w[3].re);
+			w_pauli[1] = 0.5*(w[1].im + w[2].im);
+			w_pauli[2] = 0.5*(w[1].re - w[2].re);
+			w_pauli[3] = 0.5*(w[0].im - w[3].im);
+			k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
+
+			hmc_float beta_neu =  2.*beta / NC*k;
+			SU2Update(r_pauli, beta_neu, &rnd[id]);
+
+			/*
+			   w[0].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
+			   w[0].im = (w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
+			   w[1].re = (w_pauli[0]*r_pauli[2] - w_pauli[2]*r_pauli[0] + r_pauli[3]*w_pauli[1] - r_pauli[1]*w_pauli[3] )/k;
+			   w[1].im = (w_pauli[0]*r_pauli[1] - w_pauli[1]*r_pauli[0] + r_pauli[2]*w_pauli[3] - r_pauli[3]*w_pauli[2] )/k;
+			   w[2].re = -(w_pauli[0]*r_pauli[2] - w_pauli[2]*r_pauli[0] + r_pauli[3]*w_pauli[1] - r_pauli[1]*w_pauli[3] )/k;
+			   w[2].im = (w_pauli[0]*r_pauli[1] - w_pauli[1]*r_pauli[0] + r_pauli[2]*w_pauli[3] - r_pauli[3]*w_pauli[2] )/k;
+			   w[3].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
+			   w[3].im = -(w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
+			 */
+
+			//old:
+			w_pauli[0] = w_pauli[0]/k;
+			w_pauli[1] = -w_pauli[1]/k;
+			w_pauli[2] = -w_pauli[2]/k;
+			w_pauli[3] = -w_pauli[3]/k;
+
+			hmc_float su2_tmp[su2_entries];
+			su2_tmp[0] = r_pauli[0]*w_pauli[0] - r_pauli[1]*w_pauli[1] - r_pauli[2]*w_pauli[2] - r_pauli[3]*w_pauli[3] ;
+			su2_tmp[1] = w_pauli[0]*r_pauli[1] + w_pauli[1]*r_pauli[0] - r_pauli[2]*w_pauli[3] + r_pauli[3]*w_pauli[2] ;
+			su2_tmp[2] = w_pauli[0]*r_pauli[2] + w_pauli[2]*r_pauli[0] - r_pauli[3]*w_pauli[1] + r_pauli[1]*w_pauli[3] ;
+			su2_tmp[3] = w_pauli[0]*r_pauli[3] + w_pauli[3]*r_pauli[0] - r_pauli[1]*w_pauli[2] + r_pauli[2]*w_pauli[1] ;
+			r_pauli[0] = su2_tmp[0];
+			r_pauli[1] = su2_tmp[1];
+			r_pauli[2] = su2_tmp[2];
+			r_pauli[3] = su2_tmp[3];
+
+
+			//go back to a su2 matrix in standard basis
+			w[0].re = r_pauli[0];
+			w[0].im = r_pauli[3];
+			w[1].re = r_pauli[2];
+			w[1].im = r_pauli[1];
+			w[2].re = -r_pauli[2];
+			w[2].im = r_pauli[1];
+			w[3].re = r_pauli[0];
+			w[3].im = -r_pauli[3];
+
+
+
+			hmc_ocl_su3matrix extW[SU3SIZE];
+			extend (extW, order[i], w);
+			//perhaps one can define another acc-func here and save one copying step
+			accumulate_su3matrix_prod(extW, U);
+			copy_su3matrix(U, extW);
+		}
+		put_su3matrix(gaugefield, U, pos, t, mu);
+	}
+
+	return;
 }
 
 __kernel void overrelax_even(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd){
-  //it is assumed that there are VOL4D/2 threads
-  int t, pos;
-  int id = get_global_id(0);
-  get_even_site(id, &pos, &t);
-  
-  hmc_ocl_su3matrix U[SU3SIZE];
-  hmc_ocl_staplematrix W[STAPLEMATRIXSIZE];
-  hmc_ocl_staplematrix staplematrix[STAPLEMATRIXSIZE];
-  
-  hmc_complex w [su2_entries];
-  hmc_float w_pauli[su2_entries], k;
-  int order[3]; 
-  random_1_2_3(order, &rnd[id]);
-  get_su3matrix(U, gaugefield, pos, t, mu);
+	//it is assumed that there are VOL4D/2 threads
+	int t, pos;
+	for( int id = get_global_id(0); id < VOL4D/2; id += get_global_size(0) )
+	{
+		get_even_site(id, &pos, &t);
 
-  hmc_complex det = det_su3matrix(U);
-  hmc_complex detadj = complexconj(&det);
-  hmc_complex detsqnorm = complexmult(&det, &detadj);
-  if( (detsqnorm.re - hmc_one_f) <= projectioneps)
-    project_su3(U);
-  
-  calc_staple(gaugefield, staplematrix, pos, t, mu);
-  hmc_ocl_su3matrix tmp[SU3SIZE]; 
-  hmc_ocl_su3matrix extW[SU3SIZE]; 
-  for(int i=0; i<3; i++)
-  {
-    multiply_staplematrix(W, U, staplematrix); 
-    reduction(w, W, order[i]);
+		hmc_ocl_su3matrix U[SU3SIZE];
+		hmc_ocl_staplematrix W[STAPLEMATRIXSIZE];
+		hmc_ocl_staplematrix staplematrix[STAPLEMATRIXSIZE];
 
-    w_pauli[0] = 0.5*(w[0].re + w[3].re);
-    w_pauli[1] = 0.5*(w[1].im + w[2].im);
-    w_pauli[2] = 0.5*(w[1].re - w[2].re);
-    w_pauli[3] = 0.5*(w[0].im - w[3].im);
-    k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
+		hmc_complex w [su2_entries];
+		hmc_float w_pauli[su2_entries], k;
+		int order[3];
+		random_1_2_3(order, &rnd[id]);
+		get_su3matrix(U, gaugefield, pos, t, mu);
 
-    w[0].re = (w_pauli[0]*w_pauli[0] - w_pauli[1]*w_pauli[1] - w_pauli[2]*w_pauli[2] - w_pauli[3]*w_pauli[3])/k/k;
-    w[0].im = (-2.*w_pauli[0]*w_pauli[3])/k/k;
-    w[1].re = (-2.*w_pauli[0]*w_pauli[2])/k/k;
-    w[1].im = (-2.*w_pauli[0]*w_pauli[1])/k/k;
-    w[2].re = (2.*w_pauli[0]*w_pauli[2])/k/k;
-    w[2].im = (-2.*w_pauli[0]*w_pauli[1])/k/k;
-    w[3].re = (w_pauli[0]*w_pauli[0] - w_pauli[1]*w_pauli[1] - w_pauli[2]*w_pauli[2] - w_pauli[3]*w_pauli[3])/k/k;
-    w[3].im = (2.*w_pauli[0]*w_pauli[3])/k/k;
-    
-    extend (extW, order[i], w); 
-    multiply_su3matrices(tmp, extW, U);
-    copy_su3matrix(U, tmp);
-  }
-  put_su3matrix(gaugefield, U, pos, t, mu);
-  return;
+		hmc_complex det = det_su3matrix(U);
+		hmc_complex detadj = complexconj(&det);
+		hmc_complex detsqnorm = complexmult(&det, &detadj);
+		if( (detsqnorm.re - hmc_one_f) <= projectioneps)
+			project_su3(U);
+
+		calc_staple(gaugefield, staplematrix, pos, t, mu);
+		hmc_ocl_su3matrix tmp[SU3SIZE];
+		hmc_ocl_su3matrix extW[SU3SIZE];
+		for(int i=0; i<3; i++)
+		{
+			multiply_staplematrix(W, U, staplematrix);
+			reduction(w, W, order[i]);
+
+			w_pauli[0] = 0.5*(w[0].re + w[3].re);
+			w_pauli[1] = 0.5*(w[1].im + w[2].im);
+			w_pauli[2] = 0.5*(w[1].re - w[2].re);
+			w_pauli[3] = 0.5*(w[0].im - w[3].im);
+			k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
+
+			w[0].re = (w_pauli[0]*w_pauli[0] - w_pauli[1]*w_pauli[1] - w_pauli[2]*w_pauli[2] - w_pauli[3]*w_pauli[3])/k/k;
+			w[0].im = (-2.*w_pauli[0]*w_pauli[3])/k/k;
+			w[1].re = (-2.*w_pauli[0]*w_pauli[2])/k/k;
+			w[1].im = (-2.*w_pauli[0]*w_pauli[1])/k/k;
+			w[2].re = (2.*w_pauli[0]*w_pauli[2])/k/k;
+			w[2].im = (-2.*w_pauli[0]*w_pauli[1])/k/k;
+			w[3].re = (w_pauli[0]*w_pauli[0] - w_pauli[1]*w_pauli[1] - w_pauli[2]*w_pauli[2] - w_pauli[3]*w_pauli[3])/k/k;
+			w[3].im = (2.*w_pauli[0]*w_pauli[3])/k/k;
+
+			extend (extW, order[i], w);
+			multiply_su3matrices(tmp, extW, U);
+			copy_su3matrix(U, tmp);
+		}
+		put_su3matrix(gaugefield, U, pos, t, mu);
+	}
+	return;
 }
 
 __kernel void overrelax_odd(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd){
-  int t, pos;
-  int id = get_global_id(0);
-  get_odd_site(id, &pos, &t);
-  
-  hmc_ocl_su3matrix U[SU3SIZE];
-  hmc_ocl_staplematrix W[STAPLEMATRIXSIZE];
-  hmc_ocl_staplematrix staplematrix[STAPLEMATRIXSIZE];
-  
-  hmc_complex w [su2_entries];
-  hmc_float w_pauli[su2_entries], k;
-  int order[3]; 
-  random_1_2_3(order, &rnd[id]);
-  get_su3matrix(U, gaugefield, pos, t, mu);
+	int t, pos;
+	for( int id = get_global_id(0); id < VOL4D/2; id += get_global_size(0) )
+	{
+		get_odd_site(id, &pos, &t);
 
-  hmc_complex det = det_su3matrix(U);
-  hmc_complex detadj = complexconj(&det);
-  hmc_complex detsqnorm = complexmult(&det, &detadj);
-  if( (detsqnorm.re - hmc_one_f) <= projectioneps)
-    project_su3(U);
-  
-  calc_staple(gaugefield, staplematrix, pos, t, mu);
-  hmc_ocl_su3matrix tmp[SU3SIZE]; 
-  hmc_ocl_su3matrix extW[SU3SIZE]; 
-  for(int i=0; i<3; i++)
-  {
-    multiply_staplematrix(W, U, staplematrix); 
-    reduction(w, W, order[i]);
+		hmc_ocl_su3matrix U[SU3SIZE];
+		hmc_ocl_staplematrix W[STAPLEMATRIXSIZE];
+		hmc_ocl_staplematrix staplematrix[STAPLEMATRIXSIZE];
 
-    w_pauli[0] = 0.5*(w[0].re + w[3].re);
-    w_pauli[1] = 0.5*(w[1].im + w[2].im);
-    w_pauli[2] = 0.5*(w[1].re - w[2].re);
-    w_pauli[3] = 0.5*(w[0].im - w[3].im);
-    k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
+		hmc_complex w [su2_entries];
+		hmc_float w_pauli[su2_entries], k;
+		int order[3];
+		random_1_2_3(order, &rnd[id]);
+		get_su3matrix(U, gaugefield, pos, t, mu);
 
-    w[0].re = (w_pauli[0]*w_pauli[0] - w_pauli[1]*w_pauli[1] - w_pauli[2]*w_pauli[2] - w_pauli[3]*w_pauli[3])/k/k;
-    w[0].im = (-2.*w_pauli[0]*w_pauli[3])/k/k;
-    w[1].re = (-2.*w_pauli[0]*w_pauli[2])/k/k;
-    w[1].im = (-2.*w_pauli[0]*w_pauli[1])/k/k;
-    w[2].re = (2.*w_pauli[0]*w_pauli[2])/k/k;
-    w[2].im = (-2.*w_pauli[0]*w_pauli[1])/k/k;
-    w[3].re = (w_pauli[0]*w_pauli[0] - w_pauli[1]*w_pauli[1] - w_pauli[2]*w_pauli[2] - w_pauli[3]*w_pauli[3])/k/k;
-    w[3].im = (2.*w_pauli[0]*w_pauli[3])/k/k;
-    
-    extend (extW, order[i], w); 
-    //perhaps one can define another acc-func here and save one copying step
-    multiply_su3matrices(tmp, extW, U);
-    copy_su3matrix(U, tmp);
-  }
-  put_su3matrix(gaugefield, U, pos, t, mu);
-  return;
+		hmc_complex det = det_su3matrix(U);
+		hmc_complex detadj = complexconj(&det);
+		hmc_complex detsqnorm = complexmult(&det, &detadj);
+		if( (detsqnorm.re - hmc_one_f) <= projectioneps)
+			project_su3(U);
+
+		calc_staple(gaugefield, staplematrix, pos, t, mu);
+		hmc_ocl_su3matrix tmp[SU3SIZE];
+		hmc_ocl_su3matrix extW[SU3SIZE];
+		for(int i=0; i<3; i++)
+		{
+			multiply_staplematrix(W, U, staplematrix);
+			reduction(w, W, order[i]);
+
+			w_pauli[0] = 0.5*(w[0].re + w[3].re);
+			w_pauli[1] = 0.5*(w[1].im + w[2].im);
+			w_pauli[2] = 0.5*(w[1].re - w[2].re);
+			w_pauli[3] = 0.5*(w[0].im - w[3].im);
+			k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
+
+			w[0].re = (w_pauli[0]*w_pauli[0] - w_pauli[1]*w_pauli[1] - w_pauli[2]*w_pauli[2] - w_pauli[3]*w_pauli[3])/k/k;
+			w[0].im = (-2.*w_pauli[0]*w_pauli[3])/k/k;
+			w[1].re = (-2.*w_pauli[0]*w_pauli[2])/k/k;
+			w[1].im = (-2.*w_pauli[0]*w_pauli[1])/k/k;
+			w[2].re = (2.*w_pauli[0]*w_pauli[2])/k/k;
+			w[2].im = (-2.*w_pauli[0]*w_pauli[1])/k/k;
+			w[3].re = (w_pauli[0]*w_pauli[0] - w_pauli[1]*w_pauli[1] - w_pauli[2]*w_pauli[2] - w_pauli[3]*w_pauli[3])/k/k;
+			w[3].im = (2.*w_pauli[0]*w_pauli[3])/k/k;
+
+			extend (extW, order[i], w);
+			//perhaps one can define another acc-func here and save one copying step
+			multiply_su3matrices(tmp, extW, U);
+			copy_su3matrix(U, tmp);
+		}
+		put_su3matrix(gaugefield, U, pos, t, mu);
+	}
+	return;
 }
