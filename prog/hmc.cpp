@@ -24,19 +24,12 @@ int main(int argc, char* argv[]) {
   hmc_rndarray rndarray;
 
   init_gaugefield(gaugefield,&parameters,&inittime);
-  
-  //this needs optimization
-  const size_t local_work_size  = VOL4D/2;
-  const size_t global_work_size = local_work_size;
-  //one should define a definite number of threads and use this here
-  init_random_seeds(rnd, rndarray, VOL4D/2, &inittime);
+  init_random_seeds(rnd, rndarray, &inittime);
 
-  testing_correlator(gaugefield,&parameters);
-  
-  return 0;
-  
-  
-  opencl gpu(CL_DEVICE_TYPE_GPU, &inittime);
+  //testing_correlator(gaugefield,&parameters);
+  //return 0;
+   
+  opencl gpu(CL_DEVICE_TYPE_CPU, &inittime);
 
   cout << "initial values of observables:\n\t" ;
   print_gaugeobservables(gaugefield, &polytime, &plaqtime);
@@ -49,8 +42,6 @@ int main(int argc, char* argv[]) {
   // Heatbath
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-  //this has to go into a function later
   int nsteps = parameters.get_heatbathsteps();
   cout<<"perform "<<nsteps<<" heatbath steps on OpenCL device..."<<endl;
   for(int i = 0; i<nsteps; i++){
@@ -63,12 +54,11 @@ int main(int argc, char* argv[]) {
     if( parameters.get_saveconfigs()==TRUE && ( (i+1)%parameters.get_savefrequency() ) == 0 ) {
       gpu.get_gaugefield_from_device(gaugefield, &copytime);
       save_gaugefield(gaugefield, &parameters, i);
+      print_gaugeobservables(gaugefield, &plaqtime, &polytime, i, gaugeout_name.str());
     }
   }
 
   gpu.get_gaugefield_from_device(gaugefield, &copytime);
-
-
 
   totaltime.add();
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////

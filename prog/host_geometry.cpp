@@ -7,7 +7,6 @@ int get_neighbor(int nspace, int dir) {
   coord[dir] = (coord[dir] + 1)%NSPACE;
   return get_nspace(coord);
 }
-
 int get_lower_neighbor(int nspace, int dir) {
   int coord[NDIM];
   coord[0]=0;
@@ -15,13 +14,11 @@ int get_lower_neighbor(int nspace, int dir) {
   coord[dir] = (coord[dir] - 1 + NSPACE)%NSPACE;
   return get_nspace(coord);
 }
-
 int get_nspace(int* coord){
   int n=0;
   for(int j=1; j<NDIM; j++) n += pow(NSPACE,j-1)*coord[j];
   return n;
 }
-
 int get_spacecoord(int nspace, int dir){
   int nred=NDIM-1;
   int res = int(nspace/pow(NSPACE,nred-1));
@@ -37,20 +34,50 @@ int get_spacecoord(int nspace, int dir){
   return -99;
 }
 
+int spinor_color(int spinor_element){
+  return (int)(spinor_element/NSPIN);
+}
+
+int spinor_spin(int spinor_element,int color){
+  return spinor_element - NSPIN*color;
+}
+
+int spinor_element(int alpha, int color) {
+  return alpha + NSPIN*color;
+}
+
+int eoprec_spinor_field_element(int alpha, int color, int nspace, int t) {
+  return alpha + NSPIN*color + NSPIN*NC*get_n_eoprec(t,nspace);
+}
+
+int eoprec_spinor_field_element(int alpha, int color, int n_eoprec) {
+  return alpha + NSPIN*color + NSPIN*NC*n_eoprec;
+}
+
 int get_n_eoprec(int timepos, int spacepos){
-  return (int)((timepos+NTIME*spacepos)/2);
+  return (int)((get_global_pos(spacepos, timepos))/2);
 }
 
-int get_nspace_from_eoprecindex(int n, int which){
-  if(which==EVEN) return nspace_from_even_index[n];
-  if(which==ODD) return nspace_from_odd_index[n];
-  exit(HMC_EOERROR);
+int spinor_field_element(int alpha, int color, int nspace, int t) {
+  return alpha + NSPIN*color + NSPIN*NC*(get_global_pos(nspace, t));
 }
 
-int get_ntime_from_eoprecindex(int n, int which){
-  if(which==EVEN) return ntime_from_even_index[n];
-  if(which==ODD) return ntime_from_odd_index[n];
-  exit(HMC_EOERROR);
+//functions that have explicite spatial and temporal positions in them
+//make it:
+//site = pos + VOLSPACE*t =  x + y*NSPACE + z*NSPACE*NSPACE + VOLSPACE*t
+//idx = mu + NDIM*site
+int inline get_global_pos(int spacepos, int t){
+  return spacepos + VOLSPACE * t;
+}
+
+//site = pos + VOLSPACE*t =  x + y*NSPACE + z*NSPACE*NSPACE + VOLSPACE*t
+//idx = mu + NDIM*site
+int ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t){
+#ifdef _RECONSTRUCT_TWELVE_
+  return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*spacepos+2*NC*(NC-1)*NDIM*VOLSPACE*t;
+#else
+  return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*spacepos+2*NC*NC*NDIM*VOLSPACE*t;
+#endif
 }
 
 //it is assumed that idx iterates only over half the number of sites
@@ -79,50 +106,4 @@ void get_odd_site(int idx, int * out_space, int * out_t){
   x -= y*NSPACE;
   (*out_space) =  (int)((z+t+1)%2)*(1 + 2*x - (int) (2*x/NSPACE)) + (int)((t+z)%2)*(2*x + (int) (2*x/NSPACE)) + 2*NSPACE*y + NSPACE*NSPACE*z;
   (*out_t) = t;
-}
-
-int get_global_pos(int spacepos, int t){
-  return spacepos + VOLSPACE * t;
-}
-
-// int inline ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t){
-// #ifdef _RECONSTRUCT_TWELVE_
-//   return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*t+2*NC*(NC-1)*NDIM*NTIME*spacepos;
-// #else
-//   return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*t+2*NC*NC*NDIM*NTIME*spacepos;
-// #endif
-// }
-
-//site = pos + VOLSPACE*t =  x + y*NSPACE + z*NSPACE*NSPACE + VOLSPACE*t
-//idx = mu + NDIM*site
-int ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t){
-#ifdef _RECONSTRUCT_TWELVE_
-  return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*spacepos+2*NC*(NC-1)*NDIM*VOLSPACE*t;
-#else
-  return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*spacepos+2*NC*NC*NDIM*VOLSPACE*t;
-#endif
-}
-
-int spinor_color(int spinor_element){
-  return (int)(spinor_element/NSPIN);
-}
-
-int spinor_spin(int spinor_element,int color){
-  return spinor_element - NSPIN*color;
-}
-
-int spinor_element(int alpha, int color) {
-  return alpha + NSPIN*color;
-}
-
-int spinor_field_element(int alpha, int color, int nspace, int t) {
-  return alpha + NSPIN*color + NSPIN*NC*t+NSPIN*NC*NTIME*nspace;
-}
-
-int eoprec_spinor_field_element(int alpha, int color, int nspace, int t) {
-  return alpha + NSPIN*color + NSPIN*NC*get_n_eoprec(t,nspace);
-}
-
-int eoprec_spinor_field_element(int alpha, int color, int n_eoprec) {
-  return alpha + NSPIN*color + NSPIN*NC*n_eoprec;
 }

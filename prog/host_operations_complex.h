@@ -1,9 +1,9 @@
 #ifndef _OPERATIONS_COMPLEXH_
 #define _OPERATIONS_COMPLEXH_
 #include <iostream>
-#include "../globaldefs.h"
-#include "../types.h"
-#include "../hmcerrs.h"
+#include "globaldefs.h"
+#include "types.h"
+#include "hmcerrs.h"
 
 hmc_complex complexconj(hmc_complex *in); 
 hmc_complex complexmult(hmc_complex *a, hmc_complex *b); 

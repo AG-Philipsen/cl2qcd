@@ -8,6 +8,8 @@ hmc_error inputparameters::set_defaults(){
   prec = 64;
   theta_fermion = 0.;
   theta_gaugefield = 0.;
+  chem_pot_re = 0.;
+  chem_pot_im = 0.;
   startcondition = COLD_START;
   thermalizationsteps = 0;
   heatbathsteps = 1000;
@@ -171,6 +173,14 @@ hmc_float inputparameters::get_beta(){
 
 hmc_float inputparameters::get_mu(){
   return mu;
+}
+
+hmc_float inputparameters::get_chem_pot_re(){
+  return chem_pot_re;
+}
+
+hmc_float inputparameters::get_chem_pot_im(){
+  return chem_pot_im;
 }
 
 int inputparameters::get_cgmax(){

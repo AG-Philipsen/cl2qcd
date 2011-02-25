@@ -1,3 +1,5 @@
+//opencl_header.cl
+
 #ifdef _USEDOUBLEPREC_
 #pragma OPENCL EXTENSION cl_amd_fp64 : enable
 //#pragma OPENCL EXTENSION cl_khr_fp64 : enable
@@ -22,7 +24,3 @@
 
 #define VOL4D VOLSPACE*NTIME
 
-int* nspace_from_even_index;
-int* ntime_from_even_index;
-int* nspace_from_odd_index;
-int* ntime_from_odd_index;

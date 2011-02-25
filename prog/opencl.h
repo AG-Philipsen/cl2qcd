@@ -9,7 +9,9 @@
 #include <sstream>
 #include <CL/cl.h>
 
-#include "host_operations.h"
+#include "host_operations_complex.h"
+#include "host_operations_gaugefield.h"
+#include "host_operations_spinor.h"
 #include "globaldefs.h"
 #include "hmcerrs.h"
 #include "types.h"
@@ -18,7 +20,7 @@
 #include "host_random.h"
 
 //give a list of all kernel-files
-std::vector<std::string> const cl_kernels_file = {"opencl_header.cl", "opencl_geometry.cl","opencl_operations.cl",   "opencl_random.cl", "opencl_update_heatbath.cl", "opencl_solver.cl", "opencl_gaugeobservables.cl",  "opencl_fermionobservables.cl", "opencl_testing.cl"};
+std::vector<std::string> const cl_kernels_file = {"opencl_header.cl", "opencl_geometry.cl","opencl_operations_complex.cl",  "opencl_operations_gaugefield.cl","opencl_operations_spinor.cl", "opencl_random.cl", "opencl_update_heatbath.cl", "opencl_solver.cl", "opencl_gaugeobservables.cl",  "opencl_fermionobservables.cl", "opencl_testing.cl"};
 
 class opencl {
  public:
@@ -29,8 +31,8 @@ class opencl {
   hmc_error copy_rndarray_to_device(hmc_rndarray host_rndarray,  usetimer* timer);
   hmc_error copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer);
   hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
-  hmc_error run_heatbath(double beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
-  hmc_error run_overrelax(double beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
+  hmc_error run_heatbath(hmc_float beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
+  hmc_error run_overrelax(hmc_float beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
   hmc_error gaugeobservables(const size_t local_work_size, const size_t global_work_size, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol, usetimer* timer1, usetimer* timer2);
   hmc_error testing(hmc_gaugefield * gaugefield);
   hmc_error finalize();

@@ -2,7 +2,7 @@
 
 
 void testing_correlator(hmc_gaugefield* gf, inputparameters* parameters) {
-  simple_correlator(gf, (*parameters).get_kappa(),(*parameters).get_mu(), (*parameters).get_theta_fermion(), (*parameters).get_cgmax());
+  simple_correlator(gf, (*parameters).get_kappa(),(*parameters).get_mu(), (*parameters).get_theta_fermion(), (*parameters).get_chem_pot_re(), (*parameters).get_chem_pot_im(), (*parameters).get_cgmax());
  return;
 }
 
@@ -481,7 +481,7 @@ void testing_heatbath_norandommat_no123(hmc_su3matrix * in, hmc_staplematrix * s
     w_pauli[3] = hmc_float(-1)/k * w_pauli[3];
 	
     //beta' = 2Beta/Nc*k
-    hmc_float beta_neu =  2.*beta / hmc_float(NC)*k;
+    //hmc_float beta_neu =  2.*beta / hmc_float(NC)*k;
       
     //Neuer Link in Paulibasis mittels Kennedy-Pendleton-Algorithmus
     //SU2Update(r_pauli, beta_neu);

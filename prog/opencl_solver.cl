@@ -1,4 +1,4 @@
-
+//opencl_solver.cl
 void M_diag(hmc_spinor_field* in, hmc_spinor_field* out, hmc_float kappa, hmc_float mu){
   for(int spacepos=0; spacepos<VOLSPACE; spacepos++) {
     for(int timepos=0; timepos<NTIME; timepos++) {

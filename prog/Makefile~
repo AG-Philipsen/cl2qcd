@@ -1,6 +1,6 @@
 PROGRAM = hmc
 VERSION=0.1
-PROGNAME = hmc.v$(VERSION)
+PROGNAME = OCLhmc.v$(VERSION)
 
 CXX = g++
 HMCPATH=/home/pinke/hmc/prog

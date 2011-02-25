@@ -89,14 +89,9 @@ hmc_error opencl::init(cl_device_type wanted_device_type, usetimer* timer){
     char* kernelssource = new char[length];
     
     kernelsfile.read(kernelssource,length);
-    //        cout<<"kernel source code:"<<endl; 
-    //        cout.write(kernelssource,length);
-    //        cout<<endl;
 
     kernelsfile.close();
     sourcecode.append(kernelssource,length);
-
-    //    cout<<sourcecode<<endl;
 
     delete [] kernelssource;    
   }
@@ -172,22 +167,22 @@ hmc_error opencl::init(cl_device_type wanted_device_type, usetimer* timer){
   }
 
   cout<<"Create buffer for gaugeobservables..."<<endl;
-  clmem_plaq = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_float),0,&clerr);
+  clmem_plaq = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_float)*global_work_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
-  clmem_splaq = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_float),0,&clerr);
+  clmem_splaq = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_float)*global_work_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
-  clmem_tplaq = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_float),0,&clerr);
+  clmem_tplaq = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_float)*global_work_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
-  clmem_polyakov = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_complex),0,&clerr);
+  clmem_polyakov = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_complex)*global_work_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
@@ -301,32 +296,29 @@ hmc_error opencl::copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* tim
   return HMC_SUCCESS;
 }
 
-hmc_error opencl::run_heatbath(double beta, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
+hmc_error opencl::run_heatbath(hmc_float beta, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
   cl_int clerr=CL_SUCCESS;
   (*timer).reset();
   
-  hmc_float tmp = (hmc_float) beta;
-  
-  //cout << "updating even links" << endl;
   clerr = clSetKernelArg(heatbath_even,0,sizeof(cl_mem),&clmem_gaugefield); 
   if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg failed, aborting..."<<endl;
+    cout<<"clSetKernelArg0 at heatbath_even failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(heatbath_even,1,sizeof(hmc_float),&tmp);
+  clerr = clSetKernelArg(heatbath_even,1,sizeof(hmc_float),&beta);
   if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg failed, aborting..."<<endl;
+    cout<<"clSetKernelArg1 at heatbath_even failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
   clerr = clSetKernelArg(heatbath_even,3,sizeof(cl_mem),&clmem_rndarray);
   if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg failed, aborting..."<<endl;
+    cout<<"clSetKernelArg3 at heatbath_even failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
   for(int i = 0; i<NDIM; i++){
     clerr = clSetKernelArg(heatbath_even,2,sizeof(int),&i);
     if(clerr!=CL_SUCCESS) {
-      cout<<"clSetKernelArg failed, aborting..."<<endl;
+      cout<<"clSetKernelArg2 at heatbath_even failed, aborting..."<<endl;
       exit(HMC_OCLERROR);
     }
     clerr = clEnqueueNDRangeKernel(queue,heatbath_even,1,0,&local_work_size,&global_work_size,0,0,NULL);
@@ -334,28 +326,28 @@ hmc_error opencl::run_heatbath(double beta, const size_t local_work_size, const 
       cout<<"clEnqueueNDRangeKernel failed, aborting..."<<endl;
       exit(HMC_OCLERROR);
     }
+    clFinish(queue);
   }
   
-  //cout << "updating odd links" << endl;
   clerr = clSetKernelArg(heatbath_odd,0,sizeof(cl_mem),&clmem_gaugefield); 
   if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg failed, aborting..."<<endl;
+    cout<<"clSetKernelArg0 at heatbath_odd failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(heatbath_odd,1,sizeof(hmc_float),&tmp);
+  clerr = clSetKernelArg(heatbath_odd,1,sizeof(hmc_float),&beta);
   if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg failed, aborting..."<<endl;
+    cout<<"clSetKernelArg1 at heatbath_odd failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
   clerr = clSetKernelArg(heatbath_odd,3,sizeof(cl_mem),&clmem_rndarray);
   if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg failed, aborting..."<<endl;
+    cout<<"clSetKernelArg3 at heatbath_odd failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
   for(int i = 0; i<NDIM; i++){
     clerr = clSetKernelArg(heatbath_odd,2,sizeof(int),&i);
     if(clerr!=CL_SUCCESS) {
-      cout<<"clSetKernelArg failed, aborting..."<<endl;
+      cout<<"clSetKernelArg2 at heatbath_odd failed, aborting..."<<endl;
       exit(HMC_OCLERROR);
     }
     clerr = clEnqueueNDRangeKernel(queue,heatbath_odd,1,0,&local_work_size,&global_work_size,0,0,NULL);
@@ -363,25 +355,24 @@ hmc_error opencl::run_heatbath(double beta, const size_t local_work_size, const 
       cout<<"clEnqueueNDRangeKernel failed, aborting..."<<endl;
       exit(HMC_OCLERROR);
     }
+    clFinish(queue);
   }
   (*timer).add();
   return HMC_SUCCESS;
+  
 }
 
-hmc_error opencl::run_overrelax(double beta, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
+hmc_error opencl::run_overrelax(hmc_float beta, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
   cl_int clerr=CL_SUCCESS;
   
   (*timer).reset();
-  
-  hmc_float tmp = (hmc_float) beta;
-  
-  //cout << "overrelaxing even links" << endl;
+ 
   clerr = clSetKernelArg(overrelax_even,0,sizeof(cl_mem),&clmem_gaugefield); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(overrelax_even,1,sizeof(hmc_float),&tmp);
+  clerr = clSetKernelArg(overrelax_even,1,sizeof(hmc_float),&beta);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -405,13 +396,12 @@ hmc_error opencl::run_overrelax(double beta, const size_t local_work_size, const
     clFinish(queue);
   }
   
-  //cout << "overrelaxing odd links" << endl;
   clerr = clSetKernelArg(overrelax_odd,0,sizeof(cl_mem),&clmem_gaugefield); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg5 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(overrelax_odd,1,sizeof(hmc_float),&tmp);
+  clerr = clSetKernelArg(overrelax_odd,1,sizeof(hmc_float),&beta);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg6 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -432,8 +422,8 @@ hmc_error opencl::run_overrelax(double beta, const size_t local_work_size, const
       cout<<"clEnqueueNDRangeKernel failed, aborting..."<<endl;
       exit(HMC_OCLERROR);
     }
+    clFinish(queue);
   }
-  clFinish(queue);
   (*timer).add();
   return HMC_SUCCESS;
 }
@@ -441,32 +431,34 @@ hmc_error opencl::run_overrelax(double beta, const size_t local_work_size, const
 hmc_error opencl::gaugeobservables(const size_t local_work_size, const size_t global_work_size, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out, usetimer* timer1, usetimer * timer2){
   cl_int clerr=CL_SUCCESS;
   
-  hmc_float plaq = 0, splaq = 0, tplaq = 0;
-  hmc_complex pol = hmc_complex_zero;
+  //measure plaquette
+  (*timer1).reset();
 
+  hmc_float * plaq= new hmc_float [global_work_size];
+  hmc_float * splaq = new hmc_float[global_work_size];
+  hmc_float * tplaq = new hmc_float[global_work_size];
+  for(int i = 0; i<(int)global_work_size; i++){
+    plaq[i] = 0.;
+    splaq[i] = 0.;
+    tplaq[i] = 0.;
+  }
   //set device-values to zero for new measurement
-  clerr = clEnqueueWriteBuffer(queue,clmem_plaq,CL_TRUE,0,sizeof(hmc_float),&plaq,0,0,NULL);
+  clerr = clEnqueueWriteBuffer(queue,clmem_plaq,CL_TRUE,0,sizeof(hmc_float)*global_work_size,&plaq,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clEnqueueWriteBuffer(queue,clmem_splaq,CL_TRUE,0,sizeof(hmc_float),&splaq,0,0,NULL);
+  clerr = clEnqueueWriteBuffer(queue,clmem_splaq,CL_TRUE,0,sizeof(hmc_float)*global_work_size,&splaq,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clEnqueueWriteBuffer(queue,clmem_tplaq,CL_TRUE,0,sizeof(hmc_float),&tplaq,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clEnqueueWriteBuffer(queue,clmem_polyakov,CL_TRUE,0,sizeof(hmc_complex),&pol,0,0,NULL);
+  clerr = clEnqueueWriteBuffer(queue,clmem_tplaq,CL_TRUE,0,sizeof(hmc_float)*global_work_size,&tplaq,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
   
-  //measure plaquette
   clerr = clSetKernelArg(plaquette,0,sizeof(cl_mem),&clmem_gaugefield); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg1 failed, aborting..."<<endl;
@@ -487,16 +479,55 @@ hmc_error opencl::gaugeobservables(const size_t local_work_size, const size_t gl
     cout<<"clSetKernelArg4 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  (*timer1).reset();
   clerr = clEnqueueNDRangeKernel(queue,plaquette,1,0,&local_work_size,&global_work_size,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
       cout<<"clEnqueueNDRangeKernel failed, aborting..." << clerr <<endl;
       exit(HMC_OCLERROR);
   }
   clFinish(queue);
+
+  //read out values
+  clerr = clEnqueueReadBuffer(queue,clmem_plaq,CL_TRUE,0,sizeof(hmc_float),&plaq[0],0,NULL,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueReadBuffer(queue,clmem_splaq,CL_TRUE,0,sizeof(hmc_float),&splaq[0],0,NULL,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueReadBuffer(queue,clmem_tplaq,CL_TRUE,0,sizeof(hmc_float),&tplaq[0],0,NULL,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+
+  //two plaquette-measurements per thread -> add. factor of 1/2
+  tplaq[0] /= static_cast<hmc_float>(VOL4D*NC*(NDIM-1));
+  splaq[0] /= static_cast<hmc_float>(VOL4D*NC*(NDIM-1)*(NDIM-2))/2. ;
+  plaq[0]  /= static_cast<hmc_float>(VOL4D*NDIM*(NDIM-1)*NC)/2.;
+  
+  (*plaq_out) = plaq[0];
+  (*splaq_out)= splaq[0];
+  (*tplaq_out)= tplaq[0];
+
   (*timer1).add();
   
   //measure polyakovloop
+  (*timer2).reset();
+  hmc_complex * pol = new hmc_complex [global_work_size];
+  for(int i = 0; i<(int) global_work_size; i++){
+    pol[i] = hmc_complex_zero;
+  }
+ 
+  //set device-values to zero for new measurement
+  clerr = clEnqueueWriteBuffer(queue,clmem_polyakov,CL_TRUE,0,sizeof(hmc_complex)*global_work_size,&pol,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+
   clerr = clSetKernelArg(polyakov,0,sizeof(cl_mem),&clmem_gaugefield); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg5 failed, aborting..."<<endl;
@@ -507,54 +538,32 @@ hmc_error opencl::gaugeobservables(const size_t local_work_size, const size_t gl
     cout<<"clSetKernelArg6 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  (*timer2).reset();
   clerr = clEnqueueNDRangeKernel(queue,polyakov,1,0,&local_work_size,&global_work_size,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"clEnqueueNDRangeKernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
   clFinish(queue);
+
+  //read out values
+  clerr = clEnqueueReadBuffer(queue,clmem_polyakov,CL_TRUE,0,sizeof(hmc_complex),&pol[0],0,NULL,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  
+  pol[0].re /= static_cast<hmc_float>(NC*VOLSPACE);
+  pol[0].im /= static_cast<hmc_float>(NC*VOLSPACE);
+  
+  (*pol_out).re = pol[0].re;
+  (*pol_out).im = pol[0].im;
+
   (*timer2).add();
   
-  //read out values
-  clerr = clEnqueueReadBuffer(queue,clmem_plaq,CL_TRUE,0,sizeof(hmc_float),&plaq,0,NULL,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clEnqueueReadBuffer(queue,clmem_splaq,CL_TRUE,0,sizeof(hmc_float),&splaq,0,NULL,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clEnqueueReadBuffer(queue,clmem_tplaq,CL_TRUE,0,sizeof(hmc_float),&tplaq,0,NULL,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clEnqueueReadBuffer(queue,clmem_polyakov,CL_TRUE,0,sizeof(hmc_complex),&pol,0,NULL,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  
-  //two plaquette-measurements per thread -> add. factor of 1/2
-
-  
-  tplaq /= static_cast<hmc_float>(VOL4D*NC*(NDIM-1));
-  splaq /= static_cast<hmc_float>(VOL4D*NC*(NDIM-1)*(NDIM-2))/2. ;
-  plaq  /= static_cast<hmc_float>(VOL4D*NDIM*(NDIM-1)*NC)/2.;
-  
-  (*plaq_out) = plaq;
-  (*splaq_out)= splaq;
-  (*tplaq_out)= tplaq;
-
-  
-  pol.re /= static_cast<hmc_float>(NC*VOLSPACE);
-  pol.im /= static_cast<hmc_float>(NC*VOLSPACE);
-  
-  (*pol_out).re = pol.re;
-  (*pol_out).im = pol.im;
+  delete [] plaq;
+  delete [] splaq;
+  delete [] tplaq;
+  delete [] pol;
   
   return HMC_SUCCESS;
 }
@@ -573,6 +582,7 @@ hmc_error opencl::testing(hmc_gaugefield * gaugefield){
   int nsteps = 10;
   hmc_float beta = 4.2;
 
+  //CP: this is made for a 4^4 lattice, otherwise one will run into problems with the VOL4D/2 definition!!!
   const size_t local_work_size  = VOL4D/2;
   const size_t global_work_size = local_work_size;
  

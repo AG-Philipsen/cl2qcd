@@ -1,7 +1,5 @@
 #include "host_operations_spinor.h"
 
-
-//spinor operations
 hmc_error su3matrix_times_colorvector(hmc_su3matrix* u, hmc_color_vector* in, hmc_color_vector* out){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int a=0; a<NC-1; a++) {
@@ -74,17 +72,12 @@ hmc_error fill_with_one(hmc_spinor_field *field, int spacepos, int timepos, int 
   return HMC_SUCCESS;
 }
 
-
-//eoprec operations
-
 hmc_error convert_to_eoprec(hmc_eoprec_spinor_field* even, hmc_eoprec_spinor_field* odd, hmc_spinor_field* in){
   int spacepos;
   int timepos;
   for(int n=0; n<VOL4D/2; n++) {
     for(int alpha=0; alpha<NSPIN; alpha++) {
       for(int color=0; color<NC; color++) {
-// 	int spacepos = nspace_from_even_index[n];
-// 	int timepos = ntime_from_even_index[n];
 	get_even_site(n, &spacepos, &timepos);
 	even[eoprec_spinor_field_element(alpha,color,n)] = in[spinor_field_element(alpha,color,spacepos,timepos)];
 	get_odd_site(n, &spacepos, &timepos);
@@ -100,8 +93,6 @@ hmc_error convert_from_eoprec(hmc_eoprec_spinor_field* even, hmc_eoprec_spinor_f
   for(int n=0; n<VOL4D/2; n++) {
     for(int alpha=0; alpha<NSPIN; alpha++) {
       for(int color=0; color<NC; color++) {
-// 	int spacepos = nspace_from_even_index[n];
-// 	int timepos = ntime_from_even_index[n];
         get_even_site(n, &spacepos, &timepos);
         out[spinor_field_element(alpha,color,spacepos,timepos)] = even[eoprec_spinor_field_element(alpha,color,n)];
 	get_odd_site(n, &spacepos, &timepos);
@@ -173,8 +164,6 @@ hmc_complex scalar_product(hmc_spinor_field* a, hmc_spinor_field* b){
     res.re += a[n].re*b[n].re + a[n].im*b[n].im;
     res.im += a[n].re*b[n].im - a[n].im*b[n].re;
   }
-//   if((res.re != res.re) && (res.im != res.im)) 
-//     printf("%f, %f\n", res.re, res.im);
   return res;
 }
 
@@ -437,8 +426,6 @@ hmc_error su3matrix_times_spinor(hmc_su3matrix* u, hmc_spinor* in, hmc_spinor* o
   return HMC_SUCCESS;
 }
 
-//new stuff
-
 void copy_spinor(hmc_complex * in, hmc_complex * out){
   for (int n=0; n<SPINORFIELDSIZE; n++) {
     out[n].re = in[n].re;
@@ -474,6 +461,7 @@ void saxpy_eoprec(hmc_eoprec_spinor_field * x, hmc_eoprec_spinor_field * y, hmc_
   }
   return;
 }
+
 //alpha*x + beta*y + z
 void saxsbypz(hmc_spinor_field * x, hmc_spinor_field * y,  hmc_spinor_field * z, hmc_complex * alpha, hmc_complex * beta, hmc_spinor_field * out){
   for (int n=0; n<SPINORFIELDSIZE; n++) {
@@ -494,6 +482,7 @@ void saxsbypz_eoprec(hmc_eoprec_spinor_field * x, hmc_eoprec_spinor_field * y,  
   }
   return;
 }
+
 hmc_error create_point_source(hmc_spinor_field* b, int i, int spacepos, int timepos, hmc_float kappa, hmc_float mu, hmc_gaugefield* gaugefield){
   set_zero_spinor(b);
 
@@ -505,10 +494,9 @@ hmc_error create_point_source(hmc_spinor_field* b, int i, int spacepos, int time
   return HMC_SUCCESS;
 }
 
-hmc_error create_point_source_eoprec(hmc_eoprec_spinor_field* be,hmc_eoprec_spinor_field* bo,int i,int spacepos,int timepos,hmc_float kappa, hmc_float mu, hmc_float theta, hmc_gaugefield* gaugefield){
+//!!CP: LZ should update this...
+hmc_error create_point_source_eoprec(hmc_eoprec_spinor_field* be,hmc_eoprec_spinor_field* bo,int i,int spacepos,int timepos,hmc_float kappa, hmc_float mu, hmc_float theta,hmc_float chem_pot_re, hmc_float chem_pot_im, hmc_gaugefield* gaugefield){
   
-  //CP: for whatever reason this does not work:
-  //hmc_spinor_field source[SPINORFIELDSIZE];
   hmc_spinor_field* source = new hmc_spinor_field[SPINORFIELDSIZE];
 
   set_zero_spinor(source);
@@ -525,7 +513,7 @@ hmc_error create_point_source_eoprec(hmc_eoprec_spinor_field* be,hmc_eoprec_spin
 
   hmc_eoprec_spinor_field spintmp[EOPREC_SPINORFIELDSIZE];
   M_inverse_sitediagonal(spintmp, bo, kappa,mu);
-  dslash_eoprec(be,spintmp,gaugefield,kappa,theta,EVEN);
+  dslash_eoprec(be,spintmp,gaugefield,kappa,theta, chem_pot_re, chem_pot_im, EVEN);
 
   for(int n=0;n<EOPREC_SPINORFIELDSIZE;n++) {
     be[n].re = evensource[n].re - be[n].re;

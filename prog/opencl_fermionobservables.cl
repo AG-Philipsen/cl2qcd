@@ -1,3 +1,6 @@
+//opencl_fermionobservables.cl
+
+//!!CP: LT should update this...
 void simple_correlator(__global hmc_spinor_field * in, __global hmc_spinor_field * spinor_out, __global hmc_ocl_gaugefield* gaugefield, __global hmc_complex * out, hmc_float kappa, hmc_float mu, hmc_float theta, int cgmax){
 
   //pseudo scalar, flavour multiplet
@@ -29,6 +32,5 @@ void simple_correlator(__global hmc_spinor_field * in, __global hmc_spinor_field
       }
     }
   }
-
   return;
 }

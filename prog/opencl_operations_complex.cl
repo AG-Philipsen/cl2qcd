@@ -1,36 +1,38 @@
-#include "host_operations_complex.h"
+//opencl_operations_complex.cl
 
-hmc_complex complexconj(hmc_complex *in){
-  hmc_complex z = *in;
-  z.im = -z.im;
-  return z;
+
+hmc_complex complexconj(__private hmc_complex *in){
+  hmc_complex tmp;
+  tmp.re = (*in).re;
+  tmp.im = -(*in).im;
+  return tmp;
 }
 
-hmc_complex complexmult(hmc_complex *a, hmc_complex *b){
+hmc_complex complexmult(__private hmc_complex *a,__private hmc_complex *b){
   hmc_complex res;
   res.re = (*a).re*(*b).re - (*a).im*(*b).im;
   res.im = (*a).im*(*b).re + (*a).re*(*b).im;
   return res;
 }
 
-hmc_complex complexadd(hmc_complex *a, hmc_complex *b){
+hmc_complex complexadd(__private hmc_complex *a,__private hmc_complex *b){
   hmc_complex res;
   res.re = (*a).re + (*b).re;
   res.im = (*a).im + (*b).im;
   return res;
 }
 
-hmc_complex complexsubtract(hmc_complex *a, hmc_complex *b){
+hmc_complex complexsubtract(__private hmc_complex *a,__private hmc_complex *b){
   hmc_complex res;
   res.re = (*a).re - (*b).re;
   res.im = (*a).im - (*b).im;
   return res;
 }
 
-hmc_error complexaccumulate(hmc_complex *inout, hmc_complex *incr){
+void complexaccumulate(__private hmc_complex *inout,__private hmc_complex *incr){
   (*inout).re += (*incr).re;
   (*inout).im += (*incr).im;
-  return HMC_SUCCESS;
+  return;
 }
 
 hmc_complex complexdivide(hmc_complex* numerator, hmc_complex* denominator){
@@ -40,3 +42,4 @@ hmc_complex complexdivide(hmc_complex* numerator, hmc_complex* denominator){
   res.im = ((*numerator).im*(*denominator).re-(*numerator).re*(*denominator).im)/norm;
   return res;
 }
+

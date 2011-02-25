@@ -1,9 +1,5 @@
 #include "host_operations_gaugefield.h"
 
-
-//gaugefield operations
-
-
 hmc_error copy_to_ocl_format(hmc_ocl_gaugefield* host_gaugefield,hmc_gaugefield* gaugefield){
   for(int spacepos=0; spacepos<NSPACE*NSPACE*NSPACE; spacepos++) {
     for(int t=0; t<NTIME; t++) {
@@ -56,9 +52,6 @@ hmc_error copy_from_ocl_format(hmc_gaugefield* gaugefield,hmc_ocl_gaugefield* ho
   return HMC_SUCCESS;
 }
  
-
-
-
 hmc_error set_gaugefield_cold(hmc_gaugefield * field) {
   for(int t=0; t<NTIME; t++) {
     for(int n=0; n<VOLSPACE; n++) {
@@ -622,9 +615,6 @@ hmc_error put_su3matrix(hmc_gaugefield * field, hmc_su3matrix * in, int spacepos
   return HMC_SUCCESS;
 }
 
-
-//CP:
-//?? perhaps work with cases??
 void reduction (hmc_complex dest[su2_entries], hmc_staplematrix src, const int rand){
 #ifdef _RECONSTRUCT_TWELVE_
   if(rand == 1)
@@ -748,7 +738,6 @@ void extend (hmc_su3matrix * dest, const int random, hmc_complex src[su2_entries
 void gaugefield_apply_bc(hmc_su3matrix * in, hmc_float theta){
   hmc_float tmp1,tmp2;
 #ifdef _RECONSTRUCT_TWELVE_
-  //CP: this needs to be checked!!
   hmc_su3matrix tmp;
   copy_su3matrix(&tmp, mat);
   for(int n=0; n<NC*(NC-1); n++) {
@@ -770,3 +759,36 @@ void gaugefield_apply_bc(hmc_su3matrix * in, hmc_float theta){
   return;
 }
 
+// replace link in with e^(mu.re)*(cos(mu.im) + i*sin(mu.im))
+void gaugefield_apply_chem_pot(hmc_su3matrix * u, hmc_su3matrix * udagger, hmc_float chem_pot_re, hmc_float chem_pot_im){
+  hmc_float tmp1,tmp2;
+#ifdef _RECONSTRUCT_TWELVE_
+  hmc_su3matrix tmp;
+  copy_su3matrix(&tmp, mat);
+  for(int n=0; n<NC*(NC-1); n++) {
+    tmp1 = ((*u)[a][b]).re;
+    tmp2 = ((*u)[a][b]).im;
+    ((*u)[a][b]).re = exp(chem_pot_re)*cos(chem_pot_im)*tmp1;
+    ((*u)[a][b]).im = exp(chem_pot_re)*sin(chem_pot_im)*tmp2;
+    tmp1 = ((*udagger)[a][b]).re;
+    tmp2 = ((*udagger)[a][b]).im;
+    ((*udagger)[a][b]).re = exp(-chem_pot_re)*cos(chem_pot_im)*tmp1;
+    ((*udagger)[a][b]).im = -exp(-chem_pot_re)*sin(chem_pot_im)*tmp2;
+  }
+#else
+  for(int a=0; a<NC; a++) {
+    for(int b=0; b<NC; b++) {
+      tmp1 = ((*u)[a][b]).re;
+      tmp2 = ((*u)[a][b]).im;
+      ((*u)[a][b]).re = exp(chem_pot_re)*cos(chem_pot_im)*tmp1;
+      ((*u)[a][b]).im = exp(chem_pot_re)*sin(chem_pot_im)*tmp2;
+      tmp1 = ((*udagger)[a][b]).re;
+      tmp2 = ((*udagger)[a][b]).im;
+      ((*udagger)[a][b]).re = exp(-chem_pot_re)*cos(chem_pot_im)*tmp1;
+      ((*udagger)[a][b]).im = -exp(-chem_pot_re)*sin(chem_pot_im)*tmp2;
+    }
+  }
+#endif
+  return;
+}
+  

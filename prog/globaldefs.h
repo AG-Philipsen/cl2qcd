@@ -39,5 +39,7 @@
 
 #define su2_entries 4
 
+#define NUMTHREADS 1
+
 
 #endif

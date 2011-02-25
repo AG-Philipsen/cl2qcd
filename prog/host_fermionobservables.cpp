@@ -1,6 +1,7 @@
 #include "host_fermionobservables.h"
 
-hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, int cgmax){
+//CP: LZ should make changes here...
+hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){
 
   hmc_spinor_field in[SPINORFIELDSIZE];
   for(int t=0; t<NTIME; t++) {
@@ -32,7 +33,7 @@ hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_flo
 
   for(int k=0; k<NC*NSPIN; k++) {
     create_point_source(b,k,0,0,kappa,mu,gaugefield);
-    solver(in, phi, b, gaugefield, kappa, mu, theta, cgmax);
+    solver(in, phi, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
 
     for(int timepos = 0; timepos<NTIME; timepos++) {
       for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {

@@ -6,13 +6,11 @@
 #include <CL/cl.h>
 #endif
 
-//typedef double hmc_float;
 #ifdef _USEDOUBLEPREC_
 typedef double hmc_float;
 #else
 typedef float hmc_float;
 #endif
-
 
 #ifdef _INKERNEL_
 __constant hmc_float hmc_one_f = 1.0f;
@@ -31,14 +29,6 @@ struct hmc_complex {
   hmc_float im;
 };
 #endif
-
-#ifndef _INKERNEL_
-//CP: old random thing
-// typedef cl_uint4 hmc_ocl_ran;
-typedef cl_ulong4 hmc_ocl_ran;
-typedef hmc_ocl_ran hmc_rndarray[VOL4D/2];
-#endif
-
 
 #ifdef _INKERNEL_
 __constant hmc_complex hmc_complex_one={1., 0.};
@@ -96,6 +86,18 @@ double const epssquare=1e-12;
 int const use_eo = 1;
 #endif
 
+//CP: this needs optimization
+const size_t local_work_size  = NUMTHREADS;
+const size_t global_work_size = NUMTHREADS;
 
+#ifndef _INKERNEL_
+typedef cl_ulong4 hmc_ocl_ran;
+typedef hmc_ocl_ran hmc_rndarray[NUMTHREADS];
+#endif  
 
 #endif
+
+
+ 
+
+  

@@ -1,33 +1,4 @@
-
-
-
-//spinor operations
-void su3matrix_times_colorvector(hmc_ocl_su3matrix* u, hmc_color_vector* in, hmc_color_vector* out){
-#ifdef _RECONSTRUCT_TWELVE_
-  for(int a=0; a<NC-1; a++) {
-    out[a] = hmc_complex_zero;
-    for(int b=0; b<NC; b++) {
-      hmc_complex tmp = complexmult(&((*u)[a+(NC-1)*b]),&(in[b]));
-      complexaccumulate(&out[a],&tmp);
-    }
-  }
-  out[2] = hmc_complex_zero;
-  for(int b=0; b<NC; b++) {
-    hmc_complex rec = reconstruct_su3(u,b);
-    hmc_complex tmp = complexmult(&rec,&(in[b]));
-    complexaccumulate(&out[2],&tmp);
-  }
-#else
-  for(int a=0; a<NC; a++) {
-    out[a] = hmc_complex_zero;
-    for(int b=0; b<NC; b++) {
-      hmc_complex tmp = complexmult(&((u)[a + NC*b]),&(in[b]));
-      complexaccumulate(&(out[a]),&tmp);
-    }
-  }
-#endif
-  return;
-}
+//opencl_operations_spinor
 
 void set_zero_spinor(hmc_spinor_field *field) {
   for (int n=0; n<SPINORFIELDSIZE; n++) {
@@ -73,139 +44,30 @@ void fill_with_one(hmc_spinor_field *field, int spacepos, int timepos, int alpha
   return;
 }
 
-
-//eoprec operations
-
-void convert_to_eoprec(hmc_eoprec_spinor_field* even, hmc_eoprec_spinor_field* odd, hmc_spinor_field* in){
-  int spacepos, timepos;
-  for(int n=0; n<VOL4D/2; n++) {
-    for(int alpha=0; alpha<NSPIN; alpha++) {
-      for(int color=0; color<NC; color++) {
-	get_even_site(n, &spacepos, &timepos);
-	even[eoprec_spinor_field_element(alpha,color,n)] = in[spinor_field_element(alpha,color,spacepos,timepos)];
-	get_odd_site(n, &spacepos, &timepos);
-	odd[eoprec_spinor_field_element(alpha,color,n)] = in[spinor_field_element(alpha,color,spacepos,timepos)];
-      }
+void su3matrix_times_colorvector(hmc_ocl_su3matrix* u, hmc_color_vector* in, hmc_color_vector* out){
+#ifdef _RECONSTRUCT_TWELVE_
+  for(int a=0; a<NC-1; a++) {
+    out[a] = hmc_complex_zero;
+    for(int b=0; b<NC; b++) {
+      hmc_complex tmp = complexmult(&((*u)[ocl_su3matrix_element(a,b)]),&(in[b]));
+      complexaccumulate(&out[a],&tmp);
     }
   }
-  return;
-}
-
-void convert_from_eoprec(hmc_eoprec_spinor_field* even, hmc_eoprec_spinor_field* odd, hmc_spinor_field* out){
-  int spacepos, timepos;
-  for(int n=0; n<VOL4D/2; n++) {
-    for(int alpha=0; alpha<NSPIN; alpha++) {
-      for(int color=0; color<NC; color++) {
-        get_even_site(n, &spacepos, &timepos);
-        out[spinor_field_element(alpha,color,spacepos,timepos)] = even[eoprec_spinor_field_element(alpha,color,n)];
-	get_odd_site(n, &spacepos, &timepos);
-	out[spinor_field_element(alpha,color,spacepos,timepos)] = odd[eoprec_spinor_field_element(alpha,color,n)];
-      }
+  out[2] = hmc_complex_zero;
+  for(int b=0; b<NC; b++) {
+    hmc_complex rec = reconstruct_su3(u,b);
+    hmc_complex tmp = complexmult(&rec,&(in[b]));
+    complexaccumulate(&out[2],&tmp);
+  }
+#else
+  for(int a=0; a<NC; a++) {
+    out[a] = hmc_complex_zero;
+    for(int b=0; b<NC; b++) {
+      hmc_complex tmp = complexmult(&((u)[ocl_su3matrix_element(a,b)]),&(in[b]));
+      complexaccumulate(&(out[a]),&tmp);
     }
   }
-  return;
-}
-
-void convert_to_kappa_format(__global hmc_spinor_field* inout,hmc_float kappa){
-  for(int n=0; n<SPINORFIELDSIZE; n++) {
-    inout[n].re *= sqrt(2.*kappa);
-    inout[n].im *= sqrt(2.*kappa);
-  }
-  return;
-}
-
-void convert_to_kappa_format_eoprec(__global hmc_eoprec_spinor_field* inout,hmc_float kappa){
-  for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
-    inout[n].re *= sqrt(2.*kappa);
-    inout[n].im *= sqrt(2.*kappa);
-  }
-  return;
-}
-
-void convert_from_kappa_format(__global hmc_spinor_field* in, __global hmc_spinor_field * out,hmc_float kappa){
-  for(int n=0; n<SPINORFIELDSIZE; n++) {
-    out[n].re = (in[n].re)/sqrt(2.*kappa);
-    out[n].im = (in[n].im)/sqrt(2.*kappa);
-  }
-  return;
-}
-
-void convert_from_kappa_format_eoprec(__global hmc_eoprec_spinor_field* in, __global hmc_eoprec_spinor_field * out, hmc_float kappa){
-  for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
-    out[n].re = (in[n].re)/sqrt(2.*kappa);
-    out[n].im = (in[n].im)/sqrt(2.*kappa);
-  }
-  return;
-}
-
-
-hmc_float global_squarenorm_eoprec(hmc_eoprec_spinor_field *in) {
-  hmc_float sum=0;
-  for (int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
-    sum += in[n].re*in[n].re + in[n].im*in[n].im;
-  }
-  return sum;
-}
-
-hmc_complex scalar_product_eoprec(hmc_eoprec_spinor_field* a, hmc_eoprec_spinor_field* b){
-  // (a,b) = sum_k conj(a_k)*b_k
-  hmc_complex res;
-  res.re=0;
-  res.im=0;
-  for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
-    res.re += a[n].re*b[n].re + a[n].im*b[n].im;
-    res.im += a[n].re*b[n].im - a[n].im*b[n].re;
-  }
-  return res;
-}
-
-hmc_complex scalar_product(hmc_spinor_field* a, hmc_spinor_field* b){
-  // (a,b) = sum_k conj(a_k)*b_k
-  hmc_complex res;
-  res.re=0;
-  res.im=0;
-  for(int n=0; n<SPINORFIELDSIZE; n++) {
-    res.re += a[n].re*b[n].re + a[n].im*b[n].im;
-    res.im += a[n].re*b[n].im - a[n].im*b[n].re;
-  }
-//   if((res.re != res.re) && (res.im != res.im)) 
-//     printf("%f, %f\n", res.re, res.im);
-  return res;
-}
-
-void get_spinor_from_eoprec_field(hmc_eoprec_spinor_field* in, hmc_spinor* out, int n_eoprec){
-  for(int alpha=0; alpha<NSPIN; alpha++) {
-    for(int color=0; color<NC; color++) {
-      out[spinor_element(alpha,color)] = in[eoprec_spinor_field_element(alpha,color,n_eoprec)];
-    }
-  }
-  return;
-}
-
-void put_spinor_to_eoprec_field(hmc_spinor* in, hmc_eoprec_spinor_field* out, int n_eoprec){
-  for(int alpha=0; alpha<NSPIN; alpha++) {
-    for(int color=0; color<NC; color++) {
-      out[eoprec_spinor_field_element(alpha,color,n_eoprec)]=in[spinor_element(alpha,color)];
-    }
-  }
-  return;
-}
-
-void get_spinor_from_field(hmc_spinor_field* in, hmc_spinor* out, int n, int t){
-  for(int alpha=0; alpha<NSPIN; alpha++) {
-    for(int color=0; color<NC; color++) {
-      out[spinor_element(alpha,color)] = in[spinor_field_element(alpha,color,n,t)];
-    }
-  }
-  return;
-}
-
-void put_spinor_to_field(hmc_spinor* in, hmc_spinor_field* out, int n, int t){
-  for(int alpha=0; alpha<NSPIN; alpha++) {
-    for(int color=0; color<NC; color++) {
-      out[spinor_field_element(alpha,color,n,t)]=in[spinor_element(alpha,color)];
-    }
-  }
+#endif
   return;
 }
 
@@ -432,18 +294,136 @@ void su3matrix_times_spinor(hmc_ocl_su3matrix* u, hmc_spinor* in, hmc_spinor* ou
   return;
 }
 
-
-void spinor_apply_bc(hmc_spinor * in, hmc_float theta){
-  for(int n = 0; n<SPINORSIZE; n++){
-    hmc_float tmp1 = in[n].re;
-    hmc_float tmp2 = in[n].im;
-    in[n].re = cos(theta)*tmp1 - sin(theta)*tmp2;
-    in[n].im = sin(theta)*tmp1 + cos(theta)*tmp2;
+//eoprec operations
+void convert_to_eoprec(hmc_eoprec_spinor_field* even, hmc_eoprec_spinor_field* odd, hmc_spinor_field* in){
+  int spacepos, timepos;
+  for(int n=0; n<VOL4D/2; n++) {
+    for(int alpha=0; alpha<NSPIN; alpha++) {
+      for(int color=0; color<NC; color++) {
+	get_even_site(n, &spacepos, &timepos);
+	even[eoprec_spinor_field_element(alpha,color,n)] = in[spinor_field_element(alpha,color,spacepos,timepos)];
+	get_odd_site(n, &spacepos, &timepos);
+	odd[eoprec_spinor_field_element(alpha,color,n)] = in[spinor_field_element(alpha,color,spacepos,timepos)];
+      }
+    }
   }
-  return; 
+  return;
 }
 
-//new stuff
+void convert_from_eoprec(hmc_eoprec_spinor_field* even, hmc_eoprec_spinor_field* odd, hmc_spinor_field* out){
+  int spacepos, timepos;
+  for(int n=0; n<VOL4D/2; n++) {
+    for(int alpha=0; alpha<NSPIN; alpha++) {
+      for(int color=0; color<NC; color++) {
+        get_even_site(n, &spacepos, &timepos);
+        out[spinor_field_element(alpha,color,spacepos,timepos)] = even[eoprec_spinor_field_element(alpha,color,n)];
+	get_odd_site(n, &spacepos, &timepos);
+	out[spinor_field_element(alpha,color,spacepos,timepos)] = odd[eoprec_spinor_field_element(alpha,color,n)];
+      }
+    }
+  }
+  return;
+}
+
+void convert_to_kappa_format(__global hmc_spinor_field* inout,hmc_float kappa){
+  for(int n=0; n<SPINORFIELDSIZE; n++) {
+    inout[n].re *= sqrt(2.*kappa);
+    inout[n].im *= sqrt(2.*kappa);
+  }
+  return;
+}
+
+void convert_to_kappa_format_eoprec(__global hmc_eoprec_spinor_field* inout,hmc_float kappa){
+  for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
+    inout[n].re *= sqrt(2.*kappa);
+    inout[n].im *= sqrt(2.*kappa);
+  }
+  return;
+}
+
+void convert_from_kappa_format(__global hmc_spinor_field* in, __global hmc_spinor_field * out,hmc_float kappa){
+  for(int n=0; n<SPINORFIELDSIZE; n++) {
+    out[n].re = (in[n].re)/sqrt(2.*kappa);
+    out[n].im = (in[n].im)/sqrt(2.*kappa);
+  }
+  return;
+}
+
+void convert_from_kappa_format_eoprec(__global hmc_eoprec_spinor_field* in, __global hmc_eoprec_spinor_field * out, hmc_float kappa){
+  for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
+    out[n].re = (in[n].re)/sqrt(2.*kappa);
+    out[n].im = (in[n].im)/sqrt(2.*kappa);
+  }
+  return;
+}
+
+hmc_float global_squarenorm_eoprec(hmc_eoprec_spinor_field *in) {
+  hmc_float sum=0;
+  for (int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
+    sum += in[n].re*in[n].re + in[n].im*in[n].im;
+  }
+  return sum;
+}
+
+hmc_complex scalar_product_eoprec(hmc_eoprec_spinor_field* a, hmc_eoprec_spinor_field* b){
+  // (a,b) = sum_k conj(a_k)*b_k
+  hmc_complex res;
+  res.re=0;
+  res.im=0;
+  for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
+    res.re += a[n].re*b[n].re + a[n].im*b[n].im;
+    res.im += a[n].re*b[n].im - a[n].im*b[n].re;
+  }
+  return res;
+}
+
+hmc_complex scalar_product(hmc_spinor_field* a, hmc_spinor_field* b){
+  // (a,b) = sum_k conj(a_k)*b_k
+  hmc_complex res;
+  res.re=0;
+  res.im=0;
+  for(int n=0; n<SPINORFIELDSIZE; n++) {
+    res.re += a[n].re*b[n].re + a[n].im*b[n].im;
+    res.im += a[n].re*b[n].im - a[n].im*b[n].re;
+  }
+  return res;
+}
+
+void get_spinor_from_eoprec_field(hmc_eoprec_spinor_field* in, hmc_spinor* out, int n_eoprec){
+  for(int alpha=0; alpha<NSPIN; alpha++) {
+    for(int color=0; color<NC; color++) {
+      out[spinor_element(alpha,color)] = in[eoprec_spinor_field_element(alpha,color,n_eoprec)];
+    }
+  }
+  return;
+}
+
+void put_spinor_to_eoprec_field(hmc_spinor* in, hmc_eoprec_spinor_field* out, int n_eoprec){
+  for(int alpha=0; alpha<NSPIN; alpha++) {
+    for(int color=0; color<NC; color++) {
+      out[eoprec_spinor_field_element(alpha,color,n_eoprec)]=in[spinor_element(alpha,color)];
+    }
+  }
+  return;
+}
+
+void get_spinor_from_field(hmc_spinor_field* in, hmc_spinor* out, int n, int t){
+  for(int alpha=0; alpha<NSPIN; alpha++) {
+    for(int color=0; color<NC; color++) {
+      out[spinor_element(alpha,color)] = in[spinor_field_element(alpha,color,n,t)];
+    }
+  }
+  return;
+}
+
+void put_spinor_to_field(hmc_spinor* in, hmc_spinor_field* out, int n, int t){
+  for(int alpha=0; alpha<NSPIN; alpha++) {
+    for(int color=0; color<NC; color++) {
+      out[spinor_field_element(alpha,color,n,t)]=in[spinor_element(alpha,color)];
+    }
+  }
+  return;
+}
 
 void copy_spinor(hmc_complex * in, hmc_complex * out){
   for (int n=0; n<SPINORFIELDSIZE; n++) {
@@ -480,9 +460,28 @@ void saxpy(hmc_spinor_field * x, hmc_spinor_field * y, hmc_complex * alpha, hmc_
   return;
 }
 
+void saxpy_eoprec(hmc_eoprec_spinor_field * x, hmc_eoprec_spinor_field * y, hmc_complex * alpha, hmc_eoprec_spinor_field * out){
+  for (int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
+    hmc_complex tmp1 = complexmult(alpha,&x[n]);
+    ((out)[n]).re = -(tmp1).re + y[n].re;
+    ((out)[n]).im = -(tmp1).im + y[n].im;
+  }
+  return;
+}
+
 //alpha*x + beta*y + z
 void saxsbypz(hmc_spinor_field * x, hmc_spinor_field * y,  hmc_spinor_field * z, hmc_complex * alpha, hmc_complex * beta, hmc_spinor_field * out){
   for (int n=0; n<SPINORFIELDSIZE; n++) {
+    hmc_complex tmp1 = complexmult(alpha,&x[n]);
+    hmc_complex tmp2 = complexmult(beta,&y[n]);
+    ((out)[n]).re = (tmp1).re + (tmp2).re + z[n].re;
+    ((out)[n]).im = (tmp1).im + (tmp2).im + z[n].im;
+  }
+  return;
+}
+
+void saxsbypz_eoprec(hmc_eoprec_spinor_field * x, hmc_eoprec_spinor_field * y,  hmc_eoprec_spinor_field * z, hmc_complex * alpha, hmc_complex * beta, hmc_eoprec_spinor_field * out){
+  for (int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
     hmc_complex tmp1 = complexmult(alpha,&x[n]);
     hmc_complex tmp2 = complexmult(beta,&y[n]);
     ((out)[n]).re = (tmp1).re + (tmp2).re + z[n].re;
@@ -500,5 +499,22 @@ void create_point_source(hmc_spinor_field* b, int i, int spacepos, int timepos, 
   b[spinor_field_element(spin,color,spacepos,timepos)].re = sqrt(2.*kappa);
 
   return;
+}
+
+//!!CP: LZ should update this...
+void create_point_source_eoprec(hmc_eoprec_spinor_field* be,hmc_eoprec_spinor_field* bo,int i,int spacepos,int timepos,hmc_float kappa, hmc_float mu, hmc_float theta,hmc_float chem_pot_re, hmc_float chem_pot_im, __global hmc_ocl_gaugefield* gaugefield){
+  
+  
+  return;
+}
+
+void spinor_apply_bc(hmc_spinor * in, hmc_float theta){
+  for(int n = 0; n<SPINORSIZE; n++){
+    hmc_float tmp1 = in[n].re;
+    hmc_float tmp2 = in[n].im;
+    in[n].re = cos(theta)*tmp1 - sin(theta)*tmp2;
+    in[n].im = sin(theta)*tmp1 + cos(theta)*tmp2;
+  }
+  return; 
 }
 

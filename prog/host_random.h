@@ -7,7 +7,9 @@
 #include "hmcerrs.h"
 #include "globaldefs.h"
 #include "types.h"
-#include "host_operations.h"
+#include "host_operations_complex.h"
+#include "host_operations_gaugefield.h"
+#include "host_operations_spinor.h"
 #include "host_geometry.h"
 #include "host_use_timer.h"
 
@@ -15,14 +17,9 @@
 typedef unsigned long long int Ullong;
 typedef unsigned int Uint;
 
-//Seed for Random, should this be changed???
 const unsigned long long int seed = 500000;
 
-
-/*
-Aus Numerical recipes
-*/
-
+//taken from Numerical recipes
 struct Random {
 	Ullong u,v,w;
 	Random(Ullong j) : v(4101842887655102017LL), w(1) {
@@ -43,11 +40,10 @@ struct Random {
 
 extern Random rnd;
 
-//Gibt drei Zufallszahlen 1,2,3
+//get 1,2,3 in random order
 void random_1_2_3 (int rand[3]);
-
-void init_random_seeds(Random random, hmc_ocl_ran * hmc_rndarray, const int NUM, usetimer * inittime);
-
+//init array with seeds for device
+void init_random_seeds(Random random, hmc_ocl_ran * hmc_rndarray, usetimer * inittime);
 // Construct new SU2 matrix using improved alg by Kennedy Pendleton
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha);
 

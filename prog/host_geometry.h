@@ -16,23 +16,15 @@ int get_n_eoprec(int timepos, int spacepos);
 //switch between (x,y,z) <-> nspace=0,...,VOLSPACE-1
 int get_nspace(int* coord);
 int get_spacecoord(int nspace, int dir);
-
+//get spatial neighbors
 int get_neighbor(int nspace, int dir);
 int get_lower_neighbor(int nspace, int dir);
-
-extern int* nspace_from_even_index;
-extern int* ntime_from_even_index;
-extern int* nspace_from_odd_index;
-extern int* ntime_from_odd_index;
-int get_ntime_from_eoprecindex(int n, int which);
-int get_nspace_from_eoprecindex(int n, int which);
-
-//Checkerboard:
+//Checkerboard: get real coordinates from EVEN/ODD-index
 void get_even_site(int idx, int * out_space, int * out_t);
 void get_odd_site(int idx, int * out_space, int * out_t);
 
 int get_global_pos(int spacepos, int t);
-
+//get gaugefield element from long array
 int ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t);
 
 //Spinor functions

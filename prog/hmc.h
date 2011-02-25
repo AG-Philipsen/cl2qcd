@@ -12,7 +12,9 @@
 #include "globaldefs.h"
 #include "hmcerrs.h"
 #include "types.h"
-#include "host_operations.h"
+#include "host_operations_complex.h"
+#include "host_operations_gaugefield.h"
+#include "host_operations_spinor.h"
 #include "host_geometry.h"
 #include "host_testing.h"
 #include "host_gaugeobservables.h"
@@ -34,9 +36,10 @@ string const version = "0.1";
 
 using namespace std;
 
-// global random number generator
+//global random number generator
 Random rnd (seed);
 
+//couple of timers
 usetimer totaltime;
 usetimer inittime;
 usetimer polytime;
@@ -44,12 +47,6 @@ usetimer plaqtime;
 usetimer updatetime;
 usetimer overrelaxtime;
 usetimer copytime;
-
-int* nspace_from_even_index;
-int* ntime_from_even_index;
-int* nspace_from_odd_index;
-int* ntime_from_odd_index;
-
 
 //to save gaugeobservables
 hmc_float plaq, splaq, tplaq;
