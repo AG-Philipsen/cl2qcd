@@ -24,6 +24,9 @@ int main(int argc, char* argv[]) {
 
   init_gaugefield(gaugefield,&parameters,&inittime);
   init_random_seeds(rnd, rndarray, &inittime);
+
+  //testing_correlator(gaugefield,&parameters);
+  //return 0;
    
   opencl gpu(CL_DEVICE_TYPE_CPU, &inittime);
 

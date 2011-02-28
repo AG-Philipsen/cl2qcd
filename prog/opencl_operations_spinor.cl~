@@ -433,14 +433,6 @@ void copy_spinor(hmc_complex * in, hmc_complex * out){
   return;
 }
 
-void copy_spinorfield(__global hmc_complex * in,__global  hmc_complex * out){
-  for (int n=0; n<SPINORFIELDSIZE; n++) {
-    out[n].re = in[n].re;
-    out[n].im = in[n].im;
-  }
-  return;
-}
-
 void get_spinor(__global hmc_complex * in, hmc_complex * out){
   for (int n=0; n<SPINORFIELDSIZE; n++) {
     out[n].re = in[n].re;

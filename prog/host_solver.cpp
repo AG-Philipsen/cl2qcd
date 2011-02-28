@@ -4,7 +4,7 @@
 
 hmc_error solver(hmc_spinor_field* in, hmc_spinor_field* out, hmc_spinor_field* b, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){
   //CP: in the end this should be done with a compiler option
-  if(use_eo){
+  if(!use_eo){
     hmc_eoprec_spinor_field even[EOPREC_SPINORFIELDSIZE];
     hmc_eoprec_spinor_field odd[EOPREC_SPINORFIELDSIZE];
     hmc_eoprec_spinor_field newodd[EOPREC_SPINORFIELDSIZE];
@@ -79,7 +79,7 @@ hmc_error bicgstab(hmc_spinor_field* inout, hmc_eoprec_spinor_field* source, hmc
       set_zero_spinor(v);
       set_zero_spinor(p);
       
-      printf("true residue squared: %e\n",global_squarenorm(rn));
+      //printf("true residue squared: %e\n",global_squarenorm(rn));
     }
 
     rho_next = scalar_product(rhat,rn);
@@ -116,7 +116,7 @@ hmc_error bicgstab(hmc_spinor_field* inout, hmc_eoprec_spinor_field* source, hmc
       M(inout,aux,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
       saxpy(aux, source, &one, aux);
       hmc_float trueresid = global_squarenorm(aux);
-      printf("%d\t%e\t%e\n",iter,resid,trueresid);
+      //printf("%d\t%e\t%e\n",iter,resid,trueresid);
 
       if(trueresid<epssquare) return HMC_SUCCESS;
 

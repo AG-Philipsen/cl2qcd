@@ -1,6 +1,6 @@
 PROGRAM = hmc
 VERSION=0.1
-PROGNAME = OCLhmc.v$(VERSION)
+PROGNAME = hmc.v$(VERSION)
 
 CXX = g++
 HMCPATH=/home/pinke/hmc/prog
@@ -13,10 +13,10 @@ XMLPATH=/usr/include/libxml2
 #ATISDKPATH=/home/zeidlewicz/bin/ati-stream-sdk-v2.3-lnx64
 
 #gpu-dev01:
-#OCLSOURCEDIR="\"/home/pinke/hmc/prog"\"
-#LIMEPATH=/home/pinke/lime/lime/
-#XMLPATH=/home/pinke/libxml2/libxml2
-#ATISDKPATH=/home/pinke/ati-stream-sdk-v2.3-lnx64
+OCLSOURCEDIR="\"/home/pinke/hmc/prog"\"
+LIMEPATH=/home/pinke/lime/lime/
+XMLPATH=/home/pinke/libxml2/libxml2
+ATISDKPATH=/home/pinke/ati-stream-sdk-v2.3-lnx64
 
 DEFDOUBLE=-D_USEDOUBLEPREC_
 #DEFREC=-D_RECONSTRUCT_TWELVE_
@@ -28,7 +28,7 @@ ATISDKINCDIR=$(ATISDKPATH)/include
 ATISDKLIBDIR=$(ATISDKPATH)/lib/x86_64/
 XMLINCDIR=$(XMLPATH)
 #gpudev01:
-#XMLINCDIR=$(XMLPATH)/include/libxml2
+XMLINCDIR=$(XMLPATH)/include/libxml2
 XMLLIBDIR=$(XMLPATH)/lib
 DEFS=$(DEFDOUBLE) $(DEFREC) $(DEFOMP) -DSOURCEDIR=$(OCLSOURCEDIR)
 INCLUDES = -I$(LIMEINCDIR) -I$(XMLINCDIR) -I$(ATISDKINCDIR) -I$(HMCPATH)/host_operations

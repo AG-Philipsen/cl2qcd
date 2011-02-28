@@ -13,4 +13,5 @@ opencl_gaugeobservables.cl: reduction: how to do "cl_finish"-alike??
 			: check polyakov loop again!!
 opencl.cpp: for the reduction of gaugeobservables the global_work_size must be known at best at compiletime -> different init of cl_mems (see comments there)
 	: change opencl::gaugeobservables accordingly
+opencl_solver: work out global spinorfield-thing, this also affects some spinor-functions
 

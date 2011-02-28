@@ -293,11 +293,19 @@ void testing_heatbath(hmc_ocl_su3matrix * in, hmc_ocl_staplematrix * staple_in, 
   return;
 }
 
-__kernel void test(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int nsteps,__global hmc_float* check,__global hmc_ocl_gaugefield* gaugefield2, __global hmc_ocl_ran * rnd, __global int * random_field_int, __global float *  random_field_float, __global hmc_float * su2mat, const int size_1, const int size_2, __global hmc_ocl_su3matrix * heatbath_link_in, __global hmc_ocl_su3matrix * heatbath_staple_in, __global hmc_ocl_su3matrix * heatbath_link_out, __global hmc_float * heatbath_rnd_array_in,__global int * heatbath_cter, __global hmc_spinor_field * solver_spinor_in, __global hmc_spinor_field * solver_spinor_out, __global hmc_complex * solver_correlator)
+__kernel void test(
+__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int nsteps,__global hmc_float* check
+//random_test-args
+, __global hmc_ocl_ran * rnd, __global int * random_field_int, __global float * random_field_float, __global hmc_float * su2mat, const int size_1, const int size_2
+//heatbath_test-args
+ ,__global hmc_ocl_su3matrix * heatbath_link_in, __global hmc_ocl_su3matrix * heatbath_staple_in, __global hmc_ocl_su3matrix * heatbath_link_out, __global hmc_float * heatbath_rnd_array_in,__global int * heatbath_cter
+//solver_test-args
+,__global hmc_ocl_gaugefield* gaugefield2, __global hmc_spinor_field * solver_spinor_in, __global hmc_spinor_field * solver_spinor_out, __global hmc_complex * solver_correlator
+)
 {
-  
   int id = get_global_id(0);
-  
+  if(id >0) return;
+  else{
   //test by LZ
   hmc_complex testsum;
   testsum.re = 0;
@@ -360,6 +368,7 @@ __kernel void test(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta
 
 
   //CP: random number test
+  
   int order[3]; 
   for(int i=0;i<size_1/3;i++){
   	random_1_2_3(order, &rnd[id]);
@@ -382,6 +391,7 @@ __kernel void test(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta
   
   //CP: heatbath test
   //take a link and its staplematrix after 200 host-iterations and run the host code and the device code on it
+
   hmc_ocl_su3matrix out_tmp[SU3SIZE];
   hmc_ocl_su3matrix in_tmp[SU3SIZE];
   hmc_ocl_staplematrix staple_tmp[STAPLEMATRIXSIZE];
@@ -411,10 +421,11 @@ __kernel void test(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta
     (heatbath_link_out[i]).im = (out_tmp[i]).im;
   }
   heatbath_cter[0] = cter;
-  
+
   //CP: solver test: invert a small matrix on a cold-gaugeconfiguration and calculate the pion propagator
-  
+
   simple_correlator(solver_spinor_in, solver_spinor_out, gaugefield2, solver_correlator, 0.125, 0.06, 0., 1000);
-  
+
   return;
+  } //else
 }

@@ -243,7 +243,6 @@ void bicgstab(__global hmc_spinor_field* inout, hmc_eoprec_spinor_field* source,
   
   //CP: copy spinor back to global mem, this musst be avoided in the end
   put_spinor(inout_tmp, inout);
-
   return;
 }
 

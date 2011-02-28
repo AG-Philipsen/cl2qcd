@@ -15,9 +15,8 @@
 #include "host_operations_gaugefield.h"
 #include "host_operations_spinor.h"
 
-//extern int const iter_refresh;
 extern int const iter_refresh;
-extern hmc_float const epssquare;
+extern double const epssquare;
 
 extern int const use_eo;
 

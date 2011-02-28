@@ -13,13 +13,11 @@ void simple_correlator(__global hmc_spinor_field * in, __global hmc_spinor_field
 
   for(int k=0; k<NC*NSPIN; k++) {
     create_point_source(b,k,0,0,kappa,mu,gaugefield);
-/*
 for(int i = 0; i<SPINORFIELDSIZE; i++){
-b[i].re= 0;
-b[i].im = 0.;
+b[i].re= 1;
+b[i].im = 1.;
 }
-*/
-    solver(in, spinor_out, b, gaugefield, kappa, mu, theta, 10000);
+    solver(in, spinor_out, b, gaugefield, kappa, mu, theta, cgmax);
 
     for(int timepos = 0; timepos<NTIME; timepos++) {
       for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
@@ -31,10 +29,9 @@ b[i].im = 0.;
 	    hmc_complex tmp = spinor_out[n];
 	    hmc_complex ctmp = complexconj(&tmp);
 	    hmc_complex incr = complexmult(&ctmp,&tmp);
-	//    if(timepos == 0 && spacepos == 0){
- 	    out[z].re += incr.re;
+	    out[z].re += incr.re;
  	    out[z].im += incr.im;
-//}
+
 	  }
 	}
       }

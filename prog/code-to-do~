@@ -9,8 +9,9 @@ opencl_update_heatbath.cl:   perform update: perhaps one can define another acc-
 			: save some operations at the projection??
 			: replace operations with shorter ones and delete comments there
 			: simplify calc_staple
-opencl_gaugeobservables.cl: proper reduction must be implemented (-> MB??)
+opencl_gaugeobservables.cl: reduction: how to do "cl_finish"-alike??
 			: check polyakov loop again!!
 opencl.cpp: for the reduction of gaugeobservables the global_work_size must be known at best at compiletime -> different init of cl_mems (see comments there)
 	: change opencl::gaugeobservables accordingly
+opencl_solver: work out global spinorfield-thing
 

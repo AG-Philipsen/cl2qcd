@@ -11,7 +11,7 @@
 
 //it could be a good idea to define Nt and Ns at compile time
 //usually you stick to one volume for quite a while anyways...
-#define NSPACE 12
+#define NSPACE 4
 #define NTIME 4
 #define VOLSPACE NSPACE*NSPACE*NSPACE
 #define VOL4D VOLSPACE*NTIME

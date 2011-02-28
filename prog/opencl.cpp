@@ -122,7 +122,8 @@ hmc_error opencl::init(cl_device_type wanted_device_type, usetimer* timer){
 
   cout<<"Build program..."<<endl;
   stringstream collect_options;
-  collect_options<<"-D_INKERNEL_ -DNSPACE="<<NSPACE<<" -DNTIME="<<NTIME<<" -DVOLSPACE="<<VOLSPACE;
+  collect_options<<"-D_INKERNEL_ -DNSPACE="<<NSPACE<<" -DNTIME="<<NTIME<<" -DVOLSPACE="<<VOLSPACE <<" -DSPINORSIZE="<<SPINORSIZE <<" -DHALFSPINORSIZE="<<HALFSPINORSIZE <<" -DSPINORFIELDSIZE="<<SPINORFIELDSIZE <<" -DEOPREC_SPINORFIELDSIZE="<<EOPREC_SPINORFIELDSIZE;
+
 #ifdef _RECONSTRUCT_TWELVE_
   collect_options<<" -D_RECONSTRUCT_TWELVE_";
 #endif
@@ -727,8 +728,9 @@ hmc_error opencl::testing(hmc_gaugefield * gaugefield){
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }  
-  
+    
   //CP: solver test
+  
   hmc_ocl_gaugefield* gfout = (hmc_ocl_gaugefield*) malloc(sizeof(hmc_gaugefield));
   copy_to_ocl_format(gfout, gaugefield);
   cl_mem clmem_gfout = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_gaugefield),0,&clerr);
@@ -736,7 +738,8 @@ hmc_error opencl::testing(hmc_gaugefield * gaugefield){
     cout<<"testing: create clmem_check-buffer failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clEnqueueWriteBuffer(queue,clmem_gfout,CL_TRUE,0,sizeof(gaugefield),gfout,0,0,NULL);
+  
+  clerr = clEnqueueWriteBuffer(queue,clmem_gfout,CL_TRUE,0,sizeof(hmc_gaugefield),gfout,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
@@ -760,11 +763,26 @@ hmc_error opencl::testing(hmc_gaugefield * gaugefield){
     solver_test_in[n].im /=norm;
   }
   
-  cl_mem clmem_solver_test_spinor_in = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_spinor_field),0,&clerr);;
-  cl_mem clmem_solver_test_spinor_out = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_spinor_field),0,&clerr);;
-  cl_mem clmem_solver_test_correlator = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_complex)*NSPACE,0,&clerr);;
- 
-  clerr = clEnqueueWriteBuffer(queue,clmem_solver_test_spinor_in,CL_TRUE,0,sizeof(hmc_spinor_field),solver_test_in,0,0,NULL);
+  int test_correlator_size = sizeof(hmc_complex)*NSPACE;
+  int test_spinorfield_size = sizeof(hmc_complex)*SPINORFIELDSIZE;
+
+  cl_mem clmem_solver_test_spinor_in = clCreateBuffer(context,CL_MEM_READ_WRITE,test_spinorfield_size,0,&clerr);;
+  if(clerr!=CL_SUCCESS) {
+    cout<<"testing: create clmem_check-buffer failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  cl_mem clmem_solver_test_spinor_out = clCreateBuffer(context,CL_MEM_READ_WRITE,test_spinorfield_size,0,&clerr);;
+  if(clerr!=CL_SUCCESS) {
+    cout<<"testing: create clmem_check-buffer failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  cl_mem clmem_solver_test_correlator = clCreateBuffer(context,CL_MEM_READ_WRITE,test_correlator_size,0,&clerr);;
+  if(clerr!=CL_SUCCESS) {
+    cout<<"testing: create clmem_check-buffer failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+
+  clerr = clEnqueueWriteBuffer(queue,clmem_solver_test_spinor_in,CL_TRUE,0,test_spinorfield_size,solver_test_in,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
@@ -792,62 +810,62 @@ hmc_error opencl::testing(hmc_gaugefield * gaugefield){
     cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(testkernel,4,sizeof(cl_mem),&clmem_gfout);
+  clerr = clSetKernelArg(testkernel,4,sizeof(cl_mem),&clmem_rndarray);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 4 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(testkernel,5,sizeof(cl_mem),&clmem_rndarray);
+  clerr = clSetKernelArg(testkernel,5,sizeof(cl_mem),&clmem_random_field_int);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 5 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(testkernel,6,sizeof(cl_mem),&clmem_random_field_int);
+  clerr = clSetKernelArg(testkernel,6,sizeof(cl_mem),&clmem_random_field_float);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 6 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(testkernel,7,sizeof(cl_mem),&clmem_random_field_float);
+  clerr = clSetKernelArg(testkernel,7,sizeof(cl_mem),&clmem_random_field_su2);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 7 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(testkernel,8,sizeof(cl_mem),&clmem_random_field_su2);
+  clerr = clSetKernelArg(testkernel,8,sizeof(int),&size_1);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 8 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(testkernel,9,sizeof(int),&size_1);
+  clerr = clSetKernelArg(testkernel,9,sizeof(int),&size_2);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 9 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(testkernel,10,sizeof(int),&size_2);
+  clerr = clSetKernelArg(testkernel,10,sizeof(cl_mem),&clmem_heatbath_test_link_in);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 10 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(testkernel,11,sizeof(cl_mem),&clmem_heatbath_test_link_in);
+  clerr = clSetKernelArg(testkernel,11,sizeof(cl_mem),&clmem_heatbath_test_staple_in);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 11 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(testkernel,12,sizeof(cl_mem),&clmem_heatbath_test_staple_in);
+  clerr = clSetKernelArg(testkernel,12,sizeof(cl_mem),&clmem_heatbath_test_link_out);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 12 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(testkernel,13,sizeof(cl_mem),&clmem_heatbath_test_link_out);
+  clerr = clSetKernelArg(testkernel,13,sizeof(cl_mem),&clmem_heatbath_test_rnd_array);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 13 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(testkernel,14,sizeof(cl_mem),&clmem_heatbath_test_rnd_array);
+  clerr = clSetKernelArg(testkernel,14,sizeof(cl_mem),&clmem_heatbath_test_cter);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 14 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(testkernel,15,sizeof(cl_mem),&clmem_heatbath_test_cter);
+  clerr = clSetKernelArg(testkernel,15,sizeof(cl_mem),&clmem_gfout);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 15 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -875,6 +893,7 @@ hmc_error opencl::testing(hmc_gaugefield * gaugefield){
   }
  
   //CP: random number test
+  
   int * random_int = (int*) malloc(sizeof(int)*size_1);
   float * random_float = (float*) malloc(sizeof(float)*size_2);
   hmc_float su2mat[4];
@@ -919,6 +938,7 @@ hmc_error opencl::testing(hmc_gaugefield * gaugefield){
   for(int i=0;i<size_2;i++){
     rnd_check_float += random_float[i];
   }
+  
   rnd_check_float/=size_2;
   cout << "\tcheck: " << rnd_check_float-0.5 << endl;
   cout << "\ttest su2mat:";
@@ -927,6 +947,7 @@ hmc_error opencl::testing(hmc_gaugefield * gaugefield){
 
   
   //CP: heatbath_test
+    
   clerr = clEnqueueReadBuffer(queue,clmem_heatbath_test_link_out,CL_TRUE,0,sizeof(hmc_complex)*9,tmp,0,NULL,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
@@ -949,23 +970,29 @@ hmc_error opencl::testing(hmc_gaugefield * gaugefield){
   
   //CP: solver test
   //print result 
+  
   hmc_complex solver_test_correlator[NSPACE];
-  clerr = clEnqueueReadBuffer(queue,clmem_solver_test_correlator,CL_TRUE,0,sizeof(hmc_complex)*NSPACE,&solver_test_correlator,0,NULL,NULL);
+  cout << "\ton the host the correlator is:" << endl;
+
+  hmc_gaugefield * host_gaugefield;
+  host_gaugefield = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+  set_gaugefield_cold(host_gaugefield);
+  simple_correlator(host_gaugefield, 0.125, 0.06, 0., 0., 0.,1000);
+
+  clerr = clEnqueueReadBuffer(queue,clmem_solver_test_correlator,CL_TRUE,0,test_correlator_size,&solver_test_correlator,0,NULL,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
   
-  
-  cout << "the correlator is: " << endl;
+  cout << "\tthe correlator is: " << endl;
   for(int z=0; z<NSPACE; z++) {
-    printf("%d\t(%e,%e)\n",z, solver_test_correlator[z].re, solver_test_correlator[z].im);
+    printf("\t%d\t(%e,%e)\n",z, solver_test_correlator[z].re, solver_test_correlator[z].im);
   }
   
   
   //CP: finish
   if(clReleaseMemObject(clmem_check)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  if(clReleaseMemObject(clmem_gfout)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_random_field_float)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_random_field_int)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_random_field_su2)!=CL_SUCCESS) exit(HMC_OCLERROR);
@@ -973,6 +1000,10 @@ hmc_error opencl::testing(hmc_gaugefield * gaugefield){
   if(clReleaseMemObject(clmem_heatbath_test_staple_in)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_heatbath_test_link_out)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_heatbath_test_cter)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_gfout)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_solver_test_spinor_in)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_solver_test_spinor_out)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_solver_test_correlator)!=CL_SUCCESS) exit(HMC_OCLERROR);
 
   free(gfout);
   
