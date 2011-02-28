@@ -1,21 +1,21 @@
 #include "host_writegaugefield.h"
+#include <assert.h>
 
-hmc_error make_binary_data_single(ildg_gaugefield * array, char * out, const int array_size, const int num_entries){
-  int length = sizeof(float);
+hmc_error make_binary_data_single(hmc_float * array, char * out, const int array_size, const size_t num_entries){
+  assert( num_entries == 4u * static_cast<size_t>(array_size) );
+  printf("allocating buffer");
   char * buf_tmp = new char[num_entries];
-  int i, j;
+  printf("allocated buffer");
   
   //save the array in a char-array, suppose it is one big array of array_size entries
-  for(i = 0; i<array_size; i++){
-    for(j = 0; j<length; j++){
-      buf_tmp[i*length + j] = ( ((char*) &(array[0])) [i*length + j]  );
-    }    
-  }
+  float * buf_float = reinterpret_cast<float*>( buf_tmp );
+  for(int i = 0; i<array_size; i++)
+      buf_float[i] = static_cast<float>( array[i] );
   
   //suppose the buffer out has exactly the right size as given by array_size
   if(!ENDIAN){
     printf("\tThe ENDIANNESS of the system is little, bytes must be reversed\n");
-    for (i=0; i<num_entries; i+=length){
+    for (size_t i=0; i<num_entries; i+=4){
       out[i]   = buf_tmp[i+3];
       out[i+1] = buf_tmp[i+2];
       out[i+2] = buf_tmp[i+1];
@@ -24,7 +24,7 @@ hmc_error make_binary_data_single(ildg_gaugefield * array, char * out, const int
   }
   else {
     printf("\tThe ENDIANNESS of the system is big, bytes must not be reversed\n");
-    for (i=0; i<num_entries; i++){
+    for (size_t i=0; i<num_entries; i++){
       out[i] = buf_tmp[i];
     }
   }
@@ -33,22 +33,19 @@ hmc_error make_binary_data_single(ildg_gaugefield * array, char * out, const int
   return HMC_SUCCESS;
 }
 
-hmc_error make_binary_data_double(ildg_gaugefield * array, char * out, const int array_size, const int num_entries){
-  int length = sizeof(double);
+hmc_error make_binary_data_double(hmc_float * array, char * out, const int array_size, const size_t num_entries){
+  assert( num_entries == 8u * static_cast<size_t>(array_size) );
   char * buf_tmp = new char[num_entries];
-  int i, j;
 
   //save the array in a char-array, suppose the array is one big array of array_size entries
-  for(i = 0; i<array_size; i++){
-    for(j = 0; j<length; j++){
-      buf_tmp[i*length + j] = ( ((char*) &(array[0])) [i*length + j]  );
-    }    
-  }
+  double * buf_double = reinterpret_cast<double*>( buf_tmp );
+  for(int i = 0; i<array_size; i++)
+      buf_double[i] = static_cast<double>( array[i] );
   
   //suppose the buffer out has exactly the right size as given by array_size
   if(!ENDIAN){
     printf("\tThe ENDIANNESS of the system is little, bytes must be reversed\n");
-    for (i=0; i<num_entries; i+=length){
+    for (size_t i=0; i<num_entries; i+=8){
       out[i]   = buf_tmp[i+7];
       out[i+1] = buf_tmp[i+6];
       out[i+2] = buf_tmp[i+5];
@@ -61,7 +58,7 @@ hmc_error make_binary_data_double(ildg_gaugefield * array, char * out, const int
   }
   else {
     printf("\tThe ENDIANNESS of the system is big, bytes must not be reversed\n");
-    for (i=0; i<num_entries; i++){
+    for (size_t i=0; i<num_entries; i++){
       out[i] = buf_tmp[i];
     }
   }
@@ -94,17 +91,19 @@ hmc_error write_gaugefield (
   time ( &rawtime );
   const char * date = ctime (&rawtime);
   
+  // TODO replace this whole block by something templated
   //get binary data
-  //here it is assumed that the argument prec and sizeof(hmc_float) are the same!!
-  int num_entries = sizeof(hmc_float)*array_size;
-
+  //here it must not be assumed that the argument prec and sizeof(hmc_float) are the same!!
+  size_t num_entries = (prec/8)*array_size;
+  printf("num_entries = %ld\n", num_entries);
   char * binary_data = new char[num_entries];
 
+  // TODO make sure the ildg_gaugefield is never padded
   if(prec == 64){
-    make_binary_data_double(array, binary_data, array_size, num_entries);
+    make_binary_data_double(reinterpret_cast<hmc_float*>(array), binary_data, array_size, num_entries);
   }
   else if (prec == 32){
-    make_binary_data_single(array, binary_data, array_size, num_entries);
+    make_binary_data_single(reinterpret_cast<hmc_float*>(array), binary_data, array_size, num_entries);
   }
   else return HMC_STDERR;
   

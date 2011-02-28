@@ -85,7 +85,6 @@ void calc_staple(__global hmc_ocl_gaugefield* field,__private hmc_ocl_staplematr
 }
 
 void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id){
-  
     hmc_ocl_su3matrix U[SU3SIZE];
     hmc_ocl_staplematrix W[STAPLEMATRIXSIZE];
     hmc_ocl_staplematrix staplematrix[STAPLEMATRIXSIZE];
