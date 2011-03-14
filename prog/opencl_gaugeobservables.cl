@@ -8,12 +8,12 @@ __kernel void plaquette(__global hmc_ocl_gaugefield * field,__global hmc_float *
 
   // this is an ugly workaround 'cuz there is no atomic_add for floats
   // FIXME replace by proper parallel reduction
-  if( id > 0 )
-	return;
+  if( id_tmp > 0 )	return;
+  
   (*plaq_out) = 0.0f;
   (*splaq) = 0.0f;
   (*tplaq) = 0.0f;
-  for( id = 0; id < get_global_size(0); ++id ) {
+//   for( id = 0; id < get_global_size(0); id++ ) {
 
   hmc_float plaq=0;
   hmc_float splaq_tmp=0;
@@ -23,71 +23,71 @@ __kernel void plaquette(__global hmc_ocl_gaugefield * field,__global hmc_float *
   hmc_ocl_su3matrix tmp[SU3SIZE]; 
   hmc_ocl_su3matrix prod[SU3SIZE];
 
-  for(id = id_tmp; id<VOLSPACE*NTIME/2; id+=size){
-    //calc even plaquette
-    get_even_site(id, &pos, &t);
-    for(int mu=0; mu<NDIM; mu++) {
-      for(int nu=0;nu<mu; nu++) {
-	get_su3matrix(prod,field,pos,t,mu);
-	if(mu==0) {
-	  int newt = (t+1)%NTIME;
-	  get_su3matrix(tmp,field,pos,newt,nu);
-	  } else {
-	      get_su3matrix(tmp,field,get_neighbor(pos,mu),t,nu);
-	  }
-	  accumulate_su3matrix_prod(prod,tmp);
-	  if(nu==0) {
-	    int newt = (t+1)%NTIME;
-	    get_su3matrix(tmp,field,pos,newt,mu);
-	  } else {
-	    get_su3matrix(tmp,field,get_neighbor(pos,nu),t,mu);
-	  }
-	  adjoin_su3matrix(tmp);
-	  accumulate_su3matrix_prod(prod,tmp);
-	  get_su3matrix(tmp,field,pos,t,nu);
-	  adjoin_su3matrix(tmp);
-	  accumulate_su3matrix_prod(prod,tmp);
-	  tmpfloat = trace_su3matrix(prod).re;
-	  plaq += tmpfloat;
-	  if(mu==0 || nu==0) {
-	    tplaq_tmp+=tmpfloat;
-	  } else {
-	    splaq_tmp+=tmpfloat;
-	  }
+  for(id = id_tmp; id<VOLSPACE*NTIME/2; id++){
+  	//calc even plaquette
+  	get_even_site(id, &pos, &t);
+  	for(int mu=0; mu<NDIM; mu++) {
+  		for(int nu=0;nu<mu; nu++) {
+				get_su3matrix(prod,field,pos,t,mu);
+				if(mu==0) {
+					int newt = (t+1)%NTIME;
+	  			get_su3matrix(tmp,field,pos,newt,nu);
+	  		} else {
+	      	get_su3matrix(tmp,field,get_neighbor(pos,mu),t,nu);
+	  		}
+	  		accumulate_su3matrix_prod(prod,tmp);
+	  		if(nu==0) {
+	    		int newt = (t+1)%NTIME;
+	    		get_su3matrix(tmp,field,pos,newt,mu);
+	  		} else {
+	    		get_su3matrix(tmp,field,get_neighbor(pos,nu),t,mu);
+	  		}
+	  		adjoin_su3matrix(tmp);
+		  	accumulate_su3matrix_prod(prod,tmp);
+		  	get_su3matrix(tmp,field,pos,t,nu);
+		  	adjoin_su3matrix(tmp);
+		  	accumulate_su3matrix_prod(prod,tmp);
+		  	tmpfloat = trace_su3matrix(prod).re;
+		  	plaq += tmpfloat;
+		 	 	if(mu==0 || nu==0) {
+		  	  tplaq_tmp+=tmpfloat;
+		  	} else {
+		   	 splaq_tmp+=tmpfloat;
+		  	}
     }}
     
     //calc odd plaquette
     get_odd_site(id, &pos, &t);
     for(int mu=0; mu<NDIM; mu++) {
       for(int nu=0;nu<mu; nu++) {
-	get_su3matrix(prod,field,pos,t,mu);
-	if(mu==0) {
-	  int newt = (t+1)%NTIME;
-	  get_su3matrix(tmp,field,pos,newt,nu);
-	  } else {
-	      get_su3matrix(tmp,field,get_neighbor(pos,mu),t,nu);
-	  }
-	  accumulate_su3matrix_prod(prod,tmp);
-	  if(nu==0) {
-	    int newt = (t+1)%NTIME;
-	    get_su3matrix(tmp,field,pos,newt,mu);
-	  } else {
-	    get_su3matrix(tmp,field,get_neighbor(pos,nu),t,mu);
-	  }
-	  adjoin_su3matrix(tmp);
-	  accumulate_su3matrix_prod(prod,tmp);
-	  get_su3matrix(tmp,field,pos,t,nu);
-	  adjoin_su3matrix(tmp);
-	  accumulate_su3matrix_prod(prod,tmp);
-	  tmpfloat = trace_su3matrix(prod).re;
-	  plaq += tmpfloat;
-	  if(mu==0 || nu==0) {
-	    tplaq_tmp+=tmpfloat;
-	  } else {
-	    splaq_tmp+=tmpfloat;
-	  }
-    }}
-  }
+				get_su3matrix(prod,field,pos,t,mu);
+				if(mu==0) {
+				  int newt = (t+1)%NTIME;
+				  get_su3matrix(tmp,field,pos,newt,nu);
+			  } else {
+	 		     get_su3matrix(tmp,field,get_neighbor(pos,mu),t,nu);
+	  		}
+		  	accumulate_su3matrix_prod(prod,tmp);
+		  	if(nu==0) {
+					int newt = (t+1)%NTIME;
+		    	get_su3matrix(tmp,field,pos,newt,mu);
+		  	} else {
+		    get_su3matrix(tmp,field,get_neighbor(pos,nu),t,mu);
+		  	}
+		  	adjoin_su3matrix(tmp);
+		  	accumulate_su3matrix_prod(prod,tmp);
+		  	get_su3matrix(tmp,field,pos,t,nu);
+		  	adjoin_su3matrix(tmp);
+		  	accumulate_su3matrix_prod(prod,tmp);
+		 	 	tmpfloat = trace_su3matrix(prod).re;
+		  	plaq += tmpfloat;
+		  	if(mu==0 || nu==0) {
+		    	tplaq_tmp+=tmpfloat;
+		  	} else {
+		    	splaq_tmp+=tmpfloat;
+		  	}
+ 		}}
+	}
   
 // TODO use reduction
 //  (plaq_out)[id_tmp] += plaq;
@@ -123,7 +123,7 @@ __kernel void plaquette(__global hmc_ocl_gaugefield * field,__global hmc_float *
   (*splaq) += splaq_tmp;
   (*tplaq) += tplaq_tmp;
 
-  }
+//   }
 }
 
 __kernel void polyakov(__global hmc_ocl_gaugefield * field, __global hmc_complex * out){
@@ -133,19 +133,20 @@ __kernel void polyakov(__global hmc_ocl_gaugefield * field, __global hmc_complex
   size = get_global_size(0);
   int const tdir = 0;
    
+	hmc_complex tmp_pol;
   // this is an ugly workaround 'cuz there is no atomic_add for floats
   // FIXME replace by proper parallel reduction
-  if( id > 0 )
-	return;
+  if( id > 0 )	return;
+  
   (*out).re = 0.0f;
   (*out).im = 0.0f;
-  for( id = 0; id < VOLSPACE/2; ++id ) {
+  for( id = 0; id < VOLSPACE/2; id++ ) {
 
   hmc_ocl_su3matrix prod[SU3SIZE];
   hmc_ocl_su3matrix tmp[SU3SIZE];
   unit_su3matrix(prod);
   hmc_complex tmpcomplex;
-  hmc_complex tmp_pol;
+  
   tmp_pol.re = 0.;
   tmp_pol.im = 0.;
   
@@ -171,8 +172,8 @@ __kernel void polyakov(__global hmc_ocl_gaugefield * field, __global hmc_complex
     (tmp_pol).re += tmpcomplex.re;
     (tmp_pol).im += tmpcomplex.im;
   }
-  ((out)[id_tmp]).re += tmp_pol.re;
-  ((out)[id_tmp]).im += tmp_pol.im;
+  ((*out)).re += tmp_pol.re;
+  ((*out)).im += tmp_pol.im;
   
 // TODO use reduction
 //  //wait for all threads to end calculations, does this work in a kernel???
@@ -196,9 +197,6 @@ __kernel void polyakov(__global hmc_ocl_gaugefield * field, __global hmc_complex
 //     ((out)[id_tmp]).im +=  ((out)[i]).im;
 //    }
 //  }
-//  
-//  return;
-    else continue; //return;
-
-  }
+  
+  return;
 }

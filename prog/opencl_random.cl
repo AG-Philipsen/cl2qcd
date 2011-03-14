@@ -15,7 +15,7 @@ inline float ocl_new_ran(__global hmc_ocl_ran * state ){
 inline uint nr3_int32(__global hmc_ocl_ran * state ){
 	return (uint) nr3_int64( state );
 }
-int random_int( int range, __global hmc_ocl_ran* taus_state ){
+int random_int( int range, __global hmc_ocl_ran* state ){
 	return (nr3_int64( state ) % range);
 }
 //returns 1,2,3 in a random way

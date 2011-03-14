@@ -14,6 +14,7 @@
 #include "host_operations_complex.h"
 #include "host_operations_gaugefield.h"
 #include "host_operations_spinor.h"
+#include "host_operations_spinorfield.h"
 
 //extern int const iter_refresh;
 extern int const iter_refresh;

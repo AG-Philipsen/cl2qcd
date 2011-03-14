@@ -43,7 +43,7 @@ void testing_eoprec_spinor() {
   convert_from_eoprec(eventest,oddtest,test);
   printf("global squarenorm: %f\n",global_squarenorm(test));
 
-  set_zero_spinor(test);
+  set_zero_spinorfield(test);
 
   printf("global squarenorm: %f\n",global_squarenorm(test));
   convert_to_eoprec(eventest,oddtest,test);
@@ -76,7 +76,7 @@ void testing_eoprec_spinor() {
   convert_from_eoprec(eventest,oddtest,test);
   printf("global squarenorm: %f\n",global_squarenorm(test));
 
-  set_zero_spinor(test);
+  set_zero_spinorfield(test);
 
   printf("global squarenorm: %f\n",global_squarenorm(test));
   convert_to_eoprec(eventest,oddtest,test);
@@ -103,7 +103,7 @@ void testing_eoprec_spinor() {
   convert_from_eoprec(eventest,oddtest,test);
   printf("global squarenorm: %f\n",global_squarenorm(test));
 
-  set_zero_spinor(test);
+  set_zero_spinorfield(test);
 
   printf("fill only odd sites:\n");
   for(int t=0; t<NTIME; t++) {
@@ -160,7 +160,7 @@ void testing_spinor() {
 
 
   printf("global squarenorm: %f\n",global_squarenorm(test));
-  set_zero_spinor(test);
+  set_zero_spinorfield(test);
 
 
   printf("global squarenorm: %f\n",global_squarenorm(test));
@@ -740,7 +740,219 @@ void testing_heatbath(hmc_su3matrix * in, hmc_staplematrix * staple_in, hmc_su3m
   return;
 }
 
+void print_colorvector(hmc_color_vector * in){
+	printf("(%f, %f), (%f, %f), (%f, %f)\n", in[0].re, in[0].im, in[1].re, in[1].im, in[2].re, in[2].im );
+}
 
+void unit_colorvector(hmc_color_vector * in){
+	for(int i = 0; i<NC; i++){
+		in[i] = hmc_complex_one;
+	}
+}
 
+void zero_colorvector(hmc_color_vector * in){
+	for(int i = 0; i<NC; i++){
+		in[i] = hmc_complex_zero;
+	}
+}
 
+void  i_colorvector(hmc_color_vector * in){
+	for(int i = 0; i<NC; i++){
+		in[i] = hmc_complex_i;
+	}
+}
 
+void acc_colorvector(hmc_color_vector * inout, hmc_color_vector * incr){
+	for(int i = 0; i<NC; i++){
+		complexaccumulate(&inout[i], &incr[i]);
+	}
+}
+
+void mult_colorvector(hmc_color_vector * inout, hmc_complex * factor){
+	for(int i = 0; i<NC; i++){
+		inout[i] = complexmult(&inout[i], factor);
+	}
+}
+
+void fill_su3matrix_one(hmc_su3matrix * u){
+	for(int i = 0; i<NC; i++){
+		for(int j = 0; j<NC; j++){
+			(*u)[i][j] = hmc_complex_one;
+		}
+	}
+}
+
+void fill_su3matrix_i(hmc_su3matrix * u){
+	for(int i = 0; i<NC; i++){
+		for(int j = 0; j<NC; j++){
+			(*u)[i][j] = hmc_complex_i;
+		}
+	}
+}
+
+void testing_colorvector_ops(){
+	printf("testing colorvector operations...\n");
+	hmc_su3matrix u;
+	hmc_su3matrix v;
+	fill_su3matrix_one(&u);
+	fill_su3matrix_i(&v);
+	
+	accumulate_su3matrices_add(&u, &v);
+	
+	hmc_color_vector colorvec1[NC];
+	hmc_color_vector colorvec2[NC];
+	i_colorvector(colorvec1);
+	unit_colorvector(colorvec2);
+	acc_colorvector(colorvec1, colorvec2);
+	
+// 	hmc_complex alpha = {0.25, 2.};
+// 	mult_colorvector(colorvec1, &alpha);
+	
+// 	print_su3mat(&u);
+// 	print_colorvector(colorvec1);
+	su3matrix_times_colorvector(&u, colorvec1, colorvec2);
+// 	print_colorvector(colorvec2);
+	
+	printf("\t(%f, %f), (%f, %f), (%f, %f)\n", colorvec2[0].re, colorvec2[0].im-6, colorvec2[1].re, colorvec2[1].im-6, colorvec2[2].re, colorvec2[2].im-6 );
+
+	printf("...done\n");
+	return;
+}
+
+void unit_spinor(hmc_spinor * in){
+	for(int i = 0; i<SPINORSIZE; i++){	in[i] = hmc_complex_one; }
+}
+
+void i_spinor(hmc_spinor * in){
+	for(int i = 0; i<SPINORSIZE; i++){	in[i] = hmc_complex_i; }
+}
+
+void print_spinor(hmc_spinor * in){
+	for(int i = 0; i<NC; i++){
+		for(int j = 0; j<NDIM; j++){
+			printf("(%f, %f), ", in[spinor_element(j, i)].re, in[spinor_element(j, i)].im);	
+		}printf("\n");
+	}
+	printf("\n");
+}
+
+void set_comp_to_one_spinor(hmc_spinor * in, int comp){
+	in[comp] = hmc_complex_one;
+}
+
+void set_comp_to_i_spinor(hmc_spinor * in, int comp){
+	in[comp] = hmc_complex_i;
+}
+
+void testing_matrix_spinor_ops(){
+	printf("testing matrix-spinor operations...\n");
+
+	hmc_spinor spinor1[SPINORSIZE];
+	hmc_spinor spinor2[SPINORSIZE];
+	unit_spinor(spinor1);
+	i_spinor(spinor2);
+	
+	printf("\ttesting float*spinor:\n");
+	hmc_float alpha = 0.2134789234892347891324;
+	real_multiply_spinor(spinor1, alpha);
+// 	print_spinor(spinor1);
+	real_multiply_spinor(spinor2, alpha);
+// 	print_spinor(spinor2);
+	
+	hmc_float sum = 0.;
+	for(int i = 0; i<SPINORSIZE; i++){
+		sum+=(spinor1[i].re - spinor2[i].im);
+	}
+	printf("\t%f\n", sum);
+	
+	printf("\ttesting spinor_accumulate:\n");
+	hmc_float beta = 0.2340934;
+	real_multiply_spinor(spinor1, beta);
+	spinors_accumulate(spinor1, spinor2);
+	sum = spinor_squarenorm(spinor1);
+	printf("\t%f\n", sum - (beta*beta+1)*alpha*alpha*SPINORSIZE);
+	
+	printf("\ttesting spinor_local_squarenorm and set_zero_spinorfield:\n");
+
+	set_local_zero_spinor(spinor1);
+	hmc_float sq1 = spinor_squarenorm(spinor1);
+	hmc_float sq2 = spinor_squarenorm(spinor2);
+
+	sum = sq1 + (sq2-alpha*alpha*SPINORSIZE);
+	printf("\t%f\n", sum);
+	
+	printf("\ttesting su3matrix*spinor:\n");
+	hmc_su3matrix u;
+	unit_su3matrix(&u);
+	sq1 = spinor_squarenorm(spinor1);
+	su3matrix_times_spinor(&u, spinor1, spinor2);
+	sq2 = spinor_squarenorm(spinor1);
+	printf("\t%f\n", sq1 - sq2);
+	
+	printf("\ttesting gammax*spinor:\n");
+	set_local_zero_spinor(spinor1);
+	
+	int comp = 3;
+	int comp2 = 0;
+// 	set_comp_to_one_spinor(spinor1, spinor_element(comp,0));
+// 	set_comp_to_one_spinor(spinor1, spinor_element(comp,1));
+// 	set_comp_to_one_spinor(spinor1, spinor_element(comp,2));
+	set_comp_to_i_spinor(spinor1, spinor_element(comp2,0));
+	set_comp_to_i_spinor(spinor1, spinor_element(comp2,1));
+	set_comp_to_i_spinor(spinor1, spinor_element(comp2,2));
+	
+// 	printf("\tinput vector:\n");
+// 	print_spinor(spinor1);
+// 	printf("\tgamma0*input vector:\n");
+// 	multiply_spinor_gamma0(spinor1, spinor2);
+// 	print_spinor(spinor2);
+// 	printf("\tgamma1*input vector:\n");
+// 	multiply_spinor_gamma1(spinor1, spinor2);
+// 	print_spinor(spinor2);
+// 	printf("\tgamma2*input vector:\n");
+// 	multiply_spinor_gamma2(spinor1, spinor2);
+// 	print_spinor(spinor2);
+// 	printf("\tgamma3*input vector:\n");
+// 	multiply_spinor_gamma3(spinor1, spinor2);
+// 	print_spinor(spinor2);
+	
+// 	printf("\tinput vector:\n");
+// 	print_spinor(spinor1);
+	multiply_spinor_i_factor_gamma5(spinor1, spinor2, beta);
+// 	print_spinor(spinor2);
+
+	printf("\ttesting spinprojection...\n");
+	set_local_zero_spinor(spinor1);
+	
+// 	unit_spinor(spinor1);
+// 	print_spinor(spinor1);
+// 	unit_su3matrix(&u);
+// 	spinprojectproduct_gamma3(&u, spinor1, hmc_one_f);
+// 	print_spinor(spinor1);
+	
+	printf("\ttesting spinor squarenorm...\n");
+	i_spinor(spinor1);
+	real_multiply_spinor(spinor1, 0.5);
+// 	print_spinor(spinor1);
+	sum = spinor_squarenorm(spinor1);
+	printf("\t%f\n", sum-3);
+	
+	printf("\ttesting spinor acc...\n");
+// 	print_spinor(spinor1);
+// 	print_spinor(spinor2);
+	spinors_accumulate(spinor1, spinor2);
+// 	print_spinor(spinor1);
+	
+	
+	printf("\ttesting spinor apply bc...\n");
+	unit_spinor(spinor1);
+	spinor_apply_bc(spinor1, PI/2);
+// 	print_spinor(spinor1);
+	
+	i_spinor(spinor1);
+	spinor_apply_bc(spinor1, PI/2);
+// 	print_spinor(spinor1);
+	
+	printf("...done\n");
+	return;
+}

@@ -1,6 +1,8 @@
 //opencl_fermionobservables.cl
 
-//!!CP: LT should update this...
+//!!CP: LZ should update this...
+
+/*
 void simple_correlator(__global hmc_spinor_field * in, __global hmc_spinor_field * spinor_out, __global hmc_ocl_gaugefield* gaugefield, __global hmc_complex * out, hmc_float kappa, hmc_float mu, hmc_float theta, int cgmax){
 
   //pseudo scalar, flavour multiplet
@@ -13,13 +15,8 @@ void simple_correlator(__global hmc_spinor_field * in, __global hmc_spinor_field
 
   for(int k=0; k<NC*NSPIN; k++) {
     create_point_source(b,k,0,0,kappa,mu,gaugefield);
-/*
-for(int i = 0; i<SPINORFIELDSIZE; i++){
-b[i].re= 0;
-b[i].im = 0.;
-}
-*/
-    solver(in, spinor_out, b, gaugefield, kappa, mu, theta, 10000);
+
+    //solver(in, spinor_out, b, gaugefield, kappa, mu, theta, 10000);
 
     for(int timepos = 0; timepos<NTIME; timepos++) {
       for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
@@ -45,3 +42,5 @@ b[i].im = 0.;
 
   return;
 }
+
+*/

@@ -76,8 +76,8 @@ hmc_error bicgstab(hmc_spinor_field* inout, hmc_eoprec_spinor_field* source, hmc
       alpha = hmc_complex_one;
       omega = hmc_complex_one;
       rho = hmc_complex_one;
-      set_zero_spinor(v);
-      set_zero_spinor(p);
+      set_zero_spinorfield(v);
+      set_zero_spinorfield(p);
       
       //printf("true residue squared: %e\n",global_squarenorm(rn));
     }
@@ -169,8 +169,8 @@ hmc_error bicgstab_eoprec(hmc_eoprec_spinor_field* out,hmc_eoprec_spinor_field* 
       alpha = hmc_complex_one;
       omega = hmc_complex_one;
       rho = hmc_complex_one;      
-      set_zero_eoprec_spinor(v);
-      set_zero_eoprec_spinor(p);
+      set_zero_spinorfield_eoprec(v);
+      set_zero_spinorfield_eoprec(p);
       
       printf("true residue squared: %e\n",global_squarenorm_eoprec(rn));
     }
@@ -260,7 +260,7 @@ hmc_error M_diag(hmc_spinor_field* in, hmc_spinor_field* out, hmc_float kappa, h
       hmc_spinor spintmp[SPINORSIZE];
       get_spinor_from_field(in,spinout,spacepos,timepos);
       hmc_float twistfactor = 2*kappa*mu;
-      multiply_spinor_factor_gamma5(spinout,spintmp,twistfactor);
+      multiply_spinor_i_factor_gamma5(spinout,spintmp,twistfactor);
       spinors_accumulate(spinout,spintmp);
       put_spinor_to_field(spinout,out,spacepos,timepos);
     }
@@ -274,7 +274,7 @@ hmc_error M_sitediagonal(hmc_eoprec_spinor_field* out, hmc_eoprec_spinor_field* 
     hmc_spinor spinout[SPINORSIZE];
     get_spinor_from_eoprec_field(in,spinout,n);
     hmc_float twistfactor = 2*kappa*mu;
-    multiply_spinor_factor_gamma5(spinout,tmp,twistfactor);
+    multiply_spinor_i_factor_gamma5(spinout,tmp,twistfactor);
     spinors_accumulate(spinout,tmp);
     put_spinor_to_eoprec_field(spinout,out,n);
   }
@@ -287,7 +287,7 @@ hmc_error M_inverse_sitediagonal(hmc_eoprec_spinor_field* out, hmc_eoprec_spinor
     hmc_spinor spinout[SPINORSIZE];
     get_spinor_from_eoprec_field(in,spinout,n);
     hmc_float twistfactor = -2*kappa*mu;
-    multiply_spinor_factor_gamma5(spinout,tmp,twistfactor);
+    multiply_spinor_i_factor_gamma5(spinout,tmp,twistfactor);
     spinors_accumulate(spinout,tmp);
     hmc_float denom = 1 + twistfactor*twistfactor;
     real_multiply_spinor(spinout,1./denom);
@@ -661,7 +661,7 @@ hmc_error Aee(hmc_eoprec_spinor_field* in, hmc_eoprec_spinor_field* out, hmc_gau
   hmc_eoprec_spinor_field* spintmp3 = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
   hmc_eoprec_spinor_field* spintmp4 = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
   hmc_complex one = hmc_complex_one;
-  set_zero_eoprec_spinor(spintmp3);
+  set_zero_spinorfield_eoprec(spintmp3);
   
 //CP: original 
 //   dslash_eoprec(spintmp1,in,gaugefield,kappa, theta, chem_pot_re, chem_pot_re,ODD); // D_oe

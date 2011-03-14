@@ -33,7 +33,7 @@ struct hmc_complex {
 #ifdef _INKERNEL_
 __constant hmc_complex hmc_complex_one={1., 0.};
 __constant hmc_complex hmc_complex_zero = {0., 0.};
-__constant hmc_complex const hmc_complex_minusone = {-1., 0.};
+__constant hmc_complex hmc_complex_minusone = {-1., 0.};
 __constant hmc_complex hmc_complex_i = {0., 1.};
 #else
 hmc_complex const hmc_complex_one = {1., 0.};

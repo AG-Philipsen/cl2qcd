@@ -6,6 +6,7 @@
 #include "host_operations_complex.h"
 #include "host_operations_gaugefield.h"
 #include "host_operations_spinor.h"
+#include "host_operations_spinorfield.h"
 #include "host_geometry.h"
 #include "host_random.h"
 

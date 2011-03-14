@@ -14,6 +14,8 @@
 #include "hmcerrs.h"
 #include "host_timer.h" 
 
+extern char * benchmark_id;
+
 class usetimer {
   public:
   usetimer() {time_measurement = 0;num_meas = 0;};

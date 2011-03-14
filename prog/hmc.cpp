@@ -10,6 +10,8 @@ int main(int argc, char* argv[]) {
   parameters.readfile(inputfile);
   print_info(&parameters);
 
+  benchmark_id = argv[2];
+  
   stringstream gaugeout_name;
   gaugeout_name<<"gaugeobservables_beta"<<parameters.get_beta();
   
@@ -25,15 +27,21 @@ int main(int argc, char* argv[]) {
   init_gaugefield(gaugefield,&parameters,&inittime);
   init_random_seeds(rnd, rndarray, &inittime);
    
-  opencl gpu(CL_DEVICE_TYPE_CPU, &inittime);
+#ifdef _USEGPU_
+  opencl device(CL_DEVICE_TYPE_GPU, &inittime);
+#else
+  opencl device(CL_DEVICE_TYPE_CPU, &inittime);
+#endif
 
   cout << "initial values of observables:\n\t" ;
   print_gaugeobservables(gaugefield, &polytime, &plaqtime);
 
-  gpu.copy_gaugefield_to_device(gaugefield, &copytime);
-  gpu.copy_rndarray_to_device(rndarray, &copytime);
+  device.copy_gaugefield_to_device(gaugefield, &copytime);
+  device.copy_rndarray_to_device(rndarray, &copytime);
 
-  gpu.testing(gaugefield);
+#ifdef _TESTING_
+  device.testing(gaugefield);
+#endif
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Heatbath
@@ -42,20 +50,20 @@ int main(int argc, char* argv[]) {
   int nsteps = parameters.get_heatbathsteps();
   cout<<"perform "<<nsteps<<" heatbath steps on OpenCL device..."<<endl;
   for(int i = 0; i<nsteps; i++){
-    gpu.run_heatbath(parameters.get_beta(), local_work_size, global_work_size, &updatetime);
-    gpu.run_overrelax(parameters.get_beta(), local_work_size, global_work_size, &overrelaxtime);
+    device.run_heatbath(parameters.get_beta(), local_work_size, global_work_size, &updatetime);
+    device.run_overrelax(parameters.get_beta(), local_work_size, global_work_size, &overrelaxtime);
     if( ( (i+1)%parameters.get_writefrequency() ) == 0 ) {
-       gpu.gaugeobservables(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
+       device.gaugeobservables(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
        print_gaugeobservables(plaq, tplaq, splaq, pol, i, gaugeout_name.str());
     }
     if( parameters.get_saveconfigs()==TRUE && ( (i+1)%parameters.get_savefrequency() ) == 0 ) {
-      gpu.get_gaugefield_from_device(gaugefield, &copytime);
+      device.get_gaugefield_from_device(gaugefield, &copytime);
       save_gaugefield(gaugefield, &parameters, i);
       print_gaugeobservables(gaugefield, &plaqtime, &polytime, i, gaugeout_name.str());
     }
   }
 
-  gpu.get_gaugefield_from_device(gaugefield, &copytime);
+  device.get_gaugefield_from_device(gaugefield, &copytime);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Final Output
@@ -70,7 +78,7 @@ int main(int argc, char* argv[]) {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   free(gaugefield);
-  gpu.finalize();
+  device.finalize();
   
   return HMC_SUCCESS;
 }

@@ -39,7 +39,10 @@
 
 #define su2_entries 4
 
+#ifdef _USEGPU_
 #define NUMTHREADS 1
-
+#else
+#define NUMTHREADS 1
+#endif
 
 #endif

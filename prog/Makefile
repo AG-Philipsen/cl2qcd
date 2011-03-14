@@ -18,9 +18,12 @@ XMLPATH=/usr/include/libxml2
 #XMLPATH=/home/pinke/libxml2/libxml2
 #ATISDKPATH=/home/pinke/ati-stream-sdk-v2.3-lnx64
 
+#DEFGPU=-D_USEGPU_
 DEFDOUBLE=-D_USEDOUBLEPREC_
 #DEFREC=-D_RECONSTRUCT_TWELVE_
 #DEFOMP=-D_OPENMP
+#DEFTESTING=-D_TESTING_
+#DEFFERMIONS=-D_FERMIONS_
 
 LIMEINCDIR=$(LIMEPATH)/include 
 LIMELIBDIR=$(LIMEPATH)/lib
@@ -30,7 +33,7 @@ XMLINCDIR=$(XMLPATH)
 #gpudev01:
 #XMLINCDIR=$(XMLPATH)/include/libxml2
 XMLLIBDIR=$(XMLPATH)/lib
-DEFS=$(DEFDOUBLE) $(DEFREC) $(DEFOMP) -DSOURCEDIR=$(OCLSOURCEDIR)
+DEFS=$(DEFGPU) $(DEFDOUBLE) $(DEFFERMIONS) $(DEFTESTING) $(DEFREC) $(DEFOMP) -DSOURCEDIR=$(OCLSOURCEDIR)
 INCLUDES = -I$(LIMEINCDIR) -I$(XMLINCDIR) -I$(ATISDKINCDIR) -I$(HMCPATH)/host_operations
 LDFLAGS = -L$(LIMELIBDIR) -L$(ATISDKLIBDIR) -L$(XMLLIBDIR)
 LIBS = -lm -llime -lxml2 -lOpenCL -fopenmp
@@ -42,6 +45,7 @@ GLOBALS=globaldefs.h types.h hmcerrs.h
 OBJECTS = host_operations_complex.o \
 	host_operations_gaugefield.o \
 	host_operations_spinor.o \
+	host_operations_spinorfield.o \
 	host_gaugeobservables.o \
 	host_testing.o \
 	host_geometry.o \

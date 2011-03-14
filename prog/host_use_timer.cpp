@@ -124,11 +124,21 @@ void time_output(usetimer * total, usetimer * init, usetimer * poly, usetimer * 
   //save some data to file
   ofstream out;
   stringstream str_filename;
-  str_filename<<"time_measurement_";
-#ifdef _RECONSTRUCT_TWELVE_
-  str_filename<<1;
+  str_filename<<"time_H_";
+#ifdef _USEGPU_
+  str_filename<<"G_";
 #else
-  str_filename<<0;
+  str_filename<<"C_";
+#endif
+#ifdef _USEDOUBLEPREC_
+  str_filename<<"D_";
+#else
+  str_filename<<"S_";
+#endif
+#ifdef _RECONSTRUCT_TWELVE_
+  str_filename<<"R_";
+#else
+  str_filename<<"N_";
 #endif
   out.open(str_filename.str().c_str(), fstream::app); 
   if (out.is_open())
