@@ -3,6 +3,27 @@
 using namespace std;
 
 hmc_error opencl::init(cl_device_type wanted_device_type, usetimer* timer){
+
+
+//give a list of all kernel-files
+//!!CP: LZ should update this
+  cl_kernels_file.push_back("opencl_header.cl");
+  cl_kernels_file.push_back("opencl_geometry.cl");
+  cl_kernels_file.push_back("opencl_random.cl");
+  cl_kernels_file.push_back("opencl_operations_complex.cl");
+  cl_kernels_file.push_back("opencl_operations_gaugefield.cl");
+  cl_kernels_file.push_back("opencl_update_heatbath.cl");
+  cl_kernels_file.push_back("opencl_gaugeobservables.cl");
+#ifdef _FERMIONS_
+  cl_kernels_file.push_back("opencl_operations_spinor.cl");
+  cl_kernels_file.push_back("opencl_operations_spinorfield.cl");
+  cl_kernels_file.push_back("opencl_solver.cl");
+  cl_kernels_file.push_back("opencl_fermionobservables.cl");
+#endif
+#ifdef _TESTING_
+  cl_kernels_file.push_back("opencl_testing.cl");
+#endif
+
   cl_int clerr = CL_SUCCESS;
 
   (*timer).reset();

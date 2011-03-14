@@ -19,19 +19,6 @@
 #include "host_testing.h"
 #include "host_random.h"
 
-//give a list of all kernel-files
-//!!CP: LZ should update this
-std::vector<std::string> const cl_kernels_file = {
-	"opencl_header.cl","opencl_geometry.cl", "opencl_random.cl", "opencl_operations_complex.cl"
-	, "opencl_operations_gaugefield.cl", "opencl_update_heatbath.cl", "opencl_gaugeobservables.cl"
-#ifdef _FERMIONS_
-	, "opencl_operations_spinor.cl", "opencl_operations_spinorfield.cl", "opencl_solver.cl", "opencl_fermionobservables.cl"
-#endif
-#ifdef _TESTING_
-, "opencl_testing.cl"
-#endif
-};
-
 class opencl {
  public:
   opencl(cl_device_type wanted, usetimer* timer){init(wanted, timer);};
@@ -69,6 +56,7 @@ class opencl {
 #ifdef _TESTING_
   hmc_error testing(hmc_gaugefield * gaugefield);
 #endif
+  std::vector<std::string> cl_kernels_file;
   hmc_error finalize();
  private:
   int isinit;
