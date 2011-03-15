@@ -80,13 +80,11 @@ hmc_error convert_to_eoprec(hmc_eoprec_spinor_field* even, hmc_eoprec_spinor_fie
   for(int n=0; n<VOL4D/2; n++) {
     for(int alpha=0; alpha<NSPIN; alpha++) {
       for(int color=0; color<NC; color++) {
-	get_even_site(n, &spacepos, &timepos);
-	even[eoprec_spinor_field_element(alpha,color,n)] = in[spinor_field_element(alpha,color,spacepos,timepos)];
-	get_odd_site(n, &spacepos, &timepos);
-	odd[eoprec_spinor_field_element(alpha,color,n)] = in[spinor_field_element(alpha,color,spacepos,timepos)];
-      }
-    }
-  }
+				get_even_site(n, &spacepos, &timepos);
+				even[eoprec_spinor_field_element(alpha,color,n)] = in[spinor_field_element(alpha,color,spacepos,timepos)];
+				get_odd_site(n, &spacepos, &timepos);
+				odd[eoprec_spinor_field_element(alpha,color,n)] = in[spinor_field_element(alpha,color,spacepos,timepos)];
+	}}}
   return HMC_SUCCESS;
 }
 
@@ -95,13 +93,11 @@ hmc_error convert_from_eoprec(hmc_eoprec_spinor_field* even, hmc_eoprec_spinor_f
   for(int n=0; n<VOL4D/2; n++) {
     for(int alpha=0; alpha<NSPIN; alpha++) {
       for(int color=0; color<NC; color++) {
-        get_even_site(n, &spacepos, &timepos);
-        out[spinor_field_element(alpha,color,spacepos,timepos)] = even[eoprec_spinor_field_element(alpha,color,n)];
-	get_odd_site(n, &spacepos, &timepos);
-	out[spinor_field_element(alpha,color,spacepos,timepos)] = odd[eoprec_spinor_field_element(alpha,color,n)];
-      }
-    }
-  }
+				get_even_site(n, &spacepos, &timepos);
+				out[spinor_field_element(alpha,color,spacepos,timepos)] = even[eoprec_spinor_field_element(alpha,color,n)];
+				get_odd_site(n, &spacepos, &timepos);
+				out[spinor_field_element(alpha,color,spacepos,timepos)] = odd[eoprec_spinor_field_element(alpha,color,n)];
+  }}}
   return HMC_SUCCESS;
 }
 
@@ -117,7 +113,7 @@ hmc_error convert_to_kappa_format_eoprec(hmc_eoprec_spinor_field* inout,hmc_floa
   for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
     inout[n].re *= sqrt(2.*kappa);
     inout[n].im *= sqrt(2.*kappa);
-  }
+  	}
   return HMC_SUCCESS;
 }
 
@@ -125,7 +121,7 @@ hmc_error convert_from_kappa_format(hmc_spinor_field* in, hmc_spinor_field * out
   for(int n=0; n<SPINORFIELDSIZE; n++) {
     out[n].re = (in[n].re)/sqrt(2.*kappa);
     out[n].im = (in[n].im)/sqrt(2.*kappa);
-  }
+  	}
   return HMC_SUCCESS;
 }
 
@@ -133,7 +129,7 @@ hmc_error convert_from_kappa_format_eoprec(hmc_eoprec_spinor_field* in, hmc_eopr
   for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
     out[n].re = (in[n].re)/sqrt(2.*kappa);
     out[n].im = (in[n].im)/sqrt(2.*kappa);
-  }
+  	}
   return HMC_SUCCESS;
 }
 
@@ -141,7 +137,7 @@ hmc_float global_squarenorm_eoprec(hmc_eoprec_spinor_field *in) {
   hmc_float sum=0;
   for (int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
     sum += in[n].re*in[n].re + in[n].im*in[n].im;
-  }
+  	}
   return sum;
 }
 
@@ -153,7 +149,7 @@ hmc_complex scalar_product_eoprec(hmc_eoprec_spinor_field* a, hmc_eoprec_spinor_
   for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
     res.re += a[n].re*b[n].re + a[n].im*b[n].im;
     res.im += a[n].re*b[n].im - a[n].im*b[n].re;
-  }
+  	}
   return res;
 }
 
@@ -165,7 +161,7 @@ hmc_complex scalar_product(hmc_spinor_field* a, hmc_spinor_field* b){
   for(int n=0; n<SPINORFIELDSIZE; n++) {
     res.re += a[n].re*b[n].re + a[n].im*b[n].im;
     res.im += a[n].re*b[n].im - a[n].im*b[n].re;
-  }
+  	}
   return res;
 }
 
@@ -173,8 +169,7 @@ hmc_error get_spinor_from_eoprec_field(hmc_eoprec_spinor_field* in, hmc_spinor* 
   for(int alpha=0; alpha<NSPIN; alpha++) {
     for(int color=0; color<NC; color++) {
       out[spinor_element(alpha,color)] = in[eoprec_spinor_field_element(alpha,color,n_eoprec)];
-    }
-  }
+		}}
   return HMC_SUCCESS;
 }
 
@@ -182,8 +177,7 @@ hmc_error put_spinor_to_eoprec_field(hmc_spinor* in, hmc_eoprec_spinor_field* ou
   for(int alpha=0; alpha<NSPIN; alpha++) {
     for(int color=0; color<NC; color++) {
       out[eoprec_spinor_field_element(alpha,color,n_eoprec)]=in[spinor_element(alpha,color)];
-    }
-  }
+		}}
   return HMC_SUCCESS;
 }
 
@@ -275,9 +269,11 @@ hmc_error create_point_source_eoprec(hmc_eoprec_spinor_field* be,hmc_eoprec_spin
   convert_to_kappa_format_eoprec(bo,kappa);
 
   hmc_eoprec_spinor_field spintmp[EOPREC_SPINORFIELDSIZE];
-  M_inverse_sitediagonal(spintmp, bo, kappa,mu);
-  dslash_eoprec(be,spintmp,gaugefield,kappa,theta, chem_pot_re, chem_pot_im, EVEN);
-
+//   M_inverse_sitediagonal(spintmp, bo, kappa,mu);
+//   dslash_eoprec(be,spintmp,gaugefield,kappa,theta, chem_pot_re, chem_pot_im, EVEN);
+  M_inverse_sitediagonal(bo, spintmp, kappa,mu);
+  dslash_eoprec(spintmp, be,gaugefield,kappa,theta, chem_pot_re, chem_pot_im, EVEN);
+	
   for(int n=0;n<EOPREC_SPINORFIELDSIZE;n++) {
     be[n].re = evensource[n].re - be[n].re;
     be[n].im = evensource[n].im - be[n].im;

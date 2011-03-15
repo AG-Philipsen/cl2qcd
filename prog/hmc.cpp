@@ -27,6 +27,9 @@ int main(int argc, char* argv[]) {
   init_gaugefield(gaugefield,&parameters,&inittime);
   init_random_seeds(rnd, rndarray, &inittime);
 
+	simple_correlator(gaugefield, parameters.get_kappa(), parameters.get_mu(), parameters.get_theta_fermion(), parameters.get_chem_pot_re(), parameters.get_chem_pot_im(), 1000);
+	
+	return 0;
 #ifdef _USEGPU_
   opencl device(CL_DEVICE_TYPE_GPU, &inittime);
 #else

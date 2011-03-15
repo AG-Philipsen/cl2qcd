@@ -8,29 +8,35 @@ hmc_error solver(hmc_spinor_field* in, hmc_spinor_field* out, hmc_spinor_field* 
     hmc_eoprec_spinor_field even[EOPREC_SPINORFIELDSIZE];
     hmc_eoprec_spinor_field odd[EOPREC_SPINORFIELDSIZE];
     hmc_eoprec_spinor_field newodd[EOPREC_SPINORFIELDSIZE];
-    hmc_eoprec_spinor_field neweven[EOPREC_SPINORFIELDSIZE];
+		hmc_eoprec_spinor_field tmp[EOPREC_SPINORFIELDSIZE];
 
     hmc_eoprec_spinor_field be[EOPREC_SPINORFIELDSIZE];
     hmc_eoprec_spinor_field bo[EOPREC_SPINORFIELDSIZE];
-    convert_to_eoprec(even,odd,in);
+    
+		convert_to_eoprec(even,odd,in);
     convert_to_kappa_format_eoprec(even,kappa);
     convert_to_kappa_format_eoprec(odd,kappa);
  
     create_point_source_eoprec(be,bo,1,0,0,kappa,mu,theta, chem_pot_re, chem_pot_im, gaugefield);
-    bicgstab_eoprec(neweven, even, be, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
-
+		
+		//calculate even-solution even
+    bicgstab_eoprec(even, be, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+		
+		//desired solution is g = L^-1 x
+		//calculate L^-1x_even 
     hmc_eoprec_spinor_field spintmp[EOPREC_SPINORFIELDSIZE];
-    dslash_eoprec(newodd,neweven,gaugefield,kappa, theta, chem_pot_re, chem_pot_im, ODD); //use newood as tmp variable
-    M_inverse_sitediagonal(spintmp,newodd,kappa,mu);
-    M_inverse_sitediagonal(newodd,bo,kappa,mu);
-    for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
-      newodd[n].re -= spintmp[n].re;
-      newodd[n].im -= spintmp[n].im;
-    }
+    dslash_eoprec(even, tmp,gaugefield,kappa, theta, chem_pot_re, chem_pot_im, ODD); //use newood as tmp variable
+    M_inverse_sitediagonal(tmp, spintmp,kappa,mu);
+		
+		//calculate odd-solution odd
+    M_inverse_sitediagonal(bo, odd, kappa,mu);
+		
+		hmc_complex one = hmc_complex_one;
+		saxpy_eoprec(spintmp, odd, &one, odd);
 
-    convert_from_kappa_format_eoprec(neweven,neweven, kappa);
-    convert_from_kappa_format_eoprec(newodd, newodd, kappa);
-    convert_from_eoprec(neweven,newodd,out);
+    convert_from_kappa_format_eoprec(even,even, kappa);
+    convert_from_kappa_format_eoprec(odd, odd, kappa);
+    convert_from_eoprec(even,odd,out);
   
     return HMC_SUCCESS;
   }
@@ -134,7 +140,7 @@ hmc_error bicgstab(hmc_spinor_field* inout, hmc_eoprec_spinor_field* source, hmc
 }
 
 
-hmc_error bicgstab_eoprec(hmc_eoprec_spinor_field* out,hmc_eoprec_spinor_field* in,hmc_eoprec_spinor_field* source,hmc_gaugefield* gaugefield,hmc_float kappa,hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im,int cgmax){
+hmc_error bicgstab_eoprec(hmc_eoprec_spinor_field* inout,hmc_eoprec_spinor_field* source,hmc_gaugefield* gaugefield,hmc_float kappa,hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im,int cgmax){
 
   //BiCGStab according to hep-lat/9404013
   hmc_eoprec_spinor_field* rn = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
@@ -154,15 +160,11 @@ hmc_error bicgstab_eoprec(hmc_eoprec_spinor_field* out,hmc_eoprec_spinor_field* 
   hmc_complex one = hmc_complex_one;
   hmc_complex minusone = hmc_complex_minusone;
 
-  //CP: why is this not needed in bicgstab??
-  //init
-  copy_spinor_eoprec(in, out);
-
   for(int iter=0; iter<cgmax; iter++){
 
     if(iter%iter_refresh==0) {
       //fresh start
-      Aee(out,rn,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+      Aee(inout,rn,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
       saxpy_eoprec(rn, source, &one, rn);
       copy_spinor_eoprec(rn, rhat);
       
@@ -200,7 +202,7 @@ hmc_error bicgstab_eoprec(hmc_eoprec_spinor_field* out,hmc_eoprec_spinor_field* 
 
     saxpy_eoprec(t, s, &omega, rn);
 
-    saxsbypz_eoprec(p, s, out, &alpha, &omega, out);
+    saxsbypz_eoprec(p, s, inout, &alpha, &omega, inout);
   
     //CP: is this formula right?? There should be no t i guess...
     //        9. xi = xi−1 + αpi + ωis
@@ -219,7 +221,7 @@ hmc_error bicgstab_eoprec(hmc_eoprec_spinor_field* out,hmc_eoprec_spinor_field* 
 
     if(resid<epssquare) {
       hmc_eoprec_spinor_field* aux = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
-      Aee(out,aux,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+      Aee(inout,aux,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
       saxpy_eoprec(aux, source, &one, aux);
       hmc_float trueresid = global_squarenorm_eoprec(aux);
       printf("true residue squared: %e\n",trueresid);

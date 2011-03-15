@@ -33,24 +33,22 @@ hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_flo
 
   for(int k=0; k<NC*NSPIN; k++) {
     create_point_source(b,k,0,0,kappa,mu,gaugefield);
-    solver(in, phi, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
-
+		
+		solver(in, phi, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+		
     for(int timepos = 0; timepos<NTIME; timepos++) {
-      for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
-	for(int alpha = 0; alpha<NSPIN; alpha++) {
-	  for(int c = 0; c<NC; c++) {
-	    //	    int j = spinor_element(alpha,c);
-	    int n = spinor_field_element(alpha, c, spacepos, timepos);
-	    int z = get_spacecoord(spacepos, 3);
-	    hmc_complex tmp = phi[n];
-	    hmc_complex ctmp = complexconj(&tmp);
-	    hmc_complex incr = complexmult(&ctmp,&tmp);
-	    correlator_ps[z].re += incr.re;
-	    correlator_ps[z].im += incr.im;
-	  }
-	}
-      }
-    }
+			for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
+				for(int alpha = 0; alpha<NSPIN; alpha++) {
+					for(int c = 0; c<NC; c++) {
+					// int j = spinor_element(alpha,c);
+					int n = spinor_field_element(alpha, c, spacepos, timepos);
+					int z = get_spacecoord(spacepos, 3);
+					hmc_complex tmp = phi[n];
+					hmc_complex ctmp = complexconj(&tmp);
+					hmc_complex incr = complexmult(&ctmp,&tmp);
+					correlator_ps[z].re += incr.re;
+					correlator_ps[z].im += incr.im;
+		}}}}
   }
 
   printf("pseudo scalar correlator:\n");
