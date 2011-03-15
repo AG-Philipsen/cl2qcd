@@ -11,7 +11,7 @@
 //coord[2] = y
 //coord[3] = z
 
-int get_n_eoprec(int timepos, int spacepos);
+int get_n_eoprec(int spacepos,int timepos);
 
 //switch between (x,y,z) <-> nspace=0,...,VOLSPACE-1
 int get_nspace(int* coord);

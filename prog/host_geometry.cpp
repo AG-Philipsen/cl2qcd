@@ -54,7 +54,8 @@ int eoprec_spinor_field_element(int alpha, int color, int n_eoprec) {
   return alpha + NSPIN*color + NSPIN*NC*n_eoprec;
 }
 
-int get_n_eoprec(int timepos, int spacepos){
+//!!CP: changed the args to fit all other functions!!
+int get_n_eoprec(int spacepos, int timepos){
   return (int)((get_global_pos(spacepos, timepos))/2);
 }
 

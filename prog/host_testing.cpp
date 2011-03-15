@@ -1058,6 +1058,107 @@ void testing_fermionmatrix_functions(){
 	sq1 = global_squarenorm_eoprec(in_eoprec);
 	if(print_result == 1) printf("\t%f\n", 1.-sq1);
 	
+	printf("\ttesting dslash_temporal and dslash_temporal_eoprec:\n");
+	
+	init_spinorfield_cold(in);
+	init_spinorfield_cold_eoprec(in_eoprec);
+	
+	set_zero_spinorfield(out);
+	set_zero_spinorfield_eoprec(out_eoprec);
+	
+	int pos = 0;
+	int t = 0;
+	hmc_float theta = 0.;
+	hmc_float chem_pot_re = 0.;
+	hmc_float chem_pot_im = 0.;
+	
+	hmc_spinor spinor1 [SPINORSIZE];
+	set_local_zero_spinor(spinor1);
+	dslash_temporal (spinor1, pos, t, in, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq1 = spinor_squarenorm(spinor1);
+
+	set_local_zero_spinor(spinor1);
+	dslash_temporal_eoprec (spinor1, pos, t, in_eoprec, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	
+	sq2 = spinor_squarenorm(spinor1);
+	if(print_result == 1) printf("\t%f %f\n", sq1 - 4.*12./((float) SPINORFIELDSIZE), sq2 - 4.*12./((float) EOPREC_SPINORFIELDSIZE));
+	
+	//CP: test2
+	init_spinorfield_cold(in);
+	init_spinorfield_cold_eoprec(in_eoprec);
+	
+	set_local_zero_spinor(spinor1);
+	int tmp = t+1;
+	put_spinor_to_field(spinor1,in,pos,tmp);
+	int tmp2 = get_n_eoprec(pos, tmp);
+	put_spinor_to_eoprec_field(spinor1,in_eoprec,tmp2);
+	
+	set_local_zero_spinor(spinor1);
+	dslash_temporal (spinor1, pos, t, in, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq1 = spinor_squarenorm(spinor1);
+	
+	set_local_zero_spinor(spinor1);
+	dslash_temporal_eoprec (spinor1, pos, t, in_eoprec, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq2 = spinor_squarenorm(spinor1);
+	if(print_result == 1) printf("\t%f %f\n", sq1 - 2.*12./((float) SPINORFIELDSIZE), sq2 - 2.*12./((float) EOPREC_SPINORFIELDSIZE));
+	
+	printf("\ttesting dslash_spatial and dslash_spatial_eoprec:\n");
+	int coord[NDIM];
+	coord[0] = 0;
+	for(int j=1;j<NDIM;j++) coord[j] = get_spacecoord(pos,j);
+	init_spinorfield_cold(in);
+	init_spinorfield_cold_eoprec(in_eoprec);
+	
+	int dir = 1;
+	set_local_zero_spinor(spinor1);
+	tmp = get_neighbor(pos,dir);
+	put_spinor_to_field(spinor1,in,tmp,t); //CP: really this one is accessed in dslash_spatial
+	tmp2 = get_n_eoprec(tmp, t);
+	put_spinor_to_eoprec_field(spinor1,in_eoprec,tmp2);
+	
+	set_local_zero_spinor(spinor1);
+	dslash_spatial (spinor1, coord, dir, pos, t, in, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq1 = spinor_squarenorm(spinor1);
+	set_local_zero_spinor(spinor1);
+	dslash_spatial_eoprec (spinor1, coord, dir, pos, t, in_eoprec, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq2 = spinor_squarenorm(spinor1);
+	if(print_result == 1) printf("\t%f %f\n", sq1 - 4.*6./((float) SPINORFIELDSIZE), sq2 - 4.*6./((float) EOPREC_SPINORFIELDSIZE));
+	
+	dir = 2;
+	init_spinorfield_cold(in);
+	init_spinorfield_cold_eoprec(in_eoprec);
+	
+	set_local_zero_spinor(spinor1);
+	tmp = get_neighbor(pos,dir);
+	put_spinor_to_field(spinor1,in,tmp,t);
+	tmp2 = get_n_eoprec(tmp, t);
+	put_spinor_to_eoprec_field(spinor1,in_eoprec,tmp2);
+	
+	set_local_zero_spinor(spinor1);
+	dslash_spatial (spinor1, coord, dir, pos, t, in, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq1 = spinor_squarenorm(spinor1);
+	set_local_zero_spinor(spinor1);
+	dslash_spatial_eoprec (spinor1, coord, dir, pos, t, in_eoprec, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq2 = spinor_squarenorm(spinor1);
+	if(print_result == 1) printf("\t%f %f\n", sq1 - 2.*12./((float) SPINORFIELDSIZE), sq2 - 2.*12./((float) EOPREC_SPINORFIELDSIZE));
+	
+	dir = 3;
+	init_spinorfield_cold(in);
+	init_spinorfield_cold_eoprec(in_eoprec);
+	
+	set_local_zero_spinor(spinor1);
+	tmp = get_neighbor(pos,dir);
+	put_spinor_to_field(spinor1,in,tmp,t);
+	tmp2 = get_n_eoprec(tmp, t);
+	put_spinor_to_eoprec_field(spinor1,in_eoprec,tmp2);
+	
+	set_local_zero_spinor(spinor1);
+	dslash_spatial (spinor1, coord, dir, pos, t, in, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq1 = spinor_squarenorm(spinor1);
+	set_local_zero_spinor(spinor1);
+	dslash_spatial_eoprec (spinor1, coord, dir, pos, t, in_eoprec, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq2 = spinor_squarenorm(spinor1);
+	if(print_result == 1) printf("\t%f %f\n", sq1 - 4.*12./((float) SPINORFIELDSIZE), sq2 - 4.*12./((float) EOPREC_SPINORFIELDSIZE));
 	
 	printf("...done\n");
 	
