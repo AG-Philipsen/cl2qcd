@@ -3,13 +3,13 @@ VERSION=0.1
 PROGNAME = hmc.v$(VERSION)
 
 CXX = g++
-HMCPATH=/home/pinke/hmc/prog
-LIMEPATH=/home/pinke/lime/lime
-OCLSOURCEDIR="\"/home/pinke/hmc/prog"\"
-ATISDKPATH=/home/pinke/PHD/OpenCL/ati-stream-sdk-v2.3-lnx64
+#HMCPATH=/home/pinke/hmc/prog
+#LIMEPATH=/home/pinke/lime/lime
+#OCLSOURCEDIR="\"/home/pinke/hmc/prog"\"
+#ATISDKPATH=/home/pinke/PHD/OpenCL/ati-stream-sdk-v2.3-lnx64
 #OCLSOURCEDIR="\"/home/zeidlewicz/hmc/hmc/prog\""
 #LIMEPATH=/home/zeidlewicz/bin/lime/lime-lib
-XMLPATH=/usr/include/libxml2
+#XMLPATH=/usr/include/libxml2
 #ATISDKPATH=/home/zeidlewicz/bin/ati-stream-sdk-v2.3-lnx64
 
 #gpu-dev01:
@@ -17,6 +17,15 @@ XMLPATH=/usr/include/libxml2
 #LIMEPATH=/home/pinke/lime/lime/
 #XMLPATH=/home/pinke/libxml2/libxml2
 #ATISDKPATH=/home/pinke/ati-stream-sdk-v2.3-lnx64
+
+#LOEWE-CSC
+OCLSOURCEDIR="\"/home/hfftheo/zeidlewicz/heatbath-benchmark"\"
+LIMEPATH=/home/hfftheo/zeidlewicz/libs/lime
+XMLPATH=/home/hfftheo/zeidlewicz/libs/libxml2
+##ATISDKPATH=/home/hfftheo/zeidlewicz/opencl/ati-stream-sdk-v2.2-lnx64
+## this path is not really needed, just for comparability...
+ATISDKPATH=/cm/shared/apps/atistreamsdk/2.3
+
 
 #DEFGPU=-D_USEGPU_
 DEFDOUBLE=-D_USEDOUBLEPREC_
@@ -30,8 +39,8 @@ LIMELIBDIR=$(LIMEPATH)/lib
 ATISDKINCDIR=$(ATISDKPATH)/include
 ATISDKLIBDIR=$(ATISDKPATH)/lib/x86_64/
 XMLINCDIR=$(XMLPATH)
-#gpudev01:
-#XMLINCDIR=$(XMLPATH)/include/libxml2
+#gpudev01 OR LOEWE-CSC:
+XMLINCDIR=$(XMLPATH)/include/libxml2
 XMLLIBDIR=$(XMLPATH)/lib
 DEFS=$(DEFGPU) $(DEFDOUBLE) $(DEFFERMIONS) $(DEFTESTING) $(DEFREC) $(DEFOMP) -DSOURCEDIR=$(OCLSOURCEDIR)
 INCLUDES = -I$(LIMEINCDIR) -I$(XMLINCDIR) -I$(ATISDKINCDIR) -I$(HMCPATH)/host_operations
