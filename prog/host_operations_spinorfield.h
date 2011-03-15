@@ -13,6 +13,8 @@
 
 hmc_error set_zero_spinorfield(hmc_spinor_field * field);
 hmc_error set_zero_spinorfield_eoprec(hmc_eoprec_spinor_field * field);
+hmc_error init_spinorfield_cold(hmc_spinor_field * in);
+hmc_error init_spinorfield_cold_eoprec(hmc_eoprec_spinor_field * in);
 
 hmc_float local_squarenorm(hmc_spinor_field *field, int spacepos, int timepos);
 hmc_error fill_with_one(hmc_spinor_field *field, int spacepos, int timepos, int alpha, int color);

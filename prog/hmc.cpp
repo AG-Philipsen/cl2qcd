@@ -26,7 +26,11 @@ int main(int argc, char* argv[]) {
 
   init_gaugefield(gaugefield,&parameters,&inittime);
   init_random_seeds(rnd, rndarray, &inittime);
-   
+
+// 	testing_matrix_spinor_ops();
+	testing_fermionmatrix_functions();
+	return 0;
+	
 #ifdef _USEGPU_
   opencl device(CL_DEVICE_TYPE_GPU, &inittime);
 #else

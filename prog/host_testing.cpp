@@ -802,13 +802,14 @@ void testing_colorvector_ops(){
 	hmc_color_vector colorvec1[NC];
 	hmc_color_vector colorvec2[NC];
 	i_colorvector(colorvec1);
+
 	unit_colorvector(colorvec2);
 	acc_colorvector(colorvec1, colorvec2);
 	
 // 	hmc_complex alpha = {0.25, 2.};
 // 	mult_colorvector(colorvec1, &alpha);
-	
 // 	print_su3mat(&u);
+	
 // 	print_colorvector(colorvec1);
 	su3matrix_times_colorvector(&u, colorvec1, colorvec2);
 // 	print_colorvector(colorvec2);
@@ -883,11 +884,17 @@ void testing_matrix_spinor_ops(){
 	
 	printf("\ttesting su3matrix*spinor:\n");
 	hmc_su3matrix u;
-	unit_su3matrix(&u);
+	fill_su3matrix_i(&u);
+
+	unit_spinor(spinor1);
+	real_multiply_spinor(spinor1, beta);
+// 	print_spinor(spinor1);
+// 	print_su3mat(&u);
 	sq1 = spinor_squarenorm(spinor1);
 	su3matrix_times_spinor(&u, spinor1, spinor2);
-	sq2 = spinor_squarenorm(spinor1);
-	printf("\t%f\n", sq1 - sq2);
+// 	print_spinor(spinor2);
+	sq2 = spinor_squarenorm(spinor2);
+	printf("\t%f\n", sq1*9-sq2);
 	
 	printf("\ttesting gammax*spinor:\n");
 	set_local_zero_spinor(spinor1);
@@ -955,4 +962,104 @@ void testing_matrix_spinor_ops(){
 	
 	printf("...done\n");
 	return;
+}
+
+void testing_matrix_spinor_functions(){
+	int print_result = 0;
+	
+	printf("testing matrix*spinor functions...\n");
+	
+	printf("\ttesting M_diag_local...\n");
+	hmc_spinor spinor1[SPINORSIZE];
+	hmc_spinor spinor2[SPINORSIZE];
+	hmc_spinor spinor3[SPINORSIZE];
+	unit_spinor(spinor1);
+	
+	hmc_float kappa = 1.;
+	hmc_float mu = -0.5;
+	real_multiply_spinor(spinor1, mu);
+
+	if(print_result == 1) print_spinor(spinor1);
+	M_diag_local(spinor1, kappa, mu);
+	if(print_result == 1) print_spinor(spinor1);
+	
+	hmc_su3matrix u;
+	hmc_su3matrix udagger;
+	unit_su3matrix(&u);
+	unit_su3matrix(&udagger);
+	
+	set_local_zero_spinor(spinor1);
+	unit_spinor(spinor2);
+	unit_spinor(spinor3);
+	
+	printf("\ttesting dslash_0...\n");
+	if(print_result == 1) print_spinor(spinor1);
+	if(print_result == 1) print_spinor(spinor2);
+	if(print_result == 1) print_spinor(spinor3);
+	dslash_0(spinor2, spinor3, spinor1, &u, &udagger);
+	if(print_result == 1) print_spinor(spinor1);
+
+	printf("\ttesting dslash_1...\n");
+	real_multiply_spinor(spinor2, -1.);
+	set_local_zero_spinor(spinor1);
+	if(print_result == 1) print_spinor(spinor1);
+	if(print_result == 1) print_spinor(spinor2);
+	if(print_result == 1) print_spinor(spinor3);
+	dslash_1(spinor2, spinor3, spinor1, &u, &udagger);
+	if(print_result == 1) print_spinor(spinor1);
+	
+	printf("\ttesting dslash_2...\n");
+	real_multiply_spinor(spinor2, -1.);
+	set_local_zero_spinor(spinor1);
+	if(print_result == 1) print_spinor(spinor1);
+	if(print_result == 1) print_spinor(spinor2);
+	if(print_result == 1) print_spinor(spinor3);
+	dslash_2(spinor2, spinor3, spinor1, &u, &udagger);
+	if(print_result == 1) print_spinor(spinor1);
+	
+	printf("\ttesting dslash_3...\n");
+	real_multiply_spinor(spinor2, -1.);
+	set_local_zero_spinor(spinor1);
+	if(print_result == 1) print_spinor(spinor1);
+	if(print_result == 1) print_spinor(spinor2);
+	if(print_result == 1) print_spinor(spinor3);
+	dslash_3(spinor2, spinor3, spinor1, &u, &udagger);
+	if(print_result == 1) print_spinor(spinor1);
+	printf("...done\n");
+	return;
+}
+
+void testing_fermionmatrix_functions(){
+	int print_result = 0;
+	
+	printf("testing fermionmatrix functions...\n");
+	hmc_spinor_field in[SPINORFIELDSIZE];
+	hmc_eoprec_spinor_field in_eoprec[EOPREC_SPINORFIELDSIZE];
+	hmc_spinor_field out[SPINORFIELDSIZE];
+	hmc_eoprec_spinor_field out_eoprec[EOPREC_SPINORFIELDSIZE];
+	hmc_gaugefield gaugefield;
+	init_spinorfield_cold(in);
+	init_spinorfield_cold_eoprec(in_eoprec);
+  set_gaugefield_cold(&gaugefield);
+	hmc_float kappa = 0.125;
+	hmc_float mu = 0.06;
+	
+	printf("\ttesting M_diag and M_sitediagonal:\n");
+  hmc_float sq1 = global_squarenorm(in);
+	hmc_float sq1_eoprec = global_squarenorm_eoprec(in_eoprec);
+	M_diag(in, out, kappa, mu);
+	hmc_float sq2 = global_squarenorm(out);
+	M_sitediagonal(in_eoprec, out_eoprec, kappa, mu);
+	hmc_float sq2_eoprec = global_squarenorm_eoprec(out_eoprec);
+	if(print_result == 1) printf("\t%f %f\n", sq2-1. - 4.*kappa*kappa*mu*mu, sq2_eoprec- 1. - 4.*kappa*kappa*mu*mu);
+	
+	printf("\ttesting M_inverse_sitediagonal:\n");
+  M_inverse_sitediagonal(out_eoprec, in_eoprec, kappa, mu);
+	sq1 = global_squarenorm_eoprec(in_eoprec);
+	if(print_result == 1) printf("\t%f\n", 1.-sq1);
+	
+	
+	printf("...done\n");
+	
+	
 }

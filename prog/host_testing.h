@@ -7,11 +7,12 @@
 #include "hmcerrs.h"
 #include "globaldefs.h"
 #include "types.h"
+#include "host_geometry.h"
 #include "host_operations_complex.h"
 #include "host_operations_gaugefield.h"
 #include "host_operations_spinor.h"
 #include "host_operations_spinorfield.h"
-#include "host_geometry.h"
+#include "host_operations_fermionmatrix.h"
 #include "host_update_heatbath.h"
 #include "host_fermionobservables.h"
 
@@ -40,6 +41,8 @@ void testing_heatbath(hmc_su3matrix * su3_in, hmc_staplematrix * staple_in, hmc_
 
 void testing_colorvector_ops();
 void testing_matrix_spinor_ops();
+void testing_matrix_spinor_functions();
+void testing_fermionmatrix_functions();
 
 void unit_spinor(hmc_spinor * in);
 void i_spinor(hmc_spinor * in);

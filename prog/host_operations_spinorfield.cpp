@@ -16,6 +16,36 @@ hmc_error set_zero_spinorfield_eoprec(hmc_eoprec_spinor_field *field) {
   return HMC_SUCCESS;
 }
 
+hmc_error init_spinorfield_cold(hmc_spinor_field * in){
+  for(int n=0; n<SPINORFIELDSIZE; n++) {
+    in[n].re =1.;
+    in[n].im =0.;
+  }
+	hmc_float norm=global_squarenorm(in);
+  norm = sqrt(norm);
+  for(int n=0; n<SPINORFIELDSIZE; n++) {
+    in[n].re /= norm;
+    in[n].im /=norm;
+  }
+  
+	return HMC_SUCCESS;
+}
+
+hmc_error init_spinorfield_cold_eoprec(hmc_eoprec_spinor_field * in_eoprec){
+	for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
+    in_eoprec[n].re =1.;
+    in_eoprec[n].im =0.;
+  }
+	hmc_float norm=global_squarenorm_eoprec(in_eoprec);
+  norm = sqrt(norm);
+  for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
+    in_eoprec[n].re /= norm;
+    in_eoprec[n].im /=norm;
+  }
+	return HMC_SUCCESS;
+}
+
+
 hmc_float local_squarenorm(hmc_spinor_field *field, int spacepos, int timepos) {
   hmc_float sum=0;
   for (int a=0; a<NSPIN; a++) {

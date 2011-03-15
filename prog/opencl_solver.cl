@@ -25,6 +25,7 @@ void inline dslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos,
 	if(coord[dir] == NSPACE-1) spinor_apply_bc(spinnext, theta);
 	else if(coord[dir] == 0) spinor_apply_bc(spinprev, theta);
       
+	//!!CP: this is wrong, it is always gamma1!!! How to do this without ifs???
 	multiply_spinor_gamma1(spinnext,tmp);
 	real_multiply_spinor(tmp,-hmc_one_f);
 	spinors_accumulate(spinnext,tmp);
@@ -39,7 +40,7 @@ void inline dslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos,
 	return;
 }
 
-void inline dslash_temporal (hmc_spinor * spinout, int * coord, int pos, int t, __global hmc_spinor_field* in,  __global hmc_ocl_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im){
+void inline dslash_temporal (hmc_spinor * spinout, int pos, int t, __global hmc_spinor_field* in,  __global hmc_ocl_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im){
 	int next, prev;
 	hmc_spinor spinnext[SPINORSIZE];
 	hmc_spinor spinprev[SPINORSIZE];

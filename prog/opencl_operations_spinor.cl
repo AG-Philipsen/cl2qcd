@@ -248,8 +248,8 @@ void su3matrix_times_spinor(hmc_ocl_su3matrix* u, hmc_spinor* in, hmc_spinor* ou
     }
     su3matrix_times_colorvector(u, vec_in, vec_out);
     for(int c=0; c<NC; c++) {
-      in[spinor_element(alpha,c)].re = vec_out[c].re;
-      in[spinor_element(alpha,c)].im = vec_out[c].im;
+      out[spinor_element(alpha,c)].re = vec_out[c].re;
+      out[spinor_element(alpha,c)].im = vec_out[c].im;
     }
   }
   return;

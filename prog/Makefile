@@ -46,6 +46,7 @@ OBJECTS = host_operations_complex.o \
 	host_operations_gaugefield.o \
 	host_operations_spinor.o \
 	host_operations_spinorfield.o \
+	host_operations_fermionmatrix.o \
 	host_gaugeobservables.o \
 	host_testing.o \
 	host_geometry.o \
