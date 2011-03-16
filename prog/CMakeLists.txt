@@ -2,7 +2,7 @@
 #
 # Copyright 2011 Matthias Bach <bach@compeng.uni-frankfurt.de>
 
-cmake_minimum_required( VERSION 2.8 )
+cmake_minimum_required( VERSION 2.6.4 )
 project( clhmc )
 
 # we have some custom CMake stuff
