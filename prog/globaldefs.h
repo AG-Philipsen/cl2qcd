@@ -16,18 +16,33 @@
 #define VOLSPACE NSPACE*NSPACE*NSPACE
 #define VOL4D VOLSPACE*NTIME
 
+#define SPINORSIZE NSPIN*NC
+#define HALFSPINORSIZE NSPIN/2*NC
+#define SPINORFIELDSIZE SPINORSIZE*NTIME*VOLSPACE
+#define EOPREC_SPINORFIELDSIZE SPINORSIZE*NTIME*VOLSPACE/2
+
 //startconditions:
 #define START_FROM_SOURCE 2
 #define COLD_START 0
 #define HOT_START 1
 
+#endif //_INKERNEL_
+
+//EVEN ODD
+#define EVEN 0
+#define ODD 1
+
 #define TRUE 1
 #define FALSE 0
-
-#endif //_INKERNEL_
 
 #define PI 	3.14159265358979
 
 #define su2_entries 4
+
+#ifdef _USEGPU_
+#define NUMTHREADS 1
+#else
+#define NUMTHREADS 1
+#endif
 
 #endif

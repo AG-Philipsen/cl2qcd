@@ -1,5 +1,4 @@
 #include "host_update_heatbath.h"
-#include "host_testing.h"
 
 void calc_staple(hmc_gaugefield * field, hmc_staplematrix * dest, const int pos, const int t, const int mu_in){
   hmc_su3matrix prod, prod2, tmp;
@@ -139,7 +138,6 @@ void heatbath_update (hmc_gaugefield * gaugefield, const hmc_float beta){
         r_pauli[2] = su2_tmp[2];
         r_pauli[3] = su2_tmp[3];
 
-      
         //go back to a su2 matrix in standard basis
         w[0].re = r_pauli[0];
         w[0].im = r_pauli[3];
@@ -237,7 +235,9 @@ void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float 
   //iterate through the sites
   for (mu = 0; mu < NDIM; mu ++){
     //update even sites
+#ifdef _OPENMP
     #pragma omp for private (pos, i, x, y, z, t)
+#endif
     for (t = 0; t<NTIME; t++){
       for (x = 0; x<NSPACE; x++){
         for (y = 0; y<NSPACE/2; y++){
@@ -321,10 +321,14 @@ void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float 
           put_su3matrix(gaugefield, &U, pos, t, mu); 
     }}}}
     //make sure all even sites are done
+#ifdef _OPENMP
     #pragma omp barrier
+#endif
 
     //update odd sites
+#ifdef _OPENMP
     #pragma omp for private (pos, i, x, y, z, t)
+#endif
     for (t = 0; t<NTIME; t++){
       for (x = 0; x<NSPACE; x++){
         for (y = 0; y<NSPACE/2; y++){
@@ -414,7 +418,9 @@ void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield, const hmc_flo
   //iterate through the sites
   for (mu = 0; mu < NDIM; mu ++){
     //update even sites
+#ifdef _OPENMP
     #pragma omp for private (pos, i, x, y, z, t)
+#endif
     for (t = 0; t<NTIME; t++){
       for (x = 0; x<NSPACE; x++){
         for (y = 0; y<NSPACE/2; y++){
@@ -489,10 +495,14 @@ void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield, const hmc_flo
           put_su3matrix(gaugefield, &U, pos, t, mu);
     }}}}
     //make sure all even sites are done
+#ifdef _OPENMP
     #pragma omp barrier
+#endif
 
     //update odd sites
+#ifdef _OPENMP
     #pragma omp for private (pos, i, x, y, z, t)
+#endif
     for (t = 0; t<NTIME; t++){
       for (x = 0; x<NSPACE; x++){
         for (y = 0; y<NSPACE/2; y++){

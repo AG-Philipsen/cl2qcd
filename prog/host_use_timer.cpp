@@ -50,23 +50,60 @@ void time_output(usetimer * total, usetimer * init, usetimer * poly, usetimer * 
   uint64_t updatetime = (*update).getTime();
   uint64_t overrelaxtime = (*overrelax).getTime();
   uint64_t copytime = (*copy).getTime();
-  
-  int polysteps = (*poly).getNumMeas();
-  int plaqsteps = (*plaq).getNumMeas();
-  int updatesteps = (*update).getNumMeas();
-  int overrelaxsteps = (*overrelax).getNumMeas();
-  int copysteps = (*copy).getNumMeas();
-  
-  uint64_t poly_avgtime_site = divide(polytime, VOL4D*polysteps);
-  uint64_t plaq_avgtime_site = divide(plaqtime, VOL4D*plaqsteps);
-  uint64_t update_avgtime_site = divide(updatetime, VOL4D*updatesteps);
-  uint64_t overrelax_avgtime_site = divide(overrelaxtime, VOL4D*overrelaxsteps);
 
-  uint64_t poly_avgtime = divide(polytime, polysteps);
-  uint64_t plaq_avgtime = divide(plaqtime, plaqsteps);
-  uint64_t update_avgtime = divide(updatetime, updatesteps);
-  uint64_t overrelax_avgtime = divide(overrelaxtime, overrelaxsteps);
+  int polysteps;
+  int plaqsteps;
+  int updatesteps;
+  int overrelaxsteps;
+  int copysteps;
+  uint64_t poly_avgtime_site;
+  uint64_t plaq_avgtime_site;
+  uint64_t update_avgtime_site;
+  uint64_t overrelax_avgtime_site;
+  uint64_t poly_avgtime;
+  uint64_t plaq_avgtime;
+  uint64_t update_avgtime;
+  uint64_t overrelax_avgtime;
   uint64_t copy_avgtime;
+  
+  polysteps = (*poly).getNumMeas();
+  plaqsteps = (*plaq).getNumMeas();
+  updatesteps = (*update).getNumMeas();
+  overrelaxsteps = (*overrelax).getNumMeas();
+  copysteps = (*copy).getNumMeas();
+  
+  if(polysteps!=0){
+    poly_avgtime_site = divide(polytime, VOL4D*polysteps);
+    poly_avgtime = divide(polytime, polysteps);
+  }
+  else{
+    poly_avgtime_site = 0;
+    poly_avgtime = 0;
+  }
+  if(plaqsteps!=0){
+    plaq_avgtime_site = divide(plaqtime, VOL4D*plaqsteps);
+    plaq_avgtime = divide(plaqtime, plaqsteps);
+  }
+  else{
+    plaq_avgtime_site = 0;
+    plaq_avgtime = 0;
+  }
+  if(updatesteps!=0){
+    update_avgtime_site = divide(updatetime, VOL4D*updatesteps);
+    update_avgtime = divide(updatetime, updatesteps);
+  }
+  else{
+    update_avgtime_site = 0;
+    update_avgtime = 0;
+  }
+  if(overrelaxsteps!=0){
+    overrelax_avgtime_site = divide(overrelaxtime, VOL4D*overrelaxsteps);
+    overrelax_avgtime = divide(overrelaxtime, overrelaxsteps);
+  }
+  else{
+    overrelax_avgtime_site = 0;
+    overrelax_avgtime = 0;
+  }
   if(copysteps != 0) copy_avgtime = divide(copytime, copysteps);
   else copy_avgtime = 0;
   
@@ -87,11 +124,21 @@ void time_output(usetimer * total, usetimer * init, usetimer * poly, usetimer * 
   //save some data to file
   ofstream out;
   stringstream str_filename;
-  str_filename<<"time_measurement_";
-#ifdef _RECONSTRUCT_TWELVE_
-  str_filename<<1;
+  str_filename<<"time_H_";
+#ifdef _USEGPU_
+  str_filename<<"G_";
 #else
-  str_filename<<0;
+  str_filename<<"C_";
+#endif
+#ifdef _USEDOUBLEPREC_
+  str_filename<<"D_";
+#else
+  str_filename<<"S_";
+#endif
+#ifdef _RECONSTRUCT_TWELVE_
+  str_filename<<"R_";
+#else
+  str_filename<<"N_";
 #endif
   out.open(str_filename.str().c_str(), fstream::app); 
   if (out.is_open())

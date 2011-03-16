@@ -10,67 +10,69 @@ int main(int argc, char* argv[]) {
   parameters.readfile(inputfile);
   print_info(&parameters);
 
+  benchmark_id = argv[2];
+  
+  stringstream gaugeout_name;
+  gaugeout_name<<"gaugeobservables_beta"<<parameters.get_beta();
+  
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Initialization
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-  stringstream gaugeout_name;
-  gaugeout_name<<"gaugeobservables_beta"<<parameters.get_beta();
-    
   sourcefileparameters parameters_source;
   hmc_gaugefield * gaugefield;
   gaugefield = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
   hmc_rndarray rndarray;
 
   init_gaugefield(gaugefield,&parameters,&inittime);
-  
-  //this needs optimization
-  const size_t global_work_size = VOL4D/2;
-  const size_t local_work_size  = 0;
-  //one should define a definite number of threads and use this here
-  init_random_seeds(rnd, rndarray, VOL4D/2, &inittime);
+  init_random_seeds(rnd, rndarray, &inittime);
 
-  
-  opencl gpu(CL_DEVICE_TYPE_GPU, &inittime);
+	simple_correlator(gaugefield, parameters.get_kappa(), parameters.get_mu(), parameters.get_theta_fermion(), parameters.get_chem_pot_re(), parameters.get_chem_pot_im(), 1000);
+	
+	return 0;
+#ifdef _USEGPU_
+  opencl device(CL_DEVICE_TYPE_GPU, &inittime);
+#else
+  opencl device(CL_DEVICE_TYPE_CPU, &inittime);
+#endif
 
   cout << "initial values of observables:\n\t" ;
   print_gaugeobservables(gaugefield, &polytime, &plaqtime);
 
-  gpu.copy_gaugefield_to_device(gaugefield, &copytime);
-  gpu.copy_rndarray_to_device(rndarray, &copytime);
+  device.copy_gaugefield_to_device(gaugefield, &copytime);
+  device.copy_rndarray_to_device(rndarray, &copytime);
 
+#ifdef _TESTING_
+  device.testing(gaugefield);
+#endif
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Heatbath
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-  //this has to go into a function later
   int nsteps = parameters.get_heatbathsteps();
   cout<<"perform "<<nsteps<<" heatbath steps on OpenCL device..."<<endl;
   for(int i = 0; i<nsteps; i++){
-    gpu.run_heatbath(parameters.get_beta(), local_work_size, global_work_size, &updatetime);
-    gpu.run_overrelax(parameters.get_beta(), local_work_size, global_work_size, &overrelaxtime);
+    device.run_heatbath(parameters.get_beta(), local_work_size, global_work_size, &updatetime);
+    device.run_overrelax(parameters.get_beta(), local_work_size, global_work_size, &overrelaxtime);
     if( ( (i+1)%parameters.get_writefrequency() ) == 0 ) {
-       gpu.gaugeobservables(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
+       device.gaugeobservables(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
        print_gaugeobservables(plaq, tplaq, splaq, pol, i, gaugeout_name.str());
     }
     if( parameters.get_saveconfigs()==TRUE && ( (i+1)%parameters.get_savefrequency() ) == 0 ) {
-      gpu.get_gaugefield_from_device(gaugefield, &copytime);
+      device.get_gaugefield_from_device(gaugefield, &copytime);
       save_gaugefield(gaugefield, &parameters, i);
+      print_gaugeobservables(gaugefield, &plaqtime, &polytime, i, gaugeout_name.str());
     }
   }
 
-  gpu.get_gaugefield_from_device(gaugefield, &copytime);
+  device.get_gaugefield_from_device(gaugefield, &copytime);
 
-
-
-  totaltime.add();
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Final Output
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+  
+  totaltime.add();
   save_gaugefield(gaugefield, &parameters, nsteps);  
   time_output(&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime);
 
@@ -79,7 +81,7 @@ int main(int argc, char* argv[]) {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   free(gaugefield);
-  gpu.finalize();
+  device.finalize();
   
   return HMC_SUCCESS;
 }

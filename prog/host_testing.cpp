@@ -1,25 +1,190 @@
 #include "host_testing.h"
 
-void testing_spinor() {
-  hmc_full_spinor_field test;
-  printf("global squarenorm: %f\n",global_squarenorm(&test));
-  set_zero_spinor(&test);
 
-  printf("global squarenorm: %f\n",global_squarenorm(&test));
+void testing_correlator(hmc_gaugefield* gf, inputparameters* parameters) {
+  simple_correlator(gf, (*parameters).get_kappa(),(*parameters).get_mu(), (*parameters).get_theta_fermion(), (*parameters).get_chem_pot_re(), (*parameters).get_chem_pot_im(), (*parameters).get_cgmax());
+ return;
+}
 
-  fill_with_one(&test, 0, 0, 0);
+void testing_fermionmatrix(){
+  hmc_color_vector* vec = new hmc_color_vector[NC];
+  hmc_color_vector* out = new hmc_color_vector[NC];
 
-  printf("global squarenorm: %f\n",global_squarenorm(&test));
+  hmc_su3matrix u;
+  unit_su3matrix(&u);
+
+  vec[0].re=1;
+  vec[0].im=2;
+  vec[1].re=3;
+  vec[1].im=4;
+  vec[2].re=5;
+  vec[2].im=6;
+
+  su3matrix_times_colorvector(&u,vec,out);
+
+  for(int a=0; a<NC; a++) {
+    printf("(%f,%f)\n",out[a].re,out[a].im);
+  }
+
+  delete [] vec;
+  delete [] out;
+  return;
+}
+
+void testing_eoprec_spinor() {
+  hmc_spinor_field* test = new hmc_spinor_field[SPINORFIELDSIZE];
+
+  hmc_eoprec_spinor_field* eventest = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
+  hmc_eoprec_spinor_field* oddtest = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
+
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+  convert_to_eoprec(eventest,oddtest,test);
+  printf("eo global squarenorm: %f -- %f\n",global_squarenorm_eoprec(eventest),global_squarenorm_eoprec(oddtest));
+  convert_from_eoprec(eventest,oddtest,test);
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+
+  set_zero_spinorfield(test);
+
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+  convert_to_eoprec(eventest,oddtest,test);
+  printf("eo global squarenorm: %f -- %f\n",global_squarenorm_eoprec(eventest),global_squarenorm_eoprec(oddtest));
+  convert_from_eoprec(eventest,oddtest,test);
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+
+  fill_with_one(test, 0, 0, 0, 0);
+
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+  convert_to_eoprec(eventest,oddtest,test);
+  printf("eo global squarenorm: %f -- %f\n",global_squarenorm_eoprec(eventest),global_squarenorm_eoprec(oddtest));
+  convert_from_eoprec(eventest,oddtest,test);
+  printf("global squarenorm: %f\n",global_squarenorm(test));
 
   for(int t=0; t<NTIME; t++) {
     for(int n=0; n<VOLSPACE; n++) {
-      for(int j=0; j<NSPIN*NC; j++) {
-	fill_with_one(&test, n, t, j);
+      for(int a=0; a<NSPIN; a++) {
+	for(int j=0; j<NC; j++) {
+	  fill_with_one(test, n, t, a, j);
+	}
       }
     }
   }
 
-  printf("global squarenorm: %f\n",global_squarenorm(&test));
+
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+  convert_to_eoprec(eventest,oddtest,test);
+  printf("eo global squarenorm: %f -- %f\n",global_squarenorm_eoprec(eventest),global_squarenorm_eoprec(oddtest));
+  convert_from_eoprec(eventest,oddtest,test);
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+
+  set_zero_spinorfield(test);
+
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+  convert_to_eoprec(eventest,oddtest,test);
+  printf("eo global squarenorm: %f -- %f\n",global_squarenorm_eoprec(eventest),global_squarenorm_eoprec(oddtest));
+  convert_from_eoprec(eventest,oddtest,test);
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+
+  printf("fill only even sites:\n");
+  for(int t=0; t<NTIME; t++) {
+    for(int n=0; n<VOLSPACE; n++) {
+      for(int a=0; a<NSPIN; a++) {
+	for(int j=0; j<NC; j++) {
+	  int check = t + get_spacecoord(n,1) + get_spacecoord(n,2) + get_spacecoord(n,3);
+	  if(check%2 == 0) fill_with_one(test, n, t, a, j);
+	}
+      }
+    }
+  }
+
+
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+  convert_to_eoprec(eventest,oddtest,test);
+  printf("eo global squarenorm: %f -- %f\n",global_squarenorm_eoprec(eventest),global_squarenorm_eoprec(oddtest));
+  convert_from_eoprec(eventest,oddtest,test);
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+
+  set_zero_spinorfield(test);
+
+  printf("fill only odd sites:\n");
+  for(int t=0; t<NTIME; t++) {
+    for(int n=0; n<VOLSPACE; n++) {
+      for(int a=0; a<NSPIN; a++) {
+	for(int j=0; j<NC; j++) {
+	  int check = t + get_spacecoord(n,1) + get_spacecoord(n,2) + get_spacecoord(n,3);
+	  if(check%2 == 1) fill_with_one(test, n, t, a, j);
+	}
+      }
+    }
+  }
+
+
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+  convert_to_eoprec(eventest,oddtest,test);
+  printf("eo global squarenorm: %f -- %f\n",global_squarenorm_eoprec(eventest),global_squarenorm_eoprec(oddtest));
+  convert_from_eoprec(eventest,oddtest,test);
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+
+
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+  convert_to_eoprec(eventest,oddtest,test);
+  printf("eo global squarenorm: %f -- %f\n",global_squarenorm_eoprec(eventest),global_squarenorm_eoprec(oddtest));
+  convert_to_kappa_format(oddtest,4.214523);
+  printf("eo global squarenorm: %f -- %f\n",global_squarenorm_eoprec(eventest),global_squarenorm_eoprec(oddtest));
+  convert_from_kappa_format(oddtest, oddtest,4.214523);
+  printf("eo global squarenorm: %f -- %f\n",global_squarenorm_eoprec(eventest),global_squarenorm_eoprec(oddtest));
+  convert_from_eoprec(eventest,oddtest,test);
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+
+  delete [] test;
+  delete [] eventest;
+  delete [] oddtest;
+
+  return;
+}
+
+void print_fullspinorfield(hmc_spinor* in){
+  for(int t=0; t<NTIME; t++) {
+    for(int n=0; n<VOLSPACE; n++) {
+      for(int a=0; a<NSPIN; a++) {
+	printf("[");
+	for(int j=0; j<NC; j++) {
+	  printf("(%.3f,%.3f) ", (*in).re, (*in).im );
+	}
+      }printf("]\n");
+    }printf("\n");
+  }printf("\n");
+}
+
+void testing_spinor() {
+  hmc_spinor_field* test = new hmc_spinor_field[SPINORFIELDSIZE];
+
+
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+  set_zero_spinorfield(test);
+
+
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+
+  fill_with_one(test, 0, 0, 0, 0);
+
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+
+
+  for(int t=0; t<NTIME; t++) {
+    for(int n=0; n<VOLSPACE; n++) {
+      for(int a=0; a<NSPIN; a++) {
+	for(int j=0; j<NC; j++) {
+	  fill_with_one(test, n, t, a, j);
+	}
+      }
+    }
+  }
+
+
+  printf("global squarenorm: %f\n",global_squarenorm(test));
+
+  delete [] test;
+
   return;
 }
 
@@ -316,7 +481,7 @@ void testing_heatbath_norandommat_no123(hmc_su3matrix * in, hmc_staplematrix * s
     w_pauli[3] = hmc_float(-1)/k * w_pauli[3];
 	
     //beta' = 2Beta/Nc*k
-    hmc_float beta_neu =  2.*beta / hmc_float(NC)*k;
+    //hmc_float beta_neu =  2.*beta / hmc_float(NC)*k;
       
     //Neuer Link in Paulibasis mittels Kennedy-Pendleton-Algorithmus
     //SU2Update(r_pauli, beta_neu);
@@ -575,7 +740,427 @@ void testing_heatbath(hmc_su3matrix * in, hmc_staplematrix * staple_in, hmc_su3m
   return;
 }
 
+void print_colorvector(hmc_color_vector * in){
+	printf("(%f, %f), (%f, %f), (%f, %f)\n", in[0].re, in[0].im, in[1].re, in[1].im, in[2].re, in[2].im );
+}
 
+void unit_colorvector(hmc_color_vector * in){
+	for(int i = 0; i<NC; i++){
+		in[i] = hmc_complex_one;
+	}
+}
 
+void zero_colorvector(hmc_color_vector * in){
+	for(int i = 0; i<NC; i++){
+		in[i] = hmc_complex_zero;
+	}
+}
 
+void  i_colorvector(hmc_color_vector * in){
+	for(int i = 0; i<NC; i++){
+		in[i] = hmc_complex_i;
+	}
+}
 
+void acc_colorvector(hmc_color_vector * inout, hmc_color_vector * incr){
+	for(int i = 0; i<NC; i++){
+		complexaccumulate(&inout[i], &incr[i]);
+	}
+}
+
+void mult_colorvector(hmc_color_vector * inout, hmc_complex * factor){
+	for(int i = 0; i<NC; i++){
+		inout[i] = complexmult(&inout[i], factor);
+	}
+}
+
+void fill_su3matrix_one(hmc_su3matrix * u){
+	for(int i = 0; i<NC; i++){
+		for(int j = 0; j<NC; j++){
+			(*u)[i][j] = hmc_complex_one;
+		}
+	}
+}
+
+void fill_su3matrix_i(hmc_su3matrix * u){
+	for(int i = 0; i<NC; i++){
+		for(int j = 0; j<NC; j++){
+			(*u)[i][j] = hmc_complex_i;
+		}
+	}
+}
+
+void testing_colorvector_ops(){
+	printf("testing colorvector operations...\n");
+	hmc_su3matrix u;
+	hmc_su3matrix v;
+	fill_su3matrix_one(&u);
+	fill_su3matrix_i(&v);
+	
+	accumulate_su3matrices_add(&u, &v);
+	
+	hmc_color_vector colorvec1[NC];
+	hmc_color_vector colorvec2[NC];
+	i_colorvector(colorvec1);
+
+	unit_colorvector(colorvec2);
+	acc_colorvector(colorvec1, colorvec2);
+	
+// 	hmc_complex alpha = {0.25, 2.};
+// 	mult_colorvector(colorvec1, &alpha);
+// 	print_su3mat(&u);
+	
+// 	print_colorvector(colorvec1);
+	su3matrix_times_colorvector(&u, colorvec1, colorvec2);
+// 	print_colorvector(colorvec2);
+	
+	printf("\t(%f, %f), (%f, %f), (%f, %f)\n", colorvec2[0].re, colorvec2[0].im-6, colorvec2[1].re, colorvec2[1].im-6, colorvec2[2].re, colorvec2[2].im-6 );
+
+	printf("...done\n");
+	return;
+}
+
+void unit_spinor(hmc_spinor * in){
+	for(int i = 0; i<SPINORSIZE; i++){	in[i] = hmc_complex_one; }
+}
+
+void i_spinor(hmc_spinor * in){
+	for(int i = 0; i<SPINORSIZE; i++){	in[i] = hmc_complex_i; }
+}
+
+void print_spinor(hmc_spinor * in){
+	for(int i = 0; i<NC; i++){
+		for(int j = 0; j<NDIM; j++){
+			printf("(%f, %f), ", in[spinor_element(j, i)].re, in[spinor_element(j, i)].im);	
+		}printf("\n");
+	}
+	printf("\n");
+}
+
+void set_comp_to_one_spinor(hmc_spinor * in, int comp){
+	in[comp] = hmc_complex_one;
+}
+
+void set_comp_to_i_spinor(hmc_spinor * in, int comp){
+	in[comp] = hmc_complex_i;
+}
+
+void testing_matrix_spinor_ops(){
+	printf("testing matrix-spinor operations...\n");
+
+	hmc_spinor spinor1[SPINORSIZE];
+	hmc_spinor spinor2[SPINORSIZE];
+	unit_spinor(spinor1);
+	i_spinor(spinor2);
+	
+	printf("\ttesting float*spinor:\n");
+	hmc_float alpha = 0.2134789234892347891324;
+	real_multiply_spinor(spinor1, alpha);
+// 	print_spinor(spinor1);
+	real_multiply_spinor(spinor2, alpha);
+// 	print_spinor(spinor2);
+	
+	hmc_float sum = 0.;
+	for(int i = 0; i<SPINORSIZE; i++){
+		sum+=(spinor1[i].re - spinor2[i].im);
+	}
+	printf("\t%f\n", sum);
+	
+	printf("\ttesting spinor_accumulate:\n");
+	hmc_float beta = 0.2340934;
+	real_multiply_spinor(spinor1, beta);
+	spinors_accumulate(spinor1, spinor2);
+	sum = spinor_squarenorm(spinor1);
+	printf("\t%f\n", sum - (beta*beta+1)*alpha*alpha*SPINORSIZE);
+	
+	printf("\ttesting spinor_local_squarenorm and set_zero_spinorfield:\n");
+
+	set_local_zero_spinor(spinor1);
+	hmc_float sq1 = spinor_squarenorm(spinor1);
+	hmc_float sq2 = spinor_squarenorm(spinor2);
+
+	sum = sq1 + (sq2-alpha*alpha*SPINORSIZE);
+	printf("\t%f\n", sum);
+	
+	printf("\ttesting su3matrix*spinor:\n");
+	hmc_su3matrix u;
+	fill_su3matrix_i(&u);
+
+	unit_spinor(spinor1);
+	real_multiply_spinor(spinor1, beta);
+// 	print_spinor(spinor1);
+// 	print_su3mat(&u);
+	sq1 = spinor_squarenorm(spinor1);
+	su3matrix_times_spinor(&u, spinor1, spinor2);
+// 	print_spinor(spinor2);
+	sq2 = spinor_squarenorm(spinor2);
+	printf("\t%f\n", sq1*9-sq2);
+	
+	printf("\ttesting gammax*spinor:\n");
+	set_local_zero_spinor(spinor1);
+	
+	int comp = 3;
+	int comp2 = 0;
+// 	set_comp_to_one_spinor(spinor1, spinor_element(comp,0));
+// 	set_comp_to_one_spinor(spinor1, spinor_element(comp,1));
+// 	set_comp_to_one_spinor(spinor1, spinor_element(comp,2));
+	set_comp_to_i_spinor(spinor1, spinor_element(comp2,0));
+	set_comp_to_i_spinor(spinor1, spinor_element(comp2,1));
+	set_comp_to_i_spinor(spinor1, spinor_element(comp2,2));
+	
+// 	printf("\tinput vector:\n");
+// 	print_spinor(spinor1);
+// 	printf("\tgamma0*input vector:\n");
+// 	multiply_spinor_gamma0(spinor1, spinor2);
+// 	print_spinor(spinor2);
+// 	printf("\tgamma1*input vector:\n");
+// 	multiply_spinor_gamma1(spinor1, spinor2);
+// 	print_spinor(spinor2);
+// 	printf("\tgamma2*input vector:\n");
+// 	multiply_spinor_gamma2(spinor1, spinor2);
+// 	print_spinor(spinor2);
+// 	printf("\tgamma3*input vector:\n");
+// 	multiply_spinor_gamma3(spinor1, spinor2);
+// 	print_spinor(spinor2);
+	
+// 	printf("\tinput vector:\n");
+// 	print_spinor(spinor1);
+	multiply_spinor_i_factor_gamma5(spinor1, spinor2, beta);
+// 	print_spinor(spinor2);
+
+	printf("\ttesting spinprojection...\n");
+	set_local_zero_spinor(spinor1);
+	
+// 	unit_spinor(spinor1);
+// 	print_spinor(spinor1);
+// 	unit_su3matrix(&u);
+// 	spinprojectproduct_gamma3(&u, spinor1, hmc_one_f);
+// 	print_spinor(spinor1);
+	
+	printf("\ttesting spinor squarenorm...\n");
+	i_spinor(spinor1);
+	real_multiply_spinor(spinor1, 0.5);
+// 	print_spinor(spinor1);
+	sum = spinor_squarenorm(spinor1);
+	printf("\t%f\n", sum-3);
+	
+	printf("\ttesting spinor acc...\n");
+// 	print_spinor(spinor1);
+// 	print_spinor(spinor2);
+	spinors_accumulate(spinor1, spinor2);
+// 	print_spinor(spinor1);
+	
+	
+	printf("\ttesting spinor apply bc...\n");
+	unit_spinor(spinor1);
+	spinor_apply_bc(spinor1, PI/2);
+// 	print_spinor(spinor1);
+	
+	i_spinor(spinor1);
+	spinor_apply_bc(spinor1, PI/2);
+// 	print_spinor(spinor1);
+	
+	printf("...done\n");
+	return;
+}
+
+void testing_matrix_spinor_functions(){
+	int print_result = 0;
+	
+	printf("testing matrix*spinor functions...\n");
+	
+	printf("\ttesting M_diag_local...\n");
+	hmc_spinor spinor1[SPINORSIZE];
+	hmc_spinor spinor2[SPINORSIZE];
+	hmc_spinor spinor3[SPINORSIZE];
+	unit_spinor(spinor1);
+	
+	hmc_float kappa = 1.;
+	hmc_float mu = -0.5;
+	real_multiply_spinor(spinor1, mu);
+
+	if(print_result == 1) print_spinor(spinor1);
+	M_diag_local(spinor1, kappa, mu);
+	if(print_result == 1) print_spinor(spinor1);
+	
+	hmc_su3matrix u;
+	hmc_su3matrix udagger;
+	unit_su3matrix(&u);
+	unit_su3matrix(&udagger);
+	
+	set_local_zero_spinor(spinor1);
+	unit_spinor(spinor2);
+	unit_spinor(spinor3);
+	
+	printf("\ttesting dslash_0...\n");
+	if(print_result == 1) print_spinor(spinor1);
+	if(print_result == 1) print_spinor(spinor2);
+	if(print_result == 1) print_spinor(spinor3);
+	dslash_0(spinor2, spinor3, spinor1, &u, &udagger);
+	if(print_result == 1) print_spinor(spinor1);
+
+	printf("\ttesting dslash_1...\n");
+	real_multiply_spinor(spinor2, -1.);
+	set_local_zero_spinor(spinor1);
+	if(print_result == 1) print_spinor(spinor1);
+	if(print_result == 1) print_spinor(spinor2);
+	if(print_result == 1) print_spinor(spinor3);
+	dslash_1(spinor2, spinor3, spinor1, &u, &udagger);
+	if(print_result == 1) print_spinor(spinor1);
+	
+	printf("\ttesting dslash_2...\n");
+	real_multiply_spinor(spinor2, -1.);
+	set_local_zero_spinor(spinor1);
+	if(print_result == 1) print_spinor(spinor1);
+	if(print_result == 1) print_spinor(spinor2);
+	if(print_result == 1) print_spinor(spinor3);
+	dslash_2(spinor2, spinor3, spinor1, &u, &udagger);
+	if(print_result == 1) print_spinor(spinor1);
+	
+	printf("\ttesting dslash_3...\n");
+	real_multiply_spinor(spinor2, -1.);
+	set_local_zero_spinor(spinor1);
+	if(print_result == 1) print_spinor(spinor1);
+	if(print_result == 1) print_spinor(spinor2);
+	if(print_result == 1) print_spinor(spinor3);
+	dslash_3(spinor2, spinor3, spinor1, &u, &udagger);
+	if(print_result == 1) print_spinor(spinor1);
+	printf("...done\n");
+	return;
+}
+
+void testing_fermionmatrix_functions(){
+	int print_result = 0;
+	
+	printf("testing fermionmatrix functions...\n");
+	hmc_spinor_field in[SPINORFIELDSIZE];
+	hmc_eoprec_spinor_field in_eoprec[EOPREC_SPINORFIELDSIZE];
+	hmc_spinor_field out[SPINORFIELDSIZE];
+	hmc_eoprec_spinor_field out_eoprec[EOPREC_SPINORFIELDSIZE];
+	hmc_gaugefield gaugefield;
+	init_spinorfield_cold(in);
+	init_spinorfield_cold_eoprec(in_eoprec);
+  set_gaugefield_cold(&gaugefield);
+	hmc_float kappa = 0.125;
+	hmc_float mu = 0.06;
+	
+	printf("\ttesting M_diag and M_sitediagonal:\n");
+  hmc_float sq1 = global_squarenorm(in);
+	hmc_float sq1_eoprec = global_squarenorm_eoprec(in_eoprec);
+	M_diag(in, out, kappa, mu);
+	hmc_float sq2 = global_squarenorm(out);
+	M_sitediagonal(in_eoprec, out_eoprec, kappa, mu);
+	hmc_float sq2_eoprec = global_squarenorm_eoprec(out_eoprec);
+	if(print_result == 1) printf("\t%f %f\n", sq2-1. - 4.*kappa*kappa*mu*mu, sq2_eoprec- 1. - 4.*kappa*kappa*mu*mu);
+	
+	printf("\ttesting M_inverse_sitediagonal:\n");
+  M_inverse_sitediagonal(out_eoprec, in_eoprec, kappa, mu);
+	sq1 = global_squarenorm_eoprec(in_eoprec);
+	if(print_result == 1) printf("\t%f\n", 1.-sq1);
+	
+	printf("\ttesting dslash_temporal and dslash_temporal_eoprec:\n");
+	
+	init_spinorfield_cold(in);
+	init_spinorfield_cold_eoprec(in_eoprec);
+	
+	set_zero_spinorfield(out);
+	set_zero_spinorfield_eoprec(out_eoprec);
+	
+	int pos = 0;
+	int t = 0;
+	hmc_float theta = 0.;
+	hmc_float chem_pot_re = 0.;
+	hmc_float chem_pot_im = 0.;
+	
+	hmc_spinor spinor1 [SPINORSIZE];
+	set_local_zero_spinor(spinor1);
+	dslash_temporal (spinor1, pos, t, in, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq1 = spinor_squarenorm(spinor1);
+
+	set_local_zero_spinor(spinor1);
+	dslash_temporal_eoprec (spinor1, pos, t, in_eoprec, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	
+	sq2 = spinor_squarenorm(spinor1);
+	if(print_result == 1) printf("\t%f %f\n", sq1 - 4.*12./((float) SPINORFIELDSIZE), sq2 - 4.*12./((float) EOPREC_SPINORFIELDSIZE));
+	
+	//CP: test2
+	init_spinorfield_cold(in);
+	init_spinorfield_cold_eoprec(in_eoprec);
+	
+	set_local_zero_spinor(spinor1);
+	int tmp = t+1;
+	put_spinor_to_field(spinor1,in,pos,tmp);
+	int tmp2 = get_n_eoprec(pos, tmp);
+	put_spinor_to_eoprec_field(spinor1,in_eoprec,tmp2);
+	
+	set_local_zero_spinor(spinor1);
+	dslash_temporal (spinor1, pos, t, in, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq1 = spinor_squarenorm(spinor1);
+	
+	set_local_zero_spinor(spinor1);
+	dslash_temporal_eoprec (spinor1, pos, t, in_eoprec, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq2 = spinor_squarenorm(spinor1);
+	if(print_result == 1) printf("\t%f %f\n", sq1 - 2.*12./((float) SPINORFIELDSIZE), sq2 - 2.*12./((float) EOPREC_SPINORFIELDSIZE));
+	
+	printf("\ttesting dslash_spatial and dslash_spatial_eoprec:\n");
+	int coord[NDIM];
+	coord[0] = 0;
+	for(int j=1;j<NDIM;j++) coord[j] = get_spacecoord(pos,j);
+	init_spinorfield_cold(in);
+	init_spinorfield_cold_eoprec(in_eoprec);
+	
+	int dir = 1;
+	set_local_zero_spinor(spinor1);
+	tmp = get_neighbor(pos,dir);
+	put_spinor_to_field(spinor1,in,tmp,t); //CP: really this one is accessed in dslash_spatial
+	tmp2 = get_n_eoprec(tmp, t);
+	put_spinor_to_eoprec_field(spinor1,in_eoprec,tmp2);
+	
+	set_local_zero_spinor(spinor1);
+	dslash_spatial (spinor1, coord, dir, pos, t, in, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq1 = spinor_squarenorm(spinor1);
+	set_local_zero_spinor(spinor1);
+	dslash_spatial_eoprec (spinor1, coord, dir, pos, t, in_eoprec, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq2 = spinor_squarenorm(spinor1);
+	if(print_result == 1) printf("\t%f %f\n", sq1 - 4.*6./((float) SPINORFIELDSIZE), sq2 - 4.*6./((float) EOPREC_SPINORFIELDSIZE));
+	
+	dir = 2;
+	init_spinorfield_cold(in);
+	init_spinorfield_cold_eoprec(in_eoprec);
+	
+	set_local_zero_spinor(spinor1);
+	tmp = get_neighbor(pos,dir);
+	put_spinor_to_field(spinor1,in,tmp,t);
+	tmp2 = get_n_eoprec(tmp, t);
+	put_spinor_to_eoprec_field(spinor1,in_eoprec,tmp2);
+	
+	set_local_zero_spinor(spinor1);
+	dslash_spatial (spinor1, coord, dir, pos, t, in, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq1 = spinor_squarenorm(spinor1);
+	set_local_zero_spinor(spinor1);
+	dslash_spatial_eoprec (spinor1, coord, dir, pos, t, in_eoprec, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq2 = spinor_squarenorm(spinor1);
+	if(print_result == 1) printf("\t%f %f\n", sq1 - 2.*12./((float) SPINORFIELDSIZE), sq2 - 2.*12./((float) EOPREC_SPINORFIELDSIZE));
+	
+	dir = 3;
+	init_spinorfield_cold(in);
+	init_spinorfield_cold_eoprec(in_eoprec);
+	
+	set_local_zero_spinor(spinor1);
+	tmp = get_neighbor(pos,dir);
+	put_spinor_to_field(spinor1,in,tmp,t);
+	tmp2 = get_n_eoprec(tmp, t);
+	put_spinor_to_eoprec_field(spinor1,in_eoprec,tmp2);
+	
+	set_local_zero_spinor(spinor1);
+	dslash_spatial (spinor1, coord, dir, pos, t, in, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq1 = spinor_squarenorm(spinor1);
+	set_local_zero_spinor(spinor1);
+	dslash_spatial_eoprec (spinor1, coord, dir, pos, t, in_eoprec, &gaugefield, theta, chem_pot_re, chem_pot_im);
+	sq2 = spinor_squarenorm(spinor1);
+	if(print_result == 1) printf("\t%f %f\n", sq1 - 4.*12./((float) SPINORFIELDSIZE), sq2 - 4.*12./((float) EOPREC_SPINORFIELDSIZE));
+	
+	printf("...done\n");
+	
+	
+}

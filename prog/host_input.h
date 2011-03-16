@@ -19,7 +19,11 @@ class inputparameters {
   hmc_error set_defaults();
   hmc_float get_kappa();
   hmc_float get_beta();
+  hmc_float get_theta_fermion();
+  hmc_float get_theta_gaugefield();
   hmc_float get_mu();
+  hmc_float get_chem_pot_re();
+  hmc_float get_chem_pot_im();
   int get_cgmax();
   int get_prec();
   int get_startcondition();
@@ -38,6 +42,10 @@ class inputparameters {
   hmc_float kappa;
   hmc_float beta;
   hmc_float mu;
+  hmc_float theta_fermion;
+  hmc_float theta_gaugefield;
+  hmc_float chem_pot_re;
+  hmc_float chem_pot_im;
   int cgmax;
   int prec;
   int startcondition;
