@@ -266,7 +266,7 @@ void spinor_apply_bc(hmc_spinor * in, hmc_float theta){
 //spinout =  (1 + 2*i*gamma_5*kappa*mu)spin_in
 void M_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu){
 	hmc_spinor spintmp[SPINORSIZE];
-	hmc_float twistfactor = 2*kappa*mu;
+	hmc_float twistfactor = 2.*kappa*mu;
 	multiply_spinor_i_factor_gamma5(spininout,spintmp,twistfactor);
 	spinors_accumulate(spininout,spintmp);
 			
@@ -282,7 +282,7 @@ void M_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu){
 
 
 //spinout = U_0*(r-gamma_0)*spinnext + U^dagger_0(x-hat0) * (r+gamma_0)*spinprev
-void dslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
+void dslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_ocl_su3matrix* u, hmc_ocl_su3matrix* udagger){
 	
 	hmc_spinor tmp[SPINORSIZE];
 	multiply_spinor_gamma0(spinnext,tmp);
@@ -300,7 +300,7 @@ void dslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
 }
 
 // spinout += U_1*(r-gamma_1)*spinnext + U^dagger_1(x-hat1) * (r+gamma_1)*spinprev
-void dslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
+void dslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_ocl_su3matrix* u, hmc_ocl_su3matrix* udagger){
 	
 	hmc_spinor tmp[SPINORSIZE];
 	multiply_spinor_gamma1(spinnext,tmp);
@@ -318,7 +318,7 @@ void dslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
 }
 
 // spinout += U_2*(r-gamma_2)*spinnext + U^dagger_2(x-hat2) * (r+gamma_2)*spinprev
-void dslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
+void dslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_ocl_su3matrix* u, hmc_ocl_su3matrix* udagger){
 	
 	hmc_spinor tmp[SPINORSIZE];
 	multiply_spinor_gamma2(spinnext,tmp);
@@ -336,7 +336,7 @@ void dslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
 }
 
 // spinout += U_3*(r-gamma_3)*spinnext + U^dagger_3(x-hat3) * (r+gamma_3)*spinprev
-void dslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
+void dslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_ocl_su3matrix* u, hmc_ocl_su3matrix* udagger){
 	
 	hmc_spinor tmp[SPINORSIZE];
 	multiply_spinor_gamma3(spinnext,tmp);

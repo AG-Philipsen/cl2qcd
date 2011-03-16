@@ -8,7 +8,8 @@
 #include "globaldefs.h" //NDIM, NSPIN, NC
 #include "types.h"
 
-#define VOLSPACE NSPACE*NSPACE*NSPACE
+//!!CP: why is this here?
+// #define VOLSPACE NSPACE*NSPACE*NSPACE
 #define VOL4D VOLSPACE*NTIME
 
 //for hmc_ocl_su3matrix
@@ -20,5 +21,4 @@
 #define STAPLEMATRIXSIZE NC*NC
 #endif
 
-#define VOL4D VOLSPACE*NTIME
 

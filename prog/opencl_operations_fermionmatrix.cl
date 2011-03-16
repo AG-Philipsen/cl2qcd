@@ -24,9 +24,9 @@ void inline dslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos,
 	if(coord[dir] == NSPACE-1) spinor_apply_bc(spinnext, theta);
 	else if(coord[dir] == 0) spinor_apply_bc(spinprev, theta);
       
-	if(dir == 1) dslash_1(spinnext, spinprev, spinout, &u, &udagger);
-	else if(dir == 2) dslash_2(spinnext, spinprev, spinout, &u, &udagger);
-	else dslash_3(spinnext, spinprev, spinout, &u, &udagger);
+	if(dir == 1) dslash_1(spinnext, spinprev, spinout, u, udagger);
+	else if(dir == 2) dslash_2(spinnext, spinprev, spinout, u, udagger);
+	else dslash_3(spinnext, spinprev, spinout, u, udagger);
 
 	return;
 }
@@ -54,7 +54,7 @@ void inline dslash_temporal (hmc_spinor * spinout, int pos, int t, __global hmc_
 	//update links with chemical potential, this shall be put into compiler option lateron
 	gaugefield_apply_chem_pot(u, udagger, chem_pot_re, chem_pot_im);
       
-	dslash_0(spinnext, spinprev, spinout, &u, &udagger);
+	dslash_0(spinnext, spinprev, spinout, u, udagger);
 
 	return;
 }
@@ -65,7 +65,7 @@ void inline dslash_temporal (hmc_spinor * spinout, int pos, int t, __global hmc_
 //!! for(id_tmp=id; id_tmp< VOL4D/2; id_tmp+=get_num_groups(0)*local_size)
 //!! can also be used??
 
-__kernel void M_diag (__global hmc_spinor_field* in, __global hmc_spinor_field* out, hmc_float kappa, hmc_float mu) {
+__kernel void M_diag (__global hmc_spinor_field* in, __global hmc_spinor_field* out, __global hmc_float* kappa, __global hmc_float* mu) {
 	int id = get_global_id(0);
 	int id_tmp;
 	int local_size = get_local_size(0);
@@ -75,23 +75,25 @@ __kernel void M_diag (__global hmc_spinor_field* in, __global hmc_spinor_field* 
 
 	int pos;
 	int t;
+	hmc_float kappa_tmp = *kappa;
+	hmc_float mu_tmp = *mu;
 	hmc_spinor spinout[SPINORSIZE];
 	for(id_tmp = id; id_tmp < VOL4D/2; id_tmp += global_size){
 		get_even_site(id_tmp, &pos, &t);
 		get_spinor_from_field(in,spinout,pos,t);
-		M_diag_local(spinout, kappa, mu);
+		M_diag_local(spinout, kappa_tmp, mu_tmp);
 		put_spinor_to_field(spinout,out,pos,t);
 
 		get_odd_site(id_tmp, &pos, &t);
 		get_spinor_from_field(in,spinout,pos,t);
-		M_diag_local(spinout, kappa, mu);
+		M_diag_local(spinout, kappa_tmp, mu_tmp);
 		put_spinor_to_field(spinout,out,pos,t);
 	}
 
 	return;
 }
 
-__kernel void dslash(__global hmc_spinor_field* in, __global hmc_spinor_field* out, __global hmc_ocl_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im){
+__kernel void dslash(__global hmc_spinor_field* in, __global hmc_spinor_field* out, __global hmc_ocl_gaugefield* gaugefield, __global hmc_float* theta_in, __global hmc_float* chem_pot_re_in, __global hmc_float* chem_pot_im_in){
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);
 	int id_tmp;
@@ -102,6 +104,10 @@ __kernel void dslash(__global hmc_spinor_field* in, __global hmc_spinor_field* o
 	int pos;
 	int t;
 
+	hmc_float theta = 0.;//*theta_in;
+	hmc_float chem_pot_im = 0.;//*chem_pot_im_in;
+	hmc_float chem_pot_re = 0.;//*chem_pot_re_in;
+	
 	hmc_spinor spinout[SPINORSIZE];
 
 	//CP: this is done without odd sites only for space-saving
@@ -114,7 +120,7 @@ __kernel void dslash(__global hmc_spinor_field* in, __global hmc_spinor_field* o
 		for(int j=1;j<NDIM;j++) coord[j] = get_spacecoord(pos,j);
 		
 		// spinout = U_0*(r-gamma_0)*spinnext + U^dagger_0(x-hat0) * (r+gamma_0)*spinprev
-		dslash_temporal (spinout, coord, pos, t, in, gaugefield, theta, chem_pot_re, chem_pot_im);
+		dslash_temporal (spinout, pos, t, in, gaugefield, theta, chem_pot_re, chem_pot_im);
 		// spinout += U_1*(r-gamma_1)*spinnext + U^dagger_1(x-hat1) * (r+gamma_1)*spinprev 
 		dslash_spatial (spinout, coord, 1, pos, t, in, gaugefield, theta, chem_pot_re, chem_pot_im);
 		// spinout += U_2*(r-gamma_2)*spinnext + U^dagger_2(x-hat2) * (r+gamma_2)*spinprev
