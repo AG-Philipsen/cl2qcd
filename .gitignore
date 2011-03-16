@@ -18,3 +18,6 @@ prog/conf.?????
 prog/cl_kernelsource.cl
 prog/time_measurement_0
 prog/time_measurement_1
+
+prog/build
+prog/debug
