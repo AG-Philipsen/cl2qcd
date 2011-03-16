@@ -78,7 +78,7 @@ add_executable( hmc
 	host_gaugefieldoperations.cpp
 	host_writegaugefield.cpp
 	host_solver.cpp
-	host_fermionobservables.o
+	host_fermionobservables.cpp
 )
 target_link_libraries( hmc
 	${OPENCL_LIBRARIES}
