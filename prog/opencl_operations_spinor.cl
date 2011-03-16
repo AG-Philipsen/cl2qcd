@@ -1,6 +1,12 @@
 //opencl_operations_spinor
 
-//!!CP: many of the host-functions make no sense on the device and are deleted..
+void set_local_zero_spinor(hmc_spinor* inout){
+  for(int j=0; j<SPINORSIZE; j++) {
+    inout[j].re = 0;
+    inout[j].im = 0;
+  }
+  return;
+}
 
 void su3matrix_times_colorvector(hmc_ocl_su3matrix* u, hmc_color_vector* in, hmc_color_vector* out){
 #ifdef _RECONSTRUCT_TWELVE_
@@ -26,14 +32,6 @@ void su3matrix_times_colorvector(hmc_ocl_su3matrix* u, hmc_color_vector* in, hmc
     }
   }
 #endif
-  return;
-}
-
-void set_local_zero_spinor(hmc_spinor* inout){
-  for(int j=0; j<SPINORSIZE; j++) {
-    inout[j].re = 0;
-    inout[j].im = 0;
-  }
   return;
 }
 
@@ -263,5 +261,95 @@ void spinor_apply_bc(hmc_spinor * in, hmc_float theta){
     in[n].im = sin(theta)*tmp1 + cos(theta)*tmp2;
   }
   return; 
+}
+
+//spinout =  (1 + 2*i*gamma_5*kappa*mu)spin_in
+void M_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu){
+	hmc_spinor spintmp[SPINORSIZE];
+	hmc_float twistfactor = 2*kappa*mu;
+	multiply_spinor_i_factor_gamma5(spininout,spintmp,twistfactor);
+	spinors_accumulate(spininout,spintmp);
+			
+	return;
+}
+
+//!!CP: the dslash_x functions can be exchanged with:
+//     spinprojectproduct_gamma1(&u,spinnext,-hmc_one_f);
+//     spinors_accumulate(spinout,spinnext);
+// 
+//     spinprojectproduct_gamma1(&udagger,spinprev,hmc_one_f);
+//     spinors_accumulate(spinout,spinprev);
+
+
+//spinout = U_0*(r-gamma_0)*spinnext + U^dagger_0(x-hat0) * (r+gamma_0)*spinprev
+void dslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
+	
+	hmc_spinor tmp[SPINORSIZE];
+	multiply_spinor_gamma0(spinnext,tmp);
+	real_multiply_spinor(tmp,-hmc_one_f);
+	spinors_accumulate(spinnext,tmp);
+	su3matrix_times_spinor(u,spinnext,tmp);
+	spinors_accumulate(spinout,tmp);
+
+	multiply_spinor_gamma0(spinprev,tmp);
+	spinors_accumulate(spinprev,tmp);
+	su3matrix_times_spinor(udagger,spinprev,tmp);
+	spinors_accumulate(spinout,tmp);
+	
+	return;
+}
+
+// spinout += U_1*(r-gamma_1)*spinnext + U^dagger_1(x-hat1) * (r+gamma_1)*spinprev
+void dslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
+	
+	hmc_spinor tmp[SPINORSIZE];
+	multiply_spinor_gamma1(spinnext,tmp);
+	real_multiply_spinor(tmp,-hmc_one_f);
+	spinors_accumulate(spinnext,tmp);
+	su3matrix_times_spinor(u,spinnext,tmp);
+	spinors_accumulate(spinout,tmp);
+
+	multiply_spinor_gamma1(spinprev,tmp);
+	spinors_accumulate(spinprev,tmp);
+	su3matrix_times_spinor(udagger,spinprev,tmp);
+	spinors_accumulate(spinout,tmp);
+	
+	return;
+}
+
+// spinout += U_2*(r-gamma_2)*spinnext + U^dagger_2(x-hat2) * (r+gamma_2)*spinprev
+void dslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
+	
+	hmc_spinor tmp[SPINORSIZE];
+	multiply_spinor_gamma2(spinnext,tmp);
+	real_multiply_spinor(tmp,-hmc_one_f);
+	spinors_accumulate(spinnext,tmp);
+	su3matrix_times_spinor(u,spinnext,tmp);
+	spinors_accumulate(spinout,tmp);
+
+	multiply_spinor_gamma2(spinprev,tmp);
+	spinors_accumulate(spinprev,tmp);
+	su3matrix_times_spinor(udagger,spinprev,tmp);
+	spinors_accumulate(spinout,tmp);
+	
+	return;
+}
+
+// spinout += U_3*(r-gamma_3)*spinnext + U^dagger_3(x-hat3) * (r+gamma_3)*spinprev
+void dslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
+	
+	hmc_spinor tmp[SPINORSIZE];
+	multiply_spinor_gamma3(spinnext,tmp);
+	real_multiply_spinor(tmp,-hmc_one_f);
+	spinors_accumulate(spinnext,tmp);
+	su3matrix_times_spinor(u,spinnext,tmp);
+	spinors_accumulate(spinout,tmp);
+
+	multiply_spinor_gamma3(spinprev,tmp);
+	spinors_accumulate(spinprev,tmp);
+	su3matrix_times_spinor(udagger,spinprev,tmp);
+	spinors_accumulate(spinout,tmp);
+	
+	return;
 }
 

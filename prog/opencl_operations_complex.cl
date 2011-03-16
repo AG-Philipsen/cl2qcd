@@ -1,6 +1,5 @@
 //opencl_operations_complex.cl
 
-
 hmc_complex complexconj(__private hmc_complex *in){
   hmc_complex tmp;
   tmp.re = (*in).re;
@@ -41,5 +40,22 @@ hmc_complex complexdivide(hmc_complex* numerator, hmc_complex* denominator){
   res.re = ((*numerator).re*(*denominator).re+(*numerator).im*(*denominator).im)/norm;
   res.im = ((*numerator).im*(*denominator).re-(*numerator).re*(*denominator).im)/norm;
   return res;
+}
+
+
+__kernel void ratio(__global hmc_complex * a, __global hmc_complex * b, __global hmc_complex * out){
+	//!!CP: complexdivide cannot handle __global
+	hmc_complex tmp1 = (*a);
+	hmc_complex tmp2 = (*b);
+	(*out) =  complexdivide(&tmp1, &tmp2);
+	return;
+}
+
+__kernel void product(__global hmc_complex * a, __global hmc_complex * b, __global hmc_complex * out){
+	//!!CP: complexdivide cannot handle __global
+	hmc_complex tmp1 = (*a);
+	hmc_complex tmp2 = (*b);
+	(*out) =  complexmult(&tmp1, &tmp2);
+	return;
 }
 

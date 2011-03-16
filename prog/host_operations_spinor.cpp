@@ -36,6 +36,15 @@ hmc_error su3matrix_times_colorvector(hmc_su3matrix* u, hmc_color_vector* in, hm
   return HMC_SUCCESS;
 }
 
+hmc_float spinor_squarenorm(hmc_spinor* in){
+  hmc_float res=0;
+  for(int j=0; j<SPINORSIZE; j++) {
+    hmc_complex tmp = complexconj(&in[j]);
+    hmc_complex incr= complexmult(&tmp,&in[j]);
+    res+=incr.re;
+  }
+  return res;
+}
 
 hmc_error real_multiply_spinor(hmc_spinor* inout, hmc_float factor){
   for(int j=0; j<SPINORSIZE; j++) {
@@ -256,15 +265,6 @@ hmc_error spinors_accumulate(hmc_spinor* inout, hmc_spinor* incr){
   return HMC_SUCCESS;
 }
 
-hmc_float spinor_squarenorm(hmc_spinor* in){
-  hmc_float res=0;
-  for(int j=0; j<SPINORSIZE; j++) {
-    hmc_complex tmp = complexconj(&in[j]);
-    hmc_complex incr= complexmult(&tmp,&in[j]);
-    res+=incr.re;
-  }
-  return res;
-}
 
 //spinout =  (1 + 2*i*gamma_5*kappa*mu)spin_in
 void M_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu){

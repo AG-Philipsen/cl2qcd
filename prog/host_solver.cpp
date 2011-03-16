@@ -66,6 +66,7 @@ hmc_error bicgstab(hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugef
   hmc_spinor_field* p = new hmc_spinor_field[SPINORFIELDSIZE];
   hmc_spinor_field* s = new hmc_spinor_field[SPINORFIELDSIZE];
   hmc_spinor_field* t = new hmc_spinor_field[SPINORFIELDSIZE];
+	hmc_spinor_field* aux = new hmc_spinor_field[SPINORFIELDSIZE];
   hmc_complex rho;
   hmc_complex rho_next;
   hmc_complex alpha;
@@ -124,15 +125,11 @@ hmc_error bicgstab(hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugef
     hmc_float resid = global_squarenorm(rn);
 
     if(resid<epssquare) {
-      hmc_spinor_field* aux = new hmc_spinor_field[SPINORFIELDSIZE];
       M(inout,aux,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
       saxpy(aux, source, &one, aux);
       hmc_float trueresid = global_squarenorm(aux);
       //printf("%d\t%e\t%e\n",iter,resid,trueresid);
-
       if(trueresid<epssquare) return HMC_SUCCESS;
-
-      delete [] aux;
     }
   }
 
@@ -142,6 +139,8 @@ hmc_error bicgstab(hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugef
   delete [] p;
   delete [] s;
   delete [] t;
+	delete [] aux;
+	
   return HMC_SUCCESS;
 }
 
@@ -155,7 +154,9 @@ hmc_error bicgstab_eoprec(hmc_eoprec_spinor_field* inout,hmc_eoprec_spinor_field
   hmc_eoprec_spinor_field* p = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
   hmc_eoprec_spinor_field* s = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
   hmc_eoprec_spinor_field* t = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
-  hmc_complex rho;
+  hmc_eoprec_spinor_field* aux = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
+      
+	hmc_complex rho;
   hmc_complex rho_next;
   hmc_complex alpha;
   hmc_complex omega;
@@ -213,15 +214,11 @@ hmc_error bicgstab_eoprec(hmc_eoprec_spinor_field* inout,hmc_eoprec_spinor_field
 //     printf("%d\t%e\n",iter,resid);
 
     if(resid<epssquare) {
-      hmc_eoprec_spinor_field* aux = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
       Aee(inout,aux,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
       saxpy_eoprec(aux, source, &one, aux);
       hmc_float trueresid = global_squarenorm_eoprec(aux);
 //       printf("true residue squared: %e\n",trueresid);
-
-      if(trueresid<epssquare) return HMC_SUCCESS;
-
-      delete [] aux;
+      if(trueresid<epssquare) return HMC_SUCCESS;     
     }
   }
 
@@ -231,6 +228,8 @@ hmc_error bicgstab_eoprec(hmc_eoprec_spinor_field* inout,hmc_eoprec_spinor_field
   delete [] p;
   delete [] s;
   delete [] t;
+	delete [] aux;
+	
   return HMC_SUCCESS;
 }
 

@@ -45,7 +45,6 @@ hmc_error init_spinorfield_cold_eoprec(hmc_eoprec_spinor_field * in_eoprec){
 	return HMC_SUCCESS;
 }
 
-
 hmc_float local_squarenorm(hmc_spinor_field *field, int spacepos, int timepos) {
   hmc_float sum=0;
   for (int a=0; a<NSPIN; a++) {
@@ -251,7 +250,6 @@ hmc_error create_point_source(hmc_spinor_field* b, int i, int spacepos, int time
   return HMC_SUCCESS;
 }
 
-//!!CP: LZ should update this...
 hmc_error create_point_source_eoprec(hmc_eoprec_spinor_field* be,hmc_eoprec_spinor_field* bo,int i,int spacepos,int timepos,hmc_float kappa, hmc_float mu, hmc_float theta,hmc_float chem_pot_re, hmc_float chem_pot_im, hmc_gaugefield* gaugefield){
   
   hmc_spinor_field* source = new hmc_spinor_field[SPINORFIELDSIZE];

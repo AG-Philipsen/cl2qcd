@@ -61,6 +61,7 @@ void dslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos, int t,
   
 	get_spinor_from_field(in, spinnext, next, t);
 	get_spinor_from_field(in, spinprev, prev, t);
+	
 	get_su3matrix(&u,gaugefield,pos,t,dir);
 	get_su3matrix(&udagger,gaugefield,prev,t,dir);
 	adjoin_su3matrix(&udagger);

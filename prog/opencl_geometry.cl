@@ -103,7 +103,7 @@ int spinor_element(int alpha, int color) {
   return alpha + NSPIN*color;
 }
 
-int get_n_eoprec(int timepos, int spacepos){
+int get_n_eoprec(int spacepos, int timepos){
   return (int)((get_global_pos(spacepos, timepos))/2);
 }
 
