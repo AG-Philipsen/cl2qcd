@@ -37,6 +37,10 @@ class opencl {
 	hmc_error copy_source_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
 	hmc_error get_spinorfield_from_device(hmc_spinor_field* host_spinorfield,  usetimer* timer);
 	hmc_error copy_spinor_device(cl_mem in, cl_mem out, usetimer* timer);
+	hmc_error convert_to_kappa_format_device(cl_mem inout, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	hmc_error convert_from_kappa_format_device(cl_mem in, cl_mem out, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	hmc_error convert_to_kappa_format_eoprec_device(cl_mem inout, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	hmc_error convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error copy_float_from_device(cl_mem in, hmc_float * out, usetimer* timer);
 	hmc_error copy_complex_from_device(cl_mem in, hmc_complex * out, usetimer* timer);
 	hmc_error copy_complex_device(cl_mem in, cl_mem out, usetimer* timer);
@@ -99,6 +103,10 @@ class opencl {
 	cl_kernel global_squarenorm_reduction;
 	cl_kernel ratio;
 	cl_kernel product;
+	cl_kernel convert_to_kappa_format;
+	cl_kernel convert_from_kappa_format;
+	cl_kernel convert_to_kappa_format_eoprec;
+	cl_kernel convert_from_kappa_format_eoprec;
 
 	cl_mem clmem_inout;
 	cl_mem clmem_source;
