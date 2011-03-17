@@ -51,12 +51,16 @@ if( USE_RECONSTRUCT_TWELVE )
 endif( USE_RECONSTRUCT_TWELVE )
 option( USE_FERMIONS "Use fermions" OFF )
 if( USE_FERMIONS )
-	add_definitions( -D_FERMIONS )
+	add_definitions( -D_FERMIONS_ )
 endif( USE_FERMIONS )
 option( TESTING "Run optional test code" OFF )
 if( TESTING )
-	add_definitions( -D_TESTING )
+	add_definitions( -D_TESTING_ )
 endif( TESTING )
+option( USE_GPU "Use GPU" OFF )
+if( USE_GPU )
+	add_definitions( -D_USEGPU_ )
+endif( USE_GPU )
 
 add_executable( hmc
 	hmc.cpp
