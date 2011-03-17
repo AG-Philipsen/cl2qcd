@@ -4,7 +4,6 @@ using namespace std;
 
 hmc_error opencl::init(cl_device_type wanted_device_type, usetimer* timer){
 
-
 //give a list of all kernel-files
 //!!CP: LZ should update this
   cl_kernels_file.push_back("opencl_header.cl");
@@ -95,9 +94,12 @@ hmc_error opencl::init(cl_device_type wanted_device_type, usetimer* timer){
 
   string sourcecode;
   for(unsigned int n=0; n<cl_kernels_file.size(); n++){
-    cout<<"Read kernel source from file: "<<cl_kernels_file[n]<<endl;
+	stringstream tmp;
+	tmp << SOURCEDIR << '/' << cl_kernels_file[n];
+    cout<<"Read kernel source from file: "<<tmp.str()<<endl;
+
     fstream kernelsfile;
-    kernelsfile.open(cl_kernels_file[n].c_str());
+    kernelsfile.open(tmp.str().c_str());
     if(!kernelsfile.is_open()) {
       cout<<"Could not open kernels file. Aborting..."<<endl;
       exit(HMC_FILEERROR);
