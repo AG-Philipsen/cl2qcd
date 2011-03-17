@@ -1,5 +1,5 @@
-kappa=.15
-mu=4
+kappa=0.15
+mu=4.
 cgmax=15
 cgmax=20
 beta=6.00

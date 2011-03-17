@@ -104,19 +104,19 @@ __kernel void dslash(__global hmc_spinor_field* in, __global hmc_spinor_field* o
 	int pos;
 	int t;
 
-	hmc_float theta = 0.;//*theta_in;
-	hmc_float chem_pot_im = 0.;//*chem_pot_im_in;
-	hmc_float chem_pot_re = 0.;//*chem_pot_re_in;
+	hmc_float theta = *theta_in;
+	hmc_float chem_pot_im = *chem_pot_im_in;
+	hmc_float chem_pot_re = *chem_pot_re_in;
 	
 	hmc_spinor spinout[SPINORSIZE];
 
-	//CP: this is done without odd sites only for space-saving
 	for(id_tmp = id; id_tmp < VOL4D/2; id_tmp += global_size){
 		set_local_zero_spinor(spinout);
-		get_even_site(id_tmp, &pos, &t);
 		//CP: this can become NDIM-1 for mem-saving
 		int coord[NDIM];
-		coord[0]=0;
+		coord[0]=0;		
+
+		get_even_site(id_tmp, &pos, &t);
 		for(int j=1;j<NDIM;j++) coord[j] = get_spacecoord(pos,j);
 		
 		// spinout = U_0*(r-gamma_0)*spinnext + U^dagger_0(x-hat0) * (r+gamma_0)*spinprev
@@ -127,7 +127,19 @@ __kernel void dslash(__global hmc_spinor_field* in, __global hmc_spinor_field* o
 		dslash_spatial (spinout, coord, 2, pos, t, in, gaugefield, theta, chem_pot_re, chem_pot_im);
 		// spinout += U_3*(r-gamma_3)*spinnext + U^dagger_3(x-hat3) * (r+gamma_3)*spinprev
 		dslash_spatial (spinout, coord, 3, pos, t, in, gaugefield, theta, chem_pot_re, chem_pot_im);
-     
+    
+		get_odd_site(id_tmp, &pos, &t);
+		for(int j=1;j<NDIM;j++) coord[j] = get_spacecoord(pos,j);
+		
+		// spinout = U_0*(r-gamma_0)*spinnext + U^dagger_0(x-hat0) * (r+gamma_0)*spinprev
+		dslash_temporal (spinout, pos, t, in, gaugefield, theta, chem_pot_re, chem_pot_im);
+		// spinout += U_1*(r-gamma_1)*spinnext + U^dagger_1(x-hat1) * (r+gamma_1)*spinprev 
+		dslash_spatial (spinout, coord, 1, pos, t, in, gaugefield, theta, chem_pot_re, chem_pot_im);
+		// spinout += U_2*(r-gamma_2)*spinnext + U^dagger_2(x-hat2) * (r+gamma_2)*spinprev
+		dslash_spatial (spinout, coord, 2, pos, t, in, gaugefield, theta, chem_pot_re, chem_pot_im);
+		// spinout += U_3*(r-gamma_3)*spinnext + U^dagger_3(x-hat3) * (r+gamma_3)*spinprev
+		dslash_spatial (spinout, coord, 3, pos, t, in, gaugefield, theta, chem_pot_re, chem_pot_im);
+    
 		put_spinor_to_field(spinout,out,pos,t);
 	}
 	return;

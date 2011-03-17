@@ -1,25 +1,10 @@
 #include "host_fermionobservables.h"
 
-//CP: LZ should make changes here...
 hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){
 
   hmc_spinor_field in[SPINORFIELDSIZE];
-  for(int t=0; t<NTIME; t++) {
-    for(int n=0; n<VOLSPACE; n++) {
-      for(int a=0; a<NSPIN; a++) {
-	for(int j=0; j<NC; j++) {
-	  fill_with_one(in, n, t, a, j);
-	}
-      }
-    }
-  }
-  hmc_float norm=global_squarenorm(in);
-  norm = sqrt(norm);
-  for(int n=0; n<SPINORFIELDSIZE; n++) {
-    in[n].re /= norm;
-    in[n].im /=norm;
-  }
-
+	hmc_spinor_field phi[SPINORFIELDSIZE];
+	init_spinorfield_cold(in);
 
   //pseudo scalar, flavour multiplet
   hmc_complex correlator_ps[NSPACE];
@@ -28,14 +13,21 @@ hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_flo
     correlator_ps[z].im = 0;
   }
 
-  hmc_spinor_field b[SPINORFIELDSIZE];
-  hmc_spinor_field phi[SPINORFIELDSIZE];
-
   for(int k=0; k<NC*NSPIN; k++) {
-    create_point_source(b,k,0,0,kappa,mu,gaugefield);
-		
-		solver(in, phi, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
-		
+		if(use_eo){
+			hmc_spinor_field b[SPINORFIELDSIZE];
+// 			create_point_source(b,k,0,0,kappa,mu,gaugefield);
+			create_point_source(b,1,0,0,1,1,gaugefield);
+			solver(in, phi, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+		}
+		else{
+			hmc_eoprec_spinor_field be[EOPREC_SPINORFIELDSIZE];
+			hmc_eoprec_spinor_field bo[EOPREC_SPINORFIELDSIZE];
+			
+			create_point_source_eoprec(be,bo,k,0,0,kappa,mu,theta, chem_pot_re, chem_pot_im, gaugefield);
+			solver(in, phi, be, bo, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+			
+		}
     for(int timepos = 0; timepos<NTIME; timepos++) {
 			for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
 				for(int alpha = 0; alpha<NSPIN; alpha++) {

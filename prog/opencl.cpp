@@ -99,7 +99,7 @@ hmc_error opencl::init(cl_device_type wanted_device_type, usetimer* timer){
     fstream kernelsfile;
     kernelsfile.open(cl_kernels_file[n].c_str());
     if(!kernelsfile.is_open()) {
-      cout<<"Could not open kernels file. Aborting..."<<endl;
+      cout<<"Could not open file. Aborting..."<<endl;
       exit(HMC_FILEERROR);
     }
     
@@ -1357,11 +1357,152 @@ hmc_error opencl::init_solver_variables(inputparameters* parameters, const size_
 		cout<<"...creating product kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
 	}
-  
+	convert_to_kappa_format = clCreateKernel(clprogram,"convert_to_kappa_format",&clerr);
+	if(clerr!=CL_SUCCESS) {
+		cout<<"...creating convert_to_kappa_format kernel failed, aborting."<<endl;
+		exit(HMC_OCLERROR);
+	}
+	convert_from_kappa_format = clCreateKernel(clprogram,"convert_from_kappa_format",&clerr);
+	if(clerr!=CL_SUCCESS) {
+		cout<<"...creating convert_from_kappa_format kernel failed, aborting."<<endl;
+		exit(HMC_OCLERROR);
+	}
+	convert_to_kappa_format_eoprec = clCreateKernel(clprogram,"convert_to_kappa_format_eoprec",&clerr);
+	if(clerr!=CL_SUCCESS) {
+		cout<<"...creating convert_to_kappa_format_eoprec kernel failed, aborting."<<endl;
+		exit(HMC_OCLERROR);
+	}
+	convert_from_kappa_format_eoprec = clCreateKernel(clprogram,"convert_from_kappa_format_eoprec",&clerr);
+	if(clerr!=CL_SUCCESS) {
+		cout<<"...creating convert_from_kappa_format_eoprec kernel failed, aborting."<<endl;
+		exit(HMC_OCLERROR);
+	}
+	
+	//!!CP: this can be deleted later...
+	cout << "set spinorfields to zero..." << endl;
+	usetimer noop;
+	set_zero_spinorfield_device(clmem_tmp, local_work_size, global_work_size, &noop);
+	set_zero_spinorfield_device(clmem_inout, local_work_size, global_work_size, &noop);
+	set_zero_spinorfield_device(clmem_source, local_work_size, global_work_size, &noop);
+	set_zero_spinorfield_device(clmem_rn, local_work_size, global_work_size, &noop);
+	set_zero_spinorfield_device(clmem_rhat, local_work_size, global_work_size, &noop);
+	set_zero_spinorfield_device(clmem_v, local_work_size, global_work_size, &noop);
+	set_zero_spinorfield_device(clmem_p, local_work_size, global_work_size, &noop);
+	set_zero_spinorfield_device(clmem_s, local_work_size, global_work_size, &noop);
+	set_zero_spinorfield_device(clmem_t, local_work_size, global_work_size, &noop);
+	set_zero_spinorfield_device(clmem_aux, local_work_size, global_work_size, &noop);
+ 
   (*timer).add();
   return HMC_SUCCESS;
 }
 
+hmc_error opencl::convert_to_kappa_format_device(cl_mem inout, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
+	(*timer).reset();
+	int clerr = CL_SUCCESS;
+	
+	clerr = clSetKernelArg(convert_to_kappa_format,0,sizeof(cl_mem),&inout); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	clerr = clSetKernelArg(convert_to_kappa_format,1,sizeof(cl_mem),&clmem_kappa); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }  
+	clerr = clEnqueueNDRangeKernel(queue, convert_to_kappa_format,1,0,&global_work_size,&local_work_size,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"enqueue convert_to_kappa_format kernel failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clFinish(queue);
+  
+	(*timer).add();
+	return HMC_SUCCESS;
+}
+	
+hmc_error opencl::convert_from_kappa_format_device(cl_mem in, cl_mem out, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
+	(*timer).reset();
+	int clerr = CL_SUCCESS;
+	
+	clerr = clSetKernelArg(convert_from_kappa_format,0,sizeof(cl_mem),&out); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	clerr = clSetKernelArg(convert_from_kappa_format,1,sizeof(cl_mem),&out); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }  
+	clerr = clSetKernelArg(convert_from_kappa_format,2,sizeof(cl_mem),&clmem_kappa); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }  
+	clerr = clEnqueueNDRangeKernel(queue, convert_from_kappa_format,1,0,&global_work_size,&local_work_size,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"enqueue convert_from_kappa_format kernel failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clFinish(queue);
+	(*timer).add();
+	return HMC_SUCCESS;
+}
+
+hmc_error opencl::convert_to_kappa_format_eoprec_device(cl_mem inout, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
+	(*timer).reset();
+	int clerr = CL_SUCCESS;
+	
+	clerr = clSetKernelArg(convert_to_kappa_format_eoprec,0,sizeof(cl_mem),&inout); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	clerr = clSetKernelArg(convert_to_kappa_format_eoprec,1,sizeof(cl_mem),&clmem_kappa); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }  
+	clerr = clEnqueueNDRangeKernel(queue, convert_to_kappa_format_eoprec,1,0,&global_work_size,&local_work_size,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"enqueue convert_to_kappa_format_eoprec kernel failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clFinish(queue);
+  
+	(*timer).add();
+	return HMC_SUCCESS;
+}
+	
+hmc_error opencl::convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
+	(*timer).reset();
+	int clerr = CL_SUCCESS;
+	
+	clerr = clSetKernelArg(convert_from_kappa_format_eoprec,0,sizeof(cl_mem),&out); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	clerr = clSetKernelArg(convert_from_kappa_format_eoprec,1,sizeof(cl_mem),&out); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }  
+	clerr = clSetKernelArg(convert_from_kappa_format_eoprec,2,sizeof(cl_mem),&clmem_kappa); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }  
+	clerr = clEnqueueNDRangeKernel(queue, convert_from_kappa_format_eoprec,1,0,&global_work_size,&local_work_size,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"enqueue convert_from_kappa_format_eoprec kernel failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clFinish(queue);
+	(*timer).add();
+	return HMC_SUCCESS;
+}
 
 hmc_error opencl::copy_spinorfield_to_device(hmc_spinor_field* host_spinorfield,  usetimer* timer){
 	cout<<"Copy spinorfield to device..."<<endl;
@@ -2054,10 +2195,55 @@ hmc_error opencl::testing_spinor(size_t local_size, size_t global_size){
 	cout << "perform bicgstab..." << endl;
 	bicgstab_device(&noop, &noop, &noop, &noop, &noop,local_size, global_size, 100);
 	
+	cout<< "calculate simple_correlator with device-solver..." << endl;
+	hmc_complex correlator_ps[NSPACE];
+  for(int z=0; z<NSPACE; z++) {
+    correlator_ps[z].re = 0;
+    correlator_ps[z].im = 0;
+  }
+
+	init_spinorfield_cold(test);
+	copy_spinorfield_to_device(test, &noop);
+
+	hmc_float kappa = 0.15;
+	hmc_float mu = 4.;
+	int cgmax = 100;
+	hmc_gaugefield gaugefield;
+	set_gaugefield_cold(&gaugefield);
+	hmc_spinor_field phi[SPINORFIELDSIZE];
+  for(int k=0; k<NC*NSPIN; k++) {
+		hmc_spinor_field b[SPINORFIELDSIZE];
+		create_point_source(b,k,0,0,kappa,mu,&gaugefield);
+			
+		copy_source_to_device(b, &noop);
+		convert_to_kappa_format_device(clmem_inout, clmem_kappa, local_size, global_size, &noop);
+		bicgstab_device(&noop, &noop, &noop, &noop, &noop,local_size, global_size, cgmax);
+		convert_from_kappa_format_device(clmem_inout, clmem_inout, clmem_kappa, local_size, global_size, &noop);
+		get_spinorfield_from_device(phi, &noop);
+
+		for(int timepos = 0; timepos<NTIME; timepos++) {
+			for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
+				for(int alpha = 0; alpha<NSPIN; alpha++) {
+					for(int c = 0; c<NC; c++) {
+					// int j = spinor_element(alpha,c);
+					int n = spinor_field_element(alpha, c, spacepos, timepos);
+					int z = get_spacecoord(spacepos, 3);
+					hmc_complex tmp = phi[n];
+					hmc_complex ctmp = complexconj(&tmp);
+					hmc_complex incr = complexmult(&ctmp,&tmp);
+					correlator_ps[z].re += incr.re;
+					correlator_ps[z].im += incr.im;
+		}}}}
+  }
+
+  printf("pseudo scalar correlator:\n");
+  for(int z=0; z<NSPACE; z++) {
+    printf("%d\t(%e,%e)\n",z,correlator_ps[z].re,correlator_ps[z].im);
+  }
+
 	cout << "...testing fermion kernels done" << endl;
 	
 	return HMC_SUCCESS;
 }
-	
 	
 #endif //_FERMIONS_

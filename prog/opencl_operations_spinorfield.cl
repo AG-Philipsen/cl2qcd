@@ -31,39 +31,6 @@ void convert_from_eoprec(hmc_eoprec_spinor_field* even, hmc_eoprec_spinor_field*
   return;
 }
 
-void convert_to_kappa_format(__global hmc_spinor_field* inout,hmc_float kappa){
-  for(int n=0; n<SPINORFIELDSIZE; n++) {
-    inout[n].re *= sqrt(2.*kappa);
-    inout[n].im *= sqrt(2.*kappa);
-  }
-  return;
-}
-
-void convert_to_kappa_format_eoprec(__global hmc_eoprec_spinor_field* inout,hmc_float kappa){
-  for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
-    inout[n].re *= sqrt(2.*kappa);
-    inout[n].im *= sqrt(2.*kappa);
-  }
-  return;
-}
-
-void convert_from_kappa_format(__global hmc_spinor_field* in, __global hmc_spinor_field * out,hmc_float kappa){
-  for(int n=0; n<SPINORFIELDSIZE; n++) {
-    out[n].re = (in[n].re)/sqrt(2.*kappa);
-    out[n].im = (in[n].im)/sqrt(2.*kappa);
-  }
-  return;
-}
-
-void convert_from_kappa_format_eoprec(__global hmc_eoprec_spinor_field* in, __global hmc_eoprec_spinor_field * out, hmc_float kappa){
-  for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
-    out[n].re = (in[n].re)/sqrt(2.*kappa);
-    out[n].im = (in[n].im)/sqrt(2.*kappa);
-  }
-  return;
-}
-
-
 void get_spinor_from_eoprec_field(__global hmc_eoprec_spinor_field* in, hmc_spinor* out, int n_eoprec){
   for(int alpha=0; alpha<NSPIN; alpha++) {
     for(int color=0; color<NC; color++) {
@@ -315,7 +282,75 @@ __kernel void set_zero_spinorfield( __global hmc_spinor_field *x ){
 	return;
 }
 
-//!!CP: these two need to be kernels...
+__kernel void convert_to_kappa_format( __global hmc_spinor_field *in, __global hmc_float * kappa ){
+	int local_size = get_local_size(0);
+	int global_size = get_global_size(0);
+	int id = get_global_id(0);
+	int loc_idx = get_local_id(0);
+	int num_groups = get_num_groups(0);
+	int group_id = get_group_id (0);
+	
+	hmc_float tmp = *kappa;
+	
+	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size){
+		in[id_tmp].re *= sqrt(2.*tmp);
+		in[id_tmp].im *= sqrt(2.*tmp);
+	}
+	return;
+}
+
+__kernel void convert_from_kappa_format( __global hmc_spinor_field *in, __global hmc_spinor_field* out, __global hmc_float * kappa ){
+	int local_size = get_local_size(0);
+	int global_size = get_global_size(0);
+	int id = get_global_id(0);
+	int loc_idx = get_local_id(0);
+	int num_groups = get_num_groups(0);
+	int group_id = get_group_id (0);
+	
+	hmc_float tmp = *kappa;
+	
+	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size){
+		out[id_tmp].re = (in[id_tmp].re)/sqrt(2.*tmp);
+		out[id_tmp].im = (in[id_tmp].im)/sqrt(2.*tmp);
+	}
+	return;
+}
+
+__kernel void convert_to_kappa_format_eoprec( __global hmc_spinor_field *in, __global hmc_float * kappa ){
+	int local_size = get_local_size(0);
+	int global_size = get_global_size(0);
+	int id = get_global_id(0);
+	int loc_idx = get_local_id(0);
+	int num_groups = get_num_groups(0);
+	int group_id = get_group_id (0);
+	
+	hmc_float tmp = *kappa;
+	
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size){
+		in[id_tmp].re *= sqrt(2.*tmp);
+		in[id_tmp].im *= sqrt(2.*tmp);
+	}
+	return;
+}
+
+__kernel void convert_from_kappa_format_eoprec( __global hmc_spinor_field *in, __global hmc_spinor_field* out, __global hmc_float * kappa ){
+	int local_size = get_local_size(0);
+	int global_size = get_global_size(0);
+	int id = get_global_id(0);
+	int loc_idx = get_local_id(0);
+	int num_groups = get_num_groups(0);
+	int group_id = get_group_id (0);
+	
+	hmc_float tmp = *kappa;
+	
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size){
+		out[id_tmp].re = (in[id_tmp].re)/sqrt(2.*tmp);
+		out[id_tmp].im = (in[id_tmp].im)/sqrt(2.*tmp);
+	}
+	return;
+}
+
+//!!CP: these two need to be kernels, if they are needed at all...
 void create_point_source(hmc_spinor_field* b, int i, int spacepos, int timepos, hmc_float kappa, hmc_float mu, __global hmc_ocl_gaugefield * gaugefield){
 
 	/*

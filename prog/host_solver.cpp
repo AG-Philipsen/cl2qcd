@@ -1,59 +1,60 @@
 #include "host_solver.h"
 
-hmc_error solver(hmc_spinor_field* in, hmc_spinor_field* out, hmc_spinor_field* b, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){
-  //CP: in the end this should be done with a compiler option
+hmc_error solver(hmc_spinor_field* in, hmc_spinor_field* out, hmc_eoprec_spinor_field* be, hmc_eoprec_spinor_field* bo, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){
+  //!!CP: in the end this should be done with a compiler option
   int use_cg = 0;
-  if(!use_eo){
-    hmc_eoprec_spinor_field even[EOPREC_SPINORFIELDSIZE];
-    hmc_eoprec_spinor_field odd[EOPREC_SPINORFIELDSIZE];
-    hmc_eoprec_spinor_field newodd[EOPREC_SPINORFIELDSIZE];
-		hmc_eoprec_spinor_field tmp[EOPREC_SPINORFIELDSIZE];
+  hmc_eoprec_spinor_field even[EOPREC_SPINORFIELDSIZE];
+  hmc_eoprec_spinor_field odd[EOPREC_SPINORFIELDSIZE];
+	hmc_eoprec_spinor_field tmp[EOPREC_SPINORFIELDSIZE];
 
-    hmc_eoprec_spinor_field be[EOPREC_SPINORFIELDSIZE];
-    hmc_eoprec_spinor_field bo[EOPREC_SPINORFIELDSIZE];
-    
-		convert_to_eoprec(even,odd,in);
-    convert_to_kappa_format_eoprec(even,kappa);
-    convert_to_kappa_format_eoprec(odd,kappa);
- 
-    create_point_source_eoprec(be,bo,1,0,0,kappa,mu,theta, chem_pot_re, chem_pot_im, gaugefield);
+	convert_to_eoprec(even,odd,in);
+  convert_to_kappa_format_eoprec(even,kappa);
+  convert_to_kappa_format_eoprec(odd,kappa);
 		
-		//calculate even-solution even
-		if(use_cg)
-			cg_eoprec(even, be, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
-		else
-    bicgstab_eoprec(even, be, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+	//calculate even-solution even
+	if(use_cg)
+		cg_eoprec(even, be, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+	else
+		bicgstab_eoprec(even, be, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
 		
-		//desired solution is g = L^-1 x
-		//calculate L^-1x_even = g_even
-    hmc_eoprec_spinor_field spintmp[EOPREC_SPINORFIELDSIZE];
-    dslash_eoprec(even, tmp,gaugefield,kappa, theta, chem_pot_re, chem_pot_im, ODD); //use newood as tmp variable
-    M_inverse_sitediagonal(tmp, spintmp,kappa,mu);
+	//desired solution is g = L^-1 x
+	//calculate L^-1x_even = g_even
+	hmc_eoprec_spinor_field spintmp[EOPREC_SPINORFIELDSIZE];
+	dslash_eoprec(even, tmp,gaugefield,kappa, theta, chem_pot_re, chem_pot_im, ODD); //use newood as tmp variable
+	M_inverse_sitediagonal(tmp, spintmp,kappa,mu);
 		
-		//calculate odd-solution odd
-    M_inverse_sitediagonal(bo, odd, kappa,mu);
+	//calculate odd-solution odd
+	M_inverse_sitediagonal(bo, odd, kappa,mu);
 		
-		//calculate g_odd
-		hmc_complex one = hmc_complex_one;
-		saxpy_eoprec(spintmp, odd, &one, odd);
+	//calculate g_odd
+	hmc_complex one = hmc_complex_one;
+	saxpy_eoprec(spintmp, odd, &one, odd);
 
-    convert_from_kappa_format_eoprec(even,even, kappa);
-    convert_from_kappa_format_eoprec(odd, odd, kappa);
-		//write out g
-    convert_from_eoprec(even,odd,out);
+	convert_from_kappa_format_eoprec(even,even, kappa);
+	convert_from_kappa_format_eoprec(odd, odd, kappa);
+	//write out g
+	convert_from_eoprec(even,odd,out);
   
-    return HMC_SUCCESS;
-  }
-  else{
-    convert_to_kappa_format(in, kappa);
-		if(use_cg)
-			cg(in, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
-		else
-			bicgstab(in, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
-    convert_from_kappa_format(in, out, kappa);
+	return HMC_SUCCESS;
+}
+
+hmc_error solver(hmc_spinor_field* in, hmc_spinor_field* out, hmc_spinor_field* b, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){
+	convert_to_kappa_format(in, kappa);
+	//!!CP: in the end this should be done with a compiler option
+	int use_cg = 0;
+	
+	if(use_cg)
+		cg(in, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+	else
+		bicgstab(in, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+	
+	convert_from_kappa_format(in, out, kappa);
+  for(int n=0; n<SPINORFIELDSIZE; n++) {
+    out[n].re = (in[n].re);
+    out[n].im = (in[n].im);
+  	}
     
-    return HMC_SUCCESS;
-  }
+	return HMC_SUCCESS;
 }
 
 hmc_error bicgstab(hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){

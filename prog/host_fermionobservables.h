@@ -15,6 +15,8 @@
 #include "types.h"
 #include "host_solver.h"
 
+extern int const use_eo;
+
 hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax);
 
 #endif
