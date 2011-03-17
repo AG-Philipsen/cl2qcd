@@ -90,3 +90,11 @@ target_link_libraries( hmc
 	${LIBXML2_LIBRARIES}
 )
 
+# Documentation
+#include(FindDoxygen)
+find_package( Doxygen QUIET )
+if(DOXYGEN_FOUND)
+    add_subdirectory(doc)
+else(DOXYGEN_FOUND)
+    message(STATUS "WARNING: Failed to find Doxygen - won't build documentation")
+endif(DOXYGEN_FOUND)
