@@ -292,7 +292,7 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 }
 
 hmc_error opencl::copy_gaugefield_to_device(hmc_gaugefield* gaugefield, usetimer* timer){
-  cout<<"Copy gaugefield to device..."<<endl;
+//   cout<<"Copy gaugefield to device..."<<endl;
   (*timer).reset();
   hmc_ocl_gaugefield* host_gaugefield =  (hmc_ocl_gaugefield*) malloc(sizeof(hmc_gaugefield));
 
@@ -505,7 +505,6 @@ hmc_error opencl::gaugeobservables(const size_t local_work_size, const size_t gl
   hmc_float plaq;
   hmc_float splaq;
   hmc_float tplaq;
-	int buf_glob_size_float = sizeof(hmc_float)*num_groups;
 	int buf_loc_size_float = sizeof(hmc_float)*local_work_size;
 	int buf_loc_size_complex = sizeof(hmc_complex)*local_work_size;
 	
@@ -1175,7 +1174,6 @@ hmc_error opencl::init_solver_variables(inputparameters* parameters, const size_
 	int num_groups;
 	if(local_work_size <= global_work_size) num_groups = global_work_size/local_work_size;
 	else num_groups = 1;
-	cout<<"num_groups: " << num_groups << endl;
 	int spinorfield_size = sizeof(hmc_complex)*SPINORFIELDSIZE;
 	int complex_size = sizeof(hmc_complex);
 	int float_size = sizeof(hmc_float);
@@ -1349,7 +1347,7 @@ hmc_error opencl::init_solver_variables(inputparameters* parameters, const size_
     exit(HMC_OCLERROR);
   }  
   
-  cout << "write values to buffers..." << endl;
+  cout << "\twrite values to buffers..." << endl;
 	tmp = (*parameters).get_kappa();
   clerr = clEnqueueWriteBuffer(queue,clmem_kappa,CL_TRUE,0,float_size,&tmp,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
@@ -1397,7 +1395,7 @@ hmc_error opencl::init_solver_variables(inputparameters* parameters, const size_
     exit(HMC_OCLERROR);
   }
   
-  cout << "Init fermion kernels..." << endl;
+  cout << "\tinit fermion kernels..." << endl;
 	
 	M_diag = clCreateKernel(clprogram,"M_diag",&clerr);
 	if(clerr!=CL_SUCCESS) {
@@ -1476,7 +1474,7 @@ hmc_error opencl::init_solver_variables(inputparameters* parameters, const size_
 	}
 	
 	//!!CP: this can be deleted later...
-	cout << "set spinorfields to zero..." << endl;
+	cout << "\tset spinorfields to zero..." << endl;
 	usetimer noop;
 	set_zero_spinorfield_device(clmem_tmp, local_work_size, global_work_size, &noop);
 	set_zero_spinorfield_device(clmem_inout, local_work_size, global_work_size, &noop);
@@ -1493,7 +1491,7 @@ hmc_error opencl::init_solver_variables(inputparameters* parameters, const size_
   return HMC_SUCCESS;
 }
 
-hmc_error opencl::convert_to_kappa_format_device(cl_mem inout, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
+hmc_error opencl::convert_to_kappa_format_device(cl_mem inout, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
 	(*timer).reset();
 	int clerr = CL_SUCCESS;
 	
@@ -1518,11 +1516,11 @@ hmc_error opencl::convert_to_kappa_format_device(cl_mem inout, cl_mem kappa, con
 	return HMC_SUCCESS;
 }
 	
-hmc_error opencl::convert_from_kappa_format_device(cl_mem in, cl_mem out, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
+hmc_error opencl::convert_from_kappa_format_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
 	(*timer).reset();
 	int clerr = CL_SUCCESS;
 	
-	clerr = clSetKernelArg(convert_from_kappa_format,0,sizeof(cl_mem),&out); 
+	clerr = clSetKernelArg(convert_from_kappa_format,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -1547,7 +1545,7 @@ hmc_error opencl::convert_from_kappa_format_device(cl_mem in, cl_mem out, cl_mem
 	return HMC_SUCCESS;
 }
 
-hmc_error opencl::convert_to_kappa_format_eoprec_device(cl_mem inout, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
+hmc_error opencl::convert_to_kappa_format_eoprec_device(cl_mem inout, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
 	(*timer).reset();
 	int clerr = CL_SUCCESS;
 	
@@ -1572,11 +1570,11 @@ hmc_error opencl::convert_to_kappa_format_eoprec_device(cl_mem inout, cl_mem kap
 	return HMC_SUCCESS;
 }
 	
-hmc_error opencl::convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
+hmc_error opencl::convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
 	(*timer).reset();
 	int clerr = CL_SUCCESS;
 	
-	clerr = clSetKernelArg(convert_from_kappa_format_eoprec,0,sizeof(cl_mem),&out); 
+	clerr = clSetKernelArg(convert_from_kappa_format_eoprec,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -1602,7 +1600,7 @@ hmc_error opencl::convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out,
 }
 
 hmc_error opencl::copy_spinorfield_to_device(hmc_spinor_field* host_spinorfield,  usetimer* timer){
-	cout<<"Copy spinorfield to device..."<<endl;
+// 	cout<<"Copy spinorfield to device..."<<endl;
   (*timer).reset();
 
 	int spinorfield_size = sizeof(hmc_complex)*SPINORFIELDSIZE;
@@ -1617,7 +1615,7 @@ hmc_error opencl::copy_spinorfield_to_device(hmc_spinor_field* host_spinorfield,
 }
 
 hmc_error opencl::copy_source_to_device(hmc_spinor_field* host_source,  usetimer* timer){
-	cout<<"Copy source to device..."<<endl;
+// 	cout<<"Copy source to device..."<<endl;
   (*timer).reset();
 
 	int spinorfield_size = sizeof(hmc_complex)*SPINORFIELDSIZE;
@@ -1694,7 +1692,7 @@ hmc_error opencl::copy_complex_from_device(cl_mem in, hmc_complex * out, usetime
 	return HMC_SUCCESS;
 }
 
-hmc_error opencl::M_device(cl_mem in, cl_mem out, cl_mem tmp, cl_mem gaugefield, cl_mem kappa, cl_mem mu, cl_mem theta, cl_mem kappa_complex, cl_mem chem_pot_re, cl_mem chem_pot_im, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
+hmc_error opencl::M_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
 	(*timer).reset();
 	
 	int clerr =CL_SUCCESS;
@@ -1708,12 +1706,12 @@ hmc_error opencl::M_device(cl_mem in, cl_mem out, cl_mem tmp, cl_mem gaugefield,
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(M_diag,2,sizeof(cl_mem),&kappa);
+  clerr = clSetKernelArg(M_diag,2,sizeof(cl_mem),&clmem_kappa);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(M_diag,3,sizeof(cl_mem),&mu);
+  clerr = clSetKernelArg(M_diag,3,sizeof(cl_mem),&clmem_mu);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -1730,27 +1728,27 @@ hmc_error opencl::M_device(cl_mem in, cl_mem out, cl_mem tmp, cl_mem gaugefield,
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(dslash,1,sizeof(cl_mem),&tmp);
+  clerr = clSetKernelArg(dslash,1,sizeof(cl_mem),&clmem_tmp);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(dslash,2,sizeof(cl_mem),&gaugefield);
+  clerr = clSetKernelArg(dslash,2,sizeof(cl_mem),&clmem_gaugefield);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(dslash,3,sizeof(cl_mem),&theta);
+  clerr = clSetKernelArg(dslash,3,sizeof(cl_mem),&clmem_theta_fermion);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(dslash,4,sizeof(cl_mem),&chem_pot_re);
+  clerr = clSetKernelArg(dslash,4,sizeof(cl_mem),&clmem_chem_pot_re);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 4 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(dslash,5,sizeof(cl_mem),&chem_pot_im);
+  clerr = clSetKernelArg(dslash,5,sizeof(cl_mem),&clmem_chem_pot_im);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 5 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -1763,7 +1761,7 @@ hmc_error opencl::M_device(cl_mem in, cl_mem out, cl_mem tmp, cl_mem gaugefield,
   clFinish(queue);
 	
 	//!! perhaps this can go into an extra calling of saxpy
-	clerr = clSetKernelArg(saxpy,0,sizeof(cl_mem),&tmp); 
+	clerr = clSetKernelArg(saxpy,0,sizeof(cl_mem),&clmem_tmp); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -2090,7 +2088,7 @@ hmc_error opencl::bicgstab_device(usetimer * copytimer, usetimer* singletimer, u
 			//CP: debugging
 			set_zero_spinorfield_device(clmem_tmp, localsize, globalsize, latimer);
 			
-			M_device(clmem_inout, clmem_rn, clmem_tmp, clmem_gaugefield, clmem_kappa, clmem_mu, clmem_theta_fermion,  clmem_kappa_cmplx, clmem_chem_pot_re, clmem_chem_pot_im, localsize, globalsize, Mtimer);
+			M_device(clmem_inout, clmem_rn, localsize, globalsize, Mtimer);
 			saxpy_device(clmem_rn, clmem_source, clmem_one, clmem_rn, localsize, globalsize, latimer);
 			copy_spinor_device(clmem_rn, clmem_rhat, singletimer);
 
@@ -2102,7 +2100,7 @@ hmc_error opencl::bicgstab_device(usetimer * copytimer, usetimer* singletimer, u
 			//!!CP: calc initial residuum, this is not needed for the algorithm!!
 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
 			copy_float_from_device(clmem_resid, &resid, copytimer);
-			cout << "initial residuum is: " << resid << endl;
+// 			cout << "initial residuum is: " << resid << endl;
 		}
 
 		set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next, local_work_size, global_work_size, scalarprodtimer);
@@ -2115,14 +2113,14 @@ hmc_error opencl::bicgstab_device(usetimer * copytimer, usetimer* singletimer, u
 		set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2, singletimer);
 		saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p, local_work_size, global_work_size, latimer);
 
-		M_device(clmem_p,clmem_v, clmem_tmp, clmem_gaugefield, clmem_kappa, clmem_mu, clmem_theta_fermion, clmem_kappa_cmplx, clmem_chem_pot_re, clmem_chem_pot_im, local_work_size, global_work_size, Mtimer);
+		M_device(clmem_p,clmem_v, local_work_size, global_work_size, Mtimer);
 
 		set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1, local_work_size, global_work_size, scalarprodtimer);
 		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha, singletimer);
 		
 		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s, local_work_size, global_work_size, latimer);
 		
-		M_device(clmem_s, clmem_t, clmem_tmp, clmem_gaugefield, clmem_kappa, clmem_mu, clmem_theta_fermion, clmem_kappa_cmplx, clmem_chem_pot_re, clmem_chem_pot_im, local_work_size, global_work_size, Mtimer);
+		M_device(clmem_s, clmem_t, local_work_size, global_work_size, Mtimer);
 
 		set_complex_to_scalar_product_device(clmem_t,clmem_s, clmem_tmp1, local_work_size, global_work_size, scalarprodtimer);
 		//!!CP: can this also be global_squarenorm??
@@ -2137,16 +2135,16 @@ hmc_error opencl::bicgstab_device(usetimer * copytimer, usetimer* singletimer, u
 		copy_float_from_device(clmem_resid, &resid, copytimer);
 
 		if(resid<epssquare) {	
-			M_device(clmem_inout,clmem_aux,clmem_tmp, clmem_gaugefield,clmem_kappa,clmem_mu, clmem_theta_fermion, clmem_kappa_cmplx, clmem_chem_pot_re, clmem_chem_pot_im, local_work_size, global_work_size, Mtimer);
+			M_device(clmem_inout,clmem_aux,local_work_size, global_work_size, Mtimer);
 			saxpy_device(clmem_aux, clmem_source, clmem_one, clmem_aux, local_work_size, global_work_size, latimer); 
 			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, local_work_size, global_work_size, scalarprodtimer);
 			copy_float_from_device(clmem_trueresid, &trueresid, copytimer);
-			cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
+// 			cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
 			if(trueresid<epssquare)
 				return HMC_SUCCESS;
 		}
 		else{
-			cout << "residuum:\t" << resid << endl;
+// 			cout << "residuum:\t" << resid << endl;
 		}
 
 	}
@@ -2163,14 +2161,14 @@ hmc_error opencl::cg_device(usetimer * copytimer, usetimer* singletimer, usetime
 	int iter;
   for(iter = 0; iter < cgmax; iter ++){  
     if(iter%iter_refresh == 0){
-			M_device(clmem_inout, clmem_rn, clmem_tmp, clmem_gaugefield, clmem_kappa, clmem_mu, clmem_theta_fermion,  clmem_kappa_cmplx, clmem_chem_pot_re, clmem_chem_pot_im, localsize, globalsize, Mtimer);
+			M_device(clmem_inout, clmem_rn, localsize, globalsize, Mtimer);
 			saxpy_device(clmem_rn, clmem_source, clmem_one, clmem_rn, localsize, globalsize, latimer);
       copy_spinor_device(clmem_rn, clmem_p, copytimer);
     }
     //alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		set_complex_to_scalar_product_device(clmem_p, clmem_p, clmem_omega, local_work_size, global_work_size, scalarprodtimer);
 		//A pn --> v
-		M_device(clmem_p,clmem_v, clmem_tmp, clmem_gaugefield, clmem_kappa, clmem_mu, clmem_theta_fermion, clmem_kappa_cmplx, clmem_chem_pot_re, clmem_chem_pot_im, local_work_size, global_work_size, Mtimer);
+		M_device(clmem_p,clmem_v, local_work_size, global_work_size, Mtimer);
 		set_complex_to_scalar_product_device(clmem_p, clmem_v, clmem_rho, local_work_size, global_work_size, scalarprodtimer);
 		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha, singletimer);
 		
@@ -2211,24 +2209,28 @@ hmc_float inline global_squarenorm_host(hmc_spinor_field *field) {
   }
   return sum;
 }
+
+hmc_complex inline scalar_product_host (hmc_spinor_field * a, hmc_spinor_field * b){
+  hmc_complex res;
+  res.re=0;
+  res.im=0;
+  for(int n=0; n<SPINORFIELDSIZE; n++) {
+    res.re += a[n].re*b[n].re + a[n].im*b[n].im;
+    res.im += a[n].re*b[n].im - a[n].im*b[n].re;
+  	}
+	return res;
+}
 	
-hmc_error opencl::testing_spinor(size_t local_size, size_t global_size){
+hmc_error opencl::testing_spinor(inputparameters* parameters, size_t local_size, size_t global_size){
 
 	usetimer noop;
-	
+	hmc_float norm;
 	cout << "testing spinor kernels..." << endl;
 	 //set up spinor field for testing                                                                                                                          
 	hmc_spinor_field test[SPINORFIELDSIZE];
-  for (int i = 0; i<SPINORFIELDSIZE; i++){
-    test[i].re = 1.;
-    test[i].im = 0.;
-  }
-  hmc_float norm=global_squarenorm_host(test);
-  norm = sqrt(norm);
-  for(int n=0; n<SPINORFIELDSIZE; n++) {
-    test[n].re /= norm;
-    test[n].im /=norm;
-  }
+	hmc_spinor_field test2[SPINORFIELDSIZE];
+	init_spinorfield_cold(test);
+
   cout << "\tspinorfield norm: "<< global_squarenorm_host(test) << endl;
   copy_spinorfield_to_device(test, &noop);
   get_spinorfield_from_device(test, &noop);
@@ -2274,11 +2276,163 @@ hmc_error opencl::testing_spinor(size_t local_size, size_t global_size){
 	copy_complex_from_device(clmem_tmp2, &tester, &noop);
 	cout<< "\t|(inout + inout - inout)| is: " << tester.re << "," << tester.im << endl;
 	
-	M_device(clmem_inout, clmem_v, clmem_tmp, clmem_gaugefield, clmem_kappa, clmem_mu, clmem_theta_fermion, clmem_kappa_cmplx, clmem_chem_pot_re, clmem_chem_pot_im, local_size, global_size, &noop);
+	cout << "\tcompare M on host and device..." << endl;
+	
+	hmc_gaugefield gaugefield;
+	set_gaugefield_cold(&gaugefield);
+	copy_gaugefield_to_device(&gaugefield, &noop);
+	
+	hmc_float kappa = (*parameters).get_kappa();
+	hmc_float mu = (*parameters).get_mu();
+	
+	cout << "\tM on device:" ;
+	
+	init_spinorfield_cold(test);
+	copy_spinorfield_to_device(test, &noop);
+	
+	M_device(clmem_inout, clmem_v, local_size, global_size, &noop);
 	
 	set_complex_to_scalar_product_device(clmem_v, clmem_v, clmem_tmp2, local_size, global_size, &noop);
 	copy_complex_from_device(clmem_tmp2, &tester, &noop);
-	cout<< "\t(Mv, Mv) is: " << tester.re << "," << tester.im << endl;	
+	cout<< "\t(Minout, Minout): " << tester.re << "," << tester.im << endl;	
+
+	cout << "\tM on host:";
+	
+	M(test,test2,&gaugefield,kappa,mu, 0., 0., 0.);
+	
+	cout << "\t(M test2, M test2): "<< global_squarenorm_host(test2) << endl;
+	
+	cout << "\tcompare M_diag on host and device.." << endl;
+	
+	cout << "\tM_diag on dev:";
+	
+	init_spinorfield_cold(test);
+	copy_spinorfield_to_device(test, &noop);
+
+	//copied from M_device
+	int clerr =CL_SUCCESS;
+	clerr = clSetKernelArg(M_diag,0,sizeof(cl_mem),&clmem_inout); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(M_diag,1,sizeof(cl_mem),&clmem_inout);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(M_diag,2,sizeof(cl_mem),&clmem_kappa);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(M_diag,3,sizeof(cl_mem),&clmem_mu);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueNDRangeKernel(queue,M_diag,1,0,&global_work_size,&local_work_size,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"enqueue M_diag kernel failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clFinish(queue);
+	
+	set_complex_to_scalar_product_device(clmem_inout, clmem_inout, clmem_tmp2, local_size, global_size, &noop);
+	copy_complex_from_device(clmem_tmp2, &tester, &noop);
+	cout<< "\t(M_diag inout, M_diag inout): " << tester.re << "," << tester.im << endl;	
+	
+	cout << "\tM_diag on host:";
+	// 	M_diag(test, test2, kappa, mu);  
+	//copied from host_operations_fermionmatrix since M_diag is also a kernel
+	hmc_spinor spinout[SPINORSIZE];
+	//iterate over all lattice sites
+	for(int spacepos=0; spacepos<VOLSPACE; spacepos++) {
+		for(int timepos=0; timepos<NTIME; timepos++) {
+			get_spinor_from_field(test,spinout,spacepos,timepos);
+			M_diag_local(spinout, kappa, mu);
+			put_spinor_to_field(spinout,test2,spacepos,timepos);
+		}}
+		
+	cout << "\t(M_diag test, M_diag test): "<< global_squarenorm_host(test2) << endl;
+	
+		set_gaugefield_cold(&gaugefield);
+	copy_gaugefield_to_device(&gaugefield, &noop);
+	
+	cout << "\tdslash on dev:";
+	
+	init_spinorfield_cold(test);
+	copy_spinorfield_to_device(test, &noop);
+	
+	clerr = clSetKernelArg(dslash,0,sizeof(cl_mem),&clmem_inout); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(dslash,1,sizeof(cl_mem),&clmem_v);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(dslash,2,sizeof(cl_mem),&clmem_gaugefield);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(dslash,3,sizeof(cl_mem),&clmem_theta_fermion);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(dslash,4,sizeof(cl_mem),&clmem_chem_pot_re);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 4 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(dslash,5,sizeof(cl_mem),&clmem_chem_pot_im);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 5 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueNDRangeKernel(queue,dslash,1,0,&global_work_size,&local_work_size,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"enqueue dslash kernel failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	
+	set_complex_to_scalar_product_device(clmem_v, clmem_v, clmem_tmp2, local_size, global_size, &noop);
+	copy_complex_from_device(clmem_tmp2, &tester, &noop);
+
+	cout<< "\t(dslash inout, dslash inout): " << tester.re << "," << tester.im << endl;	
+	
+	cout << "\tdslash on host:";
+	init_spinorfield_cold(test);
+// 		dslash(test,test,gaugefield, 0., 0., 0.,);
+// 	copied from host_operations_fermionmatrix since M_diag is also a kernel
+	for(int spacepos=0; spacepos<VOLSPACE; spacepos++) {
+		for(int timepos=0; timepos<NTIME; timepos++) {
+			set_local_zero_spinor(spinout);   
+			//like in host_geometry
+			int coord[NDIM];
+			coord[0]=0;
+			for(int j=1;j<NDIM;j++) coord[j] = get_spacecoord(spacepos,j);
+			
+			// spinout = U_0*(r-gamma_0)*spinnext + U^dagger_0(x-hat0) * (r+gamma_0)*spinprev
+			dslash_temporal(spinout, spacepos, timepos, test, &gaugefield, 0., 0., 0.);
+			// spinout += U_1*(r-gamma_1)*spinnext + U^dagger_1(x-hat1) * (r+gamma_1)*spinprev
+			dslash_spatial (spinout, coord, 1, spacepos, timepos, test, &gaugefield, 0., 0., 0.);
+			// spinout += U_2*(r-gamma_2)*spinnext + U^dagger_2(x-hat2) * (r+gamma_2)*spinprev
+			dslash_spatial (spinout, coord, 2, spacepos, timepos, test, &gaugefield, 0., 0., 0.);
+			// spinout += U_3*(r-gamma_3)*spinnext + U^dagger_3(x-hat3) * (r+gamma_3)*spinprev
+			dslash_spatial (spinout, coord, 3, spacepos, timepos, test, &gaugefield, 0., 0., 0.);
+			
+			put_spinor_to_field(spinout,test2,spacepos,timepos);
+    }
+  }
+  
+	tester = scalar_product_host(test2, test2);
+	cout << "\t(dslash test, dslash test): "<< tester.re << " , " << tester.im << endl;
+	
 	
 	hmc_spinor_field b[SPINORFIELDSIZE];
 	//CP: a gaugefield is not needed here
@@ -2302,20 +2456,17 @@ hmc_error opencl::testing_spinor(size_t local_size, size_t global_size){
 	init_spinorfield_cold(test);
 	copy_spinorfield_to_device(test, &noop);
 
-	hmc_float kappa = 0.15;
-	hmc_float mu = 4.;
+
 	int cgmax = 100;
-	hmc_gaugefield gaugefield;
-	set_gaugefield_cold(&gaugefield);
 	hmc_spinor_field phi[SPINORFIELDSIZE];
   for(int k=0; k<NC*NSPIN; k++) {
 		hmc_spinor_field b[SPINORFIELDSIZE];
 		create_point_source(b,k,0,0,kappa,mu,&gaugefield);
 			
 		copy_source_to_device(b, &noop);
-		convert_to_kappa_format_device(clmem_inout, clmem_kappa, local_size, global_size, &noop);
+		convert_to_kappa_format_device(clmem_inout, local_size, global_size, &noop);
 		bicgstab_device(&noop, &noop, &noop, &noop, &noop,local_size, global_size, cgmax);
-		convert_from_kappa_format_device(clmem_inout, clmem_inout, clmem_kappa, local_size, global_size, &noop);
+		convert_from_kappa_format_device(clmem_inout, clmem_inout, local_size, global_size, &noop);
 		get_spinorfield_from_device(phi, &noop);
 
 		for(int timepos = 0; timepos<NTIME; timepos++) {

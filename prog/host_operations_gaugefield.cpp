@@ -30,25 +30,22 @@ hmc_error copy_from_ocl_format(hmc_gaugefield* gaugefield,hmc_ocl_gaugefield* ho
   for(int spacepos=0; spacepos<NSPACE*NSPACE*NSPACE; spacepos++) {
     for(int t=0; t<NTIME; t++) {
       for(int mu=0; mu<NDIM; mu++) {
-	hmc_su3matrix tmp;
-	for(int b=0; b<NC; b++) {
+				hmc_su3matrix tmp;
+				for(int b=0; b<NC; b++) {
 #ifdef _RECONSTRUCT_TWELVE_
-	  for(int a=0; a<NC-1; a++) {
-	    int n = a + (NC-1)*b;
-	    tmp[n].re = host_gaugefield[ocl_gaugefield_element(0,a,b,mu,spacepos,t)];
-	    tmp[n].im = host_gaugefield[ocl_gaugefield_element(1,a,b,mu,spacepos,t)];
-	  }
+	  			for(int a=0; a<NC-1; a++) {
+	    			int n = a + (NC-1)*b;
+	    			tmp[n].re = host_gaugefield[ocl_gaugefield_element(0,a,b,mu,spacepos,t)];
+	    			tmp[n].im = host_gaugefield[ocl_gaugefield_element(1,a,b,mu,spacepos,t)];
+	  			}
 #else
-	  for(int a=0; a<NC; a++) {
-	    tmp[a][b].re = host_gaugefield[ocl_gaugefield_element(0,a,b,mu,spacepos,t)];
-	    tmp[a][b].im = host_gaugefield[ocl_gaugefield_element(1,a,b,mu,spacepos,t)];
-	  }
+	  			for(int a=0; a<NC; a++) {
+						tmp[a][b].re = host_gaugefield[ocl_gaugefield_element(0,a,b,mu,spacepos,t)];
+						tmp[a][b].im = host_gaugefield[ocl_gaugefield_element(1,a,b,mu,spacepos,t)];
+	  			}
 #endif
-	  put_su3matrix(gaugefield, &tmp, spacepos, t, mu);
-	}
-      }
-    }
-  }
+	  	put_su3matrix(gaugefield, &tmp, spacepos, t, mu);
+				}}}}
   return HMC_SUCCESS;
 }
  

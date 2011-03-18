@@ -245,9 +245,9 @@ hmc_error Aee(hmc_eoprec_spinor_field* in, hmc_eoprec_spinor_field* out, hmc_gau
   hmc_complex one = hmc_complex_one;
   set_zero_spinorfield_eoprec(spintmp3);
   
-  dslash_eoprec(in,spintmp1,gaugefield,kappa, theta, chem_pot_re, chem_pot_re,ODD); // D_oe
+  dslash_eoprec(in,spintmp1,gaugefield,kappa, theta, chem_pot_re, chem_pot_im,ODD); // D_oe
   M_inverse_sitediagonal(spintmp1,spintmp2,kappa,mu); // R_o^(-1)
-  dslash_eoprec(spintmp2,out,gaugefield,kappa, theta, chem_pot_re, chem_pot_re,EVEN); // D_eo
+  dslash_eoprec(spintmp2,out,gaugefield,kappa, theta, chem_pot_re, chem_pot_im,EVEN); // D_eo
   M_sitediagonal(in,spintmp1,kappa,mu); //R_e
   copy_spinor_eoprec(out, spintmp3);
   saxpy_eoprec(spintmp3, spintmp1, &one, out); 

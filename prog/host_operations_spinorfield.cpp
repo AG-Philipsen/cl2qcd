@@ -239,6 +239,7 @@ void saxsbypz_eoprec(hmc_eoprec_spinor_field * x, hmc_eoprec_spinor_field * y,  
   return;
 }
 
+//!!CP: is mu and gaugefield needed at any point in the future or can it be deleted??
 hmc_error create_point_source(hmc_spinor_field* b, int i, int spacepos, int timepos, hmc_float kappa, hmc_float mu, hmc_gaugefield* gaugefield){
   set_zero_spinorfield(b);
 
@@ -249,6 +250,7 @@ hmc_error create_point_source(hmc_spinor_field* b, int i, int spacepos, int time
 
   return HMC_SUCCESS;
 }
+
 
 hmc_error create_point_source_eoprec(hmc_eoprec_spinor_field* be,hmc_eoprec_spinor_field* bo,int i,int spacepos,int timepos,hmc_float kappa, hmc_float mu, hmc_float theta,hmc_float chem_pot_re, hmc_float chem_pot_im, hmc_gaugefield* gaugefield){
   

@@ -13,8 +13,8 @@
 void calc_staple(hmc_gaugefield * field, hmc_staplematrix * dest, const int pos, const int t, const int mu_in);
 
 void heatbath_update (hmc_gaugefield * gaugefield, const hmc_float beta);
-void heatbath_overrelax (hmc_gaugefield * gaugefield, const hmc_float beta);
+void heatbath_overrelax (hmc_gaugefield * gaugefield);
 void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float beta);
-void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield, const hmc_float beta);
+void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield);
 
 #endif

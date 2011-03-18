@@ -143,7 +143,7 @@ __kernel void polyakov_reduction(__global hmc_complex* poly_buf,  __global hmc_c
 
 __kernel void polyakov(__global hmc_ocl_gaugefield * field, __global hmc_complex * out, __local hmc_complex * out_loc){
   
-  int t, pos, id;
+  int id;
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id_tmp = get_global_id(0);

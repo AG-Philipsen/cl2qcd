@@ -22,9 +22,9 @@ hmc_error fill_with_one(hmc_spinor_field *field, int spacepos, int timepos, int 
 hmc_error convert_from_eoprec(hmc_eoprec_spinor_field* even, hmc_eoprec_spinor_field* odd, hmc_spinor_field* out);
 hmc_error convert_to_eoprec(hmc_eoprec_spinor_field* even, hmc_eoprec_spinor_field* odd, hmc_spinor_field* in);
 hmc_error convert_to_kappa_format_eoprec(hmc_eoprec_spinor_field* inout,hmc_float kappa);
-hmc_error convert_from_kappa_format_eoprec(hmc_eoprec_spinor_field* in, hmc_eoprec_spinor_field * out,hmc_float kappa);
+hmc_error convert_from_kappa_format_eoprec(hmc_eoprec_spinor_field* in, hmc_spinor_field *out,hmc_float kappa);
 hmc_error convert_to_kappa_format(hmc_spinor_field* inout,hmc_float kappa);
-hmc_error convert_from_kappa_format(hmc_spinor_field* in, hmc_spinor_field * out,hmc_float kappa);
+hmc_error convert_from_kappa_format(hmc_spinor_field* in, hmc_spinor_field *out,hmc_float kappa);
 hmc_float global_squarenorm(hmc_spinor_field *field);
 hmc_float global_squarenorm_eoprec(hmc_eoprec_spinor_field* in);
 hmc_complex scalar_product_eoprec(hmc_eoprec_spinor_field* a, hmc_eoprec_spinor_field* b);

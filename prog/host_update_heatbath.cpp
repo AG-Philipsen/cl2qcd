@@ -160,7 +160,7 @@ void heatbath_update (hmc_gaugefield * gaugefield, const hmc_float beta){
   }}}
 }
 
-void heatbath_overrelax (hmc_gaugefield * gaugefield, const hmc_float beta){
+void heatbath_overrelax (hmc_gaugefield * gaugefield){
   int pos, mu, t;
   //iterate through the sites
   for(t=0; t<NTIME; t++){
@@ -413,7 +413,7 @@ void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float 
   }
 }
 
-void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield, const hmc_float beta){
+void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield){
   int pos, i, mu, t, x, y, z;
   //iterate through the sites
   for (mu = 0; mu < NDIM; mu ++){

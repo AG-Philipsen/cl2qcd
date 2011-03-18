@@ -29,6 +29,7 @@ class inputparameters {
   int get_startcondition();
   int get_thermalizationsteps();
   int get_heatbathsteps();
+	int get_overrelaxsteps();
   int get_saveconfigs();
   int get_savefrequency();
   int get_writefrequency();
@@ -51,6 +52,7 @@ class inputparameters {
   int startcondition;
   int thermalizationsteps;
   int heatbathsteps;
+	int overrelaxsteps;
   int savefrequency;
   int saveconfigs;
   int writefrequency;

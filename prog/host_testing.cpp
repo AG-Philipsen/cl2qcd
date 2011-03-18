@@ -130,7 +130,7 @@ void testing_eoprec_spinor() {
   printf("eo global squarenorm: %f -- %f\n",global_squarenorm_eoprec(eventest),global_squarenorm_eoprec(oddtest));
   convert_to_kappa_format(oddtest,4.214523);
   printf("eo global squarenorm: %f -- %f\n",global_squarenorm_eoprec(eventest),global_squarenorm_eoprec(oddtest));
-  convert_from_kappa_format(oddtest, oddtest,4.214523);
+  convert_from_kappa_format(oddtest, oddtest, 4.214523);
   printf("eo global squarenorm: %f -- %f\n",global_squarenorm_eoprec(eventest),global_squarenorm_eoprec(oddtest));
   convert_from_eoprec(eventest,oddtest,test);
   printf("global squarenorm: %f\n",global_squarenorm(test));
@@ -444,11 +444,11 @@ void print_linkplusstaplematrix(hmc_gaugefield * in, int pos, int t, int mu){
 }
 
 
-void testing_heatbath_norandommat_no123(hmc_su3matrix * in, hmc_staplematrix * staple_in, hmc_su3matrix * out, hmc_float beta){
+void testing_heatbath_norandommat_no123(hmc_su3matrix * in, hmc_staplematrix * staple_in, hmc_su3matrix * out){
   hmc_staplematrix W;
   hmc_su3matrix su3_in;
   copy_su3matrix(&su3_in, in);
-      
+
   hmc_complex w [su2_entries];
   hmc_float w_pauli[su2_entries], k, r_pauli[su2_entries];
   int order[3]; 
@@ -898,8 +898,7 @@ void testing_matrix_spinor_ops(){
 	
 	printf("\ttesting gammax*spinor:\n");
 	set_local_zero_spinor(spinor1);
-	
-	int comp = 3;
+// 	int comp = 3;
 	int comp2 = 0;
 // 	set_comp_to_one_spinor(spinor1, spinor_element(comp,0));
 // 	set_comp_to_one_spinor(spinor1, spinor_element(comp,1));
@@ -1046,7 +1045,7 @@ void testing_fermionmatrix_functions(){
 	
 	printf("\ttesting M_diag and M_sitediagonal:\n");
   hmc_float sq1 = global_squarenorm(in);
-	hmc_float sq1_eoprec = global_squarenorm_eoprec(in_eoprec);
+// 	hmc_float sq1_eoprec = global_squarenorm_eoprec(in_eoprec);
 	M_diag(in, out, kappa, mu);
 	hmc_float sq2 = global_squarenorm(out);
 	M_sitediagonal(in_eoprec, out_eoprec, kappa, mu);

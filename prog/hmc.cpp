@@ -44,28 +44,33 @@ int main(int argc, char* argv[]) {
 #ifdef _TESTING_
   device.testing(gaugefield);
 #endif
+	usetimer noop;
+	device.init_solver_variables(&parameters, local_work_size, global_work_size, &noop);
+	device.testing_spinor(&parameters, local_work_size, global_work_size);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Heatbath
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  int nsteps = parameters.get_heatbathsteps();
-  cout<<"perform "<<nsteps<<" heatbath steps on OpenCL device..."<<endl;
-  for(int i = 0; i<nsteps; i++){
-    device.run_heatbath(parameters.get_beta(), local_work_size, global_work_size, &updatetime);
-    device.run_overrelax(parameters.get_beta(), local_work_size, global_work_size, &overrelaxtime);
-    if( ( (i+1)%parameters.get_writefrequency() ) == 0 ) {
-       device.gaugeobservables(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
-       print_gaugeobservables(plaq, tplaq, splaq, pol, i, gaugeout_name.str());
-    }
-    if( parameters.get_saveconfigs()==TRUE && ( (i+1)%parameters.get_savefrequency() ) == 0 ) {
-      device.get_gaugefield_from_device(gaugefield, &copytime);
-      save_gaugefield(gaugefield, &parameters, i);
-      print_gaugeobservables(gaugefield, &plaqtime, &polytime, i, gaugeout_name.str());
-    }
-  }
+	int nsteps = parameters.get_heatbathsteps();
+	int overrelaxsteps = parameters.get_overrelaxsteps();
+	cout<<"perform "<<nsteps<<" heatbath steps on OpenCL device..."<<endl;
+	for(int i = 0; i<nsteps; i++){
+		device.run_heatbath(parameters.get_beta(), local_work_size, global_work_size, &updatetime);
+		for (int j = 0; j < overrelaxsteps; j++)
+			device.run_overrelax(parameters.get_beta(), local_work_size, global_work_size, &overrelaxtime);
+		if( ( (i+1)%parameters.get_writefrequency() ) == 0 ) {
+			device.gaugeobservables(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
+			print_gaugeobservables(plaq, tplaq, splaq, pol, i, gaugeout_name.str());
+		}
+		if( parameters.get_saveconfigs()==TRUE && ( (i+1)%parameters.get_savefrequency() ) == 0 ) {
+			device.get_gaugefield_from_device(gaugefield, &copytime);
+			save_gaugefield(gaugefield, &parameters, i);
+			print_gaugeobservables(gaugefield, &plaqtime, &polytime, i, gaugeout_name.str());
+		}
+	}
 
-  device.get_gaugefield_from_device(gaugefield, &copytime);
+	device.get_gaugefield_from_device(gaugefield, &copytime);
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Final Output

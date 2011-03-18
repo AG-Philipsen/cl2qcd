@@ -33,7 +33,7 @@ void testing_adjoin(hmc_gaugefield * in, int spacepos, int timepos);
 void testing_det_global(hmc_gaugefield * in);
 void testing_matrix_ops(hmc_gaugefield * in);
 
-void testing_heatbath_norandommat_no123(hmc_su3matrix * su3_in, hmc_staplematrix * staple_in, hmc_su3matrix * out, hmc_float beta);
+void testing_heatbath_norandommat_no123(hmc_su3matrix * su3_in, hmc_staplematrix * staple_in, hmc_su3matrix * out);
 
 void testing_heatbath_no123(hmc_su3matrix * su3_in, hmc_staplematrix * staple_in, hmc_su3matrix * out, hmc_float beta, hmc_float * rnd_array, int * cter_out);
 

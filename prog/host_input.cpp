@@ -13,6 +13,7 @@ hmc_error inputparameters::set_defaults(){
   startcondition = COLD_START;
   thermalizationsteps = 0;
   heatbathsteps = 1000;
+	overrelaxsteps = 1;
   writefrequency = 1;
   savefrequency = 100;
   saveconfigs = FALSE;
@@ -54,6 +55,7 @@ hmc_error inputparameters::readfile(char* ifn){
     }
     if(line.find("thermalizationsteps")!=std::string::npos) val_assign(&thermalizationsteps,line);
     if(line.find("heatbathsteps")!=std::string::npos) val_assign(&heatbathsteps,line);
+		if(line.find("overrelaxsteps")!=std::string::npos) val_assign(&overrelaxsteps,line);
   }
   return HMC_SUCCESS;
 }
@@ -197,6 +199,10 @@ int inputparameters::get_thermalizationsteps(){
 
 int inputparameters::get_heatbathsteps(){
   return heatbathsteps;
+}
+
+int inputparameters::get_overrelaxsteps(){
+  return overrelaxsteps;
 }
 
 int inputparameters::get_writefrequency(){

@@ -12,6 +12,8 @@
 #include "host_operations_complex.h"
 #include "host_operations_gaugefield.h"
 #include "host_operations_spinor.h"
+#include "host_operations_spinorfield.h"
+#include "host_operations_fermionmatrix.h"
 #include "globaldefs.h"
 #include "hmcerrs.h"
 #include "types.h"
@@ -37,10 +39,10 @@ class opencl {
 	hmc_error copy_source_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
 	hmc_error get_spinorfield_from_device(hmc_spinor_field* host_spinorfield,  usetimer* timer);
 	hmc_error copy_spinor_device(cl_mem in, cl_mem out, usetimer* timer);
-	hmc_error convert_to_kappa_format_device(cl_mem inout, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-	hmc_error convert_from_kappa_format_device(cl_mem in, cl_mem out, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-	hmc_error convert_to_kappa_format_eoprec_device(cl_mem inout, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-	hmc_error convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out, cl_mem kappa, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	hmc_error convert_to_kappa_format_device(cl_mem inout, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	hmc_error convert_from_kappa_format_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	hmc_error convert_to_kappa_format_eoprec_device(cl_mem inout, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	hmc_error convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error copy_float_from_device(cl_mem in, hmc_float * out, usetimer* timer);
 	hmc_error copy_complex_from_device(cl_mem in, hmc_complex * out, usetimer* timer);
 	hmc_error copy_complex_device(cl_mem in, cl_mem out, usetimer* timer);
@@ -51,11 +53,11 @@ class opencl {
 	hmc_error set_zero_spinorfield_device(cl_mem x, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
 	hmc_error saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
-	hmc_error M_device(cl_mem in, cl_mem out, cl_mem tmp, cl_mem gaugefield, cl_mem kappa, cl_mem mu, cl_mem theta, cl_mem kappa_complex, cl_mem chem_pot_re, cl_mem chem_pot_im, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
+	hmc_error M_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
 
 	hmc_error bicgstab_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
 	hmc_error cg_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
-	hmc_error testing_spinor(size_t local_size, size_t global_size);
+	hmc_error testing_spinor(inputparameters* parameters, size_t local_size, size_t global_size);
 #endif
 #ifdef _TESTING_
   hmc_error testing(hmc_gaugefield * gaugefield);
