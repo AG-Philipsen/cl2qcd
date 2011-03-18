@@ -627,4 +627,43 @@ void gaugefield_apply_chem_pot(__private hmc_ocl_su3matrix * u, __private hmc_oc
   return;
 }
   
-  
+//calculate polyakov-loop matrix at spatial site n in time-direction
+void local_polyakov(__global hmc_ocl_gaugefield * field, hmc_ocl_su3matrix * prod, int n){
+	unit_su3matrix(prod);
+	for(int t=0; t<NTIME; t++) {
+		hmc_ocl_su3matrix tmp[SU3SIZE];
+		get_su3matrix(tmp,field,n,t,0);
+		accumulate_su3matrix_prod(prod,tmp);
+	}
+	return;
+}
+
+//calculate plaquette-matrix at site n,t in direction mu and nu
+void local_plaquette(__global hmc_ocl_gaugefield * field, hmc_ocl_su3matrix * prod, int n, int t, int mu, int nu ){
+	hmc_ocl_su3matrix tmp[SU3SIZE];
+	//u_mu(x)
+	get_su3matrix(prod,field,n,t,mu);
+	//u_nu(x+mu)
+	if(mu==0) {
+	  int newt = (t+1)%NTIME; //(haha)
+	  get_su3matrix(tmp,field,n,newt,nu);
+	} else {
+	  get_su3matrix(tmp,field,get_neighbor(n,mu),t,nu);
+	}
+	accumulate_su3matrix_prod(prod,tmp);
+	//adjoint(u_mu(x+nu))
+	if(nu==0) {
+	  int newt = (t+1)%NTIME;
+	  get_su3matrix(tmp,field,n,newt,mu);
+	} else {
+	  get_su3matrix(tmp,field,get_neighbor(n,nu),t,mu);
+	}
+	adjoin_su3matrix(tmp);
+	accumulate_su3matrix_prod(prod,tmp);
+	//adjoint(u_nu(x))
+	get_su3matrix(tmp,field,n,t,nu);
+	adjoin_su3matrix(tmp);
+	accumulate_su3matrix_prod(prod,tmp);
+		
+	return;
+}

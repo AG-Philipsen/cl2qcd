@@ -25,7 +25,7 @@ download the script from http://gitorious.org/findopencl. Make sure it can be
 found by CMake. One option is to symlink it into some path searched for by
 CMake, e.g.:
 
-mkdir .cmake/modules
+mkdir -p .cmake/modules
 cd .cmake/modules
 wget http://gitorious.org/findopencl/findopencl/blobs/raw/master/FindOpenCL.cmake
 

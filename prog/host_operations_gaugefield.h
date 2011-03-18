@@ -46,4 +46,7 @@ hmc_error project_su3(hmc_su3matrix *U);
 void gaugefield_apply_bc(hmc_su3matrix * in, hmc_float theta);
 void gaugefield_apply_chem_pot(hmc_su3matrix * u, hmc_su3matrix * udagger, hmc_float chem_pot_re, hmc_float chem_pot_im);
 
+void local_polyakov(hmc_gaugefield * field, hmc_su3matrix * prod, int n);
+void local_plaquette(hmc_gaugefield * field, hmc_su3matrix * prod, int n, int t, int mu, int nu );
+
 #endif

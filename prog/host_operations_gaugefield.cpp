@@ -791,4 +791,43 @@ void gaugefield_apply_chem_pot(hmc_su3matrix * u, hmc_su3matrix * udagger, hmc_f
 #endif
   return;
 }
-  
+
+void local_polyakov(hmc_gaugefield * field, hmc_su3matrix * prod, int n){
+	unit_su3matrix(prod);
+	for(int t=0; t<NTIME; t++) {
+		hmc_su3matrix tmp;
+		get_su3matrix(&tmp,field,n,t,0);
+		accumulate_su3matrix_prod(prod,&tmp);
+	}
+	return;
+}
+
+void local_plaquette(hmc_gaugefield * field, hmc_su3matrix * prod, int n, int t, int mu, int nu ){
+	hmc_su3matrix tmp;
+	//u_mu(x)
+	get_su3matrix(prod,field,n,t,mu);
+	//u_nu(x+mu)
+	if(mu==0) {
+	  int newt = (t+1)%NTIME; //(haha)
+	  get_su3matrix(&tmp,field,n,newt,nu);
+	} else {
+	  get_su3matrix(&tmp,field,get_neighbor(n,mu),t,nu);
+	}
+	accumulate_su3matrix_prod(prod,&tmp);
+	//adjoint(u_mu(x+nu))
+	if(nu==0) {
+	  int newt = (t+1)%NTIME;
+	  get_su3matrix(&tmp,field,n,newt,mu);
+	} else {
+	  get_su3matrix(&tmp,field,get_neighbor(n,nu),t,mu);
+	}
+	adjoin_su3matrix(&tmp);
+	accumulate_su3matrix_prod(prod,&tmp);
+	//adjoint(u_nu(x))
+	get_su3matrix(&tmp,field,n,t,nu);
+	adjoin_su3matrix(&tmp);
+	accumulate_su3matrix_prod(prod,&tmp);
+		
+	return;
+}
+

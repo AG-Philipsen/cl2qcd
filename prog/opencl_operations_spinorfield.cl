@@ -143,13 +143,11 @@ __kernel void scalar_product( __global hmc_spinor_field *x, __global hmc_spinor_
 	}
 	else{
 	// sync threads
-	//!!CP: is this right??
 	barrier(CLK_LOCAL_MEM_FENCE);
 	//reduction
-	if (idx<64){
-		(result_local[idx]).re=sum.re;
-		(result_local[idx]).im=sum.im;
-	}
+	(result_local[idx]).re=sum.re;
+	(result_local[idx]).im=sum.im;
+	
 	barrier(CLK_LOCAL_MEM_FENCE);
 	if (idx>=64){
 		result_local[idx%64].re +=result_local[idx].re;
@@ -172,14 +170,23 @@ __kernel void scalar_product( __global hmc_spinor_field *x, __global hmc_spinor_
 	}
 	barrier(CLK_LOCAL_MEM_FENCE);
 	//thread 0 sums up the result_local and stores it in array result
-	if (idx==0)
-		for (int i = 1; i<8; i++) {
-			result_local[idx].re += result_local[i].re;
-			result_local[idx].im += result_local[i].im;
-// 			complexaccumulate(result[get_group_id(0)], result_local[i]);
+	if (idx==0){
+		if(local_size >= 8){
+			for (int i = 1; i<8; i++) {
+				result_local[idx].re += result_local[i].re;
+				result_local[idx].im += result_local[i].im;
+			}
+			result[ group_id ].re = result_local[idx].re;
+			result[ group_id ].im = result_local[idx].im;	
 		}
-		result[ group_id ].re = result_local[idx].re;
-		result[ group_id ].im = result_local[idx].im;	
+		else{
+			for (int i = 1; i<local_size; i++) {
+				result_local[idx].re += result_local[i].re;
+				result_local[idx].im += result_local[i].im;
+			}
+			result[ group_id ].re = result_local[idx].re;
+			result[ group_id ].im = result_local[idx].im;	
+		}
 	}
 	return;
 }
@@ -190,13 +197,11 @@ __kernel void scalar_product_reduction(__global hmc_complex* result_tmp, __globa
 	hmc_complex tmp2;
 	tmp2 = result_tmp[0];
 	int id = get_global_id(0);
-	//!!CP: only one thread is needed
 	if(id == 0){
 		for (int i = 1; i<get_num_groups(0); i++){
 			tmp1 = result_tmp[i];
 			complexaccumulate(&tmp2, &tmp1);
 		}
-	//!!CP: pointer????
 		(*result) = tmp2;
 	}
 	return;
@@ -208,7 +213,6 @@ __kernel void global_squarenorm( __global hmc_spinor_field *x, __global hmc_floa
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
-	int loc_idx = get_local_id(0);
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 	int idx = get_local_id(0);
@@ -226,15 +230,12 @@ __kernel void global_squarenorm( __global hmc_spinor_field *x, __global hmc_floa
 	}
 	else{
 	// sync threads
-	//!!CP: is this right, see also above??
 	barrier(CLK_LOCAL_MEM_FENCE);
 	//reduction
-	if (idx<64)
-		(result_local[idx])=sum;
+	(result_local[idx])=sum;
 	barrier(CLK_LOCAL_MEM_FENCE);
 	if (idx>=64)
 		result_local[idx%64]+=result_local[idx];
-//!! CP: this must be result_local[id%64]+=sum instead of [id-64]; ??
 	barrier(CLK_LOCAL_MEM_FENCE);
 	if (idx>=32)
 		result_local[idx-32]+=result_local[idx];
@@ -246,21 +247,25 @@ __kernel void global_squarenorm( __global hmc_spinor_field *x, __global hmc_floa
 		result_local[idx-8]+=result_local[idx];
 	barrier(CLK_LOCAL_MEM_FENCE);
 	//thread 0 sums up the result_local and stores it in array result
-	if (idx==0)
-		result[ group_id ] = 	result_local[0] + result_local[1] + result_local[2] + result_local[3] + 
+	if (idx==0){
+		if(local_size >= 8){
+			result[ group_id ] = 	result_local[0] + result_local[1] + result_local[2] + result_local[3] + 
 				                result_local[4] + result_local[5] + result_local[6] + result_local[7];
+		}
+		else{
+			for(int i = 0; i<local_size; i++)
+				result[group_id] += result_local[i];
+		}
 	}
 	return;
 }
 
 __kernel void global_squarenorm_reduction(__global hmc_float* result_tmp, __global hmc_float* result){
 	int id = get_global_id(0);
-	//!!CP: only one thread is needed
 	if(id == 0){
 		for (int i = 1; i<get_num_groups(0); i++){
 			result_tmp[0] += result_tmp[i];
 		}
-		//!!CP: pointer????
 		(*result) = result_tmp[0];
 	}
 

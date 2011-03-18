@@ -29,11 +29,10 @@ int main(int argc, char* argv[]) {
 
 	simple_correlator(gaugefield, parameters.get_kappa(), parameters.get_mu(), parameters.get_theta_fermion(), parameters.get_chem_pot_re(), parameters.get_chem_pot_im(), 1000);
 	
-	return 0;
 #ifdef _USEGPU_
-  opencl device(CL_DEVICE_TYPE_GPU, &inittime);
+  opencl device(CL_DEVICE_TYPE_GPU, local_work_size, global_work_size, &inittime);
 #else
-  opencl device(CL_DEVICE_TYPE_CPU, &inittime);
+  opencl device(CL_DEVICE_TYPE_CPU, local_work_size, global_work_size, &inittime);
 #endif
 
   cout << "initial values of observables:\n\t" ;

@@ -16,8 +16,7 @@ hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_flo
   for(int k=0; k<NC*NSPIN; k++) {
 		if(use_eo){
 			hmc_spinor_field b[SPINORFIELDSIZE];
-// 			create_point_source(b,k,0,0,kappa,mu,gaugefield);
-			create_point_source(b,1,0,0,1,1,gaugefield);
+			create_point_source(b,k,0,0,kappa,mu,gaugefield);
 			solver(in, phi, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
 		}
 		else{

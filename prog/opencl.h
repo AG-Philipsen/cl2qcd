@@ -21,9 +21,9 @@
 
 class opencl {
  public:
-  opencl(cl_device_type wanted, usetimer* timer){init(wanted, timer);};
+  opencl(cl_device_type wanted, const size_t ls, const size_t gs, usetimer* timer){init(wanted, ls, gs, timer);};
   ~opencl(){finalize();};
-  hmc_error init(cl_device_type wanted_device_type, usetimer* timer);
+  hmc_error init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
   hmc_error copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
   hmc_error copy_rndarray_to_device(hmc_rndarray host_rndarray,  usetimer* timer);
   hmc_error copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer);
@@ -72,15 +72,21 @@ class opencl {
   cl_kernel overrelax_odd;
   cl_kernel overrelax_even;
   cl_kernel plaquette;
+	cl_kernel plaquette_reduction;
   cl_kernel polyakov;
+	cl_kernel polyakov_reduction;
   
 	//heatbath variables
 	cl_mem clmem_gaugefield;
   cl_mem clmem_rndarray;
   cl_mem clmem_plaq;
-  cl_mem clmem_splaq;
+  cl_mem clmem_plaq_buf_glob;
+	cl_mem clmem_splaq_buf_glob;
+	cl_mem clmem_tplaq_buf_glob;
+	cl_mem clmem_splaq;
   cl_mem clmem_tplaq;
   cl_mem clmem_polyakov;
+	cl_mem clmem_polyakov_buf_glob;
 	//!!CP: this is not needed at the moment and since is not copied to the device anywhere!!
 	cl_mem clmem_theta_gaugefield;
 

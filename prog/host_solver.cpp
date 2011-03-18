@@ -49,10 +49,6 @@ hmc_error solver(hmc_spinor_field* in, hmc_spinor_field* out, hmc_spinor_field* 
 		bicgstab(in, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
 	
 	convert_from_kappa_format(in, out, kappa);
-  for(int n=0; n<SPINORFIELDSIZE; n++) {
-    out[n].re = (in[n].re);
-    out[n].im = (in[n].im);
-  	}
     
 	return HMC_SUCCESS;
 }

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-hmc_error opencl::init(cl_device_type wanted_device_type, usetimer* timer){
+hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
 
 //give a list of all kernel-files
 //!!CP: LZ should update this
@@ -211,7 +211,35 @@ hmc_error opencl::init(cl_device_type wanted_device_type, usetimer* timer){
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
+  int num_groups;
+  if(local_work_size <= global_work_size) num_groups = global_work_size/local_work_size;
+	else num_groups = 1;
+	
+	int global_buf_size_float = sizeof(hmc_float)*num_groups;
+	int global_buf_size_complex = sizeof(hmc_complex)*num_groups;
 
+	clmem_plaq_buf_glob = clCreateBuffer(context,CL_MEM_READ_WRITE,global_buf_size_float,0,&clerr);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"creating clmem_plaq_buf_glob failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  } 
+	clmem_tplaq_buf_glob = clCreateBuffer(context,CL_MEM_READ_WRITE,global_buf_size_float,0,&clerr);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"creating tclmem_plaq_buf_glob failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }  
+	clmem_splaq_buf_glob = clCreateBuffer(context,CL_MEM_READ_WRITE,global_buf_size_float,0,&clerr);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"creating sclmem_plaq_buf_glob failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }  
+	clmem_polyakov_buf_glob = clCreateBuffer(context,CL_MEM_READ_WRITE,global_buf_size_complex,0,&clerr);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"creating clmem_polyakov_buf_glob failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }  
+  
+  
   cout<<"Create heatbath kernels..."<<endl;
   heatbath_even = clCreateKernel(clprogram,"heatbath_even",&clerr);
   if(clerr!=CL_SUCCESS) {
@@ -242,6 +270,16 @@ hmc_error opencl::init(cl_device_type wanted_device_type, usetimer* timer){
     exit(HMC_OCLERROR);
   }
   polyakov = clCreateKernel(clprogram,"polyakov",&clerr);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  plaquette_reduction = clCreateKernel(clprogram,"plaquette_reduction",&clerr);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  polyakov_reduction = clCreateKernel(clprogram,"polyakov_reduction",&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
@@ -461,135 +499,186 @@ hmc_error opencl::gaugeobservables(const size_t local_work_size, const size_t gl
   
   //measure plaquette
   (*timer1).reset();
+	int num_groups;
+	if(local_work_size <= global_work_size) num_groups = (int)global_work_size/(int)local_work_size;
+	else num_groups = 1;
+  hmc_float plaq;
+  hmc_float splaq;
+  hmc_float tplaq;
+	int buf_glob_size_float = sizeof(hmc_float)*num_groups;
+	int buf_loc_size_float = sizeof(hmc_float)*local_work_size;
+	int buf_loc_size_complex = sizeof(hmc_complex)*local_work_size;
+	
+  plaq = 0.;
+  splaq = 0.;
+  tplaq = 0.;
 
-  hmc_float * plaq= new hmc_float [global_work_size];
-  hmc_float * splaq = new hmc_float[global_work_size];
-  hmc_float * tplaq = new hmc_float[global_work_size];
-  for(int i = 0; i<(int)global_work_size; i++){
-    plaq[i] = 0.;
-    splaq[i] = 0.;
-    tplaq[i] = 0.;
-  }
-  // FIXME
-  const size_t * local_work_size_p = (local_work_size == 0) ? 0 : &local_work_size;
-
-  //set device-values to zero for new measurement
-  clerr = clEnqueueWriteBuffer(queue,clmem_plaq,CL_TRUE,0,sizeof(hmc_float)*global_work_size,&plaq,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clEnqueueWriteBuffer(queue,clmem_splaq,CL_TRUE,0,sizeof(hmc_float)*global_work_size,&splaq,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clEnqueueWriteBuffer(queue,clmem_tplaq,CL_TRUE,0,sizeof(hmc_float)*global_work_size,&tplaq,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  
   clerr = clSetKernelArg(plaquette,0,sizeof(cl_mem),&clmem_gaugefield); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(plaquette,1,sizeof(cl_mem),&clmem_plaq_buf_glob);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(plaquette,1,sizeof(cl_mem),&clmem_plaq);
+  clerr = clSetKernelArg(plaquette,2,sizeof(cl_mem),&clmem_tplaq_buf_glob);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(plaquette,2,sizeof(cl_mem),&clmem_tplaq);
+  clerr = clSetKernelArg(plaquette,3,sizeof(cl_mem),&clmem_splaq_buf_glob);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg3 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(plaquette,3,sizeof(cl_mem),&clmem_splaq);
+  clerr = clSetKernelArg(plaquette,4,buf_loc_size_float,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg4 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clEnqueueNDRangeKernel(queue,plaquette,1,0,&global_work_size,local_work_size_p,0,0,NULL);
+  clerr = clSetKernelArg(plaquette,5,buf_loc_size_float,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg5 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(plaquette,6,buf_loc_size_float,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg6 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueNDRangeKernel(queue,plaquette,1,0,&global_work_size,&local_work_size,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
       cout<<"clEnqueueNDRangeKernel failed, aborting..." << clerr <<endl;
       exit(HMC_OCLERROR);
   }
   clFinish(queue);
 
+	clerr = clSetKernelArg(plaquette_reduction,0,sizeof(cl_mem),&clmem_plaq_buf_glob);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(plaquette_reduction,1,sizeof(cl_mem),&clmem_tplaq_buf_glob);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(plaquette_reduction,2,sizeof(cl_mem),&clmem_splaq_buf_glob);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg2 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(plaquette_reduction,3,sizeof(cl_mem),&clmem_plaq);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg3 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(plaquette_reduction,4,sizeof(cl_mem),&clmem_tplaq);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg4 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(plaquette_reduction,5,sizeof(cl_mem),&clmem_splaq);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg5 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }	
+  clerr = clEnqueueNDRangeKernel(queue,plaquette_reduction,1,0,&global_work_size,&local_work_size,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+      cout<<"clEnqueueNDRangeKernel failed, aborting..." << clerr <<endl;
+      exit(HMC_OCLERROR);
+  }
+  clFinish(queue);
+  
   //read out values
-  clerr = clEnqueueReadBuffer(queue,clmem_plaq,CL_TRUE,0,sizeof(hmc_float),&plaq[0],0,NULL,NULL);
+  clerr = clEnqueueReadBuffer(queue,clmem_plaq,CL_TRUE,0,sizeof(hmc_float),&plaq,0,NULL,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clEnqueueReadBuffer(queue,clmem_splaq,CL_TRUE,0,sizeof(hmc_float),&splaq[0],0,NULL,NULL);
+  clerr = clEnqueueReadBuffer(queue,clmem_tplaq,CL_TRUE,0,sizeof(hmc_float),&tplaq,0,NULL,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }  
+  clerr = clEnqueueReadBuffer(queue,clmem_splaq,CL_TRUE,0,sizeof(hmc_float),&splaq,0,NULL,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
 
   //two plaquette-measurements per thread -> add. factor of 1/2
-  tplaq[0] /= static_cast<hmc_float>(VOL4D*NC*(NDIM-1));
-  splaq[0] /= static_cast<hmc_float>(VOL4D*NC*(NDIM-1)*(NDIM-2))/2. ;
-  plaq[0]  /= static_cast<hmc_float>(VOL4D*NDIM*(NDIM-1)*NC)/2.;
+  tplaq /= static_cast<hmc_float>(VOL4D*NC*(NDIM-1));
+  splaq /= static_cast<hmc_float>(VOL4D*NC*(NDIM-1)*(NDIM-2))/2. ;
+  plaq  /= static_cast<hmc_float>(VOL4D*NDIM*(NDIM-1)*NC)/2.;
   
-  (*plaq_out) = plaq[0];
-  (*splaq_out)= splaq[0];
-  (*tplaq_out)= tplaq[0];
+  (*plaq_out) = plaq;
+  (*splaq_out)= splaq;
+  (*tplaq_out)= tplaq;
 
   (*timer1).add();
   
   //measure polyakovloop
   (*timer2).reset();
-  hmc_complex * pol = new hmc_complex [global_work_size];
-  for(int i = 0; i<(int) global_work_size; i++){
-    pol[i] = hmc_complex_zero;
-  }
- 
-  //set device-values to zero for new measurement
-  clerr = clEnqueueWriteBuffer(queue,clmem_polyakov,CL_TRUE,0,sizeof(hmc_complex)*global_work_size,&pol,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-
+  hmc_complex pol;
+  pol = hmc_complex_zero;
+ 	
   clerr = clSetKernelArg(polyakov,0,sizeof(cl_mem),&clmem_gaugefield); 
   if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg5 failed, aborting..."<<endl;
+    cout<<"clSetKernelArg0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(polyakov,1,sizeof(cl_mem),&clmem_polyakov);
+  clerr = clSetKernelArg(polyakov,1,sizeof(cl_mem),&clmem_polyakov_buf_glob);
   if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg6 failed, aborting..."<<endl;
+    cout<<"clSetKernelArg1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(polyakov,2,buf_loc_size_complex,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
   clerr = clEnqueueNDRangeKernel(queue,polyakov,1,0,&local_work_size,&global_work_size,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
-    cout<<"clEnqueueNDRangeKernel failed, aborting..."<<endl;
+    cout<<"clEnqueueNDRangeKernel poly failed, aborting..."<<endl;
+		cout << clerr << endl;
     exit(HMC_OCLERROR);
   }
   clFinish(queue);
 
+	clerr = clSetKernelArg(polyakov_reduction,0,sizeof(cl_mem),&clmem_polyakov_buf_glob);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(polyakov_reduction,1,sizeof(cl_mem),&clmem_polyakov);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueNDRangeKernel(queue,polyakov_reduction,1,0,&global_work_size,&local_work_size,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+      cout<<"clEnqueueNDRangeKernel failed, aborting..." << clerr <<endl;
+      exit(HMC_OCLERROR);
+  }
+  clFinish(queue);
+	
   //read out values
-  clerr = clEnqueueReadBuffer(queue,clmem_polyakov,CL_TRUE,0,sizeof(hmc_complex),&pol[0],0,NULL,NULL);
+  clerr = clEnqueueReadBuffer(queue,clmem_polyakov,CL_TRUE,0,sizeof(hmc_complex),&pol,0,NULL,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
   
-  pol[0].re /= static_cast<hmc_float>(NC*VOLSPACE);
-  pol[0].im /= static_cast<hmc_float>(NC*VOLSPACE);
+  pol.re /= static_cast<hmc_float>(NC*VOLSPACE);
+  pol.im /= static_cast<hmc_float>(NC*VOLSPACE);
   
-  (*pol_out).re = pol[0].re;
-  (*pol_out).im = pol[0].im;
+  (*pol_out).re = pol.re;
+  (*pol_out).im = pol.im;
 
   (*timer2).add();
-  
-  delete [] plaq;
-  delete [] splaq;
-  delete [] tplaq;
-  delete [] pol;
   
   return HMC_SUCCESS;
 }
@@ -1050,6 +1139,8 @@ hmc_error opencl::finalize(){
 
   if(clReleaseKernel(plaquette)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseKernel(polyakov)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseKernel(plaquette_reduction)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseKernel(polyakov_reduction)!=CL_SUCCESS) exit(HMC_OCLERROR);
 
   if(clReleaseProgram(clprogram)!=CL_SUCCESS) exit(HMC_OCLERROR);
 
@@ -1060,7 +1151,11 @@ hmc_error opencl::finalize(){
   if(clReleaseMemObject(clmem_tplaq)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_splaq)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_polyakov)!=CL_SUCCESS) exit(HMC_OCLERROR);
-
+  if(clReleaseMemObject(clmem_plaq_buf_glob)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_tplaq_buf_glob)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_splaq_buf_glob)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_polyakov_buf_glob)!=CL_SUCCESS) exit(HMC_OCLERROR);
+	
   if(clReleaseCommandQueue(queue)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseContext(context)!=CL_SUCCESS) exit(HMC_OCLERROR);
 
