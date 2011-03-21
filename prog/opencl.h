@@ -58,6 +58,11 @@ class opencl {
 	hmc_error bicgstab_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
 	hmc_error cg_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
 	hmc_error testing_spinor(inputparameters* parameters, size_t local_size, size_t global_size);
+	
+	hmc_error simple_correlator_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error create_point_source_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs, usetimer * latimer);
+	hmc_error solver_device(hmc_spinor_field* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, const size_t ls, const size_t gs, int cgmax);
+
 #endif
 #ifdef _TESTING_
   hmc_error testing(hmc_gaugefield * gaugefield);
@@ -115,6 +120,7 @@ class opencl {
 	cl_kernel convert_from_kappa_format;
 	cl_kernel convert_to_kappa_format_eoprec;
 	cl_kernel convert_from_kappa_format_eoprec;
+	cl_kernel create_point_source;
 
 	cl_mem clmem_inout;
 	cl_mem clmem_source;

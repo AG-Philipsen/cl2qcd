@@ -1472,6 +1472,12 @@ hmc_error opencl::init_solver_variables(inputparameters* parameters, const size_
 		cout<<"...creating convert_from_kappa_format_eoprec kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
 	}
+	create_point_source = clCreateKernel(clprogram,"create_point_source",&clerr);
+	if(clerr!=CL_SUCCESS) {
+		cout<<"...creating create_point_source kernel failed, aborting."<<endl;
+		exit(HMC_OCLERROR);
+	}
+	
 	
 	//!!CP: this can be deleted later...
 	cout << "\tset spinorfields to zero..." << endl;
@@ -2079,8 +2085,6 @@ hmc_error opencl::bicgstab_device(usetimer * copytimer, usetimer* singletimer, u
 	hmc_float resid;
 	hmc_float trueresid;
 
-	//!!CP: I think most of the args in M_device can be saved since kappa... are known global
-
 	for(int iter=0; iter<cgmax; iter++){
 		if(iter%iter_refresh==0) {
 			set_zero_spinorfield_device(clmem_v, localsize, globalsize, latimer); 
@@ -2437,7 +2441,15 @@ hmc_error opencl::testing_spinor(inputparameters* parameters, size_t local_size,
 	hmc_spinor_field b[SPINORFIELDSIZE];
 	//CP: a gaugefield is not needed here
 	hmc_gaugefield dummy;
-	create_point_source(b,1,0,0,0.15,4.,&dummy);
+// 	create_point_source(b,1,0,0,0.15,4.,&dummy);
+	//CP: taken from create_point_source
+  for (int i = 0; i< SPINORFIELDSIZE; i++) {b[i].re = 0.; b[i].im = 0.;}
+
+  int color = spinor_color(1);
+  int spin = spinor_spin(1,color);
+
+  b[spinor_field_element(spin,color,0,0)].re = sqrt(2.*kappa);
+
 	copy_source_to_device(b, &noop);
 	set_complex_to_scalar_product_device(clmem_source, clmem_source, clmem_tmp2, local_size, global_size, &noop);
 	copy_complex_from_device(clmem_tmp2, &tester, &noop);
@@ -2461,8 +2473,15 @@ hmc_error opencl::testing_spinor(inputparameters* parameters, size_t local_size,
 	hmc_spinor_field phi[SPINORFIELDSIZE];
   for(int k=0; k<NC*NSPIN; k++) {
 		hmc_spinor_field b[SPINORFIELDSIZE];
-		create_point_source(b,k,0,0,kappa,mu,&gaugefield);
-			
+		//create_point_source(b,k,0,0,kappa,mu,&gaugefield);
+			//CP: taken from create_point_source
+		for (int i = 0; i< SPINORFIELDSIZE; i++) {b[i].re = 0.; b[i].im = 0.;}
+
+		int color = spinor_color(k);
+		int spin = spinor_spin(k,color);
+
+		b[spinor_field_element(spin,color,0,0)].re = sqrt(2.*kappa);
+	
 		copy_source_to_device(b, &noop);
 		convert_to_kappa_format_device(clmem_inout, local_size, global_size, &noop);
 		bicgstab_device(&noop, &noop, &noop, &noop, &noop,local_size, global_size, cgmax);
@@ -2493,5 +2512,104 @@ hmc_error opencl::testing_spinor(inputparameters* parameters, size_t local_size,
 	
 	return HMC_SUCCESS;
 }
+	
+hmc_error opencl::simple_correlator_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, const size_t ls, const size_t gs, int cgmax){
+
+	cout << "calc simple_propagator on the device..." << endl;
+  hmc_spinor_field in[SPINORFIELDSIZE];
+	hmc_spinor_field phi[SPINORFIELDSIZE];
+	init_spinorfield_cold(in);
+	copy_spinorfield_to_device(in, copytimer);
+
+  //pseudo scalar, flavour multiplet
+  hmc_complex correlator_ps[NSPACE];
+  for(int z=0; z<NSPACE; z++) {
+    correlator_ps[z].re = 0;
+    correlator_ps[z].im = 0;
+  }
+	int use_eo = 0;
+  for(int k=0; k<NC*NSPIN; k++) {
+		if(!use_eo){
+			create_point_source_device(k,0,0,ls, gs, latimer);
+			solver_device(phi, copytimer, singletimer, Mtimer, scalarprodtimer, latimer, ls, gs, cgmax);
+		}
+		else{
+// 			hmc_eoprec_spinor_field be[EOPREC_SPINORFIELDSIZE];
+// 			hmc_eoprec_spinor_field bo[EOPREC_SPINORFIELDSIZE];
+// 			
+// 			create_point_source_eoprec(be,bo,k,0,0,kappa,mu,theta, chem_pot_re, chem_pot_im, gaugefield);
+// 			solver(in, phi, be, bo, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+			
+		}
+    for(int timepos = 0; timepos<NTIME; timepos++) {
+			for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
+				for(int alpha = 0; alpha<NSPIN; alpha++) {
+					for(int c = 0; c<NC; c++) {
+					// int j = spinor_element(alpha,c);
+					int n = spinor_field_element(alpha, c, spacepos, timepos);
+					int z = get_spacecoord(spacepos, 3);
+					hmc_complex tmp = phi[n];
+					hmc_complex ctmp = complexconj(&tmp);
+					hmc_complex incr = complexmult(&ctmp,&tmp);
+					correlator_ps[z].re += incr.re;
+					correlator_ps[z].im += incr.im;
+		}}}}
+  }
+
+  printf("pseudo scalar correlator:\n");
+  for(int z=0; z<NSPACE; z++) {
+    printf("%d\t(%e,%e)\n",z,correlator_ps[z].re,correlator_ps[z].im);
+  }
+  return HMC_SUCCESS;
+}
+
+hmc_error opencl::solver_device(hmc_spinor_field* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, const size_t ls, const size_t gs, int cgmax){
+	convert_to_kappa_format_device(clmem_inout, ls, gs, latimer);
+	bicgstab_device(copytimer, singletimer, Mtimer, scalarprodtimer, latimer ,ls, gs, cgmax);
+	convert_from_kappa_format_device(clmem_inout, clmem_inout, ls, gs, latimer);
+	get_spinorfield_from_device(out, copytimer);
+	
+	return HMC_SUCCESS;
+}
+	
+hmc_error opencl::create_point_source_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs, usetimer * latimer){
+	
+	set_zero_spinorfield_device(clmem_source, ls, gs, latimer);
+	
+	int clerr = CL_SUCCESS;
+	clerr = clSetKernelArg(create_point_source,0,sizeof(cl_mem),&clmem_source);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	clerr = clSetKernelArg(create_point_source,1,sizeof(int),&i);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	clerr = clSetKernelArg(create_point_source,2,sizeof(int),&spacepos);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	clerr = clSetKernelArg(create_point_source,3,sizeof(int),&timepos);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	clerr = clSetKernelArg(create_point_source,4,sizeof(cl_mem),&clmem_kappa);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 4 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueNDRangeKernel(queue,create_point_source,1,0,&gs,&ls,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"enqueue dslash kernel failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	
+	return HMC_SUCCESS;
+}
+	
 	
 #endif //_FERMIONS_

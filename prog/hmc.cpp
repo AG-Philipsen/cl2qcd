@@ -44,10 +44,12 @@ int main(int argc, char* argv[]) {
 #ifdef _TESTING_
   device.testing(gaugefield);
 #endif
+#ifdef _FERMIONS_
 	usetimer noop;
 	device.init_solver_variables(&parameters, local_work_size, global_work_size, &noop);
-	device.testing_spinor(&parameters, local_work_size, global_work_size);
-
+// 	device.testing_spinor(&parameters, local_work_size, global_work_size);
+	device.simple_correlator_device(&copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, local_work_size, global_work_size, 1000);
+#endif
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Heatbath
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
