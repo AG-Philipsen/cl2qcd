@@ -241,7 +241,6 @@ hmc_error Aee(hmc_eoprec_spinor_field* in, hmc_eoprec_spinor_field* out, hmc_gau
   hmc_eoprec_spinor_field* spintmp1 = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
   hmc_eoprec_spinor_field* spintmp2 = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
   hmc_eoprec_spinor_field* spintmp3 = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
-  hmc_eoprec_spinor_field* spintmp4 = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
   hmc_complex one = hmc_complex_one;
   set_zero_spinorfield_eoprec(spintmp3);
   
@@ -255,7 +254,6 @@ hmc_error Aee(hmc_eoprec_spinor_field* in, hmc_eoprec_spinor_field* out, hmc_gau
   delete [] spintmp1;
   delete [] spintmp2;
   delete [] spintmp3;
-  delete [] spintmp4;
 
   return HMC_SUCCESS;
 }

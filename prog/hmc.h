@@ -49,11 +49,13 @@ usetimer updatetime;
 usetimer overrelaxtime;
 usetimer copytime;
 #ifdef _FERMIONS_
+usetimer inittimer;
 usetimer singletimer;
 usetimer Mtimer;
 usetimer copytimer;
 usetimer scalarprodtimer;
 usetimer latimer;
+usetimer solvertimer;
 #endif
 
 

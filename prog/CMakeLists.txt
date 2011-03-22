@@ -64,6 +64,7 @@ endif( USE_GPU )
 
 add_executable( hmc
 	hmc.cpp
+	host_geometry.cpp
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
 	host_operations_spinor.cpp
@@ -71,7 +72,6 @@ add_executable( hmc
 	host_operations_fermionmatrix.cpp
 	host_gaugeobservables.cpp
 	host_testing.cpp
-	host_geometry.cpp
 	host_input.cpp
 	host_readgauge.cpp
 	host_random.cpp

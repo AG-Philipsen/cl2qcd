@@ -14,7 +14,7 @@ hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_flo
   }
 
   for(int k=0; k<NC*NSPIN; k++) {
-		if(use_eo){
+		if(!use_eo){
 			hmc_spinor_field b[SPINORFIELDSIZE];
 			create_point_source(b,k,0,0,kappa,mu,gaugefield);
 			solver(in, phi, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
@@ -24,7 +24,7 @@ hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_flo
 			hmc_eoprec_spinor_field bo[EOPREC_SPINORFIELDSIZE];
 			
 			create_point_source_eoprec(be,bo,k,0,0,kappa,mu,theta, chem_pot_re, chem_pot_im, gaugefield);
-			solver(in, phi, be, bo, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+			solver_eoprec(in, phi, be, bo, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
 			
 		}
     for(int timepos = 0; timepos<NTIME; timepos++) {

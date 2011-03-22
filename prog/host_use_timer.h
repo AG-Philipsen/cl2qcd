@@ -31,7 +31,12 @@ class usetimer {
   int num_meas;
 };
 
-void time_output(usetimer * total, usetimer * init, usetimer * poly, usetimer * plaq, usetimer * update, usetimer * overrelax, usetimer * copy);
+void time_output(
+	usetimer * total, usetimer * init, usetimer * poly, usetimer * plaq, usetimer * update, usetimer * overrelax, usetimer * copy
+#ifdef _FERMIONS_
+, usetimer * inittimer, usetimer* singletimer, usetimer *Mtimer, usetimer *copytimer, usetimer *scalarprodtimer, usetimer *latimer, usetimer * solvertimer
+#endif
+	);
 
 
 #endif

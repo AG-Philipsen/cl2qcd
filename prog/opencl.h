@@ -9,6 +9,7 @@
 #include <sstream>
 #include <CL/cl.h>
 
+#include "host_geometry.h"
 #include "host_operations_complex.h"
 #include "host_operations_gaugefield.h"
 #include "host_operations_spinor.h"
@@ -34,11 +35,15 @@ class opencl {
   hmc_error run_overrelax(hmc_float beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
   hmc_error gaugeobservables(const size_t local_work_size, const size_t global_work_size, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol, usetimer* timer1, usetimer* timer2);
 #ifdef _FERMIONS_
-	hmc_error init_solver_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	hmc_error init_fermion_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error copy_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
+	hmc_error copy_eoprec_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
 	hmc_error copy_source_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
+	hmc_error copy_eoprec_source_to_device(hmc_eoprec_spinor_field* host_spinorfield1, hmc_eoprec_spinor_field* host_spinorfield2, usetimer* timer);
 	hmc_error get_spinorfield_from_device(hmc_spinor_field* host_spinorfield,  usetimer* timer);
+	hmc_error get_eoprec_spinorfield_from_device(hmc_spinor_field* host_spinorfield,  usetimer* timer);
 	hmc_error copy_spinor_device(cl_mem in, cl_mem out, usetimer* timer);
+	hmc_error copy_eoprec_spinor_device(cl_mem in, cl_mem out, usetimer* timer);	
 	hmc_error convert_to_kappa_format_device(cl_mem inout, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error convert_from_kappa_format_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error convert_to_kappa_format_eoprec_device(cl_mem inout, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
@@ -47,21 +52,35 @@ class opencl {
 	hmc_error copy_complex_from_device(cl_mem in, hmc_complex * out, usetimer* timer);
 	hmc_error copy_complex_device(cl_mem in, cl_mem out, usetimer* timer);
 	hmc_error set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	hmc_error set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_mem b, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_mem out, usetimer* timer);
 	hmc_error set_complex_to_product_device(cl_mem a, cl_mem b, cl_mem out, usetimer* timer);
 	hmc_error set_float_to_global_squarenorm_device(cl_mem a, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	hmc_error set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error set_zero_spinorfield_device(cl_mem x, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	hmc_error set_zero_spinorfield_eoprec_device(cl_mem x, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
 	hmc_error saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
+	hmc_error saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
+	hmc_error saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
 	hmc_error M_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
 
 	hmc_error bicgstab_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
+	hmc_error bicgstab_eoprec_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
 	hmc_error cg_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
 	hmc_error testing_spinor(inputparameters* parameters, size_t local_size, size_t global_size);
 	
-	hmc_error simple_correlator_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error simple_correlator_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
 	hmc_error create_point_source_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs, usetimer * latimer);
+	hmc_error create_point_source_eoprec_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs, usetimer * latimer, usetimer * Mtimer);
 	hmc_error solver_device(hmc_spinor_field* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error Aee_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer, usetimer * singletimer);
+	hmc_error M_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error M_sitediagonal_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error dslash_eoprec_device(cl_mem in, cl_mem out, int evenodd, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error solver_eoprec_device(hmc_spinor_field* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, const size_t ls, const size_t gs, int cgmax);
+	
+	hmc_error finalize_fermions();
 
 #endif
 #ifdef _TESTING_
@@ -121,7 +140,17 @@ class opencl {
 	cl_kernel convert_to_kappa_format_eoprec;
 	cl_kernel convert_from_kappa_format_eoprec;
 	cl_kernel create_point_source;
+	cl_kernel M_sitediagonal;
+	cl_kernel M_inverse_sitediagonal;
+	cl_kernel dslash_eoprec;
+	cl_kernel saxpy_eoprec;
+	cl_kernel saxsbypz_eoprec;
+	cl_kernel scalar_product_eoprec;
+	cl_kernel set_zero_spinorfield_eoprec;
+	cl_kernel global_squarenorm_eoprec;
+	cl_kernel create_point_source_eoprec;
 
+	//CP: variables for normal solver
 	cl_mem clmem_inout;
 	cl_mem clmem_source;
 	cl_mem clmem_rn;
@@ -132,6 +161,21 @@ class opencl {
 	cl_mem clmem_t;
 	cl_mem clmem_aux;
 	cl_mem clmem_tmp;
+	
+	//CP: variables for eoprec solver
+	cl_mem clmem_inout_eoprec;
+	cl_mem clmem_source_even;
+	cl_mem clmem_source_odd;
+	cl_mem clmem_rn_eoprec;
+	cl_mem clmem_rhat_eoprec;
+	cl_mem clmem_v_eoprec;
+	cl_mem clmem_p_eoprec;
+	cl_mem clmem_s_eoprec;
+	cl_mem clmem_t_eoprec;
+	cl_mem clmem_aux_eoprec;
+	cl_mem clmem_tmp_eoprec_1;
+	cl_mem clmem_tmp_eoprec_2;
+	cl_mem clmem_tmp_eoprec_3;
 
 	cl_mem clmem_rho;
 	cl_mem clmem_rho_next;
@@ -144,14 +188,8 @@ class opencl {
 	cl_mem clmem_minusone;  
 
   cl_mem clmem_kappa_cmplx;// = {kappa, 0.};
-	//!!CP: buffer for the local scalar_product
-	cl_mem clmem_scalar_product_buf_loc;// [local_work_size];
-	//!!CP: buffer for the global scalar_product
-	cl_mem clmem_scalar_product_buf_glob;//[num_group];
-	//!!CP: buffer for the local global_squarenorm_product
-	cl_mem clmem_global_squarenorm_buf_loc;// [local_work_size];
-	//!!CP: buffer for the global global_squarenorm_product
-	cl_mem clmem_global_squarenorm_buf_glob;//[num_group];
+	cl_mem clmem_scalar_product_buf_glob;
+	cl_mem clmem_global_squarenorm_buf_glob;
 	cl_mem clmem_resid;
 	cl_mem clmem_trueresid;
 #endif

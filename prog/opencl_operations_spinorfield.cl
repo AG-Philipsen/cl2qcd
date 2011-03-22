@@ -89,6 +89,24 @@ __kernel void saxpy(__global hmc_spinor_field* x, __global hmc_spinor_field* y, 
 
 	return;
 }
+__kernel void saxpy_eoprec(__global hmc_eoprec_spinor_field* x, __global hmc_eoprec_spinor_field* y, __global hmc_complex * alpha, __global hmc_eoprec_spinor_field* out){
+	int id = get_global_id(0);
+	int local_size = get_local_size(0);
+	int global_size = get_global_size(0);
+	int num_groups = get_num_groups(0);
+	int group_id = get_group_id(0);
+
+	hmc_complex alpha_tmp = (*alpha);
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size){
+		//!!CP: complexmult cannot handle __global
+		hmc_complex tmp2 = x[id_tmp];
+		hmc_complex tmp1 = complexmult(&alpha_tmp,&tmp2);
+		((out)[id_tmp]).re = -(tmp1).re + y[id_tmp].re;
+		((out)[id_tmp]).im = -(tmp1).im + y[id_tmp].im;
+	}
+
+	return;
+}
 
 //alpha*x + beta*y + z
 __kernel void saxsbypz(__global hmc_spinor_field* x, __global hmc_spinor_field* y, __global hmc_spinor_field* z, __global hmc_complex * alpha, __global hmc_complex * beta, __global hmc_spinor_field* out){
@@ -101,6 +119,30 @@ __kernel void saxsbypz(__global hmc_spinor_field* x, __global hmc_spinor_field* 
 	hmc_complex alpha_tmp = (*alpha);
 	hmc_complex beta_tmp = (*beta);
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size){
+		//!!CP: complexmult cannot handle __global
+		hmc_complex tmp2 = x[id_tmp];
+		hmc_complex tmp1 = complexmult(&alpha_tmp,&tmp2);
+
+		hmc_complex tmp3 = y[id_tmp];
+		hmc_complex tmp4 = complexmult(&beta_tmp,&tmp3);		
+		
+    ((out)[id_tmp]).re = (tmp1).re + (tmp4).re + z[id_tmp].re;
+    ((out)[id_tmp]).im = (tmp1).im + (tmp4).im + z[id_tmp].im;
+	}
+
+	return;
+}
+
+__kernel void saxsbypz_eoprec(__global hmc_eoprec_spinor_field* x, __global hmc_eoprec_spinor_field* y, __global hmc_eoprec_spinor_field* z, __global hmc_complex * alpha, __global hmc_complex * beta, __global hmc_eoprec_spinor_field* out){
+	int id = get_global_id(0);
+	int local_size = get_local_size(0);
+	int global_size = get_global_size(0);
+	int num_groups = get_num_groups(0);
+	int group_id = get_group_id(0);
+
+	hmc_complex alpha_tmp = (*alpha);
+	hmc_complex beta_tmp = (*beta);
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size){
 		//!!CP: complexmult cannot handle __global
 		hmc_complex tmp2 = x[id_tmp];
 		hmc_complex tmp1 = complexmult(&alpha_tmp,&tmp2);
@@ -132,6 +174,81 @@ __kernel void scalar_product( __global hmc_spinor_field *x, __global hmc_spinor_
 
 	//!! CP: perhaps here one can first copy a whole spinor and then do the dot-prod
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size){
+    sum.re += x[id_tmp].re*y[id_tmp].re + x[id_tmp].im*y[id_tmp].im;
+    sum.im += x[id_tmp].re*y[id_tmp].im - x[id_tmp].im*y[id_tmp].re;
+	}
+	
+	
+	if(local_size ==1){
+		result[ group_id ].re = sum.re;
+		result[ group_id ].im = sum.im;
+	}
+	else{
+		// sync threads
+		barrier(CLK_LOCAL_MEM_FENCE);
+		//reduction
+		(result_local[idx]).re=sum.re;
+		(result_local[idx]).im=sum.im;
+	
+		barrier(CLK_LOCAL_MEM_FENCE);
+		if (idx>=64){
+		result_local[idx%64].re +=result_local[idx].re;
+		result_local[idx%64].im +=result_local[idx].im;
+		}
+		barrier(CLK_LOCAL_MEM_FENCE);
+		if (idx>=32){
+			result_local[idx-32].re +=result_local[idx].re;
+			result_local[idx-32].im +=result_local[idx].im;
+		}
+		barrier(CLK_LOCAL_MEM_FENCE);
+		if (idx>=16){
+			result_local[idx-16].re +=result_local[idx].re;
+			result_local[idx-16].im +=result_local[idx].im;
+		}
+		barrier(CLK_LOCAL_MEM_FENCE);
+		if (idx>=8){
+			result_local[idx-8].re +=result_local[idx].re;
+			result_local[idx-8].im +=result_local[idx].im;
+		}
+		barrier(CLK_LOCAL_MEM_FENCE);
+		//thread 0 sums up the result_local and stores it in array result
+		if (idx==0){
+			if(local_size >= 8){
+				for (int i = 1; i<8; i++) {
+					result_local[idx].re += result_local[i].re;
+					result_local[idx].im += result_local[i].im;
+				}
+				result[ group_id ].re = result_local[idx].re;
+				result[ group_id ].im = result_local[idx].im;	
+			}
+			else{
+				for (int i = 1; i<local_size; i++) {
+					result_local[idx].re += result_local[i].re;
+					result_local[idx].im += result_local[i].im;
+				}
+				result[ group_id ].re = result_local[idx].re;
+				result[ group_id ].im = result_local[idx].im;	
+			}
+		}
+	}
+	return;
+}
+
+__kernel void scalar_product_eoprec( __global hmc_eoprec_spinor_field *x, __global hmc_eoprec_spinor_field *y, __global hmc_complex* result, __local hmc_complex* result_local ){
+	int local_size = get_local_size(0);
+	int global_size = get_global_size(0);
+	int id = get_global_id(0);
+	int loc_idx = get_local_id(0);
+	int num_groups = get_num_groups(0);
+	int group_id = get_group_id (0);
+	int idx = get_local_id(0);
+	
+	hmc_complex sum;
+	sum.re = 0.;
+	sum.im = 0.;
+
+	//!! CP: perhaps here one can first copy a whole spinor and then do the dot-prod
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size){
     sum.re += x[id_tmp].re*y[id_tmp].re + x[id_tmp].im*y[id_tmp].im;
     sum.im += x[id_tmp].re*y[id_tmp].im - x[id_tmp].im*y[id_tmp].re;
 	}
@@ -262,6 +379,58 @@ __kernel void global_squarenorm( __global hmc_spinor_field *x, __global hmc_floa
 	return;
 }
 
+__kernel void global_squarenorm_eoprec( __global hmc_eoprec_spinor_field *x, __global hmc_float* result, __local hmc_float* result_local ){
+	int local_size = get_local_size(0);
+	int global_size = get_global_size(0);
+	int id = get_global_id(0);
+	int num_groups = get_num_groups(0);
+	int group_id = get_group_id (0);
+	int idx = get_local_id(0);
+	
+	hmc_float sum;
+	sum = 0.;
+
+	//!! CP: perhaps here one can first copy a whole spinor and then do the dot-prod
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size){
+    sum += x[id_tmp].re*x[id_tmp].re + x[id_tmp].im*x[id_tmp].im;
+	}
+	
+	if(local_size ==1){
+		result[ group_id ] = sum;
+	}
+	else{
+		// sync threads
+		barrier(CLK_LOCAL_MEM_FENCE);
+		//reduction
+		(result_local[idx])=sum;
+		barrier(CLK_LOCAL_MEM_FENCE);
+		if (idx>=64)
+			result_local[idx%64]+=result_local[idx];
+		barrier(CLK_LOCAL_MEM_FENCE);
+		if (idx>=32)
+			result_local[idx-32]+=result_local[idx];
+		barrier(CLK_LOCAL_MEM_FENCE);
+		if (idx>=16)
+			result_local[idx-16]+=result_local[idx];
+		barrier(CLK_LOCAL_MEM_FENCE);
+		if (idx>=8)
+			result_local[idx-8]+=result_local[idx];
+		barrier(CLK_LOCAL_MEM_FENCE);
+		//thread 0 sums up the result_local and stores it in array result
+		if (idx==0){
+			if(local_size >= 8){
+				result[ group_id ] = 	result_local[0] + result_local[1] + result_local[2] + result_local[3] + 
+													result_local[4] + result_local[5] + result_local[6] + result_local[7];
+			}
+			else{
+				for(int i = 0; i<local_size; i++)
+					result[group_id] += result_local[i];
+			}
+		}
+	}
+	return;
+}
+
 __kernel void global_squarenorm_reduction(__global hmc_float* result_tmp, __global hmc_float* result){
 	int id = get_global_id(0);
 	if(id == 0){
@@ -283,6 +452,21 @@ __kernel void set_zero_spinorfield( __global hmc_spinor_field *x ){
 	int group_id = get_group_id (0);
 	
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size){
+		x[id_tmp].re = 0.;
+		x[id_tmp].im = 0.;
+	}
+	return;
+}
+
+__kernel void set_zero_spinorfield_eoprec( __global hmc_eoprec_spinor_field *x ){
+	int local_size = get_local_size(0);
+	int global_size = get_global_size(0);
+	int id = get_global_id(0);
+	int loc_idx = get_local_id(0);
+	int num_groups = get_num_groups(0);
+	int group_id = get_group_id (0);
+	
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size){
 		x[id_tmp].re = 0.;
 		x[id_tmp].im = 0.;
 	}
@@ -323,7 +507,7 @@ __kernel void convert_from_kappa_format( __global hmc_spinor_field *in, __global
 	return;
 }
 
-__kernel void convert_to_kappa_format_eoprec( __global hmc_spinor_field *in, __global hmc_float * kappa ){
+__kernel void convert_to_kappa_format_eoprec( __global hmc_eoprec_spinor_field *in, __global hmc_float * kappa ){
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -340,7 +524,7 @@ __kernel void convert_to_kappa_format_eoprec( __global hmc_spinor_field *in, __g
 	return;
 }
 
-__kernel void convert_from_kappa_format_eoprec( __global hmc_spinor_field *in, __global hmc_spinor_field* out, __global hmc_float * kappa ){
+__kernel void convert_from_kappa_format_eoprec( __global hmc_eoprec_spinor_field *in, __global hmc_eoprec_spinor_field* out, __global hmc_float * kappa ){
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -359,20 +543,29 @@ __kernel void convert_from_kappa_format_eoprec( __global hmc_spinor_field *in, _
 
 //!!CP: these two need to be kernels, if they are needed at all...
 __kernel void create_point_source(__global hmc_spinor_field* b, int i, int spacepos, int timepos, __global hmc_float * kappa){
+	int id = get_global_id(0);
+	if(id == 0){
+		hmc_float tmp = *kappa;
+		int color = spinor_color(i);
+		int spin = spinor_spin(i,color);
+		int element = spinor_field_element(spin,color,spacepos,timepos);
 
-	hmc_float tmp = *kappa;
-	int color = spinor_color(i);
-	int spin = spinor_spin(i,color);
-	int element = spinor_field_element(spin,color,spacepos,timepos);
-
-	b[element].re = sqrt(2.*tmp);
-	
+		b[element].re = sqrt(2.*tmp);
+	}
 	return;
 }
 
-void create_point_source_eoprec(hmc_eoprec_spinor_field* be,hmc_eoprec_spinor_field* bo,int i,int spacepos,int timepos,hmc_float kappa, hmc_float mu, hmc_float theta,hmc_float chem_pot_re, hmc_float chem_pot_im, __global hmc_ocl_gaugefield* gaugefield){
-/*  
-  see host code
-*/
+__kernel void create_point_source_eoprec(__global hmc_eoprec_spinor_field* b, int i, int n, __global hmc_float * kappa){
+	
+	int id = get_global_id(0);
+	if(id == 0){
+		hmc_float tmp = fabs(*kappa);
+		int color = spinor_color(i);
+		int spin = spinor_spin(i,color);
+		int element = eoprec_spinor_field_element(spin, color, n);
+		//!!CP: here it happened that sqrt(2.*tmp) was negative!!!
+		b[element].re = sqrt(2.*tmp);
+	}
+
   return;
 }

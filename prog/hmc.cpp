@@ -46,9 +46,10 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef _FERMIONS_
 	usetimer noop;
-	device.init_solver_variables(&parameters, local_work_size, global_work_size, &noop);
+	device.init_fermion_variables(&parameters, local_work_size, global_work_size, &inittimer);
 // 	device.testing_spinor(&parameters, local_work_size, global_work_size);
-	device.simple_correlator_device(&copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, local_work_size, global_work_size, 1000);
+	device.simple_correlator_device(&copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &solvertimer, local_work_size, global_work_size, 1000);
+	device.finalize_fermions();
 #endif
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Heatbath
@@ -80,8 +81,12 @@ int main(int argc, char* argv[]) {
   
   totaltime.add();
   save_gaugefield(gaugefield, &parameters, nsteps);  
-  time_output(&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime);
-
+	time_output(
+  	&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime
+#ifdef _FERMIONS_
+, &inittimer, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer, &solvertimer
+#endif
+	);
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // free variables
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
