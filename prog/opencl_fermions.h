@@ -1,4 +1,5 @@
 
+#ifdef _FERMIONS_
 
 hmc_error opencl::init_fermion_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer * timer){
 	
@@ -1945,5 +1946,50 @@ hmc_error opencl::finalize_fermions(){
 	return HMC_SUCCESS;
 }
 	
+hmc_error opencl::perform_benchmark(int steps, int cgmax, const size_t ls, const size_t gs, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer){
+	hmc_float resid;
+	hmc_spinor_field phi[SPINORFIELDSIZE];
+	for(int i = 0; i<steps; i++){
+		if(!use_eo){
+			convert_to_kappa_format_device(clmem_inout, ls, gs, latimer);
+			set_zero_spinorfield_device(clmem_v, ls, gs, latimer);
+			saxpy_device(clmem_rn, clmem_source, clmem_one, clmem_rn, ls, gs, latimer);
+			copy_complex_device(clmem_one, clmem_alpha, singletimer);
+			set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next, ls, gs, scalarprodtimer);
+			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1, singletimer);
+			saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p, ls, gs, latimer);
+			M_device(clmem_inout, clmem_rn, ls, gs, Mtimer, dslashtimer, Mdiagtimer);
+			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, ls, gs, scalarprodtimer);
+			copy_float_from_device(clmem_resid, &resid, copytimer);
+			copy_spinor_device(clmem_rn, clmem_rhat, singletimer);
+			set_complex_to_product_device(clmem_tmp1, clmem_tmp2, clmem_beta, singletimer);
+			create_point_source_device(0,0,0,ls, gs, latimer);
+			solver_device(phi, copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, cgmax);
+			convert_from_kappa_format_device(clmem_inout, clmem_inout, ls, gs, latimer);
+			get_spinorfield_from_device(phi, copytimer);
+		}
+		else{
+			set_zero_spinorfield_eoprec_device(clmem_v_eoprec, ls, gs, latimer); 
+			Aee_device(clmem_inout_eoprec, clmem_rn_eoprec, ls, gs, Mtimer, singletimer, dslashtimer, Mdiagtimer, latimer);
+			copy_eoprec_spinor_device(clmem_rn_eoprec, clmem_rhat_eoprec, singletimer);
+			copy_complex_device(clmem_one, clmem_alpha, singletimer);
+			set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2, singletimer);
+			set_complex_to_product_device(clmem_tmp1, clmem_tmp2, clmem_beta, singletimer);
+			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next, ls, gs, scalarprodtimer);
+			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec, ls, gs, latimer);
+			saxpy_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_omega, clmem_rn_eoprec, ls, gs, latimer);
+			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid, ls, gs, scalarprodtimer);
+			copy_float_from_device(clmem_resid, &resid, copytimer);
+			create_point_source_eoprec_device(0,0,0,ls, gs, latimer, dslashtimer, Mdiagtimer);
+			solver_eoprec_device(phi, copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, cgmax);
+			convert_to_kappa_format_eoprec_device(clmem_inout_eoprec, ls, gs, latimer);
+			convert_from_kappa_format_eoprec_device(clmem_inout_eoprec, clmem_inout_eoprec, ls, gs, latimer);
+			get_eoprec_spinorfield_from_device(phi, copytimer);
+		}
+	}
+	
+	
+	return HMC_SUCCESS;
+}
 
-
+#endif

@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
 	
 	benchmark_id = argv[2];
 
-#ifdef _FERMIONS_
+#ifndef _FERMIONS_
 
   int benchmarksteps1 = parameters.get_heatbathsteps();
 	cout<<"perform HEATBATH-BENCHMARK with "<<benchmarksteps1<<" steps off each device operation..."<<endl;
@@ -104,59 +104,22 @@ int main(int argc, char* argv[]) {
 #else
 
 	int benchmarksteps2 = parameters.get_thermalizationsteps();
+	int cgmax = parameters.get_cgmax();
 	cout<<"perform FERMION-BENCHMARK with "<<benchmarksteps2<<" steps off each device operation..."<<endl;
 	
 	//CP: set up testing field
 	hmc_spinor_field in[SPINORFIELDSIZE];
 	if(!use_eo){
 		init_spinorfield_cold(in);
+		device.copy_spinorfield_to_device(in, &copytimer);
 	}
 	else{
 		//!!CP: this should be fine since only half the field is used but of course it is not nice...
 		init_spinorfield_cold_eoprec(in);
+		device.copy_eoprec_spinorfield_to_device(in, &copytimer);
 	}
-	hmc_float resid;
 	device.init_fermion_variables(&parameters, local_work_size, global_work_size, &inittimer);
-	for(int i = 0; i<benchmarksteps2; i++){
-		if(!use_eo){
-			copy_spinorfield_to_device(in, copytimer);
-			convert_to_kappa_format_device(clmem_inout, ls, gs, latimer);
-			set_zero_spinorfield_device(clmem_v, localsize, globalsize, &latimer);
-			saxpy_device(clmem_rn, clmem_source, clmem_one, clmem_rn, localsize, globalsize, latimer);
-			copy_complex_device(clmem_one, clmem_alpha, singletimer);
-			set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next, local_work_size, global_work_size, scalarprodtimer);
-			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1, singletimer);
-			saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p, local_work_size, global_work_size, latimer);
-			M_device(clmem_inout, clmem_rn, localsize, globalsize, Mtimer, dslashtimer, Mdiagtimer);
-			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
-			copy_float_from_device(clmem_resid, &resid, copytimer);
-			copy_spinor_device(clmem_rn, clmem_rhat, singletimer);
-			set_complex_to_product_device(clmem_tmp1, clmem_tmp2, clmem_beta, singletimer);
-			create_point_source_device(k,0,0,ls, gs, latimer);
-			solver_device(phi, copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, cgmax);
-			convert_from_kappa_format_device(clmem_inout, clmem_inout, ls, gs, latimer);
-			get_spinorfield_from_device(out, copytimer);
-		}
-		else{
-			copy_eoprec_spinorfield_to_device(in, copytimer);
-			set_zero_spinorfield_eoprec_device(clmem_v_eoprec, localsize, globalsize, latimer); 
-			Aee_device(clmem_inout_eoprec, clmem_rn_eoprec, localsize, globalsize, Mtimer, singletimer, dslashtimer, Mdiagtimer, latimer);
-			copy_eoprec_spinor_device(clmem_rn_eoprec, clmem_rhat_eoprec, singletimer);
-			copy_complex_device(clmem_one, clmem_alpha, singletimer);
-			set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2, singletimer);
-			set_complex_to_product_device(clmem_tmp1, clmem_tmp2, clmem_beta, singletimer);
-			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next, local_work_size, global_work_size, scalarprodtimer);
-			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec, local_work_size, global_work_size, latimer);
-			saxpy_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_omega, clmem_rn_eoprec, local_work_size, global_work_size, latimer);
-			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
-			copy_float_from_device(clmem_resid, &resid, copytimer);
-			create_point_source_eoprec_device(k,0,0,ls, gs, latimer, dslashtimer, Mdiagtimer);
-			solver_eoprec_device(phi, copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, cgmax);
-			convert_to_kappa_format_eoprec_device(clmem_inout_eoprec, ls, gs, latimer);
-			convert_from_kappa_format_eoprec_device(clmem_inout_eoprec, clmem_inout_eoprec, ls, gs, latimer);
-			get_eoprec_spinorfield_from_device(phi_even, copytimer);
-		}
-	}
+	device.perform_benchmark(benchmarksteps2, cgmax, local_work_size, global_work_size, &copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer);
 	device.finalize_fermions();
 	
 #endif //_FERMIONS_
@@ -168,7 +131,9 @@ int main(int argc, char* argv[]) {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   totaltime.add();
-  save_gaugefield(gaugefield, &parameters, benchmarksteps1);  
+#ifndef _PERFORM_BENCHMARKS_
+  save_gaugefield(gaugefield, &parameters, nsteps);  
+#endif
 	time_output(
   	&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime
 #ifdef _FERMIONS_
