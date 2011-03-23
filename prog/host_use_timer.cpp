@@ -247,7 +247,7 @@ void time_output(
   ofstream out;
   stringstream str_filename;
 	//CP: this H is for heatbath benchmarking, it has to be replaced meaningfully for other occasions
-  str_filename<<"time_;
+  str_filename<<"time_";
 #ifdef _PERFORM_BENCHMARKS_
 	str_filenameyy"B_";
 #endif
