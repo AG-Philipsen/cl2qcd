@@ -80,13 +80,14 @@ add_executable( hmc
 	host_readgauge.cpp
 	host_random.cpp
 	host_update_heatbath.cpp
-	host_timer.cpp
 	opencl.cpp
 	host_use_timer.cpp
 	host_gaugefieldoperations.cpp
 	host_writegaugefield.cpp
 	host_solver.cpp
 	host_fermionobservables.cpp
+	klepsydra/timer.cpp
+	klepsydra/monotonic.cpp
 )
 target_link_libraries( hmc
 	${OPENCL_LIBRARIES}
