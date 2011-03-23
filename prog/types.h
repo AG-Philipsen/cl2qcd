@@ -3,7 +3,11 @@
 
 #include "globaldefs.h"
 #ifndef _INKERNEL_
+#ifdef __APPLE__
+#include <OpenCL/cl.h>
+#else
 #include <CL/cl.h>
+#endif
 #endif
 
 #ifdef _USEDOUBLEPREC_
