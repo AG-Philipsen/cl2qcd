@@ -573,14 +573,14 @@ void extend (__private hmc_ocl_su3matrix * dest, const int random, hmc_complex s
 void gaugefield_apply_bc(__private hmc_ocl_su3matrix * in, hmc_float theta){
   hmc_float tmp1,tmp2;
 #ifdef _RECONSTRUCT_TWELVE_
-  hmc_ocl_su3matrix tmp;
-  copy_su3matrix(tmp, mat);
-  for(int n=0; n<NC*(NC-1); n++) {
+  for(int a=0; a<NC; a++) {
+    for(int b=0; b<NC-1; b++) {
+// 			for(int n=0; n<NC*(NC-1); n++) {
     tmp1 = ((in)[ocl_su3matrix_element(a,b)]).re;
     tmp2 = ((in)[ocl_su3matrix_element(a,b)]).im;
     ((in)[ocl_su3matrix_element(a,b)]).re = cos(theta)*tmp1 - sin(theta)*tmp2;
     ((in)[ocl_su3matrix_element(a,b)]).im = sin(theta)*tmp1 + cos(theta)*tmp2;
-  }
+  }}
 #else
   for(int a=0; a<NC; a++) {
     for(int b=0; b<NC; b++) {
@@ -598,9 +598,9 @@ void gaugefield_apply_bc(__private hmc_ocl_su3matrix * in, hmc_float theta){
 void gaugefield_apply_chem_pot(__private hmc_ocl_su3matrix * u, __private hmc_ocl_su3matrix * udagger, hmc_float chem_pot_re, hmc_float chem_pot_im){
   hmc_float tmp1,tmp2;
 #ifdef _RECONSTRUCT_TWELVE_
-  hmc_ocl_su3matrix tmp;
-  copy_su3matrix(tmp, mat);
-  for(int n=0; n<NC*(NC-1); n++) {
+  for(int a=0; a<NC; a++) {
+    for(int b=0; b<NC-1; b++) {
+//   for(int n=0; n<NC*(NC-1); n++) {
     tmp1 = ((u)[ocl_su3matrix_element(a,b)]).re;
     tmp2 = ((u)[ocl_su3matrix_element(a,b)]).im;
     ((u)[ocl_su3matrix_element(a,b)]).re = exp(chem_pot_re)*cos(chem_pot_im)*tmp1;
@@ -609,7 +609,7 @@ void gaugefield_apply_chem_pot(__private hmc_ocl_su3matrix * u, __private hmc_oc
     tmp2 = ((udagger)[ocl_su3matrix_element(a,b)]).im;
     ((udagger)[ocl_su3matrix_element(a,b)]).re = exp(-chem_pot_re)*cos(chem_pot_im)*tmp1;
     ((udagger)[ocl_su3matrix_element(a,b)]).im = -exp(-chem_pot_re)*sin(chem_pot_im)*tmp2;
-  }
+  }}
 #else
   for(int a=0; a<NC; a++) {
     for(int b=0; b<NC; b++) {

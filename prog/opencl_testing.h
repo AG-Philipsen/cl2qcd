@@ -1,4 +1,5 @@
 
+#ifdef _FERMIONS_
 //!!CP: this is here because the kernel global_squarenorm has the same name as the function in operations_spinor
 // hmc_float global_squarenorm(hmc_spinor_field *field) {
 hmc_float inline global_squarenorm_host(hmc_spinor_field *field) {
@@ -547,7 +548,7 @@ hmc_error opencl::testing_spinor(inputparameters* parameters, size_t local_size,
 	init_spinorfield_cold(test);
 	copy_spinorfield_to_device(test, &noop);
 	
-	M_device(clmem_inout, clmem_v, local_size, global_size, &noop);
+	M_device(clmem_inout, clmem_v, local_size, global_size, &noop, &noop, &noop);
 	
 	set_complex_to_scalar_product_device(clmem_v, clmem_v, clmem_tmp2, local_size, global_size, &noop);
 	copy_complex_from_device(clmem_tmp2, &tester, &noop);
@@ -710,7 +711,7 @@ hmc_error opencl::testing_spinor(inputparameters* parameters, size_t local_size,
 	cout<< "\t(source, source) is: " << tester.re << "," << tester.im << endl;	
 	
 	cout << "\tperform bicgstab..." << endl;
-	bicgstab_device(&noop, &noop, &noop, &noop, &noop,local_size, global_size, 100);
+	bicgstab_device(&noop, &noop, &noop, &noop, &noop, &noop,&noop,  local_size, global_size, 100);
 	
 	
 	cout<< "calculate simple_correlator with device-solver..." << endl;
@@ -739,7 +740,7 @@ hmc_error opencl::testing_spinor(inputparameters* parameters, size_t local_size,
 	
 		copy_source_to_device(b, &noop);
 		convert_to_kappa_format_device(clmem_inout, local_size, global_size, &noop);
-		bicgstab_device(&noop, &noop, &noop, &noop, &noop,local_size, global_size, cgmax);
+		bicgstab_device(&noop, &noop, &noop, &noop, &noop,&noop,&noop,  local_size, global_size, cgmax);
 		convert_from_kappa_format_device(clmem_inout, clmem_inout, local_size, global_size, &noop);
 		get_spinorfield_from_device(phi, &noop);
 
@@ -777,7 +778,7 @@ hmc_error opencl::testing_spinor(inputparameters* parameters, size_t local_size,
 	cout<< "\t(source_odd, source_odd) is: " << tester.re << "," << tester.im << endl;
 	
 	cout << "\tcreate pointsource:" << endl;
-	create_point_source_eoprec_device(1,0,0,local_size, global_size, &noop, &noop);
+	create_point_source_eoprec_device(1,0,0,local_size, global_size, &noop, &noop, &noop);
 	set_complex_to_scalar_product_eoprec_device(clmem_source_even, clmem_source_even, clmem_tmp2, local_size, global_size, &noop);
 	copy_complex_from_device(clmem_tmp2, &tester, &noop);
 	cout<< "\t(source_even, source_even) is: " << tester.re << "," << tester.im << endl;
@@ -898,9 +899,9 @@ hmc_error opencl::testing_spinor(inputparameters* parameters, size_t local_size,
 	set_float_to_global_squarenorm_eoprec_device(clmem_inout_eoprec, clmem_resid, local_work_size, global_work_size, &noop);
 	copy_float_from_device(clmem_resid, &resid, &noop);
 	cout << "\t|inout_eoprec|^2: " << resid << endl;
-  create_point_source_eoprec_device(0,0,0,local_size, global_size, &noop, &noop);
+  create_point_source_eoprec_device(0,0,0,local_size, global_size, &noop, &noop, &noop);
 	
-	bicgstab_eoprec_device(&noop, &noop, &noop, &noop, &noop,local_size, global_size, 1);
+	bicgstab_eoprec_device(&noop, &noop, &noop, &noop, &noop,&noop, &noop, local_size, global_size, 1);
 
 	cout<< "calculate simple_correlator with eoprec device-solver..." << endl;
   for(int z=0; z<NSPACE; z++) {
@@ -915,11 +916,11 @@ hmc_error opencl::testing_spinor(inputparameters* parameters, size_t local_size,
 	hmc_eoprec_spinor_field phi_even[EOPREC_SPINORFIELDSIZE];
 	hmc_eoprec_spinor_field phi_odd[EOPREC_SPINORFIELDSIZE];
   for(int k=0; k<NC*NSPIN; k++) {
-		create_point_source_eoprec_device(k,0,0,local_size, global_size, &noop, &noop);
+		create_point_source_eoprec_device(k,0,0,local_size, global_size, &noop, &noop, &noop);
 
 		//CP: even solution
 		convert_to_kappa_format_eoprec_device(clmem_inout_eoprec, local_size, global_size, &noop);
-		bicgstab_eoprec_device(&noop, &noop, &noop, &noop, &noop,local_size, global_size, cgmax);	
+		bicgstab_eoprec_device(&noop, &noop, &noop, &noop, &noop, &noop, &noop,local_size, global_size, cgmax);	
 		convert_from_kappa_format_eoprec_device(clmem_inout_eoprec, clmem_inout_eoprec, local_size, global_size, &noop);
 		get_eoprec_spinorfield_from_device(phi_even, &noop);
 
@@ -959,3 +960,5 @@ hmc_error opencl::testing_spinor(inputparameters* parameters, size_t local_size,
 	
 	return HMC_SUCCESS;
 }
+
+#endif

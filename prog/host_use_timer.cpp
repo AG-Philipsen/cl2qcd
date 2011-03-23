@@ -44,7 +44,7 @@ float percent(uint64_t a, int b){
 void time_output(
 	usetimer * total, usetimer * init, usetimer * poly, usetimer * plaq, usetimer * update, usetimer * overrelax, usetimer * copy
 #ifdef _FERMIONS_
-, usetimer * inittimer, usetimer* singletimer, usetimer *Mtimer, usetimer *copytimer, usetimer *scalarprodtimer, usetimer *latimer, usetimer * solvertimer
+, usetimer * inittimer, usetimer* singletimer, usetimer *Mtimer, usetimer *copytimer, usetimer *scalarprodtimer, usetimer *latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer
 #endif	
 	) {
 
@@ -64,6 +64,8 @@ void time_output(
   uint64_t scalprod = (*scalarprodtimer).getTime();
   uint64_t latime = (*latimer).getTime();
 	uint64_t solvertime = (*solvertimer).getTime();
+	uint64_t dslashtime = (*dslashtimer).getTime();
+	uint64_t Mdiagtime = (*Mdiagtimer).getTime();
 #endif
 	
   int polysteps;
@@ -78,6 +80,8 @@ void time_output(
   int scalprod_steps;
   int la_steps;
 	int solver_steps;
+	int dslash_steps;
+	int Mdiag_steps;
 #endif
 
 	uint64_t poly_avgtime_site;
@@ -93,12 +97,16 @@ void time_output(
   uint64_t M_avgtime_site;
   uint64_t scalprod_avgtime_site;
   uint64_t la_avgtime_site;
+	uint64_t dslash_avgtime_site;
+	uint64_t Mdiag_avgtime_site;
   uint64_t M_avgtime;
   uint64_t scalprod_avgtime;
   uint64_t la_avgtime;
   uint64_t copy_ferm_avgtime;	
 	uint64_t single_ferm_avgtime;
 	uint64_t solver_avgtime;
+	uint64_t dslash_avgtime;
+	uint64_t Mdiag_avgtime;
 #endif	
 	
   polysteps = (*poly).getNumMeas();
@@ -113,6 +121,7 @@ void time_output(
   scalprod_steps = (*scalarprodtimer).getNumMeas();
   la_steps = (*latimer).getNumMeas();
 	solver_steps = (*solvertimer).getNumMeas();
+	Mdiag_steps = (*Mdiagtimer).getNumMeas();
 #endif		
 	
   if(polysteps!=0){
@@ -170,6 +179,22 @@ void time_output(
     M_avgtime = 0;
 		M_avgtime_site = 0;
   }
+   if(Mdiag_steps!=0){
+    Mdiag_avgtime = divide(Mdiagtime, M_steps);
+		Mdiag_avgtime_site = divide(Mdiagtime, M_steps*VOL4D);
+  }
+  else{
+    Mdiag_avgtime = 0;
+		Mdiag_avgtime_site = 0;
+  }
+  if(dslash_steps!=0){
+		dslash_avgtime = divide(dslashtime, dslash_steps);
+		dslash_avgtime_site = divide(dslashtime, dslash_steps*VOL4D);
+  }
+  else{
+		dslash_avgtime = 0;
+		dslash_avgtime_site = 0;
+  }
   if(scalprod_steps!=0){
     scalprod_avgtime = divide(scalprod, scalprod_steps);
 		scalprod_avgtime_site = divide(scalprod, scalprod_steps*VOL4D);
@@ -221,6 +246,7 @@ void time_output(
   //save some data to file
   ofstream out;
   stringstream str_filename;
+	//CP: this H is for heatbath benchmarking, it has to be replaced meaningfully for other occasions
   str_filename<<"time_H_";
 #ifdef _USEGPU_
   str_filename<<"G_";
@@ -237,12 +263,20 @@ void time_output(
 #else
   str_filename<<"N_";
 #endif
+#ifdef _PERFORM_BENCHMARKS_
+	str_filename<<benchmark_id;
+#endif
+	
   out.open(str_filename.str().c_str(), fstream::app); 
   if (out.is_open())
   {
     //output:
-    //NTIME   NSPACE   VOL4D   totaltime   inittimer   polytime   plaqtime   updatetime   overrelaxtime  (all times average per time-measurement)
-    out << NTIME << "\t" << NSPACE << "\t" << VOL4D << "\t" << totaltime << "\t" 
+    //(benchmark_id) NTIME   NSPACE   VOL4D   totaltime   inittimer   polytime   plaqtime   updatetime   overrelaxtime  (all times average per time-measurement)
+    out << 
+#ifdef _PERFORM_BENCHMARKS_    
+  benchmark_id << "\t"   << 
+#endif    
+    NTIME << "\t" << NSPACE << "\t" << VOL4D << "\t" << totaltime << "\t" 
     << inittime << "\t" << copy_avgtime << "\t" << poly_avgtime << "\t" << plaq_avgtime << "\t" << update_avgtime << "\t" << overrelax_avgtime << endl;
     out.close();
   }
@@ -254,8 +288,12 @@ void time_output(
   if (out.is_open())
   {    
 		//output:
-    //NTIME   NSPACE   VOL4D   totaltime   inittime   solvertime copytime singletime   scalarproducttime   latime  Mtime (all times average time-measurement)
-    out << NTIME << "\t" << NSPACE << "\t" << VOL4D << "\t" << totaltime << "\t" 
+    //(benchmark_id) NTIME   NSPACE   VOL4D   totaltime   inittime   solvertime copytime singletime   scalarproducttime   latime  Mtime (all times average time-measurement)
+    out << 
+#ifdef _PERFORM_BENCHMARKS_    
+  benchmark_id << "\t"  <<  
+#endif    
+		NTIME << "\t" << NSPACE << "\t" << VOL4D << "\t" << totaltime << "\t" 
     << init_ferm << "\t" << solvertime << "\t" << copy_ferm_avgtime << "\t" << single_ferm_avgtime << "\t" << scalprod_avgtime << "\t" << la_avgtime << "\t" << M_avgtime << endl;
     out.close();
 

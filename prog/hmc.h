@@ -52,6 +52,8 @@ usetimer copytime;
 usetimer inittimer;
 usetimer singletimer;
 usetimer Mtimer;
+usetimer dslashtimer;
+usetimer Mdiagtimer;
 usetimer copytimer;
 usetimer scalarprodtimer;
 usetimer latimer;
@@ -63,7 +65,9 @@ usetimer solvertimer;
 hmc_float plaq, splaq, tplaq;
 hmc_complex pol;
 
+#ifdef _PERFORM_BENCHMARKS_
 char * benchmark_id;
+#endif
 
 void print_hello(char* name){
   std::cout<<"This is hmc program "<<name<<", version "<<version<<"."<<endl;

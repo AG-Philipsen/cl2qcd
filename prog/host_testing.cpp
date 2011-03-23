@@ -776,21 +776,30 @@ void mult_colorvector(hmc_color_vector * inout, hmc_complex * factor){
 
 void fill_su3matrix_one(hmc_su3matrix * u){
 	for(int i = 0; i<NC; i++){
+#ifdef _RECONSTRUCT_TWELVE_
+		(*u)[i] = hmc_complex_one;
+#else
 		for(int j = 0; j<NC; j++){
 			(*u)[i][j] = hmc_complex_one;
 		}
+#endif
 	}
 }
 
 void fill_su3matrix_i(hmc_su3matrix * u){
 	for(int i = 0; i<NC; i++){
+#ifdef _RECONSTRUCT_TWELVE_
+		(*u)[i] = hmc_complex_i;
+#else
 		for(int j = 0; j<NC; j++){
 			(*u)[i][j] = hmc_complex_i;
 		}
+#endif
 	}
 }
 
 void testing_colorvector_ops(){
+#ifndef _RECONSTRUCT_TWELVE_
 	printf("testing colorvector operations...\n");
 	hmc_su3matrix u;
 	hmc_su3matrix v;
@@ -817,6 +826,7 @@ void testing_colorvector_ops(){
 	printf("\t(%f, %f), (%f, %f), (%f, %f)\n", colorvec2[0].re, colorvec2[0].im-6, colorvec2[1].re, colorvec2[1].im-6, colorvec2[2].re, colorvec2[2].im-6 );
 
 	printf("...done\n");
+#endif
 	return;
 }
 
