@@ -14,7 +14,11 @@ void random_1_2_3 (int rand[3])
   rand[2] = 6 - rand[1] - rand[0];
 }
 
+#ifdef __APPLE__
+#define CLU_VEC( vec, idx ) (vec)[idx]
+#else
 #define CLU_VEC( vec, idx ) (vec).s[idx]
+#endif
 
 //CP: NR3-PRNG converted for OpenCL by MB
 inline cl_ulong nr3_int64( hmc_ocl_ran * state )

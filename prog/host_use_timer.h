@@ -12,7 +12,7 @@
 #include "globaldefs.h"
 #include "host_input.h"
 #include "hmcerrs.h"
-#include "host_timer.h" 
+#include "klepsydra/klepsydra.hpp"
 
 extern char * benchmark_id;
 
@@ -27,7 +27,7 @@ class usetimer {
   int getNumMeas();
  private:
   uint64_t time_measurement;
-  Timer timer;
+  klepsydra::Monotonic timer;
   int num_meas;
 };
 

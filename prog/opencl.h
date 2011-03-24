@@ -7,7 +7,11 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#ifdef __APPLE__
+#include <OpenCL/cl.h>
+#else
 #include <CL/cl.h>
+#endif
 
 #include "host_geometry.h"
 #include "host_operations_complex.h"

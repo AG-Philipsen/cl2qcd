@@ -27,7 +27,11 @@
 #include "host_use_timer.h"
 #include "host_writegaugefield.h"
 #include "opencl.h"
+#ifdef __APPLE__
+#include <OpenCL/cl.h>
+#else
 #include <CL/cl.h>
+#endif
 
 #ifdef _OPENMP
 # include <omp.h>
