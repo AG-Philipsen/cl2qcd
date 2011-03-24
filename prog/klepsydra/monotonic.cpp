@@ -24,12 +24,14 @@
 
 #include "monotonic.hpp"
 
-#ifdef __APPLE__ & __MACH__
+#ifdef __APPLE__
 #include <mach/mach_time.h>
 
 // method to get monotonic mac time, inspired by 
 // http://www.wand.net.nz/~smr26/wordpress/2009/01/19/monotonic-time-in-mac-os-x/
 
+#else
+#include <time.h>
 #endif
 
 
@@ -65,7 +67,7 @@ uint64_t Monotonic::getTimeAndReset() {
 
 uint64_t Monotonic::getDifference( uint64_t start, uint64_t end) const {
 	uint64_t mus;
-#ifdef __APPLE__ & __MACH__
+#ifdef __APPLE__
 	uint64_t difference = end - start;
 	static mach_timebase_info_data_t info = {0,0};
 
@@ -83,7 +85,7 @@ uint64_t Monotonic::getDifference( uint64_t start, uint64_t end) const {
 
 uint64_t Monotonic::getTimestamp() const
 {
-#ifdef __APPLE__ & __MACH__
+#ifdef __APPLE__
 	return mach_absolute_time();
 #else
 	struct timespec now;
