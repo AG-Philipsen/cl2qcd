@@ -3,7 +3,7 @@ mark_as_advanced(DOXYGEN_LANGUAGE)
 
 set(DOXYGEN_SOURCE_DIRS
     ${CMAKE_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/include/einhard/
+    ${CMAKE_SOURCE_DIR}/klepsydra
     )
 set(DOXYGEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
