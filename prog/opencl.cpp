@@ -312,7 +312,7 @@ hmc_error opencl::copy_gaugefield_to_device(hmc_gaugefield* gaugefield, usetimer
 }
 
 hmc_error opencl::copy_rndarray_to_device(hmc_rndarray rndarray, usetimer* timer){
-  cout<<"Copy randomarray to device..."<<endl;
+//   cout<<"Copy randomarray to device..."<<endl;
   (*timer).reset();
 
   int clerr = clEnqueueWriteBuffer(queue,clmem_rndarray,CL_TRUE,0,sizeof(hmc_rndarray),rndarray,0,0,NULL);
@@ -326,7 +326,7 @@ hmc_error opencl::copy_rndarray_to_device(hmc_rndarray rndarray, usetimer* timer
 }
 
 hmc_error opencl::get_gaugefield_from_device(hmc_gaugefield* gaugefield, usetimer* timer){
-  cout<<"Get gaugefield from device..."<<endl;
+//   cout<<"Get gaugefield from device..."<<endl;
   (*timer).reset();
   hmc_ocl_gaugefield* host_gaugefield =  (hmc_ocl_gaugefield*) malloc(sizeof(hmc_gaugefield));
 
@@ -346,7 +346,7 @@ hmc_error opencl::get_gaugefield_from_device(hmc_gaugefield* gaugefield, usetime
 }
 
 hmc_error opencl::copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer){
-  cout<<"Get randomarray from device..."<<endl;
+//   cout<<"Get randomarray from device..."<<endl;
   (*timer).reset();
 
   int clerr = clEnqueueReadBuffer(queue,clmem_rndarray,CL_TRUE,0,sizeof(hmc_rndarray),rndarray,0,0,NULL);
