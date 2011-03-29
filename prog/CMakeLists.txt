@@ -94,6 +94,9 @@ target_link_libraries( hmc
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
 )
+if(NOT CMAKE_HOST_APPLE)
+	target_link_libraries( hmc rt )
+endif(NOT CMAKE_HOST_APPLE)
 
 # Documentation
 #include(FindDoxygen)
