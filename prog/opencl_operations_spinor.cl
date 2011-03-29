@@ -1,5 +1,6 @@
 //opencl_operations_spinor
 
+#ifdef _FERMIONS_
 void set_local_zero_spinor(hmc_spinor* inout){
   for(int j=0; j<SPINORSIZE; j++) {
     inout[j].re = 0;
@@ -265,11 +266,17 @@ void spinor_apply_bc(hmc_spinor * in, hmc_float theta){
 
 //spinout =  (1 + 2*i*gamma_5*kappa*mu)spin_in
 void M_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu){
+#ifdef _TWISTEDMASS_
 	hmc_spinor spintmp[SPINORSIZE];
 	hmc_float twistfactor = 2.*kappa*mu;
 	multiply_spinor_i_factor_gamma5(spininout,spintmp,twistfactor);
 	spinors_accumulate(spininout,spintmp);
-			
+#endif
+#ifdef _CLOVER_
+  //TODO
+
+#endif //_CLOVER_
+
 	return;
 }
 
@@ -296,6 +303,12 @@ void dslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
 	su3matrix_times_spinor(udagger,spinprev,tmp);
 	spinors_accumulate(spinout,tmp);
 	
+// 	spinprojectproduct_gamma0(&u,spinnext,-hmc_one_f);
+// 	spinors_accumulate(spinout,spinnext);
+// 
+// 	spinprojectproduct_gamma0(&udagger,spinprev,hmc_one_f);
+// 	spinors_accumulate(spinout,spinprev);
+	
 	return;
 }
 
@@ -313,6 +326,12 @@ void dslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
 	spinors_accumulate(spinprev,tmp);
 	su3matrix_times_spinor(udagger,spinprev,tmp);
 	spinors_accumulate(spinout,tmp);
+	
+// 	spinprojectproduct_gamma1(&u,spinnext,-hmc_one_f);
+// 	spinors_accumulate(spinout,spinnext);
+// 
+// 	spinprojectproduct_gamma1(&udagger,spinprev,hmc_one_f);
+// 	spinors_accumulate(spinout,spinprev);
 	
 	return;
 }
@@ -353,3 +372,4 @@ void dslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
 	return;
 }
 
+#endif //_FERMIONS_

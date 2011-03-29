@@ -594,8 +594,8 @@ void gaugefield_apply_bc(__private hmc_ocl_su3matrix * in, hmc_float theta){
   return;
 }
 
-// replace link in with e^(mu.re)*(cos(mu.im) + i*sin(mu.im))
-void gaugefield_apply_chem_pot(__private hmc_ocl_su3matrix * u, __private hmc_ocl_su3matrix * udagger, hmc_float chem_pot_re, hmc_float chem_pot_im){
+//CP: the following two chem-pot functions are one in the host-code
+void gaugefield_apply_chem_pot_real(__private hmc_ocl_su3matrix * u, __private hmc_ocl_su3matrix * udagger, hmc_float chem_pot_re){
   hmc_float tmp1,tmp2;
 #ifdef _RECONSTRUCT_TWELVE_
   for(int a=0; a<NC; a++) {
@@ -603,30 +603,62 @@ void gaugefield_apply_chem_pot(__private hmc_ocl_su3matrix * u, __private hmc_oc
 //   for(int n=0; n<NC*(NC-1); n++) {
     tmp1 = ((u)[ocl_su3matrix_element(a,b)]).re;
     tmp2 = ((u)[ocl_su3matrix_element(a,b)]).im;
-    ((u)[ocl_su3matrix_element(a,b)]).re = exp(chem_pot_re)*cos(chem_pot_im)*tmp1;
-    ((u)[ocl_su3matrix_element(a,b)]).im = exp(chem_pot_re)*sin(chem_pot_im)*tmp2;
+    ((u)[ocl_su3matrix_element(a,b)]).re = exp(chem_pot_re)*tmp1;
+    ((u)[ocl_su3matrix_element(a,b)]).im = exp(chem_pot_re)*tmp2;
     tmp1 = ((udagger)[ocl_su3matrix_element(a,b)]).re;
     tmp2 = ((udagger)[ocl_su3matrix_element(a,b)]).im;
-    ((udagger)[ocl_su3matrix_element(a,b)]).re = exp(-chem_pot_re)*cos(chem_pot_im)*tmp1;
-    ((udagger)[ocl_su3matrix_element(a,b)]).im = -exp(-chem_pot_re)*sin(chem_pot_im)*tmp2;
+    ((udagger)[ocl_su3matrix_element(a,b)]).re = exp(-chem_pot_re)*tmp1;
+    ((udagger)[ocl_su3matrix_element(a,b)]).im = exp(-chem_pot_re)*tmp2;
   }}
 #else
   for(int a=0; a<NC; a++) {
     for(int b=0; b<NC; b++) {
       tmp1 = ((u)[ocl_su3matrix_element(a,b)]).re;
       tmp2 = ((u)[ocl_su3matrix_element(a,b)]).im;
-      ((u)[ocl_su3matrix_element(a,b)]).re = exp(chem_pot_re)*cos(chem_pot_im)*tmp1;
-      ((u)[ocl_su3matrix_element(a,b)]).im = exp(chem_pot_re)*sin(chem_pot_im)*tmp2;
+      ((u)[ocl_su3matrix_element(a,b)]).re = exp(chem_pot_re)*tmp1;
+      ((u)[ocl_su3matrix_element(a,b)]).im = exp(chem_pot_re)*tmp2;
       tmp1 = ((udagger)[ocl_su3matrix_element(a,b)]).re;
       tmp2 = ((udagger)[ocl_su3matrix_element(a,b)]).im;
-      ((udagger)[ocl_su3matrix_element(a,b)]).re = exp(-chem_pot_re)*cos(chem_pot_im)*tmp1;
-      ((udagger)[ocl_su3matrix_element(a,b)]).im = -exp(-chem_pot_re)*sin(chem_pot_im)*tmp2;
+      ((udagger)[ocl_su3matrix_element(a,b)]).re = exp(-chem_pot_re)*tmp1;
+      ((udagger)[ocl_su3matrix_element(a,b)]).im = exp(-chem_pot_re)*tmp2;
     }
   }
 #endif
   return;
 }
-  
+
+void gaugefield_apply_chem_pot_imag(__private hmc_ocl_su3matrix * u, __private hmc_ocl_su3matrix * udagger, hmc_float chem_pot_im){
+  hmc_float tmp1,tmp2;
+#ifdef _RECONSTRUCT_TWELVE_
+  for(int a=0; a<NC; a++) {
+    for(int b=0; b<NC-1; b++) {
+//   for(int n=0; n<NC*(NC-1); n++) {
+    tmp1 = ((u)[ocl_su3matrix_element(a,b)]).re;
+    tmp2 = ((u)[ocl_su3matrix_element(a,b)]).im;
+    ((u)[ocl_su3matrix_element(a,b)]).re = ( cos(chem_pot_im)*tmp1 - sin(chem_pot_im)*tmp2 );
+    ((u)[ocl_su3matrix_element(a,b)]).im = ( sin(chem_pot_im)*tmp1 + cos(chem_pot_im)*tmp2 );
+    tmp1 = ((udagger)[ocl_su3matrix_element(a,b)]).re;
+    tmp2 = ((udagger)[ocl_su3matrix_element(a,b)]).im;
+    ((udagger)[ocl_su3matrix_element(a,b)]).re = ( cos(chem_pot_im)*tmp1 + sin(chem_pot_im)*tmp2 );
+    ((udagger)[ocl_su3matrix_element(a,b)]).im = ( -sin(chem_pot_im)*tmp1 + cos(chem_pot_im)*tmp2 );
+  }}
+#else
+  for(int a=0; a<NC; a++) {
+    for(int b=0; b<NC; b++) {
+      tmp1 = ((u)[ocl_su3matrix_element(a,b)]).re;
+      tmp2 = ((u)[ocl_su3matrix_element(a,b)]).im;
+      ((u)[ocl_su3matrix_element(a,b)]).re = ( cos(chem_pot_im)*tmp1 - sin(chem_pot_im)*tmp2 );
+      ((u)[ocl_su3matrix_element(a,b)]).im = ( sin(chem_pot_im)*tmp1 + cos(chem_pot_im)*tmp2 );
+      tmp1 = ((udagger)[ocl_su3matrix_element(a,b)]).re;
+      tmp2 = ((udagger)[ocl_su3matrix_element(a,b)]).im;
+      ((udagger)[ocl_su3matrix_element(a,b)]).re = ( cos(chem_pot_im)*tmp1 + sin(chem_pot_im)*tmp2 );
+      ((udagger)[ocl_su3matrix_element(a,b)]).im = ( -sin(chem_pot_im)*tmp1 + cos(chem_pot_im)*tmp2 );
+    }
+  }
+#endif
+  return;
+}
+
 //calculate polyakov-loop matrix at spatial site n in time-direction
 void local_polyakov(__global hmc_ocl_gaugefield * field, hmc_ocl_su3matrix * prod, int n){
 	unit_su3matrix(prod);

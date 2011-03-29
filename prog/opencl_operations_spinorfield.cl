@@ -1,4 +1,5 @@
 //opencl_operations_spinorfield
+#ifdef _FERMIONS_
 
 //eoprec operations
 void convert_to_eoprec(hmc_eoprec_spinor_field* even, hmc_eoprec_spinor_field* odd, hmc_spinor_field* in){
@@ -569,3 +570,5 @@ __kernel void create_point_source_eoprec(__global hmc_eoprec_spinor_field* b, in
 
   return;
 }
+
+#endif //_FERMIONS_

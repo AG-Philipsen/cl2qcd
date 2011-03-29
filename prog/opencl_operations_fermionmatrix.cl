@@ -1,5 +1,6 @@
 //opencl_fermionmatrix.cl
 
+#ifdef _FERMIONS_
 void inline dslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos, int t, __global hmc_spinor_field* in,  __global hmc_ocl_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im){
 
 	int next, prev;
@@ -17,9 +18,6 @@ void inline dslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos,
 	get_su3matrix(u,gaugefield,pos,t,dir);
 	get_su3matrix(udagger,gaugefield,prev,t,dir);
 	adjoin_su3matrix(udagger);
-
-	//update links with chemical potential, this shall be put into compiler option lateron
-	gaugefield_apply_chem_pot(u, udagger, chem_pot_re, chem_pot_im);
 
 #ifdef _NPBC_S_
 	if(coord[dir] == NSPACE-1) spinor_apply_bc(spinnext, theta);
@@ -55,8 +53,12 @@ void inline dslash_temporal (hmc_spinor * spinout, int pos, int t, __global hmc_
 	get_su3matrix(udagger,gaugefield,pos,prev,0);
 	adjoin_su3matrix(udagger);
 
-	//update links with chemical potential, this shall be put into compiler option lateron
-	gaugefield_apply_chem_pot(u, udagger, chem_pot_re, chem_pot_im);
+#ifdef _CP_REAL_
+	gaugefield_apply_chem_pot_real(u, udagger, chem_pot_re);
+#endif
+#ifdef _CP_IMAG_
+	gaugefield_apply_chem_pot_imag(u, udagger, chem_pot_im);
+#endif
       
 	dslash_0(spinnext, spinprev, spinout, u, udagger);
 
@@ -85,9 +87,6 @@ void inline dslash_spatial_eoprec (hmc_spinor * spinout, int * coord, int dir, i
 	get_su3matrix(u,gaugefield,pos,t,dir);
 	get_su3matrix(udagger,gaugefield,prev,t,dir);
 	adjoin_su3matrix(udagger);
-
-	//update links with chemical potential, this shall be put into compiler option lateron
-	gaugefield_apply_chem_pot(u, udagger, chem_pot_re, chem_pot_im);
 
 #ifdef _NPBC_S_
 	if(coord[dir] == NSPACE-1) spinor_apply_bc(spinnext, theta);
@@ -128,20 +127,17 @@ void inline dslash_temporal_eoprec (hmc_spinor * spinout, int pos, int t, __glob
 	get_su3matrix(udagger,gaugefield,pos,prev,0);
 	adjoin_su3matrix(udagger);
 
-	//update links with chemical potential, this shall be put into compiler option lateron
-	gaugefield_apply_chem_pot(u, udagger, chem_pot_re, chem_pot_im);
+#ifdef _CP_REAL_
+	gaugefield_apply_chem_pot_real(u, udagger, chem_pot_re);
+#endif
+#ifdef _CP_IMAG_
+	gaugefield_apply_chem_pot_imag(u, udagger, chem_pot_im);
+#endif
       
 	dslash_0(spinnext, spinprev, spinout, u, udagger);
 
 	return;
 }
-
-
-//!! perhaps the for-loops
-//!! for(id_tmp = id; id_tmp < VOL4D/2/num_groups*(group_id + 1 ); id_tmp += local_size)
-//!! or
-//!! for(id_tmp=id; id_tmp< VOL4D/2; id_tmp+=get_num_groups(0)*local_size)
-//!! can also be used??
 
 __kernel void M_diag (__global hmc_spinor_field* in, __global hmc_spinor_field* out, __global hmc_float* kappa, __global hmc_float* mu) {
 	int id = get_global_id(0);
@@ -314,3 +310,5 @@ __kernel void dslash_eoprec(__global hmc_eoprec_spinor_field* in, __global hmc_e
 	}
 	return;
 }
+
+#endif //_FERMIONS_

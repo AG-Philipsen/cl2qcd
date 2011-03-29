@@ -122,6 +122,7 @@ void time_output(
   la_steps = (*latimer).getNumMeas();
 	solver_steps = (*solvertimer).getNumMeas();
 	Mdiag_steps = (*Mdiagtimer).getNumMeas();
+	dslash_steps = (*dslashtimer).getNumMeas();
 #endif		
 	
   if(polysteps!=0){
@@ -239,6 +240,8 @@ void time_output(
 	printf("ScPr.:\t%12lu\t%12lu\t%12lu\t%.3f\n", scalprod, scalprod_avgtime, scalprod_avgtime_site, percent (scalprod, totaltime));
 	printf("BLAS.:\t%12lu\t%12lu\t%12lu\t%.3f\n", latime, la_avgtime, la_avgtime_site, percent (latime, totaltime));
 	printf("Mferm:\t%12lu\t%12lu\t%12lu\t%.3f\n", Mtime, M_avgtime, M_avgtime_site, percent (Mtime, totaltime));
+	printf("Mdiag:\t%12lu\t%12lu\t%12lu\t%.3f\n", Mdiagtime, Mdiag_avgtime, Mdiag_avgtime_site, percent (Mdiagtime, totaltime));
+	printf("Dslas:\t%12lu\t%12lu\t%12lu\t%.3f\n", dslashtime, dslash_avgtime, dslash_avgtime_site, percent (dslashtime, totaltime));
 #endif
   printf("**************************************************************\n");
   
@@ -293,13 +296,13 @@ void time_output(
   if (out.is_open())
   {    
 		//output:
-    //(benchmark_id) NTIME   NSPACE   VOL4D   totaltime   inittime  copytime  solvertime copytime singletime   scalarproducttime   latime  Mtime (all times average time-measurement)
+    //(benchmark_id) NTIME   NSPACE   VOL4D   totaltime   inittime  copytime  solvertime copytime singletime   scalarproducttime   latime  Mtime Mdiagtime dslashtime(all times average time-measurement)
     out << 
 #ifdef _PERFORM_BENCHMARKS_    
   benchmark_id << "\t"  <<  
 #endif    
 		NTIME << "\t" << NSPACE << "\t" << VOL4D << "\t" << totaltime << "\t" 
-    << init_ferm << "\t" << solvertime << "\t" << copy_ferm_avgtime << "\t" << single_ferm_avgtime << "\t" << scalprod_avgtime << "\t" << la_avgtime << "\t" << M_avgtime << endl;
+    << init_ferm << "\t" << solvertime << "\t" << copy_ferm_avgtime << "\t" << single_ferm_avgtime << "\t" << scalprod_avgtime << "\t" << la_avgtime << "\t" << M_avgtime << "\t" << Mdiag_avgtime<< "\t" << dslash_avgtime<< endl;
     out.close();
 
   }

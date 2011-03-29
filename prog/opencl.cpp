@@ -157,13 +157,13 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 #endif
 #ifdef _FERMIONS_
 	collect_options<<" -D_FERMIONS_";
-#endif
 #ifdef _TWISTEDMASS_
 	collect_options<<" -D_TWISTEDMASS_";
 #endif
 #ifdef _CLOVER_
 	collect_options<<" -D_CLOVER_";
 #endif
+#endif //_FERMIONS_
 #ifdef _USEGPU_
 	collect_options<<" -D_USEGPU_";
 #endif
@@ -183,9 +183,11 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 	collect_options<<" -D_NPBC_S_";
 #endif
 
-	//CP: give kappa and mu
+#ifdef _FERMIONS_
+	//CP: give kappa and its negative value
 	hmc_float kappa_tmp = (*parameters).get_kappa();
 	collect_options<<" -DKAPPA="<<kappa_tmp;
+	collect_options<<" -DMKAPPA="<<-kappa_tmp;
 #ifdef _TWISTEDMASS_
 	hmc_float mu_tmp = (*parameters).get_mu();
 	collect_options<< " -DMU="<<mu_tmp;
@@ -194,6 +196,7 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 	hmc_float csw_tmp = (*parameters).get_csw();
 	collect_options<< " -DCSW="<<csw_tmp;
 #endif
+#endif //_FERMIONS_
 
   collect_options<<" -I"<<SOURCEDIR;
   string buildoptions = collect_options.str();

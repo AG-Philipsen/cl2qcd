@@ -905,6 +905,7 @@ hmc_error opencl::dslash_eoprec_device(cl_mem in, cl_mem out, int evenodd, const
     exit(HMC_OCLERROR);
   }
   clFinish(queue);	
+	(*timer).add();
 	
 	return HMC_SUCCESS;
 }

@@ -761,24 +761,24 @@ void gaugefield_apply_chem_pot(hmc_su3matrix * u, hmc_su3matrix * udagger, hmc_f
   for(int n=0; n<NC*(NC-1); n++) {
     tmp1 = ((*u)[n]).re;
     tmp2 = ((*u)[n]).im;
-    ((*u)[n]).re = exp(chem_pot_re)*cos(chem_pot_im)*tmp1;
-    ((*u)[n]).im = exp(chem_pot_re)*sin(chem_pot_im)*tmp2;
+    ((*u)[n]).re = exp(chem_pot_re)*( cos(chem_pot_im)*tmp1 - sin(chem_pot_im)*tmp2 );
+    ((*u)[n]).im = exp(chem_pot_re)*( sin(chem_pot_im)*tmp1 + cos(chem_pot_im)*tmp2 );
     tmp1 = ((*udagger)[n]).re;
     tmp2 = ((*udagger)[n]).im;
-    ((*udagger)[n]).re = exp(-chem_pot_re)*cos(chem_pot_im)*tmp1;
-    ((*udagger)[n]).im = -exp(-chem_pot_re)*sin(chem_pot_im)*tmp2;
+    ((*udagger)[n]).re = exp(-chem_pot_re)*( cos(chem_pot_im)*tmp1 + sin(chem_pot_im)*tmp2 );
+    ((*udagger)[n]).im = exp(-chem_pot_re)*( -sin(chem_pot_im)*tmp1 + cos(chem_pot_im)*tmp2 );
   }
 #else
   for(int a=0; a<NC; a++) {
     for(int b=0; b<NC; b++) {
       tmp1 = ((*u)[a][b]).re;
       tmp2 = ((*u)[a][b]).im;
-      ((*u)[a][b]).re = exp(chem_pot_re)*cos(chem_pot_im)*tmp1;
-      ((*u)[a][b]).im = exp(chem_pot_re)*sin(chem_pot_im)*tmp2;
+      ((*u)[a][b]).re = exp(chem_pot_re)*( cos(chem_pot_im)*tmp1 - sin(chem_pot_im)*tmp2 );
+      ((*u)[a][b]).im = exp(chem_pot_re)*( sin(chem_pot_im)*tmp1 + cos(chem_pot_im)*tmp2 );
       tmp1 = ((*udagger)[a][b]).re;
       tmp2 = ((*udagger)[a][b]).im;
-      ((*udagger)[a][b]).re = exp(-chem_pot_re)*cos(chem_pot_im)*tmp1;
-      ((*udagger)[a][b]).im = -exp(-chem_pot_re)*sin(chem_pot_im)*tmp2;
+      ((*udagger)[a][b]).re = exp(-chem_pot_re)*( cos(chem_pot_im)*tmp1 + sin(chem_pot_im)*tmp2 );
+      ((*udagger)[a][b]).im = exp(-chem_pot_re)*( -sin(chem_pot_im)*tmp1 + cos(chem_pot_im)*tmp2 );
     }
   }
 #endif
