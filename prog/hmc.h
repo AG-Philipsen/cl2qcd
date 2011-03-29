@@ -90,11 +90,13 @@ void print_info(inputparameters* params){
   printf("Run time parameters:\n");
   printf("kappa = %f\n",(*params).get_kappa());
   printf("mu    = %f\n",(*params).get_mu());
+	printf("csw    = %f\n",(*params).get_csw());
   printf("beta  = %f\n",(*params).get_beta());
   printf("CGmax = %d\n",(*params).get_cgmax());
   printf("prec = \t%d\n",(*params).get_prec());
   printf("thermsteps = \t%d\n",(*params).get_thermalizationsteps());
   printf("heatbathsteps = %d\n",(*params).get_heatbathsteps());
+	printf("overrelaxsteps = %d\n",(*params).get_overrelaxsteps());
   printf("\n");
   if ((*params).get_startcondition()==START_FROM_SOURCE) {
     printf("sourcefile = ");

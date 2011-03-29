@@ -28,9 +28,9 @@
 
 class opencl {
  public:
-  opencl(cl_device_type wanted, const size_t ls, const size_t gs, usetimer* timer){init(wanted, ls, gs, timer);};
+  opencl(cl_device_type wanted, const size_t ls, const size_t gs, usetimer* timer, inputparameters* parameters){init(wanted, ls, gs, timer, parameters);};
   ~opencl(){finalize();};
-  hmc_error init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+  hmc_error init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* parameters);
   hmc_error copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
   hmc_error copy_rndarray_to_device(hmc_rndarray host_rndarray,  usetimer* timer);
   hmc_error copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer);

@@ -268,13 +268,15 @@ void time_output(
 #endif
 #ifdef _PERFORM_BENCHMARKS_
 	str_filename<<benchmark_id;
+	out.open(str_filename.str().c_str(), fstream::trunc); 
+#else
+	out.open(str_filename.str().c_str(), fstream::app); 
 #endif
-	
-  out.open(str_filename.str().c_str(), fstream::app); 
+
   if (out.is_open())
   {
     //output:
-    //(benchmark_id) NTIME   NSPACE   VOL4D   totaltime   inittimer   polytime   plaqtime   updatetime   overrelaxtime  (all times average per time-measurement)
+    //(benchmark_id) NTIME   NSPACE   VOL4D   totaltime   inittimer  copytime  polytime   plaqtime   updatetime   overrelaxtime  (all times average per time-measurement)
     out << 
 #ifdef _PERFORM_BENCHMARKS_    
   benchmark_id << "\t"   << 
@@ -291,7 +293,7 @@ void time_output(
   if (out.is_open())
   {    
 		//output:
-    //(benchmark_id) NTIME   NSPACE   VOL4D   totaltime   inittime   solvertime copytime singletime   scalarproducttime   latime  Mtime (all times average time-measurement)
+    //(benchmark_id) NTIME   NSPACE   VOL4D   totaltime   inittime  copytime  solvertime copytime singletime   scalarproducttime   latime  Mtime (all times average time-measurement)
     out << 
 #ifdef _PERFORM_BENCHMARKS_    
   benchmark_id << "\t"  <<  
@@ -305,3 +307,5 @@ void time_output(
 #endif
   return;
 }
+
+

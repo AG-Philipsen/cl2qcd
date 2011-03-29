@@ -4,6 +4,7 @@ hmc_error inputparameters::set_defaults(){
   kappa = 0.125;
   beta = 4.0;
   mu = 0.006;
+	csw = 0.;
   cgmax = 1000;
   prec = 64;
   theta_fermion = 0.;
@@ -37,6 +38,8 @@ hmc_error inputparameters::readfile(char* ifn){
     if(line.find("Kappa")!=std::string::npos) val_assign(&kappa,line);
     if(line.find("mu")!=std::string::npos) val_assign(&mu,line);
     if(line.find("Mu")!=std::string::npos) val_assign(&mu,line);
+		if(line.find("csw")!=std::string::npos) val_assign(&csw,line);
+    if(line.find("Csw")!=std::string::npos) val_assign(&csw,line);
     if(line.find("beta")!=std::string::npos) val_assign(&beta,line);
     if(line.find("Beta")!=std::string::npos) val_assign(&beta,line);
     if(line.find("cgmax")!=std::string::npos) val_assign(&cgmax,line);
@@ -175,6 +178,10 @@ hmc_float inputparameters::get_beta(){
 
 hmc_float inputparameters::get_mu(){
   return mu;
+}
+
+hmc_float inputparameters::get_csw(){
+  return csw;
 }
 
 hmc_float inputparameters::get_chem_pot_re(){

@@ -13,6 +13,20 @@ int main(int argc, char* argv[]) {
   stringstream gaugeout_name;
   gaugeout_name<<"gaugeobservables_beta"<<parameters.get_beta();
   
+#ifdef _PERFORM_BENCHMARKS_
+	
+	benchmark_id = argv[2];
+
+	//CP: this is done in order to have a time-file in any case
+	time_output(
+  	&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime
+#ifdef _FERMIONS_
+, &inittimer, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer
+#endif
+	);	
+
+#endif	
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Initialization
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -26,9 +40,9 @@ int main(int argc, char* argv[]) {
   init_random_seeds(rnd, rndarray, &inittime);
 	
 #ifdef _USEGPU_
-  opencl device(CL_DEVICE_TYPE_GPU, local_work_size, global_work_size, &inittime);
+  opencl device(CL_DEVICE_TYPE_GPU, local_work_size, global_work_size, &inittime, &parameters);
 #else
-  opencl device(CL_DEVICE_TYPE_CPU, local_work_size, global_work_size, &inittime);
+  opencl device(CL_DEVICE_TYPE_CPU, local_work_size, global_work_size, &inittime, &parameters);
 #endif
 
   cout << "initial values of observables:\n\t" ;
@@ -88,8 +102,6 @@ int main(int argc, char* argv[]) {
 	// Benchmarking
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	
-	benchmark_id = argv[2];
-
 #ifndef _FERMIONS_
 
   int benchmarksteps1 = parameters.get_heatbathsteps();

@@ -3,7 +3,7 @@
 
 using namespace std;
 
-hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
+hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* parameters){
 
 //give a list of all kernel-files
 //!!CP: LZ should update this
@@ -148,12 +148,53 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
   stringstream collect_options;
   collect_options<<"-D_INKERNEL_ -DNSPACE="<<NSPACE<<" -DNTIME="<<NTIME<<" -DVOLSPACE="<<VOLSPACE <<" -DSPINORSIZE="<<SPINORSIZE <<" -DHALFSPINORSIZE="<<HALFSPINORSIZE <<" -DSPINORFIELDSIZE="<<SPINORFIELDSIZE <<" -DEOPREC_SPINORFIELDSIZE="<<EOPREC_SPINORFIELDSIZE;
 
+	//CP: these have to match those in the cmake file
 #ifdef _RECONSTRUCT_TWELVE_
   collect_options<<" -D_RECONSTRUCT_TWELVE_";
 #endif
 #ifdef _USEDOUBLEPREC_
   collect_options<<" -D_USEDOUBLEPREC_";
 #endif
+#ifdef _FERMIONS_
+	collect_options<<" -D_FERMIONS_";
+#endif
+#ifdef _TWISTEDMASS_
+	collect_options<<" -D_TWISTEDMASS_";
+#endif
+#ifdef _CLOVER_
+	collect_options<<" -D_CLOVER_";
+#endif
+#ifdef _USEGPU_
+	collect_options<<" -D_USEGPU_";
+#endif
+#ifdef _PERFORM_BENCHMARKS_
+	collect_options<<" -D_PERFORM_BENCHMARKS_";
+#endif
+#ifdef _CP_REAL_
+	collect_options<<" -D_CP_REAL_";
+#endif
+#ifdef _CP_IMAG_
+	collect_options<<" -D_CP_IMAG_";
+#endif 
+#ifdef _NPBC_T_
+	collect_options<<" -D_NPBC_T_";
+#endif
+#ifdef _NPBC_S_
+	collect_options<<" -D_NPBC_S_";
+#endif
+
+	//CP: give kappa and mu
+	hmc_float kappa_tmp = (*parameters).get_kappa();
+	collect_options<<" -DKAPPA="<<kappa_tmp;
+#ifdef _TWISTEDMASS_
+	hmc_float mu_tmp = (*parameters).get_mu();
+	collect_options<< " -DMU="<<mu_tmp;
+#endif
+#ifdef _CLOVER_
+	hmc_float csw_tmp = (*parameters).get_csw();
+	collect_options<< " -DCSW="<<csw_tmp;
+#endif
+
   collect_options<<" -I"<<SOURCEDIR;
   string buildoptions = collect_options.str();
   cout<<"\tbuild options:";

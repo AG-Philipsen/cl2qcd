@@ -12,7 +12,7 @@ jobscript = """
 #PBS -N heatbath_benchmark
 #PBS -l nodes=1:ppn=1
 #PBS -l pmem=2gb
-#PBS -l walltime=00:30:00
+#PBS -l walltime=01:00:00
 #PBS -j oe
 #PBS -q """
 
@@ -83,10 +83,10 @@ cur_dir = os.getcwd()
 #suppose there is a dir for every option-setting (8 dir) with a suiting build dir in it
 #this can be changed via cmake -DUSE_DOUBLE_PRECISION=ON . (plus other variables)
 #loop over different settings
-for l in range(0, loewe_defs.nt_ns):
-	for i in range(0, loewe_defs.cpu_gpu):
-		for j in range(0, loewe_defs.double_single):
-			for k in range (0, loewe_defs.reconstruct):
+for l in range(loewe_defs.nt_ns_start, loewe_defs.nt_ns):
+	for i in range(loewe_defs.cpu_gpu_start, loewe_defs.cpu_gpu):
+		for j in range(loewe_defs.double_single_start, loewe_defs.double_single):
+			for k in range (loewe_defs.reconstruct_start, loewe_defs.reconstruct):
 				#go into specific folder
 				newdir = loewe_defs.cpu_gpu_folder[i] + '_' + loewe_defs.double_single_folder[j] + '_' + loewe_defs.reconstruct_folder[k]
 				os.chdir(cur_dir + '/' + newdir)
@@ -110,7 +110,7 @@ for l in range(0, loewe_defs.nt_ns):
 				f.close()
 				os.system('qsub jobscript.sh' );
 				os.chdir(cur_dir)
-#os.system('mv time_* ./times');
+
 
   
 

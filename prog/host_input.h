@@ -22,6 +22,7 @@ class inputparameters {
   hmc_float get_theta_fermion();
   hmc_float get_theta_gaugefield();
   hmc_float get_mu();
+	hmc_float get_csw();
   hmc_float get_chem_pot_re();
   hmc_float get_chem_pot_im();
   int get_cgmax();
@@ -43,6 +44,7 @@ class inputparameters {
   hmc_float kappa;
   hmc_float beta;
   hmc_float mu;
+	hmc_float csw;
   hmc_float theta_fermion;
   hmc_float theta_gaugefield;
   hmc_float chem_pot_re;

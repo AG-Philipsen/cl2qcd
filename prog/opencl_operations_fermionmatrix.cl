@@ -21,9 +21,11 @@ void inline dslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos,
 	//update links with chemical potential, this shall be put into compiler option lateron
 	gaugefield_apply_chem_pot(u, udagger, chem_pot_re, chem_pot_im);
 
+#ifdef _NPBC_S_
 	if(coord[dir] == NSPACE-1) spinor_apply_bc(spinnext, theta);
 	else if(coord[dir] == 0) spinor_apply_bc(spinprev, theta);
-      
+#endif
+
 	if(dir == 1) dslash_1(spinnext, spinprev, spinout, u, udagger);
 	else if(dir == 2) dslash_2(spinnext, spinprev, spinout, u, udagger);
 	else dslash_3(spinnext, spinprev, spinout, u, udagger);
@@ -44,9 +46,11 @@ void inline dslash_temporal (hmc_spinor * spinout, int pos, int t, __global hmc_
 	get_spinor_from_field(in, spinnext, pos, next);
 	get_spinor_from_field(in, spinprev, pos, prev);
 
+#ifdef _NPBC_T_
 	if(next == 0) spinor_apply_bc(spinnext, theta);
 	else if(prev == NTIME-1) spinor_apply_bc(spinprev, theta);
-      
+#endif
+
 	get_su3matrix(u,gaugefield,pos,t,0);
 	get_su3matrix(udagger,gaugefield,pos,prev,0);
 	adjoin_su3matrix(udagger);
@@ -85,9 +89,11 @@ void inline dslash_spatial_eoprec (hmc_spinor * spinout, int * coord, int dir, i
 	//update links with chemical potential, this shall be put into compiler option lateron
 	gaugefield_apply_chem_pot(u, udagger, chem_pot_re, chem_pot_im);
 
+#ifdef _NPBC_S_
 	if(coord[dir] == NSPACE-1) spinor_apply_bc(spinnext, theta);
 	else if(coord[dir] == 0) spinor_apply_bc(spinprev, theta);
-      
+#endif
+
 	if(dir == 1) dslash_1(spinnext, spinprev, spinout, u, udagger);
 	else if(dir == 2) dslash_2(spinnext, spinprev, spinout, u, udagger);
 	else dslash_3(spinnext, spinprev, spinout, u, udagger);
@@ -112,10 +118,12 @@ void inline dslash_temporal_eoprec (hmc_spinor * spinout, int pos, int t, __glob
 
 	get_spinor_from_eoprec_field(in,spinnext,neo_next);
 	get_spinor_from_eoprec_field(in,spinprev,neo_prev);
-	
+
+#ifdef _NPBC_T_
 	if(next == 0) spinor_apply_bc(spinnext, theta);
 	else if(prev == NTIME-1) spinor_apply_bc(spinprev, theta);
-      
+#endif
+
 	get_su3matrix(u,gaugefield,pos,t,0);
 	get_su3matrix(udagger,gaugefield,pos,prev,0);
 	adjoin_su3matrix(udagger);
