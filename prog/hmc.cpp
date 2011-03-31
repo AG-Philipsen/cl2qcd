@@ -16,13 +16,14 @@ int main(int argc, char* argv[]) {
 #ifdef _PERFORM_BENCHMARKS_
 	
 	benchmark_id = argv[2];
-
+	int tmp = 0;
 	//CP: this is done in order to have a time-file in any case
 	time_output(
   	&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime
 #ifdef _FERMIONS_
 , &inittimer, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer
 #endif
+, tmp
 	);	
 
 #endif	
@@ -44,6 +45,7 @@ int main(int argc, char* argv[]) {
 #else
   opencl device(CL_DEVICE_TYPE_CPU, local_work_size, global_work_size, &inittime, &parameters);
 #endif
+	cout << endl << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]" << endl;
 
   cout << "initial values of observables:\n\t" ;
   print_gaugeobservables(gaugefield, &polytime, &plaqtime);
@@ -111,6 +113,12 @@ int main(int argc, char* argv[]) {
 		device.run_overrelax(parameters.get_beta(), local_work_size, global_work_size, &overrelaxtime);
 		device.gaugeobservables(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
 		device.get_gaugefield_from_device(gaugefield, &copytime);
+		if(i%100==0){
+			cout << "time at iteration " << i << endl;
+			totaltime.add();
+			time_output(&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime, i);
+			totaltime.reset();
+		}
 	}
 	
 #else
@@ -130,8 +138,16 @@ int main(int argc, char* argv[]) {
 		init_spinorfield_cold_eoprec(in);
 		device.copy_eoprec_spinorfield_to_device(in, &copytimer);
 	}
-	device.init_fermion_variables(&parameters, local_work_size, global_work_size, &inittimer);
-	device.perform_benchmark(benchmarksteps2, cgmax, local_work_size, global_work_size, &copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer);
+	for(int i = 0; i<benchmarksteps2; i++){
+		device.init_fermion_variables(&parameters, local_work_size, global_work_size, &inittimer);
+		device.perform_benchmark(cgmax, local_work_size, global_work_size, &copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer);
+		if(i%100==0){
+			cout << "time at iteration " << i << endl;
+			totaltime.add();
+			time_output( &totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime, &inittimer, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer, i );
+			totaltime.reset();
+		}
+	}
 	device.finalize_fermions();
 	
 #endif //_FERMIONS_
@@ -150,6 +166,13 @@ int main(int argc, char* argv[]) {
   	&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime
 #ifdef _FERMIONS_
 , &inittimer, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer
+#endif
+#ifdef _PERFORM_BENCHMARKS_
+#ifndef _FERMIONS_
+  , benchmarksteps1
+#else
+	, benchmarksteps2
+#endif
 #endif
 	);
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////

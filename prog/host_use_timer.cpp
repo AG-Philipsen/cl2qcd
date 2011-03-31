@@ -46,6 +46,9 @@ void time_output(
 #ifdef _FERMIONS_
 , usetimer * inittimer, usetimer* singletimer, usetimer *Mtimer, usetimer *copytimer, usetimer *scalarprodtimer, usetimer *latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer
 #endif	
+#ifdef _PERFORM_BENCHMARKS_
+, int steps
+#endif
 	) {
 
   uint64_t totaltime = (*total).getTime();
@@ -282,7 +285,7 @@ void time_output(
     //(benchmark_id) NTIME   NSPACE   VOL4D   totaltime   inittimer  copytime  polytime   plaqtime   updatetime   overrelaxtime  (all times average per time-measurement)
     out << 
 #ifdef _PERFORM_BENCHMARKS_    
-  benchmark_id << "\t"   << 
+  benchmark_id << "\t" <<  steps << "\t" << 
 #endif    
     NTIME << "\t" << NSPACE << "\t" << VOL4D << "\t" << totaltime << "\t" 
     << inittime << "\t" << copy_avgtime << "\t" << poly_avgtime << "\t" << plaq_avgtime << "\t" << update_avgtime << "\t" << overrelax_avgtime << endl;
@@ -299,7 +302,7 @@ void time_output(
     //(benchmark_id) NTIME   NSPACE   VOL4D   totaltime   inittime  copytime  solvertime copytime singletime   scalarproducttime   latime  Mtime Mdiagtime dslashtime(all times average time-measurement)
     out << 
 #ifdef _PERFORM_BENCHMARKS_    
-  benchmark_id << "\t"  <<  
+  benchmark_id << "\t"  <<  steps << "\t" <<  
 #endif    
 		NTIME << "\t" << NSPACE << "\t" << VOL4D << "\t" << totaltime << "\t" 
     << init_ferm << "\t" << solvertime << "\t" << copy_ferm_avgtime << "\t" << single_ferm_avgtime << "\t" << scalprod_avgtime << "\t" << la_avgtime << "\t" << M_avgtime << "\t" << Mdiag_avgtime<< "\t" << dslash_avgtime<< endl;

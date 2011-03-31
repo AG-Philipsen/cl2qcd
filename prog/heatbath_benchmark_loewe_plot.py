@@ -9,15 +9,13 @@ import loewe_defs
 
 #(benchmark_id) NTIME   NSPACE   VOL4D   totaltime   inittimer   polytime   plaqtime   updatetime   overrelaxtime  (all times average per time-measurement)
 
-s1 = """set term postscript eps color enhanced
+s1 = """set term postscript eps color
 set key left top
-set size 0.75,0.75
+#set size 0.75,0.75
 #set xtics 0.05
 #set xrange[0.09:0.41]
 set xlabel \"V\"
-set pointsize 0.5
 set autoscale y
-
 
 """
 
@@ -27,6 +25,7 @@ s3 = """.eps\"
 set ylabel \""""
 s4 = """
 set xrange[0:"""
+options = """ with linespoints  lw 5 """
 
 cur_dir = os.getcwd()
 cter = 0
@@ -53,7 +52,7 @@ for l in range(loewe_defs.obs_start, loewe_defs.obs):
 	f.write(s2 + str(l) + s3 + yaxis[l] + '\"\n plot ')
 	for m in range(0, cter):
 		#divide by 1000 to get to millisecs
-		f.write('\"./' + filearray[m] + '\" using 4:($' + str(l+1+4) + '/1000.) title ' + titlearray[m])
+		f.write('\"./' + filearray[m] + '\" using 5:($' + str(l+1+5) + '/1000.) ' + options + ' title ' + titlearray[m])
 		if(m<cter-1):
 			f.write(', ')
 f.close()
@@ -80,7 +79,7 @@ if (loewe_defs.cpu_gpu_start == 0):
 		f.write(s2 + loewe_defs.cpu_gpu_folder[i] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
 		for m in range(0, cter):
 			#divide by 1000 to get to millisecs
-			f.write('\"./' + filearray[m] + '\" using 4:($' + str(l+1+4) + '/1000.) title ' + titlearray[m])
+			f.write('\"./' + filearray[m] + '\" using 5:($' + str(l+1+5) + '/1000.) ' + options + ' title ' + titlearray[m])
 			if(m<cter-1):
 				f.write(', ')
 	f.close()
@@ -107,7 +106,7 @@ if (loewe_defs.cpu_gpu == 2):
 		f.write(s2 + loewe_defs.cpu_gpu_folder[i] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
 		for m in range(0, cter):
 			#divide by 1000 to get to millisecs
-			f.write('\"./' + filearray[m] + '\" using 4:($' + str(l+1+4) + '/1000.) title ' + titlearray[m])
+			f.write('\"./' + filearray[m] + '\" using 5:($' + str(l+1+5) + '/1000.) ' + options + ' title ' + titlearray[m])
 			if(m<cter-1):
 				f.write(', ')
 	f.close()
@@ -134,7 +133,7 @@ if (loewe_defs.double_single_start == 0):
 		f.write(s2 + loewe_defs.double_single_folder[j] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
 		for m in range(0, cter):
 			#divide by 1000 to get to millisecs
-			f.write('\"./' + filearray[m] + '\" using 4:($' + str(l+1+4) + '/1000.) title ' + titlearray[m])
+			f.write('\"./' + filearray[m] + '\" using 5:($' + str(l+1+5) + '/1000.) ' + options + ' title ' + titlearray[m])
 			if(m<cter-1):
 				f.write(', ')
 	f.close()
@@ -161,7 +160,7 @@ if (loewe_defs.double_single == 2):
 		f.write(s2 + loewe_defs.double_single_folder[j] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
 		for m in range(0, cter):
 			#divide by 1000 to get to millisecs
-			f.write('\"./' + filearray[m] + '\" using 4:($' + str(l+1+4) + '/1000.) title ' + titlearray[m])
+			f.write('\"./' + filearray[m] + '\" using 5:($' + str(l+1+5) + '/1000.) ' + options + ' title ' + titlearray[m])
 			if(m<cter-1):
 				f.write(', ')
 	f.close()
@@ -188,7 +187,7 @@ if (loewe_defs.reconstruct_start == 0):
 		f.write(s2 + loewe_defs.reconstruct_folder[k] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
 		for m in range(0, cter):
 			#divide by 1000 to get to millisecs
-			f.write('\"./' + filearray[m] + '\" using 4:($' + str(l+1+4) + '/1000.) title ' + titlearray[m])
+			f.write('\"./' + filearray[m] + '\" using 5:($' + str(l+1+5) + '/1000.) ' + options + ' title ' + titlearray[m])
 			if(m<cter-1):
 				f.write(', ')
 	f.close()
@@ -215,7 +214,7 @@ if (loewe_defs.reconstruct == 2):
 		f.write(s2 + loewe_defs.reconstruct_folder[k] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
 		for m in range(0, cter):
 			#divide by 1000 to get to millisecs
-			f.write('\"./' + filearray[m] + '\" using 4:($' + str(l+1+4) + '/1000.) title ' + titlearray[m])
+			f.write('\"./' + filearray[m] + '\" using 5:($' + str(l+1+5) + '/1000.) ' + options + ' title ' + titlearray[m])
 			if(m<cter-1):
 				f.write(', ')
 	f.close()

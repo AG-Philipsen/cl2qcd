@@ -36,6 +36,9 @@ void time_output(
 #ifdef _FERMIONS_
 , usetimer * inittimer, usetimer* singletimer, usetimer *Mtimer, usetimer *copytimer, usetimer *scalarprodtimer, usetimer *latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer
 #endif
+#ifdef _PERFORM_BENCHMARKS_
+, int steps
+#endif
 	);
 
 

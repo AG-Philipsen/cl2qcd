@@ -10,7 +10,7 @@ import loewe_defs
 jobscript = """
 #!/bin/bash
 #PBS -N heatbath_benchmark
-#PBS -l nodes=1:ppn=1
+#PBS -l nodes=1:ppn=2
 #PBS -l pmem=2gb
 #PBS -l walltime=01:00:00
 #PBS -j oe
