@@ -18,6 +18,7 @@ int main(int argc, char* argv[]) {
 	benchmark_id = argv[2];
 	int tmp = 0;
 	//CP: this is done in order to have a time-file in any case
+	totaltime.add();
 	time_output(
   	&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime
 #ifdef _FERMIONS_
@@ -25,6 +26,7 @@ int main(int argc, char* argv[]) {
 #endif
 , tmp
 	);	
+	totaltime.reset();
 
 #endif	
 
