@@ -116,6 +116,7 @@ add_executable( hmc
 	host_fermionobservables.cpp
 	klepsydra/timer.cpp
 	klepsydra/monotonic.cpp
+	host_hmc.cpp
 )
 target_link_libraries( hmc
 	${OPENCL_LIBRARIES}

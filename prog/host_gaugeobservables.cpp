@@ -95,6 +95,7 @@ hmc_float plaquette(hmc_gaugefield * field, hmc_float* tplaq, hmc_float* splaq){
 	return plaq*2.0/static_cast<hmc_float>(VOL4D*NDIM*(NDIM-1)*NC);
 }
 
+
 hmc_complex polyakov(hmc_gaugefield * field){
   hmc_complex res;
   res.re=0;
