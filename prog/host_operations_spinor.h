@@ -28,11 +28,17 @@ hmc_float spinor_squarenorm(hmc_spinor* in);//CP: checked explicitly
 hmc_error spinors_accumulate(hmc_spinor* inout, hmc_spinor* incr);//CP: checked explicitly
 void spinor_apply_bc(hmc_spinor * in, hmc_float theta);//CP: checked explicitly
 
-//!!CP: not ported to .cl
 void M_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu);//CP: checked explicitly
+void MdaggerM_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu);//CP: not checked
+
 void dslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: checked explicitly
 void dslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: checked explicitly
 void dslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: checked explicitly
 void dslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: checked explicitly
+
+void ddaggerslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: not checked
+void ddaggerslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: not checked
+void ddaggerslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: notchecked
+void ddaggerslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: not checked
 
 #endif

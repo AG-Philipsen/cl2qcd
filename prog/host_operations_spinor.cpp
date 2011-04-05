@@ -265,7 +265,6 @@ hmc_error spinors_accumulate(hmc_spinor* inout, hmc_spinor* incr){
   return HMC_SUCCESS;
 }
 
-
 //spinout =  (1 + 2*i*gamma_5*kappa*mu)spin_in
 void M_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu){
 	hmc_spinor spintmp[SPINORSIZE];
@@ -276,28 +275,33 @@ void M_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu){
 	return;
 }
 
-//!!CP: the dslash_x functions can be exchanged with:
-//     spinprojectproduct_gamma1(&u,spinnext,-hmc_one_f);
-//     spinors_accumulate(spinout,spinnext);
-// 
-//     spinprojectproduct_gamma1(&udagger,spinprev,hmc_one_f);
-//     spinors_accumulate(spinout,spinprev);
-
+//spinout =  (3 + 4*kappa^2*mu^2)spin_in
+void MdaggerM_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu){
+	hmc_float twistfactor = 1. + 8.*kappa*kappa + 4.*kappa*kappa*mu*mu;
+	real_multiply_spinor(spininout,twistfactor);
+	return;
+}
 
 //spinout = U_0*(r-gamma_0)*spinnext + U^dagger_0(x-hat0) * (r+gamma_0)*spinprev
 void dslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
 	
-	hmc_spinor tmp[SPINORSIZE];
-	multiply_spinor_gamma0(spinnext,tmp);
-	real_multiply_spinor(tmp,-hmc_one_f);
-	spinors_accumulate(spinnext,tmp);
-	su3matrix_times_spinor(u,spinnext,tmp);
-	spinors_accumulate(spinout,tmp);
+// 	hmc_spinor tmp[SPINORSIZE];
+// 	multiply_spinor_gamma0(spinnext,tmp);
+// 	real_multiply_spinor(tmp,-hmc_one_f);
+// 	spinors_accumulate(spinnext,tmp);
+// 	su3matrix_times_spinor(u,spinnext,tmp);
+// 	spinors_accumulate(spinout,tmp);
+// 
+// 	multiply_spinor_gamma0(spinprev,tmp);
+// 	spinors_accumulate(spinprev,tmp);
+// 	su3matrix_times_spinor(udagger,spinprev,tmp);
+// 	spinors_accumulate(spinout,tmp);
+	
+	spinprojectproduct_gamma0(u,spinnext,-hmc_one_f);
+	spinors_accumulate(spinout,spinnext);
 
-	multiply_spinor_gamma0(spinprev,tmp);
-	spinors_accumulate(spinprev,tmp);
-	su3matrix_times_spinor(udagger,spinprev,tmp);
-	spinors_accumulate(spinout,tmp);
+	spinprojectproduct_gamma0(udagger,spinprev,hmc_one_f);
+	spinors_accumulate(spinout,spinprev);
 	
 	return;
 }
@@ -305,17 +309,23 @@ void dslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
 // spinout += U_1*(r-gamma_1)*spinnext + U^dagger_1(x-hat1) * (r+gamma_1)*spinprev
 void dslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
 	
-	hmc_spinor tmp[SPINORSIZE];
-	multiply_spinor_gamma1(spinnext,tmp);
-	real_multiply_spinor(tmp,-hmc_one_f);
-	spinors_accumulate(spinnext,tmp);
-	su3matrix_times_spinor(u,spinnext,tmp);
-	spinors_accumulate(spinout,tmp);
+// 	hmc_spinor tmp[SPINORSIZE];
+// 	multiply_spinor_gamma1(spinnext,tmp);
+// 	real_multiply_spinor(tmp,-hmc_one_f);
+// 	spinors_accumulate(spinnext,tmp);
+// 	su3matrix_times_spinor(u,spinnext,tmp);
+// 	spinors_accumulate(spinout,tmp);
+// 
+// 	multiply_spinor_gamma1(spinprev,tmp);
+// 	spinors_accumulate(spinprev,tmp);
+// 	su3matrix_times_spinor(udagger,spinprev,tmp);
+// 	spinors_accumulate(spinout,tmp);
+	
+		spinprojectproduct_gamma1(u,spinnext,-hmc_one_f);
+	spinors_accumulate(spinout,spinnext);
 
-	multiply_spinor_gamma1(spinprev,tmp);
-	spinors_accumulate(spinprev,tmp);
-	su3matrix_times_spinor(udagger,spinprev,tmp);
-	spinors_accumulate(spinout,tmp);
+	spinprojectproduct_gamma1(udagger,spinprev,hmc_one_f);
+	spinors_accumulate(spinout,spinprev);
 	
 	return;
 }
@@ -323,17 +333,23 @@ void dslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
 // spinout += U_2*(r-gamma_2)*spinnext + U^dagger_2(x-hat2) * (r+gamma_2)*spinprev
 void dslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
 	
-	hmc_spinor tmp[SPINORSIZE];
-	multiply_spinor_gamma2(spinnext,tmp);
-	real_multiply_spinor(tmp,-hmc_one_f);
-	spinors_accumulate(spinnext,tmp);
-	su3matrix_times_spinor(u,spinnext,tmp);
-	spinors_accumulate(spinout,tmp);
+// 	hmc_spinor tmp[SPINORSIZE];
+// 	multiply_spinor_gamma2(spinnext,tmp);
+// 	real_multiply_spinor(tmp,-hmc_one_f);
+// 	spinors_accumulate(spinnext,tmp);
+// 	su3matrix_times_spinor(u,spinnext,tmp);
+// 	spinors_accumulate(spinout,tmp);
+// 
+// 	multiply_spinor_gamma2(spinprev,tmp);
+// 	spinors_accumulate(spinprev,tmp);
+// 	su3matrix_times_spinor(udagger,spinprev,tmp);
+// 	spinors_accumulate(spinout,tmp);
+	
+		spinprojectproduct_gamma2(u,spinnext,-hmc_one_f);
+	spinors_accumulate(spinout,spinnext);
 
-	multiply_spinor_gamma2(spinprev,tmp);
-	spinors_accumulate(spinprev,tmp);
-	su3matrix_times_spinor(udagger,spinprev,tmp);
-	spinors_accumulate(spinout,tmp);
+	spinprojectproduct_gamma2(udagger,spinprev,hmc_one_f);
+	spinors_accumulate(spinout,spinprev);
 	
 	return;
 }
@@ -341,17 +357,118 @@ void dslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
 // spinout += U_3*(r-gamma_3)*spinnext + U^dagger_3(x-hat3) * (r+gamma_3)*spinprev
 void dslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
 	
-	hmc_spinor tmp[SPINORSIZE];
-	multiply_spinor_gamma3(spinnext,tmp);
-	real_multiply_spinor(tmp,-hmc_one_f);
-	spinors_accumulate(spinnext,tmp);
-	su3matrix_times_spinor(u,spinnext,tmp);
-	spinors_accumulate(spinout,tmp);
+// 	hmc_spinor tmp[SPINORSIZE];
+// 	multiply_spinor_gamma3(spinnext,tmp);
+// 	real_multiply_spinor(tmp,-hmc_one_f);
+// 	spinors_accumulate(spinnext,tmp);
+// 	su3matrix_times_spinor(u,spinnext,tmp);
+// 	spinors_accumulate(spinout,tmp);
+// 
+// 	multiply_spinor_gamma3(spinprev,tmp);
+// 	spinors_accumulate(spinprev,tmp);
+// 	su3matrix_times_spinor(udagger,spinprev,tmp);
+// 	spinors_accumulate(spinout,tmp);
+	
+	spinprojectproduct_gamma3(u,spinnext,-hmc_one_f);
+	spinors_accumulate(spinout,spinnext);
 
-	multiply_spinor_gamma3(spinprev,tmp);
-	spinors_accumulate(spinprev,tmp);
-	su3matrix_times_spinor(udagger,spinprev,tmp);
-	spinors_accumulate(spinout,tmp);
+	spinprojectproduct_gamma3(udagger,spinprev,hmc_one_f);
+	spinors_accumulate(spinout,spinprev);
+	
+	return;
+}
+
+//spinout = U_0*(r+gamma_0)*spinnext + U^dagger_0(x-hat0) * (r-gamma_0)*spinprev
+void ddaggerslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
+	
+// 	hmc_spinor tmp[SPINORSIZE];
+// 	multiply_spinor_gamma0(spinnext,tmp);
+// 	spinors_accumulate(spinnext,tmp);
+// 	su3matrix_times_spinor(u,spinnext,tmp);
+// 	spinors_accumulate(spinout,tmp);
+// 
+// 	multiply_spinor_gamma0(spinprev,tmp);
+// 	real_multiply_spinor(tmp,-hmc_one_f);
+// 	spinors_accumulate(spinprev,tmp);
+// 	su3matrix_times_spinor(udagger,spinprev,tmp);
+// 	spinors_accumulate(spinout,tmp);
+	
+	spinprojectproduct_gamma0(u,spinnext,hmc_one_f);
+	spinors_accumulate(spinout,spinnext);
+
+	spinprojectproduct_gamma0(udagger,spinprev,-hmc_one_f);
+	spinors_accumulate(spinout,spinprev);
+	
+	return;
+}
+
+// spinout += U_1*(r+gamma_1)*spinnext + U^dagger_1(x-hat1) * (r-gamma_1)*spinprev
+void ddaggerslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
+	
+// 	hmc_spinor tmp[SPINORSIZE];
+// 	multiply_spinor_gamma1(spinnext,tmp);
+// 	spinors_accumulate(spinnext,tmp);
+// 	su3matrix_times_spinor(u,spinnext,tmp);
+// 	spinors_accumulate(spinout,tmp);
+// 
+// 	multiply_spinor_gamma1(spinprev,tmp);
+// 	real_multiply_spinor(tmp,-hmc_one_f);
+// 	spinors_accumulate(spinprev,tmp);
+// 	su3matrix_times_spinor(udagger,spinprev,tmp);
+// 	spinors_accumulate(spinout,tmp);
+	
+	spinprojectproduct_gamma1(u,spinnext,hmc_one_f);
+	spinors_accumulate(spinout,spinnext);
+
+	spinprojectproduct_gamma1(udagger,spinprev,-hmc_one_f);
+	spinors_accumulate(spinout,spinprev);
+	
+	return;
+}
+
+// spinout += U_2*(r+gamma_2)*spinnext + U^dagger_2(x-hat2) * (r-gamma_2)*spinprev
+void ddaggerslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
+	
+// 	hmc_spinor tmp[SPINORSIZE];
+// 	multiply_spinor_gamma2(spinnext,tmp);
+// 	spinors_accumulate(spinnext,tmp);
+// 	su3matrix_times_spinor(u,spinnext,tmp);
+// 	spinors_accumulate(spinout,tmp);
+// 
+// 	multiply_spinor_gamma2(spinprev,tmp);
+// 	real_multiply_spinor(tmp,-hmc_one_f);
+// 	spinors_accumulate(spinprev,tmp);
+// 	su3matrix_times_spinor(udagger,spinprev,tmp);
+// 	spinors_accumulate(spinout,tmp);
+
+	spinprojectproduct_gamma2(u,spinnext,hmc_one_f);
+	spinors_accumulate(spinout,spinnext);
+
+	spinprojectproduct_gamma2(udagger,spinprev,-hmc_one_f);
+	spinors_accumulate(spinout,spinprev);
+	return;
+}
+
+// spinout += U_3*(r+gamma_3)*spinnext + U^dagger_3(x-hat3) * (r-gamma_3)*spinprev
+void ddaggerslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
+	
+// 	hmc_spinor tmp[SPINORSIZE];
+// 	multiply_spinor_gamma3(spinnext,tmp);
+// 	spinors_accumulate(spinnext,tmp);
+// 	su3matrix_times_spinor(u,spinnext,tmp);
+// 	spinors_accumulate(spinout,tmp);
+// 
+// 	multiply_spinor_gamma3(spinprev,tmp);
+// 	real_multiply_spinor(tmp,-hmc_one_f);
+// 	spinors_accumulate(spinprev,tmp);
+// 	su3matrix_times_spinor(udagger,spinprev,tmp);
+// 	spinors_accumulate(spinout,tmp);
+
+	spinprojectproduct_gamma3(u,spinnext,hmc_one_f);
+	spinors_accumulate(spinout,spinnext);
+
+	spinprojectproduct_gamma3(udagger,spinprev,-hmc_one_f);
+	spinors_accumulate(spinout,spinprev);
 	
 	return;
 }

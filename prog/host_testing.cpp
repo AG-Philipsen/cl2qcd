@@ -939,12 +939,20 @@ void testing_matrix_spinor_ops(){
 
 	printf("\ttesting spinprojection...\n");
 	set_local_zero_spinor(spinor1);
+	hmc_float sign = hmc_one_f;
+	i_spinor(spinor1);
+// 	printf("\tinput vector:\n");
+	print_spinor(spinor1);
+// 	printf("\tinputvector + gamma0*input vector:\n");
+	multiply_spinor_gamma0(spinor1, spinor2);
+	real_multiply_spinor(spinor2, sign);
+	spinors_accumulate(spinor2, spinor1);
+	print_spinor(spinor2);
 	
-// 	unit_spinor(spinor1);
-// 	print_spinor(spinor1);
-// 	unit_su3matrix(&u);
-// 	spinprojectproduct_gamma3(&u, spinor1, hmc_one_f);
-// 	print_spinor(spinor1);
+// 	printf("\tspinproj(input vector):\n");
+	unit_su3matrix(&u);
+	spinprojectproduct_gamma0(&u, spinor1, sign);
+	print_spinor(spinor1);
 	
 	printf("\ttesting spinor squarenorm...\n");
 	i_spinor(spinor1);
