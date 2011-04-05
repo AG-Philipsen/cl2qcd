@@ -40,3 +40,11 @@ hmc_complex complexdivide(hmc_complex* numerator, hmc_complex* denominator){
   res.im = ((*numerator).im*(*denominator).re-(*numerator).re*(*denominator).im)/norm;
   return res;
 }
+
+hmc_error complexcopy(hmc_complex* source, hmc_complex* dest, int length){
+	// copies ``length'' complex numbers from source array to dest array, within cpu memory
+	for(int i=0;i<length;i++){
+		dest[i] = source[i];
+	}
+	return HMC_SUCCESS;  // SL: function not tested
+}

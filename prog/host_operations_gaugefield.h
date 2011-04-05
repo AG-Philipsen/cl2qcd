@@ -49,4 +49,8 @@ void gaugefield_apply_chem_pot(hmc_su3matrix * u, hmc_su3matrix * udagger, hmc_f
 void local_polyakov(hmc_gaugefield * field, hmc_su3matrix * prod, int n);
 void local_plaquette(hmc_gaugefield * field, hmc_su3matrix * prod, int n, int t, int mu, int nu );
 
+// copy-functions within cpu memory, gaugefield-related layers
+hmc_error copy_gaugefield(hmc_gaugefield * source, hmc_gaugefield * dest);
+hmc_error copy_gaugemomenta(hmc_gauge_momentum * source, hmc_gauge_momentum * dest);
+
 #endif

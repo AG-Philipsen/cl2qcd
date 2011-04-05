@@ -68,8 +68,8 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta, hmc_spinor_field * phi
 	}
 	if(rndnumber <= compare_prob){
 		// perform the change nonprimed->primed !
-		// copy_gaugefield(new_field, field);
-		// copy_gaugemomenta(new_p, p);
+		copy_gaugefield(new_field, field);
+		copy_gaugemomenta(new_p, p);
 		// SL: this works as long as p and field are pointers to the *original* memory locations!
 	}
 	return HMC_SUCCESS;
