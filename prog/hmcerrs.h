@@ -10,5 +10,6 @@ const hmc_error HMC_OCLERROR = -3;
 const hmc_error HMC_XMLERROR = -4;
 const hmc_error HMC_UNDEFINEDERROR = -999;
 const hmc_error HMC_EOERROR = -5;
+const hmc_error HMC_COMPLEX_HAMILTONIANERROR = -6;
 
 #endif
