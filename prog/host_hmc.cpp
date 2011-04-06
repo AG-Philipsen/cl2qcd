@@ -1,5 +1,7 @@
 #include "host_hmc.h"
 
+//TODO CP: all return values have to be revisited, since they should be real numbers and not complex one in the end
+
 // beta * sum_links sum_nu>mu ( 3 - Tr Re Plaquette )
 hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta){
 	hmc_float plaq=0;
@@ -41,12 +43,55 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
 	return result;
 }
 
+//TODO spinor update
+
+
+
+//TODO generate gauge momenta
+
+
+
 //TODO metropolis step
 
 
 
 //TODO leapfrog integration
+//CP: as in Gattringer/Lang, QCD on the Lattice, 8.2, p. 197
+void leapfrog(const hmc_float stepsize, const int steps, hmc_gaugefield * u_in, hmc_gauge_momentum * p_in, hmc_spinor_field * phi, hmc_gaugefield * u_out, hmc_gauge_momentum * p_out){
+	int k;
+	hmc_float stepsize_half = 0.5*stepsize;
+	//intermediate states u_k, u_k-1, p_-1/2 and p_1/2
+	hmc_gaugefield u_next;
+	hmc_gaugefield u_prev;
+	hmc_gauge_momentum p_prev;
+	hmc_gauge_momentum p_next;
+	//initial step
+	//TODO copy_gaugefield(u_prev = u_in);
+	//TODO copy_gauge_momenta(p_prev = p_in);
+	
+	//TODO mc_update_gauge_momenta(stepsize_half, p_prev, u_prev, phi, p_prev);
+	
+	
+	//intermediate steps
+	for(k = 1; k<steps-1; k++){
+		//calc u_next
+		//TODO mc_update_gaugefield(stepsize, p_prev, u_prev, u_next);
+		//calc p_next
+		//TODO mc_update_gauge_momenta(stepsize, p_prev, u_next, phi, p_next);
+		//TODO copy_gaugefield(u_prev = u_next);
+		//TODO copy_gauge_momenta(p_prev = p_next);
+	}
+	
+	//final step
+	//TODO mc_update_gaugefield(stepsize, p_prev, u_prev, field_out);
+	//TODO mc_update_gauge_momenta(stepsize_half, p_prev, field_out, phi, p_next);
 
+	//copy results
+	//TODO copy_gaugefield(u_next = u_out);
+	//TODO copy_gauge_momenta(p_next = p_out);
+	
+	return;
+}
 
 
 //TODO gauge force
@@ -54,3 +99,14 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
 
 
 //TODO fermion force
+
+
+
+//TODO force
+hmc_error force(hmc_gaugefield field, hmc_spinor_field * phi, hmc_gauge_momentum * out){
+	
+	
+	
+	
+	return HMC_SUCCESS;
+}
