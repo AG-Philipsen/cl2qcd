@@ -824,3 +824,12 @@ void local_plaquette(hmc_gaugefield * field, hmc_su3matrix * prod, int n, int t,
 	return;
 }
 
+hmc_error copy_gaugefield(hmc_gaugefield * source, hmc_gaugefield * dest){
+	// copies source to destination within cpu memory, layer for gaugefield array
+	return complexcopy((hmc_complex *)source, (hmc_complex *)dest, NC*NC*NDIM*VOL4D); // SL: not tested
+}
+
+hmc_error copy_gaugemomenta(hmc_gauge_momentum * source, hmc_gauge_momentum * dest){
+	// copies source to destination within cpu memory, layer for momentum array
+	return complexcopy((hmc_complex *)source, (hmc_complex *)dest, NDIM*VOL4D); // SL: not tested
+}

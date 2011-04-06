@@ -18,7 +18,7 @@
 hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta); //CP: not tested
 hmc_complex s_fermion(hmc_gaugefield * field, hmc_spinor_field * phi); //CP: not tested
 hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_momentum * p, hmc_spinor_field * phi); //CP: not tested
-
-
+hmc_error metropolis(hmc_float rndnumber, hmc_float beta, hmc_spinor_field * phi, hmc_gaugefield * field,
+					 hmc_gauge_momentum * p, hmc_gaugefield * new_field, hmc_gauge_momentum * new_p); // SL: not tested
 
 #endif 
