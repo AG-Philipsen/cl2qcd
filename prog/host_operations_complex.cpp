@@ -48,3 +48,11 @@ hmc_error complexcopy(hmc_complex* source, hmc_complex* dest, int length){
 	}
 	return HMC_SUCCESS;  // SL: function not tested
 }
+
+//multiply complex number with real factor
+hmc_error complexmult_real(hmc_complex *a, hmc_float *b){
+  hmc_complex res;
+  (*a).re *= (*b);
+  (*a).im *= (*b);
+  return HMC_SUCCESS;
+}
