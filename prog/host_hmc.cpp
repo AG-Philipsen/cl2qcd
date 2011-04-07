@@ -66,6 +66,8 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta, hmc_spinor_field * phi
 	}else{
 		compare_prob = 1.0;
 	}
+	// SL: the following can be tuned, whether it is more costly to draw always the rnd number even when compare_prob=1
+	//     and whether the "if compare_prob==1" costs more or less than always evaluating the exp ...
 	if(rndnumber <= compare_prob){
 		// perform the change nonprimed->primed !
 		copy_gaugefield(new_field, field);
