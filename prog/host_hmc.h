@@ -10,15 +10,13 @@
 #include "host_operations_spinor.h"
 #include "host_operations_spinorfield.h"
 #include "host_operations_fermionmatrix.h"
+#include "host_gaugeobservables.h"
 #include "host_use_timer.h"
 #include "host_solver.h"
 #include <cstdio>
 #include <fstream>
 #include <string>
 #include <cmath>
-
-hmc_error perform_hybrid_monte_carlo(inputparameters * parameters);
-
 
 hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta); //CP: not tested
 hmc_complex s_fermion(hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi); //CP: not tested

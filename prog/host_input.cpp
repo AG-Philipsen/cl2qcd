@@ -11,9 +11,12 @@ hmc_error inputparameters::set_defaults(){
   theta_gaugefield = 0.;
   chem_pot_re = 0.;
   chem_pot_im = 0.;
+	tau_fermion = 1e-04;
+	tau_gauge = tau_fermion;
   startcondition = COLD_START;
   thermalizationsteps = 0;
   heatbathsteps = 1000;
+	hmcsteps = 10;
 	overrelaxsteps = 1;
   writefrequency = 1;
   savefrequency = 100;
@@ -41,6 +44,8 @@ hmc_error inputparameters::readfile(char* ifn){
 		if(line.find("csw")!=std::string::npos) val_assign(&csw,line);
     if(line.find("Csw")!=std::string::npos) val_assign(&csw,line);
     if(line.find("beta")!=std::string::npos) val_assign(&beta,line);
+		if(line.find("tau_fermion")!=std::string::npos) val_assign(&tau_fermion,line);
+		if(line.find("tau_gauge")!=std::string::npos) val_assign(&tau_gauge,line);
     if(line.find("Beta")!=std::string::npos) val_assign(&beta,line);
     if(line.find("cgmax")!=std::string::npos) val_assign(&cgmax,line);
     if(line.find("CGmax")!=std::string::npos) val_assign(&cgmax,line);
@@ -59,6 +64,7 @@ hmc_error inputparameters::readfile(char* ifn){
     if(line.find("thermalizationsteps")!=std::string::npos) val_assign(&thermalizationsteps,line);
     if(line.find("heatbathsteps")!=std::string::npos) val_assign(&heatbathsteps,line);
 		if(line.find("overrelaxsteps")!=std::string::npos) val_assign(&overrelaxsteps,line);
+		if(line.find("hmcsteps")!=std::string::npos) val_assign(&hmcsteps,line);
   }
   return HMC_SUCCESS;
 }
@@ -180,6 +186,14 @@ hmc_float inputparameters::get_mu(){
   return mu;
 }
 
+hmc_float inputparameters::get_tau_fermion(){
+  return tau_fermion;
+}
+
+hmc_float inputparameters::get_tau_gauge(){
+  return tau_gauge;
+}
+
 hmc_float inputparameters::get_csw(){
   return csw;
 }
@@ -210,6 +224,10 @@ int inputparameters::get_heatbathsteps(){
 
 int inputparameters::get_overrelaxsteps(){
   return overrelaxsteps;
+}
+
+int inputparameters::get_hmcsteps(){
+  return hmcsteps;
 }
 
 int inputparameters::get_writefrequency(){
