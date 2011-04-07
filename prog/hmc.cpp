@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
 	// TODO give seed meaningful value, perhaps read it in from parameters
 	int seed = 89343894543895;
 	Random hmc_rnd_gen (seed);
-	hmc_float rnd;
+	hmc_float rnd_number;
 	
 	hmc_spinor_field* phi = new hmc_spinor_field[SPINORFIELDSIZE];
 	hmc_spinor_field* phi_inv = new hmc_spinor_field[SPINORFIELDSIZE];
@@ -105,8 +105,8 @@ int main(int argc, char* argv[]) {
 		
 		//metropolis step: afterwards, the updated config is again in gaugefield and p
 		//generate new random-number
-		rnd = hmc_rnd_gen.doub();
-		err = metropolis(rnd, beta, phi, phi_inv, &gaugefield, p, &new_field, new_p);
+		rnd_number = hmc_rnd_gen.doub();
+		err = metropolis(rnd_number, beta, phi, phi_inv, &gaugefield, p, &new_field, new_p);
 		
 		//TODO if wanted, measurements can be added here...
 	}

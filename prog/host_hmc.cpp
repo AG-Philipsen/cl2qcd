@@ -99,19 +99,19 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
 	return result;
 }
 
-//TODO generate gaussian initial spinorfield
 hmc_error generate_gaussian_spinorfield(hmc_spinor_field * out){
-	
-	
-	return HMC_SUCCESS;
+	// SL: this is a layer that calls the all-purpose hmc_complex gaussianly-distributed vector
+	// with appropriate length and variance, i.e. SPINORFIELDSIZE and 1/2
+	return gaussianComplexVector((hmc_complex *)out, SPINORFIELDSIZE, 0.5);
+	// SL: not yet tested
 }
 
 
-//TODO generate gaussian initial gauge momenta
 hmc_error generate_gaussian_gauge_momenta(hmc_gauge_momentum * out){
-	
-	
-	return HMC_SUCCESS;
+	// SL: this is a layer that calls the all-purpose hmc_complex gaussianly-distributed vector
+	// with appropriate length and variance, i.e. GAUGEMOMENTASIZE and 1
+	return gaussianComplexVector((hmc_complex *)out, GAUGEMOMENTASIZE, 1.0);
+	// SL: not yet tested
 }
 
 hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_gauge_momentum * out){
