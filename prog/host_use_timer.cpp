@@ -49,6 +49,9 @@ void time_output(
 #ifdef _PERFORM_BENCHMARKS_
 , int steps
 #endif
+#ifdef _USEHMC_
+, usetimer * hmctimer, usetimer * leapfrogtimer, usetimer * hmcinittimer, usetimer * metropolistimer
+#endif
 	) {
 
   uint64_t totaltime = (*total).getTime();
@@ -70,6 +73,12 @@ void time_output(
 	uint64_t dslashtime = (*dslashtimer).getTime();
 	uint64_t Mdiagtime = (*Mdiagtimer).getTime();
 #endif
+#ifdef _USEHMC_
+	uint64_t hmctime = (*hmctimer).getTime();
+	uint64_t leapfrogtime = (*leapfrogtimer).getTime();
+	uint64_t hmcinittime = (*hmcinittimer).getTime();
+	uint64_t metropolistime = (*metropolistimer).getTime();
+#endif
 	
   int polysteps;
   int plaqsteps;
@@ -85,6 +94,12 @@ void time_output(
 	int solver_steps;
 	int dslash_steps;
 	int Mdiag_steps;
+#endif
+#ifdef _USEHMC_
+	int hmc_steps;
+	int hmcinit_steps;
+	int leapfrog_steps;
+	int metropolis_steps;
 #endif
 
 	uint64_t poly_avgtime_site;
@@ -111,6 +126,12 @@ void time_output(
 	uint64_t dslash_avgtime;
 	uint64_t Mdiag_avgtime;
 #endif	
+#ifdef _USEHMC_
+	uint64_t hmc_avgtime;
+	uint64_t hmcinit_avgtime;
+	uint64_t leapfrog_avgtime;
+	uint64_t metropolis_avgtime;
+#endif	
 	
   polysteps = (*poly).getNumMeas();
   plaqsteps = (*plaq).getNumMeas();
@@ -127,7 +148,13 @@ void time_output(
 	Mdiag_steps = (*Mdiagtimer).getNumMeas();
 	dslash_steps = (*dslashtimer).getNumMeas();
 #endif		
-	
+#ifdef _USEHMC_
+  hmc_steps = (*hmctimer).getNumMeas();
+	hmcinit_steps = (*hmcinittimer).getNumMeas();
+	leapfrog_steps = (*leapfrogtimer).getNumMeas();
+	metropolis_steps = (*metropolistimer).getNumMeas();
+#endif	
+
   if(polysteps!=0){
     poly_avgtime_site = divide(polytime, VOL4D*polysteps);
     poly_avgtime = divide(polytime, polysteps);
@@ -222,6 +249,32 @@ void time_output(
     solver_avgtime = 0;
   }
 #endif
+#ifdef _USEHMC_
+	if(hmc_steps!=0){
+    hmc_avgtime = divide(hmctime, hmc_steps);
+  }
+  else{
+    hmc_avgtime = 0;
+  }
+	if(hmcinit_steps!=0){
+    hmcinit_avgtime = divide(hmcinittime, hmcinit_steps);
+  }
+  else{
+    hmcinit_avgtime = 0;
+  }
+	if(metropolis_steps!=0){
+    metropolis_avgtime = divide(metropolistime, metropolis_steps);
+  }
+  else{
+    metropolis_avgtime = 0;
+  } 
+	if(leapfrog_steps!=0){
+    leapfrog_avgtime = divide(leapfrogtime, leapfrog_steps);
+  }
+  else{
+    leapfrog_avgtime = 0;
+  }  
+#endif
   
   printf("\n");
   printf("**************************************************************\n");
@@ -245,6 +298,13 @@ void time_output(
 	printf("Mferm:\t%12lu\t%12lu\t%12lu\t%.3f\n", Mtime, M_avgtime, M_avgtime_site, percent (Mtime, totaltime));
 	printf("Mdiag:\t%12lu\t%12lu\t%12lu\t%.3f\n", Mdiagtime, Mdiag_avgtime, Mdiag_avgtime_site, percent (Mdiagtime, totaltime));
 	printf("Dslas:\t%12lu\t%12lu\t%12lu\t%.3f\n", dslashtime, dslash_avgtime, dslash_avgtime_site, percent (dslashtime, totaltime));
+#endif
+#ifdef _USEHMC_
+	printf("HybridMC Times:\t tot\t\t avg\t\tsite\tperc\n");
+	printf("HMC:\t%12lu\t%12lu\t%12lu\t%.3f\n",hmctime, hmc_avgtime, hmc_avgtime, percent (hmctime, totaltime));
+	printf("Init:\t%12lu\t%12lu\t%12lu\t%.3f\n",hmcinittime, hmcinit_avgtime, hmcinit_avgtime, percent (hmcinittime, totaltime));
+	printf("Leap:\t%12lu\t%12lu\t%12lu\t%.3f\n",leapfrogtime, leapfrog_avgtime, leapfrog_avgtime, percent (leapfrogtime, totaltime));
+	printf("Metr:\t%12lu\t%12lu\t%12lu\t%.3f\n",metropolistime, metropolis_avgtime, metropolis_avgtime, percent (metropolistime, totaltime));
 #endif
   printf("**************************************************************\n");
   
@@ -279,6 +339,7 @@ void time_output(
 	out.open(str_filename.str().c_str(), fstream::app); 
 #endif
 
+	//gauge output
   if (out.is_open())
   {
     //output:
@@ -293,13 +354,14 @@ void time_output(
   }
   else cout << "Unable to open file for output" << endl;
 
+	//fermion output
 #ifdef _FERMIONS_
 	str_filename<<"ferm";
 	out.open(str_filename.str().c_str(), fstream::app); 
   if (out.is_open())
   {    
 		//output:
-    //(benchmark_id) NTIME   NSPACE   VOL4D   totaltime   inittime  copytime  solvertime copytime singletime   scalarproducttime   latime  Mtime Mdiagtime dslashtime(all times average time-measurement)
+    //(benchmark_id) NTIME   NSPACE   VOL4D   totaltime   inittime  solvertime copytime singletime   scalarproducttime   latime  Mtime Mdiagtime dslashtime(all times average time-measurement)
     out << 
 #ifdef _PERFORM_BENCHMARKS_    
   benchmark_id << "\t"  <<  steps << "\t" <<  
@@ -311,6 +373,26 @@ void time_output(
   }
   else cout << "Unable to open file for output" << endl;
 #endif
+
+	//hybrid monte carlo output
+#ifdef _USEHMC_
+str_filename<<"ferm";
+	out.open(str_filename.str().c_str(), fstream::app); 
+  if (out.is_open())
+  {    
+		//output:
+    //(benchmark_id) NTIME   NSPACE   VOL4D   totaltime  hmc_totaltime  hmcinittime  leapfrogtime   metropolistime (all times average time-measurement)
+    out << 
+#ifdef _PERFORM_BENCHMARKS_    
+  benchmark_id << "\t"  <<  steps << "\t" <<  
+#endif    
+		NTIME << "\t" << NSPACE << "\t" << VOL4D << "\t" << totaltime << "\t" 
+    << hmc_avgtime << "\t" << hmcinit_avgtime << "\t" << leapfrog_avgtime << "\t" << metropolis_avgtime << "\t" << endl;
+    out.close();
+  }
+  else cout << "Unable to open file for output" << endl;
+#endif
+
   return;
 }
 

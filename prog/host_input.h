@@ -19,6 +19,8 @@ class inputparameters {
   hmc_error set_defaults();
   hmc_float get_kappa();
   hmc_float get_beta();
+	hmc_float get_tau_fermion();
+	hmc_float get_tau_gauge();
   hmc_float get_theta_fermion();
   hmc_float get_theta_gaugefield();
   hmc_float get_mu();
@@ -31,6 +33,7 @@ class inputparameters {
   int get_thermalizationsteps();
   int get_heatbathsteps();
 	int get_overrelaxsteps();
+	int get_hmcsteps();
   int get_saveconfigs();
   int get_savefrequency();
   int get_writefrequency();
@@ -49,12 +52,15 @@ class inputparameters {
   hmc_float theta_gaugefield;
   hmc_float chem_pot_re;
   hmc_float chem_pot_im;
+	hmc_float tau_fermion;
+	hmc_float tau_gauge;
   int cgmax;
   int prec;
   int startcondition;
   int thermalizationsteps;
   int heatbathsteps;
 	int overrelaxsteps;
+	int hmcsteps; 
   int savefrequency;
   int saveconfigs;
   int writefrequency;

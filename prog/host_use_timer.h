@@ -39,6 +39,9 @@ void time_output(
 #ifdef _PERFORM_BENCHMARKS_
 , int steps
 #endif
+#ifdef _USEHMC_
+, usetimer * hmctimer, usetimer * leapfrogtimer, usetimer * hmcinittimer, usetimer * metropolistimer
+#endif
 	);
 
 

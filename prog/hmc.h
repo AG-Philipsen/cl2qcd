@@ -64,6 +64,12 @@ usetimer scalarprodtimer;
 usetimer latimer;
 usetimer solvertimer;
 #endif
+#ifdef _USE_HMC_
+usetimer hmctimer;
+usetimer leapfrogtimer;
+usetimer hmcinittimer;
+usetimer metropolistimer;
+#endif
 
 
 //to save gaugeobservables

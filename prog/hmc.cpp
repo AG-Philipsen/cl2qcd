@@ -12,9 +12,8 @@ int main(int argc, char* argv[]) {
 
   stringstream gaugeout_name;
   gaugeout_name<<"gaugeobservables_beta"<<parameters.get_beta();
-  
+
 #ifdef _PERFORM_BENCHMARKS_
-	
 	benchmark_id = argv[2];
 	int tmp = 0;
 	//CP: this is done in order to have a time-file in any case
@@ -23,12 +22,11 @@ int main(int argc, char* argv[]) {
   	&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime
 #ifdef _FERMIONS_
 , &inittimer, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer
-#endif
+#endif // _USE_FERMIONS_
 , tmp
 	);	
 	totaltime.reset();
-
-#endif	
+#endif	//_PERFORM_BENCHMARKS_
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Initialization
@@ -39,9 +37,11 @@ int main(int argc, char* argv[]) {
   gaugefield = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
   hmc_rndarray rndarray;
 
+	//init gaugefield according to the inputfile settings
   init_gaugefield(gaugefield,&parameters,&inittime);
   init_random_seeds(rnd, rndarray, &inittime);
 	
+	//TODO add a security function that ends the OpenCL-init if it takes too long (this is apparently necessary on the loewe)
 #ifdef _USEGPU_
   opencl device(CL_DEVICE_TYPE_GPU, local_work_size, global_work_size, &inittime, &parameters);
 #else
@@ -61,7 +61,66 @@ int main(int argc, char* argv[]) {
 
 #ifndef _PERFORM_BENCHMARKS_
 
+#ifdef _USEHMC_
+
+	//TODO CP: port to OpenCL *g*
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Hybrid Monte Carlo
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	//init section
+	//CP: here, one has to get all the parameters necessary from the inputparameters
+	// suppose that in parameters the number of hmc_iterations is given, store them in a variable here...
+	int hmc_iter; //= ...
+	int iter;
+	int err = 0;
+	//beta has to be saved here to give it to the metropolis step, all other parameters can be given via parameters
+	hmc_float beta;
+	// TODO give seed meaningful value, perhaps read it in from parameters
+	int seed = 89343894543895;
+	Random hmc_rnd_gen (seed);
+	hmc_float rnd;
+	
+	hmc_spinor_field* phi = new hmc_spinor_field[SPINORFIELDSIZE];
+	hmc_spinor_field* phi_inv = new hmc_spinor_field[SPINORFIELDSIZE];
+	hmc_spinor_field* chi = new hmc_spinor_field[SPINORFIELDSIZE];
+	hmc_gauge_momentum* p = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
+	hmc_gauge_momentum* new_p = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
+	//the "old" field is the "gaugefield introduced above
+	hmc_gaugefield new_field;
+	
+	//TODO add implicit measurements(plaquette, deltaH, ...)
+	//main hmc-loop
+	for(iter = 0; iter < hmc_iter; iter ++){
+		//init gauge_momenta
+		//TODO perhaps write a wrapper that automatically evaluates the err's
+		err = generate_gaussian_gauge_momenta(p);
+		
+		//init/update spinorfield phi
+		err = generate_gaussian_spinorfield(chi);
+		err = md_update_spinorfield(chi, phi, &gaugefield, parameters);
+		
+		//update gaugefield and gauge_momenta via leapfrog
+		err = leapfrog(parameters, &gaugefield, p, phi, &new_field, new_p, phi_inv);
+		
+		//metropolis step: afterwards, the updated config is again in gaugefield and p
+		//generate new random-number
+		rnd = hmc_rnd_gen.doub();
+		err = metropolis(rnd, beta, phi, phi_inv, &gaugefield, p, &new_field, new_p);
+		
+		//TODO if wanted, measurements can be added here...
+	}
+	
+	delete [] phi;
+	delete [] phi_inv;
+	delete [] chi;
+	delete [] p;
+	delete [] new_p;
+
+#else //_USEHMC_
+
 #ifdef _FERMIONS_
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Fermions
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,6 +133,7 @@ int main(int argc, char* argv[]) {
 	device.init_fermion_variables(&parameters, local_work_size, global_work_size, &inittimer);
 	device.simple_correlator_device(&copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer,  local_work_size, global_work_size, 1000);
 	device.finalize_fermions();
+	
 #endif
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,6 +160,8 @@ int main(int argc, char* argv[]) {
 
 	device.get_gaugefield_from_device(gaugefield, &copytime);
   
+#endif _USEHMC_
+
 #else //_PERFORM_BENCHMARKS_
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
