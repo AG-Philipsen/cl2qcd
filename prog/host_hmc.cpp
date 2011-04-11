@@ -98,15 +98,18 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
 }
 
 hmc_error generate_gaussian_spinorfield(hmc_spinor_field * out){
-	//TODO generate gaussian initial spinorfield
-	
-	return HMC_SUCCESS;
+	// SL: this is a layer that calls the all-purpose hmc_complex gaussianly-distributed vector
+	// with appropriate length and variance, i.e. SPINORFIELDSIZE and 1/2
+	return gaussianComplexVector((hmc_complex *)out, SPINORFIELDSIZE, 0.5);
+	// SL: not yet tested
 }
 
+
 hmc_error generate_gaussian_gauge_momenta(hmc_gauge_momentum * out){
-	//TODO generate gaussian initial gauge momenta
-	
-	return HMC_SUCCESS;
+	// SL: this is a layer that calls the all-purpose hmc_complex gaussianly-distributed vector
+	// with appropriate length and variance, i.e. GAUGEMOMENTASIZE and 1
+	return gaussianComplexVector((hmc_complex *)out, GAUGEMOMENTASIZE, 1.0);
+	// SL: not yet tested
 }
 
 hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_gauge_momentum * out){
@@ -157,6 +160,8 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta, hmc_spinor_field * phi
 	}else{
 		compare_prob = 1.0;
 	}
+	// SL: the following can be tuned, whether it is more costly to draw always the rnd number even when compare_prob=1
+	//     and whether the "if compare_prob==1" costs more or less than always evaluating the exp ...
 	if(rndnumber <= compare_prob){
 		// perform the change nonprimed->primed !
 		copy_gaugefield(new_field, field);
