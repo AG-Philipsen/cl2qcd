@@ -51,6 +51,12 @@ void local_plaquette(hmc_gaugefield * field, hmc_su3matrix * prod, int n, int t,
 
 // copy-functions within cpu memory, gaugefield-related layers
 hmc_error copy_gaugefield(hmc_gaugefield * source, hmc_gaugefield * dest);
+
+//gauge-momenta operations
+//TODO CP: these should go into a seperate file like host_operations_gaugemomenta.cpp
+
 hmc_error copy_gaugemomenta(hmc_gauge_momentum * source, hmc_gauge_momentum * dest);
+hmc_error gaugemomenta_squarenorm(hmc_gauge_momentum * in, hmc_float * result);
+hmc_error set_zero_gaugemomenta(hmc_gauge_momentum * in);
 
 #endif

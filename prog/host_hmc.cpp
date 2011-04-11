@@ -10,15 +10,11 @@
 
 //molecular dynamics update for the gauge momenta:
 //p_out = p_in - eps/2 force(u_in, phi)
-//it is assumed that the force term has already been computed
+//it is assumed that the force term has already been computed. then one only has real-vectors
 hmc_error md_update_gauge_momenta(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gauge_momentum * force_in, hmc_gauge_momentum * p_out){
-	hmc_complex tmp;
 	for(int i = 0; i<GAUGEMOMENTASIZE; i++){
-		tmp = force_in[i];
-		complexmult_real(&tmp, &eps);
-		p_out[i] = complexsubtract(&(p_in[i]), &tmp);
+		p_out[i] -= eps*force_in[i];
 	}
-		
 	return HMC_SUCCESS;
 }
 
@@ -85,7 +81,7 @@ hmc_complex s_fermion(hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi){
 	return scalar_product(phi, MdaggerMphi);
 }
 
-//S_gauge + S_fermion + 1/2*squarenorm(Pl)
+//S_gauge + S_fermion + S_gaugemomenta
 hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_momentum * p, hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi){
 	hmc_complex result;
 	hmc_complex tmp;
@@ -93,23 +89,22 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
 	(result).re += s_gauge(field, beta);
 	tmp  = s_fermion(phi, MdaggerMphi);
 	complexaccumulate(&result, &tmp);
-	
-	//TODO calc squarenorm of p, factor 1/2??
+	//s_gm = 1/2*squarenorm(Pl)
+	hmc_float s_gm;
+	gaugemomenta_squarenorm(p, &s_gm);
+	result.re += 0.5*s_gm;
 	
 	return result;
 }
 
-//TODO generate gaussian initial spinorfield
 hmc_error generate_gaussian_spinorfield(hmc_spinor_field * out){
-	
+	//TODO generate gaussian initial spinorfield
 	
 	return HMC_SUCCESS;
 }
 
-
-//TODO generate gaussian initial gauge momenta
 hmc_error generate_gaussian_gauge_momenta(hmc_gauge_momentum * out){
-	
+	//TODO generate gaussian initial gauge momenta
 	
 	return HMC_SUCCESS;
 }
@@ -120,21 +115,21 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
 	return HMC_SUCCESS;
 }
 
-
-hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * phi, hmc_gauge_momentum * out, hmc_spinor_field * phi_inv){
+//CP: it is assumed that phi_inv has been computed already
+hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_gauge_momentum * out){
 	//TODO fermion force
 	
 	return HMC_SUCCESS;
 }
 
 //CP: this essentially calculates a hmc_gauge_momentum vector
-//CP: one has to save the MdaggerM^-1 phi from here (in phi_inv) so that one does not have to do its calculation again later... (TODO in the end, this should be optional!!)
+//CP: it is assumed that phi_inv has been computed already
 hmc_error force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * phi, hmc_gauge_momentum * out, hmc_spinor_field * phi_inv){
 	//CP: make sure that the output field is set to zero
-	//TODO set_zero_gauge_momenta(out);
+	set_zero_gaugemomenta(out);
 	//add contributions
 	gauge_force(parameters, field, out);
-	fermion_force(parameters, field, phi, out, phi_inv);
+	fermion_force(parameters, field, phi, phi_inv, out);
 	return HMC_SUCCESS;
 }
 
@@ -183,14 +178,15 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
 	//intermediate states u_k, p_-1/2 and p_1/2 (CP: i guess one only needs one hmc_gaugefield for the update here, the second in the alg. is unused..)
 	hmc_gaugefield u_next;
 	
-	hmc_spinor_field* p_prev = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
-	hmc_spinor_field* p_next = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
-	hmc_spinor_field* force_tmp = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
+	hmc_gauge_momentum* p_prev = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
+	hmc_gauge_momentum* p_next = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
+	hmc_gauge_momentum* force_tmp = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
 	
 	//initial step
 	copy_gaugefield(u_in, &u_next);
 	copy_gaugemomenta(p_in, p_prev);
 
+	//TODO calc phi_inv;
 	force(parameters, &u_next, phi, force_tmp, phi_inv);
 	md_update_gauge_momenta(stepsize_half, p_prev, force_tmp, p_prev);
 	
@@ -198,6 +194,7 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
 	for(k = 1; k<steps-1; k++){
 		//calc u_next
 		md_update_gaugefield(stepsize, p_prev, &u_next);
+		//TODO calc phi_inv;
 		//calc p_next
 		force(parameters, &u_next, phi, force_tmp, phi_inv);
 		md_update_gauge_momenta(stepsize, p_prev,force_tmp, p_next);
@@ -206,6 +203,7 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
 	
 	//final step
 	md_update_gaugefield(stepsize, p_prev, &u_next);
+	//TODO calc phi_inv;
 	force(parameters, &u_next, phi, force_tmp, phi_inv);
 	md_update_gauge_momenta(stepsize_half, p_prev,force_tmp, p_next);
 

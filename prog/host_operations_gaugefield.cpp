@@ -829,7 +829,30 @@ hmc_error copy_gaugefield(hmc_gaugefield * source, hmc_gaugefield * dest){
 	return complexcopy((hmc_complex *)source, (hmc_complex *)dest, NC*NC*NDIM*VOL4D); // SL: not tested
 }
 
+
+//gauge-momenta operations
+//TODO CP: these should go into a seperate file like host_operations_gaugemomenta.cpp
+
 hmc_error copy_gaugemomenta(hmc_gauge_momentum * source, hmc_gauge_momentum * dest){
 	// copies source to destination within cpu memory, layer for momentum array
 	return complexcopy((hmc_complex *)source, (hmc_complex *)dest, NDIM*VOL4D); // SL: not tested
+}
+
+//gaugemomentum is just a hmc_float vector of length GAUGEMOMENTASIZE
+hmc_error gaugemomenta_squarenorm(hmc_gauge_momentum * in, hmc_float * result){
+	//make sure result is zero
+	(*result) = 0.;
+	hmc_float sum = 0.;
+	for(int i = 0; i<GAUGEMOMENTASIZE; i++){
+		sum += ((in)[i])*((in)[i]);
+	}
+	(*result) = sum;
+	return HMC_SUCCESS;
+}
+
+hmc_error set_zero_gaugemomenta(hmc_gauge_momentum * in){
+	for(int i = 0; i<GAUGEMOMENTASIZE; i++){
+		(in[i]) = 0.;
+	}
+	return HMC_SUCCESS;
 }
