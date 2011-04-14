@@ -39,10 +39,10 @@ hmc_error solver_eoprec(hmc_spinor_field* in, hmc_spinor_field* out, hmc_eoprec_
 	return HMC_SUCCESS;
 }
 
-hmc_error solver(hmc_spinor_field* in, hmc_spinor_field* out, hmc_spinor_field* b, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){
+//here, one can switch with use_cg = TRUE/FALSE which Matrix should be inverted
+//TODO think about if the use of CG = MdaggerM and BiCGStab = M is the best solution
+hmc_error solver(hmc_spinor_field* in, hmc_spinor_field* out, hmc_spinor_field* b, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax, int use_cg){
 	convert_to_kappa_format(in, kappa);
-	//!!CP: in the end this should be done with a compiler option
-	int use_cg = 0;
 	
 	if(use_cg)
 		cg(in, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
@@ -234,6 +234,7 @@ hmc_error bicgstab_eoprec(hmc_eoprec_spinor_field* inout,hmc_eoprec_spinor_field
   return HMC_SUCCESS;
 }
 
+//CP: this is directly defined with MdaggerM, since M is not hermitian for Wilson fermions
 hmc_error cg(hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){
  
 	hmc_spinor_field* rn = new hmc_spinor_field[SPINORFIELDSIZE];
@@ -255,13 +256,13 @@ hmc_error cg(hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugefield* 
   for(iter = 0; iter < cgmax; iter ++){  
     if(iter%iter_refresh==0){
 			//fresh start
-			M(inout,rn,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+			MdaggerM(inout,rn,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
 			saxpy(rn, source, &one, rn);
 			copy_spinor(rn, pn);
 			printf("true residue squared: %e\n",global_squarenorm(rn));
 		}
 		
-		M(pn,tmp,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+		MdaggerM(pn,tmp,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
 		tmp1 = scalar_product(rn, pn);
 		tmp2 = scalar_product(pn, tmp);
 		alpha = complexdivide(&tmp1, &tmp2);

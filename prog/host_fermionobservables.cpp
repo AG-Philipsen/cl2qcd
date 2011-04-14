@@ -2,6 +2,9 @@
 
 hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){
 
+	//CP: one needs bicgstab here for M
+	int use_cg = FALSE;
+	
   hmc_spinor_field in[SPINORFIELDSIZE];
 	hmc_spinor_field phi[SPINORFIELDSIZE];
 	init_spinorfield_cold(in);
@@ -17,7 +20,7 @@ hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_flo
 		if(!use_eo){
 			hmc_spinor_field b[SPINORFIELDSIZE];
 			create_point_source(b,k,0,0,kappa,mu,gaugefield);
-			solver(in, phi, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+			solver(in, phi, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax, use_cg);
 		}
 		else{
 			hmc_eoprec_spinor_field be[EOPREC_SPINORFIELDSIZE];

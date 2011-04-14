@@ -70,6 +70,7 @@ hmc_error gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigm
 	// SL: not yet tested
 }
 
+//CP: should this go into host_random.h ??
 void gaussianNormalPair(hmc_float * z1, hmc_float * z2){
 	// Box-Muller method, cartesian form, for extracting two independent normal standard real numbers
 	hmc_float u1 = 1.0 - rnd.doub();

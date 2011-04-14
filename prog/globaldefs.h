@@ -1,3 +1,4 @@
+
 #ifndef _GLOBALSH_
 #define _GLOBALSH_
 
@@ -6,13 +7,11 @@
 #define NDIM 4
 
 #ifndef _INKERNEL_
-//this should not be read by kernel at runtime
-//NTIME and NSPACE must be fixed at compile time
 
-//it could be a good idea to define Nt and Ns at compile time
-//usually you stick to one volume for quite a while anyways...
-#define NSPACE 4
+
 #define NTIME 4
+#define NSPACE 8
+
 #define VOLSPACE NSPACE*NSPACE*NSPACE
 #define VOL4D VOLSPACE*NTIME
 
@@ -48,3 +47,5 @@
 #endif
 
 #endif
+
+

@@ -108,11 +108,32 @@ hmc_error generate_gaussian_spinorfield(hmc_spinor_field * out){
 hmc_error generate_gaussian_gauge_momenta(hmc_gauge_momentum * out){
 	// SL: this is a layer that calls the all-purpose hmc_complex gaussianly-distributed vector
 	// with appropriate length and variance, i.e. GAUGEMOMENTASIZE and 1
+	// CP: hmc_gauge_momentum should be a real vector, so one should use GAUGEMOMENTASIZE/2 ?!?
 	return gaussianComplexVector((hmc_complex *)out, GAUGEMOMENTASIZE, 1.0);
 	// SL: not yet tested
 }
 
 hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_gauge_momentum * out){
+	hmc_float beta = (*parameters).get_beta();
+	int globalpos;
+	//out loop over sites
+	for(int t = 0; t < NTIME; t++){
+		for(int n = 0; n < VOLSPACE; n++){
+// 			globalpos = get_global_pos(n,t);
+			for(int mu = 0; mu < NDIM; mu ++){
+				for(int nu=0;nu<mu; nu++) {
+					for(int i = 0; i< (NC*NC-1); i++){
+						hmc_su3matrix prod;
+// 						local_plaquette(field, &prod, n, t, mu, nu );
+// 						hmc_float tmpfloat = 3. - trace_su3matrix(&prod).re;
+// 						plaq += tmpfloat;
+					}
+				}
+			}
+		}
+	}
+	
+	
 	//TODO gauge force
 	
 	return HMC_SUCCESS;
@@ -180,18 +201,27 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
 	int steps;	
 	int k;
 	hmc_float stepsize_half = 0.5*stepsize;
+	hmc_float kappa, mu, theta, chem_pot_re, chem_pot_im;
+	int cgmax;
 	//intermediate states u_k, p_-1/2 and p_1/2 (CP: i guess one only needs one hmc_gaugefield for the update here, the second in the alg. is unused..)
 	hmc_gaugefield u_next;
+	
+	//CP: one needs the cg solver here since one wants to invert MdaggerM
+	int use_cg = TRUE;
 	
 	hmc_gauge_momentum* p_prev = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
 	hmc_gauge_momentum* p_next = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
 	hmc_gauge_momentum* force_tmp = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
+	//TODO check usage of source here
+	hmc_spinor_field* source = new hmc_spinor_field[SPINORFIELDSIZE];
+	set_zero_spinorfield(source);
 	
 	//initial step
 	copy_gaugefield(u_in, &u_next);
 	copy_gaugemomenta(p_in, p_prev);
 
-	//TODO calc phi_inv;
+	//calc phi_inv;
+	solver(phi, phi_inv, source, &u_next, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax, use_cg);
 	force(parameters, &u_next, phi, force_tmp, phi_inv);
 	md_update_gauge_momenta(stepsize_half, p_prev, force_tmp, p_prev);
 	
@@ -199,7 +229,8 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
 	for(k = 1; k<steps-1; k++){
 		//calc u_next
 		md_update_gaugefield(stepsize, p_prev, &u_next);
-		//TODO calc phi_inv;
+		//calc phi_inv;
+		solver(phi, phi_inv, source, &u_next, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax, use_cg);
 		//calc p_next
 		force(parameters, &u_next, phi, force_tmp, phi_inv);
 		md_update_gauge_momenta(stepsize, p_prev,force_tmp, p_next);
@@ -208,7 +239,8 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
 	
 	//final step
 	md_update_gaugefield(stepsize, p_prev, &u_next);
-	//TODO calc phi_inv;
+	//calc phi_inv;
+	solver(phi, phi_inv, source, &u_next, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax, use_cg);
 	force(parameters, &u_next, phi, force_tmp, phi_inv);
 	md_update_gauge_momenta(stepsize_half, p_prev,force_tmp, p_next);
 
@@ -219,6 +251,7 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
 	delete [] p_prev;
 	delete [] p_next;
 	delete [] force_tmp;
+	delete [] source;
 	
 	return HMC_SUCCESS;
 }
