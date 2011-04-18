@@ -12,6 +12,12 @@ cur_dir = os.getcwd()
 prog_dir = cur_dir + '/prog/'
 data_dir = cur_dir + '/heatbath_benchmark/'
 
+os.chdir(data_dir)
+data_dir += '/' + str(dev2_defs.benchmark_number)
+#make sure data folder exists
+if not os.path.exists(data_dir):
+	os.makedirs(data_dir)
+
 #loop over different settings
 for i in range(dev2_defs.cpu_gpu_start, dev2_defs.cpu_gpu):
 	for j in range(dev2_defs.double_single_start, dev2_defs.double_single):
@@ -30,9 +36,10 @@ for i in range(dev2_defs.cpu_gpu_start, dev2_defs.cpu_gpu):
 				#go into specific folder
 				newdir_spec = newdir + '_' + dev2_defs.idx[l]
 				filename_spec = 'time_B_' + newdir_spec
-				os.chdir(new_dir_spec)
+				os.chdir(newdir_spec)
 				#cp file to data_dir
-				os.system('cp ' + filename_spec + data_dir) 
+				os.system('cp ' + filename_spec + ' ' + data_dir) 
+				os.chdir(prog_dir)
 			#collect data
 			os.chdir(data_dir)
 			for l in range(dev2_defs.nt_ns_start, dev2_defs.nt_ns):
@@ -41,6 +48,8 @@ for i in range(dev2_defs.cpu_gpu_start, dev2_defs.cpu_gpu):
 				newdir2 = 'benchmark_' + dev2_defs.idx[l]
 				#os.chdir(cur_dir + '/' + newdir + '/' + newdir2 + '/')
 				os.system('cat ' + filename_spec + ' >>  ' + filename) 
+				#remove specific data file
+				os.system('rm ' + filename_spec)
 
   
 

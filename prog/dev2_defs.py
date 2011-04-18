@@ -6,13 +6,14 @@
 cpu_gpu = 2
 cpu_gpu_start = 1
 double_single = 2
-double_single_start = 1
+double_single_start = 0
 reconstruct = 2
-reconstruct_start = 1
-nt_ns = 1
+reconstruct_start = 0
+nt_ns = 6
 nt_ns_start = 0
 obs_start = 0
 obs = 7
+benchmark_number = 1
 
 #arrays with values for the Makefile and globaldefs.h
 Nt = '4', '4', '4', '4', '4',  '4',  '4',  '4',  '6',  '6',  '6',  '8',  '8',  '8',  '8',  '8',  '8',  '8',  '10',  '10',  '12',  '14'

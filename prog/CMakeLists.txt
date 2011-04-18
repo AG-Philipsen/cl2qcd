@@ -97,6 +97,17 @@ option( USE_NPBC_S "Apply non-periodic BC (spatial)" OFF )
 if( USE_NPBC_S )
 	add_definitions( -D_NPBC_S_ )
 endif( USE_NPBC_S )
+set( EXPIQ 2 CACHE STRING "Define order to which exp(iQ) is exact (2,3,ALL,MORNINGSTAR)")
+if(EXPIQ MATCHES "2")
+        add_definitions( -D_EXPONENTIATE_ALGEBRA_ORDER_2_ )
+elseif(EXPIQ MATCHES "3")
+        add_definitions( -D_EXPONENTIATE_ALGEBRA_ORDER_3_ )
+elseif(EXPIQ MATCHES "ALL")
+        add_definitions( -D_EXPONENTIATE_ALGEBRA_ORDER_ALL_ORDERS_ )
+elseif(EXPIQ MATCHES "MORNINGSTAR")
+        add_definitions( -D_USE_MORNINGSTAR_PEARDON_ )
+endif (EXPIQ MATCHES "2")
+
 
 add_executable( hmc
 	hmc.cpp

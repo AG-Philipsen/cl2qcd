@@ -4,7 +4,7 @@
 import os
 import sys
 import shutil
-import loewe_defs
+import dev2_defs
 
 
 #(benchmark_id) NTIME   NSPACE   VOL4D   totaltime   inittimer   polytime   plaqtime   updatetime   overrelaxtime  (all times average per time-measurement)
@@ -28,7 +28,7 @@ set xrange[0:"""
 options = """ with linespoints  lw 5 """
 
 cur_dir = os.getcwd()
-data_dir = cur_dir + '/heatbath_benchmark/'
+data_dir = cur_dir + '/heatbath_benchmark/' + str(dev2_defs.benchmark_number)
 
 cter = 0
 #there are at most 8 files
@@ -39,18 +39,18 @@ yaxis = 'Totaltime [ms]', 'Inittime [ms]', 'Copytime [ms]', 'Polyakovloop [ms]',
 os.chdir(data_dir)
 
 #make plots with all data in it
-for i in range(loewe_defs.cpu_gpu_start, loewe_defs.cpu_gpu):
-	for j in range(loewe_defs.double_single_start, loewe_defs.double_single):
-		for k in range (loewe_defs.reconstruct_start, loewe_defs.reconstruct):
+for i in range(dev2_defs.cpu_gpu_start, dev2_defs.cpu_gpu):
+	for j in range(dev2_defs.double_single_start, dev2_defs.double_single):
+		for k in range (dev2_defs.reconstruct_start, dev2_defs.reconstruct):
 			cter+=1
-			newdir = loewe_defs.cpu_gpu_folder[i] + '_' + loewe_defs.double_single_folder[j] + '_' + loewe_defs.reconstruct_folder[k]
+			newdir = dev2_defs.cpu_gpu_folder[i] + '_' + dev2_defs.double_single_folder[j] + '_' + dev2_defs.reconstruct_folder[k]
 			filename = 'time_B_' + newdir
-			title = '\"' + loewe_defs.cpu_gpu_folder[i] + loewe_defs.double_single_folder[j] + loewe_defs.reconstruct_folder[k]+ '\"'
+			title = '\"' + dev2_defs.cpu_gpu_folder[i] + dev2_defs.double_single_folder[j] + dev2_defs.reconstruct_folder[k]+ '\"'
 			filearray.append(filename)
 			titlearray.append(title)
 f = open('./plot', 'w')
-f.write(s1 + s4 + loewe_defs.Vol[loewe_defs.nt_ns - 1] + ']\n')
-for l in range(loewe_defs.obs_start, loewe_defs.obs):
+f.write(s1 + s4 + dev2_defs.Vol[dev2_defs.nt_ns - 1] + ']\n')
+for l in range(dev2_defs.obs_start, dev2_defs.obs):
 	f.write(s2 + str(l) + s3 + yaxis[l] + '\"\n plot ')
 	for m in range(0, cter):
 		#divide by 1000 to get to millisecs
@@ -65,20 +65,20 @@ os.system('rm plot')
 cter = 0
 filearray = []
 titlearray = []
-if (loewe_defs.cpu_gpu_start == 0):
+if (dev2_defs.cpu_gpu_start == 0):
 	i = 0
-	for j in range(loewe_defs.double_single_start, loewe_defs.double_single):
-		for k in range (loewe_defs.reconstruct_start, loewe_defs.reconstruct):
+	for j in range(dev2_defs.double_single_start, dev2_defs.double_single):
+		for k in range (dev2_defs.reconstruct_start, dev2_defs.reconstruct):
 			cter+=1
-			newdir = loewe_defs.cpu_gpu_folder[i] + '_' + loewe_defs.double_single_folder[j] + '_' + loewe_defs.reconstruct_folder[k]
+			newdir = dev2_defs.cpu_gpu_folder[i] + '_' + dev2_defs.double_single_folder[j] + '_' + dev2_defs.reconstruct_folder[k]
 			filename = 'time_B_' + newdir
-			title = '\"' + loewe_defs.cpu_gpu_folder[i] + loewe_defs.double_single_folder[j] + loewe_defs.reconstruct_folder[k]+ '\"'
+			title = '\"' + dev2_defs.cpu_gpu_folder[i] + dev2_defs.double_single_folder[j] + dev2_defs.reconstruct_folder[k]+ '\"'
 			filearray.append(filename)
 			titlearray.append(title)
 	f = open('./plot', 'w')
-	f.write(s1 + s4 + loewe_defs.Vol[loewe_defs.nt_ns - 1] + ']\n')
-	for l in range(loewe_defs.obs_start, loewe_defs.obs):
-		f.write(s2 + loewe_defs.cpu_gpu_folder[i] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
+	f.write(s1 + s4 + dev2_defs.Vol[dev2_defs.nt_ns - 1] + ']\n')
+	for l in range(dev2_defs.obs_start, dev2_defs.obs):
+		f.write(s2 + dev2_defs.cpu_gpu_folder[i] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
 		for m in range(0, cter):
 			#divide by 1000 to get to millisecs
 			f.write('\"./' + filearray[m] + '\" using 5:($' + str(l+1+5) + '/1000.) ' + options + ' title ' + titlearray[m])
@@ -92,20 +92,20 @@ if (loewe_defs.cpu_gpu_start == 0):
 cter = 0
 filearray = []
 titlearray = []
-if (loewe_defs.cpu_gpu == 2):
+if (dev2_defs.cpu_gpu == 2):
 	i = 1
-	for j in range(loewe_defs.double_single_start, loewe_defs.double_single):
-		for k in range (loewe_defs.reconstruct_start, loewe_defs.reconstruct):
+	for j in range(dev2_defs.double_single_start, dev2_defs.double_single):
+		for k in range (dev2_defs.reconstruct_start, dev2_defs.reconstruct):
 			cter+=1
-			newdir = loewe_defs.cpu_gpu_folder[i] + '_' + loewe_defs.double_single_folder[j] + '_' + loewe_defs.reconstruct_folder[k]
+			newdir = dev2_defs.cpu_gpu_folder[i] + '_' + dev2_defs.double_single_folder[j] + '_' + dev2_defs.reconstruct_folder[k]
 			filename = 'time_B_' + newdir
-			title = '\"' + loewe_defs.cpu_gpu_folder[i] + loewe_defs.double_single_folder[j] + loewe_defs.reconstruct_folder[k]+ '\"'
+			title = '\"' + dev2_defs.cpu_gpu_folder[i] + dev2_defs.double_single_folder[j] + dev2_defs.reconstruct_folder[k]+ '\"'
 			filearray.append(filename)
 			titlearray.append(title)
 	f = open('./plot', 'w')
-	f.write(s1 + s4 + loewe_defs.Vol[loewe_defs.nt_ns - 1] + ']\n')
-	for l in range(loewe_defs.obs_start, loewe_defs.obs):
-		f.write(s2 + loewe_defs.cpu_gpu_folder[i] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
+	f.write(s1 + s4 + dev2_defs.Vol[dev2_defs.nt_ns - 1] + ']\n')
+	for l in range(dev2_defs.obs_start, dev2_defs.obs):
+		f.write(s2 + dev2_defs.cpu_gpu_folder[i] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
 		for m in range(0, cter):
 			#divide by 1000 to get to millisecs
 			f.write('\"./' + filearray[m] + '\" using 5:($' + str(l+1+5) + '/1000.) ' + options + ' title ' + titlearray[m])
@@ -119,20 +119,20 @@ if (loewe_defs.cpu_gpu == 2):
 cter = 0
 filearray = []
 titlearray = []
-if (loewe_defs.double_single_start == 0):
+if (dev2_defs.double_single_start == 0):
 	j = 0
-	for i in range(loewe_defs.cpu_gpu_start, loewe_defs.cpu_gpu):
-		for k in range (loewe_defs.reconstruct_start, loewe_defs.reconstruct):
+	for i in range(dev2_defs.cpu_gpu_start, dev2_defs.cpu_gpu):
+		for k in range (dev2_defs.reconstruct_start, dev2_defs.reconstruct):
 			cter+=1
-			newdir = loewe_defs.cpu_gpu_folder[i] + '_' + loewe_defs.double_single_folder[j] + '_' + loewe_defs.reconstruct_folder[k]
+			newdir = dev2_defs.cpu_gpu_folder[i] + '_' + dev2_defs.double_single_folder[j] + '_' + dev2_defs.reconstruct_folder[k]
 			filename = 'time_B_' + newdir
-			title = '\"' + loewe_defs.cpu_gpu_folder[i] + loewe_defs.double_single_folder[j] + loewe_defs.reconstruct_folder[k]+ '\"'
+			title = '\"' + dev2_defs.cpu_gpu_folder[i] + dev2_defs.double_single_folder[j] + dev2_defs.reconstruct_folder[k]+ '\"'
 			filearray.append(filename)
 			titlearray.append(title)
 	f = open('./plot', 'w')
-	f.write(s1 + s4 + loewe_defs.Vol[loewe_defs.nt_ns - 1] + ']\n')
-	for l in range(loewe_defs.obs_start, loewe_defs.obs):
-		f.write(s2 + loewe_defs.double_single_folder[j] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
+	f.write(s1 + s4 + dev2_defs.Vol[dev2_defs.nt_ns - 1] + ']\n')
+	for l in range(dev2_defs.obs_start, dev2_defs.obs):
+		f.write(s2 + dev2_defs.double_single_folder[j] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
 		for m in range(0, cter):
 			#divide by 1000 to get to millisecs
 			f.write('\"./' + filearray[m] + '\" using 5:($' + str(l+1+5) + '/1000.) ' + options + ' title ' + titlearray[m])
@@ -146,20 +146,20 @@ if (loewe_defs.double_single_start == 0):
 cter = 0
 filearray = []
 titlearray = []
-if (loewe_defs.double_single == 2):
+if (dev2_defs.double_single == 2):
 	j = 1
-	for i in range(loewe_defs.cpu_gpu_start, loewe_defs.cpu_gpu):
-		for k in range (loewe_defs.reconstruct_start, loewe_defs.reconstruct):
+	for i in range(dev2_defs.cpu_gpu_start, dev2_defs.cpu_gpu):
+		for k in range (dev2_defs.reconstruct_start, dev2_defs.reconstruct):
 			cter+=1
-			newdir = loewe_defs.cpu_gpu_folder[i] + '_' + loewe_defs.double_single_folder[j] + '_' + loewe_defs.reconstruct_folder[k]
+			newdir = dev2_defs.cpu_gpu_folder[i] + '_' + dev2_defs.double_single_folder[j] + '_' + dev2_defs.reconstruct_folder[k]
 			filename = 'time_B_' + newdir
-			title = '\"' + loewe_defs.cpu_gpu_folder[i] + loewe_defs.double_single_folder[j] + loewe_defs.reconstruct_folder[k]+ '\"'
+			title = '\"' + dev2_defs.cpu_gpu_folder[i] + dev2_defs.double_single_folder[j] + dev2_defs.reconstruct_folder[k]+ '\"'
 			filearray.append(filename)
 			titlearray.append(title)
 	f = open('./plot', 'w')
-	f.write(s1 + s4 + loewe_defs.Vol[loewe_defs.nt_ns - 1] + ']\n')
-	for l in range(loewe_defs.obs_start, loewe_defs.obs):
-		f.write(s2 + loewe_defs.double_single_folder[j] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
+	f.write(s1 + s4 + dev2_defs.Vol[dev2_defs.nt_ns - 1] + ']\n')
+	for l in range(dev2_defs.obs_start, dev2_defs.obs):
+		f.write(s2 + dev2_defs.double_single_folder[j] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
 		for m in range(0, cter):
 			#divide by 1000 to get to millisecs
 			f.write('\"./' + filearray[m] + '\" using 5:($' + str(l+1+5) + '/1000.) ' + options + ' title ' + titlearray[m])
@@ -173,20 +173,20 @@ if (loewe_defs.double_single == 2):
 cter = 0
 filearray = []
 titlearray = []
-if (loewe_defs.reconstruct_start == 0):
+if (dev2_defs.reconstruct_start == 0):
 	k = 0
-	for i in range(loewe_defs.cpu_gpu_start, loewe_defs.cpu_gpu):
-		for j in range(loewe_defs.double_single_start, loewe_defs.double_single):
+	for i in range(dev2_defs.cpu_gpu_start, dev2_defs.cpu_gpu):
+		for j in range(dev2_defs.double_single_start, dev2_defs.double_single):
 			cter+=1
-			newdir = loewe_defs.cpu_gpu_folder[i] + '_' + loewe_defs.double_single_folder[j] + '_' + loewe_defs.reconstruct_folder[k]
+			newdir = dev2_defs.cpu_gpu_folder[i] + '_' + dev2_defs.double_single_folder[j] + '_' + dev2_defs.reconstruct_folder[k]
 			filename = 'time_B_' + newdir
-			title = '\"' + loewe_defs.cpu_gpu_folder[i] + loewe_defs.double_single_folder[j] + loewe_defs.reconstruct_folder[k]+ '\"'
+			title = '\"' + dev2_defs.cpu_gpu_folder[i] + dev2_defs.double_single_folder[j] + dev2_defs.reconstruct_folder[k]+ '\"'
 			filearray.append(filename)
 			titlearray.append(title)
 	f = open('./plot', 'w')
-	f.write(s1 + s4 + loewe_defs.Vol[loewe_defs.nt_ns - 1] + ']\n')
-	for l in range(loewe_defs.obs_start, loewe_defs.obs):
-		f.write(s2 + loewe_defs.reconstruct_folder[k] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
+	f.write(s1 + s4 + dev2_defs.Vol[dev2_defs.nt_ns - 1] + ']\n')
+	for l in range(dev2_defs.obs_start, dev2_defs.obs):
+		f.write(s2 + dev2_defs.reconstruct_folder[k] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
 		for m in range(0, cter):
 			#divide by 1000 to get to millisecs
 			f.write('\"./' + filearray[m] + '\" using 5:($' + str(l+1+5) + '/1000.) ' + options + ' title ' + titlearray[m])
@@ -200,20 +200,20 @@ if (loewe_defs.reconstruct_start == 0):
 cter = 0
 filearray = []
 titlearray = []
-if (loewe_defs.reconstruct == 2):
+if (dev2_defs.reconstruct == 2):
 	k = 1
-	for i in range(loewe_defs.cpu_gpu_start, loewe_defs.cpu_gpu):
-		for j in range(loewe_defs.double_single_start, loewe_defs.double_single):
+	for i in range(dev2_defs.cpu_gpu_start, dev2_defs.cpu_gpu):
+		for j in range(dev2_defs.double_single_start, dev2_defs.double_single):
 			cter+=1
-			newdir = loewe_defs.cpu_gpu_folder[i] + '_' + loewe_defs.double_single_folder[j] + '_' + loewe_defs.reconstruct_folder[k]
+			newdir = dev2_defs.cpu_gpu_folder[i] + '_' + dev2_defs.double_single_folder[j] + '_' + dev2_defs.reconstruct_folder[k]
 			filename = 'time_B_' + newdir
-			title = '\"' + loewe_defs.cpu_gpu_folder[i] + loewe_defs.double_single_folder[j] + loewe_defs.reconstruct_folder[k]+ '\"'
+			title = '\"' + dev2_defs.cpu_gpu_folder[i] + dev2_defs.double_single_folder[j] + dev2_defs.reconstruct_folder[k]+ '\"'
 			filearray.append(filename)
 			titlearray.append(title)
 	f = open('./plot', 'w')
-	f.write(s1 + s4 + loewe_defs.Vol[loewe_defs.nt_ns - 1] + ']\n')
-	for l in range(loewe_defs.obs_start, loewe_defs.obs):
-		f.write(s2 + loewe_defs.reconstruct_folder[k] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
+	f.write(s1 + s4 + dev2_defs.Vol[dev2_defs.nt_ns - 1] + ']\n')
+	for l in range(dev2_defs.obs_start, dev2_defs.obs):
+		f.write(s2 + dev2_defs.reconstruct_folder[k] + '_' + str(l) + s3 + yaxis[l] + '\"\n plot ')
 		for m in range(0, cter):
 			#divide by 1000 to get to millisecs
 			f.write('\"./' + filearray[m] + '\" using 5:($' + str(l+1+5) + '/1000.) ' + options + ' title ' + titlearray[m])

@@ -46,6 +46,12 @@
 #define NUMTHREADS 1
 #endif
 
+// Definition of numeric constants for the symmetric structure constants d_ijk of su(3)
+#define F_1_2   (static_cast<hmc_float>(0.5))					// 1/2
+#define F_1_2S3 (static_cast<hmc_float>(0.288675134594813))		// 1/(2*sqrt(3))
+#define F_1_S3  (static_cast<hmc_float>(0.577350269189626))		// 1/sqrt(3)
+
+
 #endif
 
 

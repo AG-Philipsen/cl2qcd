@@ -38,6 +38,7 @@ hmc_error md_update_gaugefield(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gau
 	return HMC_SUCCESS;
 }
 
+#ifdef _FERMIONS_
 //phi = D chi
 hmc_error md_update_spinorfield(hmc_spinor_field * in, hmc_spinor_field * out, hmc_gaugefield * field, inputparameters * parameters){
 	//TODO extract needed parameters from paramters, or transform this into M itself
@@ -47,6 +48,7 @@ hmc_error md_update_spinorfield(hmc_spinor_field * in, hmc_spinor_field * out, h
 	
 	return HMC_SUCCESS;
 }
+#endif
 
 //TODO chech definition of beta again, is it 2/g^2??
 // beta * sum_links sum_nu>mu ( 3 - Tr Re Plaquette )
@@ -75,11 +77,13 @@ hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta){
 	return (beta*2.0)/(VOL4D*NDIM*(NDIM-1)*NC)*(1.- plaq);
 }
 
+#ifdef _FERMIONS_
 // sum_links phi*_i (M^+M)_ij^-1 phi_j
 // here it is assumed that the rhs has already been computed... (because usually it has been during the leapfrog..)
 hmc_complex s_fermion(hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi){
 	return scalar_product(phi, MdaggerMphi);
 }
+#endif _FERMIONS_
 
 //S_gauge + S_fermion + S_gaugemomenta
 hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_momentum * p, hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi){
@@ -87,8 +91,10 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
 	hmc_complex tmp;
 	(result) = {0.,0.};
 	(result).re += s_gauge(field, beta);
+#ifdef _FERMIONS_
 	tmp  = s_fermion(phi, MdaggerMphi);
 	complexaccumulate(&result, &tmp);
+#endif
 	//s_gm = 1/2*squarenorm(Pl)
 	hmc_float s_gm;
 	gaugemomenta_squarenorm(p, &s_gm);
@@ -97,12 +103,14 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
 	return result;
 }
 
+#ifdef _FERMIONS_
 hmc_error generate_gaussian_spinorfield(hmc_spinor_field * out){
 	// SL: this is a layer that calls the all-purpose hmc_complex gaussianly-distributed vector
 	// with appropriate length and variance, i.e. SPINORFIELDSIZE and 1/2
 	return gaussianComplexVector((hmc_complex *)out, SPINORFIELDSIZE, 0.5);
 	// SL: not yet tested
 }
+#endif
 
 hmc_error generate_gaussian_gauge_momenta(hmc_gauge_momentum * out){
 	// SL: this is a layer that calls the all-purpose hmc_complex gaussianly-distributed vector
@@ -138,20 +146,28 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
 	return HMC_SUCCESS;
 }
 
+#ifdef _FERMIONS_
 //CP: it is assumed that phi_inv has been computed already
 hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_gauge_momentum * out){
 	//TODO fermion force
 	
 	return HMC_SUCCESS;
 }
+#endif
 
 //CP: this essentially calculates a hmc_gauge_momentum vector
 //CP: it is assumed that phi_inv has been computed already
-hmc_error force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * phi, hmc_gauge_momentum * out, hmc_spinor_field * phi_inv){
+hmc_error force(inputparameters * parameters, hmc_gaugefield * field
+#ifdef _FERMIONS_
+	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv
+#endif
+	, hmc_gauge_momentum * out){
 	//CP: make sure that the output field is set to zero
 	set_zero_gaugemomenta(out);
 	//add contributions
+#ifdef _FERMIONS_
 	gauge_force(parameters, field, out);
+#endif
 	fermion_force(parameters, field, phi, phi_inv, out);
 	return HMC_SUCCESS;
 }
@@ -194,7 +210,15 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta, hmc_spinor_field * phi
 
 //CP: as in Gattringer/Lang, QCD on the Lattice, 8.2, p. 197
 //TODO lateron, a multi-step alg. with different stepsizes for gauge and fermion force should be implemented
-hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gauge_momentum * p_in, hmc_spinor_field * phi, hmc_gaugefield * u_out, hmc_gauge_momentum * p_out, hmc_spinor_field * phi_inv){
+hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gauge_momentum * p_in
+#ifdef _FERMIONS_
+	, hmc_spinor_field * phi
+#endif
+	, hmc_gaugefield * u_out, hmc_gauge_momentum * p_out
+#ifdef _FERMIONS_
+	, hmc_spinor_field * phi_inv
+#endif
+	){
 	//TODO get steps and stepsize from parameters (and perhaps give them more fancy names (tau...))
 	hmc_float stepsize;
 	int steps;	
@@ -212,35 +236,55 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
 	hmc_gauge_momentum* p_next = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
 	hmc_gauge_momentum* force_tmp = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
 	//TODO check usage of source here
+#ifdef _FERMIONS_
 	hmc_spinor_field* source = new hmc_spinor_field[SPINORFIELDSIZE];
 	set_zero_spinorfield(source);
-	
+#endif
+
 	//initial step
 	copy_gaugefield(u_in, &u_next);
 	copy_gaugemomenta(p_in, p_prev);
 
+#ifdef _FERMIONS_
 	//calc phi_inv;
 	solver(phi, phi_inv, source, &u_next, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax, use_cg);
-	force(parameters, &u_next, phi, force_tmp, phi_inv);
+#endif
+	force(parameters, &u_next 
+		#ifdef _FERMIONS_
+		, phi, phi_inv
+		#endif
+		, force_tmp );
 	md_update_gauge_momenta(stepsize_half, p_prev, force_tmp, p_prev);
 	
 	//intermediate steps
 	for(k = 1; k<steps-1; k++){
 		//calc u_next
 		md_update_gaugefield(stepsize, p_prev, &u_next);
+#ifdef _FERMIONS_
 		//calc phi_inv;
 		solver(phi, phi_inv, source, &u_next, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax, use_cg);
+#endif
 		//calc p_next
-		force(parameters, &u_next, phi, force_tmp, phi_inv);
+		force(parameters, &u_next 
+			#ifdef _FERMIONS_
+			, phi, phi_inv
+			#endif
+			, force_tmp );
 		md_update_gauge_momenta(stepsize, p_prev,force_tmp, p_next);
 		copy_gaugemomenta(p_next, p_prev);
 	}
 	
 	//final step
 	md_update_gaugefield(stepsize, p_prev, &u_next);
+#ifdef _FERMIONS_
 	//calc phi_inv;
 	solver(phi, phi_inv, source, &u_next, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax, use_cg);
-	force(parameters, &u_next, phi, force_tmp, phi_inv);
+#endif
+	force(parameters, &u_next 
+		#ifdef _FERMIONS_
+		, phi, phi_inv
+		#endif
+		, force_tmp);
 	md_update_gauge_momenta(stepsize_half, p_prev,force_tmp, p_next);
 
 	//copy final results
@@ -250,7 +294,9 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
 	delete [] p_prev;
 	delete [] p_next;
 	delete [] force_tmp;
+#ifdef _FERMIONS_
 	delete [] source;
+#endif
 	
 	return HMC_SUCCESS;
 }
@@ -287,13 +333,18 @@ hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix
 	//     either by truncated "smart" series expansion to order eps^2 or eps^3, or by direct evaluation of the series
 	// NOTE: the code here is strictly SU(3)-specific! (and mostly generated by other code...)
 
-	#ifndef EXPONENTIATE_ALGEBRA_ALL_ORDERS
+	#ifdef _USE_MORNGINGSTAR_PEARDON_
+	//TODO CP: this has to be implemented
+	
+	#else
+
+	#ifndef _EXPONENTIATE_ALGEBRA_ALL_ORDERS_
 
 	// Phase 1: calculate (number) coefficients for the reconstruction
 	hmc_float beta_0, gamma_0;
 	hmc_float beta[8], gamma[8];
 	// the above are: coefficients for identity (beta_0+i*gamma_0), and coefficients for the T_l, namely T_L*(beta_l + i*gamma_l).
-	#ifdef EXPONENTIATE_ALGEBRA_ORDER_2
+	#ifdef _EXPONENTIATE_ALGEBRA_ORDER_2_
 		hmc_float pR, pQ[8], pPtilde[8];
 
 		pR = in[0]*in[0]+in[1]*in[1]+in[2]*in[2]+in[3]*in[3]+in[4]*in[4]+in[5]*in[5]+in[6]*in[6]+in[7]*in[7];
@@ -319,7 +370,7 @@ hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix
 			gamma[il]= epsilon*in[il];
 		}
 	#endif // EXPONENTIATE_ALGEBRA_ORDER_2
-	#ifdef EXPONENTIATE_ALGEBRA_ORDER_3
+	#ifdef _EXPONENTIATE_ALGEBRA_ORDER_3_
 		hmc_float pR, pQ[8], pPtilde[8];
 		hmc_float pT, pS[8], pU[8];
 
@@ -391,9 +442,11 @@ hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix
 		#endif // _RECONSTRUCT_TWELVE_
 		project_su3(out);
 	
-	#else  // (ifndef) EXPONENTIATE_ALGEBRA_ALL_ORDERS
+	#else  // (ifndef) _EXPONENTIATE_ALGEBRA_ALL_ORDERS_s
 		// this is TODO ! the case where one actually evaluates -as matrices- many orders of exp(i*e*P)=1+i*e*P+(1/2)(i*e*P) + ...
 	#endif // EXPONENTIATE_ALGEBRA_ALL_ORDERS
+	
+	#endif // _USE_MORNGINGSTAR_PEARDON_
 	
 	return HMC_SUCCESS;
 }
