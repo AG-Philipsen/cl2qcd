@@ -9,7 +9,7 @@
 #ifndef _INKERNEL_
 
 
-#define NTIME 4
+#define NTIME 8
 #define NSPACE 8
 
 #define VOLSPACE NSPACE*NSPACE*NSPACE
