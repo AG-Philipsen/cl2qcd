@@ -438,30 +438,40 @@ void ddaggerd_calc (hmc_spinor * spinout, int pos, int t, hmc_spinor_field* in, 
 
 	int mu;
 	//outer loop
-	for (mu = 0; mu<NDIM; mu++){
-	
+	for (mu = 0; mu<NDIM; mu++)
+	{
+
+#define SET3( dest, val1, val2, val3 ) \
+{ \
+	dest[0] = val1; \
+	dest[1] = val2; \
+	dest[2] = val3; \
+}
+
 		//directions where calculations have to be carried out
 		if(mu == 0){
-			nu = {1,2,3};
-			nu_spat = {1,2,3};
-			nu_time = {0,0,0};
+			SET3(nu, 1,2,3);
+			SET3(nu_spat, 1,2,3);
+			SET3(nu_time, 0,0,0);
 		}
 		else if (mu == 1){
-			nu = {0,2,3};
-			nu_spat = {0,2,3};
-			nu_time = {1,0,0};
+			SET3(nu, 0,2,3);
+			SET3(nu_spat, 0,2,3);
+			SET3(nu_time, 1,0,0);
 		}
 		else if (mu == 2){
-			nu = {0,1,3};
-			nu_spat = {0,1,3};
-			nu_time = {1,0,0};
+			SET3(nu, 0,1,3);
+			SET3(nu_spat, 0,1,3);
+			SET3(nu_time, 1,0,0);
 		}
 		else{
-			nu = {0,1,2};
-			nu_spat = {0,1,2};
-			nu_time = {1,0,0};
+			SET3(nu, 0,1,2);
+			SET3(nu_spat, 0,1,2);
+			SET3(nu_time, 1,0,0);
 		}
-	
+
+#undef SET3
+
 		//get new positions
 		if(mu == 0){
 			next_time = (t+1)%NTIME; 
