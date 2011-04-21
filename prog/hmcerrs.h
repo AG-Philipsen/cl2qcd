@@ -1,6 +1,13 @@
+/** @file
+ * Error codes for HMC
+ */
+
 #ifndef _HMCERRSH_
 #define _HMCERRSH_
 
+/**
+ * Error type
+ */
 typedef int hmc_error;
 
 const hmc_error HMC_SUCCESS =  0;

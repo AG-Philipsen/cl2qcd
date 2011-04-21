@@ -1,3 +1,8 @@
+/** @file
+ *
+ * Everything required by main()
+ */
+
 #ifndef _HMCH_
 #define _HMCH_
 //should only be included in main prog
