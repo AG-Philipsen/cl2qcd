@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
 
 	device.get_gaugefield_from_device(gaugefield, &copytime);
   
-#endif _USEHMC_
+#endif /* _USEHMC_ */
 
 #else //_PERFORM_BENCHMARKS_
 

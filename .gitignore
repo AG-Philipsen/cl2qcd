@@ -3,6 +3,7 @@
 **/*.swp
 **/*.o
 **/*.a
+**/*.pyc
 
 doc/*.toc
 doc/*.aux

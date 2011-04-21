@@ -83,7 +83,7 @@ hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta){
 hmc_complex s_fermion(hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi){
 	return scalar_product(phi, MdaggerMphi);
 }
-#endif _FERMIONS_
+#endif /* _FERMIONS_ */
 
 //S_gauge + S_fermion + S_gaugemomenta
 hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_momentum * p, hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi){
@@ -165,10 +165,10 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 	//CP: make sure that the output field is set to zero
 	set_zero_gaugemomenta(out);
 	//add contributions
-	gauge_force(parameters, field, out);
 #ifdef _FERMIONS_
 	fermion_force(parameters, field, phi, phi_inv, out);
 #endif
+	gauge_force(parameters, field, out);
 	return HMC_SUCCESS;
 }
 
