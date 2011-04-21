@@ -107,7 +107,14 @@ elseif(EXPIQ MATCHES "ALL")
 elseif(EXPIQ MATCHES "MORNINGSTAR")
         add_definitions( -D_USE_MORNINGSTAR_PEARDON_ )
 endif (EXPIQ MATCHES "2")
-
+option( USE_SMEARING "Use smearing of gauge-links" OFF)
+if(USE_SMEARING)
+	add_definitions( -D_USESMEARING_ )
+endif(USE_SMEARING)
+option( USE_EOPREC "Use even-odd-preconditioning" OFF)
+if(USE_EOPREC)
+	add_definitions( -D_USEEOPREC_ )
+endif(USE_EOPREC)
 
 add_executable( hmc
 	hmc.cpp
