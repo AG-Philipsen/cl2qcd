@@ -165,10 +165,10 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 	//CP: make sure that the output field is set to zero
 	set_zero_gaugemomenta(out);
 	//add contributions
+	gauge_force(parameters, field, out);
 #ifdef _FERMIONS_
 	fermion_force(parameters, field, phi, phi_inv, out);
 #endif
-	gauge_force(parameters, field, out);
 	return HMC_SUCCESS;
 }
 
