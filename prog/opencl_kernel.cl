@@ -1,4 +1,6 @@
-
+/** @file
+ * OpenCL kernels
+ */
 
 /*
 void inline dslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos, int t, __global hmc_spinor_field* in,  __global hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im){

@@ -1,3 +1,7 @@
+/** @file
+ * Device code for lattice geometry handling
+ */
+
 //opencl_geometry.cl
 
 int inline get_global_pos(int spacepos, int t){

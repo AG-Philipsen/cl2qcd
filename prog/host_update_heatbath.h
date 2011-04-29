@@ -1,5 +1,10 @@
+/** @file
+ * Heatbath update
+ */
+
 #ifndef _UPDATE_HEATBATHH_
 #define _UPDATE_HEATBATHH_
+
 #include "globaldefs.h"
 #include "types.h"
 #include "hmcerrs.h"
@@ -17,4 +22,4 @@ void heatbath_overrelax (hmc_gaugefield * gaugefield);
 void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float beta);
 void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield);
 
-#endif
+#endif /* _UPDATE_HEATBATHH_ */

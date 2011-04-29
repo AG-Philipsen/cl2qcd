@@ -1,3 +1,7 @@
+/** @file
+ * Inclusion and definition of types and definitions required in the Device code.
+ */
+
 //opencl_header.cl
 
 #ifdef _USEDOUBLEPREC_
@@ -20,5 +24,3 @@
 #define SU3SIZE NC*NC
 #define STAPLEMATRIXSIZE NC*NC
 #endif
-
-

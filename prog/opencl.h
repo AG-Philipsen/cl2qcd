@@ -1,3 +1,6 @@
+/** @file
+ * OpenCL device managment and everything executed on them.
+ */
 #ifndef _MYOPENCLH_
 #define _MYOPENCLH_
 
@@ -215,4 +218,4 @@ class opencl {
 
 };
 
-#endif
+#endif /* _MYOPENCLH_ */

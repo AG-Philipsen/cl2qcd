@@ -1,5 +1,10 @@
+/** @file
+ * Implementation of steps of the HMC
+ */
+
 #ifndef _HMCH_
 #define _HMCH_
+
 #include "globaldefs.h"
 #include "types.h"
 #include "hmcerrs.h"
@@ -63,6 +68,5 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
 
 hmc_error construct_3x3_combination(hmc_float beta_0, hmc_float gamma_0, hmc_float beta[], hmc_float gamma[], hmc_3x3matrix out); //TODO CP: not tested
 hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix out, hmc_float epsilon); //TODO CP: not tested
-#endif 
 
-
+#endif /* _HMCH_ */

@@ -126,4 +126,4 @@ void print_info(inputparameters* params){
   return;
 }
 
-#endif
+#endif /* _HMCH_ */

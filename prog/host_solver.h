@@ -1,4 +1,8 @@
-//!!CP: LZ should update this...
+/** @file
+ * CB and BiCG based solver
+ *
+ * @todo CP: LZ should update this...
+ */
 
 #ifndef _SOLVERH_
 #define _SOLVERH_

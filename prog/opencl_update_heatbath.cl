@@ -1,3 +1,7 @@
+/** @file
+ * Device code for the heatbath update
+ */
+
 //opencl_update_heatbath.cl
 
 void calc_staple(__global hmc_ocl_gaugefield* field,__private hmc_ocl_staplematrix* dest, const int pos, const int t, const int mu_in){

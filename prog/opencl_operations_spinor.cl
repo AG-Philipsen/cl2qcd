@@ -1,3 +1,7 @@
+/** @file
+ * Device code for operations on spinors
+ */
+
 //opencl_operations_spinor
 
 #ifdef _FERMIONS_

@@ -1,5 +1,10 @@
+/** @file
+ * Observables calculated from the gauge field
+ */
+
 #ifndef _GAUGEOBSERVABLESH_
 #define _GAUGEOBSERVABLESH_
+
 #include "globaldefs.h"
 #include "types.h"
 #include "hmcerrs.h"
@@ -24,4 +29,4 @@ hmc_float plaquette(hmc_gaugefield * field);
 hmc_complex polyakov(hmc_gaugefield * field);
 hmc_complex spatial_polyakov(hmc_gaugefield * field, int dir);
 
-#endif
+#endif /* _GAUGEOBSERVABLESH_ */

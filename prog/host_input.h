@@ -1,3 +1,7 @@
+/** @file
+ * Input file handling
+ */
+
 #ifndef _INPUTH_
 #define _INPUTH_
 
@@ -72,4 +76,4 @@ class inputparameters {
   void val_assign(std::string * out, std::string line);
 };
 
-#endif
+#endif /* _INPUTH_ */

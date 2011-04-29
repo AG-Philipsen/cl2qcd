@@ -1,3 +1,6 @@
+/** @file
+ * OpenCL device functions only used if _FERMIONS_ is defined
+ */
 
 #ifdef _FERMIONS_
 
@@ -1911,4 +1914,5 @@ hmc_error opencl::perform_benchmark(int cgmax, const size_t ls, const size_t gs,
 	return HMC_SUCCESS;
 }
 
-#endif
+#endif /* _FERMIONS_ */
+

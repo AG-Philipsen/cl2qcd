@@ -1,3 +1,7 @@
+/** @file
+ * Device code for operations on the fermion matrix
+ */
+
 //opencl_operations_gaugefield.cl
 
 void get_su3matrix(__private hmc_ocl_su3matrix* out, __global hmc_ocl_gaugefield * in, int spacepos, int timepos, int mu){

@@ -1,5 +1,9 @@
+/** @file
+ * OpenCL test code
+ */
 
 #ifdef _FERMIONS_
+
 //!!CP: this is here because the kernel global_squarenorm has the same name as the function in operations_spinor
 // hmc_float global_squarenorm(hmc_spinor_field *field) {
 hmc_float inline global_squarenorm_host(hmc_spinor_field *field) {
@@ -961,4 +965,4 @@ hmc_error opencl::testing_spinor(inputparameters* parameters, size_t local_size,
 	return HMC_SUCCESS;
 }
 
-#endif
+#endif /* _FERMIONS_ */

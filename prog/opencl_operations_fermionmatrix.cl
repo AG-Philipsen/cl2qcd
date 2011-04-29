@@ -1,3 +1,7 @@
+/** @file
+ * Device code for operations on the fermion matrix
+ */
+
 //opencl_fermionmatrix.cl
 
 #ifdef _FERMIONS_

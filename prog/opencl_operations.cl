@@ -1,5 +1,6 @@
-
-
+/** @file
+ * Miscellaneous device functions.
+ */
 
 //spinor operations
 void su3matrix_times_colorvector(hmc_ocl_su3matrix* u, hmc_color_vector* in, hmc_color_vector* out){

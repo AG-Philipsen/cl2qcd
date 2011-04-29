@@ -1,5 +1,10 @@
+/** @file
+ * Mathematical operations on spinors
+ */
+
 #ifndef _OPERATIONS_SPINORH_
 #define _OPERATIONS_SPINORH_
+
 #include <iostream>
 #include "globaldefs.h"
 #include "types.h"
@@ -41,4 +46,4 @@ void ddaggerslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spin
 void ddaggerslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: notchecked
 void ddaggerslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: not checked
 
-#endif
+#endif /* _OPERATIONS_SPINORH_ */

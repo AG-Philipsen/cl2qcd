@@ -1,3 +1,7 @@
+/** @file
+ * Gauge field handline
+ */
+
 #ifndef _GAUGEFIELDOPSH_
 #define _GAUGEFIELDOPSH_
 
@@ -27,5 +31,4 @@ hmc_error init_gaugefield(hmc_gaugefield* gaugefield, inputparameters* parameter
 
 hmc_error save_gaugefield(hmc_gaugefield* gaugefield, inputparameters* parameters, int number);
 
-
-#endif
+#endif /* _GAUGEFIELDOPSH_ */

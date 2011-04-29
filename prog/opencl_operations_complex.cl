@@ -1,3 +1,7 @@
+/** @file
+ * Device code implementing complex numbers
+ */
+
 //opencl_operations_complex.cl
 
 hmc_complex complexconj(__private hmc_complex *in){

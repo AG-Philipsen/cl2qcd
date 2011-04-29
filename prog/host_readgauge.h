@@ -1,3 +1,7 @@
+/** @file
+ * Reading of gauge field from files.
+ */
+
 #ifndef _READGAUGEH_
 #define _READGAUGEH_
 
@@ -85,4 +89,4 @@ class sourcefileparameters {
   char hmcversion_solver_source[50]; char date_solver_source[50];
 };
 
-#endif
+#endif /* _READGAUGEH_ */

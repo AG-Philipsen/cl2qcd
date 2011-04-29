@@ -1,3 +1,7 @@
+/** @file
+ * Device code for OpenCL tests
+ */
+
 //opencl_testing.cl
 
 void testing_heatbath_norandommat_no123(hmc_ocl_su3matrix * in, hmc_ocl_staplematrix * staple_in, hmc_ocl_su3matrix * out, hmc_float beta){
