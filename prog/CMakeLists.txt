@@ -3,7 +3,7 @@
 # Copyright 2011 Matthias Bach <bach@compeng.uni-frankfurt.de>
 
 cmake_minimum_required( VERSION 2.6.4 )
-project( clhmc )
+project( OpTiMaL )
 
 # we have some custom CMake stuff
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
