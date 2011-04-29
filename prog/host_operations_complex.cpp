@@ -42,6 +42,7 @@ hmc_complex complexdivide(hmc_complex* numerator, hmc_complex* denominator){
   return res;
 }
 
+/** @todo bitwise copy (memcpy) should work and be faster */
 hmc_error complexcopy(hmc_complex* source, hmc_complex* dest, int length){
 	// copies ``length'' complex numbers from source array to dest array, within cpu memory
 	for(int i=0;i<length;i++){

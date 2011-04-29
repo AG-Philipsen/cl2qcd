@@ -1,3 +1,6 @@
+/** @file
+ * A bunch of functions useful for testing and debugging.
+ */
 #ifndef _TESTINGH_
 #define _TESTINGH_
 

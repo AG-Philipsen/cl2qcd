@@ -307,6 +307,7 @@ hmc_error project_su3(hmc_su3matrix *U){
   return HMC_SUCCESS;
 }
 
+/** @todo memcpy ... */
 hmc_error copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*(NC-1); n++) {
@@ -322,6 +323,7 @@ hmc_error copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in){
   return HMC_SUCCESS;
 }
 
+/** @todo memcpy ... */
 hmc_error copy_staplematrix(hmc_staplematrix *out, hmc_staplematrix *in){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*NC; n++) {
@@ -337,6 +339,7 @@ hmc_error copy_staplematrix(hmc_staplematrix *out, hmc_staplematrix *in){
   return HMC_SUCCESS;
 }
 
+/** @todo memset ... */
 hmc_error zero_su3matrix(hmc_su3matrix * u){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*(NC-1); n++) {
@@ -354,6 +357,7 @@ hmc_error zero_su3matrix(hmc_su3matrix * u){
   return HMC_SUCCESS;
 }
 
+/** @todo memset ... */
 hmc_error zero_staplematrix(hmc_staplematrix * u){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*NC; n++) {
@@ -824,6 +828,7 @@ void local_plaquette(hmc_gaugefield * field, hmc_su3matrix * prod, int n, int t,
 	return;
 }
 
+/** @todo memcpy ... */
 hmc_error copy_gaugefield(hmc_gaugefield * source, hmc_gaugefield * dest){
 	// copies source to destination within cpu memory, layer for gaugefield array
 	return complexcopy((hmc_complex *)source, (hmc_complex *)dest, GAUGEFIELDSIZE); // SL: not tested
@@ -833,6 +838,7 @@ hmc_error copy_gaugefield(hmc_gaugefield * source, hmc_gaugefield * dest){
 //gauge-momenta operations
 //TODO CP: these should go into a seperate file like host_operations_gaugemomenta.cpp
 
+/** @todo memcpy ... */
 hmc_error copy_gaugemomenta(hmc_gauge_momentum * source, hmc_gauge_momentum * dest){
 	// copies source to destination within cpu memory, layer for momentum array
 	return complexcopy((hmc_complex *)source, (hmc_complex *)dest, GAUGEMOMENTASIZE); // SL: not tested
@@ -850,6 +856,7 @@ hmc_error gaugemomenta_squarenorm(hmc_gauge_momentum * in, hmc_float * result){
 	return HMC_SUCCESS;
 }
 
+/** @todo memset... */
 hmc_error set_zero_gaugemomenta(hmc_gauge_momentum * in){
 	for(int i = 0; i<GAUGEMOMENTASIZE; i++){
 		(in[i]) = 0.;
