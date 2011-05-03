@@ -51,7 +51,9 @@ int main(int argc, char* argv[])
 
 	//init gaugefield according to the inputfile settings
 	init_gaugefield(gaugefield, &parameters, &inittime);
-	init_random_seeds(rnd, rndarray, &inittime);
+	int err = init_random_seeds(rndarray, "rand_seeds", &inittime);
+	if( err )
+		return err;
 
 	//TODO add a security function that ends the OpenCL-init if it takes too long (this is apparently necessary on the loewe)
 #ifdef _USEGPU_

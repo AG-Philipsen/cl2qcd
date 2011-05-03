@@ -1,5 +1,7 @@
 #include "host_random.h"
 
+#include <cstdio>
+
 inline int random_123 ()
 {
 	return rnd.int64() % 3 +1;
@@ -47,20 +49,43 @@ inline void nr3_init_state( hmc_ocl_ran * state, cl_ulong seed )
 	nr3_int64( state );
 }
 
-void init_random_seeds(Random random, hmc_ocl_ran * out, usetimer * timer)
+int init_random_seeds(hmc_ocl_ran * hmc_rndarray, char * seedfile, usetimer * timer)
 {
-	(*timer).reset();
-	int dummy;
-	hmc_ocl_ran initializer;
-	nr3_init_state( &initializer, 50000 );
-	//it is assumed that the array is always of size NUMTHREADS
-	for(int i = 0; i<NUMTHREADS; i++) {
-		while( (dummy = nr3_int64(&initializer) ) >= 4101842887655102017L ) { };
-		nr3_init_state( &out[i], dummy );
+	const cl_ulong MAX_SEED = 4101842887655102017L;
+	timer->reset();
+
+	FILE* file = fopen( seedfile, "rb" );
+
+	if( ! file )
+	{
+		std::cerr << "Unable to open file " << seedfile << std::endl;
+		return HMC_FILEERROR;
 	}
 
-	(*timer).add();
-	return;
+	size_t bytes_read = 0;
+	for(size_t i_state = 0; i_state < NUMTHREADS; ++i_state) {
+		cl_ulong seed;
+		int f_err = 1;
+
+		// read bytes until we find there is an error or we found a
+		// a working one
+		do {
+			f_err = fread( &seed, sizeof( cl_ulong ), 1, file );
+			bytes_read += sizeof( cl_ulong );
+		} while( f_err == 1 && seed >= MAX_SEED );
+
+		if( f_err != 1 ) {
+			bytes_read -= sizeof( cl_ulong ); // the last read was unsuccessfull, but we incremented anyways -> correct that.
+			std::cerr << "Ran out of bytes after initializing " << i_state << " states using " << bytes_read << " bytes." << std::endl;
+			return HMC_INVALIDVALUE;
+		}
+
+		// we successfully got bytes for this state -> initialize
+		nr3_init_state( &hmc_rndarray[i_state], seed );
+	}
+
+	timer->add();
+	return HMC_SUCCESS;
 }
 
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha)

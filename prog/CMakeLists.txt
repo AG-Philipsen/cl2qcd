@@ -116,6 +116,9 @@ if(USE_EOPREC)
 	add_definitions( -D_USEEOPREC_ )
 endif(USE_EOPREC)
 
+# default random number seed
+configure_file( rand_seeds rand_seeds COPYONLY )
+
 add_executable( hmc
 	hmc.cpp
 	host_geometry.cpp
