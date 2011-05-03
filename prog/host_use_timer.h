@@ -88,4 +88,7 @@ void time_output(
 	);
 
 
+void time_heatbath(usetimer * total, usetimer * init, usetimer * poly, usetimer * plaq, usetimer * update, usetimer * overrelax, usetimer * copy);
+
+
 #endif
