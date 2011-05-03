@@ -271,7 +271,121 @@ hmc_complex det_su3matrix(hmc_su3matrix * U){
   return det;
 }
 
+
 hmc_error project_su3(hmc_su3matrix *U){
+
+  //Extract initial vectors
+  hmc_complex a[NC];
+  hmc_complex b[NC];
+  hmc_complex c[NC];
+#ifdef _RECONSTRUCT_TWELVE_
+  a[0] = (*U)[0];
+  a[1] = (*U)[1];
+  a[2] = reconstruct_su3(U,0);
+  b[0] = (*U)[2];
+  b[1] = (*U)[3];
+  b[2] = reconstruct_su3(U,1);
+  c[0] = (*U)[4];
+  c[1] = (*U)[5];
+  c[2] = reconstruct_su3(U,2);
+#else
+    for (int i = 0; i<NC; i++){
+     a[i] = (*U)[i][0];
+     b[i] = (*U)[i][1];
+     c[i] = (*U)[i][2];
+    }
+#endif
+
+  //New SU3-Matrix
+  //first vector
+  //norm
+  hmc_float norm = 0.;
+  for (int i=0; i<NC; i++){
+    hmc_complex tmp = complexconj(&(a[i]));
+    tmp = complexmult (& a[i], & tmp);
+    norm += tmp.re;
+  }
+  norm = 1./sqrt(norm);
+  //rescale
+  for (int i=0; i<NC; i++){
+    //perhaps define a new complex-function for multiplying with a real number
+    a[i].re *= norm;
+    a[i].im *= norm;
+  }
+  
+  //second vector
+  //orthogonal vector
+  hmc_complex factor;
+  factor.re = 0.0;
+  factor.im = 0.0;
+  for (int i=0; i<NC; i++){
+    hmc_complex tmp;
+    tmp = complexconj (&(b[i]));
+    tmp = complexmult (&(a[i]), &tmp);
+    factor = complexadd (&factor, &tmp);
+  }
+  for (int i=0; i<NC; i++){
+    hmc_complex tmp;
+    tmp = complexmult(&factor, &(a[i]));
+    b[i] = complexsubtract(&(b[i]), &tmp); 
+  }
+  
+//norm
+  norm = 0;
+  for (int i=0; i<NC; i++)
+  {
+    hmc_complex tmp;
+    tmp = complexconj(&(b[i]));
+    tmp = complexmult (&(b[i]), &tmp);
+    norm +=  tmp.re;
+  }
+  norm = 1./sqrt(norm);
+  //rescale
+  for  (int i=0; i<NC; i++){
+    b[i].re *= norm;
+    b[i].im *= norm;
+  }
+  
+  //third vector 
+  //orthogonal vector
+  hmc_complex tmp;
+  hmc_complex tmp2;
+  tmp = complexmult(&(a[1]), &(b[2]));
+  tmp = complexconj(&tmp);
+  tmp2 = complexmult(&(a[2]), &(b[1]));
+  tmp2 = complexconj(&tmp2);
+  c[0] = complexsubtract(&tmp, &tmp2);
+  tmp = complexmult(&(a[2]), &(b[0]));
+  tmp = complexconj(&tmp);
+  tmp2 = complexmult(&(a[0]), &(b[2]));
+  tmp2 = complexconj(&tmp2);
+  c[1] = complexsubtract(&tmp, &tmp2);
+#ifndef _RECONSTRUCT_TWELVE_
+  tmp = complexmult(&(a[0]), &(b[1]));
+  tmp = complexconj(&tmp);
+  tmp2 = complexmult(&(a[1]), &(b[0]));
+  tmp2 = complexconj(&tmp2);
+  c[2] = complexsubtract(&tmp, &tmp2);
+#endif
+
+#ifdef _RECONSTRUCT_TWELVE_
+  for(int n=0; n<NC-1; n++) { 
+    (*U)[n] = a[n];
+    (*U)[n+NC-1] = b[n];
+    (*U)[n+NC+NC-2] = c[n];
+  }
+  #else
+  for(int i=0; i<NC; i++) {
+      (*U)[i][0] = a[i];
+      (*U)[i][1] = b[i];
+      (*U)[i][2] = c[i];
+  }
+#endif
+  return HMC_SUCCESS;
+}
+
+hmc_error project_su3_old(hmc_su3matrix *U){
+//old code
   hmc_complex det = det_su3matrix(U);
   hmc_float detsqunorm = det.re*det.re + det.im*det.im;
 
@@ -452,6 +566,23 @@ hmc_error multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matr
 #endif
   return HMC_SUCCESS;
 }
+
+// wird wohl doch nicht gebraucht...
+// hmc_error add_su3matrices(hmc_su3matrix *p, hmc_su3matrix *q){
+// #ifdef _RECONSTRUCT_TWELVE
+//   for(int n=0; n<NC*(NC-1); n++) {
+//       (*p)[n].re = (*p)[n].re + (*q)[n].re;
+//       (*p)[n].im = (*p)[n].im + (*q)[n].im;
+// #else
+//   for(int i=0; i<NC; i++) {
+//     for(int k=0; k<NC; k++) {
+//       (*p)[i][k].re = (*p)[i][k].re + (*q)[i][k].re;
+//       (*p)[i][k].im = (*p)[i][k].im + (*q)[i][k].im;
+//     }
+//   }
+// #endif
+// }
+
 
 hmc_error multiply_staplematrix(hmc_staplematrix *out, hmc_su3matrix *p, hmc_staplematrix *q){
 #ifdef _RECONSTRUCT_TWELVE_

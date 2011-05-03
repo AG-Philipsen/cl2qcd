@@ -242,6 +242,7 @@ void extend (hmc_su3matrix * dest, const int random, hmc_complex src[su2_entries
  * @return Error code as defined in hmcerrs.h
  */
 hmc_error project_su3(hmc_su3matrix *U);
+hmc_error project_su3_old(hmc_su3matrix *U);
 
 void gaugefield_apply_bc(hmc_su3matrix * in, hmc_float theta);
 void gaugefield_apply_chem_pot(hmc_su3matrix * u, hmc_su3matrix * udagger, hmc_float chem_pot_re, hmc_float chem_pot_im);

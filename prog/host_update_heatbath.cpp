@@ -96,12 +96,22 @@ void heatbath_update (hmc_gaugefield * gaugefield, const hmc_float beta){
       random_1_2_3(order);
       
       get_su3matrix(&U, gaugefield, pos, t, mu);
+      
+      //projection
+      //Projection should be done every step
+      //There was a mistake in the if condition, should be >= and not <=
+      /*
       hmc_complex det = det_su3matrix(&U);
       hmc_complex detadj = complexconj(&det);
       hmc_complex detsqnorm = complexmult(&det, &detadj);
-      if( (detsqnorm.re - hmc_one_f) <= projectioneps)
-	project_su3(&U);
-      
+      if( (detsqnorm.re - hmc_one_f) >= projectioneps)
+      */
+
+      //Project by Gram Schmidt
+      project_su3(&U);
+      //Project by normalization
+//       project_su3_old(&U);
+
       calc_staple(gaugefield, &staplematrix, pos, t, mu);
       for(int i=0; i<3; i++)
       {
@@ -175,11 +185,16 @@ void heatbath_overrelax (hmc_gaugefield * gaugefield){
        order[0] = 1; order[1] = 2; order[2] = 3;
       get_su3matrix(&U, gaugefield, pos, t, mu);
   
+      /*
       hmc_complex det = det_su3matrix(&U);
       hmc_complex detadj = complexconj(&det);
       hmc_complex detsqnorm = complexmult(&det, &detadj);
       if( (detsqnorm.re - hmc_one_f) <= projectioneps)
-	project_su3(&U);
+      */
+      //Project by Gram Schmidt
+      project_su3(&U);
+      //Project by normalization
+//       project_su3_old(&U);
       
       calc_staple(gaugefield, &staplematrix, pos, t, mu);
       hmc_su3matrix extW; hmc_su3matrix tmp;
@@ -258,11 +273,17 @@ void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float 
           //old U
           get_su3matrix(&U, gaugefield, pos, t, mu);
 
+	  /*
 	  hmc_complex det = det_su3matrix(&U);
 	  hmc_complex detadj = complexconj(&det);
 	  hmc_complex detsqnorm = complexmult(&det, &detadj);
 	  if( (detsqnorm.re - hmc_one_f) <= projectioneps)
-	    project_su3(&U);
+	  */
+	    
+	  //Project by Gram Schmidt
+	  project_su3(&U);
+	  //Project by normalization
+// 	  project_su3_old(&U);
           
           calc_staple(gaugefield, &staplematrix, pos, t, mu);
           for(i=0; i<3; i++)
@@ -349,11 +370,17 @@ void heatbath_update_checkerboard (hmc_gaugefield * gaugefield, const hmc_float 
           //old U
           get_su3matrix(&U, gaugefield, pos, t, mu);
           
-	  hmc_complex det = det_su3matrix(&U);
+	  /*
+          hmc_complex det = det_su3matrix(&U);
 	  hmc_complex detadj = complexconj(&det);
 	  hmc_complex detsqnorm = complexmult(&det, &detadj);
 	  if( (detsqnorm.re - hmc_one_f) <= projectioneps)
-	    project_su3(&U);
+	  */
+	  //Project by Gram Schmidt
+	  project_su3(&U);
+	  //Project by normalization
+//        project_su3_old(&U);
+
           calc_staple(gaugefield, &staplematrix, pos, t, mu);
           for(i=0; i<3; i++)
           {
@@ -439,13 +466,19 @@ void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield){
           random_1_2_3(order);
       
           //old U
-          get_su3matrix(&U, gaugefield, pos, t, mu);
+	  get_su3matrix(&U, gaugefield, pos, t, mu);
   	  
+	  /*
 	  hmc_complex det = det_su3matrix(&U);
 	  hmc_complex detadj = complexconj(&det);
 	  hmc_complex detsqnorm = complexmult(&det, &detadj);
 	  if( (detsqnorm.re - hmc_one_f) <= projectioneps)
-	    project_su3(&U);
+	  */
+	  //Project by Gram Schmidt
+	  project_su3(&U);
+	  //Project by normalization
+//        project_su3_old(&U);
+	  
           calc_staple(gaugefield, &staplematrix, pos, t, mu);
     
           for(i=0; i<3; i++)
@@ -523,12 +556,18 @@ void heatbath_overrelax_checkerboard (hmc_gaugefield * gaugefield){
            //old U
            get_su3matrix(&U, gaugefield, pos, t, mu);
    	  
+	   /*
 	   hmc_complex det = det_su3matrix(&U);
 	   hmc_complex detadj = complexconj(&det);
 	   hmc_complex detsqnorm = complexmult(&det, &detadj);
 	   if( (detsqnorm.re - hmc_one_f) <= projectioneps)
-	     project_su3(&U);
-             calc_staple(gaugefield, &staplematrix, pos, t, mu);
+	   */
+	   //Project by Gram Schmidt
+	   project_su3(&U);
+	   //Project by normalization
+// 	   project_su3_old(&U);
+	     
+           calc_staple(gaugefield, &staplematrix, pos, t, mu);
     
            for(i=0; i<3; i++)
            {

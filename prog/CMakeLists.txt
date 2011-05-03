@@ -136,6 +136,7 @@ add_executable( hmc
 	host_writegaugefield.cpp
 	host_solver.cpp
 	host_fermionobservables.cpp
+	host_kappa.cpp
 	klepsydra/timer.cpp
 	klepsydra/monotonic.cpp
 	host_hmc.cpp
