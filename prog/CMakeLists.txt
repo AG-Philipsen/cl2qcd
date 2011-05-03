@@ -145,6 +145,26 @@ target_link_libraries( hmc
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
 )
+add_executable( heatbath
+	heatbath.cpp
+	host_geometry.cpp
+	host_operations_complex.cpp
+	host_operations_gaugefield.cpp
+	gaugefield.cpp
+	host_input.cpp
+	host_readgauge.cpp
+	host_random.cpp
+	opencl.cpp
+	host_use_timer.cpp
+	host_writegaugefield.cpp
+	klepsydra/timer.cpp
+	klepsydra/monotonic.cpp
+)
+target_link_libraries( heatbath
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+)
 if(NOT CMAKE_HOST_APPLE)
 	target_link_libraries( hmc rt )
 endif(NOT CMAKE_HOST_APPLE)
