@@ -30,17 +30,21 @@
 #include "host_random.h"
 
 class opencl {
- public:
-  opencl(cl_device_type wanted, const size_t ls, const size_t gs, usetimer* timer, inputparameters* parameters){init(wanted, ls, gs, timer, parameters);};
-  ~opencl(){finalize();};
-  hmc_error init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* parameters);
-  hmc_error copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
-  hmc_error copy_rndarray_to_device(hmc_rndarray host_rndarray,  usetimer* timer);
-  hmc_error copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer);
-  hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
-  hmc_error run_heatbath(hmc_float beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
-  hmc_error run_overrelax(hmc_float beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
-  hmc_error gaugeobservables(const size_t local_work_size, const size_t global_work_size, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol, usetimer* timer1, usetimer* timer2);
+public:
+	opencl(cl_device_type wanted, const size_t ls, const size_t gs, usetimer* timer, inputparameters* parameters) {
+		init(wanted, ls, gs, timer, parameters);
+	};
+	~opencl() {
+		finalize();
+	};
+	hmc_error init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* parameters);
+	hmc_error copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
+	hmc_error copy_rndarray_to_device(hmc_rndarray host_rndarray,  usetimer* timer);
+	hmc_error copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer);
+	hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
+	hmc_error run_heatbath(hmc_float beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
+	hmc_error run_overrelax(hmc_float beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
+	hmc_error gaugeobservables(const size_t local_work_size, const size_t global_work_size, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol, usetimer* timer1, usetimer* timer2);
 #ifdef _FERMIONS_
 	hmc_error init_fermion_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error copy_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
@@ -50,7 +54,7 @@ class opencl {
 	hmc_error get_spinorfield_from_device(hmc_spinor_field* host_spinorfield,  usetimer* timer);
 	hmc_error get_eoprec_spinorfield_from_device(hmc_spinor_field* host_spinorfield,  usetimer* timer);
 	hmc_error copy_spinor_device(cl_mem in, cl_mem out, usetimer* timer);
-	hmc_error copy_eoprec_spinor_device(cl_mem in, cl_mem out, usetimer* timer);	
+	hmc_error copy_eoprec_spinor_device(cl_mem in, cl_mem out, usetimer* timer);
 	hmc_error convert_to_kappa_format_device(cl_mem inout, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error convert_from_kappa_format_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error convert_to_kappa_format_eoprec_device(cl_mem inout, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
@@ -76,7 +80,7 @@ class opencl {
 	hmc_error bicgstab_eoprec_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
 	hmc_error cg_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
 	hmc_error testing_spinor(inputparameters* parameters, size_t local_size, size_t global_size);
-	
+
 	hmc_error simple_correlator_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t ls, const size_t gs, int cgmax);
 	hmc_error create_point_source_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs, usetimer * latimer);
 	hmc_error create_point_source_eoprec_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer);
@@ -86,40 +90,40 @@ class opencl {
 	hmc_error M_sitediagonal_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error dslash_eoprec_device(cl_mem in, cl_mem out, int evenodd, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error solver_eoprec_device(hmc_spinor_field* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
-	
+
 	hmc_error perform_benchmark(int cgmax, const size_t ls, const size_t gs, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer);
 	hmc_error finalize_fermions();
 
 #endif
 #ifdef _TESTING_
-  hmc_error testing(hmc_gaugefield * gaugefield);
+	hmc_error testing(hmc_gaugefield * gaugefield);
 #endif
-  std::vector<std::string> cl_kernels_file;
-  hmc_error finalize();
- private:
-  int isinit;
-  cl_context context;
-  cl_command_queue queue;
-  cl_program clprogram;
-  cl_kernel heatbath_odd;
-  cl_kernel heatbath_even;
-  cl_kernel overrelax_odd;
-  cl_kernel overrelax_even;
-  cl_kernel plaquette;
+	std::vector<std::string> cl_kernels_file;
+	hmc_error finalize();
+private:
+	int isinit;
+	cl_context context;
+	cl_command_queue queue;
+	cl_program clprogram;
+	cl_kernel heatbath_odd;
+	cl_kernel heatbath_even;
+	cl_kernel overrelax_odd;
+	cl_kernel overrelax_even;
+	cl_kernel plaquette;
 	cl_kernel plaquette_reduction;
-  cl_kernel polyakov;
+	cl_kernel polyakov;
 	cl_kernel polyakov_reduction;
-  
+
 	//heatbath variables
 	cl_mem clmem_gaugefield;
-  cl_mem clmem_rndarray;
-  cl_mem clmem_plaq;
-  cl_mem clmem_plaq_buf_glob;
+	cl_mem clmem_rndarray;
+	cl_mem clmem_plaq;
+	cl_mem clmem_plaq_buf_glob;
 	cl_mem clmem_splaq_buf_glob;
 	cl_mem clmem_tplaq_buf_glob;
 	cl_mem clmem_splaq;
-  cl_mem clmem_tplaq;
-  cl_mem clmem_polyakov;
+	cl_mem clmem_tplaq;
+	cl_mem clmem_polyakov;
 	cl_mem clmem_polyakov_buf_glob;
 	//!!CP: this is not needed at the moment and since is not copied to the device anywhere!!
 	cl_mem clmem_theta_gaugefield;
@@ -169,7 +173,7 @@ class opencl {
 	cl_mem clmem_t;
 	cl_mem clmem_aux;
 	cl_mem clmem_tmp;
-	
+
 	//CP: variables for eoprec solver
 	cl_mem clmem_inout_eoprec;
 	cl_mem clmem_source_even;
@@ -193,9 +197,9 @@ class opencl {
 	cl_mem clmem_tmp1;
 	cl_mem clmem_tmp2;
 	cl_mem clmem_one;
-	cl_mem clmem_minusone;  
+	cl_mem clmem_minusone;
 
-  cl_mem clmem_kappa_cmplx;// = {kappa, 0.};
+	cl_mem clmem_kappa_cmplx;// = {kappa, 0.};
 	cl_mem clmem_scalar_product_buf_glob;
 	cl_mem clmem_global_squarenorm_buf_glob;
 	cl_mem clmem_resid;
@@ -203,17 +207,17 @@ class opencl {
 #endif
 	//testing variables
 #ifdef _TESTING_
-  cl_mem clmem_random_field_int;
-  cl_mem clmem_random_field_float;
-  cl_mem clmem_random_field_su2;
+	cl_mem clmem_random_field_int;
+	cl_mem clmem_random_field_float;
+	cl_mem clmem_random_field_su2;
 	cl_mem clmem_heatbath_test_link_in;
-  cl_mem clmem_heatbath_test_staple_in;
-  cl_mem clmem_heatbath_test_link_out;
-  cl_mem clmem_heatbath_test_rnd_array;
-  cl_mem clmem_heatbath_test_cter;
-  cl_mem clmem_solver_test_spinor_in;
-  cl_mem clmem_solver_test_spinor_out;
-  cl_mem clmem_solver_test_correlator;
+	cl_mem clmem_heatbath_test_staple_in;
+	cl_mem clmem_heatbath_test_link_out;
+	cl_mem clmem_heatbath_test_rnd_array;
+	cl_mem clmem_heatbath_test_cter;
+	cl_mem clmem_solver_test_spinor_in;
+	cl_mem clmem_solver_test_spinor_out;
+	cl_mem clmem_solver_test_correlator;
 #endif
 
 };
