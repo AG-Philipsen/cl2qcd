@@ -36,20 +36,6 @@
  * has it's own wrapper function.
  */
 class opencl {
-<<<<<<< HEAD
- public:
-  opencl(){};
-  opencl(cl_device_type wanted, const size_t ls, const size_t gs, usetimer* timer, inputparameters* parameters){init(wanted, ls, gs, timer, parameters);};
-  ~opencl(){finalize();};
-  hmc_error init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* parameters);
-  hmc_error copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
-  hmc_error copy_rndarray_to_device(hmc_rndarray host_rndarray,  usetimer* timer);
-  hmc_error copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer);
-  hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
-  hmc_error run_heatbath(hmc_float beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
-  hmc_error run_overrelax(hmc_float beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
-  hmc_error gaugeobservables(const size_t local_work_size, const size_t global_work_size, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol, usetimer* timer1, usetimer* timer2);
-=======
 public:
 	/**
 	 * Default constructor that also initializes the device.
@@ -146,7 +132,6 @@ public:
 	 */
 	hmc_error gaugeobservables(const size_t local_work_size, const size_t global_work_size, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol, usetimer* timer1, usetimer* timer2);
 
->>>>>>> fd0a83bded0b3269e56de233dab6e33f84dcea6f
 #ifdef _FERMIONS_
 	hmc_error init_fermion_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error copy_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
