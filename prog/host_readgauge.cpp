@@ -835,9 +835,10 @@ hmc_error sourcefileparameters::readsourcefile(char * file, int precision, hmc_f
 	                        &array_tmp, &prec_tmp);
 	if(err!= 0) {
 		printf("error in reading file: %s\n\n", file);
-		return -1;
+		return HMC_FILEERROR;
 	}
 
+	/** @bug Isn't array already allocated? -> memory leak, and why copy */
 	*array = (hmc_float*) malloc(num_entries*sizeof(hmc_float));
 	for (int i = 0; i < num_entries; i++) (*array)[i] = array_tmp[i];
 

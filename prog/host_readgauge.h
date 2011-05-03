@@ -83,6 +83,16 @@ public:
 	sourcefileparameters() {
 		set_defaults();
 	};
+	/**
+	 * Read gauge configuration from the given file into the given array.
+	 *
+	 * @param[in] file      The file to read the gauge configuration from
+	 * @param[in] precision The precision expected for the gaugefield.
+	 * @param[out] array    The loaded gaugefield
+	 * @return Error as specified in hmcerrs.h:
+	 *         @li HMC_FILEERROR if file cannot be read
+	 *         @li HMC_SUCCESS otherwise
+	 */
 	hmc_error readsourcefile(char * file, int precision, hmc_float ** array);
 	hmc_error set_defaults();
 	void val_assign_source(int * out, int in);

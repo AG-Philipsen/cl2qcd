@@ -125,6 +125,8 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 	sourcecode.append(end.c_str(),end.size()+1);
 
 	// print complete source code to file
+	/** @todo Don't clobber everything into one file.
+	          Utilize CLU for easier handling of multiple files */
 	ofstream kernelsout;
 	kernelsout.open("cl_kernelsource.cl");
 	if(kernelsout.is_open()) {
@@ -258,8 +260,10 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 		exit(HMC_OCLERROR);
 	}
 	int num_groups;
-	if(local_work_size <= global_work_size) num_groups = global_work_size/local_work_size;
-	else num_groups = 1;
+	if(local_work_size <= global_work_size)
+		num_groups = global_work_size/local_work_size; /** @bug Number of work groups should probably be rounded up */
+	else
+		num_groups = 1;
 
 	int global_buf_size_float = sizeof(hmc_float)*num_groups;
 	int global_buf_size_complex = sizeof(hmc_complex)*num_groups;

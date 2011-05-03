@@ -10,12 +10,12 @@ int main(int argc, char* argv[])
 		std::cerr << "Please specify the input file and the benchmark ID." << std::endl;
 		return HMC_FILEERROR;
 	}
-#else
+#else /* _PERFORM_BENCHMARKS_ */
 	if( argc != 2 ) {
 		std::cerr << "Please specify one input file." << std::endl;
 		return HMC_FILEERROR;
 	}
-#endif
+#endif /* _PERFORM_BENCHMARKS_ */
 
 	char* inputfile = argv[1];
 	inputparameters parameters;
@@ -34,11 +34,11 @@ int main(int argc, char* argv[])
 	  &totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime
 #ifdef _FERMIONS_
 	  , &inittimer, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer
-#endif // _USE_FERMIONS_
+#endif /* _USE_FERMIONS_ */
 	  , tmp
 	);
 	totaltime.reset();
-#endif	//_PERFORM_BENCHMARKS_
+#endif	/* _PERFORM_BENCHMARKS_ */
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Initialization
@@ -56,9 +56,9 @@ int main(int argc, char* argv[])
 	//TODO add a security function that ends the OpenCL-init if it takes too long (this is apparently necessary on the loewe)
 #ifdef _USEGPU_
 	opencl device(CL_DEVICE_TYPE_GPU, local_work_size, global_work_size, &inittime, &parameters);
-#else
+#else /* _USEGPU_ */
 	opencl device(CL_DEVICE_TYPE_CPU, local_work_size, global_work_size, &inittime, &parameters);
-#endif
+#endif /* _USEGPU_ */
 	cout << endl << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]" << endl;
 
 	cout << "initial values of observables:\n\t" ;
@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 
 #ifdef _TESTING_
 	device.testing(gaugefield);
-#endif
+#endif /* _TESTING_ */
 
 #ifndef _PERFORM_BENCHMARKS_
 
@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
 	delete [] p;
 	delete [] new_p;
 
-#else //_USEHMC_
+#else /* _USEHMC_ */
 
 #ifdef _FERMIONS_
 
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 	device.simple_correlator_device(&copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer,  local_work_size, global_work_size, 1000);
 	device.finalize_fermions();
 
-#endif
+#endif /* _FERMIONS_ */
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Heatbath
@@ -160,11 +160,11 @@ int main(int argc, char* argv[])
 		device.run_heatbath(parameters.get_beta(), local_work_size, global_work_size, &updatetime);
 		for (int j = 0; j < overrelaxsteps; j++)
 			device.run_overrelax(parameters.get_beta(), local_work_size, global_work_size, &overrelaxtime);
-		if( ( (i+1)%parameters.get_writefrequency() ) == 0 ) {
+		if( ( (i+1) % parameters.get_writefrequency() ) == 0 ) {
 			device.gaugeobservables(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
 			print_gaugeobservables(plaq, tplaq, splaq, pol, i, gaugeout_name.str());
 		}
-		if( parameters.get_saveconfigs()==TRUE && ( (i+1)%parameters.get_savefrequency() ) == 0 ) {
+		if( parameters.get_saveconfigs()==TRUE && ( (i+1) % parameters.get_savefrequency() ) == 0 ) {
 			device.get_gaugefield_from_device(gaugefield, &copytime);
 			save_gaugefield(gaugefield, &parameters, i);
 			print_gaugeobservables(gaugefield, &plaqtime, &polytime, i, gaugeout_name.str());
@@ -175,7 +175,7 @@ int main(int argc, char* argv[])
 
 #endif /* _USEHMC_ */
 
-#else //_PERFORM_BENCHMARKS_
+#else /* _PERFORM_BENCHMARKS_ */
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Benchmarking
@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-#else
+#else /* _FERMIONS_ */
 
 	int benchmarksteps2 = parameters.get_thermalizationsteps();
 	int cgmax = parameters.get_cgmax();
@@ -226,9 +226,9 @@ int main(int argc, char* argv[])
 	}
 	device.finalize_fermions();
 
-#endif //_FERMIONS_
+#endif /* _FERMIONS_ */
 
-#endif //_PERFORM_BENCHMARKS_
+#endif /* _PERFORM_BENCHMARKS_ */
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Final Output
@@ -237,19 +237,19 @@ int main(int argc, char* argv[])
 	totaltime.add();
 #ifndef _PERFORM_BENCHMARKS_
 	save_gaugefield(gaugefield, &parameters, nsteps);
-#endif
+#endif /* _PERFORM_BENCHMARKS_ */
 	time_output(
 	  &totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime
 #ifdef _FERMIONS_
 	  , &inittimer, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer
-#endif
+#endif /* _FERMIONS_ */
 #ifdef _PERFORM_BENCHMARKS_
 #ifndef _FERMIONS_
 	  , benchmarksteps1
-#else
+#else /* _FERMIONS_ */
 	  , benchmarksteps2
-#endif
-#endif
+#endif /* _FERMIONS_ */
+#endif /* _PERFORM_BENCHMARKS_ */
 	);
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables

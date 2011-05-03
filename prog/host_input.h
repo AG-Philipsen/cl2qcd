@@ -54,6 +54,11 @@ public:
 	hmc_float get_chem_pot_re();
 	hmc_float get_chem_pot_im();
 	int get_cgmax();
+	/**
+	 * The precision to be used for gaugefield storage in bits.
+	 * @li 32 for single precision
+	 * @li 64 for double precision
+	 */
 	int get_prec();
 	int get_startcondition();
 	int get_thermalizationsteps();

@@ -29,22 +29,109 @@
 #include "host_testing.h"
 #include "host_random.h"
 
+/**
+ * An OpenCL device
+ *
+ * This class wraps all operations on a device. Operations are always specific, e.g. each kernel and copy operation
+ * has it's own wrapper function.
+ */
 class opencl {
 public:
+	/**
+	 * Default constructor that also initializes the device.
+	 *
+	 * @param wanted The OpenCL device type to be used, e.g. CL_DEVICE_TYPE_CPU or CL_DEVICE_TYPE_GPU
+	 * @param ls The local work size to be used on the device
+	 * @param gs The global work size to be used on the device
+	 * @param timer The timer to use for reporting execution time
+	 * @param parameters The parsed input parameters
+	 *
+	 * @todo Should probably throw an exception on error
+	 */
 	opencl(cl_device_type wanted, const size_t ls, const size_t gs, usetimer* timer, inputparameters* parameters) {
 		init(wanted, ls, gs, timer, parameters);
 	};
 	~opencl() {
 		finalize();
 	};
+
+	/**
+	 * Initialize the OpenCL device
+	 *
+	 * @param wanted The OpenCL device type to be used, e.g. CL_DEVICE_TYPE_CPU or CL_DEVICE_TYPE_GPU
+	 * @param ls The local work size to be used on the device
+	 * @param gs The global work size to be used on the device
+	 * @param timer The timer to use for reporting execution time
+	 * @param parameters The parsed input parameters
+	 * @return Error code as defined in hmcerrs.h:
+	 *         @li HMC_OCLERROR if OpenCL initialization / operations fail
+	 *         @li HMC_FILEERROR if one of the kernel files cannot be opened
+	 *         @li HMC_SUCCESS otherwise
+	 */
 	hmc_error init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* parameters);
+
+	/**
+	 * Copy the given gaugefield to the appropriate OpenCL buffer.
+	 *
+	 * @param host_gaugefield The gaugefield to copy
+	 * @param timer The timer to use to measure the copying time
+	 * @return Error code as defined in hmcerrs.h:
+	 *         @li HMC_OCLERROR if OpenCL operations fail
+	 *         @li HMC_SUCCESS otherwise
+	 */
 	hmc_error copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
+
+	/**
+	 * Copy the RNG state to the appropriate OpenCL buffer.
+	 *
+	 * @param host_rndarray The RNG state to copy
+	 * @param timer The timer to use to measure the copying time
+	 * @return Error code as defined in hmcerrs.h:
+	 *         @li HMC_OCLERROR if OpenCL operations fail
+	 *         @li HMC_SUCCESS otherwise
+	 */
 	hmc_error copy_rndarray_to_device(hmc_rndarray host_rndarray,  usetimer* timer);
+
 	hmc_error copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer);
+
+	/**
+	 * Copy the gaugefield from the device into the given memory location.
+	 *
+	 * @param host_gaugefield Storage location for the gaugefield
+	 * @param timer The timer to use to measure the copying time
+	 * @return Error code as defined in hmcerrs.h:
+	 *         @li HMC_OCLERROR if OpenCL operations fail
+	 *         @li HMC_SUCCESS otherwise
+	 */
 	hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
+
+	/**
+	 * Perform one heatbath step.
+	 */
 	hmc_error run_heatbath(hmc_float beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
+
+	/**
+	 * Perform one overrelaxation step.
+	 */
 	hmc_error run_overrelax(hmc_float beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
+
+	/**
+	 * Calculate plaquette and polyakov.
+	 *
+	 * @param[in] local_work_size The local work size to use
+	 * @param[in] global_work_size The global works size to use
+	 * @param[out] plaq Storage for result of plaquette calculation
+	 * @param[out] tplaq Storage for result of plaquette calculation
+	 * @param[out] splaq Storage for result of plaquette calculation
+	 * @param[out] pol Storage for result of polyakov calculation
+	 * @param[in,out] timer1 Timer into which to aggregate plaquette calculation time
+	 * @param[in,out] timer2 Timer into which to aggregate polyakov calculation time
+	 * @return Error code as defined in hmcerrs.h:
+	 *         @li HMC_OCLERROR if OpenCL operations fail
+	 *         @li HMC_SUCCESS otherwise
+	 */
 	hmc_error gaugeobservables(const size_t local_work_size, const size_t global_work_size, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol, usetimer* timer1, usetimer* timer2);
+
 #ifdef _FERMIONS_
 	hmc_error init_fermion_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error copy_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
