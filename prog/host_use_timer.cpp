@@ -271,33 +271,33 @@ void time_output(
 
 	printf("\n");
 	printf("**************************************************************\n");
-	printf("total runtime:\t\t%lu\n\n", totaltime );
+	printf("total runtime:\t\t%llu\n\n", totaltime );
 	printf("Times:\t\t tot\t\t avg\t\tsite\tperc\n");
 
-	printf("Init.:\t%12lu\t%12lu\t%12lu\t%.3f\n", inittime, inittime, divide(inittime, VOL4D),percent (inittime, totaltime) );
-	printf("Copy.:\t%12lu\t%12lu\t%12lu\t%.3f\n", copytime, copy_avgtime, copytime,percent (copytime, totaltime) );
-	printf("Plaq.:\t%12lu\t%12lu\t%12lu\t%.3f\n", plaqtime, plaq_avgtime, plaq_avgtime_site, percent (plaqtime, totaltime));
-	printf("Poly.:\t%12lu\t%12lu\t%12lu\t%.3f\n", polytime, poly_avgtime, poly_avgtime_site, percent (polytime, totaltime));
-	printf("Updt.:\t%12lu\t%12lu\t%12lu\t%.3f\n", updatetime, update_avgtime, update_avgtime_site, percent (updatetime, totaltime));
-	printf("Over.:\t%12lu\t%12lu\t%12lu\t%.3f\n", overrelaxtime, overrelax_avgtime, overrelax_avgtime_site, percent (overrelaxtime, totaltime));
+	printf("Init.:\t%12llu\t%12llu\t%12llu\t%.3f\n", inittime, inittime, divide(inittime, VOL4D),percent (inittime, totaltime) );
+	printf("Copy.:\t%12llu\t%12llu\t%12llu\t%.3f\n", copytime, copy_avgtime, copytime,percent (copytime, totaltime) );
+	printf("Plaq.:\t%12llu\t%12llu\t%12llu\t%.3f\n", plaqtime, plaq_avgtime, plaq_avgtime_site, percent (plaqtime, totaltime));
+	printf("Poly.:\t%12llu\t%12llu\t%12llu\t%.3f\n", polytime, poly_avgtime, poly_avgtime_site, percent (polytime, totaltime));
+	printf("Updt.:\t%12llu\t%12llu\t%12llu\t%.3f\n", updatetime, update_avgtime, update_avgtime_site, percent (updatetime, totaltime));
+	printf("Over.:\t%12llu\t%12llu\t%12llu\t%.3f\n", overrelaxtime, overrelax_avgtime, overrelax_avgtime_site, percent (overrelaxtime, totaltime));
 #ifdef _FERMIONS_
 	printf("Fermion Times:\t tot\t\t avg\t\tsite\tperc\n");
-	printf("Init.:\t%12lu\t%12lu\t%12lu\t%.3f\n", init_ferm, init_ferm, divide(init_ferm, VOL4D),percent (init_ferm, totaltime) );
-	printf("Solve:\t%12lu\t%12lu\t%12lu\t%.3f\n", solvertime, solver_avgtime, solver_avgtime,percent (solvertime, totaltime) );
-	printf("Copy.:\t%12lu\t%12lu\t%12lu\t%.3f\n", copy_ferm, copy_ferm_avgtime, copy_ferm,percent (copy_ferm, totaltime) );
-	printf("Sngle:\t%12lu\t%12lu\t%12lu\t%.3f\n", single_ferm, single_ferm_avgtime, single_ferm_avgtime, percent (single_ferm, totaltime));
-	printf("ScPr.:\t%12lu\t%12lu\t%12lu\t%.3f\n", scalprod, scalprod_avgtime, scalprod_avgtime_site, percent (scalprod, totaltime));
-	printf("BLAS.:\t%12lu\t%12lu\t%12lu\t%.3f\n", latime, la_avgtime, la_avgtime_site, percent (latime, totaltime));
-	printf("Mferm:\t%12lu\t%12lu\t%12lu\t%.3f\n", Mtime, M_avgtime, M_avgtime_site, percent (Mtime, totaltime));
-	printf("Mdiag:\t%12lu\t%12lu\t%12lu\t%.3f\n", Mdiagtime, Mdiag_avgtime, Mdiag_avgtime_site, percent (Mdiagtime, totaltime));
-	printf("Dslas:\t%12lu\t%12lu\t%12lu\t%.3f\n", dslashtime, dslash_avgtime, dslash_avgtime_site, percent (dslashtime, totaltime));
+	printf("Init.:\t%12llu\t%12llu\t%12llu\t%.3f\n", init_ferm, init_ferm, divide(init_ferm, VOL4D),percent (init_ferm, totaltime) );
+	printf("Solve:\t%12llu\t%12llu\t%12llu\t%.3f\n", solvertime, solver_avgtime, solver_avgtime,percent (solvertime, totaltime) );
+	printf("Copy.:\t%12llu\t%12llu\t%12llu\t%.3f\n", copy_ferm, copy_ferm_avgtime, copy_ferm,percent (copy_ferm, totaltime) );
+	printf("Sngle:\t%12llu\t%12llu\t%12llu\t%.3f\n", single_ferm, single_ferm_avgtime, single_ferm_avgtime, percent (single_ferm, totaltime));
+	printf("ScPr.:\t%12llu\t%12llu\t%12llu\t%.3f\n", scalprod, scalprod_avgtime, scalprod_avgtime_site, percent (scalprod, totaltime));
+	printf("BLAS.:\t%12llu\t%12llu\t%12llu\t%.3f\n", latime, la_avgtime, la_avgtime_site, percent (latime, totaltime));
+	printf("Mferm:\t%12llu\t%12llu\t%12llu\t%.3f\n", Mtime, M_avgtime, M_avgtime_site, percent (Mtime, totaltime));
+	printf("Mdiag:\t%12llu\t%12llu\t%12llu\t%.3f\n", Mdiagtime, Mdiag_avgtime, Mdiag_avgtime_site, percent (Mdiagtime, totaltime));
+	printf("Dslas:\t%12llu\t%12llu\t%12llu\t%.3f\n", dslashtime, dslash_avgtime, dslash_avgtime_site, percent (dslashtime, totaltime));
 #endif
 #ifdef _USEHMC_
 	printf("HybridMC Times:\t tot\t\t avg\t\tsite\tperc\n");
-	printf("HMC:\t%12lu\t%12lu\t%12lu\t%.3f\n",hmctime, hmc_avgtime, hmc_avgtime, percent (hmctime, totaltime));
-	printf("Init:\t%12lu\t%12lu\t%12lu\t%.3f\n",hmcinittime, hmcinit_avgtime, hmcinit_avgtime, percent (hmcinittime, totaltime));
-	printf("Leap:\t%12lu\t%12lu\t%12lu\t%.3f\n",leapfrogtime, leapfrog_avgtime, leapfrog_avgtime, percent (leapfrogtime, totaltime));
-	printf("Metr:\t%12lu\t%12lu\t%12lu\t%.3f\n",metropolistime, metropolis_avgtime, metropolis_avgtime, percent (metropolistime, totaltime));
+	printf("HMC:\t%12llu\t%12llu\t%12llu\t%.3f\n",hmctime, hmc_avgtime, hmc_avgtime, percent (hmctime, totaltime));
+	printf("Init:\t%12llu\t%12llu\t%12llu\t%.3f\n",hmcinittime, hmcinit_avgtime, hmcinit_avgtime, percent (hmcinittime, totaltime));
+	printf("Leap:\t%12llu\t%12llu\t%12llu\t%.3f\n",leapfrogtime, leapfrog_avgtime, leapfrog_avgtime, percent (leapfrogtime, totaltime));
+	printf("Metr:\t%12llu\t%12llu\t%12llu\t%.3f\n",metropolistime, metropolis_avgtime, metropolis_avgtime, percent (metropolistime, totaltime));
 #endif
 	printf("**************************************************************\n");
 
@@ -451,15 +451,15 @@ void time_output_heatbath(
 
 	printf("\n");
 	printf("**************************************************************\n");
-	printf("total runtime:\t\t%lu\n\n", totaltime );
+	printf("total runtime:\t\t%llu\n\n", totaltime );
 	printf("Times:\t\t tot\t\t avg\t\tsite\tperc\n");
 
-	printf("Init.:\t%12lu\t%12lu\t%12lu\t%.3f\n", inittime, inittime, divide(inittime, VOL4D),percent (inittime, totaltime) );
-	printf("Copy.:\t%12lu\t%12lu\t%12lu\t%.3f\n", copytime, copy_avgtime, copytime,percent (copytime, totaltime) );
-	printf("Plaq.:\t%12lu\t%12lu\t%12lu\t%.3f\n", plaqtime, plaq_avgtime, plaq_avgtime_site, percent (plaqtime, totaltime));
-	printf("Poly.:\t%12lu\t%12lu\t%12lu\t%.3f\n", polytime, poly_avgtime, poly_avgtime_site, percent (polytime, totaltime));
-	printf("Updt.:\t%12lu\t%12lu\t%12lu\t%.3f\n", updatetime, update_avgtime, update_avgtime_site, percent (updatetime, totaltime));
-	printf("Over.:\t%12lu\t%12lu\t%12lu\t%.3f\n", overrelaxtime, overrelax_avgtime, overrelax_avgtime_site, percent (overrelaxtime, totaltime));
+	printf("Init.:\t%12llu\t%12llu\t%12llu\t%.3f\n", inittime, inittime, divide(inittime, VOL4D),percent (inittime, totaltime) );
+	printf("Copy.:\t%12llu\t%12llu\t%12llu\t%.3f\n", copytime, copy_avgtime, copytime,percent (copytime, totaltime) );
+	printf("Plaq.:\t%12llu\t%12llu\t%12llu\t%.3f\n", plaqtime, plaq_avgtime, plaq_avgtime_site, percent (plaqtime, totaltime));
+	printf("Poly.:\t%12llu\t%12llu\t%12llu\t%.3f\n", polytime, poly_avgtime, poly_avgtime_site, percent (polytime, totaltime));
+	printf("Updt.:\t%12llu\t%12llu\t%12llu\t%.3f\n", updatetime, update_avgtime, update_avgtime_site, percent (updatetime, totaltime));
+	printf("Over.:\t%12llu\t%12llu\t%12llu\t%.3f\n", overrelaxtime, overrelax_avgtime, overrelax_avgtime_site, percent (overrelaxtime, totaltime));
 	printf("**************************************************************\n");
 
 
