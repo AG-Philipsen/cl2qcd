@@ -94,54 +94,36 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 		exit(HMC_OCLERROR);
 	}
 
+	// create array to point to contents of the different source files
+	char ** sources = new char *[ cl_kernels_file.size() ];
+	size_t * source_sizes = new size_t[ cl_kernels_file.size() ];
+
 	string sourcecode;
-	for(unsigned int n=0; n<cl_kernels_file.size(); n++) {
+	for(size_t n = 0; n < cl_kernels_file.size(); n++) {
 		stringstream tmp;
 		tmp << SOURCEDIR << '/' << cl_kernels_file[n];
-		cout<<"Read kernel source from file: "<<tmp.str()<<endl;
+		cout << "Read kernel source from file: " << tmp.str() << endl;
 
 		fstream kernelsfile;
 		kernelsfile.open(tmp.str().c_str());
 		if(!kernelsfile.is_open()) {
-			cout<<"Could not open file. Aborting..."<<endl;
+			cerr << "Could not open file. Aborting..." << endl;
 			exit(HMC_FILEERROR);
 		}
 
 		kernelsfile.seekg(0,ios::end);
-		int length = kernelsfile.tellg();
+		source_sizes[n] = kernelsfile.tellg();
 		kernelsfile.seekg(0,ios::beg);
 
-		char* kernelssource = new char[length];
+		sources[n] = new char[source_sizes[n]];
 
-		kernelsfile.read(kernelssource,length);
+		kernelsfile.read( sources[n], source_sizes[n] );
 
 		kernelsfile.close();
-		sourcecode.append(kernelssource,length);
-
-		delete [] kernelssource;
-	}
-
-	string end = "\n//EOF";
-	sourcecode.append(end.c_str(),end.size()+1);
-
-	// print complete source code to file
-	/** @todo Don't clobber everything into one file.
-	          Utilize CLU for easier handling of multiple files */
-	ofstream kernelsout;
-	kernelsout.open("cl_kernelsource.cl");
-	if(kernelsout.is_open()) {
-		kernelsout<<sourcecode.c_str()<<endl;
-		kernelsout.close();
-	} else {
-		cout<<"could not open cl_kernelsource.cl"<<endl;
 	}
 
 	cout<<"Create program..."<<endl;
-	size_t sourcesize = sourcecode.size()+1;
-	char* source = new char[sourcesize];
-	strcpy(source,sourcecode.c_str());
-	clprogram = clCreateProgramWithSource(context,1,(const char**)&source,&sourcesize,&clerr);
-	delete [] source;
+	clprogram = clCreateProgramWithSource(context, cl_kernels_file.size() , (const char**) sources, source_sizes, &clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"... failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
