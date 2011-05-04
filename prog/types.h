@@ -14,6 +14,12 @@
 #endif
 #endif
 
+#ifdef _INKERNEL_
+#define CONST __constant
+#else /* _INKERNEL_ */
+#define CONST const
+#endif /* _INKERNEL_ */
+
 /** The floating precision type used by hmc, can be 32 or 64 bit. */
 #ifdef _USEDOUBLEPREC_
 typedef double hmc_float;
@@ -101,19 +107,19 @@ typedef hmc_complex hmc_spinor;
 typedef hmc_complex hmc_spinor_field;
 typedef hmc_complex hmc_eoprec_spinor_field;
 
-
 #ifdef _USEDOUBLEPREC_
-hmc_float const projectioneps = 10.e-12;
-int const iter_refresh = 10;
-hmc_float const epssquare=1e-14;
-int const use_eo = 1;
+hmc_float CONST projectioneps = 10.e-12;
+int CONST iter_refresh = 10;
+hmc_float CONST epssquare=1e-14;
+int CONST use_eo = 1;
 #else
-hmc_float const projectioneps = 10.e-6;
-int const iter_refresh = 10;
-hmc_float const epssquare=1e-12;
-int const use_eo = 1;
+hmc_float CONST projectioneps = 10.e-6;
+int CONST iter_refresh = 10;
+hmc_float CONST epssquare=1e-12;
+int CONST use_eo = 1;
 #endif
 
+#ifndef _INKERNEL_
 /**
  * Work-group size for OpenCL kernels.
  * @bug The proper work-group size is kernel dependent and cannot be
@@ -126,17 +132,14 @@ const size_t local_work_size  = NUMTHREADS;
         specified globally.
  */
 const size_t global_work_size = NUMTHREADS;
+#endif
 
 #ifndef _INKERNEL_
 /** Storage type for state of the random number generator */
 typedef cl_ulong4 hmc_ocl_ran;
 /** The array of random number generator states for usage by an OpenCL device */
 typedef hmc_ocl_ran hmc_rndarray[NUMTHREADS];
-#endif  
+#endif /* _INKERNEL_ */
 
-#endif
+#endif /* _TYPESH_ */
 
-
- 
-
-  
