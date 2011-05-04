@@ -20,22 +20,22 @@ void su3matrix_times_colorvector(hmc_ocl_su3matrix* u, hmc_color_vector* in, hmc
 	for(int a=0; a<NC-1; a++) {
 		out[a] = hmc_complex_zero;
 		for(int b=0; b<NC; b++) {
-			hmc_complex tmp = complexmult(&((*u)[ocl_su3matrix_element(a,b)]),&(in[b]));
-			complexaccumulate(&out[a],&tmp);
+			hmc_complex tmp = complexmult((*u)[ocl_su3matrix_element(a,b)], in[b]);
+			out[a] = complexadd(out[a], tmp);
 		}
 	}
 	out[2] = hmc_complex_zero;
 	for(int b=0; b<NC; b++) {
 		hmc_complex rec = reconstruct_su3(u,b);
-		hmc_complex tmp = complexmult(&rec,&(in[b]));
-		complexaccumulate(&out[2],&tmp);
+		hmc_complex tmp = complexmult(rec, in[b]);
+		out[2] = complexadd(out[a], tmp);
 	}
 #else
 	for(int a=0; a<NC; a++) {
 		out[a] = hmc_complex_zero;
 		for(int b=0; b<NC; b++) {
-			hmc_complex tmp = complexmult(&((u)[ocl_su3matrix_element(a,b)]),&(in[b]));
-			complexaccumulate(&(out[a]),&tmp);
+			hmc_complex tmp = complexmult((*u)[ocl_su3matrix_element(a,b)], in[b]);
+			out[a] = complexadd(out[a], tmp);
 		}
 	}
 #endif
@@ -46,8 +46,8 @@ hmc_float spinor_squarenorm(hmc_spinor* in)
 {
 	hmc_float res=0;
 	for(int j=0; j<SPINORSIZE; j++) {
-		hmc_complex tmp = complexconj(&in[j]);
-		hmc_complex incr= complexmult(&tmp,&in[j]);
+		hmc_complex tmp = complexconj(in[j]);
+		hmc_complex incr= complexmult(tmp, in[j]);
 		res+=incr.re;
 	}
 	return res;

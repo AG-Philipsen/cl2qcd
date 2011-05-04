@@ -242,8 +242,8 @@ hmc_float spinor_squarenorm(hmc_spinor* in)
 {
 	hmc_float res=0;
 	for(int j=0; j<SPINORSIZE; j++) {
-		hmc_complex tmp = complexconj(&in[j]);
-		hmc_complex incr= complexmult(&tmp,&in[j]);
+		hmc_complex tmp = complexconj(in[j]);
+		hmc_complex incr= complexmult(tmp,in[j]);
 		res+=incr.re;
 	}
 	return res;
@@ -523,8 +523,8 @@ void saxpy(hmc_spinor_field * x, hmc_spinor_field * y, hmc_complex * alpha, hmc_
 void saxsbypz(hmc_spinor_field * x, hmc_spinor_field * y,  hmc_spinor_field * z, hmc_complex * alpha, hmc_complex * beta, hmc_spinor_field * out)
 {
 	for (int n=0; n<SPINORFIELDSIZE; n++) {
-		hmc_complex tmp1 = complexmult(alpha,&x[n]);
-		hmc_complex tmp2 = complexmult(beta,&y[n]);
+		hmc_complex tmp1 = complexmult(*alpha,x[n]);
+		hmc_complex tmp2 = complexmult(*beta,y[n]);
 		((out)[n]).re = (tmp1).re + (tmp2).re + z[n].re;
 		((out)[n]).im = (tmp1).im + (tmp2).im + z[n].im;
 	}

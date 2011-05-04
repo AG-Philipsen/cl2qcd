@@ -19,8 +19,8 @@ void testing_heatbath_norandommat_no123(hmc_ocl_su3matrix * in, hmc_ocl_staplema
 	order[1] = 2;
 	order[2] = 3;
 	hmc_complex det = det_su3matrix(su3_in);
-	hmc_complex detadj = complexconj(&det);
-	hmc_complex detsqnorm = complexmult(&det, &detadj);
+	hmc_complex detadj = complexconj(det);
+	hmc_complex detsqnorm = complexmult(det, detadj);
 	if( (detsqnorm.re - hmc_one_f) <= projectioneps)
 		project_su3(su3_in);
 
@@ -102,8 +102,8 @@ void testing_heatbath_no123(hmc_ocl_su3matrix * in, hmc_ocl_staplematrix * stapl
 	order[1] = 2;
 	order[2] = 3;
 	hmc_complex det = det_su3matrix(su3_in);
-	hmc_complex detadj = complexconj(&det);
-	hmc_complex detsqnorm = complexmult(&det, &detadj);
+	hmc_complex detadj = complexconj(det);
+	hmc_complex detsqnorm = complexmult(det, detadj);
 	if( (detsqnorm.re - hmc_one_f) <= projectioneps)
 		project_su3(su3_in);
 
@@ -211,8 +211,8 @@ void testing_heatbath(hmc_ocl_su3matrix * in, hmc_ocl_staplematrix * staple_in, 
 	order[2] = 6 - order[1] - order[0];
 
 	hmc_complex det = det_su3matrix(su3_in);
-	hmc_complex detadj = complexconj(&det);
-	hmc_complex detsqnorm = complexmult(&det, &detadj);
+	hmc_complex detadj = complexconj(det);
+	hmc_complex detsqnorm = complexmult(det, detadj);
 	if( (detsqnorm.re - hmc_one_f) <= projectioneps)
 		project_su3(su3_in);
 
@@ -321,8 +321,8 @@ void testing_heatbath_no123(hmc_ocl_su3matrix * in, hmc_ocl_staplematrix * stapl
 	order[1] = 2;
 	order[2] = 3;
 	hmc_complex det = det_su3matrix(su3_in);
-	hmc_complex detadj = complexconj(&det);
-	hmc_complex detsqnorm = complexmult(&det, &detadj);
+	hmc_complex detadj = complexconj(det);
+	hmc_complex detsqnorm = complexmult(det, detadj);
 	if( (detsqnorm.re - hmc_one_f) <= projectioneps)
 		project_su3(su3_in);
 
@@ -430,8 +430,8 @@ void testing_heatbath(hmc_ocl_su3matrix * in, hmc_ocl_staplematrix * staple_in, 
 	order[2] = 6 - order[1] - order[0];
 
 	hmc_complex det = det_su3matrix(su3_in);
-	hmc_complex detadj = complexconj(&det);
-	hmc_complex detsqnorm = complexmult(&det, &detadj);
+	hmc_complex detadj = complexconj(det);
+	hmc_complex detsqnorm = complexmult(det, detadj);
 	if( (detsqnorm.re - hmc_one_f) <= projectioneps)
 		project_su3(su3_in);
 
@@ -556,9 +556,9 @@ __kernel void test(
 						accumulate_su3matrix_prod(prod, tmp3);
 						ctmp = det_su3matrix(tmp3);
 						ctmp.re -= hmc_one_f;
-						hmc_complex ctmpconj = complexconj(&ctmp);
-						hmc_complex square = complexmult(&ctmp,&ctmpconj);
-						complexaccumulate(&testsum,&square);
+						hmc_complex ctmpconj = complexconj(ctmp);
+						hmc_complex square = complexmult(ctmp,ctmpconj);
+						testsum = complexadd( testsum, square );
 
 						copy_staplematrix(tester, tester2);
 

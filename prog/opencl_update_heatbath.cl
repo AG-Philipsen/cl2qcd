@@ -100,8 +100,8 @@ void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_
 	get_su3matrix(U, gaugefield, pos, t, mu);
 
 	hmc_complex det = det_su3matrix(U);
-	hmc_complex detadj = complexconj(&det);
-	hmc_complex detsqnorm = complexmult(&det, &detadj);
+	hmc_complex detadj = complexconj(det);
+	hmc_complex detsqnorm = complexmult(det, detadj);
 	if( (detsqnorm.re - hmc_one_f) <= projectioneps)
 		project_su3(U);
 
@@ -208,8 +208,8 @@ void inline perform_overrelaxing(__global hmc_ocl_gaugefield* gaugefield, const 
 	get_su3matrix(U, gaugefield, pos, t, mu);
 
 	hmc_complex det = det_su3matrix(U);
-	hmc_complex detadj = complexconj(&det);
-	hmc_complex detsqnorm = complexmult(&det, &detadj);
+	hmc_complex detadj = complexconj(det);
+	hmc_complex detsqnorm = complexmult(det, detadj);
 	if( (detsqnorm.re - hmc_one_f) <= projectioneps)
 		project_su3(U);
 

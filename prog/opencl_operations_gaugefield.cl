@@ -88,10 +88,10 @@ hmc_complex reconstruct_su3(__private hmc_ocl_su3matrix *in, int ncomp)
 {
 	int jplusone = (ncomp+1)%NC;
 	int jplustwo = (ncomp+2)%NC;
-	hmc_complex first = complexmult(&(in[(NC-1)*jplusone]),&(in[1+(NC-1)*jplustwo]));
-	hmc_complex second = complexmult(&(in[(NC-1)*jplustwo]),&(in[1+(NC-1)*jplusone]));
-	hmc_complex result = complexsubtract(&first,&second);
-	return complexconj(&result);
+	hmc_complex first = complexmult(in[(NC-1)*jplusone], in[1+(NC-1)*jplustwo]);
+	hmc_complex second = complexmult(in[(NC-1)*jplustwo], in[1+(NC-1)*jplusone]);
+	hmc_complex result = complexsubtract(first, second);
+	return complexconj(result);
 }
 #endif
 
@@ -112,8 +112,8 @@ void multiply_su3matrices(__private hmc_ocl_su3matrix *out,__private hmc_ocl_su3
 				int nq = j + (NC-1)*k;
 				qcomponent = q[nq];
 			}
-			hmc_complex tmp = complexmult(&p[np],&qcomponent);
-			complexaccumulate(&out[n],&tmp);
+			hmc_complex tmp = complexmult(p[np], qcomponent);
+			out[n] = complexadd(out[n], tmp);
 		}
 	}
 #else
@@ -194,7 +194,7 @@ void adjoin_su3matrix(__private hmc_ocl_su3matrix * mat)
 			int nnew = j + (NC-1)*i;
 			element = tmp[nnew];
 		}
-		mat[n] = complexconj(&element);
+		mat[n] = complexconj(element);
 	}
 #else
 	hmc_ocl_su3matrix tmp[SU3SIZE];
@@ -202,7 +202,7 @@ void adjoin_su3matrix(__private hmc_ocl_su3matrix * mat)
 	for(int a=0; a<NC; a++) {
 		for(int b=0; b<NC; b++) {
 			mat[ocl_su3matrix_element(a,b)] =
-			  complexconj(&(tmp[ocl_su3matrix_element(b,a)]));
+			  complexconj(tmp[ocl_su3matrix_element(b,a)]);
 		}
 	}
 #endif
@@ -214,11 +214,13 @@ hmc_complex trace_su3matrix(__private hmc_ocl_su3matrix * mat)
 	hmc_complex trace;
 #ifdef _RECONSTRUCT_TWELVE_
 	trace = reconstruct_su3(mat,NC-1);
-	for(int n=0; n<(NC-1); n++) complexaccumulate(&trace,&(mat[NC*n]));
+	for(int n=0; n<(NC-1); n++)
+		trace = complexadd( trace, mat[NC*n] );
 #else
 	trace.re=0;
 	trace.im=0;
-	for(int a=0; a<NC; a++) complexaccumulate(&trace,&(mat[ocl_su3matrix_element(a,a)]));;
+	for(int a=0; a<NC; a++)
+		trace = complexadd( trace, mat[ocl_su3matrix_element(a,a)] );
 #endif
 	return trace;
 }
@@ -235,35 +237,35 @@ hmc_complex det_su3matrix(__private hmc_ocl_su3matrix * U)
 	hmc_complex tmp1;
 	hmc_complex tmp2;
 	hmc_complex tmp3;
-	tmp1 = complexmult( &U[0], &U[3] );
+	tmp1 = complexmult( U[0], U[3] );
 	tmp2 = reconstruct_su3(U,2);
-	tmp3 = complexmult( &tmp1, &tmp2 );
-	complexaccumulate(&det,&tmp3);
+	tmp3 = complexmult( tmp1, tmp2 );
+	det = complexadd( det, tmp3 );
 
-	tmp1 = complexmult( &U[2], &U[5] );
+	tmp1 = complexmult( U[2], U[5] );
 	tmp2 = reconstruct_su3(U,0);
-	tmp3 = complexmult( &tmp1, &tmp2 );
-	complexaccumulate(&det,&tmp3);
+	tmp3 = complexmult( tmp1, tmp2 );
+	det = complexadd( det, tmp3 );
 
-	tmp1 = complexmult( &U[4], &U[1] );
+	tmp1 = complexmult( U[4], U[1] );
 	tmp2 = reconstruct_su3(U,1);
-	tmp3 = complexmult( &tmp1, &tmp2 );
-	complexaccumulate(&det,&tmp3);
+	tmp3 = complexmult( tmp1, tmp2 );
+	det = complexadd( det, tmp3 );
 
-	tmp1 = complexmult( &U[3], &U[4] );
+	tmp1 = complexmult( U[3], U[4] );
 	tmp2 = reconstruct_su3(U,0);
-	tmp3 = complexmult( &tmp1, &tmp2 );
-	complexaccumulate(&subdet,&tmp3);
+	tmp3 = complexmult( tmp1, tmp2 );
+	subdet = complexadd( subdet, tmp3 );
 
-	tmp1 = complexmult( &U[5], &U[0] );
+	tmp1 = complexmult( U[5], U[0] );
 	tmp2 = reconstruct_su3(U,1);
-	tmp3 = complexmult( &tmp1, &tmp2 );
-	complexaccumulate(&subdet,&tmp3);
+	tmp3 = complexmult( tmp1, tmp2 );
+	subdet = complexadd( subdet, tmp3 );
 
-	tmp1 = complexmult( &U[1], &U[2] );
+	tmp1 = complexmult( U[1], U[2] );
 	tmp2 = reconstruct_su3(U,2);
-	tmp3 = complexmult( &tmp1, &tmp2 );
-	complexaccumulate(&subdet,&tmp3);
+	tmp3 = complexmult( tmp1, tmp2 );
+	subdet = complexadd( subdet, tmp3 );
 
 	det.re -= subdet.re;
 	det.im -= subdet.im;
@@ -272,18 +274,18 @@ hmc_complex det_su3matrix(__private hmc_ocl_su3matrix * U)
 	hmc_complex det, det1, det2, det3, det4, det5, det6, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6;
 	det.re=0;
 	det.im=0;
-	tmp1 = complexmult( &U[ocl_su3matrix_element(1,1)], &U[ocl_su3matrix_element(2,2)] );
-	det1 = complexmult( &U[ocl_su3matrix_element(0,0)] , &tmp1);
-	tmp2 = complexmult( &U[ocl_su3matrix_element(1,2)], &U[ocl_su3matrix_element(2,0)] );
-	det2 = complexmult( &U[ocl_su3matrix_element(0,1)] , &tmp2);
-	tmp3 = complexmult( &U[ocl_su3matrix_element(1,0)], &U[ocl_su3matrix_element(2,1)] );
-	det3 = complexmult( &U[ocl_su3matrix_element(0,2)] , &tmp3);
-	tmp4 = complexmult( &U[ocl_su3matrix_element(1,1)], &U[ocl_su3matrix_element(2,0)] );
-	det4 = complexmult( &U[ocl_su3matrix_element(0,2)] , &tmp4);
-	tmp5 = complexmult( &U[ocl_su3matrix_element(1,0)], &U[ocl_su3matrix_element(2,2)] );
-	det5 = complexmult( &U[ocl_su3matrix_element(0,1)] , &tmp5);
-	tmp6 = complexmult( &U[ocl_su3matrix_element(1,2)], &U[ocl_su3matrix_element(2,1)] );
-	det6 = complexmult( &U[ocl_su3matrix_element(0,0)] , &tmp6);
+	tmp1 = complexmult( U[ocl_su3matrix_element(1,1)], U[ocl_su3matrix_element(2,2)] );
+	det1 = complexmult( U[ocl_su3matrix_element(0,0)], tmp1);
+	tmp2 = complexmult( U[ocl_su3matrix_element(1,2)], U[ocl_su3matrix_element(2,0)] );
+	det2 = complexmult( U[ocl_su3matrix_element(0,1)], tmp2);
+	tmp3 = complexmult( U[ocl_su3matrix_element(1,0)], U[ocl_su3matrix_element(2,1)] );
+	det3 = complexmult( U[ocl_su3matrix_element(0,2)], tmp3);
+	tmp4 = complexmult( U[ocl_su3matrix_element(1,1)], U[ocl_su3matrix_element(2,0)] );
+	det4 = complexmult( U[ocl_su3matrix_element(0,2)], tmp4);
+	tmp5 = complexmult( U[ocl_su3matrix_element(1,0)], U[ocl_su3matrix_element(2,2)] );
+	det5 = complexmult( U[ocl_su3matrix_element(0,1)], tmp5);
+	tmp6 = complexmult( U[ocl_su3matrix_element(1,2)], U[ocl_su3matrix_element(2,1)] );
+	det6 = complexmult( U[ocl_su3matrix_element(0,0)], tmp6);
 
 	det.re = det1.re + det2.re + det3.re - det4.re - det5.re - det6.re;
 	det.im = det1.im + det2.im + det3.im - det4.im - det5.im - det6.im;
@@ -306,8 +308,8 @@ void project_su3(__private hmc_ocl_su3matrix *U)
 	}
 
 	hmc_complex norm;
-	norm.re = pow(detsqunorm,hmc_one_f/6.)*cos(phi/3.);
-	norm.im = pow(detsqunorm,hmc_one_f/6.)*sin(phi/3.);
+	norm.re = pow(detsqunorm,hmc_one_f/6)*cos(phi/3);
+	norm.im = pow(detsqunorm,hmc_one_f/6)*sin(phi/3);
 
 	hmc_float normsqunorm = norm.re*norm.re+norm.im*norm.im;
 
@@ -407,12 +409,12 @@ void multiply_staplematrix(__private hmc_ocl_staplematrix *out, __private hmc_oc
 				int nq = j + (NC-1)*k;
 				qcomponent = q[nq];
 			}
-			hmc_complex tmp = complexmult(&p[np],&qcomponent);
-			complexaccumulate(&out[n],&tmp);
-		}
-	}
-	//the left components:
-	hmc_complex X = reconstruct_su3(p,0);
+			hmc_complex tmp = complexmult(p[np], qcomponent);
+			out[n] = complexadd(out[n], tmp)
+		         }
+	         }
+	         //the left components:
+	         hmc_complex X = reconstruct_su3(p,0);
 	hmc_complex Y = reconstruct_su3(p,1);
 	hmc_complex Z = reconstruct_su3(p,2);
 	hmc_complex tmp;
@@ -423,26 +425,26 @@ void multiply_staplematrix(__private hmc_ocl_staplematrix *out, __private hmc_oc
 	out[8].re=0;
 	out[8].im=0;
 
-	tmp = complexmult(&X,&q[0]);
-	complexaccumulate(&out[6],&tmp);
-	tmp = complexmult(&Y,&q[1]);
-	complexaccumulate(&out[6],&tmp);
-	tmp = complexmult(&Z,&q[6]);
-	complexaccumulate(&out[6],&tmp);
+	tmp = complexmult(X, q[0]);
+	out[6] = complexadd(out[6], tmp);
+	tmp = complexmult(Y, q[1]);
+	out[6] = complexadd(out[6], tmp);
+	tmp = complexmult(Z, q[6]);
+	out[6] = complexadd(out[6], tmp);
 
-	tmp = complexmult(&X,&q[2]);
-	complexaccumulate(&out[7],&tmp);
-	tmp = complexmult(&Y,&q[3]);
-	complexaccumulate(&out[7],&tmp);
-	tmp = complexmult(&Z,&q[7]);
-	complexaccumulate(&out[7],&tmp);
+	tmp = complexmult(X, q[2]);
+	out[7] = complexadd(out[7], tmp);
+	tmp = complexmult(Y, q[3]);
+	out[7] = complexadd(out[7], tmp);
+	tmp = complexmult(Z, q[7]);
+	out[7] = complexadd(out[7], tmp);
 
-	tmp = complexmult(&X,&q[4]);
-	complexaccumulate(&out[8],&tmp);
-	tmp = complexmult(&Y,&q[5]);
-	complexaccumulate(&out[8],&tmp);
-	tmp = complexmult(&Z,&q[8]);
-	complexaccumulate(&out[8],&tmp);
+	tmp = complexmult(X, q[4]);
+	out[8] = complexadd(out[8], tmp);
+	tmp = complexmult(Y, q[5]);
+	out[8] = complexadd(out[8], tmp);
+	tmp = complexmult(Z, q[8]);
+	out[8] = complexadd(out[8], tmp);
 
 #else
 	multiply_su3matrices(out, p, q);
@@ -466,15 +468,15 @@ void accumulate_su3matrices_add(__private hmc_ocl_staplematrix *p,__private hmc_
 {
 #ifdef _RECONSTRUCT_TWELVE_
 	for(int n=0; n<NC*(NC-1); n++) {
-		complexaccumulate(&(p[n]), &(q[n]));
+		p[n] = complexadd(p[n] , q[n]);
 	}
 	for(int n=NC*(NC-1);  n<NC*NC; n++) {
 		hmc_complex tmp = reconstruct_su3(q, n-NC*(NC-1));
-		complexaccumulate(&(p[n]), &(tmp));
+		p[n] = complexadd(p[n] , tmp);
 	}
 #else
 	for(int k=0; k<NC*NC; k++) {
-		complexaccumulate(&(p[k]),&(q[k]));
+		p[k] = complexadd(p[k] , q[k]);
 	}
 #endif
 	return;
