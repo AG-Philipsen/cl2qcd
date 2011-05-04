@@ -140,6 +140,7 @@ add_executable( hmc
 	host_solver.cpp
 	host_fermionobservables.cpp
 	host_kappa.cpp
+	host_matrix.cpp
 	klepsydra/timer.cpp
 	klepsydra/monotonic.cpp
 	host_hmc.cpp
