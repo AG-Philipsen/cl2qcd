@@ -87,9 +87,14 @@ hmc_error gaugefield::save(int number){
 
   //these are not yet used...
   hmc_float c2_rec = 0, epsilonbar = 0, mubar = 0;
-
-  string outputfile ("conf.");
-  outputfile.append((*parameters).sourcefilenumber);
+  //LZ: generalize the following to larger numbers, if necessary...
+  stringstream strnumber;
+  strnumber.fill('0');
+  strnumber.width(5);
+  strnumber<<right<<number;
+  stringstream outfilename;
+  outfilename<<"conf."<<strnumber.str();
+  string outputfile = outfilename.str();
   
   copy_gaugefield_to_ildg_format(gaugefield_buf, gf);
 

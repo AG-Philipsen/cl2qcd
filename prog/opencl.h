@@ -51,6 +51,10 @@ public:
 	opencl(cl_device_type wanted, const size_t ls, const size_t gs, usetimer* timer, inputparameters* parameters) {
 		init(wanted, ls, gs, timer, parameters);
 	};
+	/**
+	 * Empty constructor. Needed for gaugefield class.
+	 */
+	opencl() {};
 	~opencl() {
 		finalize();
 	};

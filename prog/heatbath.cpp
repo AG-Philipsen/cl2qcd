@@ -36,7 +36,8 @@ int main(int argc, char* argv[]) {
 #endif
 
   gaugefield.init(1,devicetypes,&parameters,&inittime);
-  init_random_seeds(rnd, rndarray, &inittime);
+  int err = init_random_seeds(rndarray, "rand_seeds", &inittime);
+  if(err) return err;
 
   //first output, if you like it...
   //  cout << endl << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]" << endl;
@@ -60,8 +61,6 @@ int main(int argc, char* argv[]) {
   int savefreq = parameters.get_savefrequency();
 
   for(int i=0; i<nsteps; i++) {
-    int VERBOSITY=2;
-    if(VERBOSITY == 2) cout<<"iteration "<<i<<endl;
     gaugefield.heatbath(local_work_size, global_work_size, &updatetime);
     for(int j=0; j<overrelaxsteps; j++) gaugefield.overrelax(local_work_size,global_work_size, &overrelaxtime);  
     if( ( (i+1)%writefreq ) == 0 ) {
