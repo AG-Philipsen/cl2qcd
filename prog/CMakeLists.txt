@@ -141,14 +141,13 @@ add_executable( hmc
 	host_fermionobservables.cpp
 	host_kappa.cpp
 	host_matrix.cpp
-	klepsydra/timer.cpp
-	klepsydra/monotonic.cpp
 	host_hmc.cpp
 )
 target_link_libraries( hmc
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
+	klepsydra
 )
 add_executable( heatbath
 	heatbath.cpp
@@ -162,16 +161,19 @@ add_executable( heatbath
 	opencl.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
-	klepsydra/timer.cpp
-	klepsydra/monotonic.cpp
 )
 target_link_libraries( heatbath
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
+	klepsydra
 )
+
+add_library( klepsydra
+	klepsydra/timer.cpp
+	klepsydra/monotonic.cpp )
 if(NOT CMAKE_HOST_APPLE)
-	target_link_libraries( hmc rt )
+	target_link_libraries( klepsydra rt )
 endif(NOT CMAKE_HOST_APPLE)
 
 # Documentation
