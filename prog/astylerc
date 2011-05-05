@@ -14,6 +14,11 @@ style=stroustrup
 
 # Indent by tabs, this allows easier keyboard navigation and adjustment of indention width to screen size
 indent=tab=2
+# But only allow tabs to be used for indention, not for placement
+convert-tabs
+
+# Make sure operators and commas have enough air to breath
+pad-oper
 
 # Switch statements more readable
 indent-switches
@@ -23,3 +28,4 @@ min-conditional-indent=0
 
 # We always want linux line endings
 lineend=linux
+
