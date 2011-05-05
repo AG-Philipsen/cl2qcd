@@ -54,41 +54,43 @@ usetimer copytime;
 hmc_float plaq, splaq, tplaq;
 hmc_complex pol;
 
-void print_hello(char* name){
-  std::cout<<"This is heatbath program, "<<name<<endl;
-  return;
+void print_hello(char* name)
+{
+	std::cout << "This is heatbath program, " << name << endl;
+	return;
 }
 
-void print_info(inputparameters* params){
-  printf("**********************************************************\n");
-  printf("Compile time parameters:\n");
-  printf("NSPACE:  %d\n",NSPACE);
-  printf("NTIME:   %d\n",NTIME);
-  printf("NDIM:    %d\n",NDIM);
-  printf("NCOLOR:  %d\n",NC);
-  printf("NSPIN:   %d\n",NSPIN);
-  printf("\n");
-  printf("Run time parameters:\n");
-  printf("beta  = %f\n",(*params).get_beta());
-  printf("prec = \t%d\n",(*params).get_prec());
-  printf("thermsteps = \t%d\n",(*params).get_thermalizationsteps());
-  printf("heatbathsteps = %d\n",(*params).get_heatbathsteps());
-  printf("overrelaxsteps = %d\n",(*params).get_overrelaxsteps());
-  printf("\n");
-  if ((*params).get_startcondition()==START_FROM_SOURCE) {
-    printf("sourcefile = ");
-    (*params).display_sourcefile();
-    printf("\n");
-  }
-  if ((*params).get_startcondition()==COLD_START) {
-    printf("cold start\n");
-  }
-  if ((*params).get_startcondition()==HOT_START) {
-    printf("hot start\n");
-  }
-  printf("**********************************************************\n");
-  printf("\n");
-  return;
+void print_info(inputparameters* params)
+{
+	std::cout << "**********************************************************\n";
+	std::cout << "Compile time parameters:\n";
+	std::cout << "NSPACE:  " << NSPACE << '\n';
+	std::cout << "NTIME:   " << NTIME << '\n';
+	std::cout << "NDIM:    " << NDIM << '\n';
+	std::cout << "NCOLOR:  " << NC << '\n';
+	std::cout << "NSPIN:   " << NSPIN << '\n';
+	std::cout << '\n';
+	std::cout << "Run time parameters:\n";
+	std::cout << "beta  = " << params->get_beta() << '\n';
+	std::cout << "prec  = " << params->get_prec() << '\n';
+	std::cout << "thermsteps     = " << params->get_thermalizationsteps() << '\n';
+	std::cout << "heatbathsteps  = " << params->get_heatbathsteps() << '\n';
+	std::cout << "overrelaxsteps = " << params->get_overrelaxsteps() << '\n';
+	std::cout << '\n';
+	if (params->get_startcondition() == START_FROM_SOURCE) {
+		std::cout << "sourcefile = ";
+		params->display_sourcefile();
+		std::cout << '\n';
+	}
+	if (params->get_startcondition() == COLD_START) {
+		std::cout << "cold start\n";
+	}
+	if (params->get_startcondition() == HOT_START) {
+		std::cout << "hot start\n";
+	}
+	std::cout << "**********************************************************\n";
+	std::cout << std::endl;
+	return;
 }
 
 #endif /* _HEATBATH_ */
