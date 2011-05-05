@@ -56,4 +56,13 @@ hmc_error copy_3x3_matrix(hmc_3x3matrix *dest, hmc_3x3matrix *src);
 */
 hmc_error multiply_3x3matrix_by_real(hmc_3x3matrix *mat, hmc_float factor);
 
+/**
+* evaluates the sum of abs of difference element-by-element between two matrices
+* @param[out] result the final ``absolute difference'' of the two matrices
+* @param[in] mat2 matrix1 to compare
+* @param[in] mat2 matrix2 to compare
+* @return Error code as defined in hmcerrs.h
+*/
+hmc_error absoluteDifference_3x3_matrix(hmc_float *result, hmc_3x3matrix *mat1, hmc_3x3matrix *mat2);
+
 #endif

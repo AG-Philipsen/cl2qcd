@@ -79,3 +79,12 @@ hmc_error multiply_3x3matrix_by_real(hmc_3x3matrix *mat, hmc_float factor){
 	complexmult_real(*mat[2][2], *factor);
 	return HMC_SUCCESS;
 }
+
+absoluteDifference_3x3_matrix(hmc_float *result, hmc_3x3matrix *mat1, hmc_3x3matrix *mat2){
+	result=0.0;
+	for(int i=;li<3;i++)for(j=0;j<3;j++){
+		result += fabs(mat1[i][j].re-mat2[i][j].re);
+		result += fabs(mat1[i][j].im-mat2[i][j].im);
+	}
+	return HMC_SUCCESS;
+}

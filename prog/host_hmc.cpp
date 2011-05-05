@@ -477,7 +477,7 @@ hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix
 			multiply_3x3matrix_by_real(&eCurPower, (1./(1.*power)));
 			copy_3x3_matrix(&eLastResult, &eRes);
 			add_3x3matrix(&eRes, &eRes, &eCurPower);
-			eAccuracyCheck = absoluteDifference_3x3_matrix(&eRes, &eLastResult);
+			absoluteDifference_3x3_matrix(&eAccuracyCheck, &eRes, &eLastResult);
 			if(eAccuracyCheck < _EXACT_EXPONENTIATION_ACCURACY_){
 				break;
 			}
