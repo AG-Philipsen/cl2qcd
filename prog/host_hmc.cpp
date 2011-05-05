@@ -442,9 +442,67 @@ hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix
 		#endif // _RECONSTRUCT_TWELVE_
 		project_su3(out);
 	
-	#else  // (ifndef) _EXPONENTIATE_ALGEBRA_ALL_ORDERS_s
-		// this is TODO ! the case where one actually evaluates -as matrices- many orders of exp(i*e*P)=1+i*e*P+(1/2)(i*e*P) + ...
-	#endif // EXPONENTIATE_ALGEBRA_ALL_ORDERS
+	#else  // (ifndef) _EXPONENTIATE_ALGEBRA_ALL_ORDERS_
+		// this is the case where one actually evaluates -as matrices- many orders of exp(i*e*P)=1+i*e*P+(1/2)(i*e*P) + ...
+		// 1. create mat = (i epsilon)/2 p_i lambda_i    with lambda=gellmann matrix
+		hmc_3x3matrix eMat;
+		hmc_float halfeps = epsilon*F_1_2;
+		eMat[0][0].re = 0.0;
+		eMat[0][0].im = halfeps*(in[7]*F_1_S3+in[2]);
+		eMat[0][1].re = halfeps*in[1];
+		eMat[0][1].im = halfeps*in[0];
+		eMat[0][2].re = halfeps*in[4];
+		eMat[0][2].im = halfeps*in[3];
+		eMat[1][0].re = -halfeps*in[1];;
+		eMat[1][0].im = halfeps*in[0];;
+		eMat[1][1].re = 0.0;
+		eMat[1][1].im = halfeps*(in[7]*F_1_S3-in[2]);
+		eMat[1][2].re = halfeps*in[6];
+		eMat[1][2].im = halfeps*in[5];
+		eMat[2][0].re = -halfeps*in[4];
+		eMat[2][0].im = halfeps*in[3];
+		eMat[2][1].re = -halfeps*in[6];
+		eMat[2][1].im = halfeps*in[5];
+		eMat[2][2].re = 0.0;
+		eMat[2][2].im = -epsilon*in[7]*F_1_S3;
+		// 2. start with the exp(...) expansion by using standard 3x3 sum and multiplication
+		hmc_3x3matrix eRes, eCurPower, eNextPower, eLastResult;
+		hmc_float eAccuracyCheck;
+		set_to_3x3_identity(&eRes);
+		set_to_3x3_identity(&eCurPower);
+		hmc_float eCoefficient = 1.0;
+		for(int power=1;power<_EXACT_EXPONENTIATION_MAX_POWER_;power++){
+			multiply_3x3matrix(&eNextPower, &eMat, &eCurPower);
+			copy_3x3_matrix(&eCurPower, &eNextPower);
+			multiply_3x3matrix_by_real(&eCurPower, (1./(1.*power)));
+			copy_3x3_matrix(&eLastResult, &eRes);
+			add_3x3matrix(&eRes, &eRes, &eCurPower);
+			eAccuracyCheck = absoluteDifference_3x3_matrix(&eRes, &eLastResult);
+			if(eAccuracyCheck < _EXACT_EXPONENTIATION_ACCURACY_){
+				break;
+			}
+		}
+		// 3. here I have the exponentiated matrix in 3x3 generic form (eRes), project it
+		#ifdef _RECONSTRUCT_TWELVE_
+			*out[0] = eRes[0][0];
+			*out[1] = eRes[0][1];
+			*out[2] = eRes[0][2];
+			*out[3] = eRes[1][0];
+			*out[4] = eRes[1][1];
+			*out[5] = eRes[1][2];
+		#else
+			*out[0][0] = eRes[0][0];
+			*out[0][1] = eRes[0][1];
+			*out[0][2] = eRes[0][2];
+			*out[1][0] = eRes[1][0];
+			*out[1][1] = eRes[1][1];
+			*out[1][2] = eRes[1][2];
+			*out[2][0] = eRes[2][0];
+			*out[2][1] = eRes[2][1];
+			*out[2][2] = eRes[2][2];
+		#endif // _RECONSTRUCT_TWELVE_
+		project_su3(out);
+	#endif // EXPONENTIATE_ALGEBRA_ALL_ORDERS_
 	
 	#endif // _USE_MORNGINGSTAR_PEARDON_
 	

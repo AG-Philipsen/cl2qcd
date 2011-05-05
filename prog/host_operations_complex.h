@@ -43,7 +43,7 @@ hmc_complex complexadd(hmc_complex *a, hmc_complex *b);
  *
  * \param a A complex number
  * \param b A complex number
- * \return The result of substractinb b from a
+ * \return The result of subtracting b from a
  */
 hmc_complex complexsubtract(hmc_complex *a, hmc_complex *b); 
 /**
