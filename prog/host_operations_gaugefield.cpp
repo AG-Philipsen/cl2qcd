@@ -271,7 +271,6 @@ hmc_complex det_su3matrix(hmc_su3matrix * U){
   return det;
 }
 
-
 hmc_error project_su3(hmc_su3matrix *U){
 
   //Extract initial vectors
@@ -280,22 +279,22 @@ hmc_error project_su3(hmc_su3matrix *U){
   hmc_complex c[NC];
 #ifdef _RECONSTRUCT_TWELVE_
   a[0] = (*U)[0];
-  a[1] = (*U)[1];
-  a[2] = reconstruct_su3(U,0);
-  b[0] = (*U)[2];
+  a[1] = (*U)[2];
+  a[2] = (*U)[4];
+  b[0] = (*U)[1];
   b[1] = (*U)[3];
-  b[2] = reconstruct_su3(U,1);
-  c[0] = (*U)[4];
-  c[1] = (*U)[5];
+  b[2] = (*U)[5];
+  c[0] = reconstruct_su3(U,0);
+  c[1] = reconstruct_su3(U,1);
   c[2] = reconstruct_su3(U,2);
 #else
     for (int i = 0; i<NC; i++){
-     a[i] = (*U)[i][0];
-     b[i] = (*U)[i][1];
-     c[i] = (*U)[i][2];
+     a[i] = (*U)[0][i];
+     b[i] = (*U)[1][i];
+     c[i] = (*U)[2][i];
     }
 #endif
-
+  
   //New SU3-Matrix
   //first vector
   //norm
@@ -331,7 +330,7 @@ hmc_error project_su3(hmc_su3matrix *U){
   }
   
 //norm
-  norm = 0;
+  norm = 0.;
   for (int i=0; i<NC; i++)
   {
     hmc_complex tmp;
@@ -345,7 +344,8 @@ hmc_error project_su3(hmc_su3matrix *U){
     b[i].re *= norm;
     b[i].im *= norm;
   }
-  
+
+#ifdef _RECONSTRUCT_TWELVE_
   //third vector 
   //orthogonal vector
   hmc_complex tmp;
@@ -360,29 +360,46 @@ hmc_error project_su3(hmc_su3matrix *U){
   tmp2 = complexmult(&(a[0]), &(b[2]));
   tmp2 = complexconj(&tmp2);
   c[1] = complexsubtract(&tmp, &tmp2);
-#ifndef _RECONSTRUCT_TWELVE_
+  
+  //Set new values to matrix
+  (*U)[0] = a[0];
+  (*U)[1] = b[0];
+  (*U)[2] = a[1];
+  (*U)[3] = b[1];
+  (*U)[4] = a[2];
+  (*U)[5] = b[2];
+#else
+  //third vector 
+  //orthogonal vector
+  hmc_complex tmp;
+  hmc_complex tmp2;
+  tmp = complexmult(&(a[1]), &(b[2]));
+  tmp = complexconj(&tmp);
+  tmp2 = complexmult(&(a[2]), &(b[1]));
+  tmp2 = complexconj(&tmp2);
+  c[0] = complexsubtract(&tmp, &tmp2);
+  tmp = complexmult(&(a[2]), &(b[0]));
+  tmp = complexconj(&tmp);
+  tmp2 = complexmult(&(a[0]), &(b[2]));
+  tmp2 = complexconj(&tmp2);
+  c[1] = complexsubtract(&tmp, &tmp2);
   tmp = complexmult(&(a[0]), &(b[1]));
   tmp = complexconj(&tmp);
   tmp2 = complexmult(&(a[1]), &(b[0]));
   tmp2 = complexconj(&tmp2);
   c[2] = complexsubtract(&tmp, &tmp2);
+  
+  //Set new values to matrix
+  for(int i=0; i<NC; i++) {
+     (*U)[0][i] = a[i];
+     (*U)[1][i] = b[i];
+     (*U)[2][i] = c[i];
+  }
 #endif
 
-#ifdef _RECONSTRUCT_TWELVE_
-  for(int n=0; n<NC-1; n++) { 
-    (*U)[n] = a[n];
-    (*U)[n+NC-1] = b[n];
-    (*U)[n+NC+NC-2] = c[n];
-  }
-  #else
-  for(int i=0; i<NC; i++) {
-      (*U)[i][0] = a[i];
-      (*U)[i][1] = b[i];
-      (*U)[i][2] = c[i];
-  }
-#endif
   return HMC_SUCCESS;
 }
+
 
 hmc_error project_su3_old(hmc_su3matrix *U){
 //old code

@@ -64,5 +64,26 @@ hmc_error multiply_3x3matrix_by_real(hmc_3x3matrix *mat, hmc_float factor);
 * @return Error code as defined in hmcerrs.h
 */
 hmc_error absoluteDifference_3x3_matrix(hmc_float *result, hmc_3x3matrix *mat1, hmc_3x3matrix *mat2);
-
+/**
+ * Accumulates a SU3-Matrix into an 3x3-Matrix
+ * @param[out] out The matrix into which to store the accumulation
+ * @param[in]  q matrix for the accumulation
+ * @return Error code as defined in hmcerrs.h
+ */
+hmc_error accumulate_su3matrix_3x3_add(hmc_3x3matrix *out, hmc_su3matrix *q);
+/**
+ * Computes the trace of an 3x3-Matrix
+ * @param[out] out The result of tracing
+ * @param[in]  q matrix for tracing
+ * @return Error code as defined in hmcerrs.h
+ */
+hmc_error trace_3x3matrix (hmc_complex *out, hmc_3x3matrix *q);
+/**
+ * Computes the adjoint of an 3x3-Matrix
+ * @param[out] out The adjoint matrix
+ * @param[in]  q matrix to adjoin
+ * @return Error code as defined in hmcerrs.h
+ */
+hmc_error adjoint_3x3matrix (hmc_3x3matrix * out, hmc_3x3matrix *q);
 #endif
+

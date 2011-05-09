@@ -96,3 +96,48 @@ int absoluteDifference_3x3_matrix(hmc_float *result, hmc_3x3matrix *mat1, hmc_3x
 		}
 	return HMC_SUCCESS;
 }
+
+hmc_error accumulate_su3matrix_3x3_add(hmc_3x3matrix *out, hmc_su3matrix *q){
+#ifdef _RECONSTRUCT_TWELVE_
+  for (int i=0; i< NC-1; i++)
+  {
+    for (int k=0; k<NC; k++)
+    {
+      complexaccumulate(&(*out)[i][k], &(*q)[i+(NC-1)*k]);
+    }
+    for (int k=0; k<NC; k++)
+      {
+	hmc_complex tmp = reconstruct_su3(q, k); 
+	complexaccumulate(&(*out)[2][k], &(tmp));
+      }
+  }
+#else
+
+  for(int i=0; i<NC; i++) {
+    for(int k=0; k<NC; k++) {
+      complexaccumulate(&(*out)[i][k],&(*q)[i][k]);
+    }
+  }
+#endif
+  return HMC_SUCCESS;
+}
+
+hmc_error trace_3x3matrix (hmc_complex * out, hmc_3x3matrix *q){
+  (*out).re = (*q[0][0]).re;
+  (*out).im = (*q[0][0]).im;
+  (*out).re += (*q[1][1]).re;
+  (*out).im += (*q[1][1]).im;
+  (*out).re += (*q[2][2]).re;
+  (*out).im += (*q[2][2]).im;
+  
+  return HMC_SUCCESS;
+}
+
+hmc_error adjoint_3x3matrix (hmc_3x3matrix * out, hmc_3x3matrix *q){
+  for(int a=0; a<3; a++) {
+    for(int b=0; b<3; b++) {
+      (*out)[a][b] = complexconj(&(*q)[b][a]);
+    }
+  }  
+  return HMC_SUCCESS;
+}
