@@ -194,7 +194,7 @@ hmc_error spinprojectproduct_gamma3(hmc_su3matrix* u, hmc_spinor* spin, hmc_floa
  * /f$\theta = \Pi/f$ are 'antiperiodic' BC.
  *
  * @param[in,out] in Spinor to be changed
- * @param[in] theta /f$ \theta /f$
+ * @param[in] theta angle /f$ \theta /f$
  * @return void
  * remark tested by CP
  * @todo the calculation involves sin- and cos-evaluations. Perhaps one should optimize this for the two special cases mentioned above.
