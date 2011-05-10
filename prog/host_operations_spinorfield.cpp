@@ -298,3 +298,11 @@ void copy_spinor_eoprec(hmc_complex * in, hmc_complex * out){
   }
   return;
 }
+
+
+hmc_error generate_gaussian_spinorfield(hmc_spinor_field * out){
+	// SL: this is a layer that calls the all-purpose hmc_complex gaussianly-distributed vector
+	// with appropriate length and variance, i.e. SPINORFIELDSIZE and 1/2
+	return gaussianComplexVector((hmc_complex *)out, SPINORFIELDSIZE, 0.5);
+	// SL: not yet tested
+}

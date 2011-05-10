@@ -12,6 +12,8 @@
 #include "types.h"
 #include "host_geometry.h"
 #include "host_operations_complex.h"
+#include "host_operations_matrix.h"
+#include "host_operations_su3matrix.h"
 #include "host_operations_gaugefield.h"
 #include "host_operations_spinor.h"
 #include "host_operations_spinorfield.h"

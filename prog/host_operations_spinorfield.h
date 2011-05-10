@@ -13,6 +13,7 @@
 #include "host_operations_complex.h"
 #include "host_operations_gaugefield.h"
 #include "host_operations_spinor.h"
+#include "host_random.h"
 #include "host_solver.h"
 #include <cmath>
 
@@ -54,5 +55,14 @@ hmc_error create_point_source_eoprec(hmc_eoprec_spinor_field* be,hmc_eoprec_spin
 
 void copy_spinor(hmc_complex * in, hmc_complex * out);
 void copy_spinor_eoprec(hmc_complex * in, hmc_complex * out);
+
+/**
+ * Generates a gaussian distributed complex vector of length SPINORFIELDSIZE and variance 0.5.
+ * @param[out] out output gauge momentum
+ * @return Error code as defined in hmcerrs.h
+ * @todo needs testing
+ *
+ */
+hmc_error generate_gaussian_spinorfield(hmc_spinor_field * out);
 
 #endif /* _OPERATIONS_SPINORFIELDH_ */

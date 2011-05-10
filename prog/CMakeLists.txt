@@ -123,12 +123,15 @@ add_executable( hmc
 	hmc.cpp
 	host_geometry.cpp
 	host_operations_complex.cpp
+	host_operations_su3matrix.cpp
+	host_operations_matrix.cpp
 	host_operations_gaugefield.cpp
+	host_operations_gaugemomentum.cpp
 	host_operations_spinor.cpp
 	host_operations_spinorfield.cpp
 	host_operations_fermionmatrix.cpp
 	host_gaugeobservables.cpp
-	host_testing.cpp
+# 	host_testing.cpp
 	host_input.cpp
 	host_readgauge.cpp
 	host_random.cpp
@@ -140,7 +143,6 @@ add_executable( hmc
 	host_solver.cpp
 	host_fermionobservables.cpp
 	host_kappa.cpp
-	host_matrix.cpp
 	host_hmc.cpp
 )
 target_link_libraries( hmc
