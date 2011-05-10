@@ -214,10 +214,13 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
 
 /**
  * Called by build_su3matrix_by_exponentiation in case of "smart" approach.
- * Takes the 2*(8+1) real parameters beta_0, gamma_0, beta[8], gamma[8] and compiles all components of the generic 3x3 complex matrix that is the linear combination of identity+generators:
+ * Takes the 2*(8+1) real parameters beta_0, gamma_0, beta[8], gamma[8] and compiles all components
+ * of the generic 3x3 complex matrix that is the linear combination of identity+generators:
  * /f[
- * \ldots
+ *     \exp(i\epsilon Q) = (\beta_0+i\gamma_0)\cdot 1 + \sum_\ell T_\ell (\beta_\ell + i \gamma_\ell)
  * /f]
+ * the coefficients gamm and beta being calculated by the caller (as in Steo's notes) by contractions with 
+ * the SU(3) symmetric structure constants with the 8 real parameters defining the algebra element
  *
  * @param[in] beta_0 ... 
  * @param[in] gamma_0 ...
@@ -226,20 +229,19 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
  * @param[out] out output 3x3-Matrix
  * @return Error code as defined in hmcerrs.h
  * @todo needs testing
- * @todo complete this descritption and insert latex formula here
  */
 hmc_error construct_3x3_combination(hmc_float beta_0, hmc_float gamma_0, hmc_float beta[], hmc_float gamma[], hmc_3x3matrix out); 
 
 /**
  * Calculates the SU(3)-Matrix /f$\exp(i\epsilon Q)/f$, where Q is a su(3)-algebra element (practically 8 real numbers). 
- * This can be done either by calculating the exponential series to order 2,3 or all orders or by applying the algorithm provided by Morningstar-Peardon.
+ * This can be done either by calculating the exponential series to order 2,3 or all orders or by applying the algorithm
+ * provided by Morningstar-Peardon.
  * @param[in] in input su(3)-algebra element (8 real numbers)
  * @param[out] out output SU(3)-Matrix
  * @param[in] epsilon input parameter
  * @return Error code as defined in hmcerrs.h
  * @todo needs testing
  * @todo implement Morningstar-Peardon
- * @todo implement exp to all orders
  * @todo in the end this should be moved elsewhere since it is not specific to he hmc-algorithm
  */
 hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix *out, hmc_float epsilon); 
