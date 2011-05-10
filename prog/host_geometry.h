@@ -89,7 +89,7 @@ void get_even_site(int idx, int * out_space, int * out_t);
 void get_odd_site(int idx, int * out_space, int * out_t);
 
 /**
- * Get the non-even-odd-preconditioned index pased on the spatial and temporal
+ * Get the non-even-odd-preconditioned index of a site based on the spatial and temporal
  * index.
  *
  * @param spacepos Spatial index
@@ -98,9 +98,24 @@ void get_odd_site(int idx, int * out_space, int * out_t);
  */
 int get_global_pos(int spacepos, int t);
 
-//get gaugefield element from long array
 /**
- * @todo this function is highly misterious.
+ * Get the non-even-odd-preconditioned index link based on the spatial, temporal
+ * and Dirac index.
+ *
+ * @param spacepos Spatial index
+ * @param t Temporal index
+ * @return Global index
+ */
+int get_global_link_pos(int mu, int spacepos, int t);
+
+//get gaugefield element from long array
+/** This function returns the index of a specific hmc_float out of an hmc_complex array. 
+ *  This is used to when copying the gaugefield to the OpenCL device.
+ *  One has:
+ *   c: complex index (0 for real, 1 for imaginary part)
+ *   a, b: SU3 indices
+ *   mu, spacepos, t: Dirac and spacetime indices
+ * @todo this function is highly misterious. Still??
  */
 int ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t);
 

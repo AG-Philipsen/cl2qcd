@@ -20,10 +20,13 @@ hmc_error md_update_gaugefield(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gau
 			for(int mu = 0; mu<NDIM; mu++){
 			hmc_su3matrix tmp;
 			hmc_su3matrix tmp2;
-			//TODO CP: here one has to calculate exp (i eps p), which is in principle again a traceless, hermitian matrix. Let it be stored in tmp2, so one has to ensure that it fits the su3-format
+// 			int globalpos = get_global_pos;
+// 			hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, &tmp2, eps);
 			get_su3matrix(&tmp, u_in,pos, t, mu);
 		
-			//TODO check the order of multiplication again!! tmp U or Utmp?? does it matter??
+			/** 
+			 * @todo check the order of multiplication again!! tmp U or Utmp?? does it matter??
+			 */
 			accumulate_su3matrix_prod( &tmp, &tmp2);
 
 			put_su3matrix(u_in, &tmp, pos, t, mu);

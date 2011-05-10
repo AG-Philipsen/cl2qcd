@@ -71,13 +71,24 @@ int inline get_global_pos(int spacepos, int t){
   return spacepos + VOLSPACE * t;
 }
 
-//site = pos + VOLSPACE*t =  x + y*NSPACE + z*NSPACE*NSPACE + VOLSPACE*t
-//idx = mu + NDIM*site
+int inline get_global_link_pos(int mu, int spacepos, int t){
+  return mu + NDIM*get_global_pos(spacepos, t);
+}
+
+// this function returns the number of a specific hmc_float out of an 
+//   hmc_complex array.
+//   c: complex index (0 for real, 1 for imaginary part)
+//   a, b: SU3 indices
+//   mu, spacepos, t: Dirac and spacetime indices
 int ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t){
 #ifdef _RECONSTRUCT_TWELVE_
-  return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*spacepos+2*NC*(NC-1)*NDIM*VOLSPACE*t;
-#else
-  return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*spacepos+2*NC*NC*NDIM*VOLSPACE*t;
+	//old: 
+//	return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*spacepos+2*NC*(NC-1)*NDIM*VOLSPACE*t;
+	return c + 2*( a + (NC-1)*b + NC*(NC-1)* ( get_global_link_pos(mu, spacepos, t) ) );
+	#else
+	//old:
+//	return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*spacepos+2*NC*NC*NDIM*VOLSPACE*t;
+	 return c + 2* (a + NC*b+ NC*NC*( get_global_link_pos(mu, spacepos, t) ) );
 #endif
 }
 
