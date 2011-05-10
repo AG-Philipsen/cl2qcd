@@ -88,8 +88,8 @@ int main(int argc, char* argv[])
 		err = md_update_spinorfield(chi, phi, &gaugefield, parameters);
 
 		//update gaugefield and gauge_momenta via leapfrog
-		//here, phi is inverted several times and stored in phi_inv
-		err = leapfrog(parameters, &gaugefield, p, phi, &new_field, new_p, phi_inv);
+		//here, phi is inverted several times and stored in phi_inv each time
+// 		err = leapfrog(parameters, &gaugefield, p, phi, &new_field, new_p, phi_inv);
 
 		//metropolis step: afterwards, the updated config is again in gaugefield and p
 		//generate new random-number
