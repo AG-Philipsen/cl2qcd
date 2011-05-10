@@ -209,7 +209,6 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta, hmc_spinor_field * phi
 
 
 //CP: as in Gattringer/Lang, QCD on the Lattice, 8.2, p. 197
-//TODO lateron, a multi-step alg. with different stepsizes for gauge and fermion force should be implemented
 hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gauge_momentum * p_in
 #ifdef _FERMIONS_
 	, hmc_spinor_field * phi

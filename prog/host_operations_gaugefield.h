@@ -112,7 +112,7 @@ hmc_error multiply_staplematrix(hmc_staplematrix *out, hmc_su3matrix *p, hmc_sta
  * Reconstruct the third row of a compressed SU3 matrix
  *
  * @param in The compressed SU3 matrix
- * @param ncomp The row to reconstruct
+ * @param ncomp The component of the row to reconstruct
  * @return The value of the chosen component
  */
 hmc_complex reconstruct_su3(hmc_su3matrix *in, int ncomp);
