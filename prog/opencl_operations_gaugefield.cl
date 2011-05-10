@@ -410,7 +410,7 @@ void multiply_staplematrix(__private hmc_ocl_staplematrix *out, __private hmc_oc
 				qcomponent = q[nq];
 			}
 			hmc_complex tmp = complexmult(p[np], qcomponent);
-			out[n] = complexadd(out[n], tmp)
+			out[n] = complexadd(out[n], tmp);
 		         }
 	         }
 	         //the left components:
