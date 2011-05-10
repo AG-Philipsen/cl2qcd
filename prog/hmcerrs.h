@@ -19,5 +19,6 @@ const hmc_error HMC_UNDEFINEDERROR = -999;
 const hmc_error HMC_EOERROR = -5;
 const hmc_error HMC_COMPLEX_HAMILTONIANERROR = -6;
 const hmc_error HMC_INVALIDVALUE = -7;
+const hmc_error HMC_INVALID_GENERATOR_INDEX = -8;
 
 #endif
