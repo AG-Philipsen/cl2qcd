@@ -236,7 +236,36 @@ void local_Q_plaquette(hmc_gaugefield * field, hmc_staplematrix * prod, int n, i
   accumulate_su3matrices_add(prod, &plaq1);
 }
 
-
+void testing_Qplak (hmc_gaugefield * field, hmc_float* plaq, hmc_float* tplaq, hmc_float* splaq)
+{
+  *plaq=0;
+  *tplaq=0;
+  *splaq=0;
+  for(int t=0; t<NTIME; t++) {
+    for(int n=0; n<VOLSPACE; n++) {
+      for(int mu=0; mu<NDIM; mu++) {
+	  for(int nu=0; nu<mu; nu++) {
+	    hmc_3x3matrix prod;
+	    local_Q_plaquette(field, &prod, n, t, mu, nu );
+	    hmc_complex tmpfloat;
+	    trace_3x3matrix(&tmpfloat, &prod);
+	    *plaq += tmpfloat.re;
+	    if(mu==0 || nu==0) {
+	      *tplaq+=tmpfloat.re;
+	    }
+	    else
+	    {
+	      *splaq+=tmpfloat.re;
+	    }
+	  }
+	}
+      }
+    }
+  //Divide by 4.0, since Qplaquette consists of 4 plaquettes
+  *tplaq /= 4.0*static_cast<hmc_float>(VOL4D*NC*(NDIM-1))/4.0;
+  *splaq /= 4.0*static_cast<hmc_float>(VOL4D*NC*(NDIM-1)*(NDIM-2))/2. /4.0 ;
+  *plaq  *= 2.0/4.0/static_cast<hmc_float>(VOL4D*NDIM*(NDIM-1)*NC) /4.0;
+}
 
 void kappa_clover (hmc_gaugefield* field, hmc_float & kappa, const hmc_float beta){
  
