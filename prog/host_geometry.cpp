@@ -67,19 +67,14 @@ int spinor_field_element(int alpha, int color, int nspace, int t) {
 //make it:
 //site = pos + VOLSPACE*t =  x + y*NSPACE + z*NSPACE*NSPACE + VOLSPACE*t
 //idx = mu + NDIM*site
-int inline get_global_pos(int spacepos, int t){
+int get_global_pos(int spacepos, int t){
   return spacepos + VOLSPACE * t;
 }
 
-int inline get_global_link_pos(int mu, int spacepos, int t){
+int get_global_link_pos(int mu, int spacepos, int t){
   return mu + NDIM*get_global_pos(spacepos, t);
 }
 
-// this function returns the number of a specific hmc_float out of an 
-//   hmc_complex array.
-//   c: complex index (0 for real, 1 for imaginary part)
-//   a, b: SU3 indices
-//   mu, spacepos, t: Dirac and spacetime indices
 int ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t){
 #ifdef _RECONSTRUCT_TWELVE_
 	//old: 

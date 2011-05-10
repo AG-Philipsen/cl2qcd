@@ -20,8 +20,11 @@ hmc_error md_update_gaugefield(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gau
 			for(int mu = 0; mu<NDIM; mu++){
 			hmc_su3matrix tmp;
 			hmc_su3matrix tmp2;
-// 			int globalpos = get_global_pos;
-// 			hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, &tmp2, eps);
+			int index= get_global_link_pos(mu, pos, t);
+			// an su3 algebra element has NC*NC-1 = 8 hmc_float entries
+			// &(p_in[index*8]) should point to the right position for the pos-th element of the 
+			//   long gaugemomentum vector p_in
+ 			build_su3matrix_by_exponentiation(&p_in[index*8], &tmp2, eps);
 			get_su3matrix(&tmp, u_in,pos, t, mu);
 		
 			/** 
