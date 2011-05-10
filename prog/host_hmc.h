@@ -198,7 +198,6 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
  * @param[out] phi_inv inverted spinorfield (if _FERMIONS_ is on). This is used again outside of this function.
  * @return Error code as defined in hmcerrs.h
  *
- * @todo needs testing
  * @todo lateron, a multi-step alg. with different stepsizes for gauge and fermion force should be implemented
  * @todo see code itself for more points
  */
