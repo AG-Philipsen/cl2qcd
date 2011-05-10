@@ -497,16 +497,16 @@ hmc_error multiply_generator_su3matrix (hmc_3x3matrix * out, int gen_index, hmc_
 	// SL: not yet tested!
 	#ifdef _RECONSTRUCT_TWELVE_
 		hmc_3x3matrix complete_reconstructed;
-		complete_reconstructed[0][0]=in[0];
-		complete_reconstructed[0][1]=in[1];
-		complete_reconstructed[0][2]=in[2];
-		complete_reconstructed[1][0]=in[3];
-		complete_reconstructed[1][1]=in[4];
-		complete_reconstructed[1][2]=in[5];
+		complete_reconstructed[0][0]=*in[0];
+		complete_reconstructed[0][1]=*in[1];
+		complete_reconstructed[0][2]=*in[2];
+		complete_reconstructed[1][0]=*in[3];
+		complete_reconstructed[1][1]=*in[4];
+		complete_reconstructed[1][2]=*in[5];
 		complete_reconstructed[2][0]=reconstruct_su3(in,0);
 		complete_reconstructed[2][1]=reconstruct_su3(in,1);
 		complete_reconstructed[2][2]=reconstruct_su3(in,2);
-		#define _MULTIPLY_SU3MATRIX_GENERATOR_TARGET_ (*complete_reconstructed)
+		#define _MULTIPLY_SU3MATRIX_GENERATOR_TARGET_ (&complete_reconstructed)
 	#else
 		#define _MULTIPLY_SU3MATRIX_GENERATOR_TARGET_ (in)
 	#endif
@@ -518,16 +518,16 @@ hmc_error multiply_su3matrix_generator (hmc_3x3matrix * out, hmc_su3matrix *in, 
 	// SL: not yet tested!
 	#ifdef _RECONSTRUCT_TWELVE_
 		hmc_3x3matrix complete_reconstructed;
-		complete_reconstructed[0][0]=in[0];
-		complete_reconstructed[0][1]=in[1];
-		complete_reconstructed[0][2]=in[2];
-		complete_reconstructed[1][0]=in[3];
-		complete_reconstructed[1][1]=in[4];
-		complete_reconstructed[1][2]=in[5];
+		complete_reconstructed[0][0]=*in[0];
+		complete_reconstructed[0][1]=*in[1];
+		complete_reconstructed[0][2]=*in[2];
+		complete_reconstructed[1][0]=*in[3];
+		complete_reconstructed[1][1]=*in[4];
+		complete_reconstructed[1][2]=*in[5];
 		complete_reconstructed[2][0]=reconstruct_su3(in,0);
 		complete_reconstructed[2][1]=reconstruct_su3(in,1);
 		complete_reconstructed[2][2]=reconstruct_su3(in,2);
-		#define _MULTIPLY_SU3MATRIX_GENERATOR_TARGET_ (*complete_reconstructed)
+		#define _MULTIPLY_SU3MATRIX_GENERATOR_TARGET_ (&complete_reconstructed)
 	#else
 		#define _MULTIPLY_SU3MATRIX_GENERATOR_TARGET_ (in)
 	#endif

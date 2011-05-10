@@ -68,6 +68,8 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("thermsteps")!=std::string::npos) val_assign(&thermalizationsteps,line);
 		if(line.find("thermalization")!=std::string::npos) val_assign(&thermalizationsteps,line);
 		if(line.find("overrelaxsteps")!=std::string::npos) val_assign(&overrelaxsteps,line);
+		if(line.find("overrelax")!=std::string::npos) val_assign(&overrelaxsteps,line);
+		if(line.find("oversteps")!=std::string::npos) val_assign(&overrelaxsteps,line);
 		if(line.find("hmcsteps")!=std::string::npos) val_assign(&hmcsteps,line);
 	}
 	return HMC_SUCCESS;
