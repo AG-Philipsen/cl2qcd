@@ -7,9 +7,9 @@
 #include "hmcerrs.h"
 #include "globaldefs.h"
 #include "types.h"
-#include "host_matrix.h"
 #include "host_geometry.h"
 #include "host_operations_complex.h"
+#include "host_operations_matrix.h"
 #include "host_operations_gaugefield.h"
 
 void kappa_karsch (hmc_gaugefield* field, hmc_float & kappa, const hmc_float beta);

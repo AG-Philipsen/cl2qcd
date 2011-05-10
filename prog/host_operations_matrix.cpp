@@ -1,4 +1,4 @@
-#include "host_matrix.h"
+#include "host_operations_matrix.h"
 
 hmc_error multiply_3x3matrix (hmc_3x3matrix *out, hmc_3x3matrix *p, hmc_3x3matrix *q)
 {

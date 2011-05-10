@@ -1,12 +1,6 @@
 #include "host_hmc.h"
 
-//TODO CP: all return values have to be revisited, since they should be real numbers and not complex one in the end
-
-//TODO in the end hmc_gaugemomenta has to be a vector of NC*NC matrices!! This means that also the declaration of such variables has to be revisited
-
-
-
-//TODO the following three functions should later go into a new, seperate file
+//TODO in the end hmc_gaugemomenta has to be a vector of NC*NC matrices!! This means that also the declaration of such variables has to be revisited?? Is that really so??
 
 //molecular dynamics update for the gauge momenta:
 //p_out = p_in - eps/2 force(u_in, phi)
@@ -50,7 +44,7 @@ hmc_error md_update_spinorfield(hmc_spinor_field * in, hmc_spinor_field * out, h
 }
 #endif
 
-//TODO chech definition of beta again, is it 2/g^2??
+//TODO check definition of beta again, is it 2/g^2??
 // beta * sum_links sum_nu>mu ( 3 - Tr Re Plaquette )
 hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta){
 	//TODO implement saving of plaquette measurement (and possibly t_plaq and s_plaq and also polyakov-loop??)
