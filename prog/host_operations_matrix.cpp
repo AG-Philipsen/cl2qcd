@@ -105,11 +105,12 @@ hmc_error accumulate_su3matrix_3x3_add(hmc_3x3matrix *out, hmc_su3matrix *q){
     {
       complexaccumulate(&(*out)[i][k], &(*q)[i+(NC-1)*k]);
     }
-    for (int k=0; k<NC; k++)
-      {
-	hmc_complex tmp = reconstruct_su3(q, k); 
-	complexaccumulate(&(*out)[2][k], &(tmp));
-      }
+  }
+  for (int k=0; k<NC; k++)
+  {
+    hmc_complex tmp = reconstruct_su3(q, k); 
+    cout << tmp.re <<" "<< tmp.im <<endl;
+    complexaccumulate(&(*out)[2][k], &tmp);
   }
 #else
 
@@ -123,12 +124,11 @@ hmc_error accumulate_su3matrix_3x3_add(hmc_3x3matrix *out, hmc_su3matrix *q){
 }
 
 hmc_error trace_3x3matrix (hmc_complex * out, hmc_3x3matrix *q){
-  (*out).re = (*q[0][0]).re;
-  (*out).im = (*q[0][0]).im;
-  (*out).re += (*q[1][1]).re;
-  (*out).im += (*q[1][1]).im;
-  (*out).re += (*q[2][2]).re;
-  (*out).im += (*q[2][2]).im;
+  *out = *q[0][0];
+  (*out).re += (*q)[1][1].re;
+  (*out).im += (*q)[1][1].im;
+  (*out).re += (*q)[2][2].re;
+  (*out).im += (*q)[2][2].im;
   
   return HMC_SUCCESS;
 }
@@ -569,15 +569,13 @@ hmc_error su3matrix_to_3x3matrix (hmc_3x3matrix * out, hmc_su3matrix * in)
   {
     for (int k=0; k<NC; k++)
     {
-      *out[i][k] = *in[i+(NC-1)*k];
-      
+      (*out)[i][k] = (*in)[i+(NC-1)*k];
     }
-    for (int k=0; k<NC; k++)
-      {
-	hmc_complex tmp = reconstruct_su3(in, k); 
-	*out[2][k] = tmp;
-	
-      }
+  }
+  for (int k=0; k<NC; k++)
+  {
+    hmc_complex tmp = reconstruct_su3(in, k); 
+    (*out)[2][k] = tmp;
   }
   #else
   for (int i=0; i<NC; i++){
