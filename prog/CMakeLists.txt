@@ -156,6 +156,8 @@ add_executable( heatbath
 	host_geometry.cpp
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
+	host_operations_su3matrix.cpp
+	host_operations_matrix.cpp	
 	gaugefield.cpp
 	host_input.cpp
 	host_readgauge.cpp
