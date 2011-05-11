@@ -179,8 +179,15 @@ public:
 	hmc_float plaquette();
 	hmc_complex polyakov();
 	hmc_complex spatial_polyakov(int dir);
-		
+	/**
+	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld
+	 * @param[out] kappa Result for the transport coefficient kappa
+	 */	
 	void kappa_karsch (hmc_float & kappa);
+	/**
+	 * Compute the transport coefficient kappa with the energy-momentum-tensor built by a Clover discretization
+	 * @param[out] kappa Result for the transport coefficient kappa
+	 */
 	void kappa_clover (hmc_float & kappa);
 	
 private:
