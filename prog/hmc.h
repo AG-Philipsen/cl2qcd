@@ -28,6 +28,7 @@
 #include "host_input.h"
 #include "host_readgauge.h"
 #include "host_random.h"
+#include "host_kappa.h"
 #include "host_update_heatbath.h"
 #include "host_use_timer.h"
 #include "host_writegaugefield.h"
