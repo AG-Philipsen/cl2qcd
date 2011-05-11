@@ -60,36 +60,36 @@ void print_hello(char* name)
 	return;
 }
 
-void print_info(inputparameters* params)
+void print_info(inputparameters* params, ostream* os)
 {
-	std::cout << "**********************************************************\n";
-	std::cout << "Compile time parameters:\n";
-	std::cout << "NSPACE:  " << NSPACE << '\n';
-	std::cout << "NTIME:   " << NTIME << '\n';
-	std::cout << "NDIM:    " << NDIM << '\n';
-	std::cout << "NCOLOR:  " << NC << '\n';
-	std::cout << "NSPIN:   " << NSPIN << '\n';
-	std::cout << '\n';
-	std::cout << "Run time parameters:\n";
-	std::cout << "beta  = " << params->get_beta() << '\n';
-	std::cout << "prec  = " << params->get_prec() << '\n';
-	std::cout << "thermsteps     = " << params->get_thermalizationsteps() << '\n';
-	std::cout << "heatbathsteps  = " << params->get_heatbathsteps() << '\n';
-	std::cout << "overrelaxsteps = " << params->get_overrelaxsteps() << '\n';
-	std::cout << '\n';
+	*os << "## **********************************************************\n";
+	*os << "## Compile time parameters:\n";
+	*os << "## NSPACE:  " << NSPACE << '\n';
+	*os << "## NTIME:   " << NTIME << '\n';
+	*os << "## NDIM:    " << NDIM << '\n';
+	*os << "## NCOLOR:  " << NC << '\n';
+	*os << "## NSPIN:   " << NSPIN << '\n';
+	*os << "##" << '\n';
+	*os << "## Run time parameters:\n";
+	*os << "## beta  = " << params->get_beta() << '\n';
+	*os << "## prec  = " << params->get_prec() << '\n';
+	*os << "## thermsteps     = " << params->get_thermalizationsteps() << '\n';
+	*os << "## heatbathsteps  = " << params->get_heatbathsteps() << '\n';
+	*os << "## overrelaxsteps = " << params->get_overrelaxsteps() << '\n';
+	*os << "##" << '\n';
 	if (params->get_startcondition() == START_FROM_SOURCE) {
-		std::cout << "sourcefile = ";
+		*os << "## sourcefile = ";
 		params->display_sourcefile();
-		std::cout << '\n';
+		*os << "##" << '\n';
 	}
 	if (params->get_startcondition() == COLD_START) {
-		std::cout << "cold start\n";
+		*os << "## cold start\n";
 	}
 	if (params->get_startcondition() == HOT_START) {
-		std::cout << "hot start\n";
+		*os << "## hot start\n";
 	}
-	std::cout << "**********************************************************\n";
-	std::cout << std::endl;
+	*os << "## **********************************************************\n";
+	*os << std::endl;
 	return;
 }
 

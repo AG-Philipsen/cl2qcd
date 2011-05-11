@@ -14,12 +14,18 @@ int main(int argc, char* argv[])
 	char* inputfile = argv[1];
 	inputparameters parameters;
 	parameters.readfile(inputfile);
-	print_info(&parameters);
+	print_info(&parameters,&cout);
 
+	//init file to store gauge observables, print initial information
 	stringstream gaugeout_name;
 	gaugeout_name << "gaugeobservables_beta" << parameters.get_beta();
-
-
+	fstream gaugeout;
+	
+	gaugeout.open(gaugeout_name.str().c_str(), std::ios::out | std::ios::app);
+	if(!gaugeout.is_open()) exit(HMC_FILEERROR);
+	print_info(&parameters,&gaugeout);
+	gaugeout.close();
+	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Initialization
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,10 +79,10 @@ int main(int argc, char* argv[])
 		}
 	}
 
+
 	gaugefield.sync_gaugefield(&copytime);
 	gaugefield.save(nsteps);
-
-
+	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Final Output
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
