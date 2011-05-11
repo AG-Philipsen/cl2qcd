@@ -7,5 +7,8 @@ beta=6
 prec=64
 startcondition=cold
 sourcefile=conf.save
-thermalization=5
-heatbathsteps=1000
+thermalization=500
+heatbathsteps=20
+overrelaxsteps=2
+savefrequency=10
+
