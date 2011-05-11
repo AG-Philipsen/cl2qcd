@@ -30,6 +30,7 @@
 #include <CL/cl.h>
 #endif
 
+
 /**
  * Version number.
  */
@@ -172,6 +173,16 @@ public:
 	 */
 	hmc_error overrelax(const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 
+	
+	//gaugeobservables, on host!!
+	hmc_float plaquette(hmc_float* tplaq, hmc_float* splaq);
+	hmc_float plaquette();
+	hmc_complex polyakov();
+	hmc_complex spatial_polyakov(int dir);
+		
+	void kappa_karsch (hmc_float & kappa);
+	void kappa_clover (hmc_float & kappa);
+	
 private:
 	hmc_gaugefield * gf;
 	opencl * devices;
@@ -179,13 +190,6 @@ private:
 	void print_info_source(sourcefileparameters* params);
 	hmc_error init_gaugefield(usetimer* timer);
 	inputparameters* parameters;
-
-	//gaugeobservables, on host!!
-	hmc_float plaquette(hmc_float* tplaq, hmc_float* splaq);
-	hmc_float plaquette();
-	hmc_complex polyakov();
-	hmc_complex spatial_polyakov(int dir);
-
 
 };
 
