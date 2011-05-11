@@ -363,7 +363,7 @@ hmc_error gaugefield::finalize()
 void gaugefield::kappa_karsch (hmc_float & kappa)
 {
   //Initialize kappa
-  kappa = .0;
+  kappa = 0.0;
   //Initializing beta
   const hmc_float beta = parameters->get_beta();
   //Compute diagonal spatial components of the energy-momentum-tensor
@@ -395,13 +395,13 @@ void gaugefield::kappa_karsch (hmc_float & kappa)
 	      hmc_float plaq_13 = trace_su3matrix(&temp).re;
 	      local_plaquette(gf, & temp, n, t, 3, 2);
 	      hmc_float plaq_32 = trace_su3matrix(&temp).re;
-	      
+
 	      int point = n + VOLSPACE * t;
 	      
 	      tdiag_11 [point] = plaq_10 + plaq_12 + plaq_13 - plaq_20 - plaq_30 - plaq_32;
 	      tdiag_22 [point] = plaq_20 + plaq_12 + plaq_32 - plaq_10 - plaq_30 - plaq_13;
 	      tdiag_33 [point] = plaq_30 + plaq_13 + plaq_32 - plaq_10 - plaq_20 - plaq_12;
-	
+
 	      a[point] = 2.0*tdiag_11[point] - tdiag_22[point] - tdiag_33[point];
 	      b[point] = 2.0*tdiag_22[point] - tdiag_11[point] - tdiag_33[point];
 	      c[point] = 2.0*tdiag_33[point] - tdiag_22[point] - tdiag_11[point];

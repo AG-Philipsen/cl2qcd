@@ -142,7 +142,6 @@ add_executable( hmc
 	host_writegaugefield.cpp
 	host_solver.cpp
 	host_fermionobservables.cpp
-	host_kappa.cpp
 	host_hmc.cpp
 )
 target_link_libraries( hmc
@@ -167,6 +166,27 @@ add_executable( heatbath
 	host_writegaugefield.cpp
 )
 target_link_libraries( heatbath
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	klepsydra
+)
+add_executable( tk_kappa
+	tk_kappa.cpp
+	host_geometry.cpp
+	host_operations_complex.cpp
+	host_operations_gaugefield.cpp
+	host_operations_su3matrix.cpp
+	host_operations_matrix.cpp	
+	gaugefield.cpp
+	host_input.cpp
+	host_readgauge.cpp
+	host_random.cpp
+	opencl.cpp
+	host_use_timer.cpp
+	host_writegaugefield.cpp
+)
+target_link_libraries( tk_kappa
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
