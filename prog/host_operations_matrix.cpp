@@ -109,7 +109,6 @@ hmc_error accumulate_su3matrix_3x3_add(hmc_3x3matrix *out, hmc_su3matrix *q){
   for (int k=0; k<NC; k++)
   {
     hmc_complex tmp = reconstruct_su3(q, k); 
-    cout << tmp.re <<" "<< tmp.im <<endl;
     complexaccumulate(&(*out)[2][k], &tmp);
   }
 #else
