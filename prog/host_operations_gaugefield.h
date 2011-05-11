@@ -125,7 +125,7 @@ void local_polyakov(hmc_gaugefield * field, hmc_su3matrix * prod, int n);
  * @param[in] field The gaugefield to use
  * @param[out] The local part of the plaquette
  * @param[in] n The spatial index to use
- * @param[in] n The temporal index to use
+ * @param[in] t The temporal index to use
  * @param[in] mu The first direction to use
  * @param[in] nu The second direction to use
  */
@@ -140,5 +140,22 @@ void local_plaquette(hmc_gaugefield * field, hmc_su3matrix * prod, int n, int t,
  * @return Error code as defined in hmcerrs.h
  */
 hmc_error copy_gaugefield(hmc_gaugefield * source, hmc_gaugefield * dest);
+
+/**
+ * Calculates the Q-plaquette (Clover discretization) at the given spacetime-point and directions
+ *  --   --
+ * |  | |  |
+ *  --   --
+ *  --   --
+ * |  | |  |
+ *  --   --
+ * @param[in] field The gaugefield to use
+ * @param[out] out The local part of the Qplaquette
+ * @param[in] n The spatial index to use
+ * @param[in] t The temporal index to use
+ * @param[in] mu The first direction to use
+ * @param[in] nu The second direction to use
+ */
+void local_Q_plaquette(hmc_3x3matrix * out, hmc_gaugefield * field, int n, int t, int mu, int nu );
 
 #endif

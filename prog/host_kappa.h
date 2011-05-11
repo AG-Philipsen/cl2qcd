@@ -14,10 +14,6 @@
 
 void kappa_karsch (hmc_gaugefield* field, hmc_float & kappa, const hmc_float beta);
 
-void local_Q_plaquette(hmc_staplematrix * prod, hmc_gaugefield * field, int n, int t, int mu, int nu );
-
-void testing_Qplak (hmc_complex* plaq, hmc_gaugefield * field);
-
 void kappa_clover (hmc_gaugefield* field, hmc_float & kappa, const hmc_float beta);
 
 
