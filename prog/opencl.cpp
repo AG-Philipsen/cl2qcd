@@ -208,7 +208,7 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 		// dump program source
 		size_t sourceSize;
 		clerr = clGetProgramInfo(clprogram, CL_PROGRAM_SOURCE, 0, NULL, &sourceSize);
-		if(!clerr && sourceSize) {
+		if(!clerr && sourceSize > 1) { // 0-terminated -> always at least one byte
 			char* source = new char[sourceSize];
 			clerr = clGetProgramInfo(clprogram, CL_PROGRAM_SOURCE, sourceSize, source, &sourceSize);
 			if(!clerr) {
