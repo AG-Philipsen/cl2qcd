@@ -203,6 +203,23 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 	}
 	if(clerr != CL_SUCCESS) {
 		cout << "... failed, aborting." << endl;
+
+		// dump program source
+		size_t sourceSize;
+		clerr = clGetProgramInfo(clprogram, CL_PROGRAM_SOURCE, 0, NULL, &sourceSize);
+		if(!clerr && sourceSize) {
+			char* source = new char[sourceSize];
+			clerr = clGetProgramInfo(clprogram, CL_PROGRAM_SOURCE, sourceSize, source, &sourceSize);
+			if(!clerr) {
+				char const * const FILENAME = "broken_source.cl";
+				ofstream srcFile(FILENAME);
+				srcFile << source;
+				srcFile.close();
+				cout << "Dumped broken source to " << FILENAME << endl;
+			}
+			delete[] source;
+		}
+
 		exit(HMC_OCLERROR);
 	}
 
