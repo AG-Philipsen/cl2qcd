@@ -192,10 +192,11 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 		cout << "... failed, but look at BuildLog and abort then." << endl;
 	}
 
-	cout << "finished building program" << endl << "Build Log:" << endl;
+	cout << "finished building program" << endl;
 	size_t logSize;
 	clerr |= clGetProgramBuildInfo(clprogram, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);
-	if(logSize != 1) {
+	if(logSize > 1) { // 0-terminated -> always at least one byte
+		cout << "Build Log:" << endl;
 		char* log = new char[logSize];
 		clerr |= clGetProgramBuildInfo(clprogram, device, CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
 		cout << log << endl << endl;
