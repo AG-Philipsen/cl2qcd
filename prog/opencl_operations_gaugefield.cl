@@ -294,7 +294,133 @@ hmc_complex det_su3matrix(__private hmc_ocl_su3matrix * U)
 	return det;
 }
 
-void project_su3(__private hmc_ocl_su3matrix *U)
+void project_su3(__private hmc_ocl_su3matrix *U){
+
+  //Extract initial vectors
+  hmc_complex a[NC];
+  hmc_complex b[NC];
+  hmc_complex c[NC];
+#ifdef _RECONSTRUCT_TWELVE_
+  a[0] = (*U)[0];
+  a[1] = (*U)[2];
+  a[2] = (*U)[4];
+  b[0] = (*U)[1];
+  b[1] = (*U)[3];
+  b[2] = (*U)[5];
+  c[0] = reconstruct_su3(U,0);
+  c[1] = reconstruct_su3(U,1);
+  c[2] = reconstruct_su3(U,2);
+#else
+    for (int i = 0; i<NC; i++){
+     a[i] = U[ocl_su3matrix_element(0,i)];
+     b[i] = U[ocl_su3matrix_element(1,i)];
+     c[i] = U[ocl_su3matrix_element(2,i)];
+    }
+#endif
+  
+  //New SU3-Matrix
+  //first vector
+  //norm
+  hmc_float norm = 0.;
+  for (int i=0; i<NC; i++){
+    hmc_complex tmp = complexconj(a[i]);
+    tmp = complexmult (a[i], tmp);
+    norm += tmp.re;
+  }
+  norm = 1./sqrt(norm);
+  //rescale
+  for (int i=0; i<NC; i++){
+    a[i].re *= norm;
+    a[i].im *= norm;
+  }
+  
+  //second vector
+  //orthogonal vector
+  hmc_complex factor;
+  factor.re = 0.0;
+  factor.im = 0.0;
+  for (int i=0; i<NC; i++){
+    hmc_complex tmp;
+    tmp = complexconj (b[i]);
+    tmp = complexmult (a[i], tmp);
+    factor = complexadd (factor, tmp);
+  }
+  for (int i=0; i<NC; i++){
+    hmc_complex tmp;
+    tmp = complexmult(factor, a[i]);
+    b[i] = complexsubtract(b[i], tmp); 
+  }
+  
+//norm
+  norm = 0.;
+  for (int i=0; i<NC; i++)
+  {
+    hmc_complex tmp;
+    tmp = complexconj(b[i]);
+    tmp = complexmult (b[i], tmp);
+    norm +=  tmp.re;
+  }
+  norm = 1./sqrt(norm);
+  //rescale
+  for  (int i=0; i<NC; i++){
+    b[i].re *= norm;
+    b[i].im *= norm;
+  }
+
+#ifdef _RECONSTRUCT_TWELVE_
+  //third vector 
+  //orthogonal vector
+  hmc_complex tmp;
+  hmc_complex tmp2;
+  tmp = complexmult(a[1], b[2]);
+  tmp = complexconj(tmp);
+  tmp2 = complexmult(a[2], b[1]);
+  tmp2 = complexconj(tmp2);
+  c[0] = complexsubtract(tmp, tmp2);
+  tmp = complexmult(a[2], b[0]);
+  tmp = complexconj(tmp);
+  tmp2 = complexmult(a[0], b[2]);
+  tmp2 = complexconj(tmp2);
+  c[1] = complexsubtract(tmp, tmp2);
+  
+  //Set new values to matrix
+  (*U)[0] = a[0];
+  (*U)[1] = b[0];
+  (*U)[2] = a[1];
+  (*U)[3] = b[1];
+  (*U)[4] = a[2];
+  (*U)[5] = b[2];
+#else
+  //third vector 
+  //orthogonal vector
+  hmc_complex tmp;
+  hmc_complex tmp2;
+  tmp = complexmult(a[1], b[2]);
+  tmp = complexconj(tmp);
+  tmp2 = complexmult(a[2], b[1]);
+  tmp2 = complexconj(tmp2);
+  c[0] = complexsubtract(tmp, tmp2);
+  tmp = complexmult(a[2], b[0]);
+  tmp = complexconj(tmp);
+  tmp2 = complexmult(a[0], b[2]);
+  tmp2 = complexconj(tmp2);
+  c[1] = complexsubtract(tmp, tmp2);
+  tmp = complexmult(a[0], b[1]);
+  tmp = complexconj(tmp);
+  tmp2 = complexmult(a[1], b[0]);
+  tmp2 = complexconj(tmp2);
+  c[2] = complexsubtract(tmp, tmp2);
+  
+  //Set new values to matrix
+  for(int i=0; i<NC; i++) {
+     U[ocl_su3matrix_element(0,i)] = a[i];
+     U[ocl_su3matrix_element(1,i)] = b[i];
+     U[ocl_su3matrix_element(2,i)] = c[i];
+  }
+#endif
+}
+
+void project_su3_old(__private hmc_ocl_su3matrix *U)
 {
 	hmc_complex det = det_su3matrix(U);
 	hmc_float detsqunorm = det.re*det.re + det.im*det.im;
