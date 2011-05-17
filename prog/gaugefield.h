@@ -115,8 +115,6 @@ public:
 	void print_gaugeobservables(hmc_float plaq, hmc_float tplaq, hmc_float splaq, hmc_complex pol, int iter, std::string filename);
 	/**
 	 * Print gauge observables calculated on device, add iteration number, return values to program.
-	 * @param[in] local_work_size OpenCL local_work_size
-	 * @param[in] global_work_size OpenCL global_work_size
 	 * @param[in,out] plaq pointer to plaquette value
 	 * @param[in,out] tplaq pointer to timelike plaquette value
 	 * @param[in,out] splaq pointer to spatial plaquette value
@@ -127,18 +125,16 @@ public:
 	 * @param[in] gaugeoutname name of output file
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error print_gaugeobservables_from_devices(const size_t local_work_size, const size_t global_work_size, hmc_float* plaq, hmc_float* tplaq, hmc_float* splaq, hmc_complex* pol, usetimer* plaqtime, usetimer* polytime, int i, string gaugeoutname);
+	hmc_error print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname);
 	/**
 	 * Print gauge observables calculated on device, add iteration number.
-	 * @param[in] local_work_size OpenCL local_work_size
-	 * @param[in] global_work_size OpenCL global_work_size
 	 * @param[in,out] plaqtime time to calculate plaquette
 	 * @param[in,out] polytime time to calculate Polyakov loop
 	 * @param[in] i integer number that accompanies output
 	 * @param[in] gaugeoutname name of output file
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error print_gaugeobservables_from_devices(const size_t local_work_size, const size_t global_work_size, usetimer* plaqtime, usetimer* polytime, int i, string gaugeoutname);
+	hmc_error print_gaugeobservables_from_devices(usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname);
 
 	/**
 	 * Perform a number of heatbath and (afterwards) overrelaxation steps.

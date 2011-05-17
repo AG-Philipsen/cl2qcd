@@ -298,23 +298,23 @@ hmc_complex gaugefield::spatial_polyakov(int dir)
 	return res;
 }
 
-hmc_error gaugefield::print_gaugeobservables_from_devices(const size_t local_work_size, const size_t global_work_size, hmc_float* plaq, hmc_float* tplaq, hmc_float* splaq, hmc_complex* pol, usetimer* plaqtime, usetimer* polytime, int i, string gaugeoutname)
+hmc_error gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 
-	devices[0].gaugeobservables(local_work_size, global_work_size, plaq, tplaq, splaq, pol, plaqtime, polytime);
+	devices[0].gaugeobservables(plaq, tplaq, splaq, pol, plaqtime, polytime);
 	print_gaugeobservables(*plaq, *tplaq, *splaq, *pol, i, gaugeoutname);
 
 	return HMC_SUCCESS;
 }
 
-hmc_error gaugefield::print_gaugeobservables_from_devices(const size_t local_work_size, const size_t global_work_size, usetimer* plaqtime, usetimer* polytime, int i, string gaugeoutname)
+hmc_error gaugefield::print_gaugeobservables_from_devices(usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname)
 {
 	hmc_float plaq, tplaq, splaq;
 	hmc_complex pol;
 
-	hmc_error err = print_gaugeobservables_from_devices(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, plaqtime, polytime, i, gaugeoutname);
+	hmc_error err = print_gaugeobservables_from_devices(&plaq, &tplaq, &splaq, &pol, plaqtime, polytime, i, gaugeoutname);
 
 	return err;
 }

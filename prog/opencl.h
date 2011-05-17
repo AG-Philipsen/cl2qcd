@@ -122,8 +122,6 @@ public:
 	/**
 	 * Calculate plaquette and polyakov.
 	 *
-	 * @param[in] local_work_size The local work size to use
-	 * @param[in] global_work_size The global works size to use
 	 * @param[out] plaq Storage for result of plaquette calculation
 	 * @param[out] tplaq Storage for result of plaquette calculation
 	 * @param[out] splaq Storage for result of plaquette calculation
@@ -134,7 +132,7 @@ public:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error gaugeobservables(const size_t local_work_size, const size_t global_work_size, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol, usetimer* timer1, usetimer* timer2);
+	hmc_error gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const timer1, usetimer * const timer2);
 
 #ifdef _FERMIONS_
 	hmc_error init_fermion_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
@@ -325,6 +323,18 @@ private:
 	 * @todo global work size will also depend on device ...
 	 */
 	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size);
+
+	/**
+	 * Enqueue the given kernel on the device. Local work size will be determined
+	 * automatically from device and kernel properties.
+	 *
+	 * @param kernel The kernel to execute.
+	 * @param global_work_size The number of threads to run.
+	 *
+	 * @todo local work size decision might need ot become less automatic
+	 * @todo global work size will also depend on device ...
+	 */
+	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
 };
 
 #endif /* _MYOPENCLH_ */
