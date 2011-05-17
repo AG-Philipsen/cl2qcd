@@ -57,13 +57,14 @@ hmc_error copy_3x3_matrix(hmc_3x3matrix *dest, hmc_3x3matrix *src);
 hmc_error multiply_3x3matrix_by_real(hmc_3x3matrix *mat, hmc_float factor);
 
 /**
-* evaluates the sum of abs of difference element-by-element between two matrices
-* @param[out] result the final ``absolute difference'' of the two matrices
-* @param[in] mat2 matrix1 to compare
-* @param[in] mat2 matrix2 to compare
+* Copies a SU(3) matrix into a 3x3 matrix
+* @param[out] out 3x3 matrix out
+* @param[in]  in SU(3) matrix in
+* 
 * @return Error code as defined in hmcerrs.h
 */
-hmc_error absoluteDifference_3x3_matrix(hmc_float *result, hmc_3x3matrix *mat1, hmc_3x3matrix *mat2);
+hmc_error su3matrix_to_3x3matrix (hmc_3x3matrix * out, hmc_su3matrix * in);
+
 /**
  * Accumulates a SU3-Matrix into an 3x3-Matrix
  * @param[out] out The matrix into which to store the accumulation
@@ -71,6 +72,7 @@ hmc_error absoluteDifference_3x3_matrix(hmc_float *result, hmc_3x3matrix *mat1, 
  * @return Error code as defined in hmcerrs.h
  */
 hmc_error accumulate_su3matrix_3x3_add(hmc_3x3matrix *out, hmc_su3matrix *q);
+
 /**
  * Computes the trace of an 3x3-Matrix
  * @param[out] out The result of tracing
@@ -78,6 +80,7 @@ hmc_error accumulate_su3matrix_3x3_add(hmc_3x3matrix *out, hmc_su3matrix *q);
  * @return Error code as defined in hmcerrs.h
  */
 hmc_error trace_3x3matrix (hmc_complex *out, hmc_3x3matrix *q);
+
 /**
  * Computes the adjoint of an 3x3-Matrix
  * @param[out] out The adjoint matrix
@@ -86,10 +89,22 @@ hmc_error trace_3x3matrix (hmc_complex *out, hmc_3x3matrix *q);
  */
 hmc_error adjoint_3x3matrix (hmc_3x3matrix * out, hmc_3x3matrix *q);
 
+
+
+/**
+* evaluates the sum of abs of difference element-by-element between two matrices
+* test it
+* @param[out] result the final ``absolute difference'' of the two matrices
+* @param[in] mat2 matrix1 to compare
+* @param[in] mat2 matrix2 to compare
+* @return Error code as defined in hmcerrs.h
+*/
+hmc_error absoluteDifference_3x3_matrix(hmc_float *result, hmc_3x3matrix *mat1, hmc_3x3matrix *mat2);
 /**
 * Multiplies a T_i SU(3) generator (i.e. 1/2 lambda_i) by a generic 3x3 matrix
 * WARNING: the generator index here runs from ONE to EIGHT !
 * Hard-coded operations on single components!
+* test it
 * @param[out] out the result, T_i * M
 * @param[in]  gen_index index i (1--8) of the generator T_i
 * @param[in]  in input matrix M
@@ -101,6 +116,7 @@ hmc_error multiply_generator_3x3matrix (hmc_3x3matrix * out, int gen_index, hmc_
 * Multiplies a generic 3x3 matrix by a T_i SU(3) generator (i.e. 1/2 lambda_i)
 * WARNING: the generator index here runs from ONE to EIGHT !
 * Hard-coded operations on single components!
+* test it
 * @param[out] out the result, M * T_i
 * @param[in]  in input matrix M
 * @param[in]  gen_index index i (1--8) of the generator T_i
@@ -113,6 +129,7 @@ hmc_error multiply_3x3matrix_generator (hmc_3x3matrix * out, hmc_3x3matrix *in, 
 * WARNING: the generator index here runs from ONE to EIGHT !
 * Relies on the "general 3x3 matrix" corresponding function
 * The result is in any case a GENERIC 3x3 matrix
+* test it
 * @param[out] out the result, T_i * M
 * @param[in]  gen_index index i (1--8) of the generator T_i
 * @param[in]  in input matrix M
@@ -125,6 +142,7 @@ hmc_error multiply_generator_su3matrix (hmc_3x3matrix * out, int gen_index, hmc_
 * WARNING: the generator index here runs from ONE to EIGHT !
 * Relies on the "general 3x3 matrix" corresponding function
 * The result is in any case a GENERIC 3x3 matrix
+* test it
 * @param[out] out the result, T_i * M
 * @param[in]  in input matrix M
 * @param[in]  gen_index index i (1--8) of the generator T_i
@@ -141,6 +159,7 @@ hmc_error multiply_su3matrix_generator (hmc_3x3matrix * out, hmc_su3matrix *in, 
  * /f]
  * the coefficients gamm and beta being calculated by the caller (as in Steo's notes) by contractions with 
  * the SU(3) symmetric structure constants with the 8 real parameters defining the algebra element
+ * test it
  *
  * @param[in] beta_0 ... 
  * @param[in] gamma_0 ...
@@ -151,7 +170,6 @@ hmc_error multiply_su3matrix_generator (hmc_3x3matrix * out, hmc_su3matrix *in, 
  * @todo needs testing
  */
 hmc_error construct_3x3_combination(hmc_float beta_0, hmc_float gamma_0, hmc_float beta[], hmc_float gamma[], hmc_3x3matrix out); 
-
 
 #endif
 

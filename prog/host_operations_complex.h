@@ -66,14 +66,23 @@ hmc_error complexaccumulate(hmc_complex *inout, hmc_complex *incr);
  */
 hmc_complex complexdivide(hmc_complex* numerator, hmc_complex* denominator);
 /**
- * Copy an array of complex numbers.
- *
- * \param[in] source Pointer to the complex number to be copied
- * \param[out] dest Pointer to copy the complex numbers to
- * \param[in] length The amount of complex numbers to be copied
- * \return Error state as defined in hmcerrs.h
- */
+* Copy an array of complex numbers.
+*
+* \param[in] source Pointer to the complex number to be copied
+* \param[out] dest Pointer to copy the complex numbers to
+* \param[in] length The amount of complex numbers to be copied
+* \return Error state as defined in hmcerrs.h
+*/
 hmc_error complexcopy(hmc_complex* source, hmc_complex* dest, int length);
+/**
+* Copy an array of complex numbers.
+*
+* \param[in] source Pointer to the hmc_float number to be copied
+* \param[out] dest Pointer to copy the hmc_float numbers to
+* \param[in] length The amount of hmc_float numbers to be copied
+* \return Error state as defined in hmcerrs.h
+*/
+hmc_error hmc_floatcopy(hmc_float* source, hmc_float* dest, int length);
 /**
  * Scale a complex number in-place
  *

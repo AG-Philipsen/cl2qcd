@@ -883,22 +883,22 @@ hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix
 		
 		// Phase 3: project back onto SU(3). This requires knowledge whether one is using _RECONSTRUCT_TWELVE_ when filling "out"
 		#ifdef _RECONSTRUCT_TWELVE_
-			*out[0] = combination[0][0];
-			*out[1] = combination[0][1];
-			*out[2] = combination[0][2];
-			*out[3] = combination[1][0];
-			*out[4] = combination[1][1];
-			*out[5] = combination[1][2];
+			(*out)[0] = combination[0][0];
+			(*out)[1] = combination[0][1];
+			(*out)[2] = combination[0][2];
+			(*out)[3] = combination[1][0];
+			(*out)[4] = combination[1][1];
+			(*out)[5] = combination[1][2];
 		#else
-			*out[0][0] = combination[0][0];
-			*out[0][1] = combination[0][1];
-			*out[0][2] = combination[0][2];
-			*out[1][0] = combination[1][0];
-			*out[1][1] = combination[1][1];
-			*out[1][2] = combination[1][2];
-			*out[2][0] = combination[2][0];
-			*out[2][1] = combination[2][1];
-			*out[2][2] = combination[2][2];
+			(*out)[0][0] = combination[0][0];
+			(*out)[0][1] = combination[0][1];
+			(*out)[0][2] = combination[0][2];
+			(*out)[1][0] = combination[1][0];
+			(*out)[1][1] = combination[1][1];
+			(*out)[1][2] = combination[1][2];
+			(*out)[2][0] = combination[2][0];
+			(*out)[2][1] = combination[2][1];
+			(*out)[2][2] = combination[2][2];
 		#endif // _RECONSTRUCT_TWELVE_
 				cout << "perform projection" << endl;
 		project_su3(out);
@@ -945,22 +945,22 @@ hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix
 		}
 		// 3. here I have the exponentiated matrix in 3x3 generic form (eRes), project it
 		#ifdef _RECONSTRUCT_TWELVE_
-			*out[0] = eRes[0][0];
-			*out[1] = eRes[0][1];
-			*out[2] = eRes[0][2];
-			*out[3] = eRes[1][0];
-			*out[4] = eRes[1][1];
-			*out[5] = eRes[1][2];
+			(*out)[0] = eRes[0][0];
+			(*out)[1] = eRes[0][1];
+			(*out)[2] = eRes[0][2];
+			(*out)[3] = eRes[1][0];
+			(*out)[4] = eRes[1][1];
+			(*out)[5] = eRes[1][2];
 		#else
-			*out[0][0] = eRes[0][0];
-			*out[0][1] = eRes[0][1];
-			*out[0][2] = eRes[0][2];
-			*out[1][0] = eRes[1][0];
-			*out[1][1] = eRes[1][1];
-			*out[1][2] = eRes[1][2];
-			*out[2][0] = eRes[2][0];
-			*out[2][1] = eRes[2][1];
-			*out[2][2] = eRes[2][2];
+			(*out)[0][0] = eRes[0][0];
+			(*out)[0][1] = eRes[0][1];
+			(*out)[0][2] = eRes[0][2];
+			(*out)[1][0] = eRes[1][0];
+			(*out)[1][1] = eRes[1][1];
+			(*out)[1][2] = eRes[1][2];
+			(*out)[2][0] = eRes[2][0];
+			(*out)[2][1] = eRes[2][1];
+			(*out)[2][2] = eRes[2][2];
 		#endif // _RECONSTRUCT_TWELVE_
 		project_su3(out);
 	#endif // EXPONENTIATE_ALGEBRA_ALL_ORDERS_

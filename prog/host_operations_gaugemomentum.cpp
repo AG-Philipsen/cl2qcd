@@ -5,8 +5,7 @@
 /** @todo memcpy ... */
 hmc_error copy_gaugemomenta(hmc_gauge_momentum * source, hmc_gauge_momentum * dest){
 	// copies source to destination within cpu memory, layer for momentum array
-	/** @bug CP: hmc_gauge_momentum is a hmc_float, so one has only to take half its size here!! */
-	return complexcopy((hmc_complex *)source, (hmc_complex *)dest, GAUGEMOMENTASIZE/2); // SL: not tested
+	return hmc_floatcopy((hmc_complex *)source, (hmc_complex *)dest, GAUGEMOMENTASIZE); // SL: not tested
 }
 
 //gaugemomentum is just a hmc_float vector of length GAUGEMOMENTASIZE

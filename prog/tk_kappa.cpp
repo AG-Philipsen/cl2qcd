@@ -66,6 +66,13 @@ int main(int argc, char* argv[])
 	int overrelaxsteps = parameters.get_overrelaxsteps();
 	int writefreq = parameters.get_writefrequency();
 	int savefreq = parameters.get_savefrequency();
+	
+	hmc_float kappa_karsch_val;
+	hmc_float kappa_clover_val;
+	ofstream kappa_karsch_out;
+	kappa_karsch_out.open ("kappa_karsch.dat");
+	ofstream kappa_clover_out;
+	kappa_clover_out.open ("kappa_clover.dat");
 
 	for(int i = 0; i < nsteps; i++) {
 		gaugefield.heatbath(local_work_size, global_work_size, &updatetime);
@@ -77,9 +84,17 @@ int main(int argc, char* argv[])
 			gaugefield.sync_gaugefield(&copytime);
 			gaugefield.save(i);
 		}
+	//Add a measurement frequency
+	gaugefield.sync_gaugefield(&copytime);
+	gaugefield.kappa_karsch (kappa_karsch_val);
+	gaugefield.kappa_clover (kappa_clover_val);
+	
+	kappa_karsch_out << kappa_karsch_val <<endl;
+	kappa_clover_out << kappa_clover_val <<endl;
 	}
-
-
+	
+	kappa_karsch_out.close();
+	kappa_clover_out.close();
 	gaugefield.sync_gaugefield(&copytime);
 	gaugefield.save(nsteps);
 	

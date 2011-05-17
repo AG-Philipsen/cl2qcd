@@ -38,21 +38,21 @@ hmc_error subtract_3x3matrix (hmc_3x3matrix *out, hmc_3x3matrix *p, hmc_3x3matri
 }
 
 
-hmc_error set_to_3x3_identity(hmc_3x3matrix mat)
+hmc_error set_to_3x3_identity(hmc_3x3matrix *mat)
 {
 	// simply sets to identity a generic 3x3 complex matrix
-	mat[0][0].re=1.0;
-	mat[0][0].im=0.0;
-	mat[0][1].re=mat[0][1].im=0.0;
-	mat[0][2].re=mat[0][2].im=0.0;
-	mat[1][0].re=mat[1][0].im=0.0;
-	mat[1][1].re=1.0;
-	mat[1][1].im=0.0;
-	mat[1][2].re=mat[1][2].im=0.0;
-	mat[2][0].re=mat[2][0].im=0.0;
-	mat[2][1].re=mat[2][1].im=0.0;
-	mat[2][2].re=1.0;
-	mat[2][2].im=0.0;
+	(*mat)[0][0].re=1.0;
+	(*mat)[0][0].im=0.0;
+	(*mat)[0][1].re=(*mat)[0][1].im=0.0;
+	(*mat)[0][2].re=(*mat)[0][2].im=0.0;
+	(*mat)[1][0].re=(*mat)[1][0].im=0.0;
+	(*mat)[1][1].re=1.0;
+	(*mat)[1][1].im=0.0;
+	(*mat)[1][2].re=(*mat)[1][2].im=0.0;
+	(*mat)[2][0].re=(*mat)[2][0].im=0.0;
+	(*mat)[2][1].re=(*mat)[2][1].im=0.0;
+	(*mat)[2][2].re=1.0;
+	(*mat)[2][2].im=0.0;
 	return HMC_SUCCESS;
 }
 
@@ -105,11 +105,11 @@ hmc_error accumulate_su3matrix_3x3_add(hmc_3x3matrix *out, hmc_su3matrix *q){
     {
       complexaccumulate(&(*out)[i][k], &(*q)[i+(NC-1)*k]);
     }
-    for (int k=0; k<NC; k++)
-      {
-	hmc_complex tmp = reconstruct_su3(q, k); 
-	complexaccumulate(&(*out)[2][k], &(tmp));
-      }
+  }
+  for (int k=0; k<NC; k++)
+  {
+    hmc_complex tmp = reconstruct_su3(q, k); 
+    complexaccumulate(&(*out)[2][k], &tmp);
   }
 #else
 
@@ -129,7 +129,6 @@ hmc_error trace_3x3matrix (hmc_complex * out, hmc_3x3matrix *q){
   (*out).im += ((*q)[1][1]).im;
   (*out).re += ((*q)[2][2]).re;
   (*out).im += ((*q)[2][2]).im;
-  
   return HMC_SUCCESS;
 }
 
@@ -560,4 +559,30 @@ hmc_error construct_3x3_combination(hmc_float beta_0, hmc_float gamma_0, hmc_flo
 	out[2][2].re = beta_0 + 2*redb8;
 	out[2][2].im = gamma_0 - 2*redg8;
 	return HMC_SUCCESS;
+}
+
+hmc_error su3matrix_to_3x3matrix (hmc_3x3matrix * out, hmc_su3matrix * in)
+{
+  #ifdef _RECONSTRUCT_TWELVE_
+  for (int i=0; i< NC-1; i++)
+  {
+    for (int k=0; k<NC; k++)
+    {
+      (*out)[i][k] = (*in)[i+(NC-1)*k];
+    }
+  }
+  for (int k=0; k<NC; k++)
+  {
+    hmc_complex tmp = reconstruct_su3(in, k); 
+    (*out)[2][k] = tmp;
+  }
+  #else
+  for (int i=0; i<NC; i++){
+    for (int j=0; j<NC; j++)
+    {
+      (*out)[i][j] = (*in)[i][j];
+    }
+  }
+  #endif
+  return HMC_SUCCESS;
 }

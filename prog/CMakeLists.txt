@@ -8,6 +8,11 @@ project( OpTiMaL )
 # we have some custom CMake stuff
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+# if a user doesn't specify anything he probably isn't interested in debug information
+if(NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif(NOT CMAKE_BUILD_TYPE)
+
 # make the compiler bitchy
 if(CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wdisabled-optimization -std=c++0x")
@@ -142,7 +147,6 @@ add_executable( hmc
 	host_writegaugefield.cpp
 	host_solver.cpp
 	host_fermionobservables.cpp
-	host_kappa.cpp
 	host_hmc.cpp
 )
 target_link_libraries( hmc
@@ -156,6 +160,8 @@ add_executable( heatbath
 	host_geometry.cpp
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
+	host_operations_su3matrix.cpp
+	host_operations_matrix.cpp	
 	gaugefield.cpp
 	host_input.cpp
 	host_readgauge.cpp
@@ -165,6 +171,27 @@ add_executable( heatbath
 	host_writegaugefield.cpp
 )
 target_link_libraries( heatbath
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	klepsydra
+)
+add_executable( tk_kappa
+	tk_kappa.cpp
+	host_geometry.cpp
+	host_operations_complex.cpp
+	host_operations_gaugefield.cpp
+	host_operations_su3matrix.cpp
+	host_operations_matrix.cpp	
+	gaugefield.cpp
+	host_input.cpp
+	host_readgauge.cpp
+	host_random.cpp
+	opencl.cpp
+	host_use_timer.cpp
+	host_writegaugefield.cpp
+)
+target_link_libraries( tk_kappa
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
