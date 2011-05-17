@@ -172,77 +172,58 @@ public:
 	 * @param[in,out] timer time for overrelaxation step
 	 */
 	hmc_error overrelax(const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	
+	/**
+	 * Returns private member gaugefield
+	 * @return The gaugefield
+	 */
+	hmc_gaugefield * get_gf ();
 
+	/**
+	 * Returns private member * devices
+	 * @return devices
+	 */
+	opencl * get_devices ();
+	
+	/**
+	 * Returns private member num_ocl_devices
+	 * @return num_ocl_devices
+	 */
+	int get_num_ocl_devices ();
+	
+	/**
+	 * Returns private member * parameters
+	 * @return parameters
+	 */
+	inputparameters * get_parameters ();
+	
+	/**
+	 * ?
+	 * @param[in,out] params ?
+	 */
+	void print_info_source(sourcefileparameters* params);
+	
+	/**
+	 * Initializes the gaugefield
+	 * @param[in,out] timer timer for initialization
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	hmc_error init_gaugefield(usetimer* timer);
 	
 	//gaugeobservables, on host!!
 	hmc_float plaquette(hmc_float* tplaq, hmc_float* splaq);
 	hmc_float plaquette();
 	hmc_complex polyakov();
 	hmc_complex spatial_polyakov(int dir);
-	/**
-	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld
-	 * @return Error code as defined in hmcerrs.h
-	 */	
-	hmc_error kappa_karsch ();
-	/**
-	 * Compute the transport coefficient kappa with the energy-momentum-tensor built by a Clover discretization
-	 * @return Error code as defined in hmcerrs.h
-	 */
-	hmc_error kappa_clover ();
+
 	
-	/**
-	 * Returns the transport coefficient kappa computed by Karsch&Wyld's method
-	 * @return Result for the transport coefficient kappa
-	 */	
-	hmc_float get_kappa_karsch ();
 	
-	/**
-	 * Returns the transport coefficient kappa computed by Clover method
-	 * @return Result for the transport coefficient kappa
-	 */	
-	hmc_float get_kappa_clover ();
-	
-	/**
-	 * Set the transport coefficient kappa computed by Karsch&Wyld's method
-	 * @param[in] in Result for the transport coefficient kappa
-	 * @return Error code as defined in hmcerrs.h
-	 */	
-	hmc_error set_kappa_karsch (hmc_float in);
-	
-	/**
-	 * Set the transport coefficient kappa computed by Clover method
-	 * @param[in] in Result for the transport coefficient kappa
-	 * @return Error code as defined in hmcerrs.h
-	 */	
-	hmc_error set_kappa_clover (hmc_float in);
-	
-	/**
-	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld on GPU
-	 * @param[in] local_work_size OpenCL local_work_size
-	 * @param[in] global_work_size OpenCL global_work_size
-	 * @param[in,out] timer time for measurement
-	 * @return Error code as defined in hmcerrs.h
-	 */	
-	hmc_error kappa_karsch_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch);
-	
-	/**
-	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld  on GPU
-	 * @param[in] local_work_size OpenCL local_work_size
-	 * @param[in] global_work_size OpenCL global_work_size
-	 * @param[in,out] timer time for measurement
-	 * @return Error code as defined in hmcerrs.h
-	 */	
-	hmc_error kappa_clover_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch);
 	
 private:
 	hmc_gaugefield * gf;
 	opencl * devices;
 	int num_ocl_devices;
-	void print_info_source(sourcefileparameters* params);
-	hmc_error init_gaugefield(usetimer* timer);
 	inputparameters* parameters;
-	hmc_float kappa_karsch_val;
-	hmc_float kappa_clover_val;
 
 };
 

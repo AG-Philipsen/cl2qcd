@@ -1,4 +1,4 @@
-#include "heatbath.h"
+#include "tk_kappa.h"
 
 int main(int argc, char* argv[])
 {
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 
 	sourcefileparameters parameters_source;
 
-	Gaugefield gaugefield;
+	Gaugefield_k gaugefield;
 	hmc_rndarray rndarray;
 	cl_device_type devicetypes[1];
 
