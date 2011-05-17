@@ -236,7 +236,11 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta,
 	return HMC_SUCCESS;
 }
 
-hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gauge_momentum * p_in, hmc_gaugefield * u_out, hmc_gauge_momentum * p_out	){
+hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gauge_momentum * p_in, 
+									 #ifdef _FERMIONS_
+									 hmc_spinor_field * phi, hmc_spinor_field * phi_inv, 
+									 #endif
+									 hmc_gaugefield * u_out, hmc_gauge_momentum * p_out	){
 	// CP: it operates directly on the fields p_out and u_out
 	int steps = (*parameters).get_integrationsteps1() ;	
 	hmc_float stepsize = ((*parameters).get_tau()) /((hmc_float) steps);
@@ -247,21 +251,33 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
 
 	//initial step
 	cout << "\tinitial step:" << endl;
-	force(parameters, u_out , force_tmp);
+	force(parameters, u_out ,
+		#ifdef _FERMIONS_
+		phi, phi_inv, 
+		#endif
+		force_tmp);
 	md_update_gauge_momenta(stepsize_half, p_out, force_tmp);
 	
 	//intermediate steps
 	if(steps > 1) cout << "\tperform " << steps << " intermediate steps " << endl;
 	for(k = 1; k<steps; k++){
 		md_update_gaugefield(stepsize, p_out, u_out);
-		force(parameters, u_out , force_tmp);
+		force(parameters, u_out ,
+			#ifdef _FERMIONS_
+			phi, phi_inv, 
+			#endif
+			force_tmp);
 		md_update_gauge_momenta(stepsize, p_out, force_tmp);
 	}
 	
 	//final step
 	cout << "\tfinal step" << endl;
 	md_update_gaugefield(stepsize, p_out, u_out);
-	force(parameters, u_out , force_tmp);
+	force(parameters, u_out ,
+		#ifdef _FERMIONS_
+		phi, phi_inv, 
+		#endif
+		force_tmp);
 	md_update_gauge_momenta(stepsize_half, p_out,force_tmp); 
 	
 	delete [] force_tmp;

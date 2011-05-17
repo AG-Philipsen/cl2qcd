@@ -1,6 +1,9 @@
 #include "host_fermionobservables.h"
 
-hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){
+hmc_error simple_correlator(inputparameters * parameters, hmc_gaugefield* gaugefield){
+
+	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
+  kappa = (*parameters).get_kappa(); mu = (*parameters).get_mu(); theta = (*parameters).get_theta_fermion(); chem_pot_re = (*parameters).get_chem_pot_re(); chem_pot_im = (*parameters).get_chem_pot_im(); cgmax = (*parameters).get_cgmax();
 
 	//CP: one needs bicgstab here for M
 	int use_cg = FALSE;

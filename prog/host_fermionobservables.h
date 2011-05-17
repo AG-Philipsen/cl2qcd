@@ -24,6 +24,13 @@
  */
 extern int const use_eo;
 
-hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax);
+/**
+ * Calculates charged pion correlator
+ * @param[in] parameters provides parameters needed
+ * @param[in] gaugefield input gaugefield
+ * @todo CP: the output is at the moment just printed to screen. this has to change at some point!
+ */
+hmc_error simple_correlator(inputparameters * parameters, hmc_gaugefield* gaugefield);
+
 
 #endif /* _FERMIONOBSERVABLESH_ */
