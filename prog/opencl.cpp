@@ -15,6 +15,7 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 	cl_kernels_file.push_back("opencl_operations_gaugefield.cl");
 	cl_kernels_file.push_back("opencl_update_heatbath.cl");
 	cl_kernels_file.push_back("opencl_gaugeobservables.cl");
+	cl_kernels_file.push_back("opencl_tk_kappa.cl");
 #ifdef _FERMIONS_
 	cl_kernels_file.push_back("opencl_operations_spinor.cl");
 	cl_kernels_file.push_back("opencl_operations_spinorfield.cl");
@@ -739,6 +740,13 @@ hmc_error opencl::gaugeobservables(const size_t local_work_size, const size_t gl
 	return HMC_SUCCESS;
 }
 
+hmc_error opencl::run_kappa_karsch_gpu(const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch){
+  return HMC_SUCCESS;
+}
+
+hmc_error opencl::run_kappa_clover_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_clover){
+  return HMC_SUCCESS; 
+}
 
 hmc_error opencl::finalize()
 {
