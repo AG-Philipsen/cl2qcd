@@ -125,9 +125,6 @@ cout << "initial values of observables:\n\t" ;
 		//init gauge_momenta
 		generate_gaussian_gauge_momenta(p);
 		
-		//CP: Debugging
-// 		set_zero_gaugemomenta(p);
-		
 		#ifdef _FERMIONS_
 		//init/update spinorfield phi
 		cout << "\tinit spinorfield " << endl;
