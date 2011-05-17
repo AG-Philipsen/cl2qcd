@@ -185,9 +185,6 @@ cout << "initial values of observables:\n\t" ;
 	delete [] new_p;
 	free(new_field);
 	
-	return 0;
-
-	
 #else /* _USEHMC_ */
 
 #ifdef _FERMIONS_
