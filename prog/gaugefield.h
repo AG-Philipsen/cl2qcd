@@ -39,10 +39,10 @@ extern string const version;
 /**
  * Class for the gaugefield. Includes initialization, device management and heatbath update.
  *
- * @class gaugefield
+ * @class Gaugefield
  * @todo: Also incorporate hmc and solver capabilities. Generalize to several devices.
  */
-class gaugefield {
+class Gaugefield {
 public:
 	/**
 	 * Initialize gaugefield and devices.
