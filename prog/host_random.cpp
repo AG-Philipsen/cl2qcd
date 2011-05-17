@@ -36,7 +36,7 @@ inline cl_ulong nr3_int64( hmc_ocl_ran * state )
 	return (tmp + CLU_VEC(*state, 1)) ^ CLU_VEC(*state, 2);
 }
 
-inline void nr3_init_state( hmc_ocl_ran * state, cl_ulong seed )
+inline void nr3_init_state( hmc_ocl_ran * const state, const cl_ulong seed )
 {
 	CLU_VEC(*state, 1) = 4101842887655102017L;
 	CLU_VEC(*state, 2) = 1;
@@ -49,12 +49,12 @@ inline void nr3_init_state( hmc_ocl_ran * state, cl_ulong seed )
 	nr3_int64( state );
 }
 
-int init_random_seeds(hmc_ocl_ran * hmc_rndarray, char * seedfile, usetimer * timer)
+int init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seedfile, usetimer * const timer)
 {
 	const cl_ulong MAX_SEED = 4101842887655102017L;
 	timer->reset();
 
-	FILE* file = fopen( seedfile, "rb" );
+	FILE * const file = fopen( seedfile, "rb" );
 
 	if( ! file ) {
 		std::cerr << "Unable to open file " << seedfile << std::endl;

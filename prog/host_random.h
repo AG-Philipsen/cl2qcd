@@ -94,7 +94,7 @@ void random_1_2_3 (int rand[3]);
  *         @li HMC_INVALIDVALUE if the seeding file does not contain enough bytes
  *         @li HMC_SUCCESS      otherwise
  */
-int init_random_seeds(hmc_ocl_ran * hmc_rndarray, char * seedfile, usetimer * inittime);
+int init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seedfile, usetimer * const inittime);
 
 /** Construct new SU2 matrix using improved alg by Kennedy Pendleton */
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha);
