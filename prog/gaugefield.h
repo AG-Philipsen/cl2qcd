@@ -181,14 +181,41 @@ public:
 	hmc_complex spatial_polyakov(int dir);
 	/**
 	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld
-	 * @param[out] kappa Result for the transport coefficient kappa
+	 * @return Error code as defined in hmcerrs.h
 	 */	
-	void kappa_karsch (hmc_float & kappa);
+	hmc_error kappa_karsch ();
 	/**
 	 * Compute the transport coefficient kappa with the energy-momentum-tensor built by a Clover discretization
-	 * @param[out] kappa Result for the transport coefficient kappa
+	 * @return Error code as defined in hmcerrs.h
 	 */
-	void kappa_clover (hmc_float & kappa);
+	hmc_error kappa_clover ();
+	
+	/**
+	 * Returns the transport coefficient kappa computed by Karsch&Wyld's method
+	 * @return Result for the transport coefficient kappa
+	 */	
+	hmc_float get_kappa_karsch ();
+	
+	/**
+	 * Returns the transport coefficient kappa computed by Clover method
+	 * @return Result for the transport coefficient kappa
+	 */	
+	hmc_float get_kappa_clover ();
+	
+	/**
+	 * Set the transport coefficient kappa computed by Karsch&Wyld's method
+	 * @param[in] in Result for the transport coefficient kappa
+	 * @return Error code as defined in hmcerrs.h
+	 */	
+	hmc_error set_kappa_karsch (hmc_float in);
+	
+	/**
+	 * Set the transport coefficient kappa computed by Clover method
+	 * @param[in] in Result for the transport coefficient kappa
+	 * @return Error code as defined in hmcerrs.h
+	 */	
+	hmc_error set_kappa_clover (hmc_float in);
+	
 	
 private:
 	hmc_gaugefield * gf;
@@ -197,6 +224,8 @@ private:
 	void print_info_source(sourcefileparameters* params);
 	hmc_error init_gaugefield(usetimer* timer);
 	inputparameters* parameters;
+	hmc_float kappa_karsch_val;
+	hmc_float kappa_clover_val;
 
 };
 

@@ -86,11 +86,12 @@ int main(int argc, char* argv[])
 		}
 	//Add a measurement frequency
 	gaugefield.sync_gaugefield(&copytime);
-	gaugefield.kappa_karsch (kappa_karsch_val);
-	gaugefield.kappa_clover (kappa_clover_val);
-	
-	kappa_karsch_out << kappa_karsch_val <<endl;
-	kappa_clover_out << kappa_clover_val <<endl;
+	hmc_error err;
+	err = gaugefield.kappa_karsch ();
+	err = gaugefield.kappa_clover ();
+
+	kappa_karsch_out << gaugefield.get_kappa_karsch() <<endl;
+	kappa_clover_out << gaugefield.get_kappa_clover() <<endl;
 	}
 	
 	kappa_karsch_out.close();

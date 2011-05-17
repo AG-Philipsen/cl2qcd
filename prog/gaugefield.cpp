@@ -359,11 +359,38 @@ hmc_error gaugefield::finalize()
 	return HMC_SUCCESS;
 }
 
+hmc_float gaugefield::get_kappa_karsch (){
+	return kappa_karsch_val;
+}
+	
+hmc_float gaugefield::get_kappa_clover (){
+	return kappa_clover_val;
+}
 
-void gaugefield::kappa_karsch (hmc_float & kappa)
+hmc_error gaugefield::set_kappa_karsch (hmc_float in){
+	kappa_karsch_val = in;
+	return HMC_SUCCESS;
+}
+
+hmc_error gaugefield::set_kappa_clover (hmc_float in){
+	kappa_clover_val = in;
+	return HMC_SUCCESS;
+  
+}
+
+// hmc_error gaugefield::kappa_karsch_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch){
+// 	//LZ: so far, we only use !!! 1 !!! device
+// 	// this function needs to be generalised to several devices and definition of subsets...
+// 	hmc_error err = devices[0].run_kappa_karsch_gpu(local_work_size, global_work_size, timer);
+// 	return err;
+//   
+// }
+
+
+hmc_error gaugefield::kappa_karsch ()
 {
   //Initialize kappa
-  kappa = 0.0;
+  kappa_karsch_val = 0.0;
   //Initializing beta
   const hmc_float beta = parameters->get_beta();
   //Compute diagonal spatial components of the energy-momentum-tensor
@@ -407,7 +434,7 @@ void gaugefield::kappa_karsch (hmc_float & kappa)
 	      c[point] = 2.0*tdiag_33[point] - tdiag_22[point] - tdiag_11[point];
   }}
 
-  hmc_float deltak = 2*PI/NSPACE;
+  hmc_float deltak = 2*PI/ hmc_float(NSPACE);
   hmc_float result = 0.0;
 
   
@@ -447,12 +474,14 @@ void gaugefield::kappa_karsch (hmc_float & kappa)
   
   hmc_float norm = hmc_float (NSPACE* NSPACE) / hmc_float (VOL4D) / hmc_float(NC * NC) /12.0 /PI /PI  * beta * beta;
 
-  kappa = norm * result;
+  kappa_karsch_val = norm * result;
+  
+  return HMC_SUCCESS;
 }
 
-void gaugefield::kappa_clover (hmc_float & kappa){
+hmc_error gaugefield::kappa_clover (){
   //Initializing result
-  kappa = .0;
+  kappa_clover_val = .0;
   //Initializing beta
   const hmc_float beta = parameters->get_beta();
   //Energy-momentum-tensor in clover-discretization
@@ -471,12 +500,10 @@ void gaugefield::kappa_clover (hmc_float & kappa){
       local_Q_plaquette(&Q_20, gf, n, t, 2, 0);
       hmc_3x3matrix Q_02;
       adjoint_3x3matrix (&Q_02, &Q_20);
-// 	      local_Q_plaquette(gf, &Q_02, n, t, 0, 2);
       hmc_3x3matrix Q_21;
       local_Q_plaquette(&Q_21,gf, n, t, 2, 1);
       hmc_3x3matrix Q_12;
       adjoint_3x3matrix (&Q_12, &Q_21);
-// 	      local_Q_plaquette(gf, &Q_12, n, t, 1, 2);
       hmc_3x3matrix Q_03;
       local_Q_plaquette(&Q_03, gf, n, t, 0, 3);
       hmc_3x3matrix Q_30;
@@ -489,7 +516,6 @@ void gaugefield::kappa_clover (hmc_float & kappa){
       local_Q_plaquette( &Q_23, gf, n, t, 2, 3);
       hmc_3x3matrix Q_32;
       adjoint_3x3matrix (&Q_32, &Q_23);
-// 	      local_Q_plaquette(gf, &Q_32, n, t, 3, 2);
       hmc_3x3matrix Q_11;
       local_Q_plaquette( &Q_11, gf, n, t, 1, 1);
 
@@ -531,7 +557,7 @@ void gaugefield::kappa_clover (hmc_float & kappa){
       multiply_3x3matrix (&tmp, &Q_11, &tmp);
       trace_3x3matrix (&tmp_cmp, &tmp);
       t_13 [point] += tmp_cmp.re;
-      //alpha=2, vanishes
+      //alpha=2
       subtract_3x3matrix (&tmp, &Q_32, &Q_23);
       multiply_3x3matrix (&tmp, &Q_12, &tmp);
       trace_3x3matrix (&tmp_cmp, &tmp);
@@ -553,7 +579,7 @@ void gaugefield::kappa_clover (hmc_float & kappa){
       multiply_3x3matrix (&tmp, &Q_21, &tmp);
       trace_3x3matrix (&tmp_cmp, &tmp);
       t_23 [point] += tmp_cmp.re;
-      //alpha=2, vanishes
+      //alpha=2
       subtract_3x3matrix (&tmp, &Q_32, &Q_23);
       multiply_3x3matrix (&tmp, &Q_22, &tmp);
       trace_3x3matrix (&tmp_cmp, &tmp);
@@ -567,13 +593,13 @@ void gaugefield::kappa_clover (hmc_float & kappa){
     }
     
     //Momentum
-    const hmc_float deltak = 2.0*PI / NSPACE;
+    const hmc_float deltak = 2.0*PI / hmc_float (NSPACE);
     hmc_float result = 0.0;
 
   
     for (int x_3=0; x_3<NSPACE; x_3++){
       for (int y_3=0; y_3<x_3; y_3++){
-	hmc_float factor = 1.0 - cos(deltak*hmc_float(x_3-y_3));
+	hmc_float factor = 1.0 - cos(deltak * hmc_float(x_3-y_3));
 	for (int x_t=0; x_t<NTIME; x_t++){
 	  for (int y_t=0; y_t<NTIME; y_t++){
 	    for (int x_1=0; x_1<NSPACE; x_1++){
@@ -602,10 +628,15 @@ void gaugefield::kappa_clover (hmc_float & kappa){
 				      + t_13[point_x]*t_13[point_y]
 				      + t_23[point_x]*t_23[point_y]);
   }}}}}}}}
+  
   //Normalization
-  // / (-96)^2=/ 9216, * beta^2, /3 für T_12T_12+T_13T_13+T_23T_23, /VOL4D für Summe y, /2 /pi^2 * L_z^2 für Ableitung * 2 für forschleife
-  hmc_float norm = hmc_float (NSPACE* NSPACE) / hmc_float (VOL4D) /PI /PI  * beta * beta /9216. /3.;
+  // 1/3 for averaging T_ij, 1/V/Nt for averaging y, L^2/2/pi^2 for derivation, (-1/64)^2 for Clover and T_munu^2, beta^2/Nc^2 for T_munu^2
+  // *2 for temp + conj (temp) *2 for for-loop
+  // = beta^2 * L^2/ (55296 * V * Nt * pi^2)
+  hmc_float norm = hmc_float (NSPACE* NSPACE) / hmc_float (VOL4D) /PI /PI * beta * beta / 55296. ;
     
-  kappa = norm * result * beta;
+  kappa_clover_val = norm * result;
+  
+  return HMC_SUCCESS;
 }
 
