@@ -1,6 +1,6 @@
 #include "gaugefield.h"
 
-hmc_error gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer)
+hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer)
 {
 	gf = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
 
@@ -28,7 +28,7 @@ hmc_error gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparame
 	return HMC_SUCCESS;
 }
 
-hmc_error gaugefield::init_gaugefield(usetimer* timer)
+hmc_error Gaugefield::init_gaugefield(usetimer* timer)
 {
 	sourcefileparameters parameters_source;
 	if(parameters->get_startcondition() == START_FROM_SOURCE) {
@@ -61,7 +61,7 @@ hmc_error gaugefield::init_gaugefield(usetimer* timer)
 	return HMC_SUCCESS;
 }
 
-void gaugefield::print_info_source(sourcefileparameters* params)
+void Gaugefield::print_info_source(sourcefileparameters* params)
 {
 	printf("**********************************************************\n");
 	printf("Sourcefile parameters: (list not complete)\n");
@@ -82,7 +82,7 @@ void gaugefield::print_info_source(sourcefileparameters* params)
 }
 
 
-hmc_error gaugefield::save(int number)
+hmc_error Gaugefield::save(int number)
 {
 
 	ildg_gaugefield * gaugefield_buf;
@@ -111,7 +111,7 @@ hmc_error gaugefield::save(int number)
 	return HMC_SUCCESS;
 }
 
-hmc_error gaugefield::copy_gaugefield_to_devices(usetimer* timer)
+hmc_error Gaugefield::copy_gaugefield_to_devices(usetimer* timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -120,7 +120,7 @@ hmc_error gaugefield::copy_gaugefield_to_devices(usetimer* timer)
 	return err;
 }
 
-hmc_error gaugefield::sync_gaugefield(usetimer* timer)
+hmc_error Gaugefield::sync_gaugefield(usetimer* timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -129,7 +129,7 @@ hmc_error gaugefield::sync_gaugefield(usetimer* timer)
 	return err;
 }
 
-hmc_error gaugefield::copy_rndarray_to_devices(hmc_rndarray host_rndarray,  usetimer* timer)
+hmc_error Gaugefield::copy_rndarray_to_devices(hmc_rndarray host_rndarray,  usetimer* timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -137,7 +137,7 @@ hmc_error gaugefield::copy_rndarray_to_devices(hmc_rndarray host_rndarray,  uset
 	return err;
 }
 
-hmc_error gaugefield::copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer* timer)
+hmc_error Gaugefield::copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer* timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -145,7 +145,7 @@ hmc_error gaugefield::copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer
 	return err;
 }
 
-void gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2)
+void Gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2)
 {
 	timer->reset();
 	hmc_float tplaq = 0;
@@ -159,7 +159,7 @@ void gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2)
 	return;
 }
 
-void gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2, int iter)
+void Gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2, int iter)
 {
 	timer->reset();
 	hmc_float tplaq = 0;
@@ -173,7 +173,7 @@ void gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2, int
 	return;
 }
 
-void gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2, int iter, std::string filename)
+void Gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2, int iter, std::string filename)
 {
 	timer->reset();
 	hmc_float tplaq = 0;
@@ -196,7 +196,7 @@ void gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2, int
 	return;
 }
 
-void gaugefield::print_gaugeobservables(hmc_float plaq, hmc_float tplaq, hmc_float splaq, hmc_complex pol, int iter, std::string filename)
+void Gaugefield::print_gaugeobservables(hmc_float plaq, hmc_float tplaq, hmc_float splaq, hmc_complex pol, int iter, std::string filename)
 {
 	//printf("%d\t%f\t%f\t%f\t%f\t%f\n",iter,plaq,tplaq,splaq,pol.re,pol.im);
 	std::fstream gaugeout;
@@ -211,7 +211,7 @@ void gaugefield::print_gaugeobservables(hmc_float plaq, hmc_float tplaq, hmc_flo
 	return;
 }
 
-hmc_float gaugefield::plaquette()
+hmc_float Gaugefield::plaquette()
 {
 	hmc_float tdummy;
 	hmc_float sdummy;
@@ -219,7 +219,7 @@ hmc_float gaugefield::plaquette()
 	return plaquette(&tdummy, &sdummy);
 }
 
-hmc_float gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
+hmc_float Gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 {
 	hmc_float plaq = 0;
 	*tplaq = 0;
@@ -247,7 +247,7 @@ hmc_float gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 }
 
 
-hmc_complex gaugefield::polyakov()
+hmc_complex Gaugefield::polyakov()
 {
 	hmc_complex res;
 	res.re = 0;
@@ -264,7 +264,7 @@ hmc_complex gaugefield::polyakov()
 }
 
 
-hmc_complex gaugefield::spatial_polyakov(int dir)
+hmc_complex Gaugefield::spatial_polyakov(int dir)
 {
 	//assuming dir=1,2, or 3
 	hmc_complex res;
@@ -298,7 +298,7 @@ hmc_complex gaugefield::spatial_polyakov(int dir)
 	return res;
 }
 
-hmc_error gaugefield::print_gaugeobservables_from_devices(const size_t local_work_size, const size_t global_work_size, hmc_float* plaq, hmc_float* tplaq, hmc_float* splaq, hmc_complex* pol, usetimer* plaqtime, usetimer* polytime, int i, string gaugeoutname)
+hmc_error Gaugefield::print_gaugeobservables_from_devices(const size_t local_work_size, const size_t global_work_size, hmc_float* plaq, hmc_float* tplaq, hmc_float* splaq, hmc_complex* pol, usetimer* plaqtime, usetimer* polytime, int i, string gaugeoutname)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -309,7 +309,7 @@ hmc_error gaugefield::print_gaugeobservables_from_devices(const size_t local_wor
 	return HMC_SUCCESS;
 }
 
-hmc_error gaugefield::print_gaugeobservables_from_devices(const size_t local_work_size, const size_t global_work_size, usetimer* plaqtime, usetimer* polytime, int i, string gaugeoutname)
+hmc_error Gaugefield::print_gaugeobservables_from_devices(const size_t local_work_size, const size_t global_work_size, usetimer* plaqtime, usetimer* polytime, int i, string gaugeoutname)
 {
 	hmc_float plaq, tplaq, splaq;
 	hmc_complex pol;
@@ -319,7 +319,7 @@ hmc_error gaugefield::print_gaugeobservables_from_devices(const size_t local_wor
 	return err;
 }
 
-hmc_error gaugefield::heatbath(const size_t local_work_size, const size_t global_work_size, usetimer* timer)
+hmc_error Gaugefield::heatbath(const size_t local_work_size, const size_t global_work_size, usetimer* timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -327,7 +327,7 @@ hmc_error gaugefield::heatbath(const size_t local_work_size, const size_t global
 	return err;
 }
 
-hmc_error gaugefield::overrelax(const size_t local_work_size, const size_t global_work_size, usetimer* timer)
+hmc_error Gaugefield::overrelax(const size_t local_work_size, const size_t global_work_size, usetimer* timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -336,7 +336,7 @@ hmc_error gaugefield::overrelax(const size_t local_work_size, const size_t globa
 	return err;
 }
 
-hmc_error gaugefield::heatbath(const size_t local_work_size, const size_t global_work_size, int nheat, int nover, usetimer* timer_heat, usetimer* timer_over)
+hmc_error Gaugefield::heatbath(const size_t local_work_size, const size_t global_work_size, int nheat, int nover, usetimer* timer_heat, usetimer* timer_over)
 {
 	hmc_error err = HMC_SUCCESS;
 	for(int i = 0; i < nheat; i++) err |= heatbath(local_work_size, global_work_size, timer_heat);
@@ -344,14 +344,14 @@ hmc_error gaugefield::heatbath(const size_t local_work_size, const size_t global
 	return err;
 }
 
-hmc_error gaugefield::heatbath(const size_t local_work_size, const size_t global_work_size, int nheat, usetimer* timer_heat)
+hmc_error Gaugefield::heatbath(const size_t local_work_size, const size_t global_work_size, int nheat, usetimer* timer_heat)
 {
 	hmc_error err = HMC_SUCCESS;
 	for(int i = 0; i < nheat; i++) err |= heatbath(local_work_size, global_work_size, timer_heat);
 	return err;
 }
 
-hmc_error gaugefield::finalize()
+hmc_error Gaugefield::finalize()
 {
 	free(gf);
 	if(num_ocl_devices > 0)
@@ -359,26 +359,26 @@ hmc_error gaugefield::finalize()
 	return HMC_SUCCESS;
 }
 
-hmc_float gaugefield::get_kappa_karsch (){
+hmc_float Gaugefield::get_kappa_karsch (){
 	return kappa_karsch_val;
 }
 	
-hmc_float gaugefield::get_kappa_clover (){
+hmc_float Gaugefield::get_kappa_clover (){
 	return kappa_clover_val;
 }
 
-hmc_error gaugefield::set_kappa_karsch (hmc_float in){
+hmc_error Gaugefield::set_kappa_karsch (hmc_float in){
 	kappa_karsch_val = in;
 	return HMC_SUCCESS;
 }
 
-hmc_error gaugefield::set_kappa_clover (hmc_float in){
+hmc_error Gaugefield::set_kappa_clover (hmc_float in){
 	kappa_clover_val = in;
 	return HMC_SUCCESS;
   
 }
 
-// hmc_error gaugefield::kappa_karsch_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch){
+// hmc_error Gaugefield::kappa_karsch_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch){
 // 	//LZ: so far, we only use !!! 1 !!! device
 // 	// this function needs to be generalised to several devices and definition of subsets...
 // 	hmc_error err = devices[0].run_kappa_karsch_gpu(local_work_size, global_work_size, timer);
@@ -387,7 +387,7 @@ hmc_error gaugefield::set_kappa_clover (hmc_float in){
 // }
 
 
-hmc_error gaugefield::kappa_karsch ()
+hmc_error Gaugefield::kappa_karsch ()
 {
   //Initialize kappa
   kappa_karsch_val = 0.0;
@@ -479,7 +479,7 @@ hmc_error gaugefield::kappa_karsch ()
   return HMC_SUCCESS;
 }
 
-hmc_error gaugefield::kappa_clover (){
+hmc_error Gaugefield::kappa_clover (){
   //Initializing result
   kappa_clover_val = .0;
   //Initializing beta
