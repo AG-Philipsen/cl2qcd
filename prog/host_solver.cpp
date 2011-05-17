@@ -12,8 +12,8 @@ hmc_error solver_eoprec(inputparameters * parameters, hmc_spinor_field* in,  hmc
 	hmc_eoprec_spinor_field tmp[EOPREC_SPINORFIELDSIZE];
 
 	convert_to_eoprec(even,odd,in);
-  convert_to_kappa_format_eoprec(even,kappa);
-  convert_to_kappa_format_eoprec(odd,kappa);
+  convert_to_kappa_format_eoprec(even,( (*parameters).get_kappa() ));
+  convert_to_kappa_format_eoprec(odd,( (*parameters).get_kappa() ));
 		
 	//calculate even-solution even
 	if(use_cg)
@@ -24,18 +24,18 @@ hmc_error solver_eoprec(inputparameters * parameters, hmc_spinor_field* in,  hmc
 	//desired solution is g = L^-1 x
 	//calculate L^-1x_even = g_even
 	hmc_eoprec_spinor_field spintmp[EOPREC_SPINORFIELDSIZE];
-	dslash_eoprec(even, tmp,gaugefield,kappa, theta, chem_pot_re, chem_pot_im, ODD); //use newood as tmp variable
-	M_inverse_sitediagonal(tmp, spintmp,kappa,mu);
+	dslash_eoprec(parameters, even,gaugefield, ODD , tmp); //use newood as tmp variable
+	M_inverse_sitediagonal(parameters, tmp, spintmp);
 		
 	//calculate odd-solution odd
-	M_inverse_sitediagonal(bo, odd, kappa,mu);
+	M_inverse_sitediagonal(parameters, bo, odd);
 		
 	//calculate g_odd
 	hmc_complex one = hmc_complex_one;
 	saxpy_eoprec(spintmp, odd, &one, odd);
 
-	convert_from_kappa_format_eoprec(even,even, kappa);
-	convert_from_kappa_format_eoprec(odd, odd, kappa);
+	convert_from_kappa_format_eoprec(even,even, ( (*parameters).get_kappa() ));
+	convert_from_kappa_format_eoprec(odd, odd, ( (*parameters).get_kappa() ));
 
 	//write out g
 	convert_from_eoprec(even,odd,out);
@@ -47,17 +47,14 @@ hmc_error solver_eoprec(inputparameters * parameters, hmc_spinor_field* in,  hmc
 //TODO think about if the use of CG = MdaggerM and BiCGStab = M is the best solution
 hmc_error solver(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* b, hmc_gaugefield* gaugefield, int use_cg, hmc_spinor_field* out){
 	
-	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
-  kappa = (*parameters).get_kappa(); mu = (*parameters).get_mu(); theta = (*parameters).get_theta_fermion(); chem_pot_re = (*parameters).get_chem_pot_re(); chem_pot_im = (*parameters).get_chem_pot_im(); cgmax = (*parameters).get_cgmax();
-	
-	convert_to_kappa_format(in, kappa);
+	convert_to_kappa_format(in, ( (*parameters).get_kappa() ));
 	
 	if(use_cg)
 		cg(parameters, in, b, gaugefield);
 	else
 		bicgstab(parameters, in, b, gaugefield);
 	
-	convert_from_kappa_format(in, out, kappa);
+	convert_from_kappa_format(in, out, ( (*parameters).get_kappa() ));
     
 	return HMC_SUCCESS;
 }
@@ -92,7 +89,7 @@ hmc_error bicgstab(inputparameters * parameters, hmc_spinor_field* inout, hmc_sp
 
     if(iter%iter_refresh==0) {
       //fresh start
-      M(inout,rn,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+      M(parameters, inout,gaugefield,rn);
       saxpy(rn, source, &one, rn);
       copy_spinor(rn, rhat);
 
@@ -115,14 +112,14 @@ hmc_error bicgstab(inputparameters * parameters, hmc_spinor_field* inout, hmc_sp
     tmp2 = complexmult(&minusone,&tmp1);
     saxsbypz(p, v, rn, &beta, &tmp2, p);
 
-    M(p,v,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+    M(parameters, p,gaugefield,v);
 
     tmp1 = scalar_product(rhat,v);
     alpha = complexdivide(&rho,&tmp1);
 
     saxpy(v, rn, &alpha, s);
 
-    M(s,t,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+    M(parameters, s,gaugefield,t);
 
     tmp1 = scalar_product(t,s);
     tmp2 = scalar_product(t,t);
@@ -135,7 +132,7 @@ hmc_error bicgstab(inputparameters * parameters, hmc_spinor_field* inout, hmc_sp
     hmc_float resid = global_squarenorm(rn);
 
     if(resid<epssquare) {
-      M(inout,aux,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+      M(parameters, inout,gaugefield,aux);
       saxpy(aux, source, &one, aux);
       hmc_float trueresid = global_squarenorm(aux);
       //printf("%d\t%e\t%e\n",iter,resid,trueresid);
@@ -184,7 +181,7 @@ hmc_error bicgstab_eoprec(inputparameters * parameters, hmc_eoprec_spinor_field*
     if(iter%iter_refresh==0) {
       //fresh start
 			set_zero_spinorfield_eoprec(p);
-      Aee(inout,rn,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+      Aee(parameters, inout,gaugefield,rn);
       saxpy_eoprec(rn, source, &one, rn);
       copy_spinor_eoprec(rn, rhat);
       
@@ -207,14 +204,14 @@ hmc_error bicgstab_eoprec(inputparameters * parameters, hmc_eoprec_spinor_field*
     tmp2 = complexmult(&minusone,&tmp1);
     saxsbypz_eoprec(p, v, rn, &beta, &tmp2, p);
     
-    Aee(p,v,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+    Aee(parameters, p,gaugefield,v);
 
     tmp1 = scalar_product_eoprec(rhat,v);
     alpha = complexdivide(&rho,&tmp1);
 
     saxpy_eoprec(v, rn, &alpha, s);
 
-    Aee(s,t,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+    Aee(parameters, s,gaugefield,t);
 
     tmp1 = scalar_product_eoprec(t,s);
     tmp2 = scalar_product_eoprec(t,t);
@@ -228,7 +225,7 @@ hmc_error bicgstab_eoprec(inputparameters * parameters, hmc_eoprec_spinor_field*
 //     printf("%d\t%e\n",iter,resid);
 
     if(resid<epssquare) {
-      Aee(inout,aux,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+      Aee(parameters, inout,gaugefield,aux);
       saxpy_eoprec(aux, source, &one, aux);
       hmc_float trueresid = global_squarenorm_eoprec(aux);
 //       printf("true residue squared: %e\n",trueresid);
@@ -275,13 +272,13 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
   for(iter = 0; iter < cgmax; iter ++){  
     if(iter%iter_refresh==0){
 			//fresh start
-			MdaggerM(inout,rn,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+			MdaggerM(parameters, inout,gaugefield,rn);
 			saxpy(rn, source, &one, rn);
 			copy_spinor(rn, pn);
 			printf("true residue squared: %e\n",global_squarenorm(rn));
 		}
 		
-		MdaggerM(pn,tmp,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+		MdaggerM(parameters, pn,gaugefield,tmp);
 		tmp1 = scalar_product(rn, pn);
 		tmp2 = scalar_product(pn, tmp);
 		alpha = complexdivide(&tmp1, &tmp2);
@@ -344,13 +341,13 @@ hmc_error cg_eoprec(inputparameters * parameters, hmc_eoprec_spinor_field* inout
   for(iter = 0; iter < cgmax; iter ++){  
     if(iter%iter_refresh==0){
 			//fresh start
-			Aee(inout,rn,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+			Aee(parameters, inout,gaugefield,rn);
 			saxpy_eoprec(rn, source, &one, rn);
 			copy_spinor_eoprec(rn, pn);
 // 			printf("true residue squared: %e\n",global_squarenorm(rn));
 		}
 		
-		Aee(pn,tmp,gaugefield,kappa,mu, theta, chem_pot_re, chem_pot_im);
+		Aee(parameters, pn,gaugefield,tmp);
 		tmp1 = scalar_product_eoprec(rn, pn);
 		tmp2 = scalar_product_eoprec(pn, tmp);
 		alpha = complexdivide(&tmp1, &tmp2);

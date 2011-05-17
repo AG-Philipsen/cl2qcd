@@ -780,7 +780,8 @@ hmc_error opencl::finalize()
 }
 
 //CP: extra file for the long testing functions
-#include "opencl_testing.h"
+//	this is not to be used anymore because of changed arg structure!!!!
+// #include "opencl_testing.h"
 //CP: extra file for the long fermion functions
 #ifdef _FERMIONS_
 #include "opencl_fermions.h"

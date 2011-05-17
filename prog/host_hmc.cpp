@@ -38,7 +38,7 @@ hmc_error md_update_spinorfield(hmc_spinor_field * in, hmc_spinor_field * out, h
 	//TODO extract needed parameters from paramters, or transform this into M itself
 	hmc_float kappa, mu, theta, chem_pot_re, chem_pot_im;
 	//TODO check again if it is M or Mdagger here
-	Mdagger(in, out, field, kappa, mu, theta, chem_pot_re, chem_pot_im);
+	Mdagger(parameters, in, field, out);
 	
 	return HMC_SUCCESS;
 }
