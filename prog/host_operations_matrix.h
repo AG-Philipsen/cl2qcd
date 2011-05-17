@@ -38,7 +38,7 @@ hmc_error subtract_3x3matrix (hmc_3x3matrix *out, hmc_3x3matrix *p, hmc_3x3matri
 * @param[out] mat The matrix into which to write the identity
 * @return Error code as defined in hmcerrs.h
 */
-hmc_error set_to_3x3_identity(hmc_3x3matrix *mat);
+hmc_error set_to_3x3_identity(hmc_3x3matrix mat);
 
 /**
 * Copy a 3x3 matrix into another (implements: *dest = *src, basically)

@@ -371,11 +371,19 @@ hmc_error read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, in
 				printf("\t\terror in creating tmp file\n");
 				return HMC_FILEERROR;
 			}
-			//char buffer [nbytes];//char * buffer = new char[nbytes+1];
-			std::string buffer;
-			limeReaderReadData ((void*) buffer.c_str(),(n_uint64_t *) &nbytes, r);
+			/** @bug CP: the std::string buffer does not work for some reason!! */
+// 			char buffertmp [1];
+			char * buffer = new char[nbytes+1];
+// 			std::string buffer;
+			printf("here is the problem\n");
+			int error = 
+// 			limeReaderReadData ((void*) buffer.c_str(),(n_uint64_t *) &nbytes, r);
+			limeReaderReadData ((void*) buffer,(n_uint64_t *) &nbytes, r);
+
+						printf("%i\n", error);
 			char * buffer2 = new char[nbytes+1];
-			strcpy(buffer2, buffer.c_str());
+// 			strcpy(buffer2, buffer.c_str());
+			strcpy(buffer2, buffer);
 			fwrite(buffer2, 1, sizeof(char)*nbytes, tmp);
 			fclose(tmp);
 
@@ -402,10 +410,16 @@ hmc_error read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, in
 				printf("\t\terror in creating tmp file\n");
 				return HMC_FILEERROR;
 			}
-			std::string buffer;
-			limeReaderReadData ((void*) buffer.c_str(),(n_uint64_t *) &nbytes, r);
+// 			std::string buffer;
+	char * buffer = new char[nbytes+1];
+			printf("and here to\n");
+// 			limeReaderReadData ((void*) buffer.c_str(),(n_uint64_t *) &nbytes, r);
+			limeReaderReadData ((void*) buffer,(n_uint64_t *) &nbytes, r);
+
 			char * buffer2 = new char[nbytes+1];
-			strcpy(buffer2, buffer.c_str());
+// 			strcpy(buffer2, buffer.c_str());
+strcpy(buffer2, buffer);
+
 			fwrite(buffer2, 1, sizeof(char)*nbytes, tmp);
 			fclose(tmp);
 

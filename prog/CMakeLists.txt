@@ -51,7 +51,7 @@ if( USE_RECONSTRUCT_TWELVE )
 endif( USE_RECONSTRUCT_TWELVE )
 option( USE_HMC "Update with hybrid monte carlo algorithm" OFF)
 if (USE_HMC)
-	add_definitions( -D_USE_HMC_ )
+	add_definitions( -D_USEHMC_ )
 endif( USE_HMC)
 option( USE_FERMIONS "Use fermions" OFF )
 if( USE_FERMIONS )
@@ -123,8 +123,8 @@ add_executable( hmc
 	hmc.cpp
 	host_geometry.cpp
 	host_operations_complex.cpp
-	host_operations_su3matrix.cpp
 	host_operations_matrix.cpp
+	host_operations_su3matrix.cpp
 	host_operations_gaugefield.cpp
 	host_operations_gaugemomentum.cpp
 	host_operations_spinor.cpp

@@ -123,12 +123,12 @@ hmc_error accumulate_su3matrix_3x3_add(hmc_3x3matrix *out, hmc_su3matrix *q){
 }
 
 hmc_error trace_3x3matrix (hmc_complex * out, hmc_3x3matrix *q){
-  (*out).re = (*q[0][0]).re;
-  (*out).im = (*q[0][0]).im;
-  (*out).re += (*q[1][1]).re;
-  (*out).im += (*q[1][1]).im;
-  (*out).re += (*q[2][2]).re;
-  (*out).im += (*q[2][2]).im;
+  (*out).re = ((*q)[0][0]).re;
+  (*out).im = ((*q)[0][0]).im;
+  (*out).re += ((*q)[1][1]).re;
+  (*out).im += ((*q)[1][1]).im;
+  (*out).re += ((*q)[2][2]).re;
+  (*out).im += ((*q)[2][2]).im;
   
   return HMC_SUCCESS;
 }
