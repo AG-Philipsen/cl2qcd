@@ -449,7 +449,6 @@ hmc_error opencl::run_heatbath(const hmc_float beta, usetimer * const timer)
 			exit(HMC_OCLERROR);
 		}
 		enqueueKernel(heatbath_even, global_work_size);
-		clFinish(queue);
 	}
 
 	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), &clmem_gaugefield);
@@ -474,8 +473,8 @@ hmc_error opencl::run_heatbath(const hmc_float beta, usetimer * const timer)
 			exit(HMC_OCLERROR);
 		}
 		enqueueKernel(heatbath_odd, global_work_size);
-		clFinish(queue);
 	}
+	clFinish(queue);
 	timer->add();
 	return HMC_SUCCESS;
 
