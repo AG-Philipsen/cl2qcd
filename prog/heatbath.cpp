@@ -14,18 +14,18 @@ int main(int argc, char* argv[])
 	char* inputfile = argv[1];
 	inputparameters parameters;
 	parameters.readfile(inputfile);
-	print_info(&parameters,&cout);
+	print_info(&parameters, &cout);
 
 	//init file to store gauge observables, print initial information
 	stringstream gaugeout_name;
 	gaugeout_name << "gaugeobservables_beta" << parameters.get_beta();
 	fstream gaugeout;
-	
+
 	gaugeout.open(gaugeout_name.str().c_str(), std::ios::out | std::ios::app);
 	if(!gaugeout.is_open()) exit(HMC_FILEERROR);
-	print_info(&parameters,&gaugeout);
+	print_info(&parameters, &gaugeout);
 	gaugeout.close();
-	
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Initialization
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	int ntherm = parameters.get_thermalizationsteps();
-	if(ntherm > 0) gaugefield.heatbath(local_work_size, global_work_size, ntherm, &updatetime);
+	if(ntherm > 0) gaugefield.heatbath(ntherm, &updatetime);
 
 	int nsteps = parameters.get_heatbathsteps();
 	int overrelaxsteps = parameters.get_overrelaxsteps();
@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 	int savefreq = parameters.get_savefrequency();
 
 	for(int i = 0; i < nsteps; i++) {
-		gaugefield.heatbath(local_work_size, global_work_size, &updatetime);
+		gaugefield.heatbath(&updatetime);
 		for(int j = 0; j < overrelaxsteps; j++) gaugefield.overrelax(local_work_size, global_work_size, &overrelaxtime);
 		if( ( (i + 1) % writefreq ) == 0 ) {
 			gaugefield.print_gaugeobservables_from_devices(local_work_size, global_work_size, &plaqtime, &polytime, i, gaugeout_name.str());
@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
 
 	gaugefield.sync_gaugefield(&copytime);
 	gaugefield.save(nsteps);
-	
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Final Output
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////

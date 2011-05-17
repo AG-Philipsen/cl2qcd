@@ -142,29 +142,23 @@ public:
 
 	/**
 	 * Perform a number of heatbath and (afterwards) overrelaxation steps.
-	 * @param[in] local_work_size OpenCL local_work_size
-	 * @param[in] global_work_size OpenCL global_work_size
 	 * @param[in] nheat number of heatbath steps
 	 * @param[in] nover number of overrelaxation steps
 	 * @param[in,out] timer_heat time for heatbath steps
 	 * @param[in,out] timer_over time for overrelaxation steps
 	 */
-	hmc_error heatbath(const size_t local_work_size, const size_t global_work_size, int nheat, int nover, usetimer* timer_heat, usetimer* timer_over);
+	hmc_error heatbath(const int nheat, const int nover, usetimer * const timer_heat, usetimer * const timer_over);
 	/**
 	 * Perform a number of heatbath steps.
-	 * @param[in] local_work_size OpenCL local_work_size
-	 * @param[in] global_work_size OpenCL global_work_size
 	 * @param[in] nheat number of heatbath steps
 	 * @param[in,out] timer_heat time for heatbath steps
 	 */
-	hmc_error heatbath(const size_t local_work_size, const size_t global_work_size, int nheat, usetimer* timer_heat);
+	hmc_error heatbath(const int nheat, usetimer * const timer_heat);
 	/**
 	 * Perform one heatbath step.
-	 * @param[in] local_work_size OpenCL local_work_size
-	 * @param[in] global_work_size OpenCL global_work_size
 	 * @param[in,out] timer time for heatbath step
 	 */
-	hmc_error heatbath(const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	hmc_error heatbath(usetimer * const timer);
 	/**
 	 * Perform one overrelaxation step.
 	 * @param[in] local_work_size OpenCL local_work_size

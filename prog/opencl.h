@@ -112,7 +112,7 @@ public:
 	/**
 	 * Perform one heatbath step.
 	 */
-	hmc_error run_heatbath(hmc_float beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
+	hmc_error run_heatbath(const hmc_float beta, usetimer * const timer);
 
 	/**
 	 * Perform one overrelaxation step.
@@ -311,6 +311,20 @@ private:
 	cl_mem clmem_solver_test_correlator;
 #endif
 
+	/** The number of cores (not PEs) of the device */
+	cl_uint max_compute_units;
+
+	/**
+	 * Enqueue the given kernel on the device. Local work size will be determined
+	 * automatically from device and kernel properties.
+	 *
+	 * @param kernel The kernel to execute.
+	 * @param global_work_size The number of threads to run.
+	 *
+	 * @todo local work size decision might need ot become less automatic
+	 * @todo global work size will also depend on device ...
+	 */
+	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size);
 };
 
 #endif /* _MYOPENCLH_ */

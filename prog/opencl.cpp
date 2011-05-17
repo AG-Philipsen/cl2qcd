@@ -1,5 +1,6 @@
 #include "opencl.h"
 
+#include <algorithm>
 
 using namespace std;
 
@@ -79,6 +80,9 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 	cout << "\t\tCL_DEVICE_VERSION: " << info << endl;
 	if(clGetDeviceInfo(device, CL_DEVICE_EXTENSIONS, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
 	cout << "\t\tCL_DEVICE_EXTENSIONS: " << info << endl;
+
+	// figure out the number of "cores"
+	if(clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
 
 	cout << "Create context..." << endl;
 	context = clCreateContext(0, 1, &device, 0, 0, &clerr);
@@ -412,12 +416,16 @@ hmc_error opencl::copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* tim
 	return HMC_SUCCESS;
 }
 
-hmc_error opencl::run_heatbath(hmc_float beta, const size_t local_work_size, const size_t global_work_size, usetimer* timer)
+hmc_error opencl::run_heatbath(const hmc_float beta, usetimer * const timer)
 {
 	cl_int clerr = CL_SUCCESS;
 	timer->reset();
 
-	const size_t * local_work_size_p = (local_work_size == 0) ? 0 : &local_work_size;
+#ifdef _USE_GPU_
+	size_t global_work_size = min(VOLSPACE * NTIME / 2, NUMRNDSTATES);
+#else
+	size_t global_work_size = min(max_compute_units, (cl_uint) NUMRNDSTATES);
+#endif
 
 	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), &clmem_gaugefield);
 	if(clerr != CL_SUCCESS) {
@@ -440,11 +448,7 @@ hmc_error opencl::run_heatbath(hmc_float beta, const size_t local_work_size, con
 			cout << "clSetKernelArg2 at heatbath_even failed, aborting..." << endl;
 			exit(HMC_OCLERROR);
 		}
-		clerr = clEnqueueNDRangeKernel(queue, heatbath_even, 1, 0, &global_work_size, local_work_size_p, 0, 0, NULL);
-		if(clerr != CL_SUCCESS) {
-			cout << "clEnqueueNDRangeKernel failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
+		enqueueKernel(heatbath_even, global_work_size);
 		clFinish(queue);
 	}
 
@@ -469,11 +473,7 @@ hmc_error opencl::run_heatbath(hmc_float beta, const size_t local_work_size, con
 			cout << "clSetKernelArg2 at heatbath_odd failed, aborting..." << endl;
 			exit(HMC_OCLERROR);
 		}
-		clerr = clEnqueueNDRangeKernel(queue, heatbath_odd, 1, 0, &global_work_size, local_work_size_p, 0, 0, NULL);
-		if(clerr != CL_SUCCESS) {
-			cout << "clEnqueueNDRangeKernel failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
+		enqueueKernel(heatbath_odd, global_work_size);
 		clFinish(queue);
 	}
 	timer->add();
@@ -777,6 +777,21 @@ hmc_error opencl::finalize()
 		isinit = 0;
 	}
 	return HMC_SUCCESS;
+}
+
+void opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
+{
+#ifdef _USE_GPU_
+	size_t local_work_size = NUM_THREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
+#else
+	size_t local_work_size = 1; // nothing else makes sens on CPU
+#endif
+
+	cl_int clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
+	if(clerr != CL_SUCCESS) {
+		cout << "clEnqueueNDRangeKernel failed, aborting..." << endl;
+		exit(HMC_OCLERROR);
+	}
 }
 
 //CP: extra file for the long testing functions
