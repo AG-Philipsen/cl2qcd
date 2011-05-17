@@ -3,10 +3,15 @@
 # Copyright 2011 Matthias Bach <bach@compeng.uni-frankfurt.de>
 
 cmake_minimum_required( VERSION 2.6.4 )
-project( clhmc )
+project( OpTiMaL )
 
 # we have some custom CMake stuff
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
+# if a user doesn't specify anything he probably isn't interested in debug information
+if(NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif(NOT CMAKE_BUILD_TYPE)
 
 # make the compiler bitchy
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -116,16 +121,22 @@ if(USE_EOPREC)
 	add_definitions( -D_USEEOPREC_ )
 endif(USE_EOPREC)
 
+# default random number seed
+configure_file( rand_seeds rand_seeds COPYONLY )
+
 add_executable( hmc
 	hmc.cpp
 	host_geometry.cpp
 	host_operations_complex.cpp
+	host_operations_su3matrix.cpp
+	host_operations_matrix.cpp
 	host_operations_gaugefield.cpp
+	host_operations_gaugemomentum.cpp
 	host_operations_spinor.cpp
 	host_operations_spinorfield.cpp
 	host_operations_fermionmatrix.cpp
 	host_gaugeobservables.cpp
-	host_testing.cpp
+# 	host_testing.cpp
 	host_input.cpp
 	host_readgauge.cpp
 	host_random.cpp
@@ -136,17 +147,62 @@ add_executable( hmc
 	host_writegaugefield.cpp
 	host_solver.cpp
 	host_fermionobservables.cpp
-	klepsydra/timer.cpp
-	klepsydra/monotonic.cpp
 	host_hmc.cpp
 )
 target_link_libraries( hmc
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
+	klepsydra
 )
+add_executable( heatbath
+	heatbath.cpp
+	host_geometry.cpp
+	host_operations_complex.cpp
+	host_operations_gaugefield.cpp
+	host_operations_su3matrix.cpp
+	host_operations_matrix.cpp	
+	gaugefield.cpp
+	host_input.cpp
+	host_readgauge.cpp
+	host_random.cpp
+	opencl.cpp
+	host_use_timer.cpp
+	host_writegaugefield.cpp
+)
+target_link_libraries( heatbath
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	klepsydra
+)
+add_executable( tk_kappa
+	tk_kappa.cpp
+	host_geometry.cpp
+	host_operations_complex.cpp
+	host_operations_gaugefield.cpp
+	host_operations_su3matrix.cpp
+	host_operations_matrix.cpp	
+	gaugefield.cpp
+	host_input.cpp
+	host_readgauge.cpp
+	host_random.cpp
+	opencl.cpp
+	host_use_timer.cpp
+	host_writegaugefield.cpp
+)
+target_link_libraries( tk_kappa
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	klepsydra
+)
+
+add_library( klepsydra
+	klepsydra/timer.cpp
+	klepsydra/monotonic.cpp )
 if(NOT CMAKE_HOST_APPLE)
-	target_link_libraries( hmc rt )
+	target_link_libraries( klepsydra rt )
 endif(NOT CMAKE_HOST_APPLE)
 
 # Documentation

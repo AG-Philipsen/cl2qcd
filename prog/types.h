@@ -1,3 +1,7 @@
+/** @file
+ * Common types used by HMC, both on host and OpenCL device.
+ */
+
 #ifndef _TYPESH_
 #define _TYPESH_
 
@@ -10,18 +14,30 @@
 #endif
 #endif
 
+#ifdef _INKERNEL_
+#define CONST __constant
+#else /* _INKERNEL_ */
+#define CONST const
+#endif /* _INKERNEL_ */
+
+/** The floating precision type used by hmc, can be 32 or 64 bit. */
 #ifdef _USEDOUBLEPREC_
 typedef double hmc_float;
 #else
 typedef float hmc_float;
 #endif
 
+/** An OpenCL-compatible constant 1.
+ * @todo this is rediculous, 1.0(f) is way more readable, let the
+ *       compiler do the optimizations.
+ */
 #ifdef _INKERNEL_
 __constant hmc_float hmc_one_f = 1.0f;
 #else
 hmc_float const hmc_one_f = static_cast<hmc_float>(1);
 #endif
 
+/** Complex number type, precision is the same as for hmc_float */
 #ifdef _INKERNEL_
 typedef struct {
   hmc_float re;
@@ -40,9 +56,13 @@ __constant hmc_complex hmc_complex_zero = {0., 0.};
 __constant hmc_complex hmc_complex_minusone = {-1., 0.};
 __constant hmc_complex hmc_complex_i = {0., 1.};
 #else
+/** A complex 1 */
 hmc_complex const hmc_complex_one = {1., 0.};
+/** A complex -1 */
 hmc_complex const hmc_complex_minusone = {-1., 0.};
+/** A complex 0 */
 hmc_complex const hmc_complex_zero = {0., 0.};
+/** A complex i */
 hmc_complex const hmc_complex_i = {0., 1.};
 #endif
 
@@ -55,15 +75,19 @@ typedef hmc_complex hmc_full_spinor_field [NSPIN*NC][VOLSPACE][NTIME];
 #ifdef _RECONSTRUCT_TWELVE_
 typedef hmc_complex hmc_su3matrix [NC*(NC-1)];
 typedef hmc_complex hmc_staplematrix [NC*NC];
-typedef hmc_complex hmc_3x3matrix[NC][NC];
+typedef hmc_complex hmc_3x3matrix[3][3];
 typedef hmc_complex hmc_gaugefield [NC*(NC-1)][NDIM][VOLSPACE][NTIME];
 typedef hmc_float ildg_gaugefield[2*NC*(NC-1)*NDIM*VOLSPACE*NTIME];
 typedef hmc_float hmc_gauge_momentum;
 typedef hmc_float hmc_algebraelement [NC*NC-1];
 #else
+/** A generic SU3 matrix */
 typedef hmc_complex hmc_su3matrix [NC][NC];
+/** A matrix representing a staple */
 typedef hmc_su3matrix hmc_staplematrix;
-typedef hmc_complex hmc_3x3matrix[NC][NC];
+/** A generic 3x3 matrix */
+typedef hmc_complex hmc_3x3matrix[3][3];
+/** The full gaugefield */
 typedef hmc_complex hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME];
 typedef hmc_float ildg_gaugefield[2*NC*NC*NDIM*VOLSPACE*NTIME];
 typedef hmc_float hmc_gauge_momentum;
@@ -83,31 +107,39 @@ typedef hmc_complex hmc_spinor;
 typedef hmc_complex hmc_spinor_field;
 typedef hmc_complex hmc_eoprec_spinor_field;
 
-
 #ifdef _USEDOUBLEPREC_
-hmc_float const projectioneps = 10.e-12;
-int const iter_refresh = 10;
-hmc_float const epssquare=1e-14;
-int const use_eo = 1;
+hmc_float CONST projectioneps = 10.e-12;
+int CONST iter_refresh = 10;
+hmc_float CONST epssquare=1e-14;
+int CONST use_eo = 1;
 #else
-hmc_float const projectioneps = 10.e-6;
-int const iter_refresh = 10;
-hmc_float const epssquare=1e-12;
-int const use_eo = 1;
+hmc_float CONST projectioneps = 10.e-6;
+int CONST iter_refresh = 10;
+hmc_float CONST epssquare=1e-12;
+int CONST use_eo = 1;
 #endif
-
-//CP: this needs optimization
-const size_t local_work_size  = NUMTHREADS;
-const size_t global_work_size = NUMTHREADS;
 
 #ifndef _INKERNEL_
-typedef cl_ulong4 hmc_ocl_ran;
-typedef hmc_ocl_ran hmc_rndarray[NUMTHREADS];
-#endif  
-
+/**
+ * Work-group size for OpenCL kernels.
+ * @bug The proper work-group size is kernel dependent and cannot be
+        specified globally.
+ */
+const size_t local_work_size  = NUMTHREADS;
+/**
+ * Global number of threads for OpenCL kernels.
+ * @bug The proper number of threads size is kernel dependent and cannot be
+        specified globally.
+ */
+const size_t global_work_size = NUMTHREADS;
 #endif
 
+#ifndef _INKERNEL_
+/** Storage type for state of the random number generator */
+typedef cl_ulong4 hmc_ocl_ran;
+/** The array of random number generator states for usage by an OpenCL device */
+typedef hmc_ocl_ran hmc_rndarray[NUMTHREADS];
+#endif /* _INKERNEL_ */
 
- 
+#endif /* _TYPESH_ */
 
-  

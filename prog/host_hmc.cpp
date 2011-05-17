@@ -1,12 +1,6 @@
 #include "host_hmc.h"
 
-//TODO CP: all return values have to be revisited, since they should be real numbers and not complex one in the end
-
-//TODO in the end hmc_gaugemomenta has to be a vector of NC*NC matrices!! This means that also the declaration of such variables has to be revisited
-
-
-
-//TODO the following three functions should later go into a new, seperate file
+//TODO in the end hmc_gaugemomenta has to be a vector of NC*NC matrices!! This means that also the declaration of such variables has to be revisited?? Is that really so??
 
 //molecular dynamics update for the gauge momenta:
 //p_out = p_in - eps/2 force(u_in, phi)
@@ -26,10 +20,16 @@ hmc_error md_update_gaugefield(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gau
 			for(int mu = 0; mu<NDIM; mu++){
 			hmc_su3matrix tmp;
 			hmc_su3matrix tmp2;
-			//TODO CP: here one has to calculate exp (i eps p), which is in principle again a traceless, hermitian matrix. Let it be stored in tmp2, so one has to ensure that it fits the su3-format
+			int index= get_global_link_pos(mu, pos, t);
+			// an su3 algebra element has NC*NC-1 = 8 hmc_float entries
+			// &(p_in[index*8]) should point to the right position for the pos-th element of the 
+			//   long gaugemomentum vector p_in
+ 			build_su3matrix_by_exponentiation(&p_in[index*8], &tmp2, eps);
 			get_su3matrix(&tmp, u_in,pos, t, mu);
 		
-			//TODO check the order of multiplication again!! tmp U or Utmp?? does it matter??
+			/** 
+			 * @todo check the order of multiplication again!! tmp U or Utmp?? does it matter??
+			 */
 			accumulate_su3matrix_prod( &tmp, &tmp2);
 
 			put_su3matrix(u_in, &tmp, pos, t, mu);
@@ -50,7 +50,7 @@ hmc_error md_update_spinorfield(hmc_spinor_field * in, hmc_spinor_field * out, h
 }
 #endif
 
-//TODO chech definition of beta again, is it 2/g^2??
+//TODO check definition of beta again, is it 2/g^2??
 // beta * sum_links sum_nu>mu ( 3 - Tr Re Plaquette )
 hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta){
 	//TODO implement saving of plaquette measurement (and possibly t_plaq and s_plaq and also polyakov-loop??)
@@ -101,23 +101,6 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
 	result.re += 0.5*s_gm;
 	
 	return result;
-}
-
-#ifdef _FERMIONS_
-hmc_error generate_gaussian_spinorfield(hmc_spinor_field * out){
-	// SL: this is a layer that calls the all-purpose hmc_complex gaussianly-distributed vector
-	// with appropriate length and variance, i.e. SPINORFIELDSIZE and 1/2
-	return gaussianComplexVector((hmc_complex *)out, SPINORFIELDSIZE, 0.5);
-	// SL: not yet tested
-}
-#endif
-
-hmc_error generate_gaussian_gauge_momenta(hmc_gauge_momentum * out){
-	// SL: this is a layer that calls the all-purpose hmc_complex gaussianly-distributed vector
-	// with appropriate length and variance, i.e. GAUGEMOMENTASIZE and 1
-	// CP: hmc_gauge_momentum should be a real vector, so one should use GAUGEMOMENTASIZE/2 ?!?
-	return gaussianComplexVector((hmc_complex *)out, GAUGEMOMENTASIZE, 1.0);
-	// SL: not yet tested
 }
 
 hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_gauge_momentum * out){
@@ -209,7 +192,6 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta, hmc_spinor_field * phi
 
 
 //CP: as in Gattringer/Lang, QCD on the Lattice, 8.2, p. 197
-//TODO lateron, a multi-step alg. with different stepsizes for gauge and fermion force should be implemented
 hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gauge_momentum * p_in
 #ifdef _FERMIONS_
 	, hmc_spinor_field * phi
@@ -301,152 +283,5 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
 	return HMC_SUCCESS;
 }
 
-hmc_error construct_3x3_combination(hmc_float beta_0, hmc_float gamma_0, hmc_float beta[], hmc_float gamma[], hmc_3x3matrix out){
-	// called by build_su3matrix_by_exponentiation in case of "smart" approach
-	// takes the 2*(8+1) real parameters beta_0, gamma_0, beta[8], gamma[8] and compiles
-	// all components of the generic 3x3 complex matrix that is the linear combination of identity+generators
-	hmc_float redb8 = beta[7] * F_1_2S3;
-	hmc_float redg8 = gamma[7]* F_1_2S3;
-	out[0][0].re = beta_0 + 0.5*beta[2] + redb8;
-	out[0][0].im = gamma_0 + 0.5*gamma[2] + redg8;
-	out[0][1].re = 0.5*(beta[0]+gamma[1]);
-	out[0][1].im = 0.5*(gamma[0]-beta[1]);
-	out[0][2].re = 0.5*(beta[3]+gamma[4]);
-	out[0][2].im = 0.5*(gamma[3]-beta[4]);
-	out[1][0].re = 0.5*(beta[0]-gamma[1]);
-	out[1][0].im = 0.5*(gamma[0]+beta[1]);
-	out[1][1].re = beta_0 - 0.5*beta[2] + redb8;
-	out[1][1].im = gamma_0 - 0.5*gamma[2] + redg8;
-	out[1][2].re = 0.5*(beta[5]+gamma[6]);
-	out[1][2].im = 0.5*(gamma[5]-beta[6]);
-	out[2][0].re = 0.5*(beta[3]-gamma[4]);
-	out[2][0].im = 0.5*(gamma[3]+beta[4]);
-	out[2][1].re = 0.5*(beta[5]-gamma[6]);
-	out[2][1].im = 0.5*(gamma[5]+beta[6]);
-	out[2][2].re = beta_0 + 2*redb8;
-	out[2][2].im = gamma_0 - 2*redg8;
-	return HMC_SUCCESS;
-}
 
-hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix* out, hmc_float epsilon){
-	// SL: this takes 8 real numbers and builds the su3 matrix exp(i*epsilon*p_i*T_i)
-	//     either by truncated "smart" series expansion to order eps^2 or eps^3, or by direct evaluation of the series
-	// NOTE: the code here is strictly SU(3)-specific! (and mostly generated by other code...)
 
-	#ifdef _USE_MORNGINGSTAR_PEARDON_
-	//TODO CP: this has to be implemented
-	
-	#else
-
-	#ifndef _EXPONENTIATE_ALGEBRA_ALL_ORDERS_
-
-	// Phase 1: calculate (number) coefficients for the reconstruction
-	hmc_float beta_0, gamma_0;
-	hmc_float beta[8], gamma[8];
-	// the above are: coefficients for identity (beta_0+i*gamma_0), and coefficients for the T_l, namely T_L*(beta_l + i*gamma_l).
-	#ifdef _EXPONENTIATE_ALGEBRA_ORDER_2_
-		hmc_float pR, pQ[8], pPtilde[8];
-
-		pR = in[0]*in[0]+in[1]*in[1]+in[2]*in[2]+in[3]*in[3]+in[4]*in[4]+in[5]*in[5]+in[6]*in[6]+in[7]*in[7];
-
-		pPtilde[0] = (F_1_S3*in[7]*in[0])+(F_1_2*(in[5]*in[3]+in[6]*in[4]));
-		pPtilde[1] = (F_1_S3*in[7]*in[1])+(F_1_2*(in[5]*in[4]-in[6]*in[3]));
-		pPtilde[2] = (F_1_S3*in[7]*in[2]);
-		pPtilde[3] = (F_1_2*(in[5]*in[0]-in[6]*in[1]+in[3]*in[2]))-(F_1_2S3*in[7]*in[3]);
-		pPtilde[4] = (F_1_2*(in[6]*in[0]+in[5]*in[1]+in[4]*in[2]))-(F_1_2S3*in[7]*in[4]);
-		pPtilde[5] = (F_1_2*(in[3]*in[0]+in[4]*in[1]-in[5]*in[2]))-(F_1_2S3*in[7]*in[5]);
-		pPtilde[6] = (F_1_2*(in[4]*in[0]-in[3]*in[1]-in[6]*in[2]))-(F_1_2S3*in[7]*in[6]);
-		pPtilde[7] = 0.0;
-
-		pQ[2] = (F_1_2*(in[3]*in[3]+in[4]*in[4]-in[5]*in[5]-in[6]*in[6]));
-		pQ[7] = (F_1_S3*(in[0]*in[0]+in[1]*in[1]+in[2]*in[2]-in[7]*in[7]))-(F_1_2S3*(in[3]*in[3]+in[4]*in[4]+in[5]*in[5]+in[6]*in[6]));
-		pQ[0] = pQ[1] = pQ[3] = pQ[4] = pQ[5] = pQ[6] = 0.0;
-
-		hmc_float eps_squared = epsilon*epsilon;
-		beta_0  = 1.0 - (eps_squared*pR/12.);
-		gamma_0 = 0.0;
-		for(int il=0;il<8;il++){
-			beta[il] = -0.25*eps_squared*(pQ[il]+2.0*pPtilde[il]);
-			gamma[il]= epsilon*in[il];
-		}
-	#endif // EXPONENTIATE_ALGEBRA_ORDER_2
-	#ifdef _EXPONENTIATE_ALGEBRA_ORDER_3_
-		hmc_float pR, pQ[8], pPtilde[8];
-		hmc_float pT, pS[8], pU[8];
-
-		pR = in[0]*in[0]+in[1]*in[1]+in[2]*in[2]+in[3]*in[3]+in[4]*in[4]+in[5]*in[5]+in[6]*in[6]+in[7]*in[7];
-		
-		pPtilde[0] = (F_1_S3*in[7]*in[0])+(F_1_2*(in[5]*in[3]+in[6]*in[4]));
-		pPtilde[1] = (F_1_S3*in[7]*in[1])+(F_1_2*(in[5]*in[4]-in[6]*in[3]));
-		pPtilde[2] = (F_1_S3*in[7]*in[2]);
-		pPtilde[3] = (F_1_2*(in[5]*in[0]-in[6]*in[1]+in[3]*in[2]))-(F_1_2S3*in[7]*in[3]);
-		pPtilde[4] = (F_1_2*(in[6]*in[0]+in[5]*in[1]+in[4]*in[2]))-(F_1_2S3*in[7]*in[4]);
-		pPtilde[5] = (F_1_2*(in[3]*in[0]+in[4]*in[1]-in[5]*in[2]))-(F_1_2S3*in[7]*in[5]);
-		pPtilde[6] = (F_1_2*(in[4]*in[0]-in[3]*in[1]-in[6]*in[2]))-(F_1_2S3*in[7]*in[6]);
-		pPtilde[7] = 0.0;
-
-		pQ[2] = (F_1_2*(in[3]*in[3]+in[4]*in[4]-in[5]*in[5]-in[6]*in[6]));
-		pQ[7] = (F_1_S3*(in[0]*in[0]+in[1]*in[1]+in[2]*in[2]-in[7]*in[7]))-(F_1_2S3*(in[3]*in[3]+in[4]*in[4]+in[5]*in[5]+in[6]*in[6]));
-		pQ[0] = pQ[1] = pQ[3] = pQ[4] = pQ[5] = pQ[6] = 0.0;
-		
-		pT = (in[0]*(pQ[0]+2*pPtilde[0]))+(in[1]*(pQ[1]+2*pPtilde[1]))+(in[2]*(pQ[2]+2*pPtilde[2]))+(in[3]*(pQ[3]+2*pPtilde[3]))
-			+(in[4]*(pQ[4]+2*pPtilde[4]))+(in[5]*(pQ[5]+2*pPtilde[5]))+(in[6]*(pQ[6]+2*pPtilde[6]))+(in[7]*(pQ[7]+2*pPtilde[7]));
-			
-		pS[0] = (F_1_2*(in[5]*(pQ[3]+2*pPtilde[3])+in[6]*(pQ[4]+2*pPtilde[4])))+(F_1_S3*in[7]*(pQ[0]+2*pPtilde[0]));
-		pS[1] = (F_1_2*(in[5]*(pQ[4]+2*pPtilde[4])-in[6]*(pQ[3]+2*pPtilde[3])))+(F_1_S3*in[7]*(pQ[1]+2*pPtilde[1]));
-		pS[2] = (F_1_S3*in[7]*(pQ[2]+2*pPtilde[2]));
-		pS[3] = (F_1_2*(in[3]*(pQ[2]+2*pPtilde[2])+in[5]*(pQ[0]+2*pPtilde[0])-in[6]*(pQ[1]+2*pPtilde[1])))-(F_1_2S3*in[7]*(pQ[3]+2*pPtilde[3]));
-		pS[4] = (F_1_2*(in[4]*(pQ[2]+2*pPtilde[2])+in[5]*(pQ[1]+2*pPtilde[1])+in[6]*(pQ[0]+2*pPtilde[0])))-(F_1_2S3*in[7]*(pQ[4]+2*pPtilde[4]));
-		pS[5] = (F_1_2*(in[3]*(pQ[0]+2*pPtilde[0])+in[4]*(pQ[1]+2*pPtilde[1])-in[5]*(pQ[2]+2*pPtilde[2])))-(F_1_2S3*in[7]*(pQ[5]+2*pPtilde[5]));
-		pS[6] = (F_1_2*(in[4]*(pQ[0]+2*pPtilde[0])-in[3]*(pQ[1]+2*pPtilde[1])-in[6]*(pQ[2]+2*pPtilde[2])))-(F_1_2S3*in[7]*(pQ[6]+2*pPtilde[6]));
-		pS[7] = 0.0;
-
-		pU[2] = (F_1_2*(in[3]*(pQ[3]+2*pPtilde[3])+in[4]*(pQ[4]+2*pPtilde[4])-in[5]*(pQ[5]+2*pPtilde[5])-in[6]*(pQ[6]+2*pPtilde[6])));
-		pU[7] = (F_1_S3*(in[0]*(pQ[0]+2*pPtilde[0])+in[1]*(pQ[1]+2*pPtilde[1])+in[2]*(pQ[2]+2*pPtilde[2])-in[7]*(pQ[7]+2*pPtilde[7])))
-			-(F_1_2S3*(in[3]*(pQ[3]+2*pPtilde[3])+in[4]*(pQ[4]+2*pPtilde[4])+in[5]*(pQ[5]+2*pPtilde[5])+in[6]*(pQ[6]+2*pPtilde[6])));
-		pU[0] = pU[1] = pU[3] = pU[4] = pU[5] = pU[6] = 0.0;
-		
-		hmc_float eps_squared, eps_cubed;
-		eps_squared = epsilon*epsilon;
-		eps_cubed = eps_squared*epsilon;
-		beta_0  = 1.0 - (eps_squared*pR/12.);
-		gamma_0 = -eps_cubed*pT/72.;
-		for(int il=0;il<8;il++){
-			beta[il]  = -0.25*eps_squared*(pQ[il]+2.0*pPtilde[il]);
-			gamma[il] = epsilon*in[il] - (eps_cubed/72.)*(2.*pR*in[il] + 3.*pU[il] + 6.*pS[il]);
-		}
-		#endif // EXPONENTIATE_ALGEBRA_ORDER_3
-	
-		// Phase 2: build a (generic 3x3) matrix from beta's and gamma's
-		hmc_3x3matrix combination;
-		construct_3x3_combination(beta_0, gamma_0, beta, gamma, combination);
-		
-		// Phase 3: project back onto SU(3). This requires knowledge whether one is using _RECONSTRUCT_TWELVE_ when filling "out"
-		#ifdef _RECONSTRUCT_TWELVE_
-			*out[0] = combination[0][0];
-			*out[1] = combination[0][1];
-			*out[2] = combination[0][2];
-			*out[3] = combination[1][0];
-			*out[4] = combination[1][1];
-			*out[5] = combination[1][2];
-		#else
-			*out[0][0] = combination[0][0];
-			*out[0][1] = combination[0][1];
-			*out[0][2] = combination[0][2];
-			*out[1][0] = combination[1][0];
-			*out[1][1] = combination[1][1];
-			*out[1][2] = combination[1][2];
-			*out[2][0] = combination[2][0];
-			*out[2][1] = combination[2][1];
-			*out[2][2] = combination[2][2];
-		#endif // _RECONSTRUCT_TWELVE_
-		project_su3(out);
-	
-	#else  // (ifndef) _EXPONENTIATE_ALGEBRA_ALL_ORDERS_s
-		// this is TODO ! the case where one actually evaluates -as matrices- many orders of exp(i*e*P)=1+i*e*P+(1/2)(i*e*P) + ...
-	#endif // EXPONENTIATE_ALGEBRA_ALL_ORDERS
-	
-	#endif // _USE_MORNGINGSTAR_PEARDON_
-	
-	return HMC_SUCCESS;
-}

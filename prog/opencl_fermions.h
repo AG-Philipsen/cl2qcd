@@ -1,3 +1,6 @@
+/** @file
+ * OpenCL device functions only used if _FERMIONS_ is defined
+ */
 
 #ifdef _FERMIONS_
 
@@ -18,7 +21,6 @@ hmc_error opencl::init_fermion_variables(inputparameters* parameters, const size
 	int global_buf_size_float = float_size*num_groups;
 	hmc_complex one = hmc_complex_one;
 	hmc_complex minusone = hmc_complex_minusone;
-	hmc_complex kappa_complex = {(*parameters).get_kappa(), 0.};
 	hmc_float tmp;
 	
 	cout << "\tinit spinorfields..." << endl;
@@ -185,11 +187,7 @@ hmc_error opencl::init_fermion_variables(inputparameters* parameters, const size
     cout<<"creating clmem_minusone failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clmem_kappa_cmplx = clCreateBuffer(context,CL_MEM_READ_ONLY,complex_size,0,&clerr);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_kappa_cplx failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }  
+
 	clmem_scalar_product_buf_glob = clCreateBuffer(context,CL_MEM_READ_WRITE,global_buf_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_scalar_product_buf_glob failed, aborting..."<<endl;
@@ -239,24 +237,14 @@ hmc_error opencl::init_fermion_variables(inputparameters* parameters, const size
   }  
   
   cout << "\twrite values to buffers..." << endl;
-	tmp = (*parameters).get_kappa();
-  clerr = clEnqueueWriteBuffer(queue,clmem_kappa,CL_TRUE,0,float_size,&tmp,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... writing clmem_kappa failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
+
   tmp = (*parameters).get_theta_fermion();
   clerr = clEnqueueWriteBuffer(queue,clmem_theta_fermion,CL_TRUE,0,float_size,&tmp,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... writing clmem_theta_fermion failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
-  tmp = (*parameters).get_mu();
-  clerr = clEnqueueWriteBuffer(queue,clmem_mu,CL_TRUE,0,float_size,&tmp,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... writing clmem_mu failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
+
   tmp = (*parameters).get_chem_pot_re();
   clerr = clEnqueueWriteBuffer(queue,clmem_chem_pot_re,CL_TRUE,0,float_size,&tmp,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
@@ -278,11 +266,6 @@ hmc_error opencl::init_fermion_variables(inputparameters* parameters, const size
   clerr = clEnqueueWriteBuffer(queue,clmem_minusone,CL_TRUE,0,complex_size,&minusone,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... writing clmem_minusone failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clEnqueueWriteBuffer(queue,clmem_kappa_cmplx,CL_TRUE,0,complex_size,&kappa_complex,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... writing clmem_kappa_cplx failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
   
@@ -441,11 +424,7 @@ hmc_error opencl::convert_to_kappa_format_device(cl_mem inout, const size_t loca
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clerr = clSetKernelArg(convert_to_kappa_format,1,sizeof(cl_mem),&clmem_kappa); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }  
+
 	clerr = clEnqueueNDRangeKernel(queue, convert_to_kappa_format,1,0,&global_work_size,&local_work_size,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"enqueue convert_to_kappa_format kernel failed, aborting..."<<endl;
@@ -471,12 +450,8 @@ hmc_error opencl::convert_from_kappa_format_device(cl_mem in, cl_mem out, const 
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }  
-	clerr = clSetKernelArg(convert_from_kappa_format,2,sizeof(cl_mem),&clmem_kappa); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }  
-	clerr = clEnqueueNDRangeKernel(queue, convert_from_kappa_format,1,0,&global_work_size,&local_work_size,0,0,NULL);
+  
+  clerr = clEnqueueNDRangeKernel(queue, convert_from_kappa_format,1,0,&global_work_size,&local_work_size,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"enqueue convert_from_kappa_format kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -495,12 +470,8 @@ hmc_error opencl::convert_to_kappa_format_eoprec_device(cl_mem inout, const size
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clerr = clSetKernelArg(convert_to_kappa_format_eoprec,1,sizeof(cl_mem),&clmem_kappa); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }  
-	clerr = clEnqueueNDRangeKernel(queue, convert_to_kappa_format_eoprec,1,0,&global_work_size,&local_work_size,0,0,NULL);
+ 
+  clerr = clEnqueueNDRangeKernel(queue, convert_to_kappa_format_eoprec,1,0,&global_work_size,&local_work_size,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"enqueue convert_to_kappa_format_eoprec kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -524,13 +495,9 @@ hmc_error opencl::convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out,
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
-  }  
-	clerr = clSetKernelArg(convert_from_kappa_format_eoprec,2,sizeof(cl_mem),&clmem_kappa); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }  
-	clerr = clEnqueueNDRangeKernel(queue, convert_from_kappa_format_eoprec,1,0,&global_work_size,&local_work_size,0,0,NULL);
+  } 
+ 
+  clerr = clEnqueueNDRangeKernel(queue, convert_from_kappa_format_eoprec,1,0,&global_work_size,&local_work_size,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"enqueue convert_from_kappa_format_eoprec kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -713,16 +680,6 @@ hmc_error opencl::M_device(cl_mem in, cl_mem out, const size_t local_work_size, 
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(M_diag,2,sizeof(cl_mem),&clmem_kappa);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(M_diag,3,sizeof(cl_mem),&clmem_mu);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
   clerr = clEnqueueNDRangeKernel(queue,M_diag,1,0,&global_work_size,&local_work_size,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"enqueue M_diag kernel failed, aborting..."<<endl;
@@ -781,12 +738,7 @@ hmc_error opencl::M_device(cl_mem in, cl_mem out, const size_t local_work_size, 
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(saxpy,2,sizeof(cl_mem),&clmem_kappa_cmplx);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(saxpy,3,sizeof(cl_mem),&out);
+  clerr = clSetKernelArg(saxpy,2,sizeof(cl_mem),&out);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -889,12 +841,15 @@ hmc_error opencl::dslash_eoprec_device(cl_mem in, cl_mem out, int evenodd, const
     cout<<"clSetKernelArg 5 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
+  /*
   clerr = clSetKernelArg(dslash_eoprec,6,sizeof(cl_mem),&clmem_kappa);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 6 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
   clerr = clSetKernelArg(dslash_eoprec,7,sizeof(int),&eo);
+  */
+  clerr = clSetKernelArg(dslash_eoprec,6,sizeof(int),&eo);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 7 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -927,16 +882,6 @@ hmc_error opencl::M_inverse_sitediagonal_device(cl_mem in, cl_mem out, const siz
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(M_inverse_sitediagonal,2,sizeof(cl_mem),&clmem_kappa);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(M_inverse_sitediagonal,3,sizeof(cl_mem),&clmem_mu);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
   clerr = clEnqueueNDRangeKernel(queue,M_inverse_sitediagonal,1,0,&gs,&ls,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"enqueue M_inverse_sitediagonal kernel failed, aborting..."<<endl;
@@ -964,16 +909,6 @@ hmc_error opencl::M_sitediagonal_device(cl_mem in, cl_mem out, const size_t loca
   clerr = clSetKernelArg(M_sitediagonal,1,sizeof(cl_mem),&out);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(M_sitediagonal,2,sizeof(cl_mem),&clmem_kappa);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(M_sitediagonal,3,sizeof(cl_mem),&clmem_mu);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
   clerr = clEnqueueNDRangeKernel(queue,M_sitediagonal,1,0,&gs,&ls,0,0,NULL);
@@ -1790,11 +1725,6 @@ hmc_error opencl::create_point_source_device(int i, int spacepos, int timepos, c
     cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clerr = clSetKernelArg(create_point_source,4,sizeof(cl_mem),&clmem_kappa);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 4 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
   clerr = clEnqueueNDRangeKernel(queue,create_point_source,1,0,&gs,&ls,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"enqueue dslash kernel failed, aborting..."<<endl;
@@ -1844,11 +1774,6 @@ hmc_error opencl::create_point_source_eoprec_device(int i, int spacepos, int tim
 	clerr = clSetKernelArg(create_point_source_eoprec,2,sizeof(int),&n);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-	clerr = clSetKernelArg(create_point_source_eoprec,3,sizeof(cl_mem),&clmem_kappa);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
   clerr = clEnqueueNDRangeKernel(queue,create_point_source_eoprec,1,0,&gs,&ls,0,0,NULL);
@@ -1938,7 +1863,6 @@ hmc_error opencl::finalize_fermions(){
 	if(clReleaseMemObject(clmem_tmp2)!=CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseMemObject(clmem_one)!=CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseMemObject(clmem_minusone)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_kappa_cmplx)!=CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseMemObject(clmem_scalar_product_buf_glob)!=CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseMemObject(clmem_global_squarenorm_buf_glob)!=CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseMemObject(clmem_resid)!=CL_SUCCESS) exit(HMC_OCLERROR);
@@ -1990,4 +1914,5 @@ hmc_error opencl::perform_benchmark(int cgmax, const size_t ls, const size_t gs,
 	return HMC_SUCCESS;
 }
 
-#endif
+#endif /* _FERMIONS_ */
+

@@ -1,3 +1,7 @@
+/** @file
+ * Device code for calculation of fermion observables
+ */
+
 //opencl_fermionobservables.cl
 
 //!!CP: LZ should update this...

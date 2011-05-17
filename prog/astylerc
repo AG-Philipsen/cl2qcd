@@ -1,0 +1,31 @@
+# Configuration file for astyle
+#
+# This defines the coding style to be used for OpTiMaL. You can automatically apply
+# this coding style by running "astyle --options=astylerc <FILENAME>". Note that you
+# can use the option -n to prevent creation of the backup file.
+#
+# Making sure you code confines to the coding style minimizes merge conflicts where
+# only formatting changed.
+#
+# (c) 2011 Matthias Bach <bach@compeng.uni-frankfurt.de>
+
+# Use C++ syntax format as suggested by Stroustrup (no 1tbs)
+style=stroustrup
+
+# Indent by tabs, this allows easier keyboard navigation and adjustment of indention width to screen size
+indent=tab=2
+# But only allow tabs to be used for indention, not for placement
+convert-tabs
+
+# Make sure operators and commas have enough air to breath
+pad-oper
+
+# Switch statements more readable
+indent-switches
+
+# Don't do strange indents on multi-line ifs...
+min-conditional-indent=0
+
+# We always want linux line endings
+lineend=linux
+

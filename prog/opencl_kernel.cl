@@ -1,4 +1,6 @@
-
+/** @file
+ * OpenCL kernels
+ */
 
 /*
 void inline dslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos, int t, __global hmc_spinor_field* in,  __global hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im){
@@ -7,14 +9,14 @@ void inline dslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos,
 	hmc_spinor spinnext[SPINORSIZE];
 	hmc_spinor spinprev[SPINORSIZE];
 	hmc_su3matrix u;
-	hmc_su3matrix udagger; 
+	hmc_su3matrix udagger;
 
 	next = get_neighbor(pos,dir);
 	prev = get_lower_neighbor(pos,dir);
-  
+
 	get_spinor_from_field(in, spinnext, next, t);
 	get_spinor_from_field(in, spinprev, prev, t);
-      
+
 	get_su3matrix(&u,gaugefield,pos,t,dir);
 	get_su3matrix(&udagger,gaugefield,prev,t,dir);
 	adjoin_su3matrix(&udagger);
@@ -24,7 +26,7 @@ void inline dslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos,
 
 	if(coord[dir] == NSPACE-1) spinor_apply_bc(spinnext, theta);
 	else if(coord[dir] == 0) spinor_apply_bc(spinprev, theta);
-      
+
 	multiply_spinor_gamma1(spinnext,tmp);
 	real_multiply_spinor(tmp,-hmc_one_f);
 	spinors_accumulate(spinnext,tmp);
@@ -44,9 +46,9 @@ void inline dslash_temporal (hmc_spinor * spinout, int * coord, int pos, int t, 
 	hmc_spinor spinnext[SPINORSIZE];
 	hmc_spinor spinprev[SPINORSIZE];
 	hmc_su3matrix u;
-	hmc_su3matrix udagger; 
+	hmc_su3matrix udagger;
 
-	next = (t+1)%NTIME; 
+	next = (t+1)%NTIME;
 	prev = (t-1+NTIME)%NTIME;
 
 	get_spinor_from_field(in, spinnext, pos, next);
@@ -54,14 +56,14 @@ void inline dslash_temporal (hmc_spinor * spinout, int * coord, int pos, int t, 
 
 	if(next == 0) spinor_apply_bc(spinnext, theta);
 	else if(prev == NTIME-1) spinor_apply_bc(spinprev, theta);
-      
+
 	get_su3matrix(u,gaugefield,pos,t,0);
 	get_su3matrix(udagger,gaugefield,pos,prev,0);
 	adjoin_su3matrix(udagger);
 
 	//update links with chemical potential, this shall be put into compiler option lateron
 	gaugefield_apply_chem_pot(u, udagger, chem_pot_re, chem_pot_im);
-      
+
 	multiply_spinor_gamma0(spinnext,tmp);
 	real_multiply_spinor(tmp,-hmc_one_f);
 	spinors_accumulate(spinnext,tmp);
@@ -140,16 +142,16 @@ __kernel void dslash(__global hmc_spinor_field* in, __global hmc_spinor_field* o
 		int coord[NDIM];
 		coord[0]=0;
 		for(int j=1;j<NDIM;j++) coord[j] = get_spacecoord(pos,j);
-		
+
 		// spinout = U_0*(r-gamma_0)*spinnext + U^dagger_0(x-hat0) * (r+gamma_0)*spinprev
 		dslash_temporal (spinout, coord, pos, t, in, gaugefield, theta, chem_pot_re, chem_pot_im);
-		// spinout += U_1*(r-gamma_1)*spinnext + U^dagger_1(x-hat1) * (r+gamma_1)*spinprev 
+		// spinout += U_1*(r-gamma_1)*spinnext + U^dagger_1(x-hat1) * (r+gamma_1)*spinprev
 		dslash_spatial (spinout, coord, 1, pos, t, in, gaugefield, theta, chem_pot_re, chem_pot_im);
 		// spinout += U_2*(r-gamma_2)*spinnext + U^dagger_2(x-hat2) * (r+gamma_2)*spinprev
 		dslash_spatial (spinout, coord, 2, pos, t, in, gaugefield, theta, chem_pot_re, chem_pot_im);
 		// spinout += U_3*(r-gamma_3)*spinnext + U^dagger_3(x-hat3) * (r+gamma_3)*spinprev
 		dslash_spatial (spinout, coord, 3, pos, t, in, gaugefield, theta, chem_pot_re, chem_pot_im);
-     
+
 		put_spinor_to_field(spinout,out,pos,t);
 	}
 	return;
@@ -195,7 +197,7 @@ __kernel void saxsbypz(__global hmc_spinor_field* x, __global hmc_spinor_field* 
 	return;
 }
 
-// complex (!!!) scalarproduct, return in result 
+// complex (!!!) scalarproduct, return in result
 // --> use 2 kernels: 1 for the summation in one block and 1 for summation over blockresults
 __kernel void scalar_product( __global __readonly hmc_spinor_field *x, __global __readonly hmc_spinor_field *y, __global __writeonly hmc_complex* result, __local hmc_complex* result_local ){
 	int local_size = get_local_size(0);
@@ -210,7 +212,7 @@ __kernel void scalar_product( __global __readonly hmc_spinor_field *x, __global 
     sum.re += x[id_tmp].re*y[id_tmp].re + x[id_tmp].im*y[id_tmp].im;
     sum.im += x[id_tmp].re*y[id_tmp].im - x[id_tmp].im*y[id_tmp].re;
 	}
-	
+
 	// sync threads
 	barrier();
 	//reduction
@@ -279,7 +281,7 @@ __kernel void set_zero_spinorfield(const hmc_spinorfield *x){
 	return;
 }
 
-// complex (!!!) squarenorm, return in result 
+// complex (!!!) squarenorm, return in result
 // --> use 2 kernels: 1 for the summation in one block and 1 for summation over blockresults (this is the same as for the scalar_product)
 __kernel void global_squarenorm( __global __readonly hmc_spinor_field *x, __global __writeonly hmc_float* result, __local hmc_float* result_local ){
 	int local_size = get_local_size(0);
@@ -292,7 +294,7 @@ __kernel void global_squarenorm( __global __readonly hmc_spinor_field *x, __glob
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE/num_groups*(group_id + 1 ); id_tmp += local_size){
     sum += x[id_tmp].re*x[id_tmp].re + x[id_tmp].im*x[id_tmp].im;
 	}
-	
+
 	// sync threads
 	barrier();
 	//reduction
@@ -320,7 +322,7 @@ __kernel void global_squarenorm( __global __readonly hmc_spinor_field *x, __glob
 	barrier();
 	//thread 0 sums up the result_local and stores it in array result
 	if (id==0)
-		result[ get_group_id(0) ] = 	result_local[0] + result_local[1] + result_local[2] + result_local[3] + 
+		result[ get_group_id(0) ] = 	result_local[0] + result_local[1] + result_local[2] + result_local[3] +
 				                result_local[4] + result_local[5] + result_local[6] + result_local[7];
 	return;
 }
