@@ -239,8 +239,8 @@ void saxsbypz_eoprec(hmc_eoprec_spinor_field * x, hmc_eoprec_spinor_field * y,  
   return;
 }
 
-//!!CP: is mu and gaugefield needed at any point in the future or can it be deleted??
-hmc_error create_point_source(hmc_spinor_field* b, int i, int spacepos, int timepos, hmc_float kappa, hmc_float mu, hmc_gaugefield* gaugefield){
+hmc_error create_point_source(inputparameters * parameters, int i, int spacepos, int timepos, hmc_spinor_field* b){
+	hmc_float kappa = (*parameters).get_kappa();
   set_zero_spinorfield(b);
 
   int color = spinor_color(i);
@@ -252,8 +252,11 @@ hmc_error create_point_source(hmc_spinor_field* b, int i, int spacepos, int time
 }
 
 
-hmc_error create_point_source_eoprec(hmc_eoprec_spinor_field* be,hmc_eoprec_spinor_field* bo,int i,int spacepos,int timepos,hmc_float kappa, hmc_float mu, hmc_float theta,hmc_float chem_pot_re, hmc_float chem_pot_im, hmc_gaugefield* gaugefield){
+hmc_error create_point_source_eoprec(inputparameters * parameters, int i, int spacepos, int timepos, hmc_gaugefield* gaugefield, hmc_eoprec_spinor_field* be,hmc_eoprec_spinor_field* bo){
   
+	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; 
+  kappa = (*parameters).get_kappa(); mu = (*parameters).get_mu(); theta = (*parameters).get_theta_fermion(); chem_pot_re = (*parameters).get_chem_pot_re(); chem_pot_im = (*parameters).get_chem_pot_im(); 
+	
   hmc_spinor_field* source = new hmc_spinor_field[SPINORFIELDSIZE];
 
   set_zero_spinorfield(source);

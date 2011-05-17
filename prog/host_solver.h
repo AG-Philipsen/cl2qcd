@@ -36,11 +36,11 @@ extern int const use_eo;
  * @param[in] in initial spinorfield
  * @param[in] b source field
  * @param[in] gaugefield input gaugefield
- * @param[in] use_cg switch to choose between CG and BiCGStab solver
+ * @param[in] use_cg switch to choose between CG and BiCGStab solver (this also means switching between M and MdaggerM)
  * @param[out] out output spinorfield
  * @remark tested by CP
  */
-hmc_error solver(hmc_spinor_field* in, hmc_spinor_field* out, hmc_spinor_field* b, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax, int use_cg);
+hmc_error solver(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* b, hmc_gaugefield* gaugefield, int use_cg, hmc_spinor_field* out);
 
 /**
  * solves the sparse matrix system $f/ M \psi = b /f$ for given matrix M, initial field $f/ \psi /f$, source b and returns a solution $f/ \psi_{out} /f$. For speedup, the EVEN-ODD preconditiong is used
@@ -49,54 +49,50 @@ hmc_error solver(hmc_spinor_field* in, hmc_spinor_field* out, hmc_spinor_field* 
  * @param[in] be even source field
  * @param[in] bo odd source field
  * @param[in] gaugefield input gaugefield
- * @param[in] use_cg switch to choose between CG and BiCGStab solver
+ * @param[in] use_cg switch to choose between CG and BiCGStab solver (this also means switching between M and MdaggerM)
  * @param[out] out output spinorfield
  * @remark tested by CP
  */
-hmc_error solver_eoprec(hmc_spinor_field* in, hmc_spinor_field* out, hmc_eoprec_spinor_field* be, hmc_eoprec_spinor_field* bo, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax);
+hmc_error solver_eoprec(inputparameters * parameters, hmc_spinor_field* in,  hmc_eoprec_spinor_field* be, hmc_eoprec_spinor_field* bo, hmc_gaugefield* gaugefield, int use_cg, hmc_spinor_field* out);
 
 /**
  * Applies the BiCGStab-algorithm
  * @param[in] parameters provides parameters needed
  * @param[in,out] in initial/output spinorfield
- * @param[in] be even source field
- * @param[in] bo odd source field
+ * @param[in] source source field
  * @param[in] gaugefield input gaugefield
  * @remark tested by CP
  */
-hmc_error bicgstab(hmc_spinor_field* inout,hmc_spinor_field* source,hmc_gaugefield* gaugefield,hmc_float kappa,hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax);
+hmc_error bicgstab(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugefield* gaugefield);
 
 /**
  * Applies the eoprec-BiCGStab-algorithm
  * @param[in] parameters provides parameters needed
- * @param[in,out] in initial/output spinorfield
- * @param[in] be even source field
- * @param[in] bo odd source field
+ * @param[in,out] inout initial/output spinorfield
+ * @param[in] source source field
  * @param[in] gaugefield input gaugefield
  * @remark tested by CP
  */
-hmc_error bicgstab_eoprec(hmc_eoprec_spinor_field* inout,hmc_eoprec_spinor_field* source,hmc_gaugefield* gaugefield,hmc_float kappa,hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im,int cgmax);
+hmc_error bicgstab_eoprec(inputparameters * parameters, hmc_eoprec_spinor_field* inout,hmc_eoprec_spinor_field* source,hmc_gaugefield* gaugefield);
 
 /**
  * Applies the CG-algorithm
  * @param[in] parameters provides parameters needed
- * @param[in,out] in initial/output spinorfield
- * @param[in] be even source field
- * @param[in] bo odd source field
+ * @param[in,out] inout initial/output spinorfield
+ * @param[in] source source field
  * @param[in] gaugefield input gaugefield
  * @remark tested by CP
  */
-hmc_error cg(hmc_spinor_field* inout, hmc_eoprec_spinor_field* source, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax);
+hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugefield* gaugefield);
 
 /**
  * Applies the eoprec CG-algorithm
  * @param[in] parameters provides parameters needed
- * @param[in,out] in initial/output spinorfield
- * @param[in] be even source field
- * @param[in] bo odd source field
+ * @param[in,out] inout initial/output spinorfield
+ * @param[in] source eoprec source field
  * @param[in] gaugefield input gaugefield
  * @remark tested by CP
  */
-hmc_error cg_eoprec(hmc_eoprec_spinor_field* inout, hmc_eoprec_spinor_field* source, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax);
+hmc_error cg_eoprec(inputparameters * parameters, hmc_eoprec_spinor_field* inout, hmc_eoprec_spinor_field* source, hmc_gaugefield* gaugefield);
 
 #endif

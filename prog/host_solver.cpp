@@ -1,8 +1,12 @@
 #include "host_solver.h"
 
-hmc_error solver_eoprec(hmc_spinor_field* in, hmc_spinor_field* out, hmc_eoprec_spinor_field* be, hmc_eoprec_spinor_field* bo, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){
+hmc_error solver_eoprec(inputparameters * parameters, hmc_spinor_field* in,  hmc_eoprec_spinor_field* be, hmc_eoprec_spinor_field* bo, hmc_gaugefield* gaugefield, int use_cg, hmc_spinor_field* out){	
+	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
+  kappa = (*parameters).get_kappa(); mu = (*parameters).get_mu(); theta = (*parameters).get_theta_fermion(); chem_pot_re = (*parameters).get_chem_pot_re(); chem_pot_im = (*parameters).get_chem_pot_im(); cgmax = (*parameters).get_cgmax();
+	
+	
   //!!CP: in the end this should be done with a compiler option
-  int use_cg = 0;
+  use_cg = FALSE;
   hmc_eoprec_spinor_field even[EOPREC_SPINORFIELDSIZE];
   hmc_eoprec_spinor_field odd[EOPREC_SPINORFIELDSIZE];
 	hmc_eoprec_spinor_field tmp[EOPREC_SPINORFIELDSIZE];
@@ -13,9 +17,9 @@ hmc_error solver_eoprec(hmc_spinor_field* in, hmc_spinor_field* out, hmc_eoprec_
 		
 	//calculate even-solution even
 	if(use_cg)
-		cg_eoprec(even, be, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+		cg_eoprec(parameters, even, be, gaugefield);
 	else
-		bicgstab_eoprec(even, be, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+		bicgstab_eoprec(parameters, even, be, gaugefield);
 		
 	//desired solution is g = L^-1 x
 	//calculate L^-1x_even = g_even
@@ -41,22 +45,30 @@ hmc_error solver_eoprec(hmc_spinor_field* in, hmc_spinor_field* out, hmc_eoprec_
 
 //here, one can switch with use_cg = TRUE/FALSE which Matrix should be inverted
 //TODO think about if the use of CG = MdaggerM and BiCGStab = M is the best solution
-hmc_error solver(hmc_spinor_field* in, hmc_spinor_field* out, hmc_spinor_field* b, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax, int use_cg){
+hmc_error solver(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* b, hmc_gaugefield* gaugefield, int use_cg, hmc_spinor_field* out){
+	
+	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
+  kappa = (*parameters).get_kappa(); mu = (*parameters).get_mu(); theta = (*parameters).get_theta_fermion(); chem_pot_re = (*parameters).get_chem_pot_re(); chem_pot_im = (*parameters).get_chem_pot_im(); cgmax = (*parameters).get_cgmax();
+	
 	convert_to_kappa_format(in, kappa);
 	
 	if(use_cg)
-		cg(in, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+		cg(parameters, in, b, gaugefield);
 	else
-		bicgstab(in, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+		bicgstab(parameters, in, b, gaugefield);
 	
 	convert_from_kappa_format(in, out, kappa);
     
 	return HMC_SUCCESS;
 }
 
-hmc_error bicgstab(hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){
+hmc_error bicgstab(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugefield* gaugefield){
 
   //BiCGStab according to hep-lat/9404013
+
+	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
+  kappa = (*parameters).get_kappa(); mu = (*parameters).get_mu(); theta = (*parameters).get_theta_fermion(); chem_pot_re = (*parameters).get_chem_pot_re(); chem_pot_im = (*parameters).get_chem_pot_im(); cgmax = (*parameters).get_cgmax();
+
 
   hmc_spinor_field* rn = new hmc_spinor_field[SPINORFIELDSIZE];
   hmc_spinor_field* rhat = new hmc_spinor_field[SPINORFIELDSIZE];
@@ -143,8 +155,11 @@ hmc_error bicgstab(hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugef
 }
 
 
-hmc_error bicgstab_eoprec(hmc_eoprec_spinor_field* inout,hmc_eoprec_spinor_field* source,hmc_gaugefield* gaugefield,hmc_float kappa,hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im,int cgmax){
+hmc_error bicgstab_eoprec(inputparameters * parameters, hmc_eoprec_spinor_field* inout,hmc_eoprec_spinor_field* source,hmc_gaugefield* gaugefield){
 
+	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
+  kappa = (*parameters).get_kappa(); mu = (*parameters).get_mu(); theta = (*parameters).get_theta_fermion(); chem_pot_re = (*parameters).get_chem_pot_re(); chem_pot_im = (*parameters).get_chem_pot_im(); cgmax = (*parameters).get_cgmax();
+	
   //BiCGStab according to hep-lat/9404013
   hmc_eoprec_spinor_field* rn = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
   hmc_eoprec_spinor_field* rhat = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
@@ -235,8 +250,12 @@ hmc_error bicgstab_eoprec(hmc_eoprec_spinor_field* inout,hmc_eoprec_spinor_field
 }
 
 //CP: this is directly defined with MdaggerM, since M is not hermitian for Wilson fermions
-hmc_error cg(hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){
+hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugefield* gaugefield){
  
+	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
+  kappa = (*parameters).get_kappa(); mu = (*parameters).get_mu(); theta = (*parameters).get_theta_fermion(); chem_pot_re = (*parameters).get_chem_pot_re(); chem_pot_im = (*parameters).get_chem_pot_im(); cgmax = (*parameters).get_cgmax();
+	
+	
 	hmc_spinor_field* rn = new hmc_spinor_field[SPINORFIELDSIZE];
   hmc_spinor_field* xnn = new hmc_spinor_field[SPINORFIELDSIZE];
   hmc_spinor_field* pn = new hmc_spinor_field[SPINORFIELDSIZE];
@@ -301,8 +320,12 @@ hmc_error cg(hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugefield* 
 	return HMC_SUCCESS;
 }
 
-hmc_error cg_eoprec(hmc_eoprec_spinor_field* inout, hmc_eoprec_spinor_field* source, hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){
+hmc_error cg_eoprec(inputparameters * parameters, hmc_eoprec_spinor_field* inout, hmc_eoprec_spinor_field* source, hmc_gaugefield* gaugefield){
  
+	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
+  kappa = (*parameters).get_kappa(); mu = (*parameters).get_mu(); theta = (*parameters).get_theta_fermion(); chem_pot_re = (*parameters).get_chem_pot_re(); chem_pot_im = (*parameters).get_chem_pot_im(); cgmax = (*parameters).get_cgmax();
+	
+	
 	hmc_eoprec_spinor_field* rn = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
   hmc_eoprec_spinor_field* xnn = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];
   hmc_eoprec_spinor_field* pn = new hmc_eoprec_spinor_field[EOPREC_SPINORFIELDSIZE];

@@ -56,12 +56,12 @@ int main(int argc, char* argv[])
 		return err;
 
 // 	//TODO add a security function that ends the OpenCL-init if it takes too long (this is apparently necessary on the loewe)
-#ifdef _USEGPU_
-	opencl device(CL_DEVICE_TYPE_GPU, local_work_size, global_work_size, &inittime, &parameters);
-#else /* _USEGPU_ */
-	opencl device(CL_DEVICE_TYPE_CPU, local_work_size, global_work_size, &inittime, &parameters);
-#endif /* _USEGPU_ */
-	cout << endl << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]" << endl;
+// #ifdef _USEGPU_
+// 	opencl device(CL_DEVICE_TYPE_GPU, local_work_size, global_work_size, &inittime, &parameters);
+// #else /* _USEGPU_ */
+// 	opencl device(CL_DEVICE_TYPE_CPU, local_work_size, global_work_size, &inittime, &parameters);
+// #endif /* _USEGPU_ */
+// 	cout << endl << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]" << endl;
 
 	for(int i = 0; i<0; i++){
 		heatbath_update (gaugefield, parameters.get_beta());
@@ -71,8 +71,8 @@ cout << "initial values of observables:\n\t" ;
 	print_gaugeobservables(gaugefield, &polytime, &plaqtime);
 	
 	
-	device.copy_gaugefield_to_device(gaugefield, &copytime);
-	device.copy_rndarray_to_device(rndarray, &copytime);
+// 	device.copy_gaugefield_to_device(gaugefield, &copytime);
+// 	device.copy_rndarray_to_device(rndarray, &copytime);
 
   #ifdef _USEHMC_
   cout << "usehmc with" << (parameters).get_tau() << "  " << (parameters).get_integrationsteps1() << endl;
@@ -194,10 +194,10 @@ cout << "initial values of observables:\n\t" ;
 	simple_correlator(&parameters, gaugefield);
 
 	cout <<"calculate simple_correlator on device..." << endl;
-	usetimer noop;
-	device.init_fermion_variables(&parameters, local_work_size, global_work_size, &inittimer);
-	device.simple_correlator_device(&copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer,  local_work_size, global_work_size, 1000);
-	device.finalize_fermions();
+// 	usetimer noop;
+// 	device.init_fermion_variables(&parameters, local_work_size, global_work_size, &inittimer);
+// 	device.simple_correlator_device(&copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer,  local_work_size, global_work_size, 1000);
+// 	device.finalize_fermions();
 
 #endif /* _FERMIONS_ */
 
@@ -205,25 +205,25 @@ cout << "initial values of observables:\n\t" ;
 	// Heatbath
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	int nsteps = parameters.get_heatbathsteps();
-	int overrelaxsteps = parameters.get_overrelaxsteps();
-	cout<<"perform "<<nsteps<<" heatbath steps on OpenCL device..."<<endl;
-	for(int i = 0; i<nsteps; i++) {
-		device.run_heatbath(parameters.get_beta(), local_work_size, global_work_size, &updatetime);
-		for (int j = 0; j < overrelaxsteps; j++)
-			device.run_overrelax(parameters.get_beta(), local_work_size, global_work_size, &overrelaxtime);
-		if( ( (i+1) % parameters.get_writefrequency() ) == 0 ) {
-			device.gaugeobservables(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
-			print_gaugeobservables(plaq, tplaq, splaq, pol, i, gaugeout_name.str());
-		}
-		if( parameters.get_saveconfigs()==TRUE && ( (i+1) % parameters.get_savefrequency() ) == 0 ) {
-			device.get_gaugefield_from_device(gaugefield, &copytime);
-			save_gaugefield(gaugefield, &parameters, i);
-			print_gaugeobservables(gaugefield, &plaqtime, &polytime, i, gaugeout_name.str());
-		}
-	}
-
-	device.get_gaugefield_from_device(gaugefield, &copytime);
+// 	int nsteps = parameters.get_heatbathsteps();
+// 	int overrelaxsteps = parameters.get_overrelaxsteps();
+// 	cout<<"perform "<<nsteps<<" heatbath steps on OpenCL device..."<<endl;
+// 	for(int i = 0; i<nsteps; i++) {
+// 		device.run_heatbath(parameters.get_beta(), local_work_size, global_work_size, &updatetime);
+// 		for (int j = 0; j < overrelaxsteps; j++)
+// 			device.run_overrelax(parameters.get_beta(), local_work_size, global_work_size, &overrelaxtime);
+// 		if( ( (i+1) % parameters.get_writefrequency() ) == 0 ) {
+// 			device.gaugeobservables(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
+// 			print_gaugeobservables(plaq, tplaq, splaq, pol, i, gaugeout_name.str());
+// 		}
+// 		if( parameters.get_saveconfigs()==TRUE && ( (i+1) % parameters.get_savefrequency() ) == 0 ) {
+// 			device.get_gaugefield_from_device(gaugefield, &copytime);
+// 			save_gaugefield(gaugefield, &parameters, i);
+// 			print_gaugeobservables(gaugefield, &plaqtime, &polytime, i, gaugeout_name.str());
+// 		}
+// 	}
+// 
+// 	device.get_gaugefield_from_device(gaugefield, &copytime);
 
 #endif /* _USEHMC_ */
 
@@ -235,48 +235,48 @@ cout << "initial values of observables:\n\t" ;
 
 #ifndef _FERMIONS_
 
-	int benchmarksteps1 = parameters.get_heatbathsteps();
-	cout<<"perform HEATBATH-BENCHMARK with "<<benchmarksteps1<<" steps off each device operation..."<<endl;
-	for(int i = 0; i<benchmarksteps1; i++) {
-		device.run_heatbath(parameters.get_beta(), local_work_size, global_work_size, &updatetime);
-		device.run_overrelax(parameters.get_beta(), local_work_size, global_work_size, &overrelaxtime);
-		device.gaugeobservables(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
-		device.get_gaugefield_from_device(gaugefield, &copytime);
-		if(i%100==0) {
-			cout << "time at iteration " << i << endl;
-			totaltime.add();
-			time_output(&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime, i);
-			totaltime.reset();
-		}
-	}
+// 	int benchmarksteps1 = parameters.get_heatbathsteps();
+// 	cout<<"perform HEATBATH-BENCHMARK with "<<benchmarksteps1<<" steps off each device operation..."<<endl;
+// 	for(int i = 0; i<benchmarksteps1; i++) {
+// 		device.run_heatbath(parameters.get_beta(), local_work_size, global_work_size, &updatetime);
+// 		device.run_overrelax(parameters.get_beta(), local_work_size, global_work_size, &overrelaxtime);
+// 		device.gaugeobservables(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
+// 		device.get_gaugefield_from_device(gaugefield, &copytime);
+// 		if(i%100==0) {
+// 			cout << "time at iteration " << i << endl;
+// 			totaltime.add();
+// 			time_output(&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime, i);
+// 			totaltime.reset();
+// 		}
+// 	}
 
 #else /* _FERMIONS_ */
 
-	int benchmarksteps2 = parameters.get_thermalizationsteps();
-	int cgmax = parameters.get_cgmax();
-	cout<<"perform FERMION-BENCHMARK with "<<benchmarksteps2<<" steps off each device operation..."<<endl;
-
-	//CP: set up testing field
-	hmc_spinor_field in[SPINORFIELDSIZE];
-	if(!use_eo) {
-		init_spinorfield_cold(in);
-		device.copy_spinorfield_to_device(in, &copytimer);
-	} else {
-		//!!CP: this should be fine since only half the field is used but of course it is not nice...
-		init_spinorfield_cold_eoprec(in);
-		device.copy_eoprec_spinorfield_to_device(in, &copytimer);
-	}
-	for(int i = 0; i<benchmarksteps2; i++) {
-		device.init_fermion_variables(&parameters, local_work_size, global_work_size, &inittimer);
-		device.perform_benchmark(cgmax, local_work_size, global_work_size, &copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer);
-		if(i%100==0) {
-			cout << "time at iteration " << i << endl;
-			totaltime.add();
-			time_output( &totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime, &inittimer, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer, i );
-			totaltime.reset();
-		}
-	}
-	device.finalize_fermions();
+// 	int benchmarksteps2 = parameters.get_thermalizationsteps();
+// 	int cgmax = parameters.get_cgmax();
+// 	cout<<"perform FERMION-BENCHMARK with "<<benchmarksteps2<<" steps off each device operation..."<<endl;
+// 
+// 	//CP: set up testing field
+// 	hmc_spinor_field in[SPINORFIELDSIZE];
+// 	if(!use_eo) {
+// 		init_spinorfield_cold(in);
+// 		device.copy_spinorfield_to_device(in, &copytimer);
+// 	} else {
+// 		//!!CP: this should be fine since only half the field is used but of course it is not nice...
+// 		init_spinorfield_cold_eoprec(in);
+// 		device.copy_eoprec_spinorfield_to_device(in, &copytimer);
+// 	}
+// 	for(int i = 0; i<benchmarksteps2; i++) {
+// 		device.init_fermion_variables(&parameters, local_work_size, global_work_size, &inittimer);
+// 		device.perform_benchmark(cgmax, local_work_size, global_work_size, &copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer);
+// 		if(i%100==0) {
+// 			cout << "time at iteration " << i << endl;
+// 			totaltime.add();
+// 			time_output( &totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime, &inittimer, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer, i );
+// 			totaltime.reset();
+// 		}
+// 	}
+// 	device.finalize_fermions();
 
 #endif /* _FERMIONS_ */
 
@@ -286,23 +286,23 @@ cout << "initial values of observables:\n\t" ;
 	// Final Output
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	totaltime.add();
-#ifndef _PERFORM_BENCHMARKS_
-	save_gaugefield(gaugefield, &parameters, nsteps);
-#endif /* _PERFORM_BENCHMARKS_ */
-	time_output(
-	  &totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime
-#ifdef _FERMIONS_
-	  , &inittimer, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer
-#endif /* _FERMIONS_ */
-#ifdef _PERFORM_BENCHMARKS_
-#ifndef _FERMIONS_
-	  , benchmarksteps1
-#else /* _FERMIONS_ */
-	  , benchmarksteps2
-#endif /* _FERMIONS_ */
-#endif /* _PERFORM_BENCHMARKS_ */
-	);
+// 	totaltime.add();
+// #ifndef _PERFORM_BENCHMARKS_
+// 	save_gaugefield(gaugefield, &parameters, nsteps);
+// #endif /* _PERFORM_BENCHMARKS_ */
+// 	time_output(
+// 	  &totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime
+// #ifdef _FERMIONS_
+// 	  , &inittimer, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer
+// #endif /* _FERMIONS_ */
+// #ifdef _PERFORM_BENCHMARKS_
+// #ifndef _FERMIONS_
+// 	  , benchmarksteps1
+// #else /* _FERMIONS_ */
+// 	  , benchmarksteps2
+// #endif /* _FERMIONS_ */
+// #endif /* _PERFORM_BENCHMARKS_ */
+// 	);
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
