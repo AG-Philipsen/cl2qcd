@@ -327,12 +327,12 @@ hmc_error gaugefield::heatbath(usetimer * const timer)
 	return err;
 }
 
-hmc_error gaugefield::overrelax(const size_t local_work_size, const size_t global_work_size, usetimer* timer)
+hmc_error gaugefield::overrelax(usetimer * const timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 
-	hmc_error err = devices[0].run_overrelax(parameters->get_beta(), local_work_size, global_work_size, timer);
+	hmc_error err = devices[0].run_overrelax(parameters->get_beta(), timer);
 	return err;
 }
 
@@ -340,7 +340,7 @@ hmc_error gaugefield::heatbath(const int nheat, const int nover, usetimer * cons
 {
 	hmc_error err = HMC_SUCCESS;
 	for(int i = 0; i < nheat; i++) err |= heatbath(timer_heat);
-	for(int i = 0; i < nover; i++) err |= overrelax(local_work_size, global_work_size, timer_over);
+	for(int i = 0; i < nover; i++) err |= overrelax(timer_over);
 	return err;
 }
 

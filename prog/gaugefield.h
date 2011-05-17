@@ -161,11 +161,9 @@ public:
 	hmc_error heatbath(usetimer * const timer);
 	/**
 	 * Perform one overrelaxation step.
-	 * @param[in] local_work_size OpenCL local_work_size
-	 * @param[in] global_work_size OpenCL global_work_size
 	 * @param[in,out] timer time for overrelaxation step
 	 */
-	hmc_error overrelax(const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	hmc_error overrelax(usetimer * const timer);
 
 	
 	//gaugeobservables, on host!!

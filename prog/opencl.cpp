@@ -480,13 +480,17 @@ hmc_error opencl::run_heatbath(const hmc_float beta, usetimer * const timer)
 
 }
 
-hmc_error opencl::run_overrelax(hmc_float beta, const size_t local_work_size, const size_t global_work_size, usetimer* timer)
+hmc_error opencl::run_overrelax(const hmc_float beta, usetimer * const timer)
 {
 	cl_int clerr = CL_SUCCESS;
 
 	timer->reset();
 
-	const size_t * local_work_size_p = (local_work_size == 0) ? 0 : &local_work_size;
+#ifdef _USE_GPU_
+	size_t global_work_size = min(VOLSPACE * NTIME / 2, NUMRNDSTATES);
+#else
+	size_t global_work_size = min(max_compute_units, (cl_uint) NUMRNDSTATES);
+#endif
 
 	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), &clmem_gaugefield);
 	if(clerr != CL_SUCCESS) {
@@ -509,12 +513,7 @@ hmc_error opencl::run_overrelax(hmc_float beta, const size_t local_work_size, co
 			cout << "clSetKernelArg4 failed, aborting..." << endl;
 			exit(HMC_OCLERROR);
 		}
-		clerr = clEnqueueNDRangeKernel(queue, overrelax_even, 1, 0, &global_work_size, local_work_size_p, 0, 0, NULL);
-		if(clerr != CL_SUCCESS) {
-			cout << "clEnqueueNDRangeKernel failed, aborting..." << clerr << endl;
-			exit(HMC_OCLERROR);
-		}
-		clFinish(queue);
+		enqueueKernel(overrelax_even, global_work_size);
 	}
 
 	clerr = clSetKernelArg(overrelax_odd, 0, sizeof(cl_mem), &clmem_gaugefield);
@@ -538,13 +537,9 @@ hmc_error opencl::run_overrelax(hmc_float beta, const size_t local_work_size, co
 			cout << "clSetKernelArg8 failed, aborting..." << endl;
 			exit(HMC_OCLERROR);
 		}
-		clerr = clEnqueueNDRangeKernel(queue, overrelax_odd, 1, 0, &global_work_size, local_work_size_p, 0, 0, NULL);
-		if(clerr != CL_SUCCESS) {
-			cout << "clEnqueueNDRangeKernel failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
-		clFinish(queue);
+		enqueueKernel(overrelax_odd, global_work_size);
 	}
+	clFinish(queue);
 	timer->add();
 	return HMC_SUCCESS;
 }

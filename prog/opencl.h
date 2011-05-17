@@ -117,7 +117,7 @@ public:
 	/**
 	 * Perform one overrelaxation step.
 	 */
-	hmc_error run_overrelax(hmc_float beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
+	hmc_error run_overrelax(const hmc_float beta, usetimer * const timer);
 
 	/**
 	 * Calculate plaquette and polyakov.
