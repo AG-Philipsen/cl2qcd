@@ -743,8 +743,8 @@ hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix
 		// 2. start with the exp(...) expansion by using standard 3x3 sum and multiplication
 		hmc_3x3matrix eRes, eCurPower, eNextPower, eLastResult;
 		hmc_float eAccuracyCheck;
-		set_to_3x3_identity(eRes);
-		set_to_3x3_identity(eCurPower);
+		set_to_3x3_identity(&eRes);
+		set_to_3x3_identity(&eCurPower);
 // 		hmc_float eCoefficient = 1.0;
 		int factorial = 1;
 		for(int power=1;power<_EXACT_EXPONENTIATION_MAX_POWER_;power++){
