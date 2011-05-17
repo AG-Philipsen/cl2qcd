@@ -378,14 +378,19 @@ hmc_error Gaugefield::set_kappa_clover (hmc_float in){
   
 }
 
-// hmc_error Gaugefield::kappa_karsch_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch){
-// 	//LZ: so far, we only use !!! 1 !!! device
-// 	// this function needs to be generalised to several devices and definition of subsets...
-// 	hmc_error err = devices[0].run_kappa_karsch_gpu(local_work_size, global_work_size, timer);
-// 	return err;
-//   
-// }
+hmc_error Gaugefield::kappa_karsch_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch){
+	//LZ: so far, we only use !!! 1 !!! device
+	// this function needs to be generalised to several devices and definition of subsets...
+	hmc_error err = devices[0].run_kappa_karsch_gpu(local_work_size, global_work_size, timer_karsch);
+	return err;
+}
 
+hmc_error Gaugefield::kappa_clover_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_clover){
+	//LZ: so far, we only use !!! 1 !!! device
+	// this function needs to be generalised to several devices and definition of subsets...
+	hmc_error err = devices[0].run_kappa_clover_gpu(local_work_size, global_work_size, timer_clover);
+	return err;
+}
 
 hmc_error Gaugefield::kappa_karsch ()
 {
