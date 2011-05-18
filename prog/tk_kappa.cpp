@@ -67,8 +67,6 @@ int main(int argc, char* argv[])
 	int writefreq = parameters.get_writefrequency();
 	int savefreq = parameters.get_savefrequency();
 	
-	hmc_float kappa_karsch_val;
-	hmc_float kappa_clover_val;
 	ofstream kappa_karsch_out;
 	kappa_karsch_out.open ("kappa_karsch.dat");
 	ofstream kappa_clover_out;

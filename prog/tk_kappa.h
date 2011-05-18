@@ -2,8 +2,8 @@
  *
  * Everything required by heatbath's main()
  */
-#ifndef _HEATBATHH_
-#define _HEATBATHH_
+#ifndef _TKKAPPAH_
+#define _TKKAPPAH_
 //should only be included in main prog
 
 #include <cstdlib>
@@ -25,12 +25,6 @@
 #include "host_use_timer.h"
 #include "gaugefield.h"
 #include "gaugefield_k.h"
-#include "opencl.h"
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
 
 #ifdef _OPENMP
 # include <omp.h>
@@ -94,4 +88,4 @@ void print_info(inputparameters* params, ostream* os)
 	return;
 }
 
-#endif /* _HEATBATH_ */
+#endif /* _TKKAPPAH_ */

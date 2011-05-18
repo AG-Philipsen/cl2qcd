@@ -4,7 +4,7 @@
 
 using namespace std;
 
-hmc_error opencl::fill_kernels_file (){
+hmc_error Opencl::fill_kernels_file (){
 	//give a list of all kernel-files
 	//!!CP: LZ should update this
 	cl_kernels_file.push_back("opencl_header.cl");
@@ -14,19 +14,17 @@ hmc_error opencl::fill_kernels_file (){
 	cl_kernels_file.push_back("opencl_operations_gaugefield.cl");
 	cl_kernels_file.push_back("opencl_update_heatbath.cl");
 	cl_kernels_file.push_back("opencl_gaugeobservables.cl");
+	cl_kernels_file.push_back("opencl_operations_matrix.cl");
 #ifdef _FERMIONS_
 	cl_kernels_file.push_back("opencl_operations_spinor.cl");
 	cl_kernels_file.push_back("opencl_operations_spinorfield.cl");
 	cl_kernels_file.push_back("opencl_operations_fermionmatrix.cl");
 	cl_kernels_file.push_back("opencl_fermionobservables.cl");
 #endif
-#ifdef _TESTING_
-	cl_kernels_file.push_back("opencl_testing.cl");
-#endif
 	return HMC_SUCCESS;  
 }
 
-hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* parameters)
+hmc_error Opencl::init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* parameters)
 {
 
 
@@ -327,7 +325,7 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 	return HMC_SUCCESS;
 }
 
-hmc_error opencl::copy_gaugefield_to_device(hmc_gaugefield* gaugefield, usetimer* timer)
+hmc_error Opencl::copy_gaugefield_to_device(hmc_gaugefield* gaugefield, usetimer* timer)
 {
 //   cout<<"Copy gaugefield to device..."<<endl;
 	timer->reset();
@@ -347,7 +345,7 @@ hmc_error opencl::copy_gaugefield_to_device(hmc_gaugefield* gaugefield, usetimer
 	return HMC_SUCCESS;
 }
 
-hmc_error opencl::copy_rndarray_to_device(hmc_rndarray rndarray, usetimer* timer)
+hmc_error Opencl::copy_rndarray_to_device(hmc_rndarray rndarray, usetimer* timer)
 {
 //   cout<<"Copy randomarray to device..."<<endl;
 	timer->reset();
@@ -362,7 +360,7 @@ hmc_error opencl::copy_rndarray_to_device(hmc_rndarray rndarray, usetimer* timer
 	return HMC_SUCCESS;
 }
 
-hmc_error opencl::get_gaugefield_from_device(hmc_gaugefield* gaugefield, usetimer* timer)
+hmc_error Opencl::get_gaugefield_from_device(hmc_gaugefield* gaugefield, usetimer* timer)
 {
 //   cout<<"Get gaugefield from device..."<<endl;
 	timer->reset();
@@ -383,7 +381,7 @@ hmc_error opencl::get_gaugefield_from_device(hmc_gaugefield* gaugefield, usetime
 	return HMC_SUCCESS;
 }
 
-hmc_error opencl::copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer)
+hmc_error Opencl::copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer)
 {
 //   cout<<"Get randomarray from device..."<<endl;
 	timer->reset();
@@ -398,7 +396,7 @@ hmc_error opencl::copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* tim
 	return HMC_SUCCESS;
 }
 
-hmc_error opencl::run_heatbath(const hmc_float beta, usetimer * const timer)
+hmc_error Opencl::run_heatbath(const hmc_float beta, usetimer * const timer)
 {
 	cl_int clerr = CL_SUCCESS;
 	timer->reset();
@@ -462,7 +460,7 @@ hmc_error opencl::run_heatbath(const hmc_float beta, usetimer * const timer)
 
 }
 
-hmc_error opencl::run_overrelax(const hmc_float beta, usetimer * const timer)
+hmc_error Opencl::run_overrelax(const hmc_float beta, usetimer * const timer)
 {
 	cl_int clerr = CL_SUCCESS;
 
@@ -526,7 +524,7 @@ hmc_error opencl::run_overrelax(const hmc_float beta, usetimer * const timer)
 	return HMC_SUCCESS;
 }
 
-hmc_error opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out, usetimer* timer1, usetimer * timer2)
+hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out, usetimer* timer1, usetimer * timer2)
 {
 	cl_int clerr = CL_SUCCESS;
 
@@ -766,15 +764,15 @@ hmc_error opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 	return HMC_SUCCESS;
 }
 
-hmc_error opencl::run_kappa_karsch_gpu(const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch){
+hmc_error Opencl::run_kappa_karsch_gpu(const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch){
   return HMC_SUCCESS;
 }
 
-hmc_error opencl::run_kappa_clover_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_clover){
+hmc_error Opencl::run_kappa_clover_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_clover){
   return HMC_SUCCESS; 
 }
 
-hmc_error opencl::finalize()
+hmc_error Opencl::finalize()
 {
 	if(isinit == 1) {
 		if(clFlush(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
@@ -813,7 +811,7 @@ hmc_error opencl::finalize()
 	return HMC_SUCCESS;
 }
 
-void opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
+void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
 {
 #ifdef _USE_GPU_
 	const size_t local_work_size = NUM_THREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
@@ -828,7 +826,7 @@ void opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 	}
 }
 
-void opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size)
+void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size)
 {
 	cl_int clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
@@ -837,10 +835,3 @@ void opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 	}
 }
 
-//CP: extra file for the long testing functions
-//	this is not to be used anymore because of changed arg structure!!!!
-// #include "opencl_testing.h"
-//CP: extra file for the long fermion functions
-#ifdef _FERMIONS_
-#include "opencl_fermions.h"
-#endif //_FERMIONS_

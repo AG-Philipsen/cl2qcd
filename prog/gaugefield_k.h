@@ -1,3 +1,6 @@
+#ifndef _GAUGEFIELDKH_
+#define _GAUGEFIELDKH_
+
 #include "gaugefield.h"
 #include "opencl_k.h"
 
@@ -75,7 +78,7 @@ class Gaugefield_k : public Gaugefield{
 	 * Returns private member opencl_k * devices
 	 * @return devices of type opencl_k
 	 */
-	opencl * get_devices_k ();
+	Opencl * get_devices_k ();
   
   private:
   Opencl_k * devices_k;
@@ -84,3 +87,5 @@ class Gaugefield_k : public Gaugefield{
   
 
 };
+
+#endif //_GAUGEFIELDKH_

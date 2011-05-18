@@ -176,13 +176,13 @@ public:
 	 * Returns private member * devices
 	 * @return devices
 	 */
-	opencl * get_devices ();
+	Opencl * get_devices ();
 	
 	/**
 	 * Sets private member * devices
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	 hmc_error set_devices (opencl * devices_val);
+	 hmc_error set_devices (Opencl * devices_val);
 	
 	/**
 	 * Returns private member num_ocl_devices
@@ -232,7 +232,7 @@ public:
 	
 private:
 	hmc_gaugefield * gf;
-	opencl * devices;
+	Opencl * devices;
 	int num_ocl_devices;
 	inputparameters* parameters;
 

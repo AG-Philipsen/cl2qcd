@@ -67,7 +67,7 @@ hmc_error Gaugefield_k::kappa_clover_gpu (const size_t local_work_size, const si
 	return err;
 }
 
-opencl * Gaugefield_k::get_devices_k (){
+Opencl * Gaugefield_k::get_devices_k (){
   return  devices_k;
 }
 

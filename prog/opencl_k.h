@@ -1,33 +1,9 @@
 /** @file
  * OpenCL device managment for TK kappa and everything executed on them.
  */
-#ifndef _MYOPENCL_kH_
-#define _MYOPENCL_kH_
+#ifndef _MYOPENCLKH_
+#define _MYOPENCLKH_
 
-#include <cstdlib>
-#include <vector>
-#include <cstring>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-
-#include "host_geometry.h"
-#include "host_operations_complex.h"
-#include "host_operations_gaugefield.h"
-#include "host_operations_spinor.h"
-#include "host_operations_spinorfield.h"
-#include "host_operations_fermionmatrix.h"
-#include "globaldefs.h"
-#include "hmcerrs.h"
-#include "types.h"
-#include "host_use_timer.h"
-#include "host_testing.h"
-#include "host_random.h"
 #include "opencl.h"
 
 /**
@@ -36,7 +12,7 @@
  * This class wraps all operations on a device. Operations are always specific, e.g. each kernel and copy operation
  * has it's own wrapper function.
  */
-class Opencl_k : public opencl {
+class Opencl_k : public Opencl {
  
     public:
       virtual hmc_error fill_kernels_file ();

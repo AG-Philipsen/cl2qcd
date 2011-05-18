@@ -135,7 +135,7 @@ add_executable( hmc
 	host_operations_spinor.cpp
 	host_operations_spinorfield.cpp
 	host_operations_fermionmatrix.cpp
-	host_gaugeobservables.cpp
+#	host_gaugeobservables.cpp
 # 	host_testing.cpp
 	host_input.cpp
 	host_readgauge.cpp
@@ -143,7 +143,7 @@ add_executable( hmc
 	host_update_heatbath.cpp
 	opencl.cpp
 	host_use_timer.cpp
-	host_gaugefieldoperations.cpp
+#	host_gaugefieldoperations.cpp
 	host_writegaugefield.cpp
 	host_solver.cpp
 	host_fermionobservables.cpp
