@@ -1744,8 +1744,8 @@ hmc_error opencl::create_point_source_eoprec_device(int i, int spacepos, int tim
 	set_zero_spinorfield_eoprec_device(clmem_tmp_eoprec_2, ls, gs, latimer);
 	set_zero_spinorfield_eoprec_device(clmem_tmp_eoprec_1, ls, gs, latimer);
 
-	//!!CP: I do not know why this does not work!! The compiler says he does not know get_global_pos, which does not make sense
-	int glob_pos = spacepos + VOLSPACE * timepos;// get_global_pos(spacepos, timepos);
+// 	int glob_pos = spacepos + VOLSPACE * timepos;
+	int glob_pos = get_global_pos(spacepos, timepos);
 	int n = get_n_eoprec(spacepos, timepos);
 	int clerr = CL_SUCCESS;
 	int evenodd = glob_pos%2;

@@ -196,7 +196,7 @@ hmc_error spinprojectproduct_gamma3(hmc_su3matrix* u, hmc_spinor* spin, hmc_floa
  * @param[in,out] in Spinor to be changed
  * @param[in] theta angle /f$ \theta /f$
  * @return void
- * remark tested by CP
+ * @remark tested by CP
  * @todo the calculation involves sin- and cos-evaluations. Perhaps one should optimize this for the two special cases mentioned above.
  */
 void spinor_apply_bc(hmc_spinor * in, hmc_float theta);//CP: checked explicitly
@@ -208,7 +208,7 @@ void spinor_apply_bc(hmc_spinor * in, hmc_float theta);//CP: checked explicitly
  * @param[in] kappa /f$\kappa/f$ of Wilson fermions.
  * @param[in] mu /f$\mu/f$ of twisted-mass fermions.
  * @return void
- * remark tested by CP
+ * @remark tested by CP
  * @todo at the moment, this is only twisted-mass!!
  */
 void M_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu);//CP: checked explicitly
@@ -220,7 +220,7 @@ void M_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu);//CP: ch
  * @param[in] kappa /f$\kappa/f$ of Wilson fermions.
  * @param[in] mu /f$\mu/f$ of twisted-mass fermions.
  * @return void
- * remark tested by CP
+ * @remark tested by CP
  * @todo at the moment, this is only twisted-mass!!
  */
 void MdaggerM_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu);//CP: not checked
@@ -234,7 +234,7 @@ void MdaggerM_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu);/
  * @param[in] u SU(3)-Matrix linking to spinnext
  * @param[in] udagger (adjoined) SU(3)-Matrix linking to spinprev
  * @return void
- * remark tested by CP
+ * @remark tested by CP
  * @todo at the moment, this is only twisted-mass!!
  */
 void dslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: checked explicitly
@@ -248,7 +248,7 @@ void dslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
  * @param[in] u SU(3)-Matrix linking to spinnext
  * @param[in] udagger (adjoined) SU(3)-Matrix linking to spinprev
  * @return void
- * remark tested by CP
+ * @remark tested by CP
  * @todo at the moment, this is only twisted-mass!!
  */
 void dslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: checked explicitly
@@ -262,7 +262,7 @@ void dslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
  * @param[in] u SU(3)-Matrix linking to spinnext
  * @param[in] udagger (adjoined) SU(3)-Matrix linking to spinprev
  * @return void
- * remark tested by CP
+ * @remark tested by CP
  * @todo at the moment, this is only twisted-mass!!
  */
 void dslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: checked explicitly
@@ -276,7 +276,7 @@ void dslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
  * @param[in] u SU(3)-Matrix linking to spinnext
  * @param[in] udagger (adjoined) SU(3)-Matrix linking to spinprev
  * @return void
- * remark tested by CP
+ * @remark tested by CP
  * @todo at the moment, this is only twisted-mass!!
  */
 void dslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: checked explicitly
@@ -290,7 +290,7 @@ void dslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
  * @param[in] u SU(3)-Matrix linking to spinnext
  * @param[in] udagger (adjoined) SU(3)-Matrix linking to spinprev
  * @return void
- * remark tested by CP
+ * @remark tested by CP
  * @todo at the moment, this is only twisted-mass!!
  */
 void ddaggerslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: not checked
@@ -304,7 +304,7 @@ void ddaggerslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spin
  * @param[in] u SU(3)-Matrix linking to spinnext
  * @param[in] udagger (adjoined) SU(3)-Matrix linking to spinprev
  * @return void
- * remark tested by CP
+ * @remark tested by CP
  * @todo at the moment, this is only twisted-mass!!
  */
 void ddaggerslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: not checked
@@ -318,7 +318,7 @@ void ddaggerslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spin
  * @param[in] u SU(3)-Matrix linking to spinnext
  * @param[in] udagger (adjoined) SU(3)-Matrix linking to spinprev
  * @return void
- * remark tested by CP
+ * @remark tested by CP
  * @todo at the moment, this is only twisted-mass!!
  */
 void ddaggerslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: notchecked
@@ -332,7 +332,7 @@ void ddaggerslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spin
  * @param[in] u SU(3)-Matrix linking to spinnext
  * @param[in] udagger (adjoined) SU(3)-Matrix linking to spinprev
  * @return void
- * remark tested by CP
+ * @remark tested by CP
  * @todo at the moment, this is only twisted-mass!!
  */
 void ddaggerslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: not checked

@@ -1,6 +1,6 @@
 #include "gaugefield.h"
 
-hmc_error gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer)
+hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer)
 {
 	gf = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
 
@@ -28,7 +28,7 @@ hmc_error gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparame
 	return HMC_SUCCESS;
 }
 
-hmc_error gaugefield::init_gaugefield(usetimer* timer)
+hmc_error Gaugefield::init_gaugefield(usetimer* timer)
 {
 	sourcefileparameters parameters_source;
 	if(parameters->get_startcondition() == START_FROM_SOURCE) {
@@ -61,7 +61,7 @@ hmc_error gaugefield::init_gaugefield(usetimer* timer)
 	return HMC_SUCCESS;
 }
 
-void gaugefield::print_info_source(sourcefileparameters* params)
+void Gaugefield::print_info_source(sourcefileparameters* params)
 {
 	printf("**********************************************************\n");
 	printf("Sourcefile parameters: (list not complete)\n");
@@ -82,7 +82,7 @@ void gaugefield::print_info_source(sourcefileparameters* params)
 }
 
 
-hmc_error gaugefield::save(int number)
+hmc_error Gaugefield::save(int number)
 {
 
 	ildg_gaugefield * gaugefield_buf;
@@ -111,7 +111,7 @@ hmc_error gaugefield::save(int number)
 	return HMC_SUCCESS;
 }
 
-hmc_error gaugefield::copy_gaugefield_to_devices(usetimer* timer)
+hmc_error Gaugefield::copy_gaugefield_to_devices(usetimer* timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -120,7 +120,7 @@ hmc_error gaugefield::copy_gaugefield_to_devices(usetimer* timer)
 	return err;
 }
 
-hmc_error gaugefield::sync_gaugefield(usetimer* timer)
+hmc_error Gaugefield::sync_gaugefield(usetimer* timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -129,7 +129,7 @@ hmc_error gaugefield::sync_gaugefield(usetimer* timer)
 	return err;
 }
 
-hmc_error gaugefield::copy_rndarray_to_devices(hmc_rndarray host_rndarray,  usetimer* timer)
+hmc_error Gaugefield::copy_rndarray_to_devices(hmc_rndarray host_rndarray,  usetimer* timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -137,7 +137,7 @@ hmc_error gaugefield::copy_rndarray_to_devices(hmc_rndarray host_rndarray,  uset
 	return err;
 }
 
-hmc_error gaugefield::copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer* timer)
+hmc_error Gaugefield::copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer* timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -145,7 +145,7 @@ hmc_error gaugefield::copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer
 	return err;
 }
 
-void gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2)
+void Gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2)
 {
 	timer->reset();
 	hmc_float tplaq = 0;
@@ -159,7 +159,7 @@ void gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2)
 	return;
 }
 
-void gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2, int iter)
+void Gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2, int iter)
 {
 	timer->reset();
 	hmc_float tplaq = 0;
@@ -173,7 +173,7 @@ void gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2, int
 	return;
 }
 
-void gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2, int iter, std::string filename)
+void Gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2, int iter, std::string filename)
 {
 	timer->reset();
 	hmc_float tplaq = 0;
@@ -196,7 +196,7 @@ void gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2, int
 	return;
 }
 
-void gaugefield::print_gaugeobservables(hmc_float plaq, hmc_float tplaq, hmc_float splaq, hmc_complex pol, int iter, std::string filename)
+void Gaugefield::print_gaugeobservables(hmc_float plaq, hmc_float tplaq, hmc_float splaq, hmc_complex pol, int iter, std::string filename)
 {
 	//printf("%d\t%f\t%f\t%f\t%f\t%f\n",iter,plaq,tplaq,splaq,pol.re,pol.im);
 	std::fstream gaugeout;
@@ -211,7 +211,7 @@ void gaugefield::print_gaugeobservables(hmc_float plaq, hmc_float tplaq, hmc_flo
 	return;
 }
 
-hmc_float gaugefield::plaquette()
+hmc_float Gaugefield::plaquette()
 {
 	hmc_float tdummy;
 	hmc_float sdummy;
@@ -219,7 +219,7 @@ hmc_float gaugefield::plaquette()
 	return plaquette(&tdummy, &sdummy);
 }
 
-hmc_float gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
+hmc_float Gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 {
 	hmc_float plaq = 0;
 	*tplaq = 0;
@@ -247,7 +247,7 @@ hmc_float gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 }
 
 
-hmc_complex gaugefield::polyakov()
+hmc_complex Gaugefield::polyakov()
 {
 	hmc_complex res;
 	res.re = 0;
@@ -264,7 +264,7 @@ hmc_complex gaugefield::polyakov()
 }
 
 
-hmc_complex gaugefield::spatial_polyakov(int dir)
+hmc_complex Gaugefield::spatial_polyakov(int dir)
 {
 	//assuming dir=1,2, or 3
 	hmc_complex res;
@@ -298,7 +298,7 @@ hmc_complex gaugefield::spatial_polyakov(int dir)
 	return res;
 }
 
-hmc_error gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname)
+hmc_error Gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -309,7 +309,7 @@ hmc_error gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq
 	return HMC_SUCCESS;
 }
 
-hmc_error gaugefield::print_gaugeobservables_from_devices(usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname)
+hmc_error Gaugefield::print_gaugeobservables_from_devices(usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname)
 {
 	hmc_float plaq, tplaq, splaq;
 	hmc_complex pol;
@@ -319,7 +319,7 @@ hmc_error gaugefield::print_gaugeobservables_from_devices(usetimer * const plaqt
 	return err;
 }
 
-hmc_error gaugefield::heatbath(usetimer * const timer)
+hmc_error Gaugefield::heatbath(usetimer * const timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -327,7 +327,7 @@ hmc_error gaugefield::heatbath(usetimer * const timer)
 	return err;
 }
 
-hmc_error gaugefield::overrelax(usetimer * const timer)
+hmc_error Gaugefield::overrelax(usetimer * const timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -336,7 +336,7 @@ hmc_error gaugefield::overrelax(usetimer * const timer)
 	return err;
 }
 
-hmc_error gaugefield::heatbath(const int nheat, const int nover, usetimer * const timer_heat, usetimer * const timer_over)
+hmc_error Gaugefield::heatbath(const int nheat, const int nover, usetimer * const timer_heat, usetimer * const timer_over)
 {
 	hmc_error err = HMC_SUCCESS;
 	for(int i = 0; i < nheat; i++) err |= heatbath(timer_heat);
@@ -344,14 +344,14 @@ hmc_error gaugefield::heatbath(const int nheat, const int nover, usetimer * cons
 	return err;
 }
 
-hmc_error gaugefield::heatbath(const int nheat, usetimer * const timer_heat)
+hmc_error Gaugefield::heatbath(const int nheat, usetimer * const timer_heat)
 {
 	hmc_error err = HMC_SUCCESS;
 	for(int i = 0; i < nheat; i++) err |= heatbath(timer_heat);
 	return err;
 }
 
-hmc_error gaugefield::finalize()
+hmc_error Gaugefield::finalize()
 {
 	free(gf);
 	if(num_ocl_devices > 0)
@@ -359,269 +359,24 @@ hmc_error gaugefield::finalize()
 	return HMC_SUCCESS;
 }
 
-
-void gaugefield::kappa_karsch (hmc_float & kappa)
+hmc_gaugefield * Gaugefield::get_gf ()
 {
-	//Initialize kappa
-	kappa = 0.0;
-	//Initializing beta
-	const hmc_float beta = parameters->get_beta();
-	//Compute diagonal spatial components of the energy-momentum-tensor
-	hmc_float tdiag_11 [VOL4D];
-	hmc_float tdiag_22 [VOL4D];
-	hmc_float tdiag_33 [VOL4D];
-	//a = 2T_11 - T_22 _ T_33
-	hmc_float a [VOL4D];
-	//b = 2T_22 - T_11 _ T_33
-	hmc_float b [VOL4D];
-	//c = 2T_33 - T_22 _ T_11
-	hmc_float c [VOL4D];
-
-	for (int t = 0; t < NTIME; t++) {
-		for (int n = 0; n < VOLSPACE; n++) {
-			//Compute required plaquettes
-			hmc_su3matrix temp;
-
-			local_plaquette(gf, & temp, n, t, 1, 0);
-			//faster, to take real first and then trace, but no method
-			hmc_float plaq_10 = trace_su3matrix(&temp).re;
-			local_plaquette(gf, & temp, n, t, 2, 0);
-			hmc_float plaq_20 = trace_su3matrix(&temp).re;
-			local_plaquette(gf, & temp, n, t, 3, 0);
-			hmc_float plaq_30 = trace_su3matrix(&temp).re;
-			local_plaquette(gf, & temp, n, t, 1, 2);
-			hmc_float plaq_12 = trace_su3matrix(&temp).re;
-			local_plaquette(gf, & temp, n, t, 1, 3);
-			hmc_float plaq_13 = trace_su3matrix(&temp).re;
-			local_plaquette(gf, & temp, n, t, 3, 2);
-			hmc_float plaq_32 = trace_su3matrix(&temp).re;
-
-			int point = n + VOLSPACE * t;
-
-			tdiag_11 [point] = plaq_10 + plaq_12 + plaq_13 - plaq_20 - plaq_30 - plaq_32;
-			tdiag_22 [point] = plaq_20 + plaq_12 + plaq_32 - plaq_10 - plaq_30 - plaq_13;
-			tdiag_33 [point] = plaq_30 + plaq_13 + plaq_32 - plaq_10 - plaq_20 - plaq_12;
-
-			a[point] = 2.0 * tdiag_11[point] - tdiag_22[point] - tdiag_33[point];
-			b[point] = 2.0 * tdiag_22[point] - tdiag_11[point] - tdiag_33[point];
-			c[point] = 2.0 * tdiag_33[point] - tdiag_22[point] - tdiag_11[point];
-		}
-	}
-
-	hmc_float deltak = 2 * PI / NSPACE;
-	hmc_float result = 0.0;
-
-
-	for (int x_3 = 0; x_3 < NSPACE; x_3++) {
-		for (int y_3 = 0; y_3 < x_3; y_3++) {
-			hmc_float factor = 1.0 - cos(deltak * hmc_float(x_3 - y_3));
-			for (int x_t = 0; x_t < NTIME; x_t++) {
-				for (int y_t = 0; y_t < NTIME; y_t++) {
-					for (int x_1 = 0; x_1 < NSPACE; x_1++) {
-						for (int y_1 = 0; y_1 < NSPACE; y_1++) {
-							for (int x_2 = 0; x_2 < NSPACE; x_2++) {
-								for (int y_2 = 0; y_2 < NSPACE; y_2++) {
-
-									int coord_x[NDIM];
-									coord_x[0] = x_t;
-									coord_x[1] = x_1;
-									coord_x[2] = x_2;
-									coord_x[3] = x_3;
-									//new method get_tnspace which gives n_x+VOLSPACE*x_t
-									int n_x = get_nspace (coord_x);
-									int point_x = n_x + VOLSPACE * x_t;
-									int coord_y[NDIM];
-									coord_y[0] = y_t;
-									coord_y[1] = y_1;
-									coord_y[2] = y_2;
-									coord_y[3] = y_3;
-									int n_y = get_nspace (coord_y);
-									int point_y = n_y + VOLSPACE * y_t;
-
-									result += factor * ( tdiag_11 [point_x] * a[point_y]
-									                     + tdiag_22 [point_x] * b[point_y]
-									                     + tdiag_33 [point_x] * c[point_y]);
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	//Correlator, 2 by Def, 2 by T_12+T_21  3 by T_12+T_13+T_23 -->/12,
-	//Volume for y /VOL4D, /2/pi^2*L_z^2 for derivation, *beta^2 / Nc^2 for T_munu, *2 for y_3<x_3
-
-	hmc_float norm = hmc_float (NSPACE * NSPACE) / hmc_float (VOL4D) / hmc_float(NC * NC) / 12.0 / PI / PI  * beta * beta;
-
-	kappa = norm * result;
+	return  gf;
 }
 
-void gaugefield::kappa_clover (hmc_float & kappa)
+opencl * Gaugefield::get_devices ()
 {
-	//Initializing result
-	kappa = .0;
-	//Initializing beta
-	const hmc_float beta = parameters->get_beta();
-	//Energy-momentum-tensor in clover-discretization
-	hmc_float t_12 [VOL4D];
-	hmc_float t_13 [VOL4D];
-	hmc_float t_23 [VOL4D];
-
-	for (int t = 0; t < NTIME; t++) {
-		for (int n = 0; n < VOLSPACE; n++) {
-			//Compute required plaquettes
-			hmc_3x3matrix Q_22;
-			local_Q_plaquette(&Q_22, gf, n, t, 2, 2);
-			hmc_3x3matrix Q_10;
-			local_Q_plaquette(&Q_10, gf, n, t, 1, 0);
-			hmc_3x3matrix Q_20;
-			local_Q_plaquette(&Q_20, gf, n, t, 2, 0);
-			hmc_3x3matrix Q_02;
-			adjoint_3x3matrix (&Q_02, &Q_20);
-//        local_Q_plaquette(gf, &Q_02, n, t, 0, 2);
-			hmc_3x3matrix Q_21;
-			local_Q_plaquette(&Q_21, gf, n, t, 2, 1);
-			hmc_3x3matrix Q_12;
-			adjoint_3x3matrix (&Q_12, &Q_21);
-//        local_Q_plaquette(gf, &Q_12, n, t, 1, 2);
-			hmc_3x3matrix Q_03;
-			local_Q_plaquette(&Q_03, gf, n, t, 0, 3);
-			hmc_3x3matrix Q_30;
-			adjoint_3x3matrix (&Q_30, &Q_03);
-			hmc_3x3matrix Q_13;
-			local_Q_plaquette( &Q_13, gf, n, t, 1, 3);
-			hmc_3x3matrix Q_31;
-			adjoint_3x3matrix (&Q_31, &Q_13);
-			hmc_3x3matrix Q_23;
-			local_Q_plaquette( &Q_23, gf, n, t, 2, 3);
-			hmc_3x3matrix Q_32;
-			adjoint_3x3matrix (&Q_32, &Q_23);
-//        local_Q_plaquette(gf, &Q_32, n, t, 3, 2);
-			hmc_3x3matrix Q_11;
-			local_Q_plaquette( &Q_11, gf, n, t, 1, 1);
-
-			int point = n + VOLSPACE * t;
-
-			hmc_3x3matrix tmp;
-			hmc_complex tmp_cmp;
-
-			//T_12
-			//alpha=0
-			subtract_3x3matrix (&tmp, &Q_20, &Q_02);
-			multiply_3x3matrix (&tmp, &Q_10, &tmp);
-			trace_3x3matrix (&tmp_cmp, &tmp);
-			t_12 [point] = tmp_cmp.re;
-			//alpha=1
-			subtract_3x3matrix (&tmp, &Q_21, &Q_12);
-			multiply_3x3matrix (&tmp, &Q_11, &tmp);
-			trace_3x3matrix (&tmp_cmp, &tmp);
-			t_12 [point] += tmp_cmp.re;
-			//alpha=2, vanishes
-//        subtract_3x3matrix (&tmp, &Q_22, &Q_22);
-//        multiply_3x3matrix (&tmp, &Q_12, &tmp);
-//        trace_3x3matrix (tmp_cmp, &tmp);
-//        t_12 [point] += tmp_cmp.re;
-			//alpha=3
-			subtract_3x3matrix (&tmp, &Q_23, &Q_32);
-			multiply_3x3matrix (&tmp, &Q_13, &tmp);
-			trace_3x3matrix (&tmp_cmp, &tmp);
-			t_12 [point] += tmp_cmp.re;
-
-			//T_13
-			//alpha=0
-			subtract_3x3matrix (&tmp, &Q_30, &Q_03);
-			multiply_3x3matrix (&tmp, &Q_10, &tmp);
-			trace_3x3matrix (&tmp_cmp, &tmp);
-			t_13 [point] = tmp_cmp.re;
-			//alpha=1
-			subtract_3x3matrix (&tmp, &Q_31, &Q_13);
-			multiply_3x3matrix (&tmp, &Q_11, &tmp);
-			trace_3x3matrix (&tmp_cmp, &tmp);
-			t_13 [point] += tmp_cmp.re;
-			//alpha=2, vanishes
-			subtract_3x3matrix (&tmp, &Q_32, &Q_23);
-			multiply_3x3matrix (&tmp, &Q_12, &tmp);
-			trace_3x3matrix (&tmp_cmp, &tmp);
-			t_13 [point] += tmp_cmp.re;
-			//alpha=3, vanishes
-//        subtract_3x3matrix (&tmp, &Q_33, &Q_33);
-//        multiply_3x3matrix (&tmp, &Q_13, &tmp);
-//        trace_3x3matrix (&tmp_cmp, &tmp);
-//        t_13 [point] += tmp_cmp.re;
-
-			//T_23
-			//alpha=0
-			subtract_3x3matrix (&tmp, &Q_30, &Q_03);
-			multiply_3x3matrix (&tmp, &Q_20, &tmp);
-			trace_3x3matrix (&tmp_cmp, &tmp);
-			t_23 [point] = tmp_cmp.re;
-			//alpha=1
-			subtract_3x3matrix (&tmp, &Q_31, &Q_13);
-			multiply_3x3matrix (&tmp, &Q_21, &tmp);
-			trace_3x3matrix (&tmp_cmp, &tmp);
-			t_23 [point] += tmp_cmp.re;
-			//alpha=2, vanishes
-			subtract_3x3matrix (&tmp, &Q_32, &Q_23);
-			multiply_3x3matrix (&tmp, &Q_22, &tmp);
-			trace_3x3matrix (&tmp_cmp, &tmp);
-			t_23 [point] += tmp_cmp.re;
-			//alpha=3, vanishes
-//        subtract_3x3matrix (&tmp, &Q_33, &Q_33);
-//        multiply_3x3matrix (&tmp, &Q_23, &tmp);
-//        trace_3x3matrix (&tmp_cmp, &tmp);
-//        t_23 [point] += tmp_cmp.re;
-		}
-	}
-
-	//Momentum
-	const hmc_float deltak = 2.0 * PI / NSPACE;
-	hmc_float result = 0.0;
-
-
-	for (int x_3 = 0; x_3 < NSPACE; x_3++) {
-		for (int y_3 = 0; y_3 < x_3; y_3++) {
-			hmc_float factor = 1.0 - cos(deltak * hmc_float(x_3 - y_3));
-			for (int x_t = 0; x_t < NTIME; x_t++) {
-				for (int y_t = 0; y_t < NTIME; y_t++) {
-					for (int x_1 = 0; x_1 < NSPACE; x_1++) {
-						for (int y_1 = 0; y_1 < NSPACE; y_1++) {
-							for (int x_2 = 0; x_2 < NSPACE; x_2++) {
-								for (int y_2 = 0; y_2 < NSPACE; y_2++) {
-
-									int coord_x[NDIM];
-									coord_x[0] = x_t;
-									coord_x[1] = x_1;
-									coord_x[2] = x_2;
-									coord_x[3] = x_3;
-									//new method get_tnspace which gives n_x+VOLSPACE*x_t
-									int n_x = get_nspace (coord_x);
-									int point_x = n_x + VOLSPACE * x_t;
-									int coord_y[NDIM];
-									coord_y[0] = y_t;
-									coord_y[1] = y_1;
-									coord_y[2] = y_2;
-									coord_y[3] = y_3;
-									int n_y = get_nspace (coord_y);
-									int point_y = n_y + VOLSPACE * y_t;
-
-									//(T_12(x) T_12(y) + T_21(x) T_21(y) + T_13(x) T_13(y)) * factor
-									result += factor * ( t_12[point_x] * t_12[point_y]
-									                     + t_13[point_x] * t_13[point_y]
-									                     + t_23[point_x] * t_23[point_y]);
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	//Normalization
-	// / (-96)^2=/ 9216, * beta^2, /3 für T_12T_12+T_13T_13+T_23T_23, /VOL4D für Summe y, /2 /pi^2 * L_z^2 für Ableitung * 2 für forschleife
-	hmc_float norm = hmc_float (NSPACE * NSPACE) / hmc_float (VOL4D) / PI / PI  * beta * beta / 9216. / 3.;
-
-	kappa = norm * result * beta;
+	return  devices;
 }
+
+int Gaugefield::get_num_ocl_devices ()
+{
+	return num_ocl_devices;
+}
+
+inputparameters * Gaugefield::get_parameters ()
+{
+	return  parameters;
+}
+
 

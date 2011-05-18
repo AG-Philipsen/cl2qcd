@@ -69,6 +69,7 @@ hmc_error copy_to_ocl_format(hmc_ocl_gaugefield* host_gaugefield,hmc_gaugefield*
  */
 hmc_error copy_from_ocl_format(hmc_gaugefield* gaugefield,hmc_ocl_gaugefield* host_gaugefield);
 
+
 /**
  * Retrieve an SU3 matrix form the gaugefield
  *
@@ -78,6 +79,7 @@ hmc_error copy_from_ocl_format(hmc_gaugefield* gaugefield,hmc_ocl_gaugefield* ho
  * @param[in] timepos Temporal index of the matrix to retrieve
  * @param[in] mu Direction of the matrix to retrieve
  * @return Error code as defined in hmcerrs.h
+ * @TODO CP: perhaps a similar function would be more efficient in same cases that just returns a pointer to the specific matrix in the "big" gaugefield-array
  */
 hmc_error get_su3matrix(hmc_su3matrix* out, hmc_gaugefield * in, int spacepos, int timepos, int mu); //cl
 /**

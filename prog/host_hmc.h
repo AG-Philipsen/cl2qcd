@@ -2,8 +2,8 @@
  * Implementation of steps of the HMC
  */
 
-#ifndef _HMCH_
-#define _HMCH_
+#ifndef _HOST_HMCH_
+#define _HOST_HMCH_
 
 #include "globaldefs.h"
 #include "types.h"
@@ -18,6 +18,7 @@
 #include "host_operations_spinor.h"
 #include "host_operations_spinorfield.h"
 #include "host_operations_fermionmatrix.h"
+#include "host_update_heatbath.h"
 #include "host_gaugeobservables.h"
 #include "host_use_timer.h"
 #include "host_solver.h"
@@ -68,6 +69,7 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
  * @param[in] new_p New Gauge Momentum
  * @return Error code as defined in hmcerrs.h
  * @todo needs testing
+ * @todo CP: if it works, one should replace the return value with 0 or 1, depending on wether the new config was accepted or not!!
  */
 hmc_error metropolis(hmc_float rndnumber, hmc_float beta
 #ifdef _FERMIONS_
@@ -82,14 +84,13 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta
  * /f]
  * 
  * @param[in] eps Leapfrog stepsize
- * @param[in] p_in input gauge momentum
+ * @param[in,out] p_inout input/output gauge momentum
  * @param[in] force_in input force
- * @param[out] p_out output gauge momentum
  * @return Error code as defined in hmcerrs.h
  * @todo needs testing
  * 
  */
-hmc_error md_update_gauge_momenta(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gauge_momentum * force_in, hmc_gauge_momentum * p_out); 
+hmc_error md_update_gauge_momenta(hmc_float eps, hmc_gauge_momentum * p_inout, hmc_gauge_momentum * force_in); 
 
 /**
  * Molecular Dynamics Update of the Gaugefield using the Leapfrog-scheme:
@@ -104,7 +105,7 @@ hmc_error md_update_gauge_momenta(hmc_float eps, hmc_gauge_momentum * p_in, hmc_
  * @todo needs testing
  * 
  */
-hmc_error md_update_gaugefield(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gaugefield * u_in);
+hmc_error md_update_gaugefield(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gaugefield * u_inout);
 
 #ifdef _FERMIONS_
 /**
@@ -184,7 +185,7 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 	, hmc_gauge_momentum * out);
 
 /**
- * Performs the Leapfrog discretised Molecular Dynamics as in Gattringer/Lang, QCD on the Lattice, 8.2, p. 197.
+ * Performs the Leapfrog discretised Molecular Dynamics as in Gattringer/Lang, QCD on the Lattice, 8.2, p 197.
  * @param[in] parameters input parameters
  * @param[in] u_in input gaugefield
  * @param[in] p_in input gauge momentum
@@ -199,13 +200,10 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
  */
 hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gauge_momentum * p_in
 #ifdef _FERMIONS_
-	, hmc_spinor_field * phi
+	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv
 #endif
 	, hmc_gaugefield * u_out, hmc_gauge_momentum * p_out
-#ifdef _FERMIONS_
-	, hmc_spinor_field * phi_inv
-#endif
 	); 
 
 
-#endif /* _HMCH_ */
+#endif /* _HOST_HMCH_ */

@@ -39,10 +39,10 @@ extern string const version;
 /**
  * Class for the gaugefield. Includes initialization, device management and heatbath update.
  *
- * @class gaugefield
+ * @class Gaugefield
  * @todo: Also incorporate hmc and solver capabilities. Generalize to several devices.
  */
-class gaugefield {
+class Gaugefield {
 public:
 	/**
 	 * Initialize gaugefield and devices.
@@ -160,30 +160,56 @@ public:
 	 * @param[in,out] timer time for overrelaxation step
 	 */
 	hmc_error overrelax(usetimer * const timer);
+	/**
+	 * Returns private member gaugefield
+	 * @return The gaugefield
+	 */
+	hmc_gaugefield * get_gf ();
 
+	/**
+	 * Returns private member * devices
+	 * @return devices
+	 */
+	opencl * get_devices ();
+	
+	/**
+	 * Returns private member num_ocl_devices
+	 * @return num_ocl_devices
+	 */
+	int get_num_ocl_devices ();
+	
+	/**
+	 * Returns private member * parameters
+	 * @return parameters
+	 */
+	inputparameters * get_parameters ();
+	
+	/**
+	 * ?
+	 * @param[in,out] params ?
+	 */
+	void print_info_source(sourcefileparameters* params);
+	
+	/**
+	 * Initializes the gaugefield
+	 * @param[in,out] timer timer for initialization
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	hmc_error init_gaugefield(usetimer* timer);
 	
 	//gaugeobservables, on host!!
 	hmc_float plaquette(hmc_float* tplaq, hmc_float* splaq);
 	hmc_float plaquette();
 	hmc_complex polyakov();
 	hmc_complex spatial_polyakov(int dir);
-	/**
-	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld
-	 * @param[out] kappa Result for the transport coefficient kappa
-	 */	
-	void kappa_karsch (hmc_float & kappa);
-	/**
-	 * Compute the transport coefficient kappa with the energy-momentum-tensor built by a Clover discretization
-	 * @param[out] kappa Result for the transport coefficient kappa
-	 */
-	void kappa_clover (hmc_float & kappa);
+
+	
+	
 	
 private:
 	hmc_gaugefield * gf;
 	opencl * devices;
 	int num_ocl_devices;
-	void print_info_source(sourcefileparameters* params);
-	hmc_error init_gaugefield(usetimer* timer);
 	inputparameters* parameters;
 
 };

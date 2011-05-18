@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 	if( err )
 		return err;
 
-	//TODO add a security function that ends the OpenCL-init if it takes too long (this is apparently necessary on the loewe)
+// 	//TODO add a security function that ends the OpenCL-init if it takes too long (this is apparently necessary on the loewe)
 #ifdef _USEGPU_
 	opencl device(CL_DEVICE_TYPE_GPU, local_work_size, global_work_size, &inittime, &parameters);
 #else /* _USEGPU_ */
@@ -63,11 +63,22 @@ int main(int argc, char* argv[])
 #endif /* _USEGPU_ */
 	cout << endl << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]" << endl;
 
-	cout << "initial values of observables:\n\t" ;
-	print_gaugeobservables(gaugefield, &polytime, &plaqtime);
+	for(int i = 0; i<0; i++){
+		heatbath_update (gaugefield, parameters.get_beta());
+	}
 
+cout << "initial values of observables:\n\t" ;
+	print_gaugeobservables(gaugefield, &polytime, &plaqtime);
+	
+	
 	device.copy_gaugefield_to_device(gaugefield, &copytime);
 	device.copy_rndarray_to_device(rndarray, &copytime);
+
+  #ifdef _USEHMC_
+  cout << "usehmc with" << (parameters).get_tau() << "  " << (parameters).get_integrationsteps1() << endl;
+  #else
+  cout << "nop" << endl;
+	#endif
 
 #ifdef _TESTING_
 	device.testing(gaugefield);
@@ -85,53 +96,92 @@ int main(int argc, char* argv[])
 	//init section
 	//CP: here, one has to get all the parameters necessary from the inputparameters
 	// suppose that in parameters the number of hmc_iterations is given, store them in a variable here...
-	int hmc_iter; //= ...
+	int hmc_iter = parameters.get_hmcsteps();
 	int iter;
-	int err = 0;
+	err = 0;
 	//beta has to be saved here to give it to the metropolis step, all other parameters can be given via parameters
-	hmc_float beta;
-	// TODO give seed meaningful value, perhaps read it in from parameters
-	int seed = 89343894543895;
+	hmc_float beta = parameters.get_beta();
+	/** @todo CP: give seed meaningful value, perhaps read it in from parameters */
+	int seed = 89343894;
 	Random hmc_rnd_gen (seed);
 	hmc_float rnd_number;
 
+#ifdef _FERMIONS_
 	hmc_spinor_field* phi = new hmc_spinor_field[SPINORFIELDSIZE];
 	hmc_spinor_field* phi_inv = new hmc_spinor_field[SPINORFIELDSIZE];
 	hmc_spinor_field* chi = new hmc_spinor_field[SPINORFIELDSIZE];
+#endif
 	hmc_gauge_momentum* p = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
 	hmc_gauge_momentum* new_p = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
 	//the "old" field is the "gaugefield introduced above
-	hmc_gaugefield new_field;
-
-	//TODO add implicit measurements(plaquette, deltaH, ...)
+	hmc_gaugefield * new_field;
+	new_field = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	
+	/** @todo CP: add implicit measurements(plaquette, deltaH, ...) */
 	//main hmc-loop
+	cout << "start main HMC loop with " << hmc_iter << " iterations: " << endl;
 	for(iter = 0; iter < hmc_iter; iter ++) {
+		cout << "\tinit gauge momentum" << endl;
 		//init gauge_momenta
-		//TODO perhaps write a wrapper that automatically evaluates the err's
-		err = generate_gaussian_gauge_momenta(p);
-
+		generate_gaussian_gauge_momenta(p);
+		
+		#ifdef _FERMIONS_
 		//init/update spinorfield phi
+		cout << "\tinit spinorfield " << endl;
 		err = generate_gaussian_spinorfield(chi);
-		err = md_update_spinorfield(chi, phi, &gaugefield, parameters);
-
+		if(err!=HMC_SUCCESS) {cout << "\t\t\terror: " << err << endl; return HMC_STDERR; }
+		
+		cout << "\tperform md update of spinorfield" << endl;
+		err = md_update_spinorfield(chi, phi, gaugefield, parameters);
+		if(err!=HMC_SUCCESS) {cout << "\t\t\terror: " << err << endl; return HMC_STDERR; }
+		#endif
+	
 		//update gaugefield and gauge_momenta via leapfrog
 		//here, phi is inverted several times and stored in phi_inv
-		err = leapfrog(parameters, &gaugefield, p, phi, &new_field, new_p, phi_inv);
-
+		cout << "\tperform leapfrog to update gaugefield and gaugemomentum" << endl;
+	
+		copy_gaugefield(gaugefield, new_field);
+		copy_gaugemomenta(p, new_p);
+		leapfrog(&parameters, gaugefield, p, 
+									 #ifdef _FERMIONS_
+									 phi, 
+									 #endif
+									 new_field, new_p
+									 #ifdef _FERMIONS_
+									 , phi_inv
+									 #endif
+									 );
+		cout << "\tobservables of new config:\n\t" ;
+		print_gaugeobservables(new_field, &polytime, &plaqtime);
 		//metropolis step: afterwards, the updated config is again in gaugefield and p
+		cout << "\tperform Metropolis step: " << endl;
 		//generate new random-number
 		rnd_number = hmc_rnd_gen.doub();
-		err = metropolis(rnd_number, beta, phi, phi_inv, &gaugefield, p, &new_field, new_p);
+		err = metropolis(rnd_number, beta, 
+										 #ifdef _FERMIONS_ 
+										 phi, phi_inv,
+										 #endif 
+										 gaugefield, p, new_field, new_p);
+		if(err!=HMC_SUCCESS) {cout << "\t\t\terror: " << err << endl; return HMC_STDERR; }
 
-		//TODO if wanted, measurements can be added here...
+		cout<< "\tfinished HMC trajectory " << iter << endl;
+		/** @todo CP: measurements should be added here... */
+		
+		print_gaugeobservables(gaugefield, &plaqtime, &polytime, iter, gaugeout_name.str());
 	}
-
+	cout << "finished HMC algorithm " << endl;
+	cout << "final values of observables:\n\t" ;
+	print_gaugeobservables(gaugefield, &polytime, &plaqtime);
+	
+#ifdef _FERMIONS_
 	delete [] phi;
 	delete [] phi_inv;
 	delete [] chi;
+#endif
 	delete [] p;
 	delete [] new_p;
-
+	free(new_field);
+	
 #else /* _USEHMC_ */
 
 #ifdef _FERMIONS_
@@ -140,8 +190,8 @@ int main(int argc, char* argv[])
 	// Fermions
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	cout << "calculate simple_correlator on host..." << endl;
-	simple_correlator(gaugefield, parameters.get_kappa(), parameters.get_mu(), parameters.get_theta_fermion(), parameters.get_chem_pot_re(), parameters.get_chem_pot_im(), 1000);
+	cout<<"calculate simple_correlator on host..."<<endl;
+	simple_correlator(&parameters, gaugefield);
 
 	cout << "calculate simple_correlator on device..." << endl;
 	usetimer noop;
@@ -258,7 +308,7 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	free(gaugefield);
-	device.finalize();
+// 	device.finalize();
 
 	return HMC_SUCCESS;
 }

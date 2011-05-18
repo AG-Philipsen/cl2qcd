@@ -16,6 +16,7 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 	cl_kernels_file.push_back("opencl_operations_gaugefield.cl");
 	cl_kernels_file.push_back("opencl_update_heatbath.cl");
 	cl_kernels_file.push_back("opencl_gaugeobservables.cl");
+	cl_kernels_file.push_back("opencl_tk_kappa.cl");
 #ifdef _FERMIONS_
 	cl_kernels_file.push_back("opencl_operations_spinor.cl");
 	cl_kernels_file.push_back("opencl_operations_spinorfield.cl");
@@ -760,6 +761,13 @@ hmc_error opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 	return HMC_SUCCESS;
 }
 
+hmc_error opencl::run_kappa_karsch_gpu(const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch){
+  return HMC_SUCCESS;
+}
+
+hmc_error opencl::run_kappa_clover_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_clover){
+  return HMC_SUCCESS; 
+}
 
 hmc_error opencl::finalize()
 {
@@ -825,7 +833,8 @@ void opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 }
 
 //CP: extra file for the long testing functions
-#include "opencl_testing.h"
+//	this is not to be used anymore because of changed arg structure!!!!
+// #include "opencl_testing.h"
 //CP: extra file for the long fermion functions
 #ifdef _FERMIONS_
 #include "opencl_fermions.h"

@@ -1,4 +1,4 @@
-#include "heatbath.h"
+#include "tk_kappa.h"
 
 int main(int argc, char* argv[])
 {
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 
 	sourcefileparameters parameters_source;
 
-	gaugefield gaugefield;
+	Gaugefield_k gaugefield;
 	hmc_rndarray rndarray;
 	cl_device_type devicetypes[1];
 
@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	int ntherm = parameters.get_thermalizationsteps();
-	if(ntherm > 0) gaugefield.heatbath(local_work_size, global_work_size, ntherm, &updatetime);
+	if(ntherm > 0) gaugefield.heatbath(ntherm, &updatetime);
 
 	int nsteps = parameters.get_heatbathsteps();
 	int overrelaxsteps = parameters.get_overrelaxsteps();
@@ -75,10 +75,10 @@ int main(int argc, char* argv[])
 	kappa_clover_out.open ("kappa_clover.dat");
 
 	for(int i = 0; i < nsteps; i++) {
-		gaugefield.heatbath(local_work_size, global_work_size, &updatetime);
-		for(int j = 0; j < overrelaxsteps; j++) gaugefield.overrelax(local_work_size, global_work_size, &overrelaxtime);
+		gaugefield.heatbath(&updatetime);
+		for(int j = 0; j < overrelaxsteps; j++) gaugefield.overrelax(&overrelaxtime);
 		if( ( (i + 1) % writefreq ) == 0 ) {
-			gaugefield.print_gaugeobservables_from_devices(local_work_size, global_work_size, &plaqtime, &polytime, i, gaugeout_name.str());
+			gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str());
 		}
 		if( parameters.get_saveconfigs() == TRUE && ( (i + 1) % savefreq ) == 0 ) {
 			gaugefield.sync_gaugefield(&copytime);
@@ -86,11 +86,12 @@ int main(int argc, char* argv[])
 		}
 	//Add a measurement frequency
 	gaugefield.sync_gaugefield(&copytime);
-	gaugefield.kappa_karsch (kappa_karsch_val);
-	gaugefield.kappa_clover (kappa_clover_val);
-	
-	kappa_karsch_out << kappa_karsch_val <<endl;
-	kappa_clover_out << kappa_clover_val <<endl;
+	hmc_error err;
+	err = gaugefield.kappa_karsch ();
+	err = gaugefield.kappa_clover ();
+
+	kappa_karsch_out << gaugefield.get_kappa_karsch() <<endl;
+	kappa_clover_out << gaugefield.get_kappa_clover() <<endl;
 	}
 	
 	kappa_karsch_out.close();

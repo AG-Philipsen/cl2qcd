@@ -239,21 +239,23 @@ void saxsbypz_eoprec(hmc_eoprec_spinor_field * x, hmc_eoprec_spinor_field * y,  
   return;
 }
 
-//!!CP: is mu and gaugefield needed at any point in the future or can it be deleted??
-hmc_error create_point_source(hmc_spinor_field* b, int i, int spacepos, int timepos, hmc_float kappa, hmc_float mu, hmc_gaugefield* gaugefield){
+hmc_error create_point_source(inputparameters * parameters, int i, int spacepos, int timepos, hmc_spinor_field* b){
   set_zero_spinorfield(b);
 
   int color = spinor_color(i);
   int spin = spinor_spin(i,color);
 
-  b[spinor_field_element(spin,color,spacepos,timepos)].re = sqrt(2.*kappa);
+  b[spinor_field_element(spin,color,spacepos,timepos)].re = sqrt(2.*( (*parameters).get_kappa() ));
 
   return HMC_SUCCESS;
 }
 
 
-hmc_error create_point_source_eoprec(hmc_eoprec_spinor_field* be,hmc_eoprec_spinor_field* bo,int i,int spacepos,int timepos,hmc_float kappa, hmc_float mu, hmc_float theta,hmc_float chem_pot_re, hmc_float chem_pot_im, hmc_gaugefield* gaugefield){
+hmc_error create_point_source_eoprec(inputparameters * parameters, int i, int spacepos, int timepos, hmc_gaugefield* gaugefield, hmc_eoprec_spinor_field* be,hmc_eoprec_spinor_field* bo){
   
+	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; 
+  kappa = (*parameters).get_kappa(); mu = (*parameters).get_mu(); theta = (*parameters).get_theta_fermion(); chem_pot_re = (*parameters).get_chem_pot_re(); chem_pot_im = (*parameters).get_chem_pot_im(); 
+	
   hmc_spinor_field* source = new hmc_spinor_field[SPINORFIELDSIZE];
 
   set_zero_spinorfield(source);
@@ -265,14 +267,14 @@ hmc_error create_point_source_eoprec(hmc_eoprec_spinor_field* be,hmc_eoprec_spin
   hmc_eoprec_spinor_field evensource[EOPREC_SPINORFIELDSIZE];
 
   convert_to_eoprec(evensource,bo,source);
-  convert_to_kappa_format_eoprec(evensource,kappa);
-  convert_to_kappa_format_eoprec(bo,kappa);
+  convert_to_kappa_format_eoprec(evensource,( (*parameters).get_kappa() ));
+  convert_to_kappa_format_eoprec(bo,( (*parameters).get_kappa() ));
 
   hmc_eoprec_spinor_field spintmp[EOPREC_SPINORFIELDSIZE];
 //   M_inverse_sitediagonal(spintmp, bo, kappa,mu);
 //   dslash_eoprec(be,spintmp,gaugefield,kappa,theta, chem_pot_re, chem_pot_im, EVEN);
-  M_inverse_sitediagonal(bo, spintmp, kappa,mu);
-  dslash_eoprec(spintmp, be,gaugefield,kappa,theta, chem_pot_re, chem_pot_im, EVEN);
+  M_inverse_sitediagonal(parameters, bo, spintmp);
+  dslash_eoprec(parameters, spintmp, gaugefield,EVEN,be);
 	
   for(int n=0;n<EOPREC_SPINORFIELDSIZE;n++) {
     be[n].re = evensource[n].re - be[n].re;

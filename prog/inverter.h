@@ -2,8 +2,8 @@
  *
  * Everything required by heatbath's main()
  */
-#ifndef _HEATBATHH_
-#define _HEATBATHH_
+#ifndef _INVERTERH_
+#define _INVERTERH_
 //should only be included in main prog
 
 #include <cstdlib>
@@ -24,7 +24,7 @@
 #include "host_update_heatbath.h"
 #include "host_use_timer.h"
 #include "gaugefield.h"
-#include "gaugefield_k.h"
+#include "gaugefieldinversion.h"
 #include "opencl.h"
 #ifdef __APPLE__
 #include <OpenCL/cl.h>
@@ -57,7 +57,7 @@ hmc_complex pol;
 
 void print_hello(char* name)
 {
-	std::cout << "This is heatbath program, " << name << endl;
+	std::cout << "This is the fermion solver, " << name << endl;
 	return;
 }
 
@@ -74,9 +74,6 @@ void print_info(inputparameters* params, ostream* os)
 	*os << "## Run time parameters:\n";
 	*os << "## beta  = " << params->get_beta() << '\n';
 	*os << "## prec  = " << params->get_prec() << '\n';
-	*os << "## thermsteps     = " << params->get_thermalizationsteps() << '\n';
-	*os << "## heatbathsteps  = " << params->get_heatbathsteps() << '\n';
-	*os << "## overrelaxsteps = " << params->get_overrelaxsteps() << '\n';
 	*os << "##" << '\n';
 	if (params->get_startcondition() == START_FROM_SOURCE) {
 		*os << "## sourcefile = ";
@@ -84,14 +81,14 @@ void print_info(inputparameters* params, ostream* os)
 		*os << "##" << '\n';
 	}
 	if (params->get_startcondition() == COLD_START) {
-		*os << "## cold start\n";
+		*os << "## WARNING: cold start - no configuration read\n";
 	}
 	if (params->get_startcondition() == HOT_START) {
-		*os << "## hot start\n";
+		*os << "## WARNING: hot start - no configuration read\n";
 	}
 	*os << "## **********************************************************\n";
 	*os << std::endl;
 	return;
 }
 
-#endif /* _HEATBATH_ */
+#endif /* _INVERTERH_ */

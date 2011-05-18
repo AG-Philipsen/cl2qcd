@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 
 	sourcefileparameters parameters_source;
 
-	gaugefield gaugefield;
+	Gaugefield gaugefield;
 	hmc_rndarray rndarray;
 	cl_device_type devicetypes[1];
 

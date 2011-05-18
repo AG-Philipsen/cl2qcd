@@ -1,6 +1,6 @@
 #include "host_fermionobservables.h"
 
-hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_float mu, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im, int cgmax){
+hmc_error simple_correlator(inputparameters * parameters, hmc_gaugefield* gaugefield){
 
 	//CP: one needs bicgstab here for M
 	int use_cg = FALSE;
@@ -19,15 +19,15 @@ hmc_error simple_correlator(hmc_gaugefield* gaugefield, hmc_float kappa, hmc_flo
   for(int k=0; k<NC*NSPIN; k++) {
 		if(!use_eo){
 			hmc_spinor_field b[SPINORFIELDSIZE];
-			create_point_source(b,k,0,0,kappa,mu,gaugefield);
-			solver(in, phi, b, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax, use_cg);
+			create_point_source(parameters,k,0,0,b);
+			solver(parameters, in, b, gaugefield, use_cg, phi);
 		}
 		else{
 			hmc_eoprec_spinor_field be[EOPREC_SPINORFIELDSIZE];
 			hmc_eoprec_spinor_field bo[EOPREC_SPINORFIELDSIZE];
 			
-			create_point_source_eoprec(be,bo,k,0,0,kappa,mu,theta, chem_pot_re, chem_pot_im, gaugefield);
-			solver_eoprec(in, phi, be, bo, gaugefield, kappa, mu, theta, chem_pot_re, chem_pot_im, cgmax);
+			create_point_source_eoprec(parameters, k,0,0, gaugefield, be,bo);
+			solver_eoprec(parameters, in, be, bo, gaugefield, use_cg, phi);
 			
 		}
     for(int timepos = 0; timepos<NTIME; timepos++) {

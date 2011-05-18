@@ -45,8 +45,7 @@ public:
 	hmc_error set_defaults();
 	hmc_float get_kappa();
 	hmc_float get_beta();
-	hmc_float get_tau_fermion();
-	hmc_float get_tau_gauge();
+	hmc_float get_tau();
 	hmc_float get_theta_fermion();
 	hmc_float get_theta_gaugefield();
 	hmc_float get_mu();
@@ -65,6 +64,10 @@ public:
 	int get_heatbathsteps();
 	int get_overrelaxsteps();
 	int get_hmcsteps();
+	//this is suppposed to be used for gauge-sector
+	int get_integrationsteps1();
+	//this is supposed to be used for fermion-sector
+	int get_integrationsteps2();
 	int get_saveconfigs();
 	int get_savefrequency();
 	int get_writefrequency();
@@ -83,8 +86,7 @@ private:
 	hmc_float theta_gaugefield;
 	hmc_float chem_pot_re;
 	hmc_float chem_pot_im;
-	hmc_float tau_fermion;
-	hmc_float tau_gauge;
+	hmc_float tau;
 	int cgmax;
 	int prec;
 	int startcondition;
@@ -95,6 +97,8 @@ private:
 	int savefrequency;
 	int saveconfigs;
 	int writefrequency;
+	int integrationsteps1;
+	int integrationsteps2;
 	void val_assign(hmc_float* out, std::string line);
 	void val_assign(int * out, std::string line);
 	void sourcefilenumber_assign(std::string * out);
