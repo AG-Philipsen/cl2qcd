@@ -199,7 +199,34 @@ target_link_libraries( tk_kappa
 	${LIBXML2_LIBRARIES}
 	klepsydra
 )
-
+add_executable( inverter
+	inverter.cpp
+	host_geometry.cpp
+	host_operations_complex.cpp
+	host_operations_gaugefield.cpp
+	host_operations_su3matrix.cpp
+	host_operations_matrix.cpp	
+	host_operations_spinor.cpp
+	host_operations_spinorfield.cpp
+	host_operations_fermionmatrix.cpp
+	gaugefield.cpp
+	gaugefield_inversion.cpp
+	host_input.cpp
+	host_readgauge.cpp
+	host_random.cpp
+	opencl.cpp
+	opencl_fermions.cpp
+	host_use_timer.cpp
+	host_writegaugefield.cpp
+	host_solver.cpp
+	host_fermionobservables.cpp
+)
+target_link_libraries( inverter
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	klepsydra
+)
 add_library( klepsydra
 	klepsydra/timer.cpp
 	klepsydra/monotonic.cpp )

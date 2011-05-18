@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 
 	sourcefileparameters parameters_source;
 
-	Gaugefieldinversion gaugefield;
+	Gaugefield_inversion gaugefield;
 	hmc_rndarray rndarray;
 	cl_device_type devicetypes[1];
 

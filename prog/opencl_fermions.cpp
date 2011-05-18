@@ -1,5 +1,44 @@
 #include "opencl_fermions.h"
 
+hmc_error Opencl_fermions::fill_kernels_file (){
+	//give a list of all kernel-files
+	hmc_error err =	Opencl::fill_kernels_file();
+	cl_kernels_file.push_back("opencl_operations_spinor.cl");
+	cl_kernels_file.push_back("opencl_operations_spinorfield.cl");
+	cl_kernels_file.push_back("opencl_operations_fermionmatrix.cl");
+	cl_kernels_file.push_back("opencl_fermionobservables.cl");
+
+	return HMC_SUCCESS;  
+}
+
+hmc_error Opencl_fermions::fill_collect_options(stringstream* collect_options){
+
+	hmc_error err = Opencl::fill_collect_options(collect_options);
+	*collect_options << " -D_FERMIONS_";
+
+#ifdef _TWISTEDMASS_
+	*collect_options << " -D_TWISTEDMASS_";
+#endif
+#ifdef _CLOVER_
+	*collect_options << " -D_CLOVER_";
+#endif
+	//CP: give kappa and its negative value
+	hmc_float kappa_tmp = parameters->get_kappa();
+	*collect_options << " -DKAPPA=" << kappa_tmp;
+	*collect_options << " -DMKAPPA=" << -kappa_tmp;
+#ifdef _TWISTEDMASS_
+	hmc_float mu_tmp = parameters->get_mu();
+	*collect_options << " -DMU=" << mu_tmp;
+#endif
+#ifdef _CLOVER_
+	hmc_float csw_tmp = parameters->get_csw();
+	*collect_options << " -DCSW=" << csw_tmp;
+#endif
+
+	return HMC_SUCCESS;
+}
+
+
 hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer * timer){
 	
 	(*timer).reset();
@@ -1909,6 +1948,3 @@ hmc_error Opencl_fermions::perform_benchmark(int cgmax, const size_t ls, const s
 
 	return HMC_SUCCESS;
 }
-
-#endif /* _FERMIONS_ */
-

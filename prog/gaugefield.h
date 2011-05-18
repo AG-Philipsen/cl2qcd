@@ -1,8 +1,8 @@
 /** @file
  * Provides a class for gauge fields
  *
- * @todo: Substitutes files host_gaugefieldoperations.h and host_gaugeobservables.h
- *        for the heatbath. Apply the class also to the hmc, benchmark and inverter
+ * @todo: Apply the class also to the hmc, benchmark and inverter
+ *
  */
 #ifndef _GAUGEFIELDH_
 #define _GAUGEFIELDH_
@@ -229,9 +229,9 @@ public:
 
 	
 	
-	
+	hmc_gaugefield * gf;	
 private:
-	hmc_gaugefield * gf;
+
 	Opencl * devices;
 	int num_ocl_devices;
 	inputparameters* parameters;

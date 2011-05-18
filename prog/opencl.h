@@ -48,8 +48,8 @@ public:
 	 *
 	 * @todo Should probably throw an exception on error
 	 */
-	Opencl(cl_device_type wanted, const size_t ls, const size_t gs, usetimer* timer, inputparameters* parameters) {
-		init(wanted, ls, gs, timer, parameters);
+	Opencl(cl_device_type wanted, const size_t ls, const size_t gs, usetimer* timer, inputparameters* params) {
+		init(wanted, ls, gs, timer, params);
 	};
 	/**
 	 * Empty constructor. Needed for gaugefield class.
@@ -153,40 +153,16 @@ public:
 	hmc_error gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const timer1, usetimer * const timer2);
 
 	virtual hmc_error fill_kernels_file ();
+	virtual hmc_error fill_collect_options(stringstream* collect_options);
 	
 
 	hmc_error finalize();
-// private:
+
         std::vector<std::string> cl_kernels_file;
-	int isinit;
-	cl_context context;
-	cl_command_queue queue;
-	cl_program clprogram;
-	cl_kernel heatbath_odd;
-	cl_kernel heatbath_even;
-	cl_kernel overrelax_odd;
-	cl_kernel overrelax_even;
-	cl_kernel plaquette;
-	cl_kernel plaquette_reduction;
-	cl_kernel polyakov;
-	cl_kernel polyakov_reduction;
-
-	//heatbath variables
-	cl_mem clmem_gaugefield;
-	cl_mem clmem_rndarray;
-	cl_mem clmem_plaq;
-	cl_mem clmem_plaq_buf_glob;
-	cl_mem clmem_splaq_buf_glob;
-	cl_mem clmem_tplaq_buf_glob;
-	cl_mem clmem_splaq;
-	cl_mem clmem_tplaq;
-	cl_mem clmem_polyakov;
-	cl_mem clmem_polyakov_buf_glob;
-	//!!CP: this is not needed at the moment and since is not copied to the device anywhere!!
-	cl_mem clmem_theta_gaugefield;
-
-
-	/** The number of cores (not PEs) of the device */
+	
+	inputparameters* parameters;
+	
+		/** The number of cores (not PEs) of the device */
 	cl_uint max_compute_units;
 
 	/**
@@ -212,6 +188,37 @@ public:
 	 * @todo global work size will also depend on device ...
 	 */
 	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
+ 
+		cl_command_queue queue;
+	cl_program clprogram;
+
+  	//heatbath variables
+	cl_mem clmem_gaugefield;
+	cl_mem clmem_rndarray;
+	cl_mem clmem_plaq;
+	cl_mem clmem_plaq_buf_glob;
+	cl_mem clmem_splaq_buf_glob;
+	cl_mem clmem_tplaq_buf_glob;
+	cl_mem clmem_splaq;
+	cl_mem clmem_tplaq;
+	cl_mem clmem_polyakov;
+	cl_mem clmem_polyakov_buf_glob;
+	//!!CP: this is not needed at the moment and since is not copied to the device anywhere!!
+	cl_mem clmem_theta_gaugefield;
+	
+	int isinit;
+	cl_context context;
+	cl_kernel heatbath_odd;
+	cl_kernel heatbath_even;
+	cl_kernel overrelax_odd;
+	cl_kernel overrelax_even;
+	cl_kernel plaquette;
+	cl_kernel plaquette_reduction;
+	cl_kernel polyakov;
+	cl_kernel polyakov_reduction;
+
+
+
 };
 
 #endif /* _MYOPENCLH_ */

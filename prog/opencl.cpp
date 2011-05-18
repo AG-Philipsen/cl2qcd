@@ -15,19 +15,49 @@ hmc_error Opencl::fill_kernels_file (){
 	cl_kernels_file.push_back("opencl_update_heatbath.cl");
 	cl_kernels_file.push_back("opencl_gaugeobservables.cl");
 	cl_kernels_file.push_back("opencl_operations_matrix.cl");
-#ifdef _FERMIONS_
-	cl_kernels_file.push_back("opencl_operations_spinor.cl");
-	cl_kernels_file.push_back("opencl_operations_spinorfield.cl");
-	cl_kernels_file.push_back("opencl_operations_fermionmatrix.cl");
-	cl_kernels_file.push_back("opencl_fermionobservables.cl");
-#endif
 	return HMC_SUCCESS;  
 }
 
-hmc_error Opencl::init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* parameters)
+hmc_error Opencl::fill_collect_options(stringstream* collect_options){
+	*collect_options << "-D_INKERNEL_ -DNSPACE=" << NSPACE << " -DNTIME=" << NTIME << " -DVOLSPACE=" << VOLSPACE << " -DSPINORSIZE=" << SPINORSIZE << " -DHALFSPINORSIZE=" << HALFSPINORSIZE << " -DSPINORFIELDSIZE=" << SPINORFIELDSIZE << " -DEOPREC_SPINORFIELDSIZE=" << EOPREC_SPINORFIELDSIZE;
+
+	//CP: these have to match those in the cmake file
+#ifdef _RECONSTRUCT_TWELVE_
+	*collect_options << " -D_RECONSTRUCT_TWELVE_";
+#endif
+#ifdef _USEDOUBLEPREC_
+	*collect_options << " -D_USEDOUBLEPREC_";
+#endif
+#ifdef _USEGPU_
+	*collect_options << " -D_USEGPU_";
+#endif
+#ifdef _PERFORM_BENCHMARKS_
+	*collect_options << " -D_PERFORM_BENCHMARKS_";
+#endif
+#ifdef _CP_REAL_
+	*collect_options << " -D_CP_REAL_";
+#endif
+#ifdef _CP_IMAG_
+	*collect_options << " -D_CP_IMAG_";
+#endif
+#ifdef _NPBC_T_
+	*collect_options << " -D_NPBC_T_";
+#endif
+#ifdef _NPBC_S_
+	*collect_options << " -D_NPBC_S_";
+#endif
+
+	*collect_options << " -I" << SOURCEDIR;
+
+	return HMC_SUCCESS;
+}
+	
+
+hmc_error Opencl::init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* params)
 {
 
-
+parameters = params;
+  
 	hmc_error err =	this->fill_kernels_file();
 
 	cl_int clerr = CL_SUCCESS;
@@ -138,63 +168,13 @@ hmc_error Opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 	}
 
 	cout << "Build program..." << endl;
+
 	stringstream collect_options;
-	collect_options << "-D_INKERNEL_ -DNSPACE=" << NSPACE << " -DNTIME=" << NTIME << " -DVOLSPACE=" << VOLSPACE << " -DSPINORSIZE=" << SPINORSIZE << " -DHALFSPINORSIZE=" << HALFSPINORSIZE << " -DSPINORFIELDSIZE=" << SPINORFIELDSIZE << " -DEOPREC_SPINORFIELDSIZE=" << EOPREC_SPINORFIELDSIZE;
-
-	//CP: these have to match those in the cmake file
-#ifdef _RECONSTRUCT_TWELVE_
-	collect_options << " -D_RECONSTRUCT_TWELVE_";
-#endif
-#ifdef _USEDOUBLEPREC_
-	collect_options << " -D_USEDOUBLEPREC_";
-#endif
-#ifdef _FERMIONS_
-	collect_options << " -D_FERMIONS_";
-#ifdef _TWISTEDMASS_
-	collect_options << " -D_TWISTEDMASS_";
-#endif
-#ifdef _CLOVER_
-	collect_options << " -D_CLOVER_";
-#endif
-#endif //_FERMIONS_
-#ifdef _USEGPU_
-	collect_options << " -D_USEGPU_";
-#endif
-#ifdef _PERFORM_BENCHMARKS_
-	collect_options << " -D_PERFORM_BENCHMARKS_";
-#endif
-#ifdef _CP_REAL_
-	collect_options << " -D_CP_REAL_";
-#endif
-#ifdef _CP_IMAG_
-	collect_options << " -D_CP_IMAG_";
-#endif
-#ifdef _NPBC_T_
-	collect_options << " -D_NPBC_T_";
-#endif
-#ifdef _NPBC_S_
-	collect_options << " -D_NPBC_S_";
-#endif
-
-#ifdef _FERMIONS_
-	//CP: give kappa and its negative value
-	hmc_float kappa_tmp = parameters->get_kappa();
-	collect_options << " -DKAPPA=" << kappa_tmp;
-	collect_options << " -DMKAPPA=" << -kappa_tmp;
-#ifdef _TWISTEDMASS_
-	hmc_float mu_tmp = parameters->get_mu();
-	collect_options << " -DMU=" << mu_tmp;
-#endif
-#ifdef _CLOVER_
-	hmc_float csw_tmp = parameters->get_csw();
-	collect_options << " -DCSW=" << csw_tmp;
-#endif
-#endif //_FERMIONS_
-
-	collect_options << " -I" << SOURCEDIR;
+	this->fill_collect_options(&collect_options);
 	string buildoptions = collect_options.str();
 	cout << "\tbuild options:";
 	cout << "\t" << buildoptions << endl;
+
 	clerr = clBuildProgram(clprogram, 1, &device, buildoptions.c_str(), 0, 0);
 	if(clerr != CL_SUCCESS) {
 		cout << "... failed, but look at BuildLog and abort then." << endl;
@@ -300,22 +280,22 @@ hmc_error Opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 	cout << "Create gaugeobservables kernels..." << endl;
 	plaquette = clCreateKernel(clprogram, "plaquette", &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		cout << "... plaquette failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
 	polyakov = clCreateKernel(clprogram, "polyakov", &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		cout << "... polyakov failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
 	plaquette_reduction = clCreateKernel(clprogram, "plaquette_reduction", &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		cout << "... plaquette_reduction failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
 	polyakov_reduction = clCreateKernel(clprogram, "polyakov_reduction", &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		cout << "... polyakov_reduction failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
 
@@ -335,7 +315,7 @@ hmc_error Opencl::copy_gaugefield_to_device(hmc_gaugefield* gaugefield, usetimer
 
 	int clerr = clEnqueueWriteBuffer(queue, clmem_gaugefield, CL_TRUE, 0, sizeof(hmc_gaugefield), host_gaugefield, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		cout << "...copy gaugefield failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
 

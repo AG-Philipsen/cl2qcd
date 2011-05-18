@@ -1,6 +1,6 @@
 /** @file
  *
- * Everything required by heatbath's main()
+ * Everything required by inverter's main()
  */
 #ifndef _INVERTERH_
 #define _INVERTERH_
@@ -24,13 +24,7 @@
 #include "host_update_heatbath.h"
 #include "host_use_timer.h"
 #include "gaugefield.h"
-#include "gaugefieldinversion.h"
-#include "opencl.h"
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
+#include "gaugefield_inversion.h"
 
 #ifdef _OPENMP
 # include <omp.h>

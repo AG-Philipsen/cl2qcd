@@ -4,8 +4,10 @@ hmc_error Gaugefield_k::init(int numdevs, cl_device_type* devicetypes, inputpara
 	
 	hmc_error err;
   
-	hmc_gaugefield * gf_tmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
-	err = set_gf (gf_tmp);
+	//needs proper handling... the problem is finalize
+//	hmc_gaugefield * gf_tmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+//	err = set_gf (gf_tmp);
+	gf = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
 	
 	err = set_parameters (input_parameters);
 
@@ -20,14 +22,14 @@ hmc_error Gaugefield_k::init(int numdevs, cl_device_type* devicetypes, inputpara
 	}
 
 	if(get_num_ocl_devices() > 0){
-		Opencl_k * devices_tmp = new Opencl_k[get_num_ocl_devices()];
-		err = set_devices (devices_tmp);
+		this->devices = new Opencl_k[get_num_ocl_devices()];
+	//	err = set_devices (devices_tmp);
 	}
 
 
 	for(int n = 0; n < get_num_ocl_devices(); n++) {
 		cout << "init device #" << n << endl;
-		(get_devices())[n].init(devicetypes[n], local_work_size, global_work_size, timer, get_parameters ());
+		this->devices[n].init(devicetypes[n], local_work_size, global_work_size, timer, get_parameters ());
 		
 	}
 
@@ -68,7 +70,7 @@ hmc_error Gaugefield_k::kappa_clover_gpu (const size_t local_work_size, const si
 }
 
 Opencl * Gaugefield_k::get_devices_k (){
-  return  devices_k;
+  return  devices;
 }
 
 hmc_error Gaugefield_k::kappa_karsch ()

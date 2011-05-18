@@ -12,6 +12,10 @@
  * This class wraps all operations on a device. Include fermions. Inherited from class Opencl.
  */
 class Opencl_fermions : public Opencl {
+  public:
+        virtual hmc_error fill_kernels_file ();
+	virtual hmc_error fill_collect_options(stringstream* collect_options);
+
 	hmc_error init_fermion_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error copy_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
 	hmc_error copy_eoprec_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
