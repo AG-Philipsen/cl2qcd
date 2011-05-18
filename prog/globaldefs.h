@@ -16,11 +16,6 @@
 
 #ifndef _INKERNEL_
 
-/** Number of lattice sites in time direction (t) */
-#define NTIME 8
-/** Number of lattice sites in space direction (x,y,z each) */
-#define NSPACE 4
-
 /** Spatial volume of the lattice */
 #define VOLSPACE NSPACE*NSPACE*NSPACE
 /** 4-Dimensional Volume of the lattice */
