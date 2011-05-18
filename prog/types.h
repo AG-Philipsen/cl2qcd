@@ -137,8 +137,16 @@ const size_t global_work_size = NUMTHREADS;
 #ifndef _INKERNEL_
 /** Storage type for state of the random number generator */
 typedef cl_ulong4 hmc_ocl_ran;
-/** The array of random number generator states for usage by an OpenCL device */
-typedef hmc_ocl_ran hmc_rndarray[NUMTHREADS];
+/** The array of random number generator states for usage by an OpenCL device
+ * @todo dynamically size according to requirements by kernels / devices
+ * @warning some kernel use NUMTHREADS threads, make sure this is always bigger!
+ */
+#ifdef _USE_GPU_
+#define NUMRNDSTATES 5120
+#else
+#define NUMRNDSTATES 64
+#endif
+typedef hmc_ocl_ran hmc_rndarray[NUMRNDSTATES];
 #endif /* _INKERNEL_ */
 
 #endif /* _TYPESH_ */

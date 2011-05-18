@@ -302,56 +302,56 @@ hmc_complex Gaugefield::spatial_polyakov(int dir)
 	return res;
 }
 
-hmc_error Gaugefield::print_gaugeobservables_from_devices(const size_t local_work_size, const size_t global_work_size, hmc_float* plaq, hmc_float* tplaq, hmc_float* splaq, hmc_complex* pol, usetimer* plaqtime, usetimer* polytime, int i, string gaugeoutname)
+hmc_error Gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 
-	devices[0].gaugeobservables(local_work_size, global_work_size, plaq, tplaq, splaq, pol, plaqtime, polytime);
+	devices[0].gaugeobservables(plaq, tplaq, splaq, pol, plaqtime, polytime);
 	print_gaugeobservables(*plaq, *tplaq, *splaq, *pol, i, gaugeoutname);
 
 	return HMC_SUCCESS;
 }
 
-hmc_error Gaugefield::print_gaugeobservables_from_devices(const size_t local_work_size, const size_t global_work_size, usetimer* plaqtime, usetimer* polytime, int i, string gaugeoutname)
+hmc_error Gaugefield::print_gaugeobservables_from_devices(usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname)
 {
 	hmc_float plaq, tplaq, splaq;
 	hmc_complex pol;
 
-	hmc_error err = print_gaugeobservables_from_devices(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, plaqtime, polytime, i, gaugeoutname);
+	hmc_error err = print_gaugeobservables_from_devices(&plaq, &tplaq, &splaq, &pol, plaqtime, polytime, i, gaugeoutname);
 
 	return err;
 }
 
-hmc_error Gaugefield::heatbath(const size_t local_work_size, const size_t global_work_size, usetimer* timer)
+hmc_error Gaugefield::heatbath(usetimer * const timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = devices[0].run_heatbath(parameters->get_beta(), local_work_size, global_work_size, timer);
+	hmc_error err = devices[0].run_heatbath(parameters->get_beta(), timer);
 	return err;
 }
 
-hmc_error Gaugefield::overrelax(const size_t local_work_size, const size_t global_work_size, usetimer* timer)
+hmc_error Gaugefield::overrelax(usetimer * const timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 
-	hmc_error err = devices[0].run_overrelax(parameters->get_beta(), local_work_size, global_work_size, timer);
+	hmc_error err = devices[0].run_overrelax(parameters->get_beta(), timer);
 	return err;
 }
 
-hmc_error Gaugefield::heatbath(const size_t local_work_size, const size_t global_work_size, int nheat, int nover, usetimer* timer_heat, usetimer* timer_over)
+hmc_error Gaugefield::heatbath(const int nheat, const int nover, usetimer * const timer_heat, usetimer * const timer_over)
 {
 	hmc_error err = HMC_SUCCESS;
-	for(int i = 0; i < nheat; i++) err |= heatbath(local_work_size, global_work_size, timer_heat);
-	for(int i = 0; i < nover; i++) err |= overrelax(local_work_size, global_work_size, timer_over);
+	for(int i = 0; i < nheat; i++) err |= heatbath(timer_heat);
+	for(int i = 0; i < nover; i++) err |= overrelax(timer_over);
 	return err;
 }
 
-hmc_error Gaugefield::heatbath(const size_t local_work_size, const size_t global_work_size, int nheat, usetimer* timer_heat)
+hmc_error Gaugefield::heatbath(const int nheat, usetimer * const timer_heat)
 {
 	hmc_error err = HMC_SUCCESS;
-	for(int i = 0; i < nheat; i++) err |= heatbath(local_work_size, global_work_size, timer_heat);
+	for(int i = 0; i < nheat; i++) err |= heatbath(timer_heat);
 	return err;
 }
 
@@ -363,20 +363,24 @@ hmc_error Gaugefield::finalize()
 	return HMC_SUCCESS;
 }
 
-hmc_gaugefield * Gaugefield::get_gf (){
-  return  gf;
+hmc_gaugefield * Gaugefield::get_gf ()
+{
+	return  gf;
 }
 
-opencl * Gaugefield::get_devices (){
-  return  devices;
+opencl * Gaugefield::get_devices ()
+{
+	return  devices;
 }
-	
-int Gaugefield::get_num_ocl_devices (){
-  return num_ocl_devices;
+
+int Gaugefield::get_num_ocl_devices ()
+{
+	return num_ocl_devices;
 }
-	
-inputparameters * Gaugefield::get_parameters (){
-  return  parameters;
+
+inputparameters * Gaugefield::get_parameters ()
+{
+	return  parameters;
 }
 
 	

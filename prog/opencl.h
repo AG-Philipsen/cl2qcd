@@ -112,12 +112,12 @@ public:
 	/**
 	 * Perform one heatbath step.
 	 */
-	hmc_error run_heatbath(hmc_float beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
+	hmc_error run_heatbath(const hmc_float beta, usetimer * const timer);
 
 	/**
 	 * Perform one overrelaxation step.
 	 */
-	hmc_error run_overrelax(hmc_float beta, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
+	hmc_error run_overrelax(const hmc_float beta, usetimer * const timer);
 
 	/**
 	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld on GPU
@@ -140,8 +140,6 @@ public:
 	/**
 	 * Calculate plaquette and polyakov.
 	 *
-	 * @param[in] local_work_size The local work size to use
-	 * @param[in] global_work_size The global works size to use
 	 * @param[out] plaq Storage for result of plaquette calculation
 	 * @param[out] tplaq Storage for result of plaquette calculation
 	 * @param[out] splaq Storage for result of plaquette calculation
@@ -152,7 +150,7 @@ public:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error gaugeobservables(const size_t local_work_size, const size_t global_work_size, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol, usetimer* timer1, usetimer* timer2);
+	hmc_error gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const timer1, usetimer * const timer2);
 
 	virtual hmc_error fill_kernels_file ();
 	
@@ -331,6 +329,32 @@ public:
 	cl_mem clmem_solver_test_correlator;
 #endif
 
+	/** The number of cores (not PEs) of the device */
+	cl_uint max_compute_units;
+
+	/**
+	 * Enqueue the given kernel on the device. Local work size will be determined
+	 * automatically from device and kernel properties.
+	 *
+	 * @param kernel The kernel to execute.
+	 * @param global_work_size The number of threads to run.
+	 *
+	 * @todo local work size decision might need ot become less automatic
+	 * @todo global work size will also depend on device ...
+	 */
+	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size);
+
+	/**
+	 * Enqueue the given kernel on the device. Local work size will be determined
+	 * automatically from device and kernel properties.
+	 *
+	 * @param kernel The kernel to execute.
+	 * @param global_work_size The number of threads to run.
+	 *
+	 * @todo local work size decision might need ot become less automatic
+	 * @todo global work size will also depend on device ...
+	 */
+	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
 };
 
 #endif /* _MYOPENCLH_ */
