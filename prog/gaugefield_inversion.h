@@ -25,9 +25,9 @@ class Gaugefield_inversion : public Gaugefield {
 	 * Returns private member Opencl_fermions * devices
 	 * @return devices of type Opencl_fermions
 	 */
-	Opencl_fermions * get_devices_f();
+	Opencl * get_devices_f();
 	
-	Opencl_fermions * devices;
+	//	Opencl_fermions * devices;
 };
 
 

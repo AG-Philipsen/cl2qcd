@@ -18,7 +18,7 @@ hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparame
 	}
 
 	if(num_ocl_devices > 0)
-		devices = new Opencl[num_ocl_devices];
+	  devices = new Opencl[num_ocl_devices];
 
 
 	for(int n = 0; n < num_ocl_devices; n++) {
@@ -26,8 +26,6 @@ hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparame
 		devices[n].init(devicetypes[n], local_work_size, global_work_size, timer, parameters);
 		
 	}
-
-	
 
 	return HMC_SUCCESS;
 }
@@ -368,6 +366,7 @@ hmc_gaugefield * Gaugefield::get_gf ()
 	return  gf;
 }
 
+//Opencl * Gaugefield::get_devices ()
 Opencl * Gaugefield::get_devices ()
 {
 	return  devices;
@@ -389,6 +388,7 @@ hmc_error Gaugefield::set_gf (hmc_gaugefield * gf_val){
   return HMC_SUCCESS;
 }
 	
+//hmc_error Gaugefield::set_devices (Opencl * devices_val){
 hmc_error Gaugefield::set_devices (Opencl * devices_val){
   devices = devices_val;
   return HMC_SUCCESS;

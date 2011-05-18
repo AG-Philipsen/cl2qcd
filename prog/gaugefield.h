@@ -53,7 +53,7 @@ public:
 	 * @param[in,out] timer Return initialization time.
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	virtual hmc_error init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer);
+        virtual hmc_error init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer);
 	/**
 	 * Free gaugefield and device allocations.
 	 */
@@ -176,13 +176,13 @@ public:
 	 * Returns private member * devices
 	 * @return devices
 	 */
-	Opencl * get_devices ();
+	Opencl*  get_devices ();
 	
 	/**
 	 * Sets private member * devices
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	 hmc_error set_devices (Opencl * devices_val);
+	hmc_error set_devices (Opencl * devices_val);
 	
 	/**
 	 * Returns private member num_ocl_devices
@@ -226,13 +226,10 @@ public:
 	hmc_float plaquette();
 	hmc_complex polyakov();
 	hmc_complex spatial_polyakov(int dir);
-
-	
 	
 	hmc_gaugefield * gf;	
-private:
-
 	Opencl * devices;
+private:
 	int num_ocl_devices;
 	inputparameters* parameters;
 

@@ -37,6 +37,6 @@ gf = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
 	return HMC_SUCCESS;
 }
 
-Opencl_fermions * Gaugefield_inversion::get_devices_f (){
+Opencl * Gaugefield_inversion::get_devices_f (){
   return  devices;
 }
