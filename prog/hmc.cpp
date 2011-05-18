@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	  , tmp
 	);
 	totaltime.reset();
-#endif	/* _PERFORM_BENCHMARKS_ */
+#endif  /* _PERFORM_BENCHMARKS_ */
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Initialization
@@ -140,10 +140,10 @@ int main(int argc, char* argv[])
 	// Fermions
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	cout<<"calculate simple_correlator on host..."<<endl;
+	cout << "calculate simple_correlator on host..." << endl;
 	simple_correlator(gaugefield, parameters.get_kappa(), parameters.get_mu(), parameters.get_theta_fermion(), parameters.get_chem_pot_re(), parameters.get_chem_pot_im(), 1000);
 
-	cout <<"calculate simple_correlator on device..." << endl;
+	cout << "calculate simple_correlator on device..." << endl;
 	usetimer noop;
 	device.init_fermion_variables(&parameters, local_work_size, global_work_size, &inittimer);
 	device.simple_correlator_device(&copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer,  local_work_size, global_work_size, 1000);
@@ -157,16 +157,16 @@ int main(int argc, char* argv[])
 
 	int nsteps = parameters.get_heatbathsteps();
 	int overrelaxsteps = parameters.get_overrelaxsteps();
-	cout<<"perform "<<nsteps<<" heatbath steps on OpenCL device..."<<endl;
-	for(int i = 0; i<nsteps; i++) {
-		device.run_heatbath(parameters.get_beta(), local_work_size, global_work_size, &updatetime);
+	cout << "perform " << nsteps << " heatbath steps on OpenCL device..." << endl;
+	for(int i = 0; i < nsteps; i++) {
+		device.run_heatbath(parameters.get_beta(), &updatetime);
 		for (int j = 0; j < overrelaxsteps; j++)
-			device.run_overrelax(parameters.get_beta(), local_work_size, global_work_size, &overrelaxtime);
-		if( ( (i+1) % parameters.get_writefrequency() ) == 0 ) {
-			device.gaugeobservables(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
+			device.run_overrelax(parameters.get_beta(), &overrelaxtime);
+		if( ( (i + 1) % parameters.get_writefrequency() ) == 0 ) {
+			device.gaugeobservables(&plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
 			print_gaugeobservables(plaq, tplaq, splaq, pol, i, gaugeout_name.str());
 		}
-		if( parameters.get_saveconfigs()==TRUE && ( (i+1) % parameters.get_savefrequency() ) == 0 ) {
+		if( parameters.get_saveconfigs() == TRUE && ( (i + 1) % parameters.get_savefrequency() ) == 0 ) {
 			device.get_gaugefield_from_device(gaugefield, &copytime);
 			save_gaugefield(gaugefield, &parameters, i);
 			print_gaugeobservables(gaugefield, &plaqtime, &polytime, i, gaugeout_name.str());
@@ -186,13 +186,13 @@ int main(int argc, char* argv[])
 #ifndef _FERMIONS_
 
 	int benchmarksteps1 = parameters.get_heatbathsteps();
-	cout<<"perform HEATBATH-BENCHMARK with "<<benchmarksteps1<<" steps off each device operation..."<<endl;
-	for(int i = 0; i<benchmarksteps1; i++) {
-		device.run_heatbath(parameters.get_beta(), local_work_size, global_work_size, &updatetime);
-		device.run_overrelax(parameters.get_beta(), local_work_size, global_work_size, &overrelaxtime);
-		device.gaugeobservables(local_work_size, global_work_size, &plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
+	cout << "perform HEATBATH-BENCHMARK with " << benchmarksteps1 << " steps off each device operation..." << endl;
+	for(int i = 0; i < benchmarksteps1; i++) {
+		device.run_heatbath(parameters.get_beta(), &updatetime);
+		device.run_overrelax(parameters.get_beta(), &overrelaxtime);
+		device.gaugeobservables(&plaq, &tplaq, &splaq, &pol, &plaqtime, &polytime);
 		device.get_gaugefield_from_device(gaugefield, &copytime);
-		if(i%100==0) {
+		if(i % 100 == 0) {
 			cout << "time at iteration " << i << endl;
 			totaltime.add();
 			time_output(&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime, i);
@@ -204,7 +204,7 @@ int main(int argc, char* argv[])
 
 	int benchmarksteps2 = parameters.get_thermalizationsteps();
 	int cgmax = parameters.get_cgmax();
-	cout<<"perform FERMION-BENCHMARK with "<<benchmarksteps2<<" steps off each device operation..."<<endl;
+	cout << "perform FERMION-BENCHMARK with " << benchmarksteps2 << " steps off each device operation..." << endl;
 
 	//CP: set up testing field
 	hmc_spinor_field in[SPINORFIELDSIZE];
@@ -216,10 +216,10 @@ int main(int argc, char* argv[])
 		init_spinorfield_cold_eoprec(in);
 		device.copy_eoprec_spinorfield_to_device(in, &copytimer);
 	}
-	for(int i = 0; i<benchmarksteps2; i++) {
-		device.init_fermion_variables(&parameters, local_work_size, global_work_size, &inittimer);
-		device.perform_benchmark(cgmax, local_work_size, global_work_size, &copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer);
-		if(i%100==0) {
+	for(int i = 0; i < benchmarksteps2; i++) {
+		device.init_fermion_variables(&parameters, &inittimer);
+		device.perform_benchmark(cgmax, &copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer);
+		if(i % 100 == 0) {
 			cout << "time at iteration " << i << endl;
 			totaltime.add();
 			time_output( &totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime, &inittimer, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer, i );
