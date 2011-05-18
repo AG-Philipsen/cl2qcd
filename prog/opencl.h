@@ -34,6 +34,8 @@
  *
  * This class wraps all operations on a device. Operations are always specific, e.g. each kernel and copy operation
  * has it's own wrapper function.
+ *
+ * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
 class Opencl {
 public:
@@ -96,6 +98,15 @@ public:
 	 */
 	hmc_error copy_rndarray_to_device(hmc_rndarray host_rndarray,  usetimer* timer);
 
+	/**
+	 * Copy the RNG state from the OpenCL buffer.
+	 *
+	 * @param[out] rndarray The RNG copy target
+	 * @param[in,out] timer The timer to use to measure the copying time
+	 * @return Error code as defined in hmcerrs.h:
+	 *         @li HMC_OCLERROR if OpenCL operations fail
+	 *         @li HMC_SUCCESS otherwise
+	 */
 	hmc_error copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer);
 
 	/**
@@ -119,6 +130,7 @@ public:
 	 */
 	hmc_error run_overrelax(const hmc_float beta, usetimer * const timer);
 
+	//LZ: the transport coefficients should be moved to Opencl_k, right?!
 	/**
 	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld on GPU
 	 * @param[in] local_work_size OpenCL local_work_size
@@ -152,17 +164,33 @@ public:
 	 */
 	hmc_error gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const timer1, usetimer * const timer2);
 
+	/**
+	 * Collect a vector of kernel file names.
+	 * Virtual method, allows to include more kernel files in inherited classes.
+	 */
 	virtual hmc_error fill_kernels_file ();
+	/**
+	 * Collect the compiler options for OpenCL.
+	 * Virtual method, allows to include more options in inherited classes.
+	 */
 	virtual hmc_error fill_collect_options(stringstream* collect_options);
 	
-
+	/**
+	 * Called by the destructor.
+	 */
 	hmc_error finalize();
 
+	/**
+	 * Contains the list of kernel files after call to fill_kernels_file().
+	 */
         std::vector<std::string> cl_kernels_file;
 	
+	/**
+	 * Instance of input_parameters.
+	 */
 	inputparameters* parameters;
 	
-		/** The number of cores (not PEs) of the device */
+        /** The number of cores (not PEs) of the device */
 	cl_uint max_compute_units;
 
 	/**
@@ -189,7 +217,7 @@ public:
 	 */
 	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
  
-		cl_command_queue queue;
+	cl_command_queue queue;
 	cl_program clprogram;
 
   	//heatbath variables
@@ -216,8 +244,6 @@ public:
 	cl_kernel plaquette_reduction;
 	cl_kernel polyakov;
 	cl_kernel polyakov_reduction;
-
-
 
 };
 

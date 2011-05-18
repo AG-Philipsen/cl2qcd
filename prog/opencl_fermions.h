@@ -7,7 +7,7 @@
 #include "opencl.h"
 
 /**
- * An OpenCL device for fermionic calculations
+ * An OpenCL device for fermionic calculations.
  *
  * This class wraps all operations on a device. Include fermions. Inherited from class Opencl.
  */
@@ -64,6 +64,7 @@ class Opencl_fermions : public Opencl {
 	hmc_error perform_benchmark(int cgmax, const size_t ls, const size_t gs, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer);
 	hmc_error finalize_fermions();
 	
+ private:
 	//spinorfield and solver variables
 	cl_mem clmem_kappa;
 	cl_mem clmem_theta_fermion;
