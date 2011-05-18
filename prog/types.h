@@ -98,6 +98,7 @@ typedef hmc_float hmc_algebraelement [NC*NC-1];
 
 typedef hmc_float hmc_ocl_spinor;
 typedef hmc_complex hmc_ocl_su3matrix;
+typedef hmc_complex hmc_ocl_3x3matrix;
 typedef hmc_complex hmc_ocl_staplematrix;
 typedef hmc_float hmc_ocl_gaugefield;
 
