@@ -28,7 +28,7 @@ void su3matrix_times_colorvector(hmc_ocl_su3matrix* u, hmc_color_vector* in, hmc
 	for(int b=0; b<NC; b++) {
 		hmc_complex rec = reconstruct_su3(u,b);
 		hmc_complex tmp = complexmult(rec, in[b]);
-		out[2] = complexadd(out[a], tmp);
+		out[2] = complexadd(out[2], tmp);
 	}
 #else
 	for(int a=0; a<NC; a++) {

@@ -9,6 +9,18 @@ int inline ocl_3x3matrix_element(int a, int b)
 	return a + 3*b;
 }
 
+#ifdef _RECONSTRUCT_TWELVE_
+hmc_complex reconstruct_su3(__private hmc_ocl_su3matrix *in, int ncomp)
+{
+	int jplusone = (ncomp+1)%NC;
+	int jplustwo = (ncomp+2)%NC;
+	hmc_complex first = complexmult(in[(NC-1)*jplusone], in[1+(NC-1)*jplustwo]);
+	hmc_complex second = complexmult(in[(NC-1)*jplustwo], in[1+(NC-1)*jplusone]);
+	hmc_complex result = complexsubtract(first, second);
+	return complexconj(result);
+}
+#endif
+
 void multiply_3x3matrix (__private hmc_ocl_3x3matrix *out, __private hmc_ocl_3x3matrix *p,__private hmc_ocl_3x3matrix *q)
 {
 	out[0].re = p[0].re*q[0].re + p[3].re*q[1].re + p[6].re*q[2].re -
@@ -76,18 +88,6 @@ void copy_3x3_matrix(__private hmc_ocl_3x3matrix *out, __private hmc_ocl_3x3matr
 	  out[i] = in[i]; 
 	}
 }
-
-#ifdef _RECONSTRUCT_TWELVE_
-hmc_complex reconstruct_su3(__private hmc_ocl_su3matrix *in, int ncomp)
-{
-	int jplusone = (ncomp+1)%NC;
-	int jplustwo = (ncomp+2)%NC;
-	hmc_complex first = complexmult(in[(NC-1)*jplusone], in[1+(NC-1)*jplustwo]);
-	hmc_complex second = complexmult(in[(NC-1)*jplustwo], in[1+(NC-1)*jplusone]);
-	hmc_complex result = complexsubtract(first, second);
-	return complexconj(result);
-}
-#endif
 
 void su3matrix_to_3x3matrix (__private hmc_ocl_3x3matrix *out, __private hmc_ocl_su3matrix *in){
 #ifdef _RECONSTRUCT_TWELVE_

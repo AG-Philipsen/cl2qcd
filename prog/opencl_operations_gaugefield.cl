@@ -83,18 +83,6 @@ void zero_su3matrix(__private hmc_ocl_su3matrix *out)
 	return;
 }
 
-#ifdef _RECONSTRUCT_TWELVE_
-hmc_complex reconstruct_su3(__private hmc_ocl_su3matrix *in, int ncomp)
-{
-	int jplusone = (ncomp+1)%NC;
-	int jplustwo = (ncomp+2)%NC;
-	hmc_complex first = complexmult(in[(NC-1)*jplusone], in[1+(NC-1)*jplustwo]);
-	hmc_complex second = complexmult(in[(NC-1)*jplustwo], in[1+(NC-1)*jplusone]);
-	hmc_complex result = complexsubtract(first, second);
-	return complexconj(result);
-}
-#endif
-
 void multiply_su3matrices(__private hmc_ocl_su3matrix *out,__private hmc_ocl_su3matrix *p,__private hmc_ocl_su3matrix *q)
 {
 #ifdef _RECONSTRUCT_TWELVE_
@@ -301,12 +289,12 @@ void project_su3(__private hmc_ocl_su3matrix *U){
   hmc_complex b[NC];
   hmc_complex c[NC];
 #ifdef _RECONSTRUCT_TWELVE_
-  a[0] = (*U)[0];
-  a[1] = (*U)[2];
-  a[2] = (*U)[4];
-  b[0] = (*U)[1];
-  b[1] = (*U)[3];
-  b[2] = (*U)[5];
+  a[0] = U[0];
+  a[1] = U[2];
+  a[2] = U[4];
+  b[0] = U[1];
+  b[1] = U[3];
+  b[2] = U[5];
   c[0] = reconstruct_su3(U,0);
   c[1] = reconstruct_su3(U,1);
   c[2] = reconstruct_su3(U,2);
@@ -384,12 +372,12 @@ void project_su3(__private hmc_ocl_su3matrix *U){
   c[1] = complexsubtract(tmp, tmp2);
   
   //Set new values to matrix
-  (*U)[0] = a[0];
-  (*U)[1] = b[0];
-  (*U)[2] = a[1];
-  (*U)[3] = b[1];
-  (*U)[4] = a[2];
-  (*U)[5] = b[2];
+  U[0] = a[0];
+  U[1] = b[0];
+  U[2] = a[1];
+  U[3] = b[1];
+  U[4] = a[2];
+  U[5] = b[2];
 #else
   //third vector 
   //orthogonal vector
