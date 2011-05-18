@@ -121,6 +121,14 @@ if(USE_EOPREC)
 	add_definitions( -D_USEEOPREC_ )
 endif(USE_EOPREC)
 
+# lattice dimensions (see feature #127)
+set( NTIME 8 CACHE STRING "Number of lattice sites in time direction (t)" )
+add_definitions( -DNTIME=${NTIME} )
+set( NSPACE 4 CACHE STRING "Number of lattice sites in space direction (x,y,z each)" )
+add_definitions( -DNSPACE=${NSPACE} )
+
+
+
 # default random number seed
 configure_file( rand_seeds rand_seeds COPYONLY )
 

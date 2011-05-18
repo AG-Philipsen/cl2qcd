@@ -77,6 +77,33 @@ void copy_3x3_matrix(__private hmc_ocl_3x3matrix *out, __private hmc_ocl_3x3matr
 	}
 }
 
+#ifdef _RECONSTRUCT_TWELVE_
+hmc_complex reconstruct_su3(__private hmc_ocl_su3matrix *in, int ncomp)
+{
+	int jplusone = (ncomp+1)%NC;
+	int jplustwo = (ncomp+2)%NC;
+	hmc_complex first = complexmult(in[(NC-1)*jplusone], in[1+(NC-1)*jplustwo]);
+	hmc_complex second = complexmult(in[(NC-1)*jplustwo], in[1+(NC-1)*jplusone]);
+	hmc_complex result = complexsubtract(first, second);
+	return complexconj(result);
+}
+#endif
+
+void su3matrix_to_3x3matrix (__private hmc_ocl_3x3matrix *out, __private hmc_ocl_su3matrix *in){
+#ifdef _RECONSTRUCT_TWELVE_
+	for(int n=0; n<NC*(NC-1); n++) {
+		out[n] = in[n];
+	}
+	for(int n=NC*(NC-1);  n<NC*NC; n++) {
+		out[n] = reconstruct_su3(in, n-NC*(NC-1));
+	}
+#else
+	for(int k=0; k<NC*NC; k++) {
+		out[k] = in[k];
+	}
+#endif
+}
+
 
 
 void accumulate_su3matrix_3x3_add(__private hmc_ocl_3x3matrix *out, __private hmc_ocl_su3matrix *q){
