@@ -154,6 +154,8 @@ public:
 	 */
 	hmc_error gaugeobservables(const size_t local_work_size, const size_t global_work_size, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol, usetimer* timer1, usetimer* timer2);
 
+	virtual hmc_error fill_kernels_file ();
+	
 #ifdef _FERMIONS_
 	hmc_error init_fermion_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error copy_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
@@ -202,14 +204,14 @@ public:
 
 	hmc_error perform_benchmark(int cgmax, const size_t ls, const size_t gs, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer);
 	hmc_error finalize_fermions();
-
+	
 #endif
 #ifdef _TESTING_
 	hmc_error testing(hmc_gaugefield * gaugefield);
 #endif
-	std::vector<std::string> cl_kernels_file;
 	hmc_error finalize();
-private:
+// private:
+        std::vector<std::string> cl_kernels_file;
 	int isinit;
 	cl_context context;
 	cl_command_queue queue;

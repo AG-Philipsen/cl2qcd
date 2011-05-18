@@ -53,7 +53,7 @@ public:
 	 * @param[in,out] timer Return initialization time.
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer);
+	virtual hmc_error init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer);
 	/**
 	 * Free gaugefield and device allocations.
 	 */
@@ -178,6 +178,12 @@ public:
 	 * @return The gaugefield
 	 */
 	hmc_gaugefield * get_gf ();
+	
+	/**
+	 * Sets private member gaugefield
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	hmc_error set_gf (hmc_gaugefield * gf_val);
 
 	/**
 	 * Returns private member * devices
@@ -186,16 +192,34 @@ public:
 	opencl * get_devices ();
 	
 	/**
+	 * Sets private member * devices
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	 hmc_error set_devices (opencl * devices_val);
+	
+	/**
 	 * Returns private member num_ocl_devices
 	 * @return num_ocl_devices
 	 */
 	int get_num_ocl_devices ();
 	
 	/**
+	 * Sets private member num_ocl_devices
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	hmc_error set_num_ocl_devices (int num);
+	
+	/**
 	 * Returns private member * parameters
 	 * @return parameters
 	 */
 	inputparameters * get_parameters ();
+	
+	/**
+	 * Sets private member * parameters
+	 * @return parameters
+	 */
+	hmc_error set_parameters (inputparameters * parameters_val);
 	
 	/**
 	 * ?

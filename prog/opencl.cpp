@@ -3,11 +3,9 @@
 
 using namespace std;
 
-hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* parameters)
-{
-
-//give a list of all kernel-files
-//!!CP: LZ should update this
+hmc_error opencl::fill_kernels_file (){
+	//give a list of all kernel-files
+	//!!CP: LZ should update this
 	cl_kernels_file.push_back("opencl_header.cl");
 	cl_kernels_file.push_back("opencl_geometry.cl");
 	cl_kernels_file.push_back("opencl_random.cl");
@@ -15,7 +13,6 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 	cl_kernels_file.push_back("opencl_operations_gaugefield.cl");
 	cl_kernels_file.push_back("opencl_update_heatbath.cl");
 	cl_kernels_file.push_back("opencl_gaugeobservables.cl");
-	cl_kernels_file.push_back("opencl_tk_kappa.cl");
 #ifdef _FERMIONS_
 	cl_kernels_file.push_back("opencl_operations_spinor.cl");
 	cl_kernels_file.push_back("opencl_operations_spinorfield.cl");
@@ -25,6 +22,14 @@ hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 #ifdef _TESTING_
 	cl_kernels_file.push_back("opencl_testing.cl");
 #endif
+	return HMC_SUCCESS;  
+}
+
+hmc_error opencl::init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* parameters)
+{
+
+
+	hmc_error err =	this->fill_kernels_file();
 
 	cl_int clerr = CL_SUCCESS;
 

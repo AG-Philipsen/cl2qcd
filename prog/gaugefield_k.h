@@ -1,8 +1,21 @@
 #include "gaugefield.h"
+#include "opencl_k.h"
 
 class Gaugefield_k : public Gaugefield{
 
   public:
+    
+	 /**
+	 * Initialize gaugefield and devices for measurement of TK kappa
+	 *
+	 * @param[in] numdevs Number of wanted devices (so far, only 1 makes sense).
+	 * @param[in] devicetypes Array of wanted cl_device_types for the devices.
+	 * @param[in] input_parameters instance of inputparameters that contains information from input file
+	 * @param[in,out] timer Return initialization time.
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	virtual hmc_error init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer);
+	
   	/**
 	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld
 	 * @return Error code as defined in hmcerrs.h
@@ -58,8 +71,14 @@ class Gaugefield_k : public Gaugefield{
 	 */	
 	hmc_error kappa_clover_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch);
   
+	/**
+	 * Returns private member opencl_k * devices
+	 * @return devices of type opencl_k
+	 */
+	opencl * get_devices_k ();
   
   private:
+  Opencl_k * devices_k;
   hmc_float kappa_karsch_val;
   hmc_float kappa_clover_val;
   
