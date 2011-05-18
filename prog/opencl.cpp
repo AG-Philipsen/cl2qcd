@@ -14,6 +14,7 @@ hmc_error opencl::fill_kernels_file (){
 	cl_kernels_file.push_back("opencl_operations_gaugefield.cl");
 	cl_kernels_file.push_back("opencl_update_heatbath.cl");
 	cl_kernels_file.push_back("opencl_gaugeobservables.cl");
+	cl_kernels_file.push_back("opencl_operations_matrix.cl");
 #ifdef _FERMIONS_
 	cl_kernels_file.push_back("opencl_operations_spinor.cl");
 	cl_kernels_file.push_back("opencl_operations_spinorfield.cl");
