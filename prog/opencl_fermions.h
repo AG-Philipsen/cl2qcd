@@ -13,8 +13,27 @@
  */
 class Opencl_fermions : public Opencl {
   public:
-        virtual hmc_error fill_kernels_file ();
+    
+	 /**
+	 * Collect a vector of kernel file names.
+	 * Virtual method, allows to include more kernel files in inherited classes.
+	 */
+	virtual hmc_error fill_kernels_file ();
+	/**
+	 * Collect the compiler options for OpenCL.
+	 * Virtual method, allows to include more options in inherited classes.
+	 */
 	virtual hmc_error fill_collect_options(stringstream* collect_options);
+	/**
+	 * Collect the buffers to generate for OpenCL.
+	 * Virtual method, allows to include more buffers in inherited classes.
+	 */
+	virtual hmc_error fill_buffers();
+	/**
+	 * Collect the kernels for OpenCL.
+	 * Virtual method, allows to include more kernels in inherited classes.
+	 */
+	virtual hmc_error fill_kernels();
 
 	hmc_error init_fermion_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error copy_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);

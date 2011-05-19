@@ -15,8 +15,29 @@
 class Opencl_k : public Opencl {
  
     public:
-      virtual hmc_error fill_kernels_file ();
-    
+        /**
+	 * Collect a vector of kernel file names.
+	 * Virtual method, allows to include more kernel files in inherited classes.
+	 */
+	virtual hmc_error fill_kernels_file ();
+	/**
+	 * Collect the compiler options for OpenCL.
+	 * Virtual method, allows to include more options in inherited classes.
+	 */
+	virtual hmc_error fill_collect_options(stringstream* collect_options);
+	/**
+	 * Collect the buffers to generate for OpenCL.
+	 * Virtual method, allows to include more buffers in inherited classes.
+	 */
+	virtual hmc_error fill_buffers();
+	/**
+	 * Collect the kernels for OpenCL.
+	 * Virtual method, allows to include more kernels in inherited classes.
+	 */
+	virtual hmc_error fill_kernels();
+      
+      
+      
 //     private:
 //         std::vector<std::string> cl_kernels_file;
 // 	int isinit;

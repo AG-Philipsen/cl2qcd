@@ -53,165 +53,9 @@ hmc_error Opencl::fill_collect_options(stringstream* collect_options){
 }
 	
 
-hmc_error Opencl::init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* params)
-{
-
-parameters = params;
+hmc_error Opencl::fill_buffers(){
   
-	hmc_error err =	this->fill_kernels_file();
-
 	cl_int clerr = CL_SUCCESS;
-
-	timer->reset();
-	cout << "OpenCL being initialized..." << endl;
-	cl_uint num_platforms;
-	cl_platform_id platform;
-	//LZ: for now, stick to one platform without any further checks...
-	clerr = clGetPlatformIDs(1, &platform, &num_platforms);
-	if(clerr != CL_SUCCESS) {
-		cout << "clGetPlatformIDs failed..." << endl;
-		exit(HMC_OCLERROR);
-	}
-
-	char info[512];
-	if(clGetPlatformInfo(platform, CL_PLATFORM_NAME, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	cout << "\tCL_PLATFORM_NAME:     " << info << endl;
-	if(clGetPlatformInfo(platform, CL_PLATFORM_VENDOR, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	cout << "\tCL_PLATFORM_VENDOR:   " << info << endl;
-	if(clGetPlatformInfo(platform, CL_PLATFORM_VERSION, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	cout << "\tCL_PLATFORM_VERSION:  " << info << endl;
-	cout << endl;
-
-	cl_uint num_devices;
-	cl_device_id device;
-	clerr = clGetDeviceIDs(platform, wanted_device_type, 0, NULL, &num_devices);
-	if(num_devices == 1) {
-		cout << "\t" << num_devices << " device of wanted type has been found." << endl;
-	} else {
-		cout << "\t" << num_devices << " devices of wanted type have been found. Choosing device number " << 0 << "." << endl;
-	}
-	clerr = clGetDeviceIDs(platform, wanted_device_type, 1, &device, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "clGetDeviceIDs failed..." << endl;
-		exit(HMC_OCLERROR);
-	}
-
-	cout << "\tDevice information: " << endl;
-	if(clGetDeviceInfo(device, CL_DEVICE_NAME, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	cout << "\t\tCL_DEVICE_NAME:    " << info << endl;
-	if(clGetDeviceInfo(device, CL_DEVICE_VENDOR, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	cout << "\t\tCL_DEVICE_VENDOR:  " << info << endl;
-	cl_device_type type;
-	if(clGetDeviceInfo(device, CL_DEVICE_TYPE, sizeof(cl_device_type), &type, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(type == CL_DEVICE_TYPE_CPU) cout << "\t\tCL_DEVICE_TYPE:    CPU" << endl;
-	if(type == CL_DEVICE_TYPE_GPU) cout << "\t\tCL_DEVICE_TYPE:    GPU" << endl;
-	if(type == CL_DEVICE_TYPE_ACCELERATOR) cout << "\t\tCL_DEVICE_TYPE:    ACCELERATOR" << endl;
-	if(type != CL_DEVICE_TYPE_CPU && type != CL_DEVICE_TYPE_GPU && type != CL_DEVICE_TYPE_ACCELERATOR) {
-		cout << "unexpected CL_DEVICE_TYPE..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if(clGetDeviceInfo(device, CL_DEVICE_VERSION, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	cout << "\t\tCL_DEVICE_VERSION: " << info << endl;
-	if(clGetDeviceInfo(device, CL_DEVICE_EXTENSIONS, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	cout << "\t\tCL_DEVICE_EXTENSIONS: " << info << endl;
-
-	// figure out the number of "cores"
-	if(clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-
-	cout << "Create context..." << endl;
-	context = clCreateContext(0, 1, &device, 0, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-
-	cout << "Create command queue..." << endl;
-	queue = clCreateCommandQueue(context, device, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-
-	// create array to point to contents of the different source files
-	char ** sources = new char *[ cl_kernels_file.size() ];
-	size_t * source_sizes = new size_t[ cl_kernels_file.size() ];
-
-	string sourcecode;
-	for(size_t n = 0; n < cl_kernels_file.size(); n++) {
-		stringstream tmp;
-		tmp << SOURCEDIR << '/' << cl_kernels_file[n];
-		cout << "Read kernel source from file: " << tmp.str() << endl;
-
-		fstream kernelsfile;
-		kernelsfile.open(tmp.str().c_str());
-		if(!kernelsfile.is_open()) {
-			cerr << "Could not open file. Aborting..." << endl;
-			exit(HMC_FILEERROR);
-		}
-
-		kernelsfile.seekg(0, ios::end);
-		source_sizes[n] = kernelsfile.tellg();
-		kernelsfile.seekg(0, ios::beg);
-
-		sources[n] = new char[source_sizes[n]];
-
-		kernelsfile.read( sources[n], source_sizes[n] );
-
-		kernelsfile.close();
-	}
-
-	cout << "Create program..." << endl;
-	clprogram = clCreateProgramWithSource(context, cl_kernels_file.size() , (const char**) sources, source_sizes, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-
-	cout << "Build program..." << endl;
-
-	stringstream collect_options;
-	this->fill_collect_options(&collect_options);
-	string buildoptions = collect_options.str();
-	cout << "\tbuild options:";
-	cout << "\t" << buildoptions << endl;
-
-	clerr = clBuildProgram(clprogram, 1, &device, buildoptions.c_str(), 0, 0);
-	if(clerr != CL_SUCCESS) {
-		cout << "... failed, but look at BuildLog and abort then." << endl;
-	}
-
-	cout << "finished building program" << endl;
-	size_t logSize;
-	clerr |= clGetProgramBuildInfo(clprogram, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);
-	if(logSize > 1) { // 0-terminated -> always at least one byte
-		cout << "Build Log:" << endl;
-		char* log = new char[logSize];
-		clerr |= clGetProgramBuildInfo(clprogram, device, CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
-		cout << log << endl << endl;
-		delete [] log;
-	}
-	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-
-		// dump program source
-		size_t sourceSize;
-		clerr = clGetProgramInfo(clprogram, CL_PROGRAM_SOURCE, 0, NULL, &sourceSize);
-		if(!clerr && sourceSize > 1) { // 0-terminated -> always at least one byte
-			char* source = new char[sourceSize];
-			clerr = clGetProgramInfo(clprogram, CL_PROGRAM_SOURCE, sourceSize, source, &sourceSize);
-			if(!clerr) {
-				char const * const FILENAME = "broken_source.cl";
-				ofstream srcFile(FILENAME);
-				srcFile << source;
-				srcFile.close();
-				cout << "Dumped broken source to " << FILENAME << endl;
-			}
-			delete[] source;
-		}
-
-		exit(HMC_OCLERROR);
-	}
-
 	cout << "Create buffer for gaugefield..." << endl;
 	clmem_gaugefield = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_gaugefield), 0, &clerr);
 	if(clerr != CL_SUCCESS) {
@@ -247,13 +91,20 @@ parameters = params;
 		cout << "... failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
-
+	
 	// scratch buffers for gauge observable will be created on demand
 	clmem_plaq_buf_glob = 0;
 	clmem_tplaq_buf_glob = 0;
 	clmem_splaq_buf_glob = 0;
 	clmem_polyakov_buf_glob = 0;
+	
+	return HMC_SUCCESS;
+}
 
+hmc_error Opencl::fill_kernels(){
+
+	cl_int clerr = CL_SUCCESS;
+  
 	cout << "Create heatbath kernels..." << endl;
 	heatbath_even = clCreateKernel(clprogram, "heatbath_even", &clerr);
 	if(clerr != CL_SUCCESS) {
@@ -298,9 +149,187 @@ parameters = params;
 		cout << "... polyakov_reduction failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
+  
+	return HMC_SUCCESS;
+}
 
+hmc_error Opencl::init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* params)
+{
+	//variables, initializing, ...
+	parameters = params;
+	hmc_error err;
+	cl_int clerr = CL_SUCCESS;
+	timer->reset();
+
+	//Initialize OpenCL, 
+	cout << "OpenCL being initialized..." << endl;
+	cl_uint num_platforms;
+	cl_platform_id platform;
+	//LZ: for now, stick to one platform without any further checks...
+	clerr = clGetPlatformIDs(1, &platform, &num_platforms);
+	if(clerr != CL_SUCCESS) {
+		cout << "clGetPlatformIDs failed..." << endl;
+		exit(HMC_OCLERROR);
+	}
+
+	//Cout Platforminfo
+	char info[512];
+	if(clGetPlatformInfo(platform, CL_PLATFORM_NAME, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
+	cout << "\tCL_PLATFORM_NAME:     " << info << endl;
+	if(clGetPlatformInfo(platform, CL_PLATFORM_VENDOR, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
+	cout << "\tCL_PLATFORM_VENDOR:   " << info << endl;
+	if(clGetPlatformInfo(platform, CL_PLATFORM_VERSION, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
+	cout << "\tCL_PLATFORM_VERSION:  " << info << endl;
+	cout << endl;
+
+	//Initializing devices
+	cl_uint num_devices;
+	cl_device_id device;
+	clerr = clGetDeviceIDs(platform, wanted_device_type, 0, NULL, &num_devices);
+	if(num_devices == 1) {
+		cout << "\t" << num_devices << " device of wanted type has been found." << endl;
+	} else {
+		cout << "\t" << num_devices << " devices of wanted type have been found. Choosing device number " << 0 << "." << endl;
+	}
+	clerr = clGetDeviceIDs(platform, wanted_device_type, 1, &device, NULL);
+	if(clerr != CL_SUCCESS) {
+		cout << "clGetDeviceIDs failed..." << endl;
+		exit(HMC_OCLERROR);
+	}
+
+	//Cout devicesinfo
+	cout << "\tDevice information: " << endl;
+	if(clGetDeviceInfo(device, CL_DEVICE_NAME, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
+	cout << "\t\tCL_DEVICE_NAME:    " << info << endl;
+	if(clGetDeviceInfo(device, CL_DEVICE_VENDOR, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
+	cout << "\t\tCL_DEVICE_VENDOR:  " << info << endl;
+	cl_device_type type;
+	if(clGetDeviceInfo(device, CL_DEVICE_TYPE, sizeof(cl_device_type), &type, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
+	if(type == CL_DEVICE_TYPE_CPU) cout << "\t\tCL_DEVICE_TYPE:    CPU" << endl;
+	if(type == CL_DEVICE_TYPE_GPU) cout << "\t\tCL_DEVICE_TYPE:    GPU" << endl;
+	if(type == CL_DEVICE_TYPE_ACCELERATOR) cout << "\t\tCL_DEVICE_TYPE:    ACCELERATOR" << endl;
+	if(type != CL_DEVICE_TYPE_CPU && type != CL_DEVICE_TYPE_GPU && type != CL_DEVICE_TYPE_ACCELERATOR) {
+		cout << "unexpected CL_DEVICE_TYPE..." << endl;
+		exit(HMC_OCLERROR);
+	}
+	if(clGetDeviceInfo(device, CL_DEVICE_VERSION, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
+	cout << "\t\tCL_DEVICE_VERSION: " << info << endl;
+	if(clGetDeviceInfo(device, CL_DEVICE_EXTENSIONS, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
+	cout << "\t\tCL_DEVICE_EXTENSIONS: " << info << endl;
+
+	// figure out the number of "cores"
+	if(clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+	//Initilize context
+	cout << "Create context..." << endl;
+	context = clCreateContext(0, 1, &device, 0, 0, &clerr);
+	if(clerr != CL_SUCCESS) {
+		cout << "... failed, aborting." << endl;
+		exit(HMC_OCLERROR);
+	}
+
+	//Initilize queue
+	cout << "Create command queue..." << endl;
+	queue = clCreateCommandQueue(context, device, 0, &clerr);
+	if(clerr != CL_SUCCESS) {
+		cout << "... failed, aborting." << endl;
+		exit(HMC_OCLERROR);
+	}
+
+	//collect all kernel files
+	err = this->fill_kernels_file();
+
+	//write kernel files into sources
+	// create array to point to contents of the different source files
+	char ** sources = new char *[ cl_kernels_file.size() ];
+	size_t * source_sizes = new size_t[ cl_kernels_file.size() ];
+
+	string sourcecode;
+	for(size_t n = 0; n < cl_kernels_file.size(); n++) {
+		stringstream tmp;
+		tmp << SOURCEDIR << '/' << cl_kernels_file[n];
+		cout << "Read kernel source from file: " << tmp.str() << endl;
+
+		fstream kernelsfile;
+		kernelsfile.open(tmp.str().c_str());
+		if(!kernelsfile.is_open()) {
+			cerr << "Could not open file. Aborting..." << endl;
+			exit(HMC_FILEERROR);
+		}
+
+		kernelsfile.seekg(0, ios::end);
+		source_sizes[n] = kernelsfile.tellg();
+		kernelsfile.seekg(0, ios::beg);
+
+		sources[n] = new char[source_sizes[n]];
+
+		kernelsfile.read( sources[n], source_sizes[n] );
+
+		kernelsfile.close();
+	}
+
+	//Create program from sources
+	cout << "Create program..." << endl;
+	clprogram = clCreateProgramWithSource(context, cl_kernels_file.size() , (const char**) sources, source_sizes, &clerr);
+	if(clerr != CL_SUCCESS) {
+		cout << "... failed, aborting." << endl;
+		exit(HMC_OCLERROR);
+	}
+	cout << "Build program..." << endl;
+
+	//account for options	
+	stringstream collect_options;
+	this->fill_collect_options(&collect_options);
+	string buildoptions = collect_options.str();
+	cout << "\tbuild options:";
+	cout << "\t" << buildoptions << endl;
+
+	clerr = clBuildProgram(clprogram, 1, &device, buildoptions.c_str(), 0, 0);
+	if(clerr != CL_SUCCESS) {
+		cout << "... failed, but look at BuildLog and abort then." << endl;
+	}
+	cout << "finished building program" << endl;
+
+	//cout Buildinfo
+	size_t logSize;
+	clerr |= clGetProgramBuildInfo(clprogram, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);
+	if(logSize > 1) { // 0-terminated -> always at least one byte
+		cout << "Build Log:" << endl;
+		char* log = new char[logSize];
+		clerr |= clGetProgramBuildInfo(clprogram, device, CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
+		cout << log << endl << endl;
+		delete [] log;
+	}
+	if(clerr != CL_SUCCESS) {
+		cout << "... failed, aborting." << endl;
+
+		// dump program source
+		size_t sourceSize;
+		clerr = clGetProgramInfo(clprogram, CL_PROGRAM_SOURCE, 0, NULL, &sourceSize);
+		if(!clerr && sourceSize > 1) { // 0-terminated -> always at least one byte
+			char* source = new char[sourceSize];
+			clerr = clGetProgramInfo(clprogram, CL_PROGRAM_SOURCE, sourceSize, source, &sourceSize);
+			if(!clerr) {
+				char const * const FILENAME = "broken_source.cl";
+				ofstream srcFile(FILENAME);
+				srcFile << source;
+				srcFile.close();
+				cout << "Dumped broken source to " << FILENAME << endl;
+			}
+			delete[] source;
+		}
+
+		exit(HMC_OCLERROR);
+	}
+
+	//Create buffer
+	err = this->fill_buffers();
+
+	//Create kernels
+	err = this->fill_kernels();
+
+	//finish
 	isinit = 1;
-
 	timer->add();
 	return HMC_SUCCESS;
 }

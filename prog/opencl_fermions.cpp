@@ -17,9 +17,9 @@ hmc_error Opencl_fermions::fill_collect_options(stringstream* collect_options){
 	*collect_options << " -D_FERMIONS_";
 
 #ifdef _TWISTEDMASS_
-	*collect_options << " -D_TWISTEDMASS_";
+	*collect_options 
+#ifdef _CLOVER_<< " -D_TWISTEDMASS_";
 #endif
-#ifdef _CLOVER_
 	*collect_options << " -D_CLOVER_";
 #endif
 	//CP: give kappa and its negative value
@@ -38,6 +38,15 @@ hmc_error Opencl_fermions::fill_collect_options(stringstream* collect_options){
 	return HMC_SUCCESS;
 }
 
+hmc_error Opencl_fermions::fill_buffers(){
+	hmc_error err = Opencl::fill_buffers();
+	return HMC_SUCCESS;  
+}
+
+hmc_error Opencl_fermions::fill_kernels(){
+  	hmc_error err = Opencl::fill_kernels();
+	return HMC_SUCCESS;  
+}
 
 hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer * timer){
 	
