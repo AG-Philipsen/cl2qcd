@@ -37,11 +37,12 @@ class Opencl_k : public Opencl {
 	virtual hmc_error fill_kernels();
       
 	hmc_error run_kappa_karsch_gpu(const hmc_float beta, usetimer * const timer, hmc_float * kappa_karsch_out);
+	hmc_error run_kappa_clover_gpu(const hmc_float beta, usetimer * const timer, hmc_float * kappa_clover_out);
 	
 	cl_mem clmem_kappa_karsch;
 	cl_mem clmem_kappa_karsch_buf_glob;
 	cl_mem clmem_kappa_clover;
-	
+	cl_mem clmem_kappa_clover_buf_glob;
 	
 	cl_kernel kappa_karsch_gpu;
 	cl_kernel kappa_clover_gpu;

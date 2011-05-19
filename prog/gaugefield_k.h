@@ -62,21 +62,17 @@ class Gaugefield_k : public Gaugefield {
 	
 	/**
 	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld on GPU
-	 * @param[in] local_work_size OpenCL local_work_size
-	 * @param[in] global_work_size OpenCL global_work_size
 	 * @param[in,out] timer time for measurement
 	 * @return Error code as defined in hmcerrs.h
 	 */	
-	hmc_error kappa_karsch_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch);
+	 hmc_error kappa_karsch_gpu (usetimer* timer_karsch);
 	
 	/**
 	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld  on GPU
 	 * @param[in] local_work_size OpenCL local_work_size
-	 * @param[in] global_work_size OpenCL global_work_size
-	 * @param[in,out] timer time for measurement
 	 * @return Error code as defined in hmcerrs.h
 	 */	
-	hmc_error kappa_clover_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch);
+	hmc_error kappa_clover_gpu (usetimer* timer_clover);
   
 	/**
 	 * Returns private member opencl_k * devices

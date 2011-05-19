@@ -55,18 +55,22 @@ hmc_error Gaugefield_k::set_kappa_clover (hmc_float in){
   
 }
 
-hmc_error Gaugefield_k::kappa_karsch_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch){
+hmc_error Gaugefield_k::kappa_karsch_gpu (usetimer* timer_karsch){
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices_k()[0].run_kappa_karsch_gpu(local_work_size, global_work_size, timer_karsch);
+	hmc_error err;
+// 	err = get_devices_k()[0].run_kappa_karsch_gpu(parameters->get_beta(), timer_karsch, kappa_karsch_val);
 	return err;
 }
 
-hmc_error Gaugefield_k::kappa_clover_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_clover){
+hmc_error Gaugefield_k::kappa_clover_gpu (usetimer* timer_clover){
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices_k()[0].run_kappa_clover_gpu(local_work_size, global_work_size, timer_clover);
+	hmc_error err;
+// 	err = get_devices_k()[0].run_clover_karsch_gpu(parameters->get_beta(), timer_clover, kappa_clover_val);
 	return err;
+
+	return HMC_SUCCESS;
 }
 
 Opencl * Gaugefield_k::get_devices_k (){
