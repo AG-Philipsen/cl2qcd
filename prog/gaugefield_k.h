@@ -81,7 +81,7 @@ class Gaugefield_k : public Gaugefield {
  	Opencl * get_devices_k ();
 
   private:
-	//  Opencl_k * devices;
+// 	 Opencl_k * devices;
   hmc_float kappa_karsch_val;
   hmc_float kappa_clover_val;
   

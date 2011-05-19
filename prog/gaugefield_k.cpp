@@ -59,7 +59,7 @@ hmc_error Gaugefield_k::kappa_karsch_gpu (usetimer* timer_karsch){
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 	hmc_error err;
-// 	err = get_devices_k()[0].run_kappa_karsch_gpu(parameters->get_beta(), timer_karsch, kappa_karsch_val);
+// 	err = get_devices_k()[0].run_kappa_karsch_gpu(parameters->get_beta(), timer_karsch, &kappa_karsch_val);
 	return err;
 }
 
@@ -67,7 +67,7 @@ hmc_error Gaugefield_k::kappa_clover_gpu (usetimer* timer_clover){
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 	hmc_error err;
-// 	err = get_devices_k()[0].run_clover_karsch_gpu(parameters->get_beta(), timer_clover, kappa_clover_val);
+// 	err = get_devices_k()[0].run_kappa_clover_gpu(parameters->get_beta(), timer_clover, &kappa_clover_val);
 	return err;
 
 	return HMC_SUCCESS;
