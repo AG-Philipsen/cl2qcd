@@ -151,16 +151,22 @@ hmc_error copy_gaugefield_to_ildg_format(ildg_gaugefield * dest, hmc_gaugefield 
 		int pos = 2*n + 2*m*NC + globalpos*NC*NC*2;
 		if(m<NC-1) {
 		  
+  
 		  (dest[0])[pos]     = (*source)[ncindex][(l+1)%NDIM][spacepos][t].re;
 		  (dest[0])[pos + 1] = (*source)[ncindex][(l+1)%NDIM][spacepos][t].im;
 		}
 		if (m==NC-1){
 		  hmc_su3matrix tmpsu3;
-		  get_su3matrix(&tmpsu3, source, spacepos, t, l );
+		  get_su3matrix(&tmpsu3, source, spacepos, t, (l+1)%NDIM);
 		  hmc_complex tmp = reconstruct_su3 (&tmpsu3, n);
 		  (dest[0])[pos]     = tmp.re;
 		  (dest[0])[pos + 1] = tmp.im;
 		}
+		
+// 		if ((dest[0])[pos] != (dest[0])[pos])
+// 		  cout << (dest[0])[pos] <<endl;
+// 		if ((dest[0])[pos+1] != (dest[0])[pos+1])
+// 		  cout << (dest[0])[pos+1]   <<endl;
 		
 		cter++;
 	      }}

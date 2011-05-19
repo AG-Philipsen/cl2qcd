@@ -77,7 +77,6 @@ typedef hmc_complex hmc_su3matrix [NC*(NC-1)];
 typedef hmc_complex hmc_staplematrix [NC*NC];
 typedef hmc_complex hmc_3x3matrix[3][3];
 typedef hmc_complex hmc_gaugefield [NC*(NC-1)][NDIM][VOLSPACE][NTIME];
-typedef hmc_float ildg_gaugefield[2*NC*(NC-1)*NDIM*VOLSPACE*NTIME];
 typedef hmc_float hmc_gauge_momentum;
 typedef hmc_float hmc_algebraelement [NC*NC-1];
 #else
@@ -89,10 +88,11 @@ typedef hmc_su3matrix hmc_staplematrix;
 typedef hmc_complex hmc_3x3matrix[3][3];
 /** The full gaugefield */
 typedef hmc_complex hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME];
-typedef hmc_float ildg_gaugefield[2*NC*NC*NDIM*VOLSPACE*NTIME];
 typedef hmc_float hmc_gauge_momentum;
 typedef hmc_float hmc_algebraelement [NC*NC-1];
 #endif
+
+typedef hmc_float ildg_gaugefield[2*NC*NC*NDIM*VOLSPACE*NTIME];
 
 #endif // ifndef _INKERNEL_
 
