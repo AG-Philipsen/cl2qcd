@@ -74,8 +74,8 @@ void print_info(inputparameters* params, ostream* os)
 	*os << "##" << '\n';
 	if (params->get_startcondition() == START_FROM_SOURCE) {
 		*os << "## sourcefile = ";
-		params->display_sourcefile();
-		*os << "##" << '\n';
+		string sf=params->sourcefile;
+		*os << sf << '\n';
 	}
 	if (params->get_startcondition() == COLD_START) {
 		*os << "## cold start\n";
