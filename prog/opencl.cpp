@@ -773,13 +773,6 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::run_kappa_karsch_gpu(const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch){
-  return HMC_SUCCESS;
-}
-
-hmc_error Opencl::run_kappa_clover_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_clover){
-  return HMC_SUCCESS; 
-}
 
 hmc_error Opencl::finalize()
 {
