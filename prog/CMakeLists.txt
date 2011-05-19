@@ -235,12 +235,16 @@ target_link_libraries( inverter
 	${LIBXML2_LIBRARIES}
 	klepsydra
 )
+
 add_library( klepsydra
 	klepsydra/timer.cpp
 	klepsydra/monotonic.cpp )
 if(NOT CMAKE_HOST_APPLE)
 	target_link_libraries( klepsydra rt )
 endif(NOT CMAKE_HOST_APPLE)
+
+add_library( einhard
+	einhard/einhard.cpp )
 
 # Documentation
 #include(FindDoxygen)
