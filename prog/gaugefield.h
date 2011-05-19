@@ -229,9 +229,12 @@ public:
 	
 	hmc_gaugefield * gf;	
 	Opencl * devices;
+	//Die sollten auch von den Folgeklassen aus zugreifbar sein
+	inputparameters* parameters;
+	
 private:
 	int num_ocl_devices;
-	inputparameters* parameters;
+// 	inputparameters* parameters;
 
 };
 
