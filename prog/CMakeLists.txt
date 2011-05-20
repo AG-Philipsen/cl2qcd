@@ -177,12 +177,14 @@ add_executable( heatbath
 	opencl.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
+	logger.cpp
 )
 target_link_libraries( heatbath
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
 	klepsydra
+	einhard
 )
 add_executable( tk_kappa
 	tk_kappa.cpp
