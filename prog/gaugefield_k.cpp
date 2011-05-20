@@ -36,6 +36,31 @@ hmc_error Gaugefield_k::init(int numdevs, cl_device_type* devicetypes, inputpara
 	return HMC_SUCCESS;
 }
 
+
+
+
+
+
+hmc_float Gaugefield_k::Q_plaquette()
+{
+	hmc_float plaq = 0;
+
+	for(int t = 0; t < NTIME; t++) {
+		for(int n = 0; n < VOLSPACE; n++) {
+			for(int mu = 0; mu < NDIM; mu++) {
+				for(int nu = 0; nu < mu; nu++) {
+					hmc_3x3matrix prod;
+					local_Q_plaquette(&prod, gf, n, t, mu, nu );
+					hmc_complex tmp;
+					trace_3x3matrix(&tmp, &prod);
+					plaq += tmp.re;
+				}
+			}
+		}
+	}
+	return plaq * 2.0 / static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) * NC) / 4.0;
+}
+
 hmc_float Gaugefield_k::get_kappa_karsch (){
 	return kappa_karsch_val;
 }

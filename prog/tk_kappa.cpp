@@ -69,8 +69,13 @@ int main(int argc, char* argv[])
 	
 	ofstream kappa_karsch_out;
 	kappa_karsch_out.open ("kappa_karsch.dat");
+	kappa_karsch_out.precision(15);
 	ofstream kappa_clover_out;
 	kappa_clover_out.open ("kappa_clover.dat");
+	kappa_clover_out.precision(15);
+	ofstream q_plaq_out;
+	q_plaq_out.open ("Q_plaquette.dat");
+	q_plaq_out.precision(15);
 
 	for(int i = 0; i < nsteps; i++) {
 		gaugefield.heatbath(&updatetime);
@@ -85,8 +90,11 @@ int main(int argc, char* argv[])
 	//Add a measurement frequency
 	gaugefield.sync_gaugefield(&copytime);
 	hmc_error err;
-	err = gaugefield.kappa_karsch ();
-	err = gaugefield.kappa_clover ();
+// 	err = gaugefield.kappa_karsch ();
+// 	err = gaugefield.kappa_clover ();
+
+	hmc_float qplaq = gaugefield.Q_plaquette();
+	q_plaq_out << qplaq <<endl;
 
 	kappa_karsch_out << gaugefield.get_kappa_karsch() <<endl;
 	kappa_clover_out << gaugefield.get_kappa_clover() <<endl;
@@ -94,6 +102,7 @@ int main(int argc, char* argv[])
 	
 	kappa_karsch_out.close();
 	kappa_clover_out.close();
+	q_plaq_out.close();
 	gaugefield.sync_gaugefield(&copytime);
 	gaugefield.save(nsteps);
 	

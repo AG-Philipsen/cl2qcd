@@ -23,6 +23,8 @@ class Gaugefield_k : public Gaugefield {
 	 */
 	virtual hmc_error init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer);
 	
+	hmc_float Q_plaquette();
+	
   	/**
 	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld
 	 * @return Error code as defined in hmcerrs.h
