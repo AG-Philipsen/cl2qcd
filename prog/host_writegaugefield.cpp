@@ -7,9 +7,9 @@
 hmc_error make_binary_data_single(hmc_float * array, char * out, const int array_size, const size_t num_entries)
 {
 	assert( num_entries == 4u * static_cast<size_t>(array_size) );
-	printf("allocating buffer");
+	logger.trace() << "allocating buffer";
 	char * buf_tmp = new char[num_entries];
-	printf("allocated buffer");
+	logger.trace() << "allocated buffer";
 
 	//save the array in a char-array, suppose it is one big array of array_size entries
 	float * buf_float = reinterpret_cast<float*>( buf_tmp );
@@ -18,7 +18,7 @@ hmc_error make_binary_data_single(hmc_float * array, char * out, const int array
 
 	//suppose the buffer out has exactly the right size as given by array_size
 	if(!ENDIAN) {
-		printf("\tThe ENDIANNESS of the system is little, bytes must be reversed\n");
+		logger.debug() << "The ENDIANNESS of the system is little, bytes must be reversed";
 		for (size_t i = 0; i < num_entries; i += 4) {
 			out[i]   = buf_tmp[i+3];
 			out[i+1] = buf_tmp[i+2];
@@ -26,7 +26,7 @@ hmc_error make_binary_data_single(hmc_float * array, char * out, const int array
 			out[i+3] = buf_tmp[i];
 		}
 	} else {
-		printf("\tThe ENDIANNESS of the system is big, bytes must not be reversed\n");
+		logger.debug() << "The ENDIANNESS of the system is big, bytes must not be reversed";
 		for (size_t i = 0; i < num_entries; i++) {
 			out[i] = buf_tmp[i];
 		}
@@ -48,7 +48,7 @@ hmc_error make_binary_data_double(hmc_float * array, char * out, const int array
 
 	//suppose the buffer out has exactly the right size as given by array_size
 	if(!ENDIAN) {
-		printf("\tThe ENDIANNESS of the system is little, bytes must be reversed\n");
+		logger.debug() << "The ENDIANNESS of the system is little, bytes must be reversed";
 		for (size_t i = 0; i < num_entries; i += 8) {
 			out[i]   = buf_tmp[i+7];
 			out[i+1] = buf_tmp[i+6];
@@ -60,7 +60,7 @@ hmc_error make_binary_data_double(hmc_float * array, char * out, const int array
 			out[i+7] = buf_tmp[i];
 		}
 	} else {
-		printf("\tThe ENDIANNESS of the system is big, bytes must not be reversed\n");
+		logger.debug() << "The ENDIANNESS of the system is big, bytes must not be reversed";
 		for (size_t i = 0; i < num_entries; i++) {
 			out[i] = buf_tmp[i];
 		}
@@ -77,7 +77,7 @@ hmc_error write_gaugefield (
   const char * hmc_version, const char * filename)
 {
 
-	printf("writing gaugefield to lime-file...\n");
+	logger.info() << "writing gaugefield to lime-file...";
 
 	time_t current_time;
 	FILE *outputfile;
@@ -99,7 +99,7 @@ hmc_error write_gaugefield (
 	//get binary data
 	//here it must not be assumed that the argument prec and sizeof(hmc_float) are the same!!
 	size_t num_entries = (prec / 8) * array_size;
-	printf("num_entries = %ld\n", num_entries);
+	logger.debug() << "  num_entries = " << num_entries;
 	char * binary_data = new char[num_entries];
 
 	// TODO make sure the ildg_gaugefield is never padded
@@ -204,7 +204,7 @@ hmc_error write_gaugefield (
 	limeWriteRecordHeader(header_xlf_info, writer);
 	limeDestroyHeader(header_xlf_info);
 	limeWriteRecordData( xlf_info, &length_xlf_info, writer);
-	printf("\txlf-info written\n");
+	logger.debug() << "  xlf-info written";
 
 	//ildg-format
 	ME_flag = 2;
@@ -212,7 +212,7 @@ hmc_error write_gaugefield (
 	limeWriteRecordHeader(header_ildg_format, writer);
 	limeDestroyHeader(header_ildg_format);
 	limeWriteRecordData( ildg_format, &length_ildg_format, writer);
-	printf("\tildg-format written\n");
+	logger.debug() << "  ildg-format written";
 
 	//binary data
 	ME_flag = 3;
@@ -220,7 +220,7 @@ hmc_error write_gaugefield (
 	limeWriteRecordHeader(header_ildg_binary_data, writer);
 	limeDestroyHeader(header_ildg_binary_data);
 	limeWriteRecordData(binary_data, &length_ildg_binary_data, writer);
-	printf("\tildg_binary_data written\n");
+	logger.debug() << "  ildg_binary_data written";
 
 	//scidac-checksum
 	ME_flag = 4;
@@ -228,12 +228,12 @@ hmc_error write_gaugefield (
 	limeWriteRecordHeader(header_scidac_checksum, writer);
 	limeDestroyHeader(header_scidac_checksum);
 	limeWriteRecordData( (void*) scidac_checksum, &length_scidac_checksum, writer);
-	printf("\tscidac-checksum written\n");
+	logger.debug() << "  scidac-checksum written";
 
 	//closing
 	fclose(outputfile);
 	limeDestroyWriter(writer);
-	printf("\t%f MBytes were written to the lime file %s\n", (float) ( (float) (length_xlf_info + length_ildg_format + length_ildg_binary_data + length_scidac_checksum) / 1024 / 1024 ),  filename);
+	logger.info() << "  " << (float) ( (float) (length_xlf_info + length_ildg_format + length_ildg_binary_data + length_scidac_checksum) / 1024 / 1024 ) << " MBytes were written to the lime file " << filename;
 
 	delete[] binary_data;
 	return HMC_SUCCESS;

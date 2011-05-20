@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <vector>
 #include <cstring>
-#include <iostream>
 #include <fstream>
 #include <sstream>
 #ifdef __APPLE__
@@ -137,18 +136,18 @@ public:
 	 * @param[in] global_work_size OpenCL global_work_size
 	 * @param[in,out] timer time for measurement
 	 * @return Error code as defined in hmcerrs.h
-	 */	
+	 */
 	hmc_error run_kappa_karsch_gpu(const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch);
-	
+
 	/**
 	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld  on GPU
 	 * @param[in] local_work_size OpenCL local_work_size
 	 * @param[in] global_work_size OpenCL global_work_size
 	 * @param[in,out] timer time for measurement
 	 * @return Error code as defined in hmcerrs.h
-	 */	
+	 */
 	hmc_error run_kappa_clover_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_clover);
-  
+
 	/**
 	 * Calculate plaquette and polyakov.
 	 *
@@ -174,7 +173,7 @@ public:
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
 	virtual hmc_error fill_collect_options(stringstream* collect_options);
-	
+
 	/**
 	 * Called by the destructor.
 	 */
@@ -183,14 +182,14 @@ public:
 	/**
 	 * Contains the list of kernel files after call to fill_kernels_file().
 	 */
-        std::vector<std::string> cl_kernels_file;
-	
+	std::vector<std::string> cl_kernels_file;
+
 	/**
 	 * Instance of input_parameters.
 	 */
 	inputparameters* parameters;
-	
-        /** The number of cores (not PEs) of the device */
+
+	/** The number of cores (not PEs) of the device */
 	cl_uint max_compute_units;
 
 	/**
@@ -216,11 +215,11 @@ public:
 	 * @todo global work size will also depend on device ...
 	 */
 	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
- 
+
 	cl_command_queue queue;
 	cl_program clprogram;
 
-  	//heatbath variables
+	//heatbath variables
 	cl_mem clmem_gaugefield;
 	cl_mem clmem_rndarray;
 	cl_mem clmem_plaq;
@@ -233,7 +232,7 @@ public:
 	cl_mem clmem_polyakov_buf_glob;
 	//!!CP: this is not needed at the moment and since is not copied to the device anywhere!!
 	cl_mem clmem_theta_gaugefield;
-	
+
 	int isinit;
 	cl_context context;
 	cl_kernel heatbath_odd;

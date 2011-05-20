@@ -1,5 +1,7 @@
 #include "gaugefield.h"
 
+#include "logger.hpp"
+
 hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer)
 {
 	gf = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
@@ -14,17 +16,17 @@ hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparame
 	if(numdevs != 1) {
 		//LZ: so far, we only use !!! 1 !!! device
 		//this needs generalisation to several devices and subsets!!!!!
-		cerr << "only 1 device possible..." << endl;
+		logger.error() << "only 1 device possible...";
 	}
 
 	if(num_ocl_devices > 0)
-	  devices = new Opencl[num_ocl_devices];
+		devices = new Opencl[num_ocl_devices];
 
 
 	for(int n = 0; n < num_ocl_devices; n++) {
-		cout << "init device #" << n << endl;
+		logger.debug() << "init device #" << n;
 		devices[n].init(devicetypes[n], local_work_size, global_work_size, timer, parameters);
-		
+
 	}
 
 	return HMC_SUCCESS;
@@ -46,7 +48,7 @@ hmc_error Gaugefield::init_gaugefield(usetimer* timer)
 		if (err == 0) {
 			print_info_source(&parameters_source);
 		} else {
-			printf("error in setting vals from source!!! check global settings!!!\n\n");
+			logger.fatal() << "error in setting vals from source!!! check global settings!!!";
 			return HMC_XMLERROR;
 		}
 	}
@@ -65,21 +67,20 @@ hmc_error Gaugefield::init_gaugefield(usetimer* timer)
 
 void Gaugefield::print_info_source(sourcefileparameters* params)
 {
-	printf("**********************************************************\n");
-	printf("Sourcefile parameters: (list not complete)\n");
-	printf("field:  %s\n", params->field_source);
-	printf("LX:  \t%d\n", params->lx_source);
-	printf("LY:  \t%d\n", params->ly_source);
-	printf("LZ:  \t%d\n", params->lz_source);
-	printf("LT:  \t%d\n", params->lt_source);
-	printf("entries: %d\n", params->num_entries_source);
-	printf("beta:  \t%f\n", params->beta_source);
-	printf("mu:  \t%f\n", params->mu_source);
-	printf("kappa:  %f\n", params->kappa_source);
-	printf("mubar:  %f\n", params->mubar_source);
-	printf("plaq: \t%f\n", params->plaquettevalue_source);
-	printf("**********************************************************\n");
-	printf("\n");
+	logger.info() << "**********************************************************";
+	logger.info() << "Sourcefile parameters: (list not complete)";
+	logger.info() << "field:   " << params->field_source;
+	logger.info() << "LX:      " << params->lx_source;
+	logger.info() << "LY:      " << params->ly_source;
+	logger.info() << "LZ:      " << params->lz_source;
+	logger.info() << "LT:      " << params->lt_source;
+	logger.info() << "entries: " << params->num_entries_source;
+	logger.info() << "beta:    " << params->beta_source;
+	logger.info() << "mu:      " << params->mu_source;
+	logger.info() << "kappa:   " << params->kappa_source;
+	logger.info() << "mubar:   " << params->mubar_source;
+	logger.info() << "plaq:    " << params->plaquettevalue_source;
+	logger.info() << "**********************************************************";
 	return;
 }
 
@@ -156,7 +157,7 @@ void Gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2)
 	timer->add();
 	timer2->reset();
 	hmc_complex pol = polyakov();
-	printf("%f\t%f\t%f\t%f\t%f\t%f\n", plaq, tplaq, splaq, pol.re, pol.im, sqrt(pol.re * pol.re + pol.im * pol.im));
+	logger.info() << plaq << '\t' << tplaq << '\t' << splaq << '\t' << pol.re << '\t' << pol.im << '\t' << sqrt(pol.re * pol.re + pol.im * pol.im);
 	timer2->add();
 	return;
 }
@@ -170,7 +171,7 @@ void Gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2, int
 	timer->add();
 	timer2->reset();
 	hmc_complex pol = polyakov();
-	printf("%d\t%f\t%f\t%f\t%f\t%f\t%f\n", iter, plaq, tplaq, splaq, pol.re, pol.im, sqrt(pol.re * pol.re + pol.im * pol.im));
+	logger.info() << iter << '\t' << plaq << '\t' << tplaq << '\t' << splaq << '\t' << pol.re << '\t' << pol.im << '\t' << sqrt(pol.re * pol.re + pol.im * pol.im);
 	timer2->add();
 	return;
 }
@@ -382,24 +383,28 @@ inputparameters * Gaugefield::get_parameters ()
 	return  parameters;
 }
 
-	
-hmc_error Gaugefield::set_gf (hmc_gaugefield * gf_val){
-  gf = gf_val;
-  return HMC_SUCCESS;
-}
-	
-//hmc_error Gaugefield::set_devices (Opencl * devices_val){
-hmc_error Gaugefield::set_devices (Opencl * devices_val){
-  devices = devices_val;
-  return HMC_SUCCESS;
-}
-	
-hmc_error Gaugefield::set_num_ocl_devices (int num){
-  num_ocl_devices = num;
-  return HMC_SUCCESS;
+
+hmc_error Gaugefield::set_gf (hmc_gaugefield * gf_val)
+{
+	gf = gf_val;
+	return HMC_SUCCESS;
 }
 
-hmc_error Gaugefield::set_parameters (inputparameters * parameters_val){
-  parameters = parameters_val; 
-  return HMC_SUCCESS;
+//hmc_error Gaugefield::set_devices (Opencl * devices_val){
+hmc_error Gaugefield::set_devices (Opencl * devices_val)
+{
+	devices = devices_val;
+	return HMC_SUCCESS;
+}
+
+hmc_error Gaugefield::set_num_ocl_devices (int num)
+{
+	num_ocl_devices = num;
+	return HMC_SUCCESS;
+}
+
+hmc_error Gaugefield::set_parameters (inputparameters * parameters_val)
+{
+	parameters = parameters_val;
+	return HMC_SUCCESS;
 }

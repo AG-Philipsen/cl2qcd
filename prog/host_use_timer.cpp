@@ -1,5 +1,7 @@
 #include "host_use_timer.h"
 
+#include "logger.hpp"
+
 void usetimer::reset()
 {
 	timer.reset();
@@ -41,12 +43,12 @@ int usetimer::getNumMeas()
 
 uint64_t divide(uint64_t a, int b)
 {
-	return uint64_t ( ( (float) a )/ ((float) b) );
+	return uint64_t ( ( (float) a ) / ((float) b) );
 }
 
 float percent(uint64_t a, int b)
 {
-	return (( (float) a) / ( (float )b )) *100;
+	return (( (float) a) / ( (float )b )) * 100;
 }
 
 void time_output(
@@ -164,29 +166,29 @@ void time_output(
 	metropolis_steps = (*metropolistimer).getNumMeas();
 #endif
 
-	if(polysteps!=0) {
-		poly_avgtime_site = divide(polytime, VOL4D*polysteps);
+	if(polysteps != 0) {
+		poly_avgtime_site = divide(polytime, VOL4D * polysteps);
 		poly_avgtime = divide(polytime, polysteps);
 	} else {
 		poly_avgtime_site = 0;
 		poly_avgtime = 0;
 	}
-	if(plaqsteps!=0) {
-		plaq_avgtime_site = divide(plaqtime, VOL4D*plaqsteps);
+	if(plaqsteps != 0) {
+		plaq_avgtime_site = divide(plaqtime, VOL4D * plaqsteps);
 		plaq_avgtime = divide(plaqtime, plaqsteps);
 	} else {
 		plaq_avgtime_site = 0;
 		plaq_avgtime = 0;
 	}
-	if(updatesteps!=0) {
-		update_avgtime_site = divide(updatetime, VOL4D*updatesteps);
+	if(updatesteps != 0) {
+		update_avgtime_site = divide(updatetime, VOL4D * updatesteps);
 		update_avgtime = divide(updatetime, updatesteps);
 	} else {
 		update_avgtime_site = 0;
 		update_avgtime = 0;
 	}
-	if(overrelaxsteps!=0) {
-		overrelax_avgtime_site = divide(overrelaxtime, VOL4D*overrelaxsteps);
+	if(overrelaxsteps != 0) {
+		overrelax_avgtime_site = divide(overrelaxtime, VOL4D * overrelaxsteps);
 		overrelax_avgtime = divide(overrelaxtime, overrelaxsteps);
 	} else {
 		overrelax_avgtime_site = 0;
@@ -195,74 +197,74 @@ void time_output(
 	if(copysteps != 0) copy_avgtime = divide(copytime, copysteps);
 	else copy_avgtime = 0;
 #ifdef _FERMIONS_
-	if(single_ferm_steps!=0) {
+	if(single_ferm_steps != 0) {
 		single_ferm_avgtime = divide(single_ferm, single_ferm_steps);
 	} else {
 		single_ferm_avgtime = 0;
 	}
-	if(copy_ferm_steps!=0) {
+	if(copy_ferm_steps != 0) {
 		copy_ferm_avgtime = divide(copy_ferm, copy_ferm_steps);
 	} else {
 		copy_ferm_avgtime = 0;
 	}
-	if(M_steps!=0) {
+	if(M_steps != 0) {
 		M_avgtime = divide(Mtime, M_steps);
-		M_avgtime_site = divide(Mtime, M_steps*VOL4D);
+		M_avgtime_site = divide(Mtime, M_steps * VOL4D);
 	} else {
 		M_avgtime = 0;
 		M_avgtime_site = 0;
 	}
-	if(Mdiag_steps!=0) {
+	if(Mdiag_steps != 0) {
 		Mdiag_avgtime = divide(Mdiagtime, M_steps);
-		Mdiag_avgtime_site = divide(Mdiagtime, M_steps*VOL4D);
+		Mdiag_avgtime_site = divide(Mdiagtime, M_steps * VOL4D);
 	} else {
 		Mdiag_avgtime = 0;
 		Mdiag_avgtime_site = 0;
 	}
-	if(dslash_steps!=0) {
+	if(dslash_steps != 0) {
 		dslash_avgtime = divide(dslashtime, dslash_steps);
-		dslash_avgtime_site = divide(dslashtime, dslash_steps*VOL4D);
+		dslash_avgtime_site = divide(dslashtime, dslash_steps * VOL4D);
 	} else {
 		dslash_avgtime = 0;
 		dslash_avgtime_site = 0;
 	}
-	if(scalprod_steps!=0) {
+	if(scalprod_steps != 0) {
 		scalprod_avgtime = divide(scalprod, scalprod_steps);
-		scalprod_avgtime_site = divide(scalprod, scalprod_steps*VOL4D);
+		scalprod_avgtime_site = divide(scalprod, scalprod_steps * VOL4D);
 	} else {
 		scalprod_avgtime = 0;
 		scalprod_avgtime_site = 0;
 	}
-	if(la_steps!=0) {
+	if(la_steps != 0) {
 		la_avgtime = divide(latime, la_steps);
-		la_avgtime_site = divide(latime, la_steps*VOL4D);
+		la_avgtime_site = divide(latime, la_steps * VOL4D);
 	} else {
 		la_avgtime = 0;
 		la_avgtime_site = 0;
 	}
-	if(solver_steps!=0) {
+	if(solver_steps != 0) {
 		solver_avgtime = divide(solvertime, solver_steps);
 	} else {
 		solver_avgtime = 0;
 	}
 #endif
 #ifdef _USEHMC_
-	if(hmc_steps!=0) {
+	if(hmc_steps != 0) {
 		hmc_avgtime = divide(hmctime, hmc_steps);
 	} else {
 		hmc_avgtime = 0;
 	}
-	if(hmcinit_steps!=0) {
+	if(hmcinit_steps != 0) {
 		hmcinit_avgtime = divide(hmcinittime, hmcinit_steps);
 	} else {
 		hmcinit_avgtime = 0;
 	}
-	if(metropolis_steps!=0) {
+	if(metropolis_steps != 0) {
 		metropolis_avgtime = divide(metropolistime, metropolis_steps);
 	} else {
 		metropolis_avgtime = 0;
 	}
-	if(leapfrog_steps!=0) {
+	if(leapfrog_steps != 0) {
 		leapfrog_avgtime = divide(leapfrogtime, leapfrog_steps);
 	} else {
 		leapfrog_avgtime = 0;
@@ -274,17 +276,17 @@ void time_output(
 	printf("total runtime:\t\t%llu\n\n", totaltime );
 	printf("Times:\t\t tot\t\t avg\t\tsite\tperc\n");
 
-	printf("Init.:\t%12llu\t%12llu\t%12llu\t%.3f\n", inittime, inittime, divide(inittime, VOL4D),percent (inittime, totaltime) );
-	printf("Copy.:\t%12llu\t%12llu\t%12llu\t%.3f\n", copytime, copy_avgtime, copytime,percent (copytime, totaltime) );
+	printf("Init.:\t%12llu\t%12llu\t%12llu\t%.3f\n", inittime, inittime, divide(inittime, VOL4D), percent (inittime, totaltime) );
+	printf("Copy.:\t%12llu\t%12llu\t%12llu\t%.3f\n", copytime, copy_avgtime, copytime, percent (copytime, totaltime) );
 	printf("Plaq.:\t%12llu\t%12llu\t%12llu\t%.3f\n", plaqtime, plaq_avgtime, plaq_avgtime_site, percent (plaqtime, totaltime));
 	printf("Poly.:\t%12llu\t%12llu\t%12llu\t%.3f\n", polytime, poly_avgtime, poly_avgtime_site, percent (polytime, totaltime));
 	printf("Updt.:\t%12llu\t%12llu\t%12llu\t%.3f\n", updatetime, update_avgtime, update_avgtime_site, percent (updatetime, totaltime));
 	printf("Over.:\t%12llu\t%12llu\t%12llu\t%.3f\n", overrelaxtime, overrelax_avgtime, overrelax_avgtime_site, percent (overrelaxtime, totaltime));
 #ifdef _FERMIONS_
 	printf("Fermion Times:\t tot\t\t avg\t\tsite\tperc\n");
-	printf("Init.:\t%12llu\t%12llu\t%12llu\t%.3f\n", init_ferm, init_ferm, divide(init_ferm, VOL4D),percent (init_ferm, totaltime) );
-	printf("Solve:\t%12llu\t%12llu\t%12llu\t%.3f\n", solvertime, solver_avgtime, solver_avgtime,percent (solvertime, totaltime) );
-	printf("Copy.:\t%12llu\t%12llu\t%12llu\t%.3f\n", copy_ferm, copy_ferm_avgtime, copy_ferm,percent (copy_ferm, totaltime) );
+	printf("Init.:\t%12llu\t%12llu\t%12llu\t%.3f\n", init_ferm, init_ferm, divide(init_ferm, VOL4D), percent (init_ferm, totaltime) );
+	printf("Solve:\t%12llu\t%12llu\t%12llu\t%.3f\n", solvertime, solver_avgtime, solver_avgtime, percent (solvertime, totaltime) );
+	printf("Copy.:\t%12llu\t%12llu\t%12llu\t%.3f\n", copy_ferm, copy_ferm_avgtime, copy_ferm, percent (copy_ferm, totaltime) );
 	printf("Sngle:\t%12llu\t%12llu\t%12llu\t%.3f\n", single_ferm, single_ferm_avgtime, single_ferm_avgtime, percent (single_ferm, totaltime));
 	printf("ScPr.:\t%12llu\t%12llu\t%12llu\t%.3f\n", scalprod, scalprod_avgtime, scalprod_avgtime_site, percent (scalprod, totaltime));
 	printf("BLAS.:\t%12llu\t%12llu\t%12llu\t%.3f\n", latime, la_avgtime, la_avgtime_site, percent (latime, totaltime));
@@ -294,10 +296,10 @@ void time_output(
 #endif
 #ifdef _USEHMC_
 	printf("HybridMC Times:\t tot\t\t avg\t\tsite\tperc\n");
-	printf("HMC:\t%12llu\t%12llu\t%12llu\t%.3f\n",hmctime, hmc_avgtime, hmc_avgtime, percent (hmctime, totaltime));
-	printf("Init:\t%12llu\t%12llu\t%12llu\t%.3f\n",hmcinittime, hmcinit_avgtime, hmcinit_avgtime, percent (hmcinittime, totaltime));
-	printf("Leap:\t%12llu\t%12llu\t%12llu\t%.3f\n",leapfrogtime, leapfrog_avgtime, leapfrog_avgtime, percent (leapfrogtime, totaltime));
-	printf("Metr:\t%12llu\t%12llu\t%12llu\t%.3f\n",metropolistime, metropolis_avgtime, metropolis_avgtime, percent (metropolistime, totaltime));
+	printf("HMC:\t%12llu\t%12llu\t%12llu\t%.3f\n", hmctime, hmc_avgtime, hmc_avgtime, percent (hmctime, totaltime));
+	printf("Init:\t%12llu\t%12llu\t%12llu\t%.3f\n", hmcinittime, hmcinit_avgtime, hmcinit_avgtime, percent (hmcinittime, totaltime));
+	printf("Leap:\t%12llu\t%12llu\t%12llu\t%.3f\n", leapfrogtime, leapfrog_avgtime, leapfrog_avgtime, percent (leapfrogtime, totaltime));
+	printf("Metr:\t%12llu\t%12llu\t%12llu\t%.3f\n", metropolistime, metropolis_avgtime, metropolis_avgtime, percent (metropolistime, totaltime));
 #endif
 	printf("**************************************************************\n");
 
@@ -306,27 +308,27 @@ void time_output(
 	ofstream out;
 	stringstream str_filename;
 	//CP: this H is for heatbath benchmarking, it has to be replaced meaningfully for other occasions
-	str_filename<<"time_";
+	str_filename << "time_";
 #ifdef _PERFORM_BENCHMARKS_
-	str_filename<<"B_";
+	str_filename << "B_";
 #endif
 #ifdef _USEGPU_
-	str_filename<<"G_";
+	str_filename << "G_";
 #else
-	str_filename<<"C_";
+	str_filename << "C_";
 #endif
 #ifdef _USEDOUBLEPREC_
-	str_filename<<"D_";
+	str_filename << "D_";
 #else
-	str_filename<<"S_";
+	str_filename << "S_";
 #endif
 #ifdef _RECONSTRUCT_TWELVE_
-	str_filename<<"R_";
+	str_filename << "R_";
 #else
-	str_filename<<"N_";
+	str_filename << "N_";
 #endif
 #ifdef _PERFORM_BENCHMARKS_
-	str_filename<<benchmark_id;
+	str_filename << benchmark_id;
 	out.open(str_filename.str().c_str(), fstream::trunc);
 #else
 	out.open(str_filename.str().c_str(), fstream::app);
@@ -343,11 +345,11 @@ void time_output(
 		    NTIME << "\t" << NSPACE << "\t" << VOL4D << "\t" << totaltime << "\t"
 		    << inittime << "\t" << copy_avgtime << "\t" << poly_avgtime << "\t" << plaq_avgtime << "\t" << update_avgtime << "\t" << overrelax_avgtime << endl;
 		out.close();
-	} else cout << "Unable to open file for output" << endl;
+	} else logger.error() << "Unable to open file for output";
 
 	//fermion output
 #ifdef _FERMIONS_
-	str_filename<<"ferm";
+	str_filename << "ferm";
 	out.open(str_filename.str().c_str(), fstream::app);
 	if (out.is_open()) {
 		//output:
@@ -357,15 +359,15 @@ void time_output(
 		    benchmark_id << "\t"  <<  steps << "\t" <<
 #endif
 		    NTIME << "\t" << NSPACE << "\t" << VOL4D << "\t" << totaltime << "\t"
-		    << init_ferm << "\t" << solvertime << "\t" << copy_ferm_avgtime << "\t" << single_ferm_avgtime << "\t" << scalprod_avgtime << "\t" << la_avgtime << "\t" << M_avgtime << "\t" << Mdiag_avgtime<< "\t" << dslash_avgtime<< endl;
+		    << init_ferm << "\t" << solvertime << "\t" << copy_ferm_avgtime << "\t" << single_ferm_avgtime << "\t" << scalprod_avgtime << "\t" << la_avgtime << "\t" << M_avgtime << "\t" << Mdiag_avgtime << "\t" << dslash_avgtime << endl;
 		out.close();
 
-	} else cout << "Unable to open file for output" << endl;
+	} else logger.error() << "Unable to open file for output";
 #endif
 
 	//hybrid monte carlo output
 #ifdef _USEHMC_
-	str_filename<<"ferm";
+	str_filename << "ferm";
 	out.open(str_filename.str().c_str(), fstream::app);
 	if (out.is_open()) {
 		//output:
@@ -377,7 +379,7 @@ void time_output(
 		    NTIME << "\t" << NSPACE << "\t" << VOL4D << "\t" << totaltime << "\t"
 		    << hmc_avgtime << "\t" << hmcinit_avgtime << "\t" << leapfrog_avgtime << "\t" << metropolis_avgtime << "\t" << endl;
 		out.close();
-	} else cout << "Unable to open file for output" << endl;
+	} else logger.error() << "Unable to open file for output";
 #endif
 
 	return;
@@ -418,29 +420,29 @@ void time_output_heatbath(
 	overrelaxsteps = (*overrelax).getNumMeas();
 	copysteps = (*copy).getNumMeas();
 
-	if(polysteps!=0) {
-		poly_avgtime_site = divide(polytime, VOL4D*polysteps);
+	if(polysteps != 0) {
+		poly_avgtime_site = divide(polytime, VOL4D * polysteps);
 		poly_avgtime = divide(polytime, polysteps);
 	} else {
 		poly_avgtime_site = 0;
 		poly_avgtime = 0;
 	}
-	if(plaqsteps!=0) {
-		plaq_avgtime_site = divide(plaqtime, VOL4D*plaqsteps);
+	if(plaqsteps != 0) {
+		plaq_avgtime_site = divide(plaqtime, VOL4D * plaqsteps);
 		plaq_avgtime = divide(plaqtime, plaqsteps);
 	} else {
 		plaq_avgtime_site = 0;
 		plaq_avgtime = 0;
 	}
-	if(updatesteps!=0) {
-		update_avgtime_site = divide(updatetime, VOL4D*updatesteps);
+	if(updatesteps != 0) {
+		update_avgtime_site = divide(updatetime, VOL4D * updatesteps);
 		update_avgtime = divide(updatetime, updatesteps);
 	} else {
 		update_avgtime_site = 0;
 		update_avgtime = 0;
 	}
-	if(overrelaxsteps!=0) {
-		overrelax_avgtime_site = divide(overrelaxtime, VOL4D*overrelaxsteps);
+	if(overrelaxsteps != 0) {
+		overrelax_avgtime_site = divide(overrelaxtime, VOL4D * overrelaxsteps);
 		overrelax_avgtime = divide(overrelaxtime, overrelaxsteps);
 	} else {
 		overrelax_avgtime_site = 0;
@@ -449,39 +451,38 @@ void time_output_heatbath(
 	if(copysteps != 0) copy_avgtime = divide(copytime, copysteps);
 	else copy_avgtime = 0;
 
-	printf("\n");
-	printf("**************************************************************\n");
-	printf("total runtime:\t\t%llu\n\n", totaltime );
-	printf("Times:\t\t tot\t\t avg\t\tsite\tperc\n");
+	logger.trace() << "*******************************************************************";
+	logger.trace() << "total runtime:" << setfill(' ') << setw(12) << totaltime;
+	logger.trace() << "Times:\t" << setfill(' ') << setw(12) << "tot" << '\t' << setw(12) << "avg" << '\t' << setw(12) << "site" << '\t' << setw(5) << "perc";
 
-	printf("Init.:\t%12llu\t%12llu\t%12llu\t%.3f\n", inittime, inittime, divide(inittime, VOL4D),percent (inittime, totaltime) );
-	printf("Copy.:\t%12llu\t%12llu\t%12llu\t%.3f\n", copytime, copy_avgtime, copytime,percent (copytime, totaltime) );
-	printf("Plaq.:\t%12llu\t%12llu\t%12llu\t%.3f\n", plaqtime, plaq_avgtime, plaq_avgtime_site, percent (plaqtime, totaltime));
-	printf("Poly.:\t%12llu\t%12llu\t%12llu\t%.3f\n", polytime, poly_avgtime, poly_avgtime_site, percent (polytime, totaltime));
-	printf("Updt.:\t%12llu\t%12llu\t%12llu\t%.3f\n", updatetime, update_avgtime, update_avgtime_site, percent (updatetime, totaltime));
-	printf("Over.:\t%12llu\t%12llu\t%12llu\t%.3f\n", overrelaxtime, overrelax_avgtime, overrelax_avgtime_site, percent (overrelaxtime, totaltime));
-	printf("**************************************************************\n");
+	logger.trace() << "Init.:\t" << setfill(' ') << setw(12) << inittime << '\t' << setw(12) << inittime << '\t' << setw(12) << divide(inittime, VOL4D) << '\t' << setw(5) << fixed << setw(5) << setprecision(1) << percent(inittime, totaltime) ;
+	logger.trace() << "Copy.:\t" << setfill(' ') << setw(12) << copytime << '\t' << setw(12) << copy_avgtime << '\t' << setw(12) << copytime << '\t' << fixed << setw(5) << setprecision(1) << percent(copytime, totaltime);
+	logger.trace() << "Plaq.:\t" << setfill(' ') << setw(12) << plaqtime << '\t' << setw(12) << plaq_avgtime << '\t' << setw(12) << plaq_avgtime_site << '\t' << fixed << setw(5) << setprecision(1) << percent(plaqtime, totaltime);
+	logger.trace() << "Poly.:\t" << setfill(' ') << setw(12) << polytime << '\t' << setw(12) << poly_avgtime << '\t' << setw(12) << poly_avgtime_site << '\t' << fixed << setw(5) << setprecision(1) << percent(polytime, totaltime);
+	logger.trace() << "Updt.:\t" << setfill(' ') << setw(12) << updatetime << '\t' << setw(12) << update_avgtime << '\t' << setw(12) << update_avgtime_site << '\t' << fixed << setw(5) << setprecision(1) << percent(updatetime, totaltime);
+	logger.trace() << "Over.:\t" << setfill(' ') << setw(12) << overrelaxtime << '\t' << setw(12) << overrelax_avgtime << '\t' << setw(12) << overrelax_avgtime_site << '\t' << fixed << setw(5) << setprecision(1) << percent(overrelaxtime, totaltime);
+	logger.trace() << "*******************************************************************";
 
 
 	//save some data to file
 	ofstream out;
 	stringstream str_filename;
 	//CP: this H is for heatbath benchmarking, it has to be replaced meaningfully for other occasions
-	str_filename<<"time_";
+	str_filename << "time_";
 #ifdef _USEGPU_
-	str_filename<<"G_";
+	str_filename << "G_";
 #else
-	str_filename<<"C_";
+	str_filename << "C_";
 #endif
 #ifdef _USEDOUBLEPREC_
-	str_filename<<"D_";
+	str_filename << "D_";
 #else
-	str_filename<<"S_";
+	str_filename << "S_";
 #endif
 #ifdef _RECONSTRUCT_TWELVE_
-	str_filename<<"R_";
+	str_filename << "R_";
 #else
-	str_filename<<"N_";
+	str_filename << "N_";
 #endif
 	out.open(str_filename.str().c_str(), fstream::app);
 
@@ -493,9 +494,7 @@ void time_output_heatbath(
 		    NTIME << "\t" << NSPACE << "\t" << VOL4D << "\t" << totaltime << "\t"
 		    << inittime << "\t" << copy_avgtime << "\t" << poly_avgtime << "\t" << plaq_avgtime << "\t" << update_avgtime << "\t" << overrelax_avgtime << endl;
 		out.close();
-	} else cout << "Unable to open file for output" << endl;
+	} else logger.error() << "Unable to open file for output";
 
 	return;
 }
-
-
