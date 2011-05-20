@@ -137,12 +137,14 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
       //alpha=0
       subtract_3x3matrix (&tmp, &Q_20, &Q_02);
       multiply_3x3matrix (&tmp, &Q_10, &tmp);
-      trace_3x3matrix (&tmp_cmp, &tmp);
+//       trace_3x3matrix (&tmp_cmp, &tmp);
+      tmp_cmp = trace_3x3matrix(&tmp);
       t_12 [point] = tmp_cmp.re;
       //alpha=1
       subtract_3x3matrix (&tmp, &Q_21, &Q_12);
       multiply_3x3matrix (&tmp, &Q_11, &tmp);
-      trace_3x3matrix (&tmp_cmp, &tmp);
+//       trace_3x3matrix (&tmp_cmp, &tmp);
+      tmp_cmp = trace_3x3matrix(&tmp);
       t_12 [point] += tmp_cmp.re;
       //alpha=2, vanishes
 // 	      subtract_3x3matrix (&tmp, &Q_22, &Q_22);
@@ -152,24 +154,28 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
       //alpha=3
       subtract_3x3matrix (&tmp, &Q_23, &Q_32);
       multiply_3x3matrix (&tmp, &Q_13, &tmp);
-      trace_3x3matrix (&tmp_cmp, &tmp);
+//       trace_3x3matrix (&tmp_cmp, &tmp);
+      tmp_cmp = trace_3x3matrix(&tmp);
       t_12 [point] += tmp_cmp.re;
 
       //T_13
       //alpha=0
       subtract_3x3matrix (&tmp, &Q_30, &Q_03);
       multiply_3x3matrix (&tmp, &Q_10, &tmp);
-      trace_3x3matrix (&tmp_cmp, &tmp);
+//      trace_3x3matrix (&tmp_cmp, &tmp);
+      tmp_cmp = trace_3x3matrix(&tmp);
       t_13 [point] = tmp_cmp.re;
       //alpha=1
       subtract_3x3matrix (&tmp, &Q_31, &Q_13);
       multiply_3x3matrix (&tmp, &Q_11, &tmp);
-      trace_3x3matrix (&tmp_cmp, &tmp);
+//      trace_3x3matrix (&tmp_cmp, &tmp);
+      tmp_cmp = trace_3x3matrix(&tmp);
       t_13 [point] += tmp_cmp.re;
       //alpha=2
       subtract_3x3matrix (&tmp, &Q_32, &Q_23);
       multiply_3x3matrix (&tmp, &Q_12, &tmp);
-      trace_3x3matrix (&tmp_cmp, &tmp);
+//      trace_3x3matrix (&tmp_cmp, &tmp);
+      tmp_cmp = trace_3x3matrix(&tmp);
       t_13 [point] += tmp_cmp.re;
       //alpha=3, vanishes
 // 	      subtract_3x3matrix (&tmp, &Q_33, &Q_33);
@@ -181,17 +187,20 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
       //alpha=0
       subtract_3x3matrix (&tmp, &Q_30, &Q_03);
       multiply_3x3matrix (&tmp, &Q_20, &tmp);
-      trace_3x3matrix (&tmp_cmp, &tmp);
+//      trace_3x3matrix (&tmp_cmp, &tmp);
+      tmp_cmp = trace_3x3matrix(&tmp);
       t_23 [point] = tmp_cmp.re;
       //alpha=1
       subtract_3x3matrix (&tmp, &Q_31, &Q_13);
       multiply_3x3matrix (&tmp, &Q_21, &tmp);
-      trace_3x3matrix (&tmp_cmp, &tmp);
+//      trace_3x3matrix (&tmp_cmp, &tmp);
+      tmp_cmp = trace_3x3matrix(&tmp);
       t_23 [point] += tmp_cmp.re;
       //alpha=2
       subtract_3x3matrix (&tmp, &Q_32, &Q_23);
       multiply_3x3matrix (&tmp, &Q_22, &tmp);
-      trace_3x3matrix (&tmp_cmp, &tmp);
+//      trace_3x3matrix (&tmp_cmp, &tmp);
+      tmp_cmp = trace_3x3matrix(&tmp);
       t_23 [point] += tmp_cmp.re;
       //alpha=3, vanishes
 // 	      subtract_3x3matrix (&tmp, &Q_33, &Q_33);
