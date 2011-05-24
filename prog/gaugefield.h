@@ -54,11 +54,15 @@ public:
 	 * @param[in,out] timer Return initialization time.
 	 * @return Error code as defined in hmcerrs.h
 	 */
-        virtual hmc_error init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer);
+        hmc_error init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer);
 	/**
 	 * Free gaugefield and device allocations.
 	 */
 	hmc_error finalize();
+	/**
+	 * Free device, called by finalize
+	 */
+	virtual hmc_error free_devices();
 	/**
 	 * Initializes the devices, to be called by init()
 	 * @return Error code as defined in hmcerrs.h

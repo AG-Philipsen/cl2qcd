@@ -28,6 +28,7 @@
 #include "host_use_timer.h"
 #include "host_testing.h"
 #include "host_random.h"
+#include "inputparameters.h"
 
 /**
  * An OpenCL device
@@ -109,6 +110,8 @@ public:
         std::vector<std::string> cl_kernels_file;
 
 
+	/////////////////////////////7
+	// communication
 	/**
 	 * Copy the given gaugefield to the appropriate OpenCL buffer.
 	 *
@@ -153,6 +156,9 @@ public:
 	 */
 	hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
 
+
+	////////////////////////////
+	//Calculations, calls to kernels
 	/**
 	 * Perform one heatbath step.
 	 */
@@ -178,8 +184,10 @@ public:
 	 */
 	hmc_error gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const timer1, usetimer * const timer2);
 
+
+	///////////////////////////////////////////////////
+	// OpenCL enqueuing
        
-	
         /** The number of cores (not PEs) of the device */
 	cl_uint max_compute_units;
 
@@ -194,7 +202,6 @@ public:
 	 * @todo global work size will also depend on device ...
 	 */
 	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size);
-
 	/**
 	 * Enqueue the given kernel on the device. Local work size will be determined
 	 * automatically from device and kernel properties.
@@ -207,34 +214,9 @@ public:
 	 */
 	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
  
-	cl_command_queue queue;
-	cl_program clprogram;
 
-  	//heatbath variables
-	cl_mem clmem_gaugefield;
-	cl_mem clmem_rndarray;
-	cl_mem clmem_plaq;
-	cl_mem clmem_plaq_buf_glob;
-	cl_mem clmem_splaq_buf_glob;
-	cl_mem clmem_tplaq_buf_glob;
-	cl_mem clmem_splaq;
-	cl_mem clmem_tplaq;
-	cl_mem clmem_polyakov;
-	cl_mem clmem_polyakov_buf_glob;
-	//!!CP: this is not needed at the moment and since is not copied to the device anywhere!!
-	cl_mem clmem_theta_gaugefield;
-	
-
-	cl_context context;
-	cl_kernel heatbath_odd;
-	cl_kernel heatbath_even;
-	cl_kernel overrelax_odd;
-	cl_kernel overrelax_even;
-	cl_kernel plaquette;
-	cl_kernel plaquette_reduction;
-	cl_kernel polyakov;
-	cl_kernel polyakov_reduction;
-
+	///////////////////////////////////////////////
+	//get and set methods
 	/**
 	 * Sets initstatus to 1 (true)
 	 *
@@ -261,6 +243,36 @@ public:
 	 * @return parameters
 	 */
 	hmc_error set_parameters (inputparameters * parameters_val);
+
+
+	///////////////////////////////////////////////////////////
+	//LZ what follows should eventually be private
+  	//heatbath variables
+	cl_mem clmem_gaugefield;
+	cl_mem clmem_rndarray;
+	cl_mem clmem_plaq;
+	cl_mem clmem_plaq_buf_glob;
+	cl_mem clmem_splaq_buf_glob;
+	cl_mem clmem_tplaq_buf_glob;
+	cl_mem clmem_splaq;
+	cl_mem clmem_tplaq;
+	cl_mem clmem_polyakov;
+	cl_mem clmem_polyakov_buf_glob;
+	//!!CP: this is not needed at the moment and since is not copied to the device anywhere!!
+	cl_mem clmem_theta_gaugefield;
+	cl_command_queue queue;
+	cl_program clprogram;
+       	cl_context context;
+	cl_kernel heatbath_odd;
+	cl_kernel heatbath_even;
+	cl_kernel overrelax_odd;
+	cl_kernel overrelax_even;
+	cl_kernel plaquette;
+	cl_kernel plaquette_reduction;
+	cl_kernel polyakov;
+	cl_kernel polyakov_reduction;
+
+
  private:
 	inputparameters* parameters;
 	int isinit;

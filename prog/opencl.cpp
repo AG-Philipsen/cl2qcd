@@ -334,6 +334,47 @@ hmc_error Opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 	return HMC_SUCCESS;
 }
 
+hmc_error Opencl::finalize()
+{
+  if(get_init_status() == 1) {
+		if(clFlush(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clFinish(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+		if(clReleaseKernel(heatbath_even) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseKernel(heatbath_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+		if(clReleaseKernel(overrelax_even) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseKernel(overrelax_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+		if(clReleaseKernel(plaquette) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseKernel(polyakov) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseKernel(plaquette_reduction) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseKernel(polyakov_reduction) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+		if(clReleaseProgram(clprogram) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+		if(clReleaseMemObject(clmem_gaugefield) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseMemObject(clmem_rndarray) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+		if(clReleaseMemObject(clmem_plaq) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseMemObject(clmem_tplaq) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseMemObject(clmem_splaq) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseMemObject(clmem_polyakov) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clmem_plaq_buf_glob) if(clReleaseMemObject(clmem_plaq_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clmem_tplaq_buf_glob) if(clReleaseMemObject(clmem_tplaq_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clmem_splaq_buf_glob) if(clReleaseMemObject(clmem_splaq_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clmem_polyakov_buf_glob) if(clReleaseMemObject(clmem_polyakov_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+		if(clReleaseCommandQueue(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseContext(context) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+		set_init_false();
+	}
+	return HMC_SUCCESS;
+}
+
+
+
 hmc_error Opencl::copy_gaugefield_to_device(hmc_gaugefield* gaugefield, usetimer* timer)
 {
 //   cout<<"Copy gaugefield to device..."<<endl;
@@ -773,45 +814,6 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 	return HMC_SUCCESS;
 }
 
-
-hmc_error Opencl::finalize()
-{
-  if(get_init_status() == 1) {
-		if(clFlush(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clFinish(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
-
-		if(clReleaseKernel(heatbath_even) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(heatbath_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
-
-		if(clReleaseKernel(overrelax_even) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(overrelax_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
-
-		if(clReleaseKernel(plaquette) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(polyakov) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(plaquette_reduction) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(polyakov_reduction) != CL_SUCCESS) exit(HMC_OCLERROR);
-
-		if(clReleaseProgram(clprogram) != CL_SUCCESS) exit(HMC_OCLERROR);
-
-		if(clReleaseMemObject(clmem_gaugefield) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_rndarray) != CL_SUCCESS) exit(HMC_OCLERROR);
-
-		if(clReleaseMemObject(clmem_plaq) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_tplaq) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_splaq) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_polyakov) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clmem_plaq_buf_glob) if(clReleaseMemObject(clmem_plaq_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clmem_tplaq_buf_glob) if(clReleaseMemObject(clmem_tplaq_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clmem_splaq_buf_glob) if(clReleaseMemObject(clmem_splaq_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clmem_polyakov_buf_glob) if(clReleaseMemObject(clmem_polyakov_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
-
-		if(clReleaseCommandQueue(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseContext(context) != CL_SUCCESS) exit(HMC_OCLERROR);
-
-		set_init_false();
-	}
-	return HMC_SUCCESS;
-}
 
 void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
 {

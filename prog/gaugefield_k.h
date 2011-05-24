@@ -12,17 +12,19 @@ class Gaugefield_k : public Gaugefield {
 
   public:
     
-	 /**
-	 * Initialize gaugefield and devices for measurement of TK kappa
-	 *
-	 * @param[in] numdevs Number of wanted devices (so far, only 1 makes sense).
-	 * @param[in] devicetypes Array of wanted cl_device_types for the devices.
-	 * @param[in] input_parameters instance of inputparameters that contains information from input file
-	 * @param[in,out] timer Return initialization time.
-	 * @return Error code as defined in hmcerrs.h
+  /**
+   * Initializes the devices, to be called by init()
+   * @return Error code as defined in hmcerrs.h
+   * @param devicetypes array of cl_device_type handles
+   * @param[in,out] timer timer for initialization
+   */
+  virtual hmc_error init_devices(cl_device_type* devicetypes, usetimer* timer);
+
+	/**
+	 * Free device, called by finalize
 	 */
-	virtual hmc_error init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer);
-	
+	virtual hmc_error free_devices();
+
 	hmc_float Q_plaquette();
 	
   	/**
@@ -79,8 +81,9 @@ class Gaugefield_k : public Gaugefield {
 	/**
 	 * Returns private member opencl_k * devices
 	 * @return devices of type opencl_k
+	 * @todo LZ: CHECK IF THIS MAKES SENSE AT ALL!!!!
 	 */
- 	Opencl * get_devices_k ();
+ 	Opencl_k * get_devices_k ();
 
   private:
 // 	 Opencl_k * devices;

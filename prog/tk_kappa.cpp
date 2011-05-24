@@ -90,8 +90,8 @@ int main(int argc, char* argv[])
 	//Add a measurement frequency
 	gaugefield.sync_gaugefield(&copytime);
 	hmc_error err;
-// 	err = gaugefield.kappa_karsch ();
-// 	err = gaugefield.kappa_clover ();
+ 	err = gaugefield.kappa_karsch ();
+ 	err = gaugefield.kappa_clover ();
 
 	hmc_float qplaq = gaugefield.Q_plaquette();
 	q_plaq_out << qplaq <<endl;

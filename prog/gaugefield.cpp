@@ -13,7 +13,7 @@ hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparame
 
 	set_num_ocl_devices(numdevs);
 
-	init_devices(devicetypes,timer);
+	this->init_devices(devicetypes,timer);
 
 	return HMC_SUCCESS;
 }
@@ -367,11 +367,15 @@ hmc_error Gaugefield::heatbath(const int nheat, usetimer * const timer_heat)
 hmc_error Gaugefield::finalize()
 {
   free(get_gf());
-  if(num_ocl_devices > 0)
-    delete [] get_devices();
-  return HMC_SUCCESS;
+  this->free_devices();
 }
 
+hmc_error Gaugefield::free_devices(){
+  if(get_num_ocl_devices() > 0)
+    delete [] get_devices();
+  return HMC_SUCCESS;
+  return HMC_SUCCESS;
+}
 
 
 hmc_error Gaugefield::set_gf (hmc_gaugefield * gf_val){
