@@ -44,6 +44,7 @@ extern string const version;
  */
 class Gaugefield {
 public:
+  //init/finalize functions
 	/**
 	 * Initialize gaugefield and devices.
 	 *
@@ -59,9 +60,21 @@ public:
 	 */
 	hmc_error finalize();
 	/**
-	 * Save gaugefield to file.
+	 * Initializes the devices, to be called by init()
+	 * @return Error code as defined in hmcerrs.h
+	 * @param devicetypes array of cl_device_type handles
+	 * @param[in,out] timer timer for initialization
 	 */
-	hmc_error save(int number);
+	virtual	hmc_error init_devices(cl_device_type* devicetypes, usetimer* timer);
+	/**
+	 * Initializes the gaugefield, to be called by init()
+	 * @param[in,out] timer timer for initialization
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	hmc_error init_gaugefield(usetimer* timer);
+	
+
+	//communication
 	/**
 	 * Copy gaugefield to devices (currently: to device).
 	 * @param[in,out] timer copy-time
@@ -82,6 +95,44 @@ public:
 	 * @param[in,out] timer copy-time
 	 */
 	hmc_error sync_gaugefield(usetimer* timer);
+
+	//calculations on device
+	/**
+	 * Perform a number of heatbath and (afterwards) overrelaxation steps.
+	 * @param[in] nheat number of heatbath steps
+	 * @param[in] nover number of overrelaxation steps
+	 * @param[in,out] timer_heat time for heatbath steps
+	 * @param[in,out] timer_over time for overrelaxation steps
+	 */
+	hmc_error heatbath(const int nheat, const int nover, usetimer * const timer_heat, usetimer * const timer_over);
+	/**
+	 * Perform a number of heatbath steps.
+	 * @param[in] nheat number of heatbath steps
+	 * @param[in,out] timer_heat time for heatbath steps
+	 */
+	hmc_error heatbath(const int nheat, usetimer * const timer_heat);
+	/**
+	 * Perform one heatbath step.
+	 * @param[in,out] timer time for heatbath step
+	 */
+	hmc_error heatbath(usetimer * const timer);
+	/**
+	 * Perform one overrelaxation step.
+	 * @param[in,out] timer time for overrelaxation step
+	 */
+	hmc_error overrelax(usetimer * const timer);
+
+	
+	//input/output, print, save functions!!
+	/**
+	 * Save gaugefield to file.
+	 */
+	hmc_error save(int number);
+	/**
+	 * Print information from source file (if any)
+	 * @param[in,out] params instance of sourcefileparameters
+	 */
+	void print_info_source(sourcefileparameters* params);
 	/**
 	 * Print gauge observables calculated from host gaugefield to stdout.
 	 * @param[in,out] timer time to calculate plaquette
@@ -135,107 +186,81 @@ public:
 	 * @return Error code as defined in hmcerrs.h
 	 */
 	hmc_error print_gaugeobservables_from_devices(usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname);
+	
 
+	//gaugeobservables, on host!!
 	/**
-	 * Perform a number of heatbath and (afterwards) overrelaxation steps.
-	 * @param[in] nheat number of heatbath steps
-	 * @param[in] nover number of overrelaxation steps
-	 * @param[in,out] timer_heat time for heatbath steps
-	 * @param[in,out] timer_over time for overrelaxation steps
+	 * Calculate plaquette on host.
+	 * @param[out] tplaq timelike plaquette
+	 * @param[out] splaq spatial plaquette
+	 * @return plaquette
 	 */
-	hmc_error heatbath(const int nheat, const int nover, usetimer * const timer_heat, usetimer * const timer_over);
+	hmc_float plaquette(hmc_float* tplaq, hmc_float* splaq);
 	/**
-	 * Perform a number of heatbath steps.
-	 * @param[in] nheat number of heatbath steps
-	 * @param[in,out] timer_heat time for heatbath steps
+	 * Calculate plaquette on host.
+	 * @return plaquette
 	 */
-	hmc_error heatbath(const int nheat, usetimer * const timer_heat);
+	hmc_float plaquette();
 	/**
-	 * Perform one heatbath step.
-	 * @param[in,out] timer time for heatbath step
+	 * Calculate Polyakov loop (in time direction) on host.
+	 * @return Polyakov loop
 	 */
-	hmc_error heatbath(usetimer * const timer);
+	hmc_complex polyakov();
 	/**
-	 * Perform one overrelaxation step.
-	 * @param[in,out] timer time for overrelaxation step
+	 * Calculate Polyakov loop (in spatial direction dir) on host.
+	 * @param[in] dir spatial direction to be used, dir=1,2,3
+	 * @return Polyakov loop
 	 */
-	hmc_error overrelax(usetimer * const timer);
+	hmc_complex spatial_polyakov(int dir);
+
+
+	//access to private members
 	/**
-	 * Returns private member gaugefield
+	 * Returns pointer to gaugefield
 	 * @return The gaugefield
 	 */
 	hmc_gaugefield * get_gf ();
-	
 	/**
 	 * Sets private member gaugefield
 	 * @return Error code as defined in hmcerrs.h
 	 */
 	hmc_error set_gf (hmc_gaugefield * gf_val);
-
 	/**
 	 * Returns private member * devices
 	 * @return devices
 	 */
 	Opencl*  get_devices ();
-	
 	/**
 	 * Sets private member * devices
 	 * @return Error code as defined in hmcerrs.h
 	 */
 	hmc_error set_devices (Opencl * devices_val);
-	
 	/**
 	 * Returns private member num_ocl_devices
 	 * @return num_ocl_devices
 	 */
 	int get_num_ocl_devices ();
-	
 	/**
 	 * Sets private member num_ocl_devices
 	 * @return Error code as defined in hmcerrs.h
 	 */
 	hmc_error set_num_ocl_devices (int num);
-	
 	/**
 	 * Returns private member * parameters
 	 * @return parameters
 	 */
 	inputparameters * get_parameters ();
-	
 	/**
 	 * Sets private member * parameters
 	 * @return parameters
 	 */
 	hmc_error set_parameters (inputparameters * parameters_val);
 	
-	/**
-	 * ?
-	 * @param[in,out] params ?
-	 */
-	void print_info_source(sourcefileparameters* params);
-	
-	/**
-	 * Initializes the gaugefield
-	 * @param[in,out] timer timer for initialization
-	 * @return Error code as defined in hmcerrs.h
-	 */
-	hmc_error init_gaugefield(usetimer* timer);
-	
-	//gaugeobservables, on host!!
-	hmc_float plaquette(hmc_float* tplaq, hmc_float* splaq);
-	hmc_float plaquette();
-	hmc_complex polyakov();
-	hmc_complex spatial_polyakov(int dir);
-	
-	hmc_gaugefield * gf;	
-	Opencl * devices;
-	//Die sollten auch von den Folgeklassen aus zugreifbar sein
-	inputparameters* parameters;
-	
 private:
+	Opencl * devices;
+	inputparameters* parameters;
+      	hmc_gaugefield * gf;	
 	int num_ocl_devices;
-// 	inputparameters* parameters;
-
 };
 
 #endif /* _GAUGEFIELDH_ */
