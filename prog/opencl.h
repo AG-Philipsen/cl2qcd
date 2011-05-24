@@ -163,6 +163,8 @@ public:
 	 */
 	hmc_error gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const timer1, usetimer * const timer2);
 
+protected:
+
 	/**
 	 * Collect a vector of kernel file names.
 	 * Virtual method, allows to include more kernel files in inherited classes.
@@ -173,6 +175,8 @@ public:
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
 	virtual hmc_error fill_collect_options(stringstream* collect_options);
+
+private:
 
 	/**
 	 * Called by the destructor.
@@ -191,30 +195,6 @@ public:
 
 	/** The number of cores (not PEs) of the device */
 	cl_uint max_compute_units;
-
-	/**
-	 * Enqueue the given kernel on the device. Local work size will be determined
-	 * automatically from device and kernel properties.
-	 *
-	 * @param kernel The kernel to execute.
-	 * @param global_work_size The number of threads to run.
-	 *
-	 * @todo local work size decision might need ot become less automatic
-	 * @todo global work size will also depend on device ...
-	 */
-	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size);
-
-	/**
-	 * Enqueue the given kernel on the device. Local work size will be determined
-	 * automatically from device and kernel properties.
-	 *
-	 * @param kernel The kernel to execute.
-	 * @param global_work_size The number of threads to run.
-	 *
-	 * @todo local work size decision might need ot become less automatic
-	 * @todo global work size will also depend on device ...
-	 */
-	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
 
 	cl_command_queue queue;
 	cl_program clprogram;
@@ -244,6 +224,29 @@ public:
 	cl_kernel polyakov;
 	cl_kernel polyakov_reduction;
 
+	/**
+	 * Enqueue the given kernel on the device. Local work size will be determined
+	 * automatically from device and kernel properties.
+	 *
+	 * @param kernel The kernel to execute.
+	 * @param global_work_size The number of threads to run.
+	 *
+	 * @todo local work size decision might need ot become less automatic
+	 * @todo global work size will also depend on device ...
+	 */
+	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size);
+
+	/**
+	 * Enqueue the given kernel on the device. Local work size will be determined
+	 * automatically from device and kernel properties.
+	 *
+	 * @param kernel The kernel to execute.
+	 * @param global_work_size The number of threads to run.
+	 *
+	 * @todo local work size decision might need ot become less automatic
+	 * @todo global work size will also depend on device ...
+	 */
+	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
 };
 
 #endif /* _MYOPENCLH_ */
