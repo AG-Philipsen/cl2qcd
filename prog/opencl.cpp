@@ -2,9 +2,12 @@
 
 #include <algorithm>
 
+#include "logger.hpp"
+
 using namespace std;
 
-hmc_error Opencl::fill_kernels_file (){
+hmc_error Opencl::fill_kernels_file ()
+{
 	//give a list of all kernel-files
 	//!!CP: LZ should update this
 	cl_kernels_file.push_back("opencl_header.cl");
@@ -15,10 +18,11 @@ hmc_error Opencl::fill_kernels_file (){
 	cl_kernels_file.push_back("opencl_operations_gaugefield.cl");
 	cl_kernels_file.push_back("opencl_update_heatbath.cl");
 	cl_kernels_file.push_back("opencl_gaugeobservables.cl");
-	return HMC_SUCCESS;  
+	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::fill_collect_options(stringstream* collect_options){
+hmc_error Opencl::fill_collect_options(stringstream* collect_options)
+{
 	*collect_options << "-D_INKERNEL_ -DNSPACE=" << NSPACE << " -DNTIME=" << NTIME << " -DVOLSPACE=" << VOLSPACE << " -DSPINORSIZE=" << SPINORSIZE << " -DHALFSPINORSIZE=" << HALFSPINORSIZE << " -DSPINORFIELDSIZE=" << SPINORFIELDSIZE << " -DEOPREC_SPINORFIELDSIZE=" << EOPREC_SPINORFIELDSIZE;
 
 	//CP: these have to match those in the cmake file
@@ -51,193 +55,212 @@ hmc_error Opencl::fill_collect_options(stringstream* collect_options){
 
 	return HMC_SUCCESS;
 }
-	
 
-hmc_error Opencl::fill_buffers(){
-  
-	cl_int clerr = CL_SUCCESS;
-	cout << "Create buffer for gaugefield..." << endl;
+
+hmc_error Opencl::fill_buffers()
+{
+
+	cl_int clerr;
+
+	logger.trace() << "Create buffer for gaugefield...";
 	clmem_gaugefield = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_gaugefield), 0, &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 
-	cout << "Create buffer for random numbers..." << endl;
+	logger.trace() << "Create buffer for random numbers...";
 	clmem_rndarray = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_rndarray), 0, &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 
-	cout << "Create buffer for gaugeobservables..." << endl;
+	logger.trace() << "Create buffer for gaugeobservables...";
 	clmem_plaq = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float) * global_work_size, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 	clmem_splaq = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float) * global_work_size, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 	clmem_tplaq = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float) * global_work_size, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 	clmem_polyakov = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_complex) * global_work_size, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
-	
+
 	// scratch buffers for gauge observable will be created on demand
 	clmem_plaq_buf_glob = 0;
 	clmem_tplaq_buf_glob = 0;
 	clmem_splaq_buf_glob = 0;
 	clmem_polyakov_buf_glob = 0;
-	
+
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::fill_kernels(){
+hmc_error Opencl::fill_kernels()
+{
 
 	cl_int clerr = CL_SUCCESS;
-  
-	cout << "Create heatbath kernels..." << endl;
+
+	logger.debug() << "Create heatbath kernels...";
 	heatbath_even = clCreateKernel(clprogram, "heatbath_even", &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( heatbath_even );
 	heatbath_odd = clCreateKernel(clprogram, "heatbath_odd", &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( heatbath_odd );
 
 	overrelax_even = clCreateKernel(clprogram, "overrelax_even", &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( overrelax_even );
 	overrelax_odd = clCreateKernel(clprogram, "overrelax_odd", &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( overrelax_odd );
 
-	cout << "Create gaugeobservables kernels..." << endl;
+	logger.debug() << "Create gaugeobservables kernels...";
 	plaquette = clCreateKernel(clprogram, "plaquette", &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... plaquette failed, aborting." << endl;
+		logger.fatal() << "... plaquette failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( plaquette );
 	polyakov = clCreateKernel(clprogram, "polyakov", &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... polyakov failed, aborting." << endl;
+		logger.fatal() << "... polyakov failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( polyakov );
 	plaquette_reduction = clCreateKernel(clprogram, "plaquette_reduction", &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... plaquette_reduction failed, aborting." << endl;
+		logger.fatal() << "... plaquette_reduction failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( plaquette_reduction );
 	polyakov_reduction = clCreateKernel(clprogram, "polyakov_reduction", &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... polyakov_reduction failed, aborting." << endl;
+		logger.fatal() << "... polyakov_reduction failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
-  
+	if( logger.beDebug() )
+		printResourceRequirements( polyakov_reduction );
+
 	return HMC_SUCCESS;
 }
 
 hmc_error Opencl::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* params)
 {
 	//variables, initializing, ...
-  set_parameters(params);
+	set_parameters(params);
 	hmc_error err;
 	cl_int clerr = CL_SUCCESS;
 	timer->reset();
 
-	//Initialize OpenCL, 
-	cout << "OpenCL being initialized..." << endl;
+	//Initialize OpenCL,
+	logger.trace() << "OpenCL being initialized...";
+
 	cl_uint num_platforms;
 	cl_platform_id platform;
 	//LZ: for now, stick to one platform without any further checks...
 	clerr = clGetPlatformIDs(1, &platform, &num_platforms);
 	if(clerr != CL_SUCCESS) {
-		cout << "clGetPlatformIDs failed..." << endl;
+		logger.fatal() << "clGetPlatformIDs failed...";
 		exit(HMC_OCLERROR);
 	}
 
 	//Cout Platforminfo
 	char info[512];
 	if(clGetPlatformInfo(platform, CL_PLATFORM_NAME, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	cout << "\tCL_PLATFORM_NAME:     " << info << endl;
+	logger.info() << "\tCL_PLATFORM_NAME:     " << info;
 	if(clGetPlatformInfo(platform, CL_PLATFORM_VENDOR, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	cout << "\tCL_PLATFORM_VENDOR:   " << info << endl;
+	logger.info() << "\tCL_PLATFORM_VENDOR:   " << info;
 	if(clGetPlatformInfo(platform, CL_PLATFORM_VERSION, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	cout << "\tCL_PLATFORM_VERSION:  " << info << endl;
-	cout << endl;
+	logger.info() << "\tCL_PLATFORM_VERSION:  " << info;
 
 	//Initializing devices
 	cl_uint num_devices;
-	cl_device_id device;
 	clerr = clGetDeviceIDs(platform, wanted_device_type, 0, NULL, &num_devices);
 	if(num_devices == 1) {
-		cout << "\t" << num_devices << " device of wanted type has been found." << endl;
+		logger.info() << "\t" << num_devices << " device of wanted type has been found.";
 	} else {
-		cout << "\t" << num_devices << " devices of wanted type have been found. Choosing device number " << 0 << "." << endl;
+		logger.info() << "\t" << num_devices << " devices of wanted type have been found. Choosing device number " << 0 << ".";
 	}
 	clerr = clGetDeviceIDs(platform, wanted_device_type, 1, &device, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "clGetDeviceIDs failed..." << endl;
+		logger.fatal() << "clGetDeviceIDs failed...";
 		exit(HMC_OCLERROR);
 	}
 
-	//Cout devicesinfo
-	cout << "\tDevice information: " << endl;
+	logger.info() << "\tDevice information: ";
 	if(clGetDeviceInfo(device, CL_DEVICE_NAME, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	cout << "\t\tCL_DEVICE_NAME:    " << info << endl;
+	logger.info() << "\t\tCL_DEVICE_NAME:    " << info;
 	if(clGetDeviceInfo(device, CL_DEVICE_VENDOR, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	cout << "\t\tCL_DEVICE_VENDOR:  " << info << endl;
+	logger.info() << "\t\tCL_DEVICE_VENDOR:  " << info;
 	cl_device_type type;
 	if(clGetDeviceInfo(device, CL_DEVICE_TYPE, sizeof(cl_device_type), &type, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(type == CL_DEVICE_TYPE_CPU) cout << "\t\tCL_DEVICE_TYPE:    CPU" << endl;
-	if(type == CL_DEVICE_TYPE_GPU) cout << "\t\tCL_DEVICE_TYPE:    GPU" << endl;
-	if(type == CL_DEVICE_TYPE_ACCELERATOR) cout << "\t\tCL_DEVICE_TYPE:    ACCELERATOR" << endl;
+	if(type == CL_DEVICE_TYPE_CPU) logger.info() << "\t\tCL_DEVICE_TYPE:    CPU";
+	if(type == CL_DEVICE_TYPE_GPU) logger.info() << "\t\tCL_DEVICE_TYPE:    GPU";
+	if(type == CL_DEVICE_TYPE_ACCELERATOR) logger.info() << "\t\tCL_DEVICE_TYPE:    ACCELERATOR";
 	if(type != CL_DEVICE_TYPE_CPU && type != CL_DEVICE_TYPE_GPU && type != CL_DEVICE_TYPE_ACCELERATOR) {
-		cout << "unexpected CL_DEVICE_TYPE..." << endl;
+		logger.fatal() << "unexpected CL_DEVICE_TYPE...";
 		exit(HMC_OCLERROR);
 	}
 	if(clGetDeviceInfo(device, CL_DEVICE_VERSION, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	cout << "\t\tCL_DEVICE_VERSION: " << info << endl;
+	logger.info() << "\t\tCL_DEVICE_VERSION: " << info;
 	if(clGetDeviceInfo(device, CL_DEVICE_EXTENSIONS, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	cout << "\t\tCL_DEVICE_EXTENSIONS: " << info << endl;
+	logger.info() << "\t\tCL_DEVICE_EXTENSIONS: " << info;
 
 	// figure out the number of "cores"
 	if(clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
 
 	//Initilize context
-	cout << "Create context..." << endl;
+	logger.trace() << "Create context...";
 	context = clCreateContext(0, 1, &device, 0, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 
 	//Initilize queue
-	cout << "Create command queue..." << endl;
+	logger.trace() << "Create command queue...";
 	queue = clCreateCommandQueue(context, device, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 
 	//collect all kernel files
 	err = this->fill_kernels_file();
+	if( err )
+		exit( HMC_OCLERROR );
 
 	//write kernel files into sources
 	// create array to point to contents of the different source files
@@ -248,12 +271,12 @@ hmc_error Opencl::init(cl_device_type wanted_device_type, usetimer* timer, input
 	for(size_t n = 0; n < cl_kernels_file.size(); n++) {
 		stringstream tmp;
 		tmp << SOURCEDIR << '/' << cl_kernels_file[n];
-		cout << "Read kernel source from file: " << tmp.str() << endl;
+		logger.debug() << "Read kernel source from file: " << tmp.str();
 
 		fstream kernelsfile;
 		kernelsfile.open(tmp.str().c_str());
 		if(!kernelsfile.is_open()) {
-			cerr << "Could not open file. Aborting..." << endl;
+			logger.fatal() << "Could not open file. Aborting...";
 			exit(HMC_FILEERROR);
 		}
 
@@ -269,39 +292,39 @@ hmc_error Opencl::init(cl_device_type wanted_device_type, usetimer* timer, input
 	}
 
 	//Create program from sources
-	cout << "Create program..." << endl;
+	logger.trace() << "Create program...";
 	clprogram = clCreateProgramWithSource(context, cl_kernels_file.size() , (const char**) sources, source_sizes, &clerr);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
-	cout << "Build program..." << endl;
 
-	//account for options	
+	logger.debug() << "Build program...";
+
+	//account for options
 	stringstream collect_options;
 	this->fill_collect_options(&collect_options);
 	string buildoptions = collect_options.str();
-	cout << "\tbuild options:";
-	cout << "\t" << buildoptions << endl;
+	logger.debug() << "\tbuild options:" << "\t" << buildoptions;
 
 	clerr = clBuildProgram(clprogram, 1, &device, buildoptions.c_str(), 0, 0);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, but look at BuildLog and abort then." << endl;
+		logger.error() << "... failed, but look at BuildLog and abort then.";
 	}
-	cout << "finished building program" << endl;
 
-	//cout Buildinfo
+	logger.trace() << "finished building program";
+
 	size_t logSize;
 	clerr |= clGetProgramBuildInfo(clprogram, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);
 	if(logSize > 1) { // 0-terminated -> always at least one byte
-		cout << "Build Log:" << endl;
+		cout << "Build Log:";
 		char* log = new char[logSize];
 		clerr |= clGetProgramBuildInfo(clprogram, device, CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
-		cout << log << endl << endl;
+		logger.debug() << log;
 		delete [] log;
 	}
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 
 		// dump program source
 		size_t sourceSize;
@@ -314,7 +337,7 @@ hmc_error Opencl::init(cl_device_type wanted_device_type, usetimer* timer, input
 				ofstream srcFile(FILENAME);
 				srcFile << source;
 				srcFile.close();
-				cout << "Dumped broken source to " << FILENAME << endl;
+				logger.error() << "Dumped broken source to " << FILENAME;
 			}
 			delete[] source;
 		}
@@ -324,9 +347,13 @@ hmc_error Opencl::init(cl_device_type wanted_device_type, usetimer* timer, input
 
 	//Create buffer
 	err = this->fill_buffers();
+	if( err )
+		exit( HMC_OCLERROR );
 
 	//Create kernels
 	err = this->fill_kernels();
+	if( err )
+		exit( HMC_OCLERROR );
 
 	//finish
 	set_init_true();
@@ -336,7 +363,7 @@ hmc_error Opencl::init(cl_device_type wanted_device_type, usetimer* timer, input
 
 hmc_error Opencl::finalize()
 {
-  if(get_init_status() == 1) {
+	if(get_init_status() == 1) {
 		if(clFlush(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clFinish(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
 
@@ -385,7 +412,7 @@ hmc_error Opencl::copy_gaugefield_to_device(hmc_gaugefield* gaugefield, usetimer
 
 	int clerr = clEnqueueWriteBuffer(queue, clmem_gaugefield, CL_TRUE, 0, sizeof(hmc_gaugefield), host_gaugefield, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "...copy gaugefield failed, aborting." << endl;
+		logger.fatal() << "...copy gaugefield failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 
@@ -402,7 +429,7 @@ hmc_error Opencl::copy_rndarray_to_device(hmc_rndarray rndarray, usetimer* timer
 
 	int clerr = clEnqueueWriteBuffer(queue, clmem_rndarray, CL_TRUE, 0, sizeof(hmc_rndarray), rndarray, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 
@@ -418,8 +445,8 @@ hmc_error Opencl::get_gaugefield_from_device(hmc_gaugefield* gaugefield, usetime
 
 	int clerr = clEnqueueReadBuffer(queue, clmem_gaugefield, CL_TRUE, 0, sizeof(hmc_gaugefield), host_gaugefield, 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-		cout << "errorcode :" << clerr << endl;
+		logger.fatal() << "... failed, aborting.";
+		logger.fatal() << "errorcode :" << clerr;
 		exit(HMC_OCLERROR);
 	}
 
@@ -438,7 +465,7 @@ hmc_error Opencl::copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* tim
 
 	int clerr = clEnqueueReadBuffer(queue, clmem_rndarray, CL_TRUE, 0, sizeof(hmc_rndarray), rndarray, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 
@@ -459,23 +486,23 @@ hmc_error Opencl::run_heatbath(const hmc_float beta, usetimer * const timer)
 
 	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), &clmem_gaugefield);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg0 at heatbath_even failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg0 at heatbath_even failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(heatbath_even, 1, sizeof(hmc_float), &beta);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg1 at heatbath_even failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg1 at heatbath_even failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(heatbath_even, 3, sizeof(cl_mem), &clmem_rndarray);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg3 at heatbath_even failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg3 at heatbath_even failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	for(int i = 0; i < NDIM; i++) {
 		clerr = clSetKernelArg(heatbath_even, 2, sizeof(int), &i);
 		if(clerr != CL_SUCCESS) {
-			cout << "clSetKernelArg2 at heatbath_even failed, aborting..." << endl;
+			logger.fatal() << "clSetKernelArg2 at heatbath_even failed, aborting...";
 			exit(HMC_OCLERROR);
 		}
 		enqueueKernel(heatbath_even, global_work_size);
@@ -483,23 +510,23 @@ hmc_error Opencl::run_heatbath(const hmc_float beta, usetimer * const timer)
 
 	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), &clmem_gaugefield);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg0 at heatbath_odd failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg0 at heatbath_odd failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(heatbath_odd, 1, sizeof(hmc_float), &beta);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg1 at heatbath_odd failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg1 at heatbath_odd failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(heatbath_odd, 3, sizeof(cl_mem), &clmem_rndarray);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg3 at heatbath_odd failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg3 at heatbath_odd failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	for(int i = 0; i < NDIM; i++) {
 		clerr = clSetKernelArg(heatbath_odd, 2, sizeof(int), &i);
 		if(clerr != CL_SUCCESS) {
-			cout << "clSetKernelArg2 at heatbath_odd failed, aborting..." << endl;
+			logger.fatal() << "clSetKernelArg2 at heatbath_odd failed, aborting...";
 			exit(HMC_OCLERROR);
 		}
 		enqueueKernel(heatbath_odd, global_work_size);
@@ -524,23 +551,23 @@ hmc_error Opencl::run_overrelax(const hmc_float beta, usetimer * const timer)
 
 	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), &clmem_gaugefield);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg1 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg1 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(overrelax_even, 1, sizeof(hmc_float), &beta);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg2 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg2 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(overrelax_even, 3, sizeof(cl_mem), &clmem_rndarray);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg3 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg3 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	for(int i = 0; i < NDIM; i++) {
 		clerr = clSetKernelArg(overrelax_even, 2, sizeof(int), &i);
 		if(clerr != CL_SUCCESS) {
-			cout << "clSetKernelArg4 failed, aborting..." << endl;
+			logger.fatal() << "clSetKernelArg4 failed, aborting...";
 			exit(HMC_OCLERROR);
 		}
 		enqueueKernel(overrelax_even, global_work_size);
@@ -548,23 +575,23 @@ hmc_error Opencl::run_overrelax(const hmc_float beta, usetimer * const timer)
 
 	clerr = clSetKernelArg(overrelax_odd, 0, sizeof(cl_mem), &clmem_gaugefield);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg5 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg5 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(overrelax_odd, 1, sizeof(hmc_float), &beta);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg6 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg6 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(overrelax_odd, 3, sizeof(cl_mem), &clmem_rndarray);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg7 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg7 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	for(int i = 0; i < NDIM; i++) {
 		clerr = clSetKernelArg(overrelax_odd, 2, sizeof(int), &i);
 		if(clerr != CL_SUCCESS) {
-			cout << "clSetKernelArg8 failed, aborting..." << endl;
+			logger.fatal() << "clSetKernelArg8 failed, aborting...";
 			exit(HMC_OCLERROR);
 		}
 		enqueueKernel(overrelax_odd, global_work_size);
@@ -601,28 +628,28 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 	if( clmem_plaq_buf_glob == 0 ) {
 		clmem_plaq_buf_glob = clCreateBuffer(context, CL_MEM_READ_WRITE, global_buf_size_float, 0, &clerr);
 		if(clerr != CL_SUCCESS) {
-			cout << "creating clmem_plaq_buf_glob failed, aborting..." << endl;
+			logger.fatal() << "creating clmem_plaq_buf_glob failed, aborting...";
 			exit(HMC_OCLERROR);
 		}
 	}
 	if( clmem_tplaq_buf_glob == 0 ) {
 		clmem_tplaq_buf_glob = clCreateBuffer(context, CL_MEM_READ_WRITE, global_buf_size_float, 0, &clerr);
 		if(clerr != CL_SUCCESS) {
-			cout << "creating tclmem_plaq_buf_glob failed, aborting..." << endl;
+			logger.fatal() << "creating tclmem_plaq_buf_glob failed, aborting...";
 			exit(HMC_OCLERROR);
 		}
 	}
 	if( clmem_splaq_buf_glob == 0 ) {
 		clmem_splaq_buf_glob = clCreateBuffer(context, CL_MEM_READ_WRITE, global_buf_size_float, 0, &clerr);
 		if(clerr != CL_SUCCESS) {
-			cout << "creating sclmem_plaq_buf_glob failed, aborting..." << endl;
+			logger.fatal() << "creating sclmem_plaq_buf_glob failed, aborting...";
 			exit(HMC_OCLERROR);
 		}
 	}
 	if( clmem_polyakov_buf_glob == 0 ) {
 		clmem_polyakov_buf_glob = clCreateBuffer(context, CL_MEM_READ_WRITE, global_buf_size_complex, 0, &clerr);
 		if(clerr != CL_SUCCESS) {
-			cout << "creating clmem_polyakov_buf_glob failed, aborting..." << endl;
+			logger.fatal() << "creating clmem_polyakov_buf_glob failed, aborting...";
 			exit(HMC_OCLERROR);
 		}
 	}
@@ -645,37 +672,37 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 
 	clerr = clSetKernelArg(plaquette, 0, sizeof(cl_mem), &clmem_gaugefield);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg0 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg0 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(plaquette, 1, sizeof(cl_mem), &clmem_plaq_buf_glob);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg1 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg1 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(plaquette, 2, sizeof(cl_mem), &clmem_tplaq_buf_glob);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg2 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg2 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(plaquette, 3, sizeof(cl_mem), &clmem_splaq_buf_glob);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg3 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg3 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(plaquette, 4, buf_loc_size_float, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg4 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg4 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(plaquette, 5, buf_loc_size_float, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg5 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg5 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(plaquette, 6, buf_loc_size_float, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg6 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg6 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	enqueueKernel(plaquette, global_work_size, local_work_size);
@@ -684,37 +711,37 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 
 	clerr = clSetKernelArg(plaquette_reduction, 0, sizeof(cl_mem), &clmem_plaq_buf_glob);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg0 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg0 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(plaquette_reduction, 1, sizeof(cl_mem), &clmem_tplaq_buf_glob);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg1 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg1 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(plaquette_reduction, 2, sizeof(cl_mem), &clmem_splaq_buf_glob);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg2 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg2 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(plaquette_reduction, 3, sizeof(cl_mem), &clmem_plaq);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg3 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg3 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(plaquette_reduction, 4, sizeof(cl_mem), &clmem_tplaq);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg4 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg4 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(plaquette_reduction, 5, sizeof(cl_mem), &clmem_splaq);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg5 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg5 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(plaquette_reduction, 6, sizeof(cl_uint), &num_groups);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg6 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg6 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	enqueueKernel(plaquette_reduction, 1, 1);
@@ -722,17 +749,17 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 	//read out values
 	clerr = clEnqueueReadBuffer(queue, clmem_plaq, CL_FALSE, 0, sizeof(hmc_float), &plaq, 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clEnqueueReadBuffer(queue, clmem_tplaq, CL_FALSE, 0, sizeof(hmc_float), &tplaq, 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clEnqueueReadBuffer(queue, clmem_splaq, CL_FALSE, 0, sizeof(hmc_float), &splaq, 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 
@@ -759,17 +786,17 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 
 	clerr = clSetKernelArg(polyakov, 0, sizeof(cl_mem), &clmem_gaugefield);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg0 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg0 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(polyakov, 1, sizeof(cl_mem), &clmem_polyakov_buf_glob);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg1 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg1 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(polyakov, 2, buf_loc_size_complex, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg2 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg2 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	enqueueKernel(polyakov, global_work_size, local_work_size);
@@ -778,17 +805,17 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 
 	clerr = clSetKernelArg(polyakov_reduction, 0, sizeof(cl_mem), &clmem_polyakov_buf_glob);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg0 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg0 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(polyakov_reduction, 1, sizeof(cl_mem), &clmem_polyakov);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg1 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg1 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	clerr = clSetKernelArg(polyakov_reduction, 2, sizeof(cl_uint), &num_groups);
 	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg2 failed, aborting..." << endl;
+		logger.fatal() << "clSetKernelArg2 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	enqueueKernel(polyakov_reduction, 1, 1);
@@ -796,7 +823,7 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 	//read out values
 	clerr = clEnqueueReadBuffer(queue, clmem_polyakov, CL_FALSE, 0, sizeof(hmc_complex), &pol, 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
+		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 
@@ -814,7 +841,6 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 	return HMC_SUCCESS;
 }
 
-
 void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
 {
 #ifdef _USE_GPU_
@@ -825,7 +851,7 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 
 	cl_int clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "clEnqueueNDRangeKernel failed, aborting..." << endl;
+		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 }
@@ -834,28 +860,98 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 {
 	cl_int clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
-		cout << "clEnqueueNDRangeKernel failed, aborting..." << endl;
+		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 }
-hmc_error Opencl::set_init_true(){
-  isinit = 1;
-  return HMC_SUCCESS;
+hmc_error Opencl::set_init_true()
+{
+	isinit = 1;
+	return HMC_SUCCESS;
 }
-hmc_error Opencl::set_init_false(){
-  isinit = 0;
-  return HMC_SUCCESS;
+hmc_error Opencl::set_init_false()
+{
+	isinit = 0;
+	return HMC_SUCCESS;
 }
-int Opencl::get_init_status(){
-  return isinit;
+int Opencl::get_init_status()
+{
+	return isinit;
 }
 
-hmc_error Opencl::set_parameters (inputparameters * parameters_val){
-  parameters = parameters_val; 
-  return HMC_SUCCESS;
+hmc_error Opencl::set_parameters (inputparameters * parameters_val)
+{
+	parameters = parameters_val;
+	return HMC_SUCCESS;
 }
 
 inputparameters * Opencl::get_parameters ()
 {
 	return  parameters;
+}
+
+void Opencl::printResourceRequirements(const cl_kernel kernel)
+{
+	cl_int clerr;
+
+	size_t nameSize;
+	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &nameSize );
+	if( clerr == CL_SUCCESS ) {
+		char* name = new char[nameSize];
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, nameSize, name, &nameSize );
+		if( clerr == CL_SUCCESS )
+			logger.trace() << "Kernel: " << name;
+		delete[] name;
+	}
+	if( clerr != CL_SUCCESS ) {
+		logger.fatal() << "Querying kernel properties failed, aborting...";
+		exit(HMC_OCLERROR);
+	}
+
+	// query the maximum work group size
+	size_t work_group_size;
+	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &work_group_size, NULL );
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "Querying kernel properties failed, aborting...";
+		exit(HMC_OCLERROR);
+	}
+	logger.trace() << "  Maximum work group size: " << work_group_size;
+
+	// query the work group size specified at compile time (if any)
+	size_t compile_work_group_size[3];
+	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 3 * sizeof(size_t), compile_work_group_size, NULL );
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "Querying kernel properties failed, aborting...";
+		exit(HMC_OCLERROR);
+	}
+	if( compile_work_group_size[0] == 0 )
+		logger.trace() << "  No work group size specified at compile time.";
+	else
+		logger.trace() << "  Compile time work group size: (" << compile_work_group_size[0] << ", " << compile_work_group_size[1] << ", " << compile_work_group_size[2] << ')';
+
+	// query the preferred WORK_GROUP_SIZE_MULTIPLE (OpenCL 1.1 only)
+	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(size_t), &work_group_size, NULL );
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "Querying kernel properties failed, aborting...";
+		exit(HMC_OCLERROR);
+	}
+	logger.trace() << "  Preferred work group size multiple: " << work_group_size;
+
+	// query the local memory requirements
+	cl_ulong local_mem_size;
+	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_LOCAL_MEM_SIZE, sizeof(cl_ulong), &local_mem_size, NULL );
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "Querying kernel properties failed, aborting...";
+		exit(HMC_OCLERROR);
+	}
+	logger.trace() << "  Local memory size (bytes): " << local_mem_size;
+
+	// query the private memory required by the kernel (OpenCL 1.1 only)
+	cl_ulong private_mem_size;
+	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_PRIVATE_MEM_SIZE, sizeof(cl_ulong), &private_mem_size, NULL );
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "Querying kernel properties failed, aborting...";
+		exit(HMC_OCLERROR);
+	}
+	logger.trace() << "  Private memory size (bytes): " << private_mem_size;
 }

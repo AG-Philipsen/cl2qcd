@@ -11,7 +11,6 @@
 #include <cstdio>
 #include <string>
 #include <vector>
-#include <iostream>
 
 #include "globaldefs.h"
 #include "hmcerrs.h"
@@ -25,6 +24,8 @@
 #include "host_use_timer.h"
 #include "gaugefield.h"
 #include "opencl.h"
+#include "logger.hpp"
+
 #ifdef __APPLE__
 #include <OpenCL/cl.h>
 #else
@@ -56,7 +57,7 @@ hmc_complex pol;
 
 void print_hello(char* name)
 {
-	std::cout << "This is heatbath program, " << name << endl;
+	logger.info() << "This is heatbath program, " << name;
 	return;
 }
 
@@ -79,7 +80,7 @@ void print_info(inputparameters* params, ostream* os)
 	*os << "##" << '\n';
 	if (params->get_startcondition() == START_FROM_SOURCE) {
 		*os << "## sourcefile = ";
-		string sf=params->sourcefile;
+		string sf = params->sourcefile;
 		*os << sf << '\n';
 	}
 	if (params->get_startcondition() == COLD_START) {

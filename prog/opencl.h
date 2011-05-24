@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <vector>
 #include <cstring>
-#include <iostream>
 #include <fstream>
 #include <sstream>
 #ifdef __APPLE__
@@ -73,39 +72,6 @@ public:
 	 */
 	hmc_error init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters);
 
-	/**
-	 * Collect a vector of kernel file names.
-	 * Virtual method, allows to include more kernel files in inherited classes.
-	 */
-	virtual hmc_error fill_kernels_file ();
-	/**
-	 * Collect the compiler options for OpenCL.
-	 * Virtual method, allows to include more options in inherited classes.
-	 */
-	virtual hmc_error fill_collect_options(stringstream* collect_options);
-	/**
-	 * Collect the buffers to generate for OpenCL.
-	 * Virtual method, allows to include more buffers in inherited classes.
-	 */
-	virtual hmc_error fill_buffers();
-	
-	/**
-	 * Collect the kernels for OpenCL.
-	 * Virtual method, allows to include more kernels in inherited classes.
-	 */
-	virtual hmc_error fill_kernels();
-	
-	/**
-	 * Called by the destructor.
-	 */
-	hmc_error finalize();
-
-	/**
-	 * Contains the list of kernel files after call to fill_kernels_file().
-	 */
-        std::vector<std::string> cl_kernels_file;
-
-
 	/////////////////////////////7
 	// communication
 	/**
@@ -164,7 +130,7 @@ public:
 	 * Perform one overrelaxation step.
 	 */
 	hmc_error run_overrelax(const hmc_float beta, usetimer * const timer);
-  
+
 	/**
 	 * Calculate plaquette and polyakov.
 	 *
@@ -180,49 +146,6 @@ public:
 	 */
 	hmc_error gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const timer1, usetimer * const timer2);
 
-
-	///////////////////////////////////////////////////
-	// OpenCL enqueuing
-       
-        /** The number of cores (not PEs) of the device */
-	cl_uint max_compute_units;
-
-	/**
-	 * Enqueue the given kernel on the device. Local work size will be determined
-	 * automatically from device and kernel properties.
-	 *
-	 * @param kernel The kernel to execute.
-	 * @param global_work_size The number of threads to run.
-	 *
-	 * @todo local work size decision might need ot become less automatic
-	 * @todo global work size will also depend on device ...
-	 */
-	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size);
-	/**
-	 * Enqueue the given kernel on the device. Local work size will be determined
-	 * automatically from device and kernel properties.
-	 *
-	 * @param kernel The kernel to execute.
-	 * @param global_work_size The number of threads to run.
-	 *
-	 * @todo local work size decision might need ot become less automatic
-	 * @todo global work size will also depend on device ...
-	 */
-	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
- 
-
-	///////////////////////////////////////////////
-	//get and set methods
-	/**
-	 * Sets initstatus to 1 (true)
-	 *
-	 */
-	hmc_error set_init_true();
-	/**
-	 * Sets initstatus to 0 (false)
-	 *
-	 */
-	hmc_error set_init_false();
 	/**
 	 * returns init status
 	 * @return isinit (1==true, 0==false)
@@ -240,10 +163,70 @@ public:
 	 */
 	hmc_error set_parameters (inputparameters * parameters_val);
 
+protected:
+
+	/**
+	 * Collect a vector of kernel file names.
+	 * Virtual method, allows to include more kernel files in inherited classes.
+	 */
+	virtual hmc_error fill_kernels_file ();
+	/**
+	 * Collect the compiler options for OpenCL.
+	 * Virtual method, allows to include more options in inherited classes.
+	 */
+	virtual hmc_error fill_collect_options(stringstream* collect_options);
+
+	/**
+	 * Collect the buffers to generate for OpenCL.
+	 * Virtual method, allows to include more buffers in inherited classes.
+	 */
+	virtual hmc_error fill_buffers();
+
+	/**
+	 * Collect the kernels for OpenCL.
+	 * Virtual method, allows to include more kernels in inherited classes.
+	 */
+	virtual hmc_error fill_kernels();
+
+	///////////////////////////////////////////////
+	//get and set methods
+	/**
+	 * Sets initstatus to 1 (true)
+	 *
+	 */
+	hmc_error set_init_true();
+	/**
+	 * Sets initstatus to 0 (false)
+	 *
+	 */
+	hmc_error set_init_false();
+
+private:
+
+	/**
+	 * Called by the destructor.
+	 */
+	hmc_error finalize();
+
+	/**
+	 * Contains the list of kernel files after call to fill_kernels_file().
+	 */
+	std::vector<std::string> cl_kernels_file;
+
+	/**
+	 * Instance of input_parameters.
+	 */
+	inputparameters* parameters;
+
+	/** The number of cores (not PEs) of the device */
+	cl_uint max_compute_units;
+
+	cl_command_queue queue;
+	cl_program clprogram;
 
 	///////////////////////////////////////////////////////////
 	//LZ what follows should eventually be private
-  	//heatbath variables
+	//heatbath variables
 	cl_mem clmem_gaugefield;
 	cl_mem clmem_rndarray;
 	cl_mem clmem_plaq;
@@ -256,9 +239,11 @@ public:
 	cl_mem clmem_polyakov_buf_glob;
 	//!!CP: this is not needed at the moment and since is not copied to the device anywhere!!
 	cl_mem clmem_theta_gaugefield;
-	cl_command_queue queue;
-	cl_program clprogram;
-       	cl_context context;
+
+	/** ID of the OpenCL device wrapped by this object */
+	cl_device_id device;
+	int isinit;
+	cl_context context;
 	cl_kernel heatbath_odd;
 	cl_kernel heatbath_even;
 	cl_kernel overrelax_odd;
@@ -268,10 +253,38 @@ public:
 	cl_kernel polyakov;
 	cl_kernel polyakov_reduction;
 
+	/**
+	 * Enqueue the given kernel on the device. Local work size will be determined
+	 * automatically from device and kernel properties.
+	 *
+	 * @param kernel The kernel to execute.
+	 * @param global_work_size The number of threads to run.
+	 *
+	 * @todo local work size decision might need ot become less automatic
+	 * @todo global work size will also depend on device ...
+	 */
+	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size);
 
- private:
-	inputparameters* parameters;
-	int isinit;
+	/**
+	 * Enqueue the given kernel on the device. Local work size will be determined
+	 * automatically from device and kernel properties.
+	 *
+	 * @param kernel The kernel to execute.
+	 * @param global_work_size The number of threads to run.
+	 *
+	 * @todo local work size decision might need ot become less automatic
+	 * @todo global work size will also depend on device ...
+	 */
+	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
+
+	/*
+	 * Print resource requirements of a kernel object.
+	 *
+	 * All information is dumped to the trace.
+	 *
+	 * @param kernel The kernel of which to query the information.
+	 */
+	void printResourceRequirements(const cl_kernel kernel);
 };
 
 #endif /* _MYOPENCLH_ */

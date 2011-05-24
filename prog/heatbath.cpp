@@ -4,7 +4,7 @@ int main(int argc, char* argv[])
 {
 
 	if(argc != 2) {
-		cerr << "need file name for input parameters" << endl;
+		logger.fatal() << "need file name for input parameters";
 		return HMC_FILEERROR;
 	}
 
@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 	char* inputfile = argv[1];
 	inputparameters parameters;
 	parameters.readfile(inputfile);
-	print_info(&parameters, &cout);
+	print_info(&parameters, &cout); /// @todo pipe through logger
 
 	//init file to store gauge observables, print initial information
 	stringstream gaugeout_name;
