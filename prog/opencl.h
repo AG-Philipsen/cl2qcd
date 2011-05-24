@@ -44,15 +44,13 @@ public:
 	 * Default constructor that also initializes the device.
 	 *
 	 * @param wanted The OpenCL device type to be used, e.g. CL_DEVICE_TYPE_CPU or CL_DEVICE_TYPE_GPU
-	 * @param ls The local work size to be used on the device
-	 * @param gs The global work size to be used on the device
 	 * @param timer The timer to use for reporting execution time
 	 * @param parameters The parsed input parameters
 	 *
 	 * @todo Should probably throw an exception on error
 	 */
-	Opencl(cl_device_type wanted, const size_t ls, const size_t gs, usetimer* timer, inputparameters* params) {
-		init(wanted, ls, gs, timer, params);
+	Opencl(cl_device_type wanted, usetimer* timer, inputparameters* params) {
+		init(wanted, timer, params);
 	};
 	/**
 	 * Empty constructor. Needed for gaugefield class.
@@ -66,8 +64,6 @@ public:
 	 * Initialize the OpenCL device
 	 *
 	 * @param wanted The OpenCL device type to be used, e.g. CL_DEVICE_TYPE_CPU or CL_DEVICE_TYPE_GPU
-	 * @param ls The local work size to be used on the device
-	 * @param gs The global work size to be used on the device
 	 * @param timer The timer to use for reporting execution time
 	 * @param parameters The parsed input parameters
 	 * @return Error code as defined in hmcerrs.h:
@@ -75,7 +71,7 @@ public:
 	 *         @li HMC_FILEERROR if one of the kernel files cannot be opened
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* parameters);
+	hmc_error init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters);
 
 	/**
 	 * Collect a vector of kernel file names.

@@ -62,7 +62,6 @@ hmc_error hmc_floatcopy(hmc_float* source, hmc_float* dest, int length){
 
 //multiply complex number with real factor
 hmc_error complexmult_real(hmc_complex *a, hmc_float *b){
-  hmc_complex res;
   (*a).re *= (*b);
   (*a).im *= (*b);
   return HMC_SUCCESS;

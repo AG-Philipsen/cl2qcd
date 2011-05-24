@@ -33,7 +33,7 @@ hmc_error Gaugefield::init_devices(cl_device_type* devicetypes, usetimer* timer)
 
 	for(int n = 0; n < num_ocl_devices; n++) {
 		cout << "init device #" << n << endl;
-		get_devices()[n].init(devicetypes[n], local_work_size, global_work_size, timer, get_parameters());
+		get_devices()[n].init(devicetypes[n], timer, get_parameters());
 		
 	}
 	return HMC_SUCCESS;
@@ -368,6 +368,7 @@ hmc_error Gaugefield::finalize()
 {
   free(get_gf());
   this->free_devices();
+  return HMC_SUCCESS;
 }
 
 hmc_error Gaugefield::free_devices(){

@@ -91,6 +91,7 @@ __kernel void kappa_karsch_gpu(__global hmc_ocl_gaugefield* gaugefield, const hm
 }
 
 
+
 __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta,  __global hmc_float * kappa_clover_val){
   
   //Energy-momentum-tensor in clover-discretization

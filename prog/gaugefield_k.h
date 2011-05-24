@@ -73,7 +73,6 @@ class Gaugefield_k : public Gaugefield {
 	
 	/**
 	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld  on GPU
-	 * @param[in] local_work_size OpenCL local_work_size
 	 * @return Error code as defined in hmcerrs.h
 	 */	
 	hmc_error kappa_clover_gpu (usetimer* timer_clover);
