@@ -66,13 +66,28 @@ void print_info(inputparameters* params, ostream* os)
 	*os << "## NSPIN:   " << NSPIN << '\n';
 	*os << "##" << '\n';
 	*os << "## Run time parameters:\n";
-	*os << "## beta  = " << params->get_beta() << '\n';
+
+	if(params->get_fermact()==WILSON) {
+	  *os<<  "## fermion action: unimproved Wilson"<<'\n';
+	  *os << "## kappa  = "<<params->get_kappa()<< '\n';
+	}
+	if(params->get_fermact()==TWISTEDMASS) {
+	  *os<<  "## fermion action: twisted mass Wilson"<<'\n';
+	  *os << "## kappa  = "<<params->get_kappa()<< '\n';
+	  *os << "## mu     = "<<params->get_mu()<< '\n';
+	}
+	if(params->get_fermact()==CLOVER) {
+	  *os<<  "## fermion action: clover Wilson"<<'\n';
+	  *os << "## kappa  = "<<params->get_kappa()<< '\n';
+	  *os << "## csw    = "<<params->get_csw()<< '\n';
+	}
 	*os << "## prec  = " << params->get_prec() << '\n';
 	*os << "##" << '\n';
+
 	if (params->get_startcondition() == START_FROM_SOURCE) {
 		*os << "## sourcefile = ";
-		params->display_sourcefile();
-		*os << "##" << '\n';
+		string sf = params->sourcefile;
+		*os << sf << '\n';
 	}
 	if (params->get_startcondition() == COLD_START) {
 		*os << "## WARNING: cold start - no configuration read\n";
