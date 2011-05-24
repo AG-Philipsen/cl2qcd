@@ -13,7 +13,6 @@
  */
 class Opencl_fermions : public Opencl {
   public:
-    
 	 /**
 	 * Collect a vector of kernel file names.
 	 * Virtual method, allows to include more kernel files in inherited classes.
@@ -35,7 +34,9 @@ class Opencl_fermions : public Opencl {
 	 */
 	virtual hmc_error fill_kernels();
 
+
 	hmc_error init_fermion_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	/*
 	hmc_error copy_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
 	hmc_error copy_eoprec_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
 	hmc_error copy_source_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
@@ -57,8 +58,10 @@ class Opencl_fermions : public Opencl {
 	hmc_error set_complex_to_product_device(cl_mem a, cl_mem b, cl_mem out, usetimer* timer);
 	hmc_error set_float_to_global_squarenorm_device(cl_mem a, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	*/
 	hmc_error set_zero_spinorfield_device(cl_mem x, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error set_zero_spinorfield_eoprec_device(cl_mem x, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	/*
 	hmc_error saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
 	hmc_error saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
 	hmc_error saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
@@ -80,9 +83,7 @@ class Opencl_fermions : public Opencl {
 	hmc_error dslash_eoprec_device(cl_mem in, cl_mem out, int evenodd, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error solver_eoprec_device(hmc_spinor_field* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
 
-	hmc_error perform_benchmark(int cgmax, const size_t ls, const size_t gs, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer);
-	hmc_error finalize_fermions();
-	
+	*/
  private:
 	//spinorfield and solver variables
 	cl_mem clmem_kappa;

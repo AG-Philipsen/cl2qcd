@@ -36,6 +36,10 @@
 
 #endif //_INKERNEL_
 
+#define WILSON 0
+#define CLOVER 1
+#define TWISTEDMASS 2
+
 //EVEN ODD
 #define EVEN 0
 #define ODD 1

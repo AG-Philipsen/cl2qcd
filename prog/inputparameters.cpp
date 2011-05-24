@@ -25,6 +25,7 @@ hmc_error inputparameters::set_defaults()
 	saveconfigs = FALSE;
 	//sourcefile = "\0";
 	sourcefilenumber = "00000";
+	fermact = WILSON;
 	return HMC_SUCCESS;
 }
 
@@ -36,16 +37,32 @@ hmc_error inputparameters::readfile(char* ifn)
 		printf("Could not open input file: %s\n",ifn);
 		exit(HMC_FILEERROR);
 	}
+
+	int muset = FALSE;
+	int cswset = FALSE;
+
 	while (infile.good()) {
 		std::string line;
 		infile>>line;
 		if(line.find("#")!=std::string::npos) continue; //allow comments
 		if(line.find("kappa")!=std::string::npos) val_assign(&kappa,line);
 		if(line.find("Kappa")!=std::string::npos) val_assign(&kappa,line);
-		if(line.find("mu")!=std::string::npos) val_assign(&mu,line);
-		if(line.find("Mu")!=std::string::npos) val_assign(&mu,line);
-		if(line.find("csw")!=std::string::npos) val_assign(&csw,line);
-		if(line.find("Csw")!=std::string::npos) val_assign(&csw,line);
+		if(line.find("mu")!=std::string::npos) {
+		  val_assign(&mu,line);
+		  muset = TRUE;
+		}
+		if(line.find("Mu")!=std::string::npos){
+		  val_assign(&mu,line);
+		  muset = TRUE;
+		}
+		if(line.find("csw")!=std::string::npos) {
+		  val_assign(&csw,line);
+		  cswset = TRUE;
+		}
+		if(line.find("Csw")!=std::string::npos) {
+		  val_assign(&csw,line);
+		  cswset = TRUE;
+		}
 		if(line.find("beta")!=std::string::npos) val_assign(&beta,line);
 		if(line.find("tau")!=std::string::npos) val_assign(&tau,line);
 		if(line.find("Beta")!=std::string::npos) val_assign(&beta,line);
@@ -71,9 +88,28 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("overrelax")!=std::string::npos) val_assign(&overrelaxsteps,line);
 		if(line.find("oversteps")!=std::string::npos) val_assign(&overrelaxsteps,line);
 		if(line.find("hmcsteps")!=std::string::npos) val_assign(&hmcsteps,line);
-		if(line.find("integrationsteps1")!=std::string::npos) val_assign(&integrationsteps1,line);
+		if(line.find("integrationtseps1")!=std::string::npos) val_assign(&integrationsteps1,line);
 		if(line.find("integrationsteps2")!=std::string::npos) val_assign(&integrationsteps2,line);
+
+		if(line.find("fermaction")!=std::string::npos) fermact_assign(&fermact,line);
+		if(line.find("fermionaction")!=std::string::npos) fermact_assign(&fermact,line);
+		if(line.find("fermact")!=std::string::npos) fermact_assign(&fermact,line);
+
 	}
+
+	if(muset==TRUE && fermact != TWISTEDMASS) {
+	  cout<<"Setting a value for mu is not allowed for fermion action other than twisted mass. Aborting..."<<endl;
+	  exit(HMC_STDERR);
+	}
+	if(cswset==TRUE && fermact != CLOVER) {
+	  cout<<"Setting a value for csw is not allowed for fermion action other than clover. Aborting..."<<endl;
+	  exit(HMC_STDERR);
+	}
+	if(cswset==TRUE && muset==TRUE) {
+	  cout<<"Setting values for both csw and mu is currently not allowed. Aborting..."<<endl;
+	  exit(HMC_STDERR);
+	}
+
 	return HMC_SUCCESS;
 }
 
@@ -128,6 +164,57 @@ void inputparameters::cond_assign(int * out, std::string line)
 		return;
 	}
 	printf("invalid startcondition\n");
+	exit(HMC_STDERR);
+	return;
+}
+
+void inputparameters::fermact_assign(int * out, std::string line)
+{
+	if(std::strstr(line.c_str(),"TWISTEDMASS")!=NULL) {
+		(*out)=TWISTEDMASS;
+		return;
+	}
+	if(std::strstr(line.c_str(),"twistedmass")!=NULL) {
+		(*out)=TWISTEDMASS;
+		return;
+	}
+	if(std::strstr(line.c_str(),"Twistedmass")!=NULL) {
+		(*out)=TWISTEDMASS;
+		return;
+	}
+	if(std::strstr(line.c_str(),"TwistedMass")!=NULL) {
+		(*out)=TWISTEDMASS;
+		return;
+	}
+	if(std::strstr(line.c_str(),"clover")!=NULL) {
+		(*out)=CLOVER;
+		return;
+	}
+	if(std::strstr(line.c_str(),"CLOVER")!=NULL) {
+		(*out)=CLOVER;
+		return;
+	}
+	if(std::strstr(line.c_str(),"Clover")!=NULL) {
+		(*out)=CLOVER;
+		return;
+	}
+	if(std::strstr(line.c_str(),"WILSON")!=NULL) {
+		(*out)=WILSON;
+		return;
+	}
+	if(std::strstr(line.c_str(),"Wilson")!=NULL) {
+		(*out)=WILSON;
+		return;
+	}
+	if(std::strstr(line.c_str(),"wilson")!=NULL) {
+		(*out)=WILSON;
+		return;
+	}
+	if(std::strstr(line.c_str(),"unimproved")!=NULL) {
+		(*out)=WILSON;
+		return;
+	}
+	printf("invalid fermion action\n");
 	exit(HMC_STDERR);
 	return;
 }
@@ -279,6 +366,11 @@ int inputparameters::get_savefrequency()
 int inputparameters::get_startcondition()
 {
 	return startcondition;
+}
+
+int inputparameters::get_fermact()
+{
+	return fermact;
 }
 
 int inputparameters::get_saveconfigs()

@@ -25,6 +25,7 @@
 #include "host_use_timer.h"
 #include "gaugefield.h"
 #include "gaugefield_k.h"
+#include "logger.hpp"
 
 #ifdef _OPENMP
 # include <omp.h>

@@ -163,7 +163,7 @@ public:
 	 */
 	hmc_error set_parameters (inputparameters * parameters_val);
 
-protected:
+	//protected:
 
 	/**
 	 * Collect a vector of kernel file names.
@@ -201,7 +201,7 @@ protected:
 	 */
 	hmc_error set_init_false();
 
-private:
+	//private:
 
 	/**
 	 * Called by the destructor.

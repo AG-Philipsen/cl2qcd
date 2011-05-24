@@ -23,7 +23,6 @@ int main(int argc, char* argv[])
 	sourcefileparameters parameters_source;
 
 	Gaugefield_inversion gaugefield;
-	hmc_rndarray rndarray;
 	cl_device_type devicetypes[1];
 
 #ifdef _USEGPU_

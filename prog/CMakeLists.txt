@@ -54,38 +54,42 @@ option( USE_RECONSTRUCT_TWELVE "Use compactified storage format (reconstruct twe
 if( USE_RECONSTRUCT_TWELVE )
 	add_definitions( -D_RECONSTRUCT_TWELVE_ )
 endif( USE_RECONSTRUCT_TWELVE )
-option( USE_HMC "Update with hybrid monte carlo algorithm" OFF)
-if (USE_HMC)
-	add_definitions( -D_USEHMC_ )
-endif( USE_HMC)
-option( USE_FERMIONS "Use fermions" OFF )
-if( USE_FERMIONS )
-	add_definitions( -D_FERMIONS_ )
-endif( USE_FERMIONS )
-if( USE_FERMIONS )
-	option( USE_TWISTEDMASS "Use twisted mass fermions" ON)
-	if ( USE_TWISTEDMASS )
-		add_definitions( -D_TWISTEDMASS_ )
-	endif ( USE_TWISTEDMASS )
-endif( USE_FERMIONS )
-if( USE_FERMIONS AND !USE_TWISTEDMASS)
-	option( USE_CLOVER "Use clover fermions" OFF)
-		if ( USE_CLOVER )
-			add_definitions( -D_CLOVER_ )
-		endif (USE_CLOVER)
-endif (  )
-option( TESTING "Run optional test code" OFF )
-if( TESTING )
-	add_definitions( -D_TESTING_ )
-endif( TESTING )
+## USE_HMC is now moved to extra executable
+#option( USE_HMC "Update with hybrid monte carlo algorithm" OFF)
+#if (USE_HMC)
+#	add_definitions( -D_USEHMC_ )
+#endif( USE_HMC)
+##LZ USE_FERMIONS is now a inputparameter option
+#option( USE_FERMIONS "Use fermions" OFF )
+#if( USE_FERMIONS )
+#	add_definitions( -D_FERMIONS_ )
+#endif( USE_FERMIONS )
+#if( USE_FERMIONS )
+#	option( USE_TWISTEDMASS "Use twisted mass fermions" ON)
+#	if ( USE_TWISTEDMASS )
+#		add_definitions( -D_TWISTEDMASS_ )
+#	endif ( USE_TWISTEDMASS )
+#endif( USE_FERMIONS )
+#if( USE_FERMIONS AND !USE_TWISTEDMASS)
+#	option( USE_CLOVER "Use clover fermions" OFF)
+#		if ( USE_CLOVER )
+#			add_definitions( -D_CLOVER_ )
+#		endif (USE_CLOVER)
+#endif (  )
+## We do not want to use TESTING anymoe
+#option( TESTING "Run optional test code" OFF )
+#if( TESTING )
+#	add_definitions( -D_TESTING_ )
+#endif( TESTING )
 option( USE_GPU "Use GPU" OFF )
 if( USE_GPU )
 	add_definitions( -D_USEGPU_ )
 endif( USE_GPU )
-option( PERFORM_BENCHMARKS "Perform Benchmarks" OFF )
-if( PERFORM_BENCHMARKS )
-	add_definitions( -D_PERFORM_BENCHMARKS_ )
-endif( PERFORM_BENCHMARKS )
+## We do not want to use BENCHMARKS anymoe
+#option( PERFORM_BENCHMARKS "Perform Benchmarks" OFF )
+#if( PERFORM_BENCHMARKS )
+#	add_definitions( -D_PERFORM_BENCHMARKS_ )
+#endif( PERFORM_BENCHMARKS )
 option( USE_CHEM_POT_REAL "Apply real chemical potential" OFF )
 if( USE_CHEM_POT_REAL )
 	add_definitions( -D_CP_REAL_ )
@@ -202,12 +206,14 @@ add_executable( tk_kappa
 	opencl_k.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
+	logger.cpp
 )
 target_link_libraries( tk_kappa
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
 	klepsydra
+	einhard
 )
 add_executable( inverter
 	inverter.cpp
@@ -230,12 +236,14 @@ add_executable( inverter
 	host_writegaugefield.cpp
 	host_solver.cpp
 	host_fermionobservables.cpp
+	logger.cpp
 )
 target_link_libraries( inverter
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
 	klepsydra
+	einhard
 )
 
 add_library( klepsydra
