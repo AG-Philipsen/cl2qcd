@@ -156,7 +156,7 @@ hmc_error Opencl::fill_kernels(){
 hmc_error Opencl::init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* params)
 {
 	//variables, initializing, ...
-	parameters = params;
+  set_parameters(params);
 	hmc_error err;
 	cl_int clerr = CL_SUCCESS;
 	timer->reset();
@@ -329,7 +329,7 @@ hmc_error Opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 	err = this->fill_kernels();
 
 	//finish
-	isinit = 1;
+	set_init_true();
 	timer->add();
 	return HMC_SUCCESS;
 }
@@ -776,7 +776,7 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 
 hmc_error Opencl::finalize()
 {
-	if(isinit == 1) {
+  if(get_init_status() == 1) {
 		if(clFlush(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clFinish(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
 
@@ -808,7 +808,7 @@ hmc_error Opencl::finalize()
 		if(clReleaseCommandQueue(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clReleaseContext(context) != CL_SUCCESS) exit(HMC_OCLERROR);
 
-		isinit = 0;
+		set_init_false();
 	}
 	return HMC_SUCCESS;
 }
@@ -836,4 +836,24 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 		exit(HMC_OCLERROR);
 	}
 }
+hmc_error Opencl::set_init_true(){
+  isinit = 1;
+  return HMC_SUCCESS;
+}
+hmc_error Opencl::set_init_false(){
+  isinit = 0;
+  return HMC_SUCCESS;
+}
+int Opencl::get_init_status(){
+  return isinit;
+}
 
+hmc_error Opencl::set_parameters (inputparameters * parameters_val){
+  parameters = parameters_val; 
+  return HMC_SUCCESS;
+}
+
+inputparameters * Opencl::get_parameters ()
+{
+	return  parameters;
+}

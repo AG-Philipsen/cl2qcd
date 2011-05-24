@@ -77,6 +77,39 @@ public:
 	hmc_error init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* parameters);
 
 	/**
+	 * Collect a vector of kernel file names.
+	 * Virtual method, allows to include more kernel files in inherited classes.
+	 */
+	virtual hmc_error fill_kernels_file ();
+	/**
+	 * Collect the compiler options for OpenCL.
+	 * Virtual method, allows to include more options in inherited classes.
+	 */
+	virtual hmc_error fill_collect_options(stringstream* collect_options);
+	/**
+	 * Collect the buffers to generate for OpenCL.
+	 * Virtual method, allows to include more buffers in inherited classes.
+	 */
+	virtual hmc_error fill_buffers();
+	
+	/**
+	 * Collect the kernels for OpenCL.
+	 * Virtual method, allows to include more kernels in inherited classes.
+	 */
+	virtual hmc_error fill_kernels();
+	
+	/**
+	 * Called by the destructor.
+	 */
+	hmc_error finalize();
+
+	/**
+	 * Contains the list of kernel files after call to fill_kernels_file().
+	 */
+        std::vector<std::string> cl_kernels_file;
+
+
+	/**
 	 * Copy the given gaugefield to the appropriate OpenCL buffer.
 	 *
 	 * @param host_gaugefield The gaugefield to copy
@@ -145,42 +178,7 @@ public:
 	 */
 	hmc_error gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const timer1, usetimer * const timer2);
 
-	/**
-	 * Collect a vector of kernel file names.
-	 * Virtual method, allows to include more kernel files in inherited classes.
-	 */
-	virtual hmc_error fill_kernels_file ();
-	/**
-	 * Collect the compiler options for OpenCL.
-	 * Virtual method, allows to include more options in inherited classes.
-	 */
-	virtual hmc_error fill_collect_options(stringstream* collect_options);
-	/**
-	 * Collect the buffers to generate for OpenCL.
-	 * Virtual method, allows to include more buffers in inherited classes.
-	 */
-	virtual hmc_error fill_buffers();
-	
-	/**
-	 * Collect the kernels for OpenCL.
-	 * Virtual method, allows to include more kernels in inherited classes.
-	 */
-	virtual hmc_error fill_kernels();
-	
-	/**
-	 * Called by the destructor.
-	 */
-	hmc_error finalize();
-
-	/**
-	 * Contains the list of kernel files after call to fill_kernels_file().
-	 */
-        std::vector<std::string> cl_kernels_file;
-	
-	/**
-	 * Instance of input_parameters.
-	 */
-	inputparameters* parameters;
+       
 	
         /** The number of cores (not PEs) of the device */
 	cl_uint max_compute_units;
@@ -226,7 +224,7 @@ public:
 	//!!CP: this is not needed at the moment and since is not copied to the device anywhere!!
 	cl_mem clmem_theta_gaugefield;
 	
-	int isinit;
+
 	cl_context context;
 	cl_kernel heatbath_odd;
 	cl_kernel heatbath_even;
@@ -237,6 +235,35 @@ public:
 	cl_kernel polyakov;
 	cl_kernel polyakov_reduction;
 
+	/**
+	 * Sets initstatus to 1 (true)
+	 *
+	 */
+	hmc_error set_init_true();
+	/**
+	 * Sets initstatus to 0 (false)
+	 *
+	 */
+	hmc_error set_init_false();
+	/**
+	 * returns init status
+	 * @return isinit (1==true, 0==false)
+	 */
+	hmc_error get_init_status();
+	/**
+	 * Returns private member * parameters
+	 * @todo parameters is only used in inherited classes
+	 * @return parameters
+	 */
+	inputparameters * get_parameters ();
+	/**
+	 * Sets private member * parameters
+	 * @return parameters
+	 */
+	hmc_error set_parameters (inputparameters * parameters_val);
+ private:
+	inputparameters* parameters;
+	int isinit;
 };
 
 #endif /* _MYOPENCLH_ */

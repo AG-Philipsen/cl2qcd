@@ -5,9 +5,9 @@ hmc_error Gaugefield_k::init(int numdevs, cl_device_type* devicetypes, inputpara
 	hmc_error err;
   
 	//needs proper handling... the problem is finalize
-//	hmc_gaugefield * gf_tmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
-//	err = set_gf (gf_tmp);
-	gf = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	hmc_gaugefield * gf_tmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	err = set_gf (gf_tmp);
+	//	gf = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
 	
 	err = set_parameters (input_parameters);
 
@@ -50,7 +50,7 @@ hmc_float Gaugefield_k::Q_plaquette()
 			for(int mu = 0; mu < NDIM; mu++) {
 				for(int nu = 0; nu < mu; nu++) {
 					hmc_3x3matrix prod;
-					local_Q_plaquette(&prod, gf, n, t, mu, nu );
+					local_Q_plaquette(&prod, get_gf(), n, t, mu, nu );
 					hmc_complex tmp;
 					trace_3x3matrix(&tmp, &prod);
 					plaq += tmp.re;

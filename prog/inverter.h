@@ -18,7 +18,7 @@
 #include "types.h"
 #include "host_operations_complex.h"
 #include "host_geometry.h"
-#include "host_input.h"
+#include "inputparameters.h"
 #include "host_readgauge.h"
 #include "host_random.h"
 #include "host_update_heatbath.h"

@@ -13,7 +13,7 @@
 //#include <boost/lexical_cast.hpp>
 
 #include "globaldefs.h"
-#include "host_input.h"
+#include "inputparameters.h"
 #include "hmcerrs.h"
 #include "klepsydra/klepsydra.hpp"
 

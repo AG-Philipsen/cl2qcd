@@ -145,7 +145,7 @@ add_executable( hmc
 	host_operations_fermionmatrix.cpp
 #	host_gaugeobservables.cpp
 # 	host_testing.cpp
-	host_input.cpp
+	inputparameters.cpp
 	host_readgauge.cpp
 	host_random.cpp
 	host_update_heatbath.cpp
@@ -171,7 +171,7 @@ add_executable( heatbath
 	host_operations_su3matrix.cpp
 	host_operations_matrix.cpp	
 	gaugefield.cpp
-	host_input.cpp
+	inputparameters.cpp
 	host_readgauge.cpp
 	host_random.cpp
 	opencl.cpp
@@ -193,7 +193,7 @@ add_executable( tk_kappa
 	host_operations_matrix.cpp	
 	gaugefield.cpp
 	gaugefield_k.cpp
-	host_input.cpp
+	inputparameters.cpp
 	host_readgauge.cpp
 	host_random.cpp
 	opencl.cpp
@@ -219,7 +219,7 @@ add_executable( inverter
 	host_operations_fermionmatrix.cpp
 	gaugefield.cpp
 	gaugefield_inversion.cpp
-	host_input.cpp
+	inputparameters.cpp
 	host_readgauge.cpp
 	host_random.cpp
 	opencl.cpp

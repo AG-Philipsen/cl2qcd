@@ -27,7 +27,7 @@
 #include "host_testing.h"
 #include "host_gaugeobservables.h"
 #include "host_gaugefieldoperations.h"
-#include "host_input.h"
+#include "inputparameters.h"
 #include "host_readgauge.h"
 #include "host_random.h"
 #include "host_update_heatbath.h"
