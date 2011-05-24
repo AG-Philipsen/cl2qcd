@@ -86,7 +86,6 @@ hmc_error Opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 	logger.info() << "\tCL_PLATFORM_VERSION:  " << info;
 
 	cl_uint num_devices;
-	cl_device_id device;
 	clerr = clGetDeviceIDs(platform, wanted_device_type, 0, NULL, &num_devices);
 	if(num_devices == 1) {
 		logger.info() << "\t" << num_devices << " device of wanted type has been found.";
@@ -256,50 +255,66 @@ hmc_error Opencl::init(cl_device_type wanted_device_type, const size_t local_wor
 	clmem_splaq_buf_glob = 0;
 	clmem_polyakov_buf_glob = 0;
 
-	logger.trace() << "Create heatbath kernels...";
+	logger.debug() << "Create heatbath kernels...";
 	heatbath_even = clCreateKernel(clprogram, "heatbath_even", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( heatbath_even );
 	heatbath_odd = clCreateKernel(clprogram, "heatbath_odd", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( heatbath_odd );
 
 	overrelax_even = clCreateKernel(clprogram, "overrelax_even", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( overrelax_even );
 	overrelax_odd = clCreateKernel(clprogram, "overrelax_odd", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( overrelax_odd );
 
-	logger.trace() << "Create gaugeobservables kernels...";
+	logger.debug() << "Create gaugeobservables kernels...";
 	plaquette = clCreateKernel(clprogram, "plaquette", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... plaquette failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( plaquette );
 	polyakov = clCreateKernel(clprogram, "polyakov", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... polyakov failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( polyakov );
 	plaquette_reduction = clCreateKernel(clprogram, "plaquette_reduction", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... plaquette_reduction failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( plaquette_reduction );
 	polyakov_reduction = clCreateKernel(clprogram, "polyakov_reduction", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... polyakov_reduction failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( polyakov_reduction );
 
 	isinit = 1;
 
@@ -821,3 +836,68 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 	}
 }
 
+void Opencl::printResourceRequirements(const cl_kernel kernel)
+{
+	cl_int clerr;
+
+	size_t nameSize;
+	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &nameSize );
+	if( clerr == CL_SUCCESS ) {
+		char* name = new char[nameSize];
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, nameSize, name, &nameSize );
+		if( clerr == CL_SUCCESS )
+			logger.trace() << "Kernel: " << name;
+		delete[] name;
+	}
+	if( clerr != CL_SUCCESS ) {
+		logger.fatal() << "Querying kernel properties failed, aborting...";
+		exit(HMC_OCLERROR);
+	}
+
+	// query the maximum work group size
+	size_t work_group_size;
+	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &work_group_size, NULL );
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "Querying kernel properties failed, aborting...";
+		exit(HMC_OCLERROR);
+	}
+	logger.trace() << "  Maximum work group size: " << work_group_size;
+
+	// query the work group size specified at compile time (if any)
+	size_t compile_work_group_size[3];
+	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 3 * sizeof(size_t), compile_work_group_size, NULL );
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "Querying kernel properties failed, aborting...";
+		exit(HMC_OCLERROR);
+	}
+	if( compile_work_group_size[0] == 0 )
+		logger.trace() << "  No work group size specified at compile time.";
+	else
+		logger.trace() << "  Compile time work group size: (" << compile_work_group_size[0] << ", " << compile_work_group_size[1] << ", " << compile_work_group_size[2] << ')';
+
+	// query the preferred WORK_GROUP_SIZE_MULTIPLE (OpenCL 1.1 only)
+	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(size_t), &work_group_size, NULL );
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "Querying kernel properties failed, aborting...";
+		exit(HMC_OCLERROR);
+	}
+	logger.trace() << "  Preferred work group size multiple: " << work_group_size;
+
+	// query the local memory requirements
+	cl_ulong local_mem_size;
+	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_LOCAL_MEM_SIZE, sizeof(cl_ulong), &local_mem_size, NULL );
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "Querying kernel properties failed, aborting...";
+		exit(HMC_OCLERROR);
+	}
+	logger.trace() << "  Local memory size (bytes): " << local_mem_size;
+
+	// query the private memory required by the kernel (OpenCL 1.1 only)
+	cl_ulong private_mem_size;
+	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_PRIVATE_MEM_SIZE, sizeof(cl_ulong), &private_mem_size, NULL );
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "Querying kernel properties failed, aborting...";
+		exit(HMC_OCLERROR);
+	}
+	logger.trace() << "  Private memory size (bytes): " << private_mem_size;
+}

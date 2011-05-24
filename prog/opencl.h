@@ -213,6 +213,8 @@ private:
 	//!!CP: this is not needed at the moment and since is not copied to the device anywhere!!
 	cl_mem clmem_theta_gaugefield;
 
+	/** ID of the OpenCL device wrapped by this object */
+	cl_device_id device;
 	int isinit;
 	cl_context context;
 	cl_kernel heatbath_odd;
@@ -247,6 +249,15 @@ private:
 	 * @todo global work size will also depend on device ...
 	 */
 	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
+
+	/*
+	 * Print resource requirements of a kernel object.
+	 *
+	 * All information is dumped to the trace.
+	 *
+	 * @param kernel The kernel of which to query the information.
+	 */
+	void printResourceRequirements(const cl_kernel kernel);
 };
 
 #endif /* _MYOPENCLH_ */
