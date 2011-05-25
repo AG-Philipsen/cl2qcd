@@ -29,15 +29,17 @@ extern "C" {
 #define ENDIAN (htons(1) == 1)
 
 
-void extrInfo_hmc_float(const char * in1, const char * in2, int len1, int len2, hmc_float * dest);
+void extrInfo_hmc_float(const char * in1, int len1, int len2, hmc_float * dest);
 
 // two strings in xlf-info and inverter-info are complicated because there are several vars saved in them
 // this is not a beautiful implementation!!
-void extrInfo_beta(const char * in1, const char * in2, int len1, int len2, hmc_float * dest1, hmc_float * dest2, hmc_float * dest3, hmc_float * dest4);
+void extrInfo_beta(const char * in1, int len1, int len2, hmc_float * dest1, hmc_float * dest2, hmc_float * dest3, hmc_float * dest4);
 
-void extrInfo_int(const char * in1, const char * in2, int len1, int len2, int * dest);
+void extrInfo_kappa(const char * in1, int len1, int len2, hmc_float * dest1, hmc_float * dest2);
+
+void extrInfo_int(const char * in1, int len1, int len2, int * dest);
 // the \n at the end is overwritten by \0
-void extrInfo_char(const char * in1, const char * in2, int len1, int len2, char * dest);
+void extrInfo_char(const char * in1, int len1, int len2, char * dest);
 
 hmc_error get_XLF_infos(char * filename, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu,
                         hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date );
@@ -61,11 +63,11 @@ hmc_error read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, in
 
 hmc_error read_binary_data_single(char * file, float * numArray, int num_entries, int filelength );
 
-int read_data_single(char * file, float * num_array_single, int num_entries, char * field_out);
+int read_data_single(char * file, float * num_array_single, int num_entries);
 
 int read_binary_data_double(char * file, double * numArray, int num_entries, int filelength );
 
-int read_data_double(char * file, double * num_array_double, int num_entries, char * field_out);
+int read_data_double(char * file, double * num_array_double, int num_entries);
 
 hmc_error read_tmlqcd_file(char * file,
                            int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries, int * flavours,
