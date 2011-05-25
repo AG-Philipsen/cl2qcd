@@ -94,6 +94,8 @@ typedef hmc_float hmc_gauge_momentum;
 typedef hmc_float hmc_algebraelement [NC*NC-1];
 #endif
 
+typedef hmc_complex hmc_su3vector[3];
+
 #endif // ifndef _INKERNEL_
 
 typedef hmc_float hmc_ocl_spinor;

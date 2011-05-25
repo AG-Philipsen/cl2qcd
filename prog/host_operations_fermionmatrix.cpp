@@ -34,7 +34,7 @@ hmc_error M_diag(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_
 	return HMC_SUCCESS; 
 }
 
-//it one would have explicit flavour structure, this would have to be revisited because (pauli)dagger is non-trivial
+//if one would have explicit flavour structure, this would have to be revisited because (pauli)dagger is non-trivial
 hmc_error Mdagger_diag(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* out){
 	hmc_spinor spinout[SPINORSIZE];
 	//iterate over all lattice sites

@@ -44,6 +44,9 @@ public:
 	 */
 	hmc_error set_defaults();
 	hmc_float get_kappa();
+	void set_kappa_negative();
+	void calc_mubar();
+	hmc_float get_mubar();
 	hmc_float get_beta();
 	hmc_float get_tau();
 	hmc_float get_theta_fermion();
@@ -87,6 +90,7 @@ private:
 	hmc_float chem_pot_re;
 	hmc_float chem_pot_im;
 	hmc_float tau;
+	hmc_float mubar;
 	int cgmax;
 	int prec;
 	int startcondition;

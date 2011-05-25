@@ -185,6 +185,21 @@ hmc_float inputparameters::get_kappa()
 	return kappa;
 }
 
+void inputparameters::set_kappa_negative()
+{
+	kappa *= -1.;
+}
+
+void inputparameters::calc_mubar()
+{
+	mubar = 2.*kappa*mu;
+}
+
+hmc_float inputparameters::get_mubar()
+{
+	return mubar;
+}
+
 hmc_float inputparameters::get_theta_fermion()
 {
 	return theta_fermion;
