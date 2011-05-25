@@ -20,20 +20,20 @@ __kernel void kappa_karsch_gpu(__global hmc_ocl_gaugefield* gaugefield, const hm
   for (int t=0; t<NTIME; t++){
 	for (int n=0; n<VOLSPACE; n++){
 	      //Compute required plaquettes
-	      hmc_ocl_su3matrix temp;
+	      hmc_ocl_su3matrix temp[SU3SIZE];
 	      
-	      local_plaquette(gaugefield, & temp, n, t, 1, 0);
-	      hmc_float plaq_10 = trace_su3matrix(&temp).re;
-	      local_plaquette(gaugefield, & temp, n, t, 2, 0);
-	      hmc_float plaq_20 = trace_su3matrix(&temp).re;
-	      local_plaquette(gaugefield, & temp, n, t, 3, 0);
-	      hmc_float plaq_30 = trace_su3matrix(&temp).re;
-	      local_plaquette(gaugefield, & temp, n, t, 1, 2);
-	      hmc_float plaq_12 = trace_su3matrix(&temp).re;
-	      local_plaquette(gaugefield, & temp, n, t, 1, 3);
-	      hmc_float plaq_13 = trace_su3matrix(&temp).re;
-	      local_plaquette(gaugefield, & temp, n, t, 3, 2);
-	      hmc_float plaq_32 = trace_su3matrix(&temp).re;
+	      local_plaquette(gaugefield,  temp, n, t, 1, 0);
+	      hmc_float plaq_10 = trace_su3matrix(temp).re;
+	      local_plaquette(gaugefield,  temp, n, t, 2, 0);
+	      hmc_float plaq_20 = trace_su3matrix(temp).re;
+	      local_plaquette(gaugefield,  temp, n, t, 3, 0);
+	      hmc_float plaq_30 = trace_su3matrix(temp).re;
+	      local_plaquette(gaugefield,  temp, n, t, 1, 2);
+	      hmc_float plaq_12 = trace_su3matrix(temp).re;
+	      local_plaquette(gaugefield,  temp, n, t, 1, 3);
+	      hmc_float plaq_13 = trace_su3matrix(temp).re;
+	      local_plaquette(gaugefield,  temp, n, t, 3, 2);
+	      hmc_float plaq_32 = trace_su3matrix(temp).re;
 
 	      int point = n + VOLSPACE * t;
 	      
@@ -97,38 +97,36 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
   hmc_float t_12 [VOL4D];
   hmc_float t_13 [VOL4D];
   hmc_float t_23 [VOL4D];
-  
-  
-  
+    
   for (int t=0; t<NTIME; t++){
     for (int n=0; n<VOLSPACE; n++){
       //Compute required plaquettes
       hmc_ocl_3x3matrix Q_22[9];
-      local_Q_plaquette(&Q_22, gaugefield, n, t, 2, 2);
+      local_Q_plaquette(Q_22, gaugefield, n, t, 2, 2);
       hmc_ocl_3x3matrix Q_10[9];
-      local_Q_plaquette(&Q_10, gaugefield, n, t, 1, 0);
+      local_Q_plaquette(Q_10, gaugefield, n, t, 1, 0);
       hmc_ocl_3x3matrix Q_20[9];
-      local_Q_plaquette(&Q_20, gaugefield, n, t, 2, 0);
+      local_Q_plaquette(Q_20, gaugefield, n, t, 2, 0);
       hmc_ocl_3x3matrix Q_02[9];
-      adjoint_3x3matrix (&Q_02, &Q_20);
+      adjoint_3x3matrix (Q_02, Q_20);
       hmc_ocl_3x3matrix Q_21[9];
-      local_Q_plaquette(&Q_21,gaugefield, n, t, 2, 1);
+      local_Q_plaquette(Q_21,gaugefield, n, t, 2, 1);
       hmc_ocl_3x3matrix Q_12[9];
-      adjoint_3x3matrix (&Q_12, &Q_21);
+      adjoint_3x3matrix (Q_12, Q_21);
       hmc_ocl_3x3matrix Q_03[9];
-      local_Q_plaquette(&Q_03, gaugefield, n, t, 0, 3);
+      local_Q_plaquette(Q_03, gaugefield, n, t, 0, 3);
       hmc_ocl_3x3matrix Q_30[9];
-      adjoint_3x3matrix (&Q_30, &Q_03);
+      adjoint_3x3matrix (Q_30, Q_03);
       hmc_ocl_3x3matrix Q_13[9];
-      local_Q_plaquette( &Q_13, gaugefield, n, t, 1, 3);
+      local_Q_plaquette( Q_13, gaugefield, n, t, 1, 3);
       hmc_ocl_3x3matrix Q_31[9];
-      adjoint_3x3matrix (&Q_31, &Q_13);
+      adjoint_3x3matrix (Q_31, Q_13);
       hmc_ocl_3x3matrix Q_23[9];
-      local_Q_plaquette( &Q_23, gaugefield, n, t, 2, 3);
+      local_Q_plaquette( Q_23, gaugefield, n, t, 2, 3);
       hmc_ocl_3x3matrix Q_32[9];
-      adjoint_3x3matrix (&Q_32, &Q_23);
+      adjoint_3x3matrix (Q_32, Q_23);
       hmc_ocl_3x3matrix Q_11[9];
-      local_Q_plaquette( &Q_11, gaugefield, n, t, 1, 1);
+      local_Q_plaquette( Q_11, gaugefield, n, t, 1, 1);
 
 
       int point = n + VOLSPACE * t;
@@ -138,79 +136,73 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
 	      
       //T_12
       //alpha=0
-      subtract_3x3matrix (&tmp, &Q_20, &Q_02);
-      multiply_3x3matrix (&tmp, &Q_10, &tmp);
-//       trace_3x3matrix (&tmp_cmp, &tmp);
-      tmp_cmp = trace_3x3matrix(&tmp);
+      subtract_3x3matrix (tmp, Q_20, Q_02);
+      multiply_3x3matrix (tmp, Q_10, tmp);
+      tmp_cmp = trace_3x3matrix(tmp);
       t_12 [point] = tmp_cmp.re;
       //alpha=1
-      subtract_3x3matrix (&tmp, &Q_21, &Q_12);
-      multiply_3x3matrix (&tmp, &Q_11, &tmp);
-//       trace_3x3matrix (&tmp_cmp, &tmp);
-      tmp_cmp = trace_3x3matrix(&tmp);
+      subtract_3x3matrix (tmp, Q_21, Q_12);
+      multiply_3x3matrix (tmp, Q_11, tmp);
+      tmp_cmp = trace_3x3matrix(tmp);
       t_12 [point] += tmp_cmp.re;
       //alpha=2, vanishes
-// 	      subtract_3x3matrix (&tmp, &Q_22, &Q_22);
-// 	      multiply_3x3matrix (&tmp, &Q_12, &tmp);
-// 	      trace_3x3matrix (tmp_cmp, &tmp);
+// 	      subtract_3x3matrix (tmp, Q_22, Q_22);
+// 	      multiply_3x3matrix (tmp, Q_12, tmp);
+// 	      trace_3x3matrix (tmp_cmp, tmp);
 // 	      t_12 [point] += tmp_cmp.re;
       //alpha=3
-      subtract_3x3matrix (&tmp, &Q_23, &Q_32);
-      multiply_3x3matrix (&tmp, &Q_13, &tmp);
-//       trace_3x3matrix (&tmp_cmp, &tmp);
-      tmp_cmp = trace_3x3matrix(&tmp);
+      subtract_3x3matrix (tmp, Q_23, Q_32);
+      multiply_3x3matrix (tmp, Q_13, tmp);
+      tmp_cmp = trace_3x3matrix(tmp);
       t_12 [point] += tmp_cmp.re;
 
       //T_13
       //alpha=0
-      subtract_3x3matrix (&tmp, &Q_30, &Q_03);
-      multiply_3x3matrix (&tmp, &Q_10, &tmp);
-//      trace_3x3matrix (&tmp_cmp, &tmp);
-      tmp_cmp = trace_3x3matrix(&tmp);
+      subtract_3x3matrix (tmp, Q_30, Q_03);
+      multiply_3x3matrix (tmp, Q_10, tmp);
+      tmp_cmp = trace_3x3matrix(tmp);
       t_13 [point] = tmp_cmp.re;
       //alpha=1
-      subtract_3x3matrix (&tmp, &Q_31, &Q_13);
-      multiply_3x3matrix (&tmp, &Q_11, &tmp);
-//      trace_3x3matrix (&tmp_cmp, &tmp);
-      tmp_cmp = trace_3x3matrix(&tmp);
+      subtract_3x3matrix (tmp, Q_31, Q_13);
+      multiply_3x3matrix (tmp, Q_11, tmp);
+      tmp_cmp = trace_3x3matrix(tmp);
       t_13 [point] += tmp_cmp.re;
       //alpha=2
-      subtract_3x3matrix (&tmp, &Q_32, &Q_23);
-      multiply_3x3matrix (&tmp, &Q_12, &tmp);
-//      trace_3x3matrix (&tmp_cmp, &tmp);
-      tmp_cmp = trace_3x3matrix(&tmp);
+      subtract_3x3matrix (tmp, Q_32, Q_23);
+      multiply_3x3matrix (tmp, Q_12, tmp);
+      tmp_cmp = trace_3x3matrix(tmp);
       t_13 [point] += tmp_cmp.re;
       //alpha=3, vanishes
-// 	      subtract_3x3matrix (&tmp, &Q_33, &Q_33);
-// 	      multiply_3x3matrix (&tmp, &Q_13, &tmp);
-// 	      trace_3x3matrix (&tmp_cmp, &tmp);
+// 	      subtract_3x3matrix (tmp, Q_33, Q_33);
+// 	      multiply_3x3matrix (tmp, Q_13, tmp);
+// 	      trace_3x3matrix (tmp_cmp, tmp);
 // 	      t_13 [point] += tmp_cmp.re;
 
       //T_23
       //alpha=0
-      subtract_3x3matrix (&tmp, &Q_30, &Q_03);
-      multiply_3x3matrix (&tmp, &Q_20, &tmp);
-//      trace_3x3matrix (&tmp_cmp, &tmp);
-      tmp_cmp = trace_3x3matrix(&tmp);
+      subtract_3x3matrix (tmp, Q_30, Q_03);
+      multiply_3x3matrix (tmp, Q_20, tmp);
+      tmp_cmp = trace_3x3matrix(tmp);
       t_23 [point] = tmp_cmp.re;
       //alpha=1
-      subtract_3x3matrix (&tmp, &Q_31, &Q_13);
-      multiply_3x3matrix (&tmp, &Q_21, &tmp);
-//      trace_3x3matrix (&tmp_cmp, &tmp);
-      tmp_cmp = trace_3x3matrix(&tmp);
+      subtract_3x3matrix (tmp, Q_31, Q_13);
+      multiply_3x3matrix (tmp, Q_21, tmp);
+      tmp_cmp = trace_3x3matrix(tmp);
       t_23 [point] += tmp_cmp.re;
+
       //alpha=2
-      subtract_3x3matrix (&tmp, &Q_32, &Q_23);
-      multiply_3x3matrix (&tmp, &Q_22, &tmp);
-//      trace_3x3matrix (&tmp_cmp, &tmp);
-      tmp_cmp = trace_3x3matrix(&tmp);
+      subtract_3x3matrix (tmp, Q_32, Q_23);
+      multiply_3x3matrix (tmp, Q_22, tmp);
+      tmp_cmp = trace_3x3matrix(tmp);
       t_23 [point] += tmp_cmp.re;
+      
       //alpha=3, vanishes
-// 	      subtract_3x3matrix (&tmp, &Q_33, &Q_33);
-// 	      multiply_3x3matrix (&tmp, &Q_23, &tmp);
-// 	      trace_3x3matrix (&tmp_cmp, &tmp);
+// 	      subtract_3x3matrix (tmp, Q_33, Q_33);
+// 	      multiply_3x3matrix (tmp, Q_23, tmp);
+// 	      trace_3x3matrix (tmp_cmp, tmp);
 // 	      t_23 [point] += tmp_cmp.re;
-      }
+
+  }
     }
     
     //Momentum
@@ -246,15 +238,15 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
 
 		    //(T_12(x) T_12(y) + T_21(x) T_21(y) + T_13(x) T_13(y)) * factor
 		    result += factor* ( t_12[point_x]*t_12[point_y]
-				      + t_13[point_x]*t_13[point_y]
-				      + t_23[point_x]*t_23[point_y]);
+ 				      + t_13[point_x]*t_13[point_y]
+ 				      + t_23[point_x]*t_23[point_y]);
   }}}}}}}}
   
   //Normalization
   // 1/3 for averaging T_ij, 1/V/Nt for averaging y, L^2/2/pi^2 for derivation, (-1/64)^2 for Clover and T_munu^2, beta^2/Nc^2 for T_munu^2
   // *2 for temp + conj (temp) *2 for for-loop
   // = beta^2 * L^2/ (55296 * V * Nt * pi^2)
-  hmc_float norm = (hmc_float) NSPACE* NSPACE / (hmc_float) VOL4D /PI /PI * beta * beta / 55296. ;
+  hmc_float norm = (hmc_float) (NSPACE* NSPACE) / (hmc_float) (VOL4D) /PI /PI * beta * beta / 55296. ;
     
   * kappa_clover_val = norm * result;
 
