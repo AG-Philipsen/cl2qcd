@@ -69,13 +69,13 @@ class Gaugefield_k : public Gaugefield {
 	 * @param[in,out] timer time for measurement
 	 * @return Error code as defined in hmcerrs.h
 	 */	
-	 hmc_error kappa_karsch_gpu (usetimer* timer_karsch);
+	 hmc_error kappa_karsch_gpu (usetimer* timer);
 	
 	/**
 	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld  on GPU
 	 * @return Error code as defined in hmcerrs.h
 	 */	
-	hmc_error kappa_clover_gpu (usetimer* timer_clover);
+	hmc_error kappa_clover_gpu (usetimer* timer);
   
 	/**
 	 * Returns private member opencl_k * devices

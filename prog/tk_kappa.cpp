@@ -79,6 +79,9 @@ int main(int argc, char* argv[])
 
 	cout<< "Start heatbath and measurement of TK kappa" <<endl;
 	
+	usetimer timer_karsch;
+	usetimer timer_clover;
+	
 	for(int i = 0; i < nsteps; i++) {
 		gaugefield.heatbath(&updatetime);
 		for(int j = 0; j < overrelaxsteps; j++)
@@ -95,9 +98,8 @@ int main(int argc, char* argv[])
 
 	//GPU
 	hmc_error err;
-	usetimer timer_karsch;
 	err = gaugefield.kappa_karsch_gpu (&timer_karsch);
-	err = gaugefield.kappa_clover_gpu (&timer_karsch);
+	err = gaugefield.kappa_clover_gpu (&timer_clover);
 	
 	//CPU
 // 	gaugefield.sync_gaugefield(&copytime);
@@ -110,6 +112,10 @@ int main(int argc, char* argv[])
 	kappa_karsch_out << gaugefield.get_kappa_karsch() <<endl;
 	kappa_clover_out << gaugefield.get_kappa_clover() <<endl;
 	}
+	
+	cout.precision(4);
+	cout <<"Measurement TK kappa_karsch: " << timer_karsch.getTime()/1000000. << " s"<< endl;
+	cout <<"Measurement TK kappa_clover: " << timer_clover.getTime()/1000000.  << " s" <<endl;
 	
 	kappa_karsch_out.close();
 	kappa_clover_out.close();

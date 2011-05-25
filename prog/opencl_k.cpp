@@ -80,7 +80,7 @@ hmc_error Opencl_k::fill_kernels(){
 
 
 
-hmc_error Opencl_k::run_kappa_karsch_gpu(const hmc_float beta, usetimer * const timer, hmc_float * kappa_karsch_out)
+hmc_error Opencl_k::run_kappa_karsch_gpu(const hmc_float beta, usetimer * timer, hmc_float * kappa_karsch_out)
 {
 	//variables
 	cl_int clerr = CL_SUCCESS;
@@ -141,7 +141,7 @@ hmc_error Opencl_k::run_kappa_karsch_gpu(const hmc_float beta, usetimer * const 
 }
 
 
-hmc_error Opencl_k::run_kappa_clover_gpu(const hmc_float beta, usetimer * const timer, hmc_float * kappa_clover_out)
+hmc_error Opencl_k::run_kappa_clover_gpu(const hmc_float beta, usetimer * timer, hmc_float * kappa_clover_out)
 {
 	//variables
 	cl_int clerr = CL_SUCCESS;

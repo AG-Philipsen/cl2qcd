@@ -49,7 +49,7 @@ public:
 	 */
 	void zero();
 	/**
-	 * Retrieve the aggregated measured time.
+	 * Retrieve the aggregated measured time in microseconds (10^6s).
 	 */
 	uint64_t getTime();
 	/**
