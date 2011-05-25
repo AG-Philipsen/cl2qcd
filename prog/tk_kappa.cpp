@@ -77,6 +77,8 @@ int main(int argc, char* argv[])
 	q_plaq_out.open ("Q_plaquette.dat");
 	q_plaq_out.precision(15);
 
+	cout<< "Start heatbath and measurement of TK kappa" <<endl;
+	
 	for(int i = 0; i < nsteps; i++) {
 		gaugefield.heatbath(&updatetime);
 		for(int j = 0; j < overrelaxsteps; j++)
@@ -90,6 +92,7 @@ int main(int argc, char* argv[])
 		}
 	//Add a measurement frequency
 	
+
 	//GPU
 	hmc_error err;
 	usetimer timer_karsch;
@@ -97,8 +100,7 @@ int main(int argc, char* argv[])
 	err = gaugefield.kappa_clover_gpu (&timer_karsch);
 	
 	//CPU
-	gaugefield.sync_gaugefield(&copytime);
-	
+// 	gaugefield.sync_gaugefield(&copytime);
 //  	err = gaugefield.kappa_karsch ();
 //  	err = gaugefield.kappa_clover ();
 

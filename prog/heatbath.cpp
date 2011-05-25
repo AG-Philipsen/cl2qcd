@@ -67,6 +67,8 @@ int main(int argc, char* argv[])
 	int writefreq = parameters.get_writefrequency();
 	int savefreq = parameters.get_savefrequency();
 
+	cout<< "Start heatbath" <<endl;
+	
 	for(int i = 0; i < nsteps; i++) {
 		gaugefield.heatbath(&updatetime);
 		for(int j = 0; j < overrelaxsteps; j++) gaugefield.overrelax(&overrelaxtime);
