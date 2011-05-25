@@ -82,8 +82,6 @@ hmc_error Gaugefield_k::kappa_clover_gpu (usetimer* timer_clover){
 	hmc_error err;
  	err = get_devices_k()[0].run_kappa_clover_gpu(get_parameters()->get_beta(), timer_clover, &kappa_clover_val);
 	return err;
-
-	return HMC_SUCCESS;
 }
 
 Opencl_k * Gaugefield_k::get_devices_k (){
