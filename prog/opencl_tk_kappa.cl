@@ -87,13 +87,12 @@ __kernel void kappa_karsch_gpu(__global hmc_ocl_gaugefield* gaugefield, const hm
   hmc_float norm = (hmc_float) (NSPACE* NSPACE) / (hmc_float) (VOL4D) / (hmc_float) (NC * NC) /12.0 /PI /PI  * beta * beta;
 
   *kappa_karsch_val = norm * result;
-  
 }
 
 
 
 __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta,  __global hmc_float * kappa_clover_val){
-  
+
   //Energy-momentum-tensor in clover-discretization
   hmc_float t_12 [VOL4D];
   hmc_float t_13 [VOL4D];
@@ -255,4 +254,5 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
   hmc_float norm = (hmc_float) NSPACE* NSPACE / (hmc_float) VOL4D /PI /PI * beta * beta / 55296. ;
     
   * kappa_clover_val = norm * result;
+
 }

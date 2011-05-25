@@ -79,7 +79,8 @@ int main(int argc, char* argv[])
 
 	for(int i = 0; i < nsteps; i++) {
 		gaugefield.heatbath(&updatetime);
-		for(int j = 0; j < overrelaxsteps; j++) gaugefield.overrelax(&overrelaxtime);
+		for(int j = 0; j < overrelaxsteps; j++)
+		  gaugefield.overrelax(&overrelaxtime);
 		if( ( (i + 1) % writefreq ) == 0 ) {
 			gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str());
 		}
@@ -88,10 +89,18 @@ int main(int argc, char* argv[])
 			gaugefield.save(i);
 		}
 	//Add a measurement frequency
-	gaugefield.sync_gaugefield(&copytime);
+	
+	//GPU
 	hmc_error err;
- 	err = gaugefield.kappa_karsch ();
- 	err = gaugefield.kappa_clover ();
+	usetimer timer_karsch;
+	err = gaugefield.kappa_karsch_gpu (&timer_karsch);
+	err = gaugefield.kappa_clover_gpu (&timer_karsch);
+	
+	//CPU
+	gaugefield.sync_gaugefield(&copytime);
+	
+//  	err = gaugefield.kappa_karsch ();
+//  	err = gaugefield.kappa_clover ();
 
 	hmc_float qplaq = gaugefield.Q_plaquette();
 	q_plaq_out << qplaq <<endl;
