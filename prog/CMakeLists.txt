@@ -184,10 +184,12 @@ add_executable( tk_kappa
 	host_operations_su3matrix.cpp
 	host_operations_matrix.cpp	
 	gaugefield.cpp
+	gaugefield_k.cpp
 	host_input.cpp
 	host_readgauge.cpp
 	host_random.cpp
 	opencl.cpp
+	opencl_k.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
 )

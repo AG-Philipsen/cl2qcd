@@ -1,6 +1,7 @@
 /** @file
  *
  * Everything required by main()
+ * @todo this file is only assumed to work within branch "hmc" of git repo
  */
 
 #ifndef _HMCH_
