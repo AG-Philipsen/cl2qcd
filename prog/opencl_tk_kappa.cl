@@ -98,39 +98,42 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
   hmc_float t_13 [VOL4D];
   hmc_float t_23 [VOL4D];
   
+  
+  
   for (int t=0; t<NTIME; t++){
     for (int n=0; n<VOLSPACE; n++){
       //Compute required plaquettes
-      hmc_ocl_3x3matrix Q_22;
+      hmc_ocl_3x3matrix Q_22[9];
       local_Q_plaquette(&Q_22, gaugefield, n, t, 2, 2);
-      hmc_ocl_3x3matrix Q_10;
+      hmc_ocl_3x3matrix Q_10[9];
       local_Q_plaquette(&Q_10, gaugefield, n, t, 1, 0);
-      hmc_ocl_3x3matrix Q_20;
+      hmc_ocl_3x3matrix Q_20[9];
       local_Q_plaquette(&Q_20, gaugefield, n, t, 2, 0);
-      hmc_ocl_3x3matrix Q_02;
+      hmc_ocl_3x3matrix Q_02[9];
       adjoint_3x3matrix (&Q_02, &Q_20);
-      hmc_ocl_3x3matrix Q_21;
+      hmc_ocl_3x3matrix Q_21[9];
       local_Q_plaquette(&Q_21,gaugefield, n, t, 2, 1);
-      hmc_ocl_3x3matrix Q_12;
+      hmc_ocl_3x3matrix Q_12[9];
       adjoint_3x3matrix (&Q_12, &Q_21);
-      hmc_ocl_3x3matrix Q_03;
+      hmc_ocl_3x3matrix Q_03[9];
       local_Q_plaquette(&Q_03, gaugefield, n, t, 0, 3);
-      hmc_ocl_3x3matrix Q_30;
+      hmc_ocl_3x3matrix Q_30[9];
       adjoint_3x3matrix (&Q_30, &Q_03);
-      hmc_ocl_3x3matrix Q_13;
+      hmc_ocl_3x3matrix Q_13[9];
       local_Q_plaquette( &Q_13, gaugefield, n, t, 1, 3);
-      hmc_ocl_3x3matrix Q_31;
+      hmc_ocl_3x3matrix Q_31[9];
       adjoint_3x3matrix (&Q_31, &Q_13);
-      hmc_ocl_3x3matrix Q_23;
+      hmc_ocl_3x3matrix Q_23[9];
       local_Q_plaquette( &Q_23, gaugefield, n, t, 2, 3);
-      hmc_ocl_3x3matrix Q_32;
+      hmc_ocl_3x3matrix Q_32[9];
       adjoint_3x3matrix (&Q_32, &Q_23);
-      hmc_ocl_3x3matrix Q_11;
+      hmc_ocl_3x3matrix Q_11[9];
       local_Q_plaquette( &Q_11, gaugefield, n, t, 1, 1);
+
 
       int point = n + VOLSPACE * t;
       
-      hmc_ocl_3x3matrix tmp;
+      hmc_ocl_3x3matrix tmp [9];
       hmc_complex tmp_cmp;
 	      
       //T_12
@@ -254,5 +257,6 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
   hmc_float norm = (hmc_float) NSPACE* NSPACE / (hmc_float) VOL4D /PI /PI * beta * beta / 55296. ;
     
   * kappa_clover_val = norm * result;
+
 
 }
