@@ -2,8 +2,8 @@
  *
  * Everything required by heatbath's main()
  */
-#ifndef _HEATBATHH_
-#define _HEATBATHH_
+#ifndef _TKKAPPAH_
+#define _TKKAPPAH_
 //should only be included in main prog
 
 #include <cstdlib>
@@ -18,19 +18,14 @@
 #include "types.h"
 #include "host_operations_complex.h"
 #include "host_geometry.h"
-#include "host_input.h"
+#include "inputparameters.h"
 #include "host_readgauge.h"
 #include "host_random.h"
 #include "host_update_heatbath.h"
 #include "host_use_timer.h"
 #include "gaugefield.h"
 #include "gaugefield_k.h"
-#include "opencl.h"
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
+#include "logger.hpp"
 
 #ifdef _OPENMP
 # include <omp.h>
@@ -80,8 +75,8 @@ void print_info(inputparameters* params, ostream* os)
 	*os << "##" << '\n';
 	if (params->get_startcondition() == START_FROM_SOURCE) {
 		*os << "## sourcefile = ";
-		params->display_sourcefile();
-		*os << "##" << '\n';
+		string sf=params->sourcefile;
+		*os << sf << '\n';
 	}
 	if (params->get_startcondition() == COLD_START) {
 		*os << "## cold start\n";
@@ -94,4 +89,4 @@ void print_info(inputparameters* params, ostream* os)
 	return;
 }
 
-#endif /* _HEATBATH_ */
+#endif /* _TKKAPPAH_ */

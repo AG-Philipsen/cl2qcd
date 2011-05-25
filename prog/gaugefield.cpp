@@ -1,94 +1,137 @@
 #include "gaugefield.h"
 
+#include "logger.hpp"
+
 hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer)
 {
-	gf = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	//allocate memory for private gaugefield
+	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	set_gf(gftmp);
 
-	parameters = input_parameters;
+
+	set_parameters(input_parameters);
 
 	init_gaugefield(timer);
 
+	set_num_ocl_devices(numdevs);
 
-	num_ocl_devices = numdevs;
-
-	if(numdevs != 1) {
-		//LZ: so far, we only use !!! 1 !!! device
-		//this needs generalisation to several devices and subsets!!!!!
-		cerr << "only 1 device possible..." << endl;
-	}
-
-	if(num_ocl_devices > 0)
-		devices = new opencl[num_ocl_devices];
-
-
-	for(int n = 0; n < num_ocl_devices; n++) {
-		cout << "init device #" << n << endl;
-		devices[n].init(devicetypes[n], local_work_size, global_work_size, timer, parameters);
-		
-	}
-
-	
+	this->init_devices(devicetypes, timer);
 
 	return HMC_SUCCESS;
 }
 
+hmc_error Gaugefield::init_devices(cl_device_type* devicetypes, usetimer* timer)
+{
+	if(get_num_ocl_devices() != 1) {
+		//LZ: so far, we only use !!! 1 !!! device
+		//this needs generalisation to several devices and subsets!!!!!
+		logger.error() << "only 1 device possible...";
+	}
+
+	if(get_num_ocl_devices() > 0) {
+		Opencl* dev_tmp = new Opencl[get_num_ocl_devices()];
+		set_devices(dev_tmp);
+	}
+
+
+	for(int n = 0; n < num_ocl_devices; n++) {
+		logger.debug() << "init device #" << n;
+		get_devices()[n].init(devicetypes[n], timer, get_parameters());
+	}
+	return HMC_SUCCESS;
+}
+
+
 hmc_error Gaugefield::init_gaugefield(usetimer* timer)
 {
 	sourcefileparameters parameters_source;
-	if(parameters->get_startcondition() == START_FROM_SOURCE) {
+	if((get_parameters())->get_startcondition() == START_FROM_SOURCE) {
 		int err;
 		timer->reset();
 		//tmp gauge field
 		hmc_float * gaugefield_tmp;
 		gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * NTIME * VOLSPACE);
-		err = parameters_source.readsourcefile(&(parameters->sourcefile)[0], parameters->get_prec(), &gaugefield_tmp);
-		err = copy_gaugefield_from_ildg_format(gf, gaugefield_tmp, parameters_source.num_entries_source);
+		err = parameters_source.readsourcefile(&(get_parameters()->sourcefile)[0], get_parameters()->get_prec(), &gaugefield_tmp);
+		err = copy_gaugefield_from_ildg_format(get_gf(), gaugefield_tmp, parameters_source.num_entries_source);
 		free(gaugefield_tmp);
 		timer->add();
 		if (err == 0) {
 			print_info_source(&parameters_source);
 		} else {
-			printf("error in setting vals from source!!! check global settings!!!\n\n");
+			logger.fatal() << "error in setting vals from source!!! check global settings!!!";
 			return HMC_XMLERROR;
 		}
 	}
-	if(parameters->get_startcondition() == COLD_START) {
+	if(get_parameters()->get_startcondition() == COLD_START) {
 		timer->reset();
-		set_gaugefield_cold(gf);
+		set_gaugefield_cold(get_gf());
 		timer->add();
 	}
-	if(parameters->get_startcondition() == HOT_START) {
+	if(get_parameters()->get_startcondition() == HOT_START) {
 		timer->reset();
-		set_gaugefield_cold(gf);
+		set_gaugefield_cold(get_gf());
 		timer->add();
 	}
 	return HMC_SUCCESS;
 }
 
+
+
+hmc_error Gaugefield::copy_gaugefield_to_devices(usetimer* timer)
+{
+	//LZ: so far, we only use !!! 1 !!! device
+	// this function needs to be generalised to several devices and definition of subsets...
+	hmc_error err = get_devices()[0].copy_gaugefield_to_device(get_gf(), timer);
+	return err;
+}
+
+hmc_error Gaugefield::sync_gaugefield(usetimer* timer)
+{
+	//LZ: so far, we only use !!! 1 !!! device
+	// this function needs to be generalised to several devices and definition of subsets...
+	hmc_error err = get_devices()[0].get_gaugefield_from_device(get_gf(), timer);
+	return err;
+}
+
+hmc_error Gaugefield::copy_rndarray_to_devices(hmc_rndarray host_rndarray,  usetimer* timer)
+{
+	//LZ: so far, we only use !!! 1 !!! device
+	// this function needs to be generalised to several devices and definition of subsets...
+	hmc_error err = get_devices()[0].copy_rndarray_to_device(host_rndarray, timer);
+	return err;
+}
+
+hmc_error Gaugefield::copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer* timer)
+{
+	//LZ: so far, we only use !!! 1 !!! device
+	// this function needs to be generalised to several devices and definition of subsets...
+	hmc_error err = get_devices()[0].copy_rndarray_from_device(rndarray, timer);
+	return err;
+}
+
+
 void Gaugefield::print_info_source(sourcefileparameters* params)
 {
-	printf("**********************************************************\n");
-	printf("Sourcefile parameters: (list not complete)\n");
-	printf("field:  %s\n", params->field_source);
-	printf("LX:  \t%d\n", params->lx_source);
-	printf("LY:  \t%d\n", params->ly_source);
-	printf("LZ:  \t%d\n", params->lz_source);
-	printf("LT:  \t%d\n", params->lt_source);
-	printf("entries: %d\n", params->num_entries_source);
-	printf("beta:  \t%f\n", params->beta_source);
-	printf("mu:  \t%f\n", params->mu_source);
-	printf("kappa:  %f\n", params->kappa_source);
-	printf("mubar:  %f\n", params->mubar_source);
-	printf("plaq: \t%f\n", params->plaquettevalue_source);
-	printf("**********************************************************\n");
-	printf("\n");
+	logger.info() << "**********************************************************";
+	logger.info() << "Sourcefile parameters: (list not complete)";
+	logger.info() << "field:   " << params->field_source;
+	logger.info() << "LX:      " << params->lx_source;
+	logger.info() << "LY:      " << params->ly_source;
+	logger.info() << "LZ:      " << params->lz_source;
+	logger.info() << "LT:      " << params->lt_source;
+	logger.info() << "entries: " << params->num_entries_source;
+	logger.info() << "beta:    " << params->beta_source;
+	logger.info() << "mu:      " << params->mu_source;
+	logger.info() << "kappa:   " << params->kappa_source;
+	logger.info() << "mubar:   " << params->mubar_source;
+	logger.info() << "plaq:    " << params->plaquettevalue_source;
+	logger.info() << "**********************************************************";
 	return;
 }
 
 
 hmc_error Gaugefield::save(int number)
 {
-
 	ildg_gaugefield * gaugefield_buf;
 	gaugefield_buf = (ildg_gaugefield*) malloc(sizeof(ildg_gaugefield));
 	int gaugefield_buf_size = sizeof(ildg_gaugefield) / sizeof(hmc_float);
@@ -104,51 +147,16 @@ hmc_error Gaugefield::save(int number)
 	outfilename << "conf." << strnumber.str();
 	string outputfile = outfilename.str();
 
-	copy_gaugefield_to_ildg_format(gaugefield_buf, gf);
+	copy_gaugefield_to_ildg_format(gaugefield_buf, get_gf());
 
 	hmc_float plaq = plaquette();
 
-	write_gaugefield ( gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NSPACE, parameters->get_prec(), number, plaq, parameters->get_beta(), parameters->get_kappa(), parameters->get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
+	write_gaugefield ( gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NTIME, get_parameters()->get_prec(), number, plaq, get_parameters()->get_beta(), get_parameters()->get_kappa(), get_parameters()->get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
 
 	free(gaugefield_buf);
 
 	return HMC_SUCCESS;
 }
-
-hmc_error Gaugefield::copy_gaugefield_to_devices(usetimer* timer)
-{
-	//LZ: so far, we only use !!! 1 !!! device
-	// this function needs to be generalised to several devices and definition of subsets...
-
-	hmc_error err = devices[0].copy_gaugefield_to_device(gf, timer);
-	return err;
-}
-
-hmc_error Gaugefield::sync_gaugefield(usetimer* timer)
-{
-	//LZ: so far, we only use !!! 1 !!! device
-	// this function needs to be generalised to several devices and definition of subsets...
-
-	hmc_error err = devices[0].get_gaugefield_from_device(gf, timer);
-	return err;
-}
-
-hmc_error Gaugefield::copy_rndarray_to_devices(hmc_rndarray host_rndarray,  usetimer* timer)
-{
-	//LZ: so far, we only use !!! 1 !!! device
-	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = devices[0].copy_rndarray_to_device(host_rndarray, timer);
-	return err;
-}
-
-hmc_error Gaugefield::copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer* timer)
-{
-	//LZ: so far, we only use !!! 1 !!! device
-	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = devices[0].copy_rndarray_from_device(rndarray, timer);
-	return err;
-}
-
 void Gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2)
 {
 	timer->reset();
@@ -158,7 +166,7 @@ void Gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2)
 	timer->add();
 	timer2->reset();
 	hmc_complex pol = polyakov();
-	printf("%f\t%f\t%f\t%f\t%f\t%f\n", plaq, tplaq, splaq, pol.re, pol.im, sqrt(pol.re * pol.re + pol.im * pol.im));
+	logger.info() << plaq << '\t' << tplaq << '\t' << splaq << '\t' << pol.re << '\t' << pol.im << '\t' << sqrt(pol.re * pol.re + pol.im * pol.im);
 	timer2->add();
 	return;
 }
@@ -172,7 +180,7 @@ void Gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2, int
 	timer->add();
 	timer2->reset();
 	hmc_complex pol = polyakov();
-	printf("%d\t%f\t%f\t%f\t%f\t%f\t%f\n", iter, plaq, tplaq, splaq, pol.re, pol.im, sqrt(pol.re * pol.re + pol.im * pol.im));
+	logger.info() << iter << '\t' << plaq << '\t' << tplaq << '\t' << splaq << '\t' << pol.re << '\t' << pol.im << '\t' << sqrt(pol.re * pol.re + pol.im * pol.im);
 	timer2->add();
 	return;
 }
@@ -215,6 +223,28 @@ void Gaugefield::print_gaugeobservables(hmc_float plaq, hmc_float tplaq, hmc_flo
 	return;
 }
 
+hmc_error Gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname)
+{
+	//LZ: so far, we only use !!! 1 !!! device
+	// this function needs to be generalised to several devices and definition of subsets...
+
+	get_devices()[0].gaugeobservables(plaq, tplaq, splaq, pol, plaqtime, polytime);
+	print_gaugeobservables(*plaq, *tplaq, *splaq, *pol, i, gaugeoutname);
+
+	return HMC_SUCCESS;
+}
+
+hmc_error Gaugefield::print_gaugeobservables_from_devices(usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname)
+{
+	hmc_float plaq, tplaq, splaq;
+	hmc_complex pol;
+
+	hmc_error err = print_gaugeobservables_from_devices(&plaq, &tplaq, &splaq, &pol, plaqtime, polytime, i, gaugeoutname);
+
+	return err;
+}
+
+
 hmc_float Gaugefield::plaquette()
 {
 	hmc_float tdummy;
@@ -233,7 +263,7 @@ hmc_float Gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 			for(int mu = 0; mu < NDIM; mu++) {
 				for(int nu = 0; nu < mu; nu++) {
 					hmc_su3matrix prod;
-					local_plaquette(gf, &prod, n, t, mu, nu );
+					local_plaquette(get_gf(), &prod, n, t, mu, nu );
 					hmc_float tmpfloat = trace_su3matrix(&prod).re;
 					plaq += tmpfloat;
 					if(mu == 0 || nu == 0) {
@@ -258,7 +288,7 @@ hmc_complex Gaugefield::polyakov()
 	res.im = 0;
 	for(int n = 0; n < VOLSPACE; n++) {
 		hmc_su3matrix prod;
-		local_polyakov(gf, &prod, n);
+		local_polyakov(get_gf(), &prod, n);
 		hmc_complex tmpcomplex = trace_su3matrix(&prod);
 		complexaccumulate(&res, &tmpcomplex);
 	}
@@ -289,7 +319,7 @@ hmc_complex Gaugefield::spatial_polyakov(int dir)
 					int nnext = (next % (NDIM - 1)) + 1;
 					coord[nnext] = x2;
 					int pos = get_nspace(coord);
-					get_su3matrix(&tmp, gf, pos, t, dir);
+					get_su3matrix(&tmp, get_gf(), pos, t, dir);
 					accumulate_su3matrix_prod(&prod, &tmp);
 				}
 				hmc_complex tmpcomplex = trace_su3matrix(&prod);
@@ -302,32 +332,12 @@ hmc_complex Gaugefield::spatial_polyakov(int dir)
 	return res;
 }
 
-hmc_error Gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname)
-{
-	//LZ: so far, we only use !!! 1 !!! device
-	// this function needs to be generalised to several devices and definition of subsets...
-
-	devices[0].gaugeobservables(plaq, tplaq, splaq, pol, plaqtime, polytime);
-	print_gaugeobservables(*plaq, *tplaq, *splaq, *pol, i, gaugeoutname);
-
-	return HMC_SUCCESS;
-}
-
-hmc_error Gaugefield::print_gaugeobservables_from_devices(usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname)
-{
-	hmc_float plaq, tplaq, splaq;
-	hmc_complex pol;
-
-	hmc_error err = print_gaugeobservables_from_devices(&plaq, &tplaq, &splaq, &pol, plaqtime, polytime, i, gaugeoutname);
-
-	return err;
-}
 
 hmc_error Gaugefield::heatbath(usetimer * const timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = devices[0].run_heatbath(parameters->get_beta(), timer);
+	hmc_error err = get_devices()[0].run_heatbath(get_parameters()->get_beta(), timer);
 	return err;
 }
 
@@ -336,7 +346,7 @@ hmc_error Gaugefield::overrelax(usetimer * const timer)
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 
-	hmc_error err = devices[0].run_overrelax(parameters->get_beta(), timer);
+	hmc_error err = get_devices()[0].run_overrelax(get_parameters()->get_beta(), timer);
 	return err;
 }
 
@@ -357,9 +367,23 @@ hmc_error Gaugefield::heatbath(const int nheat, usetimer * const timer_heat)
 
 hmc_error Gaugefield::finalize()
 {
-	free(gf);
-	if(num_ocl_devices > 0)
-		delete [] devices;
+	free(get_gf());
+	this->free_devices();
+	return HMC_SUCCESS;
+}
+
+hmc_error Gaugefield::free_devices()
+{
+	if(get_num_ocl_devices() > 0)
+		delete [] get_devices();
+	return HMC_SUCCESS;
+	return HMC_SUCCESS;
+}
+
+
+hmc_error Gaugefield::set_gf (hmc_gaugefield * gf_val)
+{
+	gf = gf_val;
 	return HMC_SUCCESS;
 }
 
@@ -368,9 +392,22 @@ hmc_gaugefield * Gaugefield::get_gf ()
 	return  gf;
 }
 
-opencl * Gaugefield::get_devices ()
+hmc_error Gaugefield::set_devices (Opencl * devices_val)
+{
+	devices = devices_val;
+	return HMC_SUCCESS;
+}
+
+Opencl * Gaugefield::get_devices ()
 {
 	return  devices;
+}
+
+
+hmc_error Gaugefield::set_num_ocl_devices (int num)
+{
+	num_ocl_devices = num;
+	return HMC_SUCCESS;
 }
 
 int Gaugefield::get_num_ocl_devices ()
@@ -378,28 +415,15 @@ int Gaugefield::get_num_ocl_devices ()
 	return num_ocl_devices;
 }
 
+
+hmc_error Gaugefield::set_parameters (inputparameters * parameters_val)
+{
+	parameters = parameters_val;
+	return HMC_SUCCESS;
+}
+
 inputparameters * Gaugefield::get_parameters ()
 {
 	return  parameters;
 }
 
-	
-hmc_error Gaugefield::set_gf (hmc_gaugefield * gf_val){
-  gf = gf_val;
-  return HMC_SUCCESS;
-}
-	
-hmc_error Gaugefield::set_devices (opencl * devices_val){
-  devices = devices_val;
-  return HMC_SUCCESS;
-}
-	
-hmc_error Gaugefield::set_num_ocl_devices (int num){
-  num_ocl_devices = num;
-  return HMC_SUCCESS;
-}
-
-hmc_error Gaugefield::set_parameters (inputparameters * parameters_val){
-  parameters = parameters_val; 
-  return HMC_SUCCESS;
-}

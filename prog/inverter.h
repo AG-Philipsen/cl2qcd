@@ -1,6 +1,6 @@
 /** @file
  *
- * Everything required by heatbath's main()
+ * Everything required by inverter's main()
  */
 #ifndef _INVERTERH_
 #define _INVERTERH_
@@ -18,19 +18,13 @@
 #include "types.h"
 #include "host_operations_complex.h"
 #include "host_geometry.h"
-#include "host_input.h"
+#include "inputparameters.h"
 #include "host_readgauge.h"
 #include "host_random.h"
 #include "host_update_heatbath.h"
 #include "host_use_timer.h"
 #include "gaugefield.h"
-#include "gaugefieldinversion.h"
-#include "opencl.h"
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
+#include "gaugefield_inversion.h"
 
 #ifdef _OPENMP
 # include <omp.h>
@@ -72,13 +66,28 @@ void print_info(inputparameters* params, ostream* os)
 	*os << "## NSPIN:   " << NSPIN << '\n';
 	*os << "##" << '\n';
 	*os << "## Run time parameters:\n";
-	*os << "## beta  = " << params->get_beta() << '\n';
+
+	if(params->get_fermact()==WILSON) {
+	  *os<<  "## fermion action: unimproved Wilson"<<'\n';
+	  *os << "## kappa  = "<<params->get_kappa()<< '\n';
+	}
+	if(params->get_fermact()==TWISTEDMASS) {
+	  *os<<  "## fermion action: twisted mass Wilson"<<'\n';
+	  *os << "## kappa  = "<<params->get_kappa()<< '\n';
+	  *os << "## mu     = "<<params->get_mu()<< '\n';
+	}
+	if(params->get_fermact()==CLOVER) {
+	  *os<<  "## fermion action: clover Wilson"<<'\n';
+	  *os << "## kappa  = "<<params->get_kappa()<< '\n';
+	  *os << "## csw    = "<<params->get_csw()<< '\n';
+	}
 	*os << "## prec  = " << params->get_prec() << '\n';
 	*os << "##" << '\n';
+
 	if (params->get_startcondition() == START_FROM_SOURCE) {
 		*os << "## sourcefile = ";
-		params->display_sourcefile();
-		*os << "##" << '\n';
+		string sf = params->sourcefile;
+		*os << sf << '\n';
 	}
 	if (params->get_startcondition() == COLD_START) {
 		*os << "## WARNING: cold start - no configuration read\n";

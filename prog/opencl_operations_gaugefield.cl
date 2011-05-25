@@ -83,18 +83,6 @@ void zero_su3matrix(__private hmc_ocl_su3matrix *out)
 	return;
 }
 
-#ifdef _RECONSTRUCT_TWELVE_
-hmc_complex reconstruct_su3(__private hmc_ocl_su3matrix *in, int ncomp)
-{
-	int jplusone = (ncomp+1)%NC;
-	int jplustwo = (ncomp+2)%NC;
-	hmc_complex first = complexmult(in[(NC-1)*jplusone], in[1+(NC-1)*jplustwo]);
-	hmc_complex second = complexmult(in[(NC-1)*jplustwo], in[1+(NC-1)*jplusone]);
-	hmc_complex result = complexsubtract(first, second);
-	return complexconj(result);
-}
-#endif
-
 void multiply_su3matrices(__private hmc_ocl_su3matrix *out,__private hmc_ocl_su3matrix *p,__private hmc_ocl_su3matrix *q)
 {
 #ifdef _RECONSTRUCT_TWELVE_
@@ -301,12 +289,12 @@ void project_su3(__private hmc_ocl_su3matrix *U){
   hmc_complex b[NC];
   hmc_complex c[NC];
 #ifdef _RECONSTRUCT_TWELVE_
-  a[0] = (*U)[0];
-  a[1] = (*U)[2];
-  a[2] = (*U)[4];
-  b[0] = (*U)[1];
-  b[1] = (*U)[3];
-  b[2] = (*U)[5];
+  a[0] = U[0];
+  a[1] = U[2];
+  a[2] = U[4];
+  b[0] = U[1];
+  b[1] = U[3];
+  b[2] = U[5];
   c[0] = reconstruct_su3(U,0);
   c[1] = reconstruct_su3(U,1);
   c[2] = reconstruct_su3(U,2);
@@ -384,12 +372,12 @@ void project_su3(__private hmc_ocl_su3matrix *U){
   c[1] = complexsubtract(tmp, tmp2);
   
   //Set new values to matrix
-  (*U)[0] = a[0];
-  (*U)[1] = b[0];
-  (*U)[2] = a[1];
-  (*U)[3] = b[1];
-  (*U)[4] = a[2];
-  (*U)[5] = b[2];
+  U[0] = a[0];
+  U[1] = b[0];
+  U[2] = a[1];
+  U[3] = b[1];
+  U[4] = a[2];
+  U[5] = b[2];
 #else
   //third vector 
   //orthogonal vector
@@ -845,4 +833,155 @@ void local_plaquette(__global hmc_ocl_gaugefield * field, hmc_ocl_su3matrix * pr
 	accumulate_su3matrix_prod(prod,tmp);
 
 	return;
+}
+
+void local_Q_plaquette(__private hmc_ocl_3x3matrix * out, __global hmc_ocl_gaugefield * field, int n, int t, int mu, int nu ){
+  hmc_ocl_su3matrix tmp [9];
+  int newpos;
+  
+  //1st plaq
+  hmc_ocl_su3matrix plaq1[SU3SIZE];
+  //u_mu(x)
+  get_su3matrix(plaq1,field,n,t,mu);
+  //u_nu(x+mu)
+  if(mu==0) {
+    int newt = (t+1)%NTIME;
+    get_su3matrix(tmp,field,n,newt,nu);
+  }
+  else
+    get_su3matrix(tmp,field,get_neighbor(n,mu),t,nu);
+  accumulate_su3matrix_prod(plaq1,tmp);
+  //adjoint(u_mu(x+nu))
+  if(nu==0) {
+    int newt = (t+1)%NTIME;
+    get_su3matrix(tmp,field,n,newt,mu);
+  }
+  else
+    get_su3matrix(tmp,field,get_neighbor(n,nu),t,mu);
+  adjoin_su3matrix(tmp);
+  accumulate_su3matrix_prod(plaq1,tmp);
+  //adjoint(u_nu(x))
+  get_su3matrix(tmp,field,n,t,nu);
+  adjoin_su3matrix(tmp);
+  accumulate_su3matrix_prod(plaq1,tmp);
+
+  //2nd plaq
+  hmc_ocl_su3matrix plaq2 [SU3SIZE];
+  //U_nu(x)
+  get_su3matrix(plaq2,field,n,t,nu);
+  //adj (u_mu(x-mu+nu))
+  newpos = get_lower_neighbor(n, mu);
+  if (nu==0){
+    int newt =  (t+1)%NTIME;
+    get_su3matrix(tmp,field,newpos,newt,mu);
+  }
+  else if (mu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    get_su3matrix(tmp,field,get_neighbor(n,nu),newt,mu);
+  }
+  else
+    get_su3matrix(tmp,field,get_neighbor(newpos, nu),t,mu);
+  adjoin_su3matrix(tmp);
+  accumulate_su3matrix_prod(plaq2,tmp);
+  //adj (u_nu(x-mu))
+  if (mu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    get_su3matrix(tmp,field,n,newt, nu);
+  }
+  else
+    get_su3matrix(tmp,field, get_lower_neighbor(n, mu),t, nu);
+  adjoin_su3matrix(tmp);
+  accumulate_su3matrix_prod(plaq2,tmp);
+  //u_mu(x-mu)
+  if (mu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    get_su3matrix(tmp,field,n,newt, mu);
+  }
+  else
+    get_su3matrix(tmp,field, get_lower_neighbor(n, mu),t, mu);
+  accumulate_su3matrix_prod(plaq2,tmp);
+
+  //3rd plaq
+  hmc_ocl_su3matrix plaq3 [SU3SIZE];
+  //adj (u_mu(x-mu))
+  if (mu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    get_su3matrix(tmp,field,n,newt, mu);
+  }
+  else
+    get_su3matrix(tmp,field, get_lower_neighbor(n, mu),t, mu);
+  adjoin_su3matrix(tmp);
+  copy_su3matrix(plaq3, tmp); 
+  //adj (u_nu(x-mu-nu))
+  newpos = get_lower_neighbor(n, mu);
+  if (nu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    get_su3matrix(tmp,field, newpos,newt,nu);
+  }
+  else if (mu==0){
+    int newt = (t-1+NTIME)%NTIME;
+  get_su3matrix(tmp,field,get_lower_neighbor(n,nu),newt,nu);
+  }
+  else
+    get_su3matrix(tmp,field,get_lower_neighbor(newpos, nu),t,nu);
+  adjoin_su3matrix(tmp);
+  accumulate_su3matrix_prod(plaq3,tmp);
+  //u_mu(x-mu-nu)
+  newpos = get_lower_neighbor(n, mu);
+  if (nu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    get_su3matrix(tmp,field,newpos,newt,mu);
+  }
+  else if (mu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    get_su3matrix(tmp,field,get_lower_neighbor(n,nu),newt,mu);
+  }
+  else
+    get_su3matrix(tmp,field,get_lower_neighbor(newpos, nu),t,mu);
+  accumulate_su3matrix_prod(plaq3,tmp);
+  //u_nu(x-nu)
+  if (nu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    get_su3matrix(tmp,field, n,newt, nu);
+  }
+  else
+    get_su3matrix(tmp,field,get_lower_neighbor(n, nu),t,nu);
+  accumulate_su3matrix_prod(plaq3,tmp);
+
+  //4th plaq
+  hmc_ocl_su3matrix plaq4[SU3SIZE];
+  //adj(u_nu(x-nu))
+  adjoin_su3matrix(tmp);
+  copy_su3matrix(plaq4, tmp); 
+  //u_mu(x-nu)
+   if (nu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    get_su3matrix(tmp,field, n,newt, mu);
+  }
+  else
+    get_su3matrix(tmp,field, get_lower_neighbor(n, nu),t,mu);
+  accumulate_su3matrix_prod(plaq4,tmp);
+  //u_nu(x+mu-nu)
+  newpos = get_lower_neighbor(n, nu);
+  if (mu==0){
+    int newt =  (t+1)%NTIME;
+    get_su3matrix(tmp,field,newpos,newt,nu);
+  }
+  else if (nu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    get_su3matrix(tmp,field,get_neighbor(n,mu),newt,nu);
+  }
+  else
+    get_su3matrix(tmp,field,get_neighbor(newpos, mu),t,nu);
+  accumulate_su3matrix_prod(plaq4,tmp);
+  //adj (u_mu(x))
+  get_su3matrix(tmp,field,n,t,mu);
+  adjoin_su3matrix(tmp);
+  accumulate_su3matrix_prod(plaq4,tmp);
+
+  //Sum up
+  su3matrix_to_3x3matrix (out, plaq1);
+  accumulate_su3matrix_3x3_add(out, plaq2);
+  accumulate_su3matrix_3x3_add(out, plaq3);
+  accumulate_su3matrix_3x3_add(out, plaq4);
 }

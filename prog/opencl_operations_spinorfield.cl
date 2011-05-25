@@ -94,7 +94,7 @@ __kernel void saxpy(__global hmc_spinor_field* x, __global hmc_spinor_field* y, 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 		//!!CP: complexmult cannot handle __global
 		hmc_complex tmp2 = x[id_tmp];
-		hmc_complex tmp1 = complexmult(&alpha_tmp,&tmp2);
+		hmc_complex tmp1 = complexmult(alpha_tmp,tmp2);
 		((out)[id_tmp]).re = -(tmp1).re + y[id_tmp].re;
 		((out)[id_tmp]).im = -(tmp1).im + y[id_tmp].im;
 	}
@@ -113,7 +113,7 @@ __kernel void saxpy_eoprec(__global hmc_eoprec_spinor_field* x, __global hmc_eop
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 		//!!CP: complexmult cannot handle __global
 		hmc_complex tmp2 = x[id_tmp];
-		hmc_complex tmp1 = complexmult(&alpha_tmp,&tmp2);
+		hmc_complex tmp1 = complexmult(alpha_tmp,tmp2);
 		((out)[id_tmp]).re = -(tmp1).re + y[id_tmp].re;
 		((out)[id_tmp]).im = -(tmp1).im + y[id_tmp].im;
 	}
@@ -135,10 +135,10 @@ __kernel void saxsbypz(__global hmc_spinor_field* x, __global hmc_spinor_field* 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 		//!!CP: complexmult cannot handle __global
 		hmc_complex tmp2 = x[id_tmp];
-		hmc_complex tmp1 = complexmult(&alpha_tmp,&tmp2);
+		hmc_complex tmp1 = complexmult(alpha_tmp,tmp2);
 
 		hmc_complex tmp3 = y[id_tmp];
-		hmc_complex tmp4 = complexmult(&beta_tmp,&tmp3);
+		hmc_complex tmp4 = complexmult(beta_tmp,tmp3);
 
 		((out)[id_tmp]).re = (tmp1).re + (tmp4).re + z[id_tmp].re;
 		((out)[id_tmp]).im = (tmp1).im + (tmp4).im + z[id_tmp].im;
@@ -160,10 +160,10 @@ __kernel void saxsbypz_eoprec(__global hmc_eoprec_spinor_field* x, __global hmc_
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 		//!!CP: complexmult cannot handle __global
 		hmc_complex tmp2 = x[id_tmp];
-		hmc_complex tmp1 = complexmult(&alpha_tmp,&tmp2);
+		hmc_complex tmp1 = complexmult(alpha_tmp,tmp2);
 
 		hmc_complex tmp3 = y[id_tmp];
-		hmc_complex tmp4 = complexmult(&beta_tmp,&tmp3);
+		hmc_complex tmp4 = complexmult(beta_tmp,tmp3);
 
 		((out)[id_tmp]).re = (tmp1).re + (tmp4).re + z[id_tmp].re;
 		((out)[id_tmp]).im = (tmp1).im + (tmp4).im + z[id_tmp].im;
@@ -332,7 +332,9 @@ __kernel void scalar_product_reduction(__global hmc_complex* result_tmp, __globa
 	if(id == 0) {
 		for (int i = 1; i<get_num_groups(0); i++) {
 			tmp1 = result_tmp[i];
-			complexaccumulate(&tmp2, &tmp1);
+			hmc_complex tmp3 = tmp2;
+			//LZ: replaced complexaccumulate by complexadd, is this correct?
+			tmp2 = complexadd(tmp3, tmp1);
 		}
 		(*result) = tmp2;
 	}

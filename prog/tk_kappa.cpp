@@ -67,16 +67,25 @@ int main(int argc, char* argv[])
 	int writefreq = parameters.get_writefrequency();
 	int savefreq = parameters.get_savefrequency();
 	
-	hmc_float kappa_karsch_val;
-	hmc_float kappa_clover_val;
 	ofstream kappa_karsch_out;
 	kappa_karsch_out.open ("kappa_karsch.dat");
+	kappa_karsch_out.precision(15);
 	ofstream kappa_clover_out;
 	kappa_clover_out.open ("kappa_clover.dat");
+	kappa_clover_out.precision(15);
+	ofstream q_plaq_out;
+	q_plaq_out.open ("Q_plaquette.dat");
+	q_plaq_out.precision(15);
 
+	cout<< "Start heatbath and measurement of TK kappa" <<endl;
+	
+	usetimer timer_karsch;
+	usetimer timer_clover;
+	
 	for(int i = 0; i < nsteps; i++) {
 		gaugefield.heatbath(&updatetime);
-		for(int j = 0; j < overrelaxsteps; j++) gaugefield.overrelax(&overrelaxtime);
+		for(int j = 0; j < overrelaxsteps; j++)
+		  gaugefield.overrelax(&overrelaxtime);
 		if( ( (i + 1) % writefreq ) == 0 ) {
 			gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str());
 		}
@@ -85,17 +94,32 @@ int main(int argc, char* argv[])
 			gaugefield.save(i);
 		}
 	//Add a measurement frequency
-	gaugefield.sync_gaugefield(&copytime);
+	
+
+	//GPU
 	hmc_error err;
-	err = gaugefield.kappa_karsch ();
-	err = gaugefield.kappa_clover ();
+	err = gaugefield.kappa_karsch_gpu (&timer_karsch);
+	err = gaugefield.kappa_clover_gpu (&timer_clover);
+	
+	//CPU
+// 	gaugefield.sync_gaugefield(&copytime);
+//  	err = gaugefield.kappa_karsch ();
+//  	err = gaugefield.kappa_clover ();
+
+	hmc_float qplaq = gaugefield.Q_plaquette();
+	q_plaq_out << qplaq <<endl;
 
 	kappa_karsch_out << gaugefield.get_kappa_karsch() <<endl;
 	kappa_clover_out << gaugefield.get_kappa_clover() <<endl;
 	}
 	
+	cout.precision(4);
+	cout <<"Measurement TK kappa_karsch: " << timer_karsch.getTime()/1000000. << " s"<< endl;
+	cout <<"Measurement TK kappa_clover: " << timer_clover.getTime()/1000000.  << " s" <<endl;
+	
 	kappa_karsch_out.close();
 	kappa_clover_out.close();
+	q_plaq_out.close();
 	gaugefield.sync_gaugefield(&copytime);
 	gaugefield.save(nsteps);
 	

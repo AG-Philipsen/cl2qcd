@@ -12,7 +12,7 @@
 //     fwrite(buffer2, 1, sizeof(char)*nbytes, tmp);
 //   changed the use of tmpnam to some fixed filename
 
-void extrInfo_hmc_float(const char * in1, const char * in2, int len1, int len2, hmc_float * dest)
+void extrInfo_hmc_float(const char * in1, int len1, int len2, hmc_float * dest)
 {
 	char * tmp = new char[len2-len1-3+1];
 	strncpy(tmp, &in1[len1+3], len2-len1-3);
@@ -23,7 +23,7 @@ void extrInfo_hmc_float(const char * in1, const char * in2, int len1, int len2, 
 
 // two strings in xlf-info and inverter-info are complicated because there are several vars saved in them
 // this is not a beautiful implementation!!
-void extrInfo_beta(const char * in1, const char * in2, int len1, int len2, hmc_float * dest1, hmc_float * dest2, hmc_float * dest3, hmc_float * dest4)
+void extrInfo_beta(const char * in1, int len1, int len2, hmc_float * dest1, hmc_float * dest2, hmc_float * dest3, hmc_float * dest4)
 {
 	char * tmp = new char[len2-len1-3+1];
 	int cutoff;
@@ -64,7 +64,7 @@ void extrInfo_beta(const char * in1, const char * in2, int len1, int len2, hmc_f
 	delete [] tmp;
 }
 
-void extrInfo_kappa(const char * in1, const char * in2, int len1, int len2, hmc_float * dest1, hmc_float * dest2)
+void extrInfo_kappa(const char * in1, int len1, int len2, hmc_float * dest1, hmc_float * dest2)
 {
 	char * tmp = new char[len2-len1-3+1];
 	int cutoff;
@@ -90,7 +90,7 @@ void extrInfo_kappa(const char * in1, const char * in2, int len1, int len2, hmc_
 	delete [] tmp;
 }
 
-void extrInfo_int(const char * in1, const char * in2, int len1, int len2, int * dest)
+void extrInfo_int(const char * in1, int len1, int len2, int * dest)
 {
 	char * tmp = new char[len2-len1-3+1];
 	strncpy(tmp, &in1[len1+3], len2-len1-3);
@@ -100,7 +100,7 @@ void extrInfo_int(const char * in1, const char * in2, int len1, int len2, int * 
 }
 
 // the \n at the end is overwritten by \0
-void extrInfo_char(const char * in1, const char * in2, int len1, int len2, char * dest)
+void extrInfo_char(const char * in1, int len1, int len2, char * dest)
 {
 	char * tmp = new char[len2-len1-4+1];
 	strncpy(tmp, &in1[len1+3], len2-len1-3);
@@ -132,17 +132,18 @@ hmc_error get_XLF_infos(const char * filename, hmc_float * plaquettevalue, int *
 		const char * tmparray [] = {"plaquette", " trajectory nr", " beta", "kappa", "mu", "c2_rec", " time", " hmcversion", " mubar", " epsilonbar", " date", " plaquette"};
 		char tmp1[512];
 		while (!feof(reader)) {
-			fgets (tmp1, 512, reader);
+		  if(fgets (tmp1, 512, reader) == NULL)
+		    printf("error in function get_XLF_infos");
 			trim2(tmp1);
-			if(strncmp(tmparray[0], tmp1, strlen(tmparray[0])) == 0) extrInfo_hmc_float(tmp1,  tmparray[0], strlen(tmparray[0]), strlen(tmp1), plaquettevalue);
-			if(strncmp(tmparray[1], tmp1, strlen(tmparray[1])) == 0) extrInfo_int(tmp1,  tmparray[1], strlen(tmparray[1]), strlen(tmp1), trajectorynr);
-			if(strncmp(tmparray[2], tmp1, strlen(tmparray[2])) == 0) extrInfo_beta(tmp1,  tmparray[2], strlen(tmparray[2]), strlen(tmp1), beta, kappa, mu, c2_rec);
-			if(strncmp(tmparray[6], tmp1, strlen(tmparray[6])) == 0) extrInfo_int(tmp1,  tmparray[6], strlen(tmparray[6]), strlen(tmp1), time);
-			if(strncmp(tmparray[7], tmp1, strlen(tmparray[7])) == 0) extrInfo_char(tmp1,  tmparray[7], strlen(tmparray[7]), strlen(tmp1), hmcversion);
-			if(strncmp(tmparray[8], tmp1, strlen(tmparray[8])) == 0) extrInfo_hmc_float(tmp1,  tmparray[8], strlen(tmparray[8]), strlen(tmp1), mubar);
-			if(strncmp(tmparray[9], tmp1, strlen(tmparray[9])) == 0) extrInfo_hmc_float(tmp1,  tmparray[9], strlen(tmparray[9]), strlen(tmp1), epsilonbar);
-			if(strncmp(tmparray[10], tmp1, strlen(tmparray[10])) == 0) extrInfo_char(tmp1,  tmparray[10], strlen(tmparray[10]), strlen(tmp1), date);
-			if(strncmp(tmparray[11], tmp1, strlen(tmparray[11])) == 0) extrInfo_hmc_float(tmp1,  tmparray[11], strlen(tmparray[11]), strlen(tmp1), plaquettevalue);
+			if(strncmp(tmparray[0], tmp1, strlen(tmparray[0])) == 0) extrInfo_hmc_float(tmp1, strlen(tmparray[0]), strlen(tmp1), plaquettevalue);
+			if(strncmp(tmparray[1], tmp1, strlen(tmparray[1])) == 0) extrInfo_int(tmp1, strlen(tmparray[1]), strlen(tmp1), trajectorynr);
+			if(strncmp(tmparray[2], tmp1, strlen(tmparray[2])) == 0) extrInfo_beta(tmp1, strlen(tmparray[2]), strlen(tmp1), beta, kappa, mu, c2_rec);
+			if(strncmp(tmparray[6], tmp1, strlen(tmparray[6])) == 0) extrInfo_int(tmp1, strlen(tmparray[6]), strlen(tmp1), time);
+			if(strncmp(tmparray[7], tmp1, strlen(tmparray[7])) == 0) extrInfo_char(tmp1, strlen(tmparray[7]), strlen(tmp1), hmcversion);
+			if(strncmp(tmparray[8], tmp1, strlen(tmparray[8])) == 0) extrInfo_hmc_float(tmp1, strlen(tmparray[8]), strlen(tmp1), mubar);
+			if(strncmp(tmparray[9], tmp1, strlen(tmparray[9])) == 0) extrInfo_hmc_float(tmp1, strlen(tmparray[9]), strlen(tmp1), epsilonbar);
+			if(strncmp(tmparray[10], tmp1, strlen(tmparray[10])) == 0) extrInfo_char(tmp1, strlen(tmparray[10]), strlen(tmp1), date);
+			if(strncmp(tmparray[11], tmp1, strlen(tmparray[11])) == 0) extrInfo_hmc_float(tmp1,  strlen(tmparray[11]), strlen(tmp1), plaquettevalue);
 		}
 	} else {
 		printf("\t\tUnable to open %s\n", filename);
@@ -161,14 +162,15 @@ hmc_error get_inverter_infos(const char * filename, char * solver, hmc_float * e
 		const char * tmparray [] = {"solver", " epssq", " noiter", " kappa", "mu", " time", " hmcversion", " date"};
 		char tmp1[512];
 		while (!feof(reader)) {
-			fgets (tmp1, 512, reader);
-			if(strncmp(tmparray[0], tmp1, strlen(tmparray[0])) == 0) extrInfo_char(tmp1,  tmparray[0], strlen(tmparray[0]), strlen(tmp1), solver);
-			if(strncmp(tmparray[1], tmp1, strlen(tmparray[1])) == 0) extrInfo_hmc_float(tmp1,  tmparray[1], strlen(tmparray[1]), strlen(tmp1), epssq);
-			if(strncmp(tmparray[2], tmp1, strlen(tmparray[2])) == 0) extrInfo_int (tmp1,  tmparray[2], strlen(tmparray[2]), strlen(tmp1), noiter);
-			if(strncmp(tmparray[3], tmp1, strlen(tmparray[3])) == 0) extrInfo_kappa(tmp1, tmparray[3], strlen(tmparray[3]), strlen(tmp1), kappa_solver, mu_solver);
-			if(strncmp(tmparray[5], tmp1, strlen(tmparray[5])) == 0) extrInfo_int (tmp1,  tmparray[5], strlen(tmparray[5]), strlen(tmp1), time);
-			if(strncmp(tmparray[6], tmp1, strlen(tmparray[6])) == 0) extrInfo_char(tmp1,  tmparray[6], strlen(tmparray[6]), strlen(tmp1), hmcversion);
-			if(strncmp(tmparray[7], tmp1, strlen(tmparray[7])) == 0) extrInfo_char(tmp1,  tmparray[7], strlen(tmparray[7]), strlen(tmp1), date);
+		  if(fgets (tmp1, 512, reader)==NULL)
+		    printf("error in function get_inverter_infos");
+			if(strncmp(tmparray[0], tmp1, strlen(tmparray[0])) == 0) extrInfo_char(tmp1, strlen(tmparray[0]), strlen(tmp1), solver);
+			if(strncmp(tmparray[1], tmp1, strlen(tmparray[1])) == 0) extrInfo_hmc_float(tmp1,  strlen(tmparray[1]), strlen(tmp1), epssq);
+			if(strncmp(tmparray[2], tmp1, strlen(tmparray[2])) == 0) extrInfo_int (tmp1, strlen(tmparray[2]), strlen(tmp1), noiter);
+			if(strncmp(tmparray[3], tmp1, strlen(tmparray[3])) == 0) extrInfo_kappa(tmp1, strlen(tmparray[3]), strlen(tmp1), kappa_solver, mu_solver);
+			if(strncmp(tmparray[5], tmp1, strlen(tmparray[5])) == 0) extrInfo_int (tmp1, strlen(tmparray[5]), strlen(tmp1), time);
+			if(strncmp(tmparray[6], tmp1, strlen(tmparray[6])) == 0) extrInfo_char(tmp1, strlen(tmparray[6]), strlen(tmp1), hmcversion);
+			if(strncmp(tmparray[7], tmp1, strlen(tmparray[7])) == 0) extrInfo_char(tmp1, strlen(tmparray[7]), strlen(tmp1), date);
 		}
 	} else {
 		printf("\t\tUnable to open %s\n", filename);
@@ -505,7 +507,9 @@ hmc_error read_binary_data_single(const char * file, float * numArray, int num_e
 	return HMC_SUCCESS;
 }
 
-int read_data_single(char * file, float * num_array_single, int num_entries, char * field_out)
+//LZ: removed unused parameter: field_out
+//int read_data_single(char * file, float * num_array_single, int num_entries, char * field_out)
+int read_data_single(char * file, float * num_array_single, int num_entries)
 {
 	FILE *fp;
 	int MB_flag, ME_flag, msg, rec, status, first, cter=0, err;
@@ -639,7 +643,8 @@ int read_binary_data_double(const char * file, double * numArray, int num_entrie
 	return HMC_SUCCESS;
 }
 
-int read_data_double(char * file, double * num_array_double, int num_entries, char * field_out)
+//LZ removed last, unused parameter char* field_out
+int read_data_double(char * file, double * num_array_double, int num_entries)
 {
 	FILE *fp;
 	int MB_flag, ME_flag, msg, rec, status, first, cter = 0, err;
@@ -755,7 +760,7 @@ hmc_error read_tmlqcd_file(char * file,
 			printf("\tfound data in single precision\n");
 			float * num_array_single;
 			num_array_single = (float*) malloc(*num_entries*sizeof(float));
-			err = read_data_single(file, num_array_single, *num_entries, field_out);
+			err = read_data_single(file, num_array_single, *num_entries);
 			if (err != 0) {
 				printf("\terror in read_data_single:\t%i\n\n", err);
 				return HMC_STDERR;
@@ -772,7 +777,7 @@ hmc_error read_tmlqcd_file(char * file,
 			printf("\tfound data in double precision\n");
 			double * num_array_double;
 			num_array_double = (double*) malloc(*num_entries*sizeof(double));
-			err = read_data_double(file, num_array_double, *num_entries, field_out);
+			err = read_data_double(file, num_array_double, *num_entries);
 			if (err != 0) {
 				printf("\terror in read_data_double:\t%i\n\n", err);
 				return HMC_STDERR;

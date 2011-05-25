@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <vector>
 #include <cstring>
-#include <iostream>
 #include <fstream>
 #include <sstream>
 #ifdef __APPLE__
@@ -28,34 +27,35 @@
 #include "host_use_timer.h"
 #include "host_testing.h"
 #include "host_random.h"
+#include "inputparameters.h"
 
 /**
  * An OpenCL device
  *
  * This class wraps all operations on a device. Operations are always specific, e.g. each kernel and copy operation
  * has it's own wrapper function.
+ *
+ * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class opencl {
+class Opencl {
 public:
 	/**
 	 * Default constructor that also initializes the device.
 	 *
 	 * @param wanted The OpenCL device type to be used, e.g. CL_DEVICE_TYPE_CPU or CL_DEVICE_TYPE_GPU
-	 * @param ls The local work size to be used on the device
-	 * @param gs The global work size to be used on the device
 	 * @param timer The timer to use for reporting execution time
 	 * @param parameters The parsed input parameters
 	 *
 	 * @todo Should probably throw an exception on error
 	 */
-	opencl(cl_device_type wanted, const size_t ls, const size_t gs, usetimer* timer, inputparameters* parameters) {
-		init(wanted, ls, gs, timer, parameters);
+	Opencl(cl_device_type wanted, usetimer* timer, inputparameters* params) {
+		init(wanted, timer, params);
 	};
 	/**
 	 * Empty constructor. Needed for gaugefield class.
 	 */
-	opencl() {};
-	~opencl() {
+	Opencl() {};
+	~Opencl() {
 		finalize();
 	};
 
@@ -63,8 +63,6 @@ public:
 	 * Initialize the OpenCL device
 	 *
 	 * @param wanted The OpenCL device type to be used, e.g. CL_DEVICE_TYPE_CPU or CL_DEVICE_TYPE_GPU
-	 * @param ls The local work size to be used on the device
-	 * @param gs The global work size to be used on the device
 	 * @param timer The timer to use for reporting execution time
 	 * @param parameters The parsed input parameters
 	 * @return Error code as defined in hmcerrs.h:
@@ -72,8 +70,10 @@ public:
 	 *         @li HMC_FILEERROR if one of the kernel files cannot be opened
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error init(cl_device_type wanted_device_type, const size_t local_work_size, const size_t global_work_size, usetimer* timer, inputparameters* parameters);
+	hmc_error init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters);
 
+	/////////////////////////////7
+	// communication
 	/**
 	 * Copy the given gaugefield to the appropriate OpenCL buffer.
 	 *
@@ -96,6 +96,15 @@ public:
 	 */
 	hmc_error copy_rndarray_to_device(hmc_rndarray host_rndarray,  usetimer* timer);
 
+	/**
+	 * Copy the RNG state from the OpenCL buffer.
+	 *
+	 * @param[out] rndarray The RNG copy target
+	 * @param[in,out] timer The timer to use to measure the copying time
+	 * @return Error code as defined in hmcerrs.h:
+	 *         @li HMC_OCLERROR if OpenCL operations fail
+	 *         @li HMC_SUCCESS otherwise
+	 */
 	hmc_error copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer);
 
 	/**
@@ -109,6 +118,9 @@ public:
 	 */
 	hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
 
+
+	////////////////////////////
+	//Calculations, calls to kernels
 	/**
 	 * Perform one heatbath step.
 	 */
@@ -119,24 +131,6 @@ public:
 	 */
 	hmc_error run_overrelax(const hmc_float beta, usetimer * const timer);
 
-	/**
-	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld on GPU
-	 * @param[in] local_work_size OpenCL local_work_size
-	 * @param[in] global_work_size OpenCL global_work_size
-	 * @param[in,out] timer time for measurement
-	 * @return Error code as defined in hmcerrs.h
-	 */	
-	hmc_error run_kappa_karsch_gpu(const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch);
-	
-	/**
-	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld  on GPU
-	 * @param[in] local_work_size OpenCL local_work_size
-	 * @param[in] global_work_size OpenCL global_work_size
-	 * @param[in,out] timer time for measurement
-	 * @return Error code as defined in hmcerrs.h
-	 */	
-	hmc_error run_kappa_clover_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_clover);
-  
 	/**
 	 * Calculate plaquette and polyakov.
 	 *
@@ -152,77 +146,86 @@ public:
 	 */
 	hmc_error gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const timer1, usetimer * const timer2);
 
+	/**
+	 * returns init status
+	 * @return isinit (1==true, 0==false)
+	 */
+	hmc_error get_init_status();
+	/**
+	 * Returns private member * parameters
+	 * @todo parameters is only used in inherited classes
+	 * @return parameters
+	 */
+	inputparameters * get_parameters ();
+	/**
+	 * Sets private member * parameters
+	 * @return parameters
+	 */
+	hmc_error set_parameters (inputparameters * parameters_val);
+
+	//protected:
+
+	/**
+	 * Collect a vector of kernel file names.
+	 * Virtual method, allows to include more kernel files in inherited classes.
+	 */
 	virtual hmc_error fill_kernels_file ();
-	
-#ifdef _FERMIONS_
-	hmc_error init_fermion_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-	hmc_error copy_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
-	hmc_error copy_eoprec_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
-	hmc_error copy_source_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
-	hmc_error copy_eoprec_source_to_device(hmc_eoprec_spinor_field* host_spinorfield1, hmc_eoprec_spinor_field* host_spinorfield2, usetimer* timer);
-	hmc_error get_spinorfield_from_device(hmc_spinor_field* host_spinorfield,  usetimer* timer);
-	hmc_error get_eoprec_spinorfield_from_device(hmc_spinor_field* host_spinorfield,  usetimer* timer);
-	hmc_error copy_spinor_device(cl_mem in, cl_mem out, usetimer* timer);
-	hmc_error copy_eoprec_spinor_device(cl_mem in, cl_mem out, usetimer* timer);
-	hmc_error convert_to_kappa_format_device(cl_mem inout, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-	hmc_error convert_from_kappa_format_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-	hmc_error convert_to_kappa_format_eoprec_device(cl_mem inout, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-	hmc_error convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-	hmc_error copy_float_from_device(cl_mem in, hmc_float * out, usetimer* timer);
-	hmc_error copy_complex_from_device(cl_mem in, hmc_complex * out, usetimer* timer);
-	hmc_error copy_complex_device(cl_mem in, cl_mem out, usetimer* timer);
-	hmc_error set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-	hmc_error set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_mem b, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-	hmc_error set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_mem out, usetimer* timer);
-	hmc_error set_complex_to_product_device(cl_mem a, cl_mem b, cl_mem out, usetimer* timer);
-	hmc_error set_float_to_global_squarenorm_device(cl_mem a, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-	hmc_error set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-	hmc_error set_zero_spinorfield_device(cl_mem x, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-	hmc_error set_zero_spinorfield_eoprec_device(cl_mem x, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-	hmc_error saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
-	hmc_error saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
-	hmc_error saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
-	hmc_error saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
-	hmc_error M_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer, usetimer * dslashtimer, usetimer * Mdiagtimer);
+	/**
+	 * Collect the compiler options for OpenCL.
+	 * Virtual method, allows to include more options in inherited classes.
+	 */
+	virtual hmc_error fill_collect_options(stringstream* collect_options);
 
-	hmc_error bicgstab_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
-	hmc_error bicgstab_eoprec_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
-	hmc_error cg_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
-	hmc_error testing_spinor(inputparameters* parameters, size_t local_size, size_t global_size);
+	/**
+	 * Collect the buffers to generate for OpenCL.
+	 * Virtual method, allows to include more buffers in inherited classes.
+	 */
+	virtual hmc_error fill_buffers();
 
-	hmc_error simple_correlator_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t ls, const size_t gs, int cgmax);
-	hmc_error create_point_source_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs, usetimer * latimer);
-	hmc_error create_point_source_eoprec_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer);
-	hmc_error solver_device(hmc_spinor_field* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
-	hmc_error Aee_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer, usetimer * singletimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * latimer);
-	hmc_error M_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error M_sitediagonal_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error dslash_eoprec_device(cl_mem in, cl_mem out, int evenodd, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error solver_eoprec_device(hmc_spinor_field* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
+	/**
+	 * Collect the kernels for OpenCL.
+	 * Virtual method, allows to include more kernels in inherited classes.
+	 */
+	virtual hmc_error fill_kernels();
 
-	hmc_error perform_benchmark(int cgmax, const size_t ls, const size_t gs, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer);
-	hmc_error finalize_fermions();
-	
-#endif
-#ifdef _TESTING_
-	hmc_error testing(hmc_gaugefield * gaugefield);
-#endif
+	///////////////////////////////////////////////
+	//get and set methods
+	/**
+	 * Sets initstatus to 1 (true)
+	 *
+	 */
+	hmc_error set_init_true();
+	/**
+	 * Sets initstatus to 0 (false)
+	 *
+	 */
+	hmc_error set_init_false();
+
+	//private:
+
+	/**
+	 * Called by the destructor.
+	 */
 	hmc_error finalize();
-// private:
-        std::vector<std::string> cl_kernels_file;
-	int isinit;
-	cl_context context;
+
+	/**
+	 * Contains the list of kernel files after call to fill_kernels_file().
+	 */
+	std::vector<std::string> cl_kernels_file;
+
+	/**
+	 * Instance of input_parameters.
+	 */
+	inputparameters* parameters;
+
+	/** The number of cores (not PEs) of the device */
+	cl_uint max_compute_units;
+
 	cl_command_queue queue;
 	cl_program clprogram;
-	cl_kernel heatbath_odd;
-	cl_kernel heatbath_even;
-	cl_kernel overrelax_odd;
-	cl_kernel overrelax_even;
-	cl_kernel plaquette;
-	cl_kernel plaquette_reduction;
-	cl_kernel polyakov;
-	cl_kernel polyakov_reduction;
 
+	///////////////////////////////////////////////////////////
+	//LZ what follows should eventually be private
 	//heatbath variables
 	cl_mem clmem_gaugefield;
 	cl_mem clmem_rndarray;
@@ -237,100 +240,18 @@ public:
 	//!!CP: this is not needed at the moment and since is not copied to the device anywhere!!
 	cl_mem clmem_theta_gaugefield;
 
-	//spinorfield and solver variables
-#ifdef _FERMIONS_
-	cl_mem clmem_kappa;
-	cl_mem clmem_theta_fermion;
-	cl_mem clmem_mu;
-	cl_mem clmem_chem_pot_re;
-	cl_mem clmem_chem_pot_im;
-
-	cl_kernel M_diag;
-	cl_kernel dslash;
-	cl_kernel saxpy;
-	cl_kernel saxsbypz;
-	cl_kernel scalar_product;
-	cl_kernel scalar_product_reduction;
-	cl_kernel set_zero_spinorfield;
-	cl_kernel global_squarenorm;
-	cl_kernel global_squarenorm_reduction;
-	cl_kernel ratio;
-	cl_kernel product;
-	cl_kernel convert_to_kappa_format;
-	cl_kernel convert_from_kappa_format;
-	cl_kernel convert_to_kappa_format_eoprec;
-	cl_kernel convert_from_kappa_format_eoprec;
-	cl_kernel create_point_source;
-	cl_kernel M_sitediagonal;
-	cl_kernel M_inverse_sitediagonal;
-	cl_kernel dslash_eoprec;
-	cl_kernel saxpy_eoprec;
-	cl_kernel saxsbypz_eoprec;
-	cl_kernel scalar_product_eoprec;
-	cl_kernel set_zero_spinorfield_eoprec;
-	cl_kernel global_squarenorm_eoprec;
-	cl_kernel create_point_source_eoprec;
-
-	//CP: variables for normal solver
-	cl_mem clmem_inout;
-	cl_mem clmem_source;
-	cl_mem clmem_rn;
-	cl_mem clmem_rhat;
-	cl_mem clmem_v;
-	cl_mem clmem_p;
-	cl_mem clmem_s;
-	cl_mem clmem_t;
-	cl_mem clmem_aux;
-	cl_mem clmem_tmp;
-
-	//CP: variables for eoprec solver
-	cl_mem clmem_inout_eoprec;
-	cl_mem clmem_source_even;
-	cl_mem clmem_source_odd;
-	cl_mem clmem_rn_eoprec;
-	cl_mem clmem_rhat_eoprec;
-	cl_mem clmem_v_eoprec;
-	cl_mem clmem_p_eoprec;
-	cl_mem clmem_s_eoprec;
-	cl_mem clmem_t_eoprec;
-	cl_mem clmem_aux_eoprec;
-	cl_mem clmem_tmp_eoprec_1;
-	cl_mem clmem_tmp_eoprec_2;
-	cl_mem clmem_tmp_eoprec_3;
-
-	cl_mem clmem_rho;
-	cl_mem clmem_rho_next;
-	cl_mem clmem_alpha;
-	cl_mem clmem_omega;
-	cl_mem clmem_beta;
-	cl_mem clmem_tmp1;
-	cl_mem clmem_tmp2;
-	cl_mem clmem_one;
-	cl_mem clmem_minusone;
-
-	cl_mem clmem_kappa_cmplx;// = {kappa, 0.};
-	cl_mem clmem_scalar_product_buf_glob;
-	cl_mem clmem_global_squarenorm_buf_glob;
-	cl_mem clmem_resid;
-	cl_mem clmem_trueresid;
-#endif
-	//testing variables
-#ifdef _TESTING_
-	cl_mem clmem_random_field_int;
-	cl_mem clmem_random_field_float;
-	cl_mem clmem_random_field_su2;
-	cl_mem clmem_heatbath_test_link_in;
-	cl_mem clmem_heatbath_test_staple_in;
-	cl_mem clmem_heatbath_test_link_out;
-	cl_mem clmem_heatbath_test_rnd_array;
-	cl_mem clmem_heatbath_test_cter;
-	cl_mem clmem_solver_test_spinor_in;
-	cl_mem clmem_solver_test_spinor_out;
-	cl_mem clmem_solver_test_correlator;
-#endif
-
-	/** The number of cores (not PEs) of the device */
-	cl_uint max_compute_units;
+	/** ID of the OpenCL device wrapped by this object */
+	cl_device_id device;
+	int isinit;
+	cl_context context;
+	cl_kernel heatbath_odd;
+	cl_kernel heatbath_even;
+	cl_kernel overrelax_odd;
+	cl_kernel overrelax_even;
+	cl_kernel plaquette;
+	cl_kernel plaquette_reduction;
+	cl_kernel polyakov;
+	cl_kernel polyakov_reduction;
 
 	/**
 	 * Enqueue the given kernel on the device. Local work size will be determined
@@ -355,6 +276,15 @@ public:
 	 * @todo global work size will also depend on device ...
 	 */
 	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
+
+	/*
+	 * Print resource requirements of a kernel object.
+	 *
+	 * All information is dumped to the trace.
+	 *
+	 * @param kernel The kernel of which to query the information.
+	 */
+	void printResourceRequirements(const cl_kernel kernel);
 };
 
 #endif /* _MYOPENCLH_ */

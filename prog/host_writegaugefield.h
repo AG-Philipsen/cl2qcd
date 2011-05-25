@@ -26,6 +26,7 @@ extern "C" {
 #include <arpa/inet.h>
 }
 
+
 #define ENDIAN (htons(1) == 1)
 
 /**
@@ -43,8 +44,8 @@ hmc_error make_binary_data_single(hmc_float * array, char * out, const int array
 hmc_error make_binary_data_double(hmc_float * array, char * out, const int array_size, const int num_entries);
 
 hmc_error write_gaugefield (
-		ildg_gaugefield * array, int array_size, 
-		int lx, int ly, int lz, int lt, int prec, int trajectorynr, hmc_float plaquettevalue, hmc_float beta, hmc_float kappa, hmc_float mu, hmc_float c2_rec, hmc_float epsilonbar, hmc_float mubar, 
-		const char * hmc_version, const char * filename);
+  ildg_gaugefield * array, int array_size,
+  int lx, int ly, int lz, int lt, int prec, int trajectorynr, hmc_float plaquettevalue, hmc_float beta, hmc_float kappa, hmc_float mu, hmc_float c2_rec, hmc_float epsilonbar, hmc_float mubar,
+  const char * hmc_version, const char * filename);
 
 #endif /* _WRITEGAUGEFIELDH_ */

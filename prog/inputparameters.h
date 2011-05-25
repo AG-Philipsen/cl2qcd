@@ -2,8 +2,8 @@
  * Input file handling
  */
 
-#ifndef _INPUTH_
-#define _INPUTH_
+#ifndef _INPUTPARAMETERSH_
+#define _INPUTPARAMETERSH_
 
 #include "hmcerrs.h"
 #include "types.h"
@@ -74,6 +74,7 @@ public:
 	int get_saveconfigs();
 	int get_savefrequency();
 	int get_writefrequency();
+	int get_fermact();
 	void display_sourcefile();
 	void display_sourcefilenumber();
 	//CP
@@ -92,6 +93,7 @@ private:
 	hmc_float tau;
 	hmc_float mubar;
 	int cgmax;
+	int fermact;
 	int prec;
 	int startcondition;
 	int thermalizationsteps;
@@ -107,8 +109,9 @@ private:
 	void val_assign(int * out, std::string line);
 	void sourcefilenumber_assign(std::string * out);
 	void cond_assign(int * out, std::string line);
+	void fermact_assign(int * out, std::string line);
 	void savecond_assign(int * out, std::string line);
 	void val_assign(std::string * out, std::string line);
 };
 
-#endif /* _INPUTH_ */
+#endif /* _INPUTPARAMETERSH_ */

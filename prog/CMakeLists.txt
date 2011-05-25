@@ -54,38 +54,42 @@ option( USE_RECONSTRUCT_TWELVE "Use compactified storage format (reconstruct twe
 if( USE_RECONSTRUCT_TWELVE )
 	add_definitions( -D_RECONSTRUCT_TWELVE_ )
 endif( USE_RECONSTRUCT_TWELVE )
-option( USE_HMC "Update with hybrid monte carlo algorithm" OFF)
-if (USE_HMC)
-	add_definitions( -D_USEHMC_ )
-endif( USE_HMC)
-option( USE_FERMIONS "Use fermions" OFF )
-if( USE_FERMIONS )
-	add_definitions( -D_FERMIONS_ )
-endif( USE_FERMIONS )
-if( USE_FERMIONS )
-	option( USE_TWISTEDMASS "Use twisted mass fermions" ON)
-	if ( USE_TWISTEDMASS )
-		add_definitions( -D_TWISTEDMASS_ )
-	endif ( USE_TWISTEDMASS )
-endif( USE_FERMIONS )
-if( USE_FERMIONS AND !USE_TWISTEDMASS)
-	option( USE_CLOVER "Use clover fermions" OFF)
-		if ( USE_CLOVER )
-			add_definitions( -D_CLOVER_ )
-		endif (USE_CLOVER)
-endif (  )
-option( TESTING "Run optional test code" OFF )
-if( TESTING )
-	add_definitions( -D_TESTING_ )
-endif( TESTING )
+## USE_HMC is now moved to extra executable
+#option( USE_HMC "Update with hybrid monte carlo algorithm" OFF)
+#if (USE_HMC)
+#	add_definitions( -D_USEHMC_ )
+#endif( USE_HMC)
+##LZ USE_FERMIONS is now a inputparameter option
+#option( USE_FERMIONS "Use fermions" OFF )
+#if( USE_FERMIONS )
+#	add_definitions( -D_FERMIONS_ )
+#endif( USE_FERMIONS )
+#if( USE_FERMIONS )
+#	option( USE_TWISTEDMASS "Use twisted mass fermions" ON)
+#	if ( USE_TWISTEDMASS )
+#		add_definitions( -D_TWISTEDMASS_ )
+#	endif ( USE_TWISTEDMASS )
+#endif( USE_FERMIONS )
+#if( USE_FERMIONS AND !USE_TWISTEDMASS)
+#	option( USE_CLOVER "Use clover fermions" OFF)
+#		if ( USE_CLOVER )
+#			add_definitions( -D_CLOVER_ )
+#		endif (USE_CLOVER)
+#endif (  )
+## We do not want to use TESTING anymoe
+#option( TESTING "Run optional test code" OFF )
+#if( TESTING )
+#	add_definitions( -D_TESTING_ )
+#endif( TESTING )
 option( USE_GPU "Use GPU" OFF )
 if( USE_GPU )
 	add_definitions( -D_USEGPU_ )
 endif( USE_GPU )
-option( PERFORM_BENCHMARKS "Perform Benchmarks" OFF )
-if( PERFORM_BENCHMARKS )
-	add_definitions( -D_PERFORM_BENCHMARKS_ )
-endif( PERFORM_BENCHMARKS )
+## We do not want to use BENCHMARKS anymoe
+#option( PERFORM_BENCHMARKS "Perform Benchmarks" OFF )
+#if( PERFORM_BENCHMARKS )
+#	add_definitions( -D_PERFORM_BENCHMARKS_ )
+#endif( PERFORM_BENCHMARKS )
 option( USE_CHEM_POT_REAL "Apply real chemical potential" OFF )
 if( USE_CHEM_POT_REAL )
 	add_definitions( -D_CP_REAL_ )
@@ -121,6 +125,14 @@ if(USE_EOPREC)
 	add_definitions( -D_USEEOPREC_ )
 endif(USE_EOPREC)
 
+# lattice dimensions (see feature #127)
+set( NTIME 8 CACHE STRING "Number of lattice sites in time direction (t)" )
+add_definitions( -DNTIME=${NTIME} )
+set( NSPACE 4 CACHE STRING "Number of lattice sites in space direction (x,y,z each)" )
+add_definitions( -DNSPACE=${NSPACE} )
+
+
+
 # default random number seed
 configure_file( rand_seeds rand_seeds COPYONLY )
 
@@ -135,15 +147,15 @@ add_executable( hmc
 	host_operations_spinor.cpp
 	host_operations_spinorfield.cpp
 	host_operations_fermionmatrix.cpp
-	host_gaugeobservables.cpp
+#	host_gaugeobservables.cpp
 # 	host_testing.cpp
-	host_input.cpp
+	inputparameters.cpp
 	host_readgauge.cpp
 	host_random.cpp
 	host_update_heatbath.cpp
 	#opencl.cpp
 	host_use_timer.cpp
-	host_gaugefieldoperations.cpp
+#	host_gaugefieldoperations.cpp
 	host_writegaugefield.cpp
 	host_solver.cpp
 	host_fermionobservables.cpp
@@ -163,18 +175,20 @@ add_executable( heatbath
 	host_operations_su3matrix.cpp
 	host_operations_matrix.cpp	
 	gaugefield.cpp
-	host_input.cpp
+	inputparameters.cpp
 	host_readgauge.cpp
 	host_random.cpp
 	opencl.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
+	logger.cpp
 )
 target_link_libraries( heatbath
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
 	klepsydra
+	einhard
 )
 add_executable( tk_kappa
 	tk_kappa.cpp
@@ -185,19 +199,51 @@ add_executable( tk_kappa
 	host_operations_matrix.cpp	
 	gaugefield.cpp
 	gaugefield_k.cpp
-	host_input.cpp
+	inputparameters.cpp
 	host_readgauge.cpp
 	host_random.cpp
 	opencl.cpp
 	opencl_k.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
+	logger.cpp
 )
 target_link_libraries( tk_kappa
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
 	klepsydra
+	einhard
+)
+add_executable( inverter
+	inverter.cpp
+	host_geometry.cpp
+	host_operations_complex.cpp
+	host_operations_gaugefield.cpp
+	host_operations_su3matrix.cpp
+	host_operations_matrix.cpp	
+	host_operations_spinor.cpp
+	host_operations_spinorfield.cpp
+	host_operations_fermionmatrix.cpp
+	gaugefield.cpp
+	gaugefield_inversion.cpp
+	inputparameters.cpp
+	host_readgauge.cpp
+	host_random.cpp
+	opencl.cpp
+	opencl_fermions.cpp
+	host_use_timer.cpp
+	host_writegaugefield.cpp
+	host_solver.cpp
+	host_fermionobservables.cpp
+	logger.cpp
+)
+target_link_libraries( inverter
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	klepsydra
+	einhard
 )
 
 add_library( klepsydra
@@ -206,6 +252,9 @@ add_library( klepsydra
 if(NOT CMAKE_HOST_APPLE)
 	target_link_libraries( klepsydra rt )
 endif(NOT CMAKE_HOST_APPLE)
+
+add_library( einhard
+	einhard/einhard.cpp )
 
 # Documentation
 #include(FindDoxygen)

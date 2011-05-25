@@ -1,37 +1,52 @@
 #include "gaugefield_k.h"
 
-hmc_error Gaugefield_k::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer){
-	
-	hmc_error err;
-  
-	hmc_gaugefield * gf_tmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
-	err = set_gf (gf_tmp);
-	
-	err = set_parameters (input_parameters);
-
-	init_gaugefield(timer);
-
-	err = set_num_ocl_devices (numdevs);
-
-	if(numdevs != 1) {
+hmc_error Gaugefield_k::init_devices(cl_device_type* devicetypes, usetimer* timer){
+	if(get_num_ocl_devices() != 1) {
 		//LZ: so far, we only use !!! 1 !!! device
 		//this needs generalisation to several devices and subsets!!!!!
 		cerr << "only 1 device possible..." << endl;
 	}
 
-	if(get_num_ocl_devices() > 0){
-		Opencl_k * devices_tmp = new Opencl_k[get_num_ocl_devices()];
-		err = set_devices (devices_tmp);
+	if(get_num_ocl_devices() > 0) {
+	  Opencl_k* dev_tmp = new Opencl_k[get_num_ocl_devices()];
+	  set_devices(dev_tmp);
 	}
 
 
 	for(int n = 0; n < get_num_ocl_devices(); n++) {
 		cout << "init device #" << n << endl;
-		(get_devices())[n].init(devicetypes[n], local_work_size, global_work_size, timer, get_parameters ());
+		get_devices_k()[n].init(devicetypes[n], timer, get_parameters());
 		
 	}
-
 	return HMC_SUCCESS;
+}
+
+hmc_error Gaugefield_k::free_devices(){
+  if(get_num_ocl_devices() > 0)
+    delete [] get_devices_k();
+  return HMC_SUCCESS;
+}
+
+
+
+hmc_float Gaugefield_k::Q_plaquette()
+{
+	hmc_float plaq = 0;
+
+	for(int t = 0; t < NTIME; t++) {
+		for(int n = 0; n < VOLSPACE; n++) {
+			for(int mu = 0; mu < NDIM; mu++) {
+				for(int nu = 0; nu < mu; nu++) {
+					hmc_3x3matrix prod;
+					local_Q_plaquette(&prod, get_gf(), n, t, mu, nu );
+					hmc_complex tmp;
+					trace_3x3matrix(&tmp, &prod);
+					plaq += tmp.re;
+				}
+			}
+		}
+	}
+	return plaq * 2.0 / static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) * NC) / 4.0;
 }
 
 hmc_float Gaugefield_k::get_kappa_karsch (){
@@ -53,22 +68,24 @@ hmc_error Gaugefield_k::set_kappa_clover (hmc_float in){
   
 }
 
-hmc_error Gaugefield_k::kappa_karsch_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_karsch){
+hmc_error Gaugefield_k::kappa_karsch_gpu (usetimer* timer){
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices_k()[0].run_kappa_karsch_gpu(local_work_size, global_work_size, timer_karsch);
+	hmc_error err;
+ 	err = get_devices_k()[0].run_kappa_karsch_gpu(get_parameters()->get_beta(), timer, &kappa_karsch_val);
 	return err;
 }
 
-hmc_error Gaugefield_k::kappa_clover_gpu (const size_t local_work_size, const size_t global_work_size, usetimer* timer_clover){
+hmc_error Gaugefield_k::kappa_clover_gpu (usetimer* timer){
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices_k()[0].run_kappa_clover_gpu(local_work_size, global_work_size, timer_clover);
+	hmc_error err;
+ 	err = get_devices_k()[0].run_kappa_clover_gpu(get_parameters()->get_beta(), timer, &kappa_clover_val);
 	return err;
 }
 
-opencl * Gaugefield_k::get_devices_k (){
-  return  devices_k;
+Opencl_k * Gaugefield_k::get_devices_k (){
+  return  (Opencl_k*)get_devices();
 }
 
 hmc_error Gaugefield_k::kappa_karsch ()
