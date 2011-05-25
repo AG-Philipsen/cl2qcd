@@ -5,6 +5,10 @@ using namespace std;
 hmc_error Opencl_k::fill_kernels_file (){
 	//give a list of all kernel-files
 	hmc_error err =	Opencl::fill_kernels_file();
+	if(err != HMC_SUCCESS) {
+		cout << "... failed, aborting." << endl;
+		exit(HMC_OCLERROR);
+	}
 	cl_kernels_file.push_back("opencl_tk_kappa.cl");
 	return HMC_SUCCESS;  
 }
@@ -12,11 +16,21 @@ hmc_error Opencl_k::fill_kernels_file (){
 hmc_error Opencl_k::fill_collect_options(stringstream* collect_options){
 
 	hmc_error err = Opencl::fill_collect_options(collect_options);
+	if(err != HMC_SUCCESS) {
+		cout << "... failed, aborting." << endl;
+		exit(HMC_OCLERROR);
+	}
 	return HMC_SUCCESS;  
 }
 
 hmc_error Opencl_k::fill_buffers(){
 	hmc_error err = Opencl::fill_buffers();
+	
+	if(err != HMC_SUCCESS) {
+		cout << "... failed, aborting." << endl;
+		exit(HMC_OCLERROR);
+	}
+	
 	cl_int clerr = CL_SUCCESS;
 	
 	cout << "Create buffer for transport coefficient kappa_karsch..." << endl;
@@ -38,6 +52,12 @@ hmc_error Opencl_k::fill_buffers(){
 
 hmc_error Opencl_k::fill_kernels(){
   	hmc_error err = Opencl::fill_kernels();
+	
+	if(err != HMC_SUCCESS) {
+		cout << "... failed, aborting." << endl;
+		exit(HMC_OCLERROR);
+	}
+	
 	cl_int clerr = CL_SUCCESS;
 	
 	cout << "Create TK kappa kernels..." << endl;
@@ -163,7 +183,7 @@ hmc_error Opencl_k::run_kappa_clover_gpu(const hmc_float beta, usetimer * const 
 		cout << "clSetKernelArg3 at kappa_clover_gpu failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	
+
 	enqueueKernel(kappa_clover_gpu, global_work_size, local_work_size);
 
 	//read out values
