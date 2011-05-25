@@ -836,7 +836,7 @@ void local_plaquette(__global hmc_ocl_gaugefield * field, hmc_ocl_su3matrix * pr
 }
 
 void local_Q_plaquette(__private hmc_ocl_3x3matrix * out, __global hmc_ocl_gaugefield * field, int n, int t, int mu, int nu ){
-  hmc_ocl_su3matrix tmp;
+  hmc_ocl_su3matrix tmp [SU3SIZE];
   int newpos;
   
   //1st plaq
