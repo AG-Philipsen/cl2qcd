@@ -141,7 +141,7 @@ add_executable( hmc
 	host_readgauge.cpp
 	host_random.cpp
 	host_update_heatbath.cpp
-	opencl.cpp
+	#opencl.cpp
 	host_use_timer.cpp
 	host_gaugefieldoperations.cpp
 	host_writegaugefield.cpp
