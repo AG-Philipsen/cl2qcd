@@ -132,7 +132,8 @@ hmc_error get_XLF_infos(const char * filename, hmc_float * plaquettevalue, int *
 		const char * tmparray [] = {"plaquette", " trajectory nr", " beta", "kappa", "mu", "c2_rec", " time", " hmcversion", " mubar", " epsilonbar", " date", " plaquette"};
 		char tmp1[512];
 		while (!feof(reader)) {
-			fgets (tmp1, 512, reader);
+		  if(fgets (tmp1, 512, reader) == NULL)
+		    printf("error in function get_XLF_infos");
 			trim2(tmp1);
 			if(strncmp(tmparray[0], tmp1, strlen(tmparray[0])) == 0) extrInfo_hmc_float(tmp1,  tmparray[0], strlen(tmparray[0]), strlen(tmp1), plaquettevalue);
 			if(strncmp(tmparray[1], tmp1, strlen(tmparray[1])) == 0) extrInfo_int(tmp1,  tmparray[1], strlen(tmparray[1]), strlen(tmp1), trajectorynr);
@@ -161,7 +162,8 @@ hmc_error get_inverter_infos(const char * filename, char * solver, hmc_float * e
 		const char * tmparray [] = {"solver", " epssq", " noiter", " kappa", "mu", " time", " hmcversion", " date"};
 		char tmp1[512];
 		while (!feof(reader)) {
-			fgets (tmp1, 512, reader);
+		  if(fgets (tmp1, 512, reader)==NULL)
+		    printf("error in function get_inverter_infos");
 			if(strncmp(tmparray[0], tmp1, strlen(tmparray[0])) == 0) extrInfo_char(tmp1,  tmparray[0], strlen(tmparray[0]), strlen(tmp1), solver);
 			if(strncmp(tmparray[1], tmp1, strlen(tmparray[1])) == 0) extrInfo_hmc_float(tmp1,  tmparray[1], strlen(tmparray[1]), strlen(tmp1), epssq);
 			if(strncmp(tmparray[2], tmp1, strlen(tmparray[2])) == 0) extrInfo_int (tmp1,  tmparray[2], strlen(tmparray[2]), strlen(tmp1), noiter);
