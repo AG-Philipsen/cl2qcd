@@ -308,3 +308,13 @@ hmc_error generate_gaussian_spinorfield(hmc_spinor_field * out){
 	return gaussianComplexVector((hmc_complex *)out, SPINORFIELDSIZE, 0.5);
 	// SL: not yet tested
 }
+
+void gamma_5_psi(hmc_spinor_field * inout){
+	hmc_full_spinor tmp;
+	for(int t = 0; t<NTIME; t++){
+		for(int n = 0; n<VOLSPACE; n++){
+			get_spinor_from_field(inout, tmp, n, t);
+			gamma_5_spinor(tmp);
+			put_spinor_to_field(tmp, inout, n, t);
+	}}
+}
