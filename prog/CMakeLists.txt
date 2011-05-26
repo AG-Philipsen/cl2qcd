@@ -235,7 +235,6 @@ add_executable( inverter
 	host_use_timer.cpp
 	host_writegaugefield.cpp
 	host_solver.cpp
-	host_fermionobservables.cpp
 	logger.cpp
 )
 target_link_libraries( inverter
