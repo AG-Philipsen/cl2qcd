@@ -202,28 +202,15 @@ hmc_error spinprojectproduct_gamma3(hmc_su3matrix* u, hmc_spinor* spin, hmc_floa
 void spinor_apply_bc(hmc_spinor * in, hmc_float theta);//CP: checked explicitly
 
 /**
- * Applies the diagonal part of the fermionmatrix M to a spinor.
- *
- * @param[in,out] spininout Spinor to be changed
- * @param[in] kappa /f$\kappa/f$ of Wilson fermions.
- * @param[in] mu /f$\mu/f$ of twisted-mass fermions.
- * @return void
- * @remark tested by CP
- * @todo at the moment, this is only twisted-mass!!
- */
-void M_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu);//CP: checked explicitly
-
-/**
  * Applies the diagonal part of /f$ M^{\dagger}M/f$ to a spinor, with /f$M/f$ being the fermionmatrix.
  *
  * @param[in,out] spininout Spinor to be changed
- * @param[in] kappa /f$\kappa/f$ of Wilson fermions.
- * @param[in] mu /f$\mu/f$ of twisted-mass fermions.
+ * @param[in] mubar /f$2\kappa\mu/f$ of twisted-mass fermions.
  * @return void
  * @remark tested by CP
  * @todo at the moment, this is only twisted-mass!!
  */
-void MdaggerM_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu);//CP: not checked
+void M_diag_local(hmc_spinor* spininout, hmc_float mubar);//CP: checked explicitly
 
 /**
  * Calculates the /f$\mu=0/f$-component of /f$ \notD/f$ to a spinor.
@@ -281,6 +268,25 @@ void dslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
  */
 void dslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: checked explicitly
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// deprecated functions
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//CP: this was usefull because M_daggerM can also be calculated by successivly using M and gamma_5
+
+/**
+ * Applies the diagonal part of /f$ M^{\dagger}M/f$ to a spinor, with /f$M/f$ being the fermionmatrix.
+ *
+ * @param[in,out] spininout Spinor to be changed
+ * @param[in] mubar /f$2\kappa\mu/f$ of twisted-mass fermions.
+ * @return void
+ * @remark tested by CP
+ * @todo at the moment, this is only twisted-mass!!
+ * @remark deprecated by CP
+ */
+void MdaggerM_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu);//CP: not checked
+
 /**
  * Calculates the /f$\mu=0/f$-component of /f$ \notD^{\dagger}/f$ to a spinor.
  *
@@ -291,6 +297,7 @@ void dslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
  * @param[in] udagger (adjoined) SU(3)-Matrix linking to spinprev
  * @return void
  * @remark tested by CP
+ * @remark deprecated by CP
  * @todo at the moment, this is only twisted-mass!!
  */
 void ddaggerslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: not checked
@@ -305,6 +312,7 @@ void ddaggerslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spin
  * @param[in] udagger (adjoined) SU(3)-Matrix linking to spinprev
  * @return void
  * @remark tested by CP
+ * @remark deprecated by CP
  * @todo at the moment, this is only twisted-mass!!
  */
 void ddaggerslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: not checked
@@ -319,6 +327,7 @@ void ddaggerslash_1(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spin
  * @param[in] udagger (adjoined) SU(3)-Matrix linking to spinprev
  * @return void
  * @remark tested by CP
+ * @remark deprecated by CP
  * @todo at the moment, this is only twisted-mass!!
  */
 void ddaggerslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: notchecked
@@ -333,8 +342,12 @@ void ddaggerslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spin
  * @param[in] udagger (adjoined) SU(3)-Matrix linking to spinprev
  * @return void
  * @remark tested by CP
+ * @remark deprecated by CP
  * @todo at the moment, this is only twisted-mass!!
  */
 void ddaggerslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: not checked
 
+
 #endif /* _OPERATIONS_SPINORH_ */
+
+

@@ -265,22 +265,14 @@ hmc_error spinors_accumulate(hmc_spinor* inout, hmc_spinor* incr){
   return HMC_SUCCESS;
 }
 
-//spinout =  (1 + i*gamma_5*kappa*mu)spin_in
-void M_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu){
+//spinout =  (1 + i*gamma_5*mubar)spin_in
+void M_diag_local(hmc_spinor* spininout, hmc_float mubar){
 	hmc_spinor spintmp[SPINORSIZE];
-	hmc_float twistfactor = 2*kappa*mu;
-	multiply_spinor_i_factor_gamma5(spininout,spintmp,twistfactor);
+	multiply_spinor_i_factor_gamma5(spininout,spintmp,mubar);
 	spinors_accumulate(spininout,spintmp);
-			
 	return;
 }
 
-//spinout =  (3 + 4*kappa^2*mu^2)spin_in
-void MdaggerM_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu){
-	hmc_float twistfactor = 1. + 8.*kappa*kappa + 4.*kappa*kappa*mu*mu;
-	real_multiply_spinor(spininout,twistfactor);
-	return;
-}
 
 //spinout = U_0*(r-gamma_0)*spinnext + U^dagger_0(x-hat0) * (r+gamma_0)*spinprev
 void dslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
@@ -378,6 +370,18 @@ void dslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
 	return;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// deprecated functions
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//spinout =  (3 + 4*kappa^2*mu^2)spin_in
+void MdaggerM_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu){
+	hmc_float twistfactor = 1. + 8.*kappa*kappa + 4.*kappa*kappa*mu*mu;
+	real_multiply_spinor(spininout,twistfactor);
+	return;
+}
+
+
 //spinout = U_0*(r+gamma_0)*spinnext + U^dagger_0(x-hat0) * (r-gamma_0)*spinprev
 void ddaggerslash_0(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger){
 	
@@ -472,9 +476,5 @@ void ddaggerslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spin
 	
 	return;
 }
-
-
-
-
 
 
