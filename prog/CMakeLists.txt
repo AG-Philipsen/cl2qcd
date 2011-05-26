@@ -158,7 +158,7 @@ add_executable( hmc
 #	host_gaugefieldoperations.cpp
 	host_writegaugefield.cpp
 	host_solver.cpp
-	host_fermionobservables.cpp
+#	host_fermionobservables.cpp
 	host_hmc.cpp
 )
 target_link_libraries( hmc
