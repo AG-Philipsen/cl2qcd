@@ -35,8 +35,6 @@ hmc_error md_update_gaugefield(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gau
 #ifdef _FERMIONS_
 //phi = D chi
 hmc_error md_update_spinorfield(hmc_spinor_field * in, hmc_spinor_field * out, hmc_gaugefield * field, inputparameters * parameters){
-	//TODO extract needed parameters from paramters, or transform this into M itself
-	hmc_float kappa, mu, theta, chem_pot_re, chem_pot_im;
 	//TODO check again if it is M or Mdagger here
 	Mdagger(parameters, in, field, out);
 	
@@ -158,16 +156,210 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
 }
 
 #ifdef _FERMIONS_
-//CP: it is assumed that phi_inv has been computed already
-hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_gauge_momentum * out){
-	//TODO fermion force
+
+void su3_vector_times_minusone(hmc_su3vector inout){
+	(inout[0]).re *= -1.;
+	(inout[0]).im *= -1.;
+	(inout[1]).re *= -1.;
+	(inout[1]).im *= -1.;
+	(inout[2]).re *= -1.;
+	(inout[2]).im *= -1.;
+}
+
+void su3_vector_acc(hmc_su3vector in, hmc_su3vector out){
+	(out[0]).re += (in[0]).re;
+	(out[0]).im += (in[0]).im;
+	(out[1]).re += (in[1]).re;
+	(out[1]).im += (in[1]).im;
+	(out[2]).re += (in[2]).re;
+	(out[2]).im += (in[2]).im;
+}
+
+void su3_vector_multiple_add(hmc_su3vector in1, hmc_su3vector in2, hmc_su3vector out){
+	(out[0]).re = (in1[0]).re + (in2[0]).re;
+	(out[1]).re = (in1[1]).re + (in2[1]).re;
+	(out[2]).re = (in1[2]).re + (in2[2]).re;
+	(out[0]).im = (in1[0]).im + (in2[0]).im;
+	(out[1]).im = (in1[1]).im + (in2[1]).im;
+	(out[2]).im = (in1[2]).im + (in2[2]).im;
+}
+
+void spinproj_gamma0_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(0,c)].re - sign*spin[spinor_element(3,c)].im;
+  	out[c].im = spin[spinor_element(0,c)].im + sign*spin[spinor_element(3,c)].re;
+  }
+}
+
+void spinproj_gamma0_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(1,c)].re - sign*spin[spinor_element(2,c)].im;
+  	out[c].im = spin[spinor_element(1,c)].im + sign*spin[spinor_element(2,c)].re;
+  }
+}
+
+//calculates the trace of generator times 3x3-matrix and stores this in a su3-algebraelement
+void tr_lambda_u(hmc_3x3matrix in, hmc_algebraelement out){
+				(out)[0] = ( -(in)[1][0].im - (in)[0][1].im);
+				(out)[1] = (+(in)[1][0].re-(in)[0][1].re);
+				(out)[2] = (-(in)[0][0].im+(in)[1][1].im);
+				(out)[3] = (-(in)[2][0].im-(in)[0][2].im);
+				(out)[4] = (+(in)[2][0].re-(in)[0][2].re);
+				(out)[5] = (-(in)[2][1].im-(in)[1][2].im);
+				(out)[6] = (+(in)[2][1].re-(in)[1][2].re);
+				(out)[7] = (-(in)[0][0].im-(in)[1][1].im + 2.0*(in)[2][2].im)*0.577350269189625;
 	
+}
+//calculates the Dirac-Trace of the matrix resulting from multiplying v*u^dagger + w*x^dagger, where u, v, w, x are SU(3)-vectors
+//	the result is a 3x3-matrix
+void tr_v_times_u_dagger(hmc_su3vector v, hmc_su3vector u, hmc_su3vector w, hmc_su3vector x, hmc_3x3matrix out){
+	for(int a = 0; a<3; a++){
+		for(int b = 0; b<3; b++){
+			(out[a][b]).re = (v[a]).re*(u[b]).re + (v[a]).im*(u[b]).im + (w[a]).re*(x[b]).re + (w[a]).im*(x[b]).im;
+			(out[a][b]).re = (v[a]).im*(u[b]).re - (v[a]).re*(u[b]).im + (w[a]).im*(x[b]).re - (w[a]).re*(x[b]).im;;
+		}}
+	/*
+	 #define _vector_tensor_vector_add(t, u, v, w, z) \
+   (t).c00.re=(u).c0.re*(v).c0.re+(u).c0.im*(v).c0.im + (w).c0.re*(z).c0.re+(w).c0.im*(z).c0.im; \
+   (t).c00.im=(u).c0.im*(v).c0.re-(u).c0.re*(v).c0.im + (w).c0.im*(z).c0.re-(w).c0.re*(z).c0.im; \
+   (t).c01.re=(u).c0.re*(v).c1.re+(u).c0.im*(v).c1.im + (w).c0.re*(z).c1.re+(w).c0.im*(z).c1.im; \
+   (t).c01.im=(u).c0.im*(v).c1.re-(u).c0.re*(v).c1.im + (w).c0.im*(z).c1.re-(w).c0.re*(z).c1.im; \
+   (t).c02.re=(u).c0.re*(v).c2.re+(u).c0.im*(v).c2.im + (w).c0.re*(z).c2.re+(w).c0.im*(z).c2.im; \
+   (t).c02.im=(u).c0.im*(v).c2.re-(u).c0.re*(v).c2.im + (w).c0.im*(z).c2.re-(w).c0.re*(z).c2.im; \
+   (t).c10.re=(u).c1.re*(v).c0.re+(u).c1.im*(v).c0.im + (w).c1.re*(z).c0.re+(w).c1.im*(z).c0.im; \
+   (t).c10.im=(u).c1.im*(v).c0.re-(u).c1.re*(v).c0.im + (w).c1.im*(z).c0.re-(w).c1.re*(z).c0.im; \
+   (t).c11.re=(u).c1.re*(v).c1.re+(u).c1.im*(v).c1.im + (w).c1.re*(z).c1.re+(w).c1.im*(z).c1.im; \
+   (t).c11.im=(u).c1.im*(v).c1.re-(u).c1.re*(v).c1.im + (w).c1.im*(z).c1.re-(w).c1.re*(z).c1.im; \
+   (t).c12.re=(u).c1.re*(v).c2.re+(u).c1.im*(v).c2.im + (w).c1.re*(z).c2.re+(w).c1.im*(z).c2.im; \
+   (t).c12.im=(u).c1.im*(v).c2.re-(u).c1.re*(v).c2.im + (w).c1.im*(z).c2.re-(w).c1.re*(z).c2.im; \
+   (t).c20.re=(u).c2.re*(v).c0.re+(u).c2.im*(v).c0.im + (w).c2.re*(z).c0.re+(w).c2.im*(z).c0.im; \
+   (t).c20.im=(u).c2.im*(v).c0.re-(u).c2.re*(v).c0.im + (w).c2.im*(z).c0.re-(w).c2.re*(z).c0.im; \
+   (t).c21.re=(u).c2.re*(v).c1.re+(u).c2.im*(v).c1.im + (w).c2.re*(z).c1.re+(w).c2.im*(z).c1.im; \
+   (t).c21.im=(u).c2.im*(v).c1.re-(u).c2.re*(v).c1.im + (w).c2.im*(z).c1.re-(w).c2.re*(z).c1.im; \
+   (t).c22.re=(u).c2.re*(v).c2.re+(u).c2.im*(v).c2.im + (w).c2.re*(z).c2.re+(w).c2.im*(z).c2.im; \
+   (t).c22.im=(u).c2.im*(v).c2.re-(u).c2.re*(v).c2.im + (w).c2.im*(z).c2.re-(w).c2.re*(z).c2.im; 
+	 */
+}
+
+void gamma_5_spinor(hmc_full_spinor inout){
+	su3_vector_times_minusone(&inout[2*NC]);
+	su3_vector_times_minusone(&inout[3*NC]);
+}
+
+void gamma_5_psi(hmc_spinor_field * inout){
+	hmc_full_spinor tmp;
+	for(int t = 0; t<NTIME; t++){
+		for(int n = 0; n<VOLSPACE; n++){
+			get_spinor_from_field(inout, tmp, n, t);
+			gamma_5_spinor(tmp);
+			put_spinor_to_field(tmp, inout, n, t);
+	}}
+}
+
+
+//this calculates Q+Q- psi = gamma_5 M (kappa) gamma_5 M(-kappa) psi
+hmc_error QplusQminus(inputparameters * parameters, hmc_spinor_field * in, hmc_gaugefield field, hmc_spinor_field * out){
+	
+	
+	return HMC_SUCCESS;
+}
+
+//CP: fermion_force = (gamma_5 Y)^dagger iT_i
+//	it is assumed that the results can be added to out!!
+hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * Y, hmc_spinor_field * X, hmc_gauge_momentum * out){
+
+  hmc_su3matrix U_up, U_down;
+	hmc_3x3matrix v1, v2;
+  hmc_su3vector psia,psib,phia,phib;
+	hmc_full_spinor y, plus, minus;
+	int nup, ndown;
+	hmc_algebraelement out_tmp;
+	int global_link_pos;
+	int global_link_pos_down;
+	hmc_float factor;
+	
+	//main loop
+	for(int t = 0; t<NTIME; t++){
+		for(int n = 0; n<VOLSPACE; n++){
+			get_spinor_from_field(Y, y, n, t);
+			//Calculate gamma_5 y
+			gamma_5_spinor(y);
+
+			//go through the different directions
+			//mu = +0
+			nup = (t+1)%NTIME;
+			global_link_pos = get_global_link_pos(0, n, t);
+			get_spinor_from_field(X, plus, n, nup);
+			
+			get_su3matrix(&U_up, field, n, t, 0);
+		
+			//psi = (1-gamma_mu)plus
+			spinproj_gamma0_a(plus, psia, -hmc_one_f);
+			spinproj_gamma0_b(plus, psib, -hmc_one_f);
+      
+			//phi = (1-gamma_mu)y
+			spinproj_gamma0_a(y, phia, -hmc_one_f);
+			spinproj_gamma0_b(y, phib, -hmc_one_f);
+
+			// v1 = Tr(phi*psi_dagger)
+			tr_v_times_u_dagger(phia, psia, phib, psib, v1);
+
+			//U*v1 = U*(phi_a)
+			/** @todo what about REC12 and this call??*/
+			multiply_3x3matrix (&v2, &U_up, &v1);
+		
+			//TODO
+	 		//ka0 is kappa*BC-factor
+			//     _complex_times_su3(v1,ka0,v2);
+			//this must become v1 if the above is included again
+			tr_lambda_u(v2, out_tmp);
+			//what is the factor here??
+			factor = 1.;
+			for(int i = 0; i<8; i++){
+  					out[global_link_pos*8 + i] += factor*out_tmp[i];
+			}
+
+			//mu = -0
+			ndown = (t+NTIME-1)%NTIME;
+			global_link_pos_down = get_global_link_pos(0, n, ndown);
+			get_spinor_from_field(X, plus, n, ndown);
+			
+			get_su3matrix(&U_down, field, n, ndown, 0);
+		
+			//psi = (1+gamma_mu)plus
+			spinproj_gamma0_a(plus, psia, hmc_one_f);
+			spinproj_gamma0_b(plus, psib, hmc_one_f);
+      
+			//phi = (1+gamma_mu)y
+			spinproj_gamma0_a(y, phia, hmc_one_f);
+			spinproj_gamma0_b(y, phib, hmc_one_f);
+
+			//CP: here is the difference with regard to +mu-direction: psi and phi interchanged!!
+			// v1 = Tr(psi*phi_dagger)
+			tr_v_times_u_dagger(psia, phia, psib, phib, v1);
+
+			//U*v1 = U*(phi_a)
+			/** @todo what about REC12 and this call??*/
+			multiply_3x3matrix (&v2, &U_down, &v1);
+		
+			//TODO
+	 		//ka0 is kappa*BC-factor
+			//     _complex_times_su3(v1,ka0,v2);
+			
+			//this must become v1 if the above is included again
+			tr_lambda_u(v2, out_tmp);
+			//what is the factor here??
+			factor = (*parameters).get_kappa();
+			for(int i = 0; i<8; i++){
+  					out[global_link_pos_down*8 + i] += factor*out_tmp[i];
+			}
+		}}
 	return HMC_SUCCESS;
 }
 #endif
 
 //CP: this essentially calculates a hmc_gauge_momentum vector
-//CP: it is assumed that phi_inv has been computed already
+//CP: if fermions are used, here is the point where the inversion has to be performed
 hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 #ifdef _FERMIONS_
 	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv
@@ -178,7 +370,38 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 	//add contributions
 	gauge_force(parameters, field, out);
 #ifdef _FERMIONS_
-	fermion_force(parameters, field, phi, phi_inv, out);
+	//the algorithm needs to spinor-fields
+	hmc_spinor_field* X = new hmc_spinor_field[SPINORFIELDSIZE];
+	hmc_spinor_field* Y = new hmc_spinor_field[SPINORFIELDSIZE];
+	//CP: to begin with, consider only the cg-solver
+	//source is at 0
+	int k = 0;
+	int use_cg = TRUE;
+	if(use_cg){
+		//the inversion calculates Y
+		if(!use_eo){
+			hmc_spinor_field b[SPINORFIELDSIZE];
+			create_point_source(parameters,k,0,0,b);
+			solver(parameters, phi, b, field, use_cg, phi_inv);
+		}
+		else{
+			hmc_eoprec_spinor_field be[EOPREC_SPINORFIELDSIZE];
+			hmc_eoprec_spinor_field bo[EOPREC_SPINORFIELDSIZE];
+			
+			create_point_source_eoprec(parameters, k,0,0, field, be,bo);
+			solver_eoprec(parameters, phi, be, bo, field, use_cg, phi_inv);
+		}
+		//X = Q Y
+		Mdagger(parameters, Y, field, X);
+	}
+	else{
+		
+	}
+
+	fermion_force(parameters, field, X, Y, out);
+	
+	delete [] X;
+	delete [] Y;
 #endif
 	return HMC_SUCCESS;
 }
