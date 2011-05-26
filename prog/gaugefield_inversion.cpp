@@ -23,9 +23,9 @@ hmc_error Gaugefield_inversion::init_devices(cl_device_type* devicetypes, usetim
 
 hmc_error Gaugefield_inversion::finalize(){
   hmc_error err = HMC_SUCCESS;
+  err |= Gaugefield::finalize();
   for(int n = 0; n < get_num_ocl_devices(); n++)
     err |= get_devices_fermions()[n].finalize_fermions();	  
-  err |= Gaugefield::finalize();
   return err;
 }
 
@@ -39,10 +39,12 @@ Opencl_fermions * Gaugefield_inversion::get_devices_fermions (){
   return  (Opencl_fermions*)get_devices();
 }
 
-hmc_error Gaugefield_inversion::perform_inversion_on_host(int use_eo){
+hmc_error Gaugefield_inversion::perform_inversion_on_host(){
   //CP: one needs bicgstab here for M
   int use_cg = FALSE;
 	
+  int use_eo = get_parameters()->get_use_eo();
+
   hmc_spinor_field in[SPINORFIELDSIZE];
   hmc_spinor_field phi[SPINORFIELDSIZE];
   init_spinorfield_cold(in);
@@ -87,5 +89,6 @@ hmc_error Gaugefield_inversion::perform_inversion_on_host(int use_eo){
   for(int z=0; z<NSPACE; z++) {
     printf("%d\t(%e,%e)\n",z,correlator_ps[z].re,correlator_ps[z].im);
   }
+
   return HMC_SUCCESS;
 }

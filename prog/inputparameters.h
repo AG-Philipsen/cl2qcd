@@ -55,6 +55,7 @@ public:
 	hmc_float get_csw();
 	hmc_float get_chem_pot_re();
 	hmc_float get_chem_pot_im();
+	int get_use_eo();
 	int get_cgmax();
 	/**
 	 * The precision to be used for gaugefield storage in bits.
@@ -93,6 +94,7 @@ private:
 	hmc_float tau;
 	hmc_float mubar;
 	int cgmax;
+	int use_eo;
 	int fermact;
 	int prec;
 	int startcondition;
@@ -112,6 +114,7 @@ private:
 	void fermact_assign(int * out, std::string line);
 	void savecond_assign(int * out, std::string line);
 	void val_assign(std::string * out, std::string line);
+	void eocond_assign(int * out, std::string line);
 };
 
 #endif /* _INPUTPARAMETERSH_ */

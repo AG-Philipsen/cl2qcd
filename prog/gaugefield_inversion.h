@@ -27,7 +27,10 @@ class Gaugefield_inversion : public Gaugefield {
    */
   virtual hmc_error finalize();
 
-  hmc_error perform_inversion_on_host(int use_eo);
+  /**
+   * Perform inversion on host.
+   */
+  hmc_error perform_inversion_on_host();
 
   /**
    * Free device, called by finalize

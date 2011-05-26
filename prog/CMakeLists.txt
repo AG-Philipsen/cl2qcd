@@ -120,10 +120,12 @@ option( USE_SMEARING "Use smearing of gauge-links" OFF)
 if(USE_SMEARING)
 	add_definitions( -D_USESMEARING_ )
 endif(USE_SMEARING)
-option( USE_EOPREC "Use even-odd-preconditioning" OFF)
-if(USE_EOPREC)
-	add_definitions( -D_USEEOPREC_ )
-endif(USE_EOPREC)
+
+#LZ: eoprec has been moved to an input file parameter
+#option( USE_EOPREC "Use even-odd-preconditioning" OFF)
+#if(USE_EOPREC)
+#	add_definitions( -D_USEEOPREC_ )
+#endif(USE_EOPREC)
 
 # lattice dimensions (see feature #127)
 set( NTIME 8 CACHE STRING "Number of lattice sites in time direction (t)" )

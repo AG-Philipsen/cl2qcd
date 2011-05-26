@@ -23,6 +23,7 @@ hmc_error inputparameters::set_defaults()
 	writefrequency = 1;
 	savefrequency = 100;
 	saveconfigs = FALSE;
+	use_eo = TRUE;
 	//sourcefile = "\0";
 	sourcefilenumber = "00000";
 	fermact = WILSON;
@@ -94,6 +95,13 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("fermaction")!=std::string::npos) fermact_assign(&fermact,line);
 		if(line.find("fermionaction")!=std::string::npos) fermact_assign(&fermact,line);
 		if(line.find("fermact")!=std::string::npos) fermact_assign(&fermact,line);
+
+		if(line.find("evenodd")!=std::string::npos) eocond_assign(&use_eo,line);
+		if(line.find("even_odd")!=std::string::npos) eocond_assign(&use_eo,line);
+		if(line.find("even-odd")!=std::string::npos) eocond_assign(&use_eo,line);
+		if(line.find("even-odd-preconditioning")!=std::string::npos) eocond_assign(&use_eo,line);
+		if(line.find("use_eo")!=std::string::npos) eocond_assign(&use_eo,line);
+		if(line.find("use_evenodd")!=std::string::npos) eocond_assign(&use_eo,line);
 
 	}
 
@@ -259,6 +267,46 @@ void inputparameters::savecond_assign(int * out, std::string line)
 	return;
 }
 
+void inputparameters::eocond_assign(int * out, std::string line)
+{
+	if(std::strstr(line.c_str(),"yes")!=NULL) {
+		(*out)=TRUE;
+		return;
+	}
+	if(std::strstr(line.c_str(),"true")!=NULL) {
+		(*out)=TRUE;
+		return;
+	}
+	if(std::strstr(line.c_str(),"TRUE")!=NULL) {
+		(*out)=TRUE;
+		return;
+	}
+	if(std::strstr(line.c_str(),"True")!=NULL) {
+		(*out)=TRUE;
+		return;
+	}
+	if(std::strstr(line.c_str(),"no")!=NULL) {
+		(*out)=FALSE;
+		return;
+	}
+	if(std::strstr(line.c_str(),"false")!=NULL) {
+		(*out)=FALSE;
+		return;
+	}
+	if(std::strstr(line.c_str(),"FALSE")!=NULL) {
+		(*out)=FALSE;
+		return;
+	}
+	if(std::strstr(line.c_str(),"False")!=NULL) {
+		(*out)=FALSE;
+		return;
+	}
+	printf("invalid even-odd condition\n");
+	exit(HMC_STDERR);
+	return;
+}
+
+
 void inputparameters::val_assign(std::string * out, std::string line)
 {
 	size_t pos = line.find("=");
@@ -401,4 +449,8 @@ void inputparameters::display_sourcefile()
 void inputparameters::display_sourcefilenumber()
 {
 	cout << sourcefilenumber;
+}
+
+int inputparameters::get_use_eo(){
+  return use_eo;
 }

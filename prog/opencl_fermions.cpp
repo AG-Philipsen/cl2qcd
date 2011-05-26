@@ -143,133 +143,136 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
     cout<<"creating clmem_v failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  //!!CP: eoprec fields, here one should insert a switch
-	clmem_inout_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-	clmem_source_even = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-	clmem_source_odd = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }  
-	clmem_rn_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-	clmem_rhat_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-	clmem_v_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-	clmem_p_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-	clmem_s_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-	clmem_t_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }  
-	clmem_aux_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-	clmem_tmp_eoprec_1 = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }  
-	clmem_tmp_eoprec_2 = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-	clmem_tmp_eoprec_3 = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }  
+  //LZ only use the following if we want to apply even odd preconditioning
+  if(get_parameters()->get_use_eo()==TRUE) {
+    clmem_inout_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
+    if(clerr!=CL_SUCCESS) {
+      cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
+      exit(HMC_OCLERROR);
+    }
+    clmem_source_even = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
+    if(clerr!=CL_SUCCESS) {
+      cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
+      exit(HMC_OCLERROR);
+    }
+    clmem_source_odd = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
+    if(clerr!=CL_SUCCESS) {
+      cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
+      exit(HMC_OCLERROR);
+    }  
+    clmem_rn_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
+    if(clerr!=CL_SUCCESS) {
+      cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
+      exit(HMC_OCLERROR);
+    }
+    clmem_rhat_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
+    if(clerr!=CL_SUCCESS) {
+      cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
+      exit(HMC_OCLERROR);
+    }
+    clmem_v_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
+    if(clerr!=CL_SUCCESS) {
+      cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
+      exit(HMC_OCLERROR);
+    }
+    clmem_p_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
+    if(clerr!=CL_SUCCESS) {
+      cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
+      exit(HMC_OCLERROR);
+    }
+    clmem_s_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
+    if(clerr!=CL_SUCCESS) {
+      cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
+      exit(HMC_OCLERROR);
+    }
+    clmem_t_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
+    if(clerr!=CL_SUCCESS) {
+      cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
+      exit(HMC_OCLERROR);
+    }  
+    clmem_aux_eoprec = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
+    if(clerr!=CL_SUCCESS) {
+      cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
+      exit(HMC_OCLERROR);
+    }
+    clmem_tmp_eoprec_1 = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
+    if(clerr!=CL_SUCCESS) {
+      cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
+      exit(HMC_OCLERROR);
+    }  
+    clmem_tmp_eoprec_2 = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
+    if(clerr!=CL_SUCCESS) {
+      cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
+      exit(HMC_OCLERROR);
+    }
+    clmem_tmp_eoprec_3 = clCreateBuffer(context,CL_MEM_READ_WRITE,eoprec_spinorfield_size,0,&clerr);;
+    if(clerr!=CL_SUCCESS) {
+      cout<<"creating clmem_inout_eoprec failed, aborting..."<<endl;
+      exit(HMC_OCLERROR);
+    } 
+
+  } //end if: eoprec
   
   cout << "\tinit complex numbers..." << endl;
-	clmem_rho = clCreateBuffer(context,CL_MEM_READ_WRITE,complex_size,0,&clerr);
+  clmem_rho = clCreateBuffer(context,CL_MEM_READ_WRITE,complex_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_rho failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
+      cout<<"creating clmem_rho failed, aborting..."<<endl;
+      exit(HMC_OCLERROR);
   }
-	clmem_rho_next = clCreateBuffer(context,CL_MEM_READ_WRITE,complex_size,0,&clerr);
+  clmem_rho_next = clCreateBuffer(context,CL_MEM_READ_WRITE,complex_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_rho_next failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clmem_alpha = clCreateBuffer(context,CL_MEM_READ_WRITE,complex_size,0,&clerr);
+  clmem_alpha = clCreateBuffer(context,CL_MEM_READ_WRITE,complex_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_alpha failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clmem_omega = clCreateBuffer(context,CL_MEM_READ_WRITE,complex_size,0,&clerr);
+  clmem_omega = clCreateBuffer(context,CL_MEM_READ_WRITE,complex_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_omega failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clmem_beta = clCreateBuffer(context,CL_MEM_READ_WRITE,complex_size,0,&clerr);
+  clmem_beta = clCreateBuffer(context,CL_MEM_READ_WRITE,complex_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_beta failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clmem_tmp1 = clCreateBuffer(context,CL_MEM_READ_WRITE,complex_size,0,&clerr);
+  clmem_tmp1 = clCreateBuffer(context,CL_MEM_READ_WRITE,complex_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_tmp1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clmem_tmp2 = clCreateBuffer(context,CL_MEM_READ_WRITE,complex_size,0,&clerr);
+  clmem_tmp2 = clCreateBuffer(context,CL_MEM_READ_WRITE,complex_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_tmp2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clmem_one = clCreateBuffer(context,CL_MEM_READ_ONLY,complex_size,0,&clerr);
+  clmem_one = clCreateBuffer(context,CL_MEM_READ_ONLY,complex_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_one failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clmem_minusone = clCreateBuffer(context,CL_MEM_READ_ONLY,complex_size,0,&clerr);
+  clmem_minusone = clCreateBuffer(context,CL_MEM_READ_ONLY,complex_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_minusone failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-
-	clmem_scalar_product_buf_glob = clCreateBuffer(context,CL_MEM_READ_WRITE,global_buf_size,0,&clerr);
+  
+  clmem_scalar_product_buf_glob = clCreateBuffer(context,CL_MEM_READ_WRITE,global_buf_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_scalar_product_buf_glob failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }  
-
+    
   cout << "\tinit float numbers..." << endl;
-	clmem_kappa = clCreateBuffer(context,CL_MEM_READ_ONLY,float_size,0,&clerr);
+  clmem_kappa = clCreateBuffer(context,CL_MEM_READ_ONLY,float_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_kappa failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   } 
-	clmem_theta_fermion = clCreateBuffer(context,CL_MEM_READ_ONLY,float_size,0,&clerr);
+  clmem_theta_fermion = clCreateBuffer(context,CL_MEM_READ_ONLY,float_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_theta_fermion failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -327,7 +330,7 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
     exit(HMC_OCLERROR);
   }
 
-	clerr = clEnqueueWriteBuffer(queue,clmem_one,CL_TRUE,0,complex_size,&one,0,0,NULL);
+  clerr = clEnqueueWriteBuffer(queue,clmem_one,CL_TRUE,0,complex_size,&one,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... writing clmem_one failed, aborting."<<endl;
     exit(HMC_OCLERROR);
@@ -404,20 +407,10 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
 		cout<<"...creating convert_from_kappa_format kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
 	}
-	convert_to_kappa_format_eoprec = clCreateKernel(clprogram,"convert_to_kappa_format_eoprec",&clerr);
-	if(clerr!=CL_SUCCESS) {
-		cout<<"...creating convert_to_kappa_format_eoprec kernel failed, aborting."<<endl;
-		exit(HMC_OCLERROR);
-	}
-	convert_from_kappa_format_eoprec = clCreateKernel(clprogram,"convert_from_kappa_format_eoprec",&clerr);
-	if(clerr!=CL_SUCCESS) {
-		cout<<"...creating convert_from_kappa_format_eoprec kernel failed, aborting."<<endl;
-		exit(HMC_OCLERROR);
-	}
 	create_point_source = clCreateKernel(clprogram,"create_point_source",&clerr);
 	if(clerr!=CL_SUCCESS) {
-		cout<<"...creating create_point_source kernel failed, aborting."<<endl;
-		exit(HMC_OCLERROR);
+	  cout<<"...creating create_point_source kernel failed, aborting."<<endl;
+	  exit(HMC_OCLERROR);
 	}
 	M_sitediagonal = clCreateKernel(clprogram,"M_sitediagonal",&clerr);
 	if(clerr!=CL_SUCCESS) {
@@ -429,59 +422,56 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
 		cout<<"...creating M_inverse_sitediagonal kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
 	}
-	dslash_eoprec = clCreateKernel(clprogram,"dslash_eoprec",&clerr);
-	if(clerr!=CL_SUCCESS) {
-		cout<<"...creating dslash_eoprec kernel failed, aborting."<<endl;
-		exit(HMC_OCLERROR);
-	}
-	saxpy_eoprec = clCreateKernel(clprogram,"saxpy_eoprec",&clerr);
-	if(clerr!=CL_SUCCESS) {
-		cout<<"...creating saxpy_eoprec kernel failed, aborting."<<endl;
-		exit(HMC_OCLERROR);
-	}
-	saxsbypz_eoprec = clCreateKernel(clprogram,"saxsbypz_eoprec",&clerr);
-	if(clerr!=CL_SUCCESS) {
-		cout<<"...creating saxsbypz_eoprec kernel failed, aborting."<<endl;
-		exit(HMC_OCLERROR);
-	}
-	scalar_product_eoprec = clCreateKernel(clprogram,"scalar_product_eoprec",&clerr);
-	if(clerr!=CL_SUCCESS) {
-		cout<<"...creating scalar_product_eoprec kernel failed, aborting."<<endl;
-		exit(HMC_OCLERROR);
-	}
-	set_zero_spinorfield_eoprec = clCreateKernel(clprogram,"set_zero_spinorfield_eoprec",&clerr);
-	if(clerr!=CL_SUCCESS) {
-		cout<<"...creating set_zero_spinorfield_eoprec kernel failed, aborting."<<endl;
-		exit(HMC_OCLERROR);
-	}
-	global_squarenorm_eoprec = clCreateKernel(clprogram,"global_squarenorm_eoprec",&clerr);
-	if(clerr!=CL_SUCCESS) {
-		cout<<"...creating global_squarenorm_eoprec kernel failed, aborting."<<endl;
-		exit(HMC_OCLERROR);
-	}
-	create_point_source_eoprec = clCreateKernel(clprogram,"create_point_source_eoprec",&clerr);
-	if(clerr!=CL_SUCCESS) {
-		cout<<"...creating create_point_source_eoprec kernel failed, aborting."<<endl;
-		exit(HMC_OCLERROR);
+	if(get_parameters()->get_use_eo()==TRUE) {
+	  convert_to_kappa_format_eoprec = clCreateKernel(clprogram,"convert_to_kappa_format_eoprec",&clerr);
+	  if(clerr!=CL_SUCCESS) {
+	    cout<<"...creating convert_to_kappa_format_eoprec kernel failed, aborting."<<endl;
+	    exit(HMC_OCLERROR);
+	  }
+	  convert_from_kappa_format_eoprec = clCreateKernel(clprogram,"convert_from_kappa_format_eoprec",&clerr);
+	  if(clerr!=CL_SUCCESS) {
+	    cout<<"...creating convert_from_kappa_format_eoprec kernel failed, aborting."<<endl;
+	    exit(HMC_OCLERROR);
+	  }
+	  dslash_eoprec = clCreateKernel(clprogram,"dslash_eoprec",&clerr);
+	  if(clerr!=CL_SUCCESS) {
+	    cout<<"...creating dslash_eoprec kernel failed, aborting."<<endl;
+	    exit(HMC_OCLERROR);
+	  }
+	  saxpy_eoprec = clCreateKernel(clprogram,"saxpy_eoprec",&clerr);
+	  if(clerr!=CL_SUCCESS) {
+	    cout<<"...creating saxpy_eoprec kernel failed, aborting."<<endl;
+	    exit(HMC_OCLERROR);
+	  }
+	  saxsbypz_eoprec = clCreateKernel(clprogram,"saxsbypz_eoprec",&clerr);
+	  if(clerr!=CL_SUCCESS) {
+	    cout<<"...creating saxsbypz_eoprec kernel failed, aborting."<<endl;
+	    exit(HMC_OCLERROR);
+	  }
+	  scalar_product_eoprec = clCreateKernel(clprogram,"scalar_product_eoprec",&clerr);
+	  if(clerr!=CL_SUCCESS) {
+	    cout<<"...creating scalar_product_eoprec kernel failed, aborting."<<endl;
+	    exit(HMC_OCLERROR);
+	  }
+	  set_zero_spinorfield_eoprec = clCreateKernel(clprogram,"set_zero_spinorfield_eoprec",&clerr);
+	  if(clerr!=CL_SUCCESS) {
+	    cout<<"...creating set_zero_spinorfield_eoprec kernel failed, aborting."<<endl;
+	    exit(HMC_OCLERROR);
+	  }
+	  global_squarenorm_eoprec = clCreateKernel(clprogram,"global_squarenorm_eoprec",&clerr);
+	  if(clerr!=CL_SUCCESS) {
+	    cout<<"...creating global_squarenorm_eoprec kernel failed, aborting."<<endl;
+	    exit(HMC_OCLERROR);
+	  }
+	  create_point_source_eoprec = clCreateKernel(clprogram,"create_point_source_eoprec",&clerr);
+	  if(clerr!=CL_SUCCESS) {
+	    cout<<"...creating create_point_source_eoprec kernel failed, aborting."<<endl;
+	    exit(HMC_OCLERROR);
+	  }
 	}
 	
-	
-	//!!CP: this can be deleted later...
-	cout << "\tset spinorfields to zero..." << endl;
-	usetimer noop;
-	set_zero_spinorfield_device(clmem_tmp, local_work_size, global_work_size, &noop);
-	set_zero_spinorfield_device(clmem_inout, local_work_size, global_work_size, &noop);
-	set_zero_spinorfield_device(clmem_source, local_work_size, global_work_size, &noop);
-	set_zero_spinorfield_device(clmem_rn, local_work_size, global_work_size, &noop);
-	set_zero_spinorfield_device(clmem_rhat, local_work_size, global_work_size, &noop);
-	set_zero_spinorfield_device(clmem_v, local_work_size, global_work_size, &noop);
-	set_zero_spinorfield_device(clmem_p, local_work_size, global_work_size, &noop);
-	set_zero_spinorfield_device(clmem_s, local_work_size, global_work_size, &noop);
-	set_zero_spinorfield_device(clmem_t, local_work_size, global_work_size, &noop);
-	set_zero_spinorfield_device(clmem_aux, local_work_size, global_work_size, &noop);
- 
-  (*timer).add();
-  return HMC_SUCCESS;
+	(*timer).add();
+	return HMC_SUCCESS;
 }
 
 
@@ -1871,80 +1861,85 @@ hmc_error Opencl_fermions::create_point_source_eoprec_device(int i, int spacepos
 
 hmc_error Opencl_fermions::finalize_fermions(){
 	
-  if(clFlush(queue)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  if(clFinish(queue)!=CL_SUCCESS) exit(HMC_OCLERROR);
-
   if(clReleaseKernel(M_diag)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(dslash)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(saxpy)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(saxsbypz)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(scalar_product)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(scalar_product_reduction)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(set_zero_spinorfield)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(global_squarenorm)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(global_squarenorm_reduction)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(ratio)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(product)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(convert_to_kappa_format)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(convert_from_kappa_format)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(convert_to_kappa_format_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(convert_from_kappa_format_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(create_point_source)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(M_sitediagonal)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(M_inverse_sitediagonal)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(dslash_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(saxpy_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(scalar_product_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(set_zero_spinorfield_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(global_squarenorm_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(create_point_source_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseKernel(dslash)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseKernel(saxpy)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseKernel(saxsbypz)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseKernel(scalar_product)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseKernel(scalar_product_reduction)!=CL_SUCCESS) exit(HMC_OCLERROR);
 
-																															
+  if(clReleaseKernel(set_zero_spinorfield)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseKernel(global_squarenorm)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseKernel(global_squarenorm_reduction)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseKernel(ratio)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseKernel(product)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseKernel(convert_to_kappa_format)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseKernel(convert_from_kappa_format)!=CL_SUCCESS) exit(HMC_OCLERROR);
+
+
+  if(clReleaseKernel(create_point_source)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseKernel(M_sitediagonal)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseKernel(M_inverse_sitediagonal)!=CL_SUCCESS) exit(HMC_OCLERROR);
+
+  if(get_parameters()->get_use_eo()==TRUE) {
+    if(clReleaseKernel(convert_to_kappa_format_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseKernel(convert_from_kappa_format_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseKernel(dslash_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseKernel(saxpy_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseKernel(scalar_product_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseKernel(set_zero_spinorfield_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseKernel(global_squarenorm_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseKernel(create_point_source_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  }
+
   if(clReleaseMemObject(clmem_kappa)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_theta_fermion)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_mu)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_chem_pot_re)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_chem_pot_im)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_theta_fermion)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_mu)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_chem_pot_re)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_chem_pot_im)!=CL_SUCCESS) exit(HMC_OCLERROR);
 	
-	if(clReleaseMemObject(clmem_inout)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_source)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_rn)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_rhat)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_v)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_p)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_s)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_t)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_aux)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_tmp)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	
-	if(clReleaseMemObject(clmem_inout_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_source_even)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_source_odd)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_rn_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_rhat_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_v_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_p_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_s_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_t_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_aux_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_tmp_eoprec_1)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_tmp_eoprec_2)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_tmp_eoprec_3)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	
-	if(clReleaseMemObject(clmem_rho)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_rho_next)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_alpha)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_omega)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_beta)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_tmp1)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_tmp2)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_one)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_minusone)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_scalar_product_buf_glob)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_global_squarenorm_buf_glob)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_resid)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_trueresid)!=CL_SUCCESS) exit(HMC_OCLERROR);
+
+  if(clReleaseMemObject(clmem_inout)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_source)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_rn)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_rhat)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_v)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_p)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_s)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_t)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_aux)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_tmp)!=CL_SUCCESS) exit(HMC_OCLERROR);
+ 
+  if(get_parameters()->get_use_eo()==TRUE) {
+    if(clReleaseMemObject(clmem_inout_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseMemObject(clmem_source_even)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseMemObject(clmem_source_odd)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseMemObject(clmem_rn_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseMemObject(clmem_rhat_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseMemObject(clmem_v_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseMemObject(clmem_p_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseMemObject(clmem_s_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseMemObject(clmem_t_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseMemObject(clmem_aux_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseMemObject(clmem_tmp_eoprec_1)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseMemObject(clmem_tmp_eoprec_2)!=CL_SUCCESS) exit(HMC_OCLERROR);
+    if(clReleaseMemObject(clmem_tmp_eoprec_3)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  }  
+
+  if(clReleaseMemObject(clmem_rho)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_rho_next)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_alpha)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_omega)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_beta)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_tmp1)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_tmp2)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_one)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_minusone)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_scalar_product_buf_glob)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_global_squarenorm_buf_glob)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_resid)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  if(clReleaseMemObject(clmem_trueresid)!=CL_SUCCESS) exit(HMC_OCLERROR);
   
-	return HMC_SUCCESS;
+  return HMC_SUCCESS;
 }
 

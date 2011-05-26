@@ -85,6 +85,11 @@ void print_info(inputparameters* params, ostream* os)
 	}
 	*os << "## prec  = " << params->get_prec() << '\n';
 	*os << "##" << '\n';
+	if(params->get_use_eo()==TRUE)
+	  *os << "## use even-odd preconditioning" << '\n';
+	if(params->get_use_eo()==FALSE) 
+	  *os << "## do not use even-odd preconditioning" << '\n';
+	*os << "##" << '\n';
 
 	if (params->get_startcondition() == START_FROM_SOURCE) {
 		*os << "## sourcefile = ";

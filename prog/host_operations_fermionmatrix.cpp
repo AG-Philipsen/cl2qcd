@@ -435,6 +435,7 @@ hmc_error Aee(inputparameters * parameters, hmc_eoprec_spinor_field* in, hmc_gau
   return HMC_SUCCESS;
 }
 
+
 void ddaggerd_calc (hmc_spinor * spinout, int pos, int t, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im){
 	int next_time, next_spat, prev_time, prev_spat;
 	int nextplusnu_time, nextminusnu_time;
@@ -605,3 +606,4 @@ void ddaggerd_calc (hmc_spinor * spinout, int pos, int t, hmc_spinor_field* in, 
 	}
 	return;
 }
+

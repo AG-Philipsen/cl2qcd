@@ -218,6 +218,7 @@ void ddaggerslash_temporal (hmc_spinor * spinout, int pos, int t, hmc_spinor_fie
 void ddaggerslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos, int t, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im);//CP: checked
 
 
+
 /**
  * Calculates $/f \not D^{\dagger} \not D \psi(specific site) = ... /f$ in all directions ($f/ \mu = 0,1,2,3 /f$)
  * @param[in] parameters includes parameters needed
@@ -228,5 +229,7 @@ void ddaggerslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos, 
  * @param[out] spinout output spinor
  */
 void ddaggerd_calc (hmc_spinor * spinout, int pos, int t, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im);
+
+
 
 #endif /* _OPERATIONS_FERMIONMATRIXH_ */
