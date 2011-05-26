@@ -17,7 +17,14 @@
 #include "host_solver.h"
 #include <cmath>
 
-//normal matrix
+/**
+ * Calculates $f/ Q^+Q^⁻ \psi = \left( \gamma_5 M_{\tilde{\mu}}} \gamma_5 M_{\tilde{\mu}}}\right ) \psi /f$
+ * @param[in] parameters includes parameters needed for evaluation of M
+ * @param[in] in spinorfield that M acts on
+ * @param[in] gaugefield input gaugefield
+ * @param[out] out output spinorfield
+ */
+hmc_error QplusQminus(inputparameters * parameters, hmc_spinor_field * in, hmc_gaugefield * field, hmc_spinor_field * out);
 
 /**
  * Calculates $f/ M \psi = \left( M_{diag} - \kappa\notD\right ) \psi /f$

@@ -1,5 +1,17 @@
 #include "host_operations_fermionmatrix.h"
 
+hmc_error QplusQminus(inputparameters * parameters, hmc_spinor_field * in, hmc_gaugefield * field, hmc_spinor_field * out){
+	//CP: this step can be saved once it is ensured mubar is calculated before function call
+	(*parameters).calc_mubar();
+	//for this to work, mubar has to be used in M_diag_local!!!!!!!
+	(*parameters).set_mubar_negative();
+	M(parameters, in, field, out);
+	gamma_5_psi(out);
+	(*parameters).set_mubar_negative();
+	M(parameters, out, field, out);
+	return HMC_SUCCESS;
+}
+
 hmc_error M(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out){
 	M_diag(parameters, in, out);    
 	hmc_spinor_field tmp[SPINORFIELDSIZE];

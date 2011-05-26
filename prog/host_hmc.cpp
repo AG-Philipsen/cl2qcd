@@ -37,8 +37,7 @@ hmc_error md_update_gaugefield(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gau
 hmc_error md_update_spinorfield(hmc_spinor_field * in, hmc_spinor_field * out, hmc_gaugefield * field, inputparameters * parameters){
 	//TODO check again if it is M or Mdagger here
 	M(parameters, in, field, out);
-//TODO
-// 	gamma_5_psi(out);
+	gamma_5_psi(out);
 	
 	return HMC_SUCCESS;
 }
@@ -158,22 +157,6 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
 }
 
 #ifdef _FERMIONS_
-
-
-
-
-//this calculates Q+Q- psi = gamma_5 M (kappa) gamma_5 M(-kappa) psi
-hmc_error QplusQminus(inputparameters * parameters, hmc_spinor_field * in, hmc_gaugefield * field, hmc_spinor_field * out){
-	//CP: this step can be saved once it is ensured mubar is calculated before function call
-	(*parameters).calc_mubar();
-	//for this to work, mubar has to be used in M_diag_local!!!!!!!
-	(*parameters).set_mubar_negative();
-	M(parameters, in, field, out);
-	gamma_5_psi(out);
-	(*parameters).set_mubar_negative();
-	M(parameters, out, field, out);
-	return HMC_SUCCESS;
-}
 
 //CP: fermion_force = (gamma_5 Y)^dagger iT_i
 //	it is assumed that the results can be added to out!!
