@@ -48,12 +48,12 @@ hmc_error solver_eoprec(inputparameters * parameters, hmc_spinor_field* in,  hmc
 hmc_error solver(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* b, hmc_gaugefield* gaugefield, int use_cg, hmc_spinor_field* out){
 	
 	convert_to_kappa_format(in, ( (*parameters).get_kappa() ));
-	
+	int err = 0;
 	if(use_cg)
-		cg(parameters, in, b, gaugefield);
+		err = cg(parameters, in, b, gaugefield);
 	else
-		bicgstab(parameters, in, b, gaugefield);
-	
+		err = bicgstab(parameters, in, b, gaugefield);
+	if(err != HMC_SUCCESS) return HMC_STDERR;
 	convert_from_kappa_format(in, out, ( (*parameters).get_kappa() ));
     
 	return HMC_SUCCESS;
@@ -267,6 +267,7 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
   hmc_complex minusone = hmc_complex_minusone;
 	
 	int iter;
+	int cter =0;
   //main loop
 	printf("\nthis is the cg-solver\n");
   for(iter = 0; iter < cgmax; iter ++){  
@@ -306,6 +307,9 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
 			copy_spinor(pnn, pn);
 			copy_spinor(rnn, rn);
 			copy_spinor(xnn, inout);
+			
+			//debugging
+			cter++;
     }
   }
 	
@@ -315,9 +319,9 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
 	delete [] pnn;
 	delete [] rnn;
 	delete [] tmp;
-	
-	if(iter < cgmax) return HMC_SUCCESS;
-	else return HMC_STDERR;
+	printf("cter: %i \n\n", cter);
+	if(cter < cgmax) return HMC_SUCCESS;
+	if(cter == cgmax) return HMC_STDERR;
 }
 
 /** @todo CP: this cannot be used with Aee since it is not hermitian, instead one has to insert the eoprec-version of QplusQminus!!! */

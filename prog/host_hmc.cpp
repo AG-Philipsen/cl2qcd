@@ -35,10 +35,7 @@ hmc_error md_update_gaugefield(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gau
 #ifdef _FERMIONS_
 //phi = Q+ chi
 hmc_error md_update_spinorfield(hmc_spinor_field * in, hmc_spinor_field * out, hmc_gaugefield * field, inputparameters * parameters){
-	//TODO check again if it is M or Mdagger here
-	M(parameters, in, field, out);
-	gamma_5_psi(out);
-	
+	Qplus(parameters, in, field, out);
 	return HMC_SUCCESS;
 }
 #endif
@@ -261,9 +258,9 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 //CP: this essentially calculates a hmc_gauge_momentum vector
 //CP: if fermions are used, here is the point where the inversion has to be performed
 hmc_error force(inputparameters * parameters, hmc_gaugefield * field
-#ifdef _FERMIONS_
+	#ifdef _FERMIONS_
 	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv
-#endif
+	#endif
 	, hmc_gauge_momentum * out){
 	cout << "\t\tstart calculating the force..." << endl;
 	//CP: make sure that the output field is set to zero
@@ -291,6 +288,8 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 			create_point_source(parameters,k,0,0,b);
 			cout << "\t\t\tstart solver" << endl;
 			err = solver(parameters, phi, b, field, use_cg, phi_inv);
+			if (err != HMC_SUCCESS) cout << "\t\tsolver did not solve!!" << endl;
+			else cout << "\t\tsolver solved!" << endl;
 		}
 		else{
 			hmc_eoprec_spinor_field be[EOPREC_SPINORFIELDSIZE];
@@ -299,7 +298,7 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 			create_point_source_eoprec(parameters, k,0,0, field, be,bo);
 			solver_eoprec(parameters, phi, be, bo, field, use_cg, phi_inv);
 		}
-		if (err != HMC_SUCCESS) cout << "\t\tsolver did not solve!!" << endl;
+		
 		cout << "\t\t\tcalc X" << endl;
 		//X = Qminus Y = Qminus phi_inv 
 		Qminus(parameters, phi_inv, field, X);

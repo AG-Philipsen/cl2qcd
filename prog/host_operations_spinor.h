@@ -269,8 +269,14 @@ void dslash_2(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
 void dslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, hmc_su3matrix* u, hmc_su3matrix* udagger);//CP: checked explicitly
 
 /**
- * Applies /$f \gamma_5 f$/ to a spinor
- * 
+ * Applies /$f \gamma_5 f$/ to a spinor \n
+ * /$f \gamma_5: f$/ 
+ * \verbatim
+ |+1   0   0   0 | 
+ | 0  +1   0   0 | 
+ | 0   0  -1   0 | 
+ | 0   0   0  -1 |
+ \endverbatim
  * @param[in] inout spinor to be multiplied by the Dirac-Matrix
  */
 void gamma_5_spinor(hmc_full_spinor inout);

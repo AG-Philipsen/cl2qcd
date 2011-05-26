@@ -8,11 +8,22 @@ hmc_error QplusQminus(inputparameters * parameters, hmc_spinor_field * in, hmc_g
 	gamma_5_psi(out);
 	(*parameters).set_mubar_negative();
 	M(parameters, out, field, out);
+	gamma_5_psi(out);
+	
+	//reversed order:
+// 	(*parameters).calc_mubar();
+// 	M(parameters, in, field, out);
+// 	gamma_5_psi(out);
+// 	(*parameters).set_mubar_negative();
+// 	M(parameters, out, field, out);
+// 	(*parameters).set_mubar_negative();
+// 	gamma_5_psi(out);
+	
 	return HMC_SUCCESS;
 }
 
 hmc_error Qplus(inputparameters * parameters, hmc_spinor_field * in, hmc_gaugefield * field, hmc_spinor_field * out){
-//CP: this step can be saved once it is ensured mubar is calculated before function call
+	//CP: this step can be saved once it is ensured mubar is calculated before function call
 	(*parameters).calc_mubar();	
 	M(parameters, in, field, out);
 	gamma_5_psi(out);

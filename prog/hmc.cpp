@@ -88,6 +88,17 @@ cout << "initial values of observables:\n\t" ;
 // 
 // #ifdef _USEHMC_
 
+
+// cout << "testing new functions..." << endl;
+// 
+// 
+// hmc_spinor_field* tester = new hmc_spinor_field[SPINORFIELDSIZE];
+// err = generate_gaussian_spinorfield(tester);
+// gamma_5_psi(tester);
+// 
+// 
+// return 0;
+
 	//TODO CP: port to OpenCL *g*
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Hybrid Monte Carlo

@@ -34,6 +34,9 @@ int get_spacecoord(int nspace, int dir){
   return -99;
 }
 
+/** @todo CP: the general structure here should be overviewed. It would be good to have the spinors structured like
+ * (cv0, cv1, cv2, cv3) with cv being a colorvector and not like (dv0, dv1, dv2) with dv being a Diracvector!! 
+ * At least in the OpenCL-Code this should be done! */
 int spinor_color(int spinor_element){
   return (int)(spinor_element/NSPIN);
 }

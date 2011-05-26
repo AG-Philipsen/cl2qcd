@@ -1,7 +1,7 @@
 kappa=0.15
-mu=4.
+mu=0.
 cgmax=15
-cgmax=20
+cgmax=50
 beta=6.00
 #cgmax=3
 prec=64

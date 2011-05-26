@@ -370,10 +370,16 @@ void dslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
 	return;
 }
 
-
 void gamma_5_spinor(hmc_full_spinor inout){
-	su3_vector_times_minusone(&inout[2*NC]);
-	su3_vector_times_minusone(&inout[3*NC]);
+	for(int i = 0; i<NC; i++){
+		for(int j = 2; j<NDIM; j++){
+			inout[spinor_element(j, i)].re *= -1.;
+			inout[spinor_element(j, i)].im *= -1.;
+		}}
+	
+	/** @todo CP: this was originally intended to be used, but can only be applied in this way if the spinorstructure is changed!!*/
+// 	su3_vector_times_minusone(&(inout[2*NC]));
+// 	su3_vector_times_minusone(&(inout[3*NC]));
 }
 
 void su3_vector_times_minusone(hmc_su3vector inout){
