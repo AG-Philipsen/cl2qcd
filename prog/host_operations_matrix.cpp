@@ -1,6 +1,6 @@
 #include "host_operations_matrix.h"
 
-hmc_error multiply_3x3matrix (hmc_3x3matrix *out, hmc_3x3matrix *p, hmc_3x3matrix *q)
+hmc_error multiply_3x3matrix (hmc_3x3matrix *out, const hmc_3x3matrix *p, const hmc_3x3matrix *q)
 {
 	for(int i=0; i<3; i++) {
 		for(int k=0; k<3; k++) {
@@ -12,6 +12,7 @@ hmc_error multiply_3x3matrix (hmc_3x3matrix *out, hmc_3x3matrix *p, hmc_3x3matri
 			}
 		}
 	}
+	
 	return HMC_SUCCESS;
 }
 

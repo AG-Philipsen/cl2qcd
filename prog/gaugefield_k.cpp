@@ -220,11 +220,12 @@ hmc_error Gaugefield_k::kappa_clover (){
       hmc_3x3matrix Q_11;
       local_Q_plaquette( &Q_11, get_gf(), n, t, 1, 1);
 
+
       int point = n + VOLSPACE * t;
       
       hmc_3x3matrix tmp;
       hmc_complex tmp_cmp;
-	      
+
       //T_12
       //alpha=0
       subtract_3x3matrix (&tmp, &Q_20, &Q_02);
@@ -246,7 +247,7 @@ hmc_error Gaugefield_k::kappa_clover (){
       multiply_3x3matrix (&tmp, &Q_13, &tmp);
       trace_3x3matrix (&tmp_cmp, &tmp);
       t_12 [point] += tmp_cmp.re;
-
+      
       //T_13
       //alpha=0
       subtract_3x3matrix (&tmp, &Q_30, &Q_03);
@@ -290,9 +291,10 @@ hmc_error Gaugefield_k::kappa_clover (){
 // 	      multiply_3x3matrix (&tmp, &Q_23, &tmp);
 // 	      trace_3x3matrix (&tmp_cmp, &tmp);
 // 	      t_23 [point] += tmp_cmp.re;
+
       }
     }
-    
+   
     //Momentum
     const hmc_float deltak = 2.0*PI / hmc_float (NSPACE);
     hmc_float result = 0.0;
@@ -325,7 +327,7 @@ hmc_error Gaugefield_k::kappa_clover (){
 		    int point_y = n_y + VOLSPACE*y_t;
 
 		    //(T_12(x) T_12(y) + T_21(x) T_21(y) + T_13(x) T_13(y)) * factor
-		    result += factor* ( t_12[point_x]*t_12[point_y]
+		    result += factor * ( t_12[point_x]*t_12[point_y]
 				      + t_13[point_x]*t_13[point_y]
 				      + t_23[point_x]*t_23[point_y]);
   }}}}}}}}

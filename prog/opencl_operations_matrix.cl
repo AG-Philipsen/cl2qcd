@@ -23,6 +23,24 @@ hmc_complex reconstruct_su3(__private hmc_ocl_su3matrix *in, int ncomp)
 
 void multiply_3x3matrix (__private hmc_ocl_3x3matrix *out, __private const hmc_ocl_3x3matrix *p,__private const hmc_ocl_3x3matrix *q)
 {
+	
+	for(int i=0; i<3; i++) {
+		for(int k=0; k<3; k++) {
+			out[ocl_3x3matrix_element(i,k)].re=0.;
+			out[ocl_3x3matrix_element(i,k)].im=0.;
+			for(int j=0; j<3; j++) {
+				hmc_complex tmp = complexmult(p[ocl_3x3matrix_element(i,j)], q[ocl_3x3matrix_element(j,k)]);
+
+				out[ocl_3x3matrix_element(i,k)].re += tmp.re;
+				out[ocl_3x3matrix_element(i,k)].im += tmp.im;
+
+				
+			}
+		}
+	}
+  
+/*
+	//Does give the right results. No idea why...
 	out[0].re = p[0].re*q[0].re + p[3].re*q[1].re + p[6].re*q[2].re -
 	            (p[0].im*q[0].im + p[3].im*q[1].im + p[6].im*q[2].im );
 	out[3].re = p[0].re*q[3].re + p[3].re*q[4].re + p[6].re*q[5].re-
@@ -60,6 +78,8 @@ void multiply_3x3matrix (__private hmc_ocl_3x3matrix *out, __private const hmc_o
 	            p[2].im*q[3].re + p[5].im*q[4].re + p[8].im*q[5].re;
 	out[8].im = p[2].re*q[6].im + p[5].re*q[7].im + p[8].re*q[8].im +
 	            p[2].im*q[6].re + p[5].im*q[7].re + p[8].im*q[8].re;
+*/
+
 }
 
 
@@ -129,13 +149,12 @@ hmc_complex trace_3x3matrix (__private const hmc_ocl_3x3matrix *q){
  
   out.re = q[0].re;
   out.im = q[0].im;
-  for (int i=1; i< 3; i++){
-    out.re += q[i].re;
-    out.im += q[i].im;
-  }
+  out.re += q[4].re;
+  out.im += q[4].im;
+  out.re += q[8].re;
+  out.im += q[8].im;
   
   return out;
-
 }
 
 

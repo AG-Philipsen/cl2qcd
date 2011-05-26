@@ -29,7 +29,7 @@ hmc_complex complexconj(hmc_complex *in);
  * \param b A complex number
  * \return The result of multiplying a and b
  */
-hmc_complex complexmult(hmc_complex *a, hmc_complex *b); 
+hmc_complex complexmult(const hmc_complex *a, const hmc_complex *b); 
 /**
  * Add two complex numbers
  *

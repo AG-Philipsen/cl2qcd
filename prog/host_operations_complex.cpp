@@ -7,7 +7,7 @@ hmc_complex complexconj(hmc_complex *in){
   return z;
 }
 
-hmc_complex complexmult(hmc_complex *a, hmc_complex *b){
+hmc_complex complexmult(const hmc_complex *a, const hmc_complex *b){
   hmc_complex res;
   res.re = (*a).re*(*b).re - (*a).im*(*b).im;
   res.im = (*a).im*(*b).re + (*a).re*(*b).im;

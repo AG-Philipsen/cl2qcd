@@ -128,12 +128,12 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
       hmc_ocl_3x3matrix Q_11[9];
       local_Q_plaquette( Q_11, gaugefield, n, t, 1, 1);
 
-
       int point = n + VOLSPACE * t;
       
       hmc_ocl_3x3matrix tmp [9];
       hmc_complex tmp_cmp;
-	      
+
+
       //T_12
       //alpha=0
       subtract_3x3matrix (tmp, Q_20, Q_02);
@@ -189,13 +189,11 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
       multiply_3x3matrix (tmp, Q_21, tmp);
       tmp_cmp = trace_3x3matrix(tmp);
       t_23 [point] += tmp_cmp.re;
-
       //alpha=2
       subtract_3x3matrix (tmp, Q_32, Q_23);
       multiply_3x3matrix (tmp, Q_22, tmp);
       tmp_cmp = trace_3x3matrix(tmp);
       t_23 [point] += tmp_cmp.re;
-      
       //alpha=3, vanishes
 // 	      subtract_3x3matrix (tmp, Q_33, Q_33);
 // 	      multiply_3x3matrix (tmp, Q_23, tmp);
@@ -237,9 +235,9 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
 		    int point_y = n_y + VOLSPACE*y_t;
 
 		    //(T_12(x) T_12(y) + T_21(x) T_21(y) + T_13(x) T_13(y)) * factor
-		    result += factor* ( t_12[point_x]*t_12[point_y]
- 				      + t_13[point_x]*t_13[point_y]
- 				      + t_23[point_x]*t_23[point_y]);
+		    result += factor  * ( t_12[point_x]*t_12[point_y]
+  				      + t_13[point_x]*t_13[point_y]
+  				      + t_23[point_x]*t_23[point_y]);
   }}}}}}}}
   
   //Normalization

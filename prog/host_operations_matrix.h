@@ -15,7 +15,7 @@
  * @param[in] q Right matrix for the multiplication
  * @return Error code as defined in hmcerrs.h
  */
-hmc_error multiply_3x3matrix (hmc_3x3matrix *out, hmc_3x3matrix *p, hmc_3x3matrix *q);
+hmc_error multiply_3x3matrix (hmc_3x3matrix *out, const hmc_3x3matrix *p, const hmc_3x3matrix *q);
 /**
  * Adds two 3x3 matrices
  * @param[out] out The matrix into which to store the sum result

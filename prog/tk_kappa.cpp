@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 	err = gaugefield.kappa_clover_gpu (&timer_clover);
 	
 	//CPU
-// 	gaugefield.sync_gaugefield(&copytime);
+	gaugefield.sync_gaugefield(&copytime);
 //  	err = gaugefield.kappa_karsch ();
 //  	err = gaugefield.kappa_clover ();
 
@@ -111,8 +111,9 @@ int main(int argc, char* argv[])
 
 	kappa_karsch_out << gaugefield.get_kappa_karsch() <<endl;
 	kappa_clover_out << gaugefield.get_kappa_clover() <<endl;
-	}
 	
+	}
+		
 	cout.precision(4);
 	cout <<"Measurement TK kappa_karsch: " << timer_karsch.getTime()/1000000. << " s"<< endl;
 	cout <<"Measurement TK kappa_clover: " << timer_clover.getTime()/1000000.  << " s" <<endl;
