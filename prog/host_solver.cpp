@@ -246,7 +246,7 @@ hmc_error bicgstab_eoprec(inputparameters * parameters, hmc_eoprec_spinor_field*
   return HMC_SUCCESS;
 }
 
-//CP: this is only useful if M is hermitian
+//CP: this is defined directly with QplusQminus
 hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugefield* gaugefield){
  
 	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
@@ -272,13 +272,13 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
   for(iter = 0; iter < cgmax; iter ++){  
     if(iter%iter_refresh==0){
 			//fresh start
-			M(parameters, inout,gaugefield,rn);
+			QplusQminus(parameters, inout,gaugefield,rn);
 			saxpy(rn, source, &one, rn);
 			copy_spinor(rn, pn);
 			printf("true residue squared: %e\n",global_squarenorm(rn));
 		}
 		
-		M(parameters, pn,gaugefield,tmp);
+		QplusQminus(parameters, pn,gaugefield,tmp);
 		tmp1 = scalar_product(rn, pn);
 		tmp2 = scalar_product(pn, tmp);
 		alpha = complexdivide(&tmp1, &tmp2);
@@ -317,6 +317,7 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
 	return HMC_SUCCESS;
 }
 
+/** @todo CP: this cannot be used with Aee since it is not hermitian, instead one has to insert the eoprec-version of QplusQminus!!! */
 hmc_error cg_eoprec(inputparameters * parameters, hmc_eoprec_spinor_field* inout, hmc_eoprec_spinor_field* source, hmc_gaugefield* gaugefield){
  
 	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;

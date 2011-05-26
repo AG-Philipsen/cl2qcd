@@ -3,7 +3,6 @@
 hmc_error QplusQminus(inputparameters * parameters, hmc_spinor_field * in, hmc_gaugefield * field, hmc_spinor_field * out){
 	//CP: this step can be saved once it is ensured mubar is calculated before function call
 	(*parameters).calc_mubar();
-	//for this to work, mubar has to be used in M_diag_local!!!!!!!
 	(*parameters).set_mubar_negative();
 	M(parameters, in, field, out);
 	gamma_5_psi(out);
@@ -11,6 +10,26 @@ hmc_error QplusQminus(inputparameters * parameters, hmc_spinor_field * in, hmc_g
 	M(parameters, out, field, out);
 	return HMC_SUCCESS;
 }
+
+hmc_error Qplus(inputparameters * parameters, hmc_spinor_field * in, hmc_gaugefield * field, hmc_spinor_field * out){
+//CP: this step can be saved once it is ensured mubar is calculated before function call
+	(*parameters).calc_mubar();	
+	M(parameters, in, field, out);
+	gamma_5_psi(out);
+	return HMC_SUCCESS;
+}
+
+hmc_error Qminus(inputparameters * parameters, hmc_spinor_field * in, hmc_gaugefield * field, hmc_spinor_field * out){
+//CP: this step can be saved once it is ensured mubar is calculated before function call
+	(*parameters).calc_mubar();	
+	(*parameters).set_mubar_negative();
+	M(parameters, in, field, out);
+	//CP: restore old mubar again
+	(*parameters).set_mubar_negative();
+	gamma_5_psi(out);
+	return HMC_SUCCESS;
+}
+
 
 hmc_error M(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out){
 	M_diag(parameters, in, out);    

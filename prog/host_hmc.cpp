@@ -64,11 +64,10 @@ hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta){
 	//CP: alternative method: use already existing plaquette-functions
 	hmc_float t_plaq;
 	hmc_float s_plaq;
-	hmc_float plaq2;
-	plaq2 = plaquette(field, &t_plaq, &s_plaq);
+	plaq = plaquette(field, &t_plaq, &s_plaq);
 	//plaq is normalized by factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC), so one has to divide by it again
 	hmc_float factor = 2.0/static_cast<hmc_float>(VOL4D*NDIM*(NDIM-1)*NC);
-	return beta/6./factor*( - plaq2);
+	return beta/6./factor*( - plaq);
 	
 }
 
@@ -106,7 +105,7 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
 	hmc_float beta = (*parameters).get_beta();
 	int globalpos;
 	hmc_3x3matrix V;
-	hmc_3x3matrix tmp, tmp2;
+	hmc_3x3matrix tmp;
 	hmc_su3matrix U;
 	
 	//Gauge force is factor*Im(i Tr(T_i U V))
@@ -129,6 +128,7 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
 				//iterate through the different directions for i of which there are NC*NC-1 = 8
 	 			//in the function the gen_index runs from 1 to 8 (including 8) !! -> i +1 
 	 			//out is a vector of length NDIM*VOL4D*(NC*NC-1) = NDIM*VOL4D*8
+// 				hmc_3x3matrix tmp2;
 // 				for(int i = 0; i<8; i++){
 // 					multiply_generator_3x3matrix (&tmp2, i+1, &tmp);
 // 					trace_3x3matrix (&trace, &tmp2);
@@ -165,7 +165,7 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
   hmc_su3matrix U_up, U_down;
 	hmc_3x3matrix v1, v2;
   hmc_su3vector psia,psib,phia,phib;
-	hmc_full_spinor y, plus, minus;
+	hmc_full_spinor y, plus;
 	int nup, ndown;
 	hmc_algebraelement out_tmp;
 	int global_link_pos;
@@ -176,11 +176,15 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 	for(int t = 0; t<NTIME; t++){
 		for(int n = 0; n<VOLSPACE; n++){
 			get_spinor_from_field(Y, y, n, t);
-			//Calculate gamma_5 y
+			///////////////////////////////////
+			// Calculate gamma_5 y
+			///////////////////////////////////
 			gamma_5_spinor(y);
 
 			//go through the different directions
-			//mu = +0
+			///////////////////////////////////
+			// mu = +0
+			///////////////////////////////////
 			nup = (t+1)%NTIME;
 			global_link_pos = get_global_link_pos(0, n, t);
 			get_spinor_from_field(X, plus, n, nup);
@@ -213,7 +217,9 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
   					out[global_link_pos*8 + i] += factor*out_tmp[i];
 			}
 
+			///////////////////////////////////
 			//mu = -0
+			///////////////////////////////////
 			ndown = (t+NTIME-1)%NTIME;
 			global_link_pos_down = get_global_link_pos(0, n, ndown);
 			get_spinor_from_field(X, plus, n, ndown);
@@ -266,14 +272,13 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 #ifdef _FERMIONS_
 	//the algorithm needs to spinor-fields
 	hmc_spinor_field* X = new hmc_spinor_field[SPINORFIELDSIZE];
-	hmc_spinor_field* Y = new hmc_spinor_field[SPINORFIELDSIZE];
 	//CP: to begin with, consider only the cg-solver
 	//source is at 0
 	int k = 0;
 	int use_cg = TRUE;
 	if(use_cg){
-		//the inversion calculates Y
 		if(!use_eo){
+			//the inversion calculates Y = (QplusQminus)^-1 phi = phi_inv
 			hmc_spinor_field b[SPINORFIELDSIZE];
 			create_point_source(parameters,k,0,0,b);
 			solver(parameters, phi, b, field, use_cg, phi_inv);
@@ -285,18 +290,17 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 			create_point_source_eoprec(parameters, k,0,0, field, be,bo);
 			solver_eoprec(parameters, phi, be, bo, field, use_cg, phi_inv);
 		}
-		//X = Q Y
-		//TODO
-		M(parameters, Y, field, X);
+		//X = Qminus Y = Qminus phi_inv 
+		Qminus(parameters, phi_inv, field, X);
 	}
 	else{
-		
+		//here, one has first to invert (with BiCGStab) Qplus phi = X and then invert Qminus X => Qminus^-1 Qplus^-1 phi = (QplusQminus)^-1 phi = Y = phi_inv
 	}
 
-	fermion_force(parameters, field, X, Y, out);
+/** @todo control the fields here again!!! */
+	fermion_force(parameters, field, phi_inv, X, out);
 	
 	delete [] X;
-	delete [] Y;
 #endif
 	return HMC_SUCCESS;
 }
@@ -367,6 +371,9 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
 	
 	hmc_gauge_momentum* force_tmp = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
 
+	//copy input gaugefield and input gaugemomentum
+	copy_gaugemomenta(p_in, p_out);
+	copy_gaugefield(u_in, u_out);
 	//initial step
 	cout << "\tinitial step:" << endl;
 	force(parameters, u_out ,
