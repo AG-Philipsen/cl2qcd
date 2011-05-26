@@ -52,15 +52,36 @@ hmc_error Opencl_fermions::fill_kernels(){
 	return HMC_SUCCESS;  
 }
 
-hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer * timer){
+hmc_error Opencl_fermions::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters){
+  hmc_error err = Opencl::init(wanted_device_type, timer, parameters);
+  err |= init_fermion_variables(parameters,timer);
+  return err;
+}
+
+hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, usetimer * timer){
+
+
+	// decide on work-sizes
+#ifdef _USE_GPU_
+	const size_t local_work_size = NUM_THREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
+#else
+	const size_t local_work_size = 1; // nothing else makes sens on CPU
+#endif
+
+#ifdef _USE_GPU_
+	size_t global_work_size = 4 * NUM_THREADS * max_compute_units; /// @todo autotune
+#else
+	size_t global_work_size = max_compute_units;
+#endif
+
+	const cl_uint num_groups = (global_work_size + local_work_size - 1) / local_work_size;
+	global_work_size = local_work_size * num_groups;
 	
 	(*timer).reset();
 		
 	cout << "init solver variables..." << endl;
 	int clerr = CL_SUCCESS; 
-	int num_groups;
-	if(local_work_size <= global_work_size) num_groups = global_work_size/local_work_size;
-	else num_groups = 1;
+
 	int spinorfield_size = sizeof(hmc_complex)*SPINORFIELDSIZE;
 	int eoprec_spinorfield_size = sizeof(hmc_complex)*EOPREC_SPINORFIELDSIZE;
 	int complex_size = sizeof(hmc_complex);
@@ -363,9 +384,9 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, c
 		cout<<"...creating global_squarenorm_reduction kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
 	}
-	ratio = clCreateKernel(clprogram,"ratio",&clerr);
+      	ratio = clCreateKernel(clprogram,"ratio",&clerr);
 	if(clerr!=CL_SUCCESS) {
-		cout<<"...creating ratio kernel failed, aborting."<<endl;
+	  cout<<"...creating ratio kernel failed, aborting. "<<clerr<<endl;
 		exit(HMC_OCLERROR);
 	}
 	product = clCreateKernel(clprogram,"product",&clerr);

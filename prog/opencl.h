@@ -18,14 +18,10 @@
 #include "host_geometry.h"
 #include "host_operations_complex.h"
 #include "host_operations_gaugefield.h"
-#include "host_operations_spinor.h"
-#include "host_operations_spinorfield.h"
-#include "host_operations_fermionmatrix.h"
 #include "globaldefs.h"
 #include "hmcerrs.h"
 #include "types.h"
 #include "host_use_timer.h"
-#include "host_testing.h"
 #include "host_random.h"
 #include "inputparameters.h"
 
@@ -49,7 +45,7 @@ public:
 	 * @todo Should probably throw an exception on error
 	 */
 	Opencl(cl_device_type wanted, usetimer* timer, inputparameters* params) {
-		init(wanted, timer, params);
+		this->init(wanted, timer, params);
 	};
 	/**
 	 * Empty constructor. Needed for gaugefield class.
@@ -70,7 +66,7 @@ public:
 	 *         @li HMC_FILEERROR if one of the kernel files cannot be opened
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters);
+	virtual hmc_error init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters);
 
 	/////////////////////////////7
 	// communication
@@ -285,6 +281,10 @@ public:
 	 * @param kernel The kernel of which to query the information.
 	 */
 	void printResourceRequirements(const cl_kernel kernel);
+
+ private:
+	hmc_error init_basic(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters);
+
 };
 
 #endif /* _MYOPENCLH_ */

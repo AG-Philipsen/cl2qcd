@@ -4,6 +4,9 @@
 #ifndef _MYOPENCLFERMIONSH_
 #define _MYOPENCLFERMIONSH_
 
+#include "host_operations_spinor.h"
+#include "host_operations_spinorfield.h"
+#include "host_operations_fermionmatrix.h"
 #include "opencl.h"
 
 /**
@@ -35,7 +38,20 @@ class Opencl_fermions : public Opencl {
 	virtual hmc_error fill_kernels();
 
 
-	hmc_error init_fermion_variables(inputparameters* parameters, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+	/**
+	 * Initialize the OpenCL device including fermion capabilities
+	 *
+	 * @param wanted The OpenCL device type to be used, e.g. CL_DEVICE_TYPE_CPU or CL_DEVICE_TYPE_GPU
+	 * @param timer The timer to use for reporting execution time
+	 * @param parameters The parsed input parameters
+	 * @return Error code as defined in hmcerrs.h:
+	 *         @li HMC_OCLERROR if OpenCL initialization / operations fail
+	 *         @li HMC_FILEERROR if one of the kernel files cannot be opened
+	 *         @li HMC_SUCCESS otherwise
+	 */
+	virtual hmc_error init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters);
+
+	hmc_error init_fermion_variables(inputparameters* parameters, usetimer* timer);
 	/*
 	hmc_error copy_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
 	hmc_error copy_eoprec_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);

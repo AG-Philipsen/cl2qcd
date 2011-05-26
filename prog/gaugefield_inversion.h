@@ -19,17 +19,17 @@ class Gaugefield_inversion : public Gaugefield {
    */
   virtual hmc_error init_devices(cl_device_type* devicetypes, usetimer* timer);
 
-	/**
-	 * Free device, called by finalize
-	 */
-	virtual hmc_error free_devices();
-
-	/**
-	 * Returns private member opencl_k * devices
-	 * @return devices of type opencl_k
-	 * @todo LZ: CHECK IF THIS MAKES SENSE AT ALL!!!!
-	 */
- 	Opencl_fermions * get_devices_fermions ();
+  /**
+   * Free device, called by finalize
+   */
+  virtual hmc_error free_devices();
+  
+  /**
+   * Returns private member opencl_k * devices
+   * @return devices of type opencl_k
+   * @todo LZ: CHECK IF THIS MAKES SENSE AT ALL!!!!
+   */
+  Opencl_fermions * get_devices_fermions ();
 
  private:
 };

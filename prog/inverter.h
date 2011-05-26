@@ -45,6 +45,8 @@ usetimer updatetime;
 usetimer overrelaxtime;
 usetimer copytime;
 
+usetimer ferm_inittime;
+
 //to save gaugeobservables
 hmc_float plaq, splaq, tplaq;
 hmc_complex pol;

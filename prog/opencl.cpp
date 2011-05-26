@@ -176,7 +176,12 @@ hmc_error Opencl::fill_kernels()
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* params)
+hmc_error Opencl::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* params){
+  hmc_error err = init_basic(wanted_device_type,timer,params);
+  return err;
+}
+
+hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer, inputparameters* params)
 {
 	//variables, initializing, ...
 	set_parameters(params);

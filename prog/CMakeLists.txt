@@ -85,7 +85,7 @@ option( USE_GPU "Use GPU" OFF )
 if( USE_GPU )
 	add_definitions( -D_USEGPU_ )
 endif( USE_GPU )
-## We do not want to use BENCHMARKS anymoe
+## We do not want to use BENCHMARKS anymore
 #option( PERFORM_BENCHMARKS "Perform Benchmarks" OFF )
 #if( PERFORM_BENCHMARKS )
 #	add_definitions( -D_PERFORM_BENCHMARKS_ )
