@@ -246,7 +246,7 @@ hmc_error bicgstab_eoprec(inputparameters * parameters, hmc_eoprec_spinor_field*
   return HMC_SUCCESS;
 }
 
-//CP: this is directly defined with MdaggerM, since M is not hermitian for Wilson fermions
+//CP: this is only useful if M is hermitian
 hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugefield* gaugefield){
  
 	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
@@ -272,13 +272,13 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
   for(iter = 0; iter < cgmax; iter ++){  
     if(iter%iter_refresh==0){
 			//fresh start
-			MdaggerM(parameters, inout,gaugefield,rn);
+			M(parameters, inout,gaugefield,rn);
 			saxpy(rn, source, &one, rn);
 			copy_spinor(rn, pn);
 			printf("true residue squared: %e\n",global_squarenorm(rn));
 		}
 		
-		MdaggerM(parameters, pn,gaugefield,tmp);
+		M(parameters, pn,gaugefield,tmp);
 		tmp1 = scalar_product(rn, pn);
 		tmp2 = scalar_product(pn, tmp);
 		alpha = complexdivide(&tmp1, &tmp2);

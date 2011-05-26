@@ -20,7 +20,7 @@
 //normal matrix
 
 /**
- * Calculates $f/ M \psi = \left( M_{diag} + \notD\right ) \psi /f$
+ * Calculates $f/ M \psi = \left( M_{diag} - \kappa\notD\right ) \psi /f$
  * @param[in] parameters includes parameters needed for evaluation of M
  * @param[in] in spinorfield that M acts on
  * @param[in] gaugefield input gaugefield
@@ -28,16 +28,6 @@
  * @remark tested by CP
  */
 hmc_error M(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out);
-
-/**
- * Calculates $f/ M^{\dagger} \psi = \left( M_{diag}^{\dagger} + \notD^{\dagger} \right ) \psi /f$
- * @param[in] parameters includes parameters needed for evaluation of $f/ M^{\dagger} /f$
- * @param[in] in spinorfield that the matrix acts on
- * @param[in] gaugefield input gaugefield
- * @param[out] out output spinorfield
- * @remark tested by CP
- */
-hmc_error Mdagger(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out);
 
 /**
  * Calculates $f/ \notD \psi /f$
@@ -50,16 +40,6 @@ hmc_error Mdagger(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugef
 hmc_error dslash(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out);
 
 /**
- * Calculates $f/ \notD\dagger} \psi /f$
- * @param[in] parameters includes parameters needed
- * @param[in] in spinorfield that the matrix acts on
- * @param[in] gaugefield input gaugefield
- * @param[out] out output spinorfield
- * @remark tested by CP
- */
-hmc_error ddaggerslash(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out);
-
-/**
  * Calculates $f/M_{diag}  \psi /f$
  * @param[in] parameters includes parameters needed
  * @param[in] in spinorfield that the matrix acts on
@@ -67,42 +47,6 @@ hmc_error ddaggerslash(inputparameters * parameters, hmc_spinor_field* in, hmc_g
  * @remark tested by CP
  */
 hmc_error M_diag(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* out);//CP: checked
-
-/**
- * Calculates $f/M_{diag}^{\dagger}  \psi /f$
- * @param[in] parameters includes parameters needed
- * @param[in] in spinorfield that the matrix acts on
- * @param[out] out output spinorfield
- */
-hmc_error Mdagger_diag(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* out);//CP: not checked
-
-/**
- * Calculates $f/ M^{\dagger} \psi = \left( M_{diag} + \notD\right ) \left( M_{diag} + \notD\right )^{\dagger}\psi /f$
- * @param[in] parameters includes parameters needed
- * @param[in] in spinorfield that the matrix acts on
- * @param[in] gaugefield input gaugefield
- * @param[out] out output spinorfield
- * @remark tested by CP
- */
-hmc_error MdaggerM(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out);
-
-/**
- * Calculates $f/ \left( M_{diag}\right ) \left( M_{diag}  )^{\dagger}\psi /f$
- * @param[in] parameters includes parameters needed
- * @param[in] in spinorfield that the matrix acts on
- * @param[out] out output spinorfield
- */
-hmc_error MdaggerM_diag(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* out); //CP: not checked
-
-/**
- * Calculates $f/  \left( \notD\right ) \left( \notD\right )^{\dagger}\psi /f$
- * @param[in] parameters includes parameters needed
- * @param[in] in spinorfield that the matrix acts on
- * @param[in] gaugefield input gaugefield
- * @param[out] out output spinorfield
- */
-hmc_error ddaggerd(inputparameters * parameter, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out); //CP: not checked
-
 
 /**
  * Calculates $f/ \notD \psi /f$ in the eoprec-version
@@ -193,6 +137,74 @@ void dslash_temporal_eoprec (hmc_spinor * spinout, int pos, int t, hmc_eoprec_sp
  */
 void dslash_spatial_eoprec (hmc_spinor * spinout, int * coord, int dir, int pos, int t, hmc_eoprec_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im);//CP: checked
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// deprecated functions
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//CP: this was usefull because M_daggerM can also be calculated by successivly using M and gamma_5
+
+/**
+ * Calculates $f/ M^{\dagger} \psi = \left( M_{diag}^{\dagger} + \notD^{\dagger} \right ) \psi /f$
+ * @param[in] parameters includes parameters needed for evaluation of $f/ M^{\dagger} /f$
+ * @param[in] in spinorfield that the matrix acts on
+ * @param[in] gaugefield input gaugefield
+ * @param[out] out output spinorfield
+ * @remark tested by CP
+ * @remark deprecated by CP
+ */
+// hmc_error Mdagger(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out);
+
+/**
+ * Calculates $f/ \notD\dagger} \psi /f$
+ * @param[in] parameters includes parameters needed
+ * @param[in] in spinorfield that the matrix acts on
+ * @param[in] gaugefield input gaugefield
+ * @param[out] out output spinorfield
+ * @remark tested by CP
+ * @remark deprecated by CP
+ */
+// hmc_error ddaggerslash(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out);
+
+/**
+ * Calculates $f/M_{diag}^{\dagger}  \psi /f$
+ * @param[in] parameters includes parameters needed
+ * @param[in] in spinorfield that the matrix acts on
+ * @param[out] out output spinorfield
+ * @remark deprecated by CP
+ */
+// hmc_error Mdagger_diag(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* out);//CP: not checked
+
+/**
+ * Calculates $f/ M^{\dagger} \psi = \left( M_{diag} + \notD\right ) \left( M_{diag} + \notD\right )^{\dagger}\psi /f$
+ * @param[in] parameters includes parameters needed
+ * @param[in] in spinorfield that the matrix acts on
+ * @param[in] gaugefield input gaugefield
+ * @param[out] out output spinorfield
+ * @remark tested by CP
+ * @remark deprecated by CP
+ */
+// hmc_error MdaggerM(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out);
+
+/**
+ * Calculates $f/ \left( M_{diag}\right ) \left( M_{diag}  )^{\dagger}\psi /f$
+ * @param[in] parameters includes parameters needed
+ * @param[in] in spinorfield that the matrix acts on
+ * @param[out] out output spinorfield
+ * @remark deprecated by CP
+ */
+// hmc_error MdaggerM_diag(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* out); //CP: not checked
+
+/**
+ * Calculates $f/  \left( \notD\right ) \left( \notD\right )^{\dagger}\psi /f$
+ * @param[in] parameters includes parameters needed
+ * @param[in] in spinorfield that the matrix acts on
+ * @param[in] gaugefield input gaugefield
+ * @param[out] out output spinorfield
+ * @remark deprecated by CP
+ */
+// hmc_error ddaggerd(inputparameters * parameter, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out); //CP: not checked
+
+
 /**
  * Calculates $/f \not D^{\dagger} \psi(specific site) = ... /f$ in temporal direction ($f/ \mu = 0 /f$)
  * @param[in] parameters includes parameters needed
@@ -202,8 +214,9 @@ void dslash_spatial_eoprec (hmc_spinor * spinout, int * coord, int dir, int pos,
  * @param[in] gaugefield input gaugefield providing the links between sites
  * @param[out] spinout output spinor
  * @remark tested by CP
+ * @remark deprecated by CP
  */
-void ddaggerslash_temporal (hmc_spinor * spinout, int pos, int t, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im);//CP: checked
+// void ddaggerslash_temporal (hmc_spinor * spinout, int pos, int t, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im);//CP: checked
 
 /**
  * Calculates $/f \not D^{\dagger} \psi(specific site) = ... /f$ in spatial direction ($f/ \mu = 1,2,3 /f$)
@@ -214,8 +227,9 @@ void ddaggerslash_temporal (hmc_spinor * spinout, int pos, int t, hmc_spinor_fie
  * @param[in] gaugefield input gaugefield providing the links between sites
  * @param[out] spinout output spinor
  * @remark tested by CP
+ * @remark deprecated by CP
  */
-void ddaggerslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos, int t, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im);//CP: checked
+// void ddaggerslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos, int t, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im);//CP: checked
 
 
 /**
@@ -226,7 +240,8 @@ void ddaggerslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos, 
  * @param[in] in inputspinorfield that include the spinors acting on the one at site (pos, t)
  * @param[in] gaugefield input gaugefield providing the links between sites
  * @param[out] spinout output spinor
+ * @remark deprecated by CP
  */
-void ddaggerd_calc (hmc_spinor * spinout, int pos, int t, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im);
+// void ddaggerd_calc (hmc_spinor * spinout, int pos, int t, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im);
 
 #endif /* _OPERATIONS_FERMIONMATRIXH_ */

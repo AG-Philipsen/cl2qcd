@@ -33,10 +33,12 @@ hmc_error md_update_gaugefield(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gau
 }
 
 #ifdef _FERMIONS_
-//phi = D chi
+//phi = Q+ chi
 hmc_error md_update_spinorfield(hmc_spinor_field * in, hmc_spinor_field * out, hmc_gaugefield * field, inputparameters * parameters){
 	//TODO check again if it is M or Mdagger here
-	Mdagger(parameters, in, field, out);
+	M(parameters, in, field, out);
+//TODO
+// 	gamma_5_psi(out);
 	
 	return HMC_SUCCESS;
 }
@@ -398,7 +400,8 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 			solver_eoprec(parameters, phi, be, bo, field, use_cg, phi_inv);
 		}
 		//X = Q Y
-		Mdagger(parameters, Y, field, X);
+		//TODO
+		M(parameters, Y, field, X);
 	}
 	else{
 		
