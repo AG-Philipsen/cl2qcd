@@ -6,6 +6,9 @@
 #define _GAUGEFIELDINVERSIONH_
 
 #include "gaugefield.h"
+#include "host_operations_spinor.h"
+#include "host_operations_spinorfield.h"
+#include "host_operations_fermionmatrix.h"
 #include "opencl_fermions.h"
 
 class Gaugefield_inversion : public Gaugefield {
@@ -20,6 +23,13 @@ class Gaugefield_inversion : public Gaugefield {
   virtual hmc_error init_devices(cl_device_type* devicetypes, usetimer* timer);
 
   /**
+   * Free gaugefield and device allocations.
+   */
+  virtual hmc_error finalize();
+
+  hmc_error perform_inversion_on_host(int use_eo);
+
+  /**
    * Free device, called by finalize
    */
   virtual hmc_error free_devices();
@@ -32,7 +42,9 @@ class Gaugefield_inversion : public Gaugefield {
   Opencl_fermions * get_devices_fermions ();
 
  private:
+
 };
+
 
 
 #endif //_GAUGEFIELDINVERSIONH_

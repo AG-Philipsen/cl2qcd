@@ -58,7 +58,7 @@ public:
 	/**
 	 * Free gaugefield and device allocations.
 	 */
-	hmc_error finalize();
+	virtual hmc_error finalize();
 	/**
 	 * Free device, called by finalize
 	 */

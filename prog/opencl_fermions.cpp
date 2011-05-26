@@ -484,7 +484,7 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
   return HMC_SUCCESS;
 }
 
-/*
+
 hmc_error Opencl_fermions::convert_to_kappa_format_device(cl_mem inout, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
 	(*timer).reset();
 	int clerr = CL_SUCCESS;
@@ -911,10 +911,10 @@ hmc_error Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, int eveno
     cout<<"clSetKernelArg 5 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-*/
 
 
-  /*commented before...
+
+  /* what's this?
   clerr = clSetKernelArg(dslash_eoprec,6,sizeof(cl_mem),&clmem_kappa);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 6 failed, aborting..."<<endl;
@@ -924,7 +924,7 @@ hmc_error Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, int eveno
   */
 
 
-/*
+
   clerr = clSetKernelArg(dslash_eoprec,6,sizeof(int),&eo);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 7 failed, aborting..."<<endl;
@@ -1421,7 +1421,7 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a
 	(*timer).add();
 	return HMC_SUCCESS;
 }
-*/
+
 hmc_error Opencl_fermions::set_zero_spinorfield_device(cl_mem x, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
 	(*timer).reset();
 	int clerr = CL_SUCCESS;
@@ -1461,7 +1461,7 @@ hmc_error Opencl_fermions::set_zero_spinorfield_eoprec_device(cl_mem x, const si
 	(*timer).add();
 	return HMC_SUCCESS;
 }
-/*
+
 hmc_error Opencl_fermions::copy_complex_device(cl_mem in, cl_mem out, usetimer* timer){
 	(*timer).reset();
 	int clerr = CL_SUCCESS;
@@ -1867,8 +1867,8 @@ hmc_error Opencl_fermions::create_point_source_eoprec_device(int i, int spacepos
 
 	return HMC_SUCCESS;
 }
-*/
-/*	
+
+
 hmc_error Opencl_fermions::finalize_fermions(){
 	
   if(clFlush(queue)!=CL_SUCCESS) exit(HMC_OCLERROR);
@@ -1947,4 +1947,4 @@ hmc_error Opencl_fermions::finalize_fermions(){
   
 	return HMC_SUCCESS;
 }
-*/
+
