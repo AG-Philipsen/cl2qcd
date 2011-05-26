@@ -142,7 +142,7 @@ cout << "initial values of observables:\n\t" ;
 	
 		copy_gaugefield(gaugefield, new_field);
 		copy_gaugemomenta(p, new_p);
-		leapfrog(&parameters, gaugefield, p, 
+		leapfrog(&parameters, 
 									 #ifdef _FERMIONS_
 									 phi, phi_inv, 
 									 #endif

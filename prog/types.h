@@ -113,12 +113,12 @@ typedef hmc_complex hmc_eoprec_spinor_field;
 hmc_float CONST projectioneps = 10.e-12;
 int CONST iter_refresh = 10;
 hmc_float CONST epssquare=1e-14;
-int CONST use_eo = 1;
+int CONST use_eo = 0;
 #else
 hmc_float CONST projectioneps = 10.e-6;
 int CONST iter_refresh = 10;
 hmc_float CONST epssquare=1e-12;
-int CONST use_eo = 1;
+int CONST use_eo = 0;
 #endif
 
 #ifndef _INKERNEL_

@@ -17,7 +17,7 @@
 #ifndef _INKERNEL_
 
 /** Number of lattice sites in time direction (t) */
-#define NTIME 8
+#define NTIME 4
 /** Number of lattice sites in space direction (x,y,z each) */
 #define NSPACE 4
 

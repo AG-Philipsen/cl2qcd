@@ -74,15 +74,15 @@ hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta){
 #ifdef _FERMIONS_
 // sum_links phi*_i (M^+M)_ij^-1 phi_j
 // here it is assumed that the rhs has already been computed... (because usually it has been during the leapfrog..)
-hmc_complex s_fermion(hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi){
-	return scalar_product(phi, MdaggerMphi);
+hmc_complex s_fermion(hmc_spinor_field * phi, hmc_spinor_field * QplusQminusphi){
+	return scalar_product(phi, QplusQminusphi);
 }
 #endif /* _FERMIONS_ */
 
 //S_gauge + S_fermion + S_gaugemomenta
 hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_momentum * p
 												#ifdef _FERMIONS_
-												, hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi
+												, hmc_spinor_field * phi, hmc_spinor_field * phi_inv
 												#endif
 												){
 	hmc_complex result;
@@ -90,7 +90,7 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
 	(result) = {0.,0.};
 	(result).re += s_gauge(field, beta);
 #ifdef _FERMIONS_
-	tmp  = s_fermion(phi, MdaggerMphi);
+	tmp  = s_fermion(phi, phi_inv);
 	complexaccumulate(&result, &tmp);
 #endif
 	//s_gm = 1/2*squarenorm(Pl)
@@ -265,23 +265,32 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv
 #endif
 	, hmc_gauge_momentum * out){
+	cout << "\t\tstart calculating the force..." << endl;
 	//CP: make sure that the output field is set to zero
 	set_zero_gaugemomenta(out);
 	//add contributions
+	cout << "\t\tcalc gauge_force..." << endl;
 	gauge_force(parameters, field, out);
 #ifdef _FERMIONS_
-	//the algorithm needs to spinor-fields
+	cout << "\t\tinvert fermion field..." << endl;
+	//the algorithm needs two spinor-fields
 	hmc_spinor_field* X = new hmc_spinor_field[SPINORFIELDSIZE];
 	//CP: to begin with, consider only the cg-solver
 	//source is at 0
 	int k = 0;
 	int use_cg = TRUE;
+	//CP: at the moment, use_eo = 0 so that even-odd is not used!!!!!
+	
+	//debugging
+	int err = 0;
+	
 	if(use_cg){
 		if(!use_eo){
 			//the inversion calculates Y = (QplusQminus)^-1 phi = phi_inv
 			hmc_spinor_field b[SPINORFIELDSIZE];
 			create_point_source(parameters,k,0,0,b);
-			solver(parameters, phi, b, field, use_cg, phi_inv);
+			cout << "\t\t\tstart solver" << endl;
+			err = solver(parameters, phi, b, field, use_cg, phi_inv);
 		}
 		else{
 			hmc_eoprec_spinor_field be[EOPREC_SPINORFIELDSIZE];
@@ -290,6 +299,8 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 			create_point_source_eoprec(parameters, k,0,0, field, be,bo);
 			solver_eoprec(parameters, phi, be, bo, field, use_cg, phi_inv);
 		}
+		if (err != HMC_SUCCESS) cout << "\t\tsolver did not solve!!" << endl;
+		cout << "\t\t\tcalc X" << endl;
 		//X = Qminus Y = Qminus phi_inv 
 		Qminus(parameters, phi_inv, field, X);
 	}
@@ -358,7 +369,8 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta,
 	return HMC_SUCCESS;
 }
 
-hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gauge_momentum * p_in, 
+//it is assumed that gaugefield and gaugemomentum have been set to the old ones already
+hmc_error leapfrog(inputparameters * parameters, 
 									 #ifdef _FERMIONS_
 									 hmc_spinor_field * phi, hmc_spinor_field * phi_inv, 
 									 #endif
@@ -371,9 +383,6 @@ hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gaug
 	
 	hmc_gauge_momentum* force_tmp = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
 
-	//copy input gaugefield and input gaugemomentum
-	copy_gaugemomenta(p_in, p_out);
-	copy_gaugefield(u_in, u_out);
 	//initial step
 	cout << "\tinitial step:" << endl;
 	force(parameters, u_out ,

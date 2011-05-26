@@ -198,7 +198,7 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
  * @todo lateron, a multi-step alg. with different stepsizes for gauge and fermion force should be implemented
  * @todo see code itself for more points
  */
-hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gauge_momentum * p_in
+hmc_error leapfrog(inputparameters * parameters
 #ifdef _FERMIONS_
 	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv
 #endif

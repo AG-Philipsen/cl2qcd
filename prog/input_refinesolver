@@ -11,6 +11,8 @@ heatbathsteps=1000
 sourcefile=conf.0759
 sourcefile=conf.save
 writefrequency=1
+hmcsteps=1
+integrationsteps1=1
 
 
 # 4^4file:
