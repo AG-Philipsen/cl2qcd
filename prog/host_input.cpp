@@ -93,6 +93,22 @@ void inputparameters::val_assign(int * out, std::string line)
 	return;
 }
 
+void inputparameters::set_mubar_negative()
+{
+	mubar *= -1.;
+}
+
+void inputparameters::calc_mubar()
+{
+	mubar = 2.*kappa*mu;
+}
+
+hmc_float inputparameters::get_mubar()
+{
+	return mubar;
+}
+
+
 void inputparameters::sourcefilenumber_assign(std::string * out)
 {
 	//it is supposed that the file is called conf.xxxxx

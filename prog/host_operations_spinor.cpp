@@ -265,7 +265,7 @@ hmc_error spinors_accumulate(hmc_spinor* inout, hmc_spinor* incr){
   return HMC_SUCCESS;
 }
 
-//spinout =  (1 + 2*i*gamma_5*kappa*mu)spin_in
+//spinout =  (1 + i*gamma_5*kappa*mu)spin_in
 void M_diag_local(hmc_spinor* spininout, hmc_float kappa, hmc_float mu){
 	hmc_spinor spintmp[SPINORSIZE];
 	hmc_float twistfactor = 2*kappa*mu;

@@ -258,9 +258,15 @@ void gamma_5_psi(hmc_spinor_field * inout){
 
 
 //this calculates Q+Q- psi = gamma_5 M (kappa) gamma_5 M(-kappa) psi
-hmc_error QplusQminus(inputparameters * parameters, hmc_spinor_field * in, hmc_gaugefield field, hmc_spinor_field * out){
-	
-	
+hmc_error QplusQminus(inputparameters * parameters, hmc_spinor_field * in, hmc_gaugefield * field, hmc_spinor_field * out){
+	//CP: this step can be saved once it is ensured mubar is calculated before function call
+	(*parameters).calc_mubar();
+	//for this to work, mubar has to be used in M_diag_local!!!!!!!
+	(*parameters).set_mubar_negative();
+	M(parameters, in, field, out);
+	gamma_5_psi(out);
+	(*parameters).set_mubar_negative();
+	M(parameters, out, field, out);
 	return HMC_SUCCESS;
 }
 
