@@ -151,6 +151,7 @@ hmc_error Opencl_k::run_kappa_karsch_gpu(const hmc_float beta, usetimer * timer,
 hmc_error Opencl_k::run_kappa_clover_gpu(const hmc_float beta, usetimer * timer, hmc_float * kappa_clover_out)
 {
 	
+	
 	//variables
 	cl_int clerr = CL_SUCCESS;
 	timer->reset();
@@ -170,7 +171,6 @@ hmc_error Opencl_k::run_kappa_clover_gpu(const hmc_float beta, usetimer * timer,
 
 	const cl_uint num_groups = (global_work_size + local_work_size - 1) / local_work_size;
 	global_work_size = local_work_size * num_groups;
-	
 	
 	
 	//buffers for kappa
@@ -218,4 +218,50 @@ hmc_error Opencl_k::run_kappa_clover_gpu(const hmc_float beta, usetimer * timer,
 
 }
 
+hmc_error Opencl_k::finalize(){
+     if(get_init_status() == 1) {
+		if(clFlush(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clFinish(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
 
+		if(clReleaseKernel(heatbath_even) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseKernel(heatbath_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+		if(clReleaseKernel(overrelax_even) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseKernel(overrelax_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+		if(clReleaseKernel(plaquette) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseKernel(polyakov) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseKernel(plaquette_reduction) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseKernel(polyakov_reduction) != CL_SUCCESS) exit(HMC_OCLERROR);
+		
+		if(clReleaseKernel(kappa_karsch_gpu) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseKernel(kappa_clover_gpu) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+		if(clReleaseProgram(clprogram) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+		if(clReleaseMemObject(clmem_gaugefield) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseMemObject(clmem_rndarray) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+		if(clReleaseMemObject(clmem_plaq) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseMemObject(clmem_tplaq) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseMemObject(clmem_splaq) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseMemObject(clmem_polyakov) != CL_SUCCESS) exit(HMC_OCLERROR);
+		
+		if(clReleaseMemObject(clmem_kappa_karsch) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseMemObject(clmem_kappa_clover) != CL_SUCCESS) exit(HMC_OCLERROR);
+		
+		if(clmem_plaq_buf_glob) if(clReleaseMemObject(clmem_plaq_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clmem_tplaq_buf_glob) if(clReleaseMemObject(clmem_tplaq_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clmem_splaq_buf_glob) if(clReleaseMemObject(clmem_splaq_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clmem_polyakov_buf_glob) if(clReleaseMemObject(clmem_polyakov_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
+		
+		if(clmem_kappa_karsch_buf_glob) if(clReleaseMemObject(clmem_kappa_karsch_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clmem_kappa_clover_buf_glob) if(clReleaseMemObject(clmem_kappa_clover_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+		if(clReleaseCommandQueue(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseContext(context) != CL_SUCCESS) exit(HMC_OCLERROR);
+
+		set_init_false();
+	}
+	return HMC_SUCCESS;
+}

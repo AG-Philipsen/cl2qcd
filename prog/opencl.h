@@ -202,7 +202,7 @@ public:
 	/**
 	 * Called by the destructor.
 	 */
-	hmc_error finalize();
+	virtual hmc_error finalize();
 
 	/**
 	 * Contains the list of kernel files after call to fill_kernels_file().

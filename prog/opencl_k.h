@@ -35,7 +35,11 @@ class Opencl_k : public Opencl {
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
 	virtual hmc_error fill_kernels();
-      
+	/**
+	 * Called by the destructor.
+	 */
+	virtual hmc_error finalize();
+	
 	hmc_error run_kappa_karsch_gpu(const hmc_float beta, usetimer * timer, hmc_float * kappa_karsch_out);
 	hmc_error run_kappa_clover_gpu(const hmc_float beta, usetimer * timer, hmc_float * kappa_clover_out);
 	
