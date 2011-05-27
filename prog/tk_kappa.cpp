@@ -81,6 +81,9 @@ int main(int argc, char* argv[])
 	
 	usetimer timer_karsch;
 	usetimer timer_clover;
+	hmc_float time_karsch = 0.;
+	hmc_float time_clover = 0.;
+	
 	
 	for(int i = 0; i < nsteps; i++) {
 		gaugefield.heatbath(&updatetime);
@@ -109,14 +112,17 @@ int main(int argc, char* argv[])
 	hmc_float qplaq = gaugefield.Q_plaquette();
 	q_plaq_out << qplaq <<endl;
 
-	kappa_karsch_out << gaugefield.get_kappa_karsch() <<endl;
-	kappa_clover_out << gaugefield.get_kappa_clover() <<endl;
+	kappa_karsch_out << gaugefield.get_kappa_karsch()  <<endl;
+	kappa_clover_out << gaugefield.get_kappa_clover()  <<endl;
+	
+	time_karsch += timer_karsch.getTime();
+	time_clover += timer_clover.getTime();
 	
 	}
 		
 	cout.precision(4);
-	cout <<"Measurement TK kappa_karsch: " << timer_karsch.getTime()/1000000. << " s"<< endl;
-	cout <<"Measurement TK kappa_clover: " << timer_clover.getTime()/1000000.  << " s" <<endl;
+	cout <<"Measurement TK kappa_karsch: " << time_karsch/1000000. / hmc_float (nsteps) << " s"<< endl;
+	cout <<"Measurement TK kappa_clover: " << time_clover/1000000. / hmc_float (nsteps) << " s" <<endl;
 	
 	kappa_karsch_out.close();
 	kappa_clover_out.close();
