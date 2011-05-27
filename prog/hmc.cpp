@@ -89,16 +89,6 @@ cout << "initial values of observables:\n\t" ;
 // #ifdef _USEHMC_
 
 
-// cout << "testing new functions..." << endl;
-// 
-// 
-// hmc_spinor_field* tester = new hmc_spinor_field[SPINORFIELDSIZE];
-// err = generate_gaussian_spinorfield(tester);
-// gamma_5_psi(tester);
-// 
-// 
-// return 0;
-
 	//TODO CP: port to OpenCL *g*
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Hybrid Monte Carlo
@@ -139,7 +129,7 @@ cout << "initial values of observables:\n\t" ;
 		#ifdef _FERMIONS_
 		//init/update spinorfield phi
 		cout << "\tinit spinorfield " << endl;
-		err = generate_gaussian_spinorfield(chi);
+ 		err = generate_gaussian_spinorfield(chi);
 		if(err!=HMC_SUCCESS) {cout << "\t\t\terror: " << err << endl; return HMC_STDERR; }
 		
 		cout << "\tperform md update of spinorfield" << endl;

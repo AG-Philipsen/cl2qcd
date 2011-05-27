@@ -53,9 +53,9 @@ hmc_error solver(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_
 		err = cg(parameters, in, b, gaugefield);
 	else
 		err = bicgstab(parameters, in, b, gaugefield);
-	if(err != HMC_SUCCESS) return HMC_STDERR;
 	convert_from_kappa_format(in, out, ( (*parameters).get_kappa() ));
-    
+	if(err != HMC_SUCCESS) return HMC_STDERR;
+	    
 	return HMC_SUCCESS;
 }
 
@@ -267,12 +267,11 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
   hmc_complex minusone = hmc_complex_minusone;
 	
 	int iter;
+	//debugging
 	int cter =0;
   //main loop
-	printf("\nthis is the cg-solver\n");
   for(iter = 0; iter < cgmax; iter ++){  
     if(iter%iter_refresh==0){
-			printf("fresh start\n");
 			//fresh start
 			QplusQminus(parameters, inout,gaugefield,rn);
 			saxpy(rn, source, &one, rn);
@@ -297,7 +296,7 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
 			break;
     }
     else{
-			printf("residue not small enough: %e\n",resid);
+// 			printf("residue not small enough: %e\n",resid);
 			tmp1 = scalar_product(rn, rn);
 			tmp2 = scalar_product(rnn, rnn);
 			beta = complexdivide(&tmp2, &tmp1);
@@ -319,7 +318,7 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
 	delete [] pnn;
 	delete [] rnn;
 	delete [] tmp;
-	printf("cter: %i \n\n", cter);
+// 	printf("cter: %i \n\n", cter);
 	if(cter < cgmax) return HMC_SUCCESS;
 	if(cter == cgmax) return HMC_STDERR;
 }

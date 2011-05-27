@@ -1,23 +1,17 @@
 #include "host_operations_fermionmatrix.h"
-
+using namespace std;
 hmc_error QplusQminus(inputparameters * parameters, hmc_spinor_field * in, hmc_gaugefield * field, hmc_spinor_field * out){
+	/** @todo: find out why tmp is necessary!!! */
+	hmc_spinor_field* tmp = new hmc_spinor_field[SPINORFIELDSIZE];
+	
 	//CP: this step can be saved once it is ensured mubar is calculated before function call
 	(*parameters).calc_mubar();
 	(*parameters).set_mubar_negative();
-	M(parameters, in, field, out);
-	gamma_5_psi(out);
+	M(parameters, in, field, tmp);
+	gamma_5_psi(tmp);
 	(*parameters).set_mubar_negative();
-	M(parameters, out, field, out);
+	M(parameters, tmp, field, out);
 	gamma_5_psi(out);
-	
-	//reversed order:
-// 	(*parameters).calc_mubar();
-// 	M(parameters, in, field, out);
-// 	gamma_5_psi(out);
-// 	(*parameters).set_mubar_negative();
-// 	M(parameters, out, field, out);
-// 	(*parameters).set_mubar_negative();
-// 	gamma_5_psi(out);
 	
 	return HMC_SUCCESS;
 }
