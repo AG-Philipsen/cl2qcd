@@ -4,7 +4,7 @@
 
 //opencl_tk_kappa.cl
 
-__kernel void kappa_karsch_gpu(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, __global hmc_float * kappa_karsch_val){
+__kernel void kappa_karsch_gpu(__global hmc_ocl_gaugefield* const gaugefield, const hmc_float beta, __global hmc_float * const kappa_karsch_val){
 
   //Compute diagonal spatial components of the energy-momentum-tensor
   hmc_float tdiag_11 [VOL4D];
@@ -91,7 +91,7 @@ __kernel void kappa_karsch_gpu(__global hmc_ocl_gaugefield* gaugefield, const hm
 
 
 
-__kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta,  __global hmc_float * kappa_clover_val){
+__kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* const gaugefield, const hmc_float beta,  __global hmc_float * const kappa_clover_val){
 
   //Energy-momentum-tensor in clover-discretization
   hmc_float t_12 [VOL4D];
@@ -111,6 +111,7 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
       adjoint_3x3matrix (Q_02, Q_20);
       hmc_ocl_3x3matrix Q_21[9];
       local_Q_plaquette(Q_21,gaugefield, n, t, 2, 1);
+      
       hmc_ocl_3x3matrix Q_12[9];
       adjoint_3x3matrix (Q_12, Q_21);
       hmc_ocl_3x3matrix Q_03[9];
