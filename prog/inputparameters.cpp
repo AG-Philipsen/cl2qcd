@@ -1,5 +1,7 @@
 #include "inputparameters.h"
 
+#include "logger.hpp"
+
 hmc_error inputparameters::set_defaults()
 {
 	kappa = 0.125;
@@ -35,7 +37,7 @@ hmc_error inputparameters::readfile(char* ifn)
 	std::ifstream infile;
 	infile.open(ifn);
 	if(!infile.is_open()) {
-		printf("Could not open input file: %s\n",ifn);
+		printf("Could not open input file: %s\n", ifn);
 		exit(HMC_FILEERROR);
 	}
 
@@ -44,78 +46,78 @@ hmc_error inputparameters::readfile(char* ifn)
 
 	while (infile.good()) {
 		std::string line;
-		infile>>line;
-		if(line.find("#")!=std::string::npos) continue; //allow comments
-		if(line.find("kappa")!=std::string::npos) val_assign(&kappa,line);
-		if(line.find("Kappa")!=std::string::npos) val_assign(&kappa,line);
-		if(line.find("mu")!=std::string::npos) {
-		  val_assign(&mu,line);
-		  muset = TRUE;
+		infile >> line;
+		if(line.find("#") != std::string::npos) continue; //allow comments
+		if(line.find("kappa") != std::string::npos) val_assign(&kappa, line);
+		if(line.find("Kappa") != std::string::npos) val_assign(&kappa, line);
+		if(line.find("mu") != std::string::npos) {
+			val_assign(&mu, line);
+			muset = TRUE;
 		}
-		if(line.find("Mu")!=std::string::npos){
-		  val_assign(&mu,line);
-		  muset = TRUE;
+		if(line.find("Mu") != std::string::npos) {
+			val_assign(&mu, line);
+			muset = TRUE;
 		}
-		if(line.find("csw")!=std::string::npos) {
-		  val_assign(&csw,line);
-		  cswset = TRUE;
+		if(line.find("csw") != std::string::npos) {
+			val_assign(&csw, line);
+			cswset = TRUE;
 		}
-		if(line.find("Csw")!=std::string::npos) {
-		  val_assign(&csw,line);
-		  cswset = TRUE;
+		if(line.find("Csw") != std::string::npos) {
+			val_assign(&csw, line);
+			cswset = TRUE;
 		}
-		if(line.find("beta")!=std::string::npos) val_assign(&beta,line);
-		if(line.find("tau")!=std::string::npos) val_assign(&tau,line);
-		if(line.find("Beta")!=std::string::npos) val_assign(&beta,line);
-		if(line.find("cgmax")!=std::string::npos) val_assign(&cgmax,line);
-		if(line.find("CGmax")!=std::string::npos) val_assign(&cgmax,line);
-		if(line.find("Cgmax")!=std::string::npos) val_assign(&cgmax,line);
-		if(line.find("writefrequency")!=std::string::npos) val_assign(&writefrequency,line);
-		if(line.find("savefrequency")!=std::string::npos) val_assign(&savefrequency,line);
-		if(line.find("saveconfigs")!=std::string::npos) savecond_assign(&saveconfigs,line);
-		if(line.find("prec")!=std::string::npos) val_assign(&prec,line);
-		if(line.find("Prec")!=std::string::npos) val_assign(&prec,line);
-		if(line.find("readsource")!=std::string::npos) cond_assign(&startcondition,line);
-		if(line.find("startcondition")!=std::string::npos) cond_assign(&startcondition,line);
-		if(line.find("sourcefile")!=std::string::npos) {
-			val_assign(&sourcefile,line);
+		if(line.find("beta") != std::string::npos) val_assign(&beta, line);
+		if(line.find("tau") != std::string::npos) val_assign(&tau, line);
+		if(line.find("Beta") != std::string::npos) val_assign(&beta, line);
+		if(line.find("cgmax") != std::string::npos) val_assign(&cgmax, line);
+		if(line.find("CGmax") != std::string::npos) val_assign(&cgmax, line);
+		if(line.find("Cgmax") != std::string::npos) val_assign(&cgmax, line);
+		if(line.find("writefrequency") != std::string::npos) val_assign(&writefrequency, line);
+		if(line.find("savefrequency") != std::string::npos) val_assign(&savefrequency, line);
+		if(line.find("saveconfigs") != std::string::npos) savecond_assign(&saveconfigs, line);
+		if(line.find("prec") != std::string::npos) val_assign(&prec, line);
+		if(line.find("Prec") != std::string::npos) val_assign(&prec, line);
+		if(line.find("readsource") != std::string::npos) cond_assign(&startcondition, line);
+		if(line.find("startcondition") != std::string::npos) cond_assign(&startcondition, line);
+		if(line.find("sourcefile") != std::string::npos) {
+			val_assign(&sourcefile, line);
 			sourcefilenumber_assign(&sourcefilenumber);
 		}
-		if(line.find("thermalizationsteps")!=std::string::npos) val_assign(&thermalizationsteps,line);
-		if(line.find("heatbathsteps")!=std::string::npos) val_assign(&heatbathsteps,line);
-		if(line.find("thermsteps")!=std::string::npos) val_assign(&thermalizationsteps,line);
-		if(line.find("thermalization")!=std::string::npos) val_assign(&thermalizationsteps,line);
-		if(line.find("overrelaxsteps")!=std::string::npos) val_assign(&overrelaxsteps,line);
-		if(line.find("overrelax")!=std::string::npos) val_assign(&overrelaxsteps,line);
-		if(line.find("oversteps")!=std::string::npos) val_assign(&overrelaxsteps,line);
-		if(line.find("hmcsteps")!=std::string::npos) val_assign(&hmcsteps,line);
-		if(line.find("integrationtseps1")!=std::string::npos) val_assign(&integrationsteps1,line);
-		if(line.find("integrationsteps2")!=std::string::npos) val_assign(&integrationsteps2,line);
+		if(line.find("thermalizationsteps") != std::string::npos) val_assign(&thermalizationsteps, line);
+		if(line.find("heatbathsteps") != std::string::npos) val_assign(&heatbathsteps, line);
+		if(line.find("thermsteps") != std::string::npos) val_assign(&thermalizationsteps, line);
+		if(line.find("thermalization") != std::string::npos) val_assign(&thermalizationsteps, line);
+		if(line.find("overrelaxsteps") != std::string::npos) val_assign(&overrelaxsteps, line);
+		if(line.find("overrelax") != std::string::npos) val_assign(&overrelaxsteps, line);
+		if(line.find("oversteps") != std::string::npos) val_assign(&overrelaxsteps, line);
+		if(line.find("hmcsteps") != std::string::npos) val_assign(&hmcsteps, line);
+		if(line.find("integrationtseps1") != std::string::npos) val_assign(&integrationsteps1, line);
+		if(line.find("integrationsteps2") != std::string::npos) val_assign(&integrationsteps2, line);
 
-		if(line.find("fermaction")!=std::string::npos) fermact_assign(&fermact,line);
-		if(line.find("fermionaction")!=std::string::npos) fermact_assign(&fermact,line);
-		if(line.find("fermact")!=std::string::npos) fermact_assign(&fermact,line);
+		if(line.find("fermaction") != std::string::npos) fermact_assign(&fermact, line);
+		if(line.find("fermionaction") != std::string::npos) fermact_assign(&fermact, line);
+		if(line.find("fermact") != std::string::npos) fermact_assign(&fermact, line);
 
-		if(line.find("evenodd")!=std::string::npos) eocond_assign(&use_eo,line);
-		if(line.find("even_odd")!=std::string::npos) eocond_assign(&use_eo,line);
-		if(line.find("even-odd")!=std::string::npos) eocond_assign(&use_eo,line);
-		if(line.find("even-odd-preconditioning")!=std::string::npos) eocond_assign(&use_eo,line);
-		if(line.find("use_eo")!=std::string::npos) eocond_assign(&use_eo,line);
-		if(line.find("use_evenodd")!=std::string::npos) eocond_assign(&use_eo,line);
+		if(line.find("evenodd") != std::string::npos) eocond_assign(&use_eo, line);
+		if(line.find("even_odd") != std::string::npos) eocond_assign(&use_eo, line);
+		if(line.find("even-odd") != std::string::npos) eocond_assign(&use_eo, line);
+		if(line.find("even-odd-preconditioning") != std::string::npos) eocond_assign(&use_eo, line);
+		if(line.find("use_eo") != std::string::npos) eocond_assign(&use_eo, line);
+		if(line.find("use_evenodd") != std::string::npos) eocond_assign(&use_eo, line);
 
 	}
 
-	if(muset==TRUE && fermact != TWISTEDMASS) {
-	  cout<<"Setting a value for mu is not allowed for fermion action other than twisted mass. Aborting..."<<endl;
-	  exit(HMC_STDERR);
+	if(muset == TRUE && fermact != TWISTEDMASS) {
+		logger.fatal() << "Setting a value for mu is not allowed for fermion action other than twisted mass. Aborting...";
+		exit(HMC_STDERR);
 	}
-	if(cswset==TRUE && fermact != CLOVER) {
-	  cout<<"Setting a value for csw is not allowed for fermion action other than clover. Aborting..."<<endl;
-	  exit(HMC_STDERR);
+	if(cswset == TRUE && fermact != CLOVER) {
+		logger.fatal() << "Setting a value for csw is not allowed for fermion action other than clover. Aborting...";
+		exit(HMC_STDERR);
 	}
-	if(cswset==TRUE && muset==TRUE) {
-	  cout<<"Setting values for both csw and mu is currently not allowed. Aborting..."<<endl;
-	  exit(HMC_STDERR);
+	if(cswset == TRUE && muset == TRUE) {
+		logger.fatal() << "Setting values for both csw and mu is currently not allowed. Aborting...";
+		exit(HMC_STDERR);
 	}
 
 	return HMC_SUCCESS;
@@ -124,7 +126,7 @@ hmc_error inputparameters::readfile(char* ifn)
 void inputparameters::val_assign(hmc_float * out, std::string line)
 {
 	size_t pos = line.find("=");
-	std::string value=line.substr(pos+1);
+	std::string value = line.substr(pos + 1);
 	(*out) = atof(value.c_str());
 	return;
 }
@@ -132,7 +134,7 @@ void inputparameters::val_assign(hmc_float * out, std::string line)
 void inputparameters::val_assign(int * out, std::string line)
 {
 	size_t pos = line.find("=");
-	std::string value=line.substr(pos+1);
+	std::string value = line.substr(pos + 1);
 	(*out) = atoi(value.c_str());
 	return;
 }
@@ -143,32 +145,32 @@ void inputparameters::sourcefilenumber_assign(std::string * out)
 	size_t length;
 	char buffer[20];
 	string str ("Test string...");
-	length=sourcefile.copy(buffer,5,5);
-	buffer[length]='\0';
+	length = sourcefile.copy(buffer, 5, 5);
+	buffer[length] = '\0';
 	//atoi should neglect any letters left in the string
 	int tmp = atoi(buffer);
 	char buffer2[20];
 	//there is no check if the number is bigger than 99999!!
-	sprintf(buffer2, "%.5i", tmp+1);
+	sprintf(buffer2, "%.5i", tmp + 1);
 	(*out) = buffer2;
 }
 
 void inputparameters::cond_assign(int * out, std::string line)
 {
-	if(std::strstr(line.c_str(),"cold")!=NULL) {
-		(*out)=COLD_START;
+	if(std::strstr(line.c_str(), "cold") != NULL) {
+		(*out) = COLD_START;
 		return;
 	}
-	if(std::strstr(line.c_str(),"hot")!=NULL) {
-		(*out)=HOT_START;
+	if(std::strstr(line.c_str(), "hot") != NULL) {
+		(*out) = HOT_START;
 		return;
 	}
-	if(std::strstr(line.c_str(),"source")!=NULL) {
-		(*out)=START_FROM_SOURCE;
+	if(std::strstr(line.c_str(), "source") != NULL) {
+		(*out) = START_FROM_SOURCE;
 		return;
 	}
-	if(std::strstr(line.c_str(),"continue")!=NULL) {
-		(*out)=START_FROM_SOURCE;
+	if(std::strstr(line.c_str(), "continue") != NULL) {
+		(*out) = START_FROM_SOURCE;
 		return;
 	}
 	printf("invalid startcondition\n");
@@ -178,48 +180,48 @@ void inputparameters::cond_assign(int * out, std::string line)
 
 void inputparameters::fermact_assign(int * out, std::string line)
 {
-	if(std::strstr(line.c_str(),"TWISTEDMASS")!=NULL) {
-		(*out)=TWISTEDMASS;
+	if(std::strstr(line.c_str(), "TWISTEDMASS") != NULL) {
+		(*out) = TWISTEDMASS;
 		return;
 	}
-	if(std::strstr(line.c_str(),"twistedmass")!=NULL) {
-		(*out)=TWISTEDMASS;
+	if(std::strstr(line.c_str(), "twistedmass") != NULL) {
+		(*out) = TWISTEDMASS;
 		return;
 	}
-	if(std::strstr(line.c_str(),"Twistedmass")!=NULL) {
-		(*out)=TWISTEDMASS;
+	if(std::strstr(line.c_str(), "Twistedmass") != NULL) {
+		(*out) = TWISTEDMASS;
 		return;
 	}
-	if(std::strstr(line.c_str(),"TwistedMass")!=NULL) {
-		(*out)=TWISTEDMASS;
+	if(std::strstr(line.c_str(), "TwistedMass") != NULL) {
+		(*out) = TWISTEDMASS;
 		return;
 	}
-	if(std::strstr(line.c_str(),"clover")!=NULL) {
-		(*out)=CLOVER;
+	if(std::strstr(line.c_str(), "clover") != NULL) {
+		(*out) = CLOVER;
 		return;
 	}
-	if(std::strstr(line.c_str(),"CLOVER")!=NULL) {
-		(*out)=CLOVER;
+	if(std::strstr(line.c_str(), "CLOVER") != NULL) {
+		(*out) = CLOVER;
 		return;
 	}
-	if(std::strstr(line.c_str(),"Clover")!=NULL) {
-		(*out)=CLOVER;
+	if(std::strstr(line.c_str(), "Clover") != NULL) {
+		(*out) = CLOVER;
 		return;
 	}
-	if(std::strstr(line.c_str(),"WILSON")!=NULL) {
-		(*out)=WILSON;
+	if(std::strstr(line.c_str(), "WILSON") != NULL) {
+		(*out) = WILSON;
 		return;
 	}
-	if(std::strstr(line.c_str(),"Wilson")!=NULL) {
-		(*out)=WILSON;
+	if(std::strstr(line.c_str(), "Wilson") != NULL) {
+		(*out) = WILSON;
 		return;
 	}
-	if(std::strstr(line.c_str(),"wilson")!=NULL) {
-		(*out)=WILSON;
+	if(std::strstr(line.c_str(), "wilson") != NULL) {
+		(*out) = WILSON;
 		return;
 	}
-	if(std::strstr(line.c_str(),"unimproved")!=NULL) {
-		(*out)=WILSON;
+	if(std::strstr(line.c_str(), "unimproved") != NULL) {
+		(*out) = WILSON;
 		return;
 	}
 	printf("invalid fermion action\n");
@@ -230,36 +232,36 @@ void inputparameters::fermact_assign(int * out, std::string line)
 
 void inputparameters::savecond_assign(int * out, std::string line)
 {
-	if(std::strstr(line.c_str(),"yes")!=NULL) {
-		(*out)=TRUE;
+	if(std::strstr(line.c_str(), "yes") != NULL) {
+		(*out) = TRUE;
 		return;
 	}
-	if(std::strstr(line.c_str(),"true")!=NULL) {
-		(*out)=TRUE;
+	if(std::strstr(line.c_str(), "true") != NULL) {
+		(*out) = TRUE;
 		return;
 	}
-	if(std::strstr(line.c_str(),"TRUE")!=NULL) {
-		(*out)=TRUE;
+	if(std::strstr(line.c_str(), "TRUE") != NULL) {
+		(*out) = TRUE;
 		return;
 	}
-	if(std::strstr(line.c_str(),"True")!=NULL) {
-		(*out)=TRUE;
+	if(std::strstr(line.c_str(), "True") != NULL) {
+		(*out) = TRUE;
 		return;
 	}
-	if(std::strstr(line.c_str(),"no")!=NULL) {
-		(*out)=FALSE;
+	if(std::strstr(line.c_str(), "no") != NULL) {
+		(*out) = FALSE;
 		return;
 	}
-	if(std::strstr(line.c_str(),"false")!=NULL) {
-		(*out)=FALSE;
+	if(std::strstr(line.c_str(), "false") != NULL) {
+		(*out) = FALSE;
 		return;
 	}
-	if(std::strstr(line.c_str(),"FALSE")!=NULL) {
-		(*out)=FALSE;
+	if(std::strstr(line.c_str(), "FALSE") != NULL) {
+		(*out) = FALSE;
 		return;
 	}
-	if(std::strstr(line.c_str(),"False")!=NULL) {
-		(*out)=FALSE;
+	if(std::strstr(line.c_str(), "False") != NULL) {
+		(*out) = FALSE;
 		return;
 	}
 	printf("invalid save condition\n");
@@ -269,36 +271,36 @@ void inputparameters::savecond_assign(int * out, std::string line)
 
 void inputparameters::eocond_assign(int * out, std::string line)
 {
-	if(std::strstr(line.c_str(),"yes")!=NULL) {
-		(*out)=TRUE;
+	if(std::strstr(line.c_str(), "yes") != NULL) {
+		(*out) = TRUE;
 		return;
 	}
-	if(std::strstr(line.c_str(),"true")!=NULL) {
-		(*out)=TRUE;
+	if(std::strstr(line.c_str(), "true") != NULL) {
+		(*out) = TRUE;
 		return;
 	}
-	if(std::strstr(line.c_str(),"TRUE")!=NULL) {
-		(*out)=TRUE;
+	if(std::strstr(line.c_str(), "TRUE") != NULL) {
+		(*out) = TRUE;
 		return;
 	}
-	if(std::strstr(line.c_str(),"True")!=NULL) {
-		(*out)=TRUE;
+	if(std::strstr(line.c_str(), "True") != NULL) {
+		(*out) = TRUE;
 		return;
 	}
-	if(std::strstr(line.c_str(),"no")!=NULL) {
-		(*out)=FALSE;
+	if(std::strstr(line.c_str(), "no") != NULL) {
+		(*out) = FALSE;
 		return;
 	}
-	if(std::strstr(line.c_str(),"false")!=NULL) {
-		(*out)=FALSE;
+	if(std::strstr(line.c_str(), "false") != NULL) {
+		(*out) = FALSE;
 		return;
 	}
-	if(std::strstr(line.c_str(),"FALSE")!=NULL) {
-		(*out)=FALSE;
+	if(std::strstr(line.c_str(), "FALSE") != NULL) {
+		(*out) = FALSE;
 		return;
 	}
-	if(std::strstr(line.c_str(),"False")!=NULL) {
-		(*out)=FALSE;
+	if(std::strstr(line.c_str(), "False") != NULL) {
+		(*out) = FALSE;
 		return;
 	}
 	printf("invalid even-odd condition\n");
@@ -310,7 +312,7 @@ void inputparameters::eocond_assign(int * out, std::string line)
 void inputparameters::val_assign(std::string * out, std::string line)
 {
 	size_t pos = line.find("=");
-	std::string value=line.substr(pos+1);
+	std::string value = line.substr(pos + 1);
 	(*out) = value.c_str();
 	return;
 }
@@ -327,7 +329,7 @@ void inputparameters::set_kappa_negative()
 
 void inputparameters::calc_mubar()
 {
-	mubar = 2.*kappa*mu;
+	mubar = 2.*kappa * mu;
 }
 
 hmc_float inputparameters::get_mubar()
@@ -451,6 +453,7 @@ void inputparameters::display_sourcefilenumber()
 	cout << sourcefilenumber;
 }
 
-int inputparameters::get_use_eo(){
-  return use_eo;
+int inputparameters::get_use_eo()
+{
+	return use_eo;
 }
