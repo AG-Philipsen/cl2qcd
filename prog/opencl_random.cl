@@ -18,7 +18,7 @@ inline ulong nr3_int64(__global hmc_ocl_ran * state )
 	(*state).y ^= (*state).y >> 17;
 	(*state).y ^= (*state).y << 31;
 	(*state).y ^= (*state).y >> 8;
-	(*state).z = 4294957665U*((*state).z & 0xffffffff) + ((*state).z >> 32);
+	(*state).z = 4294957665U * ((*state).z & 0xffffffff) + ((*state).z >> 32);
 	ulong tmp = (*state).x ^ ((*state).x << 21);
 	tmp ^= tmp >> 35;
 	tmp ^= tmp << 4;
@@ -58,17 +58,44 @@ int random_int( int range, __global hmc_ocl_ran* state )
 /**
  * Get 1,2,3 in random order
  *
- * @param[out] rand Storage location for the result
  * @param[in,out] rnd Pointer to this threads random number generator state in global memory
+ * @return A random permutation of 1,2,3 in x,y,z.
  */
-void random_1_2_3 (int rand[3], __global hmc_ocl_ran * rnd)
+void random_1_2_3(__private int seq[3], __global hmc_ocl_ran * const restrict state)
 {
-	rand[ 0 ] = random_int( 3, rnd ) + 1;
-	do {
-		rand[ 1 ] = random_int( 3, rnd ) + 1;
-	} while( rand[ 0 ] == rand[ 1 ] );
-	rand[ 2 ] = 6 - rand[ 1 ] - rand[ 0 ];
+	/// @todo using uint3 as a return type instead of using an arg for return value
+	/// would reduce register usage on cypress by two GPR
+
+	// calculate everythin in (0..2) and add 1 in the end
+	//
+	// 1. is drawn from 0..2
+	// 2. is drawn from 1..2 and processed as follows
+	//  - 1. == 0
+	//  -- 0 + 1 = 1
+	//  -- 0 + 2 = 2
+	//  - 1. == 1
+	//  -- 1 + 1 = 2
+	//  -- 1 + 2 = 3 -> 0
+	//  - 1. == 2
+	//  -- 2 + 1 = 3 -> 0
+	//  -- 2 + 2 = 4 -> 0
+	//    note how this keeps the probabilities correct by doing only a 50% roll and then a bijective mapping.
+	// 3. as above the remaing number by difference to the fixed sum of 0+1+2=3.
+
+// using the commented lines instead of the actually used ones
+// will increase register usage by 2 GPRs on the Cypress, so it
+// is essentially the same code
+//	seq[0] = nr3_int64(state) % 3;
+//	seq[1] = (seq[0] + (nr3_int64(state) % 2) + 1) % 3;
+	seq[0] = random_int(3, state);
+	seq[1] = (seq[0] + random_int(2, state) + 1) % 3;
+	seq[2] = 3 - seq[1] - seq[0];
+
+	++seq[0];
+	++seq[1];
+	++seq[2];
 }
+
 /**
  * Construct new SU2 matrix using improved alg by Kennedy Pendleton
  *
@@ -81,14 +108,14 @@ void SU2Update(__private hmc_float dst [su2_entries], const hmc_float alpha, __g
 	hmc_float a0 ;
 	hmc_float eta ;
 	do {
-		delta = -log(ocl_new_ran(rnd))/alpha*pow(cos(2. * PI * ocl_new_ran(rnd)), 2.) -log(ocl_new_ran(rnd))/alpha;
-		a0 = 1.-delta;
+		delta = -log(ocl_new_ran(rnd)) / alpha * pow(cos(2. * PI * ocl_new_ran(rnd)), 2.) - log(ocl_new_ran(rnd)) / alpha;
+		a0 = 1. - delta;
 		eta = ocl_new_ran(rnd);
-	} while ( (1.-0.5*delta) < eta*eta);
-	hmc_float phi = 2.*PI*ocl_new_ran(rnd);
+	} while ( (1. - 0.5 * delta) < eta * eta);
+	hmc_float phi = 2.*PI * ocl_new_ran(rnd);
 	hmc_float theta = asin(2.*ocl_new_ran(rnd) - 1.);
 	dst[0] = a0;
-	dst[1] = sqrt(1.-a0 * a0)*cos(theta) * cos(phi);
-	dst[2] = sqrt(1.-a0 * a0)*cos(theta) * sin(phi);
-	dst[3] = sqrt(1.-a0 * a0)*sin(theta);
+	dst[1] = sqrt(1. - a0 * a0) * cos(theta) * cos(phi);
+	dst[2] = sqrt(1. - a0 * a0) * cos(theta) * sin(phi);
+	dst[3] = sqrt(1. - a0 * a0) * sin(theta);
 }
