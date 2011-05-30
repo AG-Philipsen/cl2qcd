@@ -75,7 +75,7 @@ public:
 	 * @param[in,out] timer timer for initialization
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error init_gaugefield(usetimer* timer);
+	hmc_error init_gaugefield(usetimer*  timer);
 	
 
 	//communication
