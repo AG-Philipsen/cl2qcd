@@ -106,6 +106,19 @@ typedef hmc_complex hmc_ocl_3x3matrix;
 typedef hmc_complex hmc_ocl_staplematrix;
 typedef hmc_float hmc_ocl_gaugefield;
 
+typedef struct {
+  hmc_complex e00;
+  hmc_complex e01;
+  hmc_complex e02;
+  hmc_complex e10;
+  hmc_complex e11;
+  hmc_complex e12;
+  hmc_complex e20;
+  hmc_complex e21;
+  hmc_complex e22;
+} Matrix3x3;
+
+
 //define a spinor field:  spinor_field[spin-color*coord3d*coord_time]
 typedef hmc_complex hmc_color_vector;
 typedef hmc_complex hmc_spinor;
