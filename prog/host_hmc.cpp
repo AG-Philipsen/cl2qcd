@@ -2,6 +2,23 @@
 
 using namespace std;
 
+void print_su3mat(hmc_su3matrix* A){
+#ifdef _RECONSTRUCT_TWELVE_
+  printf("\n| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[0].re,(*A)[0].im,(*A)[2].re,(*A)[2].im,(*A)[4].re,(*A)[4].im);
+  printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[1].re,(*A)[1].im,(*A)[3].re,(*A)[3].im,(*A)[5].re,(*A)[5].im);
+  hmc_complex ca = reconstruct_su3(A,0);
+  hmc_complex cb = reconstruct_su3(A,1);
+  hmc_complex cc = reconstruct_su3(A,2);
+  printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",ca.re,ca.im,cb.re,cb.im,cc.re,cc.im);
+#else
+  printf("\n");
+  for(int a = 0; a<NC; a++) {
+  printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[a][0].re,(*A)[a][0].im,(*A)[a][1].re,(*A)[a][1].im,(*A)[a][2].re,(*A)[a][2].im);}
+  printf("\n");
+#endif
+  return;
+}
+
 //CP: molecular dynamics update for the gauge momenta:
 //p_out = p_in - eps/2 force(u_in, phi)
 //it is assumed that the force term has already been computed. then one only has real-vectors and this is essentially adding one vector to another...
@@ -88,6 +105,7 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
 	(result).re += s_gauge(field, beta);
 #ifdef _FERMIONS_
 	tmp  = s_fermion(phi, phi_inv);
+	cout << "s_fermion is:\t" << tmp.re << "  " << tmp.im << endl;
 	complexaccumulate(&result, &tmp);
 #endif
 	//s_gm = 1/2*squarenorm(Pl)
@@ -155,21 +173,30 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
 
 #ifdef _FERMIONS_
 
+void update_gaugemomentum(hmc_algebraelement in, hmc_float factor, int global_link_pos, hmc_gauge_momentum * out){
+			for(int i = 0; i<8; i++){
+  					out[global_link_pos*8 + i] += factor*in[i];
+			}
+}
+
 //CP: fermion_force = (gamma_5 Y)^dagger iT_i
 //	it is assumed that the results can be added to out!!
 hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * Y, hmc_spinor_field * X, hmc_gauge_momentum * out){
 
-  hmc_su3matrix U_up, U_down;
+  hmc_su3matrix U, U_up, U_down;
 	hmc_3x3matrix v1, v2;
   hmc_su3vector psia,psib,phia,phib;
 	hmc_full_spinor y, plus;
-	int nup, ndown;
+	int nn, nup, ndown;
 	hmc_algebraelement out_tmp;
 	int global_link_pos;
 	int global_link_pos_down;
-	hmc_float factor;
+	hmc_float factor = (*parameters).get_kappa();
+	int dir;
 	
 	//main loop
+// 	for(int t = 0; t<NTIME; t++){
+// 		for(int n = 0; n<VOLSPACE; n++){
 	for(int t = 0; t<NTIME; t++){
 		for(int n = 0; n<VOLSPACE; n++){
 			get_spinor_from_field(Y, y, n, t);
@@ -179,19 +206,25 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 			gamma_5_spinor(y);
 
 			//go through the different directions
-			///////////////////////////////////
-			// mu = +0
-			///////////////////////////////////
-			nup = (t+1)%NTIME;
-			global_link_pos = get_global_link_pos(0, n, t);
-			get_spinor_from_field(X, plus, n, nup);
+			for(int mu = 0; mu<4; mu++){
 			
-			get_su3matrix(&U_up, field, n, t, 0);
+			if(mu ==0){
+			///////////////////////////////////
+			// mu = 0
+			///////////////////////////////////
+			dir = 0;
+			
+			// mu = +0
+			global_link_pos = get_global_link_pos(dir, n, t);
+			nn = (t+1)%NTIME;
+			get_spinor_from_field(X, plus, n, nn);
+			dir = 1;
+			get_su3matrix(&U, field, n, t, dir);
+			dir = 0;
 		
 			//psi = (1-gamma_mu)plus
 			spinproj_gamma0_a(plus, psia, -hmc_one_f);
 			spinproj_gamma0_b(plus, psib, -hmc_one_f);
-      
 			//phi = (1-gamma_mu)y
 			spinproj_gamma0_a(y, phia, -hmc_one_f);
 			spinproj_gamma0_b(y, phib, -hmc_one_f);
@@ -201,32 +234,28 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 
 			//U*v1 = U*(phi_a)
 			/** @todo what about REC12 and this call??*/
-			multiply_3x3matrix (&v2, &U_up, &v1);
+			multiply_3x3matrix (&v2, &U, &v1);
 		
 			//TODO
 	 		//ka0 is kappa*BC-factor
 			//     _complex_times_su3(v1,ka0,v2);
 			//this must become v1 if the above is included again
 			tr_lambda_u(v2, out_tmp);
-			//what is the factor here??
-			factor = 1.;
-			for(int i = 0; i<8; i++){
-  					out[global_link_pos*8 + i] += factor*out_tmp[i];
-			}
-
-			///////////////////////////////////
-			//mu = -0
-			///////////////////////////////////
-			ndown = (t+NTIME-1)%NTIME;
-			global_link_pos_down = get_global_link_pos(0, n, ndown);
-			get_spinor_from_field(X, plus, n, ndown);
 			
-			get_su3matrix(&U_down, field, n, ndown, 0);
-		
+			//what is the factor here??
+			update_gaugemomentum(out_tmp, factor, global_link_pos, out);
+
+			//mu = -0
+			nn = (t+NTIME-1)%NTIME;
+			global_link_pos_down = get_global_link_pos(dir, n, nn);
+			
+			get_spinor_from_field(X, plus, n, nn);
+			
+			get_su3matrix(&U, field, n, nn, dir);
+			
 			//psi = (1+gamma_mu)plus
 			spinproj_gamma0_a(plus, psia, hmc_one_f);
 			spinproj_gamma0_b(plus, psib, hmc_one_f);
-      
 			//phi = (1+gamma_mu)y
 			spinproj_gamma0_a(y, phia, hmc_one_f);
 			spinproj_gamma0_b(y, phib, hmc_one_f);
@@ -237,18 +266,208 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 
 			//U*v1 = U*(phi_a)
 			/** @todo what about REC12 and this call??*/
-			multiply_3x3matrix (&v2, &U_down, &v1);
+			multiply_3x3matrix (&v2, &U, &v1);
 		
 			//TODO
 	 		//ka0 is kappa*BC-factor
 			//     _complex_times_su3(v1,ka0,v2);
-			
 			//this must become v1 if the above is included again
 			tr_lambda_u(v2, out_tmp);
 			//what is the factor here??
-			factor = (*parameters).get_kappa();
-			for(int i = 0; i<8; i++){
-  					out[global_link_pos_down*8 + i] += factor*out_tmp[i];
+			update_gaugemomentum(out_tmp, factor, global_link_pos_down, out);			
+			}
+			if(mu ==1){
+			///////////////////////////////////
+			// mu = 1
+			///////////////////////////////////
+			dir = 1;
+			
+			// mu = +1
+			global_link_pos = get_global_link_pos(dir, n, t);
+			nn = get_neighbor(n,t);
+			get_spinor_from_field(X, plus, nn, t);
+			get_su3matrix(&U, field, n, t, dir);
+
+			//psi = (1-gamma_mu)plus
+			spinproj_gamma1_a(plus, psia, -hmc_one_f);
+			spinproj_gamma1_b(plus, psib, -hmc_one_f);
+			//phi = (1-gamma_mu)y
+			spinproj_gamma1_a(y, phia, -hmc_one_f);
+			spinproj_gamma1_b(y, phib, -hmc_one_f);
+
+			// v1 = Tr(phi*psi_dagger)
+			tr_v_times_u_dagger(phia, psia, phib, psib, v1);
+
+			//U*v1 = U*(phi_a)
+			/** @todo what about REC12 and this call??*/
+			multiply_3x3matrix (&v2, &U, &v1);
+		
+			//TODO
+	 		//ka0 is kappa*BC-factor
+			//     _complex_times_su3(v1,ka0,v2);
+			//this must become v1 if the above is included again
+			tr_lambda_u(v2, out_tmp);
+			//what is the factor here??
+			update_gaugemomentum(out_tmp, factor, global_link_pos, out);
+
+			//mu = -1
+			nn = get_lower_neighbor(n,dir);
+			global_link_pos_down = get_global_link_pos(dir, nn,t);
+			
+			get_spinor_from_field(X, plus, nn, t);
+			get_su3matrix(&U, field, nn, t, dir);
+
+			//psi = (1+gamma_mu)plus
+			spinproj_gamma1_a(plus, psia, hmc_one_f);
+			spinproj_gamma1_b(plus, psib, hmc_one_f);
+			//phi = (1+gamma_mu)y
+			spinproj_gamma1_a(y, phia, hmc_one_f);
+			spinproj_gamma1_b(y, phib, hmc_one_f);
+
+			//CP: here is the difference with regard to +mu-direction: psi and phi interchanged!!
+			// v1 = Tr(psi*phi_dagger)
+			tr_v_times_u_dagger(psia, phia, psib, phib, v1);
+
+			//U*v1 = U*(phi_a)
+			/** @todo what about REC12 and this call??*/
+			multiply_3x3matrix (&v2, &U, &v1);
+		
+			//TODO
+	 		//ka0 is kappa*BC-factor
+			//     _complex_times_su3(v1,ka0,v2);
+			//this must become v1 if the above is included again
+			tr_lambda_u(v2, out_tmp);
+			//what is the factor here??
+			update_gaugemomentum(out_tmp, factor, global_link_pos_down, out);
+			}
+			if(mu ==2){
+			///////////////////////////////////
+			// mu = 2
+			///////////////////////////////////
+			dir = 2;
+			
+			// mu = +2
+			global_link_pos = get_global_link_pos(dir, n, t);
+			nn = get_neighbor(n,t);
+			get_spinor_from_field(X, plus, nn, t);
+			get_su3matrix(&U, field, n, t, dir);
+		
+			//psi = (1-gamma_mu)plus
+			spinproj_gamma2_a(plus, psia, -hmc_one_f);
+			spinproj_gamma2_b(plus, psib, -hmc_one_f);
+			//phi = (1-gamma_mu)y
+			spinproj_gamma2_a(y, phia, -hmc_one_f);
+			spinproj_gamma2_b(y, phib, -hmc_one_f);
+
+			// v1 = Tr(phi*psi_dagger)
+			tr_v_times_u_dagger(phia, psia, phib, psib, v1);
+
+			//U*v1 = U*(phi_a)
+			/** @todo what about REC12 and this call??*/
+			multiply_3x3matrix (&v2, &U, &v1);
+		
+			//TODO
+	 		//ka0 is kappa*BC-factor
+			//     _complex_times_su3(v1,ka0,v2);
+			//this must become v1 if the above is included again
+			tr_lambda_u(v2, out_tmp);
+			//what is the factor here??
+			update_gaugemomentum(out_tmp, factor, global_link_pos, out);
+
+			//mu = -2
+			nn = get_lower_neighbor(n,dir);
+			global_link_pos_down = get_global_link_pos(dir, nn,t);
+			
+			get_spinor_from_field(X, plus, nn, t);
+			get_su3matrix(&U, field, nn, t, dir);
+		
+			//psi = (1+gamma_mu)plus
+			spinproj_gamma2_a(plus, psia, hmc_one_f);
+			spinproj_gamma2_b(plus, psib, hmc_one_f);
+			//phi = (1+gamma_mu)y
+			spinproj_gamma2_a(y, phia, hmc_one_f);
+			spinproj_gamma2_b(y, phib, hmc_one_f);
+
+			//CP: here is the difference with regard to +mu-direction: psi and phi interchanged!!
+			// v1 = Tr(psi*phi_dagger)
+			tr_v_times_u_dagger(psia, phia, psib, phib, v1);
+
+			//U*v1 = U*(phi_a)
+			/** @todo what about REC12 and this call??*/
+			multiply_3x3matrix (&v2, &U, &v1);
+		
+			//TODO
+	 		//ka0 is kappa*BC-factor
+			//     _complex_times_su3(v1,ka0,v2);
+			//this must become v1 if the above is included again
+			tr_lambda_u(v2, out_tmp);
+			//what is the factor here??
+			update_gaugemomentum(out_tmp, factor, global_link_pos_down, out);
+			}
+			if(mu ==3){
+			///////////////////////////////////
+			// mu = 3
+			///////////////////////////////////
+			dir = 3;
+			
+			// mu = +3
+			global_link_pos = get_global_link_pos(dir, n, t);
+			nn = get_neighbor(n,t);
+			get_spinor_from_field(X, plus, nn, t);
+			get_su3matrix(&U, field, n, t, dir);
+		
+			//psi = (1-gamma_mu)plus
+			spinproj_gamma3_a(plus, psia, -hmc_one_f);
+			spinproj_gamma3_b(plus, psib, -hmc_one_f);
+			//phi = (1-gamma_mu)y
+			spinproj_gamma3_a(y, phia, -hmc_one_f);
+			spinproj_gamma3_b(y, phib, -hmc_one_f);
+
+			// v1 = Tr(phi*psi_dagger)
+			tr_v_times_u_dagger(phia, psia, phib, psib, v1);
+
+			//U*v1 = U*(phi_a)
+			/** @todo what about REC12 and this call??*/
+			multiply_3x3matrix (&v2, &U, &v1);
+		
+			//TODO
+	 		//ka0 is kappa*BC-factor
+			//     _complex_times_su3(v1,ka0,v2);
+			//this must become v1 if the above is included again
+			tr_lambda_u(v2, out_tmp);
+			//what is the factor here??
+			update_gaugemomentum(out_tmp, factor, global_link_pos, out);
+
+			//mu = -3
+			nn = get_lower_neighbor(n,dir);
+			global_link_pos_down = get_global_link_pos(dir, nn,t);
+			
+			get_spinor_from_field(X, plus, nn, t);
+			get_su3matrix(&U, field, nn, t, dir);
+		
+			//psi = (1+gamma_mu)plus
+			spinproj_gamma3_a(plus, psia, hmc_one_f);
+			spinproj_gamma3_b(plus, psib, hmc_one_f);
+			//phi = (1+gamma_mu)y
+			spinproj_gamma3_a(y, phia, hmc_one_f);
+			spinproj_gamma3_b(y, phib, hmc_one_f);
+
+			//CP: here is the difference with regard to +mu-direction: psi and phi interchanged!!
+			// v1 = Tr(psi*phi_dagger)
+			tr_v_times_u_dagger(psia, phia, psib, phib, v1);
+
+			//U*v1 = U*(phi_a)
+			/** @todo what about REC12 and this call??*/
+			multiply_3x3matrix (&v2, &U, &v1);
+		
+			//TODO
+	 		//ka0 is kappa*BC-factor
+			//     _complex_times_su3(v1,ka0,v2);
+			//this must become v1 if the above is included again
+			tr_lambda_u(v2, out_tmp);
+			//what is the factor here??
+			update_gaugemomentum(out_tmp, factor, global_link_pos_down, out);
+			}
 			}
 		}}
 	return HMC_SUCCESS;
@@ -298,7 +517,7 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 			create_point_source_eoprec(parameters, k,0,0, field, be,bo);
 			solver_eoprec(parameters, phi, be, bo, field, use_cg, phi_inv);
 		}
-		
+	
 		cout << "\t\t\tcalc X" << endl;
 		//X = Qminus Y = Qminus phi_inv 
 		Qminus(parameters, phi_inv, field, X);
@@ -306,7 +525,9 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 	else{
 		//here, one has first to invert (with BiCGStab) Qplus phi = X and then invert Qminus X => Qminus^-1 Qplus^-1 phi = (QplusQminus)^-1 phi = Y = phi_inv
 	}
-
+	hmc_complex tmp;
+tmp  = s_fermion(phi, phi_inv);
+cout << "s_fermion of inverted phi is: " << tmp.re << " " << tmp.im << endl;
 /** @todo control the fields here again!!! */
 	fermion_force(parameters, field, phi_inv, X, out);
 	

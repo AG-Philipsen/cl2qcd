@@ -291,6 +291,18 @@ void spinproj_gamma0_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign);
 
 void spinproj_gamma0_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign);
 
+void spinproj_gamma1_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign);
+
+void spinproj_gamma1_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign);
+
+void spinproj_gamma2_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign);
+
+void spinproj_gamma2_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign);
+
+void spinproj_gamma3_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign);
+
+void spinproj_gamma3_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign);
+
 //calculates the trace of generator times 3x3-matrix and stores this in a su3-algebraelement
 void tr_lambda_u(hmc_3x3matrix in, hmc_algebraelement out);
 

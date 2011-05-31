@@ -409,6 +409,69 @@ void su3_vector_multiple_add(hmc_su3vector in1, hmc_su3vector in2, hmc_su3vector
 	(out[2]).im = (in1[2]).im + (in2[2]).im;
 }
 
+void spinproj_gamma1_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(0,c)].re - sign*spin[spinor_element(3,c)].im;
+  	out[c].im = spin[spinor_element(0,c)].im + sign*spin[spinor_element(3,c)].re;
+  }
+}
+
+void spinproj_gamma1_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(1,c)].re - sign*spin[spinor_element(2,c)].im;
+  	out[c].im = spin[spinor_element(1,c)].im + sign*spin[spinor_element(2,c)].re;
+  }
+}
+
+void spinproj_gamma2_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(0,c)].re - sign*spin[spinor_element(3,c)].re;
+  	out[c].im = spin[spinor_element(0,c)].im - sign*spin[spinor_element(3,c)].im;
+  }
+}
+
+void spinproj_gamma2_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(1,c)].re + sign*spin[spinor_element(2,c)].re;
+  	out[c].im = spin[spinor_element(1,c)].im + sign*spin[spinor_element(2,c)].im;
+  }
+}
+
+void spinproj_gamma3_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(0,c)].re - sign*spin[spinor_element(2,c)].im;
+  	out[c].im = spin[spinor_element(0,c)].im + sign*spin[spinor_element(2,c)].re;
+  }
+}
+
+void spinproj_gamma3_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(1,c)].re + sign*spin[spinor_element(3,c)].im;
+  	out[c].im = spin[spinor_element(1,c)].im - sign*spin[spinor_element(3,c)].re;
+  }
+}
+
+
+void spinproj_gamma0_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(0,c)].re + sign*spin[spinor_element(2,c)].re;
+  	out[c].im = spin[spinor_element(0,c)].im + sign*spin[spinor_element(2,c)].im;
+  }
+}
+
+void spinproj_gamma0_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(1,c)].re + sign*spin[spinor_element(3,c)].re;
+  	out[c].im = spin[spinor_element(1,c)].im + sign*spin[spinor_element(3,c)].im;
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//our original gamma_matrices:
+
+/*
+
 void spinproj_gamma0_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
 	for(int c = 0; c<NC; c++){
 		out[c].re = spin[spinor_element(0,c)].re - sign*spin[spinor_element(3,c)].im;
@@ -423,6 +486,52 @@ void spinproj_gamma0_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
   }
 }
 
+void spinproj_gamma1_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(0,c)].re - sign*spin[spinor_element(3,c)].re;
+  	out[c].im = spin[spinor_element(0,c)].im - sign*spin[spinor_element(3,c)].im;
+  }
+}
+
+void spinproj_gamma1_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(1,c)].re + sign*spin[spinor_element(2,c)].re;
+  	out[c].im = spin[spinor_element(1,c)].im + sign*spin[spinor_element(2,c)].im;
+  }
+}
+
+void spinproj_gamma2_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(0,c)].re - sign*spin[spinor_element(2,c)].im;
+  	out[c].im = spin[spinor_element(0,c)].im + sign*spin[spinor_element(2,c)].re;
+  }
+}
+
+void spinproj_gamma2_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(1,c)].re + sign*spin[spinor_element(3,c)].im;
+  	out[c].im = spin[spinor_element(1,c)].im - sign*spin[spinor_element(3,c)].re;
+  }
+}
+
+
+void spinproj_gamma3_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(0,c)].re + sign*spin[spinor_element(2,c)].re;
+  	out[c].im = spin[spinor_element(0,c)].im + sign*spin[spinor_element(2,c)].im;
+  }
+}
+
+void spinproj_gamma3_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
+	for(int c = 0; c<NC; c++){
+		out[c].re = spin[spinor_element(1,c)].re + sign*spin[spinor_element(3,c)].re;
+  	out[c].im = spin[spinor_element(1,c)].im + sign*spin[spinor_element(3,c)].im;
+  }
+}
+
+*/
+
+//////////////////////////////////////////////////////////////////////
 //calculates the trace of generator times 3x3-matrix and stores this in a su3-algebraelement
 void tr_lambda_u(hmc_3x3matrix in, hmc_algebraelement out){
 				(out)[0] = ( -(in)[1][0].im - (in)[0][1].im);
@@ -441,7 +550,7 @@ void tr_v_times_u_dagger(hmc_su3vector v, hmc_su3vector u, hmc_su3vector w, hmc_
 	for(int a = 0; a<3; a++){
 		for(int b = 0; b<3; b++){
 			(out[a][b]).re = (v[a]).re*(u[b]).re + (v[a]).im*(u[b]).im + (w[a]).re*(x[b]).re + (w[a]).im*(x[b]).im;
-			(out[a][b]).re = (v[a]).im*(u[b]).re - (v[a]).re*(u[b]).im + (w[a]).im*(x[b]).re - (w[a]).re*(x[b]).im;;
+			(out[a][b]).im = (v[a]).im*(u[b]).re - (v[a]).re*(u[b]).im + (w[a]).im*(x[b]).re - (w[a]).re*(x[b]).im;;
 		}}
 	/*
 	 #define _vector_tensor_vector_add(t, u, v, w, z) \

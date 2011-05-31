@@ -276,7 +276,7 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
 			QplusQminus(parameters, inout,gaugefield,rn);
 			saxpy(rn, source, &one, rn);
 			copy_spinor(rn, pn);
-			printf("true residue squared: %e\n",global_squarenorm(rn));
+// 			printf("true residue squared: %e\n",global_squarenorm(rn));
 		}
 		
 		QplusQminus(parameters, pn,gaugefield,tmp);
@@ -291,7 +291,7 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
 		hmc_float resid = global_squarenorm(rnn);
     
     if (resid < epssquare){
-			printf("residue small enough: %e\n",resid);
+// 			printf("residue small enough: %e\n",resid);
 			copy_spinor(xnn, inout);
 			break;
     }
