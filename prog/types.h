@@ -74,6 +74,16 @@ typedef hmc_complex hmc_full_spinor_field [NSPIN*NC][VOLSPACE][NTIME];
 //define a gauge field: gauge[su3][mu][coord3d][coord_time]
 #ifdef _RECONSTRUCT_TWELVE_
 typedef hmc_complex hmc_su3matrix [NC*(NC-1)];
+
+struct Matrixsu3 {
+  hmc_complex e00;
+  hmc_complex e01;
+  hmc_complex e02;
+  hmc_complex e10;
+  hmc_complex e11;
+  hmc_complex e12;
+};
+
 typedef hmc_complex hmc_staplematrix [NC*NC];
 typedef hmc_complex hmc_3x3matrix[3][3];
 typedef hmc_complex hmc_gaugefield [NC*(NC-1)][NDIM][VOLSPACE][NTIME];
@@ -86,6 +96,19 @@ typedef hmc_complex hmc_su3matrix [NC][NC];
 typedef hmc_su3matrix hmc_staplematrix;
 /** A generic 3x3 matrix */
 typedef hmc_complex hmc_3x3matrix[3][3];
+
+struct Matrixsu3 {
+  hmc_complex e00;
+  hmc_complex e01;
+  hmc_complex e02;
+  hmc_complex e10;
+  hmc_complex e11;
+  hmc_complex e12;
+  hmc_complex e20;
+  hmc_complex e21;
+  hmc_complex e22;
+} ;
+
 /** The full gaugefield */
 typedef hmc_complex hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME];
 typedef hmc_float hmc_gauge_momentum;
@@ -106,6 +129,8 @@ typedef hmc_complex hmc_ocl_3x3matrix;
 typedef hmc_complex hmc_ocl_staplematrix;
 typedef hmc_float hmc_ocl_gaugefield;
 
+#ifdef _INKERNEL_
+
 typedef struct {
   hmc_complex e00;
   hmc_complex e01;
@@ -117,6 +142,31 @@ typedef struct {
   hmc_complex e21;
   hmc_complex e22;
 } Matrix3x3;
+
+#ifdef _RECONSTRUCT_TWELVE_
+typedef struct {
+  hmc_complex e00;
+  hmc_complex e01;
+  hmc_complex e02;
+  hmc_complex e10;
+  hmc_complex e11;
+  hmc_complex e12;
+} Matrixsu3;
+#else
+typedef struct {
+  hmc_complex e00;
+  hmc_complex e01;
+  hmc_complex e02;
+  hmc_complex e10;
+  hmc_complex e11;
+  hmc_complex e12;
+  hmc_complex e20;
+  hmc_complex e21;
+  hmc_complex e22;
+} Matrixsu3;
+#endif //ifdef _REC12_
+
+#endif  //ifdef _INKERNEL_
 
 
 //define a spinor field:  spinor_field[spin-color*coord3d*coord_time]

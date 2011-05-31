@@ -15,7 +15,9 @@ hmc_error Opencl::fill_kernels_file ()
 	cl_kernels_file.push_back("opencl_random.cl");
 	cl_kernels_file.push_back("opencl_operations_complex.cl");
 	cl_kernels_file.push_back("opencl_operations_matrix.cl");
+	cl_kernels_file.push_back("operations_matrix_su3.cl");
 	cl_kernels_file.push_back("operations_matrix.cl");
+// 	cl_kernels_file.push_back("operations_gaugefield.cl");
 	cl_kernels_file.push_back("opencl_operations_gaugefield.cl");
 	cl_kernels_file.push_back("opencl_update_heatbath.cl");
 	cl_kernels_file.push_back("opencl_gaugeobservables.cl");

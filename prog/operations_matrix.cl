@@ -4,11 +4,6 @@
 
 //operations_matrix.cl
 
-//dispensable
-//int inline ocl_3x3matrix_element(int a, int b)
-//{
-//	return a + 3*b;
-//}
 
 Matrix3x3 multiply_matrix3x3 (const Matrix3x3 p, const Matrix3x3 q)
 {
@@ -20,7 +15,7 @@ Matrix3x3 multiply_matrix3x3 (const Matrix3x3 p, const Matrix3x3 q)
 
     out.e01.re = p.e00.re * q.e01.re + p.e01.re * q.e11.re + p.e02.re * q.e21.re
 	       - p.e00.im * q.e01.im - p.e01.im * q.e11.im - p.e02.im * q.e21.im;
-    out.e01.re = p.e00.re * q.e01.im + p.e01.re * q.e11.im + p.e02.re * q.e21.im
+    out.e01.im = p.e00.re * q.e01.im + p.e01.re * q.e11.im + p.e02.re * q.e21.im
 	       + p.e00.im * q.e01.re + p.e01.im * q.e11.re + p.e02.im * q.e21.re;
     
     out.e02.re = p.e00.re * q.e02.re + p.e01.re * q.e12.re + p.e02.re * q.e22.re
@@ -40,7 +35,7 @@ Matrix3x3 multiply_matrix3x3 (const Matrix3x3 p, const Matrix3x3 q)
 	       
     out.e12.re = p.e10.re * q.e02.re + p.e11.re * q.e12.re + p.e12.re * q.e22.re
 	       - p.e10.im * q.e02.im - p.e11.im * q.e12.im - p.e12.im * q.e22.im;
-    out.e12.im = p.e10.re * q.e02.im + p.e11.im * q.e12.re + p.e12.re * q.e22.im
+    out.e12.im = p.e10.re * q.e02.im + p.e11.re * q.e12.im + p.e12.re * q.e22.im
 	       + p.e10.im * q.e02.re + p.e11.im * q.e12.re + p.e12.im * q.e22.re;	       
 
     out.e20.re = p.e20.re * q.e00.re + p.e21.re * q.e10.re + p.e22.re * q.e20.re
@@ -155,7 +150,7 @@ hmc_complex trace_matrix3x3 (const Matrix3x3 p)
   return out;
 }
 
-Matrix3x3 adjoint_matrix3x3 (Matrix3x3 p){
+Matrix3x3 adjoint_matrix3x3 (const Matrix3x3 p){
 
 	Matrix3x3 out;
         out.e00.re = p.e00.re;
@@ -184,26 +179,45 @@ Matrix3x3 adjoint_matrix3x3 (Matrix3x3 p){
 
 }
 
+Matrix3x3 matrix_su3to3x3 (const Matrixsu3 p){
+
+	Matrix3x3 out;
+	out.e00.re = p.e00.re;
+	out.e00.im = p.e00.im;
+	out.e01.re = p.e01.re;
+	out.e01.im = p.e01.im;
+	out.e02.re = p.e02.re;
+	out.e02.im = p.e02.im;
+
+	out.e10.re = p.e10.re;
+	out.e10.im = p.e10.im;
+	out.e11.re = p.e11.re;
+	out.e11.im = p.e11.im;
+	out.e12.re = p.e12.re;
+	out.e12.im = p.e12.im;
+
+#ifdef _RECONSTRUCT_TWELVE_
+	out.e20.re = reconstruct_su3(p, 0).re;
+	out.e20.im = reconstruct_su3(p, 0).im;
+	out.e21.re = reconstruct_su3(p, 1).re;
+	out.e21.im = reconstruct_su3(p, 1).im;
+	out.e22.re = reconstruct_su3(p, 2).re;
+	out.e22.im = reconstruct_su3(p, 2).im;
+#else
+	out.e20.re = p.e20.re;
+	out.e20.im = p.e20.im;
+	out.e21.re = p.e21.re;
+	out.e21.im = p.e21.im;
+	out.e22.re = p.e22.re;
+	out.e22.im = p.e22.im;
+#endif
+
+	return out;
+}
 
 
 //ToDo, implement su3 first
 /*
-void su3matrix_to_3x3matrix (__private hmc_ocl_3x3matrix *out, __private const hmc_ocl_su3matrix *in){
-#ifdef _RECONSTRUCT_TWELVE_
-	for(int n=0; n<NC*(NC-1); n++) {
-		out[n] = in[n];
-	}
-	for(int n=NC*(NC-1);  n<NC*NC; n++) {
-		out[n] = reconstruct_su3(in, n-NC*(NC-1));
-	}
-#else
-	for(int k=0; k<NC*NC; k++) {
-		out[k] = in[k];
-	}
-#endif
-}
-
-
 
 void accumulate_su3matrix_3x3_add(__private hmc_ocl_3x3matrix *out, __private const hmc_ocl_su3matrix *q){
 #ifdef _RECONSTRUCT_TWELVE_
