@@ -538,7 +538,7 @@ cout << "s_fermion of inverted phi is: " << tmp.re << " " << tmp.im << endl;
 
 hmc_error metropolis(hmc_float rndnumber, hmc_float beta, 
 										 #ifdef _FERMIONS_
-										 hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi, 
+										 hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_spinor_field * phi_inv_orig, 
 										 #endif
 										 hmc_gaugefield * field,	hmc_gauge_momentum * p, hmc_gaugefield * new_field, hmc_gauge_momentum * new_p){
 	// takes:
@@ -548,12 +548,12 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta,
 	//		if it has to be, performs the change old->new, and returns true if there are no failures.
 	hmc_complex h_old = hamiltonian(field, beta, p
 																	#ifdef _FERMIONS_
-																	, phi, MdaggerMphi
+																	, phi, phi_inv_orig
 																	#endif
 																	);
 	hmc_complex h_new = hamiltonian(new_field, beta, new_p
 																	#ifdef _FERMIONS_
-																	, phi, MdaggerMphi
+																	, phi, phi_inv
 																	#endif
 																	);
 																	
@@ -592,7 +592,7 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta,
 //it is assumed that gaugefield and gaugemomentum have been set to the old ones already
 hmc_error leapfrog(inputparameters * parameters, 
 									 #ifdef _FERMIONS_
-									 hmc_spinor_field * phi, hmc_spinor_field * phi_inv, 
+									 hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_spinor_field * phi_inv_orig, 
 									 #endif
 									 hmc_gaugefield * u_out, hmc_gauge_momentum * p_out	){
 	// CP: it operates directly on the fields p_out and u_out
@@ -607,7 +607,7 @@ hmc_error leapfrog(inputparameters * parameters,
 	cout << "\tinitial step:" << endl;
 	force(parameters, u_out ,
 		#ifdef _FERMIONS_
-		phi, phi_inv, 
+		phi, phi_inv_orig, 
 		#endif
 		force_tmp);
 	md_update_gauge_momenta(stepsize_half, p_out, force_tmp);

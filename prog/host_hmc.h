@@ -73,7 +73,7 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
  */
 hmc_error metropolis(hmc_float rndnumber, hmc_float beta
 #ifdef _FERMIONS_
-	, hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi
+	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_spinor_field * phi_inv_orig
 #endif
 	, hmc_gaugefield * field, hmc_gauge_momentum * p, hmc_gaugefield * new_field, hmc_gauge_momentum * new_p);
 
@@ -200,7 +200,7 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
  */
 hmc_error leapfrog(inputparameters * parameters
 #ifdef _FERMIONS_
-	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv
+	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_spinor_field * phi_inv_orig
 #endif
 	, hmc_gaugefield * u_out, hmc_gauge_momentum * p_out
 	); 

@@ -111,12 +111,6 @@ fermion_force(&parameters, gaugefield, phi2, phi2_inv,p2 );
 gaugemomenta_squarenorm(p2, &tmp);
 cout << "squarenorm of force: " << tmp << endl;
 
-
-
-
-
-
-
 delete [] phi2;
 delete [] phi2_inv;
 delete [] p2;
@@ -180,9 +174,10 @@ return 0;
 		copy_gaugefield(gaugefield, new_field);
 		copy_gaugemomenta(p, new_p);
 		
+		//use chi to store phi_inv from the original configuration
 		leapfrog(&parameters, 
 									 #ifdef _FERMIONS_
-									 phi, phi_inv, 
+									 phi, phi_inv, chi, 
 									 #endif
 									 new_field, new_p
 									 );
@@ -194,7 +189,7 @@ return 0;
 		rnd_number = hmc_rnd_gen.doub();
 		err = metropolis(rnd_number, beta, 
 										 #ifdef _FERMIONS_ 
-										 phi, phi_inv,
+										 phi, phi_inv, chi, 
 										 #endif 
 										 gaugefield, p, new_field, new_p);
 		if(err!=HMC_SUCCESS) {cout << "\t\t\terror: " << err << endl; return HMC_STDERR; }
