@@ -90,7 +90,9 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta
  * @todo needs testing
  * 
  */
-hmc_error md_update_gauge_momenta(hmc_float eps, hmc_gauge_momentum * p_inout, hmc_gauge_momentum * force_in); 
+hmc_error md_update_gauge_momenta(hmc_float eps, hmc_algebraelement2 * p_inout, hmc_algebraelement2 * force_in); 
+//deprecated
+//hmc_error md_update_gauge_momenta(hmc_float eps, hmc_gauge_momentum * p_inout, hmc_gauge_momentum * force_in);
 
 /**
  * Molecular Dynamics Update of the Gaugefield using the Leapfrog-scheme:

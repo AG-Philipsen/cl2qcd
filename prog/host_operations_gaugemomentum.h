@@ -37,7 +37,10 @@ hmc_error gaugemomenta_squarenorm(hmc_gauge_momentum * in, hmc_float * result);
  * @param[out] in The gauge momenta to set to zero.
  * @return Error code as defined in hmcerrs.h
  */
-hmc_error set_zero_gaugemomenta(hmc_gauge_momentum * in);
+hmc_error set_zero_gaugemomenta(hmc_algebraelement2 * in);
+//deprecated:
+//hmc_error set_zero_gaugemomenta(hmc_gauge_momentum * in);
+
 
 /**
  * Generates a gaussian distributed complex vector of length GAUGEMOMENTASIZE and variance 1.
