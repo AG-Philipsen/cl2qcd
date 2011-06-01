@@ -21,16 +21,16 @@ hmc_error gaugemomenta_squarenorm(hmc_gauge_momentum * in, hmc_float * result){
 }
 
 /** @todo memset... */
-hmc_error set_zero_gaugemomenta(hmc_algebraelement2 in){
+hmc_error set_zero_gaugemomenta(hmc_algebraelement2 * in){
 	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){
-		(in).e0 = 0.;
-		(in).e1 = 0.;
-		(in).e2 = 0.;
-		(in).e3 = 0.;
-		(in).e4 = 0.;
-		(in).e5 = 0.;
-		(in).e6 = 0.;
-		(in).e7 = 0.;
+		(in[i]).e0 = 0.;
+		(in[i]).e1 = 0.;
+		(in[i]).e2 = 0.;
+		(in[i]).e3 = 0.;
+		(in[i]).e4 = 0.;
+		(in[i]).e5 = 0.;
+		(in[i]).e6 = 0.;
+		(in[i]).e7 = 0.;
 	}
 	return HMC_SUCCESS;
 }

@@ -53,15 +53,51 @@ void convert_ae_to_ae2_global(hmc_gauge_momentum * in, hmc_algebraelement2 * out
 	}
 }
 
+//deprecated version with one struct
+/*
+void update_gaugemomentum(hmc_algebraelement2 in, hmc_float factor, int global_link_pos, hmc_gauge_momentum * out){
+			out[global_link_pos*8 + 0] += factor*in.e0;
+			out[global_link_pos*8 + 1] += factor*in.e1;
+			out[global_link_pos*8 + 2] += factor*in.e2;
+			out[global_link_pos*8 + 3] += factor*in.e3;
+			out[global_link_pos*8 + 4] += factor*in.e4;
+			out[global_link_pos*8 + 5] += factor*in.e5;
+			out[global_link_pos*8 + 6] += factor*in.e6;
+			out[global_link_pos*8 + 7] += factor*in.e7;
+}
+*/
+//future version with structs only
+
+void update_gaugemomentum(hmc_algebraelement2 in, hmc_float factor, int global_link_pos, hmc_algebraelement2 * out){
+			out[global_link_pos].e0 += factor*in.e0;
+			out[global_link_pos].e1 += factor*in.e1;
+			out[global_link_pos].e2 += factor*in.e2;
+			out[global_link_pos].e3 += factor*in.e3;
+			out[global_link_pos].e4 += factor*in.e4;
+			out[global_link_pos].e5 += factor*in.e5;
+			out[global_link_pos].e6 += factor*in.e6;
+			out[global_link_pos].e7 += factor*in.e7;
+}
+
+
+//deprecated version without structs:
+/*
+void update_gaugemomentum(hmc_algebraelement in, hmc_float factor, int global_link_pos, hmc_gauge_momentum * out){
+			for(int i = 0; i<8; i++){
+  					out[global_link_pos*8 + i] += factor*in[i];
+			}
+}
+*/
+
 void acc_factor_times_algebraelement(hmc_algebraelement2 inout, hmc_float factor, hmc_algebraelement2 force_in){
-	(inout).e1+=(force_in).e1;
-	(inout).e2+=(force_in).e2;
-	(inout).e3+=(force_in).e3;
-	(inout).e4+=(force_in).e4;
-	(inout).e5+=(force_in).e5;
-	(inout).e6+=(force_in).e6;
-	(inout).e7+=(force_in).e7;
-	(inout).e8+=(force_in).e8; 
+	(inout).e1+=factor*(force_in).e1;
+	(inout).e2+=factor*(force_in).e2;
+	(inout).e3+=factor*(force_in).e3;
+	(inout).e4+=factor*(force_in).e4;
+	(inout).e5+=factor*(force_in).e5;
+	(inout).e6+=factor*(force_in).e6;
+	(inout).e7+=factor*(force_in).e7;
+	(inout).e8+=factor*(force_in).e8; 
 }
 
 //CP: molecular dynamics update for the gauge momenta:
@@ -171,9 +207,9 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
 	return result;
 }
 
-hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_gauge_momentum * out){
+hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_algebraelement2 * out){
 	hmc_float beta = (*parameters).get_beta();
-	int globalpos;
+	int global_link_pos;
 	hmc_3x3matrix V;
 	hmc_3x3matrix tmp;
 	hmc_su3matrix U;
@@ -184,7 +220,7 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
 	for(int t = 0; t < NTIME; t++){
 		for(int n = 0; n < VOLSPACE; n++){
 			for(int mu = 0; mu < NDIM; mu++){
-				globalpos = get_global_link_pos(mu, n, t);
+				global_link_pos = get_global_link_pos(mu, n, t);
 
 				calc_staple(field, &V, n, t, mu);
 				get_su3matrix(&U, field, n, t, mu);
@@ -193,7 +229,7 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
 				//when not using Reconstruct12 staplematrix and 3x3matrix are just the same!
 				multiply_su3matrices (&tmp, &U, &V);
 
-				hmc_algebraelement out_tmp;
+				hmc_algebraelement2 out_tmp;
 				//CP: way one with function-calls
 				//iterate through the different directions for i of which there are NC*NC-1 = 8
 	 			//in the function the gen_index runs from 1 to 8 (including 8) !! -> i +1 
@@ -205,6 +241,10 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
 // 					//CP: Minus???
 // 					(out_tmp)[i] = (trace.im);
 // 				}
+				
+				
+				
+				/*
 				//CP: hardcoded way: (like in tmlqcd)
 				(out_tmp)[0]  = ( -(tmp)[1][0].im - (tmp)[0][1].im);
 				(out_tmp)[1] = (+(tmp)[1][0].re-(tmp)[0][1].re);
@@ -219,6 +259,10 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
 				for(int i = 0; i<8; i++){
   					out[globalpos*8 + i] = factor*out_tmp[i];
 				}
+				*/
+				tr_lambda_u(tmp, out_tmp);
+				hmc_float factor = -beta/3.;
+				update_gaugemomentum(out_tmp, factor, global_link_pos, out);
 			}
 		}
 	}
@@ -228,44 +272,12 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
 
 #ifdef _FERMIONS_
 
-void update_gaugemomentum(hmc_algebraelement2 in, hmc_float factor, int global_link_pos, hmc_gauge_momentum * out){
-			out[global_link_pos*8 + 0] += factor*in.e0;
-			out[global_link_pos*8 + 1] += factor*in.e1;
-			out[global_link_pos*8 + 2] += factor*in.e2;
-			out[global_link_pos*8 + 3] += factor*in.e3;
-			out[global_link_pos*8 + 4] += factor*in.e4;
-			out[global_link_pos*8 + 5] += factor*in.e5;
-			out[global_link_pos*8 + 6] += factor*in.e6;
-			out[global_link_pos*8 + 7] += factor*in.e7;
-}
-
-//future version with structs only
-/*
-void update_gaugemomentum(hmc_algebraelement2 in, hmc_float factor, int global_link_pos, hmc_algebraelement2 * out){
-			out[global_link_pos*8].e0 += factor*in.e0;
-			out[global_link_pos*8].e1 += factor*in.e1;
-			out[global_link_pos*8].e2 += factor*in.e2;
-			out[global_link_pos*8].e3 += factor*in.e3;
-			out[global_link_pos*8].e4 += factor*in.e4;
-			out[global_link_pos*8].e5 += factor*in.e5;
-			out[global_link_pos*8].e6 += factor*in.e6;
-			out[global_link_pos*8].e7 += factor*in.e7;
-}
-*/
-
-//deprecated version without structs:
-/*
-void update_gaugemomentum(hmc_algebraelement in, hmc_float factor, int global_link_pos, hmc_gauge_momentum * out){
-			for(int i = 0; i<8; i++){
-  					out[global_link_pos*8 + i] += factor*in[i];
-			}
-}
-*/
 
 //CP: fermion_force = (gamma_5 Y)^dagger iT_i
 //	it is assumed that the results can be added to out!!
-hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * Y, hmc_spinor_field * X, hmc_gauge_momentum * out){
-
+//deprecated:
+//hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * Y, hmc_spinor_field * X, hmc_gauge_momentum * out){
+hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * Y, hmc_spinor_field * X, hmc_algebraelement2 * out){
   hmc_su3matrix U, U_up, U_down;
 	hmc_3x3matrix v1, v2;
   hmc_su3vector psia,psib,phia,phib;
