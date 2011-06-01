@@ -1,5 +1,27 @@
 #include "hmc.h"
 
+
+
+
+void convert_ae2_to_aetmp(hmc_algebraelement2 in, hmc_algebraelement out){
+	out[0] = (in).e0;
+	out[1] = (in).e1;
+	out[2] = (in).e2;
+	out[3] = (in).e3;
+	out[4] = (in).e4;
+	out[5] = (in).e5;
+	out[6] = (in).e6;
+	out[7] = (in).e7;
+}
+
+void convert_ae2_to_ae_globaltmp(hmc_algebraelement2 * in, hmc_gauge_momentum * out){
+	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){
+		convert_ae2_to_aetmp(in[i], &(out[i*8]));
+	}
+}
+
+
+
 int main(int argc, char* argv[])
 {
 	char* progname = argv[0];
@@ -89,7 +111,34 @@ cout << "initial values of observables:\n\t" ;
 // #ifdef _USEHMC_
 
 
+cout << "testing fermion force..." << endl;
 
+hmc_spinor_field* phi2 = new hmc_spinor_field[SPINORFIELDSIZE];
+hmc_spinor_field* phi2_inv = new hmc_spinor_field[SPINORFIELDSIZE];
+hmc_gauge_momentum* p2 = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
+hmc_algebraelement2* p22 = new hmc_algebraelement2[GAUGEMOMENTASIZE];
+set_zero_gaugemomenta(p22);
+hmc_float tmp;
+convert_ae2_to_ae_globaltmp(p22, p2);
+gaugemomenta_squarenorm(p2, &tmp);
+cout <<scientific <<  "input squarenorm of force: " << tmp << endl;
+for(int i = 0; i<VOL4D; i++){
+        for(int j = 0; j<SPINORSIZE; j++){
+                phi2[SPINORSIZE*i + j].re = 1.;
+                phi2[SPINORSIZE*i + j].im = 1.;
+                phi2_inv[SPINORSIZE*i + j].re = 2.;
+                phi2_inv[SPINORSIZE*i + j].im = 2.;
+}}
+cout << "squarenorm of inputvectors: " << global_squarenorm (phi2) <<endl;
+fermion_force(&parameters, gaugefield, phi2, phi2_inv,p22 );
+convert_ae2_to_ae_globaltmp(p22, p2);
+gaugemomenta_squarenorm(p2, &tmp);
+
+cout << "squarenorm of force: " << tmp << endl;
+delete [] phi2;
+delete [] phi2_inv;
+delete [] p2;
+return 0;
 
 
 	//TODO CP: port to OpenCL *g*
@@ -133,6 +182,8 @@ cout << "initial values of observables:\n\t" ;
 		//init/update spinorfield phi
 		cout << "\tinit spinorfield " << endl;
  		err = generate_gaussian_spinorfield(chi);
+		hmc_float tmp = global_squarenorm(chi);
+		cout << "the energy of gaussian spinor is: " << tmp << endl;
 		if(err!=HMC_SUCCESS) {cout << "\t\t\terror: " << err << endl; return HMC_STDERR; }
 		
 		cout << "\tperform md update of spinorfield" << endl;
