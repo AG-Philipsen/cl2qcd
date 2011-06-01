@@ -304,7 +304,7 @@ void spinproj_gamma3_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign);
 void spinproj_gamma3_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign);
 
 //calculates the trace of generator times 3x3-matrix and stores this in a su3-algebraelement
-void tr_lambda_u(hmc_3x3matrix in, hmc_algebraelement2 out);
+void tr_lambda_u(hmc_3x3matrix in, hmc_algebraelement2 * out);
 
 //calculates the Dirac-Trace of the matrix resulting from multiplying v*u^dagger + w*x^dagger, where u, v, w, x are SU(3)-vectors
 //	the result is a 3x3-matrix

@@ -187,7 +187,7 @@ cout << "initial values of observables:\n\t" ;
 	
 // #else /* _USEHMC_ */
 // 
-// #ifdef _FERMIONS_
+#ifdef _FERMIONS_
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Fermions
@@ -202,7 +202,7 @@ cout << "initial values of observables:\n\t" ;
 // 	device.simple_correlator_device(&copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &solvertimer, &dslashtimer, &Mdiagtimer,  local_work_size, global_work_size, 1000);
 // 	device.finalize_fermions();
 
-// #endif /* _FERMIONS_ */
+#endif /* _FERMIONS_ */
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Heatbath

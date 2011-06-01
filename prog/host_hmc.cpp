@@ -2,32 +2,16 @@
 
 using namespace std;
 
-void print_su3mat(hmc_su3matrix* A){
-#ifdef _RECONSTRUCT_TWELVE_
-  printf("\n| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[0].re,(*A)[0].im,(*A)[2].re,(*A)[2].im,(*A)[4].re,(*A)[4].im);
-  printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[1].re,(*A)[1].im,(*A)[3].re,(*A)[3].im,(*A)[5].re,(*A)[5].im);
-  hmc_complex ca = reconstruct_su3(A,0);
-  hmc_complex cb = reconstruct_su3(A,1);
-  hmc_complex cc = reconstruct_su3(A,2);
-  printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",ca.re,ca.im,cb.re,cb.im,cc.re,cc.im);
-#else
-  printf("\n");
-  for(int a = 0; a<NC; a++) {
-  printf("| (%f,%f)\t(%f,%f)\t(%f,%f) |\n",(*A)[a][0].re,(*A)[a][0].im,(*A)[a][1].re,(*A)[a][1].im,(*A)[a][2].re,(*A)[a][2].im);}
-  printf("\n");
-#endif
-  return;
-}
 
-void convert_ae_to_ae2(hmc_algebraelement in, hmc_algebraelement2 out){
-	(out).e0 = in[0];
-	(out).e1 = in[1];
-	(out).e2 = in[2];
-	(out).e3 = in[3];
-	(out).e4 = in[4];
-	(out).e5 = in[5];
-	(out).e6 = in[6];
-	(out).e7 = in[7];
+void convert_ae_to_ae2(hmc_algebraelement in, hmc_algebraelement2 * out){
+	(*out).e0 = in[0];
+	(*out).e1 = in[1];
+	(*out).e2 = in[2];
+	(*out).e3 = in[3];
+	(*out).e4 = in[4];
+	(*out).e5 = in[5];
+	(*out).e6 = in[6];
+	(*out).e7 = in[7];
 }
 
 void convert_ae2_to_ae(hmc_algebraelement2 in, hmc_algebraelement out){
@@ -49,7 +33,7 @@ void convert_ae2_to_ae_global(hmc_algebraelement2 * in, hmc_gauge_momentum * out
 
 void convert_ae_to_ae2_global(hmc_gauge_momentum * in, hmc_algebraelement2 * out){
 	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){
-		convert_ae_to_ae2(&(in[i*8]), out[i]);
+		convert_ae_to_ae2(&(in[i*8]), &out[i]);
 	}
 }
 
@@ -89,15 +73,15 @@ void update_gaugemomentum(hmc_algebraelement in, hmc_float factor, int global_li
 }
 */
 
-void acc_factor_times_algebraelement(hmc_algebraelement2 inout, hmc_float factor, hmc_algebraelement2 force_in){
-	(inout).e1+=factor*(force_in).e1;
-	(inout).e2+=factor*(force_in).e2;
-	(inout).e3+=factor*(force_in).e3;
-	(inout).e4+=factor*(force_in).e4;
-	(inout).e5+=factor*(force_in).e5;
-	(inout).e6+=factor*(force_in).e6;
-	(inout).e7+=factor*(force_in).e7;
-	(inout).e8+=factor*(force_in).e8; 
+void acc_factor_times_algebraelement(hmc_algebraelement2 * inout, hmc_float factor, hmc_algebraelement2 force_in){
+	(*inout).e1+=factor*(force_in).e1;
+	(*inout).e2+=factor*(force_in).e2;
+	(*inout).e3+=factor*(force_in).e3;
+	(*inout).e4+=factor*(force_in).e4;
+	(*inout).e5+=factor*(force_in).e5;
+	(*inout).e6+=factor*(force_in).e6;
+	(*inout).e7+=factor*(force_in).e7;
+	(*inout).e8+=factor*(force_in).e8; 
 }
 
 //CP: molecular dynamics update for the gauge momenta:
@@ -105,7 +89,7 @@ void acc_factor_times_algebraelement(hmc_algebraelement2 inout, hmc_float factor
 //it is assumed that the force term has already been computed. then one only has real-vectors and this is essentially adding one vector to another...
 hmc_error md_update_gauge_momenta(hmc_float eps, hmc_algebraelement2 * p_inout, hmc_algebraelement2 * force_in){
 	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){
-		acc_factor_times_algebraelement(p_inout[i], -eps, force_in[i]);
+		acc_factor_times_algebraelement(&p_inout[i], -1.*eps, force_in[i]);
 	}
 	return HMC_SUCCESS;
 }
@@ -260,7 +244,7 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
   					out[globalpos*8 + i] = factor*out_tmp[i];
 				}
 				*/
-				tr_lambda_u(tmp, out_tmp);
+				tr_lambda_u(tmp, &out_tmp);
 				hmc_float factor = -beta/3.;
 				update_gaugemomentum(out_tmp, factor, global_link_pos, out);
 			}
@@ -332,7 +316,7 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 	 		//ka0 is kappa*BC-factor
 			//     _complex_times_su3(v1,ka0,v2);
 			//this must become v1 if the above is included again
-			tr_lambda_u(v2, out_tmp);
+			tr_lambda_u(v2, &out_tmp);
 			
 			//what is the factor here??
 			update_gaugemomentum(out_tmp, factor, global_link_pos, out);
@@ -364,7 +348,7 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 	 		//ka0 is kappa*BC-factor
 			//     _complex_times_su3(v1,ka0,v2);
 			//this must become v1 if the above is included again
-			tr_lambda_u(v2, out_tmp);
+			tr_lambda_u(v2, &out_tmp);
 			//what is the factor here??
 			update_gaugemomentum(out_tmp, factor, global_link_pos_down, out);			
 			///////////////////////////////////
@@ -396,7 +380,7 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 	 		//ka0 is kappa*BC-factor
 			//     _complex_times_su3(v1,ka0,v2);
 			//this must become v1 if the above is included again
-			tr_lambda_u(v2, out_tmp);
+			tr_lambda_u(v2, &out_tmp);
 			//what is the factor here??
 			update_gaugemomentum(out_tmp, factor, global_link_pos, out);
 
@@ -426,7 +410,7 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 	 		//ka0 is kappa*BC-factor
 			//     _complex_times_su3(v1,ka0,v2);
 			//this must become v1 if the above is included again
-			tr_lambda_u(v2, out_tmp);
+			tr_lambda_u(v2, &out_tmp);
 			//what is the factor here??
 			update_gaugemomentum(out_tmp, factor, global_link_pos_down, out);
 			///////////////////////////////////
@@ -458,7 +442,7 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 	 		//ka0 is kappa*BC-factor
 			//     _complex_times_su3(v1,ka0,v2);
 			//this must become v1 if the above is included again
-			tr_lambda_u(v2, out_tmp);
+			tr_lambda_u(v2, &out_tmp);
 			//what is the factor here??
 			update_gaugemomentum(out_tmp, factor, global_link_pos, out);
 
@@ -488,7 +472,7 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 	 		//ka0 is kappa*BC-factor
 			//     _complex_times_su3(v1,ka0,v2);
 			//this must become v1 if the above is included again
-			tr_lambda_u(v2, out_tmp);
+			tr_lambda_u(v2, &out_tmp);
 			//what is the factor here??
 			update_gaugemomentum(out_tmp, factor, global_link_pos_down, out);
 			///////////////////////////////////
@@ -520,7 +504,7 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 	 		//ka0 is kappa*BC-factor
 			//     _complex_times_su3(v1,ka0,v2);
 			//this must become v1 if the above is included again
-			tr_lambda_u(v2, out_tmp);
+			tr_lambda_u(v2, &out_tmp);
 			//what is the factor here??
 			update_gaugemomentum(out_tmp, factor, global_link_pos, out);
 
@@ -550,7 +534,7 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 	 		//ka0 is kappa*BC-factor
 			//     _complex_times_su3(v1,ka0,v2);
 			//this must become v1 if the above is included again
-			tr_lambda_u(v2, out_tmp);
+			tr_lambda_u(v2, &out_tmp);
 			//what is the factor here??
 			update_gaugemomentum(out_tmp, factor, global_link_pos_down, out);
 		}}
@@ -691,8 +675,9 @@ hmc_error leapfrog(inputparameters * parameters,
 
 	//initial step
 	cout << "\tinitial step:" << endl;
-	
+	cout << p2[0].e2 << endl;
 	convert_ae_to_ae2_global( p_out, p2);
+	cout << p2[0].e2 << endl;
 	//here, phi is inverted using the orig. gaugefield
 	force(parameters, u_out ,
 		#ifdef _FERMIONS_
