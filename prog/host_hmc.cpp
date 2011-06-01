@@ -173,11 +173,39 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
 
 #ifdef _FERMIONS_
 
+void update_gaugemomentum(hmc_algebraelement2 in, hmc_float factor, int global_link_pos, hmc_gauge_momentum * out){
+			out[global_link_pos*8 + 0] += factor*in.e0;
+			out[global_link_pos*8 + 1] += factor*in.e1;
+			out[global_link_pos*8 + 2] += factor*in.e2;
+			out[global_link_pos*8 + 3] += factor*in.e3;
+			out[global_link_pos*8 + 4] += factor*in.e4;
+			out[global_link_pos*8 + 5] += factor*in.e5;
+			out[global_link_pos*8 + 6] += factor*in.e6;
+			out[global_link_pos*8 + 7] += factor*in.e7;
+}
+
+//future version with structs only
+/*
+void update_gaugemomentum(hmc_algebraelement2 in, hmc_float factor, int global_link_pos, hmc_algebraelement2 * out){
+			out[global_link_pos*8].e0 += factor*in.e0;
+			out[global_link_pos*8].e1 += factor*in.e1;
+			out[global_link_pos*8].e2 += factor*in.e2;
+			out[global_link_pos*8].e3 += factor*in.e3;
+			out[global_link_pos*8].e4 += factor*in.e4;
+			out[global_link_pos*8].e5 += factor*in.e5;
+			out[global_link_pos*8].e6 += factor*in.e6;
+			out[global_link_pos*8].e7 += factor*in.e7;
+}
+*/
+
+//deprecated version without structs:
+/*
 void update_gaugemomentum(hmc_algebraelement in, hmc_float factor, int global_link_pos, hmc_gauge_momentum * out){
 			for(int i = 0; i<8; i++){
   					out[global_link_pos*8 + i] += factor*in[i];
 			}
 }
+*/
 
 //CP: fermion_force = (gamma_5 Y)^dagger iT_i
 //	it is assumed that the results can be added to out!!
@@ -188,7 +216,7 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
   hmc_su3vector psia,psib,phia,phib;
 	hmc_full_spinor y, plus;
 	int nn, nup, ndown;
-	hmc_algebraelement out_tmp;
+	hmc_algebraelement2 out_tmp;
 	int global_link_pos;
 	int global_link_pos_down;
 	hmc_float factor = (*parameters).get_kappa();
@@ -605,6 +633,7 @@ hmc_error leapfrog(inputparameters * parameters,
 
 	//initial step
 	cout << "\tinitial step:" << endl;
+	//here, phi is inverted using the orig. gaugefield
 	force(parameters, u_out ,
 		#ifdef _FERMIONS_
 		phi, phi_inv_orig, 

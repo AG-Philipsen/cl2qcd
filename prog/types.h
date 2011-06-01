@@ -79,7 +79,6 @@ typedef hmc_complex hmc_3x3matrix[3][3];
 typedef hmc_complex hmc_gaugefield [NC*(NC-1)][NDIM][VOLSPACE][NTIME];
 typedef hmc_float ildg_gaugefield[2*NC*(NC-1)*NDIM*VOLSPACE*NTIME];
 typedef hmc_float hmc_gauge_momentum;
-typedef hmc_float hmc_algebraelement [NC*NC-1];
 #else
 /** A generic SU3 matrix */
 typedef hmc_complex hmc_su3matrix [NC][NC];
@@ -90,9 +89,22 @@ typedef hmc_complex hmc_3x3matrix[3][3];
 /** The full gaugefield */
 typedef hmc_complex hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME];
 typedef hmc_float ildg_gaugefield[2*NC*NC*NDIM*VOLSPACE*NTIME];
+
+#endif
+
 typedef hmc_float hmc_gauge_momentum;
 typedef hmc_float hmc_algebraelement [NC*NC-1];
-#endif
+typedef struct {
+  hmc_float e0;
+ 	hmc_float e1;
+  hmc_float e2;
+  hmc_float e3;
+  hmc_float e4;
+  hmc_float e5;
+  hmc_float e6;
+  hmc_float e7;
+  hmc_float e8;
+} hmc_algebraelement2;
 
 typedef hmc_complex hmc_su3vector[NC];
 

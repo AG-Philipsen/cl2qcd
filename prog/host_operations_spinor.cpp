@@ -532,7 +532,25 @@ void spinproj_gamma3_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
 */
 
 //////////////////////////////////////////////////////////////////////
-//calculates the trace of generator times 3x3-matrix and stores this in a su3-algebraelement
+
+
+//calculates the trace of i times generator times 3x3-matrix and stores this in a su3-algebraelement
+//now using structs
+void tr_lambda_u(hmc_3x3matrix in, hmc_algebraelement2 out){
+				(out).e0 = ( -(in)[1][0].im - (in)[0][1].im);
+				(out).e1 = (+(in)[1][0].re-(in)[0][1].re);
+				(out).e2 = (-(in)[0][0].im+(in)[1][1].im);
+				(out).e3 = (-(in)[2][0].im-(in)[0][2].im);
+				(out).e4 = (+(in)[2][0].re-(in)[0][2].re);
+				(out).e5 = (-(in)[2][1].im-(in)[1][2].im);
+				(out).e6 = (+(in)[2][1].re-(in)[1][2].re);
+				(out).e7 = (-(in)[0][0].im-(in)[1][1].im + 2.0*(in)[2][2].im)*0.577350269189625;
+	
+}
+
+//deprecated version without struct
+///////////////////////////////////////////////////////////////
+/*
 void tr_lambda_u(hmc_3x3matrix in, hmc_algebraelement out){
 				(out)[0] = ( -(in)[1][0].im - (in)[0][1].im);
 				(out)[1] = (+(in)[1][0].re-(in)[0][1].re);
@@ -542,8 +560,10 @@ void tr_lambda_u(hmc_3x3matrix in, hmc_algebraelement out){
 				(out)[5] = (-(in)[2][1].im-(in)[1][2].im);
 				(out)[6] = (+(in)[2][1].re-(in)[1][2].re);
 				(out)[7] = (-(in)[0][0].im-(in)[1][1].im + 2.0*(in)[2][2].im)*0.577350269189625;
-	
 }
+*/
+
+
 //calculates the Dirac-Trace of the matrix resulting from multiplying v*u^dagger + w*x^dagger, where u, v, w, x are SU(3)-vectors
 //	the result is a 3x3-matrix
 void tr_v_times_u_dagger(hmc_su3vector v, hmc_su3vector u, hmc_su3vector w, hmc_su3vector x, hmc_3x3matrix out){

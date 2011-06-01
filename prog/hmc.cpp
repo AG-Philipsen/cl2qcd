@@ -88,34 +88,7 @@ cout << "initial values of observables:\n\t" ;
 // 
 // #ifdef _USEHMC_
 
-cout << "testing fermion force..." << endl;
 
-hmc_spinor_field* phi2 = new hmc_spinor_field[SPINORFIELDSIZE];
-hmc_spinor_field* phi2_inv = new hmc_spinor_field[SPINORFIELDSIZE];
-hmc_gauge_momentum* p2 = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
-set_zero_gaugemomenta(p2);
-hmc_float tmp;
-gaugemomenta_squarenorm(p2, &tmp);
-cout <<scientific <<  "input squarenorm of force: " << tmp << endl;
-
-for(int i = 0; i<VOL4D; i++){
-	for(int j = 0; j<SPINORSIZE; j++){
-		phi2[SPINORSIZE*i + j].re = 1.;
-		phi2[SPINORSIZE*i + j].im = 1.;
-		phi2_inv[SPINORSIZE*i + j].re = 2.;
-		phi2_inv[SPINORSIZE*i + j].im = 2.;
-		
-}}
-cout << "squarenorm of inputvectors: " << global_squarenorm (phi2) <<endl;
-fermion_force(&parameters, gaugefield, phi2, phi2_inv,p2 );
-gaugemomenta_squarenorm(p2, &tmp);
-cout << "squarenorm of force: " << tmp << endl;
-
-delete [] phi2;
-delete [] phi2_inv;
-delete [] p2;
-
-return 0;
 
 
 
@@ -144,7 +117,7 @@ return 0;
 #endif
 	hmc_gauge_momentum* p = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
 	hmc_gauge_momentum* new_p = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
-	//the "old" field is the "gaugefield introduced above
+	//the "old" field is the "gaugefield" introduced above
 	hmc_gaugefield * new_field;
 	new_field = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
 	
