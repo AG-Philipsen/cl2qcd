@@ -1,7 +1,19 @@
 #include "hmc.h"
 
 
-
+hmc_error copy_gaugemomenta_new2(hmc_algebraelement2 * source, hmc_algebraelement2 * dest){
+	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){	
+		(dest[i]).e0 = (source[i]).e0;
+		(dest[i]).e1 = (source[i]).e1;
+		(dest[i]).e2 = (source[i]).e2;
+		(dest[i]).e3 = (source[i]).e3;
+		(dest[i]).e4 = (source[i]).e4;
+		(dest[i]).e5 = (source[i]).e5;
+		(dest[i]).e6 = (source[i]).e6;
+		(dest[i]).e7 = (source[i]).e7;
+	}
+	return HMC_SUCCESS;
+}
 
 void convert_ae2_to_aetmp(hmc_algebraelement2 in, hmc_algebraelement out){
 	out[0] = (in).e0;
@@ -12,6 +24,23 @@ void convert_ae2_to_aetmp(hmc_algebraelement2 in, hmc_algebraelement out){
 	out[5] = (in).e5;
 	out[6] = (in).e6;
 	out[7] = (in).e7;
+}
+
+void convert_ae_to_ae2(hmc_algebraelement in, hmc_algebraelement2 * out){
+	(*out).e0 = in[0];
+	(*out).e1 = in[1];
+	(*out).e2 = in[2];
+	(*out).e3 = in[3];
+	(*out).e4 = in[4];
+	(*out).e5 = in[5];
+	(*out).e6 = in[6];
+	(*out).e7 = in[7];
+}
+
+void convert_ae_to_ae2_global(hmc_gauge_momentum * in, hmc_algebraelement2 * out){
+	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){
+		convert_ae_to_ae2(&(in[i*8]), &out[i]);
+	}
 }
 
 void convert_ae2_to_ae_globaltmp(hmc_algebraelement2 * in, hmc_gauge_momentum * out){
@@ -192,6 +221,8 @@ return 0;
 #endif
 	hmc_gauge_momentum* p = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
 	hmc_gauge_momentum* new_p = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
+		hmc_algebraelement2* new_p2 = new hmc_algebraelement2[GAUGEMOMENTASIZE2];
+		hmc_algebraelement2* p2 = new hmc_algebraelement2[GAUGEMOMENTASIZE2];
 	//the "old" field is the "gaugefield" introduced above
 	hmc_gaugefield * new_field;
 	new_field = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
@@ -202,8 +233,8 @@ return 0;
 	for(iter = 0; iter < hmc_iter; iter ++) {
 		cout << "\tinit gauge momentum" << endl;
 		//init gauge_momenta
-		generate_gaussian_gauge_momenta(p);
-		
+		generate_gaussian_gauge_momenta(p2);
+// 		convert_ae2_to_ae_globaltmp(new_p2, p);
 		#ifdef _FERMIONS_
 		//init/update spinorfield phi
 		cout << "\tinit spinorfield " << endl;
@@ -222,15 +253,18 @@ return 0;
 		cout << "\tperform leapfrog to update gaugefield and gaugemomentum" << endl;
 	
 		copy_gaugefield(gaugefield, new_field);
-		copy_gaugemomenta(p, new_p);
+		copy_gaugemomenta(p2, new_p2);
 		
+// 		convert_ae_to_ae2_global(new_p, new_p2);
+// 		convert_ae_to_ae2_global(p, p2);
 		//use chi to store phi_inv from the original configuration
 		leapfrog(&parameters, 
 									 #ifdef _FERMIONS_
 									 phi, phi_inv, chi, 
 									 #endif
-									 new_field, new_p
+									 new_field, new_p2
 									 );
+		
 		cout << "\tobservables of new config:\n\t" ;
 		print_gaugeobservables(new_field, &polytime, &plaqtime);
 		//metropolis step: afterwards, the updated config is again in gaugefield and p
@@ -241,7 +275,7 @@ return 0;
 										 #ifdef _FERMIONS_ 
 										 phi, phi_inv, chi, 
 										 #endif 
-										 gaugefield, p, new_field, new_p);
+										 gaugefield, p2, new_field, new_p2);
 		if(err!=HMC_SUCCESS) {cout << "\t\t\terror: " << err << endl; return HMC_STDERR; }
 
 		cout<< "\tfinished HMC trajectory " << iter << endl;

@@ -49,7 +49,7 @@ hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta);
  * @todo check the return values. They are supposed to be real!! If that is the case one can change the return argument
  * @todo needs testing
  */
-hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_momentum * p 
+hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_algebraelement2 * p 
 #ifdef _FERMIONS_
 	,hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi
 #endif
@@ -75,7 +75,7 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta
 #ifdef _FERMIONS_
 	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_spinor_field * phi_inv_orig
 #endif
-	, hmc_gaugefield * field, hmc_gauge_momentum * p, hmc_gaugefield * new_field, hmc_gauge_momentum * new_p);
+	, hmc_gaugefield * field, hmc_algebraelement2 * p, hmc_gaugefield * new_field, hmc_algebraelement2* new_p);
 
 /**
  * Molecular Dynamics Update of the Gauge Momenta using the Leapfrog-scheme:
@@ -107,7 +107,7 @@ hmc_error md_update_gauge_momenta(hmc_float eps, hmc_algebraelement2 * p_inout, 
  * @todo needs testing
  * 
  */
-hmc_error md_update_gaugefield(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gaugefield * u_inout);
+hmc_error md_update_gaugefield(hmc_float eps, hmc_algebraelement2 * p_in, hmc_gaugefield * u_inout);
 
 #ifdef _FERMIONS_
 /**
@@ -206,7 +206,7 @@ hmc_error leapfrog(inputparameters * parameters
 #ifdef _FERMIONS_
 	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_spinor_field * phi_inv_orig
 #endif
-	, hmc_gaugefield * u_out, hmc_gauge_momentum * p_out
+	, hmc_gaugefield * u_out, hmc_algebraelement2 * p_out
 	); 
 
 

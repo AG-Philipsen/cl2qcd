@@ -191,6 +191,6 @@ void gaugefield_apply_chem_pot(hmc_su3matrix * u, hmc_su3matrix * udagger, hmc_f
  * @todo implement Morningstar-Peardon
  * @todo in the end this should be moved elsewhere since it is not specific to he hmc-algorithm
  */
-hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix *out, hmc_float epsilon); 
+hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement2 inn, hmc_su3matrix *out, hmc_float epsilon); 
 
 #endif

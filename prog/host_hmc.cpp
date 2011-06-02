@@ -2,52 +2,6 @@
 
 using namespace std;
 
-
-void convert_ae_to_ae2(hmc_algebraelement in, hmc_algebraelement2 * out){
-	(*out).e0 = in[0];
-	(*out).e1 = in[1];
-	(*out).e2 = in[2];
-	(*out).e3 = in[3];
-	(*out).e4 = in[4];
-	(*out).e5 = in[5];
-	(*out).e6 = in[6];
-	(*out).e7 = in[7];
-}
-
-void convert_ae2_to_ae(hmc_algebraelement2 in, hmc_algebraelement out){
-	out[0] = (in).e0;
-	out[1] = (in).e1;
-	out[2] = (in).e2;
-	out[3] = (in).e3;
-	out[4] = (in).e4;
-	out[5] = (in).e5;
-	out[6] = (in).e6;
-	out[7] = (in).e7;
-}
-
-void convert_ae2_to_ae_global(hmc_algebraelement2 * in, hmc_gauge_momentum * out){
-	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){
-		convert_ae2_to_ae(in[i], &(out[i*8]));
-	}
-}
-
-void convert_ae_to_ae2_global(hmc_gauge_momentum * in, hmc_algebraelement2 * out){
-	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){
-		convert_ae_to_ae2(&(in[i*8]), &out[i]);
-	}
-}
-
-void update_gaugemomentum(hmc_algebraelement2 in, hmc_float factor, int global_link_pos, hmc_algebraelement2 * out){
-			(out[global_link_pos]).e0 += factor*in.e0;
-			(out[global_link_pos]).e1 += factor*in.e1;
-			(out[global_link_pos]).e2 += factor*in.e2;
-			(out[global_link_pos]).e3 += factor*in.e3;
-			(out[global_link_pos]).e4 += factor*in.e4;
-			(out[global_link_pos]).e5 += factor*in.e5;
-			(out[global_link_pos]).e6 += factor*in.e6;
-			(out[global_link_pos]).e7 += factor*in.e7;
-}
-
 void acc_factor_times_algebraelement(hmc_algebraelement2 * inout, hmc_float factor, hmc_algebraelement2 force_in){
 	(*inout).e0+=factor*(force_in).e0; 
 	(*inout).e1+=factor*(force_in).e1;
@@ -57,6 +11,10 @@ void acc_factor_times_algebraelement(hmc_algebraelement2 * inout, hmc_float fact
 	(*inout).e5+=factor*(force_in).e5;
 	(*inout).e6+=factor*(force_in).e6;
 	(*inout).e7+=factor*(force_in).e7;
+}
+
+void update_gaugemomentum(hmc_algebraelement2 in, hmc_float factor, int global_link_pos, hmc_algebraelement2 * out){
+		acc_factor_times_algebraelement(&out[global_link_pos], factor, in);
 }
 
 //CP: molecular dynamics update for the gauge momenta:
@@ -71,7 +29,7 @@ hmc_error md_update_gauge_momenta(hmc_float eps, hmc_algebraelement2 * p_inout, 
 
 //molecular dynamics update for the gaugefield:
 //u_out = exp(i eps p_in) u_in
-hmc_error md_update_gaugefield(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gaugefield * u_inout){
+hmc_error md_update_gaugefield(hmc_float eps, hmc_algebraelement2 * p_in, hmc_gaugefield * u_inout){
 	int index;
 	for(int t = 0; t<NTIME; t++){
 		for(int pos = 0; pos < VOLSPACE; pos++){
@@ -81,7 +39,7 @@ hmc_error md_update_gaugefield(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gau
 			index= get_global_link_pos(mu, pos, t);
 			// an su3 algebra element has NC*NC-1 = 8 hmc_float entries
 			// &(p_in[index*8]) should point to the right position for the pos-th element of the long gaugemomentum vector p_in
-			build_su3matrix_by_exponentiation(&(p_in[index*8]), &tmp2, eps);
+			build_su3matrix_by_exponentiation((p_in[index]), &tmp2, eps);
 			get_su3matrix(&tmp, u_inout, pos, t, mu);
 			accumulate_su3matrix_prod( &tmp2, &tmp);
 			put_su3matrix(u_inout, &tmp2, pos, t, mu);
@@ -118,9 +76,25 @@ hmc_complex s_fermion(hmc_spinor_field * phi, hmc_spinor_field * QplusQminusphi)
 	return scalar_product(phi, QplusQminusphi);
 }
 #endif /* _FERMIONS_ */
-
+hmc_error gaugemomenta_squarenorm_new(hmc_algebraelement2 * in, hmc_float * result){
+	//make sure result is zero
+	(*result) = 0.;
+	hmc_float sum = 0.;
+	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){
+		sum += (in[i]).e0*(in[i]).e0 +
+		       (in[i]).e1*(in[i]).e1 +
+		       (in[i]).e2*(in[i]).e2 +
+		       (in[i]).e3*(in[i]).e3 +
+		       (in[i]).e4*(in[i]).e4 +
+		       (in[i]).e5*(in[i]).e5 +
+		       (in[i]).e6*(in[i]).e6 +
+		       (in[i]).e7*(in[i]).e7;
+	}
+	(*result) = sum;
+	return HMC_SUCCESS;
+}
 //S_gauge + S_fermion + S_gaugemomenta
-hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_momentum * p
+hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_algebraelement2 * p
 		#ifdef _FERMIONS_
 		, hmc_spinor_field * phi, hmc_spinor_field * phi_inv
 		#endif
@@ -136,7 +110,7 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
 	#endif
 	//s_gm = 1/2*squarenorm(Pl)
 	hmc_float s_gm;
-	gaugemomenta_squarenorm(p, &s_gm);
+	gaugemomenta_squarenorm_new(p, &s_gm);
 	result.re += 0.5*s_gm;
 	
 	return result;
@@ -518,12 +492,28 @@ cout << "s_fermion of inverted phi is: " << tmp.re << " " << tmp.im << endl;
 #endif
 	return HMC_SUCCESS;
 }
-
+hmc_error copy_gaugemomenta_old(hmc_gauge_momentum * source, hmc_gauge_momentum * dest){
+	// copies source to destination within cpu memory, layer for momentum array
+	return hmc_floatcopy((hmc_float *)source, (hmc_float *)dest, GAUGEMOMENTASIZE); // SL: not tested
+}
+hmc_error copy_gaugemomenta_new(hmc_algebraelement2 * source, hmc_algebraelement2 * dest){
+	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){	
+		(source[i]).e0 = (dest[i]).e0;
+		(source[i]).e1 = (dest[i]).e1;
+		(source[i]).e2 = (dest[i]).e2;
+		(source[i]).e3 = (dest[i]).e3;
+		(source[i]).e4 = (dest[i]).e4;
+		(source[i]).e5 = (dest[i]).e5;
+		(source[i]).e6 = (dest[i]).e6;
+		(source[i]).e7 = (dest[i]).e7;
+	}
+	return HMC_SUCCESS;
+}
 hmc_error metropolis(hmc_float rndnumber, hmc_float beta, 
 										 #ifdef _FERMIONS_
 										 hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_spinor_field * phi_inv_orig, 
 										 #endif
-										 hmc_gaugefield * field,	hmc_gauge_momentum * p, hmc_gaugefield * new_field, hmc_gauge_momentum * new_p){
+										 hmc_gaugefield * field,	hmc_algebraelement2 * p, hmc_gaugefield * new_field, hmc_algebraelement2 * new_p){
 	// takes:
 	//		phi and beta as constant
 	//		new/old versions of gaugefield and of momenta
@@ -562,7 +552,7 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta,
 	if(rndnumber <= compare_prob){
 		// perform the change nonprimed->primed !
 		copy_gaugefield(new_field, field);
-		copy_gaugemomenta(new_p, p);
+		copy_gaugemomenta_new(new_p, p);
 		// SL: this works as long as p and field are pointers to the *original* memory locations!
 		cout << "new configuration accepted" << endl;
 	}
@@ -577,60 +567,48 @@ hmc_error leapfrog(inputparameters * parameters,
 									 #ifdef _FERMIONS_
 									 hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_spinor_field * phi_inv_orig, 
 									 #endif
-									 hmc_gaugefield * u_out, hmc_gauge_momentum * p_out	){
+									 hmc_gaugefield * u_out, hmc_algebraelement2 * p_out	){
 	// CP: it operates directly on the fields p_out and u_out
 	int steps = (*parameters).get_integrationsteps1() ;	
 	hmc_float stepsize = ((*parameters).get_tau()) /((hmc_float) steps);
 	int k;
 	hmc_float stepsize_half = 0.5*stepsize;
 	
-	hmc_gauge_momentum* force_tmp = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
-	hmc_algebraelement2* force_tmp2 = new hmc_algebraelement2[GAUGEMOMENTASIZE2];
-	hmc_algebraelement2* p2 = new hmc_algebraelement2[GAUGEMOMENTASIZE2];
+	hmc_algebraelement2* force_vec = new hmc_algebraelement2[GAUGEMOMENTASIZE2];
 
 	//initial step
 	cout << "\tinitial step:" << endl;
-	convert_ae_to_ae2_global( p_out, p2);
 	//here, phi is inverted using the orig. gaugefield
 	force(parameters, u_out ,
 		#ifdef _FERMIONS_
 		phi, phi_inv_orig, 
 		#endif
-		force_tmp2);
+		force_vec);
 	hmc_float tmp;
-convert_ae2_to_ae_global(p2, p_out);
-gaugemomenta_squarenorm(p_out, &tmp);
-cout<<"initial: "<< tmp << endl;
-	md_update_gauge_momenta(stepsize_half, p2, force_tmp2);
-convert_ae2_to_ae_global(p2, p_out);
-gaugemomenta_squarenorm(p_out, &tmp);
-cout<<"final: "<< tmp << endl;	
+	md_update_gauge_momenta(stepsize_half, p_out, force_vec);
 	//intermediate steps
 	if(steps > 1) cout << "\tperform " << steps << " intermediate steps " << endl;
 	for(k = 1; k<steps; k++){
-		convert_ae2_to_ae_global(p2, p_out);
 		md_update_gaugefield(stepsize, p_out, u_out);
 		force(parameters, u_out ,
 			#ifdef _FERMIONS_
 			phi, phi_inv, 
 			#endif
-			force_tmp2);
-		md_update_gauge_momenta(stepsize, p2, force_tmp2);
+			force_vec);
+		md_update_gauge_momenta(stepsize, p_out, force_vec);
 	}
 	
 	//final step
 	cout << "\tfinal step" << endl;
-	convert_ae2_to_ae_global(p2, p_out);
 	md_update_gaugefield(stepsize, p_out, u_out);
 	force(parameters, u_out ,
 		#ifdef _FERMIONS_
 		phi, phi_inv, 
 		#endif
-		force_tmp2);
-	md_update_gauge_momenta(stepsize_half, p2,force_tmp2); 
-	convert_ae2_to_ae_global(p2, p_out);
+		force_vec);
+	md_update_gauge_momenta(stepsize_half, p_out,force_vec); 
 	
-	delete [] force_tmp;
+	delete [] force_vec;
 	
 	cout << "\tfinished leapfrog" << endl;
 	return HMC_SUCCESS;
