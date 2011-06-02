@@ -103,7 +103,6 @@ typedef struct {
   hmc_float e5;
   hmc_float e6;
   hmc_float e7;
-  hmc_float e8;
 } hmc_algebraelement2;
 
 typedef hmc_complex hmc_su3vector[NC];

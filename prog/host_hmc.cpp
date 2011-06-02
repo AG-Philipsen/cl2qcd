@@ -38,17 +38,18 @@ void convert_ae_to_ae2_global(hmc_gauge_momentum * in, hmc_algebraelement2 * out
 }
 
 void update_gaugemomentum(hmc_algebraelement2 in, hmc_float factor, int global_link_pos, hmc_algebraelement2 * out){
-			out[global_link_pos].e0 += factor*in.e0;
-			out[global_link_pos].e1 += factor*in.e1;
-			out[global_link_pos].e2 += factor*in.e2;
-			out[global_link_pos].e3 += factor*in.e3;
-			out[global_link_pos].e4 += factor*in.e4;
-			out[global_link_pos].e5 += factor*in.e5;
-			out[global_link_pos].e6 += factor*in.e6;
-			out[global_link_pos].e7 += factor*in.e7;
+			(out[global_link_pos]).e0 += factor*in.e0;
+			(out[global_link_pos]).e1 += factor*in.e1;
+			(out[global_link_pos]).e2 += factor*in.e2;
+			(out[global_link_pos]).e3 += factor*in.e3;
+			(out[global_link_pos]).e4 += factor*in.e4;
+			(out[global_link_pos]).e5 += factor*in.e5;
+			(out[global_link_pos]).e6 += factor*in.e6;
+			(out[global_link_pos]).e7 += factor*in.e7;
 }
 
 void acc_factor_times_algebraelement(hmc_algebraelement2 * inout, hmc_float factor, hmc_algebraelement2 force_in){
+	(*inout).e0+=factor*(force_in).e0; 
 	(*inout).e1+=factor*(force_in).e1;
 	(*inout).e2+=factor*(force_in).e2;
 	(*inout).e3+=factor*(force_in).e3;
@@ -56,7 +57,6 @@ void acc_factor_times_algebraelement(hmc_algebraelement2 * inout, hmc_float fact
 	(*inout).e5+=factor*(force_in).e5;
 	(*inout).e6+=factor*(force_in).e6;
 	(*inout).e7+=factor*(force_in).e7;
-	(*inout).e8+=factor*(force_in).e8; 
 }
 
 //CP: molecular dynamics update for the gauge momenta:
@@ -469,7 +469,7 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 	set_zero_gaugemomenta(out);
 	//add contributions
 	cout << "\t\tcalc gauge_force..." << endl;
-// 	gauge_force(parameters, field, out);
+	gauge_force(parameters, field, out);
 #ifdef _FERMIONS_
 	cout << "\t\tinvert fermion field..." << endl;
 	//the algorithm needs two spinor-fields
@@ -590,17 +590,21 @@ hmc_error leapfrog(inputparameters * parameters,
 
 	//initial step
 	cout << "\tinitial step:" << endl;
-	cout << p2[0].e2 << endl;
 	convert_ae_to_ae2_global( p_out, p2);
-	cout << p2[0].e2 << endl;
 	//here, phi is inverted using the orig. gaugefield
 	force(parameters, u_out ,
 		#ifdef _FERMIONS_
 		phi, phi_inv_orig, 
 		#endif
 		force_tmp2);
+	hmc_float tmp;
+convert_ae2_to_ae_global(p2, p_out);
+gaugemomenta_squarenorm(p_out, &tmp);
+cout<<"initial: "<< tmp << endl;
 	md_update_gauge_momenta(stepsize_half, p2, force_tmp2);
-	
+convert_ae2_to_ae_global(p2, p_out);
+gaugemomenta_squarenorm(p_out, &tmp);
+cout<<"final: "<< tmp << endl;	
 	//intermediate steps
 	if(steps > 1) cout << "\tperform " << steps << " intermediate steps " << endl;
 	for(k = 1; k<steps; k++){
