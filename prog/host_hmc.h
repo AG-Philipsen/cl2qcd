@@ -68,7 +68,7 @@ hmc_float hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_algebraelement
  * @todo needs testing
  * @todo CP: if it works, one should replace the return value with 0 or 1, depending on wether the new config was accepted or not!!
  */
-hmc_error metropolis(hmc_float rndnumber, hmc_float beta
+hmc_error metropolis(hmc_float rndnumber, inputparameters * parameter
 #ifdef _FERMIONS_
 	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_float energy_init
 #endif
@@ -151,7 +151,7 @@ hmc_error md_update_spinorfield(hmc_spinor_field * in, hmc_spinor_field * out, h
  * @todo check if return value is always real. If so, change the return argument.
  *
  */
-hmc_complex s_fermion(hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi);
+hmc_float s_fermion(inputparameters*parameters, hmc_gaugefield * field, hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi);
 #endif
 
 /**

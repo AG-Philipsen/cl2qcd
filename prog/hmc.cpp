@@ -163,7 +163,7 @@ cout << "initial values of observables:\n\t" ;
 		cout << "\tperform Metropolis step: " << endl;
 		//generate new random-number
 		rnd_number = hmc_rnd_gen.doub();
-		err = metropolis(rnd_number, beta, 
+		err = metropolis(rnd_number, &parameters, 
 										 #ifdef _FERMIONS_ 
 										 phi, phi_inv, energy_init, 
 										 #endif 

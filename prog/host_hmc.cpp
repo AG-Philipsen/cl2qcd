@@ -61,8 +61,10 @@ hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta){
 #ifdef _FERMIONS_
 // sum_links phi*_i (M^+M)_ij^-1 phi_j
 // here it is assumed that the rhs has already been computed... (because usually it has been during the leapfrog..)
-hmc_complex s_fermion(hmc_spinor_field * phi, hmc_spinor_field * QplusQminusphi){
-	return scalar_product(phi, QplusQminusphi);
+hmc_float s_fermion(inputparameters*parameters, hmc_gaugefield * field, hmc_spinor_field * phi, hmc_spinor_field * QplusQminusphi_inv){
+	//CP: phi is not needed after this, so it can be used to store M (QplusQminus_inv)
+	Qminus(parameters, QplusQminusphi_inv, field, phi);
+	return global_squarenorm(phi);
 }
 #endif /* _FERMIONS_ */
 
@@ -446,9 +448,6 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 	else{
 		//here, one has first to invert (with BiCGStab) Qplus phi = X and then invert Qminus X => Qminus^-1 Qplus^-1 phi = (QplusQminus)^-1 phi = Y = phi_inv
 	}
-	hmc_complex tmp;
-tmp  = s_fermion(phi, phi_inv);
-cout << "s_fermion of inverted phi is: " << tmp.re << " " << tmp.im << endl;
 /** @todo control the fields here again!!! */
 	fermion_force(parameters, field, phi_inv, X, out);
 	
@@ -457,7 +456,7 @@ cout << "s_fermion of inverted phi is: " << tmp.re << " " << tmp.im << endl;
 	return HMC_SUCCESS;
 }
 
-hmc_error metropolis(hmc_float rndnumber, hmc_float beta, 
+hmc_error metropolis(hmc_float rndnumber, inputparameters * parameter,  
 										 #ifdef _FERMIONS_
 										 hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_float energy_init, 
 										 #endif
@@ -467,21 +466,16 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta,
 	//		new/old versions of gaugefield and of momenta
 	//		and a random number
 	//		if it has to be, performs the change old->new, and returns true if there are no failures.
-	hmc_float h_old = hamiltonian(field, beta, p);
-	hmc_float h_new = hamiltonian(new_field, beta, new_p);
+	hmc_float h_old = hamiltonian(field, (*parameter).get_beta(), p);
+	hmc_float h_new = hamiltonian(new_field, (*parameter).get_beta(), new_p);
 	
 	#ifdef _FERMIONS_
-	hmc_complex tmp;
-	tmp  = s_fermion(phi, phi_inv);
-	cout << "s_fermion is:\t" << tmp.re << "  " << tmp.im << endl;
+	hmc_float tmp;
+	tmp  = s_fermion(parameter, field, phi, phi_inv);
 	#endif
-	h_new += tmp.re;
+	h_new += tmp;
 	h_old += energy_init;
 
-	if(tmp.im > projectioneps){
-		printf("\n\tError: imaginary part in H_NEW [in function: metropolis(...)].\n");
-		return HMC_COMPLEX_HAMILTONIANERROR;
-	}
 	/** @todo CP:  export h_diff */
 	hmc_float h_diff = h_old - h_new;
 	hmc_float compare_prob;
@@ -490,6 +484,13 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta,
 	}else{
 		compare_prob = 1.0;
 	}
+	//CP: Debugging
+	cout << "\t\th_old:\t"<<h_old<<"\tenergy_init:\t"<<energy_init<<endl;
+	cout << "\t\th_new:\t"<<h_new<<"\tfermion con:\t"<<tmp<<endl;
+	cout <<"\t\tacc_prob:\t"<<compare_prob<<endl;
+	
+	
+	
 	// SL: the following can be tuned, whether it is more costly to draw always the rnd number even when compare_prob=1
 	//     and whether the "if compare_prob==1" costs more or less than always evaluating the exp ...
 	if(rndnumber <= compare_prob){
