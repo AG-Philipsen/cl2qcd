@@ -37,21 +37,6 @@ void convert_ae_to_ae2_global(hmc_gauge_momentum * in, hmc_algebraelement2 * out
 	}
 }
 
-//deprecated version with one struct
-/*
-void update_gaugemomentum(hmc_algebraelement2 in, hmc_float factor, int global_link_pos, hmc_gauge_momentum * out){
-			out[global_link_pos*8 + 0] += factor*in.e0;
-			out[global_link_pos*8 + 1] += factor*in.e1;
-			out[global_link_pos*8 + 2] += factor*in.e2;
-			out[global_link_pos*8 + 3] += factor*in.e3;
-			out[global_link_pos*8 + 4] += factor*in.e4;
-			out[global_link_pos*8 + 5] += factor*in.e5;
-			out[global_link_pos*8 + 6] += factor*in.e6;
-			out[global_link_pos*8 + 7] += factor*in.e7;
-}
-*/
-//future version with structs only
-
 void update_gaugemomentum(hmc_algebraelement2 in, hmc_float factor, int global_link_pos, hmc_algebraelement2 * out){
 			out[global_link_pos].e0 += factor*in.e0;
 			out[global_link_pos].e1 += factor*in.e1;
@@ -62,16 +47,6 @@ void update_gaugemomentum(hmc_algebraelement2 in, hmc_float factor, int global_l
 			out[global_link_pos].e6 += factor*in.e6;
 			out[global_link_pos].e7 += factor*in.e7;
 }
-
-
-//deprecated version without structs:
-/*
-void update_gaugemomentum(hmc_algebraelement in, hmc_float factor, int global_link_pos, hmc_gauge_momentum * out){
-			for(int i = 0; i<8; i++){
-  					out[global_link_pos*8 + i] += factor*in[i];
-			}
-}
-*/
 
 void acc_factor_times_algebraelement(hmc_algebraelement2 * inout, hmc_float factor, hmc_algebraelement2 force_in){
 	(*inout).e1+=factor*(force_in).e1;
@@ -93,16 +68,6 @@ hmc_error md_update_gauge_momenta(hmc_float eps, hmc_algebraelement2 * p_inout, 
 	}
 	return HMC_SUCCESS;
 }
-
-//deprecated version without structs
-/*
-hmc_error md_update_gauge_momenta(hmc_float eps, hmc_gauge_momentum * p_inout, hmc_gauge_momentum * force_in){
-	for(int i = 0; i<GAUGEMOMENTASIZE; i++){
-		p_inout[i] -= eps*force_in[i];
-	}
-	return HMC_SUCCESS;
-}
-*/
 
 //molecular dynamics update for the gaugefield:
 //u_out = exp(i eps p_in) u_in
@@ -137,19 +102,6 @@ hmc_error md_update_spinorfield(hmc_spinor_field * in, hmc_spinor_field * out, h
 hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta){
 	/** @TODO CP: implement saving of plaquette measurement (and possibly t_plaq and s_plaq and also polyakov-loop??) */
 	hmc_float plaq=0;
-
-	//CP: obvious method
-// 	for(int t=0;t<NTIME;t++) {
-// 		for(int n=0;n<VOLSPACE;n++) {
-// 			for(int mu=0; mu<NDIM; mu++) {
-// 				for(int nu=0;nu<mu; nu++) {
-// 					hmc_su3matrix prod;
-// 					local_plaquette(field, &prod, n, t, mu, nu );
-// 					hmc_float tmpfloat = - trace_su3matrix(&prod).re;
-// 					plaq += tmpfloat;
-// 				}}}}
-// 	return beta/3.*plaq;
-	
 	//CP: alternative method: use already existing plaquette-functions
 	hmc_float t_plaq;
 	hmc_float s_plaq;
@@ -157,7 +109,6 @@ hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta){
 	//plaq is normalized by factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC), so one has to divide by it again
 	hmc_float factor = 2.0/static_cast<hmc_float>(VOL4D*NDIM*(NDIM-1)*NC);
 	return beta/6./factor*( - plaq);
-	
 }
 
 #ifdef _FERMIONS_
@@ -170,19 +121,19 @@ hmc_complex s_fermion(hmc_spinor_field * phi, hmc_spinor_field * QplusQminusphi)
 
 //S_gauge + S_fermion + S_gaugemomenta
 hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_momentum * p
-												#ifdef _FERMIONS_
-												, hmc_spinor_field * phi, hmc_spinor_field * phi_inv
-												#endif
-												){
+		#ifdef _FERMIONS_
+		, hmc_spinor_field * phi, hmc_spinor_field * phi_inv
+		#endif
+		){
 	hmc_complex result;
 	hmc_complex tmp;
 	(result) = {0.,0.};
 	(result).re += s_gauge(field, beta);
-#ifdef _FERMIONS_
+	#ifdef _FERMIONS_
 	tmp  = s_fermion(phi, phi_inv);
 	cout << "s_fermion is:\t" << tmp.re << "  " << tmp.im << endl;
 	complexaccumulate(&result, &tmp);
-#endif
+	#endif
 	//s_gm = 1/2*squarenorm(Pl)
 	hmc_float s_gm;
 	gaugemomenta_squarenorm(p, &s_gm);
@@ -214,53 +165,17 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
 				multiply_su3matrices (&tmp, &U, &V);
 
 				hmc_algebraelement2 out_tmp;
-				//CP: way one with function-calls
-				//iterate through the different directions for i of which there are NC*NC-1 = 8
-	 			//in the function the gen_index runs from 1 to 8 (including 8) !! -> i +1 
-	 			//out is a vector of length NDIM*VOL4D*(NC*NC-1) = NDIM*VOL4D*8
-// 				hmc_3x3matrix tmp2;
-// 				for(int i = 0; i<8; i++){
-// 					multiply_generator_3x3matrix (&tmp2, i+1, &tmp);
-// 					trace_3x3matrix (&trace, &tmp2);
-// 					//CP: Minus???
-// 					(out_tmp)[i] = (trace.im);
-// 				}
-				
-				
-				
-				/*
-				//CP: hardcoded way: (like in tmlqcd)
-				(out_tmp)[0]  = ( -(tmp)[1][0].im - (tmp)[0][1].im);
-				(out_tmp)[1] = (+(tmp)[1][0].re-(tmp)[0][1].re);
-				(out_tmp)[2] = (-(tmp)[0][0].im+(tmp)[1][1].im);
-				(out_tmp)[3] = (-(tmp)[2][0].im-(tmp)[0][2].im);
-				(out_tmp)[4] = (+(tmp)[2][0].re-(tmp)[0][2].re);
-				(out_tmp)[5] = (-(tmp)[2][1].im-(tmp)[1][2].im);
-				(out_tmp)[6] = (+(tmp)[2][1].re-(tmp)[1][2].re);
-				(out_tmp)[7] = (-(tmp)[0][0].im-(tmp)[1][1].im + 2.0*(tmp)[2][2].im)*0.577350269189625;
-
-				hmc_float factor = -beta/3.;
-				for(int i = 0; i<8; i++){
-  					out[globalpos*8 + i] = factor*out_tmp[i];
-				}
-				*/
 				tr_lambda_u(tmp, &out_tmp);
-				hmc_float factor = -beta/3.;
+				hmc_float factor =-beta/3.;
 				update_gaugemomentum(out_tmp, factor, global_link_pos, out);
-			}
-		}
-	}
-	
+	}}}
 	return HMC_SUCCESS;
 }
 
 #ifdef _FERMIONS_
 
-
 //CP: fermion_force = (gamma_5 Y)^dagger iT_i
 //	it is assumed that the results can be added to out!!
-//deprecated:
-//hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * Y, hmc_spinor_field * X, hmc_gauge_momentum * out){
 hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * Y, hmc_spinor_field * X, hmc_algebraelement2 * out){
   hmc_su3matrix U, U_up, U_down;
 	hmc_3x3matrix v1, v2;
@@ -554,7 +469,7 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
 	set_zero_gaugemomenta(out);
 	//add contributions
 	cout << "\t\tcalc gauge_force..." << endl;
-	gauge_force(parameters, field, out);
+// 	gauge_force(parameters, field, out);
 #ifdef _FERMIONS_
 	cout << "\t\tinvert fermion field..." << endl;
 	//the algorithm needs two spinor-fields

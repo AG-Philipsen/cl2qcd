@@ -167,7 +167,8 @@ hmc_complex s_fermion(hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi);
  * @todo needs testing
  *
  */
-hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_gauge_momentum * out);
+hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_algebraelement2 * out);
+// hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_gauge_momentum * out);
 
 /**
  * Calculates the force for the molecular dynamics.

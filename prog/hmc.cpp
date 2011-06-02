@@ -110,7 +110,9 @@ cout << "initial values of observables:\n\t" ;
 // 
 // #ifdef _USEHMC_
 
-
+#ifdef _FERMIONS_
+int test_fermion_force = 0;
+if(test_fermion_force){
 cout << "testing fermion force..." << endl;
 
 hmc_spinor_field* phi2 = new hmc_spinor_field[SPINORFIELDSIZE];
@@ -139,6 +141,30 @@ delete [] phi2;
 delete [] phi2_inv;
 delete [] p2;
 return 0;
+}
+#endif
+
+
+int test_gauge_force = 0;
+if(test_gauge_force){
+cout << "testing gauge force..." << endl;
+
+hmc_gauge_momentum* p2 = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
+hmc_algebraelement2* p22 = new hmc_algebraelement2[GAUGEMOMENTASIZE2];
+set_zero_gaugemomenta(p22);
+hmc_float tmp;
+convert_ae2_to_ae_globaltmp(p22, p2);
+gaugemomenta_squarenorm(p2, &tmp);
+cout <<scientific <<  "input squarenorm of force: " << tmp << endl;
+
+gauge_force(&parameters, gaugefield ,p22 );
+convert_ae2_to_ae_globaltmp(p22, p2);
+gaugemomenta_squarenorm(p2, &tmp);
+
+cout << "squarenorm of force: " << tmp << endl;
+delete [] p2;
+return 0;
+}
 
 
 	//TODO CP: port to OpenCL *g*
