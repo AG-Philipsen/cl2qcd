@@ -90,6 +90,10 @@ cout << "initial values of observables:\n\t" ;
 // 
 // #ifdef _USEHMC_
 
+	
+	
+	
+	
 	//TODO CP: port to OpenCL *g*
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Hybrid Monte Carlo
@@ -100,6 +104,7 @@ cout << "initial values of observables:\n\t" ;
 	// suppose that in parameters the number of hmc_iterations is given, store them in a variable here...
 	int hmc_iter = parameters.get_hmcsteps();
 	int iter;
+	hmc_float energy_init = 0.;
 	err = 0;
 	//beta has to be saved here to give it to the metropolis step, all other parameters can be given via parameters
 	hmc_float beta = parameters.get_beta();
@@ -113,10 +118,8 @@ cout << "initial values of observables:\n\t" ;
 	hmc_spinor_field* phi_inv = new hmc_spinor_field[SPINORFIELDSIZE];
 	hmc_spinor_field* chi = new hmc_spinor_field[SPINORFIELDSIZE];
 #endif
-	hmc_gauge_momentum* p = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
-	hmc_gauge_momentum* new_p = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
-		hmc_algebraelement2* new_p2 = new hmc_algebraelement2[GAUGEMOMENTASIZE2];
-		hmc_algebraelement2* p2 = new hmc_algebraelement2[GAUGEMOMENTASIZE2];
+		hmc_algebraelement2* new_p = new hmc_algebraelement2[GAUGEMOMENTASIZE2];
+		hmc_algebraelement2* p = new hmc_algebraelement2[GAUGEMOMENTASIZE2];
 	//the "old" field is the "gaugefield" introduced above
 	hmc_gaugefield * new_field;
 	new_field = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
@@ -127,13 +130,12 @@ cout << "initial values of observables:\n\t" ;
 	for(iter = 0; iter < hmc_iter; iter ++) {
 		cout << "\tinit gauge momentum" << endl;
 		//init gauge_momenta
-		generate_gaussian_gauge_momenta(p2);
+		generate_gaussian_gauge_momenta(p);
 		#ifdef _FERMIONS_
 		//init/update spinorfield phi
 		cout << "\tinit spinorfield " << endl;
  		err = generate_gaussian_spinorfield(chi);
-		hmc_float tmp = global_squarenorm(chi);
-		cout << "the energy of gaussian spinor is: " << tmp << endl;
+		energy_init = global_squarenorm(chi);
 		if(err!=HMC_SUCCESS) {cout << "\t\t\terror: " << err << endl; return HMC_STDERR; }
 		
 		cout << "\tperform md update of spinorfield" << endl;
@@ -146,14 +148,13 @@ cout << "initial values of observables:\n\t" ;
 		cout << "\tperform leapfrog to update gaugefield and gaugemomentum" << endl;
 	
 		copy_gaugefield(gaugefield, new_field);
-		copy_gaugemomenta(p2, new_p2);
+		copy_gaugemomenta(p, new_p);
 		
-		//use chi to store phi_inv from the original configuration
 		leapfrog(&parameters, 
 									 #ifdef _FERMIONS_
-									 phi, phi_inv, chi, 
+									 phi, phi_inv,
 									 #endif
-									 new_field, new_p2
+									 new_field, new_p
 									 );
 		
 		cout << "\tobservables of new config:\n\t" ;
@@ -164,9 +165,9 @@ cout << "initial values of observables:\n\t" ;
 		rnd_number = hmc_rnd_gen.doub();
 		err = metropolis(rnd_number, beta, 
 										 #ifdef _FERMIONS_ 
-										 phi, phi_inv, chi, 
+										 phi, phi_inv, energy_init, 
 										 #endif 
-										 gaugefield, p2, new_field, new_p2);
+										 gaugefield, p, new_field, new_p);
 		if(err!=HMC_SUCCESS) {cout << "\t\t\terror: " << err << endl; return HMC_STDERR; }
 
 		cout<< "\tfinished HMC trajectory " << iter << endl;

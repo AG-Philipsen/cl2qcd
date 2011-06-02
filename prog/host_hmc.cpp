@@ -66,25 +66,15 @@ hmc_complex s_fermion(hmc_spinor_field * phi, hmc_spinor_field * QplusQminusphi)
 }
 #endif /* _FERMIONS_ */
 
-//S_gauge + S_fermion + S_gaugemomenta
-hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_algebraelement2 * p
-		#ifdef _FERMIONS_
-		, hmc_spinor_field * phi, hmc_spinor_field * phi_inv
-		#endif
-		){
-	hmc_complex result;
-	hmc_complex tmp;
-	(result) = {0.,0.};
-	(result).re += s_gauge(field, beta);
-	#ifdef _FERMIONS_
-	tmp  = s_fermion(phi, phi_inv);
-	cout << "s_fermion is:\t" << tmp.re << "  " << tmp.im << endl;
-	complexaccumulate(&result, &tmp);
-	#endif
+//Without fermions here!!! H = S_gauge + S_gaugemomenta
+hmc_float hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_algebraelement2 * p){
+	hmc_float result;
+	(result) = 0.;
+	(result) += s_gauge(field, beta);
 	//s_gm = 1/2*squarenorm(Pl)
 	hmc_float s_gm;
 	gaugemomenta_squarenorm(p, &s_gm);
-	result.re += 0.5*s_gm;
+	result += 0.5*s_gm;
 	
 	return result;
 }
@@ -132,7 +122,8 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 	hmc_algebraelement2 out_tmp;
 	int global_link_pos;
 	int global_link_pos_down;
-	hmc_float factor = (*parameters).get_kappa();
+	//the additional 2 comes from Tr(lambda_ij) = 2delta_ij
+	hmc_float factor = 2.*(*parameters).get_kappa();
 	int dir;
 	
 	//main loop
@@ -468,7 +459,7 @@ cout << "s_fermion of inverted phi is: " << tmp.re << " " << tmp.im << endl;
 
 hmc_error metropolis(hmc_float rndnumber, hmc_float beta, 
 										 #ifdef _FERMIONS_
-										 hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_spinor_field * phi_inv_orig, 
+										 hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_float energy_init, 
 										 #endif
 										 hmc_gaugefield * field,	hmc_algebraelement2 * p, hmc_gaugefield * new_field, hmc_algebraelement2 * new_p){
 	// takes:
@@ -476,28 +467,23 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta,
 	//		new/old versions of gaugefield and of momenta
 	//		and a random number
 	//		if it has to be, performs the change old->new, and returns true if there are no failures.
-	hmc_complex h_old = hamiltonian(field, beta, p
-																	#ifdef _FERMIONS_
-																	, phi, phi_inv_orig
-																	#endif
-																	);
-	hmc_complex h_new = hamiltonian(new_field, beta, new_p
-																	#ifdef _FERMIONS_
-																	, phi, phi_inv
-																	#endif
-																	);
-																	
-																	
-	if(h_old.im > projectioneps){
-		printf("\n\tError: imaginary part in H_OLD [in function: metropolis(...)].\n");
-		return HMC_COMPLEX_HAMILTONIANERROR;
-	}
-	if(h_new.im > projectioneps){
+	hmc_float h_old = hamiltonian(field, beta, p);
+	hmc_float h_new = hamiltonian(new_field, beta, new_p);
+	
+	#ifdef _FERMIONS_
+	hmc_complex tmp;
+	tmp  = s_fermion(phi, phi_inv);
+	cout << "s_fermion is:\t" << tmp.re << "  " << tmp.im << endl;
+	#endif
+	h_new += tmp.re;
+	h_old += energy_init;
+
+	if(tmp.im > projectioneps){
 		printf("\n\tError: imaginary part in H_NEW [in function: metropolis(...)].\n");
 		return HMC_COMPLEX_HAMILTONIANERROR;
 	}
 	/** @todo CP:  export h_diff */
-	hmc_float h_diff = h_old.re - h_new.re;
+	hmc_float h_diff = h_old - h_new;
 	hmc_float compare_prob;
 	if(h_diff<0){
 		compare_prob = exp(h_diff);
@@ -522,7 +508,7 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta,
 //it is assumed that gaugefield and gaugemomentum have been set to the old ones already
 hmc_error leapfrog(inputparameters * parameters, 
 									 #ifdef _FERMIONS_
-									 hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_spinor_field * phi_inv_orig, 
+									 hmc_spinor_field * phi, hmc_spinor_field * phi_inv, 
 									 #endif
 									 hmc_gaugefield * u_out, hmc_algebraelement2 * p_out	){
 	// CP: it operates directly on the fields p_out and u_out
@@ -538,7 +524,7 @@ hmc_error leapfrog(inputparameters * parameters,
 	//here, phi is inverted using the orig. gaugefield
 	force(parameters, u_out ,
 		#ifdef _FERMIONS_
-		phi, phi_inv_orig, 
+		phi, phi_inv, 
 		#endif
 		force_vec);
 	hmc_float tmp;

@@ -49,11 +49,7 @@ hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta);
  * @todo check the return values. They are supposed to be real!! If that is the case one can change the return argument
  * @todo needs testing
  */
-hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_algebraelement2 * p 
-#ifdef _FERMIONS_
-	,hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi
-#endif
-	); 
+hmc_float hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_algebraelement2 * p); 
 
 /**
  * Perform Metropolis-Step.
@@ -62,7 +58,8 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_algebraeleme
  * @param[in] rndnumber Random Number used for the actual Metropolis-Step in the end
  * @param[in] beta parameter for Hamiltonian
  * @param[in] phi parameter for Hamiltonian (only if _FERMIONS_ is set)
- * @param[in] MdaggerMphi parameter for Hamiltonian (only if _FERMIONS_ is set)
+ * @param[in] phi_inv parameter for Hamiltonian (only if _FERMIONS_ is set)
+ * @param[in] energy_init energy from gaussian spinorfield
  * @param[in] field Old Gauge Configuration
  * @param[in] p Old Gauge Momentum
  * @param[in] new_field New Gauge Configuration
@@ -73,7 +70,7 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_algebraeleme
  */
 hmc_error metropolis(hmc_float rndnumber, hmc_float beta
 #ifdef _FERMIONS_
-	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_spinor_field * phi_inv_orig
+	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_float energy_init
 #endif
 	, hmc_gaugefield * field, hmc_algebraelement2 * p, hmc_gaugefield * new_field, hmc_algebraelement2* new_p);
 
@@ -204,7 +201,7 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
  */
 hmc_error leapfrog(inputparameters * parameters
 #ifdef _FERMIONS_
-	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_spinor_field * phi_inv_orig
+	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv
 #endif
 	, hmc_gaugefield * u_out, hmc_algebraelement2 * p_out
 	); 
