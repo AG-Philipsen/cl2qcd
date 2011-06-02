@@ -1,55 +1,6 @@
 #include "hmc.h"
 
 
-hmc_error copy_gaugemomenta_new2(hmc_algebraelement2 * source, hmc_algebraelement2 * dest){
-	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){	
-		(dest[i]).e0 = (source[i]).e0;
-		(dest[i]).e1 = (source[i]).e1;
-		(dest[i]).e2 = (source[i]).e2;
-		(dest[i]).e3 = (source[i]).e3;
-		(dest[i]).e4 = (source[i]).e4;
-		(dest[i]).e5 = (source[i]).e5;
-		(dest[i]).e6 = (source[i]).e6;
-		(dest[i]).e7 = (source[i]).e7;
-	}
-	return HMC_SUCCESS;
-}
-
-void convert_ae2_to_aetmp(hmc_algebraelement2 in, hmc_algebraelement out){
-	out[0] = (in).e0;
-	out[1] = (in).e1;
-	out[2] = (in).e2;
-	out[3] = (in).e3;
-	out[4] = (in).e4;
-	out[5] = (in).e5;
-	out[6] = (in).e6;
-	out[7] = (in).e7;
-}
-
-void convert_ae_to_ae2(hmc_algebraelement in, hmc_algebraelement2 * out){
-	(*out).e0 = in[0];
-	(*out).e1 = in[1];
-	(*out).e2 = in[2];
-	(*out).e3 = in[3];
-	(*out).e4 = in[4];
-	(*out).e5 = in[5];
-	(*out).e6 = in[6];
-	(*out).e7 = in[7];
-}
-
-void convert_ae_to_ae2_global(hmc_gauge_momentum * in, hmc_algebraelement2 * out){
-	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){
-		convert_ae_to_ae2(&(in[i*8]), &out[i]);
-	}
-}
-
-void convert_ae2_to_ae_globaltmp(hmc_algebraelement2 * in, hmc_gauge_momentum * out){
-	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){
-		convert_ae2_to_aetmp(in[i], &(out[i*8]));
-	}
-}
-
-
 
 int main(int argc, char* argv[])
 {
@@ -139,63 +90,6 @@ cout << "initial values of observables:\n\t" ;
 // 
 // #ifdef _USEHMC_
 
-#ifdef _FERMIONS_
-int test_fermion_force = 0;
-if(test_fermion_force){
-cout << "testing fermion force..." << endl;
-
-hmc_spinor_field* phi2 = new hmc_spinor_field[SPINORFIELDSIZE];
-hmc_spinor_field* phi2_inv = new hmc_spinor_field[SPINORFIELDSIZE];
-hmc_gauge_momentum* p2 = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
-hmc_algebraelement2* p22 = new hmc_algebraelement2[GAUGEMOMENTASIZE];
-set_zero_gaugemomenta(p22);
-hmc_float tmp;
-convert_ae2_to_ae_globaltmp(p22, p2);
-gaugemomenta_squarenorm(p2, &tmp);
-cout <<scientific <<  "input squarenorm of force: " << tmp << endl;
-for(int i = 0; i<VOL4D; i++){
-        for(int j = 0; j<SPINORSIZE; j++){
-                phi2[SPINORSIZE*i + j].re = 1.;
-                phi2[SPINORSIZE*i + j].im = 1.;
-                phi2_inv[SPINORSIZE*i + j].re = 2.;
-                phi2_inv[SPINORSIZE*i + j].im = 2.;
-}}
-cout << "squarenorm of inputvectors: " << global_squarenorm (phi2) <<endl;
-fermion_force(&parameters, gaugefield, phi2, phi2_inv,p22 );
-convert_ae2_to_ae_globaltmp(p22, p2);
-gaugemomenta_squarenorm(p2, &tmp);
-
-cout << "squarenorm of force: " << tmp << endl;
-delete [] phi2;
-delete [] phi2_inv;
-delete [] p2;
-return 0;
-}
-#endif
-
-
-int test_gauge_force = 0;
-if(test_gauge_force){
-cout << "testing gauge force..." << endl;
-
-hmc_gauge_momentum* p2 = new hmc_gauge_momentum[GAUGEMOMENTASIZE];
-hmc_algebraelement2* p22 = new hmc_algebraelement2[GAUGEMOMENTASIZE2];
-set_zero_gaugemomenta(p22);
-hmc_float tmp;
-convert_ae2_to_ae_globaltmp(p22, p2);
-gaugemomenta_squarenorm(p2, &tmp);
-cout <<scientific <<  "input squarenorm of force: " << tmp << endl;
-
-gauge_force(&parameters, gaugefield ,p22 );
-convert_ae2_to_ae_globaltmp(p22, p2);
-gaugemomenta_squarenorm(p2, &tmp);
-
-cout << "squarenorm of force: " << tmp << endl;
-delete [] p2;
-return 0;
-}
-
-
 	//TODO CP: port to OpenCL *g*
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Hybrid Monte Carlo
@@ -234,7 +128,6 @@ return 0;
 		cout << "\tinit gauge momentum" << endl;
 		//init gauge_momenta
 		generate_gaussian_gauge_momenta(p2);
-// 		convert_ae2_to_ae_globaltmp(new_p2, p);
 		#ifdef _FERMIONS_
 		//init/update spinorfield phi
 		cout << "\tinit spinorfield " << endl;
@@ -255,8 +148,6 @@ return 0;
 		copy_gaugefield(gaugefield, new_field);
 		copy_gaugemomenta(p2, new_p2);
 		
-// 		convert_ae_to_ae2_global(new_p, new_p2);
-// 		convert_ae_to_ae2_global(p, p2);
 		//use chi to store phi_inv from the original configuration
 		leapfrog(&parameters, 
 									 #ifdef _FERMIONS_

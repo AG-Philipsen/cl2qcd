@@ -2,17 +2,6 @@
 
 using namespace std;
 
-void acc_factor_times_algebraelement(hmc_algebraelement2 * inout, hmc_float factor, hmc_algebraelement2 force_in){
-	(*inout).e0+=factor*(force_in).e0; 
-	(*inout).e1+=factor*(force_in).e1;
-	(*inout).e2+=factor*(force_in).e2;
-	(*inout).e3+=factor*(force_in).e3;
-	(*inout).e4+=factor*(force_in).e4;
-	(*inout).e5+=factor*(force_in).e5;
-	(*inout).e6+=factor*(force_in).e6;
-	(*inout).e7+=factor*(force_in).e7;
-}
-
 void update_gaugemomentum(hmc_algebraelement2 in, hmc_float factor, int global_link_pos, hmc_algebraelement2 * out){
 		acc_factor_times_algebraelement(&out[global_link_pos], factor, in);
 }
@@ -76,23 +65,7 @@ hmc_complex s_fermion(hmc_spinor_field * phi, hmc_spinor_field * QplusQminusphi)
 	return scalar_product(phi, QplusQminusphi);
 }
 #endif /* _FERMIONS_ */
-hmc_error gaugemomenta_squarenorm_new(hmc_algebraelement2 * in, hmc_float * result){
-	//make sure result is zero
-	(*result) = 0.;
-	hmc_float sum = 0.;
-	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){
-		sum += (in[i]).e0*(in[i]).e0 +
-		       (in[i]).e1*(in[i]).e1 +
-		       (in[i]).e2*(in[i]).e2 +
-		       (in[i]).e3*(in[i]).e3 +
-		       (in[i]).e4*(in[i]).e4 +
-		       (in[i]).e5*(in[i]).e5 +
-		       (in[i]).e6*(in[i]).e6 +
-		       (in[i]).e7*(in[i]).e7;
-	}
-	(*result) = sum;
-	return HMC_SUCCESS;
-}
+
 //S_gauge + S_fermion + S_gaugemomenta
 hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_algebraelement2 * p
 		#ifdef _FERMIONS_
@@ -110,7 +83,7 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_algebraeleme
 	#endif
 	//s_gm = 1/2*squarenorm(Pl)
 	hmc_float s_gm;
-	gaugemomenta_squarenorm_new(p, &s_gm);
+	gaugemomenta_squarenorm(p, &s_gm);
 	result.re += 0.5*s_gm;
 	
 	return result;
@@ -492,23 +465,7 @@ cout << "s_fermion of inverted phi is: " << tmp.re << " " << tmp.im << endl;
 #endif
 	return HMC_SUCCESS;
 }
-hmc_error copy_gaugemomenta_old(hmc_gauge_momentum * source, hmc_gauge_momentum * dest){
-	// copies source to destination within cpu memory, layer for momentum array
-	return hmc_floatcopy((hmc_float *)source, (hmc_float *)dest, GAUGEMOMENTASIZE); // SL: not tested
-}
-hmc_error copy_gaugemomenta_new(hmc_algebraelement2 * source, hmc_algebraelement2 * dest){
-	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){	
-		(source[i]).e0 = (dest[i]).e0;
-		(source[i]).e1 = (dest[i]).e1;
-		(source[i]).e2 = (dest[i]).e2;
-		(source[i]).e3 = (dest[i]).e3;
-		(source[i]).e4 = (dest[i]).e4;
-		(source[i]).e5 = (dest[i]).e5;
-		(source[i]).e6 = (dest[i]).e6;
-		(source[i]).e7 = (dest[i]).e7;
-	}
-	return HMC_SUCCESS;
-}
+
 hmc_error metropolis(hmc_float rndnumber, hmc_float beta, 
 										 #ifdef _FERMIONS_
 										 hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_spinor_field * phi_inv_orig, 
@@ -552,7 +509,7 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta,
 	if(rndnumber <= compare_prob){
 		// perform the change nonprimed->primed !
 		copy_gaugefield(new_field, field);
-		copy_gaugemomenta_new(new_p, p);
+		copy_gaugemomenta(new_p, p);
 		// SL: this works as long as p and field are pointers to the *original* memory locations!
 		cout << "new configuration accepted" << endl;
 	}

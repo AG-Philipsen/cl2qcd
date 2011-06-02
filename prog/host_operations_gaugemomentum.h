@@ -30,7 +30,7 @@ hmc_error copy_gaugemomenta(hmc_algebraelement2 * source, hmc_algebraelement2 * 
  * @param[out] result The square norm
  * @return Error code as defined in hmcerrs.h
  */
-hmc_error gaugemomenta_squarenorm(hmc_gauge_momentum * in, hmc_float * result);
+hmc_error gaugemomenta_squarenorm(hmc_algebraelement2 * in, hmc_float * result);
 /**
  * Set gaugemomenta to zero.
  *
@@ -47,5 +47,10 @@ hmc_error set_zero_gaugemomenta(hmc_algebraelement2 * in);
  *
  */
 hmc_error generate_gaussian_gauge_momenta(hmc_algebraelement2 * out); 
+
+/**
+ *  accumulates an algebraelement multiplied by a constant factor to another algebraelement
+ */
+void acc_factor_times_algebraelement(hmc_algebraelement2 * inout, hmc_float factor, hmc_algebraelement2 force_in);
 
 #endif

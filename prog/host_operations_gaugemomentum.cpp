@@ -24,12 +24,19 @@ hmc_error copy_gaugemomenta(hmc_algebraelement2 * source, hmc_algebraelement2 * 
 }
 	
 //gaugemomentum is just a hmc_float vector of length GAUGEMOMENTASIZE
-hmc_error gaugemomenta_squarenorm(hmc_gauge_momentum * in, hmc_float * result){
+hmc_error gaugemomenta_squarenorm(hmc_algebraelement2 * in, hmc_float * result){
 	//make sure result is zero
 	(*result) = 0.;
 	hmc_float sum = 0.;
-	for(int i = 0; i<GAUGEMOMENTASIZE; i++){
-		sum += ((in)[i])*((in)[i]);
+	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){
+		sum += (in[i]).e0*(in[i]).e0 +
+		       (in[i]).e1*(in[i]).e1 +
+		       (in[i]).e2*(in[i]).e2 +
+		       (in[i]).e3*(in[i]).e3 +
+		       (in[i]).e4*(in[i]).e4 +
+		       (in[i]).e5*(in[i]).e5 +
+		       (in[i]).e6*(in[i]).e6 +
+		       (in[i]).e7*(in[i]).e7;
 	}
 	(*result) = sum;
 	return HMC_SUCCESS;
@@ -74,4 +81,15 @@ hmc_error generate_gaussian_gauge_momenta(hmc_algebraelement2 * out){
 	
 	delete [] tmp;
 	return err;
+}
+
+void acc_factor_times_algebraelement(hmc_algebraelement2 * inout, hmc_float factor, hmc_algebraelement2 force_in){
+	(*inout).e0+=factor*(force_in).e0; 
+	(*inout).e1+=factor*(force_in).e1;
+	(*inout).e2+=factor*(force_in).e2;
+	(*inout).e3+=factor*(force_in).e3;
+	(*inout).e4+=factor*(force_in).e4;
+	(*inout).e5+=factor*(force_in).e5;
+	(*inout).e6+=factor*(force_in).e6;
+	(*inout).e7+=factor*(force_in).e7;
 }
