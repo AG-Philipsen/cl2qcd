@@ -1,14 +1,15 @@
-kappa=0.15
+kappa=1.
 mu=4.
 cgmax=15
 cgmax=50
 beta=6.00
 #cgmax=3
 prec=64
-readsource=cold
+readsource=source
 thermalizationsteps=1
 heatbathsteps=1000
 sourcefile=conf.0759
+sourcefile=deltaP_conf.save
 sourcefile=conf.save
 writefrequency=1
 hmcsteps=1

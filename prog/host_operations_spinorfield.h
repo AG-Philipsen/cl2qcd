@@ -65,4 +65,11 @@ void copy_spinor_eoprec(hmc_complex * in, hmc_complex * out);
  */
 hmc_error generate_gaussian_spinorfield(hmc_spinor_field * out);
 
+void gamma_5_psi(hmc_spinor_field * inout);
+/**
+ * Applies /$f \gamma_5 f$/ to a spinorfield
+ * 
+ * @param[in] inout spinorfield to be multiplied by the Dirac-Matrix
+ */
+
 #endif /* _OPERATIONS_SPINORFIELDH_ */

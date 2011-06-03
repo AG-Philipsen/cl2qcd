@@ -44,7 +44,7 @@ public:
 	 */
 	hmc_error set_defaults();
 	hmc_float get_kappa();
-	void set_kappa_negative();
+	void set_mubar_negative();
 	void calc_mubar();
 	hmc_float get_mubar();
 	hmc_float get_beta();
@@ -86,6 +86,7 @@ private:
 	hmc_float kappa;
 	hmc_float beta;
 	hmc_float mu;
+	hmc_float mubar;
 	hmc_float csw;
 	hmc_float theta_fermion;
 	hmc_float theta_gaugefield;

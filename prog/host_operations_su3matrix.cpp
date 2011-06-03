@@ -717,8 +717,20 @@ void gaugefield_apply_chem_pot(hmc_su3matrix * u, hmc_su3matrix * udagger, hmc_f
 
 //CP: tested version that recreates the matrices made by tmlqcd
 /** @todo recheck the factor 0.5 (or F_1_2) that has been deleted here */
-hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix* out, hmc_float epsilon){
-			// this is the case where one actually evaluates -as matrices- many orders of exp(i*e*P)=1+i*e*P+(1/2)(i*e*P)^2 + ...
+/** @todo use of hmc_algebraelement!!!! */
+hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement2 inn, hmc_su3matrix* out, hmc_float epsilon){
+		//CP: workaround for struct hmc_algebraelement
+		hmc_float in [8];
+		in[0] = inn.e0;
+		in[1] = inn.e1;
+		in[2] = inn.e2;
+		in[3] = inn.e3;
+		in[4] = inn.e4;
+		in[5] = inn.e5;
+		in[6] = inn.e6;
+		in[7] = inn.e7;
+		
+		// this is the case where one actually evaluates -as matrices- many orders of exp(i*e*P)=1+i*e*P+(1/2)(i*e*P)^2 + ...
 		// 1. create mat = (i epsilon)/2 p_i lambda_i    with lambda=gellmann matrix
 		hmc_3x3matrix eMat;
 		hmc_float halfeps = epsilon;//*F_1_2;

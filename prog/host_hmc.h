@@ -49,11 +49,7 @@ hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta);
  * @todo check the return values. They are supposed to be real!! If that is the case one can change the return argument
  * @todo needs testing
  */
-hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_momentum * p 
-#ifdef _FERMIONS_
-	,hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi
-#endif
-	); 
+hmc_float hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_algebraelement2 * p); 
 
 /**
  * Perform Metropolis-Step.
@@ -62,7 +58,8 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
  * @param[in] rndnumber Random Number used for the actual Metropolis-Step in the end
  * @param[in] beta parameter for Hamiltonian
  * @param[in] phi parameter for Hamiltonian (only if _FERMIONS_ is set)
- * @param[in] MdaggerMphi parameter for Hamiltonian (only if _FERMIONS_ is set)
+ * @param[in] phi_inv parameter for Hamiltonian (only if _FERMIONS_ is set)
+ * @param[in] energy_init energy from gaussian spinorfield
  * @param[in] field Old Gauge Configuration
  * @param[in] p Old Gauge Momentum
  * @param[in] new_field New Gauge Configuration
@@ -71,11 +68,11 @@ hmc_complex hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_gauge_moment
  * @todo needs testing
  * @todo CP: if it works, one should replace the return value with 0 or 1, depending on wether the new config was accepted or not!!
  */
-hmc_error metropolis(hmc_float rndnumber, hmc_float beta
+hmc_error metropolis(hmc_float rndnumber, inputparameters * parameter
 #ifdef _FERMIONS_
-	, hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi
+	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_float energy_init
 #endif
-	, hmc_gaugefield * field, hmc_gauge_momentum * p, hmc_gaugefield * new_field, hmc_gauge_momentum * new_p);
+	, hmc_gaugefield * field, hmc_algebraelement2 * p, hmc_gaugefield * new_field, hmc_algebraelement2* new_p);
 
 /**
  * Molecular Dynamics Update of the Gauge Momenta using the Leapfrog-scheme:
@@ -90,7 +87,9 @@ hmc_error metropolis(hmc_float rndnumber, hmc_float beta
  * @todo needs testing
  * 
  */
-hmc_error md_update_gauge_momenta(hmc_float eps, hmc_gauge_momentum * p_inout, hmc_gauge_momentum * force_in); 
+hmc_error md_update_gauge_momenta(hmc_float eps, hmc_algebraelement2 * p_inout, hmc_algebraelement2 * force_in); 
+//deprecated
+//hmc_error md_update_gauge_momenta(hmc_float eps, hmc_gauge_momentum * p_inout, hmc_gauge_momentum * force_in);
 
 /**
  * Molecular Dynamics Update of the Gaugefield using the Leapfrog-scheme:
@@ -105,7 +104,7 @@ hmc_error md_update_gauge_momenta(hmc_float eps, hmc_gauge_momentum * p_inout, h
  * @todo needs testing
  * 
  */
-hmc_error md_update_gaugefield(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gaugefield * u_inout);
+hmc_error md_update_gaugefield(hmc_float eps, hmc_algebraelement2 * p_in, hmc_gaugefield * u_inout);
 
 #ifdef _FERMIONS_
 /**
@@ -121,8 +120,9 @@ hmc_error md_update_gaugefield(hmc_float eps, hmc_gauge_momentum * p_in, hmc_gau
  * @todo needs testing
  *
  */
-hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_gauge_momentum * out); 
-
+hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_algebraelement2 * out); 
+//deprecated:
+// hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * phi, hmc_spinor_field * phi_inv, hmc_gauge_momentum * out); 
 /**
  * Molecular Dynamics Update of the Spinorfield:
  * /f[
@@ -151,7 +151,7 @@ hmc_error md_update_spinorfield(hmc_spinor_field * in, hmc_spinor_field * out, h
  * @todo check if return value is always real. If so, change the return argument.
  *
  */
-hmc_complex s_fermion(hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi);
+hmc_float s_fermion(inputparameters*parameters, hmc_gaugefield * field, hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi);
 #endif
 
 /**
@@ -164,7 +164,8 @@ hmc_complex s_fermion(hmc_spinor_field * phi, hmc_spinor_field * MdaggerMphi);
  * @todo needs testing
  *
  */
-hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_gauge_momentum * out);
+hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_algebraelement2 * out);
+// hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_gauge_momentum * out);
 
 /**
  * Calculates the force for the molecular dynamics.
@@ -198,11 +199,11 @@ hmc_error force(inputparameters * parameters, hmc_gaugefield * field
  * @todo lateron, a multi-step alg. with different stepsizes for gauge and fermion force should be implemented
  * @todo see code itself for more points
  */
-hmc_error leapfrog(inputparameters * parameters, hmc_gaugefield * u_in, hmc_gauge_momentum * p_in
+hmc_error leapfrog(inputparameters * parameters
 #ifdef _FERMIONS_
 	, hmc_spinor_field * phi, hmc_spinor_field * phi_inv
 #endif
-	, hmc_gaugefield * u_out, hmc_gauge_momentum * p_out
+	, hmc_gaugefield * u_out, hmc_algebraelement2 * p_out
 	); 
 
 

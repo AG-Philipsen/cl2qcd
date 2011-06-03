@@ -1,20 +1,45 @@
 #include "host_operations_fermionmatrix.h"
+using namespace std;
+hmc_error QplusQminus(inputparameters * parameters, hmc_spinor_field * in, hmc_gaugefield * field, hmc_spinor_field * out){
+	/** @todo: find out why tmp is necessary!!! */
+	hmc_spinor_field* tmp = new hmc_spinor_field[SPINORFIELDSIZE];
+	
+	//CP: this step can be saved once it is ensured mubar is calculated before function call
+	(*parameters).calc_mubar();
+	(*parameters).set_mubar_negative();
+	M(parameters, in, field, tmp);
+	gamma_5_psi(tmp);
+	(*parameters).set_mubar_negative();
+	M(parameters, tmp, field, out);
+	gamma_5_psi(out);
+	
+	return HMC_SUCCESS;
+}
+
+hmc_error Qplus(inputparameters * parameters, hmc_spinor_field * in, hmc_gaugefield * field, hmc_spinor_field * out){
+	//CP: this step can be saved once it is ensured mubar is calculated before function call
+	(*parameters).calc_mubar();	
+	M(parameters, in, field, out);
+	gamma_5_psi(out);
+	return HMC_SUCCESS;
+}
+
+hmc_error Qminus(inputparameters * parameters, hmc_spinor_field * in, hmc_gaugefield * field, hmc_spinor_field * out){
+//CP: this step can be saved once it is ensured mubar is calculated before function call
+	(*parameters).calc_mubar();	
+	(*parameters).set_mubar_negative();
+	M(parameters, in, field, out);
+	//CP: restore old mubar again
+	(*parameters).set_mubar_negative();
+	gamma_5_psi(out);
+	return HMC_SUCCESS;
+}
+
 
 hmc_error M(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out){
 	M_diag(parameters, in, out);    
 	hmc_spinor_field tmp[SPINORFIELDSIZE];
 	dslash(parameters, in,gaugefield,tmp);
-
-	hmc_complex kappa_cmplx = {(*parameters).get_kappa(), 0.};
-	saxpy(tmp, out, &kappa_cmplx, out);
-
-	return HMC_SUCCESS;
-}
-
-hmc_error Mdagger(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out){
-	Mdagger_diag(parameters, in, out);    
-	hmc_spinor_field tmp[SPINORFIELDSIZE];
-	ddaggerslash(parameters, in,gaugefield,tmp);
 
 	hmc_complex kappa_cmplx = {(*parameters).get_kappa(), 0.};
 	saxpy(tmp, out, &kappa_cmplx, out);
@@ -28,58 +53,10 @@ hmc_error M_diag(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_
 	for(int spacepos=0; spacepos<VOLSPACE; spacepos++) {
 		for(int timepos=0; timepos<NTIME; timepos++) {
 			get_spinor_from_field(in,spinout,spacepos,timepos);
-			M_diag_local(spinout, (*parameters).get_kappa(), (*parameters).get_mu());
+			M_diag_local(spinout, (*parameters).get_mubar());
 			put_spinor_to_field(spinout,out,spacepos,timepos);
 		}}
 	return HMC_SUCCESS; 
-}
-
-//if one would have explicit flavour structure, this would have to be revisited because (pauli)dagger is non-trivial
-hmc_error Mdagger_diag(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* out){
-	hmc_spinor spinout[SPINORSIZE];
-	//iterate over all lattice sites
-	for(int spacepos=0; spacepos<VOLSPACE; spacepos++) {
-		for(int timepos=0; timepos<NTIME; timepos++) {
-			get_spinor_from_field(in,spinout,spacepos,timepos);
-			hmc_float tmp = -(*parameters).get_kappa();
-			M_diag_local(spinout, tmp, (*parameters).get_mu());
-			put_spinor_to_field(spinout,out,spacepos,timepos);
-		}}
-	return HMC_SUCCESS; 
-}
-
-hmc_error MdaggerM_diag(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* out){
-	hmc_spinor spinout[SPINORSIZE];
-	//iterate over all lattice sites
-	for(int spacepos=0; spacepos<VOLSPACE; spacepos++) {
-		for(int timepos=0; timepos<NTIME; timepos++) {
-			get_spinor_from_field(in,spinout,spacepos,timepos);
-			MdaggerM_diag_local(spinout, (*parameters).get_kappa(), (*parameters).get_mu());
-			put_spinor_to_field(spinout,out,spacepos,timepos);
-		}}
-	return HMC_SUCCESS; 
-}
-
-hmc_error MdaggerM(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out){
-	hmc_spinor_field tmp[SPINORFIELDSIZE];
-	hmc_spinor_field tmp2[SPINORFIELDSIZE];
-	hmc_complex kappa_cmplx = {(*parameters).get_kappa(), 0.};
-	
-	//diagonal part: out = MdaggerM_diag
-	MdaggerM_diag(parameters, in, out);    
-	//out += - kappa*Ddagger( Mdiag in )
-	M_diag(parameters, in, tmp);
-	ddaggerslash(parameters, tmp,gaugefield,tmp2);
-	saxpy(tmp2, out, &kappa_cmplx, out);
-	//out += - kappa*D( Mdaggerdiag in )
-	Mdagger_diag(parameters, in, tmp);
-	dslash(parameters, tmp,gaugefield,tmp2);
-	saxpy(tmp2, out, &kappa_cmplx, out);
-	//out += kappa*kappa* DdaggerD
-	kappa_cmplx = {-(*parameters).get_kappa()*(*parameters).get_kappa(),0.};
-	ddaggerd(parameters, in,gaugefield,tmp2);
-	saxpy(tmp2, out, &kappa_cmplx, out);
-	return HMC_SUCCESS;
 }
 
 hmc_error M_sitediagonal(inputparameters * parameters, hmc_eoprec_spinor_field* in, hmc_eoprec_spinor_field* out){
@@ -87,7 +64,7 @@ hmc_error M_sitediagonal(inputparameters * parameters, hmc_eoprec_spinor_field* 
 	//iterate over half the lattice
   for(int n=0; n<VOL4D/2; n++) {
     get_spinor_from_eoprec_field(in,spinout,n);
-    M_diag_local(spinout, (*parameters).get_kappa(), (*parameters).get_mu());
+    M_diag_local(spinout, (*parameters).get_mubar());
     put_spinor_to_eoprec_field(spinout,out,n);
   }
   return HMC_SUCCESS;
@@ -98,10 +75,13 @@ hmc_error M_inverse_sitediagonal(inputparameters * parameters, hmc_eoprec_spinor
 	hmc_spinor spinout[SPINORSIZE];
 	//iterate over half the lattice
 	for(int n=0; n<VOL4D/2; n++) {
-		hmc_float minuskappa = -(*parameters).get_kappa();
 		get_spinor_from_eoprec_field(in,spinout,n);
-		M_diag_local(spinout, minuskappa, (*parameters).get_mu());
-		hmc_float denom = 1. + 4.*(*parameters).get_kappa()*(*parameters).get_kappa()*(*parameters).get_mu()*(*parameters).get_mu();
+// 		hmc_float minuskappa = -(*parameters).get_kappa();
+// 		M_diag_local(spinout, minuskappa, (*parameters).get_mu());
+// 		hmc_float denom = 1. + 4.*(*parameters).get_kappa()*(*parameters).get_kappa()*(*parameters).get_mu()*(*parameters).get_mu();
+		(*parameters).set_mubar_negative();
+		M_diag_local(spinout, (*parameters).get_mubar());
+		hmc_float denom = 1. + (*parameters).get_mubar()*(*parameters).get_mubar();
 		real_multiply_spinor(spinout,1./denom);
 		put_spinor_to_eoprec_field(spinout,out,n);
 	}
@@ -140,38 +120,6 @@ void dslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos, int t,
 	return;
 }
 
-void ddaggerslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos, int t, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im){
-
-	int next, prev;
-	hmc_spinor spinnext[SPINORSIZE];
-	hmc_spinor spinprev[SPINORSIZE];
-	hmc_su3matrix u;
-	hmc_su3matrix udagger; 
-
-	next = get_neighbor(pos,dir);
-	prev = get_lower_neighbor(pos,dir);
-  
-	get_spinor_from_field(in, spinnext, next, t);
-	get_spinor_from_field(in, spinprev, prev, t);
-	
-	get_su3matrix(&u,gaugefield,pos,t,dir);
-	get_su3matrix(&udagger,gaugefield,prev,t,dir);
-	adjoin_su3matrix(&udagger);
-
-	//update links with chemical potential, this shall be put into compiler option lateron
-	gaugefield_apply_chem_pot(&u, &udagger, chem_pot_re, chem_pot_im);
-
-	//!!CP: shouldnt this be only in time-direction??
-	if(coord[dir] == NSPACE-1) spinor_apply_bc(spinnext, theta);
-	else if(coord[dir] == 0) spinor_apply_bc(spinprev, theta);
-      
-	if(dir == 1) ddaggerslash_1(spinnext, spinprev, spinout, &u, &udagger);
-	else if(dir == 2) ddaggerslash_2(spinnext, spinprev, spinout, &u, &udagger);
-	else ddaggerslash_3(spinnext, spinprev, spinout, &u, &udagger);
-	
-	return;
-}
-
 void dslash_temporal (hmc_spinor * spinout, int pos, int t, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im){
 	int next, prev;
 	hmc_spinor spinnext[SPINORSIZE];
@@ -196,34 +144,6 @@ void dslash_temporal (hmc_spinor * spinout, int pos, int t, hmc_spinor_field* in
 	gaugefield_apply_chem_pot(&u, &udagger, chem_pot_re, chem_pot_im);
 
 	dslash_0(spinnext, spinprev, spinout, &u, &udagger);
-
-	return;
-}
-
-void ddaggerslash_temporal (hmc_spinor * spinout, int pos, int t, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im){
-	int next, prev;
-	hmc_spinor spinnext[SPINORSIZE];
-	hmc_spinor spinprev[SPINORSIZE];
-	hmc_su3matrix u;
-	hmc_su3matrix udagger; 
-
-	next = (t+1)%NTIME; 
-	prev = (t-1+NTIME)%NTIME;
-
-	get_spinor_from_field(in, spinnext, pos, next);
-	get_spinor_from_field(in, spinprev, pos, prev);
-
-	if(next == 0) spinor_apply_bc(spinnext, theta);
-	else if(prev == NTIME-1) spinor_apply_bc(spinprev, theta);
-      
-	get_su3matrix(&u,gaugefield,pos,t,0);
-	get_su3matrix(&udagger,gaugefield,pos,prev,0);
-	adjoin_su3matrix(&udagger);
-
-	//update links with chemical potential, this shall be put into compiler option lateron
-	gaugefield_apply_chem_pot(&u, &udagger, chem_pot_re, chem_pot_im);
-
-	ddaggerslash_0(spinnext, spinprev, spinout, &u, &udagger);
 
 	return;
 }
@@ -329,54 +249,6 @@ hmc_error dslash(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefi
   return HMC_SUCCESS;
 }
 
-hmc_error ddaggerslash(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out){
-	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
-  kappa = (*parameters).get_kappa(); mu = (*parameters).get_mu(); theta = (*parameters).get_theta_fermion(); chem_pot_re = (*parameters).get_chem_pot_re(); chem_pot_im = (*parameters).get_chem_pot_im(); cgmax = (*parameters).get_cgmax();
-		
-	hmc_spinor spinout[SPINORSIZE];
-	//iterate over the whole lattice
-	for(int spacepos=0; spacepos<VOLSPACE; spacepos++) {
-		for(int timepos=0; timepos<NTIME; timepos++) {
-			set_local_zero_spinor(spinout);   
-			//like in host_geometry
-			int coord[NDIM];
-			coord[0]=0;
-			for(int j=1;j<NDIM;j++) coord[j] = get_spacecoord(spacepos,j);
-			
-			// spinout = U_0*(r+gamma_0)*spinnext + U^dagger_0(x-hat0) * (r-gamma_0)*spinprev
-			ddaggerslash_temporal(spinout, spacepos, timepos, in, gaugefield, theta, chem_pot_re, chem_pot_im);
-			// spinout += U_1*(r+gamma_1)*spinnext + U^dagger_1(x-hat1) * (r-gamma_1)*spinprev
-			ddaggerslash_spatial (spinout, coord, 1, spacepos, timepos, in, gaugefield, theta, chem_pot_re, chem_pot_im);
-			// spinout += U_2*(r+gamma_2)*spinnext + U^dagger_2(x-hat2) * (r-gamma_2)*spinprev
-			ddaggerslash_spatial (spinout, coord, 2, spacepos, timepos, in, gaugefield, theta, chem_pot_re, chem_pot_im);
-			// spinout += U_3*(r+gamma_3)*spinnext + U^dagger_3(x-hat3) * (r-gamma_3)*spinprev
-			ddaggerslash_spatial (spinout, coord, 3, spacepos, timepos, in, gaugefield, theta, chem_pot_re, chem_pot_im);
-			
-			put_spinor_to_field(spinout,out,spacepos,timepos);
-    }
-  }
-
-  return HMC_SUCCESS;
-}
-
-hmc_error ddaggerd(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out){
-	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
-  kappa = (*parameters).get_kappa(); mu = (*parameters).get_mu(); theta = (*parameters).get_theta_fermion(); chem_pot_re = (*parameters).get_chem_pot_re(); chem_pot_im = (*parameters).get_chem_pot_im(); cgmax = (*parameters).get_cgmax();
-		
-	hmc_spinor spinout[SPINORSIZE];
-	//iterate over the whole lattice
-	for(int spacepos=0; spacepos<VOLSPACE; spacepos++) {
-		for(int timepos=0; timepos<NTIME; timepos++) {
-			set_local_zero_spinor(spinout);   
-			
-			ddaggerd_calc(spinout, spacepos, timepos, in, gaugefield, theta, chem_pot_re, chem_pot_im);
-		
-			put_spinor_to_field(spinout,out,spacepos,timepos);
-    }
-  }
-
-  return HMC_SUCCESS;
-}
 
 hmc_error dslash_eoprec(inputparameters * parameters, hmc_eoprec_spinor_field* in, hmc_gaugefield* gaugefield, int evenodd, hmc_eoprec_spinor_field* out){
 	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
@@ -435,6 +307,10 @@ hmc_error Aee(inputparameters * parameters, hmc_eoprec_spinor_field* in, hmc_gau
   return HMC_SUCCESS;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// deprecated functions
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
 
 void ddaggerd_calc (hmc_spinor * spinout, int pos, int t, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im){
 	int next_time, next_spat, prev_time, prev_spat;
@@ -607,3 +483,175 @@ void ddaggerd_calc (hmc_spinor * spinout, int pos, int t, hmc_spinor_field* in, 
 	return;
 }
 
+hmc_error Mdagger(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out){
+	Mdagger_diag(parameters, in, out);    
+	hmc_spinor_field tmp[SPINORFIELDSIZE];
+	ddaggerslash(parameters, in,gaugefield,tmp);
+
+	hmc_complex kappa_cmplx = {(*parameters).get_kappa(), 0.};
+	saxpy(tmp, out, &kappa_cmplx, out);
+
+	return HMC_SUCCESS;
+}
+
+//it one would have explicit flavour structure, this would have to be revisited because (pauli)dagger is non-trivial
+hmc_error Mdagger_diag(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* out){
+	hmc_spinor spinout[SPINORSIZE];
+	//iterate over all lattice sites
+	for(int spacepos=0; spacepos<VOLSPACE; spacepos++) {
+		for(int timepos=0; timepos<NTIME; timepos++) {
+			get_spinor_from_field(in,spinout,spacepos,timepos);
+			hmc_float tmp = -(*parameters).get_kappa();
+			M_diag_local(spinout, tmp, (*parameters).get_mu());
+			put_spinor_to_field(spinout,out,spacepos,timepos);
+		}}
+	return HMC_SUCCESS; 
+}
+
+hmc_error MdaggerM_diag(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* out){
+	hmc_spinor spinout[SPINORSIZE];
+	//iterate over all lattice sites
+	for(int spacepos=0; spacepos<VOLSPACE; spacepos++) {
+		for(int timepos=0; timepos<NTIME; timepos++) {
+			get_spinor_from_field(in,spinout,spacepos,timepos);
+			MdaggerM_diag_local(spinout, (*parameters).get_kappa(), (*parameters).get_mu());
+			put_spinor_to_field(spinout,out,spacepos,timepos);
+		}}
+	return HMC_SUCCESS; 
+}
+
+hmc_error MdaggerM(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out){
+	hmc_spinor_field tmp[SPINORFIELDSIZE];
+	hmc_spinor_field tmp2[SPINORFIELDSIZE];
+	hmc_complex kappa_cmplx = {(*parameters).get_kappa(), 0.};
+	
+	//diagonal part: out = MdaggerM_diag
+	MdaggerM_diag(parameters, in, out);    
+	//out += - kappa*Ddagger( Mdiag in )
+	M_diag(parameters, in, tmp);
+	ddaggerslash(parameters, tmp,gaugefield,tmp2);
+	saxpy(tmp2, out, &kappa_cmplx, out);
+	//out += - kappa*D( Mdaggerdiag in )
+	Mdagger_diag(parameters, in, tmp);
+	dslash(parameters, tmp,gaugefield,tmp2);
+	saxpy(tmp2, out, &kappa_cmplx, out);
+	//out += kappa*kappa* DdaggerD
+	kappa_cmplx = {-(*parameters).get_kappa()*(*parameters).get_kappa(),0.};
+	ddaggerd(parameters, in,gaugefield,tmp2);
+	saxpy(tmp2, out, &kappa_cmplx, out);
+	return HMC_SUCCESS;
+}
+
+void ddaggerslash_spatial (hmc_spinor * spinout, int * coord, int dir, int pos, int t, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im){
+
+	int next, prev;
+	hmc_spinor spinnext[SPINORSIZE];
+	hmc_spinor spinprev[SPINORSIZE];
+	hmc_su3matrix u;
+	hmc_su3matrix udagger; 
+
+	next = get_neighbor(pos,dir);
+	prev = get_lower_neighbor(pos,dir);
+  
+	get_spinor_from_field(in, spinnext, next, t);
+	get_spinor_from_field(in, spinprev, prev, t);
+	
+	get_su3matrix(&u,gaugefield,pos,t,dir);
+	get_su3matrix(&udagger,gaugefield,prev,t,dir);
+	adjoin_su3matrix(&udagger);
+
+	//update links with chemical potential, this shall be put into compiler option lateron
+	gaugefield_apply_chem_pot(&u, &udagger, chem_pot_re, chem_pot_im);
+
+	//!!CP: shouldnt this be only in time-direction??
+	if(coord[dir] == NSPACE-1) spinor_apply_bc(spinnext, theta);
+	else if(coord[dir] == 0) spinor_apply_bc(spinprev, theta);
+      
+	if(dir == 1) ddaggerslash_1(spinnext, spinprev, spinout, &u, &udagger);
+	else if(dir == 2) ddaggerslash_2(spinnext, spinprev, spinout, &u, &udagger);
+	else ddaggerslash_3(spinnext, spinprev, spinout, &u, &udagger);
+	
+	return;
+}
+
+void ddaggerslash_temporal (hmc_spinor * spinout, int pos, int t, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_float theta, hmc_float chem_pot_re, hmc_float chem_pot_im){
+	int next, prev;
+	hmc_spinor spinnext[SPINORSIZE];
+	hmc_spinor spinprev[SPINORSIZE];
+	hmc_su3matrix u;
+	hmc_su3matrix udagger; 
+
+	next = (t+1)%NTIME; 
+	prev = (t-1+NTIME)%NTIME;
+
+	get_spinor_from_field(in, spinnext, pos, next);
+	get_spinor_from_field(in, spinprev, pos, prev);
+
+	if(next == 0) spinor_apply_bc(spinnext, theta);
+	else if(prev == NTIME-1) spinor_apply_bc(spinprev, theta);
+      
+	get_su3matrix(&u,gaugefield,pos,t,0);
+	get_su3matrix(&udagger,gaugefield,pos,prev,0);
+	adjoin_su3matrix(&udagger);
+
+	//update links with chemical potential, this shall be put into compiler option lateron
+	gaugefield_apply_chem_pot(&u, &udagger, chem_pot_re, chem_pot_im);
+
+	ddaggerslash_0(spinnext, spinprev, spinout, &u, &udagger);
+
+	return;
+}
+
+hmc_error ddaggerslash(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out){
+	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
+  kappa = (*parameters).get_kappa(); mu = (*parameters).get_mu(); theta = (*parameters).get_theta_fermion(); chem_pot_re = (*parameters).get_chem_pot_re(); chem_pot_im = (*parameters).get_chem_pot_im(); cgmax = (*parameters).get_cgmax();
+		
+	hmc_spinor spinout[SPINORSIZE];
+	//iterate over the whole lattice
+	for(int spacepos=0; spacepos<VOLSPACE; spacepos++) {
+		for(int timepos=0; timepos<NTIME; timepos++) {
+			set_local_zero_spinor(spinout);   
+			//like in host_geometry
+			int coord[NDIM];
+			coord[0]=0;
+			for(int j=1;j<NDIM;j++) coord[j] = get_spacecoord(spacepos,j);
+			
+			// spinout = U_0*(r+gamma_0)*spinnext + U^dagger_0(x-hat0) * (r-gamma_0)*spinprev
+			ddaggerslash_temporal(spinout, spacepos, timepos, in, gaugefield, theta, chem_pot_re, chem_pot_im);
+			// spinout += U_1*(r+gamma_1)*spinnext + U^dagger_1(x-hat1) * (r-gamma_1)*spinprev
+			ddaggerslash_spatial (spinout, coord, 1, spacepos, timepos, in, gaugefield, theta, chem_pot_re, chem_pot_im);
+			// spinout += U_2*(r+gamma_2)*spinnext + U^dagger_2(x-hat2) * (r-gamma_2)*spinprev
+			ddaggerslash_spatial (spinout, coord, 2, spacepos, timepos, in, gaugefield, theta, chem_pot_re, chem_pot_im);
+			// spinout += U_3*(r+gamma_3)*spinnext + U^dagger_3(x-hat3) * (r-gamma_3)*spinprev
+			ddaggerslash_spatial (spinout, coord, 3, spacepos, timepos, in, gaugefield, theta, chem_pot_re, chem_pot_im);
+			
+			put_spinor_to_field(spinout,out,spacepos,timepos);
+    }
+  }
+
+  return HMC_SUCCESS;
+}
+
+hmc_error ddaggerd(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* gaugefield, hmc_spinor_field* out){
+	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
+  kappa = (*parameters).get_kappa(); mu = (*parameters).get_mu(); theta = (*parameters).get_theta_fermion(); chem_pot_re = (*parameters).get_chem_pot_re(); chem_pot_im = (*parameters).get_chem_pot_im(); cgmax = (*parameters).get_cgmax();
+		
+	hmc_spinor spinout[SPINORSIZE];
+	//iterate over the whole lattice
+	for(int spacepos=0; spacepos<VOLSPACE; spacepos++) {
+		for(int timepos=0; timepos<NTIME; timepos++) {
+			set_local_zero_spinor(spinout);   
+			
+			ddaggerd_calc(spinout, spacepos, timepos, in, gaugefield, theta, chem_pot_re, chem_pot_im);
+		
+			put_spinor_to_field(spinout,out,spacepos,timepos);
+    }
+  }
+
+  return HMC_SUCCESS;
+}
+
+
+
+
+*/

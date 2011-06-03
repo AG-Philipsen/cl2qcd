@@ -48,14 +48,14 @@ hmc_error solver_eoprec(inputparameters * parameters, hmc_spinor_field* in,  hmc
 hmc_error solver(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* b, hmc_gaugefield* gaugefield, int use_cg, hmc_spinor_field* out){
 	
 	convert_to_kappa_format(in, ( (*parameters).get_kappa() ));
-	
+	int err = 0;
 	if(use_cg)
-		cg(parameters, in, b, gaugefield);
+		err = cg(parameters, in, b, gaugefield);
 	else
-		bicgstab(parameters, in, b, gaugefield);
-	
+		err = bicgstab(parameters, in, b, gaugefield);
 	convert_from_kappa_format(in, out, ( (*parameters).get_kappa() ));
-    
+	if(err != HMC_SUCCESS) return HMC_STDERR;
+	    
 	return HMC_SUCCESS;
 }
 
@@ -246,7 +246,7 @@ hmc_error bicgstab_eoprec(inputparameters * parameters, hmc_eoprec_spinor_field*
   return HMC_SUCCESS;
 }
 
-//CP: this is directly defined with MdaggerM, since M is not hermitian for Wilson fermions
+//CP: this is defined directly with QplusQminus
 hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_field* source, hmc_gaugefield* gaugefield){
  
 	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;
@@ -267,18 +267,19 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
   hmc_complex minusone = hmc_complex_minusone;
 	
 	int iter;
+	//debugging
+	int cter =0;
   //main loop
-
   for(iter = 0; iter < cgmax; iter ++){  
     if(iter%iter_refresh==0){
 			//fresh start
-			MdaggerM(parameters, inout,gaugefield,rn);
+			QplusQminus(parameters, inout,gaugefield,rn);
 			saxpy(rn, source, &one, rn);
 			copy_spinor(rn, pn);
-			printf("true residue squared: %e\n",global_squarenorm(rn));
+// 			printf("true residue squared: %e\n",global_squarenorm(rn));
 		}
 		
-		MdaggerM(parameters, pn,gaugefield,tmp);
+		QplusQminus(parameters, pn,gaugefield,tmp);
 		tmp1 = scalar_product(rn, pn);
 		tmp2 = scalar_product(pn, tmp);
 		alpha = complexdivide(&tmp1, &tmp2);
@@ -290,11 +291,12 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
 		hmc_float resid = global_squarenorm(rnn);
     
     if (resid < epssquare){
-			printf("residue small enough: %e\n",resid);
+// 			printf("residue small enough: %e\n",resid);
 			copy_spinor(xnn, inout);
 			break;
     }
     else{
+// 			printf("residue not small enough: %e\n",resid);
 			tmp1 = scalar_product(rn, rn);
 			tmp2 = scalar_product(rnn, rnn);
 			beta = complexdivide(&tmp2, &tmp1);
@@ -304,6 +306,9 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
 			copy_spinor(pnn, pn);
 			copy_spinor(rnn, rn);
 			copy_spinor(xnn, inout);
+			
+			//debugging
+			cter++;
     }
   }
 	
@@ -313,10 +318,12 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
 	delete [] pnn;
 	delete [] rnn;
 	delete [] tmp;
-	
-	return HMC_SUCCESS;
+// 	printf("cter: %i \n\n", cter);
+	if(cter < cgmax) return HMC_SUCCESS;
+	if(cter == cgmax) return HMC_STDERR;
 }
 
+/** @todo CP: this cannot be used with Aee since it is not hermitian, instead one has to insert the eoprec-version of QplusQminus!!! */
 hmc_error cg_eoprec(inputparameters * parameters, hmc_eoprec_spinor_field* inout, hmc_eoprec_spinor_field* source, hmc_gaugefield* gaugefield){
  
 	hmc_float kappa; hmc_float mu; hmc_float theta; hmc_float chem_pot_re; hmc_float chem_pot_im; int cgmax;

@@ -22,7 +22,7 @@
  * @param[out] dest The storage location for the copy
  * @return Error code as defined in hmcerrs.h
  */
-hmc_error copy_gaugemomenta(hmc_gauge_momentum * source, hmc_gauge_momentum * dest);
+hmc_error copy_gaugemomenta(hmc_algebraelement2 * source, hmc_algebraelement2 * dest);
 /**
  * Calculate the squarenorm of the gauge momenta.
  *
@@ -30,14 +30,14 @@ hmc_error copy_gaugemomenta(hmc_gauge_momentum * source, hmc_gauge_momentum * de
  * @param[out] result The square norm
  * @return Error code as defined in hmcerrs.h
  */
-hmc_error gaugemomenta_squarenorm(hmc_gauge_momentum * in, hmc_float * result);
+hmc_error gaugemomenta_squarenorm(hmc_algebraelement2 * in, hmc_float * result);
 /**
  * Set gaugemomenta to zero.
  *
  * @param[out] in The gauge momenta to set to zero.
  * @return Error code as defined in hmcerrs.h
  */
-hmc_error set_zero_gaugemomenta(hmc_gauge_momentum * in);
+hmc_error set_zero_gaugemomenta(hmc_algebraelement2 * in);
 
 /**
  * Generates a gaussian distributed complex vector of length GAUGEMOMENTASIZE and variance 1.
@@ -46,6 +46,11 @@ hmc_error set_zero_gaugemomenta(hmc_gauge_momentum * in);
  * @todo needs testing
  *
  */
-hmc_error generate_gaussian_gauge_momenta(hmc_gauge_momentum * out); 
+hmc_error generate_gaussian_gauge_momenta(hmc_algebraelement2 * out); 
+
+/**
+ *  accumulates an algebraelement multiplied by a constant factor to another algebraelement
+ */
+void acc_factor_times_algebraelement(hmc_algebraelement2 * inout, hmc_float factor, hmc_algebraelement2 force_in);
 
 #endif
