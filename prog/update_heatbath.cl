@@ -12,23 +12,25 @@ Matrix3x3 calc_staple(__global hmc_ocl_gaugefield* field, const int pos, const i
 	Matrix3x3 staple;
 	int nu, newpos, newt;
 
-	staple = zero_matrix3x3();
-
+ 	staple = zero_matrix3x3();
+	
 	//iterate through the three directions other than mu
-	for(int i = 1; i<NDIM; i++) {
+ 	for(int i = 1; i<NDIM; i++) {
 
 		prod = zero_matrixsu3();
+		
 		nu = (mu_in + i)%NDIM;
 		//first staple
 		//u_nu(x+mu)
 		if(mu_in==0) {
 			newt = (t+1)%NTIME;
 			tmp = get_matrixsu3(field,pos,newt,nu);
+
 		} else {
 			tmp = get_matrixsu3(field,get_neighbor(pos,mu_in),t,nu);
 		}
-		
 		prod = copy_matrixsu3(tmp);
+		
 		//adjoint(u_mu(x+nu))
 		if(nu==0) {
 			newt = (t+1)%NTIME;
@@ -39,10 +41,12 @@ Matrix3x3 calc_staple(__global hmc_ocl_gaugefield* field, const int pos, const i
 		tmp = adjoint_matrixsu3(tmp);
 		
 		prod = multiply_matrixsu3(prod, tmp);
+		
 		//adjoint(u_nu(x))
 		tmp = get_matrixsu3(field,pos,t,nu);
 		tmp = adjoint_matrixsu3(tmp);
 		prod = multiply_matrixsu3 (prod, tmp);
+		
 		//second staple
 		//adjoint (u_nu(x+mu-nu))
 		//newpos is "pos-nu" (spatial)
@@ -78,13 +82,15 @@ Matrix3x3 calc_staple(__global hmc_ocl_gaugefield* field, const int pos, const i
 			tmp = get_matrixsu3(field,newpos,t,nu);
 		}
 		prod2 = multiply_matrixsu3(prod2, tmp);
-				
+
+		
 		Matrix3x3 dummy;
 		dummy = matrix_su3to3x3 (prod);
 		staple = add_matrix3x3 (staple, dummy );
 		dummy = matrix_su3to3x3 (prod2);
 		staple = add_matrix3x3 (staple, dummy );
 	}
+	
 	return staple;
 }
 
@@ -119,18 +125,17 @@ void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_
 	hmc_float beta_new;
 
 	random_1_2_3(order, &rnd[id]);
+	
 	U = get_matrixsu3(gaugefield, pos, t, mu);
-
-//Why?
-//  	project_su3(U);
-
+	
 	staplematrix = calc_staple(gaugefield, pos, t, mu);
-
+	
 	for(int i=0; i<NC; i++) {
+	  	
 		W = matrix_su3to3x3 (U);
 		W = multiply_matrix3x3 (W, staplematrix);
-
-		reduction(w, W, order[i]);
+		
+ 		reduction(w, W, order[i]);
 
 		w_pauli[0] = 0.5*(w[0].re + w[3].re);
 		w_pauli[1] = 0.5*(w[1].im + w[2].im);
@@ -141,6 +146,7 @@ void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_
 		beta_new =  2.*beta / NC*k;
 		SU2Update(r_pauli, beta_new, &rnd[id]);
 
+		//dispensable?
 		/*
 		w[0].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
 		w[0].im = (w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
@@ -168,7 +174,6 @@ void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_
 		r_pauli[2] = su2_tmp[2];
 		r_pauli[3] = su2_tmp[3];
 
-
 		//go back to a su2 matrix in standard basis
 		w[0].re = r_pauli[0];
 		w[0].im = r_pauli[3];
@@ -181,10 +186,48 @@ void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_
 
 		Matrixsu3 extW;
 		extW = extend (order[i], w);
+		
+		//Matthias
+		//für order[i]=2, 3 gibt es endliche ergebniss
+		//für order[i]=1 unendliche
+		//Die Funktion extend macht aber das was sie sollte...
+		//
+		//extW = extend (3, w);
+
+		//Matthias
+		//Schreibt die Elemente w aus
+		// !!! wird dieser Teil auskommentiert, gehen die Einträge von U gegen unendlich
+		//
+		//printf("order %i: \n", order[i]);
+ 		//printf("%f %f \t %f %f \t %f %f \t %f %f \n", w[0].re, w[0].im, w[1].re, w[1].im, w[2].re, w[2].im, w[3].re, w[3].im);
 
 		U = multiply_matrixsu3 (extW, U);
 	}
+	
+	project_su3(U);
+
 	put_matrixsu3(gaugefield, U, pos, t, mu);
+
+	//Matthias
+	//Schreibt die erzeugte Matrix aus
+// 	printf("%f %f \t %f %f \t %f %f \n",U.e00.re, U.e00.im, U.e01.re, U.e01.im, U.e02.re, U.e02.im);
+// 	printf("%f %f \t %f %f \t %f %f \n",U.e10.re, U.e10.im, U.e11.re, U.e11.im, U.e12.re, U.e12.im);
+// 	printf("%f %f \t %f %f \t %f %f \n",U.e20.re, U.e20.im, U.e21.re, U.e21.im, U.e22.re, U.e22.im);
+// 	printf("\n");
+	
+
+	//Matthias
+	//Überprüft, ob die erzeugte Matrix unitär ist
+	//Ja, falls trace.re = 3.0 und trace.im = 0.0
+// 	Matrixsu3 blubb;
+// 	Matrixsu3 adjU;
+// 	adjU = adjoint_matrixsu3(U);
+// 	blubb = multiply_matrixsu3 (U, adjU);
+// 	hmc_complex trace;
+// 	trace = trace_matrixsu3 (blubb);
+// 	printf (" U * adj(u) %f \n", trace.re);
+// 	printf (" U * adj(u) %f \n", trace.im);
+	
 }
 
 

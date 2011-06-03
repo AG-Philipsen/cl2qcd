@@ -20,6 +20,7 @@ int inline ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int
 #endif
 }
 
+//dispensable
 int inline ocl_su3matrix_element(int a, int b)
 {
 #ifdef _RECONSTRUCT_TWELVE_

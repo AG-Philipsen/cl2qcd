@@ -260,6 +260,9 @@ public:
 	 */
 	hmc_error set_parameters (inputparameters * parameters_val);
 	
+	hmc_error set_gaugefield_hot_new(hmc_gaugefield * field);
+	hmc_error set_gaugefield_cold_new(hmc_gaugefield * field);
+	
 private:
 	Opencl * devices;
 	inputparameters* parameters;

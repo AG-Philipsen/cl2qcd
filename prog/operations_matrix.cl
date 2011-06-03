@@ -239,23 +239,3 @@ Matrix3x3 matrix_su3to3x3 (const Matrixsu3 p){
 }
 
 
-//ToDo, implement su3 first
-/*
-
-void accumulate_su3matrix_3x3_add(__private hmc_ocl_3x3matrix *out, __private const hmc_ocl_su3matrix *q){
-#ifdef _RECONSTRUCT_TWELVE_
-	for(int n=0; n<NC*(NC-1); n++) {
-		out[n] = complexadd(out[n] , q[n]);
-	}
-	for(int n=NC*(NC-1);  n<NC*NC; n++) {
-		hmc_complex tmp = reconstruct_su3(q, n-NC*(NC-1));
-		out[n] = complexadd(out[n] , tmp);
-	}
-#else
-	for(int k=0; k<NC*NC; k++) {
-		out[k] = complexadd(out[k] , q[k]);
-	}
-#endif
-  
-} 
-*/

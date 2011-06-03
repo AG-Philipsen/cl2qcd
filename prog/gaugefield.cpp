@@ -64,18 +64,37 @@ hmc_error Gaugefield::init_gaugefield(usetimer* timer)
 	}
 	if(get_parameters()->get_startcondition() == COLD_START) {
 		timer->reset();
-		set_gaugefield_cold(get_gf());
+		set_gaugefield_cold_new(get_gf());
 		timer->add();
 	}
 	if(get_parameters()->get_startcondition() == HOT_START) {
 		timer->reset();
-		set_gaugefield_cold(get_gf());
+		set_gaugefield_cold_new(get_gf());
 		timer->add();
 	}
 	return HMC_SUCCESS;
 }
 
+hmc_error Gaugefield::set_gaugefield_cold_new(hmc_gaugefield * field) {
+  for(int t=0; t<NTIME; t++) {
+    for(int n=0; n<VOLSPACE; n++) {
+      for(int mu=0; mu<NDIM; mu++) {
+	Matrixsu3 tmp;
+	tmp = unit_matrixsu3();
+	put_matrixsu3(field, tmp, n, t, mu);
+      }
+    }
+  }
+  return HMC_SUCCESS;
+}
 
+
+//Implement this
+hmc_error Gaugefield::set_gaugefield_hot_new(hmc_gaugefield * field) {
+  hmc_error err;
+  err = set_gaugefield_cold(field);
+  return HMC_SUCCESS;
+}
 
 hmc_error Gaugefield::copy_gaugefield_to_devices(usetimer* timer)
 {

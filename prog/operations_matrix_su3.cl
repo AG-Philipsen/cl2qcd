@@ -390,35 +390,3 @@ hmc_complex det_matrixsu3(const Matrixsu3 p)
 	return out;
 }
 
-
-/*
-void accumulate_su3matrix_prod(__private hmc_ocl_su3matrix *acc,__private hmc_ocl_su3matrix *mult)
-{
-	hmc_ocl_su3matrix tmp[SU3SIZE];
-	multiply_su3matrices(tmp,acc,mult);
-	copy_su3matrix(acc,tmp);
-	return;
-}
-*/
-
-
-
-/*
-void accumulate_su3matrices_add(__private hmc_ocl_staplematrix *p,__private hmc_ocl_su3matrix *q)
-{
-#ifdef _RECONSTRUCT_TWELVE_
-	for(int n=0; n<NC*(NC-1); n++) {
-		p[n] = complexadd(p[n] , q[n]);
-	}
-	for(int n=NC*(NC-1);  n<NC*NC; n++) {
-		hmc_complex tmp = reconstruct_su3(q, n-NC*(NC-1));
-		p[n] = complexadd(p[n] , tmp);
-	}
-#else
-	for(int k=0; k<NC*NC; k++) {
-		p[k] = complexadd(p[k] , q[k]);
-	}
-#endif
-	return;
-}
-*/
