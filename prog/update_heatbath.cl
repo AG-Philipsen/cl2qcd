@@ -7,17 +7,12 @@
 Matrix3x3 calc_staple(__global hmc_ocl_gaugefield* field, const int pos, const int t, const int mu_in)
 {
 	Matrixsu3 prod;
-// 	hmc_ocl_su3matrix prod[SU3SIZE];
 	Matrixsu3 prod2;
-// 	hmc_ocl_su3matrix prod2[SU3SIZE];
 	Matrixsu3 tmp;
-// 	hmc_ocl_su3matrix tmp[SU3SIZE];
 	Matrix3x3 staple;
-// 	hmc_ocl_staplematrix dummy[STAPLEMATRIXSIZE];
 	int nu, newpos, newt;
 
 	staple = zero_matrix3x3();
-// 	zero_staplematrix(dummy);
 
 	//iterate through the three directions other than mu
 	for(int i = 1; i<NDIM; i++) {
@@ -34,7 +29,6 @@ Matrix3x3 calc_staple(__global hmc_ocl_gaugefield* field, const int pos, const i
 		}
 		
 		prod = copy_matrixsu3(tmp);
-// 		copy_matrixsu3(prod, tmp);
 		//adjoint(u_mu(x+nu))
 		if(nu==0) {
 			newt = (t+1)%NTIME;
@@ -44,15 +38,10 @@ Matrix3x3 calc_staple(__global hmc_ocl_gaugefield* field, const int pos, const i
 		}
 		tmp = adjoint_matrixsu3(tmp);
 		
-		//implement method
 		prod = multiply_matrixsu3(prod, tmp);
-// 		accumulate_su3matrix_prod(prod,tmp);
 		//adjoint(u_nu(x))
-// 		get_su3matrix(tmp,field,pos,t,nu);
 		tmp = get_matrixsu3(field,pos,t,nu);
-// 		adjoin_su3matrix(tmp);
 		tmp = adjoint_matrixsu3(tmp);
-// 		accumulate_su3matrix_prod(prod,tmp);
 		prod = multiply_matrixsu3 (prod, tmp);
 		//second staple
 		//adjoint (u_nu(x+mu-nu))
@@ -67,10 +56,7 @@ Matrix3x3 calc_staple(__global hmc_ocl_gaugefield* field, const int pos, const i
 		} else {
 			tmp = get_matrixsu3(field,get_neighbor(newpos,mu_in),t,nu);
 		}
-// 		adjoin_su3matrix(tmp);
-		tmp = adjoint_matrixsu3(tmp);
-// 		copy_su3matrix(prod2, tmp);
-		prod2 = copy_matrixsu3(tmp);
+		prod2 = adjoint_matrixsu3(tmp);
 		//adjoint(u_mu(x-nu))
 		if(mu_in==0) {
 			tmp = get_matrixsu3(field,newpos,t,mu_in);
@@ -80,9 +66,7 @@ Matrix3x3 calc_staple(__global hmc_ocl_gaugefield* field, const int pos, const i
 		} else {
 			tmp = get_matrixsu3(field,newpos,t,mu_in);
 		}
-// 		adjoin_su3matrix(tmp);
 		tmp = adjoint_matrixsu3(tmp);
-// 		accumulate_su3matrix_prod(prod2,tmp);
 		prod2 = multiply_matrixsu3(prod2, tmp);
 		//adjoint(u_nu(x-nu))
 		if(mu_in==0) {
@@ -94,17 +78,12 @@ Matrix3x3 calc_staple(__global hmc_ocl_gaugefield* field, const int pos, const i
 			tmp = get_matrixsu3(field,newpos,t,nu);
 		}
 		prod2 = multiply_matrixsu3(prod2, tmp);
-// 		accumulate_su3matrix_prod(prod2,tmp);
 				
 		Matrix3x3 dummy;
 		dummy = matrix_su3to3x3 (prod);
 		staple = add_matrix3x3 (staple, dummy );
 		dummy = matrix_su3to3x3 (prod2);
 		staple = add_matrix3x3 (staple, dummy );
-// 		accumulate_su3matrices_add(dummy, prod);
-// 		accumulate_su3matrices_add(dummy, prod2);
-		
-		
 	}
 	return staple;
 }
