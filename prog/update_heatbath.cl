@@ -109,11 +109,8 @@ void SU2Update(__private hmc_float dst [su2_entries], const hmc_float alpha, __g
 void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id)
 {
 	Matrixsu3 U;
-// 	hmc_ocl_su3matrix U[SU3SIZE];
 	Matrix3x3 W;
-// 	hmc_ocl_staplematrix W[STAPLEMATRIXSIZE];
 	Matrix3x3 staplematrix;
-// 	hmc_ocl_staplematrix staplematrix[STAPLEMATRIXSIZE];
 	int order[3];
 	hmc_complex w [su2_entries];
 	hmc_float w_pauli[su2_entries];
@@ -124,14 +121,14 @@ void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_
 	random_1_2_3(order, &rnd[id]);
 	U = get_matrixsu3(gaugefield, pos, t, mu);
 
- 	project_su3(U);
+//Why?
+//  	project_su3(U);
 
 	staplematrix = calc_staple(gaugefield, pos, t, mu);
 
 	for(int i=0; i<NC; i++) {
 		W = matrix_su3to3x3 (U);
 		W = multiply_matrix3x3 (W, staplematrix);
-// 		multiply_staplematrix(W, U, staplematrix);
 
 		reduction(w, W, order[i]);
 
@@ -184,13 +181,8 @@ void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_
 
 		Matrixsu3 extW;
 		extW = extend (order[i], w);
-// 		hmc_ocl_su3matrix extW[SU3SIZE];
-// 		extend (extW, order[i], w);
 
-		extW = multiply_matrixsu3 (extW, U);
-		U = copy_matrixsu3 (extW);
-// 		accumulate_su3matrix_prod(extW, U);
-		U = copy_matrixsu3(extW);
+		U = multiply_matrixsu3 (extW, U);
 	}
 	put_matrixsu3(gaugefield, U, pos, t, mu);
 }
@@ -225,11 +217,8 @@ void inline perform_overrelaxing(__global hmc_ocl_gaugefield* gaugefield, const 
 {
 
 	Matrixsu3 U;
-// 	hmc_ocl_su3matrix U[SU3SIZE];
 	Matrix3x3 W;
-// 	hmc_ocl_staplematrix W[STAPLEMATRIXSIZE];
 	Matrix3x3 staplematrix;
-// 	hmc_ocl_staplematrix staplematrix[STAPLEMATRIXSIZE];
 
 	hmc_complex w [su2_entries];
 	hmc_float w_pauli[su2_entries];
@@ -239,17 +228,16 @@ void inline perform_overrelaxing(__global hmc_ocl_gaugefield* gaugefield, const 
 	random_1_2_3(order, &rnd[id]);
 	U = get_matrixsu3(gaugefield, pos, t, mu);
 
- 	project_su3(U);
+//why?
+	project_su3(U);
 
 	staplematrix = calc_staple(gaugefield, pos, t, mu);
 
-// 	hmc_ocl_su3matrix tmp[SU3SIZE];
 	Matrixsu3 extW;
-// 	hmc_ocl_su3matrix extW[SU3SIZE];
+
 	for(int i=0; i<NC; i++) {
 		W = matrix_su3to3x3 (U);
 		W = multiply_matrix3x3 (W, staplematrix);
-// 		multiply_staplematrix(W, U, staplematrix);
 	  
 		reduction(w, W, order[i]);
 
@@ -270,10 +258,6 @@ void inline perform_overrelaxing(__global hmc_ocl_gaugefield* gaugefield, const 
 
 		extW = extend (order[i], w);
 		U = multiply_matrixsu3(extW, U);
-// 		extend (extW, order[i], w);
-// 		multiply_su3matrices(tmp, extW, U);
-// 		copy_su3matrix(U, tmp);
-
 	}
 	put_matrixsu3(gaugefield, U, pos, t, mu);
 
