@@ -176,9 +176,10 @@ hmc_error Opencl::fill_kernels()
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* params){
-  hmc_error err = init_basic(wanted_device_type,timer,params);
-  return err;
+hmc_error Opencl::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* params)
+{
+	hmc_error err = init_basic(wanted_device_type, timer, params);
+	return err;
 }
 
 hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer, inputparameters* params)
@@ -934,6 +935,7 @@ void Opencl::printResourceRequirements(const cl_kernel kernel)
 	else
 		logger.trace() << "  Compile time work group size: (" << compile_work_group_size[0] << ", " << compile_work_group_size[1] << ", " << compile_work_group_size[2] << ')';
 
+#ifdef CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE // don't fail on OpenCL 1.0
 	// query the preferred WORK_GROUP_SIZE_MULTIPLE (OpenCL 1.1 only)
 	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(size_t), &work_group_size, NULL );
 	if(clerr != CL_SUCCESS) {
@@ -941,6 +943,7 @@ void Opencl::printResourceRequirements(const cl_kernel kernel)
 		exit(HMC_OCLERROR);
 	}
 	logger.trace() << "  Preferred work group size multiple: " << work_group_size;
+#endif
 
 	// query the local memory requirements
 	cl_ulong local_mem_size;
@@ -951,6 +954,7 @@ void Opencl::printResourceRequirements(const cl_kernel kernel)
 	}
 	logger.trace() << "  Local memory size (bytes): " << local_mem_size;
 
+#ifdef CL_KERNEL_PRIVATE_MEM_SIZE // don't fail on OpenCL 1.0
 	// query the private memory required by the kernel (OpenCL 1.1 only)
 	cl_ulong private_mem_size;
 	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_PRIVATE_MEM_SIZE, sizeof(cl_ulong), &private_mem_size, NULL );
@@ -959,4 +963,5 @@ void Opencl::printResourceRequirements(const cl_kernel kernel)
 		exit(HMC_OCLERROR);
 	}
 	logger.trace() << "  Private memory size (bytes): " << private_mem_size;
+#endif
 }
