@@ -115,57 +115,62 @@ Matrixsu3 copy_matrixsu3(const Matrixsu3 in)
 	return out;
 }
 
-void unit_matrixsu3(Matrixsu3 *out)
+Matrixsu3 unit_matrixsu3()
 {
-	(*out).e00.re = 1.;
-	(*out).e00.im = 0.;
-	(*out).e01.re = 0.;
-	(*out).e01.im = 0.;
-	(*out).e02.re = 0.;
-	(*out).e02.im = 0.;
+	Matrixsu3 out;
+	out.e00.re = 1.;
+	out.e00.im = 0.;
+	out.e01.re = 0.;
+	out.e01.im = 0.;
+	out.e02.re = 0.;
+	out.e02.im = 0.;
 
-	(*out).e10.re = 0.;
-	(*out).e10.im = 0.;
-	(*out).e11.re = 1.;
-	(*out).e11.im = 0.;
-	(*out).e12.re = 0.;
-	(*out).e12.im = 0.;
+	out.e10.re = 0.;
+	out.e10.im = 0.;
+	out.e11.re = 1.;
+	out.e11.im = 0.;
+	out.e12.re = 0.;
+	out.e12.im = 0.;
 
 #ifndef _RECONSTRUCT_TWELVE_
-	(*out).e20.re = 0.;
-	(*out).e20.im = 0.;
-	(*out).e21.re = 0.;
-	(*out).e21.im = 0.;
-	(*out).e22.re = 1.;
-	(*out).e22.im = 0.;
+	out.e20.re = 0.;
+	out.e20.im = 0.;
+	out.e21.re = 0.;
+	out.e21.im = 0.;
+	out.e22.re = 1.;
+	out.e22.im = 0.;
 #endif
+	return out;
 }
 
 
-void zero_matrixsu3(Matrixsu3 *out)
+Matrixsu3 zero_matrixsu3()
 {
-	(*out).e00.re = 0.;
-	(*out).e00.im = 0.;
-	(*out).e01.re = 0.;
-	(*out).e01.im = 0.;
-	(*out).e02.re = 0.;
-	(*out).e02.im = 0.;
+	Matrixsu3 out;
+	out.e00.re = 0.;
+	out.e00.im = 0.;
+	out.e01.re = 0.;
+	out.e01.im = 0.;
+	out.e02.re = 0.;
+	out.e02.im = 0.;
 
-	(*out).e10.re = 0.;
-	(*out).e10.im = 0.;
-	(*out).e11.re = 0.;
-	(*out).e11.im = 0.;
-	(*out).e12.re = 0.;
-	(*out).e12.im = 0.;
+	out.e10.re = 0.;
+	out.e10.im = 0.;
+	out.e11.re = 0.;
+	out.e11.im = 0.;
+	out.e12.re = 0.;
+	out.e12.im = 0.;
 
 #ifndef _RECONSTRUCT_TWELVE_
-	(*out).e20.re = 0.;
-	(*out).e20.im = 0.;
-	(*out).e21.re = 0.;
-	(*out).e21.im = 0.;
-	(*out).e22.re = 0.;
-	(*out).e22.im = 0.;
+	out.e20.re = 0.;
+	out.e20.im = 0.;
+	out.e21.re = 0.;
+	out.e21.im = 0.;
+	out.e22.re = 0.;
+	out.e22.im = 0.;
 #endif 
+
+	return out;
 }
 
 Matrixsu3 multiply_matrixsu3(const Matrixsu3 p, const Matrixsu3 q)
@@ -386,7 +391,18 @@ hmc_complex det_matrixsu3(const Matrixsu3 p)
 }
 
 
-// Applied?
+/*
+void accumulate_su3matrix_prod(__private hmc_ocl_su3matrix *acc,__private hmc_ocl_su3matrix *mult)
+{
+	hmc_ocl_su3matrix tmp[SU3SIZE];
+	multiply_su3matrices(tmp,acc,mult);
+	copy_su3matrix(acc,tmp);
+	return;
+}
+*/
+
+
+
 /*
 void accumulate_su3matrices_add(__private hmc_ocl_staplematrix *p,__private hmc_ocl_su3matrix *q)
 {
@@ -403,14 +419,6 @@ void accumulate_su3matrices_add(__private hmc_ocl_staplematrix *p,__private hmc_
 		p[k] = complexadd(p[k] , q[k]);
 	}
 #endif
-	return;
-}
-
-void accumulate_su3matrix_prod(__private hmc_ocl_su3matrix *acc,__private hmc_ocl_su3matrix *mult)
-{
-	hmc_ocl_su3matrix tmp[SU3SIZE];
-	multiply_su3matrices(tmp,acc,mult);
-	copy_su3matrix(acc,tmp);
 	return;
 }
 */

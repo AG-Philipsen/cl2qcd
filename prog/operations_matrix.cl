@@ -4,6 +4,29 @@
 
 //operations_matrix.cl
 
+Matrix3x3 zero_matrix3x3 (){
+    Matrix3x3 out;
+    out.e00.re = 0.;
+    out.e00.im = 0.;
+    out.e01.re = 0.;
+    out.e01.im = 0.;
+    out.e02.re = 0.;
+    out.e02.im = 0.;
+    out.e10.re = 0.;
+    out.e10.im = 0.;
+    out.e11.re = 0.;
+    out.e11.im = 0.;
+    out.e12.re = 0.;
+    out.e12.im = 0.;
+    out.e20.re = 0.;
+    out.e20.im = 0.;
+    out.e21.re = 0.;
+    out.e21.im = 0.;
+    out.e22.re = 0.;
+    out.e22.im = 0.;
+
+    return out;
+}
 
 Matrix3x3 multiply_matrix3x3 (const Matrix3x3 p, const Matrix3x3 q)
 {
