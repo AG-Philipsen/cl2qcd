@@ -12,7 +12,7 @@ hmc_error Opencl::fill_kernels_file ()
 	//!!CP: LZ should update this
 	cl_kernels_file.push_back("opencl_header.cl");
 	cl_kernels_file.push_back("opencl_geometry.cl");
-	cl_kernels_file.push_back("opencl_random.cl");
+	cl_kernels_file.push_back("random.cl");
 	cl_kernels_file.push_back("opencl_operations_complex.cl");
 	cl_kernels_file.push_back("operations_matrix_su3.cl");
 	cl_kernels_file.push_back("operations_matrix.cl");
