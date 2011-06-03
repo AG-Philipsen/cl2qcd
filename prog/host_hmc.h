@@ -19,7 +19,7 @@
 #include "host_operations_spinorfield.h"
 #include "host_operations_fermionmatrix.h"
 #include "host_update_heatbath.h"
-#include "host_gaugeobservables.h"
+// #include "host_gaugeobservables.h"
 #include "host_use_timer.h"
 #include "host_solver.h"
 #include <cstdio>

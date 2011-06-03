@@ -322,9 +322,9 @@ hmc_float inputparameters::get_kappa()
 	return kappa;
 }
 
-void inputparameters::set_kappa_negative()
+void inputparameters::set_mubar_negative()
 {
-	kappa *= -1.;
+	mubar *= -1.;
 }
 
 void inputparameters::calc_mubar()
