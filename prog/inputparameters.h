@@ -93,7 +93,6 @@ private:
 	hmc_float chem_pot_re;
 	hmc_float chem_pot_im;
 	hmc_float tau;
-	hmc_float mubar;
 	int cgmax;
 	int use_eo;
 	int fermact;
