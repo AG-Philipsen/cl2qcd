@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 	// inverter
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+	//perform_inversion_from_point_sources_for_pseudoscalar_correlator_on_host()
 	gaugefield.perform_inversion_on_host();
 
 
