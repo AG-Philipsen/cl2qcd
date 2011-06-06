@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 	gaugefield.init(1, devicetypes, &parameters, &inittime);
 	int err = init_random_seeds(rndarray, "rand_seeds", &inittime);
 	if(err) return err;
-
+	
 	//first output, if you like it...
 	//  cout << endl << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]" << endl;
 	//  gaugefield.print_gaugeobservables(&polytime,&plaqtime);
@@ -69,7 +69,9 @@ int main(int argc, char* argv[])
 
 	cout<< "Start heatbath" <<endl;
 	
+
 	for(int i = 0; i < nsteps; i++) {
+	  
 		gaugefield.heatbath(&updatetime);
 		for(int j = 0; j < overrelaxsteps; j++) gaugefield.overrelax(&overrelaxtime);
 		if( ( (i + 1) % writefreq ) == 0 ) {

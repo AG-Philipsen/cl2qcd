@@ -110,10 +110,12 @@ void SU2Update(__private hmc_float dst [su2_entries], const hmc_float alpha, __g
 	dst[1] = sqrt(1.-a0 * a0)*cos(theta) * cos(phi);
 	dst[2] = sqrt(1.-a0 * a0)*cos(theta) * sin(phi);
 	dst[3] = sqrt(1.-a0 * a0)*sin(theta);
+	
 }
 
 void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id)
 {
+  
 	Matrixsu3 U;
 	Matrix3x3 W;
 	Matrix3x3 staplematrix;
@@ -129,12 +131,13 @@ void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_
 	U = get_matrixsu3(gaugefield, pos, t, mu);
 	
 	staplematrix = calc_staple(gaugefield, pos, t, mu);
-	
-	for(int i=0; i<NC; i++) {
+		
+ 	for(int i=0; i<NC; i++) {
+
 	  	
 		W = matrix_su3to3x3 (U);
 		W = multiply_matrix3x3 (W, staplematrix);
-		
+
  		reduction(w, W, order[i]);
 
 		w_pauli[0] = 0.5*(w[0].re + w[3].re);
@@ -142,12 +145,12 @@ void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_
 		w_pauli[2] = 0.5*(w[1].re - w[2].re);
 		w_pauli[3] = 0.5*(w[0].im - w[3].im);
 		k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
-
+		
 		beta_new =  2.*beta / NC*k;
 		SU2Update(r_pauli, beta_new, &rnd[id]);
 
 		//dispensable?
-		/*
+
 		w[0].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
 		w[0].im = (w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
 		w[1].re = (w_pauli[0]*r_pauli[2] - w_pauli[2]*r_pauli[0] + r_pauli[3]*w_pauli[1] - r_pauli[1]*w_pauli[3] )/k;
@@ -156,9 +159,10 @@ void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_
 		w[2].im = (w_pauli[0]*r_pauli[1] - w_pauli[1]*r_pauli[0] + r_pauli[2]*w_pauli[3] - r_pauli[3]*w_pauli[2] )/k;
 		w[3].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
 		w[3].im = -(w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
-		*/
+
 
 		//old:
+		/*
 		w_pauli[0] = w_pauli[0]/k;
 		w_pauli[1] = -w_pauli[1]/k;
 		w_pauli[2] = -w_pauli[2]/k;
@@ -183,51 +187,36 @@ void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_
 		w[2].im = r_pauli[1];
 		w[3].re = r_pauli[0];
 		w[3].im = -r_pauli[3];
-
+		
+		*/
+		
 		Matrixsu3 extW;
 		extW = extend (order[i], w);
 		
-		//Matthias
-		//für order[i]=2, 3 gibt es endliche ergebniss
-		//für order[i]=1 unendliche
-		//Die Funktion extend macht aber das was sie sollte...
-		//
-		//extW = extend (3, w);
-
-		//Matthias
-		//Schreibt die Elemente w aus
-		// !!! wird dieser Teil auskommentiert, gehen die Einträge von U gegen unendlich
-		//
-		//printf("order %i: \n", order[i]);
- 		//printf("%f %f \t %f %f \t %f %f \t %f %f \n", w[0].re, w[0].im, w[1].re, w[1].im, w[2].re, w[2].im, w[3].re, w[3].im);
-
 		U = multiply_matrixsu3 (extW, U);
 	}
-	
+		
 	project_su3(U);
-
+	
 	put_matrixsu3(gaugefield, U, pos, t, mu);
 
-	//Matthias
-	//Schreibt die erzeugte Matrix aus
-// 	printf("%f %f \t %f %f \t %f %f \n",U.e00.re, U.e00.im, U.e01.re, U.e01.im, U.e02.re, U.e02.im);
-// 	printf("%f %f \t %f %f \t %f %f \n",U.e10.re, U.e10.im, U.e11.re, U.e11.im, U.e12.re, U.e12.im);
-// 	printf("%f %f \t %f %f \t %f %f \n",U.e20.re, U.e20.im, U.e21.re, U.e21.im, U.e22.re, U.e22.im);
-// 	printf("\n");
-	
-
-	//Matthias
 	//Überprüft, ob die erzeugte Matrix unitär ist
 	//Ja, falls trace.re = 3.0 und trace.im = 0.0
-// 	Matrixsu3 blubb;
-// 	Matrixsu3 adjU;
-// 	adjU = adjoint_matrixsu3(U);
-// 	blubb = multiply_matrixsu3 (U, adjU);
-// 	hmc_complex trace;
-// 	trace = trace_matrixsu3 (blubb);
-// 	printf (" U * adj(u) %f \n", trace.re);
-// 	printf (" U * adj(u) %f \n", trace.im);
-	
+	/*
+ 	Matrixsu3 blubb;
+ 	Matrixsu3 adjU;
+ 	adjU = adjoint_matrixsu3(U);
+ 	blubb = multiply_matrixsu3 (adjU, U);
+	printf("%f %f \t %f %f \t %f %f \n",blubb.e00.re, blubb.e00.im, blubb.e01.re, blubb.e01.im, blubb.e02.re, blubb.e02.im);
+	printf("%f %f \t %f %f \t %f %f \n",blubb.e10.re, blubb.e10.im, blubb.e11.re, blubb.e11.im, blubb.e12.re, blubb.e12.im);
+	printf("%f %f \t %f %f \t %f %f \n",blubb.e20.re, blubb.e20.im, blubb.e21.re, blubb.e21.im, blubb.e22.re, blubb.e22.im);
+	printf("\n");
+	hmc_complex trace;
+ 	trace = trace_matrixsu3 (blubb);
+ 	printf (" U * adj(u) %f \n", trace.re);
+ 	printf (" U * adj(u) %f \n", trace.im);
+*/
+
 }
 
 

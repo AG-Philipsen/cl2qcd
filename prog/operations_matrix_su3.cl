@@ -191,10 +191,10 @@ Matrixsu3 multiply_matrixsu3(const Matrixsu3 p, const Matrixsu3 q)
     hmc_float q22_re = reconstruct_su3(q, 2).re;
     hmc_float q22_im = reconstruct_su3(q, 2).im;
 
-    out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e10.re + p20_re * q.e02.re
-	       - p.e00.im * q.e00.im - p.e01.im * q.e10.im - p20_im * q.e02.im;
-    out.e00.im = p.e00.re * q.e00.im + p.e01.re * q.e10.im + p20_re * q.e02.im
-	       + p.e00.im * q.e00.re + p.e01.im * q.e10.re + p20_im * q.e02.re;
+    out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e10.re + p02_re * q.e20.re
+	       - p.e00.im * q.e00.im - p.e01.im * q.e10.im - p02_im * q.e20.im;
+    out.e00.im = p.e00.re * q.e00.im + p.e01.re * q.e10.im + p02_re * q.e20.im
+	       + p.e00.im * q.e00.re + p.e01.im * q.e10.re + p02_im * q.e20.re;
 
     out.e01.re = p.e00.re * q.e01.re + p.e01.re * q.e11.re + p.e02.re * q21_re
 	       - p.e00.im * q.e01.im - p.e01.im * q.e11.im - p.e02.im * q21_im;
@@ -241,14 +241,14 @@ Matrixsu3 multiply_matrixsu3(const Matrixsu3 p, const Matrixsu3 q)
 */
 #else
     
-    out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e10.re + p.e20.re * q.e02.re
-	       - p.e00.im * q.e00.im - p.e01.im * q.e10.im - p.e20.im * q.e02.im;
-    out.e00.im = p.e00.re * q.e00.im + p.e01.re * q.e10.im + p.e20.re * q.e02.im
-	       + p.e00.im * q.e00.re + p.e01.im * q.e10.re + p.e20.im * q.e02.re;
+    out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e10.re + p.e02.re * q.e20.re
+	       - p.e00.im * q.e00.im - p.e01.im * q.e10.im - p.e02.im * q.e20.im;
+    out.e00.im = p.e00.re * q.e00.im + p.e01.re * q.e10.im + p.e02.re * q.e20.im
+	       + p.e00.im * q.e00.re + p.e01.im * q.e10.re + p.e02.im * q.e20.re;
 
     out.e01.re = p.e00.re * q.e01.re + p.e01.re * q.e11.re + p.e02.re * q.e21.re
 	       - p.e00.im * q.e01.im - p.e01.im * q.e11.im - p.e02.im * q.e21.im;
-    out.e01.re = p.e00.re * q.e01.im + p.e01.re * q.e11.im + p.e02.re * q.e21.im
+    out.e01.im = p.e00.re * q.e01.im + p.e01.re * q.e11.im + p.e02.re * q.e21.im
 	       + p.e00.im * q.e01.re + p.e01.im * q.e11.re + p.e02.im * q.e21.re;
     
     out.e02.re = p.e00.re * q.e02.re + p.e01.re * q.e12.re + p.e02.re * q.e22.re
