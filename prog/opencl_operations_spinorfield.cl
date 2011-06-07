@@ -518,7 +518,7 @@ __kernel void convert_from_kappa_format( __global hmc_spinor_field *in, __global
 	int group_id = get_group_id (0);
 
 	hmc_float tmp = KAPPA;
-
+	
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 		out[id_tmp].re = (in[id_tmp].re)/sqrt(2.*tmp);
 		out[id_tmp].im = (in[id_tmp].im)/sqrt(2.*tmp);
@@ -554,7 +554,7 @@ __kernel void convert_from_kappa_format_eoprec( __global hmc_eoprec_spinor_field
 	int group_id = get_group_id (0);
 
 	hmc_float tmp = KAPPA;
-
+	
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 		out[id_tmp].re = (in[id_tmp].re)/sqrt(2.*tmp);
 		out[id_tmp].im = (in[id_tmp].im)/sqrt(2.*tmp);

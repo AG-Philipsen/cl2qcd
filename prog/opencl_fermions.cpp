@@ -1548,9 +1548,6 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 		set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
 		copy_float_from_device(clmem_resid, &resid, copytimer);
 
-
-		cout<<iter<<"\t"<<resid<<endl;
-
 		if(resid<epssquare) {	
 			M_device(clmem_inout,clmem_aux,local_work_size, global_work_size, Mtimer, dslashtimer, Mdiagtimer);
 			saxpy_device(clmem_aux, clmem_source, clmem_one, clmem_aux, local_work_size, global_work_size, latimer); 
@@ -1628,8 +1625,6 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(usetimer * copytimer, usetimer
 		set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
 		copy_float_from_device(clmem_resid, &resid, copytimer);
 	
-		cout<<iter<<"\t"<<resid<<endl;
-
 		if(resid<epssquare) {	
 			Aee_device(clmem_inout_eoprec,clmem_aux_eoprec,local_work_size, global_work_size, Mtimer, singletimer, dslashtimer, Mdiagtimer, latimer);
 			saxpy_eoprec_device(clmem_aux_eoprec, clmem_source_even, clmem_one, clmem_aux_eoprec, local_work_size, global_work_size, latimer); 

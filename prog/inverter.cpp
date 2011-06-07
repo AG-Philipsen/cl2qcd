@@ -33,11 +33,13 @@ int main(int argc, char* argv[])
 
 	gaugefield.init(1, devicetypes, &parameters, &inittime);
 
+	gaugefield.copy_gaugefield_to_devices(&copytimer);
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// inverter
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	//	gaugefield.perform_inversion_pointsource_ps_corr_host();
+	gaugefield.perform_inversion_pointsource_ps_corr_host();
 	gaugefield.perform_inversion_pointsource_ps_corr_devices(&copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
 
 

@@ -187,6 +187,7 @@ __kernel void M_sitediagonal (__global hmc_eoprec_spinor_field* in, __global hmc
 
 	hmc_float kappa_tmp = KAPPA;
 	hmc_float mu_tmp = MU;
+
 	hmc_spinor spinout[SPINORSIZE];
 	for(id_tmp = id; id_tmp < VOL4D/2; id_tmp += global_size) {
 		get_spinor_from_eoprec_field(in,spinout,id_tmp);
@@ -208,6 +209,7 @@ __kernel void M_inverse_sitediagonal (__global hmc_eoprec_spinor_field* in, __gl
 
 	hmc_float kappa_tmp = KAPPA;
 	hmc_float mu_tmp = MU;
+
 	hmc_spinor spinout[SPINORSIZE];
 	for(id_tmp = id; id_tmp < VOL4D/2; id_tmp += global_size) {
 		hmc_float minuskappa = -kappa_tmp;
