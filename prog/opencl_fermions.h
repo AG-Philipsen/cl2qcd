@@ -108,9 +108,9 @@ class Opencl_fermions : public Opencl {
 
  private:
 	//spinorfield and solver variables
-	cl_mem clmem_kappa;
+	//LZ	cl_mem clmem_kappa;
 	cl_mem clmem_theta_fermion;
-	cl_mem clmem_mu;
+	//LZ	cl_mem clmem_mu;
 	cl_mem clmem_chem_pot_re;
 	cl_mem clmem_chem_pot_im;
 

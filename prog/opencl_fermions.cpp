@@ -268,21 +268,25 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
   }  
     
   cout << "\tinit float numbers..." << endl;
-  clmem_kappa = clCreateBuffer(context,CL_MEM_READ_ONLY,float_size,0,&clerr);
+  /* LZ: no longer needed?!?
+   clmem_kappa = clCreateBuffer(context,CL_MEM_READ_ONLY,float_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_kappa failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   } 
+  */
   clmem_theta_fermion = clCreateBuffer(context,CL_MEM_READ_ONLY,float_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_theta_fermion failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   } 
+  /* LZ no longer needed ?!?
   clmem_mu = clCreateBuffer(context,CL_MEM_READ_ONLY,float_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_mu failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   } 
+  */
   clmem_chem_pot_re = clCreateBuffer(context,CL_MEM_READ_ONLY,float_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_chem_pot_re failed, aborting..."<<endl;
@@ -799,7 +803,23 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_wo
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(saxpy,2,sizeof(cl_mem),&out);
+
+  cl_mem clmem_alphatmp = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_complex),0,&clerr);
+  if(clerr!=CL_SUCCESS) exit(HMC_OCLERROR);
+  hmc_complex alphatmp;
+  alphatmp.re = get_parameters()->get_kappa();
+  alphatmp.im = 0;
+  clerr = clEnqueueWriteBuffer(queue,clmem_alphatmp,CL_TRUE,0,sizeof(hmc_complex),&alphatmp,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"... writing clmem_alphatmp failed, aborting."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(saxpy,2,sizeof(cl_mem),&clmem_alphatmp);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(saxpy,3,sizeof(cl_mem),&out);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -810,6 +830,8 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_wo
     exit(HMC_OCLERROR);
   }
   clFinish(queue);
+
+  if(clReleaseMemObject(clmem_alphatmp)!=CL_SUCCESS) exit(HMC_OCLERROR);
 	
 	(*timer).add();
 	return HMC_SUCCESS;
@@ -1844,9 +1866,9 @@ hmc_error Opencl_fermions::finalize_fermions(){
     if(clReleaseKernel(create_point_source_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
   }
 
-  if(clReleaseMemObject(clmem_kappa)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  //LZ  if(clReleaseMemObject(clmem_kappa)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_theta_fermion)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  if(clReleaseMemObject(clmem_mu)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  //  if(clReleaseMemObject(clmem_mu)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_chem_pot_re)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_chem_pot_im)!=CL_SUCCESS) exit(HMC_OCLERROR);
 	
