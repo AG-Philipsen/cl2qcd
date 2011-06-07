@@ -490,7 +490,7 @@ __kernel void set_zero_spinorfield_eoprec( __global hmc_eoprec_spinor_field *x )
 	return;
 }
 
-__kernel void convert_to_kappa_format( __global hmc_spinor_field *in, __global hmc_float * kappa )
+__kernel void convert_to_kappa_format( __global hmc_spinor_field *in )
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -499,7 +499,7 @@ __kernel void convert_to_kappa_format( __global hmc_spinor_field *in, __global h
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	hmc_float tmp = *kappa;
+	hmc_float tmp = KAPPA;
 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 		in[id_tmp].re *= sqrt(2.*tmp);
@@ -508,7 +508,7 @@ __kernel void convert_to_kappa_format( __global hmc_spinor_field *in, __global h
 	return;
 }
 
-__kernel void convert_from_kappa_format( __global hmc_spinor_field *in, __global hmc_spinor_field* out, __global hmc_float * kappa )
+__kernel void convert_from_kappa_format( __global hmc_spinor_field *in, __global hmc_spinor_field* out )
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -517,7 +517,7 @@ __kernel void convert_from_kappa_format( __global hmc_spinor_field *in, __global
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	hmc_float tmp = *kappa;
+	hmc_float tmp = KAPPA;
 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 		out[id_tmp].re = (in[id_tmp].re)/sqrt(2.*tmp);
@@ -526,7 +526,7 @@ __kernel void convert_from_kappa_format( __global hmc_spinor_field *in, __global
 	return;
 }
 
-__kernel void convert_to_kappa_format_eoprec( __global hmc_eoprec_spinor_field *in, __global hmc_float * kappa )
+__kernel void convert_to_kappa_format_eoprec( __global hmc_eoprec_spinor_field *in)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -535,7 +535,7 @@ __kernel void convert_to_kappa_format_eoprec( __global hmc_eoprec_spinor_field *
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	hmc_float tmp = *kappa;
+	hmc_float tmp = KAPPA;
 
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 		in[id_tmp].re *= sqrt(2.*tmp);
@@ -544,7 +544,7 @@ __kernel void convert_to_kappa_format_eoprec( __global hmc_eoprec_spinor_field *
 	return;
 }
 
-__kernel void convert_from_kappa_format_eoprec( __global hmc_eoprec_spinor_field *in, __global hmc_eoprec_spinor_field* out, __global hmc_float * kappa )
+__kernel void convert_from_kappa_format_eoprec( __global hmc_eoprec_spinor_field *in, __global hmc_eoprec_spinor_field* out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -553,7 +553,7 @@ __kernel void convert_from_kappa_format_eoprec( __global hmc_eoprec_spinor_field
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	hmc_float tmp = *kappa;
+	hmc_float tmp = KAPPA;
 
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 		out[id_tmp].re = (in[id_tmp].re)/sqrt(2.*tmp);
@@ -563,11 +563,11 @@ __kernel void convert_from_kappa_format_eoprec( __global hmc_eoprec_spinor_field
 }
 
 //!!CP: these two need to be kernels, if they are needed at all...
-__kernel void create_point_source(__global hmc_spinor_field* b, int i, int spacepos, int timepos, __global hmc_float * kappa)
+__kernel void create_point_source(__global hmc_spinor_field* b, int i, int spacepos, int timepos)
 {
 	int id = get_global_id(0);
 	if(id == 0) {
-		hmc_float tmp = *kappa;
+		hmc_float tmp = KAPPA;
 		int color = spinor_color(i);
 		int spin = spinor_spin(i,color);
 		int element = spinor_field_element(spin,color,spacepos,timepos);
@@ -577,12 +577,12 @@ __kernel void create_point_source(__global hmc_spinor_field* b, int i, int space
 	return;
 }
 
-__kernel void create_point_source_eoprec(__global hmc_eoprec_spinor_field* b, int i, int n, __global hmc_float * kappa)
+__kernel void create_point_source_eoprec(__global hmc_eoprec_spinor_field* b, int i, int n)
 {
 
 	int id = get_global_id(0);
 	if(id == 0) {
-		hmc_float tmp = fabs(*kappa);
+		hmc_float tmp = fabs(KAPPA);
 		int color = spinor_color(i);
 		int spin = spinor_spin(i,color);
 		int element = eoprec_spinor_field_element(spin, color, n);

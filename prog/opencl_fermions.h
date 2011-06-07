@@ -96,7 +96,6 @@ class Opencl_fermions : public Opencl {
 	hmc_error cg_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
 	hmc_error testing_spinor(inputparameters* parameters, size_t local_size, size_t global_size);
 
-	hmc_error simple_correlator_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t ls, const size_t gs, int cgmax);
 	hmc_error create_point_source_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs, usetimer * latimer);
 	hmc_error create_point_source_eoprec_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer);
 	hmc_error solver_device(hmc_spinor_field* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);

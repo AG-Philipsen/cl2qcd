@@ -1,6 +1,7 @@
 /** @file
  * Provides class Gaugefield_inversion, inherited from Gaugefield, adds solver capabilities
  *
+ * @todo global- and local work sizes should be moved inside Opencl_fermions (LZ)
  */
 #ifndef _GAUGEFIELDINVERSIONH_
 #define _GAUGEFIELDINVERSIONH_
@@ -28,9 +29,16 @@ class Gaugefield_inversion : public Gaugefield {
   virtual hmc_error finalize();
 
   /**
-   * Perform inversion on host.
+   * Perform inversion on host and print pseudo-scalar correlator to std.
+   * Use point sources.
    */
-  hmc_error perform_inversion_on_host();
+  hmc_error perform_inversion_pointsource_ps_corr_host();
+
+  /**
+   * Perform inversion on device and print pseudo-scalar correlator to std.
+   * Use point sources.
+   */
+  hmc_error perform_inversion_pointsource_ps_corr_devices(usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer);
 
   /**
    * Free device, called by finalize

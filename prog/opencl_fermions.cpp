@@ -14,7 +14,8 @@ hmc_error Opencl_fermions::fill_kernels_file (){
 hmc_error Opencl_fermions::fill_collect_options(stringstream* collect_options){
 
 	Opencl::fill_collect_options(collect_options);
-	*collect_options << " -D_FERMIONS_";
+	*collect_options << " -D_FERMIONS_" << " -DSPINORSIZE=" << SPINORSIZE << " -DHALFSPINORSIZE=" << HALFSPINORSIZE << " -DSPINORFIELDSIZE=" << SPINORFIELDSIZE << " -DEOPREC_SPINORFIELDSIZE=" << EOPREC_SPINORFIELDSIZE;
+
 
 	switch (get_parameters()->get_fermact()) {
 	case TWISTEDMASS :
@@ -32,10 +33,10 @@ hmc_error Opencl_fermions::fill_collect_options(stringstream* collect_options){
 
 	switch (get_parameters()->get_fermact()) {
 	case TWISTEDMASS :
-	  *collect_options << " -DMU";
+	  *collect_options << " -DMU=" << get_parameters()->get_mu();
 	  break;
 	case CLOVER :
-	  *collect_options << " -DCSW";
+	  *collect_options << " -DCSW=" << get_parameters()->get_csw();
 	  break;
 	}
 
@@ -727,10 +728,10 @@ hmc_error Opencl_fermions::copy_complex_from_device(cl_mem in, hmc_complex * out
 }
 
 hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer, usetimer* dslashtimer, usetimer* Mdiagtimer){
-	(*timer).reset();
-	(*Mdiagtimer).reset();
-	int clerr =CL_SUCCESS;
-	clerr = clSetKernelArg(M_diag,0,sizeof(cl_mem),&in); 
+  (*timer).reset();
+  (*Mdiagtimer).reset();
+  int clerr =CL_SUCCESS;
+  clerr = clSetKernelArg(M_diag,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -748,8 +749,8 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_wo
   clFinish(queue);
   (*Mdiagtimer).add();
 	
-	(*dslashtimer).reset();
-	clerr = clSetKernelArg(dslash,0,sizeof(cl_mem),&in); 
+  (*dslashtimer).reset();
+  clerr = clSetKernelArg(dslash,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -785,10 +786,10 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_wo
     exit(HMC_OCLERROR);
   }
   clFinish(queue);
-	(*dslashtimer).add();
-	
-	//!! perhaps this can go into an extra calling of saxpy
-	clerr = clSetKernelArg(saxpy,0,sizeof(cl_mem),&clmem_tmp); 
+  (*dslashtimer).add();
+  
+  //!! perhaps this can go into an extra calling of saxpy
+  clerr = clSetKernelArg(saxpy,0,sizeof(cl_mem),&clmem_tmp); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -805,7 +806,7 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_wo
   }
   clerr = clEnqueueNDRangeKernel(queue,saxpy,1,0,&global_work_size,&local_work_size,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
-    cout<<"enqueue saxpy kernel failed, aborting..."<<endl;
+    cout<<"enqueue saxpy kernel failed ("<<clerr<<"), aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
   clFinish(queue);
@@ -1525,6 +1526,9 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 		set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
 		copy_float_from_device(clmem_resid, &resid, copytimer);
 
+
+		cout<<iter<<"\t"<<resid<<endl;
+
 		if(resid<epssquare) {	
 			M_device(clmem_inout,clmem_aux,local_work_size, global_work_size, Mtimer, dslashtimer, Mdiagtimer);
 			saxpy_device(clmem_aux, clmem_source, clmem_one, clmem_aux, local_work_size, global_work_size, latimer); 
@@ -1552,6 +1556,7 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(usetimer * copytimer, usetimer
 	hmc_float trueresid;
 
 	for(int iter=0; iter<cgmax; iter++){
+
 		if(iter%iter_refresh==0) {
 			set_zero_spinorfield_eoprec_device(clmem_v_eoprec, localsize, globalsize, latimer); 
 			set_zero_spinorfield_eoprec_device(clmem_p_eoprec, localsize, globalsize, latimer);
@@ -1601,6 +1606,8 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(usetimer * copytimer, usetimer
 		set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
 		copy_float_from_device(clmem_resid, &resid, copytimer);
 	
+		cout<<iter<<"\t"<<resid<<endl;
+
 		if(resid<epssquare) {	
 			Aee_device(clmem_inout_eoprec,clmem_aux_eoprec,local_work_size, global_work_size, Mtimer, singletimer, dslashtimer, Mdiagtimer, latimer);
 			saxpy_eoprec_device(clmem_aux_eoprec, clmem_source_even, clmem_one, clmem_aux_eoprec, local_work_size, global_work_size, latimer); 
@@ -1667,63 +1674,6 @@ hmc_error Opencl_fermions::cg_device(usetimer * copytimer, usetimer* singletimer
 
 
 	
-hmc_error Opencl_fermions::simple_correlator_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t ls, const size_t gs, int cgmax){
-
-	//!!CP: this has to be global or so
-	int use_eo = 1;
-	
-	cout << "calc simple_propagator on the device..." << endl;
-	hmc_spinor_field phi[SPINORFIELDSIZE];
-	
-	hmc_spinor_field in[SPINORFIELDSIZE];
-	if(!use_eo){
-		init_spinorfield_cold(in);
-		copy_spinorfield_to_device(in, copytimer);
-	}
-	else{
-		//!!CP: this should be fine since only half the field is used but of course it is not nice...
-		init_spinorfield_cold_eoprec(in);
-		copy_eoprec_spinorfield_to_device(in, copytimer);		
-	}
-
-  //pseudo scalar, flavour multiplet
-  hmc_complex correlator_ps[NSPACE];
-  for(int z=0; z<NSPACE; z++) {
-    correlator_ps[z].re = 0;
-    correlator_ps[z].im = 0;
-  }
-	
-  for(int k=0; k<NC*NSPIN; k++) {
-		if(!use_eo){
-			create_point_source_device(k,0,0,ls, gs, latimer);
-			solver_device(phi, copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, cgmax);
-		}
-		else{
-			create_point_source_eoprec_device(k,0,0,ls, gs, latimer, dslashtimer, Mdiagtimer);
-			solver_eoprec_device(phi, copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, cgmax);
-		}
-    for(int timepos = 0; timepos<NTIME; timepos++) {
-			for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
-				for(int alpha = 0; alpha<NSPIN; alpha++) {
-					for(int c = 0; c<NC; c++) {
-					// int j = spinor_element(alpha,c);
-					int n = spinor_field_element(alpha, c, spacepos, timepos);
-					int z = get_spacecoord(spacepos, 3);
-					hmc_complex tmp = phi[n];
-					hmc_complex ctmp = complexconj(&tmp);
-					hmc_complex incr = complexmult(&ctmp,&tmp);
-					correlator_ps[z].re += incr.re;
-					correlator_ps[z].im += incr.im;
-		}}}}
-  }
-
-  printf("pseudo scalar correlator:\n");
-  for(int z=0; z<NSPACE; z++) {
-    printf("%d\t(%e,%e)\n",z,correlator_ps[z].re,correlator_ps[z].im);
-  }
-  return HMC_SUCCESS;
-}
-
 hmc_error Opencl_fermions::solver_device(hmc_spinor_field* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax){
 	(*solvertimer).reset();
 	convert_to_kappa_format_device(clmem_inout, ls, gs, latimer);
@@ -1741,6 +1691,7 @@ hmc_error Opencl_fermions::solver_eoprec_device(hmc_spinor_field* out, usetimer 
 	hmc_eoprec_spinor_field phi_even[EOPREC_SPINORFIELDSIZE];
 	hmc_eoprec_spinor_field phi_odd[EOPREC_SPINORFIELDSIZE];
 	
+
 	//CP: even solution
 	convert_to_kappa_format_eoprec_device(clmem_inout_eoprec, ls, gs, latimer);
 	bicgstab_eoprec_device(copytimer, singletimer, Mtimer, scalarprodtimer, latimer ,dslashtimer, Mdiagtimer, ls, gs, cgmax);	
@@ -1758,6 +1709,7 @@ hmc_error Opencl_fermions::solver_eoprec_device(hmc_spinor_field* out, usetimer 
 	convert_from_kappa_format_eoprec_device(clmem_inout_eoprec, clmem_inout_eoprec,  ls, gs, latimer);
 	get_eoprec_spinorfield_from_device(phi_odd, copytimer);
 
+
 	//CP: whole solution
 	convert_from_eoprec(phi_even,phi_odd,out);
 	
@@ -1767,35 +1719,35 @@ hmc_error Opencl_fermions::solver_eoprec_device(hmc_spinor_field* out, usetimer 
 
 hmc_error Opencl_fermions::create_point_source_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs, usetimer * latimer){
 	
-	set_zero_spinorfield_device(clmem_source, ls, gs, latimer);
+ 	set_zero_spinorfield_device(clmem_source, ls, gs, latimer);
 	
 	(*latimer).reset();
 	int clerr = CL_SUCCESS;
 	clerr = clSetKernelArg(create_point_source,0,sizeof(cl_mem),&clmem_source);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+	if(clerr!=CL_SUCCESS) {
+	  cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+	  exit(HMC_OCLERROR);
+	}
 	clerr = clSetKernelArg(create_point_source,1,sizeof(int),&i);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+	if(clerr!=CL_SUCCESS) {
+	  cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+	  exit(HMC_OCLERROR);
+	}
 	clerr = clSetKernelArg(create_point_source,2,sizeof(int),&spacepos);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+	if(clerr!=CL_SUCCESS) {
+	  cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
+	  exit(HMC_OCLERROR);
+	}
 	clerr = clSetKernelArg(create_point_source,3,sizeof(int),&timepos);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clEnqueueNDRangeKernel(queue,create_point_source,1,0,&gs,&ls,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"enqueue dslash kernel failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+	if(clerr!=CL_SUCCESS) {
+	  cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
+	  exit(HMC_OCLERROR);
+	}
+       	clerr = clEnqueueNDRangeKernel(queue,create_point_source,1,0,&gs,&ls,0,0,NULL);
+	if(clerr!=CL_SUCCESS) {
+	  cout<<"enqueue create_point_source kernel failed ("<<clerr<<"), aborting..."<<endl;
+	  exit(HMC_OCLERROR);
+	}
 	clFinish(queue);
 	
 	(*latimer).add();

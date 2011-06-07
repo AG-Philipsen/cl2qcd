@@ -47,6 +47,16 @@ usetimer copytime;
 
 usetimer ferm_inittime;
 
+usetimer copytimer;
+usetimer singletimer;
+usetimer Mtimer;
+usetimer scalarprodtimer;
+usetimer latimer;
+usetimer dslashtimer;
+usetimer Mdiagtimer;
+usetimer solvertimer;
+
+
 //to save gaugeobservables
 hmc_float plaq, splaq, tplaq;
 hmc_complex pol;

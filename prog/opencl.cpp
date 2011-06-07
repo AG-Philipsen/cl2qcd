@@ -23,7 +23,7 @@ hmc_error Opencl::fill_kernels_file ()
 
 hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 {
-	*collect_options << "-D_INKERNEL_ -DNSPACE=" << NSPACE << " -DNTIME=" << NTIME << " -DVOLSPACE=" << VOLSPACE << " -DSPINORSIZE=" << SPINORSIZE << " -DHALFSPINORSIZE=" << HALFSPINORSIZE << " -DSPINORFIELDSIZE=" << SPINORFIELDSIZE << " -DEOPREC_SPINORFIELDSIZE=" << EOPREC_SPINORFIELDSIZE;
+  *collect_options << "-D_INKERNEL_ -DNSPACE=" << NSPACE << " -DNTIME=" << NTIME << " -DVOLSPACE=" << VOLSPACE;
 
 	//CP: these have to match those in the cmake file
 #ifdef _RECONSTRUCT_TWELVE_

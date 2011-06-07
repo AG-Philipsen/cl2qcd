@@ -39,7 +39,7 @@ Opencl_fermions * Gaugefield_inversion::get_devices_fermions (){
   return  (Opencl_fermions*)get_devices();
 }
 
-hmc_error Gaugefield_inversion::perform_inversion_on_host(){
+hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_host(){
   //CP: one needs bicgstab here for M
   int use_cg = FALSE;
 	
@@ -57,7 +57,7 @@ hmc_error Gaugefield_inversion::perform_inversion_on_host(){
   }
 
   for(int k=0; k<NC*NSPIN; k++) {
-    if(use_eo == TRUE){
+    if(use_eo == FALSE){
       hmc_spinor_field b[SPINORFIELDSIZE];
       create_point_source(get_parameters(),k,0,0,b);
       solver(get_parameters(), in, b, get_gf(), use_cg, phi);
@@ -82,7 +82,10 @@ hmc_error Gaugefield_inversion::perform_inversion_on_host(){
 	    hmc_complex incr = complexmult(&ctmp,&tmp);
 	    correlator_ps[z].re += incr.re;
 	    correlator_ps[z].im += incr.im;
-	  }}}}
+	  }
+	}
+      }
+    }
   }
   
   printf("pseudo scalar correlator:\n");
@@ -90,5 +93,87 @@ hmc_error Gaugefield_inversion::perform_inversion_on_host(){
     printf("%d\t(%e,%e)\n",z,correlator_ps[z].re,correlator_ps[z].im);
   }
 
+  return HMC_SUCCESS;
+}
+
+
+hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer){
+
+  //this uses a BiCGStab inverter on device
+
+
+  //global and local work sizes;
+  //LZ: should eventually be moved inside opencl_fermions class
+#ifdef _USE_GPU_
+	const size_t ls = NUM_THREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
+#else
+	const size_t ls = 1; // nothing else makes sens on CPU
+#endif
+
+#ifdef _USE_GPU_
+	size_t gs = 4 * NUM_THREADS * get_devices()[0].max_compute_units; /// @todo autotune
+#else
+	size_t gs = get_devices()[0].max_compute_units;
+#endif
+
+	const cl_uint num_groups = (gs + ls - 1) / ls;
+	gs = ls * num_groups;
+
+
+  int use_eo = get_parameters()->get_use_eo();
+
+  cout << "calc simple_propagator on the device..." << endl;
+  hmc_spinor_field phi[SPINORFIELDSIZE];
+	
+  hmc_spinor_field in[SPINORFIELDSIZE];
+  if(use_eo==FALSE){
+    init_spinorfield_cold(in);
+    get_devices_fermions()[0].copy_spinorfield_to_device(in, copytimer);
+  }
+  else{
+    //!!CP: this should be fine since only half the field is used but of course it is not nice...
+    init_spinorfield_cold_eoprec(in);
+    get_devices_fermions()[0].copy_eoprec_spinorfield_to_device(in, copytimer);		
+  }
+
+  //pseudo scalar, flavour multiplet
+  hmc_complex correlator_ps[NSPACE];
+  for(int z=0; z<NSPACE; z++) {
+    correlator_ps[z].re = 0;
+    correlator_ps[z].im = 0;
+  }
+	
+  for(int k=0; k<NC*NSPIN; k++) {
+    if(use_eo == FALSE){
+      get_devices_fermions()[0].create_point_source_device(k,0,0,ls, gs, latimer);
+      get_devices_fermions()[0].solver_device(phi, copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
+    }
+    else{
+      get_devices_fermions()[0].create_point_source_eoprec_device(k,0,0,ls, gs, latimer, dslashtimer, Mdiagtimer);
+      get_devices_fermions()[0].solver_eoprec_device(phi, copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
+    }
+    for(int timepos = 0; timepos<NTIME; timepos++) {
+      for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
+	for(int alpha = 0; alpha<NSPIN; alpha++) {
+	  for(int c = 0; c<NC; c++) {
+	    // int j = spinor_element(alpha,c);
+	    int n = spinor_field_element(alpha, c, spacepos, timepos);
+	    int z = get_spacecoord(spacepos, 3);
+	    hmc_complex tmp = phi[n];
+	    hmc_complex ctmp = complexconj(&tmp);
+	    hmc_complex incr = complexmult(&ctmp,&tmp);
+	    correlator_ps[z].re += incr.re;
+	    correlator_ps[z].im += incr.im;
+	  }
+	}
+      }
+    }
+  }
+  
+  printf("pseudo scalar correlator:\n");
+  for(int z=0; z<NSPACE; z++) {
+    printf("%d\t(%e,%e)\n",z,correlator_ps[z].re,correlator_ps[z].im);
+  }
+  
   return HMC_SUCCESS;
 }

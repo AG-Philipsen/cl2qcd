@@ -321,6 +321,9 @@ hmc_error cg(inputparameters * parameters, hmc_spinor_field* inout, hmc_spinor_f
 // 	printf("cter: %i \n\n", cter);
 	if(cter < cgmax) return HMC_SUCCESS;
 	if(cter == cgmax) return HMC_STDERR;
+
+	return HMC_SUCCESS;
+
 }
 
 /** @todo CP: this cannot be used with Aee since it is not hermitian, instead one has to insert the eoprec-version of QplusQminus!!! */
