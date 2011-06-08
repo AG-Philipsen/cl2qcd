@@ -4,7 +4,7 @@
 
 //opencl_gaugeobservables.cl
 
-__kernel void plaquette(__global hmc_ocl_gaugefield * field, __global hmc_float * plaq_out, __global hmc_float* tplaq_out, __global hmc_float* splaq_out, __local hmc_float * plaq_loc, __local hmc_float* tplaq_loc, __local hmc_float* splaq_loc)
+__kernel void plaquette(__global ocl_s_gaugefield * field, __global hmc_float * plaq_out, __global hmc_float* tplaq_out, __global hmc_float* splaq_out, __local hmc_float * plaq_loc, __local hmc_float* tplaq_loc, __local hmc_float* splaq_loc)
 {
 
 	int t, pos, id;

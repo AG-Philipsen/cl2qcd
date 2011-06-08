@@ -32,59 +32,73 @@ hmc_complex reconstruct_su3(const Matrixsu3 p, const int ncomp)
 }
 #endif
 
-Matrixsu3 get_matrixsu3( __global const hmc_ocl_gaugefield * field, const int spacepos, const int timepos, const int mu)
+Matrixsu3 get_matrixsu3( __global ocl_s_gaugefield * field, const int spacepos, const int timepos, const int mu)
 {
-	Matrixsu3 out;
-	out.e00.re = field [ocl_gaugefield_element(0,0,0,mu,spacepos,timepos)];
-	out.e00.im = field [ocl_gaugefield_element(1,0,0,mu,spacepos,timepos)];
-	out.e01.re = field [ocl_gaugefield_element(0,0,1,mu,spacepos,timepos)];
-	out.e01.im = field [ocl_gaugefield_element(1,0,1,mu,spacepos,timepos)];
-	out.e02.re = field [ocl_gaugefield_element(0,0,2,mu,spacepos,timepos)];
-	out.e02.im = field [ocl_gaugefield_element(1,0,2,mu,spacepos,timepos)];
+	Matrixsu3  out;
+	out = field [get_global_link_pos(mu, spacepos, timepos)];
 
-	out.e10.re = field [ocl_gaugefield_element(0,1,0,mu,spacepos,timepos)];
-	out.e10.im = field [ocl_gaugefield_element(1,1,0,mu,spacepos,timepos)];
-	out.e11.re = field [ocl_gaugefield_element(0,1,1,mu,spacepos,timepos)];
-	out.e11.im = field [ocl_gaugefield_element(1,1,1,mu,spacepos,timepos)];
-	out.e12.re = field [ocl_gaugefield_element(0,1,2,mu,spacepos,timepos)];
-	out.e12.im = field [ocl_gaugefield_element(1,1,2,mu,spacepos,timepos)];
-
-#ifndef _RECONSTRUCT_TWELVE_
-	out.e20.re = field [ocl_gaugefield_element(0,2,0,mu,spacepos,timepos)];
-	out.e20.im = field [ocl_gaugefield_element(1,2,0,mu,spacepos,timepos)];
-	out.e21.re = field [ocl_gaugefield_element(0,2,1,mu,spacepos,timepos)];
-	out.e21.im = field [ocl_gaugefield_element(1,2,1,mu,spacepos,timepos)];
-	out.e22.re = field [ocl_gaugefield_element(0,2,2,mu,spacepos,timepos)];
-	out.e22.im = field [ocl_gaugefield_element(1,2,2,mu,spacepos,timepos)];
-#endif
 
 	return out;
 }
 
-void put_matrixsu3(__global hmc_ocl_gaugefield * field, const Matrixsu3 in, const int spacepos, const int timepos, const int mu)
+void put_matrixsu3(__global ocl_s_gaugefield * field, const Matrixsu3 in, const int spacepos, const int timepos, const int mu)
 {
-	    field[ocl_gaugefield_element(0,0,0,mu,spacepos,timepos)] = in.e00.re;
-	    field[ocl_gaugefield_element(1,0,0,mu,spacepos,timepos)] = in.e00.im;
-	    field[ocl_gaugefield_element(0,0,1,mu,spacepos,timepos)] = in.e01.re;
-	    field[ocl_gaugefield_element(1,0,1,mu,spacepos,timepos)] = in.e01.im;
-	    field[ocl_gaugefield_element(0,0,2,mu,spacepos,timepos)] = in.e02.re;
-	    field[ocl_gaugefield_element(1,0,2,mu,spacepos,timepos)] = in.e02.im;
-
-	    field[ocl_gaugefield_element(0,1,0,mu,spacepos,timepos)] = in.e10.re;
-	    field[ocl_gaugefield_element(1,1,0,mu,spacepos,timepos)] = in.e10.im;
-	    field[ocl_gaugefield_element(0,1,1,mu,spacepos,timepos)] = in.e11.re;
-	    field[ocl_gaugefield_element(1,1,1,mu,spacepos,timepos)] = in.e11.im;
-	    field[ocl_gaugefield_element(0,1,2,mu,spacepos,timepos)] = in.e12.re;
-	    field[ocl_gaugefield_element(1,1,2,mu,spacepos,timepos)] = in.e12.im;
-#ifndef _RECONSTRUCT_TWELVE_
-	    field[ocl_gaugefield_element(0,2,0,mu,spacepos,timepos)] = in.e20.re;
-	    field[ocl_gaugefield_element(1,2,0,mu,spacepos,timepos)] = in.e20.im;
-	    field[ocl_gaugefield_element(0,2,1,mu,spacepos,timepos)] = in.e21.re;
-	    field[ocl_gaugefield_element(1,2,1,mu,spacepos,timepos)] = in.e21.im;
-	    field[ocl_gaugefield_element(0,2,2,mu,spacepos,timepos)] = in.e22.re;
-	    field[ocl_gaugefield_element(1,2,2,mu,spacepos,timepos)] = in.e22.im;
-#endif
+	    field [get_global_link_pos(mu, spacepos, timepos)] = in;
 }
+
+// Matrixsu3 get_matrixsu3( __global const hmc_ocl_gaugefield * field, const int spacepos, const int timepos, const int mu)
+// {
+// 	Matrixsu3 out;
+// 	out.e00.re = field [ocl_gaugefield_element(0,0,0,mu,spacepos,timepos)];
+// 	out.e00.im = field [ocl_gaugefield_element(1,0,0,mu,spacepos,timepos)];
+// 	out.e01.re = field [ocl_gaugefield_element(0,0,1,mu,spacepos,timepos)];
+// 	out.e01.im = field [ocl_gaugefield_element(1,0,1,mu,spacepos,timepos)];
+// 	out.e02.re = field [ocl_gaugefield_element(0,0,2,mu,spacepos,timepos)];
+// 	out.e02.im = field [ocl_gaugefield_element(1,0,2,mu,spacepos,timepos)];
+// 
+// 	out.e10.re = field [ocl_gaugefield_element(0,1,0,mu,spacepos,timepos)];
+// 	out.e10.im = field [ocl_gaugefield_element(1,1,0,mu,spacepos,timepos)];
+// 	out.e11.re = field [ocl_gaugefield_element(0,1,1,mu,spacepos,timepos)];
+// 	out.e11.im = field [ocl_gaugefield_element(1,1,1,mu,spacepos,timepos)];
+// 	out.e12.re = field [ocl_gaugefield_element(0,1,2,mu,spacepos,timepos)];
+// 	out.e12.im = field [ocl_gaugefield_element(1,1,2,mu,spacepos,timepos)];
+// 
+// #ifndef _RECONSTRUCT_TWELVE_
+// 	out.e20.re = field [ocl_gaugefield_element(0,2,0,mu,spacepos,timepos)];
+// 	out.e20.im = field [ocl_gaugefield_element(1,2,0,mu,spacepos,timepos)];
+// 	out.e21.re = field [ocl_gaugefield_element(0,2,1,mu,spacepos,timepos)];
+// 	out.e21.im = field [ocl_gaugefield_element(1,2,1,mu,spacepos,timepos)];
+// 	out.e22.re = field [ocl_gaugefield_element(0,2,2,mu,spacepos,timepos)];
+// 	out.e22.im = field [ocl_gaugefield_element(1,2,2,mu,spacepos,timepos)];
+// #endif
+// 
+// 	return out;
+// }
+
+// void put_matrixsu3(__global hmc_ocl_gaugefield * field, const Matrixsu3 in, const int spacepos, const int timepos, const int mu)
+// {
+// 	    field[ocl_gaugefield_element(0,0,0,mu,spacepos,timepos)] = in.e00.re;
+// 	    field[ocl_gaugefield_element(1,0,0,mu,spacepos,timepos)] = in.e00.im;
+// 	    field[ocl_gaugefield_element(0,0,1,mu,spacepos,timepos)] = in.e01.re;
+// 	    field[ocl_gaugefield_element(1,0,1,mu,spacepos,timepos)] = in.e01.im;
+// 	    field[ocl_gaugefield_element(0,0,2,mu,spacepos,timepos)] = in.e02.re;
+// 	    field[ocl_gaugefield_element(1,0,2,mu,spacepos,timepos)] = in.e02.im;
+// 
+// 	    field[ocl_gaugefield_element(0,1,0,mu,spacepos,timepos)] = in.e10.re;
+// 	    field[ocl_gaugefield_element(1,1,0,mu,spacepos,timepos)] = in.e10.im;
+// 	    field[ocl_gaugefield_element(0,1,1,mu,spacepos,timepos)] = in.e11.re;
+// 	    field[ocl_gaugefield_element(1,1,1,mu,spacepos,timepos)] = in.e11.im;
+// 	    field[ocl_gaugefield_element(0,1,2,mu,spacepos,timepos)] = in.e12.re;
+// 	    field[ocl_gaugefield_element(1,1,2,mu,spacepos,timepos)] = in.e12.im;
+// #ifndef _RECONSTRUCT_TWELVE_
+// 	    field[ocl_gaugefield_element(0,2,0,mu,spacepos,timepos)] = in.e20.re;
+// 	    field[ocl_gaugefield_element(1,2,0,mu,spacepos,timepos)] = in.e20.im;
+// 	    field[ocl_gaugefield_element(0,2,1,mu,spacepos,timepos)] = in.e21.re;
+// 	    field[ocl_gaugefield_element(1,2,1,mu,spacepos,timepos)] = in.e21.im;
+// 	    field[ocl_gaugefield_element(0,2,2,mu,spacepos,timepos)] = in.e22.re;
+// 	    field[ocl_gaugefield_element(1,2,2,mu,spacepos,timepos)] = in.e22.im;
+// #endif
+// }
 
 Matrixsu3 copy_matrixsu3(const Matrixsu3 in)
 {

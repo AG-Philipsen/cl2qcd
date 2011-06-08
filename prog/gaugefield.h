@@ -229,6 +229,19 @@ public:
 	 * @return Error code as defined in hmcerrs.h
 	 */
 	hmc_error set_gf (hmc_gaugefield * gf_val);
+	
+	/**
+	 * Returns pointer to gaugefield u (structures)
+	 * @return The gaugefield
+	 */
+	s_gaugefield * get_sgf ();
+	
+	/**
+	 * Sets private member gaugefield u (structures)
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	hmc_error set_sgf (s_gaugefield * sgf_val);
+	
 	/**
 	 * Returns private member * devices
 	 * @return devices
@@ -260,13 +273,17 @@ public:
 	 */
 	hmc_error set_parameters (inputparameters * parameters_val);
 	
-	hmc_error set_gaugefield_hot_new(hmc_gaugefield * field);
-	hmc_error set_gaugefield_cold_new(hmc_gaugefield * field);
+	hmc_error copy_gaugefield_to_s_gaugefield (s_gaugefield * sgf, hmc_gaugefield * gf);
+	hmc_error copy_s_gaugefield_to_gaugefield (hmc_gaugefield * gf, s_gaugefield * sgf);
+	hmc_error set_gaugefield_hot_new(s_gaugefield * field);
+	hmc_error set_gaugefield_cold_new(s_gaugefield * field);
 	
 private:
 	Opencl * devices;
 	inputparameters* parameters;
-      	hmc_gaugefield * gf;	
+      	hmc_gaugefield * gf;
+	s_gaugefield * sgf;
+	
 	int num_ocl_devices;
 };
 

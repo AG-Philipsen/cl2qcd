@@ -1,5 +1,6 @@
 #include "host_operations_gaugefield.h"
 
+/*
 hmc_error copy_to_ocl_format(hmc_ocl_gaugefield* host_gaugefield,hmc_gaugefield* gaugefield){
   for(int spacepos=0; spacepos<NSPACE*NSPACE*NSPACE; spacepos++) {
     for(int t=0; t<NTIME; t++) {
@@ -48,7 +49,30 @@ hmc_error copy_from_ocl_format(hmc_gaugefield* gaugefield,hmc_ocl_gaugefield* ho
 				}}}}
   return HMC_SUCCESS;
 }
- 
+*/
+
+hmc_error copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, s_gaugefield* gaugefield){
+  for(int spacepos=0; spacepos<NSPACE*NSPACE*NSPACE; spacepos++) {
+    for(int t=0; t<NTIME; t++) {
+      for(int mu=0; mu<NDIM; mu++) {
+	host_gaugefield[get_global_link_pos(mu, spacepos, t)] = (*gaugefield) [mu][spacepos][t];
+      }
+    }
+  }
+  return HMC_SUCCESS;
+}
+
+hmc_error copy_from_ocl_format(s_gaugefield* gaugefield, ocl_s_gaugefield* host_gaugefield){
+  for(int spacepos=0; spacepos<NSPACE*NSPACE*NSPACE; spacepos++) {
+    for(int t=0; t<NTIME; t++) {
+      for(int mu=0; mu<NDIM; mu++) {
+ 	(*gaugefield) [mu][spacepos][t] = host_gaugefield [get_global_link_pos(mu, spacepos, t)];
+      }
+    }
+  }
+  return HMC_SUCCESS;
+}
+
 hmc_error set_gaugefield_cold(hmc_gaugefield * field) {
   for(int t=0; t<NTIME; t++) {
     for(int n=0; n<VOLSPACE; n++) {

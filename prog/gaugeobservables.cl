@@ -4,7 +4,7 @@
 
 //opencl_gaugeobservables.cl
 
-__kernel void plaquette(__global hmc_ocl_gaugefield * field, __global hmc_float * plaq_out, __global hmc_float* tplaq_out, __global hmc_float* splaq_out, __local hmc_float * plaq_loc, __local hmc_float* tplaq_loc, __local hmc_float* splaq_loc)
+__kernel void plaquette(__global ocl_s_gaugefield * field, __global hmc_float * plaq_out, __global hmc_float* tplaq_out, __global hmc_float* splaq_out, __local hmc_float * plaq_loc, __local hmc_float* tplaq_loc, __local hmc_float* splaq_loc)
 {
 
 	int t, pos, id;
@@ -27,7 +27,6 @@ __kernel void plaquette(__global hmc_ocl_gaugefield * field, __global hmc_float 
 	hmc_float tmpfloat = 0;
 
 	Matrixsu3 prod;
-// 	hmc_ocl_su3matrix prod[SU3SIZE];
 
 	for(id = id_tmp; id < VOLSPACE * NTIME / 2; id += global_size) {
 		//calc even plaquette
@@ -149,7 +148,7 @@ __kernel void polyakov_reduction(__global hmc_complex* poly_buf,  __global hmc_c
 	return;
 }
 
-__kernel void polyakov(__global hmc_ocl_gaugefield * field, __global hmc_complex * out, __local hmc_complex * out_loc)
+__kernel void polyakov(__global ocl_s_gaugefield * field, __global hmc_complex * out, __local hmc_complex * out_loc)
 {
 
 	int id;

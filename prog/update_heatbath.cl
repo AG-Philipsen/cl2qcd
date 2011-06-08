@@ -4,7 +4,7 @@
 
 //opencl_update_heatbath.cl
 
-Matrix3x3 calc_staple(__global hmc_ocl_gaugefield* field, const int pos, const int t, const int mu_in)
+Matrix3x3 calc_staple(__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
 {
 	Matrixsu3 prod;
 	Matrixsu3 prod2;
@@ -113,7 +113,7 @@ void SU2Update(__private hmc_float dst [su2_entries], const hmc_float alpha, __g
 	
 }
 
-void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id)
+void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id)
 {
   
 	Matrixsu3 U;
@@ -128,7 +128,13 @@ void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_
 
 	random_1_2_3(order, &rnd[id]);
 	
+
 	U = get_matrixsu3(gaugefield, pos, t, mu);
+
+/*	printf("%f %f \t %f %f \t %f %f \n",U.e00.re, U.e00.im, U.e01.re, U.e01.im, U.e02.re, U.e02.im);
+	printf("%f %f \t %f %f \t %f %f \n",U.e10.re, U.e10.im, U.e11.re, U.e11.im, U.e12.re, U.e12.im);
+	printf("%f %f \t %f %f \t %f %f \n",U.e20.re, U.e20.im, U.e21.re, U.e21.im, U.e22.re, U.e22.im);
+	printf("\n");*/
 	
 	staplematrix = calc_staple(gaugefield, pos, t, mu);
 		
@@ -202,10 +208,10 @@ void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_
 
 	//Überprüft, ob die erzeugte Matrix unitär ist
 	//Ja, falls trace.re = 3.0 und trace.im = 0.0
-	/*
+/*	
  	Matrixsu3 blubb;
  	Matrixsu3 adjU;
- 	adjU = adjoint_matrixsu3(U);
+	adjU = adjoint_matrixsu3(U);
  	blubb = multiply_matrixsu3 (adjU, U);
 	printf("%f %f \t %f %f \t %f %f \n",blubb.e00.re, blubb.e00.im, blubb.e01.re, blubb.e01.im, blubb.e02.re, blubb.e02.im);
 	printf("%f %f \t %f %f \t %f %f \n",blubb.e10.re, blubb.e10.im, blubb.e11.re, blubb.e11.im, blubb.e12.re, blubb.e12.im);
@@ -221,7 +227,7 @@ void inline perform_heatbath(__global hmc_ocl_gaugefield* gaugefield, const hmc_
 
 
 
-__kernel void heatbath_even(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd)
+__kernel void heatbath_even(__global ocl_s_gaugefield * gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd)
 {
 	int t, pos, id, id_tmp, size;
 	id_tmp = get_global_id(0);
@@ -230,10 +236,9 @@ __kernel void heatbath_even(__global hmc_ocl_gaugefield* gaugefield, const hmc_f
 		get_even_site(id, &pos, &t);
 		perform_heatbath(gaugefield, beta, mu, rnd, pos, t, id_tmp);
 	}
-	return;
 }
 
-__kernel void heatbath_odd(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd)
+__kernel void heatbath_odd(__global ocl_s_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd)
 {
 	int t, pos, id, id_tmp, size;
 	id_tmp = get_global_id(0);
@@ -242,10 +247,9 @@ __kernel void heatbath_odd(__global hmc_ocl_gaugefield* gaugefield, const hmc_fl
 		get_odd_site(id, &pos, &t);
 		perform_heatbath(gaugefield, beta, mu, rnd, pos, t, id_tmp);
 	}
-	return;
 }
 
-void inline perform_overrelaxing(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id)
+void inline perform_overrelaxing(__global ocl_s_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id)
 {
 
 	Matrixsu3 U;
@@ -259,9 +263,6 @@ void inline perform_overrelaxing(__global hmc_ocl_gaugefield* gaugefield, const 
 
 	random_1_2_3(order, &rnd[id]);
 	U = get_matrixsu3(gaugefield, pos, t, mu);
-
-//why?
-	project_su3(U);
 
 	staplematrix = calc_staple(gaugefield, pos, t, mu);
 
@@ -291,12 +292,13 @@ void inline perform_overrelaxing(__global hmc_ocl_gaugefield* gaugefield, const 
 		extW = extend (order[i], w);
 		U = multiply_matrixsu3(extW, U);
 	}
+	
+	project_su3(U);
+	
 	put_matrixsu3(gaugefield, U, pos, t, mu);
-
-	return;
 }
 
-__kernel void overrelax_even(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd)
+__kernel void overrelax_even(__global ocl_s_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd)
 {
 	int t, pos, id, id_tmp, size;
 	id_tmp = get_global_id(0);
@@ -305,10 +307,9 @@ __kernel void overrelax_even(__global hmc_ocl_gaugefield* gaugefield, const hmc_
 		get_even_site(id, &pos, &t);
 		perform_overrelaxing(gaugefield, beta, mu, rnd, pos, t, id_tmp);
 	}
-	return;
 }
 
-__kernel void overrelax_odd(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd)
+__kernel void overrelax_odd(__global ocl_s_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd)
 {
 	int t, pos, id, id_tmp, size;
 	id_tmp = get_global_id(0);
@@ -317,6 +318,5 @@ __kernel void overrelax_odd(__global hmc_ocl_gaugefield* gaugefield, const hmc_f
 		get_odd_site(id, &pos, &t);
 		perform_overrelaxing(gaugefield, beta, mu, rnd, pos, t, id_tmp);
 	}
-	return;
 }
 

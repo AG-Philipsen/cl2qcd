@@ -66,6 +66,7 @@ hmc_complex const hmc_complex_zero = {0., 0.};
 hmc_complex const hmc_complex_i = {0., 1.};
 #endif
 
+//also CPU
 #ifndef _INKERNEL_
 //define a spinor field:  spinor[spin-color][coord3d][coord_time]
 typedef hmc_complex hmc_full_spinor [NSPIN*NC];
@@ -117,11 +118,14 @@ typedef hmc_float hmc_algebraelement [NC*NC-1];
 
 typedef hmc_complex hmc_su3vector[3];
 
-
 typedef hmc_float ildg_gaugefield[2*NC*NC*NDIM*VOLSPACE*NTIME];
 
+typedef Matrixsu3 ocl_s_gaugefield;
+typedef Matrixsu3 s_gaugefield [NDIM][VOLSPACE][NTIME];
 
 #endif // ifndef _INKERNEL_
+
+
 
 typedef hmc_float hmc_ocl_spinor;
 typedef hmc_complex hmc_ocl_su3matrix;
@@ -164,10 +168,17 @@ typedef struct {
   hmc_complex e21;
   hmc_complex e22;
 } Matrixsu3;
+
 #endif //ifdef _REC12_
+
+
 
 #endif  //ifdef _INKERNEL_
 
+//Das funktioniert nicht, warum auch immer...
+//typedef Matrixsu3 ocl_s_gaugefield [NDIM * VOLSPACE * NTIME];
+typedef Matrixsu3 ocl_s_gaugefield;
+typedef Matrixsu3 s_gaugefield [NDIM][VOLSPACE][NTIME];
 
 //define a spinor field:  spinor_field[spin-color*coord3d*coord_time]
 typedef hmc_complex hmc_color_vector;

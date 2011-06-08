@@ -497,7 +497,7 @@ Matrixsu3 extend (const int random, hmc_complex src[su2_entries])
 // }
 
 //calculate polyakov-loop matrix at spatial site n in time-direction
-Matrixsu3 local_polyakov(__global hmc_ocl_gaugefield * field, const int n)
+Matrixsu3 local_polyakov(__global ocl_s_gaugefield * field, const int n)
 {
 	Matrixsu3 out;
 	out = unit_matrixsu3();
@@ -510,7 +510,7 @@ Matrixsu3 local_polyakov(__global hmc_ocl_gaugefield * field, const int n)
 }
 
 //calculate plaquette-matrix at site n,t in direction mu and nu
-Matrixsu3 local_plaquette(__global hmc_ocl_gaugefield * field, const int n, const int t, const int mu, const int nu )
+Matrixsu3 local_plaquette(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
 {
 	Matrixsu3 out;
 	Matrixsu3 tmp;

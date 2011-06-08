@@ -6,21 +6,37 @@
 
 int inline get_global_pos(int spacepos, int t)
 {
-	return spacepos + VOLSPACE * t;
+return spacepos + VOLSPACE * t;
 }
 
-//site = pos + VOLSPACE*t =  x + y*NSPACE + z*NSPACE*NSPACE + VOLSPACE*t
-//idx = mu + NDIM*site
-int inline ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t)
+int inline get_global_link_pos(int mu, int spacepos, int t)
 {
-#ifdef _RECONSTRUCT_TWELVE_
-	return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*spacepos+2*NC*(NC-1)*NDIM*VOLSPACE*t;
-#else
-	return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*spacepos+2*NC*NC*NDIM*VOLSPACE*t;
-#endif
+return mu + NDIM *get_global_pos(spacepos, t);
 }
 
 //dispensable
+//site = pos + VOLSPACE*t = x + y*NSPACE + z*NSPACE*NSPACE + VOLSPACE*t
+//idx = mu + NDIM*site
+/*
+int inline ocl_gaugefield_element(int mu, int spacepos, int t)
+{
+return get_global_link_pos(mu, spacepos, t);
+}
+*/
+
+//site = pos + VOLSPACE*t =  x + y*NSPACE + z*NSPACE*NSPACE + VOLSPACE*t
+//idx = mu + NDIM*site
+// int inline ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t)
+// {
+// #ifdef _RECONSTRUCT_TWELVE_
+// 	return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*spacepos+2*NC*(NC-1)*NDIM*VOLSPACE*t;
+// #else
+// 	return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*spacepos+2*NC*NC*NDIM*VOLSPACE*t;
+// #endif
+// }
+
+//dispensable
+/*
 int inline ocl_su3matrix_element(int a, int b)
 {
 #ifdef _RECONSTRUCT_TWELVE_
@@ -29,6 +45,7 @@ int inline ocl_su3matrix_element(int a, int b)
 	return a + NC*b;
 #endif
 }
+*/
 
 //it is assumed that idx iterates only over half the number of sites
 void inline get_even_site(int idx, int * out_space, int * out_t)

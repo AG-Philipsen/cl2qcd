@@ -53,11 +53,11 @@ int main(int argc, char* argv[])
 	gaugefield.copy_gaugefield_to_devices(&copytime);
 	gaugefield.copy_rndarray_to_devices(rndarray, &copytime);
 
-
-
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Heatbath
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	cout<< "Start heatbath" <<endl;
 
 	int ntherm = parameters.get_thermalizationsteps();
 	if(ntherm > 0) gaugefield.heatbath(ntherm, &updatetime);
@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 	int writefreq = parameters.get_writefrequency();
 	int savefreq = parameters.get_savefrequency();
 
-	cout<< "Start heatbath" <<endl;
+
 	
 
 	for(int i = 0; i < nsteps; i++) {
@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
 		gaugefield.heatbath(&updatetime);
 		for(int j = 0; j < overrelaxsteps; j++) gaugefield.overrelax(&overrelaxtime);
 		if( ( (i + 1) % writefreq ) == 0 ) {
-			gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str());
+ 			gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str());
 		}
 		if( parameters.get_saveconfigs() == TRUE && ( (i + 1) % savefreq ) == 0 ) {
 			gaugefield.sync_gaugefield(&copytime);
@@ -84,8 +84,8 @@ int main(int argc, char* argv[])
 	}
 
 
-	gaugefield.sync_gaugefield(&copytime);
-	gaugefield.save(nsteps);
+  	gaugefield.sync_gaugefield(&copytime);
+ 	gaugefield.save(nsteps);
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Final Output
