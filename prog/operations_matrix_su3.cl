@@ -46,60 +46,6 @@ void put_matrixsu3(__global ocl_s_gaugefield * field, const Matrixsu3 in, const 
 	    field [get_global_link_pos(mu, spacepos, timepos)] = in;
 }
 
-// Matrixsu3 get_matrixsu3( __global const hmc_ocl_gaugefield * field, const int spacepos, const int timepos, const int mu)
-// {
-// 	Matrixsu3 out;
-// 	out.e00.re = field [ocl_gaugefield_element(0,0,0,mu,spacepos,timepos)];
-// 	out.e00.im = field [ocl_gaugefield_element(1,0,0,mu,spacepos,timepos)];
-// 	out.e01.re = field [ocl_gaugefield_element(0,0,1,mu,spacepos,timepos)];
-// 	out.e01.im = field [ocl_gaugefield_element(1,0,1,mu,spacepos,timepos)];
-// 	out.e02.re = field [ocl_gaugefield_element(0,0,2,mu,spacepos,timepos)];
-// 	out.e02.im = field [ocl_gaugefield_element(1,0,2,mu,spacepos,timepos)];
-// 
-// 	out.e10.re = field [ocl_gaugefield_element(0,1,0,mu,spacepos,timepos)];
-// 	out.e10.im = field [ocl_gaugefield_element(1,1,0,mu,spacepos,timepos)];
-// 	out.e11.re = field [ocl_gaugefield_element(0,1,1,mu,spacepos,timepos)];
-// 	out.e11.im = field [ocl_gaugefield_element(1,1,1,mu,spacepos,timepos)];
-// 	out.e12.re = field [ocl_gaugefield_element(0,1,2,mu,spacepos,timepos)];
-// 	out.e12.im = field [ocl_gaugefield_element(1,1,2,mu,spacepos,timepos)];
-// 
-// #ifndef _RECONSTRUCT_TWELVE_
-// 	out.e20.re = field [ocl_gaugefield_element(0,2,0,mu,spacepos,timepos)];
-// 	out.e20.im = field [ocl_gaugefield_element(1,2,0,mu,spacepos,timepos)];
-// 	out.e21.re = field [ocl_gaugefield_element(0,2,1,mu,spacepos,timepos)];
-// 	out.e21.im = field [ocl_gaugefield_element(1,2,1,mu,spacepos,timepos)];
-// 	out.e22.re = field [ocl_gaugefield_element(0,2,2,mu,spacepos,timepos)];
-// 	out.e22.im = field [ocl_gaugefield_element(1,2,2,mu,spacepos,timepos)];
-// #endif
-// 
-// 	return out;
-// }
-
-// void put_matrixsu3(__global hmc_ocl_gaugefield * field, const Matrixsu3 in, const int spacepos, const int timepos, const int mu)
-// {
-// 	    field[ocl_gaugefield_element(0,0,0,mu,spacepos,timepos)] = in.e00.re;
-// 	    field[ocl_gaugefield_element(1,0,0,mu,spacepos,timepos)] = in.e00.im;
-// 	    field[ocl_gaugefield_element(0,0,1,mu,spacepos,timepos)] = in.e01.re;
-// 	    field[ocl_gaugefield_element(1,0,1,mu,spacepos,timepos)] = in.e01.im;
-// 	    field[ocl_gaugefield_element(0,0,2,mu,spacepos,timepos)] = in.e02.re;
-// 	    field[ocl_gaugefield_element(1,0,2,mu,spacepos,timepos)] = in.e02.im;
-// 
-// 	    field[ocl_gaugefield_element(0,1,0,mu,spacepos,timepos)] = in.e10.re;
-// 	    field[ocl_gaugefield_element(1,1,0,mu,spacepos,timepos)] = in.e10.im;
-// 	    field[ocl_gaugefield_element(0,1,1,mu,spacepos,timepos)] = in.e11.re;
-// 	    field[ocl_gaugefield_element(1,1,1,mu,spacepos,timepos)] = in.e11.im;
-// 	    field[ocl_gaugefield_element(0,1,2,mu,spacepos,timepos)] = in.e12.re;
-// 	    field[ocl_gaugefield_element(1,1,2,mu,spacepos,timepos)] = in.e12.im;
-// #ifndef _RECONSTRUCT_TWELVE_
-// 	    field[ocl_gaugefield_element(0,2,0,mu,spacepos,timepos)] = in.e20.re;
-// 	    field[ocl_gaugefield_element(1,2,0,mu,spacepos,timepos)] = in.e20.im;
-// 	    field[ocl_gaugefield_element(0,2,1,mu,spacepos,timepos)] = in.e21.re;
-// 	    field[ocl_gaugefield_element(1,2,1,mu,spacepos,timepos)] = in.e21.im;
-// 	    field[ocl_gaugefield_element(0,2,2,mu,spacepos,timepos)] = in.e22.re;
-// 	    field[ocl_gaugefield_element(1,2,2,mu,spacepos,timepos)] = in.e22.im;
-// #endif
-// }
-
 Matrixsu3 copy_matrixsu3(const Matrixsu3 in)
 {
 	Matrixsu3 out;
@@ -234,25 +180,6 @@ Matrixsu3 multiply_matrixsu3(const Matrixsu3 p, const Matrixsu3 q)
 	       - p.e10.im * q.e02.im - p.e11.im * q.e12.im - p.e12.im * q22_im;
     out.e12.im = p.e10.re * q.e02.im + p.e11.re * q.e12.im + p.e12.re * q22_im
 	       + p.e10.im * q.e02.re + p.e11.im * q.e12.re + p.e12.im * q22_re;	       
-
-// dispensable, because of reconstruct 12
-/*
-    out.e20.re = p20_re * q.e00.re + p21_re * q.e10.re + p22_re * q20_re
-	       - p20_im * q.e00.im - p21_im * q.e10.im - p22_im * q20_im;
-    out.e20.im = p20_re * q.e00.im + p21_re * q.e10.im + p22_re * q20_im
-	       + p20_im * q.e00.re + p21_im * q.e10.re + p22_im * q20_re;
-	       
-    out.e21.re = p20_re * q.e01.re + p21_re * q.e11.re + p22_re * q21_re
-	       - p20_im * q.e01.im - p21_im * q.e11.im - p22_im * q21_im;
-    out.e21.im = p20_re * q.e01.im + p21_re * q.e11.im + p22_re * q21_im
-	       + p20_im * q.e01.re + p21_im * q.e11.re + p22_im * q21_re;
-	       
-    out.e22.re = p20_re * q.e02.re + p21_re * q.e12.re + p22_re * q22_re
-	       - p20_im * q.e02.im - p21_im * q.e12.im - p22_im * q22_im;
-    out.e22.im = p20_re * q.e02.im + p21_re * q.e12.im + p22_re * q22_im
-	       + p20_im * q.e02.re + p21_im * q.e12.re + p22_im * q22_re;
-
-*/
 #else
     
     out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e10.re + p.e02.re * q.e20.re

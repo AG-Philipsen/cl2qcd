@@ -83,7 +83,6 @@ int main(int argc, char* argv[])
 		}
 	}
 
-
   	gaugefield.sync_gaugefield(&copytime);
  	gaugefield.save(nsteps);
 

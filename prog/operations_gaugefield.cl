@@ -21,111 +21,6 @@
 // 	return sum;
 // }
 
-// void copy_staplematrix(__private hmc_ocl_staplematrix *out,__private hmc_ocl_staplematrix *in)
-// {
-// 	for(int n=0; n<NC*NC; n++) {
-// 		out[n] = in[n];
-// 	}
-// 	return;
-// }
-
-//raus struct
-// void zero_staplematrix(__private hmc_ocl_staplematrix * u)
-// {
-// 	for(int n=0; n<STAPLEMATRIXSIZE; n++) {
-// 		u[n].re = 0;
-// 		u[n].im = 0;
-// 	}
-// 	return;
-// }
-
-// void unit_staplematrix(__private hmc_ocl_staplematrix * u)
-// {
-// 	u[0].re = 1.;
-// 	u[0].im = 0;
-// 	u[4].re = 1.;
-// 	u[4].im = 0;
-// 	u[8].re = 1.;
-// 	u[8].im = 0;
-// 
-// 	return;
-// }
-
-//dispensable
-// void multiply_staplematrix(__private hmc_ocl_staplematrix *out, __private hmc_ocl_su3matrix *p,__private  hmc_ocl_staplematrix *q)
-// {
-// #ifdef _RECONSTRUCT_TWELVE_
-// 	for(int n=0; n<NC*(NC-1); n++) {
-// 		out[n].re=0;
-// 		out[n].im=0;
-// 		for(int j=0; j<NC; j++) {
-// 			int k = (int)(n/(NC-1));
-// 			int i = n - (NC-1)*k;
-// 			int np = i + (NC-1)*j;
-// 			hmc_complex qcomponent;
-// 			if(j==2) {
-// // 	  qcomponent = reconstruct_su3(q,k);
-// 				qcomponent = q[NC*(NC-1)+k];
-// 			} else {
-// 				int nq = j + (NC-1)*k;
-// 				qcomponent = q[nq];
-// 			}
-// 			hmc_complex tmp = complexmult(p[np], qcomponent);
-// 			out[n] = complexadd(out[n], tmp);
-// 		         }
-// 	         }
-// 	         //the left components:
-// 	         hmc_complex X = reconstruct_su3(p,0);
-// 	hmc_complex Y = reconstruct_su3(p,1);
-// 	hmc_complex Z = reconstruct_su3(p,2);
-// 	hmc_complex tmp;
-// 	out[6].re=0;
-// 	out[6].im=0;
-// 	out[7].re=0;
-// 	out[7].im=0;
-// 	out[8].re=0;
-// 	out[8].im=0;
-// 
-// 	tmp = complexmult(X, q[0]);
-// 	out[6] = complexadd(out[6], tmp);
-// 	tmp = complexmult(Y, q[1]);
-// 	out[6] = complexadd(out[6], tmp);
-// 	tmp = complexmult(Z, q[6]);
-// 	out[6] = complexadd(out[6], tmp);
-// 
-// 	tmp = complexmult(X, q[2]);
-// 	out[7] = complexadd(out[7], tmp);
-// 	tmp = complexmult(Y, q[3]);
-// 	out[7] = complexadd(out[7], tmp);
-// 	tmp = complexmult(Z, q[7]);
-// 	out[7] = complexadd(out[7], tmp);
-// 
-// 	tmp = complexmult(X, q[4]);
-// 	out[8] = complexadd(out[8], tmp);
-// 	tmp = complexmult(Y, q[5]);
-// 	out[8] = complexadd(out[8], tmp);
-// 	tmp = complexmult(Z, q[8]);
-// 	out[8] = complexadd(out[8], tmp);
-// 
-// #else
-// 	multiply_su3matrices(out, p, q);
-// 	/*
-// 	for(int i=0; i<NC; i++) {
-// 	  for(int k=0; k<NC; k++) {
-// 		out[ocl_su3matrix_element(i,k)].re=0;
-// 		out[ocl_su3matrix_element(i,k)].im=0;
-// 		for(int j=0;j<NC;j++) {
-// 	hmc_complex tmp = complexmult(&p[ocl_su3matrix_element(i,j)],&q[ocl_su3matrix_element(j,k)]);
-// 	complexaccumulate(&out[ocl_su3matrix_element(i,k)],&tmp);
-// 		}
-// 	  }
-// 	}
-// 	*/
-// #endif
-// 	return;
-// }
-
-
 Matrixsu3 project_su3(const Matrixsu3 U){
 
   Matrixsu3 out;
@@ -141,9 +36,6 @@ Matrixsu3 project_su3(const Matrixsu3 U){
   b[0] = U.e10;
   b[1] = U.e11;
   b[2] = U.e12;
-//   c[0] = reconstruct_su3(U,0);
-//   c[1] = reconstruct_su3(U,1);
-//   c[2] = reconstruct_su3(U,2);
 #else
   hmc_complex c[NC];
   a[0] = U.e00;
@@ -206,23 +98,7 @@ Matrixsu3 project_su3(const Matrixsu3 U){
     b[i].im *= norm;
   }
 
-#ifdef _RECONSTRUCT_TWELVE_
-  //third vector 
-  //orthogonal vector
-//   hmc_complex tmp;
-//   hmc_complex tmp2;
-//   tmp = complexmult(a[1], b[2]);
-//   tmp = complexconj(tmp);
-//   tmp2 = complexmult(a[2], b[1]);
-//   tmp2 = complexconj(tmp2);
-//   c[0] = complexsubtract(tmp, tmp2);
-//   tmp = complexmult(a[2], b[0]);
-//   tmp = complexconj(tmp);
-//   tmp2 = complexmult(a[0], b[2]);
-//   tmp2 = complexconj(tmp2);
-//   c[1] = complexsubtract(tmp, tmp2);
-
-#else
+#ifndef _RECONSTRUCT_TWELVE_
   //third vector 
   //orthogonal vector
   hmc_complex tmp;
@@ -242,9 +118,7 @@ Matrixsu3 project_su3(const Matrixsu3 U){
   tmp2 = complexmult(a[1], b[0]);
   tmp2 = complexconj(tmp2);
   c[2] = complexsubtract(tmp, tmp2);
-  
-  //Set new values to matrix
-  
+   //Set new values to matrix
   out.e20 = c[0];
   out.e21 = c[1];
   out.e22 = c[2];
@@ -260,79 +134,6 @@ Matrixsu3 project_su3(const Matrixsu3 U){
   
   return out;
 }
-
-//not dispensable, but neither used
-// void project_su3_old(__private hmc_ocl_su3matrix *U)
-// {
-// 	hmc_complex det = det_su3matrix(U);
-// 	hmc_float detsqunorm = det.re*det.re + det.im*det.im;
-// 
-// 	hmc_float phi;
-// 	if(det.re*det.re<projectioneps) {
-// 		phi = PI/2.;
-// 	} else {
-// 		phi = atan(det.im/det.re);
-// 		if(det.re<0) phi += PI;
-// 	}
-// 
-// 	hmc_complex norm;
-// 	norm.re = pow(detsqunorm,hmc_one_f/6)*cos(phi/3);
-// 	norm.im = pow(detsqunorm,hmc_one_f/6)*sin(phi/3);
-// 
-// 	hmc_float normsqunorm = norm.re*norm.re+norm.im*norm.im;
-// 
-// #ifdef _RECONSTRUCT_TWELVE_
-// 	for(int n=0; n<NC*(NC-1); n++) {
-// 		hmc_complex tmp = (U)[n];
-// 		(U)[n].re = (tmp.re*norm.re+tmp.im*norm.im)/normsqunorm;
-// 		(U)[n].im = (tmp.im*norm.re-tmp.re*norm.im)/normsqunorm;
-// 	}
-// #else
-// 	for(int a=0; a<NC; a++) {
-// 		for(int b=0; b<NC; b++) {
-// 			hmc_complex tmp = (U)[ocl_su3matrix_element(a,b)];
-// 			(U)[ocl_su3matrix_element(a,b)].re = (tmp.re*norm.re+tmp.im*norm.im)/normsqunorm;
-// 			(U)[ocl_su3matrix_element(a,b)].im = (tmp.im*norm.re-tmp.re*norm.im)/normsqunorm;
-// 		}
-// 	}
-// #endif
-// 	return;
-// }
-
-// void adjoin_su3(__global hmc_ocl_gaugefield * in,__global hmc_ocl_gaugefield * out)
-// {
-// 	for(int t=0; t<NTIME; t++) {
-// 		for(int n=0; n<VOLSPACE; n++) {
-// 			for(int mu=0; mu<NDIM; mu++) {
-// 				hmc_ocl_su3matrix tmp[SU3SIZE];
-// 				get_su3matrix(tmp, in, n, t, mu);
-// 				adjoin_su3matrix(tmp);
-// 				put_su3matrix(out, tmp, n, t, mu);
-// 			}
-// 		}
-// 	}
-// 	return;
-// }
-
-// void reduction (hmc_complex dest[su2_entries], const Matrix3x3 src, const int rand)
-// {
-// 	if(rand == 1) {
-// 		dest[0] = src.e00;
-// 		dest[1] = src.e01;
-// 		dest[2] = src.e10;
-// 		dest[3] = src.e11;
-// 	} else if (rand==2) {
-// 		dest[0] = src.e11;
-// 		dest[1] = src.e12;
-// 		dest[2] = src.e21;
-// 		dest[3] = src.e22;
-// 	} else if (rand==3) {
-// 		dest[0] = src.e00;
-// 		dest[1] = src.e02;
-// 		dest[2] = src.e20;
-// 		dest[3] = src.e22;
-// 	}
-// }
 
 Matrixsu2 reduction (const Matrix3x3 src, const int rand)
 {
@@ -355,71 +156,6 @@ Matrixsu2 reduction (const Matrix3x3 src, const int rand)
 	}
 	return out;
 }
-
-// return an SU2 matrix (std basis) extended to SU3 (std basis)
-// Matrixsu3 extend (const int random, hmc_complex src[su2_entries])
-// {
-// 	Matrixsu3 out;
-//   
-// #ifdef _RECONSTRUCT_TWELVE_
-// 	if (random == 1) {
-// 		out.e00 = src[0];
-// 		out.e01 = src[1];
-// 		out.e02 = hmc_complex_zero;
-// 		out.e10 = src[2];
-// 		out.e11 = src[3];
-// 		out.e12 = hmc_complex_zero;
-// 	} else if (random == 2) {
-// 		out.e00 = hmc_complex_one;
-// 		out.e01 = hmc_complex_zero;
-// 		out.e02 = hmc_complex_zero;
-// 		out.e10 = hmc_complex_zero;
-// 		out.e11 = src[0];
-// 		out.e12 = src[1];
-// 	} else if (random == 3) {
-// 		out.e00 = src[0];
-// 		out.e01 = hmc_complex_zero;
-// 		out.e02 = src[1];
-// 		out.e10= hmc_complex_zero;
-// 		out.e11 = hmc_complex_one;
-// 		out.e12 = hmc_complex_zero;
-// 	}
-// #else
-// 	if (random == 1) {
-// 		out.e00 = src[0];
-// 		out.e01 = src[1];
-// 		out.e02 = hmc_complex_zero;
-// 		out.e10 = src[2];
-// 		out.e11 = src[3];
-// 		out.e12 = hmc_complex_zero;
-// 		out.e20 = hmc_complex_zero;
-// 		out.e21 = hmc_complex_zero;
-// 		out.e22 = hmc_complex_one;
-// 	} else if (random == 2) {
-// 		out.e00 = hmc_complex_one;
-// 		out.e01 = hmc_complex_zero;
-// 		out.e02 = hmc_complex_zero;
-// 		out.e10 = hmc_complex_zero;
-// 		out.e11 = src[0];
-// 		out.e12 = src[1];
-// 		out.e20 = hmc_complex_zero;
-// 		out.e21 = src[2];
-// 		out.e22 = src[3];
-// 	} else if (random == 3) {
-// 		out.e00 = src[0];
-// 		out.e01 = hmc_complex_zero;
-// 		out.e02 = src[1];
-// 		out.e10= hmc_complex_zero;
-// 		out.e11 = hmc_complex_one;
-// 		out.e12 = hmc_complex_zero;
-// 		out.e20 = src[2];
-// 		out.e21 = hmc_complex_zero;
-// 		out.e22 = src[3];
-// 	}
-// #endif
-// 
-// 	return out;
-// }
 
 Matrixsu3 extend (const int random, Matrixsu2 src)
 {
