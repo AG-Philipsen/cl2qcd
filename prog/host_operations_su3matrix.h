@@ -58,7 +58,10 @@ hmc_error copy_staplematrix(hmc_staplematrix *out, hmc_staplematrix *in);
  * @param[out] mat The matrix to replace by a unit one
  * @return Error code as defined in hmcerrs.h
  */
-hmc_error unit_su3matrix(hmc_su3matrix * u); 
+hmc_error unit_su3matrix(hmc_su3matrix * u);
+
+Matrixsu3 unit_matrixsu3();
+
 /**
  * Replace the given matrix by a random matrix.
  *

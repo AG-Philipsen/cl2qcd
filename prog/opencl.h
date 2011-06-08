@@ -79,7 +79,8 @@ public:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
+	hmc_error copy_gaugefield_to_device(s_gaugefield* gaugefield, usetimer* timer);
+// 	hmc_error copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
 
 	/**
 	 * Copy the RNG state to the appropriate OpenCL buffer.
@@ -112,7 +113,8 @@ public:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
+	hmc_error get_gaugefield_from_device(s_gaugefield* gaugefield, usetimer* timer);
+// 	hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
 
 
 	////////////////////////////

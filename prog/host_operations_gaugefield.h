@@ -59,7 +59,8 @@ hmc_error copy_gaugefield_to_ildg_format(ildg_gaugefield * dest, hmc_gaugefield 
  * @param[out] gaugefield The location to store the OpenCL kernel compatible representation to
  * @return Error code as defined in hmcerrs.h
  */
-hmc_error copy_to_ocl_format(hmc_ocl_gaugefield* host_gaugefield,hmc_gaugefield* gaugefield);
+hmc_error copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, s_gaugefield* gaugefield);
+
 /**
  * Transform the gaugefield representation used by the OpenCL kernels into the normal one.
  *
@@ -67,8 +68,7 @@ hmc_error copy_to_ocl_format(hmc_ocl_gaugefield* host_gaugefield,hmc_gaugefield*
  * @param[out] host_gaugefield The location to store the gaugefield to
  * @return Error code as defined in hmcerrs.h
  */
-hmc_error copy_from_ocl_format(hmc_gaugefield* gaugefield,hmc_ocl_gaugefield* host_gaugefield);
-
+hmc_error copy_from_ocl_format(s_gaugefield* gaugefield, ocl_s_gaugefield* host_gaugefield);
 
 /**
  * Retrieve an SU3 matrix form the gaugefield

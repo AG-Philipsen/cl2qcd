@@ -75,7 +75,7 @@ public:
 	 * @param[in,out] timer timer for initialization
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error init_gaugefield(usetimer* timer);
+	hmc_error init_gaugefield(usetimer*  timer);
 	
 
 	//communication
@@ -229,6 +229,19 @@ public:
 	 * @return Error code as defined in hmcerrs.h
 	 */
 	hmc_error set_gf (hmc_gaugefield * gf_val);
+	
+	/**
+	 * Returns pointer to gaugefield u (structures)
+	 * @return The gaugefield
+	 */
+	s_gaugefield * get_sgf ();
+	
+	/**
+	 * Sets private member gaugefield u (structures)
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	hmc_error set_sgf (s_gaugefield * sgf_val);
+	
 	/**
 	 * Returns private member * devices
 	 * @return devices
@@ -260,10 +273,42 @@ public:
 	 */
 	hmc_error set_parameters (inputparameters * parameters_val);
 	
+	/**
+	 * Copies the gaugefield from pure array format to structure array format
+	 * @param[in] gf pure array
+	 * @param[out] sgf array of structs
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	hmc_error copy_gaugefield_to_s_gaugefield (s_gaugefield * sgf, hmc_gaugefield * gf);
+	
+	/**
+	 * Copies the gaugefield from structure array format to pure array format
+	 * @param[in] sgf array of structs
+	 * @param[out] gf pure array
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	hmc_error copy_s_gaugefield_to_gaugefield (hmc_gaugefield * gf, s_gaugefield * sgf);
+	
+	/**
+	 * Initializing the gaugefield consisting of structs for a hot start
+	 * Not implemented yet, does a cold start
+	 * @param field gaugefield
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	hmc_error set_gaugefield_hot_new(s_gaugefield * field);
+	/**
+	 * Initializing the gaugefield consisting of structs for a cold start
+	 * @param field gaugefield
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	hmc_error set_gaugefield_cold_new(s_gaugefield * field);
+	
 private:
 	Opencl * devices;
 	inputparameters* parameters;
-      	hmc_gaugefield * gf;	
+      	hmc_gaugefield * gf;
+	s_gaugefield * sgf;
+	
 	int num_ocl_devices;
 };
 
