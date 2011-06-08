@@ -43,11 +43,35 @@ typedef struct {
   hmc_float re;
   hmc_float im;
 } hmc_complex;
+typedef struct{
+  hmc_complex e00;
+  hmc_complex e01;
+  hmc_complex e10;
+  hmc_complex e11;
+} Matrixsu2;
+typedef struct{
+  hmc_float e00;
+  hmc_float e01;
+  hmc_float e10;
+  hmc_float e11;
+} Matrixsu2_pauli;
 #else
 struct hmc_complex {
   hmc_float re;
   hmc_float im;
 };
+struct Matrixsu2{
+  hmc_complex e00;
+  hmc_complex e01;
+  hmc_complex e10;
+  hmc_complex e11;
+} ;
+struct Matrixsu2_pauli{
+  hmc_float e00;
+  hmc_float e01;
+  hmc_float e10;
+  hmc_float e11;
+} ;
 #endif
 
 #ifdef _INKERNEL_

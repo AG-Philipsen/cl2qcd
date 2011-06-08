@@ -316,61 +316,147 @@ Matrixsu3 project_su3(const Matrixsu3 U){
 // 	return;
 // }
 
-void reduction (hmc_complex dest[su2_entries], const Matrix3x3 src, const int rand)
+// void reduction (hmc_complex dest[su2_entries], const Matrix3x3 src, const int rand)
+// {
+// 	if(rand == 1) {
+// 		dest[0] = src.e00;
+// 		dest[1] = src.e01;
+// 		dest[2] = src.e10;
+// 		dest[3] = src.e11;
+// 	} else if (rand==2) {
+// 		dest[0] = src.e11;
+// 		dest[1] = src.e12;
+// 		dest[2] = src.e21;
+// 		dest[3] = src.e22;
+// 	} else if (rand==3) {
+// 		dest[0] = src.e00;
+// 		dest[1] = src.e02;
+// 		dest[2] = src.e20;
+// 		dest[3] = src.e22;
+// 	}
+// }
+
+Matrixsu2 reduction (const Matrix3x3 src, const int rand)
 {
+	Matrixsu2 out;
 	if(rand == 1) {
-		dest[0] = src.e00;
-		dest[1] = src.e01;
-		dest[2] = src.e10;
-		dest[3] = src.e11;
+		out.e00 = src.e00;
+		out.e01 = src.e01;
+		out.e10 = src.e10;
+		out.e11 = src.e11;
 	} else if (rand==2) {
-		dest[0] = src.e11;
-		dest[1] = src.e12;
-		dest[2] = src.e21;
-		dest[3] = src.e22;
+		out.e00 = src.e11;
+		out.e01 = src.e12;
+		out.e10 = src.e21;
+		out.e11 = src.e22;
 	} else if (rand==3) {
-		dest[0] = src.e00;
-		dest[1] = src.e02;
-		dest[2] = src.e20;
-		dest[3] = src.e22;
+		out.e00 = src.e00;
+		out.e01 = src.e02;
+		out.e10 = src.e20;
+		out.e11 = src.e22;
 	}
+	return out;
 }
 
 // return an SU2 matrix (std basis) extended to SU3 (std basis)
-Matrixsu3 extend (const int random, hmc_complex src[su2_entries])
+// Matrixsu3 extend (const int random, hmc_complex src[su2_entries])
+// {
+// 	Matrixsu3 out;
+//   
+// #ifdef _RECONSTRUCT_TWELVE_
+// 	if (random == 1) {
+// 		out.e00 = src[0];
+// 		out.e01 = src[1];
+// 		out.e02 = hmc_complex_zero;
+// 		out.e10 = src[2];
+// 		out.e11 = src[3];
+// 		out.e12 = hmc_complex_zero;
+// 	} else if (random == 2) {
+// 		out.e00 = hmc_complex_one;
+// 		out.e01 = hmc_complex_zero;
+// 		out.e02 = hmc_complex_zero;
+// 		out.e10 = hmc_complex_zero;
+// 		out.e11 = src[0];
+// 		out.e12 = src[1];
+// 	} else if (random == 3) {
+// 		out.e00 = src[0];
+// 		out.e01 = hmc_complex_zero;
+// 		out.e02 = src[1];
+// 		out.e10= hmc_complex_zero;
+// 		out.e11 = hmc_complex_one;
+// 		out.e12 = hmc_complex_zero;
+// 	}
+// #else
+// 	if (random == 1) {
+// 		out.e00 = src[0];
+// 		out.e01 = src[1];
+// 		out.e02 = hmc_complex_zero;
+// 		out.e10 = src[2];
+// 		out.e11 = src[3];
+// 		out.e12 = hmc_complex_zero;
+// 		out.e20 = hmc_complex_zero;
+// 		out.e21 = hmc_complex_zero;
+// 		out.e22 = hmc_complex_one;
+// 	} else if (random == 2) {
+// 		out.e00 = hmc_complex_one;
+// 		out.e01 = hmc_complex_zero;
+// 		out.e02 = hmc_complex_zero;
+// 		out.e10 = hmc_complex_zero;
+// 		out.e11 = src[0];
+// 		out.e12 = src[1];
+// 		out.e20 = hmc_complex_zero;
+// 		out.e21 = src[2];
+// 		out.e22 = src[3];
+// 	} else if (random == 3) {
+// 		out.e00 = src[0];
+// 		out.e01 = hmc_complex_zero;
+// 		out.e02 = src[1];
+// 		out.e10= hmc_complex_zero;
+// 		out.e11 = hmc_complex_one;
+// 		out.e12 = hmc_complex_zero;
+// 		out.e20 = src[2];
+// 		out.e21 = hmc_complex_zero;
+// 		out.e22 = src[3];
+// 	}
+// #endif
+// 
+// 	return out;
+// }
+
+Matrixsu3 extend (const int random, Matrixsu2 src)
 {
 	Matrixsu3 out;
   
 #ifdef _RECONSTRUCT_TWELVE_
 	if (random == 1) {
-		out.e00 = src[0];
-		out.e01 = src[1];
+		out.e00 = src.e00;
+		out.e01 = src.e01;
 		out.e02 = hmc_complex_zero;
-		out.e10 = src[2];
-		out.e11 = src[3];
+		out.e10 = src.e10;
+		out.e11 = src.e11;
 		out.e12 = hmc_complex_zero;
 	} else if (random == 2) {
 		out.e00 = hmc_complex_one;
 		out.e01 = hmc_complex_zero;
 		out.e02 = hmc_complex_zero;
 		out.e10 = hmc_complex_zero;
-		out.e11 = src[0];
-		out.e12 = src[1];
+		out.e11 = src.e00;
+		out.e12 = src.e01;
 	} else if (random == 3) {
-		out.e00 = src[0];
+		out.e00 = src.e00;
 		out.e01 = hmc_complex_zero;
-		out.e02 = src[1];
+		out.e02 = src.e01;
 		out.e10= hmc_complex_zero;
 		out.e11 = hmc_complex_one;
 		out.e12 = hmc_complex_zero;
 	}
 #else
 	if (random == 1) {
-		out.e00 = src[0];
-		out.e01 = src[1];
+		out.e00 = src.e00;
+		out.e01 = src.e01;
 		out.e02 = hmc_complex_zero;
-		out.e10 = src[2];
-		out.e11 = src[3];
+		out.e10 = src.e10;
+		out.e11 = src.e11;
 		out.e12 = hmc_complex_zero;
 		out.e20 = hmc_complex_zero;
 		out.e21 = hmc_complex_zero;
@@ -380,21 +466,21 @@ Matrixsu3 extend (const int random, hmc_complex src[su2_entries])
 		out.e01 = hmc_complex_zero;
 		out.e02 = hmc_complex_zero;
 		out.e10 = hmc_complex_zero;
-		out.e11 = src[0];
-		out.e12 = src[1];
+		out.e11 = src.e00;
+		out.e12 = src.e01;
 		out.e20 = hmc_complex_zero;
-		out.e21 = src[2];
-		out.e22 = src[3];
+		out.e21 = src.e10;
+		out.e22 = src.e11;
 	} else if (random == 3) {
-		out.e00 = src[0];
+		out.e00 = src.e00;
 		out.e01 = hmc_complex_zero;
-		out.e02 = src[1];
+		out.e02 = src.e01;
 		out.e10= hmc_complex_zero;
 		out.e11 = hmc_complex_one;
 		out.e12 = hmc_complex_zero;
-		out.e20 = src[2];
+		out.e20 = src.e10;
 		out.e21 = hmc_complex_zero;
-		out.e22 = src[3];
+		out.e22 = src.e11;
 	}
 #endif
 

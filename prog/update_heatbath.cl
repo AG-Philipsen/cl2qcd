@@ -94,8 +94,10 @@ Matrix3x3 calc_staple(__global ocl_s_gaugefield* field, const int pos, const int
 	return staple;
 }
 
-void SU2Update(__private hmc_float dst [su2_entries], const hmc_float alpha, __global hmc_ocl_ran * rnd)
+Matrixsu2_pauli SU2Update(const hmc_float alpha, __global hmc_ocl_ran * rnd)
 {
+	Matrixsu2_pauli out;
+  
 	hmc_float delta;
 	hmc_float a0 ;
 	hmc_float eta ;
@@ -106,11 +108,12 @@ void SU2Update(__private hmc_float dst [su2_entries], const hmc_float alpha, __g
 	} while ( (1.-0.5*delta) < eta*eta);
 	hmc_float phi = 2.*PI*ocl_new_ran(rnd);
 	hmc_float theta = asin(2.*ocl_new_ran(rnd) - 1.);
-	dst[0] = a0;
-	dst[1] = sqrt(1.-a0 * a0)*cos(theta) * cos(phi);
-	dst[2] = sqrt(1.-a0 * a0)*cos(theta) * sin(phi);
-	dst[3] = sqrt(1.-a0 * a0)*sin(theta);
+	out.e00 = a0;
+	out.e01 = sqrt(1.-a0 * a0)*cos(theta) * cos(phi);
+	out.e10 = sqrt(1.-a0 * a0)*cos(theta) * sin(phi);
+	out.e11 = sqrt(1.-a0 * a0)*sin(theta);
 	
+	return out;
 }
 
 void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id)
@@ -120,11 +123,14 @@ void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const hmc_fl
 	Matrix3x3 W;
 	Matrix3x3 staplematrix;
 	int order[3];
-	hmc_complex w [su2_entries];
-	hmc_float w_pauli[su2_entries];
-	hmc_float k;
-	hmc_float r_pauli[su2_entries];
+// 	hmc_complex w [su2_entries];
+	Matrixsu2 w;
+// 	hmc_float w_pauli[su2_entries];
+	Matrixsu2_pauli w_pauli;
+// 	hmc_float r_pauli[su2_entries];
+	Matrixsu2_pauli r_pauli;
 	hmc_float beta_new;
+	hmc_float k;
 
 	random_1_2_3(order, &rnd[id]);
 	
@@ -144,28 +150,41 @@ void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const hmc_fl
 		W = matrix_su3to3x3 (U);
 		W = multiply_matrix3x3 (W, staplematrix);
 
- 		reduction(w, W, order[i]);
+//  		reduction(w, W, order[i]);
+		w = reduction(W, order[i]);
 
-		w_pauli[0] = 0.5*(w[0].re + w[3].re);
-		w_pauli[1] = 0.5*(w[1].im + w[2].im);
-		w_pauli[2] = 0.5*(w[1].re - w[2].re);
-		w_pauli[3] = 0.5*(w[0].im - w[3].im);
-		k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
+// 		w_pauli[0] = 0.5*(w[0].re + w[3].re);
+// 		w_pauli[1] = 0.5*(w[1].im + w[2].im);
+// 		w_pauli[2] = 0.5*(w[1].re - w[2].re);
+// 		w_pauli[3] = 0.5*(w[0].im - w[3].im);
+// 		k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
+		w_pauli.e00 = 0.5*(w.e00.re + w.e11.re);
+		w_pauli.e01 = 0.5*(w.e01.im + w.e10.im);
+		w_pauli.e10 = 0.5*(w.e01.re - w.e10.re);
+		w_pauli.e11 = 0.5*(w.e00.im - w.e11.im);
+		k = sqrt(  w_pauli.e00*w_pauli.e00 +  w_pauli.e01*w_pauli.e01 + w_pauli.e10*w_pauli.e10 + w_pauli.e11*w_pauli.e11  );
 		
 		beta_new =  2.*beta / NC*k;
-		SU2Update(r_pauli, beta_new, &rnd[id]);
+// 		SU2Update(r_pauli, beta_new, &rnd[id]);
+		r_pauli = SU2Update(beta_new, &rnd[id]);
 
-		//dispensable?
+// 		w[0].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
+// 		w[0].im = (w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
+// 		w[1].re = (w_pauli[0]*r_pauli[2] - w_pauli[2]*r_pauli[0] + r_pauli[3]*w_pauli[1] - r_pauli[1]*w_pauli[3] )/k;
+// 		w[1].im = (w_pauli[0]*r_pauli[1] - w_pauli[1]*r_pauli[0] + r_pauli[2]*w_pauli[3] - r_pauli[3]*w_pauli[2] )/k;
+// 		w[2].re = -(w_pauli[0]*r_pauli[2] - w_pauli[2]*r_pauli[0] + r_pauli[3]*w_pauli[1] - r_pauli[1]*w_pauli[3] )/k;
+// 		w[2].im = (w_pauli[0]*r_pauli[1] - w_pauli[1]*r_pauli[0] + r_pauli[2]*w_pauli[3] - r_pauli[3]*w_pauli[2] )/k;
+// 		w[3].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
+// 		w[3].im = -(w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
 
-		w[0].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
-		w[0].im = (w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
-		w[1].re = (w_pauli[0]*r_pauli[2] - w_pauli[2]*r_pauli[0] + r_pauli[3]*w_pauli[1] - r_pauli[1]*w_pauli[3] )/k;
-		w[1].im = (w_pauli[0]*r_pauli[1] - w_pauli[1]*r_pauli[0] + r_pauli[2]*w_pauli[3] - r_pauli[3]*w_pauli[2] )/k;
-		w[2].re = -(w_pauli[0]*r_pauli[2] - w_pauli[2]*r_pauli[0] + r_pauli[3]*w_pauli[1] - r_pauli[1]*w_pauli[3] )/k;
-		w[2].im = (w_pauli[0]*r_pauli[1] - w_pauli[1]*r_pauli[0] + r_pauli[2]*w_pauli[3] - r_pauli[3]*w_pauli[2] )/k;
-		w[3].re = (r_pauli[0]*w_pauli[0] + r_pauli[1]*w_pauli[1] + r_pauli[2]*w_pauli[2] + r_pauli[3]*w_pauli[3] )/k;
-		w[3].im = -(w_pauli[0]*r_pauli[3] - w_pauli[3]*r_pauli[0] + r_pauli[1]*w_pauli[2] - r_pauli[2]*w_pauli[1] )/k;
-
+		w.e00.re = (r_pauli.e00*w_pauli.e00 + r_pauli.e01*w_pauli.e01 + r_pauli.e10*w_pauli.e10 + r_pauli.e11*w_pauli.e11 )/k;
+		w.e00.im = (w_pauli.e00*r_pauli.e11 - w_pauli.e11*r_pauli.e00 + r_pauli.e01*w_pauli.e10 - r_pauli.e10*w_pauli.e01 )/k;
+		w.e01.re = (w_pauli.e00*r_pauli.e10 - w_pauli.e10*r_pauli.e00 + r_pauli.e11*w_pauli.e01 - r_pauli.e01*w_pauli.e11 )/k;
+		w.e01.im = (w_pauli.e00*r_pauli.e01 - w_pauli.e01*r_pauli.e00 + r_pauli.e10*w_pauli.e11 - r_pauli.e11*w_pauli.e10 )/k;
+		w.e10.re = -(w_pauli.e00*r_pauli.e10 - w_pauli.e10*r_pauli.e00 + r_pauli.e11*w_pauli.e01 - r_pauli.e01*w_pauli.e11 )/k;
+		w.e10.im = (w_pauli.e00*r_pauli.e01 - w_pauli.e01*r_pauli.e00 + r_pauli.e10*w_pauli.e11 - r_pauli.e11*w_pauli.e10 )/k;
+		w.e11.re = (r_pauli.e00*w_pauli.e00 + r_pauli.e01*w_pauli.e01 + r_pauli.e10*w_pauli.e10 + r_pauli.e11*w_pauli.e11 )/k;
+		w.e11.im = -(w_pauli.e00*r_pauli.e11 - w_pauli.e11*r_pauli.e00 + r_pauli.e01*w_pauli.e10 - r_pauli.e10*w_pauli.e01 )/k;
 
 		//old:
 		/*
@@ -249,15 +268,18 @@ __kernel void heatbath_odd(__global ocl_s_gaugefield* gaugefield, const hmc_floa
 	}
 }
 
+
 void inline perform_overrelaxing(__global ocl_s_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id)
 {
-
+  
 	Matrixsu3 U;
 	Matrix3x3 W;
 	Matrix3x3 staplematrix;
 
-	hmc_complex w [su2_entries];
-	hmc_float w_pauli[su2_entries];
+// 	hmc_complex w [su2_entries];
+	Matrixsu2 w;
+// 	hmc_float w_pauli[su2_entries];
+	Matrixsu2_pauli w_pauli;
 	hmc_float k;
 	int order[3];
 
@@ -272,22 +294,37 @@ void inline perform_overrelaxing(__global ocl_s_gaugefield* gaugefield, const hm
 		W = matrix_su3to3x3 (U);
 		W = multiply_matrix3x3 (W, staplematrix);
 	  
-		reduction(w, W, order[i]);
+// 		reduction(w, W, order[i]);
+		w = reduction(W, order[i]);
+		
+// 		w_pauli[0] = 0.5*(w[0].re + w[3].re);
+// 		w_pauli[1] = 0.5*(w[1].im + w[2].im);
+// 		w_pauli[2] = 0.5*(w[1].re - w[2].re);
+// 		w_pauli[3] = 0.5*(w[0].im - w[3].im);
+// 		k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
+		w_pauli.e00 = 0.5*(w.e00.re + w.e11.re);
+		w_pauli.e01 = 0.5*(w.e01.im + w.e10.im);
+		w_pauli.e10 = 0.5*(w.e01.re - w.e10.re);
+		w_pauli.e11 = 0.5*(w.e00.im - w.e11.im);
+		k = sqrt(  w_pauli.e00*w_pauli.e00 +  w_pauli.e01*w_pauli.e01 + w_pauli.e10*w_pauli.e10 + w_pauli.e11*w_pauli.e11  );
 
-		w_pauli[0] = 0.5*(w[0].re + w[3].re);
-		w_pauli[1] = 0.5*(w[1].im + w[2].im);
-		w_pauli[2] = 0.5*(w[1].re - w[2].re);
-		w_pauli[3] = 0.5*(w[0].im - w[3].im);
-		k = sqrt(  w_pauli[0]*w_pauli[0] +  w_pauli[1]*w_pauli[1] + w_pauli[2]*w_pauli[2] + w_pauli[3]*w_pauli[3]  );
+// 		w[0].re = (w_pauli[0]*w_pauli[0] - w_pauli[1]*w_pauli[1] - w_pauli[2]*w_pauli[2] - w_pauli[3]*w_pauli[3])/k/k;
+// 		w[0].im = (-2.*w_pauli[0]*w_pauli[3])/k/k;
+// 		w[1].re = (-2.*w_pauli[0]*w_pauli[2])/k/k;
+// 		w[1].im = (-2.*w_pauli[0]*w_pauli[1])/k/k;
+// 		w[2].re = (2.*w_pauli[0]*w_pauli[2])/k/k;
+// 		w[2].im = (-2.*w_pauli[0]*w_pauli[1])/k/k;
+// 		w[3].re = (w_pauli[0]*w_pauli[0] - w_pauli[1]*w_pauli[1] - w_pauli[2]*w_pauli[2] - w_pauli[3]*w_pauli[3])/k/k;
+// 		w[3].im = (2.*w_pauli[0]*w_pauli[3])/k/k;
 
-		w[0].re = (w_pauli[0]*w_pauli[0] - w_pauli[1]*w_pauli[1] - w_pauli[2]*w_pauli[2] - w_pauli[3]*w_pauli[3])/k/k;
-		w[0].im = (-2.*w_pauli[0]*w_pauli[3])/k/k;
-		w[1].re = (-2.*w_pauli[0]*w_pauli[2])/k/k;
-		w[1].im = (-2.*w_pauli[0]*w_pauli[1])/k/k;
-		w[2].re = (2.*w_pauli[0]*w_pauli[2])/k/k;
-		w[2].im = (-2.*w_pauli[0]*w_pauli[1])/k/k;
-		w[3].re = (w_pauli[0]*w_pauli[0] - w_pauli[1]*w_pauli[1] - w_pauli[2]*w_pauli[2] - w_pauli[3]*w_pauli[3])/k/k;
-		w[3].im = (2.*w_pauli[0]*w_pauli[3])/k/k;
+		w.e00.re = (w_pauli.e00*w_pauli.e00 - w_pauli.e01*w_pauli.e01 - w_pauli.e10*w_pauli.e10 - w_pauli.e11*w_pauli.e11)/k/k;
+		w.e00.im = (-2.*w_pauli.e00*w_pauli.e11)/k/k;
+		w.e01.re = (-2.*w_pauli.e00*w_pauli.e10)/k/k;
+		w.e01.im = (-2.*w_pauli.e00*w_pauli.e01)/k/k;
+		w.e10.re = (2.*w_pauli.e00*w_pauli.e10)/k/k;
+		w.e10.im = (-2.*w_pauli.e00*w_pauli.e01)/k/k;
+		w.e11.re = (w_pauli.e00*w_pauli.e00 - w_pauli.e01*w_pauli.e01 - w_pauli.e10*w_pauli.e10 - w_pauli.e11*w_pauli.e11)/k/k;
+		w.e11.im = (2.*w_pauli.e00*w_pauli.e11)/k/k;
 
 		extW = extend (order[i], w);
 		U = multiply_matrixsu3(extW, U);
