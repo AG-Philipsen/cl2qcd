@@ -133,7 +133,7 @@ Matrixsu3 project_su3(const Matrixsu3 U){
   //Extract initial vectors
   hmc_complex a[NC];
   hmc_complex b[NC];
-  hmc_complex c[NC];
+  
 #ifdef _RECONSTRUCT_TWELVE_
   a[0] = U.e00;
   a[1] = U.e01;
@@ -141,10 +141,11 @@ Matrixsu3 project_su3(const Matrixsu3 U){
   b[0] = U.e10;
   b[1] = U.e11;
   b[2] = U.e12;
-  c[0] = reconstruct_su3(U,0);
-  c[1] = reconstruct_su3(U,1);
-  c[2] = reconstruct_su3(U,2);
+//   c[0] = reconstruct_su3(U,0);
+//   c[1] = reconstruct_su3(U,1);
+//   c[2] = reconstruct_su3(U,2);
 #else
+  hmc_complex c[NC];
   a[0] = U.e00;
   a[1] = U.e01;
   a[2] = U.e02;
@@ -208,26 +209,19 @@ Matrixsu3 project_su3(const Matrixsu3 U){
 #ifdef _RECONSTRUCT_TWELVE_
   //third vector 
   //orthogonal vector
-  hmc_complex tmp;
-  hmc_complex tmp2;
-  tmp = complexmult(a[1], b[2]);
-  tmp = complexconj(tmp);
-  tmp2 = complexmult(a[2], b[1]);
-  tmp2 = complexconj(tmp2);
-  c[0] = complexsubtract(tmp, tmp2);
-  tmp = complexmult(a[2], b[0]);
-  tmp = complexconj(tmp);
-  tmp2 = complexmult(a[0], b[2]);
-  tmp2 = complexconj(tmp2);
-  c[1] = complexsubtract(tmp, tmp2);
-  
-  //Set new values to matrix
-  out.e00 = a[0];
-  out.e10 = b[0];
-  out.e01 = a[1];
-  out.e11 = b[1];
-  out.e02 = a[2];
-  out.e12 = b[2];
+//   hmc_complex tmp;
+//   hmc_complex tmp2;
+//   tmp = complexmult(a[1], b[2]);
+//   tmp = complexconj(tmp);
+//   tmp2 = complexmult(a[2], b[1]);
+//   tmp2 = complexconj(tmp2);
+//   c[0] = complexsubtract(tmp, tmp2);
+//   tmp = complexmult(a[2], b[0]);
+//   tmp = complexconj(tmp);
+//   tmp2 = complexmult(a[0], b[2]);
+//   tmp2 = complexconj(tmp2);
+//   c[1] = complexsubtract(tmp, tmp2);
+
 #else
   //third vector 
   //orthogonal vector
@@ -250,16 +244,20 @@ Matrixsu3 project_su3(const Matrixsu3 U){
   c[2] = complexsubtract(tmp, tmp2);
   
   //Set new values to matrix
-  out.e00 = a[0];
-  out.e01 = a[1];
-  out.e02 = a[2];
-  out.e10 = b[0];
-  out.e11 = b[1];
-  out.e12 = b[2];
+  
   out.e20 = c[0];
   out.e21 = c[1];
   out.e22 = c[2];
 #endif
+
+   //Set new values to matrix
+  out.e00 = a[0];
+  out.e10 = b[0];
+  out.e01 = a[1];
+  out.e11 = b[1];
+  out.e02 = a[2];
+  out.e12 = b[2];
+  
   return out;
 }
 

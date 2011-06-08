@@ -242,6 +242,7 @@ hmc_error get_su3matrix(hmc_su3matrix * out, hmc_gaugefield * in, int spacepos, 
   return HMC_SUCCESS;
 }
 
+/*
 void put_matrixsu3(hmc_gaugefield * field, const Matrixsu3 in, const int spacepos, const int timepos, const int mu)
 {
 	    (*field)[0][0][mu][spacepos][timepos] = in.e00;
@@ -258,6 +259,7 @@ void put_matrixsu3(hmc_gaugefield * field, const Matrixsu3 in, const int spacepo
 #endif
 
 }
+*/
 
 hmc_error put_su3matrix(hmc_gaugefield * field, hmc_su3matrix * in, int spacepos, int timepos, int mu) {
 #ifdef _RECONSTRUCT_TWELVE_

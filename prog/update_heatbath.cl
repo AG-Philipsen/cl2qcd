@@ -134,20 +134,16 @@ void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const hmc_fl
 
 	random_1_2_3(order, &rnd[id]);
 	
-
 	U = get_matrixsu3(gaugefield, pos, t, mu);
+	U = project_su3(U);
 
-/*	printf("%f %f \t %f %f \t %f %f \n",U.e00.re, U.e00.im, U.e01.re, U.e01.im, U.e02.re, U.e02.im);
-	printf("%f %f \t %f %f \t %f %f \n",U.e10.re, U.e10.im, U.e11.re, U.e11.im, U.e12.re, U.e12.im);
-	printf("%f %f \t %f %f \t %f %f \n",U.e20.re, U.e20.im, U.e21.re, U.e21.im, U.e22.re, U.e22.im);
-	printf("\n");*/
-	
 	staplematrix = calc_staple(gaugefield, pos, t, mu);
-		
+	
  	for(int i=0; i<NC; i++) {
 
 	  	
 		W = matrix_su3to3x3 (U);
+		
 		W = multiply_matrix3x3 (W, staplematrix);
 
 //  		reduction(w, W, order[i]);
@@ -220,28 +216,32 @@ void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const hmc_fl
 		
 		U = multiply_matrixsu3 (extW, U);
 	}
-		
-	project_su3(U);
 	
-	put_matrixsu3(gaugefield, U, pos, t, mu);
+ 	put_matrixsu3(gaugefield, U, pos, t, mu);
 
 	//Überprüft, ob die erzeugte Matrix unitär ist
 	//Ja, falls trace.re = 3.0 und trace.im = 0.0
 /*	
+	hmc_complex detu = det_matrixsu3 (U);
+	printf("det: %f \t %f \n", detu.re, detu.im);
+	
  	Matrixsu3 blubb;
  	Matrixsu3 adjU;
 	adjU = adjoint_matrixsu3(U);
  	blubb = multiply_matrixsu3 (adjU, U);
 	printf("%f %f \t %f %f \t %f %f \n",blubb.e00.re, blubb.e00.im, blubb.e01.re, blubb.e01.im, blubb.e02.re, blubb.e02.im);
 	printf("%f %f \t %f %f \t %f %f \n",blubb.e10.re, blubb.e10.im, blubb.e11.re, blubb.e11.im, blubb.e12.re, blubb.e12.im);
-	printf("%f %f \t %f %f \t %f %f \n",blubb.e20.re, blubb.e20.im, blubb.e21.re, blubb.e21.im, blubb.e22.re, blubb.e22.im);
+// 	printf("%f %f \t %f %f \t %f %f \n",blubb.e20.re, blubb.e20.im, blubb.e21.re, blubb.e21.im, blubb.e22.re, blubb.e22.im);
+	hmc_complex u0 = reconstruct_su3 (blubb, 0);
+	hmc_complex u1 = reconstruct_su3 (blubb, 1);
+	hmc_complex u2 = reconstruct_su3 (blubb, 2);
+	printf("%f %f \t %f %f \t %f %f \n",u0.re, u0.im, u1.re, u1.im, u2.re, u2.im);
 	printf("\n");
 	hmc_complex trace;
  	trace = trace_matrixsu3 (blubb);
  	printf (" U * adj(u) %f \n", trace.re);
  	printf (" U * adj(u) %f \n", trace.im);
 */
-
 }
 
 
@@ -285,7 +285,8 @@ void inline perform_overrelaxing(__global ocl_s_gaugefield* gaugefield, const hm
 
 	random_1_2_3(order, &rnd[id]);
 	U = get_matrixsu3(gaugefield, pos, t, mu);
-
+	U=project_su3(U);
+	
 	staplematrix = calc_staple(gaugefield, pos, t, mu);
 
 	Matrixsu3 extW;
@@ -329,8 +330,6 @@ void inline perform_overrelaxing(__global ocl_s_gaugefield* gaugefield, const hm
 		extW = extend (order[i], w);
 		U = multiply_matrixsu3(extW, U);
 	}
-	
-	project_su3(U);
 	
 	put_matrixsu3(gaugefield, U, pos, t, mu);
 }

@@ -205,16 +205,16 @@ Matrixsu3 multiply_matrixsu3(const Matrixsu3 p, const Matrixsu3 q)
     hmc_float q22_re = reconstruct_su3(q, 2).re;
     hmc_float q22_im = reconstruct_su3(q, 2).im;
 
-    out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e10.re + p02_re * q.e20.re
-	       - p.e00.im * q.e00.im - p.e01.im * q.e10.im - p02_im * q.e20.im;
-    out.e00.im = p.e00.re * q.e00.im + p.e01.re * q.e10.im + p02_re * q.e20.im
-	       + p.e00.im * q.e00.re + p.e01.im * q.e10.re + p02_im * q.e20.re;
-
+    out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e10.re + p.e02.re * q20_re
+	       - p.e00.im * q.e00.im - p.e01.im * q.e10.im - p.e02.im * q20_im;
+    out.e00.im = p.e00.re * q.e00.im + p.e01.re * q.e10.im + p.e02.re * q20_im
+	       + p.e00.im * q.e00.re + p.e01.im * q.e10.re + p.e02.im * q20_re;
+	      
     out.e01.re = p.e00.re * q.e01.re + p.e01.re * q.e11.re + p.e02.re * q21_re
 	       - p.e00.im * q.e01.im - p.e01.im * q.e11.im - p.e02.im * q21_im;
     out.e01.im = p.e00.re * q.e01.im + p.e01.re * q.e11.im + p.e02.re * q21_im
 	       + p.e00.im * q.e01.re + p.e01.im * q.e11.re + p.e02.im * q21_re;
-    
+	       
     out.e02.re = p.e00.re * q.e02.re + p.e01.re * q.e12.re + p.e02.re * q22_re
 	       - p.e00.im * q.e02.im - p.e01.im * q.e12.im - p.e02.im * q22_im;
     out.e02.im = p.e00.re * q.e02.im + p.e01.re * q.e12.im + p.e02.re * q22_im
@@ -232,7 +232,7 @@ Matrixsu3 multiply_matrixsu3(const Matrixsu3 p, const Matrixsu3 q)
 	       
     out.e12.re = p.e10.re * q.e02.re + p.e11.re * q.e12.re + p.e12.re * q22_re
 	       - p.e10.im * q.e02.im - p.e11.im * q.e12.im - p.e12.im * q22_im;
-    out.e12.im = p.e10.re * q.e02.im + p.e11.im * q.e12.re + p.e12.re * q22_im
+    out.e12.im = p.e10.re * q.e02.im + p.e11.re * q.e12.im + p.e12.re * q22_im
 	       + p.e10.im * q.e02.re + p.e11.im * q.e12.re + p.e12.im * q22_re;	       
 
 // dispensable, because of reconstruct 12
