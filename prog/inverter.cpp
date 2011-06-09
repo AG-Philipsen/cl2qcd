@@ -30,11 +30,15 @@ int main(int argc, char* argv[])
 #else
 	devicetypes[0] = CL_DEVICE_TYPE_CPU;
 #endif
-
+	cerr << "init gaugefield" << endl;
 	gaugefield.init(1, devicetypes, &parameters, &inittime);
-
+	cerr << "gaugefield has values: "<<endl;
+	gaugefield.print_gaugeobservables (&copytimer, &copytimer);
 	gaugefield.copy_gaugefield_to_devices(&copytimer);
-
+	gaugefield.sync_gaugefield(&copytimer);
+	cerr << "gaugefield has values: "<<endl;
+	gaugefield.print_gaugeobservables (&copytimer, &copytimer);
+	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// inverter
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////

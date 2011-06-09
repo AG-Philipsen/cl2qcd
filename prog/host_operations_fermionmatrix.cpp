@@ -49,6 +49,8 @@ hmc_error M(inputparameters * parameters, hmc_spinor_field* in, hmc_gaugefield* 
 
 hmc_error M_diag(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_field* out){
 	hmc_spinor spinout[SPINORSIZE];
+	//make sure that mubar is calculated..
+	(*parameters).calc_mubar();
 	//iterate over all lattice sites
 	for(int spacepos=0; spacepos<VOLSPACE; spacepos++) {
 		for(int timepos=0; timepos<NTIME; timepos++) {
@@ -62,8 +64,11 @@ hmc_error M_diag(inputparameters * parameters, hmc_spinor_field* in, hmc_spinor_
 hmc_error M_sitediagonal(inputparameters * parameters, hmc_eoprec_spinor_field* in, hmc_eoprec_spinor_field* out){
 	hmc_spinor spinout[SPINORSIZE];
 	//iterate over half the lattice
+	//make sure that mubar is calculated..
+	(*parameters).calc_mubar();
   for(int n=0; n<VOL4D/2; n++) {
     get_spinor_from_eoprec_field(in,spinout,n);
+    //    M_diag_local(spinout, 1.2);
     M_diag_local(spinout, (*parameters).get_mubar());
     put_spinor_to_eoprec_field(spinout,out,n);
   }
@@ -71,7 +76,9 @@ hmc_error M_sitediagonal(inputparameters * parameters, hmc_eoprec_spinor_field* 
 }
 
 hmc_error M_inverse_sitediagonal(inputparameters * parameters, hmc_eoprec_spinor_field* in, hmc_eoprec_spinor_field* out){
-	
+	//make sure that mubar is calculated..
+	(*parameters).calc_mubar();	
+	(*parameters).set_mubar_negative();
 	hmc_spinor spinout[SPINORSIZE];
 	//iterate over half the lattice
 	for(int n=0; n<VOL4D/2; n++) {
@@ -79,7 +86,6 @@ hmc_error M_inverse_sitediagonal(inputparameters * parameters, hmc_eoprec_spinor
 // 		hmc_float minuskappa = -(*parameters).get_kappa();
 // 		M_diag_local(spinout, minuskappa, (*parameters).get_mu());
 // 		hmc_float denom = 1. + 4.*(*parameters).get_kappa()*(*parameters).get_kappa()*(*parameters).get_mu()*(*parameters).get_mu();
-		(*parameters).set_mubar_negative();
 		M_diag_local(spinout, (*parameters).get_mubar());
 		hmc_float denom = 1. + (*parameters).get_mubar()*(*parameters).get_mubar();
 		real_multiply_spinor(spinout,1./denom);

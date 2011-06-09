@@ -1499,11 +1499,16 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 	hmc_float trueresid;
 
 	for(int iter=0; iter<cgmax; iter++){
-		if(iter%iter_refresh==0) {
+	        if(iter%iter_refresh==0) {
 			set_zero_spinorfield_device(clmem_v, localsize, globalsize, latimer); 
 			set_zero_spinorfield_device(clmem_p, localsize, globalsize, latimer);
 			
 			M_device(clmem_inout, clmem_rn, localsize, globalsize, Mtimer, dslashtimer, Mdiagtimer);
+
+ 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
+ 			copy_float_from_device(clmem_resid, &resid, copytimer);
+			printf("initial Mphi  at iter %i is %.40e\n", iter, resid);
+
 			saxpy_device(clmem_rn, clmem_source, clmem_one, clmem_rn, localsize, globalsize, latimer);
 			copy_spinor_device(clmem_rn, clmem_rhat, singletimer);
 
@@ -1512,9 +1517,10 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 			copy_complex_device(clmem_one, clmem_rho, singletimer);
 			
 			//CP: calc initial residuum for output, this is not needed for the algorithm!!
-// 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
-// 			copy_float_from_device(clmem_resid, &resid, copytimer);
-// 			cout << "initial residuum is: " << resid << endl;
+ 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
+ 			copy_float_from_device(clmem_resid, &resid, copytimer);
+			// 			cout << "initial residuum at iter " << iter << "is: " << scientific << resid << endl;
+			printf("initial residuum at iter %i is %.40e\n", iter, resid);
 		}
 
 		set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next, local_work_size, global_work_size, scalarprodtimer);
@@ -1543,8 +1549,29 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 
 		saxpy_device(clmem_t, clmem_s, clmem_omega, clmem_rn, local_work_size, global_work_size, latimer);
 
+ 			set_float_to_global_squarenorm_device(clmem_v, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
+ 			copy_float_from_device(clmem_resid, &resid, copytimer);
+ 			cout << "v^2 at iter " << iter << "is: " << scientific << resid << endl;
+
+ 			set_float_to_global_squarenorm_device(clmem_inout, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
+ 			copy_float_from_device(clmem_resid, &resid, copytimer);
+ 			cout << "inout^2 at iter " << iter << "is: " << scientific << resid << endl;
+
+	set_float_to_global_squarenorm_device(clmem_s, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
+ 			copy_float_from_device(clmem_resid, &resid, copytimer);
+ 			cout << "s^2 at iter " << iter << "is: " << scientific << resid << endl;
+
+	set_float_to_global_squarenorm_device(clmem_t, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
+ 			copy_float_from_device(clmem_resid, &resid, copytimer);
+ 			cout << "t^2 at iter " << iter << "is: " << scientific << resid << endl;
+		
+	     
 		saxsbypz_device(clmem_p, clmem_s, clmem_inout, clmem_alpha, clmem_omega, clmem_inout, local_work_size, global_work_size, latimer); 
     
+ 			set_float_to_global_squarenorm_device(clmem_inout, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
+ 			copy_float_from_device(clmem_resid, &resid, copytimer);
+ 			cout << "inout^2 at iter " << iter << "is: " << scientific << resid << endl;
+
 		set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
 		copy_float_from_device(clmem_resid, &resid, copytimer);
 
@@ -1553,12 +1580,12 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 			saxpy_device(clmem_aux, clmem_source, clmem_one, clmem_aux, local_work_size, global_work_size, latimer); 
 			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, local_work_size, global_work_size, scalarprodtimer);
 			copy_float_from_device(clmem_trueresid, &trueresid, copytimer);
-// 			cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
+ 			cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
 			if(trueresid<epssquare)
 				return HMC_SUCCESS;
 		}
 		else{
-// 			cout << "residuum:\t" << resid << endl;
+		  //printf("residuum at iter%i is:\t%.10e\n", iter, resid);//cout << "residuum:\t" << resid << endl;
 		}
 
 	}

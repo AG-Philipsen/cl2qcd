@@ -164,12 +164,16 @@ __kernel void M_diag (__global hmc_spinor_field* in, __global hmc_spinor_field* 
 	for(id_tmp = id; id_tmp < VOL4D/2; id_tmp += global_size) {
 		get_even_site(id_tmp, &pos, &t);
 		get_spinor_from_field(in,spinout,pos,t);
-		M_diag_local(spinout, kappa_tmp, mu_tmp);
+		//DEBUGGING
+		//M_diag_local(spinout, kappa_tmp, mu_tmp);
+M_diag_local(spinout, 0.15, 4.);
 		put_spinor_to_field(spinout,out,pos,t);
 
 		get_odd_site(id_tmp, &pos, &t);
 		get_spinor_from_field(in,spinout,pos,t);
-		M_diag_local(spinout, kappa_tmp, mu_tmp);
+//DEBUGGING
+//		M_diag_local(spinout, kappa_tmp, mu_tmp);
+M_diag_local(spinout, 0.15, 4.);
 		put_spinor_to_field(spinout,out,pos,t);
 	}
 
