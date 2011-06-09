@@ -43,8 +43,13 @@ int main(int argc, char* argv[])
 #endif
 
 	gaugefield.init(1, devicetypes, &parameters, &inittime);
+
+	logger.trace() << "Got gaugefield";
+
 	int err = init_random_seeds(rndarray, "rand_seeds", &inittime);
 	if(err) return err;
+
+	logger.trace() << "Got seeds";
 
 	//first output, if you like it...
 	//  cout << endl << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]" << endl;
@@ -53,7 +58,7 @@ int main(int argc, char* argv[])
 	gaugefield.copy_gaugefield_to_devices(&copytime);
 	gaugefield.copy_rndarray_to_devices(rndarray, &copytime);
 
-
+	logger.trace() << "Moved stuff to device";
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Heatbath

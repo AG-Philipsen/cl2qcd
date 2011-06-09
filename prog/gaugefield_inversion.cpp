@@ -109,14 +109,14 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
 
 	//global and local work sizes;
 	//LZ: should eventually be moved inside opencl_fermions class
-#ifdef _USE_GPU_
-	const size_t ls = NUM_THREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
+#ifdef _USEGPU_
+	const size_t ls = NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
 #else
 	const size_t ls = 1; // nothing else makes sens on CPU
 #endif
 
-#ifdef _USE_GPU_
-	size_t gs = 4 * NUM_THREADS * get_devices()[0].max_compute_units; /// @todo autotune
+#ifdef _USEGPU_
+	size_t gs = 4 * NUMTHREADS * get_devices()[0].max_compute_units; /// @todo autotune
 #else
 	size_t gs = get_devices()[0].max_compute_units;
 #endif

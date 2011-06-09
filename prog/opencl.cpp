@@ -489,11 +489,11 @@ hmc_error Opencl::run_heatbath(const hmc_float beta, usetimer * const timer)
 	cl_int clerr = CL_SUCCESS;
 	timer->reset();
 
-#ifdef _USE_GPU_
-	size_t global_work_size = min(VOLSPACE * NTIME / 2, NUMRNDSTATES);
-#else
-	size_t global_work_size = min(max_compute_units, (cl_uint) NUMRNDSTATES);
-#endif
+	size_t global_work_size;
+	if( device_type == CL_DEVICE_TYPE_GPU )
+		global_work_size = min(VOLSPACE * NTIME / 2, NUMRNDSTATES);
+	else
+		global_work_size = min(max_compute_units, (cl_uint) NUMRNDSTATES);
 
 	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), &clmem_gaugefield);
 	if(clerr != CL_SUCCESS) {
@@ -554,11 +554,11 @@ hmc_error Opencl::run_overrelax(const hmc_float beta, usetimer * const timer)
 
 	timer->reset();
 
-#ifdef _USE_GPU_
-	size_t global_work_size = min(VOLSPACE * NTIME / 2, NUMRNDSTATES);
-#else
-	size_t global_work_size = min(max_compute_units, (cl_uint) NUMRNDSTATES);
-#endif
+	size_t global_work_size;
+	if( device_type == CL_DEVICE_TYPE_GPU )
+		global_work_size = min(VOLSPACE * NTIME / 2, NUMRNDSTATES);
+	else
+		global_work_size = min(max_compute_units, (cl_uint) NUMRNDSTATES);
 
 	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), &clmem_gaugefield);
 	if(clerr != CL_SUCCESS) {
@@ -617,17 +617,17 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 	cl_int clerr = CL_SUCCESS;
 
 	// decide on work-sizes
-#ifdef _USE_GPU_
-	const size_t local_work_size = NUM_THREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
-#else
-	const size_t local_work_size = 1; // nothing else makes sens on CPU
-#endif
+	size_t local_work_size;
+	if( device_type == CL_DEVICE_TYPE_GPU )
+		local_work_size = NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
+	else
+		local_work_size = 1; // nothing else makes sens on CPU
 
-#ifdef _USE_GPU_
-	size_t global_work_size = 4 * NUM_THREADS * max_compute_units; /// @todo autotune
-#else
-	size_t global_work_size = max_compute_units;
-#endif
+	size_t global_work_size;
+	if( device_type == CL_DEVICE_TYPE_GPU )
+		global_work_size = 4 * NUMTHREADS * max_compute_units; /// @todo autotune
+	else
+		global_work_size = max_compute_units;
 
 	const cl_uint num_groups = (global_work_size + local_work_size - 1) / local_work_size;
 	global_work_size = local_work_size * num_groups;
@@ -852,14 +852,15 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 	return HMC_SUCCESS;
 }
 
-void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size_req)
+void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
 {
 	///@todo make this properly handle multiple dimensions
-#ifdef _USE_GPU_
-	const size_t local_work_size = NUM_THREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
-#else
-	const size_t local_work_size = 1; // nothing else makes sens on CPU
-#endif
+	// decide on work-sizes
+	size_t local_work_size;
+	if( device_type == CL_DEVICE_TYPE_GPU )
+		local_work_size = NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
+	else
+		local_work_size = 1; // nothing else makes sens on CPU
 
 	// query the work group size specified at compile time (if any)
 	size_t compile_work_group_size[3];
@@ -871,11 +872,41 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 	const size_t * const local_work_size_p = (compile_work_group_size[0] == 0) ? &local_work_size : &compile_work_group_size[0];
 
 	// make sure global_work_size is divisible by global_work_size
-	const size_t global_work_size = (global_work_size_req + *local_work_size_p - 1) / *local_work_size_p * *local_work_size_p;
+	if( global_work_size % *local_work_size_p ) {
+		size_t bytesInKernelName;
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+		char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+
+		logger.fatal() << "Kernel " << kernelName << " can only be run with a global work size which is a multiple of " << *local_work_size_p << ". The requested size was " << global_work_size << '.';
+	}
 
 	clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, local_work_size_p, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting..." << clerr << " - " << global_work_size << " - " << *local_work_size_p;
+
+		size_t bytesInKernelName;
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+		char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+		logger.fatal() << "Failed kernel: " << kernelName;
+
 		exit(HMC_OCLERROR);
 	}
 }
@@ -885,6 +916,21 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 	cl_int clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting...";
+
+		size_t bytesInKernelName;
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+		char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+		logger.fatal() << "Failed kernel: " << kernelName;
+
 		exit(HMC_OCLERROR);
 	}
 }
