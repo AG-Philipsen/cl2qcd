@@ -1,6 +1,7 @@
 #include "opencl.h"
 
 #include <algorithm>
+#include <boost/regex.hpp>
 
 #include "logger.hpp"
 
@@ -23,7 +24,7 @@ hmc_error Opencl::fill_kernels_file ()
 
 hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 {
-  *collect_options << "-D_INKERNEL_ -DNSPACE=" << NSPACE << " -DNTIME=" << NTIME << " -DVOLSPACE=" << VOLSPACE;
+	*collect_options << "-D_INKERNEL_ -DNSPACE=" << NSPACE << " -DNTIME=" << NTIME << " -DVOLSPACE=" << VOLSPACE;
 
 	//CP: these have to match those in the cmake file
 #ifdef _RECONSTRUCT_TWELVE_
@@ -190,11 +191,16 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 	cl_int clerr = CL_SUCCESS;
 	timer->reset();
 
+	// in debug scenarios make the compiler dump the compile results
+	if( logger.beDebug() ) {
+		// the cast is safe here, we don't want to modify the value later
+		putenv(const_cast<char*>("GPU_DUMP_DEVICE_KERNEL=3"));
+	}
+
 	//Initialize OpenCL,
 	logger.trace() << "OpenCL being initialized...";
 
 	cl_uint num_platforms;
-	cl_platform_id platform;
 	//LZ: for now, stick to one platform without any further checks...
 	clerr = clGetPlatformIDs(1, &platform, &num_platforms);
 	if(clerr != CL_SUCCESS) {
@@ -230,12 +236,11 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 	logger.info() << "\t\tCL_DEVICE_NAME:    " << info;
 	if(clGetDeviceInfo(device, CL_DEVICE_VENDOR, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
 	logger.info() << "\t\tCL_DEVICE_VENDOR:  " << info;
-	cl_device_type type;
-	if(clGetDeviceInfo(device, CL_DEVICE_TYPE, sizeof(cl_device_type), &type, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(type == CL_DEVICE_TYPE_CPU) logger.info() << "\t\tCL_DEVICE_TYPE:    CPU";
-	if(type == CL_DEVICE_TYPE_GPU) logger.info() << "\t\tCL_DEVICE_TYPE:    GPU";
-	if(type == CL_DEVICE_TYPE_ACCELERATOR) logger.info() << "\t\tCL_DEVICE_TYPE:    ACCELERATOR";
-	if(type != CL_DEVICE_TYPE_CPU && type != CL_DEVICE_TYPE_GPU && type != CL_DEVICE_TYPE_ACCELERATOR) {
+	if(clGetDeviceInfo(device, CL_DEVICE_TYPE, sizeof(cl_device_type), &device_type, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
+	if(device_type == CL_DEVICE_TYPE_CPU) logger.info() << "\t\tCL_DEVICE_TYPE:    CPU";
+	if(device_type == CL_DEVICE_TYPE_GPU) logger.info() << "\t\tCL_DEVICE_TYPE:    GPU";
+	if(device_type == CL_DEVICE_TYPE_ACCELERATOR) logger.info() << "\t\tCL_DEVICE_TYPE:    ACCELERATOR";
+	if(device_type != CL_DEVICE_TYPE_CPU && device_type != CL_DEVICE_TYPE_GPU && device_type != CL_DEVICE_TYPE_ACCELERATOR) {
 		logger.fatal() << "unexpected CL_DEVICE_TYPE...";
 		exit(HMC_OCLERROR);
 	}
@@ -964,4 +969,125 @@ void Opencl::printResourceRequirements(const cl_kernel kernel)
 	}
 	logger.trace() << "  Private memory size (bytes): " << private_mem_size;
 #endif
+
+	// the following only makes sense on AMD gpus ...
+
+	size_t platform_name_size;
+	clerr = clGetPlatformInfo(platform, CL_PLATFORM_NAME, 0, NULL, &platform_name_size);
+	if( clerr ) {
+		logger.error() << "Failed to get name of OpenCL platform: ";
+		return;
+	}
+	char * platform_name = new char[platform_name_size];
+	clerr = clGetPlatformInfo(platform, CL_PLATFORM_NAME, platform_name_size, platform_name, NULL);
+	if( clerr ) {
+		logger.error() << "Failed to get name of OpenCL platform: ";
+		return;
+	}
+
+	if( strcmp("AMD Accelerated Parallel Processing", platform_name) == 0
+	    && device_type == CL_DEVICE_TYPE_GPU ) {
+
+		// get device name
+		size_t device_name_bytes;
+		clerr = clGetDeviceInfo( device, CL_DEVICE_NAME, 0, NULL, &device_name_bytes );
+		if( clerr ) {
+			logger.error() << "Failed to get name of OpenCL device: ";
+			return;
+		}
+		char * device_name = new char[device_name_bytes];
+		clerr = clGetDeviceInfo( device, CL_DEVICE_NAME, device_name_bytes, device_name, NULL );
+		if( clerr ) {
+			logger.error() << "Failed to get name of OpenCL device: ";
+			return;
+		}
+
+		logger.trace() << "Retrieving information for device " << device_name;
+
+		size_t bytesInKernelName;
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+		char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+
+		logger.trace() << "Retrieving information for kernel " << kernelName;
+
+		// retrieve some additinal info on the program
+		std::stringstream tmp;
+		tmp << kernelName << '_' << device_name << ".isa";
+		std::string filename = tmp.str();
+
+		logger.trace() << "Reading information from file " << filename;
+
+		std::fstream isafile;
+		isafile.open(filename.c_str());
+		if(!isafile.is_open()) {
+			logger.error() << "Could not open ISA file. Aborting...";
+			return;
+		}
+
+		isafile.seekg(0, std::ios::end);
+		size_t isasize = isafile.tellg();
+		isafile.seekg(0, std::ios::beg);
+
+		char * isabytes = new char[isasize];
+
+		isafile.read( isabytes, isasize );
+
+		isafile.close();
+
+		std::string isa( isabytes );
+		delete[] isabytes;
+
+		unsigned int scratch_regs, gp_regs, static_local_bytes;
+
+		boost::smatch what;
+
+		// get scratch registers
+		boost::regex exScratch( "^MaxScratchRegsNeeded\\s*=\\s*(\\d*)$" );
+		if( boost::regex_search( isa, what, exScratch ) ) {
+			logger.trace() << what[0];
+			std::istringstream tmp( what[1] );
+			tmp >> scratch_regs;
+		} else {
+			logger.error() << "Scratch register usage section not found!";
+		}
+
+		// get GP registers
+		boost::regex exGPR( "^SQ_PGM_RESOURCES:NUM_GPRS\\s*=\\s*(\\d*)$" );
+		if( boost::regex_search( isa, what, exGPR ) ) {
+			logger.trace() << what[0];
+			std::istringstream tmp( what[1] );
+			tmp >> gp_regs;
+		} else {
+			logger.error() << "GPR usage section not found!";
+		}
+
+		// get GP registers
+		boost::regex exStatic( "^SQ_LDS_ALLOC:SIZE\\s*=\\s*(0x\\d*)$" );
+		if( boost::regex_search( isa, what, exStatic ) ) {
+			logger.trace() << what[0];
+			std::istringstream tmp( what[1] );
+			tmp >> std::hex >> static_local_bytes;
+			static_local_bytes *= 4; // value in file is in units of floats
+		} else {
+			logger.error() << "Static local memory allocation section not found!";
+		}
+
+		logger.debug() << "Kernel: " << kernelName << " - " << gp_regs << " GPRs, " << scratch_regs << " scratch registers, "
+		               << static_local_bytes << " bytes statically allocated local memory";
+
+		delete[] device_name;
+	} else {
+		logger.trace() << "No AMD-GPU -> not scanning for kernel resource requirements";
+	}
+
+	delete[] platform_name;
 }
