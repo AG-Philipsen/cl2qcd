@@ -56,8 +56,7 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_host(){
     correlator_ps[z].im = 0;
   }
 
-  //DEBUGGING for(int k=0; k<NC*NSPIN; k++) {
-for(int k=0; k<1; k++) {
+ for(int k=0; k<NC*NSPIN; k++) {
     if(use_eo == FALSE){
       hmc_spinor_field b[SPINORFIELDSIZE];
       create_point_source(get_parameters(),k,0,0,b);
@@ -144,8 +143,7 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
     correlator_ps[z].im = 0;
   }
 	
-  //DEBUGGING  for(int k=0; k<NC*NSPIN; k++) {
-  for(int k=0; k<1; k++) {
+  for(int k=0; k<NC*NSPIN; k++) {
     if(use_eo == FALSE){
       get_devices_fermions()[0].create_point_source_device(k,0,0,ls, gs, latimer);
       get_devices_fermions()[0].solver_device(phi, copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, get_parameters()->get_cgmax());

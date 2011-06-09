@@ -90,7 +90,6 @@ hmc_error bicgstab(inputparameters * parameters, hmc_spinor_field* inout, hmc_sp
     if(iter%iter_refresh==0) {
       //fresh start
       M(parameters, inout,gaugefield,rn);
-      printf("initial Mphi squared at iter %i  is: %.40e\n",iter, global_squarenorm(rn));
       saxpy(rn, source, &one, rn);
       copy_spinor(rn, rhat);
 
@@ -99,7 +98,7 @@ hmc_error bicgstab(inputparameters * parameters, hmc_spinor_field* inout, hmc_sp
       rho = hmc_complex_one;
       set_zero_spinorfield(v);
       set_zero_spinorfield(p);
-      printf("initial residue squared at iter %i  is: %.40e\n",iter, global_squarenorm(rn));
+      //printf("initial residue squared at iter %i  is: %.40e\n",iter, global_squarenorm(rn));
     }
     rho_next = scalar_product(rhat,rn);
     tmp1 = complexdivide(&rho_next,&rho);
@@ -125,21 +124,13 @@ hmc_error bicgstab(inputparameters * parameters, hmc_spinor_field* inout, hmc_sp
     omega = complexdivide(&(tmp1),&(tmp2));
 
     saxpy(t, s, &omega, rn);
-      printf("v squared at iter %i  is: %e\n",iter, global_squarenorm(v));
-      printf("inout squared at iter %i  is: %e\n",iter, global_squarenorm(inout));
-  printf("s squared at iter %i  is: %e\n",iter, global_squarenorm(s));
-  printf("t squared at iter %i  is: %e\n",iter, global_squarenorm(t));
-      //      printf("alpha: %f %f beta: %f %f\n", alpha.re, alpha.im, beta.re, beta.im);
     saxsbypz(p, s, inout, &alpha, &omega, inout);
-      printf("inout squared at iter %i  is: %e\n",iter, global_squarenorm(inout));
     hmc_float resid = global_squarenorm(rn);
-    //    printf("resid at iter %i is: %.10e\n", iter, resid);
     if(resid<epssquare) {
-      printf("resid small enough\n");
       M(parameters, inout,gaugefield,aux);
       saxpy(aux, source, &one, aux);
       hmc_float trueresid = global_squarenorm(aux);
-      printf("true resid: %d\t%e\t%e\n",iter,resid,trueresid);
+      //printf("true resid: %d\t%e\t%e\n",iter,resid,trueresid);
       if(trueresid<epssquare) return HMC_SUCCESS;
     }
   }
