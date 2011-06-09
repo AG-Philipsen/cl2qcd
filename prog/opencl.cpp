@@ -618,10 +618,12 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 
 	// decide on work-sizes
 	size_t local_work_size;
-	if( device_type == CL_DEVICE_TYPE_GPU )
-		local_work_size = NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
-	else
+	if( device_type == CL_DEVICE_TYPE_GPU ) {
+		// reductions are broken for local_work_size > 64
+		local_work_size = 64;//NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
+	} else {
 		local_work_size = 1; // nothing else makes sens on CPU
+	}
 
 	size_t global_work_size;
 	if( device_type == CL_DEVICE_TYPE_GPU )
