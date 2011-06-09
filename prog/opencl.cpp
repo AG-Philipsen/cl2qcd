@@ -852,17 +852,30 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 	return HMC_SUCCESS;
 }
 
-void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
+void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size_req)
 {
+	///@todo make this properly handle multiple dimensions
 #ifdef _USE_GPU_
 	const size_t local_work_size = NUM_THREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
 #else
 	const size_t local_work_size = 1; // nothing else makes sens on CPU
 #endif
 
-	cl_int clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
+	// query the work group size specified at compile time (if any)
+	size_t compile_work_group_size[3];
+	cl_int clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 3 * sizeof(size_t), compile_work_group_size, NULL );
 	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting...";
+		logger.fatal() << "Querying kernel properties failed, aborting...";
+		exit(HMC_OCLERROR);
+	}
+	const size_t * const local_work_size_p = (compile_work_group_size[0] == 0) ? &local_work_size : &compile_work_group_size[0];
+
+	// make sure global_work_size is divisible by global_work_size
+	const size_t global_work_size = (global_work_size_req + *local_work_size_p - 1) / *local_work_size_p * *local_work_size_p;
+
+	clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, local_work_size_p, 0, 0, NULL);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting..." << clerr << " - " << global_work_size << " - " << *local_work_size_p;
 		exit(HMC_OCLERROR);
 	}
 }
