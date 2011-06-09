@@ -48,6 +48,11 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 # maybe even patch this during install step
 add_definitions( -DSOURCEDIR="${CMAKE_SOURCE_DIR}" )
 
+# Don't compile in debug output if compiling for release
+if( CMAKE_BUILD_TYPE STREQUAL "Release" )
+	add_definitions( -DNDEBUG )
+endif( CMAKE_BUILD_TYPE STREQUAL "Release" )
+
 # some options for various variants
 option( USE_DOUBLE_PRECISION "Use double precision arithmetics" ON )
 if( USE_DOUBLE_PRECISION )
