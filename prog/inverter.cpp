@@ -32,12 +32,8 @@ int main(int argc, char* argv[])
 #endif
 	cerr << "init gaugefield" << endl;
 	gaugefield.init(1, devicetypes, &parameters, &inittime);
-	cerr << "gaugefield has values: "<<endl;
-	gaugefield.print_gaugeobservables (&copytimer, &copytimer);
+	cerr << "copy gaugefield" << endl;
 	gaugefield.copy_gaugefield_to_devices(&copytimer);
-	gaugefield.sync_gaugefield(&copytimer);
-	cerr << "gaugefield has values: "<<endl;
-	gaugefield.print_gaugeobservables (&copytimer, &copytimer);
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// inverter

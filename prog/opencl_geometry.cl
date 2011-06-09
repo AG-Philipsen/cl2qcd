@@ -24,6 +24,26 @@ return get_global_link_pos(mu, spacepos, t);
 }
 */
 
+//old version, this can be deleted soon:
+int inline ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t)
+{
+#ifdef _RECONSTRUCT_TWELVE_
+       return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*spacepos+2*NC*(NC-1)*NDIM*VOLSPACE*t;
+#else
+	return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*spacepos+2*NC*NC*NDIM*VOLSPACE*t;
+#endif
+}
+
+int inline ocl_su3matrix_element(int a, int b)
+{
+#ifdef _RECONSTRUCT_TWELVE_
+       return a + (NC-1)*b;
+#else
+	return a + NC*b;
+#endif
+}
+
+
 //site = pos + VOLSPACE*t =  x + y*NSPACE + z*NSPACE*NSPACE + VOLSPACE*t
 //idx = mu + NDIM*site
 // int inline ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t)
