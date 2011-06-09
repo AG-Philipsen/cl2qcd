@@ -1,0 +1,17 @@
+kappa=.125
+mu=0.06
+cgmax=15
+cgmax=1
+beta=6
+#cgmax=3
+prec=64
+startcondition=cold
+#startcondition=source
+sourcefile=conf.save
+sourcefile=conf.00100
+thermalization=500
+heatbathsteps=20
+overrelaxsteps=2
+savefrequency=10
+fermact=TWISTEDMASS
+use_evenodd=yes
