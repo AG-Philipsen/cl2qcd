@@ -98,10 +98,8 @@ hmc_error bicgstab(inputparameters * parameters, hmc_spinor_field* inout, hmc_sp
       rho = hmc_complex_one;
       set_zero_spinorfield(v);
       set_zero_spinorfield(p);
-      
-      //printf("true residue squared: %e\n",global_squarenorm(rn));
+      //printf("initial residue squared at iter %i  is: %.40e\n",iter, global_squarenorm(rn));
     }
-
     rho_next = scalar_product(rhat,rn);
     tmp1 = complexdivide(&rho_next,&rho);
     rho = rho_next;
@@ -126,16 +124,13 @@ hmc_error bicgstab(inputparameters * parameters, hmc_spinor_field* inout, hmc_sp
     omega = complexdivide(&(tmp1),&(tmp2));
 
     saxpy(t, s, &omega, rn);
-
     saxsbypz(p, s, inout, &alpha, &omega, inout);
-
     hmc_float resid = global_squarenorm(rn);
-
     if(resid<epssquare) {
       M(parameters, inout,gaugefield,aux);
       saxpy(aux, source, &one, aux);
       hmc_float trueresid = global_squarenorm(aux);
-      //printf("%d\t%e\t%e\n",iter,resid,trueresid);
+      //printf("true resid: %d\t%e\t%e\n",iter,resid,trueresid);
       if(trueresid<epssquare) return HMC_SUCCESS;
     }
   }
@@ -191,7 +186,7 @@ hmc_error bicgstab_eoprec(inputparameters * parameters, hmc_eoprec_spinor_field*
       set_zero_spinorfield_eoprec(v);
       
       
-//       printf("true residue squared: %e\n",global_squarenorm_eoprec(rn));
+      //       printf("true residue squared: %e\n",global_squarenorm_eoprec(rn));
     }
 
     rho_next = scalar_product_eoprec(rhat,rn);

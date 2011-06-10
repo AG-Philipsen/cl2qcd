@@ -26,15 +26,15 @@ __kernel void plaquette(__global ocl_s_gaugefield * field, __global hmc_float * 
 	hmc_float tplaq = 0;
 	hmc_float tmpfloat = 0;
 
-	hmc_ocl_su3matrix prod[SU3SIZE];
+	Matrixsu3 prod;
 
 	for(id = id_tmp; id < VOLSPACE * NTIME / 2; id += global_size) {
 		//calc even plaquette
 		get_even_site(id, &pos, &t);
 		for(int mu = 0; mu < NDIM; mu++) {
 			for(int nu = 0; nu < mu; nu++) {
-				local_plaquette(field, prod, pos, t, mu, nu );
-				tmpfloat = trace_su3matrix(prod).re;
+				prod = local_plaquette(field, pos, t, mu, nu );
+				tmpfloat = trace_matrixsu3(prod).re;
 				plaq += tmpfloat;
 				if(mu == 0 || nu == 0) {
 					tplaq += tmpfloat;
@@ -48,8 +48,8 @@ __kernel void plaquette(__global ocl_s_gaugefield * field, __global hmc_float * 
 		get_odd_site(id, &pos, &t);
 		for(int mu = 0; mu < NDIM; mu++) {
 			for(int nu = 0; nu < mu; nu++) {
-				local_plaquette(field, prod, pos, t, mu, nu );
-				tmpfloat = trace_su3matrix(prod).re;
+				prod = local_plaquette(field, pos, t, mu, nu );
+				tmpfloat = trace_matrixsu3(prod).re;
 				plaq += tmpfloat;
 				if(mu == 0 || nu == 0) {
 					tplaq += tmpfloat;
@@ -148,7 +148,7 @@ __kernel void polyakov_reduction(__global hmc_complex* poly_buf,  __global hmc_c
 	return;
 }
 
-__kernel void polyakov(__global hmc_ocl_gaugefield * field, __global hmc_complex * out, __local hmc_complex * out_loc)
+__kernel void polyakov(__global ocl_s_gaugefield * field, __global hmc_complex * out, __local hmc_complex * out_loc)
 {
 
 	int id;
@@ -170,9 +170,9 @@ __kernel void polyakov(__global hmc_ocl_gaugefield * field, __global hmc_complex
 	}
 
 	for(id = id_tmp; id < VOLSPACE; id += global_size) {
-		hmc_ocl_su3matrix prod[SU3SIZE];
-		local_polyakov(field, prod, id);
-		tmpcomplex = trace_su3matrix(prod);
+		Matrixsu3 prod;
+		prod = local_polyakov(field, id);
+		tmpcomplex = trace_matrixsu3(prod);
 		(tmp_pol).re += tmpcomplex.re;
 		(tmp_pol).im += tmpcomplex.im;
 	}

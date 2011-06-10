@@ -13,12 +13,13 @@ hmc_error Opencl::fill_kernels_file ()
 	//!!CP: LZ should update this
 	cl_kernels_file.push_back("opencl_header.cl");
 	cl_kernels_file.push_back("opencl_geometry.cl");
-	cl_kernels_file.push_back("opencl_random.cl");
+	cl_kernels_file.push_back("random.cl");
 	cl_kernels_file.push_back("opencl_operations_complex.cl");
-	cl_kernels_file.push_back("opencl_operations_matrix.cl");
-	cl_kernels_file.push_back("opencl_operations_gaugefield.cl");
-	cl_kernels_file.push_back("opencl_update_heatbath.cl");
-	cl_kernels_file.push_back("opencl_gaugeobservables.cl");
+	cl_kernels_file.push_back("operations_matrix_su3.cl");
+	cl_kernels_file.push_back("operations_matrix.cl");
+	cl_kernels_file.push_back("operations_gaugefield.cl");
+	cl_kernels_file.push_back("update_heatbath.cl");
+	cl_kernels_file.push_back("gaugeobservables.cl");
 	return HMC_SUCCESS;
 }
 
@@ -60,11 +61,10 @@ hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 
 hmc_error Opencl::fill_buffers()
 {
-
 	cl_int clerr;
 
 	logger.trace() << "Create buffer for gaugefield...";
-	clmem_gaugefield = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_gaugefield), 0, &clerr);
+	clmem_gaugefield = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(s_gaugefield), 0, &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
@@ -413,22 +413,22 @@ hmc_error Opencl::finalize()
 
 
 
-hmc_error Opencl::copy_gaugefield_to_device(hmc_gaugefield* gaugefield, usetimer* timer)
+hmc_error Opencl::copy_gaugefield_to_device(s_gaugefield* gaugefield, usetimer* timer)
 {
 //   cout<<"Copy gaugefield to device..."<<endl;
 	timer->reset();
-	hmc_ocl_gaugefield* host_gaugefield =  (hmc_ocl_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(sizeof(s_gaugefield));
 
 	copy_to_ocl_format(host_gaugefield, gaugefield);
 
-	int clerr = clEnqueueWriteBuffer(queue, clmem_gaugefield, CL_TRUE, 0, sizeof(hmc_gaugefield), host_gaugefield, 0, 0, NULL);
+	int clerr = clEnqueueWriteBuffer(queue, clmem_gaugefield, CL_TRUE, 0, sizeof(s_gaugefield), host_gaugefield, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "...copy gaugefield failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 
 	free(host_gaugefield);
-
+	
 	timer->add();
 	return HMC_SUCCESS;
 }
@@ -448,13 +448,13 @@ hmc_error Opencl::copy_rndarray_to_device(hmc_rndarray rndarray, usetimer* timer
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::get_gaugefield_from_device(hmc_gaugefield* gaugefield, usetimer* timer)
+hmc_error Opencl::get_gaugefield_from_device(s_gaugefield* gaugefield, usetimer* timer)
 {
 //   cout<<"Get gaugefield from device..."<<endl;
 	timer->reset();
-	hmc_ocl_gaugefield* host_gaugefield =  (hmc_ocl_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(sizeof(s_gaugefield));
 
-	int clerr = clEnqueueReadBuffer(queue, clmem_gaugefield, CL_TRUE, 0, sizeof(hmc_gaugefield), host_gaugefield, 0, NULL, NULL);
+	int clerr = clEnqueueReadBuffer(queue, clmem_gaugefield, CL_TRUE, 0, sizeof(s_gaugefield), host_gaugefield, 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		logger.fatal() << "errorcode :" << clerr;

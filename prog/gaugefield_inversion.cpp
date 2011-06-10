@@ -43,22 +43,50 @@ Opencl_fermions * Gaugefield_inversion::get_devices_fermions ()
 	return  (Opencl_fermions*)get_devices();
 }
 
-hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_host()
-{
-	//CP: one needs bicgstab here for M
-	int use_cg = FALSE;
+hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_host(){
+  //CP: one needs bicgstab here for M
+  int use_cg = FALSE;
+	
+  int use_eo = get_parameters()->get_use_eo();
 
-	int use_eo = get_parameters()->get_use_eo();
+  hmc_spinor_field in[SPINORFIELDSIZE];
+  hmc_spinor_field phi[SPINORFIELDSIZE];
+  init_spinorfield_cold(in);
 
-	hmc_spinor_field in[SPINORFIELDSIZE];
-	hmc_spinor_field phi[SPINORFIELDSIZE];
-	init_spinorfield_cold(in);
+  //pseudo scalar, flavour multiplet
+  hmc_complex correlator_ps[NSPACE];
+  for(int z=0; z<NSPACE; z++) {
+    correlator_ps[z].re = 0;
+    correlator_ps[z].im = 0;
+  }
 
-	//pseudo scalar, flavour multiplet
-	hmc_complex correlator_ps[NSPACE];
-	for(int z = 0; z < NSPACE; z++) {
-		correlator_ps[z].re = 0;
-		correlator_ps[z].im = 0;
+ for(int k=0; k<NC*NSPIN; k++) {
+    if(use_eo == FALSE){
+      hmc_spinor_field b[SPINORFIELDSIZE];
+      create_point_source(get_parameters(),k,0,0,b);
+      solver(get_parameters(), in, b, get_gf(), use_cg, phi);
+    }
+    else{
+      hmc_eoprec_spinor_field be[EOPREC_SPINORFIELDSIZE];
+      hmc_eoprec_spinor_field bo[EOPREC_SPINORFIELDSIZE];
+      
+      create_point_source_eoprec(get_parameters(), k,0,0, get_gf(), be,bo);
+      solver_eoprec(get_parameters(), in, be, bo, get_gf(), use_cg, phi);
+      
+    }
+    for(int timepos = 0; timepos<NTIME; timepos++) {
+      for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
+	for(int alpha = 0; alpha<NSPIN; alpha++) {
+	  for(int c = 0; c<NC; c++) {
+	    // int j = spinor_element(alpha,c);
+	    int n = spinor_field_element(alpha, c, spacepos, timepos);
+	    int z = get_spacecoord(spacepos, 3);
+	    hmc_complex tmp = phi[n];
+	    hmc_complex ctmp = complexconj(&tmp);
+	    hmc_complex incr = complexmult(&ctmp,&tmp);
+	    correlator_ps[z].re += incr.re;
+	    correlator_ps[z].im += incr.im;
+	  }
 	}
 
 	for(int k = 0; k < NC * NSPIN; k++) {

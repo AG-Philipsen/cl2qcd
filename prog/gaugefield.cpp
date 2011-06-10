@@ -5,9 +5,9 @@
 hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer)
 {
 	//allocate memory for private gaugefield
-	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
-	set_gf(gftmp);
-
+// 	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+ 	s_gaugefield* gftmp = (s_gaugefield*) malloc(sizeof(s_gaugefield));
+	set_sgf(gftmp);
 
 	set_parameters(input_parameters);
 
@@ -48,12 +48,17 @@ hmc_error Gaugefield::init_gaugefield(usetimer* timer)
 	if((get_parameters())->get_startcondition() == START_FROM_SOURCE) {
 		int err;
 		timer->reset();
+		//hmc_gaugefield for filetransfer, initialize here, because otherwise it is not needed
+		hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+		set_gf(gftmp);
 		//tmp gauge field
 		hmc_float * gaugefield_tmp;
 		gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * NTIME * VOLSPACE);
 		err = parameters_source.readsourcefile(&(get_parameters()->sourcefile)[0], get_parameters()->get_prec(), &gaugefield_tmp);
 		err = copy_gaugefield_from_ildg_format(get_gf(), gaugefield_tmp, parameters_source.num_entries_source);
+		err = copy_gaugefield_to_s_gaugefield (get_sgf(), get_gf());
 		free(gaugefield_tmp);
+		free(get_gf());
 		timer->add();
 		if (err == 0) {
 			print_info_source(&parameters_source);
@@ -64,24 +69,101 @@ hmc_error Gaugefield::init_gaugefield(usetimer* timer)
 	}
 	if(get_parameters()->get_startcondition() == COLD_START) {
 		timer->reset();
-		set_gaugefield_cold(get_gf());
+		set_gaugefield_cold_new(get_sgf());
 		timer->add();
 	}
 	if(get_parameters()->get_startcondition() == HOT_START) {
 		timer->reset();
-		set_gaugefield_cold(get_gf());
+		set_gaugefield_hot_new(get_sgf());
 		timer->add();
 	}
+	
 	return HMC_SUCCESS;
 }
 
+hmc_error Gaugefield::copy_gaugefield_to_s_gaugefield (s_gaugefield * sgf, hmc_gaugefield * gf){
+  for (int d=0; d <NDIM; d++){
+    for (int n=0; n<VOLSPACE; n++){
+      for (int t=0; t<NTIME; t++){
+#ifdef _RECONSTRUCT_TWELVE_
+	  (*sgf)[d][n][t].e00 = (*gf) [0][d][n][t];
+	  (*sgf)[d][n][t].e01 = (*gf) [2][d][n][t];
+	  (*sgf)[d][n][t].e02 = (*gf) [4][d][n][t];
+	  (*sgf)[d][n][t].e10 = (*gf) [1][d][n][t];
+	  (*sgf)[d][n][t].e11 = (*gf) [3][d][n][t];
+	  (*sgf)[d][n][t].e12 = (*gf) [5][d][n][t];
+#else
+	  (*sgf)[d][n][t].e00 = (*gf)[0][0][d][n][t];
+	  (*sgf)[d][n][t].e01 = (*gf) [0][1][d][n][t];
+	  (*sgf)[d][n][t].e02 = (*gf) [0][2][d][n][t];
+	  (*sgf)[d][n][t].e10 = (*gf) [1][0][d][n][t];
+	  (*sgf)[d][n][t].e11 = (*gf) [1][1][d][n][t];
+	  (*sgf)[d][n][t].e12 = (*gf) [1][2][d][n][t];
+	  (*sgf)[d][n][t].e20 = (*gf) [2][0][d][n][t];
+	  (*sgf)[d][n][t].e21 = (*gf) [2][1][d][n][t];
+	  (*sgf)[d][n][t].e22 = (*gf) [2][2][d][n][t];
+#endif
 
+      }
+    }
+  }
+  return HMC_SUCCESS;
+}
+
+hmc_error Gaugefield::copy_s_gaugefield_to_gaugefield(hmc_gaugefield * gf, s_gaugefield * sgf){
+  for (int d=0; d <NDIM; d++){
+    for (int n=0; n<VOLSPACE; n++){
+      for (int t=0; t<NTIME; t++){
+#ifdef _RECONSTRUCT_TWELVE_
+	  (*gf) [0][d][n][t] = (*sgf)[d][n][t].e00;
+	  (*gf) [2][d][n][t] = (*sgf)[d][n][t].e01;
+	  (*gf) [4][d][n][t] = (*sgf)[d][n][t].e02;
+	  (*gf) [1][d][n][t] = (*sgf)[d][n][t].e10;
+	  (*gf) [3][d][n][t] = (*sgf)[d][n][t].e11;
+	  (*gf) [5][d][n][t] = (*sgf)[d][n][t].e12;
+#else
+	  (*gf)[0][0][d][n][t] = (*sgf)[d][n][t].e00;
+	  (*gf)[0][1][d][n][t] = (*sgf)[d][n][t].e01;
+	  (*gf)[0][2][d][n][t] = (*sgf)[d][n][t].e02;
+	  (*gf)[1][0][d][n][t] = (*sgf)[d][n][t].e10;
+	  (*gf)[1][1][d][n][t] = (*sgf)[d][n][t].e11;
+	  (*gf)[1][2][d][n][t] = (*sgf)[d][n][t].e12;
+	  (*gf)[2][0][d][n][t] = (*sgf)[d][n][t].e20;
+	  (*gf)[2][1][d][n][t] = (*sgf)[d][n][t].e21;
+	  (*gf)[2][2][d][n][t] = (*sgf)[d][n][t].e22;
+#endif
+      }
+    }
+  }
+  return HMC_SUCCESS;
+}
+
+hmc_error Gaugefield::set_gaugefield_cold_new (s_gaugefield * field) {
+  for(int t=0; t<NTIME; t++) {
+    for(int n=0; n<VOLSPACE; n++) {
+      for(int mu=0; mu<NDIM; mu++) {
+	Matrixsu3 tmp;
+	tmp = unit_matrixsu3();
+	(*field)[mu][n][t] = tmp;
+      }
+    }
+  }
+  return HMC_SUCCESS;
+}
+
+
+//Implement this
+hmc_error Gaugefield::set_gaugefield_hot_new(s_gaugefield * field) {
+  hmc_error err;
+  err = set_gaugefield_cold_new(field);
+  return HMC_SUCCESS;
+}
 
 hmc_error Gaugefield::copy_gaugefield_to_devices(usetimer* timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices()[0].copy_gaugefield_to_device(get_gf(), timer);
+	hmc_error err = get_devices()[0].copy_gaugefield_to_device(get_sgf(), timer);
 	return err;
 }
 
@@ -89,7 +171,7 @@ hmc_error Gaugefield::sync_gaugefield(usetimer* timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices()[0].get_gaugefield_from_device(get_gf(), timer);
+	hmc_error err = get_devices()[0].get_gaugefield_from_device(get_sgf(), timer);
 	return err;
 }
 
@@ -147,6 +229,10 @@ hmc_error Gaugefield::save(int number)
 	outfilename << "conf." << strnumber.str();
 	string outputfile = outfilename.str();
 
+	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	set_gf(gftmp);
+	
+	hmc_error err = copy_s_gaugefield_to_gaugefield(get_gf(), get_sgf());
 	copy_gaugefield_to_ildg_format(gaugefield_buf, get_gf());
 
 	hmc_float plaq = plaquette();
@@ -154,6 +240,7 @@ hmc_error Gaugefield::save(int number)
 	write_gaugefield ( gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NTIME, get_parameters()->get_prec(), number, plaq, get_parameters()->get_beta(), get_parameters()->get_kappa(), get_parameters()->get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
 
 	free(gaugefield_buf);
+	free(get_gf());
 
 	return HMC_SUCCESS;
 }
@@ -367,7 +454,8 @@ hmc_error Gaugefield::heatbath(const int nheat, usetimer * const timer_heat)
 
 hmc_error Gaugefield::finalize()
 {
-	free(get_gf());
+	//free(get_gf());
+	free(get_sgf());
 	this->free_devices();
 	return HMC_SUCCESS;
 }
@@ -379,7 +467,6 @@ hmc_error Gaugefield::free_devices()
 	return HMC_SUCCESS;
 	return HMC_SUCCESS;
 }
-
 
 hmc_error Gaugefield::set_gf (hmc_gaugefield * gf_val)
 {
@@ -425,5 +512,16 @@ hmc_error Gaugefield::set_parameters (inputparameters * parameters_val)
 inputparameters * Gaugefield::get_parameters ()
 {
 	return  parameters;
+}
+
+
+
+s_gaugefield * Gaugefield::get_sgf (){
+    return sgf;
+}
+	
+hmc_error Gaugefield::set_sgf (s_gaugefield * sgf_val){
+	sgf = sgf_val;
+	return HMC_SUCCESS;
 }
 

@@ -310,6 +310,34 @@ hmc_error zero_staplematrix(hmc_staplematrix * u){
   return HMC_SUCCESS;
 }
 
+Matrixsu3 unit_matrixsu3()
+{
+	Matrixsu3 out;
+	out.e00.re = 1.;
+	out.e00.im = 0.;
+	out.e01.re = 0.;
+	out.e01.im = 0.;
+	out.e02.re = 0.;
+	out.e02.im = 0.;
+
+	out.e10.re = 0.;
+	out.e10.im = 0.;
+	out.e11.re = 1.;
+	out.e11.im = 0.;
+	out.e12.re = 0.;
+	out.e12.im = 0.;
+
+#ifndef _RECONSTRUCT_TWELVE_
+	out.e20.re = 0.;
+	out.e20.im = 0.;
+	out.e21.re = 0.;
+	out.e21.im = 0.;
+	out.e22.re = 1.;
+	out.e22.im = 0.;
+#endif
+	return out;
+}
+
 hmc_error unit_su3matrix(hmc_su3matrix * u){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*(NC-1); n++) {
