@@ -5,6 +5,8 @@
 **/*.a
 **/*.pyc
 
+**/\#*\#
+
 doc/*.toc
 doc/*.aux
 doc/*.bbl
