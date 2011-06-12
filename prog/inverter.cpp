@@ -32,14 +32,17 @@ int main(int argc, char* argv[])
 #endif
 	cerr << "init gaugefield" << endl;
 	gaugefield.init(1, devicetypes, &parameters, &inittime);
+	//cerr << "print initial gaugeobservables..." << endl;
+	//	gaugefield.print_gaugeobservables(&polytime, &plaqtime);
 	cerr << "copy gaugefield" << endl;
 	gaugefield.copy_gaugefield_to_devices(&copytimer);
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// inverter
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	gaugefield.perform_inversion_pointsource_ps_corr_host();
+	//cout << "perform inversion on host.." << endl;
+	//	gaugefield.perform_inversion_pointsource_ps_corr_host();
+	cout << "perform inversion on device.." << endl;
 	gaugefield.perform_inversion_pointsource_ps_corr_devices(&copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
 
 

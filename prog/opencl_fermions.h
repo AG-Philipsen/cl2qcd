@@ -114,6 +114,7 @@ class Opencl_fermions : public Opencl {
 	cl_mem clmem_chem_pot_re;
 	cl_mem clmem_chem_pot_im;
 
+	cl_kernel M;
 	cl_kernel M_diag;
 	cl_kernel dslash;
 	cl_kernel saxpy;

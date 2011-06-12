@@ -234,12 +234,12 @@ add_executable( inverter
 	gaugefield_inversion.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
-	host_random.cpp
+	#host_random.cpp
 	opencl.cpp
 	opencl_fermions.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
-	host_solver.cpp
+	#host_solver.cpp
 	logger.cpp
 )
 target_link_libraries( inverter

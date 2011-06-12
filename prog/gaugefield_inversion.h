@@ -28,11 +28,14 @@ class Gaugefield_inversion : public Gaugefield {
    */
   virtual hmc_error finalize();
 
+
   /**
    * Perform inversion on host and print pseudo-scalar correlator to std.
    * Use point sources.
    */
-  hmc_error perform_inversion_pointsource_ps_corr_host();
+  //CP: this is deprecated
+  /*  hmc_error perform_inversion_pointsource_ps_corr_host();
+  */
 
   /**
    * Perform inversion on device and print pseudo-scalar correlator to std.

@@ -380,6 +380,11 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
   }
   
   cout << "\tinit fermion kernels..." << endl;
+	M = clCreateKernel(clprogram,"M",&clerr);
+	if(clerr!=CL_SUCCESS) {
+		cout<<"...creating M kernel failed, aborting."<<endl;
+		exit(HMC_OCLERROR);
+	}
 	M_diag = clCreateKernel(clprogram,"M_diag",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating M_diag kernel failed, aborting."<<endl;
@@ -1536,7 +1541,7 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 			set_zero_spinorfield_device(clmem_v, localsize, globalsize, latimer); 
 			set_zero_spinorfield_device(clmem_p, localsize, globalsize, latimer);
 			
-			M_device(clmem_inout, clmem_rn, localsize, globalsize, Mtimer, dslashtimer, Mdiagtimer);
+			//M_device(clmem_inout, clmem_rn, localsize, globalsize, Mtimer, dslashtimer, Mdiagtimer);
 
 			saxpy_device(clmem_rn, clmem_source, clmem_one, clmem_rn, localsize, globalsize, latimer);
 			copy_spinor_device(clmem_rn, clmem_rhat, singletimer);
@@ -1562,14 +1567,14 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 		set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2, singletimer);
 		saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p, local_work_size, global_work_size, latimer);
 
-		M_device(clmem_p,clmem_v, local_work_size, global_work_size, Mtimer, dslashtimer, Mdiagtimer);
+		//M_device(clmem_p,clmem_v, local_work_size, global_work_size, Mtimer, dslashtimer, Mdiagtimer);
 
 		set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1, local_work_size, global_work_size, scalarprodtimer);
 		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha, singletimer);
 		
 		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s, local_work_size, global_work_size, latimer);
 		
-		M_device(clmem_s, clmem_t, local_work_size, global_work_size, Mtimer, dslashtimer, Mdiagtimer);
+		//M_device(clmem_s, clmem_t, local_work_size, global_work_size, Mtimer, dslashtimer, Mdiagtimer);
 
 		set_complex_to_scalar_product_device(clmem_t,clmem_s, clmem_tmp1, local_work_size, global_work_size, scalarprodtimer);
 		//!!CP: this can also be global_squarenorm
@@ -1584,7 +1589,7 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 		copy_float_from_device(clmem_resid, &resid, copytimer);
 
 		if(resid<epssquare) {	
-			M_device(clmem_inout,clmem_aux,local_work_size, global_work_size, Mtimer, dslashtimer, Mdiagtimer);
+		  //M_device(clmem_inout,clmem_aux,local_work_size, global_work_size, Mtimer, dslashtimer, Mdiagtimer);
 			saxpy_device(clmem_aux, clmem_source, clmem_one, clmem_aux, local_work_size, global_work_size, latimer); 
 			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, local_work_size, global_work_size, scalarprodtimer);
 			copy_float_from_device(clmem_trueresid, &trueresid, copytimer);
@@ -1728,10 +1733,10 @@ hmc_error Opencl_fermions::cg_device(usetimer * copytimer, usetimer* singletimer
 	
 hmc_error Opencl_fermions::solver_device(hmc_spinor_field* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax){
 	(*solvertimer).reset();
-	convert_to_kappa_format_device(clmem_inout, ls, gs, latimer);
-	bicgstab_device(copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer ,ls, gs, cgmax);
-	convert_from_kappa_format_device(clmem_inout, clmem_inout, ls, gs, latimer);
-	get_spinorfield_from_device(out, copytimer);
+	//convert_to_kappa_format_device(clmem_inout, ls, gs, latimer);
+	//bicgstab_device(copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer ,ls, gs, cgmax);
+	//convert_from_kappa_format_device(clmem_inout, clmem_inout, ls, gs, latimer);
+	//get_spinorfield_from_device(out, copytimer);
 	(*solvertimer).add();
 	
 	return HMC_SUCCESS;

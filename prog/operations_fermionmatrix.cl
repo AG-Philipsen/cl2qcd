@@ -263,3 +263,22 @@ __kernel void M(__global spinorfield * in, __global ocl_s_gaugefield * field, __
 	}
   }
 }
+
+
+//CP: perhaps these are still needed
+__kernel void M_diag(){
+
+}
+
+__kernel void dslash(){
+
+
+}
+
+__kernel void M_sitediagonal(){
+
+}
+
+__kernel void M_inverse_sitediagonal(){
+
+}

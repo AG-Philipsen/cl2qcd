@@ -249,6 +249,7 @@ void Gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2)
 	timer->reset();
 	hmc_float tplaq = 0;
 	hmc_float splaq = 0;
+	printf("calling plaquette function...\n");
 	hmc_float plaq = plaquette(&tplaq, &splaq);
 	timer->add();
 	timer2->reset();
@@ -350,8 +351,10 @@ hmc_float Gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 			for(int mu = 0; mu < NDIM; mu++) {
 				for(int nu = 0; nu < mu; nu++) {
 					hmc_su3matrix prod;
+					printf("1\n");
 					local_plaquette(get_gf(), &prod, n, t, mu, nu );
 					hmc_float tmpfloat = trace_su3matrix(&prod).re;
+					printf("2\n");
 					plaq += tmpfloat;
 					if(mu == 0 || nu == 0) {
 						*tplaq += tmpfloat;

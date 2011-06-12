@@ -39,6 +39,8 @@ Opencl_fermions * Gaugefield_inversion::get_devices_fermions (){
   return  (Opencl_fermions*)get_devices();
 }
 
+//CP: this is deprecated 
+/*
 hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_host(){
   //CP: one needs bicgstab here for M
   int use_cg = FALSE;
@@ -55,19 +57,22 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_host(){
     correlator_ps[z].re = 0;
     correlator_ps[z].im = 0;
   }
-
+  cout << "start iterations of solver.. " << endl;
  for(int k=0; k<NC*NSPIN; k++) {
     if(use_eo == FALSE){
       hmc_spinor_field b[SPINORFIELDSIZE];
+      cout << "create pointsource.." << endl;
       create_point_source(get_parameters(),k,0,0,b);
-      solver(get_parameters(), in, b, get_gf(), use_cg, phi);
+      cout << "start solver.." << endl;
+      solver(get_parameters(), in, b, get_sgf(), use_cg, phi);
+    cout<<"solver done" << endl;
     }
     else{
       hmc_eoprec_spinor_field be[EOPREC_SPINORFIELDSIZE];
       hmc_eoprec_spinor_field bo[EOPREC_SPINORFIELDSIZE];
       
       create_point_source_eoprec(get_parameters(), k,0,0, get_gf(), be,bo);
-      solver_eoprec(get_parameters(), in, be, bo, get_gf(), use_cg, phi);
+      solver_eoprec(get_parameters(), in, be, bo, get_sgf(), use_cg, phi);
       
     }
     for(int timepos = 0; timepos<NTIME; timepos++) {
@@ -95,7 +100,7 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_host(){
 
   return HMC_SUCCESS;
 }
-
+*/
 
 hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer){
 
