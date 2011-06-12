@@ -2,7 +2,7 @@
 
 hmc_error Opencl_fermions::fill_kernels_file (){
 	//give a list of all kernel-files
-	//Opencl::fill_kernels_file();
+	Opencl::fill_kernels_file();
 	/*
 	cl_kernels_file.push_back("opencl_header.cl");
 	  cl_kernels_file.push_back("opencl_geometry.cl");
@@ -11,24 +11,31 @@ hmc_error Opencl_fermions::fill_kernels_file (){
 	  cl_kernels_file.push_back("opencl_operations_complex.cl");
 	*/
 	/*
-cl_kernels_file.push_back("opencl_operations_matrix.cl");
+	  cl_kernels_file.push_back("opencl_operations_matrix.cl");
 	  cl_kernels_file.push_back("opencl_operations_gaugefield.cl");
 	  cl_kernels_file.push_back("opencl_update_heatbath.cl");
 	  cl_kernels_file.push_back("opencl_gaugeobservables.cl");
 	*/
-        cl_kernels_file.push_back("opencl_header.cl");
+        /*cl_kernels_file.push_back("opencl_header.cl");
         cl_kernels_file.push_back("opencl_geometry.cl");
         cl_kernels_file.push_back("opencl_random.cl");
         cl_kernels_file.push_back("opencl_operations_complex.cl");
 	cl_kernels_file.push_back("opencl_operations_matrix.cl");
 	//	cl_kernels_file.push_back("operations_matrix_su3.cl");
 	cl_kernels_file.push_back("opencl_operations_gaugefield.cl");
-	cl_kernels_file.push_back("opencl_operations_spinor.cl");
-	cl_kernels_file.push_back("opencl_operations_spinorfield.cl");
-	cl_kernels_file.push_back("opencl_operations_fermionmatrix.cl");
-	cl_kernels_file.push_back("opencl_fermionobservables.cl");
-	cl_kernels_file.push_back("opencl_update_heatbath.cl");
 	cl_kernels_file.push_back("opencl_gaugeobservables.cl");
+	*/
+	cl_kernels_file.push_back("types_fermions.h");
+	cl_kernels_file.push_back("operations_su3vec.cl");
+	cl_kernels_file.push_back("operations_spinor.cl");
+	cl_kernels_file.push_back("operations_spinorfield.cl");
+	cl_kernels_file.push_back("operations_fermionmatrix.cl");
+	//cl_kernels_file.push_back("fermionobservables.cl");
+
+
+
+
+
 	return HMC_SUCCESS;  
 }
 
@@ -55,6 +62,11 @@ hmc_error Opencl_fermions::fill_collect_options(stringstream* collect_options){
 	switch (get_parameters()->get_fermact()) {
 	case TWISTEDMASS :
 	  *collect_options << " -DMU=" << get_parameters()->get_mu();
+	  get_parameters()->calc_mubar();
+	  *collect_options << " -DMUBAR=" << get_parameters()->get_mubar();
+	  get_parameters()->set_mubar_negative();
+	  *collect_options << " -DMMUBAR=" << get_parameters()->get_mubar();
+	  get_parameters()->set_mubar_negative();
 	  break;
 	case CLOVER :
 	  *collect_options << " -DCSW=" << get_parameters()->get_csw();
