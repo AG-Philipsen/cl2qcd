@@ -15,6 +15,16 @@ spinor set_spinor_zero()
 	return tmp;
 }
 
+spinor set_spinor_cold()
+{
+	spinor tmp;
+	tmp.e0 = set_su3vec_cold();
+	tmp.e1 = set_su3vec_cold();
+	tmp.e2 = set_su3vec_cold();
+	tmp.e3 = set_su3vec_cold();
+	return tmp;
+}
+
 hmc_float spinor_squarenorm(spinor in)
 {
 	hmc_float res=0;

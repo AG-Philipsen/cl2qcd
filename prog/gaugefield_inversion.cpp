@@ -124,16 +124,16 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
 	const cl_uint num_groups = (gs + ls - 1) / ls;
 	gs = ls * num_groups;
 
+  /** @todo here one has to introduce more timer instead of noop*/
+  usetimer noop;
 
   int use_eo = get_parameters()->get_use_eo();
 
   cout << "calc simple_propagator on the device..." << endl;
-  spinorfield phi[SPINORFIELDSIZE];
-	
-  spinorfield in[SPINORFIELDSIZE];
+  
   if(use_eo==FALSE){
-    //init_spinorfield_cold(in);
-    get_devices_fermions()[0].copy_spinorfield_to_device(in, copytimer);
+    get_devices_fermions()[0].set_spinorfield_cold_device(ls, gs, &noop);
+    //get_devices_fermions()[0].copy_spinorfield_to_device(in, copytimer);
   }
   else{
     //!!CP: this should be fine since only half the field is used but of course it is not nice...
@@ -146,7 +146,7 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
       cout << "create point source" << endl;
       get_devices_fermions()[0].create_point_source_device(k,0,0,ls, gs, latimer);
       cout << "start solver " << endl;
-      //get_devices_fermions()[0].solver_device(phi, copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
+      get_devices_fermions()[0].solver_device(copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
     }
     else{
       //get_devices_fermions()[0].create_point_source_eoprec_device(k,0,0,ls, gs, latimer, dslashtimer, Mdiagtimer);
@@ -154,12 +154,10 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
     }
   }
 
-  /** @todo here one has to introduce one more timer*/
-  usetimer noop;
   get_devices_fermions()[0].ps_correlator_device(ls, gs, &noop);
 
   //copy spinorfield back to host (this should not be done anymore in the end)
-  get_devices_fermions()[0].get_spinorfield_from_device(phi, copytimer);
+  //get_devices_fermions()[0].get_spinorfield_from_device(phi, copytimer);
   
   return HMC_SUCCESS;
 }

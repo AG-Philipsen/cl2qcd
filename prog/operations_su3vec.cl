@@ -31,6 +31,14 @@ su3vec set_su3vec_zero(){
   return tmp;
 }
 
+su3vec set_su3vec_cold(){
+	su3vec tmp;
+  (tmp).e0 = hmc_complex_one;
+	(tmp).e1 = hmc_complex_one;
+	(tmp).e2 = hmc_complex_one;
+  return tmp;
+}
+
 su3vec su3vec_times_real(su3vec in, hmc_float factor){
 	su3vec tmp;
 	tmp.e0.re = in.e0.re*factor;

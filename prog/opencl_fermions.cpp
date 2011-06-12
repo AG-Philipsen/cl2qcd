@@ -392,6 +392,11 @@ int eoprec_spinorfield_size = sizeof(spinor)*EOPREC_SPINORFIELDSIZE;
 		cout<<"...creating ps_correlator kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
 	}
+	set_spinorfield_cold = clCreateKernel(clprogram,"set_spinorfield_cold",&clerr);
+	if(clerr!=CL_SUCCESS) {
+		cout<<"...creating set_spinorfield_cold kernel failed, aborting."<<endl;
+		exit(HMC_OCLERROR);
+	}
 	M_diag = clCreateKernel(clprogram,"M_diag",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating M_diag kernel failed, aborting."<<endl;
@@ -1071,6 +1076,30 @@ hmc_error Opencl_fermions::ps_correlator_device(const size_t local_work_size, co
     exit(HMC_OCLERROR);
   }
   clerr = clEnqueueNDRangeKernel(queue,ps_correlator,1,0,&gs,&ls,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"enqueue ps_correlator kernel failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clFinish(queue);
+	
+	(*timer).add();
+	
+	return HMC_SUCCESS;
+}
+
+hmc_error Opencl_fermions::set_spinorfield_cold_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer){
+	
+	(*timer).reset();
+	size_t ls = local_work_size;
+	size_t gs = global_work_size;
+	int clerr = CL_SUCCESS;
+	
+	clerr = clSetKernelArg(set_spinorfield_cold,0,sizeof(cl_mem),&clmem_inout); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueNDRangeKernel(queue,set_spinorfield_cold,1,0,&gs,&ls,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"enqueue ps_correlator kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -1763,12 +1792,11 @@ hmc_error Opencl_fermions::cg_device(usetimer * copytimer, usetimer* singletimer
 
 
 	
-hmc_error Opencl_fermions::solver_device(spinorfield* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax){
+hmc_error Opencl_fermions::solver_device(usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax){
 	(*solvertimer).reset();
 	//convert_to_kappa_format_device(clmem_inout, ls, gs, latimer);
 	//bicgstab_device(copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer ,ls, gs, cgmax);
 	//convert_from_kappa_format_device(clmem_inout, clmem_inout, ls, gs, latimer);
-	//get_spinorfield_from_device(out, copytimer);
 	(*solvertimer).add();
 	
 	return HMC_SUCCESS;
