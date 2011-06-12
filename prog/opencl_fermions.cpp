@@ -116,8 +116,10 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
 	cout << "init solver variables..." << endl;
 	int clerr = CL_SUCCESS; 
 
-	int spinorfield_size = sizeof(hmc_complex)*SPINORFIELDSIZE;
-	int eoprec_spinorfield_size = sizeof(hmc_complex)*EOPREC_SPINORFIELDSIZE;
+	//	int spinorfield_size = sizeof(hmc_complex)*SPINORFIELDSIZE;
+	int spinorfield_size = sizeof(spinor)*SPINORFIELDSIZE;
+	//int eoprec_spinorfield_size = sizeof(hmc_complex)*EOPREC_SPINORFIELDSIZE;
+int eoprec_spinorfield_size = sizeof(spinor)*EOPREC_SPINORFIELDSIZE;
 	int complex_size = sizeof(hmc_complex);
 	int float_size = sizeof(hmc_float);
 	int global_buf_size = complex_size*num_groups; 
@@ -385,6 +387,11 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
 		cout<<"...creating M kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
 	}
+	ps_correlator = clCreateKernel(clprogram,"ps_correlator",&clerr);
+	if(clerr!=CL_SUCCESS) {
+		cout<<"...creating ps_correlator kernel failed, aborting."<<endl;
+		exit(HMC_OCLERROR);
+	}
 	M_diag = clCreateKernel(clprogram,"M_diag",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating M_diag kernel failed, aborting."<<endl;
@@ -610,11 +617,12 @@ hmc_error Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::copy_spinorfield_to_device(hmc_spinor_field* host_spinorfield,  usetimer* timer){
+hmc_error Opencl_fermions::copy_spinorfield_to_device(spinorfield* host_spinorfield,  usetimer* timer){
 // 	cout<<"Copy spinorfield to device..."<<endl;
   (*timer).reset();
 
-	int spinorfield_size = sizeof(hmc_complex)*SPINORFIELDSIZE;
+  /** @todo: spinorfield_size should propably be private */
+	int spinorfield_size = sizeof(hmc_spinor)*SPINORFIELDSIZE;
 	int clerr = clEnqueueWriteBuffer(queue,clmem_inout,CL_TRUE,0,spinorfield_size,host_spinorfield,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
@@ -629,7 +637,7 @@ hmc_error Opencl_fermions::copy_eoprec_spinorfield_to_device(hmc_eoprec_spinor_f
 // 	cout<<"Copy spinorfield to device..."<<endl;
   (*timer).reset();
 
-	int spinorfield_size = sizeof(hmc_complex)*EOPREC_SPINORFIELDSIZE;
+	int spinorfield_size = sizeof(spinor)*EOPREC_SPINORFIELDSIZE;
 	int clerr = clEnqueueWriteBuffer(queue,clmem_inout_eoprec,CL_TRUE,0,spinorfield_size,host_spinorfield,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
@@ -644,7 +652,7 @@ hmc_error Opencl_fermions::copy_source_to_device(hmc_spinor_field* host_source, 
 // 	cout<<"Copy source to device..."<<endl;
   (*timer).reset();
 
-	int spinorfield_size = sizeof(hmc_complex)*SPINORFIELDSIZE;
+	int spinorfield_size = sizeof(spinor)*SPINORFIELDSIZE;
 	int clerr = clEnqueueWriteBuffer(queue,clmem_source,CL_TRUE,0,spinorfield_size,host_source,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
@@ -659,7 +667,7 @@ hmc_error Opencl_fermions::copy_eoprec_source_to_device(hmc_eoprec_spinor_field*
 // 	cout<<"Copy source to device..."<<endl;
   (*timer).reset();
 
-	int spinorfield_size = sizeof(hmc_complex)*EOPREC_SPINORFIELDSIZE;
+	int spinorfield_size = sizeof(spinor)*EOPREC_SPINORFIELDSIZE;
 	int clerr = clEnqueueWriteBuffer(queue,clmem_source_even,CL_TRUE,0,spinorfield_size,host_source1,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
@@ -675,11 +683,11 @@ hmc_error Opencl_fermions::copy_eoprec_source_to_device(hmc_eoprec_spinor_field*
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::get_spinorfield_from_device(hmc_spinor_field* host_spinorfield, usetimer* timer){
+hmc_error Opencl_fermions::get_spinorfield_from_device(spinorfield* host_spinorfield, usetimer* timer){
 //   cout<<"Get spinorfield from device..."<<endl;
   (*timer).reset();
 
-	int spinorfield_size = sizeof(hmc_complex)*SPINORFIELDSIZE;
+	int spinorfield_size = sizeof(spinor)*SPINORFIELDSIZE;
   int clerr = clEnqueueReadBuffer(queue,clmem_inout,CL_TRUE,0,spinorfield_size,host_spinorfield,0,NULL,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
@@ -1041,6 +1049,30 @@ hmc_error Opencl_fermions::M_sitediagonal_device(cl_mem in, cl_mem out, const si
   clerr = clEnqueueNDRangeKernel(queue,M_sitediagonal,1,0,&gs,&ls,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"enqueue M_sitediagonal kernel failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clFinish(queue);
+	
+	(*timer).add();
+	
+	return HMC_SUCCESS;
+}
+
+hmc_error Opencl_fermions::ps_correlator_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer){
+	
+	(*timer).reset();
+	size_t ls = local_work_size;
+	size_t gs = global_work_size;
+	int clerr = CL_SUCCESS;
+	
+	clerr = clSetKernelArg(ps_correlator,0,sizeof(cl_mem),&clmem_inout); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueNDRangeKernel(queue,ps_correlator,1,0,&gs,&ls,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"enqueue ps_correlator kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
   clFinish(queue);
@@ -1731,7 +1763,7 @@ hmc_error Opencl_fermions::cg_device(usetimer * copytimer, usetimer* singletimer
 
 
 	
-hmc_error Opencl_fermions::solver_device(hmc_spinor_field* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax){
+hmc_error Opencl_fermions::solver_device(spinorfield* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax){
 	(*solvertimer).reset();
 	//convert_to_kappa_format_device(clmem_inout, ls, gs, latimer);
 	//bicgstab_device(copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer ,ls, gs, cgmax);

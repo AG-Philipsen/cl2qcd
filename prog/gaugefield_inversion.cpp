@@ -128,57 +128,38 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
   int use_eo = get_parameters()->get_use_eo();
 
   cout << "calc simple_propagator on the device..." << endl;
-  hmc_spinor_field phi[SPINORFIELDSIZE];
+  spinorfield phi[SPINORFIELDSIZE];
 	
-  hmc_spinor_field in[SPINORFIELDSIZE];
+  spinorfield in[SPINORFIELDSIZE];
   if(use_eo==FALSE){
-    init_spinorfield_cold(in);
+    //init_spinorfield_cold(in);
     get_devices_fermions()[0].copy_spinorfield_to_device(in, copytimer);
   }
   else{
     //!!CP: this should be fine since only half the field is used but of course it is not nice...
-    init_spinorfield_cold_eoprec(in);
-    get_devices_fermions()[0].copy_eoprec_spinorfield_to_device(in, copytimer);		
+    //init_spinorfield_cold_eoprec(in);
+    //get_devices_fermions()[0].copy_eoprec_spinorfield_to_device(in, copytimer);		
   }
 
-  //pseudo scalar, flavour multiplet
-  hmc_complex correlator_ps[NSPACE];
-  for(int z=0; z<NSPACE; z++) {
-    correlator_ps[z].re = 0;
-    correlator_ps[z].im = 0;
-  }
-	
   for(int k=0; k<NC*NSPIN; k++) {
     if(use_eo == FALSE){
+      cout << "create point source" << endl;
       get_devices_fermions()[0].create_point_source_device(k,0,0,ls, gs, latimer);
-      get_devices_fermions()[0].solver_device(phi, copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
+      cout << "start solver " << endl;
+      //get_devices_fermions()[0].solver_device(phi, copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
     }
     else{
-      get_devices_fermions()[0].create_point_source_eoprec_device(k,0,0,ls, gs, latimer, dslashtimer, Mdiagtimer);
-      get_devices_fermions()[0].solver_eoprec_device(phi, copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
-    }
-    for(int timepos = 0; timepos<NTIME; timepos++) {
-      for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
-	for(int alpha = 0; alpha<NSPIN; alpha++) {
-	  for(int c = 0; c<NC; c++) {
-	    // int j = spinor_element(alpha,c);
-	    int n = spinor_field_element(alpha, c, spacepos, timepos);
-	    int z = get_spacecoord(spacepos, 3);
-	    hmc_complex tmp = phi[n];
-	    hmc_complex ctmp = complexconj(&tmp);
-	    hmc_complex incr = complexmult(&ctmp,&tmp);
-	    correlator_ps[z].re += incr.re;
-	    correlator_ps[z].im += incr.im;
-	  }
-	}
-      }
+      //get_devices_fermions()[0].create_point_source_eoprec_device(k,0,0,ls, gs, latimer, dslashtimer, Mdiagtimer);
+      //get_devices_fermions()[0].solver_eoprec_device(phi, copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
     }
   }
-  
-  printf("pseudo scalar correlator:\n");
-  for(int z=0; z<NSPACE; z++) {
-    printf("%d\t(%e,%e)\n",z,correlator_ps[z].re,correlator_ps[z].im);
-  }
+
+  /** @todo here one has to introduce one more timer*/
+  usetimer noop;
+  get_devices_fermions()[0].ps_correlator_device(ls, gs, &noop);
+
+  //copy spinorfield back to host (this should not be done anymore in the end)
+  get_devices_fermions()[0].get_spinorfield_from_device(phi, copytimer);
   
   return HMC_SUCCESS;
 }

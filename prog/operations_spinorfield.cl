@@ -530,11 +530,12 @@ __kernel void convert_from_kappa_format_eoprec( __global spinorfield_eoprec *in,
 }
 
 //!!CP: these two need to be kernels, if they are needed at all...
-__kernel void create_point_source(__global spinorfield* b, int i, int spacepos, int timepos, __global hmc_float * kappa)
+//the kappa should not be necessary as an argument in both kernels!!__kernel void create_point_source(__global spinorfield* b, int i, int spacepos, int timepos, __global hmc_float * kappa)
+__kernel void create_point_source(__global spinorfield* b, int i, int spacepos, int timepos)
 {
 	int id = get_global_id(0);
 	if(id == 0) {
-		hmc_float tmp = sqrt(2.*(*kappa));
+		hmc_float tmp = sqrt(2.*KAPPA);
 		int color = spinor_color(i);
 		int spin = spinor_spin(i,color);
 		int pos = get_global_pos(spacepos, timepos);
@@ -578,11 +579,11 @@ __kernel void create_point_source(__global spinorfield* b, int i, int spacepos, 
 	return;
 }
 
-__kernel void create_point_source_eoprec(__global spinorfield_eoprec* b, int i, int n, __global hmc_float * kappa)
+__kernel void create_point_source_eoprec(__global spinorfield_eoprec* b, int i, int n)
 {
 	int id = get_global_id(0);
 	if(id == 0) {
-		hmc_float tmp = sqrt(2.*(*kappa));
+		hmc_float tmp = sqrt(2.*KAPPA);
 		int color = spinor_color(i);
 		int spin = spinor_spin(i,color);
 		int pos = n;
@@ -624,6 +625,35 @@ __kernel void create_point_source_eoprec(__global spinorfield_eoprec* b, int i, 
 				}}
 	}
 	return;
+}
+
+//this is the pseudoscalar pion correlator in z-direction
+__kernel void ps_correlator(__global spinorfield* phi){
+   int local_size = get_local_size(0);
+   int global_size = get_global_size(0);
+   int id = get_global_id(0);
+   int loc_idx = get_local_id(0);
+   int num_groups = get_num_groups(0);
+   int group_id = get_group_id (0);
+
+   if(id==0){
+	hmc_float correlator_ps[NSPACE];
+	for(int i = 0; i<NSPACE; i++){
+		correlator_ps[i]=0.;
+	}
+	for(int timepos = 0; timepos<NTIME; timepos++) {
+   		for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
+		//correlator_ps[z] += |phi(n,t)|^2
+		spinor tmp = phi[get_global_pos(spacepos, timepos)];
+		int z = get_spacecoord(spacepos, 3);
+		correlator_ps[z] += spinor_squarenorm(tmp);
+   }}
+	printf("ps correlator:\n");
+	for(int i = 0; i<NSPACE; i++){
+		printf("%i\t(%f)\n", i, correlator_ps[i]);
+	}
+  }
+
 }
 
 #endif //_FERMIONS_

@@ -5,6 +5,8 @@
 #define _MYOPENCLFERMIONSH_
 
 #include "opencl.h"
+//CP: this includes the struct-definitions for the spinors...
+#include "types_fermions.h"
 #include "host_operations_spinorfield.h"
 
 /**
@@ -53,11 +55,12 @@ class Opencl_fermions : public Opencl {
 
 	////////////////////////////////////////////////7777
 	// copying
+	// now with the new spinor types
 	//     non-eoprec
 	hmc_error init_fermion_variables(inputparameters* parameters, usetimer* timer);
-	hmc_error copy_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
+	hmc_error copy_spinorfield_to_device(spinorfield* host_spinorfield, usetimer* timer);
 	hmc_error copy_source_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
-	hmc_error get_spinorfield_from_device(hmc_spinor_field* host_spinorfield,  usetimer* timer);
+	hmc_error get_spinorfield_from_device(spinorfield* host_spinorfield,  usetimer* timer);
 	hmc_error copy_spinor_device(cl_mem in, cl_mem out, usetimer* timer);
 
  	//     eoprec
@@ -98,13 +101,13 @@ class Opencl_fermions : public Opencl {
 
 	hmc_error create_point_source_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs, usetimer * latimer);
 	hmc_error create_point_source_eoprec_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer);
-	hmc_error solver_device(hmc_spinor_field* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error solver_device(spinorfield* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
 	hmc_error Aee_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer, usetimer * singletimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * latimer);
 	hmc_error M_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error M_sitediagonal_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error dslash_eoprec_device(cl_mem in, cl_mem out, int evenodd, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error solver_eoprec_device(hmc_spinor_field* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
-
+	hmc_error ps_correlator_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 
  private:
 	//spinorfield and solver variables
@@ -115,6 +118,7 @@ class Opencl_fermions : public Opencl {
 	cl_mem clmem_chem_pot_im;
 
 	cl_kernel M;
+	cl_kernel ps_correlator;
 	cl_kernel M_diag;
 	cl_kernel dslash;
 	cl_kernel saxpy;

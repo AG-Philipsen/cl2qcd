@@ -7,7 +7,7 @@
 
 #include "types.h"
 
-#ifdef _INKERNEL_
+//#ifdef _INKERNEL_
 //CP: new defs for spinors
 typedef struct {
 	hmc_complex e0;
@@ -30,7 +30,7 @@ typedef struct {
 
 typedef spinor spinorfield;
 typedef spinor spinorfield_eoprec;
-#endif /* _INKERNEL_ */
+//#endif /* _INKERNEL_ */
 
 #endif /* _TYPES_FERMIONSH_ */
 
