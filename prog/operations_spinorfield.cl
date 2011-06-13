@@ -2,6 +2,11 @@
  * Device code for operations on the spinor field
  */
 
+
+/** @todo CP: this must be taken out of this code again! */
+#define EOPREC_SPINORFIELDSIZE2 EOPREC_SPINORFIELDSIZE
+
+
 //opencl_operations_spinorfield
 #ifdef _FERMIONS_
 
@@ -11,7 +16,6 @@ void convert_to_eoprec(spinorfield_eoprec* even, spinorfield_eoprec* odd, spinor
 	int spacepos, timepos;
 	for(int n=0; n<VOL4D/2; n++) {
 		     get_even_site(n, &spacepos, &timepos);
-		     /**  @todo CP: does this work with structs?? */
 		     even[n] = in[get_global_pos(spacepos,timepos)];
 		     get_odd_site(n, &spacepos, &timepos);
 		     odd[n] = in[get_global_pos(spacepos,timepos)];
@@ -19,8 +23,9 @@ void convert_to_eoprec(spinorfield_eoprec* even, spinorfield_eoprec* odd, spinor
 	return;
 }
 
-void convert_from_eoprec(spinorfield_eoprec* even, spinorfield_eoprec* odd, spinorfield* out)
-{
+__kernel void convert_from_eoprec(__global spinorfield_eoprec* even, __global spinorfield_eoprec* odd, __global spinorfield* out){
+  int id = get_global_id(0);
+  if(id ==0){
 	int spacepos, timepos;
 	for(int n=0; n<VOL4D/2; n++) {
 		get_even_site(n, &spacepos, &timepos);
@@ -28,6 +33,7 @@ void convert_from_eoprec(spinorfield_eoprec* even, spinorfield_eoprec* odd, spin
 		get_odd_site(n, &spacepos, &timepos);
 		out[get_global_pos(spacepos,timepos)] = odd[n];
 	}
+   }
 	return;
 }
 
@@ -85,7 +91,7 @@ __kernel void saxpy_eoprec(__global spinorfield_eoprec* x, __global spinorfield_
 	int group_id = get_group_id(0);
 
 	hmc_complex alpha_tmp = (*alpha);
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE2; id_tmp += global_size) {
 		spinor x_tmp = x[id_tmp];
 		spinor y_tmp = y[id_tmp];
 		x_tmp = spinor_times_complex(x_tmp, alpha_tmp);
@@ -127,7 +133,7 @@ __kernel void saxsbypz_eoprec(__global spinorfield_eoprec* x, __global spinorfie
 
 	hmc_complex alpha_tmp = (*alpha);
 	hmc_complex beta_tmp = (*beta);
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE2; id_tmp += global_size) {
 		spinor x_tmp = x[id_tmp];
 		spinor y_tmp = y[id_tmp];
 		spinor z_tmp = z[id_tmp];
@@ -233,7 +239,7 @@ __kernel void scalar_product_eoprec( __global spinorfield_eoprec *x, __global sp
 	sum.re = 0.;
 	sum.im = 0.;
 
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE2; id_tmp += global_size) {
 		spinor x_tmp = x[id_tmp];
 		spinor y_tmp = y[id_tmp];
 		hmc_complex tmp = spinor_scalarproduct(x_tmp, y_tmp);
@@ -378,7 +384,7 @@ __kernel void global_squarenorm_eoprec( __global spinorfield_eoprec *x, __global
 	hmc_float sum;
 	sum = 0.;
 
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE2; id_tmp += global_size) {
 		spinor x_tmp = x[id_tmp];
 		hmc_float tmp = spinor_squarenorm(x_tmp);
 		sum += tmp;
@@ -455,13 +461,13 @@ __kernel void set_zero_spinorfield_eoprec( __global spinorfield_eoprec *x )
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE2; id_tmp += global_size) {
 		x[id_tmp] = set_spinor_zero();
 	}
 	return;
 }
 
-__kernel void convert_to_kappa_format( __global spinorfield *in, __global hmc_float * kappa )
+__kernel void convert_to_kappa_format( __global spinorfield *in)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -470,7 +476,7 @@ __kernel void convert_to_kappa_format( __global spinorfield *in, __global hmc_fl
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	hmc_float tmp = sqrt((*kappa)*2.);
+	hmc_float tmp = sqrt(KAPPA*2.);
 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 		in[id_tmp] = real_multiply_spinor(in[id_tmp], tmp);
@@ -478,7 +484,7 @@ __kernel void convert_to_kappa_format( __global spinorfield *in, __global hmc_fl
 	return;
 }
 
-__kernel void convert_from_kappa_format( __global spinorfield *in, __global spinorfield* out, __global hmc_float * kappa )
+__kernel void convert_from_kappa_format( __global spinorfield *in, __global spinorfield* out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -487,7 +493,7 @@ __kernel void convert_from_kappa_format( __global spinorfield *in, __global spin
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	hmc_float tmp = 1./sqrt((*kappa)*2.);
+	hmc_float tmp = 1./sqrt(KAPPA*2.);
 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 		in[id_tmp] = real_multiply_spinor(in[id_tmp], tmp);
@@ -495,7 +501,7 @@ __kernel void convert_from_kappa_format( __global spinorfield *in, __global spin
 	return;
 }
 
-__kernel void convert_to_kappa_format_eoprec( __global spinorfield_eoprec *in, __global hmc_float * kappa )
+__kernel void convert_to_kappa_format_eoprec( __global spinorfield_eoprec *in)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -504,15 +510,15 @@ __kernel void convert_to_kappa_format_eoprec( __global spinorfield_eoprec *in, _
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	hmc_float tmp = sqrt((*kappa)*2.);
+	hmc_float tmp = sqrt(KAPPA*2.);
 
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE2; id_tmp += global_size) {
 		in[id_tmp] = real_multiply_spinor(in[id_tmp], tmp);
 	}
 	return;
 }
 
-__kernel void convert_from_kappa_format_eoprec( __global spinorfield_eoprec *in, __global spinorfield_eoprec* out, __global hmc_float * kappa )
+__kernel void convert_from_kappa_format_eoprec( __global spinorfield_eoprec *in, __global spinorfield_eoprec* out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -521,9 +527,9 @@ __kernel void convert_from_kappa_format_eoprec( __global spinorfield_eoprec *in,
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	hmc_float tmp = 1./sqrt((*kappa)*2.);
+	hmc_float tmp = 1./sqrt(KAPPA*2.);
 
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE2; id_tmp += global_size) {
 		in[id_tmp] = real_multiply_spinor(in[id_tmp], tmp);
 	}
 	return;
@@ -658,12 +664,26 @@ __kernel void ps_correlator(__global spinorfield* phi){
 
 
 __kernel void set_spinorfield_cold(__global spinorfield* in){
+  int id = get_global_id(0);
+  if(id == 0){
 	 hmc_float norm = 1./sqrt(12. * VOLSPACE * NTIME);
 	 for(int t = 0; t<NTIME; t++){
 	 	 for(int n = 0; n<VOLSPACE; n++){
 		 	 in[get_global_pos(n,t)] = set_spinor_cold();
 			 in[get_global_pos(n,t)] = real_multiply_spinor(in[get_global_pos(n,t)], norm);
 	 }}
+  }
+}
 
+__kernel void set_eoprec_spinorfield_cold(__global spinorfield* in){
+  int id = get_global_id(0);
+  if (id ==0){
+     	 //NOTE: the normalization is the same as in the above case, putting |phi|^2 of the WHOLE field to 1!!
+  	 hmc_float norm = 1./sqrt(12. * VOLSPACE * NTIME);
+	 for(int n = 0; n<EOPREC_SPINORFIELDSIZE; n++){
+	 	 in[n] = set_spinor_cold();
+		 in[n] = real_multiply_spinor(in[n], norm);
+	 }
+  }
 }
 #endif //_FERMIONS_

@@ -59,14 +59,14 @@ class Opencl_fermions : public Opencl {
 	//     non-eoprec
 	hmc_error init_fermion_variables(inputparameters* parameters, usetimer* timer);
 	hmc_error copy_spinorfield_to_device(spinorfield* host_spinorfield, usetimer* timer);
-	hmc_error copy_source_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
+	hmc_error copy_source_to_device(spinorfield* host_spinorfield, usetimer* timer);
 	hmc_error get_spinorfield_from_device(spinorfield* host_spinorfield,  usetimer* timer);
 	hmc_error copy_spinor_device(cl_mem in, cl_mem out, usetimer* timer);
 
  	//     eoprec
-	hmc_error copy_eoprec_spinorfield_to_device(hmc_spinor_field* host_spinorfield, usetimer* timer);
-	hmc_error copy_eoprec_source_to_device(hmc_eoprec_spinor_field* host_spinorfield1, hmc_eoprec_spinor_field* host_spinorfield2, usetimer* timer);
-	hmc_error get_eoprec_spinorfield_from_device(hmc_spinor_field* host_spinorfield,  usetimer* timer);
+	hmc_error copy_eoprec_spinorfield_to_device(spinorfield_eoprec* host_spinorfield, usetimer* timer);
+	hmc_error copy_eoprec_source_to_device(spinorfield_eoprec* host_spinorfield1, spinorfield_eoprec* host_spinorfield2, usetimer* timer);
+	hmc_error get_eoprec_spinorfield_from_device(spinorfield_eoprec* host_spinorfield,  usetimer* timer);
 	hmc_error copy_eoprec_spinor_device(cl_mem in, cl_mem out, usetimer* timer);
 
 	/////////////////////////////////////////
@@ -75,6 +75,9 @@ class Opencl_fermions : public Opencl {
 	hmc_error convert_from_kappa_format_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error convert_to_kappa_format_eoprec_device(cl_mem inout, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+
+	hmc_error convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
+
 	hmc_error copy_float_from_device(cl_mem in, hmc_float * out, usetimer* timer);
 	hmc_error copy_complex_from_device(cl_mem in, hmc_complex * out, usetimer* timer);
 	hmc_error copy_complex_device(cl_mem in, cl_mem out, usetimer* timer);
@@ -106,9 +109,10 @@ class Opencl_fermions : public Opencl {
 	hmc_error M_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error M_sitediagonal_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error dslash_eoprec_device(cl_mem in, cl_mem out, int evenodd, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error solver_eoprec_device(hmc_spinor_field* out, usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error solver_eoprec_device(usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
 	hmc_error ps_correlator_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error set_spinorfield_cold_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error set_eoprec_spinorfield_cold_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 
  private:
 	//spinorfield and solver variables
@@ -121,6 +125,8 @@ class Opencl_fermions : public Opencl {
 	cl_kernel M;
 	cl_kernel ps_correlator;
 	cl_kernel set_spinorfield_cold;
+	cl_kernel set_eoprec_spinorfield_cold;
+	cl_kernel convert_from_eoprec;
 	cl_kernel M_diag;
 	cl_kernel dslash;
 	cl_kernel saxpy;

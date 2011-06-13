@@ -346,15 +346,40 @@ hmc_float Gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 	hmc_float plaq = 0;
 	*tplaq = 0;
 	*splaq = 0;
+	
+	//CP: new method that is not working right now since elementary matrix-function using structs are missing on the host
+	/*
+	Matrixsu3 prod;
+
 	for(int t = 0; t < NTIME; t++) {
+	  for(int n = 0; n < VOLSPACE; n++) {
+	    for(int mu = 0; mu < NDIM; mu++) {
+		for(int nu = 0; nu < mu; nu++) {
+		  prod = local_plaquette(get_sgf(), pos, t, mu, nu );
+		  hmc_float tmpfloat = trace_matrixsu3(prod).re;
+		  plaq += tmpfloat;
+		  if(mu == 0 || nu == 0) {
+		      	tplaq += tmpfloat;
+		  } else {
+			splaq += tmpfloat;
+		  }
+		}
+	      }
+	  }
+	}
+*/
+
+
+
+	//CP: old method, this should be replaced!!
+	
+for(int t = 0; t < NTIME; t++) {
 		for(int n = 0; n < VOLSPACE; n++) {
 			for(int mu = 0; mu < NDIM; mu++) {
 				for(int nu = 0; nu < mu; nu++) {
 					hmc_su3matrix prod;
-					printf("1\n");
 					local_plaquette(get_gf(), &prod, n, t, mu, nu );
 					hmc_float tmpfloat = trace_su3matrix(&prod).re;
-					printf("2\n");
 					plaq += tmpfloat;
 					if(mu == 0 || nu == 0) {
 						*tplaq += tmpfloat;
@@ -365,6 +390,7 @@ hmc_float Gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 			}
 		}
 	}
+	
 	*tplaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1));
 	*splaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
 	return plaq * 2.0 / static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) * NC);

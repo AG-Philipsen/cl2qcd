@@ -275,6 +275,11 @@ __kernel void dslash(){
 
 }
 
+__kernel void dslash_eoprec(){
+
+
+}
+
 __kernel void M_sitediagonal(){
 
 }

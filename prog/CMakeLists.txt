@@ -227,9 +227,9 @@ add_executable( inverter
 	host_operations_gaugefield.cpp
 	host_operations_su3matrix.cpp
 	host_operations_matrix.cpp	
-	host_operations_spinor.cpp
-	host_operations_spinorfield.cpp
-	host_operations_fermionmatrix.cpp
+	#host_operations_spinor.cpp
+	#host_operations_spinorfield.cpp
+	#host_operations_fermionmatrix.cpp
 	gaugefield.cpp
 	gaugefield_inversion.cpp
 	inputparameters.cpp
