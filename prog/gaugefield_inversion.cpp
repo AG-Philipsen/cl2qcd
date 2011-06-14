@@ -43,7 +43,6 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
 
   //this uses a BiCGStab inverter on device
 
-
   //global and local work sizes;
   //LZ: should eventually be moved inside opencl_fermions class
 #ifdef _USE_GPU_
@@ -78,8 +77,7 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
   for(int k=0; k<NC*NSPIN; k++) {
     if(use_eo == FALSE){
       get_devices_fermions()[0].create_point_source_device(k,0,0,ls, gs, latimer);
-      //cout << "start solver " << endl;
-            get_devices_fermions()[0].solver_device(copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
+      get_devices_fermions()[0].solver_device(copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
       //CP: add solution to former ones...
       get_devices_fermions()[0].add_solution_to_correlator_field_device(ls, gs, latimer);
 
