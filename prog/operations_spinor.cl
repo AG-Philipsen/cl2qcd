@@ -117,6 +117,8 @@ spinor spinor_acc_acc(spinor in1, spinor in2, spinor in3)
 // 	return;
 // }
 
+//CP: I think this is not needed anymore. A more flexibel function will be introduced that can be used for the inverse sitediagonal matrix as well
+/*
 //spinout =  (1 + 2*i*gamma_5*kappa*mu)spin_in
 spinor M_diag_local(spinor y, hmc_float mubar)
 {
@@ -138,7 +140,7 @@ spinor M_diag_local(spinor y, hmc_float mubar)
 	#endif
 	return out_tmp;
 }
-
+*/
 
 //CP: this is all deprecated!!!
 /*
