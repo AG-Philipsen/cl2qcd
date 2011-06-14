@@ -113,6 +113,8 @@ class Opencl_fermions : public Opencl {
 	hmc_error ps_correlator_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error set_spinorfield_cold_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error set_eoprec_spinorfield_cold_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error set_correlator_field_zero_device(const size_t ls, const size_t gs, usetimer * latimer);
+	hmc_error add_solution_to_correlator_field_device(const size_t ls, const size_t gs, usetimer * latimer);
 
  private:
 	//spinorfield and solver variables
@@ -195,5 +197,8 @@ class Opencl_fermions : public Opencl {
 	cl_mem clmem_global_squarenorm_buf_glob;
 	cl_mem clmem_resid;
 	cl_mem clmem_trueresid;
+
+	//CP: variables for correlator, these should propably not be here...
+	cl_mem clmem_corr;
 };
 #endif // _MYOPENCLFERMIONSH_

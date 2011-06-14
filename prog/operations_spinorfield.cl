@@ -115,7 +115,7 @@ __kernel void saxsbypz(__global spinorfield* x, __global spinorfield* y, __globa
 		spinor y_tmp = y[id_tmp];
 		spinor z_tmp = z[id_tmp];
 		x_tmp = spinor_times_complex(x_tmp, alpha_tmp);
-		y_tmp = spinor_times_complex(x_tmp, beta_tmp);
+		y_tmp = spinor_times_complex(y_tmp, beta_tmp);
 
 		out[id_tmp] = spinor_acc_acc(y_tmp, x_tmp, z_tmp);
 	}
@@ -138,7 +138,7 @@ __kernel void saxsbypz_eoprec(__global spinorfield_eoprec* x, __global spinorfie
 		spinor y_tmp = y[id_tmp];
 		spinor z_tmp = z[id_tmp];
 		x_tmp = spinor_times_complex(x_tmp, alpha_tmp);
-		y_tmp = spinor_times_complex(x_tmp, beta_tmp);
+		y_tmp = spinor_times_complex(y_tmp, beta_tmp);
 
 		out[id_tmp] = spinor_acc_acc(y_tmp, x_tmp, z_tmp);
 	}
@@ -545,42 +545,58 @@ __kernel void create_point_source(__global spinorfield* b, int i, int spacepos, 
 		int color = spinor_color(i);
 		int spin = spinor_spin(i,color);
 		int pos = get_global_pos(spacepos, timepos);
-
+		b[pos] = set_spinor_zero();
 		switch (color){
 			
 			case 0:
 				switch (spin){
 					case 0:
 						(b[pos].e0).e0.re = tmp;
+						break;
 					case 1:
 						(b[pos].e1).e0.re = tmp;
+						break;
 					case 2:
 						(b[pos].e2).e0.re = tmp;
+						break;
 					case 3:
 						(b[pos].e3).e0.re = tmp;
+						break;
 				}
+				break;
 			case 1:
 				switch (spin){
 					case 0:
 						(b[pos].e0).e1.re = tmp;
+						break;
 					case 1:
 						(b[pos].e1).e1.re = tmp;
+						break;
 					case 2:
 						(b[pos].e2).e1.re = tmp;
+						break;
 					case 3:
 						(b[pos].e3).e1.re = tmp;
+						break;
 				}
+				break;
 			case 2:
 				switch (spin){
 					case 0:
 						(b[pos].e0).e2.re = tmp;
+						break;
 					case 1:
 						(b[pos].e1).e2.re = tmp;
+						break;
 					case 2:
 						(b[pos].e2).e2.re = tmp;
+						break;
 					case 3:
 						(b[pos].e3).e2.re = tmp;
-				}}
+						break;
+				}
+				break;
+}
 	}
 	return;
 }
@@ -656,7 +672,7 @@ __kernel void ps_correlator(__global spinorfield* phi){
    }}
 	printf("ps correlator:\n");
 	for(int i = 0; i<NSPACE; i++){
-		printf("%i\t(%f)\n", i, correlator_ps[i]);
+		printf("%i\t(%.12e)\n", i, correlator_ps[i]);
 	}
   }
 
