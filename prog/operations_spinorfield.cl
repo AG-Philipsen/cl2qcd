@@ -678,7 +678,7 @@ __kernel void ps_correlator(__global spinorfield* phi){
 
 }
 
-
+/** @todo: here one can insert multi-threading, but this is not so important */
 __kernel void set_spinorfield_cold(__global spinorfield* in){
   int id = get_global_id(0);
   if(id == 0){

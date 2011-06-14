@@ -16,21 +16,29 @@
 
 
 __kernel void M(__global spinorfield * in, __global ocl_s_gaugefield * field, __global spinorfield * out){
-int id = get_global_id(0);
-if (id ==0){
-  int n,t,nn, dir;
-  spinor out_tmp;
-  spinor plus;
-  Matrixsu3 U;
+	int local_size = get_local_size(0);
+	int global_size = get_global_size(0);
+	int id = get_global_id(0);
+	int loc_idx = get_local_id(0);
+	int num_groups = get_num_groups(0);
+	int group_id = get_group_id (0);
+	int n,t,nn, dir;
+	spinor out_tmp;
+	spinor plus;
+	Matrixsu3 U;
 	su3vec psi, phi;
-
+	
 	hmc_complex twistfactor = {1., MUBAR};
 	hmc_complex twistfactor_minus = {1., MMUBAR};
 	hmc_float kappa_minus = MKAPPA;
 
 	/** @todo implement BC! Beware, the kappa at -mu then has to be complex conjugated (see tmlqcd)*/
-	for (t=0;t<NTIME;t++){
-		for (n = 0; n<VOLSPACE; n++){
+	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {	
+	
+		/** @todo this must be done more efficient */
+		if(id_tmp%2 == 0) get_even_site(id_tmp/2, &n, &t);
+		else get_odd_site(id_tmp/2, &n, &t);
+		
 		out_tmp = set_spinor_zero();
 		//get input spinor
 		plus = get_spinor_from_field(in, n, t);
@@ -106,7 +114,7 @@ if (id ==0){
 		out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 		out_tmp.e3 = su3vec_acc(out_tmp.e3, psi);		
 
-		//CP: all comments correspond to the mu = 0 comments
+		//CP: all actions correspond to the mu = 0 ones
 		///////////////////////////////////
 		// mu = 1
 		///////////////////////////////////
@@ -286,8 +294,6 @@ if (id ==0){
 	
 		put_spinor_to_field(out_tmp, out, n, t);
 	}
-  }
-}
 }
 
 //CP: perhaps these are still needed
