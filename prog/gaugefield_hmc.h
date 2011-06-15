@@ -1,19 +1,17 @@
 /** @file
- * Provides class Gaugefield_inversion, inherited from Gaugefield, adds solver capabilities
+ * Provides class Gaugefield_hmc, inherited from Gaugefield_inversion, adds HMC capabilities
  *
  * @todo global- and local work sizes should be moved inside Opencl_fermions (LZ)
  */
-#ifndef _GAUGEFIELDINVERSIONH_
-#define _GAUGEFIELDINVERSIONH_
+#ifndef _GAUGEFIELDHMCH_
+#define _GAUGEFIELDHMCH_
 
 #include "gaugefield.h"
-//CP: these dont seem to be needed anymore
-//#include "host_operations_spinor.h"
-//#include "host_operations_spinorfield.h"
-//#include "host_operations_fermionmatrix.h"
+#include "gaugefield_inversion.h"
 #include "opencl_fermions.h"
+#include "opencl_hmc.h"
 
-class Gaugefield_inversion : public Gaugefield {
+class Gaugefield_hmc : public Gaugefield_inversion {
   public:
 
   /**
@@ -33,7 +31,7 @@ class Gaugefield_inversion : public Gaugefield {
    * Perform inversion on device and print pseudo-scalar correlator to std.
    * Use point sources.
    */
-  hmc_error perform_inversion_pointsource_ps_corr_devices(usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer);
+  //hmc_error perform_inversion_pointsource_ps_corr_devices(usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer);
 
   /**
    * Free device, called by finalize
@@ -45,7 +43,7 @@ class Gaugefield_inversion : public Gaugefield {
    * @return devices of type opencl_k
    * @todo LZ: CHECK IF THIS MAKES SENSE AT ALL!!!!
    */
-  Opencl_fermions * get_devices_fermions ();
+  Opencl_hmc * get_devices_hmc ();
 
  private:
 
@@ -53,4 +51,4 @@ class Gaugefield_inversion : public Gaugefield {
 
 
 
-#endif //_GAUGEFIELDINVERSIONH_
+#endif //_GAUGEFIELDHMCH_

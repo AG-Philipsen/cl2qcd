@@ -7,7 +7,8 @@
 #include "opencl.h"
 //CP: this includes the struct-definitions for the spinors...
 #include "types_fermions.h"
-#include "host_operations_spinorfield.h"
+/** @todo is this needed?!?!? */
+//#include "host_operations_spinorfield.h"
 
 /**
  * An OpenCL device for fermionic calculations.
@@ -198,7 +199,7 @@ class Opencl_fermions : public Opencl {
 	cl_mem clmem_resid;
 	cl_mem clmem_trueresid;
 
-	//CP: variables for correlator, these should propably not be here...
+	//CP: variables for correlator, these should propably not be here if no observables should be calculated...
 	cl_mem clmem_corr;
 };
 #endif // _MYOPENCLFERMIONSH_

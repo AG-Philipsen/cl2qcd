@@ -2,8 +2,8 @@
  *
  * Everything required by inverter's main()
  */
-#ifndef _INVERTERH_
-#define _INVERTERH_
+#ifndef _HMCH_
+#define _HMCH_
 //should only be included in main prog
 
 #include <cstdlib>
@@ -16,15 +16,12 @@
 #include "globaldefs.h"
 #include "hmcerrs.h"
 #include "types.h"
-//#include "host_operations_complex.h"
-//#include "host_geometry.h"
 #include "inputparameters.h"
 #include "host_readgauge.h"
-//#include "host_random.h"
-//#include "host_update_heatbath.h"
 #include "host_use_timer.h"
 #include "gaugefield.h"
 #include "gaugefield_inversion.h"
+#include "gaugefield_hmc.h"
 
 #ifdef _OPENMP
 # include <omp.h>
@@ -63,7 +60,7 @@ hmc_complex pol;
 
 void print_hello(char* name)
 {
-	std::cout << "This is the fermion solver, " << name << endl;
+	std::cout << "This is the HMC, " << name << endl;
 	return;
 }
 
@@ -117,4 +114,4 @@ void print_info(inputparameters* params, ostream* os)
 	return;
 }
 
-#endif /* _INVERTERH_ */
+#endif /* _HMCH_ */

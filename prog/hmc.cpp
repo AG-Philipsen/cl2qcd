@@ -1,4 +1,4 @@
-#include "inverter.h"
+#include "hmc.h"
 
 int main(int argc, char* argv[])
 {
@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 
 	sourcefileparameters parameters_source;
 
-	Gaugefield_inversion gaugefield;
+	Gaugefield_hmc gaugefield;
 	cl_device_type devicetypes[1];
 
 #ifdef _USEGPU_
@@ -32,18 +32,19 @@ int main(int argc, char* argv[])
 #endif
 	cerr << "init gaugefield" << endl;
 	gaugefield.init(1, devicetypes, &parameters, &inittime);
+	/** @todo this needs to be implemented using structs.. */
 	//cerr << "print initial gaugeobservables..." << endl;
 	//	gaugefield.print_gaugeobservables(&polytime, &plaqtime);
-	cerr << "copy gaugefield" << endl;
+	cerr << "copy gaugefield to device.." << endl;
 	gaugefield.copy_gaugefield_to_devices(&copytimer);
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// inverter
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	cout << "perform inversion on device.." << endl;
-	gaugefield.perform_inversion_pointsource_ps_corr_devices(&copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
+	cout << "perform HMC-algorithm on device.." << endl;
+	//gaugefield.perform_inversion_pointsource_ps_corr_devices(&copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
 
-	cout << "inversion done" << endl;
+	cout << "HMC done" << endl;
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
