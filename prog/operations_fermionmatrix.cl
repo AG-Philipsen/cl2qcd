@@ -25,6 +25,18 @@ spinor inline M_diag_local(spinor in, hmc_complex factor1, hmc_complex factor2){
 	return tmp;	
 }
 
+/** @todo this can be optimized...
+//local gamma5:
+//	(gamma_5)psi = (1)psi.0,1 (-1)psi.2,3
+spinor inline gamma5_local(spinor in){
+	spinor tmp;
+	tmp.e0 = in.e0;
+	tmp.e1 = in.e1;
+	tmp.e2 = su3vec_times_real(in.e2, -1.);
+	tmp.e3 = su3vec_times_real(in.e3, -1.);
+	return tmp;	
+}
+
 //"local" dslash working on a particular link (n,t)
 //NOTE: each component is multiplied by +KAPPA, so the resulting spinor has to be mutliplied by -1 to obtain the correct dslash!!!
 spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield * field, int n, int t){
@@ -558,7 +570,7 @@ __kernel void M(__global spinorfield * in, __global ocl_s_gaugefield * field, __
 }
 
 //CP: perhaps these are still needed
-__kernel void M_diag(__global spinorfield_eoprec * in, __global spinorfield_eoprec * out){
+__kernel void M_diag(__global spinorfield * in, __global spinorfield * out){
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -646,5 +658,26 @@ __kernel void M_inverse_sitediagonal(__global spinorfield_eoprec * in, __global 
 		hmc_float denom = 1./(1. + MUBAR*MUBAR);
 		out_tmp = real_multiply_spinor(out_tmp,denom);
 		put_spinor_to_eoprec_field(out_tmp, out, id_tmp);
+	}
+}
+
+__kernel void gamma5(__global spinorfield *in, __global spinorfield *out){
+	int local_size = get_local_size(0);
+	int global_size = get_global_size(0);
+	int id = get_global_id(0);
+	int loc_idx = get_local_id(0);
+	int num_groups = get_num_groups(0);
+	int group_id = get_group_id (0);
+	spinor out_tmp;
+	int n,t;
+
+	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {	
+		/** @todo this must be done more efficient */
+		if(id_tmp%2 == 0) get_even_site(id_tmp/2, &n, &t);
+		else get_odd_site(id_tmp/2, &n, &t);
+
+		out_tmp = get_spinor_from_field(in,n, t); 
+		out_tmp = local_gamma5(in);
+		put_spinor_to_field(out_tmp, out, n, t);
 	}
 }
