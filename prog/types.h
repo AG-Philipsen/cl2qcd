@@ -226,13 +226,13 @@ typedef hmc_complex hmc_eoprec_spinor_field;
 
 #ifdef _USEDOUBLEPREC_
 hmc_float CONST projectioneps = 10.e-12;
-int CONST iter_refresh = 50;
+int CONST iter_refresh = 10;
 hmc_float CONST epssquare=1e-14;
 //CP: this is not needed anymore
 //int CONST use_eo = 0;
 #else
 hmc_float CONST projectioneps = 10.e-6;
-int CONST iter_refresh = 50;
+int CONST iter_refresh = 10;
 hmc_float CONST epssquare=1e-12;
 //CP: this is not needed anymore
 //int CONST use_eo = 0;

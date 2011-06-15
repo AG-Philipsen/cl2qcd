@@ -27,7 +27,7 @@ __kernel void convert_from_eoprec(__global spinorfield_eoprec* even, __global sp
   int id = get_global_id(0);
   if(id ==0){
 	int spacepos, timepos;
-	for(int n=0; n<VOL4D/2; n++) {
+	for(int n=0; n<EOPREC_SPINORFIELDSIZE2; n++) {
 		get_even_site(n, &spacepos, &timepos);
 		out[get_global_pos(spacepos,timepos)] = even[n];
 		get_odd_site(n, &spacepos, &timepos);
@@ -616,35 +616,51 @@ __kernel void create_point_source_eoprec(__global spinorfield_eoprec* b, int i, 
 				switch (spin){
 					case 0:
 						(b[pos].e0).e0.re = tmp;
+						break;
 					case 1:
 						(b[pos].e1).e0.re = tmp;
+						break;
 					case 2:
 						(b[pos].e2).e0.re = tmp;
+						break;
 					case 3:
 						(b[pos].e3).e0.re = tmp;
+						break;
 				}
+				break;
 			case 1:
 				switch (spin){
 					case 0:
 						(b[pos].e0).e1.re = tmp;
+						break;
 					case 1:
 						(b[pos].e1).e1.re = tmp;
+						break;
 					case 2:
 						(b[pos].e2).e1.re = tmp;
+						break;
 					case 3:
 						(b[pos].e3).e1.re = tmp;
+						break;
 				}
+				break;
 			case 2:
 				switch (spin){
 					case 0:
 						(b[pos].e0).e2.re = tmp;
+						break;
 					case 1:
 						(b[pos].e1).e2.re = tmp;
+						break;
 					case 2:
 						(b[pos].e2).e2.re = tmp;
+						break;
 					case 3:
 						(b[pos].e3).e2.re = tmp;
-				}}
+						break;
+				}
+				break;
+}
 	}
 	return;
 }

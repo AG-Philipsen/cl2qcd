@@ -849,14 +849,12 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_wo
 
   (*timer).add();
 
-  return 0;
+  clFinish(queue);
 
+  return HMC_SUCCESS;
 
-
-
-
-
-
+  //deprecated version with 2 kernels
+  /*
 
   clerr = clSetKernelArg(M_diag,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
@@ -958,6 +956,7 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_wo
 	
 	(*timer).add();
 	return HMC_SUCCESS;
+*/
 }
 
 
@@ -968,7 +967,7 @@ hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, const size_t local_
 	int odd = ODD;
 	const size_t ls = local_work_size;
 	const size_t gs = global_work_size;
-	
+     
 	dslash_eoprec_device(in, clmem_tmp_eoprec_1, odd, ls, gs, dslashtimer);
 	M_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, ls, gs, Mdiagtimer);
 	dslash_eoprec_device(clmem_tmp_eoprec_2, out, even, ls, gs, dslashtimer);
@@ -1032,38 +1031,9 @@ hmc_error Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, int eveno
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(dslash_eoprec,3,sizeof(cl_mem),&clmem_theta_fermion);
+  clerr = clSetKernelArg(dslash_eoprec,3,sizeof(int),&eo);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(dslash_eoprec,4,sizeof(cl_mem),&clmem_chem_pot_re);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 4 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(dslash_eoprec,5,sizeof(cl_mem),&clmem_chem_pot_im);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 5 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-
-
-
-  /* what's this?
-  clerr = clSetKernelArg(dslash_eoprec,6,sizeof(cl_mem),&clmem_kappa);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 6 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(dslash_eoprec,7,sizeof(int),&eo);
-  */
-
-
-
-  clerr = clSetKernelArg(dslash_eoprec,6,sizeof(int),&eo);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 7 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }  
   clerr = clEnqueueNDRangeKernel(queue,dslash_eoprec,1,0,&gs,&ls,0,0,NULL);
@@ -1755,6 +1725,7 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(usetimer * copytimer, usetimer
 			set_zero_spinorfield_eoprec_device(clmem_p_eoprec, localsize, globalsize, latimer);
 			
 			Aee_device(clmem_inout_eoprec, clmem_rn_eoprec, localsize, globalsize, Mtimer, singletimer, dslashtimer, Mdiagtimer, latimer);
+
 			saxpy_eoprec_device(clmem_rn_eoprec, clmem_source_even, clmem_one, clmem_rn_eoprec, localsize, globalsize, latimer);
 			copy_eoprec_spinor_device(clmem_rn_eoprec, clmem_rhat_eoprec, singletimer);
 			
@@ -1763,9 +1734,9 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(usetimer * copytimer, usetimer
 			copy_complex_device(clmem_one, clmem_rho, singletimer);
 			
 			//!!CP: calc initial residuum, this is not needed for the algorithm!!
-// 			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
-// 			copy_float_from_device(clmem_resid, &resid, copytimer);
-// 			cout << "initial residuum is: " << resid << endl;
+ 			//set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
+ 			//copy_float_from_device(clmem_resid, &resid, copytimer);
+ 			//cout << "initial residuum is: " << resid << endl;
 		}
 
 		set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next, local_work_size, global_work_size, scalarprodtimer);
@@ -1804,12 +1775,12 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(usetimer * copytimer, usetimer
 			saxpy_eoprec_device(clmem_aux_eoprec, clmem_source_even, clmem_one, clmem_aux_eoprec, local_work_size, global_work_size, latimer); 
 			set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid, local_work_size, global_work_size, scalarprodtimer);
 			copy_float_from_device(clmem_trueresid, &trueresid, copytimer);
-// 			cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
+ 			//cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
 			if(trueresid<epssquare)
 				return HMC_SUCCESS;
 		}
 		else{
-// 			cout << "residuum:\t" << resid << endl;
+		  // 			cout << "residuum:\t" << resid << endl;
 		}
 
 	}
@@ -1881,19 +1852,14 @@ hmc_error Opencl_fermions::solver_eoprec_device(usetimer * copytimer, usetimer *
 	
 	//CP: even solution
 	convert_to_kappa_format_eoprec_device(clmem_inout_eoprec, ls, gs, latimer);
-	//bicgstab_eoprec_device(copytimer, singletimer, Mtimer, scalarprodtimer, latimer ,dslashtimer, Mdiagtimer, ls, gs, cgmax);	
+	bicgstab_eoprec_device(copytimer, singletimer, Mtimer, scalarprodtimer, latimer ,dslashtimer, Mdiagtimer, ls, gs, cgmax);	
 
 	//P: odd solution
 
-	set_zero_spinorfield_eoprec_device(clmem_tmp_eoprec_1, ls, gs, latimer);
-	set_zero_spinorfield_eoprec_device(clmem_tmp_eoprec_2, ls, gs, latimer);
-	set_zero_spinorfield_eoprec_device(clmem_tmp_eoprec_3, ls, gs, latimer);
-	//	set_zero_spinorfield_eoprec_device(clmem_inout_eoprec, ls, gs, latimer);
-
 	/** @todo CP: perhaps one can save some variables used here */
-	//dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, ODD, ls, gs, dslashtimer);
-	//M_inverse_sitediagonal_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, ls, gs, Mdiagtimer);
-	//M_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2, ls, gs, Mdiagtimer);
+	dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, ODD, ls, gs, dslashtimer);
+	M_inverse_sitediagonal_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, ls, gs, Mdiagtimer);
+	M_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2, ls, gs, Mdiagtimer);
 	saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, clmem_one, clmem_tmp_eoprec_3,  ls, gs, latimer);
 
 	convert_from_kappa_format_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_3,  ls, gs, latimer);
@@ -1990,10 +1956,10 @@ hmc_error Opencl_fermions::create_point_source_eoprec_device(int i, int spacepos
   }		
 	clFinish(queue);
 	(*latimer).add();
-	/*
+	
 	M_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1, ls, gs, Mdiagtimer);
 	dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_3, EVEN, ls, gs, dslashtimer);
-	*/
+	
 	saxpy_eoprec_device(clmem_tmp_eoprec_2, clmem_tmp_eoprec_3, clmem_one, clmem_source_even, ls, gs, latimer);
 	
 	return HMC_SUCCESS;
