@@ -237,19 +237,14 @@ add_executable( inverter
 	host_operations_gaugefield.cpp
 	host_operations_su3matrix.cpp
 	host_operations_matrix.cpp	
-	#host_operations_spinor.cpp
-	#host_operations_spinorfield.cpp
-	#host_operations_fermionmatrix.cpp
 	gaugefield.cpp
 	gaugefield_inversion.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
-	#host_random.cpp
 	opencl.cpp
 	opencl_fermions.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
-	#host_solver.cpp
 	logger.cpp
 )
 target_link_libraries( inverter
