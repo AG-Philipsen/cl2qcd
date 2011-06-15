@@ -382,32 +382,6 @@ void gamma_5_spinor(hmc_full_spinor inout){
 // 	su3_vector_times_minusone(&(inout[3*NC]));
 }
 
-void su3_vector_times_minusone(hmc_su3vector inout){
-	(inout[0]).re *= -1.;
-	(inout[0]).im *= -1.;
-	(inout[1]).re *= -1.;
-	(inout[1]).im *= -1.;
-	(inout[2]).re *= -1.;
-	(inout[2]).im *= -1.;
-}
-
-void su3_vector_acc(hmc_su3vector in, hmc_su3vector out){
-	(out[0]).re += (in[0]).re;
-	(out[0]).im += (in[0]).im;
-	(out[1]).re += (in[1]).re;
-	(out[1]).im += (in[1]).im;
-	(out[2]).re += (in[2]).re;
-	(out[2]).im += (in[2]).im;
-}
-
-void su3_vector_multiple_add(hmc_su3vector in1, hmc_su3vector in2, hmc_su3vector out){
-	(out[0]).re = (in1[0]).re + (in2[0]).re;
-	(out[1]).re = (in1[1]).re + (in2[1]).re;
-	(out[2]).re = (in1[2]).re + (in2[2]).re;
-	(out[0]).im = (in1[0]).im + (in2[0]).im;
-	(out[1]).im = (in1[1]).im + (in2[1]).im;
-	(out[2]).im = (in1[2]).im + (in2[2]).im;
-}
 
 void spinproj_gamma1_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
 	for(int c = 0; c<NC; c++){
@@ -533,7 +507,7 @@ void spinproj_gamma3_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign){
 
 //////////////////////////////////////////////////////////////////////
 
-
+/*
 //calculates the trace of i times generator times 3x3-matrix and stores this in a su3-algebraelement
 //now using structs
 void tr_lambda_u(hmc_3x3matrix in, hmc_algebraelement2 * out){
@@ -547,7 +521,7 @@ void tr_lambda_u(hmc_3x3matrix in, hmc_algebraelement2 * out){
 				(*out).e7 = (-(in)[0][0].im-(in)[1][1].im + 2.0*(in)[2][2].im)*0.577350269189625;
 	
 }
-
+*/
 //deprecated version without struct
 ///////////////////////////////////////////////////////////////
 /*
@@ -563,7 +537,7 @@ void tr_lambda_u(hmc_3x3matrix in, hmc_algebraelement out){
 }
 */
 
-
+/*
 //calculates the Dirac-Trace of the matrix resulting from multiplying v*u^dagger + w*x^dagger, where u, v, w, x are SU(3)-vectors
 //	the result is a 3x3-matrix
 void tr_v_times_u_dagger(hmc_su3vector v, hmc_su3vector u, hmc_su3vector w, hmc_su3vector x, hmc_3x3matrix out){
@@ -593,7 +567,7 @@ void tr_v_times_u_dagger(hmc_su3vector v, hmc_su3vector u, hmc_su3vector w, hmc_
    (t).c22.re=(u).c2.re*(v).c2.re+(u).c2.im*(v).c2.im + (w).c2.re*(z).c2.re+(w).c2.im*(z).c2.im; \
    (t).c22.im=(u).c2.im*(v).c2.re-(u).c2.re*(v).c2.im + (w).c2.im*(z).c2.re-(w).c2.re*(z).c2.im; 
 	 */
-}
+//}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // deprecated functions

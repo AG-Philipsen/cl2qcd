@@ -281,12 +281,6 @@ void dslash_3(hmc_spinor* spinnext, hmc_spinor* spinprev, hmc_spinor* spinout, h
  */
 void gamma_5_spinor(hmc_full_spinor inout);
 
-void su3_vector_times_minusone(hmc_su3vector inout);
-
-void su3_vector_acc(hmc_su3vector in, hmc_su3vector out);
-
-void su3_vector_multiple_add(hmc_su3vector in1, hmc_su3vector in2, hmc_su3vector out);
-
 void spinproj_gamma0_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign);
 
 void spinproj_gamma0_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign);
@@ -304,11 +298,11 @@ void spinproj_gamma3_a(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign);
 void spinproj_gamma3_b(hmc_full_spinor spin, hmc_su3vector out, hmc_float sign);
 
 //calculates the trace of generator times 3x3-matrix and stores this in a su3-algebraelement
-void tr_lambda_u(hmc_3x3matrix in, hmc_algebraelement2 * out);
+//void tr_lambda_u(hmc_3x3matrix in, hmc_algebraelement2 * out);
 
 //calculates the Dirac-Trace of the matrix resulting from multiplying v*u^dagger + w*x^dagger, where u, v, w, x are SU(3)-vectors
 //	the result is a 3x3-matrix
-void tr_v_times_u_dagger(hmc_su3vector v, hmc_su3vector u, hmc_su3vector w, hmc_su3vector x, hmc_3x3matrix out);
+//void tr_v_times_u_dagger(hmc_su3vector v, hmc_su3vector u, hmc_su3vector w, hmc_su3vector x, hmc_3x3matrix out);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // deprecated functions

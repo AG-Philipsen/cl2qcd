@@ -1,5 +1,5 @@
 /** @file
- * Common types used by HMC, both on host and OpenCL device.
+ * Common types used by all program parts, both on host and OpenCL device.
  */
 
 #ifndef _TYPESH_
@@ -112,7 +112,7 @@ struct Matrixsu3 {
 typedef hmc_complex hmc_staplematrix [NC*NC];
 typedef hmc_complex hmc_3x3matrix[3][3];
 typedef hmc_complex hmc_gaugefield [NC*(NC-1)][NDIM][VOLSPACE][NTIME];
-typedef hmc_float hmc_gauge_momentum;
+//typedef hmc_float hmc_gauge_momentum;
 #else
 /** A generic SU3 matrix */
 typedef hmc_complex hmc_su3matrix [NC][NC];
@@ -139,8 +139,10 @@ typedef hmc_float ildg_gaugefield[2*NC*NC*NDIM*VOLSPACE*NTIME];
 
 #endif
 
+/*
 typedef hmc_float hmc_gauge_momentum;
 typedef hmc_float hmc_algebraelement [NC*NC-1];
+*/
 typedef struct {
   hmc_float e0;
  	hmc_float e1;
@@ -152,8 +154,10 @@ typedef struct {
   hmc_float e7;
 } hmc_algebraelement2;
 
-typedef hmc_complex hmc_su3vector[NC];
 
+//typedef hmc_complex hmc_su3vector[NC];
+
+//CP: this can be deleted if host_operations_spinor is not needed anywhere anymore...
 typedef hmc_complex hmc_su3vector[3];
 
 typedef hmc_float ildg_gaugefield[2*NC*NC*NDIM*VOLSPACE*NTIME];
