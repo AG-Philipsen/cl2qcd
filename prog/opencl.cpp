@@ -1,6 +1,7 @@
 #include "opencl.h"
 
 #include <algorithm>
+#include <boost/regex.hpp>
 
 #include "logger.hpp"
 
@@ -24,7 +25,7 @@ hmc_error Opencl::fill_kernels_file ()
 
 hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 {
-  *collect_options << "-D_INKERNEL_ -DNSPACE=" << NSPACE << " -DNTIME=" << NTIME << " -DVOLSPACE=" << VOLSPACE;
+	*collect_options << "-D_INKERNEL_ -DNSPACE=" << NSPACE << " -DNTIME=" << NTIME << " -DVOLSPACE=" << VOLSPACE;
 
 	//CP: these have to match those in the cmake file
 #ifdef _RECONSTRUCT_TWELVE_
@@ -190,11 +191,16 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 	cl_int clerr = CL_SUCCESS;
 	timer->reset();
 
+	// in debug scenarios make the compiler dump the compile results
+	if( logger.beDebug() ) {
+		// the cast is safe here, we don't want to modify the value later
+		putenv(const_cast<char*>("GPU_DUMP_DEVICE_KERNEL=3"));
+	}
+
 	//Initialize OpenCL,
 	logger.trace() << "OpenCL being initialized...";
 
 	cl_uint num_platforms;
-	cl_platform_id platform;
 	//LZ: for now, stick to one platform without any further checks...
 	clerr = clGetPlatformIDs(1, &platform, &num_platforms);
 	if(clerr != CL_SUCCESS) {
@@ -230,12 +236,11 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 	logger.info() << "\t\tCL_DEVICE_NAME:    " << info;
 	if(clGetDeviceInfo(device, CL_DEVICE_VENDOR, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
 	logger.info() << "\t\tCL_DEVICE_VENDOR:  " << info;
-	cl_device_type type;
-	if(clGetDeviceInfo(device, CL_DEVICE_TYPE, sizeof(cl_device_type), &type, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(type == CL_DEVICE_TYPE_CPU) logger.info() << "\t\tCL_DEVICE_TYPE:    CPU";
-	if(type == CL_DEVICE_TYPE_GPU) logger.info() << "\t\tCL_DEVICE_TYPE:    GPU";
-	if(type == CL_DEVICE_TYPE_ACCELERATOR) logger.info() << "\t\tCL_DEVICE_TYPE:    ACCELERATOR";
-	if(type != CL_DEVICE_TYPE_CPU && type != CL_DEVICE_TYPE_GPU && type != CL_DEVICE_TYPE_ACCELERATOR) {
+	if(clGetDeviceInfo(device, CL_DEVICE_TYPE, sizeof(cl_device_type), &device_type, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
+	if(device_type == CL_DEVICE_TYPE_CPU) logger.info() << "\t\tCL_DEVICE_TYPE:    CPU";
+	if(device_type == CL_DEVICE_TYPE_GPU) logger.info() << "\t\tCL_DEVICE_TYPE:    GPU";
+	if(device_type == CL_DEVICE_TYPE_ACCELERATOR) logger.info() << "\t\tCL_DEVICE_TYPE:    ACCELERATOR";
+	if(device_type != CL_DEVICE_TYPE_CPU && device_type != CL_DEVICE_TYPE_GPU && device_type != CL_DEVICE_TYPE_ACCELERATOR) {
 		logger.fatal() << "unexpected CL_DEVICE_TYPE...";
 		exit(HMC_OCLERROR);
 	}
@@ -484,11 +489,11 @@ hmc_error Opencl::run_heatbath(const hmc_float beta, usetimer * const timer)
 	cl_int clerr = CL_SUCCESS;
 	timer->reset();
 
-#ifdef _USE_GPU_
-	size_t global_work_size = min(VOLSPACE * NTIME / 2, NUMRNDSTATES);
-#else
-	size_t global_work_size = min(max_compute_units, (cl_uint) NUMRNDSTATES);
-#endif
+	size_t global_work_size;
+	if( device_type == CL_DEVICE_TYPE_GPU )
+		global_work_size = min(VOLSPACE * NTIME / 2, NUMRNDSTATES);
+	else
+		global_work_size = min(max_compute_units, (cl_uint) NUMRNDSTATES);
 
 	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), &clmem_gaugefield);
 	if(clerr != CL_SUCCESS) {
@@ -549,11 +554,11 @@ hmc_error Opencl::run_overrelax(const hmc_float beta, usetimer * const timer)
 
 	timer->reset();
 
-#ifdef _USE_GPU_
-	size_t global_work_size = min(VOLSPACE * NTIME / 2, NUMRNDSTATES);
-#else
-	size_t global_work_size = min(max_compute_units, (cl_uint) NUMRNDSTATES);
-#endif
+	size_t global_work_size;
+	if( device_type == CL_DEVICE_TYPE_GPU )
+		global_work_size = min(VOLSPACE * NTIME / 2, NUMRNDSTATES);
+	else
+		global_work_size = min(max_compute_units, (cl_uint) NUMRNDSTATES);
 
 	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), &clmem_gaugefield);
 	if(clerr != CL_SUCCESS) {
@@ -612,17 +617,19 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 	cl_int clerr = CL_SUCCESS;
 
 	// decide on work-sizes
-#ifdef _USE_GPU_
-	const size_t local_work_size = NUM_THREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
-#else
-	const size_t local_work_size = 1; // nothing else makes sens on CPU
-#endif
+	size_t local_work_size;
+	if( device_type == CL_DEVICE_TYPE_GPU ) {
+		// reductions are broken for local_work_size > 64
+		local_work_size = 64;//NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
+	} else {
+		local_work_size = 1; // nothing else makes sens on CPU
+	}
 
-#ifdef _USE_GPU_
-	size_t global_work_size = 4 * NUM_THREADS * max_compute_units; /// @todo autotune
-#else
-	size_t global_work_size = max_compute_units;
-#endif
+	size_t global_work_size;
+	if( device_type == CL_DEVICE_TYPE_GPU )
+		global_work_size = 4 * NUMTHREADS * max_compute_units; /// @todo autotune
+	else
+		global_work_size = max_compute_units;
 
 	const cl_uint num_groups = (global_work_size + local_work_size - 1) / local_work_size;
 	global_work_size = local_work_size * num_groups;
@@ -849,15 +856,59 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 
 void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
 {
-#ifdef _USE_GPU_
-	const size_t local_work_size = NUM_THREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
-#else
-	const size_t local_work_size = 1; // nothing else makes sens on CPU
-#endif
+	///@todo make this properly handle multiple dimensions
+	// decide on work-sizes
+	size_t local_work_size;
+	if( device_type == CL_DEVICE_TYPE_GPU )
+		local_work_size = NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
+	else
+		local_work_size = 1; // nothing else makes sens on CPU
 
-	cl_int clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
+	// query the work group size specified at compile time (if any)
+	size_t compile_work_group_size[3];
+	cl_int clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 3 * sizeof(size_t), compile_work_group_size, NULL );
 	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting...";
+		logger.fatal() << "Querying kernel properties failed, aborting...";
+		exit(HMC_OCLERROR);
+	}
+	const size_t * const local_work_size_p = (compile_work_group_size[0] == 0) ? &local_work_size : &compile_work_group_size[0];
+
+	// make sure global_work_size is divisible by global_work_size
+	if( global_work_size % *local_work_size_p ) {
+		size_t bytesInKernelName;
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+		char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+
+		logger.fatal() << "Kernel " << kernelName << " can only be run with a global work size which is a multiple of " << *local_work_size_p << ". The requested size was " << global_work_size << '.';
+	}
+
+	clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, local_work_size_p, 0, 0, NULL);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting..." << clerr << " - " << global_work_size << " - " << *local_work_size_p;
+
+		size_t bytesInKernelName;
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+		char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+		logger.fatal() << "Failed kernel: " << kernelName;
+
 		exit(HMC_OCLERROR);
 	}
 }
@@ -867,6 +918,21 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 	cl_int clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting...";
+
+		size_t bytesInKernelName;
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+		char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+		logger.fatal() << "Failed kernel: " << kernelName;
+
 		exit(HMC_OCLERROR);
 	}
 }
@@ -964,4 +1030,125 @@ void Opencl::printResourceRequirements(const cl_kernel kernel)
 	}
 	logger.trace() << "  Private memory size (bytes): " << private_mem_size;
 #endif
+
+	// the following only makes sense on AMD gpus ...
+
+	size_t platform_name_size;
+	clerr = clGetPlatformInfo(platform, CL_PLATFORM_NAME, 0, NULL, &platform_name_size);
+	if( clerr ) {
+		logger.error() << "Failed to get name of OpenCL platform: ";
+		return;
+	}
+	char * platform_name = new char[platform_name_size];
+	clerr = clGetPlatformInfo(platform, CL_PLATFORM_NAME, platform_name_size, platform_name, NULL);
+	if( clerr ) {
+		logger.error() << "Failed to get name of OpenCL platform: ";
+		return;
+	}
+
+	if( strcmp("AMD Accelerated Parallel Processing", platform_name) == 0
+	    && device_type == CL_DEVICE_TYPE_GPU ) {
+
+		// get device name
+		size_t device_name_bytes;
+		clerr = clGetDeviceInfo( device, CL_DEVICE_NAME, 0, NULL, &device_name_bytes );
+		if( clerr ) {
+			logger.error() << "Failed to get name of OpenCL device: ";
+			return;
+		}
+		char * device_name = new char[device_name_bytes];
+		clerr = clGetDeviceInfo( device, CL_DEVICE_NAME, device_name_bytes, device_name, NULL );
+		if( clerr ) {
+			logger.error() << "Failed to get name of OpenCL device: ";
+			return;
+		}
+
+		logger.trace() << "Retrieving information for device " << device_name;
+
+		size_t bytesInKernelName;
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+		char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
+		if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+		}
+
+		logger.trace() << "Retrieving information for kernel " << kernelName;
+
+		// retrieve some additinal info on the program
+		std::stringstream tmp;
+		tmp << kernelName << '_' << device_name << ".isa";
+		std::string filename = tmp.str();
+
+		logger.trace() << "Reading information from file " << filename;
+
+		std::fstream isafile;
+		isafile.open(filename.c_str());
+		if(!isafile.is_open()) {
+			logger.error() << "Could not open ISA file. Aborting...";
+			return;
+		}
+
+		isafile.seekg(0, std::ios::end);
+		size_t isasize = isafile.tellg();
+		isafile.seekg(0, std::ios::beg);
+
+		char * isabytes = new char[isasize];
+
+		isafile.read( isabytes, isasize );
+
+		isafile.close();
+
+		std::string isa( isabytes );
+		delete[] isabytes;
+
+		unsigned int scratch_regs, gp_regs, static_local_bytes;
+
+		boost::smatch what;
+
+		// get scratch registers
+		boost::regex exScratch( "^MaxScratchRegsNeeded\\s*=\\s*(\\d*)$" );
+		if( boost::regex_search( isa, what, exScratch ) ) {
+			logger.trace() << what[0];
+			std::istringstream tmp( what[1] );
+			tmp >> scratch_regs;
+		} else {
+			logger.error() << "Scratch register usage section not found!";
+		}
+
+		// get GP registers
+		boost::regex exGPR( "^SQ_PGM_RESOURCES:NUM_GPRS\\s*=\\s*(\\d*)$" );
+		if( boost::regex_search( isa, what, exGPR ) ) {
+			logger.trace() << what[0];
+			std::istringstream tmp( what[1] );
+			tmp >> gp_regs;
+		} else {
+			logger.error() << "GPR usage section not found!";
+		}
+
+		// get GP registers
+		boost::regex exStatic( "^SQ_LDS_ALLOC:SIZE\\s*=\\s*(0x\\d*)$" );
+		if( boost::regex_search( isa, what, exStatic ) ) {
+			logger.trace() << what[0];
+			std::istringstream tmp( what[1] );
+			tmp >> std::hex >> static_local_bytes;
+			static_local_bytes *= 4; // value in file is in units of floats
+		} else {
+			logger.error() << "Static local memory allocation section not found!";
+		}
+
+		logger.debug() << "Kernel: " << kernelName << " - " << gp_regs << " GPRs, " << scratch_regs << " scratch registers, "
+		               << static_local_bytes << " bytes statically allocated local memory";
+
+		delete[] device_name;
+	} else {
+		logger.trace() << "No AMD-GPU -> not scanning for kernel resource requirements";
+	}
+
+	delete[] platform_name;
 }

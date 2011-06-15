@@ -4,7 +4,7 @@
 
 //opencl_tk_kappa.cl
 
-__kernel void kappa_karsch_gpu(__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta, __global hmc_float * kappa_karsch_val){
+__kernel void kappa_karsch_gpu(__global ocl_s_gaugefield* gaugefield, const hmc_float beta, __global hmc_float * kappa_karsch_val){
 
   //Compute diagonal spatial components of the energy-momentum-tensor
   hmc_float tdiag_11 [VOL4D];
@@ -20,20 +20,20 @@ __kernel void kappa_karsch_gpu(__global hmc_ocl_gaugefield* gaugefield, const hm
   for (int t=0; t<NTIME; t++){
 	for (int n=0; n<VOLSPACE; n++){
 	      //Compute required plaquettes
-	      hmc_ocl_su3matrix temp[SU3SIZE];
+	      Matrixsu3 temp;
 	      
-	      local_plaquette(gaugefield,  temp, n, t, 1, 0);
-	      hmc_float plaq_10 = trace_su3matrix(temp).re;
-	      local_plaquette(gaugefield,  temp, n, t, 2, 0);
-	      hmc_float plaq_20 = trace_su3matrix(temp).re;
-	      local_plaquette(gaugefield,  temp, n, t, 3, 0);
-	      hmc_float plaq_30 = trace_su3matrix(temp).re;
-	      local_plaquette(gaugefield,  temp, n, t, 1, 2);
-	      hmc_float plaq_12 = trace_su3matrix(temp).re;
-	      local_plaquette(gaugefield,  temp, n, t, 1, 3);
-	      hmc_float plaq_13 = trace_su3matrix(temp).re;
-	      local_plaquette(gaugefield,  temp, n, t, 3, 2);
-	      hmc_float plaq_32 = trace_su3matrix(temp).re;
+	      temp = local_plaquette(gaugefield, n, t, 1, 0);
+	      hmc_float plaq_10 = trace_matrixsu3(temp).re;
+	      temp = local_plaquette(gaugefield, n, t, 2, 0);
+	      hmc_float plaq_20 = trace_matrixsu3(temp).re;
+	      temp = local_plaquette(gaugefield, n, t, 3, 0);
+	      hmc_float plaq_30 = trace_matrixsu3(temp).re;
+	      temp = local_plaquette(gaugefield, n, t, 1, 2);
+	      hmc_float plaq_12 = trace_matrixsu3(temp).re;
+	      temp = local_plaquette(gaugefield, n, t, 1, 3);
+	      hmc_float plaq_13 = trace_matrixsu3(temp).re;
+	      temp = local_plaquette(gaugefield, n, t, 3, 2);
+	      hmc_float plaq_32 = trace_matrixsu3(temp).re;
 
 	      int point = n + VOLSPACE * t;
 	      
@@ -91,7 +91,7 @@ __kernel void kappa_karsch_gpu(__global hmc_ocl_gaugefield* gaugefield, const hm
 
 
 
-__kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const hmc_float beta,  __global hmc_float * kappa_clover_val){
+__kernel void kappa_clover_gpu (__global ocl_s_gaugefield* gaugefield, const hmc_float beta,  __global hmc_float * kappa_clover_val){
 
   //Energy-momentum-tensor in clover-discretization
   hmc_float t_12 [VOL4D];
@@ -101,50 +101,48 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
   for (int t=0; t<NTIME; t++){
     for (int n=0; n<VOLSPACE; n++){
       //Compute required plaquettes
-      hmc_ocl_3x3matrix Q_22[9];
-      local_Q_plaquette(Q_22, gaugefield, n, t, 2, 2);
-      hmc_ocl_3x3matrix Q_10[9];
-      local_Q_plaquette(Q_10, gaugefield, n, t, 1, 0);
-      hmc_ocl_3x3matrix Q_20[9];
-      local_Q_plaquette(Q_20, gaugefield, n, t, 2, 0);
-      hmc_ocl_3x3matrix Q_02[9];
-      adjoint_3x3matrix (Q_02, Q_20);
-      hmc_ocl_3x3matrix Q_21[9];
-      local_Q_plaquette(Q_21,gaugefield, n, t, 2, 1);
-      
-      hmc_ocl_3x3matrix Q_12[9];
-      adjoint_3x3matrix (Q_12, Q_21);
-      hmc_ocl_3x3matrix Q_03[9];
-      local_Q_plaquette(Q_03, gaugefield, n, t, 0, 3);
-      hmc_ocl_3x3matrix Q_30[9];
-      adjoint_3x3matrix (Q_30, Q_03);
-      hmc_ocl_3x3matrix Q_13[9];
-      local_Q_plaquette( Q_13, gaugefield, n, t, 1, 3);
-      hmc_ocl_3x3matrix Q_31[9];
-      adjoint_3x3matrix (Q_31, Q_13);
-      hmc_ocl_3x3matrix Q_23[9];
-      local_Q_plaquette( Q_23, gaugefield, n, t, 2, 3);
-      hmc_ocl_3x3matrix Q_32[9];
-      adjoint_3x3matrix (Q_32, Q_23);
-      hmc_ocl_3x3matrix Q_11[9];
-      local_Q_plaquette( Q_11, gaugefield, n, t, 1, 1);
+      Matrix3x3 Q_22;
+      Q_22 = local_Q_plaquette(gaugefield, n, t, 2, 2);
+      Matrix3x3 Q_10;
+      Q_10 = local_Q_plaquette(gaugefield, n, t, 1, 0);
+      Matrix3x3 Q_20;
+      Q_20 = local_Q_plaquette(gaugefield, n, t, 2, 0);
+      Matrix3x3 Q_02;
+      Q_02 = adjoint_matrix3x3 (Q_20);
+      Matrix3x3 Q_21;
+      Q_21 = local_Q_plaquette(gaugefield, n, t, 2, 1);
+      Matrix3x3 Q_12;
+      Q_12 = adjoint_matrix3x3 (Q_21);
+      Matrix3x3 Q_03;
+      Q_03 = local_Q_plaquette(gaugefield, n, t, 0, 3);
+      Matrix3x3 Q_30;
+      Q_30 = adjoint_matrix3x3 (Q_03);
+      Matrix3x3 Q_13;
+      Q_13 = local_Q_plaquette( gaugefield, n, t, 1, 3);
+      Matrix3x3 Q_31;
+      Q_31 = adjoint_matrix3x3 (Q_13);
+      Matrix3x3 Q_23;
+      Q_23 = local_Q_plaquette(gaugefield, n, t, 2, 3);
+      Matrix3x3 Q_32;
+      Q_32 = adjoint_matrix3x3 (Q_23);
+      Matrix3x3 Q_11;
+      Q_11 = local_Q_plaquette(gaugefield, n, t, 1, 1);
 
       int point = n + VOLSPACE * t;
       
-      hmc_ocl_3x3matrix tmp [9];
+      Matrix3x3 tmp;
       hmc_complex tmp_cmp;
-
 
       //T_12
       //alpha=0
-      subtract_3x3matrix (tmp, Q_20, Q_02);
-      multiply_3x3matrix (tmp, Q_10, tmp);
-      tmp_cmp = trace_3x3matrix(tmp);
+      tmp = subtract_matrix3x3 (Q_20, Q_02);
+      tmp = multiply_matrix3x3 (Q_10, tmp);
+      tmp_cmp = trace_matrix3x3(tmp);
       t_12 [point] = tmp_cmp.re;
       //alpha=1
-      subtract_3x3matrix (tmp, Q_21, Q_12);
-      multiply_3x3matrix (tmp, Q_11, tmp);
-      tmp_cmp = trace_3x3matrix(tmp);
+      tmp = subtract_matrix3x3 (Q_21, Q_12);
+      tmp = multiply_matrix3x3 (Q_11, tmp);
+      tmp_cmp = trace_matrix3x3(tmp);
       t_12 [point] += tmp_cmp.re;
       //alpha=2, vanishes
 // 	      subtract_3x3matrix (tmp, Q_22, Q_22);
@@ -152,26 +150,26 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
 // 	      trace_3x3matrix (tmp_cmp, tmp);
 // 	      t_12 [point] += tmp_cmp.re;
       //alpha=3
-      subtract_3x3matrix (tmp, Q_23, Q_32);
-      multiply_3x3matrix (tmp, Q_13, tmp);
-      tmp_cmp = trace_3x3matrix(tmp);
+      tmp = subtract_matrix3x3 (Q_23, Q_32);
+      tmp = multiply_matrix3x3 (Q_13, tmp);
+      tmp_cmp = trace_matrix3x3(tmp);
       t_12 [point] += tmp_cmp.re;
 
       //T_13
       //alpha=0
-      subtract_3x3matrix (tmp, Q_30, Q_03);
-      multiply_3x3matrix (tmp, Q_10, tmp);
-      tmp_cmp = trace_3x3matrix(tmp);
+      tmp = subtract_matrix3x3 (Q_30, Q_03);
+      tmp = multiply_matrix3x3 (Q_10, tmp);
+      tmp_cmp = trace_matrix3x3(tmp);
       t_13 [point] = tmp_cmp.re;
       //alpha=1
-      subtract_3x3matrix (tmp, Q_31, Q_13);
-      multiply_3x3matrix (tmp, Q_11, tmp);
-      tmp_cmp = trace_3x3matrix(tmp);
+      tmp = subtract_matrix3x3 (Q_31, Q_13);
+      tmp = multiply_matrix3x3 (Q_11, tmp);
+      tmp_cmp = trace_matrix3x3(tmp);
       t_13 [point] += tmp_cmp.re;
       //alpha=2
-      subtract_3x3matrix (tmp, Q_32, Q_23);
-      multiply_3x3matrix (tmp, Q_12, tmp);
-      tmp_cmp = trace_3x3matrix(tmp);
+      tmp = subtract_matrix3x3 (Q_32, Q_23);
+      tmp = multiply_matrix3x3 (Q_12, tmp);
+      tmp_cmp = trace_matrix3x3(tmp);
       t_13 [point] += tmp_cmp.re;
       //alpha=3, vanishes
 // 	      subtract_3x3matrix (tmp, Q_33, Q_33);
@@ -181,19 +179,19 @@ __kernel void kappa_clover_gpu (__global hmc_ocl_gaugefield* gaugefield, const h
 
       //T_23
       //alpha=0
-      subtract_3x3matrix (tmp, Q_30, Q_03);
-      multiply_3x3matrix (tmp, Q_20, tmp);
-      tmp_cmp = trace_3x3matrix(tmp);
+      tmp = subtract_matrix3x3 (Q_30, Q_03);
+      tmp = multiply_matrix3x3 (Q_20, tmp);
+      tmp_cmp = trace_matrix3x3(tmp);
       t_23 [point] = tmp_cmp.re;
       //alpha=1
-      subtract_3x3matrix (tmp, Q_31, Q_13);
-      multiply_3x3matrix (tmp, Q_21, tmp);
-      tmp_cmp = trace_3x3matrix(tmp);
+      tmp = subtract_matrix3x3 (Q_31, Q_13);
+      tmp = multiply_matrix3x3 (Q_21, tmp);
+      tmp_cmp = trace_matrix3x3(tmp);
       t_23 [point] += tmp_cmp.re;
       //alpha=2
-      subtract_3x3matrix (tmp, Q_32, Q_23);
-      multiply_3x3matrix (tmp, Q_22, tmp);
-      tmp_cmp = trace_3x3matrix(tmp);
+      tmp = subtract_matrix3x3 (Q_32, Q_23);
+      tmp = multiply_matrix3x3 (Q_22, tmp);
+      tmp_cmp = trace_matrix3x3(tmp);
       t_23 [point] += tmp_cmp.re;
       //alpha=3, vanishes
 // 	      subtract_3x3matrix (tmp, Q_33, Q_33);

@@ -363,157 +363,164 @@ Matrixsu3 local_plaquette(__global ocl_s_gaugefield * field, const int n, const 
 
 
 //todo
-// void local_Q_plaquette(__private hmc_ocl_3x3matrix * out, __global hmc_ocl_gaugefield * field,
-// 		       const int n, const int t, const int mu, const int nu ){
-//   hmc_ocl_su3matrix tmp [SU3SIZE];
-//   int newpos;
-//   
-//   //1st plaq
-//   hmc_ocl_su3matrix plaq1[SU3SIZE];
-//   //u_mu(x)
-//   get_su3matrix(plaq1,field,n,t,mu);
-//   //u_nu(x+mu)
-//   if(mu==0) {
-//     int newt = (t+1)%NTIME;
-//     get_su3matrix(tmp,field,n,newt,nu);
-//   }
-//   else
-//     get_su3matrix(tmp,field,get_neighbor(n,mu),t,nu);
-//   accumulate_su3matrix_prod(plaq1,tmp);
-//   //adjoint(u_mu(x+nu))
-//   if(nu==0) {
-//     int newt = (t+1)%NTIME;
-//     get_su3matrix(tmp,field,n,newt,mu);
-//   }
-//   else
-//     get_su3matrix(tmp,field,get_neighbor(n,nu),t,mu);
-//   adjoin_su3matrix(tmp);
-//   accumulate_su3matrix_prod(plaq1,tmp);
-//   //adjoint(u_nu(x))
-//   get_su3matrix(tmp,field,n,t,nu);
-//   adjoin_su3matrix(tmp);
-//   accumulate_su3matrix_prod(plaq1,tmp);
-// 
-//   //2nd plaq
-//   hmc_ocl_su3matrix plaq2 [SU3SIZE];
-//   //U_nu(x)
-//   get_su3matrix(plaq2,field,n,t,nu);
-//   //adj (u_mu(x-mu+nu))
-//   newpos = get_lower_neighbor(n, mu);
-//   if (nu==0){
-//     int newt =  (t+1)%NTIME;
-//     get_su3matrix(tmp,field,newpos,newt,mu);
-//   }
-//   else if (mu==0){
-//     int newt = (t-1+NTIME)%NTIME;
-//     get_su3matrix(tmp,field,get_neighbor(n,nu),newt,mu);
-//   }
-//   else
-//     get_su3matrix(tmp,field,get_neighbor(newpos, nu),t,mu);
-//   adjoin_su3matrix(tmp);
-//   accumulate_su3matrix_prod(plaq2,tmp);
-//   //adj (u_nu(x-mu))
-//   if (mu==0){
-//     int newt = (t-1+NTIME)%NTIME;
-//     get_su3matrix(tmp,field,n,newt, nu);
-//   }
-//   else
-//     get_su3matrix(tmp,field, get_lower_neighbor(n, mu),t, nu);
-//   adjoin_su3matrix(tmp);
-//   accumulate_su3matrix_prod(plaq2,tmp);
-//   //u_mu(x-mu)
-//   if (mu==0){
-//     int newt = (t-1+NTIME)%NTIME;
-//     get_su3matrix(tmp,field,n,newt, mu);
-//   }
-//   else
-//     get_su3matrix(tmp,field, get_lower_neighbor(n, mu),t, mu);
-//   accumulate_su3matrix_prod(plaq2,tmp);
-// 
-//   //3rd plaq
-//   hmc_ocl_su3matrix plaq3 [SU3SIZE];
-//   //adj (u_mu(x-mu))
-//   if (mu==0){
-//     int newt = (t-1+NTIME)%NTIME;
-//     get_su3matrix(tmp,field,n,newt, mu);
-//   }
-//   else
-//     get_su3matrix(tmp,field, get_lower_neighbor(n, mu),t, mu);
-//   adjoin_su3matrix(tmp);
-//   copy_su3matrix(plaq3, tmp); 
-//   //adj (u_nu(x-mu-nu))
-//   newpos = get_lower_neighbor(n, mu);
-//   if (nu==0){
-//     int newt = (t-1+NTIME)%NTIME;
-//     get_su3matrix(tmp,field, newpos,newt,nu);
-//   }
-//   else if (mu==0){
-//     int newt = (t-1+NTIME)%NTIME;
-//   get_su3matrix(tmp,field,get_lower_neighbor(n,nu),newt,nu);
-//   }
-//   else
-//     get_su3matrix(tmp,field,get_lower_neighbor(newpos, nu),t,nu);
-//   adjoin_su3matrix(tmp);
-//   accumulate_su3matrix_prod(plaq3,tmp);
-//   //u_mu(x-mu-nu)
-//   newpos = get_lower_neighbor(n, mu);
-//   if (nu==0){
-//     int newt = (t-1+NTIME)%NTIME;
-//     get_su3matrix(tmp,field,newpos,newt,mu);
-//   }
-//   else if (mu==0){
-//     int newt = (t-1+NTIME)%NTIME;
-//     get_su3matrix(tmp,field,get_lower_neighbor(n,nu),newt,mu);
-//   }
-//   else
-//     get_su3matrix(tmp,field,get_lower_neighbor(newpos, nu),t,mu);
-//   accumulate_su3matrix_prod(plaq3,tmp);
-//   //u_nu(x-nu)
-//   if (nu==0){
-//     int newt = (t-1+NTIME)%NTIME;
-//     get_su3matrix(tmp,field, n,newt, nu);
-//   }
-//   else
-//     //this causes for nu=1 a speicherzugriffsfehler
-//     get_su3matrix(tmp,field,get_lower_neighbor(n, nu),t,nu);
-//   accumulate_su3matrix_prod(plaq3,tmp);
-// 
-//   //4th plaq
-//   hmc_ocl_su3matrix plaq4[SU3SIZE];
-//   //adj(u_nu(x-nu))
-//   adjoin_su3matrix(tmp);
-//   copy_su3matrix(plaq4, tmp); 
-//   //u_mu(x-nu)
-//    if (nu==0){
-//     int newt = (t-1+NTIME)%NTIME;
-//     get_su3matrix(tmp,field, n,newt, mu);
-//   }
-//   else
-//     get_su3matrix(tmp,field, get_lower_neighbor(n, nu),t,mu);
-//   accumulate_su3matrix_prod(plaq4,tmp);
-//   //u_nu(x+mu-nu)
-//   newpos = get_lower_neighbor(n, nu);
-//   if (mu==0){
-//     int newt =  (t+1)%NTIME;
-//     get_su3matrix(tmp,field,newpos,newt,nu);
-//   }
-//   else if (nu==0){
-//     int newt = (t-1+NTIME)%NTIME;
-//     get_su3matrix(tmp,field,get_neighbor(n,mu),newt,nu);
-//   }
-//   else
-//     get_su3matrix(tmp,field,get_neighbor(newpos, mu),t,nu);
-//   accumulate_su3matrix_prod(plaq4,tmp);
-//   //adj (u_mu(x))
-//   get_su3matrix(tmp,field,n,t,mu);
-//   adjoin_su3matrix(tmp);
-//   accumulate_su3matrix_prod(plaq4,tmp);
-// 
-//   //Sum up
-//   su3matrix_to_3x3matrix (out, plaq1);
-//   accumulate_su3matrix_3x3_add(out, plaq2);
-//   accumulate_su3matrix_3x3_add(out, plaq3);
-//   accumulate_su3matrix_3x3_add(out, plaq4);
-// }
+Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu ){
+  Matrix3x3 out;
+  Matrixsu3 tmp;
+  int newpos;
+  
+  //1st plaq
+  Matrixsu3 plaq1;
+  //u_mu(x)
+  plaq1 = get_matrixsu3(field,n,t,mu);
+  //u_nu(x+mu)
+  if(mu==0) {
+    int newt = (t+1)%NTIME;
+    tmp = get_matrixsu3(field,n,newt,nu);
+  }
+  else
+    tmp = get_matrixsu3(field,get_neighbor(n,mu),t,nu);
+  plaq1 = multiply_matrixsu3 (plaq1, tmp);
+  //adjoint(u_mu(x+nu))
+  if(nu==0) {
+    int newt = (t+1)%NTIME;
+    tmp = get_matrixsu3(field,n,newt,mu);
+  }
+  else
+    tmp = get_matrixsu3(field,get_neighbor(n,nu),t,mu);
+  tmp = adjoint_matrixsu3(tmp);
+  plaq1 = multiply_matrixsu3 (plaq1, tmp);
+  //adjoint(u_nu(x))
+  tmp = get_matrixsu3(field,n,t,nu);
+  tmp = adjoint_matrixsu3(tmp);
+  plaq1 = multiply_matrixsu3 (plaq1, tmp);
+
+  //2nd plaq
+  Matrixsu3 plaq2;
+  //U_nu(x)
+  plaq2 = get_matrixsu3(field,n,t,nu);
+  //adj (u_mu(x-mu+nu))
+  newpos = get_lower_neighbor(n, mu);
+  if (nu==0){
+    int newt =  (t+1)%NTIME;
+    tmp = get_matrixsu3(field,newpos,newt,mu);
+  }
+  else if (mu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    tmp = get_matrixsu3(field,get_neighbor(n,nu),newt,mu);
+  }
+  else
+    tmp = get_matrixsu3(field,get_neighbor(newpos, nu),t,mu);
+  
+  tmp = adjoint_matrixsu3(tmp);
+  plaq2 = multiply_matrixsu3 (plaq2, tmp);
+  //adj (u_nu(x-mu))
+  if (mu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    tmp = get_matrixsu3(field,n,newt, nu);
+  }
+  else
+    tmp = get_matrixsu3(field, get_lower_neighbor(n, mu),t, nu);
+  tmp = adjoint_matrixsu3(tmp);
+  plaq2 = multiply_matrixsu3 (plaq2, tmp);
+  //u_mu(x-mu)
+  if (mu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    tmp = get_matrixsu3(field,n,newt, mu);
+  }
+  else
+    tmp = get_matrixsu3(field, get_lower_neighbor(n, mu),t, mu);
+  plaq2 = multiply_matrixsu3 (plaq2, tmp);
+
+  //3rd plaq
+  Matrixsu3 plaq3;
+  //adj (u_mu(x-mu))
+  if (mu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    tmp = get_matrixsu3(field,n,newt, mu);
+  }
+  else
+    tmp = get_matrixsu3(field, get_lower_neighbor(n, mu),t, mu);
+  tmp = adjoint_matrixsu3(tmp);
+  plaq3 = copy_matrixsu3(tmp); 
+  //adj (u_nu(x-mu-nu))
+  newpos = get_lower_neighbor(n, mu);
+  if (nu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    tmp = get_matrixsu3(field, newpos,newt,nu);
+  }
+  else if (mu==0){
+    int newt = (t-1+NTIME)%NTIME;
+  tmp = get_matrixsu3(field,get_lower_neighbor(n,nu),newt,nu);
+  }
+  else
+    tmp = get_matrixsu3(field,get_lower_neighbor(newpos, nu),t,nu);
+  tmp = adjoint_matrixsu3(tmp);
+  plaq3 = multiply_matrixsu3 (plaq3, tmp);
+  //u_mu(x-mu-nu)
+  newpos = get_lower_neighbor(n, mu);
+  if (nu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    tmp = get_matrixsu3(field,newpos,newt,mu);
+  }
+  else if (mu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    tmp = get_matrixsu3(field,get_lower_neighbor(n,nu),newt,mu);
+  }
+  else
+    tmp = get_matrixsu3 (field,get_lower_neighbor(newpos, nu),t,mu);
+  plaq3 = multiply_matrixsu3(plaq3, tmp);
+  //u_nu(x-nu)
+  if (nu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    tmp = get_matrixsu3(field, n,newt, nu);
+  }
+  else
+    //this causes for nu=1 a speicherzugriffsfehler
+    tmp = get_matrixsu3(field,get_lower_neighbor(n, nu),t,nu);
+  plaq3 = multiply_matrixsu3 (plaq3, tmp);
+
+  //4th plaq
+  Matrixsu3 plaq4;
+  //adj(u_nu(x-nu))
+  tmp = adjoint_matrixsu3(tmp);
+  plaq4 = copy_matrixsu3(tmp); 
+  //u_mu(x-nu)
+   if (nu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    tmp = get_matrixsu3(field, n,newt, mu);
+  }
+  else
+    tmp = get_matrixsu3(field, get_lower_neighbor(n, nu),t,mu);
+  plaq4 = multiply_matrixsu3 (plaq4, tmp);
+  //u_nu(x+mu-nu)
+  newpos = get_lower_neighbor(n, nu);
+  if (mu==0){
+    int newt =  (t+1)%NTIME;
+    tmp = get_matrixsu3(field,newpos,newt,nu);
+  }
+  else if (nu==0){
+    int newt = (t-1+NTIME)%NTIME;
+    tmp = get_matrixsu3(field,get_neighbor(n,mu),newt,nu);
+  }
+  else
+    tmp = get_matrixsu3(field,get_neighbor(newpos, mu),t,nu);
+  plaq4 = multiply_matrixsu3(plaq4, tmp);
+  //adj (u_mu(x))
+  tmp = get_matrixsu3(field,n,t,mu);
+  tmp = adjoint_matrixsu3(tmp);
+  plaq4 = multiply_matrixsu3 (plaq4, tmp);
+
+  //Sum up
+  Matrix3x3 tmp3x3;
+  out = matrix_su3to3x3 (plaq1);
+  tmp3x3 = matrix_su3to3x3 (plaq2);
+  out = add_matrix3x3 (out, tmp3x3);
+  tmp3x3 = matrix_su3to3x3 (plaq3);
+  out = add_matrix3x3 (out, tmp3x3);
+  tmp3x3 = matrix_su3to3x3 (plaq4);
+  out = add_matrix3x3 (out, tmp3x3);
+  
+  return out;
+}
 
 

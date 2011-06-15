@@ -1,58 +1,61 @@
 #include "gaugefield_inversion.h"
 
 
-hmc_error Gaugefield_inversion::init_devices(cl_device_type* devicetypes, usetimer* timer){
-  if(get_num_ocl_devices() != 1) {
-    //LZ: so far, we only use !!! 1 !!! device
-    //this needs generalisation to several devices and subsets!!!!!
-    cerr << "only 1 device possible..." << endl;
-  }
-  
-  if(get_num_ocl_devices() > 0) {
-    Opencl_fermions* dev_tmp = new Opencl_fermions[get_num_ocl_devices()];
-    set_devices(dev_tmp);
-  }
+hmc_error Gaugefield_inversion::init_devices(cl_device_type* devicetypes, usetimer* timer)
+{
+	if(get_num_ocl_devices() != 1) {
+		//LZ: so far, we only use !!! 1 !!! device
+		//this needs generalisation to several devices and subsets!!!!!
+		cerr << "only 1 device possible..." << endl;
+	}
 
-  
-  for(int n = 0; n < get_num_ocl_devices(); n++) {
-	  cout << "init device #" << n << endl;
-	  get_devices_fermions()[n].init(devicetypes[n], timer, get_parameters());	  
-  }
-  return HMC_SUCCESS;
+	if(get_num_ocl_devices() > 0) {
+		Opencl_fermions* dev_tmp = new Opencl_fermions[get_num_ocl_devices()];
+		set_devices(dev_tmp);
+	}
+
+
+	for(int n = 0; n < get_num_ocl_devices(); n++) {
+		cout << "init device #" << n << endl;
+		get_devices_fermions()[n].init(devicetypes[n], timer, get_parameters());
+	}
+	return HMC_SUCCESS;
 }
 
-hmc_error Gaugefield_inversion::finalize(){
-  hmc_error err = HMC_SUCCESS;
-  err |= Gaugefield::finalize();
-  for(int n = 0; n < get_num_ocl_devices(); n++)
-    err |= get_devices_fermions()[n].finalize_fermions();	  
-  return err;
+hmc_error Gaugefield_inversion::finalize()
+{
+	hmc_error err = HMC_SUCCESS;
+	err |= Gaugefield::finalize();
+	for(int n = 0; n < get_num_ocl_devices(); n++)
+		err |= get_devices_fermions()[n].finalize_fermions();
+	return err;
 }
 
-hmc_error Gaugefield_inversion::free_devices(){
-  if(get_num_ocl_devices() > 0)
-    delete [] get_devices_fermions();
-  return HMC_SUCCESS;
+hmc_error Gaugefield_inversion::free_devices()
+{
+	if(get_num_ocl_devices() > 0)
+		delete [] get_devices_fermions();
+	return HMC_SUCCESS;
 }
 
-Opencl_fermions * Gaugefield_inversion::get_devices_fermions (){
-  return  (Opencl_fermions*)get_devices();
+Opencl_fermions * Gaugefield_inversion::get_devices_fermions ()
+{
+	return  (Opencl_fermions*)get_devices();
 }
 
 hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer){
+	//this uses a BiCGStab inverter on device
 
-  //this uses a BiCGStab inverter on device
-
-  //global and local work sizes;
-  //LZ: should eventually be moved inside opencl_fermions class
-#ifdef _USE_GPU_
-	const size_t ls = NUM_THREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
+	//global and local work sizes;
+	//LZ: should eventually be moved inside opencl_fermions class
+#ifdef _USEGPU_
+	const size_t ls = NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
 #else
 	const size_t ls = 1; // nothing else makes sens on CPU
 #endif
 
-#ifdef _USE_GPU_
-	size_t gs = 4 * NUM_THREADS * get_devices()[0].max_compute_units; /// @todo autotune
+#ifdef _USEGPU_
+	size_t gs = 4 * NUMTHREADS * get_devices()[0].max_compute_units; /// @todo autotune
 #else
 	size_t gs = get_devices()[0].max_compute_units;
 #endif
@@ -63,7 +66,7 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
   /** @todo here one has to introduce more timer instead of noop*/
   usetimer noop;
 
-  int use_eo = get_parameters()->get_use_eo();
+	int use_eo = get_parameters()->get_use_eo();
 
   if(use_eo==FALSE){
     get_devices_fermions()[0].set_spinorfield_cold_device(ls, gs, &noop);

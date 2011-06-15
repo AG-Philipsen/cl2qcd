@@ -24,19 +24,6 @@ class Gaugefield_k : public Gaugefield {
 	 * Free device, called by finalize
 	 */
 	virtual hmc_error free_devices();
-
-	hmc_float Q_plaquette();
-	
-  	/**
-	 * Compute the transport coefficient kappa with the energy-momentum-tensor discretized by Karsch&Wyld
-	 * @return Error code as defined in hmcerrs.h
-	 */	
-	hmc_error kappa_karsch ();
-	/**
-	 * Compute the transport coefficient kappa with the energy-momentum-tensor built by a Clover discretization
-	 * @return Error code as defined in hmcerrs.h
-	 */
-	hmc_error kappa_clover ();
 	
 	/**
 	 * Returns the transport coefficient kappa computed by Karsch&Wyld's method

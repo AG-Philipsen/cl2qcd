@@ -238,8 +238,11 @@ public:
 	//!!CP: this is not needed at the moment and since is not copied to the device anywhere!!
 	cl_mem clmem_theta_gaugefield;
 
+	cl_platform_id platform;
+
 	/** ID of the OpenCL device wrapped by this object */
 	cl_device_id device;
+	cl_device_type device_type;
 	int isinit;
 	cl_context context;
 	cl_kernel heatbath_odd;
@@ -284,7 +287,7 @@ public:
 	 */
 	void printResourceRequirements(const cl_kernel kernel);
 
- private:
+private:
 	hmc_error init_basic(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters);
 
 };

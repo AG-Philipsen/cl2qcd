@@ -260,7 +260,7 @@ typedef cl_ulong4 hmc_ocl_ran;
  * @todo dynamically size according to requirements by kernels / devices
  * @warning some kernel use NUMTHREADS threads, make sure this is always bigger!
  */
-#ifdef _USE_GPU_
+#ifdef _USEGPU_
 #define NUMRNDSTATES 5120
 #else
 #define NUMRNDSTATES 64

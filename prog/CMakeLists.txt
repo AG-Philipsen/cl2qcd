@@ -40,10 +40,18 @@ if( LIBXML2_DEFINITIONS )
 	add_definitions( ${LIBXML2_DEFINITIONS} )
 endif( LIBXML2_DEFINITIONS )
 
+find_package(Boost 1.33.0 REQUIRED COMPONENTS regex)
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
+
 # Define where to find the OpenCL kernels
 # TODO this should also include the installation place
 # maybe even patch this during install step
 add_definitions( -DSOURCEDIR="${CMAKE_SOURCE_DIR}" )
+
+# Don't compile in debug output if compiling for release
+if( CMAKE_BUILD_TYPE STREQUAL "Release" )
+	add_definitions( -DNDEBUG )
+endif( CMAKE_BUILD_TYPE STREQUAL "Release" )
 
 # some options for various variants
 option( USE_DOUBLE_PRECISION "Use double precision arithmetics" ON )
@@ -192,6 +200,7 @@ target_link_libraries( heatbath
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
 	klepsydra
 	einhard
 )
@@ -217,6 +226,7 @@ target_link_libraries( tk_kappa
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
 	klepsydra
 	einhard
 )
@@ -246,6 +256,7 @@ target_link_libraries( inverter
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
 	klepsydra
 	einhard
 )
