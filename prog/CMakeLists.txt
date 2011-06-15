@@ -272,6 +272,8 @@ add_executable( hmc
 	host_use_timer.cpp
 	host_writegaugefield.cpp
 	logger.cpp
+	gaugefield_hmc.cpp
+	opencl_hmc.cpp
 )
 target_link_libraries( hmc
 	${OPENCL_LIBRARIES}
