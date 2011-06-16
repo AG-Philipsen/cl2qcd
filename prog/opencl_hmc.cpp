@@ -37,7 +37,7 @@ hmc_error Opencl_hmc::fill_kernels()
 hmc_error Opencl_hmc::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters)
 {
 	hmc_error err = Opencl_fermions::init(wanted_device_type, timer, parameters);
-	err |= init_fermion_variables(parameters, timer);
+	err |= init_hmc_variables(parameters, timer);
 	return err;
 }
 

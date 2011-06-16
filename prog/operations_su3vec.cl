@@ -223,8 +223,8 @@ su3vec su3vec_acc_acc(su3vec in1, su3vec in2, su3vec in3){
 
 
 //calculates the Dirac-Trace of the matrix resulting from multiplying U*V^dagger =  u*v^dagger + w*x^dagger, where u, v, w, x are SU(3)-vectors (using spinprojection). The result is a 3x3-matrix
-Matrixsu3 tr_v_times_u_dagger(su3vec u, su3vec v, su3vec w, su3vec x){
-	Matrixsu3 tmp;
+Matrix3x3 tr_v_times_u_dagger(su3vec u, su3vec v, su3vec w, su3vec x){
+	Matrix3x3 tmp;
 	tmp.e00.re=(u).e0.re*(v).e0.re+(u).e0.im*(v).e0.im + (w).e0.re*(x).e0.re+(w).e0.im*(x).e0.im; 
 	tmp.e00.im=(u).e0.im*(v).e0.re-(u).e0.re*(v).e0.im + (w).e0.im*(x).e0.re-(w).e0.re*(x).e0.im;
 	tmp.e01.re=(u).e0.re*(v).e1.re+(u).e0.im*(v).e1.im + (w).e0.re*(x).e1.re+(w).e0.im*(x).e1.im; 
