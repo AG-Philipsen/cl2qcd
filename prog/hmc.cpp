@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 	//main hmc-loop
 	cout << "start main HMC loop with " << hmc_iter << " iterations: " << endl;
 	for(iter = 0; iter < hmc_iter; iter ++) {
-		gaugefield.perform_hmc_step(&copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
+		gaugefield.perform_hmc_step(iter, &copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
 		if( ( (iter + 1) % writefreq ) == 0 ) {
  			gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, iter, gaugeout_name.str());
 		}

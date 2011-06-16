@@ -13,6 +13,21 @@ hmc_float s_fermion(inputparameters*parameters, hmc_gaugefield * field, hmc_spin
 }
 #endif /* _FERMIONS_ */
 
+// beta * sum_links sum_nu>mu ( 3 - Tr Re Plaquette )
+//CP: since one is only interested in differences of s_gauge, the constant part can be left out!!
+hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta){
+	/** @TODO CP: implement saving of plaquette measurement (and possibly t_plaq and s_plaq and also polyakov-loop??) */
+	hmc_float plaq=0;
+	//CP: alternative method: use already existing plaquette-functions
+	hmc_float t_plaq;
+	hmc_float s_plaq;
+	plaq = plaquette(field, &t_plaq, &s_plaq);
+	//plaq is normalized by factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC), so one has to divide by it again
+	hmc_float factor = 2.0/static_cast<hmc_float>(VOL4D*NDIM*(NDIM-1)*NC);
+	return beta/6./factor*( - plaq);
+}
+
+
 //Without fermions here!!! H = S_gauge + S_gaugemomenta
 hmc_float hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_algebraelement2 * p){
 	hmc_float result;
@@ -27,19 +42,7 @@ hmc_float hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_algebraelement
 }
 
 
-// beta * sum_links sum_nu>mu ( 3 - Tr Re Plaquette )
-//CP: since one is only interested in differences of s_gauge, the constant part can be left out!!
-hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta){
-	/** @TODO CP: implement saving of plaquette measurement (and possibly t_plaq and s_plaq and also polyakov-loop??) */
-	hmc_float plaq=0;
-	//CP: alternative method: use already existing plaquette-functions
-	hmc_float t_plaq;
-	hmc_float s_plaq;
-	plaq = plaquette(field, &t_plaq, &s_plaq);
-	//plaq is normalized by factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC), so one has to divide by it again
-	hmc_float factor = 2.0/static_cast<hmc_float>(VOL4D*NDIM*(NDIM-1)*NC);
-	return beta/6./factor*( - plaq);
-}
+
 
 
 

@@ -39,7 +39,7 @@ class Gaugefield_hmc : public Gaugefield_inversion {
    */
   Opencl_hmc * get_devices_hmc ();
 
-	hmc_error perform_hmc_step(usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer);
+	hmc_error perform_hmc_step(int iter, usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer);
 	
 	
  private:
