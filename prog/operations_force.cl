@@ -35,12 +35,13 @@ __kernel void gauge_force(__global ocl_s_gaugefield * field, __global ae * out){
 	}
 }
 
-#ifdef _FERMIONS_
-
 //CP: fermion_force = (gamma_5 Y)^dagger iT_i
 //	it is assumed that the results can be added to out!!
 __kernel void fermion_force(__global ocl_s_gaugefield * field,__global  spinorfield * Y,__global  spinorfield * X,__global  ae * out){
-  Matrixsu3 U;
+  int id = get_global_id(0);
+	if(id==0) {	
+	
+	Matrixsu3 U;
 	Matrix3x3 v1, v2, tmp;
   su3vec psia,psib,phia,phib;
 	spinor y, plus;
@@ -335,9 +336,8 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field,__global  spinorfi
 			update_gaugemomentum(out_tmp, factor, global_link_pos_down, out);
 			
 		}}
-		
+	}
 }
-#endif
 			
 			
 //this has to go into a wrapper function!!

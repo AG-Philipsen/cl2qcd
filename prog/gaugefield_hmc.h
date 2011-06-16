@@ -28,12 +28,6 @@ class Gaugefield_hmc : public Gaugefield_inversion {
   virtual hmc_error finalize();
 
   /**
-   * Perform inversion on device and print pseudo-scalar correlator to std.
-   * Use point sources.
-   */
-  hmc_error perform_inversion_pointsource_ps_corr_devices(usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer);
-
-  /**
    * Free device, called by finalize
    */
   virtual hmc_error free_devices();
@@ -45,6 +39,9 @@ class Gaugefield_hmc : public Gaugefield_inversion {
    */
   Opencl_hmc * get_devices_hmc ();
 
+	hmc_error perform_hmc_step(usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer);
+	
+	
  private:
 
 };

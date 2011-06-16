@@ -19,9 +19,11 @@
 #include "inputparameters.h"
 #include "host_readgauge.h"
 #include "host_use_timer.h"
+#include "host_random.h"
 #include "gaugefield.h"
 #include "gaugefield_inversion.h"
 #include "gaugefield_hmc.h"
+#include "logger.hpp"
 
 #ifdef _OPENMP
 # include <omp.h>
@@ -109,6 +111,12 @@ void print_info(inputparameters* params, ostream* os)
 	if (params->get_startcondition() == HOT_START) {
 		*os << "## WARNING: hot start - no configuration read\n";
 	}
+	*os << "##  " << '\n';
+	*os << "## HMC parameters: "  << '\n';
+	*os << "## tau  = " << params->get_tau() << '\n';
+	*os << "## HMC steps  = " << params->get_hmcsteps() << '\n';
+	*os << "## integrationsteps1  = " << params->get_integrationsteps1() << '\n';
+	*os << "## integrationsteps2  = " << params->get_integrationsteps2() << '\n';
 	*os << "## **********************************************************\n";
 	*os << std::endl;
 	return;

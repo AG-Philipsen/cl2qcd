@@ -267,6 +267,7 @@ add_executable( hmc
 	gaugefield_inversion.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
+	host_random.cpp
 	opencl.cpp
 	opencl_fermions.cpp
 	host_use_timer.cpp
