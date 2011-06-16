@@ -7,9 +7,9 @@ hmc_error Opencl_hmc::fill_kernels_file ()
 
 	cl_kernels_file.push_back("types_hmc.h");
 	cl_kernels_file.push_back("operations_gaugemomentum.cl");
-	cl_kernels_file.push_back("operations_force.cl");
-	cl_kernels_file.push_back("integrator.cl");
-	cl_kernels_file.push_back("molecular_dynamics.cl");
+// 	cl_kernels_file.push_back("operations_force.cl");
+// 	cl_kernels_file.push_back("integrator.cl");
+// 	cl_kernels_file.push_back("molecular_dynamics.cl");
 
 	return HMC_SUCCESS;  
 }

@@ -25,7 +25,7 @@ spinor inline M_diag_local(spinor in, hmc_complex factor1, hmc_complex factor2){
 	return tmp;	
 }
 
-/** @todo this can be optimized...
+/** @todo this can be optimized... */
 //local gamma5:
 //	(gamma_5)psi = (1)psi.0,1 (-1)psi.2,3
 spinor inline gamma5_local(spinor in){
@@ -677,7 +677,7 @@ __kernel void gamma5(__global spinorfield *in, __global spinorfield *out){
 		else get_odd_site(id_tmp/2, &n, &t);
 
 		out_tmp = get_spinor_from_field(in,n, t); 
-		out_tmp = local_gamma5(in);
+		out_tmp = gamma5_local(out_tmp);
 		put_spinor_to_field(out_tmp, out, n, t);
 	}
 }
