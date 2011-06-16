@@ -8,15 +8,11 @@ __kernel void gauge_force(__global ocl_s_gaugefield * field, __global ae * out){
 	if(id == 0){
 	
 	
-	
-	
-	
-	
-	hmc_float beta = BETA;
+	hmc_float factor =-BETA/3.;
 	int global_link_pos;
-	hmc_3x3matrix V;
-	hmc_3x3matrix tmp;
-	hmc_su3matrix U;
+	Matrix3x3 V, tmp, tmp2;
+	Matrixsu3 U;
+	ae out_tmp;
 	
 	//Gauge force is factor*Im(i Tr(T_i U V))
 	//   with T_i being the SU3-Generator in i-th direction and V the staplematrix
@@ -25,28 +21,25 @@ __kernel void gauge_force(__global ocl_s_gaugefield * field, __global ae * out){
 		for(int n = 0; n < VOLSPACE; n++){
 			for(int mu = 0; mu < NDIM; mu++){
 				global_link_pos = get_global_link_pos(mu, n, t);
+				V = calc_staple(field, n, t, mu);
+				U = get_matrixsu3(field, n, t, mu);
 
-				calc_staple(field, &V, n, t, mu);
-				get_su3matrix(&U, field, n, t, mu);
+				tmp2 = matrix_su3to3x3(U);
+				tmp = multiply_matrix3x3 (tmp2, V);
 
-				/** @TODO CP: this is not valid for REC12 */
-				//when not using Reconstruct12 staplematrix and 3x3matrix are just the same!
-				multiply_su3matrices (&tmp, &U, &V);
+				out_tmp = tr_lambda_u(tmp);
 
-				hmc_algebraelement2 out_tmp;
-				tr_lambda_u(tmp, &out_tmp);
-				hmc_float factor =-beta/3.;
 				update_gaugemomentum(out_tmp, factor, global_link_pos, out);
 	}}}
 	
 	}
 }
-
+/*
 #ifdef _FERMIONS_
 
 //CP: fermion_force = (gamma_5 Y)^dagger iT_i
 //	it is assumed that the results can be added to out!!
-hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hmc_spinor_field * Y, hmc_spinor_field * X, hmc_algebraelement2 * out){
+__kernel void fermion_force(ocl_s_gaugefield * field, spinorfield * Y, spinorfield * X, ae * out){
   hmc_su3matrix U, U_up, U_down;
 	hmc_3x3matrix v1, v2;
   hmc_su3vector psia,psib,phia,phib;
@@ -56,7 +49,7 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 	int global_link_pos;
 	int global_link_pos_down;
 	//the additional 2 comes from Tr(lambda_ij) = 2delta_ij
-	hmc_float factor = 2.*(*parameters).get_kappa();
+	hmc_float factor = 2.*KAPPA;
 	int dir;
 	
 	//main loop
@@ -68,7 +61,7 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 			///////////////////////////////////
 			// Calculate gamma_5 y
 			///////////////////////////////////
-			gamma_5_spinor(y);
+			y = gamma5_local(y);
 
 			//go through the different directions
 			///////////////////////////////////
@@ -96,6 +89,8 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 
 			//U*v1 = U*(phi_a)
 			/** @todo what about REC12 and this call??*/
+
+/*
 			multiply_3x3matrix (&v2, &U, &v1);
 		
 			//TODO
@@ -128,6 +123,8 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 
 			//U*v1 = U*(phi_a)
 			/** @todo what about REC12 and this call??*/
+			
+			/*
 			multiply_3x3matrix (&v2, &U, &v1);
 		
 			//TODO
@@ -160,6 +157,8 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 
 			//U*v1 = U*(phi_a)
 			/** @todo what about REC12 and this call??*/
+			
+			/*
 			multiply_3x3matrix (&v2, &U, &v1);
 		
 			//TODO
@@ -190,6 +189,8 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 
 			//U*v1 = U*(phi_a)
 			/** @todo what about REC12 and this call??*/
+			
+			/*
 			multiply_3x3matrix (&v2, &U, &v1);
 		
 			//TODO
@@ -222,6 +223,8 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 
 			//U*v1 = U*(phi_a)
 			/** @todo what about REC12 and this call??*/
+			
+			/*
 			multiply_3x3matrix (&v2, &U, &v1);
 		
 			//TODO
@@ -252,6 +255,8 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 
 			//U*v1 = U*(phi_a)
 			/** @todo what about REC12 and this call??*/
+			
+			/*
 			multiply_3x3matrix (&v2, &U, &v1);
 		
 			//TODO
@@ -284,6 +289,8 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 
 			//U*v1 = U*(phi_a)
 			/** @todo what about REC12 and this call??*/
+			
+			/*
 			multiply_3x3matrix (&v2, &U, &v1);
 		
 			//TODO
@@ -314,6 +321,8 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 
 			//U*v1 = U*(phi_a)
 			/** @todo what about REC12 and this call??*/
+			
+			/*
 			multiply_3x3matrix (&v2, &U, &v1);
 		
 			//TODO
@@ -326,7 +335,9 @@ hmc_error fermion_force(inputparameters * parameters, hmc_gaugefield * field, hm
 		}}
 	return HMC_SUCCESS;
 }
-
+*/
+			
+			
 //this has to go into a wrapper function!!
 /*
 //CP: this essentially calculates a hmc_gauge_momentum vector

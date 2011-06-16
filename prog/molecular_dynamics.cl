@@ -51,11 +51,6 @@ hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta){
 
 
 
-void update_gaugemomentum(hmc_algebraelement2 in, hmc_float factor, int global_link_pos, hmc_algebraelement2 * out){
-		acc_factor_times_algebraelement(&out[global_link_pos], factor, in);
-}
-
-
 //CP: molecular dynamics update for the gauge momenta:
 //p_out = p_in - eps/2 force(u_in, phi)
 //it is assumed that the force term has already been computed. then one only has real-vectors and this is essentially adding one vector to another...
