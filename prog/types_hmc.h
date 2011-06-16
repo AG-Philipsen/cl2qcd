@@ -15,4 +15,4 @@ typedef struct {
   hmc_float e7;
 } ae;
 
-#define GAUGEMOMENTASIZE NDIM*VOL4D
+// #define GAUGEMOMENTASIZE NDIM*VOL4D

@@ -18,7 +18,7 @@ hmc_error Opencl_hmc::fill_collect_options(stringstream* collect_options)
 {
 
 	Opencl_fermions::fill_collect_options(collect_options);
-
+	*collect_options <<  " -DBETA=" << get_parameters()->get_beta() << " -DGAUGEMOMENTASIZE=" << GAUGEMOMENTASIZE2;
 	return HMC_SUCCESS;
 }
 

@@ -2,8 +2,17 @@
  * @file operations to calculate the forces
  */
 
-hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_algebraelement2 * out){
-	hmc_float beta = (*parameters).get_beta();
+__kernel void gauge_force(__global ocl_s_gaugefield * field, __global ae * out){
+	
+	int id = get_global_id(0);
+	if(id == 0){
+	
+	
+	
+	
+	
+	
+	hmc_float beta = BETA;
 	int global_link_pos;
 	hmc_3x3matrix V;
 	hmc_3x3matrix tmp;
@@ -29,7 +38,8 @@ hmc_error gauge_force(inputparameters * parameters, hmc_gaugefield * field, hmc_
 				hmc_float factor =-beta/3.;
 				update_gaugemomentum(out_tmp, factor, global_link_pos, out);
 	}}}
-	return HMC_SUCCESS;
+	
+	}
 }
 
 #ifdef _FERMIONS_
