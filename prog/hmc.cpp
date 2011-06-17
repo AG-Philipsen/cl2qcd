@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
 	for(iter = 0; iter < hmc_iter; iter ++) {
 		//generate new random-number for Metropolis step
 		rnd_number = hmc_rnd_gen.doub();
-		gaugefield.perform_hmc_step(iter, rnd_number,  &copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
+		gaugefield.perform_hmc_step(&parameters, iter, rnd_number,  &copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
 		if( ( (iter + 1) % writefreq ) == 0 ) {
  			gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, iter, gaugeout_name.str());
 		}

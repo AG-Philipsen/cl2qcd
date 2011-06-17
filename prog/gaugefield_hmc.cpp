@@ -47,7 +47,7 @@ Opencl_hmc * Gaugefield_hmc::get_devices_hmc ()
 	return  (Opencl_hmc*)get_devices();
 }
 
-hmc_error Gaugefield_hmc::perform_hmc_step(int iter, hmc_float rnd_number, usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer){
+hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, int iter, hmc_float rnd_number, usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer){
 	
 	//global and local work sizes;
 	//LZ: should eventually be moved inside opencl_fermions class
@@ -65,6 +65,8 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int iter, hmc_float rnd_number, useti
 
 	const cl_uint num_groups = (gs + ls - 1) / ls;
 	gs = ls * num_groups;
+	
+	hmc_float deltah;
 	
 	/////////////////////////////////////////////////////////////////////
 	//HMC-algorithm
@@ -99,7 +101,7 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int iter, hmc_float rnd_number, useti
 	get_devices_hmc()[0].copy_gaugefield_old_new_device(ls, gs, copytimer);
 	get_devices_hmc()[0].copy_gaugemomenta_old_new_device(ls, gs, copytimer);
 		
-	get_devices_hmc()[0].leapfrog_device(ls, gs, latimer);
+	get_devices_hmc()[0].leapfrog_device((*parameters).get_tau(), (*parameters).get_integrationsteps1(), (*parameters).get_integrationsteps2(), ls, gs, latimer);
 		
 	logger.trace() << "\tobservables of new config:\t" ;
 // 		print_gaugeobservables(new_field, &polytime, &plaqtime);
@@ -108,7 +110,6 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int iter, hmc_float rnd_number, useti
 	
 	//this call calculates deltaH on the device
 	get_devices_hmc()[0].hamiltonian_device(ls, gs, latimer);
-	hmc_float deltah;
 	get_devices_hmc()[0].get_deltah_from_device(&deltah, ls, gs, copytimer);
 
 	/** @todo CP:  export deltah */

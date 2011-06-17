@@ -62,10 +62,12 @@ class Opencl_hmc : public Opencl_fermions {
 	hmc_error generate_gaussian_gaugemomenta_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error generate_gaussian_spinorfield_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error md_update_spinorfield_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);;
-	hmc_error leapfrog_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error leapfrog_device(hmc_float tau, int steps1, int steps2, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error force_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error hamiltonian_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error calc_spinorfield_init_energy_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error md_update_gaugemomentum_device(hmc_float eps, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error md_update_gaugefield_device(hmc_float eps, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	
 	////////////////////////////////////////////////////
 	//copying
