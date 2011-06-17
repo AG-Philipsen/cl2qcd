@@ -28,6 +28,7 @@ hmc_float ae_squarenorm(ae in){
 	return result;
 }
 
+/** @todo this can propably be defined with a minus...*/
 ae acc_factor_times_algebraelement(ae in, hmc_float factor, ae force_in){
 	ae tmp;
 	tmp.e0 = (in).e0+factor*(force_in).e0; 

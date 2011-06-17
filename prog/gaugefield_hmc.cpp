@@ -66,7 +66,10 @@ hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, int iter
 	const cl_uint num_groups = (gs + ls - 1) / ls;
 	gs = ls * num_groups;
 	
+	//variables for interesting observables
 	hmc_float deltah;
+	hmc_float plaq;
+	hmc_float poly;
 	
 	/////////////////////////////////////////////////////////////////////
 	//HMC-algorithm
@@ -108,11 +111,11 @@ hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, int iter
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
 	logger.trace() << "\tperform Metropolis step: " ;
 	
-	//this call calculates deltaH on the device
+	//this call calculates s_gauge (=plaquette), s_fermion, s_gaugemomentum, polyakovloop (just to have it) and deltaH on the device
 	get_devices_hmc()[0].hamiltonian_device(ls, gs, latimer);
+	/** @todo modify this function to get also plaq, poly... */
 	get_devices_hmc()[0].get_deltah_from_device(&deltah, ls, gs, copytimer);
 
-	/** @todo CP:  export deltah */
 	hmc_float compare_prob;
 	if(deltah<0){
 		compare_prob = exp(deltah);
@@ -134,6 +137,7 @@ hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, int iter
 	}
 		logger.trace()<< "\tfinished HMC trajectory " << iter ;
 		/** @todo CP: measurements should be added here... */
+	/** @todo CP:  export deltah */
 		
 // 		print_gaugeobservables(gaugefield, &plaqtime, &polytime, iter, gaugeout_name.str());
 	return HMC_SUCCESS;

@@ -27,26 +27,33 @@ __kernel void md_update_gaugefield(){
 	
 	
 }
-	
-__kernel void md_update_gaugemomenta(){
-	
-	//CP: molecular dynamics update for the gauge momenta:
+
+//CP: molecular dynamics update for the gauge momenta:
 //p_out = p_in - eps/2 force(u_in, phi)
-//it is assumed that the force term has already been computed. then one only has real-vectors and this is essentially adding one vector to another...
-// hmc_error md_update_gauge_momenta(hmc_float eps, hmc_algebraelement2 * p_inout, hmc_algebraelement2 * force_in){
-// 	for(int i = 0; i<GAUGEMOMENTASIZE2; i++){
-// 		acc_factor_times_algebraelement(&p_inout[i], -1.*eps, force_in[i]);
-// 	}
-// 	return HMC_SUCCESS;
-// }
+//it is assumed that the force term has already been computed. then one only has real-vectors and this is essentially adding one vector to another...	
+__kernel void md_update_gaugemomenta(hmc_float eps, __global ae * p_inout, __global ae* force_in){
+	int local_size = get_local_size(0);
+	int global_size = get_global_size(0);
+	int id = get_global_id(0);
+	int loc_idx = get_local_id(0);
+	int num_groups = get_num_groups(0);
+	int group_id = get_group_id (0);
+	
+	hmc_complex tmp;
+	
+	for(int id_tmp = id; id_tmp < GAUGEMOMENTASIZE; id_tmp += global_size) {	
+		p_inout[id_tmp] = acc_factor_times_algebraelement(p_inout[id_tmp], -1.*eps, force_in[id_tmp]);
+	}
 	
 }
 
-__kernel void s_gauge(){
-	// beta * sum_links sum_nu>mu ( 3 - Tr Re Plaquette )
+//these are deprecated since they are not really needed and can be executed from outside...
+/*
+// beta * sum_links sum_nu>mu ( 3 - Tr Re Plaquette )
 //CP: since one is only interested in differences of s_gauge, the constant part can be left out!!
+__kernel void s_gauge(){
 // hmc_float s_gauge(hmc_gaugefield * field, hmc_float beta){
-// 	/** @TODO CP: implement saving of plaquette measurement (and possibly t_plaq and s_plaq and also polyakov-loop??) */
+// 	/** @TODO CP: implement saving of plaquette measurement (and possibly t_plaq and s_plaq and also polyakov-loop??) 
 // 	hmc_float plaq=0;
 // 	//CP: alternative method: use already existing plaquette-functions
 // 	hmc_float t_plaq;
@@ -68,3 +75,5 @@ __kernel void s_fermion(){
 // 	return global_squarenorm(phi);
 	
 }
+
+*/

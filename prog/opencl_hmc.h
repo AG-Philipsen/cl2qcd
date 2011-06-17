@@ -91,8 +91,8 @@ class Opencl_hmc : public Opencl_fermions {
 		cl_kernel md_update_gaugemomenta;
 		cl_kernel gauge_force;
 		cl_kernel fermion_force;
-		cl_kernel s_gauge;
-		cl_kernel s_fermion;
+		//cl_kernel s_gauge;
+		//cl_kernel s_fermion;
 		cl_kernel set_zero_gaugemomentum;
 		
 		//variables

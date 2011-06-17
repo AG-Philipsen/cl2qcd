@@ -171,18 +171,19 @@ hmc_error Opencl_hmc::init_hmc_variables(inputparameters* parameters, usetimer *
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	/** @todo this can most likely be deleted */
+	/*
 	s_gauge = clCreateKernel(clprogram, "s_gauge", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
-	/** @todo this can most likely be deleted */
 	s_fermion = clCreateKernel(clprogram, "s_fermion", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
-
+	*/
 
 	(*timer).add();
 	return HMC_SUCCESS;
@@ -201,8 +202,8 @@ hmc_error Opencl_hmc::finalize_hmc(){
 
 	logger.debug() << "release HMC-kernels.." ;
 	if(clReleaseKernel(generate_gaussian_spinorfield)!=CL_SUCCESS) return HMC_RELEASEKERNELERR;
-	if(clReleaseKernel(s_gauge)!=CL_SUCCESS) return HMC_RELEASEKERNELERR;
-	if(clReleaseKernel(s_fermion)!=CL_SUCCESS) return HMC_RELEASEKERNELERR;
+	//if(clReleaseKernel(s_gauge)!=CL_SUCCESS) return HMC_RELEASEKERNELERR;
+	//if(clReleaseKernel(s_fermion)!=CL_SUCCESS) return HMC_RELEASEKERNELERR;
 	if(clReleaseKernel(generate_gaussian_gaugemomenta)!=CL_SUCCESS) return HMC_RELEASEKERNELERR;
 	if(clReleaseKernel(md_update_gaugefield)!=CL_SUCCESS) return HMC_RELEASEKERNELERR;
 	if(clReleaseKernel(md_update_gaugemomenta)!=CL_SUCCESS) return HMC_RELEASEKERNELERR;
