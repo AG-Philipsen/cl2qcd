@@ -362,6 +362,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs, usetimer * 
 	else{
 		//here, one has first to invert (with BiCGStab) Qplus phi = X and then invert Qminus X => Qminus^-1 Qplus^-1 phi = (QplusQminus)^-1 phi = Y = phi_inv
 	}
+	cout << "\t\tcalc fermion_force..." << endl;
 	fermion_force_device(ls, gs, &noop);
 	
 	
@@ -439,22 +440,67 @@ hmc_error Opencl_hmc::set_zero_clmem_force_device(const size_t ls, const size_t 
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_hmc::gauge_force_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer){
+hmc_error Opencl_hmc::gauge_force_device(const size_t ls, const size_t gs, usetimer * timer){
 	(*timer).reset();
-	
-	
+
+		int clerr;
+	clerr = clSetKernelArg(gauge_force,0,sizeof(cl_mem),&clmem_new_u);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(gauge_force,1,sizeof(cl_mem),&clmem_force);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueNDRangeKernel(queue,gauge_force,1,0,&gs,&ls,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"enqueue gauge_force kernel failed, aborting..." << clerr <<endl;
+    exit(HMC_OCLERROR);
+  }		
+	clFinish(queue);	
 	
 	(*timer).add();
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_hmc::fermion_force_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer){
+hmc_error Opencl_hmc::fermion_force_device(const size_t ls, const size_t gs, usetimer * timer){
 	(*timer).reset();
 	
-	
+	//fermion_force(field, Y, X, out);
+	cl_mem tmp = get_clmem_inout();
+	int clerr;
+	clerr = clSetKernelArg(fermion_force,0,sizeof(cl_mem),&clmem_new_u);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	clerr = clSetKernelArg(fermion_force,1,sizeof(cl_mem),&clmem_phi_inv);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	clerr = clSetKernelArg(fermion_force,2,sizeof(cl_mem),&tmp);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(fermion_force,3,sizeof(cl_mem),&clmem_force);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueNDRangeKernel(queue,fermion_force,1,0,&gs,&ls,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"enqueue fermion_force kernel failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }		
+	clFinish(queue);	
 	
 	(*timer).add();
 	return HMC_SUCCESS;
+
 }
 
 ////////////////////////////////////////////////////

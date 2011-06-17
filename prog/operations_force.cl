@@ -52,7 +52,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field,__global  spinorfi
 	//the 2 here comes from Tr(lambda_ij) = 2delta_ij
 	hmc_float factor = 2.*KAPPA;
 	int dir;
-	
+
 	//main loop
 	for(int t = 0; t<NTIME; t++){
 		for(int n = 0; n<VOLSPACE; n++){
