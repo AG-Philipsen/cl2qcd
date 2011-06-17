@@ -585,12 +585,17 @@ __kernel void M_diag(__global spinorfield * in, __global spinorfield * out){
 	hmc_complex twistfactor_minus = {1., MMUBAR};
 	
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {	
+		
+		/** @todo this must be done more efficient */
+		if(id_tmp%2 == 0) get_even_site(id_tmp/2, &n, &t);
+		else get_odd_site(id_tmp/2, &n, &t);
+		
 		out_tmp = set_spinor_zero();
 		//get input spinor
-		plus = get_spinor_from_eoprec_field(in, id_tmp);
+		plus = get_spinor_from_field(in, n, t);
 		//Diagonalpart:
 		out_tmp = M_diag_local(plus, twistfactor, twistfactor_minus);
-		put_spinor_to_eoprec_field(out_tmp, out, id_tmp);
+		put_spinor_to_field(out_tmp, out, n, t);
 	}
 }
 

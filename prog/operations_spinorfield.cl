@@ -718,4 +718,22 @@ __kernel void set_eoprec_spinorfield_cold(__global spinorfield* in){
 	 }
   }
 }
+
+__kernel void generate_gaussian_spinorfield(__global spinorfield * in){
+	
+	
+	
+	
+	
+}
+
+
+
+
+
+
+
+
+
+
 #endif //_FERMIONS_

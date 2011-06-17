@@ -67,12 +67,18 @@ int main(int argc, char* argv[])
 	int iter;	
 	int writefreq = parameters.get_writefrequency();
 	int savefreq = parameters.get_savefrequency();
+	hmc_float rnd_number;
+	/** @todo CP: give seed meaningful value, perhaps read it in from parameters */
+	int seed = 89343894;
+	Random hmc_rnd_gen (seed);
 	
-	cout << "perform HMC on device... " << endl;
+	logger.trace() << "perform HMC on device... ";
 	//main hmc-loop
-	cout << "start main HMC loop with " << hmc_iter << " iterations: " << endl;
+	logger.trace() << "start main HMC loop with " << hmc_iter << " iterations: " ;
 	for(iter = 0; iter < hmc_iter; iter ++) {
-		gaugefield.perform_hmc_step(iter, &copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
+		//generate new random-number for Metropolis step
+		rnd_number = hmc_rnd_gen.doub();
+		gaugefield.perform_hmc_step(iter, rnd_number,  &copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
 		if( ( (iter + 1) % writefreq ) == 0 ) {
  			gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, iter, gaugeout_name.str());
 		}
@@ -81,12 +87,13 @@ int main(int argc, char* argv[])
 			gaugefield.save(iter);
 		}
 	}
-	cout << "HMC done" << endl;
+	logger.trace() << "HMC done";
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	gaugefield.finalize();
-
+	err = gaugefield.finalize();
+	if (err!= HMC_SUCCESS) 
+		logger.fatal() << "error in finalizing HMC";
 	return HMC_SUCCESS;
 }

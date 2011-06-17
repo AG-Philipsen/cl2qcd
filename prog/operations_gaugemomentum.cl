@@ -111,7 +111,7 @@ __kernel void set_zero_gaugemomentum(__global ae * in){
 }
 
 /** @todo rewrite gaussianComplexVector to handle structs??*/
-__kernel void generate_gaussian_gauge_momenta(__global ae * out){
+__kernel void generate_gaussian_gaugemomenta(__global ae * out){
 	int id = get_global_id(0);
 	if(id == 0){
 		// SL: this is a layer that calls the all-purpose hmc_complex gaussianly-distributed vector

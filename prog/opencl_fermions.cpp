@@ -99,7 +99,7 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
 	//	int spinorfield_size = sizeof(hmc_complex)*SPINORFIELDSIZE;
 	int spinorfield_size = sizeof(spinor)*SPINORFIELDSIZE;
 	//int eoprec_spinorfield_size = sizeof(hmc_complex)*EOPREC_SPINORFIELDSIZE;
-int eoprec_spinorfield_size = sizeof(spinor)*EOPREC_SPINORFIELDSIZE;
+	int eoprec_spinorfield_size = sizeof(spinor)*EOPREC_SPINORFIELDSIZE;
 	int complex_size = sizeof(hmc_complex);
 	int float_size = sizeof(hmc_float);
 	int global_buf_size = complex_size * num_groups;
@@ -109,7 +109,7 @@ int eoprec_spinorfield_size = sizeof(spinor)*EOPREC_SPINORFIELDSIZE;
 	hmc_float tmp;
 
 	cout << "\tinit spinorfields..." << endl;
-   clmem_corr = clCreateBuffer(context,CL_MEM_READ_WRITE,spinorfield_size,0,&clerr);;
+  clmem_corr = clCreateBuffer(context,CL_MEM_READ_WRITE,spinorfield_size,0,&clerr);;
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_corr failed, aborting..."<<endl;
     exit(HMC_OCLERROR);

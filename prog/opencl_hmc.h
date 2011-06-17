@@ -55,6 +55,49 @@ class Opencl_hmc : public Opencl_fermions {
 	hmc_error finalize_hmc();
 
 	hmc_error init_hmc_variables(inputparameters* parameters, usetimer* timer);
-
+	
+	////////////////////////////////////////////////////
+	//Methods needed for the HMC-algorithm
+	
+	hmc_error generate_gaussian_gaugemomenta_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error generate_gaussian_spinorfield_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error md_update_spinorfield_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);;
+	hmc_error leapfrog_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error force_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error hamiltonian_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error calc_spinorfield_init_energy_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	
+	////////////////////////////////////////////////////
+	//copying
+	//Methods to copy new and old fields... these can be optimized!!
+	hmc_error copy_gaugefield_old_new_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error copy_gaugemomenta_old_new_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error copy_gaugefield_new_old_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error copy_gaugemomenta_new_old_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	
+	hmc_error get_deltah_from_device(hmc_float * out, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	private:
+		//kernels
+		cl_kernel generate_gaussian_spinorfield;
+		cl_kernel generate_gaussian_gaugemomenta;
+		cl_kernel md_update_gaugefield;
+		cl_kernel md_update_gaugemomenta;
+		cl_kernel gauge_force;
+		cl_kernel fermion_force;
+		cl_kernel s_gauge;
+		cl_kernel s_fermion;
+		
+		//variables
+		//initial energy of the (gaussian) spinorfield
+		cl_mem clmem_energy_init;
+		//DeltaH
+		cl_mem clmem_deltah;
+		//new and old gaugemomentum, new gaugefield
+		cl_mem clmem_p;
+		cl_mem clmem_new_p;
+		cl_mem clmem_new_u;
+		//inverted spinorfield
+		cl_mem clmem_phi_inv;
+		
 };
 #endif // _MYOPENCLHMCH_

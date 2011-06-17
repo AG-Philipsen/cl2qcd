@@ -45,7 +45,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field,__global  spinorfi
 	Matrix3x3 v1, v2, tmp;
   su3vec psia,psib,phia,phib;
 	spinor y, plus;
-	int nn, nup, ndown;
+	int nn;
 	ae out_tmp;
 	int global_link_pos;
 	int global_link_pos_down;
