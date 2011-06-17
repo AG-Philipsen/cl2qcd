@@ -119,3 +119,5 @@ void SU2Update(__private hmc_float dst [su2_entries], const hmc_float alpha, __g
 	dst[2] = sqrt(1. - a0 * a0) * cos(theta) * sin(phi);
 	dst[3] = sqrt(1. - a0 * a0) * sin(theta);
 }
+
+

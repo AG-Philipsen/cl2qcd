@@ -886,6 +886,25 @@ hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, const size_t loc
 
 }
 
+hmc_error Opencl_fermions::QplusQminus_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
+  int clerr =CL_SUCCESS;
+
+	/** @todo one could save one field here if an additional copying would be included in the end... */
+  clerr = Qminus_device(in, clmem_tmp, local_work_size, global_work_size, timer);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"Qminus_device failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = Qplus_device(clmem_tmp, out, local_work_size, global_work_size, timer);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"Qplus_device failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  
+  return HMC_SUCCESS;
+
+}
+
 hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer, usetimer* dslashtimer, usetimer* Mdiagtimer){
   (*timer).reset();
   int clerr =CL_SUCCESS;

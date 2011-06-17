@@ -108,6 +108,7 @@ class Opencl_fermions : public Opencl {
 	hmc_error gamma5_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer *timer);
 	hmc_error Qplus_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
 	hmc_error Qminus_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
+	hmc_error QplusQminus_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
 	//		eoprec
 	hmc_error gamma5_eoprec_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer *timer);
 	hmc_error Aee_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer, usetimer * singletimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * latimer);
@@ -185,6 +186,7 @@ class Opencl_fermions : public Opencl {
 	cl_mem clmem_s;
 	cl_mem clmem_t;
 	cl_mem clmem_aux;
+	//this is needed in QplusQminus as a temporary field
 	cl_mem clmem_tmp;
 
 	//CP: variables for eoprec solver
