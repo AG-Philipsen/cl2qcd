@@ -68,6 +68,11 @@ class Opencl_hmc : public Opencl_fermions {
 	hmc_error calc_spinorfield_init_energy_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error md_update_gaugemomentum_device(hmc_float eps, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error md_update_gaugefield_device(hmc_float eps, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error set_zero_clmem_force_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error gauge_force_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error fermion_force_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	
+	
 	
 	////////////////////////////////////////////////////
 	//copying
@@ -88,6 +93,7 @@ class Opencl_hmc : public Opencl_fermions {
 		cl_kernel fermion_force;
 		cl_kernel s_gauge;
 		cl_kernel s_fermion;
+		cl_kernel set_zero_gaugemomentum;
 		
 		//variables
 		//initial energy of the (gaussian) spinorfield
@@ -98,6 +104,8 @@ class Opencl_hmc : public Opencl_fermions {
 		cl_mem clmem_p;
 		cl_mem clmem_new_p;
 		cl_mem clmem_new_u;
+		//force field
+		cl_mem clmem_force;
 		//inverted spinorfield
 		cl_mem clmem_phi_inv;
 		
