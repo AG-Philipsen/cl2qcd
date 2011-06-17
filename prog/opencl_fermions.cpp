@@ -368,6 +368,16 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
   }
   
   cout << "\tinit fermion kernels..." << endl;
+	Qplus = clCreateKernel(clprogram,"Qplus",&clerr);
+	if(clerr!=CL_SUCCESS) {
+		cout<<"...creating Qplus kernel failed, aborting."<<endl;
+		exit(HMC_OCLERROR);
+	}
+	Qminus = clCreateKernel(clprogram,"Qminus",&clerr);
+	if(clerr!=CL_SUCCESS) {
+		cout<<"...creating Qminus kernel failed, aborting."<<endl;
+		exit(HMC_OCLERROR);
+	}
 	gamma5 = clCreateKernel(clprogram,"gamma5",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating gamma5 kernel failed, aborting."<<endl;
@@ -818,6 +828,64 @@ hmc_error Opencl_fermions::copy_complex_from_device(cl_mem in, hmc_complex * out
 	return HMC_SUCCESS;
 }
 
+hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
+  (*timer).reset();
+  int clerr =CL_SUCCESS;
+
+  clerr = clSetKernelArg(Qplus,0,sizeof(cl_mem),&in); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(Qplus,1,sizeof(cl_mem),&clmem_gaugefield);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(Qplus,2,sizeof(cl_mem),&out);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueNDRangeKernel(queue,Qplus,1,0,&global_work_size,&local_work_size,0,0,NULL);
+
+  (*timer).add();
+
+  clFinish(queue);
+
+  return HMC_SUCCESS;
+
+}
+
+hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
+  (*timer).reset();
+  int clerr =CL_SUCCESS;
+
+  clerr = clSetKernelArg(Qminus,0,sizeof(cl_mem),&in); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(Qminus,1,sizeof(cl_mem),&clmem_gaugefield);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(Qminus,2,sizeof(cl_mem),&out);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueNDRangeKernel(queue,Qminus,1,0,&global_work_size,&local_work_size,0,0,NULL);
+
+  (*timer).add();
+
+  clFinish(queue);
+
+  return HMC_SUCCESS;
+
+}
+
 hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer, usetimer* dslashtimer, usetimer* Mdiagtimer){
   (*timer).reset();
   int clerr =CL_SUCCESS;
@@ -845,112 +913,46 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_wo
 
   return HMC_SUCCESS;
 
-  //deprecated version with 2 kernels
-  /*
-
-  clerr = clSetKernelArg(M_diag,0,sizeof(cl_mem),&in); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(M_diag,1,sizeof(cl_mem),&out);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clEnqueueNDRangeKernel(queue,M_diag,1,0,&global_work_size,&local_work_size,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"enqueue M_diag kernel failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clFinish(queue);
-  (*Mdiagtimer).add();
-	
-  (*dslashtimer).reset();
-  clerr = clSetKernelArg(dslash,0,sizeof(cl_mem),&in); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(dslash,1,sizeof(cl_mem),&clmem_tmp);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(dslash,2,sizeof(cl_mem),&clmem_gaugefield);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(dslash,3,sizeof(cl_mem),&clmem_theta_fermion);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(dslash,4,sizeof(cl_mem),&clmem_chem_pot_re);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 4 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(dslash,5,sizeof(cl_mem),&clmem_chem_pot_im);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 5 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clEnqueueNDRangeKernel(queue,dslash,1,0,&global_work_size,&local_work_size,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"enqueue dslash kernel failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clFinish(queue);
-  (*dslashtimer).add();
-  
-  //!! perhaps this can go into an extra calling of saxpy
-  clerr = clSetKernelArg(saxpy,0,sizeof(cl_mem),&clmem_tmp); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(saxpy,1,sizeof(cl_mem),&out);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-
-  cl_mem clmem_alphatmp = clCreateBuffer(context,CL_MEM_READ_WRITE,sizeof(hmc_complex),0,&clerr);
-  if(clerr!=CL_SUCCESS) exit(HMC_OCLERROR);
-  hmc_complex alphatmp;
-  alphatmp.re = get_parameters()->get_kappa();
-  alphatmp.im = 0;
-  clerr = clEnqueueWriteBuffer(queue,clmem_alphatmp,CL_TRUE,0,sizeof(hmc_complex),&alphatmp,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... writing clmem_alphatmp failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(saxpy,2,sizeof(cl_mem),&clmem_alphatmp);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(saxpy,3,sizeof(cl_mem),&out);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clEnqueueNDRangeKernel(queue,saxpy,1,0,&global_work_size,&local_work_size,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"enqueue saxpy kernel failed ("<<clerr<<"), aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clFinish(queue);
-
-  if(clReleaseMemObject(clmem_alphatmp)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	
-	(*timer).add();
-	return HMC_SUCCESS;
-*/
 }
 
+
+hmc_error Opencl_fermions::gamma5_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer *timer){
+	(*timer).reset();
+	int clerr =CL_SUCCESS;
+
+  clerr = clSetKernelArg(gamma5,0,sizeof(cl_mem),&in); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(gamma5,1,sizeof(cl_mem),&out);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueNDRangeKernel(queue,gamma5,1,0,&global_work_size,&local_work_size,0,0,NULL);
+	
+	(*timer).add();
+}
+
+hmc_error Opencl_fermions::gamma5_eoprec_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer *timer){
+	(*timer).reset();
+	int clerr =CL_SUCCESS;
+
+  clerr = clSetKernelArg(gamma5_eoprec,0,sizeof(cl_mem),&in); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(gamma5_eoprec,1,sizeof(cl_mem),&out);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clEnqueueNDRangeKernel(queue,gamma5_eoprec,1,0,&global_work_size,&local_work_size,0,0,NULL);
+	
+	(*timer).add();
+}
 
 hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer, usetimer * singletimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * latimer)
 {
