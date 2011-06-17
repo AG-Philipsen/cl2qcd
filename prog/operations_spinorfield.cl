@@ -778,19 +778,6 @@ __kernel void generate_gaussian_spinorfield(__global spinorfield * in, __global 
 		
 		put_spinor_to_field(out_tmp, in, n,t);
 	}
-	
-	
-	
-	
 }
-
-
-
-
-
-
-
-
-
 
 #endif //_FERMIONS_

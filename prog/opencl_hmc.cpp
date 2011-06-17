@@ -224,18 +224,13 @@ hmc_error Opencl_hmc::generate_gaussian_spinorfield_device(const size_t local_wo
 
 hmc_error Opencl_hmc::md_update_spinorfield_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer){
 	(*timer).reset();
-	
-	
-	
-	(*timer).add();
-// #ifdef _FERMIONS_
-// //phi = Q+ chi
-// hmc_error md_update_spinorfield(hmc_spinor_field * in, hmc_spinor_field * out, hmc_gaugefield * field, inputparameters * parameters){
-// 	Qplus(parameters, in, field, out);
-// 	return HMC_SUCCESS;
-// }
-// #endif
+	//suppose the initial gaussian field is saved in phi_inv. then the "phi" from the algorithm is clmem_inout
+	int err =  Opencl_fermions::Qplus_device(clmem_phi_inv, get_clmem_inout() , local_work_size, global_work_size,  timer);
 
+	(*timer).add();
+
+	if(err!=HMC_SUCCESS)
+		logger.fatal() << "error occured in md_update_spinorfield_device.. ";
 	return HMC_SUCCESS;
 }
 

@@ -133,6 +133,10 @@ class Opencl_fermions : public Opencl {
 	hmc_error set_correlator_field_zero_device(const size_t ls, const size_t gs, usetimer * latimer);
 	hmc_error add_solution_to_correlator_field_device(const size_t ls, const size_t gs, usetimer * latimer);
 
+	/////////////////////////////////////////////////
+	//functions to get private variables
+	cl_mem get_clmem_inout();
+	
  private:
 	//spinorfield and solver variables
 	//LZ	cl_mem clmem_kappa;

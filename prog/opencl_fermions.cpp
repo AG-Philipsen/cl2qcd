@@ -2030,6 +2030,11 @@ hmc_error Opencl_fermions::ps_correlator_device(const size_t local_work_size, co
 	return HMC_SUCCESS;
 }
 
+cl_mem Opencl_fermions::get_clmem_inout(){
+	return clmem_inout;
+}
+
+
 
 hmc_error Opencl_fermions::finalize_fermions(){
 	
