@@ -111,27 +111,30 @@ __kernel void set_zero_gaugemomentum(__global ae * in){
 }
 
 /** @todo rewrite gaussianComplexVector to handle structs??*/
-__kernel void generate_gaussian_gaugemomenta(__global ae * out){
+__kernel void generate_gaussian_gaugemomenta(__global ae * out, __global hmc_ocl_ran * rnd){
+	int local_size = get_local_size(0);
+	int global_size = get_global_size(0);
 	int id = get_global_id(0);
-	if(id == 0){
-		// SL: this is a layer that calls the all-purpose hmc_complex gaussianly-distributed vector
-		// with appropriate length and variance, i.e. GAUGEMOMENTASIZE and 1
-		// CP: hmc_gauge_momentum should be a real vector, so one should use GAUGEMOMENTASIZE/2 ?!?
-		// CP: workaround for structs:
-		//hmc_float * tmp = new hmc_float[GAUGEMOMENTASIZE*8];
-		//gaussianComplexVector((hmc_complex *)tmp, GAUGEMOMENTASIZE/2, 1.0);
-		// SL: not yet tested
-// 		for(int i = 0; i<GAUGEMOMENTASIZE; i++){	
-// 			(out[i]).e0 = tmp[i*8 + 0];
-// 			(out[i]).e1 = tmp[i*8 + 1];
-// 			(out[i]).e2 = tmp[i*8 + 2];
-// 			(out[i]).e3 = tmp[i*8 + 3];
-// 			(out[i]).e4 = tmp[i*8 + 4];
-// 			(out[i]).e5 = tmp[i*8 + 5];
-// 			(out[i]).e6 = tmp[i*8 + 6];
-// 			(out[i]).e7 = tmp[i*8 + 7];
-// 		}
-// 		delete [] tmp;
+	int loc_idx = get_local_id(0);
+	int num_groups = get_num_groups(0);
+	int group_id = get_group_id (0);
+	
+	hmc_complex tmp;
+	
+	for(int id_tmp = id; id_tmp < GAUGEMOMENTASIZE; id_tmp += global_size) {	
+		//CP: there are 8 elements in ae
+		tmp = gaussianNormalPair(&rnd[id]);
+		out[id_tmp].e0 = tmp.re;
+		out[id_tmp].e1 = tmp.im;
+		tmp = gaussianNormalPair(&rnd[id]);
+		out[id_tmp].e2 = tmp.re;
+		out[id_tmp].e3 = tmp.im;
+		tmp = gaussianNormalPair(&rnd[id]);
+		out[id_tmp].e4 = tmp.re;
+		out[id_tmp].e5 = tmp.im;
+		tmp = gaussianNormalPair(&rnd[id]);
+		out[id_tmp].e6 = tmp.re;
+		out[id_tmp].e7 = tmp.im;
 	}
 }
 

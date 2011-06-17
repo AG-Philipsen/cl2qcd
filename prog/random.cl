@@ -95,3 +95,17 @@ void random_1_2_3(__private int seq[3], __global hmc_ocl_ran * const restrict st
 	++seq[1];
 	++seq[2];
 }
+/**
+ * Get a normal distributed complex number
+ */
+hmc_complex inline gaussianNormalPair(__global hmc_ocl_ran * rnd){
+	// Box-Muller method, cartesian form, for extracting two independent normal standard real numbers
+	hmc_complex tmp;
+	hmc_float u1 = 1.0 - ocl_new_ran(rnd);
+	hmc_float u2 = 1.0 - ocl_new_ran(rnd);
+	hmc_float p  = sqrt(-2*log(u1));
+	tmp.re = p * cos(2*PI*u2);
+	tmp.im = p * sin(2*PI*u2);
+	return tmp;
+	// SL: not yet tested
+}
