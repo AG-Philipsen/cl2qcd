@@ -368,6 +368,16 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
   }
   
   cout << "\tinit fermion kernels..." << endl;
+	gamma5 = clCreateKernel(clprogram,"gamma5",&clerr);
+	if(clerr!=CL_SUCCESS) {
+		cout<<"...creating gamma5 kernel failed, aborting."<<endl;
+		exit(HMC_OCLERROR);
+	}
+	gamma5_eoprec = clCreateKernel(clprogram,"gamma5_eoprec",&clerr);
+	if(clerr!=CL_SUCCESS) {
+		cout<<"...creating gamma5_eoprec kernel failed, aborting."<<endl;
+		exit(HMC_OCLERROR);
+	}	
 	M = clCreateKernel(clprogram,"M",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating M kernel failed, aborting."<<endl;

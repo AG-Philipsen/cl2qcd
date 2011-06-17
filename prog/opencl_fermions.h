@@ -57,63 +57,74 @@ class Opencl_fermions : public Opencl {
 	////////////////////////////////////////////////7777
 	// copying
 	// now with the new spinor types
-	//     non-eoprec
+	//		non-eoprec
 	hmc_error init_fermion_variables(inputparameters* parameters, usetimer* timer);
 	hmc_error copy_spinorfield_to_device(spinorfield* host_spinorfield, usetimer* timer);
 	hmc_error copy_source_to_device(spinorfield* host_spinorfield, usetimer* timer);
 	hmc_error get_spinorfield_from_device(spinorfield* host_spinorfield,  usetimer* timer);
 	hmc_error copy_spinor_device(cl_mem in, cl_mem out, usetimer* timer);
 
- 	//     eoprec
+ 	//		eoprec
 	hmc_error copy_eoprec_spinorfield_to_device(spinorfield_eoprec* host_spinorfield, usetimer* timer);
 	hmc_error copy_eoprec_source_to_device(spinorfield_eoprec* host_spinorfield1, spinorfield_eoprec* host_spinorfield2, usetimer* timer);
 	hmc_error get_eoprec_spinorfield_from_device(spinorfield_eoprec* host_spinorfield,  usetimer* timer);
 	hmc_error copy_eoprec_spinor_device(cl_mem in, cl_mem out, usetimer* timer);
 
+	//		misc
+	hmc_error copy_float_from_device(cl_mem in, hmc_float * out, usetimer* timer);
+	hmc_error copy_complex_from_device(cl_mem in, hmc_complex * out, usetimer* timer);
+	hmc_error copy_complex_device(cl_mem in, cl_mem out, usetimer* timer);
+		
 	/////////////////////////////////////////
 	// device operations
+	
+	//		linear Algebra operations
 	hmc_error convert_to_kappa_format_device(cl_mem inout, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error convert_from_kappa_format_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error convert_to_kappa_format_eoprec_device(cl_mem inout, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-
 	hmc_error convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 
-	hmc_error copy_float_from_device(cl_mem in, hmc_float * out, usetimer* timer);
-	hmc_error copy_complex_from_device(cl_mem in, hmc_complex * out, usetimer* timer);
-	hmc_error copy_complex_device(cl_mem in, cl_mem out, usetimer* timer);
 	hmc_error set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_mem b, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_mem out, usetimer* timer);
 	hmc_error set_complex_to_product_device(cl_mem a, cl_mem b, cl_mem out, usetimer* timer);
 	hmc_error set_float_to_global_squarenorm_device(cl_mem a, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-	
 	hmc_error set_zero_spinorfield_device(cl_mem x, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
 	hmc_error set_zero_spinorfield_eoprec_device(cl_mem x, const size_t local_work_size, const size_t global_work_size, usetimer* timer);
-
 	hmc_error saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
 	hmc_error saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
 	hmc_error saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
 	hmc_error saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer);
-	hmc_error M_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer, usetimer * dslashtimer, usetimer * Mdiagtimer);
-
-	hmc_error bicgstab_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
-	hmc_error bicgstab_eoprec_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
-	hmc_error cg_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
-	hmc_error testing_spinor(inputparameters* parameters, size_t local_size, size_t global_size);
-
 	hmc_error create_point_source_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs, usetimer * latimer);
 	hmc_error create_point_source_eoprec_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer);
-	hmc_error solver_device(usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error set_spinorfield_cold_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error set_eoprec_spinorfield_cold_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	
+	//		fermionmatrix operations
+	//		non-eoprec
+	hmc_error M_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer, usetimer * dslashtimer, usetimer * Mdiagtimer);
+	//		eoprec
 	hmc_error Aee_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer, usetimer * singletimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * latimer);
 	hmc_error M_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error M_sitediagonal_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error dslash_eoprec_device(cl_mem in, cl_mem out, int evenodd, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	
+	//this is not needed anymore!!
+// 	hmc_error testing_spinor(inputparameters* parameters, size_t local_size, size_t global_size);
+
+	//		solver operations
+	//		non-eoprec
+	hmc_error solver_device(usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error bicgstab_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
+	//		eorec
+	hmc_error bicgstab_eoprec_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
+	hmc_error cg_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
 	hmc_error solver_eoprec_device(usetimer * copytimer, usetimer * singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
+	
+	//		operations needed calculating fermionic observables
 	hmc_error ps_correlator_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error set_spinorfield_cold_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error set_eoprec_spinorfield_cold_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error set_correlator_field_zero_device(const size_t ls, const size_t gs, usetimer * latimer);
 	hmc_error add_solution_to_correlator_field_device(const size_t ls, const size_t gs, usetimer * latimer);
 
@@ -126,6 +137,8 @@ class Opencl_fermions : public Opencl {
 	cl_mem clmem_chem_pot_im;
 
 	cl_kernel M;
+	cl_kernel gamma5;
+	cl_kernel gamma5_eoprec;
 	cl_kernel ps_correlator;
 	cl_kernel set_spinorfield_cold;
 	cl_kernel set_eoprec_spinorfield_cold;
