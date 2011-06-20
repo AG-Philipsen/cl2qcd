@@ -65,6 +65,7 @@
 #define NUMTHREADS 1
 #endif
 
+#ifndef _INKERNEL_
 // Definition of numeric constants for the symmetric structure constants d_ijk of su(3)
 /** 1/2 */
 #define F_1_2   (static_cast<hmc_float>(0.5))
@@ -76,6 +77,8 @@
 // SL: not sure if those should be here: they define details for the exact exponentiation of su(3) into SU(3)
 #define _EXACT_EXPONENTIATION_MAX_POWER_  (50)
 #define _EXACT_EXPONENTIATION_ACCURACY_   (2.0E-16)
+
+#endif //_INKERNEL_
 
 #endif
 
