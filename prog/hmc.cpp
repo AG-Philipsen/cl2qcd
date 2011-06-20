@@ -17,8 +17,9 @@ int main(int argc, char* argv[])
 	print_info(&parameters,&cout);
 
 	//init file to store gauge observables, print initial information
+	/** @todo think about what is a senseful filename*/
 	stringstream gaugeout_name;
-	gaugeout_name << "gaugeobservables_beta" << parameters.get_beta();
+	gaugeout_name << "HMC_output";
 	fstream gaugeout;
 
 	gaugeout.open(gaugeout_name.str().c_str(), std::ios::out | std::ios::app);
@@ -31,7 +32,8 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	sourcefileparameters parameters_source;
-
+	hmc_observables obs;
+	
 	Gaugefield_hmc gaugefield;
 	hmc_rndarray rndarray;
 	cl_device_type devicetypes[1];
@@ -78,9 +80,9 @@ int main(int argc, char* argv[])
 	for(iter = 0; iter < hmc_iter; iter ++) {
 		//generate new random-number for Metropolis step
 		rnd_number = hmc_rnd_gen.doub();
-		gaugefield.perform_hmc_step(&parameters, iter, rnd_number,  &copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
+		gaugefield.perform_hmc_step(&parameters, &obs, iter, rnd_number, gaugeout_name.str(),  &copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
 		if( ( (iter + 1) % writefreq ) == 0 ) {
- 			gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, iter, gaugeout_name.str());
+			gaugefield.print_hmcobservables(obs, iter, gaugeout_name.str());
 		}
 		if( parameters.get_saveconfigs() == TRUE && ( (iter + 1) % savefreq ) == 0 ) {
 			gaugefield.sync_gaugefield(&copytime);

@@ -47,7 +47,7 @@ Opencl_hmc * Gaugefield_hmc::get_devices_hmc ()
 	return  (Opencl_hmc*)get_devices();
 }
 
-hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, int iter, hmc_float rnd_number, usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer){
+hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, hmc_observables *obs, int iter, hmc_float rnd_number, const string outname, usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer){
 	
 	//global and local work sizes;
 	//LZ: should eventually be moved inside opencl_fermions class
@@ -110,22 +110,10 @@ hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, int iter
 // 		print_gaugeobservables(new_field, &polytime, &plaqtime);
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
 	logger.trace() << "\tperform Metropolis step: " ;
-	
-	//this call calculates s_gauge (=plaquette), s_fermion, s_gaugemomentum, polyakovloop (just to have it) and deltaH on the device
-	get_devices_hmc()[0].hamiltonian_device(ls, gs, latimer);
-	/** @todo modify this function to get also plaq, poly... */
-	get_devices_hmc()[0].get_deltah_from_device(&deltah, ls, gs, copytimer);
+	//this call calculates also the HMC-Observables
+	*obs = get_devices_hmc()[0].metropolis(rnd_number, (*parameters).get_beta(), outname, ls, gs, latimer);
 
-	hmc_float compare_prob;
-	if(deltah<0){
-		compare_prob = exp(deltah);
-	}else{
-		compare_prob = 1.0;
-	}
-	
-	// SL: the following can be tuned, whether it is more costly to draw always the rnd number even when compare_prob=1
-	//     and whether the "if compare_prob==1" costs more or less than always evaluating the exp ...
-	if(rnd_number <= compare_prob){
+	if((*obs).accept == 1){
 		// perform the change nonprimed->primed !
 		get_devices_hmc()[0].copy_gaugefield_new_old_device(ls, gs, latimer);
 		get_devices_hmc()[0].copy_gaugemomenta_new_old_device(ls, gs, latimer);
@@ -136,45 +124,24 @@ hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, int iter
 		logger.trace() << "\t\tnew configuration rejected" ;
 	}
 		logger.trace()<< "\tfinished HMC trajectory " << iter ;
-		/** @todo CP: measurements should be added here... */
-	/** @todo CP:  export deltah */
-		
-// 		print_gaugeobservables(gaugefield, &plaqtime, &polytime, iter, gaugeout_name.str());
+	
 	return HMC_SUCCESS;
 }
 
-//needed variables for HMC:
-/*
-variables:
-energy_init
-chi (gaussian spinorfield)
-p, p_new (ae fields)
-u_new (gaugefield)
-phi, phi_inv (spinorfields)s
-
-functions:
-generate_gaussian_gaugemomenta_device
-generate_gaussian_spinorfield_device
-md_update_spinorfield_device()
-leapfrog_device
-copy_gaugefield_device
-copy_gaugemomenta_device
-force_device
-hamiltonian_device
-QplusQminus_device (this should go into opencl_fermions...)
-Qplus_device (this should go into opencl_fermions...)
-Qminus_device (this should go into opencl_fermions...)
-
-kernels:
-generate_gaussian_spinorfield
-generate_gaussian_gaugemomenta
-md_update_gaugefield
-md_update_gaugemomenta
-gauge_force
-fermion_force
-s_gauge
-s_fermion
-gamma5 (this should go into opencl_fermions...)
-
-*/
+void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::string filename)
+{
+	hmc_float exp_deltaH = exp(obs.deltaH);
+	logger.trace() << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq << "\t" << obs.poly.re << "\t" << obs.poly.im <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept ;
+// 	printf("Observables:%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\n",iter,obs.plaq,obs.tplaq,obs.splaq,obs.poly.re,obs.poly.im,obs.deltaH, exp_deltaH, obs.prob, obs.accept );
+	std::fstream hmcout;
+	hmcout.open(filename.c_str(), std::ios::out | std::ios::app);
+	if(!hmcout.is_open()) exit(HMC_FILEERROR);
+	hmcout.width(8);
+	hmcout << iter;
+	hmcout << "\t";
+	hmcout.precision(15);
+	hmcout << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq << "\t" << obs.poly.re << "\t" << obs.poly.im << "\t" << sqrt(obs.poly.re * obs.poly.re + obs.poly.im * obs.poly.im) <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept << std::endl;
+	hmcout.close();
+	return;
+}
 

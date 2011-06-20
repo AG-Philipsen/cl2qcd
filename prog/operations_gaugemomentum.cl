@@ -88,7 +88,7 @@ hmc_algebraelement copy_gaugemomenta(hmc_algebraelement2 * source, hmc_algebrael
 */
 	
 /** @todo add args for reduction... */
-__kernel void gaugemomenta_squarenorm(__global ae * in){
+__kernel void gaugemomentum_squarenorm(__global ae * in,__global hmc_float * out){
 	int id = get_global_id(0);
 	if(id == 0){
 		hmc_float result = 0.;
@@ -97,7 +97,8 @@ __kernel void gaugemomenta_squarenorm(__global ae * in){
 		}
 		
 		/** @todo add reduction.. */
-		
+		//CP: Does this work??
+		*out = result;
 	}
 }
 
@@ -158,7 +159,9 @@ Matrixsu3 build_su3matrix_by_exponentiation(ae in, hmc_float epsilon){
   hmc_complex a0,a1,a2,a1p;
 
   //make in an su3matrix
+	//CP: this is the crucial difference between our original method and tmlqcd. They have tr(lambda_i lambda_j) = 2delta_ij instead of delta_ij!!!
 	hmc_float halfeps = epsilon;//*F_1_2;
+	
 	v.e00.re = 0.0;
 	v.e00.im = halfeps*(in.e7*F_1_S3+in.e2);
 	v.e01.re = halfeps*in.e1;
@@ -232,7 +235,7 @@ Matrixsu3 build_su3matrix_by_exponentiation(ae in, hmc_float epsilon){
   vr.e21.im =         a1.re*v.e21.im + a1.im*v.e21.re + a2.re*v2.e21.im + a2.im*v2.e21.re;
   vr.e22.re = a0.re + a1.re*v.e22.re - a1.im*v.e22.im + a2.re*v2.e22.re - a2.im*v2.e22.im;
   vr.e22.im = a0.im + a1.re*v.e22.im + a1.im*v.e22.re + a2.re*v2.e22.im + a2.im*v2.e22.re;
-  return vr;
+  return v;
 }
 
 //CP: tested version that recreates the matrices made by tmlqcd

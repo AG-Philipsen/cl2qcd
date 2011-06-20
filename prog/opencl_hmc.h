@@ -64,7 +64,7 @@ class Opencl_hmc : public Opencl_fermions {
 	hmc_error md_update_spinorfield_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);;
 	hmc_error leapfrog_device(hmc_float tau, int steps1, int steps2, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error force_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error hamiltonian_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_observables metropolis(hmc_float rnd, hmc_float beta, const string outname,const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error calc_spinorfield_init_energy_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error md_update_gaugemomentum_device(hmc_float eps, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error md_update_gaugefield_device(hmc_float eps, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
@@ -82,7 +82,7 @@ class Opencl_hmc : public Opencl_fermions {
 	hmc_error copy_gaugefield_new_old_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error copy_gaugemomenta_new_old_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	
-	hmc_error get_deltah_from_device(hmc_float * out, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error set_float_to_gaugemomentum_squarenorm_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	private:
 		//kernels
 		cl_kernel generate_gaussian_spinorfield;
@@ -94,12 +94,15 @@ class Opencl_hmc : public Opencl_fermions {
 		//cl_kernel s_gauge;
 		//cl_kernel s_fermion;
 		cl_kernel set_zero_gaugemomentum;
+		cl_kernel gaugemomentum_squarenorm;
 		
 		//variables
 		//initial energy of the (gaussian) spinorfield
 		cl_mem clmem_energy_init;
-		//DeltaH
-		cl_mem clmem_deltah;
+		//squarenorm temps
+		cl_mem clmem_p2;
+		cl_mem clmem_new_p2;
+		cl_mem clmem_s_fermion;
 		//new and old gaugemomentum, new gaugefield
 		cl_mem clmem_p;
 		cl_mem clmem_new_p;

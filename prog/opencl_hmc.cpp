@@ -121,8 +121,20 @@ hmc_error Opencl_hmc::init_hmc_variables(inputparameters* parameters, usetimer *
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
-	logger.trace() << "Create buffer for deltaH...";
-	clmem_deltah = clCreateBuffer(context, CL_MEM_READ_WRITE, float_size, 0, &clerr);
+	logger.trace() << "Create buffer for p2...";
+	clmem_p2 = clCreateBuffer(context, CL_MEM_READ_WRITE, float_size, 0, &clerr);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "... failed, aborting.";
+		exit(HMC_OCLERROR);
+	}
+	logger.trace() << "Create buffer for new_p2...";
+	clmem_new_p2 = clCreateBuffer(context, CL_MEM_READ_WRITE, float_size, 0, &clerr);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "... failed, aborting.";
+		exit(HMC_OCLERROR);
+	}
+	logger.trace() << "Create buffer for s_fermion...";
+	clmem_s_fermion = clCreateBuffer(context, CL_MEM_READ_WRITE, float_size, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
@@ -184,7 +196,12 @@ hmc_error Opencl_hmc::init_hmc_variables(inputparameters* parameters, usetimer *
 		exit(HMC_OCLERROR);
 	}
 	*/
-
+	logger.debug() << "Create kernel gaugemomentum_squarenorm...";
+	gaugemomentum_squarenorm = clCreateKernel(clprogram, "gaugemomentum_squarenorm", &clerr);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "... failed, aborting.";
+		exit(HMC_OCLERROR);
+	}
 	(*timer).add();
 	return HMC_SUCCESS;
 }
@@ -193,7 +210,8 @@ hmc_error Opencl_hmc::finalize_hmc(){
 
 	logger.debug() << "release HMC-variables.." ;
 	if(clReleaseMemObject(clmem_energy_init)!=CL_SUCCESS) return HMC_RELEASEVARIABLEERR;
-	if(clReleaseMemObject(clmem_deltah)!=CL_SUCCESS) return HMC_RELEASEVARIABLEERR;
+	if(clReleaseMemObject(clmem_p2)!=CL_SUCCESS) return HMC_RELEASEVARIABLEERR;
+	if(clReleaseMemObject(clmem_new_p2)!=CL_SUCCESS) return HMC_RELEASEVARIABLEERR;
 	if(clReleaseMemObject(clmem_p)!=CL_SUCCESS) return HMC_RELEASEVARIABLEERR;
 	if(clReleaseMemObject(clmem_new_p)!=CL_SUCCESS) return HMC_RELEASEVARIABLEERR;
 	if(clReleaseMemObject(clmem_new_u)!=CL_SUCCESS) return HMC_RELEASEVARIABLEERR;
@@ -358,7 +376,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs, usetimer * 
 		}
 		cout << "\t\t\tcalc X" << endl;
 		//X = Qminus Y = Qminus phi_inv 
-		Qminus_device(clmem_phi_inv,get_clmem_inout(), ls, gs, &noop);
+		Opencl_fermions::Qminus_device(clmem_phi_inv,get_clmem_inout(), ls, gs, &noop);
 	}
 	else{
 		//here, one has first to invert (with BiCGStab) Qplus phi = X and then invert Qminus X => Qminus^-1 Qplus^-1 phi = (QplusQminus)^-1 phi = Y = phi_inv
@@ -372,49 +390,154 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs, usetimer * 
 }
 
 
-hmc_error Opencl_hmc::hamiltonian_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer){
-	//Without fermions here!!! H = S_gauge + S_gaugemomenta
-// hmc_float hamiltonian(hmc_gaugefield * field, hmc_float beta, hmc_algebraelement2 * p){
-// 	hmc_float result;
-// 	(result) = 0.;
-// 	(result) += s_gauge(field, beta);
-// 	//s_gm = 1/2*squarenorm(Pl)
-// 	hmc_float s_gm;
-// 	gaugemomenta_squarenorm(p, &s_gm);
-// 	result += 0.5*s_gm;
-// 	
-// 	return result;
-// }
+hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const string outname, const size_t local_work_size, const size_t global_work_size, usetimer * timer){
 	(*timer).reset();
+	hmc_observables tmp;
+	//Calc Hamiltonian
+	int accept = 0;
+	hmc_float deltaH;
+	hmc_float spinor_energy_init, s_fermion;
+	hmc_float p2, new_p2;
+	hmc_float tplaq, splaq, plaq;
+	hmc_float tplaq_new, splaq_new, plaq_new;
+	hmc_complex poly;
+	hmc_complex poly_new;
+	/** @todo check use of timer */
+	usetimer noop;
 	
+	logger.trace() << "\tCalc Hamiltonian...";
+	//Gauge-Part
+	//Calc gaugeobservables from old gaugefield
+	Opencl_fermions::copy_float_from_device(clmem_energy_init, &spinor_energy_init, timer);
+	//In this call, the observables are calculated already with appropiate Weighting factor
+	Opencl_fermions::gaugeobservables(&plaq,  &tplaq, &splaq, &poly, &noop, &noop);
+	//plaq is normalized by factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC), so one has to divide by it again to get s_gauge
+	hmc_float factor = 2.0/static_cast<hmc_float>(VOL4D*NDIM*(NDIM-1)*NC);
+	deltaH = plaq;
+	Opencl::gaugeobservables(clmem_new_u, &plaq_new,  &tplaq_new, &splaq_new, &poly_new, &noop, &noop);
+	//plaq is normalized by factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC), so one has to divide by it again to get s_gauge
+	deltaH -=plaq_new;
+	deltaH *= beta/6.*factor;
 	
+		logger.trace() << "\tCalc Hamiltonian gaugemom...";
+	//Gaugemomentum-Part
+	set_float_to_gaugemomentum_squarenorm_device(clmem_p, clmem_p2, local_work_size, global_work_size, timer);
+	set_float_to_gaugemomentum_squarenorm_device(clmem_new_p, clmem_new_p2, local_work_size, global_work_size, timer);
+	Opencl_fermions::copy_float_from_device(clmem_p2, &p2, timer);
+	Opencl_fermions::copy_float_from_device(clmem_new_p2, &new_p2, timer);
+	deltaH += 0.5*(p2 - new_p2);
+	
+		logger.trace() << "\tCalc Hamiltonian ferm...";
+	
+	//Fermion-Part:
+	// sum_links phi*_i (M^+M)_ij^-1 phi_j
+	// here it is assumed that the rhs has already been computed in clmem_inout... (during the leapfrog..)
+	//CP: phi_inv is not needed after this, so it can be used to store M (QplusQminus_inv)
+	Opencl_fermions::Qminus_device(Opencl_fermions::get_clmem_inout(), clmem_phi_inv, local_work_size, global_work_size, timer);
+	set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_s_fermion, local_work_size, global_work_size, timer);
+	copy_float_from_device(clmem_s_fermion, &s_fermion, timer);
+	deltaH += spinor_energy_init - s_fermion;
+	
+	logger.trace() << "\tmetropolis...";
+	//Metropolis-Part
+	hmc_float compare_prob;
+	if(deltaH<0){
+		compare_prob = exp(deltaH);
+	}else{
+		compare_prob = 1.0;
+	}
+	int iter;
+	if(rnd <= compare_prob) {
+		tmp.accept = 1; 
+		tmp.plaq = plaq_new;
+		tmp.tplaq = tplaq_new;
+		tmp.splaq = splaq_new;
+		tmp.poly = poly_new;
+		tmp.deltaH = deltaH;
+		tmp.prob = compare_prob;
+	}
+	else{
+		tmp.accept = 0; 
+		tmp.plaq = plaq;
+		tmp.tplaq = tplaq;
+		tmp.splaq = splaq;
+		tmp.poly = poly;
+		tmp.deltaH = deltaH;
+		tmp.prob = compare_prob;
+	}
 	
 	(*timer).add();
-	return HMC_SUCCESS;
+	return tmp;
 }
 
 hmc_error Opencl_hmc::calc_spinorfield_init_energy_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer){
 	(*timer).reset();
+	//Suppose the initial spinorfield is saved in phi_inv
+	Opencl_fermions::set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_energy_init, local_work_size, global_work_size, timer);
+
+	(*timer).add();
+	return HMC_SUCCESS;
+}
+
+hmc_error Opencl_hmc::md_update_gaugemomentum_device(hmc_float eps, const size_t ls, const size_t gs, usetimer * timer){
+	(*timer).reset();
+	//__kernel void md_update_gaugemomenta(hmc_float eps, __global ae * p_inout, __global ae* force_in){
 	
+	hmc_float tmp = eps;
+	int clerr;
+	clerr = clSetKernelArg(md_update_gaugemomenta,0,sizeof(hmc_float),&tmp);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	clerr = clSetKernelArg(md_update_gaugemomenta,1,sizeof(cl_mem),&clmem_new_p);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	clerr = clSetKernelArg(md_update_gaugemomenta,2,sizeof(cl_mem),&clmem_force);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }  clerr = clEnqueueNDRangeKernel(queue,md_update_gaugemomenta,1,0,&gs,&ls,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"enqueue md_update_gaugemomenta kernel failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }		
+	clFinish(queue);	
 	
 	
 	(*timer).add();
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_hmc::md_update_gaugemomentum_device(hmc_float eps, const size_t local_work_size, const size_t global_work_size, usetimer * timer){
+hmc_error Opencl_hmc::md_update_gaugefield_device(hmc_float eps, const size_t ls, const size_t gs, usetimer * timer){
 	(*timer).reset();
-	
-	
-	
-	(*timer).add();
-	return HMC_SUCCESS;
-}
-
-hmc_error Opencl_hmc::md_update_gaugefield_device(hmc_float eps, const size_t local_work_size, const size_t global_work_size, usetimer * timer){
-	(*timer).reset();
-	
-	
+	// __kernel void md_update_gaugefield(hmc_float eps, __global ae * p_in, __global ocl_s_gaugefield * u_inout){
+	hmc_float tmp = eps;
+		int clerr;
+	//this is always applied to clmem_force
+	clerr = clSetKernelArg(md_update_gaugefield,0,sizeof(hmc_float),&tmp);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	clerr = clSetKernelArg(md_update_gaugefield,1,sizeof(cl_mem),&clmem_new_p);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	clerr = clSetKernelArg(md_update_gaugefield,2,sizeof(cl_mem),&clmem_new_u);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }  
+  clerr = clEnqueueNDRangeKernel(queue,md_update_gaugefield,1,0,&gs,&ls,0,0,NULL);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"enqueue md_update_gaugefield kernel failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }		
+	clFinish(queue);	
 	
 	(*timer).add();
 	return HMC_SUCCESS;
@@ -562,9 +685,30 @@ hmc_error Opencl_hmc::copy_gaugemomenta_new_old_device(const size_t local_work_s
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_hmc::get_deltah_from_device(hmc_float * out, const size_t local_work_size, const size_t global_work_size, usetimer * timer){
-	hmc_float tmp;
-	copy_float_from_device(clmem_deltah, &tmp, timer);
-	(*out) = tmp;
+hmc_error Opencl_hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out, const size_t local_work_size, const size_t global_work_size, usetimer * timer){
+	(*timer).reset();
+	int clerr = CL_SUCCESS;
+	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
+	clerr = clSetKernelArg(gaugemomentum_squarenorm, 0, sizeof(cl_mem), &clmem_in);
+	if(clerr != CL_SUCCESS) {
+		cout << "clSetKernelArg 0 failed, aborting..." << endl;
+		exit(HMC_OCLERROR);
+	}
+// 	/** @todo add reduction */
+	clerr = clSetKernelArg(gaugemomentum_squarenorm, 1, sizeof(cl_mem), &clmem_out);
+	if(clerr != CL_SUCCESS) {
+		cout << "clSetKernelArg 1 failed, aborting..." << endl;
+		exit(HMC_OCLERROR);
+	}
+	clerr = clEnqueueNDRangeKernel(queue, gaugemomentum_squarenorm, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
+	if(clerr != CL_SUCCESS) {
+		cout << "enqueue gaugemomenta_squarenorm kernel failed, aborting..." << endl;
+		exit(HMC_OCLERROR);
+	}
+
+	clFinish(queue);
+	
+	(*timer).add();
 	return HMC_SUCCESS;	
 }
+

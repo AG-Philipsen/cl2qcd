@@ -91,7 +91,7 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("overrelax") != std::string::npos) val_assign(&overrelaxsteps, line);
 		if(line.find("oversteps") != std::string::npos) val_assign(&overrelaxsteps, line);
 		if(line.find("hmcsteps") != std::string::npos) val_assign(&hmcsteps, line);
-		if(line.find("integrationtseps1") != std::string::npos) val_assign(&integrationsteps1, line);
+		if(line.find("integrationsteps1") != std::string::npos) val_assign(&integrationsteps1, line);
 		if(line.find("integrationsteps2") != std::string::npos) val_assign(&integrationsteps2, line);
 
 		if(line.find("fermaction") != std::string::npos) fermact_assign(&fermact, line);

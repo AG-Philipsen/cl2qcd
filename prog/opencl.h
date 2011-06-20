@@ -145,6 +145,20 @@ public:
 	hmc_error gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const timer1, usetimer * const timer2);
 
 	/**
+	 * Calculate plaquette and polyakov, but with a specific gaugefield.
+	 *
+	 * @param[out] plaq Storage for result of plaquette calculation
+	 * @param[out] tplaq Storage for result of plaquette calculation
+	 * @param[out] splaq Storage for result of plaquette calculation
+	 * @param[out] pol Storage for result of polyakov calculation
+	 * @param[in,out] timer1 Timer into which to aggregate plaquette calculation time
+	 * @param[in,out] timer2 Timer into which to aggregate polyakov calculation time
+	 * @return Error code as defined in hmcerrs.h:
+	 *         @li HMC_OCLERROR if OpenCL operations fail
+	 *         @li HMC_SUCCESS otherwise
+	 */
+	hmc_error gaugeobservables(cl_mem gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const timer1, usetimer * const timer2);
+	/**
 	 * returns init status
 	 * @return isinit (1==true, 0==false)
 	 */

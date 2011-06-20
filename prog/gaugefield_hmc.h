@@ -10,6 +10,7 @@
 #include "gaugefield_inversion.h"
 #include "opencl_fermions.h"
 #include "opencl_hmc.h"
+#include "types_hmc.h"
 
 class Gaugefield_hmc : public Gaugefield_inversion {
   public:
@@ -39,9 +40,9 @@ class Gaugefield_hmc : public Gaugefield_inversion {
    */
   Opencl_hmc * get_devices_hmc ();
 
-	hmc_error perform_hmc_step(inputparameters *parameters, int iter, hmc_float rnd_number, usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer);
+	hmc_error perform_hmc_step(inputparameters *parameters, hmc_observables *obs, int iter, hmc_float rnd_number, const string outname, usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer);
 	
-	
+	void print_hmcobservables(hmc_observables obs, int iter, std::string filename);
  private:
 
 };

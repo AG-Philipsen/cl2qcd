@@ -24,6 +24,7 @@
 #include "gaugefield_inversion.h"
 #include "gaugefield_hmc.h"
 #include "logger.hpp"
+#include "types_hmc.h"
 
 #ifdef _OPENMP
 # include <omp.h>
