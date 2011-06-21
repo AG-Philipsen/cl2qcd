@@ -75,7 +75,7 @@ hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, hmc_obse
 	//HMC-algorithm
 	
 	logger.trace() << "\tinit gauge momentum" ;
-	//init gauge_momenta
+	//init gauge_momenta, saved in clmem_p
 	get_devices_hmc()[0].generate_gaussian_gaugemomenta_device(ls, gs, latimer);
 	//init/update spinorfield phi
 	logger.trace() << "\tinit spinorfield " ;
@@ -101,6 +101,7 @@ hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, hmc_obse
 	logger.trace() << "\tperform leapfrog to update gaugefield and gaugemomentum" ;
 	
 	/** @todo these have to be reconsidered! */
+	//copy u->u' p->p' for the leapfrog
 	get_devices_hmc()[0].copy_gaugefield_old_new_device(ls, gs, copytimer);
 	get_devices_hmc()[0].copy_gaugemomenta_old_new_device(ls, gs, copytimer);
 		
@@ -123,7 +124,7 @@ hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, hmc_obse
 	else{
 		logger.trace() << "\t\tnew configuration rejected" ;
 	}
-		logger.trace()<< "\tfinished HMC trajectory " << iter ;
+	logger.trace()<< "\tfinished HMC trajectory " << iter ;
 	
 	return HMC_SUCCESS;
 }
@@ -131,7 +132,7 @@ hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, hmc_obse
 void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::string filename)
 {
 	hmc_float exp_deltaH = exp(obs.deltaH);
-	logger.trace() << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq << "\t" << obs.poly.re << "\t" << obs.poly.im <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept ;
+	logger.trace() << "Observables: " << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq << "\t" << obs.poly.re << "\t" << obs.poly.im <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept ;
 // 	printf("Observables:%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\n",iter,obs.plaq,obs.tplaq,obs.splaq,obs.poly.re,obs.poly.im,obs.deltaH, exp_deltaH, obs.prob, obs.accept );
 	std::fstream hmcout;
 	hmcout.open(filename.c_str(), std::ios::out | std::ios::app);

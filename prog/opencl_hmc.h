@@ -72,8 +72,6 @@ class Opencl_hmc : public Opencl_fermions {
 	hmc_error gauge_force_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	hmc_error fermion_force_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 	
-	
-	
 	////////////////////////////////////////////////////
 	//copying
 	//Methods to copy new and old fields... these can be optimized!!

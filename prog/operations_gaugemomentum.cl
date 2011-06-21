@@ -15,6 +15,19 @@ ae set_zero_ae(){
 	return tmp;
 }
 
+ae set_one_ae(){
+	ae tmp;
+	tmp.e0 = 1.;
+	tmp.e1 = 1.;
+	tmp.e2 = 1.;
+	tmp.e3 = 1.;
+	tmp.e4 = 1.;
+	tmp.e5 = 1.;
+	tmp.e6 = 1.;
+	tmp.e7 = 1.;
+	return tmp;
+}
+
 hmc_float ae_squarenorm(ae in){
 	hmc_float result = 
 		(in).e0*(in).e0 +
@@ -31,14 +44,14 @@ hmc_float ae_squarenorm(ae in){
 /** @todo this can propably be defined with a minus...*/
 ae acc_factor_times_algebraelement(ae in, hmc_float factor, ae force_in){
 	ae tmp;
-	tmp.e0 = (in).e0+factor*(force_in).e0; 
-	tmp.e1 = (in).e1+factor*(force_in).e1;
-	tmp.e2 = (in).e2+factor*(force_in).e2;
-	tmp.e3 = (in).e3+factor*(force_in).e3;
-	tmp.e4 = (in).e4+factor*(force_in).e4;
-	tmp.e5 = (in).e5+factor*(force_in).e5;
-	tmp.e6 = (in).e6+factor*(force_in).e6;
-	tmp.e7 = (in).e7+factor*(force_in).e7;
+	tmp.e0 = in.e0+factor*force_in.e0; 
+	tmp.e1 = in.e1+factor*force_in.e1;
+	tmp.e2 = in.e2+factor*force_in.e2;
+	tmp.e3 = in.e3+factor*force_in.e3;
+	tmp.e4 = in.e4+factor*force_in.e4;
+	tmp.e5 = in.e5+factor*force_in.e5;
+	tmp.e6 = in.e6+factor*force_in.e6;
+	tmp.e7 = in.e7+factor*force_in.e7;
 	return tmp;
 }
 
@@ -144,108 +157,107 @@ __kernel void generate_gaussian_gaugemomenta(__global ae * out, __global hmc_ocl
 
 void update_gaugemomentum(ae in, hmc_float factor, int global_link_pos, __global ae * out){
 	ae tmp = out[global_link_pos];
-	acc_factor_times_algebraelement(tmp, factor, in);
+	tmp = acc_factor_times_algebraelement(tmp, factor, in);
 	out[global_link_pos] = tmp;
 }
 
 
 //CP: this is the method from tmlqcd
 /** @todo decide wheter to use this one or our old one */
-Matrixsu3 build_su3matrix_by_exponentiation(ae in, hmc_float epsilon){
-	int i;
-  Matrixsu3 v,v2,vr;
-  hmc_float fac,r;
-  hmc_float a,b;
-  hmc_complex a0,a1,a2,a1p;
-
-  //make in an su3matrix
-	//CP: this is the crucial difference between our original method and tmlqcd. They have tr(lambda_i lambda_j) = 2delta_ij instead of delta_ij!!!
-	hmc_float halfeps = epsilon;//*F_1_2;
-	
-	v.e00.re = 0.0;
-	v.e00.im = halfeps*(in.e7*F_1_S3+in.e2);
-	v.e01.re = halfeps*in.e1;
-	v.e01.im = halfeps*in.e0;
-	v.e02.re = halfeps*in.e4;
-	v.e02.im = halfeps*in.e3;
-	v.e10.re = -halfeps*in.e1;;
-	v.e10.im = halfeps*in.e0;;
-	v.e11.re = 0.0;
-	v.e11.im = halfeps*(in.e7*F_1_S3-in.e2);
-	v.e12.re = halfeps*in.e6;
-	v.e12.im = halfeps*in.e5;
-	v.e20.re = -halfeps*in.e4;
-	v.e20.im = halfeps*in.e3;
-	v.e21.re = -halfeps*in.e6;
-	v.e21.im = halfeps*in.e5;
-	v.e22.re = 0.0;
-	v.e22.im = -halfeps*2.*in.e7*F_1_S3;
-	
-  /* calculates v^2 */
-  v2 = multiply_matrixsu3 (v,v);
-  /* */
-  a=0.5*(v2.e00.re+v2.e11.re+v2.e22.re);
-  /* 1/3 imaginary part of tr v*v2 */
-  b = 0.33333333333333333*
-    (v.e00.re*v2.e00.im+v.e00.im*v2.e00.re
-     +v.e01.re*v2.e10.im+v.e01.im*v2.e10.re
-     +v.e02.re*v2.e20.im+v.e02.im*v2.e20.re
-     +v.e10.re*v2.e01.im+v.e10.im*v2.e01.re
-     +v.e11.re*v2.e11.im+v.e11.im*v2.e11.re
-     +v.e12.re*v2.e21.im+v.e12.im*v2.e21.re
-     +v.e20.re*v2.e02.im+v.e20.im*v2.e02.re
-     +v.e21.re*v2.e12.im+v.e21.im*v2.e12.re
-     +v.e22.re*v2.e22.im+v.e22.im*v2.e22.re  );
-  a0.re=0.16059043836821615e-9;    /*  1/13! */
-  a0.im=0.0;
-  a1.re=0.11470745597729725e-10;   /*  1/14! */
-  a1.im=0.0;
-  a2.re=0.76471637318198165e-12;   /*  1/15! */
-  a2.im=0.0;
-  fac=0.20876756987868099e-8;      /*  1/12! */
-  r=12.0;
-  for(i = 3; i <= 15; i++) {
-    a1p.re = a0.re + a * a2.re;
-    a1p.im = a0.im + a * a2.im;
-    a0.re = fac - b * a2.im;
-    a0.im =     + b * a2.re;
-    a2.re = a1.re; 
-    a2.im = a1.im;
-    a1.re = a1p.re; 
-    a1.im = a1p.im;
-    fac *= r;  
-    r -= 1.0;
-  }
-  /* vr = a0 + a1*v + a2*v2 */
-  vr.e00.re = a0.re + a1.re*v.e00.re - a1.im*v.e00.im + a2.re*v2.e00.re - a2.im*v2.e00.im;
-  vr.e00.im = a0.im + a1.re*v.e00.im + a1.im*v.e00.re + a2.re*v2.e00.im + a2.im*v2.e00.re;
-  vr.e01.re =         a1.re*v.e01.re - a1.im*v.e01.im + a2.re*v2.e01.re - a2.im*v2.e01.im;
-  vr.e01.im =         a1.re*v.e01.im + a1.im*v.e01.re + a2.re*v2.e01.im + a2.im*v2.e01.re;
-  vr.e02.re =         a1.re*v.e02.re - a1.im*v.e02.im + a2.re*v2.e02.re - a2.im*v2.e02.im;
-  vr.e02.im =         a1.re*v.e02.im + a1.im*v.e02.re + a2.re*v2.e02.im + a2.im*v2.e02.re;
-  vr.e10.re =         a1.re*v.e10.re - a1.im*v.e10.im + a2.re*v2.e10.re - a2.im*v2.e10.im;
-  vr.e10.im =         a1.re*v.e10.im + a1.im*v.e10.re + a2.re*v2.e10.im + a2.im*v2.e10.re;
-  vr.e11.re = a0.re + a1.re*v.e11.re - a1.im*v.e11.im + a2.re*v2.e11.re - a2.im*v2.e11.im;
-  vr.e11.im = a0.im + a1.re*v.e11.im + a1.im*v.e11.re + a2.re*v2.e11.im + a2.im*v2.e11.re;
-  vr.e12.re =         a1.re*v.e12.re - a1.im*v.e12.im + a2.re*v2.e12.re - a2.im*v2.e12.im;
-  vr.e12.im =         a1.re*v.e12.im + a1.im*v.e12.re + a2.re*v2.e12.im + a2.im*v2.e12.re;
-  vr.e20.re =         a1.re*v.e20.re - a1.im*v.e20.im + a2.re*v2.e20.re - a2.im*v2.e20.im;
-  vr.e20.im =         a1.re*v.e20.im + a1.im*v.e20.re + a2.re*v2.e20.im + a2.im*v2.e20.re;
-  vr.e21.re =         a1.re*v.e21.re - a1.im*v.e21.im + a2.re*v2.e21.re - a2.im*v2.e21.im;
-  vr.e21.im =         a1.re*v.e21.im + a1.im*v.e21.re + a2.re*v2.e21.im + a2.im*v2.e21.re;
-  vr.e22.re = a0.re + a1.re*v.e22.re - a1.im*v.e22.im + a2.re*v2.e22.re - a2.im*v2.e22.im;
-  vr.e22.im = a0.im + a1.re*v.e22.im + a1.im*v.e22.re + a2.re*v2.e22.im + a2.im*v2.e22.re;
-  return v;
-}
+// Matrixsu3 build_su3matrix_by_exponentiation(ae in, hmc_float epsilon){
+// 	int i;
+//   Matrixsu3 v,v2,vr;
+//   hmc_float fac,r;
+//   hmc_float a,b;
+//   hmc_complex a0,a1,a2,a1p;
+// 
+//   //make in an su3matrix
+// 	//CP: this is the crucial difference between our original method and tmlqcd. They have tr(lambda_i lambda_j) = 2delta_ij instead of delta_ij!!!
+// 	hmc_float halfeps = epsilon;//*F_1_2;
+// 	
+// 	v.e00.re = 0.0;
+// 	v.e00.im = halfeps*(in.e7*F_1_S3+in.e2);
+// 	v.e01.re = halfeps*in.e1;
+// 	v.e01.im = halfeps*in.e0;
+// 	v.e02.re = halfeps*in.e4;
+// 	v.e02.im = halfeps*in.e3;
+// 	v.e10.re = -halfeps*in.e1;;
+// 	v.e10.im = halfeps*in.e0;;
+// 	v.e11.re = 0.0;
+// 	v.e11.im = halfeps*(in.e7*F_1_S3-in.e2);
+// 	v.e12.re = halfeps*in.e6;
+// 	v.e12.im = halfeps*in.e5;
+// 	v.e20.re = -halfeps*in.e4;
+// 	v.e20.im = halfeps*in.e3;
+// 	v.e21.re = -halfeps*in.e6;
+// 	v.e21.im = halfeps*in.e5;
+// 	v.e22.re = 0.0;
+// 	v.e22.im = -halfeps*2.*in.e7*F_1_S3;
+// 	
+//   /* calculates v^2 */
+//   v2 = multiply_matrixsu3 (v,v);
+//   /* */
+//   a=0.5*(v2.e00.re+v2.e11.re+v2.e22.re);
+//   /* 1/3 imaginary part of tr v*v2 */
+//   b = 0.33333333333333333*
+//     ( v.e00.re*v2.e00.im+v.e00.im*v2.e00.re
+//      +v.e01.re*v2.e10.im+v.e01.im*v2.e10.re
+//      +v.e02.re*v2.e20.im+v.e02.im*v2.e20.re
+//      +v.e10.re*v2.e01.im+v.e10.im*v2.e01.re
+//      +v.e11.re*v2.e11.im+v.e11.im*v2.e11.re
+//      +v.e12.re*v2.e21.im+v.e12.im*v2.e21.re
+//      +v.e20.re*v2.e02.im+v.e20.im*v2.e02.re
+//      +v.e21.re*v2.e12.im+v.e21.im*v2.e12.re
+//      +v.e22.re*v2.e22.im+v.e22.im*v2.e22.re  );
+//   a0.re=0.16059043836821615e-9;    /*  1/13! */
+//   a0.im=0.0;
+//   a1.re=0.11470745597729725e-10;   /*  1/14! */
+//   a1.im=0.0;
+//   a2.re=0.76471637318198165e-12;   /*  1/15! */
+//   a2.im=0.0;
+//   fac=0.20876756987868099e-8;      /*  1/12! */
+//   r=12.0;
+//   for(i = 3; i <= 15; i++) {
+//     a1p.re = a0.re + a * a2.re;
+//     a1p.im = a0.im + a * a2.im;
+//     a0.re = fac - b * a2.im;
+//     a0.im =     + b * a2.re;
+//     a2.re = a1.re; 
+//     a2.im = a1.im;
+//     a1.re = a1p.re; 
+//     a1.im = a1p.im;
+//     fac *= r;  
+//     r -= 1.0;
+//   }
+//   /* vr = a0 + a1*v + a2*v2 */
+//   vr.e00.re = a0.re + a1.re*v.e00.re - a1.im*v.e00.im + a2.re*v2.e00.re - a2.im*v2.e00.im;
+//   vr.e00.im = a0.im + a1.re*v.e00.im + a1.im*v.e00.re + a2.re*v2.e00.im + a2.im*v2.e00.re;
+//   vr.e01.re =         a1.re*v.e01.re - a1.im*v.e01.im + a2.re*v2.e01.re - a2.im*v2.e01.im;
+//   vr.e01.im =         a1.re*v.e01.im + a1.im*v.e01.re + a2.re*v2.e01.im + a2.im*v2.e01.re;
+//   vr.e02.re =         a1.re*v.e02.re - a1.im*v.e02.im + a2.re*v2.e02.re - a2.im*v2.e02.im;
+//   vr.e02.im =         a1.re*v.e02.im + a1.im*v.e02.re + a2.re*v2.e02.im + a2.im*v2.e02.re;
+//   vr.e10.re =         a1.re*v.e10.re - a1.im*v.e10.im + a2.re*v2.e10.re - a2.im*v2.e10.im;
+//   vr.e10.im =         a1.re*v.e10.im + a1.im*v.e10.re + a2.re*v2.e10.im + a2.im*v2.e10.re;
+//   vr.e11.re = a0.re + a1.re*v.e11.re - a1.im*v.e11.im + a2.re*v2.e11.re - a2.im*v2.e11.im;
+//   vr.e11.im = a0.im + a1.re*v.e11.im + a1.im*v.e11.re + a2.re*v2.e11.im + a2.im*v2.e11.re;
+//   vr.e12.re =         a1.re*v.e12.re - a1.im*v.e12.im + a2.re*v2.e12.re - a2.im*v2.e12.im;
+//   vr.e12.im =         a1.re*v.e12.im + a1.im*v.e12.re + a2.re*v2.e12.im + a2.im*v2.e12.re;
+//   vr.e20.re =         a1.re*v.e20.re - a1.im*v.e20.im + a2.re*v2.e20.re - a2.im*v2.e20.im;
+//   vr.e20.im =         a1.re*v.e20.im + a1.im*v.e20.re + a2.re*v2.e20.im + a2.im*v2.e20.re;
+//   vr.e21.re =         a1.re*v.e21.re - a1.im*v.e21.im + a2.re*v2.e21.re - a2.im*v2.e21.im;
+//   vr.e21.im =         a1.re*v.e21.im + a1.im*v.e21.re + a2.re*v2.e21.im + a2.im*v2.e21.re;
+//   vr.e22.re = a0.re + a1.re*v.e22.re - a1.im*v.e22.im + a2.re*v2.e22.re - a2.im*v2.e22.im;
+//   vr.e22.im = a0.im + a1.re*v.e22.im + a1.im*v.e22.re + a2.re*v2.e22.im + a2.im*v2.e22.re;
+//   return vr;
+// }
 
 //CP: tested version that recreates the matrices made by tmlqcd
 /** @todo recheck the factor 0.5 (or F_1_2) that has been deleted here */
 /** @todo use of hmc_algebraelement!!!! */
-/*
-typedef hmc_3x3matrix hmc_complex[3][3]
-Matrix_su3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon){
+
+Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon){
+
 		Matrixsu3 tmp;
-		//CP: workaround for struct hmc_algebraelement
 		hmc_float in [8];
 		in[0] = inn.e0;
 		in[1] = inn.e1;
@@ -256,70 +268,71 @@ Matrix_su3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon){
 		in[6] = inn.e6;
 		in[7] = inn.e7;
 		
-		// this is the case where one actually evaluates -as matrices- many orders of exp(i*e*P)=1+i*e*P+(1/2)(i*e*P)^2 + ...
-		// 1. create mat = (i epsilon)/2 p_i lambda_i    with lambda=gellmann matrix
-		hmc_3x3matrix eMat;
+		//this is the case where one actually evaluates -as matrices- many orders of exp(i*e*P)=1+i*e*P+(1/2)(i*e*P)^2 + ...
+		//1. create mat = (i epsilon)/2 p_i lambda_i    with lambda=gellmann matrix
+		Matrix3x3 eMat;
 		hmc_float halfeps = epsilon;//*F_1_2;
-		eMat[0][0].re = 0.0;
-		eMat[0][0].im = halfeps*(in[7]*F_1_S3+in[2]);
-		eMat[0][1].re = halfeps*in[1];
-		eMat[0][1].im = halfeps*in[0];
-		eMat[0][2].re = halfeps*in[4];
-		eMat[0][2].im = halfeps*in[3];
-		eMat[1][0].re = -halfeps*in[1];;
-		eMat[1][0].im = halfeps*in[0];;
-		eMat[1][1].re = 0.0;
-		eMat[1][1].im = halfeps*(in[7]*F_1_S3-in[2]);
-		eMat[1][2].re = halfeps*in[6];
-		eMat[1][2].im = halfeps*in[5];
-		eMat[2][0].re = -halfeps*in[4];
-		eMat[2][0].im = halfeps*in[3];
-		eMat[2][1].re = -halfeps*in[6];
-		eMat[2][1].im = halfeps*in[5];
-		eMat[2][2].re = 0.0;
-		eMat[2][2].im = -halfeps*2.*in[7]*F_1_S3;
-		// 2. start with the exp(...) expansion by using standard 3x3 sum and multiplication
-		hmc_3x3matrix eRes, eCurPower, eNextPower, eLastResult;
+		eMat.e00.re = 0.0;
+		eMat.e00.im = halfeps*(in[7]*F_1_S3+in[2]);
+		eMat.e01.re = halfeps*in[1];
+		eMat.e01.im = halfeps*in[0];
+		eMat.e02.re = halfeps*in[4];
+		eMat.e02.im = halfeps*in[3];
+		eMat.e10.re = -halfeps*in[1];;
+		eMat.e10.im = halfeps*in[0];;
+		eMat.e11.re = 0.0;
+		eMat.e11.im = halfeps*(in[7]*F_1_S3-in[2]);
+		eMat.e12.re = halfeps*in[6];
+		eMat.e12.im = halfeps*in[5];
+		eMat.e20.re = -halfeps*in[4];
+		eMat.e20.im = halfeps*in[3];
+		eMat.e21.re = -halfeps*in[6];
+		eMat.e21.im = halfeps*in[5];
+		eMat.e22.re = 0.0;
+		eMat.e22.im = -halfeps*2.*in[7]*F_1_S3;
+		
+		//2. start with the exp(...) expansion by using standard 3x3 sum and multiplication
+		Matrix3x3 eRes, eCurPower, eNextPower, eLastResult;
 		hmc_float eAccuracyCheck;
-		set_to_3x3_identity(&eRes);
-		set_to_3x3_identity(&eCurPower);
-// 		hmc_float eCoefficient = 1.0;
+		eRes = identity_matrix3x3();
+		eCurPower = identity_matrix3x3();
+		hmc_float eCoefficient = 1.0;
 		int factorial = 1;
-		for(int power=1;power<_EXACT_EXPONENTIATION_MAX_POWER_;power++){
-			multiply_3x3matrix(&eNextPower, &eMat, &eCurPower);
-			copy_3x3_matrix(&eCurPower, &eNextPower);
+		for(int power=1;power<50;power++){
+			eNextPower = multiply_matrix3x3(eMat, eCurPower);
+			eCurPower = eNextPower;
 			//CP: the calc of factorial can be simplified by just doing factorial*=power!!
 			for(int i = power; i>1; i--) factorial *= i;
-			multiply_3x3matrix_by_real(&eCurPower, (1./(1.*factorial)));
+			eCurPower = multiply_matrix3x3_by_real(eCurPower, (1./(1.*factorial)));
 			factorial = 1;
-			copy_3x3_matrix(&eLastResult, &eRes);
-			add_3x3matrix(&eRes, &eRes, &eCurPower);
-			absoluteDifference_3x3_matrix(&eAccuracyCheck, &eRes, &eLastResult);
-			if(eAccuracyCheck < _EXACT_EXPONENTIATION_ACCURACY_){
+			eLastResult = eRes;
+			eRes = add_matrix3x3(eRes, eCurPower);
+			eAccuracyCheck = absoluteDifference_matrix3x3(eRes, eLastResult);
+			if(eAccuracyCheck < 1e-15){
 				break;
 			}
 		}
-		// 3. here I have the exponentiated matrix in 3x3 generic form (eRes), project it
+		//3. here I have the exponentiated matrix in 3x3 generic form (eRes), project it
 		#ifdef _RECONSTRUCT_TWELVE_
-			(*out)[0] = eRes[0][0];
-			(*out)[1] = eRes[0][1];
-			(*out)[2] = eRes[0][2];
-			(*out)[3] = eRes[1][0];
-			(*out)[4] = eRes[1][1];
-			(*out)[5] = eRes[1][2];
+			tmp.e0 = eRes.e00;
+			tmp.e1 = eRes.e01;
+			tmp.e2 = eRes.e02;
+			tmp.e3 = eRes.e10;
+			tmp.e4 = eRes.e11;
+			tmp.e5 = eRes.e12;
 		#else
-			(*out)[0][0] = eRes[0][0];
-			(*out)[0][1] = eRes[0][1];
-			(*out)[0][2] = eRes[0][2];
-			(*out)[1][0] = eRes[1][0];
-			(*out)[1][1] = eRes[1][1];
-			(*out)[1][2] = eRes[1][2];
-			(*out)[2][0] = eRes[2][0];
-			(*out)[2][1] = eRes[2][1];
-			(*out)[2][2] = eRes[2][2];
+			tmp.e00 = eRes.e00;
+			tmp.e01 = eRes.e01;
+			tmp.e02 = eRes.e02;
+			tmp.e10 = eRes.e10;
+			tmp.e11 = eRes.e11;
+			tmp.e12 = eRes.e12;
+			tmp.e20 = eRes.e20;
+			tmp.e21 = eRes.e21;
+			tmp.e22 = eRes.e22;
 		#endif // _RECONSTRUCT_TWELVE_
-		project_su3(out);
+		project_su3(tmp);
 	
 	return tmp;
 }
-*/
+

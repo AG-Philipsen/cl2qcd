@@ -239,7 +239,7 @@ hmc_error Opencl_hmc::generate_gaussian_gaugemomenta_device(const size_t ls, con
 	(*timer).reset();
 	int clerr;
 	//this is always applied to clmem_new_p
-	clerr = clSetKernelArg(generate_gaussian_gaugemomenta,0,sizeof(cl_mem),&clmem_new_p);
+	clerr = clSetKernelArg(generate_gaussian_gaugemomenta,0,sizeof(cl_mem),&clmem_p);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -354,35 +354,35 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs, usetimer * 
 	//CP: at the moment, use_eo = 0 so that even-odd is not used!!!!!
 	
 	//debugging
-	int err = 0;
-	int use_eo = 0;
-	/** @todo check the use of the sources again, compare to tmlqcd!!! */
-	if(use_cg){
-		if(!use_eo){
-			//the inversion calculates Y = (QplusQminus)^-1 phi = phi_inv
-			cout << "\t\t\tstart solver" << endl;
-			Opencl_fermions::create_point_source_device(k, 0,0,ls, gs, &noop);
-			Opencl_fermions::solver_device(&noop,&noop,&noop,&noop,&noop,&noop,&noop,&noop, ls, gs, get_parameters()->get_cgmax());
-	
-			if (err != HMC_SUCCESS) cout << "\t\tsolver did not solve!!" << endl;
-			else cout << "\t\tsolver solved!" << endl;
-		}
-		else{
-			hmc_eoprec_spinor_field be[EOPREC_SPINORFIELDSIZE];
-			hmc_eoprec_spinor_field bo[EOPREC_SPINORFIELDSIZE];
-			
-			Opencl_fermions::create_point_source_eoprec_device(k,0,0, ls, gs, &noop, &noop, &noop);
-			Opencl_fermions::solver_eoprec_device(&noop,&noop,&noop,&noop,&noop,&noop,&noop,&noop, ls, gs, get_parameters()->get_cgmax());
-		}
-		cout << "\t\t\tcalc X" << endl;
-		//X = Qminus Y = Qminus phi_inv 
-		Opencl_fermions::Qminus_device(clmem_phi_inv,get_clmem_inout(), ls, gs, &noop);
-	}
-	else{
-		//here, one has first to invert (with BiCGStab) Qplus phi = X and then invert Qminus X => Qminus^-1 Qplus^-1 phi = (QplusQminus)^-1 phi = Y = phi_inv
-	}
-	cout << "\t\tcalc fermion_force..." << endl;
-	fermion_force_device(ls, gs, &noop);
+// 	int err = 0;
+// 	int use_eo = 0;
+// 	/** @todo check the use of the sources again, compare to tmlqcd!!! */
+// 	if(use_cg){
+// 		if(!use_eo){
+// 			//the inversion calculates Y = (QplusQminus)^-1 phi = phi_inv
+// 			cout << "\t\t\tstart solver" << endl;
+// 			Opencl_fermions::create_point_source_device(k, 0,0,ls, gs, &noop);
+// 			Opencl_fermions::solver_device(&noop,&noop,&noop,&noop,&noop,&noop,&noop,&noop, ls, gs, get_parameters()->get_cgmax());
+// 	
+// 			if (err != HMC_SUCCESS) cout << "\t\tsolver did not solve!!" << endl;
+// 			else cout << "\t\tsolver solved!" << endl;
+// 		}
+// 		else{
+// 			hmc_eoprec_spinor_field be[EOPREC_SPINORFIELDSIZE];
+// 			hmc_eoprec_spinor_field bo[EOPREC_SPINORFIELDSIZE];
+// 			
+// 			Opencl_fermions::create_point_source_eoprec_device(k,0,0, ls, gs, &noop, &noop, &noop);
+// 			Opencl_fermions::solver_eoprec_device(&noop,&noop,&noop,&noop,&noop,&noop,&noop,&noop, ls, gs, get_parameters()->get_cgmax());
+// 		}
+// 		cout << "\t\t\tcalc X" << endl;
+// 		//X = Qminus Y = Qminus phi_inv 
+// 		Opencl_fermions::Qminus_device(clmem_phi_inv,get_clmem_inout(), ls, gs, &noop);
+// 	}
+// 	else{
+// 		//here, one has first to invert (with BiCGStab) Qplus phi = X and then invert Qminus X => Qminus^-1 Qplus^-1 phi = (QplusQminus)^-1 phi = Y = phi_inv
+// 	}
+// 	cout << "\t\tcalc fermion_force..." << endl;
+// 	fermion_force_device(ls, gs, &noop);
 	
 	
 	(*timer).add();
@@ -410,33 +410,34 @@ hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const stri
 	//Calc gaugeobservables from old gaugefield
 	Opencl_fermions::copy_float_from_device(clmem_energy_init, &spinor_energy_init, timer);
 	//In this call, the observables are calculated already with appropiate Weighting factor
-	Opencl_fermions::gaugeobservables(&plaq,  &tplaq, &splaq, &poly, &noop, &noop);
+	Opencl::gaugeobservables(&plaq,  &tplaq, &splaq, &poly, &noop, &noop);
 	//plaq is normalized by factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC), so one has to divide by it again to get s_gauge
 	hmc_float factor = 2.0/static_cast<hmc_float>(VOL4D*NDIM*(NDIM-1)*NC);
-	deltaH = plaq;
+	logger.debug() << "\t\tS_gauge(old field) = " << plaq;
 	Opencl::gaugeobservables(clmem_new_u, &plaq_new,  &tplaq_new, &splaq_new, &poly_new, &noop, &noop);
 	//plaq is normalized by factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC), so one has to divide by it again to get s_gauge
-	deltaH -=plaq_new;
-	deltaH *= beta/6.*factor;
+	logger.debug() << "\t\tS_gauge(new field) = " << plaq_new;
+	deltaH = (plaq - plaq_new)*beta/6.*factor;
 	
-		logger.trace() << "\tCalc Hamiltonian gaugemom...";
+	logger.trace() << "\tCalc Hamiltonian gaugemom...";
 	//Gaugemomentum-Part
 	set_float_to_gaugemomentum_squarenorm_device(clmem_p, clmem_p2, local_work_size, global_work_size, timer);
 	set_float_to_gaugemomentum_squarenorm_device(clmem_new_p, clmem_new_p2, local_work_size, global_work_size, timer);
 	Opencl_fermions::copy_float_from_device(clmem_p2, &p2, timer);
 	Opencl_fermions::copy_float_from_device(clmem_new_p2, &new_p2, timer);
 	deltaH += 0.5*(p2 - new_p2);
-	
-		logger.trace() << "\tCalc Hamiltonian ferm...";
+	logger.debug() << "\t\tS_gaugemom(old field) = " << p2;
+	logger.debug() << "\t\tS_gaugemom(new field) = " << new_p2;
+	logger.trace() << "\tCalc Hamiltonian ferm...";
 	
 	//Fermion-Part:
 	// sum_links phi*_i (M^+M)_ij^-1 phi_j
 	// here it is assumed that the rhs has already been computed in clmem_inout... (during the leapfrog..)
 	//CP: phi_inv is not needed after this, so it can be used to store M (QplusQminus_inv)
-	Opencl_fermions::Qminus_device(Opencl_fermions::get_clmem_inout(), clmem_phi_inv, local_work_size, global_work_size, timer);
-	set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_s_fermion, local_work_size, global_work_size, timer);
-	copy_float_from_device(clmem_s_fermion, &s_fermion, timer);
-	deltaH += spinor_energy_init - s_fermion;
+// 	Opencl_fermions::Qminus_device(Opencl_fermions::get_clmem_inout(), clmem_phi_inv, local_work_size, global_work_size, timer);
+// 	set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_s_fermion, local_work_size, global_work_size, timer);
+// 	copy_float_from_device(clmem_s_fermion, &s_fermion, timer);
+// 	deltaH += spinor_energy_init - s_fermion;
 	
 	logger.trace() << "\tmetropolis...";
 	//Metropolis-Part
@@ -484,6 +485,7 @@ hmc_error Opencl_hmc::md_update_gaugemomentum_device(hmc_float eps, const size_t
 	//__kernel void md_update_gaugemomenta(hmc_float eps, __global ae * p_inout, __global ae* force_in){
 	
 	hmc_float tmp = eps;
+
 	int clerr;
 	clerr = clSetKernelArg(md_update_gaugemomenta,0,sizeof(hmc_float),&tmp);
   if(clerr!=CL_SUCCESS) {
@@ -631,7 +633,8 @@ hmc_error Opencl_hmc::fermion_force_device(const size_t ls, const size_t gs, use
 //Methods to copy new and old fields... these can be optimized!!
 hmc_error Opencl_hmc::copy_gaugefield_old_new_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer){
 	(*timer).reset();
-	int clerr = clEnqueueCopyBuffer(queue, clmem_new_u, clmem_gaugefield, 0, 0, sizeof(s_gaugefield), NULL, NULL, NULL);
+	int gaugefield_size = sizeof(s_gaugefield);
+	int clerr = clEnqueueCopyBuffer(queue, clmem_gaugefield,clmem_new_u,  0, 0, gaugefield_size, NULL, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "...copy old to new gaugefield failed, aborting.";
 		exit(HMC_OCLERROR);
@@ -647,7 +650,7 @@ hmc_error Opencl_hmc::copy_gaugemomenta_old_new_device(const size_t local_work_s
 	(*timer).reset();
 	
 	int gaugemomentum_size = sizeof(ae)*GAUGEMOMENTASIZE2;
-	int clerr = clEnqueueCopyBuffer(queue, clmem_new_p, clmem_p, 0, 0, gaugemomentum_size, NULL, NULL, NULL);
+	int clerr = clEnqueueCopyBuffer(queue, clmem_p, clmem_new_p, 0, 0, gaugemomentum_size, NULL, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "...copy old to new gaugemomentum failed, aborting.";
 		exit(HMC_OCLERROR);
@@ -660,7 +663,7 @@ hmc_error Opencl_hmc::copy_gaugemomenta_old_new_device(const size_t local_work_s
 hmc_error Opencl_hmc::copy_gaugefield_new_old_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer){
 	(*timer).reset();
 
-	int clerr = clEnqueueCopyBuffer(queue, clmem_gaugefield, clmem_new_u, 0, 0, sizeof(s_gaugefield), NULL, NULL, NULL);
+	int clerr = clEnqueueCopyBuffer(queue, clmem_new_u, clmem_gaugefield, 0, 0, sizeof(s_gaugefield), NULL, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "...copy new to old gaugefield failed, aborting.";
 		exit(HMC_OCLERROR);
@@ -675,7 +678,7 @@ hmc_error Opencl_hmc::copy_gaugemomenta_new_old_device(const size_t local_work_s
 	(*timer).reset();
 	
 	int gaugemomentum_size = sizeof(ae)*GAUGEMOMENTASIZE2;
-	int clerr = clEnqueueCopyBuffer(queue, clmem_p, clmem_new_p, 0, 0, gaugemomentum_size, NULL, NULL, NULL);
+	int clerr = clEnqueueCopyBuffer(queue, clmem_new_p, clmem_p, 0, 0, gaugemomentum_size, NULL, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "...copy new to old gaugemomentum failed, aborting.";
 		exit(HMC_OCLERROR);

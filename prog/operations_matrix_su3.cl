@@ -1,8 +1,16 @@
 /** @file
  * Device code implementing SU(3)matrices with and without reconstruct 12
  */
-
 //operations_matrix_su3.cl
+
+
+
+//not valid for REC12
+void print_matrixsu3(Matrixsu3 in){
+     printf("(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n", in.e00.re, in.e00.im, in.e01.re, in.e01.im, in.e02.re, in.e02.im, in.e10.re, in.e10.im, in.e11.re, in.e11.im, in.e12.re, in.e12.im, in.e02.re, in.e02.im, in.e21.re, in.e21.im, in.e22.re, in.e22.im);
+     printf("\n");
+}
+
 
 #ifdef _RECONSTRUCT_TWELVE_
 hmc_complex reconstruct_su3(const Matrixsu3 p, const int ncomp)

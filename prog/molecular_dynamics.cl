@@ -26,8 +26,9 @@ __kernel void md_update_gaugefield(hmc_float eps, __global ae * p_in, __global o
  			// &(p_in[index*8]) should point to the right position for the pos-th element of the long gaugemomentum vector p_in
 			tmp2 = build_su3matrix_by_exponentiation((p_in[index]), eps);
 			tmp = get_matrixsu3(u_inout, n, t, mu);
-			tmp = multiply_matrixsu3( tmp2, tmp);
-			put_matrixsu3(u_inout, tmp, n, t, mu);
+// 			if(id_tmp == 0 && mu == 0) print_matrixsu3(tmp);
+			tmp2 = multiply_matrixsu3( tmp2, tmp);
+			put_matrixsu3(u_inout, tmp2, n, t, mu);
 		}
 	}	
 }
@@ -44,7 +45,7 @@ __kernel void md_update_gaugemomenta(hmc_float eps, __global ae * p_inout, __glo
 	int group_id = get_group_id (0);
 	
 	for(int id_tmp = id; id_tmp < GAUGEMOMENTASIZE; id_tmp += global_size) {	
-		p_inout[id_tmp] = acc_factor_times_algebraelement(p_inout[id_tmp], -1.*eps, force_in[id_tmp]);
+		update_gaugemomentum(force_in[id_tmp], eps, id_tmp, p_inout);
 	}
 	
 }
