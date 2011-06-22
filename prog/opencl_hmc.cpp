@@ -28,27 +28,8 @@ hmc_error Opencl_hmc::fill_collect_options(stringstream* collect_options)
 hmc_error Opencl_hmc::fill_buffers()
 {
 	Opencl_fermions::fill_buffers();
-	return HMC_SUCCESS;
-}
-
-hmc_error Opencl_hmc::fill_kernels()
-{
-	Opencl_fermions::fill_kernels();
-	return HMC_SUCCESS;
-}
-
-hmc_error Opencl_hmc::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters)
-{
-	hmc_error err = Opencl_fermions::init(wanted_device_type, timer, parameters);
-	err |= init_hmc_variables(parameters, timer);
-	return err;
-}
-
-hmc_error Opencl_hmc::init_hmc_variables(inputparameters* parameters, usetimer * timer)
-{
-	(*timer).reset();
 	
-	//CP: this is copied from opencl_fermions
+		//CP: this is copied from opencl_fermions
 		// decide on work-sizes
 	size_t local_work_size;
 	if( device_type == CL_DEVICE_TYPE_GPU )
@@ -64,8 +45,6 @@ hmc_error Opencl_hmc::init_hmc_variables(inputparameters* parameters, usetimer *
 
 	const cl_uint num_groups = (global_work_size + local_work_size - 1) / local_work_size;
 	global_work_size = local_work_size * num_groups;
-
-	(*timer).reset();
 
 	logger.trace()<< "init HMC variables...";
 	int clerr = CL_SUCCESS;
@@ -140,7 +119,17 @@ hmc_error Opencl_hmc::init_hmc_variables(inputparameters* parameters, usetimer *
 		exit(HMC_OCLERROR);
 	}
 	
-	//init kernels
+	
+	return HMC_SUCCESS;
+}
+
+hmc_error Opencl_hmc::fill_kernels()
+{
+	int clerr = HMC_SUCCESS;
+	
+	//fill kernels of Mother classes
+	Opencl_fermions::fill_kernels();
+		//init kernels for HMC
 	logger.debug() << "Create kernel set_zero_gaugemomentum...";
 	set_zero_gaugemomentum = clCreateKernel(clprogram, "set_zero_gaugemomentum", &clerr);
 	if(clerr != CL_SUCCESS) {
@@ -183,27 +172,35 @@ hmc_error Opencl_hmc::init_hmc_variables(inputparameters* parameters, usetimer *
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
-	/** @todo this can most likely be deleted */
-	/*
-	s_gauge = clCreateKernel(clprogram, "s_gauge", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	s_fermion = clCreateKernel(clprogram, "s_fermion", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	*/
 	logger.debug() << "Create kernel gaugemomentum_squarenorm...";
 	gaugemomentum_squarenorm = clCreateKernel(clprogram, "gaugemomentum_squarenorm", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
-	(*timer).add();
+	
+	
 	return HMC_SUCCESS;
+}
+
+hmc_error Opencl_hmc::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters)
+{
+	(*timer).reset();
+	hmc_error err = Opencl_fermions::init(wanted_device_type, timer, parameters);
+// 	err |= init_hmc_variables(parameters, timer);
+	
+	//Create buffer
+	err = this->fill_buffers();
+	if( err )
+		exit( HMC_OCLERROR );
+
+	//Create kernels
+	err = this->fill_kernels();
+	if( err )
+		exit( HMC_OCLERROR );
+	
+	(*timer).add();
+	return err;
 }
 
 hmc_error Opencl_hmc::finalize_hmc(){

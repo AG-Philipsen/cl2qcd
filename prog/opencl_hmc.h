@@ -54,8 +54,6 @@ class Opencl_hmc : public Opencl_fermions {
 
 	hmc_error finalize_hmc();
 
-	hmc_error init_hmc_variables(inputparameters* parameters, usetimer* timer);
-	
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
 	
