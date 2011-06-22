@@ -46,7 +46,6 @@ hmc_error Opencl_hmc::fill_buffers()
 	const cl_uint num_groups = (global_work_size + local_work_size - 1) / local_work_size;
 	global_work_size = local_work_size * num_groups;
 
-	logger.trace()<< "init HMC variables...";
 	int clerr = CL_SUCCESS;
 
 	int spinorfield_size = sizeof(spinor)*SPINORFIELDSIZE;
@@ -64,55 +63,47 @@ hmc_error Opencl_hmc::fill_buffers()
 	/** @todo insert variables needed */
 	//init mem-objects
 
-	logger.trace() << "Create buffer for force...";
+	logger.trace() << "Create buffer for HMC...";
 	clmem_force = clCreateBuffer(context,CL_MEM_READ_WRITE,gaugemomentum_size,0,&clerr);;
 	if(clerr!=CL_SUCCESS) {
 		cout<<"creating clmem_force failed, aborting..."<<endl;
 		exit(HMC_OCLERROR);
 	}
-	logger.trace() << "Create buffer for phi_inv...";
 	clmem_phi_inv = clCreateBuffer(context,CL_MEM_READ_WRITE,spinorfield_size,0,&clerr);;
 	if(clerr!=CL_SUCCESS) {
 		cout<<"creating clmem_phi_inv failed, aborting..."<<endl;
 		exit(HMC_OCLERROR);
 	}
-	logger.trace() << "Create buffer for new gaugefield...";
 	clmem_new_u = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(s_gaugefield), 0, &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
-	logger.trace() << "Create buffer for gaugemomentum p...";
 	clmem_p = clCreateBuffer(context, CL_MEM_READ_WRITE, gaugemomentum_size, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
-	logger.trace() << "Create buffer for gaugemomentum new_p...";
 	clmem_new_p = clCreateBuffer(context, CL_MEM_READ_WRITE, gaugemomentum_size, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
-	logger.trace() << "Create buffer for initial spinorfield energy...";
 	clmem_energy_init = clCreateBuffer(context, CL_MEM_READ_WRITE, float_size, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
-	logger.trace() << "Create buffer for p2...";
 	clmem_p2 = clCreateBuffer(context, CL_MEM_READ_WRITE, float_size, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
-	logger.trace() << "Create buffer for new_p2...";
 	clmem_new_p2 = clCreateBuffer(context, CL_MEM_READ_WRITE, float_size, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
-	logger.trace() << "Create buffer for s_fermion...";
 	clmem_s_fermion = clCreateBuffer(context, CL_MEM_READ_WRITE, float_size, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
@@ -129,7 +120,7 @@ hmc_error Opencl_hmc::fill_kernels()
 	
 	//fill kernels of Mother classes
 	Opencl_fermions::fill_kernels();
-		//init kernels for HMC
+	//init kernels for HMC
 	logger.debug() << "Create kernel set_zero_gaugemomentum...";
 	set_zero_gaugemomentum = clCreateKernel(clprogram, "set_zero_gaugemomentum", &clerr);
 	if(clerr != CL_SUCCESS) {
@@ -193,7 +184,7 @@ hmc_error Opencl_hmc::fill_kernels()
 		exit(HMC_OCLERROR);
 	}
 	if( logger.beDebug() )
-		printResourceRequirements( gaugemomentum_squarenorm );	
+		printResourceRequirements( gaugemomentum_squarenorm );
 	
 	return HMC_SUCCESS;
 }
@@ -204,15 +195,7 @@ hmc_error Opencl_hmc::init(cl_device_type wanted_device_type, usetimer* timer, i
 	hmc_error err = Opencl_fermions::init(wanted_device_type, timer, parameters);
 // 	err |= init_hmc_variables(parameters, timer);
 	
-	//Create buffer
-	err = this->fill_buffers();
-	if( err )
-		exit( HMC_OCLERROR );
 
-	//Create kernels
-	err = this->fill_kernels();
-	if( err )
-		exit( HMC_OCLERROR );
 	
 	(*timer).add();
 	return err;

@@ -1,4 +1,5 @@
 #include "opencl_fermions.h"
+#include "logger.hpp" 
 
 hmc_error Opencl_fermions::fill_kernels_file ()
 {
@@ -55,32 +56,13 @@ hmc_error Opencl_fermions::fill_collect_options(stringstream* collect_options)
 hmc_error Opencl_fermions::fill_buffers()
 {
 	Opencl::fill_buffers();
-	return HMC_SUCCESS;
-}
-
-hmc_error Opencl_fermions::fill_kernels()
-{
-	Opencl::fill_kernels();
-	return HMC_SUCCESS;
-}
-
-hmc_error Opencl_fermions::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters)
-{
-	hmc_error err = Opencl::init(wanted_device_type, timer, parameters);
-	err |= init_fermion_variables(parameters, timer);
-	return err;
-}
-
-hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, usetimer * timer)
-{
-
 
 	// decide on work-sizes
 	size_t local_work_size;
 	if( device_type == CL_DEVICE_TYPE_GPU )
 		local_work_size = NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
 	else
-		local_work_size = 1; // nothing else makes sens on CPU
+		local_work_size = 1; // nothing else makes sense on CPU
 
 	size_t global_work_size;
 	if( device_type == CL_DEVICE_TYPE_GPU )
@@ -91,9 +73,7 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
 	const cl_uint num_groups = (global_work_size + local_work_size - 1) / local_work_size;
 	global_work_size = local_work_size * num_groups;
 
-	(*timer).reset();
-
-	cout << "init solver variables..." << endl;
+	logger.trace() << "init buffer for solver...";
 	int clerr = CL_SUCCESS;
 
 	//	int spinorfield_size = sizeof(hmc_complex)*SPINORFIELDSIZE;
@@ -106,15 +86,12 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
 	int global_buf_size_float = float_size * num_groups;
 	hmc_complex one = hmc_complex_one;
 	hmc_complex minusone = hmc_complex_minusone;
-	hmc_float tmp;
 
-	cout << "\tinit spinorfields..." << endl;
   clmem_corr = clCreateBuffer(context,CL_MEM_READ_WRITE,spinorfield_size,0,&clerr);;
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_corr failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-
   clmem_inout = clCreateBuffer(context,CL_MEM_READ_WRITE,spinorfield_size,0,&clerr);;
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_inout failed, aborting..."<<endl;
@@ -235,7 +212,6 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
 
   } //end if: eoprec
   
-  cout << "\tinit complex numbers..." << endl;
   clmem_rho = clCreateBuffer(context,CL_MEM_READ_WRITE,complex_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
       cout<<"creating clmem_rho failed, aborting..."<<endl;
@@ -281,43 +257,13 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
     cout<<"creating clmem_minusone failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  
+
   clmem_scalar_product_buf_glob = clCreateBuffer(context,CL_MEM_READ_WRITE,global_buf_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_scalar_product_buf_glob failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }  
     
-  cout << "\tinit float numbers..." << endl;
-  /* LZ: no longer needed?!?
-   clmem_kappa = clCreateBuffer(context,CL_MEM_READ_ONLY,float_size,0,&clerr);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_kappa failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  } 
-  */
-  clmem_theta_fermion = clCreateBuffer(context,CL_MEM_READ_ONLY,float_size,0,&clerr);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_theta_fermion failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  } 
-  /* LZ no longer needed ?!?
-  clmem_mu = clCreateBuffer(context,CL_MEM_READ_ONLY,float_size,0,&clerr);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_mu failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  } 
-  */
-  clmem_chem_pot_re = clCreateBuffer(context,CL_MEM_READ_ONLY,float_size,0,&clerr);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_chem_pot_re failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  } 
-  clmem_chem_pot_im = clCreateBuffer(context,CL_MEM_READ_ONLY,float_size,0,&clerr);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"creating clmem_chem_pot_im failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  } 
   clmem_resid = clCreateBuffer(context,CL_MEM_READ_WRITE,float_size,0,&clerr);
   if(clerr!=CL_SUCCESS) {
     cout<<"creating clmem_resid failed, aborting..."<<endl;
@@ -333,28 +279,6 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
     cout<<"creating clmem_global_squarenorm_buf_glob failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }  
-  
-  cout << "\twrite values to buffers..." << endl;
-
-  tmp = (*parameters).get_theta_fermion();
-  clerr = clEnqueueWriteBuffer(queue,clmem_theta_fermion,CL_TRUE,0,float_size,&tmp,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... writing clmem_theta_fermion failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-
-  tmp = (*parameters).get_chem_pot_re();
-  clerr = clEnqueueWriteBuffer(queue,clmem_chem_pot_re,CL_TRUE,0,float_size,&tmp,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... writing clmem_chem_pot_re failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  tmp = (*parameters).get_chem_pot_im();
-  clerr = clEnqueueWriteBuffer(queue,clmem_chem_pot_im,CL_TRUE,0,float_size,&tmp,0,0,NULL);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"... writing clmem_chem_pot_im failed, aborting."<<endl;
-    exit(HMC_OCLERROR);
-  }
 
   clerr = clEnqueueWriteBuffer(queue,clmem_one,CL_TRUE,0,complex_size,&one,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
@@ -366,182 +290,264 @@ hmc_error Opencl_fermions::init_fermion_variables(inputparameters* parameters, u
     cout<<"... writing clmem_minusone failed, aborting."<<endl;
     exit(HMC_OCLERROR);
   }
-  
-  cout << "\tinit fermion kernels..." << endl;
+	
+	return HMC_SUCCESS;
+}
+
+hmc_error Opencl_fermions::fill_kernels()
+{
+	int clerr = HMC_SUCCESS;
+	
+	Opencl::fill_kernels();
+	
+	logger.debug() << "Create fermion kernels...";
 	Qplus = clCreateKernel(clprogram,"Qplus",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating Qplus kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( Qplus );
 	Qminus = clCreateKernel(clprogram,"Qminus",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating Qminus kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( Qminus );
 	gamma5 = clCreateKernel(clprogram,"gamma5",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating gamma5 kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
+	if( logger.beDebug() )
+		printResourceRequirements( gamma5 );
 	}
 	gamma5_eoprec = clCreateKernel(clprogram,"gamma5_eoprec",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating gamma5_eoprec kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
 	}	
+	if( logger.beDebug() )
+		printResourceRequirements( gamma5_eoprec );
 	M = clCreateKernel(clprogram,"M",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating M kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( M );
 	convert_from_eoprec = clCreateKernel(clprogram,"convert_from_eoprec",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating convert_from_eoprec kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( convert_from_eoprec );
 	ps_correlator = clCreateKernel(clprogram,"ps_correlator",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating ps_correlator kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( ps_correlator );
 	set_spinorfield_cold = clCreateKernel(clprogram,"set_spinorfield_cold",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating set_spinorfield_cold kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( set_spinorfield_cold );
 	set_eoprec_spinorfield_cold = clCreateKernel(clprogram,"set_eoprec_spinorfield_cold",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating set_eoprec_spinorfield_cold kernel failed, aborting."<<endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( set_eoprec_spinorfield_cold );
 	M_diag = clCreateKernel(clprogram,"M_diag",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating M_diag kernel failed, aborting."<<endl;
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( M_diag );
 	dslash = clCreateKernel(clprogram, "dslash", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating dslash kernel failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( dslash );
 	saxpy = clCreateKernel(clprogram, "saxpy", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating saxpy kernel failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( saxpy );
 	saxsbypz = clCreateKernel(clprogram, "saxsbypz", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating saxsbypz kernel failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( saxsbypz );
 	scalar_product = clCreateKernel(clprogram, "scalar_product", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating scalar_product kernel failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( scalar_product );
 	scalar_product_reduction = clCreateKernel(clprogram, "scalar_product_reduction", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating scalar_product_reduction kernel failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( scalar_product_reduction );
 	set_zero_spinorfield = clCreateKernel(clprogram, "set_zero_spinorfield", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating set_zero_spinorfield kernel failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( set_zero_spinorfield );
 	global_squarenorm = clCreateKernel(clprogram, "global_squarenorm", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating global_squarenorm kernel failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( global_squarenorm );
 	global_squarenorm_reduction = clCreateKernel(clprogram, "global_squarenorm_reduction", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating global_squarenorm_reduction kernel failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( global_squarenorm_reduction );
 	ratio = clCreateKernel(clprogram, "ratio", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating ratio kernel failed, aborting. " << clerr << endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( ratio );
 	product = clCreateKernel(clprogram, "product", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating product kernel failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( product );
 	convert_to_kappa_format = clCreateKernel(clprogram, "convert_to_kappa_format", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating convert_to_kappa_format kernel failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( convert_to_kappa_format );
 	convert_from_kappa_format = clCreateKernel(clprogram, "convert_from_kappa_format", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating convert_from_kappa_format kernel failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( convert_from_kappa_format );
 	create_point_source = clCreateKernel(clprogram, "create_point_source", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating create_point_source kernel failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( create_point_source );
 	M_sitediagonal = clCreateKernel(clprogram, "M_sitediagonal", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating M_sitediagonal kernel failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( M_sitediagonal );
 	M_inverse_sitediagonal = clCreateKernel(clprogram, "M_inverse_sitediagonal", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating M_inverse_sitediagonal kernel failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( M_inverse_sitediagonal );	
 	if(get_parameters()->get_use_eo() == TRUE) {
 		convert_to_kappa_format_eoprec = clCreateKernel(clprogram, "convert_to_kappa_format_eoprec", &clerr);
 		if(clerr != CL_SUCCESS) {
 			cout << "...creating convert_to_kappa_format_eoprec kernel failed, aborting." << endl;
 			exit(HMC_OCLERROR);
 		}
+		if( logger.beDebug() )
+		printResourceRequirements( convert_to_kappa_format_eoprec );
 		convert_from_kappa_format_eoprec = clCreateKernel(clprogram, "convert_from_kappa_format_eoprec", &clerr);
 		if(clerr != CL_SUCCESS) {
 			cout << "...creating convert_from_kappa_format_eoprec kernel failed, aborting." << endl;
 			exit(HMC_OCLERROR);
 		}
+		if( logger.beDebug() )
+		printResourceRequirements( convert_from_kappa_format_eoprec );
 		dslash_eoprec = clCreateKernel(clprogram, "dslash_eoprec", &clerr);
 		if(clerr != CL_SUCCESS) {
 			cout << "...creating dslash_eoprec kernel failed, aborting." << endl;
 			exit(HMC_OCLERROR);
 		}
+		if( logger.beDebug() )
+		printResourceRequirements( dslash_eoprec );
 		saxpy_eoprec = clCreateKernel(clprogram, "saxpy_eoprec", &clerr);
 		if(clerr != CL_SUCCESS) {
 			cout << "...creating saxpy_eoprec kernel failed, aborting." << endl;
 			exit(HMC_OCLERROR);
 		}
+		if( logger.beDebug() )
+		printResourceRequirements( saxpy_eoprec );
 		saxsbypz_eoprec = clCreateKernel(clprogram, "saxsbypz_eoprec", &clerr);
 		if(clerr != CL_SUCCESS) {
 			cout << "...creating saxsbypz_eoprec kernel failed, aborting." << endl;
 			exit(HMC_OCLERROR);
 		}
+		if( logger.beDebug() )
+		printResourceRequirements( saxsbypz_eoprec );
 		scalar_product_eoprec = clCreateKernel(clprogram, "scalar_product_eoprec", &clerr);
 		if(clerr != CL_SUCCESS) {
 			cout << "...creating scalar_product_eoprec kernel failed, aborting." << endl;
 			exit(HMC_OCLERROR);
 		}
+		if( logger.beDebug() )
+		printResourceRequirements( scalar_product_eoprec );
 		set_zero_spinorfield_eoprec = clCreateKernel(clprogram, "set_zero_spinorfield_eoprec", &clerr);
 		if(clerr != CL_SUCCESS) {
 			cout << "...creating set_zero_spinorfield_eoprec kernel failed, aborting." << endl;
 			exit(HMC_OCLERROR);
 		}
+		if( logger.beDebug() )
+		printResourceRequirements( set_zero_spinorfield_eoprec );
 		global_squarenorm_eoprec = clCreateKernel(clprogram, "global_squarenorm_eoprec", &clerr);
 		if(clerr != CL_SUCCESS) {
 			cout << "...creating global_squarenorm_eoprec kernel failed, aborting." << endl;
 			exit(HMC_OCLERROR);
 		}
+		if( logger.beDebug() )
+		printResourceRequirements( global_squarenorm_eoprec );
 		create_point_source_eoprec = clCreateKernel(clprogram, "create_point_source_eoprec", &clerr);
 		if(clerr != CL_SUCCESS) {
 			cout << "...creating create_point_source_eoprec kernel failed, aborting." << endl;
 			exit(HMC_OCLERROR);
 		}
 	}
-
-	(*timer).add();
+	
 	return HMC_SUCCESS;
+}
+
+hmc_error Opencl_fermions::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters)
+{
+	(*timer).reset();
+	hmc_error err = Opencl::init(wanted_device_type, timer, parameters);
+	return err;
+	(*timer).add();
 }
 
 
@@ -2071,13 +2077,6 @@ hmc_error Opencl_fermions::finalize_fermions(){
     if(clReleaseKernel(global_squarenorm_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
     if(clReleaseKernel(create_point_source_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
   }
-
-  //LZ  if(clReleaseMemObject(clmem_kappa)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  if(clReleaseMemObject(clmem_theta_fermion)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  //  if(clReleaseMemObject(clmem_mu)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  if(clReleaseMemObject(clmem_chem_pot_re)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  if(clReleaseMemObject(clmem_chem_pot_im)!=CL_SUCCESS) exit(HMC_OCLERROR);
-	
 
   if(clReleaseMemObject(clmem_inout)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_source)!=CL_SUCCESS) exit(HMC_OCLERROR);
