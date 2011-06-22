@@ -136,49 +136,64 @@ hmc_error Opencl_hmc::fill_kernels()
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( set_zero_gaugemomentum );
 	logger.debug() << "Create kernel generate_gaussian_spinorfield...";
 	generate_gaussian_spinorfield = clCreateKernel(clprogram, "generate_gaussian_spinorfield", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( generate_gaussian_spinorfield );
 	logger.debug() << "Create kernel generate_gaussian_gaugemomenta...";
 	generate_gaussian_gaugemomenta = clCreateKernel(clprogram, "generate_gaussian_gaugemomenta", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( generate_gaussian_gaugemomenta );
 	logger.debug() << "Create kernel md_update_gaugefield...";
 	md_update_gaugefield = clCreateKernel(clprogram, "md_update_gaugefield", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( md_update_gaugefield );
 	logger.debug() << "Create kernel md_update_gaugemomenta...";
 	md_update_gaugemomenta = clCreateKernel(clprogram, "md_update_gaugemomenta", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( md_update_gaugemomenta );
 	logger.debug() << "Create kernel gauge_force...";
 	gauge_force = clCreateKernel(clprogram, "gauge_force", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( gauge_force );
 	logger.debug() << "Create kernel fermion_force...";
 	fermion_force = clCreateKernel(clprogram, "fermion_force", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
+	if( logger.beDebug() )
+		printResourceRequirements( fermion_force );
 	logger.debug() << "Create kernel gaugemomentum_squarenorm...";
 	gaugemomentum_squarenorm = clCreateKernel(clprogram, "gaugemomentum_squarenorm", &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
-	
+	if( logger.beDebug() )
+		printResourceRequirements( gaugemomentum_squarenorm );	
 	
 	return HMC_SUCCESS;
 }
