@@ -63,7 +63,7 @@ hmc_complex pol;
 
 void print_hello(char* name)
 {
-	std::cout << "This is the HMC, " << name << endl;
+	std::cout << "This is " << name << endl;
 	return;
 }
 

@@ -193,9 +193,6 @@ hmc_error Opencl_hmc::init(cl_device_type wanted_device_type, usetimer* timer, i
 {
 	(*timer).reset();
 	hmc_error err = Opencl_fermions::init(wanted_device_type, timer, parameters);
-// 	err |= init_hmc_variables(parameters, timer);
-	
-
 	
 	(*timer).add();
 	return err;
