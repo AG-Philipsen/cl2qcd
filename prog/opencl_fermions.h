@@ -136,44 +136,55 @@ class Opencl_fermions : public Opencl {
 	/////////////////////////////////////////////////
 	//functions to get private variables
 	cl_mem get_clmem_inout();
+	cl_mem get_clmem_tmp();
+	
+	cl_mem get_clmem_inout_eoprec();
+	cl_mem get_clmem_tmp_eoprec_1();
 	
  private:
-	//spinorfield and solver variables
-
+	////////////////////////////////////
+	//kernels, sorted roughly by groups
+	//fermionmatrix
 	cl_kernel M;
 	cl_kernel gamma5;
-	cl_kernel gamma5_eoprec;
 	cl_kernel Qplus;
 	cl_kernel Qminus;
 	cl_kernel ps_correlator;
 	cl_kernel set_spinorfield_cold;
-	cl_kernel set_eoprec_spinorfield_cold;
-	cl_kernel convert_from_eoprec;
+	cl_kernel gamma5_eoprec;
 	cl_kernel M_diag;
 	cl_kernel dslash;
+	cl_kernel M_sitediagonal;
+	cl_kernel M_inverse_sitediagonal;
+	cl_kernel dslash_eoprec;
+		
+	//BLAS
+	cl_kernel set_eoprec_spinorfield_cold;
+	cl_kernel convert_from_eoprec;
 	cl_kernel saxpy;
 	cl_kernel saxsbypz;
-	cl_kernel scalar_product;
-	cl_kernel scalar_product_reduction;
 	cl_kernel set_zero_spinorfield;
-	cl_kernel global_squarenorm;
-	cl_kernel global_squarenorm_reduction;
-	cl_kernel ratio;
-	cl_kernel product;
 	cl_kernel convert_to_kappa_format;
 	cl_kernel convert_from_kappa_format;
 	cl_kernel convert_to_kappa_format_eoprec;
 	cl_kernel convert_from_kappa_format_eoprec;
 	cl_kernel create_point_source;
-	cl_kernel M_sitediagonal;
-	cl_kernel M_inverse_sitediagonal;
-	cl_kernel dslash_eoprec;
 	cl_kernel saxpy_eoprec;
 	cl_kernel saxsbypz_eoprec;
-	cl_kernel scalar_product_eoprec;
 	cl_kernel set_zero_spinorfield_eoprec;
-	cl_kernel global_squarenorm_eoprec;
 	cl_kernel create_point_source_eoprec;
+			
+	//Scalar Product
+	cl_kernel scalar_product;
+	cl_kernel scalar_product_reduction;
+	cl_kernel global_squarenorm;
+	cl_kernel global_squarenorm_reduction;
+	cl_kernel scalar_product_eoprec;
+	cl_kernel global_squarenorm_eoprec;
+	
+	//Single
+	cl_kernel ratio;
+	cl_kernel product;
 
 	//CP: variables for normal solver
 	cl_mem clmem_inout;
