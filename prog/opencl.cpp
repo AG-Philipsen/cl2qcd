@@ -320,15 +320,15 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 
 	clerr = clBuildProgram(clprogram, 1, &device, buildoptions.c_str(), 0, 0);
 	if(clerr != CL_SUCCESS) {
-		logger.error() << "... failed, but look at BuildLog and abort then.";
+		logger.error() << "... failed with error " << clerr << ", but look at BuildLog and abort then.";
 	}
 
 	logger.trace() << "finished building program";
 
 	size_t logSize;
 	clerr |= clGetProgramBuildInfo(clprogram, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);
-	if(logSize > 1) { // 0-terminated -> always at least one byte
-		cout << "Build Log:";
+	if(logSize > 1 && logger.beDebug()) { // 0-terminated -> always at least one byte
+		logger.debug() << "Build Log:";
 		char* log = new char[logSize];
 		clerr |= clGetProgramBuildInfo(clprogram, device, CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
 		logger.debug() << log;
@@ -340,7 +340,7 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 		// dump program source
 		size_t sourceSize;
 		clerr = clGetProgramInfo(clprogram, CL_PROGRAM_SOURCE, 0, NULL, &sourceSize);
-		if(!clerr && sourceSize > 1) { // 0-terminated -> always at least one byte
+		if(!clerr && sourceSize > 1 && logger.beDebug()) { // 0-terminated -> always at least one byte
 			char* source = new char[sourceSize];
 			clerr = clGetProgramInfo(clprogram, CL_PROGRAM_SOURCE, sourceSize, source, &sourceSize);
 			if(!clerr) {
@@ -348,7 +348,7 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 				ofstream srcFile(FILENAME);
 				srcFile << source;
 				srcFile.close();
-				logger.error() << "Dumped broken source to " << FILENAME;
+				logger.debug() << "Dumped broken source to " << FILENAME;
 			}
 			delete[] source;
 		}
@@ -428,7 +428,7 @@ hmc_error Opencl::copy_gaugefield_to_device(s_gaugefield* gaugefield, usetimer* 
 	}
 
 	free(host_gaugefield);
-	
+
 	timer->add();
 	return HMC_SUCCESS;
 }
