@@ -80,7 +80,7 @@ public:
 	 *         @li HMC_SUCCESS otherwise
 	 */
 	hmc_error copy_gaugefield_to_device(s_gaugefield* gaugefield, usetimer* timer);
-// 	hmc_error copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
+//  hmc_error copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
 
 	/**
 	 * Copy the RNG state to the appropriate OpenCL buffer.
@@ -114,7 +114,7 @@ public:
 	 *         @li HMC_SUCCESS otherwise
 	 */
 	hmc_error get_gaugefield_from_device(s_gaugefield* gaugefield, usetimer* timer);
-// 	hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
+//  hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
 
 
 	////////////////////////////
@@ -219,6 +219,18 @@ public:
 	 * Called by the destructor.
 	 */
 	virtual hmc_error finalize();
+
+	/**
+	 * Clear out the kernels,
+	 * Virtual method, allows to clear additional kernels in inherited classes.
+	 */
+	virtual hmc_error clear_kernels();
+
+	/**
+	 * Clear out the buffers,
+	 * Virtual method, allows to clear additional buffers in inherited classes.
+	 */
+	virtual hmc_error clear_buffers();
 
 	/**
 	 * Contains the list of kernel files after call to fill_kernels_file().
