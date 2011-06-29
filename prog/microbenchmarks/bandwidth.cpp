@@ -276,5 +276,5 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 	int64_t kernelTime = timer.getTime() / num_meas;
 
 	// format is: #groups #threads per group #copy time in mus #bandwidth in megabytes
-	cout << groups << ' ' << threads_per_group << ' ' << kernelTime << ' ' << (2 * elems * sizeof(T) / kernelTime) << endl;
+	cout << ' ' << groups * threads_per_group << ' ' << groups << ' ' << threads_per_group << ' ' << kernelTime << ' ' << (2 * elems * sizeof(T) / kernelTime) << endl;
 }
