@@ -5,8 +5,8 @@
 #
 
 
-from pylab import recfromtxt
 import matplotlib.pyplot as plt
+from pylab import recfromtxt
 import optparse
 import operator
 
@@ -16,6 +16,8 @@ import operator
 if __name__ == "__main__":
 
 	parser = optparse.OptionParser( usage='Usage: %prog [options] datafile reference', description='Compare two sets of heatbath output data' )
+	parser.add_option("-f","--file", dest="filename", help="write comparison results to files")
+	parser.add_option("-e","--format", dest="format", help="format for the result file", default="pdf")
 
 	( args, files ) = parser.parse_args()
 
@@ -38,6 +40,9 @@ if __name__ == "__main__":
 
 	plt.legend()
 
+	if args.filename:
+		plt.savefig( args.filename + '.comparison.' + args.format )
+
 
 
 	difference = data.kappa - reference.kappa
@@ -51,7 +56,8 @@ if __name__ == "__main__":
 
 	plt.legend()
 
-
-
-	plt.show()
+	if args.filename:
+		plt.savefig( args.filename + '.difference.' + args.format )
+	else:
+		plt.show()
 

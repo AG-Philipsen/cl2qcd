@@ -358,3 +358,8 @@ if(DOXYGEN_FOUND)
 else(DOXYGEN_FOUND)
     message(STATUS "WARNING: Failed to find Doxygen - won't build documentation")
 endif(DOXYGEN_FOUND)
+
+option(BUILD_MICROBENCHMARKS "Build micro benchmarks" OFF)
+if(BUILD_MICROBENCHMARKS)
+	add_subdirectory(microbenchmarks)
+endif(BUILD_MICROBENCHMARKS)
