@@ -1727,7 +1727,7 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 		copy_float_from_device(clmem_resid, &resid, copytimer);
 
 		if(resid<epssquare) {	
-// 		  M_device(clmem_inout,clmem_aux,local_work_size, global_work_size, Mtimer, dslashtimer, Mdiagtimer);
+		  M_device(clmem_inout,clmem_aux,local_work_size, global_work_size, Mtimer, dslashtimer, Mdiagtimer);
 			saxpy_device(clmem_aux, clmem_source, clmem_one, clmem_aux, local_work_size, global_work_size, latimer); 
 			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, local_work_size, global_work_size, scalarprodtimer);
 			copy_float_from_device(clmem_trueresid, &trueresid, copytimer);
