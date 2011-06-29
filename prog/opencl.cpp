@@ -933,7 +933,7 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 {
 	cl_int clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting...";
+		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting..." << clerr << " - " << global_work_size << " - " << local_work_size;
 
 		size_t bytesInKernelName;
 		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
