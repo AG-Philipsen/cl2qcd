@@ -34,13 +34,23 @@ int main(int argc, char* argv[])
 
 	Gaugefield gaugefield;
 	hmc_rndarray rndarray;
-	cl_device_type devicetypes[1];
+	cl_device_type devicetypes[parameters.get_num_dev()];
 
-#ifdef _USEGPU_
-	devicetypes[0] = CL_DEVICE_TYPE_GPU;
-#else
-	devicetypes[0] = CL_DEVICE_TYPE_CPU;
-#endif
+	if(parameters.get_num_dev() == 1){
+	#ifdef _USEGPU_
+		devicetypes[0] = CL_DEVICE_TYPE_GPU;
+	#else
+		devicetypes[0] = CL_DEVICE_TYPE_CPU;
+	#endif
+	}
+	else if(parameters.get_num_dev() == 2){
+		devicetypes[0] = CL_DEVICE_TYPE_GPU;
+		devicetypes[1] = CL_DEVICE_TYPE_CPU;
+	}
+	else{
+		logger.fatal() << "Number of devices too big, aborting..." ;
+		return HMC_STDERR;
+	}
 
 	gaugefield.init(1, devicetypes, &parameters, &inittime);
 

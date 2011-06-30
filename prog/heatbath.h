@@ -78,6 +78,10 @@ void print_info(inputparameters* params, ostream* os)
 	*os << "## heatbathsteps  = " << params->get_heatbathsteps() << '\n';
 	*os << "## overrelaxsteps = " << params->get_overrelaxsteps() << '\n';
 	*os << "##" << '\n';
+	
+	*os<<"## number of devices desired for calculations: " << params->get_num_dev() << "\n" ;
+	*os << "##" << '\n';	
+	
 	if (params->get_startcondition() == START_FROM_SOURCE) {
 		*os << "## sourcefile = ";
 		string sf = params->sourcefile;
