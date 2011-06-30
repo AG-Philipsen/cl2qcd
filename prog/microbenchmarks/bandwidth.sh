@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 MIN_NATIVE_GROUP_SIZE=64
 MAX_NATIVE_GROUP_SIZE=256
