@@ -78,6 +78,7 @@ public:
 	int get_fermact();
 	void display_sourcefile();
 	void display_sourcefilenumber();
+	int get_num_dev();
 	//CP
 	//this is out of laziness
 	std::string sourcefile;
@@ -93,6 +94,7 @@ private:
 	hmc_float chem_pot_re;
 	hmc_float chem_pot_im;
 	hmc_float tau;
+	int num_dev;
 	int cgmax;
 	int use_eo;
 	int fermact;

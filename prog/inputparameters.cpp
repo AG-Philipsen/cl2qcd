@@ -29,6 +29,7 @@ hmc_error inputparameters::set_defaults()
 	//sourcefile = "\0";
 	sourcefilenumber = "00000";
 	fermact = WILSON;
+	num_dev = 1;
 	return HMC_SUCCESS;
 }
 
@@ -93,6 +94,7 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("hmcsteps") != std::string::npos) val_assign(&hmcsteps, line);
 		if(line.find("integrationsteps1") != std::string::npos) val_assign(&integrationsteps1, line);
 		if(line.find("integrationsteps2") != std::string::npos) val_assign(&integrationsteps2, line);
+		if(line.find("num_dev") != std::string::npos) val_assign(&num_dev, line);
 
 		if(line.find("fermaction") != std::string::npos) fermact_assign(&fermact, line);
 		if(line.find("fermionaction") != std::string::npos) fermact_assign(&fermact, line);
@@ -104,6 +106,7 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("even-odd-preconditioning") != std::string::npos) eocond_assign(&use_eo, line);
 		if(line.find("use_eo") != std::string::npos) eocond_assign(&use_eo, line);
 		if(line.find("use_evenodd") != std::string::npos) eocond_assign(&use_eo, line);
+		
 
 	}
 
@@ -385,6 +388,11 @@ int inputparameters::get_cgmax()
 int inputparameters::get_prec()
 {
 	return prec;
+}
+
+int inputparameters::get_num_dev()
+{
+	return num_dev;
 }
 
 int inputparameters::get_thermalizationsteps()

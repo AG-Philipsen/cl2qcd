@@ -99,6 +99,9 @@ void print_info(inputparameters* params, ostream* os)
 	  *os << "## do not use even-odd preconditioning" << '\n';
 	*os << "##" << '\n';
 
+	*os<<"## number of devices used for calculations: " << params->get_num_dev() << "\n" ;
+	*os << "##" << '\n';
+	
 	if (params->get_startcondition() == START_FROM_SOURCE) {
 		*os << "## sourcefile = ";
 		string sf = params->sourcefile;
