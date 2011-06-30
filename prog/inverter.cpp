@@ -21,17 +21,29 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	sourcefileparameters parameters_source;
+	//CP: spinorfield on host for storage while copying between devices...
+	spinorfield host_spinorfield [SPINORFIELDSIZE];
 
 	Gaugefield_inversion gaugefield;
-	cl_device_type devicetypes[1];
+	cl_device_type devicetypes[parameters.get_num_dev()];
 
-#ifdef _USEGPU_
-	devicetypes[0] = CL_DEVICE_TYPE_GPU;
-#else
-	devicetypes[0] = CL_DEVICE_TYPE_CPU;
-#endif
+	if(parameters.get_num_dev() == 1){
+	#ifdef _USEGPU_
+		devicetypes[0] = CL_DEVICE_TYPE_GPU;
+	#else
+		devicetypes[0] = CL_DEVICE_TYPE_CPU;
+	#endif
+	}
+	else if(parameters.get_num_dev() == 2){
+		devicetypes[0] = CL_DEVICE_TYPE_GPU;
+		devicetypes[1] = CL_DEVICE_TYPE_CPU;
+	}
+	else{
+		logger.fatal() << "Number of devices too big, aborting..." ;
+		return HMC_STDERR;
+	}
 	cerr << "init gaugefield" << endl;
-	gaugefield.init(1, devicetypes, &parameters, &inittime);
+	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters, &inittime);
 	//cerr << "print initial gaugeobservables..." << endl;
 	//	gaugefield.print_gaugeobservables(&polytime, &plaqtime);
 	cerr << "copy gaugefield" << endl;
@@ -41,8 +53,18 @@ int main(int argc, char* argv[])
 	// inverter
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	cout << "perform inversion on device.." << endl;
-	gaugefield.perform_inversion_pointsource_ps_corr_devices(&copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
 
+	if(parameters.get_num_dev() == 1){
+		gaugefield.perform_inversion_pointsource_ps_corr_devices(&copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
+		gaugefield.get_devices_fermions()[0].ps_correlator_device(1,1, &noop);
+	}
+	else{
+		gaugefield.perform_inversion_pointsource_ps_corr_devices(&copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
+		gaugefield.get_devices_fermions()[0].get_spinorfield_from_device(host_spinorfield, &copytimer);
+		gaugefield.get_devices_fermions()[1].copy_spinorfield_to_device(host_spinorfield, &copytimer);
+		/** @todo improve ls, gs, here*/
+		gaugefield.get_devices_fermions()[1].ps_correlator_device(1,1, &latimer);
+	}
 	cout << "inversion done" << endl;
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables

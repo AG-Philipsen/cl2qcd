@@ -91,8 +91,9 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
       get_devices_fermions()[0].add_solution_to_correlator_field_device(ls, gs, latimer);
     }
   }
-
-  get_devices_fermions()[0].ps_correlator_device(ls, gs, &noop);
+	
+	//CP: this should be called from outside...
+  //get_devices_fermions()[0].ps_correlator_device(ls, gs, &noop);
 
   return HMC_SUCCESS;
 }

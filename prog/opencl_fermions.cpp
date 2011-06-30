@@ -681,7 +681,8 @@ hmc_error Opencl_fermions::copy_spinorfield_to_device(spinorfield* host_spinorfi
 
   /** @todo: spinorfield_size should propably be private */
 	int spinorfield_size = sizeof(spinor)*SPINORFIELDSIZE;
-	int clerr = clEnqueueWriteBuffer(queue,clmem_inout,CL_TRUE,0,spinorfield_size,host_spinorfield,0,0,NULL);
+	//int clerr = clEnqueueWriteBuffer(queue,clmem_inout,CL_TRUE,0,spinorfield_size,host_spinorfield,0,0,NULL);
+	int clerr = clEnqueueWriteBuffer(queue,clmem_corr,CL_TRUE,0,spinorfield_size,host_spinorfield,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
@@ -732,6 +733,7 @@ hmc_error Opencl_fermions::copy_eoprec_source_to_device(spinorfield_eoprec* host
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     exit(HMC_OCLERROR);
+		
   }
 		     
   (*timer).add();
@@ -742,7 +744,8 @@ hmc_error Opencl_fermions::get_spinorfield_from_device(spinorfield* host_spinorf
   (*timer).reset();
 
 	int spinorfield_size = sizeof(spinor)*SPINORFIELDSIZE;
-  int clerr = clEnqueueReadBuffer(queue,clmem_inout,CL_TRUE,0,spinorfield_size,host_spinorfield,0,NULL,NULL);
+//   int clerr = clEnqueueReadBuffer(queue,clmem_inout,CL_TRUE,0,spinorfield_size,host_spinorfield,0,NULL,NULL);
+	int clerr = clEnqueueReadBuffer(queue,clmem_corr,CL_TRUE,0,spinorfield_size,host_spinorfield,0,NULL,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
     cout <<"errorcode :" << clerr << endl;
