@@ -56,6 +56,7 @@ int main(int argc, char* argv[])
 
 	if(parameters.get_num_dev() == 1){
 		gaugefield.perform_inversion_pointsource_ps_corr_devices(&copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
+		/** @todo improve ls, gs, here*/
 		gaugefield.get_devices_fermions()[0].ps_correlator_device(1,1, &noop);
 	}
 	else{

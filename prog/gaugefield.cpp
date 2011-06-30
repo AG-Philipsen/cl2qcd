@@ -22,11 +22,11 @@ hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparame
 
 hmc_error Gaugefield::init_devices(cl_device_type* devicetypes, usetimer* timer)
 {
-	if(get_num_ocl_devices() != 1) {
-		//LZ: so far, we only use !!! 1 !!! device
-		//this needs generalisation to several devices and subsets!!!!!
-		logger.error() << "only 1 device possible...";
-	}
+// 	if(get_num_ocl_devices() != 1) {
+// 		//LZ: so far, we only use !!! 1 !!! device
+// 		//this needs generalisation to several devices and subsets!!!!!
+// 		logger.error() << "only 1 device possible...";
+// 	}
 
 	if(get_num_ocl_devices() > 0) {
 		Opencl* dev_tmp = new Opencl[get_num_ocl_devices()];
