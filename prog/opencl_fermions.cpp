@@ -680,7 +680,7 @@ hmc_error Opencl_fermions::copy_spinorfield_to_device(spinorfield* host_spinorfi
   (*timer).reset();
 
   /** @todo: spinorfield_size should propably be private */
-	int spinorfield_size = sizeof(hmc_spinor)*SPINORFIELDSIZE;
+	int spinorfield_size = sizeof(spinor)*SPINORFIELDSIZE;
 	int clerr = clEnqueueWriteBuffer(queue,clmem_inout,CL_TRUE,0,spinorfield_size,host_spinorfield,0,0,NULL);
   if(clerr!=CL_SUCCESS) {
     cout<<"... failed, aborting."<<endl;
