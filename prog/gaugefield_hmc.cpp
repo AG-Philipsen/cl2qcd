@@ -47,7 +47,7 @@ Opencl_hmc * Gaugefield_hmc::get_devices_hmc ()
 	return  (Opencl_hmc*)get_devices();
 }
 
-hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, hmc_observables *obs, int iter, hmc_float rnd_number, const string outname, usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer){
+hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters, hmc_observables *obs, int iter, hmc_float rnd_number, const string outname, usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer){
 	
 	//global and local work sizes;
 	//LZ: should eventually be moved inside opencl_fermions class
@@ -58,9 +58,9 @@ hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, hmc_obse
 #endif
 
 #ifdef _USEGPU_
-	size_t gs = 4 * NUMTHREADS * get_devices()[0].max_compute_units; /// @todo autotune
+	size_t gs = 4 * NUMTHREADS * get_devices()[dev].max_compute_units; /// @todo autotune
 #else
-	size_t gs = get_devices()[0].max_compute_units;
+	size_t gs = get_devices()[dev].max_compute_units;
 #endif
 
 	const cl_uint num_groups = (gs + ls - 1) / ls;
@@ -76,7 +76,7 @@ hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, hmc_obse
 	
 	logger.trace() << "\tinit gauge momentum" ;
 	//init gauge_momenta, saved in clmem_p
-	get_devices_hmc()[0].generate_gaussian_gaugemomenta_device(ls, gs, latimer);
+	get_devices_hmc()[dev].generate_gaussian_gaugemomenta_device(ls, gs, latimer);
 	//init/update spinorfield phi
 	logger.trace() << "\tinit spinorfield " ;
 	
@@ -91,10 +91,10 @@ hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, hmc_obse
 	//		md_update_spinorfield_device(phi_inv, phi): phi = Qminus phi_inv
 	//	saving one variable in global mem!!
 	
-	get_devices_hmc()[0].generate_gaussian_spinorfield_device(ls, gs, latimer);
-	get_devices_hmc()[0].calc_spinorfield_init_energy_device(ls, gs, scalarprodtimer);
+	get_devices_hmc()[dev].generate_gaussian_spinorfield_device(ls, gs, latimer);
+	get_devices_hmc()[dev].calc_spinorfield_init_energy_device(ls, gs, scalarprodtimer);
 	logger.trace() << "\tperform md update of spinorfield" ;
-	get_devices_hmc()[0].md_update_spinorfield_device(ls, gs, Mtimer);
+	get_devices_hmc()[dev].md_update_spinorfield_device(ls, gs, Mtimer);
 	
 	//update gaugefield and gauge_momenta via leapfrog
 	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
@@ -102,22 +102,22 @@ hmc_error Gaugefield_hmc::perform_hmc_step(inputparameters *parameters, hmc_obse
 	
 	/** @todo these have to be reconsidered! */
 	//copy u->u' p->p' for the leapfrog
-	get_devices_hmc()[0].copy_gaugefield_old_new_device(ls, gs, copytimer);
-	get_devices_hmc()[0].copy_gaugemomenta_old_new_device(ls, gs, copytimer);
+	get_devices_hmc()[dev].copy_gaugefield_old_new_device(ls, gs, copytimer);
+	get_devices_hmc()[dev].copy_gaugemomenta_old_new_device(ls, gs, copytimer);
 		
-	get_devices_hmc()[0].leapfrog_device((*parameters).get_tau(), (*parameters).get_integrationsteps1(), (*parameters).get_integrationsteps2(), ls, gs, latimer);
+	get_devices_hmc()[dev].leapfrog_device((*parameters).get_tau(), (*parameters).get_integrationsteps1(), (*parameters).get_integrationsteps2(), ls, gs, latimer);
 		
 	logger.trace() << "\tobservables of new config:\t" ;
 // 		print_gaugeobservables(new_field, &polytime, &plaqtime);
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
 	logger.trace() << "\tperform Metropolis step: " ;
 	//this call calculates also the HMC-Observables
-	*obs = get_devices_hmc()[0].metropolis(rnd_number, (*parameters).get_beta(), outname, ls, gs, latimer);
+	*obs = get_devices_hmc()[dev].metropolis(rnd_number, (*parameters).get_beta(), outname, ls, gs, latimer);
 
 	if((*obs).accept == 1){
 		// perform the change nonprimed->primed !
-		get_devices_hmc()[0].copy_gaugefield_new_old_device(ls, gs, latimer);
-		get_devices_hmc()[0].copy_gaugemomenta_new_old_device(ls, gs, latimer);
+		get_devices_hmc()[dev].copy_gaugefield_new_old_device(ls, gs, latimer);
+		get_devices_hmc()[dev].copy_gaugemomenta_new_old_device(ls, gs, latimer);
 		// SL: this works as long as p and field are pointers to the *original* memory locations!
 		logger.trace() << "\t\tnew configuration accepted" ;
 	}
