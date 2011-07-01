@@ -250,6 +250,7 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 
 	// figure out the number of "cores"
 	if(clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
+	logger.info() << "\t\tCL_DEVICE_MAX_COMPUTE_UNITS: " << max_compute_units;
 
 	//Initilize context
 	logger.trace() << "Create context...";

@@ -11,6 +11,7 @@ hmc_error Opencl_fermions::fill_kernels_file ()
 	cl_kernels_file.push_back("operations_spinor.cl");
 	cl_kernels_file.push_back("operations_spinorfield.cl");
 	cl_kernels_file.push_back("operations_fermionmatrix.cl");
+	cl_kernels_file.push_back("fermionobservables.cl");	
 
 	return HMC_SUCCESS;  
 }
