@@ -73,6 +73,16 @@ spinor spinor_times_complex(spinor in, hmc_complex factor)
 	return tmp;
 }
 
+spinor spinor_times_complex_conj(spinor in, hmc_complex factor)
+{
+	spinor tmp;
+	tmp.e0 = su3vec_times_complex_conj(in.e0, factor);
+	tmp.e1 = su3vec_times_complex_conj(in.e1, factor);
+	tmp.e2 = su3vec_times_complex_conj(in.e2, factor);
+	tmp.e3 = su3vec_times_complex_conj(in.e3, factor);
+	return tmp;
+}
+
 spinor spinor_dim(spinor in1, spinor in2)
 {
 	spinor tmp;

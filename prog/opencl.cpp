@@ -396,12 +396,14 @@ hmc_error Opencl::clear_kernels()
 {
 	logger.trace() << "Clearing kernels";
 
-	if(clReleaseKernel(heatbath_even) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(heatbath_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
+	if(get_parameters()->get_perform_heatbath() == 1){
+		if(clReleaseKernel(heatbath_even) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseKernel(heatbath_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
 
-	if(clReleaseKernel(overrelax_even) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(overrelax_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
-
+		if(clReleaseKernel(overrelax_even) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseKernel(overrelax_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
+	}
+	
 	if(clReleaseKernel(plaquette) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseKernel(polyakov) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseKernel(plaquette_reduction) != CL_SUCCESS) exit(HMC_OCLERROR);

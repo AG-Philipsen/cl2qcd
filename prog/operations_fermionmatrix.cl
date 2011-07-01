@@ -46,6 +46,13 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	Matrixsu3 U;
 	hmc_float kappa_minus = KAPPA;
 	
+	//These are the kappa including BC
+	hmc_complex ks, kt;
+	ks.re = KAPPA_SPATIAL_RE;
+	ks.im = KAPPA_SPATIAL_IM;
+	kt.re = KAPPA_TEMPORAL_RE;
+	kt.im = KAPPA_TEMPORAL_IM;
+	
 	out_tmp = set_spinor_zero();
 		//go through the different directions
 	///////////////////////////////////
@@ -70,6 +77,7 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	// phi = U*psi
 	phi =  su3matrix_times_su3vec(U, psi);
 	psi = su3vec_times_real(phi, kappa_minus);
+// 	psi = su3vec_times_complex(phi, kt);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e2 = su3vec_dim(out_tmp.e2, psi);
 	// psi = 1. component of (1-gamma_0)y
@@ -98,6 +106,8 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	// phi = U*psi
 	phi = su3matrix_dagger_times_su3vec(U, psi);
 	psi = su3vec_times_real(phi, kappa_minus);
+	//TODO: put this into the other places too
+// 	psi = su3vec_times_complex_conj(phi, kt);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e2 = su3vec_acc(out_tmp.e2, psi);
 	// psi = 1. component of (1+gamma_0)y

@@ -188,11 +188,14 @@ int main(int argc, char* argv[])
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	gaugefield.finalize();
-
 	time_output_inverter(
    &totaltime,  &inittime,  &polytime,  &plaqtime,  &updatetime,  &overrelaxtime,  &copytime
   ,  &ferm_inittime, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer,  &solvertimer,  &dslashtimer,  &Mdiagtimer);
+
+	int err = gaugefield.finalize();
+	if(err!=HMC_SUCCESS)
+		logger.fatal() << "error in finalizing gaugefield";
+	
 	
 	
 	return HMC_SUCCESS;

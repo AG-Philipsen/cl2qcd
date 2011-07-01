@@ -61,6 +61,17 @@ su3vec su3vec_times_complex(su3vec in, hmc_complex factor){
 	return tmp;
 }
 
+su3vec su3vec_times_complex_conj(su3vec in, hmc_complex factor){
+	su3vec tmp;
+	tmp.e0.re = in.e0.re*factor.re + in.e0.im*factor.im;
+	tmp.e0.im = in.e0.im*factor.re - in.e0.re*factor.im;
+	tmp.e1.re = in.e1.re*factor.re + in.e1.im*factor.im;
+	tmp.e1.im = in.e1.im*factor.re - in.e1.re*factor.im;
+	tmp.e2.re = in.e2.re*factor.re + in.e2.im*factor.im;
+	tmp.e2.im = in.e2.im*factor.re - in.e2.re*factor.im;
+	return tmp;
+}
+
 su3vec su3matrix_times_su3vec(Matrixsu3 u, su3vec in){
 	su3vec tmp;
 	#ifdef _RECONSTRUCT_TWELVE_
