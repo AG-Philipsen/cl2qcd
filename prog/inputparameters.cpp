@@ -10,7 +10,8 @@ hmc_error inputparameters::set_defaults()
 	csw = 0.;
 	cgmax = 1000;
 	prec = 64;
-	theta_fermion = 0.;
+	theta_fermion_spatial = 0.;
+	theta_fermion_temporal = 0.;	
 	theta_gaugefield = 0.;
 	chem_pot_re = 0.;
 	chem_pot_im = 0.;
@@ -30,6 +31,7 @@ hmc_error inputparameters::set_defaults()
 	sourcefilenumber = "00000";
 	fermact = WILSON;
 	num_dev = 1;
+	perform_heatbath = 1;
 	return HMC_SUCCESS;
 }
 
@@ -70,6 +72,11 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("beta") != std::string::npos) val_assign(&beta, line);
 		if(line.find("tau") != std::string::npos) val_assign(&tau, line);
 		if(line.find("Beta") != std::string::npos) val_assign(&beta, line);
+		
+		if(line.find("theta_fermion_spatial") != std::string::npos) val_assign(&theta_fermion_spatial, line);
+		if(line.find("theta_fermion_temporal") != std::string::npos) val_assign(&theta_fermion_temporal, line);
+		
+		
 		if(line.find("cgmax") != std::string::npos) val_assign(&cgmax, line);
 		if(line.find("CGmax") != std::string::npos) val_assign(&cgmax, line);
 		if(line.find("Cgmax") != std::string::npos) val_assign(&cgmax, line);
@@ -95,6 +102,7 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("integrationsteps1") != std::string::npos) val_assign(&integrationsteps1, line);
 		if(line.find("integrationsteps2") != std::string::npos) val_assign(&integrationsteps2, line);
 		if(line.find("num_dev") != std::string::npos) val_assign(&num_dev, line);
+		if(line.find("perform_heatbath") != std::string::npos) val_assign(&perform_heatbath, line);
 
 		if(line.find("fermaction") != std::string::npos) fermact_assign(&fermact, line);
 		if(line.find("fermionaction") != std::string::npos) fermact_assign(&fermact, line);
@@ -106,6 +114,7 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("even-odd-preconditioning") != std::string::npos) eocond_assign(&use_eo, line);
 		if(line.find("use_eo") != std::string::npos) eocond_assign(&use_eo, line);
 		if(line.find("use_evenodd") != std::string::npos) eocond_assign(&use_eo, line);
+		
 		
 
 	}
@@ -340,9 +349,14 @@ hmc_float inputparameters::get_mubar()
 	return mubar;
 }
 
-hmc_float inputparameters::get_theta_fermion()
+hmc_float inputparameters::get_theta_fermion_spatial()
 {
-	return theta_fermion;
+	return theta_fermion_spatial;
+}
+
+hmc_float inputparameters::get_theta_fermion_temporal()
+{
+	return theta_fermion_temporal;
 }
 
 hmc_float inputparameters::get_theta_gaugefield()
@@ -444,6 +458,11 @@ int inputparameters::get_startcondition()
 int inputparameters::get_fermact()
 {
 	return fermact;
+}
+
+int inputparameters::get_perform_heatbath()
+{
+	return perform_heatbath;
 }
 
 int inputparameters::get_saveconfigs()

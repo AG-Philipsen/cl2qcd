@@ -35,7 +35,20 @@ hmc_error Opencl_fermions::fill_collect_options(stringstream* collect_options)
 	hmc_float kappa_tmp = get_parameters()->get_kappa();
 	*collect_options << " -DKAPPA=" << kappa_tmp;
 	*collect_options << " -DMKAPPA=" << -kappa_tmp;
-
+	//CP: These are the kappas including BC in spatial and temporal direction
+	hmc_float tmp_spatial = (get_parameters()->get_theta_fermion_spatial() * PI)/( (hmc_float) NSPACE);
+	hmc_float tmp_temporal = (get_parameters()->get_theta_fermion_temporal() * PI)/( (hmc_float) NTIME);
+	//BC: on the corners in each direction: exp(i theta) -> on each site exp(i theta*PI /LATEXTENSION) = cos(tmp2) + isin(tmp2)
+	*collect_options << " -DKAPPA_SPATIAL_RE=" << kappa_tmp*cos(tmp_spatial);
+	*collect_options << " -DMKAPPA_SPATIAL_RE=" << -kappa_tmp*cos(tmp_spatial);	
+	*collect_options << " -DKAPPA_SPATIAL_IM=" << kappa_tmp*sin(tmp_spatial);
+	*collect_options << " -DMKAPPA_SPATIAL_IM=" << -kappa_tmp*sin(tmp_spatial);		
+	
+	*collect_options << " -DKAPPA_TEMPORAL_RE=" << kappa_tmp*cos(tmp_temporal);
+	*collect_options << " -DMKAPPA_TEMPORAL_RE=" << -kappa_tmp*cos(tmp_temporal);	
+	*collect_options << " -DKAPPA_TEMPORAL_IM=" << kappa_tmp*sin(tmp_temporal);
+	*collect_options << " -DMKAPPA_TEMPORAL_IM=" << -kappa_tmp*sin(tmp_temporal);		
+	
 	switch (get_parameters()->get_fermact()) {
 	case TWISTEDMASS :
 		*collect_options << " -DMU=" << get_parameters()->get_mu();

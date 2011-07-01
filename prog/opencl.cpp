@@ -18,7 +18,9 @@ hmc_error Opencl::fill_kernels_file ()
 	cl_kernels_file.push_back("operations_matrix_su3.cl");
 	cl_kernels_file.push_back("operations_matrix.cl");
 	cl_kernels_file.push_back("operations_gaugefield.cl");
-	cl_kernels_file.push_back("update_heatbath.cl");
+	if(get_parameters()->get_perform_heatbath() == 1){
+		cl_kernels_file.push_back("update_heatbath.cl");
+	}
 	cl_kernels_file.push_back("gaugeobservables.cl");
 	return HMC_SUCCESS;
 }
@@ -113,37 +115,41 @@ hmc_error Opencl::fill_kernels()
 
 	cl_int clerr = CL_SUCCESS;
 
-	logger.debug() << "Create heatbath kernels...";
-	heatbath_even = clCreateKernel(clprogram, "heatbath_even", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( heatbath_even );
-	heatbath_odd = clCreateKernel(clprogram, "heatbath_odd", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( heatbath_odd );
+	//CP: this should only be done when the heatbath wants to be used!!
+	if(get_parameters()->get_perform_heatbath() == 1){
+	
+		logger.debug() << "Create heatbath kernels...";
+		heatbath_even = clCreateKernel(clprogram, "heatbath_even", &clerr);
+		if(clerr != CL_SUCCESS) {
+			logger.fatal() << "... failed, aborting.";
+			exit(HMC_OCLERROR);
+		}
+		if( logger.beDebug() )
+			printResourceRequirements( heatbath_even );
+		heatbath_odd = clCreateKernel(clprogram, "heatbath_odd", &clerr);
+		if(clerr != CL_SUCCESS) {
+			logger.fatal() << "... failed, aborting.";
+			exit(HMC_OCLERROR);
+		}
+		if( logger.beDebug() )
+			printResourceRequirements( heatbath_odd );
 
-	overrelax_even = clCreateKernel(clprogram, "overrelax_even", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
+		overrelax_even = clCreateKernel(clprogram, "overrelax_even", &clerr);
+		if(clerr != CL_SUCCESS) {
+			logger.fatal() << "... failed, aborting.";
+			exit(HMC_OCLERROR);
+		}
+		if( logger.beDebug() )
+			printResourceRequirements( overrelax_even );
+		overrelax_odd = clCreateKernel(clprogram, "overrelax_odd", &clerr);
+		if(clerr != CL_SUCCESS) {
+			logger.fatal() << "... failed, aborting.";
+			exit(HMC_OCLERROR);
+		}
+		if( logger.beDebug() )
+			printResourceRequirements( overrelax_odd );
 	}
-	if( logger.beDebug() )
-		printResourceRequirements( overrelax_even );
-	overrelax_odd = clCreateKernel(clprogram, "overrelax_odd", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( overrelax_odd );
-
+	
 	logger.debug() << "Create gaugeobservables kernels...";
 	plaquette = clCreateKernel(clprogram, "plaquette", &clerr);
 	if(clerr != CL_SUCCESS) {

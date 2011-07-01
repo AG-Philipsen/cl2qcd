@@ -49,7 +49,8 @@ public:
 	hmc_float get_mubar();
 	hmc_float get_beta();
 	hmc_float get_tau();
-	hmc_float get_theta_fermion();
+	hmc_float get_theta_fermion_spatial();
+	hmc_float get_theta_fermion_temporal();
 	hmc_float get_theta_gaugefield();
 	hmc_float get_mu();
 	hmc_float get_csw();
@@ -79,6 +80,7 @@ public:
 	void display_sourcefile();
 	void display_sourcefilenumber();
 	int get_num_dev();
+	int get_perform_heatbath();
 	//CP
 	//this is out of laziness
 	std::string sourcefile;
@@ -89,12 +91,14 @@ private:
 	hmc_float mu;
 	hmc_float mubar;
 	hmc_float csw;
-	hmc_float theta_fermion;
+	hmc_float theta_fermion_spatial;
+	hmc_float theta_fermion_temporal;
 	hmc_float theta_gaugefield;
 	hmc_float chem_pot_re;
 	hmc_float chem_pot_im;
 	hmc_float tau;
 	int num_dev;
+	int perform_heatbath;
 	int cgmax;
 	int use_eo;
 	int fermact;

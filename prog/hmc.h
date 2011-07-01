@@ -101,6 +101,24 @@ void print_info(inputparameters* params, ostream* os)
 	  *os << "## do not use even-odd preconditioning" << '\n';
 	*os << "##" << '\n';
 
+	*os << "## Boundary Conditions:" << '\n';
+	*os << "## theta_fermion_spatial  = "<<params->get_theta_fermion_spatial()<< '\n';
+	*os << "## theta_fermion_temporal = "<<params->get_theta_fermion_temporal()<< '\n';
+	*os << "##" << '\n';
+
+	*os << "## Chemical Potential:" << '\n';
+	#ifdef _CP_REAL_
+	*os << "## chem_pot_re  = "<<params->get_chem_pot_re()<< '\n';
+	#else
+	*os << "## do not use real chem. pot."<< '\n';
+	#endif
+	#ifdef _CP_IMAG_
+	*os << "## chem_pot_im = "<<params->get_chem_pot_im()<< '\n';
+	#else
+	*os << "## do not use imag. chem. pot."<< '\n';
+	#endif
+	*os << "##" << '\n';	
+	
 	*os<<"## number of devices desired for calculations: " << params->get_num_dev() << "\n" ;
 	*os << "##" << '\n';
 	
