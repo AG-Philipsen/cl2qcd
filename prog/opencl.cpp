@@ -39,22 +39,15 @@ hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 #ifdef _USEGPU_
 	*collect_options << " -D_USEGPU_";
 #endif
-#ifdef _PERFORM_BENCHMARKS_
-	*collect_options << " -D_PERFORM_BENCHMARKS_";
-#endif
 #ifdef _CP_REAL_
 	*collect_options << " -D_CP_REAL_";
 #endif
 #ifdef _CP_IMAG_
 	*collect_options << " -D_CP_IMAG_";
 #endif
-#ifdef _NPBC_T_
-	*collect_options << " -D_NPBC_T_";
+#ifdef _USE_SMEARING_
+	*collect_options << " -D_USE_SMEARING_";
 #endif
-#ifdef _NPBC_S_
-	*collect_options << " -D_NPBC_S_";
-#endif
-
 	*collect_options << " -I" << SOURCEDIR;
 
 	return HMC_SUCCESS;
