@@ -55,8 +55,8 @@ __kernel void saxpy_eoprec(__global spinorfield_eoprec* x, __global spinorfield_
 	hmc_complex alpha_tmp = (*alpha);
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE2; id_tmp += global_size) {
 		spinor x_tmp = x[id_tmp];
-		spinor y_tmp = y[id_tmp];
 		x_tmp = spinor_times_complex(x_tmp, alpha_tmp);
+		spinor y_tmp = y[id_tmp];
 		out[id_tmp] = spinor_dim(y_tmp, x_tmp);
 	}
 }
@@ -74,11 +74,11 @@ __kernel void saxsbypz_eoprec(__global spinorfield_eoprec* x, __global spinorfie
 	hmc_complex beta_tmp = (*beta);
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE2; id_tmp += global_size) {
 		spinor x_tmp = x[id_tmp];
-		spinor y_tmp = y[id_tmp];
-		spinor z_tmp = z[id_tmp];
 		x_tmp = spinor_times_complex(x_tmp, alpha_tmp);
+		spinor y_tmp = y[id_tmp];
 		y_tmp = spinor_times_complex(y_tmp, beta_tmp);
-
+		spinor z_tmp = z[id_tmp];
+		
 		out[id_tmp] = spinor_acc_acc(y_tmp, x_tmp, z_tmp);
 	}
 
