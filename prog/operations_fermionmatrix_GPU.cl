@@ -363,26 +363,23 @@ __kernel void M(__global spinorfield * in, __global ocl_s_gaugefield * field, __
 	hmc_complex twistfactor_minus = {1., MMUBAR};
 
 	/** @todo implement BC! Beware, the kappa at -mu then has to be complex conjugated (see tmlqcd)*/
-	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {	
-	
+	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 		/** @todo this must be done more efficient */
 		if(id_tmp%2 == 0) get_even_site(id_tmp/2, &n, &t);
 		else get_odd_site(id_tmp/2, &n, &t);
-		
-		out_tmp = set_spinor_zero();
+
 		//get input spinor
 		plus = get_spinor_from_field(in, n, t);
 		//Diagonalpart:
 		out_tmp = M_diag_local(plus, twistfactor, twistfactor_minus);
 		//calc dslash (this includes mutliplication with kappa)
 		out_tmp2 = dslash_local_0(in, field, n, t);
-		out_tmp3 = dslash_local_1(in, field, n, t);
-		out_tmp2 = spinor_acc(out_tmp2, out_tmp3);
-		out_tmp3 = dslash_local_2(in, field, n, t);
-		out_tmp2 = spinor_acc(out_tmp2, out_tmp3);
-		out_tmp3 = dslash_local_3(in, field, n, t);
-		out_tmp2 = spinor_acc(out_tmp2, out_tmp3);
-		//M = M_diag - dslash
+		out_tmp = spinor_dim(out_tmp, out_tmp2);
+		out_tmp2 = dslash_local_1(in, field, n, t);
+		out_tmp = spinor_dim(out_tmp, out_tmp2);
+		out_tmp2 = dslash_local_2(in, field, n, t);
+		out_tmp = spinor_dim(out_tmp, out_tmp2);
+		out_tmp2 = dslash_local_3(in, field, n, t);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 		put_spinor_to_field(out_tmp, out, n, t);
 	}
