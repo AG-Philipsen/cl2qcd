@@ -149,16 +149,13 @@ class Opencl_fermions : public Opencl {
 	cl_kernel gamma5;
 	cl_kernel Qplus;
 	cl_kernel Qminus;
-	cl_kernel ps_correlator;
-	cl_kernel set_spinorfield_cold;
 	cl_kernel gamma5_eoprec;
-	cl_kernel M_diag;
-	cl_kernel dslash;
 	cl_kernel M_sitediagonal;
 	cl_kernel M_inverse_sitediagonal;
 	cl_kernel dslash_eoprec;
 		
 	//BLAS
+	cl_kernel set_spinorfield_cold;
 	cl_kernel set_eoprec_spinorfield_cold;
 	cl_kernel convert_from_eoprec;
 	cl_kernel saxpy;
@@ -185,6 +182,9 @@ class Opencl_fermions : public Opencl {
 	//Single
 	cl_kernel ratio;
 	cl_kernel product;
+	
+	//Observables
+	cl_kernel ps_correlator;
 
 	//CP: variables for normal solver
 	cl_mem clmem_inout;

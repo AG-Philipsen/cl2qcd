@@ -361,19 +361,6 @@ hmc_error Opencl_fermions::fill_kernels()
 	}
 	if( logger.beDebug() )
 		printResourceRequirements( set_spinorfield_cold );
-	M_diag = clCreateKernel(clprogram,"M_diag",&clerr);
-	if(clerr!=CL_SUCCESS) {
-		cout<<"...creating M_diag kernel failed, aborting."<<endl;
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( M_diag );
-	dslash = clCreateKernel(clprogram, "dslash", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating dslash kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( dslash );
 	saxpy = clCreateKernel(clprogram, "saxpy", &clerr);
 	if(clerr != CL_SUCCESS) {
 		cout << "...creating saxpy kernel failed, aborting." << endl;
@@ -2080,8 +2067,6 @@ hmc_error Opencl_fermions::finalize_fermions(){
   if(clReleaseKernel(ps_correlator)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseKernel(set_spinorfield_cold)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseKernel(M)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  if(clReleaseKernel(M_diag)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  if(clReleaseKernel(dslash)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseKernel(saxpy)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseKernel(saxsbypz)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseKernel(scalar_product)!=CL_SUCCESS) exit(HMC_OCLERROR);
@@ -2094,11 +2079,7 @@ hmc_error Opencl_fermions::finalize_fermions(){
   if(clReleaseKernel(product)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseKernel(convert_to_kappa_format)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseKernel(convert_from_kappa_format)!=CL_SUCCESS) exit(HMC_OCLERROR);
-
-
   if(clReleaseKernel(create_point_source)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  if(clReleaseKernel(M_sitediagonal)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  if(clReleaseKernel(M_inverse_sitediagonal)!=CL_SUCCESS) exit(HMC_OCLERROR);
 
   if(get_parameters()->get_use_eo()==TRUE) {
     if(clReleaseKernel(convert_to_kappa_format_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
@@ -2109,7 +2090,9 @@ hmc_error Opencl_fermions::finalize_fermions(){
     if(clReleaseKernel(set_zero_spinorfield_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
     if(clReleaseKernel(global_squarenorm_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
     if(clReleaseKernel(create_point_source_eoprec)!=CL_SUCCESS) exit(HMC_OCLERROR);
-  }
+  	if(clReleaseKernel(M_sitediagonal)!=CL_SUCCESS) exit(HMC_OCLERROR);
+  	if(clReleaseKernel(M_inverse_sitediagonal)!=CL_SUCCESS) exit(HMC_OCLERROR);
+	}
 
   if(clReleaseMemObject(clmem_inout)!=CL_SUCCESS) exit(HMC_OCLERROR);
   if(clReleaseMemObject(clmem_source)!=CL_SUCCESS) exit(HMC_OCLERROR);
