@@ -179,6 +179,14 @@ int main(int argc, char* argv[])
 			singletimer.reset();
 			
 			singletimer.add();
+			
+			//the input spinorfield should always be the same
+			gaugefield.get_devices_fermions()[0].set_eoprec_spinorfield_cold_device(ls, gs, &noop);
+			solvertimer.reset();
+			gaugefield.get_devices_fermions()[0].bicgstab_eoprec_device(&copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &dslashtimer, &Mdiagtimer, ls, gs, cgmax);
+			solvertimer.add();
+		
+		
 		}
 		
 	}
