@@ -453,7 +453,7 @@ hmc_error Gaugefield::heatbath(usetimer * const timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices()[0].run_heatbath(get_parameters()->get_beta(), timer);
+        hmc_error err = get_devices()[0].run_heatbath(get_parameters()->get_beta(), timer);
 	return err;
 }
 

@@ -11,6 +11,10 @@ hmc_error Opencl_fermions::fill_kernels_file ()
 	cl_kernels_file.push_back("operations_spinor.cl");
 	cl_kernels_file.push_back("operations_spinorfield.cl");
 	cl_kernels_file.push_back("operations_fermionmatrix.cl");
+	if(get_parameters()->get_use_eo() == TRUE){
+		cl_kernels_file.push_back("operations_spinorfield_eo.cl");
+		cl_kernels_file.push_back("operations_fermionmatrix_eo.cl");
+	}
 	cl_kernels_file.push_back("fermionobservables.cl");	
 
 	return HMC_SUCCESS;  
@@ -336,13 +340,6 @@ hmc_error Opencl_fermions::fill_kernels()
 	if( logger.beDebug() )
 		printResourceRequirements( gamma5 );
 	}
-	gamma5_eoprec = clCreateKernel(clprogram,"gamma5_eoprec",&clerr);
-	if(clerr!=CL_SUCCESS) {
-		cout<<"...creating gamma5_eoprec kernel failed, aborting."<<endl;
-		exit(HMC_OCLERROR);
-	}	
-	if( logger.beDebug() )
-		printResourceRequirements( gamma5_eoprec );
 	M = clCreateKernel(clprogram,"M",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating M kernel failed, aborting."<<endl;
@@ -350,13 +347,6 @@ hmc_error Opencl_fermions::fill_kernels()
 	}
 	if( logger.beDebug() )
 		printResourceRequirements( M );
-	convert_from_eoprec = clCreateKernel(clprogram,"convert_from_eoprec",&clerr);
-	if(clerr!=CL_SUCCESS) {
-		cout<<"...creating convert_from_eoprec kernel failed, aborting."<<endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( convert_from_eoprec );
 	ps_correlator = clCreateKernel(clprogram,"ps_correlator",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating ps_correlator kernel failed, aborting."<<endl;
@@ -371,13 +361,6 @@ hmc_error Opencl_fermions::fill_kernels()
 	}
 	if( logger.beDebug() )
 		printResourceRequirements( set_spinorfield_cold );
-	set_eoprec_spinorfield_cold = clCreateKernel(clprogram,"set_eoprec_spinorfield_cold",&clerr);
-	if(clerr!=CL_SUCCESS) {
-		cout<<"...creating set_eoprec_spinorfield_cold kernel failed, aborting."<<endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( set_eoprec_spinorfield_cold );
 	M_diag = clCreateKernel(clprogram,"M_diag",&clerr);
 	if(clerr!=CL_SUCCESS) {
 		cout<<"...creating M_diag kernel failed, aborting."<<endl;
@@ -475,21 +458,44 @@ hmc_error Opencl_fermions::fill_kernels()
 	}
 	if( logger.beDebug() )
 		printResourceRequirements( create_point_source );
-	M_sitediagonal = clCreateKernel(clprogram, "M_sitediagonal", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating M_sitediagonal kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( M_sitediagonal );
-	M_inverse_sitediagonal = clCreateKernel(clprogram, "M_inverse_sitediagonal", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating M_inverse_sitediagonal kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( M_inverse_sitediagonal );	
+
+	//Kernels needed if eoprec is used
 	if(get_parameters()->get_use_eo() == TRUE) {
+		M_sitediagonal = clCreateKernel(clprogram, "M_sitediagonal", &clerr);
+		if(clerr != CL_SUCCESS) {
+			cout << "...creating M_sitediagonal kernel failed, aborting." << endl;
+			exit(HMC_OCLERROR);
+		}
+		if( logger.beDebug() )
+		printResourceRequirements( M_sitediagonal );
+		M_inverse_sitediagonal = clCreateKernel(clprogram, "M_inverse_sitediagonal", &clerr);
+		if(clerr != CL_SUCCESS) {
+			cout << "...creating M_inverse_sitediagonal kernel failed, aborting." << endl;
+			exit(HMC_OCLERROR);
+		}
+		if( logger.beDebug() )
+			printResourceRequirements( M_inverse_sitediagonal );		
+		convert_from_eoprec = clCreateKernel(clprogram,"convert_from_eoprec",&clerr);
+		if(clerr!=CL_SUCCESS) {
+			cout<<"...creating convert_from_eoprec kernel failed, aborting."<<endl;
+			exit(HMC_OCLERROR);
+		}
+		if( logger.beDebug() )
+		printResourceRequirements( convert_from_eoprec );
+		set_eoprec_spinorfield_cold = clCreateKernel(clprogram,"set_eoprec_spinorfield_cold",&clerr);
+		if(clerr!=CL_SUCCESS) {
+			cout<<"...creating set_eoprec_spinorfield_cold kernel failed, aborting."<<endl;
+			exit(HMC_OCLERROR);
+		}
+		if( logger.beDebug() )
+		printResourceRequirements( set_eoprec_spinorfield_cold );
+		gamma5_eoprec = clCreateKernel(clprogram,"gamma5_eoprec",&clerr);	
+		if(clerr!=CL_SUCCESS) {
+			cout<<"...creating gamma5_eoprec kernel failed, aborting."<<endl;
+			exit(HMC_OCLERROR);
+		}	
+		if( logger.beDebug() )
+			printResourceRequirements( gamma5_eoprec );
 		convert_to_kappa_format_eoprec = clCreateKernel(clprogram, "convert_to_kappa_format_eoprec", &clerr);
 		if(clerr != CL_SUCCESS) {
 			cout << "...creating convert_to_kappa_format_eoprec kernel failed, aborting." << endl;
