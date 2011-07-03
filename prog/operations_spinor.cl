@@ -93,6 +93,16 @@ spinor spinor_dim(spinor in1, spinor in2)
 	return tmp;
 }
 
+spinor spinor_acc(spinor in1, spinor in2)
+{
+	spinor tmp;
+	tmp.e0 = su3vec_acc(in1.e0, in2.e0);
+	tmp.e1 = su3vec_acc(in1.e1, in2.e1);
+	tmp.e2 = su3vec_acc(in1.e2, in2.e2);
+	tmp.e3 = su3vec_acc(in1.e3, in2.e3);
+	return tmp;
+}
+
 spinor spinor_acc_acc(spinor in1, spinor in2, spinor in3)
 {
 	spinor tmp;

@@ -37,9 +37,10 @@ spinor inline gamma5_local(spinor in){
 	return tmp;	
 }
 
-//"local" dslash working on a particular link (n,t)
+//"local" dslash working on a particular link (n,t) in a specific direction
 //NOTE: each component is multiplied by +KAPPA, so the resulting spinor has to be mutliplied by -1 to obtain the correct dslash!!!
-spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield * field, int n, int t){
+
+spinor dslash_local_0(__global spinorfield * in,__global ocl_s_gaugefield * field, int n, int t){
 	spinor out_tmp, plus;
 	int dir, nn;
 	su3vec psi, phi;
@@ -119,6 +120,25 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e3 = su3vec_acc(out_tmp.e3, psi);		
 
+	return out_tmp;
+}
+
+spinor dslash_local_1(__global spinorfield * in,__global ocl_s_gaugefield * field, int n, int t){
+	spinor out_tmp, plus;
+	int dir, nn;
+	su3vec psi, phi;
+	Matrixsu3 U;
+	hmc_float kappa_minus = KAPPA;
+	
+	//These are the kappa including BC
+	hmc_complex ks, kt;
+	ks.re = KAPPA_SPATIAL_RE;
+	ks.im = KAPPA_SPATIAL_IM;
+	kt.re = KAPPA_TEMPORAL_RE;
+	kt.im = KAPPA_TEMPORAL_IM;
+	
+	out_tmp = set_spinor_zero();
+
 	//CP: all actions correspond to the mu = 0 ones
 	///////////////////////////////////
 	// mu = 1
@@ -175,6 +195,26 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e2 = su3vec_dim_i(out_tmp.e2, psi);		
 	
+	
+	return out_tmp;
+}
+
+spinor dslash_local_2(__global spinorfield * in,__global ocl_s_gaugefield * field, int n, int t){
+	spinor out_tmp, plus;
+	int dir, nn;
+	su3vec psi, phi;
+	Matrixsu3 U;
+	hmc_float kappa_minus = KAPPA;
+	
+	//These are the kappa including BC
+	hmc_complex ks, kt;
+	ks.re = KAPPA_SPATIAL_RE;
+	ks.im = KAPPA_SPATIAL_IM;
+	kt.re = KAPPA_TEMPORAL_RE;
+	kt.im = KAPPA_TEMPORAL_IM;
+	
+	out_tmp = set_spinor_zero();
+	
 	///////////////////////////////////
 	// mu = 2
 	///////////////////////////////////
@@ -230,6 +270,26 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e2 = su3vec_acc(out_tmp.e2, psi);	
 
+	
+	return out_tmp;
+}
+
+spinor dslash_local_3(__global spinorfield * in,__global ocl_s_gaugefield * field, int n, int t){
+	spinor out_tmp, plus;
+	int dir, nn;
+	su3vec psi, phi;
+	Matrixsu3 U;
+	hmc_float kappa_minus = KAPPA;
+	
+	//These are the kappa including BC
+	hmc_complex ks, kt;
+	ks.re = KAPPA_SPATIAL_RE;
+	ks.im = KAPPA_SPATIAL_IM;
+	kt.re = KAPPA_TEMPORAL_RE;
+	kt.im = KAPPA_TEMPORAL_IM;
+	
+	out_tmp = set_spinor_zero();
+	
 	///////////////////////////////////
 	// mu = 3
 	///////////////////////////////////
@@ -284,10 +344,9 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	psi = su3vec_times_real(phi, kappa_minus);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e3 = su3vec_acc_i(out_tmp.e3, psi);
-
+	
 	return out_tmp;
 }
-
 
 __kernel void M(__global spinorfield * in, __global ocl_s_gaugefield * field, __global spinorfield * out){
 	int local_size = get_local_size(0);
@@ -297,7 +356,7 @@ __kernel void M(__global spinorfield * in, __global ocl_s_gaugefield * field, __
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 	int n,t;
-	spinor out_tmp, out_tmp2;
+	spinor out_tmp, out_tmp2, out_tmp3;
 	spinor plus;
 	
 	hmc_complex twistfactor = {1., MUBAR};
@@ -316,7 +375,13 @@ __kernel void M(__global spinorfield * in, __global ocl_s_gaugefield * field, __
 		//Diagonalpart:
 		out_tmp = M_diag_local(plus, twistfactor, twistfactor_minus);
 		//calc dslash (this includes mutliplication with kappa)
-		out_tmp2 = dslash_local(in, field, n, t);
+		out_tmp2 = dslash_local_0(in, field, n, t);
+		out_tmp3 = dslash_local_1(in, field, n, t);
+		out_tmp2 = spinor_acc(out_tmp2, out_tmp3);
+		out_tmp3 = dslash_local_2(in, field, n, t);
+		out_tmp2 = spinor_acc(out_tmp2, out_tmp3);
+		out_tmp3 = dslash_local_3(in, field, n, t);
+		out_tmp2 = spinor_acc(out_tmp2, out_tmp3);
 		//M = M_diag - dslash
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 		put_spinor_to_field(out_tmp, out, n, t);
@@ -352,7 +417,7 @@ __kernel void Qplus(__global spinorfield * in, __global ocl_s_gaugefield * field
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 	int n,t;
-	spinor out_tmp, out_tmp2;
+	spinor out_tmp, out_tmp2, out_tmp3;
 	spinor plus;
 	
 	hmc_complex twistfactor = {1., MUBAR};
@@ -371,7 +436,13 @@ __kernel void Qplus(__global spinorfield * in, __global ocl_s_gaugefield * field
 		//Diagonalpart: this is just the normal tm-diagonal matrix
 		out_tmp = M_diag_local(plus, twistfactor, twistfactor_minus);
 		//calc dslash (this includes mutliplication with kappa)
-		out_tmp2 = dslash_local(in, field, n, t);
+// 		out_tmp2 = dslash_local_0(in, field, n, t);
+// 		out_tmp3 = dslash_local_1(in, field, n, t);
+		out_tmp2 = spinor_acc(out_tmp2, out_tmp3);
+		out_tmp3 = dslash_local_2(in, field, n, t);
+		out_tmp2 = spinor_acc(out_tmp2, out_tmp3);
+		out_tmp3 = dslash_local_3(in, field, n, t);
+		out_tmp2 = spinor_acc(out_tmp2, out_tmp3);
 		//M = M_diag - dslash
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 		//gamma_5
@@ -388,16 +459,16 @@ __kernel void Qminus(__global spinorfield * in, __global ocl_s_gaugefield * fiel
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 	int n,t;
-	spinor out_tmp, out_tmp2;
+	spinor out_tmp, out_tmp2, out_tmp3;
 	spinor plus;
 	
 	hmc_complex twistfactor = {1., MUBAR};
 	hmc_complex twistfactor_minus = {1., MMUBAR};
 
-	/** @todo implement BC! Beware, the kappa at -mu then has to be complex conjugated (see tmlqcd)*/
+	// @todo implement BC! Beware, the kappa at -mu then has to be complex conjugated (see tmlqcd)
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {	
 	
-		/** @todo this must be done more efficient */
+		//@todo this must be done more efficient 
 		if(id_tmp%2 == 0) get_even_site(id_tmp/2, &n, &t);
 		else get_odd_site(id_tmp/2, &n, &t);
 		
@@ -407,7 +478,13 @@ __kernel void Qminus(__global spinorfield * in, __global ocl_s_gaugefield * fiel
 		//Diagonalpart: this is normal tm-diagonal matrix with negative imaginary part
 		out_tmp = M_diag_local(plus, twistfactor_minus, twistfactor);
 		//calc dslash (this includes mutliplication with kappa)
-		out_tmp2 = dslash_local(in, field, n, t);
+// 		out_tmp2 = dslash_local_0(in, field, n, t);
+// 		out_tmp3 = dslash_local_1(in, field, n, t);
+		out_tmp2 = spinor_acc(out_tmp2, out_tmp3);
+		out_tmp3 = dslash_local_2(in, field, n, t);
+		out_tmp2 = spinor_acc(out_tmp2, out_tmp3);
+		out_tmp3 = dslash_local_3(in, field, n, t);
+		out_tmp2 = spinor_acc(out_tmp2, out_tmp3);
 		//M = M_diag - dslash
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 		//gamma_5

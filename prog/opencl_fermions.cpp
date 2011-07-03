@@ -10,10 +10,18 @@ hmc_error Opencl_fermions::fill_kernels_file ()
 	cl_kernels_file.push_back("operations_su3vec.cl");
 	cl_kernels_file.push_back("operations_spinor.cl");
 	cl_kernels_file.push_back("operations_spinorfield.cl");
+	#ifdef _USE_GPU_
+	cl_kernels_file.push_back("operations_fermionmatrix_GPU.cl");
+	#else
 	cl_kernels_file.push_back("operations_fermionmatrix.cl");
+	#endif
 	if(get_parameters()->get_use_eo() == TRUE){
 		cl_kernels_file.push_back("operations_spinorfield_eo.cl");
+		#ifdef _USE_GPU_
+		cl_kernels_file.push_back("operations_fermionmatrix_eo_GPU.cl");
+		#else
 		cl_kernels_file.push_back("operations_fermionmatrix_eo.cl");
+		#endif
 	}
 	cl_kernels_file.push_back("fermionobservables.cl");	
 
