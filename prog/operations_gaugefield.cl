@@ -329,36 +329,31 @@ Matrixsu3 local_polyakov(__global ocl_s_gaugefield * field, const int n)
 	return out;
 }
 
+//CP: final version, using one third of the original scratch-registers...
 //calculate plaquette-matrix at site n,t in direction mu and nu
 Matrixsu3 local_plaquette(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
 {
-	Matrixsu3 out;
-	Matrixsu3 tmp;
-	//u_mu(x)
-	out = get_matrixsu3(field,n,t,mu);
-	//u_nu(x+mu)
-	if(mu==0) {
-		int newt = (t+1)%NTIME; //(haha)
-		tmp = get_matrixsu3(field,n,newt,nu);
-	} else {
-		tmp = get_matrixsu3(field,get_neighbor(n,mu),t,nu);
-	}
-	out = multiply_matrixsu3 (out, tmp);
-	//adjoint(u_mu(x+nu))
-	if(nu==0) {
-		int newt = (t+1)%NTIME;
-		tmp = get_matrixsu3(field,n,newt,mu);
-	} else {
-		tmp = get_matrixsu3(field,get_neighbor(n,nu),t,mu);
-	}
-	tmp = adjoint_matrixsu3(tmp);
-	out = multiply_matrixsu3(out, tmp);
-	//adjoint(u_nu(x))
-	tmp = get_matrixsu3(field,n,t,nu);
-	tmp = adjoint_matrixsu3(tmp);
-	out = multiply_matrixsu3(out, tmp);
+        Matrixsu3 out;
+        int4 pos;
+        if(mu==0) {
+                pos.x = (t+1)%NTIME;
+                pos.y = n;
+        } else {
+               pos.x = t;
+               pos.y = get_neighbor(n, mu);
+        }
+        if(nu==0) {
+                pos.z = (t+1)&NTIME;
+                pos.w = n;
+        } else {
+               pos.z = t;
+               pos.w = get_neighbor(n, nu);
+        }
+        out = multiply_matrixsu3 (get_matrixsu3(field,n,t,mu), get_matrixsu3(field,pos.y,pos.x,nu)      );
+        out = multiply_matrixsu3_dagger(out, get_matrixsu3(field,pos.w,pos.z,mu) );
+        out = multiply_matrixsu3_dagger(out, get_matrixsu3(field,n,t,nu) );
 
-	return out;
+        return out;
 }
 
 
