@@ -303,18 +303,16 @@ __kernel void dslash_eoprec(__global spinorfield_eoprec* in, __global spinorfiel
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 	int n,t;
-	spinor out_tmp, out_tmp2;
+	spinor out_tmp;
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {	
 		if(evenodd == ODD) get_odd_site(id_tmp, &n, &t);
 		else get_even_site(id_tmp, &n, &t);
+	
 		out_tmp = dslash_eoprec_local_0(in, field, n, t);
-		out_tmp2 = dslash_eoprec_local_1(in, field, n, t);
-		out_tmp = spinor_acc(out_tmp, out_tmp2);
-		out_tmp2 = dslash_eoprec_local_2(in, field, n, t);
-		out_tmp = spinor_acc(out_tmp, out_tmp2);
-		out_tmp2 = dslash_eoprec_local_3(in, field, n, t);
-		out_tmp = spinor_acc(out_tmp, out_tmp2);
+		out_tmp = spinor_acc(out_tmp, dslash_eoprec_local_1(in, field, n, t));
+		out_tmp = spinor_acc_acc(out_tmp, dslash_eoprec_local_2(in, field, n, t),dslash_eoprec_local_3(in, field, n, t));
 		put_spinor_to_eoprec_field(out_tmp, out, id_tmp);
+
 	}
 }
 
