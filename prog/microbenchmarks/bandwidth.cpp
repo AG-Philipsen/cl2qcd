@@ -37,7 +37,7 @@ public:
 	};
 	virtual hmc_error fill_kernels_file();
 	virtual hmc_error fill_buffers();
-	virtual hmc_error fill_kernels();
+	virtual hmc_error fill_kernels(cl_program program);
 	virtual hmc_error clear_buffers();
 	virtual hmc_error clear_kernels();
 	~Device() {
@@ -164,7 +164,7 @@ hmc_error Device::fill_buffers()
 	return HMC_SUCCESS;
 }
 
-hmc_error Device::fill_kernels()
+hmc_error Device::fill_kernels(cl_program clprogram)
 {
 	int clerr = HMC_SUCCESS;
 

@@ -103,7 +103,7 @@ hmc_error Opencl::fill_buffers()
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::fill_kernels()
+hmc_error Opencl::fill_kernels(cl_program clprogram)
 {
 
 	cl_int clerr = CL_SUCCESS;
@@ -305,7 +305,7 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 
 	//Create program from sources
 	logger.trace() << "Create program...";
-	clprogram = clCreateProgramWithSource(context, cl_kernels_file.size() , (const char**) sources, source_sizes, &clerr);
+	cl_program clprogram = clCreateProgramWithSource(context, cl_kernels_file.size() , (const char**) sources, source_sizes, &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
@@ -363,9 +363,12 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 		exit( HMC_OCLERROR );
 
 	//Create kernels
-	err = this->fill_kernels();
+	err = this->fill_kernels(clprogram);
 	if( err )
 		exit( HMC_OCLERROR );
+
+	// release program
+	clReleaseProgram(clprogram);
 
 	//finish
 	set_init_true();
@@ -380,8 +383,6 @@ hmc_error Opencl::finalize()
 		if(clFinish(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
 
 		this->clear_kernels();
-
-		if(clReleaseProgram(clprogram) != CL_SUCCESS) exit(HMC_OCLERROR);
 
 		this->clear_buffers();
 

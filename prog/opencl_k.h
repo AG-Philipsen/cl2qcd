@@ -34,7 +34,7 @@ public:
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
-	virtual hmc_error fill_kernels();
+	virtual hmc_error fill_kernels(cl_program clprogram);
 	/**
 	 * Called by the destructor.
 	 */

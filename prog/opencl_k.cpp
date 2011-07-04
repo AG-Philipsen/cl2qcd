@@ -53,9 +53,9 @@ hmc_error Opencl_k::fill_buffers()
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_k::fill_kernels()
+hmc_error Opencl_k::fill_kernels(cl_program clprogram)
 {
-	hmc_error err = Opencl::fill_kernels();
+	hmc_error err = Opencl::fill_kernels(clprogram);
 
 	if(err != HMC_SUCCESS) {
 		cout << "... failed, aborting." << endl;
@@ -241,8 +241,6 @@ hmc_error Opencl_k::finalize()
 
 		if(clReleaseKernel(kappa_karsch_gpu) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clReleaseKernel(kappa_clover_gpu) != CL_SUCCESS) exit(HMC_OCLERROR);
-
-		if(clReleaseProgram(clprogram) != CL_SUCCESS) exit(HMC_OCLERROR);
 
 		if(clReleaseMemObject(clmem_gaugefield) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clReleaseMemObject(clmem_rndarray) != CL_SUCCESS) exit(HMC_OCLERROR);

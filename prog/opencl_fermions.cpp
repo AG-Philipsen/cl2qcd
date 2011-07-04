@@ -320,11 +320,11 @@ hmc_error Opencl_fermions::fill_buffers()
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::fill_kernels()
+hmc_error Opencl_fermions::fill_kernels(cl_program clprogram)
 {
 	int clerr = HMC_SUCCESS;
 
-	Opencl::fill_kernels();
+	Opencl::fill_kernels(clprogram);
 
 	logger.debug() << "Create fermion kernels...";
 	Qplus = clCreateKernel(clprogram, "Qplus", &clerr);

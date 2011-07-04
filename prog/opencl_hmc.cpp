@@ -114,12 +114,12 @@ hmc_error Opencl_hmc::fill_buffers()
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_hmc::fill_kernels()
+hmc_error Opencl_hmc::fill_kernels(cl_program clprogram)
 {
 	int clerr = HMC_SUCCESS;
 
 	//fill kernels of Mother classes
-	Opencl_fermions::fill_kernels();
+	Opencl_fermions::fill_kernels(clprogram);
 	//init kernels for HMC
 	logger.debug() << "Create kernel set_zero_gaugemomentum...";
 	set_zero_gaugemomentum = clCreateKernel(clprogram, "set_zero_gaugemomentum", &clerr);

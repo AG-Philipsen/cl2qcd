@@ -198,7 +198,7 @@ public:
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
-	virtual hmc_error fill_kernels();
+	virtual hmc_error fill_kernels(cl_program clprogram);
 
 	///////////////////////////////////////////////
 	//get and set methods
@@ -246,7 +246,6 @@ public:
 	cl_uint max_compute_units;
 
 	cl_command_queue queue;
-	cl_program clprogram;
 
 	///////////////////////////////////////////////////////////
 	//LZ what follows should eventually be private
