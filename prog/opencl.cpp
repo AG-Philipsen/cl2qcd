@@ -18,7 +18,7 @@ hmc_error Opencl::fill_kernels_file ()
 	cl_kernels_file.push_back("operations_matrix_su3.cl");
 	cl_kernels_file.push_back("operations_matrix.cl");
 	cl_kernels_file.push_back("operations_gaugefield.cl");
-	if(get_parameters()->get_perform_heatbath() == 1){
+	if(get_parameters()->get_perform_heatbath() == 1) {
 		cl_kernels_file.push_back("update_heatbath.cl");
 	}
 	cl_kernels_file.push_back("gaugeobservables.cl");
@@ -109,8 +109,8 @@ hmc_error Opencl::fill_kernels()
 	cl_int clerr = CL_SUCCESS;
 
 	//CP: this should only be done when the heatbath wants to be used!!
-	if(get_parameters()->get_perform_heatbath() == 1){
-	
+	if(get_parameters()->get_perform_heatbath() == 1) {
+
 		logger.debug() << "Create heatbath kernels...";
 		heatbath_even = clCreateKernel(clprogram, "heatbath_even", &clerr);
 		if(clerr != CL_SUCCESS) {
@@ -142,7 +142,7 @@ hmc_error Opencl::fill_kernels()
 		if( logger.beDebug() )
 			printResourceRequirements( overrelax_odd );
 	}
-	
+
 	logger.debug() << "Create gaugeobservables kernels...";
 	plaquette = clCreateKernel(clprogram, "plaquette", &clerr);
 	if(clerr != CL_SUCCESS) {
@@ -397,14 +397,14 @@ hmc_error Opencl::clear_kernels()
 {
 	logger.trace() << "Clearing kernels";
 
-	if(get_parameters()->get_perform_heatbath() == 1){
+	if(get_parameters()->get_perform_heatbath() == 1) {
 		if(clReleaseKernel(heatbath_even) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clReleaseKernel(heatbath_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
 
 		if(clReleaseKernel(overrelax_even) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clReleaseKernel(overrelax_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
 	}
-	
+
 	if(clReleaseKernel(plaquette) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseKernel(polyakov) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseKernel(plaquette_reduction) != CL_SUCCESS) exit(HMC_OCLERROR);
