@@ -95,7 +95,7 @@ su3vec su3matrix_times_su3vec(Matrixsu3 u, su3vec in){
 	tmp.e2.re = u_e20_re*in.e0.re + u_e21_re * in.e1.re + u_e22_re * in.e2.re
 		  - u_e20_im*in.e0.im - u_e21_im * in.e1.im - u_e22_im * in.e2.im;
 	tmp.e2.im = u_e20_re*in.e0.im + u_e21_re * in.e1.im + u_e22_re * in.e2.im;
-		  + u_20_im*in.e0.re + u_e21_im * in.e1.re + u_e22_im * in.e2.re;
+		  + u_e20_im*in.e0.re + u_e21_im * in.e1.re + u_e22_im * in.e2.re;
 
 	#else
 	tmp.e0.re = u.e00.re*in.e0.re + u.e01.re * in.e1.re + u.e02.re * in.e2.re

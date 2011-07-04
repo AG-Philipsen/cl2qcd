@@ -6,10 +6,10 @@
 
 
 //not valid for REC12
-void print_matrixsu3(Matrixsu3 in){
-     printf("(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n", in.e00.re, in.e00.im, in.e01.re, in.e01.im, in.e02.re, in.e02.im, in.e10.re, in.e10.im, in.e11.re, in.e11.im, in.e12.re, in.e12.im, in.e02.re, in.e02.im, in.e21.re, in.e21.im, in.e22.re, in.e22.im);
-     printf("\n");
-}
+// void print_matrixsu3(Matrixsu3 in){
+//      printf("(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n", in.e00.re, in.e00.im, in.e01.re, in.e01.im, in.e02.re, in.e02.im, in.e10.re, in.e10.im, in.e11.re, in.e11.im, in.e12.re, in.e12.im, in.e02.re, in.e02.im, in.e21.re, in.e21.im, in.e22.re, in.e22.im);
+//      printf("\n");
+// }
 
 
 #ifdef _RECONSTRUCT_TWELVE_
@@ -258,35 +258,35 @@ Matrixsu3 multiply_matrixsu3_dagger(const Matrixsu3 p, const Matrixsu3 q)
     hmc_float q22_re = reconstruct_su3(q, 2).re;
     hmc_float q22_im = reconstruct_su3(q, 2).im;
 
-		out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e01.re + p.e02.re * q02_re
-		           + p.e00.im * q.e00.im + p.e01.im * q.e01.im + p.e02.im * q02_im;
-		out.e00.im =-p.e00.re * q.e00.im - p.e01.re * q.e01.im - p.e02.re * q02_im
-		           + p.e00.im * q.e00.re + p.e01.im * q.e01.re + p.e02.im * q02_re;
+		out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e01.re + p.e02.re * q.e02.re
+		           + p.e00.im * q.e00.im + p.e01.im * q.e01.im + p.e02.im * q.e02.im;
+		out.e00.im =-p.e00.re * q.e00.im - p.e01.re * q.e01.im - p.e02.re * q.e02.im
+		           + p.e00.im * q.e00.re + p.e01.im * q.e01.re + p.e02.im * q.e02.re;
 	      
-		out.e01.re = p.e00.re * q.e10.re + p.e01.re * q.e11.re + p.e02.re * q12_re
-		           + p.e00.im * q.e10.im + p.e01.im * q.e11.im + p.e02.im * q12_im;
-		out.e01.im =-p.e00.re * q.e10.im - p.e01.re * q.e11.im - p.e02.re * q12_im
-		           + p.e00.im * q.e10.re + p.e01.im * q.e11.re + p.e02.im * q12_re;
+		out.e01.re = p.e00.re * q.e10.re + p.e01.re * q.e11.re + p.e02.re * q.e12.re
+		           + p.e00.im * q.e10.im + p.e01.im * q.e11.im + p.e02.im * q.e12.im;
+		out.e01.im =-p.e00.re * q.e10.im - p.e01.re * q.e11.im - p.e02.re * q.e12.im
+		           + p.e00.im * q.e10.re + p.e01.im * q.e11.re + p.e02.im * q.e12.re;
 	       
-		out.e02.re = p.e00.re * q.e20.re + p.e01.re * q.e21.re + p.e02.re * q22_re
-		           + p.e00.im * q.e20.im + p.e01.im * q.e21.im + p.e02.im * q22_im;
-		out.e02.im =-p.e00.re * q.e20.im - p.e01.re * q.e21.im - p.e02.re * q22_im
-		           + p.e00.im * q.e20.re + p.e01.im * q.e21.re + p.e02.im * q22_re;
+		out.e02.re = p.e00.re * q20_re + p.e01.re * q21_re + p.e02.re * q22_re
+		           + p.e00.im * q20_im + p.e01.im * q21_im + p.e02.im * q22_im;
+		out.e02.im =-p.e00.re * q20_im - p.e01.re * q21_im - p.e02.re * q22_im
+		           + p.e00.im * q20_re + p.e01.im * q21_re + p.e02.im * q22_re;
 	       
-		out.e10.re = p.e10.re * q.e00.re + p.e11.re * q.e01.re + p.e12.re * q02_re
-		           + p.e10.im * q.e00.im + p.e11.im * q.e01.im + p.e12.im * q02_im;
-		out.e10.im =-p.e10.re * q.e00.im - p.e11.re * q.e01.im - p.e12.re * q02_im
-		           + p.e10.im * q.e00.re + p.e11.im * q.e01.re + p.e12.im * q02_re;
+		out.e10.re = p.e10.re * q.e00.re + p.e11.re * q.e01.re + p.e12.re * q.e02.re
+		           + p.e10.im * q.e00.im + p.e11.im * q.e01.im + p.e12.im * q.e02.im;
+		out.e10.im =-p.e10.re * q.e00.im - p.e11.re * q.e01.im - p.e12.re * q.e02.im
+		           + p.e10.im * q.e00.re + p.e11.im * q.e01.re + p.e12.im * q.e02.re;
 	       
-		out.e11.re = p.e10.re * q.e10.re + p.e11.re * q.e11.re + p.e12.re * q12_re
-		           + p.e10.im * q.e10.im + p.e11.im * q.e11.im + p.e12.im * q12_im;
-		out.e11.im =-p.e10.re * q.e10.im - p.e11.re * q.e11.im - p.e12.re * q12_im
-		           + p.e10.im * q.e10.re + p.e11.im * q.e11.re + p.e12.im * q12_re;
+		out.e11.re = p.e10.re * q.e10.re + p.e11.re * q.e11.re + p.e12.re * q.e12.re
+		           + p.e10.im * q.e10.im + p.e11.im * q.e11.im + p.e12.im * q.e12.im;
+		out.e11.im =-p.e10.re * q.e10.im - p.e11.re * q.e11.im - p.e12.re * q.e12.im
+		           + p.e10.im * q.e10.re + p.e11.im * q.e11.re + p.e12.im * q.e12.re;
 	       
-		out.e12.re = p.e10.re * q.e20.re + p.e11.re * q.e21.re + p.e12.re * q22_re
-		           + p.e10.im * q.e20.im + p.e11.im * q.e21.im + p.e12.im * q22_im;
-		out.e12.im =-p.e10.re * q.e20.im - p.e11.re * q.e21.im - p.e12.re * q22_im
-		           + p.e10.im * q.e20.re + p.e11.im * q.e21.re + p.e12.im * q22_re;	       
+		out.e12.re = p.e10.re * q20_re + p.e11.re * q21_re + p.e12.re * q22_re
+		           + p.e10.im * q20_im + p.e11.im * q21_im + p.e12.im * q22_im;
+		out.e12.im =-p.e10.re * q20_im - p.e11.re * q21_im - p.e12.re * q22_im
+		           + p.e10.im * q20_re + p.e11.im * q21_re + p.e12.im * q22_re;	       
 #else
     
 		out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e01.re + p.e02.re * q.e02.re

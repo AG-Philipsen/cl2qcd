@@ -628,6 +628,50 @@ void time_output_inverter(
 	logger.trace() << "Dslas:\t" << setfill(' ') << setw(12) << dslashtime << '\t' << setw(12) << dslash_avgtime << '\t' << setw(12) << dslash_avgtime_site << '\t' << fixed << setw(5) << setprecision(1) << percent(dslashtime, totaltime);
 	logger.trace() << "*******************************************************************";
 
+	//Depending on the compile-options, one has different sizes...
+	int D, S, R;
+#ifdef _USEDOUBLEPREC_
+	D = 8;
+#else
+	D = 4;
+#endif
+#ifdef _RECONSTRUCT_TWELVE_
+	R = 6;
+#else
+	R = 9;
+#endif
+	//CP: only done for non-eo!!
+	S = SPINORFIELDSIZE;
+	
+	//CP: List of kernel load- and write-amounts (byte)
+	int M_byte = (240 + 16*R)*D*S;
+	int dslash_byte = (216 + 16*R)*D*S;
+	//this is valid for gamma_5, gamma_5_eo, M_sitediag, M_inversesitediag
+	int M_diag_byte = 48*D*S;
+	//scalarprod
+	int SP_byte = 50*D*S;
+	//squarenorm
+	int GS_byte = 25*D*S;
+	int saxpy_byte = 74*D*S;
+	int saxsbypz_byte = 100*D*S;
+	
+	//bandwidths
+	hmc_float M_bw = (hmc_float) M_byte / (hmc_float) Mtime * (hmc_float) M_steps *1e6;
+	hmc_float dslash_bw = (hmc_float) dslash_byte / (hmc_float) dslashtime * (hmc_float) dslash_steps*1e6;
+	hmc_float Mdiag_bw = (hmc_float) M_diag_byte / (hmc_float) Mdiagtime * (hmc_float) Mdiag_steps*1e6;
+	hmc_float scalprod_bw = (hmc_float) (SP_byte + GS_byte) / (hmc_float) scalprod * (hmc_float) scalprod_steps*1e6;
+	hmc_float la_bw = (hmc_float) (SP_byte + GS_byte) / (hmc_float) latime * (hmc_float) la_steps*1e6;
+	
+	logger.trace() << "*******************************************************************";
+	logger.trace() << "Fermion Bandwidths(GB/s):";
+	logger.trace() << "ScPr.:\t" << setfill(' ') << setw(12) << scalprod_bw;
+	logger.trace() << "BLAS.:\t" << setfill(' ') << setw(12) << la_bw;
+	logger.trace() << "Mferm:\t" << setfill(' ') << setw(12) << M_bw;
+	logger.trace() << "Mdiag:\t" << setfill(' ') << setw(12) << Mdiag_bw;
+	logger.trace() << "Dslas:\t" << setfill(' ') << setw(12) << dslash_bw;
+	
+	
+	
 	//save some data to file
 	ofstream out;
 	stringstream str_filename;
