@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
 
 	time_output_inverter(
    &totaltime,  &inittime,  &polytime,  &plaqtime,  &updatetime,  &overrelaxtime,  &copytime
-  ,  &ferm_inittime, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer,  &solvertimer,  &dslashtimer,  &Mdiagtimer);
+   ,  &ferm_inittime, &singletimer, &Mtimer, &copytimer, &scalarprodtimer, &latimer,  &solvertimer,  &dslashtimer,  &Mdiagtimer, parameters.get_use_eo());
 
 	int err = gaugefield.finalize();
 	if(err!=HMC_SUCCESS)

@@ -582,7 +582,7 @@ hmc_error Opencl_fermions::convert_to_kappa_format_device(cl_mem inout, const si
 		cout << "enqueue convert_to_kappa_format kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-// 	clFinish(queue);
+ 	clFinish(queue);
 
 	(*timer).add();
 	return HMC_SUCCESS;
@@ -609,7 +609,7 @@ hmc_error Opencl_fermions::convert_from_kappa_format_device(cl_mem in, cl_mem ou
 		cout << "enqueue convert_from_kappa_format kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-// 	clFinish(queue);
+ 	clFinish(queue);
 	(*timer).add();
 	return HMC_SUCCESS;
 }
@@ -639,7 +639,7 @@ hmc_error Opencl_fermions::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl
     cout<<"enqueue convert_from_eoprec kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
- //clFinish(queue);
+ clFinish(queue);
   
 	(*timer).add();
 	return HMC_SUCCESS;
@@ -660,7 +660,7 @@ hmc_error Opencl_fermions::convert_to_kappa_format_eoprec_device(cl_mem in, cons
     cout<<"enqueue convert_to_kappa_format_eoprec kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
- //clFinish(queue);
+ clFinish(queue);
 	(*timer).add();
 	return HMC_SUCCESS;
 }
@@ -686,7 +686,7 @@ hmc_error Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl
 		cout << "enqueue convert_from_kappa_format_eoprec kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-// 	clFinish(queue);
+ 	clFinish(queue);
 	(*timer).add();
 	return HMC_SUCCESS;
 }
@@ -875,7 +875,7 @@ hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, const size_t loca
 
   (*timer).add();
 
-//   clFinish(queue);
+   clFinish(queue);
 
   return HMC_SUCCESS;
 
@@ -904,7 +904,7 @@ hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, const size_t loc
 
   (*timer).add();
 
-//   clFinish(queue);
+   clFinish(queue);
 
   return HMC_SUCCESS;
 
@@ -950,9 +950,9 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_wo
   }
   clerr = clEnqueueNDRangeKernel(queue,M,1,0,&global_work_size,&local_work_size,0,0,NULL);
 
-  (*timer).add();
+  clFinish(queue);
 
-//   clFinish(queue);
+  (*timer).add();
 
   return HMC_SUCCESS;
 
@@ -1081,7 +1081,7 @@ hmc_error Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, int eveno
     cout<<"enqueue dslash_eoprec kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-//   clFinish(queue);	
+   clFinish(queue);	
 	(*timer).add();
 
 	return HMC_SUCCESS;
@@ -1110,7 +1110,7 @@ hmc_error Opencl_fermions::M_inverse_sitediagonal_device(cl_mem in, cl_mem out, 
 		cout << "enqueue M_inverse_sitediagonal kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-// 	clFinish(queue);
+ 	clFinish(queue);
 
 	(*timer).add();
 
@@ -1140,7 +1140,7 @@ hmc_error Opencl_fermions::M_sitediagonal_device(cl_mem in, cl_mem out, const si
 		cout << "enqueue M_sitediagonal kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-// 	clFinish(queue);
+ 	clFinish(queue);
 
 	(*timer).add();
 
@@ -1177,7 +1177,7 @@ hmc_error Opencl_fermions::saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem
 		cout << "enqueue saxpy kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-// 	clFinish(queue);
+ 	clFinish(queue);
 	
 	(*timer).add();
 	return HMC_SUCCESS;
@@ -1200,7 +1200,7 @@ hmc_error Opencl_fermions::set_spinorfield_cold_device(const size_t local_work_s
     cout<<"enqueue ps_correlator kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-//   clFinish(queue);
+   clFinish(queue);
 	
 	(*timer).add();
 	
@@ -1224,7 +1224,7 @@ hmc_error Opencl_fermions::set_eoprec_spinorfield_cold_device(const size_t local
     cout<<"enqueue ps_correlator kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
- //clFinish(queue);
+ clFinish(queue);
 	
 	(*timer).add();
 	
@@ -1261,7 +1261,7 @@ hmc_error Opencl_fermions::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha,
 		cout << "enqueue saxpy_eoprec kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-// 	clFinish(queue);
+ 	clFinish(queue);
 
 	(*timer).add();
 	return HMC_SUCCESS;
@@ -1307,7 +1307,7 @@ hmc_error Opencl_fermions::saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem 
 		cout << "enqueue saxsbypz kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-// 	clFinish(queue);
+ 	clFinish(queue);
 
 	(*timer).add();
 	return HMC_SUCCESS;
@@ -1353,7 +1353,7 @@ hmc_error Opencl_fermions::saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, 
 		cout << "enqueue saxsbypz_eoprec kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-// 	clFinish(queue);
+ 	clFinish(queue);
 
 	(*timer).add();
 	return HMC_SUCCESS;
@@ -1492,7 +1492,7 @@ hmc_error Opencl_fermions::set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_me
 		cout << "enqueue ratio kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-// 	clFinish(queue);
+ 	clFinish(queue);
 
 	(*timer).add();
 	return HMC_SUCCESS;
@@ -1525,7 +1525,7 @@ hmc_error Opencl_fermions::set_complex_to_product_device(cl_mem a, cl_mem b, cl_
 		cout << "enqueue product kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-// 	clFinish(queue);
+ 	clFinish(queue);
 	(*timer).add();
 	return HMC_SUCCESS;
 }
@@ -1641,7 +1641,7 @@ hmc_error Opencl_fermions::set_zero_spinorfield_device(cl_mem x, const size_t lo
 		cout << "enqueue set_zero_spinorfield kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-// 	clFinish(queue);
+ 	clFinish(queue);
 
 	(*timer).add();
 	return HMC_SUCCESS;
@@ -1662,7 +1662,7 @@ hmc_error Opencl_fermions::set_zero_spinorfield_eoprec_device(cl_mem x, const si
 		cout << "enqueue set_zero_spinorfield_eoprec kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-// 	clFinish(queue);
+ 	clFinish(queue);
 
 	(*timer).add();
 	return HMC_SUCCESS;
@@ -1956,7 +1956,7 @@ hmc_error Opencl_fermions::create_point_source_device(int i, int spacepos, int t
 		cout << "enqueue create_point_source kernel failed (" << clerr << "), aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-// 	clFinish(queue);
+ 	clFinish(queue);
 
 	(*latimer).add();
 	return HMC_SUCCESS;
@@ -2007,7 +2007,7 @@ hmc_error Opencl_fermions::create_point_source_eoprec_device(int i, int spacepos
     cout<<"enqueue create_point_source_eoprec kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }		
-// 	clFinish(queue);
+ 	clFinish(queue);
 	(*latimer).add();
 	
 	M_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1, ls, gs, Mdiagtimer);
@@ -2047,7 +2047,7 @@ hmc_error Opencl_fermions::ps_correlator_device(const size_t local_work_size, co
     cout<<"enqueue ps_correlator kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
- //clFinish(queue);
+ clFinish(queue);
 	
 	(*timer).add();
 	

@@ -514,7 +514,7 @@ void time_output_heatbath(
 
 void time_output_inverter(
   usetimer * total, usetimer * init, usetimer * poly, usetimer * plaq, usetimer * update, usetimer * overrelax, usetimer * copy
-  , usetimer * inittimer, usetimer* singletimer, usetimer *Mtimer, usetimer *copytimer, usetimer *scalarprodtimer, usetimer *latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer)
+  , usetimer * inittimer, usetimer* singletimer, usetimer *Mtimer, usetimer *copytimer, usetimer *scalarprodtimer, usetimer *latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer, int use_eo)
 {
 
 	uint64_t totaltime = (*total).getTime();
@@ -561,6 +561,55 @@ void time_output_inverter(
 	Mdiag_steps = (*Mdiagtimer).getNumMeas();
 	dslash_steps = (*dslashtimer).getNumMeas();
 
+	//Compute Bandwidths obtained during the program
+	//Depending on the compile-options, one has different sizes...
+	int D, S, R;
+#ifdef _USEDOUBLEPREC_
+	D = 8;
+#else
+	D = 4;
+#endif
+#ifdef _RECONSTRUCT_TWELVE_
+	R = 6;
+#else
+	R = 9;
+#endif
+	if(use_eo == 1)
+	  S = EOPREC_SPINORFIELDSIZE;
+	else
+	  S = SPINORFIELDSIZE;
+	
+	//List of kernel load- and write-amounts (byte)
+	/** @todo put this in a more fancy function */
+	//this is valid for the normal fermionmatrix
+	int M_byte = (240 + 16*R)*D*S;
+	//this is valied for dslash_eoprec
+	int dslash_byte = (216 + 16*R)*D*S;
+	//this is valid for gamma_5, gamma_5_eo, M_sitediag, M_inversesitediag
+	int M_diag_byte = 48*D*S;
+	//scalarprod
+	int SP_byte = 50*D*S;
+	//squarenorm
+	int GS_byte = 25*D*S;
+	int saxpy_byte = 74*D*S;
+	int saxsbypz_byte = 100*D*S;
+	
+	//bandwidths
+	/*
+	  //here, it is possible that one divides through zero
+	  //1e-3 = 1e6 (museconds) * 1e-9 (GByte)
+	hmc_float M_bw = (hmc_float) M_byte / (hmc_float) Mtime * (hmc_float) M_steps *1e-3;
+	hmc_float dslash_bw = (hmc_float) dslash_byte / (hmc_float) dslashtime * (hmc_float) dslash_steps*1e-3;
+	hmc_float Mdiag_bw = (hmc_float) M_diag_byte / (hmc_float) Mdiagtime * (hmc_float) Mdiag_steps*1e-3;
+	hmc_float scalprod_bw = (hmc_float) (SP_byte + GS_byte) / (hmc_float) scalprod * (hmc_float) scalprod_steps*1e-3;
+	hmc_float la_bw = (hmc_float) (saxpy_byte + saxsbypz_byte) / (hmc_float) latime * (hmc_float) la_steps*1e-3;
+*/
+	hmc_float M_bw;
+	hmc_float dslash_bw;
+	hmc_float Mdiag_bw;
+	hmc_float scalprod_bw;
+	hmc_float la_bw;
+
 	if(single_ferm_steps != 0) {
 		single_ferm_avgtime = divide(single_ferm, single_ferm_steps);
 	} else {
@@ -574,37 +623,47 @@ void time_output_inverter(
 	if(M_steps != 0) {
 		M_avgtime = divide(Mtime, M_steps);
 		M_avgtime_site = divide(Mtime, M_steps * VOL4D);
+		M_bw = (hmc_float) M_byte / (hmc_float) Mtime * (hmc_float) M_steps * 1e-3;
 	} else {
 		M_avgtime = 0;
 		M_avgtime_site = 0;
+		M_bw = 0;
 	}
 	if(Mdiag_steps != 0) {
 		Mdiag_avgtime = divide(Mdiagtime, M_steps);
 		Mdiag_avgtime_site = divide(Mdiagtime, M_steps * VOL4D);
+		Mdiag_bw = (hmc_float) M_diag_byte / (hmc_float) Mdiagtime * (hmc_float) Mdiag_steps*1e-3;
 	} else {
 		Mdiag_avgtime = 0;
 		Mdiag_avgtime_site = 0;
+		Mdiag_bw = 0;
 	}
 	if(dslash_steps != 0) {
 		dslash_avgtime = divide(dslashtime, dslash_steps);
 		dslash_avgtime_site = divide(dslashtime, dslash_steps * VOL4D);
+		dslash_bw = (hmc_float) dslash_byte / (hmc_float) dslashtime * (hmc_float) dslash_steps*1e-3;
 	} else {
 		dslash_avgtime = 0;
 		dslash_avgtime_site = 0;
+		dslash_bw = 0;
 	}
 	if(scalprod_steps != 0) {
 		scalprod_avgtime = divide(scalprod, scalprod_steps);
 		scalprod_avgtime_site = divide(scalprod, scalprod_steps * VOL4D);
+		scalprod_bw = (hmc_float) (SP_byte + GS_byte) / (hmc_float) scalprod * (hmc_float) scalprod_steps*1e-3;
 	} else {
 		scalprod_avgtime = 0;
 		scalprod_avgtime_site = 0;
+		scalprod_bw = 0;
 	}
 	if(la_steps != 0) {
 		la_avgtime = divide(latime, la_steps);
 		la_avgtime_site = divide(latime, la_steps * VOL4D);
+		la_bw = (hmc_float) (saxpy_byte + saxsbypz_byte) / (hmc_float) latime * (hmc_float) la_steps*1e-3;
 	} else {
 		la_avgtime = 0;
 		la_avgtime_site = 0;
+		la_bw = 0;
 	}
 	if(solver_steps != 0) {
 		solver_avgtime = divide(solvertime, solver_steps);
@@ -615,7 +674,7 @@ void time_output_inverter(
 	time_output_heatbath(total, init, poly, plaq, update, overrelax, copy);
 
 	logger.trace() << "*******************************************************************";
-	logger.trace() << "Fermion times:\t" << setfill(' ') << setw(12) << "tot" << '\t' << setw(12) << "avg" << '\t' << setw(12) << "site" << '\t' << setw(5) << "perc";
+	logger.trace() << "Fermion times:\t" << setfill(' ') << setw(6) << "tot" << '\t' << setw(12) << "avg" << '\t' << setw(12) << "site" << '\t' << setw(5) << "perc";
 
 	logger.trace() << "Init.:\t" << setfill(' ') << setw(12) << init_ferm << '\t' << setw(12) << init_ferm << '\t' << setw(12) << divide(init_ferm, VOL4D) << '\t' << setw(5) << fixed << setw(5) << setprecision(1) << percent(init_ferm, totaltime) ;
 	logger.trace() << "Solve.:\t" << setfill(' ') << setw(12) << solvertime << '\t' << setw(12) << solver_avgtime << '\t' << setw(12) << solver_avgtime << '\t' << fixed << setw(5) << setprecision(1) << percent(solvertime, totaltime);
@@ -628,48 +687,15 @@ void time_output_inverter(
 	logger.trace() << "Dslas:\t" << setfill(' ') << setw(12) << dslashtime << '\t' << setw(12) << dslash_avgtime << '\t' << setw(12) << dslash_avgtime_site << '\t' << fixed << setw(5) << setprecision(1) << percent(dslashtime, totaltime);
 	logger.trace() << "*******************************************************************";
 
-	//Depending on the compile-options, one has different sizes...
-	int D, S, R;
-#ifdef _USEDOUBLEPREC_
-	D = 8;
-#else
-	D = 4;
-#endif
-#ifdef _RECONSTRUCT_TWELVE_
-	R = 6;
-#else
-	R = 9;
-#endif
-	//CP: only done for non-eo!!
-	S = SPINORFIELDSIZE;
-	
-	//CP: List of kernel load- and write-amounts (byte)
-	int M_byte = (240 + 16*R)*D*S;
-	int dslash_byte = (216 + 16*R)*D*S;
-	//this is valid for gamma_5, gamma_5_eo, M_sitediag, M_inversesitediag
-	int M_diag_byte = 48*D*S;
-	//scalarprod
-	int SP_byte = 50*D*S;
-	//squarenorm
-	int GS_byte = 25*D*S;
-	int saxpy_byte = 74*D*S;
-	int saxsbypz_byte = 100*D*S;
-	
-	//bandwidths
-	hmc_float M_bw = (hmc_float) M_byte / (hmc_float) Mtime * (hmc_float) M_steps *1e6;
-	hmc_float dslash_bw = (hmc_float) dslash_byte / (hmc_float) dslashtime * (hmc_float) dslash_steps*1e6;
-	hmc_float Mdiag_bw = (hmc_float) M_diag_byte / (hmc_float) Mdiagtime * (hmc_float) Mdiag_steps*1e6;
-	hmc_float scalprod_bw = (hmc_float) (SP_byte + GS_byte) / (hmc_float) scalprod * (hmc_float) scalprod_steps*1e6;
-	hmc_float la_bw = (hmc_float) (SP_byte + GS_byte) / (hmc_float) latime * (hmc_float) la_steps*1e6;
 	
 	logger.trace() << "*******************************************************************";
 	logger.trace() << "Fermion Bandwidths(GB/s):";
-	logger.trace() << "ScPr.:\t" << setfill(' ') << setw(12) << scalprod_bw;
-	logger.trace() << "BLAS.:\t" << setfill(' ') << setw(12) << la_bw;
-	logger.trace() << "Mferm:\t" << setfill(' ') << setw(12) << M_bw;
-	logger.trace() << "Mdiag:\t" << setfill(' ') << setw(12) << Mdiag_bw;
-	logger.trace() << "Dslas:\t" << setfill(' ') << setw(12) << dslash_bw;
-	
+	logger.trace() << "ScPr.:\t" << setfill(' ') << setw(12) << setprecision(5) << scalprod_bw;
+	logger.trace() << "BLAS.:\t" << setfill(' ') << setw(12) << setprecision(5) << la_bw;
+	logger.trace() << "Mferm:\t" << setfill(' ') << setw(12) << setprecision(5) << M_bw;
+	logger.trace() << "Mdiag:\t" << setfill(' ') << setw(12) << setprecision(5) << Mdiag_bw;
+	logger.trace() << "Dslas:\t" << setfill(' ') << setw(12) << setprecision(5) << dslash_bw;
+	logger.trace() << "*******************************************************************";
 	
 	
 	//save some data to file
