@@ -7,6 +7,9 @@
 
 using namespace std;
 
+ClSourcePackage basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "opencl_geometry.cl" << "opencl_operations_complex.cl"
+                                    << "operations_matrix_su3.cl" << "operations_matrix.cl";
+
 hmc_error Opencl::fill_kernels_file ()
 {
 	//give a list of all kernel-files

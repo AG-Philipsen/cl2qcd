@@ -18,6 +18,7 @@ add_executable( bandwidth
 	../host_readgauge.cpp
 	../host_random.cpp
 	../opencl.cpp
+	../opencl_compiler.cpp
 	../host_use_timer.cpp
 	../host_writegaugefield.cpp
 	../logger.cpp

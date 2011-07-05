@@ -186,12 +186,13 @@ add_executable( heatbath
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
 	host_operations_su3matrix.cpp
-	host_operations_matrix.cpp	
+	host_operations_matrix.cpp
 	gaugefield.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
 	host_random.cpp
 	opencl.cpp
+	opencl_compiler.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
 	logger.cpp
@@ -210,13 +211,14 @@ add_executable( tk_kappa
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
 	host_operations_su3matrix.cpp
-	host_operations_matrix.cpp	
+	host_operations_matrix.cpp
 	gaugefield.cpp
 	gaugefield_k.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
 	host_random.cpp
 	opencl.cpp
+	opencl_compiler.cpp
 	opencl_k.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
@@ -236,12 +238,13 @@ add_executable( inverter
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
 	host_operations_su3matrix.cpp
-	host_operations_matrix.cpp	
+	host_operations_matrix.cpp
 	gaugefield.cpp
 	gaugefield_inversion.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
 	opencl.cpp
+	opencl_compiler.cpp
 	opencl_fermions.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
@@ -262,12 +265,13 @@ add_executable( inverter_bench
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
 	host_operations_su3matrix.cpp
-	host_operations_matrix.cpp	
+	host_operations_matrix.cpp
 	gaugefield.cpp
 	gaugefield_inversion.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
 	opencl.cpp
+	opencl_compiler.cpp
 	opencl_fermions.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
@@ -288,13 +292,14 @@ add_executable( hmc
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
 	host_operations_su3matrix.cpp
-	host_operations_matrix.cpp	
+	host_operations_matrix.cpp
 	gaugefield.cpp
 	gaugefield_inversion.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
 	host_random.cpp
 	opencl.cpp
+	opencl_compiler.cpp
 	opencl_fermions.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
@@ -324,6 +329,7 @@ add_executable( hmc_bench
 	host_readgauge.cpp
 	host_random.cpp
 	opencl.cpp
+	opencl_compiler.cpp
 	opencl_fermions.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp

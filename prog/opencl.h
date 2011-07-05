@@ -27,6 +27,11 @@
 #include "opencl_compiler.hpp"
 
 /**
+ * A set of source files used by all kernels.
+ */
+extern ClSourcePackage basic_opencl_code;
+
+/**
  * An OpenCL device
  *
  * This class wraps all operations on a device. Operations are always specific, e.g. each kernel and copy operation
