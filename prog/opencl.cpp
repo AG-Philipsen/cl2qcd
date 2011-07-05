@@ -8,7 +8,7 @@
 using namespace std;
 
 ClSourcePackage basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "opencl_geometry.cl" << "opencl_operations_complex.cl"
-                                    << "operations_matrix_su3.cl" << "operations_matrix.cl";
+                                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 
 hmc_error Opencl::fill_kernels_file ()
 {
@@ -21,9 +21,6 @@ hmc_error Opencl::fill_kernels_file ()
 	cl_kernels_file.push_back("operations_matrix_su3.cl");
 	cl_kernels_file.push_back("operations_matrix.cl");
 	cl_kernels_file.push_back("operations_gaugefield.cl");
-	if(get_parameters()->get_perform_heatbath() == 1) {
-		cl_kernels_file.push_back("update_heatbath.cl");
-	}
 	return HMC_SUCCESS;
 }
 
@@ -107,56 +104,39 @@ hmc_error Opencl::fill_buffers()
 
 hmc_error Opencl::fill_kernels(cl_program clprogram)
 {
-
-	cl_int clerr = CL_SUCCESS;
-
 	//CP: this should only be done when the heatbath wants to be used!!
 	if(get_parameters()->get_perform_heatbath() == 1) {
 
 		logger.debug() << "Create heatbath kernels...";
-		heatbath_even = clCreateKernel(clprogram, "heatbath_even", &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "... failed, aborting.";
-			exit(HMC_OCLERROR);
-		}
+		heatbath_even = createKernel("heatbath_even") << basic_opencl_code << "random.cl" << "update_heatbath.cl";
 		if( logger.beDebug() )
 			printResourceRequirements( heatbath_even );
-		heatbath_odd = clCreateKernel(clprogram, "heatbath_odd", &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "... failed, aborting.";
-			exit(HMC_OCLERROR);
-		}
+		heatbath_odd = createKernel("heatbath_odd") << basic_opencl_code << "random.cl" << "update_heatbath.cl";
 		if( logger.beDebug() )
 			printResourceRequirements( heatbath_odd );
 
-		overrelax_even = clCreateKernel(clprogram, "overrelax_even", &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "... failed, aborting.";
-			exit(HMC_OCLERROR);
-		}
+		logger.debug() << "Create overrelax kernels...";
+		overrelax_even = createKernel("overrelax_even") << basic_opencl_code << "random.cl" << "overrelax.cl";
 		if( logger.beDebug() )
 			printResourceRequirements( overrelax_even );
-		overrelax_odd = clCreateKernel(clprogram, "overrelax_odd", &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "... failed, aborting.";
-			exit(HMC_OCLERROR);
-		}
+		overrelax_odd = createKernel("overrelax_odd") << basic_opencl_code << "random.cl" << "overrelax.cl";
 		if( logger.beDebug() )
 			printResourceRequirements( overrelax_odd );
+
 	}
 
 	logger.debug() << "Create gaugeobservables kernels...";
-	plaquette = createKernel("plaquette") << basic_opencl_code << "operations_gaugefield.cl" << "gaugeobservables_plaquette.cl";
+	plaquette = createKernel("plaquette") << basic_opencl_code << "gaugeobservables_plaquette.cl";
 	if( logger.beDebug() )
 		printResourceRequirements( plaquette );
-	plaquette_reduction = createKernel("plaquette_reduction") << basic_opencl_code << "operations_gaugefield.cl" << "gaugeobservables_plaquette.cl";
+	plaquette_reduction = createKernel("plaquette_reduction") << basic_opencl_code << "gaugeobservables_plaquette.cl";
 	if( logger.beDebug() )
 		printResourceRequirements( plaquette_reduction );
 
-	polyakov = createKernel("polyakov") << basic_opencl_code << "operations_gaugefield.cl" << "gaugeobservables_polyakov.cl";
+	polyakov = createKernel("polyakov") << basic_opencl_code << "gaugeobservables_polyakov.cl";
 	if( logger.beDebug() )
 		printResourceRequirements( polyakov );
-	polyakov_reduction = createKernel("polyakov_reduction") << basic_opencl_code << "operations_gaugefield.cl" << "gaugeobservables_polyakov.cl";
+	polyakov_reduction = createKernel("polyakov_reduction") << basic_opencl_code << "gaugeobservables_polyakov.cl";
 	if( logger.beDebug() )
 		printResourceRequirements( polyakov_reduction );
 
