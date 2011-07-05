@@ -23,6 +23,13 @@ void usetimer::add()
 	return;
 }
 
+void usetimer::add(uint64_t incr)
+{
+	time_measurement +=  incr;
+	num_meas ++;
+	return;
+}
+
 void usetimer::zero()
 {
 	time_measurement = 0;

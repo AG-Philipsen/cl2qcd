@@ -44,6 +44,7 @@ public:
 	 * Add passed time to any previously measured time and reset.
 	 */
 	void add();
+	void add(uint64_t incr);
 	/**
 	 * Reset the aggregated measurement information.
 	 */

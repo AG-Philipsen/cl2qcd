@@ -262,7 +262,8 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 
 	//Initilize queue
 	logger.trace() << "Create command queue...";
-	queue = clCreateCommandQueue(context, device, 0, &clerr);
+	//	queue = clCreateCommandQueue(context, device, 0, &clerr);
+	queue = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
