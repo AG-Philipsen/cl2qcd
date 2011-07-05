@@ -952,7 +952,6 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_wo
   clerr = clEnqueueNDRangeKernel(queue,M,1,0,&global_work_size,&local_work_size,0,0,&event);
 
 	int done = clWaitForEvents(1, &event);
-	noop.add();
 
 	//CP: Old method
 //   clFinish(queue);
