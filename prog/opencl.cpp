@@ -109,36 +109,20 @@ hmc_error Opencl::fill_kernels(cl_program clprogram)
 
 		logger.debug() << "Create heatbath kernels...";
 		heatbath_even = createKernel("heatbath_even") << basic_opencl_code << "random.cl" << "update_heatbath.cl";
-		if( logger.beDebug() )
-			printResourceRequirements( heatbath_even );
 		heatbath_odd = createKernel("heatbath_odd") << basic_opencl_code << "random.cl" << "update_heatbath.cl";
-		if( logger.beDebug() )
-			printResourceRequirements( heatbath_odd );
 
 		logger.debug() << "Create overrelax kernels...";
 		overrelax_even = createKernel("overrelax_even") << basic_opencl_code << "random.cl" << "overrelax.cl";
-		if( logger.beDebug() )
-			printResourceRequirements( overrelax_even );
 		overrelax_odd = createKernel("overrelax_odd") << basic_opencl_code << "random.cl" << "overrelax.cl";
-		if( logger.beDebug() )
-			printResourceRequirements( overrelax_odd );
 
 	}
 
 	logger.debug() << "Create gaugeobservables kernels...";
 	plaquette = createKernel("plaquette") << basic_opencl_code << "gaugeobservables_plaquette.cl";
-	if( logger.beDebug() )
-		printResourceRequirements( plaquette );
 	plaquette_reduction = createKernel("plaquette_reduction") << basic_opencl_code << "gaugeobservables_plaquette.cl";
-	if( logger.beDebug() )
-		printResourceRequirements( plaquette_reduction );
 
 	polyakov = createKernel("polyakov") << basic_opencl_code << "gaugeobservables_polyakov.cl";
-	if( logger.beDebug() )
-		printResourceRequirements( polyakov );
 	polyakov_reduction = createKernel("polyakov_reduction") << basic_opencl_code << "gaugeobservables_polyakov.cl";
-	if( logger.beDebug() )
-		printResourceRequirements( polyakov_reduction );
 
 	return HMC_SUCCESS;
 }

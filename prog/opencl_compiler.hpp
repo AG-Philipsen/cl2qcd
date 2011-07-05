@@ -128,6 +128,15 @@ private:
 	 * The files required for compilation.
 	 */
 	const std::vector<const char *> files;
+
+	/**
+	 * Print resource requirements of a kernel object.
+	 *
+	 * All information is dumped to the trace.
+	 *
+	 * @param kernel The kernel of which to query the information.
+	 */
+	void printResourceRequirements(const cl_kernel kernel, const cl_device_id device) const;
 };
 
 #endif /* _OPENCL_COMPILER_H_ */
