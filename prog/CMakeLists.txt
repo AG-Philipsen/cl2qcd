@@ -363,3 +363,7 @@ option(BUILD_MICROBENCHMARKS "Build micro benchmarks" OFF)
 if(BUILD_MICROBENCHMARKS)
 	add_subdirectory(microbenchmarks)
 endif(BUILD_MICROBENCHMARKS)
+
+# Take care of unit tests
+enable_testing()
+add_subdirectory(tests)
