@@ -24,6 +24,7 @@
 #include "host_use_timer.h"
 #include "host_random.h"
 #include "inputparameters.h"
+#include "opencl_compiler.hpp"
 
 /**
  * An OpenCL device
@@ -303,7 +304,7 @@ public:
 	 */
 	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
 
-	/*
+	/**
 	 * Print resource requirements of a kernel object.
 	 *
 	 * All information is dumped to the trace.
@@ -311,6 +312,19 @@ public:
 	 * @param kernel The kernel of which to query the information.
 	 */
 	void printResourceRequirements(const cl_kernel kernel);
+
+protected:
+	/**
+	 * Create a kernel from source files.
+	 *
+	 * Usage:
+	 * @code
+	 * cl_kernel dummy = createKernel("dummy") << "dummy.cl";
+	 * @endcode
+	 *
+	 * @param kernel_name The name of the kernel to create.
+	 */
+	TmpClKernel createKernel(const char * const kernel_name);
 
 private:
 	hmc_error init_basic(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters);
