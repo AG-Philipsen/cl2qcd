@@ -7,11 +7,11 @@
 
 using namespace std;
 
-ClSourcePackage basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "opencl_geometry.cl" << "opencl_operations_complex.cl"
-                                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-
 hmc_error Opencl::fill_kernels_file ()
 {
+	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "opencl_geometry.cl" << "opencl_operations_complex.cl"
+	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
+
 	//give a list of all kernel-files
 	//!!CP: LZ should update this
 	cl_kernels_file.push_back("opencl_header.cl");
