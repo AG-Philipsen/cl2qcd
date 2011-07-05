@@ -6,6 +6,7 @@
 #define _OPENCL_COMPILER_H_
 
 #include <vector>
+#include <string>
 
 #ifdef __APPLE__
 #include <OpenCL/cl.h>
@@ -76,7 +77,7 @@ public:
 	/**
 	 * All purpose constructor.
 	 */
-	TmpClKernel(const char * const kernel_name, const char * const build_options,
+	TmpClKernel(const char * const kernel_name, const std::string build_options,
 	            const cl_context context, const cl_device_id * const devices, const size_t num_devices,
 	            const std::vector<const char *> files = std::vector<const char *>())
 		: kernel_name(kernel_name), build_options(build_options), context(context),
@@ -106,7 +107,7 @@ private:
 	/**
 	 * The build options to use for the kernel.
 	 */
-	const char * const build_options;
+	const std::string build_options;
 
 	/**
 	 * The OpenCL context we are working in.

@@ -82,7 +82,7 @@ TmpClKernel::operator cl_kernel() const
 
 	logger.trace() << "Building kernel " << kernel_name;
 
-	clerr = clBuildProgram(program, num_devices, devices, build_options, 0, 0);
+	clerr = clBuildProgram(program, num_devices, devices, build_options.c_str(), 0, 0);
 	if(clerr != CL_SUCCESS && logger.beDebug()) {
 		logger.error() << "... failed with error " << clerr << ", but look at BuildLog and abort then.";
 	}

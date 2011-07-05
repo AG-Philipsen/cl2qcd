@@ -1423,6 +1423,5 @@ TmpClKernel Opencl::createKernel(const char * const kernel_name)
 {
 	stringstream collect_options;
 	this->fill_collect_options(&collect_options);
-	string buildoptions = collect_options.str();
-	return TmpClKernel(kernel_name, buildoptions.c_str(), context, &device, 1);
+	return TmpClKernel(kernel_name, collect_options.str(), context, &device, 1);
 }
