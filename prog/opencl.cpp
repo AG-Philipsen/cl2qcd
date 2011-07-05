@@ -24,7 +24,6 @@ hmc_error Opencl::fill_kernels_file ()
 	if(get_parameters()->get_perform_heatbath() == 1) {
 		cl_kernels_file.push_back("update_heatbath.cl");
 	}
-	cl_kernels_file.push_back("gaugeobservables.cl");
 	return HMC_SUCCESS;
 }
 
@@ -147,32 +146,17 @@ hmc_error Opencl::fill_kernels(cl_program clprogram)
 	}
 
 	logger.debug() << "Create gaugeobservables kernels...";
-	plaquette = clCreateKernel(clprogram, "plaquette", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... plaquette failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
+	plaquette = createKernel("plaquette") << basic_opencl_code << "operations_gaugefield.cl" << "gaugeobservables_plaquette.cl";
 	if( logger.beDebug() )
 		printResourceRequirements( plaquette );
-	polyakov = clCreateKernel(clprogram, "polyakov", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... polyakov failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( polyakov );
-	plaquette_reduction = clCreateKernel(clprogram, "plaquette_reduction", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... plaquette_reduction failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
+	plaquette_reduction = createKernel("plaquette_reduction") << basic_opencl_code << "operations_gaugefield.cl" << "gaugeobservables_plaquette.cl";
 	if( logger.beDebug() )
 		printResourceRequirements( plaquette_reduction );
-	polyakov_reduction = clCreateKernel(clprogram, "polyakov_reduction", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... polyakov_reduction failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
+
+	polyakov = createKernel("polyakov") << basic_opencl_code << "operations_gaugefield.cl" << "gaugeobservables_polyakov.cl";
+	if( logger.beDebug() )
+		printResourceRequirements( polyakov );
+	polyakov_reduction = createKernel("polyakov_reduction") << basic_opencl_code << "operations_gaugefield.cl" << "gaugeobservables_polyakov.cl";
 	if( logger.beDebug() )
 		printResourceRequirements( polyakov_reduction );
 
