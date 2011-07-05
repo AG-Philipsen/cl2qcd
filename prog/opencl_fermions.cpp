@@ -6,6 +6,9 @@ hmc_error Opencl_fermions::fill_kernels_file ()
 	//give a list of all kernel-files
 	Opencl::fill_kernels_file();
 
+	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl"
+	                   << "operations_spinor.cl" << "spinorfield.cl";
+
 	cl_kernels_file.push_back("types_fermions.h");
 	cl_kernels_file.push_back("operations_su3vec.cl");
 	cl_kernels_file.push_back("operations_spinor.cl");
@@ -327,231 +330,45 @@ hmc_error Opencl_fermions::fill_kernels(cl_program clprogram)
 	Opencl::fill_kernels(clprogram);
 
 	logger.debug() << "Create fermion kernels...";
-	Qplus = clCreateKernel(clprogram, "Qplus", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating Qplus kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( Qplus );
-	Qminus = clCreateKernel(clprogram, "Qminus", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating Qminus kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( Qminus );
-	gamma5 = clCreateKernel(clprogram, "gamma5", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating gamma5 kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-		if( logger.beDebug() )
-			printResourceRequirements( gamma5 );
-	}
-	M = clCreateKernel(clprogram, "M", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating M kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( M );
-	ps_correlator = clCreateKernel(clprogram, "ps_correlator", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating ps_correlator kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( ps_correlator );
-	set_spinorfield_cold = clCreateKernel(clprogram, "set_spinorfield_cold", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating set_spinorfield_cold kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( set_spinorfield_cold );
-	saxpy = clCreateKernel(clprogram, "saxpy", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating saxpy kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( saxpy );
-	saxsbypz = clCreateKernel(clprogram, "saxsbypz", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating saxsbypz kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( saxsbypz );
-	scalar_product = clCreateKernel(clprogram, "scalar_product", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating scalar_product kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( scalar_product );
-	scalar_product_reduction = clCreateKernel(clprogram, "scalar_product_reduction", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating scalar_product_reduction kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( scalar_product_reduction );
-	set_zero_spinorfield = clCreateKernel(clprogram, "set_zero_spinorfield", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating set_zero_spinorfield kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( set_zero_spinorfield );
-	global_squarenorm = clCreateKernel(clprogram, "global_squarenorm", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating global_squarenorm kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( global_squarenorm );
-	global_squarenorm_reduction = clCreateKernel(clprogram, "global_squarenorm_reduction", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating global_squarenorm_reduction kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( global_squarenorm_reduction );
-	ratio = clCreateKernel(clprogram, "ratio", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating ratio kernel failed, aborting. " << clerr << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( ratio );
-	product = clCreateKernel(clprogram, "product", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating product kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( product );
-	convert_to_kappa_format = clCreateKernel(clprogram, "convert_to_kappa_format", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating convert_to_kappa_format kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( convert_to_kappa_format );
-	convert_from_kappa_format = clCreateKernel(clprogram, "convert_from_kappa_format", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating convert_from_kappa_format kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( convert_from_kappa_format );
-	create_point_source = clCreateKernel(clprogram, "create_point_source", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating create_point_source kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( create_point_source );
+	Qplus = createKernel("Qplus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_qplus.cl";
+	Qminus = createKernel("Qminus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_qminus.cl";
+	gamma5 = createKernel("gamma5") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_gamma5.cl";
+	M = createKernel("M") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m.cl";
+
+	ps_correlator = createKernel("ps_correlator") << basic_fermion_code << "fermionobservables.cl";
+
+	set_spinorfield_cold = createKernel("set_spinorfield_cold") << basic_fermion_code << "spinorfield_cold.cl";
+	saxpy = createKernel("saxpy") << basic_fermion_code << "spinorfield_saxpy.cl";
+	saxsbypz = createKernel("saxsbypz") << basic_fermion_code << "spinorfield_saxsbypz.cl";
+	scalar_product = createKernel("scalar_product") << basic_fermion_code << "spinorfield_scalar_product.cl";
+	scalar_product_reduction = createKernel("scalar_product_reduction") << basic_fermion_code << "spinorfield_scalar_product.cl";
+	set_zero_spinorfield = createKernel("set_zero_spinorfield") << basic_fermion_code << "spinorfield_set_zero.cl";
+	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
+	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
+
+	ratio = createKernel("ratio") << basic_opencl_code;
+	product = createKernel("product") << basic_opencl_code;
+
+	convert_to_kappa_format = createKernel("convert_to_kappa_format") << basic_fermion_code << "spinorfield_kappaformat_convert.cl";
+	convert_from_kappa_format = createKernel("convert_from_kappa_format") << basic_fermion_code << "spinorfield_kappaformat_convert.cl";
+	create_point_source = createKernel("create_point_source") << basic_fermion_code << "spinorfield_point_source.cl";
 
 	//Kernels needed if eoprec is used
 	if(get_parameters()->get_use_eo() == TRUE) {
-		M_sitediagonal = clCreateKernel(clprogram, "M_sitediagonal", &clerr);
-		if(clerr != CL_SUCCESS) {
-			cout << "...creating M_sitediagonal kernel failed, aborting." << endl;
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( M_sitediagonal );
-		M_inverse_sitediagonal = clCreateKernel(clprogram, "M_inverse_sitediagonal", &clerr);
-		if(clerr != CL_SUCCESS) {
-			cout << "...creating M_inverse_sitediagonal kernel failed, aborting." << endl;
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( M_inverse_sitediagonal );
-		convert_from_eoprec = clCreateKernel(clprogram, "convert_from_eoprec", &clerr);
-		if(clerr != CL_SUCCESS) {
-			cout << "...creating convert_from_eoprec kernel failed, aborting." << endl;
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( convert_from_eoprec );
-		set_eoprec_spinorfield_cold = clCreateKernel(clprogram, "set_eoprec_spinorfield_cold", &clerr);
-		if(clerr != CL_SUCCESS) {
-			cout << "...creating set_eoprec_spinorfield_cold kernel failed, aborting." << endl;
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( set_eoprec_spinorfield_cold );
-		gamma5_eoprec = clCreateKernel(clprogram, "gamma5_eoprec", &clerr);
-		if(clerr != CL_SUCCESS) {
-			cout << "...creating gamma5_eoprec kernel failed, aborting." << endl;
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( gamma5_eoprec );
-		convert_to_kappa_format_eoprec = clCreateKernel(clprogram, "convert_to_kappa_format_eoprec", &clerr);
-		if(clerr != CL_SUCCESS) {
-			cout << "...creating convert_to_kappa_format_eoprec kernel failed, aborting." << endl;
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( convert_to_kappa_format_eoprec );
-		convert_from_kappa_format_eoprec = clCreateKernel(clprogram, "convert_from_kappa_format_eoprec", &clerr);
-		if(clerr != CL_SUCCESS) {
-			cout << "...creating convert_from_kappa_format_eoprec kernel failed, aborting." << endl;
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( convert_from_kappa_format_eoprec );
-		dslash_eoprec = clCreateKernel(clprogram, "dslash_eoprec", &clerr);
-		if(clerr != CL_SUCCESS) {
-			cout << "...creating dslash_eoprec kernel failed, aborting." << endl;
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( dslash_eoprec );
-		saxpy_eoprec = clCreateKernel(clprogram, "saxpy_eoprec", &clerr);
-		if(clerr != CL_SUCCESS) {
-			cout << "...creating saxpy_eoprec kernel failed, aborting." << endl;
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( saxpy_eoprec );
-		saxsbypz_eoprec = clCreateKernel(clprogram, "saxsbypz_eoprec", &clerr);
-		if(clerr != CL_SUCCESS) {
-			cout << "...creating saxsbypz_eoprec kernel failed, aborting." << endl;
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( saxsbypz_eoprec );
-		scalar_product_eoprec = clCreateKernel(clprogram, "scalar_product_eoprec", &clerr);
-		if(clerr != CL_SUCCESS) {
-			cout << "...creating scalar_product_eoprec kernel failed, aborting." << endl;
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( scalar_product_eoprec );
-		set_zero_spinorfield_eoprec = clCreateKernel(clprogram, "set_zero_spinorfield_eoprec", &clerr);
-		if(clerr != CL_SUCCESS) {
-			cout << "...creating set_zero_spinorfield_eoprec kernel failed, aborting." << endl;
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( set_zero_spinorfield_eoprec );
-		global_squarenorm_eoprec = clCreateKernel(clprogram, "global_squarenorm_eoprec", &clerr);
-		if(clerr != CL_SUCCESS) {
-			cout << "...creating global_squarenorm_eoprec kernel failed, aborting." << endl;
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( global_squarenorm_eoprec );
-		create_point_source_eoprec = clCreateKernel(clprogram, "create_point_source_eoprec", &clerr);
-		if(clerr != CL_SUCCESS) {
-			cout << "...creating create_point_source_eoprec kernel failed, aborting." << endl;
-			exit(HMC_OCLERROR);
-		}
+		M_sitediagonal = createKernel("M_sitediagonal") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_m.cl";
+		M_inverse_sitediagonal = createKernel("M_inverse_sitediagonal") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_m.cl";
+		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
+		set_eoprec_spinorfield_cold = createKernel("set_eoprec_spinorfield_cold") << basic_fermion_code << "spinorfield_eo_cold.cl";
+		gamma5_eoprec = createKernel("gamma5_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
+		convert_to_kappa_format_eoprec = createKernel("convert_to_kappa_format_eoprec") << basic_fermion_code << "spinorfield_eo_kappaformat_convert.cl";
+		convert_from_kappa_format_eoprec = createKernel("convert_from_kappa_format_eoprec") << basic_fermion_code << "spinorfield_eo_kappaformat_convert.cl";
+		dslash_eoprec = createKernel("dslash_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_dslash.cl";
+		saxpy_eoprec = createKernel("saxpy_eoprec") << basic_fermion_code << "spinorfield_eo_saxpy.cl";
+		saxsbypz_eoprec = createKernel("saxsbypz_eoprec") << basic_fermion_code << "spinorfield_eo_saxsbypz.cl";
+		scalar_product_eoprec = createKernel("scalar_product_eoprec") << basic_fermion_code << "spinorfield_eo_scalar_product.cl";
+		set_zero_spinorfield_eoprec = createKernel("set_zero_spinorfield_eoprec") << basic_fermion_code << "spinorfield_eo_zero.cl";
+		global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "spinorfield_eo_squarenorm.cl";
+		create_point_source_eoprec = createKernel("create_point_source_eoprec") << basic_fermion_code << "spinorfield_eo_point_source.cl";
 	}
 
 	return HMC_SUCCESS;
