@@ -80,7 +80,7 @@ TmpClKernel::operator cl_kernel() const
 		exit(HMC_OCLERROR);
 	}
 
-	logger.trace() << "Building kernel " << kernel_name;
+	logger.trace() << "Building kernel " << kernel_name << " using these options: " << build_options;
 
 	clerr = clBuildProgram(program, num_devices, devices, build_options.c_str(), 0, 0);
 	if(clerr != CL_SUCCESS && logger.beDebug()) {
