@@ -930,11 +930,12 @@ hmc_error Opencl_fermions::QplusQminus_device(cl_mem in, cl_mem out, const size_
 }
 
 hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer, usetimer* dslashtimer, usetimer* Mdiagtimer){
-// 	(*timer).reset();
-	
+
   int clerr =CL_SUCCESS;
-  cl_event event;
-  clerr = clSetKernelArg(M,0,sizeof(cl_mem),&in); 
+#ifdef _PROFILING_
+cl_event event;
+#endif
+	clerr = clSetKernelArg(M,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -949,40 +950,13 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_wo
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clEnqueueNDRangeKernel(queue,M,1,0,&global_work_size,&local_work_size,0,0,&event);
-
+#ifdef _PROFILING_
+	clerr = clEnqueueNDRangeKernel(queue,M,1,0,&global_work_size,&local_work_size,0,0,&event);
 	int done = clWaitForEvents(1, &event);
-
-	//CP: Old method
-//   clFinish(queue);
-//   (*timer).add();
-	
-// 	cout << "wait for events gave: " << done << " and it should be " << CL_COMPLETE << endl;
-	//Get Event-Infos
-  cl_ulong time_start;
-  cl_ulong time_end;
-  cl_ulong time_init;
-  cl_ulong time_queue;
-  clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &time_start, NULL);
-  clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &time_end, NULL);
-  clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_QUEUED, sizeof(cl_ulong), &time_queue, NULL);
-  clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_SUBMIT, sizeof(cl_ulong), &time_init, NULL);
-
-  cout.precision(64);
-  
-//   cout << "times measured by clProfiling"<< endl;
-//   cout << "Queue Time: " << time_queue << endl;
-//   cout << "Submit Time: " << time_init << endl;
-//   cout << "Start Time: " << time_start << endl;
-//   cout << "End Time: " << time_end  << endl;
-//   cout << "Resulting total Time: " << (time_end - time_queue )*0.001<< endl;
-// 	cout << "Resulting Execution Time: " << (time_end - time_start )*0.001<< endl;
-// 	cout << "time measured by use_timer:  " << noop.getTime() << endl;  
-
-	//calc Execution Time, in microsecs
-	uint64_t exec_time = (time_end - time_start )*0.001;
-	(*timer).add(exec_time);
-
+	(*timer).add(get_kernel_exec_time(event));
+#else
+	clerr = clEnqueueNDRangeKernel(queue,M,1,0,&global_work_size,&local_work_size,0,0,NULL);
+#endif
   return HMC_SUCCESS;
 
 }

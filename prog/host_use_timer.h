@@ -100,4 +100,19 @@ void time_output_heatbath(usetimer * total, usetimer * init, usetimer * poly, us
  */
 void time_output_inverter(usetimer * total, usetimer * init, usetimer * poly, usetimer * plaq, usetimer * update, usetimer * overrelax, usetimer * copy, usetimer * inittimer, usetimer* singletimer, usetimer *Mtimer, usetimer *copytimer, usetimer *scalarprodtimer, usetimer *latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer, int use_eo);
 
+/**
+ * Measure the execution time of a OpenCL-Kernel based on an event associated to this kernel call known to have finished.
+ */	
+uint64_t get_kernel_exec_time(cl_event event);
+
+/**
+ * Measure the time of a OpenCL-Kernel from queuing to calculation start based on an event associated to this kernel call known to have finished.
+ */	
+uint64_t get_kernel_overhead_time(cl_event event);
+
+/**
+ * Measure the time an OpenCL-Kernel waited to be submitted to the device based on an event associated to this kernel call known to have finished.
+ */	
+uint64_t get_kernel_submit_overhead_time(cl_event event);
+
 #endif

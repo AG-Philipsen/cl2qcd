@@ -58,6 +58,39 @@ float percent(uint64_t a, int b)
 	return (( (float) a) / ( (float )b )) * 100;
 }
 
+uint64_t get_kernel_exec_time(cl_event event){
+	uint64_t tmp;
+	cl_ulong time_start;
+  cl_ulong time_end;
+  clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &time_start, NULL);
+  clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &time_end, NULL);
+	tmp = (time_end - time_start )*0.001;
+	
+	return tmp;
+}
+
+uint64_t get_kernel_overhead_time(cl_event event){
+	uint64_t tmp;
+  cl_ulong time_start;
+  cl_ulong time_queue;
+  clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &time_start, NULL);
+  clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_QUEUED, sizeof(cl_ulong), &time_queue, NULL);
+	tmp = (time_start - time_queue )*0.001;
+	
+	return tmp;
+}
+
+uint64_t get_kernel_submit_overhead_time(cl_event event){
+	uint64_t tmp;
+  cl_ulong time_submit;
+  cl_ulong time_queue;
+  clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_SUBMIT, sizeof(cl_ulong), &time_submit, NULL);
+  clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_QUEUED, sizeof(cl_ulong), &time_queue, NULL);
+	tmp = (time_queue - time_submit )*0.001;
+	
+	return tmp;
+}
+
 
 /*
 void time_output(
@@ -694,14 +727,14 @@ void time_output_inverter(
 	logger.trace() << "Dslas:\t" << setfill(' ') << setw(12) << dslashtime << '\t' << setw(12) << dslash_avgtime << '\t' << setw(12) << dslash_avgtime_site << '\t' << fixed << setw(5) << setprecision(1) << percent(dslashtime, totaltime);
 	logger.trace() << "*******************************************************************";
 
-	
+	float mega = 1024*1024;
 	logger.trace() << "*******************************************************************";
-	logger.trace() << "Fermion Bandwidths(GB/s):";
-	logger.trace() << "ScPr.:\t" << setfill(' ') << setw(12) << setprecision(5) << scalprod_bw;
-	logger.trace() << "BLAS.:\t" << setfill(' ') << setw(12) << setprecision(5) << la_bw;
-	logger.trace() << "Mferm:\t" << setfill(' ') << setw(12) << setprecision(5) << M_bw;
-	logger.trace() << "Mdiag:\t" << setfill(' ') << setw(12) << setprecision(5) << Mdiag_bw;
-	logger.trace() << "Dslas:\t" << setfill(' ') << setw(12) << setprecision(5) << dslash_bw;
+	logger.trace() << "Fermion\t"<< setfill(' ') << setw(16)<< "BW[GB/s]\t" << setfill(' ') << setw(18) << "Re/Wr[MByte]\t" << setfill(' ') << setw(6)  << "Calls\t" << setfill(' ') << setw(10)  << "Time[mus]";
+	logger.trace() << "ScPr.:\t" << setfill(' ') << setw(12) << setprecision(3) << scalprod_bw << setfill(' ') << setw(20) << (float)(GS_byte + SP_byte)/mega<< setfill(' ') << setw(12) << scalprod_steps <<   setfill(' ') << setw(12) << scalprod;
+	logger.trace() << "BLAS.:\t" << setfill(' ') << setw(12) << setprecision(3) << la_bw << setfill(' ') << setw(20) << (float)(saxpy_byte + saxsbypz_byte)/mega << setfill(' ') << setw(12) << la_steps <<   setfill(' ') << setw(12) << latime;
+	logger.trace() << "Mferm:\t" << setfill(' ') << setw(12) << setprecision(3) << M_bw << setfill(' ') << setw(20) << (float)M_byte/mega << setfill(' ') << setw(12) << M_steps <<   setfill(' ') << setw(12) << Mtime;
+	logger.trace() << "Mdiag:\t" << setfill(' ') << setw(12) << setprecision(3) << Mdiag_bw << setfill(' ') << setw(20) << (float)dslash_byte/mega << setfill(' ') << setw(12) << dslash_steps <<   setfill(' ') << setw(12) << dslashtime;
+	logger.trace() << "Dslas:\t" << setfill(' ') << setw(12) << setprecision(3) << dslash_bw << setfill(' ') << setw(20) << (float)M_diag_byte/mega<< setfill(' ') << setw(12) << Mdiag_steps <<   setfill(' ') << setw(12) << Mdiagtime ;
 	logger.trace() << "*******************************************************************";
 	
 	
