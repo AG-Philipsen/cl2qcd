@@ -65,19 +65,10 @@ hmc_error Opencl_k::fill_kernels(cl_program clprogram)
 	cl_int clerr = CL_SUCCESS;
 
 	cout << "Create TK kappa kernels..." << endl;
-	kappa_karsch_gpu = clCreateKernel(clprogram, "kappa_karsch_gpu", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
+	kappa_karsch_gpu = createKernel("kappa_karsch_gpu") << basic_opencl_code << "opencl_tk_kappa.cl";
 
 	cout << "Create TK clover kernels..." << endl;
-	kappa_clover_gpu = clCreateKernel(clprogram, "kappa_clover_gpu", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-
+	kappa_clover_gpu = createKernel("kappa_clover_gpu") << basic_opencl_code << "opencl_tk_kappa.cl";
 
 	return HMC_SUCCESS;
 }
