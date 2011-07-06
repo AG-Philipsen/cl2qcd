@@ -733,8 +733,8 @@ void time_output_inverter(
 	logger.trace() << "ScPr.:\t" << setfill(' ') << setw(12) << setprecision(3) << scalprod_bw << setfill(' ') << setw(20) << (float)(GS_byte + SP_byte)/mega<< setfill(' ') << setw(12) << scalprod_steps <<   setfill(' ') << setw(12) << scalprod;
 	logger.trace() << "BLAS.:\t" << setfill(' ') << setw(12) << setprecision(3) << la_bw << setfill(' ') << setw(20) << (float)(saxpy_byte + saxsbypz_byte)/mega << setfill(' ') << setw(12) << la_steps <<   setfill(' ') << setw(12) << latime;
 	logger.trace() << "Mferm:\t" << setfill(' ') << setw(12) << setprecision(3) << M_bw << setfill(' ') << setw(20) << (float)M_byte/mega << setfill(' ') << setw(12) << M_steps <<   setfill(' ') << setw(12) << Mtime;
-	logger.trace() << "Mdiag:\t" << setfill(' ') << setw(12) << setprecision(3) << Mdiag_bw << setfill(' ') << setw(20) << (float)dslash_byte/mega << setfill(' ') << setw(12) << dslash_steps <<   setfill(' ') << setw(12) << dslashtime;
-	logger.trace() << "Dslas:\t" << setfill(' ') << setw(12) << setprecision(3) << dslash_bw << setfill(' ') << setw(20) << (float)M_diag_byte/mega<< setfill(' ') << setw(12) << Mdiag_steps <<   setfill(' ') << setw(12) << Mdiagtime ;
+	logger.trace() << "Mdiag:\t" << setfill(' ') << setw(12) << setprecision(3) << Mdiag_bw << setfill(' ') << setw(20) << (float)M_diag_byte/mega<< setfill(' ') << setw(12) << Mdiag_steps <<   setfill(' ') << setw(12) << Mdiagtime ;logger.trace() << "Dslas:\t" << setfill(' ') << setw(12) << setprecision(3) << dslash_bw << setfill(' ') << setw(20) << 
+	(float)dslash_byte/mega << setfill(' ') << setw(12) << dslash_steps <<   setfill(' ') << setw(12) << dslashtime;
 	logger.trace() << "*******************************************************************";
 	
 	

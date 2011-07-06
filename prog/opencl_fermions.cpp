@@ -17,7 +17,7 @@ hmc_error Opencl_fermions::fill_kernels_file ()
 	#endif
 	if(get_parameters()->get_use_eo() == TRUE){
 		cl_kernels_file.push_back("operations_spinorfield_eo.cl");
-		#ifdef _USE_GPU_
+		#ifdef _USEGPU_
 		cl_kernels_file.push_back("operations_fermionmatrix_eo_GPU.cl");
 		#else
 		cl_kernels_file.push_back("operations_fermionmatrix_eo.cl");
@@ -1060,7 +1060,6 @@ hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, const size_t local_
 
 	saxpy_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, clmem_one, out, ls, gs, latimer);
 
-	(*timer).add();
 	return HMC_SUCCESS;
 }
 

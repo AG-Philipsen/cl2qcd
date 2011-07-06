@@ -15,6 +15,10 @@ int main(int argc, char* argv[])
 		return HMC_FILEERROR;
 	}
 
+#ifndef _PROFILING_
+	logger.fatal() << "No _PROFILING_ defined. Aborting..." ;
+#endif
+
 	char* progname = argv[0];
 	print_hello_bench(progname);
 
@@ -137,53 +141,53 @@ int main(int argc, char* argv[])
 	for(int i = 0; i<steps; i++){
 		if(use_eo == FALSE) {
 // 			logger.trace() << "benchmark fermionmatrix kernels";
-			Mtimer.reset();
+// 			Mtimer.reset();
 // 			gaugefield.get_devices_fermions()[0].M_device(gaugefield.get_devices_fermions()[0].get_clmem_inout(), gaugefield.get_devices_fermions()[0].get_clmem_tmp(), ls, gs,  &noop, &noop, &noop);
-			Mtimer.add();
+// 			Mtimer.add();
 // 			logger.trace() << "benchmark BLAS kernels";
-			latimer.reset();
+// 			latimer.reset();
 			
-			latimer.add();
+// 			latimer.add();
 // 			logger.trace() << "benchmark ScalarProduct kernels";
-			scalarprodtimer.reset();
-			
-			scalarprodtimer.add();
+// 			scalarprodtimer.reset();
+// 			
+// 			scalarprodtimer.add();
 // 			logger.trace() << "benchmark Single kernels";
-			singletimer.reset();
-			
-			singletimer.add();
+// 			singletimer.reset();
+// 			
+// 			singletimer.add();
 			
 			//the input spinorfield should always be the same
 			gaugefield.get_devices_fermions()[0].set_spinorfield_cold_device(ls, gs, &noop);
 			solvertimer.reset();
-			gaugefield.get_devices_fermions()[0].bicgstab_device(&copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &dslashtimer, &Mdiagtimer, ls, gs, cgmax);
+			gaugefield.get_devices_fermions()[0].bicgstab_device(&copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &noop, &noop, ls, gs, cgmax);
 // 			gaugefield.get_devices_fermions()[0].cg_device(usetimer * copytimer, usetimer* singletimer, usetimer * Mtimer, usetimer * scalarprodtimer, usetimer * latimer, usetimer * dslashtimer, usetimer * Mdiagtimer, const size_t local_work_size, const size_t global_work_size, int cgmax);
 			solvertimer.add();
 		}
 		else{
 // 			logger.trace() << "benchmark fermionmatrix kernels";
-			Mtimer.reset();
-			
-			
-			
-			Mtimer.add();
+// 			Mtimer.reset();
+// 			
+// 			
+// 			
+// 			Mtimer.add();
 // 			logger.trace() << "benchmark BLAS kernels";
-			latimer.reset();
-			
-			latimer.add();
+// 			latimer.reset();
+// 			
+// 			latimer.add();
 // 			logger.trace() << "benchmark ScalarProduct kernels";
-			scalarprodtimer.reset();
-			
-			scalarprodtimer.add();
+// 			scalarprodtimer.reset();
+// 			
+// 			scalarprodtimer.add();
 // 			logger.trace() << "benchmark Single kernels";
-			singletimer.reset();
-			
-			singletimer.add();
+// 			singletimer.reset();
+// 			
+// 			singletimer.add();
 			
 			//the input spinorfield should always be the same
 			gaugefield.get_devices_fermions()[0].set_eoprec_spinorfield_cold_device(ls, gs, &noop);
 			solvertimer.reset();
-			gaugefield.get_devices_fermions()[0].bicgstab_eoprec_device(&copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &dslashtimer, &Mdiagtimer, ls, gs, cgmax);
+			gaugefield.get_devices_fermions()[0].bicgstab_eoprec_device(&copytimer, &singletimer, &noop, &scalarprodtimer, &latimer, &dslashtimer, &Mdiagtimer, ls, gs, cgmax);
 			solvertimer.add();
 		
 		
