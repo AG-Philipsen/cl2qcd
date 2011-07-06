@@ -170,21 +170,9 @@ hmc_error Device::fill_kernels(cl_program clprogram)
 
 	// don't invoke parent function as we don't require the original kernels
 
-	floatKernel = clCreateKernel(clprogram, "copyFloat", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating float kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( floatKernel );
+	floatKernel = createKernel("copyFloat") << "bandwidth.cl";
+	su3Kernel = createKernel("copySU3") << "bandwidth.cl";
 
-	su3Kernel = clCreateKernel(clprogram, "copySU3", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating su3 kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( su3Kernel );
 	return clerr;
 }
 
