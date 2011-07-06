@@ -59,7 +59,7 @@ TmpClKernel::operator cl_kernel() const
 		std::fstream file;
 		file.open(tmp.str().c_str());
 		if(!file.is_open()) {
-			logger.fatal() << "Could not open file. Aborting...";
+			logger.fatal() << "Could not open file " << tmp << ". Aborting...";
 			exit(HMC_FILEERROR);
 		}
 
