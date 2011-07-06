@@ -317,8 +317,8 @@ void Opencl_fermions::fill_kernels()
 	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
 	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
 
-	ratio = createKernel("ratio") << basic_opencl_code;
-	product = createKernel("product") << basic_opencl_code;
+	ratio = createKernel("ratio") << basic_opencl_code << "complex_ratio.cl";
+	product = createKernel("product") << basic_opencl_code << "complex_product.cl";
 
 	convert_to_kappa_format = createKernel("convert_to_kappa_format") << basic_fermion_code << "spinorfield_kappaformat_convert.cl";
 	convert_from_kappa_format = createKernel("convert_from_kappa_format") << basic_fermion_code << "spinorfield_kappaformat_convert.cl";

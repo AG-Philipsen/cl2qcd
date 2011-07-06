@@ -43,26 +43,6 @@ hmc_complex complexdivide(hmc_complex numerator, hmc_complex denominator)
 	return res;
 }
 
-
-__kernel void ratio(__global hmc_complex * a, __global hmc_complex * b, __global hmc_complex * out)
-{
-    //!!CP: complexdivide cannot handle __global
-    hmc_complex tmp1 = (*a);
-    hmc_complex tmp2 = (*b);
-    (*out) =  complexdivide(tmp1, tmp2);
-    return;
-}
-
-
-__kernel void product(__global hmc_complex * a, __global hmc_complex * b, __global hmc_complex * out)
-{
-    //!!CP: complexdivide cannot handle __global
-    hmc_complex tmp1 = (*a);
-    hmc_complex tmp2 = (*b);
-    (*out) =  complexmult(tmp1, tmp2);
-    return;
-}
-
 //this is deprecated...
 // void gaussianComplexVector(__global hmc_complex * vector, int length, hmc_float sigma, __global hmc_ocl_ran * rnd){
 // 	// SL: this fills real and imaginary part of a vector of "length" complex numbers
