@@ -1,36 +1,6 @@
 #include "opencl_fermions.h"
 #include "logger.hpp"
 
-hmc_error Opencl_fermions::fill_kernels_file ()
-{
-	//give a list of all kernel-files
-	Opencl::fill_kernels_file();
-
-	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl"
-	                   << "operations_spinor.cl" << "spinorfield.cl";
-
-	cl_kernels_file.push_back("types_fermions.h");
-	cl_kernels_file.push_back("operations_su3vec.cl");
-	cl_kernels_file.push_back("operations_spinor.cl");
-	cl_kernels_file.push_back("operations_spinorfield.cl");
-#ifdef _USE_GPU_
-	cl_kernels_file.push_back("operations_fermionmatrix_GPU.cl");
-#else
-	cl_kernels_file.push_back("operations_fermionmatrix.cl");
-#endif
-	if(get_parameters()->get_use_eo() == TRUE) {
-		cl_kernels_file.push_back("operations_spinorfield_eo.cl");
-#ifdef _USE_GPU_
-		cl_kernels_file.push_back("operations_fermionmatrix_eo_GPU.cl");
-#else
-		cl_kernels_file.push_back("operations_fermionmatrix_eo.cl");
-#endif
-	}
-	cl_kernels_file.push_back("fermionobservables.cl");
-
-	return HMC_SUCCESS;
-}
-
 hmc_error Opencl_fermions::fill_collect_options(stringstream* collect_options)
 {
 
@@ -323,11 +293,12 @@ hmc_error Opencl_fermions::fill_buffers()
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::fill_kernels(cl_program clprogram)
+void Opencl_fermions::fill_kernels()
 {
-	int clerr = HMC_SUCCESS;
+	Opencl::fill_kernels();
 
-	Opencl::fill_kernels(clprogram);
+	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl"
+	                     << "operations_spinor.cl" << "spinorfield.cl";
 
 	logger.debug() << "Create fermion kernels...";
 	Qplus = createKernel("Qplus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_qplus.cl";
@@ -370,8 +341,6 @@ hmc_error Opencl_fermions::fill_kernels(cl_program clprogram)
 		global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "spinorfield_eo_squarenorm.cl";
 		create_point_source_eoprec = createKernel("create_point_source_eoprec") << basic_fermion_code << "spinorfield_eo_point_source.cl";
 	}
-
-	return HMC_SUCCESS;
 }
 
 hmc_error Opencl_fermions::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters)

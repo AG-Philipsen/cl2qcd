@@ -18,11 +18,6 @@
 class Opencl_hmc : public Opencl_fermions {
 public:
 	/**
-	* Collect a vector of kernel file names.
-	* Virtual method, allows to include more kernel files in inherited classes.
-	*/
-	virtual hmc_error fill_kernels_file ();
-	/**
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
@@ -36,7 +31,7 @@ public:
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
-	virtual hmc_error fill_kernels(cl_program clprogram);
+	virtual void fill_kernels();
 
 
 	/**

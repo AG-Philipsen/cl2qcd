@@ -2,18 +2,6 @@
 
 using namespace std;
 
-hmc_error Opencl_k::fill_kernels_file ()
-{
-	//give a list of all kernel-files
-	hmc_error err = Opencl::fill_kernels_file();
-	if(err != HMC_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	cl_kernels_file.push_back("opencl_tk_kappa.cl");
-	return HMC_SUCCESS;
-}
-
 hmc_error Opencl_k::fill_collect_options(stringstream* collect_options)
 {
 
@@ -53,14 +41,9 @@ hmc_error Opencl_k::fill_buffers()
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_k::fill_kernels(cl_program clprogram)
+void Opencl_k::fill_kernels()
 {
-	hmc_error err = Opencl::fill_kernels(clprogram);
-
-	if(err != HMC_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
+	Opencl::fill_kernels();
 
 	cl_int clerr = CL_SUCCESS;
 
@@ -69,8 +52,6 @@ hmc_error Opencl_k::fill_kernels(cl_program clprogram)
 
 	cout << "Create TK clover kernels..." << endl;
 	kappa_clover_gpu = createKernel("kappa_clover_gpu") << basic_opencl_code << "opencl_tk_kappa.cl";
-
-	return HMC_SUCCESS;
 }
 
 

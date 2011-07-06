@@ -7,23 +7,6 @@
 
 using namespace std;
 
-hmc_error Opencl::fill_kernels_file ()
-{
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "opencl_geometry.cl" << "opencl_operations_complex.cl"
-	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-
-	//give a list of all kernel-files
-	//!!CP: LZ should update this
-	cl_kernels_file.push_back("opencl_header.cl");
-	cl_kernels_file.push_back("opencl_geometry.cl");
-	cl_kernels_file.push_back("random.cl");
-	cl_kernels_file.push_back("opencl_operations_complex.cl");
-	cl_kernels_file.push_back("operations_matrix_su3.cl");
-	cl_kernels_file.push_back("operations_matrix.cl");
-	cl_kernels_file.push_back("operations_gaugefield.cl");
-	return HMC_SUCCESS;
-}
-
 hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 {
 	*collect_options << "-D_INKERNEL_ -DNSPACE=" << NSPACE << " -DNTIME=" << NTIME << " -DVOLSPACE=" << VOLSPACE;
@@ -102,8 +85,11 @@ hmc_error Opencl::fill_buffers()
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::fill_kernels(cl_program clprogram)
+void Opencl::fill_kernels()
 {
+	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "opencl_geometry.cl" << "opencl_operations_complex.cl"
+	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
+
 	//CP: this should only be done when the heatbath wants to be used!!
 	if(get_parameters()->get_perform_heatbath() == 1) {
 
@@ -123,8 +109,6 @@ hmc_error Opencl::fill_kernels(cl_program clprogram)
 
 	polyakov = createKernel("polyakov") << basic_opencl_code << "gaugeobservables_polyakov.cl";
 	polyakov_reduction = createKernel("polyakov_reduction") << basic_opencl_code << "gaugeobservables_polyakov.cl";
-
-	return HMC_SUCCESS;
 }
 
 hmc_error Opencl::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* params)
@@ -220,106 +204,13 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 		exit(HMC_OCLERROR);
 	}
 
-	//collect all kernel files
-	err = this->fill_kernels_file();
-	if( err )
-		exit( HMC_OCLERROR );
-
-	//write kernel files into sources
-	// create array to point to contents of the different source files
-	char ** sources = new char *[ cl_kernels_file.size() ];
-	size_t * source_sizes = new size_t[ cl_kernels_file.size() ];
-
-	string sourcecode;
-	for(size_t n = 0; n < cl_kernels_file.size(); n++) {
-		stringstream tmp;
-		tmp << SOURCEDIR << '/' << cl_kernels_file[n];
-		logger.debug() << "Read kernel source from file: " << tmp.str();
-
-		fstream kernelsfile;
-		kernelsfile.open(tmp.str().c_str());
-		if(!kernelsfile.is_open()) {
-			logger.fatal() << "Could not open file. Aborting...";
-			exit(HMC_FILEERROR);
-		}
-
-		kernelsfile.seekg(0, ios::end);
-		source_sizes[n] = kernelsfile.tellg();
-		kernelsfile.seekg(0, ios::beg);
-
-		sources[n] = new char[source_sizes[n]];
-
-		kernelsfile.read( sources[n], source_sizes[n] );
-
-		kernelsfile.close();
-	}
-
-	//Create program from sources
-	logger.trace() << "Create program...";
-	cl_program clprogram = clCreateProgramWithSource(context, cl_kernels_file.size() , (const char**) sources, source_sizes, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-
-	logger.debug() << "Build program...";
-
-	//account for options
-	stringstream collect_options;
-	this->fill_collect_options(&collect_options);
-	string buildoptions = collect_options.str();
-	logger.debug() << "\tbuild options:" << "\t" << buildoptions;
-
-	clerr = clBuildProgram(clprogram, 1, &device, buildoptions.c_str(), 0, 0);
-	if(clerr != CL_SUCCESS) {
-		logger.error() << "... failed with error " << clerr << ", but look at BuildLog and abort then.";
-	}
-
-	logger.trace() << "finished building program";
-
-	size_t logSize;
-	clerr |= clGetProgramBuildInfo(clprogram, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);
-	if(logSize > 1 && logger.beDebug()) { // 0-terminated -> always at least one byte
-		logger.debug() << "Build Log:";
-		char* log = new char[logSize];
-		clerr |= clGetProgramBuildInfo(clprogram, device, CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
-		logger.debug() << log;
-		delete [] log;
-	}
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-
-		// dump program source
-		size_t sourceSize;
-		clerr = clGetProgramInfo(clprogram, CL_PROGRAM_SOURCE, 0, NULL, &sourceSize);
-		if(!clerr && sourceSize > 1 && logger.beDebug()) { // 0-terminated -> always at least one byte
-			char* source = new char[sourceSize];
-			clerr = clGetProgramInfo(clprogram, CL_PROGRAM_SOURCE, sourceSize, source, &sourceSize);
-			if(!clerr) {
-				char const * const FILENAME = "broken_source.cl";
-				ofstream srcFile(FILENAME);
-				srcFile << source;
-				srcFile.close();
-				logger.debug() << "Dumped broken source to " << FILENAME;
-			}
-			delete[] source;
-		}
-
-		exit(HMC_OCLERROR);
-	}
-
 	//Create buffer
 	err = this->fill_buffers();
 	if( err )
 		exit( HMC_OCLERROR );
 
 	//Create kernels
-	err = this->fill_kernels(clprogram);
-	if( err )
-		exit( HMC_OCLERROR );
-
-	// release program
-	clReleaseProgram(clprogram);
+	this->fill_kernels();
 
 	//finish
 	set_init_true();
