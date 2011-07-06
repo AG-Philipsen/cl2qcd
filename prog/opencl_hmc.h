@@ -108,5 +108,7 @@ private:
 	//inverted spinorfield
 	cl_mem clmem_phi_inv;
 
+	ClSourcePackage basic_hmc_code;
+
 };
 #endif // _MYOPENCLHMCH_

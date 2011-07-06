@@ -9,6 +9,8 @@ hmc_error Opencl_hmc::fill_kernels_file ()
 	//give a list of all kernel-files
 	Opencl_fermions::fill_kernels_file();
 
+	basic_hmc_code = basic_fermion_code << "types_hmc.h";
+
 	cl_kernels_file.push_back("types_hmc.h");
 	cl_kernels_file.push_back("operations_gaugemomentum.cl");
 	cl_kernels_file.push_back("operations_force.cl");
@@ -122,69 +124,21 @@ hmc_error Opencl_hmc::fill_kernels(cl_program clprogram)
 	Opencl_fermions::fill_kernels(clprogram);
 	//init kernels for HMC
 	logger.debug() << "Create kernel set_zero_gaugemomentum...";
-	set_zero_gaugemomentum = clCreateKernel(clprogram, "set_zero_gaugemomentum", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( set_zero_gaugemomentum );
+	set_zero_gaugemomentum = createKernel("set_zero_gaugemomentum") << basic_hmc_code << "gaugemomentum_zero.cl";
 	logger.debug() << "Create kernel generate_gaussian_spinorfield...";
-	generate_gaussian_spinorfield = clCreateKernel(clprogram, "generate_gaussian_spinorfield", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( generate_gaussian_spinorfield );
+	generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_hmc_code << "random.cl" << "spinorfield_gaussian.cl";
 	logger.debug() << "Create kernel generate_gaussian_gaugemomenta...";
-	generate_gaussian_gaugemomenta = clCreateKernel(clprogram, "generate_gaussian_gaugemomenta", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( generate_gaussian_gaugemomenta );
+	generate_gaussian_gaugemomenta = createKernel("generate_gaussian_gaugemomenta") << basic_hmc_code << "random.cl" << "gaugemomentum_gaussian.cl";
 	logger.debug() << "Create kernel md_update_gaugefield...";
-	md_update_gaugefield = clCreateKernel(clprogram, "md_update_gaugefield", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( md_update_gaugefield );
+	md_update_gaugefield = createKernel("md_update_gaugefield") << basic_hmc_code << "md_update_gaugefield.cl";
 	logger.debug() << "Create kernel md_update_gaugemomenta...";
-	md_update_gaugemomenta = clCreateKernel(clprogram, "md_update_gaugemomenta", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( md_update_gaugemomenta );
+	md_update_gaugemomenta = createKernel("md_update_gaugemomenta") << basic_hmc_code << "gaugemomentum.cl" << "md_update_gaugemomenta.cl";
 	logger.debug() << "Create kernel gauge_force...";
-	gauge_force = clCreateKernel(clprogram, "gauge_force", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( gauge_force );
+	gauge_force = createKernel("gauge_force") << basic_hmc_code << "gaugemomentum.cl" << "force_gauge.cl";
 	logger.debug() << "Create kernel fermion_force...";
-	fermion_force = clCreateKernel(clprogram, "fermion_force", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( fermion_force );
+	fermion_force = createKernel("fermion_force") << basic_hmc_code << "gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion.cl";
 	logger.debug() << "Create kernel gaugemomentum_squarenorm...";
-	gaugemomentum_squarenorm = clCreateKernel(clprogram, "gaugemomentum_squarenorm", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( gaugemomentum_squarenorm );
+	gaugemomentum_squarenorm = createKernel("gaugemomentum_squarenorm") << basic_hmc_code << "gaugemomentum_squarenorm.cl";
 
 	return HMC_SUCCESS;
 }

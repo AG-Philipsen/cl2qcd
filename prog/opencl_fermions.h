@@ -233,6 +233,7 @@ private:
 	//CP: variables for correlator, these should propably not be here if no observables should be calculated...
 	cl_mem clmem_corr;
 
+protected:
 	ClSourcePackage basic_fermion_code;
 };
 #endif // _MYOPENCLFERMIONSH_
