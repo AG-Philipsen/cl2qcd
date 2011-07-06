@@ -45,8 +45,6 @@ void Opencl_k::fill_kernels()
 {
 	Opencl::fill_kernels();
 
-	cl_int clerr = CL_SUCCESS;
-
 	cout << "Create TK kappa kernels..." << endl;
 	kappa_karsch_gpu = createKernel("kappa_karsch_gpu") << basic_opencl_code << "opencl_tk_kappa.cl";
 
