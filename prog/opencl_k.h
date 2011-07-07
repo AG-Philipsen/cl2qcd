@@ -13,13 +13,8 @@
  * has it's own wrapper function.
  */
 class Opencl_k : public Opencl {
- 
-    public:
-        /**
-	 * Collect a vector of kernel file names.
-	 * Virtual method, allows to include more kernel files in inherited classes.
-	 */
-	virtual hmc_error fill_kernels_file ();
+
+public:
 	/**
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
@@ -34,23 +29,23 @@ class Opencl_k : public Opencl {
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
-	virtual hmc_error fill_kernels();
+	virtual void fill_kernels();
 	/**
 	 * Called by the destructor.
 	 */
 	virtual hmc_error finalize();
-	
+
 	hmc_error run_kappa_karsch_gpu(const hmc_float beta, usetimer * timer, hmc_float * kappa_karsch_out);
 	hmc_error run_kappa_clover_gpu(const hmc_float beta, usetimer * timer, hmc_float * kappa_clover_out);
-	
+
 	cl_mem clmem_kappa_karsch;
 	cl_mem clmem_kappa_karsch_buf_glob;
 	cl_mem clmem_kappa_clover;
 	cl_mem clmem_kappa_clover_buf_glob;
-	
+
 	cl_kernel kappa_karsch_gpu;
 	cl_kernel kappa_clover_gpu;
- 
+
 };
 
 #endif

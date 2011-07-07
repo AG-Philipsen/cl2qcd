@@ -24,6 +24,7 @@
 #include "host_use_timer.h"
 #include "host_random.h"
 #include "inputparameters.h"
+#include "opencl_compiler.hpp"
 
 /**
  * An OpenCL device
@@ -178,11 +179,6 @@ public:
 	//protected:
 
 	/**
-	 * Collect a vector of kernel file names.
-	 * Virtual method, allows to include more kernel files in inherited classes.
-	 */
-	virtual hmc_error fill_kernels_file ();
-	/**
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
@@ -198,7 +194,7 @@ public:
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
-	virtual hmc_error fill_kernels();
+	virtual void fill_kernels();
 
 	///////////////////////////////////////////////
 	//get and set methods
@@ -246,7 +242,6 @@ public:
 	cl_uint max_compute_units;
 
 	cl_command_queue queue;
-	cl_program clprogram;
 
 	///////////////////////////////////////////////////////////
 	//LZ what follows should eventually be private
@@ -304,7 +299,7 @@ public:
 	 */
 	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
 
-	/*
+	/**
 	 * Print resource requirements of a kernel object.
 	 *
 	 * All information is dumped to the trace.
@@ -312,6 +307,24 @@ public:
 	 * @param kernel The kernel of which to query the information.
 	 */
 	void printResourceRequirements(const cl_kernel kernel);
+
+protected:
+	/**
+	 * A set of source files used by all kernels.
+	 */
+	ClSourcePackage basic_opencl_code;
+
+	/**
+	 * Create a kernel from source files.
+	 *
+	 * Usage:
+	 * @code
+	 * cl_kernel dummy = createKernel("dummy") << "dummy.cl";
+	 * @endcode
+	 *
+	 * @param kernel_name The name of the kernel to create.
+	 */
+	TmpClKernel createKernel(const char * const kernel_name);
 
 private:
 	hmc_error init_basic(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters);

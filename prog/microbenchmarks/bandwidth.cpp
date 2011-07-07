@@ -35,9 +35,8 @@ public:
 	Device(cl_device_type device_type) : Opencl() {
 		Opencl::init(device_type, &timer, &params); /* init in body for proper this-pointer */
 	};
-	virtual hmc_error fill_kernels_file();
 	virtual hmc_error fill_buffers();
-	virtual hmc_error fill_kernels();
+	virtual void fill_kernels();
 	virtual hmc_error clear_buffers();
 	virtual hmc_error clear_kernels();
 	~Device() {
@@ -131,18 +130,6 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-hmc_error Device::fill_kernels_file()
-{
-	//give a list of all kernel-files
-	Opencl::fill_kernels_file();
-
-	cl_kernels_file.push_back("microbenchmarks/bandwidth.cl");
-
-	logger.debug() << "Filled kernels file list";
-
-	return HMC_SUCCESS;
-}
-
 hmc_error Device::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
@@ -164,28 +151,12 @@ hmc_error Device::fill_buffers()
 	return HMC_SUCCESS;
 }
 
-hmc_error Device::fill_kernels()
+void Device::fill_kernels()
 {
-	int clerr = HMC_SUCCESS;
-
 	// don't invoke parent function as we don't require the original kernels
 
-	floatKernel = clCreateKernel(clprogram, "copyFloat", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating float kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( floatKernel );
-
-	su3Kernel = clCreateKernel(clprogram, "copySU3", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "...creating su3 kernel failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( su3Kernel );
-	return clerr;
+	floatKernel = createKernel("copyFloat") << "microbenchmarks/bandwidth.cl";
+	su3Kernel = createKernel("copySU3") << "microbenchmarks/bandwidth.cl";
 }
 
 hmc_error Device::clear_buffers()

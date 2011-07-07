@@ -2,18 +2,6 @@
 
 using namespace std;
 
-hmc_error Opencl_k::fill_kernels_file ()
-{
-	//give a list of all kernel-files
-	hmc_error err = Opencl::fill_kernels_file();
-	if(err != HMC_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	cl_kernels_file.push_back("opencl_tk_kappa.cl");
-	return HMC_SUCCESS;
-}
-
 hmc_error Opencl_k::fill_collect_options(stringstream* collect_options)
 {
 
@@ -53,33 +41,15 @@ hmc_error Opencl_k::fill_buffers()
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_k::fill_kernels()
+void Opencl_k::fill_kernels()
 {
-	hmc_error err = Opencl::fill_kernels();
-
-	if(err != HMC_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-
-	cl_int clerr = CL_SUCCESS;
+	Opencl::fill_kernels();
 
 	cout << "Create TK kappa kernels..." << endl;
-	kappa_karsch_gpu = clCreateKernel(clprogram, "kappa_karsch_gpu", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
+	kappa_karsch_gpu = createKernel("kappa_karsch_gpu") << basic_opencl_code << "opencl_tk_kappa.cl";
 
 	cout << "Create TK clover kernels..." << endl;
-	kappa_clover_gpu = clCreateKernel(clprogram, "kappa_clover_gpu", &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-
-
-	return HMC_SUCCESS;
+	kappa_clover_gpu = createKernel("kappa_clover_gpu") << basic_opencl_code << "opencl_tk_kappa.cl";
 }
 
 
@@ -241,8 +211,6 @@ hmc_error Opencl_k::finalize()
 
 		if(clReleaseKernel(kappa_karsch_gpu) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clReleaseKernel(kappa_clover_gpu) != CL_SUCCESS) exit(HMC_OCLERROR);
-
-		if(clReleaseProgram(clprogram) != CL_SUCCESS) exit(HMC_OCLERROR);
 
 		if(clReleaseMemObject(clmem_gaugefield) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clReleaseMemObject(clmem_rndarray) != CL_SUCCESS) exit(HMC_OCLERROR);

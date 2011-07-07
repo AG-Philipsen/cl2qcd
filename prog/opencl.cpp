@@ -7,24 +7,6 @@
 
 using namespace std;
 
-hmc_error Opencl::fill_kernels_file ()
-{
-	//give a list of all kernel-files
-	//!!CP: LZ should update this
-	cl_kernels_file.push_back("opencl_header.cl");
-	cl_kernels_file.push_back("opencl_geometry.cl");
-	cl_kernels_file.push_back("random.cl");
-	cl_kernels_file.push_back("opencl_operations_complex.cl");
-	cl_kernels_file.push_back("operations_matrix_su3.cl");
-	cl_kernels_file.push_back("operations_matrix.cl");
-	cl_kernels_file.push_back("operations_gaugefield.cl");
-	if(get_parameters()->get_perform_heatbath() == 1){
-		cl_kernels_file.push_back("update_heatbath.cl");
-	}
-	cl_kernels_file.push_back("gaugeobservables.cl");
-	return HMC_SUCCESS;
-}
-
 hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 {
 	*collect_options << "-D_INKERNEL_ -DNSPACE=" << NSPACE << " -DNTIME=" << NTIME << " -DVOLSPACE=" << VOLSPACE;
@@ -103,77 +85,30 @@ hmc_error Opencl::fill_buffers()
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::fill_kernels()
+void Opencl::fill_kernels()
 {
-
-	cl_int clerr = CL_SUCCESS;
+	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "opencl_geometry.cl" << "opencl_operations_complex.cl"
+	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 
 	//CP: this should only be done when the heatbath wants to be used!!
-	if(get_parameters()->get_perform_heatbath() == 1){
-	
+	if(get_parameters()->get_perform_heatbath() == 1) {
+
 		logger.debug() << "Create heatbath kernels...";
-		heatbath_even = clCreateKernel(clprogram, "heatbath_even", &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "... failed, aborting.";
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( heatbath_even );
-		heatbath_odd = clCreateKernel(clprogram, "heatbath_odd", &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "... failed, aborting.";
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( heatbath_odd );
+		heatbath_even = createKernel("heatbath_even") << basic_opencl_code << "random.cl" << "update_heatbath.cl";
+		heatbath_odd = createKernel("heatbath_odd") << basic_opencl_code << "random.cl" << "update_heatbath.cl";
 
-		overrelax_even = clCreateKernel(clprogram, "overrelax_even", &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "... failed, aborting.";
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( overrelax_even );
-		overrelax_odd = clCreateKernel(clprogram, "overrelax_odd", &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "... failed, aborting.";
-			exit(HMC_OCLERROR);
-		}
-		if( logger.beDebug() )
-			printResourceRequirements( overrelax_odd );
+		logger.debug() << "Create overrelax kernels...";
+		overrelax_even = createKernel("overrelax_even") << basic_opencl_code << "random.cl" << "overrelax.cl";
+		overrelax_odd = createKernel("overrelax_odd") << basic_opencl_code << "random.cl" << "overrelax.cl";
+
 	}
-	
+
 	logger.debug() << "Create gaugeobservables kernels...";
-	plaquette = clCreateKernel(clprogram, "plaquette", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... plaquette failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( plaquette );
-	polyakov = clCreateKernel(clprogram, "polyakov", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... polyakov failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( polyakov );
-	plaquette_reduction = clCreateKernel(clprogram, "plaquette_reduction", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... plaquette_reduction failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( plaquette_reduction );
-	polyakov_reduction = clCreateKernel(clprogram, "polyakov_reduction", &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... polyakov_reduction failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	if( logger.beDebug() )
-		printResourceRequirements( polyakov_reduction );
+	plaquette = createKernel("plaquette") << basic_opencl_code << "gaugeobservables_plaquette.cl";
+	plaquette_reduction = createKernel("plaquette_reduction") << basic_opencl_code << "gaugeobservables_plaquette.cl";
 
-	return HMC_SUCCESS;
+	polyakov = createKernel("polyakov") << basic_opencl_code << "gaugeobservables_polyakov.cl";
+	polyakov_reduction = createKernel("polyakov_reduction") << basic_opencl_code << "gaugeobservables_polyakov.cl";
 }
 
 hmc_error Opencl::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* params)
@@ -269,103 +204,13 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 		exit(HMC_OCLERROR);
 	}
 
-	//collect all kernel files
-	err = this->fill_kernels_file();
-	if( err )
-		exit( HMC_OCLERROR );
-
-	//write kernel files into sources
-	// create array to point to contents of the different source files
-	char ** sources = new char *[ cl_kernels_file.size() ];
-	size_t * source_sizes = new size_t[ cl_kernels_file.size() ];
-
-	string sourcecode;
-	for(size_t n = 0; n < cl_kernels_file.size(); n++) {
-		stringstream tmp;
-		tmp << SOURCEDIR << '/' << cl_kernels_file[n];
-		logger.debug() << "Read kernel source from file: " << tmp.str();
-
-		fstream kernelsfile;
-		kernelsfile.open(tmp.str().c_str());
-		if(!kernelsfile.is_open()) {
-			logger.fatal() << "Could not open file. Aborting...";
-			exit(HMC_FILEERROR);
-		}
-
-		kernelsfile.seekg(0, ios::end);
-		source_sizes[n] = kernelsfile.tellg();
-		kernelsfile.seekg(0, ios::beg);
-
-		sources[n] = new char[source_sizes[n]];
-
-		kernelsfile.read( sources[n], source_sizes[n] );
-
-		kernelsfile.close();
-	}
-
-	//Create program from sources
-	logger.trace() << "Create program...";
-	clprogram = clCreateProgramWithSource(context, cl_kernels_file.size() , (const char**) sources, source_sizes, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-
-	logger.debug() << "Build program...";
-
-	//account for options
-	stringstream collect_options;
-	this->fill_collect_options(&collect_options);
-	string buildoptions = collect_options.str();
-	logger.debug() << "\tbuild options:" << "\t" << buildoptions;
-
-	clerr = clBuildProgram(clprogram, 1, &device, buildoptions.c_str(), 0, 0);
-	if(clerr != CL_SUCCESS) {
-		logger.error() << "... failed with error " << clerr << ", but look at BuildLog and abort then.";
-	}
-
-	logger.trace() << "finished building program";
-
-	size_t logSize;
-	clerr |= clGetProgramBuildInfo(clprogram, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);
-	if(logSize > 1 && logger.beDebug()) { // 0-terminated -> always at least one byte
-		logger.debug() << "Build Log:";
-		char* log = new char[logSize];
-		clerr |= clGetProgramBuildInfo(clprogram, device, CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
-		logger.debug() << log;
-		delete [] log;
-	}
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-
-		// dump program source
-		size_t sourceSize;
-		clerr = clGetProgramInfo(clprogram, CL_PROGRAM_SOURCE, 0, NULL, &sourceSize);
-		if(!clerr && sourceSize > 1 && logger.beDebug()) { // 0-terminated -> always at least one byte
-			char* source = new char[sourceSize];
-			clerr = clGetProgramInfo(clprogram, CL_PROGRAM_SOURCE, sourceSize, source, &sourceSize);
-			if(!clerr) {
-				char const * const FILENAME = "broken_source.cl";
-				ofstream srcFile(FILENAME);
-				srcFile << source;
-				srcFile.close();
-				logger.debug() << "Dumped broken source to " << FILENAME;
-			}
-			delete[] source;
-		}
-
-		exit(HMC_OCLERROR);
-	}
-
 	//Create buffer
 	err = this->fill_buffers();
 	if( err )
 		exit( HMC_OCLERROR );
 
 	//Create kernels
-	err = this->fill_kernels();
-	if( err )
-		exit( HMC_OCLERROR );
+	this->fill_kernels();
 
 	//finish
 	set_init_true();
@@ -381,8 +226,6 @@ hmc_error Opencl::finalize()
 
 		this->clear_kernels();
 
-		if(clReleaseProgram(clprogram) != CL_SUCCESS) exit(HMC_OCLERROR);
-
 		this->clear_buffers();
 
 		if(clReleaseCommandQueue(queue) != CL_SUCCESS) exit(HMC_OCLERROR);
@@ -397,14 +240,14 @@ hmc_error Opencl::clear_kernels()
 {
 	logger.trace() << "Clearing kernels";
 
-	if(get_parameters()->get_perform_heatbath() == 1){
+	if(get_parameters()->get_perform_heatbath() == 1) {
 		if(clReleaseKernel(heatbath_even) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clReleaseKernel(heatbath_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
 
 		if(clReleaseKernel(overrelax_even) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clReleaseKernel(overrelax_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
 	}
-	
+
 	if(clReleaseKernel(plaquette) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseKernel(polyakov) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseKernel(plaquette_reduction) != CL_SUCCESS) exit(HMC_OCLERROR);
@@ -1413,4 +1256,11 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 	timer2->add();
 
 	return HMC_SUCCESS;
+}
+
+TmpClKernel Opencl::createKernel(const char * const kernel_name)
+{
+	stringstream collect_options;
+	this->fill_collect_options(&collect_options);
+	return TmpClKernel(kernel_name, collect_options.str(), context, &device, 1);
 }

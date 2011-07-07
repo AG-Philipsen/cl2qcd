@@ -5,7 +5,7 @@
 //"local" dslash working on a particular link (n,t) of an eoprec field
 //NOTE: each component is multiplied by +KAPPA, so the resulting spinor has to be mutliplied by -1 to obtain the correct dslash!!!
 //the difference to the "normal" dslash is that the coordinates of the neighbors have to be transformed into an eoprec index
-spinor dslash_eoprec_local_0(__global spinorfield_eoprec * in,__global ocl_s_gaugefield * field, int n, int t){
+spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_s_gaugefield * field, int n, int t){
 	spinor out_tmp, plus;
 	int dir, nn, nn_eo;
 	su3vec psi, phi;
@@ -79,18 +79,6 @@ spinor dslash_eoprec_local_0(__global spinorfield_eoprec * in,__global ocl_s_gau
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e3 = su3vec_acc(out_tmp.e3, psi);		
 
-	return out_tmp;
-}
-	
-	
-spinor dslash_eoprec_local_1(__global spinorfield_eoprec * in,__global ocl_s_gaugefield * field, int n, int t){
-	spinor out_tmp, plus;
-	int dir, nn, nn_eo;
-	su3vec psi, phi;
-	Matrixsu3 U;
-	hmc_float kappa_minus = KAPPA;
-	
-	out_tmp = set_spinor_zero();
 	//CP: all actions correspond to the mu = 0 ones
 	///////////////////////////////////
 	// mu = 1
@@ -150,19 +138,7 @@ spinor dslash_eoprec_local_1(__global spinorfield_eoprec * in,__global ocl_s_gau
 	psi = su3vec_times_real(phi, kappa_minus);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e2 = su3vec_dim_i(out_tmp.e2, psi);		
-
-	return out_tmp;
-}
 	
-	
-spinor dslash_eoprec_local_2(__global spinorfield_eoprec * in,__global ocl_s_gaugefield * field, int n, int t){
-	spinor out_tmp, plus;
-	int dir, nn, nn_eo;
-	su3vec psi, phi;
-	Matrixsu3 U;
-	hmc_float kappa_minus = KAPPA;
-	
-	out_tmp = set_spinor_zero();
 	///////////////////////////////////
 	// mu = 2
 	///////////////////////////////////
@@ -221,18 +197,7 @@ spinor dslash_eoprec_local_2(__global spinorfield_eoprec * in,__global ocl_s_gau
 	psi = su3vec_times_real(phi, kappa_minus);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e2 = su3vec_acc(out_tmp.e2, psi);	
-	return out_tmp;
-}
 
-	
-spinor dslash_eoprec_local_3(__global spinorfield_eoprec * in,__global ocl_s_gaugefield * field, int n, int t){
-	spinor out_tmp, plus;
-	int dir, nn, nn_eo;
-	su3vec psi, phi;
-	Matrixsu3 U;
-	hmc_float kappa_minus = KAPPA;
-	
-	out_tmp = set_spinor_zero();
 	///////////////////////////////////
 	// mu = 3
 	///////////////////////////////////
@@ -295,86 +260,3 @@ spinor dslash_eoprec_local_3(__global spinorfield_eoprec * in,__global ocl_s_gau
 	return out_tmp;
 }
 
-__kernel void dslash_eoprec(__global spinorfield_eoprec* in, __global spinorfield_eoprec* out, __global ocl_s_gaugefield* field, int evenodd){
-	int local_size = get_local_size(0);
-	int global_size = get_global_size(0);
-	int id = get_global_id(0);
-	int loc_idx = get_local_id(0);
-	int num_groups = get_num_groups(0);
-	int group_id = get_group_id (0);
-	int n,t;
-	spinor out_tmp;
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {	
-		if(evenodd == ODD) get_odd_site(id_tmp, &n, &t);
-		else get_even_site(id_tmp, &n, &t);
-	
-		out_tmp = dslash_eoprec_local_0(in, field, n, t);
-		out_tmp = spinor_acc(out_tmp, dslash_eoprec_local_1(in, field, n, t));
-		out_tmp = spinor_acc_acc(out_tmp, dslash_eoprec_local_2(in, field, n, t),dslash_eoprec_local_3(in, field, n, t));
-		put_spinor_to_eoprec_field(out_tmp, out, id_tmp);
-
-	}
-}
-
-__kernel void M_sitediagonal(__global spinorfield_eoprec * in, __global spinorfield_eoprec * out){
-	int local_size = get_local_size(0);
-	int global_size = get_global_size(0);
-	int id = get_global_id(0);
-	int loc_idx = get_local_id(0);
-	int num_groups = get_num_groups(0);
-	int group_id = get_group_id (0);
-	spinor out_tmp;
-	spinor plus;
-	
-	hmc_complex twistfactor = {1., MUBAR};
-	hmc_complex twistfactor_minus = {1., MMUBAR};
-	
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {	
-		out_tmp = set_spinor_zero();
-		//get input spinor
-		plus = get_spinor_from_eoprec_field(in, id_tmp);
-		//Diagonalpart:
-		out_tmp = M_diag_local(plus, twistfactor, twistfactor_minus);
-		put_spinor_to_eoprec_field(out_tmp, out, id_tmp);
-	}
-}
-
-__kernel void M_inverse_sitediagonal(__global spinorfield_eoprec * in, __global spinorfield_eoprec * out){
-	int local_size = get_local_size(0);
-	int global_size = get_global_size(0);
-	int id = get_global_id(0);
-	int loc_idx = get_local_id(0);
-	int num_groups = get_num_groups(0);
-	int group_id = get_group_id (0);
-	spinor out_tmp;
-	spinor plus;
-	hmc_complex twistfactor = {1., MUBAR};
-	hmc_complex twistfactor_minus = {1., MMUBAR};
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {	
-		out_tmp = set_spinor_zero();
-		//get input spinor
-		plus = get_spinor_from_eoprec_field(in, id_tmp);
-		//Diagonalpart, here the twisted factor give the inverse matrix:
-		out_tmp = M_diag_local(plus, twistfactor_minus, twistfactor);
-		hmc_float denom = 1./(1. + MUBAR*MUBAR);
-		out_tmp = real_multiply_spinor(out_tmp,denom);
-		put_spinor_to_eoprec_field(out_tmp, out, id_tmp);
-	}
-}
-
-__kernel void gamma5_eoprec(__global spinorfield_eoprec *in, __global spinorfield_eoprec *out){
-	int local_size = get_local_size(0);
-	int global_size = get_global_size(0);
-	int id = get_global_id(0);
-	int loc_idx = get_local_id(0);
-	int num_groups = get_num_groups(0);
-	int group_id = get_group_id (0);
-	spinor out_tmp;
-
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {	
-
-		out_tmp = get_spinor_from_eoprec_field(in, id_tmp); 
-		out_tmp = gamma5_local(out_tmp);
-		put_spinor_to_eoprec_field(out_tmp, out, id_tmp);
-	}
-}
