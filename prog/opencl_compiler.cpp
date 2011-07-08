@@ -175,7 +175,7 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel, const cl_dev
 		delete[] name;
 	}
 	if( clerr != CL_SUCCESS ) {
-		logger.fatal() << "Querying kernel properties failed, aborting...";
+		logger.fatal() << "Querying kernel properties failed: " << clerr;
 		exit(HMC_OCLERROR);
 	}
 
@@ -183,51 +183,76 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel, const cl_dev
 	size_t work_group_size;
 	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &work_group_size, NULL );
 	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "Querying kernel properties failed, aborting...";
-		exit(HMC_OCLERROR);
+		if( clerr == CL_INVALID_VALUE ) {
+			logger.warn() << "Quering maximum work group size is not supported on this device.";
+		} else {
+			logger.fatal() << "Querying kernel properties failed: " << clerr;
+			exit(HMC_OCLERROR);
+		}
+	} else {
+		logger.trace() << "  Maximum work group size: " << work_group_size;
 	}
-	logger.trace() << "  Maximum work group size: " << work_group_size;
 
 	// query the work group size specified at compile time (if any)
 	size_t compile_work_group_size[3];
 	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 3 * sizeof(size_t), compile_work_group_size, NULL );
 	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "Querying kernel properties failed, aborting...";
-		exit(HMC_OCLERROR);
+		if( clerr == CL_INVALID_VALUE ) {
+			logger.warn() << "Quering compile time work group size is not supported on this device.";
+		} else {
+			logger.fatal() << "Querying kernel properties failed: " << clerr;
+			exit(HMC_OCLERROR);
+		}
+	} else {
+		if( compile_work_group_size[0] == 0 )
+			logger.trace() << "  No work group size specified at compile time.";
+		else
+			logger.trace() << "  Compile time work group size: (" << compile_work_group_size[0] << ", " << compile_work_group_size[1] << ", " << compile_work_group_size[2] << ')';
 	}
-	if( compile_work_group_size[0] == 0 )
-		logger.trace() << "  No work group size specified at compile time.";
-	else
-		logger.trace() << "  Compile time work group size: (" << compile_work_group_size[0] << ", " << compile_work_group_size[1] << ", " << compile_work_group_size[2] << ')';
 
 #ifdef CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE // don't fail on OpenCL 1.0
 	// query the preferred WORK_GROUP_SIZE_MULTIPLE (OpenCL 1.1 only)
 	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(size_t), &work_group_size, NULL );
 	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "Querying kernel properties failed, aborting...";
-		exit(HMC_OCLERROR);
+		if( clerr == CL_INVALID_VALUE ) {
+			logger.warn() << "Quering work group size multiple is not supported on this device.";
+		} else {
+			logger.fatal() << "Querying kernel properties failed: " << clerr;
+			exit(HMC_OCLERROR);
+		}
+	} else {
+		logger.trace() << "  Preferred work group size multiple: " << work_group_size;
 	}
-	logger.trace() << "  Preferred work group size multiple: " << work_group_size;
 #endif
 
 	// query the local memory requirements
 	cl_ulong local_mem_size;
 	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_LOCAL_MEM_SIZE, sizeof(cl_ulong), &local_mem_size, NULL );
 	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "Querying kernel properties failed, aborting...";
-		exit(HMC_OCLERROR);
+		if( clerr == CL_INVALID_VALUE ) {
+			logger.warn() << "Quering local memory size is not supported on this device.";
+		} else {
+			logger.fatal() << "Querying kernel properties failed: " << clerr;
+			exit(HMC_OCLERROR);
+		}
+	} else {
+		logger.trace() << "  Local memory size (bytes): " << local_mem_size;
 	}
-	logger.trace() << "  Local memory size (bytes): " << local_mem_size;
 
 #ifdef CL_KERNEL_PRIVATE_MEM_SIZE // don't fail on OpenCL 1.0
 	// query the private memory required by the kernel (OpenCL 1.1 only)
 	cl_ulong private_mem_size;
 	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_PRIVATE_MEM_SIZE, sizeof(cl_ulong), &private_mem_size, NULL );
 	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "Querying kernel properties failed, aborting...";
-		exit(HMC_OCLERROR);
+		if( clerr == CL_INVALID_VALUE ) {
+			logger.warn() << "Quering private memory size is not supported on this device.";
+		} else {
+			logger.fatal() << "Querying kernel properties failed: " << clerr;
+			exit(HMC_OCLERROR);
+		}
+	} else {
+		logger.trace() << "  Private memory size (bytes): " << private_mem_size;
 	}
-	logger.trace() << "  Private memory size (bytes): " << private_mem_size;
 #endif
 
 	// the following only makes sense on AMD gpus ...
