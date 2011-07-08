@@ -8,7 +8,7 @@
 
 #ifdef _USEDOUBLEPREC_
 #pragma OPENCL EXTENSION cl_amd_fp64 : enable
-//#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
 #endif
 
 #include "globaldefs.h" //NDIM, NSPIN, NC
