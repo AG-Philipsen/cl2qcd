@@ -19,7 +19,7 @@ hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 	*collect_options << " -D_USEDOUBLEPREC_";
 
         if( device_double_extension.empty() ) {
-          cout<<"Warning: Undefined extension for use of double."<<endl;
+          logger.warn() << "Warning: Undefined extension for use of double.";
         } else {
           *collect_options << " -D_DEVICE_DOUBLE_EXTENSION_"<<device_double_extension<<"_";
         }
