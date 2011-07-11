@@ -264,6 +264,7 @@ public:
 	/** ID of the OpenCL device wrapped by this object */
 	cl_device_id device;
 	cl_device_type device_type;
+	string device_double_extension;
 	int isinit;
 	cl_context context;
 	cl_kernel heatbath_odd;

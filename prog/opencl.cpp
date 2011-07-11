@@ -17,6 +17,13 @@ hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 #endif
 #ifdef _USEDOUBLEPREC_
 	*collect_options << " -D_USEDOUBLEPREC_";
+
+        if( device_double_extension.empty() ) {
+          cout<<"Warning: Undefined extension for use of double."<<endl;
+        } else {
+          *collect_options << " -D_DEVICE_DOUBLE_EXTENSION_"<<device_double_extension<<"_";
+        }
+	
 #endif
 #ifdef _USEGPU_
 	*collect_options << " -D_USEGPU_";
@@ -182,6 +189,10 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 	logger.info() << "\t\tCL_DEVICE_VERSION: " << info;
 	if(clGetDeviceInfo(device, CL_DEVICE_EXTENSIONS, 512 * sizeof(char), info, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);
 	logger.info() << "\t\tCL_DEVICE_EXTENSIONS: " << info;
+
+        if( strstr( info, "cl_amd_fp64" ) != NULL ) device_double_extension="AMD";
+        if( strstr( info, "cl_khr_fp64" ) != NULL ) device_double_extension="KHR";
+
 
 	// figure out the number of "cores"
 	if(clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units, NULL) != CL_SUCCESS) exit(HMC_OCLERROR);

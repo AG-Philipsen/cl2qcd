@@ -7,9 +7,14 @@
 #pragma OPENCL EXTENSION cl_amd_printf : enable
 
 #ifdef _USEDOUBLEPREC_
+#ifdef _DEVICE_DOUBLE_EXTENSION_AMD_
 #pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#endif
+#ifdef _DEVICE_DOUBLE_EXTENSION_KHR_
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 #endif
+#endif
+
 
 #include "globaldefs.h" //NDIM, NSPIN, NC
 #include "types.h"
