@@ -343,7 +343,7 @@ Matrixsu3 local_plaquette(__global ocl_s_gaugefield * field, const int n, const 
                pos.y = get_neighbor(n, mu);
         }
         if(nu==0) {
-                pos.z = (t+1)&NTIME;
+                pos.z = (t+1)%NTIME;
                 pos.w = n;
         } else {
                pos.z = t;
