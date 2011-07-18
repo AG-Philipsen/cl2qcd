@@ -8,23 +8,25 @@ int main(int argc, char* argv[])
 		return HMC_FILEERROR;
 	}
 
-	char* progname = argv[0];
-	print_hello(progname);
-
 	char* inputfile = argv[1];
 	inputparameters parameters;
 	parameters.readfile(inputfile);
-	print_info(&parameters,&cout);
+	parameters.print_info_tkkappa(argv[0]);
 
-	//init file to store gauge observables, print initial information
+	//name of file to store gauge observables
 	stringstream gaugeout_name;
 	gaugeout_name << "gaugeobservables_beta" << parameters.get_beta();
-	fstream gaugeout;
-	
-	gaugeout.open(gaugeout_name.str().c_str(), std::ios::out | std::ios::app);
-	if(!gaugeout.is_open()) exit(HMC_FILEERROR);
-	print_info(&parameters,&gaugeout);
-	gaugeout.close();
+
+
+	fstream logfile;	
+	logfile.open("tk_kappa.log", std::ios::out | std::ios::app);
+	if(logfile.is_open()) {
+	  parameters.print_info_tkkappa(argv[0],&logfile);
+	  logfile.close();
+	} else {
+	  logger.warn() << "Could not open tk_kappa.log";
+	  exit(HMC_FILEERROR);
+	}
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Initialization

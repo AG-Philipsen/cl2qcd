@@ -1,3 +1,5 @@
+#ifndef _LOGGERHPP_
+#define _LOGGERHPP_
 /**
  * @file
  *
@@ -11,3 +13,5 @@
  */
 extern einhard::Logger<einhard::ALL> logger;
 
+
+#endif //_LOGGERHPP_

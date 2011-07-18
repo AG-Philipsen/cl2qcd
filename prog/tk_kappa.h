@@ -50,43 +50,4 @@ usetimer copytime;
 hmc_float plaq, splaq, tplaq;
 hmc_complex pol;
 
-void print_hello(char* name)
-{
-	std::cout << "This is heatbath program, " << name << endl;
-	return;
-}
-
-void print_info(inputparameters* params, ostream* os)
-{
-	*os << "## **********************************************************\n";
-	*os << "## Compile time parameters:\n";
-	*os << "## NSPACE:  " << NSPACE << '\n';
-	*os << "## NTIME:   " << NTIME << '\n';
-	*os << "## NDIM:    " << NDIM << '\n';
-	*os << "## NCOLOR:  " << NC << '\n';
-	*os << "## NSPIN:   " << NSPIN << '\n';
-	*os << "##" << '\n';
-	*os << "## Run time parameters:\n";
-	*os << "## beta  = " << params->get_beta() << '\n';
-	*os << "## prec  = " << params->get_prec() << '\n';
-	*os << "## thermsteps     = " << params->get_thermalizationsteps() << '\n';
-	*os << "## heatbathsteps  = " << params->get_heatbathsteps() << '\n';
-	*os << "## overrelaxsteps = " << params->get_overrelaxsteps() << '\n';
-	*os << "##" << '\n';
-	if (params->get_startcondition() == START_FROM_SOURCE) {
-		*os << "## sourcefile = ";
-		string sf=params->sourcefile;
-		*os << sf << '\n';
-	}
-	if (params->get_startcondition() == COLD_START) {
-		*os << "## cold start\n";
-	}
-	if (params->get_startcondition() == HOT_START) {
-		*os << "## hot start\n";
-	}
-	*os << "## **********************************************************\n";
-	*os << std::endl;
-	return;
-}
-
 #endif /* _TKKAPPAH_ */

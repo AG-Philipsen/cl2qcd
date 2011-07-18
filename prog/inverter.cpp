@@ -4,17 +4,23 @@ int main(int argc, char* argv[])
 {
 
 	if(argc != 2) {
-		cerr << "need file name for input parameters" << endl;
-		return HMC_FILEERROR;
+	  logger.fatal() << "need file name for input parameters";
+	  return HMC_FILEERROR;
 	}
-
-	char* progname = argv[0];
-	print_hello(progname);
 
 	char* inputfile = argv[1];
 	inputparameters parameters;
 	parameters.readfile(inputfile);
-	print_info(&parameters, &cout);
+	parameters.print_info_inverter(argv[0]);
+
+	ofstream ofile;
+	ofile.open("inverter.log");
+	if(ofile.is_open()) {
+	  parameters.print_info_inverter(argv[0],&ofile);
+	  ofile.close();
+	} else {
+	  logger.warn() << "Could not log file for inverter.";
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Initialization
@@ -40,17 +46,17 @@ int main(int argc, char* argv[])
 		logger.fatal() << "Number of devices too big, aborting..." ;
 		return HMC_STDERR;
 	}
-	cerr << "init gaugefield" << endl;
+	logger.trace() << "init gaugefield" ;
 	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters, &inittime);
 	//cerr << "print initial gaugeobservables..." << endl;
 	//  gaugefield.print_gaugeobservables(&polytime, &plaqtime);
-	cerr << "copy gaugefield" << endl;
+	logger.trace() << "copy gaugefield" ;
 	gaugefield.copy_gaugefield_to_devices(&copytimer);
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// inverter
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	cout << "perform inversion on device.." << endl;
+	logger.info() << "perform inversion on device.." ;
 
 	if(parameters.get_num_dev() == 1) {
 		gaugefield.perform_inversion_pointsource_ps_corr_devices(&copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &dslashtimer, &Mdiagtimer, &solvertimer);
@@ -63,7 +69,7 @@ int main(int argc, char* argv[])
 		/** @todo improve ls, gs, here*/
 		gaugefield.get_devices_fermions()[1].ps_correlator_device(1, 1, &latimer);
 	}
-	cout << "inversion done" << endl;
+	logger.trace() << "inversion done" ;
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////

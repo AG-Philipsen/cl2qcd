@@ -8,23 +8,25 @@ int main(int argc, char* argv[])
 		return HMC_FILEERROR;
 	}
 
-	char* progname = argv[0];
-	print_hello(progname);
-
 	char* inputfile = argv[1];
 	inputparameters parameters;
 	parameters.readfile(inputfile);
-	print_info(&parameters, &cout); /// @todo pipe through logger
+	parameters.print_info_heatbath(argv[0]);
 
-	//init file to store gauge observables, print initial information
+	//name of file to store gauge observables
 	stringstream gaugeout_name;
 	gaugeout_name << "gaugeobservables_beta" << parameters.get_beta();
-	fstream gaugeout;
 
-	gaugeout.open(gaugeout_name.str().c_str(), std::ios::out | std::ios::app);
-	if(!gaugeout.is_open()) exit(HMC_FILEERROR);
-	print_info(&parameters, &gaugeout);
-	gaugeout.close();
+
+	fstream logfile;
+	logfile.open("heatbath.log", std::ios::out | std::ios::app);
+	if(logfile.is_open()) {
+	  parameters.print_info_heatbath(argv[0], &logfile);
+	  logfile.close();
+	} else {
+	  logger.warn()<<"Could not open heatbath.log";
+	}
+
 
 	if(parameters.get_perform_heatbath() != 1){
 		logger.fatal() << "perform_heatbath is set to a value other than 1. Aborting...";
@@ -95,7 +97,7 @@ int main(int argc, char* argv[])
 		gaugefield.heatbath(&updatetime);
 		for(int j = 0; j < overrelaxsteps; j++) gaugefield.overrelax(&overrelaxtime);
 		if( ( (i + 1) % writefreq ) == 0 ) {
-		  //gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str());
+		  gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str());
 		}
 		if( parameters.get_saveconfigs() == TRUE && ( (i + 1) % savefreq ) == 0 ) {
 			gaugefield.sync_gaugefield(&copytime);
