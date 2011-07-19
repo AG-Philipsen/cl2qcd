@@ -16,23 +16,6 @@
 #include "host_operations_gaugemomentum.h"
 #include <cmath>
 
-
-
-/**
- * Set all matrices in the gaugefield to unit matrices, representing a cold state.
- *
- * @param[out] field Pointer to a field of SU3 matrices
- * @return Error code as defined in hmcerrs.h
- */
-hmc_error set_gaugefield_cold(hmc_gaugefield * field);
-/**
- * Set all matrices in the gaugefield gausian distributed random matrices, representing a hot state.
- *
- * @param[out] field Pointer to a field of SU3 matrices
- * @return Error code as defined in hmcerrs.h
- */
-hmc_error set_gaugefield_hot(hmc_gaugefield * field);
-
 /**
  * Create the gaugefield from an array of floats as used by by ILDG.
  *
@@ -42,6 +25,7 @@ hmc_error set_gaugefield_hot(hmc_gaugefield * field);
  * @param[in] gaugefield_tmp Field in IDLG format
  * @param[in] check Size of the ILDG field.
  * @return Error code as defined in hmcerrs.h
+ * @todo Replace hmc_gaugefield type by s_gaugefield type (LZ)
  */
 hmc_error copy_gaugefield_from_ildg_format(hmc_gaugefield * gaugefield, hmc_float * gaugefield_tmp, int check);
 /**
@@ -50,6 +34,7 @@ hmc_error copy_gaugefield_from_ildg_format(hmc_gaugefield * gaugefield, hmc_floa
  * @param[out] dest The location to store the ILDG representation to
  * @param[in] source The gaugefield in the internal representation
  * @return Error code as defined in hmcerrs.h
+ * @todo Replace hmc_gaugefield type by s_gaugefield type (LZ) 
  */
 hmc_error copy_gaugefield_to_ildg_format(ildg_gaugefield * dest, hmc_gaugefield * source);
 /**
@@ -69,6 +54,14 @@ hmc_error copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, s_gaugefield* ga
  * @return Error code as defined in hmcerrs.h
  */
 hmc_error copy_from_ocl_format(s_gaugefield* gaugefield, ocl_s_gaugefield* host_gaugefield);
+
+
+/* *****************************************************************************************************
+LZ: Note that the following section provides functions that work on the old hmc_gaugefield format.
+    For the new format (s_gaugefield) they can still be used in combination with the corresponding copy to/from
+    functions that exist in the Gaugefield class.
+****************************************************************************************************/
+
 
 /**
  * Retrieve an SU3 matrix form the gaugefield

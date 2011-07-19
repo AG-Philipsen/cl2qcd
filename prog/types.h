@@ -145,7 +145,7 @@ typedef hmc_float hmc_algebraelement [NC*NC-1];
 */
 typedef struct {
   hmc_float e0;
- 	hmc_float e1;
+  hmc_float e1;
   hmc_float e2;
   hmc_float e3;
   hmc_float e4;

@@ -50,15 +50,14 @@ hmc_error Gaugefield::init_gaugefield(usetimer* timer)
 		timer->reset();
 		//hmc_gaugefield for filetransfer, initialize here, because otherwise it is not needed
 		hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
-		set_gf(gftmp);
 		//tmp gauge field
 		hmc_float * gaugefield_tmp;
 		gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * NTIME * VOLSPACE);
 		err = parameters_source.readsourcefile(&(get_parameters()->sourcefile)[0], get_parameters()->get_prec(), &gaugefield_tmp);
-		err = copy_gaugefield_from_ildg_format(get_gf(), gaugefield_tmp, parameters_source.num_entries_source);
-		err = copy_gaugefield_to_s_gaugefield (get_sgf(), get_gf());
+		err = copy_gaugefield_from_ildg_format(gftmp, gaugefield_tmp, parameters_source.num_entries_source);
+		err = copy_gaugefield_to_s_gaugefield (get_sgf(), gftmp);
 		free(gaugefield_tmp);
-		free(get_gf());
+		free(gftmp);
 		timer->add();
 		if (err == 0) {
 			print_info_source(&parameters_source);
@@ -230,17 +229,15 @@ hmc_error Gaugefield::save(int number)
 	string outputfile = outfilename.str();
 
 	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
-	set_gf(gftmp);
-	
-	hmc_error err = copy_s_gaugefield_to_gaugefield(get_gf(), get_sgf());
-	copy_gaugefield_to_ildg_format(gaugefield_buf, get_gf());
+	hmc_error err = copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
+	copy_gaugefield_to_ildg_format(gaugefield_buf, gftmp);
 
 	hmc_float plaq = plaquette();
 
 	write_gaugefield ( gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NTIME, get_parameters()->get_prec(), number, plaq, get_parameters()->get_beta(), get_parameters()->get_kappa(), get_parameters()->get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
 
 	free(gaugefield_buf);
-	free(get_gf());
+	free(gftmp);
 
 	return HMC_SUCCESS;
 }
@@ -368,17 +365,21 @@ hmc_float Gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 	  }
 	}
 */
-
-
-
 	//CP: old method, this should be replaced!!
+	//LZ: for now it works because I have inserted the copy_to/from routines...
+	//LZ: eventually, someone should implement the "structured operations" for the host
 	
+
+ 	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
+
+
 for(int t = 0; t < NTIME; t++) {
 		for(int n = 0; n < VOLSPACE; n++) {
 			for(int mu = 0; mu < NDIM; mu++) {
 				for(int nu = 0; nu < mu; nu++) {
 					hmc_su3matrix prod;
-					local_plaquette(get_gf(), &prod, n, t, mu, nu );
+					local_plaquette(gftmp, &prod, n, t, mu, nu );
 					hmc_float tmpfloat = trace_su3matrix(&prod).re;
 					plaq += tmpfloat;
 					if(mu == 0 || nu == 0) {
@@ -391,6 +392,8 @@ for(int t = 0; t < NTIME; t++) {
 		}
 	}
 	
+ free(gftmp);
+
 	*tplaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1));
 	*splaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
 	return plaq * 2.0 / static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) * NC);
@@ -399,15 +402,22 @@ for(int t = 0; t < NTIME; t++) {
 
 hmc_complex Gaugefield::polyakov()
 {
+
+ 	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
+
 	hmc_complex res;
 	res.re = 0;
 	res.im = 0;
 	for(int n = 0; n < VOLSPACE; n++) {
 		hmc_su3matrix prod;
-		local_polyakov(get_gf(), &prod, n);
+		local_polyakov(gftmp, &prod, n);
 		hmc_complex tmpcomplex = trace_su3matrix(&prod);
 		complexaccumulate(&res, &tmpcomplex);
 	}
+
+	free(gftmp);
+
 	res.re /= static_cast<hmc_float>(NC * VOLSPACE);
 	res.im /= static_cast<hmc_float>(NC * VOLSPACE);
 	return res;
@@ -416,6 +426,10 @@ hmc_complex Gaugefield::polyakov()
 
 hmc_complex Gaugefield::spatial_polyakov(int dir)
 {
+
+ 	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
+
 	//assuming dir=1,2, or 3
 	hmc_complex res;
 	res.re = 0;
@@ -435,7 +449,7 @@ hmc_complex Gaugefield::spatial_polyakov(int dir)
 					int nnext = (next % (NDIM - 1)) + 1;
 					coord[nnext] = x2;
 					int pos = get_nspace(coord);
-					get_su3matrix(&tmp, get_gf(), pos, t, dir);
+					get_su3matrix(&tmp, gftmp, pos, t, dir);
 					accumulate_su3matrix_prod(&prod, &tmp);
 				}
 				hmc_complex tmpcomplex = trace_su3matrix(&prod);
@@ -443,6 +457,9 @@ hmc_complex Gaugefield::spatial_polyakov(int dir)
 			}
 		}
 	}
+
+	free(gftmp);
+
 	res.re /= static_cast<hmc_float>(NC * NSPACE * NSPACE * NTIME);
 	res.im /= static_cast<hmc_float>(NC * NSPACE * NSPACE * NTIME);
 	return res;
@@ -495,17 +512,6 @@ hmc_error Gaugefield::free_devices()
 		delete [] get_devices();
 	return HMC_SUCCESS;
 	return HMC_SUCCESS;
-}
-
-hmc_error Gaugefield::set_gf (hmc_gaugefield * gf_val)
-{
-	gf = gf_val;
-	return HMC_SUCCESS;
-}
-
-hmc_gaugefield * Gaugefield::get_gf ()
-{
-	return  gf;
 }
 
 hmc_error Gaugefield::set_devices (Opencl * devices_val)

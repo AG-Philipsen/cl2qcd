@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
 	// Heatbath
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	cout<< "Start heatbath" <<endl;
+	logger.trace() << "Start heatbath" ;
 
 	int ntherm = parameters.get_thermalizationsteps();
 	if(ntherm > 0) gaugefield.heatbath(ntherm, &updatetime);
@@ -98,6 +98,8 @@ int main(int argc, char* argv[])
 		for(int j = 0; j < overrelaxsteps; j++) gaugefield.overrelax(&overrelaxtime);
 		if( ( (i + 1) % writefreq ) == 0 ) {
 		  gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str());
+		  //		  gaugefield.sync_gaugefield(&copytime);
+		  //		  cout<<gaugefield.plaquette()<<" "<<gaugefield.polyakov().re<<endl;
 		}
 		if( parameters.get_saveconfigs() == TRUE && ( (i + 1) % savefreq ) == 0 ) {
 			gaugefield.sync_gaugefield(&copytime);

@@ -198,6 +198,7 @@ public:
 	 * @param[out] tplaq timelike plaquette
 	 * @param[out] splaq spatial plaquette
 	 * @return plaquette
+	 * @todo we still need to transform to the old hmc-format, we should implement new operations for host code
 	 */
 	hmc_float plaquette(hmc_float* tplaq, hmc_float* splaq);
 	/**
@@ -219,17 +220,6 @@ public:
 
 
 	//access to private members
-	/**
-	 * Returns pointer to gaugefield
-	 * @return The gaugefield
-	 */
-	hmc_gaugefield * get_gf ();
-	/**
-	 * Sets private member gaugefield
-	 * @return Error code as defined in hmcerrs.h
-	 */
-	hmc_error set_gf (hmc_gaugefield * gf_val);
-	
 	/**
 	 * Returns pointer to gaugefield u (structures)
 	 * @return The gaugefield
@@ -306,7 +296,6 @@ public:
 private:
 	Opencl * devices;
 	inputparameters* parameters;
-      	hmc_gaugefield * gf;
 	s_gaugefield * sgf;
 	
 	int num_ocl_devices;
