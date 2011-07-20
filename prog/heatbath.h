@@ -22,8 +22,8 @@
 #include "host_random.h"
 #include "host_update_heatbath.h"
 #include "host_use_timer.h"
-#include "gaugefield.h"
-#include "opencl.h"
+#include "gaugefield_heatbath.h"
+#include "opencl_heatbath.h"
 #include "logger.hpp"
 
 #ifdef __APPLE__

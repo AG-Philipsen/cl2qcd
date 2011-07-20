@@ -63,5 +63,5 @@ hmc_error Gaugefield_k::kappa_clover_gpu (usetimer* timer){
 }
 
 Opencl_k * Gaugefield_k::get_devices_k (){
-  return  (Opencl_k*)get_devices();
+  return  (Opencl_k*)get_devices_heatbath();
 }

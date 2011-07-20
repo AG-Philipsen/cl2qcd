@@ -24,6 +24,7 @@
 #include "host_update_heatbath.h"
 #include "host_use_timer.h"
 #include "gaugefield.h"
+#include "gaugefield_heatbath.h"
 #include "gaugefield_k.h"
 #include "logger.hpp"
 

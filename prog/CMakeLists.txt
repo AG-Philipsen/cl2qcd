@@ -187,10 +187,12 @@ add_executable( heatbath
 	host_operations_su3matrix.cpp
 	host_operations_matrix.cpp
 	gaugefield.cpp
+	gaugefield_heatbath.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
 	host_random.cpp
 	opencl.cpp
+	opencl_heatbath.cpp
 	opencl_compiler.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
@@ -213,12 +215,14 @@ add_executable( tk_kappa
 	host_operations_matrix.cpp
 	gaugefield.cpp
 	gaugefield_k.cpp
+	gaugefield_heatbath.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
 	host_random.cpp
 	opencl.cpp
 	opencl_compiler.cpp
 	opencl_k.cpp
+	opencl_heatbath.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
 	logger.cpp

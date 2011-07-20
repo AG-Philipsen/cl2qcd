@@ -85,48 +85,12 @@ public:
 	 */
 	hmc_error copy_gaugefield_to_devices(usetimer* timer);
 	/**
-	 * Copy random array to devices (currently: to device).
-	 * @param[in,out] timer copy-time
-	 */
-	hmc_error copy_rndarray_to_devices(hmc_rndarray host_rndarray,  usetimer* timer);
-	/**
-	 * Copy random array from devices (currently: from device).
-	 * @param[in,out] timer copy-time
-	 */
-	hmc_error copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer* timer);
-	/**
 	 * Copy gaugefield from devices (currently: from device) to host.
 	 * @param[in,out] timer copy-time
 	 */
 	hmc_error sync_gaugefield(usetimer* timer);
 
-	//calculations on device
-	/**
-	 * Perform a number of heatbath and (afterwards) overrelaxation steps.
-	 * @param[in] nheat number of heatbath steps
-	 * @param[in] nover number of overrelaxation steps
-	 * @param[in,out] timer_heat time for heatbath steps
-	 * @param[in,out] timer_over time for overrelaxation steps
-	 */
-	hmc_error heatbath(const int nheat, const int nover, usetimer * const timer_heat, usetimer * const timer_over);
-	/**
-	 * Perform a number of heatbath steps.
-	 * @param[in] nheat number of heatbath steps
-	 * @param[in,out] timer_heat time for heatbath steps
-	 */
-	hmc_error heatbath(const int nheat, usetimer * const timer_heat);
-	/**
-	 * Perform one heatbath step.
-	 * @param[in,out] timer time for heatbath step
-	 */
-	hmc_error heatbath(usetimer * const timer);
-	/**
-	 * Perform one overrelaxation step.
-	 * @param[in,out] timer time for overrelaxation step
-	 */
-	hmc_error overrelax(usetimer * const timer);
 
-	
 	//input/output, print, save functions!!
 	/**
 	 * Save gaugefield to file.

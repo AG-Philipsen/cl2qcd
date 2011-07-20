@@ -4,7 +4,7 @@
 #ifndef _MYOPENCLKH_
 #define _MYOPENCLKH_
 
-#include "opencl.h"
+#include "opencl_heatbath.h"
 
 /**
  * An OpenCL device
@@ -12,7 +12,7 @@
  * This class wraps all operations on a device. Operations are always specific, e.g. each kernel and copy operation
  * has it's own wrapper function.
  */
-class Opencl_k : public Opencl {
+class Opencl_k : public Opencl_heatbath {
 
 public:
 	/**

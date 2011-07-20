@@ -5,7 +5,7 @@ using namespace std;
 hmc_error Opencl_k::fill_collect_options(stringstream* collect_options)
 {
 
-	hmc_error err = Opencl::fill_collect_options(collect_options);
+	hmc_error err = Opencl_heatbath::fill_collect_options(collect_options);
 	if(err != HMC_SUCCESS) {
 		cout << "... failed, aborting." << endl;
 		exit(HMC_OCLERROR);
@@ -15,7 +15,7 @@ hmc_error Opencl_k::fill_collect_options(stringstream* collect_options)
 
 hmc_error Opencl_k::fill_buffers()
 {
-	hmc_error err = Opencl::fill_buffers();
+	hmc_error err = Opencl_heatbath::fill_buffers();
 
 	if(err != HMC_SUCCESS) {
 		cout << "... failed, aborting." << endl;
@@ -43,7 +43,7 @@ hmc_error Opencl_k::fill_buffers()
 
 void Opencl_k::fill_kernels()
 {
-	Opencl::fill_kernels();
+	Opencl_heatbath::fill_kernels();
 
 	cout << "Create TK kappa kernels..." << endl;
 	kappa_karsch_gpu = createKernel("kappa_karsch_gpu") << basic_opencl_code << "opencl_tk_kappa.cl";

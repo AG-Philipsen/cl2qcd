@@ -28,9 +28,6 @@ int main(int argc, char* argv[])
 	}
 
 
-	if(parameters.get_perform_heatbath() != 1){
-		logger.fatal() << "perform_heatbath is set to a value other than 1. Aborting...";
-	}
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Initialization
@@ -38,7 +35,7 @@ int main(int argc, char* argv[])
 
 	sourcefileparameters parameters_source;
 
-	Gaugefield gaugefield;
+	Gaugefield_heatbath gaugefield;
 	hmc_rndarray rndarray;
 	cl_device_type devicetypes[parameters.get_num_dev()];
 

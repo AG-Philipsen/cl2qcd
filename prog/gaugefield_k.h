@@ -5,10 +5,10 @@
 #ifndef _GAUGEFIELDKH_
 #define _GAUGEFIELDKH_
 
-#include "gaugefield.h"
+#include "gaugefield_heatbath.h"
 #include "opencl_k.h"
 
-class Gaugefield_k : public Gaugefield {
+class Gaugefield_k : public Gaugefield_heatbath  {
 
   public:
     

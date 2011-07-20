@@ -4,8 +4,8 @@ int main(int argc, char* argv[])
 {
 
 	if(argc != 2) {
-		cerr << "need file name for input parameters" << endl;
-		return HMC_FILEERROR;
+	  logger.warn() << "need file name for input parameters" ;
+	  return HMC_FILEERROR;
 	}
 
 	char* inputfile = argv[1];
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 // 	q_plaq_out.open ("Q_plaquette.dat");
 // 	q_plaq_out.precision(15);
 
-	cout<< "Start heatbath and measurement of TK kappa" <<endl;
+	logger.trace() << "Start heatbath and measurement of TK kappa" ;
 	
 	usetimer timer_karsch;
 	usetimer timer_clover;

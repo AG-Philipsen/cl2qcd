@@ -174,23 +174,6 @@ hmc_error Gaugefield::sync_gaugefield(usetimer* timer)
 	return err;
 }
 
-hmc_error Gaugefield::copy_rndarray_to_devices(hmc_rndarray host_rndarray,  usetimer* timer)
-{
-	//LZ: so far, we only use !!! 1 !!! device
-	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices()[0].copy_rndarray_to_device(host_rndarray, timer);
-	return err;
-}
-
-hmc_error Gaugefield::copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer* timer)
-{
-	//LZ: so far, we only use !!! 1 !!! device
-	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices()[0].copy_rndarray_from_device(rndarray, timer);
-	return err;
-}
-
-
 void Gaugefield::print_info_source(sourcefileparameters* params)
 {
 	logger.info() << "**********************************************************";
@@ -229,7 +212,7 @@ hmc_error Gaugefield::save(int number)
 	string outputfile = outfilename.str();
 
 	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
-	hmc_error err = copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
+	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
 	copy_gaugefield_to_ildg_format(gaugefield_buf, gftmp);
 
 	hmc_float plaq = plaquette();
@@ -465,38 +448,6 @@ hmc_complex Gaugefield::spatial_polyakov(int dir)
 	return res;
 }
 
-
-hmc_error Gaugefield::heatbath(usetimer * const timer)
-{
-	//LZ: so far, we only use !!! 1 !!! device
-	// this function needs to be generalised to several devices and definition of subsets...
-        hmc_error err = get_devices()[0].run_heatbath(get_parameters()->get_beta(), timer);
-	return err;
-}
-
-hmc_error Gaugefield::overrelax(usetimer * const timer)
-{
-	//LZ: so far, we only use !!! 1 !!! device
-	// this function needs to be generalised to several devices and definition of subsets...
-
-	hmc_error err = get_devices()[0].run_overrelax(get_parameters()->get_beta(), timer);
-	return err;
-}
-
-hmc_error Gaugefield::heatbath(const int nheat, const int nover, usetimer * const timer_heat, usetimer * const timer_over)
-{
-	hmc_error err = HMC_SUCCESS;
-	for(int i = 0; i < nheat; i++) err |= heatbath(timer_heat);
-	for(int i = 0; i < nover; i++) err |= overrelax(timer_over);
-	return err;
-}
-
-hmc_error Gaugefield::heatbath(const int nheat, usetimer * const timer_heat)
-{
-	hmc_error err = HMC_SUCCESS;
-	for(int i = 0; i < nheat; i++) err |= heatbath(timer_heat);
-	return err;
-}
 
 hmc_error Gaugefield::finalize()
 {

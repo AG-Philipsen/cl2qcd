@@ -84,28 +84,6 @@ public:
 //  hmc_error copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
 
 	/**
-	 * Copy the RNG state to the appropriate OpenCL buffer.
-	 *
-	 * @param host_rndarray The RNG state to copy
-	 * @param timer The timer to use to measure the copying time
-	 * @return Error code as defined in hmcerrs.h:
-	 *         @li HMC_OCLERROR if OpenCL operations fail
-	 *         @li HMC_SUCCESS otherwise
-	 */
-	hmc_error copy_rndarray_to_device(hmc_rndarray host_rndarray,  usetimer* timer);
-
-	/**
-	 * Copy the RNG state from the OpenCL buffer.
-	 *
-	 * @param[out] rndarray The RNG copy target
-	 * @param[in,out] timer The timer to use to measure the copying time
-	 * @return Error code as defined in hmcerrs.h:
-	 *         @li HMC_OCLERROR if OpenCL operations fail
-	 *         @li HMC_SUCCESS otherwise
-	 */
-	hmc_error copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer);
-
-	/**
 	 * Copy the gaugefield from the device into the given memory location.
 	 *
 	 * @param host_gaugefield Storage location for the gaugefield
@@ -118,17 +96,6 @@ public:
 //  hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
 
 
-	////////////////////////////
-	//Calculations, calls to kernels
-	/**
-	 * Perform one heatbath step.
-	 */
-	hmc_error run_heatbath(const hmc_float beta, usetimer * const timer);
-
-	/**
-	 * Perform one overrelaxation step.
-	 */
-	hmc_error run_overrelax(const hmc_float beta, usetimer * const timer);
 
 	/**
 	 * Calculate plaquette and polyakov.
@@ -247,7 +214,6 @@ public:
 	//LZ what follows should eventually be private
 	//heatbath variables
 	cl_mem clmem_gaugefield;
-	cl_mem clmem_rndarray;
 	cl_mem clmem_plaq;
 	cl_mem clmem_plaq_buf_glob;
 	cl_mem clmem_splaq_buf_glob;
@@ -267,10 +233,6 @@ public:
 	string device_double_extension;
 	int isinit;
 	cl_context context;
-	cl_kernel heatbath_odd;
-	cl_kernel heatbath_even;
-	cl_kernel overrelax_odd;
-	cl_kernel overrelax_even;
 	cl_kernel plaquette;
 	cl_kernel plaquette_reduction;
 	cl_kernel polyakov;

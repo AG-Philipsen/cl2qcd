@@ -31,7 +31,6 @@ hmc_error inputparameters::set_defaults()
 	sourcefilenumber = "00000";
 	fermact = WILSON;
 	num_dev = 1;
-	perform_heatbath = 1;
 	return HMC_SUCCESS;
 }
 
@@ -102,7 +101,6 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("integrationsteps1") != std::string::npos) val_assign(&integrationsteps1, line);
 		if(line.find("integrationsteps2") != std::string::npos) val_assign(&integrationsteps2, line);
 		if(line.find("num_dev") != std::string::npos) val_assign(&num_dev, line);
-		if(line.find("perform_heatbath") != std::string::npos) val_assign(&perform_heatbath, line);
 
 		if(line.find("fermaction") != std::string::npos) fermact_assign(&fermact, line);
 		if(line.find("fermionaction") != std::string::npos) fermact_assign(&fermact, line);
@@ -458,11 +456,6 @@ int inputparameters::get_startcondition()
 int inputparameters::get_fermact()
 {
 	return fermact;
-}
-
-int inputparameters::get_perform_heatbath()
-{
-	return perform_heatbath;
 }
 
 int inputparameters::get_saveconfigs()

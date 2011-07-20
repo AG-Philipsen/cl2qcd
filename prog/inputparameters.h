@@ -81,51 +81,59 @@ public:
 	void display_sourcefile();
 	void display_sourcefilenumber();
 	int get_num_dev();
-	int get_perform_heatbath();
+
 	/**
 	 * Print info for heatbath executable using logger.
 	 * @param progname Name of the executable.
 	 */
 	void print_info_heatbath(char* progname);
+
 	/**
 	 * Print info for heatbath executable using output stream.
 	 * @param progname Name of the executable.
 	 * @param os Pointer to wanted output stream.
 	 */
 	void print_info_heatbath(char* progname, ostream* os);
+
 	/**
 	 * Print info for inverter executable using logger.
 	 * @param progname Name of the executable.
 	 */
 	void print_info_inverter(char* progname);
+
 	/**
 	 * Print info for inverter executable using output stream.
 	 * @param progname Name of the executable.
 	 * @param os Pointer to wanted output stream.
 	 */
 	void print_info_inverter(char* progname, ostream* os);
+
 	/**
 	 * Print info for tk_kappa executable using logger.
 	 * @param progname Name of the executable.
 	 */
 	void print_info_tkkappa(char* progname);
+
 	/**
 	 * Print info for tk_kappa executable using output stream.
 	 * @param progname Name of the executable.
 	 * @param os Pointer to wanted output stream.
 	 */
 	void print_info_tkkappa(char* progname, ostream* os);
+
 	/**
 	 * Print info for hmc executable using logger.
 	 * @param progname Name of the executable.
 	 */
 	void print_info_hmc(char* progname);
+
 	/**
 	 * Print info for hmc executable using output stream.
 	 * @param progname Name of the executable.
 	 * @param os Pointer to wanted output stream.
 	 */
 	void print_info_hmc(char* progname, ostream* os);
+
 	//CP
 	//this is out of laziness
 	std::string sourcefile;
@@ -143,7 +151,6 @@ private:
 	hmc_float chem_pot_im;
 	hmc_float tau;
 	int num_dev;
-	int perform_heatbath;
 	int cgmax;
 	int use_eo;
 	int fermact;
