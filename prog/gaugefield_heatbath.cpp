@@ -12,6 +12,7 @@ hmc_error Gaugefield_heatbath::init_devices(cl_device_type* devicetypes, usetime
 
 	if(get_num_ocl_devices() > 0) {
 		Opencl_heatbath* dev_tmp = new Opencl_heatbath[get_num_ocl_devices()];
+		alloc_devicetypes();
 		set_devices(dev_tmp);
 	}
 

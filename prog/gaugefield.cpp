@@ -2,22 +2,36 @@
 
 #include "logger.hpp"
 
-hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer)
+hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer){
+
+  int n_devs[1] = {numdevs};
+  init(n_devs,1,devicetypes,input_parameters,timer);
+
+  return HMC_SUCCESS;
+
+}
+
+hmc_error Gaugefield::init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer)
 {
-	//allocate memory for private gaugefield
-// 	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
- 	s_gaugefield* gftmp = (s_gaugefield*) malloc(sizeof(s_gaugefield));
-	set_sgf(gftmp);
+  set_num_device_types(numdevtypes);
 
-	set_parameters(input_parameters);
+  //LZ: for now assume that there is only one num_ocl_devices that is the same for all device types
+  //    to be generalized later
+  set_num_ocl_devices(numdevs[0]);
+  
 
-	init_gaugefield(timer);
+  //allocate memory for private gaugefield
+  // 	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+  s_gaugefield* gftmp = (s_gaugefield*) malloc(sizeof(s_gaugefield));
+  set_sgf(gftmp);
 
-	set_num_ocl_devices(numdevs);
+  set_parameters(input_parameters);
+  
+  init_gaugefield(timer);
+	
+  this->init_devices(devicetypes, timer);
 
-	this->init_devices(devicetypes, timer);
-
-	return HMC_SUCCESS;
+  return HMC_SUCCESS;
 }
 
 hmc_error Gaugefield::init_devices(cl_device_type* devicetypes, usetimer* timer)
@@ -29,8 +43,11 @@ hmc_error Gaugefield::init_devices(cl_device_type* devicetypes, usetimer* timer)
 // 	}
 
 	if(get_num_ocl_devices() > 0) {
-		Opencl* dev_tmp = new Opencl[get_num_ocl_devices()];
-		set_devices(dev_tmp);
+		alloc_devicetypes();
+		for(int n=0; n<get_num_device_types();n++) {
+		  Opencl* devtmp = new Opencl[get_num_ocl_devices()];
+		  set_devices(devtmp,n);
+		}
 	}
 
 
@@ -296,10 +313,10 @@ hmc_error Gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 
-	get_devices()[0].gaugeobservables(plaq, tplaq, splaq, pol, plaqtime, polytime);
-	print_gaugeobservables(*plaq, *tplaq, *splaq, *pol, i, gaugeoutname);
+  get_devices()[0].gaugeobservables (plaq, tplaq, splaq, pol, plaqtime, polytime);
+  print_gaugeobservables(*plaq, *tplaq, *splaq, *pol, i, gaugeoutname);
 
-	return HMC_SUCCESS;
+  return HMC_SUCCESS;
 }
 
 hmc_error Gaugefield::print_gaugeobservables_from_devices(usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname)
@@ -459,21 +476,47 @@ hmc_error Gaugefield::finalize()
 
 hmc_error Gaugefield::free_devices()
 {
+  if(get_num_device_types()==1){
 	if(get_num_ocl_devices() > 0)
 		delete [] get_devices();
-	return HMC_SUCCESS;
-	return HMC_SUCCESS;
+  } else {
+    for(int i=0; i<get_num_device_types(); i++) {
+      if(get_num_ocl_devices() > 0)
+	delete [] get_devices(i);
+    }
+    delete [] devices;
+  }
+  return HMC_SUCCESS;
 }
 
 hmc_error Gaugefield::set_devices (Opencl * devices_val)
 {
-	devices = devices_val;
+  set_devices(devices_val,0);
+  return HMC_SUCCESS;
+}
+
+hmc_error Gaugefield::set_devices (Opencl * devices_val, int i)
+{
+  if(get_num_device_types()==1) {
+    devices[0] = devices_val;
+  } else {
+    devices[i] = devices_val;
+  }
 	return HMC_SUCCESS;
 }
 
 Opencl * Gaugefield::get_devices ()
 {
-	return  devices;
+  return get_devices(0);
+}
+
+Opencl * Gaugefield::get_devices (int i)
+{
+  if(i>=get_num_device_types() || i<0) {
+    logger.warn()<<"get_devices: no pointer to that device number";
+    return NULL;
+  } 
+    return devices[i];
 }
 
 
@@ -486,6 +529,18 @@ hmc_error Gaugefield::set_num_ocl_devices (int num)
 int Gaugefield::get_num_ocl_devices ()
 {
 	return num_ocl_devices;
+}
+
+
+hmc_error Gaugefield::set_num_device_types (int num)
+{
+	num_device_types = num;
+	return HMC_SUCCESS;
+}
+
+int Gaugefield::get_num_device_types ()
+{
+	return num_device_types;
 }
 
 
@@ -510,4 +565,11 @@ hmc_error Gaugefield::set_sgf (s_gaugefield * sgf_val){
 	sgf = sgf_val;
 	return HMC_SUCCESS;
 }
+
+
+hmc_error Gaugefield::alloc_devicetypes(){
+  devices = new Opencl* [this->get_num_device_types()];
+  return HMC_SUCCESS;
+}
+
 

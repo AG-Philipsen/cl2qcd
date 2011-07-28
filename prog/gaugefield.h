@@ -55,6 +55,13 @@ public:
 	 * @return Error code as defined in hmcerrs.h
 	 */
         hmc_error init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer);
+
+	/**
+	 * Initialize gaugefield and different device types
+	 *
+	 * @todo This needs to be worked out in detail. So far it is assumed that numdevs[] has identical entries.
+	 */
+        hmc_error init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer);
 	/**
 	 * Free gaugefield and device allocations.
 	 */
@@ -80,15 +87,15 @@ public:
 
 	//communication
 	/**
-	 * Copy gaugefield to devices (currently: to device).
+	 * Copy gaugefield to devices (here: to device).
 	 * @param[in,out] timer copy-time
 	 */
-	hmc_error copy_gaugefield_to_devices(usetimer* timer);
+	virtual hmc_error copy_gaugefield_to_devices(usetimer* timer);
 	/**
 	 * Copy gaugefield from devices (currently: from device) to host.
 	 * @param[in,out] timer copy-time
 	 */
-	hmc_error sync_gaugefield(usetimer* timer);
+	virtual hmc_error sync_gaugefield(usetimer* timer);
 
 
 	//input/output, print, save functions!!
@@ -144,7 +151,7 @@ public:
 	 * @param[in] gaugeoutname name of output file
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname);
+	virtual hmc_error print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname);
 	/**
 	 * Print gauge observables calculated on device, add iteration number.
 	 * @param[in,out] plaqtime time to calculate plaquette
@@ -153,7 +160,7 @@ public:
 	 * @param[in] gaugeoutname name of output file
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error print_gaugeobservables_from_devices(usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname);
+	virtual hmc_error print_gaugeobservables_from_devices(usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname);
 	
 
 	//gaugeobservables, on host!!
@@ -201,11 +208,27 @@ public:
 	 * @return devices
 	 */
 	Opencl*  get_devices ();
+
+	/**
+	 * Returns private member * devices with index i
+	 * @in index of device type
+	 * @return devices
+	 */
+	Opencl*  get_devices (int i);
+
 	/**
 	 * Sets private member * devices
 	 * @return Error code as defined in hmcerrs.h
 	 */
 	hmc_error set_devices (Opencl * devices_val);
+
+	/**
+	 * Sets private member * devices with index i
+	 * @in index i
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	hmc_error set_devices (Opencl * devices_val, int i);
+
 	/**
 	 * Returns private member num_ocl_devices
 	 * @return num_ocl_devices
@@ -221,6 +244,19 @@ public:
 	 * @return parameters
 	 */
 	inputparameters * get_parameters ();
+
+
+	/**
+	 * Returns private member num_device_types
+	 * @return num_device_types
+	 */
+	int get_num_device_types ();
+	/**
+	 * Sets private member num_device_types
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	hmc_error set_num_device_types (int num);
+
 	/**
 	 * Sets private member * parameters
 	 * @return parameters
@@ -257,12 +293,19 @@ public:
 	 */
 	hmc_error set_gaugefield_cold_new(s_gaugefield * field);
 	
+	/**
+	 * This method provides allocation for device double pointer
+	 * @return Error code as defined in hmcerrs.h
+	 */
+	hmc_error alloc_devicetypes();
+
 private:
-	Opencl * devices;
+	Opencl ** devices;
 	inputparameters* parameters;
 	s_gaugefield * sgf;
 	
 	int num_ocl_devices;
+	int num_device_types;
 };
 
 #endif /* _GAUGEFIELDH_ */

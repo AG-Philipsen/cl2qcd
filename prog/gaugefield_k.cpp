@@ -1,10 +1,11 @@
 #include "gaugefield_k.h"
 
 hmc_error Gaugefield_k::init_devices(cl_device_type* devicetypes, usetimer* timer){
-	if(get_num_ocl_devices() != 1) {
+
+	if(get_num_ocl_devices() > 2) {
 		//LZ: so far, we only use !!! 1 !!! device
 		//this needs generalisation to several devices and subsets!!!!!
-		cerr << "only 1 device possible..." << endl;
+		cerr << "only 1 or 2 devices possible..." << endl;
 	}
 
 	if(get_num_ocl_devices() > 0) {
