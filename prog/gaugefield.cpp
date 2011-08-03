@@ -97,27 +97,27 @@ hmc_error Gaugefield::init_gaugefield(usetimer* timer)
 	return HMC_SUCCESS;
 }
 
-hmc_error Gaugefield::copy_gaugefield_to_s_gaugefield (s_gaugefield * sgf, hmc_gaugefield * gf){
+hmc_error Gaugefield::copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_gaugefield * gf){
   for (int d=0; d <NDIM; d++){
     for (int n=0; n<VOLSPACE; n++){
       for (int t=0; t<NTIME; t++){
 #ifdef _RECONSTRUCT_TWELVE_
-	  (*sgf)[d][n][t].e00 = (*gf) [0][d][n][t];
-	  (*sgf)[d][n][t].e01 = (*gf) [2][d][n][t];
-	  (*sgf)[d][n][t].e02 = (*gf) [4][d][n][t];
-	  (*sgf)[d][n][t].e10 = (*gf) [1][d][n][t];
-	  (*sgf)[d][n][t].e11 = (*gf) [3][d][n][t];
-	  (*sgf)[d][n][t].e12 = (*gf) [5][d][n][t];
+	  (*sgfo)[d][n][t].e00 = (*gf) [0][d][n][t];
+	  (*sgfo)[d][n][t].e01 = (*gf) [2][d][n][t];
+	  (*sgfo)[d][n][t].e02 = (*gf) [4][d][n][t];
+	  (*sgfo)[d][n][t].e10 = (*gf) [1][d][n][t];
+	  (*sgfo)[d][n][t].e11 = (*gf) [3][d][n][t];
+	  (*sgfo)[d][n][t].e12 = (*gf) [5][d][n][t];
 #else
-	  (*sgf)[d][n][t].e00 = (*gf)[0][0][d][n][t];
-	  (*sgf)[d][n][t].e01 = (*gf) [0][1][d][n][t];
-	  (*sgf)[d][n][t].e02 = (*gf) [0][2][d][n][t];
-	  (*sgf)[d][n][t].e10 = (*gf) [1][0][d][n][t];
-	  (*sgf)[d][n][t].e11 = (*gf) [1][1][d][n][t];
-	  (*sgf)[d][n][t].e12 = (*gf) [1][2][d][n][t];
-	  (*sgf)[d][n][t].e20 = (*gf) [2][0][d][n][t];
-	  (*sgf)[d][n][t].e21 = (*gf) [2][1][d][n][t];
-	  (*sgf)[d][n][t].e22 = (*gf) [2][2][d][n][t];
+	  (*sgfo)[d][n][t].e00 = (*gf)[0][0][d][n][t];
+	  (*sgfo)[d][n][t].e01 = (*gf) [0][1][d][n][t];
+	  (*sgfo)[d][n][t].e02 = (*gf) [0][2][d][n][t];
+	  (*sgfo)[d][n][t].e10 = (*gf) [1][0][d][n][t];
+	  (*sgfo)[d][n][t].e11 = (*gf) [1][1][d][n][t];
+	  (*sgfo)[d][n][t].e12 = (*gf) [1][2][d][n][t];
+	  (*sgfo)[d][n][t].e20 = (*gf) [2][0][d][n][t];
+	  (*sgfo)[d][n][t].e21 = (*gf) [2][1][d][n][t];
+	  (*sgfo)[d][n][t].e22 = (*gf) [2][2][d][n][t];
 #endif
 
       }
@@ -126,27 +126,27 @@ hmc_error Gaugefield::copy_gaugefield_to_s_gaugefield (s_gaugefield * sgf, hmc_g
   return HMC_SUCCESS;
 }
 
-hmc_error Gaugefield::copy_s_gaugefield_to_gaugefield(hmc_gaugefield * gf, s_gaugefield * sgf){
+hmc_error Gaugefield::copy_s_gaugefield_to_gaugefield(hmc_gaugefield * gf, s_gaugefield * sgfo){
   for (int d=0; d <NDIM; d++){
     for (int n=0; n<VOLSPACE; n++){
       for (int t=0; t<NTIME; t++){
 #ifdef _RECONSTRUCT_TWELVE_
-	  (*gf) [0][d][n][t] = (*sgf)[d][n][t].e00;
-	  (*gf) [2][d][n][t] = (*sgf)[d][n][t].e01;
-	  (*gf) [4][d][n][t] = (*sgf)[d][n][t].e02;
-	  (*gf) [1][d][n][t] = (*sgf)[d][n][t].e10;
-	  (*gf) [3][d][n][t] = (*sgf)[d][n][t].e11;
-	  (*gf) [5][d][n][t] = (*sgf)[d][n][t].e12;
+	  (*gf) [0][d][n][t] = (*sgfo)[d][n][t].e00;
+	  (*gf) [2][d][n][t] = (*sgfo)[d][n][t].e01;
+	  (*gf) [4][d][n][t] = (*sgfo)[d][n][t].e02;
+	  (*gf) [1][d][n][t] = (*sgfo)[d][n][t].e10;
+	  (*gf) [3][d][n][t] = (*sgfo)[d][n][t].e11;
+	  (*gf) [5][d][n][t] = (*sgfo)[d][n][t].e12;
 #else
-	  (*gf)[0][0][d][n][t] = (*sgf)[d][n][t].e00;
-	  (*gf)[0][1][d][n][t] = (*sgf)[d][n][t].e01;
-	  (*gf)[0][2][d][n][t] = (*sgf)[d][n][t].e02;
-	  (*gf)[1][0][d][n][t] = (*sgf)[d][n][t].e10;
-	  (*gf)[1][1][d][n][t] = (*sgf)[d][n][t].e11;
-	  (*gf)[1][2][d][n][t] = (*sgf)[d][n][t].e12;
-	  (*gf)[2][0][d][n][t] = (*sgf)[d][n][t].e20;
-	  (*gf)[2][1][d][n][t] = (*sgf)[d][n][t].e21;
-	  (*gf)[2][2][d][n][t] = (*sgf)[d][n][t].e22;
+	  (*gf)[0][0][d][n][t] = (*sgfo)[d][n][t].e00;
+	  (*gf)[0][1][d][n][t] = (*sgfo)[d][n][t].e01;
+	  (*gf)[0][2][d][n][t] = (*sgfo)[d][n][t].e02;
+	  (*gf)[1][0][d][n][t] = (*sgfo)[d][n][t].e10;
+	  (*gf)[1][1][d][n][t] = (*sgfo)[d][n][t].e11;
+	  (*gf)[1][2][d][n][t] = (*sgfo)[d][n][t].e12;
+	  (*gf)[2][0][d][n][t] = (*sgfo)[d][n][t].e20;
+	  (*gf)[2][1][d][n][t] = (*sgfo)[d][n][t].e21;
+	  (*gf)[2][2][d][n][t] = (*sgfo)[d][n][t].e22;
 #endif
       }
     }

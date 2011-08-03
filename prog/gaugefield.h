@@ -269,7 +269,7 @@ public:
 	 * @param[out] sgf array of structs
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error copy_gaugefield_to_s_gaugefield (s_gaugefield * sgf, hmc_gaugefield * gf);
+	hmc_error copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_gaugefield * gf);
 	
 	/**
 	 * Copies the gaugefield from structure array format to pure array format
@@ -277,7 +277,7 @@ public:
 	 * @param[out] gf pure array
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error copy_s_gaugefield_to_gaugefield (hmc_gaugefield * gf, s_gaugefield * sgf);
+	hmc_error copy_s_gaugefield_to_gaugefield (hmc_gaugefield * gf, s_gaugefield * sgfo);
 	
 	/**
 	 * Initializing the gaugefield consisting of structs for a hot start
