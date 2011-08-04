@@ -1,9 +1,8 @@
-kappa=.125
-mu=0.06
-cgmax=15
-cgmax=1000
+NS=4
+NT=4
+use_rec12=0
+use_gpu=0
 beta=6
-#cgmax=3
 prec=64
 startcondition=cold
 sourcefile=conf.save

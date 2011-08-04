@@ -1,3 +1,8 @@
+NS=4
+NT=4
+use_rec12=0
+use_gpu=0
+
 kappa=0.15
 mu=4.
 cgmax=15

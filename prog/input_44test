@@ -1,18 +1,16 @@
-kappa=0.15
-mu=4.
-cgmax=15
-cgmax=50
-beta=6.00
-#cgmax=3
+#global parameters
+NS=4
+NT=4
+use_rec12=0
+use_gpu=0
 prec=64
 readsource=cold
-thermalizationsteps=1
+
+beta=6.00
+thermalizationsteps=0
 heatbathsteps=1000
-sourcefile=conf.0759
 sourcefile=conf.save
 writefrequency=1
-fermact=TWISTEDMASS
-evenodd=no
 
 # 4^4file:
 #Plaquette: 0.622595987170167
