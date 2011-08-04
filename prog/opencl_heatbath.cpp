@@ -10,6 +10,7 @@ using namespace std;
 hmc_error Opencl_heatbath::fill_collect_options(stringstream* collect_options)
 {
   Opencl::fill_collect_options(collect_options);
+	*collect_options <<  " -DBETA=" << get_parameters()->get_beta();
   return HMC_SUCCESS;
 }
 
