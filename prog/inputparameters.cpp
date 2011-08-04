@@ -4,33 +4,46 @@
 
 hmc_error inputparameters::set_defaults()
 {
-	kappa = 0.125;
+	//global parameters
+	prec = 64;
+	use_rec12 = 0;
+	use_gpu = 0;
+	nspace = 4;
+	ntime = 8;
+	startcondition = COLD_START;
+	saveconfigs = FALSE;
+	writefrequency = 1;
+	savefrequency = 100;
+	num_dev = 1;
+	sourcefilenumber = "00000";
+	
+	//gaugefield parameters
 	beta = 4.0;
+	theta_gaugefield = 0.;
+		
+	//heatbath parameters
+	thermalizationsteps = 0;
+	heatbathsteps = 1000;
+	overrelaxsteps = 1;
+	
+	//fermionic parameters
+	fermact = WILSON;
+	kappa = 0.125;
 	mu = 0.006;
 	csw = 0.;
 	cgmax = 1000;
-	prec = 64;
 	theta_fermion_spatial = 0.;
 	theta_fermion_temporal = 0.;	
-	theta_gaugefield = 0.;
 	chem_pot_re = 0.;
 	chem_pot_im = 0.;
+	use_eo = TRUE;
+	
+	//HMC specific parameters
 	tau = 0.5;
 	integrationsteps1 = 10;
 	integrationsteps2 = 10;
-	startcondition = COLD_START;
-	thermalizationsteps = 0;
-	heatbathsteps = 1000;
 	hmcsteps = 10;
-	overrelaxsteps = 1;
-	writefrequency = 1;
-	savefrequency = 100;
-	saveconfigs = FALSE;
-	use_eo = TRUE;
-	//sourcefile = "\0";
-	sourcefilenumber = "00000";
-	fermact = WILSON;
-	num_dev = 1;
+	
 	return HMC_SUCCESS;
 }
 
@@ -112,9 +125,16 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("even-odd-preconditioning") != std::string::npos) eocond_assign(&use_eo, line);
 		if(line.find("use_eo") != std::string::npos) eocond_assign(&use_eo, line);
 		if(line.find("use_evenodd") != std::string::npos) eocond_assign(&use_eo, line);
-		
-		
+		if(line.find("use_rec12") != std::string::npos) val_assign(&use_rec12, line);
+		if(line.find("REC12") != std::string::npos) val_assign(&use_rec12, line);
+		if(line.find("use_gpu") != std::string::npos) val_assign(&use_gpu, line);
+		if(line.find("GPU") != std::string::npos) val_assign(&use_gpu, line);
 
+		if(line.find("NS") != std::string::npos) val_assign(&nspace, line);
+		if(line.find("NSPACE") != std::string::npos) val_assign(&nspace, line);
+		if(line.find("NT") != std::string::npos) val_assign(&ntime, line);
+		if(line.find("NTIME") != std::string::npos) val_assign(&ntime, line);
+		
 	}
 
 	if(muset == TRUE && fermact != TWISTEDMASS) {
@@ -129,6 +149,9 @@ hmc_error inputparameters::readfile(char* ifn)
 		logger.fatal() << "Setting values for both csw and mu is currently not allowed. Aborting...";
 		exit(HMC_STDERR);
 	}
+
+	//check the read-in values against the compile time values
+	this->check_settings_global();
 
 	return HMC_SUCCESS;
 }
@@ -397,6 +420,16 @@ int inputparameters::get_cgmax()
 	return cgmax;
 }
 
+int inputparameters::get_nspace()
+{
+	return nspace;
+}
+
+int inputparameters::get_ntime()
+{
+	return ntime;
+}
+
 int inputparameters::get_prec()
 {
 	return prec;
@@ -478,28 +511,36 @@ int inputparameters::get_use_eo()
 	return use_eo;
 }
 
-void inputparameters::print_info_heatbath(char* progname){
-  logger.info() << "## Starting heatbath program, executable name: " << progname;
+int inputparameters::get_use_rec12()
+{
+	return use_rec12;
+}
+
+int inputparameters::get_use_gpu()
+{
+	return use_gpu;
+}
+
+void inputparameters::print_info_global(){
   logger.info() << "## **********************************************************";
-  logger.info() << "## Compile time parameters:";
-  logger.info() << "## NSPACE:  " << NSPACE;
-  logger.info() << "## NTIME:   " << NTIME;
+	logger.info() << "## Global parameters:";
+	logger.info() << "## NSPACE:  " << this->get_nspace();
+  logger.info() << "## NTIME:   " << this->get_ntime();
   logger.info() << "## NDIM:    " << NDIM;
   logger.info() << "## NCOLOR:  " << NC;
   logger.info() << "## NSPIN:   " << NSPIN;
-  logger.info() << "##";
-  logger.info() << "## Run time parameters:";
-  logger.info() << "## beta  = " << this->get_beta();
-  logger.info() << "## prec  = " << this->get_prec();
-  logger.info() << "## thermsteps     = " << this->get_thermalizationsteps() ;
-  logger.info() << "## heatbathsteps  = " << this->get_heatbathsteps();
-  logger.info() << "## overrelaxsteps = " << this->get_overrelaxsteps();
-  logger.info() << "##";
-  
-  logger.info() << "## number of devices demanded for calculations: " << this->get_num_dev()  ;
-  logger.info() << "##" ;	
-	
-  if (this->get_startcondition() == START_FROM_SOURCE) {
+  logger.info() << "## **********************************************************";
+	logger.info() << "## Computational parameters:";	
+	logger.info() << "## PREC:    " << this->get_prec();
+	logger.info() << "## REC12:   " << this->get_use_rec12();
+	logger.info() << "## USE GPU: " << this->get_use_gpu();
+	logger.info() << "## Number of devices demanded for calculations: " << this->get_num_dev()  ;
+	logger.info() << "## **********************************************************";
+  logger.info() << "## I/O parameters:";
+	logger.info() << "## SvConf:  " << this->get_saveconfigs();
+	logger.info() << "## WrFreq:  " << this->get_writefrequency();
+	logger.info() << "## SvFreq:  " << this->get_savefrequency();
+	if (this->get_startcondition() == START_FROM_SOURCE) {
     string sf = this->sourcefile;
     logger.info() << "## sourcefile = " << sf;
   }
@@ -508,85 +549,106 @@ void inputparameters::print_info_heatbath(char* progname){
   }
   if (this->get_startcondition() == HOT_START) {
     logger.info() << "## hot start";
-  }
-  logger.info() << "## **********************************************************";
-  return;
+  }	
 }
 
-void inputparameters::print_info_heatbath(char* progname, ostream* os){
-  *os << "## Starting heatbath program, executable name: " << progname <<endl;
-  *os << "## **********************************************************"<<endl;
-  *os << "## Compile time parameters:"<<endl;
-  *os << "## NSPACE:  " << NSPACE<<endl;
-  *os << "## NTIME:   " << NTIME<<endl;
-  *os << "## NDIM:    " << NDIM<<endl;
-  *os << "## NCOLOR:  " << NC<<endl;
-  *os << "## NSPIN:   " << NSPIN<<endl;
-  *os << "##"<<endl;
-  *os << "## Run time parameters:"<<endl;
-  *os << "## beta  = " << this->get_beta()<<endl;
-  *os << "## prec  = " << this->get_prec()<<endl;
-  *os << "## thermsteps     = " << this->get_thermalizationsteps()<<endl ;
-  *os << "## heatbathsteps  = " << this->get_heatbathsteps()<<endl;
-  *os << "## overrelaxsteps = " << this->get_overrelaxsteps()<<endl;
-  *os << "##"<<endl;
-  
-  *os << "## number of devices demanded for calculations: " << this->get_num_dev()<<endl  ;
-  *os << "##" <<endl;	
-	
-  if (this->get_startcondition() == START_FROM_SOURCE) {
+void inputparameters::print_info_global(ostream* os){
+  *os  << "## **********************************************************"<<endl;
+	*os  << "## Global parameters:"<< endl;
+	*os  << "## NSPACE:  " << this->get_nspace()<< endl;
+  *os  << "## NTIME:   " << this->get_ntime()<<endl;
+  *os  << "## NDIM:    " << NDIM<<endl;
+  *os  << "## NCOLOR:  " << NC<<endl;
+  *os  << "## NSPIN:   " << NSPIN<<endl;
+  *os  << "## **********************************************************"<<endl;
+	*os  << "## Computational parameters:"<<endl;	
+	*os  << "## PREC:    " << this->get_prec()<<endl;
+	*os  << "## REC12:   " << this->get_use_rec12()<<endl;
+	*os  << "## USE GPU: " << this->get_use_gpu()<<endl;
+	*os  << "## Number of devices demanded for calculations: " << this->get_num_dev()  <<endl;
+	*os  << "## **********************************************************"<<endl;
+  *os  << "## I/O parameters:"<<endl;
+	*os  << "## SvConf:  " << this->get_saveconfigs()<<endl;
+	*os  << "## WrFreq:  " << this->get_writefrequency()<<endl;
+	*os  << "## SvFreq:  " << this->get_savefrequency()<<endl;
+	if (this->get_startcondition() == START_FROM_SOURCE) {
     string sf = this->sourcefile;
-    *os << "## sourcefile = " << sf<<endl;
+    *os  << "## sourcefile = " << sf<<endl;
   }
   if (this->get_startcondition() == COLD_START) {
-    *os << "## cold start"<<endl;
+    *os  << "## cold start"<<endl;
   }
   if (this->get_startcondition() == HOT_START) {
-    *os << "## hot start"<<endl;
-  }
-  *os << "## **********************************************************"<<endl;
+    *os  << "## hot start"<<endl;
+  }	
+}
+
+
+void inputparameters::print_info_heatbath(char* progname){
+  logger.info() << "## Starting heatbath program, executable name: " << progname;
+	this->print_info_global();
+	logger.info() << "## **********************************************************";
+  logger.info() << "## Simulation parameters:";
+  logger.info() << "## beta  = " << this->get_beta();
+  logger.info() << "## thermsteps     = " << this->get_thermalizationsteps() ;
+  logger.info() << "## heatbathsteps  = " << this->get_heatbathsteps();
+  logger.info() << "## overrelaxsteps = " << this->get_overrelaxsteps();
+  logger.info() << "## **********************************************************";
   return;
 }
 
-void inputparameters::print_info_inverter(char* progname){
-  logger.info() << "## Starting inverter program, executable name: " << progname;
+
+void inputparameters::print_info_heatbath(char* progname, ostream* os){
+  *os  << "## Starting heatbath program, executable name: " << progname<<endl;
+	this->print_info_global(os);
+	*os  << "## **********************************************************"<<endl;
+  *os  << "## Simulation parameters:"<<endl;
+  *os  << "## beta  = " << this->get_beta()<<endl;
+  *os  << "## thermsteps     = " << this->get_thermalizationsteps() <<endl;
+  *os  << "## heatbathsteps  = " << this->get_heatbathsteps()<<endl;
+  *os  << "## overrelaxsteps = " << this->get_overrelaxsteps()<<endl;
+  *os  << "## **********************************************************"<<endl;
+  return;
+}
+
+
+void inputparameters::print_info_tkkappa(char* progname, ostream* os){
+	*os << "## Starting tk_kappa program, " << progname << endl;
+	this->print_info_global(os);
+	*os  << "## **********************************************************"<<endl;
+  *os  << "## Simulation parameters:"<<endl;
+  *os  << "## beta  = " << this->get_beta()<<endl;
+  *os  << "## thermsteps     = " << this->get_thermalizationsteps() <<endl;
+  *os  << "## heatbathsteps  = " << this->get_heatbathsteps()<<endl;
+  *os  << "## overrelaxsteps = " << this->get_overrelaxsteps()<<endl;
+	*os  << "## TODO: INSERT SPECIFIC PARAMETERS!!!!!"<<endl;
+  *os  << "## **********************************************************"<<endl;
+  return;
+}
+
+void inputparameters::print_info_tkkappa(char* progname){
+	logger.info() << "## Starting tk_kappa program, " << progname ;
+	this->print_info_global();
+	logger.info() << "## **********************************************************";
+  logger.info() << "## Simulation parameters:";
+  logger.info() << "## beta  = " << this->get_beta();
+  logger.info() << "## thermsteps     = " << this->get_thermalizationsteps() ;
+  logger.info() << "## heatbathsteps  = " << this->get_heatbathsteps();
+  logger.info() << "## overrelaxsteps = " << this->get_overrelaxsteps();
+	logger.info() << "## TODO: INSERT SPECIFIC PARAMETERS!!!!!";
   logger.info() << "## **********************************************************";
-  logger.info() << "## Compile time parameters:";
-  logger.info() << "## NSPACE:  " << NSPACE;
-  logger.info() << "## NTIME:   " << NTIME;
-  logger.info() << "## NDIM:    " << NDIM;
-  logger.info() << "## NCOLOR:  " << NC;
-  logger.info() << "## NSPIN:   " << NSPIN;
-  logger.info() << "##" ;
-  logger.info() << "## Run time parameters:";
+  return;
+}
 
-	if(this->get_fermact()==WILSON) {
-	  logger.info()<<  "## fermion action: unimproved Wilson";
-	  logger.info() << "## kappa  = "<<this->get_kappa();
-	}
-	if(this->get_fermact()==TWISTEDMASS) {
-	  logger.info()<<  "## fermion action: twisted mass Wilson";
-	  logger.info() << "## kappa  = "<<this->get_kappa();
-	  logger.info() << "## mu     = "<<this->get_mu();
-	}
-	if(this->get_fermact()==CLOVER) {
-	  logger.info()<<  "## fermion action: clover Wilson";
-	  logger.info() << "## kappa  = "<<this->get_kappa();
-	  logger.info() << "## csw    = "<<this->get_csw();
-	}
-	logger.info() << "## prec  = " << this->get_prec() ;
-	logger.info() << "##" ;
-	if(this->get_use_eo()==TRUE)
-	  logger.info() << "## use even-odd preconditioning" ;
-	if(this->get_use_eo()==FALSE) 
-	  logger.info() << "## do not use even-odd preconditioning";
-	logger.info() << "##" ;
 
+void inputparameters::print_info_fermion(){
+	logger.info() << "## **********************************************************";
+  logger.info() << "## Fermionic parameters:";
+	logger.info() << "##" ;
 	logger.info() << "## Boundary Conditions:";
 	logger.info() << "## theta_fermion_spatial  = "<<this->get_theta_fermion_spatial();
 	logger.info() << "## theta_fermion_temporal = "<<this->get_theta_fermion_temporal();
 	logger.info() << "##" ;
-
 	logger.info() << "## Chemical Potential:" ;
 	#ifdef _CP_REAL_
 	logger.info() << "## chem_pot_re  = "<<this->get_chem_pot_re();
@@ -599,170 +661,6 @@ void inputparameters::print_info_inverter(char* progname){
 	logger.info() << "## do not use imag. chem. pot.";
 	#endif
 	logger.info() << "##" ;
-	
-	logger.info()<<"## number of devices desired for calculations: " << this->get_num_dev() ;
-	logger.info() << "##" ;
-	
-	if (this->get_startcondition() == START_FROM_SOURCE) {
-		string sf = this->sourcefile;
-		logger.info() << "## sourcefile = " << sf ;
-	}
-	if (this->get_startcondition() == COLD_START) {
-		logger.info() << "## WARNING: cold start - no configuration read";
-	}
-	if (this->get_startcondition() == HOT_START) {
-		logger.info() << "## WARNING: hot start - no configuration read";
-	}
-	logger.info() << "## **********************************************************";
-  return;
-}
-
-void inputparameters::print_info_inverter(char* progname, ostream* os){
-  *os << "## Starting inverter program, executable name: " << progname << endl;
-  *os << "## **********************************************************"<< endl;
-  *os << "## Compile time parameters:"<< endl;
-  *os << "## NSPACE:  " << NSPACE<< endl;
-  *os << "## NTIME:   " << NTIME<< endl;
-  *os << "## NDIM:    " << NDIM<< endl;
-  *os << "## NCOLOR:  " << NC<< endl;
-  *os << "## NSPIN:   " << NSPIN<< endl;
-  *os << "##" << endl;
-  *os << "## Run time parameters:"<< endl;
-
-	if(this->get_fermact()==WILSON) {
-	  *os<<  "## fermion action: unimproved Wilson"<< endl;
-	  *os << "## kappa  = "<<this->get_kappa()<< endl;
-	}
-	if(this->get_fermact()==TWISTEDMASS) {
-	  *os<<  "## fermion action: twisted mass Wilson"<< endl;
-	  *os << "## kappa  = "<<this->get_kappa()<< endl;
-	  *os << "## mu     = "<<this->get_mu()<< endl;
-	}
-	if(this->get_fermact()==CLOVER) {
-	  *os<<  "## fermion action: clover Wilson"<< endl;
-	  *os << "## kappa  = "<<this->get_kappa()<< endl;
-	  *os << "## csw    = "<<this->get_csw()<< endl;
-	}
-	*os << "## prec  = " << this->get_prec() << endl;
-	*os << "##" << endl;
-	if(this->get_use_eo()==TRUE)
-	  *os << "## use even-odd preconditioning"<< endl ;
-	if(this->get_use_eo()==FALSE) 
-	  *os << "## do not use even-odd preconditioning"<< endl;
-	*os << "##" << endl;
-
-	*os << "## Boundary Conditions:"<< endl;
-	*os << "## theta_fermion_spatial  = "<<this->get_theta_fermion_spatial()<< endl;
-	*os << "## theta_fermion_temporal = "<<this->get_theta_fermion_temporal()<< endl;
-	*os << "##" << endl;
-
-	*os << "## Chemical Potential:" << endl;
-	#ifdef _CP_REAL_
-	*os << "## chem_pot_re  = "<<this->get_chem_pot_re()<< endl;
-	#else
-	*os << "## do not use real chem. pot."<< endl;
-	#endif
-	#ifdef _CP_IMAG_
-	*os << "## chem_pot_im = "<<this->get_chem_pot_im()<< endl;
-	#else
-	*os << "## do not use imag. chem. pot."<< endl;
-	#endif
-	*os << "##" << endl;
-	
-	*os<<"## number of devices desired for calculations: " << this->get_num_dev() << endl;
-	*os << "##" << endl;
-	
-	if (this->get_startcondition() == START_FROM_SOURCE) {
-		string sf = this->sourcefile;
-		*os << "## sourcefile = " << sf << endl;
-	}
-	if (this->get_startcondition() == COLD_START) {
-		*os << "## WARNING: cold start - no configuration read"<< endl;
-	}
-	if (this->get_startcondition() == HOT_START) {
-		*os << "## WARNING: hot start - no configuration read"<< endl;
-	}
-	*os << "## **********************************************************"<< endl;
-  return;
-}
-
-void inputparameters::print_info_tkkappa(char* progname, ostream* os){
-	*os << "## Starting tk_kappa program, " << progname << endl;
-	*os << "## **********************************************************\n";
-	*os << "## Compile time parameters:\n";
-	*os << "## NSPACE:  " << NSPACE << '\n';
-	*os << "## NTIME:   " << NTIME << '\n';
-	*os << "## NDIM:    " << NDIM << '\n';
-	*os << "## NCOLOR:  " << NC << '\n';
-	*os << "## NSPIN:   " << NSPIN << '\n';
-	*os << "##" << '\n';
-	*os << "## Run time parameters:\n";
-	*os << "## beta  = " << this->get_beta() << '\n';
-	*os << "## prec  = " << this->get_prec() << '\n';
-	*os << "## thermsteps     = " << this->get_thermalizationsteps() << '\n';
-	*os << "## heatbathsteps  = " << this->get_heatbathsteps() << '\n';
-	*os << "## overrelaxsteps = " << this->get_overrelaxsteps() << '\n';
-	*os << "##" << '\n';
-	if (this->get_startcondition() == START_FROM_SOURCE) {
-		*os << "## sourcefile = ";
-		string sf=this->sourcefile;
-		*os << sf << '\n';
-	}
-	if (this->get_startcondition() == COLD_START) {
-		*os << "## cold start\n";
-	}
-	if (this->get_startcondition() == HOT_START) {
-		*os << "## hot start\n";
-	}
-	*os << "## **********************************************************\n";
-	*os << std::endl;
-  return;
-}
-
-void inputparameters::print_info_tkkappa(char* progname){
-	logger.info() << "## Starting tk_kappa program, " << progname ;
-	logger.info() << "## **********************************************************";
-	logger.info() << "## Compile time parameters:";
-	logger.info() << "## NSPACE:  " << NSPACE;
-	logger.info() << "## NTIME:   " << NTIME;
-	logger.info() << "## NDIM:    " << NDIM;
-	logger.info() << "## NCOLOR:  " << NC;
-	logger.info() << "## NSPIN:   " << NSPIN;
-	logger.info() << "##";
-	logger.info() << "## Run time parameters:";
-	logger.info() << "## beta  = " << this->get_beta();
-	logger.info() << "## prec  = " << this->get_prec();
-	logger.info() << "## thermsteps     = " << this->get_thermalizationsteps();
-	logger.info() << "## heatbathsteps  = " << this->get_heatbathsteps();
-	logger.info() << "## overrelaxsteps = " << this->get_overrelaxsteps();
-	logger.info() << "##";
-	if (this->get_startcondition() == START_FROM_SOURCE) {
-	  string sf=this->sourcefile;
-	  logger.info() << "## sourcefile = "<< sf;
-	}
-	if (this->get_startcondition() == COLD_START) {
-		logger.info() << "## cold start";
-	}
-	if (this->get_startcondition() == HOT_START) {
-		logger.info() << "## hot start";
-	}
-	logger.info() << "## **********************************************************";
-  return;
-}
-
-void inputparameters::print_info_hmc(char* progname){
-
-	logger.info() << "## Starting hmc program, executable name: " << progname ;
-	logger.info() << "## **********************************************************";
-	logger.info() << "## Compile time parameters:";
-	logger.info() << "## NSPACE:  " << NSPACE ;
-	logger.info() << "## NTIME:   " << NTIME ;
-	logger.info() << "## NDIM:    " << NDIM ;
-	logger.info() << "## NCOLOR:  " << NC ;
-	logger.info() << "## NSPIN:   " << NSPIN ;
-	logger.info() << "##";
-	logger.info() << "## Run time parameters:";
-
 	if(this->get_fermact()==WILSON) {
 	  logger.info()<<  "## fermion action: unimproved Wilson";
 	  logger.info() << "## kappa  = "<<this->get_kappa();
@@ -777,45 +675,80 @@ void inputparameters::print_info_hmc(char* progname){
 	  logger.info() << "## kappa  = "<<this->get_kappa();
 	  logger.info() << "## csw    = "<<this->get_csw();
 	}
-	logger.info() << "## prec  = " << this->get_prec();
-	logger.info() << "##";
+	logger.info() << "##" ;
+	logger.info() << "## Inverter parameters:";
 	if(this->get_use_eo()==TRUE)
-	  logger.info() << "## use even-odd preconditioning";
+	  logger.info() << "## Use even-odd preconditioning" ;
 	if(this->get_use_eo()==FALSE) 
-	  logger.info() << "## do not use even-odd preconditioning";
-	logger.info() << "##";
+	  logger.info() << "## Do NOT use even-odd preconditioning";
+	logger.info() << "## cgmax  = "<< this->get_cgmax();
+}
 
-	logger.info() << "## Boundary Conditions:" ;
-	logger.info() << "## theta_fermion_spatial  = "<<this->get_theta_fermion_spatial();
-	logger.info() << "## theta_fermion_temporal = "<<this->get_theta_fermion_temporal();
-	logger.info() << "##";
-
-	logger.info() << "## Chemical Potential:";
+void inputparameters::print_info_fermion(ostream * os){
+	*os  << "## **********************************************************"<<endl;
+  *os  << "## Fermionic parameters:"<<endl;
+	*os  << "##" <<endl;
+	*os  << "## Boundary Conditions:"<<endl;
+	*os  << "## theta_fermion_spatial  = "<<this->get_theta_fermion_spatial()<<endl;
+	*os  << "## theta_fermion_temporal = "<<this->get_theta_fermion_temporal()<<endl;
+	*os  << "##" <<endl;
+	*os  << "## Chemical Potential:" <<endl;
 	#ifdef _CP_REAL_
-	logger.info() << "## chem_pot_re  = "<<this->get_chem_pot_re();
+	*os  << "## chem_pot_re  = "<<this->get_chem_pot_re()<<endl;
 	#else
-	logger.info() << "## do not use real chem. pot.";
+	*os  << "## do not use real chem. pot."<<endl;
 	#endif
 	#ifdef _CP_IMAG_
-	logger.info() << "## chem_pot_im = "<<this->get_chem_pot_im();
+	*os  << "## chem_pot_im = "<<this->get_chem_pot_im()<<endl;
 	#else
-	logger.info() << "## do not use imag. chem. pot.";
+	*os  << "## do not use imag. chem. pot."<<endl;
 	#endif
-	logger.info() << "##" ;	
-	
-	logger.info()<<"## number of devices desired for calculations: " << this->get_num_dev() ;
-	logger.info() << "##";
-	
-	if (this->get_startcondition() == START_FROM_SOURCE) {
-		string sf = this->sourcefile;
-		logger.info() << "## sourcefile = "<< sf;
+	*os  << "##" <<endl;
+	if(this->get_fermact()==WILSON) {
+	  *os <<  "## fermion action: unimproved Wilson"<<endl;
+	  *os  << "## kappa  = "<<this->get_kappa()<<endl;
 	}
-	if (this->get_startcondition() == COLD_START) {
-		logger.info() << "## WARNING: cold start - no configuration read";
+	if(this->get_fermact()==TWISTEDMASS) {
+	  *os <<  "## fermion action: twisted mass Wilson"<<endl;
+	  *os  << "## kappa  = "<<this->get_kappa()<<endl;
+	  *os  << "## mu     = "<<this->get_mu()<<endl;
 	}
-	if (this->get_startcondition() == HOT_START) {
-		logger.info() << "## WARNING: hot start - no configuration read";
+	if(this->get_fermact()==CLOVER) {
+	  *os <<  "## fermion action: clover Wilson"<<endl;
+	  *os  << "## kappa  = "<<this->get_kappa()<<endl;
+	  *os  << "## csw    = "<<this->get_csw()<<endl;
 	}
+	*os  << "##" <<endl;
+	*os  << "## Inverter parameters:" << endl;
+	if(this->get_use_eo()==TRUE)
+	  *os  << "## Use even-odd preconditioning" <<endl;
+	if(this->get_use_eo()==FALSE) 
+	  *os  << "## Do NOT use even-odd preconditioning"<<endl;
+	*os << "## cgmax  = " << this->get_cgmax() << endl;
+}
+
+
+void inputparameters::print_info_inverter(char* progname){
+  logger.info() << "## Starting inverter program, executable name: " << progname;
+	this->print_info_global();
+	this->print_info_fermion();
+	logger.info() << "## **********************************************************";
+  return;
+}
+
+void inputparameters::print_info_inverter(char* progname, ostream* os){
+  *os << "## Starting inverter program, executable name: " << progname << endl;
+  this->print_info_global(os);
+	this->print_info_fermion(os);
+	*os << "## **********************************************************"<< endl;
+  return;
+}
+
+void inputparameters::print_info_hmc(char* progname){
+
+	logger.info() << "## Starting hmc program, executable name: " << progname ;
+	this->print_info_global();
+	this->print_info_fermion();
 	logger.info() << "##  ";
 	logger.info() << "## HMC parameters: " ;
 	logger.info() << "## tau  = " << this->get_tau();
@@ -828,70 +761,8 @@ void inputparameters::print_info_hmc(char* progname){
 
  void inputparameters::print_info_hmc(char* progname, ostream* os){
    *os << "## Starting hmc program, executable name: " << progname << endl;
-	*os << "## **********************************************************\n";
-	*os << "## Compile time parameters:\n";
-	*os << "## NSPACE:  " << NSPACE << '\n';
-	*os << "## NTIME:   " << NTIME << '\n';
-	*os << "## NDIM:    " << NDIM << '\n';
-	*os << "## NCOLOR:  " << NC << '\n';
-	*os << "## NSPIN:   " << NSPIN << '\n';
-	*os << "##" << '\n';
-	*os << "## Run time parameters:\n";
-
-	if(this->get_fermact()==WILSON) {
-	  *os<<  "## fermion action: unimproved Wilson"<<'\n';
-	  *os << "## kappa  = "<<this->get_kappa()<< '\n';
-	}
-	if(this->get_fermact()==TWISTEDMASS) {
-	  *os<<  "## fermion action: twisted mass Wilson"<<'\n';
-	  *os << "## kappa  = "<<this->get_kappa()<< '\n';
-	  *os << "## mu     = "<<this->get_mu()<< '\n';
-	}
-	if(this->get_fermact()==CLOVER) {
-	  *os<<  "## fermion action: clover Wilson"<<'\n';
-	  *os << "## kappa  = "<<this->get_kappa()<< '\n';
-	  *os << "## csw    = "<<this->get_csw()<< '\n';
-	}
-	*os << "## prec  = " << this->get_prec() << '\n';
-	*os << "##" << '\n';
-	if(this->get_use_eo()==TRUE)
-	  *os << "## use even-odd preconditioning" << '\n';
-	if(this->get_use_eo()==FALSE) 
-	  *os << "## do not use even-odd preconditioning" << '\n';
-	*os << "##" << '\n';
-
-	*os << "## Boundary Conditions:" << '\n';
-	*os << "## theta_fermion_spatial  = "<<this->get_theta_fermion_spatial()<< '\n';
-	*os << "## theta_fermion_temporal = "<<this->get_theta_fermion_temporal()<< '\n';
-	*os << "##" << '\n';
-
-	*os << "## Chemical Potential:" << '\n';
-	#ifdef _CP_REAL_
-	*os << "## chem_pot_re  = "<<this->get_chem_pot_re()<< '\n';
-	#else
-	*os << "## do not use real chem. pot."<< '\n';
-	#endif
-	#ifdef _CP_IMAG_
-	*os << "## chem_pot_im = "<<this->get_chem_pot_im()<< '\n';
-	#else
-	*os << "## do not use imag. chem. pot."<< '\n';
-	#endif
-	*os << "##" << '\n';	
-	
-	*os<<"## number of devices desired for calculations: " << this->get_num_dev() << "\n" ;
-	*os << "##" << '\n';
-	
-	if (this->get_startcondition() == START_FROM_SOURCE) {
-		*os << "## sourcefile = ";
-		string sf = this->sourcefile;
-		*os << sf << '\n';
-	}
-	if (this->get_startcondition() == COLD_START) {
-		*os << "## WARNING: cold start - no configuration read\n";
-	}
-	if (this->get_startcondition() == HOT_START) {
-		*os << "## WARNING: hot start - no configuration read\n";
-	}
+	this->print_info_global(os);
+	this->print_info_fermion(os);
 	*os << "##  " << '\n';
 	*os << "## HMC parameters: "  << '\n';
 	*os << "## tau  = " << this->get_tau() << '\n';
@@ -901,4 +772,65 @@ void inputparameters::print_info_hmc(char* progname){
 	*os << "## **********************************************************\n";
 	*os << std::endl;
     return;
+}
+
+void inputparameters::check_settings_global(){
+	logger.info() << "checking compile-time-parameters against input-parameters...";
+	
+	//compile time parameters
+	//numerical precision
+#ifdef _USEDOUBLEPREC_
+	if( this->get_prec() != 64) {
+		logger.fatal() << "Error in numerical precision, aborting...";
+		logger.fatal() << "compile: 64\tinput:" << this->get_prec();
+		exit (HMC_STDERR);
+	}
+#else
+	if( this->get_prec() != 32) {
+		logger.fatal() << "Error in numerical precision, aborting...";
+		logger.fatal() << "compile: 32\tinput:" << this->get_prec();
+		exit (HMC_STDERR);
+	}
+#endif
+	//reconstruct12
+#ifdef _USE_RECONSTRUCT_TWELVE_
+	if( this->get_use_rec12() != 1) {
+		logger.fatal() << "Error in REC12-setting, aborting...";
+		logger.fatal() << "compile: 1\tinput:" << this->get_use_rec12();
+		exit (HMC_STDERR);
+	}
+#else
+	if( this->get_use_rec12() != 0) {
+		logger.fatal() << "Error in REC12-setting, aborting...";
+		logger.fatal() << "compile: 0\tinput:" << this->get_use_rec12();
+		exit (HMC_STDERR);
+	}
+#endif
+	//GPU-Usage
+#ifdef _USE_GPU_
+	if( this->get_use_gpu() != 1) {
+		logger.fatal() << "Error in setting of GPU-usage, aborting...";
+		logger.fatal() << "compile:1\t"<<this->get_use_gpu();
+		exit (HMC_STDERR);
+	}
+#else
+	if( this->get_use_gpu() != 0) {
+		logger.fatal() << "Error in setting of GPU-usage, aborting...";
+		logger.fatal() << "compile:0\t"<<this->get_use_gpu();
+		exit (HMC_STDERR);
+	}
+#endif
+	//Lattice Size
+	if( this->get_nspace() != NSPACE)  {
+		logger.fatal() << "Error in spatial lattice size, aborting...";
+		logger.fatal() << "compile:"<<NSPACE<<"\tinput:"<<this->get_nspace();
+		exit (HMC_STDERR);
+	}
+	if( this->get_ntime() != NTIME) {
+		logger.fatal() << "Error in temporal lattice size, aborting...";
+		logger.fatal() << "compile:"<<NTIME<<"\tinput:"<<this->get_ntime();
+		exit (HMC_STDERR);
+	}	
+	
+
 }

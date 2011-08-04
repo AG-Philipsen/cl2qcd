@@ -57,6 +57,10 @@ public:
 	hmc_float get_csw();
 	hmc_float get_chem_pot_re();
 	hmc_float get_chem_pot_im();
+	int get_ntime();
+	int get_nspace();
+	int get_use_rec12();
+	int get_use_gpu();
 	int get_use_eo();
 	int get_cgmax();
 	/**
@@ -134,6 +138,32 @@ public:
 	 */
 	void print_info_hmc(char* progname, ostream* os);
 
+	/**
+	 * check inputparameters against compile settings
+	 * NOTE: In the end, this is propably not needed anymore, but for now it is a safety net
+	 */
+	void check_settings_global();
+	
+	/**
+	 * print info independent of executable using logger
+	 */
+	void print_info_global();
+
+	/**
+	 * print info independent of executable using output stream
+	 */
+	void print_info_global(ostream* os);
+	
+	/**
+	 *
+	 */
+	void print_info_fermion();
+
+	/**
+	 *
+	 */
+	void print_info_fermion(ostream * os);	
+	
 	//CP
 	//this is out of laziness
 	std::string sourcefile;
@@ -150,6 +180,10 @@ private:
 	hmc_float chem_pot_re;
 	hmc_float chem_pot_im;
 	hmc_float tau;
+	int nspace;
+	int ntime;
+	int use_rec12;
+	int use_gpu;
 	int num_dev;
 	int cgmax;
 	int use_eo;

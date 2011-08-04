@@ -80,7 +80,7 @@ hmc_error Gaugefield::init_gaugefield(usetimer* timer)
 			print_info_source(&parameters_source);
 		} else {
 			logger.fatal() << "error in setting vals from source!!! check global settings!!!";
-			return HMC_XMLERROR;
+			exit( HMC_XMLERROR );
 		}
 	}
 	if(get_parameters()->get_startcondition() == COLD_START) {
