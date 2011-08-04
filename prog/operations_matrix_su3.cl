@@ -3,15 +3,6 @@
  */
 //operations_matrix_su3.cl
 
-
-
-//not valid for REC12
-// void print_matrixsu3(Matrixsu3 in){
-//      printf("(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n", in.e00.re, in.e00.im, in.e01.re, in.e01.im, in.e02.re, in.e02.im, in.e10.re, in.e10.im, in.e11.re, in.e11.im, in.e12.re, in.e12.im, in.e02.re, in.e02.im, in.e21.re, in.e21.im, in.e22.re, in.e22.im);
-//      printf("\n");
-// }
-
-
 #ifdef _RECONSTRUCT_TWELVE_
 hmc_complex reconstruct_su3(const Matrixsu3 p, const int ncomp)
 {
@@ -39,6 +30,30 @@ hmc_complex reconstruct_su3(const Matrixsu3 p, const int ncomp)
 	return complexconj (out);
 }
 #endif
+
+void print_matrixsu3(Matrixsu3 in){
+#ifdef _RECONSTRUCT_TWELVE_
+	hmc_float in20_re = reconstruct_su3(in, 0).re;
+	hmc_float in20_im = reconstruct_su3(in, 0).im;
+	hmc_float in21_re = reconstruct_su3(in, 1).re;
+	hmc_float in21_im = reconstruct_su3(in, 1).im;
+	hmc_float in22_re = reconstruct_su3(in, 2).re;
+	hmc_float in22_im = reconstruct_su3(in, 2).im;
+		
+	printf("(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n", 
+						in.e00.re, in.e00.im, in.e01.re, in.e01.im, in.e02.re, in.e02.im, 
+						in.e10.re, in.e10.im, in.e11.re, in.e11.im, in.e12.re, in.e12.im, 
+						in20_re, in20_im, in21_re, in21_im, in22_re, in22_im);
+#else
+		printf("(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n", 
+						in.e00.re, in.e00.im, in.e01.re, in.e01.im, in.e02.re, in.e02.im, 
+						in.e10.re, in.e10.im, in.e11.re, in.e11.im, in.e12.re, in.e12.im, 
+						in.e20.re, in.e20.im, in.e21.re, in.e21.im, in.e22.re, in.e22.im);
+#endif
+	printf("\n");
+}
+
+
 
 Matrixsu3 get_matrixsu3( __global ocl_s_gaugefield * field, const int spacepos, const int timepos, const int mu)
 {
@@ -268,10 +283,10 @@ Matrixsu3 multiply_matrixsu3_dagger(const Matrixsu3 p, const Matrixsu3 q)
 		out.e01.im =-p.e00.re * q.e10.im - p.e01.re * q.e11.im - p.e02.re * q.e12.im
 		           + p.e00.im * q.e10.re + p.e01.im * q.e11.re + p.e02.im * q.e12.re;
 	       
-		out.e02.re = p.e00.re * q20_re + p.e01.re * q21_re + p.e02.re * q22_re
-		           + p.e00.im * q20_im + p.e01.im * q21_im + p.e02.im * q22_im;
-		out.e02.im =-p.e00.re * q20_im - p.e01.re * q21_im - p.e02.re * q22_im
-		           + p.e00.im * q20_re + p.e01.im * q21_re + p.e02.im * q22_re;
+		out.e02.re = p.e00.re * q20_re   + p.e01.re * q21_re   + p.e02.re * q22_re
+		           + p.e00.im * q20_im   + p.e01.im * q21_im   + p.e02.im * q22_im;
+		out.e02.im =-p.e00.re * q20_im   - p.e01.re * q21_im   - p.e02.re * q22_im
+		           + p.e00.im * q20_re   + p.e01.im * q21_re   + p.e02.im * q22_re;
 	       
 		out.e10.re = p.e10.re * q.e00.re + p.e11.re * q.e01.re + p.e12.re * q.e02.re
 		           + p.e10.im * q.e00.im + p.e11.im * q.e01.im + p.e12.im * q.e02.im;
@@ -283,10 +298,10 @@ Matrixsu3 multiply_matrixsu3_dagger(const Matrixsu3 p, const Matrixsu3 q)
 		out.e11.im =-p.e10.re * q.e10.im - p.e11.re * q.e11.im - p.e12.re * q.e12.im
 		           + p.e10.im * q.e10.re + p.e11.im * q.e11.re + p.e12.im * q.e12.re;
 	       
-		out.e12.re = p.e10.re * q20_re + p.e11.re * q21_re + p.e12.re * q22_re
-		           + p.e10.im * q20_im + p.e11.im * q21_im + p.e12.im * q22_im;
-		out.e12.im =-p.e10.re * q20_im - p.e11.re * q21_im - p.e12.re * q22_im
-		           + p.e10.im * q20_re + p.e11.im * q21_re + p.e12.im * q22_re;	       
+		out.e12.re = p.e10.re * q20_re   + p.e11.re * q21_re   + p.e12.re * q22_re
+		           + p.e10.im * q20_im   + p.e11.im * q21_im   + p.e12.im * q22_im;
+		out.e12.im =-p.e10.re * q20_im   - p.e11.re * q21_im   - p.e12.re * q22_im
+		           + p.e10.im * q20_re   + p.e11.im * q21_re   + p.e12.im * q22_re;	       
 #else
     
 		out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e01.re + p.e02.re * q.e02.re

@@ -4,6 +4,15 @@
 
 //operations_matrix.cl
 
+
+void print_matrix3x3(Matrix3x3 in){
+	printf("(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n", 
+					in.e00.re, in.e00.im, in.e01.re, in.e01.im, in.e02.re, in.e02.im, 
+					in.e10.re, in.e10.im, in.e11.re, in.e11.im, in.e12.re, in.e12.im, 
+					in.e20.re, in.e20.im, in.e21.re, in.e21.im, in.e22.re, in.e22.im);
+	printf("\n");
+}
+
 Matrix3x3 zero_matrix3x3 (){
     Matrix3x3 out;
     out.e00.re = 0.;
