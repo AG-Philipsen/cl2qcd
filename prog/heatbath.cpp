@@ -65,8 +65,8 @@ int main(int argc, char* argv[])
 	logger.trace() << "Got seeds";
 
 	//first output, if you like it...
-	//  cout << endl << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]" << endl;
-	//  gaugefield.print_gaugeobservables(&polytime,&plaqtime);
+	cout << endl << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]" << endl;
+	gaugefield.print_gaugeobservables(&polytime,&plaqtime);
 
 	gaugefield.copy_gaugefield_to_devices(&copytime);
 	gaugefield.copy_rndarray_to_devices(rndarray, &copytime);
@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 	// Heatbath
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	logger.trace() << "Start heatbath" ;
+	logger.trace() << "Start thermalization" ;
 
 	int ntherm = parameters.get_thermalizationsteps();
 	if(ntherm > 0) gaugefield.heatbath(ntherm, &updatetime);
@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 		gaugefield.heatbath(&updatetime);
 		for(int j = 0; j < overrelaxsteps; j++) gaugefield.overrelax(&overrelaxtime);
 		if( ( (i + 1) % writefreq ) == 0 ) {
-		  gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str());
+		  gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str(), 1);
 		  //		  gaugefield.sync_gaugefield(&copytime);
 		  //		  cout<<gaugefield.plaquette()<<" "<<gaugefield.polyakov().re<<endl;
 		}

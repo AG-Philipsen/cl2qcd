@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
 		for(int j = 0; j < overrelaxsteps; j++)
 		  gaugefield.overrelax(&overrelaxtime);
 		if( ( (i + 1) % writefreq ) == 0 ) {
-			gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str());
+			gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str(), 0);
 		}
 		if( parameters.get_saveconfigs() == TRUE && ( (i + 1) % savefreq ) == 0 ) {
 			gaugefield.sync_gaugefield(&copytime);

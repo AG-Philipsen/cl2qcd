@@ -795,7 +795,6 @@ void inputparameters::check_settings_global(){
 	//reconstruct12
 #ifdef _RECONSTRUCT_TWELVE_
 	if( this->get_use_rec12() != 1) {
-		printf("%i\n", this->get_use_rec12());
 		logger.fatal() << "Error in REC12-setting, aborting...";
 		logger.fatal() << "compile: 1\tinput:" << this->get_use_rec12();
 		exit (HMC_STDERR);

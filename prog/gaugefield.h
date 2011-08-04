@@ -140,6 +140,16 @@ public:
 	 */
 	void print_gaugeobservables(hmc_float plaq, hmc_float tplaq, hmc_float splaq, hmc_complex pol, int iter, std::string filename);
 	/**
+	 * Print gauge observables passed as function arguments, add iteration number to stdout.
+	 * @param[in] plaq plaquette value
+	 * @param[in] tplaq timelike plaquette value
+	 * @param[in] splaq spatial plaquette value
+	 * @param[in] pol Polyakov loop value
+	 * @param[in] iter integer number that accompanies output
+	 */
+	void print_gaugeobservables(hmc_float plaq, hmc_float tplaq, hmc_float splaq, hmc_complex pol, int iter);
+	
+	/**
 	 * Print gauge observables calculated on device, add iteration number, return values to program.
 	 * @param[in,out] plaq pointer to plaquette value
 	 * @param[in,out] tplaq pointer to timelike plaquette value
@@ -149,18 +159,20 @@ public:
 	 * @param[in,out] polytime time to calculate Polyakov loop
 	 * @param[in] i integer number that accompanies output
 	 * @param[in] gaugeoutname name of output file
+	 * @param[in] stdout print also to stdout
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	virtual hmc_error print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname);
+	virtual hmc_error print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname, int stdout);
 	/**
 	 * Print gauge observables calculated on device, add iteration number.
 	 * @param[in,out] plaqtime time to calculate plaquette
 	 * @param[in,out] polytime time to calculate Polyakov loop
 	 * @param[in] i integer number that accompanies output
 	 * @param[in] gaugeoutname name of output file
+	 * @param[in] stdout print also to stdout
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	virtual hmc_error print_gaugeobservables_from_devices(usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname);
+	virtual hmc_error print_gaugeobservables_from_devices(usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname, int stdout);
 	
 
 	//gaugeobservables, on host!!
