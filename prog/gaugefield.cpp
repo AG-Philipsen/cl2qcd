@@ -71,15 +71,19 @@ hmc_error Gaugefield::init_gaugefield(usetimer* timer)
 		hmc_float * gaugefield_tmp;
 		gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * NTIME * VOLSPACE);
 		err = parameters_source.readsourcefile(&(get_parameters()->sourcefile)[0], get_parameters()->get_prec(), &gaugefield_tmp);
+		if (err == 0) {
+			print_info_source(&parameters_source);
+		} else {
+			logger.fatal() << "error in setting vals from source!!! check global settings!! Aborting..";
+			exit( HMC_XMLERROR );
+		}
 		err = copy_gaugefield_from_ildg_format(gftmp, gaugefield_tmp, parameters_source.num_entries_source);
 		err = copy_gaugefield_to_s_gaugefield (get_sgf(), gftmp);
 		free(gaugefield_tmp);
 		free(gftmp);
 		timer->add();
-		if (err == 0) {
-			print_info_source(&parameters_source);
-		} else {
-			logger.fatal() << "error in setting vals from source!!! check global settings!!!";
+		if(err!=0) {
+			logger.fatal() << "error in initiating gaugefield from source!!! Aborting...";
 			exit( HMC_XMLERROR );
 		}
 	}
