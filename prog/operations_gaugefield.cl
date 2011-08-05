@@ -157,9 +157,87 @@ Matrixsu2 reduction (const Matrix3x3 src, const int rand)
 	return out;
 }
 
+//CP: I leave both version in here...
 Matrixsu3 extend (const int random, Matrixsu2 src)
 {
-	Matrixsu3 out;
+        Matrixsu3 out;
+#ifdef _USE_GPU_
+
+#ifdef _RECONSTRUCT_TWELVE_
+switch(random){
+        case 1:
+                out.e00 = src.e00;
+                out.e01 = src.e01;
+                out.e02 = hmc_complex_zero;
+                out.e10 = src.e10;
+                out.e11 = src.e11;
+                out.e12 = hmc_complex_zero;
+                return out;
+                break;
+        case 2:
+                out.e00 = hmc_complex_one;
+                out.e01 = hmc_complex_zero;
+                out.e02 = hmc_complex_zero;
+                out.e10 = hmc_complex_zero;
+                out.e11 = src.e00;
+                out.e12 = src.e01;
+                return out;
+                break;
+        case 3:
+                out.e00 = src.e00;
+                out.e01 = hmc_complex_zero;
+                out.e02 = src.e01;
+                out.e10= hmc_complex_zero;
+                out.e11 = hmc_complex_one;
+                out.e12 = hmc_complex_zero;
+                return out;
+                break;
+        }
+#else
+
+switch(random){
+        case 1:
+                out.e00 = src.e00;
+                out.e01 = src.e01;
+                out.e02 = hmc_complex_zero;
+                out.e10 = src.e10;
+                out.e11 = src.e11;
+                out.e12 = hmc_complex_zero;
+                out.e20 = hmc_complex_zero;
+                out.e21 = hmc_complex_zero;
+                out.e22 = hmc_complex_one;
+                return out;
+                break;
+        case 2:
+                out.e00 = hmc_complex_one;
+                out.e01 = hmc_complex_zero;
+                out.e02 = hmc_complex_zero;
+                out.e10 = hmc_complex_zero;
+                out.e11 = src.e00;
+                out.e12 = src.e01;
+                out.e20 = hmc_complex_zero;
+                out.e21 = src.e10;
+                out.e22 = src.e11;
+                return out;
+                break;
+        case 3:
+                out.e00 = src.e00;
+                out.e01 = hmc_complex_zero;
+                out.e02 = src.e01;
+                out.e10= hmc_complex_zero;
+                out.e11 = hmc_complex_one;
+                out.e12 = hmc_complex_zero;
+                out.e20 = src.e10;
+                out.e21 = hmc_complex_zero;
+                out.e22 = src.e11;
+                return out;
+                break;
+        }
+#endif
+	return;
+}
+
+#else
   
 #ifdef _RECONSTRUCT_TWELVE_
 	if (random == 1) {
@@ -220,6 +298,7 @@ Matrixsu3 extend (const int random, Matrixsu2 src)
 
 	return out;
 }
+#endif //_USE_GPU_
 
 // void gaugefield_apply_bc(__private hmc_ocl_su3matrix * in, hmc_float theta)
 // {
