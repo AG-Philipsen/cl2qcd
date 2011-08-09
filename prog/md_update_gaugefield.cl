@@ -105,15 +105,18 @@ __kernel void md_update_gaugefield(hmc_float eps, __global ae * p_in, __global o
 	//CP: it is GAUGEMOMENTASIZE = NDIM * SPINORFIELDSIZE
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 		/** @todo this must be done more efficient */
-		if(id_tmp % 2 == 0) get_even_site(id_tmp / 2, &n, &t);
-		else get_odd_site(id_tmp / 2, &n, &t);
+		if(id_tmp < VOLSPACE * NTIME / 2)
+			get_even_site(id_tmp, &n, &t);
+		else
+			get_odd_site(id_tmp-(VOLSPACE*NTIME/2), &n, &t);
+		
 		for(int mu = 0; mu < NDIM; mu++) {
 			index = get_global_link_pos(mu, n, t);
 			// an su3 algebra element has NC*NC-1 = 8 hmc_float entries
 			// &(p_in[index*8]) should point to the right position for the pos-th element of the long gaugemomentum vector p_in
 			tmp2 = build_su3matrix_by_exponentiation((p_in[index]), eps);
+
 			tmp = get_matrixsu3(u_inout, n, t, mu);
-//      if(id_tmp == 0 && mu == 0) print_matrixsu3(tmp);
 			tmp2 = multiply_matrixsu3( tmp2, tmp);
 			put_matrixsu3(u_inout, tmp2, n, t, mu);
 		}

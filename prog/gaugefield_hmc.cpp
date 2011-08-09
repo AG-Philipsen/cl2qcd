@@ -11,12 +11,11 @@ hmc_error Gaugefield_hmc::init_devices(cl_device_type* devicetypes, usetimer* ti
 // 		//this needs generalisation to several devices and subsets!!!!!
 // 		cerr << "only 1 device possible..." << endl;
 // 	}
-
 	if(get_num_ocl_devices() > 0) {
-		Opencl_hmc* dev_tmp = new Opencl_hmc[get_num_ocl_devices()];
+		Opencl_hmc* dev_tmp = new Opencl_hmc[this->get_num_ocl_devices()];
+		alloc_devicetypes();
 		set_devices(dev_tmp);
 	}
-
 
 	for(int n = 0; n < get_num_ocl_devices(); n++) {
 		cout << "init device #" << n << endl;
@@ -74,12 +73,12 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters,
 	/////////////////////////////////////////////////////////////////////
 	//HMC-algorithm
 	
-	logger.trace() << "\tinit gauge momentum" ;
 	//init gauge_momenta, saved in clmem_p
+	logger.debug() << "\tinit gauge momentum" ;
 	get_devices_hmc()[dev].generate_gaussian_gaugemomenta_device(ls, gs, latimer);
-	//init/update spinorfield phi
-	logger.trace() << "\tinit spinorfield " ;
 	
+	//init/update spinorfield phi
+	logger.debug() << "\tinit spinorfield " ;
 	//NOTE: one does not have to use phi as initial spinorfield in order to save one variable!!!
 	//	original alg:
 	//		generate_gaussian_spinorfield(chi)
@@ -90,15 +89,14 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters,
 	//		energy_init = |phi_inv|^2
 	//		md_update_spinorfield_device(phi_inv, phi): phi = Qminus phi_inv
 	//	saving one variable in global mem!!
-	
 	get_devices_hmc()[dev].generate_gaussian_spinorfield_device(ls, gs, latimer);
 	get_devices_hmc()[dev].calc_spinorfield_init_energy_device(ls, gs, scalarprodtimer);
-	logger.trace() << "\tperform md update of spinorfield" ;
+	logger.debug() << "\tperform md update of spinorfield" ;
 	get_devices_hmc()[dev].md_update_spinorfield_device(ls, gs, Mtimer);
 	
 	//update gaugefield and gauge_momenta via leapfrog
 	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
-	logger.trace() << "\tperform leapfrog to update gaugefield and gaugemomentum" ;
+	logger.debug() << "\tperform leapfrog to update gaugefield and gaugemomentum" ;
 	
 	/** @todo these have to be reconsidered! */
 	//copy u->u' p->p' for the leapfrog
@@ -107,10 +105,11 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters,
 		
 	get_devices_hmc()[dev].leapfrog_device((*parameters).get_tau(), (*parameters).get_integrationsteps1(), (*parameters).get_integrationsteps2(), ls, gs, latimer);
 		
-	logger.trace() << "\tobservables of new config:\t" ;
+// 	logger.debug() << "\tobservables of new config:\t" ;
 // 		print_gaugeobservables(new_field, &polytime, &plaqtime);
+
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
-	logger.trace() << "\tperform Metropolis step: " ;
+	logger.debug() << "\tperform Metropolis step: " ;
 	//this call calculates also the HMC-Observables
 	*obs = get_devices_hmc()[dev].metropolis(rnd_number, (*parameters).get_beta(), outname, ls, gs, latimer);
 
@@ -119,10 +118,10 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters,
 		get_devices_hmc()[dev].copy_gaugefield_new_old_device(ls, gs, latimer);
 		get_devices_hmc()[dev].copy_gaugemomenta_new_old_device(ls, gs, latimer);
 		// SL: this works as long as p and field are pointers to the *original* memory locations!
-		logger.trace() << "\t\tnew configuration accepted" ;
+		logger.debug() << "\t\tnew configuration accepted" ;
 	}
 	else{
-		logger.trace() << "\t\tnew configuration rejected" ;
+		logger.debug() << "\t\tnew configuration rejected" ;
 	}
 	logger.trace()<< "\tfinished HMC trajectory " << iter ;
 	

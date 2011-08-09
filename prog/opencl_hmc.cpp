@@ -235,27 +235,27 @@ hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, con
 	hmc_float stepsize_half = 0.5 * stepsize;
 
 	//initial step
-	logger.trace() << "\t\tinitial step:";
+	logger.debug() << "\t\tinitial step:";
 	//here, phi is inverted using the orig. gaugefield
 	/** @todo replace noop here */
 	usetimer noop;
 	force_device(ls, gs, &noop);
-	md_update_gaugemomentum_device(stepsize_half, ls, gs, &noop);
+	md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs, &noop);
 	//intermediate steps
-	if(steps1 > 1) logger.trace() << "\t\tperform " << steps1 - 1 << " intermediate steps " ;
+	if(steps1 > 1) logger.debug() << "\t\tperform " << steps1 - 1 << " intermediate steps " ;
 	for(k = 1; k < steps1; k++) {
 		md_update_gaugefield_device(stepsize, ls, gs, &noop);
 		force_device(ls, gs, &noop);
-		md_update_gaugemomentum_device(stepsize, ls, gs, &noop);
+		md_update_gaugemomentum_device(-1.*stepsize, ls, gs, &noop);
 	}
 
 	//final step
-	logger.trace() << "\t\tfinal step" ;
+	logger.debug() << "\t\tfinal step" ;
 	md_update_gaugefield_device(stepsize, ls, gs, &noop);
 	force_device(ls, gs, &noop);
-	md_update_gaugemomentum_device(stepsize_half, ls, gs, &noop);
+	md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs, &noop);
 
-	logger.trace() << "\t\tfinished leapfrog";
+	logger.debug() << "\t\tfinished leapfrog";
 
 
 	(*timer).add();
@@ -268,17 +268,17 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs, usetimer * 
 	(*timer).reset();
 	/** @todo replace noop */
 	usetimer noop;
-	cout << "\t\tstart calculating the force..." << endl;
+	logger.debug() << "\t\tstart calculating the force...";
 	//CP: make sure that the output field is set to zero
 	set_zero_clmem_force_device(ls, gs, &noop);
 	//add contributions
-	cout << "\t\tcalc gauge_force..." << endl;
+	logger.debug() << "\t\tcalc gauge_force...";
 	gauge_force_device(ls, gs, &noop);
-	cout << "\t\tinvert fermion field..." << endl;
+// 	cout << "\t\tinvert fermion field..." << endl;
 	//CP: to begin with, consider only the cg-solver
 	//source is at 0
-	int k = 0;
-	int use_cg = TRUE;
+// 	int k = 0;
+// 	int use_cg = TRUE;
 	//CP: at the moment, use_eo = 0 so that even-odd is not used!!!!!
 
 	//debugging
@@ -324,42 +324,44 @@ hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const stri
 	hmc_observables tmp;
 	//Calc Hamiltonian
 	int accept = 0;
-	hmc_float deltaH;
-	hmc_float spinor_energy_init, s_fermion;
-	hmc_float p2, new_p2;
+	/** @todo check use of timer */
+	usetimer noop;
+
+	logger.debug() << "Calculate Hamiltonian";
+	//Gauge-Part
 	hmc_float tplaq, splaq, plaq;
 	hmc_float tplaq_new, splaq_new, plaq_new;
 	hmc_complex poly;
 	hmc_complex poly_new;
-	/** @todo check use of timer */
-	usetimer noop;
-
-	logger.trace() << "\tCalc Hamiltonian...";
-	//Gauge-Part
-	//Calc gaugeobservables from old gaugefield
-	Opencl_fermions::copy_float_from_device(clmem_energy_init, &spinor_energy_init, timer);
-	//In this call, the observables are calculated already with appropiate Weighting factor
+	//In this call, the observables are calculated already with appropiate Weighting factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC)
 	Opencl::gaugeobservables(&plaq,  &tplaq, &splaq, &poly, &noop, &noop);
-	//plaq is normalized by factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC), so one has to divide by it again to get s_gauge
-	hmc_float factor = 2.0 / static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) * NC);
-	logger.debug() << "\t\tS_gauge(old field) = " << plaq;
 	Opencl::gaugeobservables(clmem_new_u, &plaq_new,  &tplaq_new, &splaq_new, &poly_new, &noop, &noop);
-	//plaq is normalized by factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC), so one has to divide by it again to get s_gauge
-	logger.debug() << "\t\tS_gauge(new field) = " << plaq_new;
-	deltaH = (plaq - plaq_new) * beta / 6.*factor;
+	//plaq has to be divided by the norm-factor and multiplied by NC 
+	//	(because this is in the defintion of the gauge action and not in the normalization) to get s_gauge
+	hmc_float factor = 2.0 / static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) );
+	/** NOTE: the minus here is introduced to fit tmlqcd!!! */
+	hmc_float deltaH = -(plaq - plaq_new) * beta / factor;
+	
+	logger.debug() << "\tS_gauge(old field) = " << plaq << "\t" << plaq* beta  /factor;
+	logger.debug() << "\tS_gauge(new field) = " << plaq_new << "\t" << plaq_new* beta /factor;
+	logger.debug() << "\tdeltaS_gauge = " << deltaH;
 
-	logger.trace() << "\tCalc Hamiltonian gaugemom...";
 	//Gaugemomentum-Part
+	hmc_float p2, new_p2;
 	set_float_to_gaugemomentum_squarenorm_device(clmem_p, clmem_p2, local_work_size, global_work_size, timer);
 	set_float_to_gaugemomentum_squarenorm_device(clmem_new_p, clmem_new_p2, local_work_size, global_work_size, timer);
 	Opencl_fermions::copy_float_from_device(clmem_p2, &p2, timer);
 	Opencl_fermions::copy_float_from_device(clmem_new_p2, &new_p2, timer);
+	//the energy is half the squarenorm
 	deltaH += 0.5 * (p2 - new_p2);
-	logger.debug() << "\t\tS_gaugemom(old field) = " << p2;
-	logger.debug() << "\t\tS_gaugemom(new field) = " << new_p2;
-	logger.trace() << "\tCalc Hamiltonian ferm...";
+	
+	logger.debug() << "\tS_gaugemom(old field) = " << 0.5*p2;
+	logger.debug() << "\tS_gaugemom(new field) = " << 0.5*new_p2;
+	logger.debug() << "\tdeltaS_gaugemom = " << 0.5 * (p2 - new_p2);
 
 	//Fermion-Part:
+	hmc_float spinor_energy_init, s_fermion;
+	Opencl_fermions::copy_float_from_device(clmem_energy_init, &spinor_energy_init, timer);
 	// sum_links phi*_i (M^+M)_ij^-1 phi_j
 	// here it is assumed that the rhs has already been computed in clmem_inout... (during the leapfrog..)
 	//CP: phi_inv is not needed after this, so it can be used to store M (QplusQminus_inv)
@@ -368,7 +370,6 @@ hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const stri
 //  copy_float_from_device(clmem_s_fermion, &s_fermion, timer);
 //  deltaH += spinor_energy_init - s_fermion;
 
-	logger.trace() << "\tmetropolis...";
 	//Metropolis-Part
 	hmc_float compare_prob;
 	if(deltaH < 0) {
@@ -376,6 +377,7 @@ hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const stri
 	} else {
 		compare_prob = 1.0;
 	}
+	logger.debug() << "\tdeltaH = " << deltaH << "\tAcc-Prop = " << compare_prob;
 	int iter;
 	if(rnd <= compare_prob) {
 		tmp.accept = 1;

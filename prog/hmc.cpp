@@ -68,6 +68,7 @@ int main(int argc, char* argv[])
 	logger.trace() << "Got seeds";
 
 	gaugefield.copy_gaugefield_to_devices(&copytimer);
+
 	gaugefield.copy_rndarray_to_devices(rndarray, &copytime);
 	
 	logger.trace() << "Moved stuff to device";
@@ -86,8 +87,8 @@ int main(int argc, char* argv[])
 	Random hmc_rnd_gen (seed);
 	
 	logger.trace() << "perform HMC on device... ";
-	//main hmc-loop
 	logger.trace() << "start main HMC loop with " << hmc_iter << " iterations: " ;
+	//main hmc-loop
 	for(iter = 0; iter < hmc_iter; iter ++) {
 		//generate new random-number for Metropolis step
 		rnd_number = hmc_rnd_gen.doub();
