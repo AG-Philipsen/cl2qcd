@@ -8,15 +8,26 @@ hmc_error inputparameters::set_defaults()
 	prec = 64;
 	use_rec12 = 0;
 	use_gpu = 0;
+	use_chem_pot_re = 0;
+	use_chem_pot_im = 0;
+	use_smearing = 0; 
 	nspace = 4;
 	ntime = 8;
+	volspace = nspace*nspace*nspace;
+	vol4d = volspace*ntime;
+	spinorfieldsize = vol4d*12;
+	eoprec_spinorfieldsize = spinorfieldsize/2;	
 	startcondition = COLD_START;
 	saveconfigs = FALSE;
 	writefrequency = 1;
 	savefrequency = 100;
 	num_dev = 1;
 	sourcefilenumber = "00000";
-	
+
+#ifdef _PROFILING_
+	mat_size = 9;
+	float_size = 8;
+#endif
 	//gaugefield parameters
 	beta = 4.0;
 	theta_gaugefield = 0.;
@@ -153,6 +164,11 @@ hmc_error inputparameters::readfile(char* ifn)
 	//check the read-in values against the compile time values
 	this->check_settings_global();
 
+#ifdef _PROFILING_
+	//set variables needed for Profiling according to the input-parameters
+	if(this->get_use_rec12() != 0) this->mat_size = 6;
+	if(this->get_prec() == 32 ) this->float_size = 4;
+#endif
 	return HMC_SUCCESS;
 }
 

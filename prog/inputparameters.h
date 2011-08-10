@@ -43,6 +43,9 @@ public:
 	 *
 	 * \return Should always return HMC_SUCCESS.
 	 */
+
+	/////////////////////////////////////////////////////
+	// access to private members
 	hmc_error set_defaults();
 	hmc_float get_kappa();
 	void set_mubar_negative();
@@ -74,9 +77,7 @@ public:
 	int get_heatbathsteps();
 	int get_overrelaxsteps();
 	int get_hmcsteps();
-	//this is suppposed to be used for gauge-sector
 	int get_integrationsteps1();
-	//this is supposed to be used for fermion-sector
 	int get_integrationsteps2();
 	int get_saveconfigs();
 	int get_savefrequency();
@@ -86,6 +87,8 @@ public:
 	void display_sourcefilenumber();
 	int get_num_dev();
 
+	/////////////////////////////////////////////////////
+	// printing-functions for the different executables
 	/**
 	 * Print info for heatbath executable using logger.
 	 * @param progname Name of the executable.
@@ -139,12 +142,6 @@ public:
 	void print_info_hmc(char* progname, ostream* os);
 
 	/**
-	 * check inputparameters against compile settings
-	 * NOTE: In the end, this is propably not needed anymore, but for now it is a safety net
-	 */
-	void check_settings_global();
-	
-	/**
 	 * print info independent of executable using logger
 	 */
 	void print_info_global();
@@ -164,11 +161,38 @@ public:
 	 */
 	void print_info_fermion(ostream * os);	
 	
+	/**
+	 * check inputparameters against compile settings
+	 * NOTE: In the end, this is propably not needed anymore, but for now it is a safety net
+	 */
+	void check_settings_global();	
+	
 	//CP
 	//this is out of laziness
 	std::string sourcefile;
 	std::string sourcefilenumber;
 private:
+	//general parameters
+	int nspace;
+	int ntime;
+	int volspace;
+	int vol4d;
+	int spinorfieldsize;
+	int eoprec_spinorfieldsize;
+	int use_rec12;
+	int use_gpu;
+	int use_eo;
+	int use_chem_pot_re;
+	int use_chem_pot_im;
+	int use_smearing;
+	
+#ifdef _PROFILING_
+	//parameters that describe the size of datatypes in bytes
+	int mat_size;
+	int float_size;	
+#endif
+	
+	//more specific ones
 	hmc_float kappa;
 	hmc_float beta;
 	hmc_float mu;
@@ -180,13 +204,8 @@ private:
 	hmc_float chem_pot_re;
 	hmc_float chem_pot_im;
 	hmc_float tau;
-	int nspace;
-	int ntime;
-	int use_rec12;
-	int use_gpu;
 	int num_dev;
 	int cgmax;
-	int use_eo;
 	int fermact;
 	int prec;
 	int startcondition;
