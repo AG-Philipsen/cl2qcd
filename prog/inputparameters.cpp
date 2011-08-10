@@ -714,16 +714,14 @@ void inputparameters::print_info_fermion(){
 	logger.info() << "## theta_fermion_temporal = "<<this->get_theta_fermion_temporal();
 	logger.info() << "##" ;
 	logger.info() << "## Chemical Potential:" ;
-	#ifdef _CP_REAL_
+	if(this->get_use_chem_pot_re() == 1)
 	logger.info() << "## chem_pot_re  = "<<this->get_chem_pot_re();
-	#else
+	else
 	logger.info() << "## do not use real chem. pot.";
-	#endif
-	#ifdef _CP_IMAG_
+	if(this->get_use_chem_pot_im() == 1)
 	logger.info() << "## chem_pot_im = "<<this->get_chem_pot_im();
-	#else
+	else
 	logger.info() << "## do not use imag. chem. pot.";
-	#endif
 	logger.info() << "##" ;
 	if(this->get_fermact()==WILSON) {
 	  logger.info()<<  "## fermion action: unimproved Wilson";
@@ -757,16 +755,14 @@ void inputparameters::print_info_fermion(ostream * os){
 	*os  << "## theta_fermion_temporal = "<<this->get_theta_fermion_temporal()<<endl;
 	*os  << "##" <<endl;
 	*os  << "## Chemical Potential:" <<endl;
-	#ifdef _CP_REAL_
+	if(this->get_use_chem_pot_re() == 1)
 	*os  << "## chem_pot_re  = "<<this->get_chem_pot_re()<<endl;
-	#else
+	else
 	*os  << "## do not use real chem. pot."<<endl;
-	#endif
-	#ifdef _CP_IMAG_
+	if(this->get_use_chem_pot_im() == 1)
 	*os  << "## chem_pot_im = "<<this->get_chem_pot_im()<<endl;
-	#else
+	else
 	*os  << "## do not use imag. chem. pot."<<endl;
-	#endif
 	*os  << "##" <<endl;
 	if(this->get_fermact()==WILSON) {
 	  *os <<  "## fermion action: unimproved Wilson"<<endl;
