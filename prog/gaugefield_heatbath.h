@@ -62,26 +62,21 @@ public:
 	 * Perform a number of heatbath and (afterwards) overrelaxation steps.
 	 * @param[in] nheat number of heatbath steps
 	 * @param[in] nover number of overrelaxation steps
-	 * @param[in,out] timer_heat time for heatbath steps
-	 * @param[in,out] timer_over time for overrelaxation steps
 	 */
-	hmc_error heatbath(const int nheat, const int nover, usetimer * const timer_heat, usetimer * const timer_over);
+	hmc_error heatbath(const int nheat, const int nover);
 	/**
 	 * Perform a number of heatbath steps.
 	 * @param[in] nheat number of heatbath steps
-	 * @param[in,out] timer_heat time for heatbath steps
 	 */
-	hmc_error heatbath(const int nheat, usetimer * const timer_heat);
+	hmc_error heatbath(const int nheat);
 	/**
 	 * Perform one heatbath step.
-	 * @param[in,out] timer time for heatbath step
 	 */
-	hmc_error heatbath(usetimer * const timer);
+	hmc_error heatbath();
 	/**
 	 * Perform one overrelaxation step.
-	 * @param[in,out] timer time for overrelaxation step
 	 */
-	hmc_error overrelax(usetimer * const timer);
+	hmc_error overrelax();
 
 	//access to private members
 	

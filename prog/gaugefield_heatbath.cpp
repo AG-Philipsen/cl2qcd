@@ -25,35 +25,35 @@ hmc_error Gaugefield_heatbath::init_devices(cl_device_type* devicetypes)
 }
 
 
-hmc_error Gaugefield_heatbath::heatbath(usetimer * const timer)
+hmc_error Gaugefield_heatbath::heatbath()
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices_heatbath()[0].run_heatbath(get_parameters()->get_beta(), timer);
+	hmc_error err = get_devices_heatbath()[0].run_heatbath(get_parameters()->get_beta());
 	return err;
 }
 
-hmc_error Gaugefield_heatbath::overrelax(usetimer * const timer)
+hmc_error Gaugefield_heatbath::overrelax()
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 
-	hmc_error err = get_devices_heatbath()[0].run_overrelax(get_parameters()->get_beta(), timer);
+	hmc_error err = get_devices_heatbath()[0].run_overrelax(get_parameters()->get_beta());
 	return err;
 }
 
-hmc_error Gaugefield_heatbath::heatbath(const int nheat, const int nover, usetimer * const timer_heat, usetimer * const timer_over)
+hmc_error Gaugefield_heatbath::heatbath(const int nheat, const int nover)
 {
 	hmc_error err = HMC_SUCCESS;
-	for(int i = 0; i < nheat; i++) err |= heatbath(timer_heat);
-	for(int i = 0; i < nover; i++) err |= overrelax(timer_over);
+	for(int i = 0; i < nheat; i++) err |= heatbath();
+	for(int i = 0; i < nover; i++) err |= overrelax();
 	return err;
 }
 
-hmc_error Gaugefield_heatbath::heatbath(const int nheat, usetimer * const timer_heat)
+hmc_error Gaugefield_heatbath::heatbath(const int nheat)
 {
 	hmc_error err = HMC_SUCCESS;
-	for(int i = 0; i < nheat; i++) err |= heatbath(timer_heat);
+	for(int i = 0; i < nheat; i++) err |= heatbath();
 	return err;
 }
 

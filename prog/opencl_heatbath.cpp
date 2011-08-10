@@ -63,10 +63,9 @@ hmc_error Opencl_heatbath::clear_kernels()
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_heatbath::run_heatbath(const hmc_float beta, usetimer * const timer)
+hmc_error Opencl_heatbath::run_heatbath(const hmc_float beta)
 {
 	cl_int clerr = CL_SUCCESS;
-	timer->reset();
 
 	size_t global_work_size;
 	if( device_type == CL_DEVICE_TYPE_GPU )
@@ -122,16 +121,13 @@ hmc_error Opencl_heatbath::run_heatbath(const hmc_float beta, usetimer * const t
 		enqueueKernel(heatbath_odd, global_work_size);
 	}
 	clFinish(queue);
-	timer->add();
 	return HMC_SUCCESS;
 
 }
 
-hmc_error Opencl_heatbath::run_overrelax(const hmc_float beta, usetimer * const timer)
+hmc_error Opencl_heatbath::run_overrelax(const hmc_float beta)
 {
 	cl_int clerr = CL_SUCCESS;
-
-	timer->reset();
 
 	size_t global_work_size;
 	if( device_type == CL_DEVICE_TYPE_GPU )
@@ -187,7 +183,6 @@ hmc_error Opencl_heatbath::run_overrelax(const hmc_float beta, usetimer * const 
 		enqueueKernel(overrelax_odd, global_work_size);
 	}
 	clFinish(queue);
-	timer->add();
 	return HMC_SUCCESS;
 }
 
