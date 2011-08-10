@@ -9,34 +9,26 @@ using namespace std;
 
 hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 {
-	*collect_options << "-D_INKERNEL_ -DNSPACE=" << NSPACE << " -DNTIME=" << NTIME << " -DVOLSPACE=" << VOLSPACE;
-
-	//CP: these have to match those in the cmake file
-#ifdef _RECONSTRUCT_TWELVE_
-	*collect_options << " -D_RECONSTRUCT_TWELVE_";
-#endif
-#ifdef _USEDOUBLEPREC_
-	*collect_options << " -D_USEDOUBLEPREC_";
-
+	*collect_options << "-D_INKERNEL_ -DNSPACE=" << get_parameters()->get_nspace() << " -DNTIME=" << get_parameters()->get_ntime() << " -DVOLSPACE=" << get_parameters()->get_volspace();
+	
+	if(get_parameters()->get_use_rec12() == 1)
+		*collect_options << " -D_RECONSTRUCT_TWELVE_";
+	if(get_parameters()->get_prec() == 64){
+		*collect_options << " -D_USEDOUBLEPREC_";
         if( device_double_extension.empty() ) {
           logger.warn() << "Warning: Undefined extension for use of double.";
         } else {
           *collect_options << " -D_DEVICE_DOUBLE_EXTENSION_"<<device_double_extension<<"_";
         }
-	
-#endif
-#ifdef _USEGPU_
-	*collect_options << " -D_USEGPU_";
-#endif
-#ifdef _CP_REAL_
-	*collect_options << " -D_CP_REAL_";
-#endif
-#ifdef _CP_IMAG_
-	*collect_options << " -D_CP_IMAG_";
-#endif
-#ifdef _USE_SMEARING_
-	*collect_options << " -D_USE_SMEARING_";
-#endif
+	}
+	if(get_parameters()->get_use_gpu() == 1)
+		*collect_options << " -D_USEGPU_";
+	if(get_parameters()->get_use_chem_pot_re() == 1)
+		*collect_options << " -D_CP_REAL_";
+	if(get_parameters()->get_use_chem_pot_im() == 1)
+		*collect_options << " -D_CP_IMAG_";
+	if(get_parameters()->get_use_smearing() == 1)
+		*collect_options << " -D_USE_SMEARING_";
 	*collect_options << " -I" << SOURCEDIR;
 
 	return HMC_SUCCESS;
@@ -1182,15 +1174,9 @@ usetimer* Opencl::get_timer(char * in){
 
 int Opencl::get_read_write_size(char * in, inputparameters * parameters){
 	//Depending on the compile-options, one has different sizes...
-	int D, S, R;
-	if((*parameters).get_prec() == 64)
-		D = 8;
-	else
-		D = 4;
-	if((*parameters).get_use_rec12() == 1)
-		R = 6;
-	else
-		R = 9;
+	int D = (*parameters).get_float_size();
+	int R = (*parameters).get_mat_size();
+	int S;
 	if((*parameters).get_use_eo() == 1)
 	  S = EOPREC_SPINORFIELDSIZE;
 	else
@@ -1214,14 +1200,10 @@ int Opencl::get_read_write_size(char * in, inputparameters * parameters){
 	}
 }
 
-void Opencl::print_profiling(std::string filename, char * kernelName, inputparameters * parameters, uint64_t time_total, int calls_total, int read_write_size){
+void Opencl::print_profiling(std::string filename, char * kernelName, uint64_t time_total, int calls_total, int read_write_size){
 	hmc_float bandwidth = 0.;
 	uint64_t avg_time = 0.;
 	uint64_t avg_time_site = 0.;
-	//get information about times
-// 	uint64_t time_total = this->get_timer(kernelName).getTime();
-// 	int calls_total = this->get_timer(kernelName).getNumMeas();
-// 	int read_write_size = this->get_read_write_size(kernelName, parameters);
 	//check if kernel has been called at all
 	if(calls_total != 0){
 		avg_time = (uint64_t) ( ( (float) time_total ) / ((float) calls_total) );
@@ -1240,17 +1222,17 @@ void Opencl::print_profiling(std::string filename, char * kernelName, inputparam
 	return;
 }
 
-void Opencl::print_profiling(std::string filename, inputparameters * parameters){
+void Opencl::print_profiling(std::string filename){
 	logger.trace() << "Printing Profiling-information to file \"" << filename << "\"";
 	char * kernelName;
 	kernelName = "polyakov";
-	print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "polyakov_reduction";
-	print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "plaquette";
-	print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "plaquette_reduction";
-	print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 }
 #endif
 

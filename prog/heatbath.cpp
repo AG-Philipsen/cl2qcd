@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
 	} else {
 	  logger.warn()<<"Could not open " << profiling_out;
 	}
-	gaugefield.get_devices()[0].print_profiling(profiling_out.str(), &parameters);
+	gaugefield.get_devices()[0].print_profiling(profiling_out.str());
 #endif
 
 	totaltime.add();

@@ -264,20 +264,18 @@ public:
 	 *
 	 * @param filename Name of file where data is appended.
 	 * @param kernelName Name of specific kernel.
-	 * @param parameters inputparameters
 	 * @param time_total total execution time
 	 * @param calls_total total number of kernel calls
 	 * @param read_write_size number of bytes read and written by the kernel
 	 */
-	void print_profiling(std::string filename, char * kernelName, inputparameters * parameters, uint64_t time_total, int calls_total, int read_write_size);
+	void print_profiling(std::string filename, char * kernelName, uint64_t time_total, int calls_total, int read_write_size);
 	
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
-	 * @param parameters inputparameters
 	 */
-	void virtual print_profiling(std::string filename, inputparameters * parameters);	
+	void virtual print_profiling(std::string filename);	
 	
 #endif	
 	

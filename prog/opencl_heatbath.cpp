@@ -257,15 +257,9 @@ usetimer* Opencl_heatbath::get_timer(char * in){
 int Opencl_heatbath::get_read_write_size(char * in, inputparameters * parameters){
 	Opencl::get_read_write_size(in, parameters);
 		//Depending on the compile-options, one has different sizes...
-	int D, S, R;
-	if((*parameters).get_prec() == 64)
-		D = 8;
-	else
-		D = 4;
-	if((*parameters).get_use_rec12() == 1)
-		R = 6;
-	else
-		R = 9;
+	int D = (*parameters).get_float_size();
+	int R = (*parameters).get_mat_size();
+	int S;
 	if((*parameters).get_use_eo() == 1)
 	  S = EOPREC_SPINORFIELDSIZE;
 	else
@@ -285,16 +279,16 @@ int Opencl_heatbath::get_read_write_size(char * in, inputparameters * parameters
 	}
 }
 
-void Opencl_heatbath::print_profiling(std::string filename, inputparameters * parameters){
-	Opencl::print_profiling(filename, parameters);
+void Opencl_heatbath::print_profiling(std::string filename){
+	Opencl::print_profiling(filename);
 	char * kernelName;
 	kernelName = "heatbath_even";
-	Opencl::print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "heatbath_odd";
-	Opencl::print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "overrelax_even";
-	Opencl::print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "overrelax_odd";
-	Opencl::print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 }
 #endif
