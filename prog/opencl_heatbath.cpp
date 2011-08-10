@@ -52,6 +52,11 @@ void Opencl_heatbath::fill_kernels()
   overrelax_even = createKernel("overrelax_even") << basic_opencl_code << "random.cl" << "overrelax.cl";
   overrelax_odd = createKernel("overrelax_odd") << basic_opencl_code << "random.cl" << "overrelax.cl";
 
+#ifdef _PROFILING_
+	//init timers
+	usetimer noop;
+	timer_heatbath_even.reset();
+#endif
 }
 
 hmc_error Opencl_heatbath::clear_kernels()
@@ -226,3 +231,68 @@ hmc_error Opencl_heatbath::copy_rndarray_from_device(hmc_rndarray rndarray, uset
 	return HMC_SUCCESS;
 }
 
+#ifdef _PROFILING_
+usetimer Opencl_heatbath::get_timer(char * in){
+	Opencl::get_timer(in);
+	if (strcmp(in, "heatbath_even") == 0){
+    return this->timer_heatbath_even;
+	}
+	if (strcmp(in, "heatbath_odd") == 0){
+    return this->timer_heatbath_odd;
+	}
+	if (strcmp(in, "overrelax_even") == 0){
+    return this->timer_overrelax_even;
+	}
+	if (strcmp(in, "overrelax_odd") == 0){
+    return this->timer_overrelax_odd;
+	}
+// 	else{
+// 		logger.fatal() << "No matching timer found for kernel " << in << "!! Aborting...";
+// 		exit (HMC_STDERR);
+// 	}
+}
+
+int Opencl_heatbath::get_read_write_size(char * in, inputparameters * parameters){
+	Opencl::get_read_write_size(in, parameters);
+		//Depending on the compile-options, one has different sizes...
+	int D, S, R;
+	if((*parameters).get_prec() == 64)
+		D = 8;
+	else
+		D = 4;
+	if((*parameters).get_use_rec12() == 1)
+		R = 6;
+	else
+		R = 9;
+	if((*parameters).get_use_eo() == 1)
+	  S = EOPREC_SPINORFIELDSIZE;
+	else
+	  S = SPINORFIELDSIZE;
+	//this is the same as in the function above
+	if (strcmp(in, "heatbath_even") == 0){
+    return VOL4D*D*R + 1;
+	}
+	if (strcmp(in, "heatbath_odd") == 0){
+    return NUMTHREADS;
+	}
+	if (strcmp(in, "overrelax_even") == 0){
+    return 48*VOL4D *D*R + 1;
+	}
+	if (strcmp(in, "overrelax_odd") == 0){
+    return NUMTHREADS;	
+	}
+}
+
+void Opencl_heatbath::print_profiling(std::string filename, inputparameters * parameters){
+	Opencl::print_profiling(filename, parameters);
+	char * kernelName;
+	kernelName = "heatbath_even";
+	Opencl::print_profiling(filename, kernelName, parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "heatbath_odd";
+	Opencl::print_profiling(filename, kernelName, parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "overrelax_even";
+	Opencl::print_profiling(filename, kernelName, parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "overrelax_odd";
+	Opencl::print_profiling(filename, kernelName, parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+}
+#endif

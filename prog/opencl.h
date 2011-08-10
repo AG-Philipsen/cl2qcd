@@ -238,6 +238,49 @@ public:
 	cl_kernel polyakov;
 	cl_kernel polyakov_reduction;
 
+#ifdef _PROFILING_
+	//CP: if PROFILING is activated, one needs a timer for each kernel
+	usetimer timer_plaquette;
+	usetimer timer_plaquette_reduction;
+	usetimer timer_polyakov;
+	usetimer timer_polyakov_reduction;
+	
+	/**
+	 * Return the timer connected to a specific kernel.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual usetimer get_timer(char * in);	
+
+		/**
+	 * Return amount of bytes read and written by a specific kernel per call. 
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual int get_read_write_size(char * in, inputparameters * parameters);	
+	
+	/**
+	 * Print the profiling information of a specific kernel to a file.
+	 *
+	 * @param filename Name of file where data is appended.
+	 * @param kernelName Name of specific kernel.
+	 * @param parameters inputparameters
+	 * @param time_total total execution time
+	 * @param calls_total total number of kernel calls
+	 * @param read_write_size number of bytes read and written by the kernel
+	 */
+	void print_profiling(std::string filename, char * kernelName, inputparameters * parameters, uint64_t time_total, int calls_total, int read_write_size);
+	
+	/**
+	 * Print the profiling information to a file.
+	 *
+	 * @param filename Name of file where data is appended.
+	 * @param parameters inputparameters
+	 */
+	void virtual print_profiling(std::string filename, inputparameters * parameters);	
+	
+#endif	
+	
 	/**
 	 * Enqueue the given kernel on the device. Local work size will be determined
 	 * automatically from device and kernel properties.
@@ -291,7 +334,7 @@ protected:
 
 private:
 	hmc_error init_basic(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters);
-
+	
 };
 
 #endif /* _MYOPENCLH_ */

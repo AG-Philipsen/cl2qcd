@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 	logger.trace() << "Got seeds";
 
 	//first output, if you like it...
-	cout << endl << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]" << endl;
+	logger.trace() << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]";
 	gaugefield.print_gaugeobservables(&polytime,&plaqtime);
 
 	gaugefield.copy_gaugefield_to_devices(&copytime);
@@ -104,12 +104,28 @@ int main(int argc, char* argv[])
 		}
 	}
 
-  	gaugefield.sync_gaugefield(&copytime);
+  gaugefield.sync_gaugefield(&copytime);
  	gaugefield.save(nsteps);
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Final Output
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef _PROFILING_
+	//CP: this is just a fist version and will go into an own file later
+	stringstream profiling_out;
+	profiling_out << "profiling";
+
+	fstream prof_file;
+	prof_file.open(profiling_out.str(), std::ios::out | std::ios::app);
+	if(prof_file.is_open()) {
+	  parameters.print_info_heatbath(argv[0], &prof_file);
+	  prof_file.close();
+	} else {
+	  logger.warn()<<"Could not open " << profiling_out;
+	}
+	gaugefield.get_devices()[0].print_profiling(profiling_out.str(), &parameters);
+#endif
 
 	totaltime.add();
 	time_output_heatbath(&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime);

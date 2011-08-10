@@ -97,6 +97,8 @@ void Opencl::fill_kernels()
 
 	polyakov = createKernel("polyakov") << basic_opencl_code << "gaugeobservables_polyakov.cl";
 	polyakov_reduction = createKernel("polyakov_reduction") << basic_opencl_code << "gaugeobservables_polyakov.cl";
+	
+	
 }
 
 hmc_error Opencl::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* params)
@@ -189,8 +191,11 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 
 	//Initilize queue
 	logger.trace() << "Create command queue...";
-	//	queue = clCreateCommandQueue(context, device, 0, &clerr);
+#ifdef _PROFILING_	
 	queue = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &clerr);
+#else
+	queue = clCreateCommandQueue(context, device, 0, &clerr);
+#endif
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
@@ -579,7 +584,40 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 		logger.fatal() << "Kernel " << kernelName << " can only be run with a global work size which is a multiple of " << *local_work_size_p << ". The requested size was " << global_work_size << '.';
 	}
 
+#ifdef _PROFILING_
+	cl_event event;
+	clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, local_work_size_p, 0, 0, &event);
+	int done = clWaitForEvents(1, &event);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "clWaitForEvents failed with errorcode " << done << "aborting...";
+		exit (HMC_OCLERROR);
+	}
+	//CP: Now I have to get the right timer, called timer_"kernelname"
+	//First Method: Construct the explicit timername
+	size_t bytesInKernelName;
+	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
+	if( clerr ) {
+		logger.error() << "Failed to query kernel name: ";
+		return;
+	}
+	char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
+	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
+	if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+	}
+// 	char timerName[7] = ("timer_");
+// 	strcat(timerName, kernelName);
+// 	//Problem: How to call the memory object?
+// 	(this->timerName).add(get_kernel_exec_time(event));
+	
+	//Second Method: Nasty workaround
+ 	cout << kernelName << endl;
+ 	(get_timer(kernelName)).add(get_kernel_exec_time(event));
+// (this->timer_plaquette).add(get_kernel_exec_time(event));
+#else
 	clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, local_work_size_p, 0, 0, NULL);
+#endif
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting..." << clerr << " - " << global_work_size << " - " << *local_work_size_p;
 
@@ -603,7 +641,41 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 
 void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size)
 {
-	cl_int clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
+	cl_int clerr;
+#ifdef _PROFILING_
+	cl_event event;
+	clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, &event);
+	int done = clWaitForEvents(1, &event);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "clWaitForEvents failed with errorcode " << done << "aborting...";
+		exit (HMC_OCLERROR);
+	}
+	//CP: Now I have to get the right timer, called timer_"kernelname"
+	//First Method: Construct the explicit timername
+	size_t bytesInKernelName;
+	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
+	if( clerr ) {
+		logger.error() << "Failed to query kernel name: ";
+		return;
+	}
+	char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
+	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
+	if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return;
+	}
+// 	char timerName[7] = ("timer_");
+// 	strcat(timerName, kernelName);
+// 	//Problem: How to call the memory object?
+// 	(this->timerName).add(get_kernel_exec_time(event));
+	
+	//Second Method: Nasty workaround
+	cout << kernelName << endl;
+ 	(get_timer(kernelName)).add(get_kernel_exec_time(event));
+#else
+	clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
+#endif	
+	
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting..." << clerr << " - " << global_work_size << " - " << local_work_size;
 
@@ -1090,3 +1162,99 @@ TmpClKernel Opencl::createKernel(const char * const kernel_name)
 	this->fill_collect_options(&collect_options);
 	return TmpClKernel(kernel_name, collect_options.str(), context, &device, 1);
 }
+
+#ifdef _PROFILING_
+usetimer Opencl::get_timer(char * in){
+	if (strcmp(in, "polyakov_reduction") == 0){
+    return this->timer_polyakov_reduction;
+	}
+	if (strcmp(in, "polyakov") == 0){
+    return this->timer_polyakov;
+	}
+	if (strcmp(in, "plaquette_reduction") == 0){
+    return this->timer_plaquette_reduction;
+	}
+	if (strcmp(in, "plaquette") == 0){
+    return this->timer_plaquette;
+	}
+// 	else{
+// 		logger.fatal() << "No matching timer found for kernel " << in << "!! Aborting...";
+// 		exit (HMC_STDERR);
+// 	}
+}
+
+int Opencl::get_read_write_size(char * in, inputparameters * parameters){
+	//Depending on the compile-options, one has different sizes...
+	int D, S, R;
+	if((*parameters).get_prec() == 64)
+		D = 8;
+	else
+		D = 4;
+	if((*parameters).get_use_rec12() == 1)
+		R = 6;
+	else
+		R = 9;
+	if((*parameters).get_use_eo() == 1)
+	  S = EOPREC_SPINORFIELDSIZE;
+	else
+	  S = SPINORFIELDSIZE;
+	//this is the same as in the function above
+	if (strcmp(in, "polyakov") == 0){
+    return VOL4D*D*R + 1;
+	}
+	if (strcmp(in, "polyakov_reduction") == 0){
+		//this is not right, since one does not know bufelements now
+		//return (Bufel + 1) *2
+    return NUMTHREADS;
+	}
+	if (strcmp(in, "plaquette") == 0){
+    return 48*VOL4D *D*R + 1;
+	}
+	if (strcmp(in, "plaquette_reduction") == 0){
+		//this is not right, since one does not know bufelements now
+		//return (Bufel + 1) *2
+    return NUMTHREADS;	
+	}
+}
+
+void Opencl::print_profiling(std::string filename, char * kernelName, inputparameters * parameters, uint64_t time_total, int calls_total, int read_write_size){
+	hmc_float bandwidth = 0.;
+	uint64_t avg_time = 0.;
+	uint64_t avg_time_site = 0.;
+	//get information about times
+// 	uint64_t time_total = this->get_timer(kernelName).getTime();
+// 	int calls_total = this->get_timer(kernelName).getNumMeas();
+// 	int read_write_size = this->get_read_write_size(kernelName, parameters);
+	//check if kernel has been called at all
+	if(calls_total != 0){
+		avg_time = (uint64_t) ( ( (float) time_total ) / ((float) calls_total) );
+		avg_time_site =(uint64_t) ( ( (float) time_total ) / ((float) (calls_total*VOL4D)) );
+		//Bandwidth in GB/s: 1e-3 = 1e6 (museconds) * 1e-9 (GByte)
+		bandwidth = (hmc_float) read_write_size / (hmc_float) time_total * (hmc_float) calls_total *1e-3;
+	}
+	//write to stream
+	fstream out;
+	out.open(filename.c_str(), std::ios::out | std::ios::app);
+	if(!out.is_open()) exit(HMC_FILEERROR);
+	out.width(8);
+	cout << time_total << endl;
+	out.precision(15);
+	out << kernelName << "\t" << time_total << "\t" << calls_total << "\t" << avg_time << "\t" << avg_time_site << "\t" << bandwidth << std::endl;
+	out.close();
+	return;
+}
+
+void Opencl::print_profiling(std::string filename, inputparameters * parameters){
+	logger.trace() << "Printing Profiling-information to file " << filename;
+	char * kernelName;
+	kernelName = "polyakov";
+	print_profiling(filename, kernelName, parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "polyakov_reduction";
+	print_profiling(filename, kernelName, parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "plaquette";
+	print_profiling(filename, kernelName , parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "plaquette_reduction";
+	print_profiling(filename, kernelName, parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+}
+#endif
+

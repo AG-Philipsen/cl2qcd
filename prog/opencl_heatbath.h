@@ -111,6 +111,37 @@ public:
 	cl_kernel heatbath_even;
 	cl_kernel overrelax_odd;
 	cl_kernel overrelax_even;
+	
+#ifdef _PROFILING_
+	//CP: if PROFILING is activated, one needs a timer for each kernel
+	usetimer timer_heatbath_odd;
+	usetimer timer_heatbath_even;
+	usetimer timer_overrelax_odd;
+	usetimer timer_overrelax_even;
+
+	/**
+	 * Return the timer connected to a specific kernel.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual usetimer get_timer(char * in);
+	
+	/**
+	 * Return amount of bytes read and written by a specific kernel per call. 
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual int get_read_write_size(char * in, inputparameters * parameters);	
+	
+	/**
+	 * Print the profiling information to a file.
+	 *
+	 * @param filename Name of file where data is appended.
+	 * @param parameters inputparameters
+	 */
+	void virtual print_profiling(std::string filename, inputparameters * parameters);	
+#endif
+
 
 protected:
 

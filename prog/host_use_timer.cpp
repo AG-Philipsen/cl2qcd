@@ -24,9 +24,10 @@ void usetimer::add()
 }
 
 void usetimer::add(uint64_t incr)
-{
+{ cout << "before: " << time_measurement << "  " << num_meas << endl; 
 	time_measurement +=  incr;
 	num_meas ++;
+	cout << "after: " << incr << " " << 	time_measurement << "  " << num_meas << endl;
 	return;
 }
 
@@ -65,7 +66,7 @@ uint64_t get_kernel_exec_time(cl_event event){
   clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &time_start, NULL);
   clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &time_end, NULL);
 	tmp = (time_end - time_start )*0.001;
-	
+// 	cout << tmp << endl;
 	return tmp;
 }
 
