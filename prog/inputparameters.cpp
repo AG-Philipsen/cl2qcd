@@ -537,6 +537,54 @@ int inputparameters::get_use_gpu()
 	return use_gpu;
 }
 
+int inputparameters::get_volspace()
+{
+	return volspace;
+}
+
+int inputparameters::get_vol4d()
+{
+	return vol4d;
+}
+
+int inputparameters::get_spinorfieldsize()
+{
+	return spinorfieldsize;
+}
+
+int inputparameters::get_eoprec_spinorfieldsize()
+{
+	return eoprec_spinorfieldsize;
+}
+
+int inputparameters::get_use_chem_pot_re()
+{
+	return use_chem_pot_re;
+}
+
+int inputparameters::get_use_chem_pot_im()
+{
+	return use_chem_pot_im;
+}
+
+int inputparameters::get_use_smearing()
+{
+	return use_smearing;
+}
+
+#ifdef _PROFILING_
+int inputparameters::get_mat_size()
+{
+	return mat_size;
+}
+
+int inputparameters::get_float_size()
+{
+	return float_size;
+}
+
+#endif
+
 void inputparameters::print_info_global(){
   logger.info() << "## **********************************************************";
 	logger.info() << "## Global parameters:";

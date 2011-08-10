@@ -86,7 +86,19 @@ public:
 	void display_sourcefile();
 	void display_sourcefilenumber();
 	int get_num_dev();
-
+	int get_volspace();
+	int get_vol4d();
+	int get_spinorfieldsize();
+	int get_eoprec_spinorfieldsize();
+	int get_use_chem_pot_re();
+	int get_use_chem_pot_im();
+	int get_use_smearing();
+	
+	
+#ifdef _PROFILING_
+	int get_mat_size();
+	int get_float_size();
+#endif
 	/////////////////////////////////////////////////////
 	// printing-functions for the different executables
 	/**
