@@ -1,7 +1,16 @@
-#include "heatbath.h"
+//CP: this is done in a first attempt
+#include "../heatbath.h"
 
 int main(int argc, char* argv[])
 {
+
+#ifndef _PROFILING_
+	logger.fatal() << "_PROFILING_ not defined, cannot perform benchmarks. Aborting...";
+	exit (HMC_STDERR);
+#endif
+
+//CP: This should be the same as the normal heatbath-executable
+/////////////////////////////////////////////////////////////////////////////////////////
 
 	if(argc != 2) {
 		logger.fatal() << "need file name for input parameters";
@@ -73,45 +82,29 @@ int main(int argc, char* argv[])
 
 	logger.trace() << "Moved stuff to device";
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Heatbath
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////	
+//CP: Now it differs from the normal heatbath-executable
 
-	logger.trace() << "Start thermalization" ;
-
-	int ntherm = parameters.get_thermalizationsteps();
-	if(ntherm > 0) gaugefield.heatbath(ntherm);
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Heatbath-benchmark
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	int nsteps = parameters.get_heatbathsteps();
-	int overrelaxsteps = parameters.get_overrelaxsteps();
-	int writefreq = parameters.get_writefrequency();
-	int savefreq = parameters.get_savefrequency();
-
-	logger.info() << "Start heatbath";
+	
+	logger.info() << "Perform " << nsteps << "of benchmarking";
 
 	for(int i = 0; i < nsteps; i++) {
-	  
 		gaugefield.heatbath();
-		for(int j = 0; j < overrelaxsteps; j++) gaugefield.overrelax();
-		if( ( (i + 1) % writefreq ) == 0 ) {
-		  gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str(), 1);
-		  //		  gaugefield.sync_gaugefield(&copytime);
-		  //		  cout<<gaugefield.plaquette()<<" "<<gaugefield.polyakov().re<<endl;
-		}
-		if( parameters.get_saveconfigs() == TRUE && ( (i + 1) % savefreq ) == 0 ) {
-			gaugefield.sync_gaugefield(&copytime);
-			gaugefield.save(i);
-		}
+		gaugefield.overrelax();
+		gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str(), 0);
 	}
-
-  gaugefield.sync_gaugefield(&copytime);
- 	gaugefield.save(nsteps);
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Final Output
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef _PROFILING_
+	//TODO: remove gaugeobservables-file
+	
 	//CP: this is just a fist version and will go into an own file later
 	stringstream profiling_out;
 	profiling_out << "profiling";
@@ -125,7 +118,6 @@ int main(int argc, char* argv[])
 	  logger.warn()<<"Could not open " << profiling_out;
 	}
 	gaugefield.get_devices()[0].print_profiling(profiling_out.str());
-#endif
 
 	totaltime.add();
 	time_output_heatbath(&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime);
