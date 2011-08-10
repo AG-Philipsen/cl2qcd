@@ -612,9 +612,7 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 // 	(this->timerName).add(get_kernel_exec_time(event));
 	
 	//Second Method: Nasty workaround
- 	cout << kernelName << endl;
- 	(get_timer(kernelName)).add(get_kernel_exec_time(event));
-// (this->timer_plaquette).add(get_kernel_exec_time(event));
+ 	(*get_timer(kernelName)).add(get_kernel_exec_time(event));
 #else
 	clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, local_work_size_p, 0, 0, NULL);
 #endif
@@ -670,8 +668,7 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 // 	(this->timerName).add(get_kernel_exec_time(event));
 	
 	//Second Method: Nasty workaround
-	cout << kernelName << endl;
- 	(get_timer(kernelName)).add(get_kernel_exec_time(event));
+ 	(*get_timer(kernelName)).add(get_kernel_exec_time(event));
 #else
 	clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
 #endif	
@@ -1164,23 +1161,23 @@ TmpClKernel Opencl::createKernel(const char * const kernel_name)
 }
 
 #ifdef _PROFILING_
-usetimer Opencl::get_timer(char * in){
+usetimer* Opencl::get_timer(char * in){
 	if (strcmp(in, "polyakov_reduction") == 0){
-    return this->timer_polyakov_reduction;
+    return &(this->timer_polyakov_reduction);
 	}
 	if (strcmp(in, "polyakov") == 0){
-    return this->timer_polyakov;
+    return &(this->timer_polyakov);
 	}
 	if (strcmp(in, "plaquette_reduction") == 0){
-    return this->timer_plaquette_reduction;
+    return &(this->timer_plaquette_reduction);
 	}
 	if (strcmp(in, "plaquette") == 0){
-    return this->timer_plaquette;
+    return &(this->timer_plaquette);
 	}
-// 	else{
-// 		logger.fatal() << "No matching timer found for kernel " << in << "!! Aborting...";
-// 		exit (HMC_STDERR);
-// 	}
+	//if the kernelname has not matched, return NULL
+	else{
+		return NULL;
+	}
 }
 
 int Opencl::get_read_write_size(char * in, inputparameters * parameters){
@@ -1237,7 +1234,6 @@ void Opencl::print_profiling(std::string filename, char * kernelName, inputparam
 	out.open(filename.c_str(), std::ios::out | std::ios::app);
 	if(!out.is_open()) exit(HMC_FILEERROR);
 	out.width(8);
-	cout << time_total << endl;
 	out.precision(15);
 	out << kernelName << "\t" << time_total << "\t" << calls_total << "\t" << avg_time << "\t" << avg_time_site << "\t" << bandwidth << std::endl;
 	out.close();
@@ -1245,16 +1241,16 @@ void Opencl::print_profiling(std::string filename, char * kernelName, inputparam
 }
 
 void Opencl::print_profiling(std::string filename, inputparameters * parameters){
-	logger.trace() << "Printing Profiling-information to file " << filename;
+	logger.trace() << "Printing Profiling-information to file \"" << filename << "\"";
 	char * kernelName;
 	kernelName = "polyakov";
-	print_profiling(filename, kernelName, parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "polyakov_reduction";
-	print_profiling(filename, kernelName, parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "plaquette";
-	print_profiling(filename, kernelName , parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "plaquette_reduction";
-	print_profiling(filename, kernelName, parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 }
 #endif
 

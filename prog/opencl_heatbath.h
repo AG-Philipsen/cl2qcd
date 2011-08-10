@@ -124,7 +124,7 @@ public:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual usetimer get_timer(char * in);
+	virtual usetimer* get_timer(char * in);
 	
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call. 

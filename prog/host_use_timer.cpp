@@ -24,10 +24,9 @@ void usetimer::add()
 }
 
 void usetimer::add(uint64_t incr)
-{ cout << "before: " << time_measurement << "  " << num_meas << endl; 
+{ 
 	time_measurement +=  incr;
 	num_meas ++;
-	cout << "after: " << incr << " " << 	time_measurement << "  " << num_meas << endl;
 	return;
 }
 

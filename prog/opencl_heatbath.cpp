@@ -232,24 +232,26 @@ hmc_error Opencl_heatbath::copy_rndarray_from_device(hmc_rndarray rndarray, uset
 }
 
 #ifdef _PROFILING_
-usetimer Opencl_heatbath::get_timer(char * in){
-	Opencl::get_timer(in);
+usetimer* Opencl_heatbath::get_timer(char * in){
+	usetimer *noop = NULL;
+	noop = Opencl::get_timer(in);
+	if(noop != NULL) return noop;
 	if (strcmp(in, "heatbath_even") == 0){
-    return this->timer_heatbath_even;
+    return &this->timer_heatbath_even;
 	}
 	if (strcmp(in, "heatbath_odd") == 0){
-    return this->timer_heatbath_odd;
+    return &this->timer_heatbath_odd;
 	}
 	if (strcmp(in, "overrelax_even") == 0){
-    return this->timer_overrelax_even;
+    return &this->timer_overrelax_even;
 	}
 	if (strcmp(in, "overrelax_odd") == 0){
-    return this->timer_overrelax_odd;
+    return &this->timer_overrelax_odd;
 	}
-// 	else{
-// 		logger.fatal() << "No matching timer found for kernel " << in << "!! Aborting...";
-// 		exit (HMC_STDERR);
-// 	}
+	//if the kernelname has not matched, return NULL
+	else{
+		return NULL;
+	}
 }
 
 int Opencl_heatbath::get_read_write_size(char * in, inputparameters * parameters){
@@ -287,12 +289,12 @@ void Opencl_heatbath::print_profiling(std::string filename, inputparameters * pa
 	Opencl::print_profiling(filename, parameters);
 	char * kernelName;
 	kernelName = "heatbath_even";
-	Opencl::print_profiling(filename, kernelName, parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl::print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "heatbath_odd";
-	Opencl::print_profiling(filename, kernelName, parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl::print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "overrelax_even";
-	Opencl::print_profiling(filename, kernelName, parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl::print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "overrelax_odd";
-	Opencl::print_profiling(filename, kernelName, parameters, this->get_timer(kernelName).getTime(), this->get_timer(kernelName).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl::print_profiling(filename, kernelName, parameters, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 }
 #endif
