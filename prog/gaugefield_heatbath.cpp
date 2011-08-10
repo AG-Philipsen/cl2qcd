@@ -29,7 +29,7 @@ hmc_error Gaugefield_heatbath::heatbath()
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices_heatbath()[0].run_heatbath(get_parameters()->get_beta());
+	hmc_error err = get_devices_heatbath()[0].run_heatbath();
 	return err;
 }
 
@@ -38,7 +38,7 @@ hmc_error Gaugefield_heatbath::overrelax()
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 
-	hmc_error err = get_devices_heatbath()[0].run_overrelax(get_parameters()->get_beta());
+	hmc_error err = get_devices_heatbath()[0].run_overrelax();
 	return err;
 }
 

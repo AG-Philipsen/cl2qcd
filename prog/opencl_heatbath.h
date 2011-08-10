@@ -22,12 +22,12 @@ public:
 	/**
 	 * Perform one heatbath step.
 	 */
-	hmc_error run_heatbath(const hmc_float beta);
+	hmc_error run_heatbath();
 
 	/**
 	 * Perform one overrelaxation step.
 	 */
-	hmc_error run_overrelax(const hmc_float beta);
+	hmc_error run_overrelax();
 
 	/**
 	 * Calculate plaquette and polyakov.

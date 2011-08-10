@@ -2,7 +2,7 @@
  * Device code for the heatbath overrelaxation
  */
 
-void inline perform_overrelaxing(__global ocl_s_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id)
+void inline perform_overrelaxing(__global ocl_s_gaugefield* gaugefield, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id)
 {
 
 	Matrixsu3 U;
@@ -50,25 +50,25 @@ void inline perform_overrelaxing(__global ocl_s_gaugefield* gaugefield, const hm
 	put_matrixsu3(gaugefield, U, pos, t, mu);
 }
 
-__kernel void overrelax_even(__global ocl_s_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd)
+__kernel void overrelax_even(__global ocl_s_gaugefield* gaugefield, const int mu, __global hmc_ocl_ran * rnd)
 {
 	int t, pos, id, id_tmp, size;
 	id_tmp = get_global_id(0);
 	size = get_global_size(0);
 	for(id = id_tmp; id < VOLSPACE * NTIME / 2; id += size) {
 		get_even_site(id, &pos, &t);
-		perform_overrelaxing(gaugefield, beta, mu, rnd, pos, t, id_tmp);
+		perform_overrelaxing(gaugefield, mu, rnd, pos, t, id_tmp);
 	}
 }
 
-__kernel void overrelax_odd(__global ocl_s_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd)
+__kernel void overrelax_odd(__global ocl_s_gaugefield* gaugefield, const int mu, __global hmc_ocl_ran * rnd)
 {
 	int t, pos, id, id_tmp, size;
 	id_tmp = get_global_id(0);
 	size = get_global_size(0);
 	for(id = id_tmp; id < VOLSPACE * NTIME / 2; id += size) {
 		get_odd_site(id, &pos, &t);
-		perform_overrelaxing(gaugefield, beta, mu, rnd, pos, t, id_tmp);
+		perform_overrelaxing(gaugefield, mu, rnd, pos, t, id_tmp);
 	}
 }
 

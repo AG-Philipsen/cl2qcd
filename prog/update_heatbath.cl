@@ -26,7 +26,7 @@ Matrixsu2_pauli SU2Update(const hmc_float alpha, __global hmc_ocl_ran * rnd)
 	return out;
 }
 
-void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id)
+void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id)
 {
 
 	Matrixsu3 U;
@@ -61,7 +61,7 @@ void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const hmc_fl
 		w_pauli.e11 = 0.5 * (w.e00.im - w.e11.im);
 		k = sqrt(  w_pauli.e00 * w_pauli.e00 +  w_pauli.e01 * w_pauli.e01 + w_pauli.e10 * w_pauli.e10 + w_pauli.e11 * w_pauli.e11  );
 
-		beta_new =  2.*beta / NC * k;
+		beta_new =  2.*BETA / NC * k;
 
 		r_pauli = SU2Update(beta_new, &rnd[id]);
 
@@ -137,24 +137,24 @@ void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const hmc_fl
 
 
 
-__kernel void heatbath_even(__global ocl_s_gaugefield * gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd)
+__kernel void heatbath_even(__global ocl_s_gaugefield * gaugefield, const int mu, __global hmc_ocl_ran * rnd)
 {
 	int t, pos, id, id_tmp, size;
 	id_tmp = get_global_id(0);
 	size = get_global_size(0);
 	for(id = id_tmp; id < VOLSPACE * NTIME / 2; id += size) {
 		get_even_site(id, &pos, &t);
-		perform_heatbath(gaugefield, beta, mu, rnd, pos, t, id_tmp);
+		perform_heatbath(gaugefield, mu, rnd, pos, t, id_tmp);
 	}
 }
 
-__kernel void heatbath_odd(__global ocl_s_gaugefield* gaugefield, const hmc_float beta, const int mu, __global hmc_ocl_ran * rnd)
+__kernel void heatbath_odd(__global ocl_s_gaugefield* gaugefield, const int mu, __global hmc_ocl_ran * rnd)
 {
 	int t, pos, id, id_tmp, size;
 	id_tmp = get_global_id(0);
 	size = get_global_size(0);
 	for(id = id_tmp; id < VOLSPACE * NTIME / 2; id += size) {
 		get_odd_site(id, &pos, &t);
-		perform_heatbath(gaugefield, beta, mu, rnd, pos, t, id_tmp);
+		perform_heatbath(gaugefield, mu, rnd, pos, t, id_tmp);
 	}
 }

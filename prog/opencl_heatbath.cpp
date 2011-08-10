@@ -63,7 +63,7 @@ hmc_error Opencl_heatbath::clear_kernels()
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_heatbath::run_heatbath(const hmc_float beta)
+hmc_error Opencl_heatbath::run_heatbath()
 {
 	cl_int clerr = CL_SUCCESS;
 
@@ -78,18 +78,13 @@ hmc_error Opencl_heatbath::run_heatbath(const hmc_float beta)
 		logger.fatal() << "clSetKernelArg0 at heatbath_even failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
-	clerr = clSetKernelArg(heatbath_even, 1, sizeof(hmc_float), &beta);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg1 at heatbath_even failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(heatbath_even, 3, sizeof(cl_mem), &clmem_rndarray);
+	clerr = clSetKernelArg(heatbath_even, 2, sizeof(cl_mem), &clmem_rndarray);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clSetKernelArg3 at heatbath_even failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	for(int i = 0; i < NDIM; i++) {
-		clerr = clSetKernelArg(heatbath_even, 2, sizeof(int), &i);
+		clerr = clSetKernelArg(heatbath_even, 1, sizeof(int), &i);
 		if(clerr != CL_SUCCESS) {
 			logger.fatal() << "clSetKernelArg2 at heatbath_even failed, aborting...";
 			exit(HMC_OCLERROR);
@@ -102,18 +97,13 @@ hmc_error Opencl_heatbath::run_heatbath(const hmc_float beta)
 		logger.fatal() << "clSetKernelArg0 at heatbath_odd failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
-	clerr = clSetKernelArg(heatbath_odd, 1, sizeof(hmc_float), &beta);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg1 at heatbath_odd failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(heatbath_odd, 3, sizeof(cl_mem), &clmem_rndarray);
+	clerr = clSetKernelArg(heatbath_odd, 2, sizeof(cl_mem), &clmem_rndarray);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clSetKernelArg3 at heatbath_odd failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	for(int i = 0; i < NDIM; i++) {
-		clerr = clSetKernelArg(heatbath_odd, 2, sizeof(int), &i);
+		clerr = clSetKernelArg(heatbath_odd, 1, sizeof(int), &i);
 		if(clerr != CL_SUCCESS) {
 			logger.fatal() << "clSetKernelArg2 at heatbath_odd failed, aborting...";
 			exit(HMC_OCLERROR);
@@ -125,7 +115,7 @@ hmc_error Opencl_heatbath::run_heatbath(const hmc_float beta)
 
 }
 
-hmc_error Opencl_heatbath::run_overrelax(const hmc_float beta)
+hmc_error Opencl_heatbath::run_overrelax()
 {
 	cl_int clerr = CL_SUCCESS;
 
@@ -140,18 +130,13 @@ hmc_error Opencl_heatbath::run_overrelax(const hmc_float beta)
 		logger.fatal() << "clSetKernelArg1 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
-	clerr = clSetKernelArg(overrelax_even, 1, sizeof(hmc_float), &beta);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg2 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(overrelax_even, 3, sizeof(cl_mem), &clmem_rndarray);
+	clerr = clSetKernelArg(overrelax_even, 2, sizeof(cl_mem), &clmem_rndarray);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clSetKernelArg3 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	for(int i = 0; i < NDIM; i++) {
-		clerr = clSetKernelArg(overrelax_even, 2, sizeof(int), &i);
+		clerr = clSetKernelArg(overrelax_even, 1, sizeof(int), &i);
 		if(clerr != CL_SUCCESS) {
 			logger.fatal() << "clSetKernelArg4 failed, aborting...";
 			exit(HMC_OCLERROR);
@@ -164,18 +149,13 @@ hmc_error Opencl_heatbath::run_overrelax(const hmc_float beta)
 		logger.fatal() << "clSetKernelArg5 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
-	clerr = clSetKernelArg(overrelax_odd, 1, sizeof(hmc_float), &beta);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg6 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(overrelax_odd, 3, sizeof(cl_mem), &clmem_rndarray);
+	clerr = clSetKernelArg(overrelax_odd, 2, sizeof(cl_mem), &clmem_rndarray);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clSetKernelArg7 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
 	for(int i = 0; i < NDIM; i++) {
-		clerr = clSetKernelArg(overrelax_odd, 2, sizeof(int), &i);
+		clerr = clSetKernelArg(overrelax_odd, 1, sizeof(int), &i);
 		if(clerr != CL_SUCCESS) {
 			logger.fatal() << "clSetKernelArg8 failed, aborting...";
 			exit(HMC_OCLERROR);
