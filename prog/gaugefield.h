@@ -54,14 +54,14 @@ public:
 	 * @param[in,out] timer Return initialization time.
 	 * @return Error code as defined in hmcerrs.h
 	 */
-        hmc_error init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer);
+        hmc_error init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters);
 
 	/**
 	 * Initialize gaugefield and different device types
 	 *
 	 * @todo This needs to be worked out in detail. So far it is assumed that numdevs[] has identical entries.
 	 */
-        hmc_error init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer);
+        hmc_error init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters);
 	/**
 	 * Free gaugefield and device allocations.
 	 */
@@ -76,13 +76,12 @@ public:
 	 * @param devicetypes array of cl_device_type handles
 	 * @param[in,out] timer timer for initialization
 	 */
-	virtual	hmc_error init_devices(cl_device_type* devicetypes, usetimer* timer);
+	virtual	hmc_error init_devices(cl_device_type* devicetypes);
 	/**
 	 * Initializes the gaugefield, to be called by init()
-	 * @param[in,out] timer timer for initialization
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error init_gaugefield(usetimer*  timer);
+	hmc_error init_gaugefield();
 	
 
 	//communication
@@ -96,7 +95,16 @@ public:
 	 * @param[in,out] timer copy-time
 	 */
 	virtual hmc_error sync_gaugefield(usetimer* timer);
-
+	/**
+	 * Copy random array to devices (currently: to device).
+	 * @param[in,out] timer copy-time
+	 */
+	hmc_error copy_rndarray_to_devices(hmc_rndarray host_rndarray,  usetimer* timer);
+	/**
+	 * Copy random array from devices (currently: from device).
+	 * @param[in,out] timer copy-time
+	 */
+	hmc_error copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer* timer);
 
 	//input/output, print, save functions!!
 	/**

@@ -19,15 +19,6 @@ hmc_error Opencl_heatbath::fill_buffers()
 {
   Opencl::fill_buffers();
 
-  cl_int clerr = CL_SUCCESS;
-	logger.trace() << "Create buffer for random numbers...";
-	clmem_rndarray = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_rndarray), 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-
-
 	return HMC_SUCCESS;
 }
 
@@ -196,37 +187,6 @@ hmc_error Opencl_heatbath::run_overrelax(const hmc_float beta, usetimer * const 
 		enqueueKernel(overrelax_odd, global_work_size);
 	}
 	clFinish(queue);
-	timer->add();
-	return HMC_SUCCESS;
-}
-
-
-hmc_error Opencl_heatbath::copy_rndarray_to_device(hmc_rndarray rndarray, usetimer* timer)
-{
-//   cout<<"Copy randomarray to device..."<<endl;
-	timer->reset();
-
-	int clerr = clEnqueueWriteBuffer(queue, clmem_rndarray, CL_TRUE, 0, sizeof(hmc_rndarray), rndarray, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-
-	timer->add();
-	return HMC_SUCCESS;
-}
-
-hmc_error Opencl_heatbath::copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer)
-{
-//   cout<<"Get randomarray from device..."<<endl;
-	timer->reset();
-
-	int clerr = clEnqueueReadBuffer(queue, clmem_rndarray, CL_TRUE, 0, sizeof(hmc_rndarray), rndarray, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-
 	timer->add();
 	return HMC_SUCCESS;
 }

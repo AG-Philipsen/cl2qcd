@@ -45,8 +45,8 @@ public:
 	 *
 	 * @todo Should probably throw an exception on error
 	 */
-	Opencl(cl_device_type wanted, usetimer* timer, inputparameters* params) {
-		this->init(wanted, timer, params);
+	Opencl(cl_device_type wanted, inputparameters* params) {
+		this->init(wanted, params);
 	};
 	/**
 	 * Empty constructor. Needed for gaugefield class.
@@ -67,7 +67,7 @@ public:
 	 *         @li HMC_FILEERROR if one of the kernel files cannot be opened
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	virtual hmc_error init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters);
+	virtual hmc_error init(cl_device_type wanted_device_type, inputparameters* parameters);
 
 	/////////////////////////////7
 	// communication
@@ -110,7 +110,7 @@ public:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const timer1, usetimer * const timer2);
+	hmc_error gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
 
 	/**
 	 * Calculate plaquette and polyakov, but with a specific gaugefield.
@@ -125,7 +125,7 @@ public:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error gaugeobservables(cl_mem gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const timer1, usetimer * const timer2);
+	hmc_error gaugeobservables(cl_mem gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
 	/**
 	 * returns init status
 	 * @return isinit (1==true, 0==false)
@@ -214,6 +214,7 @@ public:
 	//LZ what follows should eventually be private
 	//heatbath variables
 	cl_mem clmem_gaugefield;
+	cl_mem clmem_rndarray;
 	cl_mem clmem_plaq;
 	cl_mem clmem_plaq_buf_glob;
 	cl_mem clmem_splaq_buf_glob;
@@ -312,6 +313,28 @@ public:
 	 */
 	void printResourceRequirements(const cl_kernel kernel);
 
+	/**
+	 * Copy the RNG state to the appropriate OpenCL buffer.
+	 *
+	 * @param host_rndarray The RNG state to copy
+	 * @param timer The timer to use to measure the copying time
+	 * @return Error code as defined in hmcerrs.h:
+	 *         @li HMC_OCLERROR if OpenCL operations fail
+	 *         @li HMC_SUCCESS otherwise
+	 */
+	hmc_error copy_rndarray_to_device(hmc_rndarray host_rndarray,  usetimer* timer);
+
+	/**
+	 * Copy the RNG state from the OpenCL buffer.
+	 *
+	 * @param[out] rndarray The RNG copy target
+	 * @param[in,out] timer The timer to use to measure the copying time
+	 * @return Error code as defined in hmcerrs.h:
+	 *         @li HMC_OCLERROR if OpenCL operations fail
+	 *         @li HMC_SUCCESS otherwise
+	 */
+	hmc_error copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer);	
+	
 protected:
 	/**
 	 * A set of source files used by all kernels.
@@ -331,7 +354,7 @@ protected:
 	TmpClKernel createKernel(const char * const kernel_name);
 
 private:
-	hmc_error init_basic(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters);
+	hmc_error init_basic(cl_device_type wanted_device_type, inputparameters* parameters);
 	
 };
 

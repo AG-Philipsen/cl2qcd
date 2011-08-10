@@ -46,6 +46,14 @@ hmc_error Opencl::fill_buffers()
 		exit(HMC_OCLERROR);
 	}
 
+	clerr = CL_SUCCESS;
+	logger.trace() << "Create buffer for random numbers...";
+	clmem_rndarray = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_rndarray), 0, &clerr);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "... failed, aborting.";
+		exit(HMC_OCLERROR);
+	}
+
 	logger.trace() << "Create buffer for gaugeobservables...";
 	clmem_plaq = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float) * global_work_size, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
@@ -93,19 +101,18 @@ void Opencl::fill_kernels()
 	
 }
 
-hmc_error Opencl::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* params)
+hmc_error Opencl::init(cl_device_type wanted_device_type, inputparameters* params)
 {
-	hmc_error err = init_basic(wanted_device_type, timer, params);
+	hmc_error err = init_basic(wanted_device_type, params);
 	return err;
 }
 
-hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer, inputparameters* params)
+hmc_error Opencl::init_basic(cl_device_type wanted_device_type, inputparameters* params)
 {
 	//variables, initializing, ...
 	set_parameters(params);
 	hmc_error err;
 	cl_int clerr = CL_SUCCESS;
-	timer->reset();
 
 	// in debug scenarios make the compiler dump the compile results
 	if( logger.beDebug() ) {
@@ -203,7 +210,6 @@ hmc_error Opencl::init_basic(cl_device_type wanted_device_type, usetimer* timer,
 
 	//finish
 	set_init_true();
-	timer->add();
 	return HMC_SUCCESS;
 }
 
@@ -297,7 +303,37 @@ hmc_error Opencl::get_gaugefield_from_device(s_gaugefield* gaugefield, usetimer*
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out, usetimer* timer1, usetimer * timer2)
+hmc_error Opencl::copy_rndarray_to_device(hmc_rndarray rndarray, usetimer* timer)
+{
+//   cout<<"Copy randomarray to device..."<<endl;
+	timer->reset();
+
+	int clerr = clEnqueueWriteBuffer(queue, clmem_rndarray, CL_TRUE, 0, sizeof(hmc_rndarray), rndarray, 0, 0, NULL);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "... failed, aborting.";
+		exit(HMC_OCLERROR);
+	}
+
+	timer->add();
+	return HMC_SUCCESS;
+}
+
+hmc_error Opencl::copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer)
+{
+//   cout<<"Get randomarray from device..."<<endl;
+	timer->reset();
+
+	int clerr = clEnqueueReadBuffer(queue, clmem_rndarray, CL_TRUE, 0, sizeof(hmc_rndarray), rndarray, 0, 0, NULL);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "... failed, aborting.";
+		exit(HMC_OCLERROR);
+	}
+
+	timer->add();
+	return HMC_SUCCESS;
+}
+
+hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
 {
 	cl_int clerr = CL_SUCCESS;
 
@@ -354,7 +390,6 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 
 
 	//measure plaquette
-	timer1->reset();
 
 	hmc_float plaq;
 	hmc_float splaq;
@@ -473,10 +508,7 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 	(*splaq_out) = splaq;
 	(*tplaq_out) = tplaq;
 
-	timer1->add();
-
 	//measure polyakovloop
-	timer2->reset();
 	hmc_complex pol;
 	pol = hmc_complex_zero;
 
@@ -533,8 +565,6 @@ hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, 
 
 	pol_out->re = pol.re;
 	pol_out->im = pol.im;
-
-	timer2->add();
 
 	return HMC_SUCCESS;
 }
@@ -903,7 +933,7 @@ void Opencl::printResourceRequirements(const cl_kernel kernel)
 }
 
 //CP: this is the overloaded function to calc gaugeobservables with a specific gaugefield
-hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out, usetimer* timer1, usetimer * timer2)
+hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
 {
 	cl_int clerr = CL_SUCCESS;
 
@@ -960,7 +990,6 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 
 
 	//measure plaquette
-	timer1->reset();
 
 	hmc_float plaq;
 	hmc_float splaq;
@@ -1079,10 +1108,7 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 	(*splaq_out) = splaq;
 	(*tplaq_out) = tplaq;
 
-	timer1->add();
-
 	//measure polyakovloop
-	timer2->reset();
 	hmc_complex pol;
 	pol = hmc_complex_zero;
 
@@ -1139,8 +1165,6 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 
 	pol_out->re = pol.re;
 	pol_out->im = pol.im;
-
-	timer2->add();
 
 	return HMC_SUCCESS;
 }
@@ -1205,19 +1229,20 @@ void Opencl::print_profiling(std::string filename, char * kernelName, uint64_t t
 	uint64_t avg_time = 0.;
 	uint64_t avg_time_site = 0.;
 	//check if kernel has been called at all
-	if(calls_total != 0){
+	if(calls_total != 0 && time_total != 0){
 		avg_time = (uint64_t) ( ( (float) time_total ) / ((float) calls_total) );
 		avg_time_site =(uint64_t) ( ( (float) time_total ) / ((float) (calls_total*VOL4D)) );
 		//Bandwidth in GB/s: 1e-3 = 1e6 (museconds) * 1e-9 (GByte)
 		bandwidth = (hmc_float) read_write_size / (hmc_float) time_total * (hmc_float) calls_total *1e-3;
 	}
+	float mega = 1024*1024;
 	//write to stream
 	fstream out;
 	out.open(filename.c_str(), std::ios::out | std::ios::app);
 	if(!out.is_open()) exit(HMC_FILEERROR);
 	out.width(8);
 	out.precision(15);
-	out << kernelName << "\t" << time_total << "\t" << calls_total << "\t" << avg_time << "\t" << avg_time_site << "\t" << bandwidth << std::endl;
+	out << kernelName << "\t" << time_total << "\t" << calls_total << "\t" << avg_time << "\t" << avg_time_site << "\t" << bandwidth << "\t" << (float) read_write_size/mega << std::endl;
 	out.close();
 	return;
 }

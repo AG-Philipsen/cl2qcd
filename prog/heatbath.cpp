@@ -55,8 +55,10 @@ int main(int argc, char* argv[])
 		return HMC_STDERR;
 	}
 
-	gaugefield.init(1, devicetypes, &parameters, &inittime);
-
+	inittime.reset();
+	gaugefield.init(1, devicetypes, &parameters);
+	inittime.add();
+	
 	logger.trace() << "Got gaugefield";
 
 	int err = init_random_seeds(rndarray, "rand_seeds", &inittime);

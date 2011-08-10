@@ -2,16 +2,16 @@
 
 #include "logger.hpp"
 
-hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer){
+hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters){
 
   int n_devs[1] = {numdevs};
-  init(n_devs,1,devicetypes,input_parameters,timer);
+  init(n_devs,1,devicetypes,input_parameters);
 
   return HMC_SUCCESS;
 
 }
 
-hmc_error Gaugefield::init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters, usetimer* timer)
+hmc_error Gaugefield::init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters)
 {
   set_num_device_types(numdevtypes);
 
@@ -27,14 +27,14 @@ hmc_error Gaugefield::init(int* numdevs, int numdevtypes, cl_device_type* device
 
   set_parameters(input_parameters);
   
-  init_gaugefield(timer);
+  init_gaugefield();
 	
-  this->init_devices(devicetypes, timer);
+  this->init_devices(devicetypes);
 
   return HMC_SUCCESS;
 }
 
-hmc_error Gaugefield::init_devices(cl_device_type* devicetypes, usetimer* timer)
+hmc_error Gaugefield::init_devices(cl_device_type* devicetypes)
 {
 // 	if(get_num_ocl_devices() != 1) {
 // 		//LZ: so far, we only use !!! 1 !!! device
@@ -50,21 +50,19 @@ hmc_error Gaugefield::init_devices(cl_device_type* devicetypes, usetimer* timer)
 		}
 	}
 
-
 	for(int n = 0; n < num_ocl_devices; n++) {
 		logger.debug() << "init device #" << n;
-		get_devices()[n].init(devicetypes[n], timer, get_parameters());
+		get_devices()[n].init(devicetypes[n], get_parameters());
 	}
 	return HMC_SUCCESS;
 }
 
 
-hmc_error Gaugefield::init_gaugefield(usetimer* timer)
+hmc_error Gaugefield::init_gaugefield()
 {
 	sourcefileparameters parameters_source;
 	if((get_parameters())->get_startcondition() == START_FROM_SOURCE) {
 		int err;
-		timer->reset();
 		//hmc_gaugefield for filetransfer, initialize here, because otherwise it is not needed
 		hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
 		//tmp gauge field
@@ -81,21 +79,16 @@ hmc_error Gaugefield::init_gaugefield(usetimer* timer)
 		err = copy_gaugefield_to_s_gaugefield (get_sgf(), gftmp);
 		free(gaugefield_tmp);
 		free(gftmp);
-		timer->add();
 		if(err!=0) {
 			logger.fatal() << "error in initiating gaugefield from source!!! Aborting...";
 			exit( HMC_XMLERROR );
 		}
 	}
 	if(get_parameters()->get_startcondition() == COLD_START) {
-		timer->reset();
 		set_gaugefield_cold_new(get_sgf());
-		timer->add();
 	}
 	if(get_parameters()->get_startcondition() == HOT_START) {
-		timer->reset();
 		set_gaugefield_hot_new(get_sgf());
-		timer->add();
 	}
 	
 	return HMC_SUCCESS;
@@ -192,6 +185,22 @@ hmc_error Gaugefield::sync_gaugefield(usetimer* timer)
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 	hmc_error err = get_devices()[0].get_gaugefield_from_device(get_sgf(), timer);
+	return err;
+}
+
+hmc_error Gaugefield::copy_rndarray_to_devices(hmc_rndarray host_rndarray,  usetimer* timer)
+{
+	//LZ: so far, we only use !!! 1 !!! device
+	// this function needs to be generalised to several devices and definition of subsets...
+	hmc_error err = get_devices()[0].copy_rndarray_to_device(host_rndarray, timer);
+	return err;
+}
+
+hmc_error Gaugefield::copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer* timer)
+{
+	//LZ: so far, we only use !!! 1 !!! device
+	// this function needs to be generalised to several devices and definition of subsets...
+	hmc_error err = get_devices()[0].copy_rndarray_from_device(rndarray, timer);
 	return err;
 }
 
@@ -329,7 +338,7 @@ hmc_error Gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 
-  get_devices()[0].gaugeobservables (plaq, tplaq, splaq, pol, plaqtime, polytime);
+  get_devices()[0].gaugeobservables (plaq, tplaq, splaq, pol);
   print_gaugeobservables(*plaq, *tplaq, *splaq, *pol, i, gaugeoutname);
 
 	if(stdout)

@@ -2,7 +2,7 @@
 
 #include "logger.hpp"
 
-hmc_error Gaugefield_heatbath::init_devices(cl_device_type* devicetypes, usetimer* timer)
+hmc_error Gaugefield_heatbath::init_devices(cl_device_type* devicetypes)
 {
 // 	if(get_num_ocl_devices() != 1) {
 // 		//LZ: so far, we only use !!! 1 !!! device
@@ -19,7 +19,7 @@ hmc_error Gaugefield_heatbath::init_devices(cl_device_type* devicetypes, usetime
 
 	for(int n = 0; n < get_num_ocl_devices(); n++) {
 		logger.debug() << "init device #" << n;
-		get_devices_heatbath()[n].init(devicetypes[n], timer, get_parameters());
+		get_devices_heatbath()[n].init(devicetypes[n], get_parameters());
 	}
 	return HMC_SUCCESS;
 }
@@ -29,7 +29,7 @@ hmc_error Gaugefield_heatbath::heatbath(usetimer * const timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-        hmc_error err = get_devices_heatbath()[0].run_heatbath(get_parameters()->get_beta(), timer);
+	hmc_error err = get_devices_heatbath()[0].run_heatbath(get_parameters()->get_beta(), timer);
 	return err;
 }
 
@@ -74,20 +74,4 @@ hmc_error Gaugefield_heatbath::finalize()
 	hmc_error err = HMC_SUCCESS;
 	err |= Gaugefield::finalize();
 	return HMC_SUCCESS;
-}
-
-hmc_error Gaugefield_heatbath::copy_rndarray_to_devices(hmc_rndarray host_rndarray,  usetimer* timer)
-{
-	//LZ: so far, we only use !!! 1 !!! device
-	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices_heatbath()[0].copy_rndarray_to_device(host_rndarray, timer);
-	return err;
-}
-
-hmc_error Gaugefield_heatbath::copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer* timer)
-{
-	//LZ: so far, we only use !!! 1 !!! device
-	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices_heatbath()[0].copy_rndarray_from_device(rndarray, timer);
-	return err;
 }
