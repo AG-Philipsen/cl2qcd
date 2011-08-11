@@ -134,6 +134,73 @@ public:
 	cl_mem get_clmem_inout_eoprec();
 	cl_mem get_clmem_tmp_eoprec_1();
 
+#ifdef _PROFILING_
+	//CP: if PROFILING is activated, one needs a timer for each kernel
+	//fermionmatrix
+	usetimer timer_M;
+	usetimer timer_gamma5;
+	usetimer timer_Qplus;
+	usetimer timer_Qminus;
+	usetimer timer_gamma5_eoprec;
+	usetimer timer_M_sitediagonal;
+	usetimer timer_M_inverse_sitediagonal;
+	usetimer timer_dslash_eoprec;
+
+	//BLAS
+	usetimer timer_set_spinorfield_cold;
+	usetimer timer_set_eoprec_spinorfield_cold;
+	usetimer timer_convert_from_eoprec;
+	usetimer timer_saxpy;
+	usetimer timer_saxsbypz;
+	usetimer timer_set_zero_spinorfield;
+	usetimer timer_convert_to_kappa_format;
+	usetimer timer_convert_from_kappa_format;
+	usetimer timer_convert_to_kappa_format_eoprec;
+	usetimer timer_convert_from_kappa_format_eoprec;
+	usetimer timer_create_point_source;
+	usetimer timer_saxpy_eoprec;
+	usetimer timer_saxsbypz_eoprec;
+	usetimer timer_set_zero_spinorfield_eoprec;
+	usetimer timer_create_point_source_eoprec;
+
+	//Scalar Product
+	usetimer timer_scalar_product;
+	usetimer timer_scalar_product_reduction;
+	usetimer timer_global_squarenorm;
+	usetimer timer_global_squarenorm_reduction;
+	usetimer timer_scalar_product_eoprec;
+	usetimer timer_global_squarenorm_eoprec;
+
+	//Single
+	usetimer timer_ratio;
+	usetimer timer_product;
+
+	//Observables
+	usetimer timer_ps_correlator;
+
+	/**
+	 * Return the timer connected to a specific kernel.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual usetimer* get_timer(char * in);
+	
+	/**
+	 * Return amount of bytes read and written by a specific kernel per call. 
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual int get_read_write_size(char * in, inputparameters * parameters);	
+	
+	/**
+	 * Print the profiling information to a file.
+	 *
+	 * @param filename Name of file where data is appended.
+	 * @param parameters inputparameters
+	 */
+	void virtual print_profiling(std::string filename);	
+#endif	
+	
 private:
 	////////////////////////////////////
 	//kernels, sorted roughly by groups

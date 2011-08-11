@@ -1653,3 +1653,292 @@ hmc_error Opencl_fermions::finalize_fermions()
 	return HMC_SUCCESS;
 }
 
+#ifdef _PROFILING_
+usetimer* Opencl_fermions::get_timer(char * in){
+	usetimer *noop = NULL;
+	noop = Opencl::get_timer(in);
+	if(noop != NULL) return noop;
+	
+	if (strcmp(in, "M") == 0){
+    return &this->timer_M;
+	}	
+	if (strcmp(in, "gamma5") == 0){
+    return &this->timer_gamma5;
+	}
+	if (strcmp(in, "Qplus") == 0){
+    return &this->timer_Qplus;
+	}
+	if (strcmp(in, "Qminus") == 0){
+    return &this->timer_Qminus;
+	}
+	if (strcmp(in, "gamma5_eoprec") == 0){
+    return &this->timer_gamma5_eoprec;
+	}
+	if (strcmp(in, "M_sitediagonal") == 0){
+    return &this->timer_M_sitediagonal;
+	}
+	if (strcmp(in, "M_inverse_sitediagonal") == 0){
+    return &this->timer_M_inverse_sitediagonal;
+	}
+	if (strcmp(in, "dslash_eoprec") == 0){
+    return &this->timer_dslash_eoprec;
+	}
+	if (strcmp(in, "set_spinorfield_cold") == 0){
+    return &this->timer_set_spinorfield_cold;
+	}
+	if (strcmp(in, "set_eoprec_spinorfield_cold") == 0){
+    return &this->timer_set_eoprec_spinorfield_cold;
+	}
+	if (strcmp(in, "convert_from_eoprec") == 0){
+    return &this->timer_convert_from_eoprec;
+	}
+	if (strcmp(in, "saxpy") == 0){
+    return &this->timer_saxpy;
+	}
+	if (strcmp(in, "saxsbypz") == 0){
+    return &this->timer_saxsbypz;
+	}
+	if (strcmp(in, "set_zero_spinorfield") == 0){
+    return &this->timer_set_zero_spinorfield;
+	}
+	if (strcmp(in, "convert_to_kappa_format") == 0){
+    return &this->timer_convert_to_kappa_format;
+	}
+	if (strcmp(in, "convert_from_kappa_format") == 0){
+    return &this->timer_convert_from_kappa_format;
+	}
+	if (strcmp(in, "convert_to_kappa_format_eoprec") == 0){
+    return &this->timer_convert_to_kappa_format_eoprec;
+	}
+	if (strcmp(in, "convert_from_kappa_format_eoprec") == 0){
+    return &this->timer_convert_from_kappa_format_eoprec;
+	}
+	if (strcmp(in, "create_point_source") == 0){
+    return &this->timer_create_point_source;
+	}
+	if (strcmp(in, "saxpy_eoprec") == 0){
+    return &this->timer_saxpy_eoprec;
+	}
+	if (strcmp(in, "saxsbypz_eoprec") == 0){
+    return &this->timer_saxsbypz_eoprec;
+	}
+	if (strcmp(in, "set_zero_spinorfield_eoprec") == 0){
+    return &this->timer_set_zero_spinorfield_eoprec;
+	}
+	if (strcmp(in, "create_point_source_eoprec") == 0){
+    return &this->timer_create_point_source_eoprec;
+	}
+	if (strcmp(in, "scalar_product") == 0){
+    return &this->timer_scalar_product;
+	}
+	if (strcmp(in, "scalar_product_reduction") == 0){
+    return &this->timer_scalar_product_reduction;
+	}
+	if (strcmp(in, "global_squarenorm") == 0){
+    return &this->timer_global_squarenorm;
+	}
+	if (strcmp(in, "global_squarenorm_reduction") == 0){
+    return &this->timer_global_squarenorm_reduction;
+	}
+	if (strcmp(in, "scalar_product_eoprec") == 0){
+    return &this->timer_scalar_product_eoprec;
+	}
+	if (strcmp(in, "global_squarenorm_eoprec") == 0){
+    return &this->timer_global_squarenorm_eoprec;
+	}
+	if (strcmp(in, "ratio") == 0){
+    return &this->timer_ratio;
+	}
+	if (strcmp(in, "product") == 0){
+    return &this->timer_product;
+	}
+	if (strcmp(in, "ps_correlator") == 0){
+    return &this->timer_ps_correlator;
+	}
+	
+	//if the kernelname has not matched, return NULL
+	else{
+		return NULL;
+	}
+}
+
+int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters){
+	Opencl::get_read_write_size(in, parameters);
+		//Depending on the compile-options, one has different sizes...
+	int D = (*parameters).get_float_size();
+	int R = (*parameters).get_mat_size();
+	int S;
+	if((*parameters).get_use_eo() == 1)
+	  S = EOPREC_SPINORFIELDSIZE;
+	else
+	  S = SPINORFIELDSIZE;
+	//this is the same as in the function above
+	if (strcmp(in, "M") == 0){
+    return 1000000000000000000000000;
+	}	
+	if (strcmp(in, "gamma5") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "Qplus") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "Qminus") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "gamma5_eoprec") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "M_sitediagonal") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "M_inverse_sitediagonal") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "dslash_eoprec") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "set_spinorfield_cold") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "set_eoprec_spinorfield_cold") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "convert_from_eoprec") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "saxpy") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "saxsbypz") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "set_zero_spinorfield") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "convert_to_kappa_format") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "convert_from_kappa_format") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "convert_to_kappa_format_eoprec") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "convert_from_kappa_format_eoprec") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "create_point_source") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "saxpy_eoprec") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "saxsbypz_eoprec") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "set_zero_spinorfield_eoprec") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "create_point_source_eoprec") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "scalar_product") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "scalar_product_reduction") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "global_squarenorm") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "global_squarenorm_reduction") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "scalar_product_eoprec") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "global_squarenorm_eoprec") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "ratio") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "product") == 0){
+    return 1000000000000000000000000;
+	}
+	if (strcmp(in, "ps_correlator") == 0){
+    return 1000000000000000000000000;
+	}
+	
+}
+
+void Opencl_fermions::print_profiling(std::string filename){
+	Opencl::print_profiling(filename);
+	char * kernelName;
+	kernelName = "M";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "gamma5";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "Qplus";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "Qminus";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "gamma5_eoprec";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "M_sitediagonal";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "M_inverse_sitediagonal";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "dslash_eoprec";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "set_spinorfield_cold";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "set_eoprec_spinorfield_cold";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "convert_from_eoprec";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "saxpy";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "saxsbypz";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "set_zero_spinorfield";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "convert_to_kappa_format";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "convert_from_kappa_format";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "convert_to_kappa_format_eoprec";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "convert_from_kappa_format_eoprec";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "create_point_source";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "saxpy_eoprec";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "saxsbypz_eoprec";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "set_zero_spinorfield_eoprec";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "create_point_source_eoprec";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "scalar_product";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "scalar_product_reduction";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "global_squarenorm";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "global_squarenorm_reduction";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "scalar_product_eoprec";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "global_squarenorm_eoprec";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "ratio";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "product";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "ps_correlator";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	
+}
+#endif
