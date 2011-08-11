@@ -33,23 +33,27 @@ int main(int argc, char* argv[])
 
 	Gaugefield_inversion gaugefield;
 	cl_device_type devicetypes[parameters.get_num_dev()];
-
-	if(parameters.get_num_dev() == 1) {
-#ifdef _USEGPU_
-		devicetypes[0] = CL_DEVICE_TYPE_GPU;
-#else
-		devicetypes[0] = CL_DEVICE_TYPE_CPU;
-#endif
-	} else if(parameters.get_num_dev() == 2) {
+	/** @bug CP: using this funtion causes a segfault, though the result is the same as the code below */
+// 	gaugefield.init_devicetypes_array(devicetypes, &parameters);
+	if((parameters).get_num_dev() == 1){
+		if((parameters).get_use_gpu() == 1)
+			devicetypes[0] = CL_DEVICE_TYPE_GPU;
+		else
+			devicetypes[0] = CL_DEVICE_TYPE_CPU;
+	}
+	else if((parameters).get_num_dev() == 2){
 		devicetypes[0] = CL_DEVICE_TYPE_GPU;
 		devicetypes[1] = CL_DEVICE_TYPE_CPU;
-	} else {
+	}
+	//So far, more than 3 devices are not supported
+	else{
 		logger.fatal() << "Number of devices too big, aborting..." ;
 		return HMC_STDERR;
 	}
+
 	logger.trace() << "init gaugefield" ;
 	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters);
-	//this gives a segfault, must be a bug in the logger-usage...
+	/** @bug CP: this gives a segfault, maybe a bug in the logger-usage... */
 	// 	logger.trace()<< "initial gaugeobservables:";
 	gaugefield.print_gaugeobservables(&polytime, &plaqtime);
 	logger.trace() << "copy gaugefield" ;

@@ -34,6 +34,27 @@ hmc_error Gaugefield::init(int* numdevs, int numdevtypes, cl_device_type* device
   return HMC_SUCCESS;
 }
 
+hmc_error Gaugefield::init_devicetypes_array(cl_device_type* devicetypes, inputparameters* parameters){
+	/** @todo work this out! */
+	//Check if only one device should be used
+	if((*parameters).get_num_dev() == 1){
+		if((*parameters).get_use_gpu() == 1)
+			devicetypes[0] = CL_DEVICE_TYPE_GPU;
+		else
+			devicetypes[0] = CL_DEVICE_TYPE_CPU;
+	}
+	else if((*parameters).get_num_dev() == 2){
+		devicetypes[0] = CL_DEVICE_TYPE_GPU;
+		devicetypes[1] = CL_DEVICE_TYPE_CPU;
+	}
+	//So far, more than 3 devices are not supported
+	else{
+		logger.fatal() << "Number of devices too big, aborting..." ;
+		return HMC_STDERR;
+	}
+	return HMC_SUCCESS;
+}
+
 hmc_error Gaugefield::init_devices(cl_device_type* devicetypes)
 {
 // 	if(get_num_ocl_devices() != 1) {

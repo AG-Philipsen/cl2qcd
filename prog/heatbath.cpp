@@ -37,22 +37,7 @@ int main(int argc, char* argv[])
 	Gaugefield_heatbath gaugefield;
 	hmc_rndarray rndarray;
 	cl_device_type devicetypes[parameters.get_num_dev()];
-
-	if(parameters.get_num_dev() == 1){
-	#ifdef _USEGPU_
-		devicetypes[0] = CL_DEVICE_TYPE_GPU;
-	#else
-		devicetypes[0] = CL_DEVICE_TYPE_CPU;
-	#endif
-	}
-	else if(parameters.get_num_dev() == 2){
-		devicetypes[0] = CL_DEVICE_TYPE_GPU;
-		devicetypes[1] = CL_DEVICE_TYPE_CPU;
-	}
-	else{
-		logger.fatal() << "Number of devices too big, aborting..." ;
-		return HMC_STDERR;
-	}
+	gaugefield.init_devicetypes_array(devicetypes, &parameters);
 
 	gaugefield.init(1, devicetypes, &parameters);
 	logger.trace() << "Got gaugefield";

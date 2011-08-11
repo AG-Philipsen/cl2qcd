@@ -54,14 +54,20 @@ public:
 	 * @param[in,out] timer Return initialization time.
 	 * @return Error code as defined in hmcerrs.h
 	 */
-        hmc_error init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters);
+		hmc_error init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters);
 
 	/**
-	 * Initialize gaugefield and different device types
+	 * Fills an array of device types according to inputparameters
+	 */
+		hmc_error init_devicetypes_array(cl_device_type* devicetypes, inputparameters* input_parameters);
+		
+	/**
+	 * Initialize device types
 	 *
 	 * @todo This needs to be worked out in detail. So far it is assumed that numdevs[] has identical entries.
 	 */
-        hmc_error init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters);
+		hmc_error init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters);		
+		
 	/**
 	 * Free gaugefield and device allocations.
 	 */
