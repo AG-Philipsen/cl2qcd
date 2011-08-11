@@ -11,9 +11,9 @@ hmc_error Gaugefield_inversion::init_devices(cl_device_type* devicetypes)
 
 	if(get_num_ocl_devices() > 0) {
 		Opencl_fermions* dev_tmp = new Opencl_fermions[get_num_ocl_devices()];
+		alloc_devicetypes();
 		set_devices(dev_tmp);
 	}
-
 
 	for(int n = 0; n < get_num_ocl_devices(); n++) {
 		logger.trace() << "init device #" << n ;
