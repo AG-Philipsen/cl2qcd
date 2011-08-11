@@ -49,10 +49,9 @@ inline void nr3_init_state( hmc_ocl_ran * const state, const cl_ulong seed )
 	nr3_int64( state );
 }
 
-int init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seedfile, usetimer * const timer)
+int init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seedfile)
 {
 	const cl_ulong MAX_SEED = 4101842887655102017L;
-	timer->reset();
 
 	FILE * const file = fopen( seedfile, "rb" );
 
@@ -83,7 +82,6 @@ int init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seedf
 		nr3_init_state( &hmc_rndarray[i_state], seed );
 	}
 
-	timer->add();
 	return HMC_SUCCESS;
 }
 

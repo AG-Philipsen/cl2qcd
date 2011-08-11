@@ -31,6 +31,7 @@ int main(int argc, char* argv[])
 	// Initialization
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	init_timer.reset();
 	sourcefileparameters parameters_source;
 
 	Gaugefield_heatbath gaugefield;
@@ -53,30 +54,26 @@ int main(int argc, char* argv[])
 		return HMC_STDERR;
 	}
 
-	inittime.reset();
 	gaugefield.init(1, devicetypes, &parameters);
-	inittime.add();
-	
 	logger.trace() << "Got gaugefield";
 
-	int err = init_random_seeds(rndarray, "rand_seeds", &inittime);
+	int err = init_random_seeds(rndarray, "rand_seeds");
 	if(err) return err;
-
 	logger.trace() << "Got seeds";
 
-	//first output, if you like it...
-	logger.trace() << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]";
+	/** @todo these times are not used anywhere below. Remove? */
 	gaugefield.print_gaugeobservables(&polytime,&plaqtime);
 
-	gaugefield.copy_gaugefield_to_devices(&copytime);
-	gaugefield.copy_rndarray_to_devices(rndarray, &copytime);
-
+	gaugefield.copy_gaugefield_to_devices(&copy_to_from_dev_timer);
+	gaugefield.copy_rndarray_to_devices(rndarray, &copy_to_from_dev_timer);
 	logger.trace() << "Moved stuff to device";
+	init_timer.add();
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Heatbath
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	perform_timer.reset();
 	logger.trace() << "Start thermalization" ;
 
 	int ntherm = parameters.get_thermalizationsteps();
@@ -90,46 +87,28 @@ int main(int argc, char* argv[])
 	logger.info() << "Start heatbath";
 
 	for(int i = 0; i < nsteps; i++) {
-	  
 		gaugefield.heatbath();
 		for(int j = 0; j < overrelaxsteps; j++) gaugefield.overrelax();
 		if( ( (i + 1) % writefreq ) == 0 ) {
-		  gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str(), 1);
-		  //		  gaugefield.sync_gaugefield(&copytime);
-		  //		  cout<<gaugefield.plaquette()<<" "<<gaugefield.polyakov().re<<endl;
+		  gaugefield.print_gaugeobservables_from_devices(i, gaugeout_name.str(), parameters.get_print_to_screen());
 		}
 		if( parameters.get_saveconfigs() == TRUE && ( (i + 1) % savefreq ) == 0 ) {
-			gaugefield.sync_gaugefield(&copytime);
+			gaugefield.sync_gaugefield(&copy_to_from_dev_timer);
 			gaugefield.save(i);
 		}
 	}
 
-  gaugefield.sync_gaugefield(&copytime);
+  gaugefield.sync_gaugefield(&copy_to_from_dev_timer);
  	gaugefield.save(nsteps);
+	logger.trace() << "heatbath done";
+	perform_timer.add();
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Final Output
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef _PROFILING_
-	//CP: this is just a fist version and will go into an own file later
-	stringstream profiling_out;
-	profiling_out << "profiling";
-
-	fstream prof_file;
-	prof_file.open(profiling_out.str(), std::ios::out | std::ios::app);
-	if(prof_file.is_open()) {
-	  parameters.print_info_heatbath(argv[0], &prof_file);
-	  prof_file.close();
-	} else {
-	  logger.warn()<<"Could not open " << profiling_out;
-	}
-	gaugefield.get_devices()[0].print_profiling(profiling_out.str());
-#endif
-
-	totaltime.add();
-	time_output_heatbath(&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime);
-
+	total_timer.add();
+	heatbath_time_output(&total_timer, &init_timer, &perform_timer, &copy_to_from_dev_timer, &copy_on_dev_timer);
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables

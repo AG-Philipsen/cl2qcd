@@ -23,6 +23,7 @@ hmc_error inputparameters::set_defaults()
 	savefrequency = 100;
 	num_dev = 1;
 	sourcefilenumber = "00000";
+	print_to_screen = 0;
 
 #ifdef _PROFILING_
 	mat_size = 9;
@@ -145,6 +146,7 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("NSPACE") != std::string::npos) val_assign(&nspace, line);
 		if(line.find("NT") != std::string::npos) val_assign(&ntime, line);
 		if(line.find("NTIME") != std::string::npos) val_assign(&ntime, line);
+		if(line.find("print_to_screen") != std::string::npos) val_assign(&print_to_screen, line);
 		
 	}
 
@@ -581,6 +583,11 @@ int inputparameters::get_mat_size()
 int inputparameters::get_float_size()
 {
 	return float_size;
+}
+
+int inputparameters::get_print_to_screen()
+{
+	return print_to_screen;
 }
 
 #endif

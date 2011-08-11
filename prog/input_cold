@@ -10,4 +10,4 @@ thermalization=500
 heatbathsteps=20
 overrelaxsteps=2
 savefrequency=10
-
+print_to_screen=1

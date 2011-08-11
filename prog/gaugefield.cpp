@@ -333,7 +333,7 @@ void Gaugefield::print_gaugeobservables(hmc_float plaq, hmc_float tplaq, hmc_flo
 	return;
 }
 
-hmc_error Gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname, int stdout)
+hmc_error Gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, const int i, const string gaugeoutname, int stdout)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -347,12 +347,12 @@ hmc_error Gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq
   return HMC_SUCCESS;
 }
 
-hmc_error Gaugefield::print_gaugeobservables_from_devices(usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname, int stdout)
+hmc_error Gaugefield::print_gaugeobservables_from_devices(const int i, const string gaugeoutname, int stdout)
 {
 	hmc_float plaq, tplaq, splaq;
 	hmc_complex pol;
 
-	hmc_error err = print_gaugeobservables_from_devices(&plaq, &tplaq, &splaq, &pol, plaqtime, polytime, i, gaugeoutname, stdout);
+	hmc_error err = print_gaugeobservables_from_devices(&plaq, &tplaq, &splaq, &pol, i, gaugeoutname, stdout);
 
 	return err;
 }

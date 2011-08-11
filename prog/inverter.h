@@ -35,6 +35,10 @@ using namespace std;
 //global random number generator
 Random rnd (seed);
 
+//these can be used to measure times on the host
+usetimer polytime;
+usetimer plaqtime;
+
 //couple of timers
 usetimer total_timer;
 usetimer init_timer;
@@ -53,8 +57,8 @@ void inverter_time_output(usetimer * total, usetimer * init_timer, usetimer * pe
 	
 	uint64_t init_time = (*init_timer).getTime();
 	uint64_t perform_time = (*perform_timer).getTime();
-	uint64_t copy1_time = (*copy_on_dev_timer).getTime();
-	uint64_t copy2_time = (*copy_to_from_dev_timer).getTime();
+	uint64_t copy2_time = (*copy_on_dev_timer).getTime();
+	uint64_t copy1_time = (*copy_to_from_dev_timer).getTime();
 	uint64_t solvertime = (*solver_timer).getTime();
 
 	int copy1_steps;
@@ -66,28 +70,28 @@ void inverter_time_output(usetimer * total, usetimer * init_timer, usetimer * pe
 	uint64_t solver_avgtime;
 	
 	copy2_steps = (*copy_on_dev_timer).getNumMeas();
-	copy2_steps = (*copy_to_from_dev_timer).getNumMeas();
+	copy1_steps = (*copy_to_from_dev_timer).getNumMeas();
 	solver_steps = (*solver_timer).getNumMeas();
 	
 	copy2_avgtime = divide(copy2_time, copy2_steps);
 	copy1_avgtime = divide(copy1_time, copy1_steps);
 	solver_avgtime = divide(solvertime, solver_steps);
 
-	logger.trace() << "*******************************************************************";
-	logger.trace() << "Times [mus]:";
-	logger.trace() << "*******************************************************************";
-	logger.trace() << "Program Parts:\t" << setfill(' ') << setw(5) << "total" << '\t' << setw(5) << "perc";
-	logger.trace() << "Total:\t" << setfill(' ') << setw(12) << totaltime;
-	logger.trace() << "Init.:\t" << setfill(' ') << setw(12) << init_time << '\t'<< fixed << setw(5) << setprecision(1) << percent(init_time, totaltime) ;
-	logger.trace() << "Perf.:\t" << setfill(' ') << setw(12) << perform_time << '\t'<< fixed << setw(5) << setprecision(1) << percent(perform_time, totaltime) ;
-	logger.trace() << "*******************************************************************";
-	logger.trace() << "Other:\t" << setfill(' ') << setw(12) << "total" << '\t' << setw(12) << "avg"<< '\t' << setw(5) << "perc";
-	logger.trace() << "Solve:\t" << setfill(' ') << setw(12) << solvertime << '\t' << setw(12) << solver_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(solvertime, totaltime);
-	logger.trace() << "Copy1:\t" << setfill(' ') << setw(12) << copy1_time << '\t' << setw(12) << copy1_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(copy1_time, totaltime);
-	logger.trace() << "Copy2:\t" << setfill(' ') << setw(12) << copy2_time << '\t' << setw(12) << copy2_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(copy2_time, totaltime);
-	logger.trace() << "*******************************************************************";
+	logger.trace() << "## *******************************************************************";
+	logger.trace() << "## Times [mus]:";
+	logger.trace() << "## *******************************************************************";
+	logger.trace() << "## Program Parts:\t" << setfill(' ') << setw(5) << "total" << '\t' << setw(5) << "perc";
+	logger.trace() << "## Total:\t" << setfill(' ') << setw(12) << totaltime;
+	logger.trace() << "## Init.:\t" << setfill(' ') << setw(12) << init_time << '\t'<< fixed << setw(5) << setprecision(1) << percent(init_time, totaltime) ;
+	logger.trace() << "## Perf.:\t" << setfill(' ') << setw(12) << perform_time << '\t'<< fixed << setw(5) << setprecision(1) << percent(perform_time, totaltime) ;
+	logger.trace() << "## *******************************************************************";
+	logger.trace() << "## Other:\t" << setfill(' ') << setw(12) << "total" << '\t' << setw(12) << "avg"<< '\t' << setw(5) << "perc";
+	logger.trace() << "## Solve:\t" << setfill(' ') << setw(12) << solvertime << '\t' << setw(12) << solver_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(solvertime, totaltime);
+	logger.trace() << "## Copy1:\t" << setfill(' ') << setw(12) << copy1_time << '\t' << setw(12) << copy1_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(copy1_time, totaltime);
+	logger.trace() << "## Copy2:\t" << setfill(' ') << setw(12) << copy2_time << '\t' << setw(12) << copy2_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(copy2_time, totaltime);
+	logger.trace() << "## *******************************************************************";
 
-	logger.trace() << "No output to file implemented yet...";
+	logger.trace() << "## No output to file implemented yet...";
 	/** @todo output to file is not implemented */
 // 	ofstream out;
 // 	stringstream str_filename;

@@ -49,8 +49,9 @@ int main(int argc, char* argv[])
 	}
 	logger.trace() << "init gaugefield" ;
 	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters);
-	//cerr << "print initial gaugeobservables..." << endl;
-	//  gaugefield.print_gaugeobservables(&polytime, &plaqtime);
+	//this gives a segfault, must be a bug in the logger-usage...
+	// 	logger.trace()<< "initial gaugeobservables:";
+	gaugefield.print_gaugeobservables(&polytime, &plaqtime);
 	logger.trace() << "copy gaugefield" ;
 	gaugefield.copy_gaugefield_to_devices(&copy_to_from_dev_timer);
 	init_timer.add();

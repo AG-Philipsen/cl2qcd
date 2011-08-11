@@ -93,6 +93,7 @@ public:
 	int get_use_chem_pot_re();
 	int get_use_chem_pot_im();
 	int get_use_smearing();
+	int get_print_to_screen();
 	
 	
 #ifdef _PROFILING_
@@ -197,6 +198,7 @@ private:
 	int use_chem_pot_re;
 	int use_chem_pot_im;
 	int use_smearing;
+	int print_to_screen;
 	
 #ifdef _PROFILING_
 	//parameters that describe the size of datatypes in bytes

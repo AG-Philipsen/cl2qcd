@@ -170,7 +170,7 @@ public:
 	 * @param[in] stdout print also to stdout
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	virtual hmc_error print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname, int stdout);
+	virtual hmc_error print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, const int i, const string gaugeoutname, int stdout);
 	/**
 	 * Print gauge observables calculated on device, add iteration number.
 	 * @param[in,out] plaqtime time to calculate plaquette
@@ -180,7 +180,7 @@ public:
 	 * @param[in] stdout print also to stdout
 	 * @return Error code as defined in hmcerrs.h
 	 */
-	virtual hmc_error print_gaugeobservables_from_devices(usetimer * const plaqtime, usetimer * const polytime, const int i, const string gaugeoutname, int stdout);
+	virtual hmc_error print_gaugeobservables_from_devices(const int i, const string gaugeoutname, int stdout);
 	
 
 	//gaugeobservables, on host!!
