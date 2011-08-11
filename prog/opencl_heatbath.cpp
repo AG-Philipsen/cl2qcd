@@ -54,11 +54,11 @@ hmc_error Opencl_heatbath::clear_kernels()
 {
   Opencl::clear_kernels();
 
-		if(clReleaseKernel(heatbath_even) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(heatbath_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
+	if(clReleaseKernel(heatbath_even) != CL_SUCCESS) exit(HMC_OCLERROR);
+	if(clReleaseKernel(heatbath_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
 
-		if(clReleaseKernel(overrelax_even) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(overrelax_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
+	if(clReleaseKernel(overrelax_even) != CL_SUCCESS) exit(HMC_OCLERROR);
+	if(clReleaseKernel(overrelax_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
 
 	return HMC_SUCCESS;
 }

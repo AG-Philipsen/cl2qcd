@@ -338,9 +338,10 @@ hmc_error Gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 
-  get_devices()[0].gaugeobservables (plaq, tplaq, splaq, pol);
+  get_devices()[0].gaugeobservables (get_devices()[0].get_clmem_gaugefield(), plaq, tplaq, splaq, pol);
   print_gaugeobservables(*plaq, *tplaq, *splaq, *pol, i, gaugeoutname);
 
+	//if wanted, this prints the results to the screen
 	if(stdout)
 		print_gaugeobservables(*plaq, *tplaq, *splaq, *pol, i);
   return HMC_SUCCESS;

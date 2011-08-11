@@ -15,11 +15,11 @@ hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 		*collect_options << " -D_RECONSTRUCT_TWELVE_";
 	if(get_parameters()->get_prec() == 64){
 		*collect_options << " -D_USEDOUBLEPREC_";
-        if( device_double_extension.empty() ) {
-          logger.warn() << "Warning: Undefined extension for use of double.";
-        } else {
-          *collect_options << " -D_DEVICE_DOUBLE_EXTENSION_"<<device_double_extension<<"_";
-        }
+		if( device_double_extension.empty() ) {
+			logger.warn() << "Warning: Undefined extension for use of double.";
+		} else {
+			*collect_options << " -D_DEVICE_DOUBLE_EXTENSION_"<<device_double_extension<<"_";
+		}
 	}
 	if(get_parameters()->get_use_gpu() == 1)
 		*collect_options << " -D_USEGPU_";
@@ -34,6 +34,9 @@ hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 	return HMC_SUCCESS;
 }
 
+cl_mem Opencl::get_clmem_gaugefield(){
+	return clmem_gaugefield;
+}
 
 hmc_error Opencl::fill_buffers()
 {
@@ -330,242 +333,6 @@ hmc_error Opencl::copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* tim
 	}
 
 	timer->add();
-	return HMC_SUCCESS;
-}
-
-hmc_error Opencl::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
-{
-	cl_int clerr = CL_SUCCESS;
-
-	// decide on work-sizes
-	size_t local_work_size;
-	if( device_type == CL_DEVICE_TYPE_GPU ) {
-		// reductions are broken for local_work_size > 64
-		local_work_size = 64;//NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
-	} else {
-		local_work_size = 1; // nothing else makes sens on CPU
-	}
-
-	size_t global_work_size;
-	if( device_type == CL_DEVICE_TYPE_GPU )
-		global_work_size = 4 * NUMTHREADS * max_compute_units; /// @todo autotune
-	else
-		global_work_size = max_compute_units;
-
-	const cl_uint num_groups = (global_work_size + local_work_size - 1) / local_work_size;
-	global_work_size = local_work_size * num_groups;
-
-	// init scratch buffers if not already done
-	int global_buf_size_float = sizeof(hmc_float) * num_groups;
-	int global_buf_size_complex = sizeof(hmc_complex) * num_groups;
-
-	if( clmem_plaq_buf_glob == 0 ) {
-		clmem_plaq_buf_glob = clCreateBuffer(context, CL_MEM_READ_WRITE, global_buf_size_float, 0, &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "creating clmem_plaq_buf_glob failed, aborting...";
-			exit(HMC_OCLERROR);
-		}
-	}
-	if( clmem_tplaq_buf_glob == 0 ) {
-		clmem_tplaq_buf_glob = clCreateBuffer(context, CL_MEM_READ_WRITE, global_buf_size_float, 0, &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "creating tclmem_plaq_buf_glob failed, aborting...";
-			exit(HMC_OCLERROR);
-		}
-	}
-	if( clmem_splaq_buf_glob == 0 ) {
-		clmem_splaq_buf_glob = clCreateBuffer(context, CL_MEM_READ_WRITE, global_buf_size_float, 0, &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "creating sclmem_plaq_buf_glob failed, aborting...";
-			exit(HMC_OCLERROR);
-		}
-	}
-	if( clmem_polyakov_buf_glob == 0 ) {
-		clmem_polyakov_buf_glob = clCreateBuffer(context, CL_MEM_READ_WRITE, global_buf_size_complex, 0, &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "creating clmem_polyakov_buf_glob failed, aborting...";
-			exit(HMC_OCLERROR);
-		}
-	}
-
-
-	//measure plaquette
-
-	hmc_float plaq;
-	hmc_float splaq;
-	hmc_float tplaq;
-	int buf_loc_size_float = sizeof(hmc_float) * local_work_size;
-	int buf_loc_size_complex = sizeof(hmc_complex) * local_work_size;
-
-	plaq = 0.;
-	splaq = 0.;
-	tplaq = 0.;
-
-	// run local plaquette calculation and first part of reduction
-
-	clerr = clSetKernelArg(plaquette, 0, sizeof(cl_mem), &clmem_gaugefield);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg0 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(plaquette, 1, sizeof(cl_mem), &clmem_plaq_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg1 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(plaquette, 2, sizeof(cl_mem), &clmem_tplaq_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg2 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(plaquette, 3, sizeof(cl_mem), &clmem_splaq_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg3 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(plaquette, 4, buf_loc_size_float, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg4 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(plaquette, 5, buf_loc_size_float, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg5 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(plaquette, 6, buf_loc_size_float, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg6 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	enqueueKernel(plaquette, global_work_size, local_work_size);
-
-	// run second part of plaquette reduction
-
-	clerr = clSetKernelArg(plaquette_reduction, 0, sizeof(cl_mem), &clmem_plaq_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg0 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(plaquette_reduction, 1, sizeof(cl_mem), &clmem_tplaq_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg1 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(plaquette_reduction, 2, sizeof(cl_mem), &clmem_splaq_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg2 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(plaquette_reduction, 3, sizeof(cl_mem), &clmem_plaq);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg3 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(plaquette_reduction, 4, sizeof(cl_mem), &clmem_tplaq);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg4 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(plaquette_reduction, 5, sizeof(cl_mem), &clmem_splaq);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg5 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(plaquette_reduction, 6, sizeof(cl_uint), &num_groups);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg6 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	enqueueKernel(plaquette_reduction, 1, 1);
-
-	//read out values
-	clerr = clEnqueueReadBuffer(queue, clmem_plaq, CL_FALSE, 0, sizeof(hmc_float), &plaq, 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clEnqueueReadBuffer(queue, clmem_tplaq, CL_FALSE, 0, sizeof(hmc_float), &tplaq, 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clEnqueueReadBuffer(queue, clmem_splaq, CL_FALSE, 0, sizeof(hmc_float), &splaq, 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-
-	// wait for results to have been read back
-	clFinish(queue);
-
-	//two plaquette-measurements per thread -> add. factor of 1/2
-	tplaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1));
-	splaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
-	plaq  /= static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) * NC) / 2.;
-
-	(*plaq_out) = plaq;
-	(*splaq_out) = splaq;
-	(*tplaq_out) = tplaq;
-
-	//measure polyakovloop
-	hmc_complex pol;
-	pol = hmc_complex_zero;
-
-	// local polyakov compuation and first part of reduction
-
-	clerr = clSetKernelArg(polyakov, 0, sizeof(cl_mem), &clmem_gaugefield);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg0 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(polyakov, 1, sizeof(cl_mem), &clmem_polyakov_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg1 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(polyakov, 2, buf_loc_size_complex, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg2 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	enqueueKernel(polyakov, global_work_size, local_work_size);
-
-	// second part of polyakov reduction
-
-	clerr = clSetKernelArg(polyakov_reduction, 0, sizeof(cl_mem), &clmem_polyakov_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg0 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(polyakov_reduction, 1, sizeof(cl_mem), &clmem_polyakov);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg1 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clSetKernelArg(polyakov_reduction, 2, sizeof(cl_uint), &num_groups);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg2 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
-	enqueueKernel(polyakov_reduction, 1, 1);
-
-	//read out values
-	clerr = clEnqueueReadBuffer(queue, clmem_polyakov, CL_FALSE, 0, sizeof(hmc_complex), &pol, 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-
-	// wait for result to have been read back
-	clFinish(queue);
-
-	pol.re /= static_cast<hmc_float>(NC * VOLSPACE);
-	pol.im /= static_cast<hmc_float>(NC * VOLSPACE);
-
-	pol_out->re = pol.re;
-	pol_out->im = pol.im;
-
 	return HMC_SUCCESS;
 }
 
@@ -932,7 +699,6 @@ void Opencl::printResourceRequirements(const cl_kernel kernel)
 	delete[] platform_name;
 }
 
-//CP: this is the overloaded function to calc gaugeobservables with a specific gaugefield
 hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
 {
 	cl_int clerr = CL_SUCCESS;

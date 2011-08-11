@@ -95,32 +95,14 @@ public:
 	hmc_error get_gaugefield_from_device(s_gaugefield* gaugefield, usetimer* timer);
 //  hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
 
-
-
 	/**
-	 * Calculate plaquette and polyakov.
+	 * Calculate plaquette and polyakov of a specific gaugefield.
 	 *
+	 * @param[in] gf gaugefield to measure on
 	 * @param[out] plaq Storage for result of plaquette calculation
 	 * @param[out] tplaq Storage for result of plaquette calculation
 	 * @param[out] splaq Storage for result of plaquette calculation
 	 * @param[out] pol Storage for result of polyakov calculation
-	 * @param[in,out] timer1 Timer into which to aggregate plaquette calculation time
-	 * @param[in,out] timer2 Timer into which to aggregate polyakov calculation time
-	 * @return Error code as defined in hmcerrs.h:
-	 *         @li HMC_OCLERROR if OpenCL operations fail
-	 *         @li HMC_SUCCESS otherwise
-	 */
-	hmc_error gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
-
-	/**
-	 * Calculate plaquette and polyakov, but with a specific gaugefield.
-	 *
-	 * @param[out] plaq Storage for result of plaquette calculation
-	 * @param[out] tplaq Storage for result of plaquette calculation
-	 * @param[out] splaq Storage for result of plaquette calculation
-	 * @param[out] pol Storage for result of polyakov calculation
-	 * @param[in,out] timer1 Timer into which to aggregate plaquette calculation time
-	 * @param[in,out] timer2 Timer into which to aggregate polyakov calculation time
 	 * @return Error code as defined in hmcerrs.h:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
@@ -176,6 +158,11 @@ public:
 	 */
 	hmc_error set_init_false();
 
+	/**
+	 * Returns clmem_gaugefield
+	 *
+	 */
+	cl_mem get_clmem_gaugefield();	
 	//private:
 
 	/**
@@ -209,7 +196,7 @@ public:
 	cl_uint max_compute_units;
 
 	cl_command_queue queue;
-
+	
 	///////////////////////////////////////////////////////////
 	//LZ what follows should eventually be private
 	//heatbath variables
