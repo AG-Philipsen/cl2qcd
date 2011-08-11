@@ -69,26 +69,26 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
 	int use_eo = get_parameters()->get_use_eo();
 
   if(use_eo==FALSE){
-    get_devices_fermions()[0].set_spinorfield_cold_device(ls, gs, &noop);
+    get_devices_fermions()[0].set_spinorfield_cold_device(ls, gs);
   }
   else{
-    get_devices_fermions()[0].set_eoprec_spinorfield_cold_device(ls, gs, &noop);		
+    get_devices_fermions()[0].set_eoprec_spinorfield_cold_device(ls, gs);		
   }
 
-  get_devices_fermions()[0].set_correlator_field_zero_device(ls, gs, latimer);
+  get_devices_fermions()[0].set_correlator_field_zero_device(ls, gs);
 
   for(int k=0; k<12; k++) {
     if(use_eo == FALSE){
-      get_devices_fermions()[0].create_point_source_device(k,0,0,ls, gs, latimer);
-      get_devices_fermions()[0].solver_device(copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
+      get_devices_fermions()[0].create_point_source_device(k,0,0,ls, gs);
+      get_devices_fermions()[0].solver_device(copytimer, singletimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
       //CP: add solution to former ones...
-      get_devices_fermions()[0].add_solution_to_correlator_field_device(ls, gs, latimer);
+      get_devices_fermions()[0].add_solution_to_correlator_field_device(ls, gs);
     }
     else{
-      get_devices_fermions()[0].create_point_source_eoprec_device(k,0,0,ls, gs, latimer, dslashtimer, Mdiagtimer);
-      get_devices_fermions()[0].solver_eoprec_device(copytimer, singletimer, Mtimer, scalarprodtimer, latimer, dslashtimer, Mdiagtimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
+      get_devices_fermions()[0].create_point_source_eoprec_device(k,0,0,ls, gs);
+      get_devices_fermions()[0].solver_eoprec_device(copytimer, singletimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
       //CP: add solution to former ones... This is the same call as without eoprec since the eoprec solver saves the normal field also in clmem_inout!!
-      get_devices_fermions()[0].add_solution_to_correlator_field_device(ls, gs, latimer);
+      get_devices_fermions()[0].add_solution_to_correlator_field_device(ls, gs);
     }
   }
 	
