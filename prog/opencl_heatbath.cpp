@@ -204,13 +204,13 @@ int Opencl_heatbath::get_read_write_size(char * in, inputparameters * parameters
     return VOL4D*D*R + 1;
 	}
 	if (strcmp(in, "heatbath_odd") == 0){
-    return NUMTHREADS;
+    return VOL4D*D*R + 1;
 	}
 	if (strcmp(in, "overrelax_even") == 0){
     return 48*VOL4D *D*R + 1;
 	}
 	if (strcmp(in, "overrelax_odd") == 0){
-    return NUMTHREADS;	
+    return 48*VOL4D *D*R + 1;	
 	}
 }
 

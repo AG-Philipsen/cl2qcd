@@ -26,6 +26,7 @@ int main(int argc, char* argv[])
 	// Initialization
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	init_timer.reset();
 	sourcefileparameters parameters_source;
 	//CP: spinorfield on host for storage while copying between devices...
 	spinorfield host_spinorfield [SPINORFIELDSIZE];
@@ -47,31 +48,41 @@ int main(int argc, char* argv[])
 		return HMC_STDERR;
 	}
 	logger.trace() << "init gaugefield" ;
-	inittime.reset();
 	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters);
-	inittime.add();
 	//cerr << "print initial gaugeobservables..." << endl;
 	//  gaugefield.print_gaugeobservables(&polytime, &plaqtime);
 	logger.trace() << "copy gaugefield" ;
-	gaugefield.copy_gaugefield_to_devices(&copytimer);
-
+	gaugefield.copy_gaugefield_to_devices(&copy_to_from_dev_timer);
+	init_timer.add();
+	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// inverter
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	perform_timer.reset();
 	logger.info() << "perform inversion on device.." ;
-
 	if(parameters.get_num_dev() == 1) {
-		gaugefield.perform_inversion_pointsource_ps_corr_devices(&copytimer, &singletimer, &Mtimer, &scalarprodtimer, &latimer, &dslashtimer, &Mdiagtimer, &solvertimer);
+		gaugefield.perform_inversion_pointsource_ps_corr_devices(&copy_to_from_dev_timer, &copy_on_dev_timer,&solver_timer);
 		/** @todo improve ls, gs, here*/
 		gaugefield.get_devices_fermions()[0].ps_correlator_device(1,1);
 	}
-	else{	gaugefield.perform_inversion_pointsource_ps_corr_devices(&copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
-		gaugefield.get_devices_fermions()[0].get_spinorfield_from_device(host_spinorfield, &copytimer);
-		gaugefield.get_devices_fermions()[1].copy_spinorfield_to_device(host_spinorfield, &copytimer);
+	else{	
+		gaugefield.perform_inversion_pointsource_ps_corr_devices(&copy_to_from_dev_timer,&copy_on_dev_timer,&solver_timer);
+		gaugefield.get_devices_fermions()[0].get_spinorfield_from_device(host_spinorfield, &copy_to_from_dev_timer);
+		gaugefield.get_devices_fermions()[1].copy_spinorfield_to_device(host_spinorfield, &copy_to_from_dev_timer);
 		/** @todo improve ls, gs, here*/
 		gaugefield.get_devices_fermions()[1].ps_correlator_device(1, 1);
 	}
 	logger.trace() << "inversion done" ;
+	perform_timer.add();
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Final Output
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	total_timer.add();
+	inverter_time_output(&total_timer, &init_timer, &perform_timer, &copy_to_from_dev_timer, &copy_on_dev_timer, &solver_timer);
+	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////

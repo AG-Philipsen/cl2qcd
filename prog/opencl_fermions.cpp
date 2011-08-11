@@ -1774,7 +1774,7 @@ int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters
 	  S = SPINORFIELDSIZE;
 	//this is the same as in the function above
 	if (strcmp(in, "M") == 0){
-    return 1000000000000000000000000;
+    return (240 + 16*R)*D*S;
 	}	
 	if (strcmp(in, "gamma5") == 0){
     return 1000000000000000000000000;
@@ -1789,13 +1789,13 @@ int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters
     return 1000000000000000000000000;
 	}
 	if (strcmp(in, "M_sitediagonal") == 0){
-    return 1000000000000000000000000;
+    return 48*D*S;
 	}
 	if (strcmp(in, "M_inverse_sitediagonal") == 0){
-    return 1000000000000000000000000;
+    return 48*D*S;
 	}
 	if (strcmp(in, "dslash_eoprec") == 0){
-    return 1000000000000000000000000;
+    return (216 + 16*R)*D*S;
 	}
 	if (strcmp(in, "set_spinorfield_cold") == 0){
     return 1000000000000000000000000;
@@ -1807,10 +1807,10 @@ int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters
     return 1000000000000000000000000;
 	}
 	if (strcmp(in, "saxpy") == 0){
-    return 1000000000000000000000000;
+    return 74*D*S;
 	}
 	if (strcmp(in, "saxsbypz") == 0){
-    return 1000000000000000000000000;
+    return 100*D*S;
 	}
 	if (strcmp(in, "set_zero_spinorfield") == 0){
     return 1000000000000000000000000;
@@ -1831,10 +1831,10 @@ int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters
     return 1000000000000000000000000;
 	}
 	if (strcmp(in, "saxpy_eoprec") == 0){
-    return 1000000000000000000000000;
+    return 74*D*S;
 	}
 	if (strcmp(in, "saxsbypz_eoprec") == 0){
-    return 1000000000000000000000000;
+    return 100*D*S;
 	}
 	if (strcmp(in, "set_zero_spinorfield_eoprec") == 0){
     return 1000000000000000000000000;
@@ -1843,13 +1843,13 @@ int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters
     return 1000000000000000000000000;
 	}
 	if (strcmp(in, "scalar_product") == 0){
-    return 1000000000000000000000000;
+    return 50*D*S;
 	}
 	if (strcmp(in, "scalar_product_reduction") == 0){
     return 1000000000000000000000000;
 	}
 	if (strcmp(in, "global_squarenorm") == 0){
-    return 1000000000000000000000000;
+    return 25*D*S;
 	}
 	if (strcmp(in, "global_squarenorm_reduction") == 0){
     return 1000000000000000000000000;

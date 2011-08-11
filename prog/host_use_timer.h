@@ -115,4 +115,15 @@ uint64_t get_kernel_overhead_time(cl_event event);
  */	
 uint64_t get_kernel_submit_overhead_time(cl_event event);
 
+/**
+ * Divides a uint64_t-object by an integer.
+ * Returns 0 if the integer is 0.
+ */
+uint64_t divide(uint64_t a, int b);
+
+/**
+ * Divides two uint64_t-objects and returns the result in percent. 
+ */
+float percent(uint64_t a, uint64_t b);
+
 #endif

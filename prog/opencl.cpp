@@ -1008,6 +1008,11 @@ void Opencl::print_profiling(std::string filename, char * kernelName, uint64_t t
 	if(!out.is_open()) exit(HMC_FILEERROR);
 	out.width(8);
 	out.precision(15);
+	//to look like that
+	/*
+	logger.trace() << "*******************************************************************";
+	logger.trace() << "Fermion\t"<< setfill(' ') << setw(16)<< "BW[GB/s]\t" << setfill(' ') << setw(18) << "Re/Wr[MByte]\t" << setfill(' ') << setw(6)  << "Calls\t" << setfill(' ') << setw(10)  << "Time[mus]";
+	*/
 	out << kernelName << "\t" << time_total << "\t" << calls_total << "\t" << avg_time << "\t" << avg_time_site << "\t" << bandwidth << "\t" << (float) read_write_size/mega << std::endl;
 	out.close();
 	return;

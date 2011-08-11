@@ -43,7 +43,7 @@ Opencl_fermions * Gaugefield_inversion::get_devices_fermions ()
 	return  (Opencl_fermions*)get_devices();
 }
 
-hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer){
+hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(usetimer* copytimer, usetimer* singletimer, usetimer* solvertimer){
 	//this uses a BiCGStab inverter on device
 
 	//global and local work sizes;
@@ -80,13 +80,13 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
   for(int k=0; k<12; k++) {
     if(use_eo == FALSE){
       get_devices_fermions()[0].create_point_source_device(k,0,0,ls, gs);
-      get_devices_fermions()[0].solver_device(copytimer, singletimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
+      get_devices_fermions()[0].solver_device(get_devices_fermions()[0].get_clmem_gaugefield(), copytimer, singletimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
       //CP: add solution to former ones...
       get_devices_fermions()[0].add_solution_to_correlator_field_device(ls, gs);
     }
     else{
-      get_devices_fermions()[0].create_point_source_eoprec_device(k,0,0,ls, gs);
-      get_devices_fermions()[0].solver_eoprec_device(copytimer, singletimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
+      get_devices_fermions()[0].create_point_source_eoprec_device(get_devices_fermions()[0].get_clmem_gaugefield(), k,0,0,ls, gs);
+      get_devices_fermions()[0].solver_eoprec_device(get_devices_fermions()[0].get_clmem_gaugefield(), copytimer, singletimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
       //CP: add solution to former ones... This is the same call as without eoprec since the eoprec solver saves the normal field also in clmem_inout!!
       get_devices_fermions()[0].add_solution_to_correlator_field_device(ls, gs);
     }

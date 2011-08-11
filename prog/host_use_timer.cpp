@@ -50,11 +50,13 @@ int usetimer::getNumMeas()
 
 uint64_t divide(uint64_t a, int b)
 {
+	if (b==0) return 0.;
 	return uint64_t ( ( (float) a ) / ((float) b) );
 }
 
-float percent(uint64_t a, int b)
+float percent(uint64_t a, uint64_t b)
 {
+	if(b==0) return 0;
 	return (( (float) a) / ( (float )b )) * 100;
 }
 
