@@ -644,7 +644,7 @@ hmc_error Opencl_fermions::QplusQminus_device(cl_mem in, cl_mem out, const size_
 	int clerr = CL_SUCCESS;
 
 	/** @todo one could save one field here if an additional copying would be included in the end... */
-	clerr = Qminus_device(in, clmem_tmp, local_work_size, global_work_size);
+	clerr = Qminus_device(in, clmem_tmp, ls, gs);
 	if(clerr != CL_SUCCESS) {
 		cout << "Qminus_device failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1235,7 +1235,7 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 			//printf("initial residuum at iter %i is %.40e\n", iter, resid);
 		}
 
-		set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next, local_work_size, global_work_size);
+		set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next, localsize, globalsize);
 		set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
 		copy_complex_device(clmem_rho_next, clmem_rho, singletimer);
 		set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
@@ -1243,33 +1243,33 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 
 		set_complex_to_product_device(clmem_beta, clmem_omega, clmem_tmp1);
 		set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
-		saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p, local_work_size, global_work_size);
+		saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p, localsize, globalsize);
 
-		M_device(clmem_p, clmem_v, local_work_size, global_work_size);
+		M_device(clmem_p, clmem_v, localsize, globalsize);
 
-		set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1, local_work_size, global_work_size);
+		set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1, localsize, globalsize);
 		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 
-		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s, local_work_size, global_work_size);
+		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s, localsize, globalsize);
 
-		M_device(clmem_s, clmem_t, local_work_size, global_work_size);
+		M_device(clmem_s, clmem_t, localsize, globalsize);
 
-		set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1, local_work_size, global_work_size);
+		set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1, localsize, globalsize);
 		//!!CP: this can also be global_squarenorm
-		set_complex_to_scalar_product_device(clmem_t, clmem_t, clmem_tmp2, local_work_size, global_work_size);
+		set_complex_to_scalar_product_device(clmem_t, clmem_t, clmem_tmp2, localsize, globalsize);
 		set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
 
-		saxpy_device(clmem_t, clmem_s, clmem_omega, clmem_rn, local_work_size, global_work_size);
+		saxpy_device(clmem_t, clmem_s, clmem_omega, clmem_rn, localsize, globalsize);
 
-		saxsbypz_device(clmem_p, clmem_s, clmem_inout, clmem_alpha, clmem_omega, clmem_inout, local_work_size, global_work_size);
+		saxsbypz_device(clmem_p, clmem_s, clmem_inout, clmem_alpha, clmem_omega, clmem_inout, localsize, globalsize);
 
-		set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size);
+		set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, localsize, globalsize);
 		copy_float_from_device(clmem_resid, &resid, copytimer);
 
 		if(resid < epssquare) {
-			M_device(clmem_inout, clmem_aux, local_work_size, global_work_size);
-			saxpy_device(clmem_aux, clmem_source, clmem_one, clmem_aux, local_work_size, global_work_size);
-			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, local_work_size, global_work_size);
+			M_device(clmem_inout, clmem_aux, localsize, globalsize);
+			saxpy_device(clmem_aux, clmem_source, clmem_one, clmem_aux, localsize, globalsize);
+			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, localsize, globalsize);
 			copy_float_from_device(clmem_trueresid, &trueresid, copytimer);
 			//cout << "\tsolver converged! residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
 			if(trueresid < epssquare)
@@ -1313,7 +1313,7 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(usetimer * copytimer, usetimer
 			//cout << "initial residuum is: " << resid << endl;
 		}
 
-		set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next, local_work_size, global_work_size);
+		set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next, localsize, globalsize);
 		set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
 		copy_complex_device(clmem_rho_next, clmem_rho, singletimer);
 		set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
@@ -1321,33 +1321,33 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(usetimer * copytimer, usetimer
 
 		set_complex_to_product_device(clmem_beta, clmem_omega, clmem_tmp1);
 		set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
-		saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec, local_work_size, global_work_size);
+		saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec, localsize, globalsize);
 
-		Aee_device(clmem_p_eoprec, clmem_v_eoprec, local_work_size, global_work_size, singletimer);
+		Aee_device(clmem_p_eoprec, clmem_v_eoprec, localsize, globalsize, singletimer);
 
-		set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1, local_work_size, global_work_size);
+		set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1, localsize, globalsize);
 		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 
-		saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec, local_work_size, global_work_size);
+		saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec, localsize, globalsize);
 
-		Aee_device(clmem_s_eoprec, clmem_t_eoprec, local_work_size, global_work_size, singletimer);
+		Aee_device(clmem_s_eoprec, clmem_t_eoprec, localsize, globalsize, singletimer);
 
-		set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1, local_work_size, global_work_size);
+		set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1, localsize, globalsize);
 		//!!CP: can this also be global_squarenorm??
-		set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_t_eoprec, clmem_tmp2, local_work_size, global_work_size);
+		set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_t_eoprec, clmem_tmp2, localsize, globalsize);
 		set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
 
-		saxpy_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_omega, clmem_rn_eoprec, local_work_size, global_work_size);
+		saxpy_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_omega, clmem_rn_eoprec, localsize, globalsize);
 
-		saxsbypz_eoprec_device(clmem_p_eoprec, clmem_s_eoprec, clmem_inout_eoprec, clmem_alpha, clmem_omega, clmem_inout_eoprec, local_work_size, global_work_size);
+		saxsbypz_eoprec_device(clmem_p_eoprec, clmem_s_eoprec, clmem_inout_eoprec, clmem_alpha, clmem_omega, clmem_inout_eoprec, localsize, globalsize);
 
-		set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid, local_work_size, global_work_size);
+		set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid, localsize, globalsize);
 		copy_float_from_device(clmem_resid, &resid, copytimer);
 
 		if(resid < epssquare) {
-			Aee_device(clmem_inout_eoprec, clmem_aux_eoprec, local_work_size, global_work_size, singletimer);
-			saxpy_eoprec_device(clmem_aux_eoprec, clmem_source_even, clmem_one, clmem_aux_eoprec, local_work_size, global_work_size);
-			set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid, local_work_size, global_work_size);
+			Aee_device(clmem_inout_eoprec, clmem_aux_eoprec, localsize, globalsize, singletimer);
+			saxpy_eoprec_device(clmem_aux_eoprec, clmem_source_even, clmem_one, clmem_aux_eoprec, localsize, globalsize);
+			set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid, localsize, globalsize);
 			copy_float_from_device(clmem_trueresid, &trueresid, copytimer);
 			//cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
 			if(trueresid < epssquare)
@@ -1376,10 +1376,10 @@ hmc_error Opencl_fermions::cg_device(usetimer * copytimer, usetimer* singletimer
 			copy_spinor_device(clmem_rn, clmem_p, copytimer);
 		}
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
-		set_complex_to_scalar_product_device(clmem_p, clmem_p, clmem_omega, local_work_size, global_work_size);
+		set_complex_to_scalar_product_device(clmem_p, clmem_p, clmem_omega, localsize, globalsize);
 		//A pn --> v
-		M_device(clmem_p, clmem_v, local_work_size, global_work_size);
-		set_complex_to_scalar_product_device(clmem_p, clmem_v, clmem_rho, local_work_size, global_work_size);
+		M_device(clmem_p, clmem_v, localsize, globalsize);
+		set_complex_to_scalar_product_device(clmem_p, clmem_v, clmem_rho, localsize, globalsize);
 		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
 
 		set_complex_to_product_device(clmem_alpha, clmem_minusone, clmem_tmp1);
@@ -1388,14 +1388,14 @@ hmc_error Opencl_fermions::cg_device(usetimer * copytimer, usetimer* singletimer
 		//rn+1 -> rhat
 		saxpy_device(clmem_rn, clmem_v, clmem_alpha, clmem_rhat, localsize, globalsize);
 
-		set_float_to_global_squarenorm_device(clmem_rhat, clmem_resid, local_work_size, global_work_size);
+		set_float_to_global_squarenorm_device(clmem_rhat, clmem_resid, localsize, globalsize);
 		copy_float_from_device(clmem_resid, &resid, copytimer);
 
 		if(resid < epssquare) {
 			return HMC_SUCCESS;
 		} else {
 			//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
-			set_complex_to_scalar_product_device(clmem_rhat, clmem_rhat, clmem_rho_next, local_work_size, global_work_size);
+			set_complex_to_scalar_product_device(clmem_rhat, clmem_rhat, clmem_rho_next, localsize, globalsize);
 			set_complex_to_ratio_device(clmem_rho_next, clmem_omega, clmem_beta);
 
 			//pn+1 = rn+1 + beta*pn
