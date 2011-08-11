@@ -516,11 +516,7 @@ hmc_error Opencl_fermions::convert_to_kappa_format_device(cl_mem inout, const si
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, convert_to_kappa_format, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue convert_to_kappa_format kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel( convert_to_kappa_format, global_work_size, local_work_size);
 	return HMC_SUCCESS;
 }
 
@@ -538,11 +534,7 @@ hmc_error Opencl_fermions::convert_from_kappa_format_device(cl_mem in, cl_mem ou
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, convert_from_kappa_format, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue convert_from_kappa_format kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel( convert_from_kappa_format , global_work_size, local_work_size);
 	return HMC_SUCCESS;
 }
 
@@ -564,11 +556,7 @@ hmc_error Opencl_fermions::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clEnqueueNDRangeKernel(queue, convert_from_eoprec,1,0,&global_work_size,&local_work_size,0,0,NULL);
-	if(clerr!=CL_SUCCESS) {
-    cout<<"enqueue convert_from_eoprec kernel failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+	enqueueKernel(convert_from_eoprec , global_work_size, local_work_size);
 	return HMC_SUCCESS;
 }
 
@@ -581,11 +569,7 @@ hmc_error Opencl_fermions::convert_to_kappa_format_eoprec_device(cl_mem in, cons
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clEnqueueNDRangeKernel(queue, convert_to_kappa_format_eoprec,1,0,&global_work_size,&local_work_size,0,0,NULL);
-	if(clerr!=CL_SUCCESS) {
-    cout<<"enqueue convert_to_kappa_format_eoprec kernel failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+	enqueueKernel(convert_to_kappa_format_eoprec , global_work_size, local_work_size);
 
 	return HMC_SUCCESS;
 }
@@ -603,11 +587,7 @@ hmc_error Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, convert_from_kappa_format_eoprec, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue convert_from_kappa_format_eoprec kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel(convert_from_kappa_format_eoprec , global_work_size, local_work_size);
 
 	return HMC_SUCCESS;
 }
@@ -630,8 +610,7 @@ hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, const size_t loca
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clerr = clEnqueueNDRangeKernel(queue,Qplus,1,0,&global_work_size,&local_work_size,0,0,NULL);
-
+	enqueueKernel(Qplus , global_work_size, local_work_size);
 	return HMC_SUCCESS;
 
 }
@@ -654,8 +633,8 @@ hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, const size_t loc
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clerr = clEnqueueNDRangeKernel(queue,Qminus,1,0,&global_work_size,&local_work_size,0,0,NULL);
 
+	enqueueKernel( Qminus, global_work_size, local_work_size);
 	return HMC_SUCCESS;
 
 }
@@ -698,8 +677,8 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_wo
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clerr = clEnqueueNDRangeKernel(queue,M,1,0,&global_work_size,&local_work_size,0,0,NULL);
-  return HMC_SUCCESS;
+	enqueueKernel( M, global_work_size, local_work_size);
+	return HMC_SUCCESS;
 }
 
 
@@ -716,8 +695,8 @@ hmc_error Opencl_fermions::gamma5_device(cl_mem in, cl_mem out, const size_t loc
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clerr = clEnqueueNDRangeKernel(queue,gamma5,1,0,&global_work_size,&local_work_size,0,0,NULL);
-
+	enqueueKernel(gamma5 , global_work_size, local_work_size);
+	return HMC_SUCCESS;
 }
 
 hmc_error Opencl_fermions::gamma5_eoprec_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size){
@@ -733,9 +712,7 @@ hmc_error Opencl_fermions::gamma5_eoprec_device(cl_mem in, cl_mem out, const siz
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clerr = clEnqueueNDRangeKernel(queue,gamma5_eoprec,1,0,&global_work_size,&local_work_size,0,0,NULL);
-
-	
+	enqueueKernel( gamma5_eoprec, global_work_size, local_work_size);
 	return HMC_SUCCESS;
 }
 
@@ -786,12 +763,7 @@ hmc_error Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, int eveno
     cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }  
-	clerr = clEnqueueNDRangeKernel(queue,dslash_eoprec,1,0,&gs,&ls,0,0,NULL);
-	if(clerr!=CL_SUCCESS) {
-    cout<<"enqueue dslash_eoprec kernel failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-
+	enqueueKernel(dslash_eoprec , global_work_size, local_work_size);
 	return HMC_SUCCESS;
 }
 
@@ -811,12 +783,7 @@ hmc_error Opencl_fermions::M_inverse_sitediagonal_device(cl_mem in, cl_mem out, 
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, M_inverse_sitediagonal, 1, 0, &gs, &ls, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue M_inverse_sitediagonal kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-
+	enqueueKernel( M_inverse_sitediagonal, global_work_size, local_work_size);
 
 	return HMC_SUCCESS;
 }
@@ -837,12 +804,7 @@ hmc_error Opencl_fermions::M_sitediagonal_device(cl_mem in, cl_mem out, const si
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, M_sitediagonal, 1, 0, &gs, &ls, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue M_sitediagonal kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-
+	enqueueKernel(M_sitediagonal , global_work_size, local_work_size);
 	return HMC_SUCCESS;
 }
 
@@ -869,12 +831,7 @@ hmc_error Opencl_fermions::saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, saxpy, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue saxpy kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-
+	enqueueKernel(saxpy , global_work_size, local_work_size);
 	return HMC_SUCCESS;
 }
 
@@ -889,12 +846,7 @@ hmc_error Opencl_fermions::set_spinorfield_cold_device(const size_t local_work_s
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clerr = clEnqueueNDRangeKernel(queue,set_spinorfield_cold,1,0,&gs,&ls,0,0,NULL);
-
-	if(clerr!=CL_SUCCESS) {
-    cout<<"enqueue ps_correlator kernel failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+	enqueueKernel(set_spinorfield_cold , global_work_size, local_work_size);
   
 	return HMC_SUCCESS;
 }
@@ -910,11 +862,7 @@ hmc_error Opencl_fermions::set_eoprec_spinorfield_cold_device(const size_t local
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clerr = clEnqueueNDRangeKernel(queue,set_eoprec_spinorfield_cold,1,0,&gs,&ls,0,0,NULL);
-	if(clerr!=CL_SUCCESS) {
-    cout<<"enqueue ps_correlator kernel failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+	enqueueKernel(set_eoprec_spinorfield_cold , global_work_size, local_work_size);
 	return HMC_SUCCESS;
 }
 
@@ -942,11 +890,7 @@ hmc_error Opencl_fermions::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha,
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, saxpy_eoprec, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue saxpy_eoprec kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel( saxpy_eoprec, global_work_size, local_work_size);
 
  	return HMC_SUCCESS;
 
@@ -986,11 +930,7 @@ hmc_error Opencl_fermions::saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem 
 		cout << "clSetKernelArg 5 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, saxsbypz, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue saxsbypz kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel( saxsbypz, global_work_size, local_work_size);
 
 	return HMC_SUCCESS;
 }
@@ -1028,12 +968,7 @@ hmc_error Opencl_fermions::saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, 
 		cout << "clSetKernelArg 5 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, saxsbypz_eoprec, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue saxsbypz_eoprec kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel( saxsbypz_eoprec, global_work_size, local_work_size);
 
 	return HMC_SUCCESS;
 }
@@ -1062,12 +997,8 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, scalar_product, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
+	enqueueKernel(scalar_product , global_work_size, local_work_size);
 
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue scalar_product kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
 	/** @todo Here the wait is needed. Replace this call by a clWaitForEvents! */
 	clFinish(queue);
 	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
@@ -1080,12 +1011,7 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, scalar_product_reduction, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue scalar_product_reduction kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel( scalar_product_reduction, global_work_size, local_work_size);
 	return HMC_SUCCESS;
 }
 
@@ -1113,12 +1039,7 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_eoprec_device(cl_mem a,
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, scalar_product_eoprec, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue scalar_product kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel( scalar_product_eoprec, global_work_size, local_work_size);
 	clFinish(queue);
 	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
 	if(clerr != CL_SUCCESS) {
@@ -1130,13 +1051,7 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_eoprec_device(cl_mem a,
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, scalar_product_reduction, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue scalar_product_reduction kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-
+	enqueueKernel( scalar_product_reduction, global_work_size, local_work_size);
 	return HMC_SUCCESS;
 }
 
@@ -1161,11 +1076,7 @@ hmc_error Opencl_fermions::set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_me
 	}
 	//CP:this needs only one kernel!!
 	size_t one = 1;
-	clerr = clEnqueueNDRangeKernel(queue, ratio, 1, 0, &one, &one, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue ratio kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel( ratio, one, one);
  	return HMC_SUCCESS;
 
 }
@@ -1190,11 +1101,7 @@ hmc_error Opencl_fermions::set_complex_to_product_device(cl_mem a, cl_mem b, cl_
 	}
 	//CP:this needs only one kernel!!
 	size_t one = 1;
-	clerr = clEnqueueNDRangeKernel(queue, product, 1, 0, &one, &one, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue product kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel(product , one, one);
  	return HMC_SUCCESS;
 
 }
@@ -1218,11 +1125,7 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_me
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, global_squarenorm, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue global_squarenorm kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel(global_squarenorm , global_work_size, local_work_size);
 	clFinish(queue);
 	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
 	if(clerr != CL_SUCCESS) {
@@ -1234,11 +1137,7 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_me
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, global_squarenorm_reduction, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue scalar_product_reduction kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel( global_squarenorm_reduction, global_work_size, local_work_size);
 	return HMC_SUCCESS;
 }
 
@@ -1262,11 +1161,7 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, global_squarenorm_eoprec, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue global_squarenorm kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel( global_squarenorm_eoprec, global_work_size, local_work_size);
 	clFinish(queue);
 	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
 	if(clerr != CL_SUCCESS) {
@@ -1278,11 +1173,7 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, global_squarenorm_reduction, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue scalar_product_reduction kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel( global_squarenorm_reduction, global_work_size, local_work_size);
 	return HMC_SUCCESS;
 }
 
@@ -1295,11 +1186,7 @@ hmc_error Opencl_fermions::set_zero_spinorfield_device(cl_mem x, const size_t lo
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, set_zero_spinorfield, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue set_zero_spinorfield kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel(set_zero_spinorfield , global_work_size, local_work_size);
  	return HMC_SUCCESS;
 
 }
@@ -1313,11 +1200,7 @@ hmc_error Opencl_fermions::set_zero_spinorfield_eoprec_device(cl_mem x, const si
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, set_zero_spinorfield_eoprec, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue set_zero_spinorfield_eoprec kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel( set_zero_spinorfield_eoprec, global_work_size, local_work_size);
  	return HMC_SUCCESS;
 
 }
@@ -1603,11 +1486,7 @@ hmc_error Opencl_fermions::create_point_source_device(int i, int spacepos, int t
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, create_point_source, 1, 0, &gs, &ls, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue create_point_source kernel failed (" << clerr << "), aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel( create_point_source, global_work_size, local_work_size);
 
 	return HMC_SUCCESS;
 }
@@ -1651,11 +1530,7 @@ hmc_error Opencl_fermions::create_point_source_eoprec_device(int i, int spacepos
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clerr = clEnqueueNDRangeKernel(queue,create_point_source_eoprec,1,0,&gs,&ls,0,0,NULL);
-	if(clerr!=CL_SUCCESS) {
-    cout<<"enqueue create_point_source_eoprec kernel failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }		
+	enqueueKernel(create_point_source_eoprec , gs, ls);
   /** @todo replace this call by a wait for events..*/
  	clFinish(queue);
 
@@ -1692,11 +1567,7 @@ hmc_error Opencl_fermions::ps_correlator_device(const size_t local_work_size, co
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	clerr = clEnqueueNDRangeKernel(queue,ps_correlator,1,0,&gs,&ls,0,0,NULL);
-	if(clerr!=CL_SUCCESS) {
-    cout<<"enqueue ps_correlator kernel failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+	enqueueKernel(ps_correlator , gs, ls);
 
 	return HMC_SUCCESS;
 }
