@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 	//name of file to store gauge observables, print initial information
 	/** @todo think about what is a senseful filename*/
 	stringstream gaugeout_name;
-	gaugeout_name << "HMC_output";
+	gaugeout_name << "hmc_output";
 
 
 	fstream logfile;
@@ -38,37 +38,18 @@ int main(int argc, char* argv[])
 	Gaugefield_hmc gaugefield;
 	hmc_rndarray rndarray;
 	cl_device_type devicetypes[parameters.get_num_dev()];
+	gaugefield.init_devicetypes_array(devicetypes, &parameters);
 
-	if(parameters.get_num_dev() == 1){
-	#ifdef _USEGPU_
-		devicetypes[0] = CL_DEVICE_TYPE_GPU;
-	#else
-		devicetypes[0] = CL_DEVICE_TYPE_CPU;
-	#endif
-	}
-	else if(parameters.get_num_dev() == 2){
-		devicetypes[0] = CL_DEVICE_TYPE_GPU;
-		devicetypes[1] = CL_DEVICE_TYPE_CPU;
-	}
-	else{
-		logger.fatal() << "Number of devices too big, aborting..." ;
-		return HMC_STDERR;
-	}
-	cerr << "init gaugefield" << endl;
-	gaugefield.init(1, devicetypes, &parameters, &inittime);
-	logger.trace() << "Got gaugefield";
-	
-	/** @todo this needs to be implemented using structs.. */
-	//cerr << "print initial gaugeobservables..." << endl;
-	//	gaugefield.print_gaugeobservables(&polytime, &plaqtime);
+	logger.trace() << "init gaugefield" ;
+	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters);
+	logger.trace()<< "initial gaugeobservables:";
+	gaugefield.print_gaugeobservables(&polytime, &plaqtime);
 
-	int err = init_random_seeds(rndarray, "rand_seeds", &inittime);
+	int err = init_random_seeds(rndarray, "rand_seeds");
 	if(err) return err;
-
 	logger.trace() << "Got seeds";
 
 	gaugefield.copy_gaugefield_to_devices(&copytimer);
-
 	gaugefield.copy_rndarray_to_devices(rndarray, &copytime);
 	
 	logger.trace() << "Moved stuff to device";

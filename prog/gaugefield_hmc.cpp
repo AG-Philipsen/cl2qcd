@@ -4,7 +4,7 @@
 
 #include "logger.hpp"
 
-hmc_error Gaugefield_hmc::init_devices(cl_device_type* devicetypes, usetimer* timer)
+hmc_error Gaugefield_hmc::init_devices(cl_device_type* devicetypes)
 {
 // 	if(get_num_ocl_devices() != 1) {
 // 		//LZ: so far, we only use !!! 1 !!! device
@@ -18,8 +18,8 @@ hmc_error Gaugefield_hmc::init_devices(cl_device_type* devicetypes, usetimer* ti
 	}
 
 	for(int n = 0; n < get_num_ocl_devices(); n++) {
-		cout << "init device #" << n << endl;
-		get_devices_hmc()[n].init(devicetypes[n], timer, get_parameters());
+		logger.debug() << "init device #" << n;
+		get_devices_hmc()[n].init(devicetypes[n], get_parameters());
 	}
 	return HMC_SUCCESS;
 }

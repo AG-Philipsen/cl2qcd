@@ -119,12 +119,10 @@ void Opencl_hmc::fill_kernels()
 	gaugemomentum_squarenorm = createKernel("gaugemomentum_squarenorm") << basic_hmc_code << "gaugemomentum_squarenorm.cl";
 }
 
-hmc_error Opencl_hmc::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters)
+hmc_error Opencl_hmc::init(cl_device_type wanted_device_type, inputparameters* parameters)
 {
-	(*timer).reset();
-	hmc_error err = Opencl_fermions::init(wanted_device_type, timer, parameters);
-
-	(*timer).add();
+	hmc_error err = Opencl_fermions::init(wanted_device_type, parameters);
+	
 	return err;
 }
 
@@ -215,7 +213,7 @@ hmc_error Opencl_hmc::md_update_spinorfield_device(const size_t local_work_size,
 {
 	(*timer).reset();
 	//suppose the initial gaussian field is saved in phi_inv. then the "phi" from the algorithm is clmem_inout
-	int err =  Opencl_fermions::Qplus_device(clmem_phi_inv, get_clmem_inout() , local_work_size, global_work_size,  timer);
+	int err =  Opencl_fermions::Qplus_device(clmem_phi_inv, get_clmem_inout() , get_clmem_gaugefield(), local_work_size, global_work_size);
 
 	(*timer).add();
 
@@ -334,8 +332,8 @@ hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const stri
 	hmc_complex poly;
 	hmc_complex poly_new;
 	//In this call, the observables are calculated already with appropiate Weighting factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC)
-	Opencl::gaugeobservables(&plaq,  &tplaq, &splaq, &poly, &noop, &noop);
-	Opencl::gaugeobservables(clmem_new_u, &plaq_new,  &tplaq_new, &splaq_new, &poly_new, &noop, &noop);
+	Opencl::gaugeobservables(get_clmem_gaugefield(), &plaq,  &tplaq, &splaq, &poly);
+	Opencl::gaugeobservables(clmem_new_u, &plaq_new,  &tplaq_new, &splaq_new, &poly_new);
 	//plaq has to be divided by the norm-factor and multiplied by NC 
 	//	(because this is in the defintion of the gauge action and not in the normalization) to get s_gauge
 	hmc_float factor = 2.0 / static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) );
@@ -405,7 +403,7 @@ hmc_error Opencl_hmc::calc_spinorfield_init_energy_device(const size_t local_wor
 {
 	(*timer).reset();
 	//Suppose the initial spinorfield is saved in phi_inv
-	Opencl_fermions::set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_energy_init, local_work_size, global_work_size, timer);
+	Opencl_fermions::set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_energy_init, local_work_size, global_work_size);
 
 	(*timer).add();
 	return HMC_SUCCESS;
