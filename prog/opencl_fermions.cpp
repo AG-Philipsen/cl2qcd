@@ -592,7 +592,7 @@ hmc_error Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs){
+hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem gf, cl_mem out, const size_t ls, const size_t gs){
   int clerr =CL_SUCCESS;
 
   clerr = clSetKernelArg(Qplus,0,sizeof(cl_mem),&in); 
@@ -600,7 +600,7 @@ hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, const size_t ls, 
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(Qplus,1,sizeof(cl_mem),&clmem_gaugefield);
+  clerr = clSetKernelArg(Qplus,1,sizeof(cl_mem),&gf);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -615,7 +615,7 @@ hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, const size_t ls, 
 
 }
 
-hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs){
+hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
   int clerr =CL_SUCCESS;
 
   clerr = clSetKernelArg(Qminus,0,sizeof(cl_mem),&in); 
@@ -623,7 +623,7 @@ hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, const size_t ls,
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(Qminus,1,sizeof(cl_mem),&clmem_gaugefield);
+  clerr = clSetKernelArg(Qminus,1,sizeof(cl_mem),&gf);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -639,17 +639,17 @@ hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, const size_t ls,
 
 }
 
-hmc_error Opencl_fermions::QplusQminus_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs)
+hmc_error Opencl_fermions::QplusQminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs)
 {
 	int clerr = CL_SUCCESS;
 
 	/** @todo one could save one field here if an additional copying would be included in the end... */
-	clerr = Qminus_device(in, clmem_tmp, ls, gs);
+	clerr = Qminus_device(in, clmem_tmp, gf, ls, gs);
 	if(clerr != CL_SUCCESS) {
 		cout << "Qminus_device failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = Qplus_device(clmem_tmp, out, ls, gs);
+	clerr = Qplus_device(clmem_tmp, out, gf, ls, gs);
 	if(clerr != CL_SUCCESS) {
 		cout << "Qplus_device failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -659,7 +659,7 @@ hmc_error Opencl_fermions::QplusQminus_device(cl_mem in, cl_mem out, const size_
 
 }
 
-hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs){
+hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
 
   int clerr =CL_SUCCESS;
 	clerr = clSetKernelArg(M,0,sizeof(cl_mem),&in); 
@@ -667,7 +667,7 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t ls, cons
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(M,1,sizeof(cl_mem),&clmem_gaugefield);
+  clerr = clSetKernelArg(M,1,sizeof(cl_mem),&gf);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -716,14 +716,14 @@ hmc_error Opencl_fermions::gamma5_eoprec_device(cl_mem in, cl_mem out, const siz
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs, usetimer * singletimer)
+hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs, usetimer * singletimer)
 {
 	int even = EVEN;
 	int odd = ODD;
 
-	dslash_eoprec_device(in, clmem_tmp_eoprec_1, odd, ls, gs);
+	dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd, ls, gs);
 	M_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, ls, gs);
-	dslash_eoprec_device(clmem_tmp_eoprec_2, out, even, ls, gs);
+	dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even, ls, gs);
 	M_sitediagonal_device(in, clmem_tmp_eoprec_1, ls, gs);
 
 	copy_eoprec_spinor_device(out, clmem_tmp_eoprec_3, singletimer);
@@ -733,7 +733,7 @@ hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, const size_t ls, co
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, int evenodd, const size_t ls, const size_t gs)
+hmc_error Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, const size_t ls, const size_t gs)
 {
 	int clerr = CL_SUCCESS;
 	int eo = evenodd;
@@ -748,7 +748,7 @@ hmc_error Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, int eveno
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(dslash_eoprec,2,sizeof(cl_mem),&clmem_gaugefield);
+  clerr = clSetKernelArg(dslash_eoprec,2,sizeof(cl_mem),&gf);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -1205,7 +1205,7 @@ hmc_error Opencl_fermions::copy_complex_device(cl_mem in, cl_mem out, usetimer* 
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax)
+hmc_error Opencl_fermions::bicgstab_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax)
 {
 
 	//!!CP: here one has to be careful if local_work_size is a null-pointer
@@ -1219,7 +1219,7 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 		if(iter % iter_refresh == 0) {
 			set_zero_spinorfield_device(clmem_v, localsize, globalsize);
 			set_zero_spinorfield_device(clmem_p, localsize, globalsize);
-			M_device(clmem_inout, clmem_rn, localsize, globalsize);
+			M_device(clmem_inout, clmem_rn, gf, localsize, globalsize);
 
 			saxpy_device(clmem_rn, clmem_source, clmem_one, clmem_rn, localsize, globalsize);
 			copy_spinor_device(clmem_rn, clmem_rhat, singletimer);
@@ -1245,14 +1245,14 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 		set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 		saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p, localsize, globalsize);
 
-		M_device(clmem_p, clmem_v, localsize, globalsize);
+		M_device(clmem_p, clmem_v, gf, localsize, globalsize);
 
 		set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1, localsize, globalsize);
 		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 
 		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s, localsize, globalsize);
 
-		M_device(clmem_s, clmem_t, localsize, globalsize);
+		M_device(clmem_s, clmem_t, gf, localsize, globalsize);
 
 		set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1, localsize, globalsize);
 		//!!CP: this can also be global_squarenorm
@@ -1267,7 +1267,7 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 		copy_float_from_device(clmem_resid, &resid, copytimer);
 
 		if(resid < epssquare) {
-			M_device(clmem_inout, clmem_aux, localsize, globalsize);
+			M_device(clmem_inout, clmem_aux, gf, localsize, globalsize);
 			saxpy_device(clmem_aux, clmem_source, clmem_one, clmem_aux, localsize, globalsize);
 			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, localsize, globalsize);
 			copy_float_from_device(clmem_trueresid, &trueresid, copytimer);
@@ -1283,7 +1283,7 @@ hmc_error Opencl_fermions::bicgstab_device(usetimer * copytimer, usetimer* singl
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::bicgstab_eoprec_device(usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax)
+hmc_error Opencl_fermions::bicgstab_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax)
 {
 	//!!CP: here one has to be careful if local_work_size is a null-pointer
 	size_t globalsize = gs;
@@ -1298,7 +1298,7 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(usetimer * copytimer, usetimer
 			set_zero_spinorfield_eoprec_device(clmem_v_eoprec, localsize, globalsize);
 			set_zero_spinorfield_eoprec_device(clmem_p_eoprec, localsize, globalsize);
 
-			Aee_device(clmem_inout_eoprec, clmem_rn_eoprec, localsize, globalsize, singletimer);
+			Aee_device(clmem_inout_eoprec, clmem_rn_eoprec, gf, localsize, globalsize, singletimer);
 
 			saxpy_eoprec_device(clmem_rn_eoprec, clmem_source_even, clmem_one, clmem_rn_eoprec, localsize, globalsize);
 			copy_eoprec_spinor_device(clmem_rn_eoprec, clmem_rhat_eoprec, singletimer);
@@ -1323,14 +1323,14 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(usetimer * copytimer, usetimer
 		set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 		saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec, localsize, globalsize);
 
-		Aee_device(clmem_p_eoprec, clmem_v_eoprec, localsize, globalsize, singletimer);
+		Aee_device(clmem_p_eoprec, clmem_v_eoprec, gf, localsize, globalsize, singletimer);
 
 		set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1, localsize, globalsize);
 		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 
 		saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec, localsize, globalsize);
 
-		Aee_device(clmem_s_eoprec, clmem_t_eoprec, localsize, globalsize, singletimer);
+		Aee_device(clmem_s_eoprec, clmem_t_eoprec, gf, localsize, globalsize, singletimer);
 
 		set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1, localsize, globalsize);
 		//!!CP: can this also be global_squarenorm??
@@ -1345,7 +1345,7 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(usetimer * copytimer, usetimer
 		copy_float_from_device(clmem_resid, &resid, copytimer);
 
 		if(resid < epssquare) {
-			Aee_device(clmem_inout_eoprec, clmem_aux_eoprec, localsize, globalsize, singletimer);
+			Aee_device(clmem_inout_eoprec, clmem_aux_eoprec, gf, localsize, globalsize, singletimer);
 			saxpy_eoprec_device(clmem_aux_eoprec, clmem_source_even, clmem_one, clmem_aux_eoprec, localsize, globalsize);
 			set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid, localsize, globalsize);
 			copy_float_from_device(clmem_trueresid, &trueresid, copytimer);
@@ -1361,7 +1361,7 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(usetimer * copytimer, usetimer
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::cg_device(usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax)
+hmc_error Opencl_fermions::cg_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax)
 {
 	//!!CP: here one has to be careful if local_work_size is a null-pointer
 	size_t globalsize = gs;
@@ -1371,14 +1371,14 @@ hmc_error Opencl_fermions::cg_device(usetimer * copytimer, usetimer* singletimer
 	int iter;
 	for(iter = 0; iter < cgmax; iter ++) {
 		if(iter % iter_refresh == 0) {
-			M_device(clmem_inout, clmem_rn, localsize, globalsize);
+			M_device(clmem_inout, clmem_rn, gf, localsize, globalsize);
 			saxpy_device(clmem_rn, clmem_source, clmem_one, clmem_rn, localsize, globalsize);
 			copy_spinor_device(clmem_rn, clmem_p, copytimer);
 		}
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		set_complex_to_scalar_product_device(clmem_p, clmem_p, clmem_omega, localsize, globalsize);
 		//A pn --> v
-		M_device(clmem_p, clmem_v, localsize, globalsize);
+		M_device(clmem_p, clmem_v, gf, localsize, globalsize);
 		set_complex_to_scalar_product_device(clmem_p, clmem_v, clmem_rho, localsize, globalsize);
 		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
 
@@ -1407,11 +1407,11 @@ hmc_error Opencl_fermions::cg_device(usetimer * copytimer, usetimer* singletimer
 }
 
 
-hmc_error Opencl_fermions::solver_device(usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax)
+hmc_error Opencl_fermions::solver_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax)
 {
 	(*solvertimer).reset();
 	convert_to_kappa_format_device(clmem_inout, ls, gs);
-	bicgstab_device(copytimer, singletimer, ls, gs, cgmax);
+	bicgstab_device(gf, copytimer, singletimer, ls, gs, cgmax);
 	convert_from_kappa_format_device(clmem_inout, clmem_inout, ls, gs);
 	(*solvertimer).add();
 
@@ -1419,18 +1419,18 @@ hmc_error Opencl_fermions::solver_device(usetimer * copytimer, usetimer * single
 }
 
 
-hmc_error Opencl_fermions::solver_eoprec_device(usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax)
+hmc_error Opencl_fermions::solver_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax)
 {
 	(*solvertimer).reset();
 
 	//CP: even solution
 	convert_to_kappa_format_eoprec_device(clmem_inout_eoprec, ls, gs);
-	bicgstab_eoprec_device(copytimer, singletimer, ls, gs, cgmax);
+	bicgstab_eoprec_device(gf, copytimer, singletimer, ls, gs, cgmax);
 
 	//P: odd solution
 
 	/** @todo CP: perhaps one can save some variables used here */
-	dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, ODD, ls, gs);
+	dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, gf, ODD, ls, gs);
 	M_inverse_sitediagonal_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, ls, gs);
 	M_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2, ls, gs);
 	saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, clmem_one, clmem_tmp_eoprec_3,  ls, gs);
@@ -1477,7 +1477,7 @@ hmc_error Opencl_fermions::create_point_source_device(int i, int spacepos, int t
 }
 
 
-hmc_error Opencl_fermions::create_point_source_eoprec_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs)
+hmc_error Opencl_fermions::create_point_source_eoprec_device(cl_mem gf, int i, int spacepos, int timepos, const size_t ls, const size_t gs)
 {
 
 	set_zero_spinorfield_eoprec_device(clmem_source_even, ls, gs);
@@ -1520,7 +1520,7 @@ hmc_error Opencl_fermions::create_point_source_eoprec_device(int i, int spacepos
  	clFinish(queue);
 
 	M_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1, ls, gs);
-	dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_3, EVEN, ls, gs);
+	dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_3, gf, EVEN, ls, gs);
 
 	saxpy_eoprec_device(clmem_tmp_eoprec_2, clmem_tmp_eoprec_3, clmem_one, clmem_source_even, ls, gs);
 

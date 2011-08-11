@@ -91,35 +91,35 @@ public:
 	hmc_error saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t ls, const size_t gs);
 	hmc_error saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t ls, const size_t gs);
 	hmc_error create_point_source_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs);
-	hmc_error create_point_source_eoprec_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs);
+	hmc_error create_point_source_eoprec_device(cl_mem gf, int i, int spacepos, int timepos, const size_t ls, const size_t gs);
 	hmc_error set_spinorfield_cold_device(const size_t ls, const size_t gs);
 	hmc_error set_eoprec_spinorfield_cold_device(const size_t ls, const size_t gs);
 
 	//    fermionmatrix operations
 	//    non-eoprec
-	hmc_error M_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
+	hmc_error M_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error gamma5_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error Qplus_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error Qminus_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error QplusQminus_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
+	hmc_error Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+	hmc_error Qminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+	hmc_error QplusQminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	//    eoprec
 	hmc_error gamma5_eoprec_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error Aee_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs, usetimer * singletimer);
+	hmc_error Aee_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs, usetimer * singletimer);
 	hmc_error M_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
 	hmc_error M_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error dslash_eoprec_device(cl_mem in, cl_mem out, int evenodd, const size_t ls, const size_t gs);
+	hmc_error dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, const size_t ls, const size_t gs);
 
 	//this is not needed anymore!!
 //  hmc_error testing_spinor(inputparameters* parameters, size_t local_size, size_t global_size);
 
 	//    solver operations
 	//    non-eoprec
-	hmc_error solver_device(usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
-	hmc_error bicgstab_device(usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax);
-	hmc_error cg_device(usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error solver_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error bicgstab_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error cg_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax);
 	//    eorec
-	hmc_error bicgstab_eoprec_device(usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax);
-	hmc_error solver_eoprec_device(usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error bicgstab_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error solver_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
 
 	//    operations needed calculating fermionic observables
 	hmc_error ps_correlator_device(const size_t ls, const size_t gs);
