@@ -20,9 +20,8 @@ class Gaugefield_inversion : public Gaugefield {
    * Initializes the devices, to be called by init()
    * @return Error code as defined in hmcerrs.h
    * @param devicetypes array of cl_device_type handles
-   * @param[in,out] timer timer for initialization
    */
-  virtual hmc_error init_devices(cl_device_type* devicetypes, usetimer* timer);
+  virtual hmc_error init_devices(cl_device_type* devicetypes);
 
   /**
    * Free gaugefield and device allocations.

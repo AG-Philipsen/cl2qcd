@@ -33,19 +33,17 @@ public:
 	 */
 	virtual void fill_kernels();
 
-
 	/**
 	 * Initialize the OpenCL device including fermion capabilities
 	 *
 	 * @param wanted The OpenCL device type to be used, e.g. CL_DEVICE_TYPE_CPU or CL_DEVICE_TYPE_GPU
-	 * @param timer The timer to use for reporting execution time
 	 * @param parameters The parsed input parameters
 	 * @return Error code as defined in hmcerrs.h:
 	 *         @li HMC_OCLERROR if OpenCL initialization / operations fail
 	 *         @li HMC_FILEERROR if one of the kernel files cannot be opened
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	virtual hmc_error init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters);
+	virtual hmc_error init(cl_device_type wanted_device_type, inputparameters* parameters);
 
 	hmc_error finalize_fermions();
 

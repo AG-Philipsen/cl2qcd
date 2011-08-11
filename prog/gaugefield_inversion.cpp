@@ -1,7 +1,7 @@
 #include "gaugefield_inversion.h"
 
 
-hmc_error Gaugefield_inversion::init_devices(cl_device_type* devicetypes, usetimer* timer)
+hmc_error Gaugefield_inversion::init_devices(cl_device_type* devicetypes)
 {
 	if(get_num_ocl_devices() != 1) {
 		//LZ: so far, we only use !!! 1 !!! device
@@ -17,7 +17,7 @@ hmc_error Gaugefield_inversion::init_devices(cl_device_type* devicetypes, usetim
 
 	for(int n = 0; n < get_num_ocl_devices(); n++) {
 		cout << "init device #" << n << endl;
-		get_devices_fermions()[n].init(devicetypes[n], timer, get_parameters());
+		get_devices_fermions()[n].init(devicetypes[n], get_parameters());
 	}
 	return HMC_SUCCESS;
 }

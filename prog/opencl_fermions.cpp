@@ -345,12 +345,10 @@ void Opencl_fermions::fill_kernels()
 	}
 }
 
-hmc_error Opencl_fermions::init(cl_device_type wanted_device_type, usetimer* timer, inputparameters* parameters)
+hmc_error Opencl_fermions::init(cl_device_type wanted_device_type, inputparameters* parameters)
 {
-	(*timer).reset();
-	hmc_error err = Opencl::init(wanted_device_type, timer, parameters);
+	hmc_error err = Opencl::init(wanted_device_type, parameters);
 	return err;
-	(*timer).add();
 }
 
 

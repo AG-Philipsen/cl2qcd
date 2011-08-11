@@ -47,7 +47,9 @@ int main(int argc, char* argv[])
 		return HMC_STDERR;
 	}
 	logger.trace() << "init gaugefield" ;
-	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters, &inittime);
+	inittime.reset();
+	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters);
+	inittime.add();
 	//cerr << "print initial gaugeobservables..." << endl;
 	//  gaugefield.print_gaugeobservables(&polytime, &plaqtime);
 	logger.trace() << "copy gaugefield" ;
