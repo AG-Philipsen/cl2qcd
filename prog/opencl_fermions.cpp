@@ -7,9 +7,8 @@ hmc_error Opencl_fermions::fill_collect_options(stringstream* collect_options)
 {
 
 	Opencl::fill_collect_options(collect_options);
-	*collect_options << " -D_FERMIONS_" << " -DSPINORSIZE=" << SPINORSIZE << " -DHALFSPINORSIZE=" << HALFSPINORSIZE << " -DSPINORFIELDSIZE=" << SPINORFIELDSIZE << " -DEOPREC_SPINORFIELDSIZE=" << EOPREC_SPINORFIELDSIZE;
-
-
+	*collect_options << " -D_FERMIONS_" << " -DSPINORSIZE=" << SPINORSIZE << " -DHALFSPINORSIZE=" << HALFSPINORSIZE 
+		<< " -DSPINORFIELDSIZE=" << SPINORFIELDSIZE << " -DEOPREC_SPINORFIELDSIZE=" << EOPREC_SPINORFIELDSIZE;
 	switch (get_parameters()->get_fermact()) {
 		case TWISTEDMASS :
 			*collect_options << " -D_TWISTEDMASS_";
@@ -354,9 +353,6 @@ hmc_error Opencl_fermions::init(cl_device_type wanted_device_type, inputparamete
 
 hmc_error Opencl_fermions::convert_to_kappa_format_device(cl_mem inout, const size_t local_work_size, const size_t global_work_size, usetimer* timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 	int clerr = CL_SUCCESS;
 
 	clerr = clSetKernelArg(convert_to_kappa_format, 0, sizeof(cl_mem), &inout);
@@ -364,13 +360,7 @@ hmc_error Opencl_fermions::convert_to_kappa_format_device(cl_mem inout, const si
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,convert_to_kappa_format,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, convert_to_kappa_format, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue convert_to_kappa_format kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -380,9 +370,6 @@ hmc_error Opencl_fermions::convert_to_kappa_format_device(cl_mem inout, const si
 
 hmc_error Opencl_fermions::convert_from_kappa_format_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 	int clerr = CL_SUCCESS;
 
 	clerr = clSetKernelArg(convert_from_kappa_format, 0, sizeof(cl_mem), &in);
@@ -395,13 +382,7 @@ hmc_error Opencl_fermions::convert_from_kappa_format_device(cl_mem in, cl_mem ou
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,convert_from_kappa_format,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, convert_from_kappa_format, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue convert_from_kappa_format kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -410,10 +391,6 @@ hmc_error Opencl_fermions::convert_from_kappa_format_device(cl_mem in, cl_mem ou
 }
 
 hmc_error Opencl_fermions::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
-#ifdef _PROFILING_
-	cl_event event;
-#endif
-
 	int clerr = CL_SUCCESS;
 
 	clerr = clSetKernelArg(convert_from_eoprec,0,sizeof(cl_mem),&in1); 
@@ -431,14 +408,7 @@ hmc_error Opencl_fermions::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,convert_from_eoprec,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
   clerr = clEnqueueNDRangeKernel(queue, convert_from_eoprec,1,0,&global_work_size,&local_work_size,0,0,NULL);
-#endif
 	if(clerr!=CL_SUCCESS) {
     cout<<"enqueue convert_from_eoprec kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -448,9 +418,6 @@ hmc_error Opencl_fermions::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl
 
 	
 hmc_error Opencl_fermions::convert_to_kappa_format_eoprec_device(cl_mem in, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 	int clerr = CL_SUCCESS;
 	
 	clerr = clSetKernelArg(convert_to_kappa_format_eoprec,0,sizeof(cl_mem),&in); 
@@ -458,13 +425,7 @@ hmc_error Opencl_fermions::convert_to_kappa_format_eoprec_device(cl_mem in, cons
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,convert_to_kappa_format_eoprec,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else 
   clerr = clEnqueueNDRangeKernel(queue, convert_to_kappa_format_eoprec,1,0,&global_work_size,&local_work_size,0,0,NULL);
-#endif
 	if(clerr!=CL_SUCCESS) {
     cout<<"enqueue convert_to_kappa_format_eoprec kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -476,10 +437,6 @@ hmc_error Opencl_fermions::convert_to_kappa_format_eoprec_device(cl_mem in, cons
 
 
 hmc_error Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
-#ifdef _PROFILING_
-	cl_event event;
-#endif
-
 	int clerr = CL_SUCCESS;
 
 	clerr = clSetKernelArg(convert_from_kappa_format_eoprec, 0, sizeof(cl_mem), &in);
@@ -492,13 +449,7 @@ hmc_error Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,convert_from_kappa_format_eoprec,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, convert_from_kappa_format_eoprec, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue convert_from_kappa_format_eoprec kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -665,9 +616,6 @@ hmc_error Opencl_fermions::copy_complex_from_device(cl_mem in, hmc_complex * out
 }
 
 hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
-#ifdef _PROFILING_
-	cl_event event;
-#endif
   int clerr =CL_SUCCESS;
 
   clerr = clSetKernelArg(Qplus,0,sizeof(cl_mem),&in); 
@@ -685,22 +633,13 @@ hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, const size_t loca
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,Qplus,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue,Qplus,1,0,&global_work_size,&local_work_size,0,0,NULL);
-#endif
 
 	return HMC_SUCCESS;
 
 }
 
 hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer){
-#ifdef _PROFILING_
-	cl_event event;
-#endif
   int clerr =CL_SUCCESS;
 
   clerr = clSetKernelArg(Qminus,0,sizeof(cl_mem),&in); 
@@ -718,13 +657,7 @@ hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, const size_t loc
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,Qminus,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue,Qminus,1,0,&global_work_size,&local_work_size,0,0,NULL);
-#endif
 
 	return HMC_SUCCESS;
 
@@ -753,9 +686,6 @@ hmc_error Opencl_fermions::QplusQminus_device(cl_mem in, cl_mem out, const size_
 hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer, usetimer* dslashtimer, usetimer* Mdiagtimer){
 
   int clerr =CL_SUCCESS;
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 	clerr = clSetKernelArg(M,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
@@ -771,22 +701,13 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, const size_t local_wo
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,M,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue,M,1,0,&global_work_size,&local_work_size,0,0,NULL);
-#endif
   return HMC_SUCCESS;
 
 }
 
 
 hmc_error Opencl_fermions::gamma5_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer *timer){
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 	int clerr =CL_SUCCESS;
 
   clerr = clSetKernelArg(gamma5,0,sizeof(cl_mem),&in); 
@@ -799,20 +720,11 @@ hmc_error Opencl_fermions::gamma5_device(cl_mem in, cl_mem out, const size_t loc
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,gamma5,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue,gamma5,1,0,&global_work_size,&local_work_size,0,0,NULL);
-#endif
 
 }
 
 hmc_error Opencl_fermions::gamma5_eoprec_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer *timer){
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 	int clerr =CL_SUCCESS;
 
   clerr = clSetKernelArg(gamma5_eoprec,0,sizeof(cl_mem),&in); 
@@ -825,22 +737,15 @@ hmc_error Opencl_fermions::gamma5_eoprec_device(cl_mem in, cl_mem out, const siz
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,gamma5_eoprec,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue,gamma5_eoprec,1,0,&global_work_size,&local_work_size,0,0,NULL);
-#endif
+
 	
 	return HMC_SUCCESS;
 }
 
 hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer, usetimer * singletimer, usetimer * dslashtimer, usetimer * Mdiagtimer, usetimer * latimer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
+
 
 	int even = EVEN;
 	int odd = ODD;
@@ -861,9 +766,6 @@ hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, const size_t local_
 
 hmc_error Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, int evenodd, const size_t local_work_size, const size_t global_work_size, usetimer * timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 	size_t ls = local_work_size;
 	size_t gs = global_work_size;
 	int clerr = CL_SUCCESS;
@@ -890,13 +792,7 @@ hmc_error Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, int eveno
     cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }  
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,dslash_eoprec,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue,dslash_eoprec,1,0,&gs,&ls,0,0,NULL);
-#endif
 	if(clerr!=CL_SUCCESS) {
     cout<<"enqueue dslash_eoprec kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -907,9 +803,6 @@ hmc_error Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, int eveno
 
 hmc_error Opencl_fermions::M_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer * timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 	size_t ls = local_work_size;
 	size_t gs = global_work_size;
 	int clerr = CL_SUCCESS;
@@ -924,13 +817,7 @@ hmc_error Opencl_fermions::M_inverse_sitediagonal_device(cl_mem in, cl_mem out, 
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,M_inverse_sitediagonal,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, M_inverse_sitediagonal, 1, 0, &gs, &ls, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue M_inverse_sitediagonal kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -942,9 +829,6 @@ hmc_error Opencl_fermions::M_inverse_sitediagonal_device(cl_mem in, cl_mem out, 
 
 hmc_error Opencl_fermions::M_sitediagonal_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer * timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 	size_t ls = local_work_size;
 	size_t gs = global_work_size;
 	int clerr = CL_SUCCESS;
@@ -959,13 +843,7 @@ hmc_error Opencl_fermions::M_sitediagonal_device(cl_mem in, cl_mem out, const si
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,M_sitediagonal,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, M_sitediagonal, 1, 0, &gs, &ls, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue M_sitediagonal kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -976,10 +854,6 @@ hmc_error Opencl_fermions::M_sitediagonal_device(cl_mem in, cl_mem out, const si
 
 hmc_error Opencl_fermions::saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
-
 	int clerr = CL_SUCCESS;
 	clerr = clSetKernelArg(saxpy, 0, sizeof(cl_mem), &x);
 	if(clerr != CL_SUCCESS) {
@@ -1001,13 +875,7 @@ hmc_error Opencl_fermions::saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,saxpy,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, saxpy, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue saxpy kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1017,9 +885,6 @@ hmc_error Opencl_fermions::saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem
 }
 
 hmc_error Opencl_fermions::set_spinorfield_cold_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer){
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 
 	size_t ls = local_work_size;
 	size_t gs = global_work_size;
@@ -1030,13 +895,8 @@ hmc_error Opencl_fermions::set_spinorfield_cold_device(const size_t local_work_s
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,set_spinorfield_cold,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue,set_spinorfield_cold,1,0,&gs,&ls,0,0,NULL);
-#endif
+
 	if(clerr!=CL_SUCCESS) {
     cout<<"enqueue ps_correlator kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -1046,9 +906,6 @@ hmc_error Opencl_fermions::set_spinorfield_cold_device(const size_t local_work_s
 }
 
 hmc_error Opencl_fermions::set_eoprec_spinorfield_cold_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer){
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 
 	size_t ls = local_work_size;
 	size_t gs = global_work_size;
@@ -1059,13 +916,7 @@ hmc_error Opencl_fermions::set_eoprec_spinorfield_cold_device(const size_t local
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,set_eoprec_spinorfield_cold,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue,set_eoprec_spinorfield_cold,1,0,&gs,&ls,0,0,NULL);
-#endif
 	if(clerr!=CL_SUCCESS) {
     cout<<"enqueue ps_correlator kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -1075,9 +926,6 @@ hmc_error Opencl_fermions::set_eoprec_spinorfield_cold_device(const size_t local
 
 hmc_error Opencl_fermions::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 
 	int clerr = CL_SUCCESS;
 	clerr = clSetKernelArg(saxpy_eoprec, 0, sizeof(cl_mem), &x);
@@ -1100,13 +948,7 @@ hmc_error Opencl_fermions::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha,
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,saxpy_eoprec,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, saxpy_eoprec, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue saxpy_eoprec kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1118,9 +960,6 @@ hmc_error Opencl_fermions::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha,
 
 hmc_error Opencl_fermions::saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 
 	int clerr = CL_SUCCESS;
 	clerr = clSetKernelArg(saxsbypz, 0, sizeof(cl_mem), &x);
@@ -1153,13 +992,7 @@ hmc_error Opencl_fermions::saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem 
 		cout << "clSetKernelArg 5 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,saxsbypz,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, saxsbypz, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue saxsbypz kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1170,10 +1003,6 @@ hmc_error Opencl_fermions::saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem 
 
 hmc_error Opencl_fermions::saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t local_work_size, const size_t global_work_size,  usetimer* timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
-
 	int clerr = CL_SUCCESS;
 	clerr = clSetKernelArg(saxsbypz_eoprec, 0, sizeof(cl_mem), &x);
 	if(clerr != CL_SUCCESS) {
@@ -1205,13 +1034,8 @@ hmc_error Opencl_fermions::saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, 
 		cout << "clSetKernelArg 5 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,saxsbypz_eoprec,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, saxsbypz_eoprec, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
+
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue saxsbypz_eoprec kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1222,10 +1046,6 @@ hmc_error Opencl_fermions::saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, 
 
 hmc_error Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
-
 	int clerr = CL_SUCCESS;
 	clerr = clSetKernelArg(scalar_product, 0, sizeof(cl_mem), &a);
 	if(clerr != CL_SUCCESS) {
@@ -1248,13 +1068,8 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,scalar_product,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, scalar_product, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
+
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue scalar_product kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1271,13 +1086,8 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,scalar_product_reduction,1,0,&global_work_size,&local_work_size,0,0,&event);
-	done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, scalar_product_reduction, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
+
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue scalar_product_reduction kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1287,9 +1097,6 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem
 
 hmc_error Opencl_fermions::set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_mem b, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 
 	int clerr = CL_SUCCESS;
 	clerr = clSetKernelArg(scalar_product_eoprec, 0, sizeof(cl_mem), &a);
@@ -1312,13 +1119,8 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_eoprec_device(cl_mem a,
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,scalar_product_eoprec,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, scalar_product_eoprec, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
+
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue scalar_product kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1334,13 +1136,8 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_eoprec_device(cl_mem a,
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,scalar_product_reduction,1,0,&global_work_size,&local_work_size,0,0,&event);
-	done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, scalar_product_reduction, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
+
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue scalar_product_reduction kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1352,10 +1149,6 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_eoprec_device(cl_mem a,
 
 hmc_error Opencl_fermions::set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_mem out, usetimer* timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
-
 	int clerr = CL_SUCCESS;
 	clerr = clSetKernelArg(ratio, 0, sizeof(cl_mem), &a);
 	if(clerr != CL_SUCCESS) {
@@ -1374,13 +1167,7 @@ hmc_error Opencl_fermions::set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_me
 	}
 	//CP:this needs only one kernel!!
 	size_t one = 1;
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,ratio,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, ratio, 1, 0, &one, &one, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue ratio kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1391,10 +1178,6 @@ hmc_error Opencl_fermions::set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_me
 
 hmc_error Opencl_fermions::set_complex_to_product_device(cl_mem a, cl_mem b, cl_mem out, usetimer* timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
-
 	int clerr = CL_SUCCESS;
 	clerr = clSetKernelArg(product, 0, sizeof(cl_mem), &a);
 	if(clerr != CL_SUCCESS) {
@@ -1413,13 +1196,7 @@ hmc_error Opencl_fermions::set_complex_to_product_device(cl_mem a, cl_mem b, cl_
 	}
 	//CP:this needs only one kernel!!
 	size_t one = 1;
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,product,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, product, 1, 0, &one, &one, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue product kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1430,10 +1207,6 @@ hmc_error Opencl_fermions::set_complex_to_product_device(cl_mem a, cl_mem b, cl_
 
 hmc_error Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
-
 	int clerr = CL_SUCCESS;
 	clerr = clSetKernelArg(global_squarenorm, 0, sizeof(cl_mem), &a);
 	if(clerr != CL_SUCCESS) {
@@ -1451,13 +1224,7 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_me
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,global_squarenorm,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, global_squarenorm, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue global_squarenorm kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1473,13 +1240,7 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_me
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,global_squarenorm_reduction,1,0,&global_work_size,&local_work_size,0,0,&event);
-	done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, global_squarenorm_reduction, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue scalar_product_reduction kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1489,9 +1250,6 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_me
 
 hmc_error Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer* timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 
 	int clerr = CL_SUCCESS;
 	clerr = clSetKernelArg(global_squarenorm_eoprec, 0, sizeof(cl_mem), &a);
@@ -1510,13 +1268,7 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,global_squarenorm_eoprec,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, global_squarenorm_eoprec, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue global_squarenorm kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1532,13 +1284,7 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,global_squarenorm_reduction,1,0,&global_work_size,&local_work_size,0,0,&event);
-	done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, global_squarenorm_reduction, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue scalar_product_reduction kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1548,9 +1294,6 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a
 
 hmc_error Opencl_fermions::set_zero_spinorfield_device(cl_mem x, const size_t local_work_size, const size_t global_work_size, usetimer* timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 	int clerr = CL_SUCCESS;
 
 	clerr = clSetKernelArg(set_zero_spinorfield, 0, sizeof(cl_mem), &x);
@@ -1558,13 +1301,7 @@ hmc_error Opencl_fermions::set_zero_spinorfield_device(cl_mem x, const size_t lo
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,set_zero_spinorfield,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, set_zero_spinorfield, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue set_zero_spinorfield kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1575,9 +1312,6 @@ hmc_error Opencl_fermions::set_zero_spinorfield_device(cl_mem x, const size_t lo
 
 hmc_error Opencl_fermions::set_zero_spinorfield_eoprec_device(cl_mem x, const size_t local_work_size, const size_t global_work_size, usetimer* timer)
 {
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 	int clerr = CL_SUCCESS;
 
 	clerr = clSetKernelArg(set_zero_spinorfield_eoprec, 0, sizeof(cl_mem), &x);
@@ -1585,13 +1319,7 @@ hmc_error Opencl_fermions::set_zero_spinorfield_eoprec_device(cl_mem x, const si
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,set_zero_spinorfield_eoprec,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, set_zero_spinorfield_eoprec, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue set_zero_spinorfield_eoprec kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1861,9 +1589,6 @@ hmc_error Opencl_fermions::create_point_source_device(int i, int spacepos, int t
 
 	set_zero_spinorfield_device(clmem_source, ls, gs, latimer);
 
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 	int clerr = CL_SUCCESS;
 	clerr = clSetKernelArg(create_point_source, 0, sizeof(cl_mem), &clmem_source);
 	if(clerr != CL_SUCCESS) {
@@ -1885,13 +1610,7 @@ hmc_error Opencl_fermions::create_point_source_device(int i, int spacepos, int t
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue, create_point_source,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*latimer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue, create_point_source, 1, 0, &gs, &ls, 0, 0, NULL);
-#endif
 	if(clerr != CL_SUCCESS) {
 		cout << "enqueue create_point_source kernel failed (" << clerr << "), aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1914,9 +1633,6 @@ hmc_error Opencl_fermions::create_point_source_eoprec_device(int i, int spacepos
 	int clerr = CL_SUCCESS;
 	int evenodd = glob_pos % 2;
 
-#ifdef _PROFILING_
-	cl_event event;
-#endif
 	//CP: this is different than the host code, where this is done implicitly when converting the normal source to even/odd
 	if(evenodd == 1) {
 		clerr = clSetKernelArg(create_point_source_eoprec, 0, sizeof(cl_mem), &clmem_source_odd);
@@ -1942,13 +1658,7 @@ hmc_error Opencl_fermions::create_point_source_eoprec_device(int i, int spacepos
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,create_point_source_eoprec,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*latimer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue,create_point_source_eoprec,1,0,&gs,&ls,0,0,NULL);
-#endif
 	if(clerr!=CL_SUCCESS) {
     cout<<"enqueue create_point_source_eoprec kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -1980,10 +1690,6 @@ hmc_error Opencl_fermions::add_solution_to_correlator_field_device(const size_t 
 
 hmc_error Opencl_fermions::ps_correlator_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer){
 	
-#ifdef _PROFILING_
-	cl_event event;
-#endif
-
 	size_t ls = local_work_size;
 	size_t gs = global_work_size;
 	int clerr = CL_SUCCESS;
@@ -1993,13 +1699,7 @@ hmc_error Opencl_fermions::ps_correlator_device(const size_t local_work_size, co
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-#ifdef _PROFILING_
-	clerr = clEnqueueNDRangeKernel(queue,ps_correlator,1,0,&global_work_size,&local_work_size,0,0,&event);
-	int done = clWaitForEvents(1, &event);
-	(*timer).add(get_kernel_exec_time(event));
-#else
 	clerr = clEnqueueNDRangeKernel(queue,ps_correlator,1,0,&gs,&ls,0,0,NULL);
-#endif
 	if(clerr!=CL_SUCCESS) {
     cout<<"enqueue ps_correlator kernel failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
