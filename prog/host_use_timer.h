@@ -72,34 +72,6 @@ private:
 	int num_meas;
 };
 
-/* 
-LZ: old version, relies on compiler flags which will be removed; keep copy for now so that we will eventually be able to copy and paste parts of the code in the function time_output_hmc which has to be written later
-
-void time_output(
-  usetimer * total, usetimer * init, usetimer * poly, usetimer * plaq, usetimer * update, usetimer * overrelax, usetimer * copy
-#ifdef _FERMIONS_
-  , usetimer * inittimer, usetimer* singletimer, usetimer *Mtimer, usetimer *copytimer, usetimer *scalarprodtimer, usetimer *latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer
-#endif
-#ifdef _PERFORM_BENCHMARKS_
-  , int steps
-#endif
-#ifdef _USEHMC_
-  , usetimer * hmctimer, usetimer * leapfrogtimer, usetimer * hmcinittimer, usetimer * metropolistimer
-#endif
-);
-*/
-
-/**
- * Print statistics given by the passed timers to stdout and to a file
- * Designed for use in heatbath.cpp
- */
-void time_output_heatbath(usetimer * total, usetimer * init, usetimer * poly, usetimer * plaq, usetimer * update, usetimer * overrelax, usetimer * copy);
-/**
- * Print statistics given by the passed timers to stdout and to a file
- * Designed for use in inverter.cpp
- */
-void time_output_inverter(usetimer * total, usetimer * init, usetimer * poly, usetimer * plaq, usetimer * update, usetimer * overrelax, usetimer * copy, usetimer * inittimer, usetimer* singletimer, usetimer *Mtimer, usetimer *copytimer, usetimer *scalarprodtimer, usetimer *latimer, usetimer * solvertimer, usetimer * dslashtimer, usetimer * Mdiagtimer, int use_eo);
-
 /**
  * Measure the execution time of a OpenCL-Kernel based on an event associated to this kernel call known to have finished.
  */	
