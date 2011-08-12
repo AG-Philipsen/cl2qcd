@@ -50,29 +50,28 @@ public:
 
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
-
-	hmc_error generate_gaussian_gaugemomenta_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error generate_gaussian_spinorfield_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error md_update_spinorfield_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);;
-	hmc_error leapfrog_device(hmc_float tau, int steps1, int steps2, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error force_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_observables metropolis(hmc_float rnd, hmc_float beta, const string outname, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error calc_spinorfield_init_energy_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error md_update_gaugemomentum_device(hmc_float eps, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error md_update_gaugefield_device(hmc_float eps, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error set_zero_clmem_force_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error gauge_force_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error fermion_force_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-
+	hmc_error generate_gaussian_gaugemomenta_device(const size_t ls, const size_t gs);
+	hmc_error generate_gaussian_spinorfield_device(const size_t ls, const size_t gs);
+	hmc_error md_update_spinorfield_device(const size_t ls, const size_t gs);
+	hmc_error leapfrog_device(hmc_float tau, int steps1, int steps2, const size_t ls, const size_t gs);
+	hmc_error force_device(const size_t ls, const size_t gs);
+	hmc_observables metropolis(hmc_float rnd, hmc_float beta, const size_t ls, const size_t gs, usetimer * timer);
+	hmc_error calc_spinorfield_init_energy_device(const size_t ls, const size_t gs);
+	hmc_error md_update_gaugemomentum_device(hmc_float eps, const size_t ls, const size_t gs);
+	hmc_error md_update_gaugefield_device(hmc_float eps, const size_t ls, const size_t gs);
+	hmc_error set_zero_clmem_force_device(const size_t ls, const size_t gs);
+	hmc_error gauge_force_device(const size_t ls, const size_t gs);
+	hmc_error fermion_force_device(const size_t ls, const size_t gs);
+	hmc_error set_float_to_gaugemomentum_squarenorm_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
+	
 	////////////////////////////////////////////////////
 	//copying
 	//Methods to copy new and old fields... these can be optimized!!
-	hmc_error copy_gaugefield_old_new_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error copy_gaugemomenta_old_new_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error copy_gaugefield_new_old_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
-	hmc_error copy_gaugemomenta_new_old_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer);
+	hmc_error copy_gaugefield_old_new_device(usetimer * timer);
+	hmc_error copy_gaugemomenta_old_new_device(usetimer * timer);
+	hmc_error copy_gaugefield_new_old_device(usetimer * timer);
+	hmc_error copy_gaugemomenta_new_old_device(usetimer * timer);
 
-	hmc_error set_float_to_gaugemomentum_squarenorm_device(cl_mem in, cl_mem out, const size_t local_work_size, const size_t global_work_size, usetimer * timer);
 private:
 	//kernels
 	cl_kernel generate_gaussian_spinorfield;
