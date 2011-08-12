@@ -158,7 +158,6 @@ hmc_error Opencl_hmc::finalize_hmc()
 
 hmc_error Opencl_hmc::generate_gaussian_gaugemomenta_device(const size_t ls, const size_t gs, usetimer * timer)
 {
-	(*timer).reset();
 	int clerr;
 	//this is always applied to clmem_new_p
 	clerr = clSetKernelArg(generate_gaussian_gaugemomenta, 0, sizeof(cl_mem), &clmem_p);
@@ -176,15 +175,11 @@ hmc_error Opencl_hmc::generate_gaussian_gaugemomenta_device(const size_t ls, con
 		cout << "enqueue generate_gaussian_gaugemomenta kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clFinish(queue);
-
-	(*timer).add();
 	return HMC_SUCCESS;
 }
 
 hmc_error Opencl_hmc::generate_gaussian_spinorfield_device(const size_t ls, const size_t gs, usetimer * timer)
 {
-	(*timer).reset();
 	int clerr;
 	//this is always applied to clmem_phi_inv
 	clerr = clSetKernelArg(generate_gaussian_spinorfield, 0, sizeof(cl_mem), &clmem_phi_inv);
@@ -202,20 +197,15 @@ hmc_error Opencl_hmc::generate_gaussian_spinorfield_device(const size_t ls, cons
 		cout << "enqueue generate_gaussian_spinorfield kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clFinish(queue);
 
-	(*timer).add();
 	return HMC_SUCCESS;
 }
 
 
 hmc_error Opencl_hmc::md_update_spinorfield_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer)
 {
-	(*timer).reset();
 	//suppose the initial gaussian field is saved in phi_inv. then the "phi" from the algorithm is clmem_inout
-	int err =  Opencl_fermions::Qplus_device(clmem_phi_inv, get_clmem_inout(), get_clmem_gaugefield(), local_work_size, global_work_size);
-
-	(*timer).add();
+	int err =  Opencl_fermions::Qplus_device(clmem_phi_inv, get_clmem_inout() , get_clmem_gaugefield(), local_work_size, global_work_size);
 
 	if(err != HMC_SUCCESS)
 		logger.fatal() << "error occured in md_update_spinorfield_device.. ";
@@ -226,7 +216,6 @@ hmc_error Opencl_hmc::md_update_spinorfield_device(const size_t local_work_size,
 //CP: steps2 is not used at the moment....
 hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, const size_t ls, const size_t gs, usetimer * timer)
 {
-	(*timer).reset();
 	//it is assumed that gaugefield and gaugemomentum have been set to the old ones already
 	hmc_float stepsize = (tau) / ((hmc_float) steps1);
 	int k;
@@ -255,14 +244,12 @@ hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, con
 
 	logger.debug() << "\t\tfinished leapfrog";
 
-	(*timer).add();
 	return HMC_SUCCESS;
 }
 
 
 hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs, usetimer * timer)
 {
-	(*timer).reset();
 	/** @todo replace noop */
 	usetimer noop;
 	logger.debug() << "\t\tstart calculating the force...";
@@ -309,15 +296,12 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs, usetimer * 
 //  cout << "\t\tcalc fermion_force..." << endl;
 //  fermion_force_device(ls, gs, &noop);
 
-
-	(*timer).add();
 	return HMC_SUCCESS;
 }
 
 
 hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const string outname, const size_t local_work_size, const size_t global_work_size, usetimer * timer)
 {
-	(*timer).reset();
 	hmc_observables tmp;
 	//Calc Hamiltonian
 	int accept = 0;
@@ -394,23 +378,19 @@ hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const stri
 		tmp.prob = compare_prob;
 	}
 
-	(*timer).add();
 	return tmp;
 }
 
 hmc_error Opencl_hmc::calc_spinorfield_init_energy_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer)
 {
-	(*timer).reset();
 	//Suppose the initial spinorfield is saved in phi_inv
 	Opencl_fermions::set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_energy_init, local_work_size, global_work_size);
 
-	(*timer).add();
 	return HMC_SUCCESS;
 }
 
 hmc_error Opencl_hmc::md_update_gaugemomentum_device(hmc_float eps, const size_t ls, const size_t gs, usetimer * timer)
 {
-	(*timer).reset();
 	//__kernel void md_update_gaugemomenta(hmc_float eps, __global ae * p_inout, __global ae* force_in){
 
 	hmc_float tmp = eps;
@@ -438,14 +418,11 @@ hmc_error Opencl_hmc::md_update_gaugemomentum_device(hmc_float eps, const size_t
 	}
 	clFinish(queue);
 
-
-	(*timer).add();
 	return HMC_SUCCESS;
 }
 
 hmc_error Opencl_hmc::md_update_gaugefield_device(hmc_float eps, const size_t ls, const size_t gs, usetimer * timer)
 {
-	(*timer).reset();
 	// __kernel void md_update_gaugefield(hmc_float eps, __global ae * p_in, __global ocl_s_gaugefield * u_inout){
 	hmc_float tmp = eps;
 	int clerr;
@@ -470,15 +447,12 @@ hmc_error Opencl_hmc::md_update_gaugefield_device(hmc_float eps, const size_t ls
 		cout << "enqueue md_update_gaugefield kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clFinish(queue);
 
-	(*timer).add();
 	return HMC_SUCCESS;
 }
 
 hmc_error Opencl_hmc::set_zero_clmem_force_device(const size_t ls, const size_t gs, usetimer * timer)
 {
-	(*timer).reset();
 
 	int clerr;
 	//this is always applied to clmem_force
@@ -492,16 +466,12 @@ hmc_error Opencl_hmc::set_zero_clmem_force_device(const size_t ls, const size_t 
 		cout << "enqueue set_zero_gaugemomentum kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clFinish(queue);
 
-	(*timer).add();
 	return HMC_SUCCESS;
 }
 
 hmc_error Opencl_hmc::gauge_force_device(const size_t ls, const size_t gs, usetimer * timer)
 {
-	(*timer).reset();
-
 	int clerr;
 	clerr = clSetKernelArg(gauge_force, 0, sizeof(cl_mem), &clmem_new_u);
 	if(clerr != CL_SUCCESS) {
@@ -518,16 +488,12 @@ hmc_error Opencl_hmc::gauge_force_device(const size_t ls, const size_t gs, useti
 		cout << "enqueue gauge_force kernel failed, aborting..." << clerr << endl;
 		exit(HMC_OCLERROR);
 	}
-	clFinish(queue);
 
-	(*timer).add();
 	return HMC_SUCCESS;
 }
 
 hmc_error Opencl_hmc::fermion_force_device(const size_t ls, const size_t gs, usetimer * timer)
 {
-	(*timer).reset();
-
 	//fermion_force(field, Y, X, out);
 	cl_mem tmp = get_clmem_inout();
 	int clerr;
@@ -556,9 +522,7 @@ hmc_error Opencl_hmc::fermion_force_device(const size_t ls, const size_t gs, use
 		cout << "enqueue fermion_force kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clFinish(queue);
 
-	(*timer).add();
 	return HMC_SUCCESS;
 
 }
@@ -567,7 +531,6 @@ hmc_error Opencl_hmc::fermion_force_device(const size_t ls, const size_t gs, use
 //Methods to copy new and old fields... these can be optimized!!
 hmc_error Opencl_hmc::copy_gaugefield_old_new_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer)
 {
-	(*timer).reset();
 	int gaugefield_size = sizeof(s_gaugefield);
 	int clerr = clEnqueueCopyBuffer(queue, clmem_gaugefield, clmem_new_u,  0, 0, gaugefield_size, NULL, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
@@ -575,16 +538,12 @@ hmc_error Opencl_hmc::copy_gaugefield_old_new_device(const size_t local_work_siz
 		exit(HMC_OCLERROR);
 	}
 
-
-	(*timer).add();
 	return HMC_SUCCESS;
 }
 
 
 hmc_error Opencl_hmc::copy_gaugemomenta_old_new_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer)
 {
-	(*timer).reset();
-
 	int gaugemomentum_size = sizeof(ae) * GAUGEMOMENTASIZE2;
 	int clerr = clEnqueueCopyBuffer(queue, clmem_p, clmem_new_p, 0, 0, gaugemomentum_size, NULL, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
@@ -592,29 +551,23 @@ hmc_error Opencl_hmc::copy_gaugemomenta_old_new_device(const size_t local_work_s
 		exit(HMC_OCLERROR);
 	}
 
-	(*timer).add();
 	return HMC_SUCCESS;
 }
 
 hmc_error Opencl_hmc::copy_gaugefield_new_old_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer)
 {
-	(*timer).reset();
-
 	int clerr = clEnqueueCopyBuffer(queue, clmem_new_u, clmem_gaugefield, 0, 0, sizeof(s_gaugefield), NULL, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "...copy new to old gaugefield failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 
-	(*timer).add();
 	return HMC_SUCCESS;
 }
 
 
 hmc_error Opencl_hmc::copy_gaugemomenta_new_old_device(const size_t local_work_size, const size_t global_work_size, usetimer * timer)
 {
-	(*timer).reset();
-
 	int gaugemomentum_size = sizeof(ae) * GAUGEMOMENTASIZE2;
 	int clerr = clEnqueueCopyBuffer(queue, clmem_new_p, clmem_p, 0, 0, gaugemomentum_size, NULL, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
@@ -622,13 +575,11 @@ hmc_error Opencl_hmc::copy_gaugemomenta_new_old_device(const size_t local_work_s
 		exit(HMC_OCLERROR);
 	}
 
-	(*timer).add();
 	return HMC_SUCCESS;
 }
 
 hmc_error Opencl_hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out, const size_t local_work_size, const size_t global_work_size, usetimer * timer)
 {
-	(*timer).reset();
 	int clerr = CL_SUCCESS;
 	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
 	clerr = clSetKernelArg(gaugemomentum_squarenorm, 0, sizeof(cl_mem), &clmem_in);
@@ -648,9 +599,6 @@ hmc_error Opencl_hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clmem_
 		exit(HMC_OCLERROR);
 	}
 
-	clFinish(queue);
-
-	(*timer).add();
 	return HMC_SUCCESS;
 }
 
