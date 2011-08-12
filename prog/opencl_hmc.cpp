@@ -170,11 +170,8 @@ hmc_error Opencl_hmc::generate_gaussian_gaugemomenta_device(const size_t ls, con
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, generate_gaussian_gaugemomenta, 1, 0, &gs, &ls, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue generate_gaussian_gaugemomenta kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	enqueueKernel( generate_gaussian_gaugemomenta , gs, ls);
+
 	return HMC_SUCCESS;
 }
 
@@ -192,11 +189,8 @@ hmc_error Opencl_hmc::generate_gaussian_spinorfield_device(const size_t ls, cons
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, generate_gaussian_spinorfield, 1, 0, &gs, &ls, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue generate_gaussian_spinorfield kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+
+	enqueueKernel(generate_gaussian_spinorfield  , gs, ls);
 
 	return HMC_SUCCESS;
 }
@@ -411,13 +405,9 @@ hmc_error Opencl_hmc::md_update_gaugemomentum_device(hmc_float eps, const size_t
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, md_update_gaugemomenta, 1, 0, &gs, &ls, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue md_update_gaugemomenta kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clFinish(queue);
-
+	
+	enqueueKernel(md_update_gaugemomenta  , gs, ls);
+	
 	return HMC_SUCCESS;
 }
 
@@ -442,18 +432,14 @@ hmc_error Opencl_hmc::md_update_gaugefield_device(hmc_float eps, const size_t ls
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, md_update_gaugefield, 1, 0, &gs, &ls, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue md_update_gaugefield kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-
+	
+	enqueueKernel( md_update_gaugefield , gs, ls);
+	
 	return HMC_SUCCESS;
 }
 
 hmc_error Opencl_hmc::set_zero_clmem_force_device(const size_t ls, const size_t gs, usetimer * timer)
 {
-
 	int clerr;
 	//this is always applied to clmem_force
 	clerr = clSetKernelArg(set_zero_gaugemomentum, 0, sizeof(cl_mem), &clmem_force);
@@ -461,11 +447,8 @@ hmc_error Opencl_hmc::set_zero_clmem_force_device(const size_t ls, const size_t 
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, set_zero_gaugemomentum, 1, 0, &gs, &ls, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue set_zero_gaugemomentum kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	
+	enqueueKernel( set_zero_gaugemomentum , gs, ls);
 
 	return HMC_SUCCESS;
 }
@@ -483,12 +466,9 @@ hmc_error Opencl_hmc::gauge_force_device(const size_t ls, const size_t gs, useti
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, gauge_force, 1, 0, &gs, &ls, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue gauge_force kernel failed, aborting..." << clerr << endl;
-		exit(HMC_OCLERROR);
-	}
-
+	
+	enqueueKernel( gauge_force , gs, ls);
+	
 	return HMC_SUCCESS;
 }
 
@@ -517,14 +497,32 @@ hmc_error Opencl_hmc::fermion_force_device(const size_t ls, const size_t gs, use
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clEnqueueNDRangeKernel(queue, fermion_force, 1, 0, &gs, &ls, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue fermion_force kernel failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-
+	
+	enqueueKernel( fermion_force , gs, ls);
+	
 	return HMC_SUCCESS;
 
+}
+
+hmc_error Opencl_hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out, const size_t ls, const size_t gs, usetimer * timer)
+{
+	int clerr = CL_SUCCESS;
+	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
+	clerr = clSetKernelArg(gaugemomentum_squarenorm, 0, sizeof(cl_mem), &clmem_in);
+	if(clerr != CL_SUCCESS) {
+		cout << "clSetKernelArg 0 failed, aborting..." << endl;
+		exit(HMC_OCLERROR);
+	}
+//  /** @todo add reduction */
+	clerr = clSetKernelArg(gaugemomentum_squarenorm, 1, sizeof(cl_mem), &clmem_out);
+	if(clerr != CL_SUCCESS) {
+		cout << "clSetKernelArg 1 failed, aborting..." << endl;
+		exit(HMC_OCLERROR);
+	}
+	
+	enqueueKernel(gaugemomentum_squarenorm  , gs, ls);
+	
+	return HMC_SUCCESS;
 }
 
 ////////////////////////////////////////////////////
@@ -572,30 +570,6 @@ hmc_error Opencl_hmc::copy_gaugemomenta_new_old_device(const size_t local_work_s
 	int clerr = clEnqueueCopyBuffer(queue, clmem_new_p, clmem_p, 0, 0, gaugemomentum_size, NULL, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "...copy new to old gaugemomentum failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-
-	return HMC_SUCCESS;
-}
-
-hmc_error Opencl_hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out, const size_t local_work_size, const size_t global_work_size, usetimer * timer)
-{
-	int clerr = CL_SUCCESS;
-	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
-	clerr = clSetKernelArg(gaugemomentum_squarenorm, 0, sizeof(cl_mem), &clmem_in);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-//  /** @todo add reduction */
-	clerr = clSetKernelArg(gaugemomentum_squarenorm, 1, sizeof(cl_mem), &clmem_out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clerr = clEnqueueNDRangeKernel(queue, gaugemomentum_squarenorm, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "enqueue gaugemomenta_squarenorm kernel failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
 
