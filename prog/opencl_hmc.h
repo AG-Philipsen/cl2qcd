@@ -72,6 +72,41 @@ public:
 	hmc_error copy_gaugefield_new_old_device(usetimer * timer);
 	hmc_error copy_gaugemomenta_new_old_device(usetimer * timer);
 
+#ifdef _PROFILING_
+	//CP: if PROFILING is activated, one needs a timer for each kernel
+	//fermionmatrix
+	usetimer timer_generate_gaussian_spinorfield;
+	usetimer timer_generate_gaussian_gaugemomenta;
+	usetimer timer_md_update_gaugefield;
+	usetimer timer_md_update_gaugemomenta;
+	usetimer timer_gauge_force;
+	usetimer timer_fermion_force;
+	usetimer timer_set_zero_gaugemomentum;
+	usetimer timer_gaugemomentum_squarenorm;
+	
+	/**
+	 * Return the timer connected to a specific kernel.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual usetimer* get_timer(char * in);
+	
+	/**
+	 * Return amount of bytes read and written by a specific kernel per call. 
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual int get_read_write_size(char * in, inputparameters * parameters);	
+	
+	/**
+	 * Print the profiling information to a file.
+	 *
+	 * @param filename Name of file where data is appended.
+	 * @param parameters inputparameters
+	 */
+	void virtual print_profiling(std::string filename);	
+#endif		
+	
 private:
 	//kernels
 	cl_kernel generate_gaussian_spinorfield;

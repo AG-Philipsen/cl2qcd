@@ -576,3 +576,99 @@ hmc_error Opencl_hmc::copy_gaugemomenta_new_old_device(usetimer * timer)
 	return HMC_SUCCESS;
 }
 
+#ifdef _PROFILING_
+usetimer* Opencl_hmc::get_timer(char * in){
+	usetimer *noop = NULL;
+	noop = Opencl_fermions::get_timer(in);
+	if(noop != NULL) return noop;
+	
+	if (strcmp(in, "generate_gaussian_spinorfield") == 0){
+    return &this->timer_generate_gaussian_spinorfield;
+	}	
+	if (strcmp(in, "generate_gaussian_gaugemomenta") == 0){
+    return &this->timer_generate_gaussian_gaugemomenta;
+	}	
+	if (strcmp(in, "md_update_gaugefield") == 0){
+    return &this->timer_md_update_gaugefield;
+	}
+	if (strcmp(in, "md_update_gaugemomenta") == 0){
+    return &this->timer_md_update_gaugemomenta;
+	}
+	if (strcmp(in, "gauge_force") == 0){
+    return &this->timer_gauge_force;
+	}
+	if (strcmp(in, "fermion_force") == 0){
+    return &this->timer_fermion_force;
+	}
+	if (strcmp(in, "set_zero_gaugemomentum") == 0){
+    return &this->timer_set_zero_gaugemomentum;
+	}	
+	if (strcmp(in, "gaugemomentum_squarenorm") == 0){
+    return &this->timer_gaugemomentum_squarenorm;
+	}		
+	//if the kernelname has not matched, return NULL
+	else{
+		return NULL;
+	}
+}
+
+int Opencl_hmc::get_read_write_size(char * in, inputparameters * parameters){
+	Opencl::get_read_write_size(in, parameters);
+		//Depending on the compile-options, one has different sizes...
+	int D = (*parameters).get_float_size();
+	int R = (*parameters).get_mat_size();
+	int S;
+	if((*parameters).get_use_eo() == 1)
+	  S = EOPREC_SPINORFIELDSIZE;
+	else
+	  S = SPINORFIELDSIZE;
+	//this is the same as in the function above
+	if (strcmp(in, "generate_gaussian_spinorfield") == 0){
+    return 10000000000000000000;
+	}	
+	if (strcmp(in, "generate_gaussian_gaugemomenta") == 0){
+    return 10000000000000000000;
+	}	
+	if (strcmp(in, "md_update_gaugefield") == 0){
+    return 10000000000000000000;
+	}	
+	if (strcmp(in, "md_update_gaugemomenta") == 0){
+    return 10000000000000000000;
+	}	
+	if (strcmp(in, "gauge_force") == 0){
+    return 10000000000000000000;
+	}	
+	if (strcmp(in, "fermion_force") == 0){
+    return 10000000000000000000;
+	}	
+	if (strcmp(in, "set_zero_gaugemomentum;") == 0){
+    return 10000000000000000000;
+	}	
+	if (strcmp(in, "gaugemomentum_squarenorm") == 0){
+    return 10000000000000000000;
+	}	
+	
+}
+
+void Opencl_hmc::print_profiling(std::string filename){
+	Opencl::print_profiling(filename);
+	char * kernelName;
+	kernelName = "generate_gaussian_spinorfield";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "generate_gaussian_gaugemomenta";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "md_update_gaugefield";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "md_update_gaugemomenta";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "gauge_force";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "fermion_force";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "set_zero_gaugemomentum";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "gaugemomentum_squarenorm";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	
+}
+#endif
