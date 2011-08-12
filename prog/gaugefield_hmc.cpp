@@ -105,9 +105,6 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters,
 		
 	get_devices_hmc()[dev].leapfrog_device((*parameters).get_tau(), (*parameters).get_integrationsteps1(), (*parameters).get_integrationsteps2(), ls, gs, latimer);
 		
-// 	logger.debug() << "\tobservables of new config:\t" ;
-// 		print_gaugeobservables(new_field, &polytime, &plaqtime);
-
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
 	logger.debug() << "\tperform Metropolis step: " ;
 	//this call calculates also the HMC-Observables

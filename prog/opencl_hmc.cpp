@@ -213,7 +213,7 @@ hmc_error Opencl_hmc::md_update_spinorfield_device(const size_t local_work_size,
 {
 	(*timer).reset();
 	//suppose the initial gaussian field is saved in phi_inv. then the "phi" from the algorithm is clmem_inout
-	int err =  Opencl_fermions::Qplus_device(clmem_phi_inv, get_clmem_inout() , get_clmem_gaugefield(), local_work_size, global_work_size);
+	int err =  Opencl_fermions::Qplus_device(clmem_phi_inv, get_clmem_inout(), get_clmem_gaugefield(), local_work_size, global_work_size);
 
 	(*timer).add();
 
@@ -254,7 +254,6 @@ hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, con
 	md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs, &noop);
 
 	logger.debug() << "\t\tfinished leapfrog";
-
 
 	(*timer).add();
 	return HMC_SUCCESS;

@@ -592,7 +592,7 @@ hmc_error Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem gf, cl_mem out, const size_t ls, const size_t gs){
+hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
   int clerr =CL_SUCCESS;
 
   clerr = clSetKernelArg(Qplus,0,sizeof(cl_mem),&in); 
