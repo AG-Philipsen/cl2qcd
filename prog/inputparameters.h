@@ -88,8 +88,13 @@ public:
 	int get_num_dev();
 	int get_volspace();
 	int get_vol4d();
-	int get_spinorfieldsize();
+	int get_spinorsize();
+	int get_halfspinorsize();
 	int get_eoprec_spinorfieldsize();
+	int get_gaugemomentasize();
+	int get_su3algebrasize();
+	int get_gaugefieldsize();
+	int get_spinorfieldsize();
 	int get_use_chem_pot_re();
 	int get_use_chem_pot_im();
 	int get_use_smearing();
@@ -179,6 +184,11 @@ public:
 	 * NOTE: In the end, this is propably not needed anymore, but for now it is a safety net
 	 */
 	void check_settings_global();	
+
+	/**
+	 * set global settings according to inputparameters
+	 */
+	void set_settings_global();		
 	
 	//CP
 	//this is out of laziness
@@ -190,8 +200,13 @@ private:
 	int ntime;
 	int volspace;
 	int vol4d;
+	int spinorsize;
+	int halfspinorsize;
 	int spinorfieldsize;
 	int eoprec_spinorfieldsize;
+	int gaugemomentasize;
+	int su3algebrasize;
+	int gaugefieldsize;
 	int use_rec12;
 	int use_gpu;
 	int use_eo;

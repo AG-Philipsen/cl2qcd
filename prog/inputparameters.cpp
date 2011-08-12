@@ -15,8 +15,14 @@ hmc_error inputparameters::set_defaults()
 	ntime = 8;
 	volspace = nspace*nspace*nspace;
 	vol4d = volspace*ntime;
-	spinorfieldsize = vol4d*12;
+	spinorsize = 12;
+	halfspinorsize = 6;
+	spinorfieldsize = vol4d;
 	eoprec_spinorfieldsize = spinorfieldsize/2;	
+	su3algebrasize = NC*NC-1;
+	gaugemomentasize = NDIM*vol4d;
+	gaugefieldsize = NC*NC*NDIM*vol4d;
+	
 	startcondition = COLD_START;
 	saveconfigs = FALSE;
 	writefrequency = 1;
@@ -166,6 +172,7 @@ hmc_error inputparameters::readfile(char* ifn)
 	}
 
 	//check the read-in values against the compile time values
+	this->set_settings_global();
 	this->check_settings_global();
 
 #ifdef _PROFILING_
@@ -556,6 +563,26 @@ int inputparameters::get_spinorfieldsize()
 	return spinorfieldsize;
 }
 
+int inputparameters::get_spinorsize(){
+	return spinorsize;
+}
+
+int inputparameters::get_halfspinorsize(){
+	return halfspinorsize;
+}
+
+int inputparameters::get_gaugemomentasize(){
+	return gaugemomentasize;
+}
+
+int inputparameters::get_su3algebrasize(){
+	return su3algebrasize;
+}
+
+int inputparameters::get_gaugefieldsize(){
+	return gaugefieldsize;
+}
+
 int inputparameters::get_eoprec_spinorfieldsize()
 {
 	return eoprec_spinorfieldsize;
@@ -847,6 +874,17 @@ void inputparameters::print_info_hmc(char* progname){
 	*os << "## **********************************************************\n";
 	*os << std::endl;
     return;
+}
+
+void inputparameters::set_settings_global(){
+	logger.info() << "setting global parameters...";
+	this->volspace = this->nspace*this->nspace*this->nspace;
+	this->vol4d = this->volspace*this->ntime;
+	this->spinorfieldsize = this->vol4d;
+	this->eoprec_spinorfieldsize = this->spinorfieldsize/2;	
+	this->gaugemomentasize = NDIM*this->vol4d;
+	this->gaugefieldsize = NC*NC*NDIM*this->vol4d;
+	
 }
 
 void inputparameters::check_settings_global(){
