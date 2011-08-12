@@ -302,8 +302,10 @@ void Opencl_fermions::fill_kernels()
 	                     << "operations_spinor.cl" << "spinorfield.cl";
 
 	logger.debug() << "Create fermion kernels...";
-	Qplus = createKernel("Qplus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_qplus.cl";
-	Qminus = createKernel("Qminus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_qminus.cl";
+	if(get_parameters()->get_fermact() == TWISTEDMASS){
+		Qplus = createKernel("Qplus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_qplus.cl";
+		Qminus = createKernel("Qminus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_qminus.cl";
+	}
 	gamma5 = createKernel("gamma5") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_gamma5.cl";
 	M = createKernel("M") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m.cl";
 
