@@ -58,6 +58,7 @@ int main(int argc, char* argv[])
 	perform_timer.reset();
 	int hmc_iter = parameters.get_hmcsteps();
 	int iter;	
+	hmc_float acc_rate = 0.;
 	int writefreq = parameters.get_writefrequency();
 	int savefreq = parameters.get_savefrequency();
 	//This is the random-number generator for the metropolis-step
@@ -69,6 +70,7 @@ int main(int argc, char* argv[])
 		//generate new random-number for Metropolis step
 		hmc_float rnd_number = hmc_rnd_gen.doub();
 		gaugefield.perform_hmc_step(0, &parameters, &obs, iter, rnd_number, &copy_to_from_dev_timer,&copy_on_dev_timer);
+		acc_rate += obs.accept;
 		if( ( (iter + 1) % writefreq ) == 0 ) {
 			gaugefield.print_hmcobservables(obs, iter, gaugeout_name.str());
 		}
@@ -78,6 +80,7 @@ int main(int argc, char* argv[])
 		}
 	}
 	logger.trace() << "HMC done";
+	logger.trace() << "Acceptance rate: " << setprecision(1) << percent(acc_rate, hmc_iter) << "%";
 	perform_timer.add();
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
