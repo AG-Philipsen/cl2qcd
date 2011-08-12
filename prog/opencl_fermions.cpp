@@ -1659,7 +1659,7 @@ usetimer* Opencl_fermions::get_timer(char * in){
 	if(noop != NULL) return noop;
 	
 	if (strcmp(in, "M") == 0){
-    return &this->timer_M;
+    return &(this->timer_M);
 	}	
 	if (strcmp(in, "gamma5") == 0){
     return &this->timer_gamma5;
@@ -1692,7 +1692,7 @@ usetimer* Opencl_fermions::get_timer(char * in){
     return &this->timer_convert_from_eoprec;
 	}
 	if (strcmp(in, "saxpy") == 0){
-    return &this->timer_saxpy;
+    return &(this->timer_saxpy);
 	}
 	if (strcmp(in, "saxsbypz") == 0){
     return &this->timer_saxsbypz;

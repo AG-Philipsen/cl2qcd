@@ -581,7 +581,7 @@ usetimer* Opencl_hmc::get_timer(char * in){
 	usetimer *noop = NULL;
 	noop = Opencl_fermions::get_timer(in);
 	if(noop != NULL) return noop;
-	
+
 	if (strcmp(in, "generate_gaussian_spinorfield") == 0){
     return &this->timer_generate_gaussian_spinorfield;
 	}	

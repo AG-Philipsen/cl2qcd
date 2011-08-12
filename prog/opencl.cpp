@@ -465,7 +465,8 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 	//Second Method: Nasty workaround
 	//noop is used in case the kernel is not recognized
 	usetimer *noop = NULL;
-	noop = Opencl::get_timer(kernelName);
+// 	noop = Opencl::get_timer(kernelName);
+	noop = get_timer(kernelName);
 	if(noop == NULL) 
 		logger.error() << "get_timer(" << kernelName << ") did not return a timer!";
 	else
