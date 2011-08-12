@@ -218,7 +218,7 @@ private:
 	hmc_float chem_pot_re;
 	hmc_float chem_pot_im;
 	hmc_float tau;
-	int host_seed;
+	long long host_seed;
 	int num_dev;
 	int cgmax;
 	int fermact;

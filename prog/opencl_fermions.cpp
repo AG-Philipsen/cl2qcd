@@ -1373,7 +1373,7 @@ hmc_error Opencl_fermions::cg_device(cl_mem gf, usetimer * copytimer, usetimer* 
 		if(iter % iter_refresh == 0) {
 			M_device(clmem_inout, clmem_rn, gf, localsize, globalsize);
 			saxpy_device(clmem_rn, clmem_source, clmem_one, clmem_rn, localsize, globalsize);
-			copy_spinor_device(clmem_rn, clmem_p, copytimer);
+			copy_spinor_device(clmem_rn, clmem_p, singletimer);
 		}
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		set_complex_to_scalar_product_device(clmem_p, clmem_p, clmem_omega, localsize, globalsize);
@@ -1868,7 +1868,7 @@ int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters
 	if (strcmp(in, "ps_correlator") == 0){
     return 1000000000000000000000000;
 	}
-	
+	return 0;
 }
 
 void Opencl_fermions::print_profiling(std::string filename){

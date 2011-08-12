@@ -647,7 +647,7 @@ int Opencl_hmc::get_read_write_size(char * in, inputparameters * parameters){
 	if (strcmp(in, "gaugemomentum_squarenorm") == 0){
     return 10000000000000000000;
 	}	
-	
+	return 0;	
 }
 
 void Opencl_hmc::print_profiling(std::string filename){

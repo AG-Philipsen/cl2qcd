@@ -46,7 +46,7 @@ Opencl_hmc * Gaugefield_hmc::get_devices_hmc ()
 	return  (Opencl_hmc*)get_devices();
 }
 
-hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters, hmc_observables *obs, int iter, hmc_float rnd_number, const string outname, usetimer* copytimer, usetimer* singletimer, usetimer* Mtimer, usetimer* scalarprodtimer, usetimer* latimer, usetimer* dslashtimer, usetimer* Mdiagtimer, usetimer* solvertimer){
+hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters, hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* copy_to_from_dev_timer, usetimer* copy_on_dev_timer){
 	
 	//global and local work sizes;
 	//LZ: should eventually be moved inside opencl_fermions class
@@ -95,20 +95,20 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters,
 	
 	/** @todo these have to be reconsidered! */
 	//copy u->u' p->p' for the leapfrog
-	get_devices_hmc()[dev].copy_gaugefield_old_new_device(copytimer);
-	get_devices_hmc()[dev].copy_gaugemomenta_old_new_device(copytimer);
+	get_devices_hmc()[dev].copy_gaugefield_old_new_device(copy_on_dev_timer);
+	get_devices_hmc()[dev].copy_gaugemomenta_old_new_device(copy_on_dev_timer);
 		
 	get_devices_hmc()[dev].leapfrog_device((*parameters).get_tau(), (*parameters).get_integrationsteps1(), (*parameters).get_integrationsteps2(), ls, gs);
 		
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
 	logger.debug() << "\tperform Metropolis step: " ;
 	//this call calculates also the HMC-Observables
-	*obs = get_devices_hmc()[dev].metropolis(rnd_number, (*parameters).get_beta(), ls, gs, copytimer);
+	*obs = get_devices_hmc()[dev].metropolis(rnd_number, (*parameters).get_beta(), ls, gs, copy_to_from_dev_timer);
 
 	if((*obs).accept == 1){
 		// perform the change nonprimed->primed !
-		get_devices_hmc()[dev].copy_gaugefield_new_old_device(latimer);
-		get_devices_hmc()[dev].copy_gaugemomenta_new_old_device(latimer);
+		get_devices_hmc()[dev].copy_gaugefield_new_old_device(copy_on_dev_timer);
+		get_devices_hmc()[dev].copy_gaugemomenta_new_old_device(copy_on_dev_timer);
 		// SL: this works as long as p and field are pointers to the *original* memory locations!
 		logger.debug() << "\t\tnew configuration accepted" ;
 	}

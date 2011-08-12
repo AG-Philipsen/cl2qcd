@@ -1001,6 +1001,7 @@ int Opencl::get_read_write_size(char * in, inputparameters * parameters){
 		//return (Bufel + 1) *2
     return NUMTHREADS;	
 	}
+	return 0;
 }
 
 void Opencl::print_profiling(std::string filename, char * kernelName, uint64_t time_total, int calls_total, int read_write_size){
