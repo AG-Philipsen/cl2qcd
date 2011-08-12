@@ -18,7 +18,6 @@ int main(int argc, char* argv[])
 	stringstream gaugeout_name;
 	gaugeout_name << "hmc_output";
 
-
 	fstream logfile;
 	logfile.open("hmc.log", std::ios::out | std::ios::app);
 	if(logfile.is_open()) {
@@ -32,6 +31,7 @@ int main(int argc, char* argv[])
 	// Initialization
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	init_timer.reset();
 	sourcefileparameters parameters_source;
 	hmc_observables obs;
 	
@@ -39,50 +39,54 @@ int main(int argc, char* argv[])
 	hmc_rndarray rndarray;
 	cl_device_type devicetypes[parameters.get_num_dev()];
 	gaugefield.init_devicetypes_array(devicetypes, &parameters);
-
 	logger.trace() << "init gaugefield" ;
 	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters);
 	logger.trace()<< "initial gaugeobservables:";
 	gaugefield.print_gaugeobservables(&polytime, &plaqtime);
-
 	int err = init_random_seeds(rndarray, "rand_seeds");
 	if(err) return err;
 	logger.trace() << "Got seeds";
-
-	gaugefield.copy_gaugefield_to_devices(&copytimer);
-	gaugefield.copy_rndarray_to_devices(rndarray, &copytime);
-	
+	gaugefield.copy_gaugefield_to_devices(&copy_to_from_dev_timer);
+	gaugefield.copy_rndarray_to_devices(rndarray, &copy_to_from_dev_timer);
 	logger.trace() << "Moved stuff to device";
+	init_timer.add();
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// HMC
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	perform_timer.reset();
 	int hmc_iter = parameters.get_hmcsteps();
 	int iter;	
 	int writefreq = parameters.get_writefrequency();
 	int savefreq = parameters.get_savefrequency();
-	hmc_float rnd_number;
-	/** @todo CP: give seed meaningful value, perhaps read it in from parameters */
-	int seed = 89343894;
-	Random hmc_rnd_gen (seed);
+	//This is the random-number generator for the metropolis-step
+	Random hmc_rnd_gen (parameters.get_host_seed());
 	
 	logger.trace() << "perform HMC on device... ";
-	logger.trace() << "start main HMC loop with " << hmc_iter << " iterations: " ;
 	//main hmc-loop
 	for(iter = 0; iter < hmc_iter; iter ++) {
 		//generate new random-number for Metropolis step
-		rnd_number = hmc_rnd_gen.doub();
-		gaugefield.perform_hmc_step(0, &parameters, &obs, iter, rnd_number, gaugeout_name.str(),  &copytimer,&singletimer,&Mtimer,&scalarprodtimer,&latimer,&dslashtimer,&Mdiagtimer,&solvertimer);
+		hmc_float rnd_number = hmc_rnd_gen.doub();
+		gaugefield.perform_hmc_step(0, &parameters, &obs, iter, rnd_number, gaugeout_name.str(),  &copy_to_from_dev_timer,&copy_on_dev_timer,&copy_to_from_dev_timer,&copy_to_from_dev_timer,&copy_to_from_dev_timer,&copy_to_from_dev_timer,&copy_to_from_dev_timer,&copy_to_from_dev_timer);
 		if( ( (iter + 1) % writefreq ) == 0 ) {
 			gaugefield.print_hmcobservables(obs, iter, gaugeout_name.str());
 		}
 		if( parameters.get_saveconfigs() == TRUE && ( (iter + 1) % savefreq ) == 0 ) {
-			gaugefield.sync_gaugefield(&copytime);
+			gaugefield.sync_gaugefield(&copy_to_from_dev_timer);
 			gaugefield.save(iter);
 		}
 	}
 	logger.trace() << "HMC done";
+	perform_timer.add();
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Final Output
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	total_timer.add();
+	hmc_time_output(&total_timer, &init_timer, &perform_timer, &copy_to_from_dev_timer, &copy_on_dev_timer, &solver_timer);
+	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////

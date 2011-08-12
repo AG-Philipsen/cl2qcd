@@ -24,6 +24,8 @@ hmc_error inputparameters::set_defaults()
 	num_dev = 1;
 	sourcefilenumber = "00000";
 	print_to_screen = 0;
+	//This is obvious!!!
+	host_seed = 4815162342;
 
 #ifdef _PROFILING_
 	mat_size = 9;
@@ -588,6 +590,11 @@ int inputparameters::get_float_size()
 int inputparameters::get_print_to_screen()
 {
 	return print_to_screen;
+}
+
+int inputparameters::get_host_seed()
+{
+	return host_seed;
 }
 
 #endif

@@ -1428,7 +1428,6 @@ hmc_error Opencl_fermions::solver_eoprec_device(cl_mem gf, usetimer * copytimer,
 	bicgstab_eoprec_device(gf, copytimer, singletimer, ls, gs, cgmax);
 
 	//P: odd solution
-
 	/** @todo CP: perhaps one can save some variables used here */
 	dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, gf, ODD, ls, gs);
 	M_inverse_sitediagonal_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, ls, gs);
