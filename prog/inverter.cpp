@@ -48,6 +48,8 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	perform_timer.reset();
+	/** @todo usage of solver_timer has to be checked. No output yet */
+	usetimer solver_timer;
 	logger.info() << "perform inversion on device.." ;
 	if(parameters.get_num_dev() == 1) {
 		gaugefield.perform_inversion_pointsource_ps_corr_devices(&copy_to_from_dev_timer, &copy_on_dev_timer,&solver_timer);

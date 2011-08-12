@@ -50,7 +50,6 @@ usetimer perform_timer;
 //timers for copying to, from and on devices
 usetimer copy_to_from_dev_timer;
 usetimer copy_on_dev_timer;
-usetimer solver_timer;
 
 //to save gaugeobservables on host
 hmc_float plaq, splaq, tplaq;
