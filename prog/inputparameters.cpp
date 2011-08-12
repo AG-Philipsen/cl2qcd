@@ -576,6 +576,17 @@ int inputparameters::get_use_smearing()
 	return use_smearing;
 }
 
+int inputparameters::get_host_seed()
+{
+	return host_seed;
+}
+
+
+int inputparameters::get_print_to_screen()
+{
+	return print_to_screen;
+}
+
 #ifdef _PROFILING_
 int inputparameters::get_mat_size()
 {
@@ -585,16 +596,6 @@ int inputparameters::get_mat_size()
 int inputparameters::get_float_size()
 {
 	return float_size;
-}
-
-int inputparameters::get_print_to_screen()
-{
-	return print_to_screen;
-}
-
-int inputparameters::get_host_seed()
-{
-	return host_seed;
 }
 
 #endif

@@ -401,7 +401,13 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 // 	(this->timerName).add(get_kernel_exec_time(event));
 	
 	//Second Method: Nasty workaround
- 	(*get_timer(kernelName)).add(get_kernel_exec_time(event));
+	//noop is used in case the kernel is not recognized
+	usetimer *noop = NULL;
+	noop = Opencl::get_timer(kernelName);
+	if(noop == NULL) 
+		logger.error() << "get_timer(" << kernelName << ") did not return a timer!";
+	else
+ 		(*get_timer(kernelName)).add(get_kernel_exec_time(event));
 #else
 	clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, local_work_size_p, 0, 0, NULL);
 #endif
@@ -457,7 +463,13 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 // 	(this->timerName).add(get_kernel_exec_time(event));
 	
 	//Second Method: Nasty workaround
- 	(*get_timer(kernelName)).add(get_kernel_exec_time(event));
+	//noop is used in case the kernel is not recognized
+	usetimer *noop = NULL;
+	noop = Opencl::get_timer(kernelName);
+	if(noop == NULL) 
+		logger.error() << "get_timer(" << kernelName << ") did not return a timer!";
+	else
+ 		(*get_timer(kernelName)).add(get_kernel_exec_time(event));
 #else
 	clerr = clEnqueueNDRangeKernel(queue, kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
 #endif	
