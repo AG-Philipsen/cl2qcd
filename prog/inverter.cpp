@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	logger.trace() << "init gaugefield" ;
 	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters);
 	logger.trace()<< "initial gaugeobservables:";
-	gaugefield.print_gaugeobservables(&polytime, &plaqtime);
+	gaugefield.print_gaugeobservables(&poly_timer, &plaq_timer);
 	logger.trace() << "copy gaugefield" ;
 	gaugefield.copy_gaugefield_to_devices(&copy_to_from_dev_timer);
 	init_timer.add();
@@ -69,13 +69,15 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	total_timer.add();
-	inverter_time_output(&total_timer, &init_timer, &perform_timer, &copy_to_from_dev_timer, &copy_on_dev_timer, &solver_timer);
+	general_time_output(&total_timer, &init_timer, &perform_timer, &copy_to_from_dev_timer, &copy_on_dev_timer, &plaq_timer, &poly_timer);
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	gaugefield.finalize();
-
+	int err = gaugefield.finalize();
+	if (err!= HMC_SUCCESS) 
+		logger.fatal() << "error in finalizing " << argv[0];
 	return HMC_SUCCESS;
+	
 }

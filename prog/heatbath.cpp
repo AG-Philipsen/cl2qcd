@@ -17,7 +17,6 @@ int main(int argc, char* argv[])
 	stringstream gaugeout_name;
 	gaugeout_name << "gaugeobservables_beta" << parameters.get_beta();
 
-
 	fstream logfile;
 	logfile.open("heatbath.log", std::ios::out | std::ios::app);
 	if(logfile.is_open()) {
@@ -41,14 +40,10 @@ int main(int argc, char* argv[])
 
 	gaugefield.init(1, devicetypes, &parameters);
 	logger.trace() << "Got gaugefield";
-
 	int err = init_random_seeds(rndarray, "rand_seeds");
 	if(err) return err;
 	logger.trace() << "Got seeds";
-
-	/** @todo these times are not used anywhere below. Remove? */
-	gaugefield.print_gaugeobservables(&polytime,&plaqtime);
-
+	gaugefield.print_gaugeobservables(&poly_timer,&plaq_timer);
 	gaugefield.copy_gaugefield_to_devices(&copy_to_from_dev_timer);
 	gaugefield.copy_rndarray_to_devices(rndarray, &copy_to_from_dev_timer);
 	logger.trace() << "Moved stuff to device";
@@ -93,13 +88,15 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	total_timer.add();
-	heatbath_time_output(&total_timer, &init_timer, &perform_timer, &copy_to_from_dev_timer, &copy_on_dev_timer);
+	general_time_output(&total_timer, &init_timer, &perform_timer, &copy_to_from_dev_timer, &copy_on_dev_timer, &plaq_timer, &poly_timer);
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	gaugefield.finalize();
-
+	err = gaugefield.finalize();
+	if (err!= HMC_SUCCESS) 
+		logger.fatal() << "error in finalizing " << argv[0];
 	return HMC_SUCCESS;
+	
 }
