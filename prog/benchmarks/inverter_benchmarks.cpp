@@ -1,37 +1,25 @@
-#include "../heatbath.h"
+#include "../inverter.h"
 
 int main(int argc, char* argv[])
 {
-	
-#ifndef _PROFILING_
-	logger.fatal() << "_PROFILING_ not defined, cannot perform benchmarks. Aborting...";
-	exit (HMC_STDERR);
-#endif
-
-//CP: This should be the same as the normal heatbath-executable
-/////////////////////////////////////////////////////////////////////////////////////////
 
 	if(argc != 2) {
-		logger.fatal() << "need file name for input parameters";
-		return HMC_FILEERROR;
+	  logger.fatal() << "need file name for input parameters";
+	  return HMC_FILEERROR;
 	}
 
 	char* inputfile = argv[1];
 	inputparameters parameters;
 	parameters.readfile(inputfile);
-	parameters.print_info_heatbath(argv[0]);
+	parameters.print_info_inverter(argv[0]);
 
-	//name of file to store gauge observables
-	stringstream gaugeout_name;
-	gaugeout_name << "gaugeobservables_beta" << parameters.get_beta();
-
-	fstream logfile;
-	logfile.open("heatbath.log", std::ios::out | std::ios::app);
-	if(logfile.is_open()) {
-	  parameters.print_info_heatbath(argv[0], &logfile);
-	  logfile.close();
+	ofstream ofile;
+	ofile.open("inverter.log");
+	if(ofile.is_open()) {
+	  parameters.print_info_inverter(argv[0],&ofile);
+	  ofile.close();
 	} else {
-	  logger.warn()<<"Could not open heatbath.log";
+	  logger.warn() << "Could not log file for inverter.";
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -40,51 +28,44 @@ int main(int argc, char* argv[])
 
 	init_timer.reset();
 	sourcefileparameters parameters_source;
+	//CP: spinorfield on host for storage while copying between devices...
+	spinorfield host_spinorfield [SPINORFIELDSIZE];
 
-	Gaugefield_heatbath gaugefield;
-	hmc_rndarray rndarray;
+	Gaugefield_inversion gaugefield;
 	cl_device_type devicetypes[parameters.get_num_dev()];
 	gaugefield.init_devicetypes_array(devicetypes, &parameters);
 
-	gaugefield.init(1, devicetypes, &parameters);
-	logger.trace() << "Got gaugefield";
-	int err = init_random_seeds(rndarray, "rand_seeds");
-	if(err) return err;
-	logger.trace() << "Got seeds";
-	gaugefield.print_gaugeobservables(&poly_timer,&plaq_timer);
+	logger.trace() << "init gaugefield" ;
+	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters);
+	logger.trace()<< "initial gaugeobservables:";
+	gaugefield.print_gaugeobservables(&poly_timer, &plaq_timer);
+	logger.trace() << "copy gaugefield" ;
 	gaugefield.copy_gaugefield_to_devices(&copy_to_from_dev_timer);
-	gaugefield.copy_rndarray_to_devices(rndarray, &copy_to_from_dev_timer);
-	logger.trace() << "Moved stuff to device";
 	init_timer.add();
-
-/////////////////////////////////////////////////////////////////////////////////////////	
-//CP: Now it differs from the normal heatbath-executable
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Heatbath-benchmark
+	// inverter-benchmarks
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+	
 	perform_timer.reset();
-	int nsteps = parameters.get_heatbathsteps();
+
+	int hmc_iter = parameters.get_hmcsteps();
+	int iter;	
 	
-	logger.info() << "Perform " << nsteps << "of benchmarking";
-
-	for(int i = 0; i < nsteps; i++) {
-		gaugefield.heatbath();
-		gaugefield.overrelax();
-		gaugefield.print_gaugeobservables_from_devices(i, gaugeout_name.str(), parameters.get_print_to_screen());
+	logger.trace() << "Perform " << hmc_iter << "of benchmarking";
+	for(iter = 0; iter < hmc_iter; iter ++) {
+		/** @todo Insert functions here */
 	}
-	logger.trace() << "heatbath-benchmarking done";
+	logger.trace() << "inverter-benchmarking done" ;
 	perform_timer.add();
-
+	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Final Output
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	//TODO: remove gaugeobservables-file, this is not really needed
 	total_timer.add();
 	general_time_output(&total_timer, &init_timer, &perform_timer, &copy_to_from_dev_timer, &copy_on_dev_timer, &plaq_timer, &poly_timer);
-
+	
 	//CP: this is just a fist version and will go into an own file later
 	stringstream profiling_out;
 	profiling_out << argv[0] << "_profiling_data";
@@ -103,7 +84,7 @@ int main(int argc, char* argv[])
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	err = gaugefield.finalize();
+	int err = gaugefield.finalize();
 	if (err!= HMC_SUCCESS) 
 		logger.fatal() << "error in finalizing " << argv[0];
 	return HMC_SUCCESS;
