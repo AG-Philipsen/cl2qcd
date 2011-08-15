@@ -1415,6 +1415,7 @@ hmc_error Opencl_fermions::solver_device(cl_mem gf, usetimer * copytimer, usetim
 	convert_to_kappa_format_device(clmem_inout, ls, gs);
 	bicgstab_device(gf, copytimer, singletimer, ls, gs, cgmax);
 	convert_from_kappa_format_device(clmem_inout, clmem_inout, ls, gs);
+	clFinish(queue);
 	(*solvertimer).add();
 
 	return HMC_SUCCESS;
