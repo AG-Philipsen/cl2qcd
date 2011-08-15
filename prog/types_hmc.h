@@ -43,7 +43,6 @@ struct hmc_observables{
 	hmc_float prob;
 	int accept;
 };
-
 #endif
 
 #endif // _TYPES_HMC
