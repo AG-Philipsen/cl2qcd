@@ -135,6 +135,8 @@ private:
 	cl_mem clmem_force;
 	//inverted spinorfield
 	cl_mem clmem_phi_inv;
+	//D(gaussian spinorfield)
+	cl_mem clmem_phi;
 
 	ClSourcePackage basic_hmc_code;
 

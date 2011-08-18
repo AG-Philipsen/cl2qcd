@@ -98,12 +98,12 @@ public:
 	//    fermionmatrix operations
 	//    non-eoprec
 	hmc_error M_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-	hmc_error gamma5_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
+	hmc_error gamma5_device(cl_mem inout, const size_t ls, const size_t gs);
 	hmc_error Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error Qminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error QplusQminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	//    eoprec
-	hmc_error gamma5_eoprec_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
+	hmc_error gamma5_eoprec_device(cl_mem inout, const size_t ls, const size_t gs);
 	hmc_error Aee_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs, usetimer * singletimer);
 	hmc_error M_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
 	hmc_error M_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);

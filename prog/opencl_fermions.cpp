@@ -613,6 +613,9 @@ hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const 
     exit(HMC_OCLERROR);
   }
 	enqueueKernel(Qplus , gs, ls);
+	
+	gamma5_device(out, ls, gs);
+
 	return HMC_SUCCESS;
 
 }
@@ -637,25 +640,19 @@ hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, cl_mem gf, const
   }
 
 	enqueueKernel( Qminus, gs, ls);
+	
+	gamma5_device(out, ls, gs);
+	
 	return HMC_SUCCESS;
 
 }
 
 hmc_error Opencl_fermions::QplusQminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs)
 {
-	int clerr = CL_SUCCESS;
-
 	/** @todo one could save one field here if an additional copying would be included in the end... */
-	clerr = Qminus_device(in, clmem_tmp, gf, ls, gs);
-	if(clerr != CL_SUCCESS) {
-		cout << "Qminus_device failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clerr = Qplus_device(clmem_tmp, out, gf, ls, gs);
-	if(clerr != CL_SUCCESS) {
-		cout << "Qplus_device failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	Qminus_device(in, clmem_tmp, gf, ls, gs);
+
+	Qplus_device(clmem_tmp, out, gf, ls, gs);
 
 	return HMC_SUCCESS;
 
@@ -684,34 +681,24 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, cl_mem gf, const size
 }
 
 
-hmc_error Opencl_fermions::gamma5_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs){
+hmc_error Opencl_fermions::gamma5_device(cl_mem inout, const size_t ls, const size_t gs){
 	int clerr =CL_SUCCESS;
 
-  clerr = clSetKernelArg(gamma5,0,sizeof(cl_mem),&in); 
+  clerr = clSetKernelArg(gamma5,0,sizeof(cl_mem),&inout); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(gamma5,1,sizeof(cl_mem),&out);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
 	enqueueKernel(gamma5 , gs, ls);
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::gamma5_eoprec_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs){
+hmc_error Opencl_fermions::gamma5_eoprec_device(cl_mem inout, const size_t ls, const size_t gs){
 	int clerr =CL_SUCCESS;
 
-  clerr = clSetKernelArg(gamma5_eoprec,0,sizeof(cl_mem),&in); 
+  clerr = clSetKernelArg(gamma5_eoprec,0,sizeof(cl_mem),&inout); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(gamma5_eoprec,1,sizeof(cl_mem),&out);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
 	enqueueKernel( gamma5_eoprec, gs, ls);
@@ -1210,6 +1197,9 @@ hmc_error Opencl_fermions::copy_complex_device(cl_mem in, cl_mem out, usetimer* 
 hmc_error Opencl_fermions::bicgstab_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax)
 {
 
+int debug = 1;
+if(debug) cout << "debug-output at bicgstab_device is activated" << endl;
+	
 	//!!CP: here one has to be careful if local_work_size is a null-pointer
 	size_t globalsize = gs;
 	size_t localsize = ls;
@@ -1221,7 +1211,8 @@ hmc_error Opencl_fermions::bicgstab_device(cl_mem gf, usetimer * copytimer, uset
 		if(iter % iter_refresh == 0) {
 			set_zero_spinorfield_device(clmem_v, localsize, globalsize);
 			set_zero_spinorfield_device(clmem_p, localsize, globalsize);
-			M_device(clmem_inout, clmem_rn, gf, localsize, globalsize);
+// 			M_device(clmem_inout, clmem_rn, gf, localsize, globalsize);
+Qplus_device(clmem_inout, clmem_rn, gf, localsize, globalsize);
 
 			saxpy_device(clmem_rn, clmem_source, clmem_one, clmem_rn, localsize, globalsize);
 			copy_spinor_device(clmem_rn, clmem_rhat, singletimer);
@@ -1231,13 +1222,45 @@ hmc_error Opencl_fermions::bicgstab_device(cl_mem gf, usetimer * copytimer, uset
 			copy_complex_device(clmem_one, clmem_rho, singletimer);
 
 			//CP: calc initial residuum for output, this is not needed for the algorithm!!
-			//set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
-			//copy_float_from_device(clmem_resid, &resid, copytimer);
-			//cout << "initial residuum at iter " << iter << "is: " << scientific << resid << endl;
+			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size);
+			copy_float_from_device(clmem_resid, &resid, copytimer);
+			cout << "initial residuum at iter " << iter << " is: " << scientific << resid << endl;
 			//printf("initial residuum at iter %i is %.40e\n", iter, resid);
 		}
 
+////////////////////////////////////
+//collect all variables if debug is enabled
+if(debug){
+	hmc_complex omega;
+	hmc_complex rho;
+	hmc_complex rho_next;
+	hmc_complex tmp1;
+	hmc_complex tmp2;
+	hmc_complex beta;
+	hmc_complex alpha;
+		
+	copy_complex_from_device(clmem_omega, &omega, copytimer);
+	copy_complex_from_device(clmem_rho, &rho, copytimer);
+	copy_complex_from_device(clmem_rho_next, &rho_next, copytimer);
+	copy_complex_from_device(clmem_tmp1, &tmp1, copytimer);
+	copy_complex_from_device(clmem_tmp2, &tmp2, copytimer);
+	copy_complex_from_device(clmem_beta, &beta, copytimer);
+	copy_complex_from_device(clmem_alpha, &alpha, copytimer);
+	
+ 	cout << "debug output at start: " << endl;
+	cout << " rho: " << rho.re << "  " <<  rho.im << endl;
+	cout << " alpha: " <<alpha.re << "  " <<  alpha.im << endl;
+	cout << " omega: " << omega.re << "  " <<  omega.im << endl;
+}
+////////////////////////////////////
+
 		set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next, localsize, globalsize);
+
+if(debug){
+	hmc_complex rho_next;
+	copy_complex_from_device(clmem_rho_next, &rho_next, copytimer);
+		cout << "(rhat, rn): " << rho_next.re << "  " <<  rho_next.im << endl;
+}
 		set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
 		copy_complex_device(clmem_rho_next, clmem_rho, singletimer);
 		set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
@@ -1247,14 +1270,90 @@ hmc_error Opencl_fermions::bicgstab_device(cl_mem gf, usetimer * copytimer, uset
 		set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 		saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p, localsize, globalsize);
 
-		M_device(clmem_p, clmem_v, gf, localsize, globalsize);
+if(debug){
+	hmc_complex rho_next;
+	set_complex_to_scalar_product_device(clmem_p, clmem_p, clmem_tmp2, localsize, globalsize);
+	copy_complex_from_device(clmem_tmp2, &rho_next, copytimer);
+		cout << "(p,p): " << rho_next.re << "  " <<  rho_next.im << endl;
+				set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
+}
+		
+// 		M_device(clmem_p, clmem_v, gf, localsize, globalsize);
+Qplus_device(clmem_p, clmem_v, gf, localsize, globalsize);
+
+////////////////////////////////////
+//collect all variables if debug is enabled
+if(debug){
+	hmc_complex omega;
+	hmc_complex rho;
+	hmc_complex rho_next;
+	hmc_complex tmp1;
+	hmc_complex tmp2;
+	hmc_complex beta;
+	hmc_complex alpha;
+		
+	copy_complex_from_device(clmem_omega, &omega, copytimer);
+	copy_complex_from_device(clmem_rho, &rho, copytimer);
+	copy_complex_from_device(clmem_rho_next, &rho_next, copytimer);
+	copy_complex_from_device(clmem_tmp1, &tmp1, copytimer);
+	copy_complex_from_device(clmem_tmp2, &tmp2, copytimer);
+	copy_complex_from_device(clmem_beta, &beta, copytimer);
+	copy_complex_from_device(clmem_alpha, &alpha, copytimer);
+	
+ 	cout << "debug output after first half: " << endl;
+	cout << " rho: " << rho.re << "  " <<  rho.im << endl;
+	cout << " rho_next: " << rho_next.re << "  " <<  rho_next.im << endl;
+	cout << " beta: " << beta.re << "  " <<  beta.im << endl;
+	cout << " alpha: " <<alpha.re << "  " <<  alpha.im << endl;
+	cout << " omega: " << omega.re << "  " <<  omega.im << endl;
+	cout << " tmp1: " << tmp1.re << "  " <<  tmp1.im << endl;
+	cout << " tmp2: " << tmp2.re << "  " <<  tmp2.im << endl;
+}
+////////////////////////////////////
+
 
 		set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1, localsize, globalsize);
-		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 
+if(debug){
+	hmc_complex rho_next;
+	copy_complex_from_device(clmem_tmp1, &rho_next, copytimer);
+		cout << "(rhat, v): " << rho_next.re << "  " <<  rho_next.im << endl;
+}
+
+		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s, localsize, globalsize);
 
-		M_device(clmem_s, clmem_t, gf, localsize, globalsize);
+		//see if s is too small
+		hmc_complex s_norm;
+		//borrow clmem_alpha for this
+		set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
+		copy_complex_from_device(clmem_alpha, &s_norm, copytimer);
+		if(debug) cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
+		//reset value of alpha
+		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
+		//check if |s|^2 is too small
+		if(s_norm.re < epssquare){
+			set_complex_to_product_device(clmem_minusone, clmem_alpha, clmem_alpha);
+			saxpy_device(clmem_p, clmem_inout, clmem_alpha, clmem_inout, localsize, globalsize);
+			
+			// 			M_device(clmem_inout, clmem_aux, gf, localsize, globalsize);
+			Qplus_device(clmem_inout, clmem_aux, gf, localsize, globalsize);
+			saxpy_device(clmem_aux, clmem_source, clmem_one, clmem_aux, localsize, globalsize);
+			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, localsize, globalsize);
+			copy_float_from_device(clmem_trueresid, &trueresid, copytimer);
+			cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << epssquare << endl;
+
+			cout << "|s|^2 is too small to continue..." << endl;
+
+			return HMC_SUCCESS;
+		}
+		
+		
+		
+		
+		
+// 		M_device(clmem_s, clmem_t, gf, localsize, globalsize);
+Qplus_device(clmem_s, clmem_t, gf, localsize, globalsize);
 
 		set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1, localsize, globalsize);
 		//!!CP: this can also be global_squarenorm
@@ -1265,19 +1364,83 @@ hmc_error Opencl_fermions::bicgstab_device(cl_mem gf, usetimer * copytimer, uset
 
 		saxsbypz_device(clmem_p, clmem_s, clmem_inout, clmem_alpha, clmem_omega, clmem_inout, localsize, globalsize);
 
+if(debug){
+	hmc_complex rho_next;
+	set_complex_to_scalar_product_device(clmem_inout, clmem_inout, clmem_omega, localsize, globalsize);
+	copy_complex_from_device(clmem_omega, &rho_next, copytimer);
+		cout << "(inout,inout): " << rho_next.re << "  " <<  rho_next.im << endl;
+		set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
+}				
+		
+////////////////////////////////////
+//collect all variables if debug is enabled
+if(debug){
+	hmc_complex omega;
+	hmc_complex rho;
+	hmc_complex rho_next;
+	hmc_complex tmp1;
+	hmc_complex tmp2;
+	hmc_complex beta;
+	hmc_complex alpha;
+		
+	copy_complex_from_device(clmem_omega, &omega, copytimer);
+	copy_complex_from_device(clmem_rho, &rho, copytimer);
+	copy_complex_from_device(clmem_rho_next, &rho_next, copytimer);
+	copy_complex_from_device(clmem_tmp1, &tmp1, copytimer);
+	copy_complex_from_device(clmem_tmp2, &tmp2, copytimer);
+	copy_complex_from_device(clmem_beta, &beta, copytimer);
+	copy_complex_from_device(clmem_alpha, &alpha, copytimer);
+	
+ 	cout << "debug output after second half: " << endl;
+	cout << " rho: " << rho.re << "  " <<  rho.im << endl;
+	cout << " rho_next: " << rho_next.re << "  " <<  rho_next.im << endl;
+	cout << " beta: " << beta.re << "  " <<  beta.im << endl;
+	cout << " alpha: " <<alpha.re << "  " <<  alpha.im << endl;
+	cout << " omega: " << omega.re << "  " <<  omega.im << endl;
+
+	cout << " tmp1: " << tmp1.re << "  " <<  tmp1.im << endl;
+	cout << " tmp2: " << tmp2.re << "  " <<  tmp2.im << endl;
+}
+////////////////////////////////////
+
 		set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, localsize, globalsize);
 		copy_float_from_device(clmem_resid, &resid, copytimer);
 
+		cout << "resid at iter " << iter << " is: " << resid << endl;
+
+
+		
+		
 		if(resid < epssquare) {
-			M_device(clmem_inout, clmem_aux, gf, localsize, globalsize);
+// 			M_device(clmem_inout, clmem_aux, gf, localsize, globalsize);
+Qplus_device(clmem_inout, clmem_aux, gf, localsize, globalsize);
+
+
 			saxpy_device(clmem_aux, clmem_source, clmem_one, clmem_aux, localsize, globalsize);
 			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, localsize, globalsize);
 			copy_float_from_device(clmem_trueresid, &trueresid, copytimer);
-			//cout << "\tsolver converged! residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
+			cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << epssquare << endl;
+			cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << epssquare << endl;
 			if(trueresid < epssquare)
 				return HMC_SUCCESS;
-		} else {
-			//printf("residuum at iter%i is:\t%.10e\n", iter, resid);//cout << "residuum:\t" << resid << endl;
+			else {
+				cout << "trueresiduum not small enough" <<endl;
+				hmc_complex s_norm;
+				//borrow clmem_alpha for this
+				set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
+				copy_complex_from_device(clmem_alpha, &s_norm, copytimer);
+				cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
+				//reset value of alpha
+				set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
+				//check if |s|^2 is too small
+				if(s_norm.re < epssquare){
+					cout << "|s|^2 is too small to continue..." << endl;
+					return HMC_SUCCESS;
+				}
+			}
+		} 
+		else {
+			printf("residuum at iter%i is:\t%.10e\n", iter, resid);//cout << "residuum:\t" << resid << endl;
 		}
 
 	}
@@ -1373,36 +1536,63 @@ hmc_error Opencl_fermions::cg_device(cl_mem gf, usetimer * copytimer, usetimer* 
 	int iter;
 	for(iter = 0; iter < cgmax; iter ++) {
 		if(iter % iter_refresh == 0) {
-			M_device(clmem_inout, clmem_rn, gf, localsize, globalsize);
+			QplusQminus_device(clmem_inout, clmem_rn, gf, localsize, globalsize);
 			saxpy_device(clmem_rn, clmem_source, clmem_one, clmem_rn, localsize, globalsize);
 			copy_spinor_device(clmem_rn, clmem_p, singletimer);
 		}
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
-		set_complex_to_scalar_product_device(clmem_p, clmem_p, clmem_omega, localsize, globalsize);
+		set_complex_to_scalar_product_device(clmem_rn, clmem_rn, clmem_omega, localsize, globalsize);
+// 		hmc_complex omega;
+// 		copy_complex_from_device(clmem_omega, &omega, copytimer);
+// 		cout << "omega: " << omega.re << " " << omega.im << endl;
 		//A pn --> v
-		M_device(clmem_p, clmem_v, gf, localsize, globalsize);
+		QplusQminus_device(clmem_p, clmem_v, gf, localsize, globalsize);
 		set_complex_to_scalar_product_device(clmem_p, clmem_v, clmem_rho, localsize, globalsize);
-		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
-
+// 		hmc_complex rho;
+// 		copy_complex_from_device(clmem_rho, &rho, copytimer);
+// 		cout << "rho: " << rho.re << " " << rho.im << endl;
+		
+		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);	
+// 		hmc_complex alpha;
+// 		copy_complex_from_device(clmem_alpha, &alpha, copytimer);
+// 		cout << "alpha: " << alpha.re << " " << alpha.im << endl;
+		
 		set_complex_to_product_device(clmem_alpha, clmem_minusone, clmem_tmp1);
-
+// 		hmc_complex tmp1;
+// 		copy_complex_from_device(clmem_tmp1, &tmp1, copytimer);
+// 		cout << "tmp1: " << tmp1.re << " " << tmp1.im << endl;
+		
+		//xn+1
 		saxpy_device(clmem_inout, clmem_p, clmem_tmp1, clmem_inout, localsize, globalsize);
 		//rn+1 -> rhat
 		saxpy_device(clmem_rn, clmem_v, clmem_alpha, clmem_rhat, localsize, globalsize);
 
 		set_float_to_global_squarenorm_device(clmem_rhat, clmem_resid, localsize, globalsize);
 		copy_float_from_device(clmem_resid, &resid, copytimer);
+		cout << "resid: " << resid << endl;
 
 		if(resid < epssquare) {
+			//???
+// 			copy_spinor_device(clmem_rhat, clmem_inout, singletimer);
 			return HMC_SUCCESS;
 		} else {
 			//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
 			set_complex_to_scalar_product_device(clmem_rhat, clmem_rhat, clmem_rho_next, localsize, globalsize);
 			set_complex_to_ratio_device(clmem_rho_next, clmem_omega, clmem_beta);
+// 					hmc_complex beta;
+// 		copy_complex_from_device(clmem_beta, &beta, copytimer);
+// 		cout << "beta: " << beta.re << " " << beta.im << endl;
 
 			//pn+1 = rn+1 + beta*pn
 			set_complex_to_product_device(clmem_beta, clmem_minusone, clmem_tmp2);
+// 		hmc_complex tmp2;
+// 		copy_complex_from_device(clmem_tmp2, &tmp2, copytimer);
+// 		cout << "tmp2: " << tmp2.re << " " << tmp2.im << endl;
+			
 			saxpy_device(clmem_p, clmem_rhat, clmem_tmp2, clmem_p, localsize, globalsize);
+			
+			//rn = rn+1 ^= rn = rhat
+			copy_spinor_device(clmem_rhat, clmem_rn, singletimer);
 		}
 	}
 	return HMC_SUCCESS;
@@ -1413,8 +1603,11 @@ hmc_error Opencl_fermions::solver_device(cl_mem gf, usetimer * copytimer, usetim
 {
 	(*solvertimer).reset();
 	convert_to_kappa_format_device(clmem_inout, ls, gs);
+	convert_to_kappa_format_device(clmem_source, ls, gs);
 	bicgstab_device(gf, copytimer, singletimer, ls, gs, cgmax);
+// 	cg_device(gf, copytimer, singletimer, ls, gs, cgmax);
 	convert_from_kappa_format_device(clmem_inout, clmem_inout, ls, gs);
+	convert_from_kappa_format_device(clmem_source, clmem_source, ls, gs);
 	clFinish(queue);
 	(*solvertimer).add();
 
@@ -1560,6 +1753,11 @@ hmc_error Opencl_fermions::ps_correlator_device(const size_t ls, const size_t gs
 cl_mem Opencl_fermions::get_clmem_inout()
 {
 	return clmem_inout;
+}
+
+cl_mem Opencl_fermions::get_clmem_source()
+{
+	return clmem_source;
 }
 
 cl_mem Opencl_fermions::get_clmem_tmp()

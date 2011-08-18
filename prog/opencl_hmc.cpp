@@ -61,6 +61,11 @@ hmc_error Opencl_hmc::fill_buffers()
 		cout << "creating clmem_phi_inv failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
+	clmem_phi = clCreateBuffer(context, CL_MEM_READ_WRITE, spinorfield_size, 0, &clerr);;
+	if(clerr != CL_SUCCESS) {
+		cout << "creating clmem_phi failed, aborting..." << endl;
+		exit(HMC_OCLERROR);
+	}
 	clmem_new_u = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(s_gaugefield), 0, &clerr);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
@@ -178,7 +183,7 @@ hmc_error Opencl_hmc::generate_gaussian_gaugemomenta_device(const size_t ls, con
 hmc_error Opencl_hmc::generate_gaussian_spinorfield_device(const size_t ls, const size_t gs)
 {
 	int clerr;
-	//this is always applied to clmem_phi_inv
+	//this is always applied to clmem_phi_inv, which can be done since the gaussian field is only needed in the beginning
 	clerr = clSetKernelArg(generate_gaussian_spinorfield, 0, sizeof(cl_mem), &clmem_phi_inv);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
@@ -198,11 +203,21 @@ hmc_error Opencl_hmc::generate_gaussian_spinorfield_device(const size_t ls, cons
 
 hmc_error Opencl_hmc::md_update_spinorfield_device(const size_t local_work_size, const size_t global_work_size)
 {
-	//suppose the initial gaussian field is saved in phi_inv. then the "phi" from the algorithm is clmem_inout
-	int err =  Opencl_fermions::Qplus_device(clmem_phi_inv, get_clmem_inout() , get_clmem_gaugefield(), local_work_size, global_work_size);
+	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
+	//	then the "phi" = Dpsi from the algorithm is stored in clmem_phi
+	//	which then has to be the source of the inversion
+	int err =  Opencl_fermions::Qplus_device(clmem_phi_inv, clmem_phi , get_clmem_gaugefield(), local_work_size, global_work_size);
 
-	if(err != HMC_SUCCESS)
+	usetimer noop;
+	hmc_float s_fermion;
+	set_float_to_global_squarenorm_device(clmem_phi, clmem_s_fermion, local_work_size, global_work_size);
+	copy_float_from_device(clmem_s_fermion, &s_fermion, &noop);
+	logger.debug() << "\tsquarenorm init field after update = " << s_fermion;
+		
+	if(err != HMC_SUCCESS){
 		logger.fatal() << "error occured in md_update_spinorfield_device.. ";
+		exit (HMC_STDERR);
+	}
 	return HMC_SUCCESS;
 }
 
@@ -242,53 +257,121 @@ hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, con
 
 hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 {
+	int err = HMC_SUCCESS;
+	/** @todo build in timer */
+	usetimer copy_to, copy_on, solvertimer;
+
 	logger.debug() << "\t\tstart calculating the force...";
 	//CP: make sure that the output field is set to zero
 	set_zero_clmem_force_device(ls, gs);
-	//add contributions
+	//add different contributions
 	logger.debug() << "\t\tcalc gauge_force...";
 	gauge_force_device(ls, gs);
-// 	cout << "\t\tinvert fermion field..." << endl;
-	//CP: to begin with, consider only the cg-solver
-	//source is at 0
-// 	int k = 0;
-// 	int use_cg = TRUE;
-	//CP: at the moment, use_eo = 0 so that even-odd is not used!!!!!
-
-	//debugging
-//  int err = 0;
-//  int use_eo = 0;
-//  /** @todo check the use of the sources again, compare to tmlqcd!!! */
-//  if(use_cg){
-//    if(!use_eo){
-//      //the inversion calculates Y = (QplusQminus)^-1 phi = phi_inv
-//      cout << "\t\t\tstart solver" << endl;
-//      Opencl_fermions::create_point_source_device(k, 0,0,ls, gs, &noop);
-//      Opencl_fermions::solver_device(&noop,&noop,&noop,&noop,&noop,&noop,&noop,&noop, ls, gs, get_parameters()->get_cgmax());
-//
-//      if (err != HMC_SUCCESS) cout << "\t\tsolver did not solve!!" << endl;
-//      else cout << "\t\tsolver solved!" << endl;
-//    }
-//    else{
-//      hmc_eoprec_spinor_field be[EOPREC_SPINORFIELDSIZE];
-//      hmc_eoprec_spinor_field bo[EOPREC_SPINORFIELDSIZE];
-//
-//      Opencl_fermions::create_point_source_eoprec_device(k,0,0, ls, gs, &noop, &noop, &noop);
-//      Opencl_fermions::solver_eoprec_device(&noop,&noop,&noop,&noop,&noop,&noop,&noop,&noop, ls, gs, get_parameters()->get_cgmax());
-//    }
-//    cout << "\t\t\tcalc X" << endl;
-//    //X = Qminus Y = Qminus phi_inv
-//    Opencl_fermions::Qminus_device(clmem_phi_inv,get_clmem_inout(), ls, gs, &noop);
-//  }
-//  else{
-//    //here, one has first to invert (with BiCGStab) Qplus phi = X and then invert Qminus X => Qminus^-1 Qplus^-1 phi = (QplusQminus)^-1 phi = Y = phi_inv
-//  }
-//  cout << "\t\tcalc fermion_force..." << endl;
-//  fermion_force_device(ls, gs, &noop);
+	
+	//CP: to begin with, consider only the bicgstab-solver
+	int use_cg = FALSE;
+	
+	/** @todo at the moment, we can only put in a cold spinorfield 
+	 * or a point-source spinorfield as trial-solution */
+	/**
+	 * Trial solution for the spinorfield
+	 */
+	set_spinorfield_cold_device(ls, gs);
+ 
+	/** @todo check the use of the sources again, compare to tmlqcd!!! */
+	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
+	if((*get_parameters()).get_use_eo() == 1){
+		if(use_cg){
+			//this is broken right now since the CG doesnt work!!
+			logger.debug() << "\t\tcalc fermion force ingredients using cg and eoprec";
+			logger.fatal() << "this is not implemented yet. Aborting..";
+			exit(HMC_STDERR); 
+		}
+		else{
+			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab and eoprec";
+			logger.fatal() << "this is not implemented yet. Aborting..";
+			exit(HMC_STDERR);
+		}
+	}
+	else{
+		if(use_cg){
+			//this is broken right now since the CG doesnt work!!
+			logger.debug() << "\t\tcalc fermion force ingredients using cg and no eoprec";
+			logger.fatal() << "this is not implemented yet. Aborting..";
+			exit(HMC_STDERR);
+		}
+		else{
+			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab and no eoprec";
+			/**
+			* The first inversion calculates 
+			* Y = phi = (Qplus)^-1 psi
+			* out of 
+			* Qplus phi = psi
+			* This is also the energy of the final field!
+			*/
+			logger.debug() << "\t\t\tstart solver";
+			
+			/** @todo make the source an arg in solver to get rid of all these copying. This should make one spinorfield unnecessary!! */
+			//the first source is the original phi
+			copy_spinor_device(clmem_phi, get_clmem_source(), &copy_on);
+			
+			//debugging
+			hmc_float s_fermion;
+			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
+			copy_float_from_device(clmem_s_fermion, &s_fermion, &copy_to);
+			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
+			 
+			err = Opencl_fermions::solver_device(clmem_new_u, &copy_to, &copy_on, &solvertimer, ls, gs, get_parameters()->get_cgmax());
+			if (err != HMC_SUCCESS) logger.debug() << "\t\t\tsolver did not solve!!";
+			else logger.debug() << "\t\t\tsolver solved!";
+			
+			//debugging
+			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
+			copy_float_from_device(clmem_s_fermion, &s_fermion, &copy_to);
+			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
+			
+			//store this result in clmem_phi_inv
+			copy_spinor_device(get_clmem_inout(), clmem_phi_inv, &copy_on);
+			
+			/**
+			 * Now, one has to calculate 
+			 * X = (Qminus)^-1 Y = (Qminus)^-1 (Qplus)^-1 psi = (QplusQminus)^-1 psi ??
+			 * out of 
+			 * Qminus clmem_inout = clmem_phi_inv
+			 * Therefore, when calculating the final energy of the spinorfield,
+			 * 	one can just take clmem_phi_inv (see also above)!!
+			 */
+			
+			//copy former solution to clmem_source
+			copy_spinor_device(get_clmem_inout(), get_clmem_source(), &copy_on);
+			
+			logger.debug() << "\t\t\tstart solver";
+			
+			//debugging
+			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
+			copy_float_from_device(clmem_s_fermion, &s_fermion, &copy_to);
+			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
+			 
+			//this sets clmem_inout cold as trial-solution
+			set_spinorfield_cold_device(ls, gs);
+			
+			err = Opencl_fermions::solver_device(clmem_new_u, &copy_to, &copy_on, &solvertimer, ls, gs, get_parameters()->get_cgmax());
+			if (err != HMC_SUCCESS) logger.debug() << "\t\t\tsolver did not solve!!";
+			else logger.debug() << "\t\t\tsolver solved!";
+			
+			//debugging
+			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
+			copy_float_from_device(clmem_s_fermion, &s_fermion, &copy_to);
+			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
+		}	
+	}
+	logger.debug() << "\t\tcalc fermion_force...";
+	//CP: this always call fermion_force(Y,X) with Y = clmem_phi_inv, X = clmem_inout
+	fermion_force_device(ls, gs);
 
 	return HMC_SUCCESS;
 }
-
+  
 
 hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const size_t local_work_size, const size_t global_work_size, usetimer * timer)
 {
@@ -309,10 +392,10 @@ hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const size
 	/** NOTE: the minus here is introduced to fit tmlqcd!!! */
 	hmc_float deltaH = -(plaq - plaq_new) * beta / factor;
 	
-	logger.debug() << "\tS_gauge(old field) = " << plaq << "\t" << plaq* beta  /factor;
-	logger.debug() << "\tS_gauge(new field) = " << plaq_new << "\t" << plaq_new* beta /factor;
-	logger.debug() << "\tdeltaS_gauge = " << deltaH;
-
+	logger.debug() << "\tS_gauge(old field) = " << setprecision(10) <<plaq << "\t" << plaq* beta  /factor;
+	logger.debug() << "\tS_gauge(new field) = " << setprecision(10) <<plaq_new << "\t" << plaq_new* beta /factor;
+	logger.debug() << "\tdeltaS_gauge = " << setprecision(10) << deltaH;
+	
 	//Gaugemomentum-Part
 	hmc_float p2, new_p2;
 	set_float_to_gaugemomentum_squarenorm_device(clmem_p, clmem_p2, local_work_size, global_work_size);
@@ -322,20 +405,24 @@ hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const size
 	//the energy is half the squarenorm
 	deltaH += 0.5 * (p2 - new_p2);
 	
-	logger.debug() << "\tS_gaugemom(old field) = " << 0.5*p2;
-	logger.debug() << "\tS_gaugemom(new field) = " << 0.5*new_p2;
-	logger.debug() << "\tdeltaS_gaugemom = " << 0.5 * (p2 - new_p2);
+	logger.debug() << "\tS_gaugemom(old field) = " << setprecision(10) << 0.5*p2;
+	logger.debug() << "\tS_gaugemom(new field) = " << setprecision(10) <<0.5*new_p2;
+	logger.debug() << "\tdeltaS_gaugemom = " << setprecision(10) <<0.5 * (p2 - new_p2);
 
 	//Fermion-Part:
 	hmc_float spinor_energy_init, s_fermion;
+	//initial energy has been computed in the beginning...
 	Opencl_fermions::copy_float_from_device(clmem_energy_init, &spinor_energy_init, timer);
 	// sum_links phi*_i (M^+M)_ij^-1 phi_j
-	// here it is assumed that the rhs has already been computed in clmem_inout... (during the leapfrog..)
-	//CP: phi_inv is not needed after this, so it can be used to store M (QplusQminus_inv)
-//  Opencl_fermions::Qminus_device(Opencl_fermions::get_clmem_inout(), clmem_phi_inv, local_work_size, global_work_size, timer);
-//  set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_s_fermion, local_work_size, global_work_size, timer);
-//  copy_float_from_device(clmem_s_fermion, &s_fermion, timer);
-//  deltaH += spinor_energy_init - s_fermion;
+	// the inversion with respect to the input-gaussian field and the new gaugefield has taken place during the leapfrog
+	// 	and was saved in clmem_phi_inv during that step.
+	set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_s_fermion, local_work_size, global_work_size);
+	copy_float_from_device(clmem_s_fermion, &s_fermion, timer);
+	deltaH += spinor_energy_init - s_fermion;
+ 
+ 	logger.debug() << "\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
+	logger.debug() << "\tS_ferm(new field) = " << setprecision(10)<< s_fermion;
+	logger.debug() << "\tdeltaS_ferm = " << spinor_energy_init - s_fermion;
 
 	//Metropolis-Part
 	hmc_float compare_prob;
