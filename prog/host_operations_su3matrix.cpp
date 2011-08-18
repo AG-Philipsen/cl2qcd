@@ -787,7 +787,7 @@ hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement2 inn, hmc_su3matr
 		set_to_3x3_identity(&eCurPower);
 // 		hmc_float eCoefficient = 1.0;
 		int factorial = 1;
-		for(int power=1;power<_EXACT_EXPONENTIATION_MAX_POWER_;power++){
+		for(int power=1;power<50; power++){
 			multiply_3x3matrix(&eNextPower, &eMat, &eCurPower);
 			copy_3x3_matrix(&eCurPower, &eNextPower);
 			//CP: the calc of factorial can be simplified by just doing factorial*=power!!
@@ -797,7 +797,7 @@ hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement2 inn, hmc_su3matr
 			copy_3x3_matrix(&eLastResult, &eRes);
 			add_3x3matrix(&eRes, &eRes, &eCurPower);
 			absoluteDifference_3x3_matrix(&eAccuracyCheck, &eRes, &eLastResult);
-			if(eAccuracyCheck < _EXACT_EXPONENTIATION_ACCURACY_){
+			if(eAccuracyCheck < 1e-15){
 				break;
 			}
 		}

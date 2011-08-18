@@ -7,7 +7,6 @@
 
 #include "types.h"
 
-//#ifdef _INKERNEL_
 //CP: new defs for spinors
 typedef struct {
 	hmc_complex e0;
@@ -30,7 +29,18 @@ typedef struct {
 
 typedef spinor spinorfield;
 typedef spinor spinorfield_eoprec;
-//#endif /* _INKERNEL_ */
+
+//CP: this an algebraelement
+typedef struct {
+  hmc_float e0;
+ 	hmc_float e1;
+  hmc_float e2;
+  hmc_float e3;
+  hmc_float e4;
+  hmc_float e5;
+  hmc_float e6;
+  hmc_float e7;
+} ae;
 
 #endif /* _TYPES_FERMIONSH_ */
 

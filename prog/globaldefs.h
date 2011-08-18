@@ -75,10 +75,6 @@
 /** 1/sqrt(3) */
 #define F_1_S3  (static_cast<hmc_float>(0.577350269189626))
 
-// SL: not sure if those should be here: they define details for the exact exponentiation of su(3) into SU(3)
-#define _EXACT_EXPONENTIATION_MAX_POWER_  (50)
-#define _EXACT_EXPONENTIATION_ACCURACY_   (2.0E-16)
-
 #endif //_INKERNEL_
 
 #endif
