@@ -20,6 +20,7 @@ __kernel void Qplus(__global spinorfield * in, __global ocl_s_gaugefield * field
 		else get_odd_site(id_tmp/2, &n, &t);
 		
 		out_tmp = set_spinor_zero();
+		out_tmp2 = set_spinor_zero();
 		//get input spinor
 		plus = get_spinor_from_field(in, n, t);
 		//Diagonalpart: this is just the normal tm-diagonal matrix
@@ -29,7 +30,7 @@ __kernel void Qplus(__global spinorfield * in, __global ocl_s_gaugefield * field
 		//M = M_diag - dslash
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 		//gamma_5
-		out_tmp = gamma5_local(out_tmp);
+// 		out_tmp = gamma5_local(out_tmp);
 		put_spinor_to_field(out_tmp, out, n, t);
 	}
 }
