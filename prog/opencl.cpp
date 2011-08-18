@@ -100,7 +100,10 @@ void Opencl::fill_kernels()
 
 	polyakov = createKernel("polyakov") << basic_opencl_code << "gaugeobservables_polyakov.cl";
 	polyakov_reduction = createKernel("polyakov_reduction") << basic_opencl_code << "gaugeobservables_polyakov.cl";
-	
+	//only init if if wanted
+	if(get_parameters()->get_use_smearing() == TRUE){
+		stout_smear = createKernel("stout_smear") << basic_opencl_code << "stout_smear.cl";
+	}
 	
 }
 
@@ -969,6 +972,9 @@ usetimer* Opencl::get_timer(char * in){
 	if (strcmp(in, "plaquette") == 0){
     return &(this->timer_plaquette);
 	}
+	if (strcmp(in, "stout_smear") == 0){
+    return &(this->timer_stout_smear);
+	}
 	//if the kernelname has not matched, return NULL
 	else{
 		return NULL;
@@ -1000,6 +1006,9 @@ int Opencl::get_read_write_size(char * in, inputparameters * parameters){
 		//this is not right, since one does not know bufelements now
 		//return (Bufel + 1) *2
     return NUMTHREADS;	
+	}
+	if (strcmp(in, "stout_smear") == 0){
+    return 1000000000000000000000;
 	}
 	return 0;
 }
@@ -1042,6 +1051,8 @@ void Opencl::print_profiling(std::string filename){
 	kernelName = "plaquette";
 	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "plaquette_reduction";
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "stout_smear";
 	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 }
 #endif

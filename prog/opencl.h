@@ -109,6 +109,11 @@ public:
 	 */
 	hmc_error gaugeobservables(cl_mem gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
 	/**
+	 * This applies stout smearing to a gaugefield 
+	 */
+	hmc_error stout_smear_device(const size_t ls, const size_t gs);
+	
+	/**
 	 * returns init status
 	 * @return isinit (1==true, 0==false)
 	 */
@@ -225,14 +230,17 @@ public:
 	cl_kernel plaquette_reduction;
 	cl_kernel polyakov;
 	cl_kernel polyakov_reduction;
-
+	
+	//since this is only applicated to the gaugefield, this should be here...
+	cl_kernel stout_smear;
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
 	usetimer timer_plaquette;
 	usetimer timer_plaquette_reduction;
 	usetimer timer_polyakov;
 	usetimer timer_polyakov_reduction;
-	
+
+	usetimer timer_stout_smear;
 	/**
 	 * Return the timer connected to a specific kernel.
 	 *
