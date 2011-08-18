@@ -5,17 +5,6 @@
 #ifndef _TYPES_HMCH_
 #define _TYPES_HMCH_
 
-#ifdef _INKERNEL_
-// Definition of numeric constants for the symmetric structure constants d_ijk of su(3) suited for OpenCL
-/** 1/2 */
-#define F_1_2  0.5
-/** 1/(2*sqrt(3)) */
-#define F_1_2S3 0.288675134594813
-/** 1/sqrt(3) */
-#define F_1_S3  0.577350269189626
-
-#endif
-
 #ifndef _INKERNEL_
 //CP: define struct for observables
 struct hmc_observables{
