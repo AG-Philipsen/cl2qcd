@@ -158,6 +158,10 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("NTIME") != std::string::npos) val_assign(&ntime, line);
 		if(line.find("print_to_screen") != std::string::npos) val_assign(&print_to_screen, line);
 		
+		if(line.find("use_smearing") != std::string::npos) val_assign(&use_smearing, line);
+		if(line.find("rho") != std::string::npos) val_assign(&rho, line);
+		if(line.find("rho_iter") != std::string::npos) val_assign(&rho_iter, line);
+		
 	}
 
 	if(muset == TRUE && fermact != TWISTEDMASS) {
@@ -664,7 +668,13 @@ void inputparameters::print_info_global(){
   }
   if (this->get_startcondition() == HOT_START) {
     logger.info() << "## hot start";
-  }	
+  }
+  if(this->get_use_smearing()==1){
+		logger.info() << "## **********************************************************";
+		logger.info() << "## Apply Smearing with:";
+		logger.info() << "## rho:      " << this->get_rho();
+		logger.info() << "## rho_iter: " << this->get_rho_iter();
+	}
 }
 
 void inputparameters::print_info_global(ostream* os){
@@ -696,6 +706,12 @@ void inputparameters::print_info_global(ostream* os){
   if (this->get_startcondition() == HOT_START) {
     *os  << "## hot start"<<endl;
   }	
+  if(this->get_use_smearing()==1){
+		*os  << "## **********************************************************"<<endl;
+		*os  << "## Apply Smearing with:"<<endl;
+	  *os  << "## rho:      " << this->get_rho() <<endl;
+		*os  << "## rho_iter: " << this->get_rho_iter() <<endl;
+	}
 }
 
 

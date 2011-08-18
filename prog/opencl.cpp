@@ -27,8 +27,11 @@ hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 		*collect_options << " -D_CP_REAL_";
 	if(get_parameters()->get_use_chem_pot_im() == 1)
 		*collect_options << " -D_CP_IMAG_";
-	if(get_parameters()->get_use_smearing() == 1)
+	if(get_parameters()->get_use_smearing() == 1){
 		*collect_options << " -D_USE_SMEARING_";
+		*collect_options << " -DRHO="<< get_parameters()->get_rho();
+		*collect_options << " -DRHO_ITER="<< get_parameters()->get_rho_iter();
+	}
 	*collect_options << " -I" << SOURCEDIR;
 
 	return HMC_SUCCESS;
