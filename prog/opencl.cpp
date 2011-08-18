@@ -105,7 +105,7 @@ void Opencl::fill_kernels()
 	polyakov_reduction = createKernel("polyakov_reduction") << basic_opencl_code << "gaugeobservables_polyakov.cl";
 	//only init if if wanted
 	if(get_parameters()->get_use_smearing() == TRUE){
-		stout_smear = createKernel("stout_smear") << basic_opencl_code << "stout_smear.cl";
+		stout_smear = createKernel("stout_smear") << basic_opencl_code << "gaugemomentum.cl" << "stout_smear.cl";
 	}
 	
 }

@@ -659,3 +659,31 @@ Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
   return vr;
 	
 }
+
+//scale a su3 matrix by a real factor
+Matrixsu3 multiply_matrixsu3_by_real (Matrixsu3 in, hmc_float factor){
+    Matrixsu3 out = in;
+    out.e00.re *= factor;
+    out.e00.im *= factor;
+    out.e01.re *= factor;
+    out.e01.im *= factor;
+    out.e02.re *= factor;
+    out.e02.im *= factor;
+    out.e10.re *= factor;
+    out.e10.im *= factor;
+    out.e11.re *= factor;
+    out.e11.im *= factor;
+    out.e12.re *= factor;
+    out.e12.im *= factor;
+#ifdef _RECONSTRUCT_TWELVE_
+    out.e20.re *= factor;
+    out.e20.im *= factor;
+    out.e21.re *= factor;
+    out.e21.im *= factor;
+		out.e22.re *= factor;
+    out.e22.im *= factor;
+#endif
+
+    return out;
+}
+

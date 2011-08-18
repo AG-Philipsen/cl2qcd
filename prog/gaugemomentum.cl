@@ -39,3 +39,18 @@ ae tr_lambda_u(Matrix3x3 in)
 	tmp.e7 = (-in.e00.im - in.e11.im + 2.0 * in.e22.im) * 0.577350269189625;
 	return tmp;
 }
+
+ae ae_times_factor(ae in, hmc_float factor){
+	ae tmp;
+	
+	tmp.e0 = in.e0 * factor;
+	tmp.e1 = in.e1 * factor;
+	tmp.e2 = in.e2 * factor;
+	tmp.e3 = in.e3 * factor;
+	tmp.e4 = in.e4 * factor;
+	tmp.e5 = in.e5 * factor;
+	tmp.e6 = in.e6 * factor;
+	tmp.e7 = in.e7 * factor;
+		
+	return tmp;
+}
