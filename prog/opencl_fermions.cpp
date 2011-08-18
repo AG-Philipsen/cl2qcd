@@ -1197,7 +1197,7 @@ hmc_error Opencl_fermions::copy_complex_device(cl_mem in, cl_mem out, usetimer* 
 hmc_error Opencl_fermions::bicgstab_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax)
 {
 
-int debug = 1;
+int debug = 0;
 if(debug) cout << "debug-output at bicgstab_device is activated" << endl;
 	
 	//!!CP: here one has to be careful if local_work_size is a null-pointer
@@ -1222,9 +1222,9 @@ Qplus_device(clmem_inout, clmem_rn, gf, localsize, globalsize);
 			copy_complex_device(clmem_one, clmem_rho, singletimer);
 
 			//CP: calc initial residuum for output, this is not needed for the algorithm!!
-			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size);
-			copy_float_from_device(clmem_resid, &resid, copytimer);
-			cout << "initial residuum at iter " << iter << " is: " << scientific << resid << endl;
+// 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size);
+// 			copy_float_from_device(clmem_resid, &resid, copytimer);
+// 			cout << "initial residuum at iter " << iter << " is: " << scientific << resid << endl;
 			//printf("initial residuum at iter %i is %.40e\n", iter, resid);
 		}
 
@@ -1323,30 +1323,30 @@ if(debug){
 		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s, localsize, globalsize);
 
-		//see if s is too small
-		hmc_complex s_norm;
-		//borrow clmem_alpha for this
-		set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
-		copy_complex_from_device(clmem_alpha, &s_norm, copytimer);
-		if(debug) cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
-		//reset value of alpha
-		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
-		//check if |s|^2 is too small
-		if(s_norm.re < epssquare){
-			set_complex_to_product_device(clmem_minusone, clmem_alpha, clmem_alpha);
-			saxpy_device(clmem_p, clmem_inout, clmem_alpha, clmem_inout, localsize, globalsize);
-			
-			// 			M_device(clmem_inout, clmem_aux, gf, localsize, globalsize);
-			Qplus_device(clmem_inout, clmem_aux, gf, localsize, globalsize);
-			saxpy_device(clmem_aux, clmem_source, clmem_one, clmem_aux, localsize, globalsize);
-			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, localsize, globalsize);
-			copy_float_from_device(clmem_trueresid, &trueresid, copytimer);
-			cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << epssquare << endl;
-
-			cout << "|s|^2 is too small to continue..." << endl;
-
-			return HMC_SUCCESS;
-		}
+// 		//see if s is too small
+// 		hmc_complex s_norm;
+// 		//borrow clmem_alpha for this
+// 		set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
+// 		copy_complex_from_device(clmem_alpha, &s_norm, copytimer);
+// 		if(debug) cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
+// 		//reset value of alpha
+// 		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
+// 		//check if |s|^2 is too small
+// 		if(s_norm.re < epssquare){
+// 			set_complex_to_product_device(clmem_minusone, clmem_alpha, clmem_alpha);
+// 			saxpy_device(clmem_p, clmem_inout, clmem_alpha, clmem_inout, localsize, globalsize);
+// 			
+// 			// 			M_device(clmem_inout, clmem_aux, gf, localsize, globalsize);
+// 			Qplus_device(clmem_inout, clmem_aux, gf, localsize, globalsize);
+// 			saxpy_device(clmem_aux, clmem_source, clmem_one, clmem_aux, localsize, globalsize);
+// 			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, localsize, globalsize);
+// 			copy_float_from_device(clmem_trueresid, &trueresid, copytimer);
+// 			cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << epssquare << endl;
+// 
+// 			cout << "|s|^2 is too small to continue..." << endl;
+// 
+// 			return HMC_SUCCESS;
+// 		}
 		
 		
 		
@@ -1425,18 +1425,18 @@ Qplus_device(clmem_inout, clmem_aux, gf, localsize, globalsize);
 				return HMC_SUCCESS;
 			else {
 				cout << "trueresiduum not small enough" <<endl;
-				hmc_complex s_norm;
-				//borrow clmem_alpha for this
-				set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
-				copy_complex_from_device(clmem_alpha, &s_norm, copytimer);
-				cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
-				//reset value of alpha
-				set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
-				//check if |s|^2 is too small
-				if(s_norm.re < epssquare){
-					cout << "|s|^2 is too small to continue..." << endl;
-					return HMC_SUCCESS;
-				}
+// 				hmc_complex s_norm;
+// 				//borrow clmem_alpha for this
+// 				set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
+// 				copy_complex_from_device(clmem_alpha, &s_norm, copytimer);
+// 				cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
+// 				//reset value of alpha
+// 				set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
+// 				//check if |s|^2 is too small
+// 				if(s_norm.re < epssquare){
+// 					cout << "|s|^2 is too small to continue..." << endl;
+// // 					return HMC_SUCCESS;
+// 				}
 			}
 		} 
 		else {
