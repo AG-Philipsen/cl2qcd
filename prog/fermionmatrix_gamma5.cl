@@ -1,4 +1,4 @@
-__kernel void gamma5(__global spinorfield *in, __global spinorfield *out){
+__kernel void gamma5(__global spinorfield *inout){
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -13,8 +13,8 @@ __kernel void gamma5(__global spinorfield *in, __global spinorfield *out){
 		if(id_tmp%2 == 0) get_even_site(id_tmp/2, &n, &t);
 		else get_odd_site(id_tmp/2, &n, &t);
 
-		out_tmp = get_spinor_from_field(in,n, t); 
+		out_tmp = get_spinor_from_field(inout,n, t); 
 		out_tmp = gamma5_local(out_tmp);
-		put_spinor_to_field(out_tmp, out, n, t);
+		put_spinor_to_field(out_tmp, inout, n, t);
 	}
 }
