@@ -40,6 +40,8 @@ hmc_error inputparameters::set_defaults()
 	//gaugefield parameters
 	beta = 4.0;
 	theta_gaugefield = 0.;
+	rho = 0.;
+	rho_iter = 0;
 		
 	//heatbath parameters
 	thermalizationsteps = 0;
@@ -442,6 +444,11 @@ hmc_float inputparameters::get_chem_pot_im()
 	return chem_pot_im;
 }
 
+hmc_float inputparameters::get_rho()
+{
+	return rho;
+}
+
 int inputparameters::get_cgmax()
 {
 	return cgmax;
@@ -608,10 +615,14 @@ int inputparameters::get_host_seed()
 	return host_seed;
 }
 
-
 int inputparameters::get_print_to_screen()
 {
 	return print_to_screen;
+}
+
+int inputparameters::get_rho_iter()
+{
+	return rho_iter;
 }
 
 #ifdef _PROFILING_
@@ -619,12 +630,10 @@ int inputparameters::get_mat_size()
 {
 	return mat_size;
 }
-
 int inputparameters::get_float_size()
 {
 	return float_size;
 }
-
 #endif
 
 void inputparameters::print_info_global(){

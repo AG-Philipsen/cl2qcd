@@ -100,6 +100,8 @@ public:
 	int get_use_smearing();
 	int get_print_to_screen();
 	int get_host_seed();
+	hmc_float get_rho();
+	int get_rho_iter();
 	
 #ifdef _PROFILING_
 	int get_mat_size();
@@ -233,6 +235,8 @@ private:
 	hmc_float chem_pot_re;
 	hmc_float chem_pot_im;
 	hmc_float tau;
+	hmc_float rho;
+	int rho_iter;
 	long long host_seed;
 	int num_dev;
 	int cgmax;
