@@ -2,6 +2,20 @@
  * Device code for operations on the spinor field
  */
 
+
+void print_su3vec(su3vec in){
+     printf("(%f,%f)\t(%f,%f)\t(%f,%f)\t", in.e0.re, in.e0.im, in.e1.re, in.e1.im, in.e2.re, in.e2.im);
+}
+
+void print_spinor(spinor in){
+     print_su3vec(in.e0);
+     print_su3vec(in.e1);
+     print_su3vec(in.e2);
+     print_su3vec(in.e3);
+     printf("\n");
+}
+
+
 /** @todo CP: this must be taken out of this code again! */
 #define EOPREC_SPINORFIELDSIZE2 EOPREC_SPINORFIELDSIZE
 

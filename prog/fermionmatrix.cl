@@ -1,18 +1,6 @@
 /**
- @file fermionmatrix-functions
+ @file fermionmatrix-functions that are called from within kernels
 */
-
-// void print_su3vec(su3vec in){
-//      printf("(%f,%f)\t(%f,%f)\t(%f,%f)\t", in.e0.re, in.e0.im, in.e1.re, in.e1.im, in.e2.re, in.e2.im);
-// }
-// 
-// void print_spinor(spinor in){
-//      print_su3vec(in.e0);
-//      print_su3vec(in.e1);
-//      print_su3vec(in.e2);
-//      print_su3vec(in.e3);
-//      printf("\n");
-// }
 
 //local Diagonalmatrix:
 //	(1+i*mubar*gamma_5)psi = (1, mubar)psi.0,1 (1,-mubar)psi.2,3
