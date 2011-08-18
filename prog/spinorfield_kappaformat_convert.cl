@@ -24,10 +24,10 @@ __kernel void convert_from_kappa_format( __global spinorfield *in, __global spin
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	hmc_float tmp = 1./sqrt(KAPPA*2.);
+	hmc_float tmp = 1./sqrt(KAPPA*2);
 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
-		in[id_tmp] = real_multiply_spinor(in[id_tmp], tmp);
+		out[id_tmp] = real_multiply_spinor(in[id_tmp], tmp);
 	}
 	return;
 }

@@ -27,7 +27,7 @@ __kernel void convert_from_kappa_format_eoprec( __global spinorfield_eoprec *in,
 	hmc_float tmp = 1./sqrt(KAPPA*2.);
 
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE2; id_tmp += global_size) {
-		in[id_tmp] = real_multiply_spinor(in[id_tmp], tmp);
+		out[id_tmp] = real_multiply_spinor(in[id_tmp], tmp);
 	}
 	return;
 }

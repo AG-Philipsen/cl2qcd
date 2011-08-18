@@ -13,7 +13,7 @@
 #include "host_geometry.h"
 #include "host_operations_complex.h"
 #include "host_operations_su3matrix.h"
-#include "host_operations_gaugemomentum.h"
+// #include "host_operations_gaugemomentum.h"
 #include <cmath>
 
 /**

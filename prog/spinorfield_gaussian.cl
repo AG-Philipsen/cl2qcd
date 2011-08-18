@@ -8,7 +8,7 @@ __kernel void generate_gaussian_spinorfield(__global spinorfield * in, __global 
 	int n,t;
 	hmc_complex tmp;
 	//sigma has to be 0.5 here
-	hmc_float sigma = 1.;//0.5;
+	hmc_float sigma = 0.5;
 	spinor out_tmp;
 	
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {	

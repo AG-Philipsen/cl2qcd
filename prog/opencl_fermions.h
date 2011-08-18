@@ -129,6 +129,7 @@ public:
 	/////////////////////////////////////////////////
 	//functions to get private variables
 	cl_mem get_clmem_inout();
+	cl_mem get_clmem_source();
 	cl_mem get_clmem_tmp();
 
 	cl_mem get_clmem_inout_eoprec();
