@@ -9,7 +9,6 @@
 #include "general_header.h"
 
 //should only be included in main prog
-#include "host_update_heatbath.h"
 #include "gaugefield_heatbath.h"
 #include "opencl_heatbath.h"
 string const version = "0.1b";
