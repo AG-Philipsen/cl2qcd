@@ -202,6 +202,14 @@ public:
 
 	cl_command_queue queue;
 	
+	/**
+	 *	This calls
+	 *		clCreateBuffer(context, CL_MEM_READ_WRITE, size, 0, &clerr)
+	 *	and returns a pointer to a cl_mem-object if clerr is HMC_SUCCESS
+	 *	@param size size of buffer
+	 */
+	cl_mem create_rw_buffer(size_t size);
+	
 	///////////////////////////////////////////////////////////
 	//LZ what follows should eventually be private
 	//heatbath variables

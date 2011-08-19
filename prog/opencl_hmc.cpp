@@ -121,6 +121,9 @@ void Opencl_hmc::fill_kernels()
 	md_update_gaugemomenta = createKernel("md_update_gaugemomenta") << basic_hmc_code << "gaugemomentum.cl" << "md_update_gaugemomenta.cl";
 	gauge_force = createKernel("gauge_force") << basic_hmc_code << "gaugemomentum.cl" << "force_gauge.cl";
 	fermion_force = createKernel("fermion_force") << basic_hmc_code << "gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion.cl";
+	if(get_parameters()->get_use_smearing() == TRUE){
+		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_fermion_code << "stout_smear_fermion_force.cl";
+	}
 	gaugemomentum_squarenorm = createKernel("gaugemomentum_squarenorm") << basic_hmc_code << "gaugemomentum_squarenorm.cl";
 }
 
@@ -154,7 +157,9 @@ hmc_error Opencl_hmc::finalize_hmc()
 	if(clReleaseKernel(gauge_force) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
 	if(clReleaseKernel(fermion_force) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
 	if(clReleaseKernel(set_zero_gaugemomentum) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
-
+	if(get_parameters()->get_use_smearing() == TRUE){
+	if(clReleaseKernel(stout_smear_fermion_force) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
+	}
 	return HMC_SUCCESS;
 }
 
@@ -260,13 +265,21 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 	int err = HMC_SUCCESS;
 	/** @todo build in timer */
 	usetimer copy_to, copy_on, solvertimer;
+	//this is only used when smearing is activated
+	cl_mem gf_tmp;
 
 	logger.debug() << "\t\tstart calculating the force...";
 	//CP: make sure that the output field is set to zero
 	set_zero_clmem_force_device(ls, gs);
-	//add different contributions
-	logger.debug() << "\t\tcalc gauge_force...";
-	gauge_force_device(ls, gs);
+	//add different contributions: Those potentially containing smeared links should be calculated first!!
+	
+	if(get_parameters()->get_use_smearing() == 1){
+		logger.debug() << "\t\t\tsave unsmeared gaugefield...";
+		gf_tmp = create_rw_buffer(sizeof(s_gaugefield));
+		/** @todo copy gf to gf_tmp -> general copy fct?? */
+		logger.debug() << "\t\t\tsmear gaugefield...";
+		stout_smear_device(ls, gs);
+	}
 	
 	//CP: to begin with, consider only the bicgstab-solver
 	int use_cg = FALSE;
@@ -280,7 +293,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
  
 	/** @todo check the use of the sources again, compare to tmlqcd!!! */
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
-	if((*get_parameters()).get_use_eo() == 1){
+	if(get_parameters()->get_use_eo() == 1){
 		if(use_cg){
 			//this is broken right now since the CG doesnt work!!
 			logger.debug() << "\t\tcalc fermion force ingredients using cg and eoprec";
@@ -366,8 +379,22 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 		}	
 	}
 	logger.debug() << "\t\tcalc fermion_force...";
-	//CP: this always call fermion_force(Y,X) with Y = clmem_phi_inv, X = clmem_inout
+	//CP: this always calls fermion_force(Y,X) with Y = clmem_phi_inv, X = clmem_inout
 	fermion_force_device(ls, gs);
+	
+	if(get_parameters()->get_use_smearing() == 1){
+		//CP: The fermion_force call above used the smeared gaugefield if wished,
+		//	now the force by the thin link has to be determined...
+		logger.debug() << "\t\t\tcalc stout-smeared fermion_force...";
+		stout_smeared_fermion_force_device(ls, gs);
+		logger.debug() << "\t\t\trestore unsmeared gaugefield...";
+		/** @todo copy gf_tmp to gf -> general copy fct?? */
+		if(clReleaseMemObject(gf_tmp) != CL_SUCCESS) exit(HMC_OCLERROR);
+	}
+	
+	logger.debug() << "\t\tcalc gauge_force...";
+	gauge_force_device(ls, gs);
+	
 
 	return HMC_SUCCESS;
 }
@@ -583,6 +610,13 @@ hmc_error Opencl_hmc::fermion_force_device(const size_t ls, const size_t gs)
 
 }
 
+hmc_error Opencl_hmc::stout_smeared_fermion_force_device(const size_t ls, const size_t gs)
+{
+		
+	return HMC_SUCCESS;
+
+}
+
 hmc_error Opencl_hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out, const size_t ls, const size_t gs)
 {
 	int clerr = CL_SUCCESS;
@@ -692,7 +726,10 @@ usetimer* Opencl_hmc::get_timer(char * in){
 	}	
 	if (strcmp(in, "gaugemomentum_squarenorm") == 0){
     return &this->timer_gaugemomentum_squarenorm;
-	}		
+	}
+	if (strcmp(in, "stout_smear_fermion_force") == 0){
+		return &this->timer_stout_smear_fermion_force;
+	}
 	//if the kernelname has not matched, return NULL
 	else{
 		return NULL;
@@ -734,6 +771,9 @@ int Opencl_hmc::get_read_write_size(char * in, inputparameters * parameters){
 	if (strcmp(in, "gaugemomentum_squarenorm") == 0){
     return 10000000000000000000;
 	}	
+	if (strcmp(in, "stout_smear_fermion_force") == 0){
+    return 10000000000000000000;
+	}	
 	return 0;	
 }
 
@@ -755,6 +795,8 @@ void Opencl_hmc::print_profiling(std::string filename){
 	kernelName = "set_zero_gaugemomentum";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "gaugemomentum_squarenorm";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "stout_smear_fermion_force";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	
 }

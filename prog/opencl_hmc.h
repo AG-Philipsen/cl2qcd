@@ -62,6 +62,7 @@ public:
 	hmc_error set_zero_clmem_force_device(const size_t ls, const size_t gs);
 	hmc_error gauge_force_device(const size_t ls, const size_t gs);
 	hmc_error fermion_force_device(const size_t ls, const size_t gs);
+	hmc_error stout_smeared_fermion_force_device(const size_t ls, const size_t gs);
 	hmc_error set_float_to_gaugemomentum_squarenorm_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
 	
 	////////////////////////////////////////////////////
@@ -83,6 +84,7 @@ public:
 	usetimer timer_fermion_force;
 	usetimer timer_set_zero_gaugemomentum;
 	usetimer timer_gaugemomentum_squarenorm;
+	usetimer timer_stout_smear_fermion_force;
 	
 	/**
 	 * Return the timer connected to a specific kernel.
@@ -115,8 +117,7 @@ private:
 	cl_kernel md_update_gaugemomenta;
 	cl_kernel gauge_force;
 	cl_kernel fermion_force;
-	//cl_kernel s_gauge;
-	//cl_kernel s_fermion;
+	cl_kernel stout_smear_fermion_force;
 	cl_kernel set_zero_gaugemomentum;
 	cl_kernel gaugemomentum_squarenorm;
 

@@ -41,16 +41,22 @@ cl_mem Opencl::get_clmem_gaugefield(){
 	return clmem_gaugefield;
 }
 
+cl_mem Opencl::create_rw_buffer(size_t size){
+	cl_int clerr;
+	cl_mem tmp = clCreateBuffer(context, CL_MEM_READ_WRITE, size, 0, &clerr);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "... creating rw buffer failed, aborting.";
+		exit(HMC_OCLERROR);
+	}
+	return tmp;
+}
+
 hmc_error Opencl::fill_buffers()
 {
 	cl_int clerr;
 
 	logger.trace() << "Create buffer for gaugefield...";
-	clmem_gaugefield = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(s_gaugefield), 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
+	clmem_gaugefield = create_rw_buffer(sizeof(s_gaugefield));
 
 	clerr = CL_SUCCESS;
 	logger.trace() << "Create buffer for random numbers...";
@@ -248,6 +254,9 @@ hmc_error Opencl::clear_kernels()
 	if(clReleaseKernel(polyakov) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseKernel(plaquette_reduction) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseKernel(polyakov_reduction) != CL_SUCCESS) exit(HMC_OCLERROR);
+	if(get_parameters()->get_use_smearing() == TRUE){
+		if(clReleaseKernel(stout_smear) != CL_SUCCESS) exit(HMC_OCLERROR);
+	}
 
 	return HMC_SUCCESS;
 }
@@ -959,6 +968,11 @@ TmpClKernel Opencl::createKernel(const char * const kernel_name)
 	stringstream collect_options;
 	this->fill_collect_options(&collect_options);
 	return TmpClKernel(kernel_name, collect_options.str(), context, &device, 1);
+}
+
+hmc_error Opencl::stout_smear_device(const size_t ls, const size_t gs){
+	
+	return HMC_SUCCESS;
 }
 
 #ifdef _PROFILING_
