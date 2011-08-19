@@ -6,11 +6,11 @@ hmc_error inputparameters::set_defaults()
 {
 	//global parameters
 	prec = 64;
-	use_rec12 = 0;
-	use_gpu = 0;
-	use_chem_pot_re = 0;
-	use_chem_pot_im = 0;
-	use_smearing = 0; 
+	use_rec12 = false;
+	use_gpu = false;
+	use_chem_pot_re = false;
+	use_chem_pot_im = false;
+	use_smearing = false; 
 	nspace = 4;
 	ntime = 8;
 	volspace = nspace*nspace*nspace;
@@ -24,12 +24,12 @@ hmc_error inputparameters::set_defaults()
 	gaugefieldsize = NC*NC*NDIM*vol4d;
 	
 	startcondition = COLD_START;
-	saveconfigs = FALSE;
+	saveconfigs = false;
 	writefrequency = 1;
 	savefrequency = 100;
 	num_dev = 1;
 	sourcefilenumber = "00000";
-	print_to_screen = 0;
+	print_to_screen = false;
 	//This is obvious!!!
 	host_seed = 4815162342;
 
@@ -58,7 +58,7 @@ hmc_error inputparameters::set_defaults()
 	theta_fermion_temporal = 0.;	
 	chem_pot_re = 0.;
 	chem_pot_im = 0.;
-	use_eo = TRUE;
+	use_eo = true;
 	
 	//HMC specific parameters
 	tau = 0.5;
@@ -78,10 +78,12 @@ hmc_error inputparameters::readfile(char* ifn)
 		exit(HMC_FILEERROR);
 	}
 
-	int muset = FALSE;
-	int cswset = FALSE;
+	bool muset  = false;
+	bool cswset = false;
+
 
 	while (infile.good()) {
+	  try {
 		std::string line;
 		infile >> line;
 		if(line.find("#") != std::string::npos) continue; //allow comments
@@ -89,19 +91,19 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("Kappa") != std::string::npos) val_assign(&kappa, line);
 		if(line.find("mu") != std::string::npos) {
 			val_assign(&mu, line);
-			muset = TRUE;
+			muset = true;
 		}
 		if(line.find("Mu") != std::string::npos) {
 			val_assign(&mu, line);
-			muset = TRUE;
+			muset = true;
 		}
 		if(line.find("csw") != std::string::npos) {
 			val_assign(&csw, line);
-			cswset = TRUE;
+			cswset = true;
 		}
 		if(line.find("Csw") != std::string::npos) {
 			val_assign(&csw, line);
-			cswset = TRUE;
+			cswset = true;
 		}
 		if(line.find("beta") != std::string::npos) val_assign(&beta, line);
 		if(line.find("tau") != std::string::npos) val_assign(&tau, line);
@@ -110,21 +112,21 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("theta_fermion_spatial") != std::string::npos) val_assign(&theta_fermion_spatial, line);
 		if(line.find("theta_fermion_temporal") != std::string::npos) val_assign(&theta_fermion_temporal, line);
 		
-		
 		if(line.find("cgmax") != std::string::npos) val_assign(&cgmax, line);
 		if(line.find("CGmax") != std::string::npos) val_assign(&cgmax, line);
 		if(line.find("Cgmax") != std::string::npos) val_assign(&cgmax, line);
 		if(line.find("writefrequency") != std::string::npos) val_assign(&writefrequency, line);
 		if(line.find("savefrequency") != std::string::npos) val_assign(&savefrequency, line);
-		if(line.find("saveconfigs") != std::string::npos) savecond_assign(&saveconfigs, line);
+		if(line.find("saveconfigs") != std::string::npos) bool_assign(&saveconfigs, line);
 		if(line.find("prec") != std::string::npos) val_assign(&prec, line);
 		if(line.find("Prec") != std::string::npos) val_assign(&prec, line);
-		if(line.find("readsource") != std::string::npos) cond_assign(&startcondition, line);
-		if(line.find("startcondition") != std::string::npos) cond_assign(&startcondition, line);
+		if(line.find("readsource") != std::string::npos) startcond_assign(&startcondition, line);
+		if(line.find("startcondition") != std::string::npos) startcond_assign(&startcondition, line);
 		if(line.find("sourcefile") != std::string::npos) {
 			val_assign(&sourcefile, line);
 			sourcefilenumber_assign(&sourcefilenumber);
 		}
+
 		if(line.find("thermalizationsteps") != std::string::npos) val_assign(&thermalizationsteps, line);
 		if(line.find("heatbathsteps") != std::string::npos) val_assign(&heatbathsteps, line);
 		if(line.find("thermsteps") != std::string::npos) val_assign(&thermalizationsteps, line);
@@ -141,38 +143,45 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("fermionaction") != std::string::npos) fermact_assign(&fermact, line);
 		if(line.find("fermact") != std::string::npos) fermact_assign(&fermact, line);
 
-		if(line.find("evenodd") != std::string::npos) eocond_assign(&use_eo, line);
-		if(line.find("even_odd") != std::string::npos) eocond_assign(&use_eo, line);
-		if(line.find("even-odd") != std::string::npos) eocond_assign(&use_eo, line);
-		if(line.find("even-odd-preconditioning") != std::string::npos) eocond_assign(&use_eo, line);
-		if(line.find("use_eo") != std::string::npos) eocond_assign(&use_eo, line);
-		if(line.find("use_evenodd") != std::string::npos) eocond_assign(&use_eo, line);
-		if(line.find("use_rec12") != std::string::npos) val_assign(&use_rec12, line);
-		if(line.find("REC12") != std::string::npos) val_assign(&use_rec12, line);
-		if(line.find("use_gpu") != std::string::npos) val_assign(&use_gpu, line);
-		if(line.find("GPU") != std::string::npos) val_assign(&use_gpu, line);
+		if(line.find("evenodd") != std::string::npos) bool_assign(&use_eo, line);
+		if(line.find("even_odd") != std::string::npos) bool_assign(&use_eo, line);
+		if(line.find("even-odd") != std::string::npos) bool_assign(&use_eo, line);
+		if(line.find("even-odd-preconditioning") != std::string::npos) bool_assign(&use_eo, line);
+		if(line.find("use_eo") != std::string::npos) bool_assign(&use_eo, line);
+		if(line.find("use_evenodd") != std::string::npos) bool_assign(&use_eo, line);
+		if(line.find("use_rec12") != std::string::npos) bool_assign(&use_rec12, line);
+		if(line.find("REC12") != std::string::npos) bool_assign(&use_rec12, line);
+		if(line.find("use_gpu") != std::string::npos) bool_assign(&use_gpu, line);
+		if(line.find("GPU") != std::string::npos) bool_assign(&use_gpu, line);
 
 		if(line.find("NS") != std::string::npos) val_assign(&nspace, line);
 		if(line.find("NSPACE") != std::string::npos) val_assign(&nspace, line);
 		if(line.find("NT") != std::string::npos) val_assign(&ntime, line);
 		if(line.find("NTIME") != std::string::npos) val_assign(&ntime, line);
-		if(line.find("print_to_screen") != std::string::npos) val_assign(&print_to_screen, line);
+		if(line.find("print_to_screen") != std::string::npos) bool_assign(&print_to_screen, line);
 		
-		if(line.find("use_smearing") != std::string::npos) val_assign(&use_smearing, line);
+		if(line.find("use_smearing") != std::string::npos) bool_assign(&use_smearing, line);
 		if(line.find("rho") != std::string::npos) val_assign(&rho, line);
 		if(line.find("rho_iter") != std::string::npos) val_assign(&rho_iter, line);
-		
+	  }
+	  catch (std::string line) {
+	    logger.fatal()<<"Read invalid option in parameter file. Critical line was:";
+	    logger.fatal()<<line;
+	    logger.fatal()<<"Aborting.";
+	    exit(1);
+	  }
+
 	}
 
-	if(muset == TRUE && fermact != TWISTEDMASS) {
+	if(muset == true && fermact != TWISTEDMASS) {
 		logger.fatal() << "Setting a value for mu is not allowed for fermion action other than twisted mass. Aborting...";
 		exit(HMC_STDERR);
 	}
-	if(cswset == TRUE && fermact != CLOVER) {
+	if(cswset == true && fermact != CLOVER) {
 		logger.fatal() << "Setting a value for csw is not allowed for fermion action other than clover. Aborting...";
 		exit(HMC_STDERR);
 	}
-	if(cswset == TRUE && muset == TRUE) {
+	if(cswset == true && muset == true) {
 		logger.fatal() << "Setting values for both csw and mu is currently not allowed. Aborting...";
 		exit(HMC_STDERR);
 	}
@@ -183,7 +192,7 @@ hmc_error inputparameters::readfile(char* ifn)
 
 #ifdef _PROFILING_
 	//set variables needed for Profiling according to the input-parameters
-	if(this->get_use_rec12() != 0) this->mat_size = 6;
+	if(this->get_use_rec12() != false) this->mat_size = 6;
 	if(this->get_prec() == 32 ) this->float_size = 4;
 #endif
 	return HMC_SUCCESS;
@@ -221,21 +230,24 @@ void inputparameters::sourcefilenumber_assign(std::string * out)
 	(*out) = buffer2;
 }
 
-void inputparameters::cond_assign(int * out, std::string line)
+void inputparameters::startcond_assign(int * out, std::string line)
 {
-	if(std::strstr(line.c_str(), "cold") != NULL) {
+	size_t pos = line.find("=");
+	std::string value = line.substr(pos + 1);
+
+	if(std::strstr(value.c_str(), "cold") != NULL) {
 		(*out) = COLD_START;
 		return;
 	}
-	if(std::strstr(line.c_str(), "hot") != NULL) {
+	if(std::strstr(value.c_str(), "hot") != NULL) {
 		(*out) = HOT_START;
 		return;
 	}
-	if(std::strstr(line.c_str(), "source") != NULL) {
+	if(std::strstr(value.c_str(), "source") != NULL) {
 		(*out) = START_FROM_SOURCE;
 		return;
 	}
-	if(std::strstr(line.c_str(), "continue") != NULL) {
+	if(std::strstr(value.c_str(), "continue") != NULL) {
 		(*out) = START_FROM_SOURCE;
 		return;
 	}
@@ -246,47 +258,50 @@ void inputparameters::cond_assign(int * out, std::string line)
 
 void inputparameters::fermact_assign(int * out, std::string line)
 {
-	if(std::strstr(line.c_str(), "TWISTEDMASS") != NULL) {
+	size_t pos = line.find("=");
+	std::string value = line.substr(pos + 1);
+
+	if(std::strstr(value.c_str(), "TWISTEDMASS") != NULL) {
 		(*out) = TWISTEDMASS;
 		return;
 	}
-	if(std::strstr(line.c_str(), "twistedmass") != NULL) {
+	if(std::strstr(value.c_str(), "twistedmass") != NULL) {
 		(*out) = TWISTEDMASS;
 		return;
 	}
-	if(std::strstr(line.c_str(), "Twistedmass") != NULL) {
+	if(std::strstr(value.c_str(), "Twistedmass") != NULL) {
 		(*out) = TWISTEDMASS;
 		return;
 	}
-	if(std::strstr(line.c_str(), "TwistedMass") != NULL) {
+	if(std::strstr(value.c_str(), "TwistedMass") != NULL) {
 		(*out) = TWISTEDMASS;
 		return;
 	}
-	if(std::strstr(line.c_str(), "clover") != NULL) {
+	if(std::strstr(value.c_str(), "clover") != NULL) {
 		(*out) = CLOVER;
 		return;
 	}
-	if(std::strstr(line.c_str(), "CLOVER") != NULL) {
+	if(std::strstr(value.c_str(), "CLOVER") != NULL) {
 		(*out) = CLOVER;
 		return;
 	}
-	if(std::strstr(line.c_str(), "Clover") != NULL) {
+	if(std::strstr(value.c_str(), "Clover") != NULL) {
 		(*out) = CLOVER;
 		return;
 	}
-	if(std::strstr(line.c_str(), "WILSON") != NULL) {
+	if(std::strstr(value.c_str(), "WILSON") != NULL) {
 		(*out) = WILSON;
 		return;
 	}
-	if(std::strstr(line.c_str(), "Wilson") != NULL) {
+	if(std::strstr(value.c_str(), "Wilson") != NULL) {
 		(*out) = WILSON;
 		return;
 	}
-	if(std::strstr(line.c_str(), "wilson") != NULL) {
+	if(std::strstr(value.c_str(), "wilson") != NULL) {
 		(*out) = WILSON;
 		return;
 	}
-	if(std::strstr(line.c_str(), "unimproved") != NULL) {
+	if(std::strstr(value.c_str(), "unimproved") != NULL) {
 		(*out) = WILSON;
 		return;
 	}
@@ -295,82 +310,68 @@ void inputparameters::fermact_assign(int * out, std::string line)
 	return;
 }
 
-
-void inputparameters::savecond_assign(int * out, std::string line)
+void inputparameters::bool_assign(bool * out, std::string line)
 {
-	if(std::strstr(line.c_str(), "yes") != NULL) {
-		(*out) = TRUE;
-		return;
-	}
-	if(std::strstr(line.c_str(), "true") != NULL) {
-		(*out) = TRUE;
-		return;
-	}
-	if(std::strstr(line.c_str(), "TRUE") != NULL) {
-		(*out) = TRUE;
-		return;
-	}
-	if(std::strstr(line.c_str(), "True") != NULL) {
-		(*out) = TRUE;
-		return;
-	}
-	if(std::strstr(line.c_str(), "no") != NULL) {
-		(*out) = FALSE;
-		return;
-	}
-	if(std::strstr(line.c_str(), "false") != NULL) {
-		(*out) = FALSE;
-		return;
-	}
-	if(std::strstr(line.c_str(), "FALSE") != NULL) {
-		(*out) = FALSE;
-		return;
-	}
-	if(std::strstr(line.c_str(), "False") != NULL) {
-		(*out) = FALSE;
-		return;
-	}
-	printf("invalid save condition\n");
-	exit(HMC_STDERR);
-	return;
-}
+	size_t pos = line.find("=");
+	std::string value = line.substr(pos + 1);
 
-void inputparameters::eocond_assign(int * out, std::string line)
-{
-	if(std::strstr(line.c_str(), "yes") != NULL) {
-		(*out) = TRUE;
+	if(std::strstr(value.c_str(), "1") != NULL) {
+		(*out) = true;
 		return;
 	}
-	if(std::strstr(line.c_str(), "true") != NULL) {
-		(*out) = TRUE;
+	if(std::strstr(value.c_str(), "on") != NULL) {
+		(*out) = true;
 		return;
 	}
-	if(std::strstr(line.c_str(), "TRUE") != NULL) {
-		(*out) = TRUE;
+	if(std::strstr(value.c_str(), "ON") != NULL) {
+		(*out) = true;
 		return;
 	}
-	if(std::strstr(line.c_str(), "True") != NULL) {
-		(*out) = TRUE;
+	if(std::strstr(value.c_str(), "yes") != NULL) {
+		(*out) = true;
 		return;
 	}
-	if(std::strstr(line.c_str(), "no") != NULL) {
-		(*out) = FALSE;
+	if(std::strstr(value.c_str(), "TRUE") != NULL) {
+		(*out) = true;
 		return;
 	}
-	if(std::strstr(line.c_str(), "false") != NULL) {
-		(*out) = FALSE;
+	if(std::strstr(value.c_str(), "true") != NULL) {
+		(*out) = true;
 		return;
 	}
-	if(std::strstr(line.c_str(), "FALSE") != NULL) {
-		(*out) = FALSE;
+	if(std::strstr(value.c_str(), "True") != NULL) {
+		(*out) = true;
 		return;
 	}
-	if(std::strstr(line.c_str(), "False") != NULL) {
-		(*out) = FALSE;
+	if(std::strstr(value.c_str(), "0") != NULL) {
+		(*out) = false;
 		return;
 	}
-	printf("invalid even-odd condition\n");
-	exit(HMC_STDERR);
+	if(std::strstr(value.c_str(), "off") != NULL) {
+		(*out) = false;
+		return;
+	}
+	if(std::strstr(value.c_str(), "OFF") != NULL) {
+		(*out) = false;
+		return;
+	}
+	if(std::strstr(value.c_str(), "no") != NULL) {
+		(*out) = false;
+		return;
+	}
+	if(std::strstr(value.c_str(), "false") != NULL) {
+		(*out) = false;
+		return;
+	}
+	if(std::strstr(value.c_str(), "FALSE") != NULL) {
+		(*out) = false;
+		return;
+	}
+	if(std::strstr(value.c_str(), "False") != NULL) {
+		(*out) = false;
+		return;
+	}
+	throw line;
 	return;
 }
 
@@ -529,7 +530,7 @@ int inputparameters::get_fermact()
 	return fermact;
 }
 
-int inputparameters::get_saveconfigs()
+bool inputparameters::get_saveconfigs()
 {
 	return saveconfigs;
 }
@@ -544,17 +545,17 @@ void inputparameters::display_sourcefilenumber()
 	cout << sourcefilenumber;
 }
 
-int inputparameters::get_use_eo()
+bool inputparameters::get_use_eo()
 {
 	return use_eo;
 }
 
-int inputparameters::get_use_rec12()
+bool inputparameters::get_use_rec12()
 {
 	return use_rec12;
 }
 
-int inputparameters::get_use_gpu()
+bool inputparameters::get_use_gpu()
 {
 	return use_gpu;
 }
@@ -599,17 +600,17 @@ int inputparameters::get_eoprec_spinorfieldsize()
 	return eoprec_spinorfieldsize;
 }
 
-int inputparameters::get_use_chem_pot_re()
+bool inputparameters::get_use_chem_pot_re()
 {
 	return use_chem_pot_re;
 }
 
-int inputparameters::get_use_chem_pot_im()
+bool inputparameters::get_use_chem_pot_im()
 {
 	return use_chem_pot_im;
 }
 
-int inputparameters::get_use_smearing()
+bool inputparameters::get_use_smearing()
 {
 	return use_smearing;
 }
@@ -619,7 +620,7 @@ int inputparameters::get_host_seed()
 	return host_seed;
 }
 
-int inputparameters::get_print_to_screen()
+bool inputparameters::get_print_to_screen()
 {
 	return print_to_screen;
 }
@@ -651,8 +652,16 @@ void inputparameters::print_info_global(){
   logger.info() << "## **********************************************************";
 	logger.info() << "## Computational parameters:";	
 	logger.info() << "## PREC:    " << this->get_prec();
-	logger.info() << "## REC12:   " << this->get_use_rec12();
-	logger.info() << "## USE GPU: " << this->get_use_gpu();
+	if(this->get_use_rec12()==true) {
+	  logger.info() << "## REC12:   ON";
+	} else {
+	  logger.info() << "## REC12:   OFF";
+	}
+	if(this->get_use_gpu()==true) {
+	  logger.info() << "## USE GPU: ON";
+	} else {
+	  logger.info() << "## USE GPU: OFF";
+	}
 	logger.info() << "## Number of devices demanded for calculations: " << this->get_num_dev()  ;
 	logger.info() << "## **********************************************************";
   logger.info() << "## I/O parameters:";
@@ -679,17 +688,25 @@ void inputparameters::print_info_global(){
 
 void inputparameters::print_info_global(ostream* os){
   *os  << "## **********************************************************"<<endl;
-	*os  << "## Global parameters:"<< endl;
-	*os  << "## NSPACE:  " << this->get_nspace()<< endl;
+  *os  << "## Global parameters:"<< endl;
+  *os  << "## NSPACE:  " << this->get_nspace()<< endl;
   *os  << "## NTIME:   " << this->get_ntime()<<endl;
   *os  << "## NDIM:    " << NDIM<<endl;
   *os  << "## NCOLOR:  " << NC<<endl;
   *os  << "## NSPIN:   " << NSPIN<<endl;
   *os  << "## **********************************************************"<<endl;
-	*os  << "## Computational parameters:"<<endl;	
-	*os  << "## PREC:    " << this->get_prec()<<endl;
-	*os  << "## REC12:   " << this->get_use_rec12()<<endl;
-	*os  << "## USE GPU: " << this->get_use_gpu()<<endl;
+  *os  << "## Computational parameters:"<<endl;	
+  *os  << "## PREC:    " << this->get_prec()<<endl;
+	if(this->get_use_rec12() == true) {
+	  *os << "## REC12:   ON";
+	} else {
+	  *os << "## REC12:   OFF";
+	}
+	if(this->get_use_gpu() == true) {
+	  *os << "## USE GPU: ON";
+	} else {
+	  *os << "## USE GPU: OFF";
+	}
 	*os  << "## Number of devices demanded for calculations: " << this->get_num_dev()  <<endl;
 	*os  << "## **********************************************************"<<endl;
   *os  << "## I/O parameters:"<<endl;
@@ -706,7 +723,7 @@ void inputparameters::print_info_global(ostream* os){
   if (this->get_startcondition() == HOT_START) {
     *os  << "## hot start"<<endl;
   }	
-  if(this->get_use_smearing()==1){
+  if(this->get_use_smearing()==true){
 		*os  << "## **********************************************************"<<endl;
 		*os  << "## Apply Smearing with:"<<endl;
 	  *os  << "## rho:      " << this->get_rho() <<endl;
@@ -720,7 +737,7 @@ void inputparameters::print_info_heatbath(char* progname){
 	this->print_info_global();
 	logger.info() << "## **********************************************************";
   logger.info() << "## Simulation parameters:";
-  logger.info() << "## beta  = " << this->get_beta();
+  logger.info() << "## beta           = " << this->get_beta();
   logger.info() << "## thermsteps     = " << this->get_thermalizationsteps() ;
   logger.info() << "## heatbathsteps  = " << this->get_heatbathsteps();
   logger.info() << "## overrelaxsteps = " << this->get_overrelaxsteps();
@@ -734,7 +751,7 @@ void inputparameters::print_info_heatbath(char* progname, ostream* os){
 	this->print_info_global(os);
 	*os  << "## **********************************************************"<<endl;
   *os  << "## Simulation parameters:"<<endl;
-  *os  << "## beta  = " << this->get_beta()<<endl;
+  *os  << "## beta           = " << this->get_beta()<<endl;
   *os  << "## thermsteps     = " << this->get_thermalizationsteps() <<endl;
   *os  << "## heatbathsteps  = " << this->get_heatbathsteps()<<endl;
   *os  << "## overrelaxsteps = " << this->get_overrelaxsteps()<<endl;
@@ -781,11 +798,11 @@ void inputparameters::print_info_fermion(){
 	logger.info() << "## theta_fermion_temporal = "<<this->get_theta_fermion_temporal();
 	logger.info() << "##" ;
 	logger.info() << "## Chemical Potential:" ;
-	if(this->get_use_chem_pot_re() == 1)
+	if(this->get_use_chem_pot_re()==true)
 	logger.info() << "## chem_pot_re  = "<<this->get_chem_pot_re();
 	else
 	logger.info() << "## do not use real chem. pot.";
-	if(this->get_use_chem_pot_im() == 1)
+	if(this->get_use_chem_pot_im()==true)
 	logger.info() << "## chem_pot_im = "<<this->get_chem_pot_im();
 	else
 	logger.info() << "## do not use imag. chem. pot.";
@@ -806,9 +823,9 @@ void inputparameters::print_info_fermion(){
 	}
 	logger.info() << "##" ;
 	logger.info() << "## Inverter parameters:";
-	if(this->get_use_eo()==TRUE)
+	if(this->get_use_eo()==true)
 	  logger.info() << "## Use even-odd preconditioning" ;
-	if(this->get_use_eo()==FALSE) 
+	if(this->get_use_eo()==false) 
 	  logger.info() << "## Do NOT use even-odd preconditioning";
 	logger.info() << "## cgmax  = "<< this->get_cgmax();
 }
@@ -847,9 +864,9 @@ void inputparameters::print_info_fermion(ostream * os){
 	}
 	*os  << "##" <<endl;
 	*os  << "## Inverter parameters:" << endl;
-	if(this->get_use_eo()==TRUE)
+	if(this->get_use_eo()==true)
 	  *os  << "## Use even-odd preconditioning" <<endl;
-	if(this->get_use_eo()==FALSE) 
+	if(this->get_use_eo()==false) 
 	  *os  << "## Do NOT use even-odd preconditioning"<<endl;
 	*os << "## cgmax  = " << this->get_cgmax() << endl;
 }
@@ -932,13 +949,13 @@ void inputparameters::check_settings_global(){
 #endif
 	//reconstruct12
 #ifdef _RECONSTRUCT_TWELVE_
-	if( this->get_use_rec12() != 1) {
+	if( this->get_use_rec12() == false) {
 		logger.fatal() << "Error in REC12-setting, aborting...";
 		logger.fatal() << "compile: 1\tinput:" << this->get_use_rec12();
 		exit (HMC_STDERR);
 	}
 #else
-	if( this->get_use_rec12() != 0) {
+	if( this->get_use_rec12() == true) {
 		logger.fatal() << "Error in REC12-setting, aborting...";
 		logger.fatal() << "compile: 0\tinput:" << this->get_use_rec12();
 		exit (HMC_STDERR);
@@ -946,13 +963,13 @@ void inputparameters::check_settings_global(){
 #endif
 	//GPU-Usage
 #ifdef _USEGPU_
-	if( this->get_use_gpu() != 1) {
+	if( this->get_use_gpu() == false) {
 		logger.fatal() << "Error in setting of GPU-usage, aborting...";
 		logger.fatal() << "compile:1\t"<<this->get_use_gpu();
 		exit (HMC_STDERR);
 	}
 #else
-	if( this->get_use_gpu() != 0) {
+	if( this->get_use_gpu() == true) {
 		logger.fatal() << "Error in setting of GPU-usage, aborting...";
 		logger.fatal() << "compile:0\t"<<this->get_use_gpu();
 		exit (HMC_STDERR);

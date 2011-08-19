@@ -48,9 +48,6 @@
 #define EVEN 0
 #define ODD 1
 
-#define TRUE 1
-#define FALSE 0
-
 /**
  * PI
  * @todo Rather use PI from stdlib

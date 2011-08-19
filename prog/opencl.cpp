@@ -11,7 +11,7 @@ hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 {
 	*collect_options << "-D_INKERNEL_ -DNSPACE=" << get_parameters()->get_nspace() << " -DNTIME=" << get_parameters()->get_ntime() << " -DVOLSPACE=" << get_parameters()->get_volspace();
 	
-	if(get_parameters()->get_use_rec12() == 1)
+	if(get_parameters()->get_use_rec12() == true)
 		*collect_options << " -D_RECONSTRUCT_TWELVE_";
 	if(get_parameters()->get_prec() == 64){
 		*collect_options << " -D_USEDOUBLEPREC_";
@@ -21,13 +21,13 @@ hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 			*collect_options << " -D_DEVICE_DOUBLE_EXTENSION_"<<device_double_extension<<"_";
 		}
 	}
-	if(get_parameters()->get_use_gpu() == 1)
+	if(get_parameters()->get_use_gpu() == true)
 		*collect_options << " -D_USEGPU_";
-	if(get_parameters()->get_use_chem_pot_re() == 1)
+	if(get_parameters()->get_use_chem_pot_re() == true)
 		*collect_options << " -D_CP_REAL_";
-	if(get_parameters()->get_use_chem_pot_im() == 1)
+	if(get_parameters()->get_use_chem_pot_im() == true)
 		*collect_options << " -D_CP_IMAG_";
-	if(get_parameters()->get_use_smearing() == 1){
+	if(get_parameters()->get_use_smearing() == true){
 		*collect_options << " -D_USE_SMEARING_";
 		*collect_options << " -DRHO="<< get_parameters()->get_rho();
 		*collect_options << " -DRHO_ITER="<< get_parameters()->get_rho_iter();
@@ -110,7 +110,7 @@ void Opencl::fill_kernels()
 	polyakov = createKernel("polyakov") << basic_opencl_code << "gaugeobservables_polyakov.cl";
 	polyakov_reduction = createKernel("polyakov_reduction") << basic_opencl_code << "gaugeobservables_polyakov.cl";
 	//only init if if wanted
-	if(get_parameters()->get_use_smearing() == TRUE){
+	if(get_parameters()->get_use_smearing()==true){
 		stout_smear = createKernel("stout_smear") << basic_opencl_code << "gaugemomentum.cl" << "stout_smear.cl";
 	}
 	
@@ -254,7 +254,7 @@ hmc_error Opencl::clear_kernels()
 	if(clReleaseKernel(polyakov) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseKernel(plaquette_reduction) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseKernel(polyakov_reduction) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(get_parameters()->get_use_smearing() == TRUE){
+	if(get_parameters()->get_use_smearing()==true){
 		if(clReleaseKernel(stout_smear) != CL_SUCCESS) exit(HMC_OCLERROR);
 	}
 
