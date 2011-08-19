@@ -302,13 +302,24 @@ void Opencl_fermions::fill_kernels()
 	                     << "operations_spinor.cl" << "spinorfield.cl";
 
 	logger.debug() << "Create fermion kernels...";
-	if(get_parameters()->get_fermact() == TWISTEDMASS){
+	if(get_parameters()->get_fermact() == WILSON){
+		M = createKernel("M") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m.cl";
+	}
+	else if(get_parameters()->get_fermact() == TWISTEDMASS){
 		M_tm_plus = createKernel("M_tm_plus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
 		M_tm_minus = createKernel("M_tm_minus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m_tm_minus.cl";
 	}
+	else if(get_parameters()->get_fermact() == CLOVER){
+		logger.fatal() << "no kernels for CLOVER-discretization implemented yet, aborting... ";
+		exit (HMC_STDERR);
+	}
+	else{
+		logger.fatal() << "there was a problem with which fermion-discretization to use, aborting... ";
+		exit (HMC_STDERR);
+	}
+	
 	gamma5 = createKernel("gamma5") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_gamma5.cl";
-	M = createKernel("M") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m.cl";
-
+	
 	ps_correlator = createKernel("ps_correlator") << basic_fermion_code << "fermionobservables.cl";
 
 	set_spinorfield_cold = createKernel("set_spinorfield_cold") << basic_fermion_code << "spinorfield_cold.cl";
