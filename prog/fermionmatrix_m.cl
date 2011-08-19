@@ -1,3 +1,7 @@
+/**
+ * @file M normal Wilson fermionmatrix
+ */
+
 __kernel void M(__global spinorfield * in, __global ocl_s_gaugefield * field, __global spinorfield * out){
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -7,23 +11,15 @@ __kernel void M(__global spinorfield * in, __global ocl_s_gaugefield * field, __
 	int group_id = get_group_id (0);
 	int n,t;
 	spinor out_tmp, out_tmp2;
-	spinor plus;
-	
-	hmc_complex twistfactor = {1., MUBAR};
-	hmc_complex twistfactor_minus = {1., MMUBAR};
 
-	/** @todo implement BC! Beware, the kappa at -mu then has to be complex conjugated (see tmlqcd)*/
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {	
 	
 		/** @todo this must be done more efficient */
 		if(id_tmp%2 == 0) get_even_site(id_tmp/2, &n, &t);
 		else get_odd_site(id_tmp/2, &n, &t);
 		
-		out_tmp = set_spinor_zero();
-		//get input spinor
-		plus = get_spinor_from_field(in, n, t);
-		//Diagonalpart:
-		out_tmp = M_diag_local(plus, twistfactor, twistfactor_minus);
+		//Diagonalpart: (this is simple here)
+		out_tmp = get_spinor_from_field(in, n, t);
 		//calc dslash (this includes mutliplication with kappa)
 		out_tmp2 = dslash_local(in, field, n, t);
 		//M = M_diag - dslash

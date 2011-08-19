@@ -303,8 +303,8 @@ void Opencl_fermions::fill_kernels()
 
 	logger.debug() << "Create fermion kernels...";
 	if(get_parameters()->get_fermact() == TWISTEDMASS){
-		Qplus = createKernel("Qplus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_qplus.cl";
-		Qminus = createKernel("Qminus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_qminus.cl";
+		M_tm_plus = createKernel("M_tm_plus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_qplus.cl";
+		M_tm_minus = createKernel("M_tm_minus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_qminus.cl";
 	}
 	gamma5 = createKernel("gamma5") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_gamma5.cl";
 	M = createKernel("M") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m.cl";
@@ -597,22 +597,22 @@ hmc_error Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl
 hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
   int clerr =CL_SUCCESS;
 
-  clerr = clSetKernelArg(Qplus,0,sizeof(cl_mem),&in); 
+  clerr = clSetKernelArg(M_tm_plus,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(Qplus,1,sizeof(cl_mem),&gf);
+  clerr = clSetKernelArg(M_tm_plus,1,sizeof(cl_mem),&gf);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(Qplus,2,sizeof(cl_mem),&out);
+  clerr = clSetKernelArg(M_tm_plus,2,sizeof(cl_mem),&out);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	enqueueKernel(Qplus , gs, ls);
+	enqueueKernel(M_tm_plus , gs, ls);
 	
 	gamma5_device(out, ls, gs);
 
@@ -623,23 +623,23 @@ hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const 
 hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
   int clerr =CL_SUCCESS;
 
-  clerr = clSetKernelArg(Qminus,0,sizeof(cl_mem),&in); 
+  clerr = clSetKernelArg(M_tm_minus,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(Qminus,1,sizeof(cl_mem),&gf);
+  clerr = clSetKernelArg(M_tm_minus,1,sizeof(cl_mem),&gf);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(Qminus,2,sizeof(cl_mem),&out);
+  clerr = clSetKernelArg(M_tm_minus,2,sizeof(cl_mem),&out);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
 
-	enqueueKernel( Qminus, gs, ls);
+	enqueueKernel( M_tm_minus, gs, ls);
 	
 	gamma5_device(out, ls, gs);
 	
@@ -1865,11 +1865,11 @@ usetimer* Opencl_fermions::get_timer(char * in){
 	if (strcmp(in, "gamma5") == 0){
     return &this->timer_gamma5;
 	}
-	if (strcmp(in, "Qplus") == 0){
-    return &this->timer_Qplus;
+	if (strcmp(in, "M_tm_plus") == 0){
+    return &this->timer_M_tm_plus;
 	}
-	if (strcmp(in, "Qminus") == 0){
-    return &this->timer_Qminus;
+	if (strcmp(in, "M_tm_minus") == 0){
+    return &this->timer_M_tm_minus;
 	}
 	if (strcmp(in, "gamma5_eoprec") == 0){
     return &this->timer_gamma5_eoprec;
@@ -1979,10 +1979,10 @@ int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters
 	if (strcmp(in, "gamma5") == 0){
     return 1000000000000000000000000;
 	}
-	if (strcmp(in, "Qplus") == 0){
+	if (strcmp(in, "M_tm_plus") == 0){
     return 1000000000000000000000000;
 	}
-	if (strcmp(in, "Qminus") == 0){
+	if (strcmp(in, "M_tm_minus") == 0){
     return 1000000000000000000000000;
 	}
 	if (strcmp(in, "gamma5_eoprec") == 0){
@@ -2079,9 +2079,9 @@ void Opencl_fermions::print_profiling(std::string filename){
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "gamma5";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
-	kernelName = "Qplus";
+	kernelName = "M_tm_plus";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
-	kernelName = "Qminus";
+	kernelName = "M_tm_minus";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "gamma5_eoprec";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );

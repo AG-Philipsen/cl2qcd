@@ -2,9 +2,9 @@
  @file fermionmatrix-functions that are called from within kernels
 */
 
-//local Diagonalmatrix:
+//local twisted-mass Diagonalmatrix:
 //	(1+i*mubar*gamma_5)psi = (1, mubar)psi.0,1 (1,-mubar)psi.2,3
-spinor inline M_diag_local(spinor in, hmc_complex factor1, hmc_complex factor2){
+spinor inline M_diag_tm_local(spinor in, hmc_complex factor1, hmc_complex factor2){
 	spinor tmp;
 	tmp.e0 = su3vec_times_complex(in.e0, factor1);
 	tmp.e1 = su3vec_times_complex(in.e1, factor1);
@@ -35,6 +35,7 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	hmc_float kappa_minus = KAPPA;
 	
 	//These are the kappa including BC
+	/** @todo implement BC! Beware, the kappa at -mu then has to be complex conjugated (see tmlqcd)*/
 	hmc_complex ks, kt;
 	ks.re = KAPPA_SPATIAL_RE;
 	ks.im = KAPPA_SPATIAL_IM;

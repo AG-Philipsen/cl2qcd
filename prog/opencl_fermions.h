@@ -140,8 +140,8 @@ public:
 	//fermionmatrix
 	usetimer timer_M;
 	usetimer timer_gamma5;
-	usetimer timer_Qplus;
-	usetimer timer_Qminus;
+	usetimer timer_M_tm_plus;
+	usetimer timer_M_tm_minus;
 	usetimer timer_gamma5_eoprec;
 	usetimer timer_M_sitediagonal;
 	usetimer timer_M_inverse_sitediagonal;
@@ -208,8 +208,8 @@ private:
 	//fermionmatrix
 	cl_kernel M;
 	cl_kernel gamma5;
-	cl_kernel Qplus;
-	cl_kernel Qminus;
+	cl_kernel M_tm_plus;
+	cl_kernel M_tm_minus;
 	cl_kernel gamma5_eoprec;
 	cl_kernel M_sitediagonal;
 	cl_kernel M_inverse_sitediagonal;

@@ -1,4 +1,7 @@
-__kernel void Qplus(__global spinorfield * in, __global ocl_s_gaugefield * field, __global spinorfield * out){
+/**
+ * @file M_tm_plus this is the "total" twisted-mass fermionmatrix (no evenodd) for the upper flavor
+ */
+__kernel void M_tm_plus(__global spinorfield * in, __global ocl_s_gaugefield * field, __global spinorfield * out){
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -12,7 +15,6 @@ __kernel void Qplus(__global spinorfield * in, __global ocl_s_gaugefield * field
 	hmc_complex twistfactor = {1., MUBAR};
 	hmc_complex twistfactor_minus = {1., MMUBAR};
 
-	/** @todo implement BC! Beware, the kappa at -mu then has to be complex conjugated (see tmlqcd)*/
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {	
 	
 		/** @todo this must be done more efficient */
@@ -24,13 +26,11 @@ __kernel void Qplus(__global spinorfield * in, __global ocl_s_gaugefield * field
 		//get input spinor
 		plus = get_spinor_from_field(in, n, t);
 		//Diagonalpart: this is just the normal tm-diagonal matrix
-		out_tmp = M_diag_local(plus, twistfactor, twistfactor_minus);
+		out_tmp = M_diag_tm_local(plus, twistfactor, twistfactor_minus);
 		//calc dslash (this includes mutliplication with kappa)
 		out_tmp2 = dslash_local(in, field, n, t);
 		//M = M_diag - dslash
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		//gamma_5
-// 		out_tmp = gamma5_local(out_tmp);
 		put_spinor_to_field(out_tmp, out, n, t);
 	}
 }
