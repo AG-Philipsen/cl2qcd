@@ -4,11 +4,22 @@
 #ifndef _MYOPENCLFERMIONSH_
 #define _MYOPENCLFERMIONSH_
 
+
+class Opencl_fermions;
+
 #include "opencl.h"
 //CP: this includes the struct-definitions for the spinors...
 #include "types_fermions.h"
 /** @todo is this needed?!?!? */
 //#include "host_operations_spinorfield.h"
+
+/**
+ * this is a workaround to be able to pass a (fermionmatrix-)function, which are methods in this class,
+ * to another function inside this class.
+ * This type points to a helper-function, which then calls the wanted function.
+ */
+typedef hmc_error (*matrix_function_call) (Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+
 
 /**
  * An OpenCL device for fermionic calculations.
@@ -98,6 +109,7 @@ public:
 	//    fermionmatrix operations
 	//    non-eoprec
 	hmc_error M_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+// 	hmc_error M_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error gamma5_device(cl_mem inout, const size_t ls, const size_t gs);
 	hmc_error Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error Qminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
@@ -114,10 +126,13 @@ public:
 
 	//    solver operations
 	//    non-eoprec
+	/** this calls the solver according to parameter settings using the fermionmatrix f*/
 	hmc_error solver_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
-	hmc_error bicgstab_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax);
-	hmc_error cg_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax);
-	//    eorec
+	/** this executes the bicgstab on the device, using the fermionmatrix f */
+	hmc_error bicgstab_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f);
+	/** this executes the cg on the device, using the fermionmatrix f */
+	hmc_error cg_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f);
+	//    eoprec
 	hmc_error bicgstab_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax);
 	hmc_error solver_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
 
@@ -297,4 +312,5 @@ private:
 protected:
 	ClSourcePackage basic_fermion_code;
 };
+
 #endif // _MYOPENCLFERMIONSH_
