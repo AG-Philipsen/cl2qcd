@@ -41,6 +41,10 @@ cl_mem Opencl::get_clmem_gaugefield(){
 	return clmem_gaugefield;
 }
 
+cl_device_type Opencl::get_device_type(){
+	return device_type;
+}
+
 cl_mem Opencl::create_rw_buffer(size_t size){
 	cl_int clerr;
 	cl_mem tmp = clCreateBuffer(context, CL_MEM_READ_WRITE, size, 0, &clerr);
@@ -760,21 +764,11 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 
 	// decide on work-sizes
 	size_t local_work_size;
-	if( device_type == CL_DEVICE_TYPE_GPU ) {
-		// reductions are broken for local_work_size > 64
-		local_work_size = 64;//NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
-	} else {
-		local_work_size = 1; // nothing else makes sens on CPU
-	}
-
 	size_t global_work_size;
-	if( device_type == CL_DEVICE_TYPE_GPU )
-		global_work_size = 4 * NUMTHREADS * max_compute_units; /// @todo autotune
-	else
-		global_work_size = max_compute_units;
-
-	const cl_uint num_groups = (global_work_size + local_work_size - 1) / local_work_size;
-	global_work_size = local_work_size * num_groups;
+	cl_uint num_groups;
+	//CP: This has no effect yet!!
+	char * kernelname = "gaugeobservables";
+	Opencl::get_work_sizes(&local_work_size, &global_work_size, &num_groups, device_type, kernelname);
 
 	// init scratch buffers if not already done
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
@@ -998,6 +992,31 @@ TmpClKernel Opencl::createKernel(const char * const kernel_name)
 }
 
 hmc_error Opencl::stout_smear_device(const size_t ls, const size_t gs){
+	
+	return HMC_SUCCESS;
+}
+
+hmc_error Opencl::get_work_sizes(size_t * ls, size_t * gs, cl_uint * num_groups, cl_device_type dev_type, char * name){
+	/// @todo use kernelname
+	size_t local_work_size;
+	int numthreads = 128;
+	if( dev_type == CL_DEVICE_TYPE_GPU )
+		local_work_size = numthreads; /// @todo have local work size depend on kernel properties (and device? autotune?)
+	else
+		local_work_size = 1; // nothing else makes sense on CPU
+
+	size_t global_work_size;
+	if( dev_type == CL_DEVICE_TYPE_GPU )
+		global_work_size = 4 * numthreads * max_compute_units; /// @todo autotune
+	else
+		global_work_size = max_compute_units;
+
+	const cl_uint num_groups_tmp = (global_work_size + local_work_size - 1) / local_work_size;
+	global_work_size = local_work_size * num_groups_tmp;
+	
+	*ls = local_work_size;
+	*gs = global_work_size;
+	*num_groups = num_groups_tmp;
 	
 	return HMC_SUCCESS;
 }

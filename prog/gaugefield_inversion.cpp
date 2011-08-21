@@ -46,22 +46,12 @@ Opencl_fermions * Gaugefield_inversion::get_devices_fermions ()
 hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(usetimer* copytimer, usetimer* singletimer, usetimer* solvertimer){
 	//this uses a BiCGStab inverter on device
 
-	//global and local work sizes;
-	//LZ: should eventually be moved inside opencl_fermions class
-#ifdef _USEGPU_
-	const size_t ls = NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
-#else
-	const size_t ls = 1; // nothing else makes sens on CPU
-#endif
-
-#ifdef _USEGPU_
-	size_t gs = 4 * NUMTHREADS * get_devices()[0].max_compute_units; /// @todo autotune
-#else
-	size_t gs = get_devices()[0].max_compute_units;
-#endif
-
-	const cl_uint num_groups = (gs + ls - 1) / ls;
-	gs = ls * num_groups;
+	size_t ls;
+	size_t gs;
+	cl_uint num_groups;
+	//CP: This has no effect yet!!
+	char * kernelname = "dummy";
+	get_devices_fermions()[0].get_work_sizes(&ls, &gs, &num_groups, get_devices_fermions()[0].get_device_type(), kernelname);	
 
   /** @todo here one has to introduce more timer instead of noop*/
   usetimer noop;

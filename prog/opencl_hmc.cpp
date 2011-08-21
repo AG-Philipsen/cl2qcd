@@ -16,24 +16,13 @@ hmc_error Opencl_hmc::fill_buffers()
 {
 	Opencl_fermions::fill_buffers();
 
-	//CP: this is copied from opencl_fermions
-	// decide on work-sizes
 	size_t local_work_size;
-	if( device_type == CL_DEVICE_TYPE_GPU )
-		local_work_size = NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
-	else
-		local_work_size = 1; // nothing else makes sens on CPU
-
 	size_t global_work_size;
-	if( device_type == CL_DEVICE_TYPE_GPU )
-		global_work_size = 4 * NUMTHREADS * max_compute_units; /// @todo autotune
-	else
-		global_work_size = max_compute_units;
+	cl_uint num_groups;
+	//CP: This has no effect yet!!
+	char * kernelname = "dummy";
+	get_work_sizes(&local_work_size, &global_work_size, &num_groups, Opencl::get_device_type(), kernelname);	
 
-	const cl_uint num_groups = (global_work_size + local_work_size - 1) / local_work_size;
-	global_work_size = local_work_size * num_groups;
-
-	int clerr = CL_SUCCESS;
 
 	int spinorfield_size = sizeof(spinor) * SPINORFIELDSIZE;
 // 	int eoprec_spinorfield_size = sizeof(spinor) * EOPREC_SPINORFIELDSIZE;
@@ -46,7 +35,6 @@ hmc_error Opencl_hmc::fill_buffers()
 	hmc_complex minusone = hmc_complex_minusone;
 // 	hmc_float tmp;
 
-	/** @todo insert variables needed */
 	//init mem-objects
 
 	logger.trace() << "Create buffer for HMC...";

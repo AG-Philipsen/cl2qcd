@@ -168,6 +168,11 @@ public:
 	 *
 	 */
 	cl_mem get_clmem_gaugefield();	
+	/**
+	 * Returns device_type
+	 */
+	cl_device_type get_device_type();
+	
 	//private:
 
 	/**
@@ -245,7 +250,7 @@ public:
 	 */
 	cl_mem create_ahp_buffer(size_t size, void *host_pointer);
 
-		/**
+	/**
 	 *	This calls
 	 *		clCreateBuffer(context, CL_MEM_USE_HOST_PTR, size, host_pointer, &clerr);
 	 *	and returns a pointer to a cl_mem-object located on the device and
@@ -256,6 +261,16 @@ public:
 	 */
 	cl_mem create_chp_buffer(size_t size, void *host_pointer);
 	
+	/**
+	 * comutes work-sizes for a kernel
+	 * @todo autotune
+	 * @param ls local-work-size
+	 * @param gs global-work-size
+	 * @param num_groups number of work groups
+	 * @param dev_type type of device on which the kernel should be executed
+	 * @param name name of the kernel for possible autotune-usage, not yet used!!
+	 */
+	hmc_error get_work_sizes(size_t * ls, size_t * gs, cl_uint * num_groups, cl_device_type dev_type, char * name);
 	///////////////////////////////////////////////////////////
 	//LZ what follows should eventually be private
 	//heatbath variables

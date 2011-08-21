@@ -48,22 +48,12 @@ Opencl_hmc * Gaugefield_hmc::get_devices_hmc ()
 
 hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters, hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* copy_to_from_dev_timer, usetimer* copy_on_dev_timer){
 	
-	//global and local work sizes;
-	//LZ: should eventually be moved inside opencl_fermions class
-#ifdef _USEGPU_
-	const size_t ls = NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
-#else
-	const size_t ls = 1; // nothing else makes sense on CPU
-#endif
-
-#ifdef _USEGPU_
-	size_t gs = 4 * NUMTHREADS * get_devices()[dev].max_compute_units; /// @todo autotune
-#else
-	size_t gs = get_devices()[dev].max_compute_units;
-#endif
-
-	const cl_uint num_groups = (gs + ls - 1) / ls;
-	gs = ls * num_groups;
+	size_t ls;
+	size_t gs;
+	cl_uint num_groups;
+	//CP: This has no effect yet!!
+	char * kernelname = "dummy";
+	get_devices_hmc()[dev].get_work_sizes(&ls, &gs, &num_groups, get_devices_hmc()[dev].get_device_type(), kernelname);	
 	
 	/////////////////////////////////////////////////////////////////////
 	//HMC-algorithm

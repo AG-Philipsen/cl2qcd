@@ -60,21 +60,12 @@ hmc_error Opencl_k_hybrid::run_kappa_karsch_gpu(const hmc_float beta, usetimer *
 	cl_int clerr = CL_SUCCESS;
 	timer->reset();
 
-	// decide on work-sizes
 	size_t local_work_size;
-	if( device_type == CL_DEVICE_TYPE_GPU )
-		local_work_size = NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
-	else
-		local_work_size = 1; // nothing else makes sens on CPU
-
 	size_t global_work_size;
-	if( device_type == CL_DEVICE_TYPE_GPU )
-		global_work_size = 4 * NUMTHREADS * max_compute_units; /// @todo autotune
-	else
-		global_work_size = max_compute_units;
-
-	const cl_uint num_groups = (global_work_size + local_work_size - 1) / local_work_size;
-	global_work_size = local_work_size * num_groups;
+	cl_uint num_groups;
+	//CP: This has no effect yet!!
+	char * kernelname = "dummy";
+	get_work_sizes(&local_work_size, &global_work_size, &num_groups, Opencl::get_device_type(), kernelname);	
 
 	//buffers for kappa
 	// init scratch buffers if not already done
@@ -130,21 +121,12 @@ hmc_error Opencl_k_hybrid::run_kappa_clover_gpu(const hmc_float beta, usetimer *
 	cl_int clerr = CL_SUCCESS;
 	timer->reset();
 
-	// decide on work-sizes
 	size_t local_work_size;
-	if( device_type == CL_DEVICE_TYPE_GPU )
-		local_work_size = NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
-	else
-		local_work_size = 1; // nothing else makes sens on CPU
-
 	size_t global_work_size;
-	if( device_type == CL_DEVICE_TYPE_GPU )
-		global_work_size = 4 * NUMTHREADS * max_compute_units; /// @todo autotune
-	else
-		global_work_size = max_compute_units;
-
-	const cl_uint num_groups = (global_work_size + local_work_size - 1) / local_work_size;
-	global_work_size = local_work_size * num_groups;
+	cl_uint num_groups;
+	//CP: This has no effect yet!!
+	char * kernelname = "dummy";
+	get_work_sizes(&local_work_size, &global_work_size, &num_groups, Opencl::get_device_type(), kernelname);	
 
 
 	//buffers for kappa
