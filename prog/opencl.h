@@ -399,6 +399,15 @@ public:
 	 */
 	hmc_error copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer);	
 	
+	/**
+	 * Copy content of a buffer to another buffer inside a queue using 
+	 *     clEnqueueCopyBuffer(queue, in, out, 0, 0, size , 0, 0, NULL);
+	 * @param in source
+	 * @param out destination
+	 * @param size size of data (out must be equal or bigger than size)
+	 * @param timer timer to measure time used
+	 */	
+	hmc_error copy_buffer_on_device(cl_mem in, cl_mem out, size_t size, usetimer* timer);
 protected:
 	/**
 	 * A set of source files used by all kernels.

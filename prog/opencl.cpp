@@ -382,6 +382,20 @@ hmc_error Opencl::copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* tim
 	return HMC_SUCCESS;
 }
 
+hmc_error Opencl::copy_buffer_on_device(cl_mem in, cl_mem out, size_t size, usetimer* timer)
+{
+	(*timer).reset();
+	int clerr = CL_SUCCESS;
+
+	clerr = clEnqueueCopyBuffer(queue, in, out, 0, 0, size , 0, 0, NULL);
+	if(clerr != CL_SUCCESS) {
+		cout << "... copying buffer on device failed, aborting." << endl;
+		exit(HMC_OCLERROR);
+	}
+	(*timer).add();
+	return HMC_SUCCESS;
+}
+
 void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
 {
 	///@todo make this properly handle multiple dimensions
