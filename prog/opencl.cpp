@@ -767,43 +767,18 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 	size_t global_work_size;
 	cl_uint num_groups;
 	//CP: This has no effect yet!!
-	char * kernelname = "gaugeobservables";
+	char * kernelname = "dummy";
 	Opencl::get_work_sizes(&local_work_size, &global_work_size, &num_groups, device_type, kernelname);
 
-	// init scratch buffers if not already done
+	logger.debug() <<"init scratch buffers if not already done";
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
 	int global_buf_size_complex = sizeof(hmc_complex) * num_groups;
 
-	if( clmem_plaq_buf_glob == 0 ) {
-		clmem_plaq_buf_glob = clCreateBuffer(context, CL_MEM_READ_WRITE, global_buf_size_float, 0, &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "creating clmem_plaq_buf_glob failed, aborting...";
-			exit(HMC_OCLERROR);
-		}
-	}
-	if( clmem_tplaq_buf_glob == 0 ) {
-		clmem_tplaq_buf_glob = clCreateBuffer(context, CL_MEM_READ_WRITE, global_buf_size_float, 0, &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "creating tclmem_plaq_buf_glob failed, aborting...";
-			exit(HMC_OCLERROR);
-		}
-	}
-	if( clmem_splaq_buf_glob == 0 ) {
-		clmem_splaq_buf_glob = clCreateBuffer(context, CL_MEM_READ_WRITE, global_buf_size_float, 0, &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "creating sclmem_plaq_buf_glob failed, aborting...";
-			exit(HMC_OCLERROR);
-		}
-	}
-	if( clmem_polyakov_buf_glob == 0 ) {
-		clmem_polyakov_buf_glob = clCreateBuffer(context, CL_MEM_READ_WRITE, global_buf_size_complex, 0, &clerr);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "creating clmem_polyakov_buf_glob failed, aborting...";
-			exit(HMC_OCLERROR);
-		}
-	}
-
-
+	if( clmem_plaq_buf_glob == 0 ) clmem_plaq_buf_glob = create_rw_buffer(global_buf_size_float);
+	if( clmem_tplaq_buf_glob == 0 ) clmem_tplaq_buf_glob = create_rw_buffer(global_buf_size_float);
+	if( clmem_splaq_buf_glob == 0 ) clmem_splaq_buf_glob = create_rw_buffer(global_buf_size_float);
+	if( clmem_polyakov_buf_glob == 0 ) clmem_polyakov_buf_glob = create_rw_buffer(global_buf_size_complex);
+	
 	//measure plaquette
 
 	hmc_float plaq;
