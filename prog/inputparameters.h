@@ -102,6 +102,7 @@ public:
 	int get_host_seed();
 	hmc_float get_rho();
 	int get_rho_iter();
+	bool get_use_cg();
 	
 #ifdef _PROFILING_
 	int get_mat_size();
@@ -252,6 +253,7 @@ private:
 	int writefrequency;
 	int integrationsteps1;
 	int integrationsteps2;
+	bool use_cg;
 	void val_assign(hmc_float* out, std::string line);
 	void val_assign(int * out, std::string line);
 	void sourcefilenumber_assign(std::string * out);

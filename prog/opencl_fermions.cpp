@@ -1505,14 +1505,21 @@ hmc_error Opencl_fermions::cg_device(cl_mem gf, usetimer * copytimer, usetimer* 
 	return HMC_SUCCESS;
 }
 
+hmc_error Opencl_fermions::cg_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f){
+	/// to be implemented if the above one has been checked..
+	return HMC_SUCCESS;
+}
+
 
 hmc_error Opencl_fermions::solver_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f)
 {
 	(*solvertimer).reset();
 	convert_to_kappa_format_device(clmem_inout, ls, gs);
 	convert_to_kappa_format_device(clmem_source, ls, gs);
-	bicgstab_device(gf, copytimer, singletimer, ls, gs, cgmax, f);
-// 	cg_device(gf, copytimer, singletimer, ls, gs, cgmax, f);
+	if(get_parameters()->get_use_cg() == true)
+	 	cg_device(gf, copytimer, singletimer, ls, gs, cgmax, f);
+	else 
+		bicgstab_device(gf, copytimer, singletimer, ls, gs, cgmax, f);
 	convert_from_kappa_format_device(clmem_inout, clmem_inout, ls, gs);
 	convert_from_kappa_format_device(clmem_source, clmem_source, ls, gs);
 	clFinish(queue);
@@ -1528,7 +1535,10 @@ hmc_error Opencl_fermions::solver_eoprec_device(cl_mem gf, usetimer * copytimer,
 
 	//CP: even solution
 	convert_to_kappa_format_eoprec_device(clmem_inout_eoprec, ls, gs);
-	bicgstab_eoprec_device(gf, copytimer, singletimer, ls, gs, cgmax, f);
+	if(get_parameters()->get_use_cg() == true)
+	 	cg_eoprec_device(gf, copytimer, singletimer, ls, gs, cgmax, f);
+	else 
+		bicgstab_eoprec_device(gf, copytimer, singletimer, ls, gs, cgmax, f);
 
 	//P: odd solution
 	/** @todo CP: perhaps one can save some variables used here */

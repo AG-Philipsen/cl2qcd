@@ -59,6 +59,8 @@ hmc_error inputparameters::set_defaults()
 	chem_pot_re = 0.;
 	chem_pot_im = 0.;
 	use_eo = true;
+	//at the moment, only 2 solvers are implemented..
+	use_cg = false;
 	
 	//HMC specific parameters
 	tau = 0.5;
@@ -628,6 +630,11 @@ bool inputparameters::get_print_to_screen()
 int inputparameters::get_rho_iter()
 {
 	return rho_iter;
+}
+
+bool inputparameters::get_use_cg()
+{
+	return use_cg;
 }
 
 #ifdef _PROFILING_

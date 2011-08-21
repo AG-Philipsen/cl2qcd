@@ -143,7 +143,8 @@ public:
 	hmc_error solver_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f);	
 	/// this executes the eoprec bicgstab on the device, using the fermionmatrix f 
 	hmc_error bicgstab_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f);
-
+	hmc_error cg_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f);
+	
 	//    operations needed calculating fermionic observables
 	hmc_error ps_correlator_device(const size_t ls, const size_t gs);
 	hmc_error set_correlator_field_zero_device(const size_t ls, const size_t gs);
