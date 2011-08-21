@@ -131,199 +131,53 @@ hmc_error Opencl_fermions::fill_buffers()
 	hmc_complex one = hmc_complex_one;
 	hmc_complex minusone = hmc_complex_minusone;
 
-	clmem_corr = clCreateBuffer(context, CL_MEM_READ_WRITE, spinorfield_size, 0, &clerr);;
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_corr failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_inout = clCreateBuffer(context, CL_MEM_READ_WRITE, spinorfield_size, 0, &clerr);;
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_inout failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_source = clCreateBuffer(context, CL_MEM_READ_WRITE, spinorfield_size, 0, &clerr);;
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_source failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_rn = clCreateBuffer(context, CL_MEM_READ_WRITE, spinorfield_size, 0, &clerr);;
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_rn failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_rhat = clCreateBuffer(context, CL_MEM_READ_WRITE, spinorfield_size, 0, &clerr);;
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_rhat failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_v = clCreateBuffer(context, CL_MEM_READ_WRITE, spinorfield_size, 0, &clerr);;
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_v failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_p = clCreateBuffer(context, CL_MEM_READ_WRITE, spinorfield_size, 0, &clerr);;
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_p failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_s = clCreateBuffer(context, CL_MEM_READ_WRITE, spinorfield_size, 0, &clerr);;
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_s failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_t = clCreateBuffer(context, CL_MEM_READ_WRITE, spinorfield_size, 0, &clerr);;
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_t failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_aux = clCreateBuffer(context, CL_MEM_READ_WRITE, spinorfield_size, 0, &clerr);;
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_v failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_tmp = clCreateBuffer(context, CL_MEM_READ_WRITE, spinorfield_size, 0, &clerr);;
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_v failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	logger.debug() << "init buffers for spinorfields";
+	clmem_corr = create_rw_buffer(spinorfield_size);
+	clmem_inout = create_rw_buffer(spinorfield_size);
+	clmem_source = create_rw_buffer(spinorfield_size);
+	clmem_rn = create_rw_buffer(spinorfield_size);
+	clmem_rhat = create_rw_buffer(spinorfield_size);
+	clmem_v = create_rw_buffer(spinorfield_size);
+	clmem_p = create_rw_buffer(spinorfield_size);
+	clmem_s =create_rw_buffer(spinorfield_size);
+	clmem_t = create_rw_buffer(spinorfield_size);
+	clmem_aux = create_rw_buffer(spinorfield_size);
+	clmem_tmp = create_rw_buffer(spinorfield_size);
+	
 	//LZ only use the following if we want to apply even odd preconditioning
 	if(get_parameters()->get_use_eo() == true) {
-		clmem_inout_eoprec = clCreateBuffer(context, CL_MEM_READ_WRITE, eoprec_spinorfield_size, 0, &clerr);;
-		if(clerr != CL_SUCCESS) {
-			cout << "creating clmem_inout_eoprec failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
-		clmem_source_even = clCreateBuffer(context, CL_MEM_READ_WRITE, eoprec_spinorfield_size, 0, &clerr);;
-		if(clerr != CL_SUCCESS) {
-			cout << "creating clmem_inout_eoprec failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
-		clmem_source_odd = clCreateBuffer(context, CL_MEM_READ_WRITE, eoprec_spinorfield_size, 0, &clerr);;
-		if(clerr != CL_SUCCESS) {
-			cout << "creating clmem_inout_eoprec failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
-		clmem_rn_eoprec = clCreateBuffer(context, CL_MEM_READ_WRITE, eoprec_spinorfield_size, 0, &clerr);;
-		if(clerr != CL_SUCCESS) {
-			cout << "creating clmem_inout_eoprec failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
-		clmem_rhat_eoprec = clCreateBuffer(context, CL_MEM_READ_WRITE, eoprec_spinorfield_size, 0, &clerr);;
-		if(clerr != CL_SUCCESS) {
-			cout << "creating clmem_inout_eoprec failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
-		clmem_v_eoprec = clCreateBuffer(context, CL_MEM_READ_WRITE, eoprec_spinorfield_size, 0, &clerr);;
-		if(clerr != CL_SUCCESS) {
-			cout << "creating clmem_inout_eoprec failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
-		clmem_p_eoprec = clCreateBuffer(context, CL_MEM_READ_WRITE, eoprec_spinorfield_size, 0, &clerr);;
-		if(clerr != CL_SUCCESS) {
-			cout << "creating clmem_inout_eoprec failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
-		clmem_s_eoprec = clCreateBuffer(context, CL_MEM_READ_WRITE, eoprec_spinorfield_size, 0, &clerr);;
-		if(clerr != CL_SUCCESS) {
-			cout << "creating clmem_inout_eoprec failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
-		clmem_t_eoprec = clCreateBuffer(context, CL_MEM_READ_WRITE, eoprec_spinorfield_size, 0, &clerr);;
-		if(clerr != CL_SUCCESS) {
-			cout << "creating clmem_inout_eoprec failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
-		clmem_aux_eoprec = clCreateBuffer(context, CL_MEM_READ_WRITE, eoprec_spinorfield_size, 0, &clerr);;
-		if(clerr != CL_SUCCESS) {
-			cout << "creating clmem_inout_eoprec failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
-		clmem_tmp_eoprec_1 = clCreateBuffer(context, CL_MEM_READ_WRITE, eoprec_spinorfield_size, 0, &clerr);;
-		if(clerr != CL_SUCCESS) {
-			cout << "creating clmem_inout_eoprec failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
-		clmem_tmp_eoprec_2 = clCreateBuffer(context, CL_MEM_READ_WRITE, eoprec_spinorfield_size, 0, &clerr);;
-		if(clerr != CL_SUCCESS) {
-			cout << "creating clmem_inout_eoprec failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
-		clmem_tmp_eoprec_3 = clCreateBuffer(context, CL_MEM_READ_WRITE, eoprec_spinorfield_size, 0, &clerr);;
-		if(clerr != CL_SUCCESS) {
-			cout << "creating clmem_inout_eoprec failed, aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
-
+		logger.debug() << "init buffers for eoprec-spinorfields";
+		clmem_inout_eoprec = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_source_even = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_source_odd = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_rn_eoprec = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_rhat_eoprec = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_v_eoprec = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_p_eoprec = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_s_eoprec = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_t_eoprec = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_aux_eoprec = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_tmp_eoprec_1 = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_tmp_eoprec_2 = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_tmp_eoprec_3 = create_rw_buffer(eoprec_spinorfield_size);
 	} //end if: eoprec
 
-	clmem_rho = clCreateBuffer(context, CL_MEM_READ_WRITE, complex_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_rho failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_rho_next = clCreateBuffer(context, CL_MEM_READ_WRITE, complex_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_rho_next failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_alpha = clCreateBuffer(context, CL_MEM_READ_WRITE, complex_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_alpha failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_omega = clCreateBuffer(context, CL_MEM_READ_WRITE, complex_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_omega failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_beta = clCreateBuffer(context, CL_MEM_READ_WRITE, complex_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_beta failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_tmp1 = clCreateBuffer(context, CL_MEM_READ_WRITE, complex_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_tmp1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_tmp2 = clCreateBuffer(context, CL_MEM_READ_WRITE, complex_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_tmp2 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_one = clCreateBuffer(context, CL_MEM_READ_ONLY, complex_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_one failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_minusone = clCreateBuffer(context, CL_MEM_READ_ONLY, complex_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_minusone failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	logger.debug() << "create buffers for complex and real numbers";
+	clmem_rho = create_rw_buffer(complex_size);
+	clmem_rho_next = create_rw_buffer(complex_size);
+	clmem_alpha = create_rw_buffer(complex_size);
+	clmem_omega = create_rw_buffer(complex_size);
+	clmem_beta = create_rw_buffer(complex_size);
+	clmem_tmp1 = create_rw_buffer(complex_size);
+	clmem_tmp2 = create_rw_buffer(complex_size);
+	clmem_one = create_rw_buffer(complex_size);
+	clmem_minusone = create_rw_buffer(complex_size);
+	clmem_scalar_product_buf_glob = create_rw_buffer(global_buf_size);
+	clmem_resid = create_rw_buffer(float_size);
+	clmem_trueresid = create_rw_buffer(float_size);
+	clmem_global_squarenorm_buf_glob = create_rw_buffer(global_buf_size_float);
 
-	clmem_scalar_product_buf_glob = clCreateBuffer(context, CL_MEM_READ_WRITE, global_buf_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_scalar_product_buf_glob failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-
-	clmem_resid = clCreateBuffer(context, CL_MEM_READ_WRITE, float_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_resid failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_trueresid = clCreateBuffer(context, CL_MEM_READ_WRITE, float_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_trueresid failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_global_squarenorm_buf_glob = clCreateBuffer(context, CL_MEM_READ_WRITE, global_buf_size_float, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_global_squarenorm_buf_glob failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-
+	logger.debug() << "write contents to some buffers";
 	clerr = clEnqueueWriteBuffer(queue, clmem_one, CL_TRUE, 0, complex_size, &one, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "... writing clmem_one failed, aborting." << endl;

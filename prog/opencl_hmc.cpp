@@ -46,63 +46,21 @@ hmc_error Opencl_hmc::fill_buffers()
 	hmc_complex minusone = hmc_complex_minusone;
 // 	hmc_float tmp;
 
-
 	/** @todo insert variables needed */
 	//init mem-objects
 
 	logger.trace() << "Create buffer for HMC...";
-	clmem_force = clCreateBuffer(context, CL_MEM_READ_WRITE, gaugemomentum_size, 0, &clerr);;
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_force failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_phi_inv = clCreateBuffer(context, CL_MEM_READ_WRITE, spinorfield_size, 0, &clerr);;
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_phi_inv failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_phi = clCreateBuffer(context, CL_MEM_READ_WRITE, spinorfield_size, 0, &clerr);;
-	if(clerr != CL_SUCCESS) {
-		cout << "creating clmem_phi failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clmem_new_u = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(s_gaugefield), 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	clmem_p = clCreateBuffer(context, CL_MEM_READ_WRITE, gaugemomentum_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	clmem_new_p = clCreateBuffer(context, CL_MEM_READ_WRITE, gaugemomentum_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	clmem_energy_init = clCreateBuffer(context, CL_MEM_READ_WRITE, float_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	clmem_p2 = clCreateBuffer(context, CL_MEM_READ_WRITE, float_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	clmem_new_p2 = clCreateBuffer(context, CL_MEM_READ_WRITE, float_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	clmem_s_fermion = clCreateBuffer(context, CL_MEM_READ_WRITE, float_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-
-
+	clmem_force = create_rw_buffer(gaugemomentum_size);
+	clmem_phi_inv = create_rw_buffer(spinorfield_size);
+	clmem_phi = create_rw_buffer(spinorfield_size);
+	clmem_new_u = create_rw_buffer(sizeof(s_gaugefield));
+	clmem_p = create_rw_buffer(gaugemomentum_size);
+	clmem_new_p = create_rw_buffer(gaugemomentum_size);
+	clmem_energy_init = create_rw_buffer(float_size);
+	clmem_p2 = create_rw_buffer(float_size);
+	clmem_new_p2 = create_rw_buffer(float_size);
+	clmem_s_fermion = create_rw_buffer(float_size);
+	
 	return HMC_SUCCESS;
 }
 
