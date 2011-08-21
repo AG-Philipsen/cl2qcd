@@ -62,9 +62,9 @@ public:
 	hmc_float get_chem_pot_im();
 	int get_ntime();
 	int get_nspace();
-	int get_use_rec12();
-	int get_use_gpu();
-	int get_use_eo();
+	bool get_use_rec12();
+	bool get_use_gpu();
+	bool get_use_eo();
 	int get_cgmax();
 	/**
 	 * The precision to be used for gaugefield storage in bits.
@@ -79,7 +79,7 @@ public:
 	int get_hmcsteps();
 	int get_integrationsteps1();
 	int get_integrationsteps2();
-	int get_saveconfigs();
+	bool get_saveconfigs();
 	int get_savefrequency();
 	int get_writefrequency();
 	int get_fermact();
@@ -95,10 +95,10 @@ public:
 	int get_su3algebrasize();
 	int get_gaugefieldsize();
 	int get_spinorfieldsize();
-	int get_use_chem_pot_re();
-	int get_use_chem_pot_im();
-	int get_use_smearing();
-	int get_print_to_screen();
+	bool get_use_chem_pot_re();
+	bool get_use_chem_pot_im();
+	bool get_use_smearing();
+	bool get_print_to_screen();
 	int get_host_seed();
 	hmc_float get_rho();
 	int get_rho_iter();
@@ -209,13 +209,13 @@ private:
 	int gaugemomentasize;
 	int su3algebrasize;
 	int gaugefieldsize;
-	int use_rec12;
-	int use_gpu;
-	int use_eo;
-	int use_chem_pot_re;
-	int use_chem_pot_im;
-	int use_smearing;
-	int print_to_screen;
+	bool use_rec12;
+	bool use_gpu;
+	bool use_eo;
+	bool use_chem_pot_re;
+	bool use_chem_pot_im;
+	bool use_smearing;
+	bool print_to_screen;
 	
 #ifdef _PROFILING_
 	//parameters that describe the size of datatypes in bytes
@@ -248,18 +248,17 @@ private:
 	int overrelaxsteps;
 	int hmcsteps;
 	int savefrequency;
-	int saveconfigs;
+	bool saveconfigs;
 	int writefrequency;
 	int integrationsteps1;
 	int integrationsteps2;
 	void val_assign(hmc_float* out, std::string line);
 	void val_assign(int * out, std::string line);
 	void sourcefilenumber_assign(std::string * out);
-	void cond_assign(int * out, std::string line);
+	void startcond_assign(int * out, std::string line);
 	void fermact_assign(int * out, std::string line);
-	void savecond_assign(int * out, std::string line);
 	void val_assign(std::string * out, std::string line);
-	void eocond_assign(int * out, std::string line);
+	void bool_assign(bool * out, std::string line);
 };
 
 #endif /* _INPUTPARAMETERSH_ */

@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 		if( ( (i + 1) % writefreq ) == 0 ) {
 		  gaugefield.print_gaugeobservables_from_devices(i, gaugeout_name.str(), parameters.get_print_to_screen());
 		}
-		if( parameters.get_saveconfigs() == TRUE && ( (i + 1) % savefreq ) == 0 ) {
+		if( parameters.get_saveconfigs()==true && ( (i + 1) % savefreq ) == 0 ) {
 			gaugefield.sync_gaugefield(&copy_to_from_dev_timer);
 			gaugefield.save(i);
 		}
