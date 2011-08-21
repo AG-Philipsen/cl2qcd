@@ -379,35 +379,38 @@ Matrixsu3 project_anti_herm(Matrix3x3 in) {
   Matrixsu3 tmp;
 	hmc_float tr_omega ; 
 
-  tr_omega = (in.e00.im + in.e11.im + in.e22.im) / 3.0 ; 
-
-  tmp.e00.re = 0.0 ;
+	//in is not a su3 matrix, so reconstruct does not have to be applied here!!
+	tr_omega = (in.e00.im + in.e11.im + in.e22.im) / 3.0 ; 
+	
+	tmp.e00.re = 0.0 ;
   tmp.e00.im = -in.e00.im + tr_omega ;
 
   tmp.e11.re = 0.0 ;
   tmp.e11.im = -in.e11.im + tr_omega ;
-
+	
+#ifndef _RECONSTRUCT_TWELVE_
   tmp.e22.re = 0.0 ;
   tmp.e22.im = -in.e22.im + tr_omega ;
-	
-	/** @todo build in rec12 */
+#endif
 
 	// is this all right? check with original again!!
-  tmp.e01.re -= in.e10.re ;  in.e01.re /= -2.0 ; 
-  tmp.e01.im += in.e10.im ;  in.e01.im /= -2.0 ; 
-  tmp.e10.re  = -in.e01.re ; 
-  tmp.e10.im  =  in.e01.im ; 
+  tmp.e01.re = in.e01.re - in.e10.re ;  tmp.e01.re /= -2.0 ; 
+  tmp.e01.im = in.e01.im + in.e10.im ;  tmp.e01.im /= -2.0 ; 
+  tmp.e10.re  = -tmp.e01.re ; 
+  tmp.e10.im  =  tmp.e01.im ; 
 
-  tmp.e02.re -= in.e20.re ;  in.e02.re /= -2.0 ; 
-  tmp.e02.im += in.e20.im ;  in.e02.im /= -2.0 ; 
-  tmp.e20.re  = -in.e02.re ; 
-  tmp.e20.im  =  in.e02.im ; 
-
-  tmp.e12.re -= in.e21.re ;  in.e12.re /= -2.0 ; 
-  tmp.e12.im += in.e21.im ;  in.e12.im /= -2.0 ; 
-  tmp.e21.re  = -in.e12.re ; 
-  tmp.e21.im  =  in.e12.im ; 
-
+  tmp.e02.re = in.e01.re - in.e20.re ;  tmp.e02.re /= -2.0 ; 
+  tmp.e02.im = in.e02.im + in.e20.im ;  tmp.e02.im /= -2.0 ; 
+#ifndef _RECONSTRUCT_TWELVE_
+	tmp.e20.re  = -tmp.e02.re ; 
+  tmp.e20.im  =  tmp.e02.im ; 
+#endif
+  tmp.e12.re = in.e12.re - in.e21.re ;  tmp.e12.re /= -2.0 ; 
+  tmp.e12.im = in.e12.im + in.e21.im ;  tmp.e12.im /= -2.0 ; 
+#ifndef _RECONSTRUCT_TWELVE_
+	tmp.e21.re  = -tmp.e12.re ; 
+  tmp.e21.im  =  tmp.e12.im ; 
+#endif
   // flip sign, this is just taken from the tmlqcd analogue
   tmp = multiply_matrixsu3_by_real(tmp, -1.0) ; 
 	

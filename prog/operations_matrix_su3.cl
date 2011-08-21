@@ -471,13 +471,14 @@ Matrixsu3 build_su3_from_ae(ae in){
 	v.e11.im = (in.e7 * F_1_S3 - in.e2);
 	v.e12.re = in.e6;
 	v.e12.im = in.e5;
+#ifndef _RECONSTRUCT_TWELVE_
 	v.e20.re = -in.e4;
 	v.e20.im = in.e3;
 	v.e21.re = -in.e6;
 	v.e21.im = in.e5;
 	v.e22.re = 0.0;
 	v.e22.im = -2.*in.e7 * F_1_S3;
-	
+#endif
 	return v;
 }
 
@@ -497,12 +498,14 @@ Matrixsu3 build_su3_from_ae_times_real(ae in, hmc_float eps){
 	v.e11.im = eps * (in.e7 * F_1_S3 - in.e2);
 	v.e12.re = eps * in.e6;
 	v.e12.im = eps * in.e5;
+#ifndef _RECONSTRUCT_TWELVE_
 	v.e20.re = -eps * in.e4;
 	v.e20.im = eps * in.e3;
 	v.e21.re = -eps * in.e6;
 	v.e21.im = eps * in.e5;
 	v.e22.re = 0.0;
 	v.e22.im = -eps * 2.*in.e7 * F_1_S3;
+#endif
 	
 	return v;
 }
@@ -605,6 +608,29 @@ Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 	
   // calculates v^2 
   v2 = multiply_matrixsu3(v,v);
+#ifdef _RECONSTRUCT_TWELVE_
+	hmc_complex v_e20 = reconstruct_su3(v, 0);
+	hmc_complex v_e21 = reconstruct_su3(v, 1);
+	hmc_complex v_e22 = reconstruct_su3(v, 2);
+	
+	hmc_complex v2_e20 = reconstruct_su3(v2, 0);
+	hmc_complex v2_e21 = reconstruct_su3(v2, 1);
+	hmc_complex v2_e22 = reconstruct_su3(v2, 2);
+	
+	a=0.5*(v2.e00.re+v2.e11.re+v2_e22.re);
+	
+	b = 0.33333333333333333*
+    (v.e00.re*v2.e00.im+v.e00.im*v2.e00.re
+     +v.e01.re*v2.e10.im+v.e01.im*v2.e10.re
+     +v.e02.re*v2_e20.im+v.e02.im*v2_e20.re
+     +v.e10.re*v2.e01.im+v.e10.im*v2.e01.re
+     +v.e11.re*v2.e11.im+v.e11.im*v2.e11.re
+     +v.e12.re*v2_e21.im+v.e12.im*v2_e21.re
+     +v_e20.re*v2.e02.im+v_e20.im*v2.e02.re
+     +v_e21.re*v2.e12.im+v_e21.im*v2.e12.re
+     +v_e22.re*v2_e22.im+v_e22.im*v2_e22.re  );
+	
+#else
   a=0.5*(v2.e00.re+v2.e11.re+v2.e22.re);
   // 1/3 imaginary part of tr v*v2 
   b = 0.33333333333333333*
@@ -617,6 +643,7 @@ Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
      +v.e20.re*v2.e02.im+v.e20.im*v2.e02.re
      +v.e21.re*v2.e12.im+v.e21.im*v2.e12.re
      +v.e22.re*v2.e22.im+v.e22.im*v2.e22.re  );
+#endif
   a0.re=0.16059043836821615e-9;    //  1/13! 
   a0.im=0.0;
   a1.re=0.11470745597729725e-10;   //  1/14! 
@@ -650,12 +677,14 @@ Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
   vr.e11.im = a0.im + a1.re*v.e11.im + a1.im*v.e11.re + a2.re*v2.e11.im + a2.im*v2.e11.re;
   vr.e12.re =         a1.re*v.e12.re - a1.im*v.e12.im + a2.re*v2.e12.re - a2.im*v2.e12.im;
   vr.e12.im =         a1.re*v.e12.im + a1.im*v.e12.re + a2.re*v2.e12.im + a2.im*v2.e12.re;
-  vr.e20.re =         a1.re*v.e20.re - a1.im*v.e20.im + a2.re*v2.e20.re - a2.im*v2.e20.im;
+#ifndef _RECONSTRUCT_TWELVE_
+	vr.e20.re =         a1.re*v.e20.re - a1.im*v.e20.im + a2.re*v2.e20.re - a2.im*v2.e20.im;
   vr.e20.im =         a1.re*v.e20.im + a1.im*v.e20.re + a2.re*v2.e20.im + a2.im*v2.e20.re;
   vr.e21.re =         a1.re*v.e21.re - a1.im*v.e21.im + a2.re*v2.e21.re - a2.im*v2.e21.im;
   vr.e21.im =         a1.re*v.e21.im + a1.im*v.e21.re + a2.re*v2.e21.im + a2.im*v2.e21.re;
   vr.e22.re = a0.re + a1.re*v.e22.re - a1.im*v.e22.im + a2.re*v2.e22.re - a2.im*v2.e22.im;
   vr.e22.im = a0.im + a1.re*v.e22.im + a1.im*v.e22.re + a2.re*v2.e22.im + a2.im*v2.e22.re;
+#endif
   return vr;
 	
 }
@@ -675,7 +704,7 @@ Matrixsu3 multiply_matrixsu3_by_real (Matrixsu3 in, hmc_float factor){
     out.e11.im *= factor;
     out.e12.re *= factor;
     out.e12.im *= factor;
-#ifdef _RECONSTRUCT_TWELVE_
+#ifndef _RECONSTRUCT_TWELVE_
     out.e20.re *= factor;
     out.e20.im *= factor;
     out.e21.re *= factor;
