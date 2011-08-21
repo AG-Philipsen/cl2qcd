@@ -10,42 +10,20 @@
 hmc_error M_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
 	return that->M_device(in, out, gf, ls, gs);
 }
-
 hmc_error Qplus_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
 	return that->Qplus_device(in, out, gf, ls, gs);
 }
-
 hmc_error Qminus_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
 	return that->Qminus_device(in, out, gf, ls, gs);
 }
-
 hmc_error QplusQminus_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
 	return that->QplusQminus_device(in, out, gf, ls, gs);
 }
+hmc_error Aee_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
+	return that->Aee_device(in, out, gf, ls, gs);
+}
 
-// //work-around for function calling
-// hmc_error Aee_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
-// 	return that->Aee_device(in, out, gf, ls, gs);
-// }
-
-
-// //work-around for function calling
-// hmc_error dslash_eoprec_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
-// 	return that->dslash_eoprec_device(in, out, gf, ls, gs);
-// }
-
-
-// //work-around for function calling
-// hmc_error M_inverse_sitediagonal_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
-// 	return that->M_inverse_sitediagonal_device(in, out, gf, ls, gs);
-// }
-
-
-// //work-around for function calling
-// hmc_error M_sitediagonal_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
-// 	return that->M_sitediagonal_device(in, out, gf, ls, gs);
-// }
-
+//Opencl_fermions class functions
 
 hmc_error Opencl_fermions::fill_collect_options(stringstream* collect_options)
 {
@@ -622,7 +600,7 @@ hmc_error Opencl_fermions::gamma5_device(cl_mem inout, const size_t ls, const si
 }
 
 //compound fermionmatrix-functions with eoprec
-hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs, usetimer * singletimer)
+hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs)
 {
 	int even = EVEN;
 	int odd = ODD;
@@ -635,8 +613,9 @@ hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, cl_mem gf, const si
 		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, ls, gs);
 		dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even, ls, gs);
 		M_tm_sitediagonal_device(in, clmem_tmp_eoprec_1, ls, gs);
-	
-		copy_eoprec_spinor_device(out, clmem_tmp_eoprec_3, singletimer);
+		/// @todo this timer can be extincted
+		usetimer noop;
+		copy_eoprec_spinor_device(out, clmem_tmp_eoprec_3, &noop);
 
 		saxpy_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, clmem_one, out, ls, gs);
 	}
@@ -1146,8 +1125,6 @@ if(debug) cout << "debug-output at bicgstab_device is activated" << endl;
 		if(iter % iter_refresh == 0) {
 			set_zero_spinorfield_device(clmem_v, localsize, globalsize);
 			set_zero_spinorfield_device(clmem_p, localsize, globalsize);
-// 			M_device(clmem_inout, clmem_rn, gf, localsize, globalsize);
-//Qplus_device(clmem_inout, clmem_rn, gf, localsize, globalsize);
 			f(this, clmem_inout, clmem_rn, gf, localsize, globalsize);
 
 			saxpy_device(clmem_rn, clmem_source, clmem_one, clmem_rn, localsize, globalsize);
@@ -1213,10 +1190,8 @@ if(debug){
 		cout << "(p,p): " << rho_next.re << "  " <<  rho_next.im << endl;
 				set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 }
-		
-// 		M_device(clmem_p, clmem_v, gf, localsize, globalsize);
-// Qplus_device(clmem_p, clmem_v, gf, localsize, globalsize);
-f(this, clmem_p, clmem_v, gf, localsize, globalsize);
+
+		f(this, clmem_p, clmem_v, gf, localsize, globalsize);
 
 ////////////////////////////////////
 //collect all variables if debug is enabled
@@ -1285,13 +1260,8 @@ if(debug){
 // 			return HMC_SUCCESS;
 // 		}
 		
-		
-		
-		
-		
-// 		M_device(clmem_s, clmem_t, gf, localsize, globalsize);
-// Qplus_device(clmem_s, clmem_t, gf, localsize, globalsize);
-f(this, clmem_s, clmem_t, gf, localsize, globalsize);
+
+		f(this, clmem_s, clmem_t, gf, localsize, globalsize);
 
 		set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1, localsize, globalsize);
 		//!!CP: this can also be global_squarenorm
@@ -1350,9 +1320,7 @@ if(debug){
 		
 		
 		if(resid < epssquare) {
-// 			M_device(clmem_inout, clmem_aux, gf, localsize, globalsize);
-// Qplus_device(clmem_inout, clmem_aux, gf, localsize, globalsize);
-f(this, clmem_inout, clmem_aux, gf, localsize, globalsize);
+			f(this, clmem_inout, clmem_aux, gf, localsize, globalsize);
 
 
 			saxpy_device(clmem_aux, clmem_source, clmem_one, clmem_aux, localsize, globalsize);
@@ -1387,7 +1355,7 @@ f(this, clmem_inout, clmem_aux, gf, localsize, globalsize);
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::bicgstab_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax)
+hmc_error Opencl_fermions::bicgstab_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f)
 {
 	//!!CP: here one has to be careful if local_work_size is a null-pointer
 	size_t globalsize = gs;
@@ -1402,7 +1370,7 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(cl_mem gf, usetimer * copytime
 			set_zero_spinorfield_eoprec_device(clmem_v_eoprec, localsize, globalsize);
 			set_zero_spinorfield_eoprec_device(clmem_p_eoprec, localsize, globalsize);
 
-			Aee_device(clmem_inout_eoprec, clmem_rn_eoprec, gf, localsize, globalsize, singletimer);
+			f(this, clmem_inout_eoprec, clmem_rn_eoprec, gf, localsize, globalsize);
 
 			saxpy_eoprec_device(clmem_rn_eoprec, clmem_source_even, clmem_one, clmem_rn_eoprec, localsize, globalsize);
 			copy_eoprec_spinor_device(clmem_rn_eoprec, clmem_rhat_eoprec, singletimer);
@@ -1427,14 +1395,14 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(cl_mem gf, usetimer * copytime
 		set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 		saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec, localsize, globalsize);
 
-		Aee_device(clmem_p_eoprec, clmem_v_eoprec, gf, localsize, globalsize, singletimer);
+		f(this, clmem_p_eoprec, clmem_v_eoprec, gf, localsize, globalsize);
 
 		set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1, localsize, globalsize);
 		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 
 		saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec, localsize, globalsize);
 
-		Aee_device(clmem_s_eoprec, clmem_t_eoprec, gf, localsize, globalsize, singletimer);
+		f(this, clmem_s_eoprec, clmem_t_eoprec, gf, localsize, globalsize);
 
 		set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1, localsize, globalsize);
 		//!!CP: can this also be global_squarenorm??
@@ -1449,7 +1417,7 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(cl_mem gf, usetimer * copytime
 		copy_float_from_device(clmem_resid, &resid, copytimer);
 
 		if(resid < epssquare) {
-			Aee_device(clmem_inout_eoprec, clmem_aux_eoprec, gf, localsize, globalsize, singletimer);
+			f(this, clmem_inout_eoprec, clmem_aux_eoprec, gf, localsize, globalsize);
 			saxpy_eoprec_device(clmem_aux_eoprec, clmem_source_even, clmem_one, clmem_aux_eoprec, localsize, globalsize);
 			set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid, localsize, globalsize);
 			copy_float_from_device(clmem_trueresid, &trueresid, copytimer);
@@ -1475,8 +1443,7 @@ hmc_error Opencl_fermions::cg_device(cl_mem gf, usetimer * copytimer, usetimer* 
 	int iter;
 	for(iter = 0; iter < cgmax; iter ++) {
 		if(iter % iter_refresh == 0) {
-// 			QplusQminus_device(clmem_inout, clmem_rn, gf, localsize, globalsize);
-f(this, clmem_inout, clmem_rn, gf, localsize, globalsize);
+			f(this, clmem_inout, clmem_rn, gf, localsize, globalsize);
 			saxpy_device(clmem_rn, clmem_source, clmem_one, clmem_rn, localsize, globalsize);
 			copy_spinor_device(clmem_rn, clmem_p, singletimer);
 		}
@@ -1486,7 +1453,6 @@ f(this, clmem_inout, clmem_rn, gf, localsize, globalsize);
 // 		copy_complex_from_device(clmem_omega, &omega, copytimer);
 // 		cout << "omega: " << omega.re << " " << omega.im << endl;
 		//A pn --> v
-// 		QplusQminus_device(clmem_p, clmem_v, gf, localsize, globalsize);
 		f(this,clmem_p, clmem_v, gf, localsize, globalsize);
 		set_complex_to_scalar_product_device(clmem_p, clmem_v, clmem_rho, localsize, globalsize);
 // 		hmc_complex rho;
@@ -1540,13 +1506,13 @@ f(this, clmem_inout, clmem_rn, gf, localsize, globalsize);
 }
 
 
-hmc_error Opencl_fermions::solver_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax)
+hmc_error Opencl_fermions::solver_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f)
 {
 	(*solvertimer).reset();
 	convert_to_kappa_format_device(clmem_inout, ls, gs);
 	convert_to_kappa_format_device(clmem_source, ls, gs);
-	bicgstab_device(gf, copytimer, singletimer, ls, gs, cgmax, Qplus_device_call);
-// 	cg_device(gf, copytimer, singletimer, ls, gs, cgmax, QplusQminus_device_call);
+	bicgstab_device(gf, copytimer, singletimer, ls, gs, cgmax, f);
+// 	cg_device(gf, copytimer, singletimer, ls, gs, cgmax, f);
 	convert_from_kappa_format_device(clmem_inout, clmem_inout, ls, gs);
 	convert_from_kappa_format_device(clmem_source, clmem_source, ls, gs);
 	clFinish(queue);
@@ -1556,13 +1522,13 @@ hmc_error Opencl_fermions::solver_device(cl_mem gf, usetimer * copytimer, usetim
 }
 
 
-hmc_error Opencl_fermions::solver_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax)
+hmc_error Opencl_fermions::solver_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f)
 {
 	(*solvertimer).reset();
 
 	//CP: even solution
 	convert_to_kappa_format_eoprec_device(clmem_inout_eoprec, ls, gs);
-	bicgstab_eoprec_device(gf, copytimer, singletimer, ls, gs, cgmax);
+	bicgstab_eoprec_device(gf, copytimer, singletimer, ls, gs, cgmax, f);
 
 	//P: odd solution
 	/** @todo CP: perhaps one can save some variables used here */

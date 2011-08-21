@@ -19,7 +19,11 @@ class Opencl_fermions;
  * This type points to a helper-function, which then calls the wanted function.
  */
 typedef hmc_error (*matrix_function_call) (Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-
+hmc_error M_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+hmc_error Qplus_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+hmc_error Qminus_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+hmc_error QplusQminus_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+hmc_error Aee_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 
 /**
  * An OpenCL device for fermionic calculations.
@@ -116,30 +120,29 @@ public:
 	hmc_error M_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-
-// 	hmc_error M_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error gamma5_device(cl_mem inout, const size_t ls, const size_t gs);
 	//    eoprec
+	//        compound
+	hmc_error Aee_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+	//        explicit
 	hmc_error gamma5_eoprec_device(cl_mem inout, const size_t ls, const size_t gs);
-	hmc_error Aee_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs, usetimer * singletimer);
 	hmc_error M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
 	hmc_error M_tm_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
 	hmc_error dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, const size_t ls, const size_t gs);
 
-	//this is not needed anymore!!
-//  hmc_error testing_spinor(inputparameters* parameters, size_t local_size, size_t global_size);
-
 	//    solver operations
 	//    non-eoprec
-	/** this calls the solver according to parameter settings using the fermionmatrix f*/
-	hmc_error solver_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
-	/** this executes the bicgstab on the device, using the fermionmatrix f */
+	/// this calls the solver according to parameter settings using the fermionmatrix f
+	hmc_error solver_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f);
+	/// this executes the bicgstab on the device, using the fermionmatrix f
 	hmc_error bicgstab_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f);
-	/** this executes the cg on the device, using the fermionmatrix f */
+	/// this executes the cg on the device, using the fermionmatrix f 
 	hmc_error cg_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f);
 	//    eoprec
-	hmc_error bicgstab_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax);
-	hmc_error solver_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
+	/// this calls the solver according to parameter settings using the fermionmatrix f
+	hmc_error solver_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f);	
+	/// this executes the eoprec bicgstab on the device, using the fermionmatrix f 
+	hmc_error bicgstab_eoprec_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f);
 
 	//    operations needed calculating fermionic observables
 	hmc_error ps_correlator_device(const size_t ls, const size_t gs);
