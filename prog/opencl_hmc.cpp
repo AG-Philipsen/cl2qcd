@@ -121,7 +121,7 @@ void Opencl_hmc::fill_kernels()
 	md_update_gaugemomenta = createKernel("md_update_gaugemomenta") << basic_hmc_code << "gaugemomentum.cl" << "md_update_gaugemomenta.cl";
 	gauge_force = createKernel("gauge_force") << basic_hmc_code << "gaugemomentum.cl" << "force_gauge.cl";
 	fermion_force = createKernel("fermion_force") << basic_hmc_code << "gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion.cl";
-	if(get_parameters()->get_use_smearing() == TRUE){
+	if(get_parameters()->get_use_smearing() == true){
 		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_fermion_code << "stout_smear_fermion_force.cl";
 	}
 	gaugemomentum_squarenorm = createKernel("gaugemomentum_squarenorm") << basic_hmc_code << "gaugemomentum_squarenorm.cl";
@@ -157,7 +157,7 @@ hmc_error Opencl_hmc::finalize_hmc()
 	if(clReleaseKernel(gauge_force) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
 	if(clReleaseKernel(fermion_force) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
 	if(clReleaseKernel(set_zero_gaugemomentum) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
-	if(get_parameters()->get_use_smearing() == TRUE){
+	if(get_parameters()->get_use_smearing() == true){
 	if(clReleaseKernel(stout_smear_fermion_force) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
 	}
 	return HMC_SUCCESS;
@@ -273,7 +273,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 	set_zero_clmem_force_device(ls, gs);
 	//add different contributions: Those potentially containing smeared links should be calculated first!!
 	
-	if(get_parameters()->get_use_smearing() == 1){
+	if(get_parameters()->get_use_smearing() == true){
 		logger.debug() << "\t\t\tsave unsmeared gaugefield...";
 		gf_tmp = create_rw_buffer(sizeof(s_gaugefield));
 		/** @todo copy gf to gf_tmp -> general copy fct?? */
@@ -282,7 +282,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 	}
 	
 	//CP: to begin with, consider only the bicgstab-solver
-	int use_cg = FALSE;
+	int use_cg = false;
 	
 	/** @todo at the moment, we can only put in a cold spinorfield 
 	 * or a point-source spinorfield as trial-solution */
@@ -293,7 +293,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
  
 	/** @todo check the use of the sources again, compare to tmlqcd!!! */
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
-	if(get_parameters()->get_use_eo() == 1){
+	if(get_parameters()->get_use_eo() == true){
 		if(use_cg){
 			//this is broken right now since the CG doesnt work!!
 			logger.debug() << "\t\tcalc fermion force ingredients using cg and eoprec";
@@ -382,7 +382,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 	//CP: this always calls fermion_force(Y,X) with Y = clmem_phi_inv, X = clmem_inout
 	fermion_force_device(ls, gs);
 	
-	if(get_parameters()->get_use_smearing() == 1){
+	if(get_parameters()->get_use_smearing() == true){
 		//CP: The fermion_force call above used the smeared gaugefield if wished,
 		//	now the force by the thin link has to be determined...
 		logger.debug() << "\t\t\tcalc stout-smeared fermion_force...";

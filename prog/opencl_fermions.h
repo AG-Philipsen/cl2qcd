@@ -108,12 +108,17 @@ public:
 
 	//    fermionmatrix operations
 	//    non-eoprec
-	hmc_error M_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-// 	hmc_error M_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-	hmc_error gamma5_device(cl_mem inout, const size_t ls, const size_t gs);
+	//        compound
 	hmc_error Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error Qminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error QplusQminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+	//        explicit
+	hmc_error M_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+	hmc_error M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+	hmc_error M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+
+// 	hmc_error M_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+	hmc_error gamma5_device(cl_mem inout, const size_t ls, const size_t gs);
 	//    eoprec
 	hmc_error gamma5_eoprec_device(cl_mem inout, const size_t ls, const size_t gs);
 	hmc_error Aee_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs, usetimer * singletimer);

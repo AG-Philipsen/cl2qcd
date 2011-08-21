@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 		if( ( (iter + 1) % writefreq ) == 0 ) {
 			gaugefield.print_hmcobservables(obs, iter, gaugeout_name.str());
 		}
-		if( parameters.get_saveconfigs() == TRUE && ( (iter + 1) % savefreq ) == 0 ) {
+		if( parameters.get_saveconfigs() == true && ( (iter + 1) % savefreq ) == 0 ) {
 			gaugefield.sync_gaugefield(&copy_to_from_dev_timer);
 			gaugefield.save(iter);
 		}

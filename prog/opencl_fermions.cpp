@@ -187,7 +187,7 @@ hmc_error Opencl_fermions::fill_buffers()
 		exit(HMC_OCLERROR);
 	}
 	//LZ only use the following if we want to apply even odd preconditioning
-	if(get_parameters()->get_use_eo() == TRUE) {
+	if(get_parameters()->get_use_eo() == true) {
 		clmem_inout_eoprec = clCreateBuffer(context, CL_MEM_READ_WRITE, eoprec_spinorfield_size, 0, &clerr);;
 		if(clerr != CL_SUCCESS) {
 			cout << "creating clmem_inout_eoprec failed, aborting..." << endl;
@@ -383,7 +383,7 @@ void Opencl_fermions::fill_kernels()
 	create_point_source = createKernel("create_point_source") << basic_fermion_code << "spinorfield_point_source.cl";
 
 	//Kernels needed if eoprec is used
-	if(get_parameters()->get_use_eo() == TRUE) {
+	if(get_parameters()->get_use_eo() == true) {
 		M_sitediagonal = createKernel("M_sitediagonal") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_m.cl";
 		M_inverse_sitediagonal = createKernel("M_inverse_sitediagonal") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_m.cl";
 		gamma5_eoprec = createKernel("gamma5_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
@@ -649,26 +649,16 @@ hmc_error Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl
 	return HMC_SUCCESS;
 }
 
-
+//compound fermionmatrix-functions
 hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
-  int clerr =CL_SUCCESS;
 
-  clerr = clSetKernelArg(M_tm_plus,0,sizeof(cl_mem),&in); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(M_tm_plus,1,sizeof(cl_mem),&gf);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(M_tm_plus,2,sizeof(cl_mem),&out);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-	enqueueKernel(M_tm_plus , gs, ls);
+	if(get_parameters()->get_fermact() == WILSON){
+		//in the pure Wilson case there is just one fermionmatrix 
+		M_device(in, out, gf, ls, gs);
+	}
+	else if(get_parameters()->get_fermact() == TWISTEDMASS){
+		M_tm_plus_device(in, out, gf, ls, gs);
+	}
 	
 	gamma5_device(out, ls, gs);
 
@@ -677,25 +667,14 @@ hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const 
 }
 
 hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
-  int clerr =CL_SUCCESS;
-
-  clerr = clSetKernelArg(M_tm_minus,0,sizeof(cl_mem),&in); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(M_tm_minus,1,sizeof(cl_mem),&gf);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-  clerr = clSetKernelArg(M_tm_minus,2,sizeof(cl_mem),&out);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-
-	enqueueKernel( M_tm_minus, gs, ls);
+ 
+	if(get_parameters()->get_fermact() == WILSON){
+		//in the pure Wilson case there is just one fermionmatrix 
+		M_device(in, out, gf, ls, gs);
+	}
+	else if(get_parameters()->get_fermact() == TWISTEDMASS){
+		M_tm_minus_device(in, out, gf, ls, gs);
+	}
 	
 	gamma5_device(out, ls, gs);
 	
@@ -705,7 +684,8 @@ hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, cl_mem gf, const
 
 hmc_error Opencl_fermions::QplusQminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs)
 {
-	/** @todo one could save one field here if an additional copying would be included in the end... */
+	/** @todo one could save one field here if an additional copying would be included in the end... 
+	 * or the field should be created in here, local */
 	Qminus_device(in, clmem_tmp, gf, ls, gs);
 
 	Qplus_device(clmem_tmp, out, gf, ls, gs);
@@ -714,6 +694,7 @@ hmc_error Opencl_fermions::QplusQminus_device(cl_mem in, cl_mem out, cl_mem gf, 
 
 }
 
+//explicit fermionmatrix-kernel calling functions
 hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
 
   int clerr =CL_SUCCESS;
@@ -733,6 +714,50 @@ hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, cl_mem gf, const size
     exit(HMC_OCLERROR);
   }
 	enqueueKernel( M, gs, ls);
+	return HMC_SUCCESS;
+}
+
+hmc_error Opencl_fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
+
+  int clerr =CL_SUCCESS;
+	clerr = clSetKernelArg(M_tm_plus,0,sizeof(cl_mem),&in); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(M_tm_plus,1,sizeof(cl_mem),&gf);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(M_tm_plus,2,sizeof(cl_mem),&out);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	enqueueKernel( M_tm_plus, gs, ls);
+	return HMC_SUCCESS;
+}
+
+hmc_error Opencl_fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
+
+  int clerr =CL_SUCCESS;
+	clerr = clSetKernelArg(M_tm_minus,0,sizeof(cl_mem),&in); 
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(M_tm_minus,1,sizeof(cl_mem),&gf);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+  clerr = clSetKernelArg(M_tm_minus,2,sizeof(cl_mem),&out);
+  if(clerr!=CL_SUCCESS) {
+    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
+    exit(HMC_OCLERROR);
+  }
+	enqueueKernel( M_tm_minus, gs, ls);
 	return HMC_SUCCESS;
 }
 
@@ -843,6 +868,7 @@ hmc_error Opencl_fermions::M_sitediagonal_device(cl_mem in, cl_mem out, const si
 	return HMC_SUCCESS;
 }
 
+//BLAS-functions
 hmc_error Opencl_fermions::saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t ls, const size_t gs)
 {
 	int clerr = CL_SUCCESS;
@@ -1856,7 +1882,7 @@ hmc_error Opencl_fermions::finalize_fermions()
 	if(clReleaseKernel(convert_from_kappa_format) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseKernel(create_point_source) != CL_SUCCESS) exit(HMC_OCLERROR);
 
-	if(get_parameters()->get_use_eo() == TRUE) {
+	if(get_parameters()->get_use_eo() == false) {
 		if(clReleaseKernel(convert_to_kappa_format_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clReleaseKernel(convert_from_kappa_format_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clReleaseKernel(dslash_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
@@ -1880,7 +1906,7 @@ hmc_error Opencl_fermions::finalize_fermions()
 	if(clReleaseMemObject(clmem_aux) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseMemObject(clmem_tmp) != CL_SUCCESS) exit(HMC_OCLERROR);
 
-	if(get_parameters()->get_use_eo() == TRUE) {
+	if(get_parameters()->get_use_eo() == false) {
 		if(clReleaseMemObject(clmem_inout_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clReleaseMemObject(clmem_source_even) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clReleaseMemObject(clmem_source_odd) != CL_SUCCESS) exit(HMC_OCLERROR);

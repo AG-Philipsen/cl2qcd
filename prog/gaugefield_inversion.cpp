@@ -68,7 +68,7 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
 
 	int use_eo = get_parameters()->get_use_eo();
 
-  if(use_eo==FALSE){
+  if(use_eo==false){
     get_devices_fermions()[0].set_spinorfield_cold_device(ls, gs);
   }
   else{
@@ -78,7 +78,7 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
   get_devices_fermions()[0].set_correlator_field_zero_device(ls, gs);
 
   for(int k=0; k<12; k++) {
-    if(use_eo == FALSE){
+    if(use_eo == false){
       get_devices_fermions()[0].create_point_source_device(k,0,0,ls, gs);
       get_devices_fermions()[0].solver_device(get_devices_fermions()[0].get_clmem_gaugefield(), copytimer, singletimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
       //CP: add solution to former ones...
