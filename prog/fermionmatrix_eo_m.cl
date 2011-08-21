@@ -1,4 +1,4 @@
-__kernel void M_sitediagonal(__global spinorfield_eoprec * in, __global spinorfield_eoprec * out){
+__kernel void M_tm_sitediagonal(__global spinorfield_eoprec * in, __global spinorfield_eoprec * out){
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -16,12 +16,12 @@ __kernel void M_sitediagonal(__global spinorfield_eoprec * in, __global spinorfi
 		//get input spinor
 		plus = get_spinor_from_eoprec_field(in, id_tmp);
 		//Diagonalpart:
-		out_tmp = M_diag_local(plus, twistfactor, twistfactor_minus);
+		out_tmp = M_diag_tm_local(plus, twistfactor, twistfactor_minus);
 		put_spinor_to_eoprec_field(out_tmp, out, id_tmp);
 	}
 }
 
-__kernel void M_inverse_sitediagonal(__global spinorfield_eoprec * in, __global spinorfield_eoprec * out){
+__kernel void M_tm_inverse_sitediagonal(__global spinorfield_eoprec * in, __global spinorfield_eoprec * out){
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -37,9 +37,10 @@ __kernel void M_inverse_sitediagonal(__global spinorfield_eoprec * in, __global 
 		//get input spinor
 		plus = get_spinor_from_eoprec_field(in, id_tmp);
 		//Diagonalpart, here the twisted factor give the inverse matrix:
-		out_tmp = M_diag_local(plus, twistfactor_minus, twistfactor);
+		out_tmp = M_diag_tm_local(plus, twistfactor_minus, twistfactor);
 		hmc_float denom = 1./(1. + MUBAR*MUBAR);
 		out_tmp = real_multiply_spinor(out_tmp,denom);
 		put_spinor_to_eoprec_field(out_tmp, out, id_tmp);
 	}
 }
+

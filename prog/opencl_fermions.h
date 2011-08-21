@@ -122,8 +122,8 @@ public:
 	//    eoprec
 	hmc_error gamma5_eoprec_device(cl_mem inout, const size_t ls, const size_t gs);
 	hmc_error Aee_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs, usetimer * singletimer);
-	hmc_error M_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error M_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
+	hmc_error M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
+	hmc_error M_tm_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
 	hmc_error dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, const size_t ls, const size_t gs);
 
 	//this is not needed anymore!!
@@ -163,8 +163,8 @@ public:
 	usetimer timer_M_tm_plus;
 	usetimer timer_M_tm_minus;
 	usetimer timer_gamma5_eoprec;
-	usetimer timer_M_sitediagonal;
-	usetimer timer_M_inverse_sitediagonal;
+	usetimer timer_M_tm_sitediagonal;
+	usetimer timer_M_tm_inverse_sitediagonal;
 	usetimer timer_dslash_eoprec;
 
 	//BLAS
@@ -231,8 +231,8 @@ private:
 	cl_kernel M_tm_plus;
 	cl_kernel M_tm_minus;
 	cl_kernel gamma5_eoprec;
-	cl_kernel M_sitediagonal;
-	cl_kernel M_inverse_sitediagonal;
+	cl_kernel M_tm_sitediagonal;
+	cl_kernel M_tm_inverse_sitediagonal;
 	cl_kernel dslash_eoprec;
 
 	//BLAS

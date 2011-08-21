@@ -230,10 +230,12 @@ void Opencl_fermions::fill_kernels()
 
 	//Kernels needed if eoprec is used
 	if(get_parameters()->get_use_eo() == true) {
-		M_sitediagonal = createKernel("M_sitediagonal") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_m.cl";
-		M_inverse_sitediagonal = createKernel("M_inverse_sitediagonal") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_m.cl";
-		gamma5_eoprec = createKernel("gamma5_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
+		if(get_parameters()->get_fermact() == TWISTEDMASS){
+			M_tm_sitediagonal = createKernel("M_tm_sitediagonal") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_m.cl";
+			M_tm_inverse_sitediagonal = createKernel("M_tm_inverse_sitediagonal") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_m.cl";
+		}
 		dslash_eoprec = createKernel("dslash_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_dslash.cl";
+		gamma5_eoprec = createKernel("gamma5_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
 		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		set_eoprec_spinorfield_cold = createKernel("set_eoprec_spinorfield_cold") << basic_fermion_code << "spinorfield_eo_cold.cl";
 		convert_to_kappa_format_eoprec = createKernel("convert_to_kappa_format_eoprec") << basic_fermion_code << "spinorfield_eo_kappaformat_convert.cl";
@@ -495,7 +497,7 @@ hmc_error Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl
 	return HMC_SUCCESS;
 }
 
-//compound fermionmatrix-functions
+//compound fermionmatrix-functions without eoprec
 hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
 
 	if(get_parameters()->get_fermact() == WILSON){
@@ -619,6 +621,29 @@ hmc_error Opencl_fermions::gamma5_device(cl_mem inout, const size_t ls, const si
 	return HMC_SUCCESS;
 }
 
+//compound fermionmatrix-functions with eoprec
+hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs, usetimer * singletimer)
+{
+	int even = EVEN;
+	int odd = ODD;
+
+	if(get_parameters()->get_fermact() == WILSON){
+		logger.fatal() << "not yet implemented in WILSON case, aborting...";
+	}
+	else if(get_parameters()->get_fermact() == TWISTEDMASS){
+		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd, ls, gs);
+		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, ls, gs);
+		dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even, ls, gs);
+		M_tm_sitediagonal_device(in, clmem_tmp_eoprec_1, ls, gs);
+	
+		copy_eoprec_spinor_device(out, clmem_tmp_eoprec_3, singletimer);
+
+		saxpy_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, clmem_one, out, ls, gs);
+	}
+	return HMC_SUCCESS;
+}
+
+//explicit eoprec fermionmatrix functions
 hmc_error Opencl_fermions::gamma5_eoprec_device(cl_mem inout, const size_t ls, const size_t gs){
 	int clerr =CL_SUCCESS;
 
@@ -628,23 +653,6 @@ hmc_error Opencl_fermions::gamma5_eoprec_device(cl_mem inout, const size_t ls, c
     exit(HMC_OCLERROR);
   }
 	enqueueKernel( gamma5_eoprec, gs, ls);
-	return HMC_SUCCESS;
-}
-
-hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs, usetimer * singletimer)
-{
-	int even = EVEN;
-	int odd = ODD;
-
-	dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd, ls, gs);
-	M_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, ls, gs);
-	dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even, ls, gs);
-	M_sitediagonal_device(in, clmem_tmp_eoprec_1, ls, gs);
-
-	copy_eoprec_spinor_device(out, clmem_tmp_eoprec_3, singletimer);
-
-	saxpy_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, clmem_one, out, ls, gs);
-
 	return HMC_SUCCESS;
 }
 
@@ -677,40 +685,40 @@ hmc_error Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::M_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs)
+hmc_error Opencl_fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs)
 {
 	int clerr = CL_SUCCESS;
 
-	clerr = clSetKernelArg(M_inverse_sitediagonal, 0, sizeof(cl_mem), &in);
+	clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clSetKernelArg(M_inverse_sitediagonal, 1, sizeof(cl_mem), &out);
+	clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( M_inverse_sitediagonal, gs, ls);
+	enqueueKernel( M_tm_inverse_sitediagonal, gs, ls);
 
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::M_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs)
+hmc_error Opencl_fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs)
 {
 	int clerr = CL_SUCCESS;
 
-	clerr = clSetKernelArg(M_sitediagonal, 0, sizeof(cl_mem), &in);
+	clerr = clSetKernelArg(M_tm_sitediagonal, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clSetKernelArg(M_sitediagonal, 1, sizeof(cl_mem), &out);
+	clerr = clSetKernelArg(M_tm_sitediagonal, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel(M_sitediagonal , gs, ls);
+	enqueueKernel(M_tm_sitediagonal , gs, ls);
 	return HMC_SUCCESS;
 }
 
@@ -1558,17 +1566,22 @@ hmc_error Opencl_fermions::solver_eoprec_device(cl_mem gf, usetimer * copytimer,
 
 	//P: odd solution
 	/** @todo CP: perhaps one can save some variables used here */
-	dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, gf, ODD, ls, gs);
-	M_inverse_sitediagonal_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, ls, gs);
-	M_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2, ls, gs);
-	saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, clmem_one, clmem_tmp_eoprec_3,  ls, gs);
+	if(get_parameters()->get_fermact() == WILSON){
+		logger.fatal() << "not yet implemented in WILSON case, aborting...";
+	}
+	else if(get_parameters()->get_fermact() == TWISTEDMASS){
+		dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, gf, ODD, ls, gs);
+		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, ls, gs);
+		M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2, ls, gs);
+		saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, clmem_one, clmem_tmp_eoprec_3,  ls, gs);
 
-	convert_from_kappa_format_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_3,  ls, gs);
-	convert_from_kappa_format_eoprec_device(clmem_inout_eoprec, clmem_inout_eoprec, ls, gs);
-	//CP: whole solution
-	//CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eoprec_3
-	convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, clmem_inout, ls, gs);
-
+		convert_from_kappa_format_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_3,  ls, gs);
+		convert_from_kappa_format_eoprec_device(clmem_inout_eoprec, clmem_inout_eoprec, ls, gs);
+		//CP: whole solution
+		//CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eoprec_3
+		convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, clmem_inout, ls, gs);
+	}
+	
 	(*solvertimer).add();
 	return HMC_SUCCESS;
 }
@@ -1647,10 +1660,14 @@ hmc_error Opencl_fermions::create_point_source_eoprec_device(cl_mem gf, int i, i
   /** @todo replace this call by a wait for events..*/
  	clFinish(queue);
 
-	M_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1, ls, gs);
-	dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_3, gf, EVEN, ls, gs);
-
-	saxpy_eoprec_device(clmem_tmp_eoprec_2, clmem_tmp_eoprec_3, clmem_one, clmem_source_even, ls, gs);
+	if(get_parameters()->get_fermact() == WILSON){
+		logger.fatal() << "not yet implemented in WILSON case, aborting...";
+	}
+	else if(get_parameters()->get_fermact() == TWISTEDMASS){
+		M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1, ls, gs);
+		dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_3, gf, EVEN, ls, gs);
+		saxpy_eoprec_device(clmem_tmp_eoprec_2, clmem_tmp_eoprec_3, clmem_one, clmem_source_even, ls, gs);
+	}
 
 	return HMC_SUCCESS;
 }
@@ -1737,8 +1754,8 @@ hmc_error Opencl_fermions::finalize_fermions()
 		if(clReleaseKernel(set_zero_spinorfield_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clReleaseKernel(global_squarenorm_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
 		if(clReleaseKernel(create_point_source_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(M_sitediagonal) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(M_inverse_sitediagonal) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseKernel(M_tm_sitediagonal) != CL_SUCCESS) exit(HMC_OCLERROR);
+		if(clReleaseKernel(M_tm_inverse_sitediagonal) != CL_SUCCESS) exit(HMC_OCLERROR);
 	}
 
 	if(clReleaseMemObject(clmem_inout) != CL_SUCCESS) exit(HMC_OCLERROR);
@@ -1807,10 +1824,10 @@ usetimer* Opencl_fermions::get_timer(char * in){
 	if (strcmp(in, "gamma5_eoprec") == 0){
     return &this->timer_gamma5_eoprec;
 	}
-	if (strcmp(in, "M_sitediagonal") == 0){
+	if (strcmp(in, "M_tm_sitediagonal") == 0){
     return &this->timer_M_sitediagonal;
 	}
-	if (strcmp(in, "M_inverse_sitediagonal") == 0){
+	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0){
     return &this->timer_M_inverse_sitediagonal;
 	}
 	if (strcmp(in, "dslash_eoprec") == 0){
@@ -1921,10 +1938,10 @@ int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters
 	if (strcmp(in, "gamma5_eoprec") == 0){
     return 1000000000000000000000000;
 	}
-	if (strcmp(in, "M_sitediagonal") == 0){
+	if (strcmp(in, "M_tm_sitediagonal") == 0){
     return 48*D*S;
 	}
-	if (strcmp(in, "M_inverse_sitediagonal") == 0){
+	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0){
     return 48*D*S;
 	}
 	if (strcmp(in, "dslash_eoprec") == 0){
@@ -2018,9 +2035,9 @@ void Opencl_fermions::print_profiling(std::string filename){
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "gamma5_eoprec";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
-	kernelName = "M_sitediagonal";
+	kernelName = "M_tm_sitediagonal";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
-	kernelName = "M_inverse_sitediagonal";
+	kernelName = "M_tm_inverse_sitediagonal";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "dslash_eoprec";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
