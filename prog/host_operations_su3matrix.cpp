@@ -825,7 +825,20 @@ hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement2 inn, hmc_su3matr
 	return HMC_SUCCESS;
 }
 
-
+//CP: this is the old function which should now be deprecated.
+// It came with compile options 
+/*
+set( EXPIQ 2 CACHE STRING "Define order to which exp(iQ) is exact (2,3,ALL,MORNINGSTAR)")
+if(EXPIQ MATCHES "2")
+        add_definitions( -D_EXPONENTIATE_ALGEBRA_ORDER_2_ )
+elseif(EXPIQ MATCHES "3")
+        add_definitions( -D_EXPONENTIATE_ALGEBRA_ORDER_3_ )
+elseif(EXPIQ MATCHES "ALL")
+        add_definitions( -D_EXPONENTIATE_ALGEBRA_ORDER_ALL_ORDERS_ )
+elseif(EXPIQ MATCHES "MORNINGSTAR")
+        add_definitions( -D_USE_MORNINGSTAR_PEARDON_ )
+endif (EXPIQ MATCHES "2")
+*/
 /*
 hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix* out, hmc_float epsilon){
 	// SL: this takes 8 real numbers and builds the su3 matrix exp(i*epsilon*p_i*T_i)
