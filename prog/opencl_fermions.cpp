@@ -1535,6 +1535,7 @@ hmc_error Opencl_fermions::solver_eoprec_device(cl_mem gf, usetimer * copytimer,
 
 	//CP: even solution
 	convert_to_kappa_format_eoprec_device(clmem_inout_eoprec, ls, gs);
+	convert_to_kappa_format_eoprec_device(clmem_source_even, ls, gs);
 	if(get_parameters()->get_use_cg() == true)
 	 	cg_eoprec_device(gf, copytimer, singletimer, ls, gs, cgmax, f);
 	else 
@@ -1556,6 +1557,7 @@ hmc_error Opencl_fermions::solver_eoprec_device(cl_mem gf, usetimer * copytimer,
 		//CP: whole solution
 		//CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eoprec_3
 		convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, clmem_inout, ls, gs);
+		///convert source back from kappa???
 	}
 	
 	(*solvertimer).add();
