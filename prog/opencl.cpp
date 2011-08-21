@@ -45,7 +45,57 @@ cl_mem Opencl::create_rw_buffer(size_t size){
 	cl_int clerr;
 	cl_mem tmp = clCreateBuffer(context, CL_MEM_READ_WRITE, size, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... creating rw buffer failed, aborting.";
+		logger.fatal() << "... creating read-write buffer failed, aborting.";
+		exit(HMC_OCLERROR);
+	}
+	return tmp;
+}
+
+cl_mem Opencl::create_wo_buffer(size_t size){
+	cl_int clerr;
+	cl_mem tmp = clCreateBuffer(context, CL_MEM_WRITE_ONLY, size, 0, &clerr);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "... creating write-only buffer failed, aborting.";
+		exit(HMC_OCLERROR);
+	}
+	return tmp;
+}
+
+cl_mem Opencl::create_ro_buffer(size_t size){
+	cl_int clerr;
+	cl_mem tmp = clCreateBuffer(context, CL_MEM_READ_ONLY, size, 0, &clerr);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "... creating read-only buffer failed, aborting.";
+		exit(HMC_OCLERROR);
+	}
+	return tmp;
+}
+
+cl_mem Opencl::create_uhp_buffer(size_t size, void *host_pointer){
+	cl_int clerr;
+	cl_mem tmp = clCreateBuffer(context, CL_MEM_USE_HOST_PTR, size, host_pointer, &clerr);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "... creating use-host-pointer buffer failed, aborting.";
+		exit(HMC_OCLERROR);
+	}
+	return tmp;
+}
+
+cl_mem Opencl::create_ahp_buffer(size_t size, void *host_pointer){
+	cl_int clerr;
+	cl_mem tmp = clCreateBuffer(context, CL_MEM_ALLOC_HOST_PTR, size, host_pointer, &clerr);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "... creating alloc-host-pointer buffer failed, aborting.";
+		exit(HMC_OCLERROR);
+	}
+	return tmp;
+}
+
+cl_mem Opencl::create_chp_buffer(size_t size, void *host_pointer){
+	cl_int clerr;
+	cl_mem tmp = clCreateBuffer(context, CL_MEM_COPY_HOST_PTR, size, host_pointer, &clerr);
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "... creating copy-host-pointer buffer failed, aborting.";
 		exit(HMC_OCLERROR);
 	}
 	return tmp;
@@ -53,40 +103,17 @@ cl_mem Opencl::create_rw_buffer(size_t size){
 
 hmc_error Opencl::fill_buffers()
 {
-	cl_int clerr;
-
 	logger.trace() << "Create buffer for gaugefield...";
 	clmem_gaugefield = create_rw_buffer(sizeof(s_gaugefield));
 
-	clerr = CL_SUCCESS;
 	logger.trace() << "Create buffer for random numbers...";
-	clmem_rndarray = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_rndarray), 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
+	clmem_rndarray = create_rw_buffer(sizeof(hmc_rndarray));
 
 	logger.trace() << "Create buffer for gaugeobservables...";
-	clmem_plaq = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float) * global_work_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	clmem_splaq = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float) * global_work_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	clmem_tplaq = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float) * global_work_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	clmem_polyakov = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_complex) * global_work_size, 0, &clerr);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
+	clmem_plaq = create_rw_buffer(sizeof(hmc_float) * global_work_size);
+	clmem_splaq = create_rw_buffer(sizeof(hmc_float) * global_work_size);
+	clmem_tplaq = create_rw_buffer(sizeof(hmc_float) * global_work_size);
+	clmem_polyakov = create_rw_buffer(sizeof(hmc_complex) * global_work_size);
 
 	// scratch buffers for gauge observable will be created on demand
 	clmem_plaq_buf_glob = 0;

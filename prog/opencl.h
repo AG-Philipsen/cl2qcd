@@ -205,10 +205,56 @@ public:
 	/**
 	 *	This calls
 	 *		clCreateBuffer(context, CL_MEM_READ_WRITE, size, 0, &clerr)
-	 *	and returns a pointer to a cl_mem-object if clerr is HMC_SUCCESS
+	 *	and returns a pointer to a read-write cl_mem-object if clerr is HMC_SUCCESS
 	 *	@param size size of buffer
 	 */
 	cl_mem create_rw_buffer(size_t size);
+
+	/**
+	 *	This calls
+	 *		clCreateBuffer(context, CL_MEM_READ_ONLY, size, 0, &clerr)
+	 *	and returns a pointer to a read-only cl_mem-object if clerr is HMC_SUCCESS
+	 *	@param size size of buffer
+	 */
+	cl_mem create_wo_buffer(size_t size);
+	
+	/**
+	 *	This calls
+	 *		clCreateBuffer(context, CL_MEM_WRITE_ONLY, size, 0, &clerr)
+	 *	and returns a pointer to a write-only cl_mem-object if clerr is HMC_SUCCESS
+	 *	@param size size of buffer
+	 */
+	cl_mem create_ro_buffer(size_t size);
+	
+	/**
+	 *	This calls
+	 *		clCreateBuffer(context, CL_MEM_USE_HOST_PTR, size, host_pointer, &clerr);
+	 *	and returns a pointer to a cl_mem-object located on the host if clerr is HMC_SUCCESS
+	 *	@param size size of buffer
+	 *	@param host_pointer pointer to memory on host
+	 */
+	cl_mem create_uhp_buffer(size_t size, void *host_pointer);
+
+	/**
+	 *	This calls
+	 *		clCreateBuffer(context, CL_MEM_ALLOC_HOST_PTR, size, host_pointer, &clerr);
+	 *	and returns a pointer to a cl_mem-object located on the host and allocats memory on the host 
+	 *	if clerr is HMC_SUCCESS
+	 *	@param size size of buffer
+	 *	@param host_pointer pointer to memory on host
+	 */
+	cl_mem create_ahp_buffer(size_t size, void *host_pointer);
+
+		/**
+	 *	This calls
+	 *		clCreateBuffer(context, CL_MEM_USE_HOST_PTR, size, host_pointer, &clerr);
+	 *	and returns a pointer to a cl_mem-object located on the device and
+	 *	then copies host-memory pointed to by host-pointer to the device 
+	 *	if clerr is HMC_SUCCESS
+	 *	@param size size of buffer
+	 *	@param host_pointer pointer to memory on host
+	 */
+	cl_mem create_chp_buffer(size_t size, void *host_pointer);
 	
 	///////////////////////////////////////////////////////////
 	//LZ what follows should eventually be private
