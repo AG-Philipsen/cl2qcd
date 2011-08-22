@@ -95,6 +95,7 @@ add_executable( heatbath
 	host_use_timer.cpp
 	host_writegaugefield.cpp
 	logger.cpp
+	exceptions.cpp
 )
 target_link_libraries( heatbath
 	${OPENCL_LIBRARIES}
@@ -124,6 +125,7 @@ add_executable( tk_kappa
 	host_use_timer.cpp
 	host_writegaugefield.cpp
 	logger.cpp
+	exceptions.cpp
 )
 target_link_libraries( tk_kappa
 	${OPENCL_LIBRARIES}
@@ -154,6 +156,7 @@ add_executable( tk_kappa_hybrid
 	host_use_timer.cpp
 	host_writegaugefield.cpp
 	logger.cpp
+	exceptions.cpp
 )
 target_link_libraries( tk_kappa_hybrid
 	${OPENCL_LIBRARIES}
@@ -180,6 +183,7 @@ add_executable( inverter
 	host_use_timer.cpp
 	host_writegaugefield.cpp
 	logger.cpp
+	exceptions.cpp
 )
 target_link_libraries( inverter
 	${OPENCL_LIBRARIES}
@@ -210,6 +214,7 @@ add_executable( hmc
 	logger.cpp
 	gaugefield_hmc.cpp
 	opencl_hmc.cpp
+	exceptions.cpp
 )
 target_link_libraries( hmc
 	${OPENCL_LIBRARIES}

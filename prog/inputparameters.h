@@ -5,17 +5,23 @@
 #ifndef _INPUTPARAMETERSH_
 #define _INPUTPARAMETERSH_
 
-#include "hmcerrs.h"
 #include "types.h"
 #include "globaldefs.h"
 #include "logger.hpp"
+
+#include "exceptions.h"
 
 #include <cstdlib>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <cstring>
+
+#define EXIT_INPUTPARAMETERS 1
+
 using namespace std;
+
+
 
 /**
  * Parser for the input file.
@@ -33,20 +39,15 @@ public:
 	 * parameter values.
 	 *
 	 * \param ifn Name of the input file to parse
-	 * \return Error as defined in hmcerrs.h:
-	 *         \li HMC_FILEERROR if file cannot be opened
-	 *         \li HMC_SUCCESS otherwise
 	 */
-	hmc_error readfile(char* ifn);
-	/**
-	 * Reset all parameters to default values.
-	 *
-	 * \return Should always return HMC_SUCCESS.
-	 */
+	void readfile(char* ifn);
 
 	/////////////////////////////////////////////////////
 	// access to private members
-	hmc_error set_defaults();
+	/**
+	 * Reset all parameters to default values.
+	 */
+	void set_defaults();
 	hmc_float get_kappa();
 	void set_mubar_negative();
 	void calc_mubar();
