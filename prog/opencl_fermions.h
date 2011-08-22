@@ -63,22 +63,7 @@ public:
 	hmc_error finalize_fermions();
 
 	////////////////////////////////////////////////7777
-	// copying
-	// now with the new spinor types
-	//    non-eoprec
 	hmc_error init_fermion_variables(inputparameters* parameters, usetimer* timer);
-	hmc_error copy_spinorfield_to_device(spinorfield* host_spinorfield, usetimer* timer);
-	hmc_error copy_source_to_device(spinorfield* host_spinorfield, usetimer* timer);
-	hmc_error get_spinorfield_from_device(spinorfield* host_spinorfield,  usetimer* timer);
-
-	//    eoprec
-	hmc_error copy_eoprec_spinorfield_to_device(spinorfield_eoprec* host_spinorfield, usetimer* timer);
-	hmc_error copy_eoprec_source_to_device(spinorfield_eoprec* host_spinorfield1, spinorfield_eoprec* host_spinorfield2, usetimer* timer);
-	hmc_error get_eoprec_spinorfield_from_device(spinorfield_eoprec* host_spinorfield,  usetimer* timer);
-
-	//    misc
-	hmc_error copy_float_from_device(cl_mem in, hmc_float * out, usetimer* timer);
-	hmc_error copy_complex_from_device(cl_mem in, hmc_complex * out, usetimer* timer);
 
 	/////////////////////////////////////////
 	// device operations
@@ -152,6 +137,7 @@ public:
 	cl_mem get_clmem_inout();
 	cl_mem get_clmem_source();
 	cl_mem get_clmem_tmp();
+	cl_mem get_clmem_corr();
 
 	cl_mem get_clmem_inout_eoprec();
 	cl_mem get_clmem_tmp_eoprec_1();

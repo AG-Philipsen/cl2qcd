@@ -162,7 +162,7 @@ hmc_error Opencl_hmc::md_update_spinorfield_device(const size_t local_work_size,
 	usetimer noop;
 	hmc_float s_fermion;
 	set_float_to_global_squarenorm_device(clmem_phi, clmem_s_fermion, local_work_size, global_work_size);
-	copy_float_from_device(clmem_s_fermion, &s_fermion, &noop);
+	get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), &noop);
 	logger.debug() << "\tsquarenorm init field after update = " << s_fermion;
 		
 	if(err != HMC_SUCCESS){
@@ -278,7 +278,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 			//debugging
 			hmc_float s_fermion;
 			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
-			copy_float_from_device(clmem_s_fermion, &s_fermion, &copy_to);
+			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), &copy_to);
 			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
 			 
 			err = Opencl_fermions::solver_device(clmem_new_u, &copy_to, &copy_on, &solvertimer, ls, gs, get_parameters()->get_cgmax(), Qplus_device_call);
@@ -287,7 +287,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 			
 			//debugging
 			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
-			copy_float_from_device(clmem_s_fermion, &s_fermion, &copy_to);
+			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), &copy_to);
 			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
 			
 			//store this result in clmem_phi_inv
@@ -308,7 +308,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 			
 			//debugging
 			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
-			copy_float_from_device(clmem_s_fermion, &s_fermion, &copy_to);
+			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), &copy_to);
 			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
 			 
 			//this sets clmem_inout cold as trial-solution
@@ -320,7 +320,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 			
 			//debugging
 			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
-			copy_float_from_device(clmem_s_fermion, &s_fermion, &copy_to);
+			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), &copy_to);
 			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
 		}	
 	}
@@ -373,8 +373,9 @@ hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const size
 	hmc_float p2, new_p2;
 	set_float_to_gaugemomentum_squarenorm_device(clmem_p, clmem_p2, local_work_size, global_work_size);
 	set_float_to_gaugemomentum_squarenorm_device(clmem_new_p, clmem_new_p2, local_work_size, global_work_size);
-	Opencl_fermions::copy_float_from_device(clmem_p2, &p2, timer);
-	Opencl_fermions::copy_float_from_device(clmem_new_p2, &new_p2, timer);
+	Opencl_fermions::get_buffer_from_device(clmem_p2, &p2, sizeof(hmc_float), timer);
+
+	Opencl_fermions::get_buffer_from_device(clmem_new_p2, &new_p2, sizeof(hmc_float), timer);
 	//the energy is half the squarenorm
 	deltaH += 0.5 * (p2 - new_p2);
 	
@@ -385,12 +386,12 @@ hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const size
 	//Fermion-Part:
 	hmc_float spinor_energy_init, s_fermion;
 	//initial energy has been computed in the beginning...
-	Opencl_fermions::copy_float_from_device(clmem_energy_init, &spinor_energy_init, timer);
+	Opencl_fermions::get_buffer_from_device(clmem_energy_init, &spinor_energy_init, sizeof(hmc_float), timer);
 	// sum_links phi*_i (M^+M)_ij^-1 phi_j
 	// the inversion with respect to the input-gaussian field and the new gaugefield has taken place during the leapfrog
 	// 	and was saved in clmem_phi_inv during that step.
 	set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_s_fermion, local_work_size, global_work_size);
-	copy_float_from_device(clmem_s_fermion, &s_fermion, timer);
+	get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), timer);
 	deltaH += spinor_energy_init - s_fermion;
  
  	logger.debug() << "\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
