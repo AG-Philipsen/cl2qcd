@@ -1,8 +1,6 @@
 #include "inputparameters.h"
 
-#include "logger.hpp"
-
-hmc_error inputparameters::set_defaults()
+void inputparameters::set_defaults()
 {
 	//global parameters
 	prec = 64;
@@ -68,24 +66,20 @@ hmc_error inputparameters::set_defaults()
 	integrationsteps2 = 10;
 	hmcsteps = 10;
 	
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error inputparameters::readfile(char* ifn)
+void inputparameters::readfile(char* ifn)
 {
+  try {
 	std::ifstream infile;
 	infile.open(ifn);
-	if(!infile.is_open()) {
-		printf("Could not open input file: %s\n", ifn);
-		exit(HMC_FILEERROR);
-	}
+	if(!infile.is_open()) throw File_Exception(ifn);
 
 	bool muset  = false;
 	bool cswset = false;
 
-
 	while (infile.good()) {
-	  try {
 		std::string line;
 		infile >> line;
 		if(line.find("#") != std::string::npos) continue; //allow comments
@@ -165,28 +159,14 @@ hmc_error inputparameters::readfile(char* ifn)
 		if(line.find("use_smearing") != std::string::npos) bool_assign(&use_smearing, line);
 		if(line.find("rho") != std::string::npos) val_assign(&rho, line);
 		if(line.find("rho_iter") != std::string::npos) val_assign(&rho_iter, line);
-	  }
-	  catch (std::string line) {
-	    logger.fatal()<<"Read invalid option in parameter file. Critical line was:";
-	    logger.fatal()<<line;
-	    logger.fatal()<<"Aborting.";
-	    exit(1);
-	  }
 
 	}
 
-	if(muset == true && fermact != TWISTEDMASS) {
-		logger.fatal() << "Setting a value for mu is not allowed for fermion action other than twisted mass. Aborting...";
-		exit(HMC_STDERR);
-	}
-	if(cswset == true && fermact != CLOVER) {
-		logger.fatal() << "Setting a value for csw is not allowed for fermion action other than clover. Aborting...";
-		exit(HMC_STDERR);
-	}
-	if(cswset == true && muset == true) {
-		logger.fatal() << "Setting values for both csw and mu is currently not allowed. Aborting...";
-		exit(HMC_STDERR);
-	}
+	if( ( (muset  == true) && (fermact != TWISTEDMASS) ) ||  
+	    ( (cswset == true) && (fermact != CLOVER     ) ) || 
+	    ( (cswset == true) && (muset   == true       ) )  )
+	  throw Invalid_Fermact(fermact, muset, cswset);
+
 
 	//check the read-in values against the compile time values
 	this->set_settings_global();
@@ -197,7 +177,25 @@ hmc_error inputparameters::readfile(char* ifn)
 	if(this->get_use_rec12() != false) this->mat_size = 6;
 	if(this->get_prec() == 32 ) this->float_size = 4;
 #endif
-	return HMC_SUCCESS;
+
+  } //try
+  catch (File_Exception& fe) {
+    logger.fatal()<<"Could not open file: "<<fe.get_filename();
+    logger.fatal()<<"Aborting.";
+    exit(EXIT_INPUTPARAMETERS);
+  }
+  catch (std::string line) {
+    logger.fatal()<<"Read invalid option in parameter file. Critical line was:";
+    logger.fatal()<<line;
+    logger.fatal()<<"Aborting.";
+    exit(EXIT_INPUTPARAMETERS);
+  }
+  catch (Invalid_Fermact& e) {
+    logger.fatal()<<e.what();
+    logger.fatal()<<"Aborting.";
+    exit(EXIT_INPUTPARAMETERS);
+  }
+  return;
 }
 
 void inputparameters::val_assign(hmc_float * out, std::string line)
@@ -253,8 +251,7 @@ void inputparameters::startcond_assign(int * out, std::string line)
 		(*out) = START_FROM_SOURCE;
 		return;
 	}
-	printf("invalid startcondition\n");
-	exit(HMC_STDERR);
+	throw line;
 	return;
 }
 
@@ -307,8 +304,7 @@ void inputparameters::fermact_assign(int * out, std::string line)
 		(*out) = WILSON;
 		return;
 	}
-	printf("invalid fermion action\n");
-	exit(HMC_STDERR);
+	throw line;
 	return;
 }
 
@@ -939,60 +935,40 @@ void inputparameters::set_settings_global(){
 void inputparameters::check_settings_global(){
 	logger.info() << "checking compile-time-parameters against input-parameters...";
 	
+	try {
+
 	//compile time parameters
 	//numerical precision
 #ifdef _USEDOUBLEPREC_
-	if( this->get_prec() != 64) {
-		logger.fatal() << "Error in numerical precision, aborting...";
-		logger.fatal() << "compile: 64\tinput:" << this->get_prec();
-		exit (HMC_STDERR);
-	}
+	  if( this->get_prec() != 64) throw Invalid_Parameters("Numerical precision","64",this->get_prec()); 
 #else
-	if( this->get_prec() != 32) {
-		logger.fatal() << "Error in numerical precision, aborting...";
-		logger.fatal() << "compile: 32\tinput:" << this->get_prec();
-		exit (HMC_STDERR);
-	}
+	  if( this->get_prec() != 32) throw Invalid_Parameters("Numerical precision","64",this->get_prec()); 
 #endif
+
 	//reconstruct12
 #ifdef _RECONSTRUCT_TWELVE_
-	if( this->get_use_rec12() == false) {
-		logger.fatal() << "Error in REC12-setting, aborting...";
-		logger.fatal() << "compile: 1\tinput:" << this->get_use_rec12();
-		exit (HMC_STDERR);
-	}
+	  if( this->get_use_rec12() == false) throw Invalid_Parameters("Reconstruct12.","ON","OFF");
 #else
-	if( this->get_use_rec12() == true) {
-		logger.fatal() << "Error in REC12-setting, aborting...";
-		logger.fatal() << "compile: 0\tinput:" << this->get_use_rec12();
-		exit (HMC_STDERR);
-	}
+	  if( this->get_use_rec12() == true) throw Invalid_Parameters("Reconstruct12.","OFF","ON");
 #endif
+
 	//GPU-Usage
 #ifdef _USEGPU_
-	if( this->get_use_gpu() == false) {
-		logger.fatal() << "Error in setting of GPU-usage, aborting...";
-		logger.fatal() << "compile:1\t"<<this->get_use_gpu();
-		exit (HMC_STDERR);
-	}
+	  if( this->get_use_gpu() == false) throw Invalid_Parameters("GPU usage.","ON","OFF");
 #else
-	if( this->get_use_gpu() == true) {
-		logger.fatal() << "Error in setting of GPU-usage, aborting...";
-		logger.fatal() << "compile:0\t"<<this->get_use_gpu();
-		exit (HMC_STDERR);
-	}
+	  if( this->get_use_gpu() == true) throw Invalid_Parameters("GPU usage.","OFF","ON");
 #endif
-	//Lattice Size
-	if( this->get_nspace() != NSPACE)  {
-		logger.fatal() << "Error in spatial lattice size, aborting...";
-		logger.fatal() << "compile:"<<NSPACE<<"\tinput:"<<this->get_nspace();
-		exit (HMC_STDERR);
-	}
-	if( this->get_ntime() != NTIME) {
-		logger.fatal() << "Error in temporal lattice size, aborting...";
-		logger.fatal() << "compile:"<<NTIME<<"\tinput:"<<this->get_ntime();
-		exit (HMC_STDERR);
-	}	
-	
 
+	//Lattice Size
+	  if( this->get_nspace() != NSPACE)  throw Invalid_Parameters("Spatial lattice size.", NSPACE, this->get_nspace());
+	  if( this->get_ntime() != NTIME)  throw Invalid_Parameters("Timelike lattice size.", NTIME, this->get_ntime());
+
+	
+	}//try
+	catch (Invalid_Parameters& e) {
+	  logger.fatal()<<"Error in check_setting_global():";
+	  logger.fatal()<<e.what();
+	  logger.fatal()<<"Aborting.";
+	  exit(EXIT_INPUTPARAMETERS);
+	}
 }
