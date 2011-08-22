@@ -70,18 +70,15 @@ public:
 	hmc_error copy_spinorfield_to_device(spinorfield* host_spinorfield, usetimer* timer);
 	hmc_error copy_source_to_device(spinorfield* host_spinorfield, usetimer* timer);
 	hmc_error get_spinorfield_from_device(spinorfield* host_spinorfield,  usetimer* timer);
-	hmc_error copy_spinor_device(cl_mem in, cl_mem out, usetimer* timer);
 
 	//    eoprec
 	hmc_error copy_eoprec_spinorfield_to_device(spinorfield_eoprec* host_spinorfield, usetimer* timer);
 	hmc_error copy_eoprec_source_to_device(spinorfield_eoprec* host_spinorfield1, spinorfield_eoprec* host_spinorfield2, usetimer* timer);
 	hmc_error get_eoprec_spinorfield_from_device(spinorfield_eoprec* host_spinorfield,  usetimer* timer);
-	hmc_error copy_eoprec_spinor_device(cl_mem in, cl_mem out, usetimer* timer);
 
 	//    misc
 	hmc_error copy_float_from_device(cl_mem in, hmc_float * out, usetimer* timer);
 	hmc_error copy_complex_from_device(cl_mem in, hmc_complex * out, usetimer* timer);
-	hmc_error copy_complex_device(cl_mem in, cl_mem out, usetimer* timer);
 
 	/////////////////////////////////////////
 	// device operations

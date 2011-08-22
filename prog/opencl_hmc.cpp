@@ -272,7 +272,8 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 			
 			/** @todo make the source an arg in solver to get rid of all these copying. This should make one spinorfield unnecessary!! */
 			//the first source is the original phi
-			copy_spinor_device(clmem_phi, get_clmem_source(), &copy_on);
+			copy_buffer_on_device(clmem_phi, get_clmem_source(), sizeof(spinor) * SPINORFIELDSIZE, &copy_on);
+
 			
 			//debugging
 			hmc_float s_fermion;
@@ -290,7 +291,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
 			
 			//store this result in clmem_phi_inv
-			copy_spinor_device(get_clmem_inout(), clmem_phi_inv, &copy_on);
+			copy_buffer_on_device(get_clmem_inout(), clmem_phi_inv, sizeof(spinor) * SPINORFIELDSIZE, &copy_on);
 			
 			/**
 			 * Now, one has to calculate 
@@ -302,8 +303,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 			 */
 			
 			//copy former solution to clmem_source
-			copy_spinor_device(get_clmem_inout(), get_clmem_source(), &copy_on);
-			
+			copy_buffer_on_device(get_clmem_inout(), get_clmem_source(), sizeof(spinor) * SPINORFIELDSIZE, &copy_on);
 			logger.debug() << "\t\t\tstart solver";
 			
 			//debugging

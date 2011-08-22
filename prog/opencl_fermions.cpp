@@ -326,38 +326,6 @@ hmc_error Opencl_fermions::get_eoprec_spinorfield_from_device(spinorfield_eoprec
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::copy_spinor_device(cl_mem in, cl_mem out, usetimer* timer)
-{
-	(*timer).reset();
-	int clerr = CL_SUCCESS;
-	int spinorfield_size = sizeof(spinor) * SPINORFIELDSIZE;
-
-	clerr = clEnqueueCopyBuffer(queue, in, out, 0, 0, spinorfield_size , 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-
-	(*timer).add();
-	return HMC_SUCCESS;
-}
-
-hmc_error Opencl_fermions::copy_eoprec_spinor_device(cl_mem in, cl_mem out, usetimer* timer)
-{
-	(*timer).reset();
-	int clerr = CL_SUCCESS;
-	int spinorfield_size = sizeof(spinor) * EOPREC_SPINORFIELDSIZE;
-
-	clerr = clEnqueueCopyBuffer(queue, in, out, 0, 0, spinorfield_size , 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-
-	(*timer).add();
-	return HMC_SUCCESS;
-}
-
 hmc_error Opencl_fermions::copy_float_from_device(cl_mem in, hmc_float * out, usetimer* timer)
 {
 (*timer).reset();
@@ -615,7 +583,7 @@ hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, cl_mem gf, const si
 		M_tm_sitediagonal_device(in, clmem_tmp_eoprec_1, ls, gs);
 		/// @todo this timer can be extincted
 		usetimer noop;
-		copy_eoprec_spinor_device(out, clmem_tmp_eoprec_3, &noop);
+		copy_buffer_on_device(out, clmem_tmp_eoprec_3, sizeof(spinor) * EOPREC_SPINORFIELDSIZE, &noop);
 
 		saxpy_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, clmem_one, out, ls, gs);
 	}
@@ -1093,21 +1061,6 @@ hmc_error Opencl_fermions::set_zero_spinorfield_eoprec_device(cl_mem x, const si
 
 }
 
-hmc_error Opencl_fermions::copy_complex_device(cl_mem in, cl_mem out, usetimer* timer)
-{
-
-	int clerr = CL_SUCCESS;
-	int complex_size = sizeof(hmc_complex);
-
-	clerr = clEnqueueCopyBuffer(queue, in, out, 0, 0, complex_size , 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "... failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	(*timer).add();
-	return HMC_SUCCESS;
-}
-
 hmc_error Opencl_fermions::bicgstab_device(cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax, matrix_function_call f)
 {
 
@@ -1128,11 +1081,11 @@ if(debug) cout << "debug-output at bicgstab_device is activated" << endl;
 			f(this, clmem_inout, clmem_rn, gf, localsize, globalsize);
 
 			saxpy_device(clmem_rn, clmem_source, clmem_one, clmem_rn, localsize, globalsize);
-			copy_spinor_device(clmem_rn, clmem_rhat, singletimer);
+			copy_buffer_on_device(clmem_rn, clmem_rhat, sizeof(spinor) * SPINORFIELDSIZE, singletimer);
 
-			copy_complex_device(clmem_one, clmem_alpha, singletimer);
-			copy_complex_device(clmem_one, clmem_omega, singletimer);
-			copy_complex_device(clmem_one, clmem_rho, singletimer);
+			copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex), singletimer);
+			copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex), singletimer);
+			copy_buffer_on_device(clmem_one, clmem_rho, sizeof(hmc_complex), singletimer);
 
 			//CP: calc initial residuum for output, this is not needed for the algorithm!!
 // 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size);
@@ -1175,7 +1128,7 @@ if(debug){
 		cout << "(rhat, rn): " << rho_next.re << "  " <<  rho_next.im << endl;
 }
 		set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
-		copy_complex_device(clmem_rho_next, clmem_rho, singletimer);
+		copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex), singletimer);
 		set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
 		set_complex_to_product_device(clmem_tmp1, clmem_tmp2, clmem_beta);
 
@@ -1373,11 +1326,11 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(cl_mem gf, usetimer * copytime
 			f(this, clmem_inout_eoprec, clmem_rn_eoprec, gf, localsize, globalsize);
 
 			saxpy_eoprec_device(clmem_rn_eoprec, clmem_source_even, clmem_one, clmem_rn_eoprec, localsize, globalsize);
-			copy_eoprec_spinor_device(clmem_rn_eoprec, clmem_rhat_eoprec, singletimer);
-
-			copy_complex_device(clmem_one, clmem_alpha, singletimer);
-			copy_complex_device(clmem_one, clmem_omega, singletimer);
-			copy_complex_device(clmem_one, clmem_rho, singletimer);
+			copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, sizeof(spinor) * EOPREC_SPINORFIELDSIZE, singletimer);
+			
+			copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex), singletimer);
+			copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex), singletimer);
+			copy_buffer_on_device(clmem_one, clmem_rho, sizeof(hmc_complex), singletimer);
 
 			//!!CP: calc initial residuum, this is not needed for the algorithm!!
 			//set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid, local_work_size, global_work_size, scalarprodtimer);
@@ -1387,7 +1340,7 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(cl_mem gf, usetimer * copytime
 
 		set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next, localsize, globalsize);
 		set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
-		copy_complex_device(clmem_rho_next, clmem_rho, singletimer);
+		copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex), singletimer);
 		set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
 		set_complex_to_product_device(clmem_tmp1, clmem_tmp2, clmem_beta);
 
@@ -1445,7 +1398,8 @@ hmc_error Opencl_fermions::cg_device(cl_mem gf, usetimer * copytimer, usetimer* 
 		if(iter % iter_refresh == 0) {
 			f(this, clmem_inout, clmem_rn, gf, localsize, globalsize);
 			saxpy_device(clmem_rn, clmem_source, clmem_one, clmem_rn, localsize, globalsize);
-			copy_spinor_device(clmem_rn, clmem_p, singletimer);
+			copy_buffer_on_device(clmem_rn, clmem_p, sizeof(spinor) * SPINORFIELDSIZE, singletimer);
+
 		}
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		set_complex_to_scalar_product_device(clmem_rn, clmem_rn, clmem_omega, localsize, globalsize);
@@ -1480,7 +1434,8 @@ hmc_error Opencl_fermions::cg_device(cl_mem gf, usetimer * copytimer, usetimer* 
 
 		if(resid < epssquare) {
 			//???
-// 			copy_spinor_device(clmem_rhat, clmem_inout, singletimer);
+			//copy_buffer_on_device(clmem_rhat, clmem_inout, sizeof(spinor) * SPINORFIELDSIZE, singletimer);
+
 			return HMC_SUCCESS;
 		} else {
 			//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
@@ -1499,7 +1454,8 @@ hmc_error Opencl_fermions::cg_device(cl_mem gf, usetimer * copytimer, usetimer* 
 			saxpy_device(clmem_p, clmem_rhat, clmem_tmp2, clmem_p, localsize, globalsize);
 			
 			//rn = rn+1 ^= rn = rhat
-			copy_spinor_device(clmem_rhat, clmem_rn, singletimer);
+			copy_buffer_on_device(clmem_rhat, clmem_rn, sizeof(spinor) * SPINORFIELDSIZE, singletimer);
+
 		}
 	}
 	return HMC_SUCCESS;
