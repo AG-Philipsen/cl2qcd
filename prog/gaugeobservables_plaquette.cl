@@ -27,7 +27,6 @@ __kernel void plaquette(__global ocl_s_gaugefield * field, __global hmc_float * 
 	Matrixsu3 prod;
 
 	for(id = id_tmp; id < VOLSPACE * NTIME; id += global_size) {
-		get_even_site(id, &pos, &t);
 		if(id < VOLSPACE * NTIME / 2)
 			get_even_site(id, &pos, &t);
 		else
@@ -45,7 +44,6 @@ __kernel void plaquette(__global ocl_s_gaugefield * field, __global hmc_float * 
 				}
 			}
 		}
-
 	}
 
 	if(local_size == 1) {

@@ -98,28 +98,38 @@ hmc_error Opencl_fermions::fill_buffers()
 	int float_size = sizeof(hmc_float);
 	int global_buf_size = complex_size * num_groups;
 	int global_buf_size_float = float_size * num_groups;
-	hmc_complex one = hmc_complex_one;
-	hmc_complex minusone = hmc_complex_minusone;
 
-	logger.debug() << "init buffers for spinorfields";
+	logger.debug() << "init general spinorfield-buffers";
 	clmem_corr = create_rw_buffer(spinorfield_size);
 	clmem_inout = create_rw_buffer(spinorfield_size);
 	clmem_source = create_rw_buffer(spinorfield_size);
-	clmem_rn = create_rw_buffer(spinorfield_size);
-	clmem_rhat = create_rw_buffer(spinorfield_size);
-	clmem_v = create_rw_buffer(spinorfield_size);
-	clmem_p = create_rw_buffer(spinorfield_size);
-	clmem_s =create_rw_buffer(spinorfield_size);
-	clmem_t = create_rw_buffer(spinorfield_size);
-	clmem_aux = create_rw_buffer(spinorfield_size);
 	clmem_tmp = create_rw_buffer(spinorfield_size);
 	
-	//LZ only use the following if we want to apply even odd preconditioning
 	if(get_parameters()->get_use_eo() == true) {
-		logger.debug() << "init buffers for eoprec-spinorfields";
+		logger.debug() << "init geberal eoprec-spinorfield-buffers";
 		clmem_inout_eoprec = create_rw_buffer(eoprec_spinorfield_size);
 		clmem_source_even = create_rw_buffer(eoprec_spinorfield_size);
 		clmem_source_odd = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_tmp_eoprec_1 = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_tmp_eoprec_2 = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_tmp_eoprec_3 = create_rw_buffer(eoprec_spinorfield_size);
+	}
+	
+	logger.debug() << "init solver spinorfield-buffers";
+	///@todo some buffers can be saved here if only cg is used
+	if(get_parameters()->get_use_eo() == false) {
+		//these are only used in a non-eoprec solver
+		clmem_rn = create_rw_buffer(spinorfield_size);
+		clmem_rhat = create_rw_buffer(spinorfield_size);
+		clmem_v = create_rw_buffer(spinorfield_size);
+		clmem_p = create_rw_buffer(spinorfield_size);
+		clmem_s =create_rw_buffer(spinorfield_size);
+		clmem_t = create_rw_buffer(spinorfield_size);
+		clmem_aux = create_rw_buffer(spinorfield_size);
+	}
+	else{
+		//LZ only use the following if we want to apply even odd preconditioning
+		logger.debug() << "init solver eoprec-spinorfield-buffers";
 		clmem_rn_eoprec = create_rw_buffer(eoprec_spinorfield_size);
 		clmem_rhat_eoprec = create_rw_buffer(eoprec_spinorfield_size);
 		clmem_v_eoprec = create_rw_buffer(eoprec_spinorfield_size);
@@ -127,9 +137,7 @@ hmc_error Opencl_fermions::fill_buffers()
 		clmem_s_eoprec = create_rw_buffer(eoprec_spinorfield_size);
 		clmem_t_eoprec = create_rw_buffer(eoprec_spinorfield_size);
 		clmem_aux_eoprec = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_tmp_eoprec_1 = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_tmp_eoprec_2 = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_tmp_eoprec_3 = create_rw_buffer(eoprec_spinorfield_size);
+
 	} //end if: eoprec
 
 	logger.debug() << "create buffers for complex and real numbers";
@@ -148,6 +156,8 @@ hmc_error Opencl_fermions::fill_buffers()
 	clmem_global_squarenorm_buf_glob = create_rw_buffer(global_buf_size_float);
 
 	logger.debug() << "write contents to some buffers";
+	hmc_complex one = hmc_complex_one;
+	hmc_complex minusone = hmc_complex_minusone;
 	clerr = clEnqueueWriteBuffer(queue, clmem_one, CL_TRUE, 0, complex_size, &one, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "... writing clmem_one failed, aborting." << endl;
@@ -470,10 +480,12 @@ hmc_error Opencl_fermions::Aee(cl_mem in, cl_mem out, cl_mem gf, const size_t ls
 		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, ls, gs);
 		dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even, ls, gs);
 		M_tm_sitediagonal_device(in, clmem_tmp_eoprec_1, ls, gs);
-		/// @todo this timer as well as the copying can be extincted
+		/** @todo this timer as well as the copying can be extincted
+		 * by using
+		 * 	saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out, ls, gs);
+		 */
 		usetimer noop;
 		copy_buffer_on_device(out, clmem_tmp_eoprec_3, sizeof(spinor) * EOPREC_SPINORFIELDSIZE, &noop);
-
 		saxpy_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, clmem_one, out, ls, gs);
 	}
 	return HMC_SUCCESS;
@@ -1090,8 +1102,7 @@ if(debug){
 // 			set_complex_to_product_device(clmem_minusone, clmem_alpha, clmem_alpha);
 // 			saxpy_device(clmem_p, clmem_inout, clmem_alpha, clmem_inout, localsize, globalsize);
 // 			
-// 			// 			M_device(clmem_inout, clmem_aux, gf, localsize, globalsize);
-// 			Qplus_device(clmem_inout, clmem_aux, gf, localsize, globalsize);
+// 			f(this, clmem_inout, clmem_aux, gf, localsize, globalsize);
 // 			saxpy_device(clmem_aux, clmem_source, clmem_one, clmem_aux, localsize, globalsize);
 // 			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, localsize, globalsize);
 // 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float), copytimer);
@@ -1389,6 +1400,7 @@ hmc_error Opencl_fermions::solver_eoprec_device(cl_mem gf, usetimer * copytimer,
 		logger.fatal() << "not yet implemented in WILSON case, aborting...";
 	}
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
+		///@todo here, the use of clmem_tmp_eoprec_3 can be avoided
 		dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, gf, ODD, ls, gs);
 		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, ls, gs);
 		M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2, ls, gs);
@@ -1484,6 +1496,7 @@ hmc_error Opencl_fermions::create_point_source_eoprec_device(cl_mem gf, int i, i
 		logger.fatal() << "not yet implemented in WILSON case, aborting...";
 	}
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
+		///@todo here, the use of clmem_tmp_eoprec_3 can be avoided by using clmem_source_even instead
 		M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1, ls, gs);
 		dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_3, gf, EVEN, ls, gs);
 		saxpy_eoprec_device(clmem_tmp_eoprec_2, clmem_tmp_eoprec_3, clmem_one, clmem_source_even, ls, gs);
