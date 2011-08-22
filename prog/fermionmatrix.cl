@@ -32,16 +32,8 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	int dir, nn;
 	su3vec psi, phi;
 	Matrixsu3 U;
-	hmc_float kappa_minus = KAPPA;
-	
-	//These are the kappa including BC
-	/** @todo implement BC! Beware, the kappa at -mu then has to be complex conjugated (see tmlqcd)*/
-	hmc_complex ks, kt;
-	ks.re = KAPPA_SPATIAL_RE;
-	ks.im = KAPPA_SPATIAL_IM;
-	kt.re = KAPPA_TEMPORAL_RE;
-	kt.im = KAPPA_TEMPORAL_IM;
-	
+	//this is used to save the BC-conditions...
+	hmc_complex bc_tmp;
 	out_tmp = set_spinor_zero();
 	
 	//go through the different directions
@@ -62,6 +54,8 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	hmc_complex cpi_tmp = {cos(CPI), sin(CPI)};
 	U = multiply_matrixsu3_by_complex (U, cpi_tmp );
 #endif
+	bc_tmp.re = KAPPA_TEMPORAL_RE;
+	bc_tmp.im = KAPPA_TEMPORAL_IM;
 	///////////////////////////////////
 	// Calculate psi/phi = (1 - gamma_0) y
 	// with 1 - gamma_0:
@@ -74,15 +68,14 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	psi = su3vec_dim(plus.e0, plus.e2);
 	// phi = U*psi
 	phi =  su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
-// 	psi = su3vec_times_complex(phi, kt);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e2 = su3vec_dim(out_tmp.e2, psi);
 	// psi = 1. component of (1-gamma_0)y
 	psi = su3vec_dim(plus.e1, plus.e3);
 	// phi = U*psi
 	phi =  su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e3 = su3vec_dim(out_tmp.e3, psi);
 
@@ -103,6 +96,9 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	hmc_complex cpi_tmp = {cos(CPI), sin(CPI)};
 	U = multiply_matrixsu3_by_complex (U, cpi_tmp );
 #endif
+	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
+	bc_tmp.re = KAPPA_TEMPORAL_RE;
+	bc_tmp.im = MKAPPA_TEMPORAL_IM;
 	///////////////////////////////////
 	// Calculate psi/phi = (1 + gamma_0) y
 	// with 1 + gamma_0:
@@ -115,16 +111,14 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	psi = su3vec_acc(plus.e0, plus.e2);
 	// phi = U*psi
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
-	//TODO: put this into the other places too
-// 	psi = su3vec_times_complex_conj(phi, kt);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e2 = su3vec_acc(out_tmp.e2, psi);
 	// psi = 1. component of (1+gamma_0)y
 	psi = su3vec_acc(plus.e1, plus.e3);
 	// phi = U*psi
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e3 = su3vec_acc(out_tmp.e3, psi);		
 
@@ -139,6 +133,8 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	nn = get_neighbor(n,dir);
 	plus = get_spinor_from_field(in, nn, t);
 	U = field[get_global_link_pos(dir, n, t)];
+	bc_tmp.re = KAPPA_SPATIAL_RE;
+	bc_tmp.im = KAPPA_SPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 - gamma_1) y
 	// with 1 - gamma_1:
@@ -149,13 +145,13 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	///////////////////////////////////
 	psi = su3vec_dim_i(plus.e0, plus.e3);
 	phi = su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e3 = su3vec_acc_i(out_tmp.e3, psi);
 	
 	psi = su3vec_dim_i(plus.e1, plus.e2);
 	phi = su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e2 = su3vec_acc_i(out_tmp.e2, psi);		
 
@@ -164,6 +160,9 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	nn = get_lower_neighbor(n,dir);
 	plus = get_spinor_from_field(in, nn, t);
 	U = field[get_global_link_pos(dir, nn, t)];
+	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
+	bc_tmp.re = KAPPA_SPATIAL_RE;
+	bc_tmp.im = MKAPPA_SPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 + gamma_1) y
 	// with 1 + gamma_1:
@@ -174,13 +173,13 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	///////////////////////////////////
 	psi = su3vec_acc_i(plus.e0, plus.e3);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e3 = su3vec_dim_i(out_tmp.e3, psi);
 	
 	psi = su3vec_acc_i(plus.e1, plus.e2);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e2 = su3vec_dim_i(out_tmp.e2, psi);		
 	
@@ -194,6 +193,8 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	nn = get_neighbor(n,dir);
 	plus = get_spinor_from_field(in, nn, t);
 	U = field[get_global_link_pos(dir, n, t)];
+	bc_tmp.re = KAPPA_SPATIAL_RE;
+	bc_tmp.im = KAPPA_SPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 - gamma_2) y
 	// with 1 - gamma_2:
@@ -204,13 +205,13 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	///////////////////////////////////
 	psi = su3vec_acc(plus.e0, plus.e3);
 	phi = su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e3 = su3vec_acc(out_tmp.e3, psi);
 	
 	psi = su3vec_dim(plus.e1, plus.e2);
 	phi = su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e2 = su3vec_dim(out_tmp.e2, psi);	
 	
@@ -219,6 +220,9 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	nn = get_lower_neighbor(n,dir);
 	plus = get_spinor_from_field(in,  nn, t);
 	U = field[get_global_link_pos(dir, nn, t)];
+	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
+	bc_tmp.re = KAPPA_SPATIAL_RE;
+	bc_tmp.im = MKAPPA_SPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 + gamma_2) y
 	// with 1 + gamma_2:
@@ -229,13 +233,13 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	///////////////////////////////////
 	psi = su3vec_dim(plus.e0, plus.e3);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e3 = su3vec_dim(out_tmp.e3, psi);
 	
 	psi = su3vec_acc(plus.e1, plus.e2);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e2 = su3vec_acc(out_tmp.e2, psi);	
 
@@ -249,6 +253,8 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	nn = get_neighbor(n,dir);
 	plus = get_spinor_from_field(in, nn, t);
 	U = field[get_global_link_pos(dir, n, t)];
+	bc_tmp.re = KAPPA_SPATIAL_RE;
+	bc_tmp.im = KAPPA_SPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 - gamma_3) y
 	// with 1 - gamma_3:
@@ -259,13 +265,13 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	///////////////////////////////////
 	psi = su3vec_dim_i(plus.e0, plus.e2);
 	phi = su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e2 = su3vec_acc_i(out_tmp.e2, psi);
 	
 	psi = su3vec_acc_i(plus.e1, plus.e3);
 	phi = su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e3 = su3vec_dim_i(out_tmp.e3, psi);	
 
@@ -274,6 +280,9 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	nn = get_lower_neighbor(n,dir);
 	plus = get_spinor_from_field(in, nn, t);
 	U = field[get_global_link_pos(dir, nn, t)];
+	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
+	bc_tmp.re = KAPPA_SPATIAL_RE;
+	bc_tmp.im = MKAPPA_SPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 + gamma_3) y
 	// with 1 + gamma_3:
@@ -284,13 +293,13 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	///////////////////////////////////
 	psi = su3vec_acc_i(plus.e0, plus.e2);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e2 = su3vec_dim_i(out_tmp.e2, psi);
 	
 	psi = su3vec_dim_i(plus.e1, plus.e3);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e3 = su3vec_acc_i(out_tmp.e3, psi);
 

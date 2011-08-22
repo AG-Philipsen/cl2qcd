@@ -10,8 +10,8 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	int dir, nn, nn_eo;
 	su3vec psi, phi;
 	Matrixsu3 U;
-	hmc_float kappa_minus = KAPPA;
-	
+	//this is used to save the BC-conditions...
+	hmc_complex bc_tmp;
 	out_tmp = set_spinor_zero();
 
 	//go through the different directions
@@ -34,6 +34,8 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	hmc_complex cpi_tmp = {cos(CPI), sin(CPI)};
 	U = multiply_matrixsu3_by_complex (U, cpi_tmp );
 #endif
+	bc_tmp.re = KAPPA_TEMPORAL_RE;
+	bc_tmp.im = KAPPA_TEMPORAL_IM;
 	///////////////////////////////////
 	// Calculate psi/phi = (1 - gamma_0) y
 	// with 1 - gamma_0:
@@ -76,6 +78,9 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	hmc_complex cpi_tmp = {cos(CPI), sin(CPI)};
 	U = multiply_matrixsu3_by_complex (U, cpi_tmp );
 #endif
+	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
+	bc_tmp.re = KAPPA_TEMPORAL_RE;
+	bc_tmp.im = MKAPPA_TEMPORAL_IM;
 	///////////////////////////////////
 	// Calculate psi/phi = (1 + gamma_0) y
 	// with 1 + gamma_0:
@@ -112,6 +117,8 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	nn_eo = get_n_eoprec(nn, t);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
 	U = field[get_global_link_pos(dir, n, t)];
+	bc_tmp.re = KAPPA_SPATIAL_RE;
+	bc_tmp.im = KAPPA_SPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 - gamma_1) y
 	// with 1 - gamma_1:
@@ -139,6 +146,9 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	nn_eo = get_n_eoprec(nn, t);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
 	U = field[get_global_link_pos(dir, nn, t)];
+	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
+	bc_tmp.re = KAPPA_SPATIAL_RE;
+	bc_tmp.im = MKAPPA_SPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 + gamma_1) y
 	// with 1 + gamma_1:
@@ -171,6 +181,8 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	nn_eo = get_n_eoprec(nn, t);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
 	U = field[get_global_link_pos(dir, n, t)];
+	bc_tmp.re = KAPPA_SPATIAL_RE;
+	bc_tmp.im = KAPPA_SPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 - gamma_2) y
 	// with 1 - gamma_2:
@@ -198,6 +210,9 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	nn_eo = get_n_eoprec(nn, t);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
 	U = field[get_global_link_pos(dir, nn, t)];
+	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
+	bc_tmp.re = KAPPA_SPATIAL_RE;
+	bc_tmp.im = MKAPPA_SPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 + gamma_2) y
 	// with 1 + gamma_2:
@@ -230,6 +245,8 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	nn_eo = get_n_eoprec(nn, t);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
 	U = field[get_global_link_pos(dir, n, t)];
+	bc_tmp.re = KAPPA_SPATIAL_RE;
+	bc_tmp.im = KAPPA_SPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 - gamma_3) y
 	// with 1 - gamma_3:
@@ -257,6 +274,9 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	nn_eo = get_n_eoprec(nn, t);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
 	U = field[get_global_link_pos(dir, nn, t)];
+	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
+	bc_tmp.re = KAPPA_SPATIAL_RE;
+	bc_tmp.im = MKAPPA_SPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 + gamma_3) y
 	// with 1 + gamma_3:
