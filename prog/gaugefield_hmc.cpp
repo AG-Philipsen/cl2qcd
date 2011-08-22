@@ -85,8 +85,8 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters,
 	
 	/** @todo these have to be reconsidered! */
 	//copy u->u' p->p' for the leapfrog
-	get_devices_hmc()[dev].copy_gaugefield_old_new_device(copy_on_dev_timer);
-	get_devices_hmc()[dev].copy_gaugemomenta_old_new_device(copy_on_dev_timer);
+	get_devices_hmc()[dev].copy_buffer_on_device(get_devices_hmc()[dev].get_clmem_gaugefield(), get_devices_hmc()[dev].get_clmem_new_u(), sizeof(s_gaugefield), copy_on_dev_timer); 
+	get_devices_hmc()[dev].copy_buffer_on_device(get_devices_hmc()[dev].get_clmem_p(), get_devices_hmc()[dev].get_clmem_new_p(), sizeof(ae) * GAUGEMOMENTASIZE2, copy_on_dev_timer); 
 		
 	get_devices_hmc()[dev].leapfrog_device((*parameters).get_tau(), (*parameters).get_integrationsteps1(), (*parameters).get_integrationsteps2(), ls, gs);
 		
@@ -97,9 +97,8 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters,
 
 	if((*obs).accept == 1){
 		// perform the change nonprimed->primed !
-		get_devices_hmc()[dev].copy_gaugefield_new_old_device(copy_on_dev_timer);
-		get_devices_hmc()[dev].copy_gaugemomenta_new_old_device(copy_on_dev_timer);
-		// SL: this works as long as p and field are pointers to the *original* memory locations!
+		get_devices_hmc()[dev].copy_buffer_on_device(get_devices_hmc()[dev].get_clmem_new_u(), get_devices_hmc()[dev].get_clmem_gaugefield(), sizeof(s_gaugefield), copy_on_dev_timer); 
+		get_devices_hmc()[dev].copy_buffer_on_device(get_devices_hmc()[dev].get_clmem_new_p(), get_devices_hmc()[dev].get_clmem_p(), sizeof(ae) * GAUGEMOMENTASIZE2, copy_on_dev_timer); 
 		logger.debug() << "\t\tnew configuration accepted" ;
 	}
 	else{

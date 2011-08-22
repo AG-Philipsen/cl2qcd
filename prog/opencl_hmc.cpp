@@ -586,62 +586,18 @@ hmc_error Opencl_hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clmem_
 }
 
 ////////////////////////////////////////////////////
-//Methods to copy new and old fields... these can be optimized!!
-hmc_error Opencl_hmc::copy_gaugefield_old_new_device(usetimer * timer)
-{
-	(*timer).reset();
-	int gaugefield_size = sizeof(s_gaugefield);
-	int clerr = clEnqueueCopyBuffer(queue, clmem_gaugefield, clmem_new_u,  0, 0, gaugefield_size, NULL, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "...copy old to new gaugefield failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	(*timer).add();
-	
-	return HMC_SUCCESS;
+//Access to members
+
+cl_mem Opencl_hmc::get_clmem_p(){
+	return clmem_p;
 }
 
-
-hmc_error Opencl_hmc::copy_gaugemomenta_old_new_device(usetimer * timer)
-{
-	(*timer).reset();
-	int gaugemomentum_size = sizeof(ae) * GAUGEMOMENTASIZE2;
-	int clerr = clEnqueueCopyBuffer(queue, clmem_p, clmem_new_p, 0, 0, gaugemomentum_size, NULL, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "...copy old to new gaugemomentum failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	(*timer).add();
-	
-	return HMC_SUCCESS;
+cl_mem Opencl_hmc::get_clmem_new_p(){
+	return clmem_new_p;
 }
 
-hmc_error Opencl_hmc::copy_gaugefield_new_old_device(usetimer * timer)
-{
-	(*timer).reset();
-	int clerr = clEnqueueCopyBuffer(queue, clmem_new_u, clmem_gaugefield, 0, 0, sizeof(s_gaugefield), NULL, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "...copy new to old gaugefield failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	(*timer).add();
-	
-	return HMC_SUCCESS;
-}
-
-
-hmc_error Opencl_hmc::copy_gaugemomenta_new_old_device(usetimer * timer)
-{
-	(*timer).reset();
-	int gaugemomentum_size = sizeof(ae) * GAUGEMOMENTASIZE2;
-	int clerr = clEnqueueCopyBuffer(queue, clmem_new_p, clmem_p, 0, 0, gaugemomentum_size, NULL, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "...copy new to old gaugemomentum failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	(*timer).add();
-	
-	return HMC_SUCCESS;
+cl_mem Opencl_hmc::get_clmem_new_u(){
+	return clmem_new_u;
 }
 
 #ifdef _PROFILING_

@@ -66,13 +66,10 @@ public:
 	hmc_error set_float_to_gaugemomentum_squarenorm_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
 	
 	////////////////////////////////////////////////////
-	//copying
-	//Methods to copy new and old fields... these can be optimized!!
-	hmc_error copy_gaugefield_old_new_device(usetimer * timer);
-	hmc_error copy_gaugemomenta_old_new_device(usetimer * timer);
-	hmc_error copy_gaugefield_new_old_device(usetimer * timer);
-	hmc_error copy_gaugemomenta_new_old_device(usetimer * timer);
-
+	//get members
+	cl_mem get_clmem_p();
+	cl_mem get_clmem_new_p();
+	cl_mem get_clmem_new_u();
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
 	//fermionmatrix
