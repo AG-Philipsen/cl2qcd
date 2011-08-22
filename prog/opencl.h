@@ -407,7 +407,27 @@ public:
 	 * @param size size of data (out must be equal or bigger than size)
 	 * @param timer timer to measure time used
 	 */	
-	hmc_error copy_buffer_on_device(cl_mem in, cl_mem out, size_t size, usetimer* timer);
+	void copy_buffer_on_device(cl_mem in, cl_mem out, size_t size, usetimer* timer);
+	/**
+	 * Copy content of a buffer on host to a buffer on device inside a queue using 
+	 *     clEnqueueWriteBuffer(queue, dest, CL_TRUE, 0, size, source, 0, 0, NULL);
+	 * This call is a blocking write. 
+	 * @param source
+	 * @param dest 
+	 * @param size size of data (out must be equal or bigger than size)
+	 * @param timer timer to measure time used
+	 */	
+	void copy_buffer_to_device(void * source, cl_mem dest, size_t size, usetimer* timer);
+	/**
+	 * Copy content of a buffer on device to a buffer on host inside a queue using 
+	 *    clEnqueueReadBuffer(queue, source, CL_TRUE, 0, size, dest, 0, NULL, NULL);
+	 * This call is a blocking read. 
+	 * @param source
+	 * @param dest 
+	 * @param size size of data (out must be equal or bigger than size)
+	 * @param timer timer to measure time used
+	 */
+	void get_buffer_from_device(cl_mem source, void * dest, size_t size, usetimer* timer);
 protected:
 	/**
 	 * A set of source files used by all kernels.

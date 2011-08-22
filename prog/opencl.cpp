@@ -382,18 +382,36 @@ hmc_error Opencl::copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* tim
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::copy_buffer_on_device(cl_mem in, cl_mem out, size_t size, usetimer* timer)
+void Opencl::copy_buffer_on_device(cl_mem in, cl_mem out, size_t size, usetimer* timer)
 {
 	(*timer).reset();
-	int clerr = CL_SUCCESS;
-
-	clerr = clEnqueueCopyBuffer(queue, in, out, 0, 0, size , 0, 0, NULL);
+	int clerr = clEnqueueCopyBuffer(queue, in, out, 0, 0, size , 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "... copying buffer on device failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
 	(*timer).add();
-	return HMC_SUCCESS;
+}
+
+void Opencl::copy_buffer_to_device(void * source, cl_mem dest, size_t size, usetimer* timer){
+	(*timer).reset();
+	int clerr = clEnqueueWriteBuffer(queue, dest, CL_TRUE, 0, size, source, 0, 0, NULL);
+	if(clerr != CL_SUCCESS) {
+		cout << "... failed, aborting." << endl;
+		exit(HMC_OCLERROR);
+	}
+	(*timer).add();
+}
+
+void Opencl::get_buffer_from_device(cl_mem source, void * dest, size_t size, usetimer* timer){
+	(*timer).reset();
+	int clerr = clEnqueueReadBuffer(queue, source, CL_TRUE, 0, size, dest, 0, NULL, NULL);
+	if(clerr != CL_SUCCESS) {
+		cout << "... failed, aborting." << endl;
+		cout << "errorcode :" << clerr << endl;
+		exit(HMC_OCLERROR);
+	}
+	(*timer).add();
 }
 
 void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
