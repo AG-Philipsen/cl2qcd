@@ -716,3 +716,19 @@ Matrixsu3 multiply_matrixsu3_by_real (Matrixsu3 in, hmc_float factor){
     return out;
 }
 
+Matrixsu3 multiply_matrixsu3_by_complex (Matrixsu3 in, hmc_complex factor){
+	Matrixsu3 out;
+	out.e00 = complexmult(in.e00, factor);
+	out.e01 = complexmult(in.e01, factor);
+	out.e02 = complexmult(in.e02, factor);
+	out.e10 = complexmult(in.e10, factor);
+	out.e11 = complexmult(in.e11, factor);
+	out.e12 = complexmult(in.e12, factor);
+#ifndef _RECONSTRUCT_TWELVE_
+	out.e20 = complexmult(in.e20, factor);
+	out.e21 = complexmult(in.e21, factor);
+	out.e22 = complexmult(in.e22, factor);
+#endif
+    return out;
+}
+
