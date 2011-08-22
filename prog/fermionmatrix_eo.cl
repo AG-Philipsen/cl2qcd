@@ -26,6 +26,14 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	nn_eo = get_n_eoprec(n, nn);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
 	U = field[get_global_link_pos(dir, n, t)];
+	//if chemical potential is activated, U has to be multiplied by appropiate factor
+#ifdef _CP_REAL_
+	U = multiply_matrixsu3_by_real (U, exp(CPR) );
+#endif
+#ifdef _CP_IMAG_
+	hmc_complex cpi_tmp = {cos(CPI), sin(CPI)};
+	U = multiply_matrixsu3_by_complex (U, cpi_tmp );
+#endif
 	///////////////////////////////////
 	// Calculate psi/phi = (1 - gamma_0) y
 	// with 1 - gamma_0:
@@ -56,6 +64,18 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	nn_eo = get_n_eoprec(n, nn);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
 	U = field[get_global_link_pos(dir, n, nn)];
+	//if chemical potential is activated, U has to be multiplied by appropiate factor
+	//this is the same as at mu=0 in the imag. case, since U is taken to be U^+ later:
+	//	(exp(iq)U)^+ = exp(-iq)U^+
+	//as it should be
+	//in the real case, one has to take exp(q) -> exp(-q)
+#ifdef _CP_REAL_
+	U = multiply_matrixsu3_by_real (U, exp(-CPR) );
+#endif
+#ifdef _CP_IMAG_
+	hmc_complex cpi_tmp = {cos(CPI), sin(CPI)};
+	U = multiply_matrixsu3_by_complex (U, cpi_tmp );
+#endif
 	///////////////////////////////////
 	// Calculate psi/phi = (1 + gamma_0) y
 	// with 1 + gamma_0:
