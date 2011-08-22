@@ -95,6 +95,7 @@ public:
 	//    fermionmatrix operations
 	//    non-eoprec
 	//        compound
+	hmc_error M(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error Qminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error QplusQminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
@@ -145,7 +146,7 @@ public:
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
 	//fermionmatrix
-	usetimer timer_M;
+	usetimer timer_M_wilson;
 	usetimer timer_gamma5;
 	usetimer timer_M_tm_plus;
 	usetimer timer_M_tm_minus;
@@ -213,7 +214,7 @@ private:
 	////////////////////////////////////
 	//kernels, sorted roughly by groups
 	//fermionmatrix
-	cl_kernel M;
+	cl_kernel M_wilson;
 	cl_kernel gamma5;
 	cl_kernel M_tm_plus;
 	cl_kernel M_tm_minus;

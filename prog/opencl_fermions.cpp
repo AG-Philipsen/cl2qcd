@@ -171,7 +171,7 @@ void Opencl_fermions::fill_kernels()
 
 	logger.debug() << "Create fermion kernels...";
 	if(get_parameters()->get_fermact() == WILSON){
-		M = createKernel("M") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m.cl";
+		M_wilson = createKernel("M_wilson") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m.cl";
 	}
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
 		M_tm_plus = createKernel("M_tm_plus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
@@ -319,6 +319,20 @@ hmc_error Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl
 }
 
 //compound fermionmatrix-functions without eoprec
+hmc_error Opencl_fermions::M(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
+
+	if(get_parameters()->get_fermact() == WILSON){
+		//in the pure Wilson case there is just one fermionmatrix 
+		M_device(in, out, gf, ls, gs);
+	}
+	else if(get_parameters()->get_fermact() == TWISTEDMASS){
+		M_tm_plus_device(in, out, gf, ls, gs);
+	}
+
+	return HMC_SUCCESS;
+
+}
+
 hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
 
 	if(get_parameters()->get_fermact() == WILSON){
@@ -367,22 +381,22 @@ hmc_error Opencl_fermions::QplusQminus_device(cl_mem in, cl_mem out, cl_mem gf, 
 hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
 
   int clerr =CL_SUCCESS;
-	clerr = clSetKernelArg(M,0,sizeof(cl_mem),&in); 
+	clerr = clSetKernelArg(M_wilson,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(M,1,sizeof(cl_mem),&gf);
+  clerr = clSetKernelArg(M_wilson,1,sizeof(cl_mem),&gf);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-  clerr = clSetKernelArg(M,2,sizeof(cl_mem),&out);
+  clerr = clSetKernelArg(M_wilson,2,sizeof(cl_mem),&out);
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	enqueueKernel( M, gs, ls);
+	enqueueKernel( M_wilson, gs, ls);
 	return HMC_SUCCESS;
 }
 
@@ -456,7 +470,7 @@ hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, cl_mem gf, const si
 		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, ls, gs);
 		dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even, ls, gs);
 		M_tm_sitediagonal_device(in, clmem_tmp_eoprec_1, ls, gs);
-		/// @todo this timer can be extincted
+		/// @todo this timer as well as the copying can be extincted
 		usetimer noop;
 		copy_buffer_on_device(out, clmem_tmp_eoprec_3, sizeof(spinor) * EOPREC_SPINORFIELDSIZE, &noop);
 
@@ -1541,7 +1555,7 @@ hmc_error Opencl_fermions::finalize_fermions()
 
 	if(clReleaseKernel(ps_correlator) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseKernel(set_spinorfield_cold) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(M) != CL_SUCCESS) exit(HMC_OCLERROR);
+	if(clReleaseKernel(M_wilson) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseKernel(saxpy) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseKernel(saxsbypz) != CL_SUCCESS) exit(HMC_OCLERROR);
 	if(clReleaseKernel(scalar_product) != CL_SUCCESS) exit(HMC_OCLERROR);
@@ -1620,8 +1634,8 @@ usetimer* Opencl_fermions::get_timer(char * in){
 	noop = Opencl::get_timer(in);
 	if(noop != NULL) return noop;
 	
-	if (strcmp(in, "M") == 0){
-    return &(this->timer_M);
+	if (strcmp(in, "M_wilson") == 0){
+    return &(this->timer_M_wilson);
 	}	
 	if (strcmp(in, "gamma5") == 0){
     return &this->timer_gamma5;
@@ -1734,7 +1748,7 @@ int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters
 	else
 	  S = SPINORFIELDSIZE;
 	//this is the same as in the function above
-	if (strcmp(in, "M") == 0){
+	if (strcmp(in, "M_wilson") == 0){
     return (240 + 16*R)*D*S;
 	}	
 	if (strcmp(in, "gamma5") == 0){
@@ -1836,7 +1850,7 @@ int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters
 void Opencl_fermions::print_profiling(std::string filename){
 	Opencl::print_profiling(filename);
 	char * kernelName;
-	kernelName = "M";
+	kernelName = "M_wilson";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "gamma5";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
