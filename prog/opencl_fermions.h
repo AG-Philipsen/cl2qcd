@@ -19,11 +19,11 @@ class Opencl_fermions;
  * This type points to a helper-function, which then calls the wanted function.
  */
 typedef hmc_error (*matrix_function_call) (Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-hmc_error M_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-hmc_error Qplus_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-hmc_error Qminus_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-hmc_error QplusQminus_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-hmc_error Aee_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+hmc_error M_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+hmc_error Qplus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+hmc_error Qminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+hmc_error QplusQminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+hmc_error Aee_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 
 /**
  * An OpenCL device for fermionic calculations.
@@ -96,17 +96,17 @@ public:
 	//    non-eoprec
 	//        compound
 	hmc_error M(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-	hmc_error Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-	hmc_error Qminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-	hmc_error QplusQminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+	hmc_error Qplus(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+	hmc_error Qminus(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+	hmc_error QplusQminus(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	//        explicit
-	hmc_error M_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+	hmc_error M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error gamma5_device(cl_mem inout, const size_t ls, const size_t gs);
 	//    eoprec
 	//        compound
-	hmc_error Aee_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+	hmc_error Aee(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	//        explicit
 	hmc_error gamma5_eoprec_device(cl_mem inout, const size_t ls, const size_t gs);
 	hmc_error M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);

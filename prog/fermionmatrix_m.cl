@@ -2,7 +2,7 @@
  * @file M normal Wilson fermionmatrix
  */
 
-__kernel void M(__global spinorfield * in, __global ocl_s_gaugefield * field, __global spinorfield * out){
+__kernel void M_wilson(__global spinorfield * in, __global ocl_s_gaugefield * field, __global spinorfield * out){
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);

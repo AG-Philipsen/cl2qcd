@@ -32,8 +32,6 @@ public:
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
 	virtual void fill_kernels();
-
-
 	/**
 	 * Initialize the OpenCL device including fermion capabilities
 	 *
@@ -70,6 +68,7 @@ public:
 	cl_mem get_clmem_p();
 	cl_mem get_clmem_new_p();
 	cl_mem get_clmem_new_u();
+	
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
 	//fermionmatrix

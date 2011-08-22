@@ -157,7 +157,7 @@ hmc_error Opencl_hmc::md_update_spinorfield_device(const size_t local_work_size,
 	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
 	//	then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//	which then has to be the source of the inversion
-	int err =  Opencl_fermions::Qplus_device(clmem_phi_inv, clmem_phi , get_clmem_gaugefield(), local_work_size, global_work_size);
+	int err =  Opencl_fermions::Qplus(clmem_phi_inv, clmem_phi , get_clmem_gaugefield(), local_work_size, global_work_size);
 
 	usetimer noop;
 	hmc_float s_fermion;
@@ -281,7 +281,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), &copy_to);
 			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
 			 
-			err = Opencl_fermions::solver_device(clmem_new_u, &copy_to, &copy_on, &solvertimer, ls, gs, get_parameters()->get_cgmax(), Qplus_device_call);
+			err = Opencl_fermions::solver_device(clmem_new_u, &copy_to, &copy_on, &solvertimer, ls, gs, get_parameters()->get_cgmax(), Qplus_call);
 			if (err != HMC_SUCCESS) logger.debug() << "\t\t\tsolver did not solve!!";
 			else logger.debug() << "\t\t\tsolver solved!";
 			
@@ -314,7 +314,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 			//this sets clmem_inout cold as trial-solution
 			set_spinorfield_cold_device(ls, gs);
 			
-			err = Opencl_fermions::solver_device(clmem_new_u, &copy_to, &copy_on, &solvertimer, ls, gs, get_parameters()->get_cgmax(), Qminus_device_call);
+			err = Opencl_fermions::solver_device(clmem_new_u, &copy_to, &copy_on, &solvertimer, ls, gs, get_parameters()->get_cgmax(), Qminus_call);
 			if (err != HMC_SUCCESS) logger.debug() << "\t\t\tsolver did not solve!!";
 			else logger.debug() << "\t\t\tsolver solved!";
 			

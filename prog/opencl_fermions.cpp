@@ -7,20 +7,20 @@
  * This is needed to be able to pass different fermionmatrices as
  * 	arguments to class-functions.
  */
-hmc_error M_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
-	return that->M_device(in, out, gf, ls, gs);
+hmc_error M_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
+	return that->M(in, out, gf, ls, gs);
 }
-hmc_error Qplus_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
-	return that->Qplus_device(in, out, gf, ls, gs);
+hmc_error Qplus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
+	return that->Qplus(in, out, gf, ls, gs);
 }
-hmc_error Qminus_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
-	return that->Qminus_device(in, out, gf, ls, gs);
+hmc_error Qminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
+	return that->Qminus(in, out, gf, ls, gs);
 }
-hmc_error QplusQminus_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
-	return that->QplusQminus_device(in, out, gf, ls, gs);
+hmc_error QplusQminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
+	return that->QplusQminus(in, out, gf, ls, gs);
 }
-hmc_error Aee_device_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
-	return that->Aee_device(in, out, gf, ls, gs);
+hmc_error Aee_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
+	return that->Aee(in, out, gf, ls, gs);
 }
 
 //Opencl_fermions class functions
@@ -323,7 +323,7 @@ hmc_error Opencl_fermions::M(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, 
 
 	if(get_parameters()->get_fermact() == WILSON){
 		//in the pure Wilson case there is just one fermionmatrix 
-		M_device(in, out, gf, ls, gs);
+		M_wilson_device(in, out, gf, ls, gs);
 	}
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
 		M_tm_plus_device(in, out, gf, ls, gs);
@@ -333,11 +333,11 @@ hmc_error Opencl_fermions::M(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, 
 
 }
 
-hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
+hmc_error Opencl_fermions::Qplus(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
 
 	if(get_parameters()->get_fermact() == WILSON){
 		//in the pure Wilson case there is just one fermionmatrix 
-		M_device(in, out, gf, ls, gs);
+		M_wilson_device(in, out, gf, ls, gs);
 	}
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
 		M_tm_plus_device(in, out, gf, ls, gs);
@@ -349,11 +349,11 @@ hmc_error Opencl_fermions::Qplus_device(cl_mem in, cl_mem out, cl_mem gf, const 
 
 }
 
-hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
+hmc_error Opencl_fermions::Qminus(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
  
 	if(get_parameters()->get_fermact() == WILSON){
 		//in the pure Wilson case there is just one fermionmatrix 
-		M_device(in, out, gf, ls, gs);
+		M_wilson_device(in, out, gf, ls, gs);
 	}
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
 		M_tm_minus_device(in, out, gf, ls, gs);
@@ -365,20 +365,20 @@ hmc_error Opencl_fermions::Qminus_device(cl_mem in, cl_mem out, cl_mem gf, const
 
 }
 
-hmc_error Opencl_fermions::QplusQminus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs)
+hmc_error Opencl_fermions::QplusQminus(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs)
 {
 	/** @todo one could save one field here if an additional copying would be included in the end... 
 	 * or the field should be created in here, local */
-	Qminus_device(in, clmem_tmp, gf, ls, gs);
+	Qminus(in, clmem_tmp, gf, ls, gs);
 
-	Qplus_device(clmem_tmp, out, gf, ls, gs);
+	Qplus(clmem_tmp, out, gf, ls, gs);
 
 	return HMC_SUCCESS;
 
 }
 
 //explicit fermionmatrix-kernel calling functions
-hmc_error Opencl_fermions::M_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
+hmc_error Opencl_fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
 
   int clerr =CL_SUCCESS;
 	clerr = clSetKernelArg(M_wilson,0,sizeof(cl_mem),&in); 
@@ -457,7 +457,7 @@ hmc_error Opencl_fermions::gamma5_device(cl_mem inout, const size_t ls, const si
 }
 
 //compound fermionmatrix-functions with eoprec
-hmc_error Opencl_fermions::Aee_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs)
+hmc_error Opencl_fermions::Aee(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs)
 {
 	int even = EVEN;
 	int odd = ODD;
