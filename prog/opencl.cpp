@@ -26,10 +26,14 @@ hmc_error Opencl::fill_collect_options(stringstream* collect_options)
 	if(get_parameters()->get_use_chem_pot_re() == true){
 		*collect_options << " -D_CP_REAL_";
 		*collect_options << " -DCPR=" << get_parameters()->get_chem_pot_re();
+		*collect_options << " -DEXPCPR=" << exp(get_parameters()->get_chem_pot_re() );
+		*collect_options << " -DMEXPCPR=" << exp(-1.*get_parameters()->get_chem_pot_re() );
 	}
 	if(get_parameters()->get_use_chem_pot_im() == true){
 		*collect_options << " -D_CP_IMAG_";
 		*collect_options << " -DCPI=" << get_parameters()->get_chem_pot_im();
+		*collect_options << " -DCOSCPI=" << cos( get_parameters()->get_chem_pot_im() );
+		*collect_options << " -DSINCPI=" << sin( get_parameters()->get_chem_pot_im() );
 	}
 	if(get_parameters()->get_use_smearing() == true){
 		*collect_options << " -D_USE_SMEARING_";

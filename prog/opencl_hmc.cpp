@@ -95,8 +95,6 @@ hmc_error Opencl_hmc::finalize_hmc()
 
 	logger.debug() << "release HMC-kernels.." ;
 	if(clReleaseKernel(generate_gaussian_spinorfield) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
-	//if(clReleaseKernel(s_gauge)!=CL_SUCCESS) return HMC_RELEASEKERNELERR;
-	//if(clReleaseKernel(s_fermion)!=CL_SUCCESS) return HMC_RELEASEKERNELERR;
 	if(clReleaseKernel(generate_gaussian_gaugemomenta) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
 	if(clReleaseKernel(md_update_gaugefield) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
 	if(clReleaseKernel(md_update_gaugemomenta) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
@@ -104,7 +102,7 @@ hmc_error Opencl_hmc::finalize_hmc()
 	if(clReleaseKernel(fermion_force) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
 	if(clReleaseKernel(set_zero_gaugemomentum) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
 	if(get_parameters()->get_use_smearing() == true){
-	if(clReleaseKernel(stout_smear_fermion_force) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
+		if(clReleaseKernel(stout_smear_fermion_force) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
 	}
 	return HMC_SUCCESS;
 }

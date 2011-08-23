@@ -48,10 +48,10 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	U = field[get_global_link_pos(dir, n, t)];
 	//if chemical potential is activated, U has to be multiplied by appropiate factor
 #ifdef _CP_REAL_
-	U = multiply_matrixsu3_by_real (U, exp(CPR) );
+	U = multiply_matrixsu3_by_real (U, EXPCPR);
 #endif
 #ifdef _CP_IMAG_
-	hmc_complex cpi_tmp = {cos(CPI), sin(CPI)};
+	hmc_complex cpi_tmp = {COSCPI, SINCPI};
 	U = multiply_matrixsu3_by_complex (U, cpi_tmp );
 #endif
 	bc_tmp.re = KAPPA_TEMPORAL_RE;
@@ -90,10 +90,10 @@ spinor inline dslash_local(__global spinorfield * in,__global ocl_s_gaugefield *
 	//as it should be
 	//in the real case, one has to take exp(q) -> exp(-q)
 #ifdef _CP_REAL_
-	U = multiply_matrixsu3_by_real (U, exp(-CPR) );
+	U = multiply_matrixsu3_by_real (U, MEXPCPR);
 #endif
 #ifdef _CP_IMAG_
-	hmc_complex cpi_tmp = {cos(CPI), sin(CPI)};
+	hmc_complex cpi_tmp = {COSCPI, SINCPI};
 	U = multiply_matrixsu3_by_complex (U, cpi_tmp );
 #endif
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
