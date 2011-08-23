@@ -24,6 +24,11 @@ hmc_error Opencl_k::fill_buffers()
 
 	cl_int clerr = CL_SUCCESS;
 
+	cl_uint numgrps;
+	size_t local_work_size;
+	size_t global_work_size;
+	get_work_sizes(&local_work_size, &global_work_size, &numgrps, Opencl::get_device_type() );
+
 	cout << "Create buffer for transport coefficient kappa_karsch..." << endl;
 	clmem_kappa_karsch = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float) * global_work_size, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
@@ -64,8 +69,9 @@ hmc_error Opencl_k::run_kappa_karsch_gpu(const hmc_float beta, usetimer * timer,
 	size_t global_work_size;
 	cl_uint num_groups;
 	//CP: This has no effect yet!!
-	char * kernelname = "dummy";
+	string kernelname = "dummy";
 	get_work_sizes(&local_work_size, &global_work_size, &num_groups, Opencl::get_device_type(), kernelname);	
+
 
 	//buffers for kappa
 	// init scratch buffers if not already done
@@ -79,21 +85,26 @@ hmc_error Opencl_k::run_kappa_karsch_gpu(const hmc_float beta, usetimer * timer,
 		}
 	}
 
+
 	clerr = clSetKernelArg(kappa_karsch_gpu, 0, sizeof(cl_mem), &clmem_gaugefield);
+
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg0 at kappa_karsch_gpu failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
+
 	clerr = clSetKernelArg(kappa_karsch_gpu, 1, sizeof(hmc_float), &beta);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg1 at kappa_karsch_gpu failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
+
 	clerr = clSetKernelArg(kappa_karsch_gpu, 2, sizeof(cl_mem), &clmem_kappa_karsch_buf_glob);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg3 at kappa_karsch_gpu failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
+
 
 	enqueueKernel(kappa_karsch_gpu, global_work_size, local_work_size);
 
@@ -125,7 +136,7 @@ hmc_error Opencl_k::run_kappa_clover_gpu(const hmc_float beta, usetimer * timer,
 	size_t global_work_size;
 	cl_uint num_groups;
 	//CP: This has no effect yet!!
-	char * kernelname = "dummy";
+	string kernelname = "dummy";
 	get_work_sizes(&local_work_size, &global_work_size, &num_groups, Opencl::get_device_type(), kernelname);	
 
 

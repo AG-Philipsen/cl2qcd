@@ -32,43 +32,50 @@ int main(int argc, char* argv[])
 	// Initialization
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	init_timer.reset();
+
 	sourcefileparameters parameters_source;
 
 	Gaugefield_k gaugefield;
-	hmc_rndarray rndarray;
 	cl_device_type devicetypes[1];
 
-	if(parameters->get_use_gpu() == true) {
+
+	if(parameters.get_use_gpu() == true) {
 	  devicetypes[0] = CL_DEVICE_TYPE_GPU;
 	} else {
 	  devicetypes[0] = CL_DEVICE_TYPE_CPU;
 	}
 
-	gaugefield.init(1, devicetypes, &parameters, &inittime);
-	int err = init_random_seeds(rndarray, "rand_seeds", &inittime);
+	gaugefield.init(1, &devicetypes[0], &parameters);
+	int rndsize = gaugefield.get_numrndstates();
+	int err = init_random_seeds(gaugefield.get_rndarray(), "rand_seeds", rndsize);
 	if(err) return err;
 
 	//first output, if you like it...
 	//  cout << endl << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]" << endl;
 	//  gaugefield.print_gaugeobservables(&polytime,&plaqtime);
 
-	gaugefield.copy_gaugefield_to_devices(&copytime);
-	gaugefield.copy_rndarray_to_devices(rndarray, &copytime);
+	gaugefield.copy_gaugefield_to_devices(&copy_to_from_dev_timer);
+	gaugefield.copy_rndarray_to_devices(&copy_to_from_dev_timer);
 
-
+	init_timer.add();
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Heatbath
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	perform_timer.reset();
+
 	int ntherm = parameters.get_thermalizationsteps();
-	if(ntherm > 0) gaugefield.heatbath(ntherm, &updatetime);
+	if(ntherm > 0) gaugefield.heatbath(ntherm);
+
 
 	int nsteps = parameters.get_heatbathsteps();
 	int overrelaxsteps = parameters.get_overrelaxsteps();
 	int writefreq = parameters.get_writefrequency();
 	int savefreq = parameters.get_savefrequency();
 	
+
 	ofstream kappa_karsch_out;
 	kappa_karsch_out.open ("kappa_karsch.dat");
 	kappa_karsch_out.precision(15);
@@ -88,14 +95,14 @@ int main(int argc, char* argv[])
 	
 	
 	for(int i = 0; i < nsteps; i++) {
-		gaugefield.heatbath(&updatetime);
+		gaugefield.heatbath();
 		for(int j = 0; j < overrelaxsteps; j++)
-		  gaugefield.overrelax(&overrelaxtime);
+		  gaugefield.overrelax();
 		if( ( (i + 1) % writefreq ) == 0 ) {
-			gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str(), 0);
+			gaugefield.print_gaugeobservables_from_devices(i, gaugeout_name.str(), 0);
 		}
-		if( parameters.get_saveconfigs() == TRUE && ( (i + 1) % savefreq ) == 0 ) {
-			gaugefield.sync_gaugefield(&copytime);
+		if( parameters.get_saveconfigs() == true && ( (i + 1) % savefreq ) == 0 ) {
+			gaugefield.sync_gaugefield(&copy_to_from_dev_timer);
 			gaugefield.save(i);
 		}
 	//Add a measurement frequency
@@ -104,15 +111,16 @@ int main(int argc, char* argv[])
 	//GPU
 	hmc_error err;
 	err = gaugefield.kappa_karsch_gpu (&timer_karsch);
-	err = gaugefield.kappa_clover_gpu (&timer_clover);
+	//     	err = gaugefield.kappa_clover_gpu (&timer_clover);
 	
 	//CPU
-	gaugefield.sync_gaugefield(&copytime);
+	gaugefield.sync_gaugefield(&copy_to_from_dev_timer);
 //  	err = gaugefield.kappa_karsch ();
 //  	err = gaugefield.kappa_clover ();
 
 // 	hmc_float qplaq = gaugefield.Q_plaquette();
 // 	q_plaq_out << qplaq <<endl;
+
 
 	kappa_karsch_out << gaugefield.get_kappa_karsch()  <<endl;
 	kappa_clover_out << gaugefield.get_kappa_clover()  <<endl;
@@ -129,22 +137,24 @@ int main(int argc, char* argv[])
 	kappa_karsch_out.close();
 	kappa_clover_out.close();
 // 	q_plaq_out.close();
-	gaugefield.sync_gaugefield(&copytime);
+	gaugefield.sync_gaugefield(&copy_to_from_dev_timer);
 	gaugefield.save(nsteps);
 	
+	perform_timer.add();
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Final Output
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	totaltime.add();
-	time_output_heatbath(&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime);
+	total_timer.add();
+	general_time_output(&total_timer, &init_timer, &perform_timer, &copy_to_from_dev_timer, &copy_on_dev_timer, &plaq_timer, &poly_timer);
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	gaugefield.finalize();
+      	gaugefield.finalize();
 
 	return HMC_SUCCESS;
 }

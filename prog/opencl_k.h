@@ -4,6 +4,7 @@
 #ifndef _MYOPENCLKH_
 #define _MYOPENCLKH_
 
+#include "opencl.h"
 #include "opencl_heatbath.h"
 
 /**

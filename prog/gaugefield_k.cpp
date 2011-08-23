@@ -16,7 +16,7 @@ hmc_error Gaugefield_k::init_devices(cl_device_type* devicetypes, usetimer* time
 
 	for(int n = 0; n < get_num_ocl_devices(); n++) {
 		cout << "init device #" << n << endl;
-		get_devices_k()[n].init(devicetypes[n], timer, get_parameters());
+		get_devices_k()[n].init(devicetypes[n], get_parameters(), Gaugefield::get_numrndstates());
 		
 	}
 	return HMC_SUCCESS;
