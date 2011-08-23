@@ -63,7 +63,7 @@ void inputparameters::set_defaults()
 	//HMC specific parameters
 	tau = 0.5;
 	integrationsteps1 = 10;
-	integrationsteps2 = 10;
+	integrationsteps2 = integrationsteps1;
 	hmcsteps = 10;
 	
 	return;
