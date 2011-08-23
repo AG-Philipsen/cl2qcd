@@ -65,20 +65,20 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
     get_devices_fermions()[0].set_eoprec_spinorfield_cold_device(get_devices_fermions()[0].get_clmem_inout_eoprec(), ls, gs);		
   }
 
-  get_devices_fermions()[0].set_correlator_field_zero_device(ls, gs);
+  get_devices_fermions()[0].set_zero_spinorfield_device(get_devices_fermions()[0].get_clmem_corr(), ls, gs);
 
   for(int k=0; k<12; k++) {
     if(use_eo == false){
       get_devices_fermions()[0].create_point_source_device(get_devices_fermions()[0].get_clmem_source(), k,0,0,ls, gs);
       get_devices_fermions()[0].solver_device(M_call, get_devices_fermions()[0].get_clmem_inout(), get_devices_fermions()[0].get_clmem_source(), get_devices_fermions()[0].get_clmem_gaugefield(), copytimer, singletimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
       //CP: add solution to former ones...
-      get_devices_fermions()[0].add_solution_to_correlator_field_device(ls, gs);
+			get_devices_fermions()[0].saxpy_device(get_devices_fermions()[0].get_clmem_inout(), get_devices_fermions()[0].get_clmem_corr(), get_devices_fermions()[0].get_clmem_minusone(), get_devices_fermions()[0].get_clmem_corr(), ls, gs);
     }
     else{
       get_devices_fermions()[0].create_point_source_eoprec_device(get_devices_fermions()[0].get_clmem_source_even(), get_devices_fermions()[0].get_clmem_source_odd(), get_devices_fermions()[0].get_clmem_gaugefield(), k,0,0,ls, gs);
       get_devices_fermions()[0].solver_eoprec_device(Aee_call, get_devices_fermions()[0].get_clmem_inout(), get_devices_fermions()[0].get_clmem_inout_eoprec(), get_devices_fermions()[0].get_clmem_source_even(), get_devices_fermions()[0].get_clmem_source_odd(), get_devices_fermions()[0].get_clmem_gaugefield(), copytimer, singletimer, solvertimer, ls, gs, get_parameters()->get_cgmax());
       //CP: add solution to former ones... This is the same call as without eoprec since the eoprec solver saves the normal field also in clmem_inout!!
-      get_devices_fermions()[0].add_solution_to_correlator_field_device(ls, gs);
+      get_devices_fermions()[0].saxpy_device(get_devices_fermions()[0].get_clmem_inout(), get_devices_fermions()[0].get_clmem_corr(), get_devices_fermions()[0].get_clmem_minusone(), get_devices_fermions()[0].get_clmem_corr(), ls, gs);
     }
   }
 	

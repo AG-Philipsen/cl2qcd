@@ -130,8 +130,6 @@ public:
 	
 	//    operations needed calculating fermionic observables
 	hmc_error ps_correlator_device(const size_t ls, const size_t gs);
-	hmc_error set_correlator_field_zero_device(const size_t ls, const size_t gs);
-	hmc_error add_solution_to_correlator_field_device(const size_t ls, const size_t gs);
 
 	/////////////////////////////////////////////////
 	//functions to get private variables
@@ -144,6 +142,8 @@ public:
 	cl_mem get_clmem_tmp_eoprec_1();
 	cl_mem get_clmem_source_even();
 	cl_mem get_clmem_source_odd();
+	
+	cl_mem get_clmem_minusone();
 
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel

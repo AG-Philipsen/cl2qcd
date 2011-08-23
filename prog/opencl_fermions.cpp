@@ -1485,18 +1485,6 @@ void Opencl_fermions::create_point_source_eoprec_device(cl_mem inout_even, cl_me
 }
 
 //functions to calculate the correlator
-hmc_error Opencl_fermions::set_correlator_field_zero_device(const size_t ls, const size_t gs)
-{
-	set_zero_spinorfield_device(clmem_corr, ls, gs);
-	return HMC_SUCCESS;
-}
-
-hmc_error Opencl_fermions::add_solution_to_correlator_field_device(const size_t ls, const size_t gs)
-{
-	saxpy_device(clmem_inout, clmem_corr, clmem_minusone, clmem_corr, ls, gs);
-	return HMC_SUCCESS;
-}
-
 hmc_error Opencl_fermions::ps_correlator_device(const size_t ls, const size_t gs){
 	
 	int clerr = CL_SUCCESS;
@@ -1549,6 +1537,11 @@ cl_mem Opencl_fermions::get_clmem_source_even()
 cl_mem Opencl_fermions::get_clmem_source_odd()
 {
 	return clmem_source_odd;
+}
+
+cl_mem Opencl_fermions::get_clmem_minusone()
+{
+	return clmem_minusone;
 }
 
 hmc_error Opencl_fermions::finalize_fermions()
