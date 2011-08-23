@@ -279,7 +279,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), &copy_to);
 			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
 			 
-			err = Opencl_fermions::solver_device(clmem_new_u, &copy_to, &copy_on, &solvertimer, ls, gs, get_parameters()->get_cgmax(), Qplus_call);
+			err = Opencl_fermions::solver_device(Qplus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, &copy_to, &copy_on, &solvertimer, ls, gs, get_parameters()->get_cgmax());
 			if (err != HMC_SUCCESS) logger.debug() << "\t\t\tsolver did not solve!!";
 			else logger.debug() << "\t\t\tsolver solved!";
 			
@@ -312,7 +312,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 			//this sets clmem_inout cold as trial-solution
 			set_spinorfield_cold_device(get_clmem_inout(), ls, gs);
 			
-			err = Opencl_fermions::solver_device(clmem_new_u, &copy_to, &copy_on, &solvertimer, ls, gs, get_parameters()->get_cgmax(), Qminus_call);
+			err = Opencl_fermions::solver_device(Qminus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, &copy_to, &copy_on, &solvertimer, ls, gs, get_parameters()->get_cgmax());
 			if (err != HMC_SUCCESS) logger.debug() << "\t\t\tsolver did not solve!!";
 			else logger.debug() << "\t\t\tsolver solved!";
 			
