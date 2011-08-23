@@ -176,39 +176,87 @@ hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, con
 {
 	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already
 	//this is the number of int.steps for the fermion during one gauge-int.step
-	//this is done after hep-lat/0209037 
+	//this is done after hep-lat/0209037. See also hep-lat/050611v2 for a more advanced versions
 	int mult = steps1%steps2;
 	if( mult != 0){
 		logger.fatal() << "integrationsteps1 must be a multiple of integrationssteps2, nothing else is implemented yet. Aborting...";
 		exit(HMC_STDERR);
 	}
+	int m = steps1/steps2;
+	if(m == 1){
+		//this is the simplest case, just using 1 timescale
+		hmc_float stepsize = (tau) / ((hmc_float) steps1);
+		hmc_float stepsize_half = 0.5 * stepsize;
 		
-	hmc_float stepsize = (tau) / ((hmc_float) steps1);
-	hmc_float stepsize2 = (tau) / ((hmc_float) steps2);
-	hmc_float stepsize_half = 0.5 * stepsize;
-	hmc_float stepsize2_half = 0.5 * stepsize2;
-
-	//initial step
-	logger.debug() << "\t\tinitial step:";
-	//here, phi is inverted using the orig. gaugefield
-	calc_total_force(ls, gs);
-	md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
-	//intermediate steps
-	if(steps1 > 1) logger.debug() << "\t\tperform " << steps1 - 1 << " intermediate steps " ;
-	for(int k = 1; k < steps1; k++) {
+		//initial step
+		logger.debug() << "\t\tinitial step:";
+		calc_total_force(ls, gs);
+		md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
+		//intermediate steps
+		if(steps1 > 1) logger.debug() << "\t\tperform " << steps1 - 1 << " intermediate steps " ;
+		for(int k = 1; k < steps1; k++) {
+			md_update_gaugefield_device(stepsize, ls, gs);
+			calc_total_force(ls, gs);
+			md_update_gaugemomentum_device(-1.*stepsize, ls, gs);
+		}
+		//final step
+		logger.debug() << "\t\tfinal step" ;
 		md_update_gaugefield_device(stepsize, ls, gs);
 		calc_total_force(ls, gs);
-		md_update_gaugemomentum_device(-1.*stepsize, ls, gs);
+		md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
+		logger.debug() << "\t\tfinished leapfrog";
 	}
-
-	//final step
-	logger.debug() << "\t\tfinal step" ;
-	md_update_gaugefield_device(stepsize, ls, gs);
-	calc_total_force(ls, gs);
-	md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
-
-	logger.debug() << "\t\tfinished leapfrog";
-
+	else {
+		//this uses 2 timescales (more is not implemented yet): timescale1 for the gauge-part, timescale2 for the fermion part
+		hmc_float stepsize = (tau) / ((hmc_float) steps1);
+		hmc_float stepsize2 = (tau) / ((hmc_float) steps2);
+		hmc_float stepsize_half = 0.5 * stepsize;
+		hmc_float stepsize2_half = 0.5 * stepsize2;
+		
+		//initial step
+		logger.debug() << "\t\tinitial step:";
+		//this corresponds to V_s2(deltaTau/2)
+		set_zero_clmem_force_device(ls, gs);
+		calc_fermion_force(ls, gs);
+		md_update_gaugemomentum_device(-1.*stepsize2_half, ls, gs);
+		//now, m steps "more" a performed for the gauge-part
+		//this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
+		for(int l=0; l<m; l++){
+			set_zero_clmem_force_device(ls, gs);
+			calc_gauge_force(ls, gs);
+			md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
+			md_update_gaugefield_device(stepsize2, ls, gs);
+			set_zero_clmem_force_device(ls, gs);
+			calc_gauge_force(ls, gs);
+			md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
+		}
+		//intermediate steps
+		if(steps1 > 1) logger.debug() << "\t\tperform " << steps2 - 1 << " intermediate steps " ;
+		for(int k = 1; k < steps2; k++) {
+			//this corresponds to V_s2(deltaTau)
+			set_zero_clmem_force_device(ls, gs);
+			calc_fermion_force(ls, gs);
+			md_update_gaugemomentum_device(-1.*stepsize2, ls, gs);
+			for(int l=0; l<m; l++){
+				//this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
+				set_zero_clmem_force_device(ls, gs);
+				calc_gauge_force(ls, gs);
+				md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
+				md_update_gaugefield_device(stepsize2, ls, gs);
+				set_zero_clmem_force_device(ls, gs);
+				calc_gauge_force(ls, gs);
+				md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
+			}
+		}
+		//final step
+		logger.debug() << "\t\tfinal step" ;
+		//this corresponds to the missing V_s2(deltaTau/2)
+		set_zero_clmem_force_device(ls, gs);
+		calc_fermion_force(ls, gs);
+		md_update_gaugemomentum_device(-1.*stepsize2_half, ls, gs);
+		logger.debug() << "\t\tfinished leapfrog";
+	}
+	
 	return HMC_SUCCESS;
 }
 
