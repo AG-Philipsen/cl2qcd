@@ -277,7 +277,7 @@ public:
 	 * @param dev_type type of device on which the kernel should be executed
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
-	hmc_error get_work_sizes(size_t * ls, size_t * gs, cl_uint * num_groups, cl_device_type dev_type, char * name);
+	hmc_error get_work_sizes(size_t * ls, size_t * gs, cl_uint * num_groups, cl_device_type dev_type, string name = "dummy");
 	///////////////////////////////////////////////////////////
 	//LZ what follows should eventually be private
 	//heatbath variables
@@ -455,19 +455,6 @@ protected:
 	 * @param kernel_name The name of the kernel to create.
 	 */
 	TmpClKernel createKernel(const char * const kernel_name);
-
-	/**
-	 * Get local work size
-	 * @return size_t local_work_size
-	 *
-	 */
-	size_t get_local_work_size();
-	/**
-	 * Get global work size
-	 * @return size_t local_work_size
-	 *
-	 */
-	size_t get_global_work_size();
 
 	/**
 	 * Get number of threads

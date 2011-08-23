@@ -115,8 +115,11 @@ cl_mem Opencl::create_chp_buffer(size_t size, void *host_pointer){
 
 hmc_error Opencl::fill_buffers()
 {
+  cl_uint num_groups;
+  size_t ls;
+  size_t gs;
 
-  size_t global_work_size = get_numthreads();
+  Opencl::get_work_sizes(&ls, &gs, &num_groups, get_device_type());
 
 	logger.trace() << "Create buffer for gaugefield...";
 	clmem_gaugefield = create_rw_buffer(sizeof(s_gaugefield));
@@ -125,10 +128,10 @@ hmc_error Opencl::fill_buffers()
 	clmem_rndarray = create_rw_buffer(sizeof(hmc_ocl_ran)*get_num_rndstates());
 
 	logger.trace() << "Create buffer for gaugeobservables...";
-	clmem_plaq = create_rw_buffer(sizeof(hmc_float) * global_work_size);
-	clmem_splaq = create_rw_buffer(sizeof(hmc_float) * global_work_size);
-	clmem_tplaq = create_rw_buffer(sizeof(hmc_float) * global_work_size);
-	clmem_polyakov = create_rw_buffer(sizeof(hmc_complex) * global_work_size);
+	clmem_plaq = create_rw_buffer(sizeof(hmc_float) * gs);
+	clmem_splaq = create_rw_buffer(sizeof(hmc_float) * gs);
+	clmem_tplaq = create_rw_buffer(sizeof(hmc_float) * gs);
+	clmem_polyakov = create_rw_buffer(sizeof(hmc_complex) * gs);
 
 	// scratch buffers for gauge observable will be created on demand
 	clmem_plaq_buf_glob = 0;
@@ -441,7 +444,7 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 	// decide on work-sizes
 	size_t local_work_size;
 	if( device_type == CL_DEVICE_TYPE_GPU )
-	  local_work_size = this->get_numthreads(); /// @todo have local work size depend on kernel properties (and device? autotune?)
+	  local_work_size = Opencl::get_numthreads(); /// @todo have local work size depend on kernel properties (and device? autotune?)
 	else
 		local_work_size = 1; // nothing else makes sens on CPU
 
@@ -820,8 +823,10 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 	size_t global_work_size;
 	cl_uint num_groups;
 	//CP: This has no effect yet!!
-	char * kernelname = "dummy";
-	Opencl::get_work_sizes(&local_work_size, &global_work_size, &num_groups, device_type, kernelname);
+	//	char * kernelname = "dummy";
+	//LZ: Therefore, until there is some effect: use default arg
+	//	Opencl::get_work_sizes(&local_work_size, &global_work_size, &num_groups, device_type, kernelname);
+	Opencl::get_work_sizes(&local_work_size, &global_work_size, &num_groups, get_device_type());
 
 	logger.debug() <<"init scratch buffers if not already done";
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
@@ -1024,18 +1029,17 @@ hmc_error Opencl::stout_smear_device(const size_t ls, const size_t gs){
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::get_work_sizes(size_t * ls, size_t * gs, cl_uint * num_groups, cl_device_type dev_type, char * name){
+hmc_error Opencl::get_work_sizes(size_t * ls, size_t * gs, cl_uint * num_groups, cl_device_type dev_type, string name){
 	/// @todo use kernelname
 	size_t local_work_size;
-	int numthreads = 128;
 	if( dev_type == CL_DEVICE_TYPE_GPU )
-		local_work_size = numthreads; /// @todo have local work size depend on kernel properties (and device? autotune?)
+	  local_work_size = Opencl::get_numthreads(); /// @todo have local work size depend on kernel properties (and device? autotune?)
 	else
-		local_work_size = 1; // nothing else makes sense on CPU
+	  local_work_size = 1; // nothing else makes sense on CPU
 
 	size_t global_work_size;
 	if( dev_type == CL_DEVICE_TYPE_GPU )
-		global_work_size = 4 * numthreads * max_compute_units; /// @todo autotune
+	  global_work_size = 4 * Opencl::get_numthreads() * max_compute_units; /// @todo autotune
 	else
 		global_work_size = max_compute_units;
 
@@ -1088,7 +1092,7 @@ int Opencl::get_read_write_size(char * in, inputparameters * parameters){
 	if (strcmp(in, "polyakov_reduction") == 0){
 		//this is not right, since one does not know bufelements now
 		//return (Bufel + 1) *2
-    return this->get_numthreads();
+	  return Opencl::get_numthreads();
 	}
 	if (strcmp(in, "plaquette") == 0){
     return 48*VOL4D *D*R + 1;
@@ -1096,7 +1100,7 @@ int Opencl::get_read_write_size(char * in, inputparameters * parameters){
 	if (strcmp(in, "plaquette_reduction") == 0){
 		//this is not right, since one does not know bufelements now
 		//return (Bufel + 1) *2
-    return this->get_numthreads();	
+	  return Opencl::get_numthreads();	
 	}
 	if (strcmp(in, "stout_smear") == 0){
     return 1000000000000000000000;
