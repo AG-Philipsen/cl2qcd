@@ -174,28 +174,37 @@ hmc_error Opencl_hmc::md_update_spinorfield_device(const size_t local_work_size,
 //CP: steps2 is not used at the moment....
 hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, const size_t ls, const size_t gs)
 {
-	//it is assumed that gaugefield and gaugemomentum have been set to the old ones already
+	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already
+	//this is the number of int.steps for the fermion during one gauge-int.step
+	//this is done after hep-lat/0209037 
+	int mult = steps1%steps2;
+	if( mult != 0){
+		logger.fatal() << "integrationsteps1 must be a multiple of integrationssteps2, nothing else is implemented yet. Aborting...";
+		exit(HMC_STDERR);
+	}
+		
 	hmc_float stepsize = (tau) / ((hmc_float) steps1);
-	int k;
+	hmc_float stepsize2 = (tau) / ((hmc_float) steps2);
 	hmc_float stepsize_half = 0.5 * stepsize;
+	hmc_float stepsize2_half = 0.5 * stepsize2;
 
 	//initial step
 	logger.debug() << "\t\tinitial step:";
 	//here, phi is inverted using the orig. gaugefield
-	force_device(ls, gs);
+	calc_total_force(ls, gs);
 	md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
 	//intermediate steps
 	if(steps1 > 1) logger.debug() << "\t\tperform " << steps1 - 1 << " intermediate steps " ;
-	for(k = 1; k < steps1; k++) {
+	for(int k = 1; k < steps1; k++) {
 		md_update_gaugefield_device(stepsize, ls, gs);
-		force_device(ls, gs);
+		calc_total_force(ls, gs);
 		md_update_gaugemomentum_device(-1.*stepsize, ls, gs);
 	}
 
 	//final step
 	logger.debug() << "\t\tfinal step" ;
 	md_update_gaugefield_device(stepsize, ls, gs);
-	force_device(ls, gs);
+	calc_total_force(ls, gs);
 	md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
 
 	logger.debug() << "\t\tfinished leapfrog";
@@ -203,9 +212,14 @@ hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, con
 	return HMC_SUCCESS;
 }
 
+void Opencl_hmc::calc_total_force(const size_t ls, const size_t gs){
+	//CP: make sure that the output field is set to zero
+	set_zero_clmem_force_device(ls, gs);
+	this->calc_fermion_force(ls, gs);
+	this->calc_gauge_force(ls, gs);
+}
 
-hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
-{
+void Opencl_hmc::calc_fermion_force(const size_t ls, const size_t gs){
 	int err = HMC_SUCCESS;
 	/** @todo build in timer */
 	usetimer copy_to, copy_on, solvertimer;
@@ -220,7 +234,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 	if(get_parameters()->get_use_smearing() == true){
 		logger.debug() << "\t\t\tsave unsmeared gaugefield...";
 		gf_tmp = create_rw_buffer(sizeof(s_gaugefield));
-		/** @todo copy gf to gf_tmp -> general copy fct?? */
+		copy_buffer_on_device(get_clmem_gaugefield(), gf_tmp, sizeof(s_gaugefield), &copy_on);
 		logger.debug() << "\t\t\tsmear gaugefield...";
 		stout_smear_device(ls, gs);
 	}
@@ -332,17 +346,15 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 		logger.debug() << "\t\t\tcalc stout-smeared fermion_force...";
 		stout_smeared_fermion_force_device(ls, gs);
 		logger.debug() << "\t\t\trestore unsmeared gaugefield...";
-		/** @todo copy gf_tmp to gf -> general copy fct?? */
+		copy_buffer_on_device(gf_tmp, get_clmem_gaugefield(), sizeof(s_gaugefield), &copy_on);
 		if(clReleaseMemObject(gf_tmp) != CL_SUCCESS) exit(HMC_OCLERROR);
-	}
-	
+	}	
+}
+
+void Opencl_hmc::calc_gauge_force(const size_t ls, const size_t gs){
 	logger.debug() << "\t\tcalc gauge_force...";
 	gauge_force_device(ls, gs);
-	
-
-	return HMC_SUCCESS;
 }
-  
 
 hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const size_t local_work_size, const size_t global_work_size, usetimer * timer)
 {
