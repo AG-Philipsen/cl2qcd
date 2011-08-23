@@ -172,7 +172,7 @@ hmc_error Opencl_hmc::md_update_spinorfield_device(const size_t local_work_size,
 
 
 //CP: steps2 is not used at the moment....
-hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, const size_t ls, const size_t gs)
+hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer, const size_t ls, const size_t gs)
 {
 	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already
 	//this is the number of int.steps for the fermion during one gauge-int.step
@@ -190,19 +190,19 @@ hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, con
 		
 		//initial step
 		logger.debug() << "\t\tinitial step:";
-		calc_total_force(ls, gs);
+		calc_total_force(copy_to, copy_on, solvertimer, ls, gs);
 		md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
 		//intermediate steps
 		if(steps1 > 1) logger.debug() << "\t\tperform " << steps1 - 1 << " intermediate steps " ;
 		for(int k = 1; k < steps1; k++) {
 			md_update_gaugefield_device(stepsize, ls, gs);
-			calc_total_force(ls, gs);
+			calc_total_force(copy_to, copy_on, solvertimer, ls, gs);
 			md_update_gaugemomentum_device(-1.*stepsize, ls, gs);
 		}
 		//final step
 		logger.debug() << "\t\tfinal step" ;
 		md_update_gaugefield_device(stepsize, ls, gs);
-		calc_total_force(ls, gs);
+		calc_total_force(copy_to, copy_on, solvertimer, ls, gs);
 		md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
 		logger.debug() << "\t\tfinished leapfrog";
 	}
@@ -217,7 +217,7 @@ hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, con
 		logger.debug() << "\t\tinitial step:";
 		//this corresponds to V_s2(deltaTau/2)
 		set_zero_clmem_force_device(ls, gs);
-		calc_fermion_force(ls, gs);
+		calc_fermion_force(copy_to, copy_on, solvertimer, ls, gs);
 		md_update_gaugemomentum_device(-1.*stepsize2_half, ls, gs);
 		//now, m steps "more" a performed for the gauge-part
 		//this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
@@ -235,7 +235,7 @@ hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, con
 		for(int k = 1; k < steps2; k++) {
 			//this corresponds to V_s2(deltaTau)
 			set_zero_clmem_force_device(ls, gs);
-			calc_fermion_force(ls, gs);
+			calc_fermion_force(copy_to, copy_on, solvertimer, ls, gs);
 			md_update_gaugemomentum_device(-1.*stepsize2, ls, gs);
 			for(int l=0; l<m; l++){
 				//this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
@@ -252,7 +252,7 @@ hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, con
 		logger.debug() << "\t\tfinal step" ;
 		//this corresponds to the missing V_s2(deltaTau/2)
 		set_zero_clmem_force_device(ls, gs);
-		calc_fermion_force(ls, gs);
+		calc_fermion_force(copy_to, copy_on, solvertimer, ls, gs);
 		md_update_gaugemomentum_device(-1.*stepsize2_half, ls, gs);
 		logger.debug() << "\t\tfinished leapfrog";
 	}
@@ -260,47 +260,29 @@ hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, con
 	return HMC_SUCCESS;
 }
 
-void Opencl_hmc::calc_total_force(const size_t ls, const size_t gs){
+void Opencl_hmc::calc_total_force(usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer, const size_t ls, const size_t gs){
 	//CP: make sure that the output field is set to zero
 	set_zero_clmem_force_device(ls, gs);
-	this->calc_fermion_force(ls, gs);
+	this->calc_fermion_force(copy_to, copy_on, solvertimer, ls, gs);
 	this->calc_gauge_force(ls, gs);
 }
 
-void Opencl_hmc::calc_fermion_force(const size_t ls, const size_t gs){
+void Opencl_hmc::calc_fermion_force(usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer, const size_t ls, const size_t gs){
 	int err = HMC_SUCCESS;
-	/** @todo build in timer */
-	usetimer copy_to, copy_on, solvertimer;
 	//this is only used when smearing is activated
 	cl_mem gf_tmp;
-
-	logger.debug() << "\t\tstart calculating the force...";
-	//CP: make sure that the output field is set to zero
-	set_zero_clmem_force_device(ls, gs);
-	//add different contributions: Those potentially containing smeared links should be calculated first!!
 	
 	if(get_parameters()->get_use_smearing() == true){
 		logger.debug() << "\t\t\tsave unsmeared gaugefield...";
 		gf_tmp = create_rw_buffer(sizeof(s_gaugefield));
-		copy_buffer_on_device(get_clmem_gaugefield(), gf_tmp, sizeof(s_gaugefield), &copy_on);
+		copy_buffer_on_device(get_clmem_gaugefield(), gf_tmp, sizeof(s_gaugefield), copy_on);
 		logger.debug() << "\t\t\tsmear gaugefield...";
 		stout_smear_device(ls, gs);
 	}
 	
-	//CP: to begin with, consider only the bicgstab-solver
-	int use_cg = false;
-	
-	/** @todo at the moment, we can only put in a cold spinorfield 
-	 * or a point-source spinorfield as trial-solution */
-	/**
-	 * Trial solution for the spinorfield
-	 */
-	set_spinorfield_cold_device(get_clmem_inout(), ls, gs);
- 
-	/** @todo check the use of the sources again, compare to tmlqcd!!! */
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 	if(get_parameters()->get_use_eo() == true){
-		if(use_cg){
+		if(get_parameters()->get_use_cg() == true){
 			//this is broken right now since the CG doesnt work!!
 			logger.debug() << "\t\tcalc fermion force ingredients using cg and eoprec";
 			logger.fatal() << "this is not implemented yet. Aborting..";
@@ -313,7 +295,7 @@ void Opencl_hmc::calc_fermion_force(const size_t ls, const size_t gs){
 		}
 	}
 	else{
-		if(use_cg){
+		if(get_parameters()->get_use_cg() == true){
 			//this is broken right now since the CG doesnt work!!
 			logger.debug() << "\t\tcalc fermion force ingredients using cg and no eoprec";
 			logger.fatal() << "this is not implemented yet. Aborting..";
@@ -330,28 +312,31 @@ void Opencl_hmc::calc_fermion_force(const size_t ls, const size_t gs){
 			*/
 			logger.debug() << "\t\t\tstart solver";
 			
-			/** @todo make the source an arg in solver to get rid of all these copying. This should make one spinorfield unnecessary!! */
-			//the first source is the original phi
-			copy_buffer_on_device(clmem_phi, get_clmem_source(), sizeof(spinor) * SPINORFIELDSIZE, &copy_on);
-
+			/** @todo at the moment, we can only put in a cold spinorfield 
+				* or a point-source spinorfield as trial-solution 
+				*/
+			/**
+			  * Trial solution for the spinorfield
+	 		  */
+			set_spinorfield_cold_device(get_clmem_inout(), ls, gs);			
 			
 			//debugging
 			hmc_float s_fermion;
 			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
-			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), &copy_to);
+			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), copy_to);
 			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
 			 
-			err = Opencl_fermions::solver_device(Qplus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, &copy_to, &copy_on, &solvertimer, ls, gs, get_parameters()->get_cgmax());
+			err = Opencl_fermions::solver_device(Qplus_call, get_clmem_inout(), get_clmem_phi(), clmem_new_u, copy_to, copy_on, solvertimer, ls, gs, get_parameters()->get_cgmax());
 			if (err != HMC_SUCCESS) logger.debug() << "\t\t\tsolver did not solve!!";
 			else logger.debug() << "\t\t\tsolver solved!";
 			
 			//debugging
 			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
-			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), &copy_to);
+			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), copy_to);
 			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
 			
 			//store this result in clmem_phi_inv
-			copy_buffer_on_device(get_clmem_inout(), clmem_phi_inv, sizeof(spinor) * SPINORFIELDSIZE, &copy_on);
+			copy_buffer_on_device(get_clmem_inout(), clmem_phi_inv, sizeof(spinor) * SPINORFIELDSIZE, copy_on);
 			
 			/**
 			 * Now, one has to calculate 
@@ -363,24 +348,24 @@ void Opencl_hmc::calc_fermion_force(const size_t ls, const size_t gs){
 			 */
 			
 			//copy former solution to clmem_source
-			copy_buffer_on_device(get_clmem_inout(), get_clmem_source(), sizeof(spinor) * SPINORFIELDSIZE, &copy_on);
+			copy_buffer_on_device(get_clmem_inout(), get_clmem_source(), sizeof(spinor) * SPINORFIELDSIZE, copy_on);
 			logger.debug() << "\t\t\tstart solver";
 			
 			//debugging
 			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
-			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), &copy_to);
+			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), copy_to);
 			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
 			 
 			//this sets clmem_inout cold as trial-solution
 			set_spinorfield_cold_device(get_clmem_inout(), ls, gs);
 			
-			err = Opencl_fermions::solver_device(Qminus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, &copy_to, &copy_on, &solvertimer, ls, gs, get_parameters()->get_cgmax());
+			err = Opencl_fermions::solver_device(Qminus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, copy_to, copy_on, solvertimer, ls, gs, get_parameters()->get_cgmax());
 			if (err != HMC_SUCCESS) logger.debug() << "\t\t\tsolver did not solve!!";
 			else logger.debug() << "\t\t\tsolver solved!";
 			
 			//debugging
 			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
-			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), &copy_to);
+			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), copy_to);
 			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
 		}	
 	}
@@ -394,7 +379,7 @@ void Opencl_hmc::calc_fermion_force(const size_t ls, const size_t gs){
 		logger.debug() << "\t\t\tcalc stout-smeared fermion_force...";
 		stout_smeared_fermion_force_device(ls, gs);
 		logger.debug() << "\t\t\trestore unsmeared gaugefield...";
-		copy_buffer_on_device(gf_tmp, get_clmem_gaugefield(), sizeof(s_gaugefield), &copy_on);
+		copy_buffer_on_device(gf_tmp, get_clmem_gaugefield(), sizeof(s_gaugefield), copy_on);
 		if(clReleaseMemObject(gf_tmp) != CL_SUCCESS) exit(HMC_OCLERROR);
 	}	
 }
@@ -656,6 +641,10 @@ cl_mem Opencl_hmc::get_clmem_new_p(){
 
 cl_mem Opencl_hmc::get_clmem_new_u(){
 	return clmem_new_u;
+}
+
+cl_mem Opencl_hmc::get_clmem_phi(){
+	return clmem_phi;
 }
 
 #ifdef _PROFILING_

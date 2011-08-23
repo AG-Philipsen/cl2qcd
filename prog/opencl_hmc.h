@@ -51,7 +51,7 @@ public:
 	hmc_error generate_gaussian_gaugemomenta_device(const size_t ls, const size_t gs);
 	hmc_error generate_gaussian_spinorfield_device(const size_t ls, const size_t gs);
 	hmc_error md_update_spinorfield_device(const size_t ls, const size_t gs);
-	hmc_error leapfrog_device(hmc_float tau, int steps1, int steps2, const size_t ls, const size_t gs);
+	hmc_error leapfrog_device(hmc_float tau, int steps1, int steps2, usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer, const size_t ls, const size_t gs);
 	hmc_observables metropolis(hmc_float rnd, hmc_float beta, const size_t ls, const size_t gs, usetimer * timer);
 	hmc_error calc_spinorfield_init_energy_device(const size_t ls, const size_t gs);
 	hmc_error md_update_gaugemomentum_device(hmc_float eps, const size_t ls, const size_t gs);
@@ -61,15 +61,16 @@ public:
 	hmc_error fermion_force_device(const size_t ls, const size_t gs);
 	hmc_error stout_smeared_fermion_force_device(const size_t ls, const size_t gs);
 	hmc_error set_float_to_gaugemomentum_squarenorm_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	void calc_total_force(const size_t ls, const size_t gs);
+	void calc_total_force(usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer, const size_t ls, const size_t gs);
 	void calc_gauge_force(const size_t ls, const size_t gs);
-	void calc_fermion_force(const size_t ls, const size_t gs);
+	void calc_fermion_force(usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer, const size_t ls, const size_t gs);
 	
 	////////////////////////////////////////////////////
 	//get members
 	cl_mem get_clmem_p();
 	cl_mem get_clmem_new_p();
 	cl_mem get_clmem_new_u();
+	cl_mem get_clmem_phi();
 	
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel

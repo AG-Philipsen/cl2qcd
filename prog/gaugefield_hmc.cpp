@@ -82,13 +82,13 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters,
 	//update gaugefield and gauge_momenta via leapfrog
 	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
 	logger.debug() << "\tperform leapfrog to update gaugefield and gaugemomentum" ;
-	
-	/** @todo these have to be reconsidered! */
+
 	//copy u->u' p->p' for the leapfrog
 	get_devices_hmc()[dev].copy_buffer_on_device(get_devices_hmc()[dev].get_clmem_gaugefield(), get_devices_hmc()[dev].get_clmem_new_u(), sizeof(s_gaugefield), copy_on_dev_timer); 
 	get_devices_hmc()[dev].copy_buffer_on_device(get_devices_hmc()[dev].get_clmem_p(), get_devices_hmc()[dev].get_clmem_new_p(), sizeof(ae) * GAUGEMOMENTASIZE2, copy_on_dev_timer); 
-		
-	get_devices_hmc()[dev].leapfrog_device((*parameters).get_tau(), (*parameters).get_integrationsteps1(), (*parameters).get_integrationsteps2(), ls, gs);
+	///@todo this timer is not used at the moment, compare to inverter.cpp
+	usetimer solvertimer;
+	get_devices_hmc()[dev].leapfrog_device((*parameters).get_tau(), (*parameters).get_integrationsteps1(), (*parameters).get_integrationsteps2(), copy_to_from_dev_timer, copy_on_dev_timer, &solvertimer, ls, gs);
 		
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
 	logger.debug() << "\tperform Metropolis step: " ;
