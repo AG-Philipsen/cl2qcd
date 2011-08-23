@@ -35,7 +35,6 @@ int main(int argc, char* argv[])
 
 	Gaugefield_heatbath gaugefield;
 	cl_device_type* devicetypes = new cl_device_type[parameters.get_num_dev()];
-	gaugefield.init_devicetypes_array(devicetypes, &parameters);
 	gaugefield.init(1, devicetypes, &parameters);
 	delete [] devicetypes;
 

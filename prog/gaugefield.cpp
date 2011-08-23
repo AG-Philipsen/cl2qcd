@@ -37,6 +37,8 @@ hmc_error Gaugefield::init(int* numdevs, int numdevtypes, cl_device_type* device
   set_parameters(input_parameters);
   
   init_gaugefield();
+
+  this->init_devicetypes_array(devicetypes,input_parameters);
 	
   this->init_devices(devicetypes);
 

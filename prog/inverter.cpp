@@ -33,7 +33,6 @@ int main(int argc, char* argv[])
 
 	Gaugefield_inversion gaugefield;
 	cl_device_type devicetypes[parameters.get_num_dev()];
-	gaugefield.init_devicetypes_array(devicetypes, &parameters);
 
 	logger.trace() << "init gaugefield" ;
 	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters);
