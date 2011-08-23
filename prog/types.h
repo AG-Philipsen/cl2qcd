@@ -243,39 +243,19 @@ hmc_float CONST epssquare=1e-12;
 #endif
 
 #ifndef _INKERNEL_
-/**
- * Work-group size for OpenCL kernels.
- * @bug The proper work-group size is kernel dependent and cannot be
-        specified globally.
- */
-const size_t local_work_size  = NUMTHREADS;
-/**
- * Global number of threads for OpenCL kernels.
- * @bug The proper number of threads size is kernel dependent and cannot be
-        specified globally.
- */
-const size_t global_work_size = NUMTHREADS;
+
 #endif
 
 #ifndef _INKERNEL_
 /** Storage type for state of the random number generator */
 typedef cl_ulong4 hmc_ocl_ran;
-/** The array of random number generator states for usage by an OpenCL device
- * @todo dynamically size according to requirements by kernels / devices
- * @warning some kernel use NUMTHREADS threads, make sure this is always bigger!
- */
-#ifdef _USEGPU_
-#define NUMRNDSTATES 5120
-#else
-#define NUMRNDSTATES 64
-#endif
-typedef hmc_ocl_ran hmc_rndarray[NUMRNDSTATES];
+
 #endif /* _INKERNEL_ */
 
 //CP: this an algebraelement
 typedef struct {
   hmc_float e0;
- 	hmc_float e1;
+  hmc_float e1;
   hmc_float e2;
   hmc_float e3;
   hmc_float e4;

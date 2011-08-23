@@ -49,7 +49,7 @@ inline void nr3_init_state( hmc_ocl_ran * const state, const cl_ulong seed )
 	nr3_int64( state );
 }
 
-int init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seedfile)
+int init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seedfile, int const num_rndstates)
 {
 	const cl_ulong MAX_SEED = 4101842887655102017L;
 
@@ -61,7 +61,7 @@ int init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seedf
 	}
 
 	size_t bytes_read = 0;
-	for(size_t i_state = 0; i_state < NUMRNDSTATES; ++i_state) {
+	for(size_t i_state = 0; i_state < num_rndstates; ++i_state) {
 		cl_ulong seed;
 		int f_err = 1;
 

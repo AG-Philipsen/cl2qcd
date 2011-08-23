@@ -69,9 +69,9 @@ hmc_error Opencl_heatbath::run_heatbath()
 
 	size_t global_work_size;
 	if( device_type == CL_DEVICE_TYPE_GPU )
-		global_work_size = min(VOLSPACE * NTIME / 2, NUMRNDSTATES);
+	  global_work_size = min(VOLSPACE * NTIME / 2, this->Opencl::get_num_rndstates());
 	else
-		global_work_size = min(max_compute_units, (cl_uint) NUMRNDSTATES);
+	  global_work_size = min(max_compute_units, (cl_uint) this->Opencl::get_num_rndstates());
 
 	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), &clmem_gaugefield);
 	if(clerr != CL_SUCCESS) {
@@ -121,9 +121,9 @@ hmc_error Opencl_heatbath::run_overrelax()
 
 	size_t global_work_size;
 	if( device_type == CL_DEVICE_TYPE_GPU )
-		global_work_size = min(VOLSPACE * NTIME / 2, NUMRNDSTATES);
+	  global_work_size = min(VOLSPACE * NTIME / 2, this->Opencl::get_num_rndstates());
 	else
-		global_work_size = min(max_compute_units, (cl_uint) NUMRNDSTATES);
+	  global_work_size = min(max_compute_units, (cl_uint) this->Opencl::get_num_rndstates());
 
 	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), &clmem_gaugefield);
 	if(clerr != CL_SUCCESS) {

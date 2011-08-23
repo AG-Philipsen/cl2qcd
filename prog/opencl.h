@@ -42,11 +42,12 @@ public:
 	 * @param wanted The OpenCL device type to be used, e.g. CL_DEVICE_TYPE_CPU or CL_DEVICE_TYPE_GPU
 	 * @param timer The timer to use for reporting execution time
 	 * @param parameters The parsed input parameters
+	 * @param nstates Number of random states
 	 *
 	 * @todo Should probably throw an exception on error
 	 */
-	Opencl(cl_device_type wanted, inputparameters* params) {
-		this->init(wanted, params);
+  Opencl(cl_device_type wanted, inputparameters* params, int nstates) {
+	  this->init(wanted, params, nstates);
 	};
 	/**
 	 * Empty constructor. Needed for gaugefield class.
@@ -55,6 +56,12 @@ public:
 	~Opencl() {
 		finalize();
 	};
+
+
+	/**
+	 * Initialize the random array.
+	 */
+	void init_rndarray(int nstates);
 
 	/**
 	 * Initialize the OpenCL device
@@ -67,9 +74,9 @@ public:
 	 *         @li HMC_FILEERROR if one of the kernel files cannot be opened
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	virtual hmc_error init(cl_device_type wanted_device_type, inputparameters* parameters);
+	virtual hmc_error init(cl_device_type wanted_device_type, inputparameters* parameters, int nstates);
 
-	/////////////////////////////7
+	/////////////////////////////
 	// communication
 	/**
 	 * Copy the given gaugefield to the appropriate OpenCL buffer.
@@ -386,7 +393,7 @@ public:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error copy_rndarray_to_device(hmc_rndarray host_rndarray,  usetimer* timer);
+	hmc_error copy_rndarray_to_device(hmc_ocl_ran* host_rndarray,  usetimer* timer);
 
 	/**
 	 * Copy the RNG state from the OpenCL buffer.
@@ -397,7 +404,7 @@ public:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer);	
+	hmc_error copy_rndarray_from_device(hmc_ocl_ran* rndarray, usetimer* timer);	
 	
 	/**
 	 * Copy content of a buffer to another buffer inside a queue using 
@@ -428,6 +435,9 @@ public:
 	 * @param timer timer to measure time used
 	 */
 	void get_buffer_from_device(cl_mem source, void * dest, size_t size, usetimer* timer);
+
+	int get_num_rndstates();
+
 protected:
 	/**
 	 * A set of source files used by all kernels.
@@ -446,9 +456,33 @@ protected:
 	 */
 	TmpClKernel createKernel(const char * const kernel_name);
 
+	/**
+	 * Get local work size
+	 * @return size_t local_work_size
+	 *
+	 */
+	size_t get_local_work_size();
+	/**
+	 * Get global work size
+	 * @return size_t local_work_size
+	 *
+	 */
+	size_t get_global_work_size();
+
+	/**
+	 * Get number of threads
+	 * @return int numthreads
+	 *
+	 */
+	int get_numthreads();
+
 private:
-	hmc_error init_basic(cl_device_type wanted_device_type, inputparameters* parameters);
-	
+	hmc_error init_basic(cl_device_type wanted_device_type, inputparameters* parameters, int nstates);
+
+	int num_rndstates;
+
+	int numthreads;
+
 };
 
 #endif /* _MYOPENCLH_ */

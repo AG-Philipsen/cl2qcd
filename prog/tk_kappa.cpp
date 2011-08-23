@@ -38,11 +38,11 @@ int main(int argc, char* argv[])
 	hmc_rndarray rndarray;
 	cl_device_type devicetypes[1];
 
-#ifdef _USEGPU_
-	devicetypes[0] = CL_DEVICE_TYPE_GPU;
-#else
-	devicetypes[0] = CL_DEVICE_TYPE_CPU;
-#endif
+	if(parameters->get_use_gpu() == true) {
+	  devicetypes[0] = CL_DEVICE_TYPE_GPU;
+	} else {
+	  devicetypes[0] = CL_DEVICE_TYPE_CPU;
+	}
 
 	gaugefield.init(1, devicetypes, &parameters, &inittime);
 	int err = init_random_seeds(rndarray, "rand_seeds", &inittime);

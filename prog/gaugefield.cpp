@@ -1,7 +1,5 @@
 #include "gaugefield.h"
 
-#include "logger.hpp"
-
 hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters){
 
   int n_devs[1] = {numdevs};
@@ -13,6 +11,17 @@ hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparame
 
 hmc_error Gaugefield::init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters)
 {
+
+  if(input_parameters->get_use_gpu()) {
+    numrndstates = 5120;
+  } else {
+    numrndstates = 64;
+  }
+  sizeof_rndarray = sizeof(hmc_ocl_ran)*numrndstates;
+
+  rndarray = new hmc_ocl_ran[numrndstates];
+
+
   set_num_device_types(numdevtypes);
 
   //LZ: for now assume that there is only one num_ocl_devices that is the same for all device types
@@ -73,7 +82,7 @@ hmc_error Gaugefield::init_devices(cl_device_type* devicetypes)
 
 	for(int n = 0; n < num_ocl_devices; n++) {
 		logger.debug() << "init device #" << n;
-		get_devices()[n].init(devicetypes[n], get_parameters());
+		get_devices()[n].init(devicetypes[n], get_parameters(),numrndstates);
 	}
 	return HMC_SUCCESS;
 }
@@ -81,6 +90,7 @@ hmc_error Gaugefield::init_devices(cl_device_type* devicetypes)
 
 hmc_error Gaugefield::init_gaugefield()
 {
+
 	sourcefileparameters parameters_source;
 	if((get_parameters())->get_startcondition() == START_FROM_SOURCE) {
 		int err;
@@ -209,19 +219,19 @@ hmc_error Gaugefield::sync_gaugefield(usetimer* timer)
 	return err;
 }
 
-hmc_error Gaugefield::copy_rndarray_to_devices(hmc_rndarray host_rndarray,  usetimer* timer)
+hmc_error Gaugefield::copy_rndarray_to_devices(usetimer* timer)
 {
-	//LZ: so far, we only use !!! 1 !!! device
-	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices()[0].copy_rndarray_to_device(host_rndarray, timer);
-	return err;
+  //LZ: so far, we only use !!! 1 !!! device
+  // this function needs to be generalised to several devices and definition of subsets...
+  hmc_error err = get_devices()[0].copy_rndarray_to_device(this->get_rndarray(), timer);
+  return err;
 }
 
-hmc_error Gaugefield::copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer* timer)
+hmc_error Gaugefield::copy_rndarray_from_devices(usetimer* timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices()[0].copy_rndarray_from_device(rndarray, timer);
+  hmc_error err = get_devices()[0].copy_rndarray_from_device(this->get_rndarray(), timer);
 	return err;
 }
 
@@ -519,6 +529,7 @@ hmc_error Gaugefield::finalize()
 {
 	//free(get_gf());
 	free(get_sgf());
+	delete [] get_rndarray();
 	this->free_devices();
 	return HMC_SUCCESS;
 }
@@ -622,3 +633,10 @@ hmc_error Gaugefield::alloc_devicetypes(){
 }
 
 
+hmc_ocl_ran* Gaugefield::get_rndarray(){
+  return rndarray;
+}
+
+size_t Gaugefield::get_numrndstates(){
+  return numrndstates;
+}

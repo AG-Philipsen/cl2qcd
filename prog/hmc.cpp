@@ -36,18 +36,18 @@ int main(int argc, char* argv[])
 	hmc_observables obs;
 	
 	Gaugefield_hmc gaugefield;
-	hmc_rndarray rndarray;
 	cl_device_type devicetypes[parameters.get_num_dev()];
 	gaugefield.init_devicetypes_array(devicetypes, &parameters);
 	logger.trace() << "init gaugefield" ;
 	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters);
 	logger.trace()<< "initial gaugeobservables:";
 	gaugefield.print_gaugeobservables(&poly_timer, &plaq_timer);
-	int err = init_random_seeds(rndarray, "rand_seeds");
+	size_t rndsize = gaugefield.get_numrndstates();
+	int err = init_random_seeds(gaugefield.get_rndarray(), "rand_seeds", rndsize);
 	if(err) return err;
 	logger.trace() << "Got seeds";
 	gaugefield.copy_gaugefield_to_devices(&copy_to_from_dev_timer);
-	gaugefield.copy_rndarray_to_devices(rndarray, &copy_to_from_dev_timer);
+	gaugefield.copy_rndarray_to_devices(&copy_to_from_dev_timer);
 	logger.trace() << "Moved stuff to device";
 	init_timer.add();
 	

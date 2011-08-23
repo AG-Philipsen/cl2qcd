@@ -942,7 +942,7 @@ void inputparameters::check_settings_global(){
 #ifdef _USEDOUBLEPREC_
 	  if( this->get_prec() != 64) throw Invalid_Parameters("Numerical precision","64",this->get_prec()); 
 #else
-	  if( this->get_prec() != 32) throw Invalid_Parameters("Numerical precision","64",this->get_prec()); 
+	  if( this->get_prec() != 32) throw Invalid_Parameters("Numerical precision","32",this->get_prec()); 
 #endif
 
 	//reconstruct12
@@ -950,13 +950,6 @@ void inputparameters::check_settings_global(){
 	  if( this->get_use_rec12() == false) throw Invalid_Parameters("Reconstruct12.","ON","OFF");
 #else
 	  if( this->get_use_rec12() == true) throw Invalid_Parameters("Reconstruct12.","OFF","ON");
-#endif
-
-	//GPU-Usage
-#ifdef _USEGPU_
-	  if( this->get_use_gpu() == false) throw Invalid_Parameters("GPU usage.","ON","OFF");
-#else
-	  if( this->get_use_gpu() == true) throw Invalid_Parameters("GPU usage.","OFF","ON");
 #endif
 
 	//Lattice Size

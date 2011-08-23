@@ -115,11 +115,14 @@ cl_mem Opencl::create_chp_buffer(size_t size, void *host_pointer){
 
 hmc_error Opencl::fill_buffers()
 {
+
+  size_t global_work_size = get_numthreads();
+
 	logger.trace() << "Create buffer for gaugefield...";
 	clmem_gaugefield = create_rw_buffer(sizeof(s_gaugefield));
 
 	logger.trace() << "Create buffer for random numbers...";
-	clmem_rndarray = create_rw_buffer(sizeof(hmc_rndarray));
+	clmem_rndarray = create_rw_buffer(sizeof(hmc_ocl_ran)*get_num_rndstates());
 
 	logger.trace() << "Create buffer for gaugeobservables...";
 	clmem_plaq = create_rw_buffer(sizeof(hmc_float) * global_work_size);
@@ -155,14 +158,24 @@ void Opencl::fill_kernels()
 	
 }
 
-hmc_error Opencl::init(cl_device_type wanted_device_type, inputparameters* params)
+hmc_error Opencl::init(cl_device_type wanted_device_type, inputparameters* params, int nstates)
 {
-	hmc_error err = init_basic(wanted_device_type, params);
+
+/** Number of threads to use for OpenCL kernels */
+  if(params->get_use_gpu() == true) {
+    numthreads = 128;
+  } else {
+    numthreads = 1;
+  }
+
+	hmc_error err = init_basic(wanted_device_type, params, nstates);
 	return err;
 }
 
-hmc_error Opencl::init_basic(cl_device_type wanted_device_type, inputparameters* params)
+hmc_error Opencl::init_basic(cl_device_type wanted_device_type, inputparameters* params, int nstates)
 {
+  init_rndarray(nstates);
+
 	//variables, initializing, ...
 	set_parameters(params);
 	hmc_error err;
@@ -360,12 +373,12 @@ hmc_error Opencl::get_gaugefield_from_device(s_gaugefield* gaugefield, usetimer*
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::copy_rndarray_to_device(hmc_rndarray rndarray, usetimer* timer)
+hmc_error Opencl::copy_rndarray_to_device(hmc_ocl_ran* rndarray, usetimer* timer)
 {
 //   cout<<"Copy randomarray to device..."<<endl;
 	timer->reset();
 
-	int clerr = clEnqueueWriteBuffer(queue, clmem_rndarray, CL_TRUE, 0, sizeof(hmc_rndarray), rndarray, 0, 0, NULL);
+	int clerr = clEnqueueWriteBuffer(queue, clmem_rndarray, CL_TRUE, 0, sizeof(hmc_ocl_ran)*get_num_rndstates(), rndarray, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
@@ -375,12 +388,12 @@ hmc_error Opencl::copy_rndarray_to_device(hmc_rndarray rndarray, usetimer* timer
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::copy_rndarray_from_device(hmc_rndarray rndarray, usetimer* timer)
+hmc_error Opencl::copy_rndarray_from_device(hmc_ocl_ran* rndarray, usetimer* timer)
 {
 //   cout<<"Get randomarray from device..."<<endl;
 	timer->reset();
 
-	int clerr = clEnqueueReadBuffer(queue, clmem_rndarray, CL_TRUE, 0, sizeof(hmc_rndarray), rndarray, 0, 0, NULL);
+	int clerr = clEnqueueReadBuffer(queue, clmem_rndarray, CL_TRUE, 0, sizeof(hmc_ocl_ran)*get_num_rndstates(), rndarray, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "... failed, aborting.";
 		exit(HMC_OCLERROR);
@@ -428,7 +441,7 @@ void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size
 	// decide on work-sizes
 	size_t local_work_size;
 	if( device_type == CL_DEVICE_TYPE_GPU )
-		local_work_size = NUMTHREADS; /// @todo have local work size depend on kernel properties (and device? autotune?)
+	  local_work_size = this->get_numthreads(); /// @todo have local work size depend on kernel properties (and device? autotune?)
 	else
 		local_work_size = 1; // nothing else makes sens on CPU
 
@@ -1075,7 +1088,7 @@ int Opencl::get_read_write_size(char * in, inputparameters * parameters){
 	if (strcmp(in, "polyakov_reduction") == 0){
 		//this is not right, since one does not know bufelements now
 		//return (Bufel + 1) *2
-    return NUMTHREADS;
+    return this->get_numthreads();
 	}
 	if (strcmp(in, "plaquette") == 0){
     return 48*VOL4D *D*R + 1;
@@ -1083,7 +1096,7 @@ int Opencl::get_read_write_size(char * in, inputparameters * parameters){
 	if (strcmp(in, "plaquette_reduction") == 0){
 		//this is not right, since one does not know bufelements now
 		//return (Bufel + 1) *2
-    return NUMTHREADS;	
+    return this->get_numthreads();	
 	}
 	if (strcmp(in, "stout_smear") == 0){
     return 1000000000000000000000;
@@ -1134,4 +1147,17 @@ void Opencl::print_profiling(std::string filename){
 	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 }
 #endif
+
+void Opencl::init_rndarray(int nstates){
+  num_rndstates = nstates;
+}
+
+
+int Opencl::get_numthreads(){
+  return numthreads;
+}
+
+int Opencl::get_num_rndstates(){
+  return num_rndstates;
+}
 

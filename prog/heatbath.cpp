@@ -34,18 +34,19 @@ int main(int argc, char* argv[])
 	sourcefileparameters parameters_source;
 
 	Gaugefield_heatbath gaugefield;
-	hmc_rndarray rndarray;
-	cl_device_type devicetypes[parameters.get_num_dev()];
+	cl_device_type* devicetypes = new cl_device_type[parameters.get_num_dev()];
 	gaugefield.init_devicetypes_array(devicetypes, &parameters);
-
 	gaugefield.init(1, devicetypes, &parameters);
+	delete [] devicetypes;
+
 	logger.trace() << "Got gaugefield";
-	int err = init_random_seeds(rndarray, "rand_seeds");
+	size_t rndsize = gaugefield.get_numrndstates();
+	int err = init_random_seeds(gaugefield.get_rndarray(), "rand_seeds", rndsize);
 	if(err) return err;
 	logger.trace() << "Got seeds";
 	gaugefield.print_gaugeobservables(&poly_timer,&plaq_timer);
 	gaugefield.copy_gaugefield_to_devices(&copy_to_from_dev_timer);
-	gaugefield.copy_rndarray_to_devices(rndarray, &copy_to_from_dev_timer);
+	gaugefield.copy_rndarray_to_devices(&copy_to_from_dev_timer);
 	logger.trace() << "Moved stuff to device";
 	init_timer.add();
 

@@ -237,9 +237,9 @@ void Opencl_fermions::fill_kernels()
 	}
 }
 
-hmc_error Opencl_fermions::init(cl_device_type wanted_device_type, inputparameters* parameters)
+hmc_error Opencl_fermions::init(cl_device_type wanted_device_type, inputparameters* parameters, int nstates)
 {
-	hmc_error err = Opencl::init(wanted_device_type, parameters);
+        hmc_error err = Opencl::init(wanted_device_type, parameters, nstates);
 	return err;
 }
 
@@ -724,6 +724,7 @@ hmc_error Opencl_fermions::saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, 
 
 hmc_error Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out, const size_t ls, const size_t gs)
 {
+
 	int clerr = CL_SUCCESS;
 	clerr = clSetKernelArg(scalar_product, 0, sizeof(cl_mem), &a);
 	if(clerr != CL_SUCCESS) {
@@ -741,6 +742,9 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
+
+  //this needs a CHECK:
+  size_t local_work_size = get_numthreads();
 	clerr = clSetKernelArg(scalar_product, 3, sizeof(hmc_complex) * local_work_size, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
@@ -783,6 +787,8 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_eoprec_device(cl_mem a,
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
+  //this needs a CHECK:
+  size_t local_work_size = get_numthreads();
 	clerr = clSetKernelArg(scalar_product_eoprec, 3, sizeof(hmc_complex) * local_work_size, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
@@ -869,6 +875,9 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_me
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
+
+  //this needs a CHECK:
+  size_t local_work_size = get_numthreads();
 	clerr = clSetKernelArg(global_squarenorm, 2, sizeof(hmc_float) * local_work_size, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
@@ -905,6 +914,8 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
+  //this needs a CHECK:
+  size_t local_work_size = get_numthreads();
 	clerr = clSetKernelArg(global_squarenorm_eoprec, 2, sizeof(hmc_float) * local_work_size, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;

@@ -30,6 +30,8 @@
 #include <CL/cl.h>
 #endif
 
+#include "logger.hpp"
+
 
 /**
  * Version number.
@@ -105,12 +107,12 @@ public:
 	 * Copy random array to devices (currently: to device).
 	 * @param[in,out] timer copy-time
 	 */
-	hmc_error copy_rndarray_to_devices(hmc_rndarray host_rndarray,  usetimer* timer);
+	hmc_error copy_rndarray_to_devices(usetimer* timer);
 	/**
 	 * Copy random array from devices (currently: from device).
 	 * @param[in,out] timer copy-time
 	 */
-	hmc_error copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer* timer);
+	hmc_error copy_rndarray_from_devices(usetimer* timer);
 
 	//input/output, print, save functions!!
 	/**
@@ -325,6 +327,18 @@ public:
 	 */
 	hmc_error alloc_devicetypes();
 
+	/**
+	 * Returns private member * rndarray
+	 * @return rndarray
+	 */
+	hmc_ocl_ran* get_rndarray();
+
+	/*
+      	 * Returns numrndstates
+	 * @return numrndstates
+	 */
+	size_t get_numrndstates();
+
 private:
 	Opencl ** devices;
 	inputparameters* parameters;
@@ -332,6 +346,11 @@ private:
 	
 	int num_ocl_devices;
 	int num_device_types;
+
+	int numrndstates;
+	size_t sizeof_rndarray;
+
+	hmc_ocl_ran* rndarray;
 };
 
 #endif /* _GAUGEFIELDH_ */

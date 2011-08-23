@@ -58,7 +58,7 @@ public:
 	 *         @li HMC_FILEERROR if one of the kernel files cannot be opened
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	virtual hmc_error init(cl_device_type wanted_device_type, inputparameters* parameters);
+	virtual hmc_error init(cl_device_type wanted_device_type, inputparameters* parameters, int nstates);
 
 	hmc_error finalize_fermions();
 

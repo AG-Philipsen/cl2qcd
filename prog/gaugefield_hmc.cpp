@@ -19,7 +19,7 @@ hmc_error Gaugefield_hmc::init_devices(cl_device_type* devicetypes)
 
 	for(int n = 0; n < get_num_ocl_devices(); n++) {
 		logger.debug() << "init device #" << n;
-		get_devices_hmc()[n].init(devicetypes[n], get_parameters());
+		get_devices_hmc()[n].init(devicetypes[n], get_parameters(),this->get_numrndstates());
 	}
 	return HMC_SUCCESS;
 }

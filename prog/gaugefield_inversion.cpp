@@ -17,7 +17,7 @@ hmc_error Gaugefield_inversion::init_devices(cl_device_type* devicetypes)
 
 	for(int n = 0; n < get_num_ocl_devices(); n++) {
 		logger.trace() << "init device #" << n ;
-		get_devices_fermions()[n].init(devicetypes[n], get_parameters());
+		get_devices_fermions()[n].init(devicetypes[n], get_parameters(),this->get_numrndstates());
 	}
 	return HMC_SUCCESS;
 }

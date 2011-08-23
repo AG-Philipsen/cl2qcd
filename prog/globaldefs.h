@@ -56,12 +56,6 @@
 
 #define su2_entries 4
 
-/** Number of threads to use for OpenCL kernels */
-#ifdef _USEGPU_
-#define NUMTHREADS 128
-#else
-#define NUMTHREADS 1
-#endif
 
 #ifndef _INKERNEL_
 // Definition of numeric constants for the symmetric structure constants d_ijk of su(3)

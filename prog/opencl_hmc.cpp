@@ -73,9 +73,9 @@ void Opencl_hmc::fill_kernels()
 	gaugemomentum_squarenorm = createKernel("gaugemomentum_squarenorm") << basic_hmc_code << "gaugemomentum_squarenorm.cl";
 }
 
-hmc_error Opencl_hmc::init(cl_device_type wanted_device_type, inputparameters* parameters)
+hmc_error Opencl_hmc::init(cl_device_type wanted_device_type, inputparameters* parameters, int nstates)
 {
-	hmc_error err = Opencl_fermions::init(wanted_device_type, parameters);
+  hmc_error err = Opencl_fermions::init(wanted_device_type, parameters,nstates);
 	
 	return err;
 }
@@ -273,6 +273,10 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 			copy_buffer_on_device(clmem_phi, get_clmem_source(), sizeof(spinor) * SPINORFIELDSIZE, &copy_on);
 
 			
+			//CHECK
+			size_t local_work_size = get_numthreads();
+			size_t global_work_size = get_numthreads();
+
 			//debugging
 			hmc_float s_fermion;
 			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);

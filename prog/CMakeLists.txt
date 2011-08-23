@@ -63,11 +63,6 @@ if( USE_RECONSTRUCT_TWELVE )
 	add_definitions( -D_RECONSTRUCT_TWELVE_ )
 endif( USE_RECONSTRUCT_TWELVE )
 
-option( USE_GPU "Use GPU" OFF )
-if( USE_GPU )
-	add_definitions( -D_USEGPU_ )
-endif( USE_GPU )
-
 # lattice dimensions (see feature #127)
 set( NTIME 8 CACHE STRING "Number of lattice sites in time direction (t)" )
 add_definitions( -DNTIME=${NTIME} )
