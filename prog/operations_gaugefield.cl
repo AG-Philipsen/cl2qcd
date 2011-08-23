@@ -161,7 +161,7 @@ Matrixsu2 reduction (const Matrix3x3 src, const int rand)
 Matrixsu3 extend (const int random, Matrixsu2 src)
 {
         Matrixsu3 out;
-#ifdef _USE_GPU_
+#ifdef _USEGPU_
 
 #ifdef _RECONSTRUCT_TWELVE_
 switch(random){
