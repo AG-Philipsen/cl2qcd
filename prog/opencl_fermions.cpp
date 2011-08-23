@@ -598,30 +598,22 @@ hmc_error Opencl_fermions::saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::set_spinorfield_cold_device(const size_t ls, const size_t gs){
-
-	int clerr = CL_SUCCESS;
-
-	clerr = clSetKernelArg(set_spinorfield_cold,0,sizeof(cl_mem),&clmem_inout); 
+void Opencl_fermions::set_spinorfield_cold_device(cl_mem inout, const size_t ls, const size_t gs){
+	int clerr = clSetKernelArg(set_spinorfield_cold,0,sizeof(cl_mem),inout); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
 	enqueueKernel(set_spinorfield_cold , gs, ls);
-  
-	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::set_eoprec_spinorfield_cold_device(const size_t ls, const size_t gs){
-	int clerr = CL_SUCCESS;
-
-	clerr = clSetKernelArg(set_eoprec_spinorfield_cold,0,sizeof(cl_mem),&clmem_inout_eoprec); 
+void Opencl_fermions::set_eoprec_spinorfield_cold_device(cl_mem inout, const size_t ls, const size_t gs){
+	int clerr = clSetKernelArg(set_eoprec_spinorfield_cold,0,sizeof(cl_mem),inout); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
 	enqueueKernel(set_eoprec_spinorfield_cold , gs, ls);
-	return HMC_SUCCESS;
 }
 
 hmc_error Opencl_fermions::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t ls, const size_t gs){
@@ -1418,13 +1410,11 @@ hmc_error Opencl_fermions::solver_eoprec_device(cl_mem gf, usetimer * copytimer,
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::create_point_source_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs)
+void Opencl_fermions::create_point_source_device(cl_mem inout, int i, int spacepos, int timepos, const size_t ls, const size_t gs)
 {
+	set_zero_spinorfield_device(inout, ls, gs);
 
-	set_zero_spinorfield_device(clmem_source, ls, gs);
-
-	int clerr = CL_SUCCESS;
-	clerr = clSetKernelArg(create_point_source, 0, sizeof(cl_mem), &clmem_source);
+	int clerr = clSetKernelArg(create_point_source, 0, sizeof(cl_mem), inout);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -1445,16 +1435,13 @@ hmc_error Opencl_fermions::create_point_source_device(int i, int spacepos, int t
 		exit(HMC_OCLERROR);
 	}
 	enqueueKernel( create_point_source, gs, ls);
-
-	return HMC_SUCCESS;
 }
 
 
-hmc_error Opencl_fermions::create_point_source_eoprec_device(cl_mem gf, int i, int spacepos, int timepos, const size_t ls, const size_t gs)
+void Opencl_fermions::create_point_source_eoprec_device(cl_mem inout_even, cl_mem inout_odd, cl_mem gf, int i, int spacepos, int timepos, const size_t ls, const size_t gs)
 {
-
-	set_zero_spinorfield_eoprec_device(clmem_source_even, ls, gs);
-	set_zero_spinorfield_eoprec_device(clmem_source_odd, ls, gs);
+	set_zero_spinorfield_eoprec_device(inout_even, ls, gs);
+	set_zero_spinorfield_eoprec_device(inout_odd, ls, gs);
 	set_zero_spinorfield_eoprec_device(clmem_tmp_eoprec_2, ls, gs);
 	set_zero_spinorfield_eoprec_device(clmem_tmp_eoprec_1, ls, gs);
 
@@ -1465,7 +1452,7 @@ hmc_error Opencl_fermions::create_point_source_eoprec_device(cl_mem gf, int i, i
 
 	//CP: this is different than the host code, where this is done implicitly when converting the normal source to even/odd
 	if(evenodd == 1) {
-		clerr = clSetKernelArg(create_point_source_eoprec, 0, sizeof(cl_mem), &clmem_source_odd);
+		clerr = clSetKernelArg(create_point_source_eoprec, 0, sizeof(cl_mem), inout_odd);
 		if(clerr != CL_SUCCESS) {
 			cout << "clSetKernelArg 0 failed with " << clerr << " , aborting..." << endl;
 			exit(HMC_OCLERROR);
@@ -1489,20 +1476,16 @@ hmc_error Opencl_fermions::create_point_source_eoprec_device(cl_mem gf, int i, i
     exit(HMC_OCLERROR);
   }
 	enqueueKernel(create_point_source_eoprec , gs, ls);
-  /** @todo replace this call by a wait for events..*/
- 	clFinish(queue);
 
 	if(get_parameters()->get_fermact() == WILSON){
 		logger.fatal() << "not yet implemented in WILSON case, aborting...";
 	}
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
 		///@todo here, the use of clmem_tmp_eoprec_3 can be avoided by using clmem_source_even instead
-		M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1, ls, gs);
+		M_tm_inverse_sitediagonal_device(inout_odd, clmem_tmp_eoprec_1, ls, gs);
 		dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_3, gf, EVEN, ls, gs);
-		saxpy_eoprec_device(clmem_tmp_eoprec_2, clmem_tmp_eoprec_3, clmem_one, clmem_source_even, ls, gs);
+		saxpy_eoprec_device(clmem_tmp_eoprec_2, clmem_tmp_eoprec_3, clmem_one, inout_even, ls, gs);
 	}
-
-	return HMC_SUCCESS;
 }
 
 
@@ -1561,6 +1544,16 @@ cl_mem Opencl_fermions::get_clmem_inout_eoprec()
 cl_mem Opencl_fermions::get_clmem_tmp_eoprec_1()
 {
 	return clmem_tmp_eoprec_1;
+}
+
+cl_mem Opencl_fermions::get_clmem_source_even()
+{
+	return clmem_source_even;
+}
+
+cl_mem Opencl_fermions::get_clmem_source_odd()
+{
+	return clmem_source_odd;
 }
 
 hmc_error Opencl_fermions::finalize_fermions()

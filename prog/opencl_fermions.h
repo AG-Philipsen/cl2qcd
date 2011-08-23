@@ -87,10 +87,10 @@ public:
 	hmc_error saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t ls, const size_t gs);
 	hmc_error saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t ls, const size_t gs);
 	hmc_error saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error create_point_source_device(int i, int spacepos, int timepos, const size_t ls, const size_t gs);
-	hmc_error create_point_source_eoprec_device(cl_mem gf, int i, int spacepos, int timepos, const size_t ls, const size_t gs);
-	hmc_error set_spinorfield_cold_device(const size_t ls, const size_t gs);
-	hmc_error set_eoprec_spinorfield_cold_device(const size_t ls, const size_t gs);
+	void create_point_source_device(cl_mem inout, int i, int spacepos, int timepos, const size_t ls, const size_t gs);
+	void create_point_source_eoprec_device(cl_mem inout_even, cl_mem inout_odd, cl_mem gf, int i, int spacepos, int timepos, const size_t ls, const size_t gs);
+	void set_spinorfield_cold_device(cl_mem inout, const size_t ls, const size_t gs);
+	void set_eoprec_spinorfield_cold_device(cl_mem inout, const size_t ls, const size_t gs);
 
 	//    fermionmatrix operations
 	//    non-eoprec
@@ -142,6 +142,8 @@ public:
 
 	cl_mem get_clmem_inout_eoprec();
 	cl_mem get_clmem_tmp_eoprec_1();
+	cl_mem get_clmem_source_even();
+	cl_mem get_clmem_source_odd();
 
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel

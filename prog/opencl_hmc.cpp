@@ -233,7 +233,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 	/**
 	 * Trial solution for the spinorfield
 	 */
-	set_spinorfield_cold_device(ls, gs);
+	set_spinorfield_cold_device(get_clmem_inout(), ls, gs);
  
 	/** @todo check the use of the sources again, compare to tmlqcd!!! */
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
@@ -310,7 +310,7 @@ hmc_error Opencl_hmc::force_device(const size_t ls, const size_t gs)
 			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
 			 
 			//this sets clmem_inout cold as trial-solution
-			set_spinorfield_cold_device(ls, gs);
+			set_spinorfield_cold_device(get_clmem_inout(), ls, gs);
 			
 			err = Opencl_fermions::solver_device(clmem_new_u, &copy_to, &copy_on, &solvertimer, ls, gs, get_parameters()->get_cgmax(), Qminus_call);
 			if (err != HMC_SUCCESS) logger.debug() << "\t\t\tsolver did not solve!!";
