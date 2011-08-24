@@ -32,7 +32,7 @@ std::string Invalid_Fermact::what(){
 
 Invalid_Parameters::Invalid_Parameters(std::string descr, std::string expected, std::string found){
   std::stringstream msg;
-  msg<< descr<<" Expeceted: "<<expected<<" But found: "<<found;
+  msg<< descr<<" Expected: "<<expected<<" But found: "<<found;
   error_message = msg.str();
   return;
 }
