@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 	sourcefileparameters parameters_source;
 
 	Gaugefield_k gaugefield;
-	cl_device_type devicetypes[1];
+	cl_device_type* devicetypes = new cl_device_type;
 
 
 	if(parameters.get_use_gpu() == true) {
@@ -46,10 +46,13 @@ int main(int argc, char* argv[])
 	  devicetypes[0] = CL_DEVICE_TYPE_CPU;
 	}
 
-	gaugefield.init(1, &devicetypes[0], &parameters);
+	gaugefield.init(1, devicetypes, &parameters);
 	int rndsize = gaugefield.get_numrndstates();
 	int err = init_random_seeds(gaugefield.get_rndarray(), "rand_seeds", rndsize);
 	if(err) return err;
+
+	delete devicetypes;
+
 
 	//first output, if you like it...
 	//  cout << endl << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]" << endl;
