@@ -1654,12 +1654,6 @@ usetimer* Opencl_fermions::get_timer(char * in){
 	if (strcmp(in, "gamma5_eoprec") == 0){
     return &this->timer_gamma5_eoprec;
 	}
-	if (strcmp(in, "M_tm_sitediagonal") == 0){
-    return &this->timer_M_sitediagonal;
-	}
-	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0){
-    return &this->timer_M_inverse_sitediagonal;
-	}
 	if (strcmp(in, "dslash_eoprec") == 0){
     return &this->timer_dslash_eoprec;
 	}

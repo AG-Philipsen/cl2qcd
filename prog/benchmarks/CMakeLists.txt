@@ -27,6 +27,7 @@ add_executable( heatbath_benchmarks
 	../host_use_timer.cpp
 	../host_writegaugefield.cpp
 	../logger.cpp
+	../exceptions.cpp
 )
 target_link_libraries( heatbath_benchmarks
 	${OPENCL_LIBRARIES}
@@ -54,6 +55,7 @@ add_executable( inverter_benchmarks
 	../host_use_timer.cpp
 	../host_writegaugefield.cpp
 	../logger.cpp
+	../exceptions.cpp
 )
 target_link_libraries( inverter_benchmarks
 	${OPENCL_LIBRARIES}
@@ -84,6 +86,7 @@ add_executable( hmc_benchmarks
 	../logger.cpp
 	../gaugefield_hmc.cpp
 	../opencl_hmc.cpp
+	../exceptions.cpp
 )
 target_link_libraries( hmc_benchmarks
 	${OPENCL_LIBRARIES}
