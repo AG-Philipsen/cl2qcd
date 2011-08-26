@@ -320,13 +320,9 @@ void Opencl_hmc::calc_fermion_force(usetimer *copy_to, usetimer * copy_on, useti
 	 		  */
 			set_spinorfield_cold_device(get_clmem_inout(), ls, gs);			
 			
-			//CHECK
-			size_t local_work_size = get_numthreads();
-			size_t global_work_size = get_numthreads();
-
 			//debugging
 			hmc_float s_fermion;
-			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
+			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, ls, gs);
 			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), copy_to);
 			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
 			 
@@ -335,7 +331,7 @@ void Opencl_hmc::calc_fermion_force(usetimer *copy_to, usetimer * copy_on, useti
 			else logger.debug() << "\t\t\tsolver solved!";
 			
 			//debugging
-			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
+			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, ls, gs);
 			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), copy_to);
 			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
 			
@@ -356,7 +352,7 @@ void Opencl_hmc::calc_fermion_force(usetimer *copy_to, usetimer * copy_on, useti
 			logger.debug() << "\t\t\tstart solver";
 			
 			//debugging
-			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
+			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, ls, gs);
 			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), copy_to);
 			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
 			 
@@ -368,7 +364,7 @@ void Opencl_hmc::calc_fermion_force(usetimer *copy_to, usetimer * copy_on, useti
 			else logger.debug() << "\t\t\tsolver solved!";
 			
 			//debugging
-			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, local_work_size, global_work_size);
+			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion, ls, gs);
 			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), copy_to);
 			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
 		}	

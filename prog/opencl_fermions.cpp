@@ -743,9 +743,7 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem
 		exit(HMC_OCLERROR);
 	}
 
-  //this needs a CHECK:
-  size_t local_work_size = get_numthreads();
-	clerr = clSetKernelArg(scalar_product, 3, sizeof(hmc_complex) * local_work_size, NULL);
+	clerr = clSetKernelArg(scalar_product, 3, sizeof(hmc_complex) * ls, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -787,9 +785,7 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_eoprec_device(cl_mem a,
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-  //this needs a CHECK:
-  size_t local_work_size = get_numthreads();
-	clerr = clSetKernelArg(scalar_product_eoprec, 3, sizeof(hmc_complex) * local_work_size, NULL);
+	clerr = clSetKernelArg(scalar_product_eoprec, 3, sizeof(hmc_complex) * ls, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -876,9 +872,7 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_me
 		exit(HMC_OCLERROR);
 	}
 
-  //this needs a CHECK:
-  size_t local_work_size = get_numthreads();
-	clerr = clSetKernelArg(global_squarenorm, 2, sizeof(hmc_float) * local_work_size, NULL);
+	clerr = clSetKernelArg(global_squarenorm, 2, sizeof(hmc_float) * ls, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -914,9 +908,7 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-  //this needs a CHECK:
-  size_t local_work_size = get_numthreads();
-	clerr = clSetKernelArg(global_squarenorm_eoprec, 2, sizeof(hmc_float) * local_work_size, NULL);
+	clerr = clSetKernelArg(global_squarenorm_eoprec, 2, sizeof(hmc_float) * ls, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
