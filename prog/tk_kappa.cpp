@@ -129,10 +129,9 @@ int main(int argc, char* argv[])
 	time_clover += timer_clover.getTime();
 	
 	}
-		
-	cout.precision(4);
-	cout <<"Measurement TK kappa_karsch: " << time_karsch/1000000. / hmc_float (nsteps) << " s"<< endl;
-	cout <<"Measurement TK kappa_clover: " << time_clover/1000000. / hmc_float (nsteps) << " s" <<endl;
+
+	logger.info() << "Measurement TK kappa_karsch: " << std::setprecision(4) << time_karsch/1000000. / hmc_float (nsteps) << " s";
+	logger.info() << "Measurement TK kappa_clover: " << std::setprecision(4) << time_clover/1000000. / hmc_float (nsteps) << " s";
 	
 	kappa_karsch_out.close();
 	kappa_clover_out.close();
