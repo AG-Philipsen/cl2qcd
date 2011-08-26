@@ -173,7 +173,6 @@ switch(random){
                 out.e11 = src.e11;
                 out.e12 = hmc_complex_zero;
                 return out;
-                break;
         case 2:
                 out.e00 = hmc_complex_one;
                 out.e01 = hmc_complex_zero;
@@ -182,7 +181,6 @@ switch(random){
                 out.e11 = src.e00;
                 out.e12 = src.e01;
                 return out;
-                break;
         case 3:
                 out.e00 = src.e00;
                 out.e01 = hmc_complex_zero;
@@ -191,7 +189,6 @@ switch(random){
                 out.e11 = hmc_complex_one;
                 out.e12 = hmc_complex_zero;
                 return out;
-                break;
         }
 #else
 
@@ -207,7 +204,6 @@ switch(random){
                 out.e21 = hmc_complex_zero;
                 out.e22 = hmc_complex_one;
                 return out;
-                break;
         case 2:
                 out.e00 = hmc_complex_one;
                 out.e01 = hmc_complex_zero;
@@ -219,7 +215,6 @@ switch(random){
                 out.e21 = src.e10;
                 out.e22 = src.e11;
                 return out;
-                break;
         case 3:
                 out.e00 = src.e00;
                 out.e01 = hmc_complex_zero;
@@ -231,7 +226,6 @@ switch(random){
                 out.e21 = hmc_complex_zero;
                 out.e22 = src.e11;
                 return out;
-                break;
         }
 #endif
 	return;
