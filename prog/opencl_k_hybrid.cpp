@@ -24,6 +24,10 @@ hmc_error Opencl_k_hybrid::fill_buffers()
 
 	cl_int clerr = CL_SUCCESS;
 
+	size_t global_work_size, local_work_size;
+	cl_uint num_groups;
+	Opencl::get_work_sizes(&local_work_size, &global_work_size, &num_groups, get_device_type());
+
 	cout << "Create buffer for transport coefficient kappa_karsch..." << endl;
 	clmem_kappa_karsch = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float) * global_work_size, 0, &clerr);
 	if(clerr != CL_SUCCESS) {
