@@ -24,7 +24,6 @@ class Device : public Opencl {
 
 private:
 	inputparameters params;
-	usetimer timer;
 	cl_kernel floatKernel;
 	cl_kernel su3Kernel;
 	cl_mem in, out;
@@ -33,7 +32,7 @@ private:
 
 public:
 	Device(cl_device_type device_type) : Opencl() {
-		Opencl::init(device_type, &timer, &params); /* init in body for proper this-pointer */
+		Opencl::init(device_type, &params, 0); /* init in body for proper this-pointer */
 	};
 	virtual hmc_error fill_buffers();
 	virtual void fill_kernels();

@@ -22,6 +22,7 @@ add_executable( bandwidth
 	../host_use_timer.cpp
 	../host_writegaugefield.cpp
 	../logger.cpp
+	../exceptions.cpp
 )
 target_link_libraries( bandwidth
 	${OPENCL_LIBRARIES}
