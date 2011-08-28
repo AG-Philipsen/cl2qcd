@@ -100,18 +100,18 @@ public:
 	hmc_error Qminus(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	hmc_error QplusQminus(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	//        explicit
-	hmc_error M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-	hmc_error M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-	hmc_error M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-	hmc_error gamma5_device(cl_mem inout, const size_t ls, const size_t gs);
+	void M_wilson_device(cl_mem in, cl_mem out, cl_mem gf);
+	void M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf);
+	void M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf);
+	void gamma5_device(cl_mem inout);
 	//    eoprec
 	//        compound
 	hmc_error Aee(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
 	//        explicit
-	hmc_error gamma5_eoprec_device(cl_mem inout, const size_t ls, const size_t gs);
-	hmc_error M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error M_tm_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, const size_t ls, const size_t gs);
+	void gamma5_eoprec_device(cl_mem inout);
+	void M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out);
+	void M_tm_sitediagonal_device(cl_mem in, cl_mem out);
+	void dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd);
 
 	//    solver operations
 	//    non-eoprec

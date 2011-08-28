@@ -341,10 +341,10 @@ hmc_error Opencl_fermions::M(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, 
 
 	if(get_parameters()->get_fermact() == WILSON){
 		//in the pure Wilson case there is just one fermionmatrix 
-		M_wilson_device(in, out, gf, ls, gs);
+		M_wilson_device(in, out, gf);
 	}
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
-		M_tm_plus_device(in, out, gf, ls, gs);
+		M_tm_plus_device(in, out, gf);
 	}
 
 	return HMC_SUCCESS;
@@ -355,13 +355,13 @@ hmc_error Opencl_fermions::Qplus(cl_mem in, cl_mem out, cl_mem gf, const size_t 
 
 	if(get_parameters()->get_fermact() == WILSON){
 		//in the pure Wilson case there is just one fermionmatrix 
-		M_wilson_device(in, out, gf, ls, gs);
+		M_wilson_device(in, out, gf);
 	}
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
-		M_tm_plus_device(in, out, gf, ls, gs);
+		M_tm_plus_device(in, out, gf);
 	}
 	
-	gamma5_device(out, ls, gs);
+	gamma5_device(out);
 
 	return HMC_SUCCESS;
 
@@ -371,13 +371,13 @@ hmc_error Opencl_fermions::Qminus(cl_mem in, cl_mem out, cl_mem gf, const size_t
  
 	if(get_parameters()->get_fermact() == WILSON){
 		//in the pure Wilson case there is just one fermionmatrix 
-		M_wilson_device(in, out, gf, ls, gs);
+		M_wilson_device(in, out, gf);
 	}
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
-		M_tm_minus_device(in, out, gf, ls, gs);
+		M_tm_minus_device(in, out, gf);
 	}
 	
-	gamma5_device(out, ls, gs);
+	gamma5_device(out);
 	
 	return HMC_SUCCESS;
 
@@ -396,10 +396,13 @@ hmc_error Opencl_fermions::QplusQminus(cl_mem in, cl_mem out, cl_mem gf, const s
 }
 
 //explicit fermionmatrix-kernel calling functions
-hmc_error Opencl_fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
-
-  int clerr =CL_SUCCESS;
-	clerr = clSetKernelArg(M_wilson,0,sizeof(cl_mem),&in); 
+void Opencl_fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(M_wilson, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+  int clerr = clSetKernelArg(M_wilson,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -414,14 +417,16 @@ hmc_error Opencl_fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, con
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	enqueueKernel( M_wilson, gs, ls);
-	return HMC_SUCCESS;
+	enqueueKernel( M_wilson, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
-
-  int clerr =CL_SUCCESS;
-	clerr = clSetKernelArg(M_tm_plus,0,sizeof(cl_mem),&in); 
+void Opencl_fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(M_tm_plus, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+  int clerr = clSetKernelArg(M_tm_plus,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -436,14 +441,16 @@ hmc_error Opencl_fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, co
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	enqueueKernel( M_tm_plus, gs, ls);
-	return HMC_SUCCESS;
+	enqueueKernel( M_tm_plus, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
-
-  int clerr =CL_SUCCESS;
-	clerr = clSetKernelArg(M_tm_minus,0,sizeof(cl_mem),&in); 
+void Opencl_fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(M_tm_minus, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+  int clerr = clSetKernelArg(M_tm_minus,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -458,20 +465,21 @@ hmc_error Opencl_fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, c
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	enqueueKernel( M_tm_minus, gs, ls);
-	return HMC_SUCCESS;
+	enqueueKernel( M_tm_minus, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::gamma5_device(cl_mem inout, const size_t ls, const size_t gs){
-	int clerr =CL_SUCCESS;
-
-  clerr = clSetKernelArg(gamma5,0,sizeof(cl_mem),&inout); 
+void Opencl_fermions::gamma5_device(cl_mem inout){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(gamma5, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(gamma5,0,sizeof(cl_mem),&inout); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	enqueueKernel(gamma5 , gs, ls);
-	return HMC_SUCCESS;
+	enqueueKernel(gamma5 , gs2, ls2);
 }
 
 //compound fermionmatrix-functions with eoprec
@@ -484,13 +492,13 @@ hmc_error Opencl_fermions::Aee(cl_mem in, cl_mem out, cl_mem gf, const size_t ls
 		logger.fatal() << "not yet implemented in WILSON case, aborting...";
 	}
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
-		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd, ls, gs);
-		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, ls, gs);
-		dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even, ls, gs);
-		M_tm_sitediagonal_device(in, clmem_tmp_eoprec_1, ls, gs);
+		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
+		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
+		dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even);
+		M_tm_sitediagonal_device(in, clmem_tmp_eoprec_1);
 		/** @todo this timer as well as the copying can be extincted
 		 * by using
-		 * 	saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out, ls, gs);
+		 * 	saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
 		 */
 		usetimer noop;
 		copy_buffer_on_device(out, clmem_tmp_eoprec_3, sizeof(spinor) * EOPREC_SPINORFIELDSIZE, &noop);
@@ -500,24 +508,29 @@ hmc_error Opencl_fermions::Aee(cl_mem in, cl_mem out, cl_mem gf, const size_t ls
 }
 
 //explicit eoprec fermionmatrix functions
-hmc_error Opencl_fermions::gamma5_eoprec_device(cl_mem inout, const size_t ls, const size_t gs){
-	int clerr =CL_SUCCESS;
-
-  clerr = clSetKernelArg(gamma5_eoprec,0,sizeof(cl_mem),&inout); 
+void Opencl_fermions::gamma5_eoprec_device(cl_mem inout){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(gamma5_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(gamma5_eoprec,0,sizeof(cl_mem),&inout); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	enqueueKernel( gamma5_eoprec, gs, ls);
-	return HMC_SUCCESS;
+	enqueueKernel( gamma5_eoprec, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, const size_t ls, const size_t gs)
+void Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd)
 {
-	int clerr = CL_SUCCESS;
 	int eo = evenodd;
-
-	clerr = clSetKernelArg(dslash_eoprec,0,sizeof(cl_mem),&in); 
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(dslash_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(dslash_eoprec,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -537,15 +550,17 @@ hmc_error Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf
     cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }  
-	enqueueKernel(dslash_eoprec , gs, ls);
-	return HMC_SUCCESS;
+	enqueueKernel(dslash_eoprec , gs2, ls2);
 }
 
-hmc_error Opencl_fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs)
+void Opencl_fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out)
 {
-	int clerr = CL_SUCCESS;
-
-	clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 0, sizeof(cl_mem), &in);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(M_tm_inverse_sitediagonal, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -555,16 +570,17 @@ hmc_error Opencl_fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem ou
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( M_tm_inverse_sitediagonal, gs, ls);
-
-	return HMC_SUCCESS;
+	enqueueKernel( M_tm_inverse_sitediagonal, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs)
+void Opencl_fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out)
 {
-	int clerr = CL_SUCCESS;
-
-	clerr = clSetKernelArg(M_tm_sitediagonal, 0, sizeof(cl_mem), &in);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(M_tm_sitediagonal, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(M_tm_sitediagonal, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -574,8 +590,7 @@ hmc_error Opencl_fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, const
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel(M_tm_sitediagonal , gs, ls);
-	return HMC_SUCCESS;
+	enqueueKernel(M_tm_sitediagonal , gs2, ls2);
 }
 
 //BLAS-functions
@@ -1400,9 +1415,9 @@ hmc_error Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem i
 	}
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
 		///@todo here, the use of clmem_tmp_eoprec_3 can be avoided
-		dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, gf, ODD, ls, gs);
-		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, ls, gs);
-		M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2, ls, gs);
+		dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, gf, ODD);
+		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1);
+		M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2);
 		saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, clmem_one, clmem_tmp_eoprec_3,  ls, gs);
 
 		convert_from_kappa_format_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_3);
@@ -1489,8 +1504,8 @@ void Opencl_fermions::create_point_source_eoprec_device(cl_mem inout_even, cl_me
 	}
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
 		///@todo here, the use of clmem_tmp_eoprec_3 can be avoided by using clmem_source_even instead
-		M_tm_inverse_sitediagonal_device(inout_odd, clmem_tmp_eoprec_1, ls, gs);
-		dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_3, gf, EVEN, ls, gs);
+		M_tm_inverse_sitediagonal_device(inout_odd, clmem_tmp_eoprec_1);
+		dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_3, gf, EVEN);
 		saxpy_eoprec_device(clmem_tmp_eoprec_2, clmem_tmp_eoprec_3, clmem_one, inout_even, ls, gs);
 	}
 }
