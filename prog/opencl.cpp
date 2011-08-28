@@ -1024,7 +1024,7 @@ TmpClKernel Opencl::createKernel(const char * const kernel_name)
 	return TmpClKernel(kernel_name, collect_options.str(), context, &device, 1);
 }
 
-hmc_error Opencl::stout_smear_device(const size_t ls, const size_t gs){
+hmc_error Opencl::stout_smear_device(){
 	
 	return HMC_SUCCESS;
 }

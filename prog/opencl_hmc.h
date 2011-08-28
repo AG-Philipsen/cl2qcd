@@ -49,22 +49,22 @@ public:
 
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
-	hmc_error generate_gaussian_gaugemomenta_device(const size_t ls, const size_t gs);
-	hmc_error generate_gaussian_spinorfield_device(const size_t ls, const size_t gs);
-	hmc_error md_update_spinorfield_device(const size_t ls, const size_t gs);
-	hmc_error leapfrog_device(hmc_float tau, int steps1, int steps2, usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer, const size_t ls, const size_t gs);
-	hmc_observables metropolis(hmc_float rnd, hmc_float beta, const size_t ls, const size_t gs, usetimer * timer);
-	hmc_error calc_spinorfield_init_energy_device(const size_t ls, const size_t gs);
-	hmc_error md_update_gaugemomentum_device(hmc_float eps, const size_t ls, const size_t gs);
-	hmc_error md_update_gaugefield_device(hmc_float eps, const size_t ls, const size_t gs);
-	hmc_error set_zero_clmem_force_device(const size_t ls, const size_t gs);
-	hmc_error gauge_force_device(const size_t ls, const size_t gs);
-	hmc_error fermion_force_device(const size_t ls, const size_t gs);
-	hmc_error stout_smeared_fermion_force_device(const size_t ls, const size_t gs);
-	hmc_error set_float_to_gaugemomentum_squarenorm_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	void calc_total_force(usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer, const size_t ls, const size_t gs);
-	void calc_gauge_force(const size_t ls, const size_t gs);
-	void calc_fermion_force(usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer, const size_t ls, const size_t gs);
+	void generate_gaussian_gaugemomenta_device();
+	void generate_gaussian_spinorfield_device();
+	void md_update_spinorfield_device();
+	void leapfrog_device(hmc_float tau, int steps1, int steps2, usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer);
+	hmc_observables metropolis(hmc_float rnd, hmc_float beta, usetimer * timer);
+	void calc_spinorfield_init_energy_device();
+	void md_update_gaugemomentum_device(hmc_float eps);
+	void md_update_gaugefield_device(hmc_float eps);
+	void set_zero_clmem_force_device();
+	void gauge_force_device();
+	void fermion_force_device();
+	void stout_smeared_fermion_force_device();
+	void set_float_to_gaugemomentum_squarenorm_device(cl_mem in, cl_mem out);
+	void calc_total_force(usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer);
+	void calc_gauge_force();
+	void calc_fermion_force(usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer);
 	
 	////////////////////////////////////////////////////
 	//get members

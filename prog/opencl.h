@@ -118,7 +118,7 @@ public:
 	/**
 	 * This applies stout smearing to a gaugefield 
 	 */
-	hmc_error stout_smear_device(const size_t ls, const size_t gs);
+	hmc_error stout_smear_device();
 	
 	/**
 	 * returns init status

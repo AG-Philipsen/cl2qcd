@@ -110,11 +110,15 @@ hmc_error Opencl_hmc::finalize_hmc()
 ////////////////////////////////////////////////////
 //Methods needed for the HMC-algorithm
 
-hmc_error Opencl_hmc::generate_gaussian_gaugemomenta_device(const size_t ls, const size_t gs)
+void Opencl_hmc::generate_gaussian_gaugemomenta_device()
 {
-	int clerr;
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(generate_gaussian_gaugemomenta, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
 	//this is always applied to clmem_new_p
-	clerr = clSetKernelArg(generate_gaussian_gaugemomenta, 0, sizeof(cl_mem), &clmem_p);
+	int clerr = clSetKernelArg(generate_gaussian_gaugemomenta, 0, sizeof(cl_mem), &clmem_p);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -124,16 +128,18 @@ hmc_error Opencl_hmc::generate_gaussian_gaugemomenta_device(const size_t ls, con
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( generate_gaussian_gaugemomenta , gs, ls);
-
-	return HMC_SUCCESS;
+	enqueueKernel( generate_gaussian_gaugemomenta , gs2, ls2);
 }
 
-hmc_error Opencl_hmc::generate_gaussian_spinorfield_device(const size_t ls, const size_t gs)
+void Opencl_hmc::generate_gaussian_spinorfield_device()
 {
-	int clerr;
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(generate_gaussian_spinorfield, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
 	//this is always applied to clmem_phi_inv, which can be done since the gaussian field is only needed in the beginning
-	clerr = clSetKernelArg(generate_gaussian_spinorfield, 0, sizeof(cl_mem), &clmem_phi_inv);
+	int clerr = clSetKernelArg(generate_gaussian_spinorfield, 0, sizeof(cl_mem), &clmem_phi_inv);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -143,14 +149,11 @@ hmc_error Opencl_hmc::generate_gaussian_spinorfield_device(const size_t ls, cons
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-
-	enqueueKernel(generate_gaussian_spinorfield  , gs, ls);
-
-	return HMC_SUCCESS;
+	enqueueKernel(generate_gaussian_spinorfield  , gs2, ls2);
 }
 
 
-hmc_error Opencl_hmc::md_update_spinorfield_device(const size_t local_work_size, const size_t global_work_size)
+void Opencl_hmc::md_update_spinorfield_device()
 {
 	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
 	//	then the "phi" = Dpsi from the algorithm is stored in clmem_phi
@@ -162,13 +165,10 @@ hmc_error Opencl_hmc::md_update_spinorfield_device(const size_t local_work_size,
 	set_float_to_global_squarenorm_device(clmem_phi, clmem_s_fermion);
 	get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float), &noop);
 	logger.debug() << "\tsquarenorm init field after update = " << s_fermion;
-
-	return HMC_SUCCESS;
 }
 
 
-//CP: steps2 is not used at the moment....
-hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer, const size_t ls, const size_t gs)
+void Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer)
 {
 	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already
 	//this is the number of int.steps for the fermion during one gauge-int.step
@@ -186,20 +186,20 @@ hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, use
 		
 		//initial step
 		logger.debug() << "\t\tinitial step:";
-		calc_total_force(copy_to, copy_on, solvertimer, ls, gs);
-		md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
+		calc_total_force(copy_to, copy_on, solvertimer);
+		md_update_gaugemomentum_device(-1.*stepsize_half);
 		//intermediate steps
 		if(steps1 > 1) logger.debug() << "\t\tperform " << steps1 - 1 << " intermediate steps " ;
 		for(int k = 1; k < steps1; k++) {
-			md_update_gaugefield_device(stepsize, ls, gs);
-			calc_total_force(copy_to, copy_on, solvertimer, ls, gs);
-			md_update_gaugemomentum_device(-1.*stepsize, ls, gs);
+			md_update_gaugefield_device(stepsize);
+			calc_total_force(copy_to, copy_on, solvertimer);
+			md_update_gaugemomentum_device(-1.*stepsize);
 		}
 		//final step
 		logger.debug() << "\t\tfinal step" ;
-		md_update_gaugefield_device(stepsize, ls, gs);
-		calc_total_force(copy_to, copy_on, solvertimer, ls, gs);
-		md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
+		md_update_gaugefield_device(stepsize);
+		calc_total_force(copy_to, copy_on, solvertimer);
+		md_update_gaugemomentum_device(-1.*stepsize_half);
 		logger.debug() << "\t\tfinished leapfrog";
 	}
 	else {
@@ -212,58 +212,56 @@ hmc_error Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, use
 		//initial step
 		logger.debug() << "\t\tinitial step:";
 		//this corresponds to V_s2(deltaTau/2)
-		set_zero_clmem_force_device(ls, gs);
-		calc_fermion_force(copy_to, copy_on, solvertimer, ls, gs);
-		md_update_gaugemomentum_device(-1.*stepsize2_half, ls, gs);
+		set_zero_clmem_force_device();
+		calc_fermion_force(copy_to, copy_on, solvertimer);
+		md_update_gaugemomentum_device(-1.*stepsize2_half);
 		//now, m steps "more" a performed for the gauge-part
 		//this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
 		for(int l=0; l<m; l++){
-			set_zero_clmem_force_device(ls, gs);
-			calc_gauge_force(ls, gs);
-			md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
-			md_update_gaugefield_device(stepsize2, ls, gs);
-			set_zero_clmem_force_device(ls, gs);
-			calc_gauge_force(ls, gs);
-			md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
+			set_zero_clmem_force_device();
+			calc_gauge_force();
+			md_update_gaugemomentum_device(-1.*stepsize_half);
+			md_update_gaugefield_device(stepsize2);
+			set_zero_clmem_force_device();
+			calc_gauge_force();
+			md_update_gaugemomentum_device(-1.*stepsize_half);
 		}
 		//intermediate steps
 		if(steps1 > 1) logger.debug() << "\t\tperform " << steps2 - 1 << " intermediate steps " ;
 		for(int k = 1; k < steps2; k++) {
 			//this corresponds to V_s2(deltaTau)
-			set_zero_clmem_force_device(ls, gs);
-			calc_fermion_force(copy_to, copy_on, solvertimer, ls, gs);
-			md_update_gaugemomentum_device(-1.*stepsize2, ls, gs);
+			set_zero_clmem_force_device();
+			calc_fermion_force(copy_to, copy_on, solvertimer);
+			md_update_gaugemomentum_device(-1.*stepsize2);
 			for(int l=0; l<m; l++){
 				//this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
-				set_zero_clmem_force_device(ls, gs);
-				calc_gauge_force(ls, gs);
-				md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
-				md_update_gaugefield_device(stepsize2, ls, gs);
-				set_zero_clmem_force_device(ls, gs);
-				calc_gauge_force(ls, gs);
-				md_update_gaugemomentum_device(-1.*stepsize_half, ls, gs);
+				set_zero_clmem_force_device();
+				calc_gauge_force();
+				md_update_gaugemomentum_device(-1.*stepsize_half);
+				md_update_gaugefield_device(stepsize2);
+				set_zero_clmem_force_device();
+				calc_gauge_force();
+				md_update_gaugemomentum_device(-1.*stepsize_half);
 			}
 		}
 		//final step
 		logger.debug() << "\t\tfinal step" ;
 		//this corresponds to the missing V_s2(deltaTau/2)
-		set_zero_clmem_force_device(ls, gs);
-		calc_fermion_force(copy_to, copy_on, solvertimer, ls, gs);
-		md_update_gaugemomentum_device(-1.*stepsize2_half, ls, gs);
+		set_zero_clmem_force_device();
+		calc_fermion_force(copy_to, copy_on, solvertimer);
+		md_update_gaugemomentum_device(-1.*stepsize2_half);
 		logger.debug() << "\t\tfinished leapfrog";
 	}
-	
-	return HMC_SUCCESS;
 }
 
-void Opencl_hmc::calc_total_force(usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer, const size_t ls, const size_t gs){
+void Opencl_hmc::calc_total_force(usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer){
 	//CP: make sure that the output field is set to zero
-	set_zero_clmem_force_device(ls, gs);
-	this->calc_fermion_force(copy_to, copy_on, solvertimer, ls, gs);
-	this->calc_gauge_force(ls, gs);
+	set_zero_clmem_force_device();
+	this->calc_fermion_force(copy_to, copy_on, solvertimer);
+	this->calc_gauge_force();
 }
 
-void Opencl_hmc::calc_fermion_force(usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer, const size_t ls, const size_t gs){
+void Opencl_hmc::calc_fermion_force(usetimer *copy_to, usetimer * copy_on, usetimer * solvertimer){
 	int err = HMC_SUCCESS;
 	//this is only used when smearing is activated
 	cl_mem gf_tmp;
@@ -273,7 +271,7 @@ void Opencl_hmc::calc_fermion_force(usetimer *copy_to, usetimer * copy_on, useti
 		gf_tmp = create_rw_buffer(sizeof(s_gaugefield));
 		copy_buffer_on_device(get_clmem_gaugefield(), gf_tmp, sizeof(s_gaugefield), copy_on);
 		logger.debug() << "\t\t\tsmear gaugefield...";
-		stout_smear_device(ls, gs);
+		stout_smear_device();
 	}
 	
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
@@ -367,25 +365,25 @@ void Opencl_hmc::calc_fermion_force(usetimer *copy_to, usetimer * copy_on, useti
 	}
 	logger.debug() << "\t\tcalc fermion_force...";
 	//CP: this always calls fermion_force(Y,X) with Y = clmem_phi_inv, X = clmem_inout
-	fermion_force_device(ls, gs);
+	fermion_force_device();
 	
 	if(get_parameters()->get_use_smearing() == true){
 		//CP: The fermion_force call above used the smeared gaugefield if wished,
 		//	now the force by the thin link has to be determined...
 		logger.debug() << "\t\t\tcalc stout-smeared fermion_force...";
-		stout_smeared_fermion_force_device(ls, gs);
+		stout_smeared_fermion_force_device();
 		logger.debug() << "\t\t\trestore unsmeared gaugefield...";
 		copy_buffer_on_device(gf_tmp, get_clmem_gaugefield(), sizeof(s_gaugefield), copy_on);
 		if(clReleaseMemObject(gf_tmp) != CL_SUCCESS) exit(HMC_OCLERROR);
 	}	
 }
 
-void Opencl_hmc::calc_gauge_force(const size_t ls, const size_t gs){
+void Opencl_hmc::calc_gauge_force(){
 	logger.debug() << "\t\tcalc gauge_force...";
-	gauge_force_device(ls, gs);
+	gauge_force_device();
 }
 
-hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const size_t local_work_size, const size_t global_work_size, usetimer * timer)
+hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, usetimer * timer)
 {
 	//Calc Hamiltonian
 	logger.debug() << "Calculate Hamiltonian";
@@ -410,8 +408,8 @@ hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const size
 	
 	//Gaugemomentum-Part
 	hmc_float p2, new_p2;
-	set_float_to_gaugemomentum_squarenorm_device(clmem_p, clmem_p2,local_work_size, global_work_size);
-	set_float_to_gaugemomentum_squarenorm_device(clmem_new_p, clmem_new_p2,local_work_size, global_work_size);
+	set_float_to_gaugemomentum_squarenorm_device(clmem_p, clmem_p2);
+	set_float_to_gaugemomentum_squarenorm_device(clmem_new_p, clmem_new_p2);
 	Opencl_fermions::get_buffer_from_device(clmem_p2, &p2, sizeof(hmc_float), timer);
 
 	Opencl_fermions::get_buffer_from_device(clmem_new_p2, &new_p2, sizeof(hmc_float), timer);
@@ -467,22 +465,22 @@ hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta, const size
 	return tmp;
 }
 
-hmc_error Opencl_hmc::calc_spinorfield_init_energy_device(const size_t local_work_size, const size_t global_work_size)
+void Opencl_hmc::calc_spinorfield_init_energy_device()
 {
 	//Suppose the initial spinorfield is saved in phi_inv
 	Opencl_fermions::set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_energy_init);
-
-	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_hmc::md_update_gaugemomentum_device(hmc_float eps, const size_t ls, const size_t gs)
+void Opencl_hmc::md_update_gaugemomentum_device(hmc_float eps)
 {
 	//__kernel void md_update_gaugemomenta(hmc_float eps, __global ae * p_inout, __global ae* force_in){
-
 	hmc_float tmp = eps;
-
-	int clerr;
-	clerr = clSetKernelArg(md_update_gaugemomenta, 0, sizeof(hmc_float), &tmp);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(md_update_gaugemomenta, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(md_update_gaugemomenta, 0, sizeof(hmc_float), &tmp);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -497,19 +495,20 @@ hmc_error Opencl_hmc::md_update_gaugemomentum_device(hmc_float eps, const size_t
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	
-	enqueueKernel(md_update_gaugemomenta  , gs, ls);
-	
-	return HMC_SUCCESS;
+	enqueueKernel(md_update_gaugemomenta  , gs2, ls2);
 }
 
-hmc_error Opencl_hmc::md_update_gaugefield_device(hmc_float eps, const size_t ls, const size_t gs)
+void Opencl_hmc::md_update_gaugefield_device(hmc_float eps)
 {
 	// __kernel void md_update_gaugefield(hmc_float eps, __global ae * p_in, __global ocl_s_gaugefield * u_inout){
 	hmc_float tmp = eps;
-	int clerr;
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(md_update_gaugefield, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
 	//this is always applied to clmem_force
-	clerr = clSetKernelArg(md_update_gaugefield, 0, sizeof(hmc_float), &tmp);
+	int clerr = clSetKernelArg(md_update_gaugefield, 0, sizeof(hmc_float), &tmp);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -524,31 +523,33 @@ hmc_error Opencl_hmc::md_update_gaugefield_device(hmc_float eps, const size_t ls
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	
-	enqueueKernel( md_update_gaugefield , gs, ls);
-	
-	return HMC_SUCCESS;
+	enqueueKernel( md_update_gaugefield , gs2, ls2);
 }
 
-hmc_error Opencl_hmc::set_zero_clmem_force_device(const size_t ls, const size_t gs)
+void Opencl_hmc::set_zero_clmem_force_device()
 {
-	int clerr;
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(md_update_gaugemomenta, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
 	//this is always applied to clmem_force
-	clerr = clSetKernelArg(set_zero_gaugemomentum, 0, sizeof(cl_mem), &clmem_force);
+	int clerr = clSetKernelArg(set_zero_gaugemomentum, 0, sizeof(cl_mem), &clmem_force);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	
-	enqueueKernel( set_zero_gaugemomentum , gs, ls);
-
-	return HMC_SUCCESS;
+	enqueueKernel( set_zero_gaugemomentum , gs2, ls2);
 }
 
-hmc_error Opencl_hmc::gauge_force_device(const size_t ls, const size_t gs)
+void Opencl_hmc::gauge_force_device()
 {
-	int clerr;
-	clerr = clSetKernelArg(gauge_force, 0, sizeof(cl_mem), &clmem_new_u);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(gauge_force, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(gauge_force, 0, sizeof(cl_mem), &clmem_new_u);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -558,18 +559,19 @@ hmc_error Opencl_hmc::gauge_force_device(const size_t ls, const size_t gs)
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	
-	enqueueKernel( gauge_force , gs, ls);
-	
-	return HMC_SUCCESS;
+	enqueueKernel( gauge_force , gs2, ls2);
 }
 
-hmc_error Opencl_hmc::fermion_force_device(const size_t ls, const size_t gs)
+void Opencl_hmc::fermion_force_device()
 {
 	//fermion_force(field, Y, X, out);
 	cl_mem tmp = get_clmem_inout();
-	int clerr;
-	clerr = clSetKernelArg(fermion_force, 0, sizeof(cl_mem), &clmem_new_u);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(fermion_force, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(fermion_force, 0, sizeof(cl_mem), &clmem_new_u);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -589,25 +591,28 @@ hmc_error Opencl_hmc::fermion_force_device(const size_t ls, const size_t gs)
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	
-	enqueueKernel( fermion_force , gs, ls);
-	
-	return HMC_SUCCESS;
-
+	enqueueKernel( fermion_force , gs2, ls2);
 }
 
-hmc_error Opencl_hmc::stout_smeared_fermion_force_device(const size_t ls, const size_t gs)
+void Opencl_hmc::stout_smeared_fermion_force_device()
 {
-		
-	return HMC_SUCCESS;
-
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(stout_smear_fermion_force, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
 }
 
-hmc_error Opencl_hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out, const size_t ls, const size_t gs)
+void Opencl_hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out)
 {
-	int clerr = CL_SUCCESS;
 	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
-	clerr = clSetKernelArg(gaugemomentum_squarenorm, 0, sizeof(cl_mem), &clmem_in);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(gaugemomentum_squarenorm, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
+	int clerr = clSetKernelArg(gaugemomentum_squarenorm, 0, sizeof(cl_mem), &clmem_in);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -618,10 +623,7 @@ hmc_error Opencl_hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clmem_
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	
-	enqueueKernel(gaugemomentum_squarenorm  , gs, ls);
-	
-	return HMC_SUCCESS;
+	enqueueKernel(gaugemomentum_squarenorm  , gs2, ls2);
 }
 
 ////////////////////////////////////////////////////

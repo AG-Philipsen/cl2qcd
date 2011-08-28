@@ -60,7 +60,7 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters,
 	
 	//init gauge_momenta, saved in clmem_p
 	logger.debug() << "\tinit gauge momentum" ;
-	get_devices_hmc()[dev].generate_gaussian_gaugemomenta_device(ls, gs);
+	get_devices_hmc()[dev].generate_gaussian_gaugemomenta_device();
 	
 	//init/update spinorfield phi
 	logger.debug() << "\tinit spinorfield " ;
@@ -74,10 +74,10 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters,
 	//		energy_init = |phi_inv|^2
 	//		md_update_spinorfield_device(phi_inv, phi): phi = Qminus phi_inv
 	//	saving one variable in global mem!!
-	get_devices_hmc()[dev].generate_gaussian_spinorfield_device(ls, gs);
-	get_devices_hmc()[dev].calc_spinorfield_init_energy_device(ls, gs);
+	get_devices_hmc()[dev].generate_gaussian_spinorfield_device();
+	get_devices_hmc()[dev].calc_spinorfield_init_energy_device();
 	logger.debug() << "\tperform md update of spinorfield" ;
-	get_devices_hmc()[dev].md_update_spinorfield_device(ls, gs);
+	get_devices_hmc()[dev].md_update_spinorfield_device();
 	
 	//update gaugefield and gauge_momenta via leapfrog
 	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
@@ -88,12 +88,12 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters,
 	get_devices_hmc()[dev].copy_buffer_on_device(get_devices_hmc()[dev].get_clmem_p(), get_devices_hmc()[dev].get_clmem_new_p(), sizeof(ae) * GAUGEMOMENTASIZE2, copy_on_dev_timer); 
 	///@todo this timer is not used at the moment, compare to inverter.cpp
 	usetimer solvertimer;
-	get_devices_hmc()[dev].leapfrog_device((*parameters).get_tau(), (*parameters).get_integrationsteps1(), (*parameters).get_integrationsteps2(), copy_to_from_dev_timer, copy_on_dev_timer, &solvertimer, ls, gs);
+	get_devices_hmc()[dev].leapfrog_device((*parameters).get_tau(), (*parameters).get_integrationsteps1(), (*parameters).get_integrationsteps2(), copy_to_from_dev_timer, copy_on_dev_timer, &solvertimer);
 		
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
 	logger.debug() << "\tperform Metropolis step: " ;
 	//this call calculates also the HMC-Observables
-	*obs = get_devices_hmc()[dev].metropolis(rnd_number, (*parameters).get_beta(), ls, gs, copy_to_from_dev_timer);
+	*obs = get_devices_hmc()[dev].metropolis(rnd_number, (*parameters).get_beta(), copy_to_from_dev_timer);
 
 	if((*obs).accept == 1){
 		// perform the change nonprimed->primed !
