@@ -115,12 +115,6 @@ cl_mem Opencl::create_chp_buffer(size_t size, void *host_pointer){
 
 hmc_error Opencl::fill_buffers()
 {
-  cl_uint num_groups;
-  size_t ls;
-  size_t gs;
-
-  Opencl::get_work_sizes(&ls, &gs, &num_groups, get_device_type());
-
 	logger.trace() << "Create buffer for gaugefield...";
 	clmem_gaugefield = create_rw_buffer(sizeof(s_gaugefield));
 
@@ -128,10 +122,10 @@ hmc_error Opencl::fill_buffers()
 	clmem_rndarray = create_rw_buffer(sizeof(hmc_ocl_ran)*get_num_rndstates());
 
 	logger.trace() << "Create buffer for gaugeobservables...";
-	clmem_plaq = create_rw_buffer(sizeof(hmc_float) * gs);
-	clmem_splaq = create_rw_buffer(sizeof(hmc_float) * gs);
-	clmem_tplaq = create_rw_buffer(sizeof(hmc_float) * gs);
-	clmem_polyakov = create_rw_buffer(sizeof(hmc_complex) * gs);
+	clmem_plaq = create_rw_buffer(sizeof(hmc_float));
+	clmem_splaq = create_rw_buffer(sizeof(hmc_float));
+	clmem_tplaq = create_rw_buffer(sizeof(hmc_float));
+	clmem_polyakov = create_rw_buffer(sizeof(hmc_complex));
 
 	// scratch buffers for gauge observable will be created on demand
 	clmem_plaq_buf_glob = 0;
@@ -814,20 +808,12 @@ void Opencl::printResourceRequirements(const cl_kernel kernel)
 	delete[] platform_name;
 }
 
-hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
-{
-	cl_int clerr = CL_SUCCESS;
-
-	// decide on work-sizes
-	size_t local_work_size;
-	size_t global_work_size;
+void Opencl::plaquette_device(cl_mem gf){
+	//query work-sizes for kernel
+	size_t ls, gs;
 	cl_uint num_groups;
-	//CP: This has no effect yet!!
-	//	char * kernelname = "dummy";
-	//LZ: Therefore, until there is some effect: use default arg
-	//	Opencl::get_work_sizes(&local_work_size, &global_work_size, &num_groups, device_type, kernelname);
-	Opencl::get_work_sizes(&local_work_size, &global_work_size, &num_groups, get_device_type());
-
+	this->get_work_sizes2(plaquette, this->get_device_type(), &ls, &gs, &num_groups);
+	
 	logger.debug() <<"init scratch buffers if not already done";
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
 	int global_buf_size_complex = sizeof(hmc_complex) * num_groups;
@@ -837,21 +823,11 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 	if( clmem_splaq_buf_glob == 0 ) clmem_splaq_buf_glob = create_rw_buffer(global_buf_size_float);
 	if( clmem_polyakov_buf_glob == 0 ) clmem_polyakov_buf_glob = create_rw_buffer(global_buf_size_complex);
 	
-	//measure plaquette
-
-	hmc_float plaq;
-	hmc_float splaq;
-	hmc_float tplaq;
-	int buf_loc_size_float = sizeof(hmc_float) * local_work_size;
-	int buf_loc_size_complex = sizeof(hmc_complex) * local_work_size;
-
-	plaq = 0.;
-	splaq = 0.;
-	tplaq = 0.;
-
+	int buf_loc_size_float = sizeof(hmc_float) * ls;
+	
+	//set arguments
 	// run local plaquette calculation and first part of reduction
-
-	clerr = clSetKernelArg(plaquette, 0, sizeof(cl_mem), &gf);
+	int clerr = clSetKernelArg(plaquette, 0, sizeof(cl_mem), &gf);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clSetKernelArg0 failed, aborting...";
 		exit(HMC_OCLERROR);
@@ -886,9 +862,11 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 		logger.fatal() << "clSetKernelArg6 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel(plaquette, global_work_size, local_work_size);
+	enqueueKernel(plaquette, gs, ls);
 
 	// run second part of plaquette reduction
+
+	this->get_work_sizes2(plaquette_reduction, this->get_device_type(), &ls, &gs, &num_groups);
 
 	clerr = clSetKernelArg(plaquette_reduction, 0, sizeof(cl_mem), &clmem_plaq_buf_glob);
 	if(clerr != CL_SUCCESS) {
@@ -925,44 +903,23 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 		logger.fatal() << "clSetKernelArg6 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel(plaquette_reduction, 1, 1);
+	
+	///@todo improve
+	ls = 1;
+	gs = 1;
+	enqueueKernel(plaquette_reduction, gs, ls);
+	
+}
 
-	//read out values
-	clerr = clEnqueueReadBuffer(queue, clmem_plaq, CL_FALSE, 0, sizeof(hmc_float), &plaq, 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clEnqueueReadBuffer(queue, clmem_tplaq, CL_FALSE, 0, sizeof(hmc_float), &tplaq, 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clEnqueueReadBuffer(queue, clmem_splaq, CL_FALSE, 0, sizeof(hmc_float), &splaq, 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-
-	// wait for results to have been read back
-	clFinish(queue);
-
-	//two plaquette-measurements per thread -> add. factor of 1/2
-	tplaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1));
-	splaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
-	plaq  /= static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) * NC) / 2.;
-
-	(*plaq_out) = plaq;
-	(*splaq_out) = splaq;
-	(*tplaq_out) = tplaq;
-
-	//measure polyakovloop
-	hmc_complex pol;
-	pol = hmc_complex_zero;
-
+void Opencl::polyakov_device(cl_mem gf){
+	//query work-sizes for kernel
+	size_t ls, gs;
+	cl_uint num_groups;
+	this->get_work_sizes2(polyakov, this->get_device_type(), &ls, &gs, &num_groups);
+	int buf_loc_size_complex = sizeof(hmc_complex) * ls;
+	
 	// local polyakov compuation and first part of reduction
-
-	clerr = clSetKernelArg(polyakov, 0, sizeof(cl_mem), &gf);
+	int clerr = clSetKernelArg(polyakov, 0, sizeof(cl_mem), &gf);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clSetKernelArg0 failed, aborting...";
 		exit(HMC_OCLERROR);
@@ -977,10 +934,12 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 		logger.fatal() << "clSetKernelArg2 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel(polyakov, global_work_size, local_work_size);
+	enqueueKernel(polyakov, gs, ls);
 
 	// second part of polyakov reduction
 
+	this->get_work_sizes2(polyakov_reduction, this->get_device_type(), &ls, &gs, &num_groups);
+	
 	clerr = clSetKernelArg(polyakov_reduction, 0, sizeof(cl_mem), &clmem_polyakov_buf_glob);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clSetKernelArg0 failed, aborting...";
@@ -996,25 +955,51 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 		logger.fatal() << "clSetKernelArg2 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel(polyakov_reduction, 1, 1);
+	
+	///@todo improve
+	ls = 1;
+	gs = 1;
+	enqueueKernel(polyakov_reduction, gs, ls);
+	
+}
+
+void Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
+{
+	//measure plaquette
+	plaquette_device(gf);
 
 	//read out values
-	clerr = clEnqueueReadBuffer(queue, clmem_polyakov, CL_FALSE, 0, sizeof(hmc_complex), &pol, 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
+	hmc_float plaq = 0.;
+	hmc_float splaq = 0.;
+	hmc_float tplaq = 0.;
+	//NOTE: these are blocking calls!
+	///@todo replace this timer
+	usetimer noop;
+	get_buffer_from_device(clmem_plaq, &plaq, sizeof(hmc_float), &noop);
+	get_buffer_from_device(clmem_tplaq, &tplaq, sizeof(hmc_float), &noop);
+	get_buffer_from_device(clmem_splaq, &splaq, sizeof(hmc_float), &noop);
 
-	// wait for result to have been read back
-	clFinish(queue);
+	tplaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1));
+	splaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
+	plaq  /= static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) * NC) / 2.;
+
+	(*plaq_out) = plaq;
+	(*splaq_out) = splaq;
+	(*tplaq_out) = tplaq;
+
+	//measure polyakovloop
+	polyakov_device(gf);
+
+	//read out values
+	hmc_complex pol = hmc_complex_zero;
+	//NOTE: this is a blocking call!
+	get_buffer_from_device(clmem_polyakov, &pol, sizeof(hmc_complex), &noop);
 
 	pol.re /= static_cast<hmc_float>(NC * VOLSPACE);
 	pol.im /= static_cast<hmc_float>(NC * VOLSPACE);
 
 	pol_out->re = pol.re;
 	pol_out->im = pol.im;
-
-	return HMC_SUCCESS;
 }
 
 TmpClKernel Opencl::createKernel(const char * const kernel_name)

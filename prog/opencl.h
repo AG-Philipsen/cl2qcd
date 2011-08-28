@@ -114,7 +114,9 @@ public:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error gaugeobservables(cl_mem gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
+	void gaugeobservables(cl_mem gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
+	void plaquette_device(cl_mem gf);
+	void polyakov_device(cl_mem gf);
 	/**
 	 * This applies stout smearing to a gaugefield 
 	 */
@@ -310,6 +312,12 @@ public:
 	
 	//since this is only applicated to the gaugefield, this should be here...
 	cl_kernel stout_smear;
+	
+	//bunch of timers
+	//this is used to measure data-transfer to and from the device
+	usetimer copy_to;
+	//this is used to measure data-transfer on the device
+	usetimer copy_on;
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
 	usetimer timer_plaquette;

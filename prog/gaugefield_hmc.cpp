@@ -47,14 +47,6 @@ Opencl_hmc * Gaugefield_hmc::get_devices_hmc ()
 }
 
 hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters, hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* copy_to_from_dev_timer, usetimer* copy_on_dev_timer){
-	
-	size_t ls;
-	size_t gs;
-	cl_uint num_groups;
-	//CP: This has no effect yet!!
-	char * kernelname = "dummy";
-	get_devices_hmc()[dev].get_work_sizes(&ls, &gs, &num_groups, get_devices_hmc()[dev].get_device_type(), kernelname);	
-	
 	/////////////////////////////////////////////////////////////////////
 	//HMC-algorithm
 	
