@@ -992,7 +992,7 @@ void Opencl_fermions::set_zero_spinorfield_eoprec_device(cl_mem x)
 	enqueueKernel( set_zero_spinorfield_eoprec, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::bicgstab_device( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, int cgmax)
+hmc_error Opencl_fermions::bicgstab_device( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
 {
 
 int debug = 0;
@@ -1228,7 +1228,7 @@ if(debug){
 	return HMC_STDERR;
 }
 
-hmc_error Opencl_fermions::bicgstab_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, int cgmax)
+hmc_error Opencl_fermions::bicgstab_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
 {
 	//CP: these have to be on the host
 	hmc_float resid;
@@ -1303,7 +1303,7 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(matrix_function_call f, cl_mem
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::cg_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, int cgmax)
+hmc_error Opencl_fermions::cg_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
 {
 	//CP: these have to be on the host
 	hmc_float resid;
@@ -1375,21 +1375,21 @@ hmc_error Opencl_fermions::cg_device(matrix_function_call f, cl_mem inout, cl_me
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::cg_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, int cgmax){
+hmc_error Opencl_fermions::cg_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax){
 	/// to be implemented if the above one has been checked..
 	return HMC_SUCCESS;
 }
 
 
-hmc_error Opencl_fermions::solver_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, int cgmax)
+hmc_error Opencl_fermions::solver_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer, int cgmax)
 {
 	(*solvertimer).reset();
 	convert_to_kappa_format_device(clmem_inout);
 	convert_to_kappa_format_device(clmem_source);
 	if(get_parameters()->get_use_cg() == true)
-	 	cg_device(f, inout, source, gf, copytimer, singletimer, cgmax);
+	 	cg_device(f, inout, source, gf, cgmax);
 	else 
-		bicgstab_device(f, inout, source, gf, copytimer, singletimer, cgmax);
+		bicgstab_device(f, inout, source, gf, cgmax);
 	convert_from_kappa_format_device(clmem_inout, clmem_inout);
 	convert_from_kappa_format_device(clmem_source, clmem_source);
 	clFinish(queue);
@@ -1399,7 +1399,7 @@ hmc_error Opencl_fermions::solver_device(matrix_function_call f, cl_mem inout, c
 }
 
 
-hmc_error Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, int cgmax)
+hmc_error Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * solvertimer, int cgmax)
 {
 	(*solvertimer).reset();
 
@@ -1407,9 +1407,9 @@ hmc_error Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem i
 	convert_to_kappa_format_eoprec_device(clmem_inout_eoprec);
 	convert_to_kappa_format_eoprec_device(clmem_source_even);
 	if(get_parameters()->get_use_cg() == true)
-	 	cg_eoprec_device(f, inout_eo, source_even, gf, copytimer, singletimer, cgmax);
+	 	cg_eoprec_device(f, inout_eo, source_even, gf, cgmax);
 	else 
-		bicgstab_eoprec_device(f, inout_eo, source_even, gf, copytimer, singletimer, cgmax);
+		bicgstab_eoprec_device(f, inout_eo, source_even, gf, cgmax);
 
 	//P: odd solution
 	/** @todo CP: perhaps one can save some variables used here */

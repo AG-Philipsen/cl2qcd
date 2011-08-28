@@ -47,7 +47,6 @@ Opencl_hmc * Gaugefield_hmc::get_devices_hmc ()
 }
 
 hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters, hmc_observables *obs, int iter, hmc_float rnd_number){
-	usetimer* copy_to_from_dev_timer; usetimer* copy_on_dev_timer;
 	/////////////////////////////////////////////////////////////////////
 	//HMC-algorithm
 	
@@ -81,12 +80,12 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters,
 	get_devices_hmc()[dev].copy_buffer_on_device(get_devices_hmc()[dev].get_clmem_p(), get_devices_hmc()[dev].get_clmem_new_p(), sizeof(ae) * GAUGEMOMENTASIZE2); 
 	///@todo this timer is not used at the moment, compare to inverter.cpp
 	usetimer solvertimer;
-	get_devices_hmc()[dev].leapfrog_device((*parameters).get_tau(), (*parameters).get_integrationsteps1(), (*parameters).get_integrationsteps2(), copy_to_from_dev_timer, copy_on_dev_timer, &solvertimer);
+	get_devices_hmc()[dev].leapfrog_device((*parameters).get_tau(), (*parameters).get_integrationsteps1(), (*parameters).get_integrationsteps2(), &solvertimer);
 		
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
 	logger.debug() << "\tperform Metropolis step: " ;
 	//this call calculates also the HMC-Observables
-	*obs = get_devices_hmc()[dev].metropolis(rnd_number, (*parameters).get_beta(), copy_to_from_dev_timer);
+	*obs = get_devices_hmc()[dev].metropolis(rnd_number, (*parameters).get_beta());
 
 	if((*obs).accept == 1){
 		// perform the change nonprimed->primed !
