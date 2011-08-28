@@ -78,26 +78,14 @@ hmc_error Opencl_fermions::fill_collect_options(stringstream* collect_options)
 hmc_error Opencl_fermions::fill_buffers()
 {
 	Opencl::fill_buffers();
-
-	// decide on work-sizes
-	size_t local_work_size;
-	size_t global_work_size;
-	cl_uint num_groups;
-	//CP: This has no effect yet!!
-	char * kernelname = "dummy";
-	Opencl::get_work_sizes(&local_work_size, &global_work_size, &num_groups, device_type, kernelname);
 	
 	logger.trace() << "init buffer for solver...";
 	int clerr = CL_SUCCESS;
 
-	//  int spinorfield_size = sizeof(hmc_complex)*SPINORFIELDSIZE;
 	int spinorfield_size = sizeof(spinor) * SPINORFIELDSIZE;
-	//int eoprec_spinorfield_size = sizeof(hmc_complex)*EOPREC_SPINORFIELDSIZE;
 	int eoprec_spinorfield_size = sizeof(spinor) * EOPREC_SPINORFIELDSIZE;
 	int complex_size = sizeof(hmc_complex);
 	int float_size = sizeof(hmc_float);
-	int global_buf_size = complex_size * num_groups;
-	int global_buf_size_float = float_size * num_groups;
 
 	logger.debug() << "init general spinorfield-buffers";
 	clmem_corr = create_rw_buffer(spinorfield_size);
@@ -150,11 +138,12 @@ hmc_error Opencl_fermions::fill_buffers()
 	clmem_tmp2 = create_rw_buffer(complex_size);
 	clmem_one = create_rw_buffer(complex_size);
 	clmem_minusone = create_rw_buffer(complex_size);
-	clmem_scalar_product_buf_glob = create_rw_buffer(global_buf_size);
 	clmem_resid = create_rw_buffer(float_size);
 	clmem_trueresid = create_rw_buffer(float_size);
-	clmem_global_squarenorm_buf_glob = create_rw_buffer(global_buf_size_float);
-
+	//scratch buffers will be created on demand
+	clmem_global_squarenorm_buf_glob = 0;
+	clmem_scalar_product_buf_glob = 0;
+	
 	logger.debug() << "write contents to some buffers";
 	hmc_complex one = hmc_complex_one;
 	hmc_complex minusone = hmc_complex_minusone;
@@ -749,6 +738,9 @@ void Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem b, c
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(scalar_product, this->get_device_type(), &ls2, &gs2, &num_groups);
+	int global_buf_size_complex = sizeof(hmc_complex)*num_groups;
+	if( clmem_scalar_product_buf_glob == 0 ) clmem_scalar_product_buf_glob = create_rw_buffer(global_buf_size_complex);
+
 	//set arguments
 	int clerr = clSetKernelArg(scalar_product, 0, sizeof(cl_mem), &a);
 	if(clerr != CL_SUCCESS) {
@@ -760,7 +752,6 @@ void Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem b, c
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	//CP: these do not have to be args of the function since they are global objects to the class opencl??
 	clerr = clSetKernelArg(scalar_product, 2, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
@@ -795,6 +786,9 @@ void Opencl_fermions::set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_m
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(scalar_product_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	int global_buf_size_complex = sizeof(hmc_complex)*num_groups;
+	if( clmem_scalar_product_buf_glob == 0 ) clmem_scalar_product_buf_glob = create_rw_buffer(global_buf_size_complex);	
+	
 	//set arguments
 	int clerr = clSetKernelArg(scalar_product_eoprec, 0, sizeof(cl_mem), &a);
 	if(clerr != CL_SUCCESS) {
@@ -894,6 +888,9 @@ void Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_mem out
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(global_squarenorm, this->get_device_type(), &ls2, &gs2, &num_groups);
+	int global_buf_size_float = sizeof(hmc_float)*num_groups;
+	if( clmem_global_squarenorm_buf_glob == 0 ) clmem_global_squarenorm_buf_glob = create_rw_buffer(global_buf_size_float);	
+	
 	//set arguments
 	int clerr = clSetKernelArg(global_squarenorm, 0, sizeof(cl_mem), &a);
 	if(clerr != CL_SUCCESS) {
@@ -933,6 +930,9 @@ void Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_
 	cl_uint num_groups;
 	this->get_work_sizes2(global_squarenorm_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
+	int global_buf_size_float = sizeof(hmc_float)*num_groups;
+	if( clmem_global_squarenorm_buf_glob == 0 ) clmem_global_squarenorm_buf_glob = create_rw_buffer(global_buf_size_float);	
+	
 	int clerr = clSetKernelArg(global_squarenorm_eoprec, 0, sizeof(cl_mem), &a);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;

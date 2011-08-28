@@ -16,24 +16,11 @@ hmc_error Opencl_hmc::fill_buffers()
 {
 	Opencl_fermions::fill_buffers();
 
-	size_t local_work_size;
-	size_t global_work_size;
-	cl_uint num_groups;
-	//CP: This has no effect yet!!
-	char * kernelname = "dummy";
-	get_work_sizes(&local_work_size, &global_work_size, &num_groups, Opencl::get_device_type(), kernelname);	
-
-
 	int spinorfield_size = sizeof(spinor) * SPINORFIELDSIZE;
-// 	int eoprec_spinorfield_size = sizeof(spinor) * EOPREC_SPINORFIELDSIZE;
 	int gaugemomentum_size = sizeof(ae) * GAUGEMOMENTASIZE2;
-// 	int complex_size = sizeof(hmc_complex);
 	int float_size = sizeof(hmc_float);
-// 	int global_buf_size = complex_size * num_groups;
-// 	int global_buf_size_float = float_size * num_groups;
 	hmc_complex one = hmc_complex_one;
 	hmc_complex minusone = hmc_complex_minusone;
-// 	hmc_float tmp;
 
 	//init mem-objects
 
