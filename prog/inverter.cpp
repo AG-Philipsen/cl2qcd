@@ -53,14 +53,14 @@ int main(int argc, char* argv[])
 	if(parameters.get_num_dev() == 1) {
 		gaugefield.perform_inversion_pointsource_ps_corr_devices(&copy_to_from_dev_timer, &copy_on_dev_timer,&solver_timer);
 		/** @todo improve ls, gs, here*/
-		gaugefield.get_devices_fermions()[0].ps_correlator_device(1,1);
+		gaugefield.get_devices_fermions()[0].ps_correlator_device(gaugefield.get_devices_fermions()[0].get_clmem_corr());
 	}
 	else{	
 		gaugefield.perform_inversion_pointsource_ps_corr_devices(&copy_to_from_dev_timer,&copy_on_dev_timer,&solver_timer);
 		gaugefield.get_devices_fermions()[0].get_buffer_from_device(gaugefield.get_devices_fermions()[0].get_clmem_corr(), host_spinorfield, sizeof(spinor)*SPINORFIELDSIZE,  &copy_to_from_dev_timer);		
 		gaugefield.get_devices_fermions()[1].copy_buffer_to_device(host_spinorfield, gaugefield.get_devices_fermions()[0].get_clmem_corr(), sizeof(spinor)*SPINORFIELDSIZE, &copy_to_from_dev_timer);
 		/** @todo improve ls, gs, here*/
-		gaugefield.get_devices_fermions()[1].ps_correlator_device(1, 1);
+		gaugefield.get_devices_fermions()[1].ps_correlator_device(gaugefield.get_devices_fermions()[0].get_clmem_corr());
 	}
 	logger.trace() << "inversion done" ;
 	perform_timer.add();

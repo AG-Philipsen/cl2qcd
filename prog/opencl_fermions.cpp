@@ -7,20 +7,20 @@
  * This is needed to be able to pass different fermionmatrices as
  * 	arguments to class-functions.
  */
-hmc_error M_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
-	return that->M(in, out, gf, ls, gs);
+void M_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf) {
+	that->M(in, out, gf);
 }
-hmc_error Qplus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
-	return that->Qplus(in, out, gf, ls, gs);
+void Qplus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf) {
+	that->Qplus(in, out, gf);
 }
-hmc_error Qminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
-	return that->Qminus(in, out, gf, ls, gs);
+void Qminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf) {
+	that->Qminus(in, out, gf);
 }
-hmc_error QplusQminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
-	return that->QplusQminus(in, out, gf, ls, gs);
+void QplusQminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf) {
+	that->QplusQminus(in, out, gf);
 }
-hmc_error Aee_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs) {
-	return that->Aee(in, out, gf, ls, gs);
+void Aee_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf) {
+	that->Aee(in, out, gf);
 }
 
 //Opencl_fermions class functions
@@ -337,7 +337,7 @@ void Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem 
 }
 
 //compound fermionmatrix-functions without eoprec
-hmc_error Opencl_fermions::M(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
+void Opencl_fermions::M(cl_mem in, cl_mem out, cl_mem gf){
 
 	if(get_parameters()->get_fermact() == WILSON){
 		//in the pure Wilson case there is just one fermionmatrix 
@@ -346,13 +346,9 @@ hmc_error Opencl_fermions::M(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, 
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
 		M_tm_plus_device(in, out, gf);
 	}
-
-	return HMC_SUCCESS;
-
 }
 
-hmc_error Opencl_fermions::Qplus(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
-
+void Opencl_fermions::Qplus(cl_mem in, cl_mem out, cl_mem gf){
 	if(get_parameters()->get_fermact() == WILSON){
 		//in the pure Wilson case there is just one fermionmatrix 
 		M_wilson_device(in, out, gf);
@@ -360,15 +356,10 @@ hmc_error Opencl_fermions::Qplus(cl_mem in, cl_mem out, cl_mem gf, const size_t 
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
 		M_tm_plus_device(in, out, gf);
 	}
-	
 	gamma5_device(out);
-
-	return HMC_SUCCESS;
-
 }
 
-hmc_error Opencl_fermions::Qminus(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs){
- 
+void Opencl_fermions::Qminus(cl_mem in, cl_mem out, cl_mem gf){
 	if(get_parameters()->get_fermact() == WILSON){
 		//in the pure Wilson case there is just one fermionmatrix 
 		M_wilson_device(in, out, gf);
@@ -376,23 +367,15 @@ hmc_error Opencl_fermions::Qminus(cl_mem in, cl_mem out, cl_mem gf, const size_t
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
 		M_tm_minus_device(in, out, gf);
 	}
-	
 	gamma5_device(out);
-	
-	return HMC_SUCCESS;
-
 }
 
-hmc_error Opencl_fermions::QplusQminus(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs)
+void Opencl_fermions::QplusQminus(cl_mem in, cl_mem out, cl_mem gf)
 {
 	/** @todo one could save one field here if an additional copying would be included in the end... 
 	 * or the field should be created in here, local */
-	Qminus(in, clmem_tmp, gf, ls, gs);
-
-	Qplus(clmem_tmp, out, gf, ls, gs);
-
-	return HMC_SUCCESS;
-
+	Qminus(in, clmem_tmp, gf);
+	Qplus(clmem_tmp, out, gf);
 }
 
 //explicit fermionmatrix-kernel calling functions
@@ -483,7 +466,7 @@ void Opencl_fermions::gamma5_device(cl_mem inout){
 }
 
 //compound fermionmatrix-functions with eoprec
-hmc_error Opencl_fermions::Aee(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs)
+void Opencl_fermions::Aee(cl_mem in, cl_mem out, cl_mem gf)
 {
 	int even = EVEN;
 	int odd = ODD;
@@ -502,9 +485,8 @@ hmc_error Opencl_fermions::Aee(cl_mem in, cl_mem out, cl_mem gf, const size_t ls
 		 */
 		usetimer noop;
 		copy_buffer_on_device(out, clmem_tmp_eoprec_3, sizeof(spinor) * EOPREC_SPINORFIELDSIZE, &noop);
-		saxpy_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, clmem_one, out, ls, gs);
+		saxpy_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, clmem_one, out);
 	}
-	return HMC_SUCCESS;
 }
 
 //explicit eoprec fermionmatrix functions
@@ -594,10 +576,14 @@ void Opencl_fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out)
 }
 
 //BLAS-functions
-hmc_error Opencl_fermions::saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t ls, const size_t gs)
+void Opencl_fermions::saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out)
 {
-	int clerr = CL_SUCCESS;
-	clerr = clSetKernelArg(saxpy, 0, sizeof(cl_mem), &x);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(saxpy, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(saxpy, 0, sizeof(cl_mem), &x);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -617,32 +603,44 @@ hmc_error Opencl_fermions::saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel(saxpy , gs, ls);
-	return HMC_SUCCESS;
+	enqueueKernel(saxpy , gs2, ls2);
 }
 
-void Opencl_fermions::set_spinorfield_cold_device(cl_mem inout, const size_t ls, const size_t gs){
+void Opencl_fermions::set_spinorfield_cold_device(cl_mem inout){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(set_spinorfield_cold, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
 	int clerr = clSetKernelArg(set_spinorfield_cold,0,sizeof(cl_mem),&inout); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	enqueueKernel(set_spinorfield_cold , gs, ls);
+	enqueueKernel(set_spinorfield_cold , gs2, ls2);
 }
 
-void Opencl_fermions::set_eoprec_spinorfield_cold_device(cl_mem inout, const size_t ls, const size_t gs){
+void Opencl_fermions::set_eoprec_spinorfield_cold_device(cl_mem inout){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(set_eoprec_spinorfield_cold, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
 	int clerr = clSetKernelArg(set_eoprec_spinorfield_cold,0,sizeof(cl_mem),&inout); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	enqueueKernel(set_eoprec_spinorfield_cold , gs, ls);
+	enqueueKernel(set_eoprec_spinorfield_cold , gs2, ls2);
 }
 
-hmc_error Opencl_fermions::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t ls, const size_t gs){
-
-	int clerr = CL_SUCCESS;
-	clerr = clSetKernelArg(saxpy_eoprec, 0, sizeof(cl_mem), &x);
+void Opencl_fermions::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(saxpy_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(saxpy_eoprec, 0, sizeof(cl_mem), &x);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -662,17 +660,17 @@ hmc_error Opencl_fermions::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha,
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( saxpy_eoprec, gs, ls);
-
- 	return HMC_SUCCESS;
-
+	enqueueKernel( saxpy_eoprec, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t ls, const size_t gs)
+void Opencl_fermions::saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out)
 {
-
-	int clerr = CL_SUCCESS;
-	clerr = clSetKernelArg(saxsbypz, 0, sizeof(cl_mem), &x);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(saxsbypz, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(saxsbypz, 0, sizeof(cl_mem), &x);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -702,15 +700,17 @@ hmc_error Opencl_fermions::saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem 
 		cout << "clSetKernelArg 5 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( saxsbypz, gs, ls);
-
-	return HMC_SUCCESS;
+	enqueueKernel( saxsbypz, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t ls, const size_t gs)
+void Opencl_fermions::saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out)
 {
-	int clerr = CL_SUCCESS;
-	clerr = clSetKernelArg(saxsbypz_eoprec, 0, sizeof(cl_mem), &x);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(saxsbypz_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(saxsbypz_eoprec, 0, sizeof(cl_mem), &x);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -740,16 +740,17 @@ hmc_error Opencl_fermions::saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, 
 		cout << "clSetKernelArg 5 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( saxsbypz_eoprec, gs, ls);
-
-	return HMC_SUCCESS;
+	enqueueKernel( saxsbypz_eoprec, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out, const size_t ls, const size_t gs)
+void Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out)
 {
-
-	int clerr = CL_SUCCESS;
-	clerr = clSetKernelArg(scalar_product, 0, sizeof(cl_mem), &a);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(scalar_product, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(scalar_product, 0, sizeof(cl_mem), &a);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -766,12 +767,12 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem
 		exit(HMC_OCLERROR);
 	}
 
-	clerr = clSetKernelArg(scalar_product, 3, sizeof(hmc_complex) * ls, NULL);
+	clerr = clSetKernelArg(scalar_product, 3, sizeof(hmc_complex) * ls2, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel(scalar_product , gs, ls);
+	enqueueKernel(scalar_product , gs2, ls2);
 
 	/** @todo Here the wait is needed. Replace this call by a clWaitForEvents! */
 	clFinish(queue);
@@ -785,15 +786,17 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( scalar_product_reduction, gs, ls);
-	return HMC_SUCCESS;
+	enqueueKernel( scalar_product_reduction, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_mem b, cl_mem out, const size_t ls, const size_t gs)
+void Opencl_fermions::set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_mem b, cl_mem out)
 {
-
-	int clerr = CL_SUCCESS;
-	clerr = clSetKernelArg(scalar_product_eoprec, 0, sizeof(cl_mem), &a);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(scalar_product_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(scalar_product_eoprec, 0, sizeof(cl_mem), &a);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -808,12 +811,12 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_eoprec_device(cl_mem a,
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clSetKernelArg(scalar_product_eoprec, 3, sizeof(hmc_complex) * ls, NULL);
+	clerr = clSetKernelArg(scalar_product_eoprec, 3, sizeof(hmc_complex) * ls2, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( scalar_product_eoprec, gs, ls);
+	enqueueKernel( scalar_product_eoprec, gs2, ls2);
 	clFinish(queue);
 	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
 	if(clerr != CL_SUCCESS) {
@@ -825,15 +828,18 @@ hmc_error Opencl_fermions::set_complex_to_scalar_product_eoprec_device(cl_mem a,
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( scalar_product_reduction, gs, ls);
-	return HMC_SUCCESS;
+	enqueueKernel( scalar_product_reduction, gs2, ls2);
 }
 
 
-hmc_error Opencl_fermions::set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_mem out)
+void Opencl_fermions::set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_mem out)
 {
-	int clerr = CL_SUCCESS;
-	clerr = clSetKernelArg(ratio, 0, sizeof(cl_mem), &a);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(ratio, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(ratio, 0, sizeof(cl_mem), &a);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -849,16 +855,19 @@ hmc_error Opencl_fermions::set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_me
 		exit(HMC_OCLERROR);
 	}
 	//CP:this needs only one kernel!!
-	size_t one = 1;
-	enqueueKernel( ratio, one, one);
- 	return HMC_SUCCESS;
-
+	ls2 = 1;
+	gs2 = 1;
+	enqueueKernel( ratio, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::set_complex_to_product_device(cl_mem a, cl_mem b, cl_mem out)
+void Opencl_fermions::set_complex_to_product_device(cl_mem a, cl_mem b, cl_mem out)
 {
-	int clerr = CL_SUCCESS;
-	clerr = clSetKernelArg(product, 0, sizeof(cl_mem), &a);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(product, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(product, 0, sizeof(cl_mem), &a);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -874,16 +883,19 @@ hmc_error Opencl_fermions::set_complex_to_product_device(cl_mem a, cl_mem b, cl_
 		exit(HMC_OCLERROR);
 	}
 	//CP:this needs only one kernel!!
-	size_t one = 1;
-	enqueueKernel(product , one, one);
- 	return HMC_SUCCESS;
-
+	ls2 = 1;
+	gs2 = 1;
+	enqueueKernel(product , gs2, ls2);
 }
 
-hmc_error Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_mem out, const size_t ls, const size_t gs)
+void Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_mem out)
 {
-	int clerr = CL_SUCCESS;
-	clerr = clSetKernelArg(global_squarenorm, 0, sizeof(cl_mem), &a);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(global_squarenorm, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(global_squarenorm, 0, sizeof(cl_mem), &a);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -894,13 +906,12 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_me
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-
-	clerr = clSetKernelArg(global_squarenorm, 2, sizeof(hmc_float) * ls, NULL);
+	clerr = clSetKernelArg(global_squarenorm, 2, sizeof(hmc_float) * ls2, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel(global_squarenorm , gs, ls);
+	enqueueKernel(global_squarenorm , gs2, ls2);
 	clFinish(queue);
 	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
 	if(clerr != CL_SUCCESS) {
@@ -912,15 +923,17 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_me
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( global_squarenorm_reduction, gs, ls);
-	return HMC_SUCCESS;
+	enqueueKernel( global_squarenorm_reduction, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_mem out, const size_t ls, const size_t gs)
+void Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_mem out)
 {
-
-	int clerr = CL_SUCCESS;
-	clerr = clSetKernelArg(global_squarenorm_eoprec, 0, sizeof(cl_mem), &a);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(global_squarenorm_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(global_squarenorm_eoprec, 0, sizeof(cl_mem), &a);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -931,12 +944,12 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	clerr = clSetKernelArg(global_squarenorm_eoprec, 2, sizeof(hmc_float) * ls, NULL);
+	clerr = clSetKernelArg(global_squarenorm_eoprec, 2, sizeof(hmc_float) * ls2, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 2 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( global_squarenorm_eoprec, gs, ls);
+	enqueueKernel( global_squarenorm_eoprec, gs2, ls2);
 	clFinish(queue);
 	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
 	if(clerr != CL_SUCCESS) {
@@ -948,58 +961,56 @@ hmc_error Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( global_squarenorm_reduction, gs, ls);
-	return HMC_SUCCESS;
+	enqueueKernel( global_squarenorm_reduction, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::set_zero_spinorfield_device(cl_mem x, const size_t ls, const size_t gs)
+void Opencl_fermions::set_zero_spinorfield_device(cl_mem x)
 {
-	int clerr = CL_SUCCESS;
-
-	clerr = clSetKernelArg(set_zero_spinorfield, 0, sizeof(cl_mem), &x);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(set_zero_spinorfield, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(set_zero_spinorfield, 0, sizeof(cl_mem), &x);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel(set_zero_spinorfield , gs, ls);
- 	return HMC_SUCCESS;
-
+	enqueueKernel(set_zero_spinorfield , gs2, ls2);
 }
 
-hmc_error Opencl_fermions::set_zero_spinorfield_eoprec_device(cl_mem x, const size_t ls, const size_t gs)
+void Opencl_fermions::set_zero_spinorfield_eoprec_device(cl_mem x)
 {
-	int clerr = CL_SUCCESS;
-
-	clerr = clSetKernelArg(set_zero_spinorfield_eoprec, 0, sizeof(cl_mem), &x);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(set_zero_spinorfield_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(set_zero_spinorfield_eoprec, 0, sizeof(cl_mem), &x);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( set_zero_spinorfield_eoprec, gs, ls);
- 	return HMC_SUCCESS;
-
+	enqueueKernel( set_zero_spinorfield_eoprec, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::bicgstab_device( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax)
+hmc_error Opencl_fermions::bicgstab_device( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, int cgmax)
 {
 
 int debug = 0;
 if(debug) cout << "debug-output at bicgstab_device is activated" << endl;
 	
-	//!!CP: here one has to be careful if local_work_size is a null-pointer
-	size_t globalsize = gs;
-	size_t localsize = ls;
 	//CP: these have to be on the host
 	hmc_float resid;
 	hmc_float trueresid;
 
 	for(int iter = 0; iter < cgmax; iter++) {
 		if(iter % iter_refresh == 0) {
-			set_zero_spinorfield_device(clmem_v, localsize, globalsize);
-			set_zero_spinorfield_device(clmem_p, localsize, globalsize);
-			f(this, inout, clmem_rn, gf, localsize, globalsize);
+			set_zero_spinorfield_device(clmem_v);
+			set_zero_spinorfield_device(clmem_p);
+			f(this, inout, clmem_rn, gf);
 
-			saxpy_device(clmem_rn, source, clmem_one, clmem_rn, localsize, globalsize);
+			saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
 			copy_buffer_on_device(clmem_rn, clmem_rhat, sizeof(spinor) * SPINORFIELDSIZE, singletimer);
 
 			copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex), singletimer);
@@ -1039,7 +1050,7 @@ if(debug){
 }
 ////////////////////////////////////
 
-		set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next, localsize, globalsize);
+		set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next);
 
 if(debug){
 	hmc_complex rho_next;
@@ -1053,17 +1064,17 @@ if(debug){
 
 		set_complex_to_product_device(clmem_beta, clmem_omega, clmem_tmp1);
 		set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
-		saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p, localsize, globalsize);
+		saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p);
 
 if(debug){
 	hmc_complex rho_next;
-	set_complex_to_scalar_product_device(clmem_p, clmem_p, clmem_tmp2, localsize, globalsize);
+	set_complex_to_scalar_product_device(clmem_p, clmem_p, clmem_tmp2);
 	get_buffer_from_device(clmem_tmp2, &rho_next, sizeof(hmc_complex), copytimer);
 		cout << "(p,p): " << rho_next.re << "  " <<  rho_next.im << endl;
 				set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 }
 
-		f(this, clmem_p, clmem_v, gf, localsize, globalsize);
+		f(this, clmem_p, clmem_v, gf);
 
 ////////////////////////////////////
 //collect all variables if debug is enabled
@@ -1096,7 +1107,7 @@ if(debug){
 ////////////////////////////////////
 
 
-		set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1, localsize, globalsize);
+		set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1);
 
 if(debug){
 	hmc_complex rho_next;
@@ -1105,7 +1116,7 @@ if(debug){
 }
 
 		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
-		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s, localsize, globalsize);
+		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
 
 // 		//see if s is too small
 // 		hmc_complex s_norm;
@@ -1132,20 +1143,20 @@ if(debug){
 // 		}
 		
 
-		f(this, clmem_s, clmem_t, gf, localsize, globalsize);
+		f(this, clmem_s, clmem_t, gf);
 
-		set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1, localsize, globalsize);
+		set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
 		//!!CP: this can also be global_squarenorm
-		set_complex_to_scalar_product_device(clmem_t, clmem_t, clmem_tmp2, localsize, globalsize);
+		set_complex_to_scalar_product_device(clmem_t, clmem_t, clmem_tmp2);
 		set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
 
-		saxpy_device(clmem_t, clmem_s, clmem_omega, clmem_rn, localsize, globalsize);
+		saxpy_device(clmem_t, clmem_s, clmem_omega, clmem_rn);
 
-		saxsbypz_device(clmem_p, clmem_s, inout, clmem_alpha, clmem_omega, inout, localsize, globalsize);
+		saxsbypz_device(clmem_p, clmem_s, inout, clmem_alpha, clmem_omega, inout);
 
 if(debug){
 	hmc_complex rho_next;
-	set_complex_to_scalar_product_device(inout, inout, clmem_omega, localsize, globalsize);
+	set_complex_to_scalar_product_device(inout, inout, clmem_omega);
 	get_buffer_from_device(clmem_omega, &rho_next, sizeof(hmc_complex), copytimer);
 		cout << "(inout,inout): " << rho_next.re << "  " <<  rho_next.im << endl;
 		set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
@@ -1182,15 +1193,15 @@ if(debug){
 }
 ////////////////////////////////////
 
-		set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, localsize, globalsize);
+		set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 		get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float), copytimer);
 
 		cout << "resid at iter " << iter << " is: " << resid << endl;
 		
 		if(resid < epssquare) {
-			f(this, inout, clmem_aux, gf, localsize, globalsize);
-			saxpy_device(clmem_aux, source, clmem_one, clmem_aux, localsize, globalsize);
-			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, localsize, globalsize);
+			f(this, inout, clmem_aux, gf);
+			saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
+			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
 			get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float), copytimer);
 			cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << epssquare << endl;
 			cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << epssquare << endl;
@@ -1219,11 +1230,8 @@ if(debug){
 	return HMC_STDERR;
 }
 
-hmc_error Opencl_fermions::bicgstab_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax)
+hmc_error Opencl_fermions::bicgstab_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, int cgmax)
 {
-	//!!CP: here one has to be careful if local_work_size is a null-pointer
-	size_t globalsize = gs;
-	size_t localsize = ls;
 	//CP: these have to be on the host
 	hmc_float resid;
 	hmc_float trueresid;
@@ -1231,12 +1239,12 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(matrix_function_call f, cl_mem
 	for(int iter = 0; iter < cgmax; iter++) {
 
 		if(iter % iter_refresh == 0) {
-			set_zero_spinorfield_eoprec_device(clmem_v_eoprec, localsize, globalsize);
-			set_zero_spinorfield_eoprec_device(clmem_p_eoprec, localsize, globalsize);
+			set_zero_spinorfield_eoprec_device(clmem_v_eoprec);
+			set_zero_spinorfield_eoprec_device(clmem_p_eoprec);
 
-			f(this, inout, clmem_rn_eoprec, gf, localsize, globalsize);
+			f(this, inout, clmem_rn_eoprec, gf);
 
-			saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec, localsize, globalsize);
+			saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
 			copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, sizeof(spinor) * EOPREC_SPINORFIELDSIZE, singletimer);
 			
 			copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex), singletimer);
@@ -1249,7 +1257,7 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(matrix_function_call f, cl_mem
 			//cout << "initial residuum is: " << resid << endl;
 		}
 
-		set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next, localsize, globalsize);
+		set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next);
 		set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
 		copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex), singletimer);
 		set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
@@ -1257,33 +1265,33 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(matrix_function_call f, cl_mem
 
 		set_complex_to_product_device(clmem_beta, clmem_omega, clmem_tmp1);
 		set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
-		saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec, localsize, globalsize);
+		saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec);
 
-		f(this, clmem_p_eoprec, clmem_v_eoprec, gf, localsize, globalsize);
+		f(this, clmem_p_eoprec, clmem_v_eoprec, gf);
 
-		set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1, localsize, globalsize);
+		set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
 		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 
-		saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec, localsize, globalsize);
+		saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec);
 
-		f(this, clmem_s_eoprec, clmem_t_eoprec, gf, localsize, globalsize);
+		f(this, clmem_s_eoprec, clmem_t_eoprec, gf);
 
-		set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1, localsize, globalsize);
+		set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1);
 		//!!CP: can this also be global_squarenorm??
-		set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_t_eoprec, clmem_tmp2, localsize, globalsize);
+		set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_t_eoprec, clmem_tmp2);
 		set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
 
-		saxpy_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_omega, clmem_rn_eoprec, localsize, globalsize);
+		saxpy_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_omega, clmem_rn_eoprec);
 
-		saxsbypz_eoprec_device(clmem_p_eoprec, clmem_s_eoprec, inout, clmem_alpha, clmem_omega, inout, localsize, globalsize);
+		saxsbypz_eoprec_device(clmem_p_eoprec, clmem_s_eoprec, inout, clmem_alpha, clmem_omega, inout);
 
-		set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid, localsize, globalsize);
+		set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
 		get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float), copytimer);
 
 		if(resid < epssquare) {
-			f(this, inout, clmem_aux_eoprec, gf, localsize, globalsize);
-			saxpy_eoprec_device(clmem_aux_eoprec, clmem_source_even, clmem_one, clmem_aux_eoprec, localsize, globalsize);
-			set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid, localsize, globalsize);
+			f(this, inout, clmem_aux_eoprec, gf);
+			saxpy_eoprec_device(clmem_aux_eoprec, clmem_source_even, clmem_one, clmem_aux_eoprec);
+			set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid);
 			get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float), copytimer);
 			//cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
 			if(trueresid < epssquare)
@@ -1297,29 +1305,26 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(matrix_function_call f, cl_mem
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::cg_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax)
+hmc_error Opencl_fermions::cg_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, int cgmax)
 {
-	//!!CP: here one has to be careful if local_work_size is a null-pointer
-	size_t globalsize = gs;
-	size_t localsize = ls;
 	//CP: these have to be on the host
 	hmc_float resid;
 	int iter;
 	for(iter = 0; iter < cgmax; iter ++) {
 		if(iter % iter_refresh == 0) {
-			f(this, inout, clmem_rn, gf, localsize, globalsize);
-			saxpy_device(clmem_rn, source, clmem_one, clmem_rn, localsize, globalsize);
+			f(this, inout, clmem_rn, gf);
+			saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
 			copy_buffer_on_device(clmem_rn, clmem_p, sizeof(spinor) * SPINORFIELDSIZE, singletimer);
 
 		}
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
-		set_complex_to_scalar_product_device(clmem_rn, clmem_rn, clmem_omega, localsize, globalsize);
+		set_complex_to_scalar_product_device(clmem_rn, clmem_rn, clmem_omega);
 // 		hmc_complex omega;
 // 		get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex), copytimer);
 // 		cout << "omega: " << omega.re << " " << omega.im << endl;
 		//A pn --> v
-		f(this,clmem_p, clmem_v, gf, localsize, globalsize);
-		set_complex_to_scalar_product_device(clmem_p, clmem_v, clmem_rho, localsize, globalsize);
+		f(this,clmem_p, clmem_v, gf);
+		set_complex_to_scalar_product_device(clmem_p, clmem_v, clmem_rho);
 // 		hmc_complex rho;
 // 		get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex), copytimer);
 // 		cout << "rho: " << rho.re << " " << rho.im << endl;
@@ -1335,11 +1340,11 @@ hmc_error Opencl_fermions::cg_device(matrix_function_call f, cl_mem inout, cl_me
 // 		cout << "tmp1: " << tmp1.re << " " << tmp1.im << endl;
 		
 		//xn+1
-		saxpy_device(inout, clmem_p, clmem_tmp1, inout, localsize, globalsize);
+		saxpy_device(inout, clmem_p, clmem_tmp1, inout);
 		//rn+1 -> rhat
-		saxpy_device(clmem_rn, clmem_v, clmem_alpha, clmem_rhat, localsize, globalsize);
+		saxpy_device(clmem_rn, clmem_v, clmem_alpha, clmem_rhat);
 
-		set_float_to_global_squarenorm_device(clmem_rhat, clmem_resid, localsize, globalsize);
+		set_float_to_global_squarenorm_device(clmem_rhat, clmem_resid);
 		get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float), copytimer);
 		cout << "resid: " << resid << endl;
 
@@ -1350,7 +1355,7 @@ hmc_error Opencl_fermions::cg_device(matrix_function_call f, cl_mem inout, cl_me
 			return HMC_SUCCESS;
 		} else {
 			//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
-			set_complex_to_scalar_product_device(clmem_rhat, clmem_rhat, clmem_rho_next, localsize, globalsize);
+			set_complex_to_scalar_product_device(clmem_rhat, clmem_rhat, clmem_rho_next);
 			set_complex_to_ratio_device(clmem_rho_next, clmem_omega, clmem_beta);
 // 					hmc_complex beta;
 // 		get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex), copytimer);
@@ -1362,7 +1367,7 @@ hmc_error Opencl_fermions::cg_device(matrix_function_call f, cl_mem inout, cl_me
 // 		get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex), copytimer);
 // 		cout << "tmp2: " << tmp2.re << " " << tmp2.im << endl;
 			
-			saxpy_device(clmem_p, clmem_rhat, clmem_tmp2, clmem_p, localsize, globalsize);
+			saxpy_device(clmem_p, clmem_rhat, clmem_tmp2, clmem_p);
 			
 			//rn = rn+1 ^= rn = rhat
 			copy_buffer_on_device(clmem_rhat, clmem_rn, sizeof(spinor) * SPINORFIELDSIZE, singletimer);
@@ -1372,21 +1377,21 @@ hmc_error Opencl_fermions::cg_device(matrix_function_call f, cl_mem inout, cl_me
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl_fermions::cg_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax){
+hmc_error Opencl_fermions::cg_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, int cgmax){
 	/// to be implemented if the above one has been checked..
 	return HMC_SUCCESS;
 }
 
 
-hmc_error Opencl_fermions::solver_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax)
+hmc_error Opencl_fermions::solver_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, int cgmax)
 {
 	(*solvertimer).reset();
 	convert_to_kappa_format_device(clmem_inout);
 	convert_to_kappa_format_device(clmem_source);
 	if(get_parameters()->get_use_cg() == true)
-	 	cg_device(f, inout, source, gf, copytimer, singletimer, ls, gs, cgmax);
+	 	cg_device(f, inout, source, gf, copytimer, singletimer, cgmax);
 	else 
-		bicgstab_device(f, inout, source, gf, copytimer, singletimer, ls, gs, cgmax);
+		bicgstab_device(f, inout, source, gf, copytimer, singletimer, cgmax);
 	convert_from_kappa_format_device(clmem_inout, clmem_inout);
 	convert_from_kappa_format_device(clmem_source, clmem_source);
 	clFinish(queue);
@@ -1396,7 +1401,7 @@ hmc_error Opencl_fermions::solver_device(matrix_function_call f, cl_mem inout, c
 }
 
 
-hmc_error Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax)
+hmc_error Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, int cgmax)
 {
 	(*solvertimer).reset();
 
@@ -1404,9 +1409,9 @@ hmc_error Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem i
 	convert_to_kappa_format_eoprec_device(clmem_inout_eoprec);
 	convert_to_kappa_format_eoprec_device(clmem_source_even);
 	if(get_parameters()->get_use_cg() == true)
-	 	cg_eoprec_device(f, inout_eo, source_even, gf, copytimer, singletimer, ls, gs, cgmax);
+	 	cg_eoprec_device(f, inout_eo, source_even, gf, copytimer, singletimer, cgmax);
 	else 
-		bicgstab_eoprec_device(f, inout_eo, source_even, gf, copytimer, singletimer, ls, gs, cgmax);
+		bicgstab_eoprec_device(f, inout_eo, source_even, gf, copytimer, singletimer, cgmax);
 
 	//P: odd solution
 	/** @todo CP: perhaps one can save some variables used here */
@@ -1418,7 +1423,7 @@ hmc_error Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem i
 		dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, gf, ODD);
 		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1);
 		M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2);
-		saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, clmem_one, clmem_tmp_eoprec_3,  ls, gs);
+		saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, clmem_one, clmem_tmp_eoprec_3);
 
 		convert_from_kappa_format_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_3);
 		convert_from_kappa_format_eoprec_device(clmem_inout_eoprec, clmem_inout_eoprec);
@@ -1427,15 +1432,20 @@ hmc_error Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem i
 		convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, clmem_inout);
 		///convert source back from kappa???
 	}
-	
+	clFinish(queue);
 	(*solvertimer).add();
 	return HMC_SUCCESS;
 }
 
-void Opencl_fermions::create_point_source_device(cl_mem inout, int i, int spacepos, int timepos, const size_t ls, const size_t gs)
+void Opencl_fermions::create_point_source_device(cl_mem inout, int i, int spacepos, int timepos)
 {
-	set_zero_spinorfield_device(inout, ls, gs);
+	set_zero_spinorfield_device(inout);
 
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(set_zero_spinorfield_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
 	int clerr = clSetKernelArg(create_point_source, 0, sizeof(cl_mem), &inout);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
@@ -1456,22 +1466,27 @@ void Opencl_fermions::create_point_source_device(cl_mem inout, int i, int spacep
 		cout << "clSetKernelArg 3 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( create_point_source, gs, ls);
+	enqueueKernel( create_point_source, gs2, ls2);
 }
 
 
-void Opencl_fermions::create_point_source_eoprec_device(cl_mem inout_even, cl_mem inout_odd, cl_mem gf, int i, int spacepos, int timepos, const size_t ls, const size_t gs)
+void Opencl_fermions::create_point_source_eoprec_device(cl_mem inout_even, cl_mem inout_odd, cl_mem gf, int i, int spacepos, int timepos)
 {
-	set_zero_spinorfield_eoprec_device(inout_even, ls, gs);
-	set_zero_spinorfield_eoprec_device(inout_odd, ls, gs);
-	set_zero_spinorfield_eoprec_device(clmem_tmp_eoprec_2, ls, gs);
-	set_zero_spinorfield_eoprec_device(clmem_tmp_eoprec_1, ls, gs);
+	set_zero_spinorfield_eoprec_device(inout_even);
+	set_zero_spinorfield_eoprec_device(inout_odd);
+	set_zero_spinorfield_eoprec_device(clmem_tmp_eoprec_2);
+	set_zero_spinorfield_eoprec_device(clmem_tmp_eoprec_1);
 
 	int glob_pos = get_global_pos(spacepos, timepos);
 	int n = get_n_eoprec(spacepos, timepos);
 	int clerr = CL_SUCCESS;
 	int evenodd = glob_pos % 2;
 
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(set_zero_spinorfield_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
 	//CP: this is different than the host code, where this is done implicitly when converting the normal source to even/odd
 	if(evenodd == 1) {
 		clerr = clSetKernelArg(create_point_source_eoprec, 0, sizeof(cl_mem), &inout_odd);
@@ -1497,7 +1512,7 @@ void Opencl_fermions::create_point_source_eoprec_device(cl_mem inout_even, cl_me
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	enqueueKernel(create_point_source_eoprec , gs, ls);
+	enqueueKernel(create_point_source_eoprec , gs2, ls2);
 
 	if(get_parameters()->get_fermact() == WILSON){
 		logger.fatal() << "not yet implemented in WILSON case, aborting...";
@@ -1506,23 +1521,26 @@ void Opencl_fermions::create_point_source_eoprec_device(cl_mem inout_even, cl_me
 		///@todo here, the use of clmem_tmp_eoprec_3 can be avoided by using clmem_source_even instead
 		M_tm_inverse_sitediagonal_device(inout_odd, clmem_tmp_eoprec_1);
 		dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_3, gf, EVEN);
-		saxpy_eoprec_device(clmem_tmp_eoprec_2, clmem_tmp_eoprec_3, clmem_one, inout_even, ls, gs);
+		saxpy_eoprec_device(clmem_tmp_eoprec_2, clmem_tmp_eoprec_3, clmem_one, inout_even);
 	}
 }
 
 //functions to calculate the correlator
-hmc_error Opencl_fermions::ps_correlator_device(const size_t ls, const size_t gs){
-	
-	int clerr = CL_SUCCESS;
-	
-	clerr = clSetKernelArg(ps_correlator,0,sizeof(cl_mem),&clmem_corr); 
+void Opencl_fermions::ps_correlator_device(cl_mem in){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(set_zero_spinorfield_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(ps_correlator,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	enqueueKernel(ps_correlator , gs, ls);
-
-	return HMC_SUCCESS;
+  ///@todo improve this
+	ls2 = 1;
+	gs2 = 1;
+	enqueueKernel(ps_correlator , gs2, ls2);
 }
 
 cl_mem Opencl_fermions::get_clmem_inout()
