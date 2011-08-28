@@ -55,8 +55,8 @@ int main(int argc, char* argv[])
 	//  cout << endl << "OpenCL initialisaton time:\t" << inittime.getTime() << " [mus]" << endl;
 	//  gaugefield.print_gaugeobservables(&polytime,&plaqtime);
 
-	gaugefield.copy_gaugefield_to_devices(&copy_to_from_dev_timer);
-	gaugefield.copy_rndarray_to_devices(&copy_to_from_dev_timer);
+	gaugefield.copy_gaugefield_to_devices();
+	gaugefield.copy_rndarray_to_devices();
 
 	init_timer.add();
 
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
 			gaugefield.print_gaugeobservables_from_devices(i, gaugeout_name.str(), 0);
 		}
 		if( parameters.get_saveconfigs() == true && ( (i + 1) % savefreq ) == 0 ) {
-			gaugefield.sync_gaugefield(&copy_to_from_dev_timer);
+			gaugefield.sync_gaugefield();
 			gaugefield.save(i);
 		}
 	//Add a measurement frequency
@@ -114,7 +114,7 @@ int main(int argc, char* argv[])
 	//     	err = gaugefield.kappa_clover_gpu (&timer_clover);
 	
 	//CPU
-	gaugefield.sync_gaugefield(&copy_to_from_dev_timer);
+	gaugefield.sync_gaugefield();
 //  	err = gaugefield.kappa_karsch ();
 //  	err = gaugefield.kappa_clover ();
 
@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
 	kappa_karsch_out.close();
 	kappa_clover_out.close();
 // 	q_plaq_out.close();
-	gaugefield.sync_gaugefield(&copy_to_from_dev_timer);
+	gaugefield.sync_gaugefield();
 	gaugefield.save(nsteps);
 	
 	perform_timer.add();
@@ -146,8 +146,7 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	total_timer.add();
-	general_time_output(&total_timer, &init_timer, &perform_timer, &copy_to_from_dev_timer, &copy_on_dev_timer, &plaq_timer, &poly_timer);
-
+	general_time_output(&total_timer, &init_timer, &perform_timer, gaugefield.get_devices_heatbath()[0].get_copy_to(), gaugefield.get_devices_heatbath()[0].get_copy_on(), &plaq_timer, &poly_timer);
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables

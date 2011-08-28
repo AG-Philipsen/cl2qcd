@@ -84,9 +84,8 @@ class Gaugefield_k_hybrid : public Gaugefield  {
 
 	/**
 	 * Copy gaugefield to devices.
-	 * @param[in,out] timer copy-time
 	 */
-	virtual hmc_error copy_gaugefield_to_devices(usetimer* timer);
+	virtual hmc_error copy_gaugefield_to_devices();
 
 	/**
 	 * Perform a number of heatbath and (afterwards) overrelaxation steps.
@@ -148,9 +147,8 @@ class Gaugefield_k_hybrid : public Gaugefield  {
 
 	/**
 	 * Communicate gaugefield from heatbath device to everyone else.
-	 * @param[in,out] timer copy-time
 	 */
-	virtual hmc_error sync_gaugefield(usetimer* timer);
+	virtual hmc_error sync_gaugefield();
 
   private:
   hmc_float kappa_karsch_val;

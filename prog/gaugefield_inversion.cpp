@@ -43,8 +43,10 @@ Opencl_fermions * Gaugefield_inversion::get_devices_fermions ()
 	return  (Opencl_fermions*)get_devices();
 }
 
-hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(usetimer* copytimer, usetimer* singletimer, usetimer* solvertimer){
+hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(usetimer* solvertimer){
 	int use_eo = get_parameters()->get_use_eo();
+	
+	usetimer* copytimer; usetimer* singletimer;
 
   if(use_eo==false){
     get_devices_fermions()[0].set_spinorfield_cold_device(get_devices_fermions()[0].get_clmem_inout());

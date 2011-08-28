@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
 
 	gaugefield.init(num_ocl_devices, 2, devicetypes, &parameters);
 
-	gaugefield.copy_gaugefield_to_devices(&copytime);
+	gaugefield.copy_gaugefield_to_devices();
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
 	    time_clover += timer_clover.getTime();
 	  
 	  } //end OMP sections
-	  gaugefield.sync_gaugefield(&copytime);	    
+	  gaugefield.sync_gaugefield();	    
 	  if( parameters.get_saveconfigs() && ( (i + 1) % savefreq ) == 0 ) 
 	    gaugefield.save(i);
 
@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
 	logger.info() <<"Measurement TK kappa_karsch: " << time_karsch/1000000. / hmc_float (nsteps) << " s" ;
 	logger.info() <<"Measurement TK kappa_clover: " << time_clover/1000000. / hmc_float (nsteps) << " s" ;
 	
-	gaugefield.sync_gaugefield(&copytime);
+	gaugefield.sync_gaugefield();
 	gaugefield.save(nsteps);
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////

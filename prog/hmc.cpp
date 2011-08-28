@@ -45,8 +45,8 @@ int main(int argc, char* argv[])
 	int err = init_random_seeds(gaugefield.get_rndarray(), "rand_seeds", rndsize);
 	if(err) return err;
 	logger.trace() << "Got seeds";
-	gaugefield.copy_gaugefield_to_devices(&copy_to_from_dev_timer);
-	gaugefield.copy_rndarray_to_devices(&copy_to_from_dev_timer);
+	gaugefield.copy_gaugefield_to_devices();
+	gaugefield.copy_rndarray_to_devices();
 	logger.trace() << "Moved stuff to device";
 	init_timer.add();
 	
@@ -68,13 +68,13 @@ int main(int argc, char* argv[])
 	for(iter = 0; iter < hmc_iter; iter ++) {
 		//generate new random-number for Metropolis step
 		hmc_float rnd_number = hmc_rnd_gen.doub();
-		gaugefield.perform_hmc_step(0, &parameters, &obs, iter, rnd_number, &copy_to_from_dev_timer,&copy_on_dev_timer);
+		gaugefield.perform_hmc_step(0, &parameters, &obs, iter, rnd_number);
 		acc_rate += obs.accept;
 		if( ( (iter + 1) % writefreq ) == 0 ) {
 			gaugefield.print_hmcobservables(obs, iter, gaugeout_name.str());
 		}
 		if( parameters.get_saveconfigs() == true && ( (iter + 1) % savefreq ) == 0 ) {
-			gaugefield.sync_gaugefield(&copy_to_from_dev_timer);
+			gaugefield.sync_gaugefield();
 			gaugefield.save(iter);
 		}
 	}
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	total_timer.add();
-	general_time_output(&total_timer, &init_timer, &perform_timer, &copy_to_from_dev_timer, &copy_on_dev_timer, &plaq_timer, &poly_timer);
+	general_time_output(&total_timer, &init_timer, &perform_timer, gaugefield.get_devices_hmc()[0].get_copy_to(), gaugefield.get_devices_hmc()[0].get_copy_on(), &plaq_timer, &poly_timer);
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables

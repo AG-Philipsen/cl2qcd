@@ -76,10 +76,10 @@ Opencl_heatbath * Gaugefield_k_hybrid::get_devices_heatbath (){
 }
 
 
-hmc_error Gaugefield_k_hybrid::copy_gaugefield_to_devices(usetimer* timer)
+hmc_error Gaugefield_k_hybrid::copy_gaugefield_to_devices()
 {
-	hmc_error err = get_devices_k()[0].copy_gaugefield_to_device(get_sgf(), timer);
-	err |= get_devices_heatbath()[0].copy_gaugefield_to_device(get_sgf(), timer);
+	hmc_error err = get_devices_k()[0].copy_gaugefield_to_device(get_sgf());
+	err |= get_devices_heatbath()[0].copy_gaugefield_to_device(get_sgf());
 	return err;
 }
 
@@ -160,12 +160,10 @@ hmc_error Gaugefield_k_hybrid::print_TK(const string kappa_karsch_out,const stri
   return HMC_SUCCESS;
 }
 
-
-
-hmc_error Gaugefield_k_hybrid::sync_gaugefield(usetimer* timer)
+hmc_error Gaugefield_k_hybrid::sync_gaugefield()
 {
-	hmc_error err = get_devices_heatbath()[0].get_gaugefield_from_device(get_sgf(), timer);
-	err |= get_devices_k()[0].copy_gaugefield_to_device(get_sgf(), timer);
+	hmc_error err = get_devices_heatbath()[0].get_gaugefield_from_device(get_sgf());
+	err |= get_devices_k()[0].copy_gaugefield_to_device(get_sgf());
 
 	return err;
 }

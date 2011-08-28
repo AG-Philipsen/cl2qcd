@@ -53,6 +53,14 @@ cl_device_type Opencl::get_device_type(){
 	return device_type;
 }
 
+usetimer * Opencl::get_copy_on(){
+	return &copy_on;
+}
+
+usetimer * Opencl::get_copy_to(){
+	return &copy_to;
+}
+
 cl_mem Opencl::create_rw_buffer(size_t size){
 	cl_int clerr;
 	cl_mem tmp = clCreateBuffer(context, CL_MEM_READ_WRITE, size, 0, &clerr);
@@ -328,10 +336,9 @@ hmc_error Opencl::clear_buffers()
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::copy_gaugefield_to_device(s_gaugefield* gaugefield, usetimer* timer)
+hmc_error Opencl::copy_gaugefield_to_device(s_gaugefield* gaugefield)
 {
-//   cout<<"Copy gaugefield to device..."<<endl;
-	timer->reset();
+	(*this->get_copy_to()).reset();
 	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(sizeof(s_gaugefield));
 
 	copy_to_ocl_format(host_gaugefield, gaugefield);
@@ -344,15 +351,14 @@ hmc_error Opencl::copy_gaugefield_to_device(s_gaugefield* gaugefield, usetimer* 
 
 	free(host_gaugefield);
 
-	timer->add();
+	(*this->get_copy_to()).add();
 	return HMC_SUCCESS;
 }
 
 
-hmc_error Opencl::get_gaugefield_from_device(s_gaugefield* gaugefield, usetimer* timer)
+hmc_error Opencl::get_gaugefield_from_device(s_gaugefield* gaugefield)
 {
-//   cout<<"Get gaugefield from device..."<<endl;
-	timer->reset();
+	(*this->get_copy_to()).reset();
 	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(sizeof(s_gaugefield));
 
 	int clerr = clEnqueueReadBuffer(queue, clmem_gaugefield, CL_TRUE, 0, sizeof(s_gaugefield), host_gaugefield, 0, NULL, NULL);
@@ -366,14 +372,13 @@ hmc_error Opencl::get_gaugefield_from_device(s_gaugefield* gaugefield, usetimer*
 
 	free(host_gaugefield);
 
-	timer->add();
+	(*this->get_copy_to()).add();
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::copy_rndarray_to_device(hmc_ocl_ran* rndarray, usetimer* timer)
+hmc_error Opencl::copy_rndarray_to_device(hmc_ocl_ran* rndarray)
 {
-//   cout<<"Copy randomarray to device..."<<endl;
-	timer->reset();
+	(*this->get_copy_to()).reset();
 
 	int clerr = clEnqueueWriteBuffer(queue, clmem_rndarray, CL_TRUE, 0, sizeof(hmc_ocl_ran)*get_num_rndstates(), rndarray, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
@@ -381,14 +386,13 @@ hmc_error Opencl::copy_rndarray_to_device(hmc_ocl_ran* rndarray, usetimer* timer
 		exit(HMC_OCLERROR);
 	}
 
-	timer->add();
+	(*this->get_copy_to()).add();
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::copy_rndarray_from_device(hmc_ocl_ran* rndarray, usetimer* timer)
+hmc_error Opencl::copy_rndarray_from_device(hmc_ocl_ran* rndarray)
 {
-//   cout<<"Get randomarray from device..."<<endl;
-	timer->reset();
+	(*this->get_copy_to()).reset();
 
 	int clerr = clEnqueueReadBuffer(queue, clmem_rndarray, CL_TRUE, 0, sizeof(hmc_ocl_ran)*get_num_rndstates(), rndarray, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
@@ -396,40 +400,41 @@ hmc_error Opencl::copy_rndarray_from_device(hmc_ocl_ran* rndarray, usetimer* tim
 		exit(HMC_OCLERROR);
 	}
 
-	timer->add();
+	(*this->get_copy_to()).add();
 	return HMC_SUCCESS;
 }
 
-void Opencl::copy_buffer_on_device(cl_mem in, cl_mem out, size_t size, usetimer* timer)
+void Opencl::copy_buffer_on_device(cl_mem in, cl_mem out, size_t size)
 {
-	(*timer).reset();
+	(*this->get_copy_on()).reset();
 	int clerr = clEnqueueCopyBuffer(queue, in, out, 0, 0, size , 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "... copying buffer on device failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
-	(*timer).add();
+	(*this->get_copy_on()).reset();
 }
 
-void Opencl::copy_buffer_to_device(void * source, cl_mem dest, size_t size, usetimer* timer){
-	(*timer).reset();
+void Opencl::copy_buffer_to_device(void * source, cl_mem dest, size_t size){
+	(*this->get_copy_to()).reset();
+
 	int clerr = clEnqueueWriteBuffer(queue, dest, CL_TRUE, 0, size, source, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "... failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
-	(*timer).add();
+	(*this->get_copy_to()).add();
 }
 
-void Opencl::get_buffer_from_device(cl_mem source, void * dest, size_t size, usetimer* timer){
-	(*timer).reset();
+void Opencl::get_buffer_from_device(cl_mem source, void * dest, size_t size){
+	(*this->get_copy_to()).reset();
 	int clerr = clEnqueueReadBuffer(queue, source, CL_TRUE, 0, size, dest, 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "... failed, aborting." << endl;
 		cout << "errorcode :" << clerr << endl;
 		exit(HMC_OCLERROR);
 	}
-	(*timer).add();
+	(*this->get_copy_to()).add();
 }
 
 void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
@@ -973,11 +978,9 @@ void Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * tplaq
 	hmc_float splaq = 0.;
 	hmc_float tplaq = 0.;
 	//NOTE: these are blocking calls!
-	///@todo replace this timer
-	usetimer noop;
-	get_buffer_from_device(clmem_plaq, &plaq, sizeof(hmc_float), &noop);
-	get_buffer_from_device(clmem_tplaq, &tplaq, sizeof(hmc_float), &noop);
-	get_buffer_from_device(clmem_splaq, &splaq, sizeof(hmc_float), &noop);
+	get_buffer_from_device(clmem_plaq, &plaq, sizeof(hmc_float));
+	get_buffer_from_device(clmem_tplaq, &tplaq, sizeof(hmc_float));
+	get_buffer_from_device(clmem_splaq, &splaq, sizeof(hmc_float));
 
 	tplaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1));
 	splaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
@@ -993,7 +996,7 @@ void Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * tplaq
 	//read out values
 	hmc_complex pol = hmc_complex_zero;
 	//NOTE: this is a blocking call!
-	get_buffer_from_device(clmem_polyakov, &pol, sizeof(hmc_complex), &noop);
+	get_buffer_from_device(clmem_polyakov, &pol, sizeof(hmc_complex));
 
 	pol.re /= static_cast<hmc_float>(NC * VOLSPACE);
 	pol.im /= static_cast<hmc_float>(NC * VOLSPACE);
