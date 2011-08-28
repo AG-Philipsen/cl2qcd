@@ -48,14 +48,14 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	psi = su3vec_dim(plus.e0, plus.e2);
 	// phi = U*psi
 	phi =  su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e2 = su3vec_dim(out_tmp.e2, psi);
 	// psi = 1. component of (1-gamma_0)y
 	psi = su3vec_dim(plus.e1, plus.e3);
 	// phi = U*psi
 	phi =  su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e3 = su3vec_dim(out_tmp.e3, psi);
 
@@ -93,14 +93,14 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	psi = su3vec_acc(plus.e0, plus.e2);
 	// phi = U*psi
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e2 = su3vec_acc(out_tmp.e2, psi);
 	// psi = 1. component of (1+gamma_0)y
 	psi = su3vec_acc(plus.e1, plus.e3);
 	// phi = U*psi
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e3 = su3vec_acc(out_tmp.e3, psi);		
 
@@ -129,13 +129,13 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	///////////////////////////////////
 	psi = su3vec_dim_i(plus.e0, plus.e3);
 	phi = su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e3 = su3vec_acc_i(out_tmp.e3, psi);
 	
 	psi = su3vec_dim_i(plus.e1, plus.e2);
 	phi = su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e2 = su3vec_acc_i(out_tmp.e2, psi);		
 
@@ -159,13 +159,13 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	///////////////////////////////////
 	psi = su3vec_acc_i(plus.e0, plus.e3);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e3 = su3vec_dim_i(out_tmp.e3, psi);
 	
 	psi = su3vec_acc_i(plus.e1, plus.e2);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e2 = su3vec_dim_i(out_tmp.e2, psi);		
 	
@@ -193,13 +193,13 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	///////////////////////////////////
 	psi = su3vec_acc(plus.e0, plus.e3);
 	phi = su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e3 = su3vec_acc(out_tmp.e3, psi);
 	
 	psi = su3vec_dim(plus.e1, plus.e2);
 	phi = su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e2 = su3vec_dim(out_tmp.e2, psi);	
 	
@@ -223,13 +223,13 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	///////////////////////////////////
 	psi = su3vec_dim(plus.e0, plus.e3);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e3 = su3vec_dim(out_tmp.e3, psi);
 	
 	psi = su3vec_acc(plus.e1, plus.e2);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e2 = su3vec_acc(out_tmp.e2, psi);	
 
@@ -257,13 +257,13 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	///////////////////////////////////
 	psi = su3vec_dim_i(plus.e0, plus.e2);
 	phi = su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e2 = su3vec_acc_i(out_tmp.e2, psi);
 	
 	psi = su3vec_acc_i(plus.e1, plus.e3);
 	phi = su3matrix_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e3 = su3vec_dim_i(out_tmp.e3, psi);	
 
@@ -287,13 +287,13 @@ spinor inline dslash_eoprec_local(__global spinorfield_eoprec * in,__global ocl_
 	///////////////////////////////////
 	psi = su3vec_acc_i(plus.e0, plus.e2);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e2 = su3vec_dim_i(out_tmp.e2, psi);
 	
 	psi = su3vec_dim_i(plus.e1, plus.e3);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
-	psi = su3vec_times_real(phi, kappa_minus);
+	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e3 = su3vec_acc_i(out_tmp.e3, psi);
 
