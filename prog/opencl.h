@@ -278,6 +278,7 @@ public:
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
 	hmc_error get_work_sizes(size_t * ls, size_t * gs, cl_uint * num_groups, cl_device_type dev_type, string name = "dummy");
+	hmc_error get_work_sizes2(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
 	///////////////////////////////////////////////////////////
 	//LZ what follows should eventually be private
 	//heatbath variables

@@ -1029,6 +1029,46 @@ hmc_error Opencl::stout_smear_device(const size_t ls, const size_t gs){
 	return HMC_SUCCESS;
 }
 
+hmc_error Opencl::get_work_sizes2(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups){
+	//Construct explicit kernel name
+	int clerr;
+	size_t bytesInKernelName;
+	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
+	if( clerr ) {
+		logger.error() << "Failed to query kernel name: ";
+		return HMC_STDERR;
+	}
+	char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
+	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
+	if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return HMC_STDERR;
+	}
+	
+	/// @todo use kernelname
+	size_t local_work_size;
+	if( dev_type == CL_DEVICE_TYPE_GPU )
+	  local_work_size = Opencl::get_numthreads(); /// @todo have local work size depend on kernel properties (and device? autotune?)
+	else
+	  local_work_size = 1; // nothing else makes sense on CPU
+
+	size_t global_work_size;
+	if( dev_type == CL_DEVICE_TYPE_GPU )
+	  global_work_size = 4 * Opencl::get_numthreads() * max_compute_units; /// @todo autotune
+	else
+		global_work_size = max_compute_units;
+
+	const cl_uint num_groups_tmp = (global_work_size + local_work_size - 1) / local_work_size;
+	global_work_size = local_work_size * num_groups_tmp;
+	
+	//write out values
+	*ls = local_work_size;
+	*gs = global_work_size;
+	*num_groups = num_groups_tmp;
+	
+	return HMC_SUCCESS;
+}
+
 hmc_error Opencl::get_work_sizes(size_t * ls, size_t * gs, cl_uint * num_groups, cl_device_type dev_type, string name){
 	/// @todo use kernelname
 	size_t local_work_size;

@@ -243,24 +243,29 @@ hmc_error Opencl_fermions::init(cl_device_type wanted_device_type, inputparamete
 	return err;
 }
 
-hmc_error Opencl_fermions::convert_to_kappa_format_device(cl_mem inout, const size_t ls, const size_t gs)
+void Opencl_fermions::convert_to_kappa_format_device(cl_mem inout)
 {
-	int clerr = CL_SUCCESS;
-
-	clerr = clSetKernelArg(convert_to_kappa_format, 0, sizeof(cl_mem), &inout);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(convert_to_kappa_format, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(convert_to_kappa_format, 0, sizeof(cl_mem), &inout);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( convert_to_kappa_format, gs, ls);
-	return HMC_SUCCESS;
+	enqueueKernel( convert_to_kappa_format, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::convert_from_kappa_format_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs)
+void Opencl_fermions::convert_from_kappa_format_device(cl_mem in, cl_mem out)
 {
-	int clerr = CL_SUCCESS;
-
-	clerr = clSetKernelArg(convert_from_kappa_format, 0, sizeof(cl_mem), &in);
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(convert_from_kappa_format, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(convert_from_kappa_format, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -270,14 +275,16 @@ hmc_error Opencl_fermions::convert_from_kappa_format_device(cl_mem in, cl_mem ou
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel( convert_from_kappa_format , gs, ls);
-	return HMC_SUCCESS;
+	enqueueKernel( convert_from_kappa_format , gs2, ls2);
 }
 
-hmc_error Opencl_fermions::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out, const size_t ls, const size_t gs){
-	int clerr = CL_SUCCESS;
-
-	clerr = clSetKernelArg(convert_from_eoprec,0,sizeof(cl_mem),&in1); 
+void Opencl_fermions::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(convert_from_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(convert_from_eoprec,0,sizeof(cl_mem),&in1); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
@@ -292,28 +299,31 @@ hmc_error Opencl_fermions::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl
     cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	enqueueKernel(convert_from_eoprec , gs, ls);
-	return HMC_SUCCESS;
+	enqueueKernel(convert_from_eoprec , gs2, ls2);
 }
 
 	
-hmc_error Opencl_fermions::convert_to_kappa_format_eoprec_device(cl_mem in, const size_t ls, const size_t gs){
-	int clerr = CL_SUCCESS;
-	
-	clerr = clSetKernelArg(convert_to_kappa_format_eoprec,0,sizeof(cl_mem),&in); 
+void Opencl_fermions::convert_to_kappa_format_eoprec_device(cl_mem in){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(convert_to_kappa_format_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(convert_to_kappa_format_eoprec,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {
     cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
     exit(HMC_OCLERROR);
   }
-	enqueueKernel(convert_to_kappa_format_eoprec , gs, ls);
-
-	return HMC_SUCCESS;
+	enqueueKernel(convert_to_kappa_format_eoprec , gs2, ls2);
 }
 
-hmc_error Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs){
-	int clerr = CL_SUCCESS;
-
-	clerr = clSetKernelArg(convert_from_kappa_format_eoprec, 0, sizeof(cl_mem), &in);
+void Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes2(convert_from_kappa_format_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(convert_from_kappa_format_eoprec, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) {
 		cout << "clSetKernelArg 0 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
@@ -323,9 +333,7 @@ hmc_error Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl
 		cout << "clSetKernelArg 1 failed, aborting..." << endl;
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel(convert_from_kappa_format_eoprec , gs, ls);
-
-	return HMC_SUCCESS;
+	enqueueKernel(convert_from_kappa_format_eoprec , gs2, ls2);
 }
 
 //compound fermionmatrix-functions without eoprec
@@ -1358,14 +1366,14 @@ hmc_error Opencl_fermions::cg_eoprec_device(matrix_function_call f, cl_mem inout
 hmc_error Opencl_fermions::solver_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax)
 {
 	(*solvertimer).reset();
-	convert_to_kappa_format_device(clmem_inout, ls, gs);
-	convert_to_kappa_format_device(clmem_source, ls, gs);
+	convert_to_kappa_format_device(clmem_inout);
+	convert_to_kappa_format_device(clmem_source);
 	if(get_parameters()->get_use_cg() == true)
 	 	cg_device(f, inout, source, gf, copytimer, singletimer, ls, gs, cgmax);
 	else 
 		bicgstab_device(f, inout, source, gf, copytimer, singletimer, ls, gs, cgmax);
-	convert_from_kappa_format_device(clmem_inout, clmem_inout, ls, gs);
-	convert_from_kappa_format_device(clmem_source, clmem_source, ls, gs);
+	convert_from_kappa_format_device(clmem_inout, clmem_inout);
+	convert_from_kappa_format_device(clmem_source, clmem_source);
 	clFinish(queue);
 	(*solvertimer).add();
 
@@ -1378,8 +1386,8 @@ hmc_error Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem i
 	(*solvertimer).reset();
 
 	//CP: even solution
-	convert_to_kappa_format_eoprec_device(clmem_inout_eoprec, ls, gs);
-	convert_to_kappa_format_eoprec_device(clmem_source_even, ls, gs);
+	convert_to_kappa_format_eoprec_device(clmem_inout_eoprec);
+	convert_to_kappa_format_eoprec_device(clmem_source_even);
 	if(get_parameters()->get_use_cg() == true)
 	 	cg_eoprec_device(f, inout_eo, source_even, gf, copytimer, singletimer, ls, gs, cgmax);
 	else 
@@ -1397,11 +1405,11 @@ hmc_error Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem i
 		M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2, ls, gs);
 		saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, clmem_one, clmem_tmp_eoprec_3,  ls, gs);
 
-		convert_from_kappa_format_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_3,  ls, gs);
-		convert_from_kappa_format_eoprec_device(clmem_inout_eoprec, clmem_inout_eoprec, ls, gs);
+		convert_from_kappa_format_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_3);
+		convert_from_kappa_format_eoprec_device(clmem_inout_eoprec, clmem_inout_eoprec);
 		//CP: whole solution
 		//CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eoprec_3
-		convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, clmem_inout, ls, gs);
+		convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, clmem_inout);
 		///convert source back from kappa???
 	}
 	

@@ -69,11 +69,11 @@ public:
 	// device operations
 
 	//    linear Algebra operations
-	hmc_error convert_to_kappa_format_device(cl_mem inout, const size_t ls, const size_t gs);
-	hmc_error convert_from_kappa_format_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error convert_to_kappa_format_eoprec_device(cl_mem inout, const size_t ls, const size_t gs);
-	hmc_error convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out, const size_t ls, const size_t gs);
+	void convert_to_kappa_format_device(cl_mem inout);
+	void convert_from_kappa_format_device(cl_mem in, cl_mem out);
+	void convert_to_kappa_format_eoprec_device(cl_mem inout);
+	void convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out);
+	void convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out);
 
 	hmc_error set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out, const size_t ls, const size_t gs);
 	hmc_error set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_mem b, cl_mem out, const size_t ls, const size_t gs);
