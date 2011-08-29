@@ -1,0 +1,30 @@
+##################################################################
+##	This is 
+##		inverter_test_input_8
+##	At the moment, it calculates the ps-correlator and 
+##	prints it to screen.
+##		NOTE: The solver will not converge since cgmax 
+##		is too small to speed up the test!
+##	On this lattice the output should be:
+##	ps correlator:
+##	0	(1.516786023505e+00)
+##	1	(1.048493398623e-01)
+##	2	(1.208025224859e-01)
+##	3	(1.222998100301e-01)
+##################################################################
+NS=4
+NT=4
+use_rec12=1
+use_gpu=1
+prec=64
+
+kappa=.15
+mu=4.
+cgmax=10
+beta=6
+startcondition=cold
+savefrequency=10
+fermact=TWISTEDMASS
+
+use_evenodd=no
+
