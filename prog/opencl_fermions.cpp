@@ -1442,7 +1442,7 @@ void Opencl_fermions::create_point_source_device(cl_mem inout, int i, int spacep
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes2(set_zero_spinorfield_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes2(create_point_source, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(create_point_source, 0, sizeof(cl_mem), &inout);
 	if(clerr != CL_SUCCESS) {
@@ -1483,7 +1483,7 @@ void Opencl_fermions::create_point_source_eoprec_device(cl_mem inout_even, cl_me
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes2(set_zero_spinorfield_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes2(create_point_source_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	//CP: this is different than the host code, where this is done implicitly when converting the normal source to even/odd
 	if(evenodd == 1) {
@@ -1528,7 +1528,7 @@ void Opencl_fermions::ps_correlator_device(cl_mem in){
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes2(set_zero_spinorfield_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes2(ps_correlator, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(ps_correlator,0,sizeof(cl_mem),&in); 
   if(clerr!=CL_SUCCESS) {

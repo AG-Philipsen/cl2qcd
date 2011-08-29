@@ -412,7 +412,7 @@ void Opencl::copy_buffer_on_device(cl_mem in, cl_mem out, size_t size)
 		cout << "... copying buffer on device failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
-	(*this->get_copy_on()).reset();
+	(*this->get_copy_on()).add();
 }
 
 void Opencl::copy_buffer_to_device(void * source, cl_mem dest, size_t size){
@@ -1023,7 +1023,7 @@ hmc_error Opencl::get_work_sizes2(const cl_kernel kernel, cl_device_type dev_typ
 	size_t bytesInKernelName;
 	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
 	if( clerr ) {
-		logger.error() << "Failed to query kernel name: ";
+		logger.error() << "Failed to query kernel name: asdfaasdfdfd";
 		return HMC_STDERR;
 	}
 	char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte

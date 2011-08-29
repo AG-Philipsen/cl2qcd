@@ -86,8 +86,8 @@ void general_time_output(usetimer * total, usetimer * init_timer, usetimer * per
 	logger.trace() << "## Perf.:\t" << setfill(' ') << setw(12) << perform_time << '\t'<< fixed << setw(5) << setprecision(1) << percent(perform_time, totaltime) ;
 	logger.trace() << "## *******************************************************************";
 	logger.trace() << "## Other:\t" << setfill(' ') << setw(12) << "total" << '\t' << setw(12) << "avg"<< '\t' << setw(5) << "perc";
-	logger.trace() << "## Copy1:\t" << setfill(' ') << setw(12) << copy1_time << '\t' << setw(12) << copy1_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(copy1_time, totaltime);
-	logger.trace() << "## Copy2:\t" << setfill(' ') << setw(12) << copy2_time << '\t' << setw(12) << copy2_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(copy2_time, totaltime);
+	logger.trace() << "## CpyTo:\t" << setfill(' ') << setw(12) << copy1_time << '\t' << setw(12) << copy1_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(copy1_time, totaltime);
+	logger.trace() << "## CpyOn:\t" << setfill(' ') << setw(12) << copy2_time << '\t' << setw(12) << copy2_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(copy2_time, totaltime);
 	logger.trace() << "## Plaq.:\t" << setfill(' ') << setw(12) << plaq_time << '\t' << setw(12) << plaq_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(plaq_time, totaltime);
 	logger.trace() << "## Poly.:\t" << setfill(' ') << setw(12) << poly_time << '\t' << setw(12) << poly_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(poly_time, totaltime);
 	logger.trace() << "## *******************************************************************";
