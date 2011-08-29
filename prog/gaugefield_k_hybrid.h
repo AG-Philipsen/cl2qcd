@@ -22,7 +22,7 @@ class Gaugefield_k_hybrid : public Gaugefield  {
    * @param devicetypes array of cl_device_type handles
    * @param[in,out] timer timer for initialization
    */
-  virtual hmc_error init_devices(cl_device_type* devicetypes, usetimer* timer);
+  virtual hmc_error init_devices(cl_device_type* devicetypes, int nstates);
 
 	/**
 	 * Free device, called by finalize
@@ -84,21 +84,8 @@ class Gaugefield_k_hybrid : public Gaugefield  {
 
 	/**
 	 * Copy gaugefield to devices.
-	 * @param[in,out] timer copy-time
 	 */
-	virtual hmc_error copy_gaugefield_to_devices(usetimer* timer);
-
-	//copied from Gaugefield_heatbath
-	/**
-	 * Copy random array to devices (currently: to device).
-	 * @param[in,out] timer copy-time
-	 */
-	hmc_error copy_rndarray_to_devices(hmc_rndarray host_rndarray,  usetimer* timer);
-	/**
-	 * Copy random array from devices (currently: from device).
-	 * @param[in,out] timer copy-time
-	 */
-	hmc_error copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer* timer);
+	virtual hmc_error copy_gaugefield_to_devices();
 
 	/**
 	 * Perform a number of heatbath and (afterwards) overrelaxation steps.
@@ -160,9 +147,8 @@ class Gaugefield_k_hybrid : public Gaugefield  {
 
 	/**
 	 * Communicate gaugefield from heatbath device to everyone else.
-	 * @param[in,out] timer copy-time
 	 */
-	virtual hmc_error sync_gaugefield(usetimer* timer);
+	virtual hmc_error sync_gaugefield();
 
   private:
   hmc_float kappa_karsch_val;

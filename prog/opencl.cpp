@@ -53,6 +53,14 @@ cl_device_type Opencl::get_device_type(){
 	return device_type;
 }
 
+usetimer * Opencl::get_copy_on(){
+	return &copy_on;
+}
+
+usetimer * Opencl::get_copy_to(){
+	return &copy_to;
+}
+
 cl_mem Opencl::create_rw_buffer(size_t size){
 	cl_int clerr;
 	cl_mem tmp = clCreateBuffer(context, CL_MEM_READ_WRITE, size, 0, &clerr);
@@ -115,12 +123,6 @@ cl_mem Opencl::create_chp_buffer(size_t size, void *host_pointer){
 
 hmc_error Opencl::fill_buffers()
 {
-  cl_uint num_groups;
-  size_t ls;
-  size_t gs;
-
-  Opencl::get_work_sizes(&ls, &gs, &num_groups, get_device_type());
-
 	logger.trace() << "Create buffer for gaugefield...";
 	clmem_gaugefield = create_rw_buffer(sizeof(s_gaugefield));
 
@@ -128,10 +130,10 @@ hmc_error Opencl::fill_buffers()
 	clmem_rndarray = create_rw_buffer(sizeof(hmc_ocl_ran)*get_num_rndstates());
 
 	logger.trace() << "Create buffer for gaugeobservables...";
-	clmem_plaq = create_rw_buffer(sizeof(hmc_float) * gs);
-	clmem_splaq = create_rw_buffer(sizeof(hmc_float) * gs);
-	clmem_tplaq = create_rw_buffer(sizeof(hmc_float) * gs);
-	clmem_polyakov = create_rw_buffer(sizeof(hmc_complex) * gs);
+	clmem_plaq = create_rw_buffer(sizeof(hmc_float));
+	clmem_splaq = create_rw_buffer(sizeof(hmc_float));
+	clmem_tplaq = create_rw_buffer(sizeof(hmc_float));
+	clmem_polyakov = create_rw_buffer(sizeof(hmc_complex));
 
 	// scratch buffers for gauge observable will be created on demand
 	clmem_plaq_buf_glob = 0;
@@ -334,10 +336,9 @@ hmc_error Opencl::clear_buffers()
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::copy_gaugefield_to_device(s_gaugefield* gaugefield, usetimer* timer)
+hmc_error Opencl::copy_gaugefield_to_device(s_gaugefield* gaugefield)
 {
-//   cout<<"Copy gaugefield to device..."<<endl;
-	timer->reset();
+	(*this->get_copy_to()).reset();
 	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(sizeof(s_gaugefield));
 
 	copy_to_ocl_format(host_gaugefield, gaugefield);
@@ -350,15 +351,14 @@ hmc_error Opencl::copy_gaugefield_to_device(s_gaugefield* gaugefield, usetimer* 
 
 	free(host_gaugefield);
 
-	timer->add();
+	(*this->get_copy_to()).add();
 	return HMC_SUCCESS;
 }
 
 
-hmc_error Opencl::get_gaugefield_from_device(s_gaugefield* gaugefield, usetimer* timer)
+hmc_error Opencl::get_gaugefield_from_device(s_gaugefield* gaugefield)
 {
-//   cout<<"Get gaugefield from device..."<<endl;
-	timer->reset();
+	(*this->get_copy_to()).reset();
 	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(sizeof(s_gaugefield));
 
 	int clerr = clEnqueueReadBuffer(queue, clmem_gaugefield, CL_TRUE, 0, sizeof(s_gaugefield), host_gaugefield, 0, NULL, NULL);
@@ -372,14 +372,13 @@ hmc_error Opencl::get_gaugefield_from_device(s_gaugefield* gaugefield, usetimer*
 
 	free(host_gaugefield);
 
-	timer->add();
+	(*this->get_copy_to()).add();
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::copy_rndarray_to_device(hmc_ocl_ran* rndarray, usetimer* timer)
+hmc_error Opencl::copy_rndarray_to_device(hmc_ocl_ran* rndarray)
 {
-//   cout<<"Copy randomarray to device..."<<endl;
-	timer->reset();
+	(*this->get_copy_to()).reset();
 
 	int clerr = clEnqueueWriteBuffer(queue, clmem_rndarray, CL_TRUE, 0, sizeof(hmc_ocl_ran)*get_num_rndstates(), rndarray, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
@@ -387,14 +386,13 @@ hmc_error Opencl::copy_rndarray_to_device(hmc_ocl_ran* rndarray, usetimer* timer
 		exit(HMC_OCLERROR);
 	}
 
-	timer->add();
+	(*this->get_copy_to()).add();
 	return HMC_SUCCESS;
 }
 
-hmc_error Opencl::copy_rndarray_from_device(hmc_ocl_ran* rndarray, usetimer* timer)
+hmc_error Opencl::copy_rndarray_from_device(hmc_ocl_ran* rndarray)
 {
-//   cout<<"Get randomarray from device..."<<endl;
-	timer->reset();
+	(*this->get_copy_to()).reset();
 
 	int clerr = clEnqueueReadBuffer(queue, clmem_rndarray, CL_TRUE, 0, sizeof(hmc_ocl_ran)*get_num_rndstates(), rndarray, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
@@ -402,40 +400,41 @@ hmc_error Opencl::copy_rndarray_from_device(hmc_ocl_ran* rndarray, usetimer* tim
 		exit(HMC_OCLERROR);
 	}
 
-	timer->add();
+	(*this->get_copy_to()).add();
 	return HMC_SUCCESS;
 }
 
-void Opencl::copy_buffer_on_device(cl_mem in, cl_mem out, size_t size, usetimer* timer)
+void Opencl::copy_buffer_on_device(cl_mem in, cl_mem out, size_t size)
 {
-	(*timer).reset();
+	(*this->get_copy_on()).reset();
 	int clerr = clEnqueueCopyBuffer(queue, in, out, 0, 0, size , 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "... copying buffer on device failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
-	(*timer).add();
+	(*this->get_copy_on()).reset();
 }
 
-void Opencl::copy_buffer_to_device(void * source, cl_mem dest, size_t size, usetimer* timer){
-	(*timer).reset();
+void Opencl::copy_buffer_to_device(void * source, cl_mem dest, size_t size){
+	(*this->get_copy_to()).reset();
+
 	int clerr = clEnqueueWriteBuffer(queue, dest, CL_TRUE, 0, size, source, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "... failed, aborting." << endl;
 		exit(HMC_OCLERROR);
 	}
-	(*timer).add();
+	(*this->get_copy_to()).add();
 }
 
-void Opencl::get_buffer_from_device(cl_mem source, void * dest, size_t size, usetimer* timer){
-	(*timer).reset();
+void Opencl::get_buffer_from_device(cl_mem source, void * dest, size_t size){
+	(*this->get_copy_to()).reset();
 	int clerr = clEnqueueReadBuffer(queue, source, CL_TRUE, 0, size, dest, 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) {
 		cout << "... failed, aborting." << endl;
 		cout << "errorcode :" << clerr << endl;
 		exit(HMC_OCLERROR);
 	}
-	(*timer).add();
+	(*this->get_copy_to()).add();
 }
 
 void Opencl::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
@@ -814,20 +813,12 @@ void Opencl::printResourceRequirements(const cl_kernel kernel)
 	delete[] platform_name;
 }
 
-hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
-{
-	cl_int clerr = CL_SUCCESS;
-
-	// decide on work-sizes
-	size_t local_work_size;
-	size_t global_work_size;
+void Opencl::plaquette_device(cl_mem gf){
+	//query work-sizes for kernel
+	size_t ls, gs;
 	cl_uint num_groups;
-	//CP: This has no effect yet!!
-	//	char * kernelname = "dummy";
-	//LZ: Therefore, until there is some effect: use default arg
-	//	Opencl::get_work_sizes(&local_work_size, &global_work_size, &num_groups, device_type, kernelname);
-	Opencl::get_work_sizes(&local_work_size, &global_work_size, &num_groups, get_device_type());
-
+	this->get_work_sizes2(plaquette, this->get_device_type(), &ls, &gs, &num_groups);
+	
 	logger.debug() <<"init scratch buffers if not already done";
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
 	int global_buf_size_complex = sizeof(hmc_complex) * num_groups;
@@ -837,21 +828,11 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 	if( clmem_splaq_buf_glob == 0 ) clmem_splaq_buf_glob = create_rw_buffer(global_buf_size_float);
 	if( clmem_polyakov_buf_glob == 0 ) clmem_polyakov_buf_glob = create_rw_buffer(global_buf_size_complex);
 	
-	//measure plaquette
-
-	hmc_float plaq;
-	hmc_float splaq;
-	hmc_float tplaq;
-	int buf_loc_size_float = sizeof(hmc_float) * local_work_size;
-	int buf_loc_size_complex = sizeof(hmc_complex) * local_work_size;
-
-	plaq = 0.;
-	splaq = 0.;
-	tplaq = 0.;
-
+	int buf_loc_size_float = sizeof(hmc_float) * ls;
+	
+	//set arguments
 	// run local plaquette calculation and first part of reduction
-
-	clerr = clSetKernelArg(plaquette, 0, sizeof(cl_mem), &gf);
+	int clerr = clSetKernelArg(plaquette, 0, sizeof(cl_mem), &gf);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clSetKernelArg0 failed, aborting...";
 		exit(HMC_OCLERROR);
@@ -886,9 +867,11 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 		logger.fatal() << "clSetKernelArg6 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel(plaquette, global_work_size, local_work_size);
+	enqueueKernel(plaquette, gs, ls);
 
 	// run second part of plaquette reduction
+
+	this->get_work_sizes2(plaquette_reduction, this->get_device_type(), &ls, &gs, &num_groups);
 
 	clerr = clSetKernelArg(plaquette_reduction, 0, sizeof(cl_mem), &clmem_plaq_buf_glob);
 	if(clerr != CL_SUCCESS) {
@@ -925,44 +908,23 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 		logger.fatal() << "clSetKernelArg6 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel(plaquette_reduction, 1, 1);
+	
+	///@todo improve
+	ls = 1;
+	gs = 1;
+	enqueueKernel(plaquette_reduction, gs, ls);
+	
+}
 
-	//read out values
-	clerr = clEnqueueReadBuffer(queue, clmem_plaq, CL_FALSE, 0, sizeof(hmc_float), &plaq, 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clEnqueueReadBuffer(queue, clmem_tplaq, CL_FALSE, 0, sizeof(hmc_float), &tplaq, 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-	clerr = clEnqueueReadBuffer(queue, clmem_splaq, CL_FALSE, 0, sizeof(hmc_float), &splaq, 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
-
-	// wait for results to have been read back
-	clFinish(queue);
-
-	//two plaquette-measurements per thread -> add. factor of 1/2
-	tplaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1));
-	splaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
-	plaq  /= static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) * NC) / 2.;
-
-	(*plaq_out) = plaq;
-	(*splaq_out) = splaq;
-	(*tplaq_out) = tplaq;
-
-	//measure polyakovloop
-	hmc_complex pol;
-	pol = hmc_complex_zero;
-
+void Opencl::polyakov_device(cl_mem gf){
+	//query work-sizes for kernel
+	size_t ls, gs;
+	cl_uint num_groups;
+	this->get_work_sizes2(polyakov, this->get_device_type(), &ls, &gs, &num_groups);
+	int buf_loc_size_complex = sizeof(hmc_complex) * ls;
+	
 	// local polyakov compuation and first part of reduction
-
-	clerr = clSetKernelArg(polyakov, 0, sizeof(cl_mem), &gf);
+	int clerr = clSetKernelArg(polyakov, 0, sizeof(cl_mem), &gf);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clSetKernelArg0 failed, aborting...";
 		exit(HMC_OCLERROR);
@@ -977,10 +939,12 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 		logger.fatal() << "clSetKernelArg2 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel(polyakov, global_work_size, local_work_size);
+	enqueueKernel(polyakov, gs, ls);
 
 	// second part of polyakov reduction
 
+	this->get_work_sizes2(polyakov_reduction, this->get_device_type(), &ls, &gs, &num_groups);
+	
 	clerr = clSetKernelArg(polyakov_reduction, 0, sizeof(cl_mem), &clmem_polyakov_buf_glob);
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clSetKernelArg0 failed, aborting...";
@@ -996,25 +960,49 @@ hmc_error Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * 
 		logger.fatal() << "clSetKernelArg2 failed, aborting...";
 		exit(HMC_OCLERROR);
 	}
-	enqueueKernel(polyakov_reduction, 1, 1);
+	
+	///@todo improve
+	ls = 1;
+	gs = 1;
+	enqueueKernel(polyakov_reduction, gs, ls);
+	
+}
+
+void Opencl::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
+{
+	//measure plaquette
+	plaquette_device(gf);
 
 	//read out values
-	clerr = clEnqueueReadBuffer(queue, clmem_polyakov, CL_FALSE, 0, sizeof(hmc_complex), &pol, 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-		exit(HMC_OCLERROR);
-	}
+	hmc_float plaq = 0.;
+	hmc_float splaq = 0.;
+	hmc_float tplaq = 0.;
+	//NOTE: these are blocking calls!
+	get_buffer_from_device(clmem_plaq, &plaq, sizeof(hmc_float));
+	get_buffer_from_device(clmem_tplaq, &tplaq, sizeof(hmc_float));
+	get_buffer_from_device(clmem_splaq, &splaq, sizeof(hmc_float));
 
-	// wait for result to have been read back
-	clFinish(queue);
+	tplaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1));
+	splaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
+	plaq  /= static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) * NC) / 2.;
+
+	(*plaq_out) = plaq;
+	(*splaq_out) = splaq;
+	(*tplaq_out) = tplaq;
+
+	//measure polyakovloop
+	polyakov_device(gf);
+
+	//read out values
+	hmc_complex pol = hmc_complex_zero;
+	//NOTE: this is a blocking call!
+	get_buffer_from_device(clmem_polyakov, &pol, sizeof(hmc_complex));
 
 	pol.re /= static_cast<hmc_float>(NC * VOLSPACE);
 	pol.im /= static_cast<hmc_float>(NC * VOLSPACE);
 
 	pol_out->re = pol.re;
 	pol_out->im = pol.im;
-
-	return HMC_SUCCESS;
 }
 
 TmpClKernel Opencl::createKernel(const char * const kernel_name)
@@ -1024,7 +1012,47 @@ TmpClKernel Opencl::createKernel(const char * const kernel_name)
 	return TmpClKernel(kernel_name, collect_options.str(), context, &device, 1);
 }
 
-hmc_error Opencl::stout_smear_device(const size_t ls, const size_t gs){
+hmc_error Opencl::stout_smear_device(){
+	
+	return HMC_SUCCESS;
+}
+
+hmc_error Opencl::get_work_sizes2(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups){
+	//Construct explicit kernel name
+	int clerr;
+	size_t bytesInKernelName;
+	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
+	if( clerr ) {
+		logger.error() << "Failed to query kernel name: ";
+		return HMC_STDERR;
+	}
+	char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
+	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
+	if( clerr ) {
+			logger.error() << "Failed to query kernel name: ";
+			return HMC_STDERR;
+	}
+	
+	/// @todo use kernelname
+	size_t local_work_size;
+	if( dev_type == CL_DEVICE_TYPE_GPU )
+	  local_work_size = Opencl::get_numthreads(); /// @todo have local work size depend on kernel properties (and device? autotune?)
+	else
+	  local_work_size = 1; // nothing else makes sense on CPU
+
+	size_t global_work_size;
+	if( dev_type == CL_DEVICE_TYPE_GPU )
+	  global_work_size = 4 * Opencl::get_numthreads() * max_compute_units; /// @todo autotune
+	else
+		global_work_size = max_compute_units;
+
+	const cl_uint num_groups_tmp = (global_work_size + local_work_size - 1) / local_work_size;
+	global_work_size = local_work_size * num_groups_tmp;
+	
+	//write out values
+	*ls = local_work_size;
+	*gs = global_work_size;
+	*num_groups = num_groups_tmp;
 	
 	return HMC_SUCCESS;
 }

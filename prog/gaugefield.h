@@ -95,24 +95,21 @@ public:
 	//communication
 	/**
 	 * Copy gaugefield to devices (here: to device).
-	 * @param[in,out] timer copy-time
 	 */
-	virtual hmc_error copy_gaugefield_to_devices(usetimer* timer);
+	virtual hmc_error copy_gaugefield_to_devices();
 	/**
 	 * Copy gaugefield from devices (currently: from device) to host.
 	 * @param[in,out] timer copy-time
 	 */
-	virtual hmc_error sync_gaugefield(usetimer* timer);
+	virtual hmc_error sync_gaugefield();
 	/**
 	 * Copy random array to devices (currently: to device).
-	 * @param[in,out] timer copy-time
 	 */
-	hmc_error copy_rndarray_to_devices(usetimer* timer);
+	hmc_error copy_rndarray_to_devices();
 	/**
 	 * Copy random array from devices (currently: from device).
-	 * @param[in,out] timer copy-time
 	 */
-	hmc_error copy_rndarray_from_devices(usetimer* timer);
+	hmc_error copy_rndarray_from_devices();
 
 	//input/output, print, save functions!!
 	/**

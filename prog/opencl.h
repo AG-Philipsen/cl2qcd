@@ -87,19 +87,18 @@ public:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error copy_gaugefield_to_device(s_gaugefield* gaugefield, usetimer* timer);
+	hmc_error copy_gaugefield_to_device(s_gaugefield* gaugefield);
 //  hmc_error copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
 
 	/**
 	 * Copy the gaugefield from the device into the given memory location.
 	 *
 	 * @param host_gaugefield Storage location for the gaugefield
-	 * @param timer The timer to use to measure the copying time
 	 * @return Error code as defined in hmcerrs.h:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error get_gaugefield_from_device(s_gaugefield* gaugefield, usetimer* timer);
+	hmc_error get_gaugefield_from_device(s_gaugefield* gaugefield);
 //  hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
 
 	/**
@@ -114,11 +113,13 @@ public:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error gaugeobservables(cl_mem gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
+	void gaugeobservables(cl_mem gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
+	void plaquette_device(cl_mem gf);
+	void polyakov_device(cl_mem gf);
 	/**
 	 * This applies stout smearing to a gaugefield 
 	 */
-	hmc_error stout_smear_device(const size_t ls, const size_t gs);
+	hmc_error stout_smear_device();
 	
 	/**
 	 * returns init status
@@ -179,6 +180,9 @@ public:
 	 * Returns device_type
 	 */
 	cl_device_type get_device_type();
+	
+	usetimer * get_copy_to();
+	usetimer * get_copy_on();
 	
 	//private:
 
@@ -278,6 +282,7 @@ public:
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
 	hmc_error get_work_sizes(size_t * ls, size_t * gs, cl_uint * num_groups, cl_device_type dev_type, string name = "dummy");
+	hmc_error get_work_sizes2(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
 	///////////////////////////////////////////////////////////
 	//LZ what follows should eventually be private
 	//heatbath variables
@@ -309,6 +314,12 @@ public:
 	
 	//since this is only applicated to the gaugefield, this should be here...
 	cl_kernel stout_smear;
+	
+	//bunch of timers
+	//this is used to measure data-transfer to and from the device
+	usetimer copy_to;
+	//this is used to measure data-transfer on the device
+	usetimer copy_on;
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
 	usetimer timer_plaquette;
@@ -388,23 +399,21 @@ public:
 	 * Copy the RNG state to the appropriate OpenCL buffer.
 	 *
 	 * @param host_rndarray The RNG state to copy
-	 * @param timer The timer to use to measure the copying time
 	 * @return Error code as defined in hmcerrs.h:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error copy_rndarray_to_device(hmc_ocl_ran* host_rndarray,  usetimer* timer);
+	hmc_error copy_rndarray_to_device(hmc_ocl_ran* host_rndarray);
 
 	/**
 	 * Copy the RNG state from the OpenCL buffer.
 	 *
 	 * @param[out] rndarray The RNG copy target
-	 * @param[in,out] timer The timer to use to measure the copying time
 	 * @return Error code as defined in hmcerrs.h:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error copy_rndarray_from_device(hmc_ocl_ran* rndarray, usetimer* timer);	
+	hmc_error copy_rndarray_from_device(hmc_ocl_ran* rndarray);	
 	
 	/**
 	 * Copy content of a buffer to another buffer inside a queue using 
@@ -412,9 +421,8 @@ public:
 	 * @param in source
 	 * @param out destination
 	 * @param size size of data (out must be equal or bigger than size)
-	 * @param timer timer to measure time used
 	 */	
-	void copy_buffer_on_device(cl_mem in, cl_mem out, size_t size, usetimer* timer);
+	void copy_buffer_on_device(cl_mem in, cl_mem out, size_t size);
 	/**
 	 * Copy content of a buffer on host to a buffer on device inside a queue using 
 	 *     clEnqueueWriteBuffer(queue, dest, CL_TRUE, 0, size, source, 0, 0, NULL);
@@ -422,9 +430,8 @@ public:
 	 * @param source
 	 * @param dest 
 	 * @param size size of data (out must be equal or bigger than size)
-	 * @param timer timer to measure time used
 	 */	
-	void copy_buffer_to_device(void * source, cl_mem dest, size_t size, usetimer* timer);
+	void copy_buffer_to_device(void * source, cl_mem dest, size_t size);
 	/**
 	 * Copy content of a buffer on device to a buffer on host inside a queue using 
 	 *    clEnqueueReadBuffer(queue, source, CL_TRUE, 0, size, dest, 0, NULL, NULL);
@@ -432,9 +439,8 @@ public:
 	 * @param source
 	 * @param dest 
 	 * @param size size of data (out must be equal or bigger than size)
-	 * @param timer timer to measure time used
 	 */
-	void get_buffer_from_device(cl_mem source, void * dest, size_t size, usetimer* timer);
+	void get_buffer_from_device(cl_mem source, void * dest, size_t size);
 
 	int get_num_rndstates();
 

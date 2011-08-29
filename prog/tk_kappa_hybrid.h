@@ -6,35 +6,10 @@
 #define _TKKAPPAH_
 //should only be included in main prog
 
-#include <cstdlib>
-#include <cmath>
-#include <cstdio>
-#include <string>
-#include <vector>
-#include <iostream>
-
-#include "globaldefs.h"
-#include "hmcerrs.h"
-#include "types.h"
-#include "host_operations_complex.h"
-#include "host_geometry.h"
-#include "inputparameters.h"
-#include "host_readgauge.h"
-#include "host_random.h"
-#include "host_update_heatbath.h"
-#include "host_use_timer.h"
+#include "heatbath.h"
 #include "gaugefield.h"
 #include "gaugefield_heatbath.h"
 #include "gaugefield_k_hybrid.h"
-#include "logger.hpp"
-
-#include <omp.h>
-
-string const version = "0.1b";
-using namespace std;
-
-//global random number generator
-Random rnd (seed);
 
 //couple of timers
 usetimer totaltime;
@@ -44,9 +19,5 @@ usetimer plaqtime;
 usetimer updatetime;
 usetimer overrelaxtime;
 usetimer copytime;
-
-//to save gaugeobservables
-hmc_float plaq, splaq, tplaq;
-hmc_complex pol;
 
 #endif /* _TKKAPPAH_ */

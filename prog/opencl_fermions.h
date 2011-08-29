@@ -18,12 +18,12 @@ class Opencl_fermions;
  * to another function inside this class.
  * This type points to a helper-function, which then calls the wanted function.
  */
-typedef hmc_error (*matrix_function_call) (Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-hmc_error M_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-hmc_error Qplus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-hmc_error Qminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-hmc_error QplusQminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-hmc_error Aee_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+typedef void (*matrix_function_call) (Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf);
+void M_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf);
+void Qplus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf);
+void Qminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf);
+void QplusQminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf);
+void Aee_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf);
 
 /**
  * An OpenCL device for fermionic calculations.
@@ -69,67 +69,67 @@ public:
 	// device operations
 
 	//    linear Algebra operations
-	hmc_error convert_to_kappa_format_device(cl_mem inout, const size_t ls, const size_t gs);
-	hmc_error convert_from_kappa_format_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error convert_to_kappa_format_eoprec_device(cl_mem inout, const size_t ls, const size_t gs);
-	hmc_error convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out, const size_t ls, const size_t gs);
+	void convert_to_kappa_format_device(cl_mem inout);
+	void convert_from_kappa_format_device(cl_mem in, cl_mem out);
+	void convert_to_kappa_format_eoprec_device(cl_mem inout);
+	void convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out);
+	void convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out);
 
-	hmc_error set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_mem b, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_mem out);
-	hmc_error set_complex_to_product_device(cl_mem a, cl_mem b, cl_mem out);
-	hmc_error set_float_to_global_squarenorm_device(cl_mem a, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error set_zero_spinorfield_device(cl_mem x, const size_t ls, const size_t gs);
-	hmc_error set_zero_spinorfield_eoprec_device(cl_mem x, const size_t ls, const size_t gs);
-	hmc_error saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out, const size_t ls, const size_t gs);
-	void create_point_source_device(cl_mem inout, int i, int spacepos, int timepos, const size_t ls, const size_t gs);
-	void create_point_source_eoprec_device(cl_mem inout_even, cl_mem inout_odd, cl_mem gf, int i, int spacepos, int timepos, const size_t ls, const size_t gs);
-	void set_spinorfield_cold_device(cl_mem inout, const size_t ls, const size_t gs);
-	void set_eoprec_spinorfield_cold_device(cl_mem inout, const size_t ls, const size_t gs);
+	void set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out);
+	void set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_mem b, cl_mem out);
+	void set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_mem out);
+	void set_complex_to_product_device(cl_mem a, cl_mem b, cl_mem out);
+	void set_float_to_global_squarenorm_device(cl_mem a, cl_mem out);
+	void set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_mem out);
+	void set_zero_spinorfield_device(cl_mem x);
+	void set_zero_spinorfield_eoprec_device(cl_mem x);
+	void saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out);
+	void saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out);
+	void saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out);
+	void saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out);
+	void create_point_source_device(cl_mem inout, int i, int spacepos, int timepos);
+	void create_point_source_eoprec_device(cl_mem inout_even, cl_mem inout_odd, cl_mem gf, int i, int spacepos, int timepos);
+	void set_spinorfield_cold_device(cl_mem inout);
+	void set_eoprec_spinorfield_cold_device(cl_mem inout);
 
 	//    fermionmatrix operations
 	//    non-eoprec
 	//        compound
-	hmc_error M(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-	hmc_error Qplus(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-	hmc_error Qminus(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-	hmc_error QplusQminus(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+	void M(cl_mem in, cl_mem out, cl_mem gf);
+	void Qplus(cl_mem in, cl_mem out, cl_mem gf);
+	void Qminus(cl_mem in, cl_mem out, cl_mem gf);
+	void QplusQminus(cl_mem in, cl_mem out, cl_mem gf);
 	//        explicit
-	hmc_error M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-	hmc_error M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-	hmc_error M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
-	hmc_error gamma5_device(cl_mem inout, const size_t ls, const size_t gs);
+	void M_wilson_device(cl_mem in, cl_mem out, cl_mem gf);
+	void M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf);
+	void M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf);
+	void gamma5_device(cl_mem inout);
 	//    eoprec
 	//        compound
-	hmc_error Aee(cl_mem in, cl_mem out, cl_mem gf, const size_t ls, const size_t gs);
+	void Aee(cl_mem in, cl_mem out, cl_mem gf);
 	//        explicit
-	hmc_error gamma5_eoprec_device(cl_mem inout, const size_t ls, const size_t gs);
-	hmc_error M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error M_tm_sitediagonal_device(cl_mem in, cl_mem out, const size_t ls, const size_t gs);
-	hmc_error dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, const size_t ls, const size_t gs);
+	void gamma5_eoprec_device(cl_mem inout);
+	void M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out);
+	void M_tm_sitediagonal_device(cl_mem in, cl_mem out);
+	void dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd);
 
 	//    solver operations
 	//    non-eoprec
 	/// this calls the solver according to parameter settings using the fermionmatrix f
-	hmc_error solver_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error solver_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer, int cgmax);
 	/// this executes the bicgstab on the device, using the fermionmatrix f
-	hmc_error bicgstab_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error bicgstab_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
 	/// this executes the cg on the device, using the fermionmatrix f 
-	hmc_error cg_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error cg_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
 	//    eoprec
 	/// this calls the solver according to parameter settings using the fermionmatrix f
-	hmc_error solver_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * copytimer, usetimer * singletimer, usetimer * solvertimer, const size_t ls, const size_t gs, int cgmax);	
+	hmc_error solver_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * solvertimer, int cgmax);	
 	/// this executes the eoprec bicgstab on the device, using the fermionmatrix f 
-	hmc_error bicgstab_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax);
-	hmc_error cg_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * copytimer, usetimer* singletimer, const size_t ls, const size_t gs, int cgmax);
+	hmc_error bicgstab_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
+	hmc_error cg_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
 	
 	//    operations needed calculating fermionic observables
-	hmc_error ps_correlator_device(const size_t ls, const size_t gs);
+	void ps_correlator_device(cl_mem in);
 
 	/////////////////////////////////////////////////
 	//functions to get private variables

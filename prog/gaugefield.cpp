@@ -205,35 +205,35 @@ hmc_error Gaugefield::set_gaugefield_hot_new(s_gaugefield * field) {
   return HMC_SUCCESS;
 }
 
-hmc_error Gaugefield::copy_gaugefield_to_devices(usetimer* timer)
+hmc_error Gaugefield::copy_gaugefield_to_devices()
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices()[0].copy_gaugefield_to_device(get_sgf(), timer);
+	hmc_error err = get_devices()[0].copy_gaugefield_to_device(get_sgf());
 	return err;
 }
 
-hmc_error Gaugefield::sync_gaugefield(usetimer* timer)
+hmc_error Gaugefield::sync_gaugefield()
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices()[0].get_gaugefield_from_device(get_sgf(), timer);
+	hmc_error err = get_devices()[0].get_gaugefield_from_device(get_sgf());
 	return err;
 }
 
-hmc_error Gaugefield::copy_rndarray_to_devices(usetimer* timer)
+hmc_error Gaugefield::copy_rndarray_to_devices()
 {
   //LZ: so far, we only use !!! 1 !!! device
   // this function needs to be generalised to several devices and definition of subsets...
-  hmc_error err = get_devices()[0].copy_rndarray_to_device(this->get_rndarray(), timer);
+  hmc_error err = get_devices()[0].copy_rndarray_to_device(this->get_rndarray());
   return err;
 }
 
-hmc_error Gaugefield::copy_rndarray_from_devices(usetimer* timer)
+hmc_error Gaugefield::copy_rndarray_from_devices()
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-  hmc_error err = get_devices()[0].copy_rndarray_from_device(this->get_rndarray(), timer);
+  hmc_error err = get_devices()[0].copy_rndarray_from_device(this->get_rndarray());
 	return err;
 }
 

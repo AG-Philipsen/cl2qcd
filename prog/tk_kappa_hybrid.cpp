@@ -38,7 +38,6 @@ int main(int argc, char* argv[])
 	sourcefileparameters parameters_source;
 
 	Gaugefield_k_hybrid gaugefield;
-	hmc_rndarray rndarray;
 	cl_device_type devicetypes[2];
 
 	devicetypes[0] = CL_DEVICE_TYPE_GPU;
@@ -46,13 +45,9 @@ int main(int argc, char* argv[])
 
 	int num_ocl_devices[2] = {1,1};
 
-	gaugefield.init(num_ocl_devices, 2, devicetypes, &parameters, &inittime);
-	int err = init_random_seeds(rndarray, "rand_seeds", &inittime);
-	if(err) return err;
+	gaugefield.init(num_ocl_devices, 2, devicetypes, &parameters);
 
-
-	gaugefield.copy_gaugefield_to_devices(&copytime);
-	gaugefield.copy_rndarray_to_devices(rndarray, &copytime);
+	gaugefield.copy_gaugefield_to_devices();
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,7 +74,6 @@ int main(int argc, char* argv[])
 	
 	for(int i = 0; i < nsteps/writefreq; i++) {
 
-#pragma omp sections
 	  {
 	    
 	    for(int n=0; n<writefreq; n++) {
@@ -90,8 +84,6 @@ int main(int argc, char* argv[])
 	    cout<<"print"<<endl;
       	    gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str());
 
-#pragma omp section	  
-
 	    hmc_error err;
 	    err = gaugefield.kappa_karsch_gpu (&timer_karsch);
 	    err |= gaugefield.kappa_clover_gpu (&timer_clover);
@@ -101,8 +93,8 @@ int main(int argc, char* argv[])
 	    time_clover += timer_clover.getTime();
 	  
 	  } //end OMP sections
-	  gaugefield.sync_gaugefield(&copytime);	    
-	  if( parameters.get_saveconfigs() == TRUE && ( (i + 1) % savefreq ) == 0 ) 
+	  gaugefield.sync_gaugefield();	    
+	  if( parameters.get_saveconfigs() && ( (i + 1) % savefreq ) == 0 ) 
 	    gaugefield.save(i);
 
  	}
@@ -111,7 +103,7 @@ int main(int argc, char* argv[])
 	logger.info() <<"Measurement TK kappa_karsch: " << time_karsch/1000000. / hmc_float (nsteps) << " s" ;
 	logger.info() <<"Measurement TK kappa_clover: " << time_clover/1000000. / hmc_float (nsteps) << " s" ;
 	
-	gaugefield.sync_gaugefield(&copytime);
+	gaugefield.sync_gaugefield();
 	gaugefield.save(nsteps);
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,7 +111,7 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	totaltime.add();
-	time_output_heatbath(&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime);
+	// FIXME time_output_heatbath(&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime);
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////

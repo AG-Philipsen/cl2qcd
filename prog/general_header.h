@@ -47,15 +47,12 @@ usetimer total_timer;
 usetimer init_timer;
 usetimer perform_timer;
 
-//timers for copying to, from and on devices
-usetimer copy_to_from_dev_timer;
-usetimer copy_on_dev_timer;
-
 //to save gaugeobservables on host
 hmc_float plaq, splaq, tplaq;
 hmc_complex pol;
 
-//output-method for timer above
+//output-method for timer above and the copy-timer from (each) device
+///@todo For hybrid case one will have to add more timer here
 void general_time_output(usetimer * total, usetimer * init_timer, usetimer * perform_timer, usetimer * copy_to_from_dev_timer, usetimer* copy_on_dev_timer, usetimer * plaq_timer, usetimer * poly_timer){
 
 	uint64_t totaltime = (*total).getTime();

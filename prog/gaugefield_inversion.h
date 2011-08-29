@@ -32,7 +32,7 @@ class Gaugefield_inversion : public Gaugefield {
    * Perform inversion on device and print pseudo-scalar correlator to std.
    * Use point sources.
    */
-  hmc_error perform_inversion_pointsource_ps_corr_devices(usetimer* copytimer, usetimer* singletimer, usetimer* solvertimer);
+  hmc_error perform_inversion_pointsource_ps_corr_devices(usetimer* solvertimer);
 
   /**
    * Free device, called by finalize

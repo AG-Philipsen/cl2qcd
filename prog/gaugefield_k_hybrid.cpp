@@ -1,6 +1,6 @@
 #include "gaugefield_k_hybrid.h"
 
-hmc_error Gaugefield_k_hybrid::init_devices(cl_device_type* devicetypes, usetimer* timer){
+hmc_error Gaugefield_k_hybrid::init_devices(cl_device_type* devicetypes, int nstates){
 
 	if(get_num_ocl_devices() != 1) {
 	  logger.fatal() << "Gaugefiel_k needs exactly one device per type.";
@@ -18,10 +18,10 @@ hmc_error Gaugefield_k_hybrid::init_devices(cl_device_type* devicetypes, usetime
 	set_devices(dev_tmp_k,DEV_KAPPA);
 
 	logger.trace()<<"init device for heatbath";
-	get_devices_heatbath()[0].init(devicetypes[DEV_HEATBATH], timer, get_parameters());
+	get_devices_heatbath()[0].init(devicetypes[DEV_HEATBATH], get_parameters(), nstates);
 
 	logger.trace()<<"init device for kappa calculation";
-	get_devices_k()[0].init(devicetypes[DEV_KAPPA], timer, get_parameters());
+	get_devices_k()[0].init(devicetypes[DEV_KAPPA], get_parameters(), nstates);
 
 	return HMC_SUCCESS;
 }
@@ -76,34 +76,18 @@ Opencl_heatbath * Gaugefield_k_hybrid::get_devices_heatbath (){
 }
 
 
-hmc_error Gaugefield_k_hybrid::copy_gaugefield_to_devices(usetimer* timer)
+hmc_error Gaugefield_k_hybrid::copy_gaugefield_to_devices()
 {
-	hmc_error err = get_devices_k()[0].copy_gaugefield_to_device(get_sgf(), timer);
-	err |= get_devices_heatbath()[0].copy_gaugefield_to_device(get_sgf(), timer);
+	hmc_error err = get_devices_k()[0].copy_gaugefield_to_device(get_sgf());
+	err |= get_devices_heatbath()[0].copy_gaugefield_to_device(get_sgf());
 	return err;
 }
-
-
-hmc_error Gaugefield_k_hybrid::copy_rndarray_to_devices(hmc_rndarray host_rndarray,  usetimer* timer)
-{
-	//LZ: so far, we only use !!! 1 !!! device
-	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices_heatbath()[0].copy_rndarray_to_device(host_rndarray, timer);
-	return err;
-}
-
-hmc_error Gaugefield_k_hybrid::copy_rndarray_from_devices(hmc_rndarray rndarray, usetimer* timer)
-{
-	hmc_error err = get_devices_heatbath()[0].copy_rndarray_from_device(rndarray, timer);
-	return err;
-}
-
 
 hmc_error Gaugefield_k_hybrid::heatbath(usetimer * const timer)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-        hmc_error err = get_devices_heatbath()[0].run_heatbath(get_parameters()->get_beta(), timer);
+        hmc_error err = get_devices_heatbath()[0].run_heatbath();
 	return err;
 }
 
@@ -112,7 +96,7 @@ hmc_error Gaugefield_k_hybrid::overrelax(usetimer * const timer)
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 
-	hmc_error err = get_devices_heatbath()[0].run_overrelax(get_parameters()->get_beta(), timer);
+	hmc_error err = get_devices_heatbath()[0].run_overrelax();
 	return err;
 }
 
@@ -136,7 +120,7 @@ hmc_error Gaugefield_k_hybrid::print_gaugeobservables_from_devices(hmc_float * c
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 
-	get_devices_heatbath()[0].gaugeobservables(plaq, tplaq, splaq, pol, plaqtime, polytime);
+	get_devices_heatbath()[0].gaugeobservables(get_devices_heatbath()[0].clmem_gaugefield, plaq, tplaq, splaq, pol);
 	print_gaugeobservables(*plaq, *tplaq, *splaq, *pol, i, gaugeoutname);
 
 	return HMC_SUCCESS;
@@ -176,12 +160,10 @@ hmc_error Gaugefield_k_hybrid::print_TK(const string kappa_karsch_out,const stri
   return HMC_SUCCESS;
 }
 
-
-
-hmc_error Gaugefield_k_hybrid::sync_gaugefield(usetimer* timer)
+hmc_error Gaugefield_k_hybrid::sync_gaugefield()
 {
-	hmc_error err = get_devices_heatbath()[0].get_gaugefield_from_device(get_sgf(), timer);
-	err |= get_devices_k()[0].copy_gaugefield_to_device(get_sgf(), timer);
+	hmc_error err = get_devices_heatbath()[0].get_gaugefield_from_device(get_sgf());
+	err |= get_devices_k()[0].copy_gaugefield_to_device(get_sgf());
 
 	return err;
 }
