@@ -1,0 +1,25 @@
+##################################################################
+##	This is 
+##		heatbath_test_input_6
+##	It should reproduce the data obtained in 
+##		hep-lat/9602007
+##	There, NT=16, NS=16, beta=6.0 is reported to give
+##		P: 0.593678 (24)
+##	after 5000-10000 steps on the thermalized system.
+##	Thus, the error in this setup is expected to be higher!
+##	The output is written to the file
+##		"gaugeobservables_beta6"
+##################################################################
+NS=16
+NT=16
+use_rec12=1
+use_gpu=0
+beta=6
+prec=32
+startcondition=cold
+sourcefile=conf.save
+thermalization=0
+heatbathsteps=20
+overrelaxsteps=4
+savefrequency=10
+print_to_screen=1
