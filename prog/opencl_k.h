@@ -20,12 +20,12 @@ public:
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual hmc_error fill_collect_options(stringstream* collect_options);
+	virtual void fill_collect_options(stringstream* collect_options);
 	/**
 	 * Collect the buffers to generate for OpenCL.
 	 * Virtual method, allows to include more buffers in inherited classes.
 	 */
-	virtual hmc_error fill_buffers();
+	virtual void fill_buffers();
 	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
@@ -34,10 +34,10 @@ public:
 	/**
 	 * Called by the destructor.
 	 */
-	virtual hmc_error finalize();
+	virtual void finalize();
 
-	hmc_error run_kappa_karsch_gpu(const hmc_float beta, usetimer * timer, hmc_float * kappa_karsch_out);
-	hmc_error run_kappa_clover_gpu(const hmc_float beta, usetimer * timer, hmc_float * kappa_clover_out);
+	void run_kappa_karsch_gpu(const hmc_float beta, usetimer * timer, hmc_float * kappa_karsch_out);
+	void run_kappa_clover_gpu(const hmc_float beta, usetimer * timer, hmc_float * kappa_clover_out);
 
 	cl_mem clmem_kappa_karsch;
 	cl_mem clmem_kappa_karsch_buf_glob;

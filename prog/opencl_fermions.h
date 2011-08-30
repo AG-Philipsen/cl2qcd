@@ -36,12 +36,12 @@ public:
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual hmc_error fill_collect_options(stringstream* collect_options);
+	virtual void fill_collect_options(stringstream* collect_options);
 	/**
 	 * Collect the buffers to generate for OpenCL.
 	 * Virtual method, allows to include more buffers in inherited classes.
 	 */
-	virtual hmc_error fill_buffers();
+	virtual void fill_buffers();
 	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
@@ -53,17 +53,13 @@ public:
 	 *
 	 * @param wanted The OpenCL device type to be used, e.g. CL_DEVICE_TYPE_CPU or CL_DEVICE_TYPE_GPU
 	 * @param parameters The parsed input parameters
-	 * @return Error code as defined in hmcerrs.h:
-	 *         @li HMC_OCLERROR if OpenCL initialization / operations fail
-	 *         @li HMC_FILEERROR if one of the kernel files cannot be opened
-	 *         @li HMC_SUCCESS otherwise
 	 */
-	virtual hmc_error init(cl_device_type wanted_device_type, inputparameters* parameters, int nstates);
+	virtual void init(cl_device_type wanted_device_type, inputparameters* parameters, int nstates);
 
-	hmc_error finalize_fermions();
+	void finalize_fermions();
 
 	////////////////////////////////////////////////
-	hmc_error init_fermion_variables(inputparameters* parameters, usetimer* timer);
+	void init_fermion_variables(inputparameters* parameters, usetimer* timer);
 
 	/////////////////////////////////////////
 	// device operations
@@ -116,17 +112,17 @@ public:
 	//    solver operations
 	//    non-eoprec
 	/// this calls the solver according to parameter settings using the fermionmatrix f
-	hmc_error solver_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer, int cgmax);
+	void solver_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer, int cgmax);
 	/// this executes the bicgstab on the device, using the fermionmatrix f
-	hmc_error bicgstab_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
+	bool bicgstab_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
 	/// this executes the cg on the device, using the fermionmatrix f 
-	hmc_error cg_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
+	bool cg_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
 	//    eoprec
 	/// this calls the solver according to parameter settings using the fermionmatrix f
-	hmc_error solver_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * solvertimer, int cgmax);	
+	void solver_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * solvertimer, int cgmax);	
 	/// this executes the eoprec bicgstab on the device, using the fermionmatrix f 
-	hmc_error bicgstab_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
-	hmc_error cg_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
+	bool bicgstab_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
+	bool cg_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
 	
 	//    operations needed calculating fermionic observables
 	void ps_correlator_device(cl_mem in);

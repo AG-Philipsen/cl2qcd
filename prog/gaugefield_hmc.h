@@ -17,20 +17,19 @@ class Gaugefield_hmc : public Gaugefield_inversion {
 
   /**
    * Initializes the devices, to be called by init()
-   * @return Error code as defined in hmcerrs.h
    * @param devicetypes array of cl_device_type handles
    */
-  virtual hmc_error init_devices(cl_device_type* devicetypes);
+  virtual void init_devices(cl_device_type* devicetypes);
 
   /**
    * Free gaugefield and device allocations.
    */
-  virtual hmc_error finalize();
+  virtual void finalize();
 
   /**
    * Free device, called by finalize
    */
-  virtual hmc_error free_devices();
+  virtual void free_devices();
   
   /**
    * Returns private member opencl_k * devices
@@ -39,7 +38,7 @@ class Gaugefield_hmc : public Gaugefield_inversion {
    */
   Opencl_hmc * get_devices_hmc ();
 
-	hmc_error perform_hmc_step(int dev, inputparameters *parameters, hmc_observables *obs, int iter, hmc_float rnd_number);
+	void perform_hmc_step(int dev, inputparameters *parameters, hmc_observables *obs, int iter, hmc_float rnd_number);
 	
 	void print_hmcobservables(hmc_observables obs, int iter, std::string filename);
  private:

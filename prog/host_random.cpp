@@ -49,19 +49,16 @@ inline void nr3_init_state( hmc_ocl_ran * const state, const cl_ulong seed )
 	nr3_int64( state );
 }
 
-int init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seedfile, int const num_rndstates)
+void init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seedfile, int const num_rndstates)
 {
 	const cl_ulong MAX_SEED = 4101842887655102017L;
 
 	FILE * const file = fopen( seedfile, "rb" );
 
-	if( ! file ) {
-		std::cerr << "Unable to open file " << seedfile << std::endl;
-		return HMC_FILEERROR;
-	}
+	if( ! file ) throw File_Exception(seedfile);
 
 	size_t bytes_read = 0;
-	for(size_t i_state = 0; i_state < num_rndstates; ++i_state) {
+	for(size_t i_state = 0; i_state < (size_t)num_rndstates; ++i_state) {
 		cl_ulong seed;
 		int f_err = 1;
 
@@ -74,15 +71,16 @@ int init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seedf
 
 		if( f_err != 1 ) {
 			bytes_read -= sizeof( cl_ulong ); // the last read was unsuccessfull, but we incremented anyways -> correct that.
-			std::cerr << "Ran out of bytes after initializing " << i_state << " states using " << bytes_read << " bytes." << std::endl;
-			return HMC_INVALIDVALUE;
+			std::stringstream errstr;
+			errstr << "Ran out of bytes after initializing " << i_state << " states using " << bytes_read << " bytes.";
+			throw Print_Error_Message(errstr.str());
 		}
 
 		// we successfully got bytes for this state -> initialize
 		nr3_init_state( &hmc_rndarray[i_state], seed );
 	}
 
-	return HMC_SUCCESS;
+	return;
 }
 
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha)

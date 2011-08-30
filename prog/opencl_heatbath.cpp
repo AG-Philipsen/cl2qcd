@@ -7,27 +7,28 @@
 
 using namespace std;
 
-hmc_error Opencl_heatbath::fill_collect_options(stringstream* collect_options)
+void Opencl_heatbath::fill_collect_options(stringstream* collect_options)
 {
   Opencl::fill_collect_options(collect_options);
 	*collect_options <<  " -DBETA=" << get_parameters()->get_beta();
-  return HMC_SUCCESS;
+  return;
 }
 
 
-hmc_error Opencl_heatbath::fill_buffers()
+void Opencl_heatbath::fill_buffers()
 {
   Opencl::fill_buffers();
 
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error Opencl_heatbath::clear_buffers(){
+void Opencl_heatbath::clear_buffers(){
 
   Opencl::clear_buffers();
-  if(clReleaseMemObject(clmem_rndarray) != CL_SUCCESS) exit(HMC_OCLERROR);
+  cl_int clerr = clReleaseMemObject(clmem_rndarray);
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
 
-  return HMC_SUCCESS;
+  return;
 
 }
 
@@ -48,22 +49,33 @@ void Opencl_heatbath::fill_kernels()
 	usetimer noop;
 	timer_heatbath_even.reset();
 #endif
+
+	return;
+
 }
 
-hmc_error Opencl_heatbath::clear_kernels()
+void Opencl_heatbath::clear_kernels()
 {
   Opencl::clear_kernels();
 
-	if(clReleaseKernel(heatbath_even) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(heatbath_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
+  cl_int clerr = CL_SUCCESS;
 
-	if(clReleaseKernel(overrelax_even) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(overrelax_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
+  clerr = clReleaseKernel(heatbath_even);
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 
-	return HMC_SUCCESS;
+  clerr = clReleaseKernel(heatbath_odd);
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+
+  clerr = clReleaseKernel(overrelax_even);
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+
+  clerr = clReleaseKernel(overrelax_odd);
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+
+  return;
 }
 
-hmc_error Opencl_heatbath::run_heatbath()
+void Opencl_heatbath::run_heatbath()
 {
 	cl_int clerr = CL_SUCCESS;
 
@@ -74,48 +86,36 @@ hmc_error Opencl_heatbath::run_heatbath()
 	  global_work_size = min(max_compute_units, (cl_uint) this->Opencl::get_num_rndstates());
 
 	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), &clmem_gaugefield);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg0 at heatbath_even failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(heatbath_even, 2, sizeof(cl_mem), &clmem_rndarray);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg3 at heatbath_even failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	for(int i = 0; i < NDIM; i++) {
 		clerr = clSetKernelArg(heatbath_even, 1, sizeof(int), &i);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "clSetKernelArg2 at heatbath_even failed, aborting...";
-			exit(HMC_OCLERROR);
-		}
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 		enqueueKernel(heatbath_even, global_work_size);
 	}
 
 	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), &clmem_gaugefield);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg0 at heatbath_odd failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(heatbath_odd, 2, sizeof(cl_mem), &clmem_rndarray);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg3 at heatbath_odd failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	for(int i = 0; i < NDIM; i++) {
 		clerr = clSetKernelArg(heatbath_odd, 1, sizeof(int), &i);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "clSetKernelArg2 at heatbath_odd failed, aborting...";
-			exit(HMC_OCLERROR);
-		}
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
 		enqueueKernel(heatbath_odd, global_work_size);
 	}
-	clFinish(queue);
-	return HMC_SUCCESS;
+	clerr = clFinish(queue);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
+	return;
 
 }
 
-hmc_error Opencl_heatbath::run_overrelax()
+void Opencl_heatbath::run_overrelax()
 {
 	cl_int clerr = CL_SUCCESS;
 
@@ -126,44 +126,33 @@ hmc_error Opencl_heatbath::run_overrelax()
 	  global_work_size = min(max_compute_units, (cl_uint) this->Opencl::get_num_rndstates());
 
 	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), &clmem_gaugefield);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg1 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(overrelax_even, 2, sizeof(cl_mem), &clmem_rndarray);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg3 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	for(int i = 0; i < NDIM; i++) {
 		clerr = clSetKernelArg(overrelax_even, 1, sizeof(int), &i);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "clSetKernelArg4 failed, aborting...";
-			exit(HMC_OCLERROR);
-		}
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 		enqueueKernel(overrelax_even, global_work_size);
 	}
 
 	clerr = clSetKernelArg(overrelax_odd, 0, sizeof(cl_mem), &clmem_gaugefield);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg5 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(overrelax_odd, 2, sizeof(cl_mem), &clmem_rndarray);
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "clSetKernelArg7 failed, aborting...";
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	for(int i = 0; i < NDIM; i++) {
 		clerr = clSetKernelArg(overrelax_odd, 1, sizeof(int), &i);
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "clSetKernelArg8 failed, aborting...";
-			exit(HMC_OCLERROR);
-		}
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 		enqueueKernel(overrelax_odd, global_work_size);
 	}
-	clFinish(queue);
-	return HMC_SUCCESS;
+	clerr = clFinish(queue);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
+	return;
 }
 
 #ifdef _PROFILING_

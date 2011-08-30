@@ -1,6 +1,6 @@
 #include "host_operations_gaugefield.h"
 
-hmc_error copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, s_gaugefield* gaugefield){
+void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, s_gaugefield* gaugefield){
   for(int spacepos=0; spacepos<NSPACE*NSPACE*NSPACE; spacepos++) {
     for(int t=0; t<NTIME; t++) {
       for(int mu=0; mu<NDIM; mu++) {
@@ -8,10 +8,10 @@ hmc_error copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, s_gaugefield* ga
       }
     }
   }
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error copy_from_ocl_format(s_gaugefield* gaugefield, ocl_s_gaugefield* host_gaugefield){
+void copy_from_ocl_format(s_gaugefield* gaugefield, ocl_s_gaugefield* host_gaugefield){
   for(int spacepos=0; spacepos<NSPACE*NSPACE*NSPACE; spacepos++) {
     for(int t=0; t<NTIME; t++) {
       for(int mu=0; mu<NDIM; mu++) {
@@ -19,10 +19,10 @@ hmc_error copy_from_ocl_format(s_gaugefield* gaugefield, ocl_s_gaugefield* host_
       }
     }
   }
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error set_gaugefield_cold(hmc_gaugefield * field) {
+void set_gaugefield_cold(hmc_gaugefield * field) {
   for(int t=0; t<NTIME; t++) {
     for(int n=0; n<VOLSPACE; n++) {
       for(int mu=0; mu<NDIM; mu++) {
@@ -32,10 +32,10 @@ hmc_error set_gaugefield_cold(hmc_gaugefield * field) {
       }
     }
   }
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error set_gaugefield_hot(hmc_gaugefield * field) {
+void set_gaugefield_hot(hmc_gaugefield * field) {
   for(int t=0; t<NTIME; t++) {
     for(int n=0; n<VOLSPACE; n++) {
       for(int mu=0; mu<NDIM; mu++) {
@@ -45,14 +45,15 @@ hmc_error set_gaugefield_hot(hmc_gaugefield * field) {
       }
     }
   }
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error copy_gaugefield_from_ildg_format(hmc_gaugefield * gaugefield, hmc_float * gaugefield_tmp, int check){
+void copy_gaugefield_from_ildg_format(hmc_gaugefield * gaugefield, hmc_float * gaugefield_tmp, int check){
   //little check if arrays are big enough
   if (VOL4D*NDIM*NC*NC*2 != check){
-    std::cout << "error in setting gaugefield to source values!! "<< std::endl << "Check global settings!!" << std::endl << std::endl;
-    return HMC_STDERR;
+    std::stringstream errstr;
+    errstr<<"Error in setting gaugefield to source values!!\nCheck global settings!!";
+    throw Print_Error_Message(errstr.str(),__FILE__,__LINE__);
   }
 
   int cter=0;
@@ -94,14 +95,15 @@ hmc_error copy_gaugefield_from_ildg_format(hmc_gaugefield * gaugefield, hmc_floa
   }}}}}
 
   if(cter*2 != check) {
-    std::cout << "error in setting gaugefield to source values! there were " << cter*2 << " vals set and not " << check << std::endl;
-    return HMC_STDERR;
+    std::stringstream errstr;
+    errstr << "Error in setting gaugefield to source values! there were " << cter*2 << " vals set and not " << check <<".";
+    throw Print_Error_Message(errstr.str(),__FILE__,__LINE__);
   }
 
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error copy_gaugefield_to_ildg_format(ildg_gaugefield * dest, hmc_gaugefield * source){
+void copy_gaugefield_to_ildg_format(ildg_gaugefield * dest, hmc_gaugefield * source){
   
   int cter=0;
   //our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
@@ -157,7 +159,7 @@ hmc_error copy_gaugefield_to_ildg_format(ildg_gaugefield * dest, hmc_gaugefield 
 #endif
   }}}}}
   
-  return HMC_SUCCESS;
+  return;
 }
 
 hmc_complex global_trace_su3(hmc_gaugefield * field, int mu) {
@@ -178,7 +180,7 @@ hmc_complex global_trace_su3(hmc_gaugefield * field, int mu) {
 
 
 
-hmc_error get_su3matrix(hmc_su3matrix * out, hmc_gaugefield * in, int spacepos, int timepos, int mu) {
+void get_su3matrix(hmc_su3matrix * out, hmc_gaugefield * in, int spacepos, int timepos, int mu) {
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*(NC-1); n++) (*out)[n] = (*in)[n][mu][spacepos][timepos];
 #else
@@ -188,10 +190,10 @@ hmc_error get_su3matrix(hmc_su3matrix * out, hmc_gaugefield * in, int spacepos, 
     }
   }
 #endif
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error put_su3matrix(hmc_gaugefield * field, hmc_su3matrix * in, int spacepos, int timepos, int mu) {
+void put_su3matrix(hmc_gaugefield * field, hmc_su3matrix * in, int spacepos, int timepos, int mu) {
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*(NC-1); n++) (*field)[n][mu][spacepos][timepos] = (*in)[n];
 #else
@@ -201,7 +203,7 @@ hmc_error put_su3matrix(hmc_gaugefield * field, hmc_su3matrix * in, int spacepos
     }
   }
 #endif
-  return HMC_SUCCESS;
+  return;
 }
 
 void local_polyakov(hmc_gaugefield * field, hmc_su3matrix * prod, int n){
@@ -244,7 +246,7 @@ void local_plaquette(hmc_gaugefield * field, hmc_su3matrix * prod, int n, int t,
 }
 
 /** @todo memcpy ... */
-hmc_error copy_gaugefield(hmc_gaugefield * source, hmc_gaugefield * dest){
+void copy_gaugefield(hmc_gaugefield * source, hmc_gaugefield * dest){
 	// copies source to destination within cpu memory, layer for gaugefield array
 	return complexcopy((hmc_complex *)source, (hmc_complex *)dest, GAUGEFIELDSIZE); // SL: not tested
 }

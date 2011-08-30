@@ -25,7 +25,7 @@ void Aee_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf) {
 
 //Opencl_fermions class functions
 
-hmc_error Opencl_fermions::fill_collect_options(stringstream* collect_options)
+void Opencl_fermions::fill_collect_options(stringstream* collect_options)
 {
 
 	Opencl::fill_collect_options(collect_options);
@@ -72,10 +72,10 @@ hmc_error Opencl_fermions::fill_collect_options(stringstream* collect_options)
 			break;
 	}
 
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error Opencl_fermions::fill_buffers()
+void Opencl_fermions::fill_buffers()
 {
 	Opencl::fill_buffers();
 	
@@ -148,17 +148,12 @@ hmc_error Opencl_fermions::fill_buffers()
 	hmc_complex one = hmc_complex_one;
 	hmc_complex minusone = hmc_complex_minusone;
 	clerr = clEnqueueWriteBuffer(queue, clmem_one, CL_TRUE, 0, complex_size, &one, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "... writing clmem_one failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
-	clerr = clEnqueueWriteBuffer(queue, clmem_minusone, CL_TRUE, 0, complex_size, &minusone, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "... writing clmem_minusone failed, aborting." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clEnqueueWriteBuffer",__FILE__,__LINE__);
 
-	return HMC_SUCCESS;
+	clerr = clEnqueueWriteBuffer(queue, clmem_minusone, CL_TRUE, 0, complex_size, &minusone, 0, 0, NULL);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clEnqueueWriteBuffer",__FILE__,__LINE__);
+
+	return;
 }
 
 void Opencl_fermions::fill_kernels()
@@ -177,12 +172,10 @@ void Opencl_fermions::fill_kernels()
 		M_tm_minus = createKernel("M_tm_minus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m_tm_minus.cl";
 	}
 	else if(get_parameters()->get_fermact() == CLOVER){
-		logger.fatal() << "no kernels for CLOVER-discretization implemented yet, aborting... ";
-		exit (HMC_STDERR);
+	  throw Print_Error_Message("no kernels for CLOVER-discretization implemented yet, aborting... ",__FILE__,__LINE__);
 	}
 	else{
-		logger.fatal() << "there was a problem with which fermion-discretization to use, aborting... ";
-		exit (HMC_STDERR);
+	  throw Print_Error_Message("there was a problem with which fermion-discretization to use, aborting... ",__FILE__,__LINE__);
 	}
 	
 	gamma5 = createKernel("gamma5") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_gamma5.cl";
@@ -226,10 +219,10 @@ void Opencl_fermions::fill_kernels()
 	}
 }
 
-hmc_error Opencl_fermions::init(cl_device_type wanted_device_type, inputparameters* parameters, int nstates)
+void Opencl_fermions::init(cl_device_type wanted_device_type, inputparameters* parameters, int nstates)
 {
-        hmc_error err = Opencl::init(wanted_device_type, parameters, nstates);
-	return err;
+        Opencl::init(wanted_device_type, parameters, nstates);
+	return;
 }
 
 void Opencl_fermions::convert_to_kappa_format_device(cl_mem inout)
@@ -240,10 +233,8 @@ void Opencl_fermions::convert_to_kappa_format_device(cl_mem inout)
 	this->get_work_sizes2(convert_to_kappa_format, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(convert_to_kappa_format, 0, sizeof(cl_mem), &inout);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( convert_to_kappa_format, gs2, ls2);
 }
 
@@ -255,15 +246,11 @@ void Opencl_fermions::convert_from_kappa_format_device(cl_mem in, cl_mem out)
 	this->get_work_sizes2(convert_from_kappa_format, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(convert_from_kappa_format, 0, sizeof(cl_mem), &in);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(convert_from_kappa_format, 1, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( convert_from_kappa_format , gs2, ls2);
 }
 
@@ -274,21 +261,15 @@ void Opencl_fermions::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem 
 	this->get_work_sizes2(convert_from_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(convert_from_eoprec,0,sizeof(cl_mem),&in1); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+  	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
   clerr = clSetKernelArg(convert_from_eoprec,1,sizeof(cl_mem),&in2); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
   clerr = clSetKernelArg(convert_from_eoprec,2,sizeof(cl_mem),&out); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-	enqueueKernel(convert_from_eoprec , gs2, ls2);
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
+  enqueueKernel(convert_from_eoprec , gs2, ls2);
 }
 
 	
@@ -298,11 +279,9 @@ void Opencl_fermions::convert_to_kappa_format_eoprec_device(cl_mem in){
 	cl_uint num_groups;
 	this->get_work_sizes2(convert_to_kappa_format_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(convert_to_kappa_format_eoprec,0,sizeof(cl_mem),&in); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+	int clerr = clSetKernelArg(convert_to_kappa_format_eoprec,0,sizeof(cl_mem),&in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__); 
+
 	enqueueKernel(convert_to_kappa_format_eoprec , gs2, ls2);
 }
 
@@ -313,15 +292,11 @@ void Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem 
 	this->get_work_sizes2(convert_from_kappa_format_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(convert_from_kappa_format_eoprec, 0, sizeof(cl_mem), &in);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__); 
+
 	clerr = clSetKernelArg(convert_from_kappa_format_eoprec, 1, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__); 
+
 	enqueueKernel(convert_from_kappa_format_eoprec , gs2, ls2);
 }
 
@@ -375,21 +350,15 @@ void Opencl_fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf){
 	this->get_work_sizes2(M_wilson, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
   int clerr = clSetKernelArg(M_wilson,0,sizeof(cl_mem),&in); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
   clerr = clSetKernelArg(M_wilson,1,sizeof(cl_mem),&gf);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
   clerr = clSetKernelArg(M_wilson,2,sizeof(cl_mem),&out);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
-	enqueueKernel( M_wilson, gs2, ls2);
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+  
+  enqueueKernel( M_wilson, gs2, ls2);
 }
 
 void Opencl_fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf){
@@ -399,20 +368,14 @@ void Opencl_fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf){
 	this->get_work_sizes2(M_tm_plus, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
   int clerr = clSetKernelArg(M_tm_plus,0,sizeof(cl_mem),&in); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
   clerr = clSetKernelArg(M_tm_plus,1,sizeof(cl_mem),&gf);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
   clerr = clSetKernelArg(M_tm_plus,2,sizeof(cl_mem),&out);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( M_tm_plus, gs2, ls2);
 }
 
@@ -423,20 +386,14 @@ void Opencl_fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf){
 	this->get_work_sizes2(M_tm_minus, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
   int clerr = clSetKernelArg(M_tm_minus,0,sizeof(cl_mem),&in); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
   clerr = clSetKernelArg(M_tm_minus,1,sizeof(cl_mem),&gf);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
   clerr = clSetKernelArg(M_tm_minus,2,sizeof(cl_mem),&out);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( M_tm_minus, gs2, ls2);
 }
 
@@ -447,10 +404,8 @@ void Opencl_fermions::gamma5_device(cl_mem inout){
 	this->get_work_sizes2(gamma5, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(gamma5,0,sizeof(cl_mem),&inout); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel(gamma5 , gs2, ls2);
 }
 
@@ -484,10 +439,8 @@ void Opencl_fermions::gamma5_eoprec_device(cl_mem inout){
 	this->get_work_sizes2(gamma5_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(gamma5_eoprec,0,sizeof(cl_mem),&inout); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( gamma5_eoprec, gs2, ls2);
 }
 
@@ -500,25 +453,17 @@ void Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int
 	this->get_work_sizes2(dslash_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(dslash_eoprec,0,sizeof(cl_mem),&in); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
   clerr = clSetKernelArg(dslash_eoprec,1,sizeof(cl_mem),&out);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
   clerr = clSetKernelArg(dslash_eoprec,2,sizeof(cl_mem),&gf);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
   clerr = clSetKernelArg(dslash_eoprec,3,sizeof(int),&eo);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 3 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }  
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel(dslash_eoprec , gs2, ls2);
 }
 
@@ -530,15 +475,11 @@ void Opencl_fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out)
 	this->get_work_sizes2(M_tm_inverse_sitediagonal, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 0, sizeof(cl_mem), &in);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 1, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( M_tm_inverse_sitediagonal, gs2, ls2);
 }
 
@@ -550,15 +491,11 @@ void Opencl_fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out)
 	this->get_work_sizes2(M_tm_sitediagonal, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_sitediagonal, 0, sizeof(cl_mem), &in);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(M_tm_sitediagonal, 1, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel(M_tm_sitediagonal , gs2, ls2);
 }
 
@@ -571,25 +508,17 @@ void Opencl_fermions::saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out)
 	this->get_work_sizes2(saxpy, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(saxpy, 0, sizeof(cl_mem), &x);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(saxpy, 1, sizeof(cl_mem), &y);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(saxpy, 2, sizeof(cl_mem), &alpha);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 2 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+     
 	clerr = clSetKernelArg(saxpy, 3, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 3 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel(saxpy , gs2, ls2);
 }
 
@@ -600,10 +529,8 @@ void Opencl_fermions::set_spinorfield_cold_device(cl_mem inout){
 	this->get_work_sizes2(set_spinorfield_cold, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(set_spinorfield_cold,0,sizeof(cl_mem),&inout); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel(set_spinorfield_cold , gs2, ls2);
 }
 
@@ -614,10 +541,8 @@ void Opencl_fermions::set_eoprec_spinorfield_cold_device(cl_mem inout){
 	this->get_work_sizes2(set_eoprec_spinorfield_cold, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(set_eoprec_spinorfield_cold,0,sizeof(cl_mem),&inout); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel(set_eoprec_spinorfield_cold , gs2, ls2);
 }
 
@@ -628,25 +553,17 @@ void Opencl_fermions::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_m
 	this->get_work_sizes2(saxpy_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(saxpy_eoprec, 0, sizeof(cl_mem), &x);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(saxpy_eoprec, 1, sizeof(cl_mem), &y);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(saxpy_eoprec, 2, sizeof(cl_mem), &alpha);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 2 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(saxpy_eoprec, 3, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 3 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( saxpy_eoprec, gs2, ls2);
 }
 
@@ -658,35 +575,23 @@ void Opencl_fermions::saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha
 	this->get_work_sizes2(saxsbypz, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(saxsbypz, 0, sizeof(cl_mem), &x);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(saxsbypz, 1, sizeof(cl_mem), &y);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(saxsbypz, 2, sizeof(cl_mem), &z);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 2 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(saxsbypz, 3, sizeof(cl_mem), &alpha);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 3 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(saxsbypz, 4, sizeof(cl_mem), &beta);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 4 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(saxsbypz, 5, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 5 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( saxsbypz, gs2, ls2);
 }
 
@@ -698,35 +603,23 @@ void Opencl_fermions::saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_me
 	this->get_work_sizes2(saxsbypz_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(saxsbypz_eoprec, 0, sizeof(cl_mem), &x);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(saxsbypz_eoprec, 1, sizeof(cl_mem), &y);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(saxsbypz_eoprec, 2, sizeof(cl_mem), &z);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 2 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(saxsbypz_eoprec, 3, sizeof(cl_mem), &alpha);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 3 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(saxsbypz_eoprec, 4, sizeof(cl_mem), &beta);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 4 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(saxsbypz_eoprec, 5, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 5 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( saxsbypz_eoprec, gs2, ls2);
 }
 
@@ -741,40 +634,29 @@ void Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem b, c
 
 	//set arguments
 	int clerr = clSetKernelArg(scalar_product, 0, sizeof(cl_mem), &a);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(scalar_product, 1, sizeof(cl_mem), &b);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	
 	clerr = clSetKernelArg(scalar_product, 2, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 2 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
 
 	clerr = clSetKernelArg(scalar_product, 3, sizeof(hmc_complex) * ls2, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 3 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel(scalar_product , gs2, ls2);
 
 	/** @todo Here the wait is needed. Replace this call by a clWaitForEvents! */
-	clFinish(queue);
+	clerr = clFinish(queue);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(scalar_product_reduction, 1, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( scalar_product_reduction, gs2, ls2);
 }
 
@@ -789,37 +671,27 @@ void Opencl_fermions::set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_m
 	
 	//set arguments
 	int clerr = clSetKernelArg(scalar_product_eoprec, 0, sizeof(cl_mem), &a);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(scalar_product_eoprec, 1, sizeof(cl_mem), &b);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(scalar_product_eoprec, 2, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 2 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(scalar_product_eoprec, 3, sizeof(hmc_complex) * ls2, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 3 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( scalar_product_eoprec, gs2, ls2);
-	clFinish(queue);
+	clerr = clFinish(queue);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(scalar_product_reduction, 1, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( scalar_product_reduction, gs2, ls2);
 }
 
@@ -832,20 +704,14 @@ void Opencl_fermions::set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_mem out
 	this->get_work_sizes2(ratio, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(ratio, 0, sizeof(cl_mem), &a);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(ratio, 1, sizeof(cl_mem), &b);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(ratio, 2, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 2 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	
 	//CP:this needs only one kernel!!
 	ls2 = 1;
 	gs2 = 1;
@@ -860,20 +726,14 @@ void Opencl_fermions::set_complex_to_product_device(cl_mem a, cl_mem b, cl_mem o
 	this->get_work_sizes2(product, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(product, 0, sizeof(cl_mem), &a);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(product, 1, sizeof(cl_mem), &b);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(product, 2, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 2 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	//CP:this needs only one kernel!!
 	ls2 = 1;
 	gs2 = 1;
@@ -891,33 +751,25 @@ void Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_mem out
 	
 	//set arguments
 	int clerr = clSetKernelArg(global_squarenorm, 0, sizeof(cl_mem), &a);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	//CP: these do not have to be args of the function since they are global objects to the class opencl??
 	clerr = clSetKernelArg(global_squarenorm, 1, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(global_squarenorm, 2, sizeof(hmc_float) * ls2, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 2 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel(global_squarenorm , gs2, ls2);
-	clFinish(queue);
+	clerr = clFinish(queue);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( global_squarenorm_reduction, gs2, ls2);
 }
 
@@ -932,33 +784,26 @@ void Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_
 	if( clmem_global_squarenorm_buf_glob == 0 ) clmem_global_squarenorm_buf_glob = create_rw_buffer(global_buf_size_float);	
 	
 	int clerr = clSetKernelArg(global_squarenorm_eoprec, 0, sizeof(cl_mem), &a);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	//CP: these do not have to be args of the function since they are global objects to the class opencl??
 	clerr = clSetKernelArg(global_squarenorm_eoprec, 1, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(global_squarenorm_eoprec, 2, sizeof(hmc_float) * ls2, NULL);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 2 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( global_squarenorm_eoprec, gs2, ls2);
+
 	clFinish(queue);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( global_squarenorm_reduction, gs2, ls2);
 }
 
@@ -970,10 +815,8 @@ void Opencl_fermions::set_zero_spinorfield_device(cl_mem x)
 	this->get_work_sizes2(set_zero_spinorfield, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(set_zero_spinorfield, 0, sizeof(cl_mem), &x);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel(set_zero_spinorfield , gs2, ls2);
 }
 
@@ -985,14 +828,12 @@ void Opencl_fermions::set_zero_spinorfield_eoprec_device(cl_mem x)
 	this->get_work_sizes2(set_zero_spinorfield_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(set_zero_spinorfield_eoprec, 0, sizeof(cl_mem), &x);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( set_zero_spinorfield_eoprec, gs2, ls2);
 }
 
-hmc_error Opencl_fermions::bicgstab_device( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
+bool Opencl_fermions::bicgstab_device( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
 {
 
 int debug = 0;
@@ -1137,7 +978,7 @@ if(debug){
 // 
 // 			cout << "|s|^2 is too small to continue..." << endl;
 // 
-// 			return HMC_SUCCESS;
+// 			return;
 // 		}
 		
 
@@ -1204,7 +1045,7 @@ if(debug){
 			cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << epssquare << endl;
 			cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << epssquare << endl;
 			if(trueresid < epssquare)
-				return HMC_SUCCESS;
+				return true;
 			else {
 				cout << "trueresiduum not small enough" <<endl;
 // 				hmc_complex s_norm;
@@ -1217,7 +1058,7 @@ if(debug){
 // 				//check if |s|^2 is too small
 // 				if(s_norm.re < epssquare){
 // 					cout << "|s|^2 is too small to continue..." << endl;
-// // 					return HMC_SUCCESS;
+// // 					return;
 // 				}
 			}
 		} 
@@ -1225,10 +1066,10 @@ if(debug){
 			printf("residuum at iter%i is:\t%.10e\n", iter, resid);//cout << "residuum:\t" << resid << endl;
 		}
 	}
-	return HMC_STDERR;
+	return false;
 }
 
-hmc_error Opencl_fermions::bicgstab_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
+bool Opencl_fermions::bicgstab_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
 {
 	//CP: these have to be on the host
 	hmc_float resid;
@@ -1293,17 +1134,17 @@ hmc_error Opencl_fermions::bicgstab_eoprec_device(matrix_function_call f, cl_mem
 			get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
 			//cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
 			if(trueresid < epssquare)
-				return HMC_SUCCESS;
+				return true;
 		} else {
 			//      cout << "residuum:\t" << resid << endl;
 		}
 
 	}
 
-	return HMC_SUCCESS;
+	return false;
 }
 
-hmc_error Opencl_fermions::cg_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
+bool Opencl_fermions::cg_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
 {
 	//CP: these have to be on the host
 	hmc_float resid;
@@ -1350,7 +1191,7 @@ hmc_error Opencl_fermions::cg_device(matrix_function_call f, cl_mem inout, cl_me
 			//???
 			//copy_buffer_on_device(clmem_rhat, clmem_inout, sizeof(spinor) * SPINORFIELDSIZE);
 
-			return HMC_SUCCESS;
+			return true;
 		} else {
 			//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
 			set_complex_to_scalar_product_device(clmem_rhat, clmem_rhat, clmem_rho_next);
@@ -1372,44 +1213,53 @@ hmc_error Opencl_fermions::cg_device(matrix_function_call f, cl_mem inout, cl_me
 
 		}
 	}
-	return HMC_SUCCESS;
+	return false;
 }
 
-hmc_error Opencl_fermions::cg_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax){
+bool Opencl_fermions::cg_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax){
 	/// to be implemented if the above one has been checked..
-	return HMC_SUCCESS;
+	return false;
 }
 
 
-hmc_error Opencl_fermions::solver_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer, int cgmax)
+void Opencl_fermions::solver_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer, int cgmax)
 {
+
+  bool converged = false;
+
 	(*solvertimer).reset();
 	convert_to_kappa_format_device(clmem_inout);
 	convert_to_kappa_format_device(clmem_source);
 	if(get_parameters()->get_use_cg() == true)
-	 	cg_device(f, inout, source, gf, cgmax);
+	 	converged = cg_device(f, inout, source, gf, cgmax);
 	else 
-		bicgstab_device(f, inout, source, gf, cgmax);
+		converged = bicgstab_device(f, inout, source, gf, cgmax);
 	convert_from_kappa_format_device(clmem_inout, clmem_inout);
 	convert_from_kappa_format_device(clmem_source, clmem_source);
 	clFinish(queue);
 	(*solvertimer).add();
 
-	return HMC_SUCCESS;
+			if (converged == false) logger.debug() << "\t\t\tsolver did not solve!!";
+			else logger.debug() << "\t\t\tsolver solved!";
+
+	return;
 }
 
 
-hmc_error Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * solvertimer, int cgmax)
+void Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * solvertimer, int cgmax)
 {
+
+  bool converged = false;
+
 	(*solvertimer).reset();
 
 	//CP: even solution
 	convert_to_kappa_format_eoprec_device(clmem_inout_eoprec);
 	convert_to_kappa_format_eoprec_device(clmem_source_even);
 	if(get_parameters()->get_use_cg() == true)
-	 	cg_eoprec_device(f, inout_eo, source_even, gf, cgmax);
+	 	converged = cg_eoprec_device(f, inout_eo, source_even, gf, cgmax);
 	else 
-		bicgstab_eoprec_device(f, inout_eo, source_even, gf, cgmax);
+		converged = bicgstab_eoprec_device(f, inout_eo, source_even, gf, cgmax);
 
 	//P: odd solution
 	/** @todo CP: perhaps one can save some variables used here */
@@ -1432,7 +1282,12 @@ hmc_error Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem i
 	}
 	clFinish(queue);
 	(*solvertimer).add();
-	return HMC_SUCCESS;
+
+
+			if (converged == false) logger.debug() << "\t\t\tsolver did not solve!!";
+			else logger.debug() << "\t\t\tsolver solved!";
+
+	return;
 }
 
 void Opencl_fermions::create_point_source_device(cl_mem inout, int i, int spacepos, int timepos)
@@ -1445,25 +1300,17 @@ void Opencl_fermions::create_point_source_device(cl_mem inout, int i, int spacep
 	this->get_work_sizes2(create_point_source, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(create_point_source, 0, sizeof(cl_mem), &inout);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(create_point_source, 1, sizeof(int), &i);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(create_point_source, 2, sizeof(int), &spacepos);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 2 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(create_point_source, 3, sizeof(int), &timepos);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 3 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( create_point_source, gs2, ls2);
 }
 
@@ -1488,28 +1335,18 @@ void Opencl_fermions::create_point_source_eoprec_device(cl_mem inout_even, cl_me
 	//CP: this is different than the host code, where this is done implicitly when converting the normal source to even/odd
 	if(evenodd == 1) {
 		clerr = clSetKernelArg(create_point_source_eoprec, 0, sizeof(cl_mem), &inout_odd);
-		if(clerr != CL_SUCCESS) {
-			cout << "clSetKernelArg 0 failed with " << clerr << " , aborting..." << endl;
-			exit(HMC_OCLERROR);
-		}
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
   }
 	else {
 		clerr = clSetKernelArg(create_point_source_eoprec,0,sizeof(cl_mem),&clmem_tmp_eoprec_2);
-		if(clerr!=CL_SUCCESS) {
-		  cout<<"clSetKernelArg 0 failed with " << clerr << " , aborting..."<<endl;
-    exit(HMC_OCLERROR);
-		}		
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
 	}
 	clerr = clSetKernelArg(create_point_source_eoprec,1,sizeof(int),&i);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 1 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(create_point_source_eoprec,2,sizeof(int),&n);
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 2 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel(create_point_source_eoprec , gs2, ls2);
 
 	if(get_parameters()->get_fermact() == WILSON){
@@ -1531,10 +1368,8 @@ void Opencl_fermions::ps_correlator_device(cl_mem in){
 	this->get_work_sizes2(ps_correlator, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(ps_correlator,0,sizeof(cl_mem),&in); 
-  if(clerr!=CL_SUCCESS) {
-    cout<<"clSetKernelArg 0 failed, aborting..."<<endl;
-    exit(HMC_OCLERROR);
-  }
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
   ///@todo improve this
 	ls2 = 1;
 	gs2 = 1;
@@ -1586,82 +1421,144 @@ cl_mem Opencl_fermions::get_clmem_minusone()
 	return clmem_minusone;
 }
 
-hmc_error Opencl_fermions::finalize_fermions()
+void Opencl_fermions::finalize_fermions()
 {
+  cl_int clerr = CL_SUCCESS;
 
-	if(clReleaseKernel(ps_correlator) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(set_spinorfield_cold) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(M_wilson) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(saxpy) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(saxsbypz) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(scalar_product) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(scalar_product_reduction) != CL_SUCCESS) exit(HMC_OCLERROR);
+	clerr = clReleaseKernel(ps_correlator);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(set_spinorfield_cold);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(M_wilson);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(saxpy);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(saxsbypz);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(scalar_product);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(scalar_product_reduction);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 
-	if(clReleaseKernel(set_zero_spinorfield) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(global_squarenorm) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(global_squarenorm_reduction) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(ratio) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(product) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(convert_to_kappa_format) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(convert_from_kappa_format) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseKernel(create_point_source) != CL_SUCCESS) exit(HMC_OCLERROR);
-
-	if(get_parameters()->get_use_eo() == false) {
-		if(clReleaseKernel(convert_to_kappa_format_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(convert_from_kappa_format_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(dslash_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(saxpy_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(scalar_product_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(set_zero_spinorfield_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(global_squarenorm_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(create_point_source_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(M_tm_sitediagonal) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseKernel(M_tm_inverse_sitediagonal) != CL_SUCCESS) exit(HMC_OCLERROR);
-	}
-
-	if(clReleaseMemObject(clmem_inout) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_source) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_rn) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_rhat) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_v) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_p) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_s) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_t) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_aux) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_tmp) != CL_SUCCESS) exit(HMC_OCLERROR);
+	clerr = clReleaseKernel(set_zero_spinorfield);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(global_squarenorm);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(global_squarenorm_reduction);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(ratio);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(product);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(convert_to_kappa_format);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(convert_from_kappa_format);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(create_point_source);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 
 	if(get_parameters()->get_use_eo() == false) {
-		if(clReleaseMemObject(clmem_inout_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_source_even) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_source_odd) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_rn_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_rhat_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_v_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_p_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_s_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_t_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_aux_eoprec) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_tmp_eoprec_1) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_tmp_eoprec_2) != CL_SUCCESS) exit(HMC_OCLERROR);
-		if(clReleaseMemObject(clmem_tmp_eoprec_3) != CL_SUCCESS) exit(HMC_OCLERROR);
+		clerr = clReleaseKernel(convert_to_kappa_format_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		clerr = clReleaseKernel(convert_from_kappa_format_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		clerr = clReleaseKernel(dslash_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		clerr = clReleaseKernel(saxpy_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		clerr = clReleaseKernel(scalar_product_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		clerr = clReleaseKernel(set_zero_spinorfield_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		clerr = clReleaseKernel(global_squarenorm_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		clerr = clReleaseKernel(create_point_source_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		clerr = clReleaseKernel(M_tm_sitediagonal);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		clerr = clReleaseKernel(M_tm_inverse_sitediagonal);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 	}
 
-	if(clReleaseMemObject(clmem_rho) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_rho_next) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_alpha) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_omega) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_beta) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_tmp1) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_tmp2) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_one) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_minusone) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_scalar_product_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_global_squarenorm_buf_glob) != CL_SUCCESS) exit(HMC_OCLERROR);
-	if(clReleaseMemObject(clmem_resid) != CL_SUCCESS) exit(HMC_OCLERROR);
+	clerr = clReleaseMemObject(clmem_inout);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_source);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_rn);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_rhat);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_v);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_p);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_s);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_t);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_aux);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+
+	if(get_parameters()->get_use_eo() == false) {
+		clerr = clReleaseMemObject(clmem_inout_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		clerr = clReleaseMemObject(clmem_source_even);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		clerr = clReleaseMemObject(clmem_source_odd);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		clerr = clReleaseMemObject(clmem_rn_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		clerr = clReleaseMemObject(clmem_rhat_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		clerr = clReleaseMemObject(clmem_v_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		clerr = clReleaseMemObject(clmem_p_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		clerr = clReleaseMemObject(clmem_s_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		clerr = clReleaseMemObject(clmem_t_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		clerr = clReleaseMemObject(clmem_aux_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		clerr = clReleaseMemObject(clmem_tmp_eoprec_1);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		clerr = clReleaseMemObject(clmem_tmp_eoprec_2);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		clerr = clReleaseMemObject(clmem_tmp_eoprec_3);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	}
+
+	clerr = clReleaseMemObject(clmem_rho);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_rho_next);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_alpha);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_omega);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_beta);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_tmp1);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_tmp2);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_one);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_minusone);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_scalar_product_buf_glob);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_global_squarenorm_buf_glob);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_resid);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
 	/** @todo CP: this call seems to cause a seg fault!! */
-	if(clReleaseMemObject(clmem_trueresid) != CL_SUCCESS) exit(HMC_OCLERROR);
+	clerr = clReleaseMemObject(clmem_trueresid);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
 
-	return HMC_SUCCESS;
+	return;
 }
 
 #ifdef _PROFILING_

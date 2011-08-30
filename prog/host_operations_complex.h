@@ -13,7 +13,6 @@
 #include "host_random.h"
 #include "globaldefs.h"
 #include "types.h"
-#include "hmcerrs.h"
 
 /**
  * Calculate the complex conjugate.
@@ -54,9 +53,8 @@ hmc_complex complexsubtract(hmc_complex *a, hmc_complex *b);
  *
  * \param[in,out] inout A complex number used as an accumulator
  * \param[in] incr A complex number specifying the increment
- * \return Error state as defined in hmcerrs.h
  */
-hmc_error complexaccumulate(hmc_complex *inout, hmc_complex *incr); 
+void complexaccumulate(hmc_complex *inout, hmc_complex *incr); 
 /**
  * Divide two complex numbers
  *
@@ -71,26 +69,23 @@ hmc_complex complexdivide(hmc_complex* numerator, hmc_complex* denominator);
 * \param[in] source Pointer to the complex number to be copied
 * \param[out] dest Pointer to copy the complex numbers to
 * \param[in] length The amount of complex numbers to be copied
-* \return Error state as defined in hmcerrs.h
 */
-hmc_error complexcopy(hmc_complex* source, hmc_complex* dest, int length);
+void complexcopy(hmc_complex* source, hmc_complex* dest, int length);
 /**
 * Copy an array of complex numbers.
 *
 * \param[in] source Pointer to the hmc_float number to be copied
 * \param[out] dest Pointer to copy the hmc_float numbers to
 * \param[in] length The amount of hmc_float numbers to be copied
-* \return Error state as defined in hmcerrs.h
 */
-hmc_error hmc_floatcopy(hmc_float* source, hmc_float* dest, int length);
+void hmc_floatcopy(hmc_float* source, hmc_float* dest, int length);
 /**
  * Scale a complex number in-place
  *
  * \param[in,out] a The complex number to scale
  * \param[in] b A real scaling factor (may be negative)
- * \return Error state as defined in hmcerrs.h
  */
-hmc_error complexmult_real(hmc_complex *a, hmc_float *b); 
+void complexmult_real(hmc_complex *a, hmc_float *b); 
 /**
  * Fill the real and imaginary parts of complex numbers in an
  * array with components drawn from a Gaussian distribution.
@@ -98,9 +93,8 @@ hmc_error complexmult_real(hmc_complex *a, hmc_float *b);
  * \param[out] vector An array of complex numbers to write to
  * \param[in] length The amount of complex numbers to be copied
  * \param[in] sigma The variance of the Gaussian distribution
- * \return Error state as defined in hmcerrs.h
  */
-hmc_error gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma);
+void gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma);
 /**
  * Generate two independent normal standard real numbers
  *

@@ -73,7 +73,7 @@ hmc_complex det_su3matrix(hmc_su3matrix * U){
 
 using namespace std;
 
-hmc_error project_su3(hmc_su3matrix *U){
+void project_su3(hmc_su3matrix *U){
 
 // 	cout << "0" << endl;
 	
@@ -201,11 +201,11 @@ hmc_error project_su3(hmc_su3matrix *U){
   }
 #endif
 // 	cout << "5" << endl;
-  return HMC_SUCCESS;
+  return;
 }
 
 
-hmc_error project_su3_old(hmc_su3matrix *U){
+void project_su3_old(hmc_su3matrix *U){
 //old code
   hmc_complex det = det_su3matrix(U);
   hmc_float detsqunorm = det.re*det.re + det.im*det.im;
@@ -239,11 +239,11 @@ hmc_error project_su3_old(hmc_su3matrix *U){
     }
   }
   #endif
-  return HMC_SUCCESS;
+  return;
 }
 
 /** @todo memcpy ... */
-hmc_error copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in){
+void copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*(NC-1); n++) {
     (*out)[n] = (*in)[n];
@@ -255,11 +255,11 @@ hmc_error copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in){
     }
   }
 #endif
-  return HMC_SUCCESS;
+  return;
 }
 
 /** @todo memcpy ... */
-hmc_error copy_staplematrix(hmc_staplematrix *out, hmc_staplematrix *in){
+void copy_staplematrix(hmc_staplematrix *out, hmc_staplematrix *in){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*NC; n++) {
     (*out)[n] = (*in)[n];
@@ -271,11 +271,11 @@ hmc_error copy_staplematrix(hmc_staplematrix *out, hmc_staplematrix *in){
     }
   }
 #endif
-  return HMC_SUCCESS;
+  return;
 }
 
 /** @todo memset ... */
-hmc_error zero_su3matrix(hmc_su3matrix * u){
+void zero_su3matrix(hmc_su3matrix * u){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*(NC-1); n++) {
     (*u)[n].re = 0;
@@ -289,11 +289,11 @@ hmc_error zero_su3matrix(hmc_su3matrix * u){
     }
   }
 #endif
-  return HMC_SUCCESS;
+  return;
 }
 
 /** @todo memset ... */
-hmc_error zero_staplematrix(hmc_staplematrix * u){
+void zero_staplematrix(hmc_staplematrix * u){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*NC; n++) {
     (*u)[n].re = 0;
@@ -307,7 +307,7 @@ hmc_error zero_staplematrix(hmc_staplematrix * u){
     }
   }
 #endif
-  return HMC_SUCCESS;
+  return;
 }
 
 Matrixsu3 unit_matrixsu3()
@@ -338,7 +338,7 @@ Matrixsu3 unit_matrixsu3()
 	return out;
 }
 
-hmc_error unit_su3matrix(hmc_su3matrix * u){
+void unit_su3matrix(hmc_su3matrix * u){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*(NC-1); n++) {
     if( n%NC == 0) {
@@ -360,13 +360,12 @@ hmc_error unit_su3matrix(hmc_su3matrix * u){
     }
   }
 #endif
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error random_su3matrix(hmc_su3matrix * u){
-  printf("random su3matrix needs to be implemented...\n");
-  exit(HMC_UNDEFINEDERROR);
-  return HMC_SUCCESS;
+void random_su3matrix(hmc_su3matrix * u){
+  throw Print_Error_Message("random su3matrix needs to be implemented...");
+  return;
 }
 
 #ifdef _RECONSTRUCT_TWELVE_
@@ -381,7 +380,7 @@ hmc_complex reconstruct_su3(hmc_su3matrix *in, int ncomp){
 #endif
 
 
-hmc_error multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matrix *q){
+void multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matrix *q){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*(NC-1); n++) {
       (*out)[n].re=0;
@@ -413,11 +412,11 @@ hmc_error multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matr
     }
   }
 #endif
-  return HMC_SUCCESS;
+  return;
 }
 
 // wird wohl doch nicht gebraucht...
-// hmc_error add_su3matrices(hmc_su3matrix *p, hmc_su3matrix *q){
+// void add_su3matrices(hmc_su3matrix *p, hmc_su3matrix *q){
 // #ifdef _RECONSTRUCT_TWELVE
 //   for(int n=0; n<NC*(NC-1); n++) {
 //       (*p)[n].re = (*p)[n].re + (*q)[n].re;
@@ -433,7 +432,7 @@ hmc_error multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matr
 // }
 
 
-hmc_error multiply_staplematrix(hmc_staplematrix *out, hmc_su3matrix *p, hmc_staplematrix *q){
+void multiply_staplematrix(hmc_staplematrix *out, hmc_su3matrix *p, hmc_staplematrix *q){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*(NC-1); n++) {
       (*out)[n].re=0;
@@ -499,10 +498,10 @@ hmc_error multiply_staplematrix(hmc_staplematrix *out, hmc_su3matrix *p, hmc_sta
     }
   }
 #endif
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error accumulate_su3matrices_add(hmc_staplematrix *p, hmc_su3matrix *q){
+void accumulate_su3matrices_add(hmc_staplematrix *p, hmc_su3matrix *q){
 #ifdef _RECONSTRUCT_TWELVE_
   for(int n=0; n<NC*(NC-1); n++) {
     complexaccumulate(&(*p)[n], &(*q)[n]);
@@ -519,17 +518,17 @@ hmc_error accumulate_su3matrices_add(hmc_staplematrix *p, hmc_su3matrix *q){
     }
   }
 #endif
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error accumulate_su3matrix_prod(hmc_su3matrix *acc, hmc_su3matrix *mult){
+void accumulate_su3matrix_prod(hmc_su3matrix *acc, hmc_su3matrix *mult){
   hmc_su3matrix tmp;
   multiply_su3matrices(&tmp,acc,mult);
   copy_su3matrix(acc,&tmp);
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error adjoin_su3matrix(hmc_su3matrix * mat){
+void adjoin_su3matrix(hmc_su3matrix * mat){
 #ifdef _RECONSTRUCT_TWELVE_
   hmc_su3matrix tmp;
   copy_su3matrix(&tmp, mat);
@@ -554,7 +553,7 @@ hmc_error adjoin_su3matrix(hmc_su3matrix * mat){
     }
   }
 #endif
-  return HMC_SUCCESS;
+  return;
 }
 
 hmc_complex trace_su3matrix(hmc_su3matrix * mat){
@@ -746,7 +745,7 @@ void gaugefield_apply_chem_pot(hmc_su3matrix * u, hmc_su3matrix * udagger, hmc_f
 //CP: tested version that recreates the matrices made by tmlqcd
 /** @todo recheck the factor 0.5 (or F_1_2) that has been deleted here */
 /** @todo use of hmc_algebraelement!!!! */
-hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement2 inn, hmc_su3matrix* out, hmc_float epsilon){
+void build_su3matrix_by_exponentiation(hmc_algebraelement2 inn, hmc_su3matrix* out, hmc_float epsilon){
 		//CP: workaround for struct hmc_algebraelement
 		hmc_float in [8];
 		in[0] = inn.e0;
@@ -822,7 +821,7 @@ hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement2 inn, hmc_su3matr
 		#endif // _RECONSTRUCT_TWELVE_
 		project_su3(out);
 	
-	return HMC_SUCCESS;
+	return;
 }
 
 //CP: this is the old function which should now be deprecated.
@@ -840,7 +839,7 @@ elseif(EXPIQ MATCHES "MORNINGSTAR")
 endif (EXPIQ MATCHES "2")
 */
 /*
-hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix* out, hmc_float epsilon){
+void build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix* out, hmc_float epsilon){
 	// SL: this takes 8 real numbers and builds the su3 matrix exp(i*epsilon*p_i*T_i)
 	//     either by truncated "smart" series expansion to order eps^2 or eps^3, or by direct evaluation of the series
 	// NOTE: the code here is strictly SU(3)-specific! (and mostly generated by other code...)
@@ -1021,6 +1020,6 @@ hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement in, hmc_su3matrix
 	#endif // _USE_MORNGINGSTAR_PEARDON_
 
 	
-	return HMC_SUCCESS;
+	return;
 }
 */

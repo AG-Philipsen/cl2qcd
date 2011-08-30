@@ -14,7 +14,6 @@
 
 #include "globaldefs.h"
 #include "inputparameters.h"
-#include "hmcerrs.h"
 #include "klepsydra/klepsydra.hpp"
 
 extern char * benchmark_id;

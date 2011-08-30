@@ -8,7 +8,6 @@
 #include <cstdlib>
 #include <cstdio>
 
-#include "hmcerrs.h"
 #include "globaldefs.h"
 #include "types.h"
 #include "host_operations_complex.h"
@@ -88,12 +87,8 @@ void random_1_2_3 (int rand[3]);
  * @param[out] hmc_rndarray The array to feed with seeds
  * @param[in] file The file containing the binary seed
  * @param[in,out] inittime Timer to add execution time to
- * @return Error code as defined in hmcerrs.h
- *         @li HMC_FILEERROR    if the seeding file cannot be opened
- *         @li HMC_INVALIDVALUE if the seeding file does not contain enough bytes
- *         @li HMC_SUCCESS      otherwise
  */
-int init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seedfile, int const num_rndstates);
+void init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seedfile, int const num_rndstates);
 
 /** Construct new SU2 matrix using improved alg by Kennedy Pendleton */
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha);

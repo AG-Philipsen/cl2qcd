@@ -11,7 +11,6 @@
 #define _GEOMETRYH_
 
 #include "globaldefs.h"
-#include "hmcerrs.h"
 #include <cstdlib>
 #include <cmath>
 

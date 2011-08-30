@@ -3,10 +3,9 @@
 int main(int argc, char* argv[])
 {
 
-	if(argc != 2) {
-		logger.fatal() << "need file name for input parameters";
-		return HMC_FILEERROR;
-	}
+  try {
+
+    if(argc != 2) throw Print_Error_Message("Need file name for input parameters",__FILE__,__LINE__);
 
 	char* inputfile = argv[1];
 	inputparameters parameters;
@@ -40,8 +39,7 @@ int main(int argc, char* argv[])
 
 	logger.trace() << "Got gaugefield";
 	size_t rndsize = gaugefield.get_numrndstates();
-	int err = init_random_seeds(gaugefield.get_rndarray(), "rand_seeds", rndsize);
-	if(err) return err;
+	init_random_seeds(gaugefield.get_rndarray(), "rand_seeds", rndsize);
 	logger.trace() << "Got seeds";
 	gaugefield.print_gaugeobservables(&poly_timer,&plaq_timer);
 	gaugefield.copy_gaugefield_to_devices();
@@ -94,9 +92,25 @@ int main(int argc, char* argv[])
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	err = gaugefield.finalize();
-	if (err!= HMC_SUCCESS) 
-		logger.fatal() << "error in finalizing " << argv[0];
-	return HMC_SUCCESS;
+	gaugefield.finalize();
+
+
+  } //try
+  //exceptions from Opencl classes
+  catch (Opencl_Error& e) {
+    logger.fatal()<<e.what();
+    exit(1);
+  }
+  catch (File_Exception& fe) {
+    logger.fatal()<<"Could not open file: "<<fe.get_filename();
+    logger.fatal()<<"Aborting.";
+    exit(1);
+  }
+  catch (Print_Error_Message& em) {
+    logger.fatal()<<em.what();
+    exit(1);
+  }
+
+	return 0;
 	
 }

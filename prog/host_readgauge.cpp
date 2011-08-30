@@ -122,7 +122,7 @@ void trim2(char * buff)
 }
 
 
-hmc_error get_XLF_infos(const char * filename, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu,
+void get_XLF_infos(const char * filename, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu,
                         hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date )
 {
 	FILE * reader;
@@ -145,14 +145,12 @@ hmc_error get_XLF_infos(const char * filename, hmc_float * plaquettevalue, int *
 			if(strncmp(tmparray[10], tmp1, strlen(tmparray[10])) == 0) extrInfo_char(tmp1, strlen(tmparray[10]), strlen(tmp1), date);
 			if(strncmp(tmparray[11], tmp1, strlen(tmparray[11])) == 0) extrInfo_hmc_float(tmp1,  strlen(tmparray[11]), strlen(tmp1), plaquettevalue);
 		}
-	} else {
-		printf("\t\tUnable to open %s\n", filename);
-		return HMC_FILEERROR;
-	}
-	return HMC_SUCCESS;
+	} else throw File_Exception(filename);
+
+	return;
 }
 
-hmc_error get_inverter_infos(const char * filename, char * solver, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,
+void get_inverter_infos(const char * filename, char * solver, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,
                              int * time, char * hmcversion, char * date )
 {
 	FILE * reader;
@@ -172,11 +170,9 @@ hmc_error get_inverter_infos(const char * filename, char * solver, hmc_float * e
 			if(strncmp(tmparray[6], tmp1, strlen(tmparray[6])) == 0) extrInfo_char(tmp1, strlen(tmparray[6]), strlen(tmp1), hmcversion);
 			if(strncmp(tmparray[7], tmp1, strlen(tmparray[7])) == 0) extrInfo_char(tmp1, strlen(tmparray[7]), strlen(tmp1), date);
 		}
-	} else {
-		printf("\t\tUnable to open %s\n", filename);
-		return HMC_FILEERROR;
-	}
-	return HMC_SUCCESS;
+	} else throw File_Exception(filename);
+
+	return;
 }
 
 // from http://www.codecodex.com/wiki/Remove_blanks_from_a_string#C
@@ -250,7 +246,7 @@ void get_XML_info_simple(xmlTextReaderPtr reader, int numbers[6], char * field)
 	xmlFree(name);
 }
 
-hmc_error get_XML_infos(const char * filename, int * prec, int * lx, int * ly, int * lz, int *lt, int * flavours, char * field_out )
+void get_XML_infos(const char * filename, int * prec, int * lx, int * ly, int * lz, int *lt, int * flavours, char * field_out )
 {
 	xmlTextReaderPtr reader;
 	int ret;
@@ -268,14 +264,12 @@ hmc_error get_XML_infos(const char * filename, int * prec, int * lx, int * ly, i
 		if (ret != 0) {
 			printf("%s : failed to parse\n", filename);
 		}
-	} else {
-		printf("Unable to open %s\n", filename);
-		return HMC_FILEERROR;
-	}
+	} else throw File_Exception(filename);
+
 	*prec = tmpArray[0], *flavours = tmpArray[1];
 	*lx = tmpArray[2], *ly = tmpArray[3], *lz = tmpArray[4], *lt = tmpArray[5],
 	 strcpy(field_out, field);
-	return HMC_SUCCESS;
+	return;
 }
 
 
@@ -283,7 +277,7 @@ hmc_error get_XML_infos(const char * filename, int * prec, int * lx, int * ly, i
 // since tmLQCD always saves data with BigEndian one has to be careful
 
 // get XML Infos: file to be read + parameters
-hmc_error read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries,
+void read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries,
                          int * flavours, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
                          char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, int * fermion)
 {
@@ -308,8 +302,9 @@ hmc_error read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, in
 	//go through the lime-entries
 	while( (status = limeReaderNextRecord(r)) != LIME_EOF ) {
 		if( status != LIME_SUCCESS ) {
-			fprintf(stderr, "\t\tlimeReaderNextRecord returned status = %d\n", status);
-			return HMC_STDERR;
+		  char errmsg[256];
+		  sprintf(errmsg, "\t\tlimeReaderNextRecord returned status = %d\n", status);
+		  throw Print_Error_Message(errmsg);
 		}
 		if (MB_flag == 1 || first) {
 			first = 0;
@@ -340,10 +335,8 @@ hmc_error read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, in
 			FILE * tmp;
 			const char tmp_file_name[] = "tmpfilenameone";
 			tmp = fopen(tmp_file_name, "w");
-			if(tmp == NULL) {
-				printf("\t\terror in creating tmp file\n");
-				return HMC_FILEERROR;
-			}
+			if(tmp == NULL) throw Print_Error_Message("\t\terror in creating tmp file\n");
+		      
 			std::string buffer;
 			limeReaderReadData ((void*) buffer.c_str(),(n_uint64_t *) &nbytes, r);
 			char * buffer2 = new char[nbytes+1];
@@ -351,13 +344,8 @@ hmc_error read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, in
 			fwrite(buffer2, 1, sizeof(char)*nbytes, tmp);
 			fclose(tmp);
 
-			int err;
-			err = get_inverter_infos(tmp_file_name, solvertype, epssq, noiter, kappa_solver, mu_solver, time_solver, hmcversion_solver, date_solver);
-			if (err != 0) {
-				printf("\t\tfailure reading InverterInfos\n");
-				return HMC_STDERR;
-			} else
-				printf("\tsuccesfully read InverterInfos\n");
+			get_inverter_infos(tmp_file_name, solvertype, epssq, noiter, kappa_solver, mu_solver, time_solver, hmcversion_solver, date_solver);
+			printf("\tsuccesfully read InverterInfos\n");
 
 			remove(tmp_file_name);
 			delete [] buffer2;
@@ -370,8 +358,7 @@ hmc_error read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, in
 			const char tmp_file_name[] = "tmpfilenametwo";
 			tmp = fopen(tmp_file_name, "w");
 			if(tmp == NULL) {
-				printf("\t\terror in creating tmp file\n");
-				return HMC_FILEERROR;
+			  throw Print_Error_Message("\t\terror in creating tmp file\n");
 			}
 			/** @bug CP: the std::string buffer does not work for some reason!! */
 // 			char buffertmp [1];
@@ -389,13 +376,8 @@ hmc_error read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, in
 			fwrite(buffer2, 1, sizeof(char)*nbytes, tmp);
 			fclose(tmp);
 
-			int err;
-			err = get_XLF_infos(tmp_file_name, plaquettevalue, trajectorynr, beta, kappa, mu, c2_rec, time, hmcversion, mubar, epsilonbar, date);
-			if (err != 0) {
-				printf("\t\tfailure reading XLFInfos\n");
-				return HMC_STDERR;
-			} else
-				printf("\tsuccesfully read XLFInfos\n");
+			get_XLF_infos(tmp_file_name, plaquettevalue, trajectorynr, beta, kappa, mu, c2_rec, time, hmcversion, mubar, epsilonbar, date);
+			printf("\tsuccesfully read XLFInfos\n");
 
 			remove(tmp_file_name);
 			delete [] buffer2;
@@ -409,8 +391,7 @@ hmc_error read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, in
 			tmp = fopen(tmp_file_name, "w");
 
 			if(tmp == NULL) {
-				printf("\t\terror in creating tmp file\n");
-				return HMC_FILEERROR;
+				throw Print_Error_Message("\t\terror in creating tmp file\n");
 			}
 // 			std::string buffer;
 	char * buffer = new char[nbytes+1];
@@ -425,13 +406,8 @@ strcpy(buffer2, buffer);
 			fwrite(buffer2, 1, sizeof(char)*nbytes, tmp);
 			fclose(tmp);
 
-			int err;
-			err = get_XML_infos(tmp_file_name, prec, lx, ly, lz, lt, flavours, field_out );
-			if (err != 0) {
-				printf("\t\tfailure reading XMLInfos\n");
-				return HMC_STDERR;
-			} else
-				printf("\tsuccesfully read XMLInfos\n");
+			get_XML_infos(tmp_file_name, prec, lx, ly, lz, lt, flavours, field_out );
+			printf("\tsuccesfully read XMLInfos\n");
 
 			// different sizes for fermions or gauge fields
 			if(strcmp(field_out, "diracFermion") == 0) {
@@ -441,7 +417,7 @@ strcpy(buffer2, buffer);
 				// latSize sites, 4 links, 2 complex indices -> 9 complex numbers per link
 				*num_entries = (int) (*lx)*(*ly)*(*lz)*(*lt)*2*4*9;
 			} else {
-				return HMC_STDERR;
+			  throw Print_Error_Message("\tError in read_meta_infos()");
 			}
 			remove(tmp_file_name);
 			delete [] buffer2;
@@ -449,10 +425,10 @@ strcpy(buffer2, buffer);
 	}
 	limeDestroyReader(r);
 	fclose(fp);
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error read_binary_data_single(const char * file, float * numArray, int num_entries, int filelength )
+void read_binary_data_single(const char * file, float * numArray, int num_entries, int filelength )
 {
 	printf("\treading binary file %s..\n",file);
 	int length = sizeof(float), i;
@@ -468,8 +444,7 @@ hmc_error read_binary_data_single(const char * file, float * numArray, int num_e
 	int num_entries_check = filelength_check/length;
 	printf("\tnumber of entries:\t%i\n" ,num_entries_check);
 	if (filelength_check != filelength && num_entries_check != num_entries) {
-		printf("\twrong filelength or number of entries!!\n");
-		return HMC_STDERR;
+		throw Print_Error_Message("\twrong filelength or number of entries!!\n");
 	}
 
 	// read in bytes from file
@@ -504,15 +479,15 @@ hmc_error read_binary_data_single(const char * file, float * numArray, int num_e
 	for(i = 0; i<num_entries; i++) {
 		numArray[i] = *((float*) &buf2[i*length]);
 	}
-	return HMC_SUCCESS;
+	return;
 }
 
 //LZ: removed unused parameter: field_out
 //int read_data_single(char * file, float * num_array_single, int num_entries, char * field_out)
-int read_data_single(char * file, float * num_array_single, int num_entries)
+void read_data_single(char * file, float * num_array_single, int num_entries)
 {
 	FILE *fp;
-	int MB_flag, ME_flag, msg, rec, status, first, cter=0, err;
+	int MB_flag, ME_flag, msg, rec, status, first, cter=0;
 	char *lime_type;
 	size_t bytes_pad;
 	n_uint64_t nbytes;
@@ -531,9 +506,9 @@ int read_data_single(char * file, float * num_array_single, int num_entries)
 	msg = 0;
 	while( (status = limeReaderNextRecord(r)) != LIME_EOF ) {
 		if( status != LIME_SUCCESS ) {
-			fprintf(stderr, "limeReaderNextRecord returned status = %d\n",
-			        status);
-			return HMC_STDERR;
+		  char errmsg[256];
+		  sprintf(errmsg,"limeReaderNextRecord returned status = %d\n", status);
+		  throw Print_Error_Message(errmsg);
 		}
 		if (MB_flag == 1 || first) {
 			first = 0;
@@ -557,8 +532,7 @@ int read_data_single(char * file, float * num_array_single, int num_entries)
 			const char tmp_file_name[] = "tmpfilenamefour";
 			tmp = fopen(tmp_file_name, "w");
 			if(tmp == NULL) {
-				printf("\terror in creating tmp file\n");
-				return HMC_FILEERROR;
+				throw Print_Error_Message("\terror in creating tmp file\n");
 			}
 			//this cant be "char buffer [nbytes];" because this can be too big
 			char * buffer;
@@ -569,20 +543,17 @@ int read_data_single(char * file, float * num_array_single, int num_entries)
 			fclose(tmp);
 			free(buffer);
 
-			err = read_binary_data_single(tmp_file_name, num_array_single, num_entries, filelength );
-			if (err != 0) {
-				printf("\terror in reading binary data\n");
-				return HMC_STDERR;
-			}
+			read_binary_data_single(tmp_file_name, num_array_single, num_entries, filelength );
+			
 			remove(tmp_file_name);
 		}
 	}
 	limeDestroyReader(r);
 	fclose(fp);
-	return HMC_SUCCESS;
+	return;
 }
 
-int read_binary_data_double(const char * file, double * numArray, int num_entries, int filelength )
+void read_binary_data_double(const char * file, double * numArray, int num_entries, int filelength )
 {
 	printf("\treading binary file %s..\n",file);
 	int i, length = sizeof(double);
@@ -598,8 +569,7 @@ int read_binary_data_double(const char * file, double * numArray, int num_entrie
 	int num_entries_check = filelength_check/length;
 	printf("\tnumber of entries:\t%i\n" ,num_entries_check);
 	if (filelength_check != filelength && num_entries_check != num_entries) {
-		printf("\twrong filelength or number of entries!!\n");
-		return HMC_STDERR;
+		throw Print_Error_Message("\twrong filelength or number of entries!!");
 	}
 
 	// read in bytes from file
@@ -640,14 +610,14 @@ int read_binary_data_double(const char * file, double * numArray, int num_entrie
 	for(i = 0; i<num_entries; i++) {
 		numArray[i] = *((double*) &buf2[i*length]);
 	}
-	return HMC_SUCCESS;
+	return;
 }
 
 //LZ removed last, unused parameter char* field_out
-int read_data_double(char * file, double * num_array_double, int num_entries)
+void read_data_double(char * file, double * num_array_double, int num_entries)
 {
 	FILE *fp;
-	int MB_flag, ME_flag, msg, rec, status, first, cter = 0, err;
+	int MB_flag, ME_flag, msg, rec, status, first, cter = 0;
 	char *lime_type;
 	size_t bytes_pad;
 	n_uint64_t nbytes;
@@ -666,9 +636,10 @@ int read_data_double(char * file, double * num_array_double, int num_entries)
 	msg = 0;
 	while( (status = limeReaderNextRecord(r)) != LIME_EOF ) {
 		if( status != LIME_SUCCESS ) {
-			fprintf(stderr, "\tlimeReaderNextRecord returned status = %d\n",
+		  char errmsg[256];
+			sprintf(errmsg, "\tlimeReaderNextRecord returned status = %d\n",
 			        status);
-			return HMC_STDERR;
+			throw Print_Error_Message(errmsg);
 		}
 		if (MB_flag == 1 || first) {
 			first = 0;
@@ -692,8 +663,7 @@ int read_data_double(char * file, double * num_array_double, int num_entries)
 			const char tmp_file_name[] = "tmpfilenamefive";
 			tmp = fopen(tmp_file_name, "w");
 			if(tmp == NULL) {
-				printf("\terror in creating tmp file\n");
-				return HMC_FILEERROR;
+				throw Print_Error_Message("\terror in creating tmp file");
 			}
 			//this cant be "char buffer [nbytes];" because this can be too big
 			char * buffer;
@@ -704,33 +674,28 @@ int read_data_double(char * file, double * num_array_double, int num_entries)
 			fclose(tmp);
 			free(buffer);
 
-			err = read_binary_data_double(tmp_file_name, num_array_double, num_entries, filelength );
-			if (err != 0) {
-				printf("\terror in reading binary data\n");
-				return HMC_STDERR;
-			}
+			read_binary_data_double(tmp_file_name, num_array_double, num_entries, filelength );
 			remove(tmp_file_name);
 		}
 	}
 
 	limeDestroyReader(r);
 	fclose(fp);
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error read_tmlqcd_file(char * file,
+void read_tmlqcd_file(char * file,
                            int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries, int * flavours,
                            hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
                            char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver, int * time_solver, char * hmcversion_solver, char * date_solver,
                            hmc_float ** array, int * hmc_prec)
 {
 
-	int err, fermion = 0;
+	int fermion = 0;
 	FILE * checker;
 	checker = fopen(file, "r");
 	if(checker == 0) {
-		printf("\tcould not open sourcefile!\n\n");
-		return HMC_FILEERROR;
+	  throw Print_Error_Message("\tcould not open sourcefile!\n");
 	} else {
 		printf("**********************************************************\n");
 		printf("reading tmlqcd-file %s..\n\n", file);
@@ -738,21 +703,16 @@ hmc_error read_tmlqcd_file(char * file,
 	fclose(checker);
 
 	printf("reading Metadata..\n");
-	err = read_meta_data(file, lx, ly, lz, lt, prec, field_out, num_entries, flavours, plaquettevalue, trajectorynr,
+	read_meta_data(file, lx, ly, lz, lt, prec, field_out, num_entries, flavours, plaquettevalue, trajectorynr,
 	                     beta, kappa, mu, c2_rec, time, hmcversion, mubar, epsilonbar, date,
 	                     solvertype, epssq, noiter, kappa_solver, mu_solver, time_solver, hmcversion_solver, date_solver, &fermion);
-	if (err != 0) {
-		printf("\terror in read_meta_data:\t%i\n\n", err);
-		return HMC_STDERR;
-	} else {
-		printf("\treading XML-file gave:\n\t\tfield type:\t%s\n\t\tprecision:\t%d\n\t\tlx:\t\t%d\n\t\tly:\t\t%d\n\t\tlz:\t\t%d\n\t\tlt:\t\t%d\n\t\tflavours:\t%d\n", field_out, *prec, *lx, *ly, *lz, *lt, *flavours);
-		printf("\treading XLF-data gave:\n\t\tplaquette:\t%f\n\t\ttrajectorynr:\t%i\n\t\tbeta:\t\t%f\n\t\tkappa:\t\t%f\n\t\tmu:\t\t%f\n\t\tc2_rec:\t\t%f\n\t\ttime:\t\t%i\n\t\thmc-version:\t%s\n\t\tmubar:\t\t%f\n\t\tepsilonbar:\t%f\n\t\tdate:\t\t%s\n", *plaquettevalue, *trajectorynr, *beta, *kappa, *mu, *c2_rec, *time, hmcversion, *mubar, *epsilonbar, date);
-		if(fermion != 0)
-			printf("\treading inverter-data gave:\n\t\tsolvertype:\t%s\n\t\tepssq:\t\t%.30f\n\t\tnoiter:\t\t%i\n\t\tkappa_solver:\t%f\n\t\tmu_solver:\t%f\n\t\ttime_solver:\t%i\n\t\thmc-ver_solver:\t%s\n\t\tdate_solver:\t%s\n", solvertype, *epssq, *noiter, *kappa_solver, *mu_solver, *time_solver, hmcversion_solver, date_solver);
-	}
+	printf("\treading XML-file gave:\n\t\tfield type:\t%s\n\t\tprecision:\t%d\n\t\tlx:\t\t%d\n\t\tly:\t\t%d\n\t\tlz:\t\t%d\n\t\tlt:\t\t%d\n\t\tflavours:\t%d\n", field_out, *prec, *lx, *ly, *lz, *lt, *flavours);
+	printf("\treading XLF-data gave:\n\t\tplaquette:\t%f\n\t\ttrajectorynr:\t%i\n\t\tbeta:\t\t%f\n\t\tkappa:\t\t%f\n\t\tmu:\t\t%f\n\t\tc2_rec:\t\t%f\n\t\ttime:\t\t%i\n\t\thmc-version:\t%s\n\t\tmubar:\t\t%f\n\t\tepsilonbar:\t%f\n\t\tdate:\t\t%s\n", *plaquettevalue, *trajectorynr, *beta, *kappa, *mu, *c2_rec, *time, hmcversion, *mubar, *epsilonbar, date);
+	if(fermion != 0)
+	  printf("\treading inverter-data gave:\n\t\tsolvertype:\t%s\n\t\tepssq:\t\t%.30f\n\t\tnoiter:\t\t%i\n\t\tkappa_solver:\t%f\n\t\tmu_solver:\t%f\n\t\ttime_solver:\t%i\n\t\thmc-ver_solver:\t%s\n\t\tdate_solver:\t%s\n", solvertype, *epssq, *noiter, *kappa_solver, *mu_solver, *time_solver, hmcversion_solver, date_solver);
+
 	if(*hmc_prec != *prec) {
-		printf("\nthe precision of hmc and sourcefile do not match, will not read data!!!\n\n");
-		return -2;
+	  throw Print_Error_Message("\nthe precision of hmc and sourcefile do not match, will not read data!!!",__FILE__,__LINE__);
 	} else {
 		printf("reading data..\n");
 		//!!note: the read-routines were not changed, the array is just set to the values of the num_array`s
@@ -760,12 +720,8 @@ hmc_error read_tmlqcd_file(char * file,
 			printf("\tfound data in single precision\n");
 			float * num_array_single;
 			num_array_single = (float*) malloc(*num_entries*sizeof(float));
-			err = read_data_single(file, num_array_single, *num_entries);
-			if (err != 0) {
-				printf("\terror in read_data_single:\t%i\n\n", err);
-				return HMC_STDERR;
-			} else
-				printf("\tsuccesfully read in data\n");
+			read_data_single(file, num_array_single, *num_entries);
+			printf("\tsuccesfully read in data\n");
 
 			*array = (hmc_float*) malloc(*num_entries*sizeof(hmc_float));
 			int i;
@@ -777,12 +733,8 @@ hmc_error read_tmlqcd_file(char * file,
 			printf("\tfound data in double precision\n");
 			double * num_array_double;
 			num_array_double = (double*) malloc(*num_entries*sizeof(double));
-			err = read_data_double(file, num_array_double, *num_entries);
-			if (err != 0) {
-				printf("\terror in read_data_double:\t%i\n\n", err);
-				return HMC_STDERR;
-			} else
-				printf("\tsuccesfully read in data\n");
+			read_data_double(file, num_array_double, *num_entries);
+			printf("\tsuccesfully read in data\n");
 
 			*array = (hmc_float*) malloc(*num_entries*sizeof(hmc_float));
 			int i;
@@ -792,17 +744,16 @@ hmc_error read_tmlqcd_file(char * file,
 
 			free(num_array_double);
 		} else {
-			printf("\tcould not determine precision of data\n\n");
-			return HMC_STDERR;
+			throw Print_Error_Message("\tcould not determine precision of data\n\n");
 		}
 		printf("\nsuccesfully read tmlqcd-file %s..\n", file);
 		printf("**********************************************************\n\n");
-		return HMC_SUCCESS;
+		return;
 	}
 }
 
 
-hmc_error sourcefileparameters::set_defaults()
+void sourcefileparameters::set_defaults()
 {
 	lx_source = 0;
 	ly_source = 0;
@@ -825,11 +776,11 @@ hmc_error sourcefileparameters::set_defaults()
 	epssq_source = 0;
 	kappa_solver_source = 0;
 	mu_solver_source = 0;
-	return HMC_SUCCESS;
+	return;
 }
 
 
-hmc_error sourcefileparameters::readsourcefile(char * file, int precision, hmc_float ** array)
+void sourcefileparameters::readsourcefile(char * file, int precision, hmc_float ** array)
 {
 
 	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;
@@ -840,22 +791,18 @@ hmc_error sourcefileparameters::readsourcefile(char * file, int precision, hmc_f
 	char solvertype[50];
 	char hmcversion_solver[50];
 	char date_solver[50];
-	int err, prec_tmp;
+	int  prec_tmp;
 
 	//CP
 	//this was done because i am lazy
 	prec_tmp = precision;
 	hmc_float * array_tmp;
 
-	err = read_tmlqcd_file( file,
+	read_tmlqcd_file( file,
 	                        &lx, &ly, &lz, &lt, &prec, field_out, &num_entries, &flavours,
 	                        &plaquettevalue, &trajectorynr, &beta, &kappa, &mu, &c2_rec, &time, hmcversion, &mubar, &epsilonbar, date,
 	                        solvertype, &epssq, &noiter, &kappa_solver, &mu_solver, &time_solver, hmcversion_solver, date_solver,
 	                        &array_tmp, &prec_tmp);
-	if(err!= 0) {
-		printf("error in reading file: %s\n\n", file);
-		return HMC_FILEERROR;
-	}
 
 	/** @bug Isn't array already allocated? -> memory leak, and why copy */
 	*array = (hmc_float*) malloc(num_entries*sizeof(hmc_float));
@@ -892,7 +839,7 @@ hmc_error sourcefileparameters::readsourcefile(char * file, int precision, hmc_f
 	strcpy(hmcversion_solver_source, hmcversion_solver);
 	strcpy(date_solver_source, date_solver);
 
-	return HMC_SUCCESS;
+	return;
 }
 
 

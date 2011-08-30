@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "globaldefs.h"
-#include "hmcerrs.h"
 #include "types.h"
 #include "host_operations_complex.h"
 #include "host_operations_gaugefield.h"
@@ -29,6 +28,8 @@
 #else
 #include <CL/cl.h>
 #endif
+
+#include "exceptions.h"
 
 #include "logger.hpp"
 
@@ -54,68 +55,65 @@ public:
 	 * @param[in] devicetypes Array of wanted cl_device_types for the devices.
 	 * @param[in] input_parameters instance of inputparameters that contains information from input file
 	 * @param[in,out] timer Return initialization time.
-	 * @return Error code as defined in hmcerrs.h
 	 */
-		hmc_error init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters);
+		void init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters);
 
 	/**
 	 * Fills an array of device types according to inputparameters
 	 */
-		hmc_error init_devicetypes_array(cl_device_type* devicetypes, inputparameters* input_parameters);
+		void init_devicetypes_array(cl_device_type* devicetypes, inputparameters* input_parameters);
 		
 	/**
 	 * Initialize device types
 	 *
 	 * @todo This needs to be worked out in detail. So far it is assumed that numdevs[] has identical entries.
 	 */
-		hmc_error init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters);		
+		void init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters);		
 		
 	/**
 	 * Free gaugefield and device allocations.
 	 */
-	virtual hmc_error finalize();
+	virtual void finalize();
 	/**
 	 * Free device, called by finalize
 	 */
-	virtual hmc_error free_devices();
+	virtual void free_devices();
 	/**
 	 * Initializes the devices, to be called by init()
-	 * @return Error code as defined in hmcerrs.h
 	 * @param devicetypes array of cl_device_type handles
 	 * @param[in,out] timer timer for initialization
 	 */
-	virtual	hmc_error init_devices(cl_device_type* devicetypes);
+	virtual	void init_devices(cl_device_type* devicetypes);
 	/**
 	 * Initializes the gaugefield, to be called by init()
-	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error init_gaugefield();
+	void init_gaugefield();
 	
 
 	//communication
 	/**
 	 * Copy gaugefield to devices (here: to device).
 	 */
-	virtual hmc_error copy_gaugefield_to_devices();
+	virtual void copy_gaugefield_to_devices();
 	/**
 	 * Copy gaugefield from devices (currently: from device) to host.
 	 * @param[in,out] timer copy-time
 	 */
-	virtual hmc_error sync_gaugefield();
+	virtual void sync_gaugefield();
 	/**
 	 * Copy random array to devices (currently: to device).
 	 */
-	hmc_error copy_rndarray_to_devices();
+	void copy_rndarray_to_devices();
 	/**
 	 * Copy random array from devices (currently: from device).
 	 */
-	hmc_error copy_rndarray_from_devices();
+	void copy_rndarray_from_devices();
 
 	//input/output, print, save functions!!
 	/**
 	 * Save gaugefield to file.
 	 */
-	hmc_error save(int number);
+	void save(int number);
 	/**
 	 * Print information from source file (if any)
 	 * @param[in,out] params instance of sourcefileparameters
@@ -173,9 +171,8 @@ public:
 	 * @param[in] i integer number that accompanies output
 	 * @param[in] gaugeoutname name of output file
 	 * @param[in] stdout print also to stdout
-	 * @return Error code as defined in hmcerrs.h
 	 */
-	virtual hmc_error print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, const int i, const string gaugeoutname, int stdout);
+	virtual void print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, const int i, const string gaugeoutname, int stdout);
 	/**
 	 * Print gauge observables calculated on device, add iteration number.
 	 * @param[in,out] plaqtime time to calculate plaquette
@@ -183,9 +180,8 @@ public:
 	 * @param[in] i integer number that accompanies output
 	 * @param[in] gaugeoutname name of output file
 	 * @param[in] stdout print also to stdout
-	 * @return Error code as defined in hmcerrs.h
 	 */
-	virtual hmc_error print_gaugeobservables_from_devices(const int i, const string gaugeoutname, int stdout);
+	virtual void print_gaugeobservables_from_devices(const int i, const string gaugeoutname, int stdout);
 	
 
 	//gaugeobservables, on host!!
@@ -224,9 +220,8 @@ public:
 	
 	/**
 	 * Sets private member gaugefield u (structures)
-	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error set_sgf (s_gaugefield * sgf_val);
+	void set_sgf (s_gaugefield * sgf_val);
 	
 	/**
 	 * Returns private member * devices
@@ -243,16 +238,14 @@ public:
 
 	/**
 	 * Sets private member * devices
-	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error set_devices (Opencl * devices_val);
+	void set_devices (Opencl * devices_val);
 
 	/**
 	 * Sets private member * devices with index i
 	 * @in index i
-	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error set_devices (Opencl * devices_val, int i);
+	void set_devices (Opencl * devices_val, int i);
 
 	/**
 	 * Returns private member num_ocl_devices
@@ -261,9 +254,8 @@ public:
 	int get_num_ocl_devices ();
 	/**
 	 * Sets private member num_ocl_devices
-	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error set_num_ocl_devices (int num);
+	void set_num_ocl_devices (int num);
 	/**
 	 * Returns private member * parameters
 	 * @return parameters
@@ -278,51 +270,45 @@ public:
 	int get_num_device_types ();
 	/**
 	 * Sets private member num_device_types
-	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error set_num_device_types (int num);
+	void set_num_device_types (int num);
 
 	/**
 	 * Sets private member * parameters
 	 * @return parameters
 	 */
-	hmc_error set_parameters (inputparameters * parameters_val);
+	void set_parameters (inputparameters * parameters_val);
 	
 	/**
 	 * Copies the gaugefield from pure array format to structure array format
 	 * @param[in] gf pure array
 	 * @param[out] sgf array of structs
-	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_gaugefield * gf);
+	void copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_gaugefield * gf);
 	
 	/**
 	 * Copies the gaugefield from structure array format to pure array format
 	 * @param[in] sgf array of structs
 	 * @param[out] gf pure array
-	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error copy_s_gaugefield_to_gaugefield (hmc_gaugefield * gf, s_gaugefield * sgfo);
+	void copy_s_gaugefield_to_gaugefield (hmc_gaugefield * gf, s_gaugefield * sgfo);
 	
 	/**
 	 * Initializing the gaugefield consisting of structs for a hot start
 	 * Not implemented yet, does a cold start
 	 * @param field gaugefield
-	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error set_gaugefield_hot_new(s_gaugefield * field);
+	void set_gaugefield_hot_new(s_gaugefield * field);
 	/**
 	 * Initializing the gaugefield consisting of structs for a cold start
 	 * @param field gaugefield
-	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error set_gaugefield_cold_new(s_gaugefield * field);
+	void set_gaugefield_cold_new(s_gaugefield * field);
 	
 	/**
 	 * This method provides allocation for device double pointer
-	 * @return Error code as defined in hmcerrs.h
 	 */
-	hmc_error alloc_devicetypes();
+	void alloc_devicetypes();
 
 	/**
 	 * Returns private member * rndarray

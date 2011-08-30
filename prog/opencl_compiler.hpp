@@ -8,6 +8,8 @@
 #include <vector>
 #include <string>
 
+#include "exceptions.h"
+
 #ifdef __APPLE__
 #include <OpenCL/cl.h>
 #else

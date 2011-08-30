@@ -2,11 +2,9 @@
 
 int main(int argc, char* argv[])
 {
+  try {
 
-	if(argc != 2) {
-	  logger.warn() << "need file name for input parameters" ;
-	  return HMC_FILEERROR;
-	}
+    if(argc != 2) throw Print_Error_Message("Need file name for input parameters",__FILE__,__LINE__);
 
 	char* inputfile = argv[1];
 	inputparameters parameters;
@@ -24,8 +22,7 @@ int main(int argc, char* argv[])
 	  parameters.print_info_tkkappa(argv[0],&logfile);
 	  logfile.close();
 	} else {
-	  logger.warn() << "Could not open tk_kappa.log";
-	  exit(HMC_FILEERROR);
+	  throw File_Exception("tk_kappa.log");
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,8 +45,7 @@ int main(int argc, char* argv[])
 
 	gaugefield.init(1, devicetypes, &parameters);
 	int rndsize = gaugefield.get_numrndstates();
-	int err = init_random_seeds(gaugefield.get_rndarray(), "rand_seeds", rndsize);
-	if(err) return err;
+	init_random_seeds(gaugefield.get_rndarray(), "rand_seeds", rndsize);
 
 	delete devicetypes;
 
@@ -112,8 +108,7 @@ int main(int argc, char* argv[])
 	
 
 	//GPU
-	hmc_error err;
-	err = gaugefield.kappa_karsch_gpu (&timer_karsch);
+		gaugefield.kappa_karsch_gpu (&timer_karsch);
 	//     	err = gaugefield.kappa_clover_gpu (&timer_clover);
 	
 	//CPU
@@ -157,5 +152,23 @@ int main(int argc, char* argv[])
 
       	gaugefield.finalize();
 
-	return HMC_SUCCESS;
+
+  } //try
+  //exceptions from Opencl classes
+  catch (Opencl_Error& e) {
+    logger.fatal()<<e.what();
+    exit(1);
+  }
+  catch (File_Exception& fe) {
+    logger.fatal()<<"Could not open file: "<<fe.get_filename();
+    logger.fatal()<<"Aborting.";
+    exit(1);
+  }
+  catch (Print_Error_Message& em) {
+    logger.fatal()<<em.what();
+    exit(1);
+  }
+
+  return 0;
+
 }

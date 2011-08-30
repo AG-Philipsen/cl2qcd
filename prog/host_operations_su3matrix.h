@@ -9,7 +9,6 @@
 #include <iostream>
 #include "globaldefs.h"
 #include "types.h"
-#include "hmcerrs.h"
 #include "host_geometry.h"
 #include "host_operations_complex.h"
 #include "host_operations_matrix.h"
@@ -19,9 +18,8 @@
  * Replace the given matrix by it's adjoint.
  *
  * @param[in,out] mat The matrix to replace by it's adjoint
- * @return Error code as defined in hmcerrs.h
  */
-hmc_error adjoin_su3matrix(hmc_su3matrix * mat);
+void adjoin_su3matrix(hmc_su3matrix * mat);
 /**
  * Calculate the trace of the given SU3 matrix.
  *
@@ -41,24 +39,21 @@ hmc_complex det_su3matrix(hmc_su3matrix * U);
  *
  * @param[out] The SU3 matrix to copy to
  * @param[in] The SU3 matrix to copy from
- * @return Error code as defined in hmcerrs.h
  */
-hmc_error copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in); 
+void copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in); 
 /**
  * Copy the contents of an staple matrix to another one.
  *
  * @param[out] The staple matrix to copy to
  * @param[in] The staple matrix to copy from
- * @return Error code as defined in hmcerrs.h
  */
-hmc_error copy_staplematrix(hmc_staplematrix *out, hmc_staplematrix *in);
+void copy_staplematrix(hmc_staplematrix *out, hmc_staplematrix *in);
 /**
  * Replace the given matrix by a unit matrix.
  *
  * @param[out] mat The matrix to replace by a unit one
- * @return Error code as defined in hmcerrs.h
  */
-hmc_error unit_su3matrix(hmc_su3matrix * u);
+void unit_su3matrix(hmc_su3matrix * u);
 
 Matrixsu3 unit_matrixsu3();
 
@@ -66,49 +61,43 @@ Matrixsu3 unit_matrixsu3();
  * Replace the given matrix by a random matrix.
  *
  * @param[out] mat The matrix to replace by a random one
- * @return Error code as defined in hmcerrs.h
  */
-hmc_error random_su3matrix(hmc_su3matrix * u);
+void random_su3matrix(hmc_su3matrix * u);
 /**
  * Replace the given matrix by a zero matrix.
  *
  * @param[out] mat The matrix to replace by a zero one
- * @return Error code as defined in hmcerrs.h
  */
-hmc_error zero_su3matrix(hmc_su3matrix * u); 
+void zero_su3matrix(hmc_su3matrix * u); 
 /**
  * Replace the given matrix by a zero matrix.
  *
  * @param[out] mat The matrix to replace by a zero one
- * @return Error code as defined in hmcerrs.h
  */
-hmc_error zero_staplematrix(hmc_staplematrix * u);
+void zero_staplematrix(hmc_staplematrix * u);
 /**
  * Multiply two SU3 matrices in place
  *
  * @param[in,out] acc The matrix to be replaced by the multiplication result
  * @param[in] multiplicator The matrix to multiply witht the acc matrix
- * @return Error code as defined in hmcerrs.h
  */
-hmc_error accumulate_su3matrix_prod(hmc_su3matrix *acc, hmc_su3matrix *multiplicator);
+void accumulate_su3matrix_prod(hmc_su3matrix *acc, hmc_su3matrix *multiplicator);
 /**
  * Multiply two SU3 matrices
  *
  * @param[out] out The matrix into which to store the multiplication result
  * @param[in] p Left matrix for the multiplication
  * @param[in] q Right matrix for the multiplication
- * @return Error code as defined in hmcerrs.h
  */
-hmc_error multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matrix *q);
+void multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matrix *q);
 /**
  * Multiply two staple matrices
  *
  * @param[out] out The matrix into which to store the multiplication result
  * @param[in] p Left matrix for the multiplication
  * @param[in] q Right matrix for the multiplication
- * @return Error code as defined in hmcerrs.h
  */
-hmc_error multiply_staplematrix(hmc_staplematrix *out, hmc_su3matrix *p, hmc_staplematrix *q);
+void multiply_staplematrix(hmc_staplematrix *out, hmc_su3matrix *p, hmc_staplematrix *q);
 #ifdef _RECONSTRUCT_TWELVE_
 /**
  * Reconstruct the third row of a compressed SU3 matrix
@@ -125,9 +114,8 @@ hmc_complex reconstruct_su3(hmc_su3matrix *in, int ncomp);
  *
  * @param[in,out] p The staple to accumulate into. Needs to be null element on first invocation.
  * @param[in] q The SU3 matrix to add to the accumulation
- * @return Error code as defined in hmcerrs.h
  */
-hmc_error accumulate_su3matrices_add(hmc_staplematrix *p, hmc_su3matrix *q);
+void accumulate_su3matrices_add(hmc_staplematrix *p, hmc_su3matrix *q);
 /**
  * Reduce an SU3 matrix to an SU2 (as in Cabbibo-Marinari)
  *
@@ -149,10 +137,9 @@ void extend (hmc_su3matrix * dest, const int random, hmc_complex src[su2_entries
  * Projects a 3x3-Matrix back to SU(3) using the Gram-Schmidt-Procedure.
  *
  * @param[in,out] U The SU3 matrix to project.
- * @return Error code as defined in hmcerrs.h
  */
-hmc_error project_su3(hmc_su3matrix *U);
-hmc_error project_su3_old(hmc_su3matrix *U);
+void project_su3(hmc_su3matrix *U);
+void project_su3_old(hmc_su3matrix *U);
 
 /**
  * Apply Boundary Conditions to a SU(3)-Matrix. 
@@ -189,11 +176,10 @@ void gaugefield_apply_chem_pot(hmc_su3matrix * u, hmc_su3matrix * udagger, hmc_f
  * @param[in] in input su(3)-algebra element (8 real numbers)
  * @param[out] out output SU(3)-Matrix
  * @param[in] epsilon input parameter
- * @return Error code as defined in hmcerrs.h
  * @todo needs testing
  * @todo implement Morningstar-Peardon
  * @todo in the end this should be moved elsewhere since it is not specific to he hmc-algorithm
  */
-hmc_error build_su3matrix_by_exponentiation(hmc_algebraelement2 inn, hmc_su3matrix *out, hmc_float epsilon); 
+void  build_su3matrix_by_exponentiation(hmc_algebraelement2 inn, hmc_su3matrix *out, hmc_float epsilon); 
 
 #endif

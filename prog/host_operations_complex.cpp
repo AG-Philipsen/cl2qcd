@@ -28,10 +28,10 @@ hmc_complex complexsubtract(hmc_complex *a, hmc_complex *b){
   return res;
 }
 
-hmc_error complexaccumulate(hmc_complex *inout, hmc_complex *incr){
+void complexaccumulate(hmc_complex *inout, hmc_complex *incr){
   (*inout).re += (*incr).re;
   (*inout).im += (*incr).im;
-  return HMC_SUCCESS;
+  return;
 }
 
 hmc_complex complexdivide(hmc_complex* numerator, hmc_complex* denominator){
@@ -43,31 +43,31 @@ hmc_complex complexdivide(hmc_complex* numerator, hmc_complex* denominator){
 }
 
 /** @todo bitwise copy (memcpy) should work and be faster */
-hmc_error complexcopy(hmc_complex* source, hmc_complex* dest, int length){
+void complexcopy(hmc_complex* source, hmc_complex* dest, int length){
 	// copies ``length'' complex numbers from source array to dest array, within cpu memory
 	for(int i=0;i<length;i++){
 		dest[i] = source[i];
 	}
-	return HMC_SUCCESS;  // SL: function not tested
+	return;  // SL: function not tested
 }
 
 /** @todo bitwise copy (memcpy) should work and be faster */
-hmc_error hmc_floatcopy(hmc_float* source, hmc_float* dest, int length){
+void hmc_floatcopy(hmc_float* source, hmc_float* dest, int length){
 	// copies ``length'' complex numbers from source array to dest array, within cpu memory
 	for(int i=0;i<length;i++){
 		dest[i] = source[i];
 	}
-	return HMC_SUCCESS;  // SL: function not tested
+	return;  // SL: function not tested
 }
 
 //multiply complex number with real factor
-hmc_error complexmult_real(hmc_complex *a, hmc_float *b){
+void complexmult_real(hmc_complex *a, hmc_float *b){
   (*a).re *= (*b);
   (*a).im *= (*b);
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma){
+void gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma){
 	// SL: this fills real and imaginary part of a vector of "length" complex numbers
 	//     with components drawn with a Gaussian distribution and variance sigma
 	for(int idx=0;idx<length;idx++){
@@ -75,7 +75,7 @@ hmc_error gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigm
 		vector[idx].re*=sigma;
 		vector[idx].im*=sigma;
 	}
-	return HMC_SUCCESS;
+	return;
 	// SL: not yet tested
 }
 

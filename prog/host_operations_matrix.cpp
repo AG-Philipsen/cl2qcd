@@ -1,6 +1,6 @@
 #include "host_operations_matrix.h"
 
-hmc_error multiply_3x3matrix (hmc_3x3matrix *out, const hmc_3x3matrix *p, const hmc_3x3matrix *q)
+void multiply_3x3matrix (hmc_3x3matrix *out, const hmc_3x3matrix *p, const hmc_3x3matrix *q)
 {
 	for(int i=0; i<3; i++) {
 		for(int k=0; k<3; k++) {
@@ -13,33 +13,33 @@ hmc_error multiply_3x3matrix (hmc_3x3matrix *out, const hmc_3x3matrix *p, const 
 		}
 	}
 	
-	return HMC_SUCCESS;
+	return;
 }
 
 
-hmc_error add_3x3matrix (hmc_3x3matrix *out, hmc_3x3matrix *p, hmc_3x3matrix *q)
+void add_3x3matrix (hmc_3x3matrix *out, hmc_3x3matrix *p, hmc_3x3matrix *q)
 {
 	for(int i=0; i<3; i++) {
 		for(int k=0; k<3; k++) {
 			(*out)[i][k] = complexadd(&(*p)[i][k],&(*q)[i][k]);
 		}
 	}
-	return HMC_SUCCESS;
+	return;
 }
 
 
-hmc_error subtract_3x3matrix (hmc_3x3matrix *out, hmc_3x3matrix *p, hmc_3x3matrix *q)
+void subtract_3x3matrix (hmc_3x3matrix *out, hmc_3x3matrix *p, hmc_3x3matrix *q)
 {
 	for(int i=0; i<3; i++) {
 		for(int k=0; k<3; k++) {
 			(*out)[i][k] = complexsubtract(&(*p)[i][k],&(*q)[i][k]);
 		}
 	}
-	return HMC_SUCCESS;
+	return;
 }
 
 
-hmc_error set_to_3x3_identity(hmc_3x3matrix *mat)
+void set_to_3x3_identity(hmc_3x3matrix *mat)
 {
 	// simply sets to identity a generic 3x3 complex matrix
 	(*mat)[0][0].re=1.0;
@@ -54,10 +54,10 @@ hmc_error set_to_3x3_identity(hmc_3x3matrix *mat)
 	(*mat)[2][1].re=(*mat)[2][1].im=0.0;
 	(*mat)[2][2].re=1.0;
 	(*mat)[2][2].im=0.0;
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error copy_3x3_matrix(hmc_3x3matrix *dest, hmc_3x3matrix *src)
+void copy_3x3_matrix(hmc_3x3matrix *dest, hmc_3x3matrix *src)
 {
 	// copies the values in src into dest
 	(*dest)[0][0] = (*src)[0][0];
@@ -69,10 +69,10 @@ hmc_error copy_3x3_matrix(hmc_3x3matrix *dest, hmc_3x3matrix *src)
 	(*dest)[2][0] = (*src)[2][0];
 	(*dest)[2][1] = (*src)[2][1];
 	(*dest)[2][2] = (*src)[2][2];
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error multiply_3x3matrix_by_real(hmc_3x3matrix *mat, hmc_float factor)
+void multiply_3x3matrix_by_real(hmc_3x3matrix *mat, hmc_float factor)
 {
 	// applies a real factor to all elements of matrix mat
 	complexmult_real(&(*mat)[0][0], &factor);
@@ -84,10 +84,10 @@ hmc_error multiply_3x3matrix_by_real(hmc_3x3matrix *mat, hmc_float factor)
 	complexmult_real(&(*mat)[2][0], &factor);
 	complexmult_real(&(*mat)[2][1], &factor);
 	complexmult_real(&(*mat)[2][2], &factor);
-	return HMC_SUCCESS;
+	return;
 }
 
-int absoluteDifference_3x3_matrix(hmc_float *result, hmc_3x3matrix *mat1, hmc_3x3matrix *mat2)
+void absoluteDifference_3x3_matrix(hmc_float *result, hmc_3x3matrix *mat1, hmc_3x3matrix *mat2)
 {
 	*result=0.0;
 	for(int i=0; i<3; i++)
@@ -95,10 +95,10 @@ int absoluteDifference_3x3_matrix(hmc_float *result, hmc_3x3matrix *mat1, hmc_3x
 			*result += fabs((*mat1)[i][j].re - (*mat2)[i][j].re);
 			*result += fabs((*mat1)[i][j].im - (*mat2)[i][j].im);
 		}
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error accumulate_su3matrix_3x3_add(hmc_3x3matrix *out, hmc_su3matrix *q){
+void accumulate_su3matrix_3x3_add(hmc_3x3matrix *out, hmc_su3matrix *q){
 #ifdef _RECONSTRUCT_TWELVE_
   for (int i=0; i< NC-1; i++)
   {
@@ -120,29 +120,29 @@ hmc_error accumulate_su3matrix_3x3_add(hmc_3x3matrix *out, hmc_su3matrix *q){
     }
   }
 #endif
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error trace_3x3matrix (hmc_complex * out, hmc_3x3matrix *q){
+void trace_3x3matrix (hmc_complex * out, hmc_3x3matrix *q){
   (*out).re = ((*q)[0][0]).re;
   (*out).im = ((*q)[0][0]).im;
   (*out).re += ((*q)[1][1]).re;
   (*out).im += ((*q)[1][1]).im;
   (*out).re += ((*q)[2][2]).re;
   (*out).im += ((*q)[2][2]).im;
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error adjoint_3x3matrix (hmc_3x3matrix * out, hmc_3x3matrix *q){
+void adjoint_3x3matrix (hmc_3x3matrix * out, hmc_3x3matrix *q){
   for(int a=0; a<3; a++) {
     for(int b=0; b<3; b++) {
       (*out)[a][b] = complexconj(&(*q)[b][a]);
     }
   }  
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error multiply_generator_3x3matrix (hmc_3x3matrix * out, int gen_index, hmc_3x3matrix *in){
+void multiply_generator_3x3matrix (hmc_3x3matrix * out, int gen_index, hmc_3x3matrix *in){
 	// useful constants:
 	// F_1_2   = 1/2
 	// F_1_2S3 = 1/(2*sqrt(3))
@@ -312,12 +312,12 @@ hmc_error multiply_generator_3x3matrix (hmc_3x3matrix * out, int gen_index, hmc_
 			(*out)[2][2].im = -F_1_S3*(*in)[2][2].im;
 			break;
 		default:
-			return HMC_INVALID_GENERATOR_INDEX;
+		  throw Print_Error_Message("INVALID_GENERATOR_INDEX",__FILE__,__LINE__);
 	}
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error multiply_3x3matrix_generator (hmc_3x3matrix * out, hmc_3x3matrix *in, int gen_index){
+void multiply_3x3matrix_generator (hmc_3x3matrix * out, hmc_3x3matrix *in, int gen_index){
 	// useful constants:
 	// F_1_2   = 1/2
 	// F_1_2S3 = 1/(2*sqrt(3))
@@ -487,12 +487,12 @@ hmc_error multiply_3x3matrix_generator (hmc_3x3matrix * out, hmc_3x3matrix *in, 
 			(*out)[2][2].im = -F_1_S3*(*in)[2][2].im;
 			break;
 			default:
-				return HMC_INVALID_GENERATOR_INDEX;
+			  throw Print_Error_Message("HMC_INVALID_GENERATOR_INDEX",__FILE__,__LINE__);
 	}
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error multiply_generator_su3matrix (hmc_3x3matrix * out, int gen_index, hmc_su3matrix *in){
+void multiply_generator_su3matrix (hmc_3x3matrix * out, int gen_index, hmc_su3matrix *in){
 	// if needed, construct the full 3x3 matrix and then invoke the general_3x3 version of this
 	// SL: not yet tested!
 	#ifdef _RECONSTRUCT_TWELVE_
@@ -513,7 +513,7 @@ hmc_error multiply_generator_su3matrix (hmc_3x3matrix * out, int gen_index, hmc_
 	return multiply_generator_3x3matrix(out, gen_index, _MULTIPLY_SU3MATRIX_GENERATOR_TARGET_);
 }
 
-hmc_error multiply_su3matrix_generator (hmc_3x3matrix * out, hmc_su3matrix *in, int gen_index){
+void multiply_su3matrix_generator (hmc_3x3matrix * out, hmc_su3matrix *in, int gen_index){
 	// if needed, construct the full 3x3 matrix and then invoke the general_3x3 version of this
 	// SL: not yet tested!
 	#ifdef _RECONSTRUCT_TWELVE_
@@ -535,7 +535,7 @@ hmc_error multiply_su3matrix_generator (hmc_3x3matrix * out, hmc_su3matrix *in, 
 }
 
 
-hmc_error construct_3x3_combination(hmc_float beta_0, hmc_float gamma_0, hmc_float beta[], hmc_float gamma[], hmc_3x3matrix out){
+void construct_3x3_combination(hmc_float beta_0, hmc_float gamma_0, hmc_float beta[], hmc_float gamma[], hmc_3x3matrix out){
 	// called by build_su3matrix_by_exponentiation in case of "smart" approach
 	// takes the 2*(8+1) real parameters beta_0, gamma_0, beta[8], gamma[8] and compiles
 	// all components of the generic 3x3 complex matrix that is the linear combination of identity+generators
@@ -559,10 +559,10 @@ hmc_error construct_3x3_combination(hmc_float beta_0, hmc_float gamma_0, hmc_flo
 	out[2][1].im = 0.5*(gamma[5]+beta[6]);
 	out[2][2].re = beta_0 + 2*redb8;
 	out[2][2].im = gamma_0 - 2*redg8;
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error su3matrix_to_3x3matrix (hmc_3x3matrix * out, hmc_su3matrix * in)
+void su3matrix_to_3x3matrix (hmc_3x3matrix * out, hmc_su3matrix * in)
 {
   #ifdef _RECONSTRUCT_TWELVE_
   for (int i=0; i< NC-1; i++)
@@ -585,5 +585,5 @@ hmc_error su3matrix_to_3x3matrix (hmc_3x3matrix * out, hmc_su3matrix * in)
     }
   }
   #endif
-  return HMC_SUCCESS;
+  return; 
 }
