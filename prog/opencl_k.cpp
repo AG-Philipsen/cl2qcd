@@ -146,17 +146,20 @@ void Opencl_k::run_kappa_clover_gpu(const hmc_float beta, usetimer * timer, hmc_
 
 }
 
-void Opencl_k::finalize()
+void Opencl_k::finalize_k()
 {
 
   cl_int clerr = CL_SUCCESS;
 
-	if(get_init_status() == 1) {
+  //	if(get_init_status() == 1) {
+	  /*
 		clerr = clFlush(queue);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFlush",__FILE__,__LINE__);
 		clerr = clFinish(queue);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
+	  */
 
+	  /* //this should be part of opencl_heatbath
 		clerr = clReleaseKernel(heatbath_even);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 		clerr = clReleaseKernel(heatbath_odd);
@@ -175,17 +178,21 @@ void Opencl_k::finalize()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 		clerr = clReleaseKernel(polyakov_reduction);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	  */
 
 		clerr = clReleaseKernel(kappa_karsch_gpu);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 		clerr = clReleaseKernel(kappa_clover_gpu);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 
+		/*
 		clerr = clReleaseMemObject(clmem_gaugefield);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
 		clerr = clReleaseMemObject(clmem_rndarray);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
+		*/
 
+		/*
 		clerr = clReleaseMemObject(clmem_plaq);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
 		clerr = clReleaseMemObject(clmem_tplaq);
@@ -194,12 +201,14 @@ void Opencl_k::finalize()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
 		clerr = clReleaseMemObject(clmem_polyakov);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
+		*/
 
 		clerr = clReleaseMemObject(clmem_kappa_karsch);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
 		clerr = clReleaseMemObject(clmem_kappa_clover);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
 
+		/*
 		if(clmem_plaq_buf_glob) {
 		  clerr = clReleaseMemObject(clmem_plaq_buf_glob);
 		  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
@@ -216,6 +225,8 @@ void Opencl_k::finalize()
 		  clerr = clReleaseMemObject(clmem_polyakov_buf_glob);
 		  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
 		}
+		*/
+
 		if(clmem_kappa_karsch_buf_glob){
 		  clerr = clReleaseMemObject(clmem_kappa_karsch_buf_glob);
 		  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
@@ -225,12 +236,14 @@ void Opencl_k::finalize()
 		  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
 		}
 
+		/*
 		clerr = clReleaseCommandQueue(queue);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseCommandQueue",__FILE__,__LINE__);
 		clerr = clReleaseContext(context);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseContext",__FILE__,__LINE__);
+		*/
 
-		set_init_false();
-	}
+		//		set_init_false();
+		//	}
 	return;
 }

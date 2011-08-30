@@ -5,7 +5,9 @@
 #ifndef _GAUGEFIELDKH_
 #define _GAUGEFIELDKH_
 
+#include "gaugefield.h"
 #include "gaugefield_heatbath.h"
+#include "opencl_heatbath.h"
 #include "opencl_k.h"
 
 class Gaugefield_k : public Gaugefield_heatbath  {
@@ -17,12 +19,18 @@ class Gaugefield_k : public Gaugefield_heatbath  {
    * @param devicetypes array of cl_device_type handles
    * @param[in,out] timer timer for initialization
    */
-  virtual void init_devices(cl_device_type* devicetypes, usetimer* timer);
+  virtual void init_devices(cl_device_type* devicetypes);
 
 	/**
 	 * Free device, called by finalize
 	 */
 	virtual void free_devices();
+
+  /**
+   * Free gaugefield and device allocations.
+   */
+  virtual void finalize();
+
 	
 	/**
 	 * Returns the transport coefficient kappa computed by Karsch&Wyld's method

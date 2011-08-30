@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
 
 	//GPU
 		gaugefield.kappa_karsch_gpu (&timer_karsch);
-	//     	err = gaugefield.kappa_clover_gpu (&timer_clover);
+		gaugefield.kappa_clover_gpu (&timer_clover);
 	
 	//CPU
 	gaugefield.sync_gaugefield();

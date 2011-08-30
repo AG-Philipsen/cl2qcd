@@ -34,7 +34,7 @@ public:
 	/**
 	 * Called by the destructor.
 	 */
-	virtual void finalize();
+	void finalize_k();
 
 	void run_kappa_karsch_gpu(const hmc_float beta, usetimer * timer, hmc_float * kappa_karsch_out);
 	void run_kappa_clover_gpu(const hmc_float beta, usetimer * timer, hmc_float * kappa_clover_out);
