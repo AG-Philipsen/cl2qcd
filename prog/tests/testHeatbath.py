@@ -5,7 +5,7 @@ import re
 import sys
 
 # use a rather large tolerance as we don't want to have to do too many iterations
-tolerance = .1
+tolerance = .3
 
 def compareFloat(reference, actual, precision):
 	return actual > reference * (1.0 - precision / 100) and actual < reference * (1.0 + precision / 100)
