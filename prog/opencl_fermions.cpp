@@ -1471,7 +1471,7 @@ void Opencl_fermions::finalize_fermions()
 	clerr = clReleaseKernel(create_point_source);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 
-	if(get_parameters()->get_use_eo() == false) {
+	if(get_parameters()->get_use_eo()) {
 		clerr = clReleaseKernel(convert_to_kappa_format_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 		clerr = clReleaseKernel(convert_from_kappa_format_eoprec);
@@ -1502,7 +1502,7 @@ void Opencl_fermions::finalize_fermions()
 	clerr = clReleaseMemObject(clmem_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
 
-	if(get_parameters()->get_use_eo() == false) {
+	if(get_parameters()->get_use_eo()) {
 		clerr = clReleaseMemObject(clmem_inout_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
 		clerr = clReleaseMemObject(clmem_source_even);
