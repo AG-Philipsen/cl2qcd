@@ -1,6 +1,6 @@
 #include "exceptions.h"
 
-File_Exception::File_Exception(char* name) {
+File_Exception::File_Exception(const char* name) {
   filename = name;
   return;
 }

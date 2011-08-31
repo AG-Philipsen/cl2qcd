@@ -14,7 +14,7 @@
 
 class File_Exception {
  public:
-  File_Exception(char* name);
+  File_Exception(const char* name);
   File_Exception(std::string name);
   std::string get_filename();
  private:
