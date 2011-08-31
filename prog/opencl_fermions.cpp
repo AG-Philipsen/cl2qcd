@@ -163,6 +163,10 @@ void Opencl_fermions::fill_kernels()
 	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl"
 	                     << "operations_spinor.cl" << "spinorfield.cl";
 
+	M_wilson = 0;
+	M_tm_plus = 0;
+	M_tm_minus = 0;
+
 	logger.debug() << "Create fermion kernels...";
 	if(get_parameters()->get_fermact() == WILSON){
 		M_wilson = createKernel("M_wilson") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m.cl";
@@ -1429,8 +1433,18 @@ void Opencl_fermions::finalize_fermions()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 	clerr = clReleaseKernel(set_spinorfield_cold);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
-	clerr = clReleaseKernel(M_wilson);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	if(M_wilson) {
+		clerr = clReleaseKernel(M_wilson);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	}
+	if(M_tm_plus) {
+		clerr = clReleaseKernel(M_tm_plus);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	}
+	if(M_tm_minus) {
+		clerr = clReleaseKernel(M_tm_minus);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	}
 	clerr = clReleaseKernel(saxpy);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 	clerr = clReleaseKernel(saxsbypz);
@@ -1457,7 +1471,7 @@ void Opencl_fermions::finalize_fermions()
 	clerr = clReleaseKernel(create_point_source);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 
-	if(get_parameters()->get_use_eo() == false) {
+	if(get_parameters()->get_use_eo()) {
 		clerr = clReleaseKernel(convert_to_kappa_format_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 		clerr = clReleaseKernel(convert_from_kappa_format_eoprec);
@@ -1484,24 +1498,11 @@ void Opencl_fermions::finalize_fermions()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
 	clerr = clReleaseMemObject(clmem_source);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
-	clerr = clReleaseMemObject(clmem_rn);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
-	clerr = clReleaseMemObject(clmem_rhat);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
-	clerr = clReleaseMemObject(clmem_v);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
-	clerr = clReleaseMemObject(clmem_p);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
-	clerr = clReleaseMemObject(clmem_s);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
-	clerr = clReleaseMemObject(clmem_t);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
-	clerr = clReleaseMemObject(clmem_aux);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
 	clerr = clReleaseMemObject(clmem_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
 
-	if(get_parameters()->get_use_eo() == false) {
+	if(get_parameters()->get_use_eo()) {
 		clerr = clReleaseMemObject(clmem_inout_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
 		clerr = clReleaseMemObject(clmem_source_even);

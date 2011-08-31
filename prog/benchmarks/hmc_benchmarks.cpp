@@ -5,7 +5,7 @@ int main(int argc, char* argv[])
 
 	if(argc != 2) {
 		logger.fatal() << "need file name for input parameters";
-		return HMC_FILEERROR;
+		throw File_Exception("No file given");
 	}
 
 	char* inputfile = argv[1];
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters);
 	logger.trace()<< "initial gaugeobservables:";
 	gaugefield.print_gaugeobservables(&poly_timer, &plaq_timer);
-	gaugefield.copy_gaugefield_to_devices(&copy_to_from_dev_timer);
+	gaugefield.copy_gaugefield_to_devices();
 	logger.trace() << "Moved stuff to device";
 	init_timer.add();
 	
@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	total_timer.add();
-	general_time_output(&total_timer, &init_timer, &perform_timer, &copy_to_from_dev_timer, &copy_on_dev_timer, &plaq_timer, &poly_timer);
+	general_time_output(&total_timer, &init_timer, &perform_timer, gaugefield.get_copy_to(), gaugefield.get_copy_on(), &plaq_timer, &poly_timer);
 	
 	//CP: this is just a fist version and will go into an own file later
 	stringstream profiling_out;
@@ -90,8 +90,7 @@ int main(int argc, char* argv[])
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	err = gaugefield.finalize();
-	if (err!= HMC_SUCCESS) 
-		logger.fatal() << "error in finalizing " << argv[0];
-	return HMC_SUCCESS;
+	gaugefield.finalize();
+
+	return 0;
 }

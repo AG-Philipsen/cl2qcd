@@ -10,6 +10,7 @@
 #include "../host_random.h"
 #include "../opencl.h"
 #include "../logger.hpp"
+#include "../exceptions.h"
 
 namespace po = boost::program_options;
 
@@ -34,10 +35,10 @@ public:
 	Device(cl_device_type device_type) : Opencl() {
 		Opencl::init(device_type, &params, 0); /* init in body for proper this-pointer */
 	};
-	virtual hmc_error fill_buffers();
+	virtual void fill_buffers();
 	virtual void fill_kernels();
-	virtual hmc_error clear_buffers();
-	virtual hmc_error clear_kernels();
+	virtual void clear_buffers();
+	virtual void clear_kernels();
 	~Device() {
 		finalize();
 	};
@@ -129,7 +130,7 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-hmc_error Device::fill_buffers()
+void Device::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
@@ -138,16 +139,14 @@ hmc_error Device::fill_buffers()
 	in = clCreateBuffer(context, CL_MEM_READ_ONLY, MAX_MEM_SIZE, 0, &err );
 	if(err) {
 		logger.fatal() << "Unable to allocate memory on device";
-		exit(HMC_OCLERROR);
+		throw Opencl_Error(err);
 	}
 
 	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, MAX_MEM_SIZE, 0, &err );
 	if(err) {
 		logger.fatal() << "Unable to allocate memory on device";
-		exit(HMC_OCLERROR);
+		throw Opencl_Error(err);
 	}
-
-	return HMC_SUCCESS;
 }
 
 void Device::fill_kernels()
@@ -158,26 +157,20 @@ void Device::fill_kernels()
 	su3Kernel = createKernel("copySU3") << "microbenchmarks/bandwidth.cl";
 }
 
-hmc_error Device::clear_buffers()
+void Device::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
 	clReleaseMemObject(in);
 	clReleaseMemObject(out);
-
-	return HMC_SUCCESS;
 }
 
-hmc_error Device::clear_kernels()
+void Device::clear_kernels()
 {
-	int clerr = HMC_SUCCESS;
-
 	// don't invoke parent function as we don't require the original kernels
 
 	clReleaseKernel(floatKernel);
 	clReleaseKernel(su3Kernel);
-
-	return clerr;
 }
 
 
@@ -208,22 +201,22 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &in);
 	if(err) {
 		logger.fatal() << "Failed to set kernel argument: " << err;
-		exit(HMC_OCLERROR);
+		throw Opencl_Error(err);
 	}
 	err = clSetKernelArg(kernel, 1, sizeof(cl_mem), &in);
 	if(err) {
 		logger.fatal() << "Failed to set kernel argument: " << err;
-		exit(HMC_OCLERROR);
+		throw Opencl_Error(err);
 	}
 	err = clSetKernelArg(kernel, 2, sizeof(cl_ulong), &elems);
 	if(err) {
 		logger.fatal() << "Failed to set kernel argument: " << err;
-		exit(HMC_OCLERROR);
+		throw Opencl_Error(err);
 	}
 	err = clSetKernelArg(kernel, 3, sizeof(cl_ulong), &threads_per_group);
 	if(err) {
 		logger.fatal() << "Failed to set kernel argument: " << err;
-		exit(HMC_OCLERROR);
+		throw Opencl_Error(err);
 	}
 
 	size_t num_meas = 10;
@@ -234,14 +227,14 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 	err = clFinish(queue);
 	if(err) {
 		logger.fatal() << "Failed to execute kernel: " << err;
-		exit(HMC_OCLERROR);
+		throw Opencl_Error(err);
 	}
 	for(size_t i = 1; i < num_meas; ++i)
 		enqueueKernel(kernel, total_threads, local_threads);
 	err = clFinish(queue);
 	if(err) {
 		logger.fatal() << "Failed to execute kernel: " << err;
-		exit(HMC_OCLERROR);
+		throw Opencl_Error(err);
 	}
 	int64_t kernelTime = timer.getTime() / num_meas;
 
