@@ -192,33 +192,47 @@ void Gaugefield::set_gaugefield_hot_new(s_gaugefield * field) {
 
 void Gaugefield::copy_gaugefield_to_devices()
 {
+	copy_to.reset();
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 	get_devices()[0].copy_gaugefield_to_device(get_sgf());
+
+	copy_to.add();
 	return;
 }
 
 void Gaugefield::sync_gaugefield()
 {
+	copy_to.reset();
+
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 	get_devices()[0].get_gaugefield_from_device(get_sgf());
+
+	copy_to.add();
 	return;
 }
 
 void Gaugefield::copy_rndarray_to_devices()
 {
-  //LZ: so far, we only use !!! 1 !!! device
-  // this function needs to be generalised to several devices and definition of subsets...
-  get_devices()[0].copy_rndarray_to_device(this->get_rndarray());
-  return;
+	copy_to.reset();
+
+	//LZ: so far, we only use !!! 1 !!! device
+	// this function needs to be generalised to several devices and definition of subsets...
+	get_devices()[0].copy_rndarray_to_device(this->get_rndarray());
+
+	copy_to.add();
+	return;
 }
 
 void Gaugefield::copy_rndarray_from_devices()
 {
+	copy_to.reset();
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-  get_devices()[0].copy_rndarray_from_device(this->get_rndarray());
+	get_devices()[0].copy_rndarray_from_device(this->get_rndarray());
+
+	copy_to.add();
 	return;
 }
 
@@ -626,4 +640,12 @@ hmc_ocl_ran* Gaugefield::get_rndarray(){
 
 size_t Gaugefield::get_numrndstates(){
   return numrndstates;
+}
+
+usetimer * Gaugefield::get_copy_on(){
+	return &copy_on;
+}
+
+usetimer * Gaugefield::get_copy_to(){
+	return &copy_to;
 }

@@ -322,6 +322,9 @@ public:
 	 */
 	size_t get_numrndstates();
 
+	usetimer * get_copy_to();
+	usetimer * get_copy_on();
+
 private:
 	Opencl ** devices;
 	inputparameters* parameters;
@@ -334,6 +337,12 @@ private:
 	size_t sizeof_rndarray;
 
 	hmc_ocl_ran* rndarray;
+
+	//bunch of timers
+	//this is used to measure data-transfer to and from the device
+	usetimer copy_to;
+	//this is used to measure data-transfer on the device
+	usetimer copy_on;
 };
 
 #endif /* _GAUGEFIELDH_ */
