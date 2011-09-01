@@ -68,7 +68,7 @@ void Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(usetime
       get_devices_fermions()[0].saxpy_device(get_devices_fermions()[0].get_clmem_inout(), get_devices_fermions()[0].get_clmem_corr(), get_devices_fermions()[0].get_clmem_minusone(), get_devices_fermions()[0].get_clmem_corr());
     }
   }
-  get_devices_fermions()[0].convert_from_kappa_format_device(get_devices_fermions()[0].get_clmem_corr(), get_devices_fermions()[0].get_clmem_corr());
+//   get_devices_fermions()[0].convert_from_kappa_format_device(get_devices_fermions()[0].get_clmem_corr(), get_devices_fermions()[0].get_clmem_corr());
 // 	get_devices_fermions()[0].convert_to_kappa_format_device(get_devices_fermions()[0].get_clmem_corr());
   return;
 }
