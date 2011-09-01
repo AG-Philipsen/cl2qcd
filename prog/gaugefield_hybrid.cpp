@@ -20,8 +20,8 @@ void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type, i
 
   init_devicetypearray(primary_device_type);
   init_opencl();
-  init_devices();
-  init_random_arrays();
+  this->init_devices();
+
 
   copy_gaugefield_to_all_devices();
 
@@ -160,36 +160,19 @@ void Gaugefield_hybrid::init_opencl(){
 
 void Gaugefield_hybrid::init_devices(){
 
-  //init devices
-  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  return;
-}
-
-void Gaugefield_hybrid::init_random_arrays(){
-  // Prepare random number arrays, for each task and device separately
-  numrndstates    = new int          [get_num_tasks()];
-  sizeof_rndarray = new size_t       [get_num_tasks()];
-  rndarray        = new hmc_ocl_ran* [get_num_tasks()];
+  opencl_modules = new Opencl_Module [get_num_tasks()];
   for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-    if(get_device_type(ntask) == CL_DEVICE_TYPE_GPU)
-      numrndstates[ntask] = 5120;
-    else
-      numrndstates[ntask] = 64;
-    rndarray[ntask] = new hmc_ocl_ran [numrndstates[ntask]];
-    sizeof_rndarray[ntask] = sizeof(hmc_ocl_ran)*numrndstates[ntask];
-    init_random_seeds(rndarray[ntask], "rand_seeds", numrndstates[ntask]);
+    opencl_modules[ntask].init(queue[ntask], &clmem_gaugefield, get_parameters(), max_compute_units[ntask], get_double_ext(ntask));
   }
 
   return;
 }
 
+
 void Gaugefield_hybrid::finalize(){
 
-  finalize_opencl();
-  delete_variables();
+  this->finalize_opencl();
+  this->delete_variables();
 
   return;
 }
@@ -198,18 +181,14 @@ void Gaugefield_hybrid::delete_variables(){
 
   delete [] sgf;
  
-  for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-      delete [] rndarray[ntask];
-  }
-  delete [] numrndstates;
-  delete [] sizeof_rndarray;
-  delete [] rndarray;
   delete [] devices;
   delete [] queue;
   delete [] device_double_extension;
   delete [] max_compute_units;
   
   delete [] devicetypes;
+
+  delete [] opencl_modules;
 
   return;
 }
@@ -346,6 +325,10 @@ void Gaugefield_hybrid::copy_gaugefield_from_device(int ntask){
   return;
 }
 
+cl_mem* Gaugefield_hybrid::get_clmem_gaugefield(){
+  return &clmem_gaugefield;
+}
+
 void Gaugefield_hybrid::set_num_tasks (int num){
 	num_tasks = num;
 	return;
@@ -355,6 +338,15 @@ int Gaugefield_hybrid::get_num_tasks (){
 	return num_tasks;
 }
 
+int Gaugefield_hybrid::get_max_compute_units(int ntask){
+  if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("rndarray index out of range",__FILE__,__LINE__); 
+  return max_compute_units[ntask];
+}
+
+string Gaugefield_hybrid::get_double_ext(int ntask){
+  if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("rndarray index out of range",__FILE__,__LINE__); 
+  return device_double_extension[ntask];
+}
 
 inputparameters * Gaugefield_hybrid::get_parameters (){
 	return  parameters;
@@ -365,6 +357,7 @@ void Gaugefield_hybrid::set_parameters (inputparameters * parameters_val){
 	return;
 }
 
+
 s_gaugefield * Gaugefield_hybrid::get_sgf (){
     return sgf;
 }
@@ -374,10 +367,6 @@ void Gaugefield_hybrid::set_sgf (s_gaugefield * sgf_val){
 	return;
 }
 
-hmc_ocl_ran* Gaugefield_hybrid::get_rndarray(int ntask){
-  if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("rndarray index out of range",__FILE__,__LINE__); 
-  return rndarray[ntask];
-}
 
 cl_device_type Gaugefield_hybrid::get_device_type(int ntask){
   if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range",__FILE__,__LINE__); 

@@ -139,6 +139,7 @@ add_executable( tk_kappa_hybrid
 	host_operations_su3matrix.cpp
 	host_operations_matrix.cpp
 	gaugefield_hybrid.cpp
+	gaugefield_heatbath_kappa.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
 	host_random.cpp
@@ -146,6 +147,8 @@ add_executable( tk_kappa_hybrid
 	host_writegaugefield.cpp
 	logger.cpp
 	exceptions.cpp
+	opencl_module.cpp
+	opencl_compiler.cpp
 )
 target_link_libraries( tk_kappa_hybrid
 	${OPENCL_LIBRARIES}

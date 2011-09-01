@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 	// Initialization
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	Gaugefield_hybrid gaugefield;
+	Gaugefield_heatbath_kappa gaugefield;
 	int numtasks = 2;
 	cl_device_type primary_device_type = CL_DEVICE_TYPE_GPU;
 	gaugefield.init(numtasks, primary_device_type, &parameters);

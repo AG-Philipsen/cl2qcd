@@ -27,6 +27,7 @@
 #endif
 
 #include "exceptions.h"
+#include "opencl_module.h"
 
 #include "logger.hpp"
 
@@ -52,16 +53,15 @@ public:
 
   void init_devicetypearray(cl_device_type primary_device_type);
   void init_opencl();
-  void init_devices();
-  void init_random_arrays();
+  virtual void init_devices();
 
   /**
    * Free gaugefield and device allocations.
    */
   void finalize();
 
-  void delete_variables();
-  void finalize_opencl();
+  virtual void delete_variables();
+  virtual void finalize_opencl();
 
   /**
    * Initializes the gaugefield, to be called by init()
@@ -121,13 +121,10 @@ public:
    */
   s_gaugefield * get_sgf ();
 
-  /**
-   * Returns private member * rndarray for given task
-   * @param[in] ntask task identifier
-   * @param[in] ndevice device identifier
-   * @return rndarray
-   */
-  hmc_ocl_ran* get_rndarray(int ntask);
+  cl_mem* get_clmem_gaugefield();
+
+  int get_max_compute_units(int ntask);
+  string get_double_ext(int ntask);
 
   /**
    * Returns device type for given task.
@@ -159,23 +156,20 @@ public:
   void print_gaugeobservables(int iter);
   void print_gaugeobservables(int iter, std::string filename);
 
+  cl_device_type* devicetypes;
+  Opencl_Module * opencl_modules;
+  
+  cl_command_queue* queue;
+
 private:
 
   inputparameters* parameters;
   s_gaugefield * sgf;
   int num_tasks;
   
-  int* numrndstates;
-  size_t* sizeof_rndarray;
-  hmc_ocl_ran** rndarray;
-	
-  cl_device_type* devicetypes;
-  //	Opencl ** devices;
-  
   //OpenCL:
   cl_platform_id platform;
   cl_context context;
-  cl_command_queue* queue;
   cl_device_id* devices;
 
   string* device_double_extension;
