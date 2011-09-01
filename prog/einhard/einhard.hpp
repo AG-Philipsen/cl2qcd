@@ -45,6 +45,15 @@
  * and debug messages in a way that should allow the compilers dead code elimination to remove
  * everything that is only pushed into such a stream.
  *
+ * You can use all of the normal C++ stream modifiers like std::setw, std::setfill and std::setprecision.
+ *
+ * \code
+ * using namespace std;
+ * ...
+ * logger.info() << "Iterations: " << setfill(' ') << setw(5) << count;
+ * logger.info() << "Load: " << setprecision(1) << load << "%";
+ * \endcode
+ *
  * \section install_sec Installation
  *
  * Einhard is build using cmake. You can install it using the usual cmake triplet:
