@@ -22,12 +22,12 @@ public:
 	/**
 	 * Perform one heatbath step.
 	 */
-	hmc_error run_heatbath();
+	void run_heatbath();
 
 	/**
 	 * Perform one overrelaxation step.
 	 */
-	hmc_error run_overrelax();
+	void run_overrelax();
 
 	/**
 	 * Calculate plaquette and polyakov.
@@ -38,9 +38,6 @@ public:
 	 * @param[out] pol Storage for result of polyakov calculation
 	 * @param[in,out] timer1 Timer into which to aggregate plaquette calculation time
 	 * @param[in,out] timer2 Timer into which to aggregate polyakov calculation time
-	 * @return Error code as defined in hmcerrs.h:
-	 *         @li HMC_OCLERROR if OpenCL operations fail
-	 *         @li HMC_SUCCESS otherwise
 	 */
 	//protected:
 
@@ -48,13 +45,13 @@ public:
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual hmc_error fill_collect_options(stringstream* collect_options);
+	virtual void fill_collect_options(stringstream* collect_options);
 
 	/**
 	 * Collect the buffers to generate for OpenCL.
 	 * Virtual method, allows to include more buffers in inherited classes.
 	 */
-	virtual hmc_error fill_buffers();
+	virtual void fill_buffers();
 
 	/**
 	 * Collect the kernels for OpenCL.
@@ -69,13 +66,13 @@ public:
 	 * Clear out the kernels,
 	 * Virtual method, allows to clear additional kernels in inherited classes.
 	 */
-	virtual hmc_error clear_kernels();
+	virtual void clear_kernels();
 
 	/**
 	 * Clear out the buffers,
 	 * Virtual method, allows to clear additional buffers in inherited classes.
 	 */
-	virtual hmc_error clear_buffers();
+	virtual void clear_buffers();
 
 	///////////////////////////////////////////////////////////
 	//LZ what follows should eventually be private

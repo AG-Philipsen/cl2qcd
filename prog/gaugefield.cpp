@@ -1,17 +1,16 @@
 #include "gaugefield.h"
 
-hmc_error Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters){
+void Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters){
 
   int n_devs[1] = {numdevs};
   init(n_devs,1,devicetypes,input_parameters);
 
-  return HMC_SUCCESS;
+  return;
 
 }
 
-hmc_error Gaugefield::init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters)
+void Gaugefield::init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters)
 {
-
   if(input_parameters->get_use_gpu()) {
     numrndstates = 5120;
   } else {
@@ -42,10 +41,10 @@ hmc_error Gaugefield::init(int* numdevs, int numdevtypes, cl_device_type* device
 	
   this->init_devices(devicetypes);
 
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error Gaugefield::init_devicetypes_array(cl_device_type* devicetypes, inputparameters* parameters){
+void Gaugefield::init_devicetypes_array(cl_device_type* devicetypes, inputparameters* parameters){
 	/** @todo work this out! */
 	//Check if only one device should be used
 	if((*parameters).get_num_dev() == 1){
@@ -59,14 +58,12 @@ hmc_error Gaugefield::init_devicetypes_array(cl_device_type* devicetypes, inputp
 		devicetypes[1] = CL_DEVICE_TYPE_CPU;
 	}
 	//So far, more than 3 devices are not supported
-	else{
-		logger.fatal() << "Number of devices too big, aborting..." ;
-		return HMC_STDERR;
-	}
-	return HMC_SUCCESS;
+	else throw Print_Error_Message("Number of devices too big, aborting...",__FILE__,__LINE__);
+
+	return;
 }
 
-hmc_error Gaugefield::init_devices(cl_device_type* devicetypes)
+void Gaugefield::init_devices(cl_device_type* devicetypes)
 {
 // 	if(get_num_ocl_devices() != 1) {
 // 		//LZ: so far, we only use !!! 1 !!! device
@@ -86,36 +83,25 @@ hmc_error Gaugefield::init_devices(cl_device_type* devicetypes)
 		logger.debug() << "init device #" << n;
 		get_devices()[n].init(devicetypes[n], get_parameters(),numrndstates);
 	}
-	return HMC_SUCCESS;
+	return;
 }
 
 
-hmc_error Gaugefield::init_gaugefield()
+void Gaugefield::init_gaugefield()
 {
 
 	sourcefileparameters parameters_source;
 	if((get_parameters())->get_startcondition() == START_FROM_SOURCE) {
-		int err;
 		//hmc_gaugefield for filetransfer, initialize here, because otherwise it is not needed
 		hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
 		//tmp gauge field
 		hmc_float * gaugefield_tmp;
 		gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * NTIME * VOLSPACE);
-		err = parameters_source.readsourcefile(&(get_parameters()->sourcefile)[0], get_parameters()->get_prec(), &gaugefield_tmp);
-		if (err == 0) {
-			print_info_source(&parameters_source);
-		} else {
-			logger.fatal() << "error in setting vals from source!!! check global settings!! Aborting..";
-			exit( HMC_XMLERROR );
-		}
-		err = copy_gaugefield_from_ildg_format(gftmp, gaugefield_tmp, parameters_source.num_entries_source);
-		err = copy_gaugefield_to_s_gaugefield (get_sgf(), gftmp);
+		parameters_source.readsourcefile(&(get_parameters()->sourcefile)[0], get_parameters()->get_prec(), &gaugefield_tmp);
+		copy_gaugefield_from_ildg_format(gftmp, gaugefield_tmp, parameters_source.num_entries_source);
+		copy_gaugefield_to_s_gaugefield (get_sgf(), gftmp);
 		free(gaugefield_tmp);
 		free(gftmp);
-		if(err!=0) {
-			logger.fatal() << "error in initiating gaugefield from source!!! Aborting...";
-			exit( HMC_XMLERROR );
-		}
 	}
 	if(get_parameters()->get_startcondition() == COLD_START) {
 		set_gaugefield_cold_new(get_sgf());
@@ -124,10 +110,10 @@ hmc_error Gaugefield::init_gaugefield()
 		set_gaugefield_hot_new(get_sgf());
 	}
 	
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error Gaugefield::copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_gaugefield * gf){
+void Gaugefield::copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_gaugefield * gf){
   for (int d=0; d <NDIM; d++){
     for (int n=0; n<VOLSPACE; n++){
       for (int t=0; t<NTIME; t++){
@@ -153,10 +139,10 @@ hmc_error Gaugefield::copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_
       }
     }
   }
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error Gaugefield::copy_s_gaugefield_to_gaugefield(hmc_gaugefield * gf, s_gaugefield * sgfo){
+void Gaugefield::copy_s_gaugefield_to_gaugefield(hmc_gaugefield * gf, s_gaugefield * sgfo){
   for (int d=0; d <NDIM; d++){
     for (int n=0; n<VOLSPACE; n++){
       for (int t=0; t<NTIME; t++){
@@ -181,10 +167,10 @@ hmc_error Gaugefield::copy_s_gaugefield_to_gaugefield(hmc_gaugefield * gf, s_gau
       }
     }
   }
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error Gaugefield::set_gaugefield_cold_new (s_gaugefield * field) {
+void Gaugefield::set_gaugefield_cold_new (s_gaugefield * field) {
   for(int t=0; t<NTIME; t++) {
     for(int n=0; n<VOLSPACE; n++) {
       for(int mu=0; mu<NDIM; mu++) {
@@ -194,47 +180,60 @@ hmc_error Gaugefield::set_gaugefield_cold_new (s_gaugefield * field) {
       }
     }
   }
-  return HMC_SUCCESS;
+  return;
 }
 
 
 //Implement this
-hmc_error Gaugefield::set_gaugefield_hot_new(s_gaugefield * field) {
-  hmc_error err;
-  err = set_gaugefield_cold_new(field);
-  return HMC_SUCCESS;
+void Gaugefield::set_gaugefield_hot_new(s_gaugefield * field) {
+  set_gaugefield_cold_new(field);
+  return;
 }
 
-hmc_error Gaugefield::copy_gaugefield_to_devices()
+void Gaugefield::copy_gaugefield_to_devices()
 {
+	copy_to.reset();
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices()[0].copy_gaugefield_to_device(get_sgf());
-	return err;
+	get_devices()[0].copy_gaugefield_to_device(get_sgf());
+
+	copy_to.add();
+	return;
 }
 
-hmc_error Gaugefield::sync_gaugefield()
+void Gaugefield::sync_gaugefield()
 {
+	copy_to.reset();
+
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-	hmc_error err = get_devices()[0].get_gaugefield_from_device(get_sgf());
-	return err;
+	get_devices()[0].get_gaugefield_from_device(get_sgf());
+
+	copy_to.add();
+	return;
 }
 
-hmc_error Gaugefield::copy_rndarray_to_devices()
+void Gaugefield::copy_rndarray_to_devices()
 {
-  //LZ: so far, we only use !!! 1 !!! device
-  // this function needs to be generalised to several devices and definition of subsets...
-  hmc_error err = get_devices()[0].copy_rndarray_to_device(this->get_rndarray());
-  return err;
-}
+	copy_to.reset();
 
-hmc_error Gaugefield::copy_rndarray_from_devices()
-{
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
-  hmc_error err = get_devices()[0].copy_rndarray_from_device(this->get_rndarray());
-	return err;
+	get_devices()[0].copy_rndarray_to_device(this->get_rndarray());
+
+	copy_to.add();
+	return;
+}
+
+void Gaugefield::copy_rndarray_from_devices()
+{
+	copy_to.reset();
+	//LZ: so far, we only use !!! 1 !!! device
+	// this function needs to be generalised to several devices and definition of subsets...
+	get_devices()[0].copy_rndarray_from_device(this->get_rndarray());
+
+	copy_to.add();
+	return;
 }
 
 void Gaugefield::print_info_source(sourcefileparameters* params)
@@ -257,7 +256,7 @@ void Gaugefield::print_info_source(sourcefileparameters* params)
 }
 
 
-hmc_error Gaugefield::save(int number)
+void Gaugefield::save(int number)
 {
 	ildg_gaugefield * gaugefield_buf;
 	gaugefield_buf = (ildg_gaugefield*) malloc(sizeof(ildg_gaugefield));
@@ -285,7 +284,7 @@ hmc_error Gaugefield::save(int number)
 	free(gaugefield_buf);
 	free(gftmp);
 
-	return HMC_SUCCESS;
+	return;
 }
 void Gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2)
 {
@@ -329,7 +328,7 @@ void Gaugefield::print_gaugeobservables(usetimer * timer, usetimer * timer2, int
 	//printf("%d\t%f\t%f\t%f\t%f\t%f\n",iter,plaq,tplaq,splaq,pol.re,pol.im);
 	std::fstream gaugeout;
 	gaugeout.open(filename.c_str(), std::ios::out | std::ios::app);
-	if(!gaugeout.is_open()) exit(HMC_FILEERROR);
+	if(!gaugeout.is_open()) throw File_Exception(filename);
 	gaugeout.width(8);
 	gaugeout << iter;
 	gaugeout << "\t";
@@ -344,7 +343,7 @@ void Gaugefield::print_gaugeobservables(hmc_float plaq, hmc_float tplaq, hmc_flo
 	//printf("%d\t%f\t%f\t%f\t%f\t%f\n",iter,plaq,tplaq,splaq,pol.re,pol.im);
 	std::fstream gaugeout;
 	gaugeout.open(filename.c_str(), std::ios::out | std::ios::app);
-	if(!gaugeout.is_open()) exit(HMC_FILEERROR);
+	if(!gaugeout.is_open()) throw File_Exception(filename);
 	gaugeout.width(8);
 	gaugeout << iter;
 	gaugeout << "\t";
@@ -366,7 +365,7 @@ void Gaugefield::print_gaugeobservables(hmc_float plaq, hmc_float tplaq, hmc_flo
 	return;
 }
 
-hmc_error Gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, const int i, const string gaugeoutname, int stdout)
+void Gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol, const int i, const string gaugeoutname, int stdout)
 {
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
@@ -377,17 +376,17 @@ hmc_error Gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq
 	//if wanted, this prints the results to the screen
 	if(stdout)
 		print_gaugeobservables(*plaq, *tplaq, *splaq, *pol, i);
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error Gaugefield::print_gaugeobservables_from_devices(const int i, const string gaugeoutname, int stdout)
+void Gaugefield::print_gaugeobservables_from_devices(const int i, const string gaugeoutname, int stdout)
 {
 	hmc_float plaq, tplaq, splaq;
 	hmc_complex pol;
 
-	hmc_error err = print_gaugeobservables_from_devices(&plaq, &tplaq, &splaq, &pol, i, gaugeoutname, stdout);
+	print_gaugeobservables_from_devices(&plaq, &tplaq, &splaq, &pol, i, gaugeoutname, stdout);
 
-	return err;
+	return;
 }
 
 
@@ -527,16 +526,16 @@ hmc_complex Gaugefield::spatial_polyakov(int dir)
 }
 
 
-hmc_error Gaugefield::finalize()
+void Gaugefield::finalize()
 {
 	//free(get_gf());
 	free(get_sgf());
 	delete [] get_rndarray();
 	this->free_devices();
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error Gaugefield::free_devices()
+void Gaugefield::free_devices()
 {
   if(get_num_device_types()==1){
 	if(get_num_ocl_devices() > 0)
@@ -548,23 +547,23 @@ hmc_error Gaugefield::free_devices()
     }
     delete [] devices;
   }
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error Gaugefield::set_devices (Opencl * devices_val)
+void Gaugefield::set_devices (Opencl * devices_val)
 {
   set_devices(devices_val,0);
-  return HMC_SUCCESS;
+  return;
 }
 
-hmc_error Gaugefield::set_devices (Opencl * devices_val, int i)
+void Gaugefield::set_devices (Opencl * devices_val, int i)
 {
   if(get_num_device_types()==1) {
     devices[0] = devices_val;
   } else {
     devices[i] = devices_val;
   }
-	return HMC_SUCCESS;
+	return;
 }
 
 Opencl * Gaugefield::get_devices ()
@@ -582,10 +581,10 @@ Opencl * Gaugefield::get_devices (int i)
 }
 
 
-hmc_error Gaugefield::set_num_ocl_devices (int num)
+void Gaugefield::set_num_ocl_devices (int num)
 {
 	num_ocl_devices = num;
-	return HMC_SUCCESS;
+	return;
 }
 
 int Gaugefield::get_num_ocl_devices ()
@@ -594,10 +593,10 @@ int Gaugefield::get_num_ocl_devices ()
 }
 
 
-hmc_error Gaugefield::set_num_device_types (int num)
+void Gaugefield::set_num_device_types (int num)
 {
 	num_device_types = num;
-	return HMC_SUCCESS;
+	return;
 }
 
 int Gaugefield::get_num_device_types ()
@@ -606,10 +605,10 @@ int Gaugefield::get_num_device_types ()
 }
 
 
-hmc_error Gaugefield::set_parameters (inputparameters * parameters_val)
+void Gaugefield::set_parameters (inputparameters * parameters_val)
 {
 	parameters = parameters_val;
-	return HMC_SUCCESS;
+	return;
 }
 
 inputparameters * Gaugefield::get_parameters ()
@@ -623,15 +622,15 @@ s_gaugefield * Gaugefield::get_sgf (){
     return sgf;
 }
 	
-hmc_error Gaugefield::set_sgf (s_gaugefield * sgf_val){
+void Gaugefield::set_sgf (s_gaugefield * sgf_val){
 	sgf = sgf_val;
-	return HMC_SUCCESS;
+	return;
 }
 
 
-hmc_error Gaugefield::alloc_devicetypes(){
+void Gaugefield::alloc_devicetypes(){
   devices = new Opencl* [this->get_num_device_types()];
-  return HMC_SUCCESS;
+  return;
 }
 
 
@@ -641,4 +640,12 @@ hmc_ocl_ran* Gaugefield::get_rndarray(){
 
 size_t Gaugefield::get_numrndstates(){
   return numrndstates;
+}
+
+usetimer * Gaugefield::get_copy_on(){
+	return &copy_on;
+}
+
+usetimer * Gaugefield::get_copy_to(){
+	return &copy_to;
 }

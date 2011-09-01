@@ -29,10 +29,10 @@ public:
 	Device(cl_device_type device_type) : Opencl() {
 		Opencl::init(device_type, &params, 0); /* init in body for proper this-pointer */
 	};
-	virtual hmc_error fill_buffers();
+	virtual void fill_buffers();
 	virtual void fill_kernels();
-	virtual hmc_error clear_buffers();
-	virtual hmc_error clear_kernels();
+	virtual void clear_buffers();
+	virtual void clear_kernels();
 	~Device() {
 		finalize();
 	};
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE( GPU )
 	dev.verify();
 }
 
-hmc_error Device::fill_buffers()
+void Device::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
@@ -88,7 +88,7 @@ hmc_error Device::fill_buffers()
 	d_rand = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, NUM_ELEMENTS * sizeof(cl_int), h_rand, &err );
 	BOOST_REQUIRE_EQUAL(err,CL_SUCCESS);
 
-	return HMC_SUCCESS;
+	return;
 }
 
 void Device::fill_kernels()
@@ -98,7 +98,7 @@ void Device::fill_kernels()
 	extendKernel = createKernel("extendKernel") << basic_opencl_code << "tests/su2su3extend.cl";
 }
 
-hmc_error Device::clear_buffers()
+void Device::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
@@ -108,18 +108,16 @@ hmc_error Device::clear_buffers()
 	delete[] h_in;
 	delete[] h_out;
 
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error Device::clear_kernels()
+void Device::clear_kernels()
 {
-	int clerr = HMC_SUCCESS;
-
 	Opencl::clear_kernels();
 
 	clReleaseKernel(extendKernel);
 
-	return clerr;
+	return;
 }
 
 void Device::runExtendKernel() {

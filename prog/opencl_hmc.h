@@ -21,12 +21,12 @@ public:
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual hmc_error fill_collect_options(stringstream* collect_options);
+	virtual void fill_collect_options(stringstream* collect_options);
 	/**
 	 * Collect the buffers to generate for OpenCL.
 	 * Virtual method, allows to include more buffers in inherited classes.
 	 */
-	virtual hmc_error fill_buffers();
+	virtual void fill_buffers();
 	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
@@ -38,14 +38,10 @@ public:
 	 * @param wanted The OpenCL device type to be used, e.g. CL_DEVICE_TYPE_CPU or CL_DEVICE_TYPE_GPU
 	 * @param parameters The parsed input parameters
 	 * @param nstates Number of random states
-	 * @return Error code as defined in hmcerrs.h:
-	 *         @li HMC_OCLERROR if OpenCL initialization / operations fail
-	 *         @li HMC_FILEERROR if one of the kernel files cannot be opened
-	 *         @li HMC_SUCCESS otherwise
 	 */
-	virtual hmc_error init(cl_device_type wanted_device_type, inputparameters* parameters, int nstates);
+	virtual void init(cl_device_type wanted_device_type, inputparameters* parameters, int nstates);
 
-	hmc_error finalize_hmc();
+	void finalize_hmc();
 
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm

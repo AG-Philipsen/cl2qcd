@@ -19,12 +19,13 @@
 #include "host_operations_complex.h"
 #include "host_operations_gaugefield.h"
 #include "globaldefs.h"
-#include "hmcerrs.h"
 #include "types.h"
 #include "host_use_timer.h"
 #include "host_random.h"
 #include "inputparameters.h"
 #include "opencl_compiler.hpp"
+
+#include "exceptions.h"
 
 /**
  * An OpenCL device
@@ -69,12 +70,11 @@ public:
 	 * @param wanted The OpenCL device type to be used, e.g. CL_DEVICE_TYPE_CPU or CL_DEVICE_TYPE_GPU
 	 * @param timer The timer to use for reporting execution time
 	 * @param parameters The parsed input parameters
-	 * @return Error code as defined in hmcerrs.h:
 	 *         @li HMC_OCLERROR if OpenCL initialization / operations fail
 	 *         @li HMC_FILEERROR if one of the kernel files cannot be opened
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	virtual hmc_error init(cl_device_type wanted_device_type, inputparameters* parameters, int nstates);
+	virtual void init(cl_device_type wanted_device_type, inputparameters* parameters, int nstates);
 
 	/////////////////////////////
 	// communication
@@ -83,23 +83,21 @@ public:
 	 *
 	 * @param host_gaugefield The gaugefield to copy
 	 * @param timer The timer to use to measure the copying time
-	 * @return Error code as defined in hmcerrs.h:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error copy_gaugefield_to_device(s_gaugefield* gaugefield);
-//  hmc_error copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
+	void copy_gaugefield_to_device(s_gaugefield* gaugefield);
+//  void copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
 
 	/**
 	 * Copy the gaugefield from the device into the given memory location.
 	 *
 	 * @param host_gaugefield Storage location for the gaugefield
-	 * @return Error code as defined in hmcerrs.h:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error get_gaugefield_from_device(s_gaugefield* gaugefield);
-//  hmc_error get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
+	void get_gaugefield_from_device(s_gaugefield* gaugefield);
+//  void get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
 
 	/**
 	 * Calculate plaquette and polyakov of a specific gaugefield.
@@ -109,9 +107,6 @@ public:
 	 * @param[out] tplaq Storage for result of plaquette calculation
 	 * @param[out] splaq Storage for result of plaquette calculation
 	 * @param[out] pol Storage for result of polyakov calculation
-	 * @return Error code as defined in hmcerrs.h:
-	 *         @li HMC_OCLERROR if OpenCL operations fail
-	 *         @li HMC_SUCCESS otherwise
 	 */
 	void gaugeobservables(cl_mem gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
 	void plaquette_device(cl_mem gf);
@@ -119,13 +114,13 @@ public:
 	/**
 	 * This applies stout smearing to a gaugefield 
 	 */
-	hmc_error stout_smear_device();
+	void stout_smear_device();
 	
 	/**
 	 * returns init status
 	 * @return isinit (1==true, 0==false)
 	 */
-	hmc_error get_init_status();
+	int get_init_status();
 	/**
 	 * Returns private member * parameters
 	 * @todo parameters is only used in inherited classes
@@ -136,7 +131,7 @@ public:
 	 * Sets private member * parameters
 	 * @return parameters
 	 */
-	hmc_error set_parameters (inputparameters * parameters_val);
+	void set_parameters (inputparameters * parameters_val);
 
 	//protected:
 
@@ -144,13 +139,13 @@ public:
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual hmc_error fill_collect_options(stringstream* collect_options);
+	virtual void fill_collect_options(stringstream* collect_options);
 
 	/**
 	 * Collect the buffers to generate for OpenCL.
 	 * Virtual method, allows to include more buffers in inherited classes.
 	 */
-	virtual hmc_error fill_buffers();
+	virtual void fill_buffers();
 
 	/**
 	 * Collect the kernels for OpenCL.
@@ -164,12 +159,12 @@ public:
 	 * Sets initstatus to 1 (true)
 	 *
 	 */
-	hmc_error set_init_true();
+	void set_init_true();
 	/**
 	 * Sets initstatus to 0 (false)
 	 *
 	 */
-	hmc_error set_init_false();
+	void set_init_false();
 
 	/**
 	 * Returns clmem_gaugefield
@@ -189,19 +184,19 @@ public:
 	/**
 	 * Called by the destructor.
 	 */
-	virtual hmc_error finalize();
+	virtual void finalize();
 
 	/**
 	 * Clear out the kernels,
 	 * Virtual method, allows to clear additional kernels in inherited classes.
 	 */
-	virtual hmc_error clear_kernels();
+	virtual void clear_kernels();
 
 	/**
 	 * Clear out the buffers,
 	 * Virtual method, allows to clear additional buffers in inherited classes.
 	 */
-	virtual hmc_error clear_buffers();
+	virtual void clear_buffers();
 
 	/**
 	 * Contains the list of kernel files after call to fill_kernels_file().
@@ -281,8 +276,8 @@ public:
 	 * @param dev_type type of device on which the kernel should be executed
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
-	hmc_error get_work_sizes(size_t * ls, size_t * gs, cl_uint * num_groups, cl_device_type dev_type, string name = "dummy");
-	hmc_error get_work_sizes2(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
+	void get_work_sizes(size_t * ls, size_t * gs, cl_uint * num_groups, cl_device_type dev_type, string name = "dummy");
+	void get_work_sizes2(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
 	///////////////////////////////////////////////////////////
 	//LZ what follows should eventually be private
 	//heatbath variables
@@ -399,21 +394,19 @@ public:
 	 * Copy the RNG state to the appropriate OpenCL buffer.
 	 *
 	 * @param host_rndarray The RNG state to copy
-	 * @return Error code as defined in hmcerrs.h:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error copy_rndarray_to_device(hmc_ocl_ran* host_rndarray);
+	void copy_rndarray_to_device(hmc_ocl_ran* host_rndarray);
 
 	/**
 	 * Copy the RNG state from the OpenCL buffer.
 	 *
 	 * @param[out] rndarray The RNG copy target
-	 * @return Error code as defined in hmcerrs.h:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	hmc_error copy_rndarray_from_device(hmc_ocl_ran* rndarray);	
+	void copy_rndarray_from_device(hmc_ocl_ran* rndarray);	
 	
 	/**
 	 * Copy content of a buffer to another buffer inside a queue using 
@@ -470,7 +463,7 @@ protected:
 	int get_numthreads();
 
 private:
-	hmc_error init_basic(cl_device_type wanted_device_type, inputparameters* parameters, int nstates);
+	void init_basic(cl_device_type wanted_device_type, inputparameters* parameters, int nstates);
 
 	int num_rndstates;
 

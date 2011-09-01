@@ -4,15 +4,15 @@
 
 #include "logger.hpp"
 
-hmc_error Opencl_hmc::fill_collect_options(stringstream* collect_options)
+void Opencl_hmc::fill_collect_options(stringstream* collect_options)
 {
 
 	Opencl_fermions::fill_collect_options(collect_options);
 	*collect_options <<  " -DBETA=" << get_parameters()->get_beta() << " -DGAUGEMOMENTASIZE=" << get_parameters()->get_gaugemomentasize();
-	return HMC_SUCCESS;	
+	return;	
 }
 
-hmc_error Opencl_hmc::fill_buffers()
+void Opencl_hmc::fill_buffers()
 {
 	Opencl_fermions::fill_buffers();
 
@@ -36,7 +36,7 @@ hmc_error Opencl_hmc::fill_buffers()
 	clmem_new_p2 = create_rw_buffer(float_size);
 	clmem_s_fermion = create_rw_buffer(float_size);
 	
-	return HMC_SUCCESS;
+	return;
 }
 
 void Opencl_hmc::fill_kernels()
@@ -60,38 +60,56 @@ void Opencl_hmc::fill_kernels()
 	gaugemomentum_squarenorm = createKernel("gaugemomentum_squarenorm") << basic_hmc_code << "gaugemomentum_squarenorm.cl";
 }
 
-hmc_error Opencl_hmc::init(cl_device_type wanted_device_type, inputparameters* parameters, int nstates)
+void Opencl_hmc::init(cl_device_type wanted_device_type, inputparameters* parameters, int nstates)
 {
-  hmc_error err = Opencl_fermions::init(wanted_device_type, parameters,nstates);
+  Opencl_fermions::init(wanted_device_type, parameters,nstates);
 	
-	return err;
+	return;
 }
 
-hmc_error Opencl_hmc::finalize_hmc()
+void Opencl_hmc::finalize_hmc()
 {
+  cl_int clerr = CL_SUCCESS;
 
 	logger.debug() << "release HMC-variables.." ;
-	if(clReleaseMemObject(clmem_energy_init) != CL_SUCCESS) return HMC_RELEASEVARIABLEERR;
-	if(clReleaseMemObject(clmem_p2) != CL_SUCCESS) return HMC_RELEASEVARIABLEERR;
-	if(clReleaseMemObject(clmem_new_p2) != CL_SUCCESS) return HMC_RELEASEVARIABLEERR;
-	if(clReleaseMemObject(clmem_p) != CL_SUCCESS) return HMC_RELEASEVARIABLEERR;
-	if(clReleaseMemObject(clmem_new_p) != CL_SUCCESS) return HMC_RELEASEVARIABLEERR;
-	if(clReleaseMemObject(clmem_new_u) != CL_SUCCESS) return HMC_RELEASEVARIABLEERR;
-	if(clReleaseMemObject(clmem_phi_inv) != CL_SUCCESS) return HMC_RELEASEVARIABLEERR;
-	if(clReleaseMemObject(clmem_force) != CL_SUCCESS) return HMC_RELEASEVARIABLEERR;
+	clerr = clReleaseMemObject(clmem_energy_init);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_p2);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_new_p2);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_p);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_new_p);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_new_u);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_phi_inv);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
+	clerr = clReleaseMemObject(clmem_force);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
+
 
 	logger.debug() << "release HMC-kernels.." ;
-	if(clReleaseKernel(generate_gaussian_spinorfield) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
-	if(clReleaseKernel(generate_gaussian_gaugemomenta) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
-	if(clReleaseKernel(md_update_gaugefield) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
-	if(clReleaseKernel(md_update_gaugemomenta) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
-	if(clReleaseKernel(gauge_force) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
-	if(clReleaseKernel(fermion_force) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
-	if(clReleaseKernel(set_zero_gaugemomentum) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
+	clerr = clReleaseKernel(generate_gaussian_spinorfield);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(generate_gaussian_gaugemomenta);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(md_update_gaugefield);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(md_update_gaugemomenta);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(gauge_force);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(fermion_force);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(set_zero_gaugemomentum);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 	if(get_parameters()->get_use_smearing() == true){
-		if(clReleaseKernel(stout_smear_fermion_force) != CL_SUCCESS) return HMC_RELEASEKERNELERR;
+	  clerr = clReleaseKernel(stout_smear_fermion_force);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 	}
-	return HMC_SUCCESS;
+	return;
 }
 
 ////////////////////////////////////////////////////
@@ -106,15 +124,11 @@ void Opencl_hmc::generate_gaussian_gaugemomenta_device()
 	//set arguments
 	//this is always applied to clmem_new_p
 	int clerr = clSetKernelArg(generate_gaussian_gaugemomenta, 0, sizeof(cl_mem), &clmem_p);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+ 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(generate_gaussian_gaugemomenta, 1, sizeof(cl_mem), &clmem_rndarray);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( generate_gaussian_gaugemomenta , gs2, ls2);
 }
 
@@ -127,15 +141,11 @@ void Opencl_hmc::generate_gaussian_spinorfield_device()
 	//set arguments
 	//this is always applied to clmem_phi_inv, which can be done since the gaussian field is only needed in the beginning
 	int clerr = clSetKernelArg(generate_gaussian_spinorfield, 0, sizeof(cl_mem), &clmem_phi_inv);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(generate_gaussian_spinorfield, 1, sizeof(cl_mem), &clmem_rndarray);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel(generate_gaussian_spinorfield  , gs2, ls2);
 }
 
@@ -160,10 +170,8 @@ void Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, usetimer
 	//this is the number of int.steps for the fermion during one gauge-int.step
 	//this is done after hep-lat/0209037. See also hep-lat/050611v2 for a more advanced versions
 	int mult = steps1%steps2;
-	if( mult != 0){
-		logger.fatal() << "integrationsteps1 must be a multiple of integrationssteps2, nothing else is implemented yet. Aborting...";
-		exit(HMC_STDERR);
-	}
+	if( mult != 0) Print_Error_Message("integrationsteps1 must be a multiple of integrationssteps2, nothing else is implemented yet. Aborting...");
+
 	int m = steps1/steps2;
 	if(m == 1){
 		//this is the simplest case, just using 1 timescale
@@ -248,7 +256,6 @@ void Opencl_hmc::calc_total_force(usetimer * solvertimer){
 }
 
 void Opencl_hmc::calc_fermion_force(usetimer * solvertimer){
-	int err = HMC_SUCCESS;
 	//this is only used when smearing is activated
 	cl_mem gf_tmp;
 	
@@ -262,24 +269,18 @@ void Opencl_hmc::calc_fermion_force(usetimer * solvertimer){
 	
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 	if(get_parameters()->get_use_eo() == true){
-		if(get_parameters()->get_use_cg() == true){
-			//this is broken right now since the CG doesnt work!!
-			logger.debug() << "\t\tcalc fermion force ingredients using cg and eoprec";
-			logger.fatal() << "this is not implemented yet. Aborting..";
-			exit(HMC_STDERR); 
-		}
-		else{
-			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab and eoprec";
-			logger.fatal() << "this is not implemented yet. Aborting..";
-			exit(HMC_STDERR);
-		}
+	  if(get_parameters()->get_use_cg() == true){
+	    //this is broken right now since the CG doesnt work!!
+	    throw Print_Error_Message("\t\tcalc fermion force ingredients using cg and eoprec\nthis is not implemented yet. Aborting..");   
+	  }
+	  else{
+	    throw Print_Error_Message("\t\tcalc fermion force ingredients using bicgstab and eoprec\nthis is not implemented yet. Aborting..");
+	  }
 	}
-	else{
+	else {
 		if(get_parameters()->get_use_cg() == true){
 			//this is broken right now since the CG doesnt work!!
-			logger.debug() << "\t\tcalc fermion force ingredients using cg and no eoprec";
-			logger.fatal() << "this is not implemented yet. Aborting..";
-			exit(HMC_STDERR);
+		  throw Print_Error_Message("\t\tcalc fermion force ingredients using cg and no eoprec\nthis is not implemented yet. Aborting..");
 		}
 		else{
 			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab and no eoprec";
@@ -306,9 +307,7 @@ void Opencl_hmc::calc_fermion_force(usetimer * solvertimer){
 			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
 			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
 			 
-			err = Opencl_fermions::solver_device(Qplus_call, get_clmem_inout(), get_clmem_phi(), clmem_new_u, solvertimer, get_parameters()->get_cgmax());
-			if (err != HMC_SUCCESS) logger.debug() << "\t\t\tsolver did not solve!!";
-			else logger.debug() << "\t\t\tsolver solved!";
+			Opencl_fermions::solver_device(Qplus_call, get_clmem_inout(), get_clmem_phi(), clmem_new_u, solvertimer, get_parameters()->get_cgmax());
 			
 			//debugging
 			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
@@ -339,9 +338,7 @@ void Opencl_hmc::calc_fermion_force(usetimer * solvertimer){
 			//this sets clmem_inout cold as trial-solution
 			set_spinorfield_cold_device(get_clmem_inout());
 			
-			err = Opencl_fermions::solver_device(Qminus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, solvertimer, get_parameters()->get_cgmax());
-			if (err != HMC_SUCCESS) logger.debug() << "\t\t\tsolver did not solve!!";
-			else logger.debug() << "\t\t\tsolver solved!";
+			Opencl_fermions::solver_device(Qminus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, solvertimer, get_parameters()->get_cgmax());
 			
 			//debugging
 			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
@@ -360,7 +357,8 @@ void Opencl_hmc::calc_fermion_force(usetimer * solvertimer){
 		stout_smeared_fermion_force_device();
 		logger.debug() << "\t\t\trestore unsmeared gaugefield...";
 		copy_buffer_on_device(gf_tmp, get_clmem_gaugefield(), sizeof(s_gaugefield));
-		if(clReleaseMemObject(gf_tmp) != CL_SUCCESS) exit(HMC_OCLERROR);
+		cl_int clerr = clReleaseMemObject(gf_tmp);
+		if(clerr != CL_SUCCESS) Opencl_Error(clerr,"clReleaseMemObject",__FILE__,__LINE__);
 	}	
 }
 
@@ -466,20 +464,12 @@ void Opencl_hmc::md_update_gaugemomentum_device(hmc_float eps)
 	this->get_work_sizes2(md_update_gaugemomenta, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(md_update_gaugemomenta, 0, sizeof(hmc_float), &tmp);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
 	clerr = clSetKernelArg(md_update_gaugemomenta, 1, sizeof(cl_mem), &clmem_new_p);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+      	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
 	clerr = clSetKernelArg(md_update_gaugemomenta, 2, sizeof(cl_mem), &clmem_force);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 2 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel(md_update_gaugemomenta  , gs2, ls2);
 }
 
@@ -494,20 +484,14 @@ void Opencl_hmc::md_update_gaugefield_device(hmc_float eps)
 	//set arguments
 	//this is always applied to clmem_force
 	int clerr = clSetKernelArg(md_update_gaugefield, 0, sizeof(hmc_float), &tmp);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(md_update_gaugefield, 1, sizeof(cl_mem), &clmem_new_p);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(md_update_gaugefield, 2, sizeof(cl_mem), &clmem_new_u);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 2 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( md_update_gaugefield , gs2, ls2);
 }
 
@@ -520,10 +504,8 @@ void Opencl_hmc::set_zero_clmem_force_device()
 	//set arguments
 	//this is always applied to clmem_force
 	int clerr = clSetKernelArg(set_zero_gaugemomentum, 0, sizeof(cl_mem), &clmem_force);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( set_zero_gaugemomentum , gs2, ls2);
 }
 
@@ -535,15 +517,11 @@ void Opencl_hmc::gauge_force_device()
 	this->get_work_sizes2(gauge_force, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(gauge_force, 0, sizeof(cl_mem), &clmem_new_u);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(gauge_force, 1, sizeof(cl_mem), &clmem_force);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( gauge_force , gs2, ls2);
 }
 
@@ -557,25 +535,17 @@ void Opencl_hmc::fermion_force_device()
 	this->get_work_sizes2(fermion_force, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(fermion_force, 0, sizeof(cl_mem), &clmem_new_u);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(fermion_force, 1, sizeof(cl_mem), &clmem_phi_inv);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(fermion_force, 2, sizeof(cl_mem), &tmp);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 2 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	clerr = clSetKernelArg(fermion_force, 3, sizeof(cl_mem), &clmem_force);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 3 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel( fermion_force , gs2, ls2);
 }
 
@@ -598,16 +568,12 @@ void Opencl_hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clmem_in, c
 	//set arguments
 	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
 	int clerr = clSetKernelArg(gaugemomentum_squarenorm, 0, sizeof(cl_mem), &clmem_in);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 0 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 //  /** @todo add reduction */
 	clerr = clSetKernelArg(gaugemomentum_squarenorm, 1, sizeof(cl_mem), &clmem_out);
-	if(clerr != CL_SUCCESS) {
-		cout << "clSetKernelArg 1 failed, aborting..." << endl;
-		exit(HMC_OCLERROR);
-	}
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
 	enqueueKernel(gaugemomentum_squarenorm  , gs2, ls2);
 }
 

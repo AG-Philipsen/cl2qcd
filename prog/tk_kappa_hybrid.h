@@ -1,23 +1,15 @@
 /** @file
  *
- * Everything required by heatbath's main()
+ * Everything required by tk_kappa_hybrid's main()
  */
-#ifndef _TKKAPPAH_
-#define _TKKAPPAH_
-//should only be included in main prog
+#ifndef _TKKAPPAHYBRIDH_
+#define _TKKAPPAHYBRIDH_
 
-#include "heatbath.h"
-#include "gaugefield.h"
-#include "gaugefield_heatbath.h"
-#include "gaugefield_k_hybrid.h"
+#include "general_header.h"
 
-//couple of timers
-usetimer totaltime;
-usetimer inittime;
-usetimer polytime;
-usetimer plaqtime;
-usetimer updatetime;
-usetimer overrelaxtime;
-usetimer copytime;
+#include "host_operations_complex.h"
+#include "host_geometry.h"
+#include "gaugefield_hybrid.h"
+string const version = "0.1b";
 
-#endif /* _TKKAPPAH_ */
+#endif /* _TKKAPPAHYBRIDH_ */

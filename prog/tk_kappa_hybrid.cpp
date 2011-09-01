@@ -2,24 +2,19 @@
 
 int main(int argc, char* argv[])
 {
+  try {
 
-	if(argc != 2) {
-	  logger.warn() << "need file name for input parameters" ;
-	  return HMC_FILEERROR;
-	}
+    if(argc != 2) throw Print_Error_Message("Need file name for input parameters",__FILE__,__LINE__);
 
 	char* inputfile = argv[1];
 	inputparameters parameters;
 	parameters.readfile(inputfile);
 	parameters.print_info_tkkappa(argv[0]);
 
-	//name of file to store observables
+	//name of file to store gauge observables
 	stringstream gaugeout_name;
 	gaugeout_name << "gaugeobservables_beta" << parameters.get_beta();
-       	stringstream kappa_karsch_out;
-	kappa_karsch_out<<"kappa_karsch.dat";
-       	stringstream kappa_clover_out;
-	kappa_karsch_out<<"kappa_clover.dat";
+
 
 	fstream logfile;	
 	logfile.open("tk_kappa_hybrid.log", std::ios::out | std::ios::app);
@@ -27,98 +22,49 @@ int main(int argc, char* argv[])
 	  parameters.print_info_tkkappa(argv[0],&logfile);
 	  logfile.close();
 	} else {
-	  logger.warn() << "Could not open tk_kappa.log";
-	  exit(HMC_FILEERROR);
+	  throw File_Exception("tk_kappa_hybrid.log");
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Initialization
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	sourcefileparameters parameters_source;
+	Gaugefield_hybrid gaugefield;
+	int numtasks = 2;
+	cl_device_type primary_device_type = CL_DEVICE_TYPE_GPU;
+	gaugefield.init(numtasks, primary_device_type, &parameters);
 
-	Gaugefield_k_hybrid gaugefield;
-	cl_device_type devicetypes[2];
+	gaugefield.print_gaugeobservables(1);
 
-	devicetypes[0] = CL_DEVICE_TYPE_GPU;
-	devicetypes[1] = CL_DEVICE_TYPE_CPU;
+	gaugefield.synchronize(0);
 
-	int num_ocl_devices[2] = {1,1};
+	gaugefield.print_gaugeobservables(1);
 
-	gaugefield.init(num_ocl_devices, 2, devicetypes, &parameters);
-
-	gaugefield.copy_gaugefield_to_devices();
-
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Heatbath
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-	int ntherm = parameters.get_thermalizationsteps();
-	if(ntherm > 0) gaugefield.heatbath(ntherm, &updatetime);
-
-	int nsteps = parameters.get_heatbathsteps();
-	int overrelaxsteps = parameters.get_overrelaxsteps();
-	int writefreq = parameters.get_writefrequency();	//LZ Note: Use writefreq to determine frequency for kappa measurements 
-	int savefreq = parameters.get_savefrequency();
-	
-
-	logger.trace() << "Start heatbath and measurement of TK kappa" ;
-	
-	usetimer timer_karsch;
-	usetimer timer_clover;
-	hmc_float time_karsch = 0.;
-	hmc_float time_clover = 0.;
-	
-	
-	for(int i = 0; i < nsteps/writefreq; i++) {
-
-	  {
-	    
-	    for(int n=0; n<writefreq; n++) {
-	      gaugefield.heatbath(&updatetime);
-	      for(int j = 0; j < overrelaxsteps; j++)
-		gaugefield.overrelax(&overrelaxtime);
-	    }
-	    cout<<"print"<<endl;
-      	    gaugefield.print_gaugeobservables_from_devices(&plaqtime, &polytime, i, gaugeout_name.str());
-
-	    hmc_error err;
-	    err = gaugefield.kappa_karsch_gpu (&timer_karsch);
-	    err |= gaugefield.kappa_clover_gpu (&timer_clover);
-	    gaugefield.print_TK(kappa_karsch_out.str(),kappa_clover_out.str());
-	    
-	    time_karsch += timer_karsch.getTime();
-	    time_clover += timer_clover.getTime();
-	  
-	  } //end OMP sections
-	  gaugefield.sync_gaugefield();	    
-	  if( parameters.get_saveconfigs() && ( (i + 1) % savefreq ) == 0 ) 
-	    gaugefield.save(i);
-
- 	}
-	
-
-	logger.info() <<"Measurement TK kappa_karsch: " << time_karsch/1000000. / hmc_float (nsteps) << " s" ;
-	logger.info() <<"Measurement TK kappa_clover: " << time_clover/1000000. / hmc_float (nsteps) << " s" ;
-	
-	gaugefield.sync_gaugefield();
-	gaugefield.save(nsteps);
-	
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Final Output
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	totaltime.add();
-	// FIXME time_output_heatbath(&totaltime, &inittime, &polytime, &plaqtime, &updatetime, &overrelaxtime, &copytime);
-
+	gaugefield.save(2);
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	gaugefield.finalize();
+      	gaugefield.finalize();
 
-	return HMC_SUCCESS;
+
+  } //try
+  //exceptions from Opencl classes
+  catch (Opencl_Error& e) {
+    logger.fatal()<<e.what();
+    exit(1);
+  }
+  catch (File_Exception& fe) {
+    logger.fatal()<<"Could not open file: "<<fe.get_filename();
+    logger.fatal()<<"Aborting.";
+    exit(1);
+  }
+  catch (Print_Error_Message& em) {
+    logger.fatal()<<em.what();
+    exit(1);
+  }
+
+  return 0;
+
 }

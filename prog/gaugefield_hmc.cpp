@@ -4,7 +4,7 @@
 
 #include "logger.hpp"
 
-hmc_error Gaugefield_hmc::init_devices(cl_device_type* devicetypes)
+void Gaugefield_hmc::init_devices(cl_device_type* devicetypes)
 {
 // 	if(get_num_ocl_devices() != 1) {
 // 		//LZ: so far, we only use !!! 1 !!! device
@@ -21,24 +21,22 @@ hmc_error Gaugefield_hmc::init_devices(cl_device_type* devicetypes)
 		logger.debug() << "init device #" << n;
 		get_devices_hmc()[n].init(devicetypes[n], get_parameters(),this->get_numrndstates());
 	}
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error Gaugefield_hmc::finalize()
+void Gaugefield_hmc::finalize()
 {
-	hmc_error err = HMC_SUCCESS;
-	err |= Gaugefield_inversion::finalize();
+  Gaugefield_inversion::finalize();
 	for(int n = 0; n < get_num_ocl_devices(); n++)
-		err |= get_devices_hmc()[n].finalize_hmc();
-	
-	return err;
+	  get_devices_hmc()[n].finalize_hmc();
+	return;
 }
 
-hmc_error Gaugefield_hmc::free_devices()
+void Gaugefield_hmc::free_devices()
 {
 	if(get_num_ocl_devices() > 0)
 		delete [] get_devices_hmc();
-	return HMC_SUCCESS;
+	return;
 }
 
 Opencl_hmc * Gaugefield_hmc::get_devices_hmc ()
@@ -46,7 +44,7 @@ Opencl_hmc * Gaugefield_hmc::get_devices_hmc ()
 	return  (Opencl_hmc*)get_devices();
 }
 
-hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters, hmc_observables *obs, int iter, hmc_float rnd_number){
+void Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters, hmc_observables *obs, int iter, hmc_float rnd_number){
 	/////////////////////////////////////////////////////////////////////
 	//HMC-algorithm
 	
@@ -98,7 +96,7 @@ hmc_error Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters,
 	}
 	logger.trace()<< "\tfinished HMC trajectory " << iter ;
 	
-	return HMC_SUCCESS;
+	return;
 }
 
 void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::string filename)
@@ -108,7 +106,7 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::st
 // 	printf("Observables:%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\n",iter,obs.plaq,obs.tplaq,obs.splaq,obs.poly.re,obs.poly.im,obs.deltaH, exp_deltaH, obs.prob, obs.accept );
 	std::fstream hmcout;
 	hmcout.open(filename.c_str(), std::ios::out | std::ios::app);
-	if(!hmcout.is_open()) exit(HMC_FILEERROR);
+	if(!hmcout.is_open()) throw File_Exception(filename);
 	hmcout.width(8);
 	hmcout << iter;
 	hmcout << "\t";

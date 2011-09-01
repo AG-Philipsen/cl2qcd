@@ -18,26 +18,25 @@ class Gaugefield_inversion : public Gaugefield {
 
   /**
    * Initializes the devices, to be called by init()
-   * @return Error code as defined in hmcerrs.h
    * @param devicetypes array of cl_device_type handles
    */
-  virtual hmc_error init_devices(cl_device_type* devicetypes);
+  virtual void init_devices(cl_device_type* devicetypes);
 
   /**
    * Free gaugefield and device allocations.
    */
-  virtual hmc_error finalize();
+  virtual void finalize();
 
   /**
    * Perform inversion on device and print pseudo-scalar correlator to std.
    * Use point sources.
    */
-  hmc_error perform_inversion_pointsource_ps_corr_devices(usetimer* solvertimer);
+  void perform_inversion_pointsource_ps_corr_devices(usetimer* solvertimer);
 
   /**
    * Free device, called by finalize
    */
-  virtual hmc_error free_devices();
+  virtual void free_devices();
   
   /**
    * Returns private member opencl_k * devices

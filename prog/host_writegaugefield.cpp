@@ -4,7 +4,7 @@
 
 #include "logger.hpp"
 
-hmc_error make_binary_data_single(hmc_float * array, char * out, const int array_size, const size_t num_entries)
+void make_binary_data_single(hmc_float * array, char * out, const int array_size, const size_t num_entries)
 {
 	assert( num_entries == 4u * static_cast<size_t>(array_size) );
 	logger.trace() << "allocating buffer";
@@ -33,10 +33,10 @@ hmc_error make_binary_data_single(hmc_float * array, char * out, const int array
 	}
 
 	delete [] buf_tmp;
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error make_binary_data_double(hmc_float * array, char * out, const int array_size, const size_t num_entries)
+void make_binary_data_double(hmc_float * array, char * out, const int array_size, const size_t num_entries)
 {
 	assert( num_entries == 8u * static_cast<size_t>(array_size) );
 	char * buf_tmp = new char[num_entries];
@@ -67,11 +67,11 @@ hmc_error make_binary_data_double(hmc_float * array, char * out, const int array
 	}
 
 	delete[] buf_tmp;
-	return HMC_SUCCESS;
+	return;
 }
 
 
-hmc_error write_gaugefield (
+void write_gaugefield (
   ildg_gaugefield * array, int array_size,
   int lx, int ly, int lz, int lt, int prec, int trajectorynr, hmc_float plaquettevalue, hmc_float beta, hmc_float kappa, hmc_float mu, hmc_float c2_rec, hmc_float epsilonbar, hmc_float mubar,
   const char * hmc_version, const char * filename)
@@ -107,7 +107,7 @@ hmc_error write_gaugefield (
 		make_binary_data_double(reinterpret_cast<hmc_float*>(array), binary_data, array_size, num_entries);
 	} else if (prec == 32) {
 		make_binary_data_single(reinterpret_cast<hmc_float*>(array), binary_data, array_size, num_entries);
-	} else return HMC_STDERR;
+	} else throw Print_Error_Message("STDERR",__FILE__,__LINE__);
 
 	length_ildg_binary_data = num_entries;
 
@@ -236,5 +236,5 @@ hmc_error write_gaugefield (
 	logger.info() << "  " << (float) ( (float) (length_xlf_info + length_ildg_format + length_ildg_binary_data + length_scidac_checksum) / 1024 / 1024 ) << " MBytes were written to the lime file " << filename;
 
 	delete[] binary_data;
-	return HMC_SUCCESS;
+	return;
 }

@@ -14,12 +14,13 @@
 #include <fstream>
 
 #include "globaldefs.h"
-#include "hmcerrs.h"
 #include "types.h"
 #include "inputparameters.h"
 #include "host_readgauge.h"
 #include "host_use_timer.h"
 #include "host_random.h"
+
+#include "exceptions.h"
 
 #ifdef __APPLE__
 #include <OpenCL/cl.h>

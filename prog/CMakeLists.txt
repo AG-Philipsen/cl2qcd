@@ -138,16 +138,10 @@ add_executable( tk_kappa_hybrid
 	host_operations_gaugefield.cpp
 	host_operations_su3matrix.cpp
 	host_operations_matrix.cpp
-	gaugefield.cpp
-	gaugefield_k_hybrid.cpp
-	gaugefield_heatbath.cpp
+	gaugefield_hybrid.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
 	host_random.cpp
-	opencl.cpp
-	opencl_compiler.cpp
-	opencl_k_hybrid.cpp
-	opencl_heatbath.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
 	logger.cpp
@@ -161,6 +155,7 @@ target_link_libraries( tk_kappa_hybrid
 	klepsydra
 	einhard
 )
+
 add_executable( inverter
 	inverter.cpp
 	host_geometry.cpp

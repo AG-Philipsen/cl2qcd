@@ -1,7 +1,7 @@
 #include "gaugefield_inversion.h"
 
 
-hmc_error Gaugefield_inversion::init_devices(cl_device_type* devicetypes)
+void Gaugefield_inversion::init_devices(cl_device_type* devicetypes)
 {
 	if(get_num_ocl_devices() != 1) {
 		//LZ: so far, we only use !!! 1 !!! device
@@ -19,23 +19,22 @@ hmc_error Gaugefield_inversion::init_devices(cl_device_type* devicetypes)
 		logger.trace() << "init device #" << n ;
 		get_devices_fermions()[n].init(devicetypes[n], get_parameters(),this->get_numrndstates());
 	}
-	return HMC_SUCCESS;
+	return;
 }
 
-hmc_error Gaugefield_inversion::finalize()
+void Gaugefield_inversion::finalize()
 {
-	hmc_error err = HMC_SUCCESS;
-	err |= Gaugefield::finalize();
+	Gaugefield::finalize();
 	for(int n = 0; n < get_num_ocl_devices(); n++)
-		err |= get_devices_fermions()[n].finalize_fermions();
-	return err;
+		get_devices_fermions()[n].finalize_fermions();
+	return;
 }
 
-hmc_error Gaugefield_inversion::free_devices()
+void Gaugefield_inversion::free_devices()
 {
 	if(get_num_ocl_devices() > 0)
 		delete [] get_devices_fermions();
-	return HMC_SUCCESS;
+	return;
 }
 
 Opencl_fermions * Gaugefield_inversion::get_devices_fermions ()
@@ -43,7 +42,7 @@ Opencl_fermions * Gaugefield_inversion::get_devices_fermions ()
 	return  (Opencl_fermions*)get_devices();
 }
 
-hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(usetimer* solvertimer){
+void Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(usetimer* solvertimer){
 	int use_eo = get_parameters()->get_use_eo();
 
   if(use_eo==false){
@@ -69,8 +68,7 @@ hmc_error Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(us
       get_devices_fermions()[0].saxpy_device(get_devices_fermions()[0].get_clmem_inout(), get_devices_fermions()[0].get_clmem_corr(), get_devices_fermions()[0].get_clmem_minusone(), get_devices_fermions()[0].get_clmem_corr());
     }
   }
-  
-//   get_devices_fermions()[0].convert_from_kappa_format_device(get_devices_fermions()[0].get_clmem_corr(), get_devices_fermions()[0].get_clmem_corr());
+  get_devices_fermions()[0].convert_from_kappa_format_device(get_devices_fermions()[0].get_clmem_corr(), get_devices_fermions()[0].get_clmem_corr());
 // 	get_devices_fermions()[0].convert_to_kappa_format_device(get_devices_fermions()[0].get_clmem_corr());
-  return HMC_SUCCESS;
+  return;
 }

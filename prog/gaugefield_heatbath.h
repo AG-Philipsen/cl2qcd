@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "globaldefs.h"
-#include "hmcerrs.h"
 #include "types.h"
 #include "host_operations_complex.h"
 #include "host_operations_gaugefield.h"
@@ -43,18 +42,17 @@ public:
 	/**
 	 * Free gaugefield and device allocations.
 	 */
-	virtual hmc_error finalize();
+	virtual void finalize();
 	/**
 	 * Free device, called by finalize
 	 */
-	virtual hmc_error free_devices();
+	virtual void free_devices();
 	/**
 	 * Initializes the devices, to be called by init()
-	 * @return Error code as defined in hmcerrs.h
 	 * @param devicetypes array of cl_device_type handles
 	 * @param[in,out] timer timer for initialization
 	 */
-	virtual	hmc_error init_devices(cl_device_type* devicetypes);
+	virtual	void init_devices(cl_device_type* devicetypes);
 
 
 	//calculations on device
@@ -63,20 +61,20 @@ public:
 	 * @param[in] nheat number of heatbath steps
 	 * @param[in] nover number of overrelaxation steps
 	 */
-	hmc_error heatbath(const int nheat, const int nover);
+	void heatbath(const int nheat, const int nover);
 	/**
 	 * Perform a number of heatbath steps.
 	 * @param[in] nheat number of heatbath steps
 	 */
-	hmc_error heatbath(const int nheat);
+	void heatbath(const int nheat);
 	/**
 	 * Perform one heatbath step.
 	 */
-	hmc_error heatbath();
+	void heatbath();
 	/**
 	 * Perform one overrelaxation step.
 	 */
-	hmc_error overrelax();
+	void overrelax();
 
 	//access to private members
 	

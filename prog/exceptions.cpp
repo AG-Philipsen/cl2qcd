@@ -1,7 +1,12 @@
 #include "exceptions.h"
 
-File_Exception::File_Exception(char* name) {
+File_Exception::File_Exception(const char* name) {
   filename = name;
+  return;
+}
+
+File_Exception::File_Exception(std::string name) {
+  filename = name.c_str();
   return;
 }
 
@@ -54,3 +59,48 @@ Invalid_Parameters::Invalid_Parameters(std::string descr, int expected, int foun
 std::string Invalid_Parameters::what(){
   return error_message;
 }
+
+
+Opencl_Error::Opencl_Error(int clerr){
+  std::stringstream msg;
+  msg<<"OpenCL reported an error, error code: "<<clerr;
+  error_message = msg.str();
+  return;
+}
+
+Opencl_Error::Opencl_Error(int clerr, std::string clname){
+  std::stringstream msg;
+  msg<<"OpenCL reported an error in "<<clname<<", error code: "<<clerr;
+  error_message = msg.str();
+  return;
+}
+
+Opencl_Error::Opencl_Error(int clerr, std::string clname, std::string filename, int linenumber){
+  std::stringstream msg;
+  msg<<"OpenCL failed. Error code "<<clerr<<" in "<<clname<<" at "<<filename<<":"<<linenumber;
+  error_message = msg.str();
+  return;
+}
+
+std::string Opencl_Error::what(){
+  return error_message;
+}
+
+
+Print_Error_Message::Print_Error_Message(std::string msg){
+  error_message = msg;
+  return;
+}
+
+Print_Error_Message::Print_Error_Message(std::string msg, std::string filename, int linenumber){
+  std::stringstream streammsg;
+  streammsg<<msg<<" Occurred at "<<filename<<":"<<linenumber;
+  error_message = streammsg.str();
+  return;
+}
+
+std::string Print_Error_Message::what(){
+  return error_message;
+}
+
+
