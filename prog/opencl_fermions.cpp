@@ -345,7 +345,7 @@ void Opencl_fermions::Qplus(cl_mem in, cl_mem out, cl_mem gf){
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
 		M_tm_plus_device(in, out, gf);
 	}
-	gamma5_device(out);
+// 	gamma5_device(out);
 }
 
 void Opencl_fermions::Qminus(cl_mem in, cl_mem out, cl_mem gf){
@@ -1194,19 +1194,19 @@ if(debug){
 		set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 		get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-		cout << "resid at iter " << iter << " is: " << resid << endl;
+// 		cout << "resid at iter " << iter << " is: " << resid << endl;
 		
 		if(resid < epssquare) {
 			f(this, inout, clmem_aux, gf);
 			saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
 			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
 			get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
-			cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << epssquare << endl;
-			cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << epssquare << endl;
+// 			cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << epssquare << endl;
+// 			cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << epssquare << endl;
 			if(trueresid < epssquare)
 				return HMC_SUCCESS;
 			else {
-				cout << "trueresiduum not small enough" <<endl;
+// 				cout << "trueresiduum not small enough" <<endl;
 // 				hmc_complex s_norm;
 // 				//borrow clmem_alpha for this
 // 				set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
@@ -1222,7 +1222,7 @@ if(debug){
 			}
 		} 
 		else {
-			printf("residuum at iter%i is:\t%.10e\n", iter, resid);//cout << "residuum:\t" << resid << endl;
+// 			printf("residuum at iter%i is:\t%.10e\n", iter, resid);//cout << "residuum:\t" << resid << endl;
 		}
 	}
 	return HMC_STDERR;
@@ -1384,14 +1384,14 @@ hmc_error Opencl_fermions::cg_eoprec_device(matrix_function_call f, cl_mem inout
 hmc_error Opencl_fermions::solver_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer, int cgmax)
 {
 	(*solvertimer).reset();
-	convert_to_kappa_format_device(clmem_inout);
-	convert_to_kappa_format_device(clmem_source);
+	convert_to_kappa_format_device(inout);
+	convert_to_kappa_format_device(source);
 	if(get_parameters()->get_use_cg() == true)
 	 	cg_device(f, inout, source, gf, cgmax);
 	else 
 		bicgstab_device(f, inout, source, gf, cgmax);
-	convert_from_kappa_format_device(clmem_inout, clmem_inout);
-	convert_from_kappa_format_device(clmem_source, clmem_source);
+	convert_from_kappa_format_device(inout, inout);
+	convert_from_kappa_format_device(source, source);
 	clFinish(queue);
 	(*solvertimer).add();
 

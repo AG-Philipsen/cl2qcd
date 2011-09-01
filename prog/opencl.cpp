@@ -1023,7 +1023,7 @@ hmc_error Opencl::get_work_sizes2(const cl_kernel kernel, cl_device_type dev_typ
 	size_t bytesInKernelName;
 	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
 	if( clerr ) {
-		logger.error() << "Failed to query kernel name: asdfaasdfdfd";
+		logger.error() << "Failed to query kernel name: ";
 		return HMC_STDERR;
 	}
 	char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
