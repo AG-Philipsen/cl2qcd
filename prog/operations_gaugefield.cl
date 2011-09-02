@@ -227,20 +227,7 @@ Matrixsu3 extend (const int random, Matrixsu2 src)
 			return out;
 	}
 #endif
-
-	// this should never be reached. NaN output to poison the computation.
-	hmc_complex tmp = {nan(0), nan(0)};
-	out.e00 = tmp;
-	out.e01 = tmp;
-	out.e02 = tmp;
-	out.e10 = tmp;
-	out.e11 = tmp;
-	out.e12 = tmp;
-	out.e20 = tmp;
-	out.e21 = tmp;
-	out.e22 = tmp;
-
-	return out;
+	return;
 }
 
 // void gaugefield_apply_bc(__private hmc_ocl_su3matrix * in, hmc_float theta)
