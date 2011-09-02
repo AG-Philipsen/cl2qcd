@@ -92,9 +92,6 @@ hmc_complex const hmc_complex_i = {0., 1.};
 
 //also CPU
 #ifndef _INKERNEL_
-//define a spinor field:  spinor[spin-color][coord3d][coord_time]
-typedef hmc_complex hmc_full_spinor [NSPIN*NC];
-typedef hmc_complex hmc_full_spinor_field [NSPIN*NC][VOLSPACE][NTIME];
 
 //define a gauge field: gauge[su3][mu][coord3d][coord_time]
 #ifdef _RECONSTRUCT_TWELVE_
