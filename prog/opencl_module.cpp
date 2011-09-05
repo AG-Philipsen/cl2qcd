@@ -12,7 +12,6 @@ void Opencl_Module::init(cl_command_queue queue, cl_mem* clmem_gaugefield, input
   set_queue(queue);
   set_gaugefield(clmem_gaugefield);
   set_parameters(params);
-  init_random_arrays();
 
   device_double_extension = double_ext;
   max_compute_units = maxcomp;
@@ -45,22 +44,8 @@ void Opencl_Module::init(cl_command_queue queue, cl_mem* clmem_gaugefield, input
 
 }
 
-void Opencl_Module::init_random_arrays(){
-  // Prepare random number arrays, for each task and device separately
-  if(get_device_type() == CL_DEVICE_TYPE_GPU)
-      num_rndstates = 5120;
-    else
-      num_rndstates = 64;
-    rndarray = new hmc_ocl_ran [num_rndstates];
-    sizeof_rndarray = sizeof(hmc_ocl_ran)*num_rndstates;
-    init_random_seeds(rndarray, "rand_seeds", num_rndstates);
-  return;
-}
-
 
 void Opencl_Module::finalize(){
-
-  delete [] rndarray;
 
   this->clear_buffers();
   this->clear_kernels();
@@ -195,8 +180,6 @@ cl_mem Opencl_Module::create_chp_buffer(size_t size, void *host_pointer){
 
 void Opencl_Module::fill_buffers()
 {
-	logger.trace() << "Create buffer for random numbers...";
-	clmem_rndarray = create_rw_buffer(sizeof(hmc_ocl_ran)*get_num_rndstates());
 
 	logger.trace() << "Create buffer for gaugeobservables...";
 	clmem_plaq = create_rw_buffer(sizeof(hmc_float));
@@ -292,22 +275,6 @@ void Opencl_Module::clear_buffers()
 	return;
 }
 
-
-void Opencl_Module::copy_rndarray_to_device(hmc_ocl_ran* rndarray)
-{
-	cl_int clerr = clEnqueueWriteBuffer(get_queue(), clmem_rndarray, CL_TRUE, 0, sizeof(hmc_ocl_ran)*get_num_rndstates(), rndarray, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clEnqueueWriteBuffer",__FILE__,__LINE__);
-
-	return;
-}
-
-void Opencl_Module::copy_rndarray_from_device(hmc_ocl_ran* rndarray)
-{
-	cl_int clerr = clEnqueueReadBuffer(get_queue(), clmem_rndarray, CL_TRUE, 0, sizeof(hmc_ocl_ran)*get_num_rndstates(), rndarray, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clEnqueueReadBuffer",__FILE__,__LINE__);
-
-	return;
-}
 
 void Opencl_Module::copy_buffer_on_device(cl_mem in, cl_mem out, size_t size)
 {
@@ -1007,8 +974,3 @@ void Opencl_Module::print_profiling(std::string filename){
 int Opencl_Module::get_numthreads(){
   return numthreads;
 }
-
-int Opencl_Module::get_num_rndstates(){
-  return num_rndstates;
-}
-

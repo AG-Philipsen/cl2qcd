@@ -29,6 +29,7 @@
 #include "exceptions.h"
 #include "gaugefield_hybrid.h"
 #include "opencl_module.h"
+#include "opencl_module_heatbath.h"
 
 #include "logger.hpp"
 
@@ -49,24 +50,11 @@ public:
 
   virtual void init_devices();
 
-  void init_random_arrays();
 
   virtual void delete_variables();
   virtual void finalize_opencl();
 
-  /**
-   * Returns private member * rndarray for given task
-   * @param[in] ntask task identifier
-   * @param[in] ndevice device identifier
-   * @return rndarray
-   */
-  hmc_ocl_ran* get_rndarray(int ntask);
-
 private:
-
-  int* numrndstates;
-  size_t* sizeof_rndarray;
-  hmc_ocl_ran** rndarray;
 
 };
 

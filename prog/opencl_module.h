@@ -21,7 +21,6 @@
 #include "globaldefs.h"
 #include "types.h"
 #include "host_use_timer.h"
-#include "host_random.h"
 #include "inputparameters.h"
 #include "opencl_compiler.hpp"
 
@@ -37,10 +36,10 @@
  */
 class Opencl_Module {
 public:
-	/**
-	 * Empty constructor.
-	 *
-	 */
+  /**
+   * Empty constructor.
+   *
+   */
   Opencl_Module() {};
 
   ~Opencl_Module() { finalize(); }
@@ -176,20 +175,14 @@ public:
 	void get_work_sizes(size_t * ls, size_t * gs, cl_uint * num_groups, cl_device_type dev_type, string name = "dummy");
 	void get_work_sizes2(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
 
-	void init_random_arrays();
-
 
  private:
-
-	hmc_ocl_ran* rndarray;
-	size_t sizeof_rndarray;
 
   cl_context ocl_context;
   cl_command_queue ocl_queue;
   cl_mem* ocl_gaugefield;
   inputparameters* parameters;
 
-  cl_mem clmem_rndarray;
 
   cl_device_id device;
   cl_device_type device_type;
@@ -292,25 +285,6 @@ public:
 
 
 	/**
-	 * Copy the RNG state to the appropriate OpenCL buffer.
-	 *
-	 * @param host_rndarray The RNG state to copy
-	 *         @li HMC_OCLERROR if OpenCL operations fail
-	 *         @li HMC_SUCCESS otherwise
-	 */
-	void copy_rndarray_to_device(hmc_ocl_ran* host_rndarray);
-
-	/**
-	 * Copy the RNG state from the OpenCL buffer.
-	 *
-	 * @param[out] rndarray The RNG copy target
-	 *         @li HMC_OCLERROR if OpenCL operations fail
-	 *         @li HMC_SUCCESS otherwise
-	 */
-	void copy_rndarray_from_device(hmc_ocl_ran* rndarray);	
-
-
-	/**
 	 * Copy content of a buffer to another buffer inside a queue using 
 	 *     clEnqueueCopyBuffer(queue, in, out, 0, 0, size , 0, 0, NULL);
 	 * @param in source
@@ -368,11 +342,9 @@ protected:
 	 */
 	int get_numthreads();
 
-	int get_num_rndstates();
 
  private:
 
-	int num_rndstates;
 	int numthreads;
 
 };

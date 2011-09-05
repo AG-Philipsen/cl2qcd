@@ -148,6 +148,7 @@ add_executable( tk_kappa_hybrid
 	logger.cpp
 	exceptions.cpp
 	opencl_module.cpp
+	opencl_module_heatbath.cpp
 	opencl_compiler.cpp
 )
 target_link_libraries( tk_kappa_hybrid
