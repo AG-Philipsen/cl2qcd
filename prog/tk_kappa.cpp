@@ -74,13 +74,13 @@ int main(int argc, char* argv[])
 	int writefreq = parameters.get_writefrequency();
 	int savefreq = parameters.get_savefrequency();
 	
-
 	ofstream kappa_karsch_out;
 	kappa_karsch_out.open ("kappa_karsch.dat");
 	kappa_karsch_out.precision(15);
 	ofstream kappa_clover_out;
 	kappa_clover_out.open ("kappa_clover.dat");
 	kappa_clover_out.precision(15);
+
 // 	ofstream q_plaq_out;
 // 	q_plaq_out.open ("Q_plaquette.dat");
 // 	q_plaq_out.precision(15);

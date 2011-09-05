@@ -33,17 +33,23 @@ int main(int argc, char* argv[])
 	int numtasks = 2;
 	cl_device_type primary_device_type = CL_DEVICE_TYPE_GPU;
 
+	hmc_float kappa_clover = 0.0f;
+
 	int iter = 0;
 
 	gaugefield.init(numtasks, primary_device_type, &parameters);
 	gaugefield.print_gaugeobservables(iter);
+	gaugefield.print_gaugeobservables(iter,gaugeout_name.str());
 
 	gaugefield.perform_tasks(parameters.get_heatbathsteps(), parameters.get_overrelaxsteps());
+
+	logger.info()<<"Calculated kappa-clover: "<<kappa_clover;
 
 	iter++;
 	gaugefield.synchronize(0);
 
 	gaugefield.print_gaugeobservables(iter);
+	gaugefield.print_gaugeobservables(iter,gaugeout_name.str());
 
 	gaugefield.save(iter);
 

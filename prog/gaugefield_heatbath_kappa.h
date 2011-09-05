@@ -31,6 +31,7 @@
 #include "opencl_module.h"
 #include "opencl_module_ran.h"
 #include "opencl_module_heatbath.h"
+#include "opencl_module_kappa.h"
 
 #include "logger.hpp"
 
@@ -58,6 +59,7 @@ public:
   void perform_tasks(int nheat, int nover);
 
   Opencl_Module_Heatbath* get_devices_heatbath(int task);
+  Opencl_Module_Kappa* get_devices_kappa(int task);
 
 private:
 

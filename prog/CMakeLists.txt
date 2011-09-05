@@ -150,6 +150,7 @@ add_executable( tk_kappa_hybrid
 	opencl_module.cpp
 	opencl_module_ran.cpp
 	opencl_module_heatbath.cpp
+	opencl_module_kappa.cpp
 	opencl_compiler.cpp
 )
 target_link_libraries( tk_kappa_hybrid

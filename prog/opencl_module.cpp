@@ -111,7 +111,7 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 			*collect_options << " -D_DEVICE_DOUBLE_EXTENSION_"<<device_double_extension<<"_";
 		}
 	}
-	if(get_parameters()->get_use_gpu() == true)
+	if( device_type == CL_DEVICE_TYPE_GPU )
 		*collect_options << " -D_USEGPU_";
 	if(get_parameters()->get_use_chem_pot_re() == true){
 		*collect_options << " -D_CP_REAL_";
