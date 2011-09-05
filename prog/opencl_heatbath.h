@@ -29,16 +29,6 @@ public:
 	 */
 	void run_overrelax();
 
-	/**
-	 * Calculate plaquette and polyakov.
-	 *
-	 * @param[out] plaq Storage for result of plaquette calculation
-	 * @param[out] tplaq Storage for result of plaquette calculation
-	 * @param[out] splaq Storage for result of plaquette calculation
-	 * @param[out] pol Storage for result of polyakov calculation
-	 * @param[in,out] timer1 Timer into which to aggregate plaquette calculation time
-	 * @param[in,out] timer2 Timer into which to aggregate polyakov calculation time
-	 */
 	//protected:
 
 	/**

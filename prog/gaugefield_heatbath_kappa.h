@@ -29,6 +29,7 @@
 #include "exceptions.h"
 #include "gaugefield_hybrid.h"
 #include "opencl_module.h"
+#include "opencl_module_ran.h"
 #include "opencl_module_heatbath.h"
 
 #include "logger.hpp"
@@ -53,6 +54,10 @@ public:
 
   virtual void delete_variables();
   virtual void finalize_opencl();
+
+  void perform_tasks(int nheat, int nover);
+
+  Opencl_Module_Heatbath* get_devices_heatbath(int task);
 
 private:
 

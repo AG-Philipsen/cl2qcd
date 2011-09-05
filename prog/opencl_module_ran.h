@@ -1,8 +1,8 @@
 /** @file
  * Heatbath for OpenCL
  */
-#ifndef _OPENCLMODULEHEATBATHH_
-#define _OPENCLMODULEHEATBATHH_
+#ifndef _OPENCLMODULERANH_
+#define _OPENCLMODULERANH_
 
 #include <cstdlib>
 #include <vector>
@@ -26,18 +26,17 @@
 #include "opencl_compiler.hpp"
 
 #include "opencl_module.h"
-#include "opencl_module_ran.h"
 
 #include "exceptions.h"
 
 /**
  * An OpenCL device
  *
- * Adds heatbath to basic Opencl_Module class
+ * Adds random numbers to basic Opencl_Module class
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Heatbath : public Opencl_Module_Ran {
+class Opencl_Module_Ran : public Opencl_Module {
 public:
   /**
    * Collect the compiler options for OpenCL.
@@ -69,58 +68,40 @@ public:
    */
   virtual void clear_buffers();
 
-	/**
-	 * Perform one heatbath step.
-	 */
-	void run_heatbath();
+  void init_random_arrays();
+
+
+  hmc_ocl_ran* rndarray;
+  size_t sizeof_rndarray;
 
 	/**
-	 * Perform one overrelaxation step.
+	 * Copy the RNG state to the appropriate OpenCL buffer.
+	 *
+	 * @param host_rndarray The RNG state to copy
+	 *         @li HMC_OCLERROR if OpenCL operations fail
+	 *         @li HMC_SUCCESS otherwise
 	 */
-	void run_overrelax();
+	void copy_rndarray_to_device(hmc_ocl_ran* host_rndarray);
 
+	/**
+	 * Copy the RNG state from the OpenCL buffer.
+	 *
+	 * @param[out] rndarray The RNG copy target
+	 *         @li HMC_OCLERROR if OpenCL operations fail
+	 *         @li HMC_SUCCESS otherwise
+	 */
+	void copy_rndarray_from_device(hmc_ocl_ran* rndarray);	
+
+	cl_mem* get_clmem_rndarray();
 
 protected:
+	int get_num_rndstates();
 
  private:
 
-	cl_kernel heatbath_odd;
-	cl_kernel heatbath_even;
-	cl_kernel overrelax_odd;
-	cl_kernel overrelax_even;
-
-
-#ifdef _PROFILING_
-	//CP: if PROFILING is activated, one needs a timer for each kernel
-	usetimer timer_heatbath_odd;
-	usetimer timer_heatbath_even;
-	usetimer timer_overrelax_odd;
-	usetimer timer_overrelax_even;
-
-	/**
-	 * Return the timer connected to a specific kernel.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual usetimer* get_timer(char * in);
-	
-	/**
-	 * Return amount of bytes read and written by a specific kernel per call. 
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual int get_read_write_size(char * in, inputparameters * parameters);	
-	
-	/**
-	 * Print the profiling information to a file.
-	 *
-	 * @param filename Name of file where data is appended.
-	 * @param parameters inputparameters
-	 */
-	void virtual print_profiling(std::string filename);	
-#endif
-
+	int num_rndstates;
+	cl_mem clmem_rndarray;
 
 };
 
-#endif //OPENCLMODULEHEATBATHH
+#endif //OPENCLMODULERANH

@@ -32,15 +32,20 @@ int main(int argc, char* argv[])
 	Gaugefield_heatbath_kappa gaugefield;
 	int numtasks = 2;
 	cl_device_type primary_device_type = CL_DEVICE_TYPE_GPU;
+
+	int iter = 0;
+
 	gaugefield.init(numtasks, primary_device_type, &parameters);
+	gaugefield.print_gaugeobservables(iter);
 
-	gaugefield.print_gaugeobservables(1);
+	gaugefield.perform_tasks(parameters.get_heatbathsteps(), parameters.get_overrelaxsteps());
 
+	iter++;
 	gaugefield.synchronize(0);
 
-	gaugefield.print_gaugeobservables(1);
+	gaugefield.print_gaugeobservables(iter);
 
-	gaugefield.save(2);
+	gaugefield.save(iter);
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables

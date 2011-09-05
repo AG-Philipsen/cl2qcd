@@ -4,6 +4,7 @@
 #ifndef _OPENCLMODULEH_
 #define _OPENCLMODULEH_
 
+#include <cmath>
 #include <cstdlib>
 #include <vector>
 #include <cstring>
@@ -60,6 +61,8 @@ public:
   cl_device_id get_device();
   cl_device_type get_device_type();
   cl_platform_id get_platform();
+
+  int get_max_compute_units();
 
   /**
    * Calculate plaquette and polyakov of a specific gaugefield.
@@ -176,38 +179,6 @@ public:
 	void get_work_sizes2(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
 
 
- private:
-
-  cl_context ocl_context;
-  cl_command_queue ocl_queue;
-  cl_mem* ocl_gaugefield;
-  inputparameters* parameters;
-
-
-  cl_device_id device;
-  cl_device_type device_type;
-
-  cl_uint max_compute_units;
-
-	cl_mem clmem_plaq;
-	cl_mem clmem_plaq_buf_glob;
-	cl_mem clmem_splaq_buf_glob;
-	cl_mem clmem_tplaq_buf_glob;
-	cl_mem clmem_splaq;
-	cl_mem clmem_tplaq;
-	cl_mem clmem_polyakov;
-	cl_mem clmem_polyakov_buf_glob;
-
-	string device_double_extension;
-
-	//since this is only applicated to the gaugefield, this should be here...
-	cl_kernel stout_smear;
-
-	cl_kernel plaquette;
-	cl_kernel plaquette_reduction;
-	cl_kernel polyakov;
-	cl_kernel polyakov_reduction;
-
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
 	usetimer timer_plaquette;
@@ -315,6 +286,39 @@ public:
 	 * This applies stout smearing to a gaugefield 
 	 */
 	void stout_smear_device();
+
+
+ private:
+
+  cl_context ocl_context;
+  cl_command_queue ocl_queue;
+  cl_mem* ocl_gaugefield;
+  inputparameters* parameters;
+
+
+  cl_device_id device;
+  cl_device_type device_type;
+
+  cl_uint max_compute_units;
+
+	cl_mem clmem_plaq;
+	cl_mem clmem_plaq_buf_glob;
+	cl_mem clmem_splaq_buf_glob;
+	cl_mem clmem_tplaq_buf_glob;
+	cl_mem clmem_splaq;
+	cl_mem clmem_tplaq;
+	cl_mem clmem_polyakov;
+	cl_mem clmem_polyakov_buf_glob;
+
+	string device_double_extension;
+
+	//since this is only applicated to the gaugefield, this should be here...
+	cl_kernel stout_smear;
+
+	cl_kernel plaquette;
+	cl_kernel plaquette_reduction;
+	cl_kernel polyakov;
+	cl_kernel polyakov_reduction;
 
 
 protected:

@@ -157,7 +157,7 @@ public:
   void print_gaugeobservables(int iter, std::string filename);
 
   cl_device_type* devicetypes;
-  Opencl_Module * opencl_modules;
+  Opencl_Module ** opencl_modules;
   
   cl_command_queue* queue;
 

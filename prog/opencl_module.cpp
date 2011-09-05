@@ -974,3 +974,7 @@ void Opencl_Module::print_profiling(std::string filename){
 int Opencl_Module::get_numthreads(){
   return numthreads;
 }
+
+int Opencl_Module::get_max_compute_units(){
+  return max_compute_units;
+}
