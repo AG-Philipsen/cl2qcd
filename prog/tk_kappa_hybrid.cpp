@@ -38,20 +38,14 @@ int main(int argc, char* argv[])
 
         gaugefield.init(numtasks, primary_device_type, &parameters);
 
-
-	  gaugefield.print_gaugeobservables(-1);
-	  gaugefield.print_gaugeobservables_from_task(-1,0);
-	  gaugefield.print_gaugeobservables_from_task(-1,1);
-	  exit(0);
-
 	gaugefield.print_gaugeobservables(0);
 	gaugefield.print_gaugeobservables(0, gaugeout_name.str());
 	for(int iter = 0; iter < parameters.get_heatbathsteps() / parameters.get_writefrequency(); iter++) {
 	  gaugefield.perform_tasks(parameters.get_writefrequency(), parameters.get_overrelaxsteps());
 	  gaugefield.synchronize(0);
 	  gaugefield.print_gaugeobservables(iter);
-	  gaugefield.print_gaugeobservables_from_task(iter,0);
-	  gaugefield.print_gaugeobservables_from_task(iter,1);
+	  //	  gaugefield.print_gaugeobservables_from_task(iter,0);
+	  //	  gaugefield.print_gaugeobservables_from_task(iter,1);
 	  gaugefield.print_gaugeobservables(iter,gaugeout_name.str());
 	  //	  gaugefield.print_kappa(iter,"kappa_clover.dat");
 	}

@@ -399,7 +399,7 @@ hmc_complex trace_matrixsu3(const Matrixsu3 p)
 	out.im += p.e11.im;
 #ifdef _RECONSTRUCT_TWELVE_
 	out.re += reconstruct_su3(p, 2).re;
-	out.re += reconstruct_su3(p, 2).im;
+	out.im += reconstruct_su3(p, 2).im;
 #else
 	out.re += p.e22.re;
 	out.im += p.e22.im;
