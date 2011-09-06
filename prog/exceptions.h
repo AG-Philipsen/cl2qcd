@@ -9,7 +9,7 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <cstring>
+#include <string>
 #include <sstream>
 
 class File_Exception {

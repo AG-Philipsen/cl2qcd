@@ -13,11 +13,12 @@ void Opencl_Module::init(cl_command_queue queue, cl_mem* clmem_gaugefield, input
   set_gaugefield(clmem_gaugefield);
   set_parameters(params);
 
-  device_double_extension = double_ext;
-  max_compute_units = maxcomp;
+  set_device_double_extension(double_ext);
+  set_max_compute_units(maxcomp);
 
   cl_uint clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ocl_context, NULL);
   if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetCommandQueueInfo",__FILE__,__LINE__);
+
 
   clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_DEVICE, sizeof(cl_device_id), &device, NULL);
   if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetCommandQueueInfo",__FILE__,__LINE__);
@@ -41,7 +42,6 @@ void Opencl_Module::init(cl_command_queue queue, cl_mem* clmem_gaugefield, input
 
   this->fill_buffers();
   this->fill_kernels();
-
 }
 
 
@@ -56,6 +56,7 @@ void Opencl_Module::finalize(){
 cl_context Opencl_Module::get_context(){
   return ocl_context;
 }
+
 
 void Opencl_Module::set_queue(cl_command_queue queue){
   ocl_queue = queue;
@@ -975,6 +976,24 @@ int Opencl_Module::get_numthreads(){
   return numthreads;
 }
 
+void Opencl_Module::set_max_compute_units(int maxcomp){
+  max_compute_units = maxcomp;
+  return;
+}
+
 int Opencl_Module::get_max_compute_units(){
   return max_compute_units;
+}
+
+void Opencl_Module::set_device_double_extension(string double_ext){
+  if(double_ext.empty()) {
+    device_double_extension.clear();
+  } else {
+    device_double_extension.assign(double_ext);
+  }
+  return;
+}
+
+string Opencl_Module::get_device_double_extension(){
+  return device_double_extension;
 }

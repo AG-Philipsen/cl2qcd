@@ -7,7 +7,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <vector>
-#include <cstring>
+#include <string>
 #include <fstream>
 #include <sstream>
 #ifdef __APPLE__
@@ -56,13 +56,16 @@ public:
   cl_mem* get_gaugefield();
   void set_parameters(inputparameters* params);
   inputparameters* get_parameters();
-  cl_platform_id platform;
 
   cl_device_id get_device();
   cl_device_type get_device_type();
   cl_platform_id get_platform();
 
+  void set_device_double_extension(string double_ext);
+  string get_device_double_extension();
+
   int get_max_compute_units();
+  void set_max_compute_units(int maxcomp);
 
   /**
    * Calculate plaquette and polyakov of a specific gaugefield.
@@ -287,19 +290,19 @@ public:
 	 */
 	void stout_smear_device();
 
-
  private:
 
+  cl_platform_id platform;
   cl_context ocl_context;
   cl_command_queue ocl_queue;
   cl_mem* ocl_gaugefield;
   inputparameters* parameters;
 
+  cl_uint max_compute_units;
+  string device_double_extension;
 
   cl_device_id device;
   cl_device_type device_type;
-
-  cl_uint max_compute_units;
 
 	cl_mem clmem_plaq;
 	cl_mem clmem_plaq_buf_glob;
@@ -309,8 +312,6 @@ public:
 	cl_mem clmem_tplaq;
 	cl_mem clmem_polyakov;
 	cl_mem clmem_polyakov_buf_glob;
-
-	string device_double_extension;
 
 	//since this is only applicated to the gaugefield, this should be here...
 	cl_kernel stout_smear;

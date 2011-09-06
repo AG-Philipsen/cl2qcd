@@ -6,7 +6,7 @@
 
 #include <cstdlib>
 #include <vector>
-#include <cstring>
+#include <string>
 #include <fstream>
 #include <sstream>
 #ifdef __APPLE__

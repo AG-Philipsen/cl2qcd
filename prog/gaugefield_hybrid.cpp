@@ -20,11 +20,11 @@ void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type, i
 
   init_devicetypearray(primary_device_type);
   init_opencl();
-  this->init_devices();
 
+  this->init_tasks();
 
   //this has to be done anyways...
-  copy_gaugefield_to_all_devices();
+  copy_gaugefield_to_all_tasks();
 
   return;
 
@@ -159,7 +159,7 @@ void Gaugefield_hybrid::init_opencl(){
 }
 
 
-void Gaugefield_hybrid::init_devices(){
+void Gaugefield_hybrid::init_tasks(){
 
   opencl_modules = new Opencl_Module* [get_num_tasks()];
   for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
@@ -272,14 +272,14 @@ void Gaugefield_hybrid::set_gaugefield_hot(s_gaugefield * field) {
   return;
 }
 
-void Gaugefield_hybrid::copy_gaugefield_to_all_devices(){
+void Gaugefield_hybrid::copy_gaugefield_to_all_tasks(){
   for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-    copy_gaugefield_to_device(ntask);
+    copy_gaugefield_to_task(ntask);
   }
   return;
 }
 
-void Gaugefield_hybrid::copy_gaugefield_to_device(int ntask){
+void Gaugefield_hybrid::copy_gaugefield_to_task(int ntask){
 
   if(ntask < 0 || ntask > get_num_tasks() ) {
     logger.warn()<<"Index out of range, copy_gaugefield_to_device does nothing.";
@@ -303,17 +303,17 @@ void Gaugefield_hybrid::synchronize(int ntask_reference){
     return;
   }
   clFinish(queue[ntask_reference]);
-  copy_gaugefield_from_device(ntask_reference);
+  copy_gaugefield_from_task(ntask_reference);
 
   for(int ntask=0; ntask<get_num_tasks(); ntask++) {
     clFinish(queue[ntask]);
-    if(ntask != ntask_reference) copy_gaugefield_to_device(ntask);
+    if(ntask != ntask_reference) copy_gaugefield_to_task(ntask);
   }
   return;
 }
 
 
-void Gaugefield_hybrid::copy_gaugefield_from_device(int ntask){
+void Gaugefield_hybrid::copy_gaugefield_from_task(int ntask){
 
   if(ntask < 0 || ntask > get_num_tasks() ) {
     logger.warn()<<"Index out of range, copy_gaugefield_from_device does nothing.";

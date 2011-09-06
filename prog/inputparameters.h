@@ -15,7 +15,7 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
-#include <cstring>
+#include <string>
 
 #define EXIT_INPUTPARAMETERS 1
 

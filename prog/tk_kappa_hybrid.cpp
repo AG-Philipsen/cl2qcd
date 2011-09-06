@@ -29,29 +29,26 @@ int main(int argc, char* argv[])
 	// Initialization
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 	Gaugefield_heatbath_kappa gaugefield;
 	int numtasks = 2;
+
+	// this is the device type for the heatbath
 	cl_device_type primary_device_type = CL_DEVICE_TYPE_GPU;
 
-	hmc_float kappa_clover = 0.0f;
+        gaugefield.init(numtasks, primary_device_type, &parameters);
 
-	int iter = 0;
+	gaugefield.print_gaugeobservables(0);
+	gaugefield.print_gaugeobservables(0, gaugeout_name.str());
+	for(int iter = 0; iter < parameters.get_heatbathsteps() / parameters.get_writefrequency(); iter++) {
+	  gaugefield.perform_tasks(parameters.get_writefrequency(), parameters.get_overrelaxsteps());
+	  gaugefield.synchronize(0);
+	  gaugefield.print_gaugeobservables(iter);
+	  gaugefield.print_gaugeobservables(iter,gaugeout_name.str());
+	  //	  gaugefield.print_kappa(iter,"kappa_clover.dat");
+	}
 
-	gaugefield.init(numtasks, primary_device_type, &parameters);
-	gaugefield.print_gaugeobservables(iter);
-	gaugefield.print_gaugeobservables(iter,gaugeout_name.str());
-
-	gaugefield.perform_tasks(parameters.get_heatbathsteps(), parameters.get_overrelaxsteps());
-
-	logger.info()<<"Calculated kappa-clover: "<<kappa_clover;
-
-	iter++;
-	gaugefield.synchronize(0);
-
-	gaugefield.print_gaugeobservables(iter);
-	gaugefield.print_gaugeobservables(iter,gaugeout_name.str());
-
-	gaugefield.save(iter);
+	gaugefield.save("conf.save");
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables

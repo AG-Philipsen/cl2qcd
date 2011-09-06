@@ -72,11 +72,6 @@ void Opencl_Module_Kappa::run_kappa_clover(const hmc_float beta)
 
 	enqueueKernel(kappa_clover_gpu, global_work_size, local_work_size);
 
-	/*
-	//read out values
-	clerr = clEnqueueReadBuffer(get_queue(), clmem_kappa_clover_buf_glob, CL_FALSE, 0, sizeof(hmc_float), kappa_clover_out, 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clEnqueueReadBuffer",__FILE__,__LINE__);
-	*/
 	// wait for results to have been read back
 	//don't do that anymore ;-)
 	//	clFinish(queue);
@@ -86,7 +81,12 @@ void Opencl_Module_Kappa::run_kappa_clover(const hmc_float beta)
 
 }
 
-
+hmc_float Opencl_Module_Kappa::get_kappa_clover(){
+  hmc_float kappa_clover = 0.0f;
+  cl_int clerr = clEnqueueReadBuffer(get_queue(), clmem_kappa_clover_buf_glob, CL_TRUE, 0, sizeof(hmc_float), &kappa_clover, 0, NULL, NULL);
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clEnqueueReadBuffer",__FILE__,__LINE__);
+  return kappa_clover;
+}
 
 void Opencl_Module_Kappa::clear_kernels()
 {

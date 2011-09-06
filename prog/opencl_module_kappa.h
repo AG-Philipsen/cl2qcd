@@ -6,7 +6,7 @@
 
 #include <cstdlib>
 #include <vector>
-#include <cstring>
+#include <string>
 #include <fstream>
 #include <sstream>
 #ifdef __APPLE__
@@ -68,15 +68,25 @@ public:
    */
   virtual void clear_buffers();
 
-	void run_kappa_clover(const hmc_float beta);
+  /**
+   * Run the calculation of kappa clover. No OpenCL barrier.
+   * @TODO remove beta
+   */
+  void run_kappa_clover(const hmc_float beta);
 
-	cl_mem clmem_kappa_clover;
-	cl_mem clmem_kappa_clover_buf_glob;
-	cl_kernel kappa_clover_gpu;
+  /**
+   * Copy kappa_clover from device to host and return it
+   * @return kappa_clover
+   */
+  hmc_float get_kappa_clover();
 
-protected:
+ protected:
 
  private:
+  cl_mem clmem_kappa_clover;
+  cl_mem clmem_kappa_clover_buf_glob;
+  cl_kernel kappa_clover_gpu;
+
 
 };
 

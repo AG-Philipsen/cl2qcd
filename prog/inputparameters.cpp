@@ -235,19 +235,19 @@ void inputparameters::startcond_assign(int * out, std::string line)
 	size_t pos = line.find("=");
 	std::string value = line.substr(pos + 1);
 
-	if(std::strstr(value.c_str(), "cold") != NULL) {
+	if(value.find("cold") != std::string::npos) {
 		(*out) = COLD_START;
 		return;
 	}
-	if(std::strstr(value.c_str(), "hot") != NULL) {
+	if(value.find("hot") != std::string::npos) {
 		(*out) = HOT_START;
 		return;
 	}
-	if(std::strstr(value.c_str(), "source") != NULL) {
+	if(value.find("source") != std::string::npos) {
 		(*out) = START_FROM_SOURCE;
 		return;
 	}
-	if(std::strstr(value.c_str(), "continue") != NULL) {
+	if(value.find("continue") != std::string::npos) {
 		(*out) = START_FROM_SOURCE;
 		return;
 	}
@@ -260,47 +260,47 @@ void inputparameters::fermact_assign(int * out, std::string line)
 	size_t pos = line.find("=");
 	std::string value = line.substr(pos + 1);
 
-	if(std::strstr(value.c_str(), "TWISTEDMASS") != NULL) {
+	if(value.find("TWISTEDMASS") != std::string::npos) {
 		(*out) = TWISTEDMASS;
 		return;
 	}
-	if(std::strstr(value.c_str(), "twistedmass") != NULL) {
+	if(value.find("twistedmass") != std::string::npos) {
 		(*out) = TWISTEDMASS;
 		return;
 	}
-	if(std::strstr(value.c_str(), "Twistedmass") != NULL) {
+	if(value.find("Twistedmass") != std::string::npos) {
 		(*out) = TWISTEDMASS;
 		return;
 	}
-	if(std::strstr(value.c_str(), "TwistedMass") != NULL) {
+	if(value.find("TwistedMass") != std::string::npos) {
 		(*out) = TWISTEDMASS;
 		return;
 	}
-	if(std::strstr(value.c_str(), "clover") != NULL) {
+	if(value.find("clover") != std::string::npos) {
 		(*out) = CLOVER;
 		return;
 	}
-	if(std::strstr(value.c_str(), "CLOVER") != NULL) {
+	if(value.find("CLOVER") != std::string::npos) {
 		(*out) = CLOVER;
 		return;
 	}
-	if(std::strstr(value.c_str(), "Clover") != NULL) {
+	if(value.find("Clover") != std::string::npos) {
 		(*out) = CLOVER;
 		return;
 	}
-	if(std::strstr(value.c_str(), "WILSON") != NULL) {
+	if(value.find("WILSON") != std::string::npos) {
 		(*out) = WILSON;
 		return;
 	}
-	if(std::strstr(value.c_str(), "Wilson") != NULL) {
+	if(value.find("Wilson") != std::string::npos) {
 		(*out) = WILSON;
 		return;
 	}
-	if(std::strstr(value.c_str(), "wilson") != NULL) {
+	if(value.find("wilson") != std::string::npos) {
 		(*out) = WILSON;
 		return;
 	}
-	if(std::strstr(value.c_str(), "unimproved") != NULL) {
+	if(value.find("unimproved") != std::string::npos) {
 		(*out) = WILSON;
 		return;
 	}
@@ -313,59 +313,59 @@ void inputparameters::bool_assign(bool * out, std::string line)
 	size_t pos = line.find("=");
 	std::string value = line.substr(pos + 1);
 
-	if(std::strstr(value.c_str(), "1") != NULL) {
+	if(value.find("1") != std::string::npos) {
 		(*out) = true;
 		return;
 	}
-	if(std::strstr(value.c_str(), "on") != NULL) {
+	if(value.find("on") != std::string::npos) {
 		(*out) = true;
 		return;
 	}
-	if(std::strstr(value.c_str(), "ON") != NULL) {
+	if(value.find("ON") != std::string::npos) {
 		(*out) = true;
 		return;
 	}
-	if(std::strstr(value.c_str(), "yes") != NULL) {
+	if(value.find("yes") != std::string::npos) {
 		(*out) = true;
 		return;
 	}
-	if(std::strstr(value.c_str(), "TRUE") != NULL) {
+	if(value.find("TRUE") != std::string::npos) {
 		(*out) = true;
 		return;
 	}
-	if(std::strstr(value.c_str(), "true") != NULL) {
+	if(value.find("true") != std::string::npos) {
 		(*out) = true;
 		return;
 	}
-	if(std::strstr(value.c_str(), "True") != NULL) {
+	if(value.find("True") != std::string::npos) {
 		(*out) = true;
 		return;
 	}
-	if(std::strstr(value.c_str(), "0") != NULL) {
+	if(value.find("0") != std::string::npos) {
 		(*out) = false;
 		return;
 	}
-	if(std::strstr(value.c_str(), "off") != NULL) {
+	if(value.find("off") != std::string::npos) {
 		(*out) = false;
 		return;
 	}
-	if(std::strstr(value.c_str(), "OFF") != NULL) {
+	if(value.find("OFF") != std::string::npos) {
 		(*out) = false;
 		return;
 	}
-	if(std::strstr(value.c_str(), "no") != NULL) {
+	if(value.find("no") != std::string::npos) {
 		(*out) = false;
 		return;
 	}
-	if(std::strstr(value.c_str(), "false") != NULL) {
+	if(value.find("false") != std::string::npos) {
 		(*out) = false;
 		return;
 	}
-	if(std::strstr(value.c_str(), "FALSE") != NULL) {
+	if(value.find("FALSE") != std::string::npos) {
 		(*out) = false;
 		return;
 	}
-	if(std::strstr(value.c_str(), "False") != NULL) {
+	if(value.find("False") != std::string::npos) {
 		(*out) = false;
 		return;
 	}

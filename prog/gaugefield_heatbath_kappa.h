@@ -42,26 +42,65 @@
 extern string const version;
 
 /**
- * Class for the gaugefield. Includes initialization, device management for multiple devices.
+ * Class for the gaugefield. Includes initialization, device management for two devices doing a heatbath and tk calculation.
  *
  * @class Gaugefield
  */
 class Gaugefield_heatbath_kappa : public Gaugefield_hybrid {
 public:
-  //init/finalize functions
+  //init functions
+  /**
+   * Initialize tasks
+   * Called by init()
+   */
+  virtual void init_tasks();
 
-  virtual void init_devices();
-
-
+  // proper finish
+  /**
+   * Free variables
+   * Called by finalize()
+   */
   virtual void delete_variables();
+  /**
+   * Free variables
+   * Called by finalize()
+   */
   virtual void finalize_opencl();
 
+  // do the real work
+  /**
+   * Perform all the tasks
+   * @param[in] nheat number of heatbath steps
+   * @param[in] nover number of overrelaxation steps per heatbath step
+   */
   void perform_tasks(int nheat, int nover);
+  /**
+   * Print kappa coefficient to screen, add iteration number
+   * @param[in] iter iteration number
+   */
+  void print_kappa(int iter);
+  /**
+   * Print kappa coefficient to file, add iteration number
+   * @param[in] iter iteration number
+   * @param[in] filename name of file to which the output line is to be appended
+   */
+  void print_kappa(int iter, std::string filename);
 
-  Opencl_Module_Heatbath* get_devices_heatbath(int task);
-  Opencl_Module_Kappa* get_devices_kappa(int task);
+  // get methods
+  /**
+   * Returns a pointer to heatbath task
+   */
+  Opencl_Module_Heatbath* get_task_heatbath();
+  /**
+   * Returns a pointer to kappa task
+   */
+  Opencl_Module_Kappa* get_task_kappa();
 
 private:
+
+  int task_heatbath;
+  int task_kappa;
+
 
 };
 
