@@ -637,3 +637,35 @@ void Gaugefield_hybrid::print_gaugeobservables(int iter, std::string filename)
 	return;
 }
 
+void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask){
+  if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range",__FILE__,__LINE__); 
+  hmc_float plaq  = 0;
+  hmc_float tplaq = 0;
+  hmc_float splaq = 0;
+  hmc_complex pol;
+  cl_mem gf = *get_clmem_gaugefield();
+  opencl_modules[ntask]->gaugeobservables(gf, &plaq, &tplaq, &splaq, &pol);
+  logger.info() << iter << '\t' << plaq << '\t' << tplaq << '\t' << splaq << '\t' << pol.re << '\t' << pol.im << '\t' << sqrt(pol.re * pol.re + pol.im * pol.im);
+  return;
+}
+
+void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask, std::string filename){
+  if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range",__FILE__,__LINE__); 
+  hmc_float plaq  = 0;
+  hmc_float tplaq = 0;
+  hmc_float splaq = 0;
+  hmc_complex pol;
+  cl_mem gf = *get_clmem_gaugefield();
+  opencl_modules[ntask]->gaugeobservables(gf, &plaq, &tplaq, &splaq, &pol);
+  std::fstream gaugeout;
+  gaugeout.open(filename.c_str(), std::ios::out | std::ios::app);
+  if(!gaugeout.is_open()) throw File_Exception(filename);
+  gaugeout.width(8);
+  gaugeout << iter;
+  gaugeout << "\t";
+  gaugeout.precision(15);
+  gaugeout << plaq << "\t" << tplaq << "\t" << splaq << "\t" << pol.re << "\t" << pol.im << "\t" << sqrt(pol.re * pol.re + pol.im * pol.im) << std::endl;
+  gaugeout.close();
+  return;
+}
+

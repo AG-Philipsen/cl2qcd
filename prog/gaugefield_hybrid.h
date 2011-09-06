@@ -242,7 +242,19 @@ public:
    * @param[in] filename name of file to which the output line is to be appended
    */
   void print_gaugeobservables(int iter, std::string filename);
-
+  /**
+   * Print gaugeobservables from task to screen, add iteration number
+   * @param[in] iter iteration number
+   * @param[in] ntask id of target task
+   */
+  void print_gaugeobservables_from_task(int iter, int ntask);
+  /**
+   * Print gaugeobservables from task to file, add iteration number
+   * @param[in] iter iteration number
+   * @param[in] ntask id of target task
+   * @param[in] filename name of file to which the output line is to be appended
+   */
+  void print_gaugeobservables_from_task(int iter, int ntask, std::string filename);
 
  protected:
   cl_device_type* devicetypes;
