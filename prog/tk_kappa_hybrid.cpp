@@ -28,7 +28,6 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Initialization
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	bool use_autotiming = true;
 
 	Gaugefield_heatbath_kappa gaugefield;
 	int numtasks = 2;
@@ -50,7 +49,7 @@ int main(int argc, char* argv[])
 
 	//first iteration: whether we want to do auto-timing
 	int nheat_frequency = parameters.get_writefrequency();
-	if(use_autotiming == true) {
+	if(parameters.get_use_autotuning() == true) {
 	  gaugefield.perform_tasks(parameters.get_writefrequency(), parameters.get_overrelaxsteps(), &nheat_frequency);
 	} else {
 	  gaugefield.perform_tasks(nheat_frequency, parameters.get_overrelaxsteps());
