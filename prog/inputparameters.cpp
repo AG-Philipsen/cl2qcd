@@ -30,6 +30,7 @@ void inputparameters::set_defaults()
 	print_to_screen = false;
 	//This is obvious!!!
 	host_seed = 4815162342;
+	use_autotuning = false;
 
 #ifdef _PROFILING_
 	mat_size = 9;
@@ -159,6 +160,8 @@ void inputparameters::readfile(char* ifn)
 		if(line.find("use_smearing") != std::string::npos) bool_assign(&use_smearing, line);
 		if(line.find("rho") != std::string::npos) val_assign(&rho, line);
 		if(line.find("rho_iter") != std::string::npos) val_assign(&rho_iter, line);
+
+		if(line.find("autotuning") != std::string::npos) bool_assign(&use_autotuning, line);
 
 	}
 
@@ -644,6 +647,10 @@ int inputparameters::get_float_size()
 }
 #endif
 
+bool inputparameters::get_use_autotuning(){
+  return use_autotuning;
+}
+
 void inputparameters::print_info_global(){
   logger.info() << "## **********************************************************";
 	logger.info() << "## Global parameters:";
@@ -768,11 +775,13 @@ void inputparameters::print_info_tkkappa(char* progname, ostream* os){
 	this->print_info_global(os);
 	*os  << "## **********************************************************"<<endl;
   *os  << "## Simulation parameters:"<<endl;
-  *os  << "## beta  = " << this->get_beta()<<endl;
+  *os  << "## beta           = " << this->get_beta()<<endl;
   *os  << "## thermsteps     = " << this->get_thermalizationsteps() <<endl;
   *os  << "## heatbathsteps  = " << this->get_heatbathsteps()<<endl;
   *os  << "## overrelaxsteps = " << this->get_overrelaxsteps()<<endl;
-	*os  << "## TODO: INSERT SPECIFIC PARAMETERS!!!!!"<<endl;
+  if(use_autotuning == true) 
+    *os << "## autotuning for hybrid program is switched on"<<endl;
+  *os  << "## TODO: INSERT SPECIFIC PARAMETERS!!!!!"<<endl;
   *os  << "## **********************************************************"<<endl;
   return;
 }
@@ -782,11 +791,13 @@ void inputparameters::print_info_tkkappa(char* progname){
 	this->print_info_global();
 	logger.info() << "## **********************************************************";
   logger.info() << "## Simulation parameters:";
-  logger.info() << "## beta  = " << this->get_beta();
+  logger.info() << "## beta           = " << this->get_beta();
   logger.info() << "## thermsteps     = " << this->get_thermalizationsteps() ;
   logger.info() << "## heatbathsteps  = " << this->get_heatbathsteps();
   logger.info() << "## overrelaxsteps = " << this->get_overrelaxsteps();
-	logger.info() << "## TODO: INSERT SPECIFIC PARAMETERS!!!!!";
+  if(use_autotuning == true) 
+    logger.info() << "## autotuning for hybrid program is switched on";
+  logger.info() << "## TODO: INSERT SPECIFIC PARAMETERS!!!!!";
   logger.info() << "## **********************************************************";
   return;
 }

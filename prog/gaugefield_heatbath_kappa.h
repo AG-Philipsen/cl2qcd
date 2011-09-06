@@ -75,6 +75,13 @@ public:
    */
   void perform_tasks(int nheat, int nover);
   /**
+   * Perform all the tasks, perform tuning
+   * @param[in] nheat number of heatbath steps
+   * @param[in] nover number of overrelaxation steps per heatbath step
+   * @param[out] nheat_optimal optimal number of heatbath steps for further iterations
+   */
+  void perform_tasks(int nheat, int nover, int* nheat_optimal);
+  /**
    * Print kappa coefficient to screen, add iteration number
    * @param[in] iter iteration number
    */

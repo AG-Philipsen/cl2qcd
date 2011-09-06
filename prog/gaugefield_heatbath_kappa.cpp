@@ -39,6 +39,37 @@ void Gaugefield_heatbath_kappa::perform_tasks(int nheat, int nover){
   return;
 }
 
+void Gaugefield_heatbath_kappa::perform_tasks(int nheat, int nover, int* nheat_optimal){
+
+  uint64_t time_for_heatbath;
+  uint64_t time_for_kappa;
+
+  usetimer timer;
+  timer.reset();
+  for(int iter = 0; iter < nheat; iter++) {
+    get_task_heatbath()->run_heatbath();
+      for(int iter_over = 0; iter_over < nover; iter_over++) 
+	get_task_heatbath()->run_overrelax();
+  }
+  timer.add();
+  time_for_heatbath = timer.getTime() / nheat;
+
+  timer.reset();
+  get_task_kappa()->run_kappa_clover(get_parameters()->get_beta());
+  timer.add();
+  time_for_kappa = timer.getTime();
+
+  logger.info()<<"Autotuning:";
+  logger.info()<<"\tAverage time for one heatbath iteration (including overrelaxation):  " << time_for_heatbath << " microseconds";
+  logger.info()<<"\tTime for calculation of transport coefficient:                       " << time_for_kappa    << " microseconds";
+
+  *nheat_optimal = time_for_kappa / time_for_heatbath;
+  if(*nheat_optimal <= 0) *nheat_optimal = 1;
+  logger.info()<<"\tThus set the optimal number of heatbath steps per tk calculation to: " << *nheat_optimal;
+
+  return;
+}
+
 void Gaugefield_heatbath_kappa::delete_variables(){
   Gaugefield_hybrid::delete_variables();
   

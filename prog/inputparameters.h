@@ -104,6 +104,7 @@ public:
 	hmc_float get_rho();
 	int get_rho_iter();
 	bool get_use_cg();
+	bool get_use_autotuning();
 	
 #ifdef _PROFILING_
 	int get_mat_size();
@@ -218,6 +219,7 @@ private:
 	bool use_chem_pot_im;
 	bool use_smearing;
 	bool print_to_screen;
+	bool use_autotuning;
 	
 #ifdef _PROFILING_
 	//parameters that describe the size of datatypes in bytes
