@@ -105,7 +105,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				///////////////////////////////////
 				// mu = +1
 				global_link_pos = get_global_link_pos(dir, n, t);
-				nn = get_neighbor(n, t);
+				nn = get_neighbor(n, dir);
 				plus = get_spinor_from_field(X, nn, t);
 				U = get_matrixsu3(field, n, t, dir);
 				///////////////////////////////////
@@ -123,7 +123,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				phib = su3vec_dim_i(y.e1, y.e2);
 
 
-				v1 = tr_v_times_u_dagger(psia, phia, psib, phib);
+				v1 = tr_v_times_u_dagger(phia, psia, phib, psib);
 				tmp = matrix_su3to3x3(U);
 				v2 = multiply_matrix3x3 (tmp, v1);
 				//TODO
@@ -171,7 +171,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				///////////////////////////////////
 				// mu = +2
 				global_link_pos = get_global_link_pos(dir, n, t);
-				nn = get_neighbor(n, t);
+				nn = get_neighbor(n, dir);
 				plus = get_spinor_from_field(X, nn, t);
 				U = get_matrixsu3(field, n, t, dir);
 				///////////////////////////////////
@@ -187,7 +187,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				phia = su3vec_acc(y.e0, y.e3);
 				phib = su3vec_dim(y.e1, y.e2);
 
-				v1 = tr_v_times_u_dagger(psia, phia, psib, phib);
+				v1 = tr_v_times_u_dagger(phia, psia, phib, psib);
 				tmp = matrix_su3to3x3(U);
 				v2 = multiply_matrix3x3 (tmp, v1);
 				//TODO
@@ -238,7 +238,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				///////////////////////////////////
 				// mu = +3
 				global_link_pos = get_global_link_pos(dir, n, t);
-				nn = get_neighbor(n, t);
+				nn = get_neighbor(n, dir);
 				plus = get_spinor_from_field(X, nn, t);
 				U = get_matrixsu3(field, n, t, dir);
 
@@ -255,7 +255,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				phia = su3vec_dim_i(y.e0, y.e2);
 				phib = su3vec_acc_i(y.e1, y.e3);
 
-				v1 = tr_v_times_u_dagger(psia, phia, psib, phib);
+				v1 = tr_v_times_u_dagger(phia, psia, phib, psib);
 				tmp = matrix_su3to3x3(U);
 				v2 = multiply_matrix3x3 (tmp, v1);
 				//TODO
