@@ -38,41 +38,41 @@
  */
 class Opencl_Module_Ran : public Opencl_Module {
 public:
-  /**
-   * Collect the compiler options for OpenCL.
-   * Virtual method, allows to include more options in inherited classes.
-   */
-  virtual void fill_collect_options(stringstream* collect_options);
-  
-  /**
-   * Collect the buffers to generate for OpenCL.
-   * Virtual method, allows to include more buffers in inherited classes.
-   */
-  virtual void fill_buffers();
-  
-  /**
-   * Collect the kernels for OpenCL.
-   * Virtual method, allows to include more kernels in inherited classes.
-   */
-  virtual void fill_kernels();
+	/**
+	 * Collect the compiler options for OpenCL.
+	 * Virtual method, allows to include more options in inherited classes.
+	 */
+	virtual void fill_collect_options(stringstream* collect_options);
 
-  /**
-   * Clear out the kernels,
-   * Virtual method, allows to clear additional kernels in inherited classes.
-   */
-  virtual void clear_kernels();
-  
-  /**
-   * Clear out the buffers,
-   * Virtual method, allows to clear additional buffers in inherited classes.
-   */
-  virtual void clear_buffers();
+	/**
+	 * Collect the buffers to generate for OpenCL.
+	 * Virtual method, allows to include more buffers in inherited classes.
+	 */
+	virtual void fill_buffers();
 
-  /**
-   * Initialize random arrays. 
-   * Called by fill_buffers() so that the arrays are available "in time"
-   */
-  void init_random_arrays();
+	/**
+	 * Collect the kernels for OpenCL.
+	 * Virtual method, allows to include more kernels in inherited classes.
+	 */
+	virtual void fill_kernels();
+
+	/**
+	 * Clear out the kernels,
+	 * Virtual method, allows to clear additional kernels in inherited classes.
+	 */
+	virtual void clear_kernels();
+
+	/**
+	 * Clear out the buffers,
+	 * Virtual method, allows to clear additional buffers in inherited classes.
+	 */
+	virtual void clear_buffers();
+
+	/**
+	 * Initialize random arrays.
+	 * Called by fill_buffers() so that the arrays are available "in time"
+	 */
+	void init_random_arrays();
 
 	/**
 	 * Copy the RNG state to the appropriate OpenCL buffer.
@@ -90,7 +90,7 @@ public:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	void copy_rndarray_from_device(hmc_ocl_ran* rndarray);	
+	void copy_rndarray_from_device(hmc_ocl_ran* rndarray);
 
 	/**
 	 * Get cl_mem object rndarray
@@ -107,8 +107,8 @@ protected:
 	hmc_ocl_ran* rndarray;
 	size_t sizeof_rndarray;
 
- private:
-	
+private:
+
 	int num_rndstates;
 	cl_mem clmem_rndarray;
 

@@ -39,35 +39,35 @@
  */
 class Opencl_Module_Heatbath : public Opencl_Module_Ran {
 public:
-  /**
-   * Collect the compiler options for OpenCL.
-   * Virtual method, allows to include more options in inherited classes.
-   */
-  virtual void fill_collect_options(stringstream* collect_options);
-  
-  /**
-   * Collect the buffers to generate for OpenCL.
-   * Virtual method, allows to include more buffers in inherited classes.
-   */
-  virtual void fill_buffers();
-  
-  /**
-   * Collect the kernels for OpenCL.
-   * Virtual method, allows to include more kernels in inherited classes.
-   */
-  virtual void fill_kernels();
+	/**
+	 * Collect the compiler options for OpenCL.
+	 * Virtual method, allows to include more options in inherited classes.
+	 */
+	virtual void fill_collect_options(stringstream* collect_options);
 
-  /**
-   * Clear out the kernels,
-   * Virtual method, allows to clear additional kernels in inherited classes.
-   */
-  virtual void clear_kernels();
-  
-  /**
-   * Clear out the buffers,
-   * Virtual method, allows to clear additional buffers in inherited classes.
-   */
-  virtual void clear_buffers();
+	/**
+	 * Collect the buffers to generate for OpenCL.
+	 * Virtual method, allows to include more buffers in inherited classes.
+	 */
+	virtual void fill_buffers();
+
+	/**
+	 * Collect the kernels for OpenCL.
+	 * Virtual method, allows to include more kernels in inherited classes.
+	 */
+	virtual void fill_kernels();
+
+	/**
+	 * Clear out the kernels,
+	 * Virtual method, allows to clear additional kernels in inherited classes.
+	 */
+	virtual void clear_kernels();
+
+	/**
+	 * Clear out the buffers,
+	 * Virtual method, allows to clear additional buffers in inherited classes.
+	 */
+	virtual void clear_buffers();
 
 	/**
 	 * Perform one heatbath step.
@@ -82,7 +82,7 @@ public:
 
 protected:
 
- private:
+private:
 
 	cl_kernel heatbath_odd;
 	cl_kernel heatbath_even;
@@ -103,21 +103,21 @@ protected:
 	 * @param in Name of the kernel under consideration.
 	 */
 	virtual usetimer* get_timer(char * in);
-	
+
 	/**
-	 * Return amount of bytes read and written by a specific kernel per call. 
+	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual int get_read_write_size(char * in, inputparameters * parameters);	
-	
+	virtual int get_read_write_size(char * in, inputparameters * parameters);
+
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 * @param parameters inputparameters
 	 */
-	void virtual print_profiling(std::string filename);	
+	void virtual print_profiling(std::string filename);
 #endif
 
 

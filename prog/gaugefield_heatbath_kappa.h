@@ -48,65 +48,65 @@ extern string const version;
  */
 class Gaugefield_heatbath_kappa : public Gaugefield_hybrid {
 public:
-  //init functions
-  /**
-   * Initialize tasks
-   * Called by init()
-   */
-  virtual void init_tasks();
+	//init functions
+	/**
+	 * Initialize tasks
+	 * Called by init()
+	 */
+	virtual void init_tasks();
 
-  // proper finish
-  /**
-   * Free variables
-   * Called by finalize()
-   */
-  virtual void delete_variables();
-  /**
-   * Free variables
-   * Called by finalize()
-   */
-  virtual void finalize_opencl();
+	// proper finish
+	/**
+	 * Free variables
+	 * Called by finalize()
+	 */
+	virtual void delete_variables();
+	/**
+	 * Free variables
+	 * Called by finalize()
+	 */
+	virtual void finalize_opencl();
 
-  // do the real work
-  /**
-   * Perform all the tasks
-   * @param[in] nheat number of heatbath steps
-   * @param[in] nover number of overrelaxation steps per heatbath step
-   */
-  void perform_tasks(int nheat, int nover);
-  /**
-   * Perform all the tasks, perform tuning
-   * @param[in] nheat number of heatbath steps
-   * @param[in] nover number of overrelaxation steps per heatbath step
-   * @param[out] nheat_optimal optimal number of heatbath steps for further iterations
-   */
-  void perform_tasks(int nheat, int nover, int* nheat_optimal);
-  /**
-   * Print kappa coefficient to screen, add iteration number
-   * @param[in] iter iteration number
-   */
-  void print_kappa(int iter);
-  /**
-   * Print kappa coefficient to file, add iteration number
-   * @param[in] iter iteration number
-   * @param[in] filename name of file to which the output line is to be appended
-   */
-  void print_kappa(int iter, std::string filename);
+	// do the real work
+	/**
+	 * Perform all the tasks
+	 * @param[in] nheat number of heatbath steps
+	 * @param[in] nover number of overrelaxation steps per heatbath step
+	 */
+	void perform_tasks(int nheat, int nover);
+	/**
+	 * Perform all the tasks, perform tuning
+	 * @param[in] nheat number of heatbath steps
+	 * @param[in] nover number of overrelaxation steps per heatbath step
+	 * @param[out] nheat_optimal optimal number of heatbath steps for further iterations
+	 */
+	void perform_tasks(int nheat, int nover, int* nheat_optimal);
+	/**
+	 * Print kappa coefficient to screen, add iteration number
+	 * @param[in] iter iteration number
+	 */
+	void print_kappa(int iter);
+	/**
+	 * Print kappa coefficient to file, add iteration number
+	 * @param[in] iter iteration number
+	 * @param[in] filename name of file to which the output line is to be appended
+	 */
+	void print_kappa(int iter, std::string filename);
 
-  // get methods
-  /**
-   * Returns a pointer to heatbath task
-   */
-  Opencl_Module_Heatbath* get_task_heatbath();
-  /**
-   * Returns a pointer to kappa task
-   */
-  Opencl_Module_Kappa* get_task_kappa();
+	// get methods
+	/**
+	 * Returns a pointer to heatbath task
+	 */
+	Opencl_Module_Heatbath* get_task_heatbath();
+	/**
+	 * Returns a pointer to kappa task
+	 */
+	Opencl_Module_Kappa* get_task_kappa();
 
 private:
 
-  int task_heatbath;
-  int task_kappa;
+	int task_heatbath;
+	int task_kappa;
 
 
 };
