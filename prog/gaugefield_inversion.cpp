@@ -45,14 +45,14 @@ Opencl_fermions * Gaugefield_inversion::get_devices_fermions ()
 void Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(usetimer* solvertimer){
 	int use_eo = get_parameters()->get_use_eo();
 
-  if(use_eo==false){
-    get_devices_fermions()[0].set_spinorfield_cold_device(get_devices_fermions()[0].get_clmem_inout());
-  }
-  else{
-    get_devices_fermions()[0].set_eoprec_spinorfield_cold_device(get_devices_fermions()[0].get_clmem_inout_eoprec());		
-  }
+	if(use_eo==false){
+	  get_devices_fermions()[0].set_spinorfield_cold_device(get_devices_fermions()[0].get_clmem_inout());
+	}
+	else{
+	  get_devices_fermions()[0].set_eoprec_spinorfield_cold_device(get_devices_fermions()[0].get_clmem_inout_eoprec());		
+	}
 
-  get_devices_fermions()[0].set_zero_spinorfield_device(get_devices_fermions()[0].get_clmem_corr());
+	get_devices_fermions()[0].set_zero_spinorfield_device(get_devices_fermions()[0].get_clmem_corr());
 
   for(int k=0; k<12; k++) {
     if(use_eo == false){
@@ -68,7 +68,5 @@ void Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(usetime
       get_devices_fermions()[0].saxpy_device(get_devices_fermions()[0].get_clmem_inout(), get_devices_fermions()[0].get_clmem_corr(), get_devices_fermions()[0].get_clmem_minusone(), get_devices_fermions()[0].get_clmem_corr());
     }
   }
-//   get_devices_fermions()[0].convert_from_kappa_format_device(get_devices_fermions()[0].get_clmem_corr(), get_devices_fermions()[0].get_clmem_corr());
-// 	get_devices_fermions()[0].convert_to_kappa_format_device(get_devices_fermions()[0].get_clmem_corr());
   return;
 }

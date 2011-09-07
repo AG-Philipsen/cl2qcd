@@ -198,8 +198,6 @@ void Opencl_fermions::fill_kernels()
 	ratio = createKernel("ratio") << basic_opencl_code << "complex_ratio.cl";
 	product = createKernel("product") << basic_opencl_code << "complex_product.cl";
 
-	convert_to_kappa_format = createKernel("convert_to_kappa_format") << basic_fermion_code << "spinorfield_kappaformat_convert.cl";
-	convert_from_kappa_format = createKernel("convert_from_kappa_format") << basic_fermion_code << "spinorfield_kappaformat_convert.cl";
 	create_point_source = createKernel("create_point_source") << basic_fermion_code << "spinorfield_point_source.cl";
 
 	//Kernels needed if eoprec is used
@@ -212,8 +210,6 @@ void Opencl_fermions::fill_kernels()
 		gamma5_eoprec = createKernel("gamma5_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
 		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		set_eoprec_spinorfield_cold = createKernel("set_eoprec_spinorfield_cold") << basic_fermion_code << "spinorfield_eo_cold.cl";
-		convert_to_kappa_format_eoprec = createKernel("convert_to_kappa_format_eoprec") << basic_fermion_code << "spinorfield_eo_kappaformat_convert.cl";
-		convert_from_kappa_format_eoprec = createKernel("convert_from_kappa_format_eoprec") << basic_fermion_code << "spinorfield_eo_kappaformat_convert.cl";
 		saxpy_eoprec = createKernel("saxpy_eoprec") << basic_fermion_code << "spinorfield_eo_saxpy.cl";
 		saxsbypz_eoprec = createKernel("saxsbypz_eoprec") << basic_fermion_code << "spinorfield_eo_saxsbypz.cl";
 		scalar_product_eoprec = createKernel("scalar_product_eoprec") << basic_fermion_code << "spinorfield_eo_scalar_product.cl";
@@ -227,35 +223,6 @@ void Opencl_fermions::init(cl_device_type wanted_device_type, inputparameters* p
 {
         Opencl::init(wanted_device_type, parameters, nstates);
 	return;
-}
-
-void Opencl_fermions::convert_to_kappa_format_device(cl_mem inout)
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes2(convert_to_kappa_format, this->get_device_type(), &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(convert_to_kappa_format, 0, sizeof(cl_mem), &inout);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
-
-	enqueueKernel( convert_to_kappa_format, gs2, ls2);
-}
-
-void Opencl_fermions::convert_from_kappa_format_device(cl_mem in, cl_mem out)
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes2(convert_from_kappa_format, this->get_device_type(), &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(convert_from_kappa_format, 0, sizeof(cl_mem), &in);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
-
-	clerr = clSetKernelArg(convert_from_kappa_format, 1, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
-
-	enqueueKernel( convert_from_kappa_format , gs2, ls2);
 }
 
 void Opencl_fermions::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out){
@@ -276,33 +243,7 @@ void Opencl_fermions::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem 
   enqueueKernel(convert_from_eoprec , gs2, ls2);
 }
 
-	
-void Opencl_fermions::convert_to_kappa_format_eoprec_device(cl_mem in){
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes2(convert_to_kappa_format_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(convert_to_kappa_format_eoprec,0,sizeof(cl_mem),&in);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__); 
 
-	enqueueKernel(convert_to_kappa_format_eoprec , gs2, ls2);
-}
-
-void Opencl_fermions::convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out){
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes2(convert_from_kappa_format_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(convert_from_kappa_format_eoprec, 0, sizeof(cl_mem), &in);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__); 
-
-	clerr = clSetKernelArg(convert_from_kappa_format_eoprec, 1, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__); 
-
-	enqueueKernel(convert_from_kappa_format_eoprec , gs2, ls2);
-}
 
 //compound fermionmatrix-functions without eoprec
 void Opencl_fermions::M(cl_mem in, cl_mem out, cl_mem gf){
@@ -1232,14 +1173,10 @@ void Opencl_fermions::solver_device(matrix_function_call f, cl_mem inout, cl_mem
   bool converged = false;
 
 	(*solvertimer).reset();
-	convert_to_kappa_format_device(inout);
-	convert_to_kappa_format_device(source);
 	if(get_parameters()->get_use_cg() == true)
 	 	converged = cg_device(f, inout, source, gf, cgmax);
 	else 
 		converged = bicgstab_device(f, inout, source, gf, cgmax);
-	convert_from_kappa_format_device(inout, inout);
-	convert_from_kappa_format_device(source, source);
 	clFinish(queue);
 	(*solvertimer).add();
 
@@ -1258,8 +1195,6 @@ void Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem inout,
 	(*solvertimer).reset();
 
 	//CP: even solution
-	convert_to_kappa_format_eoprec_device(clmem_inout_eoprec);
-	convert_to_kappa_format_eoprec_device(clmem_source_even);
 	if(get_parameters()->get_use_cg() == true)
 	 	converged = cg_eoprec_device(f, inout_eo, source_even, gf, cgmax);
 	else 
@@ -1277,12 +1212,9 @@ void Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem inout,
 		M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2);
 		saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, clmem_one, clmem_tmp_eoprec_3);
 
-		convert_from_kappa_format_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_3);
-		convert_from_kappa_format_eoprec_device(clmem_inout_eoprec, clmem_inout_eoprec);
 		//CP: whole solution
 		//CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eoprec_3
 		convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, clmem_inout);
-		///convert source back from kappa???
 	}
 	clFinish(queue);
 	(*solvertimer).add();
@@ -1464,18 +1396,10 @@ void Opencl_fermions::finalize_fermions()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 	clerr = clReleaseKernel(product);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
-	clerr = clReleaseKernel(convert_to_kappa_format);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
-	clerr = clReleaseKernel(convert_from_kappa_format);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 	clerr = clReleaseKernel(create_point_source);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 
 	if(get_parameters()->get_use_eo()) {
-		clerr = clReleaseKernel(convert_to_kappa_format_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
-		clerr = clReleaseKernel(convert_from_kappa_format_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 		clerr = clReleaseKernel(dslash_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 		clerr = clReleaseKernel(saxpy_eoprec);
@@ -1604,18 +1528,6 @@ usetimer* Opencl_fermions::get_timer(char * in){
 	if (strcmp(in, "set_zero_spinorfield") == 0){
     return &this->timer_set_zero_spinorfield;
 	}
-	if (strcmp(in, "convert_to_kappa_format") == 0){
-    return &this->timer_convert_to_kappa_format;
-	}
-	if (strcmp(in, "convert_from_kappa_format") == 0){
-    return &this->timer_convert_from_kappa_format;
-	}
-	if (strcmp(in, "convert_to_kappa_format_eoprec") == 0){
-    return &this->timer_convert_to_kappa_format_eoprec;
-	}
-	if (strcmp(in, "convert_from_kappa_format_eoprec") == 0){
-    return &this->timer_convert_from_kappa_format_eoprec;
-	}
 	if (strcmp(in, "create_point_source") == 0){
     return &this->timer_create_point_source;
 	}
@@ -1718,18 +1630,6 @@ int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters
 	if (strcmp(in, "set_zero_spinorfield") == 0){
     return 1000000000000000000000000;
 	}
-	if (strcmp(in, "convert_to_kappa_format") == 0){
-    return 1000000000000000000000000;
-	}
-	if (strcmp(in, "convert_from_kappa_format") == 0){
-    return 1000000000000000000000000;
-	}
-	if (strcmp(in, "convert_to_kappa_format_eoprec") == 0){
-    return 1000000000000000000000000;
-	}
-	if (strcmp(in, "convert_from_kappa_format_eoprec") == 0){
-    return 1000000000000000000000000;
-	}
 	if (strcmp(in, "create_point_source") == 0){
     return 1000000000000000000000000;
 	}
@@ -1805,14 +1705,6 @@ void Opencl_fermions::print_profiling(std::string filename){
 	kernelName = "saxsbypz";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "set_zero_spinorfield";
-	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
-	kernelName = "convert_to_kappa_format";
-	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
-	kernelName = "convert_from_kappa_format";
-	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
-	kernelName = "convert_to_kappa_format_eoprec";
-	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
-	kernelName = "convert_from_kappa_format_eoprec";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "create_point_source";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );

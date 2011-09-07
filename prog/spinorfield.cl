@@ -16,9 +16,6 @@ void print_spinor(spinor in){
 }
 
 
-/** @todo CP: this must be taken out of this code again! */
-#define EOPREC_SPINORFIELDSIZE2 EOPREC_SPINORFIELDSIZE
-
 spinor get_spinor_from_field(__global spinorfield* in, int n, int t)
 {
 	int pos = get_global_pos(n,t);

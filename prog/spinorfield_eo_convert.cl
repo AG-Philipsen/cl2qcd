@@ -15,7 +15,7 @@ __kernel void convert_from_eoprec(__global spinorfield_eoprec* even, __global sp
   int id = get_global_id(0);
   if(id ==0){
 	int spacepos, timepos;
-	for(int n=0; n<EOPREC_SPINORFIELDSIZE2; n++) {
+	for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
 		get_even_site(n, &spacepos, &timepos);
 		out[get_global_pos(spacepos,timepos)] = even[n];
 		get_odd_site(n, &spacepos, &timepos);

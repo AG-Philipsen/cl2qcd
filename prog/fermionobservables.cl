@@ -12,21 +12,25 @@ __kernel void ps_correlator(__global spinorfield* phi){
    int group_id = get_group_id (0);
 
    if(id==0){
-	hmc_float correlator_ps[NSPACE];
-	for(int i = 0; i<NSPACE; i++){
-		correlator_ps[i]=0.;
-	}
-	for(int timepos = 0; timepos<NTIME; timepos++) {
-   		for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
+     hmc_float correlator_ps[NSPACE];
+     for(int i = 0; i<NSPACE; i++){
+       correlator_ps[i]=0.;
+     }
+     for(int timepos = 0; timepos<NTIME; timepos++) {
+       for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
 		//correlator_ps[z] += |phi(n,t)|^2
-		spinor tmp = phi[get_global_pos(spacepos, timepos)];
-		int z = get_spacecoord(spacepos, 3);
-		correlator_ps[z] += spinor_squarenorm(tmp);
-   }}
-	printf("ps correlator:\n");
-	for(int i = 0; i<NSPACE; i++){
-		printf("%i\t(%.12e)\n", i, correlator_ps[i]);
-	}
-  }
-
+	 spinor tmp = phi[get_global_pos(spacepos, timepos)];
+	 int z = get_spacecoord(spacepos, 3);
+	 correlator_ps[z] += spinor_squarenorm(tmp);
+       }
+     }
+     // print the correlator in the "physical" normalization,
+     // i.e. in the mass basis, without kappa
+     // thus we have to multiply by (2*kappa)**2
+     printf("ps correlator:\n");
+     for(int i = 0; i<NSPACE; i++){
+       printf("%i\t(%.12e)\n", i, 4.*KAPPA*KAPPA*correlator_ps[i]);
+     }
+   }
+   
 }

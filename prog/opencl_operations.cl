@@ -115,43 +115,6 @@ void convert_from_eoprec(hmc_eoprec_spinor_field* even, hmc_eoprec_spinor_field*
 	return;
 }
 
-void convert_to_kappa_format(__global hmc_spinor_field* inout,hmc_float kappa)
-{
-	for(int n=0; n<SPINORFIELDSIZE; n++) {
-		inout[n].re *= sqrt(2.*kappa);
-		inout[n].im *= sqrt(2.*kappa);
-	}
-	return;
-}
-
-void convert_to_kappa_format_eoprec(__global hmc_eoprec_spinor_field* inout,hmc_float kappa)
-{
-	for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
-		inout[n].re *= sqrt(2.*kappa);
-		inout[n].im *= sqrt(2.*kappa);
-	}
-	return;
-}
-
-void convert_from_kappa_format(__global hmc_spinor_field* in, __global hmc_spinor_field * out,hmc_float kappa)
-{
-	for(int n=0; n<SPINORFIELDSIZE; n++) {
-		out[n].re = (in[n].re)/sqrt(2.*kappa);
-		out[n].im = (in[n].im)/sqrt(2.*kappa);
-	}
-	return;
-}
-
-void convert_from_kappa_format_eoprec(__global hmc_eoprec_spinor_field* in, __global hmc_eoprec_spinor_field * out, hmc_float kappa)
-{
-	for(int n=0; n<EOPREC_SPINORFIELDSIZE; n++) {
-		out[n].re = (in[n].re)/sqrt(2.*kappa);
-		out[n].im = (in[n].im)/sqrt(2.*kappa);
-	}
-	return;
-}
-
-
 hmc_float global_squarenorm_eoprec(hmc_eoprec_spinor_field *in)
 {
 	hmc_float sum=0;

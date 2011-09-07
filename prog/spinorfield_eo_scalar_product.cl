@@ -14,7 +14,7 @@ __kernel void scalar_product_eoprec( __global spinorfield_eoprec *x, __global sp
 	sum.re = 0.;
 	sum.im = 0.;
 
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE2; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 		spinor x_tmp = x[id_tmp];
 		spinor y_tmp = y[id_tmp];
 		hmc_complex tmp = spinor_scalarproduct(x_tmp, y_tmp);

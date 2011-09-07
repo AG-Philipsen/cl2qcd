@@ -65,10 +65,6 @@ public:
 	// device operations
 
 	//    linear Algebra operations
-	void convert_to_kappa_format_device(cl_mem inout);
-	void convert_from_kappa_format_device(cl_mem in, cl_mem out);
-	void convert_to_kappa_format_eoprec_device(cl_mem inout);
-	void convert_from_kappa_format_eoprec_device(cl_mem in, cl_mem out);
 	void convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out);
 
 	void set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out);
@@ -160,10 +156,6 @@ public:
 	usetimer timer_saxpy;
 	usetimer timer_saxsbypz;
 	usetimer timer_set_zero_spinorfield;
-	usetimer timer_convert_to_kappa_format;
-	usetimer timer_convert_from_kappa_format;
-	usetimer timer_convert_to_kappa_format_eoprec;
-	usetimer timer_convert_from_kappa_format_eoprec;
 	usetimer timer_create_point_source;
 	usetimer timer_saxpy_eoprec;
 	usetimer timer_saxsbypz_eoprec;
@@ -228,10 +220,6 @@ private:
 	cl_kernel saxpy;
 	cl_kernel saxsbypz;
 	cl_kernel set_zero_spinorfield;
-	cl_kernel convert_to_kappa_format;
-	cl_kernel convert_from_kappa_format;
-	cl_kernel convert_to_kappa_format_eoprec;
-	cl_kernel convert_from_kappa_format_eoprec;
 	cl_kernel create_point_source;
 	cl_kernel saxpy_eoprec;
 	cl_kernel saxsbypz_eoprec;

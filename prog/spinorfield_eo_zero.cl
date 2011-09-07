@@ -7,7 +7,7 @@ __kernel void set_zero_spinorfield_eoprec( __global spinorfield_eoprec *x )
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE2; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 		x[id_tmp] = set_spinor_zero();
 	}
 	return;

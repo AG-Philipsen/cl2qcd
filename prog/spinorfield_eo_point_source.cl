@@ -2,10 +2,13 @@ __kernel void create_point_source_eoprec(__global spinorfield_eoprec* b, int i, 
 {
 	int id = get_global_id(0);
 	if(id == 0) {
-		hmc_float tmp = sqrt(2.*KAPPA);
-		int color = spinor_color(i);
-		int spin = spinor_spin(i,color);
-		int pos = n;
+	  //LZ: Note that in the kappa-format the source has norm^2 = 1/(2*kappa)
+	  //we assume everything on the device to be in kappa-normalization
+	  //going back is achieved by multiplying all fields by sqrt(2*kappa)
+		hmc_float tmp = 1./sqrt(2.*KAPPA);
+		int color     = spinor_color(i);
+		int spin      = spinor_spin(i,color);
+		int pos       = n;
 
 		switch (color){
 			

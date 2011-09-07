@@ -12,7 +12,7 @@ __kernel void global_squarenorm_eoprec( __global spinorfield_eoprec *x, __global
 	hmc_float sum;
 	sum = 0.;
 
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE2; id_tmp += global_size) {
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 		spinor x_tmp = x[id_tmp];
 		hmc_float tmp = spinor_squarenorm(x_tmp);
 		sum += tmp;
