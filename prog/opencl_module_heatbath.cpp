@@ -152,6 +152,11 @@ void Opencl_Module_Heatbath::run_overrelax()
 	return;
 }
 
+void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups){
+  Opencl_Module_Ran::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
+  return;
+}
+
 #ifdef _PROFILING_
 usetimer* Opencl_Module_Heatbath::get_timer(char * in)
 {
@@ -175,9 +180,9 @@ usetimer* Opencl_Module_Heatbath::get_timer(char * in)
 		return NULL;
 	}
 }
-int Opencl_heatbath::get_read_write_size(char * in, inputparameters * parameters)
+int Opencl_Module_Heatbath::get_read_write_size(char * in, inputparameters * parameters)
 {
-	Opencl::get_read_write_size(in, parameters);
+        Opencl_Module_Ran::get_read_write_size(in, parameters);
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
 	int R = (*parameters).get_mat_size();

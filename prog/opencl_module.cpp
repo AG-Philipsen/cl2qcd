@@ -678,7 +678,7 @@ void Opencl_Module::plaquette_device(cl_mem gf)
 	//query work-sizes for kernel
 	size_t ls, gs;
 	cl_uint num_groups;
-	this->get_work_sizes2(plaquette, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(plaquette, this->get_device_type(), &ls, &gs, &num_groups);
 
 	logger.debug() << "init scratch buffers if not already done";
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
@@ -712,7 +712,7 @@ void Opencl_Module::plaquette_device(cl_mem gf)
 
 	// run second part of plaquette reduction
 
-	this->get_work_sizes2(plaquette_reduction, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(plaquette_reduction, this->get_device_type(), &ls, &gs, &num_groups);
 
 	clerr = clSetKernelArg(plaquette_reduction, 0, sizeof(cl_mem), &clmem_plaq_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -748,7 +748,7 @@ void Opencl_Module::polyakov_device(cl_mem gf)
 	//query work-sizes for kernel
 	size_t ls, gs;
 	cl_uint num_groups;
-	this->get_work_sizes2(polyakov, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(polyakov, this->get_device_type(), &ls, &gs, &num_groups);
 	int buf_loc_size_complex = sizeof(hmc_complex) * ls;
 
 	// local polyakov compuation and first part of reduction
@@ -765,7 +765,7 @@ void Opencl_Module::polyakov_device(cl_mem gf)
 
 	// second part of polyakov reduction
 
-	this->get_work_sizes2(polyakov_reduction, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(polyakov_reduction, this->get_device_type(), &ls, &gs, &num_groups);
 
 	clerr = clSetKernelArg(polyakov_reduction, 0, sizeof(cl_mem), &clmem_polyakov_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -835,7 +835,7 @@ void Opencl_Module::stout_smear_device()
 	return;
 }
 
-void Opencl_Module::get_work_sizes2(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
+void Opencl_Module::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
 {
 	//Construct explicit kernel name
 	int clerr;
@@ -872,30 +872,6 @@ void Opencl_Module::get_work_sizes2(const cl_kernel kernel, cl_device_type dev_t
 	return;
 }
 
-void Opencl_Module::get_work_sizes(size_t * ls, size_t * gs, cl_uint * num_groups, cl_device_type dev_type, string name)
-{
-	/// @todo use kernelname
-	size_t local_work_size;
-	if( dev_type == CL_DEVICE_TYPE_GPU )
-		local_work_size = Opencl_Module::get_numthreads(); /// @todo have local work size depend on kernel properties (and device? autotune?)
-	else
-		local_work_size = 1; // nothing else makes sense on CPU
-
-	size_t global_work_size;
-	if( dev_type == CL_DEVICE_TYPE_GPU )
-		global_work_size = 4 * Opencl_Module::get_numthreads() * max_compute_units; /// @todo autotune
-	else
-		global_work_size = max_compute_units;
-
-	const cl_uint num_groups_tmp = (global_work_size + local_work_size - 1) / local_work_size;
-	global_work_size = local_work_size * num_groups_tmp;
-
-	*ls = local_work_size;
-	*gs = global_work_size;
-	*num_groups = num_groups_tmp;
-
-	return;
-}
 
 #ifdef _PROFILING_
 usetimer* Opencl_Module::get_timer(char * in)

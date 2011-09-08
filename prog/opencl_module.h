@@ -256,8 +256,7 @@ public:
 	 * @param dev_type type of device on which the kernel should be executed
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
-	void get_work_sizes(size_t * ls, size_t * gs, cl_uint * num_groups, cl_device_type dev_type, string name = "dummy");
-	void get_work_sizes2(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
+	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
 
 
 #ifdef _PROFILING_

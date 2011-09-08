@@ -28,6 +28,18 @@ class Gaugefield_inversion : public Gaugefield {
   virtual void finalize();
 
   /**
+   * Perform inversion with point source
+   * @return Pointer to OpenCL buffer with solution
+   */
+  cl_mem* perform_inversion_pointsource(usetimer* solvertimer);
+  /**
+   * Calculate set of correlators and print to file
+   * Use 
+   * @param[in] filename where to store the correlators
+   */
+  void calculate_correlators_from_pointsource();
+
+  /**
    * Perform inversion on device and print pseudo-scalar correlator to std.
    * Use point sources.
    */
