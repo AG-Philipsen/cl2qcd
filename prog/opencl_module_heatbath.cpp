@@ -72,11 +72,9 @@ void Opencl_Module_Heatbath::run_heatbath()
 {
 	cl_int clerr = CL_SUCCESS;
 
-	size_t global_work_size;
-	if( get_device_type() == CL_DEVICE_TYPE_GPU )
-		global_work_size = min(VOLSPACE * NTIME / 2, this->Opencl_Module_Ran::get_num_rndstates());
-	else
-		global_work_size = min(get_max_compute_units(), this->Opencl_Module_Ran::get_num_rndstates());
+	size_t global_work_size, ls;
+	cl_uint num_groups;
+	this->get_work_sizes(heatbath_even, this->get_device_type(), &ls, &global_work_size, &num_groups);
 
 	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), get_gaugefield());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -91,6 +89,8 @@ void Opencl_Module_Heatbath::run_heatbath()
 		enqueueKernel(heatbath_even, global_work_size);
 	}
 
+	this->get_work_sizes(heatbath_odd, this->get_device_type(), &ls, &global_work_size, &num_groups);
+	
 	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), get_gaugefield());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
@@ -114,11 +114,9 @@ void Opencl_Module_Heatbath::run_overrelax()
 {
 	cl_int clerr = CL_SUCCESS;
 
-	size_t global_work_size;
-	if( get_device_type() == CL_DEVICE_TYPE_GPU )
-		global_work_size = min(VOLSPACE * NTIME / 2, this->Opencl_Module_Ran::get_num_rndstates());
-	else
-		global_work_size = min(get_max_compute_units(), this->Opencl_Module_Ran::get_num_rndstates());
+	size_t global_work_size, ls;
+	cl_uint num_groups;
+	this->get_work_sizes(overrelax_even, this->get_device_type(), &ls, &global_work_size, &num_groups);
 
 	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), get_gaugefield());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -133,6 +131,8 @@ void Opencl_Module_Heatbath::run_overrelax()
 		enqueueKernel(overrelax_even, global_work_size);
 	}
 
+	this->get_work_sizes(overrelax_odd, this->get_device_type(), &ls, &global_work_size, &num_groups);
+	
 	clerr = clSetKernelArg(overrelax_odd, 0, sizeof(cl_mem), get_gaugefield());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
@@ -154,6 +154,20 @@ void Opencl_Module_Heatbath::run_overrelax()
 
 void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups){
   Opencl_Module_Ran::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
+	
+	//Query kernel name
+	string kernelname = get_kernel_name(kernel);
+	
+	//Query specific sizes for kernels if needed
+	//all of the following kernels are called with EnqueueKernel(gs), ls, num_groups are not needed!
+	if (kernelname.compare("heatbath_even") == 0 || kernelname.compare("heatbath_odd") == 0 || kernelname.compare("overrelax_even") == 0 || kernelname.compare("overrelax_even") == 0) {
+		if( get_device_type() == CL_DEVICE_TYPE_GPU )
+			*gs = min(VOLSPACE * NTIME / 2, this->Opencl_Module_Ran::get_num_rndstates());
+		else
+			*gs = min(get_max_compute_units(), this->Opencl_Module_Ran::get_num_rndstates());
+		*ls = 0;
+		*num_groups = 0;
+	}
   return;
 }
 
