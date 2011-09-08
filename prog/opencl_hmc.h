@@ -45,22 +45,25 @@ public:
 
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
+	void md_update_spinorfield();
+	void leapfrog(hmc_float tau, int steps1, int steps2, usetimer * solvertimer);
+	hmc_observables metropolis(hmc_float rnd, hmc_float beta);
+	void calc_spinorfield_init_energy();
+	void calc_total_force(usetimer * solvertimer);
+	void calc_gauge_force();
+	void calc_fermion_force(usetimer * solvertimer);
+	
+	///////////////////////////////////////////////////
+	//Methods on device
 	void generate_gaussian_gaugemomenta_device();
 	void generate_gaussian_spinorfield_device();
-	void md_update_spinorfield_device();
-	void leapfrog_device(hmc_float tau, int steps1, int steps2, usetimer * solvertimer);
-	hmc_observables metropolis(hmc_float rnd, hmc_float beta);
-	void calc_spinorfield_init_energy_device();
+	void stout_smeared_fermion_force_device();
 	void md_update_gaugemomentum_device(hmc_float eps);
 	void md_update_gaugefield_device(hmc_float eps);
 	void set_zero_clmem_force_device();
 	void gauge_force_device();
 	void fermion_force_device();
-	void stout_smeared_fermion_force_device();
 	void set_float_to_gaugemomentum_squarenorm_device(cl_mem in, cl_mem out);
-	void calc_total_force(usetimer * solvertimer);
-	void calc_gauge_force();
-	void calc_fermion_force(usetimer * solvertimer);
 	
 	////////////////////////////////////////////////////
 	//get members

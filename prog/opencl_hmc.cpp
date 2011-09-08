@@ -150,13 +150,14 @@ void Opencl_hmc::generate_gaussian_spinorfield_device()
 }
 
 
-void Opencl_hmc::md_update_spinorfield_device()
+void Opencl_hmc::md_update_spinorfield()
 {
 	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
 	//	then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//	which then has to be the source of the inversion
 	Opencl_fermions::Qplus(clmem_phi_inv, clmem_phi , get_clmem_gaugefield());
 
+	//debugging
 	hmc_float s_fermion;
 	set_float_to_global_squarenorm_device(clmem_phi, clmem_s_fermion);
 	get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
@@ -164,7 +165,7 @@ void Opencl_hmc::md_update_spinorfield_device()
 }
 
 
-void Opencl_hmc::leapfrog_device(hmc_float tau, int steps1, int steps2, usetimer * solvertimer)
+void Opencl_hmc::leapfrog(hmc_float tau, int steps1, int steps2, usetimer * solvertimer)
 {
 	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already
 	//this is the number of int.steps for the fermion during one gauge-int.step
@@ -307,7 +308,7 @@ void Opencl_hmc::calc_fermion_force(usetimer * solvertimer){
 			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
 			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
 			 
-			Opencl_fermions::solver_device(Qplus_call, get_clmem_inout(), get_clmem_phi(), clmem_new_u, solvertimer, get_parameters()->get_cgmax());
+			Opencl_fermions::solver(Qplus_call, get_clmem_inout(), get_clmem_phi(), clmem_new_u, solvertimer, get_parameters()->get_cgmax());
 			
 			//debugging
 			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
@@ -338,7 +339,7 @@ void Opencl_hmc::calc_fermion_force(usetimer * solvertimer){
 			//this sets clmem_inout cold as trial-solution
 			set_spinorfield_cold_device(get_clmem_inout());
 			
-			Opencl_fermions::solver_device(Qminus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, solvertimer, get_parameters()->get_cgmax());
+			Opencl_fermions::solver(Qminus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, solvertimer, get_parameters()->get_cgmax());
 			
 			//debugging
 			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
@@ -448,9 +449,10 @@ hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta)
 	return tmp;
 }
 
-void Opencl_hmc::calc_spinorfield_init_energy_device()
+void Opencl_hmc::calc_spinorfield_init_energy()
 {
 	//Suppose the initial spinorfield is saved in phi_inv
+	//	it is created in generate_gaussian_spinorfield_device
 	Opencl_fermions::set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_energy_init);
 }
 
