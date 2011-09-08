@@ -33,4 +33,20 @@ __kernel void ps_correlator(__global spinorfield* phi){
      }
    }
    
+   //CP: future versions that requires an additional buffer correlator_ps[NSPACE] as kernel-arg
+//    //suppose that there are NSPACE threads (one for each entry of the correlator)
+// 	for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
+// 		correlator_ps[i]=0.;
+// 		cl_int4 coord;
+// 		coord[3] = id;
+// 		for(int t = 0; t<NTIME; t++) {
+// 			for(int x = 0; x<NSPACE; x++) {
+// 				for(int y = 0; y<NSPACE; y++) {
+// 					coord[1] = x;
+// 					coord[2] = y;
+// 					int nspace = get_nspace(coord);
+// 					spinor tmp = phi[get_global_pos(nspace, t)];
+// 					correlator_ps[z] += spinor_squarenorm(tmp);
+// 		}}}
+// 	}
 }
