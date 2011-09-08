@@ -72,34 +72,6 @@ add_definitions( -DNSPACE=${NSPACE} )
 # default random number seed
 configure_file( rand_seeds rand_seeds COPYONLY )
 
-add_executable( heatbath
-	heatbath.cpp
-	host_geometry.cpp
-	host_operations_complex.cpp
-	host_operations_gaugefield.cpp
-	host_operations_su3matrix.cpp
-	host_operations_matrix.cpp
-	gaugefield.cpp
-	gaugefield_heatbath.cpp
-	inputparameters.cpp
-	host_readgauge.cpp
-	host_random.cpp
-	opencl.cpp
-	opencl_heatbath.cpp
-	opencl_compiler.cpp
-	host_use_timer.cpp
-	host_writegaugefield.cpp
-	logger.cpp
-	exceptions.cpp
-)
-target_link_libraries( heatbath
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
-	${Boost_LIBRARIES}
-	klepsydra
-	einhard
-)
 add_executable( heatbath_tmp
 	heatbath_tmp.cpp
 	host_geometry.cpp
