@@ -8,7 +8,7 @@
 //this includes header used by all executables
 #include "general_header.h"
 
-#include "gaugefield_heatbath_tmp.h"
+#include "gaugefield_heatbath.h"
 #include "opencl_module.h"
 string const version = "0.1b";
 

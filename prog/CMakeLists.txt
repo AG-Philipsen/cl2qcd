@@ -87,7 +87,7 @@ add_executable( heatbath
 	logger.cpp
 	exceptions.cpp
 	gaugefield_hybrid.cpp
-	gaugefield_heatbath_tmp.cpp
+	gaugefield_heatbath.cpp
 	opencl_module.cpp
 	opencl_module_ran.cpp
 	opencl_module_heatbath.cpp
@@ -162,7 +162,7 @@ target_link_libraries( inverter
 )
 
 add_executable( inverter_tmp
-	inverter.cpp
+	inverter_tmp.cpp
 	host_geometry.cpp
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp

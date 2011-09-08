@@ -1,4 +1,4 @@
-#include "gaugefield_heatbath_tmp.h"
+#include "gaugefield_heatbath.h"
 
 
 Opencl_Module_Heatbath* Gaugefield_heatbath::get_task_heatbath() {
