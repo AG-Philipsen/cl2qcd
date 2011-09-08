@@ -57,13 +57,13 @@ void Gaugefield_inversion::perform_inversion_pointsource_ps_corr_devices(usetime
   for(int k=0; k<12; k++) {
     if(use_eo == false){
       get_devices_fermions()[0].create_point_source_device(get_devices_fermions()[0].get_clmem_source(), k,0,0);
-      get_devices_fermions()[0].solver_device(M_call, get_devices_fermions()[0].get_clmem_inout(), get_devices_fermions()[0].get_clmem_source(), get_devices_fermions()[0].get_clmem_gaugefield(), solvertimer, get_parameters()->get_cgmax());
+      get_devices_fermions()[0].solver(M_call, get_devices_fermions()[0].get_clmem_inout(), get_devices_fermions()[0].get_clmem_source(), get_devices_fermions()[0].get_clmem_gaugefield(), solvertimer, get_parameters()->get_cgmax());
       //CP: add solution to former ones...
 			get_devices_fermions()[0].saxpy_device(get_devices_fermions()[0].get_clmem_inout(), get_devices_fermions()[0].get_clmem_corr(), get_devices_fermions()[0].get_clmem_minusone(), get_devices_fermions()[0].get_clmem_corr());
     }
     else{
       get_devices_fermions()[0].create_point_source_eoprec_device(get_devices_fermions()[0].get_clmem_source_even(), get_devices_fermions()[0].get_clmem_source_odd(), get_devices_fermions()[0].get_clmem_gaugefield(), k,0,0);
-      get_devices_fermions()[0].solver_eoprec_device(Aee_call, get_devices_fermions()[0].get_clmem_inout(), get_devices_fermions()[0].get_clmem_inout_eoprec(), get_devices_fermions()[0].get_clmem_source_even(), get_devices_fermions()[0].get_clmem_source_odd(), get_devices_fermions()[0].get_clmem_gaugefield(), solvertimer, get_parameters()->get_cgmax());
+      get_devices_fermions()[0].solver_eoprec(Aee_call, get_devices_fermions()[0].get_clmem_inout(), get_devices_fermions()[0].get_clmem_inout_eoprec(), get_devices_fermions()[0].get_clmem_source_even(), get_devices_fermions()[0].get_clmem_source_odd(), get_devices_fermions()[0].get_clmem_gaugefield(), solvertimer, get_parameters()->get_cgmax());
       //CP: add solution to former ones... This is the same call as without eoprec since the eoprec solver saves the normal field also in clmem_inout!!
       get_devices_fermions()[0].saxpy_device(get_devices_fermions()[0].get_clmem_inout(), get_devices_fermions()[0].get_clmem_corr(), get_devices_fermions()[0].get_clmem_minusone(), get_devices_fermions()[0].get_clmem_corr());
     }

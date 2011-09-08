@@ -592,7 +592,7 @@ void Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem b, c
 
 	enqueueKernel(scalar_product , gs2, ls2);
 
-	/** @todo Here the wait is needed. Replace this call by a clWaitForEvents! */
+	/// @todo Here the wait is needed. Replace this call by a clWaitForEvents!
 	clerr = clFinish(queue);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
 
@@ -706,6 +706,8 @@ void Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_mem out
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
 
 	enqueueKernel(global_squarenorm , gs2, ls2);
+	
+	/// @todo Here the wait is needed. Replace this call by a clWaitForEvents!
 	clerr = clFinish(queue);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
 
@@ -740,6 +742,7 @@ void Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_
 
 	enqueueKernel( global_squarenorm_eoprec, gs2, ls2);
 
+	/// @todo Here the wait is needed. Replace this call by a clWaitForEvents!
 	clFinish(queue);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
 
@@ -778,11 +781,11 @@ void Opencl_fermions::set_zero_spinorfield_eoprec_device(cl_mem x)
 	enqueueKernel( set_zero_spinorfield_eoprec, gs2, ls2);
 }
 
-bool Opencl_fermions::bicgstab_device( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
+bool Opencl_fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
 {
 
 int debug = 0;
-if(debug) cout << "debug-output at bicgstab_device is activated" << endl;
+if(debug) cout << "debug-output at bicgstab is activated" << endl;
 	
 	//CP: these have to be on the host
 	hmc_float resid;
@@ -1014,7 +1017,7 @@ if(debug){
 	return false;
 }
 
-bool Opencl_fermions::bicgstab_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
+bool Opencl_fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
 {
 	//CP: these have to be on the host
 	hmc_float resid;
@@ -1089,7 +1092,7 @@ bool Opencl_fermions::bicgstab_eoprec_device(matrix_function_call f, cl_mem inou
 	return false;
 }
 
-bool Opencl_fermions::cg_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
+bool Opencl_fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
 {
 	//CP: these have to be on the host
 	hmc_float resid;
@@ -1161,22 +1164,22 @@ bool Opencl_fermions::cg_device(matrix_function_call f, cl_mem inout, cl_mem sou
 	return false;
 }
 
-bool Opencl_fermions::cg_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax){
+bool Opencl_fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax){
 	/// to be implemented if the above one has been checked..
 	return false;
 }
 
 
-void Opencl_fermions::solver_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer, int cgmax)
+void Opencl_fermions::solver(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer, int cgmax)
 {
 
   bool converged = false;
 
 	(*solvertimer).reset();
 	if(get_parameters()->get_use_cg() == true)
-	 	converged = cg_device(f, inout, source, gf, cgmax);
+	 	converged = cg(f, inout, source, gf, cgmax);
 	else 
-		converged = bicgstab_device(f, inout, source, gf, cgmax);
+		converged = bicgstab(f, inout, source, gf, cgmax);
 	clFinish(queue);
 	(*solvertimer).add();
 
@@ -1187,7 +1190,7 @@ void Opencl_fermions::solver_device(matrix_function_call f, cl_mem inout, cl_mem
 }
 
 
-void Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * solvertimer, int cgmax)
+void Opencl_fermions::solver_eoprec(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * solvertimer, int cgmax)
 {
 
   bool converged = false;
@@ -1196,9 +1199,9 @@ void Opencl_fermions::solver_eoprec_device(matrix_function_call f, cl_mem inout,
 
 	//CP: even solution
 	if(get_parameters()->get_use_cg() == true)
-	 	converged = cg_eoprec_device(f, inout_eo, source_even, gf, cgmax);
+	 	converged = cg_eoprec(f, inout_eo, source_even, gf, cgmax);
 	else 
-		converged = bicgstab_eoprec_device(f, inout_eo, source_even, gf, cgmax);
+		converged = bicgstab_eoprec(f, inout_eo, source_even, gf, cgmax);
 
 	//P: odd solution
 	/** @todo CP: perhaps one can save some variables used here */

@@ -108,17 +108,17 @@ public:
 	//    solver operations
 	//    non-eoprec
 	/// this calls the solver according to parameter settings using the fermionmatrix f
-	void solver_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer, int cgmax);
+	void solver(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer, int cgmax);
 	/// this executes the bicgstab on the device, using the fermionmatrix f
-	bool bicgstab_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
+	bool bicgstab(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
 	/// this executes the cg on the device, using the fermionmatrix f 
-	bool cg_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
+	bool cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
 	//    eoprec
 	/// this calls the solver according to parameter settings using the fermionmatrix f
-	void solver_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * solvertimer, int cgmax);	
+	void solver_eoprec(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * solvertimer, int cgmax);	
 	/// this executes the eoprec bicgstab on the device, using the fermionmatrix f 
-	bool bicgstab_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
-	bool cg_eoprec_device(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
+	bool bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
+	bool cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
 	
 	//    operations needed calculating fermionic observables
 	void ps_correlator_device(cl_mem in);
