@@ -162,7 +162,7 @@ target_link_libraries( inverter
 )
 
 add_executable( inverter_tmp
-	inverter.cpp
+	inverter_tmp.cpp
 	host_geometry.cpp
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
