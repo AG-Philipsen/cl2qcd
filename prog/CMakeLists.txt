@@ -100,29 +100,28 @@ target_link_libraries( heatbath
 	klepsydra
 	einhard
 )
-add_executable( tk_kappa
-	tk_kappa.cpp
+add_executable( heatbath_tmp
+	heatbath_tmp.cpp
 	host_geometry.cpp
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
 	host_operations_su3matrix.cpp
 	host_operations_matrix.cpp
-	gaugefield.cpp
-	gaugefield_k.cpp
-	gaugefield_heatbath.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
-	host_random.cpp
-	opencl.cpp
-	opencl_compiler.cpp
-	opencl_k.cpp
-	opencl_heatbath.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
+	host_random.cpp
 	logger.cpp
 	exceptions.cpp
+	gaugefield_hybrid.cpp
+	gaugefield_heatbath_tmp.cpp
+	opencl_module.cpp
+	opencl_module_ran.cpp
+	opencl_module_heatbath.cpp
+	opencl_compiler.cpp
 )
-target_link_libraries( tk_kappa
+target_link_libraries( heatbath_tmp
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}

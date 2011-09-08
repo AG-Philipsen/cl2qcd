@@ -372,7 +372,9 @@ public:
 	 * This applies stout smearing to a gaugefield
 	 */
 	void stout_smear_device();
-
+	
+	usetimer * get_copy_to();
+	usetimer * get_copy_on();
 protected:
 	/**
 	 * A set of source files used by all kernels.
@@ -430,6 +432,12 @@ private:
 	cl_kernel polyakov;
 	cl_kernel polyakov_reduction;
 
+	//bunch of timers
+	//this is used to measure data-transfer to and from the device
+	usetimer copy_to;
+	//this is used to measure data-transfer on the device
+	usetimer copy_on;
+	
 	int numthreads;
 
 };
