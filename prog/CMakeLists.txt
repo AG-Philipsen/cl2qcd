@@ -130,8 +130,8 @@ target_link_libraries( heatbath_tmp
 	einhard
 )
 
-add_executable( tk_kappa_hybrid
-	tk_kappa_hybrid.cpp
+add_executable( transportcoefficient
+	transportcoefficient.cpp
 	host_geometry.cpp
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
@@ -152,7 +152,7 @@ add_executable( tk_kappa_hybrid
 	opencl_module_kappa.cpp
 	opencl_compiler.cpp
 )
-target_link_libraries( tk_kappa_hybrid
+target_link_libraries( transportcoefficient
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
