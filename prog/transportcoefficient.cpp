@@ -1,4 +1,4 @@
-#include "tk_kappa_hybrid.h"
+#include "transportcoefficient.h"
 
 int main(int argc, char* argv[])
 {
@@ -15,7 +15,6 @@ int main(int argc, char* argv[])
 		stringstream gaugeout_name;
 		gaugeout_name << "gaugeobservables_beta" << parameters.get_beta();
 
-
 		fstream logfile;
 		logfile.open("tk_kappa_hybrid.log", std::ios::out | std::ios::app);
 		if(logfile.is_open()) {
@@ -29,6 +28,8 @@ int main(int argc, char* argv[])
 		// Initialization
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+		init_timer.reset();
+		
 		Gaugefield_heatbath_kappa gaugefield;
 		int numtasks = 2;
 
@@ -36,11 +37,21 @@ int main(int argc, char* argv[])
 		cl_device_type primary_device_type = CL_DEVICE_TYPE_GPU;
 
 		gaugefield.init(numtasks, primary_device_type, &parameters);
+		
+		init_timer.add();
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Do the iterations
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+		perform_timer.reset();
+		
+		logger.trace() << "Start thermalization" ;
+		int ntherm = parameters.get_thermalizationsteps();
+		///@todo this still calculates kappa, which is not necessary
+		if(ntherm > 0) gaugefield.perform_tasks(ntherm,0);
+		
+		logger.info() << "Start hybrid heatbath and tk_kappa";
 		//first output is considered to be zeroth iteration
 		int iter = 0;
 		gaugefield.print_gaugeobservables(iter);
@@ -72,6 +83,15 @@ int main(int argc, char* argv[])
 		}
 
 		gaugefield.save("conf.save");
+		logger.trace() << "... done";
+		perform_timer.add();
+		
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// Final Output
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		total_timer.add();
+		general_time_output(&total_timer, &init_timer, &perform_timer, (gaugefield.get_task_heatbath())->get_copy_to(), gaugefield.get_task_heatbath()->get_copy_on(), &plaq_timer, &poly_timer);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// free variables

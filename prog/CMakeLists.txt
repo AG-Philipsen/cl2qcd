@@ -79,18 +79,19 @@ add_executable( heatbath
 	host_operations_gaugefield.cpp
 	host_operations_su3matrix.cpp
 	host_operations_matrix.cpp
-	gaugefield.cpp
-	gaugefield_heatbath.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
-	host_random.cpp
-	opencl.cpp
-	opencl_heatbath.cpp
-	opencl_compiler.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
+	host_random.cpp
 	logger.cpp
 	exceptions.cpp
+	gaugefield_hybrid.cpp
+	gaugefield_heatbath_tmp.cpp
+	opencl_module.cpp
+	opencl_module_ran.cpp
+	opencl_module_heatbath.cpp
+	opencl_compiler.cpp
 )
 target_link_libraries( heatbath
 	${OPENCL_LIBRARIES}
@@ -100,39 +101,9 @@ target_link_libraries( heatbath
 	klepsydra
 	einhard
 )
-add_executable( tk_kappa
-	tk_kappa.cpp
-	host_geometry.cpp
-	host_operations_complex.cpp
-	host_operations_gaugefield.cpp
-	host_operations_su3matrix.cpp
-	host_operations_matrix.cpp
-	gaugefield.cpp
-	gaugefield_k.cpp
-	gaugefield_heatbath.cpp
-	inputparameters.cpp
-	host_readgauge.cpp
-	host_random.cpp
-	opencl.cpp
-	opencl_compiler.cpp
-	opencl_k.cpp
-	opencl_heatbath.cpp
-	host_use_timer.cpp
-	host_writegaugefield.cpp
-	logger.cpp
-	exceptions.cpp
-)
-target_link_libraries( tk_kappa
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
-	${Boost_LIBRARIES}
-	klepsydra
-	einhard
-)
 
-add_executable( tk_kappa_hybrid
-	tk_kappa_hybrid.cpp
+add_executable( transportcoefficient
+	transportcoefficient.cpp
 	host_geometry.cpp
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
@@ -153,7 +124,7 @@ add_executable( tk_kappa_hybrid
 	opencl_module_kappa.cpp
 	opencl_compiler.cpp
 )
-target_link_libraries( tk_kappa_hybrid
+target_link_libraries( transportcoefficient
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}

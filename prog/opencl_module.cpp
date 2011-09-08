@@ -297,31 +297,31 @@ void Opencl_Module::clear_buffers()
 
 void Opencl_Module::copy_buffer_on_device(cl_mem in, cl_mem out, size_t size)
 {
-	//  (*this->get_copy_on()).reset();
+	 (*this->get_copy_on()).reset();
 
 	int clerr = clEnqueueCopyBuffer(get_queue(), in, out, 0, 0, size , 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueCopyBuffer", __FILE__, __LINE__);
 
-	//  (*this->get_copy_on()).add();
+	 (*this->get_copy_on()).add();
 }
 
 void Opencl_Module::copy_buffer_to_device(void * source, cl_mem dest, size_t size)
 {
-	//  (*this->get_copy_to()).reset();
+	 (*this->get_copy_to()).reset();
 
 	int clerr = clEnqueueWriteBuffer(get_queue(), dest, CL_TRUE, 0, size, source, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 
-	//  (*this->get_copy_to()).add();
+	 (*this->get_copy_to()).add();
 }
 
 void Opencl_Module::get_buffer_from_device(cl_mem source, void * dest, size_t size)
 {
-	//  (*this->get_copy_to()).reset();
+	 (*this->get_copy_to()).reset();
 	cl_int clerr = clEnqueueReadBuffer(get_queue(), source, CL_TRUE, 0, size, dest, 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueReadBuffer", __FILE__, __LINE__);
 
-	//  (*this->get_copy_to()).add();
+	 (*this->get_copy_to()).add();
 }
 
 void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
@@ -680,7 +680,6 @@ void Opencl_Module::plaquette_device(cl_mem gf)
 	cl_uint num_groups;
 	this->get_work_sizes(plaquette, this->get_device_type(), &ls, &gs, &num_groups);
 
-	logger.debug() << "init scratch buffers if not already done";
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
 	int global_buf_size_complex = sizeof(hmc_complex) * num_groups;
 
@@ -876,7 +875,13 @@ string Opencl_Module::get_kernel_name(const cl_kernel kernel){
   return kernel_name;
 }	
 
+usetimer * Opencl_Module::get_copy_on(){
+	return &copy_on;
+}
 
+usetimer * Opencl_Module::get_copy_to(){
+	return &copy_to;
+}
 
 #ifdef _PROFILING_
 usetimer* Opencl_Module::get_timer(char * in)

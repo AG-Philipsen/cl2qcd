@@ -36,7 +36,7 @@ void Opencl_Module_Ran::fill_buffers()
 
 	logger.trace() << "Create buffer for random numbers...";
 	clmem_rndarray = create_rw_buffer(sizeof(hmc_ocl_ran) * get_num_rndstates());
-
+	this->copy_rndarray_to_device(rndarray);
 	return;
 }
 
@@ -71,7 +71,6 @@ void Opencl_Module_Ran::copy_rndarray_to_device(hmc_ocl_ran* rndarray)
 {
 	cl_int clerr = clEnqueueWriteBuffer(get_queue(), clmem_rndarray, CL_TRUE, 0, sizeof(hmc_ocl_ran) * get_num_rndstates(), rndarray, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
-
 	return;
 }
 

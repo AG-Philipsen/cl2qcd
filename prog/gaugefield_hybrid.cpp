@@ -5,14 +5,11 @@ void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type, i
   logger.trace()<<"Initialize gaugefield";
 
   //how many tasks (devices with different purpose) do we need:
-  if(numtasks != 2) throw Print_Error_Message("Only exactly two tasks make sense right now!",__FILE__,__LINE__);
   set_num_tasks(numtasks);
   //LZ: for now assume that there is only one device per task
-
   
   //input parameters
   set_parameters(input_parameters);
-
 
   //allocate memory for private gaugefield on host and initialize (cold start, read in, future: hot start)
   sgf = new s_gaugefield[1];
@@ -39,19 +36,27 @@ void Gaugefield_hybrid::init_devicetypearray(cl_device_type primary_device_type)
   //    num_task_types is given to this class and can potentially control whether certain additional tasks are performed or not
   //    num_dev controls how many devices should be used/are available (so usually CPU and GPU, but possibly also CPU, GPU from different nodes)
   //    here, the different devices can be assigned automatically to the tasks
-  if(get_parameters()->get_num_dev() != 2)
+	//CP: At the moment, get_num_dev is simply not used, altough it may be in the future...
+	if(get_parameters()->get_num_dev() != 2)
     logger.warn()<<"Number of devices set to " << get_parameters()->get_num_dev() <<" in input parameters. Overruled: Number of devices must be 2.";
 
-  //assume num_task_types = 2
+	
   devicetypes = new cl_device_type[get_num_tasks()];
+	if(get_num_tasks() == 1){
+		devicetypes[0] = primary_device_type;
+	}
+	else if (get_num_tasks() == 2){
+		devicetypes[0] = primary_device_type;
+		if(primary_device_type == CL_DEVICE_TYPE_GPU){
+			devicetypes[1] = CL_DEVICE_TYPE_CPU;
+		} else {
+			devicetypes[1] = CL_DEVICE_TYPE_GPU;
+		}
+	}
+	else{
+		throw Print_Error_Message("3 or more tasks not yet implemented.");
+	}
   
-  devicetypes[0] = primary_device_type;
-  if(primary_device_type == CL_DEVICE_TYPE_GPU){
-    devicetypes[1] = CL_DEVICE_TYPE_CPU;
-  } else {
-    devicetypes[1] = CL_DEVICE_TYPE_GPU;
-  }
-
   return;
 }
 
@@ -83,11 +88,19 @@ void Gaugefield_hybrid::init_opencl(){
   cl_uint num_devices_gpu;
   cl_uint num_devices_cpu;
   clerr = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices_gpu);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceIDs",__FILE__,__LINE__);
   clerr = clGetDeviceIDs(platform, CL_DEVICE_TYPE_CPU, 0, NULL, &num_devices_cpu);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceIDs",__FILE__,__LINE__);
   logger.info() << "Found " << num_devices_gpu << " GPU(s) and " << num_devices_cpu << " CPU(s).";
-  if(num_devices_gpu < 1 || num_devices_cpu < 1) throw Print_Error_Message("Application needs one GPU and one CPU device.");
+	
+	//Check if number of devices fits progs needs
+	if(get_num_tasks() == 1){
+		if (devicetypes[0] == CL_DEVICE_TYPE_GPU && num_devices_gpu < 1) 
+			throw Print_Error_Message("Application needs one GPU device.");
+		else if (devicetypes[0] == CL_DEVICE_TYPE_CPU && num_devices_cpu < 1) 
+			throw Print_Error_Message("Application needs one CPU device.");
+	}
+	else if (get_num_tasks() == 2){
+		if(num_devices_gpu < 1 || num_devices_cpu < 1) throw Print_Error_Message("Application needs one GPU and one CPU device.");
+	}
 
   queue   = new cl_command_queue [get_num_tasks()];
   devices = new cl_device_id     [get_num_tasks()];
@@ -163,6 +176,7 @@ void Gaugefield_hybrid::init_tasks(){
 
   opencl_modules = new Opencl_Module* [get_num_tasks()];
   for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
+		//this is initialized with length 1, meaning one assumes one device per task
     opencl_modules[ntask] = new Opencl_Module[1];
     opencl_modules[ntask]->init(queue[ntask], &clmem_gaugefield, get_parameters(), max_compute_units[ntask], get_double_ext(ntask));
   }
@@ -668,4 +682,3 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask, st
   gaugeout.close();
   return;
 }
-
