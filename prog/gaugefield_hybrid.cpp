@@ -99,7 +99,15 @@ void Gaugefield_hybrid::init_opencl(){
 			throw Print_Error_Message("Application needs one CPU device.");
 	}
 	else if (get_num_tasks() == 2){
-		if(num_devices_gpu < 1 || num_devices_cpu < 1) throw Print_Error_Message("Application needs one GPU and one CPU device.");
+	  if( num_devices_gpu + num_devices_cpu == 1 ){
+	    logger.warn() << "You wanted to have two devices, but only one has been found!";
+	    set_num_tasks(1);
+	    if( num_devices_gpu == 1 ) devicetypes[0] = CL_DEVICE_TYPE_GPU;
+	    if( num_devices_cpu == 1 ) devicetypes[0] = CL_DEVICE_TYPE_CPU;
+	  }
+	  if( num_devices_gpu == 0 ) logger.warn() << "No GPU found.";
+	  if( num_devices_cpu == 0 ) logger.warn() << "No CPU found.";
+	  if( num_devices_gpu + num_devices_cpu < 1 ) throw Print_Error_Message("Application needs two devices.");
 	}
 
   queue   = new cl_command_queue [get_num_tasks()];

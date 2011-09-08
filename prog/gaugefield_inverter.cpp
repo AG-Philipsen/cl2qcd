@@ -11,10 +11,18 @@ Opencl_Module_Correlator* Gaugefield_inverter::get_task_correlator() {
 
 void Gaugefield_inverter::init_tasks(){
 
-  if(get_num_tasks() != 2) throw Print_Error_Message("We need exactly 2 tasks");
-
-  task_solver = 0;
-  task_correlator = 1;
+  switch (get_num_tasks()) {
+  case 2 :
+    task_solver = 0;
+    task_correlator = 1;
+    break;
+  case 1:
+    task_solver = 0;
+    task_correlator = 0;
+    break;
+  default:
+    throw Print_Error_Message("We need exactly 2 tasks");
+  }
 
   opencl_modules = new Opencl_Module* [get_num_tasks()];
 
