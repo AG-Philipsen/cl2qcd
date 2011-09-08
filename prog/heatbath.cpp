@@ -1,4 +1,4 @@
-#include "heatbath_tmp.h"
+#include "heatbath.h"
 
 int main(int argc, char* argv[])
 {

@@ -72,8 +72,8 @@ add_definitions( -DNSPACE=${NSPACE} )
 # default random number seed
 configure_file( rand_seeds rand_seeds COPYONLY )
 
-add_executable( heatbath_tmp
-	heatbath_tmp.cpp
+add_executable( heatbath
+	heatbath.cpp
 	host_geometry.cpp
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
@@ -93,7 +93,7 @@ add_executable( heatbath_tmp
 	opencl_module_heatbath.cpp
 	opencl_compiler.cpp
 )
-target_link_libraries( heatbath_tmp
+target_link_libraries( heatbath
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
