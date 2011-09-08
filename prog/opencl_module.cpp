@@ -837,15 +837,6 @@ void Opencl_Module::stout_smear_device()
 
 void Opencl_Module::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
 {
-	//Construct explicit kernel name
-	int clerr;
-	size_t bytesInKernelName;
-	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetKernelInfo", __FILE__, __LINE__);
-	char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
-	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetKernelInfo", __FILE__, __LINE__);
-
 	/// @todo use kernelname
 	size_t local_work_size;
 	if( dev_type == CL_DEVICE_TYPE_GPU )
@@ -867,10 +858,24 @@ void Opencl_Module::get_work_sizes(const cl_kernel kernel, cl_device_type dev_ty
 	*gs = global_work_size;
 	*num_groups = num_groups_tmp;
 
-	delete [] kernelName;
-
 	return;
 }
+
+string Opencl_Module::get_kernel_name(const cl_kernel kernel){
+  int clerr;
+  size_t bytesInKernelName;
+  clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetKernelInfo", __FILE__, __LINE__);
+  char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
+  clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetKernelInfo", __FILE__, __LINE__);
+
+  string kernel_name = kernelName;
+  delete [] kernelName;
+
+  return kernel_name;
+}	
+
 
 
 #ifdef _PROFILING_

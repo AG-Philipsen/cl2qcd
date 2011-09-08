@@ -258,6 +258,12 @@ public:
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
 
+	/**
+	 * Return the kernel name as a string
+	 * @param[in] kernel
+	 * @return kernel_name
+	 */
+	string get_kernel_name(const cl_kernel kernel);
 
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
