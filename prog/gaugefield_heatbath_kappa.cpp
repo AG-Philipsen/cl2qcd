@@ -11,6 +11,8 @@ Opencl_Module_Kappa* Gaugefield_heatbath_kappa::get_task_kappa() {
 
 void Gaugefield_heatbath_kappa::init_tasks(){
 
+  if(get_num_tasks() != 2) throw Print_Error_Message("We need exactly 2 tasks");
+
   task_heatbath = 0;
   task_kappa = 1;
 
