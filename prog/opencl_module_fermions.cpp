@@ -120,6 +120,17 @@ void Opencl_Module_Fermions::fill_buffers()
 
 	} //end if: eoprec
 
+	if(get_parameters()->get_use_eo() == true) {
+		logger.debug() << "init general eoprec-spinorfield-buffers";
+		clmem_inout_eoprec = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_source_even = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_source_odd = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_tmp_eoprec_1 = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_tmp_eoprec_2 = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_tmp_eoprec_3 = create_rw_buffer(eoprec_spinorfield_size);
+	}
+
+
 	logger.debug() << "create buffers for complex and real numbers";
 	clmem_rho = create_rw_buffer(complex_size);
 	clmem_rho_next = create_rw_buffer(complex_size);

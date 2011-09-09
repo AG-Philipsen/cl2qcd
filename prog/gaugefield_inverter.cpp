@@ -11,6 +11,8 @@ Opencl_Module_Correlator* Gaugefield_inverter::get_task_correlator() {
 
 void Gaugefield_inverter::init_tasks(){
 
+  solution_buffer = 0;
+
   switch (get_num_tasks()) {
   case 2 :
     task_solver = 0;
@@ -45,7 +47,7 @@ void Gaugefield_inverter::finalize_opencl(){
 
   Gaugefield_hybrid::finalize_opencl();
 	logger.debug() << "free solution buffer";
-	free(solution_buffer);
+	delete [] solution_buffer;
   return;
 }
 
@@ -58,10 +60,10 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer){
 	if(get_parameters()->get_use_pointsource() == true){
 		//allocate host-memory for solution-buffer
 		size_t sfsize = get_parameters()->get_spinorfieldsize()*sizeof(spinor);
-		size_t bufsize = sfsize*12;
+		size_t bufsize = 12*sfsize;
 		logger.debug() << "allocate memory for solution-buffer on host of size " << bufsize/1024./1024./1024. << " GByte";
-		solution_buffer = (spinorfield*) malloc(bufsize);
-		void* sftmp = malloc(sfsize);
+		if(solution_buffer == 0) solution_buffer = new spinor [12*get_parameters()->get_spinorfieldsize()];
+		spinor* sftmp = new spinor [get_parameters()->get_spinorfieldsize()];
 		
 		for(int k=0; k<12; k++) {
 			//create source
@@ -70,8 +72,6 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer){
 			//copy source from one device to the other
 			logger.debug() << "copy pointsource between devices";
 			///@todo is this possible without the host in between?
-			///@todo here happens a segfault!!!
-			throw Print_Error_Message("remove this segfault!!");
 			get_task_correlator()->get_buffer_from_device(get_task_correlator()->get_clmem_source(), sftmp, sfsize);
 			get_task_solver()->copy_buffer_to_device(sftmp, get_task_solver()->get_clmem_source(), sfsize);
 			
@@ -84,9 +84,9 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer){
 			//add solution to solution-buffer
 			//NOTE: this is a blocking call!
 			logger.debug() << "add solution...";
-			get_task_solver()->get_buffer_from_device(get_task_solver()->get_clmem_inout(), (void*) &solution_buffer[sfsize*k], sfsize);
-			free(sftmp);
+			get_task_solver()->get_buffer_from_device(get_task_solver()->get_clmem_inout(), &solution_buffer[k], sfsize);
 		}
+		delete [] sftmp;
 	}
 	else{
 		//use stochastic sources
