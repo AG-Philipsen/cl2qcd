@@ -51,6 +51,11 @@ void Gaugefield_inverter::finalize_opencl(){
   return;
 }
 
+void Gaugefield_inverter::sync_solution_buffer(){
+	size_t sfsize = 12*get_parameters()->get_spinorfieldsize()*sizeof(spinor);
+	get_task_correlator()->copy_buffer_to_device(&solution_buffer, get_task_correlator()->get_clmem_corr(), sfsize);
+	return;
+}
 
 void Gaugefield_inverter::perform_inversion(usetimer* solver_timer){
 	
@@ -84,7 +89,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer){
 			//add solution to solution-buffer
 			//NOTE: this is a blocking call!
 			logger.debug() << "add solution...";
-			get_task_solver()->get_buffer_from_device(get_task_solver()->get_clmem_inout(), &solution_buffer[k*get_parameters()->get_spinorfieldsize()], sfsize);
+			get_task_solver()->get_buffer_from_device(get_task_solver()->get_clmem_inout(), &solution_buffer[k], sfsize);
 		}
 		delete [] sftmp;
 	}
@@ -103,9 +108,6 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer){
 		}
 	}
 	
-
-
-
   return;
 }
 

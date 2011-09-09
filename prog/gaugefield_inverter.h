@@ -93,6 +93,7 @@ class Gaugefield_inverter : public Gaugefield_hybrid {
 	 */
 	Opencl_Module_Correlator* get_task_correlator();
 
+	void sync_solution_buffer();
 protected:
 
 private:
