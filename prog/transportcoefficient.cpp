@@ -48,8 +48,7 @@ int main(int argc, char* argv[])
 		
 		logger.trace() << "Start thermalization" ;
 		int ntherm = parameters.get_thermalizationsteps();
-		///@todo this still calculates kappa, which is not necessary
-		if(ntherm > 0) gaugefield.perform_tasks(ntherm,0);
+		if(ntherm > 0) gaugefield.perform_heatbath(ntherm,0);
 		
 		logger.info() << "Start hybrid heatbath and tk_kappa";
 		//first output is considered to be zeroth iteration
@@ -70,7 +69,7 @@ int main(int argc, char* argv[])
 		//    gaugefield.print_gaugeobservables_from_task(iter,0);
 		//    gaugefield.print_gaugeobservables_from_task(iter,1);
 		gaugefield.print_gaugeobservables(iter, gaugeout_name.str());
-		//    gaugefield.print_kappa(iter,"kappa_clover.dat");
+		gaugefield.print_kappa(iter,"kappa_clover.dat");
 
 		for(iter = 2; iter < parameters.get_heatbathsteps() / nheat_frequency; iter++) {
 			gaugefield.perform_tasks(parameters.get_writefrequency(), parameters.get_overrelaxsteps());
@@ -79,7 +78,7 @@ int main(int argc, char* argv[])
 			//    gaugefield.print_gaugeobservables_from_task(iter,0);
 			//    gaugefield.print_gaugeobservables_from_task(iter,1);
 			gaugefield.print_gaugeobservables(iter, gaugeout_name.str());
-			//    gaugefield.print_kappa(iter,"kappa_clover.dat");
+			gaugefield.print_kappa(iter,"kappa_clover.dat");
 		}
 
 		gaugefield.save("conf.save");

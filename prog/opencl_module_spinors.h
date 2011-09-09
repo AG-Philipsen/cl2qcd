@@ -83,7 +83,7 @@ public:
 	//    linear Algebra operations
 	void convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out);
 	void convert_to_eoprec_device(cl_mem out1, cl_mem out2, cl_mem in);
-	
+
 	void set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out);
 	void set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_mem b, cl_mem out);
 	void set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_mem out);
@@ -138,21 +138,21 @@ public:
 	 * @param in Name of the kernel under consideration.
 	 */
 	virtual usetimer* get_timer(char * in);
-	
+
 	/**
-	 * Return amount of bytes read and written by a specific kernel per call. 
+	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual int get_read_write_size(char * in, inputparameters * parameters);	
-	
+	virtual int get_read_write_size(char * in, inputparameters * parameters);
+
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 * @param parameters inputparameters
 	 */
-	void virtual print_profiling(std::string filename);	
+	void virtual print_profiling(std::string filename);
 
 #endif
 
