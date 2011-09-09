@@ -18,8 +18,6 @@
 /**
  * Create the gaugefield from an array of floats as used by by ILDG.
  *
- * @todo Why doesn't this use ildg_gaugefield?
- *
  * @param[out] gaugefield Pointer to the new storage location.
  * @param[in] gaugefield_tmp Field in IDLG format
  * @param[in] check Size of the ILDG field.
@@ -33,7 +31,7 @@ void copy_gaugefield_from_ildg_format(hmc_gaugefield * gaugefield, hmc_float * g
  * @param[in] source The gaugefield in the internal representation
  * @todo Replace hmc_gaugefield type by s_gaugefield type (LZ)
  */
-void copy_gaugefield_to_ildg_format(ildg_gaugefield * dest, hmc_gaugefield * source);
+void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_gaugefield * source);
 /**
  * Create a representation of the gaugefield usable by the OpenCL kernels.
  *

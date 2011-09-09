@@ -263,9 +263,8 @@ void Gaugefield::print_info_source(sourcefileparameters* params)
 
 void Gaugefield::save(int number)
 {
-	ildg_gaugefield * gaugefield_buf;
-	gaugefield_buf = (ildg_gaugefield*) malloc(sizeof(ildg_gaugefield));
-	int gaugefield_buf_size = sizeof(ildg_gaugefield) / sizeof(hmc_float);
+	const int gaugefield_buf_size = 2*NC*NC*NDIM*VOLSPACE*NTIME;
+	hmc_float * gaugefield_buf = new hmc_float[gaugefield_buf_size];
 
 	//these are not yet used...
 	hmc_float c2_rec = 0, epsilonbar = 0, mubar = 0;
@@ -286,7 +285,7 @@ void Gaugefield::save(int number)
 
 	write_gaugefield ( gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NTIME, get_parameters()->get_prec(), number, plaq, get_parameters()->get_beta(), get_parameters()->get_kappa(), get_parameters()->get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
 
-	free(gaugefield_buf);
+	delete[] gaugefield_buf;
 	free(gftmp);
 
 	return;

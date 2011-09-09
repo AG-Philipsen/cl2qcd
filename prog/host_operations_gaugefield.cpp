@@ -114,7 +114,7 @@ void copy_gaugefield_from_ildg_format(hmc_gaugefield * gaugefield, hmc_float * g
 	return;
 }
 
-void copy_gaugefield_to_ildg_format(ildg_gaugefield * dest, hmc_gaugefield * source)
+void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_gaugefield * source)
 {
 
 	int cter = 0;
@@ -139,21 +139,16 @@ void copy_gaugefield_to_ildg_format(ildg_gaugefield * dest, hmc_gaugefield * sou
 								if(m < NC - 1) {
 
 
-									(dest[0])[pos]     = (*source)[ncindex][(l+1)%NDIM][spacepos][t].re;
-									(dest[0])[pos + 1] = (*source)[ncindex][(l+1)%NDIM][spacepos][t].im;
+									dest[pos]     = (*source)[ncindex][(l+1)%NDIM][spacepos][t].re;
+									dest[pos + 1] = (*source)[ncindex][(l+1)%NDIM][spacepos][t].im;
 								}
 								if (m == NC - 1) {
 									hmc_su3matrix tmpsu3;
 									get_su3matrix(&tmpsu3, source, spacepos, t, (l + 1) % NDIM);
 									hmc_complex tmp = reconstruct_su3 (&tmpsu3, n);
-									(dest[0])[pos]     = tmp.re;
-									(dest[0])[pos + 1] = tmp.im;
+									dest[pos]     = tmp.re;
+									dest[pos + 1] = tmp.im;
 								}
-
-//    if ((dest[0])[pos] != (dest[0])[pos])
-//      cout << (dest[0])[pos] <<endl;
-//    if ((dest[0])[pos+1] != (dest[0])[pos+1])
-//      cout << (dest[0])[pos+1]   <<endl;
 
 								cter++;
 							}
@@ -165,8 +160,8 @@ void copy_gaugefield_to_ildg_format(ildg_gaugefield * dest, hmc_gaugefield * sou
 								//which is stored in one single array here
 								//skip NC*NC*2 cmplx numbers
 								int pos = 2 * n + 2 * m * NC + globalpos * NC * NC * 2;
-								(dest[0])[pos]     = ((*source)[m][n][(l+1)%NDIM][spacepos][t]).re;
-								(dest[0])[pos + 1] = ((*source)[m][n][(l+1)%NDIM][spacepos][t]).im;
+								dest[pos]     = ((*source)[m][n][(l+1)%NDIM][spacepos][t]).re;
+								dest[pos + 1] = ((*source)[m][n][(l+1)%NDIM][spacepos][t]).im;
 								cter++;
 							}
 						}

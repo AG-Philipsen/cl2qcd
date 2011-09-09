@@ -365,7 +365,7 @@ void Gaugefield_hybrid::set_gaugefield_cold(s_gaugefield * field)
 
 
 //Implement this
-void Gaugefield_hybrid::set_gaugefield_hot(s_gaugefield * field)
+void Gaugefield_hybrid::set_gaugefield_hot(s_gaugefield *)
 {
 	throw Print_Error_Message("Hot start not yet implemented.", __FILE__, __LINE__);
 	return;
@@ -586,9 +586,8 @@ void Gaugefield_hybrid::save(int number)
 
 void Gaugefield_hybrid::save(string outputfile)
 {
-	ildg_gaugefield * gaugefield_buf;
-	gaugefield_buf = (ildg_gaugefield*) malloc(sizeof(ildg_gaugefield));
-	int gaugefield_buf_size = sizeof(ildg_gaugefield) / sizeof(hmc_float);
+	const size_t gaugefield_buf_size = 2*NC*NC*NDIM*VOLSPACE*NTIME;
+	hmc_float * gaugefield_buf = new hmc_float[gaugefield_buf_size];
 
 	//these are not yet used...
 	hmc_float c2_rec = 0, epsilonbar = 0, mubar = 0;
@@ -603,7 +602,7 @@ void Gaugefield_hybrid::save(string outputfile)
 
 	write_gaugefield ( gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NTIME, get_parameters()->get_prec(), number, plaq, get_parameters()->get_beta(), get_parameters()->get_kappa(), get_parameters()->get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
 
-	free(gaugefield_buf);
+	delete[] gaugefield_buf;
 	free(gftmp);
 
 	return;

@@ -132,7 +132,6 @@ struct Matrixsu3 {
 
 /** The full gaugefield */
 typedef hmc_complex hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME];
-typedef hmc_float ildg_gaugefield[2*NC*NC*NDIM*VOLSPACE*NTIME];
 
 #endif
 
@@ -156,8 +155,6 @@ typedef struct {
 
 //CP: this can be deleted if host_operations_spinor is not needed anywhere anymore...
 typedef hmc_complex hmc_su3vector[3];
-
-typedef hmc_float ildg_gaugefield[2*NC*NC*NDIM*VOLSPACE*NTIME];
 
 typedef Matrixsu3 ocl_s_gaugefield;
 typedef Matrixsu3 s_gaugefield [NDIM][VOLSPACE][NTIME];
