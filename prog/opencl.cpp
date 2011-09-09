@@ -9,7 +9,7 @@ using namespace std;
 
 void Opencl::fill_collect_options(stringstream* collect_options)
 {
-	*collect_options << "-D_INKERNEL_ -DNSPACE=" << get_parameters()->get_nspace() << " -DNTIME=" << get_parameters()->get_ntime() << " -DVOLSPACE=" << get_parameters()->get_volspace();
+	*collect_options << "-D_INKERNEL_ -DNSPACE=" << get_parameters()->get_ns() << " -DNTIME=" << get_parameters()->get_nt() << " -DVOLSPACE=" << get_parameters()->get_volspace();
 	
 	if(get_parameters()->get_use_rec12() == true)
 		*collect_options << " -D_RECONSTRUCT_TWELVE_";

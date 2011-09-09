@@ -60,6 +60,12 @@ void inputparameters::set_defaults()
 	use_eo = true;
 	//at the moment, only 2 solvers are implemented..
 	use_cg = false;
+	use_pointsource = true;
+	num_sources = 12;
+	pointsource_x = 0;
+	pointsource_y = 0;
+	pointsource_z = 0;
+	pointsource_t = 0;
 	
 	//HMC specific parameters
 	tau = 0.5;
@@ -156,6 +162,13 @@ void inputparameters::readfile(char* ifn)
 		if(line.find("NT") != std::string::npos) val_assign(&ntime, line);
 		if(line.find("NTIME") != std::string::npos) val_assign(&ntime, line);
 		if(line.find("print_to_screen") != std::string::npos) bool_assign(&print_to_screen, line);
+		
+		if(line.find("use_pointsource") != std::string::npos) bool_assign(&use_pointsource, line);
+		if(line.find("num_sources") != std::string::npos) val_assign(&num_sources, line);
+		if(line.find("pointsource_x") != std::string::npos) val_assign(&pointsource_x, line);
+		if(line.find("pointsource_y") != std::string::npos) val_assign(&pointsource_y, line);
+		if(line.find("pointsource_z") != std::string::npos) val_assign(&pointsource_z, line);
+		if(line.find("pointsource_t") != std::string::npos) val_assign(&pointsource_t, line);
 		
 		if(line.find("use_smearing") != std::string::npos) bool_assign(&use_smearing, line);
 		if(line.find("rho") != std::string::npos) val_assign(&rho, line);
@@ -460,12 +473,12 @@ int inputparameters::get_cgmax()
 	return cgmax;
 }
 
-int inputparameters::get_nspace()
+int inputparameters::get_ns()
 {
 	return nspace;
 }
 
-int inputparameters::get_ntime()
+int inputparameters::get_nt()
 {
 	return ntime;
 }
@@ -636,6 +649,27 @@ bool inputparameters::get_use_cg()
 	return use_cg;
 }
 
+bool inputparameters::get_use_pointsource(){
+	return use_pointsource;
+}
+
+int inputparameters::get_num_sources(){
+	return num_sources;
+}
+
+int inputparameters::get_source_pos_spatial(){
+	int coord [4];
+	coord[1] = pointsource_x;
+	coord[2] = pointsource_y;
+	coord[3] = pointsource_z;
+
+	return get_nspace(coord);
+}
+
+int inputparameters::get_source_pos_temporal(){
+	return pointsource_t;
+}
+
 #ifdef _PROFILING_
 int inputparameters::get_mat_size()
 {
@@ -654,8 +688,8 @@ bool inputparameters::get_use_autotuning(){
 void inputparameters::print_info_global(){
   logger.info() << "## **********************************************************";
 	logger.info() << "## Global parameters:";
-	logger.info() << "## NSPACE:  " << this->get_nspace();
-  logger.info() << "## NTIME:   " << this->get_ntime();
+	logger.info() << "## NSPACE:  " << this->get_ns();
+  logger.info() << "## NTIME:   " << this->get_nt();
   logger.info() << "## NDIM:    " << NDIM;
   logger.info() << "## NCOLOR:  " << NC;
   logger.info() << "## NSPIN:   " << NSPIN;
@@ -699,8 +733,8 @@ void inputparameters::print_info_global(){
 void inputparameters::print_info_global(ostream* os){
   *os  << "## **********************************************************"<<endl;
   *os  << "## Global parameters:"<< endl;
-  *os  << "## NSPACE:  " << this->get_nspace()<< endl;
-  *os  << "## NTIME:   " << this->get_ntime()<<endl;
+  *os  << "## NSPACE:  " << this->get_ns()<< endl;
+  *os  << "## NTIME:   " << this->get_nt()<<endl;
   *os  << "## NDIM:    " << NDIM<<endl;
   *os  << "## NCOLOR:  " << NC<<endl;
   *os  << "## NSPIN:   " << NSPIN<<endl;
@@ -837,6 +871,14 @@ void inputparameters::print_info_fermion(){
 	}
 	logger.info() << "##" ;
 	logger.info() << "## Inverter parameters:";
+	if(this->get_use_pointsource()==true){
+	  logger.info() << "## Use pointsource for inversion" ;
+		logger.info() << "## Position (x,y,z,t): " << pointsource_x << " " <<  pointsource_y << " " <<  pointsource_z << " " <<  pointsource_t;
+	}
+	if(this->get_use_pointsource()==false){
+		logger.info() << "## Use stochastic sources for inversion" ;
+		logger.info() << "## Number of sources: " << this->get_num_sources();
+	}
 	if(this->get_use_eo()==true)
 	  logger.info() << "## Use even-odd preconditioning" ;
 	if(this->get_use_eo()==false) 
@@ -878,6 +920,14 @@ void inputparameters::print_info_fermion(ostream * os){
 	}
 	*os  << "##" <<endl;
 	*os  << "## Inverter parameters:" << endl;
+	if(this->get_use_pointsource()==true){
+	  *os  << "## Use pointsource for inversion" ;
+		*os  << "## Position (x,y,z,t): " << pointsource_x << " " <<  pointsource_y << " " <<  pointsource_z << " " <<  pointsource_t;
+	}
+	if(this->get_use_pointsource()==false){
+		*os  << "## Use stochastic sources for inversion" ;
+		*os  << "## Number of sources: " << this->get_num_sources();
+	}
 	if(this->get_use_eo()==true)
 	  *os  << "## Use even-odd preconditioning" <<endl;
 	if(this->get_use_eo()==false) 
@@ -964,8 +1014,8 @@ void inputparameters::check_settings_global(){
 #endif
 
 	//Lattice Size
-	  if( this->get_nspace() != NSPACE)  throw Invalid_Parameters("Spatial lattice size.", NSPACE, this->get_nspace());
-	  if( this->get_ntime() != NTIME)  throw Invalid_Parameters("Timelike lattice size.", NTIME, this->get_ntime());
+	  if( this->get_ns() != NSPACE)  throw Invalid_Parameters("Spatial lattice size.", NSPACE, this->get_ns());
+	  if( this->get_nt() != NTIME)  throw Invalid_Parameters("Timelike lattice size.", NTIME, this->get_nt());
 
 	
 	}//try

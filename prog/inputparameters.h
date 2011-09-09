@@ -19,6 +19,8 @@
 
 #define EXIT_INPUTPARAMETERS 1
 
+#include "host_geometry.h"
+
 using namespace std;
 
 
@@ -61,8 +63,8 @@ public:
 	hmc_float get_csw();
 	hmc_float get_chem_pot_re();
 	hmc_float get_chem_pot_im();
-	int get_ntime();
-	int get_nspace();
+	int get_nt();
+	int get_ns();
 	bool get_use_rec12();
 	bool get_use_gpu();
 	bool get_use_eo();
@@ -105,7 +107,10 @@ public:
 	int get_rho_iter();
 	bool get_use_cg();
 	bool get_use_autotuning();
-	
+	bool get_use_pointsource();
+	int get_num_sources();
+	int get_source_pos_spatial();
+	int get_source_pos_temporal();
 #ifdef _PROFILING_
 	int get_mat_size();
 	int get_float_size();
@@ -257,6 +262,12 @@ private:
 	int integrationsteps1;
 	int integrationsteps2;
 	bool use_cg;
+	bool use_pointsource;
+	int num_sources;
+	int pointsource_x;
+	int pointsource_y;
+	int pointsource_z;
+	int pointsource_t;
 	void val_assign(hmc_float* out, std::string line);
 	void val_assign(int * out, std::string line);
 	void sourcefilenumber_assign(std::string * out);
