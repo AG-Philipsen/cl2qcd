@@ -49,6 +49,7 @@ void Opencl_Module_Spinors::fill_kernels()
 
 	if(get_parameters()->get_use_eo() == true) {
 		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
+		convert_to_eoprec = createKernel("convert_to_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		set_eoprec_spinorfield_cold = createKernel("set_eoprec_spinorfield_cold") << basic_fermion_code << "spinorfield_eo_cold.cl";
 		saxpy_eoprec = createKernel("saxpy_eoprec") << basic_fermion_code << "spinorfield_eo_saxpy.cl";
 		saxsbypz_eoprec = createKernel("saxsbypz_eoprec") << basic_fermion_code << "spinorfield_eo_saxsbypz.cl";
@@ -145,6 +146,23 @@ void Opencl_Module_Spinors::convert_from_eoprec_device(cl_mem in1, cl_mem in2, c
 	enqueueKernel(convert_from_eoprec , gs2, ls2);
 }
 
+void Opencl_Module_Spinors::convert_to_eoprec_device(cl_mem out1, cl_mem out2, cl_mem in){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(convert_to_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(convert_to_eoprec,0,sizeof(cl_mem),&out1); 
+  	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
+	clerr = clSetKernelArg(convert_to_eoprec,1,sizeof(cl_mem),&out2); 
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+
+	clerr = clSetKernelArg(convert_to_eoprec,2,sizeof(cl_mem),&in); 
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	
+	enqueueKernel(convert_to_eoprec , gs2, ls2);
+}
 
 //BLAS-functions
 void Opencl_Module_Spinors::saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out)
@@ -498,6 +516,9 @@ usetimer* Opencl_Module_Spinors::get_timer(char * in){
 	if (strcmp(in, "convert_from_eoprec") == 0){
     return &this->timer_convert_from_eoprec;
 	}
+	if (strcmp(in, "convert_to_eoprec") == 0){
+    return &this->timer_convert_to_eoprec;
+	}
 	if (strcmp(in, "saxpy") == 0){
     return &(this->timer_saxpy);
 	}
@@ -565,6 +586,9 @@ int Opencl_Module_Spinors::get_read_write_size(char * in, inputparameters * para
 	if (strcmp(in, "convert_from_eoprec") == 0){
     return 1000000000000000000000000;
 	}
+	if (strcmp(in, "convert_to_eoprec") == 0){
+    return 1000000000000000000000000;
+	}
 	if (strcmp(in, "saxpy") == 0){
     return 74*D*S;
 	}
@@ -618,6 +642,8 @@ void Opencl_Module_Spinors::print_profiling(std::string filename){
 	kernelName = "set_eoprec_spinorfield_cold";
 	Opencl_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "convert_from_eoprec";
+	Opencl_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "convert_to_eoprec";
 	Opencl_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "saxpy";
 	Opencl_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );

@@ -82,7 +82,8 @@ public:
 
 	//    linear Algebra operations
 	void convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out);
-
+	void convert_to_eoprec_device(cl_mem out1, cl_mem out2, cl_mem in);
+	
 	void set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out);
 	void set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_mem b, cl_mem out);
 	void set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_mem out);
@@ -106,6 +107,7 @@ public:
 	usetimer timer_set_spinorfield_cold;
 	usetimer timer_set_eoprec_spinorfield_cold;
 	usetimer timer_convert_from_eoprec;
+	usetimer timer_convert_to_eoprec;
 	usetimer timer_saxpy;
 	usetimer timer_saxsbypz;
 	usetimer timer_set_zero_spinorfield;
@@ -168,6 +170,7 @@ protected:
 	cl_kernel set_zero_spinorfield;
 
 	cl_kernel convert_from_eoprec;
+	cl_kernel convert_to_eoprec;
 	cl_kernel set_eoprec_spinorfield_cold;
 	cl_kernel set_zero_spinorfield_eoprec;
 	cl_kernel saxpy_eoprec;
