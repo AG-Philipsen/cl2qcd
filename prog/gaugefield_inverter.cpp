@@ -84,7 +84,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer){
 			//add solution to solution-buffer
 			//NOTE: this is a blocking call!
 			logger.debug() << "add solution...";
-			get_task_solver()->get_buffer_from_device(get_task_solver()->get_clmem_inout(), &solution_buffer[k], sfsize);
+			get_task_solver()->get_buffer_from_device(get_task_solver()->get_clmem_inout(), &solution_buffer[k*get_parameters()->get_spinorfieldsize()], sfsize);
 		}
 		delete [] sftmp;
 	}
@@ -103,6 +103,9 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer){
 		}
 	}
 	
+
+
+
   return;
 }
 
