@@ -132,12 +132,12 @@ void Opencl_Module_Spinors::get_work_sizes(const cl_kernel kernel, cl_device_typ
 	if(kernelname.compare("ratio") == 0) {
 		*ls = 1;
 		*gs = 1;
-		*num_groups 1;
+		*num_groups = 1;
 	}
 	if(kernelname.compare("product") == 0) {
 		*ls = 1;
 		*gs = 1;
-		*num_groups 1;
+		*num_groups = 1;
 	}
 
 
