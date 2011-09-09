@@ -400,6 +400,8 @@ protected:
 	 */
 	int get_numthreads();
 
+protected:
+	inputparameters* parameters;
 
 private:
 
@@ -407,7 +409,6 @@ private:
 	cl_context ocl_context;
 	cl_command_queue ocl_queue;
 	cl_mem* ocl_gaugefield;
-	inputparameters* parameters;
 
 	cl_uint max_compute_units;
 	string device_double_extension;

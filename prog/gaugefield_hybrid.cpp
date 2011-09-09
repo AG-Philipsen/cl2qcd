@@ -690,3 +690,12 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask, st
   gaugeout.close();
   return;
 }
+
+#ifdef _PROFILING_
+void Gaugefield_hybrid::print_profiling(std::string filename) {
+	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
+		//this is initialized with length 1, meaning one assumes one device per task
+		opencl_modules[ntask]->print_profiling(filename);
+	}
+}
+#endif

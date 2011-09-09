@@ -38,20 +38,22 @@ int main(int argc, char* argv[])
 	// Initialization
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	cl_int err;
-
 	init_timer.reset();
 	sourcefileparameters parameters_source;
 
 	Gaugefield_heatbath gaugefield;
-	cl_device_type * devicetypes = new cl_device_type[parameters.get_num_dev()];
-	gaugefield.init_devicetypes_array(devicetypes, &parameters);
 
-	gaugefield.init(1, devicetypes, &parameters);
+	cl_device_type primary_device_type;
+	//check whether GPU should be used
+	if(parameters.get_use_gpu() == true) {
+		primary_device_type = CL_DEVICE_TYPE_GPU;
+	} else {
+		primary_device_type = CL_DEVICE_TYPE_CPU;
+	}
+	gaugefield.init(1, primary_device_type, &parameters);
 	logger.trace() << "Got gaugefield";
-	gaugefield.print_gaugeobservables(&poly_timer,&plaq_timer);
-	gaugefield.copy_gaugefield_to_devices();
-	logger.trace() << "Moved stuff to device";
+	gaugefield.print_gaugeobservables(0);
+
 	init_timer.add();
 
 /////////////////////////////////////////////////////////////////////////////////////////	
@@ -67,9 +69,9 @@ int main(int argc, char* argv[])
 	logger.info() << "Perform " << nsteps << "of benchmarking";
 
 	for(int i = 0; i < nsteps; i++) {
-		gaugefield.heatbath();
-		gaugefield.overrelax();
-		gaugefield.print_gaugeobservables_from_devices(i, gaugeout_name.str(), parameters.get_print_to_screen());
+		gaugefield.perform_tasks(parameters.get_overrelaxsteps());
+		gaugefield.synchronize(0);
+		gaugefield.print_gaugeobservables_from_task(i, 0, gaugeout_name.str());
 	}
 	logger.trace() << "heatbath-benchmarking done";
 	perform_timer.add();
@@ -80,7 +82,7 @@ int main(int argc, char* argv[])
 	
 	//TODO: remove gaugeobservables-file, this is not really needed
 	total_timer.add();
-	general_time_output(&total_timer, &init_timer, &perform_timer, gaugefield.get_copy_to(), gaugefield.get_copy_on(), &plaq_timer, &poly_timer);
+	general_time_output(&total_timer, &init_timer, &perform_timer, (gaugefield.get_task_heatbath())->get_copy_to(), gaugefield.get_task_heatbath()->get_copy_on(), &plaq_timer, &poly_timer);
 
 	//CP: this is just a fist version and will go into an own file later
 	stringstream profiling_out;
@@ -94,13 +96,11 @@ int main(int argc, char* argv[])
 	} else {
 	  logger.warn()<<"Could not open " << profiling_out;
 	}
-	gaugefield.get_devices()[0].print_profiling(profiling_out.str());
+	gaugefield.print_profiling(profiling_out.str());
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	delete[] devicetypes;
 
 	gaugefield.finalize();
 

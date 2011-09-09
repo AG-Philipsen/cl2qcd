@@ -256,6 +256,10 @@ public:
 	 */
 	void print_gaugeobservables_from_task(int iter, int ntask, std::string filename);
 
+#ifdef _PROFILING_
+	void print_profiling(std::string filename);
+#endif
+
 protected:
 	cl_device_type* devicetypes;
 	Opencl_Module ** opencl_modules;
