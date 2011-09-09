@@ -36,6 +36,18 @@ void Gaugefield_heatbath_kappa::init_tasks(){
   return;
 }
 
+void Gaugefield_heatbath_kappa::perform_heatbath(int nheat, int nover){
+
+  for(int iter = 0; iter < nheat; iter++) {
+    get_task_heatbath()->run_heatbath();
+    for(int iter_over = 0; iter_over < nover; iter_over++) 
+			get_task_heatbath()->run_overrelax();
+  }
+
+  return;
+}
+
+
 void Gaugefield_heatbath_kappa::perform_tasks(int nheat, int nover){
 
   for(int iter = 0; iter < nheat; iter++) {

@@ -69,6 +69,12 @@ public:
 
 	// do the real work
 	/**
+	 * Perform the heatbath only (e.g. for thermalization)
+	 * @param[in] nheat number of heatbath steps
+	 * @param[in] nover number of overrelaxation steps per heatbath step
+	 */
+	void perform_heatbath(int nheat, int nover);
+	/**
 	 * Perform all the tasks
 	 * @param[in] nheat number of heatbath steps
 	 * @param[in] nover number of overrelaxation steps per heatbath step
