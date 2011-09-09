@@ -90,6 +90,11 @@ void Opencl_Module_Fermions::fill_buffers()
 	int complex_size = sizeof(hmc_complex);
 	int float_size = sizeof(hmc_float);
 
+	logger.debug() << "init general spinorfield-buffers";
+	clmem_inout = create_rw_buffer(spinorfield_size);
+	clmem_source = create_rw_buffer(spinorfield_size);
+	clmem_tmp = create_rw_buffer(spinorfield_size);
+	
 	logger.debug() << "init solver spinorfield-buffers";
 	///@todo some buffers can be saved here if only cg is used
 	if(get_parameters()->get_use_eo() == false) {
@@ -136,8 +141,6 @@ void Opencl_Module_Fermions::fill_buffers()
 
 	clerr = clEnqueueWriteBuffer(get_queue(), clmem_minusone, CL_TRUE, 0, complex_size, &minusone, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clEnqueueWriteBuffer",__FILE__,__LINE__);
-
-
 
 	return;
 }
@@ -893,59 +896,63 @@ void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem
   bool converged = false;
 
 	(*solvertimer).reset();
-	if(get_parameters()->get_use_cg() == true)
-	 	converged = cg(f, inout, source, gf, cgmax);
-	else 
-		converged = bicgstab(f, inout, source, gf, cgmax);
+	if(get_parameters()->get_use_eo() == true){
+		//convert source and input-vector to eoprec-format
+		convert_to_eoprec_device(clmem_source_even, clmem_source_odd, clmem_source);
+		//prepare sources
+		if(get_parameters()->get_fermact() == WILSON){
+			logger.fatal() << "not yet implemented in WILSON case, aborting...";
+		}
+		else if(get_parameters()->get_fermact() == TWISTEDMASS){
+			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1);
+			dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, gf, EVEN);
+			saxpy_eoprec_device(clmem_source_even, clmem_tmp_eoprec_2, clmem_one, clmem_source_even);
+		}
+
+		//Trial solution
+		///@todo this should go into a more general function
+		this->set_eoprec_spinorfield_cold_device(this->get_clmem_inout_eoprec());
+		
+		//even solution
+		if(get_parameters()->get_use_cg() == true)
+			converged = cg_eoprec(f, clmem_inout_eoprec, clmem_source_even, gf, cgmax);
+		else 
+			converged = bicgstab_eoprec(f, clmem_inout_eoprec, clmem_source_even, gf, cgmax);
+
+		//odd solution
+		/** @todo CP: perhaps one can save some variables used here */
+		if(get_parameters()->get_fermact() == WILSON){
+			logger.fatal() << "not yet implemented in WILSON case, aborting...";
+		}
+		else if(get_parameters()->get_fermact() == TWISTEDMASS){
+			dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_2, gf, ODD);
+			M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_2, clmem_tmp_eoprec_1);
+			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2);
+			saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, clmem_one, clmem_tmp_eoprec_1);
+
+			//CP: whole solution
+			//CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eoprec_1
+			convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_1, clmem_inout);
+		}
+	}
+	else{
+		//Trial solution
+		///@todo this should go into a more general function
+		this->set_spinorfield_cold_device(inout);
+				
+		if(get_parameters()->get_use_cg() == true)
+			converged = cg(f, inout, source, gf, cgmax);
+		else 
+			converged = bicgstab(f, inout, source, gf, cgmax);
+	}
 	clFinish(get_queue());
 	(*solvertimer).add();
 
-			if (converged == false) logger.debug() << "\t\t\tsolver did not solve!!";
-			else logger.debug() << "\t\t\tsolver solved!";
+	if (converged == false) logger.debug() << "\t\t\tsolver did not solve!!";
+	else logger.debug() << "\t\t\tsolver solved!";
 
 	return;
 }
-
-
-void Opencl_Module_Fermions::solver_eoprec(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * solvertimer, int cgmax)
-{
-
-  bool converged = false;
-
-	(*solvertimer).reset();
-
-	//CP: even solution
-	if(get_parameters()->get_use_cg() == true)
-	 	converged = cg_eoprec(f, inout_eo, source_even, gf, cgmax);
-	else 
-		converged = bicgstab_eoprec(f, inout_eo, source_even, gf, cgmax);
-
-	//P: odd solution
-	/** @todo CP: perhaps one can save some variables used here */
-	if(get_parameters()->get_fermact() == WILSON){
-		logger.fatal() << "not yet implemented in WILSON case, aborting...";
-	}
-	else if(get_parameters()->get_fermact() == TWISTEDMASS){
-		///@todo here, the use of clmem_tmp_eoprec_3 can be avoided
-		dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, gf, ODD);
-		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1);
-		M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2);
-		saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, clmem_one, clmem_tmp_eoprec_3);
-
-		//CP: whole solution
-		//CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eoprec_3
-		convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, clmem_inout);
-	}
-	clFinish(get_queue());
-	(*solvertimer).add();
-
-
-			if (converged == false) logger.debug() << "\t\t\tsolver did not solve!!";
-			else logger.debug() << "\t\t\tsolver solved!";
-
-	return;
-}
-
 
 cl_mem Opencl_Module_Fermions::get_clmem_inout()
 {

@@ -21,6 +21,7 @@
 #include "host_operations_gaugefield.h"
 #include "globaldefs.h"
 #include "types.h"
+#include "types_fermions.h"
 #include "host_use_timer.h"
 #include "inputparameters.h"
 #include "opencl_compiler.hpp"
@@ -126,8 +127,6 @@ public:
 	/// this executes the cg on the device, using the fermionmatrix f 
 	bool cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
 	//    eoprec
-	/// this calls the solver according to parameter settings using the fermionmatrix f
-	void solver_eoprec(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * solvertimer, int cgmax);	
 	/// this executes the eoprec bicgstab on the device, using the fermionmatrix f 
 	bool bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
 	bool cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);

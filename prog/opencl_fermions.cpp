@@ -94,7 +94,7 @@ void Opencl_fermions::fill_buffers()
 	clmem_tmp = create_rw_buffer(spinorfield_size);
 	
 	if(get_parameters()->get_use_eo() == true) {
-		logger.debug() << "init geberal eoprec-spinorfield-buffers";
+		logger.debug() << "init general eoprec-spinorfield-buffers";
 		clmem_inout_eoprec = create_rw_buffer(eoprec_spinorfield_size);
 		clmem_source_even = create_rw_buffer(eoprec_spinorfield_size);
 		clmem_source_odd = create_rw_buffer(eoprec_spinorfield_size);

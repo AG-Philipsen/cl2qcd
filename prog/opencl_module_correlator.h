@@ -80,11 +80,60 @@ public:
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
 
+	void create_point_source_device(cl_mem inout, int i, int spacepos, int timepos);
+	
+	void ps_correlator_device(cl_mem in);
+
+	/////////////////////////////////////////////////
+	//functions to get private variables
+	cl_mem get_clmem_corr();
+	cl_mem get_clmem_source();
+	
+#ifdef _PROFILING_
+	//CP: if PROFILING is activated, one needs a timer for each kernel
+
+	usetimer timer_create_point_source;
+
+	usetimer timer_ps_correlator;
+
+	/**
+	 * Return the timer connected to a specific kernel.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual usetimer* get_timer(char * in);
+	
+	/**
+	 * Return amount of bytes read and written by a specific kernel per call. 
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual int get_read_write_size(char * in, inputparameters * parameters);	
+	
+	/**
+	 * Print the profiling information to a file.
+	 *
+	 * @param filename Name of file where data is appended.
+	 * @param parameters inputparameters
+	 */
+	void virtual print_profiling(std::string filename);	
+#endif	
+	
+private:
+	////////////////////////////////////
+	//kernels
+
+	cl_kernel create_point_source;
+
+	//Observables
+	cl_kernel ps_correlator;
+
+	cl_mem clmem_source;
+
+	cl_mem clmem_corr;
 
 protected:
-
-
-private:
+	ClSourcePackage basic_correlator_code;
 
 };
 

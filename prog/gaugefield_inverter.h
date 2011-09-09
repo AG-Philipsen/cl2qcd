@@ -97,7 +97,7 @@ protected:
 
 private:
 
-	cl_mem* solution_buffer;
+	spinorfield* solution_buffer;
 
 	int task_solver;
 	int task_correlator;

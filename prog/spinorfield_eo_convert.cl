@@ -1,5 +1,5 @@
 //eoprec operations
-void convert_to_eoprec(spinorfield_eoprec* even, spinorfield_eoprec* odd, spinorfield* in)
+__kernel void convert_to_eoprec(__global spinorfield_eoprec* even, __global spinorfield_eoprec* odd, __global spinorfield* in)
 {
 	int spacepos, timepos;
 	for(int n=0; n<VOL4D/2; n++) {

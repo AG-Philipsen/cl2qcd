@@ -44,22 +44,72 @@ void Gaugefield_inverter::delete_variables(){
 void Gaugefield_inverter::finalize_opencl(){
 
   Gaugefield_hybrid::finalize_opencl();
+	logger.debug() << "free solution buffer";
+	free(solution_buffer);
   return;
 }
 
 
 void Gaugefield_inverter::perform_inversion(usetimer* solver_timer){
-  (*solver_timer).reset();
+	
+	int use_eo = get_parameters()->get_use_eo();
+	
+	//decide on type of sources
+	if(get_parameters()->get_use_pointsource() == true){
+		//allocate host-memory for solution-buffer
+		size_t sfsize = get_parameters()->get_spinorfieldsize()*sizeof(spinor);
+		size_t bufsize = sfsize*12;
+		logger.debug() << "allocate memory for solution-buffer on host of size " << bufsize/1024./1024./1024. << " GByte";
+		solution_buffer = (spinorfield*) malloc(bufsize);
+		void* sftmp = malloc(sfsize);
+		
+		for(int k=0; k<12; k++) {
+			//create source
+			logger.debug() << "create pointsource";
+			get_task_correlator()->create_point_source_device(get_task_correlator()->get_clmem_source(), k,get_parameters()->get_source_pos_spatial(),get_parameters()->get_source_pos_temporal());
+			//copy source from one device to the other
+			logger.debug() << "copy pointsource between devices";
+			///@todo is this possible without the host in between?
+			///@todo here happens a segfault!!!
+			throw Print_Error_Message("remove this segfault!!");
+			get_task_correlator()->get_buffer_from_device(get_task_correlator()->get_clmem_source(), sftmp, sfsize);
+			get_task_solver()->copy_buffer_to_device(sftmp, get_task_solver()->get_clmem_source(), sfsize);
+			
+			logger.debug() << "calling solver..";
+			if(use_eo == false)
+				get_task_solver()->solver(M_call, get_task_solver()->get_clmem_inout(), get_task_solver()->get_clmem_source(), *get_clmem_gaugefield(), solver_timer, get_parameters()->get_cgmax());
+			else
+				get_task_solver()->solver(Aee_call, get_task_solver()->get_clmem_inout(), get_task_solver()->get_clmem_source(), *get_clmem_gaugefield(), solver_timer, get_parameters()->get_cgmax());
 
-  cout<<"buh"<<endl;
-
-  (*solver_timer).add();
+			//add solution to solution-buffer
+			//NOTE: this is a blocking call!
+			logger.debug() << "add solution...";
+			get_task_solver()->get_buffer_from_device(get_task_solver()->get_clmem_inout(), (void*) &solution_buffer[sfsize*k], sfsize);
+			free(sftmp);
+		}
+	}
+	else{
+		//use stochastic sources
+		//allocate host-memory for solution-buffer
+		int sfsize = get_parameters()->get_spinorfieldsize()*sizeof(spinor);
+		size_t bufsize = sfsize*get_parameters()->get_num_sources();
+		logger.debug() << "allocate memory for solution-buffer on host of size " << bufsize/1024./1024./1024. << " GByte";
+		solution_buffer = (spinorfield*) malloc(bufsize);
+		spinorfield* sftmp = (spinorfield*) malloc(bufsize);
+		
+		throw Print_Error_Message("Stochastic Sources not yet implemented.");
+		for(int k=0; k<get_parameters()->get_num_sources(); k++) {
+			///@todo this is the same as above, just with a different source-generating-function
+		}
+	}
+	
   return;
 }
 
 void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn){
-
-  cout<<"buh"<<endl;
+	//suppose that the buffer on the device has been filled with the prior calculated solutions of the solver
+	logger.debug() << "start calculating correlators...";
+  get_task_correlator()->ps_correlator_device(get_task_correlator()->get_clmem_corr());
 
   return;
 }
