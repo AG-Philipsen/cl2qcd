@@ -53,7 +53,7 @@ void Gaugefield_inverter::finalize_opencl(){
 
 void Gaugefield_inverter::sync_solution_buffer(){
 	size_t sfsize = 12*get_parameters()->get_spinorfieldsize()*sizeof(spinor);
-	get_task_correlator()->copy_buffer_to_device(&solution_buffer, get_task_correlator()->get_clmem_corr(), sfsize);
+	get_task_correlator()->copy_buffer_to_device(solution_buffer, get_task_correlator()->get_clmem_corr(), sfsize);
 	return;
 }
 
@@ -79,7 +79,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer){
 			///@todo is this possible without the host in between?
 			get_task_correlator()->get_buffer_from_device(get_task_correlator()->get_clmem_source(), sftmp, sfsize);
 			get_task_solver()->copy_buffer_to_device(sftmp, get_task_solver()->get_clmem_source(), sfsize);
-			
+		
 			logger.debug() << "calling solver..";
 			if(use_eo == false)
 				get_task_solver()->solver(M_call, get_task_solver()->get_clmem_inout(), get_task_solver()->get_clmem_source(), *get_clmem_gaugefield(), solver_timer, get_parameters()->get_cgmax());
@@ -89,7 +89,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer){
 			//add solution to solution-buffer
 			//NOTE: this is a blocking call!
 			logger.debug() << "add solution...";
-			get_task_solver()->get_buffer_from_device(get_task_solver()->get_clmem_inout(), &solution_buffer[k], sfsize);
+			get_task_solver()->get_buffer_from_device(get_task_solver()->get_clmem_inout(), &solution_buffer[k*VOL4D], sfsize);
 		}
 		delete [] sftmp;
 	}
@@ -114,7 +114,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer){
 void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn){
 	//suppose that the buffer on the device has been filled with the prior calculated solutions of the solver
 	logger.debug() << "start calculating correlators...";
-  get_task_correlator()->ps_correlator_device(get_task_correlator()->get_clmem_corr());
+	get_task_correlator()->ps_correlator_device(get_task_correlator()->get_clmem_corr());
 
   return;
 }

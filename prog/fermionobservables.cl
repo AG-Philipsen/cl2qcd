@@ -16,12 +16,14 @@ __kernel void ps_correlator(__global spinorfield* phi){
      for(int i = 0; i<NSPACE; i++){
        correlator_ps[i]=0.;
      }
-     for(int timepos = 0; timepos<NTIME; timepos++) {
-       for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
+     for(int k=0; k<12; k++) {  
+       for(int timepos = 0; timepos<NTIME; timepos++) {
+	 for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
 		//correlator_ps[z] += |phi(n,t)|^2
-	 spinor tmp = phi[get_global_pos(spacepos, timepos)];
-	 int z = get_spacecoord(spacepos, 3);
-	 correlator_ps[z] += spinor_squarenorm(tmp);
+	   spinor tmp = phi[get_global_pos(spacepos, timepos) + VOL4D*k];
+	   int z = get_spacecoord(spacepos, 3);
+	   correlator_ps[z] += spinor_squarenorm(tmp);
+	 }
        }
      }
      // print the correlator in the "physical" normalization,
