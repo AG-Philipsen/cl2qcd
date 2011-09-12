@@ -11,8 +11,18 @@ Opencl_Module_Correlator* Gaugefield_inverter::get_task_correlator() {
 
 void Gaugefield_inverter::init_tasks(){
 
-  solution_buffer = 0;
-
+	//allocate host-memory for solution- and source-buffer
+	int num_sources; 
+	if(get_parameters()->get_use_pointsource() == true)
+		num_sources = 12;
+	else
+		num_sources = get_parameters()->get_num_sources();
+	
+	size_t bufsize = num_sources*get_parameters()->get_spinorfieldsize()*sizeof(spinor);
+	logger.debug() << "allocate memory for solution-buffer on host of size " << bufsize/1024./1024./1024. << " GByte";
+	solution_buffer = new spinor [num_sources*get_parameters()->get_spinorfieldsize()];
+	source_buffer = new spinor [num_sources*get_parameters()->get_spinorfieldsize()];
+	
   switch (get_num_tasks()) {
   case 2 :
     task_solver = 0;
@@ -48,7 +58,9 @@ void Gaugefield_inverter::finalize_opencl(){
   Gaugefield_hybrid::finalize_opencl();
 	logger.debug() << "free solution buffer";
 	delete [] solution_buffer;
-  return;
+	logger.debug() << "free source buffer";
+	delete [] source_buffer;
+	return;
 }
 
 void Gaugefield_inverter::sync_solution_buffer(){
@@ -62,51 +74,34 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer){
 	int use_eo = get_parameters()->get_use_eo();
 	
 	//decide on type of sources
-	if(get_parameters()->get_use_pointsource() == true){
-		//allocate host-memory for solution-buffer
-		size_t sfsize = get_parameters()->get_spinorfieldsize()*sizeof(spinor);
-		size_t bufsize = 12*sfsize;
-		logger.debug() << "allocate memory for solution-buffer on host of size " << bufsize/1024./1024./1024. << " GByte";
-		if(solution_buffer == 0) solution_buffer = new spinor [12*get_parameters()->get_spinorfieldsize()];
-		spinor* sftmp = new spinor [get_parameters()->get_spinorfieldsize()];
+	int num_sources;
+	if(get_parameters()->get_use_pointsource() == true)
+		num_sources = 12;
+	else
+		num_sources = get_parameters()->get_num_sources();
+	
+	//allocate host-memory for tmp-buffer
+	size_t sfsize = get_parameters()->get_spinorfieldsize()*sizeof(spinor);
+	spinor* sftmp = new spinor [get_parameters()->get_spinorfieldsize()];
 		
-		for(int k=0; k<12; k++) {
-			//create source
-			logger.debug() << "create pointsource";
-			get_task_correlator()->create_point_source_device(get_task_correlator()->get_clmem_source(), k,get_parameters()->get_source_pos_spatial(),get_parameters()->get_source_pos_temporal());
-			//copy source from one device to the other
-			logger.debug() << "copy pointsource between devices";
-			///@todo is this possible without the host in between?
-			get_task_correlator()->get_buffer_from_device(get_task_correlator()->get_clmem_source(), sftmp, sfsize);
-			get_task_solver()->copy_buffer_to_device(sftmp, get_task_solver()->get_clmem_source(), sfsize);
-		
-			logger.debug() << "calling solver..";
-			if(use_eo == false)
-				get_task_solver()->solver(M_call, get_task_solver()->get_clmem_inout(), get_task_solver()->get_clmem_source(), *get_clmem_gaugefield(), solver_timer, get_parameters()->get_cgmax());
-			else
-				get_task_solver()->solver(Aee_call, get_task_solver()->get_clmem_inout(), get_task_solver()->get_clmem_source(), *get_clmem_gaugefield(), solver_timer, get_parameters()->get_cgmax());
+	for(int k=0; k<num_sources; k++) {
+		//copy source from to device
+		//NOTE: this is a blocking call!
+		logger.debug() << "copy pointsource between devices";
+		get_task_solver()->copy_buffer_to_device(&source_buffer[k*VOL4D], get_task_solver()->get_clmem_source(), sfsize);
+	
+		logger.debug() << "calling solver..";
+		if(use_eo == false)
+			get_task_solver()->solver(M_call, get_task_solver()->get_clmem_inout(), get_task_solver()->get_clmem_source(), *get_clmem_gaugefield(), solver_timer, get_parameters()->get_cgmax());
+		else
+			get_task_solver()->solver(Aee_call, get_task_solver()->get_clmem_inout(), get_task_solver()->get_clmem_source(), *get_clmem_gaugefield(), solver_timer, get_parameters()->get_cgmax());
 
-			//add solution to solution-buffer
-			//NOTE: this is a blocking call!
-			logger.debug() << "add solution...";
-			get_task_solver()->get_buffer_from_device(get_task_solver()->get_clmem_inout(), &solution_buffer[k*VOL4D], sfsize);
-		}
-		delete [] sftmp;
+		//add solution to solution-buffer
+		//NOTE: this is a blocking call!
+		logger.debug() << "add solution...";
+		get_task_solver()->get_buffer_from_device(get_task_solver()->get_clmem_inout(), &solution_buffer[k*VOL4D], sfsize);
 	}
-	else{
-		//use stochastic sources
-		//allocate host-memory for solution-buffer
-		int sfsize = get_parameters()->get_spinorfieldsize()*sizeof(spinor);
-		size_t bufsize = sfsize*get_parameters()->get_num_sources();
-		logger.debug() << "allocate memory for solution-buffer on host of size " << bufsize/1024./1024./1024. << " GByte";
-		solution_buffer = (spinorfield*) malloc(bufsize);
-		spinorfield* sftmp = (spinorfield*) malloc(bufsize);
-		
-		throw Print_Error_Message("Stochastic Sources not yet implemented.");
-		for(int k=0; k<get_parameters()->get_num_sources(); k++) {
-			///@todo this is the same as above, just with a different source-generating-function
-		}
-	}
+	delete [] sftmp;
 	
   return;
 }
@@ -116,5 +111,28 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn){
 	logger.debug() << "start calculating correlators...";
 	get_task_correlator()->ps_correlator_device(get_task_correlator()->get_clmem_corr());
 
+  return;
+}
+
+void Gaugefield_inverter::create_sources(){
+	//create sources on the correlator-device and save them on the host
+	size_t sfsize = get_parameters()->get_spinorfieldsize()*sizeof(spinor);
+	if(get_parameters()->get_use_pointsource() == true){
+		logger.debug() << "start creating point-sources...";
+		for(int k=0; k<12; k++) {
+			get_task_correlator()->create_point_source_device(get_task_correlator()->get_clmem_source(), k,get_parameters()->get_source_pos_spatial(),get_parameters()->get_source_pos_temporal());
+			logger.debug() << "copy pointsource to host";
+			get_task_correlator()->get_buffer_from_device(get_task_correlator()->get_clmem_source(), &source_buffer[k*VOL4D], sfsize);
+		}
+	}
+	else{
+		logger.debug() << "start creating stochastic-sources...";
+		int num_sources = get_parameters()->get_num_sources();
+		for(int k=0; k<num_sources; k++) {
+			get_task_correlator()->create_stochastic_source_device(get_task_correlator()->get_clmem_source());
+			logger.debug() << "copy stochastic-source to host";
+			get_task_correlator()->get_buffer_from_device(get_task_correlator()->get_clmem_source(), &source_buffer[k*VOL4D], sfsize);
+		}
+	}
   return;
 }

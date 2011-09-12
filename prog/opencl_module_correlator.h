@@ -82,6 +82,8 @@ public:
 
 	void create_point_source_device(cl_mem inout, int i, int spacepos, int timepos);
 	
+	void create_stochastic_source_device(cl_mem inout);
+	
 	void ps_correlator_device(cl_mem in);
 
 	/////////////////////////////////////////////////
@@ -93,6 +95,7 @@ public:
 	//CP: if PROFILING is activated, one needs a timer for each kernel
 
 	usetimer timer_create_point_source;
+	usetimer timer_create_stochastic_source;
 
 	usetimer timer_ps_correlator;
 
@@ -124,6 +127,7 @@ private:
 	//kernels
 
 	cl_kernel create_point_source;
+	cl_kernel create_stochastic_source;
 
 	//Observables
 	cl_kernel ps_correlator;

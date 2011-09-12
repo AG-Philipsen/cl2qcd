@@ -74,6 +74,7 @@ int main(int argc, char* argv[])
 
 	logger.info() << "Perform inversion on device.." ;
 
+	gaugefield.create_sources();
 	gaugefield.perform_inversion(&solver_timer);
 	gaugefield.sync_solution_buffer();
 	gaugefield.flavour_doublet_correlators(corr_fn.str());

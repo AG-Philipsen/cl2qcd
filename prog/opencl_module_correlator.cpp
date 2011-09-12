@@ -46,7 +46,10 @@ void Opencl_Module_Correlator::fill_kernels()
 	basic_correlator_code = basic_fermion_code;
 	logger.debug() << "Create correlator kernels...";
 	
-	create_point_source = createKernel("create_point_source") << basic_fermion_code << "spinorfield_point_source.cl";
+	if(get_parameters()->get_use_pointsource() == true)
+		create_point_source = createKernel("create_point_source") << basic_fermion_code << "spinorfield_point_source.cl";
+	else
+		create_stochastic_source = createKernel("create_stochastic_source") << basic_fermion_code << "spinorfield_stochastic_source.cl";
 	ps_correlator = createKernel("ps_correlator") << basic_fermion_code << "fermionobservables.cl";
 
 	return;
@@ -58,6 +61,8 @@ void Opencl_Module_Correlator::clear_kernels()
 	int clerr = clReleaseKernel(ps_correlator);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 	clerr = clReleaseKernel(create_point_source);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	clerr = clReleaseKernel(create_stochastic_source);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 	return;
 }
@@ -113,7 +118,19 @@ void Opencl_Module_Correlator::create_point_source_device(cl_mem inout, int i, i
 	enqueueKernel( create_point_source, gs2, ls2);
 }
 
+void Opencl_Module_Correlator::create_stochastic_source_device(cl_mem inout)
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(create_stochastic_source, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(create_stochastic_source, 0, sizeof(cl_mem), &inout);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
 
+	throw Opencl_Error(clerr,"stochastic source not yet implemented!!",__FILE__,__LINE__);
+	enqueueKernel( create_stochastic_source, gs2, ls2);
+}
 
 void Opencl_Module_Correlator::ps_correlator_device(cl_mem in){
 	//query work-sizes for kernel
@@ -139,6 +156,9 @@ usetimer* Opencl_Module_Correlator::get_timer(char * in){
 	if (strcmp(in, "create_point_source") == 0){
     return &this->timer_create_point_source;
 	}
+	if (strcmp(in, "create_stochastic_source") == 0){
+    return &this->timer_create_stochastic_source;
+	}
 	if (strcmp(in, "ps_correlator") == 0){
     return &this->timer_ps_correlator;
 	}
@@ -163,6 +183,9 @@ int Opencl_Module_Correlator::get_read_write_size(char * in, inputparameters * p
 	if (strcmp(in, "create_point_source") == 0){
     return 1000000000000000000000000;
 	}
+	if (strcmp(in, "create_stochastic_source") == 0){
+    return 1000000000000000000000000;
+	}
 	if (strcmp(in, "ps_correlator") == 0){
     return 1000000000000000000000000;
 	}
@@ -173,6 +196,8 @@ void Opencl_Module_Correlator::print_profiling(std::string filename){
 	Opencl::print_profiling(filename);
 	char * kernelName;
 	kernelName = "create_point_source";
+	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "create_stochastic_source";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "ps_correlator";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
