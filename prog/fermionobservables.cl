@@ -1,5 +1,5 @@
 /**
- @file fermionmatrix
+ @file fermion-observables
 */
 
 //this is the pseudoscalar pion correlator in z-direction
@@ -35,20 +35,34 @@ __kernel void ps_correlator(__global spinorfield* phi){
      }
    }
    
-   //CP: future versions that requires an additional buffer correlator_ps[NSPACE] as kernel-arg
-//    //suppose that there are NSPACE threads (one for each entry of the correlator)
+}
+
+//CP: future versions that requires an additional buffer correlator_ps[NSPACE] as kernel-arg
+
+// //this is the pseudoscalar pion correlator in z-direction
+// __kernel void ps_correlator(__global spinorfield* phi, __global hmc_float * out){
+//    int local_size = get_local_size(0);
+//    int global_size = get_global_size(0);
+//    int id = get_global_id(0);
+//    int loc_idx = get_local_id(0);
+//    int num_groups = get_num_groups(0);
+//    int group_id = get_group_id (0);
+// 	 
+// 	//suppose that there are NSPACE threads (one for each entry of the correlator)
 // 	for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
-// 		correlator_ps[i]=0.;
+// 		hmc_float correlator_ps=0.;
 // 		cl_int4 coord;
 // 		coord[3] = id;
-// 		for(int t = 0; t<NTIME; t++) {
-// 			for(int x = 0; x<NSPACE; x++) {
-// 				for(int y = 0; y<NSPACE; y++) {
-// 					coord[1] = x;
-// 					coord[2] = y;
-// 					int nspace = get_nspace(coord);
-// 					spinor tmp = phi[get_global_pos(nspace, t)];
-// 					correlator_ps[z] += spinor_squarenorm(tmp);
-// 		}}}
+// 		for(int k=0; k<NUM_SOURCES; k++) {  
+// 			for(int t = 0; t<NTIME; t++) {
+// 				for(int x = 0; x<NSPACE; x++) {
+// 					for(int y = 0; y<NSPACE; y++) {
+// 						coord[1] = x;
+// 						coord[2] = y;
+// 						int nspace = get_nspace(coord);
+// 						spinor tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
+// 						correlator_ps += spinor_squarenorm(tmp);
+// 		}}}}
 // 	}
-}
+// 	*out[id] = correlator_ps;
+// }	 
