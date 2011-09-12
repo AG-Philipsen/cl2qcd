@@ -90,82 +90,91 @@ void Gaugefield_hybrid::init_opencl(){
   clerr = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices_gpu);
   clerr = clGetDeviceIDs(platform, CL_DEVICE_TYPE_CPU, 0, NULL, &num_devices_cpu);
   logger.info() << "Found " << num_devices_gpu << " GPU(s) and " << num_devices_cpu << " CPU(s).";
+
+  //LZ: begin debug
+  //  num_devices_gpu = 0;
+  //  num_devices_cpu = 1;
+  //  logger.info() << "Found " << num_devices_gpu << " GPU(s) and " << num_devices_cpu << " CPU(s).";
+  // end debug
 	
-	//Check if number of devices fits progs needs
-	if(get_num_tasks() == 1){
-		if (devicetypes[0] == CL_DEVICE_TYPE_GPU && num_devices_gpu < 1) 
-			throw Print_Error_Message("Application needs one GPU device.");
-		else if (devicetypes[0] == CL_DEVICE_TYPE_CPU && num_devices_cpu < 1) 
-			throw Print_Error_Message("Application needs one CPU device.");
-	}
-	else if (get_num_tasks() == 2){
-	  if( num_devices_gpu + num_devices_cpu == 1 ){
-	    logger.warn() << "You wanted to have two devices, but only one has been found!";
-	    set_num_tasks(1);
-	    if( num_devices_gpu == 1 ) devicetypes[0] = CL_DEVICE_TYPE_GPU;
-	    if( num_devices_cpu == 1 ) devicetypes[0] = CL_DEVICE_TYPE_CPU;
-	  }
-	  if( num_devices_gpu == 0 ) logger.warn() << "No GPU found.";
-	  if( num_devices_cpu == 0 ) logger.warn() << "No CPU found.";
-	  if( num_devices_gpu + num_devices_cpu < 1 ) throw Print_Error_Message("Application needs two devices.");
-	}
+  set_num_devices(num_devices_gpu + num_devices_cpu);
 
-  queue   = new cl_command_queue [get_num_tasks()];
-  devices = new cl_device_id     [get_num_tasks()];
-  device_double_extension = new string  [get_num_tasks()];
-  max_compute_units       = new cl_uint [get_num_tasks()];
-  
+  //Map tasks and devices
+  if(get_num_devices() < 1) throw Print_Error_Message("No devices found.");
+  if( num_devices_gpu == 0 ) logger.warn() << "No GPU found.";
+  if( num_devices_cpu == 0 ) logger.warn() << "No CPU found.";
 
-  for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-    logger.info()<<"\tInitialize task #"<<ntask<<":";
-    clerr = clGetDeviceIDs(platform, get_device_type(ntask), 1, &devices[ntask], NULL);
-    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceIDs",__FILE__,__LINE__);
-    
-    clerr = clGetDeviceInfo(devices[ntask], CL_DEVICE_NAME, 512 * sizeof(char), info, NULL);
-    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceInfo",__FILE__,__LINE__);
-    logger.info() << "\t\t\tCL_DEVICE_NAME:    " << info;
-    clerr = clGetDeviceInfo(devices[ntask], CL_DEVICE_VENDOR, 512 * sizeof(char), info, NULL);
-    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceInfo",__FILE__,__LINE__);
-    logger.info() << "\t\t\tCL_DEVICE_VENDOR:  " << info;
-    cl_device_type devtype;
-    clerr = clGetDeviceInfo(devices[ntask], CL_DEVICE_TYPE, sizeof(cl_device_type), &devtype, NULL);
-    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceInfo",__FILE__,__LINE__);
-    if(devtype == CL_DEVICE_TYPE_CPU) logger.info() << "\t\t\tCL_DEVICE_TYPE:    CPU";
-    if(devtype == CL_DEVICE_TYPE_GPU) logger.info() << "\t\t\tCL_DEVICE_TYPE:    GPU";
-    if(devtype == CL_DEVICE_TYPE_ACCELERATOR) logger.info() << "\t\t\tCL_DEVICE_TYPE:    ACCELERATOR";
-    if(devtype != CL_DEVICE_TYPE_CPU && devtype != CL_DEVICE_TYPE_GPU && devtype != CL_DEVICE_TYPE_ACCELERATOR)
-      throw Print_Error_Message("Unexpected CL_DEVICE_TYPE...",__FILE__,__LINE__);
-    clerr = clGetDeviceInfo(devices[ntask], CL_DEVICE_VERSION, 512 * sizeof(char), info, NULL);
-    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceInfo",__FILE__,__LINE__);
-    logger.info() << "\t\t\tCL_DEVICE_VERSION: " << info;
-    clerr = clGetDeviceInfo(devices[ntask], CL_DEVICE_EXTENSIONS, 512 * sizeof(char), info, NULL);
-    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceInfo",__FILE__,__LINE__);
-    logger.info() << "\t\t\tCL_DEVICE_EXTENSIONS: " << info;
-    
-    if( strstr( info, "cl_amd_fp64" ) != NULL ) device_double_extension[ntask]="AMD";
-    if( strstr( info, "cl_khr_fp64" ) != NULL ) device_double_extension[ntask]="KHR";
-      
-    // figure out the number of "cores"
-    clerr = clGetDeviceInfo(devices[ntask], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units[ntask], NULL);
-    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceInfo",__FILE__,__LINE__);;
-    logger.info() << "\t\t\tCL_DEVICE_MAX_COMPUTE_UNITS: " << max_compute_units[ntask];
+  switch (get_num_tasks() ) {
 
+  case 1 :
+    if(devicetypes[0] == CL_DEVICE_TYPE_GPU && num_devices_gpu < 1) {
+      logger.warn() << "Program demanded GPU device but there is only a CPU device available. Try that." ;
+      devicetypes[0] = CL_DEVICE_TYPE_CPU;
     }
+    if(devicetypes[0] == CL_DEVICE_TYPE_CPU && num_devices_cpu < 1) {
+      logger.warn() << "Program demanded CPU device but there is only a GPU device available. Try that." ;
+      devicetypes[0] = CL_DEVICE_TYPE_GPU;
+    }
+    break;
 
+  case 2 :
+    if( get_num_devices() == 1 ){
+      logger.warn() << "You wanted to have two devices, but only one has been found!";
+      if( num_devices_gpu == 1 ) {
+	devicetypes[0] = CL_DEVICE_TYPE_GPU;
+	devicetypes[1] = CL_DEVICE_TYPE_GPU;
+      }
+      if( num_devices_cpu == 1 ) {
+	devicetypes[0] = CL_DEVICE_TYPE_CPU;
+	devicetypes[1] = CL_DEVICE_TYPE_CPU;
+      }
+    }
+    break;
+
+  default:
+    logger.warn() << "Set of devices could not be mapped properly. Try what happens..." ;
+  }
+
+  int len = min( get_num_tasks(), get_num_devices() );
+  queue                   = new cl_command_queue [get_num_tasks()];
+  devices                 = new cl_device_id     [len];
+  device_double_extension = new string  [len];
+  max_compute_units       = new cl_uint [len];
+  
+  for(int ntask = 0; ntask < len; ntask++) {
+    logger.info()<<"\tInitialize device #"<<ntask<<":";
+    init_devices(ntask);
+  }
    
   //Initilize context
   logger.trace() << "Create context...";
-  context = clCreateContext(0, get_num_tasks(), devices, 0, 0, &clerr);
+  context = clCreateContext(0, len, devices, 0, 0, &clerr);
   if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clCreateContext",__FILE__,__LINE__);
 
-  //Initilize queues
+  //now we need a mapping between devices and tasks for the case of fewer devices than tasks
+  device_id_for_task = new int [len];
+  for(int ntask=0 ; ntask < get_num_tasks() ; ntask++) {
+    device_id_for_task[ntask] = ntask;
+  }
+  if(get_num_devices() < get_num_tasks()) {
+    switch (get_num_tasks()) {
+    case 2:
+      device_id_for_task[1] = 0;
+      break;
+    default:
+      throw Print_Error_Message("Fewer devices than tasks but no proper mapping available.");
+    }
+  }
+
+  //Initilize queues, one per task
+  // Note that it might be advantageous to combine tasks on the same device into the same queue, i.e. to have only one queue per device even for more devices
   for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
     logger.trace() << "Create command queue for task #"<<ntask<<"...";
 
 #ifdef _PROFILING_	
-    queue[ntask] = clCreateCommandQueue(context, devices[ntask], CL_QUEUE_PROFILING_ENABLE, &clerr);
+    queue[ntask] = clCreateCommandQueue(context, get_device_for_task(ntask), CL_QUEUE_PROFILING_ENABLE, &clerr);
 #else
-    queue[ntask] = clCreateCommandQueue(context, devices[ntask], 0, &clerr);
+    queue[ntask] = clCreateCommandQueue(context, get_device_for_task(ntask), 0, &clerr);
 #endif
     if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clCreateCommandQueue",__FILE__,__LINE__);
   }	
@@ -176,8 +185,51 @@ void Gaugefield_hybrid::init_opencl(){
   clmem_gaugefield = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(s_gaugefield), 0, &clerr);
   if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clCreateBuffer",__FILE__,__LINE__);
 
+
   return;
 }
+
+void Gaugefield_hybrid::init_devices(int ndev){
+
+  cl_int clerr = CL_SUCCESS;
+
+  char info[512];
+
+    clerr = clGetDeviceIDs(platform, get_device_type(ndev), 1, &devices[ndev], NULL);
+    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceIDs",__FILE__,__LINE__);
+    
+    clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_NAME, 512 * sizeof(char), info, NULL);
+    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceInfo",__FILE__,__LINE__);
+    logger.info() << "\t\t\tCL_DEVICE_NAME:    " << info;
+    clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_VENDOR, 512 * sizeof(char), info, NULL);
+    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceInfo",__FILE__,__LINE__);
+    logger.info() << "\t\t\tCL_DEVICE_VENDOR:  " << info;
+    cl_device_type devtype;
+    clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_TYPE, sizeof(cl_device_type), &devtype, NULL);
+    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceInfo",__FILE__,__LINE__);
+    if(devtype == CL_DEVICE_TYPE_CPU) logger.info() << "\t\t\tCL_DEVICE_TYPE:    CPU";
+    if(devtype == CL_DEVICE_TYPE_GPU) logger.info() << "\t\t\tCL_DEVICE_TYPE:    GPU";
+    if(devtype == CL_DEVICE_TYPE_ACCELERATOR) logger.info() << "\t\t\tCL_DEVICE_TYPE:    ACCELERATOR";
+    if(devtype != CL_DEVICE_TYPE_CPU && devtype != CL_DEVICE_TYPE_GPU && devtype != CL_DEVICE_TYPE_ACCELERATOR)
+      throw Print_Error_Message("Unexpected CL_DEVICE_TYPE...",__FILE__,__LINE__);
+    clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_VERSION, 512 * sizeof(char), info, NULL);
+    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceInfo",__FILE__,__LINE__);
+    logger.info() << "\t\t\tCL_DEVICE_VERSION: " << info;
+    clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_EXTENSIONS, 512 * sizeof(char), info, NULL);
+    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceInfo",__FILE__,__LINE__);
+    logger.info() << "\t\t\tCL_DEVICE_EXTENSIONS: " << info;
+    
+    if( strstr( info, "cl_amd_fp64" ) != NULL ) device_double_extension[ndev]="AMD";
+    if( strstr( info, "cl_khr_fp64" ) != NULL ) device_double_extension[ndev]="KHR";
+      
+    // figure out the number of "cores"
+    clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units[ndev], NULL);
+    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clGetDeviceInfo",__FILE__,__LINE__);;
+    logger.info() << "\t\t\tCL_DEVICE_MAX_COMPUTE_UNITS: " << max_compute_units[ndev];
+
+  return;
+}
+
 
 
 void Gaugefield_hybrid::init_tasks(){
@@ -202,6 +254,8 @@ void Gaugefield_hybrid::finalize(){
 }
 
 void Gaugefield_hybrid::delete_variables(){
+
+  delete [] device_id_for_task;
 
   delete [] sgf;
  
@@ -354,6 +408,11 @@ void Gaugefield_hybrid::copy_gaugefield_from_task(int ntask){
   return;
 }
 
+cl_device_id Gaugefield_hybrid::get_device_for_task(int ntask){
+  if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("task index out of range",__FILE__,__LINE__); 
+  return devices[device_id_for_task[ntask]];
+}
+
 cl_mem* Gaugefield_hybrid::get_clmem_gaugefield(){
   return &clmem_gaugefield;
 }
@@ -369,12 +428,12 @@ int Gaugefield_hybrid::get_num_tasks (){
 
 int Gaugefield_hybrid::get_max_compute_units(int ntask){
   if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("rndarray index out of range",__FILE__,__LINE__); 
-  return max_compute_units[ntask];
+  return max_compute_units[device_id_for_task[ntask]];
 }
 
 string Gaugefield_hybrid::get_double_ext(int ntask){
   if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("rndarray index out of range",__FILE__,__LINE__); 
-  return device_double_extension[ntask];
+  return device_double_extension[device_id_for_task[ntask]];
 }
 
 inputparameters * Gaugefield_hybrid::get_parameters (){
@@ -396,6 +455,14 @@ void Gaugefield_hybrid::set_sgf (s_gaugefield * sgf_val){
 	return;
 }
 
+void Gaugefield_hybrid::set_num_devices(int num) {
+  num_devices = num;
+  return;
+}
+
+int Gaugefield_hybrid::get_num_devices(){
+  return num_devices;
+}
 
 cl_device_type Gaugefield_hybrid::get_device_type(int ntask){
   if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range",__FILE__,__LINE__); 

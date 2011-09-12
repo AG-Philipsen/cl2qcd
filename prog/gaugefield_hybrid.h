@@ -66,6 +66,13 @@ public:
 	 */
 	void init_opencl();
 	/**
+	 * Initialize devices.
+	 * Helper function called by init_opencl()
+	 * @param[in] ndev number of device to be initialized
+	 */
+	void init_devices(int ndev);
+
+	/**
 	 * Initialize class.
 	 * Helper function called by init()
 	 * Virtual to allow proper modification in inherited classes
@@ -108,6 +115,17 @@ public:
 	 * @param field gaugefield
 	 */
 	void set_gaugefield_cold(s_gaugefield * field);
+
+	/**
+	 * Set the number of devices available
+	 * @param num number of devices
+	 */
+	void set_num_devices(int num);
+	/**
+	 * Get the number of devices available
+	 * @return num_devices
+	 */
+	int get_num_devices();
 
 
 	// communication
@@ -164,6 +182,12 @@ public:
 	 * @return The gaugefield
 	 */
 	s_gaugefield * get_sgf ();
+	/**
+	 * Get device assigned to given task
+	 * @param[in] ntask id for task
+	 * @return device cl_device_id for given task
+	 */
+	cl_device_id get_device_for_task(int ntask);
 	/**
 	 * Returns pointer to cl_mem gaugefield
 	 * @return Pointer to cl_mem gaugefield
@@ -270,6 +294,8 @@ private:
 	inputparameters* parameters;
 	s_gaugefield * sgf;
 	int num_tasks;
+	int num_devices;
+	int* device_id_for_task;
 
 	//OpenCL:
 	cl_platform_id platform;

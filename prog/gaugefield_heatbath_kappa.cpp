@@ -11,18 +11,11 @@ Opencl_Module_Kappa* Gaugefield_heatbath_kappa::get_task_kappa() {
 
 void Gaugefield_heatbath_kappa::init_tasks(){
 
-  switch (get_num_tasks()) {
-  case 2 :
-    task_heatbath = 0;
-    task_kappa = 1;
-    break;
-  case 1:
-    task_heatbath = 0;
-    task_kappa = 0;
-    break;
-  default:
-    throw Print_Error_Message("We need 1 or 2 tasks");
-  }
+  if (get_num_tasks() != 2)
+    throw Print_Error_Message("We need 2 tasks");
+
+  if (get_num_devices() != 2)
+    logger.warn() << "Calculation of transport coefficients has not been tested for " << get_num_devices() ;
 
   opencl_modules = new Opencl_Module* [get_num_tasks()];
 

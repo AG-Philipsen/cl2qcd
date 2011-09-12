@@ -23,20 +23,11 @@ void Gaugefield_inverter::init_tasks(){
 	solution_buffer = new spinor [num_sources*get_parameters()->get_spinorfieldsize()];
 	source_buffer = new spinor [num_sources*get_parameters()->get_spinorfieldsize()];
 	
-  switch (get_num_tasks()) {
-  case 2 :
-    task_solver = 0;
-    task_correlator = 1;
-    break;
-  case 1:
-    task_solver = 0;
-    task_correlator = 0;
-    break;
-  default:
-    throw Print_Error_Message("We need exactly 2 tasks");
-  }
+	task_solver = 0;
+	task_correlator = 1;
 
   opencl_modules = new Opencl_Module* [get_num_tasks()];
+
 
   //LZ: right now, each task carries exactly one opencl device -> thus the below allocation with [1]. Could be generalized in future
   opencl_modules[task_solver] = new Opencl_Module_Fermions[1];
