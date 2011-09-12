@@ -15,7 +15,7 @@ void Opencl_Module_Correlator::fill_collect_options(stringstream* collect_option
 	*collect_options << " -DKAPPA=" << kappa_tmp;
 	*collect_options << " -DMKAPPA=" << -kappa_tmp;
 	
-	if(get_parameters()->get_use_poinsource() == true)
+	if(get_parameters()->get_use_pointsource() == true)
 		*collect_options << " -DNUM_SOURCES=" << 12;
 	else
 		*collect_options << " -DNUM_SOURCES=" << get_parameters()->get_num_sources();
