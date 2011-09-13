@@ -31,8 +31,6 @@ void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type, i
 void Gaugefield_hybrid::init_devicetypearray(cl_device_type primary_device_type)
 {
 	//init devicetype array
-	if(get_parameters()->get_use_gpu() == false)
-		logger.warn() << "GPU usage turned off in input parameters. Overruled.";
 
 	//LZ: Note that num_task_types and the input parameter num_dev seem not to fit to each other. However, consider following scenario:
 	//    num_task_types is given to this class and can potentially control whether certain additional tasks are performed or not
@@ -59,6 +57,18 @@ void Gaugefield_hybrid::init_devicetypearray(cl_device_type primary_device_type)
 		}
 	} else {
 		throw Print_Error_Message("3 or more tasks not yet implemented.");
+	}
+
+	logger.debug() << "Wish list for device types:" ;
+	for(int n = 0; n < get_num_tasks(); n++) {
+		switch(devicetypes[n]) {
+			case CL_DEVICE_TYPE_CPU :
+				logger.debug() << "CL_DEVICE_TYPE_CPU" ;
+				break;
+			case CL_DEVICE_TYPE_GPU :
+				logger.debug() << "CL_DEVICE_TYPE_GPU" ;
+				break;
+		}
 	}
 
 	return;
@@ -94,7 +104,7 @@ void Gaugefield_hybrid::init_opencl()
 	cl_uint num_devices_cpu;
 	clerr = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices_gpu);
 	clerr = clGetDeviceIDs(platform, CL_DEVICE_TYPE_CPU, 0, NULL, &num_devices_cpu);
-	logger.info() << "Found " << num_devices_gpu << " GPU(s) and " << num_devices_cpu << " CPU(s).";
+	logger.info() << "\tFound " << num_devices_gpu << " GPU(s) and " << num_devices_cpu << " CPU(s).";
 
 	//LZ: begin debug
 	//    num_devices_gpu = 0;
