@@ -49,7 +49,7 @@ __kernel void correlator_ps_z(__global spinorfield* phi, __global hmc_float * ou
 	int group_id = get_group_id (0);
 
 		//suppose that there are NSPACE threads (one for each entry of the correlator)
-		for(int id_tmp = id_glob; id_tmp < NSPACE; id_tmp += global_size) {
+		for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
 			hmc_float correlator_ps = 0.;
 			int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
 			coord[3] = id_tmp;
