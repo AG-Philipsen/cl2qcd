@@ -43,7 +43,7 @@ __kernel void correlator_ps_z(__global spinorfield* phi, __global hmc_float * ou
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
-	int id_glob = get_global_id(0);
+	int id = get_global_id(0);
 	int loc_idx = get_local_id(0);
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
@@ -71,9 +71,9 @@ __kernel void correlator_ps_z(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
-	//     if(id_glob == 0) {
-	//       for(int id=0; id<NSPACE; id++)
-	//  printf("%i\t(%.12e)\n", id, out[id]);
+	//     if(id == 0) {
+	//       for(int z=0; z<NSPACE; z++)
+	//  printf("%i\t(%.12e)\n", z, out[z]);
 	//     }
 
 }
