@@ -37,9 +37,7 @@ void Gaugefield_hybrid::init_devicetypearray(cl_device_type primary_device_type)
   //    num_dev controls how many devices should be used/are available (so usually CPU and GPU, but possibly also CPU, GPU from different nodes)
   //    here, the different devices can be assigned automatically to the tasks
 	//CP: At the moment, get_num_dev is simply not used, altough it may be in the future...
-	if(get_parameters()->get_num_dev() != 2)
-    logger.warn()<<"Number of devices set to " << get_parameters()->get_num_dev() <<" in input parameters. Overruled: Number of devices must be 2.";
-
+        //LZ: first application of num_dev: if num_dev==1 then we want to use devices of one type (primary_device_type) only
 	
   devicetypes = new cl_device_type[get_num_tasks()];
 	if(get_num_tasks() == 1){
@@ -48,9 +46,15 @@ void Gaugefield_hybrid::init_devicetypearray(cl_device_type primary_device_type)
 	else if (get_num_tasks() == 2){
 		devicetypes[0] = primary_device_type;
 		if(primary_device_type == CL_DEVICE_TYPE_GPU){
-			devicetypes[1] = CL_DEVICE_TYPE_CPU;
+		  if(get_parameters()->get_num_dev() == 1) 		  
+		    devicetypes[1] = CL_DEVICE_TYPE_GPU;
+		  else
+		    devicetypes[1] = CL_DEVICE_TYPE_CPU;
 		} else {
-			devicetypes[1] = CL_DEVICE_TYPE_GPU;
+		  if(get_parameters()->get_num_dev() == 1) 		  
+		    devicetypes[1] = CL_DEVICE_TYPE_CPU;
+		  else
+		    devicetypes[1] = CL_DEVICE_TYPE_GPU;
 		}
 	}
 	else{
@@ -92,7 +96,7 @@ void Gaugefield_hybrid::init_opencl(){
   logger.info() << "Found " << num_devices_gpu << " GPU(s) and " << num_devices_cpu << " CPU(s).";
 
   //LZ: begin debug
-  //  num_devices_gpu = 0;
+  //    num_devices_gpu = 0;
   //  num_devices_cpu = 1;
   //  logger.info() << "Found " << num_devices_gpu << " GPU(s) and " << num_devices_cpu << " CPU(s).";
   // end debug
