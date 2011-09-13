@@ -20,10 +20,7 @@ __kernel void ps_correlator(__global spinorfield* phi){
        for(int timepos = 0; timepos<NTIME; timepos++) {
 	 for(int spacepos = 0; spacepos<VOLSPACE; spacepos++) {
 		//correlator_ps[z] += |phi(n,t)|^2
-		//CP: this is the version for inverter_tmp
-// 	   spinor tmp = phi[get_global_pos(spacepos, timepos) + VOL4D*k];
-		//this is the version for inverter
-		 	   spinor tmp = phi[get_global_pos(spacepos, timepos)];
+ 	   spinor tmp = phi[get_global_pos(spacepos, timepos) + VOL4D*k];
 	   int z = get_spacecoord(spacepos, 3);
 	   correlator_ps[z] += spinor_squarenorm(tmp);
 	 }

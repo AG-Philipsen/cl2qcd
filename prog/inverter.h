@@ -9,7 +9,8 @@
 #include "general_header.h"
 
 //should only be included in main prog
-#include "gaugefield_inversion.h"
+#include "gaugefield_inverter.h"
+#include "gaugefield_hybrid.h"
 string const version = "0.1b";
 
 #endif /* _INVERTERH_ */

@@ -140,34 +140,6 @@ add_executable( inverter
 	host_operations_gaugefield.cpp
 	host_operations_su3matrix.cpp
 	host_operations_matrix.cpp
-	gaugefield.cpp
-	gaugefield_inversion.cpp
-	inputparameters.cpp
-	host_readgauge.cpp
-	opencl.cpp
-	opencl_compiler.cpp
-	opencl_fermions.cpp
-	host_use_timer.cpp
-	host_writegaugefield.cpp
-	logger.cpp
-	exceptions.cpp
-)
-target_link_libraries( inverter
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
-	${Boost_LIBRARIES}
-	klepsydra
-	einhard
-)
-
-add_executable( inverter_tmp
-	inverter_tmp.cpp
-	host_geometry.cpp
-	host_operations_complex.cpp
-	host_operations_gaugefield.cpp
-	host_operations_su3matrix.cpp
-	host_operations_matrix.cpp
 	gaugefield_hybrid.cpp
 	gaugefield_inverter.cpp
 	inputparameters.cpp
@@ -185,7 +157,7 @@ add_executable( inverter_tmp
 	host_random.cpp
 )
 
-target_link_libraries( inverter_tmp
+target_link_libraries( inverter
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}

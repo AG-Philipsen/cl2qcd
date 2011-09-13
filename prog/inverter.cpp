@@ -20,27 +20,48 @@ int main(int argc, char* argv[])
 	  logger.warn() << "Could not log file for inverter.";
 	}
 
+	//get name for file to which correlators are to be stored
+	stringstream corr_fn;
+	switch ( parameters.get_startcondition() ) {
+	case START_FROM_SOURCE :
+	  corr_fn << parameters.sourcefile << "_correlators.dat" ;
+	  break;
+	case HOT_START :
+	  corr_fn << "conf.hot_correlators.dat" ;
+	  break;
+	case COLD_START :
+	  corr_fn << "conf.cold_correlators.dat" ;
+	  break;
+	}
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Initialization
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	init_timer.reset();
-	sourcefileparameters parameters_source;
-	//CP: spinorfield on host for storage while copying between devices...
-	spinorfield host_spinorfield [SPINORFIELDSIZE];
+	Gaugefield_inverter gaugefield;
 
-	Gaugefield_inversion gaugefield;
-	cl_device_type* devicetypes = new cl_device_type[parameters.get_num_dev()];
+	//use 2 devices: one for solver, one for correlator
+	int numtasks = 2;
+	if(parameters.get_num_dev() != 2 )
+	  logger.warn()<<parameters.get_num_dev()<<" devices wanted but this program only works with 2 devices.";
 
-	logger.trace() << "init gaugefield" ;
-	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters);
+	cl_device_type primary_device;
+	switch ( parameters.get_use_gpu() ) {
+	case true : 
+	  primary_device = CL_DEVICE_TYPE_GPU;
+	  break;
+	case false :
+	  primary_device = CL_DEVICE_TYPE_CPU;
+	  break;
+	}
 
-	delete [] devicetypes;
+	logger.trace() << "Init gaugefield" ;
+	gaugefield.init(numtasks, primary_device, &parameters);
 
-	logger.trace()<< "initial gaugeobservables:";
-	gaugefield.print_gaugeobservables(&poly_timer, &plaq_timer);
-	logger.trace() << "copy gaugefield" ;
-	gaugefield.copy_gaugefield_to_devices();
+
+	logger.info()<< "Gaugeobservables:";
+	gaugefield.print_gaugeobservables(0);
 	init_timer.add();
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -50,20 +71,15 @@ int main(int argc, char* argv[])
 	perform_timer.reset();
 	/** @todo usage of solver_timer has to be checked. No output yet */
 	usetimer solver_timer;
-	logger.info() << "perform inversion on device.." ;
-	if(parameters.get_num_dev() == 1) {
-		gaugefield.perform_inversion_pointsource_ps_corr_devices(&solver_timer);
-		/** @todo improve ls, gs, here*/
-		gaugefield.get_devices_fermions()[0].ps_correlator_device(gaugefield.get_devices_fermions()[0].get_clmem_corr());
-	}
-	else{	
-		gaugefield.perform_inversion_pointsource_ps_corr_devices(&solver_timer);
-		gaugefield.get_devices_fermions()[0].get_buffer_from_device(gaugefield.get_devices_fermions()[0].get_clmem_corr(), host_spinorfield, sizeof(spinor)*SPINORFIELDSIZE);		
-		gaugefield.get_devices_fermions()[1].copy_buffer_to_device(host_spinorfield, gaugefield.get_devices_fermions()[0].get_clmem_corr(), sizeof(spinor)*SPINORFIELDSIZE);
-		/** @todo improve ls, gs, here*/
-		gaugefield.get_devices_fermions()[1].ps_correlator_device(gaugefield.get_devices_fermions()[0].get_clmem_corr());
-	}
-	logger.trace() << "inversion done" ;
+
+	logger.info() << "Perform inversion on device.." ;
+
+	gaugefield.create_sources();
+	gaugefield.perform_inversion(&solver_timer);
+	gaugefield.sync_solution_buffer();
+	gaugefield.flavour_doublet_correlators(corr_fn.str());
+
+	logger.trace() << "Inversion done" ;
 	perform_timer.add();
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,12 +87,12 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	total_timer.add();
-	general_time_output(&total_timer, &init_timer, &perform_timer, gaugefield.get_devices_fermions()[0].get_copy_to(), gaugefield.get_devices_fermions()[0].get_copy_on(), &plaq_timer, &poly_timer);
+	//	general_time_output(&total_timer, &init_timer, &perform_timer, gaugefield.get_devices_fermions()[0].get_copy_to(), gaugefield.get_devices_fermions()[0].get_copy_on(), &plaq_timer, &poly_timer);
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+	
 	gaugefield.finalize();
 
   } //try
