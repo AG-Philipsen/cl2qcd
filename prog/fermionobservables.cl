@@ -43,19 +43,16 @@ __kernel void correlator_ps_z(__global spinorfield* phi, __global hmc_float * ou
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
-	int id_glob = get_global_id(0);
+	int id = get_global_id(0);
 	int loc_idx = get_local_id(0);
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
-
-	//LZ: needed for CPU where global_size=1; on GPU we should have global_size=NSPACE and thus this loop has got just one single iteration
-	for(int id = id_glob; id < NSPACE; id += global_size) {
 
 		//suppose that there are NSPACE threads (one for each entry of the correlator)
 		for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
 			hmc_float correlator_ps = 0.;
 			int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
-			coord[3] = id;
+			coord[3] = id_tmp;
 			for(int k = 0; k < NUM_SOURCES; k++) {
 				for(int t = 0; t < NTIME; t++) {
 					for(int x = 0; x < NSPACE; x++) {
@@ -69,14 +66,13 @@ __kernel void correlator_ps_z(__global spinorfield* phi, __global hmc_float * ou
 					}
 				}
 			}
-			out[id] = 4.*KAPPA * KAPPA * correlator_ps;
+			out[id_tmp] = 4.*KAPPA * KAPPA * correlator_ps;
 		}
-	}
 
 	//LZ: print directly to stdout for debugging:
-	//     if(id_glob == 0) {
-	//       for(int id=0; id<NSPACE; id++)
-	//  printf("%i\t(%.12e)\n", id, out[id]);
+	//     if(id == 0) {
+	//       for(int z=0; z<NSPACE; z++)
+	//  printf("%i\t(%.12e)\n", z, out[z]);
 	//     }
 
 }
