@@ -81,16 +81,16 @@ public:
 	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
 
 	void create_point_source_device(cl_mem inout, int i, int spacepos, int timepos);
-	
+
 	void create_stochastic_source_device(cl_mem inout);
-	
-	void ps_correlator_device(cl_mem in);
+
+	void correlator_device(cl_mem in, cl_mem correlator);
 
 	/////////////////////////////////////////////////
 	//functions to get private variables
 	cl_mem get_clmem_corr();
 	cl_mem get_clmem_source();
-	
+
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
 
@@ -105,23 +105,23 @@ public:
 	 * @param in Name of the kernel under consideration.
 	 */
 	virtual usetimer* get_timer(char * in);
-	
+
 	/**
-	 * Return amount of bytes read and written by a specific kernel per call. 
+	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual int get_read_write_size(char * in, inputparameters * parameters);	
-	
+	virtual int get_read_write_size(char * in, inputparameters * parameters);
+
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 * @param parameters inputparameters
 	 */
-	void virtual print_profiling(std::string filename);	
-#endif	
-	
+	void virtual print_profiling(std::string filename);
+#endif
+
 private:
 	////////////////////////////////////
 	//kernels
@@ -130,7 +130,7 @@ private:
 	cl_kernel create_stochastic_source;
 
 	//Observables
-	cl_kernel ps_correlator;
+	cl_kernel correlator_ps_z;
 
 	cl_mem clmem_source;
 
