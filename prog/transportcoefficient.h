@@ -1,9 +1,9 @@
 /** @file
  *
- * Everything required by tk_kappa_hybrid's main()
+ * Everything required by transportcoefficient's main()
  */
-#ifndef _TKKAPPAHYBRIDH_
-#define _TKKAPPAHYBRIDH_
+#ifndef _TRANSPORTCOEFFICIENTH_
+#define _TRANSPORTCOEFFICIENTH_
 
 #include "general_header.h"
 
@@ -14,4 +14,4 @@
 #include "opencl_module.h"
 string const version = "0.1b";
 
-#endif /* _TKKAPPAHYBRIDH_ */
+#endif /* _TRANSPORTCOEFFICIENTH_ */

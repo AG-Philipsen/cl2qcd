@@ -1017,3 +1017,28 @@ string Opencl_Module::get_device_double_extension()
 {
 	return device_double_extension;
 }
+
+void Opencl_Module::print_copy_times(uint64_t totaltime){
+	//copy1 ^= copy_to_from_dev_time
+	//copy2 ^= copy_on_dev_time
+	
+	uint64_t copy2_time = (this->copy_on).getTime();
+	uint64_t copy1_time = (this->copy_to).getTime();
+	
+	int copy1_steps =  (this->copy_to).getNumMeas();
+	int copy2_steps =  (this->copy_on).getNumMeas();
+	
+	uint64_t copy1_avgtime = divide(copy1_time, copy1_steps);
+	uint64_t copy2_avgtime = divide(copy2_time, copy2_steps);
+	
+	logger.trace() << "## *******************************************************************";
+	logger.trace() << "## Copy-Times\t" << setfill(' ') << setw(12) << "total" << '\t' << setw(12) << "avg"<< '\t' << setw(5) << "perc";
+	logger.trace() << "## CpyTo:\t" << setfill(' ') << setw(12) << copy1_time << '\t' << setw(12) << copy1_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(copy1_time, totaltime);
+	logger.trace() << "## CpyOn:\t" << setfill(' ') << setw(12) << copy2_time << '\t' << setw(12) << copy2_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(copy2_time, totaltime);
+	logger.trace() << "## *******************************************************************";
+
+	logger.trace() << "## No output of times to file implemented yet...";
+	/** @todo output to file is not implemented */
+	//See older files for example code
+	return;
+}

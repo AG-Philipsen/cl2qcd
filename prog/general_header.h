@@ -54,7 +54,7 @@ hmc_complex pol;
 
 //output-method for timer above and the copy-timer from (each) device
 ///@todo For hybrid case one will have to add more timer here
-void general_time_output(usetimer * total, usetimer * init_timer, usetimer * perform_timer, usetimer * copy_to_from_dev_timer, usetimer* copy_on_dev_timer, usetimer * plaq_timer, usetimer * poly_timer){
+void general_time_output(usetimer * total, usetimer * init_timer, usetimer * perform_timer, usetimer * plaq_timer, usetimer * poly_timer){
 
 	uint64_t totaltime = (*total).getTime();
 
@@ -63,18 +63,12 @@ void general_time_output(usetimer * total, usetimer * init_timer, usetimer * per
 	
 	uint64_t init_time = (*init_timer).getTime();
 	uint64_t perform_time = (*perform_timer).getTime();
-	uint64_t copy2_time = (*copy_on_dev_timer).getTime();
-	uint64_t copy1_time = (*copy_to_from_dev_timer).getTime();
 	uint64_t plaq_time = (*plaq_timer).getTime();
 	uint64_t poly_time = (*poly_timer).getTime();
 
-	int copy1_steps = (*copy_to_from_dev_timer).getNumMeas();
-	int copy2_steps = (*copy_on_dev_timer).getNumMeas();
 	int plaq_steps = (*plaq_timer).getNumMeas();
 	int poly_steps = (*poly_timer).getNumMeas();
 	
-	uint64_t copy1_avgtime = divide(copy1_time, copy1_steps);
-	uint64_t copy2_avgtime = divide(copy2_time, copy2_steps);
 	uint64_t poly_avgtime = divide(poly_time, poly_steps);
 	uint64_t plaq_avgtime = divide(plaq_time, plaq_steps);
 
@@ -86,9 +80,7 @@ void general_time_output(usetimer * total, usetimer * init_timer, usetimer * per
 	logger.trace() << "## Init.:\t" << setfill(' ') << setw(12) << init_time << '\t'<< fixed << setw(5) << setprecision(1) << percent(init_time, totaltime) ;
 	logger.trace() << "## Perf.:\t" << setfill(' ') << setw(12) << perform_time << '\t'<< fixed << setw(5) << setprecision(1) << percent(perform_time, totaltime) ;
 	logger.trace() << "## *******************************************************************";
-	logger.trace() << "## Other:\t" << setfill(' ') << setw(12) << "total" << '\t' << setw(12) << "avg"<< '\t' << setw(5) << "perc";
-	logger.trace() << "## CpyTo:\t" << setfill(' ') << setw(12) << copy1_time << '\t' << setw(12) << copy1_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(copy1_time, totaltime);
-	logger.trace() << "## CpyOn:\t" << setfill(' ') << setw(12) << copy2_time << '\t' << setw(12) << copy2_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(copy2_time, totaltime);
+	logger.trace() << "## Host-Obs:\t" << setfill(' ') << setw(12) << "total" << '\t' << setw(12) << "avg"<< '\t' << setw(5) << "perc";
 	logger.trace() << "## Plaq.:\t" << setfill(' ') << setw(12) << plaq_time << '\t' << setw(12) << plaq_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(plaq_time, totaltime);
 	logger.trace() << "## Poly.:\t" << setfill(' ') << setw(12) << poly_time << '\t' << setw(12) << poly_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(poly_time, totaltime);
 	logger.trace() << "## *******************************************************************";
