@@ -111,6 +111,7 @@ public:
 	int get_num_sources();
 	int get_source_pos_spatial();
 	int get_source_pos_temporal();
+	int get_corr_dir();
 #ifdef _PROFILING_
 	int get_mat_size();
 	int get_float_size();
@@ -178,7 +179,7 @@ public:
 	 * print info independent of executable using output stream
 	 */
 	void print_info_global(ostream* os);
-	
+
 	/**
 	 *
 	 */
@@ -187,19 +188,19 @@ public:
 	/**
 	 *
 	 */
-	void print_info_fermion(ostream * os);	
-	
+	void print_info_fermion(ostream * os);
+
 	/**
 	 * check inputparameters against compile settings
 	 * NOTE: In the end, this is propably not needed anymore, but for now it is a safety net
 	 */
-	void check_settings_global();	
+	void check_settings_global();
 
 	/**
 	 * set global settings according to inputparameters
 	 */
-	void set_settings_global();		
-	
+	void set_settings_global();
+
 	//CP
 	//this is out of laziness
 	std::string sourcefile;
@@ -225,13 +226,13 @@ private:
 	bool use_smearing;
 	bool print_to_screen;
 	bool use_autotuning;
-	
+
 #ifdef _PROFILING_
 	//parameters that describe the size of datatypes in bytes
 	int mat_size;
-	int float_size;	
+	int float_size;
 #endif
-	
+
 	//more specific ones
 	hmc_float kappa;
 	hmc_float beta;
@@ -268,6 +269,7 @@ private:
 	int pointsource_y;
 	int pointsource_z;
 	int pointsource_t;
+	int corr_dir;
 	void val_assign(hmc_float* out, std::string line);
 	void val_assign(int * out, std::string line);
 	void sourcefilenumber_assign(std::string * out);

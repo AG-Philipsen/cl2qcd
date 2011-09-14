@@ -113,21 +113,39 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 	of.open(corr_fn.c_str(), ios_base::app);
 	if( !of.is_open() ) throw File_Exception(corr_fn);
 	of << "# flavour doublet correlators" << endl;
-	of << "# format: J P z real complex"  << endl;
+	if(get_parameters()->get_corr_dir() == 3) {
+		of << "# format: J P z real complex"  << endl;
+	} else {
+		of << "# format: J P t real complex"  << endl;
+	}
 	of << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), z spatial distance, real part, complex part" << endl;
 
-	size_t buffersize = sizeof(hmc_float) * get_parameters()->get_ns();
+	int num_corr_entries =  0;
+	switch (get_parameters()->get_corr_dir()) {
+		case 0 :
+			num_corr_entries = get_parameters()->get_nt();
+			break;
+		case 3 :
+			num_corr_entries = get_parameters()->get_ns();
+			break;
+		default :
+			stringstream errmsg;
+			errmsg << "Correlator direction " << get_parameters()->get_corr_dir() << " has not been implemented.";
+			throw Print_Error_Message(errmsg.str());
+	}
+
+	size_t buffersize = sizeof(hmc_float) * num_corr_entries;
 	cl_mem result = get_task_correlator()->create_rw_buffer(buffersize);
-	hmc_float* host_result = new hmc_float [get_parameters()->get_ns()];
+	hmc_float* host_result = new hmc_float [num_corr_entries];
 
 	//the pseudo-scalar (J=0, P=1)
 	get_task_correlator()->correlator_device(get_task_correlator()->get_clmem_corr(), result);
 	get_task_correlator()->get_buffer_from_device(result, host_result, buffersize);
 	logger.info() << "pseudo scalar correlator" ;
-	for(int z = 0; z < get_parameters()->get_ns(); z++) {
-		printf("%i\t(%.12e)\n", z, host_result[z]);
-		logger.info() << z << "\t" << scientific << setprecision(14) << host_result[z] << "\t"  << scientific << setprecision(14) << "0" ;
-		of << scientific << setprecision(14) << "0 1\t" << z << "\t" << host_result[z] << "\t0" << endl;
+	for(int j = 0; j < num_corr_entries; j++) {
+		printf("%i\t(%.12e)\n", j, host_result[j]);
+		logger.info() << j << "\t" << scientific << setprecision(14) << host_result[j] << "\t"  << scientific << setprecision(14) << "0" ;
+		of << scientific << setprecision(14) << "0 1\t" << j << "\t" << host_result[j] << "\t0" << endl;
 	}
 
 

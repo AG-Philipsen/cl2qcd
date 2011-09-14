@@ -53,7 +53,19 @@ void Opencl_Module_Correlator::fill_kernels()
 		create_point_source = createKernel("create_point_source") << basic_fermion_code << "spinorfield_point_source.cl";
 	else
 		create_stochastic_source = createKernel("create_stochastic_source") << basic_fermion_code << "spinorfield_stochastic_source.cl";
-	correlator_ps_z = createKernel("correlator_ps_z") << basic_fermion_code << "fermionobservables.cl";
+
+	switch (get_parameters()->get_corr_dir()) {
+		case 0 :
+			correlator_ps = createKernel("correlator_ps_t") << basic_fermion_code << "fermionobservables.cl";
+			break;
+		case 3 :
+			correlator_ps = createKernel("correlator_ps_z") << basic_fermion_code << "fermionobservables.cl";
+			break;
+		default:
+			stringstream errmsg;
+			errmsg << "Could not create correlator kernel as correlator direction " << get_parameters()->get_corr_dir() << " has not been implemented.";
+			throw Print_Error_Message(errmsg.str());
+	}
 
 	return;
 }
@@ -61,7 +73,7 @@ void Opencl_Module_Correlator::fill_kernels()
 void Opencl_Module_Correlator::clear_kernels()
 {
 	Opencl_Module_Spinors::clear_kernels();
-	int clerr = clReleaseKernel(correlator_ps_z);
+	int clerr = clReleaseKernel(correlator_ps);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(create_point_source);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -85,7 +97,7 @@ void Opencl_Module_Correlator::get_work_sizes(const cl_kernel kernel, cl_device_
 	Opencl_Module_Spinors::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
 
 	string kernelname = get_kernel_name(kernel);
-	if( kernelname.compare("correlator_ps_z") == 0) {
+	if( kernelname.compare("correlator_ps_z") == 0 && kernelname.compare("correlator_ps_t")) {
 		if(dev_type == CL_DEVICE_TYPE_GPU) {
 			*ls = get_parameters()->get_ns();
 			*gs = *ls;
@@ -153,14 +165,14 @@ void Opencl_Module_Correlator::correlator_device(cl_mem in, cl_mem correlator)
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(correlator_ps_z, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(correlator_ps, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(correlator_ps_z, 0, sizeof(cl_mem), &in);
+	int clerr = clSetKernelArg(correlator_ps, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(correlator_ps_z, 1, sizeof(cl_mem), &correlator);
+	clerr = clSetKernelArg(correlator_ps, 1, sizeof(cl_mem), &correlator);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(correlator_ps_z , gs2, ls2);
+	enqueueKernel(correlator_ps , gs2, ls2);
 }
 
 #ifdef _PROFILING_
@@ -177,6 +189,9 @@ usetimer* Opencl_Module_Correlator::get_timer(char * in)
 		return &this->timer_create_stochastic_source;
 	}
 	if (strcmp(in, "correlator_ps_z") == 0) {
+		return &this->timer_ps_correlator;
+	}
+	if (strcmp(in, "correlator_ps_t") == 0) {
 		return &this->timer_ps_correlator;
 	}
 
@@ -207,6 +222,9 @@ int Opencl_Module_Correlator::get_read_write_size(char * in, inputparameters * p
 	if (strcmp(in, "correlator_ps_z") == 0) {
 		return 1000000000000000000000000;
 	}
+	if (strcmp(in, "correlator_ps_t") == 0) {
+		return 1000000000000000000000000;
+	}
 	return 0;
 }
 
@@ -218,8 +236,15 @@ void Opencl_Module_Correlator::print_profiling(std::string filename)
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "create_stochastic_source";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
-	kernelName = "correlator_ps_z";
-	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	if( get_parameters()->get_corr_dir() == 3 ) {
+		kernelName = "correlator_ps_z";
+		Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	}
+	if( get_parameters()->get_corr_dir() == 0 ) {
+		kernelName = "correlator_ps_t";
+		Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	}
+
 
 }
 #endif

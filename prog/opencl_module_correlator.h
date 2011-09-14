@@ -130,7 +130,7 @@ private:
 	cl_kernel create_stochastic_source;
 
 	//Observables
-	cl_kernel correlator_ps_z;
+	cl_kernel correlator_ps;
 
 	cl_mem clmem_source;
 
