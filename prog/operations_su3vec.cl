@@ -83,35 +83,35 @@ su3vec su3matrix_times_su3vec(Matrixsu3 u, su3vec in){
 	hmc_float u_e22_im = reconstruct_su3(u, 2).im;
 	
 	tmp.e0.re = u.e00.re*in.e0.re + u.e01.re * in.e1.re + u.e02.re * in.e2.re
-		  - u.e00.im*in.e0.im - u.e01.im * in.e1.im - u.e02.im * in.e2.im;
-	tmp.e0.im = u.e00.re*in.e0.im + u.e01.re * in.e1.im + u.e02.re * in.e2.im;
-		  + u.e00.im*in.e0.re + u.e01.im * in.e1.re + u.e02.im * in.e2.re;
+		  			- u.e00.im*in.e0.im - u.e01.im * in.e1.im - u.e02.im * in.e2.im;
+	tmp.e0.im = u.e00.re*in.e0.im + u.e01.re * in.e1.im + u.e02.re * in.e2.im
+		  			+ u.e00.im*in.e0.re + u.e01.im * in.e1.re + u.e02.im * in.e2.re;
 
 	tmp.e1.re = u.e10.re*in.e0.re + u.e11.re * in.e1.re + u.e12.re * in.e2.re
-		  - u.e10.im*in.e0.im - u.e11.im * in.e1.im - u.e12.im * in.e2.im;
-	tmp.e1.im = u.e10.re*in.e0.im + u.e11.re * in.e1.im + u.e12.re * in.e2.im;
-		  + u.e10.im*in.e0.re + u.e11.im * in.e1.re + u.e12.im * in.e2.re;
+		  			- u.e10.im*in.e0.im - u.e11.im * in.e1.im - u.e12.im * in.e2.im;
+	tmp.e1.im = u.e10.re*in.e0.im + u.e11.re * in.e1.im + u.e12.re * in.e2.im
+		  			+ u.e10.im*in.e0.re + u.e11.im * in.e1.re + u.e12.im * in.e2.re;
 
 	tmp.e2.re = u_e20_re*in.e0.re + u_e21_re * in.e1.re + u_e22_re * in.e2.re
-		  - u_e20_im*in.e0.im - u_e21_im * in.e1.im - u_e22_im * in.e2.im;
-	tmp.e2.im = u_e20_re*in.e0.im + u_e21_re * in.e1.im + u_e22_re * in.e2.im;
-		  + u_e20_im*in.e0.re + u_e21_im * in.e1.re + u_e22_im * in.e2.re;
+		  			- u_e20_im*in.e0.im - u_e21_im * in.e1.im - u_e22_im * in.e2.im;
+	tmp.e2.im = u_e20_re*in.e0.im + u_e21_re * in.e1.im + u_e22_re * in.e2.im
+		  			+ u_e20_im*in.e0.re + u_e21_im * in.e1.re + u_e22_im * in.e2.re;
 
 	#else
 	tmp.e0.re = u.e00.re*in.e0.re + u.e01.re * in.e1.re + u.e02.re * in.e2.re
-		  - u.e00.im*in.e0.im - u.e01.im * in.e1.im - u.e02.im * in.e2.im;
-	tmp.e0.im = u.e00.re*in.e0.im + u.e01.re * in.e1.im + u.e02.re * in.e2.im;
-		  + u.e00.im*in.e0.re + u.e01.im * in.e1.re + u.e02.im * in.e2.re;
+		  			- u.e00.im*in.e0.im - u.e01.im * in.e1.im - u.e02.im * in.e2.im;
+	tmp.e0.im = u.e00.re*in.e0.im + u.e01.re * in.e1.im + u.e02.re * in.e2.im
+		  			+ u.e00.im*in.e0.re + u.e01.im * in.e1.re + u.e02.im * in.e2.re;
 
 	tmp.e1.re = u.e10.re*in.e0.re + u.e11.re * in.e1.re + u.e12.re * in.e2.re
-		  - u.e10.im*in.e0.im - u.e11.im * in.e1.im - u.e12.im * in.e2.im;
-	tmp.e1.im = u.e10.re*in.e0.im + u.e11.re * in.e1.im + u.e12.re * in.e2.im;
-		  + u.e10.im*in.e0.re + u.e11.im * in.e1.re + u.e12.im * in.e2.re;
+		  			- u.e10.im*in.e0.im - u.e11.im * in.e1.im - u.e12.im * in.e2.im;
+	tmp.e1.im = u.e10.re*in.e0.im + u.e11.re * in.e1.im + u.e12.re * in.e2.im
+		  			+ u.e10.im*in.e0.re + u.e11.im * in.e1.re + u.e12.im * in.e2.re;
 
 	tmp.e2.re = u.e20.re*in.e0.re + u.e21.re * in.e1.re + u.e22.re * in.e2.re
-		  - u.e20.im*in.e0.im - u.e21.im * in.e1.im - u.e22.im * in.e2.im;
-	tmp.e2.im = u.e20.re*in.e0.im + u.e21.re * in.e1.im + u.e22.re * in.e2.im;
-		  + u.e20.im*in.e0.re + u.e21.im * in.e1.re + u.e22.im * in.e2.re;
+		  			- u.e20.im*in.e0.im - u.e21.im * in.e1.im - u.e22.im * in.e2.im;
+	tmp.e2.im = u.e20.re*in.e0.im + u.e21.re * in.e1.im + u.e22.re * in.e2.im
+		  			+ u.e20.im*in.e0.re + u.e21.im * in.e1.re + u.e22.im * in.e2.re;
 
 	#endif
 	return tmp;
@@ -129,34 +129,34 @@ su3vec su3matrix_dagger_times_su3vec(Matrixsu3 u, su3vec in){
 	
 	tmp.e0.re = u.e00.re*in.e0.re + u.e10.re * in.e1.re + u_e20_re * in.e2.re
 		  + u.e00.im*in.e0.im + u.e10.im * in.e1.im + u_e20_im * in.e2.im;
-	tmp.e0.im = u.e00.re*in.e0.im + u.e10.re * in.e1.im + u_e20_re * in.e2.im;
+	tmp.e0.im = u.e00.re*in.e0.im + u.e10.re * in.e1.im + u_e20_re * in.e2.im
 		  - u.e00.im*in.e0.re - u.e10.im * in.e1.re - u_e20_im * in.e2.re;
 
 	tmp.e1.re = u.e01.re*in.e0.re + u.e11.re * in.e1.re + u_e21_re * in.e2.re
 		  + u.e01.im*in.e0.im + u.e11.im * in.e1.im + u_e21_im * in.e2.im;
-	tmp.e1.im = u.e01.re*in.e0.im + u.e11.re * in.e1.im + u_e21_re * in.e2.im;
+	tmp.e1.im = u.e01.re*in.e0.im + u.e11.re * in.e1.im + u_e21_re * in.e2.im
 		  - u.e01.im*in.e0.re - u.e11.im * in.e1.re - u_e21_im * in.e2.re;
 
 	tmp.e2.re = u.e02.re*in.e0.re + u.e12.re * in.e1.re + u_e22_re * in.e2.re
 		  + u.e02.im*in.e0.im + u.e12.im * in.e1.im + u_e22_im * in.e2.im;
-	tmp.e2.im = u.e02.re*in.e0.im + u.e12.re * in.e1.im + u_e22_re * in.e2.im;
+	tmp.e2.im = u.e02.re*in.e0.im + u.e12.re * in.e1.im + u_e22_re * in.e2.im
 		  - u.e02.im*in.e0.re - u.e12.im * in.e1.re - u_e22_im * in.e2.re;
 
 	#else
 	tmp.e0.re = u.e00.re*in.e0.re + u.e10.re * in.e1.re + u.e20.re * in.e2.re
-		  + u.e00.im*in.e0.im + u.e10.im * in.e1.im + u.e20.im * in.e2.im;
-	tmp.e0.im = u.e00.re*in.e0.im + u.e10.re * in.e1.im + u.e20.re * in.e2.im;
-		  - u.e00.im*in.e0.re - u.e10.im * in.e1.re - u.e20.im * in.e2.re;
+		  			+ u.e00.im*in.e0.im + u.e10.im * in.e1.im + u.e20.im * in.e2.im;
+	tmp.e0.im = u.e00.re*in.e0.im + u.e10.re * in.e1.im + u.e20.re * in.e2.im
+		 				- u.e00.im*in.e0.re - u.e10.im * in.e1.re - u.e20.im * in.e2.re;
 
 	tmp.e1.re = u.e01.re*in.e0.re + u.e11.re * in.e1.re + u.e21.re * in.e2.re
-		  + u.e01.im*in.e0.im + u.e11.im * in.e1.im + u.e21.im * in.e2.im;
-	tmp.e1.im = u.e01.re*in.e0.im + u.e11.re * in.e1.im + u.e21.re * in.e2.im;
-		  - u.e01.im*in.e0.re - u.e11.im * in.e1.re - u.e21.im * in.e2.re;
+		  			+ u.e01.im*in.e0.im + u.e11.im * in.e1.im + u.e21.im * in.e2.im;
+	tmp.e1.im = u.e01.re*in.e0.im + u.e11.re * in.e1.im + u.e21.re * in.e2.im
+		  			- u.e01.im*in.e0.re - u.e11.im * in.e1.re - u.e21.im * in.e2.re;
 
 	tmp.e2.re = u.e02.re*in.e0.re + u.e12.re * in.e1.re + u.e22.re * in.e2.re
-		  + u.e02.im*in.e0.im + u.e12.im * in.e1.im + u.e22.im * in.e2.im;
-	tmp.e2.im = u.e02.re*in.e0.im + u.e12.re * in.e1.im + u.e22.re * in.e2.im;
-		  - u.e02.im*in.e0.re - u.e12.im * in.e1.re - u.e22.im * in.e2.re;
+		  			+ u.e02.im*in.e0.im + u.e12.im * in.e1.im + u.e22.im * in.e2.im;
+	tmp.e2.im = u.e02.re*in.e0.im + u.e12.re * in.e1.im + u.e22.re * in.e2.im
+		  			- u.e02.im*in.e0.re - u.e12.im * in.e1.re - u.e22.im * in.e2.re;
 
 	#endif
 
@@ -164,8 +164,6 @@ su3vec su3matrix_dagger_times_su3vec(Matrixsu3 u, su3vec in){
 	return tmp;
 }
 
-
-//call: phi = su3vec_times_minusone(phi);
 su3vec su3vec_times_minusone(su3vec in){
 	su3vec tmp;
 	tmp.e0.re = -(in).e0.re;

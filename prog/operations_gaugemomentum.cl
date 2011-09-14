@@ -2,7 +2,10 @@
  * @file operations on algebraelements
  */
 
-/** @todo this can propably be defined with a minus...*/
+void print_ae(ae in){
+     printf("%f, %f, %f, %f, %f, %f, %f, %f\n", in.e0, in.e1, in.e2, in.e3, in.e4, in.e5, in.e6, in.e7);
+}
+
 ae acc_factor_times_algebraelement(ae in, hmc_float factor, ae force_in)
 {
 	ae tmp;
@@ -17,6 +20,20 @@ ae acc_factor_times_algebraelement(ae in, hmc_float factor, ae force_in)
 	return tmp;
 }
 
+ae acc_algebraelement(ae in, ae force_in)
+{
+	ae tmp;
+	tmp.e0 = in.e0 + force_in.e0;
+	tmp.e1 = in.e1 + force_in.e1;
+	tmp.e2 = in.e2 + force_in.e2;
+	tmp.e3 = in.e3 + force_in.e3;
+	tmp.e4 = in.e4 + force_in.e4;
+	tmp.e5 = in.e5 + force_in.e5;
+	tmp.e6 = in.e6 + force_in.e6;
+	tmp.e7 = in.e7 + force_in.e7;
+	return tmp;
+}
+
 void update_gaugemomentum(ae in, hmc_float factor, int global_link_pos, __global ae * out)
 {
 	ae tmp = out[global_link_pos];
@@ -25,7 +42,6 @@ void update_gaugemomentum(ae in, hmc_float factor, int global_link_pos, __global
 }
 
 //calculates the trace of i times generator times 3x3-matrix and stores this in a su3-algebraelement
-//now using structs
 ae tr_lambda_u(Matrix3x3 in)
 {
 	ae tmp;

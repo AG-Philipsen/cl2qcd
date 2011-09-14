@@ -85,6 +85,21 @@ Matrix3x3 multiply_matrix3x3_by_real (Matrix3x3 in, hmc_float factor){
     return out;
 }
 
+Matrix3x3 multiply_matrix3x3_by_complex (Matrix3x3 in, hmc_complex factor){
+    Matrix3x3 out;
+		
+		out.e00 = complexmult(in.e00, factor);
+		out.e01 = complexmult(in.e01, factor);
+		out.e02 = complexmult(in.e02, factor);
+		out.e10 = complexmult(in.e10, factor);
+		out.e11 = complexmult(in.e11, factor);
+		out.e12 = complexmult(in.e12, factor);
+		out.e20 = complexmult(in.e20, factor);
+		out.e21 = complexmult(in.e21, factor);
+		out.e22 = complexmult(in.e22, factor);
+
+    return out;
+}
 
 Matrix3x3 multiply_matrix3x3 (const Matrix3x3 p, const Matrix3x3 q)
 {
