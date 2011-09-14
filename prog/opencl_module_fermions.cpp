@@ -190,11 +190,7 @@ void Opencl_Module_Fermions::fill_kernels()
 		}
 		dslash_eoprec = createKernel("dslash_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 		gamma5_eoprec = createKernel("gamma5_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
-
-
 	}
-
-
 	return;
 }
 
@@ -332,7 +328,7 @@ void Opencl_Module_Fermions::Qplus(cl_mem in, cl_mem out, cl_mem gf){
 	else if(get_parameters()->get_fermact() == TWISTEDMASS){
 		M_tm_plus_device(in, out, gf);
 	}
-// 	gamma5_device(out);
+	gamma5_device(out);
 }
 
 void Opencl_Module_Fermions::Qminus(cl_mem in, cl_mem out, cl_mem gf){
