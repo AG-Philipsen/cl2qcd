@@ -284,14 +284,14 @@ public:
 	 * @param[in] gf pure array
 	 * @param[out] sgf array of structs
 	 */
-	void copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_gaugefield * gf);
+	void copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_complex * gf);
 
 	/**
 	 * Copies the gaugefield from structure array format to pure array format
 	 * @param[in] sgf array of structs
 	 * @param[out] gf pure array
 	 */
-	void copy_s_gaugefield_to_gaugefield (hmc_gaugefield * gf, s_gaugefield * sgfo);
+	void copy_s_gaugefield_to_gaugefield (hmc_complex * gf, s_gaugefield * sgfo);
 
 	/**
 	 * Initializing the gaugefield consisting of structs for a hot start
@@ -325,7 +325,13 @@ public:
 	usetimer * get_copy_to();
 	usetimer * get_copy_on();
 
+protected:
+
+	size_t get_num_hmc_gaugefield_elems();
+
 private:
+
+
 	Opencl ** devices;
 	inputparameters* parameters;
 	s_gaugefield * sgf;

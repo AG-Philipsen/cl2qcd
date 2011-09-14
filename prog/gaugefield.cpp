@@ -94,7 +94,7 @@ void Gaugefield::init_gaugefield()
 	sourcefileparameters parameters_source;
 	if((get_parameters())->get_startcondition() == START_FROM_SOURCE) {
 		//hmc_gaugefield for filetransfer, initialize here, because otherwise it is not needed
-		hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+		hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
 		//tmp gauge field
 		hmc_float * gaugefield_tmp;
 		gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * NTIME * VOLSPACE);
@@ -102,7 +102,7 @@ void Gaugefield::init_gaugefield()
 		copy_gaugefield_from_ildg_format(gftmp, gaugefield_tmp, parameters_source.num_entries_source);
 		copy_gaugefield_to_s_gaugefield (get_sgf(), gftmp);
 		free(gaugefield_tmp);
-		free(gftmp);
+		delete[] gftmp;
 	}
 	if(get_parameters()->get_startcondition() == COLD_START) {
 		set_gaugefield_cold_new(get_sgf());
@@ -114,59 +114,62 @@ void Gaugefield::init_gaugefield()
 	return;
 }
 
-void Gaugefield::copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_gaugefield * gf)
+void Gaugefield::copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_complex * gf)
 {
 	for (int d = 0; d < NDIM; d++) {
 		for (int n = 0; n < VOLSPACE; n++) {
 			for (int t = 0; t < NTIME; t++) {
+				hmc_su3matrix tmp;
+				get_su3matrix(&tmp, gf, n, t, d);
 #ifdef _RECONSTRUCT_TWELVE_
-				(*sgfo)[d][n][t].e00 = (*gf) [0][d][n][t];
-				(*sgfo)[d][n][t].e01 = (*gf) [2][d][n][t];
-				(*sgfo)[d][n][t].e02 = (*gf) [4][d][n][t];
-				(*sgfo)[d][n][t].e10 = (*gf) [1][d][n][t];
-				(*sgfo)[d][n][t].e11 = (*gf) [3][d][n][t];
-				(*sgfo)[d][n][t].e12 = (*gf) [5][d][n][t];
+				(*sgfo)[d][n][t].e00 = tmp[0];
+				(*sgfo)[d][n][t].e01 = tmp[2];
+				(*sgfo)[d][n][t].e02 = tmp[4];
+				(*sgfo)[d][n][t].e10 = tmp[1];
+				(*sgfo)[d][n][t].e11 = tmp[3];
+				(*sgfo)[d][n][t].e12 = tmp[5];
 #else
-				(*sgfo)[d][n][t].e00 = (*gf)[0][0][d][n][t];
-				(*sgfo)[d][n][t].e01 = (*gf) [0][1][d][n][t];
-				(*sgfo)[d][n][t].e02 = (*gf) [0][2][d][n][t];
-				(*sgfo)[d][n][t].e10 = (*gf) [1][0][d][n][t];
-				(*sgfo)[d][n][t].e11 = (*gf) [1][1][d][n][t];
-				(*sgfo)[d][n][t].e12 = (*gf) [1][2][d][n][t];
-				(*sgfo)[d][n][t].e20 = (*gf) [2][0][d][n][t];
-				(*sgfo)[d][n][t].e21 = (*gf) [2][1][d][n][t];
-				(*sgfo)[d][n][t].e22 = (*gf) [2][2][d][n][t];
+				(*sgfo)[d][n][t].e00 = tmp[0][0];
+				(*sgfo)[d][n][t].e01 = tmp[0][1];
+				(*sgfo)[d][n][t].e02 = tmp[0][2];
+				(*sgfo)[d][n][t].e10 = tmp[1][0];
+				(*sgfo)[d][n][t].e11 = tmp[1][1];
+				(*sgfo)[d][n][t].e12 = tmp[1][2];
+				(*sgfo)[d][n][t].e20 = tmp[2][0];
+				(*sgfo)[d][n][t].e21 = tmp[2][1];
+				(*sgfo)[d][n][t].e22 = tmp[2][2];
 #endif
-
 			}
 		}
 	}
 	return;
 }
 
-void Gaugefield::copy_s_gaugefield_to_gaugefield(hmc_gaugefield * gf, s_gaugefield * sgfo)
+void Gaugefield::copy_s_gaugefield_to_gaugefield(hmc_complex * gf, s_gaugefield * sgfo)
 {
 	for (int d = 0; d < NDIM; d++) {
 		for (int n = 0; n < VOLSPACE; n++) {
 			for (int t = 0; t < NTIME; t++) {
+				hmc_su3matrix tmp;
 #ifdef _RECONSTRUCT_TWELVE_
-				(*gf) [0][d][n][t] = (*sgfo)[d][n][t].e00;
-				(*gf) [2][d][n][t] = (*sgfo)[d][n][t].e01;
-				(*gf) [4][d][n][t] = (*sgfo)[d][n][t].e02;
-				(*gf) [1][d][n][t] = (*sgfo)[d][n][t].e10;
-				(*gf) [3][d][n][t] = (*sgfo)[d][n][t].e11;
-				(*gf) [5][d][n][t] = (*sgfo)[d][n][t].e12;
+				tmp[0] = (*sgfo)[d][n][t].e00;
+				tmp[2] = (*sgfo)[d][n][t].e01;
+				tmp[4] = (*sgfo)[d][n][t].e02;
+				tmp[1] = (*sgfo)[d][n][t].e10;
+				tmp[3] = (*sgfo)[d][n][t].e11;
+				tmp[5] = (*sgfo)[d][n][t].e12;
 #else
-				(*gf)[0][0][d][n][t] = (*sgfo)[d][n][t].e00;
-				(*gf)[0][1][d][n][t] = (*sgfo)[d][n][t].e01;
-				(*gf)[0][2][d][n][t] = (*sgfo)[d][n][t].e02;
-				(*gf)[1][0][d][n][t] = (*sgfo)[d][n][t].e10;
-				(*gf)[1][1][d][n][t] = (*sgfo)[d][n][t].e11;
-				(*gf)[1][2][d][n][t] = (*sgfo)[d][n][t].e12;
-				(*gf)[2][0][d][n][t] = (*sgfo)[d][n][t].e20;
-				(*gf)[2][1][d][n][t] = (*sgfo)[d][n][t].e21;
-				(*gf)[2][2][d][n][t] = (*sgfo)[d][n][t].e22;
+				tmp[0][0] = (*sgfo)[d][n][t].e00;
+				tmp[0][1] = (*sgfo)[d][n][t].e01;
+				tmp[0][2] = (*sgfo)[d][n][t].e02;
+				tmp[1][0] = (*sgfo)[d][n][t].e10;
+				tmp[1][1] = (*sgfo)[d][n][t].e11;
+				tmp[1][2] = (*sgfo)[d][n][t].e12;
+				tmp[2][0] = (*sgfo)[d][n][t].e20;
+				tmp[2][1] = (*sgfo)[d][n][t].e21;
+				tmp[2][2] = (*sgfo)[d][n][t].e22;
 #endif
+				put_su3matrix(gf, &tmp, n, t, d);
 			}
 		}
 	}
@@ -277,7 +280,7 @@ void Gaugefield::save(int number)
 	outfilename << "conf." << strnumber.str();
 	string outputfile = outfilename.str();
 
-	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
 	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
 	copy_gaugefield_to_ildg_format(gaugefield_buf, gftmp);
 
@@ -286,7 +289,7 @@ void Gaugefield::save(int number)
 	write_gaugefield ( gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NTIME, get_parameters()->get_prec(), number, plaq, get_parameters()->get_beta(), get_parameters()->get_kappa(), get_parameters()->get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
 
 	delete[] gaugefield_buf;
-	free(gftmp);
+	delete[] gftmp;
 
 	return;
 }
@@ -433,8 +436,7 @@ hmc_float Gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 	//LZ: for now it works because I have inserted the copy_to/from routines...
 	//LZ: eventually, someone should implement the "structured operations" for the host
 
-
-	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
 	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
 
 
@@ -456,7 +458,7 @@ hmc_float Gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 		}
 	}
 
-	free(gftmp);
+	delete[] gftmp;
 
 	*tplaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1));
 	*splaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
@@ -467,7 +469,7 @@ hmc_float Gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 hmc_complex Gaugefield::polyakov()
 {
 
-	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
 	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
 
 	hmc_complex res;
@@ -480,7 +482,7 @@ hmc_complex Gaugefield::polyakov()
 		complexaccumulate(&res, &tmpcomplex);
 	}
 
-	free(gftmp);
+	delete[] gftmp;
 
 	res.re /= static_cast<hmc_float>(NC * VOLSPACE);
 	res.im /= static_cast<hmc_float>(NC * VOLSPACE);
@@ -491,7 +493,7 @@ hmc_complex Gaugefield::polyakov()
 hmc_complex Gaugefield::spatial_polyakov(int dir)
 {
 
-	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
 	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
 
 	//assuming dir=1,2, or 3
@@ -522,7 +524,7 @@ hmc_complex Gaugefield::spatial_polyakov(int dir)
 		}
 	}
 
-	free(gftmp);
+	delete[] gftmp;
 
 	res.re /= static_cast<hmc_float>(NC * NSPACE * NSPACE * NTIME);
 	res.im /= static_cast<hmc_float>(NC * NSPACE * NSPACE * NTIME);
@@ -659,4 +661,12 @@ usetimer * Gaugefield::get_copy_on()
 usetimer * Gaugefield::get_copy_to()
 {
 	return &copy_to;
+}
+
+size_t Gaugefield::get_num_hmc_gaugefield_elems() {
+#ifdef _RECONSTRUCT_TWELVE_
+	return NC*(NC-1) * NDIM * VOLSPACE * NTIME;
+#else
+	return NC*NC * NDIM * VOLSPACE * NTIME;
+#endif
 }

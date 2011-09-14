@@ -24,7 +24,7 @@ void copy_from_ocl_format(s_gaugefield* gaugefield, ocl_s_gaugefield* host_gauge
 	return;
 }
 
-void set_gaugefield_cold(hmc_gaugefield * field)
+void set_gaugefield_cold(hmc_complex * field)
 {
 	for(int t = 0; t < NTIME; t++) {
 		for(int n = 0; n < VOLSPACE; n++) {
@@ -38,7 +38,7 @@ void set_gaugefield_cold(hmc_gaugefield * field)
 	return;
 }
 
-void set_gaugefield_hot(hmc_gaugefield * field)
+void set_gaugefield_hot(hmc_complex * field)
 {
 	for(int t = 0; t < NTIME; t++) {
 		for(int n = 0; n < VOLSPACE; n++) {
@@ -52,7 +52,7 @@ void set_gaugefield_hot(hmc_gaugefield * field)
 	return;
 }
 
-void copy_gaugefield_from_ildg_format(hmc_gaugefield * gaugefield, hmc_float * gaugefield_tmp, int check)
+void copy_gaugefield_from_ildg_format(hmc_complex * gaugefield, hmc_float * gaugefield_tmp, int check)
 {
 	//little check if arrays are big enough
 	if (VOL4D*NDIM*NC*NC * 2 != check) {
@@ -71,6 +71,7 @@ void copy_gaugefield_from_ildg_format(hmc_gaugefield * gaugefield, hmc_float * g
 					for (int l = 0; l < NDIM; l++) {
 						int spacepos = k + j * NSPACE + i * NSPACE * NSPACE;
 						int globalpos = l + spacepos * NDIM + t * VOLSPACE * NDIM;
+						hmc_su3matrix tmp;
 #ifdef _RECONSTRUCT_TWELVE_
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
@@ -80,8 +81,8 @@ void copy_gaugefield_from_ildg_format(hmc_gaugefield * gaugefield, hmc_float * g
 								//skip NC*NC*2 cmplx numbers
 								int pos = 2 * n + 2 * m * NC + globalpos * NC * NC * 2;
 								if(m < NC - 1) {
-									(*gaugefield)[ncindex][(l+1)%NDIM][spacepos][t].re = gaugefield_tmp[pos];
-									(*gaugefield)[ncindex][(l+1)%NDIM][spacepos][t].im = gaugefield_tmp[pos + 1];
+									tmp[ncindex].re = gaugefield_tmp[pos];
+									tmp[ncindex].im = gaugefield_tmp[pos + 1];
 								}
 								cter++;
 							}
@@ -93,12 +94,13 @@ void copy_gaugefield_from_ildg_format(hmc_gaugefield * gaugefield, hmc_float * g
 								//which is stored in one single array here
 								//skip NC*NC*2 cmplx numbers
 								int pos = 2 * n + 2 * m * NC + globalpos * NC * NC * 2;
-								(*gaugefield)[m][n][(l+1)%NDIM][spacepos][t].re = gaugefield_tmp[pos];
-								(*gaugefield)[m][n][(l+1)%NDIM][spacepos][t].im = gaugefield_tmp[pos + 1];
+								tmp[m][n].re = gaugefield_tmp[pos];
+								tmp[m][n].im = gaugefield_tmp[pos + 1];
 								cter++;
 							}
 						}
 #endif
+						put_su3matrix(gaugefield, &tmp, spacepos, t, (l + 1) % NDIM);
 					}
 				}
 			}
@@ -114,7 +116,7 @@ void copy_gaugefield_from_ildg_format(hmc_gaugefield * gaugefield, hmc_float * g
 	return;
 }
 
-void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_gaugefield * source)
+void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_complex * source)
 {
 
 	int cter = 0;
@@ -127,6 +129,8 @@ void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_gaugefield * source)
 					for (int l = 0; l < NDIM; l++) {
 						int spacepos = k + j * NSPACE + i * NSPACE * NSPACE;
 						int globalpos = l + spacepos * NDIM + t * VOLSPACE * NDIM;
+						hmc_su3matrix tmp;
+						get_su3matrix(&tmp, source, spacepos, t, (l + 1) % NDIM);
 #ifdef _RECONSTRUCT_TWELVE_
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
@@ -139,15 +143,13 @@ void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_gaugefield * source)
 								if(m < NC - 1) {
 
 
-									dest[pos]     = (*source)[ncindex][(l+1)%NDIM][spacepos][t].re;
-									dest[pos + 1] = (*source)[ncindex][(l+1)%NDIM][spacepos][t].im;
+									dest[pos]     = tmp[ncindex].re;
+									dest[pos + 1] = tmp[ncindex].im;
 								}
 								if (m == NC - 1) {
-									hmc_su3matrix tmpsu3;
-									get_su3matrix(&tmpsu3, source, spacepos, t, (l + 1) % NDIM);
-									hmc_complex tmp = reconstruct_su3 (&tmpsu3, n);
-									dest[pos]     = tmp.re;
-									dest[pos + 1] = tmp.im;
+									hmc_complex tmpc = reconstruct_su3 (&tmp, n);
+									dest[pos]     = tmpc.re;
+									dest[pos + 1] = tmpc.im;
 								}
 
 								cter++;
@@ -160,8 +162,8 @@ void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_gaugefield * source)
 								//which is stored in one single array here
 								//skip NC*NC*2 cmplx numbers
 								int pos = 2 * n + 2 * m * NC + globalpos * NC * NC * 2;
-								dest[pos]     = ((*source)[m][n][(l+1)%NDIM][spacepos][t]).re;
-								dest[pos + 1] = ((*source)[m][n][(l+1)%NDIM][spacepos][t]).im;
+								dest[pos]     = tmp[m][n].re;
+								dest[pos + 1] = tmp[m][n].im;
 								cter++;
 							}
 						}
@@ -175,7 +177,7 @@ void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_gaugefield * source)
 	return;
 }
 
-hmc_complex global_trace_su3(hmc_gaugefield * field, int mu)
+hmc_complex global_trace_su3(hmc_complex * field, int mu)
 {
 	hmc_complex sum;
 	sum.re = 0;
@@ -194,35 +196,36 @@ hmc_complex global_trace_su3(hmc_gaugefield * field, int mu)
 
 
 
-void get_su3matrix(hmc_su3matrix * out, hmc_gaugefield * in, int spacepos, int timepos, int mu)
+void get_su3matrix(hmc_su3matrix * out, hmc_complex * in, int spacepos, int timepos, int mu)
 {
 #ifdef _RECONSTRUCT_TWELVE_
-	for(int n = 0; n < NC*(NC - 1); n++) (*out)[n] = (*in)[n][mu][spacepos][timepos];
+	for(int n = 0; n < NC*(NC - 1); n++) (*out)[n] = in[get_hmc_gaugefield_index(n, spacepos, timepos, mu)];
 #else
 	for(int a = 0; a < NC; a++) {
 		for(int b = 0; b < NC; b++) {
-			(*out)[a][b] = (*in)[a][b][mu][spacepos][timepos];
+			(*out)[a][b] = in[get_hmc_gaugefield_index(a, b, spacepos, timepos, mu)];
 		}
 	}
 #endif
 	return;
 }
 
-void put_su3matrix(hmc_gaugefield * field, hmc_su3matrix * in, int spacepos, int timepos, int mu)
+void put_su3matrix(hmc_complex * field, hmc_su3matrix * in, int spacepos, int timepos, int mu)
 {
 #ifdef _RECONSTRUCT_TWELVE_
-	for(int n = 0; n < NC*(NC - 1); n++) (*field)[n][mu][spacepos][timepos] = (*in)[n];
+	for(int n = 0; n < NC*(NC - 1); n++) field[get_hmc_gaugefield_index(n, spacepos, timepos, mu)] = (*in)[n];
 #else
 	for(int a = 0; a < NC; a++) {
 		for(int b = 0; b < NC; b++) {
-			(*field)[a][b][mu][spacepos][timepos] = (*in)[a][b];
+			size_t index = get_hmc_gaugefield_index(a, b, spacepos, timepos, mu);
+			field[index] = (*in)[a][b];
 		}
 	}
 #endif
 	return;
 }
 
-void local_polyakov(hmc_gaugefield * field, hmc_su3matrix * prod, int n)
+void local_polyakov(hmc_complex * field, hmc_su3matrix * prod, int n)
 {
 	unit_su3matrix(prod);
 	for(int t = 0; t < NTIME; t++) {
@@ -233,7 +236,7 @@ void local_polyakov(hmc_gaugefield * field, hmc_su3matrix * prod, int n)
 	return;
 }
 
-void local_plaquette(hmc_gaugefield * field, hmc_su3matrix * prod, int n, int t, int mu, int nu )
+void local_plaquette(hmc_complex * field, hmc_su3matrix * prod, int n, int t, int mu, int nu )
 {
 	hmc_su3matrix tmp;
 	//u_mu(x)
@@ -264,13 +267,13 @@ void local_plaquette(hmc_gaugefield * field, hmc_su3matrix * prod, int n, int t,
 }
 
 /** @todo memcpy ... */
-void copy_gaugefield(hmc_gaugefield * source, hmc_gaugefield * dest)
+void copy_gaugefield(hmc_complex * source, hmc_complex * dest)
 {
 	// copies source to destination within cpu memory, layer for gaugefield array
-	return complexcopy((hmc_complex *)source, (hmc_complex *)dest, GAUGEFIELDSIZE); // SL: not tested
+	return complexcopy(source, dest, GAUGEFIELDSIZE); // SL: not tested
 }
 
-void local_Q_plaquette(hmc_3x3matrix * out, hmc_gaugefield * field, int n, int t, int mu, int nu )
+void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, int mu, int nu )
 {
 	hmc_su3matrix tmp;
 	int newpos;
@@ -406,3 +409,30 @@ void local_Q_plaquette(hmc_3x3matrix * out, hmc_gaugefield * field, int n, int t
 	accumulate_su3matrix_3x3_add(out, &plaq3);
 	accumulate_su3matrix_3x3_add(out, &plaq4);
 }
+
+size_t get_hmc_gaugefield_index(size_t spacepos, size_t timepos, size_t mu)
+{
+	size_t result = (mu * VOLSPACE + spacepos ) * NTIME + timepos;
+
+#ifdef _RECONSTRUCT_TWELVE_
+	result *= NC * (NC - 1);
+#else
+	result *= NC * NC;
+#endif
+	return result;
+}
+#ifdef _RECONSTRUCT_TWELVE_
+size_t get_hmc_gaugefield_index(size_t ncolor, size_t spacepos, size_t timepos, size_t mu)
+{
+	size_t result = (mu * VOLSPACE + spacepos ) * NTIME + timepos;
+	result += ncolor * NDIM * VOLSPACE * NTIME;
+	return result;
+}
+#else
+size_t get_hmc_gaugefield_index(size_t m, size_t n, size_t spacepos, size_t timepos, size_t mu)
+{
+	size_t result = (mu * VOLSPACE + spacepos ) * NTIME + timepos;
+	result += (m * NC + n) * NDIM * VOLSPACE * NTIME;
+	return result;
+}
+#endif

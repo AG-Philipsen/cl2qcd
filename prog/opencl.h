@@ -87,7 +87,6 @@ public:
 	 *         @li HMC_SUCCESS otherwise
 	 */
 	void copy_gaugefield_to_device(s_gaugefield* gaugefield);
-//  void copy_gaugefield_to_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
 
 	/**
 	 * Copy the gaugefield from the device into the given memory location.
@@ -97,7 +96,6 @@ public:
 	 *         @li HMC_SUCCESS otherwise
 	 */
 	void get_gaugefield_from_device(s_gaugefield* gaugefield);
-//  void get_gaugefield_from_device(hmc_gaugefield* host_gaugefield,  usetimer* timer);
 
 	/**
 	 * Calculate plaquette and polyakov of a specific gaugefield.

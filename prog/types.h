@@ -108,7 +108,6 @@ struct Matrixsu3 {
 
 typedef hmc_complex hmc_staplematrix [NC*NC];
 typedef hmc_complex hmc_3x3matrix[3][3];
-typedef hmc_complex hmc_gaugefield [NC*(NC-1)][NDIM][VOLSPACE][NTIME];
 //typedef hmc_float hmc_gauge_momentum;
 #else
 /** A generic SU3 matrix */
@@ -129,9 +128,6 @@ struct Matrixsu3 {
 	hmc_complex e21;
 	hmc_complex e22;
 } ;
-
-/** The full gaugefield */
-typedef hmc_complex hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME];
 
 #endif
 
