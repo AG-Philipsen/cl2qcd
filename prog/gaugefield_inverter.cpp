@@ -115,10 +115,12 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 	of << "# flavour doublet correlators" << endl;
 	if(get_parameters()->get_corr_dir() == 3) {
 		of << "# format: J P z real complex"  << endl;
+		of << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), z spatial distance, real part, complex part" << endl;
 	} else {
 		of << "# format: J P t real complex"  << endl;
+		of << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), t timelike distance, real part, complex part" << endl;
 	}
-	of << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), z spatial distance, real part, complex part" << endl;
+
 
 	int num_corr_entries =  0;
 	switch (get_parameters()->get_corr_dir()) {
