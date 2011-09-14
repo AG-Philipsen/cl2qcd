@@ -84,7 +84,14 @@ public:
 
 	void create_stochastic_source_device(cl_mem inout);
 
-	void correlator_device(cl_mem in, cl_mem correlator);
+	void correlator_device(const cl_kernel correlator_kernel, cl_mem in, cl_mem correlator);
+
+	/**
+	 * Get kernel for correlator indicated by which
+	 * @param[in] which string that identifies the correlator (ps or sc)
+	 * @return correlator_kernel
+	 */
+	cl_kernel get_correlator_kernel(string which);
 
 	/////////////////////////////////////////////////
 	//functions to get private variables
@@ -131,6 +138,7 @@ private:
 
 	//Observables
 	cl_kernel correlator_ps;
+	cl_kernel correlator_sc;
 
 	cl_mem clmem_source;
 

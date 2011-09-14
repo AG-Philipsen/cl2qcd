@@ -57,9 +57,11 @@ void Opencl_Module_Correlator::fill_kernels()
 	switch (get_parameters()->get_corr_dir()) {
 		case 0 :
 			correlator_ps = createKernel("correlator_ps_t") << basic_fermion_code << "fermionobservables.cl";
+			correlator_sc = createKernel("correlator_sc_t") << basic_fermion_code << "fermionobservables.cl";
 			break;
 		case 3 :
 			correlator_ps = createKernel("correlator_ps_z") << basic_fermion_code << "fermionobservables.cl";
+			correlator_sc = createKernel("correlator_sc_z") << basic_fermion_code << "fermionobservables.cl";
 			break;
 		default:
 			stringstream errmsg;
@@ -73,7 +75,10 @@ void Opencl_Module_Correlator::fill_kernels()
 void Opencl_Module_Correlator::clear_kernels()
 {
 	Opencl_Module_Spinors::clear_kernels();
-	int clerr = clReleaseKernel(correlator_ps);
+	int clerr = CL_SUCCESS;
+	clerr = clReleaseKernel(correlator_ps);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(correlator_sc);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(create_point_source);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -96,8 +101,9 @@ void Opencl_Module_Correlator::get_work_sizes(const cl_kernel kernel, cl_device_
 {
 	Opencl_Module_Spinors::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
 
+	//LZ: should be valid for all kernels for correlators, i.e. for names that look like correlator_??_?
 	string kernelname = get_kernel_name(kernel);
-	if( kernelname.compare("correlator_ps_z") == 0 && kernelname.compare("correlator_ps_t")) {
+	if( kernelname.find("correlator") == 0 ) {
 		if(dev_type == CL_DEVICE_TYPE_GPU) {
 			*ls = get_parameters()->get_ns();
 			*gs = *ls;
@@ -120,6 +126,17 @@ cl_mem Opencl_Module_Correlator::get_clmem_source()
 cl_mem Opencl_Module_Correlator::get_clmem_corr()
 {
 	return clmem_corr;
+}
+
+cl_kernel Opencl_Module_Correlator::get_correlator_kernel(string which)
+{
+	if( which.compare("ps") == 0 ) {
+		return correlator_ps;
+	}
+	if( which.compare("sc") == 0 ) {
+		return correlator_sc;
+	}
+	return 0;
 }
 
 void Opencl_Module_Correlator::create_point_source_device(cl_mem inout, int i, int spacepos, int timepos)
@@ -160,19 +177,19 @@ void Opencl_Module_Correlator::create_stochastic_source_device(cl_mem inout)
 	enqueueKernel( create_stochastic_source, gs2, ls2);
 }
 
-void Opencl_Module_Correlator::correlator_device(cl_mem in, cl_mem correlator)
+void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kernel, cl_mem in, cl_mem correlator)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(correlator_ps, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(correlator_kernel, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(correlator_ps, 0, sizeof(cl_mem), &in);
+	int clerr = clSetKernelArg(correlator_kernel, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(correlator_ps, 1, sizeof(cl_mem), &correlator);
+	clerr = clSetKernelArg(correlator_kernel, 1, sizeof(cl_mem), &correlator);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(correlator_ps , gs2, ls2);
+	enqueueKernel(correlator_kernel , gs2, ls2);
 }
 
 #ifdef _PROFILING_

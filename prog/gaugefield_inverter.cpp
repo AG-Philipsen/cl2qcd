@@ -141,13 +141,22 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 	hmc_float* host_result = new hmc_float [num_corr_entries];
 
 	//the pseudo-scalar (J=0, P=1)
-	get_task_correlator()->correlator_device(get_task_correlator()->get_clmem_corr(), result);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ps"),get_task_correlator()->get_clmem_corr(), result);
 	get_task_correlator()->get_buffer_from_device(result, host_result, buffersize);
-	logger.info() << "pseudo scalar correlator" ;
+	logger.info() << "calculate pseudo scalar correlator..." ;
 	for(int j = 0; j < num_corr_entries; j++) {
 		printf("%i\t(%.12e)\n", j, host_result[j]);
 		logger.info() << j << "\t" << scientific << setprecision(14) << host_result[j] << "\t"  << scientific << setprecision(14) << "0" ;
 		of << scientific << setprecision(14) << "0 1\t" << j << "\t" << host_result[j] << "\t0" << endl;
+	}
+
+
+	//the scalar (J=0, P=0)
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("sc"), get_task_correlator()->get_clmem_corr(), result);
+	get_task_correlator()->get_buffer_from_device(result, host_result, buffersize);
+	logger.info() << "calculate scalar correlator..." ;
+	for(int j = 0; j < num_corr_entries; j++) {
+		of << scientific << setprecision(14) << "0 0\t" << j << "\t" << host_result[j] << "\t0" << endl;
 	}
 
 
