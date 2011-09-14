@@ -184,7 +184,7 @@ void Opencl_fermions::fill_kernels()
 	
 	gamma5 = createKernel("gamma5") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_gamma5.cl";
 	
-	ps_correlator = createKernel("ps_correlator") << basic_fermion_code << "fermionobservables.cl";
+	//ps_correlator = createKernel("ps_correlator") << basic_fermion_code << "fermionobservables.cl";
 
 	set_spinorfield_cold = createKernel("set_spinorfield_cold") << basic_fermion_code << "spinorfield_cold.cl";
 	saxpy = createKernel("saxpy") << basic_fermion_code << "spinorfield_saxpy.cl";
@@ -1364,7 +1364,7 @@ void Opencl_fermions::finalize_fermions()
 {
   cl_int clerr = CL_SUCCESS;
 
-	clerr = clReleaseKernel(ps_correlator);
+  //	clerr = clReleaseKernel(ps_correlator);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
 	clerr = clReleaseKernel(set_spinorfield_cold);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
