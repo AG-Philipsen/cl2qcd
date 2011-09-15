@@ -167,8 +167,10 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 	get_task_correlator()->get_buffer_from_device(result, host_result, buffersize);
 	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vy"), get_task_correlator()->get_clmem_corr(), result);
 	get_task_correlator()->get_buffer_from_device(result, host_result_y, buffersize);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vz"), get_task_correlator()->get_clmem_corr(), result);
+	get_task_correlator()->get_buffer_from_device(result, host_result_z, buffersize);
 	for(int j = 0; j < num_corr_entries; j++) {
-		of << scientific << setprecision(14) << "1 1\t" << j << "\t" << (host_result[j] + host_result_y[j]) / 3. << "\t" << host_result[j] << "\t" << host_result_y[j] << endl;
+	  of << scientific << setprecision(14) << "1 1\t" << j << "\t" << (host_result[j] + host_result_y[j] + host_result_z[j]) / 3. << "\t" << host_result[j] << "\t" << host_result_y[j] << "\t" << host_result_z[j] <<endl;
 	}
 
 
