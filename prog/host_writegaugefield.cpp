@@ -72,7 +72,7 @@ void make_binary_data_double(hmc_float * array, char * out, const int array_size
 
 
 void write_gaugefield (
-  ildg_gaugefield * array, int array_size,
+  hmc_float * array, int array_size,
   int lx, int ly, int lz, int lt, int prec, int trajectorynr, hmc_float plaquettevalue, hmc_float beta, hmc_float kappa, hmc_float mu, hmc_float c2_rec, hmc_float epsilonbar, hmc_float mubar,
   const char * hmc_version, const char * filename)
 {
@@ -104,9 +104,9 @@ void write_gaugefield (
 
 	// TODO make sure the ildg_gaugefield is never padded
 	if(prec == 64) {
-		make_binary_data_double(reinterpret_cast<hmc_float*>(array), binary_data, array_size, num_entries);
+		make_binary_data_double(array, binary_data, array_size, num_entries);
 	} else if (prec == 32) {
-		make_binary_data_single(reinterpret_cast<hmc_float*>(array), binary_data, array_size, num_entries);
+		make_binary_data_single(array, binary_data, array_size, num_entries);
 	} else throw Print_Error_Message("STDERR",__FILE__,__LINE__);
 
 	length_ildg_binary_data = num_entries;

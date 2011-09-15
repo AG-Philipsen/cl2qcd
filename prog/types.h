@@ -108,7 +108,6 @@ struct Matrixsu3 {
 
 typedef hmc_complex hmc_staplematrix [NC*NC];
 typedef hmc_complex hmc_3x3matrix[3][3];
-typedef hmc_complex hmc_gaugefield [NC*(NC-1)][NDIM][VOLSPACE][NTIME];
 //typedef hmc_float hmc_gauge_momentum;
 #else
 /** A generic SU3 matrix */
@@ -129,10 +128,6 @@ struct Matrixsu3 {
 	hmc_complex e21;
 	hmc_complex e22;
 } ;
-
-/** The full gaugefield */
-typedef hmc_complex hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME];
-typedef hmc_float ildg_gaugefield[2*NC*NC*NDIM*VOLSPACE*NTIME];
 
 #endif
 
@@ -157,10 +152,7 @@ typedef struct {
 //CP: this can be deleted if host_operations_spinor is not needed anywhere anymore...
 typedef hmc_complex hmc_su3vector[3];
 
-typedef hmc_float ildg_gaugefield[2*NC*NC*NDIM*VOLSPACE*NTIME];
-
 typedef Matrixsu3 ocl_s_gaugefield;
-typedef Matrixsu3 s_gaugefield [NDIM][VOLSPACE][NTIME];
 
 #endif // ifndef _INKERNEL_
 
@@ -214,10 +206,7 @@ typedef struct {
 
 #endif  //ifdef _INKERNEL_
 
-//Das funktioniert nicht, warum auch immer...
-//typedef Matrixsu3 ocl_s_gaugefield [NDIM * VOLSPACE * NTIME];
 typedef Matrixsu3 ocl_s_gaugefield;
-typedef Matrixsu3 s_gaugefield [NDIM][VOLSPACE][NTIME];
 
 //define a spinor field:  spinor_field[spin-color*coord3d*coord_time]
 typedef hmc_complex hmc_color_vector;

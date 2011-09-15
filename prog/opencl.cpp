@@ -116,7 +116,7 @@ cl_mem Opencl::create_chp_buffer(size_t size, void *host_pointer)
 void Opencl::fill_buffers()
 {
 	logger.trace() << "Create buffer for gaugefield...";
-	clmem_gaugefield = create_rw_buffer(sizeof(s_gaugefield));
+	clmem_gaugefield = create_rw_buffer(NDIM * VOLSPACE * NTIME * sizeof(ocl_s_gaugefield));
 
 	logger.trace() << "Create buffer for random numbers...";
 	clmem_rndarray = create_rw_buffer(sizeof(hmc_ocl_ran) * get_num_rndstates());
@@ -359,14 +359,15 @@ void Opencl::clear_buffers()
 	return;
 }
 
-void Opencl::copy_gaugefield_to_device(s_gaugefield* gaugefield)
+void Opencl::copy_gaugefield_to_device(Matrixsu3* gaugefield)
 {
 	(*this->get_copy_to()).reset();
-	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(sizeof(s_gaugefield));
+	const size_t gaugefield_size = NDIM * VOLSPACE * NTIME * sizeof(ocl_s_gaugefield);
+	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(gaugefield_size);
 
 	copy_to_ocl_format(host_gaugefield, gaugefield);
 
-	cl_int clerr = clEnqueueWriteBuffer(queue, clmem_gaugefield, CL_TRUE, 0, sizeof(s_gaugefield), host_gaugefield, 0, 0, NULL);
+	cl_int clerr = clEnqueueWriteBuffer(queue, clmem_gaugefield, CL_TRUE, 0, gaugefield_size, host_gaugefield, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 
 	free(host_gaugefield);
@@ -376,12 +377,13 @@ void Opencl::copy_gaugefield_to_device(s_gaugefield* gaugefield)
 }
 
 
-void Opencl::get_gaugefield_from_device(s_gaugefield* gaugefield)
+void Opencl::get_gaugefield_from_device(Matrixsu3* gaugefield)
 {
 	(*this->get_copy_to()).reset();
-	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(sizeof(s_gaugefield));
+	const size_t gaugefield_size = NDIM * VOLSPACE * NTIME * sizeof(ocl_s_gaugefield);
+	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(gaugefield_size);
 
-	cl_int clerr = clEnqueueReadBuffer(queue, clmem_gaugefield, CL_TRUE, 0, sizeof(s_gaugefield), host_gaugefield, 0, NULL, NULL);
+	cl_int clerr = clEnqueueReadBuffer(queue, clmem_gaugefield, CL_TRUE, 0, gaugefield_size, host_gaugefield, 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueReadBuffer", __FILE__, __LINE__);
 
 	copy_from_ocl_format(gaugefield, host_gaugefield);
