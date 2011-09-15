@@ -734,7 +734,7 @@ __kernel void correlator_ax_z(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * 2.*correlator.re;
+		out[id_tmp] = -4.*KAPPA * KAPPA * 2.*correlator.re;
 	}
 
 
@@ -822,7 +822,7 @@ __kernel void correlator_ax_t(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * 2. * correlator.re;
+		out[id_tmp] = -4.*KAPPA * KAPPA * 2. * correlator.re;
 	}
 
 
@@ -909,7 +909,7 @@ __kernel void correlator_ay_z(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * 2.*correlator.re;
+		out[id_tmp] = -4.*KAPPA * KAPPA * 2.*correlator.re;
 	}
 
 
@@ -997,7 +997,7 @@ __kernel void correlator_ay_t(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * 2. * correlator.re;
+		out[id_tmp] = -4.*KAPPA * KAPPA * 2. * correlator.re;
 	}
 
 
@@ -1053,7 +1053,7 @@ __kernel void correlator_az_z(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * correlator;
+		out[id_tmp] = -4.*KAPPA * KAPPA * correlator;
 	}
 
 
@@ -1109,7 +1109,7 @@ __kernel void correlator_az_t(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * correlator;
+		out[id_tmp] = -4.*KAPPA * KAPPA * correlator;
 	}
 
 

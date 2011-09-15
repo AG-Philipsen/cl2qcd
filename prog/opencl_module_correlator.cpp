@@ -170,13 +170,13 @@ cl_kernel Opencl_Module_Correlator::get_correlator_kernel(string which)
 		return correlator_vz;
 	}
 	if( which.compare("ax") == 0 ) {
-		return correlator_vx;
+		return correlator_ax;
 	}
 	if( which.compare("ay") == 0 ) {
-		return correlator_vy;
+		return correlator_ay;
 	}
 	if( which.compare("az") == 0 ) {
-		return correlator_vz;
+		return correlator_az;
 	}
 	throw Print_Error_Message("get_correlator_kernel failed, no appropriate kernel found");
 	return 0;
