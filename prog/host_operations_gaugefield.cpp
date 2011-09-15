@@ -1,23 +1,25 @@
 #include "host_operations_gaugefield.h"
 
-void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, s_gaugefield* gaugefield)
+void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield)
 {
 	for(int spacepos = 0; spacepos < NSPACE * NSPACE * NSPACE; spacepos++) {
 		for(int t = 0; t < NTIME; t++) {
 			for(int mu = 0; mu < NDIM; mu++) {
-				host_gaugefield[get_global_link_pos(mu, spacepos, t)] = (*gaugefield) [mu][spacepos][t];
+				const size_t index = get_global_link_pos(mu, spacepos, t);
+				host_gaugefield[index] = gaugefield[index];
 			}
 		}
 	}
 	return;
 }
 
-void copy_from_ocl_format(s_gaugefield* gaugefield, ocl_s_gaugefield* host_gaugefield)
+void copy_from_ocl_format(Matrixsu3* gaugefield, ocl_s_gaugefield* host_gaugefield)
 {
 	for(int spacepos = 0; spacepos < NSPACE * NSPACE * NSPACE; spacepos++) {
 		for(int t = 0; t < NTIME; t++) {
 			for(int mu = 0; mu < NDIM; mu++) {
-				(*gaugefield) [mu][spacepos][t] = host_gaugefield [get_global_link_pos(mu, spacepos, t)];
+				const size_t index = get_global_link_pos(mu, spacepos, t);
+				gaugefield[index] = host_gaugefield[index];
 			}
 		}
 	}

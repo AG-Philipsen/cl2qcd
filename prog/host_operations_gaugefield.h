@@ -38,7 +38,7 @@ void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_complex * source);
  * @param[in] host_gaugefield The gaugefield in the internal representation
  * @param[out] gaugefield The location to store the OpenCL kernel compatible representation to
  */
-void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, s_gaugefield* gaugefield);
+void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield);
 
 /**
  * Transform the gaugefield representation used by the OpenCL kernels into the normal one.
@@ -46,7 +46,7 @@ void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, s_gaugefield* gaugefi
  * @param[in] gaugefield The gaugefield in the representation used by the OpenCL kernels
  * @param[out] host_gaugefield The location to store the gaugefield to
  */
-void copy_from_ocl_format(s_gaugefield* gaugefield, ocl_s_gaugefield* host_gaugefield);
+void copy_from_ocl_format(Matrixsu3* gaugefield, ocl_s_gaugefield* host_gaugefield);
 
 
 /* *****************************************************************************************************

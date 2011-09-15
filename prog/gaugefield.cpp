@@ -30,8 +30,7 @@ void Gaugefield::init(int* numdevs, int numdevtypes, cl_device_type* devicetypes
 
 
 	//allocate memory for private gaugefield
-	//  hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
-	s_gaugefield* gftmp = (s_gaugefield*) malloc(sizeof(s_gaugefield));
+	Matrixsu3 * gftmp = new Matrixsu3[NDIM * VOLSPACE * NTIME];
 	set_sgf(gftmp);
 
 	set_parameters(input_parameters);
@@ -114,76 +113,79 @@ void Gaugefield::init_gaugefield()
 	return;
 }
 
-void Gaugefield::copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_complex * gf)
+void Gaugefield::copy_gaugefield_to_s_gaugefield (Matrixsu3 * sgfo, hmc_complex * gf)
 {
 	for (int d = 0; d < NDIM; d++) {
 		for (int n = 0; n < VOLSPACE; n++) {
 			for (int t = 0; t < NTIME; t++) {
-				hmc_su3matrix tmp;
-				get_su3matrix(&tmp, gf, n, t, d);
+				hmc_su3matrix srcElem;
+				get_su3matrix(&srcElem, gf, n, t, d);
+
+				Matrixsu3 destElem;
 #ifdef _RECONSTRUCT_TWELVE_
-				(*sgfo)[d][n][t].e00 = tmp[0];
-				(*sgfo)[d][n][t].e01 = tmp[2];
-				(*sgfo)[d][n][t].e02 = tmp[4];
-				(*sgfo)[d][n][t].e10 = tmp[1];
-				(*sgfo)[d][n][t].e11 = tmp[3];
-				(*sgfo)[d][n][t].e12 = tmp[5];
+				destElem.e00 = srcElem[0];
+				destElem.e01 = srcElem[2];
+				destElem.e02 = srcElem[4];
+				destElem.e10 = srcElem[1];
+				destElem.e11 = srcElem[3];
+				destElem.e12 = srcElem[5];
 #else
-				(*sgfo)[d][n][t].e00 = tmp[0][0];
-				(*sgfo)[d][n][t].e01 = tmp[0][1];
-				(*sgfo)[d][n][t].e02 = tmp[0][2];
-				(*sgfo)[d][n][t].e10 = tmp[1][0];
-				(*sgfo)[d][n][t].e11 = tmp[1][1];
-				(*sgfo)[d][n][t].e12 = tmp[1][2];
-				(*sgfo)[d][n][t].e20 = tmp[2][0];
-				(*sgfo)[d][n][t].e21 = tmp[2][1];
-				(*sgfo)[d][n][t].e22 = tmp[2][2];
+				destElem.e00 = srcElem[0][0];
+				destElem.e01 = srcElem[0][1];
+				destElem.e02 = srcElem[0][2];
+				destElem.e10 = srcElem[1][0];
+				destElem.e11 = srcElem[1][1];
+				destElem.e12 = srcElem[1][2];
+				destElem.e20 = srcElem[2][0];
+				destElem.e21 = srcElem[2][1];
+				destElem.e22 = srcElem[2][2];
 #endif
+				set_to_gaugefield(sgfo, d, n, t, destElem);
 			}
 		}
 	}
 	return;
 }
 
-void Gaugefield::copy_s_gaugefield_to_gaugefield(hmc_complex * gf, s_gaugefield * sgfo)
+void Gaugefield::copy_s_gaugefield_to_gaugefield(hmc_complex * gf, Matrixsu3 * sgfo)
 {
 	for (int d = 0; d < NDIM; d++) {
 		for (int n = 0; n < VOLSPACE; n++) {
 			for (int t = 0; t < NTIME; t++) {
-				hmc_su3matrix tmp;
+				hmc_su3matrix destElem;
+				Matrixsu3 srcElem = get_from_gaugefield(sgfo, d, n, t);
 #ifdef _RECONSTRUCT_TWELVE_
-				tmp[0] = (*sgfo)[d][n][t].e00;
-				tmp[2] = (*sgfo)[d][n][t].e01;
-				tmp[4] = (*sgfo)[d][n][t].e02;
-				tmp[1] = (*sgfo)[d][n][t].e10;
-				tmp[3] = (*sgfo)[d][n][t].e11;
-				tmp[5] = (*sgfo)[d][n][t].e12;
+				destElem[0] = srcElem.e00;
+				destElem[2] = srcElem.e01;
+				destElem[4] = srcElem.e02;
+				destElem[1] = srcElem.e10;
+				destElem[3] = srcElem.e11;
+				destElem[5] = srcElem.e12;
 #else
-				tmp[0][0] = (*sgfo)[d][n][t].e00;
-				tmp[0][1] = (*sgfo)[d][n][t].e01;
-				tmp[0][2] = (*sgfo)[d][n][t].e02;
-				tmp[1][0] = (*sgfo)[d][n][t].e10;
-				tmp[1][1] = (*sgfo)[d][n][t].e11;
-				tmp[1][2] = (*sgfo)[d][n][t].e12;
-				tmp[2][0] = (*sgfo)[d][n][t].e20;
-				tmp[2][1] = (*sgfo)[d][n][t].e21;
-				tmp[2][2] = (*sgfo)[d][n][t].e22;
+				destElem[0][0] = srcElem.e00;
+				destElem[0][1] = srcElem.e01;
+				destElem[0][2] = srcElem.e02;
+				destElem[1][0] = srcElem.e10;
+				destElem[1][1] = srcElem.e11;
+				destElem[1][2] = srcElem.e12;
+				destElem[2][0] = srcElem.e20;
+				destElem[2][1] = srcElem.e21;
+				destElem[2][2] = srcElem.e22;
 #endif
-				put_su3matrix(gf, &tmp, n, t, d);
+				put_su3matrix(gf, &destElem, n, t, d);
 			}
 		}
 	}
 	return;
 }
 
-void Gaugefield::set_gaugefield_cold_new (s_gaugefield * field)
+void Gaugefield::set_gaugefield_cold_new (Matrixsu3 * field)
 {
 	for(int t = 0; t < NTIME; t++) {
 		for(int n = 0; n < VOLSPACE; n++) {
 			for(int mu = 0; mu < NDIM; mu++) {
-				Matrixsu3 tmp;
-				tmp = unit_matrixsu3();
-				(*field)[mu][n][t] = tmp;
+				const Matrixsu3 tmp = unit_matrixsu3();
+				set_to_gaugefield(field, mu, n, t, tmp);
 			}
 		}
 	}
@@ -192,8 +194,9 @@ void Gaugefield::set_gaugefield_cold_new (s_gaugefield * field)
 
 
 //Implement this
-void Gaugefield::set_gaugefield_hot_new(s_gaugefield * field)
+void Gaugefield::set_gaugefield_hot_new(Matrixsu3 * field)
 {
+	logger.warn() << "Hot initialization not impelmented – initializing cold.";
 	set_gaugefield_cold_new(field);
 	return;
 }
@@ -266,7 +269,7 @@ void Gaugefield::print_info_source(sourcefileparameters* params)
 
 void Gaugefield::save(int number)
 {
-	const int gaugefield_buf_size = 2*NC*NC*NDIM*VOLSPACE*NTIME;
+	const int gaugefield_buf_size = 2 * NC * NC * NDIM * VOLSPACE * NTIME;
 	hmc_float * gaugefield_buf = new hmc_float[gaugefield_buf_size];
 
 	//these are not yet used...
@@ -534,9 +537,8 @@ hmc_complex Gaugefield::spatial_polyakov(int dir)
 
 void Gaugefield::finalize()
 {
-	//free(get_gf());
-	free(get_sgf());
-	delete [] get_rndarray();
+	delete[] get_sgf();
+	delete[] get_rndarray();
 	this->free_devices();
 	return;
 }
@@ -624,12 +626,12 @@ inputparameters * Gaugefield::get_parameters ()
 
 
 
-s_gaugefield * Gaugefield::get_sgf ()
+Matrixsu3 * Gaugefield::get_sgf ()
 {
 	return sgf;
 }
 
-void Gaugefield::set_sgf (s_gaugefield * sgf_val)
+void Gaugefield::set_sgf (Matrixsu3 * sgf_val)
 {
 	sgf = sgf_val;
 	return;
@@ -663,10 +665,21 @@ usetimer * Gaugefield::get_copy_to()
 	return &copy_to;
 }
 
-size_t Gaugefield::get_num_hmc_gaugefield_elems() {
+size_t Gaugefield::get_num_hmc_gaugefield_elems()
+{
 #ifdef _RECONSTRUCT_TWELVE_
-	return NC*(NC-1) * NDIM * VOLSPACE * NTIME;
+	return NC * (NC - 1) * NDIM * VOLSPACE * NTIME;
 #else
-	return NC*NC * NDIM * VOLSPACE * NTIME;
+	return NC * NC * NDIM * VOLSPACE * NTIME;
 #endif
+}
+
+void Gaugefield::set_to_gaugefield(Matrixsu3 * field, const size_t mu, const size_t x, const size_t t, const Matrixsu3 val)
+{
+	field[get_global_link_pos(mu, x, t)] = val;
+}
+
+Matrixsu3 Gaugefield::get_from_gaugefield(const Matrixsu3 * field, const size_t mu, const size_t x, const size_t t) const
+{
+	return field[get_global_link_pos(mu, x, t)];
 }

@@ -216,12 +216,12 @@ public:
 	 * Returns pointer to gaugefield u (structures)
 	 * @return The gaugefield
 	 */
-	s_gaugefield * get_sgf ();
+	Matrixsu3 * get_sgf ();
 
 	/**
 	 * Sets private member gaugefield u (structures)
 	 */
-	void set_sgf (s_gaugefield * sgf_val);
+	void set_sgf (Matrixsu3 * sgf_val);
 
 	/**
 	 * Returns private member * devices
@@ -284,26 +284,48 @@ public:
 	 * @param[in] gf pure array
 	 * @param[out] sgf array of structs
 	 */
-	void copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_complex * gf);
+	void copy_gaugefield_to_s_gaugefield (Matrixsu3 * sgfo, hmc_complex * gf);
 
 	/**
 	 * Copies the gaugefield from structure array format to pure array format
 	 * @param[in] sgf array of structs
 	 * @param[out] gf pure array
 	 */
-	void copy_s_gaugefield_to_gaugefield (hmc_complex * gf, s_gaugefield * sgfo);
+	void copy_s_gaugefield_to_gaugefield (hmc_complex * gf, Matrixsu3 * sgfo);
 
 	/**
 	 * Initializing the gaugefield consisting of structs for a hot start
 	 * Not implemented yet, does a cold start
 	 * @param field gaugefield
 	 */
-	void set_gaugefield_hot_new(s_gaugefield * field);
+	void set_gaugefield_hot_new(Matrixsu3 * field);
 	/**
 	 * Initializing the gaugefield consisting of structs for a cold start
 	 * @param field gaugefield
 	 */
-	void set_gaugefield_cold_new(s_gaugefield * field);
+	void set_gaugefield_cold_new(Matrixsu3 * field);
+
+	/**
+	 * Set a value in the given gaugefield;
+	 *
+	 * @param[inout] field The field to set the value to.
+	 * @param[in]    mu    Direction coordinate
+	 * @param[in]    x     Space coordinate
+	 * @param[in]    t     Time coordinate
+	 * @param[in]    val   The value to set.
+	 */
+	void set_to_gaugefield(Matrixsu3 * field, const size_t mu, const size_t x, const size_t t, const Matrixsu3 val);
+
+	/**
+	 * Get a value from the given gaugefield;
+	 *
+	 * @param[in] field The field to set the value to.
+	 * @param[in] mu    Direction coordinate
+	 * @param[in] x     Space coordinate
+	 * @param[in] t     Time coordinate
+	 * @return The value stored at the given coordinates.
+	 */
+	Matrixsu3 get_from_gaugefield(const Matrixsu3 * field, const size_t mu, const size_t x, const size_t t) const;
 
 	/**
 	 * This method provides allocation for device double pointer
@@ -334,7 +356,7 @@ private:
 
 	Opencl ** devices;
 	inputparameters* parameters;
-	s_gaugefield * sgf;
+	Matrixsu3 * sgf;
 
 	int num_ocl_devices;
 	int num_device_types;
