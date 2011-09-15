@@ -372,15 +372,15 @@ public:
 	 * This applies stout smearing to a gaugefield
 	 */
 	void stout_smear_device();
-	
+
 	usetimer * get_copy_to();
 	usetimer * get_copy_on();
-	
+
 	/**
 	 * Prints the copy-to/from/on-device-times
 	 */
-	void print_copy_times(uint64_t totaltime);	
-	
+	void print_copy_times(uint64_t totaltime);
+
 protected:
 	/**
 	 * A set of source files used by all kernels.
@@ -405,7 +405,7 @@ protected:
 	 *
 	 */
 	int get_numthreads();
-	
+
 protected:
 	inputparameters* parameters;
 
@@ -444,7 +444,7 @@ private:
 	usetimer copy_to;
 	//this is used to measure data-transfer on the device
 	usetimer copy_on;
-	
+
 	int numthreads;
 
 };

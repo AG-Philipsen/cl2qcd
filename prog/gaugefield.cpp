@@ -1,87 +1,88 @@
 #include "gaugefield.h"
 
-void Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters){
+void Gaugefield::init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters)
+{
 
-  int n_devs[1] = {numdevs};
-  init(n_devs,1,devicetypes,input_parameters);
+	int n_devs[1] = {numdevs};
+	init(n_devs, 1, devicetypes, input_parameters);
 
-  return;
+	return;
 
 }
 
 void Gaugefield::init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters)
 {
-  if(input_parameters->get_use_gpu()) {
-    numrndstates = 5120;
-  } else {
-    numrndstates = 64;
-  }
-  sizeof_rndarray = sizeof(hmc_ocl_ran)*numrndstates;
+	if(input_parameters->get_use_gpu()) {
+		numrndstates = 5120;
+	} else {
+		numrndstates = 64;
+	}
+	sizeof_rndarray = sizeof(hmc_ocl_ran) * numrndstates;
 
-  rndarray = new hmc_ocl_ran[numrndstates];
+	rndarray = new hmc_ocl_ran[numrndstates];
 
 
-  set_num_device_types(numdevtypes);
+	set_num_device_types(numdevtypes);
 
-  //LZ: for now assume that there is only one num_ocl_devices that is the same for all device types
-  //    to be generalized later
-  set_num_ocl_devices(numdevs[0]);
-  
+	//LZ: for now assume that there is only one num_ocl_devices that is the same for all device types
+	//    to be generalized later
+	set_num_ocl_devices(numdevs[0]);
 
-  //allocate memory for private gaugefield
-  // 	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
-  s_gaugefield* gftmp = (s_gaugefield*) malloc(sizeof(s_gaugefield));
-  set_sgf(gftmp);
 
-  set_parameters(input_parameters);
-  
-  init_gaugefield();
+	//allocate memory for private gaugefield
+	//  hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	s_gaugefield* gftmp = (s_gaugefield*) malloc(sizeof(s_gaugefield));
+	set_sgf(gftmp);
 
-  this->init_devicetypes_array(devicetypes,input_parameters);
-	
-  this->init_devices(devicetypes);
+	set_parameters(input_parameters);
 
-  return;
+	init_gaugefield();
+
+	this->init_devicetypes_array(devicetypes, input_parameters);
+
+	this->init_devices(devicetypes);
+
+	return;
 }
 
-void Gaugefield::init_devicetypes_array(cl_device_type* devicetypes, inputparameters* parameters){
+void Gaugefield::init_devicetypes_array(cl_device_type* devicetypes, inputparameters* parameters)
+{
 	/** @todo work this out! */
 	//Check if only one device should be used
-	if((*parameters).get_num_dev() == 1){
+	if((*parameters).get_num_dev() == 1) {
 		if((*parameters).get_use_gpu() == 1)
 			devicetypes[0] = CL_DEVICE_TYPE_GPU;
 		else
 			devicetypes[0] = CL_DEVICE_TYPE_CPU;
-	}
-	else if((*parameters).get_num_dev() == 2){
+	} else if((*parameters).get_num_dev() == 2) {
 		devicetypes[0] = CL_DEVICE_TYPE_GPU;
 		devicetypes[1] = CL_DEVICE_TYPE_CPU;
 	}
 	//So far, more than 3 devices are not supported
-	else throw Print_Error_Message("Number of devices too big, aborting...",__FILE__,__LINE__);
+	else throw Print_Error_Message("Number of devices too big, aborting...", __FILE__, __LINE__);
 
 	return;
 }
 
 void Gaugefield::init_devices(cl_device_type* devicetypes)
 {
-// 	if(get_num_ocl_devices() != 1) {
-// 		//LZ: so far, we only use !!! 1 !!! device
-// 		//this needs generalisation to several devices and subsets!!!!!
-// 		logger.error() << "only 1 device possible...";
-// 	}
+//  if(get_num_ocl_devices() != 1) {
+//    //LZ: so far, we only use !!! 1 !!! device
+//    //this needs generalisation to several devices and subsets!!!!!
+//    logger.error() << "only 1 device possible...";
+//  }
 
 	if(get_num_ocl_devices() > 0) {
 		alloc_devicetypes();
-		for(int n=0; n<get_num_device_types();n++) {
-		  Opencl* devtmp = new Opencl[get_num_ocl_devices()];
-		  set_devices(devtmp,n);
+		for(int n = 0; n < get_num_device_types(); n++) {
+			Opencl* devtmp = new Opencl[get_num_ocl_devices()];
+			set_devices(devtmp, n);
 		}
 	}
 
 	for(int n = 0; n < num_ocl_devices; n++) {
 		logger.debug() << "init device #" << n;
-		get_devices()[n].init(devicetypes[n], get_parameters(),numrndstates);
+		get_devices()[n].init(devicetypes[n], get_parameters(), numrndstates);
 	}
 	return;
 }
@@ -109,85 +110,89 @@ void Gaugefield::init_gaugefield()
 	if(get_parameters()->get_startcondition() == HOT_START) {
 		set_gaugefield_hot_new(get_sgf());
 	}
-	
+
 	return;
 }
 
-void Gaugefield::copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_gaugefield * gf){
-  for (int d=0; d <NDIM; d++){
-    for (int n=0; n<VOLSPACE; n++){
-      for (int t=0; t<NTIME; t++){
+void Gaugefield::copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_gaugefield * gf)
+{
+	for (int d = 0; d < NDIM; d++) {
+		for (int n = 0; n < VOLSPACE; n++) {
+			for (int t = 0; t < NTIME; t++) {
 #ifdef _RECONSTRUCT_TWELVE_
-	  (*sgfo)[d][n][t].e00 = (*gf) [0][d][n][t];
-	  (*sgfo)[d][n][t].e01 = (*gf) [2][d][n][t];
-	  (*sgfo)[d][n][t].e02 = (*gf) [4][d][n][t];
-	  (*sgfo)[d][n][t].e10 = (*gf) [1][d][n][t];
-	  (*sgfo)[d][n][t].e11 = (*gf) [3][d][n][t];
-	  (*sgfo)[d][n][t].e12 = (*gf) [5][d][n][t];
+				(*sgfo)[d][n][t].e00 = (*gf) [0][d][n][t];
+				(*sgfo)[d][n][t].e01 = (*gf) [2][d][n][t];
+				(*sgfo)[d][n][t].e02 = (*gf) [4][d][n][t];
+				(*sgfo)[d][n][t].e10 = (*gf) [1][d][n][t];
+				(*sgfo)[d][n][t].e11 = (*gf) [3][d][n][t];
+				(*sgfo)[d][n][t].e12 = (*gf) [5][d][n][t];
 #else
-	  (*sgfo)[d][n][t].e00 = (*gf)[0][0][d][n][t];
-	  (*sgfo)[d][n][t].e01 = (*gf) [0][1][d][n][t];
-	  (*sgfo)[d][n][t].e02 = (*gf) [0][2][d][n][t];
-	  (*sgfo)[d][n][t].e10 = (*gf) [1][0][d][n][t];
-	  (*sgfo)[d][n][t].e11 = (*gf) [1][1][d][n][t];
-	  (*sgfo)[d][n][t].e12 = (*gf) [1][2][d][n][t];
-	  (*sgfo)[d][n][t].e20 = (*gf) [2][0][d][n][t];
-	  (*sgfo)[d][n][t].e21 = (*gf) [2][1][d][n][t];
-	  (*sgfo)[d][n][t].e22 = (*gf) [2][2][d][n][t];
+				(*sgfo)[d][n][t].e00 = (*gf)[0][0][d][n][t];
+				(*sgfo)[d][n][t].e01 = (*gf) [0][1][d][n][t];
+				(*sgfo)[d][n][t].e02 = (*gf) [0][2][d][n][t];
+				(*sgfo)[d][n][t].e10 = (*gf) [1][0][d][n][t];
+				(*sgfo)[d][n][t].e11 = (*gf) [1][1][d][n][t];
+				(*sgfo)[d][n][t].e12 = (*gf) [1][2][d][n][t];
+				(*sgfo)[d][n][t].e20 = (*gf) [2][0][d][n][t];
+				(*sgfo)[d][n][t].e21 = (*gf) [2][1][d][n][t];
+				(*sgfo)[d][n][t].e22 = (*gf) [2][2][d][n][t];
 #endif
 
-      }
-    }
-  }
-  return;
+			}
+		}
+	}
+	return;
 }
 
-void Gaugefield::copy_s_gaugefield_to_gaugefield(hmc_gaugefield * gf, s_gaugefield * sgfo){
-  for (int d=0; d <NDIM; d++){
-    for (int n=0; n<VOLSPACE; n++){
-      for (int t=0; t<NTIME; t++){
+void Gaugefield::copy_s_gaugefield_to_gaugefield(hmc_gaugefield * gf, s_gaugefield * sgfo)
+{
+	for (int d = 0; d < NDIM; d++) {
+		for (int n = 0; n < VOLSPACE; n++) {
+			for (int t = 0; t < NTIME; t++) {
 #ifdef _RECONSTRUCT_TWELVE_
-	  (*gf) [0][d][n][t] = (*sgfo)[d][n][t].e00;
-	  (*gf) [2][d][n][t] = (*sgfo)[d][n][t].e01;
-	  (*gf) [4][d][n][t] = (*sgfo)[d][n][t].e02;
-	  (*gf) [1][d][n][t] = (*sgfo)[d][n][t].e10;
-	  (*gf) [3][d][n][t] = (*sgfo)[d][n][t].e11;
-	  (*gf) [5][d][n][t] = (*sgfo)[d][n][t].e12;
+				(*gf) [0][d][n][t] = (*sgfo)[d][n][t].e00;
+				(*gf) [2][d][n][t] = (*sgfo)[d][n][t].e01;
+				(*gf) [4][d][n][t] = (*sgfo)[d][n][t].e02;
+				(*gf) [1][d][n][t] = (*sgfo)[d][n][t].e10;
+				(*gf) [3][d][n][t] = (*sgfo)[d][n][t].e11;
+				(*gf) [5][d][n][t] = (*sgfo)[d][n][t].e12;
 #else
-	  (*gf)[0][0][d][n][t] = (*sgfo)[d][n][t].e00;
-	  (*gf)[0][1][d][n][t] = (*sgfo)[d][n][t].e01;
-	  (*gf)[0][2][d][n][t] = (*sgfo)[d][n][t].e02;
-	  (*gf)[1][0][d][n][t] = (*sgfo)[d][n][t].e10;
-	  (*gf)[1][1][d][n][t] = (*sgfo)[d][n][t].e11;
-	  (*gf)[1][2][d][n][t] = (*sgfo)[d][n][t].e12;
-	  (*gf)[2][0][d][n][t] = (*sgfo)[d][n][t].e20;
-	  (*gf)[2][1][d][n][t] = (*sgfo)[d][n][t].e21;
-	  (*gf)[2][2][d][n][t] = (*sgfo)[d][n][t].e22;
+				(*gf)[0][0][d][n][t] = (*sgfo)[d][n][t].e00;
+				(*gf)[0][1][d][n][t] = (*sgfo)[d][n][t].e01;
+				(*gf)[0][2][d][n][t] = (*sgfo)[d][n][t].e02;
+				(*gf)[1][0][d][n][t] = (*sgfo)[d][n][t].e10;
+				(*gf)[1][1][d][n][t] = (*sgfo)[d][n][t].e11;
+				(*gf)[1][2][d][n][t] = (*sgfo)[d][n][t].e12;
+				(*gf)[2][0][d][n][t] = (*sgfo)[d][n][t].e20;
+				(*gf)[2][1][d][n][t] = (*sgfo)[d][n][t].e21;
+				(*gf)[2][2][d][n][t] = (*sgfo)[d][n][t].e22;
 #endif
-      }
-    }
-  }
-  return;
+			}
+		}
+	}
+	return;
 }
 
-void Gaugefield::set_gaugefield_cold_new (s_gaugefield * field) {
-  for(int t=0; t<NTIME; t++) {
-    for(int n=0; n<VOLSPACE; n++) {
-      for(int mu=0; mu<NDIM; mu++) {
-	Matrixsu3 tmp;
-	tmp = unit_matrixsu3();
-	(*field)[mu][n][t] = tmp;
-      }
-    }
-  }
-  return;
+void Gaugefield::set_gaugefield_cold_new (s_gaugefield * field)
+{
+	for(int t = 0; t < NTIME; t++) {
+		for(int n = 0; n < VOLSPACE; n++) {
+			for(int mu = 0; mu < NDIM; mu++) {
+				Matrixsu3 tmp;
+				tmp = unit_matrixsu3();
+				(*field)[mu][n][t] = tmp;
+			}
+		}
+	}
+	return;
 }
 
 
 //Implement this
-void Gaugefield::set_gaugefield_hot_new(s_gaugefield * field) {
-  set_gaugefield_cold_new(field);
-  return;
+void Gaugefield::set_gaugefield_hot_new(s_gaugefield * field)
+{
+	set_gaugefield_cold_new(field);
+	return;
 }
 
 void Gaugefield::copy_gaugefield_to_devices()
@@ -370,13 +375,13 @@ void Gaugefield::print_gaugeobservables_from_devices(hmc_float * const plaq, hmc
 	//LZ: so far, we only use !!! 1 !!! device
 	// this function needs to be generalised to several devices and definition of subsets...
 
-  get_devices()[0].gaugeobservables (get_devices()[0].get_clmem_gaugefield(), plaq, tplaq, splaq, pol);
-  print_gaugeobservables(*plaq, *tplaq, *splaq, *pol, i, gaugeoutname);
+	get_devices()[0].gaugeobservables (get_devices()[0].get_clmem_gaugefield(), plaq, tplaq, splaq, pol);
+	print_gaugeobservables(*plaq, *tplaq, *splaq, *pol, i, gaugeoutname);
 
 	//if wanted, this prints the results to the screen
 	if(stdout)
 		print_gaugeobservables(*plaq, *tplaq, *splaq, *pol, i);
-  return;
+	return;
 }
 
 void Gaugefield::print_gaugeobservables_from_devices(const int i, const string gaugeoutname, int stdout)
@@ -403,7 +408,7 @@ hmc_float Gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 	hmc_float plaq = 0;
 	*tplaq = 0;
 	*splaq = 0;
-	
+
 	//CP: new method that is not working right now since elementary matrix-function using structs are missing on the host
 	/*
 	Matrixsu3 prod;
@@ -411,30 +416,30 @@ hmc_float Gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 	for(int t = 0; t < NTIME; t++) {
 	  for(int n = 0; n < VOLSPACE; n++) {
 	    for(int mu = 0; mu < NDIM; mu++) {
-		for(int nu = 0; nu < mu; nu++) {
-		  prod = local_plaquette(get_sgf(), pos, t, mu, nu );
-		  hmc_float tmpfloat = trace_matrixsu3(prod).re;
-		  plaq += tmpfloat;
-		  if(mu == 0 || nu == 0) {
-		      	tplaq += tmpfloat;
-		  } else {
-			splaq += tmpfloat;
-		  }
-		}
+	  for(int nu = 0; nu < mu; nu++) {
+	    prod = local_plaquette(get_sgf(), pos, t, mu, nu );
+	    hmc_float tmpfloat = trace_matrixsu3(prod).re;
+	    plaq += tmpfloat;
+	    if(mu == 0 || nu == 0) {
+	          tplaq += tmpfloat;
+	    } else {
+	    splaq += tmpfloat;
+	    }
+	  }
 	      }
 	  }
 	}
-*/
+	*/
 	//CP: old method, this should be replaced!!
 	//LZ: for now it works because I have inserted the copy_to/from routines...
 	//LZ: eventually, someone should implement the "structured operations" for the host
-	
 
- 	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+
+	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
 	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
 
 
-for(int t = 0; t < NTIME; t++) {
+	for(int t = 0; t < NTIME; t++) {
 		for(int n = 0; n < VOLSPACE; n++) {
 			for(int mu = 0; mu < NDIM; mu++) {
 				for(int nu = 0; nu < mu; nu++) {
@@ -451,8 +456,8 @@ for(int t = 0; t < NTIME; t++) {
 			}
 		}
 	}
-	
- free(gftmp);
+
+	free(gftmp);
 
 	*tplaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1));
 	*splaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
@@ -463,7 +468,7 @@ for(int t = 0; t < NTIME; t++) {
 hmc_complex Gaugefield::polyakov()
 {
 
- 	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
 	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
 
 	hmc_complex res;
@@ -487,7 +492,7 @@ hmc_complex Gaugefield::polyakov()
 hmc_complex Gaugefield::spatial_polyakov(int dir)
 {
 
- 	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
+	hmc_gaugefield* gftmp = (hmc_gaugefield*) malloc(sizeof(hmc_gaugefield));
 	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
 
 	//assuming dir=1,2, or 3
@@ -537,47 +542,47 @@ void Gaugefield::finalize()
 
 void Gaugefield::free_devices()
 {
-  if(get_num_device_types()==1){
-	if(get_num_ocl_devices() > 0)
-		delete [] get_devices();
-  } else {
-    for(int i=0; i<get_num_device_types(); i++) {
-      if(get_num_ocl_devices() > 0)
-	delete [] get_devices(i);
-    }
-    delete [] devices;
-  }
-  return;
+	if(get_num_device_types() == 1) {
+		if(get_num_ocl_devices() > 0)
+			delete [] get_devices();
+	} else {
+		for(int i = 0; i < get_num_device_types(); i++) {
+			if(get_num_ocl_devices() > 0)
+				delete [] get_devices(i);
+		}
+		delete [] devices;
+	}
+	return;
 }
 
 void Gaugefield::set_devices (Opencl * devices_val)
 {
-  set_devices(devices_val,0);
-  return;
+	set_devices(devices_val, 0);
+	return;
 }
 
 void Gaugefield::set_devices (Opencl * devices_val, int i)
 {
-  if(get_num_device_types()==1) {
-    devices[0] = devices_val;
-  } else {
-    devices[i] = devices_val;
-  }
+	if(get_num_device_types() == 1) {
+		devices[0] = devices_val;
+	} else {
+		devices[i] = devices_val;
+	}
 	return;
 }
 
 Opencl * Gaugefield::get_devices ()
 {
-  return get_devices(0);
+	return get_devices(0);
 }
 
 Opencl * Gaugefield::get_devices (int i)
 {
-  if(i>=get_num_device_types() || i<0) {
-    logger.warn()<<"get_devices: no pointer to that device number";
-    return NULL;
-  } 
-    return devices[i];
+	if(i >= get_num_device_types() || i < 0) {
+		logger.warn() << "get_devices: no pointer to that device number";
+		return NULL;
+	}
+	return devices[i];
 }
 
 
@@ -618,34 +623,41 @@ inputparameters * Gaugefield::get_parameters ()
 
 
 
-s_gaugefield * Gaugefield::get_sgf (){
-    return sgf;
+s_gaugefield * Gaugefield::get_sgf ()
+{
+	return sgf;
 }
-	
-void Gaugefield::set_sgf (s_gaugefield * sgf_val){
+
+void Gaugefield::set_sgf (s_gaugefield * sgf_val)
+{
 	sgf = sgf_val;
 	return;
 }
 
 
-void Gaugefield::alloc_devicetypes(){
-  devices = new Opencl* [this->get_num_device_types()];
-  return;
+void Gaugefield::alloc_devicetypes()
+{
+	devices = new Opencl* [this->get_num_device_types()];
+	return;
 }
 
 
-hmc_ocl_ran* Gaugefield::get_rndarray(){
-  return rndarray;
+hmc_ocl_ran* Gaugefield::get_rndarray()
+{
+	return rndarray;
 }
 
-size_t Gaugefield::get_numrndstates(){
-  return numrndstates;
+size_t Gaugefield::get_numrndstates()
+{
+	return numrndstates;
 }
 
-usetimer * Gaugefield::get_copy_on(){
+usetimer * Gaugefield::get_copy_on()
+{
 	return &copy_on;
 }
 
-usetimer * Gaugefield::get_copy_to(){
+usetimer * Gaugefield::get_copy_to()
+{
 	return &copy_to;
 }

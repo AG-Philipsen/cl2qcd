@@ -47,7 +47,7 @@ extern string const version;
  */
 class Gaugefield {
 public:
-  //init/finalize functions
+	//init/finalize functions
 	/**
 	 * Initialize gaugefield and devices.
 	 *
@@ -56,20 +56,20 @@ public:
 	 * @param[in] input_parameters instance of inputparameters that contains information from input file
 	 * @param[in,out] timer Return initialization time.
 	 */
-		void init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters);
+	void init(int numdevs, cl_device_type* devicetypes, inputparameters* input_parameters);
 
 	/**
 	 * Fills an array of device types according to inputparameters
 	 */
-		void init_devicetypes_array(cl_device_type* devicetypes, inputparameters* input_parameters);
-		
+	void init_devicetypes_array(cl_device_type* devicetypes, inputparameters* input_parameters);
+
 	/**
 	 * Initialize device types
 	 *
 	 * @todo This needs to be worked out in detail. So far it is assumed that numdevs[] has identical entries.
 	 */
-		void init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters);		
-		
+	void init(int* numdevs, int numdevtypes, cl_device_type* devicetypes, inputparameters* input_parameters);
+
 	/**
 	 * Free gaugefield and device allocations.
 	 */
@@ -83,12 +83,12 @@ public:
 	 * @param devicetypes array of cl_device_type handles
 	 * @param[in,out] timer timer for initialization
 	 */
-	virtual	void init_devices(cl_device_type* devicetypes);
+	virtual void init_devices(cl_device_type* devicetypes);
 	/**
 	 * Initializes the gaugefield, to be called by init()
 	 */
 	void init_gaugefield();
-	
+
 
 	//communication
 	/**
@@ -159,7 +159,7 @@ public:
 	 * @param[in] iter integer number that accompanies output
 	 */
 	void print_gaugeobservables(hmc_float plaq, hmc_float tplaq, hmc_float splaq, hmc_complex pol, int iter);
-	
+
 	/**
 	 * Print gauge observables calculated on device, add iteration number, return values to program.
 	 * @param[in,out] plaq pointer to plaquette value
@@ -182,7 +182,7 @@ public:
 	 * @param[in] stdout print also to stdout
 	 */
 	virtual void print_gaugeobservables_from_devices(const int i, const string gaugeoutname, int stdout);
-	
+
 
 	//gaugeobservables, on host!!
 	/**
@@ -217,12 +217,12 @@ public:
 	 * @return The gaugefield
 	 */
 	s_gaugefield * get_sgf ();
-	
+
 	/**
 	 * Sets private member gaugefield u (structures)
 	 */
 	void set_sgf (s_gaugefield * sgf_val);
-	
+
 	/**
 	 * Returns private member * devices
 	 * @return devices
@@ -278,21 +278,21 @@ public:
 	 * @return parameters
 	 */
 	void set_parameters (inputparameters * parameters_val);
-	
+
 	/**
 	 * Copies the gaugefield from pure array format to structure array format
 	 * @param[in] gf pure array
 	 * @param[out] sgf array of structs
 	 */
 	void copy_gaugefield_to_s_gaugefield (s_gaugefield * sgfo, hmc_gaugefield * gf);
-	
+
 	/**
 	 * Copies the gaugefield from structure array format to pure array format
 	 * @param[in] sgf array of structs
 	 * @param[out] gf pure array
 	 */
 	void copy_s_gaugefield_to_gaugefield (hmc_gaugefield * gf, s_gaugefield * sgfo);
-	
+
 	/**
 	 * Initializing the gaugefield consisting of structs for a hot start
 	 * Not implemented yet, does a cold start
@@ -304,7 +304,7 @@ public:
 	 * @param field gaugefield
 	 */
 	void set_gaugefield_cold_new(s_gaugefield * field);
-	
+
 	/**
 	 * This method provides allocation for device double pointer
 	 */
@@ -317,7 +317,7 @@ public:
 	hmc_ocl_ran* get_rndarray();
 
 	/*
-      	 * Returns numrndstates
+	       * Returns numrndstates
 	 * @return numrndstates
 	 */
 	size_t get_numrndstates();
@@ -329,7 +329,7 @@ private:
 	Opencl ** devices;
 	inputparameters* parameters;
 	s_gaugefield * sgf;
-	
+
 	int num_ocl_devices;
 	int num_device_types;
 

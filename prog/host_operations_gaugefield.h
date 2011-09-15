@@ -31,7 +31,7 @@ void copy_gaugefield_from_ildg_format(hmc_gaugefield * gaugefield, hmc_float * g
  *
  * @param[out] dest The location to store the ILDG representation to
  * @param[in] source The gaugefield in the internal representation
- * @todo Replace hmc_gaugefield type by s_gaugefield type (LZ) 
+ * @todo Replace hmc_gaugefield type by s_gaugefield type (LZ)
  */
 void copy_gaugefield_to_ildg_format(ildg_gaugefield * dest, hmc_gaugefield * source);
 /**
