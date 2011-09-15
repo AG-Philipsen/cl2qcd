@@ -35,6 +35,54 @@ void Gaugefield_hmc::finalize_opencl()
 
 void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* solver_timer)
 {
+	size_t gfsize = get_parameters()->get_gf_buf_size();
+	size_t gmsize = get_parameters()->get_gm_buf_size();
+
+	//init gauge_momenta, saved in clmem_p
+	logger.debug() << "\tinit gauge momentum" ;
+	get_task_hmc(0)->generate_gaussian_gaugemomenta_device();
+
+	//init/update spinorfield phi
+	logger.debug() << "\tinit spinorfield " ;
+	//NOTE: one does not have to use phi as initial spinorfield in order to save one variable!!!
+	//  original alg:
+	//    generate_gaussian_spinorfield(chi)
+	//    energy_init = |chi|^2
+	//    md_update_spinorfield_device(chi, phi): phi = Qminus chi
+	//  this can be changed to:
+	//    generate_gaussian_spinorfield(phi_inv)
+	//    energy_init = |phi_inv|^2
+	//    md_update_spinorfield_device(phi_inv, phi): phi = Qminus phi_inv
+	//  saving one variable in global mem!!
+	get_task_hmc(0)->generate_gaussian_spinorfield_device();
+	get_task_hmc(0)->calc_spinorfield_init_energy();
+	logger.debug() << "\tperform md update of spinorfield" ;
+	get_task_hmc(0)->md_update_spinorfield();
+
+	//update gaugefield and gauge_momenta via leapfrog
+	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
+	logger.debug() << "\tperform leapfrog to update gaugefield and gaugemomentum" ;
+
+	//copy u->u' p->p' for the leapfrog
+	get_task_hmc(0)->copy_buffer_on_device(*(get_task_hmc(0)->get_gaugefield()), get_task_hmc(0)->get_clmem_new_u(), gfsize);
+	get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_p(), get_task_hmc(0)->get_clmem_new_p(), gmsize);
+
+	get_task_hmc(0)->leapfrog(get_parameters()->get_tau(), get_parameters()->get_integrationsteps1(), get_parameters()->get_integrationsteps2(), solver_timer);
+
+	//metropolis step: afterwards, the updated config is again in gaugefield and p
+	logger.debug() << "\tperform Metropolis step: " ;
+	//this call calculates also the HMC-Observables
+	*obs = get_task_hmc(0)->metropolis(rnd_number, get_parameters()->get_beta());
+
+	if((*obs).accept == 1) {
+		// perform the change nonprimed->primed !
+		get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_new_u(), *(get_task_hmc(0)->get_gaugefield()), gfsize);
+		get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_new_p(), get_task_hmc(0)->get_clmem_p(), gmsize);
+		logger.debug() << "\t\tnew configuration accepted" ;
+	} else {
+		logger.debug() << "\t\tnew configuration rejected" ;
+	}
+	logger.trace() << "\tfinished HMC trajectory " << iter ;
 
 	return;
 }

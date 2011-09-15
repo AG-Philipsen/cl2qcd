@@ -633,6 +633,21 @@ int inputparameters::get_spinorfieldsize()
 	return spinorfieldsize;
 }
 
+int inputparameters::get_sf_buf_size(){
+	return sf_buf_size;
+}
+
+int inputparameters::get_eo_sf_buf_size(){
+	return eo_sf_buf_size;
+}
+
+int inputparameters::get_gf_buf_size(){
+	return gf_buf_size;
+}
+
+int inputparameters::get_gm_buf_size(){
+	return gm_buf_size;
+}
 int inputparameters::get_spinorsize()
 {
 	return spinorsize;
@@ -1066,6 +1081,11 @@ void inputparameters::set_settings_global()
 	else
 		this->gaugefieldsize = NC * NC * NDIM * this->vol4d;
 
+	//set sizes of buffers
+	this->sf_buf_size = this->spinorfieldsize*sizeof(spinor);
+	this->eo_sf_buf_size = this->eoprec_spinorfieldsize*sizeof(spinor);
+	this->gf_buf_size = this->gaugefieldsize*sizeof(hmc_complex);
+	this->gm_buf_size = this->gaugemomentasize*sizeof(ae);
 }
 
 void inputparameters::check_settings_global()

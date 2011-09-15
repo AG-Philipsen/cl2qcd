@@ -20,14 +20,12 @@ void Opencl_Module_Hmc::fill_buffers()
 
 	Opencl_Module_Fermions::fill_buffers();
 
-	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
-	int gaugemomentum_size = sizeof(ae) * get_parameters()->get_gaugemomentasize();
+	int spinorfield_size = get_parameters()->get_sf_buf_size();
+	int gaugemomentum_size = get_parameters()->get_gm_buf_size();
+	int gaugefield_size = get_parameters()->get_gf_buf_size();
 	int float_size = sizeof(hmc_float);
 	hmc_complex one = hmc_complex_one;
 	hmc_complex minusone = hmc_complex_minusone;
-
-	/// @todo CP: perhaps this should be handled centrally...
-	size_t num_gaugefield_elems = get_parameters()->get_gaugefieldsize();
 	
 	//init mem-objects
 
@@ -35,7 +33,7 @@ void Opencl_Module_Hmc::fill_buffers()
 	clmem_force = create_rw_buffer(gaugemomentum_size);
 	clmem_phi_inv = create_rw_buffer(spinorfield_size);
 	clmem_phi = create_rw_buffer(spinorfield_size);
-	clmem_new_u = create_rw_buffer(num_gaugefield_elems * sizeof(hmc_complex));
+	clmem_new_u = create_rw_buffer(gaugefield_size);
 	clmem_p = create_rw_buffer(gaugemomentum_size);
 	clmem_new_p = create_rw_buffer(gaugemomentum_size);
 	clmem_energy_init = create_rw_buffer(float_size);
@@ -412,7 +410,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 	if(get_parameters()->get_use_smearing() == true) {
 		logger.debug() << "\t\t\tsave unsmeared gaugefield...";
-		size_t gfsize = get_parameters()->get_gaugefieldsize() * sizeof(hmc_complex);
+		size_t gfsize = get_parameters()->get_gf_buf_size();
 		gf_tmp = create_rw_buffer(gfsize);
 		copy_buffer_on_device(*get_gaugefield(), gf_tmp, gfsize);
 		logger.debug() << "\t\t\tsmear gaugefield...";
@@ -505,7 +503,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		logger.debug() << "\t\t\tcalc stout-smeared fermion_force...";
 		stout_smeared_fermion_force_device();
 		logger.debug() << "\t\t\trestore unsmeared gaugefield...";
-		size_t gfsize = get_parameters()->get_gaugefieldsize() * sizeof(hmc_complex);
+		size_t gfsize = get_parameters()->get_gf_buf_size();
 		copy_buffer_on_device(gf_tmp, *get_gaugefield(), gfsize);
 		cl_int clerr = clReleaseMemObject(gf_tmp);
 		if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);

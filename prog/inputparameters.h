@@ -5,7 +5,11 @@
 #ifndef _INPUTPARAMETERSH_
 #define _INPUTPARAMETERSH_
 
+//CP: this should know all types that might be used in the programm
 #include "types.h"
+#include "types_fermions.h"
+#include "types_hmc.h"
+
 #include "globaldefs.h"
 #include "logger.hpp"
 
@@ -98,6 +102,10 @@ public:
 	int get_su3algebrasize();
 	int get_gaugefieldsize();
 	int get_spinorfieldsize();
+	int get_sf_buf_size();
+	int get_eo_sf_buf_size();
+	int get_gf_buf_size();
+	int get_gm_buf_size();
 	bool get_use_chem_pot_re();
 	bool get_use_chem_pot_im();
 	bool get_use_smearing();
@@ -220,6 +228,12 @@ private:
 	int gaugemomentasize;
 	int su3algebrasize;
 	int gaugefieldsize;
+	//sizes of fieldbuffers
+	int sf_buf_size;
+	int eo_sf_buf_size;
+	int gf_buf_size;
+	int gm_buf_size;
+	
 	bool use_rec12;
 	bool use_gpu;
 	bool use_eo;
