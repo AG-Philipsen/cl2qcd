@@ -88,7 +88,7 @@ public:
 
 	/**
 	 * Get kernel for correlator indicated by which
-	 * @param[in] which string that identifies the correlator (ps or sc)
+	 * @param[in] which string that identifies the correlator (ps or sc, vx, vy, vz, ax, ay, az)
 	 * @return correlator_kernel
 	 */
 	cl_kernel get_correlator_kernel(string which);
@@ -137,8 +137,18 @@ private:
 	cl_kernel create_stochastic_source;
 
 	//Observables
+	//scalar correlators
 	cl_kernel correlator_ps;
 	cl_kernel correlator_sc;
+	//vector correlators, physical basis: Gamma_4 * Gamma_{x,y,z}
+	cl_kernel correlator_vx;
+	cl_kernel correlator_vy;
+	cl_kernel correlator_vz;
+	//axial vector correlators, physical basis: Gamma_5 * Gamma_4 * Gamma_{x,y,z}
+	cl_kernel correlator_ax;
+	cl_kernel correlator_ay;
+	cl_kernel correlator_az;
+
 
 	cl_mem clmem_source;
 

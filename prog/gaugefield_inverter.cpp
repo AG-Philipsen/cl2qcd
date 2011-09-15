@@ -115,10 +115,10 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 	of << "# flavour doublet correlators" << endl;
 	if(get_parameters()->get_corr_dir() == 3) {
 		of << "# format: J P z real complex"  << endl;
-		of << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), z spatial distance, real part, complex part" << endl;
+		of << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), z spatial distance, value (aggregate x y z)" << endl;
 	} else {
 		of << "# format: J P t real complex"  << endl;
-		of << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), t timelike distance, real part, complex part" << endl;
+		of << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), t timelike distance, value (aggregate x y z)" << endl;
 	}
 
 
@@ -141,28 +141,40 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 	hmc_float* host_result = new hmc_float [num_corr_entries];
 
 	//the pseudo-scalar (J=0, P=1)
+	logger.info() << "calculate pseudo scalar correlator..." ;
 	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ps"),get_task_correlator()->get_clmem_corr(), result);
 	get_task_correlator()->get_buffer_from_device(result, host_result, buffersize);
-	logger.info() << "calculate pseudo scalar correlator..." ;
 	for(int j = 0; j < num_corr_entries; j++) {
 		printf("%i\t(%.12e)\n", j, host_result[j]);
-		logger.info() << j << "\t" << scientific << setprecision(14) << host_result[j] << "\t"  << scientific << setprecision(14) << "0" ;
-		of << scientific << setprecision(14) << "0 1\t" << j << "\t" << host_result[j] << "\t0" << endl;
+		logger.info() << j << "\t" << scientific << setprecision(14) << host_result[j];
+		of << scientific << setprecision(14) << "0 1\t" << j << "\t" << host_result[j] << endl;
 	}
 
 
 	//the scalar (J=0, P=0)
+	logger.info() << "calculate scalar correlator..." ;
 	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("sc"), get_task_correlator()->get_clmem_corr(), result);
 	get_task_correlator()->get_buffer_from_device(result, host_result, buffersize);
-	logger.info() << "calculate scalar correlator..." ;
 	for(int j = 0; j < num_corr_entries; j++) {
-		of << scientific << setprecision(14) << "0 0\t" << j << "\t" << host_result[j] << "\t0" << endl;
+		of << scientific << setprecision(14) << "0 0\t" << j << "\t" << host_result[j] << endl;
+	}
+
+	//the vector (J=1, P=1)
+	logger.info() << "calculate vector correlator..." ;
+	hmc_float* host_result_y = new hmc_float [num_corr_entries];
+	hmc_float* host_result_z = new hmc_float [num_corr_entries];
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vx"), get_task_correlator()->get_clmem_corr(), result);
+	get_task_correlator()->get_buffer_from_device(result, host_result, buffersize);
+	for(int j = 0; j < num_corr_entries; j++) {
+	  of << scientific << setprecision(14) << "1 1\t" << j << "\t" << host_result[j] << "\t" << host_result[j] << endl;
 	}
 
 
 	of << endl;
 	of.close();
 	delete [] host_result;
+	delete [] host_result_y;
+	delete [] host_result_z;
 	cl_int clerr = clReleaseMemObject(result);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 

@@ -58,10 +58,22 @@ void Opencl_Module_Correlator::fill_kernels()
 		case 0 :
 			correlator_ps = createKernel("correlator_ps_t") << basic_fermion_code << "fermionobservables.cl";
 			correlator_sc = createKernel("correlator_sc_t") << basic_fermion_code << "fermionobservables.cl";
+			correlator_vx = createKernel("correlator_vx_t") << basic_fermion_code << "fermionobservables.cl";
+			// correlator_vy = createKernel("correlator_vy_t") << basic_fermion_code << "fermionobservables.cl";
+			// correlator_vz = createKernel("correlator_vz_t") << basic_fermion_code << "fermionobservables.cl";
+			// correlator_ax = createKernel("correlator_ax_t") << basic_fermion_code << "fermionobservables.cl";
+			// correlator_ay = createKernel("correlator_ay_t") << basic_fermion_code << "fermionobservables.cl";
+			// correlator_az = createKernel("correlator_az_t") << basic_fermion_code << "fermionobservables.cl";
 			break;
 		case 3 :
 			correlator_ps = createKernel("correlator_ps_z") << basic_fermion_code << "fermionobservables.cl";
 			correlator_sc = createKernel("correlator_sc_z") << basic_fermion_code << "fermionobservables.cl";
+			correlator_vx = createKernel("correlator_vx_z") << basic_fermion_code << "fermionobservables.cl";
+			// correlator_vy = createKernel("correlator_vy_z") << basic_fermion_code << "fermionobservables.cl";
+			// correlator_vz = createKernel("correlator_vz_z") << basic_fermion_code << "fermionobservables.cl";
+			// correlator_ax = createKernel("correlator_ax_z") << basic_fermion_code << "fermionobservables.cl";
+			// correlator_ay = createKernel("correlator_ay_z") << basic_fermion_code << "fermionobservables.cl";
+			// correlator_az = createKernel("correlator_az_z") << basic_fermion_code << "fermionobservables.cl";
 			break;
 		default:
 			stringstream errmsg;
@@ -136,6 +148,25 @@ cl_kernel Opencl_Module_Correlator::get_correlator_kernel(string which)
 	if( which.compare("sc") == 0 ) {
 		return correlator_sc;
 	}
+	if( which.compare("vx") == 0 ) {
+		return correlator_vx;
+	}
+	if( which.compare("vy") == 0 ) {
+		return correlator_vy;
+	}
+	if( which.compare("vz") == 0 ) {
+		return correlator_vz;
+	}
+	if( which.compare("ax") == 0 ) {
+		return correlator_vx;
+	}
+	if( which.compare("ay") == 0 ) {
+		return correlator_vy;
+	}
+	if( which.compare("az") == 0 ) {
+		return correlator_vz;
+	}
+	throw Print_Error_Message("get_correlator_kernel failed, no appropriate kernel found");
 	return 0;
 }
 
