@@ -93,7 +93,9 @@ public:
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
 	void md_update_spinorfield();
-	void leapfrog(hmc_float tau, int steps1, int steps2, usetimer * solvertimer);
+	void integrator(usetimer * solvertimer);
+	void leapfrog(usetimer * solvertimer);
+	void twomn(usetimer * solvertimer);
 	hmc_observables metropolis(hmc_float rnd, hmc_float beta);
 	void calc_spinorfield_init_energy();
 	void calc_total_force(usetimer * solvertimer);

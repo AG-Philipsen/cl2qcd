@@ -296,7 +296,6 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_device()
 	enqueueKernel(generate_gaussian_spinorfield  , gs2, ls2);
 }
 
-
 void Opencl_Module_Hmc::md_update_spinorfield()
 {
 	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
@@ -311,19 +310,24 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 	logger.debug() << "\tsquarenorm init field after update = " << s_fermion;
 }
 
+void Opencl_Module_Hmc::integrator(usetimer * solvertimer){
+	if(get_parameters()->get_integrator() == LEAPFROG){
+		this->leapfrog(solvertimer);
+	}
+	else if(get_parameters()->get_integrator() == TWOMN){
+		this->twomn(solvertimer);
+	}
+	return;
+}
 
-void Opencl_Module_Hmc::leapfrog(hmc_float tau, int steps1, int steps2, usetimer * solvertimer)
+void Opencl_Module_Hmc::leapfrog(usetimer * solvertimer)
 {
 	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already
-	//this is the number of int.steps for the fermion during one gauge-int.step
-	//this is done after hep-lat/0209037. See also hep-lat/050611v2 for a more advanced versions
-	int mult = steps1 % steps2;
-	if( mult != 0) Print_Error_Message("integrationsteps1 must be a multiple of integrationssteps2, nothing else is implemented yet. Aborting...");
 
-	int m = steps1 / steps2;
-	if(m == 1) {
+	if(get_parameters()->get_num_timescales() == 1) {
 		//this is the simplest case, just using 1 timescale
-		hmc_float stepsize = (tau) / ((hmc_float) steps1);
+		int steps = get_parameters()->get_integrationsteps1();
+		hmc_float stepsize = get_parameters()->get_tau() / ((hmc_float) steps);
 		hmc_float stepsize_half = 0.5 * stepsize;
 
 		//initial step
@@ -331,8 +335,8 @@ void Opencl_Module_Hmc::leapfrog(hmc_float tau, int steps1, int steps2, usetimer
 		calc_total_force(solvertimer);
 		md_update_gaugemomentum_device(-1.*stepsize_half);
 		//intermediate steps
-		if(steps1 > 1) logger.debug() << "\t\tperform " << steps1 - 1 << " intermediate steps " ;
-		for(int k = 1; k < steps1; k++) {
+		if(steps > 1) logger.debug() << "\t\tperform " << get_parameters()->get_integrationsteps1() - 1 << " intermediate steps " ;
+		for(int k = 1; k < steps; k++) {
 			md_update_gaugefield_device(stepsize);
 			calc_total_force(solvertimer);
 			md_update_gaugemomentum_device(-1.*stepsize);
@@ -343,10 +347,21 @@ void Opencl_Module_Hmc::leapfrog(hmc_float tau, int steps1, int steps2, usetimer
 		calc_total_force(solvertimer);
 		md_update_gaugemomentum_device(-1.*stepsize_half);
 		logger.debug() << "\t\tfinished leapfrog";
-	} else {
+	} 
+	else if (get_parameters()->get_num_timescales() == 2) {
+		int steps1 = get_parameters()->get_integrationsteps1();
+		int steps2 = get_parameters()->get_integrationsteps2();
+		
+		int mult = steps1 % steps2;
+		if( mult != 0) Print_Error_Message("integrationsteps1 must be a multiple of integrationssteps2, nothing else is implemented yet. Aborting...");
+		
+		//this is the number of int.steps for the fermion during one gauge-int.step
+		//this is done after hep-lat/0209037. See also hep-lat/050611v2 for a more advanced versions
+		int m = steps1/steps2;
+		
 		//this uses 2 timescales (more is not implemented yet): timescale1 for the gauge-part, timescale2 for the fermion part
-		hmc_float stepsize = (tau) / ((hmc_float) steps1);
-		hmc_float stepsize2 = (tau) / ((hmc_float) steps2);
+		hmc_float stepsize = get_parameters()->get_tau() / ((hmc_float) steps1);
+		hmc_float stepsize2 = get_parameters()->get_tau() / ((hmc_float) steps2);
 		hmc_float stepsize_half = 0.5 * stepsize;
 		hmc_float stepsize2_half = 0.5 * stepsize2;
 
@@ -368,7 +383,7 @@ void Opencl_Module_Hmc::leapfrog(hmc_float tau, int steps1, int steps2, usetimer
 			md_update_gaugemomentum_device(-1.*stepsize_half);
 		}
 		//intermediate steps
-		if(steps1 > 1) logger.debug() << "\t\tperform " << steps2 - 1 << " intermediate steps " ;
+		if(steps2 > 1) logger.debug() << "\t\tperform " << steps2 - 1 << " intermediate steps " ;
 		for(int k = 1; k < steps2; k++) {
 			//this corresponds to V_s2(deltaTau)
 			set_zero_clmem_force_device();
@@ -393,7 +408,45 @@ void Opencl_Module_Hmc::leapfrog(hmc_float tau, int steps1, int steps2, usetimer
 		md_update_gaugemomentum_device(-1.*stepsize2_half);
 		logger.debug() << "\t\tfinished leapfrog";
 	}
+	else 
+		Print_Error_Message("More than 2 timescales is not implemented yet. Aborting...");
 }
+
+void Opencl_Module_Hmc::twomn(usetimer * solvertimer)
+{
+	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already
+
+	if(get_parameters()->get_num_timescales() == 1) {
+		//this is the simplest case, just using 1 timescale
+		int steps = get_parameters()->get_integrationsteps1();
+		hmc_float stepsize = get_parameters()->get_tau() / ((hmc_float) steps);
+		hmc_float stepsize_half = 0.5 * stepsize;
+
+		
+	} 
+	else if (get_parameters()->get_num_timescales() == 2) {
+		int steps1 = get_parameters()->get_integrationsteps1();
+		int steps2 = get_parameters()->get_integrationsteps2();
+		
+		int mult = steps1 % steps2;
+		if( mult != 0) Print_Error_Message("integrationsteps1 must be a multiple of integrationssteps2, nothing else is implemented yet. Aborting...");
+		
+		//this is the number of int.steps for the fermion during one gauge-int.step
+		//this is done after hep-lat/0209037. See also hep-lat/050611v2 for a more advanced versions
+		int m = steps1/steps2;
+		
+		//this uses 2 timescales (more is not implemented yet): timescale1 for the gauge-part, timescale2 for the fermion part
+		hmc_float stepsize = get_parameters()->get_tau() / ((hmc_float) steps1);
+		hmc_float stepsize2 = get_parameters()->get_tau() / ((hmc_float) steps2);
+		hmc_float stepsize_half = 0.5 * stepsize;
+		hmc_float stepsize2_half = 0.5 * stepsize2;
+
+		
+	}
+	else 
+		Print_Error_Message("More than 2 timescales is not implemented yet. Aborting...");
+}
+
 
 void Opencl_Module_Hmc::calc_total_force(usetimer * solvertimer)
 {

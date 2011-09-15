@@ -59,15 +59,15 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 	logger.debug() << "\tperform md update of spinorfield" ;
 	get_task_hmc(0)->md_update_spinorfield();
 
-	//update gaugefield and gauge_momenta via leapfrog
+	//update gaugefield and gauge_momenta
 	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
-	logger.debug() << "\tperform leapfrog to update gaugefield and gaugemomentum" ;
+	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
 
-	//copy u->u' p->p' for the leapfrog
+	//copy u->u' p->p' for the integrator
 	get_task_hmc(0)->copy_buffer_on_device(*(get_task_hmc(0)->get_gaugefield()), get_task_hmc(0)->get_clmem_new_u(), gfsize);
 	get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_p(), get_task_hmc(0)->get_clmem_new_p(), gmsize);
 
-	get_task_hmc(0)->leapfrog(get_parameters()->get_tau(), get_parameters()->get_integrationsteps1(), get_parameters()->get_integrationsteps2(), solver_timer);
+	get_task_hmc(0)->integrator(solver_timer);
 
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
 	logger.debug() << "\tperform Metropolis step: " ;
