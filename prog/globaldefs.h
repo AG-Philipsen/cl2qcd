@@ -44,6 +44,9 @@
 #define CLOVER 1
 #define TWISTEDMASS 2
 
+#define LEAPFROG 0
+#define TWOMN 1
+
 //EVEN ODD
 #define EVEN 0
 #define ODD 1

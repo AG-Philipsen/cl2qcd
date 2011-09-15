@@ -72,6 +72,8 @@ void inputparameters::set_defaults()
 	integrationsteps1 = 10;
 	integrationsteps2 = integrationsteps1;
 	hmcsteps = 10;
+	num_timescales = 1;
+	integrator = LEAPFROG;
 
 	//direction for the correlator
 	corr_dir = 3;
@@ -143,11 +145,14 @@ void inputparameters::readfile(char* ifn)
 			if(line.find("hmcsteps") != std::string::npos) val_assign(&hmcsteps, line);
 			if(line.find("integrationsteps1") != std::string::npos) val_assign(&integrationsteps1, line);
 			if(line.find("integrationsteps2") != std::string::npos) val_assign(&integrationsteps2, line);
+			if(line.find("num_timescales") != std::string::npos) val_assign(&num_timescales, line);
 			if(line.find("num_dev") != std::string::npos) val_assign(&num_dev, line);
 
 			if(line.find("fermaction") != std::string::npos) fermact_assign(&fermact, line);
 			if(line.find("fermionaction") != std::string::npos) fermact_assign(&fermact, line);
 			if(line.find("fermact") != std::string::npos) fermact_assign(&fermact, line);
+			
+			if(line.find("integrator") != std::string::npos) integrator_assign(&integrator, line);
 
 			if(line.find("evenodd") != std::string::npos) bool_assign(&use_eo, line);
 			if(line.find("even_odd") != std::string::npos) bool_assign(&use_eo, line);
@@ -322,6 +327,31 @@ void inputparameters::fermact_assign(int * out, std::string line)
 	}
 	if(value.find("unimproved") != std::string::npos) {
 		(*out) = WILSON;
+		return;
+	}
+	throw line;
+	return;
+}
+
+void inputparameters::integrator_assign(int * out, std::string line)
+{
+	size_t pos = line.find("=");
+	std::string value = line.substr(pos + 1);
+
+	if(value.find("LEAPFROG") != std::string::npos) {
+		(*out) = LEAPFROG;
+		return;
+	}
+	if(value.find("leapfrog") != std::string::npos) {
+		(*out) = LEAPFROG;
+		return;
+	}
+	if(value.find("2MN") != std::string::npos) {
+		(*out) = TWOMN;
+		return;
+	}
+	if(value.find("2mn") != std::string::npos) {
+		(*out) = TWOMN;
 		return;
 	}
 	throw line;
@@ -546,6 +576,16 @@ int inputparameters::get_startcondition()
 int inputparameters::get_fermact()
 {
 	return fermact;
+}
+
+int inputparameters::get_integrator()
+{
+	return integrator;
+}
+
+int inputparameters::get_num_timescales()
+{
+	return num_timescales;
 }
 
 bool inputparameters::get_saveconfigs()
@@ -1021,7 +1061,10 @@ void inputparameters::set_settings_global()
 	this->spinorfieldsize = this->vol4d;
 	this->eoprec_spinorfieldsize = this->spinorfieldsize / 2;
 	this->gaugemomentasize = NDIM * this->vol4d;
-	this->gaugefieldsize = NC * NC * NDIM * this->vol4d;
+	if(get_use_rec12() == true)
+		this->gaugefieldsize = NC * (NC-1) * NDIM * this->vol4d;
+	else
+		this->gaugefieldsize = NC * NC * NDIM * this->vol4d;
 
 }
 

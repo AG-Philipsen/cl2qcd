@@ -112,6 +112,8 @@ public:
 	int get_source_pos_spatial();
 	int get_source_pos_temporal();
 	int get_corr_dir();
+	int get_integrator();
+	int get_num_timescales();
 #ifdef _PROFILING_
 	int get_mat_size();
 	int get_float_size();
@@ -260,6 +262,7 @@ private:
 	int savefrequency;
 	bool saveconfigs;
 	int writefrequency;
+	int num_timescales;
 	int integrationsteps1;
 	int integrationsteps2;
 	bool use_cg;
@@ -270,11 +273,13 @@ private:
 	int pointsource_z;
 	int pointsource_t;
 	int corr_dir;
+	int integrator;
 	void val_assign(hmc_float* out, std::string line);
 	void val_assign(int * out, std::string line);
 	void sourcefilenumber_assign(std::string * out);
 	void startcond_assign(int * out, std::string line);
 	void fermact_assign(int * out, std::string line);
+	void integrator_assign(int * out, std::string line);
 	void val_assign(std::string * out, std::string line);
 	void bool_assign(bool * out, std::string line);
 };
