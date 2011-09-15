@@ -156,8 +156,6 @@ typedef Matrixsu3 ocl_s_gaugefield;
 
 #endif // ifndef _INKERNEL_
 
-
-
 typedef hmc_float hmc_ocl_spinor;
 typedef hmc_complex hmc_ocl_su3matrix;
 typedef hmc_complex hmc_ocl_3x3matrix;
