@@ -24,9 +24,9 @@ def main():
 		print line,
 
 		# Now we can check what the line looks like and react on it
-		# The regexp searches for "<digits><whitespace>(<float>)" and returns only the <float>-part.
+		# The regexp searches for "[<timestamp>] INFO: <digits><whitespace><float>" and returns only the <float>-part.
 		# For float the scientific notation matcher from http://docs.python.org/library/re.html#re.search is used.
-		match = re.match(r"^\d+\s+\(([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)\)$",line)
+		match = re.match(r"^\[\d\d:\d\d:\d\d\] INFO: \d+\s+([-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?)$",line)
 		if match != None:
 			matched = float(match.group(1))
 			#print 'Matched: %f' % matched
