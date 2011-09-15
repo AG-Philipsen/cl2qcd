@@ -297,31 +297,31 @@ void Opencl_Module::clear_buffers()
 
 void Opencl_Module::copy_buffer_on_device(cl_mem in, cl_mem out, size_t size)
 {
-	 (*this->get_copy_on()).reset();
+	(*this->get_copy_on()).reset();
 
 	int clerr = clEnqueueCopyBuffer(get_queue(), in, out, 0, 0, size , 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueCopyBuffer", __FILE__, __LINE__);
 
-	 (*this->get_copy_on()).add();
+	(*this->get_copy_on()).add();
 }
 
 void Opencl_Module::copy_buffer_to_device(void * source, cl_mem dest, size_t size)
 {
-	 (*this->get_copy_to()).reset();
+	(*this->get_copy_to()).reset();
 
 	int clerr = clEnqueueWriteBuffer(get_queue(), dest, CL_TRUE, 0, size, source, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 
-	 (*this->get_copy_to()).add();
+	(*this->get_copy_to()).add();
 }
 
 void Opencl_Module::get_buffer_from_device(cl_mem source, void * dest, size_t size)
 {
-	 (*this->get_copy_to()).reset();
+	(*this->get_copy_to()).reset();
 	cl_int clerr = clEnqueueReadBuffer(get_queue(), source, CL_TRUE, 0, size, dest, 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueReadBuffer", __FILE__, __LINE__);
 
-	 (*this->get_copy_to()).add();
+	(*this->get_copy_to()).add();
 }
 
 void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
@@ -860,26 +860,29 @@ void Opencl_Module::get_work_sizes(const cl_kernel kernel, cl_device_type dev_ty
 	return;
 }
 
-string Opencl_Module::get_kernel_name(const cl_kernel kernel){
-  int clerr;
-  size_t bytesInKernelName;
-  clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetKernelInfo", __FILE__, __LINE__);
-  char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
-  clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetKernelInfo", __FILE__, __LINE__);
+string Opencl_Module::get_kernel_name(const cl_kernel kernel)
+{
+	int clerr;
+	size_t bytesInKernelName;
+	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetKernelInfo", __FILE__, __LINE__);
+	char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
+	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetKernelInfo", __FILE__, __LINE__);
 
-  string kernel_name = kernelName;
-  delete [] kernelName;
+	string kernel_name = kernelName;
+	delete [] kernelName;
 
-  return kernel_name;
-}	
+	return kernel_name;
+}
 
-usetimer * Opencl_Module::get_copy_on(){
+usetimer * Opencl_Module::get_copy_on()
+{
 	return &copy_on;
 }
 
-usetimer * Opencl_Module::get_copy_to(){
+usetimer * Opencl_Module::get_copy_to()
+{
 	return &copy_to;
 }
 
@@ -940,7 +943,7 @@ int Opencl_Module::get_read_write_size(char * in, inputparameters * parameters)
 	return 0;
 }
 
-void Opencl_Module::print_profiling(std::string filename, char * kernelName, uint64_t time_total, int calls_total, int read_write_size)
+void Opencl_Module::print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, int read_write_size)
 {
 	hmc_float bandwidth = 0.;
 	uint64_t avg_time = 0.;
@@ -1018,23 +1021,24 @@ string Opencl_Module::get_device_double_extension()
 	return device_double_extension;
 }
 
-void Opencl_Module::print_copy_times(uint64_t totaltime){
+void Opencl_Module::print_copy_times(uint64_t totaltime)
+{
 	//copy1 ^= copy_to_from_dev_time
 	//copy2 ^= copy_on_dev_time
-	
+
 	uint64_t copy2_time = (this->copy_on).getTime();
 	uint64_t copy1_time = (this->copy_to).getTime();
-	
+
 	int copy1_steps =  (this->copy_to).getNumMeas();
 	int copy2_steps =  (this->copy_on).getNumMeas();
-	
+
 	uint64_t copy1_avgtime = divide(copy1_time, copy1_steps);
 	uint64_t copy2_avgtime = divide(copy2_time, copy2_steps);
-	
+
 	logger.trace() << "## *******************************************************************";
-	logger.trace() << "## Copy-Times\t" << setfill(' ') << setw(12) << "total" << '\t' << setw(12) << "avg"<< '\t' << setw(5) << "perc";
-	logger.trace() << "## CpyTo:\t" << setfill(' ') << setw(12) << copy1_time << '\t' << setw(12) << copy1_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(copy1_time, totaltime);
-	logger.trace() << "## CpyOn:\t" << setfill(' ') << setw(12) << copy2_time << '\t' << setw(12) << copy2_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(copy2_time, totaltime);
+	logger.trace() << "## Copy-Times\t" << setfill(' ') << setw(12) << "total" << '\t' << setw(12) << "avg" << '\t' << setw(5) << "perc";
+	logger.trace() << "## CpyTo:\t" << setfill(' ') << setw(12) << copy1_time << '\t' << setw(12) << copy1_avgtime << '\t' << fixed << setw(5) << setprecision(1) << percent(copy1_time, totaltime);
+	logger.trace() << "## CpyOn:\t" << setfill(' ') << setw(12) << copy2_time << '\t' << setw(12) << copy2_avgtime << '\t' << fixed << setw(5) << setprecision(1) << percent(copy2_time, totaltime);
 	logger.trace() << "## *******************************************************************";
 
 	logger.trace() << "## No output of times to file implemented yet...";

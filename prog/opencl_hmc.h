@@ -52,7 +52,7 @@ public:
 	void calc_total_force(usetimer * solvertimer);
 	void calc_gauge_force();
 	void calc_fermion_force(usetimer * solvertimer);
-	
+
 	///////////////////////////////////////////////////
 	//Methods on device
 	void generate_gaussian_gaugemomenta_device();
@@ -64,14 +64,14 @@ public:
 	void gauge_force_device();
 	void fermion_force_device();
 	void set_float_to_gaugemomentum_squarenorm_device(cl_mem in, cl_mem out);
-	
+
 	////////////////////////////////////////////////////
 	//get members
 	cl_mem get_clmem_p();
 	cl_mem get_clmem_new_p();
 	cl_mem get_clmem_new_u();
 	cl_mem get_clmem_phi();
-	
+
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
 	//fermionmatrix
@@ -84,30 +84,30 @@ public:
 	usetimer timer_set_zero_gaugemomentum;
 	usetimer timer_gaugemomentum_squarenorm;
 	usetimer timer_stout_smear_fermion_force;
-	
+
 	/**
 	 * Return the timer connected to a specific kernel.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
 	virtual usetimer* get_timer(char * in);
-	
+
 	/**
-	 * Return amount of bytes read and written by a specific kernel per call. 
+	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual int get_read_write_size(char * in, inputparameters * parameters);	
-	
+	virtual int get_read_write_size(char * in, inputparameters * parameters);
+
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 * @param parameters inputparameters
 	 */
-	void virtual print_profiling(std::string filename);	
-#endif		
-	
+	void virtual print_profiling(std::string filename);
+#endif
+
 private:
 	//kernels
 	cl_kernel generate_gaussian_spinorfield;

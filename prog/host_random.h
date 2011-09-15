@@ -27,7 +27,7 @@ const unsigned long long int seed = 500000;
 struct Random {
 
 	/** Random number state */
-	Ullong u,v,w;
+	Ullong u, v, w;
 
 	/**
 	 * Initializes the random number generator.
@@ -51,7 +51,7 @@ struct Random {
 		v ^= v >> 17;
 		v ^= v << 31;
 		v ^= v >> 8;
-		w = 4294957665U*(w & 0xffffffff) + (w >> 32);
+		w = 4294957665U * (w & 0xffffffff) + (w >> 32);
 		Ullong x = u ^ (u << 21);
 		x ^= x >> 35;
 		x ^= x << 4;

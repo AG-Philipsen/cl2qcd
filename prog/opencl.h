@@ -47,8 +47,8 @@ public:
 	 *
 	 * @todo Should probably throw an exception on error
 	 */
-  Opencl(cl_device_type wanted, inputparameters* params, int nstates) {
-	  this->init(wanted, params, nstates);
+	Opencl(cl_device_type wanted, inputparameters* params, int nstates) {
+		this->init(wanted, params, nstates);
 	};
 	/**
 	 * Empty constructor. Needed for gaugefield class.
@@ -112,10 +112,10 @@ public:
 	void plaquette_device(cl_mem gf);
 	void polyakov_device(cl_mem gf);
 	/**
-	 * This applies stout smearing to a gaugefield 
+	 * This applies stout smearing to a gaugefield
 	 */
 	void stout_smear_device();
-	
+
 	/**
 	 * returns init status
 	 * @return isinit (1==true, 0==false)
@@ -170,15 +170,15 @@ public:
 	 * Returns clmem_gaugefield
 	 *
 	 */
-	cl_mem get_clmem_gaugefield();	
+	cl_mem get_clmem_gaugefield();
 	/**
 	 * Returns device_type
 	 */
 	cl_device_type get_device_type();
-	
+
 	usetimer * get_copy_to();
 	usetimer * get_copy_on();
-	
+
 	//private:
 
 	/**
@@ -212,61 +212,61 @@ public:
 	cl_uint max_compute_units;
 
 	cl_command_queue queue;
-	
+
 	/**
-	 *	This calls
-	 *		clCreateBuffer(context, CL_MEM_READ_WRITE, size, 0, &clerr)
-	 *	and returns a pointer to a read-write cl_mem-object if clerr is HMC_SUCCESS
-	 *	@param size size of buffer
+	 *  This calls
+	 *    clCreateBuffer(context, CL_MEM_READ_WRITE, size, 0, &clerr)
+	 *  and returns a pointer to a read-write cl_mem-object if clerr is HMC_SUCCESS
+	 *  @param size size of buffer
 	 */
 	cl_mem create_rw_buffer(size_t size);
 
 	/**
-	 *	This calls
-	 *		clCreateBuffer(context, CL_MEM_READ_ONLY, size, 0, &clerr)
-	 *	and returns a pointer to a read-only cl_mem-object if clerr is HMC_SUCCESS
-	 *	@param size size of buffer
+	 *  This calls
+	 *    clCreateBuffer(context, CL_MEM_READ_ONLY, size, 0, &clerr)
+	 *  and returns a pointer to a read-only cl_mem-object if clerr is HMC_SUCCESS
+	 *  @param size size of buffer
 	 */
 	cl_mem create_wo_buffer(size_t size);
-	
+
 	/**
-	 *	This calls
-	 *		clCreateBuffer(context, CL_MEM_WRITE_ONLY, size, 0, &clerr)
-	 *	and returns a pointer to a write-only cl_mem-object if clerr is HMC_SUCCESS
-	 *	@param size size of buffer
+	 *  This calls
+	 *    clCreateBuffer(context, CL_MEM_WRITE_ONLY, size, 0, &clerr)
+	 *  and returns a pointer to a write-only cl_mem-object if clerr is HMC_SUCCESS
+	 *  @param size size of buffer
 	 */
 	cl_mem create_ro_buffer(size_t size);
-	
+
 	/**
-	 *	This calls
-	 *		clCreateBuffer(context, CL_MEM_USE_HOST_PTR, size, host_pointer, &clerr);
-	 *	and returns a pointer to a cl_mem-object located on the host if clerr is HMC_SUCCESS
-	 *	@param size size of buffer
-	 *	@param host_pointer pointer to memory on host
+	 *  This calls
+	 *    clCreateBuffer(context, CL_MEM_USE_HOST_PTR, size, host_pointer, &clerr);
+	 *  and returns a pointer to a cl_mem-object located on the host if clerr is HMC_SUCCESS
+	 *  @param size size of buffer
+	 *  @param host_pointer pointer to memory on host
 	 */
 	cl_mem create_uhp_buffer(size_t size, void *host_pointer);
 
 	/**
-	 *	This calls
-	 *		clCreateBuffer(context, CL_MEM_ALLOC_HOST_PTR, size, host_pointer, &clerr);
-	 *	and returns a pointer to a cl_mem-object located on the host and allocats memory on the host 
-	 *	if clerr is HMC_SUCCESS
-	 *	@param size size of buffer
-	 *	@param host_pointer pointer to memory on host
+	 *  This calls
+	 *    clCreateBuffer(context, CL_MEM_ALLOC_HOST_PTR, size, host_pointer, &clerr);
+	 *  and returns a pointer to a cl_mem-object located on the host and allocats memory on the host
+	 *  if clerr is HMC_SUCCESS
+	 *  @param size size of buffer
+	 *  @param host_pointer pointer to memory on host
 	 */
 	cl_mem create_ahp_buffer(size_t size, void *host_pointer);
 
 	/**
-	 *	This calls
-	 *		clCreateBuffer(context, CL_MEM_USE_HOST_PTR, size, host_pointer, &clerr);
-	 *	and returns a pointer to a cl_mem-object located on the device and
-	 *	then copies host-memory pointed to by host-pointer to the device 
-	 *	if clerr is HMC_SUCCESS
-	 *	@param size size of buffer
-	 *	@param host_pointer pointer to memory on host
+	 *  This calls
+	 *    clCreateBuffer(context, CL_MEM_USE_HOST_PTR, size, host_pointer, &clerr);
+	 *  and returns a pointer to a cl_mem-object located on the device and
+	 *  then copies host-memory pointed to by host-pointer to the device
+	 *  if clerr is HMC_SUCCESS
+	 *  @param size size of buffer
+	 *  @param host_pointer pointer to memory on host
 	 */
 	cl_mem create_chp_buffer(size_t size, void *host_pointer);
-	
+
 	/**
 	 * comutes work-sizes for a kernel
 	 * @todo autotune
@@ -306,10 +306,10 @@ public:
 	cl_kernel plaquette_reduction;
 	cl_kernel polyakov;
 	cl_kernel polyakov_reduction;
-	
+
 	//since this is only applicated to the gaugefield, this should be here...
 	cl_kernel stout_smear;
-	
+
 	//bunch of timers
 	//this is used to measure data-transfer to and from the device
 	usetimer copy_to;
@@ -328,15 +328,15 @@ public:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual usetimer* get_timer(char * in);	
+	virtual usetimer* get_timer(char * in);
 
-		/**
-	 * Return amount of bytes read and written by a specific kernel per call. 
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual int get_read_write_size(char * in, inputparameters * parameters);	
-	
+	/**
+	   * Return amount of bytes read and written by a specific kernel per call.
+	   *
+	   * @param in Name of the kernel under consideration.
+	   */
+	virtual int get_read_write_size(char * in, inputparameters * parameters);
+
 	/**
 	 * Print the profiling information of a specific kernel to a file.
 	 *
@@ -347,16 +347,16 @@ public:
 	 * @param read_write_size number of bytes read and written by the kernel
 	 */
 	void print_profiling(std::string filename, char * kernelName, uint64_t time_total, int calls_total, int read_write_size);
-	
+
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 */
-	void virtual print_profiling(std::string filename);	
-	
-#endif	
-	
+	void virtual print_profiling(std::string filename);
+
+#endif
+
 	/**
 	 * Enqueue the given kernel on the device. Local work size will be determined
 	 * automatically from device and kernel properties.
@@ -406,31 +406,31 @@ public:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	void copy_rndarray_from_device(hmc_ocl_ran* rndarray);	
-	
+	void copy_rndarray_from_device(hmc_ocl_ran* rndarray);
+
 	/**
-	 * Copy content of a buffer to another buffer inside a queue using 
+	 * Copy content of a buffer to another buffer inside a queue using
 	 *     clEnqueueCopyBuffer(queue, in, out, 0, 0, size , 0, 0, NULL);
 	 * @param in source
 	 * @param out destination
 	 * @param size size of data (out must be equal or bigger than size)
-	 */	
+	 */
 	void copy_buffer_on_device(cl_mem in, cl_mem out, size_t size);
 	/**
-	 * Copy content of a buffer on host to a buffer on device inside a queue using 
+	 * Copy content of a buffer on host to a buffer on device inside a queue using
 	 *     clEnqueueWriteBuffer(queue, dest, CL_TRUE, 0, size, source, 0, 0, NULL);
-	 * This call is a blocking write. 
+	 * This call is a blocking write.
 	 * @param source
-	 * @param dest 
+	 * @param dest
 	 * @param size size of data (out must be equal or bigger than size)
-	 */	
+	 */
 	void copy_buffer_to_device(void * source, cl_mem dest, size_t size);
 	/**
-	 * Copy content of a buffer on device to a buffer on host inside a queue using 
+	 * Copy content of a buffer on device to a buffer on host inside a queue using
 	 *    clEnqueueReadBuffer(queue, source, CL_TRUE, 0, size, dest, 0, NULL, NULL);
-	 * This call is a blocking read. 
+	 * This call is a blocking read.
 	 * @param source
-	 * @param dest 
+	 * @param dest
 	 * @param size size of data (out must be equal or bigger than size)
 	 */
 	void get_buffer_from_device(cl_mem source, void * dest, size_t size);

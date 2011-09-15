@@ -227,7 +227,7 @@ void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kern
 usetimer* Opencl_Module_Correlator::get_timer(char * in)
 {
 	usetimer *noop = NULL;
-	noop = Opencl::get_timer(in);
+	noop = Opencl_Module::get_timer(in);
 	if(noop != NULL) return noop;
 
 	if (strcmp(in, "create_point_source") == 0) {
@@ -251,7 +251,7 @@ usetimer* Opencl_Module_Correlator::get_timer(char * in)
 
 int Opencl_Module_Correlator::get_read_write_size(char * in, inputparameters * parameters)
 {
-	Opencl::get_read_write_size(in, parameters);
+	Opencl_Module::get_read_write_size(in, parameters);
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
 	int R = (*parameters).get_mat_size();
@@ -278,19 +278,19 @@ int Opencl_Module_Correlator::get_read_write_size(char * in, inputparameters * p
 
 void Opencl_Module_Correlator::print_profiling(std::string filename)
 {
-	Opencl::print_profiling(filename);
+	Opencl_Module::print_profiling(filename);
 	char * kernelName;
 	kernelName = "create_point_source";
-	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "create_stochastic_source";
-	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	if( get_parameters()->get_corr_dir() == 3 ) {
 		kernelName = "correlator_ps_z";
-		Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+		Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	}
 	if( get_parameters()->get_corr_dir() == 0 ) {
 		kernelName = "correlator_ps_t";
-		Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+		Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	}
 
 

@@ -124,10 +124,10 @@ public:
 	void solver(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer, int cgmax);
 	/// this executes the bicgstab on the device, using the fermionmatrix f
 	bool bicgstab(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
-	/// this executes the cg on the device, using the fermionmatrix f 
+	/// this executes the cg on the device, using the fermionmatrix f
 	bool cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
 	//    eoprec
-	/// this executes the eoprec bicgstab on the device, using the fermionmatrix f 
+	/// this executes the eoprec bicgstab on the device, using the fermionmatrix f
 	bool bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
 	bool cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
 
@@ -141,7 +141,7 @@ public:
 	cl_mem get_clmem_tmp_eoprec_1();
 	cl_mem get_clmem_source_even();
 	cl_mem get_clmem_source_odd();
-	
+
 	cl_mem get_clmem_minusone();
 
 protected:
@@ -158,10 +158,30 @@ protected:
 	usetimer timer_M_tm_inverse_sitediagonal;
 	usetimer timer_dslash_eoprec;
 
+	/**
+	 * Return the timer connected to a specific kernel.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual usetimer* get_timer(char * in);
 
-#endif	
+	/**
+	 * Return amount of bytes read and written by a specific kernel per call.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual int get_read_write_size(char * in, inputparameters * parameters);
 
- protected:
+	/**
+	 * Print the profiling information to a file.
+	 *
+	 * @param filename Name of file where data is appended.
+	 */
+	void virtual print_profiling(std::string filename);
+
+#endif
+
+protected:
 private:
 	////////////////////////////////////
 	//kernels, sorted roughly by groups
