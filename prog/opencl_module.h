@@ -296,7 +296,7 @@ public:
 	 * @param calls_total total number of kernel calls
 	 * @param read_write_size number of bytes read and written by the kernel
 	 */
-	void print_profiling(std::string filename, char * kernelName, uint64_t time_total, int calls_total, int read_write_size);
+	void print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, int read_write_size);
 
 	/**
 	 * Print the profiling information to a file.

@@ -943,7 +943,7 @@ int Opencl_Module::get_read_write_size(char * in, inputparameters * parameters)
 	return 0;
 }
 
-void Opencl_Module::print_profiling(std::string filename, char * kernelName, uint64_t time_total, int calls_total, int read_write_size)
+void Opencl_Module::print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, int read_write_size)
 {
 	hmc_float bandwidth = 0.;
 	uint64_t avg_time = 0.;
