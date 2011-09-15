@@ -165,7 +165,6 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 	logger.info() << "pseudo scalar correlator:" ;
 	get_task_correlator()->get_buffer_from_device(result_ps, host_result, buffersize);
 	for(int j = 0; j < num_corr_entries; j++) {
-		printf("%i\t(%.12e)\n", j, host_result[j]);
 		logger.info() << j << "\t" << scientific << setprecision(14) << host_result[j];
 		of << scientific << setprecision(14) << "0 1\t" << j << "\t" << host_result[j] << endl;
 	}
