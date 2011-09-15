@@ -166,6 +166,39 @@ target_link_libraries( inverter
 	einhard
 )
 
+add_executable( hmc_tmp
+	hmc_tmp.cpp
+	host_geometry.cpp
+	host_operations_complex.cpp
+	host_operations_gaugefield.cpp
+	host_operations_su3matrix.cpp
+	host_operations_matrix.cpp
+	gaugefield_hybrid.cpp
+	gaugefield_hmc_tmp.cpp
+	inputparameters.cpp
+	host_readgauge.cpp
+	opencl_module.cpp
+	opencl_compiler.cpp
+	opencl_module_fermions.cpp
+	opencl_module_hmc.cpp
+	host_use_timer.cpp
+	host_writegaugefield.cpp
+	logger.cpp
+	exceptions.cpp
+	opencl_module_spinors.cpp
+	opencl_module_ran.cpp
+	host_random.cpp
+)
+
+target_link_libraries( hmc_tmp
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	einhard
+)
+
 add_executable( hmc
 	hmc.cpp
 	host_geometry.cpp
