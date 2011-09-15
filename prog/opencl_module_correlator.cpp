@@ -61,9 +61,9 @@ void Opencl_Module_Correlator::fill_kernels()
 			correlator_vx = createKernel("correlator_vx_t") << basic_fermion_code << "fermionobservables.cl";
 			correlator_vy = createKernel("correlator_vy_t") << basic_fermion_code << "fermionobservables.cl";
 			correlator_vz = createKernel("correlator_vz_t") << basic_fermion_code << "fermionobservables.cl";
-			// correlator_ax = createKernel("correlator_ax_t") << basic_fermion_code << "fermionobservables.cl";
-			// correlator_ay = createKernel("correlator_ay_t") << basic_fermion_code << "fermionobservables.cl";
-			// correlator_az = createKernel("correlator_az_t") << basic_fermion_code << "fermionobservables.cl";
+			correlator_ax = createKernel("correlator_ax_t") << basic_fermion_code << "fermionobservables.cl";
+			correlator_ay = createKernel("correlator_ay_t") << basic_fermion_code << "fermionobservables.cl";
+			correlator_az = createKernel("correlator_az_t") << basic_fermion_code << "fermionobservables.cl";
 			break;
 		case 3 :
 			correlator_ps = createKernel("correlator_ps_z") << basic_fermion_code << "fermionobservables.cl";
@@ -71,9 +71,9 @@ void Opencl_Module_Correlator::fill_kernels()
 			correlator_vx = createKernel("correlator_vx_z") << basic_fermion_code << "fermionobservables.cl";
 			correlator_vy = createKernel("correlator_vy_z") << basic_fermion_code << "fermionobservables.cl";
 			correlator_vz = createKernel("correlator_vz_z") << basic_fermion_code << "fermionobservables.cl";
-			// correlator_ax = createKernel("correlator_ax_z") << basic_fermion_code << "fermionobservables.cl";
-			// correlator_ay = createKernel("correlator_ay_z") << basic_fermion_code << "fermionobservables.cl";
-			// correlator_az = createKernel("correlator_az_z") << basic_fermion_code << "fermionobservables.cl";
+			correlator_ax = createKernel("correlator_ax_z") << basic_fermion_code << "fermionobservables.cl";
+			correlator_ay = createKernel("correlator_ay_z") << basic_fermion_code << "fermionobservables.cl";
+			correlator_az = createKernel("correlator_az_z") << basic_fermion_code << "fermionobservables.cl";
 			break;
 		default:
 			stringstream errmsg;
@@ -97,6 +97,12 @@ void Opencl_Module_Correlator::clear_kernels()
 	clerr = clReleaseKernel(correlator_vy);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(correlator_vz);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(correlator_ax);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(correlator_ay);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(correlator_az);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(create_point_source);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);

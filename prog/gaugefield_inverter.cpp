@@ -159,10 +159,13 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 		of << scientific << setprecision(14) << "0 0\t" << j << "\t" << host_result[j] << endl;
 	}
 
-	//the vector (J=1, P=1)
-	logger.info() << "calculate vector correlator..." ;
+
+	//prepare the vector stuff
 	hmc_float* host_result_y = new hmc_float [num_corr_entries];
 	hmc_float* host_result_z = new hmc_float [num_corr_entries];
+
+	//the vector (J=1, P=1)
+	logger.info() << "calculate vector correlator..." ;
 	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vx"), get_task_correlator()->get_clmem_corr(), result);
 	get_task_correlator()->get_buffer_from_device(result, host_result, buffersize);
 	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vy"), get_task_correlator()->get_clmem_corr(), result);
@@ -170,7 +173,20 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vz"), get_task_correlator()->get_clmem_corr(), result);
 	get_task_correlator()->get_buffer_from_device(result, host_result_z, buffersize);
 	for(int j = 0; j < num_corr_entries; j++) {
-	  of << scientific << setprecision(14) << "1 1\t" << j << "\t" << (host_result[j] + host_result_y[j] + host_result_z[j]) / 3. << "\t" << host_result[j] << "\t" << host_result_y[j] << "\t" << host_result_z[j] <<endl;
+		of << scientific << setprecision(14) << "1 1\t" << j << "\t" << (host_result[j] + host_result_y[j] + host_result_z[j]) / 3. << "\t" << host_result[j] << "\t" << host_result_y[j] << "\t" << host_result_z[j] << endl;
+	}
+
+
+	//the axial vector (J=1, P=0)
+	logger.info() << "calculate axial vector correlator..." ;
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ax"), get_task_correlator()->get_clmem_corr(), result);
+	get_task_correlator()->get_buffer_from_device(result, host_result, buffersize);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ay"), get_task_correlator()->get_clmem_corr(), result);
+	get_task_correlator()->get_buffer_from_device(result, host_result_y, buffersize);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("az"), get_task_correlator()->get_clmem_corr(), result);
+	get_task_correlator()->get_buffer_from_device(result, host_result_z, buffersize);
+	for(int j = 0; j < num_corr_entries; j++) {
+		of << scientific << setprecision(14) << "1 0\t" << j << "\t" << (host_result[j] + host_result_y[j] + host_result_z[j]) / 3. << "\t" << host_result[j] << "\t" << host_result_y[j] << "\t" << host_result_z[j] << endl;
 	}
 
 
