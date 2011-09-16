@@ -13,6 +13,7 @@
 #include "host_operations_complex.h"
 #include "host_operations_su3matrix.h"
 // #include "host_operations_gaugemomentum.h"
+#include "inputparameters.h"
 #include <cmath>
 
 /**
@@ -137,7 +138,7 @@ void local_plaquette(hmc_complex * field, hmc_su3matrix * prod, int n, int t, in
  * @param[in] source The gaugefield to copy
  * @param[ou] dest The storage location for the copy
  */
-void copy_gaugefield(hmc_complex * source, hmc_complex * dest);
+void copy_gaugefield(hmc_complex * source, hmc_complex * dest, const inputparameters * const params);
 
 /**
  * Calculates the Q-plaquette (Clover discretization) at the given spacetime-point and directions

@@ -269,10 +269,10 @@ void local_plaquette(hmc_complex * field, hmc_su3matrix * prod, int n, int t, in
 }
 
 /** @todo memcpy ... */
-void copy_gaugefield(hmc_complex * source, hmc_complex * dest)
+void copy_gaugefield(hmc_complex * source, hmc_complex * dest, const inputparameters * const params)
 {
 	// copies source to destination within cpu memory, layer for gaugefield array
-	return complexcopy(source, dest, GAUGEFIELDSIZE); // SL: not tested
+	return complexcopy(source, dest, params->get_gaugefieldsize()); // SL: not tested
 }
 
 void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, int mu, int nu )
