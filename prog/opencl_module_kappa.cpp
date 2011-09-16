@@ -48,16 +48,16 @@ void Opencl_Module_Kappa::run_kappa_clover(const hmc_float beta)
 	get_work_sizes(kappa_clover_gpu, Opencl_Module::get_device_type(), &local_work_size, &global_work_size, &num_groups);
 
 	if(clmem_kappa_clover == NULL) {
-	  cout << "Create buffer for transport coefficient kappa_clover..." << endl;
-	  clmem_kappa_clover = clCreateBuffer(get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float) * global_work_size, 0, &clerr);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
+		cout << "Create buffer for transport coefficient kappa_clover..." << endl;
+		clmem_kappa_clover = clCreateBuffer(get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float) * global_work_size, 0, &clerr);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
 	}
 
 	if(clmem_kappa_clover_buf_glob == NULL) {
-	  cout << "Create scratch buffer..." << endl;
-	  int global_buf_size_float = sizeof(hmc_float) * num_groups;
-	  clmem_kappa_clover_buf_glob = clCreateBuffer(get_context(), CL_MEM_READ_WRITE, global_buf_size_float, 0, &clerr);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
+		cout << "Create scratch buffer..." << endl;
+		int global_buf_size_float = sizeof(hmc_float) * num_groups;
+		clmem_kappa_clover_buf_glob = clCreateBuffer(get_context(), CL_MEM_READ_WRITE, global_buf_size_float, 0, &clerr);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
 	}
 
 	clerr = clSetKernelArg(kappa_clover_gpu, 0, sizeof(cl_mem), get_gaugefield());
@@ -105,20 +105,21 @@ void Opencl_Module_Kappa::clear_buffers()
 	cl_int clerr = CL_SUCCESS;
 
 	if(clmem_kappa_clover != NULL) {
-	  clerr = clReleaseMemObject(clmem_kappa_clover);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		clerr = clReleaseMemObject(clmem_kappa_clover);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	}
 
 	if(clmem_kappa_clover_buf_glob) {
-	  clerr = clReleaseMemObject(clmem_kappa_clover_buf_glob);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		clerr = clReleaseMemObject(clmem_kappa_clover_buf_glob);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	}
 
 	return;
 }
 
 
-void Opencl_Module_Kappa::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups){
-  Opencl_Module::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
-  return;
+void Opencl_Module_Kappa::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
+{
+	Opencl_Module::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
+	return;
 }

@@ -55,7 +55,7 @@
  * PI
  * @todo Rather use PI from stdlib
  */
-#define PI 	3.14159265358979
+#define PI  3.14159265358979
 
 #define su2_entries 4
 

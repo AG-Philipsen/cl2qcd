@@ -5,21 +5,26 @@
 /**
  * What follows are functions that call opencl_fermions-class-functions.
  * This is needed to be able to pass different fermionmatrices as
- * 	arguments to class-functions.
+ *  arguments to class-functions.
  */
-void M_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf) {
+void M_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+{
 	that->M(in, out, gf);
 }
-void Qplus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf) {
+void Qplus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+{
 	that->Qplus(in, out, gf);
 }
-void Qminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf) {
+void Qminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+{
 	that->Qminus(in, out, gf);
 }
-void QplusQminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf) {
+void QplusQminus_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+{
 	that->QplusQminus(in, out, gf);
 }
-void Aee_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf) {
+void Aee_call(Opencl_fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+{
 	that->Aee(in, out, gf);
 }
 
@@ -29,8 +34,8 @@ void Opencl_fermions::fill_collect_options(stringstream* collect_options)
 {
 
 	Opencl::fill_collect_options(collect_options);
-	*collect_options << " -D_FERMIONS_" << " -DSPINORSIZE=" << get_parameters()->get_spinorsize() << " -DHALFSPINORSIZE=" << get_parameters()->get_halfspinorsize() 
-		<< " -DSPINORFIELDSIZE=" << get_parameters()->get_spinorfieldsize() << " -DEOPREC_SPINORFIELDSIZE=" << get_parameters()->get_eoprec_spinorfieldsize();
+	*collect_options << " -D_FERMIONS_" << " -DSPINORSIZE=" << get_parameters()->get_spinorsize() << " -DHALFSPINORSIZE=" << get_parameters()->get_halfspinorsize()
+	                 << " -DSPINORFIELDSIZE=" << get_parameters()->get_spinorfieldsize() << " -DEOPREC_SPINORFIELDSIZE=" << get_parameters()->get_eoprec_spinorfieldsize();
 	switch (get_parameters()->get_fermact()) {
 		case TWISTEDMASS :
 			*collect_options << " -D_TWISTEDMASS_";
@@ -78,7 +83,7 @@ void Opencl_fermions::fill_collect_options(stringstream* collect_options)
 void Opencl_fermions::fill_buffers()
 {
 	Opencl::fill_buffers();
-	
+
 	logger.trace() << "init buffer for solver...";
 	int clerr = CL_SUCCESS;
 
@@ -92,7 +97,7 @@ void Opencl_fermions::fill_buffers()
 	clmem_inout = create_rw_buffer(spinorfield_size);
 	clmem_source = create_rw_buffer(spinorfield_size);
 	clmem_tmp = create_rw_buffer(spinorfield_size);
-	
+
 	if(get_parameters()->get_use_eo() == true) {
 		logger.debug() << "init general eoprec-spinorfield-buffers";
 		clmem_inout_eoprec = create_rw_buffer(eoprec_spinorfield_size);
@@ -102,7 +107,7 @@ void Opencl_fermions::fill_buffers()
 		clmem_tmp_eoprec_2 = create_rw_buffer(eoprec_spinorfield_size);
 		clmem_tmp_eoprec_3 = create_rw_buffer(eoprec_spinorfield_size);
 	}
-	
+
 	logger.debug() << "init solver spinorfield-buffers";
 	///@todo some buffers can be saved here if only cg is used
 	if(get_parameters()->get_use_eo() == false) {
@@ -111,11 +116,10 @@ void Opencl_fermions::fill_buffers()
 		clmem_rhat = create_rw_buffer(spinorfield_size);
 		clmem_v = create_rw_buffer(spinorfield_size);
 		clmem_p = create_rw_buffer(spinorfield_size);
-		clmem_s =create_rw_buffer(spinorfield_size);
+		clmem_s = create_rw_buffer(spinorfield_size);
 		clmem_t = create_rw_buffer(spinorfield_size);
 		clmem_aux = create_rw_buffer(spinorfield_size);
-	}
-	else{
+	} else {
 		//LZ only use the following if we want to apply even odd preconditioning
 		logger.debug() << "init solver eoprec-spinorfield-buffers";
 		clmem_rn_eoprec = create_rw_buffer(eoprec_spinorfield_size);
@@ -143,15 +147,15 @@ void Opencl_fermions::fill_buffers()
 	//scratch buffers will be created on demand
 	clmem_global_squarenorm_buf_glob = 0;
 	clmem_scalar_product_buf_glob = 0;
-	
+
 	logger.debug() << "write contents to some buffers";
 	hmc_complex one = hmc_complex_one;
 	hmc_complex minusone = hmc_complex_minusone;
 	clerr = clEnqueueWriteBuffer(queue, clmem_one, CL_TRUE, 0, complex_size, &one, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clEnqueueWriteBuffer",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 
 	clerr = clEnqueueWriteBuffer(queue, clmem_minusone, CL_TRUE, 0, complex_size, &minusone, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clEnqueueWriteBuffer",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 
 	return;
 }
@@ -168,22 +172,19 @@ void Opencl_fermions::fill_kernels()
 	M_tm_minus = 0;
 
 	logger.debug() << "Create fermion kernels...";
-	if(get_parameters()->get_fermact() == WILSON){
+	if(get_parameters()->get_fermact() == WILSON) {
 		M_wilson = createKernel("M_wilson") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m.cl";
-	}
-	else if(get_parameters()->get_fermact() == TWISTEDMASS){
+	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
 		M_tm_plus = createKernel("M_tm_plus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
 		M_tm_minus = createKernel("M_tm_minus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m_tm_minus.cl";
+	} else if(get_parameters()->get_fermact() == CLOVER) {
+		throw Print_Error_Message("no kernels for CLOVER-discretization implemented yet, aborting... ", __FILE__, __LINE__);
+	} else {
+		throw Print_Error_Message("there was a problem with which fermion-discretization to use, aborting... ", __FILE__, __LINE__);
 	}
-	else if(get_parameters()->get_fermact() == CLOVER){
-	  throw Print_Error_Message("no kernels for CLOVER-discretization implemented yet, aborting... ",__FILE__,__LINE__);
-	}
-	else{
-	  throw Print_Error_Message("there was a problem with which fermion-discretization to use, aborting... ",__FILE__,__LINE__);
-	}
-	
+
 	gamma5 = createKernel("gamma5") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_gamma5.cl";
-	
+
 	//ps_correlator = createKernel("ps_correlator") << basic_fermion_code << "fermionobservables.cl";
 
 	set_spinorfield_cold = createKernel("set_spinorfield_cold") << basic_fermion_code << "spinorfield_cold.cl";
@@ -202,7 +203,7 @@ void Opencl_fermions::fill_kernels()
 
 	//Kernels needed if eoprec is used
 	if(get_parameters()->get_use_eo() == true) {
-		if(get_parameters()->get_fermact() == TWISTEDMASS){
+		if(get_parameters()->get_fermact() == TWISTEDMASS) {
 			M_tm_sitediagonal = createKernel("M_tm_sitediagonal") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
 			M_tm_inverse_sitediagonal = createKernel("M_tm_inverse_sitediagonal") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
 		}
@@ -221,59 +222,60 @@ void Opencl_fermions::fill_kernels()
 
 void Opencl_fermions::init(cl_device_type wanted_device_type, inputparameters* parameters, int nstates)
 {
-        Opencl::init(wanted_device_type, parameters, nstates);
+	Opencl::init(wanted_device_type, parameters, nstates);
 	return;
 }
 
-void Opencl_fermions::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out){
+void Opencl_fermions::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out)
+{
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(convert_from_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(convert_from_eoprec,0,sizeof(cl_mem),&in1); 
-  	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	int clerr = clSetKernelArg(convert_from_eoprec, 0, sizeof(cl_mem), &in1);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  clerr = clSetKernelArg(convert_from_eoprec,1,sizeof(cl_mem),&in2); 
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	clerr = clSetKernelArg(convert_from_eoprec, 1, sizeof(cl_mem), &in2);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  clerr = clSetKernelArg(convert_from_eoprec,2,sizeof(cl_mem),&out); 
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	clerr = clSetKernelArg(convert_from_eoprec, 2, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  enqueueKernel(convert_from_eoprec , gs2, ls2);
+	enqueueKernel(convert_from_eoprec , gs2, ls2);
 }
 
 
 
 //compound fermionmatrix-functions without eoprec
-void Opencl_fermions::M(cl_mem in, cl_mem out, cl_mem gf){
+void Opencl_fermions::M(cl_mem in, cl_mem out, cl_mem gf)
+{
 
-	if(get_parameters()->get_fermact() == WILSON){
-		//in the pure Wilson case there is just one fermionmatrix 
+	if(get_parameters()->get_fermact() == WILSON) {
+		//in the pure Wilson case there is just one fermionmatrix
 		M_wilson_device(in, out, gf);
-	}
-	else if(get_parameters()->get_fermact() == TWISTEDMASS){
+	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
 		M_tm_plus_device(in, out, gf);
 	}
 }
 
-void Opencl_fermions::Qplus(cl_mem in, cl_mem out, cl_mem gf){
-	if(get_parameters()->get_fermact() == WILSON){
-		//in the pure Wilson case there is just one fermionmatrix 
+void Opencl_fermions::Qplus(cl_mem in, cl_mem out, cl_mem gf)
+{
+	if(get_parameters()->get_fermact() == WILSON) {
+		//in the pure Wilson case there is just one fermionmatrix
 		M_wilson_device(in, out, gf);
-	}
-	else if(get_parameters()->get_fermact() == TWISTEDMASS){
+	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
 		M_tm_plus_device(in, out, gf);
 	}
-// 	gamma5_device(out);
+//  gamma5_device(out);
 }
 
-void Opencl_fermions::Qminus(cl_mem in, cl_mem out, cl_mem gf){
-	if(get_parameters()->get_fermact() == WILSON){
-		//in the pure Wilson case there is just one fermionmatrix 
+void Opencl_fermions::Qminus(cl_mem in, cl_mem out, cl_mem gf)
+{
+	if(get_parameters()->get_fermact() == WILSON) {
+		//in the pure Wilson case there is just one fermionmatrix
 		M_wilson_device(in, out, gf);
-	}
-	else if(get_parameters()->get_fermact() == TWISTEDMASS){
+	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
 		M_tm_minus_device(in, out, gf);
 	}
 	gamma5_device(out);
@@ -281,75 +283,79 @@ void Opencl_fermions::Qminus(cl_mem in, cl_mem out, cl_mem gf){
 
 void Opencl_fermions::QplusQminus(cl_mem in, cl_mem out, cl_mem gf)
 {
-	/** @todo one could save one field here if an additional copying would be included in the end... 
+	/** @todo one could save one field here if an additional copying would be included in the end...
 	 * or the field should be created in here, local */
 	Qminus(in, clmem_tmp, gf);
 	Qplus(clmem_tmp, out, gf);
 }
 
 //explicit fermionmatrix-kernel calling functions
-void Opencl_fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf){
+void Opencl_fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf)
+{
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(M_wilson, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-  int clerr = clSetKernelArg(M_wilson,0,sizeof(cl_mem),&in); 
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	int clerr = clSetKernelArg(M_wilson, 0, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  clerr = clSetKernelArg(M_wilson,1,sizeof(cl_mem),&gf);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	clerr = clSetKernelArg(M_wilson, 1, sizeof(cl_mem), &gf);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  clerr = clSetKernelArg(M_wilson,2,sizeof(cl_mem),&out);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
-  
-  enqueueKernel( M_wilson, gs2, ls2);
+	clerr = clSetKernelArg(M_wilson, 2, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel( M_wilson, gs2, ls2);
 }
 
-void Opencl_fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf){
+void Opencl_fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf)
+{
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(M_tm_plus, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-  int clerr = clSetKernelArg(M_tm_plus,0,sizeof(cl_mem),&in); 
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	int clerr = clSetKernelArg(M_tm_plus, 0, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  clerr = clSetKernelArg(M_tm_plus,1,sizeof(cl_mem),&gf);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	clerr = clSetKernelArg(M_tm_plus, 1, sizeof(cl_mem), &gf);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  clerr = clSetKernelArg(M_tm_plus,2,sizeof(cl_mem),&out);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	clerr = clSetKernelArg(M_tm_plus, 2, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( M_tm_plus, gs2, ls2);
 }
 
-void Opencl_fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf){
+void Opencl_fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf)
+{
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(M_tm_minus, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-  int clerr = clSetKernelArg(M_tm_minus,0,sizeof(cl_mem),&in); 
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	int clerr = clSetKernelArg(M_tm_minus, 0, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  clerr = clSetKernelArg(M_tm_minus,1,sizeof(cl_mem),&gf);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	clerr = clSetKernelArg(M_tm_minus, 1, sizeof(cl_mem), &gf);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  clerr = clSetKernelArg(M_tm_minus,2,sizeof(cl_mem),&out);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	clerr = clSetKernelArg(M_tm_minus, 2, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( M_tm_minus, gs2, ls2);
 }
 
-void Opencl_fermions::gamma5_device(cl_mem inout){
+void Opencl_fermions::gamma5_device(cl_mem inout)
+{
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(gamma5, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(gamma5,0,sizeof(cl_mem),&inout); 
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	int clerr = clSetKernelArg(gamma5, 0, sizeof(cl_mem), &inout);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(gamma5 , gs2, ls2);
 }
@@ -360,16 +366,15 @@ void Opencl_fermions::Aee(cl_mem in, cl_mem out, cl_mem gf)
 	int even = EVEN;
 	int odd = ODD;
 
-	if(get_parameters()->get_fermact() == WILSON){
+	if(get_parameters()->get_fermact() == WILSON) {
 		logger.fatal() << "not yet implemented in WILSON case, aborting...";
-	}
-	else if(get_parameters()->get_fermact() == TWISTEDMASS){
+	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
 		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
 		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
 		dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even);
 		M_tm_sitediagonal_device(in, clmem_tmp_eoprec_1);
 		/** @todo  the copying can be extincted by using
-		 * 	saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
+		 *  saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
 		 */
 		copy_buffer_on_device(out, clmem_tmp_eoprec_3, sizeof(spinor) * EOPREC_SPINORFIELDSIZE);
 		saxpy_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, clmem_one, out);
@@ -377,14 +382,15 @@ void Opencl_fermions::Aee(cl_mem in, cl_mem out, cl_mem gf)
 }
 
 //explicit eoprec fermionmatrix functions
-void Opencl_fermions::gamma5_eoprec_device(cl_mem inout){
+void Opencl_fermions::gamma5_eoprec_device(cl_mem inout)
+{
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(gamma5_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(gamma5_eoprec,0,sizeof(cl_mem),&inout); 
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	int clerr = clSetKernelArg(gamma5_eoprec, 0, sizeof(cl_mem), &inout);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( gamma5_eoprec, gs2, ls2);
 }
@@ -397,17 +403,17 @@ void Opencl_fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int
 	cl_uint num_groups;
 	this->get_work_sizes2(dslash_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(dslash_eoprec,0,sizeof(cl_mem),&in); 
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	int clerr = clSetKernelArg(dslash_eoprec, 0, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  clerr = clSetKernelArg(dslash_eoprec,1,sizeof(cl_mem),&out);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	clerr = clSetKernelArg(dslash_eoprec, 1, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  clerr = clSetKernelArg(dslash_eoprec,2,sizeof(cl_mem),&gf);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	clerr = clSetKernelArg(dslash_eoprec, 2, sizeof(cl_mem), &gf);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  clerr = clSetKernelArg(dslash_eoprec,3,sizeof(int),&eo);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	clerr = clSetKernelArg(dslash_eoprec, 3, sizeof(int), &eo);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(dslash_eoprec , gs2, ls2);
 }
@@ -420,10 +426,10 @@ void Opencl_fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out)
 	this->get_work_sizes2(M_tm_inverse_sitediagonal, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 0, sizeof(cl_mem), &in);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 1, sizeof(cl_mem), &out);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( M_tm_inverse_sitediagonal, gs2, ls2);
 }
@@ -436,10 +442,10 @@ void Opencl_fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out)
 	this->get_work_sizes2(M_tm_sitediagonal, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_sitediagonal, 0, sizeof(cl_mem), &in);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(M_tm_sitediagonal, 1, sizeof(cl_mem), &out);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(M_tm_sitediagonal , gs2, ls2);
 }
@@ -453,61 +459,64 @@ void Opencl_fermions::saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out)
 	this->get_work_sizes2(saxpy, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(saxpy, 0, sizeof(cl_mem), &x);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxpy, 1, sizeof(cl_mem), &y);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxpy, 2, sizeof(cl_mem), &alpha);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
-     
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
 	clerr = clSetKernelArg(saxpy, 3, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(saxpy , gs2, ls2);
 }
 
-void Opencl_fermions::set_spinorfield_cold_device(cl_mem inout){
+void Opencl_fermions::set_spinorfield_cold_device(cl_mem inout)
+{
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(set_spinorfield_cold, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(set_spinorfield_cold,0,sizeof(cl_mem),&inout); 
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	int clerr = clSetKernelArg(set_spinorfield_cold, 0, sizeof(cl_mem), &inout);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(set_spinorfield_cold , gs2, ls2);
 }
 
-void Opencl_fermions::set_eoprec_spinorfield_cold_device(cl_mem inout){
+void Opencl_fermions::set_eoprec_spinorfield_cold_device(cl_mem inout)
+{
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(set_eoprec_spinorfield_cold, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(set_eoprec_spinorfield_cold,0,sizeof(cl_mem),&inout); 
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	int clerr = clSetKernelArg(set_eoprec_spinorfield_cold, 0, sizeof(cl_mem), &inout);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(set_eoprec_spinorfield_cold , gs2, ls2);
 }
 
-void Opencl_fermions::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out){
+void Opencl_fermions::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out)
+{
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(saxpy_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(saxpy_eoprec, 0, sizeof(cl_mem), &x);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxpy_eoprec, 1, sizeof(cl_mem), &y);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxpy_eoprec, 2, sizeof(cl_mem), &alpha);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxpy_eoprec, 3, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( saxpy_eoprec, gs2, ls2);
 }
@@ -520,22 +529,22 @@ void Opencl_fermions::saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha
 	this->get_work_sizes2(saxsbypz, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(saxsbypz, 0, sizeof(cl_mem), &x);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxsbypz, 1, sizeof(cl_mem), &y);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxsbypz, 2, sizeof(cl_mem), &z);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxsbypz, 3, sizeof(cl_mem), &alpha);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxsbypz, 4, sizeof(cl_mem), &beta);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxsbypz, 5, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( saxsbypz, gs2, ls2);
 }
@@ -548,22 +557,22 @@ void Opencl_fermions::saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_me
 	this->get_work_sizes2(saxsbypz_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(saxsbypz_eoprec, 0, sizeof(cl_mem), &x);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxsbypz_eoprec, 1, sizeof(cl_mem), &y);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxsbypz_eoprec, 2, sizeof(cl_mem), &z);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxsbypz_eoprec, 3, sizeof(cl_mem), &alpha);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxsbypz_eoprec, 4, sizeof(cl_mem), &beta);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxsbypz_eoprec, 5, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( saxsbypz_eoprec, gs2, ls2);
 }
@@ -574,33 +583,33 @@ void Opencl_fermions::set_complex_to_scalar_product_device(cl_mem a, cl_mem b, c
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(scalar_product, this->get_device_type(), &ls2, &gs2, &num_groups);
-	int global_buf_size_complex = sizeof(hmc_complex)*num_groups;
+	int global_buf_size_complex = sizeof(hmc_complex) * num_groups;
 	if( clmem_scalar_product_buf_glob == 0 ) clmem_scalar_product_buf_glob = create_rw_buffer(global_buf_size_complex);
 
 	//set arguments
 	int clerr = clSetKernelArg(scalar_product, 0, sizeof(cl_mem), &a);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product, 1, sizeof(cl_mem), &b);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
-	
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
 	clerr = clSetKernelArg(scalar_product, 2, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product, 3, sizeof(hmc_complex) * ls2, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(scalar_product , gs2, ls2);
 
 	/// @todo Here the wait is needed. Replace this call by a clWaitForEvents!
 	clerr = clFinish(queue);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product_reduction, 1, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( scalar_product_reduction, gs2, ls2);
 }
@@ -611,31 +620,31 @@ void Opencl_fermions::set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_m
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(scalar_product_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
-	int global_buf_size_complex = sizeof(hmc_complex)*num_groups;
-	if( clmem_scalar_product_buf_glob == 0 ) clmem_scalar_product_buf_glob = create_rw_buffer(global_buf_size_complex);	
-	
+	int global_buf_size_complex = sizeof(hmc_complex) * num_groups;
+	if( clmem_scalar_product_buf_glob == 0 ) clmem_scalar_product_buf_glob = create_rw_buffer(global_buf_size_complex);
+
 	//set arguments
 	int clerr = clSetKernelArg(scalar_product_eoprec, 0, sizeof(cl_mem), &a);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product_eoprec, 1, sizeof(cl_mem), &b);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product_eoprec, 2, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product_eoprec, 3, sizeof(hmc_complex) * ls2, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( scalar_product_eoprec, gs2, ls2);
 	clerr = clFinish(queue);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product_reduction, 1, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( scalar_product_reduction, gs2, ls2);
 }
@@ -649,14 +658,14 @@ void Opencl_fermions::set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_mem out
 	this->get_work_sizes2(ratio, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(ratio, 0, sizeof(cl_mem), &a);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(ratio, 1, sizeof(cl_mem), &b);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(ratio, 2, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
-	
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
 	//CP:this needs only one kernel!!
 	ls2 = 1;
 	gs2 = 1;
@@ -671,13 +680,13 @@ void Opencl_fermions::set_complex_to_product_device(cl_mem a, cl_mem b, cl_mem o
 	this->get_work_sizes2(product, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(product, 0, sizeof(cl_mem), &a);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(product, 1, sizeof(cl_mem), &b);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(product, 2, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	//CP:this needs only one kernel!!
 	ls2 = 1;
@@ -691,31 +700,31 @@ void Opencl_fermions::set_float_to_global_squarenorm_device(cl_mem a, cl_mem out
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(global_squarenorm, this->get_device_type(), &ls2, &gs2, &num_groups);
-	int global_buf_size_float = sizeof(hmc_float)*num_groups;
-	if( clmem_global_squarenorm_buf_glob == 0 ) clmem_global_squarenorm_buf_glob = create_rw_buffer(global_buf_size_float);	
-	
+	int global_buf_size_float = sizeof(hmc_float) * num_groups;
+	if( clmem_global_squarenorm_buf_glob == 0 ) clmem_global_squarenorm_buf_glob = create_rw_buffer(global_buf_size_float);
+
 	//set arguments
 	int clerr = clSetKernelArg(global_squarenorm, 0, sizeof(cl_mem), &a);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	//CP: these do not have to be args of the function since they are global objects to the class opencl??
 	clerr = clSetKernelArg(global_squarenorm, 1, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(global_squarenorm, 2, sizeof(hmc_float) * ls2, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(global_squarenorm , gs2, ls2);
-	
+
 	/// @todo Here the wait is needed. Replace this call by a clWaitForEvents!
 	clerr = clFinish(queue);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( global_squarenorm_reduction, gs2, ls2);
 }
@@ -727,30 +736,30 @@ void Opencl_fermions::set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_
 	cl_uint num_groups;
 	this->get_work_sizes2(global_squarenorm_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int global_buf_size_float = sizeof(hmc_float)*num_groups;
-	if( clmem_global_squarenorm_buf_glob == 0 ) clmem_global_squarenorm_buf_glob = create_rw_buffer(global_buf_size_float);	
-	
+	int global_buf_size_float = sizeof(hmc_float) * num_groups;
+	if( clmem_global_squarenorm_buf_glob == 0 ) clmem_global_squarenorm_buf_glob = create_rw_buffer(global_buf_size_float);
+
 	int clerr = clSetKernelArg(global_squarenorm_eoprec, 0, sizeof(cl_mem), &a);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	//CP: these do not have to be args of the function since they are global objects to the class opencl??
 	clerr = clSetKernelArg(global_squarenorm_eoprec, 1, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(global_squarenorm_eoprec, 2, sizeof(hmc_float) * ls2, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( global_squarenorm_eoprec, gs2, ls2);
 
 	/// @todo Here the wait is needed. Replace this call by a clWaitForEvents!
 	clFinish(queue);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( global_squarenorm_reduction, gs2, ls2);
 }
@@ -763,7 +772,7 @@ void Opencl_fermions::set_zero_spinorfield_device(cl_mem x)
 	this->get_work_sizes2(set_zero_spinorfield, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(set_zero_spinorfield, 0, sizeof(cl_mem), &x);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(set_zero_spinorfield , gs2, ls2);
 }
@@ -776,7 +785,7 @@ void Opencl_fermions::set_zero_spinorfield_eoprec_device(cl_mem x)
 	this->get_work_sizes2(set_zero_spinorfield_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(set_zero_spinorfield_eoprec, 0, sizeof(cl_mem), &x);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( set_zero_spinorfield_eoprec, gs2, ls2);
 }
@@ -784,9 +793,9 @@ void Opencl_fermions::set_zero_spinorfield_eoprec_device(cl_mem x)
 bool Opencl_fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
 {
 
-int debug = 0;
-if(debug) cout << "debug-output at bicgstab is activated" << endl;
-	
+	int debug = 0;
+	if(debug) cout << "debug-output at bicgstab is activated" << endl;
+
 	//CP: these have to be on the host
 	hmc_float resid;
 	hmc_float trueresid;
@@ -805,45 +814,45 @@ if(debug) cout << "debug-output at bicgstab is activated" << endl;
 			copy_buffer_on_device(clmem_one, clmem_rho, sizeof(hmc_complex));
 
 			//CP: calc initial residuum for output, this is not needed for the algorithm!!
-// 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size);
+//      set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size);
 //			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-// 			cout << "initial residuum at iter " << iter << " is: " << scientific << resid << endl;
+//      cout << "initial residuum at iter " << iter << " is: " << scientific << resid << endl;
 			//printf("initial residuum at iter %i is %.40e\n", iter, resid);
 		}
 
 ////////////////////////////////////
 //collect all variables if debug is enabled
-if(debug){
-	hmc_complex omega;
-	hmc_complex rho;
-	hmc_complex rho_next;
-	hmc_complex tmp1;
-	hmc_complex tmp2;
-	hmc_complex beta;
-	hmc_complex alpha;
-		
-	get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
-	
- 	cout << "debug output at start: " << endl;
-	cout << " rho: " << rho.re << "  " <<  rho.im << endl;
-	cout << " alpha: " <<alpha.re << "  " <<  alpha.im << endl;
-	cout << " omega: " << omega.re << "  " <<  omega.im << endl;
-}
+		if(debug) {
+			hmc_complex omega;
+			hmc_complex rho;
+			hmc_complex rho_next;
+			hmc_complex tmp1;
+			hmc_complex tmp2;
+			hmc_complex beta;
+			hmc_complex alpha;
+
+			get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
+
+			cout << "debug output at start: " << endl;
+			cout << " rho: " << rho.re << "  " <<  rho.im << endl;
+			cout << " alpha: " << alpha.re << "  " <<  alpha.im << endl;
+			cout << " omega: " << omega.re << "  " <<  omega.im << endl;
+		}
 ////////////////////////////////////
 
 		set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next);
 
-if(debug){
-	hmc_complex rho_next;
-	get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
-		cout << "(rhat, rn): " << rho_next.re << "  " <<  rho_next.im << endl;
-}
+		if(debug) {
+			hmc_complex rho_next;
+			get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
+			cout << "(rhat, rn): " << rho_next.re << "  " <<  rho_next.im << endl;
+		}
 		set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
 		copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
 		set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
@@ -853,82 +862,82 @@ if(debug){
 		set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 		saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p);
 
-if(debug){
-	hmc_complex rho_next;
-	set_complex_to_scalar_product_device(clmem_p, clmem_p, clmem_tmp2);
-	get_buffer_from_device(clmem_tmp2, &rho_next, sizeof(hmc_complex));
-		cout << "(p,p): " << rho_next.re << "  " <<  rho_next.im << endl;
-				set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
-}
+		if(debug) {
+			hmc_complex rho_next;
+			set_complex_to_scalar_product_device(clmem_p, clmem_p, clmem_tmp2);
+			get_buffer_from_device(clmem_tmp2, &rho_next, sizeof(hmc_complex));
+			cout << "(p,p): " << rho_next.re << "  " <<  rho_next.im << endl;
+			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
+		}
 
 		f(this, clmem_p, clmem_v, gf);
 
 ////////////////////////////////////
 //collect all variables if debug is enabled
-if(debug){
-	hmc_complex omega;
-	hmc_complex rho;
-	hmc_complex rho_next;
-	hmc_complex tmp1;
-	hmc_complex tmp2;
-	hmc_complex beta;
-	hmc_complex alpha;
-		
-	get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
-	
- 	cout << "debug output after first half: " << endl;
-	cout << " rho: " << rho.re << "  " <<  rho.im << endl;
-	cout << " rho_next: " << rho_next.re << "  " <<  rho_next.im << endl;
-	cout << " beta: " << beta.re << "  " <<  beta.im << endl;
-	cout << " alpha: " <<alpha.re << "  " <<  alpha.im << endl;
-	cout << " omega: " << omega.re << "  " <<  omega.im << endl;
-	cout << " tmp1: " << tmp1.re << "  " <<  tmp1.im << endl;
-	cout << " tmp2: " << tmp2.re << "  " <<  tmp2.im << endl;
-}
+		if(debug) {
+			hmc_complex omega;
+			hmc_complex rho;
+			hmc_complex rho_next;
+			hmc_complex tmp1;
+			hmc_complex tmp2;
+			hmc_complex beta;
+			hmc_complex alpha;
+
+			get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
+
+			cout << "debug output after first half: " << endl;
+			cout << " rho: " << rho.re << "  " <<  rho.im << endl;
+			cout << " rho_next: " << rho_next.re << "  " <<  rho_next.im << endl;
+			cout << " beta: " << beta.re << "  " <<  beta.im << endl;
+			cout << " alpha: " << alpha.re << "  " <<  alpha.im << endl;
+			cout << " omega: " << omega.re << "  " <<  omega.im << endl;
+			cout << " tmp1: " << tmp1.re << "  " <<  tmp1.im << endl;
+			cout << " tmp2: " << tmp2.re << "  " <<  tmp2.im << endl;
+		}
 ////////////////////////////////////
 
 
 		set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1);
 
-if(debug){
-	hmc_complex rho_next;
-	get_buffer_from_device(clmem_tmp1, &rho_next, sizeof(hmc_complex));
-		cout << "(rhat, v): " << rho_next.re << "  " <<  rho_next.im << endl;
-}
+		if(debug) {
+			hmc_complex rho_next;
+			get_buffer_from_device(clmem_tmp1, &rho_next, sizeof(hmc_complex));
+			cout << "(rhat, v): " << rho_next.re << "  " <<  rho_next.im << endl;
+		}
 
 		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
 
-// 		//see if s is too small
-// 		hmc_complex s_norm;
-// 		//borrow clmem_alpha for this
-// 		set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
-// 		get_buffer_from_device(clmem_alpha, &s_norm, sizeof(hmc_complex));
-// 		if(debug) cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
-// 		//reset value of alpha
-// 		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
-// 		//check if |s|^2 is too small
-// 		if(s_norm.re < epssquare){
-// 			set_complex_to_product_device(clmem_minusone, clmem_alpha, clmem_alpha);
-// 			saxpy_device(clmem_p, inout, clmem_alpha, inout, localsize, globalsize);
-// 			
-// 			f(this, inout, clmem_aux, gf, localsize, globalsize);
-// 			saxpy_device(clmem_aux, source, clmem_one, clmem_aux, localsize, globalsize);
-// 			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, localsize, globalsize);
-// 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-// 			cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << epssquare << endl;
-// 
-// 			cout << "|s|^2 is too small to continue..." << endl;
-// 
-// 			return;
-// 		}
-		
+//    //see if s is too small
+//    hmc_complex s_norm;
+//    //borrow clmem_alpha for this
+//    set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
+//    get_buffer_from_device(clmem_alpha, &s_norm, sizeof(hmc_complex));
+//    if(debug) cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
+//    //reset value of alpha
+//    set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
+//    //check if |s|^2 is too small
+//    if(s_norm.re < epssquare){
+//      set_complex_to_product_device(clmem_minusone, clmem_alpha, clmem_alpha);
+//      saxpy_device(clmem_p, inout, clmem_alpha, inout, localsize, globalsize);
+//
+//      f(this, inout, clmem_aux, gf, localsize, globalsize);
+//      saxpy_device(clmem_aux, source, clmem_one, clmem_aux, localsize, globalsize);
+//      set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, localsize, globalsize);
+//      get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << epssquare << endl;
+//
+//      cout << "|s|^2 is too small to continue..." << endl;
+//
+//      return;
+//    }
+
 
 		f(this, clmem_s, clmem_t, gf);
 
@@ -941,77 +950,76 @@ if(debug){
 
 		saxsbypz_device(clmem_p, clmem_s, inout, clmem_alpha, clmem_omega, inout);
 
-if(debug){
-	hmc_complex rho_next;
-	set_complex_to_scalar_product_device(inout, inout, clmem_omega);
-	get_buffer_from_device(clmem_omega, &rho_next, sizeof(hmc_complex));
-		cout << "(inout,inout): " << rho_next.re << "  " <<  rho_next.im << endl;
-		set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
-}				
-		
+		if(debug) {
+			hmc_complex rho_next;
+			set_complex_to_scalar_product_device(inout, inout, clmem_omega);
+			get_buffer_from_device(clmem_omega, &rho_next, sizeof(hmc_complex));
+			cout << "(inout,inout): " << rho_next.re << "  " <<  rho_next.im << endl;
+			set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
+		}
+
 ////////////////////////////////////
 //collect all variables if debug is enabled
-if(debug){
-	hmc_complex omega;
-	hmc_complex rho;
-	hmc_complex rho_next;
-	hmc_complex tmp1;
-	hmc_complex tmp2;
-	hmc_complex beta;
-	hmc_complex alpha;
-		
-	get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
-	get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
-	
- 	cout << "debug output after second half: " << endl;
-	cout << " rho: " << rho.re << "  " <<  rho.im << endl;
-	cout << " rho_next: " << rho_next.re << "  " <<  rho_next.im << endl;
-	cout << " beta: " << beta.re << "  " <<  beta.im << endl;
-	cout << " alpha: " <<alpha.re << "  " <<  alpha.im << endl;
-	cout << " omega: " << omega.re << "  " <<  omega.im << endl;
+		if(debug) {
+			hmc_complex omega;
+			hmc_complex rho;
+			hmc_complex rho_next;
+			hmc_complex tmp1;
+			hmc_complex tmp2;
+			hmc_complex beta;
+			hmc_complex alpha;
 
-	cout << " tmp1: " << tmp1.re << "  " <<  tmp1.im << endl;
-	cout << " tmp2: " << tmp2.re << "  " <<  tmp2.im << endl;
-}
+			get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
+			get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
+
+			cout << "debug output after second half: " << endl;
+			cout << " rho: " << rho.re << "  " <<  rho.im << endl;
+			cout << " rho_next: " << rho_next.re << "  " <<  rho_next.im << endl;
+			cout << " beta: " << beta.re << "  " <<  beta.im << endl;
+			cout << " alpha: " << alpha.re << "  " <<  alpha.im << endl;
+			cout << " omega: " << omega.re << "  " <<  omega.im << endl;
+
+			cout << " tmp1: " << tmp1.re << "  " <<  tmp1.im << endl;
+			cout << " tmp2: " << tmp2.re << "  " <<  tmp2.im << endl;
+		}
 ////////////////////////////////////
 
 		set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 		get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-// 		cout << "resid at iter " << iter << " is: " << resid << endl;
-		
+//    cout << "resid at iter " << iter << " is: " << resid << endl;
+
 		if(resid < epssquare) {
 			f(this, inout, clmem_aux, gf);
 			saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
 			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
 			get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
-// 			cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << epssquare << endl;
-// 			cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << epssquare << endl;
+//      cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << epssquare << endl;
+//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << epssquare << endl;
 			if(trueresid < epssquare)
 				return true;
 			else {
-// 				cout << "trueresiduum not small enough" <<endl;
-// 				hmc_complex s_norm;
-// 				//borrow clmem_alpha for this
-// 				set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
-// 				get_buffer_from_device(clmem_alpha, &s_norm, sizeof(hmc_complex));
-// 				cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
-// 				//reset value of alpha
-// 				set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
-// 				//check if |s|^2 is too small
-// 				if(s_norm.re < epssquare){
-// 					cout << "|s|^2 is too small to continue..." << endl;
-// // 					return;
-// 				}
+//        cout << "trueresiduum not small enough" <<endl;
+//        hmc_complex s_norm;
+//        //borrow clmem_alpha for this
+//        set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
+//        get_buffer_from_device(clmem_alpha, &s_norm, sizeof(hmc_complex));
+//        cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
+//        //reset value of alpha
+//        set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
+//        //check if |s|^2 is too small
+//        if(s_norm.re < epssquare){
+//          cout << "|s|^2 is too small to continue..." << endl;
+// //           return;
+//        }
 			}
-		} 
-		else {
-// 			printf("residuum at iter%i is:\t%.10e\n", iter, resid);//cout << "residuum:\t" << resid << endl;
+		} else {
+//      printf("residuum at iter%i is:\t%.10e\n", iter, resid);//cout << "residuum:\t" << resid << endl;
 		}
 	}
 	return false;
@@ -1033,7 +1041,7 @@ bool Opencl_fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_m
 
 			saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
 			copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, sizeof(spinor) * EOPREC_SPINORFIELDSIZE);
-			
+
 			copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
 			copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex));
 			copy_buffer_on_device(clmem_one, clmem_rho, sizeof(hmc_complex));
@@ -1106,26 +1114,26 @@ bool Opencl_fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl
 		}
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		set_complex_to_scalar_product_device(clmem_rn, clmem_rn, clmem_omega);
-// 		hmc_complex omega;
-// 		get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
-// 		cout << "omega: " << omega.re << " " << omega.im << endl;
+//    hmc_complex omega;
+//    get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
+//    cout << "omega: " << omega.re << " " << omega.im << endl;
 		//A pn --> v
-		f(this,clmem_p, clmem_v, gf);
+		f(this, clmem_p, clmem_v, gf);
 		set_complex_to_scalar_product_device(clmem_p, clmem_v, clmem_rho);
-// 		hmc_complex rho;
-// 		get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
-// 		cout << "rho: " << rho.re << " " << rho.im << endl;
-		
-		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);	
-// 		hmc_complex alpha;
-// 		get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
-// 		cout << "alpha: " << alpha.re << " " << alpha.im << endl;
-		
+//    hmc_complex rho;
+//    get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
+//    cout << "rho: " << rho.re << " " << rho.im << endl;
+
+		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
+//    hmc_complex alpha;
+//    get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
+//    cout << "alpha: " << alpha.re << " " << alpha.im << endl;
+
 		set_complex_to_product_device(clmem_alpha, clmem_minusone, clmem_tmp1);
-// 		hmc_complex tmp1;
-// 		get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
-// 		cout << "tmp1: " << tmp1.re << " " << tmp1.im << endl;
-		
+//    hmc_complex tmp1;
+//    get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
+//    cout << "tmp1: " << tmp1.re << " " << tmp1.im << endl;
+
 		//xn+1
 		saxpy_device(inout, clmem_p, clmem_tmp1, inout);
 		//rn+1 -> rhat
@@ -1144,18 +1152,18 @@ bool Opencl_fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl
 			//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
 			set_complex_to_scalar_product_device(clmem_rhat, clmem_rhat, clmem_rho_next);
 			set_complex_to_ratio_device(clmem_rho_next, clmem_omega, clmem_beta);
-// 					hmc_complex beta;
-// 		get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
-// 		cout << "beta: " << beta.re << " " << beta.im << endl;
+//          hmc_complex beta;
+//    get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
+//    cout << "beta: " << beta.re << " " << beta.im << endl;
 
 			//pn+1 = rn+1 + beta*pn
 			set_complex_to_product_device(clmem_beta, clmem_minusone, clmem_tmp2);
-// 		hmc_complex tmp2;
-// 		get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
-// 		cout << "tmp2: " << tmp2.re << " " << tmp2.im << endl;
-			
+//    hmc_complex tmp2;
+//    get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
+//    cout << "tmp2: " << tmp2.re << " " << tmp2.im << endl;
+
 			saxpy_device(clmem_p, clmem_rhat, clmem_tmp2, clmem_p);
-			
+
 			//rn = rn+1 ^= rn = rhat
 			copy_buffer_on_device(clmem_rhat, clmem_rn, sizeof(spinor) * SPINORFIELDSIZE);
 
@@ -1164,7 +1172,8 @@ bool Opencl_fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl
 	return false;
 }
 
-bool Opencl_fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax){
+bool Opencl_fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
+{
 	/// to be implemented if the above one has been checked..
 	return false;
 }
@@ -1173,18 +1182,18 @@ bool Opencl_fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem sou
 void Opencl_fermions::solver(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer, int cgmax)
 {
 
-  bool converged = false;
+	bool converged = false;
 
 	(*solvertimer).reset();
 	if(get_parameters()->get_use_cg() == true)
-	 	converged = cg(f, inout, source, gf, cgmax);
-	else 
+		converged = cg(f, inout, source, gf, cgmax);
+	else
 		converged = bicgstab(f, inout, source, gf, cgmax);
 	clFinish(queue);
 	(*solvertimer).add();
 
-			if (converged == false) logger.debug() << "\t\t\tsolver did not solve!!";
-			else logger.debug() << "\t\t\tsolver solved!";
+	if (converged == false) logger.debug() << "\t\t\tsolver did not solve!!";
+	else logger.debug() << "\t\t\tsolver solved!";
 
 	return;
 }
@@ -1193,22 +1202,21 @@ void Opencl_fermions::solver(matrix_function_call f, cl_mem inout, cl_mem source
 void Opencl_fermions::solver_eoprec(matrix_function_call f, cl_mem inout, cl_mem inout_eo, cl_mem source_even, cl_mem source_odd, cl_mem gf, usetimer * solvertimer, int cgmax)
 {
 
-  bool converged = false;
+	bool converged = false;
 
 	(*solvertimer).reset();
 
 	//CP: even solution
 	if(get_parameters()->get_use_cg() == true)
-	 	converged = cg_eoprec(f, inout_eo, source_even, gf, cgmax);
-	else 
+		converged = cg_eoprec(f, inout_eo, source_even, gf, cgmax);
+	else
 		converged = bicgstab_eoprec(f, inout_eo, source_even, gf, cgmax);
 
 	//P: odd solution
 	/** @todo CP: perhaps one can save some variables used here */
-	if(get_parameters()->get_fermact() == WILSON){
+	if(get_parameters()->get_fermact() == WILSON) {
 		logger.fatal() << "not yet implemented in WILSON case, aborting...";
-	}
-	else if(get_parameters()->get_fermact() == TWISTEDMASS){
+	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
 		///@todo here, the use of clmem_tmp_eoprec_3 can be avoided
 		dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_3, gf, ODD);
 		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1);
@@ -1223,8 +1231,8 @@ void Opencl_fermions::solver_eoprec(matrix_function_call f, cl_mem inout, cl_mem
 	(*solvertimer).add();
 
 
-			if (converged == false) logger.debug() << "\t\t\tsolver did not solve!!";
-			else logger.debug() << "\t\t\tsolver solved!";
+	if (converged == false) logger.debug() << "\t\t\tsolver did not solve!!";
+	else logger.debug() << "\t\t\tsolver solved!";
 
 	return;
 }
@@ -1239,16 +1247,16 @@ void Opencl_fermions::create_point_source_device(cl_mem inout, int i, int spacep
 	this->get_work_sizes2(create_point_source, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(create_point_source, 0, sizeof(cl_mem), &inout);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(create_point_source, 1, sizeof(int), &i);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(create_point_source, 2, sizeof(int), &spacepos);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(create_point_source, 3, sizeof(int), &timepos);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( create_point_source, gs2, ls2);
 }
@@ -1274,24 +1282,22 @@ void Opencl_fermions::create_point_source_eoprec_device(cl_mem inout_even, cl_me
 	//CP: this is different than the host code, where this is done implicitly when converting the normal source to even/odd
 	if(evenodd == 1) {
 		clerr = clSetKernelArg(create_point_source_eoprec, 0, sizeof(cl_mem), &inout_odd);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
-  }
-	else {
-		clerr = clSetKernelArg(create_point_source_eoprec,0,sizeof(cl_mem),&clmem_tmp_eoprec_2);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	} else {
+		clerr = clSetKernelArg(create_point_source_eoprec, 0, sizeof(cl_mem), &clmem_tmp_eoprec_2);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	}
-	clerr = clSetKernelArg(create_point_source_eoprec,1,sizeof(int),&i);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	clerr = clSetKernelArg(create_point_source_eoprec, 1, sizeof(int), &i);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(create_point_source_eoprec,2,sizeof(int),&n);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	clerr = clSetKernelArg(create_point_source_eoprec, 2, sizeof(int), &n);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(create_point_source_eoprec , gs2, ls2);
 
-	if(get_parameters()->get_fermact() == WILSON){
+	if(get_parameters()->get_fermact() == WILSON) {
 		logger.fatal() << "not yet implemented in WILSON case, aborting...";
-	}
-	else if(get_parameters()->get_fermact() == TWISTEDMASS){
+	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
 		///@todo here, the use of clmem_tmp_eoprec_3 can be avoided by using clmem_source_even instead
 		M_tm_inverse_sitediagonal_device(inout_odd, clmem_tmp_eoprec_1);
 		dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_3, gf, EVEN);
@@ -1300,16 +1306,17 @@ void Opencl_fermions::create_point_source_eoprec_device(cl_mem inout_even, cl_me
 }
 
 //functions to calculate the correlator
-void Opencl_fermions::ps_correlator_device(cl_mem in){
+void Opencl_fermions::ps_correlator_device(cl_mem in)
+{
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes2(ps_correlator, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(ps_correlator,0,sizeof(cl_mem),&in); 
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clSetKernelArg",__FILE__,__LINE__);
+	int clerr = clSetKernelArg(ps_correlator, 0, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  ///@todo improve this
+	///@todo improve this
 	ls2 = 1;
 	gs2 = 1;
 	enqueueKernel(ps_correlator , gs2, ls2);
@@ -1362,323 +1369,326 @@ cl_mem Opencl_fermions::get_clmem_minusone()
 
 void Opencl_fermions::finalize_fermions()
 {
-  cl_int clerr = CL_SUCCESS;
+	cl_int clerr = CL_SUCCESS;
 
-  //	clerr = clReleaseKernel(ps_correlator);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	//  clerr = clReleaseKernel(ps_correlator);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(set_spinorfield_cold);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	if(M_wilson) {
 		clerr = clReleaseKernel(M_wilson);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 	if(M_tm_plus) {
 		clerr = clReleaseKernel(M_tm_plus);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 	if(M_tm_minus) {
 		clerr = clReleaseKernel(M_tm_minus);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 	clerr = clReleaseKernel(saxpy);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(saxsbypz);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(scalar_product);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(scalar_product_reduction);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 
 	clerr = clReleaseKernel(set_zero_spinorfield);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(global_squarenorm);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(global_squarenorm_reduction);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(ratio);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(product);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(create_point_source);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 
 	if(get_parameters()->get_use_eo()) {
 		clerr = clReleaseKernel(dslash_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(saxpy_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(scalar_product_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(set_zero_spinorfield_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(global_squarenorm_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(create_point_source_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(M_tm_sitediagonal);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(M_tm_inverse_sitediagonal);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clReleaseKernel",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 
 	clerr = clReleaseMemObject(clmem_inout);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_source);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 
 	if(get_parameters()->get_use_eo()) {
 		clerr = clReleaseMemObject(clmem_inout_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_source_even);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_source_odd);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_rn_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_rhat_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_v_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_p_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_s_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_t_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_aux_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_tmp_eoprec_1);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_tmp_eoprec_2);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_tmp_eoprec_3);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	}
 
 	clerr = clReleaseMemObject(clmem_rho);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_rho_next);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_alpha);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_omega);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_beta);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_tmp1);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_tmp2);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_one);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_minusone);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_scalar_product_buf_glob);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_global_squarenorm_buf_glob);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_resid);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	/** @todo CP: this call seems to cause a seg fault!! */
 	clerr = clReleaseMemObject(clmem_trueresid);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clMemObject",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 
 	return;
 }
 
 #ifdef _PROFILING_
-usetimer* Opencl_fermions::get_timer(char * in){
+usetimer* Opencl_fermions::get_timer(char * in)
+{
 	usetimer *noop = NULL;
 	noop = Opencl::get_timer(in);
 	if(noop != NULL) return noop;
-	
-	if (strcmp(in, "M_wilson") == 0){
-    return &(this->timer_M_wilson);
-	}	
-	if (strcmp(in, "gamma5") == 0){
-    return &this->timer_gamma5;
+
+	if (strcmp(in, "M_wilson") == 0) {
+		return &(this->timer_M_wilson);
 	}
-	if (strcmp(in, "M_tm_plus") == 0){
-    return &this->timer_M_tm_plus;
+	if (strcmp(in, "gamma5") == 0) {
+		return &this->timer_gamma5;
 	}
-	if (strcmp(in, "M_tm_minus") == 0){
-    return &this->timer_M_tm_minus;
+	if (strcmp(in, "M_tm_plus") == 0) {
+		return &this->timer_M_tm_plus;
 	}
-	if (strcmp(in, "gamma5_eoprec") == 0){
-    return &this->timer_gamma5_eoprec;
+	if (strcmp(in, "M_tm_minus") == 0) {
+		return &this->timer_M_tm_minus;
 	}
-	if (strcmp(in, "dslash_eoprec") == 0){
-    return &this->timer_dslash_eoprec;
+	if (strcmp(in, "gamma5_eoprec") == 0) {
+		return &this->timer_gamma5_eoprec;
 	}
-	if (strcmp(in, "set_spinorfield_cold") == 0){
-    return &this->timer_set_spinorfield_cold;
+	if (strcmp(in, "dslash_eoprec") == 0) {
+		return &this->timer_dslash_eoprec;
 	}
-	if (strcmp(in, "set_eoprec_spinorfield_cold") == 0){
-    return &this->timer_set_eoprec_spinorfield_cold;
+	if (strcmp(in, "set_spinorfield_cold") == 0) {
+		return &this->timer_set_spinorfield_cold;
 	}
-	if (strcmp(in, "convert_from_eoprec") == 0){
-    return &this->timer_convert_from_eoprec;
+	if (strcmp(in, "set_eoprec_spinorfield_cold") == 0) {
+		return &this->timer_set_eoprec_spinorfield_cold;
 	}
-	if (strcmp(in, "saxpy") == 0){
-    return &(this->timer_saxpy);
+	if (strcmp(in, "convert_from_eoprec") == 0) {
+		return &this->timer_convert_from_eoprec;
 	}
-	if (strcmp(in, "saxsbypz") == 0){
-    return &this->timer_saxsbypz;
+	if (strcmp(in, "saxpy") == 0) {
+		return &(this->timer_saxpy);
 	}
-	if (strcmp(in, "set_zero_spinorfield") == 0){
-    return &this->timer_set_zero_spinorfield;
+	if (strcmp(in, "saxsbypz") == 0) {
+		return &this->timer_saxsbypz;
 	}
-	if (strcmp(in, "create_point_source") == 0){
-    return &this->timer_create_point_source;
+	if (strcmp(in, "set_zero_spinorfield") == 0) {
+		return &this->timer_set_zero_spinorfield;
 	}
-	if (strcmp(in, "saxpy_eoprec") == 0){
-    return &this->timer_saxpy_eoprec;
+	if (strcmp(in, "create_point_source") == 0) {
+		return &this->timer_create_point_source;
 	}
-	if (strcmp(in, "saxsbypz_eoprec") == 0){
-    return &this->timer_saxsbypz_eoprec;
+	if (strcmp(in, "saxpy_eoprec") == 0) {
+		return &this->timer_saxpy_eoprec;
 	}
-	if (strcmp(in, "set_zero_spinorfield_eoprec") == 0){
-    return &this->timer_set_zero_spinorfield_eoprec;
+	if (strcmp(in, "saxsbypz_eoprec") == 0) {
+		return &this->timer_saxsbypz_eoprec;
 	}
-	if (strcmp(in, "create_point_source_eoprec") == 0){
-    return &this->timer_create_point_source_eoprec;
+	if (strcmp(in, "set_zero_spinorfield_eoprec") == 0) {
+		return &this->timer_set_zero_spinorfield_eoprec;
 	}
-	if (strcmp(in, "scalar_product") == 0){
-    return &this->timer_scalar_product;
+	if (strcmp(in, "create_point_source_eoprec") == 0) {
+		return &this->timer_create_point_source_eoprec;
 	}
-	if (strcmp(in, "scalar_product_reduction") == 0){
-    return &this->timer_scalar_product_reduction;
+	if (strcmp(in, "scalar_product") == 0) {
+		return &this->timer_scalar_product;
 	}
-	if (strcmp(in, "global_squarenorm") == 0){
-    return &this->timer_global_squarenorm;
+	if (strcmp(in, "scalar_product_reduction") == 0) {
+		return &this->timer_scalar_product_reduction;
 	}
-	if (strcmp(in, "global_squarenorm_reduction") == 0){
-    return &this->timer_global_squarenorm_reduction;
+	if (strcmp(in, "global_squarenorm") == 0) {
+		return &this->timer_global_squarenorm;
 	}
-	if (strcmp(in, "scalar_product_eoprec") == 0){
-    return &this->timer_scalar_product_eoprec;
+	if (strcmp(in, "global_squarenorm_reduction") == 0) {
+		return &this->timer_global_squarenorm_reduction;
 	}
-	if (strcmp(in, "global_squarenorm_eoprec") == 0){
-    return &this->timer_global_squarenorm_eoprec;
+	if (strcmp(in, "scalar_product_eoprec") == 0) {
+		return &this->timer_scalar_product_eoprec;
 	}
-	if (strcmp(in, "ratio") == 0){
-    return &this->timer_ratio;
+	if (strcmp(in, "global_squarenorm_eoprec") == 0) {
+		return &this->timer_global_squarenorm_eoprec;
 	}
-	if (strcmp(in, "product") == 0){
-    return &this->timer_product;
+	if (strcmp(in, "ratio") == 0) {
+		return &this->timer_ratio;
 	}
-	if (strcmp(in, "ps_correlator") == 0){
-    return &this->timer_ps_correlator;
+	if (strcmp(in, "product") == 0) {
+		return &this->timer_product;
 	}
-	
+	if (strcmp(in, "ps_correlator") == 0) {
+		return &this->timer_ps_correlator;
+	}
+
 	//if the kernelname has not matched, return NULL
-	else{
+	else {
 		return NULL;
 	}
 }
 
-int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters){
+int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters)
+{
 	Opencl::get_read_write_size(in, parameters);
-		//Depending on the compile-options, one has different sizes...
+	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
 	int R = (*parameters).get_mat_size();
 	int S;
 	if((*parameters).get_use_eo() == 1)
-	  S = EOPREC_SPINORFIELDSIZE;
+		S = EOPREC_SPINORFIELDSIZE;
 	else
-	  S = SPINORFIELDSIZE;
+		S = SPINORFIELDSIZE;
 	//this is the same as in the function above
-	if (strcmp(in, "M_wilson") == 0){
-    return (240 + 16*R)*D*S;
-	}	
-	if (strcmp(in, "gamma5") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "M_wilson") == 0) {
+		return (240 + 16 * R) * D * S;
 	}
-	if (strcmp(in, "M_tm_plus") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "gamma5") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "M_tm_minus") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "M_tm_plus") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "gamma5_eoprec") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "M_tm_minus") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "M_tm_sitediagonal") == 0){
-    return 48*D*S;
+	if (strcmp(in, "gamma5_eoprec") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0){
-    return 48*D*S;
+	if (strcmp(in, "M_tm_sitediagonal") == 0) {
+		return 48 * D * S;
 	}
-	if (strcmp(in, "dslash_eoprec") == 0){
-    return (216 + 16*R)*D*S;
+	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0) {
+		return 48 * D * S;
 	}
-	if (strcmp(in, "set_spinorfield_cold") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "dslash_eoprec") == 0) {
+		return (216 + 16 * R) * D * S;
 	}
-	if (strcmp(in, "set_eoprec_spinorfield_cold") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "set_spinorfield_cold") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "convert_from_eoprec") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "set_eoprec_spinorfield_cold") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "saxpy") == 0){
-    return 74*D*S;
+	if (strcmp(in, "convert_from_eoprec") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "saxsbypz") == 0){
-    return 100*D*S;
+	if (strcmp(in, "saxpy") == 0) {
+		return 74 * D * S;
 	}
-	if (strcmp(in, "set_zero_spinorfield") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "saxsbypz") == 0) {
+		return 100 * D * S;
 	}
-	if (strcmp(in, "create_point_source") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "set_zero_spinorfield") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "saxpy_eoprec") == 0){
-    return 74*D*S;
+	if (strcmp(in, "create_point_source") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "saxsbypz_eoprec") == 0){
-    return 100*D*S;
+	if (strcmp(in, "saxpy_eoprec") == 0) {
+		return 74 * D * S;
 	}
-	if (strcmp(in, "set_zero_spinorfield_eoprec") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "saxsbypz_eoprec") == 0) {
+		return 100 * D * S;
 	}
-	if (strcmp(in, "create_point_source_eoprec") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "set_zero_spinorfield_eoprec") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "scalar_product") == 0){
-    return 50*D*S;
+	if (strcmp(in, "create_point_source_eoprec") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "scalar_product_reduction") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "scalar_product") == 0) {
+		return 50 * D * S;
 	}
-	if (strcmp(in, "global_squarenorm") == 0){
-    return 25*D*S;
+	if (strcmp(in, "scalar_product_reduction") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "global_squarenorm_reduction") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "global_squarenorm") == 0) {
+		return 25 * D * S;
 	}
-	if (strcmp(in, "scalar_product_eoprec") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "global_squarenorm_reduction") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "global_squarenorm_eoprec") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "scalar_product_eoprec") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "ratio") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "global_squarenorm_eoprec") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "product") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "ratio") == 0) {
+		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "ps_correlator") == 0){
-    return 1000000000000000000000000;
+	if (strcmp(in, "product") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "ps_correlator") == 0) {
+		return 1000000000000000000000000;
 	}
 	return 0;
 }
 
-void Opencl_fermions::print_profiling(std::string filename){
+void Opencl_fermions::print_profiling(std::string filename)
+{
 	Opencl::print_profiling(filename);
 	char * kernelName;
 	kernelName = "M_wilson";
@@ -1737,6 +1747,6 @@ void Opencl_fermions::print_profiling(std::string filename){
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "ps_correlator";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
-	
+
 }
 #endif

@@ -90,7 +90,7 @@ void Opencl_Module_Heatbath::run_heatbath()
 	}
 
 	this->get_work_sizes(heatbath_odd, this->get_device_type(), &ls, &global_work_size, &num_groups);
-	
+
 	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), get_gaugefield());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
@@ -132,7 +132,7 @@ void Opencl_Module_Heatbath::run_overrelax()
 	}
 
 	this->get_work_sizes(overrelax_odd, this->get_device_type(), &ls, &global_work_size, &num_groups);
-	
+
 	clerr = clSetKernelArg(overrelax_odd, 0, sizeof(cl_mem), get_gaugefield());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
@@ -152,12 +152,13 @@ void Opencl_Module_Heatbath::run_overrelax()
 	return;
 }
 
-void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups){
-  Opencl_Module_Ran::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
-	
+void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
+{
+	Opencl_Module_Ran::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
+
 	//Query kernel name
 	string kernelname = get_kernel_name(kernel);
-	
+
 	//Query specific sizes for kernels if needed
 	//all of the following kernels are called with EnqueueKernel(gs), ls, num_groups are not needed!
 	if (kernelname.compare("heatbath_even") == 0 || kernelname.compare("heatbath_odd") == 0 || kernelname.compare("overrelax_even") == 0 || kernelname.compare("overrelax_even") == 0) {
@@ -168,7 +169,7 @@ void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, cl_device_ty
 		*ls = 0;
 		*num_groups = 0;
 	}
-  return;
+	return;
 }
 
 #ifdef _PROFILING_
@@ -196,7 +197,7 @@ usetimer* Opencl_Module_Heatbath::get_timer(char * in)
 }
 int Opencl_Module_Heatbath::get_read_write_size(char * in, inputparameters * parameters)
 {
-        Opencl_Module_Ran::get_read_write_size(in, parameters);
+	Opencl_Module_Ran::get_read_write_size(in, parameters);
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
 	int R = (*parameters).get_mat_size();

@@ -26,7 +26,7 @@ void Opencl_Module_Hmc::fill_buffers()
 	int float_size = sizeof(hmc_float);
 	hmc_complex one = hmc_complex_one;
 	hmc_complex minusone = hmc_complex_minusone;
-	
+
 	//init mem-objects
 
 	logger.trace() << "Create buffer for HMC...";
@@ -40,7 +40,7 @@ void Opencl_Module_Hmc::fill_buffers()
 	clmem_p2 = create_rw_buffer(float_size);
 	clmem_new_p2 = create_rw_buffer(float_size);
 	clmem_s_fermion = create_rw_buffer(float_size);
-	
+
 	return;
 }
 
@@ -62,7 +62,7 @@ void Opencl_Module_Hmc::fill_kernels()
 		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_fermion_code << "stout_smear_fermion_force.cl";
 	}
 	gaugemomentum_squarenorm = createKernel("gaugemomentum_squarenorm") << basic_hmc_code << "gaugemomentum_squarenorm.cl";
-	
+
 	return;
 }
 
@@ -71,7 +71,7 @@ void Opencl_Module_Hmc::clear_kernels()
 	Opencl_Module_Fermions::clear_kernels();
 
 	cl_uint clerr = CL_SUCCESS;
-	
+
 	logger.debug() << "release HMC-kernels.." ;
 	clerr = clReleaseKernel(generate_gaussian_spinorfield);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -91,7 +91,7 @@ void Opencl_Module_Hmc::clear_kernels()
 		clerr = clReleaseKernel(stout_smear_fermion_force);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
-	
+
 	return;
 }
 
@@ -117,8 +117,8 @@ void Opencl_Module_Hmc::clear_buffers()
 	clerr = clReleaseMemObject(clmem_phi_inv);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_force);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);	
-	
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+
 	return;
 }
 
@@ -317,11 +317,10 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 	if(get_parameters()->get_use_cg() == true) {
 		//this is broken right now since the CG doesnt work!!
 		throw Print_Error_Message("\t\tcalc fermion force ingredients using cg is not implemented yet. Aborting..");
-	} 
-	else	{
+	} else  {
 		logger.debug() << "\t\tcalc fermion force ingredients using bicgstab";
-		if(get_parameters()->get_use_eo() == true) logger.warn()<<"A segfault happens here when calling the solver with eoprec on. It must be something with the fields since it works in the inverter!";
-		
+		if(get_parameters()->get_use_eo() == true) logger.warn() << "A segfault happens here when calling the solver with eoprec on. It must be something with the fields since it works in the inverter!";
+
 		/**
 		* The first inversion calculates
 		* Y = phi = (Qplus)^-1 psi
