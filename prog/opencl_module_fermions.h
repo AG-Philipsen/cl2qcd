@@ -121,15 +121,15 @@ public:
 	//    solver operations
 	//    non-eoprec
 	/// this calls the solver according to parameter settings using the fermionmatrix f
-	void solver(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer, int cgmax);
+	void solver(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer);
 	/// this executes the bicgstab on the device, using the fermionmatrix f
-	bool bicgstab(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
+	bool bicgstab(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf);
 	/// this executes the cg on the device, using the fermionmatrix f
-	bool cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
+	bool cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf);
 	//    eoprec
 	/// this executes the eoprec bicgstab on the device, using the fermionmatrix f
-	bool bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
-	bool cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax);
+	bool bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf);
+	bool cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf);
 
 	/////////////////////////////////////////////////
 	//functions to get private variables

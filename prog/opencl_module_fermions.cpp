@@ -513,12 +513,12 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out)
 }
 
 
-bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
+bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf)
 {
 
 	int debug = 0;
 	if(debug) cout << "debug-output at bicgstab is activated" << endl;
-
+	int cgmax = get_parameters()->get_cgmax();
 	//CP: these have to be on the host
 	hmc_float resid;
 	hmc_float trueresid;
@@ -748,12 +748,12 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 	return false;
 }
 
-bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
+bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf)
 {
 	//CP: these have to be on the host
 	hmc_float resid;
 	hmc_float trueresid;
-
+	int cgmax = get_parameters()->get_cgmax();
 	for(int iter = 0; iter < cgmax; iter++) {
 
 		if(iter % iter_refresh == 0) {
@@ -823,8 +823,9 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 	return false;
 }
 
-bool Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
+bool Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf)
 {
+	int cgmax = get_parameters()->get_cgmax();
 	//CP: these have to be on the host
 	hmc_float resid;
 	int iter;
@@ -895,14 +896,14 @@ bool Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem sou
 	return false;
 }
 
-bool Opencl_Module_Fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
+bool Opencl_Module_Fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf)
 {
 	/// to be implemented if the above one has been checked..
 	return false;
 }
 
 
-void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer, int cgmax)
+void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer)
 {
 
 	bool converged = false;
@@ -929,9 +930,9 @@ void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem
 logger.debug() << "solver";
 		//even solution
 		if(get_parameters()->get_use_cg() == true)
-			converged = cg_eoprec(f, clmem_inout_eoprec, clmem_source_even, gf, cgmax);
+			converged = cg_eoprec(f, clmem_inout_eoprec, clmem_source_even, gf);
 		else
-			converged = bicgstab_eoprec(f, this->get_clmem_inout_eoprec(), clmem_source_even, gf, cgmax);
+			converged = bicgstab_eoprec(f, this->get_clmem_inout_eoprec(), clmem_source_even, gf);
 
 		logger.debug() << "odd solution";
 		//odd solution
@@ -954,9 +955,9 @@ logger.debug() << "solver";
 		this->set_spinorfield_cold_device(inout);
 
 		if(get_parameters()->get_use_cg() == true)
-			converged = cg(f, inout, source, gf, cgmax);
+			converged = cg(f, inout, source, gf);
 		else
-			converged = bicgstab(f, inout, source, gf, cgmax);
+			converged = bicgstab(f, inout, source, gf);
 	}
 	clFinish(get_queue());
 	(*solvertimer).add();

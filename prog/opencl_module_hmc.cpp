@@ -345,7 +345,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
 		logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
 
-		Opencl_Module_Fermions::solver(Qplus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, solvertimer, get_parameters()->get_cgmax());
+		Opencl_Module_Fermions::solver(Qplus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, solvertimer);
 
 		//debugging
 		set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
@@ -376,7 +376,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		//this sets clmem_inout cold as trial-solution
 		set_spinorfield_cold_device(get_clmem_inout());
 
-		Opencl_Module_Fermions::solver(Qminus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, solvertimer, get_parameters()->get_cgmax());
+		Opencl_Module_Fermions::solver(Qminus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, solvertimer);
 
 		//debugging
 		set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);

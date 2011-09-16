@@ -90,9 +90,9 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 
 		logger.debug() << "calling solver..";
 		if(use_eo == false)
-			get_task_solver()->solver(M_call, get_task_solver()->get_clmem_inout(), get_task_solver()->get_clmem_source(), *get_clmem_gaugefield(), solver_timer, get_parameters()->get_cgmax());
+			get_task_solver()->solver(M_call, get_task_solver()->get_clmem_inout(), get_task_solver()->get_clmem_source(), *get_clmem_gaugefield(), solver_timer);
 		else
-			get_task_solver()->solver(Aee_call, get_task_solver()->get_clmem_inout(), get_task_solver()->get_clmem_source(), *get_clmem_gaugefield(), solver_timer, get_parameters()->get_cgmax());
+			get_task_solver()->solver(Aee_call, get_task_solver()->get_clmem_inout(), get_task_solver()->get_clmem_source(), *get_clmem_gaugefield(), solver_timer);
 
 		//add solution to solution-buffer
 		//NOTE: this is a blocking call!
