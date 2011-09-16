@@ -100,16 +100,16 @@ public:
 
 	///////////////////////////////////////////////////
 	//Methods on device
+	void set_float_to_gaugemomentum_squarenorm_device(cl_mem in, cl_mem out);
 	void generate_gaussian_gaugemomenta_device();
 	void generate_gaussian_spinorfield_device();
-	void stout_smeared_fermion_force_device();
 	void md_update_gaugemomentum_device(hmc_float eps);
 	void md_update_gaugefield_device(hmc_float eps);
 	void set_zero_clmem_force_device();
 	void gauge_force_device();
 	void fermion_force_device();
-	void set_float_to_gaugemomentum_squarenorm_device(cl_mem in, cl_mem out);
-
+	void stout_smeared_fermion_force_device();
+	
 	
 protected:
 

@@ -313,18 +313,6 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 
 void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 {
-	//this is only used when smearing is activated
-	cl_mem gf_tmp;
-
-	if(get_parameters()->get_use_smearing() == true) {
-		logger.debug() << "\t\t\tsave unsmeared gaugefield...";
-		size_t gfsize = get_parameters()->get_gf_buf_size();
-		gf_tmp = create_rw_buffer(gfsize);
-		copy_buffer_on_device(*get_gaugefield(), gf_tmp, gfsize);
-		logger.debug() << "\t\t\tsmear gaugefield...";
-		stout_smear_device();
-	}
-
 	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 	if(get_parameters()->get_use_eo() == true) {
 		if(get_parameters()->get_use_cg() == true) {
@@ -404,18 +392,6 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 	logger.debug() << "\t\tcalc fermion_force...";
 	//CP: this always calls fermion_force(Y,X) with Y = clmem_phi_inv, X = clmem_inout
 	fermion_force_device();
-
-	if(get_parameters()->get_use_smearing() == true) {
-		//CP: The fermion_force call above used the smeared gaugefield if wished,
-		//  now the force by the thin link has to be determined...
-		logger.debug() << "\t\t\tcalc stout-smeared fermion_force...";
-		stout_smeared_fermion_force_device();
-		logger.debug() << "\t\t\trestore unsmeared gaugefield...";
-		size_t gfsize = get_parameters()->get_gf_buf_size();
-		copy_buffer_on_device(gf_tmp, *get_gaugefield(), gfsize);
-		cl_int clerr = clReleaseMemObject(gf_tmp);
-		if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	}
 }
 
 void Opencl_Module_Hmc::calc_gauge_force()

@@ -96,6 +96,22 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::st
 	return;
 }
 
+void Gaugefield_hmc::calc_total_force(usetimer * solvertimer)
+{
+	//CP: make sure that the output field is set to zero
+	get_task_hmc(0)->set_zero_clmem_force_device();
+	if(get_parameters()->get_use_smearing() == true) {
+		get_task_hmc(0)->smear_gaugefield(*(get_task_hmc(0)->get_gaugefield()));
+	}
+	get_task_hmc(0)->calc_fermion_force(solvertimer);
+	if(get_parameters()->get_use_smearing() == true) {
+		get_task_hmc(0)->stout_smeared_fermion_force_device();
+		get_task_hmc(0)->unsmear_gaugefield(*(get_task_hmc(0)->get_gaugefield()));
+	}
+	get_task_hmc(0)->calc_gauge_force();
+	/// @todo check again that the force-vector is updated the right way!!
+}
+
 void Gaugefield_hmc::md_update_gaugemomentum(hmc_float eps, usetimer * solvertimer){
 	calc_total_force(solvertimer);
 	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
@@ -111,7 +127,14 @@ void Gaugefield_hmc::md_update_gaugemomentum_gauge(hmc_float eps){
 
 void Gaugefield_hmc::md_update_gaugemomentum_fermion(hmc_float eps, usetimer * solvertimer){
 	get_task_hmc(0)->set_zero_clmem_force_device();
+	if(get_parameters()->get_use_smearing() == true) {
+		get_task_hmc(0)->smear_gaugefield(*(get_task_hmc(0)->get_gaugefield()));
+	}
 	get_task_hmc(0)->calc_fermion_force(solvertimer);
+	if(get_parameters()->get_use_smearing() == true) {
+		get_task_hmc(0)->stout_smeared_fermion_force_device();
+		get_task_hmc(0)->unsmear_gaugefield(*(get_task_hmc(0)->get_gaugefield()));
+	}
 	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
 	return;
 }
@@ -237,14 +260,5 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 	}
 	else 
 		Print_Error_Message("More than 2 timescales is not implemented yet. Aborting...");
-}
-
-
-void Gaugefield_hmc::calc_total_force(usetimer * solvertimer)
-{
-	//CP: make sure that the output field is set to zero
-	get_task_hmc(0)->set_zero_clmem_force_device();
-	get_task_hmc(0)->calc_fermion_force(solvertimer);
-	get_task_hmc(0)->calc_gauge_force();
 }
 

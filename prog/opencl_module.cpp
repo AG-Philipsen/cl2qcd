@@ -1046,3 +1046,22 @@ void Opencl_Module::print_copy_times(uint64_t totaltime)
 	//See older files for example code
 	return;
 }
+
+void Opencl_Module::smear_gaugefield(cl_mem gf){
+	logger.debug() << "\t\tsave unsmeared gaugefield...";
+	size_t gfsize = get_parameters()->get_gf_buf_size();
+	gf_unsmeared = create_rw_buffer(gfsize);
+	copy_buffer_on_device(gf, gf_unsmeared, gfsize);
+	logger.debug() << "\t\tsmear gaugefield...";
+	stout_smear_device();
+	return;
+}
+
+void Opencl_Module::unsmear_gaugefield(cl_mem gf){
+	logger.debug() << "\t\trestore unsmeared gaugefield...";
+	size_t gfsize = get_parameters()->get_gf_buf_size();
+	copy_buffer_on_device(gf_unsmeared, gf, gfsize);
+	cl_int clerr = clReleaseMemObject(gf_unsmeared);
+	if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+	return;
+}

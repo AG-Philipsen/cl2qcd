@@ -371,8 +371,14 @@ public:
 	/**
 	 * This applies stout smearing to a gaugefield
 	 */
+	void smear_gaugefield(cl_mem gf);
 	void stout_smear_device();
 
+	/**
+	 * This replaces the stout smeared gaugefield with the unsmeared one
+	 */
+	void unsmear_gaugefield(cl_mem gf);
+	
 	usetimer * get_copy_to();
 	usetimer * get_copy_on();
 
@@ -431,6 +437,9 @@ private:
 	cl_mem clmem_polyakov;
 	cl_mem clmem_polyakov_buf_glob;
 
+	//this is used to save the unsmeared gaugefield if smearing is used
+	cl_mem gf_unsmeared;
+	
 	//since this is only applicated to the gaugefield, this should be here...
 	cl_kernel stout_smear;
 
