@@ -40,7 +40,7 @@ void Gaugefield_inverter::init_tasks()
 	get_task_correlator()->init(queue[task_correlator], get_clmem_gaugefield(), get_parameters(), get_max_compute_units(task_correlator), get_double_ext(task_correlator));
 
 
-	int spinorfield_size = sizeof(spinor) * SPINORFIELDSIZE;
+	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
 
 	clmem_corr = get_task_correlator()->create_rw_buffer(spinorfield_size * num_sources);
 	clmem_source = get_task_correlator()->create_rw_buffer(spinorfield_size);
@@ -97,7 +97,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 	size_t sfsize = get_parameters()->get_spinorfieldsize() * sizeof(spinor);
 	spinor* sftmp = new spinor [get_parameters()->get_spinorfieldsize()];
 
-	int spinorfield_size = sizeof(spinor) * SPINORFIELDSIZE;
+	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
 	cl_mem clmem_res = get_task_solver()->create_rw_buffer(spinorfield_size);
 
 	for(int k = 0; k < num_sources; k++) {

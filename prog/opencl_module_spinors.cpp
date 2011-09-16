@@ -591,7 +591,7 @@ int Opencl_Module_Spinors::get_read_write_size(char * in, inputparameters * para
 	if((*parameters).get_use_eo() == 1)
 		S = get_parameters()->get_eoprec_spinorfieldsize();
 	else
-		S = SPINORFIELDSIZE;
+		S = get_parameters()->get_spinorfieldsize();
 	//this is the same as in the function above
 	if (strcmp(in, "set_spinorfield_cold") == 0) {
 		return 1000000000000000000000000;

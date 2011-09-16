@@ -87,7 +87,7 @@ void Opencl_fermions::fill_buffers()
 	logger.trace() << "init buffer for solver...";
 	int clerr = CL_SUCCESS;
 
-	int spinorfield_size = sizeof(spinor) * SPINORFIELDSIZE;
+	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
 	int eoprec_spinorfield_size = sizeof(spinor) * get_parameters()->get_eoprec_spinorfieldsize();
 	int complex_size = sizeof(hmc_complex);
 	int float_size = sizeof(hmc_float);
@@ -807,7 +807,7 @@ bool Opencl_fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem sou
 			f(this, inout, clmem_rn, gf);
 
 			saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
-			copy_buffer_on_device(clmem_rn, clmem_rhat, sizeof(spinor) * SPINORFIELDSIZE);
+			copy_buffer_on_device(clmem_rn, clmem_rhat, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
 
 			copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
 			copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex));
@@ -1109,7 +1109,7 @@ bool Opencl_fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl
 		if(iter % iter_refresh == 0) {
 			f(this, inout, clmem_rn, gf);
 			saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
-			copy_buffer_on_device(clmem_rn, clmem_p, sizeof(spinor) * SPINORFIELDSIZE);
+			copy_buffer_on_device(clmem_rn, clmem_p, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
 
 		}
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
@@ -1145,7 +1145,7 @@ bool Opencl_fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl
 
 		if(resid < epssquare) {
 			//???
-			//copy_buffer_on_device(clmem_rhat, clmem_inout, sizeof(spinor) * SPINORFIELDSIZE);
+			//copy_buffer_on_device(clmem_rhat, clmem_inout, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
 
 			return true;
 		} else {
@@ -1165,7 +1165,7 @@ bool Opencl_fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl
 			saxpy_device(clmem_p, clmem_rhat, clmem_tmp2, clmem_p);
 
 			//rn = rn+1 ^= rn = rhat
-			copy_buffer_on_device(clmem_rhat, clmem_rn, sizeof(spinor) * SPINORFIELDSIZE);
+			copy_buffer_on_device(clmem_rhat, clmem_rn, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
 
 		}
 	}
@@ -1598,7 +1598,7 @@ int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters
 	if((*parameters).get_use_eo() == 1)
 		S = get_parameters()->get_eoprec_spinorfieldsize();
 	else
-		S = SPINORFIELDSIZE;
+		S = get_parameters()->get_spinorfieldsize();
 	//this is the same as in the function above
 	if (strcmp(in, "M_wilson") == 0) {
 		return (240 + 16 * R) * D * S;

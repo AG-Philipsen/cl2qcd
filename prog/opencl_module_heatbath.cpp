@@ -205,7 +205,7 @@ int Opencl_Module_Heatbath::get_read_write_size(char * in, inputparameters * par
 	if((*parameters).get_use_eo() == 1)
 		S = get_parameters()->get_eoprec_spinorfieldsize();
 	else
-		S = SPINORFIELDSIZE;
+		S = get_parameters()->get_spinorfieldsize();
 	//this is the same as in the function above
 	if (strcmp(in, "heatbath_even") == 0) {
 		return VOL4D * D * R + 1;

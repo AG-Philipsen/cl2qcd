@@ -202,7 +202,7 @@ int Opencl_Module_Hmc::get_read_write_size(char * in, inputparameters * paramete
 	if((*parameters).get_use_eo() == 1)
 		S = get_parameters()->get_eoprec_spinorfieldsize();
 	else
-		S = SPINORFIELDSIZE;
+		S = get_parameters()->get_spinorfieldsize();
 	//this is the same as in the function above
 	if (strcmp(in, "generate_gaussian_spinorfield") == 0) {
 		return 10000000000000000000;
@@ -352,7 +352,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
 
 		//store this result in clmem_phi_inv
-		copy_buffer_on_device(get_clmem_inout(), clmem_phi_inv, sizeof(spinor) * SPINORFIELDSIZE);
+		copy_buffer_on_device(get_clmem_inout(), clmem_phi_inv, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
 
 		/**
 		 * Now, one has to calculate
@@ -364,7 +364,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		 */
 
 		//copy former solution to clmem_source
-		copy_buffer_on_device(get_clmem_inout(), get_clmem_source(), sizeof(spinor) * SPINORFIELDSIZE);
+		copy_buffer_on_device(get_clmem_inout(), get_clmem_source(), sizeof(spinor) * get_parameters()->get_spinorfieldsize());
 		logger.debug() << "\t\t\tstart solver";
 
 		//debugging

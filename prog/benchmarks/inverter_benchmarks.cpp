@@ -28,8 +28,6 @@ int main(int argc, char* argv[])
 
 	init_timer.reset();
 	sourcefileparameters parameters_source;
-	//CP: spinorfield on host for storage while copying between devices...
-	spinorfield host_spinorfield [SPINORFIELDSIZE];
 
 	Gaugefield_inverter gaugefield;
 	cl_device_type primary_device;
