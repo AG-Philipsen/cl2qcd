@@ -74,6 +74,8 @@ void inputparameters::set_defaults()
 	hmcsteps = 10;
 	num_timescales = 1;
 	integrator = LEAPFROG;
+	lambda1 = .19;
+	lambda2 = .19;
 
 	//direction for the correlator
 	corr_dir = 3;
@@ -500,6 +502,16 @@ hmc_float inputparameters::get_chem_pot_im()
 hmc_float inputparameters::get_rho()
 {
 	return rho;
+}
+
+hmc_float inputparameters::get_lambda1()
+{
+	return lambda1;
+}
+
+hmc_float inputparameters::get_lambda2()
+{
+	return lambda2;
 }
 
 int inputparameters::get_cgmax()

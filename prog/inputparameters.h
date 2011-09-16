@@ -122,6 +122,8 @@ public:
 	int get_corr_dir();
 	int get_integrator();
 	int get_num_timescales();
+	hmc_float get_lambda1();
+	hmc_float get_lambda2();
 #ifdef _PROFILING_
 	int get_mat_size();
 	int get_float_size();
@@ -279,6 +281,8 @@ private:
 	int num_timescales;
 	int integrationsteps1;
 	int integrationsteps2;
+	hmc_float lambda1;
+	hmc_float lambda2;
 	bool use_cg;
 	bool use_pointsource;
 	int num_sources;
