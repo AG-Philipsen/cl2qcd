@@ -39,7 +39,7 @@ void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_complex * source);
  * @param[in] host_gaugefield The gaugefield in the internal representation
  * @param[out] gaugefield The location to store the OpenCL kernel compatible representation to
  */
-void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield);
+void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield, const inputparameters * const params);
 
 /**
  * Transform the gaugefield representation used by the OpenCL kernels into the normal one.
@@ -47,7 +47,7 @@ void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield
  * @param[in] gaugefield The gaugefield in the representation used by the OpenCL kernels
  * @param[out] host_gaugefield The location to store the gaugefield to
  */
-void copy_from_ocl_format(Matrixsu3* gaugefield, ocl_s_gaugefield* host_gaugefield);
+void copy_from_ocl_format(Matrixsu3* gaugefield, ocl_s_gaugefield* host_gaugefield, const inputparameters * const params);
 
 
 /* *****************************************************************************************************
@@ -129,7 +129,7 @@ void local_polyakov(hmc_complex * field, hmc_su3matrix * prod, int n);
  * @param[in] mu The first direction to use
  * @param[in] nu The second direction to use
  */
-void local_plaquette(hmc_complex * field, hmc_su3matrix * prod, int n, int t, int mu, int nu );
+void local_plaquette(hmc_complex * field, hmc_su3matrix * prod, int n, int t, int mu, int nu, const inputparameters * const params );
 
 // copy-functions within cpu memory, gaugefield-related layers
 /**

@@ -1,11 +1,11 @@
 #include "host_operations_gaugefield.h"
 
-void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield)
+void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield, const inputparameters * const params)
 {
 	for(int spacepos = 0; spacepos < NSPACE * NSPACE * NSPACE; spacepos++) {
 		for(int t = 0; t < NTIME; t++) {
 			for(int mu = 0; mu < NDIM; mu++) {
-				const size_t index = get_global_link_pos(mu, spacepos, t);
+				const size_t index = get_global_link_pos(mu, spacepos, t, params);
 				host_gaugefield[index] = gaugefield[index];
 			}
 		}
@@ -13,12 +13,12 @@ void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield
 	return;
 }
 
-void copy_from_ocl_format(Matrixsu3* gaugefield, ocl_s_gaugefield* host_gaugefield)
+void copy_from_ocl_format(Matrixsu3* gaugefield, ocl_s_gaugefield* host_gaugefield, const inputparameters * const params)
 {
 	for(int spacepos = 0; spacepos < NSPACE * NSPACE * NSPACE; spacepos++) {
 		for(int t = 0; t < NTIME; t++) {
 			for(int mu = 0; mu < NDIM; mu++) {
-				const size_t index = get_global_link_pos(mu, spacepos, t);
+				const size_t index = get_global_link_pos(mu, spacepos, t, params);
 				gaugefield[index] = host_gaugefield[index];
 			}
 		}
@@ -238,7 +238,7 @@ void local_polyakov(hmc_complex * field, hmc_su3matrix * prod, int n)
 	return;
 }
 
-void local_plaquette(hmc_complex * field, hmc_su3matrix * prod, int n, int t, int mu, int nu )
+void local_plaquette(hmc_complex * field, hmc_su3matrix * prod, int n, int t, int mu, int nu, const inputparameters * const params )
 {
 	hmc_su3matrix tmp;
 	//u_mu(x)
@@ -248,7 +248,7 @@ void local_plaquette(hmc_complex * field, hmc_su3matrix * prod, int n, int t, in
 		int newt = (t + 1) % NTIME; //(haha)
 		get_su3matrix(&tmp, field, n, newt, nu);
 	} else {
-		get_su3matrix(&tmp, field, get_neighbor(n, mu), t, nu);
+		get_su3matrix(&tmp, field, get_neighbor(n, mu, params), t, nu);
 	}
 	accumulate_su3matrix_prod(prod, &tmp);
 	//adjoint(u_mu(x+nu))
@@ -256,7 +256,7 @@ void local_plaquette(hmc_complex * field, hmc_su3matrix * prod, int n, int t, in
 		int newt = (t + 1) % NTIME;
 		get_su3matrix(&tmp, field, n, newt, mu);
 	} else {
-		get_su3matrix(&tmp, field, get_neighbor(n, nu), t, mu);
+		get_su3matrix(&tmp, field, get_neighbor(n, nu, params), t, mu);
 	}
 	adjoin_su3matrix(&tmp);
 	accumulate_su3matrix_prod(prod, &tmp);
@@ -275,7 +275,7 @@ void copy_gaugefield(hmc_complex * source, hmc_complex * dest, const inputparame
 	return complexcopy(source, dest, params->get_gaugefieldsize()); // SL: not tested
 }
 
-void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, int mu, int nu )
+void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, int mu, int nu, const inputparameters * const params )
 {
 	hmc_su3matrix tmp;
 	int newpos;
@@ -289,14 +289,14 @@ void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, i
 		int newt = (t + 1) % NTIME;
 		get_su3matrix(&tmp, field, n, newt, nu);
 	} else
-		get_su3matrix(&tmp, field, get_neighbor(n, mu), t, nu);
+		get_su3matrix(&tmp, field, get_neighbor(n, mu, params), t, nu);
 	accumulate_su3matrix_prod(&plaq1, &tmp);
 	//adjoint(u_mu(x+nu))
 	if(nu == 0) {
 		int newt = (t + 1) % NTIME;
 		get_su3matrix(&tmp, field, n, newt, mu);
 	} else
-		get_su3matrix(&tmp, field, get_neighbor(n, nu), t, mu);
+		get_su3matrix(&tmp, field, get_neighbor(n, nu, params), t, mu);
 	adjoin_su3matrix(&tmp);
 	accumulate_su3matrix_prod(&plaq1, &tmp);
 	//adjoint(u_nu(x))
@@ -309,15 +309,15 @@ void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, i
 	//U_nu(x)
 	get_su3matrix(&plaq2, field, n, t, nu);
 	//adj (u_mu(x-mu+nu))
-	newpos = get_lower_neighbor(n, mu);
+	newpos = get_lower_neighbor(n, mu, params);
 	if (nu == 0) {
 		int newt =  (t + 1) % NTIME;
 		get_su3matrix(&tmp, field, newpos, newt, mu);
 	} else if (mu == 0) {
 		int newt = (t - 1 + NTIME) % NTIME;
-		get_su3matrix(&tmp, field, get_neighbor(n, nu), newt, mu);
+		get_su3matrix(&tmp, field, get_neighbor(n, nu, params), newt, mu);
 	} else
-		get_su3matrix(&tmp, field, get_neighbor(newpos, nu), t, mu);
+		get_su3matrix(&tmp, field, get_neighbor(newpos, nu, params), t, mu);
 	adjoin_su3matrix(&tmp);
 	accumulate_su3matrix_prod(&plaq2, &tmp);
 	//adj (u_nu(x-mu))
@@ -325,7 +325,7 @@ void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, i
 		int newt = (t - 1 + NTIME) % NTIME;
 		get_su3matrix(&tmp, field, n, newt, nu);
 	} else
-		get_su3matrix(&tmp, field, get_lower_neighbor(n, mu), t, nu);
+		get_su3matrix(&tmp, field, get_lower_neighbor(n, mu, params), t, nu);
 	adjoin_su3matrix(&tmp);
 	accumulate_su3matrix_prod(&plaq2, &tmp);
 	//u_mu(x-mu)
@@ -333,7 +333,7 @@ void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, i
 		int newt = (t - 1 + NTIME) % NTIME;
 		get_su3matrix(&tmp, field, n, newt, mu);
 	} else
-		get_su3matrix(&tmp, field, get_lower_neighbor(n, mu), t, mu);
+		get_su3matrix(&tmp, field, get_lower_neighbor(n, mu, params), t, mu);
 	accumulate_su3matrix_prod(&plaq2, &tmp);
 
 	//3rd plaq
@@ -343,38 +343,38 @@ void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, i
 		int newt = (t - 1 + NTIME) % NTIME;
 		get_su3matrix(&tmp, field, n, newt, mu);
 	} else
-		get_su3matrix(&tmp, field, get_lower_neighbor(n, mu), t, mu);
+		get_su3matrix(&tmp, field, get_lower_neighbor(n, mu, params), t, mu);
 	adjoin_su3matrix(&tmp);
 	copy_su3matrix(&plaq3, &tmp);
 	//adj (u_nu(x-mu-nu))
-	newpos = get_lower_neighbor(n, mu);
+	newpos = get_lower_neighbor(n, mu, params);
 	if (nu == 0) {
 		int newt = (t - 1 + NTIME) % NTIME;
 		get_su3matrix(&tmp, field, newpos, newt, nu);
 	} else if (mu == 0) {
 		int newt = (t - 1 + NTIME) % NTIME;
-		get_su3matrix(&tmp, field, get_lower_neighbor(n, nu), newt, nu);
+		get_su3matrix(&tmp, field, get_lower_neighbor(n, nu, params), newt, nu);
 	} else
-		get_su3matrix(&tmp, field, get_lower_neighbor(newpos, nu), t, nu);
+		get_su3matrix(&tmp, field, get_lower_neighbor(newpos, nu, params), t, nu);
 	adjoin_su3matrix(&tmp);
 	accumulate_su3matrix_prod(&plaq3, &tmp);
 	//u_mu(x-mu-nu)
-	newpos = get_lower_neighbor(n, mu);
+	newpos = get_lower_neighbor(n, mu, params);
 	if (nu == 0) {
 		int newt = (t - 1 + NTIME) % NTIME;
 		get_su3matrix(&tmp, field, newpos, newt, mu);
 	} else if (mu == 0) {
 		int newt = (t - 1 + NTIME) % NTIME;
-		get_su3matrix(&tmp, field, get_lower_neighbor(n, nu), newt, mu);
+		get_su3matrix(&tmp, field, get_lower_neighbor(n, nu, params), newt, mu);
 	} else
-		get_su3matrix(&tmp, field, get_lower_neighbor(newpos, nu), t, mu);
+		get_su3matrix(&tmp, field, get_lower_neighbor(newpos, nu, params), t, mu);
 	accumulate_su3matrix_prod(&plaq3, &tmp);
 	//u_nu(x-nu)
 	if (nu == 0) {
 		int newt = (t - 1 + NTIME) % NTIME;
 		get_su3matrix(&tmp, field, n, newt, nu);
 	} else
-		get_su3matrix(&tmp, field, get_lower_neighbor(n, nu), t, nu);
+		get_su3matrix(&tmp, field, get_lower_neighbor(n, nu, params), t, nu);
 	accumulate_su3matrix_prod(&plaq3, &tmp);
 
 	//4th plaq
@@ -387,18 +387,18 @@ void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, i
 		int newt = (t - 1 + NTIME) % NTIME;
 		get_su3matrix(&tmp, field, n, newt, mu);
 	} else
-		get_su3matrix(&tmp, field, get_lower_neighbor(n, nu), t, mu);
+		get_su3matrix(&tmp, field, get_lower_neighbor(n, nu, params), t, mu);
 	accumulate_su3matrix_prod(&plaq4, &tmp);
 	//u_nu(x+mu-nu)
-	newpos = get_lower_neighbor(n, nu);
+	newpos = get_lower_neighbor(n, nu, params);
 	if (mu == 0) {
 		int newt =  (t + 1) % NTIME;
 		get_su3matrix(&tmp, field, newpos, newt, nu);
 	} else if (nu == 0) {
 		int newt = (t - 1 + NTIME) % NTIME;
-		get_su3matrix(&tmp, field, get_neighbor(n, mu), newt, nu);
+		get_su3matrix(&tmp, field, get_neighbor(n, mu, params), newt, nu);
 	} else
-		get_su3matrix(&tmp, field, get_neighbor(newpos, mu), t, nu);
+		get_su3matrix(&tmp, field, get_neighbor(newpos, mu, params), t, nu);
 	accumulate_su3matrix_prod(&plaq4, &tmp);
 	//adj (u_mu(x))
 	get_su3matrix(&tmp, field, n, t, mu);

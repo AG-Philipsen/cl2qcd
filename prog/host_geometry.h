@@ -13,6 +13,7 @@
 #include "globaldefs.h"
 #include <cstdlib>
 #include <cmath>
+#include "inputparameters.h"
 
 //coord[0] = t
 //coord[1] = x
@@ -28,7 +29,7 @@
  * @param timepos The index in time
  * @return even-odd preconditioned index
  */
-int get_n_eoprec(int spacepos, int timepos);
+int get_n_eoprec(int spacepos, int timepos, const inputparameters * const params);
 
 //switch between (x,y,z) <-> nspace=0,...,VOLSPACE-1
 
@@ -39,7 +40,7 @@ int get_n_eoprec(int spacepos, int timepos);
  *              time is expected in index 0 of this array.
  * @param Spatial index
  */
-int get_nspace(int* coord);
+int get_nspace(int* coord, const inputparameters * const params);
 /**
  * Calculate the cartesian coordinates of the given spatial index.
  *
@@ -47,7 +48,7 @@ int get_nspace(int* coord);
  * @param dir The dimension for which to retrieve the cartisian coordinate
  * @param Cartesian coordinate of nspace in dimension dir.
  */
-int get_spacecoord(int nspace, int dir);
+int get_spacecoord(int nspace, int dir, const inputparameters * const params);
 
 //get spatial neighbors
 
@@ -58,7 +59,7 @@ int get_spacecoord(int nspace, int dir);
  * @param dir The dimension in which to move
  * @return Index of the next site in the given direction
  */
-int get_neighbor(int nspace, int dir);
+int get_neighbor(int nspace, int dir, const inputparameters * const params);
 /**
  * Calculate the previous spatial index in a given direction.
  *
@@ -66,7 +67,7 @@ int get_neighbor(int nspace, int dir);
  * @param dir The dimension in which to move
  * @return Index of the next site in the given direction
  */
-int get_lower_neighbor(int nspace, int dir);
+int get_lower_neighbor(int nspace, int dir, const inputparameters * const params);
 //Checkerboard: get real coordinates from EVEN/ODD-index
 /**
  * Get the non-preconditioned indices for a given even-odd preconditioned index
@@ -76,7 +77,7 @@ int get_lower_neighbor(int nspace, int dir);
  * @param[out] out_space Pointer to which to write the spatial index.
  * @param[out] out_t Pointer to which to write the index in time direction.
  */
-void get_even_site(int idx, int * out_space, int * out_t);
+void get_even_site(int idx, int * out_space, int * out_t, const inputparameters * const params);
 /**
  * Get the non-preconditioned indices for a given even-odd preconditioned index
  * of an odd site.
@@ -85,7 +86,7 @@ void get_even_site(int idx, int * out_space, int * out_t);
  * @param[out] out_space Pointer to which to write the spatial index.
  * @param[out] out_t Pointer to which to write the index in time direction.
  */
-void get_odd_site(int idx, int * out_space, int * out_t);
+void get_odd_site(int idx, int * out_space, int * out_t, const inputparameters * const params);
 
 /**
  * Get the non-even-odd-preconditioned index of a site based on the spatial and temporal
@@ -95,7 +96,7 @@ void get_odd_site(int idx, int * out_space, int * out_t);
  * @param t Temporal index
  * @return Global index
  */
-int get_global_pos(int spacepos, int t);
+int get_global_pos(int spacepos, int t, const inputparameters * const params);
 
 /**
  * Get the non-even-odd-preconditioned index link based on the spatial, temporal
@@ -105,7 +106,7 @@ int get_global_pos(int spacepos, int t);
  * @param t Temporal index
  * @return Global index
  */
-int get_global_link_pos(int mu, int spacepos, int t);
+int get_global_link_pos(int mu, int spacepos, int t, const inputparameters * const params);
 
 //get gaugefield element from long array
 /** This function returns the index of a specific hmc_float out of an hmc_complex array.
@@ -116,7 +117,7 @@ int get_global_link_pos(int mu, int spacepos, int t);
  *   mu, spacepos, t: Dirac and spacetime indices
  * @todo this function is highly misterious. Still??
  */
-int ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t);
+int ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t, const inputparameters * const params);
 
 //Spinor functions
 
@@ -127,7 +128,7 @@ int ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t);
  * @param color Color index
  * @return Spinor local index
  */
-int spinor_element(int alpha, int color);
+int spinor_element(int alpha, int color, const inputparameters * const params);
 /**
  * Get the index of a spinor element within the non-even-odd-preconditioned lattice.
  *
@@ -137,21 +138,21 @@ int spinor_element(int alpha, int color);
  * @param t Temporal index
  * @return Element index within the lattice
  */
-int spinor_field_element(int alpha, int color, int nspace, int t);
+int spinor_field_element(int alpha, int color, int nspace, int t, const inputparameters * const params);
 /**
  * Get the color component from a spinor-local index.
  *
  * @param spinor_element Spinor-local indexx
  * @return Color component
  */
-int spinor_color(int spinor_element);
+int spinor_color(int spinor_element, const inputparameters * const params);
 /**
  * Get the spint component from a spinor-local index.
  *
  * @param spinor_element Spinor-local indexx
  * @return Spin component
  */
-int spinor_spin(int spinor_element, int color);
+int spinor_spin(int spinor_element, int color, const inputparameters * const params);
 /**
  * Get the index of a spinor element within the even-odd-preconditioned lattice.
  *
@@ -161,7 +162,7 @@ int spinor_spin(int spinor_element, int color);
  * @param t Temporal index
  * @return Element index within the lattice
  */
-int eoprec_spinor_field_element(int alpha, int color, int nspace, int t);
+int eoprec_spinor_field_element(int alpha, int color, int nspace, int t, const inputparameters * const params);
 /**
  * Get the index of a spinor element within the even-odd-preconditioned lattice.
  *
@@ -170,6 +171,6 @@ int eoprec_spinor_field_element(int alpha, int color, int nspace, int t);
  * @param n_eoprec Even-odd-preconditioned index as returned by get_n_eoprec(int,int).
  * @return Element index within the lattice
  */
-int eoprec_spinor_field_element(int alpha, int color, int n_eoprec);
+int eoprec_spinor_field_element(int alpha, int color, int n_eoprec, const inputparameters * const params);
 
-#endif
+#endif /* _GEOMETRYH_ */

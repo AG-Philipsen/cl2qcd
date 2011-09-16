@@ -388,7 +388,7 @@ void Gaugefield_hybrid::copy_gaugefield_to_task(int ntask)
 
 	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(get_num_gaugefield_elems() * sizeof(ocl_s_gaugefield));
 
-	copy_to_ocl_format(host_gaugefield, get_sgf());
+	copy_to_ocl_format(host_gaugefield, get_sgf(), parameters);
 
 	cl_int clerr = clEnqueueWriteBuffer(queue[ntask], clmem_gaugefield, CL_TRUE, 0, get_num_gaugefield_elems() * sizeof(ocl_s_gaugefield), host_gaugefield, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
@@ -427,7 +427,7 @@ void Gaugefield_hybrid::copy_gaugefield_from_task(int ntask)
 	cl_int clerr = clEnqueueReadBuffer(queue[ntask], clmem_gaugefield, CL_TRUE, 0, get_num_gaugefield_elems() * sizeof(ocl_s_gaugefield), host_gaugefield, 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueReadBuffer", __FILE__, __LINE__);
 
-	copy_from_ocl_format(get_sgf(), host_gaugefield);
+	copy_from_ocl_format(get_sgf(), host_gaugefield, parameters);
 
 	free(host_gaugefield);
 
@@ -662,7 +662,7 @@ hmc_float Gaugefield_hybrid::plaquette(hmc_float* tplaq, hmc_float* splaq)
 			for(int mu = 0; mu < NDIM; mu++) {
 				for(int nu = 0; nu < mu; nu++) {
 					hmc_su3matrix prod;
-					local_plaquette(gftmp, &prod, n, t, mu, nu );
+					local_plaquette(gftmp, &prod, n, t, mu, nu, parameters );
 					hmc_float tmpfloat = trace_su3matrix(&prod).re;
 					plaq += tmpfloat;
 					if(mu == 0 || nu == 0) {
@@ -731,7 +731,7 @@ hmc_complex Gaugefield_hybrid::spatial_polyakov(int dir)
 					coord[next] = x1;
 					int nnext = (next % (NDIM - 1)) + 1;
 					coord[nnext] = x2;
-					int pos = get_nspace(coord);
+					int pos = get_nspace(coord, parameters);
 					get_su3matrix(&tmp, gftmp, pos, t, dir);
 					accumulate_su3matrix_prod(&prod, &tmp);
 				}
@@ -831,12 +831,12 @@ size_t Gaugefield_hybrid::get_num_hmc_gaugefield_elems()
 
 void Gaugefield_hybrid::set_to_gaugefield(Matrixsu3 * field, const size_t mu, const size_t x, const size_t t, const Matrixsu3 val)
 {
-	field[get_global_link_pos(mu, x, t)] = val;
+	field[get_global_link_pos(mu, x, t, parameters)] = val;
 }
 
 Matrixsu3 Gaugefield_hybrid::get_from_gaugefield(const Matrixsu3 * field, const size_t mu, const size_t x, const size_t t) const
 {
-	return field[get_global_link_pos(mu, x, t)];
+	return field[get_global_link_pos(mu, x, t, parameters)];
 }
 
 size_t Gaugefield_hybrid::get_num_gaugefield_elems() const

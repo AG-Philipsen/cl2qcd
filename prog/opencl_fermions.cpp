@@ -1269,8 +1269,8 @@ void Opencl_fermions::create_point_source_eoprec_device(cl_mem inout_even, cl_me
 	set_zero_spinorfield_eoprec_device(clmem_tmp_eoprec_2);
 	set_zero_spinorfield_eoprec_device(clmem_tmp_eoprec_1);
 
-	int glob_pos = get_global_pos(spacepos, timepos);
-	int n = get_n_eoprec(spacepos, timepos);
+	int glob_pos = get_global_pos(spacepos, timepos, parameters);
+	int n = get_n_eoprec(spacepos, timepos, parameters);
 	int clerr = CL_SUCCESS;
 	int evenodd = glob_pos % 2;
 

@@ -23,8 +23,6 @@
 
 #define EXIT_INPUTPARAMETERS 1
 
-#include "host_geometry.h"
-
 using namespace std;
 
 

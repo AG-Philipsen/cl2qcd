@@ -365,7 +365,7 @@ void Opencl::copy_gaugefield_to_device(Matrixsu3* gaugefield)
 	const size_t gaugefield_size = NDIM * VOLSPACE * NTIME * sizeof(ocl_s_gaugefield);
 	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(gaugefield_size);
 
-	copy_to_ocl_format(host_gaugefield, gaugefield);
+	copy_to_ocl_format(host_gaugefield, gaugefield, parameters);
 
 	cl_int clerr = clEnqueueWriteBuffer(queue, clmem_gaugefield, CL_TRUE, 0, gaugefield_size, host_gaugefield, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
@@ -386,7 +386,7 @@ void Opencl::get_gaugefield_from_device(Matrixsu3* gaugefield)
 	cl_int clerr = clEnqueueReadBuffer(queue, clmem_gaugefield, CL_TRUE, 0, gaugefield_size, host_gaugefield, 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueReadBuffer", __FILE__, __LINE__);
 
-	copy_from_ocl_format(gaugefield, host_gaugefield);
+	copy_from_ocl_format(gaugefield, host_gaugefield, parameters);
 
 	free(host_gaugefield);
 

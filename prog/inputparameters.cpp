@@ -1,5 +1,7 @@
 #include "inputparameters.h"
 
+#include "host_geometry.h"
+
 void inputparameters::set_defaults()
 {
 	//global parameters
@@ -746,7 +748,7 @@ int inputparameters::get_source_pos_spatial() const
 	coord[2] = pointsource_y;
 	coord[3] = pointsource_z;
 
-	return get_nspace(coord);
+	return get_nspace(coord, this);
 }
 
 int inputparameters::get_source_pos_temporal() const

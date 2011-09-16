@@ -448,7 +448,7 @@ hmc_float Gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 			for(int mu = 0; mu < NDIM; mu++) {
 				for(int nu = 0; nu < mu; nu++) {
 					hmc_su3matrix prod;
-					local_plaquette(gftmp, &prod, n, t, mu, nu );
+					local_plaquette(gftmp, &prod, n, t, mu, nu, parameters );
 					hmc_float tmpfloat = trace_su3matrix(&prod).re;
 					plaq += tmpfloat;
 					if(mu == 0 || nu == 0) {
@@ -517,7 +517,7 @@ hmc_complex Gaugefield::spatial_polyakov(int dir)
 					coord[next] = x1;
 					int nnext = (next % (NDIM - 1)) + 1;
 					coord[nnext] = x2;
-					int pos = get_nspace(coord);
+					int pos = get_nspace(coord, parameters);
 					get_su3matrix(&tmp, gftmp, pos, t, dir);
 					accumulate_su3matrix_prod(&prod, &tmp);
 				}
@@ -676,10 +676,10 @@ size_t Gaugefield::get_num_hmc_gaugefield_elems()
 
 void Gaugefield::set_to_gaugefield(Matrixsu3 * field, const size_t mu, const size_t x, const size_t t, const Matrixsu3 val)
 {
-	field[get_global_link_pos(mu, x, t)] = val;
+	field[get_global_link_pos(mu, x, t, parameters)] = val;
 }
 
 Matrixsu3 Gaugefield::get_from_gaugefield(const Matrixsu3 * field, const size_t mu, const size_t x, const size_t t) const
 {
-	return field[get_global_link_pos(mu, x, t)];
+	return field[get_global_link_pos(mu, x, t, parameters)];
 }
