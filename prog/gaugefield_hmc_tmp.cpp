@@ -164,16 +164,13 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 		hmc_float stepsize = get_parameters()->get_tau() / ((hmc_float) steps);
 		hmc_float stepsize_half = 0.5 * stepsize;
 
-		//initial step
 		logger.debug() << "\t\tinitial step:";
 		md_update_gaugemomentum(stepsize_half, solvertimer);
-		//intermediate steps
 		if(steps > 1) logger.debug() << "\t\tperform " << steps - 1 << " intermediate steps " ;
 		for(int k = 1; k < steps; k++) {
 			md_update_gaugefield(stepsize);
 			md_update_gaugemomentum(stepsize, solvertimer);
 		}
-		//final step
 		logger.debug() << "\t\tfinal step" ;
 		md_update_gaugefield(stepsize);
 		md_update_gaugemomentum(stepsize_half, solvertimer);
@@ -196,7 +193,6 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 		hmc_float stepsize_half = 0.5 * stepsize;
 		hmc_float stepsize2_half = 0.5 * stepsize2;
 
-		//initial step
 		logger.debug() << "\t\tinitial step:";
 		//this corresponds to V_s2(deltaTau/2)
 		md_update_gaugemomentum_fermion(stepsize2_half, solvertimer);
@@ -207,7 +203,6 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 			md_update_gaugefield(stepsize2);
 			md_update_gaugemomentum_gauge(stepsize_half);
 		}
-		//intermediate steps
 		if(steps2 > 1) logger.debug() << "\t\tperform " << steps2 - 1 << " intermediate steps " ;
 		for(int k = 1; k < steps2; k++) {
 			//this corresponds to V_s2(deltaTau)
@@ -219,7 +214,6 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 				md_update_gaugemomentum_gauge(stepsize_half);
 			}
 		}
-		//final step
 		logger.debug() << "\t\tfinal step" ;
 		//this corresponds to the missing V_s2(deltaTau/2)
 		md_update_gaugemomentum_fermion(stepsize2_half, solvertimer);

@@ -910,8 +910,10 @@ void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem
 	(*solvertimer).reset();
 	if(get_parameters()->get_use_eo() == true) {
 		//convert source and input-vector to eoprec-format
-		convert_to_eoprec_device(clmem_source_even, clmem_source_odd, clmem_source);
+		logger.debug() << "convert source to eoprec-format";
+		convert_to_eoprec_device(clmem_source_even, clmem_source_odd, source);
 		//prepare sources
+		logger.debug() << "Prepare sources for eoprec inversion";
 		if(get_parameters()->get_fermact() == WILSON) {
 			logger.fatal() << "not yet implemented in WILSON case, aborting...";
 		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
@@ -921,15 +923,17 @@ void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem
 		}
 
 		//Trial solution
+		logger.debug() << "trial solution";
 		///@todo this should go into a more general function
 		this->set_eoprec_spinorfield_cold_device(this->get_clmem_inout_eoprec());
-
+logger.debug() << "solver";
 		//even solution
 		if(get_parameters()->get_use_cg() == true)
 			converged = cg_eoprec(f, clmem_inout_eoprec, clmem_source_even, gf, cgmax);
 		else
-			converged = bicgstab_eoprec(f, clmem_inout_eoprec, clmem_source_even, gf, cgmax);
+			converged = bicgstab_eoprec(f, this->get_clmem_inout_eoprec(), clmem_source_even, gf, cgmax);
 
+		logger.debug() << "odd solution";
 		//odd solution
 		/** @todo CP: perhaps one can save some variables used here */
 		if(get_parameters()->get_fermact() == WILSON) {
@@ -942,7 +946,7 @@ void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem
 
 			//CP: whole solution
 			//CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eoprec_1
-			convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_1, clmem_inout);
+			convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_1, inout);
 		}
 	} else {
 		//Trial solution

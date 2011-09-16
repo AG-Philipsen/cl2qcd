@@ -425,7 +425,7 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 			logger.error() << "Could not retrieve length of kernel name";
 		}
 
-		throw Opencl_Error(clerr, "clEnqueueNDRangeKernel", __FILE__, __LINE__);
+		throw Opencl_Error(clerr_enqueue, "clEnqueueNDRangeKernel", __FILE__, __LINE__);
 
 	}
 }
@@ -495,7 +495,7 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 			logger.error() << "Could not retrieve length of kernel name";
 		}
 
-		throw Opencl_Error(clerr, "clEnqueueNDRangeKernel", __FILE__, __LINE__);
+		throw Opencl_Error(clerr_enqueue, "clEnqueueNDRangeKernel", __FILE__, __LINE__);
 	}
 }
 
