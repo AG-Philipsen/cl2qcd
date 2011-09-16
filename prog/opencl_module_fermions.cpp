@@ -91,7 +91,7 @@ void Opencl_Module_Fermions::fill_buffers()
 	int clerr = CL_SUCCESS;
 
 	int spinorfield_size = sizeof(spinor) * SPINORFIELDSIZE;
-	int eoprec_spinorfield_size = sizeof(spinor) * EOPREC_SPINORFIELDSIZE;
+	int eoprec_spinorfield_size = sizeof(spinor) * get_parameters()->get_eoprec_spinorfieldsize();
 	int complex_size = sizeof(hmc_complex);
 	int float_size = sizeof(hmc_float);
 
@@ -769,7 +769,7 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 			f(this, inout, clmem_rn_eoprec, gf);
 
 			saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
-			copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, sizeof(spinor) * EOPREC_SPINORFIELDSIZE);
+			copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, sizeof(spinor) * get_parameters()->get_eoprec_spinorfieldsize());
 
 			copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
 			copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex));
@@ -974,8 +974,8 @@ void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem
 		//CP: whole solution
 		//CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eoprec_1
 		convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_1, inout);
-		}
-		else {
+	}
+	else {
 		//Trial solution
 		///@todo this should go into a more general function
 		this->set_spinorfield_cold_device(inout);
@@ -1079,7 +1079,7 @@ int Opencl_Module_Fermions::get_read_write_size(char * in, inputparameters * par
 	int R = (*parameters).get_mat_size();
 	int S;
 	if((*parameters).get_use_eo() == 1)
-		S = EOPREC_SPINORFIELDSIZE;
+		S = get_parameters()->get_eoprec_spinorfieldsize();
 	else
 		S = SPINORFIELDSIZE;
 	//this is the same as in the function above

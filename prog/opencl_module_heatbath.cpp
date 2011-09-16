@@ -203,7 +203,7 @@ int Opencl_Module_Heatbath::get_read_write_size(char * in, inputparameters * par
 	int R = (*parameters).get_mat_size();
 	int S;
 	if((*parameters).get_use_eo() == 1)
-		S = EOPREC_SPINORFIELDSIZE;
+		S = get_parameters()->get_eoprec_spinorfieldsize();
 	else
 		S = SPINORFIELDSIZE;
 	//this is the same as in the function above

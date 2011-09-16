@@ -88,7 +88,7 @@ void Opencl_fermions::fill_buffers()
 	int clerr = CL_SUCCESS;
 
 	int spinorfield_size = sizeof(spinor) * SPINORFIELDSIZE;
-	int eoprec_spinorfield_size = sizeof(spinor) * EOPREC_SPINORFIELDSIZE;
+	int eoprec_spinorfield_size = sizeof(spinor) * get_parameters()->get_eoprec_spinorfieldsize();
 	int complex_size = sizeof(hmc_complex);
 	int float_size = sizeof(hmc_float);
 
@@ -376,7 +376,7 @@ void Opencl_fermions::Aee(cl_mem in, cl_mem out, cl_mem gf)
 		/** @todo  the copying can be extincted by using
 		 *  saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
 		 */
-		copy_buffer_on_device(out, clmem_tmp_eoprec_3, sizeof(spinor) * EOPREC_SPINORFIELDSIZE);
+		copy_buffer_on_device(out, clmem_tmp_eoprec_3, sizeof(spinor) * get_parameters()->get_eoprec_spinorfieldsize());
 		saxpy_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, clmem_one, out);
 	}
 }
@@ -1040,7 +1040,7 @@ bool Opencl_fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_m
 			f(this, inout, clmem_rn_eoprec, gf);
 
 			saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
-			copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, sizeof(spinor) * EOPREC_SPINORFIELDSIZE);
+			copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, sizeof(spinor) * get_parameters()->get_eoprec_spinorfieldsize());
 
 			copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
 			copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex));
@@ -1596,7 +1596,7 @@ int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters
 	int R = (*parameters).get_mat_size();
 	int S;
 	if((*parameters).get_use_eo() == 1)
-		S = EOPREC_SPINORFIELDSIZE;
+		S = get_parameters()->get_eoprec_spinorfieldsize();
 	else
 		S = SPINORFIELDSIZE;
 	//this is the same as in the function above
