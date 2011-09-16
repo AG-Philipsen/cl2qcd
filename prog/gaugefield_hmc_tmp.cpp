@@ -33,6 +33,9 @@ void Gaugefield_hmc::finalize_opencl()
 	return;
 }
 
+//////////////////////////////////////////////////////////
+// Methods for HMC-Algorithm
+
 void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* solver_timer)
 {
 	size_t gfsize = get_parameters()->get_gf_buf_size();
@@ -44,30 +47,19 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 
 	//init/update spinorfield phi
 	logger.debug() << "\tinit spinorfield " ;
-	//NOTE: one does not have to use phi as initial spinorfield in order to save one variable!!!
-	//  original alg:
-	//    generate_gaussian_spinorfield(chi)
-	//    energy_init = |chi|^2
-	//    md_update_spinorfield_device(chi, phi): phi = Qminus chi
-	//  this can be changed to:
-	//    generate_gaussian_spinorfield(phi_inv)
-	//    energy_init = |phi_inv|^2
-	//    md_update_spinorfield_device(phi_inv, phi): phi = Qminus phi_inv
-	//  saving one variable in global mem!!
 	get_task_hmc(0)->generate_gaussian_spinorfield_device();
 	get_task_hmc(0)->calc_spinorfield_init_energy();
 	logger.debug() << "\tperform md update of spinorfield" ;
 	get_task_hmc(0)->md_update_spinorfield();
 
-	//update gaugefield and gauge_momenta
-	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
 	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
 
 	//copy u->u' p->p' for the integrator
 	get_task_hmc(0)->copy_buffer_on_device(*(get_task_hmc(0)->get_gaugefield()), get_task_hmc(0)->get_clmem_new_u(), gfsize);
 	get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_p(), get_task_hmc(0)->get_clmem_new_p(), gmsize);
 
-	get_task_hmc(0)->integrator(solver_timer);
+	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
+	this->integrator(solver_timer);
 
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
 	logger.debug() << "\tperform Metropolis step: " ;
@@ -103,3 +95,148 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::st
 	hmcout.close();
 	return;
 }
+
+void Gaugefield_hmc::integrator(usetimer * solvertimer){
+	if(get_parameters()->get_integrator() == LEAPFROG){
+		this->leapfrog(solvertimer);
+	}
+	else if(get_parameters()->get_integrator() == TWOMN){
+		this->twomn(solvertimer);
+	}
+	return;
+}
+
+void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
+{
+	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already when this function is called the first time
+
+	if(get_parameters()->get_num_timescales() == 1) {
+		//this is the simplest case, just using 1 timescale
+		int steps = get_parameters()->get_integrationsteps1();
+		hmc_float stepsize = get_parameters()->get_tau() / ((hmc_float) steps);
+		hmc_float stepsize_half = 0.5 * stepsize;
+
+		//initial step
+		logger.debug() << "\t\tinitial step:";
+		calc_total_force(solvertimer);
+		get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize_half);
+		//intermediate steps
+		if(steps > 1) logger.debug() << "\t\tperform " << steps - 1 << " intermediate steps " ;
+		for(int k = 1; k < steps; k++) {
+			get_task_hmc(0)->md_update_gaugefield_device(stepsize);
+			calc_total_force(solvertimer);
+			get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize);
+		}
+		//final step
+		logger.debug() << "\t\tfinal step" ;
+		get_task_hmc(0)->md_update_gaugefield_device(stepsize);
+		calc_total_force(solvertimer);
+		get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize_half);
+		logger.debug() << "\t\tfinished leapfrog";
+	} 
+	else if (get_parameters()->get_num_timescales() == 2) {
+		int steps1 = get_parameters()->get_integrationsteps1();
+		int steps2 = get_parameters()->get_integrationsteps2();
+		
+		int mult = steps1 % steps2;
+		if( mult != 0) Print_Error_Message("integrationsteps1 must be a multiple of integrationssteps2, nothing else is implemented yet. Aborting...");
+		
+		//this is the number of int.steps for the fermion during one gauge-int.step
+		//this is done after hep-lat/0209037. See also hep-lat/050611v2 for a more advanced versions
+		int m = steps1/steps2;
+		
+		//this uses 2 timescales (more is not implemented yet): timescale1 for the gauge-part, timescale2 for the fermion part
+		hmc_float stepsize = get_parameters()->get_tau() / ((hmc_float) steps1);
+		hmc_float stepsize2 = get_parameters()->get_tau() / ((hmc_float) steps2);
+		hmc_float stepsize_half = 0.5 * stepsize;
+		hmc_float stepsize2_half = 0.5 * stepsize2;
+
+		//initial step
+		logger.debug() << "\t\tinitial step:";
+		//this corresponds to V_s2(deltaTau/2)
+		get_task_hmc(0)->set_zero_clmem_force_device();
+		get_task_hmc(0)->calc_fermion_force(solvertimer);
+		get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize2_half);
+		//now, m steps "more" a performed for the gauge-part
+		//this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
+		for(int l = 0; l < m; l++) {
+			get_task_hmc(0)->set_zero_clmem_force_device();
+			get_task_hmc(0)->calc_gauge_force();
+			get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize_half);
+			get_task_hmc(0)->md_update_gaugefield_device(stepsize2);
+			get_task_hmc(0)->set_zero_clmem_force_device();
+			get_task_hmc(0)->calc_gauge_force();
+			get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize_half);
+		}
+		//intermediate steps
+		if(steps2 > 1) logger.debug() << "\t\tperform " << steps2 - 1 << " intermediate steps " ;
+		for(int k = 1; k < steps2; k++) {
+			//this corresponds to V_s2(deltaTau)
+			get_task_hmc(0)->set_zero_clmem_force_device();
+			get_task_hmc(0)->calc_fermion_force(solvertimer);
+			get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize2);
+			for(int l = 0; l < m; l++) {
+				//this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
+				get_task_hmc(0)->set_zero_clmem_force_device();
+				get_task_hmc(0)->calc_gauge_force();
+				get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize_half);
+				get_task_hmc(0)->md_update_gaugefield_device(stepsize2);
+				get_task_hmc(0)->set_zero_clmem_force_device();
+				get_task_hmc(0)->calc_gauge_force();
+				get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize_half);
+			}
+		}
+		//final step
+		logger.debug() << "\t\tfinal step" ;
+		//this corresponds to the missing V_s2(deltaTau/2)
+		get_task_hmc(0)->set_zero_clmem_force_device();
+		get_task_hmc(0)->calc_fermion_force(solvertimer);
+		get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize2_half);
+		logger.debug() << "\t\tfinished leapfrog";
+	}
+	else 
+		Print_Error_Message("More than 2 timescales is not implemented yet. Aborting...");
+}
+
+void Gaugefield_hmc::twomn(usetimer * solvertimer)
+{
+	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already
+
+	if(get_parameters()->get_num_timescales() == 1) {
+		//this is the simplest case, just using 1 timescale
+		int steps = get_parameters()->get_integrationsteps1();
+		hmc_float stepsize = get_parameters()->get_tau() / ((hmc_float) steps);
+		hmc_float stepsize_half = 0.5 * stepsize;
+		
+	} 
+	else if (get_parameters()->get_num_timescales() == 2) {
+		int steps1 = get_parameters()->get_integrationsteps1();
+		int steps2 = get_parameters()->get_integrationsteps2();
+		
+		int mult = steps1 % steps2;
+		if( mult != 0) Print_Error_Message("integrationsteps1 must be a multiple of integrationssteps2, nothing else is implemented yet. Aborting...");
+		
+		//this is the number of int.steps for the fermion during one gauge-int.step
+		//this is done after hep-lat/0209037. See also hep-lat/050611v2 for a more advanced versions
+		int m = steps1/steps2;
+		
+		//this uses 2 timescales (more is not implemented yet): timescale1 for the gauge-part, timescale2 for the fermion part
+		hmc_float stepsize = get_parameters()->get_tau() / ((hmc_float) steps1);
+		hmc_float stepsize2 = get_parameters()->get_tau() / ((hmc_float) steps2);
+		hmc_float stepsize_half = 0.5 * stepsize;
+		hmc_float stepsize2_half = 0.5 * stepsize2;
+		
+	}
+	else 
+		Print_Error_Message("More than 2 timescales is not implemented yet. Aborting...");
+}
+
+
+void Gaugefield_hmc::calc_total_force(usetimer * solvertimer)
+{
+	//CP: make sure that the output field is set to zero
+	get_task_hmc(0)->set_zero_clmem_force_device();
+	get_task_hmc(0)->calc_fermion_force(solvertimer);
+	get_task_hmc(0)->calc_gauge_force();
+}
+

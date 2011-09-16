@@ -77,6 +77,13 @@ class Gaugefield_hmc : public Gaugefield_hybrid {
 	
 	void print_hmcobservables(hmc_observables obs, int iter, std::string filename);
 	
+	void integrator(usetimer * solvertimer);
+	void leapfrog(usetimer * solvertimer);
+	void twomn(usetimer * solvertimer);
+	void calc_total_force(usetimer * solvertimer);
+	void calc_gauge_force();
+	void calc_fermion_force(usetimer * solvertimer);
+	
 	// get methods
 	/**
 	 * Returns a pointer to solver task
