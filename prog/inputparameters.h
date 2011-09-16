@@ -54,91 +54,91 @@ public:
 	 * Reset all parameters to default values.
 	 */
 	void set_defaults();
-	hmc_float get_kappa();
+	hmc_float get_kappa() const;
 	void set_mubar_negative();
 	void calc_mubar();
-	hmc_float get_mubar();
-	hmc_float get_beta();
-	hmc_float get_tau();
-	hmc_float get_theta_fermion_spatial();
-	hmc_float get_theta_fermion_temporal();
-	hmc_float get_theta_gaugefield();
-	hmc_float get_mu();
-	hmc_float get_csw();
-	hmc_float get_chem_pot_re();
-	hmc_float get_chem_pot_im();
-	int get_nt();
-	int get_ns();
-	bool get_use_rec12();
-	bool get_use_gpu();
-	bool get_use_eo();
-	int get_cgmax();
+	hmc_float get_mubar() const;
+	hmc_float get_beta() const;
+	hmc_float get_tau() const;
+	hmc_float get_theta_fermion_spatial() const;
+	hmc_float get_theta_fermion_temporal() const;
+	hmc_float get_theta_gaugefield() const;
+	hmc_float get_mu() const;
+	hmc_float get_csw() const;
+	hmc_float get_chem_pot_re() const;
+	hmc_float get_chem_pot_im() const;
+	int get_nt() const;
+	int get_ns() const;
+	bool get_use_rec12() const;
+	bool get_use_gpu() const;
+	bool get_use_eo() const;
+	int get_cgmax() const;
 	/**
 	 * The precision to be used for gaugefield storage in bits.
 	 * @li 32 for single precision
 	 * @li 64 for double precision
 	 */
-	int get_prec();
-	int get_startcondition();
-	int get_thermalizationsteps();
-	int get_heatbathsteps();
-	int get_overrelaxsteps();
-	int get_hmcsteps();
-	int get_integrationsteps1();
-	int get_integrationsteps2();
-	bool get_saveconfigs();
-	int get_savefrequency();
-	int get_writefrequency();
-	int get_fermact();
-	void display_sourcefile();
-	void display_sourcefilenumber();
-	int get_num_dev();
-	int get_volspace();
-	int get_vol4d();
-	int get_spinorsize();
-	int get_halfspinorsize();
-	int get_eoprec_spinorfieldsize();
-	int get_gaugemomentasize();
-	int get_su3algebrasize();
-	int get_gaugefieldsize();
-	int get_spinorfieldsize();
+	int get_prec() const;
+	int get_startcondition() const;
+	int get_thermalizationsteps() const;
+	int get_heatbathsteps() const;
+	int get_overrelaxsteps() const;
+	int get_hmcsteps() const;
+	int get_integrationsteps1() const;
+	int get_integrationsteps2() const;
+	bool get_saveconfigs() const;
+	int get_savefrequency() const;
+	int get_writefrequency() const;
+	int get_fermact() const;
+	void display_sourcefile() const;
+	void display_sourcefilenumber() const;
+	int get_num_dev() const;
+	int get_volspace() const;
+	int get_vol4d() const;
+	int get_spinorsize() const;
+	int get_halfspinorsize() const;
+	int get_eoprec_spinorfieldsize() const;
+	int get_gaugemomentasize() const;
+	int get_su3algebrasize() const;
+	int get_gaugefieldsize() const;
+	int get_spinorfieldsize() const;
 	/**
 	 * Return the size of the buffer in bytes.
 	 */
-	int get_sf_buf_size();
+	int get_sf_buf_size() const;
 	/**
 	 * Return the size of the buffer in bytes.
 	 */
-	int get_eo_sf_buf_size();
+	int get_eo_sf_buf_size() const;
 	/**
 	 * Return the size of the buffer in bytes.
 	 */
-	int get_gf_buf_size();
+	int get_gf_buf_size() const;
 	/**
 	 * Return the size of the buffer in bytes.
 	 */
-	int get_gm_buf_size();
-	bool get_use_chem_pot_re();
-	bool get_use_chem_pot_im();
-	bool get_use_smearing();
-	bool get_print_to_screen();
-	int get_host_seed();
-	hmc_float get_rho();
-	int get_rho_iter();
-	bool get_use_cg();
-	bool get_use_autotuning();
-	bool get_use_pointsource();
-	int get_num_sources();
-	int get_source_pos_spatial();
-	int get_source_pos_temporal();
-	int get_corr_dir();
-	int get_integrator();
-	int get_num_timescales();
-	hmc_float get_lambda1();
-	hmc_float get_lambda2();
+	int get_gm_buf_size() const;
+	bool get_use_chem_pot_re() const;
+	bool get_use_chem_pot_im() const;
+	bool get_use_smearing() const;
+	bool get_print_to_screen() const;
+	int get_host_seed() const;
+	hmc_float get_rho() const;
+	int get_rho_iter() const;
+	bool get_use_cg() const;
+	bool get_use_autotuning() const;
+	bool get_use_pointsource() const;
+	int get_num_sources() const;
+	int get_source_pos_spatial() const;
+	int get_source_pos_temporal() const;
+	int get_corr_dir() const;
+	int get_integrator() const;
+	int get_num_timescales() const;
+	hmc_float get_lambda1() const;
+	hmc_float get_lambda2() const;
 #ifdef _PROFILING_
-	int get_mat_size();
-	int get_float_size();
+	int get_mat_size() const;
+	int get_float_size() const;
 #endif
 	/////////////////////////////////////////////////////
 	// printing-functions for the different executables
@@ -146,79 +146,79 @@ public:
 	 * Print info for heatbath executable using logger.
 	 * @param progname Name of the executable.
 	 */
-	void print_info_heatbath(char* progname);
+	void print_info_heatbath(char* progname) const;
 
 	/**
 	 * Print info for heatbath executable using output stream.
 	 * @param progname Name of the executable.
 	 * @param os Pointer to wanted output stream.
 	 */
-	void print_info_heatbath(char* progname, ostream* os);
+	void print_info_heatbath(char* progname, ostream* os) const;
 
 	/**
 	 * Print info for inverter executable using logger.
 	 * @param progname Name of the executable.
 	 */
-	void print_info_inverter(char* progname);
+	void print_info_inverter(char* progname) const;
 
 	/**
 	 * Print info for inverter executable using output stream.
 	 * @param progname Name of the executable.
 	 * @param os Pointer to wanted output stream.
 	 */
-	void print_info_inverter(char* progname, ostream* os);
+	void print_info_inverter(char* progname, ostream* os) const;
 
 	/**
 	 * Print info for tk_kappa executable using logger.
 	 * @param progname Name of the executable.
 	 */
-	void print_info_tkkappa(char* progname);
+	void print_info_tkkappa(char* progname) const;
 
 	/**
 	 * Print info for tk_kappa executable using output stream.
 	 * @param progname Name of the executable.
 	 * @param os Pointer to wanted output stream.
 	 */
-	void print_info_tkkappa(char* progname, ostream* os);
+	void print_info_tkkappa(char* progname, ostream* os) const;
 
 	/**
 	 * Print info for hmc executable using logger.
 	 * @param progname Name of the executable.
 	 */
-	void print_info_hmc(char* progname);
+	void print_info_hmc(char* progname) const;
 
 	/**
 	 * Print info for hmc executable using output stream.
 	 * @param progname Name of the executable.
 	 * @param os Pointer to wanted output stream.
 	 */
-	void print_info_hmc(char* progname, ostream* os);
+	void print_info_hmc(char* progname, ostream* os) const;
 
 	/**
 	 * print info independent of executable using logger
 	 */
-	void print_info_global();
+	void print_info_global() const;
 
 	/**
 	 * print info independent of executable using output stream
 	 */
-	void print_info_global(ostream* os);
+	void print_info_global(ostream* os) const;
 
 	/**
 	 *
 	 */
-	void print_info_fermion();
+	void print_info_fermion() const;
 
 	/**
 	 *
 	 */
-	void print_info_fermion(ostream * os);
+	void print_info_fermion(ostream * os) const;
 
 	/**
 	 * check inputparameters against compile settings
 	 * NOTE: In the end, this is propably not needed anymore, but for now it is a safety net
 	 */
-	void check_settings_global();
+	void check_settings_global() const;
 
 	/**
 	 * set global settings according to inputparameters

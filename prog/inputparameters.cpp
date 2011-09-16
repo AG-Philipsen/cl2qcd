@@ -153,7 +153,7 @@ void inputparameters::readfile(char* ifn)
 			if(line.find("fermaction") != std::string::npos) fermact_assign(&fermact, line);
 			if(line.find("fermionaction") != std::string::npos) fermact_assign(&fermact, line);
 			if(line.find("fermact") != std::string::npos) fermact_assign(&fermact, line);
-			
+
 			if(line.find("integrator") != std::string::npos) integrator_assign(&integrator, line);
 
 			if(line.find("evenodd") != std::string::npos) bool_assign(&use_eo, line);
@@ -434,7 +434,7 @@ void inputparameters::val_assign(std::string * out, std::string line)
 	return;
 }
 
-hmc_float inputparameters::get_kappa()
+hmc_float inputparameters::get_kappa() const
 {
 	return kappa;
 }
@@ -449,293 +449,297 @@ void inputparameters::calc_mubar()
 	mubar = 2.*kappa * mu;
 }
 
-hmc_float inputparameters::get_mubar()
+hmc_float inputparameters::get_mubar() const
 {
 	return mubar;
 }
 
-hmc_float inputparameters::get_theta_fermion_spatial()
+hmc_float inputparameters::get_theta_fermion_spatial() const
 {
 	return theta_fermion_spatial;
 }
 
-hmc_float inputparameters::get_theta_fermion_temporal()
+hmc_float inputparameters::get_theta_fermion_temporal() const
 {
 	return theta_fermion_temporal;
 }
 
-hmc_float inputparameters::get_theta_gaugefield()
+hmc_float inputparameters::get_theta_gaugefield() const
 {
 	return theta_gaugefield;
 }
 
-hmc_float inputparameters::get_beta()
+hmc_float inputparameters::get_beta() const
 {
 	return beta;
 }
 
-hmc_float inputparameters::get_mu()
+hmc_float inputparameters::get_mu() const
 {
 	return mu;
 }
 
-hmc_float inputparameters::get_tau()
+hmc_float inputparameters::get_tau() const
 {
 	return tau;
 }
 
-hmc_float inputparameters::get_csw()
+hmc_float inputparameters::get_csw() const
 {
 	return csw;
 }
 
-hmc_float inputparameters::get_chem_pot_re()
+hmc_float inputparameters::get_chem_pot_re() const
 {
 	return chem_pot_re;
 }
 
-hmc_float inputparameters::get_chem_pot_im()
+hmc_float inputparameters::get_chem_pot_im() const
 {
 	return chem_pot_im;
 }
 
-hmc_float inputparameters::get_rho()
+hmc_float inputparameters::get_rho() const
 {
 	return rho;
 }
 
-hmc_float inputparameters::get_lambda1()
+hmc_float inputparameters::get_lambda1() const
 {
 	return lambda1;
 }
 
-hmc_float inputparameters::get_lambda2()
+hmc_float inputparameters::get_lambda2() const
 {
 	return lambda2;
 }
 
-int inputparameters::get_cgmax()
+int inputparameters::get_cgmax() const
 {
 	return cgmax;
 }
 
-int inputparameters::get_ns()
+int inputparameters::get_ns() const
 {
 	return nspace;
 }
 
-int inputparameters::get_nt()
+int inputparameters::get_nt() const
 {
 	return ntime;
 }
 
-int inputparameters::get_prec()
+int inputparameters::get_prec() const
 {
 	return prec;
 }
 
-int inputparameters::get_num_dev()
+int inputparameters::get_num_dev() const
 {
 	return num_dev;
 }
 
-int inputparameters::get_thermalizationsteps()
+int inputparameters::get_thermalizationsteps() const
 {
 	return thermalizationsteps;
 }
 
-int inputparameters::get_heatbathsteps()
+int inputparameters::get_heatbathsteps() const
 {
 	return heatbathsteps;
 }
 
-int inputparameters::get_overrelaxsteps()
+int inputparameters::get_overrelaxsteps() const
 {
 	return overrelaxsteps;
 }
 
-int inputparameters::get_hmcsteps()
+int inputparameters::get_hmcsteps() const
 {
 	return hmcsteps;
 }
 
-int inputparameters::get_integrationsteps1()
+int inputparameters::get_integrationsteps1() const
 {
 	return integrationsteps1;
 }
 
-int inputparameters::get_integrationsteps2()
+int inputparameters::get_integrationsteps2() const
 {
 	return integrationsteps2;
 }
 
 
-int inputparameters::get_writefrequency()
+int inputparameters::get_writefrequency() const
 {
 	return writefrequency;
 }
 
-int inputparameters::get_savefrequency()
+int inputparameters::get_savefrequency() const
 {
 	return savefrequency;
 }
 
-int inputparameters::get_startcondition()
+int inputparameters::get_startcondition() const
 {
 	return startcondition;
 }
 
-int inputparameters::get_fermact()
+int inputparameters::get_fermact() const
 {
 	return fermact;
 }
 
-int inputparameters::get_integrator()
+int inputparameters::get_integrator() const
 {
 	return integrator;
 }
 
-int inputparameters::get_num_timescales()
+int inputparameters::get_num_timescales() const
 {
 	return num_timescales;
 }
 
-bool inputparameters::get_saveconfigs()
+bool inputparameters::get_saveconfigs() const
 {
 	return saveconfigs;
 }
 
-void inputparameters::display_sourcefile()
+void inputparameters::display_sourcefile() const
 {
 	cout << sourcefile;
 }
 
-void inputparameters::display_sourcefilenumber()
+void inputparameters::display_sourcefilenumber() const
 {
 	cout << sourcefilenumber;
 }
 
-bool inputparameters::get_use_eo()
+bool inputparameters::get_use_eo() const
 {
 	return use_eo;
 }
 
-bool inputparameters::get_use_rec12()
+bool inputparameters::get_use_rec12() const
 {
 	return use_rec12;
 }
 
-bool inputparameters::get_use_gpu()
+bool inputparameters::get_use_gpu() const
 {
 	return use_gpu;
 }
 
-int inputparameters::get_volspace()
+int inputparameters::get_volspace() const
 {
 	return volspace;
 }
 
-int inputparameters::get_vol4d()
+int inputparameters::get_vol4d() const
 {
 	return vol4d;
 }
 
-int inputparameters::get_spinorfieldsize()
+int inputparameters::get_spinorfieldsize() const
 {
 	return spinorfieldsize;
 }
 
-int inputparameters::get_sf_buf_size(){
+int inputparameters::get_sf_buf_size() const
+{
 	return sf_buf_size;
 }
 
-int inputparameters::get_eo_sf_buf_size(){
+int inputparameters::get_eo_sf_buf_size() const
+{
 	return eo_sf_buf_size;
 }
 
-int inputparameters::get_gf_buf_size(){
+int inputparameters::get_gf_buf_size() const
+{
 	return gf_buf_size;
 }
 
-int inputparameters::get_gm_buf_size(){
+int inputparameters::get_gm_buf_size() const
+{
 	return gm_buf_size;
 }
-int inputparameters::get_spinorsize()
+int inputparameters::get_spinorsize() const
 {
 	return spinorsize;
 }
 
-int inputparameters::get_halfspinorsize()
+int inputparameters::get_halfspinorsize() const
 {
 	return halfspinorsize;
 }
 
-int inputparameters::get_gaugemomentasize()
+int inputparameters::get_gaugemomentasize() const
 {
 	return gaugemomentasize;
 }
 
-int inputparameters::get_su3algebrasize()
+int inputparameters::get_su3algebrasize() const
 {
 	return su3algebrasize;
 }
 
-int inputparameters::get_gaugefieldsize()
+int inputparameters::get_gaugefieldsize() const
 {
 	return gaugefieldsize;
 }
 
-int inputparameters::get_eoprec_spinorfieldsize()
+int inputparameters::get_eoprec_spinorfieldsize() const
 {
 	return eoprec_spinorfieldsize;
 }
 
-bool inputparameters::get_use_chem_pot_re()
+bool inputparameters::get_use_chem_pot_re() const
 {
 	return use_chem_pot_re;
 }
 
-bool inputparameters::get_use_chem_pot_im()
+bool inputparameters::get_use_chem_pot_im() const
 {
 	return use_chem_pot_im;
 }
 
-bool inputparameters::get_use_smearing()
+bool inputparameters::get_use_smearing() const
 {
 	return use_smearing;
 }
 
-int inputparameters::get_host_seed()
+int inputparameters::get_host_seed() const
 {
 	return host_seed;
 }
 
-bool inputparameters::get_print_to_screen()
+bool inputparameters::get_print_to_screen() const
 {
 	return print_to_screen;
 }
 
-int inputparameters::get_rho_iter()
+int inputparameters::get_rho_iter() const
 {
 	return rho_iter;
 }
 
-bool inputparameters::get_use_cg()
+bool inputparameters::get_use_cg() const
 {
 	return use_cg;
 }
 
-bool inputparameters::get_use_pointsource()
+bool inputparameters::get_use_pointsource() const
 {
 	return use_pointsource;
 }
 
-int inputparameters::get_num_sources()
+int inputparameters::get_num_sources() const
 {
 	return num_sources;
 }
 
-int inputparameters::get_source_pos_spatial()
+int inputparameters::get_source_pos_spatial() const
 {
 	int coord [4];
 	coord[1] = pointsource_x;
@@ -745,33 +749,33 @@ int inputparameters::get_source_pos_spatial()
 	return get_nspace(coord);
 }
 
-int inputparameters::get_source_pos_temporal()
+int inputparameters::get_source_pos_temporal() const
 {
 	return pointsource_t;
 }
 
 #ifdef _PROFILING_
-int inputparameters::get_mat_size()
+int inputparameters::get_mat_size() const
 {
 	return mat_size;
 }
-int inputparameters::get_float_size()
+int inputparameters::get_float_size() const
 {
 	return float_size;
 }
 #endif
 
-bool inputparameters::get_use_autotuning()
+bool inputparameters::get_use_autotuning() const
 {
 	return use_autotuning;
 }
 
-int inputparameters::get_corr_dir()
+int inputparameters::get_corr_dir() const
 {
 	return corr_dir;
 }
 
-void inputparameters::print_info_global()
+void inputparameters::print_info_global() const
 {
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Global parameters:";
@@ -817,7 +821,7 @@ void inputparameters::print_info_global()
 	}
 }
 
-void inputparameters::print_info_global(ostream* os)
+void inputparameters::print_info_global(ostream* os) const
 {
 	*os  << "## **********************************************************" << endl;
 	*os  << "## Global parameters:" << endl;
@@ -864,7 +868,7 @@ void inputparameters::print_info_global(ostream* os)
 }
 
 
-void inputparameters::print_info_heatbath(char* progname)
+void inputparameters::print_info_heatbath(char* progname) const
 {
 	logger.info() << "## Starting heatbath program, executable name: " << progname;
 	this->print_info_global();
@@ -879,7 +883,7 @@ void inputparameters::print_info_heatbath(char* progname)
 }
 
 
-void inputparameters::print_info_heatbath(char* progname, ostream* os)
+void inputparameters::print_info_heatbath(char* progname, ostream* os) const
 {
 	*os  << "## Starting heatbath program, executable name: " << progname << endl;
 	this->print_info_global(os);
@@ -894,7 +898,7 @@ void inputparameters::print_info_heatbath(char* progname, ostream* os)
 }
 
 
-void inputparameters::print_info_tkkappa(char* progname, ostream* os)
+void inputparameters::print_info_tkkappa(char* progname, ostream* os) const
 {
 	*os << "## Starting tk_kappa program, " << progname << endl;
 	this->print_info_global(os);
@@ -911,7 +915,7 @@ void inputparameters::print_info_tkkappa(char* progname, ostream* os)
 	return;
 }
 
-void inputparameters::print_info_tkkappa(char* progname)
+void inputparameters::print_info_tkkappa(char* progname) const
 {
 	logger.info() << "## Starting tk_kappa program, " << progname ;
 	this->print_info_global();
@@ -929,7 +933,7 @@ void inputparameters::print_info_tkkappa(char* progname)
 }
 
 
-void inputparameters::print_info_fermion()
+void inputparameters::print_info_fermion() const
 {
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Fermionic parameters:";
@@ -979,7 +983,7 @@ void inputparameters::print_info_fermion()
 	logger.info() << "## cgmax  = " << this->get_cgmax();
 }
 
-void inputparameters::print_info_fermion(ostream * os)
+void inputparameters::print_info_fermion(ostream * os) const
 {
 	*os  << "## **********************************************************" << endl;
 	*os  << "## Fermionic parameters:" << endl;
@@ -1030,7 +1034,7 @@ void inputparameters::print_info_fermion(ostream * os)
 }
 
 
-void inputparameters::print_info_inverter(char* progname)
+void inputparameters::print_info_inverter(char* progname) const
 {
 	logger.info() << "## Starting inverter program, executable name: " << progname;
 	this->print_info_global();
@@ -1039,7 +1043,7 @@ void inputparameters::print_info_inverter(char* progname)
 	return;
 }
 
-void inputparameters::print_info_inverter(char* progname, ostream* os)
+void inputparameters::print_info_inverter(char* progname, ostream* os) const
 {
 	*os << "## Starting inverter program, executable name: " << progname << endl;
 	this->print_info_global(os);
@@ -1048,7 +1052,7 @@ void inputparameters::print_info_inverter(char* progname, ostream* os)
 	return;
 }
 
-void inputparameters::print_info_hmc(char* progname)
+void inputparameters::print_info_hmc(char* progname) const
 {
 
 	logger.info() << "## Starting hmc program, executable name: " << progname ;
@@ -1064,7 +1068,7 @@ void inputparameters::print_info_hmc(char* progname)
 	return;
 }
 
-void inputparameters::print_info_hmc(char* progname, ostream* os)
+void inputparameters::print_info_hmc(char* progname, ostream* os) const
 {
 	*os << "## Starting hmc program, executable name: " << progname << endl;
 	this->print_info_global(os);
@@ -1089,18 +1093,18 @@ void inputparameters::set_settings_global()
 	this->eoprec_spinorfieldsize = this->spinorfieldsize / 2;
 	this->gaugemomentasize = NDIM * this->vol4d;
 	if(get_use_rec12() == true)
-		this->gaugefieldsize = NC * (NC-1) * NDIM * this->vol4d;
+		this->gaugefieldsize = NC * (NC - 1) * NDIM * this->vol4d;
 	else
 		this->gaugefieldsize = NC * NC * NDIM * this->vol4d;
 
 	//set sizes of buffers
-	this->sf_buf_size = this->spinorfieldsize*sizeof(spinor);
-	this->eo_sf_buf_size = this->eoprec_spinorfieldsize*sizeof(spinor);
-	this->gf_buf_size = this->gaugefieldsize*sizeof(hmc_complex);
-	this->gm_buf_size = this->gaugemomentasize*sizeof(ae);
+	this->sf_buf_size = this->spinorfieldsize * sizeof(spinor);
+	this->eo_sf_buf_size = this->eoprec_spinorfieldsize * sizeof(spinor);
+	this->gf_buf_size = this->gaugefieldsize * sizeof(hmc_complex);
+	this->gm_buf_size = this->gaugemomentasize * sizeof(ae);
 }
 
-void inputparameters::check_settings_global()
+void inputparameters::check_settings_global() const
 {
 	logger.info() << "checking compile-time-parameters against input-parameters...";
 
