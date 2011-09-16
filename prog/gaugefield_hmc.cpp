@@ -76,7 +76,7 @@ void Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters, hmc_
 
 	//copy u->u' p->p' for the leapfrog
 	get_devices_hmc()[dev].copy_buffer_on_device(get_devices_hmc()[dev].get_clmem_gaugefield(), get_devices_hmc()[dev].get_clmem_new_u(), NDIM * VOLSPACE * NTIME * sizeof(Matrixsu3));
-	get_devices_hmc()[dev].copy_buffer_on_device(get_devices_hmc()[dev].get_clmem_p(), get_devices_hmc()[dev].get_clmem_new_p(), sizeof(ae) * GAUGEMOMENTASIZE2);
+	get_devices_hmc()[dev].copy_buffer_on_device(get_devices_hmc()[dev].get_clmem_p(), get_devices_hmc()[dev].get_clmem_new_p(), sizeof(ae) * get_parameters()->get_gaugemomentasize());
 	///@todo this timer is not used at the moment, compare to inverter.cpp
 	usetimer solvertimer;
 	get_devices_hmc()[dev].leapfrog((*parameters).get_tau(), (*parameters).get_integrationsteps1(), (*parameters).get_integrationsteps2(), &solvertimer);
@@ -89,7 +89,7 @@ void Gaugefield_hmc::perform_hmc_step(int dev, inputparameters *parameters, hmc_
 	if((*obs).accept == 1) {
 		// perform the change nonprimed->primed !
 		get_devices_hmc()[dev].copy_buffer_on_device(get_devices_hmc()[dev].get_clmem_new_u(), get_devices_hmc()[dev].get_clmem_gaugefield(), NDIM * VOLSPACE * NTIME * sizeof(Matrixsu3));
-		get_devices_hmc()[dev].copy_buffer_on_device(get_devices_hmc()[dev].get_clmem_new_p(), get_devices_hmc()[dev].get_clmem_p(), sizeof(ae) * GAUGEMOMENTASIZE2);
+		get_devices_hmc()[dev].copy_buffer_on_device(get_devices_hmc()[dev].get_clmem_new_p(), get_devices_hmc()[dev].get_clmem_p(), sizeof(ae) * get_parameters()->get_gaugemomentasize());
 		logger.debug() << "\t\tnew configuration accepted" ;
 	} else {
 		logger.debug() << "\t\tnew configuration rejected" ;

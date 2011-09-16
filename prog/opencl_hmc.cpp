@@ -17,7 +17,7 @@ void Opencl_hmc::fill_buffers()
 	Opencl_fermions::fill_buffers();
 
 	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
-	int gaugemomentum_size = sizeof(ae) * GAUGEMOMENTASIZE2;
+	int gaugemomentum_size = sizeof(ae) * get_parameters()->get_gaugemomentasize();
 	int float_size = sizeof(hmc_float);
 	hmc_complex one = hmc_complex_one;
 	hmc_complex minusone = hmc_complex_minusone;
