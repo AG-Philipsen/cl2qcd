@@ -382,7 +382,7 @@ hmc_observables Opencl_hmc::metropolis(hmc_float rnd, hmc_float beta)
 	Opencl::gaugeobservables(clmem_new_u, &plaq_new,  &tplaq_new, &splaq_new, &poly_new);
 	//plaq has to be divided by the norm-factor and multiplied by NC
 	//  (because this is in the defintion of the gauge action and not in the normalization) to get s_gauge
-	hmc_float factor = 2.0 / static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) );
+	hmc_float factor = 2.0 / static_cast<hmc_float>(parameters->get_vol4d() * NDIM * (NDIM - 1) );
 	/** NOTE: the minus here is introduced to fit tmlqcd!!! */
 	hmc_float deltaH = -(plaq - plaq_new) * beta / factor;
 

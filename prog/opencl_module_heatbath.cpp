@@ -202,6 +202,7 @@ int Opencl_Module_Heatbath::get_read_write_size(char * in, inputparameters * par
 	int D = (*parameters).get_float_size();
 	int R = (*parameters).get_mat_size();
 	int S;
+	const size_t VOL4D = parameters->get_vol4d();
 	if((*parameters).get_use_eo() == 1)
 		S = get_parameters()->get_eoprec_spinorfieldsize();
 	else

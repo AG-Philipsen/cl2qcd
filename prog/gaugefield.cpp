@@ -98,7 +98,7 @@ void Gaugefield::init_gaugefield()
 		hmc_float * gaugefield_tmp;
 		gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * NTIME * VOLSPACE);
 		parameters_source.readsourcefile(&(get_parameters()->sourcefile)[0], get_parameters()->get_prec(), &gaugefield_tmp);
-		copy_gaugefield_from_ildg_format(gftmp, gaugefield_tmp, parameters_source.num_entries_source);
+		copy_gaugefield_from_ildg_format(gftmp, gaugefield_tmp, parameters_source.num_entries_source, parameters);
 		copy_gaugefield_to_s_gaugefield (get_sgf(), gftmp);
 		free(gaugefield_tmp);
 		delete[] gftmp;
@@ -463,9 +463,9 @@ hmc_float Gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 
 	delete[] gftmp;
 
-	*tplaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1));
-	*splaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
-	return plaq * 2.0 / static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) * NC);
+	*tplaq /= static_cast<hmc_float>(get_parameters()->get_vol4d() * NC * (NDIM - 1));
+	*splaq /= static_cast<hmc_float>(get_parameters()->get_vol4d() * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
+	return plaq * 2.0 / static_cast<hmc_float>(get_parameters()->get_vol4d() * NDIM * (NDIM - 1) * NC);
 }
 
 

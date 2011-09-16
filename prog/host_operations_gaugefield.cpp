@@ -54,10 +54,10 @@ void set_gaugefield_hot(hmc_complex * field)
 	return;
 }
 
-void copy_gaugefield_from_ildg_format(hmc_complex * gaugefield, hmc_float * gaugefield_tmp, int check)
+void copy_gaugefield_from_ildg_format(hmc_complex * gaugefield, hmc_float * gaugefield_tmp, int check, const inputparameters * const params)
 {
 	//little check if arrays are big enough
-	if (VOL4D*NDIM*NC*NC * 2 != check) {
+	if (params->get_vol4d() *NDIM*NC*NC * 2 != check) {
 		std::stringstream errstr;
 		errstr << "Error in setting gaugefield to source values!!\nCheck global settings!!";
 		throw Print_Error_Message(errstr.str(), __FILE__, __LINE__);

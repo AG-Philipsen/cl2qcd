@@ -796,6 +796,7 @@ void Opencl_Module::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float 
 	get_buffer_from_device(clmem_tplaq, &tplaq, sizeof(hmc_float));
 	get_buffer_from_device(clmem_splaq, &splaq, sizeof(hmc_float));
 
+	const size_t VOL4D = parameters->get_vol4d();
 	tplaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1));
 	splaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
 	plaq  /= static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) * NC) / 2.;
@@ -916,6 +917,7 @@ int Opencl_Module::get_read_write_size(char * in, inputparameters * parameters)
 	int D = (*parameters).get_float_size();
 	int R = (*parameters).get_mat_size();
 	int S;
+	const size_t VOL4D = parameters->get_vol4d();
 	if((*parameters).get_use_eo() == 1)
 		S = get_parameters()->get_eoprec_spinorfieldsize();
 	else
@@ -951,7 +953,7 @@ void Opencl_Module::print_profiling(std::string filename, const char * kernelNam
 	//check if kernel has been called at all
 	if(calls_total != 0 && time_total != 0) {
 		avg_time = (uint64_t) ( ( (float) time_total ) / ((float) calls_total) );
-		avg_time_site = (uint64_t) ( ( (float) time_total ) / ((float) (calls_total * VOL4D)) );
+		avg_time_site = (uint64_t) ( ( (float) time_total ) / ((float) (calls_total * parameters->get_vol4d())) );
 		//Bandwidth in GB/s: 1e-3 = 1e6 (museconds) * 1e-9 (GByte)
 		bandwidth = (hmc_float) read_write_size / (hmc_float) time_total * (hmc_float) calls_total * 1e-3;
 	}

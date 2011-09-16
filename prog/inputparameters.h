@@ -94,6 +94,7 @@ public:
 	void display_sourcefilenumber() const;
 	int get_num_dev() const;
 	int get_volspace() const;
+	/** 4-Dimensional Volume of the lattice */
 	int get_vol4d() const;
 	int get_spinorsize() const;
 	int get_halfspinorsize() const;

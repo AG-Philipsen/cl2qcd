@@ -18,8 +18,6 @@
 
 /** Spatial volume of the lattice */
 #define VOLSPACE NSPACE*NSPACE*NSPACE
-/** 4-Dimensional Volume of the lattice */
-#define VOL4D VOLSPACE*NTIME
 
 #define SPINORSIZE NSPIN*NC
 #define HALFSPINORSIZE NSPIN/2*NC
