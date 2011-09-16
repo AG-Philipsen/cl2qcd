@@ -102,9 +102,21 @@ public:
 	int get_su3algebrasize();
 	int get_gaugefieldsize();
 	int get_spinorfieldsize();
+	/**
+	 * Return the size of the buffer in bytes.
+	 */
 	int get_sf_buf_size();
+	/**
+	 * Return the size of the buffer in bytes.
+	 */
 	int get_eo_sf_buf_size();
+	/**
+	 * Return the size of the buffer in bytes.
+	 */
 	int get_gf_buf_size();
+	/**
+	 * Return the size of the buffer in bytes.
+	 */
 	int get_gm_buf_size();
 	bool get_use_chem_pot_re();
 	bool get_use_chem_pot_im();
@@ -235,7 +247,7 @@ private:
 	int eo_sf_buf_size;
 	int gf_buf_size;
 	int gm_buf_size;
-	
+
 	bool use_rec12;
 	bool use_gpu;
 	bool use_eo;
