@@ -28,7 +28,7 @@
  * @param timepos The index in time
  * @return even-odd preconditioned index
  */
-int get_n_eoprec(int spacepos,int timepos);
+int get_n_eoprec(int spacepos, int timepos);
 
 //switch between (x,y,z) <-> nspace=0,...,VOLSPACE-1
 
@@ -108,7 +108,7 @@ int get_global_pos(int spacepos, int t);
 int get_global_link_pos(int mu, int spacepos, int t);
 
 //get gaugefield element from long array
-/** This function returns the index of a specific hmc_float out of an hmc_complex array. 
+/** This function returns the index of a specific hmc_float out of an hmc_complex array.
  *  This is used to when copying the gaugefield to the OpenCL device.
  *  One has:
  *   c: complex index (0 for real, 1 for imaginary part)
@@ -151,7 +151,7 @@ int spinor_color(int spinor_element);
  * @param spinor_element Spinor-local indexx
  * @return Spin component
  */
-int spinor_spin(int spinor_element,int color);
+int spinor_spin(int spinor_element, int color);
 /**
  * Get the index of a spinor element within the even-odd-preconditioned lattice.
  *
