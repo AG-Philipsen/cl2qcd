@@ -96,6 +96,31 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::st
 	return;
 }
 
+void Gaugefield_hmc::md_update_gaugemomentum(hmc_float eps, usetimer * solvertimer){
+	calc_total_force(solvertimer);
+	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
+	return;
+}
+
+void Gaugefield_hmc::md_update_gaugemomentum_gauge(hmc_float eps){
+	get_task_hmc(0)->set_zero_clmem_force_device();
+	get_task_hmc(0)->calc_gauge_force();
+	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
+	return;
+}
+
+void Gaugefield_hmc::md_update_gaugemomentum_fermion(hmc_float eps, usetimer * solvertimer){
+	get_task_hmc(0)->set_zero_clmem_force_device();
+	get_task_hmc(0)->calc_fermion_force(solvertimer);
+	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
+	return;
+}
+
+void Gaugefield_hmc::md_update_gaugefield(hmc_float eps){
+	get_task_hmc(0)->md_update_gaugefield_device(eps);
+	return;
+}
+
 void Gaugefield_hmc::integrator(usetimer * solvertimer){
 	if(get_parameters()->get_integrator() == LEAPFROG){
 		this->leapfrog(solvertimer);
@@ -118,20 +143,17 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 
 		//initial step
 		logger.debug() << "\t\tinitial step:";
-		calc_total_force(solvertimer);
-		get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize_half);
+		md_update_gaugemomentum(stepsize_half, solvertimer);
 		//intermediate steps
 		if(steps > 1) logger.debug() << "\t\tperform " << steps - 1 << " intermediate steps " ;
 		for(int k = 1; k < steps; k++) {
-			get_task_hmc(0)->md_update_gaugefield_device(stepsize);
-			calc_total_force(solvertimer);
-			get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize);
+			md_update_gaugefield(stepsize);
+			md_update_gaugemomentum(stepsize, solvertimer);
 		}
 		//final step
 		logger.debug() << "\t\tfinal step" ;
-		get_task_hmc(0)->md_update_gaugefield_device(stepsize);
-		calc_total_force(solvertimer);
-		get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize_half);
+		md_update_gaugefield(stepsize);
+		md_update_gaugemomentum(stepsize_half, solvertimer);
 		logger.debug() << "\t\tfinished leapfrog";
 	} 
 	else if (get_parameters()->get_num_timescales() == 2) {
@@ -154,44 +176,30 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 		//initial step
 		logger.debug() << "\t\tinitial step:";
 		//this corresponds to V_s2(deltaTau/2)
-		get_task_hmc(0)->set_zero_clmem_force_device();
-		get_task_hmc(0)->calc_fermion_force(solvertimer);
-		get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize2_half);
-		//now, m steps "more" a performed for the gauge-part
+		md_update_gaugemomentum_fermion(stepsize2_half, solvertimer);
+		//now, m steps "more" are performed for the gauge-part
 		//this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
 		for(int l = 0; l < m; l++) {
-			get_task_hmc(0)->set_zero_clmem_force_device();
-			get_task_hmc(0)->calc_gauge_force();
-			get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize_half);
-			get_task_hmc(0)->md_update_gaugefield_device(stepsize2);
-			get_task_hmc(0)->set_zero_clmem_force_device();
-			get_task_hmc(0)->calc_gauge_force();
-			get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize_half);
+			md_update_gaugemomentum_gauge(stepsize_half);
+			md_update_gaugefield(stepsize2);
+			md_update_gaugemomentum_gauge(stepsize_half);
 		}
 		//intermediate steps
 		if(steps2 > 1) logger.debug() << "\t\tperform " << steps2 - 1 << " intermediate steps " ;
 		for(int k = 1; k < steps2; k++) {
 			//this corresponds to V_s2(deltaTau)
-			get_task_hmc(0)->set_zero_clmem_force_device();
-			get_task_hmc(0)->calc_fermion_force(solvertimer);
-			get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize2);
+			md_update_gaugemomentum_fermion(stepsize2, solvertimer);
 			for(int l = 0; l < m; l++) {
 				//this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
-				get_task_hmc(0)->set_zero_clmem_force_device();
-				get_task_hmc(0)->calc_gauge_force();
-				get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize_half);
-				get_task_hmc(0)->md_update_gaugefield_device(stepsize2);
-				get_task_hmc(0)->set_zero_clmem_force_device();
-				get_task_hmc(0)->calc_gauge_force();
-				get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize_half);
+				md_update_gaugemomentum_gauge(stepsize_half);
+				md_update_gaugefield(stepsize2);
+				md_update_gaugemomentum_gauge(stepsize_half);
 			}
 		}
 		//final step
 		logger.debug() << "\t\tfinal step" ;
 		//this corresponds to the missing V_s2(deltaTau/2)
-		get_task_hmc(0)->set_zero_clmem_force_device();
-		get_task_hmc(0)->calc_fermion_force(solvertimer);
-		get_task_hmc(0)->md_update_gaugemomentum_device(-1.*stepsize2_half);
+		md_update_gaugemomentum_fermion(stepsize2_half, solvertimer);
 		logger.debug() << "\t\tfinished leapfrog";
 	}
 	else 
