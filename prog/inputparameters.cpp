@@ -1127,10 +1127,6 @@ void inputparameters::check_settings_global() const
 		if( this->get_use_rec12() == true) throw Invalid_Parameters("Reconstruct12.", "OFF", "ON");
 #endif
 
-		//Lattice Size
-		if( this->get_nt() != NTIME)  throw Invalid_Parameters("Timelike lattice size.", NTIME, this->get_nt());
-
-
 	}//try
 	catch (Invalid_Parameters& e) {
 		logger.fatal() << "Error in check_setting_global():";

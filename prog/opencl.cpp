@@ -116,7 +116,7 @@ cl_mem Opencl::create_chp_buffer(size_t size, void *host_pointer)
 void Opencl::fill_buffers()
 {
 	logger.trace() << "Create buffer for gaugefield...";
-	clmem_gaugefield = create_rw_buffer(NDIM * parameters->get_volspace() * NTIME * sizeof(ocl_s_gaugefield));
+	clmem_gaugefield = create_rw_buffer(NDIM * parameters->get_volspace() * parameters->get_nt() * sizeof(ocl_s_gaugefield));
 
 	logger.trace() << "Create buffer for random numbers...";
 	clmem_rndarray = create_rw_buffer(sizeof(hmc_ocl_ran) * get_num_rndstates());
@@ -362,7 +362,7 @@ void Opencl::clear_buffers()
 void Opencl::copy_gaugefield_to_device(Matrixsu3* gaugefield)
 {
 	(*this->get_copy_to()).reset();
-	const size_t gaugefield_size = NDIM * parameters->get_volspace() * NTIME * sizeof(ocl_s_gaugefield);
+	const size_t gaugefield_size = NDIM * parameters->get_volspace() * parameters->get_nt() * sizeof(ocl_s_gaugefield);
 	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(gaugefield_size);
 
 	copy_to_ocl_format(host_gaugefield, gaugefield, parameters);
@@ -380,7 +380,7 @@ void Opencl::copy_gaugefield_to_device(Matrixsu3* gaugefield)
 void Opencl::get_gaugefield_from_device(Matrixsu3* gaugefield)
 {
 	(*this->get_copy_to()).reset();
-	const size_t gaugefield_size = NDIM * parameters->get_volspace() * NTIME * sizeof(ocl_s_gaugefield);
+	const size_t gaugefield_size = NDIM * parameters->get_volspace() * parameters->get_nt() * sizeof(ocl_s_gaugefield);
 	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(gaugefield_size);
 
 	cl_int clerr = clEnqueueReadBuffer(queue, clmem_gaugefield, CL_TRUE, 0, gaugefield_size, host_gaugefield, 0, NULL, NULL);

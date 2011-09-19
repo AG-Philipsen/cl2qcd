@@ -3,6 +3,7 @@
 void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield, const inputparameters * const parameters)
 {
 	const size_t NSPACE = parameters->get_ns();
+	const size_t NTIME = parameters->get_nt();
 	for(int spacepos = 0; spacepos < NSPACE * NSPACE * NSPACE; spacepos++) {
 		for(int t = 0; t < NTIME; t++) {
 			for(int mu = 0; mu < NDIM; mu++) {
@@ -17,6 +18,7 @@ void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield
 void copy_from_ocl_format(Matrixsu3* gaugefield, ocl_s_gaugefield* host_gaugefield, const inputparameters * const parameters)
 {
 	const size_t NSPACE = parameters->get_ns();
+	const size_t NTIME = parameters->get_nt();
 	for(int spacepos = 0; spacepos < NSPACE * NSPACE * NSPACE; spacepos++) {
 		for(int t = 0; t < NTIME; t++) {
 			for(int mu = 0; mu < NDIM; mu++) {
@@ -30,7 +32,7 @@ void copy_from_ocl_format(Matrixsu3* gaugefield, ocl_s_gaugefield* host_gaugefie
 
 void set_gaugefield_cold(hmc_complex * field, const inputparameters * const parameters)
 {
-	for(int t = 0; t < NTIME; t++) {
+	for(int t = 0; t < parameters->get_nt(); t++) {
 		for(int n = 0; n < parameters->get_volspace(); n++) {
 			for(int mu = 0; mu < NDIM; mu++) {
 				hmc_su3matrix tmp;
@@ -44,7 +46,7 @@ void set_gaugefield_cold(hmc_complex * field, const inputparameters * const para
 
 void set_gaugefield_hot(hmc_complex * field, const inputparameters * const parameters)
 {
-	for(int t = 0; t < NTIME; t++) {
+	for(int t = 0; t < parameters->get_nt(); t++) {
 		for(int n = 0; n < parameters->get_volspace(); n++) {
 			for(int mu = 0; mu < NDIM; mu++) {
 				hmc_su3matrix tmp;
@@ -70,7 +72,7 @@ void copy_gaugefield_from_ildg_format(hmc_complex * gaugefield, hmc_float * gaug
 
 	int cter = 0;
 	//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
-	for (int t = 0; t < NTIME; t++) {
+	for (int t = 0; t < parameters->get_nt(); t++) {
 		//if the alg is known to be correct, the next three for-loops could also be changed to one
 		for (int i = 0; i < NSPACE; i++) {
 			for (int j = 0; j < NSPACE; j++) {
@@ -130,7 +132,7 @@ void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_complex * source, cons
 	const size_t NSPACE = parameters->get_ns();
 
 	//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
-	for (int t = 0; t < NTIME; t++) {
+	for (int t = 0; t < parameters->get_nt(); t++) {
 		//if the alg is known to be correct, the next three for-loops could also be changed to one
 		for (int i = 0; i < NSPACE; i++) {
 			for (int j = 0; j < NSPACE; j++) {
@@ -191,7 +193,7 @@ hmc_complex global_trace_su3(hmc_complex * field, int mu, const inputparameters 
 	hmc_complex sum;
 	sum.re = 0;
 	sum.im = 0;
-	for(int t = 0; t < NTIME; t++) {
+	for(int t = 0; t < parameters->get_nt(); t++) {
 		for(int n = 0; n < parameters->get_volspace(); n++) {
 			hmc_su3matrix tmp;
 			get_su3matrix(&tmp, field, n, t, mu, parameters);
@@ -237,7 +239,7 @@ void put_su3matrix(hmc_complex * field, hmc_su3matrix * in, int spacepos, int ti
 void local_polyakov(hmc_complex * field, hmc_su3matrix * prod, int n, const inputparameters * const parameters)
 {
 	unit_su3matrix(prod);
-	for(int t = 0; t < NTIME; t++) {
+	for(int t = 0; t < parameters->get_nt(); t++) {
 		hmc_su3matrix tmp;
 		get_su3matrix(&tmp, field, n, t, 0, parameters);
 		accumulate_su3matrix_prod(prod, &tmp);
@@ -247,6 +249,7 @@ void local_polyakov(hmc_complex * field, hmc_su3matrix * prod, int n, const inpu
 
 void local_plaquette(hmc_complex * field, hmc_su3matrix * prod, int n, int t, int mu, int nu, const inputparameters * const parameters)
 {
+	const size_t NTIME = parameters->get_nt();
 	hmc_su3matrix tmp;
 	//u_mu(x)
 	get_su3matrix(prod, field, n, t, mu, parameters);
@@ -284,6 +287,7 @@ void copy_gaugefield(hmc_complex * source, hmc_complex * dest, const inputparame
 
 void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, int mu, int nu, const inputparameters * const parameters)
 {
+	const size_t NTIME = parameters->get_nt();
 	hmc_su3matrix tmp;
 	int newpos;
 
@@ -423,6 +427,7 @@ void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, i
 size_t get_hmc_gaugefield_index(size_t ncolor, size_t spacepos, size_t timepos, size_t mu, const inputparameters * const parameters)
 {
 	const size_t VOLSPACE = parameters->get_volspace();
+	const size_t NTIME = parameters->get_nt();
 	size_t result = (mu * VOLSPACE + spacepos ) * NTIME + timepos;
 	result += ncolor * NDIM * VOLSPACE * NTIME;
 	return result;
@@ -431,6 +436,7 @@ size_t get_hmc_gaugefield_index(size_t ncolor, size_t spacepos, size_t timepos, 
 size_t get_hmc_gaugefield_index(size_t m, size_t n, size_t spacepos, size_t timepos, size_t mu, const inputparameters * const parameters)
 {
 	const size_t VOLSPACE = parameters->get_volspace();
+	const size_t NTIME = parameters->get_nt();
 	size_t result = (mu * VOLSPACE + spacepos ) * NTIME + timepos;
 	result += (m * NC + n) * NDIM * VOLSPACE * NTIME;
 	return result;

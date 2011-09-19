@@ -63,10 +63,6 @@ if( USE_RECONSTRUCT_TWELVE )
 	add_definitions( -D_RECONSTRUCT_TWELVE_ )
 endif( USE_RECONSTRUCT_TWELVE )
 
-# lattice dimensions (see feature #127)
-set( NTIME 8 CACHE STRING "Number of lattice sites in time direction (t)" )
-add_definitions( -DNTIME=${NTIME} )
-
 # default random number seed
 configure_file( rand_seeds rand_seeds COPYONLY )
 

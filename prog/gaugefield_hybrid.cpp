@@ -332,7 +332,7 @@ void Gaugefield_hybrid::init_gaugefield()
 		hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
 		//tmp gauge field
 		hmc_float * gaugefield_tmp;
-		gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * NTIME * parameters->get_volspace());
+		gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * parameters->get_nt() * parameters->get_volspace());
 		parameters_source.readsourcefile(&(get_parameters()->sourcefile)[0], get_parameters()->get_prec(), &gaugefield_tmp);
 		copy_gaugefield_from_ildg_format(gftmp, gaugefield_tmp, parameters_source.num_entries_source, parameters);
 		copy_gaugefield_to_s_gaugefield (get_sgf(), gftmp);
@@ -351,7 +351,7 @@ void Gaugefield_hybrid::init_gaugefield()
 
 void Gaugefield_hybrid::set_gaugefield_cold(Matrixsu3 * field)
 {
-	for(int t = 0; t < NTIME; t++) {
+	for(int t = 0; t < parameters->get_nt(); t++) {
 		for(int n = 0; n < parameters->get_volspace(); n++) {
 			for(int mu = 0; mu < NDIM; mu++) {
 				const Matrixsu3 tmp = unit_matrixsu3();
@@ -510,6 +510,7 @@ cl_device_type Gaugefield_hybrid::get_device_type(int ntask)
 
 void Gaugefield_hybrid::copy_gaugefield_to_s_gaugefield (Matrixsu3 * sgfo, hmc_complex * gf)
 {
+	const size_t NTIME = parameters->get_nt();
 	for (int d = 0; d < NDIM; d++) {
 		for (int n = 0; n < parameters->get_volspace(); n++) {
 			for (int t = 0; t < NTIME; t++) {
@@ -543,6 +544,7 @@ void Gaugefield_hybrid::copy_gaugefield_to_s_gaugefield (Matrixsu3 * sgfo, hmc_c
 
 void Gaugefield_hybrid::copy_s_gaugefield_to_gaugefield(hmc_complex * gf, Matrixsu3 * sgfo)
 {
+	const size_t NTIME = parameters->get_nt();
 	for (int d = 0; d < NDIM; d++) {
 		for (int n = 0; n < parameters->get_volspace(); n++) {
 			for (int t = 0; t < NTIME; t++) {
@@ -591,6 +593,7 @@ void Gaugefield_hybrid::save(int number)
 
 void Gaugefield_hybrid::save(string outputfile)
 {
+	const size_t NTIME = parameters->get_nt();
 	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * parameters->get_volspace() * NTIME;
 	hmc_float * gaugefield_buf = new hmc_float[gaugefield_buf_size];
 
@@ -659,7 +662,7 @@ hmc_float Gaugefield_hybrid::plaquette(hmc_float* tplaq, hmc_float* splaq)
 	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
 
 
-	for(int t = 0; t < NTIME; t++) {
+	for(int t = 0; t < parameters->get_nt(); t++) {
 		for(int n = 0; n < parameters->get_volspace(); n++) {
 			for(int mu = 0; mu < NDIM; mu++) {
 				for(int nu = 0; nu < mu; nu++) {
@@ -712,6 +715,7 @@ hmc_complex Gaugefield_hybrid::polyakov()
 hmc_complex Gaugefield_hybrid::spatial_polyakov(int dir)
 {
 	const size_t NSPACE = parameters->get_ns();
+	const size_t NTIME = parameters->get_nt();
 
 	hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
 	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
@@ -826,9 +830,9 @@ void Gaugefield_hybrid::print_profiling(std::string filename)
 size_t Gaugefield_hybrid::get_num_hmc_gaugefield_elems()
 {
 #ifdef _RECONSTRUCT_TWELVE_
-	return NC * (NC - 1) * NDIM * parameters->get_volspace() * NTIME;
+	return NC * (NC - 1) * NDIM * parameters->get_volspace() * parameters->get_nt();
 #else
-	return NC * NC * NDIM * parameters->get_volspace() * NTIME;
+	return NC * NC * NDIM * parameters->get_volspace() * parameters->get_nt();
 #endif
 }
 
@@ -844,5 +848,5 @@ Matrixsu3 Gaugefield_hybrid::get_from_gaugefield(const Matrixsu3 * field, const 
 
 size_t Gaugefield_hybrid::get_num_gaugefield_elems() const
 {
-	return NDIM * parameters->get_volspace() * NTIME;
+	return NDIM * parameters->get_volspace() * parameters->get_nt();
 }

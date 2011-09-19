@@ -28,7 +28,7 @@ void Opencl_hmc::fill_buffers()
 	clmem_force = create_rw_buffer(gaugemomentum_size);
 	clmem_phi_inv = create_rw_buffer(spinorfield_size);
 	clmem_phi = create_rw_buffer(spinorfield_size);
-	clmem_new_u = create_rw_buffer(NDIM * parameters->get_volspace() * NTIME * sizeof(ocl_s_gaugefield));
+	clmem_new_u = create_rw_buffer(NDIM * parameters->get_volspace() * parameters->get_nt() * sizeof(ocl_s_gaugefield));
 	clmem_p = create_rw_buffer(gaugemomentum_size);
 	clmem_new_p = create_rw_buffer(gaugemomentum_size);
 	clmem_energy_init = create_rw_buffer(float_size);
@@ -265,8 +265,8 @@ void Opencl_hmc::calc_fermion_force(usetimer * solvertimer)
 
 	if(get_parameters()->get_use_smearing() == true) {
 		logger.debug() << "\t\t\tsave unsmeared gaugefield...";
-		gf_tmp = create_rw_buffer(NDIM * VOLSPACE * NTIME * sizeof(ocl_s_gaugefield));
-		copy_buffer_on_device(get_clmem_gaugefield(), gf_tmp, NDIM * VOLSPACE * NTIME * sizeof(ocl_s_gaugefield));
+		gf_tmp = create_rw_buffer(NDIM * VOLSPACE * parameters->get_nt() * sizeof(ocl_s_gaugefield));
+		copy_buffer_on_device(get_clmem_gaugefield(), gf_tmp, NDIM * VOLSPACE * parameters->get_nt() * sizeof(ocl_s_gaugefield));
 		logger.debug() << "\t\t\tsmear gaugefield...";
 		stout_smear_device();
 	}
@@ -357,7 +357,7 @@ void Opencl_hmc::calc_fermion_force(usetimer * solvertimer)
 		logger.debug() << "\t\t\tcalc stout-smeared fermion_force...";
 		stout_smeared_fermion_force_device();
 		logger.debug() << "\t\t\trestore unsmeared gaugefield...";
-		copy_buffer_on_device(gf_tmp, get_clmem_gaugefield(), NDIM * VOLSPACE * NTIME * sizeof(ocl_s_gaugefield));
+		copy_buffer_on_device(gf_tmp, get_clmem_gaugefield(), NDIM * VOLSPACE * parameters->get_nt() * sizeof(ocl_s_gaugefield));
 		cl_int clerr = clReleaseMemObject(gf_tmp);
 		if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	}
