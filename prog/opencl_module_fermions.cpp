@@ -428,18 +428,26 @@ void Opencl_Module_Fermions::Aee(cl_mem in, cl_mem out, cl_mem gf)
 	int even = EVEN;
 	int odd = ODD;
 
+	/**
+	 * This is the even-odd preconditioned fermion matrix with the 
+	 * non-trivial inversion on the even sites (see DeGran/DeTar p. 174).
+	 * If one has fermionmatrix
+	 * 	M = R + D,
+	 * then Aee is:
+	 * Aee = R_e - D_eo R_o_inv D_oe
+	 */
 	if(get_parameters()->get_fermact() == WILSON) {
-		logger.fatal() << "not yet implemented in WILSON case, aborting...";
-	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
+		//in this case, the diagonal matrix is just 1 and falls away.
+		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
+		dslash_eoprec_device(clmem_tmp_eoprec_1, out, gf, even);
+		saxpy_eoprec_device(out, in, clmem_one, out);
+	} 
+	else if(get_parameters()->get_fermact() == TWISTEDMASS) {
 		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
 		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
 		dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even);
 		M_tm_sitediagonal_device(in, clmem_tmp_eoprec_1);
-		/** @todo  the copying can be extincted by using
-		 *  saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
-		 */
-		copy_buffer_on_device(out, clmem_tmp_eoprec_3, sizeof(spinor) * EOPREC_SPINORFIELDSIZE);
-		saxpy_eoprec_device(clmem_tmp_eoprec_3, clmem_tmp_eoprec_1, clmem_one, out);
+		saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
 	}
 }
 
@@ -905,49 +913,69 @@ bool Opencl_Module_Fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_
 
 void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer)
 {
-
+	/** This solves the sparse-matrix system
+	 * 	A x = b
+	 * 	with 	x == inout
+	 * 				A == f
+	 * 				b == source
+	 * using a Krylov-Solver (BiCGStab or CG)
+	 */
 	bool converged = false;
 
 	(*solvertimer).reset();
 	if(get_parameters()->get_use_eo() == true) {
+		/**
+		 * If even-odd-preconditioning is used, the inversion is split up 
+		 * into even and odd parts using Schur decomposition, assigning the 
+		 * non-trivial inversion to the even sites (see DeGran/DeTar p 174ff).
+		 */
 		//convert source and input-vector to eoprec-format
-		logger.debug() << "convert source to eoprec-format";
 		convert_to_eoprec_device(clmem_source_even, clmem_source_odd, source);
 		//prepare sources
-		logger.debug() << "Prepare sources for eoprec inversion";
+		/** 
+		 * This changes the even source according to (with A = M + D):
+		 * 	b_e = b_e - D_eo M_inv b_o
+		 */
 		if(get_parameters()->get_fermact() == WILSON) {
-			logger.fatal() << "not yet implemented in WILSON case, aborting...";
-		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
+			//in this case, the diagonal matrix is just 1 and falls away.
+			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1);
+			dslash_eoprec_device(clmem_source_odd, clmem_tmp_eoprec_1, gf, EVEN);
+			saxpy_eoprec_device(clmem_source_even, clmem_tmp_eoprec_1, clmem_one, clmem_source_even);
+		} 
+		else if(get_parameters()->get_fermact() == TWISTEDMASS) {
 			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1);
 			dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, gf, EVEN);
 			saxpy_eoprec_device(clmem_source_even, clmem_tmp_eoprec_2, clmem_one, clmem_source_even);
 		}
 
 		//Trial solution
-		logger.debug() << "trial solution";
 		///@todo this should go into a more general function
 		this->set_eoprec_spinorfield_cold_device(this->get_clmem_inout_eoprec());
-logger.debug() << "solver";
+		logger.debug() << "start eoprec-inversion";
 		//even solution
 		if(get_parameters()->get_use_cg() == true)
 			converged = cg_eoprec(f, clmem_inout_eoprec, clmem_source_even, gf);
 		else
 			converged = bicgstab_eoprec(f, this->get_clmem_inout_eoprec(), clmem_source_even, gf);
 
-		logger.debug() << "odd solution";
 		//odd solution
-		/** @todo CP: perhaps one can save some variables used here */
+		/** The odd solution is obtained from the even one according to:
+		 * 	x_o = M_inv D x_e - M_inv b_o
+		 */
 		if(get_parameters()->get_fermact() == WILSON) {
-			logger.fatal() << "not yet implemented in WILSON case, aborting...";
-		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
+			//in this case, the diagonal matrix is just 1 and falls away.
+			dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_1, gf, ODD);
+			saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_source_odd, clmem_one, clmem_tmp_eoprec_1);
+		} 
+		else if(get_parameters()->get_fermact() == TWISTEDMASS) {
 			dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_2, gf, ODD);
 			M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_2, clmem_tmp_eoprec_1);
 			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2);
 			saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, clmem_one, clmem_tmp_eoprec_1);
-
-			//CP: whole solution
-			//CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eoprec_1
-			convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_1, inout);
+		}
+		//CP: whole solution
+		//CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eoprec_1
+		convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_1, inout);
 		}
 	} else {
 		//Trial solution
