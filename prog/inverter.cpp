@@ -76,7 +76,8 @@ int main(int argc, char* argv[])
 
 		gaugefield.create_sources();
 		gaugefield.perform_inversion(&solver_timer);
-		gaugefield.sync_solution_buffer();
+
+		//flavour_doublet_correlators does a sync at the beginning
 		gaugefield.flavour_doublet_correlators(corr_fn.str());
 
 		logger.trace() << "Inversion done" ;

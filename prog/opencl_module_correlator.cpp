@@ -28,17 +28,6 @@ void Opencl_Module_Correlator::fill_buffers()
 {
 
 	Opencl_Module_Spinors::fill_buffers();
-	logger.trace() << "init buffer for correlators...";
-
-	int spinorfield_size = sizeof(spinor) * SPINORFIELDSIZE;
-	int num_sources;
-	if( get_parameters()->get_use_pointsource() == true) {
-		num_sources = 12;
-	} else {
-		num_sources = get_parameters()->get_num_sources();
-	}
-	clmem_corr = create_rw_buffer(spinorfield_size * num_sources);
-	clmem_source = create_rw_buffer(spinorfield_size);
 
 	return;
 }
@@ -114,10 +103,6 @@ void Opencl_Module_Correlator::clear_kernels()
 void Opencl_Module_Correlator::clear_buffers()
 {
 	Opencl_Module_Spinors::clear_buffers();
-	int clerr = clReleaseMemObject(clmem_source);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	clerr = clReleaseMemObject(clmem_corr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	return;
 }
 
@@ -140,16 +125,6 @@ void Opencl_Module_Correlator::get_work_sizes(const cl_kernel kernel, cl_device_
 	}
 
 	return;
-}
-
-cl_mem Opencl_Module_Correlator::get_clmem_source()
-{
-	return clmem_source;
-}
-
-cl_mem Opencl_Module_Correlator::get_clmem_corr()
-{
-	return clmem_corr;
 }
 
 cl_kernel Opencl_Module_Correlator::get_correlator_kernel(string which)

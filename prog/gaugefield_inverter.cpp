@@ -39,6 +39,13 @@ void Gaugefield_inverter::init_tasks()
 	opencl_modules[task_correlator] = new Opencl_Module_Correlator[1];
 	get_task_correlator()->init(queue[task_correlator], get_clmem_gaugefield(), get_parameters(), get_max_compute_units(task_correlator), get_double_ext(task_correlator));
 
+
+	int spinorfield_size = sizeof(spinor) * SPINORFIELDSIZE;
+
+	clmem_corr = get_task_correlator()->create_rw_buffer(spinorfield_size * num_sources);
+	clmem_source = get_task_correlator()->create_rw_buffer(spinorfield_size);
+
+
 	return;
 }
 
@@ -52,6 +59,14 @@ void Gaugefield_inverter::finalize_opencl()
 {
 
 	Gaugefield_hybrid::finalize_opencl();
+
+	cl_int clerr = clReleaseMemObject(clmem_corr);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+
+	clerr = clReleaseMemObject(clmem_source);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+
+
 	logger.debug() << "free solution buffer";
 	delete [] solution_buffer;
 	logger.debug() << "free source buffer";
@@ -62,7 +77,7 @@ void Gaugefield_inverter::finalize_opencl()
 void Gaugefield_inverter::sync_solution_buffer()
 {
 	size_t sfsize = 12 * get_parameters()->get_spinorfieldsize() * sizeof(spinor);
-	get_task_correlator()->copy_buffer_to_device(solution_buffer, get_task_correlator()->get_clmem_corr(), sfsize);
+	get_task_correlator()->copy_buffer_to_device(solution_buffer, get_clmem_corr(), sfsize);
 	return;
 }
 
@@ -82,30 +97,40 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 	size_t sfsize = get_parameters()->get_spinorfieldsize() * sizeof(spinor);
 	spinor* sftmp = new spinor [get_parameters()->get_spinorfieldsize()];
 
+	int spinorfield_size = sizeof(spinor) * SPINORFIELDSIZE;
+	cl_mem clmem_res = get_task_solver()->create_rw_buffer(spinorfield_size);
+
 	for(int k = 0; k < num_sources; k++) {
 		//copy source from to device
 		//NOTE: this is a blocking call!
 		logger.debug() << "copy pointsource between devices";
-		get_task_solver()->copy_buffer_to_device(&source_buffer[k*VOL4D], get_task_solver()->get_clmem_source(), sfsize);
+		get_task_solver()->copy_buffer_to_device(&source_buffer[k*VOL4D], get_clmem_source(), sfsize);
 
 		logger.debug() << "calling solver..";
 		if(use_eo == false)
-			get_task_solver()->solver(M_call, get_task_solver()->get_clmem_inout(), get_task_solver()->get_clmem_source(), *get_clmem_gaugefield(), solver_timer);
+			get_task_solver()->solver(M_call, clmem_res, get_clmem_source(), *get_clmem_gaugefield(), solver_timer);
 		else
-			get_task_solver()->solver(Aee_call, get_task_solver()->get_clmem_inout(), get_task_solver()->get_clmem_source(), *get_clmem_gaugefield(), solver_timer);
+			get_task_solver()->solver(Aee_call, clmem_res, get_clmem_source(), *get_clmem_gaugefield(), solver_timer);
 
 		//add solution to solution-buffer
 		//NOTE: this is a blocking call!
 		logger.debug() << "add solution...";
-		get_task_solver()->get_buffer_from_device(get_task_solver()->get_clmem_inout(), &solution_buffer[k*VOL4D], sfsize);
+		get_task_solver()->get_buffer_from_device(clmem_res, &solution_buffer[k*VOL4D], sfsize);
 	}
+
 	delete [] sftmp;
+	cl_int clerr = clReleaseMemObject(clmem_res);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 
 	return;
 }
 
 void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 {
+
+	//for now, make sure clmem_corr is properly filled; maybe later we can increase performance a bit by playing with this...
+	sync_solution_buffer();
+
 	//suppose that the buffer on the device has been filled with the prior calculated solutions of the solver
 	logger.debug() << "start calculating correlators...";
 
@@ -152,14 +177,14 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 	hmc_float* host_result_z = new hmc_float [num_corr_entries];
 
 	logger.info() << "calculate correlators..." ;
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ps"), get_task_correlator()->get_clmem_corr(), result_ps);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("sc"), get_task_correlator()->get_clmem_corr(), result_sc);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vx"), get_task_correlator()->get_clmem_corr(), result_vx);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vy"), get_task_correlator()->get_clmem_corr(), result_vy);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vz"), get_task_correlator()->get_clmem_corr(), result_vz);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ax"), get_task_correlator()->get_clmem_corr(), result_ax);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ay"), get_task_correlator()->get_clmem_corr(), result_ay);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("az"), get_task_correlator()->get_clmem_corr(), result_az);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ps"), get_clmem_corr(), result_ps);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("sc"), get_clmem_corr(), result_sc);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vx"), get_clmem_corr(), result_vx);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vy"), get_clmem_corr(), result_vy);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vz"), get_clmem_corr(), result_vz);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ax"), get_clmem_corr(), result_ax);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ay"), get_clmem_corr(), result_ay);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("az"), get_clmem_corr(), result_az);
 
 	//the pseudo-scalar (J=0, P=1)
 	logger.info() << "pseudo scalar correlator:" ;
@@ -228,18 +253,29 @@ void Gaugefield_inverter::create_sources()
 	if(get_parameters()->get_use_pointsource() == true) {
 		logger.debug() << "start creating point-sources...";
 		for(int k = 0; k < 12; k++) {
-			get_task_correlator()->create_point_source_device(get_task_correlator()->get_clmem_source(), k, get_parameters()->get_source_pos_spatial(), get_parameters()->get_source_pos_temporal());
+			get_task_correlator()->create_point_source_device(get_clmem_source(), k, get_parameters()->get_source_pos_spatial(), get_parameters()->get_source_pos_temporal());
 			logger.debug() << "copy pointsource to host";
-			get_task_correlator()->get_buffer_from_device(get_task_correlator()->get_clmem_source(), &source_buffer[k*VOL4D], sfsize);
+			get_task_correlator()->get_buffer_from_device(get_clmem_source(), &source_buffer[k*VOL4D], sfsize);
 		}
 	} else {
 		logger.debug() << "start creating stochastic-sources...";
 		int num_sources = get_parameters()->get_num_sources();
 		for(int k = 0; k < num_sources; k++) {
-			get_task_correlator()->create_stochastic_source_device(get_task_correlator()->get_clmem_source());
+			get_task_correlator()->create_stochastic_source_device(get_clmem_source());
 			logger.debug() << "copy stochastic-source to host";
-			get_task_correlator()->get_buffer_from_device(get_task_correlator()->get_clmem_source(), &source_buffer[k*VOL4D], sfsize);
+			get_task_correlator()->get_buffer_from_device(get_clmem_source(), &source_buffer[k*VOL4D], sfsize);
 		}
 	}
 	return;
+}
+
+cl_mem Gaugefield_inverter::get_clmem_corr()
+{
+	return clmem_corr;
+}
+
+
+cl_mem Gaugefield_inverter::get_clmem_source()
+{
+	return clmem_source;
 }
