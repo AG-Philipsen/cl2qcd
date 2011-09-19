@@ -4,8 +4,8 @@ void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield
 {
 	const size_t NSPACE = parameters->get_ns();
 	const size_t NTIME = parameters->get_nt();
-	for(int spacepos = 0; spacepos < NSPACE * NSPACE * NSPACE; spacepos++) {
-		for(int t = 0; t < NTIME; t++) {
+	for(size_t spacepos = 0; spacepos < NSPACE * NSPACE * NSPACE; spacepos++) {
+		for(size_t t = 0; t < NTIME; t++) {
 			for(int mu = 0; mu < NDIM; mu++) {
 				const size_t index = get_global_link_pos(mu, spacepos, t, parameters);
 				host_gaugefield[index] = gaugefield[index];
@@ -19,8 +19,8 @@ void copy_from_ocl_format(Matrixsu3* gaugefield, ocl_s_gaugefield* host_gaugefie
 {
 	const size_t NSPACE = parameters->get_ns();
 	const size_t NTIME = parameters->get_nt();
-	for(int spacepos = 0; spacepos < NSPACE * NSPACE * NSPACE; spacepos++) {
-		for(int t = 0; t < NTIME; t++) {
+	for(size_t spacepos = 0; spacepos < NSPACE * NSPACE * NSPACE; spacepos++) {
+		for(size_t t = 0; t < NTIME; t++) {
 			for(int mu = 0; mu < NDIM; mu++) {
 				const size_t index = get_global_link_pos(mu, spacepos, t, parameters);
 				gaugefield[index] = host_gaugefield[index];
@@ -74,9 +74,9 @@ void copy_gaugefield_from_ildg_format(hmc_complex * gaugefield, hmc_float * gaug
 	//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
 	for (int t = 0; t < parameters->get_nt(); t++) {
 		//if the alg is known to be correct, the next three for-loops could also be changed to one
-		for (int i = 0; i < NSPACE; i++) {
-			for (int j = 0; j < NSPACE; j++) {
-				for (int k = 0; k < NSPACE; k++) {
+		for (size_t i = 0; i < NSPACE; i++) {
+			for (size_t j = 0; j < NSPACE; j++) {
+				for (size_t k = 0; k < NSPACE; k++) {
 					for (int l = 0; l < NDIM; l++) {
 						int spacepos = k + j * NSPACE + i * NSPACE * NSPACE;
 						int globalpos = l + spacepos * NDIM + t * VOLSPACE * NDIM;
@@ -134,9 +134,9 @@ void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_complex * source, cons
 	//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
 	for (int t = 0; t < parameters->get_nt(); t++) {
 		//if the alg is known to be correct, the next three for-loops could also be changed to one
-		for (int i = 0; i < NSPACE; i++) {
-			for (int j = 0; j < NSPACE; j++) {
-				for (int k = 0; k < NSPACE; k++) {
+		for (size_t i = 0; i < NSPACE; i++) {
+			for (size_t j = 0; j < NSPACE; j++) {
+				for (size_t k = 0; k < NSPACE; k++) {
 					for (int l = 0; l < NDIM; l++) {
 						int spacepos = k + j * NSPACE + i * NSPACE * NSPACE;
 						int globalpos = l + spacepos * NDIM + t * parameters->get_volspace() * NDIM;

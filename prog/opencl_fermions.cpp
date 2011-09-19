@@ -1172,9 +1172,9 @@ bool Opencl_fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl
 	return false;
 }
 
-bool Opencl_fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, int cgmax)
+bool Opencl_fermions::cg_eoprec(matrix_function_call, cl_mem, cl_mem, cl_mem, int)
 {
-	/// to be implemented if the above one has been checked..
+	/// @todo to be implemented if the above one has been checked..
 	return false;
 }
 
@@ -1497,7 +1497,7 @@ void Opencl_fermions::finalize_fermions()
 }
 
 #ifdef _PROFILING_
-usetimer* Opencl_fermions::get_timer(char * in)
+usetimer* Opencl_fermions::get_timer(const char * in)
 {
 	usetimer *noop = NULL;
 	noop = Opencl::get_timer(in);
@@ -1588,7 +1588,7 @@ usetimer* Opencl_fermions::get_timer(char * in)
 	}
 }
 
-int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters)
+int Opencl_fermions::get_read_write_size(const char * in, inputparameters * parameters)
 {
 	Opencl::get_read_write_size(in, parameters);
 	//Depending on the compile-options, one has different sizes...
@@ -1690,7 +1690,7 @@ int Opencl_fermions::get_read_write_size(char * in, inputparameters * parameters
 void Opencl_fermions::print_profiling(std::string filename)
 {
 	Opencl::print_profiling(filename);
-	char * kernelName;
+	const char * kernelName;
 	kernelName = "M_wilson";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "gamma5";

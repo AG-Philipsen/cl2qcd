@@ -1043,7 +1043,7 @@ void Opencl::get_work_sizes(size_t * ls, size_t * gs, cl_uint * num_groups, cl_d
 }
 
 #ifdef _PROFILING_
-usetimer* Opencl::get_timer(char * in)
+usetimer* Opencl::get_timer(const char * in)
 {
 	if (strcmp(in, "polyakov_reduction") == 0) {
 		return &(this->timer_polyakov_reduction);
@@ -1066,7 +1066,7 @@ usetimer* Opencl::get_timer(char * in)
 	}
 }
 
-int Opencl::get_read_write_size(char * in, inputparameters * parameters)
+int Opencl::get_read_write_size(const char * in, inputparameters * parameters)
 {
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
@@ -1101,7 +1101,7 @@ int Opencl::get_read_write_size(char * in, inputparameters * parameters)
 	return 0;
 }
 
-void Opencl::print_profiling(std::string filename, char * kernelName, uint64_t time_total, int calls_total, int read_write_size)
+void Opencl::print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, int read_write_size)
 {
 	hmc_float bandwidth = 0.;
 	uint64_t avg_time = 0.;
@@ -1133,7 +1133,7 @@ void Opencl::print_profiling(std::string filename, char * kernelName, uint64_t t
 void Opencl::print_profiling(std::string filename)
 {
 	logger.trace() << "Printing Profiling-information to file \"" << filename << "\"";
-	char * kernelName;
+	const char * kernelName;
 	kernelName = "polyakov";
 	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "polyakov_reduction";

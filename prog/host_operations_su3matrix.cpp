@@ -363,7 +363,7 @@ void unit_su3matrix(hmc_su3matrix * u){
   return;
 }
 
-void random_su3matrix(hmc_su3matrix * u){
+void random_su3matrix(hmc_su3matrix *){
   throw Print_Error_Message("random su3matrix needs to be implemented...");
   return;
 }

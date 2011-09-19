@@ -432,9 +432,9 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 
 void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size)
 {
-	cl_int clerr = CL_SUCCESS;
 	cl_int clerr_enqueue = CL_SUCCESS;
 #ifdef _PROFILING_
+	cl_int clerr = CL_SUCCESS;
 	cl_event event;
 	clerr_enqueue = clEnqueueNDRangeKernel(get_queue(), kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, &event); //clerr evaluated below
 	if(clerr_enqueue == CL_SUCCESS) {
@@ -888,7 +888,7 @@ usetimer * Opencl_Module::get_copy_to()
 }
 
 #ifdef _PROFILING_
-usetimer* Opencl_Module::get_timer(char * in)
+usetimer* Opencl_Module::get_timer(const char * in)
 {
 	if (strcmp(in, "polyakov_reduction") == 0) {
 		return &(this->timer_polyakov_reduction);
@@ -911,7 +911,7 @@ usetimer* Opencl_Module::get_timer(char * in)
 	}
 }
 
-int Opencl_Module::get_read_write_size(char * in, inputparameters * parameters)
+int Opencl_Module::get_read_write_size(const char * in, inputparameters * parameters)
 {
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
@@ -977,7 +977,7 @@ void Opencl_Module::print_profiling(std::string filename, const char * kernelNam
 void Opencl_Module::print_profiling(std::string filename)
 {
 	logger.trace() << "Printing Profiling-information to file \"" << filename << "\"";
-	char * kernelName;
+	const char * kernelName;
 	kernelName = "polyakov";
 	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "polyakov_reduction";

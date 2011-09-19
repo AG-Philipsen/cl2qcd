@@ -513,7 +513,7 @@ void Gaugefield_hybrid::copy_gaugefield_to_s_gaugefield (Matrixsu3 * sgfo, hmc_c
 	const size_t NTIME = parameters->get_nt();
 	for (int d = 0; d < NDIM; d++) {
 		for (int n = 0; n < parameters->get_volspace(); n++) {
-			for (int t = 0; t < NTIME; t++) {
+			for (size_t t = 0; t < NTIME; t++) {
 				hmc_su3matrix srcElem;
 				get_su3matrix(&srcElem, gf, n, t, d, parameters);
 				Matrixsu3 destElem;
@@ -547,7 +547,7 @@ void Gaugefield_hybrid::copy_s_gaugefield_to_gaugefield(hmc_complex * gf, Matrix
 	const size_t NTIME = parameters->get_nt();
 	for (int d = 0; d < NDIM; d++) {
 		for (int n = 0; n < parameters->get_volspace(); n++) {
-			for (int t = 0; t < NTIME; t++) {
+			for (size_t t = 0; t < NTIME; t++) {
 				hmc_su3matrix destElem;
 				Matrixsu3 srcElem = get_from_gaugefield(sgfo, d, n, t);
 #ifdef _RECONSTRUCT_TWELVE_
@@ -724,12 +724,12 @@ hmc_complex Gaugefield_hybrid::spatial_polyakov(int dir)
 	hmc_complex res;
 	res.re = 0;
 	res.im = 0;
-	for(int x1 = 0; x1 < NSPACE; x1++) {
-		for(int x2 = 0; x2 < NSPACE; x2++) {
-			for(int t = 0; t < NTIME; t++) {
+	for(size_t x1 = 0; x1 < NSPACE; x1++) {
+		for(size_t x2 = 0; x2 < NSPACE; x2++) {
+			for(size_t t = 0; t < NTIME; t++) {
 				hmc_su3matrix prod;
 				unit_su3matrix(&prod);
-				for(int xpol = 0; xpol < NSPACE; xpol++) {
+				for(size_t xpol = 0; xpol < NSPACE; xpol++) {
 					hmc_su3matrix tmp;
 					int coord[NDIM];
 					coord[0] = t;

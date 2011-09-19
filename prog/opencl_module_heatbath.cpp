@@ -173,7 +173,7 @@ void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, cl_device_ty
 }
 
 #ifdef _PROFILING_
-usetimer* Opencl_Module_Heatbath::get_timer(char * in)
+usetimer* Opencl_Module_Heatbath::get_timer(const char * in)
 {
 	usetimer *noop = NULL;
 	noop = Opencl_Module_Ran::get_timer(in);
@@ -195,7 +195,7 @@ usetimer* Opencl_Module_Heatbath::get_timer(char * in)
 		return NULL;
 	}
 }
-int Opencl_Module_Heatbath::get_read_write_size(char * in, inputparameters * parameters)
+int Opencl_Module_Heatbath::get_read_write_size(const char * in, inputparameters * parameters)
 {
 	Opencl_Module_Ran::get_read_write_size(in, parameters);
 	//Depending on the compile-options, one has different sizes...
@@ -225,7 +225,7 @@ int Opencl_Module_Heatbath::get_read_write_size(char * in, inputparameters * par
 void Opencl_Module_Heatbath::print_profiling(std::string filename)
 {
 	Opencl_Module_Ran::print_profiling(filename);
-	char * kernelName;
+	const char * kernelName;
 	kernelName = "heatbath_even";
 	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "heatbath_odd";

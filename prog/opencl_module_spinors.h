@@ -137,14 +137,14 @@ public:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual usetimer* get_timer(char * in);
+	virtual usetimer* get_timer(const char * in);
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual int get_read_write_size(char * in, inputparameters * parameters);
+	virtual int get_read_write_size(const char * in, inputparameters * parameters);
 
 	/**
 	 * Print the profiling information to a file.

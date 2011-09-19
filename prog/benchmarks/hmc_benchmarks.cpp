@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	hmc_observables obs;
 
 	Gaugefield_hmc gaugefield;
-	cl_device_type devicetypes[parameters.get_num_dev()];
+	cl_device_type * devicetypes = new cl_device_type[parameters.get_num_dev()];
 	gaugefield.init_devicetypes_array(devicetypes, &parameters);
 	logger.trace() << "init gaugefield" ;
 	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters);
@@ -91,6 +91,8 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	gaugefield.finalize();
+
+	delete[] devicetypes;
 
 	return 0;
 }

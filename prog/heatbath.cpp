@@ -31,8 +31,7 @@ int main(int argc, char* argv[])
 		init_timer.reset();
 
 		Gaugefield_heatbath gaugefield;
-		int numtasks = 1;
-		
+
 		cl_device_type primary_device_type;
 		//check whether GPU should be used
 		if(parameters.get_use_gpu() == true) {

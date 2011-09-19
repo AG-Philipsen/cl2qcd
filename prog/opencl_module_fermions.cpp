@@ -1037,7 +1037,7 @@ cl_mem Opencl_Module_Fermions::get_clmem_minusone()
 
 
 #ifdef _PROFILING_
-usetimer* Opencl_Module_Fermions::get_timer(char * in)
+usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 {
 	usetimer *noop = NULL;
 	noop = Opencl_Module_Spinors::get_timer(in);
@@ -1071,7 +1071,7 @@ usetimer* Opencl_Module_Fermions::get_timer(char * in)
 	}
 }
 
-int Opencl_Module_Fermions::get_read_write_size(char * in, inputparameters * parameters)
+int Opencl_Module_Fermions::get_read_write_size(const char * in, inputparameters * parameters)
 {
 	Opencl_Module_Spinors::get_read_write_size(in, parameters);
 	//Depending on the compile-options, one has different sizes...
@@ -1113,7 +1113,7 @@ int Opencl_Module_Fermions::get_read_write_size(char * in, inputparameters * par
 void Opencl_Module_Fermions::print_profiling(std::string filename)
 {
 	Opencl_Module_Spinors::print_profiling(filename);
-	char * kernelName;
+	const char * kernelName;
 	kernelName = "M_wilson";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "gamma5";

@@ -604,7 +604,7 @@ cl_mem Opencl_hmc::get_clmem_phi()
 }
 
 #ifdef _PROFILING_
-usetimer* Opencl_hmc::get_timer(char * in)
+usetimer* Opencl_hmc::get_timer(const char * in)
 {
 	usetimer *noop = NULL;
 	noop = Opencl_fermions::get_timer(in);
@@ -643,7 +643,7 @@ usetimer* Opencl_hmc::get_timer(char * in)
 	}
 }
 
-int Opencl_hmc::get_read_write_size(char * in, inputparameters * parameters)
+int Opencl_hmc::get_read_write_size(const char * in, inputparameters * parameters)
 {
 	Opencl::get_read_write_size(in, parameters);
 	//Depending on the compile-options, one has different sizes...
@@ -688,7 +688,7 @@ int Opencl_hmc::get_read_write_size(char * in, inputparameters * parameters)
 void Opencl_hmc::print_profiling(std::string filename)
 {
 	Opencl::print_profiling(filename);
-	char * kernelName;
+	const char * kernelName;
 	kernelName = "generate_gaussian_spinorfield";
 	Opencl::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "generate_gaussian_gaugemomenta";
