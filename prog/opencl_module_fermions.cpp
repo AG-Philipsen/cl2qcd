@@ -975,7 +975,7 @@ void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem
 		//CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eoprec_1
 		convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_1, inout);
 		}
-	} else {
+		else {
 		//Trial solution
 		///@todo this should go into a more general function
 		this->set_spinorfield_cold_device(inout);
