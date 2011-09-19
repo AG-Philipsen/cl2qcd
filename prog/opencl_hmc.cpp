@@ -28,7 +28,7 @@ void Opencl_hmc::fill_buffers()
 	clmem_force = create_rw_buffer(gaugemomentum_size);
 	clmem_phi_inv = create_rw_buffer(spinorfield_size);
 	clmem_phi = create_rw_buffer(spinorfield_size);
-	clmem_new_u = create_rw_buffer(NDIM * VOLSPACE * NTIME * sizeof(ocl_s_gaugefield));
+	clmem_new_u = create_rw_buffer(NDIM * parameters->get_volspace() * NTIME * sizeof(ocl_s_gaugefield));
 	clmem_p = create_rw_buffer(gaugemomentum_size);
 	clmem_new_p = create_rw_buffer(gaugemomentum_size);
 	clmem_energy_init = create_rw_buffer(float_size);
@@ -260,6 +260,8 @@ void Opencl_hmc::calc_fermion_force(usetimer * solvertimer)
 {
 	//this is only used when smearing is activated
 	cl_mem gf_tmp;
+
+	const size_t VOLSPACE = parameters->get_volspace();
 
 	if(get_parameters()->get_use_smearing() == true) {
 		logger.debug() << "\t\t\tsave unsmeared gaugefield...";

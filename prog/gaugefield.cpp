@@ -30,7 +30,7 @@ void Gaugefield::init(int* numdevs, int numdevtypes, cl_device_type* devicetypes
 
 
 	//allocate memory for private gaugefield
-	Matrixsu3 * gftmp = new Matrixsu3[NDIM * VOLSPACE * NTIME];
+	Matrixsu3 * gftmp = new Matrixsu3[NDIM * parameters->get_volspace() * NTIME];
 	set_sgf(gftmp);
 
 	set_parameters(input_parameters);
@@ -96,7 +96,7 @@ void Gaugefield::init_gaugefield()
 		hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
 		//tmp gauge field
 		hmc_float * gaugefield_tmp;
-		gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * NTIME * VOLSPACE);
+		gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * NTIME * parameters->get_volspace());
 		parameters_source.readsourcefile(&(get_parameters()->sourcefile)[0], get_parameters()->get_prec(), &gaugefield_tmp);
 		copy_gaugefield_from_ildg_format(gftmp, gaugefield_tmp, parameters_source.num_entries_source, parameters);
 		copy_gaugefield_to_s_gaugefield (get_sgf(), gftmp);
@@ -116,10 +116,10 @@ void Gaugefield::init_gaugefield()
 void Gaugefield::copy_gaugefield_to_s_gaugefield (Matrixsu3 * sgfo, hmc_complex * gf)
 {
 	for (int d = 0; d < NDIM; d++) {
-		for (int n = 0; n < VOLSPACE; n++) {
+		for (int n = 0; n < parameters->get_volspace(); n++) {
 			for (int t = 0; t < NTIME; t++) {
 				hmc_su3matrix srcElem;
-				get_su3matrix(&srcElem, gf, n, t, d);
+				get_su3matrix(&srcElem, gf, n, t, d, parameters);
 
 				Matrixsu3 destElem;
 #ifdef _RECONSTRUCT_TWELVE_
@@ -150,7 +150,7 @@ void Gaugefield::copy_gaugefield_to_s_gaugefield (Matrixsu3 * sgfo, hmc_complex 
 void Gaugefield::copy_s_gaugefield_to_gaugefield(hmc_complex * gf, Matrixsu3 * sgfo)
 {
 	for (int d = 0; d < NDIM; d++) {
-		for (int n = 0; n < VOLSPACE; n++) {
+		for (int n = 0; n < parameters->get_volspace(); n++) {
 			for (int t = 0; t < NTIME; t++) {
 				hmc_su3matrix destElem;
 				Matrixsu3 srcElem = get_from_gaugefield(sgfo, d, n, t);
@@ -172,7 +172,7 @@ void Gaugefield::copy_s_gaugefield_to_gaugefield(hmc_complex * gf, Matrixsu3 * s
 				destElem[2][1] = srcElem.e21;
 				destElem[2][2] = srcElem.e22;
 #endif
-				put_su3matrix(gf, &destElem, n, t, d);
+				put_su3matrix(gf, &destElem, n, t, d, parameters);
 			}
 		}
 	}
@@ -182,7 +182,7 @@ void Gaugefield::copy_s_gaugefield_to_gaugefield(hmc_complex * gf, Matrixsu3 * s
 void Gaugefield::set_gaugefield_cold_new (Matrixsu3 * field)
 {
 	for(int t = 0; t < NTIME; t++) {
-		for(int n = 0; n < VOLSPACE; n++) {
+		for(int n = 0; n < parameters->get_volspace(); n++) {
 			for(int mu = 0; mu < NDIM; mu++) {
 				const Matrixsu3 tmp = unit_matrixsu3();
 				set_to_gaugefield(field, mu, n, t, tmp);
@@ -269,7 +269,7 @@ void Gaugefield::print_info_source(sourcefileparameters* params)
 
 void Gaugefield::save(int number)
 {
-	const int gaugefield_buf_size = 2 * NC * NC * NDIM * VOLSPACE * NTIME;
+	const int gaugefield_buf_size = 2 * NC * NC * NDIM * parameters->get_volspace() * NTIME;
 	hmc_float * gaugefield_buf = new hmc_float[gaugefield_buf_size];
 
 	//these are not yet used...
@@ -285,7 +285,7 @@ void Gaugefield::save(int number)
 
 	hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
 	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
-	copy_gaugefield_to_ildg_format(gaugefield_buf, gftmp);
+	copy_gaugefield_to_ildg_format(gaugefield_buf, gftmp, parameters);
 
 	hmc_float plaq = plaquette();
 
@@ -444,7 +444,7 @@ hmc_float Gaugefield::plaquette(hmc_float* tplaq, hmc_float* splaq)
 
 
 	for(int t = 0; t < NTIME; t++) {
-		for(int n = 0; n < VOLSPACE; n++) {
+		for(int n = 0; n < parameters->get_volspace(); n++) {
 			for(int mu = 0; mu < NDIM; mu++) {
 				for(int nu = 0; nu < mu; nu++) {
 					hmc_su3matrix prod;
@@ -478,17 +478,17 @@ hmc_complex Gaugefield::polyakov()
 	hmc_complex res;
 	res.re = 0;
 	res.im = 0;
-	for(int n = 0; n < VOLSPACE; n++) {
+	for(int n = 0; n < parameters->get_volspace(); n++) {
 		hmc_su3matrix prod;
-		local_polyakov(gftmp, &prod, n);
+		local_polyakov(gftmp, &prod, n, parameters);
 		hmc_complex tmpcomplex = trace_su3matrix(&prod);
 		complexaccumulate(&res, &tmpcomplex);
 	}
 
 	delete[] gftmp;
 
-	res.re /= static_cast<hmc_float>(NC * VOLSPACE);
-	res.im /= static_cast<hmc_float>(NC * VOLSPACE);
+	res.re /= static_cast<hmc_float>(NC * parameters->get_volspace());
+	res.im /= static_cast<hmc_float>(NC * parameters->get_volspace());
 	return res;
 }
 
@@ -518,7 +518,7 @@ hmc_complex Gaugefield::spatial_polyakov(int dir)
 					int nnext = (next % (NDIM - 1)) + 1;
 					coord[nnext] = x2;
 					int pos = get_nspace(coord, parameters);
-					get_su3matrix(&tmp, gftmp, pos, t, dir);
+					get_su3matrix(&tmp, gftmp, pos, t, dir, parameters);
 					accumulate_su3matrix_prod(&prod, &tmp);
 				}
 				hmc_complex tmpcomplex = trace_su3matrix(&prod);
@@ -668,9 +668,9 @@ usetimer * Gaugefield::get_copy_to()
 size_t Gaugefield::get_num_hmc_gaugefield_elems()
 {
 #ifdef _RECONSTRUCT_TWELVE_
-	return NC * (NC - 1) * NDIM * VOLSPACE * NTIME;
+	return NC * (NC - 1) * NDIM * parameters->get_volspace() * NTIME;
 #else
-	return NC * NC * NDIM * VOLSPACE * NTIME;
+	return NC * NC * NDIM * parameters->get_volspace() * NTIME;
 #endif
 }
 

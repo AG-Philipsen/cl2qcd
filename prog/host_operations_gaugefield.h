@@ -32,7 +32,7 @@ void copy_gaugefield_from_ildg_format(hmc_complex * gaugefield, hmc_float * gaug
  * @param[in] source The gaugefield in the internal representation
  * @todo Replace hmc_gaugefield type by s_gaugefield type (LZ)
  */
-void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_complex * source);
+void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_complex * source, const inputparameters * const params);
 /**
  * Create a representation of the gaugefield usable by the OpenCL kernels.
  *
@@ -67,9 +67,9 @@ LZ: Note that the following section provides functions that work on the old hmc_
  *         or [NC*(NC-1)][NDIM][VOLSPACE][NTIME] format, depending on whether REC12 is enabled.
  */
 #ifdef _RECONSTRUCT_TWELVE_
-size_t get_hmc_gaugefield_index(size_t ncolor, size_t spacepos, size_t timepos, size_t mu);
+size_t get_hmc_gaugefield_index(size_t ncolor, size_t spacepos, size_t timepos, size_t mu, const inputparameters * const parameters);
 #else
-size_t get_hmc_gaugefield_index(size_t m, size_t n, size_t spacepos, size_t timepos, size_t mu);
+size_t get_hmc_gaugefield_index(size_t m, size_t n, size_t spacepos, size_t timepos, size_t mu, const inputparameters * const parameters);
 #endif
 
 /**
@@ -82,7 +82,7 @@ size_t get_hmc_gaugefield_index(size_t m, size_t n, size_t spacepos, size_t time
  * @param[in] mu Direction of the matrix to retrieve
  * @TODO CP: perhaps a similar function would be more efficient in same cases that just returns a pointer to the specific matrix in the "big" gaugefield-array
  */
-void get_su3matrix(hmc_su3matrix* out, hmc_complex * in, int spacepos, int timepos, int mu); //cl
+void get_su3matrix(hmc_su3matrix* out, hmc_complex * in, int spacepos, int timepos, int mu, const inputparameters * const parameters); //cl
 /**
  * Stores an SU3 matrix to the gaugefield
  *
@@ -92,7 +92,7 @@ void get_su3matrix(hmc_su3matrix* out, hmc_complex * in, int spacepos, int timep
  * @param[in] timepos Temporal index of the matrix to store
  * @param[in] mu Direction of the matrix to store
  */
-void put_su3matrix(hmc_complex * field, hmc_su3matrix * in, int spacepos, int timepos, int mu); //cl
+void put_su3matrix(hmc_complex * field, hmc_su3matrix * in, int spacepos, int timepos, int mu, const inputparameters * const parameters); //cl
 
 /**
  * Adjoin all SU3 matrices in a gaugefield.
@@ -100,14 +100,14 @@ void put_su3matrix(hmc_complex * field, hmc_su3matrix * in, int spacepos, int ti
  * @param[in] in Gaugefield to read the SU3 matrices from
  * @param[out] out Gaugefield to store the matrices to
  */
-void adjoin_su3(hmc_complex * in, hmc_complex * out);
+void adjoin_su3(hmc_complex * in, hmc_complex * out, const inputparameters * const parameters);
 /**
  * Sum up the traces of all SU3 matrices in on direction of the gaugefield.
  *
  * @param field The gaugefield to sum over
  * @param mu The direction to sum over
  */
-hmc_complex global_trace_su3(hmc_complex * field, int mu);
+hmc_complex global_trace_su3(hmc_complex * field, int mu, const inputparameters * const parameters);
 
 
 
@@ -118,7 +118,7 @@ hmc_complex global_trace_su3(hmc_complex * field, int mu);
  * @param[out] The local part of the polyakov
  * @param[in] n The spatial index to use
  */
-void local_polyakov(hmc_complex * field, hmc_su3matrix * prod, int n);
+void local_polyakov(hmc_complex * field, hmc_su3matrix * prod, int n, const inputparameters * const parameters);
 /**
  * Calculate the part of the plaquette local to the given coordinates.
  *
@@ -129,7 +129,7 @@ void local_polyakov(hmc_complex * field, hmc_su3matrix * prod, int n);
  * @param[in] mu The first direction to use
  * @param[in] nu The second direction to use
  */
-void local_plaquette(hmc_complex * field, hmc_su3matrix * prod, int n, int t, int mu, int nu, const inputparameters * const params );
+void local_plaquette(hmc_complex * field, hmc_su3matrix * prod, int n, int t, int mu, int nu, const inputparameters * const params);
 
 // copy-functions within cpu memory, gaugefield-related layers
 /**
@@ -155,6 +155,6 @@ void copy_gaugefield(hmc_complex * source, hmc_complex * dest, const inputparame
  * @param[in] mu The first direction to use
  * @param[in] nu The second direction to use
  */
-void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, int mu, int nu );
+void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, int mu, int nu, const inputparameters * const params);
 
 #endif

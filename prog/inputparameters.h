@@ -91,6 +91,7 @@ public:
 	void display_sourcefile() const;
 	void display_sourcefilenumber() const;
 	int get_num_dev() const;
+	/** Spatial volume of the lattice */
 	int get_volspace() const;
 	/** 4-Dimensional Volume of the lattice */
 	int get_vol4d() const;

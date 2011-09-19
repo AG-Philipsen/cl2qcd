@@ -813,8 +813,8 @@ void Opencl_Module::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float 
 	//NOTE: this is a blocking call!
 	get_buffer_from_device(clmem_polyakov, &pol, sizeof(hmc_complex));
 
-	pol.re /= static_cast<hmc_float>(NC * VOLSPACE);
-	pol.im /= static_cast<hmc_float>(NC * VOLSPACE);
+	pol.re /= static_cast<hmc_float>(NC * parameters->get_volspace());
+	pol.im /= static_cast<hmc_float>(NC * parameters->get_volspace());
 
 	pol_out->re = pol.re;
 	pol_out->im = pol.im;

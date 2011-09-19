@@ -16,9 +16,6 @@
 
 #ifndef _INKERNEL_
 
-/** Spatial volume of the lattice */
-#define VOLSPACE NSPACE*NSPACE*NSPACE
-
 #define SPINORSIZE NSPIN*NC
 #define HALFSPINORSIZE NSPIN/2*NC
 #define SU3ALGEBRASIZE NC*NC-1

@@ -2,7 +2,6 @@
 
 /** @todo Remove these undefs, only to here to hide global defs until those are removed */
 #undef NSPACE
-#undef VOLSPACE
 #undef NTIME
 
 int get_neighbor(int nspace, int dir, const inputparameters * const params)
