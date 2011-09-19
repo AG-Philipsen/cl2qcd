@@ -1,0 +1,359 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[     11113,        350]
+NotebookOptionsPosition[     10015,        311]
+NotebookOutlinePosition[     10350,        326]
+CellTagsIndexPosition[     10307,        323]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{"gamma5", ":=", 
+  RowBox[{"(", GridBox[{
+     {"1", "0", "0", "0"},
+     {"0", "1", "0", "0"},
+     {"0", "0", 
+      RowBox[{"-", "1"}], "0"},
+     {"0", "0", "0", 
+      RowBox[{"-", "1"}]}
+    }], ")"}]}]], "Input",
+ CellChangeTimes->{{3.524547008503789*^9, 3.524547034945941*^9}}],
+
+Cell[BoxData[
+ RowBox[{"gamma4", ":=", 
+  RowBox[{"(", GridBox[{
+     {"0", "0", 
+      RowBox[{"-", "1"}], "0"},
+     {"0", "0", "0", 
+      RowBox[{"-", "1"}]},
+     {
+      RowBox[{"-", "1"}], "0", "0", "0"},
+     {"0", 
+      RowBox[{"-", "1"}], "0", "0"}
+    }], ")"}]}]], "Input",
+ CellChangeTimes->{{3.5245470395872927`*^9, 3.5245470708656597`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"gamma3", ":=", 
+  RowBox[{"(", GridBox[{
+     {"0", "0", 
+      RowBox[{"-", "I"}], "0"},
+     {"0", "0", "0", "I"},
+     {"I", "0", "0", "0"},
+     {"0", 
+      RowBox[{"-", "I"}], "0", "0"}
+    }], ")"}]}]], "Input",
+ CellChangeTimes->{{3.524547082718851*^9, 3.524547120426076*^9}}],
+
+Cell[BoxData[
+ RowBox[{"gamma2", ":=", 
+  RowBox[{"(", GridBox[{
+     {"0", "0", "0", 
+      RowBox[{"-", "1"}]},
+     {"0", "0", "1", "0"},
+     {"0", "1", "0", "0"},
+     {
+      RowBox[{"-", "1"}], "0", "0", "0"}
+    }], ")"}]}]], "Input",
+ CellChangeTimes->{{3.524547100037078*^9, 3.524547166386397*^9}}],
+
+Cell[BoxData[
+ RowBox[{"gamma1", ":=", 
+  RowBox[{"(", GridBox[{
+     {"0", "0", "0", 
+      RowBox[{"-", "I"}]},
+     {"0", "0", 
+      RowBox[{"-", "I"}], "0"},
+     {"0", "I", "0", "0"},
+     {"I", "0", "0", "0"}
+    }], ")"}]}]], "Input",
+ CellChangeTimes->{{3.524547153012169*^9, 3.524547189537733*^9}}],
+
+Cell[BoxData[
+ RowBox[{"unit", ":=", 
+  RowBox[{"(", GridBox[{
+     {"1", "0", "0", "0"},
+     {"0", "1", "0", "0"},
+     {"0", "0", "1", "0"},
+     {"0", "0", "0", "1"}
+    }], ")"}]}]], "Input",
+ CellChangeTimes->{{3.524547987546743*^9, 3.52454802236957*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"anticomm", "[", 
+   RowBox[{"A_", ",", "B_"}], "]"}], ":=", 
+  RowBox[{
+   RowBox[{"A", ".", "B"}], "+", 
+   RowBox[{"B", ".", "A"}]}]}]], "Input",
+ CellChangeTimes->{{3.524547193253549*^9, 3.524547208223124*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"correlator", "[", 
+   RowBox[{"G_", ",", "v_"}], "]"}], ":=", 
+  RowBox[{"-", 
+   RowBox[{"Tr", "[", 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"Conjugate", "[", "v", "]"}], ".", "G"}], ")"}], ".", 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"Transpose", "[", "v", "]"}], ".", "G"}], ")"}]}], 
+    "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.5245479441380777`*^9, 3.524547976671198*^9}, {
+   3.524548063995922*^9, 3.524548065576645*^9}, {3.524548106907262*^9, 
+   3.5245481589394073`*^9}, {3.524549056357459*^9, 3.524549100242299*^9}, {
+   3.524549197157236*^9, 3.52454925159803*^9}, {3.524549451097589*^9, 
+   3.52454945193027*^9}, {3.52506840939196*^9, 3.525068419246813*^9}, 
+   3.52506883025056*^9}],
+
+Cell[BoxData[
+ RowBox[{"gamma41", ":=", 
+  RowBox[{"gamma4", ".", "gamma1"}]}]], "Input",
+ CellChangeTimes->{{3.524547414891217*^9, 3.524547442451544*^9}}],
+
+Cell[BoxData[
+ RowBox[{"gamma42", ":=", 
+  RowBox[{"gamma4", ".", "gamma2"}]}]], "Input",
+ CellChangeTimes->{{3.52454749834256*^9, 3.524547503798921*^9}}],
+
+Cell[BoxData[
+ RowBox[{"gamma43", ":=", 
+  RowBox[{"gamma4", ".", "gamma3"}]}]], "Input",
+ CellChangeTimes->{{3.524547444007339*^9, 3.524547445564068*^9}, {
+  3.524547506087535*^9, 3.524547537768792*^9}}],
+
+Cell[BoxData[
+ RowBox[{"gamma541", ":=", 
+  RowBox[{"gamma5", ".", "gamma41"}]}]], "Input",
+ CellChangeTimes->{{3.524547570517959*^9, 3.524547577090774*^9}, {
+  3.5245476432127857`*^9, 3.524547647189584*^9}}],
+
+Cell[BoxData[
+ RowBox[{"gamma542", ":=", 
+  RowBox[{"gamma5", ".", "gamma42"}]}]], "Input",
+ CellChangeTimes->{{3.5245476367583113`*^9, 3.5245476632872753`*^9}}],
+
+Cell[BoxData[
+ RowBox[{"gamma543", ":=", 
+  RowBox[{"gamma5", ".", "gamma43"}]}]], "Input",
+ CellChangeTimes->{{3.52454766491593*^9, 3.524547697756624*^9}}],
+
+Cell[BoxData[
+ RowBox[{"phi", ":=", 
+  RowBox[{"(", GridBox[{
+     {"p00", "p01", "p02", "p03"},
+     {"p10", "p11", "p12", "p13"},
+     {"p20", "p21", "p22", "p23"},
+     {"p30", "p31", "p32", "p33"}
+    }], ")"}]}]], "Input",
+ CellChangeTimes->{{3.52454895760528*^9, 3.524549050302157*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"correlator", "[", 
+  RowBox[{"unit", ",", "phi"}], "]"}]], "Input",
+ CellChangeTimes->{{3.524548028032875*^9, 3.5245480333334*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"-", "p00"}], " ", 
+   RowBox[{"Conjugate", "[", "p00", "]"}]}], "-", 
+  RowBox[{"p01", " ", 
+   RowBox[{"Conjugate", "[", "p01", "]"}]}], "-", 
+  RowBox[{"p02", " ", 
+   RowBox[{"Conjugate", "[", "p02", "]"}]}], "-", 
+  RowBox[{"p03", " ", 
+   RowBox[{"Conjugate", "[", "p03", "]"}]}], "-", 
+  RowBox[{"p10", " ", 
+   RowBox[{"Conjugate", "[", "p10", "]"}]}], "-", 
+  RowBox[{"p11", " ", 
+   RowBox[{"Conjugate", "[", "p11", "]"}]}], "-", 
+  RowBox[{"p12", " ", 
+   RowBox[{"Conjugate", "[", "p12", "]"}]}], "-", 
+  RowBox[{"p13", " ", 
+   RowBox[{"Conjugate", "[", "p13", "]"}]}], "-", 
+  RowBox[{"p20", " ", 
+   RowBox[{"Conjugate", "[", "p20", "]"}]}], "-", 
+  RowBox[{"p21", " ", 
+   RowBox[{"Conjugate", "[", "p21", "]"}]}], "-", 
+  RowBox[{"p22", " ", 
+   RowBox[{"Conjugate", "[", "p22", "]"}]}], "-", 
+  RowBox[{"p23", " ", 
+   RowBox[{"Conjugate", "[", "p23", "]"}]}], "-", 
+  RowBox[{"p30", " ", 
+   RowBox[{"Conjugate", "[", "p30", "]"}]}], "-", 
+  RowBox[{"p31", " ", 
+   RowBox[{"Conjugate", "[", "p31", "]"}]}], "-", 
+  RowBox[{"p32", " ", 
+   RowBox[{"Conjugate", "[", "p32", "]"}]}], "-", 
+  RowBox[{"p33", " ", 
+   RowBox[{"Conjugate", "[", "p33", "]"}]}]}]], "Output",
+ CellChangeTimes->{
+  3.524548034142742*^9, 3.524548070416807*^9, 3.524548163546043*^9, 
+   3.524548276291573*^9, {3.5245492352068977`*^9, 3.524549257111491*^9}, 
+   3.524549459380375*^9, 3.52506827151781*^9, 3.525068429232712*^9, 
+   3.52506883472087*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"correlator", "[", 
+  RowBox[{"gamma5", ",", "phi"}], "]"}]], "Input",
+ CellChangeTimes->{{3.524548277225595*^9, 3.52454828724527*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"-", "p00"}], " ", 
+   RowBox[{"Conjugate", "[", "p00", "]"}]}], "-", 
+  RowBox[{"p01", " ", 
+   RowBox[{"Conjugate", "[", "p01", "]"}]}], "+", 
+  RowBox[{"p02", " ", 
+   RowBox[{"Conjugate", "[", "p02", "]"}]}], "+", 
+  RowBox[{"p03", " ", 
+   RowBox[{"Conjugate", "[", "p03", "]"}]}], "-", 
+  RowBox[{"p10", " ", 
+   RowBox[{"Conjugate", "[", "p10", "]"}]}], "-", 
+  RowBox[{"p11", " ", 
+   RowBox[{"Conjugate", "[", "p11", "]"}]}], "+", 
+  RowBox[{"p12", " ", 
+   RowBox[{"Conjugate", "[", "p12", "]"}]}], "+", 
+  RowBox[{"p13", " ", 
+   RowBox[{"Conjugate", "[", "p13", "]"}]}], "+", 
+  RowBox[{"p20", " ", 
+   RowBox[{"Conjugate", "[", "p20", "]"}]}], "+", 
+  RowBox[{"p21", " ", 
+   RowBox[{"Conjugate", "[", "p21", "]"}]}], "-", 
+  RowBox[{"p22", " ", 
+   RowBox[{"Conjugate", "[", "p22", "]"}]}], "-", 
+  RowBox[{"p23", " ", 
+   RowBox[{"Conjugate", "[", "p23", "]"}]}], "+", 
+  RowBox[{"p30", " ", 
+   RowBox[{"Conjugate", "[", "p30", "]"}]}], "+", 
+  RowBox[{"p31", " ", 
+   RowBox[{"Conjugate", "[", "p31", "]"}]}], "-", 
+  RowBox[{"p32", " ", 
+   RowBox[{"Conjugate", "[", "p32", "]"}]}], "-", 
+  RowBox[{"p33", " ", 
+   RowBox[{"Conjugate", "[", "p33", "]"}]}]}]], "Output",
+ CellChangeTimes->{{3.524548282992436*^9, 3.524548288703102*^9}, 
+   3.524549477905233*^9, 3.5250682765450287`*^9, 3.525068432142576*^9, 
+   3.525068836776732*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"correlator", "[", 
+  RowBox[{"gamma43", ",", "phi"}], "]"}]], "Input",
+ CellChangeTimes->{{3.5245496702190113`*^9, 3.5245496895611143`*^9}, {
+  3.525080598353952*^9, 3.525080598531508*^9}, {3.52508076895041*^9, 
+  3.525080784846982*^9}, {3.5250820200087*^9, 3.5250820202115173`*^9}, {
+  3.5250829845555277`*^9, 3.525082985370735*^9}, {3.525083272856501*^9, 
+  3.525083273223507*^9}, {3.525083431393195*^9, 3.525083432180443*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"p00", " ", 
+   RowBox[{"Conjugate", "[", "p00", "]"}]}], "-", 
+  RowBox[{"p01", " ", 
+   RowBox[{"Conjugate", "[", "p01", "]"}]}], "-", 
+  RowBox[{"p02", " ", 
+   RowBox[{"Conjugate", "[", "p02", "]"}]}], "+", 
+  RowBox[{"p03", " ", 
+   RowBox[{"Conjugate", "[", "p03", "]"}]}], "-", 
+  RowBox[{"p10", " ", 
+   RowBox[{"Conjugate", "[", "p10", "]"}]}], "+", 
+  RowBox[{"p11", " ", 
+   RowBox[{"Conjugate", "[", "p11", "]"}]}], "+", 
+  RowBox[{"p12", " ", 
+   RowBox[{"Conjugate", "[", "p12", "]"}]}], "-", 
+  RowBox[{"p13", " ", 
+   RowBox[{"Conjugate", "[", "p13", "]"}]}], "-", 
+  RowBox[{"p20", " ", 
+   RowBox[{"Conjugate", "[", "p20", "]"}]}], "+", 
+  RowBox[{"p21", " ", 
+   RowBox[{"Conjugate", "[", "p21", "]"}]}], "+", 
+  RowBox[{"p22", " ", 
+   RowBox[{"Conjugate", "[", "p22", "]"}]}], "-", 
+  RowBox[{"p23", " ", 
+   RowBox[{"Conjugate", "[", "p23", "]"}]}], "+", 
+  RowBox[{"p30", " ", 
+   RowBox[{"Conjugate", "[", "p30", "]"}]}], "-", 
+  RowBox[{"p31", " ", 
+   RowBox[{"Conjugate", "[", "p31", "]"}]}], "-", 
+  RowBox[{"p32", " ", 
+   RowBox[{"Conjugate", "[", "p32", "]"}]}], "+", 
+  RowBox[{"p33", " ", 
+   RowBox[{"Conjugate", "[", "p33", "]"}]}]}]], "Output",
+ CellChangeTimes->{
+  3.524549702431342*^9, 3.525068434794092*^9, 3.525080599407628*^9, {
+   3.525080773997529*^9, 3.525080785744213*^9}, 3.525082020750931*^9, 
+   3.5250829857554693`*^9, 3.525083273949348*^9, 3.5250834326558437`*^9}]
+}, Open  ]]
+},
+WindowSize->{798, 522},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+FrontEndVersion->"8.0 for Linux x86 (64-bit) (February 23, 2011)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[557, 20, 308, 10, 76, "Input"],
+Cell[868, 32, 356, 12, 76, "Input"],
+Cell[1227, 46, 308, 10, 76, "Input"],
+Cell[1538, 58, 308, 10, 76, "Input"],
+Cell[1849, 70, 308, 10, 76, "Input"],
+Cell[2160, 82, 261, 8, 76, "Input"],
+Cell[2424, 92, 248, 7, 30, "Input"],
+Cell[2675, 101, 763, 19, 30, "Input"],
+Cell[3441, 122, 155, 3, 30, "Input"],
+Cell[3599, 127, 154, 3, 30, "Input"],
+Cell[3756, 132, 204, 4, 30, "Input"],
+Cell[3963, 138, 208, 4, 30, "Input"],
+Cell[4174, 144, 161, 3, 30, "Input"],
+Cell[4338, 149, 156, 3, 30, "Input"],
+Cell[4497, 154, 292, 8, 76, "Input"],
+Cell[CellGroupData[{
+Cell[4814, 166, 155, 3, 30, "Input"],
+Cell[4972, 171, 1490, 39, 88, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[6499, 215, 158, 3, 30, "Input"],
+Cell[6660, 220, 1397, 37, 88, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[8094, 262, 453, 7, 30, "Input"],
+Cell[8550, 271, 1449, 37, 88, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)

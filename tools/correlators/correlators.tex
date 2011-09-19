@@ -1,0 +1,95 @@
+\documentclass[a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{amsmath}
+
+\newcommand{\psibar}{\ensuremath{\overline\psi}}
+\newcommand{\vev}[1]{\ensuremath{\left<#1\right>}}
+\newcommand{\ii}{\ensuremath{\text{i}}}
+
+\begin{document}
+\author{Lars Zeidlewicz}
+\date{Sep-19-2011}
+\title{Flavour Multiplet Correlators from Point Sources}
+\maketitle
+
+\section{Conventions}
+
+We consider correlators of type
+\begin{equation}
+C_\Gamma = \vev{\psibar_x \Gamma \tau^+ \psi_x \psibar_0 \Gamma \tau^- \psi_0}
+\end{equation}
+where $\Gamma$ is some combination of Dirac matrices that determines the quantum numbers (along with $\tau^\pm$ which causes the correlator to be a iso-doublet, i.\,e.\ to describe a charged meson state). The evaluated correlator reads
+\begin{equation}
+C_\Gamma = - \text{Tr} \left( S_u^\dagger(0,x) \gamma_5 \Gamma S_u(0,x) \Gamma \gamma_5 \right)\;.
+\end{equation}
+Note the position of the source $x_0 = 0$ can be changed arbitrarily.
+
+We consider the following naming scheme:
+
+\begin{tabular}{|lll|}
+\hline
+operator                           & name                      & PDG label\\
+\hline\hline
+$\Gamma = 1$                       & scalar meson (SC)         & $a_0^\pm$ \\
+$\Gamma = \gamma_5$                & pseudo scalar meson (PS)  & $\pi^\pm$ \\
+$\Gamma = \gamma_j\gamma_5$        & vector meson (V)          & $\rho^\pm$ \\
+$\Gamma = \gamma_j\gamma_4\gamma_5$& axial vector meson (A)    & $b^\pm$\\
+\hline
+\end{tabular}
+
+For the vector type mesons the index $j$ can run over all three spatial directions so that there are in fact three correlators each. 
+
+Note that we are a bit sloppy about prefactors and signs: Actually the operators should be dressed by appropriate factors of $\ii$ and $1/2$. The imaginary prefactors contribute to the overall sign of the correlator which is -- however -- fixed to be positive. The factors of $1/2$ mean that our correlators differ from frequent conventions (see e.\,g.\ ETMC) by an overall factor of 4.
+
+In the same manner, we neglect a sign from adjoining the vector operator. All those signs can be fixed afterwards.
+
+
+\section{Solving the Dirac Equation}
+Numerically, we find the solution $\phi$ to the Dirac equation,
+\begin{equation}
+M_{ij}(x,y) \phi_j(y) = \eta_i(x|z,k)\;.
+\end{equation}
+The vector and matrix indices ($i,j,k$) run over colour-spin space, i.\,e.\ $i=1,\ldots,12$. We consider point sources, i.\,e.\
+\begin{equation}
+\eta_i(x|z,k) = \delta_{i,k} \delta_{x,z}
+\end{equation}
+and assume $z=0$ for the following (generalisation is straight forward\ldots).  With $S=M^{-1}$ we thus have
+\begin{equation}
+\phi_l^{(k)}(x) = S_{lk}(x,0)\;.
+\end{equation}
+The superscript of $phi$ refers to the source, $j=1,\ldots,12$.
+
+For the correlator we can now write
+\begin{equation}
+C_\Gamma(x,0) = - \left(\phi_j^{(i)}\right)^* \left(\gamma_5\Gamma)\right)_{jk} \phi_k^{(l)}(x) \left(\Gamma\gamma_5\right)_{li}\;.
+\end{equation}
+The commonly calculated correlators $C_\Gamma(z)$ are connected to the above formula via the relation
+\begin{equation}
+C_\Gamma(z) = \sum_{x,y,t} C_\Gamma( (x,y,z,t), 0 )
+\end{equation}
+and $C_\Gamma(t)$ correspondingly.
+
+Hence, the pseudo-scalar with $\Gamma\gamma_5=1$ can be calculated as
+\begin{equation}
+C_{PS}  \sim \sum_i \left| \phi^{(i)} \right|^2\;.
+\end{equation}
+For the other correlators an explicit evaluation of the Dirac structure is necessary. 
+
+
+\section{Mathematica File}
+The Mathematica file \verb+correlators.nb+ allows to extract the necessary structure, see comments there. The solutions $\phi$ are encoded as a matrix: $\phi^{(i)}_j = \phi_{ij}$. If you use the correlator function, remember that the matrix input needed corresponds to $\Gamma\gamma_5$; e.\,g.\ the pseudo-scalar structure is obtained via
+\begin{verbatim}
+correlator[unit,phi]
+\end{verbatim} 
+Unfortunately, Mathematica is not intelligent enough (or my knowledge of that program is too limited) in order to simplify the output so that this needs to be done ``manually''. All correlators should be sums/differences of either the squarnorm or the real part of entries of $\phi$. Note that we have only encoded the Dirac-structure. Summation of colour space is still needed (but trivial since we always consider colour singlet correlators).
+
+
+\section{References}
+I neglect extensive references here. You can find them in my PhD thesis. A general collection of ETMC conventions is found in Comput.\ Phys.\ Commun.\ 179 (2008) 695-715 (arXiv:0803.0224).
+
+
+
+\end{document}
