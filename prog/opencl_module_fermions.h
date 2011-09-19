@@ -196,7 +196,6 @@ private:
 	cl_kernel dslash_eoprec;
 	//CP: variables for normal solver
 	cl_mem clmem_inout;
-	cl_mem clmem_source;
 	cl_mem clmem_rn;
 	cl_mem clmem_rhat;
 	cl_mem clmem_v;
@@ -209,6 +208,7 @@ private:
 
 	//CP: variables for eoprec solver
 	cl_mem clmem_inout_eoprec;
+	cl_mem clmem_source;
 	cl_mem clmem_source_even;
 	cl_mem clmem_source_odd;
 	cl_mem clmem_rn_eoprec;

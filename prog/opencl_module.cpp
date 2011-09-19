@@ -1047,7 +1047,8 @@ void Opencl_Module::print_copy_times(uint64_t totaltime)
 	return;
 }
 
-void Opencl_Module::smear_gaugefield(cl_mem gf){
+void Opencl_Module::smear_gaugefield(cl_mem gf)
+{
 	logger.debug() << "\t\tsave unsmeared gaugefield...";
 	size_t gfsize = get_parameters()->get_gf_buf_size();
 	gf_unsmeared = create_rw_buffer(gfsize);
@@ -1057,7 +1058,8 @@ void Opencl_Module::smear_gaugefield(cl_mem gf){
 	return;
 }
 
-void Opencl_Module::unsmear_gaugefield(cl_mem gf){
+void Opencl_Module::unsmear_gaugefield(cl_mem gf)
+{
 	logger.debug() << "\t\trestore unsmeared gaugefield...";
 	size_t gfsize = get_parameters()->get_gf_buf_size();
 	copy_buffer_on_device(gf_unsmeared, gf, gfsize);

@@ -97,8 +97,8 @@ void Opencl_Module_Fermions::fill_buffers()
 
 	logger.debug() << "init general spinorfield-buffers";
 	clmem_inout = create_rw_buffer(spinorfield_size);
-	clmem_source = create_rw_buffer(spinorfield_size);
 	clmem_tmp = create_rw_buffer(spinorfield_size);
+	clmem_source = create_rw_buffer(spinorfield_size);
 
 	logger.debug() << "init solver spinorfield-buffers";
 	///@todo some buffers can be saved here if only cg is used
@@ -234,10 +234,8 @@ void Opencl_Module_Fermions::clear_buffers()
 	}
 
 	clerr = clReleaseMemObject(clmem_inout);
-
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_source);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
@@ -927,7 +925,7 @@ void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem
 		logger.debug() << "trial solution";
 		///@todo this should go into a more general function
 		this->set_eoprec_spinorfield_cold_device(this->get_clmem_inout_eoprec());
-logger.debug() << "solver";
+		logger.debug() << "solver";
 		//even solution
 		if(get_parameters()->get_use_cg() == true)
 			converged = cg_eoprec(f, clmem_inout_eoprec, clmem_source_even, gf);

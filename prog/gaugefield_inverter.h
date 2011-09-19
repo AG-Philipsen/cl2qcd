@@ -46,7 +46,7 @@ extern string const version;
  * @class Gaugefield_inverter
  */
 class Gaugefield_inverter : public Gaugefield_hybrid {
- public:
+public:
 
 	/**
 	 * Initialize class.
@@ -94,11 +94,18 @@ class Gaugefield_inverter : public Gaugefield_hybrid {
 	Opencl_Module_Correlator* get_task_correlator();
 
 	void sync_solution_buffer();
-	
+
 	void create_sources();
+
+	cl_mem get_clmem_corr();
+	cl_mem get_clmem_source();
+
 protected:
 
 private:
+
+	cl_mem clmem_corr;
+	cl_mem clmem_source;
 
 	spinorfield* solution_buffer;
 	spinorfield* source_buffer;
