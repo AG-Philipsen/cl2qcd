@@ -2,6 +2,7 @@
 
 void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield, const inputparameters * const parameters)
 {
+	const size_t NSPACE = parameters->get_ns();
 	for(int spacepos = 0; spacepos < NSPACE * NSPACE * NSPACE; spacepos++) {
 		for(int t = 0; t < NTIME; t++) {
 			for(int mu = 0; mu < NDIM; mu++) {
@@ -15,6 +16,7 @@ void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield
 
 void copy_from_ocl_format(Matrixsu3* gaugefield, ocl_s_gaugefield* host_gaugefield, const inputparameters * const parameters)
 {
+	const size_t NSPACE = parameters->get_ns();
 	for(int spacepos = 0; spacepos < NSPACE * NSPACE * NSPACE; spacepos++) {
 		for(int t = 0; t < NTIME; t++) {
 			for(int mu = 0; mu < NDIM; mu++) {
@@ -64,6 +66,7 @@ void copy_gaugefield_from_ildg_format(hmc_complex * gaugefield, hmc_float * gaug
 	}
 
 	const size_t VOLSPACE = parameters->get_volspace();
+	const size_t NSPACE = parameters->get_ns();
 
 	int cter = 0;
 	//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
@@ -124,6 +127,8 @@ void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_complex * source, cons
 {
 
 	int cter = 0;
+	const size_t NSPACE = parameters->get_ns();
+
 	//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
 	for (int t = 0; t < NTIME; t++) {
 		//if the alg is known to be correct, the next three for-loops could also be changed to one

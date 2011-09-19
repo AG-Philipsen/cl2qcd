@@ -1128,7 +1128,6 @@ void inputparameters::check_settings_global() const
 #endif
 
 		//Lattice Size
-		if( this->get_ns() != NSPACE)  throw Invalid_Parameters("Spatial lattice size.", NSPACE, this->get_ns());
 		if( this->get_nt() != NTIME)  throw Invalid_Parameters("Timelike lattice size.", NTIME, this->get_nt());
 
 

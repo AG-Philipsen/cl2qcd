@@ -605,6 +605,8 @@ void Gaugefield_hybrid::save(string outputfile)
 
 	int number = 0;
 
+	const size_t NSPACE = parameters->get_ns();
+
 	write_gaugefield ( gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NTIME, get_parameters()->get_prec(), number, plaq, get_parameters()->get_beta(), get_parameters()->get_kappa(), get_parameters()->get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
 
 	delete[] gaugefield_buf;
@@ -709,6 +711,7 @@ hmc_complex Gaugefield_hybrid::polyakov()
 
 hmc_complex Gaugefield_hybrid::spatial_polyakov(int dir)
 {
+	const size_t NSPACE = parameters->get_ns();
 
 	hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
 	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
