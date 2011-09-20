@@ -352,21 +352,12 @@ Matrix3x3 matrix_su3to3x3 (const Matrixsu3 p)
 	out.e12.re = p.e12.re;
 	out.e12.im = p.e12.im;
 
-#ifdef _RECONSTRUCT_TWELVE_
-	out.e20.re = reconstruct_su3(p, 0).re;
-	out.e20.im = reconstruct_su3(p, 0).im;
-	out.e21.re = reconstruct_su3(p, 1).re;
-	out.e21.im = reconstruct_su3(p, 1).im;
-	out.e22.re = reconstruct_su3(p, 2).re;
-	out.e22.im = reconstruct_su3(p, 2).im;
-#else
 	out.e20.re = p.e20.re;
 	out.e20.im = p.e20.im;
 	out.e21.re = p.e21.re;
 	out.e21.im = p.e21.im;
 	out.e22.re = p.e22.re;
 	out.e22.im = p.e22.im;
-#endif
 
 	return out;
 }
@@ -411,10 +402,8 @@ Matrixsu3 project_anti_herm(Matrix3x3 in)
 	tmp.e11.re = 0.0 ;
 	tmp.e11.im = -in.e11.im + tr_omega ;
 
-#ifndef _RECONSTRUCT_TWELVE_
 	tmp.e22.re = 0.0 ;
 	tmp.e22.im = -in.e22.im + tr_omega ;
-#endif
 
 	// is this all right? check with original again!!
 	tmp.e01.re = in.e01.re - in.e10.re ;
@@ -428,18 +417,14 @@ Matrixsu3 project_anti_herm(Matrix3x3 in)
 	tmp.e02.re /= -2.0 ;
 	tmp.e02.im = in.e02.im + in.e20.im ;
 	tmp.e02.im /= -2.0 ;
-#ifndef _RECONSTRUCT_TWELVE_
 	tmp.e20.re  = -tmp.e02.re ;
 	tmp.e20.im  =  tmp.e02.im ;
-#endif
 	tmp.e12.re = in.e12.re - in.e21.re ;
 	tmp.e12.re /= -2.0 ;
 	tmp.e12.im = in.e12.im + in.e21.im ;
 	tmp.e12.im /= -2.0 ;
-#ifndef _RECONSTRUCT_TWELVE_
 	tmp.e21.re  = -tmp.e12.re ;
 	tmp.e21.im  =  tmp.e12.im ;
-#endif
 	// flip sign, this is just taken from the tmlqcd analogue
 	tmp = multiply_matrixsu3_by_real(tmp, -1.0) ;
 

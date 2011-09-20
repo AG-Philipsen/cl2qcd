@@ -30,14 +30,6 @@ Matrixsu3 project_su3(const Matrixsu3 U)
 	hmc_complex a[NC];
 	hmc_complex b[NC];
 
-#ifdef _RECONSTRUCT_TWELVE_
-	a[0] = U.e00;
-	a[1] = U.e01;
-	a[2] = U.e02;
-	b[0] = U.e10;
-	b[1] = U.e11;
-	b[2] = U.e12;
-#else
 	hmc_complex c[NC];
 	a[0] = U.e00;
 	a[1] = U.e01;
@@ -48,7 +40,6 @@ Matrixsu3 project_su3(const Matrixsu3 U)
 	c[0] = U.e20;
 	c[1] = U.e21;
 	c[2] = U.e22;
-#endif
 
 	//New SU3-Matrix
 	//first vector
@@ -98,7 +89,6 @@ Matrixsu3 project_su3(const Matrixsu3 U)
 		b[i].im *= norm;
 	}
 
-#ifndef _RECONSTRUCT_TWELVE_
 	//third vector
 	//orthogonal vector
 	hmc_complex tmp;
@@ -122,7 +112,6 @@ Matrixsu3 project_su3(const Matrixsu3 U)
 	out.e20 = c[0];
 	out.e21 = c[1];
 	out.e22 = c[2];
-#endif
 
 	//Set new values to matrix
 	out.e00 = a[0];
@@ -162,35 +151,6 @@ Matrixsu3 extend (const int random, Matrixsu2 src)
 {
 	Matrixsu3 out;
 
-#ifdef _RECONSTRUCT_TWELVE_
-	switch(random) {
-		case 1:
-			out.e00 = src.e00;
-			out.e01 = src.e01;
-			out.e02 = hmc_complex_zero;
-			out.e10 = src.e10;
-			out.e11 = src.e11;
-			out.e12 = hmc_complex_zero;
-			return out;
-		case 2:
-			out.e00 = hmc_complex_one;
-			out.e01 = hmc_complex_zero;
-			out.e02 = hmc_complex_zero;
-			out.e10 = hmc_complex_zero;
-			out.e11 = src.e00;
-			out.e12 = src.e01;
-			return out;
-		case 3:
-			out.e00 = src.e00;
-			out.e01 = hmc_complex_zero;
-			out.e02 = src.e01;
-			out.e10 = hmc_complex_zero;
-			out.e11 = hmc_complex_one;
-			out.e12 = hmc_complex_zero;
-			return out;
-	}
-#else
-
 	switch(random) {
 		case 1:
 			out.e00 = src.e00;
@@ -226,8 +186,6 @@ Matrixsu3 extend (const int random, Matrixsu2 src)
 			out.e22 = src.e11;
 			return out;
 	}
-#endif
-	return;
 }
 
 // void gaugefield_apply_bc(__private hmc_ocl_su3matrix * in, hmc_float theta)

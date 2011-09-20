@@ -135,16 +135,6 @@ typedef struct {
 	hmc_complex e22;
 } Matrix3x3;
 
-#ifdef _RECONSTRUCT_TWELVE_
-typedef struct {
-	hmc_complex e00;
-	hmc_complex e01;
-	hmc_complex e02;
-	hmc_complex e10;
-	hmc_complex e11;
-	hmc_complex e12;
-} Matrixsu3;
-#else
 typedef struct {
 	hmc_complex e00;
 	hmc_complex e01;
@@ -156,8 +146,6 @@ typedef struct {
 	hmc_complex e21;
 	hmc_complex e22;
 } Matrixsu3;
-
-#endif //ifdef _REC12_
 
 #endif  //ifdef _INKERNEL_
 
