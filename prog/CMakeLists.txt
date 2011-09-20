@@ -58,10 +58,6 @@ option( USE_DOUBLE_PRECISION "Use double precision arithmetics" ON )
 if( USE_DOUBLE_PRECISION )
 	add_definitions( -D_USEDOUBLEPREC_ )
 endif( USE_DOUBLE_PRECISION )
-option( USE_RECONSTRUCT_TWELVE "Use compactified storage format (reconstruct twelve)" OFF )
-if( USE_RECONSTRUCT_TWELVE )
-	add_definitions( -D_RECONSTRUCT_TWELVE_ )
-endif( USE_RECONSTRUCT_TWELVE )
 
 # default random number seed
 configure_file( rand_seeds rand_seeds COPYONLY )
