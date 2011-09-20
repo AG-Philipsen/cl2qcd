@@ -108,8 +108,7 @@ struct Matrixsu3 {
 
 typedef hmc_complex hmc_staplematrix [NC*NC];
 typedef hmc_complex hmc_3x3matrix[3][3];
-//typedef hmc_float hmc_gauge_momentum;
-#else
+#else //_RECONSTRUCT_TWELVE_
 /** A generic SU3 matrix */
 typedef hmc_complex hmc_su3matrix [NC][NC];
 /** A matrix representing a staple */
@@ -127,36 +126,13 @@ struct Matrixsu3 {
 	hmc_complex e20;
 	hmc_complex e21;
 	hmc_complex e22;
-} ;
-
-#endif
-
-/*
-typedef hmc_float hmc_gauge_momentum;
-typedef hmc_float hmc_algebraelement [NC*NC-1];
-*/
-typedef struct {
-	hmc_float e0;
-	hmc_float e1;
-	hmc_float e2;
-	hmc_float e3;
-	hmc_float e4;
-	hmc_float e5;
-	hmc_float e6;
-	hmc_float e7;
-} hmc_algebraelement2;
-
-
-//typedef hmc_complex hmc_su3vector[NC];
-
-//CP: this can be deleted if host_operations_spinor is not needed anywhere anymore...
-typedef hmc_complex hmc_su3vector[3];
+};
+#endif //_RECONSTRUCT_TWELVE_
 
 typedef Matrixsu3 ocl_s_gaugefield;
 
 #endif // ifndef _INKERNEL_
 
-typedef hmc_float hmc_ocl_spinor;
 typedef hmc_complex hmc_ocl_su3matrix;
 typedef hmc_complex hmc_ocl_3x3matrix;
 typedef hmc_complex hmc_ocl_staplematrix;
@@ -200,40 +176,13 @@ typedef struct {
 
 #endif //ifdef _REC12_
 
-
-
 #endif  //ifdef _INKERNEL_
 
 typedef Matrixsu3 ocl_s_gaugefield;
 
-//define a spinor field:  spinor_field[spin-color*coord3d*coord_time]
-typedef hmc_complex hmc_color_vector;
-typedef hmc_complex hmc_spinor;
-typedef hmc_complex hmc_spinor_field;
-typedef hmc_complex hmc_eoprec_spinor_field;
-
-#ifdef _USEDOUBLEPREC_
-hmc_float CONST projectioneps = 10.e-12;
-int CONST iter_refresh = 10;
-hmc_float CONST epssquare = 1e-14;
-//CP: this is not needed anymore
-//int CONST use_eo = 0;
-#else
-hmc_float CONST projectioneps = 10.e-6;
-int CONST iter_refresh = 10;
-hmc_float CONST epssquare = 1e-12;
-//CP: this is not needed anymore
-//int CONST use_eo = 0;
-#endif
-
-#ifndef _INKERNEL_
-
-#endif
-
 #ifndef _INKERNEL_
 /** Storage type for state of the random number generator */
 typedef cl_ulong4 hmc_ocl_ran;
-
 #endif /* _INKERNEL_ */
 
 //CP: this an algebraelement
