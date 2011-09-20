@@ -5,12 +5,9 @@
 ##	prints it to screen.
 ##		NOTE: The solver will not converge since cgmax 
 ##		is too small to speed up the test!
-##	On this lattice the output should be:
-##	ps correlator:
-##	0	(1.516786023505e+00)
-##	1	(1.048493398623e-01)
-##	2	(1.208025224859e-01)
-##	3	(1.222998100301e-01)
+##	Find the reference for the pseudo-scalar correlator
+##	in this directory (inverter_test_ref).
+##
 ##################################################################
 NS=4
 NT=4
