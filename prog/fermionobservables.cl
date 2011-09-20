@@ -30,7 +30,9 @@ __kernel void correlator_ps_z(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * correlator;
+		//now, this should finally be the correct normalisation for the physical fields
+		//one factor of sqrt(2*kappa) per field and we construct the correlator from a multiplication of two fields phi
+		out[id_tmp] = 2.* KAPPA * correlator;
 	}
 
 
@@ -71,7 +73,7 @@ __kernel void correlator_ps_t(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * correlator;
+		out[id_tmp] = 2.*KAPPA * correlator;
 	}
 
 
@@ -127,7 +129,7 @@ __kernel void correlator_sc_z(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * correlator;
+		out[id_tmp] = 2. * KAPPA * correlator;
 	}
 
 
@@ -183,7 +185,7 @@ __kernel void correlator_sc_t(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * correlator;
+		out[id_tmp] = 2.*KAPPA * correlator;
 	}
 
 
@@ -270,7 +272,7 @@ __kernel void correlator_vx_z(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * 2.*correlator.re;
+		out[id_tmp] = 2. * KAPPA * 2.*correlator.re;
 	}
 
 
@@ -358,7 +360,7 @@ __kernel void correlator_vx_t(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * 2. * correlator.re;
+		out[id_tmp] = 2. * KAPPA * 2. * correlator.re;
 	}
 
 
@@ -445,7 +447,7 @@ __kernel void correlator_vy_z(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * 2.*correlator.re;
+		out[id_tmp] = 2. * KAPPA * 2.*correlator.re;
 	}
 
 
@@ -533,7 +535,7 @@ __kernel void correlator_vy_t(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * 2. * correlator.re;
+		out[id_tmp] = 2. * KAPPA * 2. * correlator.re;
 	}
 
 
@@ -589,7 +591,7 @@ __kernel void correlator_vz_z(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * correlator;
+		out[id_tmp] = 2.*KAPPA * correlator;
 	}
 
 
@@ -645,7 +647,7 @@ __kernel void correlator_vz_t(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = 4.*KAPPA * KAPPA * correlator;
+		out[id_tmp] = 2. * KAPPA * correlator;
 	}
 
 
@@ -734,7 +736,7 @@ __kernel void correlator_ax_z(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = -4.*KAPPA * KAPPA * 2.*correlator.re;
+		out[id_tmp] = -2.*KAPPA * 2.*correlator.re;
 	}
 
 
@@ -822,7 +824,7 @@ __kernel void correlator_ax_t(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = -4.*KAPPA * KAPPA * 2. * correlator.re;
+		out[id_tmp] = -2.*KAPPA * 2. * correlator.re;
 	}
 
 
@@ -909,7 +911,7 @@ __kernel void correlator_ay_z(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = -4.*KAPPA * KAPPA * 2.*correlator.re;
+		out[id_tmp] = -2.*KAPPA * 2.*correlator.re;
 	}
 
 
@@ -997,7 +999,7 @@ __kernel void correlator_ay_t(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = -4.*KAPPA * KAPPA * 2. * correlator.re;
+		out[id_tmp] = -2.*KAPPA * 2. * correlator.re;
 	}
 
 
@@ -1053,7 +1055,7 @@ __kernel void correlator_az_z(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = -4.*KAPPA * KAPPA * correlator;
+		out[id_tmp] = -2.*KAPPA * correlator;
 	}
 
 
@@ -1109,7 +1111,7 @@ __kernel void correlator_az_t(__global spinorfield* phi, __global hmc_float * ou
 				}
 			}
 		}
-		out[id_tmp] = -4.*KAPPA * KAPPA * correlator;
+		out[id_tmp] = -2.* KAPPA * correlator;
 	}
 
 
