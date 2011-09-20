@@ -81,22 +81,6 @@ void copy_gaugefield_from_ildg_format(hmc_complex * gaugefield, hmc_float * gaug
 						int spacepos = k + j * NSPACE + i * NSPACE * NSPACE;
 						int globalpos = l + spacepos * NDIM + t * VOLSPACE * NDIM;
 						hmc_su3matrix tmp;
-#ifdef _RECONSTRUCT_TWELVE_
-						for (int m = 0; m < NC; m++) {
-							for (int n = 0; n < NC; n++) {
-								int ncindex = m + (NC - 1) * n;
-								//ildg-std: [NT][NZ][NY][NX][NDIMENSION][NCOLOR][NCOLOR][2]
-								//which is stored in one single array here
-								//skip NC*NC*2 cmplx numbers
-								int pos = 2 * n + 2 * m * NC + globalpos * NC * NC * 2;
-								if(m < NC - 1) {
-									tmp[ncindex].re = gaugefield_tmp[pos];
-									tmp[ncindex].im = gaugefield_tmp[pos + 1];
-								}
-								cter++;
-							}
-						}
-#else
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
 								//ildg-std: [NT][NZ][NY][NX][NDIMENSION][NCOLOR][NCOLOR][2]
@@ -108,7 +92,6 @@ void copy_gaugefield_from_ildg_format(hmc_complex * gaugefield, hmc_float * gaug
 								cter++;
 							}
 						}
-#endif
 						put_su3matrix(gaugefield, &tmp, spacepos, t, (l + 1) % NDIM, parameters);
 					}
 				}
@@ -142,31 +125,6 @@ void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_complex * source, cons
 						int globalpos = l + spacepos * NDIM + t * parameters->get_volspace() * NDIM;
 						hmc_su3matrix tmp;
 						get_su3matrix(&tmp, source, spacepos, t, (l + 1) % NDIM, parameters);
-#ifdef _RECONSTRUCT_TWELVE_
-						for (int m = 0; m < NC; m++) {
-							for (int n = 0; n < NC; n++) {
-								int ncindex = m + (NC - 1) * n;
-								//ildg-std: [NT][NZ][NY][NX][NDIMENSION][NCOLOR][NCOLOR][2]
-								//which is stored in one single array here
-								//skip NC*NC*2 cmplx numbers
-
-								int pos = 2 * n + 2 * m * NC + globalpos * NC * NC * 2;
-								if(m < NC - 1) {
-
-
-									dest[pos]     = tmp[ncindex].re;
-									dest[pos + 1] = tmp[ncindex].im;
-								}
-								if (m == NC - 1) {
-									hmc_complex tmpc = reconstruct_su3 (&tmp, n);
-									dest[pos]     = tmpc.re;
-									dest[pos + 1] = tmpc.im;
-								}
-
-								cter++;
-							}
-						}
-#else
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
 								//ildg-std: [NT][NZ][NY][NX][NDIMENSION][NCOLOR][NCOLOR][2]
@@ -178,7 +136,6 @@ void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_complex * source, cons
 								cter++;
 							}
 						}
-#endif
 					}
 				}
 			}
@@ -209,30 +166,22 @@ hmc_complex global_trace_su3(hmc_complex * field, int mu, const inputparameters 
 
 void get_su3matrix(hmc_su3matrix * out, hmc_complex * in, int spacepos, int timepos, int mu, const inputparameters * const parameters)
 {
-#ifdef _RECONSTRUCT_TWELVE_
-	for(int n = 0; n < NC*(NC - 1); n++) (*out)[n] = in[get_hmc_gaugefield_index(n, spacepos, timepos, mu, parameters)];
-#else
 	for(int a = 0; a < NC; a++) {
 		for(int b = 0; b < NC; b++) {
 			(*out)[a][b] = in[get_hmc_gaugefield_index(a, b, spacepos, timepos, mu, parameters)];
 		}
 	}
-#endif
 	return;
 }
 
 void put_su3matrix(hmc_complex * field, hmc_su3matrix * in, int spacepos, int timepos, int mu, const inputparameters * const parameters)
 {
-#ifdef _RECONSTRUCT_TWELVE_
-	for(int n = 0; n < NC*(NC - 1); n++) field[get_hmc_gaugefield_index(n, spacepos, timepos, mu, parameters)] = (*in)[n];
-#else
 	for(int a = 0; a < NC; a++) {
 		for(int b = 0; b < NC; b++) {
 			size_t index = get_hmc_gaugefield_index(a, b, spacepos, timepos, mu, parameters);
 			field[index] = (*in)[a][b];
 		}
 	}
-#endif
 	return;
 }
 
@@ -423,16 +372,6 @@ void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, i
 	accumulate_su3matrix_3x3_add(out, &plaq4);
 }
 
-#ifdef _RECONSTRUCT_TWELVE_
-size_t get_hmc_gaugefield_index(size_t ncolor, size_t spacepos, size_t timepos, size_t mu, const inputparameters * const parameters)
-{
-	const size_t VOLSPACE = parameters->get_volspace();
-	const size_t NTIME = parameters->get_nt();
-	size_t result = (mu * VOLSPACE + spacepos ) * NTIME + timepos;
-	result += ncolor * NDIM * VOLSPACE * NTIME;
-	return result;
-}
-#else
 size_t get_hmc_gaugefield_index(size_t m, size_t n, size_t spacepos, size_t timepos, size_t mu, const inputparameters * const parameters)
 {
 	const size_t VOLSPACE = parameters->get_volspace();
@@ -441,4 +380,3 @@ size_t get_hmc_gaugefield_index(size_t m, size_t n, size_t spacepos, size_t time
 	result += (m * NC + n) * NDIM * VOLSPACE * NTIME;
 	return result;
 }
-#endif

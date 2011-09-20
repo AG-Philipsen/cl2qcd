@@ -98,16 +98,6 @@ void multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matrix *q
  * @param[in] q Right matrix for the multiplication
  */
 void multiply_staplematrix(hmc_staplematrix *out, hmc_su3matrix *p, hmc_staplematrix *q);
-#ifdef _RECONSTRUCT_TWELVE_
-/**
- * Reconstruct the third row of a compressed SU3 matrix
- *
- * @param in The compressed SU3 matrix
- * @param ncomp The component of the row to reconstruct
- * @return The value of the chosen component
- */
-hmc_complex reconstruct_su3(hmc_su3matrix *in, int ncomp);
-#endif
 
 /**
  * Accumulate SU3 matrices into a staple-matrix.

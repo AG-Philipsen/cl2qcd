@@ -93,22 +93,6 @@ hmc_complex const hmc_complex_i = {0., 1.};
 //also CPU
 #ifndef _INKERNEL_
 
-//define a gauge field: gauge[su3][mu][coord3d][coord_time]
-#ifdef _RECONSTRUCT_TWELVE_
-typedef hmc_complex hmc_su3matrix [NC*(NC-1)];
-
-struct Matrixsu3 {
-	hmc_complex e00;
-	hmc_complex e01;
-	hmc_complex e02;
-	hmc_complex e10;
-	hmc_complex e11;
-	hmc_complex e12;
-};
-
-typedef hmc_complex hmc_staplematrix [NC*NC];
-typedef hmc_complex hmc_3x3matrix[3][3];
-#else //_RECONSTRUCT_TWELVE_
 /** A generic SU3 matrix */
 typedef hmc_complex hmc_su3matrix [NC][NC];
 /** A matrix representing a staple */
@@ -127,7 +111,6 @@ struct Matrixsu3 {
 	hmc_complex e21;
 	hmc_complex e22;
 };
-#endif //_RECONSTRUCT_TWELVE_
 
 typedef Matrixsu3 ocl_s_gaugefield;
 

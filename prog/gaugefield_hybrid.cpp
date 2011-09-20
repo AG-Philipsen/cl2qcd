@@ -522,14 +522,6 @@ void Gaugefield_hybrid::copy_gaugefield_to_s_gaugefield (Matrixsu3 * sgfo, hmc_c
 				hmc_su3matrix srcElem;
 				get_su3matrix(&srcElem, gf, n, t, d, parameters);
 				Matrixsu3 destElem;
-#ifdef _RECONSTRUCT_TWELVE_
-				destElem.e00 = srcElem[0];
-				destElem.e01 = srcElem[2];
-				destElem.e02 = srcElem[4];
-				destElem.e10 = srcElem[1];
-				destElem.e11 = srcElem[3];
-				destElem.e12 = srcElem[5];
-#else
 				destElem.e00 = srcElem[0][0];
 				destElem.e01 = srcElem[0][1];
 				destElem.e02 = srcElem[0][2];
@@ -539,7 +531,6 @@ void Gaugefield_hybrid::copy_gaugefield_to_s_gaugefield (Matrixsu3 * sgfo, hmc_c
 				destElem.e20 = srcElem[2][0];
 				destElem.e21 = srcElem[2][1];
 				destElem.e22 = srcElem[2][2];
-#endif
 				set_to_gaugefield(sgfo, d, n, t, destElem);
 			}
 		}
@@ -555,14 +546,6 @@ void Gaugefield_hybrid::copy_s_gaugefield_to_gaugefield(hmc_complex * gf, Matrix
 			for (size_t t = 0; t < NTIME; t++) {
 				hmc_su3matrix destElem;
 				Matrixsu3 srcElem = get_from_gaugefield(sgfo, d, n, t);
-#ifdef _RECONSTRUCT_TWELVE_
-				destElem[0] = srcElem.e00;
-				destElem[2] = srcElem.e01;
-				destElem[4] = srcElem.e02;
-				destElem[1] = srcElem.e10;
-				destElem[3] = srcElem.e11;
-				destElem[5] = srcElem.e12;
-#else
 				destElem[0][0] = srcElem.e00;
 				destElem[0][1] = srcElem.e01;
 				destElem[0][2] = srcElem.e02;
@@ -572,7 +555,6 @@ void Gaugefield_hybrid::copy_s_gaugefield_to_gaugefield(hmc_complex * gf, Matrix
 				destElem[2][0] = srcElem.e20;
 				destElem[2][1] = srcElem.e21;
 				destElem[2][2] = srcElem.e22;
-#endif
 				put_su3matrix(gf, &destElem, n, t, d, parameters);
 			}
 		}
@@ -834,11 +816,7 @@ void Gaugefield_hybrid::print_profiling(std::string filename)
 
 size_t Gaugefield_hybrid::get_num_hmc_gaugefield_elems()
 {
-#ifdef _RECONSTRUCT_TWELVE_
-	return NC * (NC - 1) * NDIM * parameters->get_volspace() * parameters->get_nt();
-#else
 	return NC * NC * NDIM * parameters->get_volspace() * parameters->get_nt();
-#endif
 }
 
 void Gaugefield_hybrid::set_to_gaugefield(Matrixsu3 * field, const size_t mu, const size_t x, const size_t t, const Matrixsu3 val)

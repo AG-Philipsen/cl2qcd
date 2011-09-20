@@ -1247,12 +1247,7 @@ void inputparameters::check_settings_global() const
 		if( this->get_prec() != 32) throw Invalid_Parameters("Numerical precision", "32", this->get_prec());
 #endif
 
-		//reconstruct12
-#ifdef _RECONSTRUCT_TWELVE_
-		if( this->get_use_rec12() == false) throw Invalid_Parameters("Reconstruct12.", "ON", "OFF");
-#else
 		if( this->get_use_rec12() == true) throw Invalid_Parameters("Reconstruct12.", "OFF", "ON");
-#endif
 
 	}//try
 	catch (Invalid_Parameters& e) {

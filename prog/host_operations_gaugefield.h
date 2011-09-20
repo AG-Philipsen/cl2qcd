@@ -66,11 +66,7 @@ LZ: Note that the following section provides functions that work on the old hmc_
  * @return The index to be applied on the gaugefield in [NC][NC][NDIM][VOLSPACE][NTIME]
  *         or [NC*(NC-1)][NDIM][VOLSPACE][NTIME] format, depending on whether REC12 is enabled.
  */
-#ifdef _RECONSTRUCT_TWELVE_
-size_t get_hmc_gaugefield_index(size_t ncolor, size_t spacepos, size_t timepos, size_t mu, const inputparameters * const parameters);
-#else
 size_t get_hmc_gaugefield_index(size_t m, size_t n, size_t spacepos, size_t timepos, size_t mu, const inputparameters * const parameters);
-#endif
 
 /**
  * Retrieve an SU3 matrix form the gaugefield

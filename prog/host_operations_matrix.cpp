@@ -100,24 +100,11 @@ void absoluteDifference_3x3_matrix(hmc_float *result, hmc_3x3matrix *mat1, hmc_3
 
 void accumulate_su3matrix_3x3_add(hmc_3x3matrix *out, hmc_su3matrix *q)
 {
-#ifdef _RECONSTRUCT_TWELVE_
-	for (int i = 0; i < NC - 1; i++) {
-		for (int k = 0; k < NC; k++) {
-			complexaccumulate(&(*out)[i][k], &(*q)[i+(NC-1)*k]);
-		}
-	}
-	for (int k = 0; k < NC; k++) {
-		hmc_complex tmp = reconstruct_su3(q, k);
-		complexaccumulate(&(*out)[2][k], &tmp);
-	}
-#else
-
 	for(int i = 0; i < NC; i++) {
 		for(int k = 0; k < NC; k++) {
 			complexaccumulate(&(*out)[i][k], &(*q)[i][k]);
 		}
 	}
-#endif
 	return;
 }
 
@@ -498,65 +485,23 @@ void multiply_generator_su3matrix (hmc_3x3matrix * out, int gen_index, hmc_su3ma
 {
 	// if needed, construct the full 3x3 matrix and then invoke the general_3x3 version of this
 	// SL: not yet tested!
-#ifdef _RECONSTRUCT_TWELVE_
-	hmc_3x3matrix complete_reconstructed;
-	complete_reconstructed[0][0] = *in[0];
-	complete_reconstructed[0][1] = *in[1];
-	complete_reconstructed[0][2] = *in[2];
-	complete_reconstructed[1][0] = *in[3];
-	complete_reconstructed[1][1] = *in[4];
-	complete_reconstructed[1][2] = *in[5];
-	complete_reconstructed[2][0] = reconstruct_su3(in, 0);
-	complete_reconstructed[2][1] = reconstruct_su3(in, 1);
-	complete_reconstructed[2][2] = reconstruct_su3(in, 2);
-#define _MULTIPLY_SU3MATRIX_GENERATOR_TARGET_ (&complete_reconstructed)
-#else
-#define _MULTIPLY_SU3MATRIX_GENERATOR_TARGET_ (in)
-#endif
-	return multiply_generator_3x3matrix(out, gen_index, _MULTIPLY_SU3MATRIX_GENERATOR_TARGET_);
+	return multiply_generator_3x3matrix(out, gen_index, in);
 }
 
 void multiply_su3matrix_generator (hmc_3x3matrix * out, hmc_su3matrix *in, int gen_index)
 {
 	// if needed, construct the full 3x3 matrix and then invoke the general_3x3 version of this
 	// SL: not yet tested!
-#ifdef _RECONSTRUCT_TWELVE_
-	hmc_3x3matrix complete_reconstructed;
-	complete_reconstructed[0][0] = *in[0];
-	complete_reconstructed[0][1] = *in[1];
-	complete_reconstructed[0][2] = *in[2];
-	complete_reconstructed[1][0] = *in[3];
-	complete_reconstructed[1][1] = *in[4];
-	complete_reconstructed[1][2] = *in[5];
-	complete_reconstructed[2][0] = reconstruct_su3(in, 0);
-	complete_reconstructed[2][1] = reconstruct_su3(in, 1);
-	complete_reconstructed[2][2] = reconstruct_su3(in, 2);
-#define _MULTIPLY_SU3MATRIX_GENERATOR_TARGET_ (&complete_reconstructed)
-#else
-#define _MULTIPLY_SU3MATRIX_GENERATOR_TARGET_ (in)
-#endif
-	return multiply_3x3matrix_generator(out, _MULTIPLY_SU3MATRIX_GENERATOR_TARGET_, gen_index);
+	return multiply_3x3matrix_generator(out, in, gen_index);
 }
 
 
 void su3matrix_to_3x3matrix (hmc_3x3matrix * out, hmc_su3matrix * in)
 {
-#ifdef _RECONSTRUCT_TWELVE_
-	for (int i = 0; i < NC - 1; i++) {
-		for (int k = 0; k < NC; k++) {
-			(*out)[i][k] = (*in)[i+(NC-1)*k];
-		}
-	}
-	for (int k = 0; k < NC; k++) {
-		hmc_complex tmp = reconstruct_su3(in, k);
-		(*out)[2][k] = tmp;
-	}
-#else
 	for (int i = 0; i < NC; i++) {
 		for (int j = 0; j < NC; j++) {
 			(*out)[i][j] = (*in)[i][j];
 		}
 	}
-#endif
 	return;
 }
