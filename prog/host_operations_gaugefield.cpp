@@ -210,7 +210,7 @@ hmc_complex global_trace_su3(hmc_complex * field, int mu, const inputparameters 
 void get_su3matrix(hmc_su3matrix * out, hmc_complex * in, int spacepos, int timepos, int mu, const inputparameters * const parameters)
 {
 #ifdef _RECONSTRUCT_TWELVE_
-	for(int n = 0; n < NC*(NC - 1); n++) (*out)[n] = in[get_hmc_gaugefield_index(n, spacepos, timepos, mu, paramters)];
+	for(int n = 0; n < NC*(NC - 1); n++) (*out)[n] = in[get_hmc_gaugefield_index(n, spacepos, timepos, mu, parameters)];
 #else
 	for(int a = 0; a < NC; a++) {
 		for(int b = 0; b < NC; b++) {
