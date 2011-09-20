@@ -801,7 +801,7 @@ bool Opencl_fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem sou
 	hmc_float trueresid;
 
 	for(int iter = 0; iter < cgmax; iter++) {
-		if(iter % iter_refresh == 0) {
+		if(iter % get_parameters()->get_iter_refresh() == 0) {
 			set_zero_spinorfield_device(clmem_v);
 			set_zero_spinorfield_device(clmem_p);
 			f(this, inout, clmem_rn, gf);
@@ -923,7 +923,7 @@ bool Opencl_fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem sou
 //    //reset value of alpha
 //    set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 //    //check if |s|^2 is too small
-//    if(s_norm.re < epssquare){
+//    if(s_norm.re < get_parameters()->get_solver_prec()){
 //      set_complex_to_product_device(clmem_minusone, clmem_alpha, clmem_alpha);
 //      saxpy_device(clmem_p, inout, clmem_alpha, inout, localsize, globalsize);
 //
@@ -931,7 +931,7 @@ bool Opencl_fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem sou
 //      saxpy_device(clmem_aux, source, clmem_one, clmem_aux, localsize, globalsize);
 //      set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, localsize, globalsize);
 //      get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << epssquare << endl;
+//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << get_parameters()->get_solver_prec() << endl;
 //
 //      cout << "|s|^2 is too small to continue..." << endl;
 //
@@ -994,14 +994,14 @@ bool Opencl_fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem sou
 
 //    cout << "resid at iter " << iter << " is: " << resid << endl;
 
-		if(resid < epssquare) {
+		if(resid < get_parameters()->get_solver_prec()) {
 			f(this, inout, clmem_aux, gf);
 			saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
 			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
 			get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
-//      cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << epssquare << endl;
-//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << epssquare << endl;
-			if(trueresid < epssquare)
+//      cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << get_parameters()->get_solver_prec() << endl;
+//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << get_parameters()->get_solver_prec() << endl;
+			if(trueresid < get_parameters()->get_solver_prec())
 				return true;
 			else {
 //        cout << "trueresiduum not small enough" <<endl;
@@ -1013,7 +1013,7 @@ bool Opencl_fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem sou
 //        //reset value of alpha
 //        set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 //        //check if |s|^2 is too small
-//        if(s_norm.re < epssquare){
+//        if(s_norm.re < get_parameters()->get_solver_prec()){
 //          cout << "|s|^2 is too small to continue..." << endl;
 // //           return;
 //        }
@@ -1033,7 +1033,7 @@ bool Opencl_fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_m
 
 	for(int iter = 0; iter < cgmax; iter++) {
 
-		if(iter % iter_refresh == 0) {
+		if(iter % get_parameters()->get_iter_refresh() == 0) {
 			set_zero_spinorfield_eoprec_device(clmem_v_eoprec);
 			set_zero_spinorfield_eoprec_device(clmem_p_eoprec);
 
@@ -1083,13 +1083,13 @@ bool Opencl_fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_m
 		set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
 		get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-		if(resid < epssquare) {
+		if(resid < get_parameters()->get_solver_prec()) {
 			f(this, inout, clmem_aux_eoprec, gf);
 			saxpy_eoprec_device(clmem_aux_eoprec, clmem_source_even, clmem_one, clmem_aux_eoprec);
 			set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid);
 			get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
 			//cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
-			if(trueresid < epssquare)
+			if(trueresid < get_parameters()->get_solver_prec())
 				return true;
 		} else {
 			//      cout << "residuum:\t" << resid << endl;
@@ -1106,7 +1106,7 @@ bool Opencl_fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl
 	hmc_float resid;
 	int iter;
 	for(iter = 0; iter < cgmax; iter ++) {
-		if(iter % iter_refresh == 0) {
+		if(iter % get_parameters()->get_iter_refresh() == 0) {
 			f(this, inout, clmem_rn, gf);
 			saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
 			copy_buffer_on_device(clmem_rn, clmem_p, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
@@ -1143,7 +1143,7 @@ bool Opencl_fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl
 		get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 		cout << "resid: " << resid << endl;
 
-		if(resid < epssquare) {
+		if(resid < get_parameters()->get_solver_prec()) {
 			//???
 			//copy_buffer_on_device(clmem_rhat, clmem_inout, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
 

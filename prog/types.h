@@ -212,28 +212,9 @@ typedef hmc_complex hmc_spinor;
 typedef hmc_complex hmc_spinor_field;
 typedef hmc_complex hmc_eoprec_spinor_field;
 
-#ifdef _USEDOUBLEPREC_
-hmc_float CONST projectioneps = 10.e-12;
-int CONST iter_refresh = 10;
-hmc_float CONST epssquare = 1e-14;
-//CP: this is not needed anymore
-//int CONST use_eo = 0;
-#else
-hmc_float CONST projectioneps = 10.e-6;
-int CONST iter_refresh = 10;
-hmc_float CONST epssquare = 1e-12;
-//CP: this is not needed anymore
-//int CONST use_eo = 0;
-#endif
-
-#ifndef _INKERNEL_
-
-#endif
-
 #ifndef _INKERNEL_
 /** Storage type for state of the random number generator */
 typedef cl_ulong4 hmc_ocl_ran;
-
 #endif /* _INKERNEL_ */
 
 //CP: this an algebraelement
