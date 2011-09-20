@@ -84,6 +84,8 @@ public:
 	int get_hmcsteps() const;
 	int get_integrationsteps1() const;
 	int get_integrationsteps2() const;
+	hmc_float get_solver_prec() const;
+	uint get_iter_refresh() const;
 	bool get_saveconfigs() const;
 	int get_savefrequency() const;
 	int get_writefrequency() const;
@@ -276,6 +278,8 @@ private:
 	hmc_float chem_pot_im;
 	hmc_float tau;
 	hmc_float rho;
+	hmc_float solver_prec;
+	uint iter_refresh;
 	int rho_iter;
 	long long host_seed;
 	int num_dev;

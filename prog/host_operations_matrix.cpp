@@ -535,33 +535,6 @@ void multiply_su3matrix_generator (hmc_3x3matrix * out, hmc_su3matrix *in, int g
 }
 
 
-void construct_3x3_combination(hmc_float beta_0, hmc_float gamma_0, hmc_float beta[], hmc_float gamma[], hmc_3x3matrix out){
-	// called by build_su3matrix_by_exponentiation in case of "smart" approach
-	// takes the 2*(8+1) real parameters beta_0, gamma_0, beta[8], gamma[8] and compiles
-	// all components of the generic 3x3 complex matrix that is the linear combination of identity+generators
-	hmc_float redb8 = beta[7] * F_1_2S3;
-	hmc_float redg8 = gamma[7]* F_1_2S3;
-	out[0][0].re = beta_0 + 0.5*beta[2] + redb8;
-	out[0][0].im = gamma_0 + 0.5*gamma[2] + redg8;
-	out[0][1].re = 0.5*(beta[0]+gamma[1]);
-	out[0][1].im = 0.5*(gamma[0]-beta[1]);
-	out[0][2].re = 0.5*(beta[3]+gamma[4]);
-	out[0][2].im = 0.5*(gamma[3]-beta[4]);
-	out[1][0].re = 0.5*(beta[0]-gamma[1]);
-	out[1][0].im = 0.5*(gamma[0]+beta[1]);
-	out[1][1].re = beta_0 - 0.5*beta[2] + redb8;
-	out[1][1].im = gamma_0 - 0.5*gamma[2] + redg8;
-	out[1][2].re = 0.5*(beta[5]+gamma[6]);
-	out[1][2].im = 0.5*(gamma[5]-beta[6]);
-	out[2][0].re = 0.5*(beta[3]-gamma[4]);
-	out[2][0].im = 0.5*(gamma[3]+beta[4]);
-	out[2][1].re = 0.5*(beta[5]-gamma[6]);
-	out[2][1].im = 0.5*(gamma[5]+beta[6]);
-	out[2][2].re = beta_0 + 2*redb8;
-	out[2][2].im = gamma_0 - 2*redg8;
-	return;
-}
-
 void su3matrix_to_3x3matrix (hmc_3x3matrix * out, hmc_su3matrix * in)
 {
   #ifdef _RECONSTRUCT_TWELVE_

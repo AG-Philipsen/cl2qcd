@@ -68,6 +68,12 @@ void inputparameters::set_defaults()
 	pointsource_y = 0;
 	pointsource_z = 0;
 	pointsource_t = 0;
+#ifdef _USEDOUBLEPREC_
+	solver_prec = 1e-23;
+#else
+	solver_prec = 1e-16;
+#endif
+	iter_refresh = 100;
 
 	//HMC specific parameters
 	tau = 0.5;
@@ -123,7 +129,15 @@ void inputparameters::readfile(char* ifn)
 
 			if(line.find("theta_fermion_spatial") != std::string::npos) val_assign(&theta_fermion_spatial, line);
 			if(line.find("theta_fermion_temporal") != std::string::npos) val_assign(&theta_fermion_temporal, line);
-
+			if(line.find("theta_spatial") != std::string::npos) val_assign(&theta_fermion_spatial, line);
+			if(line.find("theta_temporal") != std::string::npos) val_assign(&theta_fermion_temporal, line);
+			if(line.find("theta_s") != std::string::npos) val_assign(&theta_fermion_spatial, line);
+			if(line.find("theta_t") != std::string::npos) val_assign(&theta_fermion_temporal, line);
+			if(line.find("thetas") != std::string::npos) val_assign(&theta_fermion_spatial, line);
+			if(line.find("thetat") != std::string::npos) val_assign(&theta_fermion_temporal, line);
+			if(line.find("ThetaS") != std::string::npos) val_assign(&theta_fermion_spatial, line);
+			if(line.find("ThetaT") != std::string::npos) val_assign(&theta_fermion_temporal, line);
+			
 			if(line.find("cgmax") != std::string::npos) val_assign(&cgmax, line);
 			if(line.find("CGmax") != std::string::npos) val_assign(&cgmax, line);
 			if(line.find("Cgmax") != std::string::npos) val_assign(&cgmax, line);
@@ -197,7 +211,6 @@ void inputparameters::readfile(char* ifn)
 		    ( (cswset == true) && (fermact != CLOVER     ) ) ||
 		    ( (cswset == true) && (muset   == true       ) )  )
 			throw Invalid_Fermact(fermact, muset, cswset);
-
 
 		//check the read-in values against the compile time values
 		this->set_settings_global();
@@ -777,6 +790,16 @@ int inputparameters::get_corr_dir() const
 	return corr_dir;
 }
 
+hmc_float inputparameters::get_solver_prec() const
+{
+	return solver_prec;
+}
+
+uint inputparameters::get_iter_refresh() const
+{
+	return iter_refresh;
+}
+
 void inputparameters::print_info_global() const
 {
 	logger.info() << "## **********************************************************";
@@ -983,6 +1006,11 @@ void inputparameters::print_info_fermion() const
 	if(this->get_use_eo() == false)
 		logger.info() << "## Do NOT use even-odd preconditioning";
 	logger.info() << "## cgmax  = " << this->get_cgmax();
+	
+	//print extra warning if BC are set to default since this is a serious source of errors...
+	if ( this->get_theta_fermion_spatial() != 0. && this->get_theta_fermion_temporal() != 0.) {
+		logger.warn() << "\nNOTE: BCs have been set to periodic values by default!!\nTo change this use e.g. ThetaT/ThetaS in the input-file.\n";
+	}
 }
 
 void inputparameters::print_info_fermion(ostream * os) const
@@ -993,6 +1021,7 @@ void inputparameters::print_info_fermion(ostream * os) const
 	*os  << "## Boundary Conditions:" << endl;
 	*os  << "## theta_fermion_spatial  = " << this->get_theta_fermion_spatial() << endl;
 	*os  << "## theta_fermion_temporal = " << this->get_theta_fermion_temporal() << endl;
+	
 	*os  << "##" << endl;
 	*os  << "## Chemical Potential:" << endl;
 	if(this->get_use_chem_pot_re() == 1)
@@ -1033,6 +1062,11 @@ void inputparameters::print_info_fermion(ostream * os) const
 	if(this->get_use_eo() == false)
 		*os  << "## Do NOT use even-odd preconditioning" << endl;
 	*os << "## cgmax  = " << this->get_cgmax() << endl;
+	
+	//print extra warning if BC are set to default since this is a serious source of errors...
+	if ( this->get_theta_fermion_spatial() != 0. && this->get_theta_fermion_temporal() != 0.) {
+		logger.warn() << "\nNOTE: BCs have been set to periodic values by default!!\nTo change this use e.g. ThetaT/ThetaS in the input-file.\n";
+	}
 }
 
 
