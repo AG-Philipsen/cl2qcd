@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 			parameters.print_info_inverter(argv[0], &ofile);
 			ofile.close();
 		} else {
-			logger.warn() << "Could not log file for inverter.";
+			logger.warn() << "Could not open log file for inverter.";
 		}
 
 		//get name for file to which correlators are to be stored

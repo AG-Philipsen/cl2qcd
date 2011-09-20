@@ -220,7 +220,6 @@ private:
 	cl_mem clmem_aux_eoprec;
 	cl_mem clmem_tmp_eoprec_1;
 	cl_mem clmem_tmp_eoprec_2;
-	cl_mem clmem_tmp_eoprec_3;
 
 	cl_mem clmem_rho;
 	cl_mem clmem_rho_next;

@@ -116,30 +116,6 @@ hmc_complex reconstruct_su3(hmc_su3matrix *in, int ncomp);
  * @param[in] q The SU3 matrix to add to the accumulation
  */
 void accumulate_su3matrices_add(hmc_staplematrix *p, hmc_su3matrix *q);
-/**
- * Reduce an SU3 matrix to an SU2 (as in Cabbibo-Marinari)
- *
- * @param[out] dest SU(2)-Matrix to store to
- * @param[in] src The SU3 matrix to be reduced
- * @param[in] rand Which part of the SU(3)-Matrix to use
- * (this can be 1,2 or 3)
- */
-void reduction (hmc_complex dest[su2_entries], hmc_staplematrix src, const int rand);
-/**
- * Expand an SU(2)-Matrix to SU(3)
- *
- * @param[out] dest SU(3)-Matrix to store to
- * @param[in] rand This can be 1,2 or 3 and essentially gives the position of the 1 in the SU(3)-Matrix
- * @param[in] src The SU(2)-Matrix to extend
- */
-void extend (hmc_su3matrix * dest, const int random, hmc_complex src[su2_entries]);
-/**
- * Projects a 3x3-Matrix back to SU(3) using the Gram-Schmidt-Procedure.
- *
- * @param[in,out] U The SU3 matrix to project.
- */
-void project_su3(hmc_su3matrix *U);
-void project_su3_old(hmc_su3matrix *U);
 
 /**
  * Apply Boundary Conditions to a SU(3)-Matrix. 
@@ -168,18 +144,6 @@ void gaugefield_apply_bc(hmc_su3matrix * in, hmc_float theta);
  * @remark Two Matrices are updated simultaneously since /f$\mu/f$ is usually applied in the /f$\notD/f$-operation involving two links.
  */
 void gaugefield_apply_chem_pot(hmc_su3matrix * u, hmc_su3matrix * udagger, hmc_float chem_pot_re, hmc_float chem_pot_im);
-
-/**
- * Calculates the SU(3)-Matrix /f$\exp(i\epsilon Q)/f$, where Q is a su(3)-algebra element (practically 8 real numbers). 
- * This can be done either by calculating the exponential series to order 2,3 or all orders or by applying the algorithm
- * provided by Morningstar-Peardon.
- * @param[in] in input su(3)-algebra element (8 real numbers)
- * @param[out] out output SU(3)-Matrix
- * @param[in] epsilon input parameter
- * @todo needs testing
- * @todo implement Morningstar-Peardon
- * @todo in the end this should be moved elsewhere since it is not specific to he hmc-algorithm
- */
-void  build_su3matrix_by_exponentiation(hmc_algebraelement2 inn, hmc_su3matrix *out, hmc_float epsilon); 
+ 
 
 #endif

@@ -130,8 +130,9 @@ void Opencl_Module_Fermions::fill_buffers()
 		clmem_source_even = create_rw_buffer(eoprec_spinorfield_size);
 		clmem_source_odd = create_rw_buffer(eoprec_spinorfield_size);
 		clmem_tmp_eoprec_1 = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_tmp_eoprec_2 = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_tmp_eoprec_3 = create_rw_buffer(eoprec_spinorfield_size);
+		//this field is used only with twistedmass
+		if(get_parameters()->get_fermact() == TWISTEDMASS)
+			clmem_tmp_eoprec_2 = create_rw_buffer(eoprec_spinorfield_size);
 	}
 
 
@@ -263,10 +264,10 @@ void Opencl_Module_Fermions::clear_buffers()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_tmp_eoprec_1);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_tmp_eoprec_2);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_tmp_eoprec_3);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		if(get_parameters()->get_fermact() == TWISTEDMASS){
+			clerr = clReleaseMemObject(clmem_tmp_eoprec_2);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		}
 	}
 
 	clerr = clReleaseMemObject(clmem_rho);

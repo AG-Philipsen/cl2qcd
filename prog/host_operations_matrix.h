@@ -134,25 +134,5 @@ void multiply_generator_su3matrix (hmc_3x3matrix * out, int gen_index, hmc_su3ma
 */
 void multiply_su3matrix_generator (hmc_3x3matrix * out, hmc_su3matrix *in, int gen_index);
 
-/**
- * Called by build_su3matrix_by_exponentiation in case of "smart" approach.
- * Takes the 2*(8+1) real parameters beta_0, gamma_0, beta[8], gamma[8] and compiles all components
- * of the generic 3x3 complex matrix that is the linear combination of identity+generators:
- * /f[
- *     \exp(i\epsilon Q) = (\beta_0+i\gamma_0)\cdot 1 + \sum_\ell T_\ell (\beta_\ell + i \gamma_\ell)
- * /f]
- * the coefficients gamm and beta being calculated by the caller (as in Steo's notes) by contractions with 
- * the SU(3) symmetric structure constants with the 8 real parameters defining the algebra element
- * test it
- *
- * @param[in] beta_0 ... 
- * @param[in] gamma_0 ...
- * @param[in] beta ...
- * @param[in] gamma ...
- * @param[out] out output 3x3-Matrix
- * @todo needs testing
- */
-void construct_3x3_combination(hmc_float beta_0, hmc_float gamma_0, hmc_float beta[], hmc_float gamma[], hmc_3x3matrix out); 
-
 #endif
 
