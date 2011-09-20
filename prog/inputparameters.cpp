@@ -859,14 +859,14 @@ void inputparameters::print_info_global(ostream* os) const
 	*os  << "## Computational parameters:" << endl;
 	*os  << "## PREC:    " << this->get_prec() << endl;
 	if(this->get_use_rec12() == true) {
-		*os << "## REC12:   ON";
+		*os << "## REC12:   ON"  << endl;
 	} else {
-		*os << "## REC12:   OFF";
+		*os << "## REC12:   OFF"  << endl;
 	}
 	if(this->get_use_gpu() == true) {
-		*os << "## USE GPU: ON";
+		*os << "## USE GPU: ON"  << endl;
 	} else {
-		*os << "## USE GPU: OFF";
+		*os << "## USE GPU: OFF"  << endl;
 	}
 	*os  << "## Number of devices demanded for calculations: " << this->get_num_dev()  << endl;
 	*os  << "## **********************************************************" << endl;
@@ -1050,12 +1050,12 @@ void inputparameters::print_info_fermion(ostream * os) const
 	*os  << "##" << endl;
 	*os  << "## Inverter parameters:" << endl;
 	if(this->get_use_pointsource() == true) {
-		*os  << "## Use pointsource for inversion" ;
-		*os  << "## Position (x,y,z,t): " << pointsource_x << " " <<  pointsource_y << " " <<  pointsource_z << " " <<  pointsource_t;
+		*os  << "## Use pointsource for inversion"  << endl;
+		*os  << "## Position (x,y,z,t): " << pointsource_x << " " <<  pointsource_y << " " <<  pointsource_z << " " <<  pointsource_t  << endl;
 	}
 	if(this->get_use_pointsource() == false) {
-		*os  << "## Use stochastic sources for inversion" ;
-		*os  << "## Number of sources: " << this->get_num_sources();
+		*os  << "## Use stochastic sources for inversion"  << endl;
+		*os  << "## Number of sources: " << this->get_num_sources()  << endl;
 	}
 	if(this->get_use_eo() == true)
 		*os  << "## Use even-odd preconditioning" << endl;
