@@ -40,7 +40,7 @@ hmc_complex det_su3matrix(hmc_su3matrix * U);
  * @param[out] The SU3 matrix to copy to
  * @param[in] The SU3 matrix to copy from
  */
-void copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in); 
+void copy_su3matrix(hmc_su3matrix *out, hmc_su3matrix *in);
 /**
  * Copy the contents of an staple matrix to another one.
  *
@@ -68,7 +68,7 @@ void random_su3matrix(hmc_su3matrix * u);
  *
  * @param[out] mat The matrix to replace by a zero one
  */
-void zero_su3matrix(hmc_su3matrix * u); 
+void zero_su3matrix(hmc_su3matrix * u);
 /**
  * Replace the given matrix by a zero matrix.
  *
@@ -118,7 +118,7 @@ hmc_complex reconstruct_su3(hmc_su3matrix *in, int ncomp);
 void accumulate_su3matrices_add(hmc_staplematrix *p, hmc_su3matrix *q);
 
 /**
- * Apply Boundary Conditions to a SU(3)-Matrix. 
+ * Apply Boundary Conditions to a SU(3)-Matrix.
  * This corresponds to multiplying each component of the matrix by a (complex) factor of /f$\exp(i*\theta) /f$.
  * /f$\theta = 0/f$ are 'periodic' BC.
  * /f$\theta = \Pi/f$ are 'antiperiodic' BC.
@@ -127,12 +127,12 @@ void accumulate_su3matrices_add(hmc_staplematrix *p, hmc_su3matrix *q);
  * @param[in] theta angle /f$\theta/f$
  * @return void
  * @todo the calculation involves sin- and cos-evaluations. Perhaps one should optimize this for the two special cases mentioned above.
- * 
+ *
  */
 void gaugefield_apply_bc(hmc_su3matrix * in, hmc_float theta);
 
 /**
- * Apply (complex) chemical Potential /f$\mu/f$ simultaneously to two SU(3)-Matrices. 
+ * Apply (complex) chemical Potential /f$\mu/f$ simultaneously to two SU(3)-Matrices.
  * This corresponds to multiplying each component of the matrix by a (complex) factor of /f$\exp(\mu) /f$.
  *
  * @param[in,out] u SU(3)-Matrix to be changed
@@ -144,6 +144,6 @@ void gaugefield_apply_bc(hmc_su3matrix * in, hmc_float theta);
  * @remark Two Matrices are updated simultaneously since /f$\mu/f$ is usually applied in the /f$\notD/f$-operation involving two links.
  */
 void gaugefield_apply_chem_pot(hmc_su3matrix * u, hmc_su3matrix * udagger, hmc_float chem_pot_re, hmc_float chem_pot_im);
- 
+
 
 #endif
