@@ -40,9 +40,9 @@ $\Gamma = \gamma_j\gamma_4\gamma_5$& axial vector meson (A)    & $b^\pm$\\
 \hline
 \end{tabular}
 
-For the vector type mesons the index $j$ can run over all three spatial directions so that there are in fact three correlators each. 
+For the vector type mesons the index $j$ can run over all three spatial directions so that there are in fact three correlators each.\footnote{Note: In our output we give the average of those three correlators and each of them separately. This is different to tmLQCD combined with their contractions code where the sum instead of the average of these correlators is calculated.}
 
-Note that we are a bit sloppy about prefactors and signs: Actually the operators should be dressed by appropriate factors of $\ii$ and $1/2$. The imaginary prefactors contribute to the overall sign of the correlator which is -- however -- fixed to be positive. The factors of $1/2$ mean that our correlators differ from frequent conventions (see e.\,g.\ ETMC) by an overall factor of 4.
+Note that we are a bit sloppy about prefactors and signs: Actually the operators should be dressed by appropriate factors of $\ii$ and $1/2$. The imaginary prefactors contribute to the overall sign of the correlator which is -- however -- fixed to be positive. The factors of $1/2$ mean that our correlators should differ from frequent conventions (see e.\,g.\ ETMC) by an overall factor of 4.\footnote{We cannot find this factor. Maybe tmLQCD with their contractions code does not include it either?}
 
 In the same manner, we neglect a sign from adjoining the vector operator. All those signs can be fixed afterwards.
 
@@ -60,17 +60,19 @@ and assume $z=0$ for the following (generalisation is straight forward\ldots).  
 \begin{equation}
 \phi_l^{(k)}(x) = S_{lk}(x,0)\;.
 \end{equation}
-The superscript of $phi$ refers to the source, $j=1,\ldots,12$.
+The superscript of $\phi$ refers to the source, $j=1,\ldots,12$.
 
 For the correlator we can now write
 \begin{equation}
 C_\Gamma(x,0) = - \left(\phi_j^{(i)}\right)^* \left(\gamma_5\Gamma)\right)_{jk} \phi_k^{(l)}(x) \left(\Gamma\gamma_5\right)_{li}\;.
 \end{equation}
-The commonly calculated correlators $C_\Gamma(z)$ are connected to the above formula via the relation
-\begin{equation}
-C_\Gamma(z) = \sum_{x,y,t} C_\Gamma( (x,y,z,t), 0 )
-\end{equation}
-and $C_\Gamma(t)$ correspondingly.
+The commonly calculated correlators $C_\Gamma(z)$ and $C_\Gamma(t)$ are connected to the above formula via the relations\footnote{Note that compared to the contractions code for tmLQCD we average $C(z)$ by $N_\sigma^2N_\tau$ instead of $N_\sigma^3$.}
+\begin{subequations}
+\begin{align}
+C_\Gamma(z) & = \frac{1}{N_\sigma^2 N_\tau} \sum_{x,y,t} C_\Gamma( (x,y,z,t), 0 )\;,\\
+C_\Gamma(t) & = \frac{1}{N_\sigma^3} \sum_{x,y,z} C_\Gamma( (x,y,z,t), 0 )\;,\\
+\end{align}
+\end{subequations}
 
 Hence, the pseudo-scalar with $\Gamma\gamma_5=1$ can be calculated as
 \begin{equation}
