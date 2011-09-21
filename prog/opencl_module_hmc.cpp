@@ -313,78 +313,89 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 
 void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 {
-	//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
-	if(get_parameters()->get_use_cg() == true) {
+	if(get_parameters()->get_use_eo() == true){
+		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
+		if(get_parameters()->get_use_cg() == true) { 
 		//this is broken right now since the CG doesnt work!!
-		throw Print_Error_Message("\t\tcalc fermion force ingredients using cg is not implemented yet. Aborting..");
-	} else  {
-		logger.debug() << "\t\tcalc fermion force ingredients using bicgstab";
-		if(get_parameters()->get_use_eo() == true) logger.warn() << "A segfault happens here when calling the solver with eoprec on. It must be something with the fields since it works in the inverter!";
-
-		/**
-		* The first inversion calculates
-		* Y = phi = (Qplus)^-1 psi
-		* out of
-		* Qplus phi = psi
-		* This is also the energy of the final field!
-		*/
-		logger.debug() << "\t\t\tstart solver";
-
-		/** @todo at the moment, we can only put in a cold spinorfield
-		  * or a point-source spinorfield as trial-solution
-		  */
-		/**
-		  * Trial solution for the spinorfield
-		  */
-		set_spinorfield_cold_device(get_clmem_inout());
-
-		//debugging
-		hmc_float s_fermion;
-		set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
-		get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-		logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
-
-		Opencl_Module_Fermions::solver(Qplus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, solvertimer);
-
-		//debugging
-		set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
-		get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-		logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
-
-		//store this result in clmem_phi_inv
-		copy_buffer_on_device(get_clmem_inout(), clmem_phi_inv, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
-
-		/**
-		 * Now, one has to calculate
-		 * X = (Qminus)^-1 Y = (Qminus)^-1 (Qplus)^-1 psi = (QplusQminus)^-1 psi ??
-		 * out of
-		 * Qminus clmem_inout = clmem_phi_inv
-		 * Therefore, when calculating the final energy of the spinorfield,
-		 *  one can just take clmem_phi_inv (see also above)!!
-		 */
-
-		//copy former solution to clmem_source
-		copy_buffer_on_device(get_clmem_inout(), get_clmem_source(), sizeof(spinor) * get_parameters()->get_spinorfieldsize());
-		logger.debug() << "\t\t\tstart solver";
-
-		//debugging
-		set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
-		get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-		logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
-
-		//this sets clmem_inout cold as trial-solution
-		set_spinorfield_cold_device(get_clmem_inout());
-
-		Opencl_Module_Fermions::solver(Qminus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, solvertimer);
-
-		//debugging
-		set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
-		get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-		logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
+			throw Print_Error_Message("\t\tcalc fermion force ingredients using cg is not implemented yet. Aborting..");
+		} else  {
+			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab";
+		}
 	}
-	logger.debug() << "\t\tcalc fermion_force...";
-	//CP: this always calls fermion_force(Y,X) with Y = clmem_phi_inv, X = clmem_inout
-	fermion_force_device();
+	else{
+		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield 
+		if(get_parameters()->get_use_cg() == true) { 
+			//this is broken right now since the CG doesnt work!!
+			throw Print_Error_Message("\t\tcalc fermion force ingredients using cg is not implemented yet. Aborting..");
+		} else  {
+			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab";
+
+			/**
+			* The first inversion calculates
+			* Y = phi = (Qplus)^-1 psi
+			* out of
+			* Qplus phi = psi
+			* This is also the energy of the final field!
+			*/
+			logger.debug() << "\t\t\tstart solver";
+
+			/** @todo at the moment, we can only put in a cold spinorfield
+			  * or a point-source spinorfield as trial-solution
+			  */
+			/**
+			  * Trial solution for the spinorfield
+			  */
+			set_spinorfield_cold_device(get_clmem_inout());
+
+			//debugging
+			hmc_float s_fermion;
+			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
+			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
+			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
+
+			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
+			Opencl_Module_Fermions::solver(Qplus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, solvertimer);
+
+			//debugging
+			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
+			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
+			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
+
+			//store this result in clmem_phi_inv
+			copy_buffer_on_device(get_clmem_inout(), clmem_phi_inv, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
+
+			/**
+			 * Now, one has to calculate
+			 * X = (Qminus)^-1 Y = (Qminus)^-1 (Qplus)^-1 psi = (QplusQminus)^-1 psi ??
+			 * out of
+			 * Qminus clmem_inout = clmem_phi_inv
+			 * Therefore, when calculating the final energy of the spinorfield,
+			 *  one can just take clmem_phi_inv (see also above)!!
+			 */
+
+			//copy former solution to clmem_source
+			copy_buffer_on_device(get_clmem_inout(), get_clmem_source(), sizeof(spinor) * get_parameters()->get_spinorfieldsize());
+			logger.debug() << "\t\t\tstart solver";
+
+			//debugging
+			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
+			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
+			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
+
+			//this sets clmem_inout cold as trial-solution
+			set_spinorfield_cold_device(get_clmem_inout());
+
+			Opencl_Module_Fermions::solver(Qminus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, solvertimer);
+
+			//debugging
+			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
+			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
+			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
+		}
+		logger.debug() << "\t\tcalc fermion_force...";
+		//CP: this always calls fermion_force(Y,X) with Y = clmem_phi_inv, X = clmem_inout
+		fermion_force_device();
+	}
 }
 
 void Opencl_Module_Hmc::calc_gauge_force()

@@ -111,6 +111,8 @@ public:
 	void gamma5_device(cl_mem inout);
 	//    eoprec
 	//        compound
+	void Qplus_eoprec(cl_mem in, cl_mem out, cl_mem gf);
+	void Qminus_eoprec(cl_mem in, cl_mem out, cl_mem gf);
 	void Aee(cl_mem in, cl_mem out, cl_mem gf);
 	//        explicit
 	void gamma5_eoprec_device(cl_mem inout);
@@ -157,6 +159,8 @@ protected:
 	usetimer timer_M_tm_sitediagonal;
 	usetimer timer_M_tm_inverse_sitediagonal;
 	usetimer timer_dslash_eoprec;
+	usetimer timer_M_tm_sitediagonal_minus;
+	usetimer timer_M_tm_inverse_sitediagonal_minus;
 
 	/**
 	 * Return the timer connected to a specific kernel.
@@ -193,6 +197,8 @@ private:
 	cl_kernel gamma5_eoprec;
 	cl_kernel M_tm_sitediagonal;
 	cl_kernel M_tm_inverse_sitediagonal;
+	cl_kernel M_tm_sitediagonal_minus;
+	cl_kernel M_tm_inverse_sitediagonal_minus;
 	cl_kernel dslash_eoprec;
 	//CP: variables for normal solver
 	cl_mem clmem_inout;

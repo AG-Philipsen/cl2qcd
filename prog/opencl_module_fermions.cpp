@@ -189,6 +189,8 @@ void Opencl_Module_Fermions::fill_kernels()
 		if(get_parameters()->get_fermact() == TWISTEDMASS) {
 			M_tm_sitediagonal = createKernel("M_tm_sitediagonal") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
 			M_tm_inverse_sitediagonal = createKernel("M_tm_inverse_sitediagonal") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
+			M_tm_sitediagonal_minus = createKernel("M_tm_sitediagonal_minus") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
+			M_tm_inverse_sitediagonal_minus = createKernel("M_tm_inverse_sitediagonal_minus") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
 		}
 		dslash_eoprec = createKernel("dslash_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 		gamma5_eoprec = createKernel("gamma5_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
@@ -1062,6 +1064,18 @@ usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 	if (strcmp(in, "dslash_eoprec") == 0) {
 		return &this->timer_dslash_eoprec;
 	}
+	if (strcmp(in, "M_tm_sitediagonal") == 0) {
+		return &this->timer_M_tm_sitediagonal;
+	}
+	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0) {
+		return &this->timer_M_tm_inverse_sitediagonal;
+	}
+	if (strcmp(in, "M_tm_sitediagonal_minus") == 0) {
+		return &this->timer_M_tm_sitediagonal_minus;
+	}
+	if (strcmp(in, "M_tm_inverse_sitediagonal_minus") == 0) {
+		return &this->timer_M_tm_inverse_sitediagonal_minus;
+	}
 	if (strcmp(in, "ps_correlator") == 0) {
 		return &this->timer_ps_correlator;
 	}
@@ -1105,6 +1119,12 @@ int Opencl_Module_Fermions::get_read_write_size(const char * in, inputparameters
 	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0) {
 		return 48 * D * S;
 	}
+		if (strcmp(in, "M_tm_sitediagonal_minus") == 0) {
+		return 48 * D * S;
+	}
+	if (strcmp(in, "M_tm_inverse_sitediagonal_minus") == 0) {
+		return 48 * D * S;
+	}
 	if (strcmp(in, "dslash_eoprec") == 0) {
 		return (216 + 16 * R) * D * S;
 	}
@@ -1128,6 +1148,10 @@ void Opencl_Module_Fermions::print_profiling(std::string filename)
 	kernelName = "M_tm_sitediagonal";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "M_tm_inverse_sitediagonal";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "M_tm_sitediagonal_minus";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "M_tm_inverse_sitediagonal_minus";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "dslash_eoprec";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
