@@ -53,9 +53,14 @@ void init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seed
 {
 	const cl_ulong MAX_SEED = 4101842887655102017L;
 
-	FILE * const file = fopen( seedfile, "rb" );
-
-	if( ! file ) throw File_Exception(seedfile);
+	FILE * file = fopen( seedfile, "rb" );
+	if( !file) {
+	  logger.debug() << "No random seeds in work directory. Try random seeds from source directory." ;
+	  std::stringstream file_in_sourcedir;
+	  file_in_sourcedir << SOURCEDIR << '/' << seedfile ;
+	  file = fopen( file_in_sourcedir.str().c_str(), "rb" );
+	  if( ! file ) throw File_Exception(seedfile);
+	}
 
 	size_t bytes_read = 0;
 	for(size_t i_state = 0; i_state < (size_t)num_rndstates; ++i_state) {

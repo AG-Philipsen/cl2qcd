@@ -1,3 +1,4 @@
+
 /** @file
  * Random number generations
  */
@@ -7,6 +8,7 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <sstream>
 
 #include "globaldefs.h"
 #include "types.h"
