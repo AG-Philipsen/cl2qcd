@@ -110,25 +110,32 @@ __kernel void correlator_sc_z(__global spinorfield* phi, __global hmc_float * ou
 					coord[1] = x;
 					coord[2] = y;
 					int nspace = get_nspace(coord);
+					int alpha;
 					int k;
 					spinor tmp;
 
-					k = 0;
-					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
-					correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
+					for(int color = 0; color < 3; color++) {
 
-					k = 1;
-					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
-					correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
+					  alpha = 0;
+					  k = spinor_element(alpha, color);
+					  tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
+					  correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
+					  
+					  alpha = 1;
+					  k = spinor_element(alpha, color);
+					  tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
+					  correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
+					  
+					  alpha = 2;
+					  k = spinor_element(alpha, color);
+					  tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
+					  correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					k = 2;
-					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
-					correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
-
-					k = 3;
-					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
-					correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
-
+					  alpha = 3;
+					  k = spinor_element(alpha, color);
+					  tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
+					  correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
+					}
 				}
 			}
 		}
@@ -155,7 +162,7 @@ __kernel void correlator_sc_t(__global spinorfield* phi, __global hmc_float * ou
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 
-	//suppose that there are NSPACE threads (one for each entry of the correlator)
+	//suppose that there are NTIME threads (one for each entry of the correlator)
 	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
 		hmc_float correlator = 0.;
 		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
@@ -167,25 +174,32 @@ __kernel void correlator_sc_t(__global spinorfield* phi, __global hmc_float * ou
 					coord[2] = y;
 					coord[3] = z;
 					int nspace = get_nspace(coord);
+					int alpha;
 					int k;
 					spinor tmp;
+					
+					for(int color = 0; color < 3; color++) {
 
-					k = 0;
-					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
-					correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
+					  alpha = 0;
+					  k = spinor_element(alpha, color);
+					  tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
+					  correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					k = 1;
-					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
-					correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
+					  alpha = 1;
+					  k = spinor_element(alpha, color);
+					  tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
+					  correlator += - su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					k = 2;
-					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
-					correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
+					  alpha = 2;
+					  k = spinor_element(alpha, color);
+					  tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
+					  correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					k = 3;
-					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
-					correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
-
+					  alpha = 3;
+					  k = spinor_element(alpha, color);
+					  tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
+					  correlator += su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
+					}
 				}
 			}
 		}
@@ -226,14 +240,19 @@ __kernel void correlator_vx_z(__global spinorfield* phi, __global hmc_float * ou
 					coord[1] = x;
 					coord[2] = y;
 					int nspace = get_nspace(coord);
+					int alpha;
 					int k;
 					spinor tmp_a;
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					k = 0;
+					for(int color = 0; color < 3; color++) {
+
+					alpha = 0;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 1;
+					alpha = 1;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -253,9 +272,11 @@ __kernel void correlator_vx_z(__global spinorfield* phi, __global hmc_float * ou
 					correlator.im += restmp.im;
 
 
-					k = 2;
+					alpha = 2;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 3;
+					alpha = 3;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -273,7 +294,7 @@ __kernel void correlator_vx_z(__global spinorfield* phi, __global hmc_float * ou
 					restmp = su3vec_scalarproduct(tmp_a.e3, tmp_b.e2);
 					correlator.re += restmp.re;
 					correlator.im += restmp.im;
-
+					}
 				}
 			}
 		}
@@ -314,15 +335,19 @@ __kernel void correlator_vx_t(__global spinorfield* phi, __global hmc_float * ou
 					coord[2] = y;
 					coord[3] = z;
 					int nspace = get_nspace(coord);
+					int alpha;
 					int k;
 					spinor tmp_a;
 					spinor tmp_b;
 					hmc_complex restmp;
 
+					for(int color = 0; color < 3; color++) {
 
-					k = 0;
+					alpha = 0;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 1;
+					alpha = 1;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -342,9 +367,11 @@ __kernel void correlator_vx_t(__global spinorfield* phi, __global hmc_float * ou
 					correlator.im += restmp.im;
 
 
-					k = 2;
+					alpha = 2;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 3;
+					alpha = 3;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -362,7 +389,7 @@ __kernel void correlator_vx_t(__global spinorfield* phi, __global hmc_float * ou
 					restmp = su3vec_scalarproduct(tmp_a.e3, tmp_b.e2);
 					correlator.re += restmp.re;
 					correlator.im += restmp.im;
-
+					}
 				}
 			}
 		}
@@ -403,14 +430,19 @@ __kernel void correlator_vy_z(__global spinorfield* phi, __global hmc_float * ou
 					coord[1] = x;
 					coord[2] = y;
 					int nspace = get_nspace(coord);
+					int alpha;
 					int k;
 					spinor tmp_a;
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					k = 0;
+					for(int color = 0; color < 3; color++){
+
+					alpha = 0;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 1;
+					alpha = 1;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -430,9 +462,11 @@ __kernel void correlator_vy_z(__global spinorfield* phi, __global hmc_float * ou
 					correlator.im -= restmp.im;
 
 
-					k = 2;
+					alpha = 2;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 3;
+					alpha = 3;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -450,7 +484,7 @@ __kernel void correlator_vy_z(__global spinorfield* phi, __global hmc_float * ou
 					restmp = su3vec_scalarproduct(tmp_a.e3, tmp_b.e2);
 					correlator.re -= restmp.re;
 					correlator.im -= restmp.im;
-
+					}
 				}
 			}
 		}
@@ -491,15 +525,19 @@ __kernel void correlator_vy_t(__global spinorfield* phi, __global hmc_float * ou
 					coord[2] = y;
 					coord[3] = z;
 					int nspace = get_nspace(coord);
+					int alpha;
 					int k;
 					spinor tmp_a;
 					spinor tmp_b;
 					hmc_complex restmp;
 
+					for(int color=0; color < 3; color++) {
 
-					k = 0;
+					alpha = 0;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 1;
+					alpha = 1;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -519,9 +557,11 @@ __kernel void correlator_vy_t(__global spinorfield* phi, __global hmc_float * ou
 					correlator.im -= restmp.im;
 
 
-					k = 2;
+					alpha = 2;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 3;
+					alpha = 3;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -539,7 +579,7 @@ __kernel void correlator_vy_t(__global spinorfield* phi, __global hmc_float * ou
 					restmp = su3vec_scalarproduct(tmp_a.e3, tmp_b.e2);
 					correlator.re -= restmp.re;
 					correlator.im -= restmp.im;
-
+					}
 				}
 			}
 		}
@@ -579,24 +619,32 @@ __kernel void correlator_vz_z(__global spinorfield* phi, __global hmc_float * ou
 					coord[1] = x;
 					coord[2] = y;
 					int nspace = get_nspace(coord);
+					int alpha;
 					int k;
 					spinor tmp;
 
-					k = 0;
+					for(int color = 0; color < 3; color++) {
+					  
+					alpha = 0;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					k = 1;
+					alpha = 1;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					k = 2;
+					alpha = 2;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					k = 3;
+					alpha = 3;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
+					}
 				}
 			}
 		}
@@ -635,25 +683,32 @@ __kernel void correlator_vz_t(__global spinorfield* phi, __global hmc_float * ou
 					coord[2] = y;
 					coord[3] = z;
 					int nspace = get_nspace(coord);
+					int alpha;
 					int k;
 					spinor tmp;
 
-					k = 0;
+					for(int color = 0; color < 3; color++){
+
+					alpha = 0;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					k = 1;
+					alpha = 1;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					k = 2;
+					alpha = 2;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					k = 3;
+					alpha = 3;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
-
+					}
 				}
 			}
 		}
@@ -696,14 +751,19 @@ __kernel void correlator_ax_z(__global spinorfield* phi, __global hmc_float * ou
 					coord[1] = x;
 					coord[2] = y;
 					int nspace = get_nspace(coord);
+					int alpha;
 					int k;
 					spinor tmp_a;
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					k = 0;
+					for(int color = 0; color < 3; color++) {
+
+					alpha = 0;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 1;
+					alpha = 1;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -723,9 +783,11 @@ __kernel void correlator_ax_z(__global spinorfield* phi, __global hmc_float * ou
 					correlator.im -= restmp.im;
 
 
-					k = 2;
+					alpha = 2;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 3;
+					alpha = 3;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -743,7 +805,7 @@ __kernel void correlator_ax_z(__global spinorfield* phi, __global hmc_float * ou
 					restmp = su3vec_scalarproduct(tmp_a.e3, tmp_b.e2);
 					correlator.re += restmp.re;
 					correlator.im += restmp.im;
-
+					}
 				}
 			}
 		}
@@ -784,15 +846,19 @@ __kernel void correlator_ax_t(__global spinorfield* phi, __global hmc_float * ou
 					coord[2] = y;
 					coord[3] = z;
 					int nspace = get_nspace(coord);
+					int alpha;
 					int k;
 					spinor tmp_a;
 					spinor tmp_b;
 					hmc_complex restmp;
 
+					for(int color = 0; color < 3; color++){
 
-					k = 0;
+					alpha = 0;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 1;
+					alpha = 1;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -812,9 +878,11 @@ __kernel void correlator_ax_t(__global spinorfield* phi, __global hmc_float * ou
 					correlator.im -= restmp.im;
 
 
-					k = 2;
+					alpha = 2;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 3;
+					alpha = 3;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -832,7 +900,7 @@ __kernel void correlator_ax_t(__global spinorfield* phi, __global hmc_float * ou
 					restmp = su3vec_scalarproduct(tmp_a.e3, tmp_b.e2);
 					correlator.re += restmp.re;
 					correlator.im += restmp.im;
-
+					}
 				}
 			}
 		}
@@ -873,14 +941,19 @@ __kernel void correlator_ay_z(__global spinorfield* phi, __global hmc_float * ou
 					coord[1] = x;
 					coord[2] = y;
 					int nspace = get_nspace(coord);
+					int alpha;
 					int k;
 					spinor tmp_a;
 					spinor tmp_b;
 					hmc_complex restmp;
 
-					k = 0;
+					for(int color = 0; color < 3; color++) {
+
+					alpha = 0;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 1;
+					alpha = 1;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -900,9 +973,11 @@ __kernel void correlator_ay_z(__global spinorfield* phi, __global hmc_float * ou
 					correlator.im += restmp.im;
 
 
-					k = 2;
+					alpha = 2;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 3;
+					alpha = 3;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -920,7 +995,7 @@ __kernel void correlator_ay_z(__global spinorfield* phi, __global hmc_float * ou
 					restmp = su3vec_scalarproduct(tmp_a.e3, tmp_b.e2);
 					correlator.re -= restmp.re;
 					correlator.im -= restmp.im;
-
+					}
 				}
 			}
 		}
@@ -961,15 +1036,19 @@ __kernel void correlator_ay_t(__global spinorfield* phi, __global hmc_float * ou
 					coord[2] = y;
 					coord[3] = z;
 					int nspace = get_nspace(coord);
+					int alpha;
 					int k;
 					spinor tmp_a;
 					spinor tmp_b;
 					hmc_complex restmp;
 
+					for(int color = 0; color < 3; color++) {
 
-					k = 0;
+					alpha = 0;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 1;
+					alpha = 1;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -989,9 +1068,11 @@ __kernel void correlator_ay_t(__global spinorfield* phi, __global hmc_float * ou
 					correlator.im += restmp.im;
 
 
-					k = 2;
+					alpha = 2;
+					k = spinor_element(alpha, color);
 					tmp_a = phi[get_global_pos(nspace, t) + VOL4D*k];
-					k = 3;
+					alpha = 3;
+					k = spinor_element(alpha, color);
 					tmp_b = phi[get_global_pos(nspace, t) + VOL4D*k];
 
 					restmp = su3vec_scalarproduct(tmp_a.e0, tmp_b.e1);
@@ -1009,7 +1090,7 @@ __kernel void correlator_ay_t(__global spinorfield* phi, __global hmc_float * ou
 					restmp = su3vec_scalarproduct(tmp_a.e3, tmp_b.e2);
 					correlator.re -= restmp.re;
 					correlator.im -= restmp.im;
-
+					}
 				}
 			}
 		}
@@ -1049,24 +1130,32 @@ __kernel void correlator_az_z(__global spinorfield* phi, __global hmc_float * ou
 					coord[1] = x;
 					coord[2] = y;
 					int nspace = get_nspace(coord);
+					int alpha;
 					int k;
 					spinor tmp;
 
-					k = 0;
+					for(int color = 0; color < 3; color++) {
+
+					alpha = 0;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					k = 1;
+					alpha = 1;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					k = 2;
+					alpha = 2;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					k = 3;
+					alpha = 3;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
+					}
 				}
 			}
 		}
@@ -1105,25 +1194,32 @@ __kernel void correlator_az_t(__global spinorfield* phi, __global hmc_float * ou
 					coord[2] = y;
 					coord[3] = z;
 					int nspace = get_nspace(coord);
+					int alpha;
 					int k;
 					spinor tmp;
 
-					k = 0;
+					for(int color = 0; color < 3; color++) {
+
+					alpha = 0;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
 
-					k = 1;
+					alpha = 1;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					k = 2;
+					alpha = 2;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += -su3vec_squarenorm(tmp.e0) + su3vec_squarenorm(tmp.e1) + su3vec_squarenorm(tmp.e2) - su3vec_squarenorm(tmp.e3);
 
-					k = 3;
+					alpha = 3;
+					k = spinor_element(alpha, color);
 					tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 					correlator += su3vec_squarenorm(tmp.e0) - su3vec_squarenorm(tmp.e1) - su3vec_squarenorm(tmp.e2) + su3vec_squarenorm(tmp.e3);
-
+					}
 				}
 			}
 		}
