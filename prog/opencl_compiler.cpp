@@ -59,7 +59,7 @@ TmpClKernel::operator cl_kernel() const
 		std::fstream file;
 		file.open(tmp.str().c_str());
 		if( !file.is_open() ) throw File_Exception(tmp.str());
-	
+
 		file.seekg(0, std::ios::end);
 		source_sizes[n] = file.tellg();
 		file.seekg(0, std::ios::beg);
@@ -74,7 +74,7 @@ TmpClKernel::operator cl_kernel() const
 	logger.trace() << "Creating program for the " << kernel_name << " kernel from collected sources";
 
 	cl_program program = clCreateProgramWithSource(context, files.size() , (const char**) sources, source_sizes, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clCreateProgramWithSource",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateProgramWithSource", __FILE__, __LINE__);
 
 
 	logger.trace() << "Building kernel " << kernel_name << " using these options: " << build_options;
@@ -116,13 +116,13 @@ TmpClKernel::operator cl_kernel() const
 				delete[] source;
 			}
 
-			throw Opencl_Error(clerr,"clGetProgramBuildInfo",__FILE__,__LINE__);
+			throw Opencl_Error(clerr, "clGetProgramBuildInfo", __FILE__, __LINE__);
 		}
 	}
 
 	// extract kernel
 	cl_kernel kernel = clCreateKernel(program, kernel_name, &clerr);
-	if(clerr != CL_SUCCESS)	throw Opencl_Error(clerr,"clCreateKernel",__FILE__,__LINE__);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateKernel", __FILE__, __LINE__);
 
 	if( logger.beDebug() ) {
 		for(size_t i = 0; i < num_devices; ++i)
@@ -166,7 +166,7 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel, const cl_dev
 			logger.trace() << "Kernel: " << name;
 		delete[] name;
 	}
-	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr,"clGetKernelInfo",__FILE__,__LINE__);
+	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr, "clGetKernelInfo", __FILE__, __LINE__);
 
 	// query the maximum work group size
 	size_t work_group_size;
@@ -175,7 +175,7 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel, const cl_dev
 		if( clerr == CL_INVALID_VALUE ) {
 			logger.warn() << "Quering maximum work group size is not supported on this device.";
 		} else {
-		  throw Opencl_Error(clerr,"clGetKernelWorkGroupInfo",__FILE__,__LINE__);
+			throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
 		}
 	} else {
 		logger.trace() << "  Maximum work group size: " << work_group_size;
@@ -188,7 +188,7 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel, const cl_dev
 		if( clerr == CL_INVALID_VALUE ) {
 			logger.warn() << "Quering compile time work group size is not supported on this device.";
 		} else {
-		  throw Opencl_Error(clerr,"clGetKernelWorkGroupInfo",__FILE__,__LINE__);
+			throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
 		}
 	} else {
 		if( compile_work_group_size[0] == 0 )
@@ -204,7 +204,7 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel, const cl_dev
 		if( clerr == CL_INVALID_VALUE ) {
 			logger.warn() << "Quering work group size multiple is not supported on this device.";
 		} else {
-		  throw Opencl_Error(clerr,"clGetKernelWorkGroupInfo",__FILE__,__LINE__);
+			throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
 		}
 	} else {
 		logger.trace() << "  Preferred work group size multiple: " << work_group_size;
@@ -218,7 +218,7 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel, const cl_dev
 		if( clerr == CL_INVALID_VALUE ) {
 			logger.warn() << "Quering local memory size is not supported on this device.";
 		} else {
-		  throw Opencl_Error(clerr,"clGetKernelWorkGroupInfo",__FILE__,__LINE__);
+			throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
 		}
 	} else {
 		logger.trace() << "  Local memory size (bytes): " << local_mem_size;
@@ -232,7 +232,7 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel, const cl_dev
 		if( clerr == CL_INVALID_VALUE ) {
 			logger.warn() << "Quering private memory size is not supported on this device.";
 		} else {
-		  throw Opencl_Error(clerr,"clGetKernelWorkGroupInfo",__FILE__,__LINE__);
+			throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
 		}
 	} else {
 		logger.trace() << "  Private memory size (bytes): " << private_mem_size;
