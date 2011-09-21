@@ -78,6 +78,12 @@ void Gaugefield_hybrid::init_opencl()
 {
 	cl_int clerr = CL_SUCCESS;
 
+	// in debug scenarios make the compiler dump the compile results
+	if( logger.beDebug() ) {
+		// the cast is safe here, we don't want to modify the value later
+		putenv(const_cast<char*>("GPU_DUMP_DEVICE_KERNEL=3"));
+	}
+
 	//Initialize OpenCL,
 	logger.trace() << "OpenCL being initialized...";
 
