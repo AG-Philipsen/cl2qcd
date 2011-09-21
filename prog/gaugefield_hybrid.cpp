@@ -219,7 +219,7 @@ void Gaugefield_hybrid::init_devices(int ndev)
 	logger.info() << "\t\t\tCL_DEVICE_NAME:    " << info;
 	clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_VENDOR, 512 * sizeof(char), info, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
-	logger.info() << "\t\t\tCL_DEVICE_VENDOR:  " << info;
+	logger.debug() << "\t\t\tCL_DEVICE_VENDOR:  " << info;
 	cl_device_type devtype;
 	clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_TYPE, sizeof(cl_device_type), &devtype, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
@@ -230,10 +230,10 @@ void Gaugefield_hybrid::init_devices(int ndev)
 		throw Print_Error_Message("Unexpected CL_DEVICE_TYPE...", __FILE__, __LINE__);
 	clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_VERSION, 512 * sizeof(char), info, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
-	logger.info() << "\t\t\tCL_DEVICE_VERSION: " << info;
+	logger.debug() << "\t\t\tCL_DEVICE_VERSION: " << info;
 	clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_EXTENSIONS, 512 * sizeof(char), info, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
-	logger.info() << "\t\t\tCL_DEVICE_EXTENSIONS: " << info;
+	logger.debug() << "\t\t\tCL_DEVICE_EXTENSIONS: " << info;
 
 	if( strstr( info, "cl_amd_fp64" ) != NULL ) device_double_extension[ndev] = "AMD";
 	if( strstr( info, "cl_khr_fp64" ) != NULL ) device_double_extension[ndev] = "KHR";
@@ -241,7 +241,7 @@ void Gaugefield_hybrid::init_devices(int ndev)
 	// figure out the number of "cores"
 	clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units[ndev], NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);;
-	logger.info() << "\t\t\tCL_DEVICE_MAX_COMPUTE_UNITS: " << max_compute_units[ndev];
+	logger.debug() << "\t\t\tCL_DEVICE_MAX_COMPUTE_UNITS: " << max_compute_units[ndev];
 
 	return;
 }

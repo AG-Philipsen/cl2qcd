@@ -15,6 +15,8 @@
 
 #include "exceptions.h"
 
+#include "logger.hpp"
+
 extern "C" {
 #include <lime.h>
 #include <lime_fixed_types.h>

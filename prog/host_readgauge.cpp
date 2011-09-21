@@ -131,9 +131,8 @@ void get_XLF_infos(const char * filename, hmc_float * plaquettevalue, int * traj
 		//there are " " inf front of most of the labels, the last one was added for a different style
 		const char * tmparray [] = {"plaquette", " trajectory nr", " beta", "kappa", "mu", "c2_rec", " time", " hmcversion", " mubar", " epsilonbar", " date", " plaquette"};
 		char tmp1[512];
-		while (!feof(reader)) {
-		  if(fgets (tmp1, 512, reader) == NULL)
-		    printf("error in function get_XLF_infos");
+
+		while ( fgets (tmp1, 512, reader) != NULL) {
 			trim2(tmp1);
 			if(strncmp(tmparray[0], tmp1, strlen(tmparray[0])) == 0) extrInfo_hmc_float(tmp1, strlen(tmparray[0]), strlen(tmp1), plaquettevalue);
 			if(strncmp(tmparray[1], tmp1, strlen(tmparray[1])) == 0) extrInfo_int(tmp1, strlen(tmparray[1]), strlen(tmp1), trajectorynr);
@@ -159,9 +158,7 @@ void get_inverter_infos(const char * filename, char * solver, hmc_float * epssq,
 		//there are " " inf front of most of the labels
 		const char * tmparray [] = {"solver", " epssq", " noiter", " kappa", "mu", " time", " hmcversion", " date"};
 		char tmp1[512];
-		while (!feof(reader)) {
-		  if(fgets (tmp1, 512, reader)==NULL)
-		    printf("error in function get_inverter_infos");
+		while ( fgets (tmp1, 512, reader) !=NULL ) {
 			if(strncmp(tmparray[0], tmp1, strlen(tmparray[0])) == 0) extrInfo_char(tmp1, strlen(tmparray[0]), strlen(tmp1), solver);
 			if(strncmp(tmparray[1], tmp1, strlen(tmparray[1])) == 0) extrInfo_hmc_float(tmp1,  strlen(tmparray[1]), strlen(tmp1), epssq);
 			if(strncmp(tmparray[2], tmp1, strlen(tmparray[2])) == 0) extrInfo_int (tmp1, strlen(tmparray[2]), strlen(tmp1), noiter);
@@ -262,7 +259,7 @@ void get_XML_infos(const char * filename, int * prec, int * lx, int * ly, int * 
 		}
 		xmlFreeTextReader(reader);
 		if (ret != 0) {
-			printf("%s : failed to parse\n", filename);
+		  logger.warn() << filename << ": failed to parse";
 		}
 	} else throw File_Exception(filename);
 
@@ -320,16 +317,16 @@ void read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, int * p
 		ME_flag   = limeReaderMEFlag(r);
 		if(strcmp (lime_types[0],lime_type)==0 ) {
 			if (switcher == 0) {
-				printf("\tfile containts fermion informations\n");
+			  logger.info() << "\tfile contains fermion informations" ;
 				switcher ++;
 			} else {
-				printf("\tfile containts informations about more than one fermion: %i\n", switcher);
+			  logger.info() << "\tfile contains informations about more than one fermion: " << switcher;
 				switcher ++;
 			}
 		}
 		//!!read the inverter-infos for FIRST fermion infos only!!
 		if(strcmp (lime_types[2],lime_type)==0 && switcher == 1 ) {
-			printf("\tfound inverter-infos as lime_type %s...\n", lime_type);
+		  logger.trace() << "\tfound inverter-infos as lime_type " << lime_type ;
 			*fermion = *fermion +1;
 			//!!create tmporary file to read in data, this can be done better
 			FILE * tmp;
@@ -345,14 +342,14 @@ void read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, int * p
 			fclose(tmp);
 
 			get_inverter_infos(tmp_file_name, solvertype, epssq, noiter, kappa_solver, mu_solver, time_solver, hmcversion_solver, date_solver);
-			printf("\tsuccesfully read InverterInfos\n");
+			logger.trace() << "\tsuccesfully read InverterInfos" ;
 
 			remove(tmp_file_name);
 			delete [] buffer2;
 		}
 		//!!read XLF info, only FIRST fermion is read!!
 		if(strcmp (lime_types[1],lime_type)==0 && switcher < 2 ) {
-			printf("\tfound XLF-infos as lime_type %s...\n", lime_type);
+		  logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
 			//!!create tmporary file to read in data, this can be done better
 			FILE * tmp;
 			const char tmp_file_name[] = "tmpfilenametwo";
@@ -360,31 +357,25 @@ void read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, int * p
 			if(tmp == NULL) {
 			  throw Print_Error_Message("\t\terror in creating tmp file\n");
 			}
-			/** @bug CP: the std::string buffer does not work for some reason!! */
-// 			char buffertmp [1];
 			char * buffer = new char[nbytes+1];
-// 			std::string buffer;
-			printf("here is the problem\n");
 			int error = 
-// 			limeReaderReadData ((void*) buffer.c_str(),(n_uint64_t *) &nbytes, r);
 			limeReaderReadData ((void*) buffer,(n_uint64_t *) &nbytes, r);
+			if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
 
-						printf("%i\n", error);
 			char * buffer2 = new char[nbytes+1];
-// 			strcpy(buffer2, buffer.c_str());
 			strcpy(buffer2, buffer);
 			fwrite(buffer2, 1, sizeof(char)*nbytes, tmp);
 			fclose(tmp);
 
 			get_XLF_infos(tmp_file_name, plaquettevalue, trajectorynr, beta, kappa, mu, c2_rec, time, hmcversion, mubar, epsilonbar, date);
-			printf("\tsuccesfully read XLFInfos\n");
+			logger.trace() << "\tsuccesfully read XLFInfos";
 
 			remove(tmp_file_name);
 			delete [] buffer2;
 		}
 		//!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
 		if(  (strcmp (lime_types[4],lime_type)==0 || strcmp (lime_types[7],lime_type)==0)  && switcher < 2 ) {
-			printf("\tfound XML-infos as lime_type %s..\n", lime_type);
+		  logger.trace() << "\tfound XML-infos as lime_type" << lime_type;
 			//!!create tmporary file to read in data, this can be done better
 			FILE * tmp;
 			const char tmp_file_name[] = "tmpfilenamethree";
@@ -393,21 +384,17 @@ void read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, int * p
 			if(tmp == NULL) {
 				throw Print_Error_Message("\t\terror in creating tmp file\n");
 			}
-// 			std::string buffer;
 	char * buffer = new char[nbytes+1];
-			printf("and here to\n");
-// 			limeReaderReadData ((void*) buffer.c_str(),(n_uint64_t *) &nbytes, r);
 			limeReaderReadData ((void*) buffer,(n_uint64_t *) &nbytes, r);
 
 			char * buffer2 = new char[nbytes+1];
-// 			strcpy(buffer2, buffer.c_str());
 strcpy(buffer2, buffer);
 
 			fwrite(buffer2, 1, sizeof(char)*nbytes, tmp);
 			fclose(tmp);
 
 			get_XML_infos(tmp_file_name, prec, lx, ly, lz, lt, flavours, field_out );
-			printf("\tsuccesfully read XMLInfos\n");
+			logger.trace() << "\tsuccesfully read XMLInfos";
 
 			// different sizes for fermions or gauge fields
 			if(strcmp(field_out, "diracFermion") == 0) {
@@ -430,7 +417,7 @@ strcpy(buffer2, buffer);
 
 void read_binary_data_single(const char * file, float * numArray, int num_entries, int filelength )
 {
-	printf("\treading binary file %s..\n",file);
+  logger.trace() << "\treading binary file " << file << "...";
 	int length = sizeof(float), i;
 
 	// open file and get length
@@ -440,9 +427,9 @@ void read_binary_data_single(const char * file, float * numArray, int num_entrie
 	fseek(in, 0L, SEEK_END);
 	int filelength_check = ftell(in);
 	fseek(in, 0L, SEEK_SET);
-	printf("\tlength of file:\t\t%i\n", filelength_check);
+	logger.debug() << "\tlength of file:\t\t" << filelength_check;
 	int num_entries_check = filelength_check/length;
-	printf("\tnumber of entries:\t%i\n" ,num_entries_check);
+	logger.debug() << "\tnumber of entries:\t" << num_entries_check;
 	if (filelength_check != filelength && num_entries_check != num_entries) {
 		throw Print_Error_Message("\twrong filelength or number of entries!!\n");
 	}
@@ -462,7 +449,7 @@ void read_binary_data_single(const char * file, float * numArray, int num_entrie
 
 	//if endian is little, all floats must be reversed
 	if(!ENDIAN) {
-		printf("\tThe ENDIANNESS of the system is little, bytes must be reversed\n");
+	  logger.debug() << "\tThe ENDIANNESS of the system is little, bytes must be reversed";
 		for (i=0; i<filelength; i+=length) {
 			buf2[i] = buf[i+3];
 			buf2[i+1] = buf[i+2];
@@ -470,7 +457,7 @@ void read_binary_data_single(const char * file, float * numArray, int num_entrie
 			buf2[i+3] = buf[i];
 		}
 	} else {
-		printf("\tThe ENDIANNESS of the system is big, bytes must not be reversed\n");
+	  logger.debug() << "\tThe ENDIANNESS of the system is big, bytes must not be reversed";
 		for (i=0; i<filelength; i++) {
 			buf2[i] = buf[i];
 		}
@@ -555,7 +542,7 @@ void read_data_single(char * file, float * num_array_single, int num_entries)
 
 void read_binary_data_double(const char * file, double * numArray, int num_entries, int filelength )
 {
-	printf("\treading binary file %s..\n",file);
+  logger.trace() << "\treading binary file " << file << "...";
 	int i, length = sizeof(double);
 
 	// open file and get length
@@ -565,9 +552,9 @@ void read_binary_data_double(const char * file, double * numArray, int num_entri
 	fseek(in, 0L, SEEK_END);
 	int filelength_check = ftell(in);
 	fseek(in, 0L, SEEK_SET);
-	printf("\tlength of file:\t\t%i\n", filelength_check);
+	logger.debug() << "\tlength of file:\t\t" << filelength_check;
 	int num_entries_check = filelength_check/length;
-	printf("\tnumber of entries:\t%i\n" ,num_entries_check);
+	logger.debug() << "\tnumber of entries:\t" << num_entries_check;
 	if (filelength_check != filelength && num_entries_check != num_entries) {
 		throw Print_Error_Message("\twrong filelength or number of entries!!");
 	}
@@ -587,7 +574,7 @@ void read_binary_data_double(const char * file, double * numArray, int num_entri
 
 	//if endian is little, all floats must be reversed
 	if(!ENDIAN) {
-		printf("\tThe ENDIANNESS of the system is little, bytes must be reversed\n");
+	  logger.debug() << "\tThe ENDIANNESS of the system is little, bytes must be reversed";
 		for (i=0; i<filelength; i+=length) {
 			buf2[i] = buf[i+7];
 			buf2[i+1] = buf[i+6];
@@ -600,7 +587,7 @@ void read_binary_data_double(const char * file, double * numArray, int num_entri
 		}
 
 	} else {
-		printf("\tThe ENDIANNESS of the system is big, bytes must not be reversed\n");
+	  logger.debug() << "\tThe ENDIANNESS of the system is big, bytes must not be reversed";
 		for (i=0; i<filelength; i++) {
 			buf2[i] = buf[i];
 		}
@@ -697,31 +684,60 @@ void read_tmlqcd_file(char * file,
 	if(checker == 0) {
 	  throw Print_Error_Message("\tcould not open sourcefile!\n");
 	} else {
-		printf("**********************************************************\n");
-		printf("reading tmlqcd-file %s..\n\n", file);
+	  logger.info() << " " ;
+	  logger.info() << "*************************************************************" ;
+	  logger.info() << "*************************************************************" ;
+	  logger.info() << "Reading gaugefield configuration from file " << file << "...";
 	}
 	fclose(checker);
 
-	printf("reading Metadata..\n");
+	logger.info() << "\tMetadata:" ;
 	read_meta_data(file, lx, ly, lz, lt, prec, field_out, num_entries, flavours, plaquettevalue, trajectorynr,
 	                     beta, kappa, mu, c2_rec, time, hmcversion, mubar, epsilonbar, date,
 	                     solvertype, epssq, noiter, kappa_solver, mu_solver, time_solver, hmcversion_solver, date_solver, &fermion);
-	printf("\treading XML-file gave:\n\t\tfield type:\t%s\n\t\tprecision:\t%d\n\t\tlx:\t\t%d\n\t\tly:\t\t%d\n\t\tlz:\t\t%d\n\t\tlt:\t\t%d\n\t\tflavours:\t%d\n", field_out, *prec, *lx, *ly, *lz, *lt, *flavours);
-	printf("\treading XLF-data gave:\n\t\tplaquette:\t%f\n\t\ttrajectorynr:\t%i\n\t\tbeta:\t\t%f\n\t\tkappa:\t\t%f\n\t\tmu:\t\t%f\n\t\tc2_rec:\t\t%f\n\t\ttime:\t\t%i\n\t\thmc-version:\t%s\n\t\tmubar:\t\t%f\n\t\tepsilonbar:\t%f\n\t\tdate:\t\t%s\n", *plaquettevalue, *trajectorynr, *beta, *kappa, *mu, *c2_rec, *time, hmcversion, *mubar, *epsilonbar, date);
-	if(fermion != 0)
-	  printf("\treading inverter-data gave:\n\t\tsolvertype:\t%s\n\t\tepssq:\t\t%.30f\n\t\tnoiter:\t\t%i\n\t\tkappa_solver:\t%f\n\t\tmu_solver:\t%f\n\t\ttime_solver:\t%i\n\t\thmc-ver_solver:\t%s\n\t\tdate_solver:\t%s\n", solvertype, *epssq, *noiter, *kappa_solver, *mu_solver, *time_solver, hmcversion_solver, date_solver);
+	logger.trace() << "\treading XML-file gave:";
+	logger.info() << "\t\tfield type:\t" << field_out ;
+	logger.info() << "\t\tprecision:\t" << *prec ;
+	logger.info() << "\t\tlx:\t\t" << *lx ;
+	logger.info() << "\t\tly:\t\t" << *ly ;
+	logger.info() << "\t\tlz:\t\t" << *lz ;
+	logger.info() << "\t\tlt:\t\t" << *lt ;
+	logger.debug() << "\t\tflavours:\t" << *flavours ;
+	logger.trace() << "\treading XLF-data gave:";
+	logger.info() << "\t\tplaquette:\t" << *plaquettevalue;
+	logger.debug() << "\t\ttrajectorynr:\t" << *trajectorynr;
+	logger.info() << "\t\tbeta:\t\t" << *beta;
+	logger.info() << "\t\tkappa:\t\t" << *kappa;
+	logger.info() << "\t\tmu:\t\t" << *mu;
+	logger.debug() << "\t\tc2_rec:\t\t" << *c2_rec;
+	logger.debug() << "\t\ttime:\t\t" << *time;
+	logger.info() << "\t\thmc-version:\t" << hmcversion;
+	logger.debug() << "\t\tmubar:\t\t" << *mubar;
+	logger.debug() << "\t\tepsilonbar:\t" << *epsilonbar;
+	logger.info() << "\t\tdate:\t\t" << date;
+	if(fermion != 0) {
+	  logger.info() << "\treading inverter-data gave:";
+	  logger.info() << "\t\tsolvertype:\t" << solvertype;
+	  logger.info() << "\t\tepssq:\t\t" << std::setprecision(30) << *epssq;
+	  logger.info() << "\t\tnoiter:\t\t" << *noiter;
+	  logger.info() << "\t\tkappa_solver:\t" << *kappa_solver;
+	  logger.info() << "\t\tmu_solver:\t" << *mu_solver;
+	  logger.info() << "\t\ttime_solver:\t" << *time_solver;
+	  logger.info() << "\t\thmc-ver_solver:\t" << hmcversion_solver;
+	  logger.info() << "\t\tdate_solver:\t" << date_solver;
+	}
 
 	if(*hmc_prec != *prec) {
 	  throw Print_Error_Message("\nthe precision of hmc and sourcefile do not match, will not read data!!!",__FILE__,__LINE__);
 	} else {
-		printf("reading data..\n");
+	  logger.trace() << "reading data..";
 		//!!note: the read-routines were not changed, the array is just set to the values of the num_array`s
 		if (*prec == 32) {
-			printf("\tfound data in single precision\n");
+		  logger.trace() << "\tfound data in single precision";
 			float * num_array_single;
 			num_array_single = (float*) malloc(*num_entries*sizeof(float));
 			read_data_single(file, num_array_single, *num_entries);
-			printf("\tsuccesfully read in data\n");
+			logger.trace() << "\tsuccesfully read in data";
 
 			*array = (hmc_float*) malloc(*num_entries*sizeof(hmc_float));
 			int i;
@@ -730,11 +746,11 @@ void read_tmlqcd_file(char * file,
 			}
 			free(num_array_single);
 		} else if (*prec == 64) {
-			printf("\tfound data in double precision\n");
+		  logger.trace() << "\tfound data in double precision";
 			double * num_array_double;
 			num_array_double = (double*) malloc(*num_entries*sizeof(double));
 			read_data_double(file, num_array_double, *num_entries);
-			printf("\tsuccesfully read in data\n");
+			logger.trace() << "\tsuccesfully read in data";
 
 			*array = (hmc_float*) malloc(*num_entries*sizeof(hmc_float));
 			int i;
@@ -746,8 +762,9 @@ void read_tmlqcd_file(char * file,
 		} else {
 			throw Print_Error_Message("\tcould not determine precision of data\n\n");
 		}
-		printf("\nsuccesfully read tmlqcd-file %s..\n", file);
-		printf("**********************************************************\n\n");
+		logger.trace() << "\nsuccesfully read tmlqcd-file " << file;
+		logger.info() << "*************************************************************" ;
+		logger.info() << " ";
 		return;
 	}
 }

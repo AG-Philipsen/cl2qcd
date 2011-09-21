@@ -1037,13 +1037,13 @@ void Opencl_Module::print_copy_times(uint64_t totaltime)
 	uint64_t copy1_avgtime = divide(copy1_time, copy1_steps);
 	uint64_t copy2_avgtime = divide(copy2_time, copy2_steps);
 
-	logger.trace() << "## *******************************************************************";
-	logger.trace() << "## Copy-Times\t" << setfill(' ') << setw(12) << "total" << '\t' << setw(12) << "avg" << '\t' << setw(5) << "perc";
-	logger.trace() << "## CpyTo:\t" << setfill(' ') << setw(12) << copy1_time << '\t' << setw(12) << copy1_avgtime << '\t' << fixed << setw(5) << setprecision(1) << percent(copy1_time, totaltime);
-	logger.trace() << "## CpyOn:\t" << setfill(' ') << setw(12) << copy2_time << '\t' << setw(12) << copy2_avgtime << '\t' << fixed << setw(5) << setprecision(1) << percent(copy2_time, totaltime);
-	logger.trace() << "## *******************************************************************";
+	logger.info() << "## *******************************************************************";
+	logger.info() << "## Copy-Times\t" << setfill(' ') << setw(12) << "total" << '\t' << setw(12) << "avg" << '\t' << setw(5) << "perc";
+	logger.info() << "## CpyTo:\t" << setfill(' ') << setw(12) << copy1_time << '\t' << setw(12) << copy1_avgtime << '\t' << fixed << setw(5) << setprecision(1) << percent(copy1_time, totaltime);
+	logger.info() << "## CpyOn:\t" << setfill(' ') << setw(12) << copy2_time << '\t' << setw(12) << copy2_avgtime << '\t' << fixed << setw(5) << setprecision(1) << percent(copy2_time, totaltime);
+	logger.info() << "## *******************************************************************";
 
-	logger.trace() << "## No output of times to file implemented yet...";
+	logger.info() << "## No output of times to file implemented yet...";
 	/** @todo output to file is not implemented */
 	//See older files for example code
 	return;

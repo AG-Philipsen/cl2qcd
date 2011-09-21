@@ -72,20 +72,20 @@ void general_time_output(usetimer * total, usetimer * init_timer, usetimer * per
 	uint64_t poly_avgtime = divide(poly_time, poly_steps);
 	uint64_t plaq_avgtime = divide(plaq_time, plaq_steps);
 
-	logger.trace() << "## *******************************************************************";
-	logger.trace() << "## General Times [mus]:";
-	logger.trace() << "## *******************************************************************";
-	logger.trace() << "## Program Parts:\t" << setfill(' ') << setw(5) << "total" << '\t' << setw(5) << "perc";
-	logger.trace() << "## Total:\t" << setfill(' ') << setw(12) << totaltime;
-	logger.trace() << "## Init.:\t" << setfill(' ') << setw(12) << init_time << '\t'<< fixed << setw(5) << setprecision(1) << percent(init_time, totaltime) ;
-	logger.trace() << "## Perf.:\t" << setfill(' ') << setw(12) << perform_time << '\t'<< fixed << setw(5) << setprecision(1) << percent(perform_time, totaltime) ;
-	logger.trace() << "## *******************************************************************";
-	logger.trace() << "## Host-Obs:\t" << setfill(' ') << setw(12) << "total" << '\t' << setw(12) << "avg"<< '\t' << setw(5) << "perc";
-	logger.trace() << "## Plaq.:\t" << setfill(' ') << setw(12) << plaq_time << '\t' << setw(12) << plaq_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(plaq_time, totaltime);
-	logger.trace() << "## Poly.:\t" << setfill(' ') << setw(12) << poly_time << '\t' << setw(12) << poly_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(poly_time, totaltime);
-	logger.trace() << "## *******************************************************************";
+	logger.info() << "## *******************************************************************";
+	logger.info() << "## General Times [mus]:";
+	logger.info() << "## *******************************************************************";
+	logger.info() << "## Program Parts:\t" << setfill(' ') << setw(5) << "total" << '\t' << setw(5) << "perc";
+	logger.info() << "## Total:\t" << setfill(' ') << setw(12) << totaltime;
+	logger.info() << "## Init.:\t" << setfill(' ') << setw(12) << init_time << '\t'<< fixed << setw(5) << setprecision(1) << percent(init_time, totaltime) ;
+	logger.info() << "## Perf.:\t" << setfill(' ') << setw(12) << perform_time << '\t'<< fixed << setw(5) << setprecision(1) << percent(perform_time, totaltime) ;
+	logger.info() << "## *******************************************************************";
+	logger.info() << "## Host-Obs:\t" << setfill(' ') << setw(12) << "total" << '\t' << setw(12) << "avg"<< '\t' << setw(5) << "perc";
+	logger.info() << "## Plaq.:\t" << setfill(' ') << setw(12) << plaq_time << '\t' << setw(12) << plaq_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(plaq_time, totaltime);
+	logger.info() << "## Poly.:\t" << setfill(' ') << setw(12) << poly_time << '\t' << setw(12) << poly_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(poly_time, totaltime);
+	logger.info() << "## *******************************************************************";
 
-	logger.trace() << "## No output of times to file implemented yet...";
+	logger.info() << "## No output of times to file implemented yet...";
 	/** @todo output to file is not implemented */
 	//See older files for example code
 

@@ -1122,7 +1122,7 @@ void inputparameters::print_info_hmc(char* progname, ostream* os) const
 
 void inputparameters::set_settings_global()
 {
-	logger.info() << "setting global parameters...";
+	logger.trace() << "setting global parameters...";
 	this->volspace = this->nspace * this->nspace * this->nspace;
 	this->vol4d = this->volspace * this->ntime;
 	this->spinorfieldsize = this->vol4d;
@@ -1142,7 +1142,7 @@ void inputparameters::set_settings_global()
 
 void inputparameters::check_settings_global() const
 {
-	logger.info() << "checking compile-time-parameters against input-parameters...";
+	logger.trace() << "checking compile-time-parameters against input-parameters...";
 
 	try {
 

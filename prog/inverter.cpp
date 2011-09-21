@@ -91,9 +91,9 @@ int main(int argc, char* argv[])
 		uint64_t totaltime = total_timer.getTime();
 		general_time_output(&total_timer, &init_timer, &perform_timer, &plaq_timer, &poly_timer);
 		//print times from the devices...
-		logger.trace() << "## Device: Solver";
+		logger.info() << "## Device: Solver";
 		(gaugefield.get_task_solver())->print_copy_times(totaltime);
-		logger.trace() << "## Device: Correlator";
+		logger.info() << "## Device: Correlator";
 		(gaugefield.get_task_correlator())->print_copy_times(totaltime);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////

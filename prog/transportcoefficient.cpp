@@ -93,9 +93,9 @@ int main(int argc, char* argv[])
 		uint64_t totaltime = total_timer.getTime();
 		general_time_output(&total_timer, &init_timer, &perform_timer, &plaq_timer, &poly_timer);
 		//print times from the devices...
-		logger.trace() << "## Device: Heatbath";
+		logger.info() << "## Device: Heatbath";
 		(gaugefield.get_task_heatbath())->print_copy_times(totaltime);
-		logger.trace() << "## Device: Kappa";
+		logger.info() << "## Device: Kappa";
 		(gaugefield.get_task_kappa())->print_copy_times(totaltime);
 		
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
