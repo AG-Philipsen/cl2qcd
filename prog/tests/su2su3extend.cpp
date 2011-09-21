@@ -183,11 +183,9 @@ void Dummyfield::verify()
 		verify(m.e10, hmc_complex_zero);
 		verify(m.e11, (rand == 3) ? hmc_complex_one : hmc_complex_zero);
 		verify(m.e12, hmc_complex_zero);
-#ifndef _RECONSTRUCT_TWELVE_
 		verify(m.e20, hmc_complex_zero);
 		verify(m.e21, hmc_complex_zero);
 		verify(m.e22, (rand == 1) ? hmc_complex_one : hmc_complex_zero);
-#endif
 	}
 }
 

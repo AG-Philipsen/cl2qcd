@@ -93,21 +93,6 @@ int get_global_link_pos(int mu, int spacepos, int t, const inputparameters * con
 	return mu + NDIM * get_global_pos(spacepos, t, params);
 }
 
-//dispensable
-/*
-int ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t){
-#ifdef _RECONSTRUCT_TWELVE_
-  //old:
-//  return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*spacepos+2*NC*(NC-1)*NDIM*VOLSPACE*t;
-  return c + 2*( a + (NC-1)*b + NC*(NC-1)* ( get_global_link_pos(mu, spacepos, t) ) );
-  #else
-  //old:
-//  return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*spacepos+2*NC*NC*NDIM*VOLSPACE*t;
-   return c + 2* (a + NC*b+ NC*NC*( get_global_link_pos(mu, spacepos, t) ) );
-#endif
-}
-*/
-
 //it is assumed that idx iterates only over half the number of sites
 void get_even_site(int idx, int * out_space, int * out_t, const inputparameters * const params)
 {
