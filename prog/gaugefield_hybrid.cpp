@@ -23,9 +23,6 @@ void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type, i
 
 	//this has to be done anyways...
 	copy_gaugefield_to_all_tasks();
-
-	return;
-
 }
 
 void Gaugefield_hybrid::init_devicetypearray(cl_device_type primary_device_type)
@@ -70,8 +67,6 @@ void Gaugefield_hybrid::init_devicetypearray(cl_device_type primary_device_type)
 				break;
 		}
 	}
-
-	return;
 }
 
 void Gaugefield_hybrid::init_opencl()
@@ -204,14 +199,10 @@ void Gaugefield_hybrid::init_opencl()
 	logger.trace() << "Creating gaugefield buffer...";
 	clmem_gaugefield = clCreateBuffer(context, CL_MEM_READ_WRITE, get_num_gaugefield_elems() * sizeof(Matrixsu3), 0, &clerr);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
-
-
-	return;
 }
 
 void Gaugefield_hybrid::init_devices(int ndev)
 {
-
 	cl_int clerr = CL_SUCCESS;
 
 	char info[512];
@@ -247,38 +238,29 @@ void Gaugefield_hybrid::init_devices(int ndev)
 	clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units[ndev], NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);;
 	logger.debug() << "\t\t\tCL_DEVICE_MAX_COMPUTE_UNITS: " << max_compute_units[ndev];
-
-	return;
 }
 
 
 
 void Gaugefield_hybrid::init_tasks()
 {
-
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
 		//this is initialized with length 1, meaning one assumes one device per task
 		opencl_modules[ntask] = new Opencl_Module[1];
 		opencl_modules[ntask]->init(queue[ntask], &clmem_gaugefield, get_parameters(), max_compute_units[ntask], get_double_ext(ntask));
 	}
-
-	return;
 }
 
 
 void Gaugefield_hybrid::finalize()
 {
-
 	this->finalize_opencl();
 	this->delete_variables();
-
-	return;
 }
 
 void Gaugefield_hybrid::delete_variables()
 {
-
 	delete [] device_id_for_task;
 
 	delete [] sgf;
@@ -294,13 +276,10 @@ void Gaugefield_hybrid::delete_variables()
 		delete [] opencl_modules[ntask];
 	}
 	delete [] opencl_modules;
-
-	return;
 }
 
 void Gaugefield_hybrid::finalize_opencl()
 {
-
 	cl_int clerr = CL_SUCCESS;
 
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
@@ -323,13 +302,10 @@ void Gaugefield_hybrid::finalize_opencl()
 
 	clerr = clReleaseContext(context);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseContext", __FILE__, __LINE__);
-
-	return;
 }
 
 void Gaugefield_hybrid::init_gaugefield()
 {
-
 	if((get_parameters())->get_startcondition() == START_FROM_SOURCE) {
 		sourcefileparameters parameters_source;
 
@@ -350,8 +326,6 @@ void Gaugefield_hybrid::init_gaugefield()
 	if(get_parameters()->get_startcondition() == HOT_START) {
 		set_gaugefield_hot(get_sgf());
 	}
-
-	return;
 }
 
 void Gaugefield_hybrid::set_gaugefield_cold(Matrixsu3 * field)
@@ -364,7 +338,6 @@ void Gaugefield_hybrid::set_gaugefield_cold(Matrixsu3 * field)
 			}
 		}
 	}
-	return;
 }
 
 
@@ -372,7 +345,6 @@ void Gaugefield_hybrid::set_gaugefield_cold(Matrixsu3 * field)
 void Gaugefield_hybrid::set_gaugefield_hot(Matrixsu3 *)
 {
 	throw Print_Error_Message("Hot start not yet implemented.", __FILE__, __LINE__);
-	return;
 }
 
 void Gaugefield_hybrid::copy_gaugefield_to_all_tasks()
@@ -380,12 +352,10 @@ void Gaugefield_hybrid::copy_gaugefield_to_all_tasks()
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
 		copy_gaugefield_to_task(ntask);
 	}
-	return;
 }
 
 void Gaugefield_hybrid::copy_gaugefield_to_task(int ntask)
 {
-
 	if(ntask < 0 || ntask > get_num_tasks() ) {
 		logger.warn() << "Index out of range, copy_gaugefield_to_device does nothing.";
 		return;
@@ -399,7 +369,6 @@ void Gaugefield_hybrid::copy_gaugefield_to_task(int ntask)
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 
 	free(host_gaugefield);
-	return;
 }
 
 void Gaugefield_hybrid::synchronize(int ntask_reference)
@@ -415,13 +384,11 @@ void Gaugefield_hybrid::synchronize(int ntask_reference)
 		clFinish(queue[ntask]);
 		if(ntask != ntask_reference) copy_gaugefield_to_task(ntask);
 	}
-	return;
 }
 
 
 void Gaugefield_hybrid::copy_gaugefield_from_task(int ntask)
 {
-
 	if(ntask < 0 || ntask > get_num_tasks() ) {
 		logger.warn() << "Index out of range, copy_gaugefield_from_device does nothing.";
 		return;
@@ -435,8 +402,6 @@ void Gaugefield_hybrid::copy_gaugefield_from_task(int ntask)
 	copy_from_ocl_format(get_sgf(), host_gaugefield, parameters);
 
 	free(host_gaugefield);
-
-	return;
 }
 
 cl_device_id Gaugefield_hybrid::get_device_for_task(int ntask)
@@ -453,7 +418,6 @@ cl_mem* Gaugefield_hybrid::get_clmem_gaugefield()
 void Gaugefield_hybrid::set_num_tasks (int num)
 {
 	num_tasks = num;
-	return;
 }
 
 int Gaugefield_hybrid::get_num_tasks ()
@@ -481,7 +445,6 @@ inputparameters * Gaugefield_hybrid::get_parameters ()
 void Gaugefield_hybrid::set_parameters (inputparameters * parameters_val)
 {
 	parameters = parameters_val;
-	return;
 }
 
 
@@ -493,13 +456,11 @@ Matrixsu3 * Gaugefield_hybrid::get_sgf ()
 void Gaugefield_hybrid::set_sgf (Matrixsu3 * sgf_val)
 {
 	sgf = sgf_val;
-	return;
 }
 
 void Gaugefield_hybrid::set_num_devices(int num)
 {
 	num_devices = num;
-	return;
 }
 
 int Gaugefield_hybrid::get_num_devices()
@@ -535,7 +496,6 @@ void Gaugefield_hybrid::copy_gaugefield_to_s_gaugefield (Matrixsu3 * sgfo, hmc_c
 			}
 		}
 	}
-	return;
 }
 
 void Gaugefield_hybrid::copy_s_gaugefield_to_gaugefield(hmc_complex * gf, Matrixsu3 * sgfo)
@@ -559,7 +519,6 @@ void Gaugefield_hybrid::copy_s_gaugefield_to_gaugefield(hmc_complex * gf, Matrix
 			}
 		}
 	}
-	return;
 }
 
 
@@ -574,7 +533,6 @@ void Gaugefield_hybrid::save(int number)
 	outfilename << "conf." << strnumber.str();
 	string outputfile = outfilename.str();
 	save(outputfile);
-	return;
 }
 
 
@@ -601,8 +559,6 @@ void Gaugefield_hybrid::save(string outputfile)
 
 	delete[] gaugefield_buf;
 	delete[] gftmp;
-
-	return;
 }
 
 
@@ -749,7 +705,6 @@ void Gaugefield_hybrid::print_gaugeobservables(int iter)
 	hmc_float plaq = plaquette(&tplaq, &splaq);
 	hmc_complex pol = polyakov();
 	logger.info() << iter << '\t' << plaq << '\t' << tplaq << '\t' << splaq << '\t' << pol.re << '\t' << pol.im << '\t' << sqrt(pol.re * pol.re + pol.im * pol.im);
-	return;
 }
 
 void Gaugefield_hybrid::print_gaugeobservables(int iter, std::string filename)
@@ -767,7 +722,6 @@ void Gaugefield_hybrid::print_gaugeobservables(int iter, std::string filename)
 	gaugeout.precision(15);
 	gaugeout << plaq << "\t" << tplaq << "\t" << splaq << "\t" << pol.re << "\t" << pol.im << "\t" << sqrt(pol.re * pol.re + pol.im * pol.im) << std::endl;
 	gaugeout.close();
-	return;
 }
 
 void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask)
@@ -780,7 +734,6 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask)
 	cl_mem gf = *get_clmem_gaugefield();
 	opencl_modules[ntask]->gaugeobservables(gf, &plaq, &tplaq, &splaq, &pol);
 	logger.info() << iter << '\t' << plaq << '\t' << tplaq << '\t' << splaq << '\t' << pol.re << '\t' << pol.im << '\t' << sqrt(pol.re * pol.re + pol.im * pol.im);
-	return;
 }
 
 void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask, std::string filename)
@@ -801,7 +754,6 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask, st
 	gaugeout.precision(15);
 	gaugeout << plaq << "\t" << tplaq << "\t" << splaq << "\t" << pol.re << "\t" << pol.im << "\t" << sqrt(pol.re * pol.re + pol.im * pol.im) << std::endl;
 	gaugeout.close();
-	return;
 }
 
 #ifdef _PROFILING_
