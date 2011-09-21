@@ -254,20 +254,20 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel, const cl_dev
 		return;
 	}
 
-	size_t platform_name_size;
-	clerr = clGetPlatformInfo(platform, CL_PLATFORM_NAME, 0, NULL, &platform_name_size);
+	size_t platform_vendor_size;
+	clerr = clGetPlatformInfo(platform, CL_PLATFORM_VENDOR, 0, NULL, &platform_vendor_size);
 	if( clerr ) {
-		logger.error() << "Failed to get name of OpenCL platform: ";
+		logger.error() << "Failed to get vendor of OpenCL platform: ";
 		return;
 	}
-	char * platform_name = new char[platform_name_size];
-	clerr = clGetPlatformInfo(platform, CL_PLATFORM_NAME, platform_name_size, platform_name, NULL);
+	char * platform_vendor = new char[platform_vendor_size];
+	clerr = clGetPlatformInfo(platform, CL_PLATFORM_VENDOR, platform_vendor_size, platform_vendor, NULL);
 	if( clerr ) {
-		logger.error() << "Failed to get name of OpenCL platform: ";
+		logger.error() << "Failed to get vendor of OpenCL platform: ";
 		return;
 	}
 
-	if( strcmp("AMD Accelerated Parallel Processing", platform_name) == 0
+	if( strcmp("Advanced Micro Devices, Inc.", platform_vendor) == 0
 	    && device_type == CL_DEVICE_TYPE_GPU ) {
 
 		// get device name
@@ -371,5 +371,5 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel, const cl_dev
 		logger.trace() << "No AMD-GPU -> not scanning for kernel resource requirements";
 	}
 
-	delete[] platform_name;
+	delete[] platform_vendor;
 }
