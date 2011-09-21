@@ -320,6 +320,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			throw Print_Error_Message("\t\tcalc fermion force ingredients using cg is not implemented yet. Aborting..");
 		} else  {
 			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab";
+		}
 	}
 	else{
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield 
