@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE( KernelCreation )
 	// in debug scenarios make the compiler dump the compile results
 	if( logger.beDebug() ) {
 		// the cast is safe here, we don't want to modify the value later
-		putenv(const_cast<char*>("GPU_DUMP_DEVICE_KERNEL=2"));
+		setenv("GPU_DUMP_DEVICE_KERNEL", "2", 0); // can be overriden from outside
 	}
 
 	cl_int err;
