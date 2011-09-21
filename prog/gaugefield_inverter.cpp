@@ -13,7 +13,6 @@ Opencl_Module_Correlator* Gaugefield_inverter::get_task_correlator()
 
 void Gaugefield_inverter::init_tasks()
 {
-
 	//allocate host-memory for solution- and source-buffer
 	int num_sources;
 	if(get_parameters()->get_use_pointsource() == true)
@@ -44,15 +43,11 @@ void Gaugefield_inverter::init_tasks()
 
 	clmem_corr = get_task_correlator()->create_rw_buffer(spinorfield_size * num_sources);
 	clmem_source = get_task_correlator()->create_rw_buffer(spinorfield_size);
-
-
-	return;
 }
 
 void Gaugefield_inverter::delete_variables()
 {
 	Gaugefield_hybrid::delete_variables();
-	return;
 }
 
 void Gaugefield_inverter::finalize_opencl()
@@ -74,19 +69,16 @@ void Gaugefield_inverter::finalize_opencl()
 	delete [] solution_buffer;
 	logger.debug() << "free source buffer";
 	delete [] source_buffer;
-	return;
 }
 
 void Gaugefield_inverter::sync_solution_buffer()
 {
 	size_t sfsize = 12 * get_parameters()->get_spinorfieldsize() * sizeof(spinor);
 	get_task_correlator()->copy_buffer_to_device(solution_buffer, get_clmem_corr(), sfsize);
-	return;
 }
 
 void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 {
-
 	int use_eo = get_parameters()->get_use_eo();
 
 	//decide on type of sources
@@ -124,13 +116,10 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 	delete [] sftmp;
 	cl_int clerr = clReleaseMemObject(clmem_res);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-
-	return;
 }
 
 void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 {
-
 	//for now, make sure clmem_corr is properly filled; maybe later we can increase performance a bit by playing with this...
 	sync_solution_buffer();
 
@@ -288,8 +277,6 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(result_az);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-
-	return;
 }
 
 void Gaugefield_inverter::create_sources()
@@ -312,7 +299,6 @@ void Gaugefield_inverter::create_sources()
 			get_task_correlator()->get_buffer_from_device(get_clmem_source(), &source_buffer[k*get_parameters()->get_vol4d()], sfsize);
 		}
 	}
-	return;
 }
 
 cl_mem Gaugefield_inverter::get_clmem_corr()
