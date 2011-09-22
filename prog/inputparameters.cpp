@@ -141,6 +141,11 @@ void inputparameters::readfile(char* ifn)
 			if(line.find("cgmax") != std::string::npos) val_assign(&cgmax, line);
 			if(line.find("CGmax") != std::string::npos) val_assign(&cgmax, line);
 			if(line.find("Cgmax") != std::string::npos) val_assign(&cgmax, line);
+			
+			if(line.find("Solver") != std::string::npos) solver_assign(&use_cg, line);
+			if(line.find("solver") != std::string::npos) solver_assign(&use_cg, line);
+			if(line.find("SOLVER") != std::string::npos) solver_assign(&use_cg, line);
+			
 			if(line.find("writefrequency") != std::string::npos) val_assign(&writefrequency, line);
 			if(line.find("savefrequency") != std::string::npos) val_assign(&savefrequency, line);
 			if(line.find("saveconfigs") != std::string::npos) bool_assign(&saveconfigs, line);
@@ -346,6 +351,32 @@ void inputparameters::fermact_assign(int * out, std::string line)
 		(*out) = WILSON;
 		return;
 	}
+	throw line;
+	return;
+}
+
+void inputparameters::solver_assign(bool * out, std::string line)
+{
+	size_t pos = line.find("=");
+	std::string value = line.substr(pos + 1);
+
+	if(value.find("Leapfrog") != std::string::npos) {
+		(*out) = false;
+		return;
+	}
+	if(value.find("LEAPFROG") != std::string::npos) {
+		(*out) = false;
+		return;
+	}
+	if(value.find("Cg") != std::string::npos) {
+		(*out) = true;
+		return;
+	}
+	if(value.find("CG") != std::string::npos) {
+		(*out) = true;
+		return;
+	}
+	
 	throw line;
 	return;
 }
@@ -1001,6 +1032,10 @@ void inputparameters::print_info_fermion() const
 		logger.info() << "## Use stochastic sources for inversion" ;
 		logger.info() << "## Number of sources: " << this->get_num_sources();
 	}
+	if(this->get_use_cg() == true)
+		logger.info() << "## Use CG-solver for inversions" ;
+	if(this->get_use_cg() == false)
+		logger.info() << "## Use BiCGStab for inversions";
 	if(this->get_use_eo() == true)
 		logger.info() << "## Use even-odd preconditioning" ;
 	if(this->get_use_eo() == false)
@@ -1057,6 +1092,11 @@ void inputparameters::print_info_fermion(ostream * os) const
 		*os  << "## Use stochastic sources for inversion"  << endl;
 		*os  << "## Number of sources: " << this->get_num_sources()  << endl;
 	}
+	if(this->get_use_cg() == true)
+		*os << "## Use CG-solver for inversions"  << endl;
+	if(this->get_use_cg() == false)
+		*os << "## Use BiCGStab for inversions" << endl;
+	
 	if(this->get_use_eo() == true)
 		*os  << "## Use even-odd preconditioning" << endl;
 	if(this->get_use_eo() == false)

@@ -316,6 +316,7 @@ private:
 	void integrator_assign(int * out, std::string line);
 	void val_assign(std::string * out, std::string line);
 	void bool_assign(bool * out, std::string line);
+	void solver_assign(bool * out, std::string line);
 };
 
 #endif /* _INPUTPARAMETERSH_ */
