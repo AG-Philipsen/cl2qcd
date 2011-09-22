@@ -47,7 +47,7 @@ public:
 	 *
 	 */
 	~Opencl_Module() {
-		finalize();
+		
 	}
 
 	/**

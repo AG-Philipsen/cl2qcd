@@ -28,6 +28,10 @@ void Gaugefield_hmc::delete_variables()
 
 void Gaugefield_hmc::finalize_opencl()
 {
+   /// @todo this must be generalized if more than one device is used for one task
+  for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
+    opencl_modules[ntask]->finalize();
+  }
 
 	Gaugefield_hybrid::finalize_opencl();
 	return;
