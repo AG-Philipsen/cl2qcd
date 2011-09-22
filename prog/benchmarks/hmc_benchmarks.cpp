@@ -38,14 +38,22 @@ int main(int argc, char* argv[])
 	hmc_observables obs;
 
 	Gaugefield_hmc gaugefield;
-	cl_device_type * devicetypes = new cl_device_type[parameters.get_num_dev()];
-	gaugefield.init_devicetypes_array(devicetypes, &parameters);
+
+	int numtasks = 1;
+	cl_device_type primary_device;
+	switch ( parameters.get_use_gpu() ) {
+		case true :
+			primary_device = CL_DEVICE_TYPE_GPU;
+			break;
+		case false :
+			primary_device = CL_DEVICE_TYPE_CPU;
+			break;
+	}
+
 	logger.trace() << "init gaugefield" ;
-	gaugefield.init(parameters.get_num_dev(), devicetypes, &parameters);
+	gaugefield.init(numtasks, primary_device, &parameters);
 	logger.trace() << "initial gaugeobservables:";
-	gaugefield.print_gaugeobservables(&poly_timer, &plaq_timer);
-	gaugefield.copy_gaugefield_to_devices();
-	logger.trace() << "Moved stuff to device";
+	gaugefield.print_gaugeobservables(0);
 	init_timer.add();
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -84,15 +92,13 @@ int main(int argc, char* argv[])
 	} else {
 		logger.warn() << "Could not open " << profiling_out;
 	}
-	gaugefield.get_devices()[0].print_profiling(profiling_out.str());
+	gaugefield.print_profiling(profiling_out.str());
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	gaugefield.finalize();
-
-	delete[] devicetypes;
 
 	return 0;
 }
