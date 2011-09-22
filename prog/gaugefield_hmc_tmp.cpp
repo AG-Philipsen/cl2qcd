@@ -87,6 +87,17 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::st
 	return;
 }
 
+void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter)
+{
+	hmc_float exp_deltaH = exp(obs.deltaH);
+	//	logger.info() << setw(8) << setfill(' ') << iter << "\t" << setprecision(15) << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq << "\t" << obs.poly.re << "\t" << obs.poly.im << "\t" << sqrt(obs.poly.re * obs.poly.re + obs.poly.im * obs.poly.im) <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept;
+
+	//short version of output, all obs are collected in the output file anyways...
+	logger.info() << setw(8) << setfill(' ') << iter << "\t" << setprecision(15) << obs.plaq << "\t" << obs.poly.re << "\t" << obs.poly.im << "\t" <<  exp_deltaH;
+
+	return;
+}
+
 void Gaugefield_hmc::calc_total_force(usetimer * solvertimer)
 {
 	//CP: make sure that the output field is set to zero
