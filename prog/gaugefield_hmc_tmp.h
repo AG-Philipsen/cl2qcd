@@ -76,6 +76,7 @@ class Gaugefield_hmc : public Gaugefield_hybrid {
 	void perform_hmc_step(hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* solver_timer);
 	
 	void print_hmcobservables(hmc_observables obs, int iter, std::string filename);
+	void print_hmcobservables(hmc_observables obs, int iter);
 	
 	void md_update_gaugemomentum(hmc_float eps, usetimer * solvertimer);
 	void md_update_gaugemomentum_gauge(hmc_float eps);

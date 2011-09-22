@@ -82,6 +82,8 @@ int main(int argc, char* argv[])
 			acc_rate += obs.accept;
 			if( ( (iter + 1) % writefreq ) == 0 ) {
 				gaugefield.print_hmcobservables(obs, iter, gaugeout_name.str());
+				//print (some info) to stdout if needed:
+				//				gaugefield.print_hmcobservables(obs, iter);
 			}
 			if( parameters.get_saveconfigs() == true && ( (iter + 1) % savefreq ) == 0 ) {
 				//CP: I dont think this is necessary at the moment...
