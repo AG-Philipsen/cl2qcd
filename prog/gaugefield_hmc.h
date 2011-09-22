@@ -2,8 +2,8 @@
  * Provides a class for gauge fields
  *
  */
-#ifndef _GAUGEFIELDHMCTMPH_
-#define _GAUGEFIELDHMCTMPH_
+#ifndef _GAUGEFIELDHMCH_
+#define _GAUGEFIELDHMCH_
 
 #include <cstdlib>
 #include <fstream>
@@ -106,4 +106,4 @@ private:
 
 };
 
-#endif /* _GAUGEFIELDHMCTMPH_ */
+#endif /* _GAUGEFIELDHMCH_ */

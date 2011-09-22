@@ -1,4 +1,4 @@
-#include "gaugefield_hmc_tmp.h"
+#include "gaugefield_hmc.h"
 
 
 Opencl_Module_Hmc* Gaugefield_hmc::get_task_hmc(int dev)

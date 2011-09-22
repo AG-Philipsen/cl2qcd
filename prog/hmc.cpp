@@ -1,4 +1,4 @@
-#include "hmc_tmp.h"
+#include "hmc.h"
 
 int main(int argc, char* argv[])
 {
