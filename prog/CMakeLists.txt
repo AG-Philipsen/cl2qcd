@@ -193,37 +193,6 @@ target_link_libraries( hmc_tmp
 	einhard
 )
 
-add_executable( hmc
-	hmc.cpp
-	host_geometry.cpp
-	host_operations_complex.cpp
-	host_operations_gaugefield.cpp
-	host_operations_su3matrix.cpp
-	host_operations_matrix.cpp
-	gaugefield.cpp
-	gaugefield_inversion.cpp
-	inputparameters.cpp
-	host_readgauge.cpp
-	host_random.cpp
-	opencl.cpp
-	opencl_compiler.cpp
-	opencl_fermions.cpp
-	host_use_timer.cpp
-	host_writegaugefield.cpp
-	logger.cpp
-	gaugefield_hmc.cpp
-	opencl_hmc.cpp
-	exceptions.cpp
-)
-target_link_libraries( hmc
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
-	${Boost_LIBRARIES}
-	klepsydra
-	einhard
-)
-
 add_library( klepsydra
 	klepsydra/timer.cpp
 	klepsydra/monotonic.cpp )
