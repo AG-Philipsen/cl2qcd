@@ -146,6 +146,10 @@ void Opencl_Module_Hmc::clear_buffers()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_phi_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		clerr = clReleaseMemObject(clmem_x_odd);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		clerr = clReleaseMemObject(clmem_y_odd);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	}
 	else{
 		clerr = clReleaseMemObject(clmem_phi_inv);
@@ -381,7 +385,13 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//  which then has to be the source of the inversion
 	if(get_parameters()->get_use_eo() == true){
-		
+		Opencl_Module_Fermions::Qplus_eoprec(clmem_phi_inv_eoprec, clmem_phi_eoprec , *get_gaugefield());
+
+		//debugging
+		hmc_float s_fermion;
+		set_float_to_global_squarenorm_eoprec_device(clmem_phi_eoprec, clmem_s_fermion);
+		get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
+		logger.debug() << "\tsquarenorm init field after update = " << s_fermion;
 	}
 	else{
 		Opencl_Module_Fermions::Qplus(clmem_phi_inv, clmem_phi , *get_gaugefield());
@@ -403,7 +413,8 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		//this is broken right now since the CG doesnt work!!
 			throw Print_Error_Message("\t\tcalc fermion force ingredients using cg is not implemented yet. Aborting..");
 		} else  {
-			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab";
+			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab with eoprec.";
+			logger.warn() << "not implemented yet...";
 		}
 	}
 	else{
@@ -412,7 +423,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			//this is broken right now since the CG doesnt work!!
 			throw Print_Error_Message("\t\tcalc fermion force ingredients using cg is not implemented yet. Aborting..");
 		} else  {
-			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab";
+			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab without eoprec";
 
 			/**
 			* The first inversion calculates
@@ -532,7 +543,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	// the inversion with respect to the input-gaussian field and the new gaugefield has taken place during the leapfrog
 	//  and was saved in clmem_phi_inv during that step.
 	if(get_parameters()->get_use_eo() == true){
-		
+		set_float_to_global_squarenorm_eoprec_device(clmem_phi_inv_eoprec, clmem_s_fermion);
 	}
 	else{
 		set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_s_fermion);
@@ -579,7 +590,7 @@ void Opencl_Module_Hmc::calc_spinorfield_init_energy()
 	//Suppose the initial spinorfield is saved in phi_inv
 	//  it is created in generate_gaussian_spinorfield_device
 	if(get_parameters()->get_use_eo() == true){
-		
+		Opencl_Module_Fermions::set_float_to_global_squarenorm_eoprec_device(clmem_phi_inv_eoprec, clmem_energy_init);
 	}
 	else{
 		Opencl_Module_Fermions::set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_energy_init);
