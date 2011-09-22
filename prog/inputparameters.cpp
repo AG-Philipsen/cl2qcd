@@ -102,8 +102,13 @@ void inputparameters::readfile(char* ifn)
 		bool cswset = false;
 
 		while (infile.good()) {
-			std::string line;
-			infile >> line;
+			char linebuf[256];
+			infile.getline(linebuf, 256);
+			std::string line(linebuf);
+			if(line.length() == 255) {
+				/// @todo Handle such lines properly
+				logger.fatal() << "The file contains a line longer than 255 characters - bailing out";
+			}
 			if(line.find("#") != std::string::npos) continue; //allow comments
 			if(line.find("kappa") != std::string::npos) val_assign(&kappa, line);
 			if(line.find("Kappa") != std::string::npos) val_assign(&kappa, line);
