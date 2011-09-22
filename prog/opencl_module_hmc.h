@@ -89,6 +89,7 @@ public:
 	cl_mem get_clmem_new_p();
 	cl_mem get_clmem_new_u();
 	cl_mem get_clmem_phi();
+	cl_mem get_clmem_phi_eoprec();
 	
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
@@ -103,24 +104,27 @@ public:
 	void set_float_to_gaugemomentum_squarenorm_device(cl_mem in, cl_mem out);
 	void generate_gaussian_gaugemomenta_device();
 	void generate_gaussian_spinorfield_device();
+	void generate_gaussian_spinorfield_eoprec_device();
 	void md_update_gaugemomentum_device(hmc_float eps);
 	void md_update_gaugefield_device(hmc_float eps);
 	void set_zero_clmem_force_device();
 	void gauge_force_device();
 	void fermion_force_device();
+	void fermion_force_eoprec_device(cl_mem Y, cl_mem X);
 	void stout_smeared_fermion_force_device();
-	
 	
 protected:
 
 #ifdef _PROFILING_
 
 	usetimer timer_generate_gaussian_spinorfield;
+	usetimer timer_generate_gaussian_spinorfield_eoprec;
 	usetimer timer_generate_gaussian_gaugemomenta;
 	usetimer timer_md_update_gaugefield;
 	usetimer timer_md_update_gaugemomenta;
 	usetimer timer_gauge_force;
 	usetimer timer_fermion_force;
+	usetimer timer_fermion_force_eoprec;
 	usetimer timer_set_zero_gaugemomentum;
 	usetimer timer_gaugemomentum_squarenorm;
 	usetimer timer_stout_smear_fermion_force;
@@ -153,11 +157,13 @@ private:
 
 	//kernels
 	cl_kernel generate_gaussian_spinorfield;
+	cl_kernel generate_gaussian_spinorfield_eoprec;
 	cl_kernel generate_gaussian_gaugemomenta;
 	cl_kernel md_update_gaugefield;
 	cl_kernel md_update_gaugemomenta;
 	cl_kernel gauge_force;
 	cl_kernel fermion_force;
+	cl_kernel fermion_force_eoprec;
 	cl_kernel stout_smear_fermion_force;
 	cl_kernel set_zero_gaugemomentum;
 	cl_kernel gaugemomentum_squarenorm;
@@ -177,8 +183,13 @@ private:
 	cl_mem clmem_force;
 	//inverted spinorfield
 	cl_mem clmem_phi_inv;
+	cl_mem clmem_phi_inv_eoprec;
 	//D(gaussian spinorfield)
 	cl_mem clmem_phi;
+	cl_mem clmem_phi_eoprec;
+	//these are the odd vectors for the force-calculation
+	cl_mem clmem_x_odd;
+	cl_mem clmem_y_odd;
 
 	ClSourcePackage basic_hmc_code;
 
