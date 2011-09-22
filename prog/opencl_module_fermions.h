@@ -45,7 +45,8 @@ void Qplus_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
 void Qminus_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
 void QplusQminus_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
 void Aee_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
-
+void Qplus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
+void Qminus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
 
 /**
  * An OpenCL device
@@ -114,10 +115,13 @@ public:
 	void Qplus_eoprec(cl_mem in, cl_mem out, cl_mem gf);
 	void Qminus_eoprec(cl_mem in, cl_mem out, cl_mem gf);
 	void Aee(cl_mem in, cl_mem out, cl_mem gf);
+	void Aee_minus(cl_mem in, cl_mem out, cl_mem gf);
 	//        explicit
 	void gamma5_eoprec_device(cl_mem inout);
 	void M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out);
 	void M_tm_sitediagonal_device(cl_mem in, cl_mem out);
+	void M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out);
+	void M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out);
 	void dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd);
 
 	//    solver operations

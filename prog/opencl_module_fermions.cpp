@@ -32,6 +32,14 @@ void Aee_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
 {
 	that->Aee(in, out, gf);
 }
+void Qplus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+{
+	that->Qplus_eoprec(in, out, gf);
+}
+void Qminus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+{
+	that->Qminus_eoprec(in, out, gf);
+}
 
 
 void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
@@ -202,6 +210,7 @@ void Opencl_Module_Fermions::clear_kernels()
 {
 	Opencl_Module_Spinors::clear_kernels();
 
+	logger.trace()<< "clearing fermion kernels...";
 	cl_uint clerr = CL_SUCCESS;
 
 	if(M_wilson) {
@@ -452,6 +461,53 @@ void Opencl_Module_Fermions::Aee(cl_mem in, cl_mem out, cl_mem gf)
 	}
 }
 
+/**
+ *  This is the equivalent of the above function, but for the lower 
+ *  flavour, which essentially means mu -> -mu in the tm-case and
+ *  no changes in the wilson case.
+ */
+void Opencl_Module_Fermions::Aee_minus(cl_mem in, cl_mem out, cl_mem gf)
+{
+	int even = EVEN;
+	int odd = ODD;
+
+	/**
+	 * This is the even-odd preconditioned fermion matrix with the 
+	 * non-trivial inversion on the even sites (see DeGran/DeTar p. 174).
+	 * If one has fermionmatrix
+	 * 	M = R + D,
+	 * then Aee is:
+	 * Aee = R_e - D_eo R_o_inv D_oe
+	 * and Aee_minus is:
+	 * Aee_minus = R_e(-mu) - D_eo R_o(-mu)_inv D_oe
+	 */
+	if(get_parameters()->get_fermact() == WILSON) {
+		//in this case, the diagonal matrix is just 1 and falls away.
+		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
+		dslash_eoprec_device(clmem_tmp_eoprec_1, out, gf, even);
+		saxpy_eoprec_device(out, in, clmem_one, out);
+	} 
+	else if(get_parameters()->get_fermact() == TWISTEDMASS) {
+		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
+		M_tm_inverse_sitediagonal_minus_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
+		dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even);
+		M_tm_sitediagonal_minus_device(in, clmem_tmp_eoprec_1);
+		saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
+	}
+}
+
+void Opencl_Module_Fermions::Qplus_eoprec(cl_mem in, cl_mem out, cl_mem gf){
+	Aee(in, out, gf);
+	gamma5_eoprec_device(out);
+	return;
+}
+
+void Opencl_Module_Fermions::Qminus_eoprec(cl_mem in, cl_mem out, cl_mem gf){
+	Aee_minus(in, out, gf);
+	gamma5_eoprec_device(out);
+	return;
+}
+
 //explicit eoprec fermionmatrix functions
 void Opencl_Module_Fermions::gamma5_eoprec_device(cl_mem inout)
 {
@@ -521,6 +577,37 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out)
 	enqueueKernel(M_tm_sitediagonal , gs2, ls2);
 }
 
+void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out)
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(M_tm_inverse_sitediagonal_minus, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(M_tm_inverse_sitediagonal_minus, 0, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(M_tm_inverse_sitediagonal_minus, 1, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel( M_tm_inverse_sitediagonal_minus, gs2, ls2);
+}
+
+void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out)
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(M_tm_sitediagonal_minus, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(M_tm_sitediagonal_minus, 0, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(M_tm_sitediagonal_minus, 1, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel(M_tm_sitediagonal_minus , gs2, ls2);
+}
 
 bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf)
 {
