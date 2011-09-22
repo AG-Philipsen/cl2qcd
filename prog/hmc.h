@@ -1,6 +1,6 @@
 /** @file
  *
- * Everything required by HMC's main()
+ * Everything required by inverter's main()
  */
 #ifndef _HMCH_
 #define _HMCH_
@@ -9,9 +9,8 @@
 #include "general_header.h"
 
 //should only be included in main prog
-#include "types_hmc.h"
-#include "gaugefield_inversion.h"
 #include "gaugefield_hmc.h"
-
+#include "gaugefield_hybrid.h"
 string const version = "0.1b";
+
 #endif /* _HMCH_ */
