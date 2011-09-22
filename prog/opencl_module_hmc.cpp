@@ -477,14 +477,62 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
 			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
 			
+			/**
+			 * At this point, one has calculated X_even and Y_odd.
+			 * For the force-calculation one needs the odd parts of 
+			 * the solutions. If one has a fermionmatrix
+			 * 	M = R + D
+			 * these are:
+			 * 	X_odd = -R(-mu)_inv D X_even
+			 * 	Y_odd = -R(mu)_inv D Y_even
+			 */
+			///@todo re-calculate the above formulae
+			
+			
 			///@todo force-calculation
+			///CP: check if this can be done with the non-eo force-function...
 		}
 	}
 	else{
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield 
 		if(get_parameters()->get_use_cg() == true) { 
-			//this is broken right now since the CG doesnt work!!
-			throw Print_Error_Message("\t\tcalc fermion force ingredients using cg is not implemented yet. Aborting..");
+			/**
+			* The first inversion calculates
+			* X = phi = (Qplusminus)^-1 psi
+			* out of
+			* Qplusminus phi = psi
+			*/
+			logger.debug() << "\t\t\tstart solver";
+
+			/** @todo at the moment, we can only put in a cold spinorfield
+			  * or a point-source spinorfield as trial-solution
+			  */
+			/**
+			  * Trial solution for the spinorfield
+			  */
+			set_spinorfield_cold_device(get_clmem_inout());
+
+			//debugging
+			hmc_float s_fermion;
+			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
+			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
+			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
+
+			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
+			Opencl_Module_Fermions::solver(QplusQminus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, solvertimer);
+
+			//debugging
+			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
+			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
+			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
+
+			/**
+			 * Y is now just
+			 * 	Y = (Qminus) X = (Qminus) (Qplusminus)^-1 psi =
+			 * 		= (Qplus)^-1 psi
+			 */
+			Opencl_Module_Fermions::Qminus(this->get_clmem_inout(), clmem_phi_inv, this->clmem_new_u);
+			
 		} else  {
 			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab without eoprec";
 
