@@ -364,11 +364,19 @@ void inputparameters::solver_assign(bool * out, std::string line)
 		(*out) = false;
 		return;
 	}
+	if(value.find("leapfrog") != std::string::npos) {
+		(*out) = false;
+		return;
+	}
 	if(value.find("LEAPFROG") != std::string::npos) {
 		(*out) = false;
 		return;
 	}
 	if(value.find("Cg") != std::string::npos) {
+		(*out) = true;
+		return;
+	}
+	if(value.find("cg") != std::string::npos) {
 		(*out) = true;
 		return;
 	}
