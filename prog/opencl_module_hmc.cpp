@@ -408,6 +408,7 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 {
 	if(get_parameters()->get_use_eo() == true){
+	  bool converged = false;
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 		if(get_parameters()->get_use_cg() == true) { 
 		//this is broken right now since the CG doesnt work!!
@@ -430,24 +431,25 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			/**
 			  * Trial solution for the spinorfield
 			  */
-			set_eoprec_spinorfield_cold_device(get_clmem_inout_eoprec());
-
+			set_zero_spinorfield_eoprec_device(get_clmem_inout_eoprec());
+			gamma5_eoprec_device(get_clmem_inout_eoprec());
 			//debugging
 			hmc_float s_fermion;
 			set_float_to_global_squarenorm_eoprec_device(get_clmem_inout_eoprec(), clmem_s_fermion);
 			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
 			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
 
-			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			Opencl_Module_Fermions::bicgstab_eoprec(Qplus_eoprec_call, this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u);
+			converged = Opencl_Module_Fermions::bicgstab_eoprec(Qplus_eoprec_call, this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u);
+			if(converged == false) logger.debug() << "solver did not solve";
+			else logger.debug() << "solver solved" ;
 
 			//debugging
-			set_float_to_global_squarenorm_eoprec_device(get_clmem_inout_eoprec(), clmem_s_fermion);
+ 			set_float_to_global_squarenorm_eoprec_device(get_clmem_inout_eoprec(), clmem_s_fermion);
 			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
 			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
 
 			//store this result in clmem_phi_inv
-			copy_buffer_on_device(get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
+			copy_buffer_on_device(get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, get_parameters()->get_eo_sf_buf_size());
 
 			/**
 			 * Now, one has to calculate
@@ -459,7 +461,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			 */
 
 			//copy former solution to clmem_source
-			copy_buffer_on_device(get_clmem_inout_eoprec(), get_clmem_source_even(), sizeof(spinor) * get_parameters()->get_spinorfieldsize());
+			copy_buffer_on_device(get_clmem_inout_eoprec(), get_clmem_source_even(), get_parameters()->get_eo_sf_buf_size());
 			logger.debug() << "\t\t\tstart solver";
 
 			//debugging
