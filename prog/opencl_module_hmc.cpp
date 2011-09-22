@@ -62,8 +62,8 @@ void Opencl_Module_Hmc::fill_kernels()
 
 	//init kernels for HMC
 	if(get_parameters()->get_use_eo() == true){
-		generate_gaussian_spinorfield_eoprec = createKernel("generate_gaussian_spinorfield_eoprec") << basic_hmc_code << "random.cl" << "spinorfield_gaussian_eoprec.cl";
-		fermion_force_eoprec = createKernel("fermion_force_eoprec") << basic_hmc_code << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eoprec.cl";
+		generate_gaussian_spinorfield_eoprec = createKernel("generate_gaussian_spinorfield_eoprec") << basic_hmc_code << "random.cl" << "spinorfield_eo_gaussian.cl";
+		fermion_force_eoprec = createKernel("fermion_force_eoprec") << basic_hmc_code << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 	}
 	else{
 		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_hmc_code << "random.cl" << "spinorfield_gaussian.cl";
@@ -329,6 +329,16 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( generate_gaussian_gaugemomenta , gs2, ls2);
+}
+
+void Opencl_Module_Hmc::generate_spinorfield_gaussian(){
+	if(get_parameters()->get_use_eo()== true){
+		this->generate_gaussian_spinorfield_eoprec_device();
+	}
+	else{
+		this->generate_gaussian_spinorfield_device();
+	}
+	return;
 }
 
 void Opencl_Module_Hmc::generate_gaussian_spinorfield_device()

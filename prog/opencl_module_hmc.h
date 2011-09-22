@@ -94,6 +94,7 @@ public:
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
 	void md_update_spinorfield();
+	void generate_spinorfield_gaussian();
 	hmc_observables metropolis(hmc_float rnd, hmc_float beta);
 	void calc_spinorfield_init_energy();
 	void calc_gauge_force();

@@ -40,20 +40,11 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 {
 	size_t gfsize = get_parameters()->get_gf_buf_size();
 	size_t gmsize = get_parameters()->get_gm_buf_size();
-
-	//init gauge_momenta, saved in clmem_p
-	logger.debug() << "\tinit gauge momentum" ;
-	get_task_hmc(0)->generate_gaussian_gaugemomenta_device();
-
-	//init/update spinorfield phi
-	logger.debug() << "\tinit spinorfield " ;
-	get_task_hmc(0)->generate_gaussian_spinorfield_device();
-	get_task_hmc(0)->calc_spinorfield_init_energy();
-	logger.debug() << "\tperform md update of spinorfield" ;
-	get_task_hmc(0)->md_update_spinorfield();
-
+	
+	logger.debug() << "\tinit spinorfield and gaugemomentum" ;
+	this->init_gaugemomentum_spinorfield();
+	
 	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
-
 	//copy u->u' p->p' for the integrator
 	get_task_hmc(0)->copy_buffer_on_device(*(get_task_hmc(0)->get_gaugefield()), get_task_hmc(0)->get_clmem_new_u(), gfsize);
 	get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_p(), get_task_hmc(0)->get_clmem_new_p(), gmsize);
@@ -256,3 +247,12 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		Print_Error_Message("More than 2 timescales is not implemented yet. Aborting...");
 }
 
+void Gaugefield_hmc::init_gaugemomentum_spinorfield(){
+	//init gauge_momenta, saved in clmem_p
+	get_task_hmc(0)->generate_gaussian_gaugemomenta_device();
+	//init/update spinorfield phi
+	get_task_hmc(0)->generate_spinorfield_gaussian();
+	get_task_hmc(0)->calc_spinorfield_init_energy();
+	get_task_hmc(0)->md_update_spinorfield();
+
+}

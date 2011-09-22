@@ -81,6 +81,7 @@ class Gaugefield_hmc : public Gaugefield_hybrid {
 	void md_update_gaugemomentum_gauge(hmc_float eps);
 	void md_update_gaugemomentum_fermion(hmc_float eps, usetimer * solvertimer);
 	void md_update_gaugefield(hmc_float eps);
+	void init_gaugemomentum_spinorfield();
 	
 	void integrator(usetimer * solvertimer);
 	void leapfrog(usetimer * solvertimer);
