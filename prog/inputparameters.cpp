@@ -1113,7 +1113,7 @@ void inputparameters::print_info_fermion(ostream * os) const
 	
 	//print extra warning if BC are set to default since this is a serious source of errors...
 	if ( this->get_theta_fermion_spatial() == 0. && this->get_theta_fermion_temporal() == 0.) {
-		logger.warn() << "\nNOTE: BCs have been set to periodic values by default!!\nTo change this use e.g. ThetaT/ThetaS in the input-file.\n";
+		*os << "\nNOTE: BCs have been set to periodic values by default!!\nTo change this use e.g. ThetaT/ThetaS in the input-file.\n";
 	}
 }
 

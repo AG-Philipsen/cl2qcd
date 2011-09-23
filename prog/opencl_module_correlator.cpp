@@ -38,6 +38,8 @@ void Opencl_Module_Correlator::fill_kernels()
 	basic_correlator_code = basic_fermion_code;
 	logger.debug() << "Create correlator kernels...";
 
+	create_point_source = 0;
+	create_stochastic_source = 0;
 	if(get_parameters()->get_use_pointsource() == true)
 		create_point_source = createKernel("create_point_source") << basic_fermion_code << "spinorfield_point_source.cl";
 	else
@@ -93,10 +95,14 @@ void Opencl_Module_Correlator::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(correlator_az);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(create_point_source);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(create_stochastic_source);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	if(create_point_source != 0) {
+	  clerr = clReleaseKernel(create_point_source);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
+	if(create_stochastic_source != 0) {
+	  clerr = clReleaseKernel(create_stochastic_source);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
 	return;
 }
 
@@ -267,10 +273,14 @@ void Opencl_Module_Correlator::print_profiling(std::string filename)
 {
 	Opencl_Module::print_profiling(filename);
 	const char * kernelName;
-	kernelName = "create_point_source";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
-	kernelName = "create_stochastic_source";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	if(create_point_source != 0) {
+	  kernelName = "create_point_source";
+	  Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	}
+	if(create_stochastic_source != 0) { 
+	  kernelName = "create_stochastic_source";
+	  Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	}
 	if( get_parameters()->get_corr_dir() == 3 ) {
 		kernelName = "correlator_ps_z";
 		Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
