@@ -921,11 +921,14 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 
 bool Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf)
 {
-	int cgmax = get_parameters()->get_cgmax();
+	//CP: "old" version, including debugging infos
+	/*
 	//CP: these have to be on the host
 	hmc_float resid;
-	int iter;
-	for(iter = 0; iter < cgmax; iter ++) {
+
+	int cgmax = get_parameters()->get_cgmax();
+	for(int iter = 0; iter < cgmax; iter ++) {
+	  printf("\niter: %i\n", iter);
 		if(iter % get_parameters()->get_iter_refresh() == 0) {
 			f(this, inout, clmem_rn, gf);
 			saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
@@ -934,34 +937,35 @@ bool Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem sou
 		}
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		set_complex_to_scalar_product_device(clmem_rn, clmem_rn, clmem_omega);
-//    hmc_complex omega;
-//    get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
-//    cout << "omega: " << omega.re << " " << omega.im << endl;
+    hmc_complex omega;
+    get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
+    cout << "omega: " << omega.re << " " << omega.im << endl;
 		//A pn --> v
 		f(this, clmem_p, clmem_v, gf);
 		set_complex_to_scalar_product_device(clmem_p, clmem_v, clmem_rho);
-//    hmc_complex rho;
-//    get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
-//    cout << "rho: " << rho.re << " " << rho.im << endl;
+    hmc_complex rho;
+    get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
+    cout << "rho: " << rho.re << " " << rho.im << endl;
 
 		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
-//    hmc_complex alpha;
-//    get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
-//    cout << "alpha: " << alpha.re << " " << alpha.im << endl;
-
+    hmc_complex alpha;
+    get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
+    cout << "alpha: " << alpha.re << " " << alpha.im << endl;
 		set_complex_to_product_device(clmem_alpha, clmem_minusone, clmem_tmp1);
-//    hmc_complex tmp1;
-//    get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
-//    cout << "tmp1: " << tmp1.re << " " << tmp1.im << endl;
+    hmc_complex tmp1;
+    get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
+    cout << "tmp1: " << tmp1.re << " " << tmp1.im << endl;
 
 		//xn+1
-		saxpy_device(inout, clmem_p, clmem_tmp1, inout);
+		//saxpy_device(inout, clmem_p, clmem_tmp1, inout);
+    saxpy_device(clmem_p, inout, clmem_tmp1, inout);
 		//rn+1 -> rhat
-		saxpy_device(clmem_rn, clmem_v, clmem_alpha, clmem_rhat);
+		//saxpy_device(clmem_rn, clmem_v, clmem_alpha, clmem_rhat);
+		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_rhat);
 
 		set_float_to_global_squarenorm_device(clmem_rhat, clmem_resid);
 		get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-		cout << "resid: " << resid << endl;
+				cout << "resid: " << resid << endl;
 
 		if(resid < get_parameters()->get_solver_prec()) {
 			//???
@@ -972,15 +976,15 @@ bool Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem sou
 			//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
 			set_complex_to_scalar_product_device(clmem_rhat, clmem_rhat, clmem_rho_next);
 			set_complex_to_ratio_device(clmem_rho_next, clmem_omega, clmem_beta);
-//          hmc_complex beta;
-//    get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
-//    cout << "beta: " << beta.re << " " << beta.im << endl;
+          hmc_complex beta;
+    get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
+    cout << "beta: " << beta.re << " " << beta.im << endl;
 
 			//pn+1 = rn+1 + beta*pn
 			set_complex_to_product_device(clmem_beta, clmem_minusone, clmem_tmp2);
-//    hmc_complex tmp2;
-//    get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
-//    cout << "tmp2: " << tmp2.re << " " << tmp2.im << endl;
+    hmc_complex tmp2;
+    get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
+    cout << "tmp2: " << tmp2.re << " " << tmp2.im << endl;
 
 			saxpy_device(clmem_p, clmem_rhat, clmem_tmp2, clmem_p);
 
@@ -990,11 +994,118 @@ bool Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem sou
 		}
 	}
 	return false;
+	*/
+
+	//"new" version
+	//CP: here I do not use clmem_rnhat anymore and saved one scalar_product (omega)
+	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
+	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter ++) {
+		if(iter % get_parameters()->get_iter_refresh() == 0) {
+		  //rn = A*inout
+		  f(this, inout, clmem_rn, gf);
+		  //rn = source - A*inout
+		  saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
+		  //p = rn
+		  copy_buffer_on_device(clmem_rn, clmem_p, get_parameters()->get_sf_buf_size());
+		  //omega = (rn,rn)
+		  set_complex_to_scalar_product_device(clmem_rn, clmem_rn, clmem_omega);
+		}
+		else{
+		  //update omega
+		  copy_buffer_on_device(clmem_rho_next, clmem_omega, sizeof(hmc_complex));
+		}
+		//v = A pn
+		f(this, clmem_p, clmem_v, gf);
+		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
+		set_complex_to_scalar_product_device(clmem_p, clmem_v, clmem_rho);
+		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
+		set_complex_to_product_device(clmem_alpha, clmem_minusone, clmem_tmp1);
+		
+		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
+		saxpy_device(clmem_p, inout, clmem_tmp1, inout);
+		//rn+1 = rn - alpha*v -> rhat 
+		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_rn);
+
+		//calc residuum
+		//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
+		set_complex_to_scalar_product_device(clmem_rn, clmem_rn, clmem_rho_next);
+		hmc_float resid;
+		get_buffer_from_device(clmem_rho_next, &resid, sizeof(hmc_float));
+		//this is the orig. call
+		//set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
+		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+		
+		///@todo perhaps one should be able to print this somehow
+		//cout << "resid: " << resid << endl;
+
+		if(resid < get_parameters()->get_solver_prec())
+			return true;
+		
+		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
+		set_complex_to_scalar_product_device(clmem_rn, clmem_rn, clmem_rho_next);
+		set_complex_to_ratio_device(clmem_rho_next, clmem_omega, clmem_beta);
+
+		//pn+1 = rn+1 + beta*pn
+		set_complex_to_product_device(clmem_beta, clmem_minusone, clmem_tmp2);
+		saxpy_device(clmem_p, clmem_rn, clmem_tmp2, clmem_p);
+	}
+	return false;
 }
 
 bool Opencl_Module_Fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf)
 {
-	/// to be implemented if the above one has been checked..
+  //this corresponds to the above function
+	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
+	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter ++) {
+		if(iter % get_parameters()->get_iter_refresh() == 0) {
+		  //rn = A*inout
+		  f(this, inout, clmem_rn, gf);
+		  //rn = source - A*inout
+		  saxpy_eoprec_device(clmem_rn, source, clmem_one, clmem_rn);
+		  //p = rn
+		  copy_buffer_on_device(clmem_rn, clmem_p, get_parameters()->get_eo_sf_buf_size());
+		  //omega = (rn,rn)
+		  set_complex_to_scalar_product_eoprec_device(clmem_rn, clmem_rn, clmem_omega);
+		}
+		else{
+		  //update omega
+		  copy_buffer_on_device(clmem_rho_next, clmem_omega, sizeof(hmc_complex));
+		}
+		//v = A pn
+		f(this, clmem_p, clmem_v, gf);
+		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
+		set_complex_to_scalar_product_eoprec_device(clmem_p, clmem_v, clmem_rho);
+		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
+		set_complex_to_product_device(clmem_alpha, clmem_minusone, clmem_tmp1);
+		
+		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
+		saxpy_eoprec_device(clmem_p, inout, clmem_tmp1, inout);
+		//rn+1 = rn - alpha*v -> rhat 
+		saxpy_eoprec_device(clmem_v, clmem_rn, clmem_alpha, clmem_rn);
+
+		//calc residuum
+		//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
+		set_complex_to_scalar_product_eoprec_device(clmem_rn, clmem_rn, clmem_rho_next);
+		hmc_float resid;
+		get_buffer_from_device(clmem_rho_next, &resid, sizeof(hmc_float));
+		//this is the orig. call
+		//set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
+		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+		
+		///@todo perhaps one should be able to print this somehow
+		//cout << "resid: " << resid << endl;
+
+		if(resid < get_parameters()->get_solver_prec())
+			return true;
+		
+		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
+		set_complex_to_scalar_product_eoprec_device(clmem_rn, clmem_rn, clmem_rho_next);
+		set_complex_to_ratio_device(clmem_rho_next, clmem_omega, clmem_beta);
+
+		//pn+1 = rn+1 + beta*pn
+		set_complex_to_product_device(clmem_beta, clmem_minusone, clmem_tmp2);
+		saxpy_eoprec_device(clmem_p, clmem_rn, clmem_tmp2, clmem_p);
+	}
 	return false;
 }
 
