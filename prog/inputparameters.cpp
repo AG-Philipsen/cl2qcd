@@ -364,19 +364,11 @@ void inputparameters::solver_assign(bool * out, std::string line)
 		(*out) = false;
 		return;
 	}
-	if(value.find("leapfrog") != std::string::npos) {
-		(*out) = false;
-		return;
-	}
 	if(value.find("LEAPFROG") != std::string::npos) {
 		(*out) = false;
 		return;
 	}
 	if(value.find("Cg") != std::string::npos) {
-		(*out) = true;
-		return;
-	}
-	if(value.find("cg") != std::string::npos) {
 		(*out) = true;
 		return;
 	}
@@ -1051,7 +1043,7 @@ void inputparameters::print_info_fermion() const
 	logger.info() << "## cgmax  = " << this->get_cgmax();
 	
 	//print extra warning if BC are set to default since this is a serious source of errors...
-	if ( this->get_theta_fermion_spatial() != 0. && this->get_theta_fermion_temporal() != 0.) {
+	if ( this->get_theta_fermion_spatial() == 0. && this->get_theta_fermion_temporal() == 0.) {
 		logger.warn() << "\nNOTE: BCs have been set to periodic values by default!!\nTo change this use e.g. ThetaT/ThetaS in the input-file.\n";
 	}
 }
@@ -1112,7 +1104,7 @@ void inputparameters::print_info_fermion(ostream * os) const
 	*os << "## cgmax  = " << this->get_cgmax() << endl;
 	
 	//print extra warning if BC are set to default since this is a serious source of errors...
-	if ( this->get_theta_fermion_spatial() != 0. && this->get_theta_fermion_temporal() != 0.) {
+	if ( this->get_theta_fermion_spatial() == 0. && this->get_theta_fermion_temporal() == 0.) {
 		logger.warn() << "\nNOTE: BCs have been set to periodic values by default!!\nTo change this use e.g. ThetaT/ThetaS in the input-file.\n";
 	}
 }
@@ -1146,8 +1138,10 @@ void inputparameters::print_info_hmc(char* progname) const
 	logger.info() << "## HMC parameters: " ;
 	logger.info() << "## tau  = " << this->get_tau();
 	logger.info() << "## HMC steps  = " << this->get_hmcsteps();
+	logger.info() << "## # Timescales  = " << this->get_num_timescales();
 	logger.info() << "## integrationsteps1  = " << this->get_integrationsteps1();
-	logger.info() << "## integrationsteps2  = " << this->get_integrationsteps2();
+	if(this->get_num_timescales() == 2)
+		logger.info() << "## integrationsteps2  = " << this->get_integrationsteps2();
 	logger.info() << "## **********************************************************";
 	return;
 }
@@ -1161,8 +1155,10 @@ void inputparameters::print_info_hmc(char* progname, ostream* os) const
 	*os << "## HMC parameters: "  << '\n';
 	*os << "## tau  = " << this->get_tau() << '\n';
 	*os << "## HMC steps  = " << this->get_hmcsteps() << '\n';
+	*os << "## # Timescales  = " << this->get_num_timescales() << '\n';
 	*os << "## integrationsteps1  = " << this->get_integrationsteps1() << '\n';
-	*os << "## integrationsteps2  = " << this->get_integrationsteps2() << '\n';
+	if(this->get_num_timescales() == 2)
+		*os << "## integrationsteps2  = " << this->get_integrationsteps2() << '\n';
 	*os << "## **********************************************************\n";
 	*os << std::endl;
 	return;
