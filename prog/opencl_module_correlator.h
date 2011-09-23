@@ -42,6 +42,15 @@
 class Opencl_Module_Correlator : public Opencl_Module_Spinors {
 public:
 
+	/**
+	 * Default constructor, does nothing but make sure some pointer point to 0.
+	 *
+	 */
+	Opencl_Module_Correlator()
+		: create_point_source(0), create_stochastic_source(0),
+		  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0),
+		  clmem_source(0), clmem_corr() { };
+
 	// OpenCL specific methods needed for building/compiling the OpenCL program
 	/**
 	 * Collect the compiler options for OpenCL.
