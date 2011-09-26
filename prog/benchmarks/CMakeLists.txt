@@ -78,20 +78,21 @@ add_executable( hmc_benchmarks
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
 	../host_operations_matrix.cpp
-	../gaugefield.cpp
-	../gaugefield_inversion.cpp
+	../gaugefield_hybrid.cpp
+	../gaugefield_hmc.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl.cpp
+	../opencl_module.cpp
 	../opencl_compiler.cpp
-	../opencl_fermions.cpp
+	../opencl_module_fermions.cpp
+	../opencl_module_hmc.cpp
 	../host_use_timer.cpp
 	../host_writegaugefield.cpp
 	../logger.cpp
-	../gaugefield_hmc.cpp
-	../opencl_hmc.cpp
 	../exceptions.cpp
+	../opencl_module_spinors.cpp
+	../opencl_module_ran.cpp
+	../host_random.cpp
 )
 target_link_libraries( hmc_benchmarks
 	${OPENCL_LIBRARIES}

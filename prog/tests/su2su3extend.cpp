@@ -1,4 +1,5 @@
-#include "../opencl.h"
+#include "../opencl_module.h"
+#include "../gaugefield_hybrid.h"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -12,54 +13,86 @@ Random rnd(15);
 extern std::string const version;
 std::string const version = "0.1";
 
-class Device : public Opencl {
+class Device : public Opencl_Module {
 
-private:
-	inputparameters params;
 	cl_kernel extendKernel;
-	cl_mem in, out;
-	Matrixsu2 * h_in;
-	Matrixsu3 * h_out;
-	cl_int * h_rand;
-	cl_mem d_rand;
-
-	void verify(hmc_complex, hmc_complex);
 
 public:
-	Device(cl_device_type device_type) : Opencl() {
-		Opencl::init(device_type, &params, 0); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module() {
+		Opencl_Module::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
-	virtual void fill_buffers();
-	virtual void fill_kernels();
-	virtual void clear_buffers();
-	virtual void clear_kernels();
 	~Device() {
 		finalize();
 	};
 
-	void runExtendKernel();
+	void runExtendKernel(cl_mem out, cl_mem in, cl_mem d_rand, cl_ulong elems);
+	void fill_kernels();
+	void clear_kernels();
+};
+
+class Dummyfield : public Gaugefield_hybrid {
+
+public:
+	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
+		init(1, device_type, &params);
+	};
+
+	virtual void init_tasks();
+	virtual void finalize_opencl();
+
 	void verify();
+	void runExtendKernel();
+
+private:
+	void verify(hmc_complex, hmc_complex);
+	void fill_buffers();
+	void clear_buffers();
+	inputparameters params;
+	Matrixsu2 * h_in;
+	Matrixsu3 * h_out;
+	cl_int * h_rand;
+	cl_mem in, out;
+	cl_mem d_rand;
+
 };
 
 BOOST_AUTO_TEST_CASE( CPU )
 {
-	Device dev(CL_DEVICE_TYPE_CPU);
-	dev.runExtendKernel();
-	dev.verify();
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU);
+	dummy.runExtendKernel();
+	dummy.verify();
+	BOOST_MESSAGE("Tested CPU");
 }
 
 BOOST_AUTO_TEST_CASE( GPU )
 {
-	Device dev(CL_DEVICE_TYPE_GPU);
-	dev.runExtendKernel();
-	dev.verify();
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	dummy.runExtendKernel();
+	dummy.verify();
+	BOOST_MESSAGE("Tested GPU");
 }
 
-void Device::fill_buffers()
+void Dummyfield::init_tasks()
+{
+	opencl_modules = new Opencl_Module* [get_num_tasks()];
+	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0));
+
+	fill_buffers();
+}
+
+void Dummyfield::finalize_opencl()
+{
+	clear_buffers();
+	Gaugefield_hybrid::finalize_opencl();
+}
+
+void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
 	cl_int err;
+
+	cl_context context = opencl_modules[0]->get_context();
 
 	h_in = new Matrixsu2[NUM_ELEMENTS];
 	for(int i = 0; i < NUM_ELEMENTS; ++i) {
@@ -87,18 +120,16 @@ void Device::fill_buffers()
 	}
 	d_rand = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, NUM_ELEMENTS * sizeof(cl_int), h_rand, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	return;
 }
 
 void Device::fill_kernels()
 {
-	Opencl::fill_kernels();
+	Opencl_Module::fill_kernels();
 
 	extendKernel = createKernel("extendKernel") << basic_opencl_code << "tests/su2su3extend.cl";
 }
 
-void Device::clear_buffers()
+void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
@@ -107,23 +138,17 @@ void Device::clear_buffers()
 
 	delete[] h_in;
 	delete[] h_out;
-
-	return;
 }
 
 void Device::clear_kernels()
 {
-	Opencl::clear_kernels();
-
 	clReleaseKernel(extendKernel);
-
-	return;
+	Opencl_Module::clear_kernels();
 }
 
-void Device::runExtendKernel()
+void Device::runExtendKernel(cl_mem out, cl_mem in, cl_mem d_rand, cl_ulong elems)
 {
 	cl_int err;
-	cl_ulong elems = NUM_ELEMENTS;
 	err = clSetKernelArg(extendKernel, 0, sizeof(cl_mem), &out);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(extendKernel, 1, sizeof(cl_mem), &in);
@@ -135,17 +160,17 @@ void Device::runExtendKernel()
 	enqueueKernel(extendKernel, NUM_ELEMENTS, LOCAL_SIZE);
 }
 
-void Device::verify(hmc_complex left, hmc_complex right)
+void Dummyfield::verify(hmc_complex left, hmc_complex right)
 {
 	BOOST_REQUIRE_EQUAL(left.re, right.re);
 	BOOST_REQUIRE_EQUAL(left.im, right.im);
 }
 
 
-void Device::verify()
+void Dummyfield::verify()
 {
 	// get stuff from device
-	cl_int err = clEnqueueReadBuffer(queue, out, CL_TRUE, 0, NUM_ELEMENTS * sizeof(Matrixsu3), h_out, 0, 0, 0);
+	cl_int err = clEnqueueReadBuffer(*queue, out, CL_TRUE, 0, NUM_ELEMENTS * sizeof(Matrixsu3), h_out, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
 	for(size_t i = 0; i < NUM_ELEMENTS; ++i) {
@@ -164,4 +189,9 @@ void Device::verify()
 		verify(m.e22, (rand == 1) ? hmc_complex_one : hmc_complex_zero);
 #endif
 	}
+}
+
+void Dummyfield::runExtendKernel()
+{
+	static_cast<Device*>(opencl_modules[0])->runExtendKernel(out, in, d_rand, NUM_ELEMENTS);
 }

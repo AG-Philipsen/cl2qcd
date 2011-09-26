@@ -102,8 +102,13 @@ void inputparameters::readfile(char* ifn)
 		bool cswset = false;
 
 		while (infile.good()) {
-			std::string line;
-			infile >> line;
+			char linebuf[256];
+			infile.getline(linebuf, 256);
+			std::string line(linebuf);
+			if(line.length() == 255) {
+				/// @todo Handle such lines properly
+				logger.fatal() << "The file contains a line longer than 255 characters - bailing out";
+			}
 			if(line.find("#") != std::string::npos) continue; //allow comments
 			if(line.find("kappa") != std::string::npos) val_assign(&kappa, line);
 			if(line.find("Kappa") != std::string::npos) val_assign(&kappa, line);
@@ -137,15 +142,15 @@ void inputparameters::readfile(char* ifn)
 			if(line.find("thetat") != std::string::npos) val_assign(&theta_fermion_temporal, line);
 			if(line.find("ThetaS") != std::string::npos) val_assign(&theta_fermion_spatial, line);
 			if(line.find("ThetaT") != std::string::npos) val_assign(&theta_fermion_temporal, line);
-			
+
 			if(line.find("cgmax") != std::string::npos) val_assign(&cgmax, line);
 			if(line.find("CGmax") != std::string::npos) val_assign(&cgmax, line);
 			if(line.find("Cgmax") != std::string::npos) val_assign(&cgmax, line);
-			
+
 			if(line.find("Solver") != std::string::npos) solver_assign(&use_cg, line);
 			if(line.find("solver") != std::string::npos) solver_assign(&use_cg, line);
 			if(line.find("SOLVER") != std::string::npos) solver_assign(&use_cg, line);
-			
+
 			if(line.find("writefrequency") != std::string::npos) val_assign(&writefrequency, line);
 			if(line.find("savefrequency") != std::string::npos) val_assign(&savefrequency, line);
 			if(line.find("saveconfigs") != std::string::npos) bool_assign(&saveconfigs, line);
@@ -384,7 +389,7 @@ void inputparameters::solver_assign(bool * out, std::string line)
 		(*out) = true;
 		return;
 	}
-	
+
 	throw line;
 	return;
 }
@@ -1049,7 +1054,7 @@ void inputparameters::print_info_fermion() const
 	if(this->get_use_eo() == false)
 		logger.info() << "## Do NOT use even-odd preconditioning";
 	logger.info() << "## cgmax  = " << this->get_cgmax();
-	
+
 	//print extra warning if BC are set to default since this is a serious source of errors...
 	if ( this->get_theta_fermion_spatial() == 0. && this->get_theta_fermion_temporal() == 0.) {
 		logger.warn() << "\nNOTE: BCs have been set to periodic values by default!!\nTo change this use e.g. ThetaT/ThetaS in the input-file.\n";
@@ -1064,7 +1069,7 @@ void inputparameters::print_info_fermion(ostream * os) const
 	*os  << "## Boundary Conditions:" << endl;
 	*os  << "## theta_fermion_spatial  = " << this->get_theta_fermion_spatial() << endl;
 	*os  << "## theta_fermion_temporal = " << this->get_theta_fermion_temporal() << endl;
-	
+
 	*os  << "##" << endl;
 	*os  << "## Chemical Potential:" << endl;
 	if(this->get_use_chem_pot_re() == 1)
@@ -1104,13 +1109,13 @@ void inputparameters::print_info_fermion(ostream * os) const
 		*os << "## Use CG-solver for inversions"  << endl;
 	if(this->get_use_cg() == false)
 		*os << "## Use BiCGStab for inversions" << endl;
-	
+
 	if(this->get_use_eo() == true)
 		*os  << "## Use even-odd preconditioning" << endl;
 	if(this->get_use_eo() == false)
 		*os  << "## Do NOT use even-odd preconditioning" << endl;
 	*os << "## cgmax  = " << this->get_cgmax() << endl;
-	
+
 	//print extra warning if BC are set to default since this is a serious source of errors...
 	if ( this->get_theta_fermion_spatial() == 0. && this->get_theta_fermion_temporal() == 0.) {
 		*os << "\nNOTE: BCs have been set to periodic values by default!!\nTo change this use e.g. ThetaT/ThetaS in the input-file.\n";

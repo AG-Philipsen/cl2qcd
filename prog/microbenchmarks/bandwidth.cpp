@@ -8,7 +8,8 @@
 #include <boost/program_options.hpp>
 
 #include "../host_random.h"
-#include "../opencl.h"
+#include "../opencl_module.h"
+#include "../gaugefield_hybrid.h"
 #include "../logger.hpp"
 #include "../exceptions.h"
 
@@ -21,31 +22,50 @@ Random rnd(15);
 
 const size_t MAX_MEM_SIZE = 16 * 1024 * 1024;
 
-class Device : public Opencl {
+class Device : public Opencl_Module {
 
 private:
 	inputparameters params;
 	cl_kernel floatKernel;
 	cl_kernel su3Kernel;
-	cl_mem in, out;
 
-	template<typename T> void runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel);
+	template<typename T> void runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, cl_mem in, cl_mem out);
 
 public:
-	Device(cl_device_type device_type) : Opencl() {
-		Opencl::init(device_type, &params, 0); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module() {
+		Opencl_Module::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
-	virtual void fill_buffers();
 	virtual void fill_kernels();
-	virtual void clear_buffers();
 	virtual void clear_kernels();
 	~Device() {
 		finalize();
 	};
 
+	void runFloatKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out);
+	void runSU3Kernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out);
+};
+
+class Dummyfield : public Gaugefield_hybrid {
+
+public:
+	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
+		init(1, device_type, &params);
+	};
+
+	virtual void init_tasks();
+	virtual void finalize_opencl();
+
 	void runFloatKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems);
 	void runSU3Kernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems);
+
+private:
+	void verify(hmc_complex, hmc_complex);
+	void fill_buffers();
+	void clear_buffers();
+	inputparameters params;
+	cl_mem in, out;
 };
+
 
 int main(int argc, char** argv)
 {
@@ -68,7 +88,7 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	Device dev(CL_DEVICE_TYPE_GPU);
+	Dummyfield dev(CL_DEVICE_TYPE_GPU);
 
 	const bool use_su3 = vm.count("su3");
 	if(use_su3)
@@ -130,11 +150,13 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-void Device::fill_buffers()
+void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
 	cl_int err;
+
+	cl_context context = opencl_modules[0]->get_context();
 
 	in = clCreateBuffer(context, CL_MEM_READ_ONLY, MAX_MEM_SIZE, 0, &err );
 	if(err) {
@@ -151,13 +173,13 @@ void Device::fill_buffers()
 
 void Device::fill_kernels()
 {
-	// don't invoke parent function as we don't require the original kernels
+	Opencl_Module::fill_kernels();
 
-	floatKernel = createKernel("copyFloat") << "microbenchmarks/bandwidth.cl";
-	su3Kernel = createKernel("copySU3") << "microbenchmarks/bandwidth.cl";
+	floatKernel = createKernel("copyFloat") << basic_opencl_code << "microbenchmarks/bandwidth.cl";
+	su3Kernel = createKernel("copySU3") << basic_opencl_code << "microbenchmarks/bandwidth.cl";
 }
 
-void Device::clear_buffers()
+void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
@@ -174,17 +196,17 @@ void Device::clear_kernels()
 }
 
 
-void Device::runFloatKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems)
+void Device::runFloatKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out)
 {
-	runKernel<hmc_float>(groups, threads_per_group, elems, floatKernel);
+	runKernel<hmc_float>(groups, threads_per_group, elems, floatKernel, in, out);
 }
 
-void Device::runSU3Kernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems)
+void Device::runSU3Kernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out)
 {
-	runKernel<Matrixsu3>(groups, threads_per_group, elems, su3Kernel);
+	runKernel<Matrixsu3>(groups, threads_per_group, elems, su3Kernel, in, out);
 }
 
-template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel)
+template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, cl_mem in, cl_mem out)
 {
 	cl_int err = CL_SUCCESS;
 
@@ -198,7 +220,7 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 	size_t local_threads = threads_per_group;
 	size_t total_threads = groups * local_threads;
 
-	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &in);
+	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &out);
 	if(err) {
 		logger.fatal() << "Failed to set kernel argument: " << err;
 		throw Opencl_Error(err);
@@ -221,10 +243,12 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 
 	size_t num_meas = 10;
 
+	cl_command_queue queue = get_queue();
+
 	klepsydra::Monotonic timer;
 
 	enqueueKernel(kernel, total_threads, local_threads);
-	err = clFinish(queue);
+	err = clFinish(get_queue());
 	if(err) {
 		logger.fatal() << "Failed to execute kernel: " << err;
 		throw Opencl_Error(err);
@@ -240,4 +264,27 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 
 	// format is: #groups #threads per group #copy time in mus #bandwidth in megabytes
 	cout << groups * threads_per_group << ' ' << groups << ' ' << threads_per_group << ' ' << kernelTime << ' ' << (2 * elems * sizeof(T) / kernelTime) << endl;
+}
+
+void Dummyfield::init_tasks()
+{
+	opencl_modules = new Opencl_Module* [get_num_tasks()];
+	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0));
+
+	fill_buffers();
+}
+
+void Dummyfield::finalize_opencl()
+{
+	clear_buffers();
+	Gaugefield_hybrid::finalize_opencl();
+}
+
+void Dummyfield::runFloatKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems)
+{
+	static_cast<Device*>(opencl_modules[0])->runFloatKernel(groups, threads_per_group, elems, in, out);
+}
+void Dummyfield::runSU3Kernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems)
+{
+	static_cast<Device*>(opencl_modules[0])->runSU3Kernel(groups, threads_per_group, elems, in, out);
 }

@@ -166,18 +166,45 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 
 	size_t buffersize = sizeof(hmc_float) * num_corr_entries;
 
-	cl_mem result_ps = get_task_correlator()->create_rw_buffer(buffersize);
-	cl_mem result_sc = get_task_correlator()->create_rw_buffer(buffersize);
-	cl_mem result_vx = get_task_correlator()->create_rw_buffer(buffersize);
-	cl_mem result_vy = get_task_correlator()->create_rw_buffer(buffersize);
-	cl_mem result_vz = get_task_correlator()->create_rw_buffer(buffersize);
-	cl_mem result_ax = get_task_correlator()->create_rw_buffer(buffersize);
-	cl_mem result_ay = get_task_correlator()->create_rw_buffer(buffersize);
-	cl_mem result_az = get_task_correlator()->create_rw_buffer(buffersize);
-
-	hmc_float* host_result = new hmc_float [num_corr_entries];
-	hmc_float* host_result_y = new hmc_float [num_corr_entries];
-	hmc_float* host_result_z = new hmc_float [num_corr_entries];
+	hmc_float* host_result_ps = new hmc_float [num_corr_entries];
+	hmc_float* host_result_sc = new hmc_float [num_corr_entries];
+	hmc_float* host_result_vx = new hmc_float [num_corr_entries];
+	hmc_float* host_result_vy = new hmc_float [num_corr_entries];
+	hmc_float* host_result_vz = new hmc_float [num_corr_entries];
+	hmc_float* host_result_ax = new hmc_float [num_corr_entries];
+	hmc_float* host_result_ay = new hmc_float [num_corr_entries];
+	hmc_float* host_result_az = new hmc_float [num_corr_entries];
+	
+	cl_mem result_ps;
+	cl_mem result_sc;
+	cl_mem result_vx;
+	cl_mem result_vy;
+	cl_mem result_vz;
+	cl_mem result_ax;
+	cl_mem result_ay;
+	cl_mem result_az;
+	//LZ usually the correlator is calculated on CPU, then we don't need to copy all those buffers...
+	bool needcopy = true;
+	if( get_task_correlator()->get_device_type() == CL_DEVICE_TYPE_CPU ) { 
+	  needcopy = false;
+	  result_ps = get_task_correlator()->create_uhp_buffer(buffersize, host_result_ps);
+	  result_sc = get_task_correlator()->create_uhp_buffer(buffersize, host_result_sc);
+	  result_vx = get_task_correlator()->create_uhp_buffer(buffersize, host_result_vx);
+	  result_vy = get_task_correlator()->create_uhp_buffer(buffersize, host_result_vy);
+	  result_vz = get_task_correlator()->create_uhp_buffer(buffersize, host_result_vz);
+	  result_ax = get_task_correlator()->create_uhp_buffer(buffersize, host_result_ax);
+	  result_ay = get_task_correlator()->create_uhp_buffer(buffersize, host_result_ay);
+	  result_az = get_task_correlator()->create_uhp_buffer(buffersize, host_result_az);
+	} else {
+	  result_ps = get_task_correlator()->create_rw_buffer(buffersize);
+	  result_sc = get_task_correlator()->create_rw_buffer(buffersize);
+	  result_vx = get_task_correlator()->create_rw_buffer(buffersize);
+	  result_vy = get_task_correlator()->create_rw_buffer(buffersize);
+	  result_vz = get_task_correlator()->create_rw_buffer(buffersize);
+	  result_ax = get_task_correlator()->create_rw_buffer(buffersize);
+	  result_ay = get_task_correlator()->create_rw_buffer(buffersize);
+	  result_az = get_task_correlator()->create_rw_buffer(buffersize);
+	}
 
 	logger.info() << "calculate correlators..." ;
 	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ps"), get_clmem_corr(), result_ps);
@@ -189,45 +216,61 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ay"), get_clmem_corr(), result_ay);
 	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("az"), get_clmem_corr(), result_az);
 
+	//the correlator_device calcultions are all non-blocking, hence we need a barrier here:
+	if( needcopy == false ) 
+	  clFinish(queue[task_correlator]);
+
 	//the pseudo-scalar (J=0, P=1)
 	logger.info() << "pseudo scalar correlator:" ;
-	get_task_correlator()->get_buffer_from_device(result_ps, host_result, buffersize);
+	if( needcopy == true )
+	  get_task_correlator()->get_buffer_from_device(result_ps, host_result_ps, buffersize);
 	for(int j = 0; j < num_corr_entries; j++) {
-		logger.info() << j << "\t" << scientific << setprecision(14) << host_result[j];
-		of << scientific << setprecision(14) << "0 1\t" << j << "\t" << host_result[j] << endl;
+		logger.info() << j << "\t" << scientific << setprecision(14) << host_result_ps[j];
+		of << scientific << setprecision(14) << "0 1\t" << j << "\t" << host_result_ps[j] << endl;
 	}
 
 
 	//the scalar (J=0, P=0)
-	get_task_correlator()->get_buffer_from_device(result_sc, host_result, buffersize);
+	if( needcopy == true )
+	  get_task_correlator()->get_buffer_from_device(result_sc, host_result_sc, buffersize);
 	for(int j = 0; j < num_corr_entries; j++) {
-		of << scientific << setprecision(14) << "0 0\t" << j << "\t" << host_result[j] << endl;
+		of << scientific << setprecision(14) << "0 0\t" << j << "\t" << host_result_sc[j] << endl;
 	}
 
 
 	//the vector (J=1, P=1)
-	get_task_correlator()->get_buffer_from_device(result_vx, host_result, buffersize);
-	get_task_correlator()->get_buffer_from_device(result_vy, host_result_y, buffersize);
-	get_task_correlator()->get_buffer_from_device(result_vz, host_result_z, buffersize);
+	if( needcopy == true ) {
+	  get_task_correlator()->get_buffer_from_device(result_vx, host_result_vx, buffersize);
+	  get_task_correlator()->get_buffer_from_device(result_vy, host_result_vy, buffersize);
+	  get_task_correlator()->get_buffer_from_device(result_vz, host_result_vz, buffersize);
+	}
 	for(int j = 0; j < num_corr_entries; j++) {
-		of << scientific << setprecision(14) << "1 1\t" << j << "\t" << (host_result[j] + host_result_y[j] + host_result_z[j]) / 3. << "\t" << host_result[j] << "\t" << host_result_y[j] << "\t" << host_result_z[j] << endl;
+		of << scientific << setprecision(14) << "1 1\t" << j << "\t" << (host_result_vx[j] + host_result_vy[j] + host_result_vz[j]) / 3. << "\t" << host_result_vx[j] << "\t" << host_result_vy[j] << "\t" << host_result_vz[j] << endl;
 	}
 
 
 	//the axial vector (J=1, P=0)
-	get_task_correlator()->get_buffer_from_device(result_ax, host_result, buffersize);
-	get_task_correlator()->get_buffer_from_device(result_ay, host_result_y, buffersize);
-	get_task_correlator()->get_buffer_from_device(result_az, host_result_z, buffersize);
+	if( needcopy == true ) {
+	  get_task_correlator()->get_buffer_from_device(result_ax, host_result_ax, buffersize);
+	  get_task_correlator()->get_buffer_from_device(result_ay, host_result_ay, buffersize);
+	  get_task_correlator()->get_buffer_from_device(result_az, host_result_az, buffersize);
+	}
 	for(int j = 0; j < num_corr_entries; j++) {
-		of << scientific << setprecision(14) << "1 0\t" << j << "\t" << (host_result[j] + host_result_y[j] + host_result_z[j]) / 3. << "\t" << host_result[j] << "\t" << host_result_y[j] << "\t" << host_result_z[j] << endl;
+		of << scientific << setprecision(14) << "1 0\t" << j << "\t" << (host_result_ax[j] + host_result_ay[j] + host_result_az[j]) / 3. << "\t" << host_result_ax[j] << "\t" << host_result_ay[j] << "\t" << host_result_az[j] << endl;
 	}
 
 
 	of << endl;
 	of.close();
-	delete [] host_result;
-	delete [] host_result_y;
-	delete [] host_result_z;
+	delete [] host_result_ps;
+	delete [] host_result_sc;
+	delete [] host_result_vx;
+	delete [] host_result_vy;
+	delete [] host_result_vz;
+	delete [] host_result_ax;
+	delete [] host_result_ay;
+	delete [] host_result_az;
+
 	cl_int clerr = CL_SUCCESS;
 	clerr = clReleaseMemObject(result_ps);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
