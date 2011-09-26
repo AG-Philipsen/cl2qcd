@@ -1024,10 +1024,13 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 	for(int iter = 0; iter < cgmax; iter++) {
 
 		if(iter % get_parameters()->get_iter_refresh() == 0) {
+			set_zero_spinorfield_eoprec_device(clmem_v_eoprec);
+			set_zero_spinorfield_eoprec_device(clmem_p_eoprec);
+
 			f(this, inout, clmem_rn_eoprec, gf);
 
 			saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
-			copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, sizeof(spinor) * get_parameters()->get_eo_sf_buf_size());
+			copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, get_parameters()->get_eo_sf_buf_size());
 
 			copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
 			copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex));
