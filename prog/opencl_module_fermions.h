@@ -145,6 +145,7 @@ public:
 
 	cl_mem get_clmem_inout_eoprec();
 	cl_mem get_clmem_tmp_eoprec_1();
+	cl_mem get_clmem_tmp_eoprec_2();
 	cl_mem get_clmem_source_even();
 	cl_mem get_clmem_source_odd();
 

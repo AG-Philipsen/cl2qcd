@@ -1383,6 +1383,11 @@ cl_mem Opencl_Module_Fermions::get_clmem_tmp_eoprec_1()
 	return clmem_tmp_eoprec_1;
 }
 
+cl_mem Opencl_Module_Fermions::get_clmem_tmp_eoprec_2()
+{
+	return clmem_tmp_eoprec_2;
+}
+
 cl_mem Opencl_Module_Fermions::get_clmem_source_even()
 {
 	return clmem_source_even;
