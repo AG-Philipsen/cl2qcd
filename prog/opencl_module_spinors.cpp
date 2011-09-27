@@ -37,6 +37,7 @@ void Opencl_Module_Spinors::fill_kernels()
 
 	set_spinorfield_cold = createKernel("set_spinorfield_cold") << basic_fermion_code << "spinorfield_cold.cl";
 	saxpy = createKernel("saxpy") << basic_fermion_code << "spinorfield_saxpy.cl";
+	sax = createKernel("sax") << basic_fermion_code << "spinorfield_sax.cl";
 	saxsbypz = createKernel("saxsbypz") << basic_fermion_code << "spinorfield_saxsbypz.cl";
 	scalar_product = createKernel("scalar_product") << basic_fermion_code << "spinorfield_scalar_product.cl";
 	scalar_product_reduction = createKernel("scalar_product_reduction") << basic_fermion_code << "spinorfield_scalar_product.cl";
@@ -52,6 +53,7 @@ void Opencl_Module_Spinors::fill_kernels()
 		convert_to_eoprec = createKernel("convert_to_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		set_eoprec_spinorfield_cold = createKernel("set_eoprec_spinorfield_cold") << basic_fermion_code << "spinorfield_eo_cold.cl";
 		saxpy_eoprec = createKernel("saxpy_eoprec") << basic_fermion_code << "spinorfield_eo_saxpy.cl";
+		sax_eoprec = createKernel("sax_eoprec") << basic_fermion_code << "spinorfield_eo_sax.cl";
 		saxsbypz_eoprec = createKernel("saxsbypz_eoprec") << basic_fermion_code << "spinorfield_eo_saxsbypz.cl";
 		scalar_product_eoprec = createKernel("scalar_product_eoprec") << basic_fermion_code << "spinorfield_eo_scalar_product.cl";
 		set_zero_spinorfield_eoprec = createKernel("set_zero_spinorfield_eoprec") << basic_fermion_code << "spinorfield_eo_zero.cl";
@@ -72,6 +74,8 @@ void Opencl_Module_Spinors::clear_kernels()
 
 	clerr = clReleaseKernel(saxpy);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	clerr = clReleaseKernel(sax);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(saxsbypz);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(scalar_product);
@@ -91,6 +95,8 @@ void Opencl_Module_Spinors::clear_kernels()
 
 	if(get_parameters()->get_use_eo()) {
 		clerr = clReleaseKernel(saxpy_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(sax_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(scalar_product_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -205,6 +211,25 @@ void Opencl_Module_Spinors::saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_me
 	enqueueKernel(saxpy , gs2, ls2);
 }
 
+void Opencl_Module_Spinors::sax_device(cl_mem x, cl_mem alpha, cl_mem out)
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(sax, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(sax, 0, sizeof(cl_mem), &x);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(sax, 1, sizeof(cl_mem), &alpha);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(sax, 2, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel(sax , gs2, ls2);
+}
+
 void Opencl_Module_Spinors::set_spinorfield_cold_device(cl_mem inout)
 {
 	//query work-sizes for kernel
@@ -251,6 +276,25 @@ void Opencl_Module_Spinors::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( saxpy_eoprec, gs2, ls2);
+}
+
+void Opencl_Module_Spinors::sax_eoprec_device(cl_mem x, cl_mem alpha, cl_mem out)
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(sax_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(sax_eoprec, 0, sizeof(cl_mem), &x);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+		clerr = clSetKernelArg(sax_eoprec, 1, sizeof(cl_mem), &alpha);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(sax_eoprec, 2, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel( sax_eoprec, gs2, ls2);
 }
 
 void Opencl_Module_Spinors::saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out)
@@ -538,6 +582,9 @@ usetimer* Opencl_Module_Spinors::get_timer(const char * in)
 	if (strcmp(in, "saxpy") == 0) {
 		return &(this->timer_saxpy);
 	}
+	if (strcmp(in, "sax") == 0) {
+		return &(this->timer_sax);
+	}
 	if (strcmp(in, "saxsbypz") == 0) {
 		return &this->timer_saxsbypz;
 	}
@@ -546,6 +593,9 @@ usetimer* Opencl_Module_Spinors::get_timer(const char * in)
 	}
 	if (strcmp(in, "saxpy_eoprec") == 0) {
 		return &this->timer_saxpy_eoprec;
+	}
+	if (strcmp(in, "sax_eoprec") == 0) {
+		return &this->timer_sax_eoprec;
 	}
 	if (strcmp(in, "saxsbypz_eoprec") == 0) {
 		return &this->timer_saxsbypz_eoprec;
@@ -606,6 +656,9 @@ int Opencl_Module_Spinors::get_read_write_size(const char * in, inputparameters 
 		return 1000000000000000000000000;
 	}
 	if (strcmp(in, "saxpy") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "sax") == 0) {
 		return 74 * D * S;
 	}
 	if (strcmp(in, "saxsbypz") == 0) {
@@ -616,6 +669,9 @@ int Opencl_Module_Spinors::get_read_write_size(const char * in, inputparameters 
 	}
 	if (strcmp(in, "saxpy_eoprec") == 0) {
 		return 74 * D * S;
+	}
+	if (strcmp(in, "sax_eoprec") == 0) {
+		return 1000000000000000000000000;
 	}
 	if (strcmp(in, "saxsbypz_eoprec") == 0) {
 		return 100 * D * S;
@@ -664,11 +720,15 @@ void Opencl_Module_Spinors::print_profiling(std::string filename)
 	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "saxpy";
 	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "sax";
+	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "saxsbypz";
 	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "set_zero_spinorfield";
 	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "saxpy_eoprec";
+	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "sax_eoprec";
 	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	kernelName = "saxsbypz_eoprec";
 	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );

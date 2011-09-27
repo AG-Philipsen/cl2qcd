@@ -93,8 +93,10 @@ public:
 	void set_zero_spinorfield_device(cl_mem x);
 	void set_zero_spinorfield_eoprec_device(cl_mem x);
 	void saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out);
+	void sax_device(cl_mem x, cl_mem alpha, cl_mem out);
 	void saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out);
 	void saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out);
+	void sax_eoprec_device(cl_mem x, cl_mem alpha, cl_mem out);
 	void saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out);
 	void create_point_source_device(cl_mem inout, int i, int spacepos, int timepos);
 	void create_point_source_eoprec_device(cl_mem inout_even, cl_mem inout_odd, cl_mem gf, int i, int spacepos, int timepos);
@@ -109,10 +111,12 @@ public:
 	usetimer timer_convert_from_eoprec;
 	usetimer timer_convert_to_eoprec;
 	usetimer timer_saxpy;
+	usetimer timer_sax;
 	usetimer timer_saxsbypz;
 	usetimer timer_set_zero_spinorfield;
 	usetimer timer_create_point_source;
 	usetimer timer_saxpy_eoprec;
+	usetimer timer_sax_eoprec;
 	usetimer timer_saxsbypz_eoprec;
 	usetimer timer_set_zero_spinorfield_eoprec;
 	usetimer timer_create_point_source_eoprec;
@@ -166,6 +170,7 @@ protected:
 	//BLAS
 	cl_kernel set_spinorfield_cold;
 	cl_kernel saxpy;
+	cl_kernel sax;
 	cl_kernel saxsbypz;
 	cl_kernel set_zero_spinorfield;
 
@@ -174,9 +179,8 @@ protected:
 	cl_kernel set_eoprec_spinorfield_cold;
 	cl_kernel set_zero_spinorfield_eoprec;
 	cl_kernel saxpy_eoprec;
+	cl_kernel sax_eoprec;
 	cl_kernel saxsbypz_eoprec;
-
-
 
 	//Scalar Product
 	cl_kernel scalar_product;
