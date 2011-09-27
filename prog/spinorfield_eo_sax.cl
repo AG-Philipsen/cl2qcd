@@ -1,5 +1,5 @@
 // alpha*x
-__kernel void saxpy_eoprec(__global spinorfield_eoprec* x, __global hmc_complex * alpha, __global spinorfield_eoprec* out)
+__kernel void sax_eoprec(__global spinorfield_eoprec* x, __global hmc_complex * alpha, __global spinorfield_eoprec* out)
 {
 	int id = get_global_id(0);
 	int local_size = get_local_size(0);
