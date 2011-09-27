@@ -150,6 +150,13 @@ public:
 	cl_mem get_clmem_source_odd();
 
 	cl_mem get_clmem_minusone();
+	
+	/**
+	 * This is used to print the squarenorm of an inverter-solution in debug-mode
+	 * @param eo has to be set to true/false when evenodd is used/not used.
+	 * @param msg message to be printed right before before the actual squarenorm is printed
+	 */
+	void print_info_inv_field(cl_mem in, bool eo, std::string msg);
 
 protected:
 

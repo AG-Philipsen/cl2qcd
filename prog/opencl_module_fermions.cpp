@@ -1406,7 +1406,16 @@ cl_mem Opencl_Module_Fermions::get_clmem_minusone()
 	return clmem_minusone;
 }
 
-
+void Opencl_Module_Fermions::print_info_inv_field(cl_mem in, bool eo, std::string msg){
+	cl_mem clmem_sqnorm_tmp = create_rw_buffer(sizeof(hmc_float));
+	hmc_float tmp;
+	if(eo) set_float_to_global_squarenorm_eoprec_device(in, clmem_sqnorm_tmp);
+	else set_float_to_global_squarenorm_device(in, clmem_sqnorm_tmp);
+	get_buffer_from_device(clmem_sqnorm_tmp, &tmp, sizeof(hmc_float));
+	logger.debug() << msg << tmp;
+	int clerr = clReleaseMemObject(clmem_sqnorm_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+}
 
 #ifdef _PROFILING_
 usetimer* Opencl_Module_Fermions::get_timer(const char * in)
