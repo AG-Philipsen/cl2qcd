@@ -111,7 +111,7 @@ public:
 	void set_zero_clmem_force_device();
 	void gauge_force_device();
 	void fermion_force_device();
-	void fermion_force_eoprec_device(cl_mem Y, cl_mem X);
+	void fermion_force_eoprec_device(cl_mem Y, cl_mem X, int evenodd);
 	void stout_smeared_fermion_force_device();
 	
 protected:
@@ -188,9 +188,6 @@ private:
 	//D(gaussian spinorfield)
 	cl_mem clmem_phi;
 	cl_mem clmem_phi_eoprec;
-	//these are the odd vectors for the force-calculation
-	cl_mem clmem_x_odd;
-	cl_mem clmem_y_odd;
 
 	ClSourcePackage basic_hmc_code;
 

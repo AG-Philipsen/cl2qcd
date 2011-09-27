@@ -36,13 +36,12 @@ void Opencl_Module_Hmc::fill_buffers()
 	if(get_parameters()->get_use_eo() == true){
 		clmem_phi_inv_eoprec = create_rw_buffer(eoprec_spinorfield_size);
 		clmem_phi_eoprec = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_x_odd = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_y_odd = create_rw_buffer(eoprec_spinorfield_size);
 	} 
 	else{
-		clmem_phi_inv = create_rw_buffer(spinorfield_size);
 		clmem_phi = create_rw_buffer(spinorfield_size);
 	}
+	//this is always used for the force-calculation
+	clmem_phi_inv = create_rw_buffer(spinorfield_size);
 	clmem_new_u = create_rw_buffer(gaugefield_size);
 	clmem_p = create_rw_buffer(gaugemomentum_size);
 	clmem_new_p = create_rw_buffer(gaugemomentum_size);
@@ -67,8 +66,8 @@ void Opencl_Module_Hmc::fill_kernels()
 	}
 	else{
 		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_hmc_code << "random.cl" << "spinorfield_gaussian.cl";
-		fermion_force = createKernel("fermion_force") << basic_hmc_code << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion.cl";
 	}
+	fermion_force = createKernel("fermion_force") << basic_hmc_code << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion.cl";
 	set_zero_gaugemomentum = createKernel("set_zero_gaugemomentum") << basic_hmc_code << "gaugemomentum_zero.cl";
 	generate_gaussian_gaugemomenta = createKernel("generate_gaussian_gaugemomenta") << basic_hmc_code << "random.cl" << "gaugemomentum_gaussian.cl";
 	md_update_gaugefield = createKernel("md_update_gaugefield") << basic_hmc_code << "md_update_gaugefield.cl";
@@ -145,10 +144,6 @@ void Opencl_Module_Hmc::clear_buffers()
 		clerr = clReleaseMemObject(clmem_phi_inv_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_phi_eoprec);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_x_odd);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_y_odd);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	}
 	else{
@@ -386,34 +381,59 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 	//  which then has to be the source of the inversion
 	if(get_parameters()->get_use_eo() == true){
 		Opencl_Module_Fermions::Qplus_eoprec(clmem_phi_inv_eoprec, clmem_phi_eoprec , *get_gaugefield());
-
-		//debugging
-		hmc_float s_fermion;
-		set_float_to_global_squarenorm_eoprec_device(clmem_phi_eoprec, clmem_s_fermion);
-		get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-		logger.debug() << "\tsquarenorm init field after update = " << s_fermion;
+		if(logger.beDebug()) print_info_inv_field(clmem_phi_eoprec, true, "\tinit field after update ");
 	}
 	else{
 		Opencl_Module_Fermions::Qplus(clmem_phi_inv, clmem_phi , *get_gaugefield());
-
-		//debugging
-		hmc_float s_fermion;
-		set_float_to_global_squarenorm_device(clmem_phi, clmem_s_fermion);
-		get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-		logger.debug() << "\tsquarenorm init field after update = " << s_fermion;
+		if(logger.beDebug()) print_info_inv_field(clmem_phi, false, "\tinit field after update ");
 	}
 }
 
-
 void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 {
+	/**
+	 * @NOTE The force is up to this point always calculated using "non-eoprec" spinorfields.
+	 * This is done this way since one would not save any operations using eoprec-fields, but would need
+	 * another kernel instead.
+	 * Therefore, the eoprec-fields are converted back to the normal format. 
+	 * However, using an eoprec-force holds the possibility of saving memory, which would be relevant
+	 * on e.g. a GPU.
+	 * @NOTE A dummy-kernel and corresponding calling function is already implemented if one wishes to 
+	 * 	change this one day.
+	 */
 	if(get_parameters()->get_use_eo() == true){
 	  bool converged = false;
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 		if(get_parameters()->get_use_cg() == true) { 
-		//this is broken right now since the CG doesnt work!!
-			throw Print_Error_Message("\t\tcalc fermion force ingredients using cg is not implemented yet. Aborting..");
-		} else  {
+			/**
+			* The first inversion calculates
+			* X_even = phi = (Qplusminus_eoprec)^-1 psi
+			* out of
+			* Qplusminus_eoprec phi_even = psi
+			*/
+			logger.debug() << "\t\t\tstart solver";
+
+			/** @todo at the moment, we can only put in a cold spinorfield
+			  * or a point-source spinorfield as trial-solution
+			  */
+			/**
+			  * Trial solution for the spinorfield
+			  */
+			set_eoprec_spinorfield_cold_device(get_clmem_inout_eoprec());
+
+			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
+			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
+			Opencl_Module_Fermions::solver(QplusQminus_eoprec_call, this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u, solvertimer);
+			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
+
+			/**
+			 * Y_even is now just
+			 * 	Y_even = (Qminus_eoprec) X_even = (Qminus_eoprec) (Qplusminus_eoprec)^-1 psi =
+			 * 		= (Qplus_eoprec)^-1 psi
+			 */
+			Opencl_Module_Fermions::Qminus_eoprec(this->get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, this->clmem_new_u);
+		} 
+		else {
 			///@todo if wanted, solvertimer has to be used here..
 			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab with eoprec.";
 			/**
@@ -433,21 +453,13 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			  */
 			set_zero_spinorfield_eoprec_device(get_clmem_inout_eoprec());
 			gamma5_eoprec_device(get_clmem_inout_eoprec());
-			//debugging
-			hmc_float s_fermion;
-			set_float_to_global_squarenorm_eoprec_device(get_clmem_inout_eoprec(), clmem_s_fermion);
-			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
 
+			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
 			converged = Opencl_Module_Fermions::bicgstab_eoprec(Qplus_eoprec_call, this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u);
 			if(converged == false) logger.debug() << "solver did not solve";
 			else logger.debug() << "solver solved" ;
-
-			//debugging
- 			set_float_to_global_squarenorm_eoprec_device(get_clmem_inout_eoprec(), clmem_s_fermion);
-			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
-
+			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
+			
 			//store this result in clmem_phi_inv
 			copy_buffer_on_device(get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, get_parameters()->get_eo_sf_buf_size());
 
@@ -464,36 +476,50 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			copy_buffer_on_device(get_clmem_inout_eoprec(), get_clmem_source_even(), get_parameters()->get_eo_sf_buf_size());
 			logger.debug() << "\t\t\tstart solver";
 
-			//debugging
-			set_float_to_global_squarenorm_eoprec_device(get_clmem_inout_eoprec(), clmem_s_fermion);
-			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
-
 			//this sets clmem_inout cold as trial-solution
 			set_eoprec_spinorfield_cold_device(get_clmem_inout_eoprec());
 
+			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
 			Opencl_Module_Fermions::bicgstab_eoprec(Qminus_eoprec_call, get_clmem_inout_eoprec(), get_clmem_source_even(), clmem_new_u);
-
-			//debugging
-			set_float_to_global_squarenorm_eoprec_device(get_clmem_inout_eoprec(), clmem_s_fermion);
-			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
-			
-			/**
-			 * At this point, one has calculated X_even and Y_odd.
-			 * For the force-calculation one needs the odd parts of 
-			 * the solutions. If one has a fermionmatrix
-			 * 	M = R + D
-			 * these are:
-			 * 	X_odd = -R(-mu)_inv D X_even
-			 * 	Y_odd = -R(mu)_inv D Y_even
-			 */
-			///@todo re-calculate the above formulae
-			
-			
-			///@todo force-calculation
-			///CP: check if this can be done with the non-eo force-function...
+			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
 		}
+		/**
+		 * At this point, one has calculated X_even and Y_odd.
+		 * If one has a fermionmatrix
+		 * 	M = R + D
+		 * these are:
+		 * 	X_odd = -R(-mu)_inv D X_even
+		 * 	Y_odd = -R(mu)_inv D Y_even
+		 */
+		
+		///@NOTE the following calculations could also go in a new function for convenience
+		//calculate X_odd
+		//therefore, clmem_tmp_eoprec_1 is used as intermediate state. The result is saved in clmem_inout, since
+		//	this is used as a default in the force-function.
+		if(get_parameters()->get_fermact() == WILSON){
+			dslash_eoprec_device(get_clmem_inout(), get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
+			sax_eoprec_device(get_clmem_tmp_eoprec_1(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
+		}
+		else if(get_parameters()->get_fermact() == TWISTEDMASS){
+			dslash_eoprec_device(get_clmem_inout(), get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
+			M_tm_inverse_sitediagonal_minus_device(get_clmem_tmp_eoprec_1(), get_clmem_tmp_eoprec_2());
+			sax_eoprec_device(get_clmem_tmp_eoprec_2(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
+		}
+		this->convert_from_eoprec_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), get_clmem_inout());
+		
+		//calculate Y_odd
+		//therefore, clmem_tmp_eoprec_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
+		//	this is used as a default in the force-function.
+		if(get_parameters()->get_fermact() == WILSON){
+			dslash_eoprec_device(clmem_phi_inv_eoprec, get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
+			sax_eoprec_device(get_clmem_tmp_eoprec_1(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
+		}
+		else if(get_parameters()->get_fermact() == TWISTEDMASS){
+			dslash_eoprec_device(clmem_phi_inv_eoprec, get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
+			M_tm_inverse_sitediagonal_minus_device(get_clmem_tmp_eoprec_1(), get_clmem_tmp_eoprec_2());
+			sax_eoprec_device(get_clmem_tmp_eoprec_2(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
+		}
+		this->convert_from_eoprec_device(clmem_phi_inv_eoprec, get_clmem_tmp_eoprec_1(), clmem_phi_inv);
 	}
 	else{
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield 
@@ -514,19 +540,10 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			  */
 			set_spinorfield_cold_device(get_clmem_inout());
 
-			//debugging
-			hmc_float s_fermion;
-			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
-			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
-
+			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 			Opencl_Module_Fermions::solver(QplusQminus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, solvertimer);
-
-			//debugging
-			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
-			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
+			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
 
 			/**
 			 * Y is now just
@@ -555,19 +572,10 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			  */
 			set_spinorfield_cold_device(get_clmem_inout());
 
-			//debugging
-			hmc_float s_fermion;
-			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
-			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
-
+			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
 			Opencl_Module_Fermions::solver(Qplus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, solvertimer);
-
-			//debugging
-			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
-			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
+			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
 
 			//store this result in clmem_phi_inv
 			copy_buffer_on_device(get_clmem_inout(), clmem_phi_inv, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
@@ -585,25 +593,17 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			copy_buffer_on_device(get_clmem_inout(), get_clmem_source(), sizeof(spinor) * get_parameters()->get_spinorfieldsize());
 			logger.debug() << "\t\t\tstart solver";
 
-			//debugging
-			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
-			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-			logger.debug() << "\tsquarenorm of inv.field before = " << s_fermion;
-
 			//this sets clmem_inout cold as trial-solution
 			set_spinorfield_cold_device(get_clmem_inout());
 
+			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field before inversion ");
 			Opencl_Module_Fermions::solver(Qminus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, solvertimer);
-
-			//debugging
-			set_float_to_global_squarenorm_device(get_clmem_inout(), clmem_s_fermion);
-			get_buffer_from_device(clmem_s_fermion, &s_fermion, sizeof(hmc_float));
-			logger.debug() << "\tsquarenorm of inv.field after = " << s_fermion;
+			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
 		}
-		logger.debug() << "\t\tcalc fermion_force...";
-		//CP: this always calls fermion_force(Y,X) with Y = clmem_phi_inv, X = clmem_inout
-		fermion_force_device();
 	}
+	logger.debug() << "\t\tcalc fermion_force...";
+	//CP: this always calls fermion_force(Y,X) with Y = clmem_phi_inv, X = clmem_inout
+	fermion_force_device();
 }
 
 void Opencl_Module_Hmc::calc_gauge_force()
@@ -726,7 +726,7 @@ void Opencl_Module_Hmc::md_update_gaugemomentum_device(hmc_float eps)
 	clerr = clSetKernelArg(md_update_gaugemomenta, 2, sizeof(cl_mem), &clmem_force);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(md_update_gaugemomenta  , gs2, ls2);
+	enqueueKernel(md_update_gaugemomenta , gs2, ls2);
 }
 
 void Opencl_Module_Hmc::md_update_gaugefield_device(hmc_float eps)
@@ -805,7 +805,7 @@ void Opencl_Module_Hmc::fermion_force_device()
 	enqueueKernel( fermion_force , gs2, ls2);
 }
 
-void Opencl_Module_Hmc::fermion_force_eoprec_device(cl_mem Y, cl_mem X)
+void Opencl_Module_Hmc::fermion_force_eoprec_device(cl_mem Y, cl_mem X, int evenodd)
 {
 	//fermion_force(field, Y, X, out);
 	//query work-sizes for kernel
@@ -825,6 +825,9 @@ void Opencl_Module_Hmc::fermion_force_eoprec_device(cl_mem Y, cl_mem X)
 	clerr = clSetKernelArg(fermion_force_eoprec, 3, sizeof(cl_mem), &clmem_force);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(fermion_force_eoprec, 3, sizeof(int), &evenodd);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	
 	enqueueKernel( fermion_force_eoprec , gs2, ls2);
 }
 
