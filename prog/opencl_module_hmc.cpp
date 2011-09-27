@@ -423,7 +423,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			Opencl_Module_Fermions::solver(QplusQminus_eoprec_call, this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u, solvertimer);
+			Opencl_Module_Fermions::cg_eoprec(QplusQminus_eoprec_call, this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u);
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
 
 			/**
