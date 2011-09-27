@@ -1,0 +1,26 @@
+#global settings
+NS=4
+NT=4
+use_rec12=0
+use_gpu=0
+prec=64
+
+#fermion-parameters
+kappa=.15
+mu=4.
+cgmax=1000
+beta=6
+startcondition=cold
+savefrequency=10
+fermact=TWISTEDMASS
+
+#solver-parameters
+use_evenodd=no
+solver=bicgstab
+
+#HMC-parameters
+hmcsteps=1
+integrationsteps1=10
+num_timescales=1
+tau=0.5
+

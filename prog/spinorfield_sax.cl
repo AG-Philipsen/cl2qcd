@@ -1,6 +1,5 @@
 // out = alpha*x 
-//CP: defined with a minus!!!
-__kernel void saxpy(__global spinorfield* x, __global hmc_complex * alpha, __global spinorfield* out)
+__kernel void sax(__global spinorfield* x, __global hmc_complex * alpha, __global spinorfield* out)
 {
 	int id = get_global_id(0);
 	int local_size = get_local_size(0);
