@@ -41,7 +41,7 @@ target_link_libraries(su2su3extend
 add_test(Su2su3extend su2su3extend)
 
 # ignore some tests
-configure_file(CTestCustom.cmake ${CMAKE_BINARY_DIR} @ONLY)
+configure_file(CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
 
 # Test the inverter for correct inversion
 add_test(Inverter1_CPU_TM_EO ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testInverter.py ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/inverter_test_input_1)
