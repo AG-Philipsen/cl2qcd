@@ -47,6 +47,7 @@ void QplusQminus_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_me
 void Aee_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
 void Qplus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
 void Qminus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
+void QplusQminus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
 
 /**
  * An OpenCL device
@@ -114,6 +115,7 @@ public:
 	//        compound
 	void Qplus_eoprec(cl_mem in, cl_mem out, cl_mem gf);
 	void Qminus_eoprec(cl_mem in, cl_mem out, cl_mem gf);
+	void QplusQminus_eoprec(cl_mem in, cl_mem out, cl_mem gf);
 	void Aee(cl_mem in, cl_mem out, cl_mem gf);
 	void Aee_minus(cl_mem in, cl_mem out, cl_mem gf);
 	//        explicit

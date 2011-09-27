@@ -40,7 +40,10 @@ void Qminus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_
 {
 	that->Qminus_eoprec(in, out, gf);
 }
-
+void QplusQminus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+{
+	that->QplusQminus_eoprec(in, out, gf);
+}
 
 void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
 {
@@ -506,6 +509,14 @@ void Opencl_Module_Fermions::Qminus_eoprec(cl_mem in, cl_mem out, cl_mem gf){
 	Aee_minus(in, out, gf);
 	gamma5_eoprec_device(out);
 	return;
+}
+
+void Opencl_Module_Fermions::QplusQminus_eoprec(cl_mem in, cl_mem out, cl_mem gf)
+{
+	/** @todo one could save one field here if an additional copying would be included in the end...
+	 * or the field should be created in here, local */
+	Qminus_eoprec(in, clmem_tmp_eoprec_1, gf);
+	Qplus_eoprec(clmem_tmp_eoprec_1, out, gf);
 }
 
 //explicit eoprec fermionmatrix functions
