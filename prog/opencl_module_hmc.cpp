@@ -422,8 +422,9 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			set_eoprec_spinorfield_cold_device(get_clmem_inout_eoprec());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
-			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			Opencl_Module_Fermions::cg_eoprec(QplusQminus_eoprec_call, this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u);
+			converged = Opencl_Module_Fermions::cg_eoprec(QplusQminus_eoprec_call, this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u);
+			if(converged == false) logger.debug() << "solver did not solve";
+			else logger.debug() << "solver solved" ;
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
 
 			/**
