@@ -12,8 +12,7 @@ std::string const version = "0.1";
 
 class Device : public Opencl_Module {
 
-	cl_kernel testKernel_1;
-	cl_kernel testKernel_2;
+	cl_kernel testKernel;
 
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module() {
@@ -60,13 +59,17 @@ void Dummyfield::finalize_opencl()
 
 void Device::fill_kernels()
 {
-	testKernel_1 = createKernel("saxsbypz_1") << "tests/saxsbypz.cl";
-	testKernel_2 = createKernel("saxsbypz_2") << "tests/saxsbypz.cl";
+  logger.info() << "init saxsbypz kernels to see if the compiler does strange things...";
+  logger.info() << "\thmc_float = double";
+	testKernel = createKernel("saxsbypz_1") << "tests/saxsbypz.cl";
+	testKernel = createKernel("saxsbypz_2") << "tests/saxsbypz.cl";
+  logger.info() << "\thmc_float = single";
+	testKernel = createKernel("saxsbypz_1") << "tests/saxsbypz_float.cl";
+	testKernel = createKernel("saxsbypz_2") << "tests/saxsbypz_float.cl";
 }
 
 void Device::clear_kernels()
 {
-	clReleaseKernel(testKernel_1);
-	clReleaseKernel(testKernel_2);
+	clReleaseKernel(testKernel);
 }
 
