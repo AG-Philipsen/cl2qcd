@@ -82,8 +82,8 @@ void inputparameters::set_defaults()
 	hmcsteps = 10;
 	num_timescales = 1;
 	integrator = LEAPFROG;
-	lambda1 = .19;
-	lambda2 = .19;
+	lambda1 = 0.1931833275037836;
+	lambda2 = 0.1931833275037836;
 
 	//direction for the correlator
 	corr_dir = 3;
