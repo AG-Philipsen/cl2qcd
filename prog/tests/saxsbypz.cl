@@ -2,6 +2,15 @@
 
 #define SIZE 1000
 
+#ifdef _USEDOUBLEPREC_
+#ifdef _DEVICE_DOUBLE_EXTENSION_AMD_
+#pragma OPENCL EXTENSION cl_amd_fp64 : enable
+#endif
+#ifdef _DEVICE_DOUBLE_EXTENSION_KHR_
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#endif
+#endif
+
 typedef double hmc_float;
 
 typedef struct {
@@ -25,6 +34,17 @@ typedef struct {
 
 //functions used in kernels
 
+su3vec su3vec_times_complex(su3vec in, hmc_complex factor){
+	su3vec tmp;
+	tmp.e0.re = in.e0.re*factor.re - in.e0.im*factor.im;
+	tmp.e0.im = in.e0.im*factor.re + in.e0.re*factor.im;
+	tmp.e1.re = in.e1.re*factor.re - in.e1.im*factor.im;
+	tmp.e1.im = in.e1.im*factor.re + in.e1.re*factor.im;
+	tmp.e2.re = in.e2.re*factor.re - in.e2.im*factor.im;
+	tmp.e2.im = in.e2.im*factor.re + in.e2.re*factor.im;
+	return tmp;
+}
+
 spinor spinor_times_complex(spinor in, hmc_complex factor)
 {
 	spinor tmp;
@@ -32,6 +52,17 @@ spinor spinor_times_complex(spinor in, hmc_complex factor)
 	tmp.e1 = su3vec_times_complex(in.e1, factor);
 	tmp.e2 = su3vec_times_complex(in.e2, factor);
 	tmp.e3 = su3vec_times_complex(in.e3, factor);
+	return tmp;
+}
+
+su3vec su3vec_acc_acc(su3vec in1, su3vec in2, su3vec in3){
+	su3vec tmp;     
+	tmp.e0.re = in1.e0.re + in2.e0.re + in3.e0.re;
+	tmp.e0.im = in1.e0.im + in2.e0.im + in3.e0.im;
+	tmp.e1.re = in1.e1.re + in2.e1.re + in3.e1.re;
+	tmp.e1.im = in1.e1.im + in2.e1.im + in3.e1.im;
+	tmp.e2.re = in1.e2.re + in2.e2.re + in3.e2.re;
+	tmp.e2.im = in1.e2.im + in2.e2.im + in3.e2.im;
 	return tmp;
 }
 
