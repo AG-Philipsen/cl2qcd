@@ -66,6 +66,34 @@ target_link_libraries(saxsbypz
 	einhard)
 add_test(Saxsbypz saxsbypz)
 
+add_executable(m_gpu
+	M_GPU.cpp
+	../host_geometry.cpp
+	../host_operations_complex.cpp
+	../host_operations_gaugefield.cpp
+	../host_operations_su3matrix.cpp
+	../host_operations_matrix.cpp
+	../gaugefield_hybrid.cpp
+	../inputparameters.cpp
+	../host_readgauge.cpp
+	../host_random.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../opencl_module_ran.cpp
+	../opencl_module_spinors.cpp
+	../host_use_timer.cpp
+	../host_writegaugefield.cpp
+	../exceptions.cpp
+	../logger.cpp)
+target_link_libraries(m_gpu
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	einhard)
+add_test(M_gpu m_gpu)
+
 # ignore some tests
 configure_file(CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
 
