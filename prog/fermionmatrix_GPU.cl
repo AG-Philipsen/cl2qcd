@@ -27,7 +27,8 @@ spinor inline gamma5_local(spinor const in){
 
 //"local" dslash working on a particular link (n,t) in a specific direction
 //NOTE: each component is multiplied by +KAPPA, so the resulting spinor has to be mutliplied by -1 to obtain the correct dslash!!!
-spinor dslash_local_0(__global const spinorfield * const restrict in,__global const ocl_s_gaugefield * const restrict field, const int n, const int t){
+//spinor dslash_local_0(__global const spinorfield * const restrict in,__global const ocl_s_gaugefield * const restrict field, const int n, const int t){
+spinor dslash_local_0(__global spinorfield * in,__global ocl_s_gaugefield * field, int n, int t){
 	spinor out_tmp, plus;
 	int dir, nn;
 	su3vec psi, phi;
@@ -35,7 +36,8 @@ spinor dslash_local_0(__global const spinorfield * const restrict in,__global co
 	//this is used to save the BC-conditions...
 	hmc_complex bc_tmp;
 	out_tmp = set_spinor_zero();
-	
+
+
 	//go through the different directions
 	///////////////////////////////////
 	// mu = 0
@@ -79,7 +81,7 @@ spinor dslash_local_0(__global const spinorfield * const restrict in,__global co
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e3 = su3vec_acc(out_tmp.e3, psi);
 
-/////////////////////////////////////
+	/////////////////////////////////////
 	//mu = -0
 	nn = (t-1+NTIME)%NTIME;
 	plus = get_spinor_from_field(in, n, nn);
@@ -343,7 +345,7 @@ spinor dslash_local_3(__global spinorfield * in,__global ocl_s_gaugefield * fiel
 	return out_tmp;
 }
 
-__kernel void M(__global spinorfield * in, __global spinorfield * out, __global ocl_s_gaugefield * field){
+__kernel void M_tm_plus(__global spinorfield * in,  __global ocl_s_gaugefield * field, __global spinorfield * out){
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -351,7 +353,7 @@ __kernel void M(__global spinorfield * in, __global spinorfield * out, __global 
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 	int n,t;
-	spinor out_tmp, out_tmp2, out_tmp3;
+	spinor out_tmp, out_tmp2;
 	spinor plus;
 	
 	hmc_complex twistfactor = {1., MUBAR};
@@ -365,7 +367,9 @@ __kernel void M(__global spinorfield * in, __global spinorfield * out, __global 
 		//get input spinor
 		plus = get_spinor_from_field(in, n, t);
 		//Diagonalpart:
-		out_tmp = M_diag_local(plus, twistfactor, twistfactor_minus);
+		out_tmp = M_diag_tm_local(plus, twistfactor, twistfactor_minus);
+		out_tmp2 = set_spinor_zero();
+
 		//calc dslash (this includes mutliplication with kappa)
 		out_tmp2 = dslash_local_0(in, field, n, t);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
@@ -375,6 +379,7 @@ __kernel void M(__global spinorfield * in, __global spinorfield * out, __global 
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 		out_tmp2 = dslash_local_3(in, field, n, t);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
+
 		put_spinor_to_field(out_tmp, out, n, t);
 	}
 }

@@ -81,6 +81,7 @@ add_executable(m_gpu
 	../opencl_compiler.cpp
 	../opencl_module_ran.cpp
 	../opencl_module_spinors.cpp
+	../opencl_module_fermions.cpp
 	../host_use_timer.cpp
 	../host_writegaugefield.cpp
 	../exceptions.cpp
