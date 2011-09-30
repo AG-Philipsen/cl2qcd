@@ -1,6 +1,7 @@
 /** @file
  * All definitions, types and functions required for the fermionmatrix M_tm_plus
  * No more files are included, everything that is not used has been deleted.
+ * Nevertheless, the (original) included files are still indicated by "//(filename)"
  */
 
 //opencl_header.cl
@@ -25,53 +26,24 @@
 /** Number of dimensions of the lattice */
 #define NDIM 4
 
-#ifndef _INKERNEL_
-
 #define SPINORSIZE NSPIN*NC
 #define HALFSPINORSIZE NSPIN/2*NC
-#define SU3ALGEBRASIZE NC*NC-1
-
-//startconditions:
-#define START_FROM_SOURCE 2
-#define COLD_START 0
-#define HOT_START 1
-
-#endif //_INKERNEL_
-
-#define WILSON 0
-#define CLOVER 1
-#define TWISTEDMASS 2
-
-#define LEAPFROG 0
-#define TWOMN 1
 
 //EVEN ODD
 #define EVEN 0
 #define ODD 1
 
-/**
- * PI
- * @todo Rather use PI from stdlib
- */
 #define PI  3.14159265358979
-
-#define su2_entries 4
 
 //types.h
 
-#ifndef _INKERNEL_
 #ifdef __APPLE__
 #include <OpenCL/cl.h>
 #else
 #include <CL/cl.h>
 #endif
-#endif
 
-#ifdef _INKERNEL_
 #define CONST __constant
-#else /* _INKERNEL_ */
-#define CONST const
-#endif /* _INKERNEL_ */
 
 /** The floating precision type used by hmc, can be 32 or 64 bit. */
 #ifdef _USEDOUBLEPREC_
@@ -80,118 +52,23 @@ typedef double hmc_float;
 typedef float hmc_float;
 #endif
 
-/** An OpenCL-compatible constant 1.
- * @todo this is rediculous, 1.0(f) is way more readable, let the
- *       compiler do the optimizations.
- */
-#ifdef _INKERNEL_
 __constant hmc_float hmc_one_f = 1.0f;
-#else
-hmc_float const hmc_one_f = static_cast<hmc_float>(1);
-#endif
 
 /** Complex number type, precision is the same as for hmc_float */
-#ifdef _INKERNEL_
 typedef struct {
 	hmc_float re;
 	hmc_float im;
 } hmc_complex;
-typedef struct {
-	hmc_complex e00;
-	hmc_complex e01;
-	hmc_complex e10;
-	hmc_complex e11;
-} Matrixsu2;
-typedef struct {
-	hmc_float e00;
-	hmc_float e01;
-	hmc_float e10;
-	hmc_float e11;
-} Matrixsu2_pauli;
-#else
-struct hmc_complex {
-	hmc_float re;
-	hmc_float im;
-};
-struct Matrixsu2 {
-	hmc_complex e00;
-	hmc_complex e01;
-	hmc_complex e10;
-	hmc_complex e11;
-} ;
-struct Matrixsu2_pauli {
-	hmc_float e00;
-	hmc_float e01;
-	hmc_float e10;
-	hmc_float e11;
-} ;
-#endif
 
-#ifdef _INKERNEL_
 __constant hmc_complex hmc_complex_one = {1., 0.};
 __constant hmc_complex hmc_complex_zero = {0., 0.};
 __constant hmc_complex hmc_complex_minusone = { -1., 0.};
 __constant hmc_complex hmc_complex_i = {0., 1.};
-#else
-/** A complex 1 */
-hmc_complex const hmc_complex_one = {1., 0.};
-/** A complex -1 */
-hmc_complex const hmc_complex_minusone = { -1., 0.};
-/** A complex 0 */
-hmc_complex const hmc_complex_zero = {0., 0.};
-/** A complex i */
-hmc_complex const hmc_complex_i = {0., 1.};
-#endif
-
-//also CPU
-#ifndef _INKERNEL_
-
-//define a gauge field: gauge[su3][mu][coord3d][coord_time]
-#ifdef _RECONSTRUCT_TWELVE_
-typedef hmc_complex hmc_su3matrix [NC*(NC-1)];
-
-struct Matrixsu3 {
-	hmc_complex e00;
-	hmc_complex e01;
-	hmc_complex e02;
-	hmc_complex e10;
-	hmc_complex e11;
-	hmc_complex e12;
-};
-
-typedef hmc_complex hmc_staplematrix [NC*NC];
-typedef hmc_complex hmc_3x3matrix[3][3];
-#else //_RECONSTRUCT_TWELVE_
-/** A generic SU3 matrix */
-typedef hmc_complex hmc_su3matrix [NC][NC];
-/** A matrix representing a staple */
-typedef hmc_su3matrix hmc_staplematrix;
-/** A generic 3x3 matrix */
-typedef hmc_complex hmc_3x3matrix[3][3];
-
-struct Matrixsu3 {
-	hmc_complex e00;
-	hmc_complex e01;
-	hmc_complex e02;
-	hmc_complex e10;
-	hmc_complex e11;
-	hmc_complex e12;
-	hmc_complex e20;
-	hmc_complex e21;
-	hmc_complex e22;
-};
-#endif //_RECONSTRUCT_TWELVE_
-
-typedef Matrixsu3 ocl_s_gaugefield;
-
-#endif // ifndef _INKERNEL_
 
 typedef hmc_complex hmc_ocl_su3matrix;
 typedef hmc_complex hmc_ocl_3x3matrix;
 typedef hmc_complex hmc_ocl_staplematrix;
 typedef hmc_float hmc_ocl_gaugefield;
-
-#ifdef _INKERNEL_
 
 typedef struct {
 	hmc_complex e00;
@@ -226,41 +103,9 @@ typedef struct {
 	hmc_complex e21;
 	hmc_complex e22;
 } Matrixsu3;
-
 #endif //ifdef _REC12_
 
-#endif  //ifdef _INKERNEL_
-
 typedef Matrixsu3 ocl_s_gaugefield;
-
-#ifndef _INKERNEL_
-/** Storage type for state of the random number generator */
-typedef cl_ulong4 hmc_ocl_ran;
-#endif /* _INKERNEL_ */
-
-//CP: this an algebraelement
-typedef struct {
-	hmc_float e0;
-	hmc_float e1;
-	hmc_float e2;
-	hmc_float e3;
-	hmc_float e4;
-	hmc_float e5;
-	hmc_float e6;
-	hmc_float e7;
-} ae;
-
-//for hmc_ocl_su3matrix
-#ifdef _RECONSTRUCT_TWELVE_
-#define SU3SIZE NC*(NC-1)
-#define STAPLEMATRIXSIZE NC*NC
-#else
-#define SU3SIZE NC*NC
-#define STAPLEMATRIXSIZE NC*NC
-#endif
-/** @file
- * Device code for lattice geometry handling
- */
 
 //opencl_geometry.cl
 
@@ -272,25 +117,6 @@ return spacepos + VOLSPACE * t;
 int inline get_global_link_pos(int mu, int spacepos, int t)
 {
 return mu + NDIM *get_global_pos(spacepos, t);
-}
-
-//old version, this can be deleted soon:
-int inline ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t)
-{
-#ifdef _RECONSTRUCT_TWELVE_
-       return c + 2*a + 2*(NC-1)*b+2*NC*(NC-1)*mu+2*NC*(NC-1)*NDIM*spacepos+2*NC*(NC-1)*NDIM*VOLSPACE*t;
-#else
-	return c + 2*a + 2*NC*b+2*NC*NC*mu+2*NC*NC*NDIM*spacepos+2*NC*NC*NDIM*VOLSPACE*t;
-#endif
-}
-
-int inline ocl_su3matrix_element(int a, int b)
-{
-#ifdef _RECONSTRUCT_TWELVE_
-       return a + (NC-1)*b;
-#else
-	return a + NC*b;
-#endif
 }
 
 //it is assumed that idx iterates only over half the number of sites
@@ -398,9 +224,6 @@ int spinor_field_element(int alpha, int color, int nspace, int t)
 {
 	return alpha + NSPIN*color + NSPIN*NC*(get_global_pos(nspace, t));
 }
-/** @file
- * Device code implementing complex numbers
- */
 
 //opencl_operations_complex.cl
 
@@ -443,9 +266,6 @@ hmc_complex complexdivide(hmc_complex numerator, hmc_complex denominator)
 	return res;
 }
 
-/** @file
- * Device code implementing SU(3)matrices with and without reconstruct 12
- */
 //operations_matrix_su3.cl
 
 #ifdef _RECONSTRUCT_TWELVE_
@@ -497,8 +317,6 @@ void print_matrixsu3(Matrixsu3 in){
 #endif
 	printf("\n");
 }
-
-
 
 Matrixsu3 get_matrixsu3( __global ocl_s_gaugefield * field, const int spacepos, const int timepos, const int mu)
 {
@@ -743,7 +561,6 @@ Matrixsu3 adjoint_matrixsu3(const Matrixsu3 p)
 	return out;
 }
 
-
 //scale a su3 matrix by a real factor
 Matrixsu3 multiply_matrixsu3_by_real (Matrixsu3 in, hmc_float factor){
     Matrixsu3 out = in;
@@ -787,9 +604,7 @@ Matrixsu3 multiply_matrixsu3_by_complex (Matrixsu3 in, hmc_complex factor){
     return out;
 }
 
-/** @file
- * Common fermion types used by HMC, both on host and OpenCL device.
- */
+//types_fermions.h
 
 typedef struct {
 	hmc_complex e0;
@@ -813,11 +628,7 @@ typedef struct {
 typedef spinor spinorfield;
 typedef spinor spinorfield_eoprec;
 
-
-
-/** @file
- * Device code for operations on SU(3) vectors
- */
+//operations_su3vec.cl
 
 hmc_float su3vec_squarenorm(su3vec in){
 	return
@@ -980,17 +791,6 @@ su3vec su3matrix_dagger_times_su3vec(Matrixsu3 u, su3vec in){
 	return tmp;
 }
 
-// su3vec su3vec_times_minusone(su3vec in){
-// 	su3vec tmp;
-// 	tmp.e0.re = -(in).e0.re;
-// 	tmp.e0.im = -(in).e0.im;
-// 	tmp.e1.re = -(in).e1.re;
-// 	tmp.e1.im = -(in).e1.im;
-// 	tmp.e2.re = -(in).e2.re;
-// 	tmp.e2.im = -(in).e2.im;
-// 	return tmp;
-// }
-
 su3vec su3vec_acc(su3vec in1, su3vec in2){
 	su3vec tmp;     
 	tmp.e0.re = in1.e0.re + in2.e0.re;
@@ -1035,46 +835,7 @@ su3vec su3vec_dim_i(su3vec in1, su3vec in2){
 	return tmp;
 }
 
-// su3vec su3vec_acc_acc(su3vec in1, su3vec in2, su3vec in3){
-// 	su3vec tmp;     
-// 	tmp.e0.re = in1.e0.re + in2.e0.re + in3.e0.re;
-// 	tmp.e0.im = in1.e0.im + in2.e0.im + in3.e0.im;
-// 	tmp.e1.re = in1.e1.re + in2.e1.re + in3.e1.re;
-// 	tmp.e1.im = in1.e1.im + in2.e1.im + in3.e1.im;
-// 	tmp.e2.re = in1.e2.re + in2.e2.re + in3.e2.re;
-// 	tmp.e2.im = in1.e2.im + in2.e2.im + in3.e2.im;
-// 	return tmp;
-// }
-
-
-// //calculates the Dirac-Trace of the matrix resulting from multiplying U*V^dagger =  u*v^dagger + w*x^dagger, where u, v, w, x are SU(3)-vectors (using spinprojection). The result is a 3x3-matrix
-// Matrix3x3 tr_v_times_u_dagger(su3vec u, su3vec v, su3vec w, su3vec x){
-// 	Matrix3x3 tmp;
-// 	tmp.e00.re=(u).e0.re*(v).e0.re+(u).e0.im*(v).e0.im + (w).e0.re*(x).e0.re+(w).e0.im*(x).e0.im; 
-// 	tmp.e00.im=(u).e0.im*(v).e0.re-(u).e0.re*(v).e0.im + (w).e0.im*(x).e0.re-(w).e0.re*(x).e0.im;
-// 	tmp.e01.re=(u).e0.re*(v).e1.re+(u).e0.im*(v).e1.im + (w).e0.re*(x).e1.re+(w).e0.im*(x).e1.im; 
-// 	tmp.e01.im=(u).e0.im*(v).e1.re-(u).e0.re*(v).e1.im + (w).e0.im*(x).e1.re-(w).e0.re*(x).e1.im;
-// 	tmp.e02.re=(u).e0.re*(v).e2.re+(u).e0.im*(v).e2.im + (w).e0.re*(x).e2.re+(w).e0.im*(x).e2.im; 
-// 	tmp.e02.im=(u).e0.im*(v).e2.re-(u).e0.re*(v).e2.im + (w).e0.im*(x).e2.re-(w).e0.re*(x).e2.im; 
-// 	tmp.e10.re=(u).e1.re*(v).e0.re+(u).e1.im*(v).e0.im + (w).e1.re*(x).e0.re+(w).e1.im*(x).e0.im; 
-// 	tmp.e10.im=(u).e1.im*(v).e0.re-(u).e1.re*(v).e0.im + (w).e1.im*(x).e0.re-(w).e1.re*(x).e0.im; 
-// 	tmp.e11.re=(u).e1.re*(v).e1.re+(u).e1.im*(v).e1.im + (w).e1.re*(x).e1.re+(w).e1.im*(x).e1.im; 
-// 	tmp.e11.im=(u).e1.im*(v).e1.re-(u).e1.re*(v).e1.im + (w).e1.im*(x).e1.re-(w).e1.re*(x).e1.im; 
-// 	tmp.e12.re=(u).e1.re*(v).e2.re+(u).e1.im*(v).e2.im + (w).e1.re*(x).e2.re+(w).e1.im*(x).e2.im; 
-// 	tmp.e12.im=(u).e1.im*(v).e2.re-(u).e1.re*(v).e2.im + (w).e1.im*(x).e2.re-(w).e1.re*(x).e2.im; 
-// 	tmp.e20.re=(u).e2.re*(v).e0.re+(u).e2.im*(v).e0.im + (w).e2.re*(x).e0.re+(w).e2.im*(x).e0.im; 
-// 	tmp.e20.im=(u).e2.im*(v).e0.re-(u).e2.re*(v).e0.im + (w).e2.im*(x).e0.re-(w).e2.re*(x).e0.im; 
-// 	tmp.e21.re=(u).e2.re*(v).e1.re+(u).e2.im*(v).e1.im + (w).e2.re*(x).e1.re+(w).e2.im*(x).e1.im; 
-// 	tmp.e21.im=(u).e2.im*(v).e1.re-(u).e2.re*(v).e1.im + (w).e2.im*(x).e1.re-(w).e2.re*(x).e1.im; 
-// 	tmp.e22.re=(u).e2.re*(v).e2.re+(u).e2.im*(v).e2.im + (w).e2.re*(x).e2.re+(w).e2.im*(x).e2.im; 
-// 	tmp.e22.im=(u).e2.im*(v).e2.re-(u).e2.re*(v).e2.im + (w).e2.im*(x).e2.re-(w).e2.re*(x).e2.im; 
-// 	return tmp;
-// }
-/** @file
- * Device code for operations on spinors
- */
-
-//opencl_operations_spinor
+//operations_spinor
 
 spinor set_spinor_zero()
 {
@@ -1085,54 +846,6 @@ spinor set_spinor_zero()
 	tmp.e3 = set_su3vec_zero();
 	return tmp;
 }
-
-// spinor set_spinor_cold()
-// {
-// 	spinor tmp;
-// 	tmp.e0 = set_su3vec_cold();
-// 	tmp.e1 = set_su3vec_cold();
-// 	tmp.e2 = set_su3vec_cold();
-// 	tmp.e3 = set_su3vec_cold();
-// 	return tmp;
-// }
- 
-// hmc_float spinor_squarenorm(spinor in)
-// {
-// 	hmc_float res=0;
-// 	res += su3vec_squarenorm(in.e0);
-// 	res += su3vec_squarenorm(in.e1);
-// 	res += su3vec_squarenorm(in.e2);
-// 	res += su3vec_squarenorm(in.e3);
-// 	return res;
-// }
-
-// hmc_complex spinor_scalarproduct(spinor in1, spinor in2){
-// 	hmc_complex res = hmc_complex_zero;
-// 	hmc_complex tmp;
-// 	tmp = su3vec_scalarproduct(in1.e0, in2.e0);
-// 	res.re += tmp.re;
-// 	res.im += tmp.im;
-// 	tmp = su3vec_scalarproduct(in1.e1, in2.e1);
-// 	res.re += tmp.re;
-// 	res.im += tmp.im;
-// 	tmp = su3vec_scalarproduct(in1.e2, in2.e2);
-// 	res.re += tmp.re;
-// 	res.im += tmp.im;
-// 	tmp = su3vec_scalarproduct(in1.e3, in2.e3);
-// 	res.re += tmp.re;
-// 	res.im += tmp.im;
-// 	return res;
-// }
-
-// spinor real_multiply_spinor(spinor in, hmc_float factor)
-// {
-// 	spinor tmp;
-// 	tmp.e0 = su3vec_times_real(in.e0, factor);
-// 	tmp.e1 = su3vec_times_real(in.e1, factor);
-// 	tmp.e2 = su3vec_times_real(in.e2, factor);
-// 	tmp.e3 = su3vec_times_real(in.e3, factor);
-// 	return tmp;
-// }
 
 spinor spinor_times_complex(spinor in, hmc_complex factor)
 {
@@ -1174,19 +887,7 @@ spinor spinor_acc(spinor in1, spinor in2)
 	return tmp;
 }
 
-// spinor spinor_acc_acc(spinor in1, spinor in2, spinor in3)
-// {
-// 	spinor tmp;
-// 	tmp.e0 = su3vec_acc_acc(in1.e0, in2.e0, in3.e0);
-// 	tmp.e1 = su3vec_acc_acc(in1.e1, in2.e1, in3.e1);
-// 	tmp.e2 = su3vec_acc_acc(in1.e2, in2.e2, in3.e2);
-// 	tmp.e3 = su3vec_acc_acc(in1.e3, in2.e3, in3.e3);
-// 	return tmp;
-// }
-
-/** @file
- * Device code for operations on the spinor field
- */
+//spinorfield.cl
 
 void print_su3vec(su3vec in){
      printf("(%f,%f)\t(%f,%f)\t(%f,%f)\t", in.e0.re, in.e0.im, in.e1.re, in.e1.im, in.e2.re, in.e2.im);
@@ -1199,7 +900,6 @@ void print_spinor(spinor in){
      print_su3vec(in.e3);
      printf("\n");
 }
-
 
 spinor get_spinor_from_field(__global spinorfield* in, int n, int t)
 {
@@ -1214,9 +914,8 @@ void put_spinor_to_field(spinor in, __global spinorfield* out, int n, int t)
 	int pos = get_global_pos(n,t);
 	out[pos] = in;
 }
-/**
- @file fermionmatrix-functions
-*/
+
+//fermionmatrix_GPU.cl
 
 //local twisted-mass Diagonalmatrix:
 //	(1+i*mubar*gamma_5)psi = (1, mubar)psi.0,1 (1,-mubar)psi.2,3
