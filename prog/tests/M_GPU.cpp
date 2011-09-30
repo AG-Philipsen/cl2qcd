@@ -53,6 +53,7 @@ private:
 
 };
 
+/*
 BOOST_AUTO_TEST_CASE( CPU )
 {
         logger.info() << "Init dummy device";
@@ -69,7 +70,7 @@ BOOST_AUTO_TEST_CASE( CPU )
 	dummy.verify(1);
 	BOOST_MESSAGE("Tested CPU");
 }
-
+*/
 BOOST_AUTO_TEST_CASE( GPU )
 {
         logger.info() << "Init dummy device";
@@ -86,7 +87,6 @@ BOOST_AUTO_TEST_CASE( GPU )
 	dummy.verify(1);
 	BOOST_MESSAGE("Tested GPU");
 }
-
 
 void Dummyfield::init_tasks()
 {
@@ -203,7 +203,7 @@ void Device::fill_kernels()
 
   if(get_device_type() == CL_DEVICE_TYPE_GPU)
     //    testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix_GPU.cl";
-    testKernel = createKernel("M_tm_plus")  << "/tests/m_tm_plus_GPU_full.cl";
+    testKernel = createKernel("M_tm_plus")  << "tests/m_tm_plus_GPU_full.cl";
   if(get_device_type() == CL_DEVICE_TYPE_CPU)
     testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
 

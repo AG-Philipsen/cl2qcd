@@ -1139,7 +1139,9 @@ __kernel void M_tm_plus(__global spinorfield * in,  __global ocl_s_gaugefield * 
 	hmc_complex twistfactor = {1., MUBAR};
 	hmc_complex twistfactor_minus = {1., MMUBAR};
 
-	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
+if(id>SPINORFIELDSIZE) return;
+
+		int id_tmp = id;
 		/** @todo this must be done more efficient */
 		if(id_tmp%2 == 0) get_even_site(id_tmp/2, &n, &t);
 		else get_odd_site(id_tmp/2, &n, &t);
@@ -1147,6 +1149,7 @@ __kernel void M_tm_plus(__global spinorfield * in,  __global ocl_s_gaugefield * 
 		//get input spinor
 		plus = get_spinor_from_field(in, n, t);
 		//Diagonalpart:
+		out_tmp = set_spinor_zero();
 		out_tmp = M_diag_tm_local(plus, twistfactor, twistfactor_minus);
 		out_tmp2 = set_spinor_zero();
 
@@ -1161,5 +1164,4 @@ __kernel void M_tm_plus(__global spinorfield * in,  __global ocl_s_gaugefield * 
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 
 		put_spinor_to_field(out_tmp, out, n, t);
-	}
 }
