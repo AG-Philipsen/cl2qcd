@@ -202,7 +202,8 @@ void Device::fill_kernels()
   global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
 
   if(get_device_type() == CL_DEVICE_TYPE_GPU)
-    testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix_GPU.cl";
+    //    testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix_GPU.cl";
+    testKernel = createKernel("M_tm_plus")  << "/tests/m_tm_plus_GPU_full.cl";
   if(get_device_type() == CL_DEVICE_TYPE_CPU)
     testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
 

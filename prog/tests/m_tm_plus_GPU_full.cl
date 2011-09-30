@@ -26,9 +26,6 @@
 /** Number of dimensions of the lattice */
 #define NDIM 4
 
-#define SPINORSIZE NSPIN*NC
-#define HALFSPINORSIZE NSPIN/2*NC
-
 //EVEN ODD
 #define EVEN 0
 #define ODD 1
@@ -237,35 +234,7 @@ hmc_complex complexdivide(hmc_complex numerator, hmc_complex denominator)
 
 //operations_matrix_su3.cl
 
-#ifdef _RECONSTRUCT_TWELVE_
-hmc_complex reconstruct_su3(const Matrixsu3 p, const int ncomp)
-{
-	hmc_complex out;
-	hmc_complex tmp;
-	
-	switch (ncomp){
-
-	case 0:
-	    tmp = complexmult (p.e01, p.e12);
-	    out = complexmult (p.e02, p.e11);
-	    break;
-
-	case 1:
-	    tmp = complexmult (p.e02, p.e10);
-	    out = complexmult (p.e00, p.e12);
-	    break;
-	case 2:
-	    tmp = complexmult (p.e00, p.e11);
-	    out = complexmult (p.e01, p.e10);
-	    break;
-	}
-
-	out = complexsubtract (tmp, out);
-	return complexconj (out);
-}
-#endif
-
-void print_matrixsu3(Matrixsu3 in){
+hmc_complex reconstruct_su3(const Matrixsu3 in){
 #ifdef _RECONSTRUCT_TWELVE_
 	hmc_float in20_re = reconstruct_su3(in, 0).re;
 	hmc_float in20_im = reconstruct_su3(in, 0).im;
@@ -287,7 +256,7 @@ void print_matrixsu3(Matrixsu3 in){
 	printf("\n");
 }
 
-Matrixsu3 get_matrixsu3( __global ocl_s_gaugefield * field, const int spacepos, const int timepos, const int mu)
+Matrixsu3 get_matrixsu3( __global ocl_s_gaugefield const * const restrict field, const int spacepos, const int timepos, const int mu)
 {
 	Matrixsu3  out;
 	out = field [get_global_link_pos(mu, spacepos, timepos)];
@@ -489,7 +458,7 @@ Matrixsu3 multiply_matrixsu3_dagger(const Matrixsu3 p, const Matrixsu3 q)
 }
 
 //scale a su3 matrix by a real factor
-Matrixsu3 multiply_matrixsu3_by_real (Matrixsu3 in, hmc_float factor){
+Matrixsu3 multiply_matrixsu3_by_real (const Matrixsu3 in, const hmc_float factor){
     Matrixsu3 out = in;
     out.e00.re *= factor;
     out.e00.im *= factor;
@@ -515,7 +484,7 @@ Matrixsu3 multiply_matrixsu3_by_real (Matrixsu3 in, hmc_float factor){
     return out;
 }
 
-Matrixsu3 multiply_matrixsu3_by_complex (Matrixsu3 in, hmc_complex factor){
+Matrixsu3 multiply_matrixsu3_by_complex (const Matrixsu3 in, const hmc_complex factor){
 	Matrixsu3 out;
 	out.e00 = complexmult(in.e00, factor);
 	out.e01 = complexmult(in.e01, factor);
@@ -565,7 +534,7 @@ su3vec set_su3vec_zero(){
   return tmp;
 }
 
-su3vec su3vec_times_real(su3vec in, hmc_float factor){
+su3vec su3vec_times_real(const su3vec in, const hmc_float factor){
 	su3vec tmp;
 	tmp.e0.re = in.e0.re*factor;
 	tmp.e0.im = in.e0.im*factor;
@@ -576,7 +545,7 @@ su3vec su3vec_times_real(su3vec in, hmc_float factor){
 	return tmp;
 }
 
-su3vec su3vec_times_complex(su3vec in, hmc_complex factor){
+su3vec su3vec_times_complex(const su3vec in, const hmc_complex factor){
 	su3vec tmp;
 	tmp.e0.re = in.e0.re*factor.re - in.e0.im*factor.im;
 	tmp.e0.im = in.e0.im*factor.re + in.e0.re*factor.im;
@@ -587,7 +556,7 @@ su3vec su3vec_times_complex(su3vec in, hmc_complex factor){
 	return tmp;
 }
 
-su3vec su3vec_times_complex_conj(su3vec in, hmc_complex factor){
+su3vec su3vec_times_complex_conj(const su3vec in, const hmc_complex factor){
 	su3vec tmp;
 	tmp.e0.re = in.e0.re*factor.re + in.e0.im*factor.im;
 	tmp.e0.im = in.e0.im*factor.re - in.e0.re*factor.im;
@@ -598,7 +567,7 @@ su3vec su3vec_times_complex_conj(su3vec in, hmc_complex factor){
 	return tmp;
 }
 
-su3vec su3matrix_times_su3vec(Matrixsu3 u, su3vec in){
+su3vec su3matrix_times_su3vec(const Matrixsu3 u, const su3vec in){
 	su3vec tmp;
 	#ifdef _RECONSTRUCT_TWELVE_
 	hmc_float u_e20_re = reconstruct_su3(u, 0).re;
@@ -643,7 +612,7 @@ su3vec su3matrix_times_su3vec(Matrixsu3 u, su3vec in){
 	return tmp;
 }
 
-su3vec su3matrix_dagger_times_su3vec(Matrixsu3 u, su3vec in){
+su3vec su3matrix_dagger_times_su3vec(const Matrixsu3 u,const su3vec in){
 	su3vec tmp;
 #ifdef _RECONSTRUCT_TWELVE_
 	hmc_float u_e20_re = reconstruct_su3(u, 0).re;
@@ -687,7 +656,7 @@ su3vec su3matrix_dagger_times_su3vec(Matrixsu3 u, su3vec in){
 	return tmp;
 }
 
-su3vec su3vec_acc(su3vec in1, su3vec in2){
+su3vec su3vec_acc(const su3vec in1, const su3vec in2){
 	su3vec tmp;     
 	tmp.e0.re = in1.e0.re + in2.e0.re;
 	tmp.e0.im = in1.e0.im + in2.e0.im;
@@ -698,7 +667,7 @@ su3vec su3vec_acc(su3vec in1, su3vec in2){
 	return tmp;
 }
 
-su3vec su3vec_acc_i(su3vec in1, su3vec in2){
+su3vec su3vec_acc_i(const su3vec in1, const su3vec in2){
 	su3vec tmp;     
 	tmp.e0.re = in1.e0.re - in2.e0.im;
 	tmp.e0.im = in1.e0.im + in2.e0.re;
@@ -709,7 +678,7 @@ su3vec su3vec_acc_i(su3vec in1, su3vec in2){
 	return tmp;
 }
 
-su3vec su3vec_dim(su3vec in1, su3vec in2){
+su3vec su3vec_dim(const su3vec in1, const su3vec in2){
 	su3vec tmp;     
 	tmp.e0.re = in1.e0.re - in2.e0.re;
 	tmp.e0.im = in1.e0.im - in2.e0.im;
@@ -720,7 +689,7 @@ su3vec su3vec_dim(su3vec in1, su3vec in2){
 	return tmp;
 }
 
-su3vec su3vec_dim_i(su3vec in1, su3vec in2){
+su3vec su3vec_dim_i(const su3vec in1, const su3vec in2){
 	su3vec tmp;     
 	tmp.e0.re = in1.e0.re + in2.e0.im;
 	tmp.e0.im = in1.e0.im - in2.e0.re;
@@ -743,7 +712,7 @@ spinor set_spinor_zero()
 	return tmp;
 }
 
-spinor spinor_times_complex(spinor in, hmc_complex factor)
+spinor spinor_times_complex(const spinor in, const hmc_complex factor)
 {
 	spinor tmp;
 	tmp.e0 = su3vec_times_complex(in.e0, factor);
@@ -753,7 +722,7 @@ spinor spinor_times_complex(spinor in, hmc_complex factor)
 	return tmp;
 }
 
-spinor spinor_times_complex_conj(spinor in, hmc_complex factor)
+spinor spinor_times_complex_conj(const spinor in, const hmc_complex factor)
 {
 	spinor tmp;
 	tmp.e0 = su3vec_times_complex_conj(in.e0, factor);
@@ -763,7 +732,7 @@ spinor spinor_times_complex_conj(spinor in, hmc_complex factor)
 	return tmp;
 }
 
-spinor spinor_dim(spinor in1, spinor in2)
+spinor spinor_dim(const spinor in1, const spinor in2)
 {
 	spinor tmp;
 	tmp.e0 = su3vec_dim(in1.e0, in2.e0);
@@ -773,7 +742,7 @@ spinor spinor_dim(spinor in1, spinor in2)
 	return tmp;
 }
 
-spinor spinor_acc(spinor in1, spinor in2)
+spinor spinor_acc(const spinor in1, const spinor in2)
 {
 	spinor tmp;
 	tmp.e0 = su3vec_acc(in1.e0, in2.e0);
@@ -797,7 +766,7 @@ void print_spinor(spinor in){
      printf("\n");
 }
 
-spinor get_spinor_from_field(__global spinorfield* in, int n, int t)
+spinor get_spinor_from_field(__global spinorfield const * const restrict in, const int n, const int t)
 {
 	int pos = get_global_pos(n,t);
 	spinor out;
@@ -805,7 +774,7 @@ spinor get_spinor_from_field(__global spinorfield* in, int n, int t)
 	return out;
 }
 
-void put_spinor_to_field(spinor in, __global spinorfield* out, int n, int t)
+void put_spinor_to_field(const spinor in, __global spinorfield * const restrict out, const int n, const int t)
 {
 	int pos = get_global_pos(n,t);
 	out[pos] = in;
@@ -938,7 +907,7 @@ spinor dslash_local_0(__global spinorfield * in,__global ocl_s_gaugefield * fiel
 	return out_tmp;
 }
 
-spinor dslash_local_1(__global spinorfield * in,__global ocl_s_gaugefield * field, int n, int t){
+spinor dslash_local_1(__global spinorfield const * const restrict in,__global ocl_s_gaugefield const * const restrict field, const int n, const int t){
 	spinor out_tmp, plus;
 	int dir, nn;
 	su3vec psi, phi;
@@ -1012,7 +981,7 @@ spinor dslash_local_1(__global spinorfield * in,__global ocl_s_gaugefield * fiel
 	return out_tmp;
 }
 
-spinor dslash_local_2(__global spinorfield * in,__global ocl_s_gaugefield * field, int n, int t){
+spinor dslash_local_2(__global spinorfield const * const restrict in,__global ocl_s_gaugefield const * const restrict field, const int n, const int t){
 	spinor out_tmp, plus;
 	int dir, nn;
 	su3vec psi, phi;
@@ -1084,7 +1053,7 @@ spinor dslash_local_2(__global spinorfield * in,__global ocl_s_gaugefield * fiel
 	return out_tmp;
 }
 
-spinor dslash_local_3(__global spinorfield * in,__global ocl_s_gaugefield * field, int n, int t){
+spinor dslash_local_3(__global spinorfield const * const restrict in,__global ocl_s_gaugefield const * const restrict field, const int n, const int t){
 	spinor out_tmp, plus;
 	int dir, nn;
 	su3vec psi, phi;
