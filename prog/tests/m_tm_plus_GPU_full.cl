@@ -1137,9 +1137,10 @@ __kernel void M_tm_plus(__global spinorfield * in,  __global ocl_s_gaugefield * 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {	
 #else
 	int id_tmp = get_global_id(0);
-	if(id_tmp>SPINORFIELDSIZE) return;
+	if(id_tmp>SPINORFIELDSIZE-1) return;
 	int n,t;
 #endif
+
 	if(id_tmp%2 == 0) get_even_site(id_tmp/2, &n, &t);
 	else get_odd_site(id_tmp/2, &n, &t);
 
@@ -1158,13 +1159,13 @@ __kernel void M_tm_plus(__global spinorfield * in,  __global ocl_s_gaugefield * 
 	out_tmp = M_diag_tm_local(plus, twistfactor, twistfactor_minus);
 
 	//calc dslash (this includes mutliplication with kappa)
-	//out_tmp2 = dslash_local_0(in, field, n, t);
+	out_tmp2 = dslash_local_0(in, field, n, t);
 	out_tmp = spinor_dim(out_tmp, out_tmp2);
 	out_tmp2 = dslash_local_1(in, field, n, t);
 	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	//out_tmp2 = dslash_local_2(in, field, n, t);
+	out_tmp2 = dslash_local_2(in, field, n, t);
 	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	//out_tmp2 = dslash_local_3(in, field, n, t);
+	out_tmp2 = dslash_local_3(in, field, n, t);
 	out_tmp = spinor_dim(out_tmp, out_tmp2);
 
 	put_spinor_to_field(out_tmp, out, n, t);

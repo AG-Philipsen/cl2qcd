@@ -1203,7 +1203,7 @@ __kernel void M_tm_plus(__global spinorfield * in,  __global ocl_s_gaugefield * 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {	
 #else
 	int id_tmp = get_global_id(0);
-	if(id_tmp>SPINORFIELDSIZE) return;
+	if(id_tmp>SPINORFIELDSIZE-1) return;
 	int n,t;
 #endif
 	if(id_tmp%2 == 0) get_even_site(id_tmp/2, &n, &t);
