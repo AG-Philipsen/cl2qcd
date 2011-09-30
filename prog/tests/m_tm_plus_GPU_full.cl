@@ -37,12 +37,6 @@
 
 //types.h
 
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-
 #define CONST __constant
 
 /** The floating precision type used by hmc, can be 32 or 64 bit. */
@@ -195,34 +189,9 @@ int get_lower_neighbor(const int nspace, int const dir)
 	return get_nspace(coord);
 }
 
-int spinor_color(int spinor_element)
-{
-	return (int)(spinor_element/NSPIN);
-}
-
-int spinor_spin(int spinor_element,int color)
-{
-	return spinor_element - NSPIN*color;
-}
-
-int spinor_element(int alpha, int color)
-{
-	return alpha + NSPIN*color;
-}
-
 int get_n_eoprec(int spacepos, int timepos)
 {
 	return (int)((get_global_pos(spacepos, timepos))/2);
-}
-
-int eoprec_spinor_field_element(int alpha, int color, int n_eoprec)
-{
-	return alpha + NSPIN*color + NSPIN*NC*n_eoprec;
-}
-
-int spinor_field_element(int alpha, int color, int nspace, int t)
-{
-	return alpha + NSPIN*color + NSPIN*NC*(get_global_pos(nspace, t));
 }
 
 //opencl_operations_complex.cl
@@ -322,8 +291,6 @@ Matrixsu3 get_matrixsu3( __global ocl_s_gaugefield * field, const int spacepos, 
 {
 	Matrixsu3  out;
 	out = field [get_global_link_pos(mu, spacepos, timepos)];
-
-
 	return out;
 }
 
@@ -420,9 +387,7 @@ Matrixsu3 multiply_matrixsu3(const Matrixsu3 p, const Matrixsu3 q)
 	       			 - p.e20.im * q.e02.im - p.e21.im * q.e12.im - p.e22.im * q.e22.im;
     out.e22.im = p.e20.re * q.e02.im + p.e21.re * q.e12.im + p.e22.re * q.e22.im
 	       			 + p.e20.im * q.e02.re + p.e21.im * q.e12.re + p.e22.im * q.e22.re;
-
 #endif
-    
     return out;
 }
 
@@ -519,46 +484,8 @@ Matrixsu3 multiply_matrixsu3_dagger(const Matrixsu3 p, const Matrixsu3 q)
 		           + p.e20.im * q.e20.im + p.e21.im * q.e21.im + p.e22.im * q.e22.im;
 		out.e22.im =-p.e20.re * q.e20.im - p.e21.re * q.e21.im - p.e22.re * q.e22.im
 		           + p.e20.im * q.e20.re + p.e21.im * q.e21.re + p.e22.im * q.e22.re;
-  
 #endif
     return out;
-}
-
-Matrixsu3 adjoint_matrixsu3(const Matrixsu3 p)
-{
-	Matrixsu3 out;
-	out.e00.re = p.e00.re;
-	out.e00.im = - p.e00.im;
-        out.e01.re = p.e10.re;
-	out.e01.im = - p.e10.im;
-        
-	out.e10.re = p.e01.re;
-	out.e10.im = - p.e01.im;
-	out.e11.re = p.e11.re;
-	out.e11.im = - p.e11.im;
-	
-
-#ifdef _RECONSTRUCT_TWELVE_
-	out.e02.re = reconstruct_su3(p, 0).re;
-	out.e02.im = - reconstruct_su3(p, 0).im;
-	
-	out.e12.re = reconstruct_su3(p, 1).re;
-	out.e12.im = - reconstruct_su3(p, 1).im;
-#else
-	out.e02.re = p.e20.re;
-	out.e02.im = - p.e20.im;
-	
-	out.e12.re = p.e21.re;
-	out.e12.im = - p.e21.im;
-
-	out.e20.re = p.e02.re;
-	out.e20.im = - p.e02.im;
-	out.e21.re = p.e12.re;
-	out.e21.im = - p.e12.im;
-	out.e22.re = p.e22.re;
-	out.e22.im = - p.e22.im;
-#endif
-	return out;
 }
 
 //scale a su3 matrix by a real factor
@@ -630,39 +557,11 @@ typedef spinor spinorfield_eoprec;
 
 //operations_su3vec.cl
 
-hmc_float su3vec_squarenorm(su3vec in){
-	return
-		in.e0.re*in.e0.re + in.e0.im*in.e0.im + 
-		in.e1.re*in.e1.re + in.e1.im*in.e1.im + 
-		in.e2.re*in.e2.re + in.e2.im*in.e2.im;
-}
-
-hmc_complex su3vec_scalarproduct(su3vec in1, su3vec in2){
-	    hmc_complex tmp;
-	tmp.re = 
-		in1.e0.re*in2.e0.re + in1.e0.im*in2.e0.im + 
-		in1.e1.re*in2.e1.re + in1.e1.im*in2.e1.im + 
-		in1.e2.re*in2.e2.re + in1.e2.im*in2.e2.im;
-	tmp.im = 
-		in1.e0.re*in2.e0.im - in2.e0.re*in1.e0.im + 
-		in1.e1.re*in2.e1.im - in2.e1.re*in1.e1.im + 
-		in1.e2.re*in2.e2.im - in2.e2.re*in1.e2.im;
-	return tmp;
-}
-
 su3vec set_su3vec_zero(){
 	su3vec tmp;
   (tmp).e0 = hmc_complex_zero;
 	(tmp).e1 = hmc_complex_zero;
 	(tmp).e2 = hmc_complex_zero;
-  return tmp;
-}
-
-su3vec set_su3vec_cold(){
-	su3vec tmp;
-  (tmp).e0 = hmc_complex_one;
-	(tmp).e1 = hmc_complex_one;
-	(tmp).e2 = hmc_complex_one;
   return tmp;
 }
 
@@ -746,7 +645,7 @@ su3vec su3matrix_times_su3vec(Matrixsu3 u, su3vec in){
 
 su3vec su3matrix_dagger_times_su3vec(Matrixsu3 u, su3vec in){
 	su3vec tmp;
-	#ifdef _RECONSTRUCT_TWELVE_
+#ifdef _RECONSTRUCT_TWELVE_
 	hmc_float u_e20_re = reconstruct_su3(u, 0).re;
 	hmc_float u_e20_im = reconstruct_su3(u, 0).im;
 	hmc_float u_e21_re = reconstruct_su3(u, 1).re;
@@ -769,7 +668,7 @@ su3vec su3matrix_dagger_times_su3vec(Matrixsu3 u, su3vec in){
 	tmp.e2.im = u.e02.re*in.e0.im + u.e12.re * in.e1.im + u_e22_re * in.e2.im
 		  - u.e02.im*in.e0.re - u.e12.im * in.e1.re - u_e22_im * in.e2.re;
 
-	#else
+#else
 	tmp.e0.re = u.e00.re*in.e0.re + u.e10.re * in.e1.re + u.e20.re * in.e2.re
 		  			+ u.e00.im*in.e0.im + u.e10.im * in.e1.im + u.e20.im * in.e2.im;
 	tmp.e0.im = u.e00.re*in.e0.im + u.e10.re * in.e1.im + u.e20.re * in.e2.im
@@ -784,10 +683,7 @@ su3vec su3matrix_dagger_times_su3vec(Matrixsu3 u, su3vec in){
 		  			+ u.e02.im*in.e0.im + u.e12.im * in.e1.im + u.e22.im * in.e2.im;
 	tmp.e2.im = u.e02.re*in.e0.im + u.e12.re * in.e1.im + u.e22.re * in.e2.im
 		  			- u.e02.im*in.e0.re - u.e12.im * in.e1.re - u.e22.im * in.e2.re;
-
-	#endif
-
-
+#endif
 	return tmp;
 }
 
