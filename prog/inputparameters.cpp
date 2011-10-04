@@ -62,6 +62,7 @@ void inputparameters::set_defaults()
 	use_eo = true;
 	//at the moment, only 2 solvers are implemented..
 	use_cg = false;
+	use_bicgstab_save = false;
 	use_pointsource = true;
 	num_sources = 12;
 	pointsource_x = 0;
@@ -77,6 +78,7 @@ void inputparameters::set_defaults()
 
 	//HMC specific parameters
 	tau = 0.5;
+	reversibility_check = false;
 	integrationsteps1 = 10;
 	integrationsteps2 = integrationsteps1;
 	hmcsteps = 10;
@@ -209,7 +211,9 @@ void inputparameters::readfile(char* ifn)
 			if(line.find("use_smearing") != std::string::npos) bool_assign(&use_smearing, line);
 			if(line.find("rho") != std::string::npos) val_assign(&rho, line);
 			if(line.find("rho_iter") != std::string::npos) val_assign(&rho_iter, line);
-
+			if(line.find("reversibility_check") != std::string::npos) bool_assign(&reversibility_check, line);
+			if(line.find("rev_check") != std::string::npos) bool_assign(&reversibility_check, line);
+			
 			if(line.find("autotuning") != std::string::npos) bool_assign(&use_autotuning, line);
 
 			if(line.find("corr_dir") != std::string::npos) val_assign(&corr_dir, line);
@@ -375,6 +379,26 @@ void inputparameters::solver_assign(bool * out, std::string line)
 	}
 	if(value.find("BICGSTAB") != std::string::npos) {
 		(*out) = false;
+		return;
+	}
+	if(value.find("BiCGStab_save") != std::string::npos) {
+		(*out) = false;
+		this->use_bicgstab_save = true;
+		return;
+	}
+	if(value.find("bicgstab_save") != std::string::npos) {
+		(*out) = false;
+		this->use_bicgstab_save = true;
+		return;
+	}
+	if(value.find("BICGSTAB_save") != std::string::npos) {
+		(*out) = false;
+		this->use_bicgstab_save = true;
+		return;
+	}
+	if(value.find("BICGSTAB_SAVE") != std::string::npos) {
+		(*out) = false;
+		this->use_bicgstab_save = true;
 		return;
 	}
 	//LZ: note that the ordering of false/true is crucial here
@@ -790,6 +814,11 @@ bool inputparameters::get_use_cg() const
 	return use_cg;
 }
 
+bool inputparameters::get_use_bicgstab_save() const
+{
+	return use_bicgstab_save;
+}
+
 bool inputparameters::get_use_pointsource() const
 {
 	return use_pointsource;
@@ -844,6 +873,11 @@ hmc_float inputparameters::get_solver_prec() const
 uint inputparameters::get_iter_refresh() const
 {
 	return iter_refresh;
+}
+
+bool inputparameters::get_reversibility_check() const
+{
+	return reversibility_check;
 }
 
 void inputparameters::print_info_global() const

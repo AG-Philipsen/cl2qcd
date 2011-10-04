@@ -128,8 +128,10 @@ public:
 	hmc_float get_rho() const;
 	int get_rho_iter() const;
 	bool get_use_cg() const;
+	bool get_use_bicgstab_save() const;
 	bool get_use_autotuning() const;
 	bool get_use_pointsource() const;
+	bool get_reversibility_check() const;
 	int get_num_sources() const;
 	int get_source_pos_spatial() const;
 	int get_source_pos_temporal() const;
@@ -281,6 +283,7 @@ private:
 	hmc_float solver_prec;
 	uint iter_refresh;
 	int rho_iter;
+	bool reversibility_check;
 	long long host_seed;
 	int num_dev;
 	int cgmax;
@@ -300,6 +303,7 @@ private:
 	hmc_float lambda1;
 	hmc_float lambda2;
 	bool use_cg;
+	bool use_bicgstab_save;
 	bool use_pointsource;
 	int num_sources;
 	int pointsource_x;
