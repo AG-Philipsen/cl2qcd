@@ -56,23 +56,6 @@ __constant hmc_complex hmc_complex_zero = {0., 0.};
 __constant hmc_complex hmc_complex_minusone = { -1., 0.};
 __constant hmc_complex hmc_complex_i = {0., 1.};
 
-typedef hmc_complex hmc_ocl_su3matrix;
-typedef hmc_complex hmc_ocl_3x3matrix;
-typedef hmc_complex hmc_ocl_staplematrix;
-typedef hmc_float hmc_ocl_gaugefield;
-
-typedef struct {
-	hmc_complex e00;
-	hmc_complex e01;
-	hmc_complex e02;
-	hmc_complex e10;
-	hmc_complex e11;
-	hmc_complex e12;
-	hmc_complex e20;
-	hmc_complex e21;
-	hmc_complex e22;
-} Matrix3x3;
-
 #ifdef _RECONSTRUCT_TWELVE_
 typedef struct {
 	hmc_complex e00;
@@ -199,22 +182,6 @@ hmc_complex complexconj(hmc_complex in)
 	return in;
 }
 
-hmc_complex complexmult(const hmc_complex a, const hmc_complex b)
-{
-	hmc_complex res;
-	res.re = a.re * b.re - a.im * b.im;
-	res.im = a.im * b.re + a.re * b.im;
-	return res;
-}
-
-hmc_complex complexadd(hmc_complex a, hmc_complex b)
-{
-	hmc_complex res;
-	res.re = a.re + b.re;
-	res.im = a.im + b.im;
-	return res;
-}
-
 hmc_complex complexsubtract(hmc_complex a, hmc_complex b)
 {
 	hmc_complex res;
@@ -223,38 +190,43 @@ hmc_complex complexsubtract(hmc_complex a, hmc_complex b)
 	return res;
 }
 
-hmc_complex complexdivide(hmc_complex numerator, hmc_complex denominator)
+hmc_complex complexmult(const hmc_complex a, const hmc_complex b)
 {
-	hmc_float norm = denominator.re * denominator.re + denominator.im * denominator.im;
 	hmc_complex res;
-	res.re = (numerator.re * denominator.re + numerator.im * denominator.im ) / norm;
-	res.im = (numerator.im * denominator.re - numerator.re * denominator.im ) / norm;
+	res.re = a.re * b.re - a.im * b.im;
+	res.im = a.im * b.re + a.re * b.im;
 	return res;
 }
 
 //operations_matrix_su3.cl
 
-hmc_complex reconstruct_su3(const Matrixsu3 in){
 #ifdef _RECONSTRUCT_TWELVE_
-	hmc_float in20_re = reconstruct_su3(in, 0).re;
-	hmc_float in20_im = reconstruct_su3(in, 0).im;
-	hmc_float in21_re = reconstruct_su3(in, 1).re;
-	hmc_float in21_im = reconstruct_su3(in, 1).im;
-	hmc_float in22_re = reconstruct_su3(in, 2).re;
-	hmc_float in22_im = reconstruct_su3(in, 2).im;
-		
-	printf("(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n", 
-						in.e00.re, in.e00.im, in.e01.re, in.e01.im, in.e02.re, in.e02.im, 
-						in.e10.re, in.e10.im, in.e11.re, in.e11.im, in.e12.re, in.e12.im, 
-						in20_re, in20_im, in21_re, in21_im, in22_re, in22_im);
-#else
-		printf("(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n", 
-						in.e00.re, in.e00.im, in.e01.re, in.e01.im, in.e02.re, in.e02.im, 
-						in.e10.re, in.e10.im, in.e11.re, in.e11.im, in.e12.re, in.e12.im, 
-						in.e20.re, in.e20.im, in.e21.re, in.e21.im, in.e22.re, in.e22.im);
-#endif
-	printf("\n");
+hmc_complex reconstruct_su3(const Matrixsu3 p, const int ncomp)
+{
+	hmc_complex out;
+	hmc_complex tmp;
+	
+	switch (ncomp){
+
+	case 0:
+	    tmp = complexmult (p.e01, p.e12);
+	        out = complexmult (p.e02, p.e11);
+		    break;
+
+		    case 1:
+		        tmp = complexmult (p.e02, p.e10);
+			    out = complexmult (p.e00, p.e12);
+			        break;
+				case 2:
+				    tmp = complexmult (p.e00, p.e11);
+				        out = complexmult (p.e01, p.e10);
+					    break;
+					    }
+
+					    out = complexsubtract (tmp, out);
+					    return complexconj (out);
 }
+#endif
 
 Matrixsu3 get_matrixsu3( __global ocl_s_gaugefield const * const restrict field, const int spacepos, const int timepos, const int mu)
 {
@@ -312,7 +284,7 @@ Matrixsu3 multiply_matrixsu3(const Matrixsu3 p, const Matrixsu3 q)
 	       			 + p.e10.im * q.e02.re + p.e11.im * q.e12.re + p.e12.im * q22_re;	       
 #else
     
-    out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e10.re + p.e02.re * q.e20.re
+    out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e10.re + p.e02.re *  q.e20.re
 	       			 - p.e00.im * q.e00.im - p.e01.im * q.e10.im - p.e02.im * q.e20.im;
     out.e00.im = p.e00.re * q.e00.im + p.e01.re * q.e10.im + p.e02.re * q.e20.im
 	       			 + p.e00.im * q.e00.re + p.e01.im * q.e10.re + p.e02.im * q.e20.re;
@@ -516,11 +488,6 @@ typedef struct {
 	su3vec e3;
 } spinor;
 
-typedef struct {
-	su3vec e0;
-	su3vec e1;
-} halfspinor;
-
 typedef spinor spinorfield;
 typedef spinor spinorfield_eoprec;
 
@@ -528,7 +495,7 @@ typedef spinor spinorfield_eoprec;
 
 su3vec set_su3vec_zero(){
 	su3vec tmp;
-  (tmp).e0 = hmc_complex_zero;
+	(tmp).e0 = hmc_complex_zero;
 	(tmp).e1 = hmc_complex_zero;
 	(tmp).e2 = hmc_complex_zero;
   return tmp;
@@ -1203,16 +1170,16 @@ __kernel void M_tm_plus(__global spinorfield * in,  __global ocl_s_gaugefield * 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {	
 #else
 	int id_tmp = get_global_id(0);
-	if(id_tmp>SPINORFIELDSIZE) return;
+	if(id_tmp>SPINORFIELDSIZE-1) return;
 	int n,t;
 #endif
 	if(id_tmp%2 == 0) get_even_site(id_tmp/2, &n, &t);
 	else get_odd_site(id_tmp/2, &n, &t);
 
-	spinor out_tmp;
-	spinor out_tmp2;
-	out_tmp = set_spinor_zero();
-	out_tmp2 = set_spinor_zero();
+	spinor karl;
+	spinor heinz;
+	karl = set_spinor_zero();
+	heinz = set_spinor_zero();
 	spinor plus;
 	hmc_complex twistfactor = {1., MUBAR};
 	hmc_complex twistfactor_minus = {1., MMUBAR};
@@ -1221,27 +1188,27 @@ __kernel void M_tm_plus(__global spinorfield * in,  __global ocl_s_gaugefield * 
 	plus = get_spinor_from_field(in, n, t);
 	//Diagonalpart:
 
-	out_tmp = M_diag_tm_local(plus, twistfactor, twistfactor_minus);
+	karl = M_diag_tm_local(plus, twistfactor, twistfactor_minus);
 
 	//calc dslash (this includes mutliplication with kappa)
-	out_tmp2 = dslash_local_0(in, field, n, t);
-	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	out_tmp2 = dslash_local_0m(in, field, n, t);
-	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	out_tmp2 = dslash_local_1(in, field, n, t);
-	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	out_tmp2 = dslash_local_1m(in, field, n, t);
-	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	out_tmp2 = dslash_local_2(in, field, n, t);
-	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	out_tmp2 = dslash_local_2m(in, field, n, t);
-	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	out_tmp2 = dslash_local_3(in, field, n, t);
-	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	out_tmp2 = dslash_local_3m(in, field, n, t);
-	out_tmp = spinor_dim(out_tmp, out_tmp2);
+	heinz = dslash_local_0(in, field, n, t);
+	karl = spinor_dim(karl, heinz);
+	heinz = dslash_local_0m(in, field, n, t);
+	karl = spinor_dim(karl, heinz);
+	heinz = dslash_local_1(in, field, n, t);
+	karl = spinor_dim(karl, heinz);
+	heinz = dslash_local_1m(in, field, n, t);
+	karl = spinor_dim(karl, heinz);
+	heinz = dslash_local_2(in, field, n, t);
+	karl = spinor_dim(karl, heinz);
+	heinz = dslash_local_2m(in, field, n, t);
+	karl = spinor_dim(karl, heinz);
+	heinz = dslash_local_3(in, field, n, t);
+	karl = spinor_dim(karl, heinz);
+	heinz = dslash_local_3m(in, field, n, t);
+	karl = spinor_dim(karl, heinz);
 	
-	put_spinor_to_field(out_tmp, out, n, t);
+	put_spinor_to_field(karl, out, n, t);
 
 #ifndef _USEGPU_
 	}
