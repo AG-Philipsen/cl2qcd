@@ -1122,14 +1122,10 @@ spinor dslash_local_3(__global spinorfield const * const restrict in,__global oc
 }
 
 __kernel void M_tm_plus(__global spinorfield * in,  __global ocl_s_gaugefield * field, __global spinorfield * out){
-#ifndef _USEGPU_
+
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {	
-#else
-	int id_tmp = get_global_id(0);
-	if(id_tmp > SPINORFIELDSIZE-1) return;
-#endif
 
 	stcoord pos = (id_tmp % 2 == 0) ? get_even_site(id_tmp/2) : get_odd_site(id_tmp/2);
 
@@ -1159,8 +1155,6 @@ __kernel void M_tm_plus(__global spinorfield * in,  __global ocl_s_gaugefield * 
 
 	put_spinor_to_field(out_tmp, out, pos.space, pos.time);
 
-#ifndef _USEGPU_
 	}
-#endif
 }
 
