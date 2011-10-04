@@ -21,9 +21,15 @@ __kernel void M_wilson(__global spinorfield * in, __global ocl_s_gaugefield * fi
 		//Diagonalpart: (this is simple here)
 		out_tmp = get_spinor_from_field(in, n, t);
 		//calc dslash (this includes mutliplication with kappa)
-		out_tmp2 = dslash_local(in, field, n, t);
-		//M = M_diag - dslash
+		out_tmp2 = dslash_local_0(in, field, n, t);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
+		out_tmp2 = dslash_local_1(in, field, n, t);
+		out_tmp = spinor_dim(out_tmp, out_tmp2);
+		out_tmp2 = dslash_local_2(in, field, n, t);
+		out_tmp = spinor_dim(out_tmp, out_tmp2);
+		out_tmp2 = dslash_local_3(in, field, n, t);
+		out_tmp = spinor_dim(out_tmp, out_tmp2);
+		
 		put_spinor_to_field(out_tmp, out, n, t);
 	}
 }
