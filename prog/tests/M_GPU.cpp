@@ -56,7 +56,7 @@ private:
 
 BOOST_AUTO_TEST_CASE( CPU )
 {
-        logger.info() << "Init dummy device";
+	logger.info() << "Init dummy device";
 	inputparameters params;
 	params.readfile("../tests/m_gpu_input_1");
 	//params.print_info_inverter("m_gpu");
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE( CPU )
 
 BOOST_AUTO_TEST_CASE( GPU )
 {
-        logger.info() << "Init dummy device";
+	logger.info() << "Init dummy device";
 	inputparameters params;
 	params.readfile("../tests/m_gpu_input_1");
 	//params.print_info_inverter("m_gpu");

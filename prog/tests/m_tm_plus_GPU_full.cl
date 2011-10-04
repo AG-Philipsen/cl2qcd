@@ -56,6 +56,11 @@ __constant hmc_complex hmc_complex_zero = {0., 0.};
 __constant hmc_complex hmc_complex_minusone = { -1., 0.};
 __constant hmc_complex hmc_complex_i = {0., 1.};
 
+typedef struct {
+	uint space;
+	uint time;
+} stcoord;
+
 #ifdef _RECONSTRUCT_TWELVE_
 typedef struct {
 	hmc_complex e00;
@@ -94,9 +99,9 @@ return mu + NDIM *get_global_pos(spacepos, t);
 }
 
 //it is assumed that idx iterates only over half the number of sites
-void inline get_even_site(int idx, int * out_space, int * out_t)
+stcoord get_even_site(int idx)
 {
-	int x,y,z,t;
+	uint x,y,z,t;
 	x = idx;
 	t = (int)(idx/(VOLSPACE/2));
 	x -= t*VOLSPACE/2;
@@ -104,14 +109,16 @@ void inline get_even_site(int idx, int * out_space, int * out_t)
 	x -= z*NSPACE*NSPACE/2;
 	y = (int)(x/NSPACE);
 	x -= y*NSPACE;
-	(*out_space) =  (int)((z+t)%2)*(1 + 2*x - (int) (2*x/NSPACE)) + (int)((t+z+1)%2)*(2*x + (int) (2*x/NSPACE)) + 2*NSPACE*y + NSPACE*NSPACE*z;
-	(*out_t) = t;
+	stcoord res;
+	res.space = (int)((z+t)%2)*(1 + 2*x - (int) (2*x/NSPACE)) + (int)((t+z+1)%2)*(2*x + (int) (2*x/NSPACE)) + 2*NSPACE*y + NSPACE*NSPACE*z;
+	res.time = t;
+	return res;
 }
 
 //it is assumed that idx iterates only over half the number of sites
-void inline get_odd_site(int idx, int * out_space, int * out_t)
+stcoord get_odd_site(int idx)
 {
-	int x,y,z,t;
+	uint x,y,z,t;
 	x = idx;
 	t = (int)(idx/(VOLSPACE/2));
 	x -= t*VOLSPACE/2;
@@ -119,13 +126,15 @@ void inline get_odd_site(int idx, int * out_space, int * out_t)
 	x -= z*NSPACE*NSPACE/2;
 	y = (int)(x/NSPACE);
 	x -= y*NSPACE;
-	(*out_space) =  (int)((z+t+1)%2)*(1 + 2*x - (int) (2*x/NSPACE)) + (int)((t+z)%2)*(2*x + (int) (2*x/NSPACE)) + 2*NSPACE*y + NSPACE*NSPACE*z;
-	(*out_t) = t;
+	stcoord res;
+	res.space = (int)((z+t+1)%2)*(1 + 2*x - (int) (2*x/NSPACE)) + (int)((t+z)%2)*(2*x + (int) (2*x/NSPACE)) + 2*NSPACE*y + NSPACE*NSPACE*z;
+	res.time = t;
+	return res;
 }
 
-int get_nspace(const int* coord)
+int get_nspace(uint3 coord)
 {
-	int n = coord[1] +  NSPACE*coord[2] + NSPACE*NSPACE*coord[3];
+	int n = coord.x +  NSPACE*coord.y + NSPACE*NSPACE*coord.z;
 	return n;
 }
 
@@ -141,31 +150,51 @@ int get_spacecoord(const int nspace, const int dir)
 	return res;
 }
 
-void get_allspacecoord(const int nspace, int coord[NDIM])
+uint3 get_allspacecoord(const int nspace)
 {
+	uint3 coord;
 	int res = convert_int(nspace/(NSPACE*NSPACE));
-	coord[3] = res;
+	coord.z = res;
 	int acc = res;
 	res = convert_int(nspace/(NSPACE)) - NSPACE*acc;
-	coord[2] = res;
+	coord.y = res;
 	acc = NSPACE*acc + res;
 	res = nspace - NSPACE*acc;
-	coord[1] = res;
+	coord.x = res;
+	return coord;
 }
 
 int get_neighbor(const int nspace,const int dir)
 {
-	int coord[NDIM];
-	get_allspacecoord(nspace, coord);
-	coord[dir] = (coord[dir] + 1)%NSPACE;
+	uint3 coord = get_allspacecoord(nspace);
+	switch(dir) {
+		case 1:
+			coord.x = (coord.x + 1) % NSPACE;
+			break;
+		case 2:
+			coord.y = (coord.y + 1) % NSPACE;
+			break;
+		case 3:
+			coord.z = (coord.z + 1) % NSPACE;
+			break;
+	}
 	return get_nspace(coord);
 }
 
 int get_lower_neighbor(const int nspace, int const dir)
 {
-	int coord[NDIM];
-	get_allspacecoord(nspace, coord);
-	coord[dir] = (coord[dir] - 1 + NSPACE)%NSPACE;
+	uint3 coord = get_allspacecoord(nspace);
+	switch(dir) {
+		case 1:
+			coord.x = (coord.x + NSPACE - 1) % NSPACE;
+			break;
+		case 2:
+			coord.y = (coord.y + NSPACE - 1) % NSPACE;
+			break;
+		case 3:
+			coord.z = (coord.z + NSPACE - 1) % NSPACE;
+			break;
+	}
 	return get_nspace(coord);
 }
 
@@ -1094,22 +1123,15 @@ spinor dslash_local_3(__global spinorfield const * const restrict in,__global oc
 
 __kernel void M_tm_plus(__global spinorfield * in,  __global ocl_s_gaugefield * field, __global spinorfield * out){
 #ifndef _USEGPU_
-	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
-	int loc_idx = get_local_id(0);
-	int num_groups = get_num_groups(0);
-	int group_id = get_group_id (0);
-	int n,t;
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {	
 #else
 	int id_tmp = get_global_id(0);
-	if(id_tmp>SPINORFIELDSIZE-1) return;
-	int n,t;
+	if(id_tmp > SPINORFIELDSIZE-1) return;
 #endif
 
-	if(id_tmp%2 == 0) get_even_site(id_tmp/2, &n, &t);
-	else get_odd_site(id_tmp/2, &n, &t);
+	stcoord pos = (id_tmp % 2 == 0) ? get_even_site(id_tmp/2) : get_odd_site(id_tmp/2);
 
 	spinor out_tmp;
 	spinor out_tmp2;
@@ -1120,22 +1142,22 @@ __kernel void M_tm_plus(__global spinorfield * in,  __global ocl_s_gaugefield * 
 	hmc_complex twistfactor_minus = {1., MMUBAR};
 
 	//get input spinor
-	plus = get_spinor_from_field(in, n, t);
+	plus = get_spinor_from_field(in, pos.space, pos.time);
 	//Diagonalpart:
 
 	out_tmp = M_diag_tm_local(plus, twistfactor, twistfactor_minus);
 
 	//calc dslash (this includes mutliplication with kappa)
-	out_tmp2 = dslash_local_0(in, field, n, t);
+	out_tmp2 = dslash_local_0(in, field, pos.space, pos.time);
 	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	out_tmp2 = dslash_local_1(in, field, n, t);
+	out_tmp2 = dslash_local_1(in, field, pos.space, pos.time);
 	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	out_tmp2 = dslash_local_2(in, field, n, t);
+	out_tmp2 = dslash_local_2(in, field, pos.space, pos.time);
 	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	out_tmp2 = dslash_local_3(in, field, n, t);
+	out_tmp2 = dslash_local_3(in, field, pos.space, pos.time);
 	out_tmp = spinor_dim(out_tmp, out_tmp2);
 
-	put_spinor_to_field(out_tmp, out, n, t);
+	put_spinor_to_field(out_tmp, out, pos.space, pos.time);
 
 #ifndef _USEGPU_
 	}
