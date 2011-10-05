@@ -16,21 +16,20 @@ __kernel void M_wilson(__global spinorfield * in, __global ocl_s_gaugefield * fi
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 
 		/** @todo this must be done more efficient */
-		if(id_tmp % 2 == 0) get_even_site(id_tmp / 2, &n, &t);
-		else get_odd_site(id_tmp / 2, &n, &t);
+		st_index pos = (id_tmp % 2 == 0) ? get_even_site(id_tmp / 2) : get_odd_site(id_tmp / 2);
 
 		//Diagonalpart: (this is simple here)
-		out_tmp = get_spinor_from_field(in, n, t);
+		out_tmp = get_spinor_from_field(in, pos.space, pos.time);
 		//calc dslash (this includes mutliplication with kappa)
-		out_tmp2 = dslash_local_0(in, field, n, t);
+		out_tmp2 = dslash_local_0(in, field, pos.space, pos.time);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_local_1(in, field, n, t);
+		out_tmp2 = dslash_local_1(in, field, pos.space, pos.time);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_local_2(in, field, n, t);
+		out_tmp2 = dslash_local_2(in, field, pos.space, pos.time);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_local_3(in, field, n, t);
+		out_tmp2 = dslash_local_3(in, field, pos.space, pos.time);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 
-		put_spinor_to_field(out_tmp, out, n, t);
+		put_spinor_to_field(out_tmp, out, pos.space, pos.time);
 	}
 }

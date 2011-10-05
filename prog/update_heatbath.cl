@@ -139,22 +139,22 @@ void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const int mu
 
 __kernel void heatbath_even(__global ocl_s_gaugefield * gaugefield, const int mu, __global hmc_ocl_ran * rnd)
 {
-	int t, pos, id, id_tmp, size;
+	int id, id_tmp, size;
 	id_tmp = get_global_id(0);
 	size = get_global_size(0);
 	for(id = id_tmp; id < VOLSPACE * NTIME / 2; id += size) {
-		get_even_site(id, &pos, &t);
-		perform_heatbath(gaugefield, mu, rnd, pos, t, id_tmp);
+		st_index pos = get_even_site(id);
+		perform_heatbath(gaugefield, mu, rnd, pos.space, pos.time, id_tmp);
 	}
 }
 
 __kernel void heatbath_odd(__global ocl_s_gaugefield* gaugefield, const int mu, __global hmc_ocl_ran * rnd)
 {
-	int t, pos, id, id_tmp, size;
+	int id, id_tmp, size;
 	id_tmp = get_global_id(0);
 	size = get_global_size(0);
 	for(id = id_tmp; id < VOLSPACE * NTIME / 2; id += size) {
-		get_odd_site(id, &pos, &t);
-		perform_heatbath(gaugefield, mu, rnd, pos, t, id_tmp);
+		st_index pos = get_odd_site(id);
+		perform_heatbath(gaugefield, mu, rnd, pos.space, pos.time, id_tmp);
 	}
 }

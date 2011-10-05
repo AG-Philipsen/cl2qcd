@@ -5,7 +5,7 @@
 __kernel void plaquette(__global ocl_s_gaugefield * field, __global hmc_float * plaq_out, __global hmc_float* tplaq_out, __global hmc_float* splaq_out, __local hmc_float * plaq_loc, __local hmc_float* tplaq_loc, __local hmc_float* splaq_loc)
 {
 
-	int t, pos, id;
+	int id;
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id_tmp = get_global_id(0);
@@ -27,14 +27,11 @@ __kernel void plaquette(__global ocl_s_gaugefield * field, __global hmc_float * 
 	Matrixsu3 prod;
 
 	for(id = id_tmp; id < VOLSPACE * NTIME; id += global_size) {
-		if(id < VOLSPACE * NTIME / 2)
-			get_even_site(id, &pos, &t);
-		else
-			get_odd_site(id - (VOLSPACE * NTIME / 2), &pos, &t);
+		st_index pos = (id < VOLSPACE * NTIME / 2) ? get_even_site(id) : get_odd_site(id - (VOLSPACE * NTIME / 2));
 
 		for(int mu = 0; mu < NDIM; mu++) {
 			for(int nu = 0; nu < mu; nu++) {
-				prod = local_plaquette(field, pos, t, mu, nu );
+				prod = local_plaquette(field, pos.space, pos.time, mu, nu );
 				tmpfloat = trace_matrixsu3(prod).re;
 				plaq += tmpfloat;
 				if(mu == 0 || nu == 0) {

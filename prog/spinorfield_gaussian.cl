@@ -14,14 +14,7 @@ __kernel void generate_gaussian_spinorfield(__global spinorfield * in, __global 
 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 		/** @todo this must be done more efficient */
-//    if(id_tmp%2 == 0) get_even_site(id_tmp/2, &n, &t);
-//    else get_odd_site(id_tmp/2, &n, &t);
-
-		if(id_tmp < VOLSPACE * NTIME / 2)
-			get_even_site(id_tmp, &n, &t);
-		else
-			get_odd_site(id_tmp - (VOLSPACE * NTIME / 2), &n, &t);
-
+		st_index pos = (id_tmp < VOLSPACE * NTIME / 2) ? get_even_site(id_tmp) : get_odd_site(id_tmp - (VOLSPACE * NTIME / 2));
 
 		//CP: there are 12 complex elements in the spinor
 		tmp = gaussianNormalPair(&rnd[id]);
@@ -64,6 +57,6 @@ __kernel void generate_gaussian_spinorfield(__global spinorfield * in, __global 
 		//multiply by sigma
 		out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));
 
-		put_spinor_to_field(out_tmp, in, n, t);
+		put_spinor_to_field(out_tmp, in, pos.space, pos.time);
 	}
 }

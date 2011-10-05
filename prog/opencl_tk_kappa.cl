@@ -57,24 +57,15 @@ __kernel void kappa_karsch_gpu(__global ocl_s_gaugefield* gaugefield, const hmc_
 			hmc_float factor = 1.0 - cos(deltak * (hmc_float) (x_3 - y_3));
 			for (int x_t = 0; x_t < NTIME; x_t++) {
 				for (int y_t = 0; y_t < NTIME; y_t++) {
-					for (int x_1 = 0; x_1 < NSPACE; x_1++) {
-						for (int y_1 = 0; y_1 < NSPACE; y_1++) {
-							for (int x_2 = 0; x_2 < NSPACE; x_2++) {
-								for (int y_2 = 0; y_2 < NSPACE; y_2++) {
+					uint3 coord_y, coord_y;
+					for (int coord_x.x = 0; coord_x.x < NSPACE; coord_x.x++) {
+						for (int coord_y.x = 0; coord_y.x < NSPACE; coord_y.x++) {
+							for (int coord_x.y = 0; coord_x.y < NSPACE; coord_x.y++) {
+								for (int coord_y.y = 0; coord_y.y < NSPACE; coord_y.y++) {
 
-									int coord_x[NDIM];
-									coord_x[0] = x_t;
-									coord_x[1] = x_1;
-									coord_x[2] = x_2;
-									coord_x[3] = x_3;
 									//new method get_tnspace which gives n_x+VOLSPACE*x_t
 									int n_x = get_nspace (coord_x);
 									int point_x = n_x + VOLSPACE * x_t;
-									int coord_y[NDIM];
-									coord_y[0] = y_t;
-									coord_y[1] = y_1;
-									coord_y[2] = y_2;
-									coord_y[3] = y_3;
 									int n_y = get_nspace (coord_y);
 									int point_y = n_y + VOLSPACE * y_t;
 
@@ -222,24 +213,15 @@ __kernel void kappa_clover_gpu (__global ocl_s_gaugefield* gaugefield, const hmc
 			hmc_float factor = 1.0 - cos(deltak * (hmc_float) (x_3 - y_3));
 			for (int x_t = 0; x_t < NTIME; x_t++) {
 				for (int y_t = 0; y_t < NTIME; y_t++) {
-					for (int x_1 = 0; x_1 < NSPACE; x_1++) {
-						for (int y_1 = 0; y_1 < NSPACE; y_1++) {
-							for (int x_2 = 0; x_2 < NSPACE; x_2++) {
-								for (int y_2 = 0; y_2 < NSPACE; y_2++) {
+					uint3 coord_y, coord_y;
+					for (int coord_x.x = 0; coord_x.x < NSPACE; coord_x.x++) {
+						for (int coord_y.x = 0; coord_y.x < NSPACE; coord_y.x++) {
+							for (int coord_x.y = 0; coord_x.y < NSPACE; coord_x.y++) {
+								for (int coord_y.y = 0; coord_y.y < NSPACE; coord_y.y++) {
 
-									int coord_x[NDIM];
-									coord_x[0] = x_t;
-									coord_x[1] = x_1;
-									coord_x[2] = x_2;
-									coord_x[3] = x_3;
 									//new method get_tnspace which gives n_x+VOLSPACE*x_t
 									int n_x = get_nspace (coord_x);
 									int point_x = n_x + VOLSPACE * x_t;
-									int coord_y[NDIM];
-									coord_y[0] = y_t;
-									coord_y[1] = y_1;
-									coord_y[2] = y_2;
-									coord_y[3] = y_3;
 									int n_y = get_nspace (coord_y);
 									int point_y = n_y + VOLSPACE * y_t;
 

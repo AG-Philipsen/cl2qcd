@@ -15,14 +15,12 @@ __kernel void correlator_ps_z(__global spinorfield* phi, __global hmc_float * ou
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
 	for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
 		hmc_float correlator = 0.;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
-		coord[3] = id_tmp;
+		uint3 coord;
+		coord.z = id_tmp;
 		for(int k = 0; k < NUM_SOURCES; k++) {
 			for(int t = 0; t < NTIME; t++) {
-				for(int x = 0; x < NSPACE; x++) {
-					for(int y = 0; y < NSPACE; y++) {
-						coord[1] = x;
-						coord[2] = y;
+				for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+					for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 						int nspace = get_nspace(coord);
 						spinor tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 						correlator += spinor_squarenorm(tmp);
@@ -59,15 +57,12 @@ __kernel void correlator_ps_t(__global spinorfield* phi, __global hmc_float * ou
 	//suppose that there are NTIME threads (one for each entry of the correlator)
 	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
 		hmc_float correlator = 0.;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
+		uint3 coord;
 		int t = id_tmp;
 		for(int k = 0; k < NUM_SOURCES; k++) {
-			for(int z = 0; z < NSPACE; z++) {
-				for(int x = 0; x < NSPACE; x++) {
-					for(int y = 0; y < NSPACE; y++) {
-						coord[1] = x;
-						coord[2] = y;
-						coord[3] = z;
+			for(coord.z = 0; coord.z < NSPACE; coord.z++) {
+				for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+					for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 						int nspace = get_nspace(coord);
 						spinor tmp = phi[get_global_pos(nspace, t) + VOL4D*k];
 						correlator += spinor_squarenorm(tmp);
@@ -102,13 +97,11 @@ __kernel void correlator_sc_z(__global spinorfield* phi, __global hmc_float * ou
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
 	for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
 		hmc_float correlator = 0.;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
-		coord[3] = id_tmp;
+		uint3 coord;
+		coord.z = id_tmp;
 		for(int t = 0; t < NTIME; t++) {
-			for(int x = 0; x < NSPACE; x++) {
-				for(int y = 0; y < NSPACE; y++) {
-					coord[1] = x;
-					coord[2] = y;
+			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					int alpha;
 					int k;
@@ -165,14 +158,11 @@ __kernel void correlator_sc_t(__global spinorfield* phi, __global hmc_float * ou
 	//suppose that there are NTIME threads (one for each entry of the correlator)
 	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
 		hmc_float correlator = 0.;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
+		uint3 coord;
 		int t = id_tmp;
-		for(int z = 0; z < NSPACE; z++) {
-			for(int x = 0; x < NSPACE; x++) {
-				for(int y = 0; y < NSPACE; y++) {
-					coord[1] = x;
-					coord[2] = y;
-					coord[3] = z;
+		for(coord.z = 0; coord.z < NSPACE; coord.z++) {
+			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					int alpha;
 					int k;
@@ -232,14 +222,12 @@ __kernel void correlator_vx_z(__global spinorfield* phi, __global hmc_float * ou
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
-		coord[3] = id_tmp;
+		uint3 coord;
+		coord.z = id_tmp;
 
 		for(int t = 0; t < NTIME; t++) {
-			for(int x = 0; x < NSPACE; x++) {
-				for(int y = 0; y < NSPACE; y++) {
-					coord[1] = x;
-					coord[2] = y;
+			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					int alpha;
 					int k;
@@ -327,14 +315,11 @@ __kernel void correlator_vx_t(__global spinorfield* phi, __global hmc_float * ou
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
+		uint3 coord;
 		int t = id_tmp;
-		for(int z = 0; z < NSPACE; z++) {
-			for(int x = 0; x < NSPACE; x++) {
-				for(int y = 0; y < NSPACE; y++) {
-					coord[1] = x;
-					coord[2] = y;
-					coord[3] = z;
+		for(coord.z = 0; coord.z < NSPACE; coord.z++) {
+			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					int alpha;
 					int k;
@@ -423,13 +408,11 @@ __kernel void correlator_vy_z(__global spinorfield* phi, __global hmc_float * ou
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
-		coord[3] = id_tmp;
+		uint3 coord;
+		coord.z = id_tmp;
 		for(int t = 0; t < NTIME; t++) {
-			for(int x = 0; x < NSPACE; x++) {
-				for(int y = 0; y < NSPACE; y++) {
-					coord[1] = x;
-					coord[2] = y;
+			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					int alpha;
 					int k;
@@ -517,14 +500,11 @@ __kernel void correlator_vy_t(__global spinorfield* phi, __global hmc_float * ou
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
+		uint3 coord;
 		int t = id_tmp;
-		for(int z = 0; z < NSPACE; z++) {
-			for(int x = 0; x < NSPACE; x++) {
-				for(int y = 0; y < NSPACE; y++) {
-					coord[1] = x;
-					coord[2] = y;
-					coord[3] = z;
+		for(coord.z = 0; coord.z < NSPACE; coord.z++) {
+			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					int alpha;
 					int k;
@@ -612,13 +592,11 @@ __kernel void correlator_vz_z(__global spinorfield* phi, __global hmc_float * ou
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
 	for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
 		hmc_float correlator = 0.0f;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
-		coord[3] = id_tmp;
+		uint3 coord;
+		coord.z = id_tmp;
 		for(int t = 0; t < NTIME; t++) {
-			for(int x = 0; x < NSPACE; x++) {
-				for(int y = 0; y < NSPACE; y++) {
-					coord[1] = x;
-					coord[2] = y;
+			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					int alpha;
 					int k;
@@ -675,14 +653,11 @@ __kernel void correlator_vz_t(__global spinorfield* phi, __global hmc_float * ou
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
 	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
 		hmc_float correlator = 0.0f;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
+		uint3 coord;
 		int t = id_tmp;
-		for(int z = 0; z < NSPACE; z++) {
-			for(int x = 0; x < NSPACE; x++) {
-				for(int y = 0; y < NSPACE; y++) {
-					coord[1] = x;
-					coord[2] = y;
-					coord[3] = z;
+		for(coord.z = 0; coord.z < NSPACE; coord.z++) {
+			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					int alpha;
 					int k;
@@ -744,13 +719,11 @@ __kernel void correlator_ax_z(__global spinorfield* phi, __global hmc_float * ou
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
-		coord[3] = id_tmp;
+		uint3 coord;
+		coord.z = id_tmp;
 		for(int t = 0; t < NTIME; t++) {
-			for(int x = 0; x < NSPACE; x++) {
-				for(int y = 0; y < NSPACE; y++) {
-					coord[1] = x;
-					coord[2] = y;
+			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					int alpha;
 					int k;
@@ -838,14 +811,11 @@ __kernel void correlator_ax_t(__global spinorfield* phi, __global hmc_float * ou
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
+		uint3 coord;
 		int t = id_tmp;
-		for(int z = 0; z < NSPACE; z++) {
-			for(int x = 0; x < NSPACE; x++) {
-				for(int y = 0; y < NSPACE; y++) {
-					coord[1] = x;
-					coord[2] = y;
-					coord[3] = z;
+		for(coord.z = 0; coord.z < NSPACE; coord.z++) {
+			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					int alpha;
 					int k;
@@ -934,13 +904,11 @@ __kernel void correlator_ay_z(__global spinorfield* phi, __global hmc_float * ou
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
-		coord[3] = id_tmp;
+		uint3 coord;
+		coord.z = id_tmp;
 		for(int t = 0; t < NTIME; t++) {
-			for(int x = 0; x < NSPACE; x++) {
-				for(int y = 0; y < NSPACE; y++) {
-					coord[1] = x;
-					coord[2] = y;
+			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					int alpha;
 					int k;
@@ -1028,14 +996,11 @@ __kernel void correlator_ay_t(__global spinorfield* phi, __global hmc_float * ou
 		hmc_complex correlator;
 		correlator.re = 0.0f;
 		correlator.im = 0.0f;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
+		uint3 coord;
 		int t = id_tmp;
-		for(int z = 0; z < NSPACE; z++) {
-			for(int x = 0; x < NSPACE; x++) {
-				for(int y = 0; y < NSPACE; y++) {
-					coord[1] = x;
-					coord[2] = y;
-					coord[3] = z;
+		for(coord.z = 0; coord.z < NSPACE; coord.z++) {
+			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					int alpha;
 					int k;
@@ -1123,13 +1088,11 @@ __kernel void correlator_az_z(__global spinorfield* phi, __global hmc_float * ou
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
 	for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
 		hmc_float correlator = 0.0f;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
-		coord[3] = id_tmp;
+		uint3 coord;
+		coord.z = id_tmp;
 		for(int t = 0; t < NTIME; t++) {
-			for(int x = 0; x < NSPACE; x++) {
-				for(int y = 0; y < NSPACE; y++) {
-					coord[1] = x;
-					coord[2] = y;
+			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					int alpha;
 					int k;
@@ -1186,14 +1149,11 @@ __kernel void correlator_az_t(__global spinorfield* phi, __global hmc_float * ou
 	//suppose that there are NTIME threads (one for each entry of the correlator)
 	for(int id_tmp = id; id_tmp < NTIME; id_tmp += global_size) {
 		hmc_float correlator = 0.0f;
-		int coord[4]; //LZ: int4 would be nicer but that cannot go into the current get_nspace() function...
+		uint3 coord;
 		int t = id_tmp;
-		for(int z = 0; z < NSPACE; z++) {
-			for(int x = 0; x < NSPACE; x++) {
-				for(int y = 0; y < NSPACE; y++) {
-					coord[1] = x;
-					coord[2] = y;
-					coord[3] = z;
+		for(coord.z = 0; coord.z < NSPACE; coord.z++) {
+			for(coord.x = 0; coord.x < NSPACE; coord.x++) {
+				for(coord.y = 0; coord.y < NSPACE; coord.y++) {
 					int nspace = get_nspace(coord);
 					int alpha;
 					int k;
