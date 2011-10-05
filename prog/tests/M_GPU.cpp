@@ -22,7 +22,7 @@ public:
 		finalize();
 	};
 
-  void runTestKernel(cl_mem in, cl_mem out, cl_mem gf, int gs, int ls);
+	void runTestKernel(cl_mem in, cl_mem out, cl_mem gf, int gs, int ls);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -30,8 +30,12 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-  Dummyfield(cl_device_type device_type, inputparameters * params) : Gaugefield_hybrid() {
-		init(1, device_type, params);
+	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
+		std::stringstream tmp;
+		tmp << SOURCEDIR << "/tests/m_gpu_input_1";
+		params.readfile(tmp.str().c_str());
+
+		init(1, device_type, &params);
 	};
 
 	virtual void init_tasks();
@@ -57,12 +61,10 @@ private:
 BOOST_AUTO_TEST_CASE( CPU )
 {
 	logger.info() << "Init dummy device";
-	inputparameters params;
-	params.readfile("../tests/m_gpu_input_1");
 	//params.print_info_inverter("m_gpu");
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &params);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU);
 	logger.info() << "gaugeobservables: ";
-	dummy.print_gaugeobservables_from_task(0,0);
+	dummy.print_gaugeobservables_from_task(0, 0);
 	logger.info() << "|phi|^2:";
 	dummy.verify(0);
 	dummy.runTestKernel();
@@ -74,12 +76,10 @@ BOOST_AUTO_TEST_CASE( CPU )
 BOOST_AUTO_TEST_CASE( GPU )
 {
 	logger.info() << "Init dummy device";
-	inputparameters params;
-	params.readfile("../tests/m_gpu_input_1");
 	//params.print_info_inverter("m_gpu");
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &params);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
 	logger.info() << "gaugeobservables: ";
-	dummy.print_gaugeobservables_from_task(0,0);
+	dummy.print_gaugeobservables_from_task(0, 0);
 	logger.info() << "|phi|^2:";
 	dummy.verify(0);
 	dummy.runTestKernel();
@@ -102,54 +102,56 @@ void Dummyfield::finalize_opencl()
 	Gaugefield_hybrid::finalize_opencl();
 }
 
-void fill_sf_with_one(spinor * sf_in, int size){
-  for(int i = 0; i < size; ++i) {
-    sf_in[i].e0.e0 = hmc_complex_one;
-    sf_in[i].e0.e1 = hmc_complex_one;
-    sf_in[i].e0.e2 = hmc_complex_one;
-    sf_in[i].e1.e0 = hmc_complex_one;
-    sf_in[i].e1.e1 = hmc_complex_one;
-    sf_in[i].e1.e2 = hmc_complex_one;
-    sf_in[i].e2.e0 = hmc_complex_one;
-    sf_in[i].e2.e1 = hmc_complex_one;
-    sf_in[i].e2.e2 = hmc_complex_one;
-    sf_in[i].e3.e0 = hmc_complex_one;
-    sf_in[i].e3.e1 = hmc_complex_one;
-    sf_in[i].e3.e2 = hmc_complex_one;
-  }
-  return;
+void fill_sf_with_one(spinor * sf_in, int size)
+{
+	for(int i = 0; i < size; ++i) {
+		sf_in[i].e0.e0 = hmc_complex_one;
+		sf_in[i].e0.e1 = hmc_complex_one;
+		sf_in[i].e0.e2 = hmc_complex_one;
+		sf_in[i].e1.e0 = hmc_complex_one;
+		sf_in[i].e1.e1 = hmc_complex_one;
+		sf_in[i].e1.e2 = hmc_complex_one;
+		sf_in[i].e2.e0 = hmc_complex_one;
+		sf_in[i].e2.e1 = hmc_complex_one;
+		sf_in[i].e2.e2 = hmc_complex_one;
+		sf_in[i].e3.e0 = hmc_complex_one;
+		sf_in[i].e3.e1 = hmc_complex_one;
+		sf_in[i].e3.e2 = hmc_complex_one;
+	}
+	return;
 }
 
-void fill_sf_with_random(spinor * sf_in, int size){
-  Random rnd_loc(123456);
-  for(int i = 0; i < size; ++i) {
-    sf_in[i].e0.e0.re = rnd_loc.doub();
-    sf_in[i].e0.e1.re = rnd_loc.doub();
-    sf_in[i].e0.e2.re = rnd_loc.doub();
-    sf_in[i].e1.e0.re = rnd_loc.doub();
-    sf_in[i].e1.e1.re = rnd_loc.doub();
-    sf_in[i].e1.e2.re = rnd_loc.doub();
-    sf_in[i].e2.e0.re = rnd_loc.doub();
-    sf_in[i].e2.e1.re = rnd_loc.doub();
-    sf_in[i].e2.e2.re = rnd_loc.doub();
-    sf_in[i].e3.e0.re = rnd_loc.doub();
-    sf_in[i].e3.e1.re = rnd_loc.doub();
-    sf_in[i].e3.e2.re = rnd_loc.doub();
+void fill_sf_with_random(spinor * sf_in, int size)
+{
+	Random rnd_loc(123456);
+	for(int i = 0; i < size; ++i) {
+		sf_in[i].e0.e0.re = rnd_loc.doub();
+		sf_in[i].e0.e1.re = rnd_loc.doub();
+		sf_in[i].e0.e2.re = rnd_loc.doub();
+		sf_in[i].e1.e0.re = rnd_loc.doub();
+		sf_in[i].e1.e1.re = rnd_loc.doub();
+		sf_in[i].e1.e2.re = rnd_loc.doub();
+		sf_in[i].e2.e0.re = rnd_loc.doub();
+		sf_in[i].e2.e1.re = rnd_loc.doub();
+		sf_in[i].e2.e2.re = rnd_loc.doub();
+		sf_in[i].e3.e0.re = rnd_loc.doub();
+		sf_in[i].e3.e1.re = rnd_loc.doub();
+		sf_in[i].e3.e2.re = rnd_loc.doub();
 
-    sf_in[i].e0.e0.im = rnd_loc.doub();
-    sf_in[i].e0.e1.im = rnd_loc.doub();
-    sf_in[i].e0.e2.im = rnd_loc.doub();
-    sf_in[i].e1.e0.im = rnd_loc.doub();
-    sf_in[i].e1.e1.im = rnd_loc.doub();
-    sf_in[i].e1.e2.im = rnd_loc.doub();
-    sf_in[i].e2.e0.im = rnd_loc.doub();
-    sf_in[i].e2.e1.im = rnd_loc.doub();
-    sf_in[i].e2.e2.im = rnd_loc.doub();
-    sf_in[i].e3.e0.im = rnd_loc.doub();
-    sf_in[i].e3.e1.im = rnd_loc.doub();
-    sf_in[i].e3.e2.im = rnd_loc.doub();
-  }
-  return;
+		sf_in[i].e0.e0.im = rnd_loc.doub();
+		sf_in[i].e0.e1.im = rnd_loc.doub();
+		sf_in[i].e0.e2.im = rnd_loc.doub();
+		sf_in[i].e1.e0.im = rnd_loc.doub();
+		sf_in[i].e1.e1.im = rnd_loc.doub();
+		sf_in[i].e1.e2.im = rnd_loc.doub();
+		sf_in[i].e2.e0.im = rnd_loc.doub();
+		sf_in[i].e2.e1.im = rnd_loc.doub();
+		sf_in[i].e2.e2.im = rnd_loc.doub();
+		sf_in[i].e3.e0.im = rnd_loc.doub();
+		sf_in[i].e3.e1.im = rnd_loc.doub();
+		sf_in[i].e3.e2.im = rnd_loc.doub();
+	}
+	return;
 }
 
 
@@ -164,7 +166,7 @@ void Dummyfield::fill_buffers()
 	int NUM_ELEMENTS_SF;
 	if(get_parameters()->get_use_eo() == true) NUM_ELEMENTS_SF =  params.get_eoprec_spinorfieldsize();
 	else NUM_ELEMENTS_SF =  params.get_spinorfieldsize();
-	
+
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_out = new spinor[NUM_ELEMENTS_SF];
 
@@ -183,30 +185,30 @@ void Dummyfield::fill_buffers()
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out, CL_TRUE, 0, sf_buf_size, sf_in, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	
+
 	//create buffer for squarenorm on device
 	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 }
 
 void Device::fill_kernels()
 {
-  //one only needs some kernels up to now. to save time during compiling they are put in here by hand
-  Opencl_Module::fill_kernels();
+	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
+	Opencl_Module::fill_kernels();
 
-  //to this end, one has to set the needed files by hand
-  basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "opencl_geometry.cl" << "opencl_operations_complex.cl"
-					<< "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-  basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
-  
-  global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
-  global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
+	//to this end, one has to set the needed files by hand
+	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "opencl_geometry.cl" << "opencl_operations_complex.cl"
+	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
+	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 
-  if(get_device_type() == CL_DEVICE_TYPE_GPU)
-    //    testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix_GPU.cl";
-    testKernel = createKernel("M_tm_plus")  << "tests/m_tm_plus_GPU_full.cl";
-  if(get_device_type() == CL_DEVICE_TYPE_CPU)
-    // testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
-    testKernel = createKernel("M_tm_plus")  << "tests/m_tm_plus_GPU_full.cl";
+	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
+	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
+
+	if(get_device_type() == CL_DEVICE_TYPE_GPU)
+		//    testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix_GPU.cl";
+		testKernel = createKernel("M_tm_plus")  << "tests/m_tm_plus_GPU_full.cl";
+	if(get_device_type() == CL_DEVICE_TYPE_CPU)
+		// testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
+		testKernel = createKernel("M_tm_plus")  << "tests/m_tm_plus_GPU_full.cl";
 
 }
 
@@ -237,7 +239,7 @@ void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls)
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &gf);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	
+
 	enqueueKernel(testKernel, gs, ls);
 }
 
@@ -255,15 +257,14 @@ void Dummyfield::verify(int which)
 
 void Dummyfield::runTestKernel()
 {
-  int gs, ls;
-  if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU){
-    gs = get_parameters()->get_spinorfieldsize();
-    ls = 64;
-  }
-  else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU){
-    gs = opencl_modules[0]->get_max_compute_units();
-    ls = 1;
-  } 
-  static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in, *(get_clmem_gaugefield()), gs,ls);
+	int gs, ls;
+	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
+		gs = get_parameters()->get_spinorfieldsize();
+		ls = 64;
+	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
+		gs = opencl_modules[0]->get_max_compute_units();
+		ls = 1;
+	}
+	static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in, *(get_clmem_gaugefield()), gs, ls);
 }
 

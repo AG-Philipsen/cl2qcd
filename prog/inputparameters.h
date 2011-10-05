@@ -44,7 +44,7 @@ public:
 	 *
 	 * \param ifn Name of the input file to parse
 	 */
-	void readfile(char* ifn);
+	void readfile(const char* ifn);
 
 	/////////////////////////////////////////////////////
 	// access to private members

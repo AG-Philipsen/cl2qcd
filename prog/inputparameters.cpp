@@ -93,7 +93,7 @@ void inputparameters::set_defaults()
 	return;
 }
 
-void inputparameters::readfile(char* ifn)
+void inputparameters::readfile(const char* ifn)
 {
 	try {
 		std::ifstream infile;
@@ -213,7 +213,7 @@ void inputparameters::readfile(char* ifn)
 			if(line.find("rho_iter") != std::string::npos) val_assign(&rho_iter, line);
 			if(line.find("reversibility_check") != std::string::npos) bool_assign(&reversibility_check, line);
 			if(line.find("rev_check") != std::string::npos) bool_assign(&reversibility_check, line);
-			
+
 			if(line.find("autotuning") != std::string::npos) bool_assign(&use_autotuning, line);
 
 			if(line.find("corr_dir") != std::string::npos) val_assign(&corr_dir, line);
