@@ -2,8 +2,9 @@
  * @file operations on algebraelements
  */
 
-void print_ae(ae in){
-     printf("%f, %f, %f, %f, %f, %f, %f, %f\n", in.e0, in.e1, in.e2, in.e3, in.e4, in.e5, in.e6, in.e7);
+void print_ae(ae in)
+{
+	printf("%f, %f, %f, %f, %f, %f, %f, %f\n", in.e0, in.e1, in.e2, in.e3, in.e4, in.e5, in.e6, in.e7);
 }
 
 ae acc_factor_times_algebraelement(ae in, hmc_float factor, ae force_in)
@@ -56,9 +57,10 @@ ae tr_lambda_u(Matrix3x3 in)
 	return tmp;
 }
 
-ae ae_times_factor(ae in, hmc_float factor){
+ae ae_times_factor(ae in, hmc_float factor)
+{
 	ae tmp;
-	
+
 	tmp.e0 = in.e0 * factor;
 	tmp.e1 = in.e1 * factor;
 	tmp.e2 = in.e2 * factor;
@@ -67,6 +69,6 @@ ae ae_times_factor(ae in, hmc_float factor){
 	tmp.e5 = in.e5 * factor;
 	tmp.e6 = in.e6 * factor;
 	tmp.e7 = in.e7 * factor;
-		
+
 	return tmp;
 }

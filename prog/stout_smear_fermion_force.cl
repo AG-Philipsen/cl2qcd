@@ -11,6 +11,6 @@ __kernel void stout_smear_fermion_force()
 	int loc_idx = get_local_id(0);
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
-	
-	
+
+
 }

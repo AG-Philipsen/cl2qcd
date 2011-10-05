@@ -15,7 +15,7 @@ __kernel void saxsbypz(__global spinorfield* x, __global spinorfield* y, __globa
 		spinor y_tmp = y[id_tmp];
 		y_tmp = spinor_times_complex(y_tmp, beta_tmp);
 		spinor z_tmp = z[id_tmp];
-		
+
 		out[id_tmp] = spinor_acc_acc(y_tmp, x_tmp, z_tmp);
 	}
 

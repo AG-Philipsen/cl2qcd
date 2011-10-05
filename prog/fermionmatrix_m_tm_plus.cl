@@ -1,26 +1,27 @@
 /**
  * @file M_tm_plus this is the "total" twisted-mass fermionmatrix (no evenodd) for the upper flavor
  */
-__kernel void M_tm_plus(__global spinorfield * in, __global ocl_s_gaugefield * field, __global spinorfield * out){
+__kernel void M_tm_plus(__global spinorfield * in, __global ocl_s_gaugefield * field, __global spinorfield * out)
+{
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
 	int loc_idx = get_local_id(0);
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
-	int n,t;
+	int n, t;
 	spinor out_tmp, out_tmp2;
 	spinor plus;
-	
+
 	hmc_complex twistfactor = {1., MUBAR};
 	hmc_complex twistfactor_minus = {1., MMUBAR};
 
-	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {	
-	
+	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
+
 		/** @todo this must be done more efficient */
-		if(id_tmp%2 == 0) get_even_site(id_tmp/2, &n, &t);
-		else get_odd_site(id_tmp/2, &n, &t);
-		
+		if(id_tmp % 2 == 0) get_even_site(id_tmp / 2, &n, &t);
+		else get_odd_site(id_tmp / 2, &n, &t);
+
 		out_tmp = set_spinor_zero();
 		out_tmp2 = set_spinor_zero();
 		//get input spinor
@@ -36,7 +37,7 @@ __kernel void M_tm_plus(__global spinorfield * in, __global ocl_s_gaugefield * f
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 		out_tmp2 = dslash_local_3(in, field, n, t);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		
+
 		put_spinor_to_field(out_tmp, out, n, t);
 	}
 }

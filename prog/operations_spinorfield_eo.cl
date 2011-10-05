@@ -11,7 +11,7 @@ spinor get_spinor_from_eoprec_field(__global spinorfield_eoprec* in, int n_eopre
 	return out;
 }
 
-void put_spinor_to_eoprec_field(spinor in,__global spinorfield_eoprec * out, int n_eoprec)
+void put_spinor_to_eoprec_field(spinor in, __global spinorfield_eoprec * out, int n_eoprec)
 {
 	out[n_eoprec] = in;
 }

@@ -32,7 +32,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				//the 2 here comes from Tr(lambda_ij) = 2delta_ij
 				bc_tmp.re = 2.*KAPPA_TEMPORAL_RE;
 				bc_tmp.im = 2.*KAPPA_TEMPORAL_IM;
-				
+
 				///////////////////////////////////
 				//mu = +0
 				global_link_pos = get_global_link_pos(dir, n, t);
@@ -80,7 +80,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				U = get_matrixsu3(field, n, nn, dir);
 				//if chemical potential is activated, U has to be multiplied by appropiate factor
 				//this is the same as at mu=0 in the imag. case, since U is taken to be U^+ later:
-				//	(exp(iq)U)^+ = exp(-iq)U^+
+				//  (exp(iq)U)^+ = exp(-iq)U^+
 				//as it should be
 				//in the real case, one has to take exp(q) -> exp(-q)
 #ifdef _CP_REAL_
@@ -110,7 +110,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				v2 = multiply_matrix3x3_dagger (tmp, v1);
 				v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 				out_tmp = tr_lambda_u(v1);
- 				update_gaugemomentum(out_tmp, 1., global_link_pos_down, out);
+				update_gaugemomentum(out_tmp, 1., global_link_pos_down, out);
 
 				//comments correspond to the mu=0 ones
 				/////////////////////////////////
@@ -120,7 +120,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				//this stays the same for all spatial directions at the moment
 				bc_tmp.re = 2.*KAPPA_SPATIAL_RE;
 				bc_tmp.im = 2.*KAPPA_SPATIAL_IM;
-				
+
 				/////////////////////////////////
 				//mu = +1
 				global_link_pos = get_global_link_pos(dir, n, t);
@@ -146,7 +146,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				v2 = multiply_matrix3x3_dagger (tmp, v1);
 				v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 				out_tmp = tr_lambda_u(v1);
- 				update_gaugemomentum(out_tmp, 1., global_link_pos, out);
+				update_gaugemomentum(out_tmp, 1., global_link_pos, out);
 				///////////////////////////////////
 				//mu = -1
 				nn = get_lower_neighbor(n, dir);
@@ -171,13 +171,13 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				v2 = multiply_matrix3x3_dagger (tmp, v1);
 				v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 				out_tmp = tr_lambda_u(v1);
- 				update_gaugemomentum(out_tmp, 1., global_link_pos_down, out);
+				update_gaugemomentum(out_tmp, 1., global_link_pos_down, out);
 
 				/////////////////////////////////
 				//mu = 2
 				/////////////////////////////////
 				dir = 2;
-				
+
 				///////////////////////////////////
 				// mu = +2
 				global_link_pos = get_global_link_pos(dir, n, t);
@@ -202,7 +202,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				v2 = multiply_matrix3x3_dagger (tmp, v1);
 				v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 				out_tmp = tr_lambda_u(v1);
- 				update_gaugemomentum(out_tmp, 1., global_link_pos, out);
+				update_gaugemomentum(out_tmp, 1., global_link_pos, out);
 
 				///////////////////////////////////
 				//mu = -2
@@ -229,13 +229,13 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				v2 = multiply_matrix3x3_dagger (tmp, v1);
 				v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 				out_tmp = tr_lambda_u(v1);
- 				update_gaugemomentum(out_tmp, 1., global_link_pos_down, out);
+				update_gaugemomentum(out_tmp, 1., global_link_pos_down, out);
 
 				/////////////////////////////////
 				//mu = 3
 				/////////////////////////////////
 				dir = 3;
-				
+
 				///////////////////////////////////
 				// mu = +3
 				global_link_pos = get_global_link_pos(dir, n, t);
@@ -261,7 +261,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				v2 = multiply_matrix3x3_dagger (tmp, v1);
 				v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 				out_tmp = tr_lambda_u(v1);
- 				update_gaugemomentum(out_tmp, 1., global_link_pos, out);
+				update_gaugemomentum(out_tmp, 1., global_link_pos, out);
 
 				///////////////////////////////////
 				//mu = -3
@@ -288,7 +288,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				v2 = multiply_matrix3x3_dagger (tmp, v1);
 				v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 				out_tmp = tr_lambda_u(v1);
- 				update_gaugemomentum(out_tmp, 1., global_link_pos_down, out);
+				update_gaugemomentum(out_tmp, 1., global_link_pos_down, out);
 
 			}
 		}

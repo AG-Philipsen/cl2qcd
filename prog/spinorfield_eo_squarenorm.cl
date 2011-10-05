@@ -18,33 +18,33 @@ __kernel void global_squarenorm_eoprec( __global spinorfield_eoprec *x, __global
 		sum += tmp;
 	}
 
-	if(local_size ==1) {
+	if(local_size == 1) {
 		result[ group_id ] = sum;
 	} else {
 		// sync threads
 		barrier(CLK_LOCAL_MEM_FENCE);
 		//reduction
-		(result_local[idx])=sum;
+		(result_local[idx]) = sum;
 		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx>=64)
-			result_local[idx%64]+=result_local[idx];
+		if (idx >= 64)
+			result_local[idx%64] += result_local[idx];
 		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx>=32)
-			result_local[idx-32]+=result_local[idx];
+		if (idx >= 32)
+			result_local[idx-32] += result_local[idx];
 		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx>=16)
-			result_local[idx-16]+=result_local[idx];
+		if (idx >= 16)
+			result_local[idx-16] += result_local[idx];
 		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx>=8)
-			result_local[idx-8]+=result_local[idx];
+		if (idx >= 8)
+			result_local[idx-8] += result_local[idx];
 		barrier(CLK_LOCAL_MEM_FENCE);
 		//thread 0 sums up the result_local and stores it in array result
-		if (idx==0) {
+		if (idx == 0) {
 			if(local_size >= 8) {
-				result[ group_id ] = 	result_local[0] + result_local[1] + result_local[2] + result_local[3] +
+				result[ group_id ] =  result_local[0] + result_local[1] + result_local[2] + result_local[3] +
 				                      result_local[4] + result_local[5] + result_local[6] + result_local[7];
 			} else {
-				for(int i = 0; i<local_size; i++)
+				for(int i = 0; i < local_size; i++)
 					result[group_id] += result_local[i];
 			}
 		}

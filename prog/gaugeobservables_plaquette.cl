@@ -30,7 +30,7 @@ __kernel void plaquette(__global ocl_s_gaugefield * field, __global hmc_float * 
 		if(id < VOLSPACE * NTIME / 2)
 			get_even_site(id, &pos, &t);
 		else
-			get_odd_site(id-(VOLSPACE*NTIME/2), &pos, &t);
+			get_odd_site(id - (VOLSPACE * NTIME / 2), &pos, &t);
 
 		for(int mu = 0; mu < NDIM; mu++) {
 			for(int nu = 0; nu < mu; nu++) {

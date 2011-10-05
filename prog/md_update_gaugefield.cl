@@ -22,8 +22,8 @@ __kernel void md_update_gaugefield(hmc_float eps, __global ae * p_in, __global o
 		if(id_tmp < VOLSPACE * NTIME / 2)
 			get_even_site(id_tmp, &n, &t);
 		else
-			get_odd_site(id_tmp-(VOLSPACE*NTIME/2), &n, &t);
-		
+			get_odd_site(id_tmp - (VOLSPACE * NTIME / 2), &n, &t);
+
 		for(int mu = 0; mu < NDIM; mu++) {
 			index = get_global_link_pos(mu, n, t);
 			// an su3 algebra element has NC*NC-1 = 8 hmc_float entries

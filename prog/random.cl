@@ -18,7 +18,7 @@ inline ulong nr3_int64(__global hmc_ocl_ran * state )
 	(*state).y ^= (*state).y >> 17;
 	(*state).y ^= (*state).y << 31;
 	(*state).y ^= (*state).y >> 8;
-	(*state).z = 4294957665U*((*state).z & 0xffffffff) + ((*state).z >> 32);
+	(*state).z = 4294957665U * ((*state).z & 0xffffffff) + ((*state).z >> 32);
 	ulong tmp = (*state).x ^ ((*state).x << 21);
 	tmp ^= tmp >> 35;
 	tmp ^= tmp << 4;
@@ -98,19 +98,20 @@ void random_1_2_3(__private int seq[3], __global hmc_ocl_ran * const restrict st
 /**
  * Get a normal distributed complex number
  */
-hmc_complex inline gaussianNormalPair(__global hmc_ocl_ran * rnd){
+hmc_complex inline gaussianNormalPair(__global hmc_ocl_ran * rnd)
+{
 	// Box-Muller method, cartesian form, for extracting two independent normal standard real numbers
 	hmc_complex tmp;
 	hmc_float u1 = 1.0 - ocl_new_ran(rnd);
-// 	hmc_float u2 = 1.0 - ocl_new_ran(rnd);
+//  hmc_float u2 = 1.0 - ocl_new_ran(rnd);
 	hmc_float u2 = ocl_new_ran(rnd);
 	//CP: this is the standard Box-Müller way:
- 	hmc_float p  = sqrt(-2*log(u1));
+	hmc_float p  = sqrt(-2 * log(u1));
 	//CP: without the 2, one gets sigma = 0.5 rightaway, this is done in tmlqcd
 	//hmc_float p  = sqrt(-log(u1));
 
 	//CP: in tmlqcd, sin and cos are interchanged!!
-	tmp.re = p * cos(2*PI*u2);
-	tmp.im = p * sin(2*PI*u2);
+	tmp.re = p * cos(2 * PI * u2);
+	tmp.im = p * sin(2 * PI * u2);
 	return tmp;
 }

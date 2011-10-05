@@ -1,4 +1,4 @@
-// out = alpha*x 
+// out = alpha*x
 __kernel void sax(__global spinorfield* x, __global hmc_complex * alpha, __global spinorfield* out)
 {
 	int id = get_global_id(0);
