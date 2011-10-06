@@ -1530,9 +1530,9 @@ int Opencl_Module_Fermions::get_read_write_size(const char * in, inputparameters
 	return 0;
 }
 
-void Opencl_Module_Fermions::print_profiling(std::string filename)
+void Opencl_Module_Fermions::print_profiling(std::string filename, int number)
 {
-	Opencl_Module_Spinors::print_profiling(filename);
+	Opencl_Module_Spinors::print_profiling(filename, number);
 	const char * kernelName;
 	kernelName = "M_wilson";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );

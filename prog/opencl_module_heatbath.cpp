@@ -222,9 +222,9 @@ int Opencl_Module_Heatbath::get_read_write_size(const char * in, inputparameters
 	}
 }
 
-void Opencl_Module_Heatbath::print_profiling(std::string filename)
+void Opencl_Module_Heatbath::print_profiling(std::string filename, int number)
 {
-	Opencl_Module_Ran::print_profiling(filename);
+	Opencl_Module_Ran::print_profiling(filename, number);
 	const char * kernelName;
 	kernelName = "heatbath_even";
 	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );

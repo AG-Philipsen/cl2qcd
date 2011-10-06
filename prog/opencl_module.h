@@ -302,8 +302,9 @@ public:
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
+	 * @param number task-id
 	 */
-	void virtual print_profiling(std::string filename);
+	void virtual print_profiling(std::string filename, int number);
 
 #endif
 

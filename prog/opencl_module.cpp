@@ -987,7 +987,7 @@ void Opencl_Module::print_profiling(std::string filename, const char * kernelNam
 	return;
 }
 
-void print_profile_header(std::string filename){
+void print_profile_header(std::string filename, number){
 	//write to stream
 	fstream out;
 	out.open(filename.c_str(), std::ios::out | std::ios::app);
@@ -995,14 +995,14 @@ void print_profile_header(std::string filename){
 	//CP: this is set manually to fit the longest kernel name                                                                                            
 	out.width(32);
 	out.precision(15);
-	out << " " << "\t" << "Time_total\t" << "Calls_total\t" << "Avg Time\t" << "Avg Time/Site\t" << "BW [GByte/s]\t" << "Re/Wr [MB<te]" << std::endl;
+	out << "#device "<< number << "\tTime [mus]\tCalls\tAvg Time [mus]\tAvg Time/Site [mus]\tBW [GB/s]\tRe/Wr [MB]" << std::endl;
 	return;
 }
 
-void Opencl_Module::print_profiling(std::string filename)
+void Opencl_Module::print_profiling(std::string filename, int number)
 {
 	logger.trace() << "Printing Profiling-information to file \"" << filename << "\"";
-	print_profile_header(filename);
+	print_profile_header(filename, number);
 	const char * kernelName;
 	kernelName = "polyakov";
 	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
