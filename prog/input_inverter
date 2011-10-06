@@ -2,8 +2,10 @@
 NS=4
 NT=4
 use_rec12=0
-use_gpu=0
+use_gpu=true
 prec=64
+
+num_devs=2
 
 kappa=.15
 mu=4.
@@ -18,5 +20,5 @@ heatbathsteps=20
 overrelaxsteps=2
 savefrequency=10
 fermact=TWISTEDMASS
-use_evenodd=yes
+use_evenodd=no
 
