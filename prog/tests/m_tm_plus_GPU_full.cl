@@ -948,6 +948,7 @@ spinor dslash_local_1(__global spinorfield const * const restrict in,__global oc
 	///////////////////////////////////
 	//mu = -1
 	nn = get_lower_neighbor(n,dir);
+//printf("dir: %i nspace: %i neigh: %i\n", dir, n, nn);
 	plus = get_spinor_from_field(in, nn, t);
 	U = field[get_global_link_pos(dir, nn, t)];
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
@@ -964,7 +965,6 @@ spinor dslash_local_1(__global spinorfield const * const restrict in,__global oc
 	psi = su3vec_dim_i(plus.e0, plus.e3);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
 	psi = su3vec_times_complex(phi, bc_tmp);
-	psi = su3vec_times_complex(psi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e3 = su3vec_acc_i(out_tmp.e3, psi);
 

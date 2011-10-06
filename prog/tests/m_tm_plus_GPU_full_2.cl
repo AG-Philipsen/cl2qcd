@@ -968,7 +968,6 @@ spinor dslash_local_1m(__global spinorfield * in,__global ocl_s_gaugefield * fie
 	psi = su3vec_dim_i(plus.e0, plus.e3);
 	phi = su3matrix_dagger_times_su3vec(U, psi);
 	psi = su3vec_times_complex(phi, bc_tmp);
-	psi = su3vec_times_complex(psi, bc_tmp);
 	out_tmp.e0 = su3vec_acc(out_tmp.e0, psi);
 	out_tmp.e3 = su3vec_acc_i(out_tmp.e3, psi);
 
