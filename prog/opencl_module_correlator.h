@@ -113,7 +113,14 @@ public:
 	usetimer timer_create_point_source;
 	usetimer timer_create_stochastic_source;
 
-	usetimer timer_ps_correlator;
+	usetimer timer_correlator_ps;
+	usetimer timer_correlator_sc;
+	usetimer timer_correlator_vx;
+	usetimer timer_correlator_vy;
+	usetimer timer_correlator_vz;
+	usetimer timer_correlator_ax;
+	usetimer timer_correlator_ay;
+	usetimer timer_correlator_az;
 
 	/**
 	 * Return the timer connected to a specific kernel.
@@ -157,7 +164,6 @@ private:
 	cl_kernel correlator_ax;
 	cl_kernel correlator_ay;
 	cl_kernel correlator_az;
-
 
 	cl_mem clmem_source;
 

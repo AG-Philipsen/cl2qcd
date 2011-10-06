@@ -1479,42 +1479,53 @@ int Opencl_Module_Fermions::get_read_write_size(const char * in, inputparameters
 	Opencl_Module_Spinors::get_read_write_size(in, parameters);
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
+	//this returns the number of entries in an su3-matrix
 	int R = (*parameters).get_mat_size();
-	int S;
-	if((*parameters).get_use_eo() == 1)
-		S = get_parameters()->get_eoprec_spinorfieldsize();
-	else
-		S = get_parameters()->get_spinorfieldsize();
+	int S = get_parameters()->get_spinorfieldsize();
+	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	//factor for complex numbers
+	int C = 2;
 	//this is the same as in the function above
+	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
 	if (strcmp(in, "M_wilson") == 0) {
-		return (240 + 16 * R) * D * S;
+		//this kernel reads 9 spinors, 8 su3matrices and writes 1 spinor:
+		return (C * 12 * (9+1) + C * 8 * R) * D * S;
 	}
 	if (strcmp(in, "gamma5") == 0) {
-		return 1000000000000000000000000;
+		//this kernel reads 1 spinor and writes 1 spinor:
+		return 2 * C * 12 * D * S;
 	}
 	if (strcmp(in, "M_tm_plus") == 0) {
-		return 1000000000000000000000000;
+		//this kernel reads 9 spinors, 8 su3matrices and writes 1 spinor:
+		return (C * 12 * (9+1) + C * 8 * R) * D * S;
 	}
 	if (strcmp(in, "M_tm_minus") == 0) {
-		return 1000000000000000000000000;
+		//this kernel reads 9 spinors, 8 su3matrices and writes 1 spinor:
+		return (C * 12 * (9+1) + C * 8 * R) * D * S;
 	}
 	if (strcmp(in, "gamma5_eoprec") == 0) {
-		return 1000000000000000000000000;
+		//this kernel reads 1 spinor and writes 1 spinor:
+		return 48 * D * Seo;
 	}
 	if (strcmp(in, "M_tm_sitediagonal") == 0) {
-		return 48 * D * S;
+		//this kernel reads 1 spinor and writes 1 spinor:
+		return 48 * D * Seo;
 	}
 	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0) {
-		return 48 * D * S;
+		//this kernel reads 1 spinor and writes 1 spinor:
+		return 48 * D * Seo;
 	}
-		if (strcmp(in, "M_tm_sitediagonal_minus") == 0) {
-		return 48 * D * S;
+	if (strcmp(in, "M_tm_sitediagonal_minus") == 0) {
+		//this kernel reads 1 spinor and writes 1 spinor:
+		return 48 * D * Seo;
 	}
 	if (strcmp(in, "M_tm_inverse_sitediagonal_minus") == 0) {
-		return 48 * D * S;
+		//this kernel reads 1 spinor and writes 1 spinor:
+		return 48 * D * Seo;
 	}
 	if (strcmp(in, "dslash_eoprec") == 0) {
-		return (216 + 16 * R) * D * S;
+		//this kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
+		return (C * 12 * (8+1) + C * 8 * R) * D * Seo;
 	}
 	return 0;
 }

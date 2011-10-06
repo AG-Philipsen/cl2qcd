@@ -636,72 +636,106 @@ int Opencl_Module_Spinors::get_read_write_size(const char * in, inputparameters 
 	Opencl_Module_Ran::get_read_write_size(in, parameters);
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
+	//this returns the number of entries in an su3-matrix
 	int R = (*parameters).get_mat_size();
-	int S;
-	if((*parameters).get_use_eo() == 1)
-		S = get_parameters()->get_eoprec_spinorfieldsize();
-	else
-		S = get_parameters()->get_spinorfieldsize();
+	int S = get_parameters()->get_spinorfieldsize();
+	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	//factor for complex numbers
+	int C = 2;
 	//this is the same as in the function above
+	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
 	if (strcmp(in, "set_spinorfield_cold") == 0) {
-		return 1000000000000000000000000;
+		//this kernel writes 1 spinor
+		return C * 12 * D * S;
 	}
 	if (strcmp(in, "set_eoprec_spinorfield_cold") == 0) {
-		return 1000000000000000000000000;
+		//this kernel writes 1 spinor
+		return C * 12 * D * Seo;
 	}
 	if (strcmp(in, "convert_from_eoprec") == 0) {
-		return 1000000000000000000000000;
+		//this kernel reads 2 spinor and writes 2 spinors per site
+		///@todo is this right??
+		return 2 * 2 * C * 12 * D * Seo;
 	}
 	if (strcmp(in, "convert_to_eoprec") == 0) {
-		return 1000000000000000000000000;
+		//this kernel reads 2 spinor and writes 2 spinors per site
+		return 2 * 2 * C * 12 * D * Seo;
 	}
 	if (strcmp(in, "saxpy") == 0) {
-		return 1000000000000000000000000;
+		//this kernel reads 2 spinor, 2 complex number and writes 1 spinor per site
+		return C * D * S * (12 * (2+1) + 2);
 	}
 	if (strcmp(in, "sax") == 0) {
-		return 74 * D * S;
+		//this kernel reads 1 spinor, 1 complex number and writes 1 spinor per site
+		return C * D * S * (12 * (1+1) + 1);
 	}
 	if (strcmp(in, "saxsbypz") == 0) {
-		return 100 * D * S;
+		//this kernel reads 3 spinor, 2 complex number and writes 1 spinor per site
+		return C * D * S * (12 * (3+1) + 2);
 	}
 	if (strcmp(in, "set_zero_spinorfield") == 0) {
-		return 1000000000000000000000000;
+		//this kernel writes 1 spinor
+		return C * 12 * D * S;
 	}
 	if (strcmp(in, "saxpy_eoprec") == 0) {
-		return 74 * D * S;
+		//this kernel reads 2 spinor, 1 complex number and writes 1 spinor per site
+		return C * D * Seo * (12 * (2+1) + 1);
 	}
 	if (strcmp(in, "sax_eoprec") == 0) {
-		return 1000000000000000000000000;
+		//this kernel reads 1 spinor, 1 complex number and writes 1 spinor per site
+		return C * D * Seo * (12 * (1+1) + 1);
 	}
 	if (strcmp(in, "saxsbypz_eoprec") == 0) {
-		return 100 * D * S;
+		//this kernel reads 3 spinor, 2 complex number and writes 1 spinor per site
+		return C * D * Seo * (12 * (3+1) + 2);
 	}
 	if (strcmp(in, "set_zero_spinorfield_eoprec") == 0) {
-		return 1000000000000000000000000;
+		//this kernel writes 1 spinor
+		return C * 12 * D * Seo;
 	}
 	if (strcmp(in, "scalar_product") == 0) {
-		return 50 * D * S;
+		//this kernel reads 2 spinors and writes 1 complex number
+		/// @NOTE: here, the local reduction is not taken into account
+		return C * D * S * ( 2 * 12  + 1 );
 	}
 	if (strcmp(in, "scalar_product_reduction") == 0) {
-		return 1000000000000000000000000;
+		//this kernel reads NUM_GROUPS complex numbers and writes 1 complex number
+		//query work-sizes for kernel to get num_groups
+		size_t ls2, gs2;
+		cl_uint num_groups;
+		this->get_work_sizes(scalar_product_reduction, this->get_device_type(), &ls2, &gs2, &num_groups);
+		return C * D * (num_groups + 1);
 	}
 	if (strcmp(in, "global_squarenorm") == 0) {
-		return 25 * D * S;
+		//this kernel reads 1 spinor and writes 1 real number
+		/// @NOTE: here, the local reduction is not taken into account
+		return D * S * (C * 12  + 1 );
 	}
 	if (strcmp(in, "global_squarenorm_reduction") == 0) {
-		return 1000000000000000000000000;
+		//this kernel reads NUM_GROUPS real numbers and writes 1 real number
+		//query work-sizes for kernel to get num_groups
+		size_t ls2, gs2;
+		cl_uint num_groups;
+		this->get_work_sizes(scalar_product_reduction, this->get_device_type(), &ls2, &gs2, &num_groups);
+		return D * (num_groups + 1);
 	}
 	if (strcmp(in, "scalar_product_eoprec") == 0) {
-		return 1000000000000000000000000;
+		//this kernel reads 2 spinors and writes 1 complex number
+		/// @NOTE: here, the local reduction is not taken into account
+		return C * D * Seo * ( 2 * 12  + 1 );
 	}
 	if (strcmp(in, "global_squarenorm_eoprec") == 0) {
-		return 1000000000000000000000000;
+		//this kernel reads 1 spinor and writes 1 real number
+		/// @NOTE: here, the local reduction is not taken into account
+		return D * Seo * (C * 12  + 1 );
 	}
 	if (strcmp(in, "ratio") == 0) {
-		return 1000000000000000000000000;
+		//this kernel reads 2 complex numbers and writes 1 complex number
+		return C * D * (2+1);
 	}
 	if (strcmp(in, "product") == 0) {
-		return 1000000000000000000000000;
+		//this kernel reads 2 complex numbers and writes 1 complex number
+		return C * D * (2+1);
 	}
 	return 0;
 }

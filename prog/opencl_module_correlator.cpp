@@ -227,13 +227,30 @@ usetimer* Opencl_Module_Correlator::get_timer(const char * in)
 	if (strcmp(in, "create_stochastic_source") == 0) {
 		return &this->timer_create_stochastic_source;
 	}
-	if (strcmp(in, "correlator_ps_z") == 0) {
-		return &this->timer_ps_correlator;
+	if (strcmp(in, "correlator_ps") == 0) {
+		return &this->timer_correlator_ps;
 	}
-	if (strcmp(in, "correlator_ps_t") == 0) {
-		return &this->timer_ps_correlator;
+	if (strcmp(in, "correlator_sc") == 0) {
+		return &this->timer_correlator_sc;
 	}
-
+	if (strcmp(in, "correlator_vx") == 0) {
+		return &this->timer_correlator_vx;
+	}
+	if (strcmp(in, "correlator_vy") == 0) {
+		return &this->timer_correlator_vy;
+	}
+	if (strcmp(in, "correlator_vz") == 0) {
+		return &this->timer_correlator_vz;
+	}
+	if (strcmp(in, "correlator_ax") == 0) {
+		return &this->timer_correlator_ax;
+	}
+	if (strcmp(in, "correlator_ay") == 0) {
+		return &this->timer_correlator_ay;
+	}
+	if (strcmp(in, "correlator_az") == 0) {
+		return &this->timer_correlator_az;
+	}
 	//if the kernelname has not matched, return NULL
 	else {
 		return NULL;
@@ -245,25 +262,85 @@ int Opencl_Module_Correlator::get_read_write_size(const char * in, inputparamete
 	Opencl_Module::get_read_write_size(in, parameters);
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
+	//this returns the number of entries in an su3-matrix
 	int R = (*parameters).get_mat_size();
-	int S;
-	if((*parameters).get_use_eo() == 1)
-		S = get_parameters()->get_eoprec_spinorfieldsize();
-	else
-		S = get_parameters()->get_spinorfieldsize();
+	int S = get_parameters()->get_spinorfieldsize();
+	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	//factor for complex numbers
+	int C = 2;
 	//this is the same as in the function above
+	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
 	if (strcmp(in, "create_point_source") == 0) {
 		return 1000000000000000000000000;
 	}
 	if (strcmp(in, "create_stochastic_source") == 0) {
 		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "correlator_ps_z") == 0) {
-		return 1000000000000000000000000;
+	if (strcmp(in, "correlator_ps") == 0) {
+		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
+		int size_buffer;
+		int num_sources = get_parameters()->get_num_sources();
+		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
+		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
-	if (strcmp(in, "correlator_ps_t") == 0) {
-		return 1000000000000000000000000;
+	if (strcmp(in, "correlator_sc") == 0) {
+		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
+		int size_buffer;
+		int num_sources = get_parameters()->get_num_sources();
+		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
+		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
+	if (strcmp(in, "correlator_vx") == 0) {
+		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
+		int size_buffer;
+		int num_sources = get_parameters()->get_num_sources();
+		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
+		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		return num_sources * S * D * 12 * C + size_buffer * D;
+	}
+	if (strcmp(in, "correlator_vy") == 0) {
+		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
+		int size_buffer;
+		int num_sources = get_parameters()->get_num_sources();
+		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
+		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		return num_sources * S * D * 12 * C + size_buffer * D;
+	}
+	if (strcmp(in, "correlator_vz") == 0) {
+		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
+		int size_buffer;
+		int num_sources = get_parameters()->get_num_sources();
+		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
+		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		return num_sources * S * D * 12 * C + size_buffer * D;
+	}
+	if (strcmp(in, "correlator_ax") == 0) {
+		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
+		int size_buffer;
+		int num_sources = get_parameters()->get_num_sources();
+		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
+		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		return num_sources * S * D * 12 * C + size_buffer * D;
+	}
+	if (strcmp(in, "correlator_ay") == 0) {
+		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
+		int size_buffer;
+		int num_sources = get_parameters()->get_num_sources();
+		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
+		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		return num_sources * S * D * 12 * C + size_buffer * D;
+	}
+	if (strcmp(in, "correlator_az") == 0) {
+		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
+		int size_buffer;
+		int num_sources = get_parameters()->get_num_sources();
+		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
+		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		return num_sources * S * D * 12 * C + size_buffer * D;
+	}
+	
 	return 0;
 }
 
@@ -279,15 +356,21 @@ void Opencl_Module_Correlator::print_profiling(std::string filename)
 	  kernelName = "create_stochastic_source";
 	  Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 	}
-	if( get_parameters()->get_corr_dir() == 3 ) {
-		kernelName = "correlator_ps_z";
-		Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
-	}
-	if( get_parameters()->get_corr_dir() == 0 ) {
-		kernelName = "correlator_ps_t";
-		Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
-	}
-
-
+	kernelName = "correlator_ps";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "correlator_sc";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "correlator_vx";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "correlator_vy";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "correlator_vz";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "correlator_ax";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "correlator_ay";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	kernelName = "correlator_az";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
 }
 #endif

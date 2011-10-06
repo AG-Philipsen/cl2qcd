@@ -916,28 +916,40 @@ int Opencl_Module::get_read_write_size(const char * in, inputparameters * parame
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
 	int R = (*parameters).get_mat_size();
-	int S;
+	//factor for complex numbers
+	int C = 2;
 	const size_t VOL4D = parameters->get_vol4d();
-	if((*parameters).get_use_eo() == 1)
-		S = get_parameters()->get_eoprec_spinorfieldsize();
-	else
-		S = get_parameters()->get_spinorfieldsize();
-	//this is the same as in the function above
 	if (strcmp(in, "polyakov") == 0) {
-		return VOL4D * D * R + 1;
+		//this kernel reads NTIME*VOLSPACE=VOL4D su3matrices and writes NUM_GROUPS complex numbers
+		//query work-sizes for kernel to get num_groups
+		size_t ls2, gs2;
+		cl_uint num_groups;
+		this->get_work_sizes(polyakov, this->get_device_type(), &ls2, &gs2, &num_groups);
+		return VOL4D * D * R + num_groups * C * D;
 	}
 	if (strcmp(in, "polyakov_reduction") == 0) {
-		//this is not right, since one does not know bufelements now
-		//return (Bufel + 1) *2
-		return Opencl_Module::get_numthreads();
+		//this kernel reads NUM_GROUPS complex numbers and writes 1 complex number
+		//query work-sizes for kernel to get num_groups
+		size_t ls2, gs2;
+		cl_uint num_groups;
+		this->get_work_sizes(polyakov_reduction, this->get_device_type(), &ls2, &gs2, &num_groups);
+		return (num_groups + 1 ) * C * D;
 	}
 	if (strcmp(in, "plaquette") == 0) {
-		return 48 * VOL4D * D * R + 1;
+		//this kernel reads in VOL4D * ND * (ND-1) su3matrices and writes 3*num_groups real numbers
+		//query work-sizes for kernel to get num_groups
+		size_t ls2, gs2;
+		cl_uint num_groups;
+		this->get_work_sizes(plaquette, this->get_device_type(), &ls2, &gs2, &num_groups);
+		return C * 4 * 3 * VOL4D * D * R + 3 * D * num_groups;
 	}
 	if (strcmp(in, "plaquette_reduction") == 0) {
-		//this is not right, since one does not know bufelements now
-		//return (Bufel + 1) *2
-		return Opencl_Module::get_numthreads();
+		//this kernel reads 3*NUM_GROUPS real numbers and writes 3 real numbers
+		//query work-sizes for kernel to get num_groups
+		size_t ls2, gs2;
+		cl_uint num_groups;
+		this->get_work_sizes(polyakov_reduction, this->get_device_type(), &ls2, &gs2, &num_groups);
+		return (num_groups + 1 ) * 3 * C * D;
 	}
 	if (strcmp(in, "stout_smear") == 0) {
 		return 1000000000000000000000;
