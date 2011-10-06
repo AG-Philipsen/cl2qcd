@@ -974,7 +974,8 @@ void Opencl_Module::print_profiling(std::string filename, const char * kernelNam
 	fstream out;
 	out.open(filename.c_str(), std::ios::out | std::ios::app);
 	if(!out.is_open()) File_Exception(filename.c_str());
-	out.width(8);
+	//CP: this is set manually to fit the longest kernel name                                                                                            
+	out.width(32);
 	out.precision(15);
 	//to look like that
 	/*
@@ -986,9 +987,22 @@ void Opencl_Module::print_profiling(std::string filename, const char * kernelNam
 	return;
 }
 
+void print_profile_header(std::string filename){
+	//write to stream
+	fstream out;
+	out.open(filename.c_str(), std::ios::out | std::ios::app);
+	if(!out.is_open()) File_Exception(filename.c_str());
+	//CP: this is set manually to fit the longest kernel name                                                                                            
+	out.width(32);
+	out.precision(15);
+	out << " " << "\t" << "Time_total\t" << "Calls_total\t" << "Avg Time\t" << "Avg Time/Site\t" << "BW [GByte/s]\t" << "Re/Wr [MB<te]" << std::endl;
+	return;
+}
+
 void Opencl_Module::print_profiling(std::string filename)
 {
 	logger.trace() << "Printing Profiling-information to file \"" << filename << "\"";
+	print_profile_header(filename);
 	const char * kernelName;
 	kernelName = "polyakov";
 	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
