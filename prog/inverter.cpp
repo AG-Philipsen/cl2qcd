@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
 
 		//use 2 devices: one for solver, one for correlator
 		int numtasks = 2;
-		if(parameters.get_num_dev() == 2 )
+		if(parameters.get_num_dev() != 2 )
 			logger.warn() << "Only 1 device demanded by input file. All calculations performed on primary device.";
 
 		cl_device_type primary_device;
