@@ -344,9 +344,9 @@ int Opencl_Module_Correlator::get_read_write_size(const char * in, inputparamete
 	return 0;
 }
 
-void Opencl_Module_Correlator::print_profiling(std::string filename)
+void Opencl_Module_Correlator::print_profiling(std::string filename, int number)
 {
-	Opencl_Module::print_profiling(filename);
+	Opencl_Module::print_profiling(filename, number);
 	const char * kernelName;
 	if(create_point_source) {
 	  kernelName = "create_point_source";

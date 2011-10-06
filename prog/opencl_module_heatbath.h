@@ -121,7 +121,7 @@ private:
 	 * @param filename Name of file where data is appended.
 	 * @param parameters inputparameters
 	 */
-	void virtual print_profiling(std::string filename);
+	void virtual print_profiling(std::string filename, int number);
 #endif
 
 

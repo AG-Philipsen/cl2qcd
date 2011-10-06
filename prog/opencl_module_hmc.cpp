@@ -281,9 +281,9 @@ int Opencl_Module_Hmc::get_read_write_size(char * in, inputparameters * paramete
 	return 0;
 }
 
-void Opencl_Module_Hmc::print_profiling(std::string filename)
+void Opencl_Module_Hmc::print_profiling(std::string filename, int number)
 {
-	Opencl_Module_Fermions::print_profiling(filename);
+	Opencl_Module_Fermions::print_profiling(filename, number);
 	char * kernelName;
 	kernelName = "generate_gaussian_spinorfield";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
