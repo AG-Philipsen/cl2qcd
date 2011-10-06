@@ -1476,7 +1476,8 @@ usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 
 int Opencl_Module_Fermions::get_read_write_size(const char * in, inputparameters * parameters)
 {
-	Opencl_Module_Spinors::get_read_write_size(in, parameters);
+	int result = Opencl_Module_Spinors::get_read_write_size(in, parameters);
+	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
 	//this returns the number of entries in an su3-matrix

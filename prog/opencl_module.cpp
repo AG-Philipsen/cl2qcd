@@ -987,7 +987,7 @@ void Opencl_Module::print_profiling(std::string filename, const char * kernelNam
 	return;
 }
 
-void print_profile_header(std::string filename, number){
+void print_profile_header(std::string filename, int number){
 	//write to stream
 	fstream out;
 	out.open(filename.c_str(), std::ios::out | std::ios::app);

@@ -235,7 +235,8 @@ usetimer* Opencl_Module_Hmc::get_timer(char * in)
 
 int Opencl_Module_Hmc::get_read_write_size(char * in, inputparameters * parameters)
 {
-	Opencl_Module_Fermions::get_read_write_size(in, parameters);
+	int result = Opencl_Module_Fermions::get_read_write_size(in, parameters);
+	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
 	int R = (*parameters).get_mat_size();
