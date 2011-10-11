@@ -870,7 +870,7 @@ hmc_float inputparameters::get_solver_prec() const
 	return solver_prec;
 }
 
-uint inputparameters::get_iter_refresh() const
+cl_uint inputparameters::get_iter_refresh() const
 {
 	return iter_refresh;
 }

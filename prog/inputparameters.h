@@ -85,7 +85,7 @@ public:
 	int get_integrationsteps1() const;
 	int get_integrationsteps2() const;
 	hmc_float get_solver_prec() const;
-	uint get_iter_refresh() const;
+	cl_uint get_iter_refresh() const;
 	bool get_saveconfigs() const;
 	int get_savefrequency() const;
 	int get_writefrequency() const;
@@ -281,7 +281,7 @@ private:
 	hmc_float tau;
 	hmc_float rho;
 	hmc_float solver_prec;
-	uint iter_refresh;
+	cl_uint iter_refresh;
 	int rho_iter;
 	bool reversibility_check;
 	long long host_seed;
