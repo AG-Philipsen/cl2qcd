@@ -16,7 +16,7 @@ void random_1_2_3 (int rand[3])
 	rand[2] = 6 - rand[1] - rand[0];
 }
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !defined(CL_VERSION_1_1)
 #define CLU_VEC( vec, idx ) (vec)[idx]
 #else
 #define CLU_VEC( vec, idx ) (vec).s[idx]
