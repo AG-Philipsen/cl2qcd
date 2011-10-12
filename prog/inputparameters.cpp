@@ -5,7 +5,11 @@
 void inputparameters::set_defaults()
 {
 	//global parameters
-	prec = 64;
+	// default precision is 32 for float, 64 for double
+	// this is only to ease tests. real input files should
+	// always explicitly specify the precision to use
+	prec = sizeof(hmc_float) * 8;
+
 	use_rec12 = false;
 	use_gpu = false;
 	use_chem_pot_re = false;

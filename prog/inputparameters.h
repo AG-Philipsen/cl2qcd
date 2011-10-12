@@ -73,8 +73,13 @@ public:
 	int get_cgmax() const;
 	/**
 	 * The precision to be used for gaugefield storage in bits.
+	 *
 	 * @li 32 for single precision
 	 * @li 64 for double precision
+	 *
+	 * @todo Currently this is also used in many places to specify the calculation
+	 *       precision. However it should be possible to calculate in a different
+	 *       precision than one uses for the input/output files.
 	 */
 	int get_prec() const;
 	int get_startcondition() const;
