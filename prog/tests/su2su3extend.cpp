@@ -157,7 +157,7 @@ void Device::runExtendKernel(cl_mem out, cl_mem in, cl_mem d_rand, cl_ulong elem
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(extendKernel, 3, sizeof(cl_ulong), &elems);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	enqueueKernel(extendKernel, NUM_ELEMENTS, LOCAL_SIZE);
+	enqueueKernel(extendKernel, NUM_ELEMENTS);
 }
 
 void Dummyfield::verify(hmc_complex left, hmc_complex right)
