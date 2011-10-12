@@ -4,7 +4,11 @@
 
 //opencl_header.cl
 
+#ifdef cl_amd_printf
+// we def out anything using printf if unsupported,
+// therefore we also don't need to enable printf
 #pragma OPENCL EXTENSION cl_amd_printf : enable
+#endif
 
 #ifdef _USEDOUBLEPREC_
 #ifdef _DEVICE_DOUBLE_EXTENSION_AMD_

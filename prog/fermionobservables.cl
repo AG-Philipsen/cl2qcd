@@ -37,10 +37,12 @@ __kernel void correlator_ps_z(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int z=0; z<NSPACE; z++)
 	//  printf("%i\t(%.12e)\n", z, out[z]);
 	//     }
+	//#endif
 
 }
 
@@ -76,10 +78,12 @@ __kernel void correlator_ps_t(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int t=0; t<NTIME; t++)
 	//  printf("%i\t(%.12e)\n", t, out[t]);
 	//     }
+	//#endif
 
 }
 
@@ -138,10 +142,12 @@ __kernel void correlator_sc_z(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int z=0; z<NSPACE; z++)
 	//  printf("%i\t(%.12e)\n", z, out[z]);
 	//     }
+	//#endif
 
 }
 
@@ -199,10 +205,12 @@ __kernel void correlator_sc_t(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int t=0; t<NTIME; t++)
 	//  printf("%i\t(%.12e)\n", t, out[t]);
 	//     }
+	//endif
 
 }
 
@@ -293,10 +301,12 @@ __kernel void correlator_vx_z(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int z=0; z<NSPACE; z++)
 	//  printf("%i\t(%.12e)\n", z, out[z]);
 	//     }
+	//#endif
 
 }
 
@@ -385,10 +395,12 @@ __kernel void correlator_vx_t(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int t=0; t<NTIME; t++)
 	//  printf("%i\t(%.12e)\n", t, out[t]);
 	//     }
+	//#endif
 
 }
 
@@ -478,10 +490,12 @@ __kernel void correlator_vy_z(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int z=0; z<NSPACE; z++)
 	//  printf("%i\t(%.12e)\n", z, out[z]);
 	//     }
+	//#endif
 
 }
 
@@ -570,10 +584,12 @@ __kernel void correlator_vy_t(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int t=0; t<NTIME; t++)
 	//  printf("%i\t(%.12e)\n", t, out[t]);
 	//     }
+	//#endif
 
 }
 
@@ -633,10 +649,12 @@ __kernel void correlator_vz_z(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int z=0; z<NSPACE; z++)
 	//  printf("%i\t(%.12e)\n", z, out[z]);
 	//     }
+	//#endif
 
 }
 
@@ -694,10 +712,12 @@ __kernel void correlator_vz_t(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int t=0; t<NTIME; t++)
 	//  printf("%i\t(%.12e)\n", t, out[t]);
 	//     }
+	//#endif
 
 }
 
@@ -789,10 +809,12 @@ __kernel void correlator_ax_z(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int z=0; z<NSPACE; z++)
 	//  printf("%i\t(%.12e)\n", z, out[z]);
 	//     }
+	//#endif
 
 }
 
@@ -881,10 +903,12 @@ __kernel void correlator_ax_t(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int t=0; t<NTIME; t++)
 	//  printf("%i\t(%.12e)\n", t, out[t]);
 	//     }
+	//#endif
 
 }
 
@@ -974,10 +998,12 @@ __kernel void correlator_ay_z(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int z=0; z<NSPACE; z++)
 	//  printf("%i\t(%.12e)\n", z, out[z]);
 	//     }
+	//#endif
 
 }
 
@@ -1066,10 +1092,12 @@ __kernel void correlator_ay_t(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int t=0; t<NTIME; t++)
 	//  printf("%i\t(%.12e)\n", t, out[t]);
 	//     }
+	//#endif
 
 }
 
@@ -1129,10 +1157,12 @@ __kernel void correlator_az_z(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int z=0; z<NSPACE; z++)
 	//  printf("%i\t(%.12e)\n", z, out[z]);
 	//     }
+	//#endif
 
 }
 
@@ -1190,9 +1220,11 @@ __kernel void correlator_az_t(__global spinorfield* phi, __global hmc_float * ou
 
 
 	//LZ: print directly to stdout for debugging:
+	//#ifdef cl_amd_printf
 	//     if(id == 0) {
 	//       for(int t=0; t<NTIME; t++)
 	//  printf("%i\t(%.12e)\n", t, out[t]);
 	//     }
+	//#endif
 
 }

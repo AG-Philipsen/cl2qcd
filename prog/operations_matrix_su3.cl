@@ -3,6 +3,7 @@
  */
 //operations_matrix_su3.cl
 
+#ifdef cl_amd_printf
 void print_matrixsu3(Matrixsu3 in)
 {
 	printf("(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n",
@@ -11,6 +12,7 @@ void print_matrixsu3(Matrixsu3 in)
 	       in.e20.re, in.e20.im, in.e21.re, in.e21.im, in.e22.re, in.e22.im);
 	printf("\n");
 }
+#endif
 
 
 

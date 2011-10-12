@@ -5,6 +5,7 @@
 //operations_matrix.cl
 
 
+#ifdef cl_amd_printf
 void print_matrix3x3(Matrix3x3 in)
 {
 	printf("(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n",
@@ -13,6 +14,7 @@ void print_matrix3x3(Matrix3x3 in)
 	       in.e20.re, in.e20.im, in.e21.re, in.e21.im, in.e22.re, in.e22.im);
 	printf("\n");
 }
+#endif
 
 Matrix3x3 zero_matrix3x3 ()
 {

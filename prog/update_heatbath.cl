@@ -113,6 +113,7 @@ void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const int mu
 	//Überprüft, ob die erzeugte Matrix unitär ist
 	//Ja, falls trace.re = 3.0 und trace.im = 0.0
 	/*
+	#ifdef cl_amd_printf
 	hmc_complex detu = det_matrixsu3 (U);
 	printf("det: %f \t %f \n", detu.re, detu.im);
 
@@ -132,6 +133,7 @@ void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const int mu
 	trace = trace_matrixsu3 (blubb);
 	printf (" U * adj(u) %f \n", trace.re);
 	printf (" U * adj(u) %f \n", trace.im);
+	#endif
 	*/
 }
 
