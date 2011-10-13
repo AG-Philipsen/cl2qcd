@@ -372,19 +372,9 @@ void inputparameters::solver_assign(bool * out, std::string line)
 {
 	size_t pos = line.find("=");
 	std::string value = line.substr(pos + 1);
-
-	if(value.find("BiCGStab") != std::string::npos) {
-		(*out) = false;
-		return;
-	}
-	if(value.find("bicgstab") != std::string::npos) {
-		(*out) = false;
-		return;
-	}
-	if(value.find("BICGSTAB") != std::string::npos) {
-		(*out) = false;
-		return;
-	}
+	//LZ: note that the ordering of false/true is crucial here
+	//    as any "bicgstab" hit will also be a "cg" hit...
+	//    and any "bicgstab_save" hit will also be a "bicgcgstab" hit...
 	if(value.find("BiCGStab_save") != std::string::npos) {
 		(*out) = false;
 		this->use_bicgstab_save = true;
@@ -404,9 +394,19 @@ void inputparameters::solver_assign(bool * out, std::string line)
 		(*out) = false;
 		this->use_bicgstab_save = true;
 		return;
+	}	
+	if(value.find("BiCGStab") != std::string::npos) {
+		(*out) = false;
+		return;
 	}
-	//LZ: note that the ordering of false/true is crucial here
-	//    as any "bicgstab" hit will also be a "cg" hit...
+	if(value.find("bicgstab") != std::string::npos) {
+		(*out) = false;
+		return;
+	}
+	if(value.find("BICGSTAB") != std::string::npos) {
+		(*out) = false;
+		return;
+	}
 	if(value.find("Cg") != std::string::npos) {
 		(*out) = true;
 		return;

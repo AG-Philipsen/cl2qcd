@@ -621,7 +621,6 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 
 bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf)
 {
-
 	int debug = 0;
 	int old = 1;
 	if(old == 0){
@@ -855,244 +854,317 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 	}
 	return false;
 	}
-	//"new" version, with comments
-	else if (old == 1){
+	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
+	else if (get_parameters()->get_use_bicgstab_save() == true){
 
-	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
-		if(iter % get_parameters()->get_iter_refresh() == 0) {
-			set_zero_spinorfield_device(clmem_v);
-			set_zero_spinorfield_device(clmem_p);
-			//initial r_n
-			f(this, inout, clmem_rn, gf);
-			saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
-			//rhat = r_n
-			copy_buffer_on_device(clmem_rn, clmem_rhat, get_parameters()->get_sf_buf_size());
-			//set some constants to 1
-			copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
-			copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex));
-			copy_buffer_on_device(clmem_one, clmem_rho, sizeof(hmc_complex));
-		}
-		//rho_next = (rhat, rn)
-		set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next);
-		//tmp1 = rho_next/rho = (rhat, rn)/..
-		set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
-		//rho_next = rho
-		copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
-		//tmp2 = alpha/omega = ...
-		set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
-		//beta = tmp1*tmp2
-		set_complex_to_product_device(clmem_tmp1, clmem_tmp2, clmem_beta);
-
-		//tmp1 = beta*omega
-		set_complex_to_product_device(clmem_beta, clmem_omega, clmem_tmp1);
-		//tmp2 = -tmp1
-		set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
-		//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
-		saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p);
-
-		//v = A*p
-		f(this, clmem_p, clmem_v, gf);
-		//tmp1 = (rhat, v)
-		set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1);
-		//alpha = rho/tmp1 = (..)/(rhat, v)
-		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
-		//s = - alpha * v - r_n
-		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
-		//t = A s
-		f(this, clmem_s, clmem_t, gf);
-		//tmp1 = (t, s)
-		set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
-		//!!CP: this can also be global_squarenorm, but one needs a complex number here
-		//tmp2 = (t,t)
-		set_complex_to_scalar_product_device(clmem_t, clmem_t, clmem_tmp2);
-		//omega = tmp1/tmp2 = (t,s)/(t,t)
-		set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
-		//r_n = - omega*t - s
-		saxpy_device(clmem_t, clmem_s, clmem_omega, clmem_rn);
-		//inout = alpha*p + omega * s + inout
-		saxsbypz_device(clmem_p, clmem_s, inout, clmem_alpha, clmem_omega, inout);
-		//resid = (rn,rn)
-		set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
-		hmc_float resid;
-		get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-
-//    cout << "resid at iter " << iter << " is: " << resid << endl;
-
-		if(resid < get_parameters()->get_solver_prec()) {
-		        //aux = A inout
-			f(this, inout, clmem_aux, gf);
-			//aux = -aux + source
-			saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
-			//trueresid = (aux, aux)
-			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
-			hmc_float trueresid;
-			get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
-//      cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << get_parameters()->get_solver_prec() << endl;
-//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << get_parameters()->get_solver_prec() << endl;
-			if(trueresid < get_parameters()->get_solver_prec())
-				return true;
-			else {
-//        cout << "trueresiduum not small enough" <<endl;
-//        hmc_complex s_norm;
-//        //borrow clmem_alpha for this
-//        set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
-//        get_buffer_from_device(clmem_alpha, &s_norm, sizeof(hmc_complex));
-//        cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
-//        //reset value of alpha
-//        set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
-//        //check if |s|^2 is too small
-//        if(s_norm.re < get_parameters()->get_solver_prec()){
-//          cout << "|s|^2 is too small to continue..." << endl;
-// //           return;
-//        }
+		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
+			if(iter % get_parameters()->get_iter_refresh() == 0) {
+				set_zero_spinorfield_device(clmem_v);
+				set_zero_spinorfield_device(clmem_p);
+				//initial r_n
+				f(this, inout, clmem_rn, gf);
+				saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
+				//rhat = r_n
+				copy_buffer_on_device(clmem_rn, clmem_rhat, get_parameters()->get_sf_buf_size());
+				//set some constants to 1
+				copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
+				copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex));
+				copy_buffer_on_device(clmem_one, clmem_rho, sizeof(hmc_complex));
 			}
+			//rho_next = (rhat, rn)
+			set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next);
+			//tmp1 = rho_next/rho = (rhat, rn)/..
+			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
+			//rho_next = rho
+			copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
+			//tmp2 = alpha/omega = ...
+			set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
+			//beta = tmp1*tmp2
+			set_complex_to_product_device(clmem_tmp1, clmem_tmp2, clmem_beta);
+
+			//tmp1 = beta*omega
+			set_complex_to_product_device(clmem_beta, clmem_omega, clmem_tmp1);
+			//tmp2 = -tmp1
+			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
+			//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
+			saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p);
+
+			//v = A*p
+			f(this, clmem_p, clmem_v, gf);
+			//tmp1 = (rhat, v)
+			set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1);
+			//alpha = rho/tmp1 = (..)/(rhat, v)
+			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
+			//s = - alpha * v - r_n
+			saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
+			//t = A s
+			f(this, clmem_s, clmem_t, gf);
+			//tmp1 = (t, s)
+			set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
+			//!!CP: this can also be global_squarenorm, but one needs a complex number here
+			//tmp2 = (t,t)
+			set_complex_to_scalar_product_device(clmem_t, clmem_t, clmem_tmp2);
+			//omega = tmp1/tmp2 = (t,s)/(t,t)
+			set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
+			//r_n = - omega*t - s
+			saxpy_device(clmem_t, clmem_s, clmem_omega, clmem_rn);
+			//inout = alpha*p + omega * s + inout
+			saxsbypz_device(clmem_p, clmem_s, inout, clmem_alpha, clmem_omega, inout);
+			//resid = (rn,rn)
+			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
+			hmc_float resid;
+			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+
+	//    cout << "resid at iter " << iter << " is: " << resid << endl;
+
+			if(resid < get_parameters()->get_solver_prec()) {
+							//aux = A inout
+				f(this, inout, clmem_aux, gf);
+				//aux = -aux + source
+				saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
+				//trueresid = (aux, aux)
+				set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
+				hmc_float trueresid;
+				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
+	//      cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << get_parameters()->get_solver_prec() << endl;
+	//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << get_parameters()->get_solver_prec() << endl;
+				if(trueresid < get_parameters()->get_solver_prec())
+					return true;
+				else {
+	//        cout << "trueresiduum not small enough" <<endl;
+	//        hmc_complex s_norm;
+	//        //borrow clmem_alpha for this
+	//        set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
+	//        get_buffer_from_device(clmem_alpha, &s_norm, sizeof(hmc_complex));
+	//        cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
+	//        //reset value of alpha
+	//        set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
+	//        //check if |s|^2 is too small
+	//        if(s_norm.re < get_parameters()->get_solver_prec()){
+	//          cout << "|s|^2 is too small to continue..." << endl;
+	// //           return;
+	//        }
+				}
 		} else {
 //      printf("residuum at iter%i is:\t%.10e\n", iter, resid);//cout << "residuum:\t" << resid << endl;
 		}
 	}
 	return false;
 	}
-	//"newer" version, different structure similar to tmlqcd
-	else if (old == 2){
+	//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
+	else if (get_parameters()->get_use_bicgstab_save() != true){
 
-	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
-		if(iter % get_parameters()->get_iter_refresh() == 0) {
-			//initial r_n, saved in p
-			f(this, inout, clmem_rn, gf);
-			saxpy_device(clmem_rn, source, clmem_one, clmem_p);
-			//rhat = p
-			copy_buffer_on_device(clmem_p, clmem_rhat, get_parameters()->get_sf_buf_size());
-			//r_n = p
-			copy_buffer_on_device(clmem_p, clmem_rn, get_parameters()->get_sf_buf_size());
-			//rho = (rhat, rn)
-			set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho);
-     		}
-		//resid = (rn,rn)
-		set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
-		hmc_float resid;
-		get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-		if(resid < get_parameters()->get_solver_prec()) {
-		        return true;
+		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
+			if(iter % get_parameters()->get_iter_refresh() == 0) {
+				//initial r_n, saved in p
+				f(this, inout, clmem_rn, gf);
+				saxpy_device(clmem_rn, source, clmem_one, clmem_p);
+				//rhat = p
+				copy_buffer_on_device(clmem_p, clmem_rhat, get_parameters()->get_sf_buf_size());
+				//r_n = p
+				copy_buffer_on_device(clmem_p, clmem_rn, get_parameters()->get_sf_buf_size());
+				//rho = (rhat, rn)
+				set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho);
+					}
+			//resid = (rn,rn)
+			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
+			hmc_float resid;
+			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+			if(resid < get_parameters()->get_solver_prec()) {
+							return true;
+			}
+			//v = A*p
+			f(this, clmem_p, clmem_v, gf);
+			//tmp1 = (rhat, v)
+			set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1);
+			//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
+			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
+			//s = - alpha * v - r_n
+			saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
+			//t = A s
+			f(this, clmem_s, clmem_t, gf);
+			//tmp1 = (t, s)
+			set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
+			//!!CP: this can also be global_squarenorm, but one needs a complex number here
+			//tmp2 = (t,t)
+			set_complex_to_scalar_product_device(clmem_t, clmem_t, clmem_tmp2);
+			//omega = tmp1/tmp2 = (t,s)/(t,t)
+			set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
+			//inout = alpha*p + omega * s + inout
+			saxsbypz_device(clmem_p, clmem_s, inout, clmem_alpha, clmem_omega, inout);
+			//r_n = - omega*t - s
+			saxpy_device(clmem_t, clmem_s, clmem_omega, clmem_rn);
+			//rho_next = (rhat, rn)
+			set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next);
+			//check if algorithm is stuck
+			hmc_complex check;
+			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
+			if(check.re < get_parameters()->get_solver_prec() && check.im < get_parameters()->get_solver_prec()) {
+							return true;
+			}		
+
+			//tmp1 = rho_next/rho = (rhat, rn)/..
+			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
+			//tmp2 = alpha/omega = ...
+			set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
+			//beta = tmp1*tmp2 = alpha*rho_next / (omega*rho)
+			set_complex_to_product_device(clmem_tmp1, clmem_tmp2, clmem_beta);
+			//tmp1 = beta*omega = alpha* rho_next / rho
+			set_complex_to_product_device(clmem_beta, clmem_omega, clmem_tmp1);
+			//tmp2 = -tmp1
+			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
+			//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
+			saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p);
+			//rho_next = rho
+			copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
+
 		}
-		//v = A*p
-		f(this, clmem_p, clmem_v, gf);
-		//tmp1 = (rhat, v)
-		set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1);
-		//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
-		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
-		//s = - alpha * v - r_n
-		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
-		//t = A s
-		f(this, clmem_s, clmem_t, gf);
-		//tmp1 = (t, s)
-		set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
-		//!!CP: this can also be global_squarenorm, but one needs a complex number here
-		//tmp2 = (t,t)
-		set_complex_to_scalar_product_device(clmem_t, clmem_t, clmem_tmp2);
-		//omega = tmp1/tmp2 = (t,s)/(t,t)
-		set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
-		//inout = alpha*p + omega * s + inout
-		saxsbypz_device(clmem_p, clmem_s, inout, clmem_alpha, clmem_omega, inout);
-		//r_n = - omega*t - s
-		saxpy_device(clmem_t, clmem_s, clmem_omega, clmem_rn);
-		//rho_next = (rhat, rn)
-		set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next);
-		//check if algorithm is stuck
-		hmc_complex check;
-		get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
-		if(check.re < get_parameters()->get_solver_prec() && check.im < get_parameters()->get_solver_prec()) {
-		        return true;
-		}		
-
-		//tmp1 = rho_next/rho = (rhat, rn)/..
-		set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
-		//tmp2 = alpha/omega = ...
-		set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
-		//beta = tmp1*tmp2 = alpha*rho_next / (omega*rho)
-		set_complex_to_product_device(clmem_tmp1, clmem_tmp2, clmem_beta);
-		//tmp1 = beta*omega = alpha* rho_next / rho
-		set_complex_to_product_device(clmem_beta, clmem_omega, clmem_tmp1);
-		//tmp2 = -tmp1
-		set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
-		//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
-		saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p);
-		//rho_next = rho
-		copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
-
-	}
-	return false;
+		return false;
 
 	}
 }
 
 bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf)
 {
-	//CP: these have to be on the host
-	hmc_float resid;
-	hmc_float trueresid;
-	int cgmax = get_parameters()->get_cgmax();
-	for(int iter = 0; iter < cgmax; iter++) {
+	
+	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
+	if (get_parameters()->get_use_bicgstab_save() == true){
+		//CP: these have to be on the host
+		hmc_float resid;
+		hmc_float trueresid;
+		int cgmax = get_parameters()->get_cgmax();
+		for(int iter = 0; iter < cgmax; iter++) {
 
-		if(iter % get_parameters()->get_iter_refresh() == 0) {
-			set_zero_spinorfield_eoprec_device(clmem_v_eoprec);
-			set_zero_spinorfield_eoprec_device(clmem_p_eoprec);
+			if(iter % get_parameters()->get_iter_refresh() == 0) {
+				set_zero_spinorfield_eoprec_device(clmem_v_eoprec);
+				set_zero_spinorfield_eoprec_device(clmem_p_eoprec);
 
-			f(this, inout, clmem_rn_eoprec, gf);
+				f(this, inout, clmem_rn_eoprec, gf);
 
-			saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
-			copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, get_parameters()->get_eo_sf_buf_size());
+				saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
+				copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, get_parameters()->get_eo_sf_buf_size());
 
-			copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
-			copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex));
-			copy_buffer_on_device(clmem_one, clmem_rho, sizeof(hmc_complex));
+				copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
+				copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex));
+				copy_buffer_on_device(clmem_one, clmem_rho, sizeof(hmc_complex));
+			}
+
+			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next);
+			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
+			copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
+			set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
+			set_complex_to_product_device(clmem_tmp1, clmem_tmp2, clmem_beta);
+
+			set_complex_to_product_device(clmem_beta, clmem_omega, clmem_tmp1);
+			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
+			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec);
+
+			f(this, clmem_p_eoprec, clmem_v_eoprec, gf);
+
+			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
+			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
+
+			saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec);
+
+			f(this, clmem_s_eoprec, clmem_t_eoprec, gf);
+
+			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1);
+			//!!CP: can this also be global_squarenorm??
+			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_t_eoprec, clmem_tmp2);
+			set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
+
+			saxpy_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_omega, clmem_rn_eoprec);
+
+			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_s_eoprec, inout, clmem_alpha, clmem_omega, inout);
+
+			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
+			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+
+			if(resid < get_parameters()->get_solver_prec()) {
+				f(this, inout, clmem_aux_eoprec, gf);
+				saxpy_eoprec_device(clmem_aux_eoprec, clmem_source_even, clmem_one, clmem_aux_eoprec);
+				set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid);
+				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
+				//cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
+				if(trueresid < get_parameters()->get_solver_prec())
+					return true;
+			} else {
+				//      cout << "residuum:\t" << resid << endl;
+			}
+
 		}
 
-		set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next);
-		set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
-		copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
-		set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
-		set_complex_to_product_device(clmem_tmp1, clmem_tmp2, clmem_beta);
-
-		set_complex_to_product_device(clmem_beta, clmem_omega, clmem_tmp1);
-		set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
-		saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec);
-
-		f(this, clmem_p_eoprec, clmem_v_eoprec, gf);
-
-		set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
-		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
-
-		saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec);
-
-		f(this, clmem_s_eoprec, clmem_t_eoprec, gf);
-
-		set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1);
-		//!!CP: can this also be global_squarenorm??
-		set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_t_eoprec, clmem_tmp2);
-		set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
-
-		saxpy_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_omega, clmem_rn_eoprec);
-
-		saxsbypz_eoprec_device(clmem_p_eoprec, clmem_s_eoprec, inout, clmem_alpha, clmem_omega, inout);
-
-		set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
-		get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-
-		if(resid < get_parameters()->get_solver_prec()) {
-			f(this, inout, clmem_aux_eoprec, gf);
-			saxpy_eoprec_device(clmem_aux_eoprec, clmem_source_even, clmem_one, clmem_aux_eoprec);
-			set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid);
-			get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
-			//cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
-			if(trueresid < get_parameters()->get_solver_prec())
-				return true;
-		} else {
-			//      cout << "residuum:\t" << resid << endl;
-		}
-
+		return false;
 	}
+	//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
+	if (get_parameters()->get_use_bicgstab_save() != true){
+		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
+			if(iter % get_parameters()->get_iter_refresh() == 0) {
+				//initial r_n, saved in p
+				f(this, inout, clmem_rn_eoprec, gf);
+				saxpy_device(clmem_rn_eoprec, source, clmem_one, clmem_p_eoprec);
+				//rhat = p
+				copy_buffer_on_device(clmem_p_eoprec, clmem_rhat_eoprec, get_parameters()->get_eo_sf_buf_size());
+				//r_n = p
+				copy_buffer_on_device(clmem_p_eoprec, clmem_rn_eoprec, get_parameters()->get_eo_sf_buf_size());
+				//rho = (rhat, rn)
+				set_complex_to_scalar_product_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho);
+					}
+			//resid = (rn,rn)
+			set_float_to_global_squarenorm_device(clmem_rn_eoprec, clmem_resid);
+			hmc_float resid;
+			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+			if(resid < get_parameters()->get_solver_prec()) {
+							return true;
+			}
+			//v = A*p
+			f(this, clmem_p_eoprec, clmem_v_eoprec, gf);
+			//tmp1 = (rhat, v)
+			set_complex_to_scalar_product_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
+			//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
+			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
+			//s = - alpha * v - r_n
+			saxpy_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec);
+			//t = A s
+			f(this, clmem_s_eoprec, clmem_t_eoprec, gf);
+			//tmp1 = (t, s)
+			set_complex_to_scalar_product_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1);
+			//!!CP: this can also be global_squarenorm, but one needs a complex number here
+			//tmp2 = (t,t)
+			set_complex_to_scalar_product_device(clmem_t_eoprec, clmem_t_eoprec, clmem_tmp2);
+			//omega = tmp1/tmp2 = (t,s)/(t,t)
+			set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
+			//inout = alpha*p + omega * s + inout
+			saxsbypz_device(clmem_p_eoprec, clmem_s_eoprec, inout, clmem_alpha, clmem_omega, inout);
+			//r_n = - omega*t - s
+			saxpy_device(clmem_t_eoprec, clmem_s_eoprec, clmem_omega, clmem_rn_eoprec);
+			//rho_next = (rhat, rn)
+			set_complex_to_scalar_product_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next);
+			//check if algorithm is stuck
+			hmc_complex check;
+			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
+			if(check.re < get_parameters()->get_solver_prec() && check.im < get_parameters()->get_solver_prec()) {
+							return true;
+			}		
 
-	return false;
+			//tmp1 = rho_next/rho = (rhat, rn)/..
+			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
+			//tmp2 = alpha/omega = ...
+			set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
+			//beta = tmp1*tmp2 = alpha*rho_next / (omega*rho)
+			set_complex_to_product_device(clmem_tmp1, clmem_tmp2, clmem_beta);
+			//tmp1 = beta*omega = alpha* rho_next / rho
+			set_complex_to_product_device(clmem_beta, clmem_omega, clmem_tmp1);
+			//tmp2 = -tmp1
+			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
+			//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
+			saxsbypz_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec);
+			//rho_next = rho
+			copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
+
+		}
+		return false;
+	}
 }
 
 bool Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf)
