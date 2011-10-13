@@ -1087,8 +1087,12 @@ void inputparameters::print_info_fermion() const
 	}
 	if(this->get_use_cg() == true)
 		logger.info() << "## Use CG-solver for inversions" ;
-	if(this->get_use_cg() == false)
-		logger.info() << "## Use BiCGStab for inversions";
+	if(this->get_use_cg() == false){
+		if(this->get_use_bicgstab_save() == false)
+			logger.info() << "## Use BiCGStab for inversions";
+		else
+			logger.info() << "## Use BiCGStab-SAVE for inversions";
+	}
 	if(this->get_use_eo() == true)
 		logger.info() << "## Use even-odd preconditioning" ;
 	if(this->get_use_eo() == false)
@@ -1147,8 +1151,12 @@ void inputparameters::print_info_fermion(ostream * os) const
 	}
 	if(this->get_use_cg() == true)
 		*os << "## Use CG-solver for inversions"  << endl;
-	if(this->get_use_cg() == false)
-		*os << "## Use BiCGStab for inversions" << endl;
+	if(this->get_use_cg() == false){
+		if(this->get_use_bicgstab_save() == false)
+			*os << << "## Use BiCGStab for inversions";
+		else
+			*os << << "## Use BiCGStab-SAVE for inversions";
+	}
 
 	if(this->get_use_eo() == true)
 		*os  << "## Use even-odd preconditioning" << endl;
