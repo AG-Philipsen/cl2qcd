@@ -1153,9 +1153,9 @@ void inputparameters::print_info_fermion(ostream * os) const
 		*os << "## Use CG-solver for inversions"  << endl;
 	if(this->get_use_cg() == false){
 		if(this->get_use_bicgstab_save() == false)
-			*os << << "## Use BiCGStab for inversions";
+			*os << "## Use BiCGStab for inversions" << endl;
 		else
-			*os << << "## Use BiCGStab-SAVE for inversions";
+			*os << "## Use BiCGStab-SAVE for inversions" << endl;
 	}
 
 	if(this->get_use_eo() == true)
