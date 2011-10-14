@@ -237,12 +237,12 @@ void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls)
 	cl_int err;
 	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &in);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &out);
+	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &out);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &gf);
+	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &gf);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	int ODD = 0;
-	err = clSetKernelArg(testKernel, 3, sizeof(cl_mem), &ODD);
+	int odd = 0;
+	err = clSetKernelArg(testKernel, 3, sizeof(int), &odd);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	
 	enqueueKernel(testKernel, gs, ls);
@@ -264,7 +264,7 @@ void Dummyfield::runTestKernel()
 {
 	int gs, ls;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = get_parameters()->get_spinorfieldsize();
+		gs = get_parameters()->get_eoprec_spinorfieldsize();
 		ls = 64;
 	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
 		gs = opencl_modules[0]->get_max_compute_units();

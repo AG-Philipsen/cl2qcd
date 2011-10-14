@@ -1383,7 +1383,6 @@ void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem
 		 * This changes the even source according to (with A = M + D):
 		 * 	b_e = b_e - D_eo M_inv b_o
 		 */
-		logger.debug() << "asdflaf" ;
 		if(get_parameters()->get_fermact() == WILSON) {
 			//in this case, the diagonal matrix is just 1 and falls away.
 			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1);

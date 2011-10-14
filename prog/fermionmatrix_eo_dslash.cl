@@ -13,7 +13,12 @@ __kernel void dslash_eoprec(__global spinorfield_eoprec* in, __global spinorfiel
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 	int n, t;
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
+#ifndef _USEGPU_
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp +=	global_size) {
+#else
+	int id_tmp = id;
+	if (id >= EOPREC_SPINORFIELDSIZE) return;
+#endif
 		st_index pos = (evenodd == ODD) ? get_even_site(id_tmp) : get_odd_site(id_tmp);
 
 		spinor out_tmp = set_spinor_zero();
@@ -28,5 +33,7 @@ __kernel void dslash_eoprec(__global spinorfield_eoprec* in, __global spinorfiel
 		out_tmp2 = dslash_eoprec_local_3(in, field, pos.space, pos.time);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 		put_spinor_to_eoprec_field(out_tmp, out, id_tmp);
+#ifndef _USEGPU_
 	}
+#endif
 }
