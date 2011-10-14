@@ -1102,16 +1102,16 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				//initial r_n, saved in p
 				f(this, inout, clmem_rn_eoprec, gf);
-				saxpy_device(clmem_rn_eoprec, source, clmem_one, clmem_p_eoprec);
+				saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_p_eoprec);
 				//rhat = p
 				copy_buffer_on_device(clmem_p_eoprec, clmem_rhat_eoprec, get_parameters()->get_eo_sf_buf_size());
 				//r_n = p
 				copy_buffer_on_device(clmem_p_eoprec, clmem_rn_eoprec, get_parameters()->get_eo_sf_buf_size());
 				//rho = (rhat, rn)
-				set_complex_to_scalar_product_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho);
+				set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho);
 					}
 			//resid = (rn,rn)
-			set_float_to_global_squarenorm_device(clmem_rn_eoprec, clmem_resid);
+			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
 			hmc_float resid;
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 			if(resid < get_parameters()->get_solver_prec()) {
@@ -1120,26 +1120,26 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 			//v = A*p
 			f(this, clmem_p_eoprec, clmem_v_eoprec, gf);
 			//tmp1 = (rhat, v)
-			set_complex_to_scalar_product_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
+			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
 			//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
 			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 			//s = - alpha * v - r_n
-			saxpy_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec);
+			saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec);
 			//t = A s
 			f(this, clmem_s_eoprec, clmem_t_eoprec, gf);
 			//tmp1 = (t, s)
-			set_complex_to_scalar_product_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1);
+			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1);
 			//!!CP: this can also be global_squarenorm, but one needs a complex number here
 			//tmp2 = (t,t)
-			set_complex_to_scalar_product_device(clmem_t_eoprec, clmem_t_eoprec, clmem_tmp2);
+			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_t_eoprec, clmem_tmp2);
 			//omega = tmp1/tmp2 = (t,s)/(t,t)
 			set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
 			//inout = alpha*p + omega * s + inout
-			saxsbypz_device(clmem_p_eoprec, clmem_s_eoprec, inout, clmem_alpha, clmem_omega, inout);
+			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_s_eoprec, inout, clmem_alpha, clmem_omega, inout);
 			//r_n = - omega*t - s
-			saxpy_device(clmem_t_eoprec, clmem_s_eoprec, clmem_omega, clmem_rn_eoprec);
+			saxpy_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_omega, clmem_rn_eoprec);
 			//rho_next = (rhat, rn)
-			set_complex_to_scalar_product_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next);
+			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next);
 			//check if algorithm is stuck
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
@@ -1158,7 +1158,7 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 			//tmp2 = -tmp1
 			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 			//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
-			saxsbypz_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec);
+			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec);
 			//rho_next = rho
 			copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
 
@@ -1383,6 +1383,7 @@ void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem
 		 * This changes the even source according to (with A = M + D):
 		 * 	b_e = b_e - D_eo M_inv b_o
 		 */
+		logger.debug() << "asdflaf" ;
 		if(get_parameters()->get_fermact() == WILSON) {
 			//in this case, the diagonal matrix is just 1 and falls away.
 			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1);
