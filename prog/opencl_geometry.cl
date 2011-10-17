@@ -152,7 +152,14 @@ int spinor_element(int alpha, int color)
 
 int get_n_eoprec(int spacepos, int timepos)
 {
-	return (int)((get_global_pos(spacepos, timepos)) / 2);
+	
+	//return (convert_int)((get_global_pos(spacepos, timepos)) / 2);
+int glob_pos = get_global_pos(spacepos, timepos);
+int res =  (convert_int)((get_global_pos(spacepos, timepos)) / 2);
+#ifdef _USEGPU_
+//	printf("%i %i %i %i\n", spacepos, timepos, glob_pos, res);
+#endif
+return res;
 }
 
 int eoprec_spinor_field_element(int alpha, int color, int n_eoprec)
