@@ -56,14 +56,14 @@ int main(int argc, char* argv[])
 				break;
 		}
 
+		//check if correlator-device is a GPU and in that case exit because the kernels are not meant to be executed there
+		if ( parameters.get_use_gpu() == false && parameters.get_num_dev() == 2){
+			throw Print_Error_Message("GPU cannot be used for correlator-calculation.", __FILE__, __LINE__);
+		}
+
 		logger.trace() << "Init gaugefield" ;
 		gaugefield.init(numtasks, primary_device, &parameters);
 
-		//check if correlator-device is a GPU and in that case exit because the kernels are not meant to be executed there
-		if ((*gaugefield.get_task_correlator()).get_device_type() == CL_DEVICE_TYPE_GPU){
-			throw Print_Error_Message("GPU cannot be used for correlator-calculation.", __FILE__, __LINE__);
-		}
-		
 		logger.info() << "Gaugeobservables:";
 		gaugefield.print_gaugeobservables(0);
 		init_timer.add();
