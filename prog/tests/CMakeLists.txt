@@ -40,6 +40,24 @@ target_link_libraries(su2su3extend
 	einhard)
 add_test(Su2su3extend su2su3extend)
 
+add_executable(geometry
+	geometry.cpp
+	../host_geometry.cpp
+	../inputparameters.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../host_use_timer.cpp
+	../exceptions.cpp
+	../logger.cpp)
+target_link_libraries(geometry
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	einhard)
+add_test(geometry geometry)
+
 add_executable(saxsbypz
 	saxsbypz.cpp
 	../host_geometry.cpp
