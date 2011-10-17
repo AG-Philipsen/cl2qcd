@@ -58,7 +58,7 @@ private:
 };
 
 
-BOOST_AUTO_TEST_CASE( CPU )
+BOOST_AUTO_TEST_CASE( DSLASH_EOPREC )
 {
 	logger.info() << "Init CPU device";
 	//params.print_info_inverter("m_gpu");
@@ -270,8 +270,6 @@ void Dummyfield::verify(hmc_float cpu, hmc_float gpu){
     logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
     BOOST_REQUIRE_EQUAL(1,0);
   }
-  
-
 }
 
 void Dummyfield::runTestKernel()
