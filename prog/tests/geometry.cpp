@@ -15,14 +15,14 @@ class Device : public Opencl_Module {
 	cl_kernel testKernel;
 
 public:
-	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Fermions() {
-		Opencl_Module_Fermions::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module() {
+		Opencl_Module::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
 	};
 
-	void runTestKernel(cl_mem in, cl_mem out, cl_mem gf, int gs, int ls);
+	void runTestKernel(int gs, int ls);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -50,7 +50,7 @@ private:
 BOOST_AUTO_TEST_CASE( GEOMETRY )
 {
 	logger.info() << "Init CPU device";
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU);
 	dummy.runTestKernel();
 	logger.info() << "Init GPU device";
 	Dummyfield dummy2(CL_DEVICE_TYPE_GPU);
@@ -84,7 +84,7 @@ void Device::fill_kernels()
 
 	//to this end, one has to set the needed files by hand
 	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "opencl_geometry.cl";
-	testKernel = createKernel("geometry_test") << basic_opencl_code << "geometry_test.cl";
+	testKernel = createKernel("geometry_test") << basic_opencl_code << "tests/geometry_test.cl";
 }
 
 void Dummyfield::clear_buffers()
@@ -96,10 +96,8 @@ void Device::clear_kernels()
 	clReleaseKernel(testKernel);
 }
 
-void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls)
+void Device::runTestKernel(int gs, int ls)
 {
-	cl_int err;
-	
 	enqueueKernel(testKernel, gs, ls);
 }
 
@@ -114,6 +112,6 @@ void Dummyfield::runTestKernel()
 		ls = 1;
 	}
 	logger.info() << "test kernel with global_work_size: " << gs << " and local_work_size: " << ls;
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in, *(get_clmem_gaugefield()), gs, ls);
+	static_cast<Device*>(opencl_modules[0])->runTestKernel(gs, ls);
 }
 

@@ -14,7 +14,7 @@ __kernel void geometry_test(){
 
 	int id = get_global_id(0);
 	if(id > 0) return;
-
+	int x, y,z,t;
 	for(x = 0; x < NSPACE; x++){
 		for(y = 0; y < NSPACE; y++){
 			for(z = 0; z < NSPACE; y++){
@@ -76,6 +76,7 @@ __kernel void geometry_test(){
 							printf("ERROR at get_even_site at x = %i y = %i z = %i t = %i\n", x, y, z, t);
 							return;
 						}
+					}
 					else if(glob_pos % 2 == 1){
 						idx = get_odd_site(glob_pos);
 						if(idx.space != ns || idx.time != nt){
