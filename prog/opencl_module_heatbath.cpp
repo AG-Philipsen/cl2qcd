@@ -11,6 +11,7 @@ void Opencl_Module_Heatbath::fill_collect_options(stringstream* collect_options)
 {
 	Opencl_Module_Ran::fill_collect_options(collect_options);
 	*collect_options <<  " -DBETA=" << get_parameters()->get_beta();
+	*collect_options <<  " -DXI_0=" << get_parameters()->get_xi_0();
 
 	return;
 }

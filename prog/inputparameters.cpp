@@ -52,6 +52,7 @@ void inputparameters::set_defaults()
 	thermalizationsteps = 0;
 	heatbathsteps = 1000;
 	overrelaxsteps = 1;
+	xi = 1;
 
 	//fermionic parameters
 	fermact = WILSON;
@@ -203,6 +204,12 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("NSPACE") != std::string::npos) val_assign(&nspace, line);
 			if(line.find("NT") != std::string::npos) val_assign(&ntime, line);
 			if(line.find("NTIME") != std::string::npos) val_assign(&ntime, line);
+			if(line.find("XI") != std::string::npos) val_assign(&xi, line);
+			if(line.find("xi") != std::string::npos) val_assign(&xi, line);
+			if(line.find("Xi") != std::string::npos) val_assign(&xi, line);
+			if(line.find("anisotropy") != std::string::npos) val_assign(&xi, line);
+			if(line.find("Anisotropy") != std::string::npos) val_assign(&xi, line);
+
 			if(line.find("print_to_screen") != std::string::npos) bool_assign(&print_to_screen, line);
 
 			if(line.find("use_pointsource") != std::string::npos) bool_assign(&use_pointsource, line);
@@ -618,6 +625,19 @@ int inputparameters::get_nt() const
 	return ntime;
 }
 
+int inputparameters::get_xi() const
+{
+  return xi;
+}
+
+hmc_float inputparameters::get_xi_0() const
+{
+  hmc_float aniso = hmc_float (get_xi());
+  hmc_float eta = (1.002503*aniso*aniso*aniso + .39100*aniso*aniso + 1.47130*aniso - 0.19231) /
+  (aniso*aniso*aniso + 0.26287*aniso*aniso + 1.59008*aniso - 0.18224);
+  return aniso / (1.+(1.-1./aniso)*eta/6. * (1-0.55055 *2*NC/beta)/(1-0.77810 *2*NC/beta)*2*NC/beta );
+}
+
 int inputparameters::get_prec() const
 {
 	return prec;
@@ -984,6 +1004,7 @@ void inputparameters::print_info_heatbath(char* progname) const
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Simulation parameters:";
 	logger.info() << "## beta           = " << this->get_beta();
+	logger.info() << "## xi             = " << this->get_xi();
 	logger.info() << "## thermsteps     = " << this->get_thermalizationsteps() ;
 	logger.info() << "## heatbathsteps  = " << this->get_heatbathsteps();
 	logger.info() << "## overrelaxsteps = " << this->get_overrelaxsteps();
@@ -999,6 +1020,7 @@ void inputparameters::print_info_heatbath(char* progname, ostream* os) const
 	*os  << "## **********************************************************" << endl;
 	*os  << "## Simulation parameters:" << endl;
 	*os  << "## beta           = " << this->get_beta() << endl;
+	*os  << "## xi             = " << this->get_xi();
 	*os  << "## thermsteps     = " << this->get_thermalizationsteps() << endl;
 	*os  << "## heatbathsteps  = " << this->get_heatbathsteps() << endl;
 	*os  << "## overrelaxsteps = " << this->get_overrelaxsteps() << endl;
@@ -1014,6 +1036,7 @@ void inputparameters::print_info_tkkappa(char* progname, ostream* os) const
 	*os  << "## **********************************************************" << endl;
 	*os  << "## Simulation parameters:" << endl;
 	*os  << "## beta           = " << this->get_beta() << endl;
+	*os  << "## xi             = " << this->get_xi();
 	*os  << "## thermsteps     = " << this->get_thermalizationsteps() << endl;
 	*os  << "## heatbathsteps  = " << this->get_heatbathsteps() << endl;
 	*os  << "## overrelaxsteps = " << this->get_overrelaxsteps() << endl;
@@ -1031,6 +1054,7 @@ void inputparameters::print_info_tkkappa(char* progname) const
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Simulation parameters:";
 	logger.info() << "## beta           = " << this->get_beta();
+	logger.info() << "## xi             = " << this->get_xi();
 	logger.info() << "## thermsteps     = " << this->get_thermalizationsteps() ;
 	logger.info() << "## heatbathsteps  = " << this->get_heatbathsteps();
 	logger.info() << "## overrelaxsteps = " << this->get_overrelaxsteps();
