@@ -10,7 +10,7 @@ configure_file( ${CMAKE_SOURCE_DIR}/rand_seeds rand_seeds COPYONLY )
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
-add_executable(openclCompiler opencl_compiler.cpp ../logger.cpp ../exceptions.cpp)
+add_executable(openclCompiler opencl_compiler.cpp ../opencl_compiler.cpp ../logger.cpp ../exceptions.cpp)
 target_link_libraries(openclCompiler ${Boost_LIBRARIES} ${OPENCL_LIBRARIES} einhard)
 add_test(OpenclCompiler openclCompiler)
 
