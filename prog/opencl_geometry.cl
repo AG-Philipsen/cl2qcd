@@ -80,10 +80,10 @@ size_t get_nspace(const uint3 coord)
 
 int get_spacecoord(const int nspace, const int dir)
 {
-	int res = convert_int(nspace / (NSPACE * NSPACE));
+	int res = nspace / (NSPACE * NSPACE);
 	if(dir == 3) return res;
 	int acc = res;
-	res = convert_int(nspace / (NSPACE)) - NSPACE * acc;
+	res = nspace / NSPACE - NSPACE * acc;
 	if(dir == 2) return res;
 	acc = NSPACE * acc + res;
 	res = nspace - NSPACE * acc;
@@ -152,7 +152,7 @@ int spinor_element(int alpha, int color)
 
 int get_n_eoprec(int spacepos, int timepos)
 {
-	return (convert_int)((get_global_pos(spacepos, timepos)) / 2);
+	return get_global_pos(spacepos, timepos) / 2;
 }
 
 int eoprec_spinor_field_element(int alpha, int color, int n_eoprec)
