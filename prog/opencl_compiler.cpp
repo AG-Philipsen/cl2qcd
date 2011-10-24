@@ -45,7 +45,7 @@ TmpClKernel::operator cl_kernel() const
 
 	logger.trace() << "Collecting sources to build the program for the " << kernel_name << " kernel";
 
-	//write kernel files into sources
+	// write kernel files into sources
 	// create array to point to contents of the different source files
 	char ** sources = new char *[ files.size() ];
 	size_t * source_sizes = new size_t[ files.size() ];
