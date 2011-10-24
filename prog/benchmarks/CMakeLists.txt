@@ -36,6 +36,7 @@ target_link_libraries( heatbath_benchmarks
 	${LIBXML2_LIBRARIES}
 	${Boost_LIBRARIES}
 	klepsydra
+	crypto
 	einhard
 )
 
@@ -68,6 +69,7 @@ target_link_libraries( inverter_benchmarks
 	${LIBXML2_LIBRARIES}
 	${Boost_LIBRARIES}
 	klepsydra
+	crypto
 	einhard
 )
 
@@ -100,6 +102,7 @@ target_link_libraries( hmc_benchmarks
 	${LIBXML2_LIBRARIES}
 	${Boost_LIBRARIES}
 	klepsydra
+	crypto
 	einhard
 )
 

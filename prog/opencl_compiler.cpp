@@ -10,7 +10,15 @@
 #include <fstream>
 #include <boost/regex.hpp>
 #include <cstring>
+#include "crypto/md5.h"
 
+// be ok, with rather old versions of boost filesystem
+// in principle the below code should also work with version 3,
+// but this should ensure proper behavious if version 3 is not available
+#define BOOST_FILESYSTEM_VERSION 2
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+/// @todo quite some of this code could be simplified by moving from pure fstream to boost::filesystem equivalents
 
 ClSourcePackage ClSourcePackage::operator <<(const char *file)
 {
@@ -50,32 +58,44 @@ TmpClKernel::operator cl_kernel() const
 	char ** sources = new char *[ files.size() ];
 	size_t * source_sizes = new size_t[ files.size() ];
 
-	std::string sourcecode;
-	for(size_t n = 0; n < files.size(); n++) {
-		std::stringstream tmp;
-		tmp << SOURCEDIR << '/' << files[n];
-		logger.debug() << "Read kernel source from file: " << tmp.str();
+	/// @todo seperate build for each device as otherwise cache is broken
+	std::string md5 = generateMD5(devices[0]);
 
-		std::fstream file;
-		file.open(tmp.str().c_str());
-		if( !file.is_open() ) throw File_Exception(tmp.str());
-
-		file.seekg(0, std::ios::end);
-		source_sizes[n] = file.tellg();
-		file.seekg(0, std::ios::beg);
-
-		sources[n] = new char[source_sizes[n]];
-
-		file.read( sources[n], source_sizes[n] );
-
-		file.close();
+	cl_program program = 0;
+	if(num_devices == 1) {
+		program = loadBinary(md5, devices[0]);
+	} else {
+		logger.warn() << "Sorry, OpenCL binary caching is currently broken for your configuration.";
 	}
 
-	logger.trace() << "Creating program for the " << kernel_name << " kernel from collected sources";
+	if(!program) {
+		logger.debug() << "Program not found in cache, building from source";
+		std::string sourcecode;
+		for(size_t n = 0; n < files.size(); n++) {
+			std::stringstream tmp;
+			tmp << SOURCEDIR << '/' << files[n];
+			logger.debug() << "Read kernel source from file: " << tmp.str();
 
-	cl_program program = clCreateProgramWithSource(context, files.size() , (const char**) sources, source_sizes, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateProgramWithSource", __FILE__, __LINE__);
+			std::fstream file;
+			file.open(tmp.str().c_str());
+			if( !file.is_open() ) throw File_Exception(tmp.str());
 
+			file.seekg(0, std::ios::end);
+			source_sizes[n] = file.tellg();
+			file.seekg(0, std::ios::beg);
+
+			sources[n] = new char[source_sizes[n]];
+
+			file.read( sources[n], source_sizes[n] );
+
+			file.close();
+		}
+
+		logger.trace() << "Creating program for the " << kernel_name << " kernel from collected sources";
+
+		program = clCreateProgramWithSource(context, files.size() , (const char**) sources, source_sizes, &clerr);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateProgramWithSource", __FILE__, __LINE__);
+	}
 
 	logger.trace() << "Building kernel " << kernel_name << " using these options: " << build_options;
 
@@ -119,6 +139,9 @@ TmpClKernel::operator cl_kernel() const
 			throw Opencl_Error(clerr, "clGetProgramBuildInfo", __FILE__, __LINE__);
 		}
 	}
+
+	// store built binary to working directory
+	dumpBinary(program, devices[0], md5);
 
 	// extract kernel
 	cl_kernel kernel = clCreateKernel(program, kernel_name, &clerr);
@@ -372,4 +395,221 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel, const cl_dev
 	}
 
 	delete[] platform_vendor;
+}
+
+std::string TmpClKernel::generateMD5(cl_device_id device) const
+{
+	// Points to consider for a unique binary identification
+	//  * Device (Name + Driver Version): For simplicity assume we only compile for one device at a time (could also just add all devices)
+	//  * Platform (Name + Version)
+	//  * Compiler version (Should be given by platform and device driver version)
+	//  * Sources names
+	//  * Headers are sources, too
+
+	/// @todo respect headers
+
+	md5_t md5_state;
+	md5_init(&md5_state);
+
+	cl_int clerr;
+
+	// add device info
+	size_t device_name_bytes;
+	clerr = clGetDeviceInfo( device, CL_DEVICE_NAME, 0, NULL, &device_name_bytes );
+	if( clerr ) {
+		logger.error() << "Failed to get name of OpenCL device: ";
+		throw Opencl_Error(clerr);
+	}
+	char * device_name = new char[device_name_bytes];
+	clerr = clGetDeviceInfo( device, CL_DEVICE_NAME, device_name_bytes, device_name, NULL );
+	if( clerr ) {
+		logger.error() << "Failed to get name of OpenCL device: ";
+		throw Opencl_Error(clerr);
+	}
+	logger.trace() << "Adding " << device_name << " to MD5";
+	md5_process(&md5_state, device_name, device_name_bytes);
+
+	size_t driver_version_bytes;
+	clerr = clGetDeviceInfo( device, CL_DRIVER_VERSION, 0, NULL, &driver_version_bytes );
+	if( clerr ) {
+		logger.error() << "Failed to get name of OpenCL device: ";
+		throw Opencl_Error(clerr);
+	}
+	char * driver_version = new char[driver_version_bytes];
+	clerr = clGetDeviceInfo( device, CL_DRIVER_VERSION, driver_version_bytes, driver_version, NULL );
+	if( clerr ) {
+		logger.error() << "Failed to get name of OpenCL device: ";
+		throw Opencl_Error(clerr);
+	}
+	logger.trace() << "Adding " << driver_version << " to MD5";
+	md5_process(&md5_state, driver_version, driver_version_bytes);
+
+	// add platform information
+	cl_platform_id platform;
+	clerr = clGetDeviceInfo( device, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform, NULL );
+	if( clerr ) {
+		logger.error() << "Failed to get the platform of the OpenCL device: ";
+		throw Opencl_Error(clerr);
+	}
+
+	size_t platform_name_bytes;
+	clerr = clGetPlatformInfo(platform, CL_PLATFORM_NAME, 0, NULL, &platform_name_bytes);
+	if( clerr ) {
+		logger.error() << "Failed to get vendor of OpenCL platform: ";
+		throw Opencl_Error(clerr);
+	}
+	char * platform_name = new char[platform_name_bytes];
+	clerr = clGetPlatformInfo(platform, CL_PLATFORM_NAME, platform_name_bytes, platform_name, NULL);
+	if( clerr ) {
+		logger.error() << "Failed to get vendor of OpenCL platform: ";
+		throw Opencl_Error(clerr);
+	}
+	logger.trace() << "Adding " << platform_name << " to MD5";
+	md5_process(&md5_state, platform_name, platform_name_bytes);
+
+	size_t platform_version_bytes;
+	clerr = clGetPlatformInfo(platform, CL_PLATFORM_VERSION, 0, NULL, &platform_version_bytes);
+	if( clerr ) {
+		logger.error() << "Failed to get vendor of OpenCL platform: ";
+		throw Opencl_Error(clerr);
+	}
+	char * platform_version = new char[platform_version_bytes];
+	clerr = clGetPlatformInfo(platform, CL_PLATFORM_VERSION, platform_version_bytes, platform_version, NULL);
+	if( clerr ) {
+		logger.error() << "Failed to get vendor of OpenCL platform: ";
+		throw Opencl_Error(clerr);
+	}
+	logger.trace() << "Adding " << platform_version << " to MD5";
+	md5_process(&md5_state, platform_version, platform_version_bytes);
+
+	// add source information
+	for(size_t n = 0; n < files.size(); n++) {
+		const char* filename = files[n];
+		const unsigned int filename_len = strlen(filename);
+		md5_process(&md5_state, filename, filename_len);
+	}
+
+	char sig[16];
+	md5_finish(&md5_state, sig);
+
+	char res[33];
+	md5_sig_to_string(sig, res, 33);
+
+	return std::string(res);
+}
+
+void TmpClKernel::dumpBinary(cl_program program, cl_device_id device_id, std::string md5) const
+{
+
+	cl_int clerr;
+
+	// figure out which index is the one of the device we want to know
+	cl_uint num_devices;
+	clerr = clGetProgramInfo(program, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint), &num_devices, NULL);
+	if( clerr ) {
+		throw Opencl_Error(clerr);
+	}
+	/// @todo hanyl binary_bytes == zero
+	cl_device_id * devices = new cl_device_id[num_devices];
+	clerr = clGetProgramInfo(program, CL_PROGRAM_DEVICES, sizeof(cl_device_id) * num_devices, devices, NULL);
+	if( clerr ) {
+		throw Opencl_Error(clerr);
+	}
+
+	cl_uint device_index;
+	for(device_index = 0; device_index < (num_devices - 1) && device_id != devices[device_index]; ++device_index) {
+		// we only want to find the abortion criteria
+	}
+
+	size_t * program_binaries_bytes = new size_t[num_devices];
+	clerr = clGetProgramInfo(program, CL_PROGRAM_BINARY_SIZES, sizeof(size_t) * num_devices, program_binaries_bytes, NULL);
+	if( clerr ) {
+		throw Opencl_Error(clerr);
+	}
+	size_t program_binary_bytes = program_binaries_bytes[device_index];
+	if(program_binary_bytes == 0) {
+		logger.warn() << "OpenCL implementation does not support exporting the compiled binary.";
+		return;
+	}
+
+	unsigned char ** program_binaries = new unsigned char*[num_devices];
+	unsigned char * program_binary = new unsigned char[program_binary_bytes];
+	for(cl_uint i = 0; i < num_devices; ++i) {
+		program_binaries[i] = (i == device_index) ? program_binary : NULL;
+	}
+	clerr = clGetProgramInfo(program, CL_PROGRAM_BINARIES, sizeof(char*) * num_devices, program_binaries, NULL);
+	if( clerr ) {
+		throw Opencl_Error(clerr);
+	}
+
+	std::stringstream outfile_name;
+	outfile_name << md5 << ".elf";
+
+	std::ofstream outfile(outfile_name.str().c_str());
+	outfile.write(reinterpret_cast<char*>(program_binary), program_binary_bytes);
+	outfile.close();
+
+	delete[] program_binary;
+	delete[] program_binaries;
+	delete[] program_binaries_bytes;
+}
+
+cl_program TmpClKernel::loadBinary(std::string md5, cl_device_id device) const
+{
+	/// @todo check whether any headers were modified
+	std::stringstream binaryfile_name;
+	binaryfile_name << md5 << ".elf";
+	std::string binaryfile_name_string = binaryfile_name.str();
+	logger.debug() << "Looking for cache file " << binaryfile_name_string;
+	fs::path binaryfile(binaryfile_name_string);
+	if(!fs::exists(binaryfile)) {
+		return 0; // 0 is not a valid program object
+	}
+
+	std::time_t binary_date = fs::last_write_time(binaryfile);
+
+	fs::path sourceDir(SOURCEDIR);
+	for(size_t n = 0; n < files.size(); n++) {
+		fs::path file = sourceDir / files[n];
+		if(fs::last_write_time(file) > binary_date) {
+			logger.debug() << "Sources have been modified since last program build. Recompilation is required.";
+			return 0; // 0 is not a valid program object
+		}
+	}
+
+	// read binary from file
+	std::ifstream inputfile(binaryfile.string());
+	if(!inputfile.is_open()) {
+		return 0; // 0 is not a valid program object
+	}
+
+	inputfile.seekg(0, std::ios::end);
+	size_t binarysize = inputfile.tellg();
+	inputfile.seekg(0, std::ios::beg);
+
+	unsigned char * binary = new unsigned char[binarysize];
+
+	inputfile.read( reinterpret_cast<char*>(binary), binarysize );
+
+	inputfile.close();
+
+	// create program from binary
+
+	const unsigned char ** binaries = const_cast<const unsigned char**>(&binary); // we will only read from here on
+
+	cl_int status, clerr;
+	cl_program program = clCreateProgramWithBinary(context, 1, &device, &binarysize, binaries, &status, &clerr);
+	if(clerr) {
+		logger.error() << "Failed to reconstruct program from binary";
+		throw Opencl_Error(clerr);
+	}
+	if(status) {
+		logger.error() << "Failed to load program from binary";
+		clReleaseProgram(program);
+		program = 0;
+	}
+
+	delete[] binary;
+
+	return program;
 }
