@@ -199,6 +199,9 @@ endif(NOT CMAKE_HOST_APPLE)
 add_library( einhard
 	einhard/einhard.cpp )
 
+# Add crypto stuff
+add_subdirectory( crypto )
+
 # Documentation
 #include(FindDoxygen)
 find_package( Doxygen QUIET )
