@@ -514,7 +514,7 @@ void TmpClKernel::dumpBinary(cl_program program, cl_device_id device_id, std::st
 	if( clerr ) {
 		throw Opencl_Error(clerr);
 	}
-	/// @todo handle binary_bytes == zero
+
 	cl_device_id * devices = new cl_device_id[num_devices];
 	clerr = clGetProgramInfo(program, CL_PROGRAM_DEVICES, sizeof(cl_device_id) * num_devices, devices, NULL);
 	if( clerr ) {
