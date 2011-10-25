@@ -139,6 +139,15 @@ private:
 	 * @param kernel The kernel of which to query the information.
 	 */
 	void printResourceRequirements(const cl_kernel kernel, const cl_device_id device) const;
+
+	/**
+	 * Generate an MD5 string uniquely identifying the OpenCL program binary.
+	 */
+	std::string generateMD5(cl_device_id device) const;
+
+	void dumpBinary(cl_program program, cl_device_id device, std::string md5) const;
+
+	cl_program loadBinary(std::string md5, cl_device_id device) const;
 };
 
 #endif /* _OPENCL_COMPILER_H_ */

@@ -40,7 +40,7 @@ if( LIBXML2_DEFINITIONS )
 	add_definitions( ${LIBXML2_DEFINITIONS} )
 endif( LIBXML2_DEFINITIONS )
 
-find_package(Boost 1.33.0 REQUIRED COMPONENTS regex)
+find_package(Boost 1.35.0 REQUIRED COMPONENTS regex filesystem system)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 # Define where to find the OpenCL kernels
@@ -90,6 +90,7 @@ target_link_libraries( heatbath
 	${Boost_LIBRARIES}
 	klepsydra
 	einhard
+	crypto
 )
 
 add_executable( transportcoefficient
@@ -121,6 +122,7 @@ target_link_libraries( transportcoefficient
 	${Boost_LIBRARIES}
 	klepsydra
 	einhard
+	crypto
 )
 
 add_executable( inverter
@@ -154,6 +156,7 @@ target_link_libraries( inverter
 	${Boost_LIBRARIES}
 	klepsydra
 	einhard
+	crypto
 )
 
 add_executable( hmc
@@ -187,6 +190,7 @@ target_link_libraries( hmc
 	${Boost_LIBRARIES}
 	klepsydra
 	einhard
+	crypto
 )
 
 add_library( klepsydra
@@ -198,6 +202,9 @@ endif(NOT CMAKE_HOST_APPLE)
 
 add_library( einhard
 	einhard/einhard.cpp )
+
+# Add crypto stuff
+add_subdirectory( crypto )
 
 # Documentation
 #include(FindDoxygen)

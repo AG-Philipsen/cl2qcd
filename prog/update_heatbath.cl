@@ -39,12 +39,26 @@ void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const int mu
 	hmc_float beta_new;
 	hmc_float k;
 
+	//Compute staple, comprises whole anisotropy
+	if (mu==0){
+	  staplematrix = calc_staple(gaugefield, pos, t, mu);
+	  staplematrix = multiply_matrix3x3_by_real (staplematrix, XI_0 );
+	}
+	
+	else{
+     	  Matrix3x3 staplematrix_sigma;
+	  Matrix3x3 staplematrix_tau;
+	  staplematrix_sigma = calc_staple_sigma(gaugefield, pos, t, mu);
+	  staplematrix_sigma = multiply_matrix3x3_by_real (staplematrix_sigma, 1/XI_0 );
+	  staplematrix_tau = calc_staple_tau(gaugefield, pos, t, mu);
+	  staplematrix_tau = multiply_matrix3x3_by_real (staplematrix_tau, XI_0 );
+	  staplematrix = add_matrix3x3 ( staplematrix_sigma, staplematrix_tau );
+	}
+
 	random_1_2_3(order, &rnd[id]);
-
 	U = get_matrixsu3(gaugefield, pos, t, mu);
-	U = project_su3(U);
-
-	staplematrix = calc_staple(gaugefield, pos, t, mu);
+	//Does not work with anisotropy
+	//	U = project_su3(U);
 
 	for(int i = 0; i < NC; i++) {
 
@@ -76,7 +90,7 @@ void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const int mu
 
 		//old and without structs
 		/*
-		w_pauli[0] = w_pauli[0]/k;
+  		w_pauli[0] = w_pauli[0]/k;
 		w_pauli[1] = -w_pauli[1]/k;
 		w_pauli[2] = -w_pauli[2]/k;
 		w_pauli[3] = -w_pauli[3]/k;

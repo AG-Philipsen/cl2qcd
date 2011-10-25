@@ -30,6 +30,7 @@ target_link_libraries( bandwidth
 	${LIBXML2_LIBRARIES}
 	${Boost_LIBRARIES}
 	klepsydra
+	crypto
 	einhard
 )
 

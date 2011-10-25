@@ -10,9 +10,13 @@ configure_file( ${CMAKE_SOURCE_DIR}/rand_seeds rand_seeds COPYONLY )
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
-add_executable(openclCompiler opencl_compiler.cpp ../logger.cpp ../exceptions.cpp)
-target_link_libraries(openclCompiler ${Boost_LIBRARIES} ${OPENCL_LIBRARIES} einhard)
+add_executable(openclCompiler opencl_compiler.cpp ../opencl_compiler.cpp ../logger.cpp ../exceptions.cpp)
+target_link_libraries(openclCompiler ${Boost_LIBRARIES} ${OPENCL_LIBRARIES} crypto einhard)
 add_test(OpenclCompiler openclCompiler)
+
+add_executable(cryptoLibTest crypto.cpp)
+target_link_libraries(cryptoLibTest ${Boost_LIBRARIES} crypto)
+add_test(Crypto cryptoLibTest)
 
 add_executable(su2su3extend
 	su2su3extend.cpp
@@ -37,6 +41,7 @@ target_link_libraries(su2su3extend
 	${LIBXML2_LIBRARIES}
 	${Boost_LIBRARIES}
 	klepsydra
+	crypto
 	einhard)
 add_test(Su2su3extend su2su3extend)
 
@@ -63,6 +68,7 @@ target_link_libraries(geometry
 	${LIBXML2_LIBRARIES}
 	${Boost_LIBRARIES}
 	klepsydra
+	crypto
 	einhard)
 add_test(geometry geometry)
 
@@ -89,6 +95,7 @@ target_link_libraries(saxsbypz
 	${LIBXML2_LIBRARIES}
 	${Boost_LIBRARIES}
 	klepsydra
+	crypto
 	einhard)
 add_test(Saxsbypz saxsbypz)
 
@@ -118,6 +125,7 @@ target_link_libraries(m_gpu
 	${LIBXML2_LIBRARIES}
 	${Boost_LIBRARIES}
 	klepsydra
+	crypto
 	einhard)
 add_test(M_gpu m_gpu)
 
@@ -147,6 +155,7 @@ target_link_libraries(m_eo_gpu
 	${LIBXML2_LIBRARIES}
 	${Boost_LIBRARIES}
 	klepsydra
+	crypto
 	einhard)
 add_test(M_eo_gpu m_eo_gpu)
 
