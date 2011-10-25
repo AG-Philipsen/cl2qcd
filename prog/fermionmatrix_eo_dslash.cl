@@ -1,22 +1,24 @@
 
-spinor part1(__global spinorfield_eoprec* in, __global ocl_s_gaugefield* field, st_index pos){
-       spinor out_tmp2;
-       spinor out_tmp = set_spinor_zero();
-       out_tmp2 = dslash_eoprec_local_0(in, field, pos.space, pos.time);
-       out_tmp = spinor_dim(out_tmp, out_tmp2);
-       out_tmp2 = dslash_eoprec_local_1(in, field, pos.space, pos.time);
-       out_tmp = spinor_dim(out_tmp, out_tmp2);
-       return out_tmp;
+spinor part1(__global spinorfield_eoprec* in, __global ocl_s_gaugefield* field, st_index pos)
+{
+	spinor out_tmp2;
+	spinor out_tmp = set_spinor_zero();
+	out_tmp2 = dslash_eoprec_local_0(in, field, pos.space, pos.time);
+	out_tmp = spinor_dim(out_tmp, out_tmp2);
+	out_tmp2 = dslash_eoprec_local_1(in, field, pos.space, pos.time);
+	out_tmp = spinor_dim(out_tmp, out_tmp2);
+	return out_tmp;
 }
 
-spinor part2(__global spinorfield_eoprec* in, __global ocl_s_gaugefield* field, st_index pos){
-       spinor out_tmp2;
-       spinor out_tmp = set_spinor_zero();
-       out_tmp2 = dslash_eoprec_local_2(in, field, pos.space, pos.time);
-       out_tmp = spinor_dim(out_tmp, out_tmp2);
-       out_tmp2 = dslash_eoprec_local_3(in, field, pos.space, pos.time);
-       out_tmp = spinor_dim(out_tmp, out_tmp2);
-       return out_tmp;
+spinor part2(__global spinorfield_eoprec* in, __global ocl_s_gaugefield* field, st_index pos)
+{
+	spinor out_tmp2;
+	spinor out_tmp = set_spinor_zero();
+	out_tmp2 = dslash_eoprec_local_2(in, field, pos.space, pos.time);
+	out_tmp = spinor_dim(out_tmp, out_tmp2);
+	out_tmp2 = dslash_eoprec_local_3(in, field, pos.space, pos.time);
+	out_tmp = spinor_dim(out_tmp, out_tmp2);
+	return out_tmp;
 }
 
 
@@ -38,7 +40,7 @@ __kernel void dslash_eoprec(__global spinorfield_eoprec* in, __global spinorfiel
 	int group_id = get_group_id (0);
 	int n, t;
 #ifndef _USEGPU_
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp +=	global_size) {
+	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 #else
 	int id_tmp = id;
 	if (id >= EOPREC_SPINORFIELDSIZE) return;
@@ -61,10 +63,10 @@ __kernel void dslash_eoprec(__global spinorfield_eoprec* in, __global spinorfiel
 		out_tmp2 = dslash_eoprec_local_3(in, field, pos.space, pos.time);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 #else
-out_tmp = part1(in, field, pos);
-out_tmp2 = part2(in, field, pos);
+		out_tmp = part1(in, field, pos);
+		out_tmp2 = part2(in, field, pos);
 
-out_tmp = spinor_acc(out_tmp, out_tmp2);
+		out_tmp = spinor_acc(out_tmp, out_tmp2);
 #endif
 
 

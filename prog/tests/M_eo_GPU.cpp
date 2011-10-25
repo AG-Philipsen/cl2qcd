@@ -209,7 +209,7 @@ void Device::fill_kernels()
 	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
 
 	testKernel = createKernel("dslash_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl"/* << "fermionmatrix.cl"*/ << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
-		
+
 }
 
 void Dummyfield::clear_buffers()
@@ -242,14 +242,14 @@ void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls)
 	int odd = 0;
 	err = clSetKernelArg(testKernel, 3, sizeof(int), &odd);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	
+
 	enqueueKernel(testKernel, gs, ls);
 }
 
 hmc_float Dummyfield::get_squarenorm(int which)
 {
 	//which controlls if the in or out-vector is looked at
-        if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_eoprec_device(in, sqnorm);
+	if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_eoprec_device(in, sqnorm);
 	if(which == 1) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_eoprec_device(out, sqnorm);
 	// get stuff from device
 	hmc_float result;
@@ -259,17 +259,18 @@ hmc_float Dummyfield::get_squarenorm(int which)
 	return result;
 }
 
-void Dummyfield::verify(hmc_float cpu, hmc_float gpu){
-  //this is too much required, since rounding errors can occur
-  //  BOOST_REQUIRE_EQUAL(cpu, gpu);
-  //instead, test if the two number agree within some percent
-  hmc_float dev = (cpu - gpu)/cpu/100.;
-  if(dev < 1e-10)
-    logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
-  else{
-    logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
-    BOOST_REQUIRE_EQUAL(1,0);
-  }
+void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
+{
+	//this is too much required, since rounding errors can occur
+	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
+	//instead, test if the two number agree within some percent
+	hmc_float dev = (cpu - gpu) / cpu / 100.;
+	if(dev < 1e-10)
+		logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
+	else {
+		logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
+		BOOST_REQUIRE_EQUAL(1, 0);
+	}
 }
 
 void Dummyfield::runTestKernel()
