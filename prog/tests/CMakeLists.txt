@@ -150,6 +150,127 @@ target_link_libraries(m_eo_gpu
 	einhard)
 add_test(M_eo_gpu m_eo_gpu)
 
+add_executable(f_gauge_gpu
+	F_gauge_GPU.cpp
+	../host_geometry.cpp
+	../host_operations_complex.cpp
+	../host_operations_gaugefield.cpp
+	../host_operations_su3matrix.cpp
+	../host_operations_matrix.cpp
+	../gaugefield_hybrid.cpp
+	../inputparameters.cpp
+	../host_readgauge.cpp
+	../host_random.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../opencl_module_ran.cpp
+	../opencl_module_spinors.cpp
+	../opencl_module_fermions.cpp
+	../opencl_module_hmc.cpp
+	../host_use_timer.cpp
+	../host_writegaugefield.cpp
+	../exceptions.cpp
+	../logger.cpp)
+target_link_libraries(f_gauge_gpu
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	einhard)
+add_test(F_gauge_gpu f_gauge_gpu)
+
+add_executable(f_fermion_gpu
+	Force_fermion_GPU.cpp
+	../host_geometry.cpp
+	../host_operations_complex.cpp
+	../host_operations_gaugefield.cpp
+	../host_operations_su3matrix.cpp
+	../host_operations_matrix.cpp
+	../gaugefield_hybrid.cpp
+	../inputparameters.cpp
+	../host_readgauge.cpp
+	../host_random.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../opencl_module_ran.cpp
+	../opencl_module_spinors.cpp
+	../opencl_module_fermions.cpp
+	../opencl_module_hmc.cpp
+	../host_use_timer.cpp
+	../host_writegaugefield.cpp
+	../exceptions.cpp
+	../logger.cpp)
+target_link_libraries(f_fermion_gpu
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	einhard)
+add_test(F_fermion_gpu f_fermion_gpu)
+
+add_executable(f_update_gpu
+	Force_update_GPU.cpp
+	../host_geometry.cpp
+	../host_operations_complex.cpp
+	../host_operations_gaugefield.cpp
+	../host_operations_su3matrix.cpp
+	../host_operations_matrix.cpp
+	../gaugefield_hybrid.cpp
+	../inputparameters.cpp
+	../host_readgauge.cpp
+	../host_random.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../opencl_module_ran.cpp
+	../opencl_module_spinors.cpp
+	../opencl_module_fermions.cpp
+	../opencl_module_hmc.cpp
+	../host_use_timer.cpp
+	../host_writegaugefield.cpp
+	../exceptions.cpp
+	../logger.cpp)
+target_link_libraries(f_update_gpu
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	einhard)
+add_test(F_update_gpu f_update_gpu)
+
+add_executable(gf_update_gpu
+	GF_update_GPU.cpp
+	../host_geometry.cpp
+	../host_operations_complex.cpp
+	../host_operations_gaugefield.cpp
+	../host_operations_su3matrix.cpp
+	../host_operations_matrix.cpp
+	../gaugefield_hybrid.cpp
+	../inputparameters.cpp
+	../host_readgauge.cpp
+	../host_random.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../opencl_module_ran.cpp
+	../opencl_module_spinors.cpp
+	../opencl_module_fermions.cpp
+	../opencl_module_hmc.cpp
+	../host_use_timer.cpp
+	../host_writegaugefield.cpp
+	../exceptions.cpp
+	../logger.cpp)
+target_link_libraries(gf_update_gpu
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	einhard)
+add_test(Gf_update_gpu gf_update_gpu)
+
+
 # ignore some tests
 configure_file(CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
 
