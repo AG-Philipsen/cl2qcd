@@ -186,6 +186,7 @@ target_link_libraries(f_gauge_gpu
 	${LIBXML2_LIBRARIES}
 	${Boost_LIBRARIES}
 	klepsydra
+	crypto
 	einhard)
 add_test(F_gauge_gpu f_gauge_gpu)
 
@@ -216,6 +217,7 @@ target_link_libraries(f_fermion_gpu
 	${LIBXML2_LIBRARIES}
 	${Boost_LIBRARIES}
 	klepsydra
+	crypto
 	einhard)
 add_test(F_fermion_gpu f_fermion_gpu)
 
@@ -246,6 +248,7 @@ target_link_libraries(f_update_gpu
 	${LIBXML2_LIBRARIES}
 	${Boost_LIBRARIES}
 	klepsydra
+	crypto
 	einhard)
 add_test(F_update_gpu f_update_gpu)
 
@@ -276,6 +279,7 @@ target_link_libraries(gf_update_gpu
 	${LIBXML2_LIBRARIES}
 	${Boost_LIBRARIES}
 	klepsydra
+	crypto
 	einhard)
 add_test(Gf_update_gpu gf_update_gpu)
 
