@@ -55,7 +55,7 @@ su3vec su3vec_times_real(su3vec in, hmc_float factor)
 	return tmp;
 }
 
-su3vec su3vec_times_complex(su3vec in, hmc_complex factor)
+su3vec su3vec_times_complex(const su3vec in, const hmc_complex factor)
 {
 	su3vec tmp;
 	tmp.e0.re = in.e0.re * factor.re - in.e0.im * factor.im;
