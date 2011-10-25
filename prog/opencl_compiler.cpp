@@ -405,6 +405,7 @@ std::string TmpClKernel::generateMD5(cl_device_id device) const
 	//  * Compiler version (Should be given by platform and device driver version)
 	//  * Sources names
 	//  * Headers are sources, too
+	//  * Build options
 
 	/// @todo respect headers
 
@@ -489,6 +490,10 @@ std::string TmpClKernel::generateMD5(cl_device_id device) const
 		md5_process(&md5_state, filename, filename_len);
 	}
 
+	// build options
+	logger.trace() << "Adding " << build_options << " to MD5";
+	md5_process(&md5_state, build_options.c_str(), build_options.length());
+
 	char sig[16];
 	md5_finish(&md5_state, sig);
 
@@ -509,7 +514,7 @@ void TmpClKernel::dumpBinary(cl_program program, cl_device_id device_id, std::st
 	if( clerr ) {
 		throw Opencl_Error(clerr);
 	}
-	/// @todo hanyl binary_bytes == zero
+	/// @todo handle binary_bytes == zero
 	cl_device_id * devices = new cl_device_id[num_devices];
 	clerr = clGetProgramInfo(program, CL_PROGRAM_DEVICES, sizeof(cl_device_id) * num_devices, devices, NULL);
 	if( clerr ) {
