@@ -144,8 +144,7 @@ Matrixsu3 extend (const int random, Matrixsu2 src)
 			out.e20 = hmc_complex_zero;
 			out.e21 = hmc_complex_zero;
 			out.e22 = hmc_complex_one;
-			break;
-			//			return out;
+			return out;
 		case 2:
 			out.e00 = hmc_complex_one;
 			out.e01 = hmc_complex_zero;
@@ -156,8 +155,7 @@ Matrixsu3 extend (const int random, Matrixsu2 src)
 			out.e20 = hmc_complex_zero;
 			out.e21 = src.e10;
 			out.e22 = src.e11;
-			break;
-			//			return out;
+			return out;
 		case 3:
 			out.e00 = src.e00;
 			out.e01 = hmc_complex_zero;
@@ -168,12 +166,8 @@ Matrixsu3 extend (const int random, Matrixsu2 src)
 			out.e20 = src.e10;
 			out.e21 = hmc_complex_zero;
 			out.e22 = src.e11;
-			break;
-			//			return out;
+			return out;
 	}
-
-	return out;
-
 }
 
 //calculate polyakov-loop matrix at spatial site n in time-direction
@@ -455,6 +449,7 @@ Matrix3x3 calc_staple(__global ocl_s_gaugefield* field, const int pos, const int
 	return staple;
 }
 
+/*
 Matrix3x3 calc_staple_sigma (__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
 {
 	Matrixsu3 prod;
@@ -516,7 +511,8 @@ Matrix3x3 calc_staple_sigma (__global ocl_s_gaugefield* field, const int pos, co
 	}
 	return staple;
 }
-
+*/
+/*
 
 Matrix3x3 calc_staple_tau (__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
 {
@@ -576,6 +572,6 @@ Matrix3x3 calc_staple_tau (__global ocl_s_gaugefield* field, const int pos, cons
 		staple = add_matrix3x3 (staple, dummy );
 	return staple;
 }
-
+*/
 
 

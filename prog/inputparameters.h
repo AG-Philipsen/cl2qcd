@@ -67,8 +67,8 @@ public:
 	hmc_float get_chem_pot_im() const;
 	int get_nt() const;
 	int get_ns() const;
-	int get_xi() const;
-	hmc_float get_xi_0() const;
+	//	int get_xi() const;
+	//	hmc_float get_xi_0() const;
 	bool get_use_rec12() const;
 	bool get_use_gpu() const;
 	bool get_use_eo() const;
@@ -277,7 +277,7 @@ private:
 	//more specific ones
 	hmc_float kappa;
 	hmc_float beta;
-	int xi;
+	//	int xi;
 	hmc_float mu;
 	hmc_float mubar;
 	hmc_float csw;

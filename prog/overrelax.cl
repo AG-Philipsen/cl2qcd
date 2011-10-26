@@ -14,6 +14,7 @@ void inline perform_overrelaxing(__global ocl_s_gaugefield* gaugefield, const in
 	hmc_float k;
 	int order[3];
 
+/*
 	//Compute staple, comprises whole anisotropy
 	if (mu==0){
 	  staplematrix = calc_staple(gaugefield, pos, t, mu);
@@ -29,12 +30,13 @@ void inline perform_overrelaxing(__global ocl_s_gaugefield* gaugefield, const in
 	  staplematrix_tau = multiply_matrix3x3_by_real (staplematrix_tau, XI_0 );
 	  staplematrix = add_matrix3x3 ( staplematrix_sigma, staplematrix_tau );
 	}
+*/
 
 	random_1_2_3(order, &rnd[id]);
 	U = get_matrixsu3(gaugefield, pos, t, mu);
-	// Does not work with anisotropy
-	//	U = project_su3(U);
+	U = project_su3(U);
 
+	staplematrix = calc_staple(gaugefield, pos, t, mu);
 
 	Matrixsu3 extW;
 
