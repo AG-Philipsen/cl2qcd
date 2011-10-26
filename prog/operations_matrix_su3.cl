@@ -339,41 +339,43 @@ Matrixsu3 build_su3_from_ae_times_real(ae in, hmc_float eps)
 Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 {
 	//this is the method taken from tmqlcd. It is a cut-off series.
-	int i;
-	Matrixsu3 v, v2, vr;
-	hmc_float fac, r;
-	hmc_float a, b;
-	hmc_complex a0, a1, a2, a1p;
-
 	//original in tmlqcd: _make_su3(v,p);
 	//Here, the stepsize factor is multiplied in right away!!
 	//Also, a factor of 0.5 is taken out to fit the different trace-definition from tmqlcd
 	hmc_float halfeps = epsilon;// *F_1_2;
-	v = build_su3_from_ae_times_real(inn, halfeps);
+	const Matrixsu3 v = build_su3_from_ae_times_real(inn, halfeps);
 
 	// calculates v^2
-	v2 = multiply_matrixsu3(v, v);
-	a = 0.5 * (v2.e00.re + v2.e11.re + v2.e22.re);
+	const Matrixsu3 v2 = multiply_matrixsu3(v, v);
+	const hmc_float a = 0.5 * (v2.e00.re + v2.e11.re + v2.e22.re);
 	// 1/3 imaginary part of tr v*v2
-	b = 0.33333333333333333 *
-	    (v.e00.re * v2.e00.im + v.e00.im * v2.e00.re
-	     + v.e01.re * v2.e10.im + v.e01.im * v2.e10.re
-	     + v.e02.re * v2.e20.im + v.e02.im * v2.e20.re
-	     + v.e10.re * v2.e01.im + v.e10.im * v2.e01.re
-	     + v.e11.re * v2.e11.im + v.e11.im * v2.e11.re
-	     + v.e12.re * v2.e21.im + v.e12.im * v2.e21.re
-	     + v.e20.re * v2.e02.im + v.e20.im * v2.e02.re
-	     + v.e21.re * v2.e12.im + v.e21.im * v2.e12.re
-	     + v.e22.re * v2.e22.im + v.e22.im * v2.e22.re  );
+	const hmc_float b = 0.33333333333333333 *
+	                    (v.e00.re * v2.e00.im + v.e00.im * v2.e00.re
+	                     + v.e01.re * v2.e10.im + v.e01.im * v2.e10.re
+	                     + v.e02.re * v2.e20.im + v.e02.im * v2.e20.re
+	                     + v.e10.re * v2.e01.im + v.e10.im * v2.e01.re
+	                     + v.e11.re * v2.e11.im + v.e11.im * v2.e11.re
+	                     + v.e12.re * v2.e21.im + v.e12.im * v2.e21.re
+	                     + v.e20.re * v2.e02.im + v.e20.im * v2.e02.re
+	                     + v.e21.re * v2.e12.im + v.e21.im * v2.e12.re
+	                     + v.e22.re * v2.e22.im + v.e22.im * v2.e22.re  );
+	hmc_complex a0, a1, a2;
 	a0.re = 0.16059043836821615e-9;  //  1/13!
 	a0.im = 0.0;
 	a1.re = 0.11470745597729725e-10; //  1/14!
 	a1.im = 0.0;
 	a2.re = 0.76471637318198165e-12; //  1/15!
 	a2.im = 0.0;
-	fac = 0.20876756987868099e-8;    //  1/12!
-	r = 12.0;
-	for(i = 3; i <= 15; i++) {
+	hmc_float fac = 0.20876756987868099e-8;
+	uint r = 12;
+	/*
+	 * This pragma unroll is not a performance optimization but a required workaround for a bug in APP 2.5. It seems
+	 * without it the GPU performs a wrong number of loop iterations.
+	 * See http://code.compeng.uni-frankfurt.de/issues/211 and http://forums.amd.com/forum/messageview.cfm?catid=390&threadid=155815 .
+	 */
+#pragma unroll 13
+	for(size_t i = 0; i <= 13; ++i) {
+		hmc_complex a1p;
 		a1p.re = a0.re + a * a2.re;
 		a1p.im = a0.im + a * a2.im;
 		a0.re = fac - b * a2.im;
@@ -383,9 +385,11 @@ Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 		a1.re = a1p.re;
 		a1.im = a1p.im;
 		fac *= r;
-		r -= 1.0;
+		--r;
 	}
+
 	// vr = a0 + a1*v + a2*v2
+	Matrixsu3 vr;
 	vr.e00.re = a0.re + a1.re * v.e00.re - a1.im * v.e00.im + a2.re * v2.e00.re - a2.im * v2.e00.im;
 	vr.e00.im = a0.im + a1.re * v.e00.im + a1.im * v.e00.re + a2.re * v2.e00.im + a2.im * v2.e00.re;
 	vr.e01.re =         a1.re * v.e01.re - a1.im * v.e01.im + a2.re * v2.e01.re - a2.im * v2.e01.im;
