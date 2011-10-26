@@ -169,6 +169,14 @@ void Opencl_Module_Fermions::fill_buffers()
 	clerr = clEnqueueWriteBuffer(get_queue(), clmem_minusone, CL_TRUE, 0, complex_size, &minusone, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 
+	hmc_complex zero = hmc_complex_zero;
+	clerr = clEnqueueWriteBuffer(get_queue(), clmem_resid, CL_TRUE, 0, float_size, &zero, 0, 0, NULL);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
+	clerr = clEnqueueWriteBuffer(get_queue(), clmem_trueresid, CL_TRUE, 0, float_size, &zero, 0, 0, NULL);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
+
+
+
 	return;
 }
 
@@ -1055,6 +1063,11 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 				f(this, inout, clmem_rn_eoprec, gf);
 
 				saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
+
+				set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
+				get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+				//cout << "init residuum:\t" << resid << endl;
+
 				copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, get_parameters()->get_eo_sf_buf_size());
 
 				copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
@@ -1095,14 +1108,15 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 
 			if(resid < get_parameters()->get_solver_prec()) {
 				f(this, inout, clmem_aux_eoprec, gf);
-				saxpy_eoprec_device(clmem_aux_eoprec, clmem_source_even, clmem_one, clmem_aux_eoprec);
+				saxpy_eoprec_device(clmem_aux_eoprec, source, clmem_one, clmem_aux_eoprec);
+
 				set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid);
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
 				//cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
 				if(trueresid < get_parameters()->get_solver_prec())
 					return true;
 			} else {
-				//      cout << "residuum:\t" << resid << endl;
+			        //cout << "residuum:\t" << resid << endl;
 			}
 
 		}
