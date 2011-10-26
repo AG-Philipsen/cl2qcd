@@ -8,6 +8,9 @@ find_package(PythonInterp REQUIRED)
 # default random number seed
 configure_file( ${CMAKE_SOURCE_DIR}/rand_seeds rand_seeds COPYONLY )
 
+# default random number seed
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
+
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 add_executable(openclCompiler opencl_compiler.cpp ../opencl_compiler.cpp ../logger.cpp ../exceptions.cpp)
