@@ -1156,7 +1156,7 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 			//check if algorithm is stuck
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
-			if(check.re < get_parameters()->get_solver_prec() && check.im < get_parameters()->get_solver_prec()) {
+			if(abs(check.re) < get_parameters()->get_solver_prec() && abs(check.im) < get_parameters()->get_solver_prec()) {
 							return true;
 			}		
 
