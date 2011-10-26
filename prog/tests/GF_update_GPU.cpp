@@ -10,6 +10,12 @@ Random rnd(15);
 extern std::string const version;
 std::string const version = "0.1";
 
+#define CLX_CHECK_CLOSE(left, right, precision) \
+{ \
+  BOOST_CHECK_CLOSE(left.re, right.re, precision); \
+  BOOST_CHECK_CLOSE(left.im, right.im, precision); \
+}
+
 class Device : public Opencl_Module_Hmc {
 
 	cl_kernel testKernel;
@@ -43,7 +49,7 @@ public:
 	virtual void finalize_opencl();
 
 	hmc_float get_squarenorm(int which);
-	void verify(hmc_float, hmc_float);
+	void get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol);
 	void runTestKernel();
 
 private:
@@ -70,7 +76,10 @@ BOOST_AUTO_TEST_CASE( F_UPDATE )
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables_from_task(0, 0);
 
-	//  hmc_float cpu_res;
+	hmc_float plaq_cpu, tplaq_cpu, splaq_cpu;
+	hmc_complex pol_cpu;
+	cpu.get_gaugeobservables_from_task(0, &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
+
 	//u_res = cpu.get_squarenorm(1);
 	BOOST_MESSAGE("Tested CPU");
 
@@ -84,6 +93,11 @@ BOOST_AUTO_TEST_CASE( F_UPDATE )
 	dummy.runTestKernel();
 	logger.info() << "gaugeobservables: ";
 	dummy.print_gaugeobservables_from_task(0, 0);
+
+	hmc_float plaq_gpu, tplaq_gpu, splaq_gpu;
+	hmc_complex pol_gpu;
+	dummy.get_gaugeobservables_from_task(0, &plaq_gpu, &tplaq_gpu, &splaq_gpu, &pol_gpu);
+
 	//c_float gpu_res;
 	//u_res = dummy.get_squarenorm(1);
 	BOOST_MESSAGE("Tested GPU");
@@ -95,6 +109,13 @@ BOOST_AUTO_TEST_CASE( F_UPDATE )
 	logger.info() << "Output vectors:";
 	cpu.verify(cpu_res, gpu_res);
 	*/
+	BOOST_MESSAGE(cpu_back << ' ' << gpu_back);
+	BOOST_MESSAGE(plaq_cpu << ' ' << plaq_gpu);
+	BOOST_CHECK_CLOSE(cpu_back, gpu_back, 1e-8);
+	BOOST_CHECK_CLOSE(plaq_cpu, plaq_gpu, 1e-8);
+	BOOST_CHECK_CLOSE(tplaq_cpu, tplaq_gpu, 1e-8);
+	BOOST_CHECK_CLOSE(splaq_cpu, splaq_gpu, 1e-8);
+	CLX_CHECK_CLOSE(pol_cpu, pol_gpu, 1e-8);
 }
 
 void Dummyfield::init_tasks()
@@ -251,31 +272,24 @@ hmc_float Dummyfield::get_squarenorm(int which)
 	return result;
 }
 
-void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
-{
-	//this is too much required, since rounding errors can occur
-	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
-	//instead, test if the two number agree within some percent
-	hmc_float dev = (cpu - gpu) / cpu / 100.;
-	if(dev < 1e-10)
-		logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
-	else {
-		logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
-		logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
-		BOOST_REQUIRE_EQUAL(1, 0);
-	}
-}
-
 void Dummyfield::runTestKernel()
 {
 	int gs, ls;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = get_parameters()->get_spinorfieldsize();
 		ls = 64;
-	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
+	} else {
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
 	static_cast<Device*>(opencl_modules[0])->runTestKernel(in, *(get_clmem_gaugefield()), gs, ls);
+}
+
+
+void Dummyfield::get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol)
+{
+	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range", __FILE__, __LINE__);
+	cl_mem gf = *get_clmem_gaugefield();
+	opencl_modules[ntask]->gaugeobservables(gf, plaq, tplaq, splaq, pol);
 }
 
