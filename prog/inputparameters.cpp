@@ -160,8 +160,8 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("solver") != std::string::npos) solver_assign(&use_cg, line);
 			if(line.find("SOLVER") != std::string::npos) solver_assign(&use_cg, line);
 
-			if(line.find("solver-prec") != std::string::npos) val_assign(&solver_prec, line);
-			if(line.find("force-prec") != std::string::npos) val_assign(&force_prec, line);
+			if(line.find("sol_pr") != std::string::npos) val_assign(&solver_prec, line);
+			if(line.find("force_pr") != std::string::npos) val_assign(&force_prec, line);
 			
 			if(line.find("writefrequency") != std::string::npos) val_assign(&writefrequency, line);
 			if(line.find("savefrequency") != std::string::npos) val_assign(&savefrequency, line);
