@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
 		char* inputfile = argv[1];
 		inputparameters parameters;
 		parameters.readfile(inputfile);
-		parameters.print_info_inverter(argv[0]);
+		parameters.print_info_hmc(argv[0]);
 
 		ofstream ofile;
 		ofile.open("hmc.log");

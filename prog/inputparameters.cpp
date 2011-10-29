@@ -76,8 +76,10 @@ void inputparameters::set_defaults()
 	pointsource_t = 0;
 #ifdef _USEDOUBLEPREC_
 	solver_prec = 1e-23;
+	force_prec = 1e-12;
 #else
 	solver_prec = 1e-16;
+	force_prec = 1e-8;
 #endif
 	iter_refresh = 100;
 
@@ -158,6 +160,9 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("solver") != std::string::npos) solver_assign(&use_cg, line);
 			if(line.find("SOLVER") != std::string::npos) solver_assign(&use_cg, line);
 
+			if(line.find("solver-prec") != std::string::npos) val_assign(&solver_prec, line);
+			if(line.find("force-prec") != std::string::npos) val_assign(&force_prec, line);
+			
 			if(line.find("writefrequency") != std::string::npos) val_assign(&writefrequency, line);
 			if(line.find("savefrequency") != std::string::npos) val_assign(&savefrequency, line);
 			if(line.find("saveconfigs") != std::string::npos) bool_assign(&saveconfigs, line);
@@ -894,6 +899,12 @@ hmc_float inputparameters::get_solver_prec() const
 	return solver_prec;
 }
 
+hmc_float inputparameters::get_force_prec() const
+{
+	return force_prec;
+}
+
+
 cl_uint inputparameters::get_iter_refresh() const
 {
 	return iter_refresh;
@@ -1117,6 +1128,7 @@ void inputparameters::print_info_fermion() const
 		else
 			logger.info() << "## Use BiCGStab-SAVE for inversions";
 	}
+	logger.info() << "## precision for inversions = " << this->get_solver_prec();
 	if(this->get_use_eo() == true)
 		logger.info() << "## Use even-odd preconditioning" ;
 	if(this->get_use_eo() == false)
@@ -1181,7 +1193,7 @@ void inputparameters::print_info_fermion(ostream * os) const
 		else
 			*os << "## Use BiCGStab-SAVE for inversions" << endl;
 	}
-
+	*os << "## precision for inversions = " << this->get_solver_prec() << endl;
 	if(this->get_use_eo() == true)
 		*os  << "## Use even-odd preconditioning" << endl;
 	if(this->get_use_eo() == false)
@@ -1228,6 +1240,7 @@ void inputparameters::print_info_hmc(char* progname) const
 	if(this->get_num_timescales() == 2)
 		logger.info() << "## integrationsteps2  = " << this->get_integrationsteps2();
 	logger.info() << "## **********************************************************";
+	logger.info() << "## precision used HMC-inversions = " << this->get_force_prec();
 	return;
 }
 
@@ -1245,6 +1258,7 @@ void inputparameters::print_info_hmc(char* progname, ostream* os) const
 	if(this->get_num_timescales() == 2)
 		*os << "## integrationsteps2  = " << this->get_integrationsteps2() << '\n';
 	*os << "## **********************************************************\n";
+	*os << "## precision used HMC-inversions = " << this->get_force_prec() << '\n';
 	*os << std::endl;
 	return;
 }
