@@ -12,7 +12,7 @@ hmc_float sum_up_matrix3x3(Matrix3x3 in){
 }
 
 
-__kernel void staple_test_force(__global ocl_s_gaugefield * field, __global hmc_float * out)
+__kernel void staple_test(__global ocl_s_gaugefield * field, __global hmc_float * out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -20,13 +20,17 @@ __kernel void staple_test_force(__global ocl_s_gaugefield * field, __global hmc_
 	int loc_idx = get_local_id(0);
 	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
-	
+
 	for(int id_tmp = id; id_tmp < VOL4D; id_tmp += global_size) {
 		st_index pos = (id_tmp % 2 == 0) ? get_even_site(id_tmp / 2) : get_odd_site(id_tmp / 2);
 		Matrix3x3 V;
+		hmc_float res;
 		for(int mu = 0; mu < NDIM; mu++) {
-			global_link_pos = get_global_link_pos(mu, pos.space, pos.time);
-			V = calc_staple(field, n, t, mu);
-			hmc_float res = sum_up_matrix3x3(V);
+			V = calc_staple(field, pos.space, pos.time, mu);
+			res = sum_up_matrix3x3(V);
 		}
+		int global_pos = get_global_pos(pos.space, pos.time);
+		out[global_pos] = res;
+	}
+
 }

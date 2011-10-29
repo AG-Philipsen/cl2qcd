@@ -76,6 +76,8 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	//u_res = dummy.get_squarenorm(1);
 	BOOST_MESSAGE("Tested GPU");
 
+	logger.info()<<"cpu: " << cpu_back << "\tgpu: " << gpu_back;
+
 	BOOST_MESSAGE(cpu_back << ' ' << gpu_back);
 	BOOST_CHECK_CLOSE(cpu_back, gpu_back, 1e-8);
 }
@@ -105,11 +107,9 @@ void Dummyfield::fill_buffers()
 	int NUM_ELEMENTS = params.get_vol4d();
 
 	host_out = new hmc_float[NUM_ELEMENTS];
-
 	BOOST_REQUIRE(host_out);
 
 	size_t buf_size = NUM_ELEMENTS*sizeof(hmc_float);
-
 	out = clCreateBuffer(context, CL_MEM_READ_ONLY , buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	
@@ -118,14 +118,14 @@ void Dummyfield::fill_buffers()
 void Device::fill_kernels()
 {
 	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
-// 	Opencl_Module::fill_kernels();
+ 	Opencl_Module::fill_kernels();
 
 	//to this end, one has to set the needed files by hand
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "opencl_geometry.cl" << "opencl_operations_complex.cl"
+  	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "opencl_geometry.cl" << "opencl_operations_complex.cl"
 	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 	
-	testKernel = createKernel("staple_test.cl") << basic_opencl_code  << "staple_test.cl";
-
+	testKernel = createKernel("staple_test") << basic_opencl_code  << "/tests/staple_test.cl";
+  
 }
 
 void Dummyfield::clear_buffers()
@@ -159,18 +159,18 @@ hmc_float Dummyfield::runTestKernel()
 	hmc_float res; 
 	int gs, ls;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = get_parameters()->get_spinorfieldsize();
+		gs = get_parameters()->get_vol4d();
 		ls = 64;
 	} else {
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(in, *(get_clmem_gaugefield()), gs, ls);
+	static_cast<Device*>(opencl_modules[0])->runTestKernel(*(get_clmem_gaugefield()), out, gs, ls);
 	
 	int NUM_ELEMENTS = params.get_vol4d();
 	//copy the result of the kernel to host
 	size_t size = NUM_ELEMENTS*sizeof(hmc_float);
-	cl_int clerr = clEnqueueReadBuffer(get_queue(), out, CL_TRUE, 0, size, host_out, 0, NULL, NULL);
+	cl_int clerr = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), out, CL_TRUE, 0, size, host_out, 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueReadBuffer", __FILE__, __LINE__);
 	
 	//sum up all elements in the result buffer
