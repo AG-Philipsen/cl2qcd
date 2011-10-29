@@ -639,7 +639,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 	enqueueKernel(M_tm_sitediagonal_minus , gs2, ls2);
 }
 
-bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf)
+bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	int debug = 0;
 	int old = 1;
@@ -773,7 +773,7 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 //    //reset value of alpha
 //    set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 //    //check if |s|^2 is too small
-//    if(s_norm.re < get_parameters()->get_solver_prec()){
+//    if(s_norm.re < prec){
 //      set_complex_to_product_device(clmem_minusone, clmem_alpha, clmem_alpha);
 //      saxpy_device(clmem_p, inout, clmem_alpha, inout, localsize, globalsize);
 //
@@ -781,7 +781,7 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 //      saxpy_device(clmem_aux, source, clmem_one, clmem_aux, localsize, globalsize);
 //      set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, localsize, globalsize);
 //      get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << get_parameters()->get_solver_prec() << endl;
+//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << prec << endl;
 //
 //      cout << "|s|^2 is too small to continue..." << endl;
 //
@@ -844,14 +844,14 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 
 //    cout << "resid at iter " << iter << " is: " << resid << endl;
 
-		if(resid < get_parameters()->get_solver_prec()) {
+		if(resid < prec) {
 			f(this, inout, clmem_aux, gf);
 			saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
 			set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
 			get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
-//      cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << get_parameters()->get_solver_prec() << endl;
-//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << get_parameters()->get_solver_prec() << endl;
-			if(trueresid < get_parameters()->get_solver_prec())
+//      cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << prec << endl;
+//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << prec << endl;
+			if(trueresid < prec)
 				return true;
 			else {
 //        cout << "trueresiduum not small enough" <<endl;
@@ -863,7 +863,7 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 //        //reset value of alpha
 //        set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 //        //check if |s|^2 is too small
-//        if(s_norm.re < get_parameters()->get_solver_prec()){
+//        if(s_norm.re < prec){
 //          cout << "|s|^2 is too small to continue..." << endl;
 // //           return;
 //        }
@@ -937,7 +937,7 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 
 			//    cout << "resid at iter " << iter << " is: " << resid << endl;
 
-			if(resid < get_parameters()->get_solver_prec()) {
+			if(resid < prec) {
 							//aux = A inout
 				f(this, inout, clmem_aux, gf);
 				//aux = -aux + source
@@ -946,9 +946,9 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 				set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
 				hmc_float trueresid;
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
-				//    cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << get_parameters()->get_solver_prec() << endl;
-				//	      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << get_parameters()->get_solver_prec() << endl;
-				if(trueresid < get_parameters()->get_solver_prec())
+				//    cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << prec << endl;
+				//	      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << prec << endl;
+				if(trueresid < prec)
 					return true;
 				else {
 	//        cout << "trueresiduum not small enough" <<endl;
@@ -960,7 +960,7 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 	//        //reset value of alpha
 	//        set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 	//        //check if |s|^2 is too small
-	//        if(s_norm.re < get_parameters()->get_solver_prec()){
+	//        if(s_norm.re < prec){
 	//          cout << "|s|^2 is too small to continue..." << endl;
 	// //           return;
 	//        }
@@ -990,7 +990,7 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 			hmc_float resid;
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-			if(resid < get_parameters()->get_solver_prec()) {
+			if(resid < prec) {
 							return true;
 			}
 			//v = A*p
@@ -1020,9 +1020,9 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			//if rho is too small the algorithm will get stuck and will never converge!!
-			if(abs(check.re) < get_parameters()->get_solver_prec() && abs(check.im) < get_parameters()->get_solver_prec() ) {
-			                                 return false;
-			}		
+			if(abs(check.re) < prec && abs(check.im) < prec ) {
+				return false;
+			}
 
 			//tmp1 = rho_next/rho = (rhat, rn)/..
 			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
@@ -1045,7 +1045,7 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 	}
 }
 
-bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf)
+bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
@@ -1106,14 +1106,14 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-			if(resid < get_parameters()->get_solver_prec()) {
+			if(resid < prec) {
 				f(this, inout, clmem_aux_eoprec, gf);
 				saxpy_eoprec_device(clmem_aux_eoprec, source, clmem_one, clmem_aux_eoprec);
 
 				set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid);
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
 				//cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
-				if(trueresid < get_parameters()->get_solver_prec())
+				if(trueresid < prec)
 					return true;
 			} else {
 			        //cout << "residuum:\t" << resid << endl;
@@ -1141,7 +1141,7 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
 			hmc_float resid;
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-			if(resid < get_parameters()->get_solver_prec()) {
+			if(resid < prec) {
 							return true;
 			}
 			//v = A*p
@@ -1170,7 +1170,7 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 			//check if algorithm is stuck
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
-			if(abs(check.re) < get_parameters()->get_solver_prec() && abs(check.im) < get_parameters()->get_solver_prec()) {
+			if(abs(check.re) < prec && abs(check.im) < prec) {
 							return true;
 			}		
 
@@ -1194,7 +1194,7 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 	}
 }
 
-bool Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf)
+bool Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	//CP: "old" version, including debugging infos
 	/*
@@ -1242,7 +1242,7 @@ bool Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem sou
 		get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 				cout << "resid: " << resid << endl;
 
-		if(resid < get_parameters()->get_solver_prec()) {
+		if(resid < prec) {
 			//???
 			//copy_buffer_on_device(clmem_rhat, clmem_inout, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
 
@@ -1313,7 +1313,7 @@ bool Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem sou
 		///@todo perhaps one should be able to print this somehow
 		//cout << "resid: " << resid << endl;
 
-		if(resid < get_parameters()->get_solver_prec())
+		if(resid < prec)
 			return true;
 		
 		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
@@ -1327,7 +1327,7 @@ bool Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem sou
 	return false;
 }
 
-bool Opencl_Module_Fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf)
+bool Opencl_Module_Fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
   //this corresponds to the above function
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
@@ -1370,7 +1370,7 @@ bool Opencl_Module_Fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_
 		///@todo perhaps one should be able to print this somehow
 		cout << "resid: " << resid << endl;
 
-		if(resid < get_parameters()->get_solver_prec())
+		if(resid < prec)
 			return true;
 		
 		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
@@ -1428,9 +1428,9 @@ void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem
 		logger.debug() << "start eoprec-inversion";
 		//even solution
 		if(get_parameters()->get_use_cg() == true)
-			converged = cg_eoprec(f, clmem_inout_eoprec, clmem_source_even, gf);
+			converged = cg_eoprec(f, clmem_inout_eoprec, clmem_source_even, gf, get_parameters()->get_solver_prec());
 		else
-			converged = bicgstab_eoprec(f, this->get_clmem_inout_eoprec(), clmem_source_even, gf);
+			converged = bicgstab_eoprec(f, this->get_clmem_inout_eoprec(), clmem_source_even, gf, get_parameters()->get_solver_prec());
 
 		//odd solution
 		/** The odd solution is obtained from the even one according to:
@@ -1457,9 +1457,9 @@ void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem
 		this->set_spinorfield_cold_device(inout);
 
 		if(get_parameters()->get_use_cg() == true)
-			converged = cg(f, inout, source, gf);
+			converged = cg(f, inout, source, gf, get_parameters()->get_solver_prec());
 		else
-			converged = bicgstab(f, inout, source, gf);
+			converged = bicgstab(f, inout, source, gf, get_parameters()->get_solver_prec());
 	}
 	clFinish(get_queue());
 	(*solvertimer).add();
