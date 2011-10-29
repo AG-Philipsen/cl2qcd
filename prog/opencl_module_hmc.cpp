@@ -381,7 +381,7 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//  which then has to be the source of the inversion
 	if(get_parameters()->get_use_eo() == true){
-		Opencl_Module_Fermions::Qplus_eoprec(clmem_phi_inv_eoprec, clmem_phi_eoprec , *get_gaugefield());
+	  Opencl_Module_Fermions::Qplus_eoprec (clmem_phi_inv_eoprec, clmem_phi_eoprec , *get_gaugefield());
 		if(logger.beDebug()) print_info_inv_field(clmem_phi_eoprec, true, "\tinit field after update ");
 	}
 	else{
@@ -457,6 +457,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			gamma5_eoprec_device(get_clmem_inout_eoprec());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
+			if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eoprec(), true, "\tsource before inversion ");
 			converged = Opencl_Module_Fermions::bicgstab_eoprec(Qplus_eoprec_call, this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u);
 			if(converged == false) logger.debug() << "solver did not solve";
 			else logger.debug() << "solver solved" ;
@@ -483,6 +484,8 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
 			Opencl_Module_Fermions::bicgstab_eoprec(Qminus_eoprec_call, get_clmem_inout_eoprec(), get_clmem_source_even(), clmem_new_u);
+			if(converged == false) logger.debug() << "solver did not solve";
+			else logger.debug() << "solver solved" ;
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
 		}
 		/**
@@ -499,11 +502,11 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		//therefore, clmem_tmp_eoprec_1 is used as intermediate state. The result is saved in clmem_inout, since
 		//	this is used as a default in the force-function.
 		if(get_parameters()->get_fermact() == WILSON){
-			dslash_eoprec_device(get_clmem_inout(), get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
+			dslash_eoprec_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
 			sax_eoprec_device(get_clmem_tmp_eoprec_1(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
 		}
 		else if(get_parameters()->get_fermact() == TWISTEDMASS){
-			dslash_eoprec_device(get_clmem_inout(), get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
+			dslash_eoprec_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
 			M_tm_inverse_sitediagonal_minus_device(get_clmem_tmp_eoprec_1(), get_clmem_tmp_eoprec_2());
 			sax_eoprec_device(get_clmem_tmp_eoprec_2(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
 		}
@@ -786,7 +789,7 @@ void Opencl_Module_Hmc::gauge_force_device()
 void Opencl_Module_Hmc::fermion_force_device()
 {
 	//fermion_force(field, Y, X, out);
-	cl_mem tmp = get_clmem_inout();
+  cl_mem tmp = get_clmem_inout();
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -805,6 +808,19 @@ void Opencl_Module_Hmc::fermion_force_device()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( fermion_force , gs2, ls2);
+
+	if(logger.beDebug()){
+	  cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
+	  hmc_float resid;
+	  this->set_float_to_gaugemomentum_squarenorm_device(clmem_force, force_tmp);
+	  get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
+	  logger.debug() <<  "\tforce:\t" << resid;
+	  int clerr = clReleaseMemObject(force_tmp);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+	  if(resid != resid){
+	    throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
+	  }
+	}
 }
 
 void Opencl_Module_Hmc::fermion_force_eoprec_device(cl_mem Y, cl_mem X, int evenodd)
@@ -831,6 +847,8 @@ void Opencl_Module_Hmc::fermion_force_eoprec_device(cl_mem Y, cl_mem X, int even
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	
 	enqueueKernel( fermion_force_eoprec , gs2, ls2);
+
+
 }
 
 void Opencl_Module_Hmc::stout_smeared_fermion_force_device()

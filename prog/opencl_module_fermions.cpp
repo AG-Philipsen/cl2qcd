@@ -935,7 +935,7 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 			hmc_float resid;
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-	//    cout << "resid at iter " << iter << " is: " << resid << endl;
+			//    cout << "resid at iter " << iter << " is: " << resid << endl;
 
 			if(resid < get_parameters()->get_solver_prec()) {
 							//aux = A inout
@@ -946,8 +946,8 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 				set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
 				hmc_float trueresid;
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
-	//      cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << get_parameters()->get_solver_prec() << endl;
-	//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << get_parameters()->get_solver_prec() << endl;
+				//    cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << get_parameters()->get_solver_prec() << endl;
+				//	      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << get_parameters()->get_solver_prec() << endl;
 				if(trueresid < get_parameters()->get_solver_prec())
 					return true;
 				else {
@@ -1064,8 +1064,8 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 
 				saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
 
-				set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
-				get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+				//set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
+				//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 				//cout << "init residuum:\t" << resid << endl;
 
 				copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, get_parameters()->get_eo_sf_buf_size());
