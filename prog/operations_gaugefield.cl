@@ -358,92 +358,75 @@ Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, cons
 	return out;
 }
 
+//this calculates the staple in nu direction given a direction mu of the link
+//     under consideration:
+//     s = U_nu(x + mu) * Udagger_mu(x + nu) * Udagger_nu(x) + Udagger_nu(x+mu - nu) * Udagger_mu(x-nu) * U_nu(x - nu)
+Matrix3x3 local_staple(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
+{
+	Matrix3x3 out;
+	Matrixsu3 tmp;
+	int4 pos;
+
+	//first staple
+	//calculate the coordinates for the matrices. this is the same as with	the plaquette
+	if(mu == 0) {
+		pos.x = (t + 1) % NTIME;
+		pos.y = n;
+	} else {
+	        pos.x = t;
+		pos.y = get_neighbor(n, mu);
+	}
+	if(nu == 0) {
+		pos.z = (t + 1) % NTIME;
+		pos.w = n;
+	} else {
+		pos.z = t;
+		pos.w = get_neighbor(n, nu);
+	}
+	tmp = multiply_matrixsu3_dagger(get_matrixsu3(field, pos.y, pos.x, nu), get_matrixsu3(field, pos.w, pos.z, mu) );
+	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, n, t, nu) );
+	
+	out = matrix_su3to3x3(tmp);
+
+	//second staple
+	if(mu == 0) {
+		 pos.x = (t + 1) % NTIME;
+		 pos.y = get_lower_neighbor(n, nu);
+		 pos.z = t;
+		 pos.w = get_lower_neighbor(n, nu);
+	} else if (nu == 0) {
+	  	 pos.x = (t - 1 + NTIME) % NTIME;
+		 pos.y = get_neighbor(n, mu);
+		 pos.z = (t-1+NTIME)% NTIME;
+		 pos.w = n;
+	} else {
+		 pos.x = t;
+	       	 pos.y = get_neighbor(get_lower_neighbor(n, nu), mu);
+		 pos.z = t;
+		 pos.w = get_lower_neighbor(n, nu);
+	}
+
+	//@TODO for this one can write a new function that calculates Udagger*Vdagger
+	tmp = adjoint_matrixsu3(get_matrixsu3(field, pos.y, pos.x, nu));
+	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos.w, pos.z, mu) );
+	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.w, pos.z, nu) );
+
+	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
+
+	return out;
+}
+
+
 Matrix3x3 calc_staple(__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
 {
-	Matrixsu3 prod;
-	Matrixsu3 prod2;
-	Matrixsu3 tmp;
 	Matrix3x3 staple;
-	int nu, newpos, newt;
+	int nu;
 
 	staple = zero_matrix3x3();
-
 	//iterate through the three directions other than mu
 	for(int i = 1; i < NDIM; i++) {
-
-		prod = zero_matrixsu3();
-
 		nu = (mu_in + i) % NDIM;
-
-		//first staple
-		//u_nu(x+mu)
-		if(mu_in == 0) {
-			newt = (t + 1) % NTIME;
-			tmp = get_matrixsu3(field, pos, newt, nu);
-
-		} else {
-			tmp = get_matrixsu3(field, get_neighbor(pos, mu_in), t, nu);
-		}
-		prod = copy_matrixsu3(tmp);
-
-		//adjoint(u_mu(x+nu))
-		if(nu == 0) {
-			newt = (t + 1) % NTIME;
-			tmp = get_matrixsu3(field, pos, newt, mu_in);
-		} else {
-			tmp = get_matrixsu3(field, get_neighbor(pos, nu), t, mu_in);
-		}
-		tmp = adjoint_matrixsu3(tmp);
-
-		prod = multiply_matrixsu3(prod, tmp);
-
-		//adjoint(u_nu(x))
-		tmp = get_matrixsu3(field, pos, t, nu);
-		tmp = adjoint_matrixsu3(tmp);
-		prod = multiply_matrixsu3 (prod, tmp);
-
-		//second staple
-		//adjoint (u_nu(x+mu-nu))
-		//newpos is "pos-nu" (spatial)
-		newpos = get_lower_neighbor(pos, nu);
-		if(mu_in == 0) {
-			newt = (t + 1) % NTIME;
-			tmp = get_matrixsu3(field, newpos, newt, nu);
-		} else if (nu == 0) {
-			newt = (t - 1 + NTIME) % NTIME;
-			tmp = get_matrixsu3(field, get_neighbor(pos, mu_in), newt, nu);
-		} else {
-			tmp = get_matrixsu3(field, get_neighbor(newpos, mu_in), t, nu);
-		}
-		prod2 = adjoint_matrixsu3(tmp);
-		//adjoint(u_mu(x-nu))
-		if(mu_in == 0) {
-			tmp = get_matrixsu3(field, newpos, t, mu_in);
-		} else if (nu == 0) {
-			newt = (t - 1 + NTIME) % NTIME;
-			tmp = get_matrixsu3(field, pos, newt, mu_in);
-		} else {
-			tmp = get_matrixsu3(field, newpos, t, mu_in);
-		}
-		tmp = adjoint_matrixsu3(tmp);
-		prod2 = multiply_matrixsu3(prod2, tmp);
-		//u_nu(x-nu)
-		if(mu_in == 0) {
-			tmp = get_matrixsu3(field, newpos, t, nu);
-		} else if (nu == 0) {
-			newt = (t - 1 + NTIME) % NTIME;
-			tmp = get_matrixsu3(field, pos, newt, nu);
-		} else {
-			tmp = get_matrixsu3(field, newpos, t, nu);
-		}
-		prod2 = multiply_matrixsu3(prod2, tmp);
-
-
-		Matrix3x3 dummy;
-		dummy = matrix_su3to3x3 (prod);
-		staple = add_matrix3x3 (staple, dummy );
-		dummy = matrix_su3to3x3 (prod2);
-		staple = add_matrix3x3 (staple, dummy );
+		staple = add_matrix3x3(staple,  local_staple(field, pos, t, mu_in, nu ));
 	}
 
 	return staple;
