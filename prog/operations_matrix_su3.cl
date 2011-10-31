@@ -374,7 +374,7 @@ Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 	 * See http://code.compeng.uni-frankfurt.de/issues/211 and http://forums.amd.com/forum/messageview.cfm?catid=390&threadid=155815 .
 	 */
 #pragma unroll 13
-	for(size_t i = 0; i <= 13; ++i) {
+	for(size_t i = 0; i < 13; ++i) {
 		hmc_complex a1p;
 		a1p.re = a0.re + a * a2.re;
 		a1p.im = a0.im + a * a2.im;
