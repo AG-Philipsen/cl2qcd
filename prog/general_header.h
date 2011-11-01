@@ -90,7 +90,8 @@ void general_time_output(usetimer * total, usetimer * init_timer, usetimer * per
 	ofile.open("general_time_output");
 	if(ofile.is_open()) {
 		ofile  << "## *******************************************************************"<< endl;
-		ofile  << "## General Times [mus]:\tTotal:\tInitialization\tPerformace\tHost-Plaq\tHost-Pol" << endl;
+		ofile  << "## General Times [mus]:" << endl;
+		ofile << "## Total\tInit\tPerformance\tHost-Plaq\tHost-Pol" << endl;
 		ofile  << totaltime << "\t" << init_time << '\t'<< perform_time << '\t'<< plaq_time << '\t' << poly_time << endl;
 		ofile.close();
 	} else {
