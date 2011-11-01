@@ -329,6 +329,20 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( generate_gaussian_gaugemomenta , gs2, ls2);
+
+	if(logger.beDebug()){
+	  cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
+	  hmc_float resid;
+	  this->set_float_to_gaugemomentum_squarenorm_device(clmem_p, force_tmp);
+	  get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
+	  logger.debug() <<  "\tgaussian gaugemomenta:\t" << resid;
+	  int clerr = clReleaseMemObject(force_tmp);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+	  if(resid != resid){
+	    throw Print_Error_Message("calculation of gaussian gm gave nan! Aborting...", __FILE__, __LINE__);
+	  }
+	}
+
 }
 
 void Opencl_Module_Hmc::generate_spinorfield_gaussian(){
@@ -356,6 +370,20 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_device()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(generate_gaussian_spinorfield  , gs2, ls2);
+
+	if(logger.beDebug()){
+	  cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
+	  hmc_float resid;
+	  this->set_float_to_global_squarenorm_device(clmem_phi_inv, force_tmp);
+	  get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
+	  logger.debug() <<  "\tinit gaussian spinorfield:\t" << resid;
+	  int clerr = clReleaseMemObject(force_tmp);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+	  if(resid != resid){
+	    throw Print_Error_Message("calculation of gaussian spinorfield gave nan! Aborting...", __FILE__, __LINE__);
+	  }
+	}
+
 }
 
 void Opencl_Module_Hmc::generate_gaussian_spinorfield_eoprec_device()
@@ -373,6 +401,20 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_eoprec_device()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(generate_gaussian_spinorfield_eoprec  , gs2, ls2);
+
+	if(logger.beDebug()){
+	  cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
+	  hmc_float resid;
+	  this->set_float_to_global_squarenorm_eoprec_device(clmem_phi_inv, force_tmp);
+	  get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
+	  logger.debug() <<  "\tinit gaussian spinorfield:\t" << resid;
+	  int clerr = clReleaseMemObject(force_tmp);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+	  if(resid != resid){
+	    throw Print_Error_Message("calculation of gaussian spinorfield gave nan! Aborting...", __FILE__, __LINE__);
+	  }
+	}
+
 }
 
 void Opencl_Module_Hmc::md_update_spinorfield()
