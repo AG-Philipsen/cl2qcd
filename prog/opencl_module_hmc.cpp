@@ -483,7 +483,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			set_eoprec_spinorfield_cold_device(get_clmem_inout_eoprec());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
-			Opencl_Module_Fermions::bicgstab_eoprec(Qminus_eoprec_call, get_clmem_inout_eoprec(), get_clmem_source_even(), clmem_new_u, get_parameters()->get_force_prec());
+			converged = Opencl_Module_Fermions::bicgstab_eoprec(Qminus_eoprec_call, get_clmem_inout_eoprec(), get_clmem_source_even(), clmem_new_u, get_parameters()->get_force_prec());
 			if(converged == false) logger.debug() << "solver did not solve";
 			else logger.debug() << "solver solved" ;
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
@@ -547,7 +547,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			Opencl_Module_Fermions::cg(QplusQminus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_force_prec());
+			converged = Opencl_Module_Fermions::cg(QplusQminus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_force_prec());
 			if(converged == false) logger.debug() << "solver did not solve";
 			else logger.debug() << "solver solved" ;
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
@@ -581,7 +581,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			Opencl_Module_Fermions::bicgstab(Qplus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_force_prec());
+			converged = Opencl_Module_Fermions::bicgstab(Qplus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_force_prec());
 			if(converged == false) logger.debug() << "solver did not solve";
 			else logger.debug() << "solver solved" ;
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
@@ -606,7 +606,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			set_spinorfield_cold_device(get_clmem_inout());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field before inversion ");
-			Opencl_Module_Fermions::solver(Qminus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, solvertimer);
+			converged = Opencl_Module_Fermions::bicgstab(Qminus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, solvertimer);
 			if(converged == false) logger.debug() << "solver did not solve";
 			else logger.debug() << "solver solved" ;
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
@@ -676,7 +676,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion(){
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			Opencl_Module_Fermions::cg(QplusQminus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_force_prec());
+			converged = Opencl_Module_Fermions::cg(QplusQminus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_force_prec());
 			if(converged == false) logger.debug() << "solver did not solve";
 			else logger.debug() << "solver solved" ;
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
@@ -694,7 +694,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion(){
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			Opencl_Module_Fermions::bicgstab(Qplus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_force_prec());
+			converged = Opencl_Module_Fermions::bicgstab(Qplus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_force_prec());
 			if(converged == false) logger.debug() << "solver did not solve";
 			else logger.debug() << "solver solved" ;
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");

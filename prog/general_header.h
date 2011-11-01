@@ -85,9 +85,18 @@ void general_time_output(usetimer * total, usetimer * init_timer, usetimer * per
 	logger.info() << "## Poly.:\t" << setfill(' ') << setw(12) << poly_time << '\t' << setw(12) << poly_avgtime << '\t'<< fixed << setw(5) << setprecision(1) << percent(poly_time, totaltime);
 	logger.info() << "## *******************************************************************";
 
-	logger.info() << "## No output of times to file implemented yet...";
-	/** @todo output to file is not implemented */
-	//See older files for example code
+	logger.info() << "## writing general times to file: \"general_time_output\"";
+	ofstream ofile;
+	ofile.open("general_time_output");
+	if(ofile.is_open()) {
+		ofile  << "## *******************************************************************"<< endl;
+		ofile  << "## General Times [mus]:\tTotal:\tInitialization\tPerformace\tHost-Plaq\tHost-Pol" << endl;
+		ofile  << totaltime << "\t" << init_time << '\t'<< perform_time << '\t'<< plaq_time << '\t' << poly_time << endl;
+		ofile.close();
+	} else {
+		logger.warn() << "Could not open output file for general time output.";
+	}
+
 
 	return;
 }
