@@ -10,6 +10,11 @@ __kernel void generate_gaussian_gaugemomenta(__global ae * out, __global hmc_ocl
 
 	hmc_complex tmp;
 
+#ifdef _SAME_RND_NUMBERS_
+       if(id>0) return;
+       global_size = 1;
+#endif
+
 	for(int id_tmp = id; id_tmp < GAUGEMOMENTASIZE; id_tmp += global_size) {
 		//CP: there are 8 elements in ae
 		tmp = gaussianNormalPair(&rnd[id]);

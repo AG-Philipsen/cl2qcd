@@ -148,6 +148,8 @@ public:
 	int get_num_timescales() const;
 	hmc_float get_lambda1() const;
 	hmc_float get_lambda2() const;
+
+	bool get_use_same_rnd_numbers() const;
 #ifdef _PROFILING_
 	int get_mat_size() const;
 	int get_float_size() const;
@@ -331,6 +333,9 @@ private:
 	void val_assign(std::string * out, std::string line);
 	void bool_assign(bool * out, std::string line);
 	void solver_assign(bool * out, std::string line);
+
+	//this can bee used to generate rnd-fields with only one thread
+	bool use_same_rnd_numbers;
 };
 
 #endif /* _INPUTPARAMETERSH_ */

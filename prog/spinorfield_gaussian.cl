@@ -12,6 +12,11 @@ __kernel void generate_gaussian_spinorfield(__global spinorfield * in, __global 
 	hmc_float sigma = 0.5;
 	spinor out_tmp;
 
+#ifdef _SAME_RND_NUMBERS_
+       if(id>0) return;
+       global_size = 1;
+#endif
+
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 		/** @todo this must be done more efficient */
 		st_index pos = (id_tmp < VOLSPACE * NTIME / 2) ? get_even_site(id_tmp) : get_odd_site(id_tmp - (VOLSPACE * NTIME / 2));

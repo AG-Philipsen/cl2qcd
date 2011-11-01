@@ -97,6 +97,8 @@ void inputparameters::set_defaults()
 	//direction for the correlator
 	corr_dir = 3;
 
+	use_same_rnd_numbers = false;
+
 	return;
 }
 
@@ -234,6 +236,8 @@ void inputparameters::readfile(const char* ifn)
 
 			if(line.find("corr_dir") != std::string::npos) val_assign(&corr_dir, line);
 			if(line.find("correlator_direction") != std::string::npos) val_assign(&corr_dir, line);
+
+			if(line.find("use_same_rnd_numbers") != std::string::npos) bool_assign(&use_same_rnd_numbers, line);
 
 		}
 
@@ -871,6 +875,11 @@ int inputparameters::get_source_pos_spatial() const
 int inputparameters::get_source_pos_temporal() const
 {
 	return pointsource_t;
+}
+
+bool inputparameters::get_use_same_rnd_numbers() const
+{
+	return use_same_rnd_numbers;
 }
 
 #ifdef _PROFILING_

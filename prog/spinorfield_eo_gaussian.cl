@@ -12,6 +12,11 @@ __kernel void generate_gaussian_spinorfield_eoprec(__global spinorfield * in, __
 	hmc_float sigma = 0.5;
 	spinor out_tmp;
 
+#ifdef _SAME_RND_NUMBERS_
+       if(id>0) return;
+       global_size = 1;
+#endif
+
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 
 		//CP: there are 12 complex elements in the spinor
