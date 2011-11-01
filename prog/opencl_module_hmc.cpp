@@ -405,7 +405,7 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_eoprec_device()
 	if(logger.beDebug()){
 	  cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
 	  hmc_float resid;
-	  this->set_float_to_global_squarenorm_eoprec_device(clmem_phi_inv, force_tmp);
+	  this->set_float_to_global_squarenorm_eoprec_device(clmem_phi_inv_eoprec, force_tmp);
 	  get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
 	  logger.debug() <<  "\tinit gaussian spinorfield:\t" << resid;
 	  int clerr = clReleaseMemObject(force_tmp);
