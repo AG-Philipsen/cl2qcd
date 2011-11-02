@@ -240,6 +240,7 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("correlator_direction") != std::string::npos) val_assign(&corr_dir, line);
 
 			if(line.find("use_same_rnd_numbers") != std::string::npos) bool_assign(&use_same_rnd_numbers, line);
+			if(line.find("taketimeofsol") != std::string::npos) {cout << line << endl;bool_assign(&profile_solver, line);}
 
 		}
 
