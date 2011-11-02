@@ -1,17 +1,3 @@
-hmc_float ae_squarenorm(ae in)
-{
-	hmc_float result =
-	  (in).e0 * (in).e0 +
-	  (in).e1 * (in).e1 +
-	  (in).e2 * (in).e2 +
-	  (in).e3 * (in).e3 +
-	  (in).e4 * (in).e4 +
-	  (in).e5 * (in).e5 +
-	  (in).e6 * (in).e6 +
-	  (in).e7 * (in).e7;
-	return result;
-}
-
 /** @todo add args for reduction... */
 __kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out)
 {
