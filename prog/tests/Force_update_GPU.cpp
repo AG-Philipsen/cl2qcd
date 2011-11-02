@@ -33,7 +33,11 @@ class Dummyfield : public Gaugefield_hybrid {
 public:
 	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
 		std::stringstream tmp;
+#ifdef _USEDOUBLEPRECISION_
 		tmp << SOURCEDIR << "/tests/f_gauge_input_1";
+#else
+		tmp << SOURCEDIR << "/tests/f_gauge_input_1_single";
+#endif
 		params.readfile(tmp.str().c_str());
 
 		init(1, device_type, &params);
@@ -44,6 +48,7 @@ public:
 
 	hmc_float get_squarenorm(int which);
 	void verify(hmc_float, hmc_float);	
+	void verify_result(hmc_float, hmc_float);	
 	void runTestKernel();
 
 private:
@@ -84,7 +89,7 @@ BOOST_AUTO_TEST_CASE( F_UPDATE ){
 	logger.info() << "|out|^2:";
 	hmc_float gpu_back2 = dummy.get_squarenorm(1);
 	dummy.runTestKernel();
-	logger.info() << "|out - 0.12*in |^2:";
+	logger.info() << "|out + 0.12*in |^2:";
 	hmc_float gpu_res;
 	gpu_res = dummy.get_squarenorm(1);
 	BOOST_MESSAGE("Tested GPU");
@@ -94,7 +99,7 @@ BOOST_AUTO_TEST_CASE( F_UPDATE ){
 	cpu.verify(cpu_back, gpu_back);
 	cpu.verify(cpu_back2, gpu_back2);
 	logger.info() << "Output vectors:";
-	cpu.verify(cpu_res, gpu_res);
+	cpu.verify_result(cpu_res, gpu_res);
 }
 
 void Dummyfield::init_tasks()
@@ -218,7 +223,7 @@ void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls)
 {
 	cl_int err;
 	hmc_float eps = 0.12;
-	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &eps);
+	err = clSetKernelArg(testKernel, 0, sizeof(hmc_float), &eps);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &out);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
@@ -274,6 +279,38 @@ void Dummyfield::verify(hmc_float cpu, hmc_float gpu){
     logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
     BOOST_REQUIRE_EQUAL(1,0);
   }
+
+}
+
+void Dummyfield::verify_result(hmc_float cpu, hmc_float gpu){
+  //this is too much required, since rounding errors can occur
+  //  BOOST_REQUIRE_EQUAL(cpu, gpu);
+  //instead, test if the two number agree within some percent
+  hmc_float dev = (cpu - gpu)/cpu/100.;
+  if(dev < 1e-10)
+    logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
+  else{
+    logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
+    logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
+    BOOST_REQUIRE_EQUAL(1,0);
+  }
+  //in addition, calculate the result again on the host
+  hmc_float host_res = 0.;
+  for(int i = 0; i < params.get_gaugemomentasize()*params.get_su3algebrasize();i++){
+    hmc_float tmp = gm_out[i] + gm_in[i]*0.12;
+    host_res += tmp*tmp;
+  }
+  logger.info() << "the actual result computed on the host is:\t" << host_res;
+  dev = (cpu - host_res)/cpu/100.;
+  if(dev < 1e-10)
+    logger.info() << "CPU and GPU result agree with the actual result within accuary of " << 1e-10;
+  else{
+    logger.info() << "CPU and GPU result DO NOT agree with the actual result within accuary of " << 1e-10;
+    logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
+    BOOST_REQUIRE_EQUAL(1,0);
+  }
+
+
 }
 
 void Dummyfield::runTestKernel()

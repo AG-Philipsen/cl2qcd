@@ -59,13 +59,17 @@ void Dummyfield::finalize_opencl()
 
 void Device::fill_kernels()
 {
+
+#ifdef _USEDOUBLEPRECISION_
   logger.info() << "init saxsbypz kernels to see if the compiler does strange things...";
   logger.info() << "\thmc_float = double";
-	testKernel = createKernel("saxsbypz_1") << "tests/saxsbypz.cl";
+  	testKernel = createKernel("saxsbypz_1") << "tests/saxsbypz.cl";
 	testKernel = createKernel("saxsbypz_2") << "tests/saxsbypz.cl";
+#else
   logger.info() << "\thmc_float = single";
 	testKernel = createKernel("saxsbypz_1") << "tests/saxsbypz_float.cl";
 	testKernel = createKernel("saxsbypz_2") << "tests/saxsbypz_float.cl";
+#endif
 }
 
 void Device::clear_kernels()

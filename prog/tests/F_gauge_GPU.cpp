@@ -22,7 +22,7 @@ public:
 		finalize();
 	};
 
-  void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls);
+  void runTestKernel(cl_mem out, cl_mem gf, int gs, int ls);
 	void fill_kernels();
   void set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out);
 	void clear_kernels();
@@ -33,7 +33,11 @@ class Dummyfield : public Gaugefield_hybrid {
 public:
 	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
 		std::stringstream tmp;
+#ifdef _USEDOUBLEPRECISION_
 		tmp << SOURCEDIR << "/tests/f_gauge_input_1";
+#else
+		tmp << SOURCEDIR << "/tests/f_gauge_input_1_single";
+#endif
 		params.readfile(tmp.str().c_str());
 
 		init(1, device_type, &params);
@@ -50,12 +54,10 @@ private:
 	void fill_buffers();
 	void clear_buffers();
 	inputparameters params;
-  cl_mem in1, in2, out;
+  cl_mem out;
 	cl_mem sqnorm;
-	spinor * sf_in1;
-  spinor * sf_in2;
-	hmc_float * sf_out;
 	Matrixsu3 * gf_in;
+  hmc_float * sf_out;
 
 };
 
@@ -65,12 +67,15 @@ BOOST_AUTO_TEST_CASE( F_GAUGE ){
 	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables_from_task(0, 0);
+	//these are not neede, since gauge-force operates on the gaugefield only
+	/*
 	logger.info() << "|phi_1|^2:";
 	hmc_float cpu_back = cpu.get_squarenorm(0);
 	logger.info() << "|phi_2|^2:";
 	hmc_float cpu_back2 = cpu.get_squarenorm(1);
 	cpu.runTestKernel();
 	logger.info() << "|M phi|^2:";
+	*/
 	hmc_float cpu_res;
 	cpu_res = cpu.get_squarenorm(2);
 	BOOST_MESSAGE("Tested CPU");
@@ -80,22 +85,33 @@ BOOST_AUTO_TEST_CASE( F_GAUGE ){
 	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
 	logger.info() << "gaugeobservables: ";
 	dummy.print_gaugeobservables_from_task(0, 0);
-	logger.info() << "|phi_1|^2:";
+	//these are not neede, since gauge-force operates on the gaugefield only
+	//NOTE: they are used for the fermion force!
+	/*	logger.info() << "|phi_1|^2:";
 	hmc_float gpu_back = dummy.get_squarenorm(0);
 	logger.info() << "|phi_2|^2:";
 	hmc_float gpu_back2 = dummy.get_squarenorm(1);
+	*/
 	dummy.runTestKernel();
-	logger.info() << "|M phi|^2:";
+	logger.info() << "|f_gauge|^2:";
 	hmc_float gpu_res;
 	gpu_res = dummy.get_squarenorm(2);
 	BOOST_MESSAGE("Tested GPU");
 
 	logger.info() << "Compare CPU and GPU results";
+	/*//see above
 	logger.info() << "Input vectors:";
 	cpu.verify(cpu_back, gpu_back);
 	cpu.verify(cpu_back2, gpu_back2);
+	*/
 	logger.info() << "Output vectors:";
 	cpu.verify(cpu_res, gpu_res);
+	//if the gaugeconfig is cold, the force is zero!!
+	if(dummy.get_parameters()->get_startcondition() == COLD_START) {
+	  logger.info() << "cold config used. Check if result is zero!!";
+	  	cpu.verify(cpu_res, 0.);
+	        cpu.verify(gpu_res, 0.);
+        }
 }
 
 void Dummyfield::init_tasks()
@@ -220,10 +236,9 @@ void Dummyfield::fill_buffers()
 
 	int NUM_ELEMENTS_AE = params.get_gaugemomentasize()*params.get_su3algebrasize();
 
-	sf_in1 = new spinor[NUM_ELEMENTS_SF];
-	sf_in2 = new spinor[NUM_ELEMENTS_SF];
+	
 	sf_out = new hmc_float[NUM_ELEMENTS_AE];
-
+	/*
 	//use the variable use_cg to switch between cold and random input sf
 	if(get_parameters()->get_use_cg() == true) {
 	  fill_sf_with_one(sf_in1, NUM_ELEMENTS_SF);
@@ -235,13 +250,13 @@ void Dummyfield::fill_buffers()
 	}
 	BOOST_REQUIRE(sf_in1);
 	BOOST_REQUIRE(sf_in2);
-
+	*/
 	fill_with_one(sf_out, NUM_ELEMENTS_AE);
 
 	size_t sf_buf_size = get_parameters()->get_sf_buf_size();
 	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
 	//create buffer for sf on device (and copy sf_in to both for convenience)
-
+	/*
 	in1 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	in2 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
@@ -250,6 +265,7 @@ void Dummyfield::fill_buffers()
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in2, CL_TRUE, 0, sf_buf_size, sf_in2, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	*/
 	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, ae_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out, CL_TRUE, 0, ae_buf_size, sf_out, 0, 0, NULL);
@@ -283,13 +299,11 @@ void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
-	clReleaseMemObject(in1);
-	clReleaseMemObject(in2);
+
 	clReleaseMemObject(out);
 	clReleaseMemObject(sqnorm);
 
-	delete[] sf_in1;
-	delete[] sf_in2;
+
 	delete[] sf_out;
 }
 
@@ -299,7 +313,7 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls)
+void Device::runTestKernel(cl_mem out, cl_mem gf, int gs, int ls)
 {
 	cl_int err;
 	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &gf);
@@ -334,8 +348,8 @@ void Device::set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out
 hmc_float Dummyfield::get_squarenorm(int which)
 {
 	//which controlls if the in or out-vector is looked at
-        if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1, sqnorm);
-        if(which == 1) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2, sqnorm);
+        //if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1, sqnorm);
+        //if(which == 1) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2, sqnorm);
 	if(which == 2) static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out, sqnorm);
 	// get stuff from device
 	hmc_float result;
@@ -369,6 +383,6 @@ void Dummyfield::runTestKernel()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in1, in2, *(get_clmem_gaugefield()), gs, ls);
+	static_cast<Device*>(opencl_modules[0])->runTestKernel(out,  *(get_clmem_gaugefield()), gs, ls);
 }
 

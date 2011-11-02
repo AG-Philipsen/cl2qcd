@@ -39,7 +39,11 @@ class Dummyfield : public Gaugefield_hybrid {
 public:
 	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
 		std::stringstream tmp;
+#ifdef _USEDOUBLEPRECISION_
 		tmp << SOURCEDIR << "/tests/f_gauge_input_1";
+#else
+		tmp << SOURCEDIR << "/tests/f_gauge_input_1_single";
+#endif
 		params.readfile(tmp.str().c_str());
 
 		init(1, device_type, &params);
@@ -229,7 +233,7 @@ void Device::runTestKernel(cl_mem in, cl_mem gf, int gs, int ls)
 {
 	cl_int err;
 	hmc_float eps = .12;
-	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &eps);
+	err = clSetKernelArg(testKernel, 0, sizeof(hmc_float), &eps);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &in );
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);

@@ -338,7 +338,7 @@ target_link_libraries(localQ
 	klepsydra
 	crypto
 	einhard)
-add_test(LocalQ_staple localQ_staple)
+add_test(LocalQ localQ)
 
 
 # ignore some tests

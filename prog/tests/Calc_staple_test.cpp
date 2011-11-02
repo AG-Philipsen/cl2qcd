@@ -37,7 +37,11 @@ class Dummyfield : public Gaugefield_hybrid {
 public:
 	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
 		std::stringstream tmp;
-		tmp << SOURCEDIR << "/tests/staple_input_1";
+#ifdef _USEDOUBLEPRECISION_
+		tmp << SOURCEDIR << "/tests/f_gauge_input_1";
+#else
+		tmp << SOURCEDIR << "/tests/f_gauge_input_1_single";
+#endif
 		params.readfile(tmp.str().c_str());
 
 		init(1, device_type, &params);
@@ -80,6 +84,13 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 
 	BOOST_MESSAGE(cpu_back << ' ' << gpu_back);
 	BOOST_CHECK_CLOSE(cpu_back, gpu_back, 1e-8);
+
+	//CP: in case of a cold config, the result is calculable easily
+	if(dummy.get_parameters()->get_startcondition() == COLD_START){
+	  hmc_float host_res = 18 * NDIM * dummy.get_parameters()->get_vol4d();
+	  	BOOST_CHECK_CLOSE(cpu_back,host_res , 1e-8);
+	}
+
 }
 
 void Dummyfield::init_tasks()

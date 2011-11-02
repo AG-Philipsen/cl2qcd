@@ -24,10 +24,12 @@ __kernel void staple_test(__global ocl_s_gaugefield * field, __global hmc_float 
 	for(int id_tmp = id; id_tmp < VOL4D; id_tmp += global_size) {
 		st_index pos = (id_tmp % 2 == 0) ? get_even_site(id_tmp / 2) : get_odd_site(id_tmp / 2);
 		Matrix3x3 V;
-		hmc_float res;
+		hmc_float res = 0;
+		hmc_float res2;
 		for(int mu = 0; mu < NDIM; mu++) {
 			V = calc_staple(field, pos.space, pos.time, mu);
-			res = sum_up_matrix3x3(V);
+			res2 = sum_up_matrix3x3(V);
+			res +=res2;
 		}
 		int global_pos = get_global_pos(pos.space, pos.time);
 		out[global_pos] = res;
