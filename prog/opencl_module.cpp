@@ -464,7 +464,7 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 //  noop = Opencl_Module::get_timer(kernelName);
 		noop = get_timer(kernelName);
 		if(noop == NULL)
-			logger.error() << "get_timer(" << kernelName << ") did not return a timer!";
+			logger.error() << "get_timer (" << kernelName << ") did not return a timer!";
 		else
 			(*get_timer(kernelName)).add(get_kernel_exec_time(event));
 

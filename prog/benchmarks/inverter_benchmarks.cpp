@@ -23,6 +23,20 @@ int main(int argc, char* argv[])
 			logger.warn() << "Could not log file for inverter.";
 		}
 
+		//get name for file to which correlators are to be stored
+		stringstream corr_fn;
+		switch ( parameters.get_startcondition() ) {
+		case START_FROM_SOURCE :
+		  corr_fn << parameters.sourcefile << "_correlators.dat" ;
+		  break;
+		case HOT_START :
+		  corr_fn << "conf.hot_correlators.dat" ;
+		  break;
+		case COLD_START :
+		  corr_fn << "conf.cold_correlators.dat" ;
+		  break;
+		}
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Initialization
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -30,10 +44,10 @@ int main(int argc, char* argv[])
 		init_timer.reset();
 		Gaugefield_inverter gaugefield;
 
-		//use 2 devices: one for solver, one for correlator
+		//one needs 2 tasks here since the correlator-module produces the sources...
 		int numtasks = 2;
-		if(parameters.get_num_dev() != 2 )
-			logger.warn() << "Only 1 device demanded by input file. All calculations performed on primary device.";
+		if(parameters.get_num_dev() != 1 )
+			logger.warn() << "Only 1 device demanded by benchmark executable. All calculations performed on primary device.";
 
 		cl_device_type primary_device;
 		switch ( parameters.get_use_gpu() ) {
@@ -64,7 +78,18 @@ int main(int argc, char* argv[])
 
 		logger.trace() << "Perform " << hmc_iter << "of benchmarking";
 		for(iter = 0; iter < hmc_iter; iter ++) {
-			/** @todo Insert functions here */
+		  usetimer solver_timer;
+
+		  logger.info() << "Perform inversion on device.." ;
+
+		  gaugefield.create_sources();
+		  gaugefield.perform_inversion(&solver_timer);
+		  
+		  //flavour_doublet_correlators does a sync at the beginning
+		  gaugefield.flavour_doublet_correlators(corr_fn.str());
+		  
+		  logger.trace() << "Inversion done" ;
+		  
 		}
 		logger.trace() << "inverter-benchmarking done" ;
 		perform_timer.add();
