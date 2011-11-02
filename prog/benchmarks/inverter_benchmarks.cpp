@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 
 		//one needs 2 tasks here since the correlator-module produces the sources...
 		int numtasks = 2;
-		if(parameters.get_num_dev() != 1 )
+		if(parameters.get_num_dev() != 2 )
 			logger.warn() << "Only 1 device demanded by benchmark executable. All calculations performed on primary device.";
 
 		cl_device_type primary_device;
@@ -78,6 +78,7 @@ int main(int argc, char* argv[])
 
 		logger.trace() << "Perform " << hmc_iter << "of benchmarking";
 		for(iter = 0; iter < hmc_iter; iter ++) {
+		  //CP: these are esssentially the same actions as the "normal" inverter performs...
 		  usetimer solver_timer;
 
 		  logger.info() << "Perform inversion on device.." ;
