@@ -79,8 +79,6 @@ int main(int argc, char* argv[])
 		logger.trace() << "Perform " << hmc_iter << "of benchmarking";
 		for(iter = 0; iter < hmc_iter; iter ++) {
 		  //CP: these are esssentially the same actions as the "normal" inverter performs...
-		  usetimer solver_timer;
-
 		  logger.info() << "Perform inversion on device.." ;
 
 		  gaugefield.create_sources();
@@ -120,6 +118,7 @@ int main(int argc, char* argv[])
 		} else {
 			logger.warn() << "Could not open " << profiling_out;
 		}
+		print_solver_profiling(profiling_out.str());
 		gaugefield.print_profiling(profiling_out.str());
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////

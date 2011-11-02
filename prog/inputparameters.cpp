@@ -98,7 +98,8 @@ void inputparameters::set_defaults()
 	corr_dir = 3;
 
 	use_same_rnd_numbers = false;
-
+	profile_solver = false;
+	
 	return;
 }
 
@@ -721,6 +722,11 @@ int inputparameters::get_num_timescales() const
 bool inputparameters::get_saveconfigs() const
 {
 	return saveconfigs;
+}
+
+bool inputparameters::get_profile_solver() const
+{
+	return profile_solver;
 }
 
 void inputparameters::display_sourcefile() const

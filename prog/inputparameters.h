@@ -150,6 +150,7 @@ public:
 	hmc_float get_lambda2() const;
 
 	bool get_use_same_rnd_numbers() const;
+	bool get_profile_solver() const;
 #ifdef _PROFILING_
 	int get_mat_size() const;
 	int get_float_size() const;
@@ -336,6 +337,8 @@ private:
 
 	//this can bee used to generate rnd-fields with only one thread
 	bool use_same_rnd_numbers;
+	//this can be used to measure the time the solver takes
+	bool profile_solver;
 };
 
 #endif /* _INPUTPARAMETERSH_ */

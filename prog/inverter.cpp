@@ -100,6 +100,20 @@ int main(int argc, char* argv[])
 		logger.info() << "## Device: Correlator";
 		(gaugefield.get_task_correlator())->print_copy_times(totaltime);
 
+		if(params.get_profile_solver() ) {
+			stringstream profiling_out;
+			profiling_out << argv[0] << "_profiling_data";
+			fstream prof_file;
+			prof_file.open(profiling_out.str(), std::ios::out | std::ios::app);
+			if(prof_file.is_open()) {
+				parameters.print_info_inverter(argv[0], &prof_file);
+				prof_file.close();
+			} else {
+				logger.warn() << "Could not open " << profiling_out;
+			}
+			print_solver_profiling(profiling_out.str());
+		}
+		
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// free variables
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
