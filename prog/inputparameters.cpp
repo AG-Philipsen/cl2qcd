@@ -921,7 +921,7 @@ hmc_float inputparameters::get_force_prec() const
 }
 
 
-cl_uint inputparameters::get_iter_refresh() const
+int inputparameters::get_iter_refresh() const
 {
 	return iter_refresh;
 }
@@ -1150,6 +1150,7 @@ void inputparameters::print_info_fermion() const
 	if(this->get_use_eo() == false)
 		logger.info() << "## Do NOT use even-odd preconditioning";
 	logger.info() << "## cgmax  = " << this->get_cgmax();
+	logger.info() << "## iter_refresh  = " << this->get_iter_refresh();
 
 	if(this->get_profile_solver() == true)
 	        logger.warn()<< "## Profiling of solver activated. This may influence the overall performance time!";
@@ -1218,6 +1219,7 @@ void inputparameters::print_info_fermion(ostream * os) const
 	if(this->get_use_eo() == false)
 		*os  << "## Do NOT use even-odd preconditioning" << endl;
 	*os << "## cgmax  = " << this->get_cgmax() << endl;
+	*os << "## iter_refresh  = " << this->get_iter_refresh() << endl;
 
 	if(this->get_profile_solver() == true)
 	        *os << "## Profiling of solver activated. This may influence the overall performance time!" << endl;
