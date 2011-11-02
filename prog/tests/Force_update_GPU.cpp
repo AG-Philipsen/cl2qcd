@@ -33,7 +33,7 @@ class Dummyfield : public Gaugefield_hybrid {
 public:
 	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
 		std::stringstream tmp;
-#ifdef _USEDOUBLEPRECISION_
+#ifdef _USEDOUBLEPREC_
 		tmp << SOURCEDIR << "/tests/f_gauge_input_1";
 #else
 		tmp << SOURCEDIR << "/tests/f_gauge_input_1_single";
@@ -195,7 +195,7 @@ void Device::fill_kernels()
 	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
 	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
 
-	ae_sqn = createKernel("gaugemomentum_squarenorm") << basic_fermion_code << "types_hmc.h" << "gaugemomentum_squarenorm.cl";
+	ae_sqn = createKernel("gaugemomentum_squarenorm") << basic_fermion_code << "types_hmc.h" << "operations_gaugemomentum.cl" << "gaugemomentum_squarenorm.cl";
 
 	testKernel = createKernel("md_update_gaugemomenta") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "md_update_gaugemomenta.cl";
 
