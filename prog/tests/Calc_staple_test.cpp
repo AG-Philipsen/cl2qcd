@@ -37,7 +37,7 @@ class Dummyfield : public Gaugefield_hybrid {
 public:
 	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
 		std::stringstream tmp;
-#ifdef _USEDOUBLEPRECISION_
+#ifdef _USEDOUBLEPREC_
 		tmp << SOURCEDIR << "/tests/f_gauge_input_1";
 #else
 		tmp << SOURCEDIR << "/tests/f_gauge_input_1_single";
