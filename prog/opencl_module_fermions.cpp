@@ -1142,7 +1142,7 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 			hmc_float resid;
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-						cout << resid << endl;
+			//cout << resid << endl;
 
 			if(resid < prec) {
 							return true;
