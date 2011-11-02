@@ -1141,6 +1141,9 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
 			hmc_float resid;
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+
+						cout << resid << endl;
+
 			if(resid < prec) {
 							return true;
 			}
@@ -1396,7 +1399,7 @@ void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem
 	 */
 	bool converged = false;
 
-	(*solvertimer).reset();
+	if(get_parameters()->get_profile_solver() ) (*solvertimer).reset();
 	if(get_parameters()->get_use_eo() == true) {
 		/**
 		 * If even-odd-preconditioning is used, the inversion is split up 
@@ -1461,9 +1464,11 @@ void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem
 		else
 			converged = bicgstab(f, inout, source, gf, get_parameters()->get_solver_prec());
 	}
-	clFinish(get_queue());
-	(*solvertimer).add();
-
+	if(get_parameters()->get_profile_solver() ) {
+	  clFinish(get_queue());
+	  (*solvertimer).add();
+	}
+	
 	if (converged == false) logger.fatal() << "\t\t\tsolver did not solve!!";
 	else logger.debug() << "\t\t\tsolver solved!";
 

@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 		logger.info() << "## Device: Correlator";
 		(gaugefield.get_task_correlator())->print_copy_times(totaltime);
 
-		if(params.get_profile_solver() ) {
+		if(parameters.get_profile_solver() ) {
 			stringstream profiling_out;
 			profiling_out << argv[0] << "_profiling_data";
 			fstream prof_file;

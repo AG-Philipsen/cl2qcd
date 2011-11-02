@@ -1150,6 +1150,9 @@ void inputparameters::print_info_fermion() const
 		logger.info() << "## Do NOT use even-odd preconditioning";
 	logger.info() << "## cgmax  = " << this->get_cgmax();
 
+	if(this->get_profile_solver() == true)
+	        logger.warn()<< "## Profiling of solver activated. This may influence the overall performance time!";
+
 	//print extra warning if BC are set to default since this is a serious source of errors...
 	if ( this->get_theta_fermion_spatial() == 0. && this->get_theta_fermion_temporal() == 0.) {
 		logger.warn() << "\nNOTE: BCs have been set to periodic values by default!!\nTo change this use e.g. ThetaT/ThetaS in the input-file.\n";
@@ -1214,6 +1217,9 @@ void inputparameters::print_info_fermion(ostream * os) const
 	if(this->get_use_eo() == false)
 		*os  << "## Do NOT use even-odd preconditioning" << endl;
 	*os << "## cgmax  = " << this->get_cgmax() << endl;
+
+	if(this->get_profile_solver() == true)
+	        *os << "## Profiling of solver activated. This may influence the overall performance time!" << endl;
 
 	//print extra warning if BC are set to default since this is a serious source of errors...
 	if ( this->get_theta_fermion_spatial() == 0. && this->get_theta_fermion_temporal() == 0.) {

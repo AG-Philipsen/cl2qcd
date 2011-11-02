@@ -30,12 +30,16 @@ void print_solver_profiling(std::string filename)
 	if(!out.is_open()) File_Exception(filename.c_str());
 	out.width(32);
 	out.precision(15);
-	out << "## solver time [mus]:\ttime\tcalls\tavg" << endl;
+	out << "## **********************************************************" << endl;
+	out << "## Solver Times [mus]:\ttime\tcalls\tavg" << endl;
 	out << "\t" << time_total << "\t" << calls_total << "\t" << avg_time << std::endl;
+	out << "## **********************************************************" << endl;
 	out.close();
 	
-	//logger.info() << "## solver time [mus]:\ttime\tcalls\tavg" ;
-	//logger.info() << "\t" << time_total << "\t" << calls_total << "\t" << avg_time;
+	logger.info() << "## **********************************************************";
+	logger.info() << "## Solver Times [mus]:\ttime\tcalls\tavg" ;
+	logger.info() << "##\t" << time_total << "\t" << calls_total << "\t" << avg_time;
+	logger.info() << "## **********************************************************";
 	return;
 }
 
