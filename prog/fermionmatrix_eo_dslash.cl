@@ -3,6 +3,9 @@
 //	ODD corresponds to the D_oe case: Dslash acts on even indices (the "x+mu" in the formulae) and the function
 //	saves the outcoming spinor with an odd index.
 //	EVEN is then D_eo.
+#ifdef _USEGPU_
+__attribute__((reqd_work_group_size(128, 1, 1)))
+#endif
 __kernel void dslash_eoprec(__global spinorfield_eoprec* in, __global spinorfield_eoprec* out, __global ocl_s_gaugefield* field, int evenodd)
 {
 	int global_size = get_global_size(0);
