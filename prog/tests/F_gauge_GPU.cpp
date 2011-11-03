@@ -73,13 +73,15 @@ BOOST_AUTO_TEST_CASE( F_GAUGE ){
 	hmc_float cpu_back = cpu.get_squarenorm(0);
 	logger.info() << "|phi_2|^2:";
 	hmc_float cpu_back2 = cpu.get_squarenorm(1);
-	cpu.runTestKernel();
-	logger.info() << "|M phi|^2:";
 	*/
+	cpu.runTestKernel();
+	logger.info() << "|f_gauge|^2:";
 	hmc_float cpu_res;
 	cpu_res = cpu.get_squarenorm(2);
-	BOOST_MESSAGE("Tested CPU");
 
+
+	BOOST_MESSAGE("Tested CPU");
+	
 	logger.info() << "Init GPU device";
 	//params.print_info_inverter("m_gpu");
 	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
@@ -107,7 +109,7 @@ BOOST_AUTO_TEST_CASE( F_GAUGE ){
 	logger.info() << "Output vectors:";
 	cpu.verify(cpu_res, gpu_res);
 	//if the gaugeconfig is cold, the force is zero!!
-	if(dummy.get_parameters()->get_startcondition() == COLD_START) {
+	if(cpu.get_parameters()->get_startcondition() == COLD_START) {
 	  logger.info() << "cold config used. Check if result is zero!!";
 	  	cpu.verify(cpu_res, 0.);
 	        cpu.verify(gpu_res, 0.);
@@ -147,10 +149,10 @@ void fill_sf_with_one(spinor * sf_in, int size)
 	return;
 }
 
-void fill_with_one(hmc_float * sf_in, int size)
+void fill_with_zero(hmc_float * sf_in, int size)
 {
 	for(int i = 0; i < size; ++i) {
-	  sf_in[i] = 1.;
+	  sf_in[i] = 0.;
 	}
 	return;
 }
@@ -251,7 +253,7 @@ void Dummyfield::fill_buffers()
 	BOOST_REQUIRE(sf_in1);
 	BOOST_REQUIRE(sf_in2);
 	*/
-	fill_with_one(sf_out, NUM_ELEMENTS_AE);
+	fill_with_zero(sf_out, NUM_ELEMENTS_AE);
 
 	size_t sf_buf_size = get_parameters()->get_sf_buf_size();
 	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
@@ -363,9 +365,11 @@ void Dummyfield::verify(hmc_float cpu, hmc_float gpu){
   //this is too much required, since rounding errors can occur
   //  BOOST_REQUIRE_EQUAL(cpu, gpu);
   //instead, test if the two number agree within some percent
-  hmc_float dev = (cpu - gpu)/cpu/100.;
-  if(dev < 1e-10)
+  hmc_float dev = (abs(cpu) - abs(gpu))/cpu/100.;
+  if(abs(dev) < 1e-10){
     logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
+    logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
+  }
   else{
     logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
     logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
@@ -380,7 +384,7 @@ void Dummyfield::runTestKernel()
 		gs = get_parameters()->get_spinorfieldsize();
 		ls = 64;
 	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = opencl_modules[0]->get_max_compute_units();
+	        gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
 	static_cast<Device*>(opencl_modules[0])->runTestKernel(out,  *(get_clmem_gaugefield()), gs, ls);
