@@ -1,30 +1,3 @@
-
-spinor part1(__global spinorfield_eoprec* in, __global ocl_s_gaugefield* field, st_index pos)
-{
-	spinor out_tmp2;
-	spinor out_tmp = set_spinor_zero();
-	out_tmp2 = dslash_eoprec_local_0(in, field, pos.space, pos.time);
-	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	out_tmp2 = dslash_eoprec_local_1(in, field, pos.space, pos.time);
-	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	return out_tmp;
-}
-
-spinor part2(__global spinorfield_eoprec* in, __global ocl_s_gaugefield* field, st_index pos)
-{
-	spinor out_tmp2;
-	spinor out_tmp = set_spinor_zero();
-	out_tmp2 = dslash_eoprec_local_2(in, field, pos.space, pos.time);
-	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	out_tmp2 = dslash_eoprec_local_3(in, field, pos.space, pos.time);
-	out_tmp = spinor_dim(out_tmp, out_tmp2);
-	return out_tmp;
-}
-
-
-
-
-
 //Here, two cases are possible:
 //evenodd = ODD or EVEN
 //	ODD corresponds to the D_oe case: Dslash acts on even indices (the "x+mu" in the formulae) and the function
