@@ -152,7 +152,7 @@ public:
 	cl_mem get_clmem_source_odd();
 
 	cl_mem get_clmem_minusone();
-	
+
 	/**
 	 * This is used to print the squarenorm of an inverter-solution in debug-mode
 	 * @param eo has to be set to true/false when evenodd is used/not used.
@@ -199,7 +199,6 @@ protected:
 
 #endif
 
-protected:
 private:
 	////////////////////////////////////
 	//kernels, sorted roughly by groups
@@ -254,9 +253,6 @@ private:
 	cl_mem clmem_kappa_cmplx;// = {kappa, 0.};
 	cl_mem clmem_resid;
 	cl_mem clmem_trueresid;
-
-
-private:
 
 };
 
