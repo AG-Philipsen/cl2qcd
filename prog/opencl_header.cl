@@ -23,10 +23,3 @@
 #include "globaldefs.h" //NDIM, NSPIN, NC
 #include "types.h"
 
-//!!CP: why is this here?
-// #define VOLSPACE NSPACE*NSPACE*NSPACE
-#define VOL4D VOLSPACE*NTIME
-
-//for hmc_ocl_su3matrix
-#define SU3SIZE NC*NC
-#define STAPLEMATRIXSIZE NC*NC

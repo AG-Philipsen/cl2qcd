@@ -112,7 +112,10 @@ cl_platform_id Opencl_Module::get_platform()
 
 void Opencl_Module::fill_collect_options(stringstream* collect_options)
 {
-	*collect_options << "-D_INKERNEL_ -DNSPACE=" << get_parameters()->get_ns() << " -DNTIME=" << get_parameters()->get_nt() << " -DVOLSPACE=" << get_parameters()->get_volspace();
+  *collect_options << "-D_INKERNEL_ -DNSPACE=" << get_parameters()->get_ns() << " -DNTIME=" << get_parameters()->get_nt() << " -DVOLSPACE=" << get_parameters()->get_volspace() << " -DVOL4D=" << get_parameters()->get_vol4d();
+
+  //this is needed for hmc_ocl_su3matrix
+  *collect_options << " -DSU3SIZE=" << NC*NC << " -DSTAPLEMATRIXSIZE=" << NC*NC;
 
 	if(get_parameters()->get_prec() == 64) {
 		*collect_options << " -D_USEDOUBLEPREC_";
