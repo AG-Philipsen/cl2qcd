@@ -358,9 +358,10 @@ void Dummyfield::verify(hmc_float cpu, hmc_float gpu){
   //  BOOST_REQUIRE_EQUAL(cpu, gpu);
   //instead, test if the two number agree within some percent
   hmc_float dev = (cpu - gpu)/cpu/100.;
-  if(dev < 1e-10)
+  if(abs(dev) < 1e-10){
     logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
-  else{
+        logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
+  }else{
     logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
     logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
     BOOST_REQUIRE_EQUAL(1,0);
