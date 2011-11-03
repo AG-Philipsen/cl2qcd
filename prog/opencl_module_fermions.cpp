@@ -325,18 +325,6 @@ void Opencl_Module_Fermions::clear_buffers()
 void Opencl_Module_Fermions::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
 {
 	Opencl_Module_Spinors::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
-	string kernelname = get_kernel_name(kernel);
-	if(kernelname.compare("dslash_eoprec") == 0) {
-	  //NOTE: In case of a GPU the dslash_eoprec kernel causes problems and therefore has to have as many threads as sites
-	  if(dev_type == CL_DEVICE_TYPE_GPU){
-		size_t global_work_size = get_parameters()->get_eoprec_spinorfieldsize();
-		//take ls from above
-		size_t local_work_size = *ls;
-		const cl_uint num_groups_tmp = (global_work_size + local_work_size - 1) / local_work_size;
-		*gs = global_work_size;
-		*num_groups = num_groups_tmp;
-	  }
-	}
 
 	return;
 }
