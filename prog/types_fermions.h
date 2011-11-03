@@ -12,7 +12,7 @@ typedef struct {
 	hmc_complex e0;
 	hmc_complex e1;
 	hmc_complex e2;
-	
+
 } su3vec;
 
 typedef struct {
