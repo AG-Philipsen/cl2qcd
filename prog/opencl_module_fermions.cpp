@@ -1345,8 +1345,11 @@ void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem
 	  (*solvertimer).add();
 	}
 	
-	if (converged < 0) logger.fatal() << "\t\t\tsolver did not solve!!";
-	else logger.debug() << "\t\t\tsolver solved!";
+	if (converged < 0){
+		if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
+		else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
+	}
+	else logger.debug() << "\t\t\tsolver solved in "<< converged << " iterations!";
 
 	return;
 }
