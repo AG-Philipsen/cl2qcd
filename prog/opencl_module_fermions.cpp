@@ -881,6 +881,13 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 			}
 			//rho_next = (rhat, rn)
 			set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next);
+			//check if algorithm is stuck
+			hmc_complex check;
+			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
+			//if rho is too small the algorithm will get stuck and will never converge!!
+			if(abs(check.re) < prec && abs(check.im) < prec ) {
+				return false;
+			}
 			//tmp1 = rho_next/rho = (rhat, rn)/..
 			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
 			//rho_next = rho
@@ -960,6 +967,7 @@ bool Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_
 	return false;
 	}
 	//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
+	//	In particular this version does not perform the check if the "real" residuum is sufficiently small!
 	else if (get_parameters()->get_use_bicgstab_save() != true){
 
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
@@ -1064,6 +1072,12 @@ bool Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inou
 			}
 
 			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next);
+			//check if algorithm is stuck
+			hmc_complex check;
+			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
+			if(abs(check.re) < prec && abs(check.im) < prec) {
+							return true;
+			}		
 			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
 			copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
 			set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
