@@ -130,6 +130,11 @@ public:
 	//    non-eoprec
 	/// this calls the solver according to parameter settings using the fermionmatrix f
 	void solver(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer);
+	/**
+	* the solvers return the number of iterations needed if it converged,
+	* -1 if it did not converge within cgmax
+	* -iter if the algorithm got stuck at some point
+	*/
 	/// this executes the bicgstab on the device, using the fermionmatrix f
 	int bicgstab(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
 	/// this executes the cg on the device, using the fermionmatrix f

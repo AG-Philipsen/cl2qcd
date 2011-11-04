@@ -627,12 +627,6 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 	enqueueKernel(M_tm_sitediagonal_minus , gs2, ls2);
 }
 
-/**
- * the solvers return the number of iterations needed if it converged,
- * -1 if it did not converge within cgmax
- * -2 if the algorithm got stuck at some point
- */
-
 int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	int debug = 0;
@@ -758,31 +752,6 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 		set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
 
-//    //see if s is too small
-//    hmc_complex s_norm;
-//    //borrow clmem_alpha for this
-//    set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
-//    get_buffer_from_device(clmem_alpha, &s_norm, sizeof(hmc_complex));
-//    if(debug) cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
-//    //reset value of alpha
-//    set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
-//    //check if |s|^2 is too small
-//    if(s_norm.re < prec){
-//      set_complex_to_product_device(clmem_minusone, clmem_alpha, clmem_alpha);
-//      saxpy_device(clmem_p, inout, clmem_alpha, inout, localsize, globalsize);
-//
-//      f(this, inout, clmem_aux, gf, localsize, globalsize);
-//      saxpy_device(clmem_aux, source, clmem_one, clmem_aux, localsize, globalsize);
-//      set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid, localsize, globalsize);
-//      get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << prec << endl;
-//
-//      cout << "|s|^2 is too small to continue..." << endl;
-//
-//      return;
-//    }
-
-
 		f(this, clmem_s, clmem_t, gf);
 
 		set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
@@ -870,7 +839,6 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 	}
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
 	else if (get_parameters()->get_use_bicgstab_save() == true){
-
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				set_zero_spinorfield_device(clmem_v);
@@ -892,7 +860,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			//if rho is too small the algorithm will get stuck and will never converge!!
 			if(abs(check.re) < prec && abs(check.im) < prec ) {
-				return -2;
+				return -iter;
 			}
 			//tmp1 = rho_next/rho = (rhat, rn)/..
 			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
@@ -936,10 +904,10 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			hmc_float resid;
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-			//    cout << "resid at iter " << iter << " is: " << resid << endl;
+//			cout << "resid at iter " << iter << " is: " << resid << endl;
 
 			if(resid < prec) {
-							//aux = A inout
+				//aux = A inout
 				f(this, inout, clmem_aux, gf);
 				//aux = -aux + source
 				saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
@@ -947,27 +915,13 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 				set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
 				hmc_float trueresid;
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
-				//    cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << prec << endl;
-				//	      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << prec << endl;
+//				cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << prec << endl;
+// 				cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << prec << endl;
 				if(trueresid < prec)
 					return iter;
 				else {
-	//        cout << "trueresiduum not small enough" <<endl;
-	//        hmc_complex s_norm;
-	//        //borrow clmem_alpha for this
-	//        set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
-	//        get_buffer_from_device(clmem_alpha, &s_norm, sizeof(hmc_complex));
-	//        cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
-	//        //reset value of alpha
-	//        set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
-	//        //check if |s|^2 is too small
-	//        if(s_norm.re < prec){
-	//          cout << "|s|^2 is too small to continue..." << endl;
-	// //           return;
-	//        }
+//					cout << "trueresiduum not small enough" <<endl;
 				}
-		} else {
-//      printf("residuum at iter%i is:\t%.10e\n", iter, resid);//cout << "residuum:\t" << resid << endl;
 		}
 	}
 	return -1;
@@ -975,7 +929,6 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 	//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
 	//	In particular this version does not perform the check if the "real" residuum is sufficiently small!
 	else if (get_parameters()->get_use_bicgstab_save() != true){
-
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				//initial r_n, saved in p
@@ -1023,9 +976,8 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			//if rho is too small the algorithm will get stuck and will never converge!!
 			if(abs(check.re) < prec && abs(check.im) < prec ) {
-				return -2;
+				return -iter;
 			}
-
 			//tmp1 = rho_next/rho = (rhat, rn)/..
 			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
 			//tmp2 = alpha/omega = ...
@@ -1040,16 +992,13 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p);
 			//rho_next = rho
 			copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
-
 		}
 		return -1;
-
 	}
 }
 
 int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
-	
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
 	if (get_parameters()->get_use_bicgstab_save() == true){
 		//CP: these have to be on the host
@@ -1057,7 +1006,6 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 		hmc_float trueresid;
 		int cgmax = get_parameters()->get_cgmax();
 		for(int iter = 0; iter < cgmax; iter++) {
-
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				set_zero_spinorfield_eoprec_device(clmem_v_eoprec);
 				set_zero_spinorfield_eoprec_device(clmem_p_eoprec);
@@ -1076,13 +1024,12 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 				copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex));
 				copy_buffer_on_device(clmem_one, clmem_rho, sizeof(hmc_complex));
 			}
-
 			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next);
 			//check if algorithm is stuck
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			if(abs(check.re) < prec && abs(check.im) < prec) {
-							return -2;
+							return -iter;
 			}		
 			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
 			copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
@@ -1121,17 +1068,17 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 				set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid);
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
 				//cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
-				if(trueresid < prec)
+				if(trueresid < prec){
 					return iter;
-			} else {
-			        //cout << "residuum:\t" << resid << endl;
-			}
-
+				}	else {
+//					cout << "trueresiduum not small enough" <<endl;
+				}
+			} 
 		}
-
 		return -1;
 	}
 	//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
+	//	In particular this version does not perform the check if the "real" residuum is sufficiently small!
 	if (get_parameters()->get_use_bicgstab_save() != true){
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
@@ -1182,7 +1129,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			if(abs(check.re) < prec && abs(check.im) < prec) {
-							return -2;
+							return -iter;
 			}		
 
 			//tmp1 = rho_next/rho = (rhat, rn)/..
@@ -1199,7 +1146,6 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec);
 			//rho_next = rho
 			copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
-
 		}
 		return -1;
 	}
@@ -1207,82 +1153,6 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 
 int Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
-	//CP: "old" version, including debugging infos
-	/*
-	//CP: these have to be on the host
-	hmc_float resid;
-
-	int cgmax = get_parameters()->get_cgmax();
-	for(int iter = 0; iter < cgmax; iter ++) {
-	  printf("\niter: %i\n", iter);
-		if(iter % get_parameters()->get_iter_refresh() == 0) {
-			f(this, inout, clmem_rn, gf);
-			saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
-			copy_buffer_on_device(clmem_rn, clmem_p, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
-
-		}
-		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
-		set_complex_to_scalar_product_device(clmem_rn, clmem_rn, clmem_omega);
-    hmc_complex omega;
-    get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
-    cout << "omega: " << omega.re << " " << omega.im << endl;
-		//A pn --> v
-		f(this, clmem_p, clmem_v, gf);
-		set_complex_to_scalar_product_device(clmem_p, clmem_v, clmem_rho);
-    hmc_complex rho;
-    get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
-    cout << "rho: " << rho.re << " " << rho.im << endl;
-
-		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
-    hmc_complex alpha;
-    get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
-    cout << "alpha: " << alpha.re << " " << alpha.im << endl;
-		set_complex_to_product_device(clmem_alpha, clmem_minusone, clmem_tmp1);
-    hmc_complex tmp1;
-    get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
-    cout << "tmp1: " << tmp1.re << " " << tmp1.im << endl;
-
-		//xn+1
-		//saxpy_device(inout, clmem_p, clmem_tmp1, inout);
-    saxpy_device(clmem_p, inout, clmem_tmp1, inout);
-		//rn+1 -> rhat
-		//saxpy_device(clmem_rn, clmem_v, clmem_alpha, clmem_rhat);
-		saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_rhat);
-
-		set_float_to_global_squarenorm_device(clmem_rhat, clmem_resid);
-		get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-				cout << "resid: " << resid << endl;
-
-		if(resid < prec) {
-			//???
-			//copy_buffer_on_device(clmem_rhat, clmem_inout, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
-
-			return true;
-		} else {
-			//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
-			set_complex_to_scalar_product_device(clmem_rhat, clmem_rhat, clmem_rho_next);
-			set_complex_to_ratio_device(clmem_rho_next, clmem_omega, clmem_beta);
-          hmc_complex beta;
-    get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
-    cout << "beta: " << beta.re << " " << beta.im << endl;
-
-			//pn+1 = rn+1 + beta*pn
-			set_complex_to_product_device(clmem_beta, clmem_minusone, clmem_tmp2);
-    hmc_complex tmp2;
-    get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
-    cout << "tmp2: " << tmp2.re << " " << tmp2.im << endl;
-
-			saxpy_device(clmem_p, clmem_rhat, clmem_tmp2, clmem_p);
-
-			//rn = rn+1 ^= rn = rhat
-			copy_buffer_on_device(clmem_rhat, clmem_rn, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
-
-		}
-	}
-	return false;
-	*/
-
-	//"new" version
 	//CP: here I do not use clmem_rnhat anymore and saved one scalar_product (omega)
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
 	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter ++) {
@@ -1320,8 +1190,7 @@ int Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem sour
 		//this is the orig. call
 		//set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-		
-		///@todo perhaps one should be able to print this somehow
+
 		//cout << "resid: " << resid << endl;
 
 		if(resid < prec)
@@ -1377,9 +1246,8 @@ int Opencl_Module_Fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_m
 		//this is the orig. call
 		//set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-		
-		///@todo perhaps one should be able to print this somehow
-		cout << "resid: " << resid << endl;
+
+		// cout << "resid: " << resid << endl;
 
 		if(resid < prec)
 			return iter;
