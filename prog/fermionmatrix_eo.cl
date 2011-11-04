@@ -5,7 +5,7 @@
 //"local" dslash working on a particular link (n,t) of an eoprec field
 //NOTE: each component is multiplied by +KAPPA, so the resulting spinor has to be mutliplied by -1 to obtain the correct dslash!!!
 //the difference to the "normal" dslash is that the coordinates of the neighbors have to be transformed into an eoprec index
-spinor inline dslash_eoprec_local_0(__global spinorfield_eoprec * in, __global ocl_s_gaugefield * field, int n, int t)
+spinor inline dslash_eoprec_local_0(__global const spinorfield_eoprec * const restrict in, __global ocl_s_gaugefield const * const restrict field, const int n, const int t)
 {
 	spinor out_tmp, plus;
 	int dir, nn, nn_eo;
@@ -108,7 +108,7 @@ spinor inline dslash_eoprec_local_0(__global spinorfield_eoprec * in, __global o
 	return out_tmp;
 }
 
-spinor inline dslash_eoprec_local_1(__global spinorfield_eoprec * in, __global ocl_s_gaugefield * field, int n, int t)
+spinor inline dslash_eoprec_local_1(__global const spinorfield_eoprec * const restrict in, __global ocl_s_gaugefield const * const restrict field, const int n, const int t)
 {
 	spinor out_tmp, plus;
 	int dir, nn, nn_eo;
@@ -186,7 +186,7 @@ spinor inline dslash_eoprec_local_1(__global spinorfield_eoprec * in, __global o
 	return out_tmp;
 }
 
-spinor inline dslash_eoprec_local_2(__global spinorfield_eoprec * in, __global ocl_s_gaugefield * field, int n, int t)
+spinor inline dslash_eoprec_local_2(__global const spinorfield_eoprec * const restrict in, __global ocl_s_gaugefield const * const restrict field, const int n, const int t)
 {
 	spinor out_tmp, plus;
 	int dir, nn, nn_eo;
@@ -263,7 +263,7 @@ spinor inline dslash_eoprec_local_2(__global spinorfield_eoprec * in, __global o
 	return out_tmp;
 }
 
-spinor inline dslash_eoprec_local_3(__global spinorfield_eoprec * in, __global ocl_s_gaugefield * field, int n, int t)
+spinor inline dslash_eoprec_local_3(__global const spinorfield_eoprec * const restrict in, __global ocl_s_gaugefield const * const restrict field, const int n, const int t)
 {
 	spinor out_tmp, plus;
 	int dir, nn, nn_eo;
