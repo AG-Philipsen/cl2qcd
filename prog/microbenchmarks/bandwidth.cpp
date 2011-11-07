@@ -28,7 +28,8 @@ enum copyType {
 	type_invalid,
 	type_float,
 	type_su3,
-	type_spinor
+	type_spinor,
+	type_spinorLocal
 };
 
 size_t getTypeSize(copyType type);
@@ -40,6 +41,7 @@ private:
 	cl_kernel floatKernel;
 	cl_kernel su3Kernel;
 	cl_kernel spinorKernel;
+	cl_kernel spinorLocalKernel;
 
 	template<typename T> void runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, cl_mem in, cl_mem out);
 
@@ -105,10 +107,11 @@ int main(int argc, char** argv)
 	type_map["float"] = type_float;
 	type_map["su3"] = type_su3;
 	type_map["spinor"] = type_spinor;
+	type_map["spinorLocal"] = type_spinorLocal;
 
 	const copyType copy_type = type_map[vm["type"].as<std::string>()];
 	if(!copy_type) {
-		logger.error() << "Please select one of the following types: float(default), su3";
+		logger.error() << "Please select one of the following types: float(default), su3, spinor, spinorLocal";
 		return 1;
 	}
 	logger.info() << "Using " << vm["type"].as<std::string>() << " as load/store datatype";
@@ -229,6 +232,7 @@ void Device::fill_kernels()
 	floatKernel = createKernel("copyFloat") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 	su3Kernel = createKernel("copySU3") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 	spinorKernel = createKernel("copySpinor") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
+	spinorLocalKernel = createKernel("copySpinorLocal") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 }
 
 void Dummyfield::clear_buffers()
@@ -259,6 +263,9 @@ void Device::runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_g
 			return;
 		case type_spinor:
 			runKernel<spinor>(groups, threads_per_group, elems, spinorKernel, in, out);
+			return;
+		case type_spinorLocal:
+			runKernel<spinor>(groups, threads_per_group, elems, spinorLocalKernel, in, out);
 			return;
 		default:
 			throw invalid_argument("runKernel has not been implemented for this type");
@@ -345,6 +352,7 @@ size_t getTypeSize(copyType type)
 		case type_su3:
 			return sizeof(Matrixsu3);
 		case type_spinor:
+		case type_spinorLocal:
 			return sizeof(spinor);
 		default:
 			throw invalid_argument("getTypeSize has not been implemented for this type.");
