@@ -1548,7 +1548,9 @@ int Opencl_Module_Fermions::get_flop_size(const char * in, inputparameters * par
 		return 1000000000000000000000000;
 	}
 	if (strcmp(in, "dslash_eoprec") == 0) {
-		return 1000000000000000000000000;
+		//this kernel performs for each eo site a 2*NDIM sum over (1 + gamma_mu) * su3matrix * spinor
+		//	NOTE: Should one include the simplifications here?? (halfspinor etc).
+		return Seo * NDIM * 2 * ( get_parameters()->get_flop_su3_spinor() + get_parameters()->get_flop_gamma_spinor() ) ;
 	}
 	return 0;
 }
