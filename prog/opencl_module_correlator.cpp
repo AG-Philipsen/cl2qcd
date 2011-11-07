@@ -372,6 +372,47 @@ int Opencl_Module_Correlator::get_read_write_size(const char * in, inputparamete
 	return 0;
 }
 
+int Opencl_Module_Correlator::get_flop_size(const char * in, inputparameters * parameters)
+{
+	int result = Opencl_Module_Spinors::get_flop_size(in, parameters);
+	if (result != 0) return result;
+	int S = get_parameters()->get_spinorfieldsize();
+	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	//this is the same as in the function above
+	if (strcmp(in, "create_point_source") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "create_stochastic_source") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "correlator_ps_z") == 0 ) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "correlator_sc_z") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "correlator_vx_z") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "correlator_vy_z") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "correlator_vz_z") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "correlator_ax_z") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "correlator_ay_z") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "correlator_az_z") == 0) {
+		return 1000000000000000000000000;
+	}
+	
+	return 0;
+}
+
 void Opencl_Module_Correlator::print_profiling(std::string filename, int number)
 {
 	Opencl_Module_Spinors::print_profiling(filename, number);

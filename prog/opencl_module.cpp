@@ -964,7 +964,7 @@ int Opencl_Module::get_flop_size(const char * in, inputparameters * parameters)
 	const size_t VOLSPACE = parameters->get_volspace();
 	if (strcmp(in, "polyakov") == 0) {
 		//this kernel performs NTIME -1 su3matrix-multiplications, takes a complex trace and adds these real values over VOLSPACE
-		return VOLSPACE * ( (parameters->get_nt()-1) * parameters->get_flop_su3_su3() + parameters->get_flop_su3_trace() ) ;
+		return VOLSPACE * ( (parameters->get_nt()-1) * parameters->get_flop_su3_su3() + parameters->get_flop_su3trace() ) ;
 	}
 	if (strcmp(in, "polyakov_reduction") == 0) {
 		return 1000000000000000000000;

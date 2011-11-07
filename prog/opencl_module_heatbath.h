@@ -116,6 +116,14 @@ private:
 	virtual int get_read_write_size(const char * in, inputparameters * parameters);
 
 	/**
+	 * Return amount of Floating point operations performed by a specific kernel per call.
+	 * NOTE: this is meant to be the "netto" amount in order to be comparable.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual int get_flop_size(const char * in, inputparameters * parameters);
+	
+	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.

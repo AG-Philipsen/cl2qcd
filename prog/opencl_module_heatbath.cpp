@@ -196,6 +196,7 @@ usetimer* Opencl_Module_Heatbath::get_timer(const char * in)
 		return NULL;
 	}
 }
+
 int Opencl_Module_Heatbath::get_read_write_size(const char * in, inputparameters * parameters)
 {
 	int result = Opencl_Module_Ran::get_read_write_size(in, parameters);
@@ -222,6 +223,33 @@ int Opencl_Module_Heatbath::get_read_write_size(const char * in, inputparameters
 	if (strcmp(in, "overrelax_odd") == 0) {
 		return 48 * VOL4D * D * R + 1;
 	}
+	return 0;
+}
+
+int Opencl_Module_Heatbath::get_flop_size(const char * in, inputparameters * parameters)
+{
+	int result = Opencl_Module_Ran::get_flop_size(in, parameters);
+	if (result != 0) return result;
+	const size_t VOL4D = parameters->get_vol4d();
+	int S;
+	if((*parameters).get_use_eo() == 1)
+		S = get_parameters()->get_eoprec_spinorfieldsize();
+	else
+		S = get_parameters()->get_spinorfieldsize();
+	//this is the same as in the function above
+	if (strcmp(in, "heatbath_even") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "heatbath_odd") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "overrelax_even") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "overrelax_odd") == 0) {
+		return 1000000000000000000000000;
+	}
+	return 0;
 }
 
 void Opencl_Module_Heatbath::print_profiling(std::string filename, int number)

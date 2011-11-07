@@ -741,6 +741,76 @@ int Opencl_Module_Spinors::get_read_write_size(const char * in, inputparameters 
 	return 0;
 }
 
+int Opencl_Module_Spinors::get_flop_size(const char * in, inputparameters * parameters)
+{
+	int result = Opencl_Module_Ran::get_flop_size(in, parameters);
+	if (result != 0) return result;
+	int S = get_parameters()->get_spinorfieldsize();
+	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	//this is the same as in the function above
+	if (strcmp(in, "set_spinorfield_cold") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "set_eoprec_spinorfield_cold") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "convert_from_eoprec") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "convert_to_eoprec") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "saxpy") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "sax") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "saxsbypz") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "set_zero_spinorfield") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "saxpy_eoprec") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "sax_eoprec") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "saxsbypz_eoprec") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "set_zero_spinorfield_eoprec") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "scalar_product") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "scalar_product_reduction") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "global_squarenorm") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "global_squarenorm_reduction") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "scalar_product_eoprec") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "global_squarenorm_eoprec") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "ratio") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "product") == 0) {
+		return 1000000000000000000000000;
+	}
+	return 0;
+}
+
 void Opencl_Module_Spinors::print_profiling(std::string filename, int number)
 {
 	Opencl_Module_Ran::print_profiling(filename, number);

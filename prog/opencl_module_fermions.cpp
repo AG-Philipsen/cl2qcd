@@ -1514,6 +1514,45 @@ int Opencl_Module_Fermions::get_read_write_size(const char * in, inputparameters
 	return 0;
 }
 
+int Opencl_Module_Fermions::get_flop_size(const char * in, inputparameters * parameters)
+{
+	int result = Opencl_Module_Spinors::get_flop_size(in, parameters);
+	if (result != 0) return result;
+	int S = get_parameters()->get_spinorfieldsize();
+	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	if (strcmp(in, "M_wilson") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "gamma5") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "M_tm_plus") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "M_tm_minus") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "gamma5_eoprec") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "M_tm_sitediagonal") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "M_tm_sitediagonal_minus") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "M_tm_inverse_sitediagonal_minus") == 0) {
+		return 1000000000000000000000000;
+	}
+	if (strcmp(in, "dslash_eoprec") == 0) {
+		return 1000000000000000000000000;
+	}
+	return 0;
+}
+
 void Opencl_Module_Fermions::print_profiling(std::string filename, int number)
 {
 	Opencl_Module_Spinors::print_profiling(filename, number);

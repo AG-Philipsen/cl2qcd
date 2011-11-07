@@ -282,6 +282,52 @@ int Opencl_Module_Hmc::get_read_write_size(char * in, inputparameters * paramete
 	return 0;
 }
 
+int Opencl_Module_Hmc::get_flop_size(const char * in, inputparameters * parameters)
+{
+	int result = Opencl_Module_Fermions::get_flop_size(in, parameters);
+	if (result != 0) return result;
+	int S;
+	if((*parameters).get_use_eo() == 1)
+		S = get_parameters()->get_eoprec_spinorfieldsize();
+	else
+		S = get_parameters()->get_spinorfieldsize();
+	//this is the same as in the function above
+	if (strcmp(in, "generate_gaussian_spinorfield") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "generate_gaussian_spinorfield_eoprec") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "generate_gaussian_gaugemomenta") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "md_update_gaugefield") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "md_update_gaugemomenta") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "gauge_force") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "fermion_force") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "fermion_force_eoprec") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "set_zero_gaugemomentum;") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "gaugemomentum_squarenorm") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "stout_smear_fermion_force") == 0) {
+		return 10000000000000000000;
+	}
+	return 0;
+}
+
 void Opencl_Module_Hmc::print_profiling(std::string filename, int number)
 {
 	Opencl_Module_Fermions::print_profiling(filename, number);

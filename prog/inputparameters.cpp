@@ -43,23 +43,23 @@ void inputparameters::set_defaults()
 	float_size = 8;
 	//complex_add is 2 fl. operations. There is no variable for that!
 	//( a_re * b_re - b_im * a_im , a_re * b_im + a_im * b_re )
-	flop_mult_complex = 6;
+	flop_complex_mult = 6;
 	//	1 entry: NC * complex mults and NC-1 complex adds
 	//	NC*NC entries total
-	flop_su3_su3 = (flop_mult_complex * NC + (NC-1) * 2) * NC * NC;
+	flop_su3_su3 = (flop_complex_mult * NC + (NC-1) * 2) * NC * NC;
 	//	1 entry: NC * complex mults and NC-1 complex adds
 	//	NC entries total
-	flop_su3_su3vec = (flop_mult_complex * NC + (NC-1) * 2) * NC;
+	flop_su3_su3vec = (flop_complex_mult * NC + (NC-1) * 2) * NC;
 	//	NC * complex adds
 	flop_su3trace = NC * 2;
 	//	?????
 	flop_gamma_spinor = 0;
-	//	ND * flop_su3_su3vec
-	flop_su3_spinor = ND * flop_su3_su3vec;
-	//	ND * NC * complex_mult + ( ND * NC -1 ) complex adds
-	flop_spinor_spinor = ND * NC * flop_complex_mult + (ND * NC -1) * 2;
-	//	ND * NC * 0.5 complex_mult + ( ND * NC -1 ) real adds
-	flop_spinor_sqnorm = ND * NC * flop_complex_mult * 0.5 + (NC * ND -1);
+	//	NDIM * flop_su3_su3vec
+	flop_su3_spinor = NDIM * flop_su3_su3vec;
+	//	NDIM * NC * complex_mult + ( NDIM * NC -1 ) complex adds
+	flop_spinor_spinor = NDIM * NC * flop_complex_mult + (NDIM * NC -1) * 2;
+	//	NDIM * NC * 0.5 complex_mult + ( NDIM * NC -1 ) real adds
+	flop_spinor_sqnorm = NDIM * NC * flop_complex_mult * 0.5 + (NC * NDIM -1);
 #endif
 	//gaugefield parameters
 	beta = 4.0;
