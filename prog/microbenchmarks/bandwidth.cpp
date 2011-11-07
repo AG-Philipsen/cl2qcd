@@ -83,8 +83,9 @@ int main(int argc, char** argv)
 	desc.add_options()
 	("help,h", "Produce this help message")
 	("elements,e", po::value<cl_ulong>()->default_value(100000), "How many elements to use.") // conflicts with single
-	("threads,t", po::value<cl_ulong>()->default_value(64), "The number of threads to use per groups (maximum if groups is set)")
-	("groups,g", po::value<cl_ulong>(), "Vary number of threads per group for a fixed number of groups") // default is to vary number of groups for 64 threads per groups
+	("threads,t", po::value<cl_ulong>()->default_value(64), "The number of threads to use per groups")
+	("groups,g", po::value<cl_ulong>(), "Specify a fixed number of groups.")
+	("stepthreads,st", po::value<cl_ulong>()->default_value(0), "Step size for thread per group sweeping")
 	("single", "Copy only a single element per thread")
 	("type,d", po::value<std::string>()->default_value("float"), "The data type to copy");
 
@@ -116,25 +117,39 @@ int main(int argc, char** argv)
 	}
 
 	if(vm.count("groups")) {
-		logger.info() << "Scanning number active threads per group required for maximum memory throughput";
 		cl_ulong max_threads = vm["threads"].as<cl_ulong>();
 		cl_ulong groups = vm["groups"].as<cl_ulong>();
-
+		cl_ulong step_threads = vm["stepthreads"].as<cl_ulong>();
+		cl_ulong min_threads;
+		if(step_threads) {
+			logger.info() << "Scanning number active threads per group required for maximum memory throughput";
+			min_threads = step_threads;
+		} else {
+			min_threads = max_threads;
+			step_threads = max_threads + 1;
+		}
 		if(vm.count("single")) {
 			logger.info() << "Using a single element per thread";
 			Dummyfield dev(CL_DEVICE_TYPE_GPU, groups * max_threads * getTypeSize(copy_type));
-			for(size_t threads = 1; threads <= max_threads; ++threads) {
+			if(step_threads <= max_threads) {
+				size_t threads = 1;
+				dev.runKernel(copy_type, groups, threads, groups * threads);
+			}
+			for(size_t threads = min_threads; threads <= max_threads; threads += step_threads) {
 				dev.runKernel(copy_type, groups, threads, groups * threads);
 			}
 		} else {
 			const cl_ulong elems = vm["elements"].as<cl_ulong>();
 			logger.info() << "Keeping number of elements fixed at " << elems;
 			Dummyfield dev(CL_DEVICE_TYPE_GPU, elems * getTypeSize(copy_type));
-			for(size_t threads = 1; threads <= max_threads; ++threads) {
+			if(step_threads <= max_threads) {
+				size_t threads = 1;
+				dev.runKernel(copy_type, groups, threads, groups * threads);
+			}
+			for(size_t threads = min_threads; threads <= max_threads; threads += step_threads) {
 				dev.runKernel(copy_type, groups, threads, elems);
 			}
 		}
-
 	} else {
 		logger.info() << "Scanning number of wavefronts required for maximum memory throughput";
 		cl_ulong threads = vm["threads"].as<cl_ulong>();
