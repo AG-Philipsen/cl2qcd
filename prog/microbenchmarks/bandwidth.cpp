@@ -83,6 +83,7 @@ int main(int argc, char** argv)
 	desc.add_options()
 	("help,h", "Produce this help message")
 	("elements,e", po::value<cl_ulong>()->default_value(100000), "How many elements to use.") // conflicts with single
+	("stepelements,se", po::value<cl_ulong>(), "Step size for element count sweeping")
 	("threads,t", po::value<cl_ulong>()->default_value(64), "The number of threads to use per groups")
 	("groups,g", po::value<cl_ulong>(), "Specify a fixed number of groups.")
 	("stepthreads,st", po::value<cl_ulong>()->default_value(0), "Step size for thread per group sweeping")
@@ -116,7 +117,29 @@ int main(int argc, char** argv)
 		logger.error() << "You can either use one element per thread or define the global number of elements";
 	}
 
-	if(vm.count("groups")) {
+	if(vm.count("stepelements")) {
+		logger.info() << "Sweeping element count for fixed thread count.";
+		cl_ulong max_elements = vm["elements"].as<cl_ulong>();
+		cl_ulong step_elements = vm["stepelements"].as<cl_ulong>();
+		cl_ulong threads = vm["threads"].as<cl_ulong>();
+		cl_ulong groups;
+		if(vm.count("groups")) {
+			groups = vm["groups"].as<cl_ulong>();
+		} else {
+			groups = 20 * 8; // taken out of the air and tuned for Cypress
+		}
+		if(vm.count("single")) {
+			logger.fatal() << "Single element per thread mode has not been implemented in element count sweeping mod";
+		} else {
+			Dummyfield dev(CL_DEVICE_TYPE_GPU, max_elements * getTypeSize(copy_type));
+			size_t elements = 1;
+			dev.runKernel(copy_type, groups, threads, elements);
+			for(elements = step_elements; elements <= max_elements; elements += step_elements) {
+				dev.runKernel(copy_type, groups, threads, elements);
+			}
+		}
+
+	} else if(vm.count("groups")) {
 		cl_ulong max_threads = vm["threads"].as<cl_ulong>();
 		cl_ulong groups = vm["groups"].as<cl_ulong>();
 		cl_ulong step_threads = vm["stepthreads"].as<cl_ulong>();
@@ -292,8 +315,8 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 	}
 	int64_t kernelTime = timer.getTime() / num_meas;
 
-	// format is: #groups #threads per group #copy time in mus #bandwidth in megabytes
-	cout << groups * threads_per_group << ' ' << groups << ' ' << threads_per_group << ' ' << kernelTime << ' ' << (2 * elems * sizeof(T) / kernelTime) << endl;
+	// format is: #groups #threads per group #elements #copied memory in bytes #copy time in mus #bandwidth in megabytes
+	cout << groups * threads_per_group << ' ' << groups << ' ' << threads_per_group << ' ' << elems << ' ' << elems * sizeof(T) << ' ' << kernelTime << ' ' << (2 * elems * sizeof(T) / kernelTime) << endl;
 }
 
 void Dummyfield::init_tasks()
