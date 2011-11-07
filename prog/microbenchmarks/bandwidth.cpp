@@ -27,7 +27,8 @@ Random rnd(15);
 enum copyType {
   type_invalid,
   type_float,
-  type_su3
+  type_su3,
+  type_spinor
 };
 
 size_t getTypeSize(copyType type);
@@ -38,6 +39,7 @@ private:
 	inputparameters params;
 	cl_kernel floatKernel;
 	cl_kernel su3Kernel;
+	cl_kernel spinorKernel;
 
 	template<typename T> void runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, cl_mem in, cl_mem out);
 
@@ -100,6 +102,7 @@ int main(int argc, char** argv)
 	std::map<std::string, copyType> type_map;
 	type_map["float"] = type_float;
 	type_map["su3"] = type_su3;
+	type_map["spinor"] = type_spinor;
 
 	const copyType copy_type = type_map[vm["type"].as<std::string>()];
 	if(!copy_type) {
@@ -185,8 +188,9 @@ void Device::fill_kernels()
 {
 	Opencl_Module::fill_kernels();
 
-	floatKernel = createKernel("copyFloat") << basic_opencl_code << "microbenchmarks/bandwidth.cl";
-	su3Kernel = createKernel("copySU3") << basic_opencl_code << "microbenchmarks/bandwidth.cl";
+	floatKernel = createKernel("copyFloat") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
+	su3Kernel = createKernel("copySU3") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
+	spinorKernel = createKernel("copySpinor") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 }
 
 void Dummyfield::clear_buffers()
@@ -214,6 +218,9 @@ void Device::runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_g
 			return;
 		case type_su3:
 			runKernel<Matrixsu3>(groups, threads_per_group, elems, su3Kernel, in, out);
+			return;
+		case type_spinor:
+			runKernel<spinor>(groups, threads_per_group, elems, spinorKernel, in, out);
 			return;
 		default:
 			throw invalid_argument("runKernel has not been implemented for this type");
@@ -300,6 +307,8 @@ size_t getTypeSize(copyType type)
 			return sizeof(hmc_float);
 		case type_su3:
 			return sizeof(Matrixsu3);
+		case type_spinor:
+			return sizeof(spinor);
 		default:
 			throw invalid_argument("getTypeSize has not been implemented for this type.");
 	}
