@@ -25,10 +25,10 @@ Random rnd(15);
  * Selector type for the base type of the copy operations.
  */
 enum copyType {
-  type_invalid,
-  type_float,
-  type_su3,
-  type_spinor
+	type_invalid,
+	type_float,
+	type_su3,
+	type_spinor
 };
 
 size_t getTypeSize(copyType type);
@@ -298,22 +298,21 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 
 	cl_command_queue queue = get_queue();
 
-	klepsydra::Monotonic timer;
-
-	enqueueKernel(kernel, total_threads, local_threads);
+	err = clEnqueueNDRangeKernel(get_queue(), kernel, 1, 0, &total_threads, &local_threads, 0, 0, NULL);
 	err = clFinish(get_queue());
 	if(err) {
 		logger.fatal() << "Failed to execute kernel: " << err;
 		throw Opencl_Error(err);
 	}
-	for(size_t i = 1; i < num_meas; ++i)
-		enqueueKernel(kernel, total_threads, local_threads);
+	klepsydra::Monotonic timer;
+	for(size_t i = 0; i < num_meas; ++i)
+		clEnqueueNDRangeKernel(get_queue(), kernel, 1, 0, &total_threads, &local_threads, 0, 0, NULL);
 	err = clFinish(queue);
+	int64_t kernelTime = timer.getTime() / num_meas;
 	if(err) {
 		logger.fatal() << "Failed to execute kernel: " << err;
 		throw Opencl_Error(err);
 	}
-	int64_t kernelTime = timer.getTime() / num_meas;
 
 	// format is: #groups #threads per group #elements #copied memory in bytes #copy time in mus #bandwidth in megabytes
 	cout << groups * threads_per_group << ' ' << groups << ' ' << threads_per_group << ' ' << elems << ' ' << elems * sizeof(T) << ' ' << kernelTime << ' ' << (2 * elems * sizeof(T) / kernelTime) << endl;
