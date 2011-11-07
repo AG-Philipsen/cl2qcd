@@ -4,6 +4,7 @@
  */
 
 #include <string>
+#include <stdexcept>
 
 #include <boost/program_options.hpp>
 
@@ -21,6 +22,17 @@ std::string const version = "0.1";
 Random rnd(15);
 
 const size_t MAX_MEM_SIZE = 16 * 1024 * 1024;
+
+/**
+ * Selector type for the base type of the copy operations.
+ */
+enum copyType {
+  type_invalid,
+  type_float,
+  type_su3
+};
+
+size_t getTypeSize(copyType type);
 
 class Device : public Opencl_Module {
 
@@ -41,8 +53,7 @@ public:
 		finalize();
 	};
 
-	void runFloatKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out);
-	void runSU3Kernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out);
+	void runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out);
 };
 
 class Dummyfield : public Gaugefield_hybrid {
@@ -55,8 +66,7 @@ public:
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
-	void runFloatKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems);
-	void runSU3Kernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems);
+	void runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems);
 
 private:
 	void verify(hmc_complex, hmc_complex);
@@ -65,7 +75,6 @@ private:
 	inputparameters params;
 	cl_mem in, out;
 };
-
 
 int main(int argc, char** argv)
 {
@@ -76,7 +85,7 @@ int main(int argc, char** argv)
 	("threads,t", po::value<cl_ulong>()->default_value(64), "The number of threads to use per groups (maximum if groups is set)")
 	("groups,g", po::value<cl_ulong>(), "Vary number of threads per group for a fixed number of groups") // default is to vary number of groups for 64 threads per groups
 	("single", "Copy only a single element per thread")
-	("su3", "Use SU3 datastructure instead of float");
+	("type,d", po::value<std::string>()->default_value("float"), "The data type to copy");
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -90,11 +99,17 @@ int main(int argc, char** argv)
 
 	Dummyfield dev(CL_DEVICE_TYPE_GPU);
 
-	const bool use_su3 = vm.count("su3");
-	if(use_su3)
-		logger.info() << "Using su3 matrices as load/store datatype";
-	else
-		logger.info() << "Using floating point data type";
+	// parse type
+	std::map<std::string, copyType> type_map;
+	type_map["float"] = type_float;
+	type_map["su3"] = type_su3;
+
+	const copyType copy_type = type_map[vm["type"].as<std::string>()];
+	if(!copy_type) {
+		logger.error() << "Please select one of the following types: float(default), su3";
+		return 1;
+	}
+	logger.info() << "Using " << vm["type"].as<std::string>() << " as load/store datatype";
 
 	if(vm.count("groups")) {
 		logger.info() << "Scanning number active threads per group required for maximum memory throughput";
@@ -104,19 +119,13 @@ int main(int argc, char** argv)
 		if(vm.count("single")) {
 			logger.info() << "Using a single element per thread";
 			for(size_t threads = 1; threads <= max_threads; ++threads) {
-				if(use_su3)
-					dev.runSU3Kernel(groups, threads, groups * threads);
-				else
-					dev.runFloatKernel(groups, threads, groups * threads);
+				dev.runKernel(copy_type, groups, threads, groups * threads);
 			}
 		} else {
-			const cl_ulong elems = MAX_MEM_SIZE / (use_su3 ? sizeof(Matrixsu3) : sizeof(hmc_float) );
+			const cl_ulong elems = MAX_MEM_SIZE / getTypeSize(copy_type);
 			logger.info() << "Keeping number of elements fixed at " << elems;
 			for(size_t threads = 1; threads <= max_threads; ++threads) {
-				if(use_su3)
-					dev.runSU3Kernel(groups, threads, elems);
-				else
-					dev.runFloatKernel(groups, threads, elems);
+				dev.runKernel(copy_type, groups, threads, elems);
 			}
 		}
 
@@ -128,19 +137,13 @@ int main(int argc, char** argv)
 		if(vm.count("single")) {
 			logger.info() << "Using a single element per thread";
 			for(size_t groups = 1; groups <= max_groups; ++groups) {
-				if(use_su3)
-					dev.runSU3Kernel(groups, threads, groups * threads);
-				else
-					dev.runFloatKernel(groups, threads, groups * threads);
+				dev.runKernel(copy_type, groups, threads, groups * threads);
 			}
 		} else {
-			const cl_ulong elems = MAX_MEM_SIZE / (use_su3 ? sizeof(Matrixsu3) : sizeof(hmc_float) );
+			const cl_ulong elems = MAX_MEM_SIZE / getTypeSize(copy_type);
 			logger.info() << "Keeping number of elements fixed at " << elems;
 			for(size_t groups = 1; groups <= max_groups; ++groups) {
-				if(use_su3)
-					dev.runSU3Kernel(groups, threads, elems);
-				else
-					dev.runFloatKernel(groups, threads, elems);
+				dev.runKernel(copy_type, groups, threads, elems);
 			}
 		}
 	}
@@ -196,14 +199,18 @@ void Device::clear_kernels()
 }
 
 
-void Device::runFloatKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out)
+void Device::runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out)
 {
-	runKernel<hmc_float>(groups, threads_per_group, elems, floatKernel, in, out);
-}
-
-void Device::runSU3Kernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out)
-{
-	runKernel<Matrixsu3>(groups, threads_per_group, elems, su3Kernel, in, out);
+	switch(copy_type) {
+		case type_float:
+			runKernel<hmc_float>(groups, threads_per_group, elems, floatKernel, in, out);
+			return;
+		case type_su3:
+			runKernel<Matrixsu3>(groups, threads_per_group, elems, su3Kernel, in, out);
+			return;
+		default:
+			throw invalid_argument("runKernel has not been implemented for this type");
+	}
 }
 
 template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, cl_mem in, cl_mem out)
@@ -280,11 +287,19 @@ void Dummyfield::finalize_opencl()
 	Gaugefield_hybrid::finalize_opencl();
 }
 
-void Dummyfield::runFloatKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems)
+void Dummyfield::runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems)
 {
-	static_cast<Device*>(opencl_modules[0])->runFloatKernel(groups, threads_per_group, elems, in, out);
+	static_cast<Device*>(opencl_modules[0])->runKernel(copy_type, groups, threads_per_group, elems, in, out);
 }
-void Dummyfield::runSU3Kernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems)
+
+size_t getTypeSize(copyType type)
 {
-	static_cast<Device*>(opencl_modules[0])->runSU3Kernel(groups, threads_per_group, elems, in, out);
+	switch(type) {
+		case type_float:
+			return sizeof(hmc_float);
+		case type_su3:
+			return sizeof(Matrixsu3);
+		default:
+			throw invalid_argument("getTypeSize has not been implemented for this type.");
+	}
 }
