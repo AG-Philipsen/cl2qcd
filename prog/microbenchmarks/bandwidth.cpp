@@ -21,8 +21,6 @@ std::string const version = "0.1";
 
 Random rnd(15);
 
-const size_t MAX_MEM_SIZE = 16 * 1024 * 1024;
-
 /**
  * Selector type for the base type of the copy operations.
  */
@@ -59,7 +57,7 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
+	Dummyfield(cl_device_type device_type, size_t maxMemSize) : Gaugefield_hybrid(), maxMemSize(maxMemSize) {
 		init(1, device_type, &params);
 	};
 
@@ -74,6 +72,7 @@ private:
 	void clear_buffers();
 	inputparameters params;
 	cl_mem in, out;
+	size_t maxMemSize;
 };
 
 int main(int argc, char** argv)
@@ -81,7 +80,7 @@ int main(int argc, char** argv)
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	("help,h", "Produce this help message")
-//	     ("elements,e", po::value<cl_ulong>()->default_value(100000), "How many elements to use.") // conflicts with single
+	("elements,e", po::value<cl_ulong>()->default_value(100000), "How many elements to use.") // conflicts with single
 	("threads,t", po::value<cl_ulong>()->default_value(64), "The number of threads to use per groups (maximum if groups is set)")
 	("groups,g", po::value<cl_ulong>(), "Vary number of threads per group for a fixed number of groups") // default is to vary number of groups for 64 threads per groups
 	("single", "Copy only a single element per thread")
@@ -97,8 +96,6 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	Dummyfield dev(CL_DEVICE_TYPE_GPU);
-
 	// parse type
 	std::map<std::string, copyType> type_map;
 	type_map["float"] = type_float;
@@ -111,6 +108,10 @@ int main(int argc, char** argv)
 	}
 	logger.info() << "Using " << vm["type"].as<std::string>() << " as load/store datatype";
 
+	if(vm.count("single") && vm.count("elements")) {
+		logger.error() << "You can either use one element per thread or define the global number of elements";
+	}
+
 	if(vm.count("groups")) {
 		logger.info() << "Scanning number active threads per group required for maximum memory throughput";
 		cl_ulong max_threads = vm["threads"].as<cl_ulong>();
@@ -118,12 +119,14 @@ int main(int argc, char** argv)
 
 		if(vm.count("single")) {
 			logger.info() << "Using a single element per thread";
+			Dummyfield dev(CL_DEVICE_TYPE_GPU, groups * max_threads * getTypeSize(copy_type));
 			for(size_t threads = 1; threads <= max_threads; ++threads) {
 				dev.runKernel(copy_type, groups, threads, groups * threads);
 			}
 		} else {
-			const cl_ulong elems = MAX_MEM_SIZE / getTypeSize(copy_type);
+			const cl_ulong elems = vm["elements"].as<cl_ulong>();
 			logger.info() << "Keeping number of elements fixed at " << elems;
+			Dummyfield dev(CL_DEVICE_TYPE_GPU, elems * getTypeSize(copy_type));
 			for(size_t threads = 1; threads <= max_threads; ++threads) {
 				dev.runKernel(copy_type, groups, threads, elems);
 			}
@@ -136,12 +139,14 @@ int main(int argc, char** argv)
 
 		if(vm.count("single")) {
 			logger.info() << "Using a single element per thread";
+			Dummyfield dev(CL_DEVICE_TYPE_GPU, max_groups * threads * getTypeSize(copy_type));
 			for(size_t groups = 1; groups <= max_groups; ++groups) {
 				dev.runKernel(copy_type, groups, threads, groups * threads);
 			}
 		} else {
-			const cl_ulong elems = MAX_MEM_SIZE / getTypeSize(copy_type);
+			const cl_ulong elems = vm["elements"].as<cl_ulong>();
 			logger.info() << "Keeping number of elements fixed at " << elems;
+			Dummyfield dev(CL_DEVICE_TYPE_GPU, elems * getTypeSize(copy_type));
 			for(size_t groups = 1; groups <= max_groups; ++groups) {
 				dev.runKernel(copy_type, groups, threads, elems);
 			}
@@ -161,13 +166,15 @@ void Dummyfield::fill_buffers()
 
 	cl_context context = opencl_modules[0]->get_context();
 
-	in = clCreateBuffer(context, CL_MEM_READ_ONLY, MAX_MEM_SIZE, 0, &err );
+	logger.info() << "Allocating buffers of " << maxMemSize << " bytes.";
+
+	in = clCreateBuffer(context, CL_MEM_READ_ONLY, maxMemSize, 0, &err );
 	if(err) {
 		logger.fatal() << "Unable to allocate memory on device";
 		throw Opencl_Error(err);
 	}
 
-	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, MAX_MEM_SIZE, 0, &err );
+	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, maxMemSize, 0, &err );
 	if(err) {
 		logger.fatal() << "Unable to allocate memory on device";
 		throw Opencl_Error(err);
@@ -216,12 +223,6 @@ void Device::runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_g
 template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, cl_mem in, cl_mem out)
 {
 	cl_int err = CL_SUCCESS;
-
-	// make sure memory buffers are large enough
-	if( elems * sizeof(T) > MAX_MEM_SIZE ) {
-		logger.fatal() << "Not enough memory for the given number of elements";
-		exit(-1);
-	}
 
 	// TODO adjust threads_per_group for kernel invocation to proper size but keep requested value for kernel arg
 	size_t local_threads = threads_per_group;
