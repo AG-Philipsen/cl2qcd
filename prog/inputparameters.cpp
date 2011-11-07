@@ -41,6 +41,25 @@ void inputparameters::set_defaults()
 #ifdef _PROFILING_
 	mat_size = 9;
 	float_size = 8;
+	//complex_add is 2 fl. operations. There is no variable for that!
+	//( a_re * b_re - b_im * a_im , a_re * b_im + a_im * b_re )
+	flop_mult_complex = 6;
+	//	1 entry: NC * complex mults and NC-1 complex adds
+	//	NC*NC entries total
+	flop_su3_su3 = (flop_mult_complex * NC + (NC-1) * 2) * NC * NC;
+	//	1 entry: NC * complex mults and NC-1 complex adds
+	//	NC entries total
+	flop_su3_su3vec = (flop_mult_complex * NC + (NC-1) * 2) * NC;
+	//	NC * complex adds
+	flop_su3trace = NC * 2;
+	//	?????
+	flop_gamma_spinor = 0;
+	//	ND * flop_su3_su3vec
+	flop_su3_spinor = ND * flop_su3_su3vec;
+	//	ND * NC * complex_mult + ( ND * NC -1 ) complex adds
+	flop_spinor_spinor = ND * NC * flop_complex_mult + (ND * NC -1) * 2;
+	//	ND * NC * 0.5 complex_mult + ( ND * NC -1 ) real adds
+	flop_spinor_sqnorm = ND * NC * flop_complex_mult * 0.5 + (NC * ND -1);
 #endif
 	//gaugefield parameters
 	beta = 4.0;
@@ -898,6 +917,38 @@ int inputparameters::get_mat_size() const
 int inputparameters::get_float_size() const
 {
 	return float_size;
+}
+int inputparameters::get_flop_su3_su3() const
+{
+	return flop_su3_su3;
+}
+int inputparameters::get_flop_su3_su3vec() const
+{
+	return flop_su3_su3vec;
+}
+int inputparameters::get_flop_su3trace() const
+{
+	return flop_su3trace;
+}
+int inputparameters::get_flop_complex_mult() const
+{
+	return flop_complex_mult;
+}
+int inputparameters::get_flop_spinor_spinor() const
+{
+	return flop_spinor_spinor;
+}
+int inputparameters::get_flop_su3_spinor() const
+{
+	return flop_su3_spinor;
+}
+int inputparameters::get_flop_gamma_spinor() const
+{
+	return flop_gamma_spinor;
+}
+int inputparameters::get_flop_spinor_sqnorm() const
+{
+	return flop_spinor_sqnorm;
 }
 #endif
 

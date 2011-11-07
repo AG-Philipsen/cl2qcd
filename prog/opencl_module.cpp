@@ -958,6 +958,30 @@ int Opencl_Module::get_read_write_size(const char * in, inputparameters * parame
 	return 0;
 }
 
+int Opencl_Module::get_flop_size(const char * in, inputparameters * parameters)
+{
+	const size_t VOL4D = parameters->get_vol4d();
+	const size_t VOLSPACE = parameters->get_volspace();
+	if (strcmp(in, "polyakov") == 0) {
+		//this kernel performs NTIME -1 su3matrix-multiplications, takes a complex trace and adds these real values over VOLSPACE
+		return VOLSPACE * ( (parameters->get_nt()-1) * parameters->get_flop_su3_su3() + parameters->get_flop_su3_trace() ) ;
+	}
+	if (strcmp(in, "polyakov_reduction") == 0) {
+		return 1000000000000000000000;
+	}
+	if (strcmp(in, "plaquette") == 0) {
+		//this kernel performs 3 su3matrix-mutliplications, a real su3 trace and sums over VOL4D and mu and nu (nu<mu)
+		return VOL4D * NDIM * (NDIM -1) * ( 3 + NC);
+	}
+	if (strcmp(in, "plaquette_reduction") == 0) {
+		return 1000000000000000000000;
+	}
+	if (strcmp(in, "stout_smear") == 0) {
+		return 1000000000000000000000;
+	}
+	return 0;
+}
+
 void Opencl_Module::print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, int read_write_size)
 {
 	hmc_float bandwidth = 0.;

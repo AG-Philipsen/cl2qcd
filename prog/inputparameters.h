@@ -154,6 +154,14 @@ public:
 #ifdef _PROFILING_
 	int get_mat_size() const;
 	int get_float_size() const;
+	int get_flop_su3_su3() const;
+	int get_flop_su3_su3vec() const;
+	int get_flop_su3trace() const;
+	int get_flop_complex_mult() const;
+	int get_flop_gamma_spinor() const;
+	int get_flop_su3_spinor() const;
+	int get_flop_spinor_spinor() const;
+	int get_flop_spinor_sqnorm() const;
 #endif
 	/////////////////////////////////////////////////////
 	// printing-functions for the different executables
@@ -276,6 +284,15 @@ private:
 	//parameters that describe the size of datatypes in bytes
 	int mat_size;
 	int float_size;
+	//parameters that describe the amount of floating point operations
+	int flop_su3_su3;
+	int flop_su3_su3vec;
+	int flop_su3trace;
+	int flop_complex_mult;
+	int flop_spinor_spinor;
+	int flop_su3_spinor;
+	int flop_gamma_spinor;
+	int flop_spinor_sqnorm;
 #endif
 
 	//more specific ones
