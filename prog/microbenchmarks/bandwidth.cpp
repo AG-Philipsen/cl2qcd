@@ -4,6 +4,7 @@
  */
 
 #include <string>
+#include <stdexcept>
 
 #include <boost/program_options.hpp>
 
@@ -20,7 +21,17 @@ std::string const version = "0.1";
 
 Random rnd(15);
 
-const size_t MAX_MEM_SIZE = 16 * 1024 * 1024;
+/**
+ * Selector type for the base type of the copy operations.
+ */
+enum copyType {
+  type_invalid,
+  type_float,
+  type_su3,
+  type_spinor
+};
+
+size_t getTypeSize(copyType type);
 
 class Device : public Opencl_Module {
 
@@ -28,6 +39,7 @@ private:
 	inputparameters params;
 	cl_kernel floatKernel;
 	cl_kernel su3Kernel;
+	cl_kernel spinorKernel;
 
 	template<typename T> void runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, cl_mem in, cl_mem out);
 
@@ -41,22 +53,20 @@ public:
 		finalize();
 	};
 
-	void runFloatKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out);
-	void runSU3Kernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out);
+	void runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out);
 };
 
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
+	Dummyfield(cl_device_type device_type, size_t maxMemSize) : Gaugefield_hybrid(), maxMemSize(maxMemSize) {
 		init(1, device_type, &params);
 	};
 
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
-	void runFloatKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems);
-	void runSU3Kernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems);
+	void runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems);
 
 private:
 	void verify(hmc_complex, hmc_complex);
@@ -64,19 +74,21 @@ private:
 	void clear_buffers();
 	inputparameters params;
 	cl_mem in, out;
+	size_t maxMemSize;
 };
-
 
 int main(int argc, char** argv)
 {
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	("help,h", "Produce this help message")
-//	     ("elements,e", po::value<cl_ulong>()->default_value(100000), "How many elements to use.") // conflicts with single
-	("threads,t", po::value<cl_ulong>()->default_value(64), "The number of threads to use per groups (maximum if groups is set)")
-	("groups,g", po::value<cl_ulong>(), "Vary number of threads per group for a fixed number of groups") // default is to vary number of groups for 64 threads per groups
+	("elements,e", po::value<cl_ulong>()->default_value(100000), "How many elements to use.") // conflicts with single
+	("stepelements,se", po::value<cl_ulong>(), "Step size for element count sweeping")
+	("threads,t", po::value<cl_ulong>()->default_value(64), "The number of threads to use per groups")
+	("groups,g", po::value<cl_ulong>(), "Specify a fixed number of groups.")
+	("stepthreads,st", po::value<cl_ulong>()->default_value(0), "Step size for thread per group sweeping")
 	("single", "Copy only a single element per thread")
-	("su3", "Use SU3 datastructure instead of float");
+	("type,d", po::value<std::string>()->default_value("float"), "The data type to copy");
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -88,38 +100,79 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	Dummyfield dev(CL_DEVICE_TYPE_GPU);
+	// parse type
+	std::map<std::string, copyType> type_map;
+	type_map["float"] = type_float;
+	type_map["su3"] = type_su3;
+	type_map["spinor"] = type_spinor;
 
-	const bool use_su3 = vm.count("su3");
-	if(use_su3)
-		logger.info() << "Using su3 matrices as load/store datatype";
-	else
-		logger.info() << "Using floating point data type";
+	const copyType copy_type = type_map[vm["type"].as<std::string>()];
+	if(!copy_type) {
+		logger.error() << "Please select one of the following types: float(default), su3";
+		return 1;
+	}
+	logger.info() << "Using " << vm["type"].as<std::string>() << " as load/store datatype";
 
-	if(vm.count("groups")) {
-		logger.info() << "Scanning number active threads per group required for maximum memory throughput";
-		cl_ulong max_threads = vm["threads"].as<cl_ulong>();
-		cl_ulong groups = vm["groups"].as<cl_ulong>();
+	if(vm.count("single") && vm.count("elements")) {
+		logger.error() << "You can either use one element per thread or define the global number of elements";
+	}
 
-		if(vm.count("single")) {
-			logger.info() << "Using a single element per thread";
-			for(size_t threads = 1; threads <= max_threads; ++threads) {
-				if(use_su3)
-					dev.runSU3Kernel(groups, threads, groups * threads);
-				else
-					dev.runFloatKernel(groups, threads, groups * threads);
-			}
+	if(vm.count("stepelements")) {
+		logger.info() << "Sweeping element count for fixed thread count.";
+		cl_ulong max_elements = vm["elements"].as<cl_ulong>();
+		cl_ulong step_elements = vm["stepelements"].as<cl_ulong>();
+		cl_ulong threads = vm["threads"].as<cl_ulong>();
+		cl_ulong groups;
+		if(vm.count("groups")) {
+			groups = vm["groups"].as<cl_ulong>();
 		} else {
-			const cl_ulong elems = MAX_MEM_SIZE / (use_su3 ? sizeof(Matrixsu3) : sizeof(hmc_float) );
-			logger.info() << "Keeping number of elements fixed at " << elems;
-			for(size_t threads = 1; threads <= max_threads; ++threads) {
-				if(use_su3)
-					dev.runSU3Kernel(groups, threads, elems);
-				else
-					dev.runFloatKernel(groups, threads, elems);
+			groups = 20 * 8; // taken out of the air and tuned for Cypress
+		}
+		if(vm.count("single")) {
+			logger.fatal() << "Single element per thread mode has not been implemented in element count sweeping mod";
+		} else {
+			Dummyfield dev(CL_DEVICE_TYPE_GPU, max_elements * getTypeSize(copy_type));
+			size_t elements = 1;
+			dev.runKernel(copy_type, groups, threads, elements);
+			for(elements = step_elements; elements <= max_elements; elements += step_elements) {
+				dev.runKernel(copy_type, groups, threads, elements);
 			}
 		}
 
+	} else if(vm.count("groups")) {
+		cl_ulong max_threads = vm["threads"].as<cl_ulong>();
+		cl_ulong groups = vm["groups"].as<cl_ulong>();
+		cl_ulong step_threads = vm["stepthreads"].as<cl_ulong>();
+		cl_ulong min_threads;
+		if(step_threads) {
+			logger.info() << "Scanning number active threads per group required for maximum memory throughput";
+			min_threads = step_threads;
+		} else {
+			min_threads = max_threads;
+			step_threads = max_threads + 1;
+		}
+		if(vm.count("single")) {
+			logger.info() << "Using a single element per thread";
+			Dummyfield dev(CL_DEVICE_TYPE_GPU, groups * max_threads * getTypeSize(copy_type));
+			if(step_threads <= max_threads) {
+				size_t threads = 1;
+				dev.runKernel(copy_type, groups, threads, groups * threads);
+			}
+			for(size_t threads = min_threads; threads <= max_threads; threads += step_threads) {
+				dev.runKernel(copy_type, groups, threads, groups * threads);
+			}
+		} else {
+			const cl_ulong elems = vm["elements"].as<cl_ulong>();
+			logger.info() << "Keeping number of elements fixed at " << elems;
+			Dummyfield dev(CL_DEVICE_TYPE_GPU, elems * getTypeSize(copy_type));
+			if(step_threads <= max_threads) {
+				size_t threads = 1;
+				dev.runKernel(copy_type, groups, threads, groups * threads);
+			}
+			for(size_t threads = min_threads; threads <= max_threads; threads += step_threads) {
+				dev.runKernel(copy_type, groups, threads, elems);
+			}
+		}
 	} else {
 		logger.info() << "Scanning number of wavefronts required for maximum memory throughput";
 		cl_ulong threads = vm["threads"].as<cl_ulong>();
@@ -127,20 +180,16 @@ int main(int argc, char** argv)
 
 		if(vm.count("single")) {
 			logger.info() << "Using a single element per thread";
+			Dummyfield dev(CL_DEVICE_TYPE_GPU, max_groups * threads * getTypeSize(copy_type));
 			for(size_t groups = 1; groups <= max_groups; ++groups) {
-				if(use_su3)
-					dev.runSU3Kernel(groups, threads, groups * threads);
-				else
-					dev.runFloatKernel(groups, threads, groups * threads);
+				dev.runKernel(copy_type, groups, threads, groups * threads);
 			}
 		} else {
-			const cl_ulong elems = MAX_MEM_SIZE / (use_su3 ? sizeof(Matrixsu3) : sizeof(hmc_float) );
+			const cl_ulong elems = vm["elements"].as<cl_ulong>();
 			logger.info() << "Keeping number of elements fixed at " << elems;
+			Dummyfield dev(CL_DEVICE_TYPE_GPU, elems * getTypeSize(copy_type));
 			for(size_t groups = 1; groups <= max_groups; ++groups) {
-				if(use_su3)
-					dev.runSU3Kernel(groups, threads, elems);
-				else
-					dev.runFloatKernel(groups, threads, elems);
+				dev.runKernel(copy_type, groups, threads, elems);
 			}
 		}
 	}
@@ -158,13 +207,15 @@ void Dummyfield::fill_buffers()
 
 	cl_context context = opencl_modules[0]->get_context();
 
-	in = clCreateBuffer(context, CL_MEM_READ_ONLY, MAX_MEM_SIZE, 0, &err );
+	logger.info() << "Allocating buffers of " << maxMemSize << " bytes.";
+
+	in = clCreateBuffer(context, CL_MEM_READ_ONLY, maxMemSize, 0, &err );
 	if(err) {
 		logger.fatal() << "Unable to allocate memory on device";
 		throw Opencl_Error(err);
 	}
 
-	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, MAX_MEM_SIZE, 0, &err );
+	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, maxMemSize, 0, &err );
 	if(err) {
 		logger.fatal() << "Unable to allocate memory on device";
 		throw Opencl_Error(err);
@@ -175,8 +226,9 @@ void Device::fill_kernels()
 {
 	Opencl_Module::fill_kernels();
 
-	floatKernel = createKernel("copyFloat") << basic_opencl_code << "microbenchmarks/bandwidth.cl";
-	su3Kernel = createKernel("copySU3") << basic_opencl_code << "microbenchmarks/bandwidth.cl";
+	floatKernel = createKernel("copyFloat") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
+	su3Kernel = createKernel("copySU3") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
+	spinorKernel = createKernel("copySpinor") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 }
 
 void Dummyfield::clear_buffers()
@@ -196,25 +248,26 @@ void Device::clear_kernels()
 }
 
 
-void Device::runFloatKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out)
+void Device::runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out)
 {
-	runKernel<hmc_float>(groups, threads_per_group, elems, floatKernel, in, out);
-}
-
-void Device::runSU3Kernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out)
-{
-	runKernel<Matrixsu3>(groups, threads_per_group, elems, su3Kernel, in, out);
+	switch(copy_type) {
+		case type_float:
+			runKernel<hmc_float>(groups, threads_per_group, elems, floatKernel, in, out);
+			return;
+		case type_su3:
+			runKernel<Matrixsu3>(groups, threads_per_group, elems, su3Kernel, in, out);
+			return;
+		case type_spinor:
+			runKernel<spinor>(groups, threads_per_group, elems, spinorKernel, in, out);
+			return;
+		default:
+			throw invalid_argument("runKernel has not been implemented for this type");
+	}
 }
 
 template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, cl_mem in, cl_mem out)
 {
 	cl_int err = CL_SUCCESS;
-
-	// make sure memory buffers are large enough
-	if( elems * sizeof(T) > MAX_MEM_SIZE ) {
-		logger.fatal() << "Not enough memory for the given number of elements";
-		exit(-1);
-	}
 
 	// TODO adjust threads_per_group for kernel invocation to proper size but keep requested value for kernel arg
 	size_t local_threads = threads_per_group;
@@ -262,8 +315,8 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 	}
 	int64_t kernelTime = timer.getTime() / num_meas;
 
-	// format is: #groups #threads per group #copy time in mus #bandwidth in megabytes
-	cout << groups * threads_per_group << ' ' << groups << ' ' << threads_per_group << ' ' << kernelTime << ' ' << (2 * elems * sizeof(T) / kernelTime) << endl;
+	// format is: #groups #threads per group #elements #copied memory in bytes #copy time in mus #bandwidth in megabytes
+	cout << groups * threads_per_group << ' ' << groups << ' ' << threads_per_group << ' ' << elems << ' ' << elems * sizeof(T) << ' ' << kernelTime << ' ' << (2 * elems * sizeof(T) / kernelTime) << endl;
 }
 
 void Dummyfield::init_tasks()
@@ -280,11 +333,21 @@ void Dummyfield::finalize_opencl()
 	Gaugefield_hybrid::finalize_opencl();
 }
 
-void Dummyfield::runFloatKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems)
+void Dummyfield::runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems)
 {
-	static_cast<Device*>(opencl_modules[0])->runFloatKernel(groups, threads_per_group, elems, in, out);
+	static_cast<Device*>(opencl_modules[0])->runKernel(copy_type, groups, threads_per_group, elems, in, out);
 }
-void Dummyfield::runSU3Kernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems)
+
+size_t getTypeSize(copyType type)
 {
-	static_cast<Device*>(opencl_modules[0])->runSU3Kernel(groups, threads_per_group, elems, in, out);
+	switch(type) {
+		case type_float:
+			return sizeof(hmc_float);
+		case type_su3:
+			return sizeof(Matrixsu3);
+		case type_spinor:
+			return sizeof(spinor);
+		default:
+			throw invalid_argument("getTypeSize has not been implemented for this type.");
+	}
 }
