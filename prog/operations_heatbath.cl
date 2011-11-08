@@ -2,7 +2,7 @@
  * Device code for the heatbath update
  */
 
-//opencl_update_heatbath.cl
+//operations_heatbath.cl
 
 Matrixsu2_pauli SU2Update(const hmc_float alpha, __global hmc_ocl_ran * rnd)
 {
@@ -154,26 +154,68 @@ void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const int mu
 	*/
 }
 
-
-
-__kernel void heatbath_even(__global ocl_s_gaugefield * gaugefield, const int mu, __global hmc_ocl_ran * rnd)
+void inline perform_overrelaxing(__global ocl_s_gaugefield* gaugefield, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id)
 {
-	int id, id_tmp, size;
-	id_tmp = get_global_id(0);
-	size = get_global_size(0);
-	for(id = id_tmp; id < VOLSPACE * NTIME / 2; id += size) {
-		st_index pos = get_even_site(id);
-		perform_heatbath(gaugefield, mu, rnd, pos.space, pos.time, id_tmp);
-	}
-}
 
-__kernel void heatbath_odd(__global ocl_s_gaugefield* gaugefield, const int mu, __global hmc_ocl_ran * rnd)
-{
-	int id, id_tmp, size;
-	id_tmp = get_global_id(0);
-	size = get_global_size(0);
-	for(id = id_tmp; id < VOLSPACE * NTIME / 2; id += size) {
-		st_index pos = get_odd_site(id);
-		perform_heatbath(gaugefield, mu, rnd, pos.space, pos.time, id_tmp);
+	Matrixsu3 U;
+	Matrix3x3 W;
+	Matrix3x3 staplematrix;
+
+	Matrixsu2 w;
+	Matrixsu2_pauli w_pauli;
+	hmc_float k;
+	int order[3];
+
+/*
+	//Compute staple, comprises whole anisotropy
+	if (mu==0){
+	  staplematrix = calc_staple(gaugefield, pos, t, mu);
+	  staplematrix = multiply_matrix3x3_by_real (staplematrix, XI_0 );
 	}
+	
+	else{
+     	  Matrix3x3 staplematrix_sigma;
+	  Matrix3x3 staplematrix_tau;
+	  staplematrix_sigma = calc_staple_sigma(gaugefield, pos, t, mu);
+	  staplematrix_sigma = multiply_matrix3x3_by_real (staplematrix_sigma, 1/XI_0 );
+	  staplematrix_tau = calc_staple_tau(gaugefield, pos, t, mu);
+	  staplematrix_tau = multiply_matrix3x3_by_real (staplematrix_tau, XI_0 );
+	  staplematrix = add_matrix3x3 ( staplematrix_sigma, staplematrix_tau );
+	}
+*/
+
+	random_1_2_3(order, &rnd[id]);
+	U = get_matrixsu3(gaugefield, pos, t, mu);
+	U = project_su3(U);
+
+	staplematrix = calc_staple(gaugefield, pos, t, mu);
+
+	Matrixsu3 extW;
+
+	for(int i = 0; i < NC; i++) {
+		W = matrix_su3to3x3 (U);
+		W = multiply_matrix3x3 (W, staplematrix);
+
+		w = reduction(W, order[i]);
+
+		w_pauli.e00 = 0.5 * (w.e00.re + w.e11.re);
+		w_pauli.e01 = 0.5 * (w.e01.im + w.e10.im);
+		w_pauli.e10 = 0.5 * (w.e01.re - w.e10.re);
+		w_pauli.e11 = 0.5 * (w.e00.im - w.e11.im);
+		k = sqrt(  w_pauli.e00 * w_pauli.e00 +  w_pauli.e01 * w_pauli.e01 + w_pauli.e10 * w_pauli.e10 + w_pauli.e11 * w_pauli.e11  );
+
+		w.e00.re = (w_pauli.e00 * w_pauli.e00 - w_pauli.e01 * w_pauli.e01 - w_pauli.e10 * w_pauli.e10 - w_pauli.e11 * w_pauli.e11) / k / k;
+		w.e00.im = (-2.*w_pauli.e00 * w_pauli.e11) / k / k;
+		w.e01.re = (-2.*w_pauli.e00 * w_pauli.e10) / k / k;
+		w.e01.im = (-2.*w_pauli.e00 * w_pauli.e01) / k / k;
+		w.e10.re = (2.*w_pauli.e00 * w_pauli.e10) / k / k;
+		w.e10.im = (-2.*w_pauli.e00 * w_pauli.e01) / k / k;
+		w.e11.re = (w_pauli.e00 * w_pauli.e00 - w_pauli.e01 * w_pauli.e01 - w_pauli.e10 * w_pauli.e10 - w_pauli.e11 * w_pauli.e11) / k / k;
+		w.e11.im = (2.*w_pauli.e00 * w_pauli.e11) / k / k;
+
+		extW = extend (order[i], w);
+		U = multiply_matrixsu3(extW, U);
+	}
+
+	put_matrixsu3(gaugefield, U, pos, t, mu);
 }
