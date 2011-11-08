@@ -218,9 +218,8 @@ void Opencl_Module::fill_buffers()
 
 void Opencl_Module::fill_kernels()
 {
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "opencl_geometry.cl" << "opencl_operations_complex.cl"
+	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
 	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-
 
 	logger.debug() << "Create gaugeobservables kernels...";
 	plaquette = createKernel("plaquette") << basic_opencl_code << "gaugeobservables_plaquette.cl";
@@ -232,7 +231,6 @@ void Opencl_Module::fill_kernels()
 	if(get_parameters()->get_use_smearing() == true) {
 		stout_smear = createKernel("stout_smear") << basic_opencl_code << "gaugemomentum.cl" << "stout_smear.cl";
 	}
-
 }
 
 void Opencl_Module::clear_kernels()
