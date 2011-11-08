@@ -51,9 +51,14 @@ void inputparameters::set_defaults()
 	//	NC entries total
 	flop_su3_su3vec = (flop_complex_mult * NC + (NC-1) * 2) * NC;
 	//	NC * complex adds
-	flop_su3trace = NC * 2;
-	//	?????
-	flop_gamma_spinor = 0;
+	flop_su3trace = (NC-1) * 2;
+	//	in prinicple, a gamma_matrix is a complex NDIM * NDIM matrix acting on NDIM vectors, 
+	//		which then again have NC entries for each of the NDIM entries.
+	//		the matrix-mult alone are (flop_complex_mult * NDIM + (NDIM-1) * 2) * NDIM
+	//		but for each such operation one has NC complex multiplications in addition.
+	//		@TODO: gamma real??
+	//		@TODO: simplifications possible!!
+	flop_gamma_spinor = (flop_complex_mult * NDIM + (NDIM-1) * 2) * NDIM * NC * flop_complex_mult;
 	//	NDIM * flop_su3_su3vec
 	flop_su3_spinor = NDIM * flop_su3_su3vec;
 	//	NDIM * NC * complex_mult + ( NDIM * NC -1 ) complex adds
