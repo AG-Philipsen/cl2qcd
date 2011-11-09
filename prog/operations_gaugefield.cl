@@ -216,7 +216,7 @@ Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, cons
 	//the Q-plaquette is a sum over four normal plaquettes
 	Matrix3x3 qplaq = zero_matrix3x3();
 	//first plaquette is at pos = (n,t)
-	Matrixsu3 tmp = calc_local_plaquette(field, n, t, mu, nu);
+	Matrixsu3 tmp = local_plaquette(field, n, t, mu, nu);
 	qplaq = add_matrix3x3(qplaq, matrix_su3to3x3(tmp));
 	//second plaquette is at pos - mu
 	int4 coord;
@@ -228,7 +228,7 @@ Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, cons
 		coord.x = get_lower_neighbor(n, mu);
 		coord.y = t;
 	}
-	tmp = calc_local_plaquette(field, coord.x, coord.y, mu, nu);
+	tmp = local_plaquette(field, coord.x, coord.y, mu, nu);
 	qplaq = add_matrix3x3(qplaq, matrix_su3to3x3(tmp));
 	//third plaquette is at pos-mu-nu
 	if(nu == 0) {
@@ -239,7 +239,7 @@ Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, cons
 		coord.z = get_lower_neighbor(coord.x, nu);
 		coord.w = coord.y;
 	}
-	tmp = calc_local_plaquette(field, coord.z, coord.w, mu, nu);
+	tmp = local_plaquette(field, coord.z, coord.w, mu, nu);
 	qplaq = add_matrix3x3(qplaq, matrix_su3to3x3(tmp));
 	//fourth plaquette is at pos-nu
 	if(nu == 0) {
@@ -250,7 +250,7 @@ Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, cons
 		coord.x = get_lower_neighbor(n, nu);
 		coord.y = t;
 	}
-	tmp = calc_local_plaquette(field, coord.x, coord.y, mu, nu);
+	tmp = local_plaquette(field, coord.x, coord.y, mu, nu);
 	qplaq = add_matrix3x3(qplaq, matrix_su3to3x3(tmp));
 	return qplaq;
 }
