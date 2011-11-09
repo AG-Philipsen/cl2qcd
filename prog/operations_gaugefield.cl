@@ -363,8 +363,6 @@ Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, cons
 //     s = U_nu(x + mu) * Udagger_mu(x + nu) * Udagger_nu(x) + Udagger_nu(x+mu - nu) * Udagger_mu(x-nu) * U_nu(x - nu)
 Matrix3x3 local_staple(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
 {
-	Matrix3x3 out;
-	Matrixsu3 tmp;
 	int4 pos;
 
 	//first staple
@@ -383,10 +381,10 @@ Matrix3x3 local_staple(__global ocl_s_gaugefield * field, const int n, const int
 		pos.z = t;
 		pos.w = get_neighbor(n, nu);
 	}
-	tmp = multiply_matrixsu3_dagger(get_matrixsu3(field, pos.y, pos.x, nu), get_matrixsu3(field, pos.w, pos.z, mu) );
+	Matrixsu3 tmp = multiply_matrixsu3_dagger(get_matrixsu3(field, pos.y, pos.x, nu), get_matrixsu3(field, pos.w, pos.z, mu) );
 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, n, t, nu) );
 	
-	out = matrix_su3to3x3(tmp);
+	Matrix3x3 out = matrix_su3to3x3(tmp);
 
 	//second staple
 	if(mu == 0) {
@@ -405,10 +403,7 @@ Matrix3x3 local_staple(__global ocl_s_gaugefield * field, const int n, const int
 		 pos.z = t;
 		 pos.w = get_lower_neighbor(n, nu);
 	}
-
-	//@TODO for this one can write a new function that calculates Udagger*Vdagger
-	tmp = adjoint_matrixsu3(get_matrixsu3(field, pos.y, pos.x, nu));
-	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos.w, pos.z, mu) );
+	tmp = multiply_matrixsu3_dagger_dagger(get_matrixsu3(field, pos.y, pos.x, nu), get_matrixsu3(field, pos.w,pos.z, mu) );
 	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.w, pos.z, nu) );
 
 	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
@@ -419,16 +414,12 @@ Matrix3x3 local_staple(__global ocl_s_gaugefield * field, const int n, const int
 
 Matrix3x3 calc_staple(__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
 {
-	Matrix3x3 staple;
-	int nu;
-
-	staple = zero_matrix3x3();
+	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
-	for(int i = 1; i < NDIM; i++) {
-		nu = (mu_in + i) % NDIM;
+	for(int i = 0; i < NDIM-1; i++) {
+		int nu = (mu_in + i + 1) % NDIM;
 		staple = add_matrix3x3(staple,  local_staple(field, pos, t, mu_in, nu ));
 	}
-
 	return staple;
 }
 
