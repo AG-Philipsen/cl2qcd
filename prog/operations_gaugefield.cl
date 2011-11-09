@@ -411,7 +411,6 @@ Matrix3x3 local_staple(__global ocl_s_gaugefield * field, const int n, const int
 	return out;
 }
 
-
 Matrix3x3 calc_staple(__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
 {
 	Matrix3x3 staple = zero_matrix3x3();
@@ -423,129 +422,22 @@ Matrix3x3 calc_staple(__global ocl_s_gaugefield* field, const int pos, const int
 	return staple;
 }
 
-/*
+//this is the staple only in the spatial directions only
 Matrix3x3 calc_staple_sigma (__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
 {
-	Matrixsu3 prod;
-	Matrixsu3 prod2;
-	Matrixsu3 tmp;
-	Matrix3x3 staple;
-	int nu;
-
-	staple = zero_matrix3x3();
-
-	//iterate through the three directions other than mu, dont include the temporal direction since it is the spatial staple
-	for(int i = 1; i < NDIM; i++) {
-
-	  prod = zero_matrixsu3();
-
-	  nu = (mu_in + i) % NDIM;
-
-	  if(nu != 0)
-	  {	    
-
-		//first staple
-		//u_nu(x+mu)
-		tmp = get_matrixsu3(field, get_neighbor(pos, mu_in), t, nu);
-		prod = copy_matrixsu3(tmp);
-
-		//adjoint(u_mu(x+nu))
-		tmp = get_matrixsu3(field, get_neighbor(pos, nu), t, mu_in);
-		tmp = adjoint_matrixsu3(tmp);
-
-		prod = multiply_matrixsu3(prod, tmp);
-
-		//adjoint(u_nu(x))
-		tmp = get_matrixsu3(field, pos, t, nu);
-		tmp = adjoint_matrixsu3(tmp);
-		prod = multiply_matrixsu3 (prod, tmp);
-
-		//second staple
-		//adjoint (u_nu(x+mu-nu))
-		//newpos is "pos-nu" (spatial)
-		int newpos = get_lower_neighbor(pos, nu);
-		tmp = get_matrixsu3(field, get_neighbor(newpos, mu_in), t, nu);
-		
-		prod2 = adjoint_matrixsu3(tmp);
-		//adjoint(u_mu(x-nu))
-		tmp = get_matrixsu3(field, newpos, t, mu_in);
-		
-		tmp = adjoint_matrixsu3(tmp);
-		prod2 = multiply_matrixsu3(prod2, tmp);
-		//adjoint(u_nu(x-nu))
-		tmp = get_matrixsu3(field, newpos, t, nu);
-		prod2 = multiply_matrixsu3(prod2, tmp);
-
-		Matrix3x3 dummy;
-		dummy = matrix_su3to3x3 (prod);
-		staple = add_matrix3x3 (staple, dummy );
-		dummy = matrix_su3to3x3 (prod2);
-		staple = add_matrix3x3 (staple, dummy );
-	  }
+	Matrix3x3 staple = zero_matrix3x3();
+	//iterate through the three directions other than mu
+	for(int i = 0; i < NDIM-1; i++) {
+		int nu = (mu_in + i + 1) % NDIM;
+		if(nu!=0)
+			staple = add_matrix3x3(staple,  local_staple(field, pos, t, mu_in, nu ));
 	}
 	return staple;
 }
-*/
-/*
 
+//this is the staple only in temporal direction only
 Matrix3x3 calc_staple_tau (__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
 {
-	Matrixsu3 prod;
-	Matrixsu3 prod2;
-	Matrixsu3 tmp;
-	Matrix3x3 staple;
-	int nu;
-
-	staple = zero_matrix3x3();
-
-	prod = zero_matrixsu3();
-
-	nu = 0;
-
-		//first staple
-		//u_nu(x+mu)
-		tmp = get_matrixsu3(field, get_neighbor(pos, mu_in), t, nu);
-		prod = copy_matrixsu3(tmp);
-
-		//adjoint(u_mu(x+nu))
-		int newt = (t + 1) % NTIME;
-		tmp = get_matrixsu3(field, pos, newt, mu_in);
-		tmp = adjoint_matrixsu3(tmp);
-
-		prod = multiply_matrixsu3(prod, tmp);
-
-		//adjoint(u_nu(x))
-		tmp = get_matrixsu3(field, pos, t, nu);
-		tmp = adjoint_matrixsu3(tmp);
-		prod = multiply_matrixsu3 (prod, tmp);
-
-		//second staple
-		//adjoint (u_nu(x+mu-nu))
-		//newpos is "pos-nu" (spatial)
-		int newpos = get_lower_neighbor(pos, nu);
-		newt = (t - 1 + NTIME) % NTIME;
-		tmp = get_matrixsu3(field, get_neighbor(pos, mu_in), newt, nu);
-		
-		prod2 = adjoint_matrixsu3(tmp);
-		//adjoint(u_mu(x-nu))
-		newt = (t - 1 + NTIME) % NTIME;
-		tmp = get_matrixsu3(field, pos, newt, mu_in);
-		
-		tmp = adjoint_matrixsu3(tmp);
-		prod2 = multiply_matrixsu3(prod2, tmp);
-		//adjoint(u_nu(x-nu))
-		newt = (t - 1 + NTIME) % NTIME;
-		tmp = get_matrixsu3(field, pos, newt, nu);
-		
-		prod2 = multiply_matrixsu3(prod2, tmp);
-
-		Matrix3x3 dummy;
-		dummy = matrix_su3to3x3 (prod);
-		staple = add_matrix3x3 (staple, dummy );
-		dummy = matrix_su3to3x3 (prod2);
-		staple = add_matrix3x3 (staple, dummy );
-	return staple;
+	int nu = 0;
+	return local_staple(field, pos, t, mu_in, nu );
 }
-*/
-
-
