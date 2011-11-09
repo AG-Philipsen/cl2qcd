@@ -314,7 +314,7 @@ target_link_libraries(calc_staple
 add_test(Calc_staple calc_staple)
 
 add_executable(stout_smear
-	Stout_smear_test.cpp
+	Stout_Smear_test.cpp
 	../host_geometry.cpp
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp

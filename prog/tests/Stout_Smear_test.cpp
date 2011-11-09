@@ -27,7 +27,7 @@ public:
 		finalize();
 	};
 
-	void get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol);
+
 	void runTestKernel(cl_mem gf, cl_mem out, int gs, int ls);
 	void fill_kernels();
 	void clear_kernels();
@@ -51,6 +51,7 @@ public:
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
+	void get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol);
 	hmc_float runTestKernel();
 
 private:
@@ -153,7 +154,7 @@ void Device::fill_kernels()
 	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 	
 	//this has to be the same as in opencl_module
-	testKernel = createKernel("stout_smear") << basic_opencl_code  <<  << "gaugemomentum.cl" << "stout_smear.cl";
+	testKernel = createKernel("stout_smear") << basic_opencl_code  <<  "gaugemomentum.cl" << "stout_smear.cl";
   
 }
 
