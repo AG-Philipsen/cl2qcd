@@ -128,7 +128,6 @@ Matrixsu2 reduction (const Matrix3x3 src, const int rand)
 	return out;
 }
 
-//CP: I leave both version in here...
 Matrixsu3 extend (const int random, Matrixsu2 src)
 {
 	Matrixsu3 out;
@@ -214,148 +213,46 @@ Matrixsu3 local_plaquette(__global ocl_s_gaugefield * field, const int n, const 
 //todo
 Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
 {
-	Matrix3x3 out;
-	Matrixsu3 tmp;
-	int newpos;
-
-	//1st plaq
-	Matrixsu3 plaq1;
-	//u_mu(x)
-	plaq1 = get_matrixsu3(field, n, t, mu);
-	//u_nu(x+mu)
-	if(mu == 0) {
-		int newt = (t + 1) % NTIME;
-		tmp = get_matrixsu3(field, n, newt, nu);
-	} else
-		tmp = get_matrixsu3(field, get_neighbor(n, mu), t, nu);
-	plaq1 = multiply_matrixsu3 (plaq1, tmp);
-	//adjoint(u_mu(x+nu))
+	//the Q-plaquette is a sum over four normal plaquettes
+	Matrix3x3 qplaq = zero_matrix3x3();
+	//first plaquette is at pos = (n,t)
+	Matrixsu3 tmp = calc_local_plaquette(field, n, t, mu, nu);
+	qplaq = add_matrix3x3(qplaq, matrix_su3to3x3(tmp));
+	//second plaquette is at pos - mu
+	int4 coord;
+	if(mu == 0){
+		coord.x = n;
+		coord.y = (t-1+NTIME)%NTIME;
+	}
+	else{
+		coord.x = get_lower_neighbor(n, mu);
+		coord.y = t;
+	}
+	tmp = calc_local_plaquette(field, coord.x, coord.y, mu, nu);
+	qplaq = add_matrix3x3(qplaq, matrix_su3to3x3(tmp));
+	//third plaquette is at pos-mu-nu
 	if(nu == 0) {
-		int newt = (t + 1) % NTIME;
-		tmp = get_matrixsu3(field, n, newt, mu);
-	} else
-		tmp = get_matrixsu3(field, get_neighbor(n, nu), t, mu);
-	tmp = adjoint_matrixsu3(tmp);
-	plaq1 = multiply_matrixsu3 (plaq1, tmp);
-	//adjoint(u_nu(x))
-	tmp = get_matrixsu3(field, n, t, nu);
-	tmp = adjoint_matrixsu3(tmp);
-	plaq1 = multiply_matrixsu3 (plaq1, tmp);
-
-	//2nd plaq
-	Matrixsu3 plaq2;
-	//U_nu(x)
-	plaq2 = get_matrixsu3(field, n, t, nu);
-	//adj (u_mu(x-mu+nu))
-	newpos = get_lower_neighbor(n, mu);
-	if (nu == 0) {
-		int newt =  (t + 1) % NTIME;
-		tmp = get_matrixsu3(field, newpos, newt, mu);
-	} else if (mu == 0) {
-		int newt = (t - 1 + NTIME) % NTIME;
-		tmp = get_matrixsu3(field, get_neighbor(n, nu), newt, mu);
-	} else
-		tmp = get_matrixsu3(field, get_neighbor(newpos, nu), t, mu);
-
-	tmp = adjoint_matrixsu3(tmp);
-	plaq2 = multiply_matrixsu3 (plaq2, tmp);
-	//adj (u_nu(x-mu))
-	if (mu == 0) {
-		int newt = (t - 1 + NTIME) % NTIME;
-		tmp = get_matrixsu3(field, n, newt, nu);
-	} else
-		tmp = get_matrixsu3(field, get_lower_neighbor(n, mu), t, nu);
-	tmp = adjoint_matrixsu3(tmp);
-	plaq2 = multiply_matrixsu3 (plaq2, tmp);
-	//u_mu(x-mu)
-	if (mu == 0) {
-		int newt = (t - 1 + NTIME) % NTIME;
-		tmp = get_matrixsu3(field, n, newt, mu);
-	} else
-		tmp = get_matrixsu3(field, get_lower_neighbor(n, mu), t, mu);
-	plaq2 = multiply_matrixsu3 (plaq2, tmp);
-
-	//3rd plaq
-	Matrixsu3 plaq3;
-	//adj (u_mu(x-mu))
-	if (mu == 0) {
-		int newt = (t - 1 + NTIME) % NTIME;
-		tmp = get_matrixsu3(field, n, newt, mu);
-	} else
-		tmp = get_matrixsu3(field, get_lower_neighbor(n, mu), t, mu);
-	tmp = adjoint_matrixsu3(tmp);
-	plaq3 = copy_matrixsu3(tmp);
-	//adj (u_nu(x-mu-nu))
-	newpos = get_lower_neighbor(n, mu);
-	if (nu == 0) {
-		int newt = (t - 1 + NTIME) % NTIME;
-		tmp = get_matrixsu3(field, newpos, newt, nu);
-	} else if (mu == 0) {
-		int newt = (t - 1 + NTIME) % NTIME;
-		tmp = get_matrixsu3(field, get_lower_neighbor(n, nu), newt, nu);
-	} else
-		tmp = get_matrixsu3(field, get_lower_neighbor(newpos, nu), t, nu);
-	tmp = adjoint_matrixsu3(tmp);
-	plaq3 = multiply_matrixsu3 (plaq3, tmp);
-	//u_mu(x-mu-nu)
-	newpos = get_lower_neighbor(n, mu);
-	if (nu == 0) {
-		int newt = (t - 1 + NTIME) % NTIME;
-		tmp = get_matrixsu3(field, newpos, newt, mu);
-	} else if (mu == 0) {
-		int newt = (t - 1 + NTIME) % NTIME;
-		tmp = get_matrixsu3(field, get_lower_neighbor(n, nu), newt, mu);
-	} else
-		tmp = get_matrixsu3 (field, get_lower_neighbor(newpos, nu), t, mu);
-	plaq3 = multiply_matrixsu3(plaq3, tmp);
-	//u_nu(x-nu)
-	if (nu == 0) {
-		int newt = (t - 1 + NTIME) % NTIME;
-		tmp = get_matrixsu3(field, n, newt, nu);
-	} else
-		//this causes for nu=1 a speicherzugriffsfehler
-		tmp = get_matrixsu3(field, get_lower_neighbor(n, nu), t, nu);
-	plaq3 = multiply_matrixsu3 (plaq3, tmp);
-
-	//4th plaq
-	Matrixsu3 plaq4;
-	//adj(u_nu(x-nu))
-	tmp = adjoint_matrixsu3(tmp);
-	plaq4 = copy_matrixsu3(tmp);
-	//u_mu(x-nu)
-	if (nu == 0) {
-		int newt = (t - 1 + NTIME) % NTIME;
-		tmp = get_matrixsu3(field, n, newt, mu);
-	} else
-		tmp = get_matrixsu3(field, get_lower_neighbor(n, nu), t, mu);
-	plaq4 = multiply_matrixsu3 (plaq4, tmp);
-	//u_nu(x+mu-nu)
-	newpos = get_lower_neighbor(n, nu);
-	if (mu == 0) {
-		int newt =  (t + 1) % NTIME;
-		tmp = get_matrixsu3(field, newpos, newt, nu);
-	} else if (nu == 0) {
-		int newt = (t - 1 + NTIME) % NTIME;
-		tmp = get_matrixsu3(field, get_neighbor(n, mu), newt, nu);
-	} else
-		tmp = get_matrixsu3(field, get_neighbor(newpos, mu), t, nu);
-	plaq4 = multiply_matrixsu3(plaq4, tmp);
-	//adj (u_mu(x))
-	tmp = get_matrixsu3(field, n, t, mu);
-	tmp = adjoint_matrixsu3(tmp);
-	plaq4 = multiply_matrixsu3 (plaq4, tmp);
-
-	//Sum up
-	Matrix3x3 tmp3x3;
-	out = matrix_su3to3x3 (plaq1);
-	tmp3x3 = matrix_su3to3x3 (plaq2);
-	out = add_matrix3x3 (out, tmp3x3);
-	tmp3x3 = matrix_su3to3x3 (plaq3);
-	out = add_matrix3x3 (out, tmp3x3);
-	tmp3x3 = matrix_su3to3x3 (plaq4);
-	out = add_matrix3x3 (out, tmp3x3);
-
-	return out;
+		coord.z = coord.x;
+		coord.w = (coord.y-1+NTIME)%NTIME;
+	}
+	else{
+		coord.z = get_lower_neighbor(coord.x, nu);
+		coord.w = coord.y;
+	}
+	tmp = calc_local_plaquette(field, coord.z, coord.w, mu, nu);
+	qplaq = add_matrix3x3(qplaq, matrix_su3to3x3(tmp));
+	//fourth plaquette is at pos-nu
+	if(nu == 0) {
+		coord.x = n;
+		coord.y = (t-1+NTIME)%NTIME;
+	}
+	else{
+		coord.x = get_lower_neighbor(n, nu);
+		coord.y = t;
+	}
+	tmp = calc_local_plaquette(field, coord.x, coord.y, mu, nu);
+	qplaq = add_matrix3x3(qplaq, matrix_su3to3x3(tmp));
+	return qplaq;
 }
 
 //this calculates the staple in nu direction given a direction mu of the link
