@@ -56,7 +56,7 @@ Matrixsu3 project_su3(const Matrixsu3 U)
 		b[i] = complexsubtract(b[i], tmp);
 	}
 
-//norm
+	//norm
 	norm = 0.;
 	for (int i = 0; i < NC; i++) {
 		hmc_complex tmp;
@@ -182,7 +182,6 @@ Matrixsu3 local_polyakov(__global ocl_s_gaugefield * field, const int n)
 	return out;
 }
 
-//CP: final version, using one third of the original scratch-registers...
 //calculate plaquette-matrix at site n,t in direction mu and nu
 Matrixsu3 local_plaquette(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
 {
@@ -209,8 +208,6 @@ Matrixsu3 local_plaquette(__global ocl_s_gaugefield * field, const int n, const 
 	return out;
 }
 
-
-//todo
 Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
 {
 	//the Q-plaquette is a sum over four normal plaquettes

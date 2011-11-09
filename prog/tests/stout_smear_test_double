@@ -1,0 +1,15 @@
+#input file 1 for f_gauge_test in single prec
+
+startcondition=cold
+#sourcefile=conf.00200
+
+use_smearing=true
+
+prec=64
+
+use_eo=false
+NS=4
+NT=4
+fermact=TWISTEDMASS
+#this set the init-spinorfield to random values
+use_cg=false
