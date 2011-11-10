@@ -961,7 +961,8 @@ int Opencl_Module::get_read_write_size(const char * in, inputparameters * parame
 		return (num_groups + 1 ) * 3 * C * D;
 	}
 	if (strcmp(in, "stout_smear") == 0) {
-		return 1000000000000000000000;
+		//this kernel reads in a complete gaugefield + a staple on each site and writes out a complete gaugefield
+		return VOL4D * NDIM * D * R * (6*(NDIM-1) + 1 + 1 );
 	}
 	return 0;
 }
