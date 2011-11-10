@@ -1,9 +1,12 @@
 #input file 1 for f_gauge_test in single prec
 
-startcondition=cold
-#sourcefile=conf.00200
+startcondition=continue
+sourcefile=conf.00200
 
 use_smearing=true
+
+rho_iter=1
+rho=0.001
 
 prec=64
 
