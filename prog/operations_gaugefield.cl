@@ -4,15 +4,130 @@
 
 //operations_gaugefield.cl
 
+
 Matrixsu3 project_su3(const Matrixsu3 U)
 {
-
-	Matrixsu3 out;
+  
+        Matrixsu3 out;
 
 	//Extract initial vectors
 	hmc_complex a[NC];
 	hmc_complex b[NC];
 	hmc_complex c[NC];
+
+	a[0] = U.e00;
+	a[1] = U.e10;
+	a[2] = U.e20;
+	b[0] = U.e01;
+	b[1] = U.e11;
+	b[2] = U.e21;
+	c[0] = U.e02;
+	c[1] = U.e12;
+	c[2] = U.e22;
+
+	//New SU3-Matrix
+	//first vector
+	//norm
+	hmc_float norm = 0.;
+	for (int i = 0; i < NC; i++) {
+		hmc_complex tmp = complexconj(a[i]);
+		tmp = complexmult (a[i], tmp);
+		norm += tmp.re;
+	}
+	norm = 1. / sqrt(norm);
+	//rescale
+	for (int i = 0; i < NC; i++) {
+		a[i].re *= norm;
+		a[i].im *= norm;
+	}
+
+	//second vector
+	//orthogonal vector
+	hmc_complex factor;
+	factor.re = 0.0;
+	factor.im = 0.0;
+	for (int i = 0; i < NC; i++) {
+		hmc_complex tmp;
+		tmp = complexconj (a[i]);
+		tmp = complexmult (b[i], tmp);
+		factor = complexadd (factor, tmp);
+	}
+	for (int i = 0; i < NC; i++) {
+		hmc_complex tmp;
+		tmp = complexmult(factor, a[i]);
+		b[i] = complexsubtract(b[i], tmp);
+	}
+
+	//norm
+	norm = 0.;
+	for (int i = 0; i < NC; i++) {
+		hmc_complex tmp;
+		tmp = complexconj(b[i]);
+		tmp = complexmult (b[i], tmp);
+		norm +=  tmp.re;
+	}
+	norm = 1. / sqrt(norm);
+	//rescale
+	for  (int i = 0; i < NC; i++) {
+		b[i].re *= norm;
+		b[i].im *= norm;
+	}
+
+	//third vector
+	//orthogonal vector
+	hmc_complex tmp;
+	hmc_complex tmp2;
+	tmp = complexconj(a[1]);
+	tmp2 = complexconj (b[2]);
+	c[0] = complexmult (tmp, tmp2);
+	tmp = complexconj(a[2]);
+	tmp2 = complexconj (b[1]);
+	tmp = complexmult (tmp, tmp2);
+	c[0] = complexsubtract (c[0],tmp);
+
+	tmp = complexconj(a[2]);
+	tmp2 = complexconj (b[0]);
+	c[1] = complexmult (tmp, tmp2);
+	tmp = complexconj(a[0]);
+	tmp2 = complexconj (b[2]);
+	tmp =  complexmult (tmp, tmp2);
+	c[1] = complexsubtract (c[1],tmp);
+
+	tmp = complexconj(a[0]);
+	tmp2 = complexconj (b[1]);
+	c[2] = complexmult (tmp, tmp2);
+	tmp = complexconj(a[1]);
+	tmp2 = complexconj (b[0]);
+	tmp =  complexmult (tmp, tmp2);
+	c[2] = complexsubtract (c[2],tmp);
+
+	//Set new values to matrix
+	out.e02 = c[0];
+	out.e12 = c[1];
+	out.e22 = c[2];
+ 
+	//Set new values to matrix
+	out.e01 = b[0];
+	out.e11 = b[1];
+	out.e21 = b[2];
+	out.e00 = a[0];
+	out.e10 = a[1];
+	out.e20 = a[2];
+
+	return out; 
+}
+
+/*
+Matrixsu3 project_su3(const Matrixsu3 U)
+{
+  
+        Matrixsu3 out;
+
+	//Extract initial vectors
+	hmc_complex a[NC];
+	hmc_complex b[NC];
+	hmc_complex c[NC];
+
 	a[0] = U.e00;
 	a[1] = U.e01;
 	a[2] = U.e02;
@@ -103,8 +218,9 @@ Matrixsu3 project_su3(const Matrixsu3 U)
 	out.e02 = a[2];
 	out.e12 = b[2];
 
-	return out;
+	return out; 
 }
+*/
 
 Matrixsu2 reduction (const Matrix3x3 src, const int rand)
 {
