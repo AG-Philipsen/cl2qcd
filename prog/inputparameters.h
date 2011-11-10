@@ -67,8 +67,8 @@ public:
 	hmc_float get_chem_pot_im() const;
 	int get_nt() const;
 	int get_ns() const;
-	//	int get_xi() const;
-	//	hmc_float get_xi_0() const;
+	int get_xi() const;
+	hmc_float get_xi_0() const;
 	bool get_use_rec12() const;
 	bool get_use_gpu() const;
 	bool get_use_eo() const;
@@ -154,6 +154,14 @@ public:
 #ifdef _PROFILING_
 	int get_mat_size() const;
 	int get_float_size() const;
+	int get_flop_su3_su3() const;
+	int get_flop_su3_su3vec() const;
+	int get_flop_su3trace() const;
+	int get_flop_complex_mult() const;
+	int get_flop_gamma_spinor() const;
+	int get_flop_su3_spinor() const;
+	int get_flop_spinor_spinor() const;
+	int get_flop_spinor_sqnorm() const;
 #endif
 	/////////////////////////////////////////////////////
 	// printing-functions for the different executables
@@ -276,12 +284,21 @@ private:
 	//parameters that describe the size of datatypes in bytes
 	int mat_size;
 	int float_size;
+	//parameters that describe the amount of floating point operations
+	int flop_su3_su3;
+	int flop_su3_su3vec;
+	int flop_su3trace;
+	int flop_complex_mult;
+	int flop_spinor_spinor;
+	int flop_su3_spinor;
+	int flop_gamma_spinor;
+	int flop_spinor_sqnorm;
 #endif
 
 	//more specific ones
 	hmc_float kappa;
 	hmc_float beta;
-	//	int xi;
+	int xi;
 	hmc_float mu;
 	hmc_float mubar;
 	hmc_float csw;

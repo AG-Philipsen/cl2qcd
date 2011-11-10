@@ -313,6 +313,33 @@ target_link_libraries(calc_staple
 	einhard)
 add_test(Calc_staple calc_staple)
 
+add_executable(stout_smear
+	Stout_Smear_test.cpp
+	../host_geometry.cpp
+	../host_operations_complex.cpp
+	../host_operations_gaugefield.cpp
+	../host_operations_su3matrix.cpp
+	../host_operations_matrix.cpp
+	../gaugefield_hybrid.cpp
+	../inputparameters.cpp
+	../host_readgauge.cpp
+	../host_random.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../host_use_timer.cpp
+	../host_writegaugefield.cpp
+	../exceptions.cpp
+	../logger.cpp)
+target_link_libraries(stout_smear
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	crypto
+	einhard)
+add_test(Stout_smear stout_smear)
+
 add_executable(localQ
 	local_Q_test.cpp
 	../host_geometry.cpp

@@ -41,6 +41,30 @@ void inputparameters::set_defaults()
 #ifdef _PROFILING_
 	mat_size = 9;
 	float_size = 8;
+	//complex_add is 2 fl. operations. There is no variable for that!
+	//( a_re * b_re - b_im * a_im , a_re * b_im + a_im * b_re )
+	flop_complex_mult = 6;
+	//	1 entry: NC * complex mults and NC-1 complex adds
+	//	NC*NC entries total
+	flop_su3_su3 = (flop_complex_mult * NC + (NC-1) * 2) * NC * NC;
+	//	1 entry: NC * complex mults and NC-1 complex adds
+	//	NC entries total
+	flop_su3_su3vec = (flop_complex_mult * NC + (NC-1) * 2) * NC;
+	//	NC * complex adds
+	flop_su3trace = (NC-1) * 2;
+	//	in prinicple, a gamma_matrix is a complex NDIM * NDIM matrix acting on NDIM vectors, 
+	//		which then again have NC entries for each of the NDIM entries.
+	//		the matrix-mult alone are (flop_complex_mult * NDIM + (NDIM-1) * 2) * NDIM
+	//		but for each such operation one has NC complex multiplications in addition.
+	//		@TODO: gamma real??
+	//		@TODO: simplifications possible!!
+	flop_gamma_spinor = (flop_complex_mult * NDIM + (NDIM-1) * 2) * NDIM * NC * flop_complex_mult;
+	//	NDIM * flop_su3_su3vec
+	flop_su3_spinor = NDIM * flop_su3_su3vec;
+	//	NDIM * NC * complex_mult + ( NDIM * NC -1 ) complex adds
+	flop_spinor_spinor = NDIM * NC * flop_complex_mult + (NDIM * NC -1) * 2;
+	//	NDIM * NC * 0.5 complex_mult + ( NDIM * NC -1 ) real adds
+	flop_spinor_sqnorm = NDIM * NC * flop_complex_mult * 0.5 + (NC * NDIM -1);
 #endif
 	//gaugefield parameters
 	beta = 4.0;
@@ -52,7 +76,7 @@ void inputparameters::set_defaults()
 	thermalizationsteps = 0;
 	heatbathsteps = 1000;
 	overrelaxsteps = 1;
-	//	xi = 1;
+	xi = 1;
 
 	//fermionic parameters
 	fermact = WILSON;
@@ -213,11 +237,11 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("NSPACE") != std::string::npos) val_assign(&nspace, line);
 			if(line.find("NT") != std::string::npos) val_assign(&ntime, line);
 			if(line.find("NTIME") != std::string::npos) val_assign(&ntime, line);
-			//		if(line.find("XI") != std::string::npos) val_assign(&xi, line);
-			//			if(line.find("xi") != std::string::npos) val_assign(&xi, line);
-			//			if(line.find("Xi") != std::string::npos) val_assign(&xi, line);
-			//			if(line.find("anisotropy") != std::string::npos) val_assign(&xi, line);
-			//			if(line.find("Anisotropy") != std::string::npos) val_assign(&xi, line);
+			if(line.find("XI") != std::string::npos) val_assign(&xi, line);
+			if(line.find("xi") != std::string::npos) val_assign(&xi, line);
+			if(line.find("Xi") != std::string::npos) val_assign(&xi, line);
+			if(line.find("anisotropy") != std::string::npos) val_assign(&xi, line);
+			if(line.find("Anisotropy") != std::string::npos) val_assign(&xi, line);
 
 			if(line.find("print_to_screen") != std::string::npos) bool_assign(&print_to_screen, line);
 
@@ -637,18 +661,18 @@ int inputparameters::get_nt() const
 	return ntime;
 }
 
-//int inputparameters::get_xi() const
-//{
-//  return xi;
-//}
+int inputparameters::get_xi() const
+{
+  return xi;
+}
 
-//hmc_float inputparameters::get_xi_0() const
-//{
-//  hmc_float aniso = hmc_float (get_xi());
-//  hmc_float eta = (1.002503*aniso*aniso*aniso + .39100*aniso*aniso + 1.47130*aniso - 0.19231) /
-//  (aniso*aniso*aniso + 0.26287*aniso*aniso + 1.59008*aniso - 0.18224);
-//  return aniso / (1.+(1.-1./aniso)*eta/6. * (1-0.55055 *2*NC/beta)/(1-0.77810 *2*NC/beta)*2*NC/beta );
-//}
+hmc_float inputparameters::get_xi_0() const
+{
+  hmc_float aniso = hmc_float (get_xi());
+  hmc_float eta = (1.002503*aniso*aniso*aniso + .39100*aniso*aniso + 1.47130*aniso - 0.19231) /
+  (aniso*aniso*aniso + 0.26287*aniso*aniso + 1.59008*aniso - 0.18224);
+  return aniso / (1.+(1.-1./aniso)*eta/6. * (1-0.55055 *2*NC/beta)/(1-0.77810 *2*NC/beta)*2*NC/beta );
+}
 
 int inputparameters::get_prec() const
 {
@@ -899,6 +923,38 @@ int inputparameters::get_float_size() const
 {
 	return float_size;
 }
+int inputparameters::get_flop_su3_su3() const
+{
+	return flop_su3_su3;
+}
+int inputparameters::get_flop_su3_su3vec() const
+{
+	return flop_su3_su3vec;
+}
+int inputparameters::get_flop_su3trace() const
+{
+	return flop_su3trace;
+}
+int inputparameters::get_flop_complex_mult() const
+{
+	return flop_complex_mult;
+}
+int inputparameters::get_flop_spinor_spinor() const
+{
+	return flop_spinor_spinor;
+}
+int inputparameters::get_flop_su3_spinor() const
+{
+	return flop_su3_spinor;
+}
+int inputparameters::get_flop_gamma_spinor() const
+{
+	return flop_gamma_spinor;
+}
+int inputparameters::get_flop_spinor_sqnorm() const
+{
+	return flop_spinor_sqnorm;
+}
 #endif
 
 bool inputparameters::get_use_autotuning() const
@@ -1032,7 +1088,7 @@ void inputparameters::print_info_heatbath(char* progname) const
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Simulation parameters:";
 	logger.info() << "## beta           = " << this->get_beta();
-	//	logger.info() << "## xi             = " << this->get_xi();
+	logger.info() << "## xi             = " << this->get_xi();
 	logger.info() << "## thermsteps     = " << this->get_thermalizationsteps() ;
 	logger.info() << "## heatbathsteps  = " << this->get_heatbathsteps();
 	logger.info() << "## overrelaxsteps = " << this->get_overrelaxsteps();
@@ -1048,7 +1104,7 @@ void inputparameters::print_info_heatbath(char* progname, ostream* os) const
 	*os  << "## **********************************************************" << endl;
 	*os  << "## Simulation parameters:" << endl;
 	*os  << "## beta           = " << this->get_beta() << endl;
-	//	*os  << "## xi             = " << this->get_xi();
+	*os  << "## xi             = " << this->get_xi();
 	*os  << "## thermsteps     = " << this->get_thermalizationsteps() << endl;
 	*os  << "## heatbathsteps  = " << this->get_heatbathsteps() << endl;
 	*os  << "## overrelaxsteps = " << this->get_overrelaxsteps() << endl;
@@ -1064,7 +1120,7 @@ void inputparameters::print_info_tkkappa(char* progname, ostream* os) const
 	*os  << "## **********************************************************" << endl;
 	*os  << "## Simulation parameters:" << endl;
 	*os  << "## beta           = " << this->get_beta() << endl;
-	//	*os  << "## xi             = " << this->get_xi();
+	*os  << "## xi             = " << this->get_xi();
 	*os  << "## thermsteps     = " << this->get_thermalizationsteps() << endl;
 	*os  << "## heatbathsteps  = " << this->get_heatbathsteps() << endl;
 	*os  << "## overrelaxsteps = " << this->get_overrelaxsteps() << endl;
@@ -1082,7 +1138,7 @@ void inputparameters::print_info_tkkappa(char* progname) const
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Simulation parameters:";
 	logger.info() << "## beta           = " << this->get_beta();
-	//	logger.info() << "## xi             = " << this->get_xi();
+	logger.info() << "## xi             = " << this->get_xi();
 	logger.info() << "## thermsteps     = " << this->get_thermalizationsteps() ;
 	logger.info() << "## heatbathsteps  = " << this->get_heatbathsteps();
 	logger.info() << "## overrelaxsteps = " << this->get_overrelaxsteps();

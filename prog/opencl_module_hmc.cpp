@@ -75,7 +75,7 @@ void Opencl_Module_Hmc::fill_kernels()
 	gauge_force = createKernel("gauge_force") << basic_hmc_code << "operations_gaugemomentum.cl" << "force_gauge.cl";
 	
 	if(get_parameters()->get_use_smearing() == true) {
-		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_fermion_code << "stout_smear_fermion_force.cl";
+		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_hmc_code << "force_fermion_stout_smear.cl";
 	}
 	gaugemomentum_squarenorm = createKernel("gaugemomentum_squarenorm") << basic_hmc_code << "operations_gaugemomentum.cl" << "gaugemomentum_squarenorm.cl";
 
@@ -282,32 +282,78 @@ int Opencl_Module_Hmc::get_read_write_size(char * in, inputparameters * paramete
 	return 0;
 }
 
+int Opencl_Module_Hmc::get_flop_size(const char * in, inputparameters * parameters)
+{
+	int result = Opencl_Module_Fermions::get_flop_size(in, parameters);
+	if (result != 0) return result;
+	int S;
+	if((*parameters).get_use_eo() == 1)
+		S = get_parameters()->get_eoprec_spinorfieldsize();
+	else
+		S = get_parameters()->get_spinorfieldsize();
+	//this is the same as in the function above
+	if (strcmp(in, "generate_gaussian_spinorfield") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "generate_gaussian_spinorfield_eoprec") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "generate_gaussian_gaugemomenta") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "md_update_gaugefield") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "md_update_gaugemomenta") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "gauge_force") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "fermion_force") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "fermion_force_eoprec") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "set_zero_gaugemomentum;") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "gaugemomentum_squarenorm") == 0) {
+		return 10000000000000000000;
+	}
+	if (strcmp(in, "stout_smear_fermion_force") == 0) {
+		return 10000000000000000000;
+	}
+	return 0;
+}
+
 void Opencl_Module_Hmc::print_profiling(std::string filename, int number)
 {
 	Opencl_Module_Fermions::print_profiling(filename, number);
 	char * kernelName;
 	kernelName = "generate_gaussian_spinorfield";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "generate_gaussian_spinorfield_eoprec";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "generate_gaussian_gaugemomenta";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "md_update_gaugefield";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "md_update_gaugemomenta";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "gauge_force";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "fermion_force";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "fermion_force_eoprec";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "set_zero_gaugemomentum";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "gaugemomentum_squarenorm";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "stout_smear_fermion_force";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 }
 #endif
 
@@ -1011,7 +1057,7 @@ void Opencl_Module_Hmc::fermion_force_eoprec_device(cl_mem Y, cl_mem X, int even
 
 }
 
-void Opencl_Module_Hmc::stout_smeared_fermion_force_device()
+void Opencl_Module_Hmc::stout_smeared_fermion_force_device(cl_mem * gf_intermediate)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;

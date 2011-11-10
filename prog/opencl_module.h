@@ -288,6 +288,14 @@ public:
 	virtual int get_read_write_size(const char * in, inputparameters * parameters);
 
 	/**
+	 * Return amount of Floating point operations performed by a specific kernel per call.
+	 * NOTE: this is meant to be the "netto" amount in order to be comparable.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual int get_flop_size(const char * in, inputparameters * parameters);
+	
+	/**
 	 * Print the profiling information of a specific kernel to a file.
 	 *
 	 * @param filename Name of file where data is appended.
@@ -295,8 +303,9 @@ public:
 	 * @param time_total total execution time
 	 * @param calls_total total number of kernel calls
 	 * @param read_write_size number of bytes read and written by the kernel
+	 * @param flop_size amount of flops performed by the kernel
 	 */
-	void print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, int read_write_size);
+	void print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, int read_write_size, int flop_size);
 
 	/**
 	 * Print the profiling information to a file.
@@ -372,8 +381,8 @@ public:
 	/**
 	 * This applies stout smearing to a gaugefield
 	 */
-	void smear_gaugefield(cl_mem gf);
-	void stout_smear_device();
+	void smear_gaugefield(cl_mem gf, cl_mem * gf_intermediate);
+	void stout_smear_device(cl_mem in, cl_mem out);
 
 	/**
 	 * This replaces the stout smeared gaugefield with the unsmeared one

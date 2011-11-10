@@ -218,9 +218,8 @@ void Opencl_Module::fill_buffers()
 
 void Opencl_Module::fill_kernels()
 {
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "opencl_geometry.cl" << "opencl_operations_complex.cl"
+	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
 	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-
 
 	logger.debug() << "Create gaugeobservables kernels...";
 	plaquette = createKernel("plaquette") << basic_opencl_code << "gaugeobservables_plaquette.cl";
@@ -230,9 +229,8 @@ void Opencl_Module::fill_kernels()
 	polyakov_reduction = createKernel("polyakov_reduction") << basic_opencl_code << "gaugeobservables_polyakov.cl";
 	//only init if if wanted
 	if(get_parameters()->get_use_smearing() == true) {
-		stout_smear = createKernel("stout_smear") << basic_opencl_code << "gaugemomentum.cl" << "stout_smear.cl";
+		stout_smear = createKernel("stout_smear") << basic_opencl_code << "operations_gaugemomentum.cl" << "stout_smear.cl";
 	}
-
 }
 
 void Opencl_Module::clear_kernels()
@@ -828,11 +826,21 @@ TmpClKernel Opencl_Module::createKernel(const char * const kernel_name)
 	return TmpClKernel(kernel_name, collect_options.str(), get_context(), &device, 1);
 }
 
-void Opencl_Module::stout_smear_device()
+void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
 {
+	//query work-sizes for kernel
+	size_t ls, gs;
+	cl_uint num_groups;
+	this->get_work_sizes(stout_smear, this->get_device_type(), &ls, &gs, &num_groups);
 
-	throw Print_Error_Message("Not implemented yet.");
+	int clerr = clSetKernelArg(stout_smear, 0, sizeof(cl_mem), in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(stout_smear, 0, sizeof(cl_mem), out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	
+	enqueueKernel(stout_smear , gs, ls);
+	
 	return;
 }
 
@@ -953,14 +961,40 @@ int Opencl_Module::get_read_write_size(const char * in, inputparameters * parame
 		return (num_groups + 1 ) * 3 * C * D;
 	}
 	if (strcmp(in, "stout_smear") == 0) {
+		//this kernel reads in a complete gaugefield + a staple on each site and writes out a complete gaugefield
+		return VOL4D * NDIM * D * R * (6*(NDIM-1) + 1 + 1 );
+	}
+	return 0;
+}
+
+int Opencl_Module::get_flop_size(const char * in, inputparameters * parameters)
+{
+	const size_t VOL4D = parameters->get_vol4d();
+	const size_t VOLSPACE = parameters->get_volspace();
+	if (strcmp(in, "polyakov") == 0) {
+		//this kernel performs NTIME -1 su3matrix-multiplications, takes a complex trace and adds these real values over VOLSPACE
+		return VOLSPACE * ( (parameters->get_nt()-1) * parameters->get_flop_su3_su3() + parameters->get_flop_su3trace() ) ;
+	}
+	if (strcmp(in, "polyakov_reduction") == 0) {
+		return 1000000000000000000000;
+	}
+	if (strcmp(in, "plaquette") == 0) {
+		//this kernel performs 3 su3matrix-mutliplications, a real su3 trace and sums over VOL4D and mu and nu (nu<mu)
+		return VOL4D * NDIM * (NDIM -1) * ( 3 + NC);
+	}
+	if (strcmp(in, "plaquette_reduction") == 0) {
+		return 1000000000000000000000;
+	}
+	if (strcmp(in, "stout_smear") == 0) {
 		return 1000000000000000000000;
 	}
 	return 0;
 }
 
-void Opencl_Module::print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, int read_write_size)
+void Opencl_Module::print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, int read_write_size, int flop_size)
 {
 	hmc_float bandwidth = 0.;
+	hmc_float flops = 0.;
 	uint64_t avg_time = 0.;
 	uint64_t avg_time_site = 0.;
 	//check if kernel has been called at all
@@ -969,6 +1003,7 @@ void Opencl_Module::print_profiling(std::string filename, const char * kernelNam
 		avg_time_site = (uint64_t) ( ( (float) time_total ) / ((float) (calls_total * parameters->get_vol4d())) );
 		//Bandwidth in GB/s: 1e-3 = 1e6 (museconds) * 1e-9 (GByte)
 		bandwidth = (hmc_float) read_write_size / (hmc_float) time_total * (hmc_float) calls_total * 1e-3;
+		flops = (hmc_float) flop_size / (hmc_float) time_total * (hmc_float) calls_total * 1e-3;
 	}
 	float mega = 1024 * 1024;
 	//write to stream
@@ -983,7 +1018,7 @@ void Opencl_Module::print_profiling(std::string filename, const char * kernelNam
 	logger.trace() << "*******************************************************************";
 	logger.trace() << "Fermion\t"<< setfill(' ') << setw(16)<< "BW[GB/s]\t" << setfill(' ') << setw(18) << "Re/Wr[MByte]\t" << setfill(' ') << setw(6)  << "Calls\t" << setfill(' ') << setw(10)  << "Time[mus]";
 	*/
-	out << kernelName << "\t" << time_total << "\t" << calls_total << "\t" << avg_time << "\t" << avg_time_site << "\t" << bandwidth << "\t" << (float) read_write_size / mega << std::endl;
+	out << kernelName << "\t" << time_total << "\t" << calls_total << "\t" << avg_time << "\t" << avg_time_site << "\t" << bandwidth << "\t" << flops << "\t" << (float) read_write_size / mega << "\t" << flop_size << std::endl;
 	out.close();
 	return;
 }
@@ -996,7 +1031,7 @@ void print_profile_header(std::string filename, int number){
 	//CP: this is set manually to fit the longest kernel name                                                                                            
 	out.width(32);
 	out.precision(15);
-	out << "#device "<< number << "\tTime [mus]\tCalls\tAvg Time [mus]\tAvg Time/Site [mus]\tBW [GB/s]\tRe/Wr [MB]" << std::endl;
+	out << "#device "<< number << "\tTime [mus]\tCalls\tAvg Time [mus]\tAvg Time/Site [mus]\tBW [GB/s]\tFLOPS [GFLOP/s]\tRe/Wr [MB]\tFLOP" << std::endl;
 	return;
 }
 
@@ -1006,15 +1041,15 @@ void Opencl_Module::print_profiling(std::string filename, int number)
 	print_profile_header(filename, number);
 	const char * kernelName;
 	kernelName = "polyakov";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "polyakov_reduction";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "plaquette";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "plaquette_reduction";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "stout_smear";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 }
 #endif
 
@@ -1076,14 +1111,39 @@ void Opencl_Module::print_copy_times(uint64_t totaltime)
 	return;
 }
 
-void Opencl_Module::smear_gaugefield(cl_mem gf)
+void Opencl_Module::smear_gaugefield(cl_mem gf, cl_mem * gf_intermediate)
 {
 	logger.debug() << "\t\tsave unsmeared gaugefield...";
 	size_t gfsize = get_parameters()->get_gf_buf_size();
 	gf_unsmeared = create_rw_buffer(gfsize);
 	copy_buffer_on_device(gf, gf_unsmeared, gfsize);
-	logger.debug() << "\t\tsmear gaugefield...";
-	stout_smear_device();
+	bool save_inter;
+	if(gf_intermediate == NULL) save_inter = false;
+	else save_inter = true;
+	logger.debug() << "\t\tperform " << get_parameters()->get_rho_iter() << " steps of stout-smearing to the gaugefield...";
+	if(save_inter == true){
+		//the first step is applied to the original gf
+		stout_smear_device(gf, gf_intermediate[0]);
+		//perform rho_iter -2 intermediate steps
+		for(int i = 1; i<get_parameters()->get_rho_iter() - 1; i++){
+			stout_smear_device(gf_intermediate[i-1], gf_intermediate[i]);
+		}
+		//the last step results in the smeared gf
+		stout_smear_device(gf_intermediate[get_parameters()->get_rho_iter() -1 ], gf);
+	}
+	else{
+		//one needs a temporary gf to apply the smearing to
+		cl_mem gf_tmp;
+		gf_tmp = create_rw_buffer(gfsize);
+		for(int i = 0; i<get_parameters()->get_rho_iter(); i++){
+			if(i/2) stout_smear_device(gf, gf_tmp);
+			else stout_smear_device(gf_tmp, gf);
+		}
+		//if rho_iter is odd one has to copy ones more
+		if(get_parameters()->get_rho_iter()/2 == 1) copy_buffer_on_device(gf_tmp, gf, gfsize);
+		cl_int clerr =clReleaseMemObject(gf_tmp);
+		if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+	}
 	return;
 }
 

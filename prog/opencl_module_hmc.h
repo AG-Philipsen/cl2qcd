@@ -112,7 +112,7 @@ public:
 	void gauge_force_device();
 	void fermion_force_device();
 	void fermion_force_eoprec_device(cl_mem Y, cl_mem X, int evenodd);
-	void stout_smeared_fermion_force_device();
+	void stout_smeared_fermion_force_device(cl_mem * gf_intermediate);
 	hmc_float calc_s_fermion();
 	
 protected:
@@ -145,6 +145,14 @@ protected:
 	 */
 	virtual int get_read_write_size(char * in, inputparameters * parameters);
 
+	/**
+	 * Return amount of Floating point operations performed by a specific kernel per call.
+	 * NOTE: this is meant to be the "netto" amount in order to be comparable.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual int get_flop_size(const char * in, inputparameters * parameters);
+	
 	/**
 	 * Print the profiling information to a file.
 	 *

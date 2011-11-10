@@ -1514,29 +1514,90 @@ int Opencl_Module_Fermions::get_read_write_size(const char * in, inputparameters
 	return 0;
 }
 
+int flop_dslash_per_site(inputparameters * parameters){
+	/** @NOTE: this is the "original" dslash without any simplifications, counting everything "full". this is a much too hight number!!
+		 * 	//this kernel performs for each eo site a 2*NDIM sum over (1 + gamma_mu) * su3matrix * spinor
+		 * 	//return  NDIM * 2 * ( get_parameters()->get_flop_su3_spinor() + get_parameters()->get_flop_gamma_spinor() ) ;
+		@NOTE: However, in 0911.3191 the dslash_eo is quoted to perform 1320 flop per site
+		 *	If I count our implementation of the dslash-kernel, I get 1632 flop per site:
+		 *	//the kernel performs 6 su3vec_acc, 2 su3_su3vec and 2 su3vec_complex in NDIM * 2 directions per site
+		*/
+		return NDIM * 2 * (parameters->get_flop_su3_su3vec() * 2 + 6 * NC * 2 + 2 * NC * parameters->get_flop_complex_mult() );
+		/// I do not know for sure, but if one leaves out the 2 su3vec_complex operations in each directions one has almost 1320 flop per site. This would correspond to have the kappa in the diagonal matrix still.
+	
+}
+
+int Opencl_Module_Fermions::get_flop_size(const char * in, inputparameters * parameters)
+{
+	int result = Opencl_Module_Spinors::get_flop_size(in, parameters);
+	if (result != 0) return result;
+	int S = get_parameters()->get_spinorfieldsize();
+	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	if (strcmp(in, "M_wilson") == 0) {
+		//this kernel performs one dslash on each site and adds this to a spinor
+		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * get_parameters()->get_flop_complex_mult() + NC * NDIM * 2 );
+	}
+	if (strcmp(in, "gamma5") == 0) {
+		//this kernel performs ND*NC*2/2 real mults
+		return S * NDIM * NC;
+	}
+	if (strcmp(in, "M_tm_plus") == 0) {
+		//this kernel performs ND*NC complex mults and one dslash on each site and adds the results
+		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * get_parameters()->get_flop_complex_mult() + NC * NDIM * 2 );
+	}
+	if (strcmp(in, "M_tm_minus") == 0) {
+		//this kernel performs ND*NC complex mults and one dslash on each site and adds the results
+		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * get_parameters()->get_flop_complex_mult() + NC * NDIM * 2 );
+	}
+	if (strcmp(in, "gamma5_eoprec") == 0) {
+		//this kernel performs ND*NC*2/2 real mults
+		return Seo * NDIM * NC;
+	}
+	if (strcmp(in, "M_tm_sitediagonal") == 0) {
+		//this kernel performs ND*NC complex mults
+		return Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() );
+	}
+	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0) {
+		//this kernel performs ND*NC complex mults and ND*NC*2 real mults
+		return Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() + NC*NDIM*2  );
+	}
+	if (strcmp(in, "M_tm_sitediagonal_minus") == 0) {
+		//this kernel performs ND*NC complex mults
+		return Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() );
+	}
+	if (strcmp(in, "M_tm_inverse_sitediagonal_minus") == 0) {
+		//this kernel performs ND*NC complex mults and ND*NC*2 real mults
+		return Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() + NC*NDIM*2 );
+	}
+	if (strcmp(in, "dslash_eoprec") == 0) {
+		return Seo * flop_dslash_per_site(get_parameters());
+	}
+	return 0;
+}
+
 void Opencl_Module_Fermions::print_profiling(std::string filename, int number)
 {
 	Opencl_Module_Spinors::print_profiling(filename, number);
 	const char * kernelName;
 	kernelName = "M_wilson";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "gamma5";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "M_tm_plus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "M_tm_minus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "gamma5_eoprec";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "M_tm_sitediagonal";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "M_tm_inverse_sitediagonal";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "M_tm_sitediagonal_minus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "M_tm_inverse_sitediagonal_minus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "dslash_eoprec";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 }
 #endif
