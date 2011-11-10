@@ -95,6 +95,12 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
 	cl_mem clmem_res = get_task_solver()->create_rw_buffer(spinorfield_size);
 
+	//apply stout smearing if wanted
+	if(get_parameters()->get_use_smearing() == true) {
+		get_task_solver()->smear_gaugefield(*get_clmem_gaugefield(), NULL);
+	}
+	
+	
 	for(int k = 0; k < num_sources; k++) {
 		//copy source from to device
 		//NOTE: this is a blocking call!
@@ -112,7 +118,11 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 		logger.debug() << "add solution...";
 		get_task_solver()->get_buffer_from_device(clmem_res, &solution_buffer[k*get_parameters()->get_vol4d()], sfsize);
 	}
-
+	
+	if(get_parameters()->get_use_smearing() == true) {
+			get_task_solver()->unsmear_gaugefield(*get_clmem_gaugefield());
+	}
+	
 	delete [] sftmp;
 	cl_int clerr = clReleaseMemObject(clmem_res);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);

@@ -213,7 +213,7 @@ int Opencl_Module_Heatbath::get_read_write_size(const char * in, inputparameters
 	//this is the same as in the function above
 	if ( (strcmp(in, "heatbath_even") == 0 ) || (strcmp(in, "heatbath_odd") == 0) || (strcmp(in, "overrelax_even") == 0) || (strcmp(in, "overrelax_odd") == 0)) {
 		//this kernel reads ingredients for 1 staple plus 1 su3matrix and writes 1 su3-matrix
-		return VOL4D * D * R * (6*(NDIM-1) + 1 + 1 );
+		return VOL4D/2 * D * R * (6*(NDIM-1) + 1 + 1 );
 	}
 	return 0;
 }
