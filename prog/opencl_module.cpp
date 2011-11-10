@@ -826,11 +826,21 @@ TmpClKernel Opencl_Module::createKernel(const char * const kernel_name)
 	return TmpClKernel(kernel_name, collect_options.str(), get_context(), &device, 1);
 }
 
-void Opencl_Module::stout_smear_device()
+void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
 {
+	//query work-sizes for kernel
+	size_t ls, gs;
+	cl_uint num_groups;
+	this->get_work_sizes(stout_smear, this->get_device_type(), &ls, &gs, &num_groups);
 
-	throw Print_Error_Message("Not implemented yet.");
+	int clerr = clSetKernelArg(stout_smear, 0, sizeof(cl_mem), in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(stout_smear, 0, sizeof(cl_mem), out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	
+	enqueueKernel(stout_smear , gs, ls);
+	
 	return;
 }
 
@@ -1100,14 +1110,39 @@ void Opencl_Module::print_copy_times(uint64_t totaltime)
 	return;
 }
 
-void Opencl_Module::smear_gaugefield(cl_mem gf)
+void Opencl_Module::smear_gaugefield(cl_mem gf, cl_mem * gf_intermediate)
 {
 	logger.debug() << "\t\tsave unsmeared gaugefield...";
 	size_t gfsize = get_parameters()->get_gf_buf_size();
 	gf_unsmeared = create_rw_buffer(gfsize);
 	copy_buffer_on_device(gf, gf_unsmeared, gfsize);
-	logger.debug() << "\t\tsmear gaugefield...";
-	stout_smear_device();
+	bool save_inter;
+	if(gf_intermediate == NULL) save_inter = false;
+	else save_inter = true;
+	logger.debug() << "\t\tperform " << get_parameters()->get_rho_iter() << " steps of stout-smearing to the gaugefield...";
+	if(save_inter == true){
+		//the first step is applied to the original gf
+		stout_smear_device(gf, gf_intermediate[0]);
+		//perform rho_iter -2 intermediate steps
+		for(int i = 1; i<get_parameters()->get_rho_iter() - 1; i++){
+			stout_smear_device(gf_intermediate[i-1], gf_intermediate[i]);
+		}
+		//the last step results in the smeared gf
+		stout_smear_device(gf_intermediate[get_parameters()->get_rho_iter() -1 ], gf);
+	}
+	else{
+		//one needs a temporary gf to apply the smearing to
+		cl_mem gf_tmp;
+		gf_tmp = create_rw_buffer(gfsize);
+		for(int i = 0; i<get_parameters()->get_rho_iter(); i++){
+			if(i/2) stout_smear_device(gf, gf_tmp);
+			else stout_smear_device(gf_tmp, gf);
+		}
+		//if rho_iter is odd one has to copy ones more
+		if(get_parameters()->get_rho_iter()/2 == 1) copy_buffer_on_device(gf_tmp, gf, gfsize);
+		cl_int clerr =clReleaseMemObject(gf_tmp);
+		if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+	}
 	return;
 }
 

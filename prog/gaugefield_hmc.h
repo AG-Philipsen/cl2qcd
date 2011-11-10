@@ -120,6 +120,7 @@ class Gaugefield_hmc : public Gaugefield_hybrid {
 	void calc_total_force(usetimer * solvertimer);
 	void calc_gauge_force();
 	void calc_fermion_force(usetimer * solvertimer);
+	void fermion_forces_call(usetimer * solvertimer);
 	
 	// get methods
 	/**

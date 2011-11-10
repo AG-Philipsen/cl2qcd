@@ -381,8 +381,8 @@ public:
 	/**
 	 * This applies stout smearing to a gaugefield
 	 */
-	void smear_gaugefield(cl_mem gf);
-	void stout_smear_device();
+	void smear_gaugefield(cl_mem gf, cl_mem * gf_intermediate);
+	void stout_smear_device(cl_mem in, cl_mem out);
 
 	/**
 	 * This replaces the stout smeared gaugefield with the unsmeared one

@@ -75,7 +75,7 @@ void Opencl_Module_Hmc::fill_kernels()
 	gauge_force = createKernel("gauge_force") << basic_hmc_code << "operations_gaugemomentum.cl" << "force_gauge.cl";
 	
 	if(get_parameters()->get_use_smearing() == true) {
-		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_fermion_code << "stout_smear_fermion_force.cl";
+		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_hmc_code << "stout_smear_fermion_force.cl";
 	}
 	gaugemomentum_squarenorm = createKernel("gaugemomentum_squarenorm") << basic_hmc_code << "operations_gaugemomentum.cl" << "gaugemomentum_squarenorm.cl";
 
@@ -1057,7 +1057,7 @@ void Opencl_Module_Hmc::fermion_force_eoprec_device(cl_mem Y, cl_mem X, int even
 
 }
 
-void Opencl_Module_Hmc::stout_smeared_fermion_force_device()
+void Opencl_Module_Hmc::stout_smeared_fermion_force_device(cl_mem * gf_intermediate)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;

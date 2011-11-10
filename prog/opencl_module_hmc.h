@@ -112,7 +112,7 @@ public:
 	void gauge_force_device();
 	void fermion_force_device();
 	void fermion_force_eoprec_device(cl_mem Y, cl_mem X, int evenodd);
-	void stout_smeared_fermion_force_device();
+	void stout_smeared_fermion_force_device(cl_mem * gf_intermediate);
 	hmc_float calc_s_fermion();
 	
 protected:
