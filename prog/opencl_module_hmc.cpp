@@ -75,7 +75,7 @@ void Opencl_Module_Hmc::fill_kernels()
 	gauge_force = createKernel("gauge_force") << basic_hmc_code << "operations_gaugemomentum.cl" << "force_gauge.cl";
 	
 	if(get_parameters()->get_use_smearing() == true) {
-		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_hmc_code << "stout_smear_fermion_force.cl";
+		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_hmc_code << "force_fermion_stout_smear.cl";
 	}
 	gaugemomentum_squarenorm = createKernel("gaugemomentum_squarenorm") << basic_hmc_code << "operations_gaugemomentum.cl" << "gaugemomentum_squarenorm.cl";
 
