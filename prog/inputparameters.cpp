@@ -12,6 +12,7 @@ void inputparameters::set_defaults()
 
 	use_rec12 = false;
 	use_gpu = false;
+	use_aniso = false;
 	use_chem_pot_re = false;
 	use_chem_pot_im = false;
 	use_smearing = false;
@@ -242,6 +243,7 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("Xi") != std::string::npos) val_assign(&xi, line);
 			if(line.find("anisotropy") != std::string::npos) val_assign(&xi, line);
 			if(line.find("Anisotropy") != std::string::npos) val_assign(&xi, line);
+			if(line.find("use_aniso") != std::string::npos) bool_assign(&use_aniso, line);
 
 			if(line.find("print_to_screen") != std::string::npos) bool_assign(&print_to_screen, line);
 
@@ -663,7 +665,12 @@ int inputparameters::get_nt() const
 
 int inputparameters::get_xi() const
 {
-  return xi;
+  int tmp;
+  if (use_aniso == 0)
+    tmp = 1;
+  else
+    tmp = xi;
+  return tmp;
 }
 
 hmc_float inputparameters::get_xi_0() const
@@ -778,6 +785,11 @@ bool inputparameters::get_use_rec12() const
 bool inputparameters::get_use_gpu() const
 {
 	return use_gpu;
+}
+
+bool inputparameters::get_use_aniso() const
+{
+  return use_aniso;
 }
 
 int inputparameters::get_volspace() const
@@ -1010,6 +1022,11 @@ void inputparameters::print_info_global() const
 	} else {
 		logger.info() << "## USE GPU: OFF";
 	}
+	if(this->get_use_aniso() == true){
+	        logger.info() << "## USE ANISOTROPY: ON";
+	} else {
+	        logger.info() << "## USE ANISOTROPY: OFF";
+	}
 	logger.info() << "## Number of devices demanded for calculations: " << this->get_num_dev()  ;
 	logger.info() << "## **********************************************************";
 	logger.info() << "## I/O parameters:";
@@ -1056,6 +1073,11 @@ void inputparameters::print_info_global(ostream* os) const
 	} else {
 		*os << "## USE GPU: OFF"  << endl;
 	}
+	if(this->get_use_aniso() == true){
+	        *os << "## USE ANISOTROPY: ON";
+	} else {
+	        *os << "## USE ANISOTROPY: OFF";
+	}
 	*os  << "## Number of devices demanded for calculations: " << this->get_num_dev()  << endl;
 	*os  << "## **********************************************************" << endl;
 	*os  << "## I/O parameters:" << endl;
@@ -1095,7 +1117,6 @@ void inputparameters::print_info_heatbath(char* progname) const
 	logger.info() << "## **********************************************************";
 	return;
 }
-
 
 void inputparameters::print_info_heatbath(char* progname, ostream* os) const
 {

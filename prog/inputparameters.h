@@ -72,6 +72,7 @@ public:
 	bool get_use_rec12() const;
 	bool get_use_gpu() const;
 	bool get_use_eo() const;
+	bool get_use_aniso() const;
 	int get_cgmax() const;
 	/**
 	 * The precision to be used for gaugefield storage in bits.
@@ -273,6 +274,7 @@ private:
 
 	bool use_rec12;
 	bool use_gpu;
+	bool use_aniso;
 	bool use_eo;
 	bool use_chem_pot_re;
 	bool use_chem_pot_im;
