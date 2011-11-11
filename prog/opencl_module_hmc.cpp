@@ -734,7 +734,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion(){
 	//this function essentially performs the same steps as in the force-calculation, but with higher precision.
 	//	therefore, comments are deleted here...
 	//	Furthermore, in the bicgstab-case, the second inversions are not needed
-	bool converged = false;
+	int converged = -1;
 	if(get_parameters()->get_use_eo() == true){
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 		if(get_parameters()->get_use_cg() == true) { 
