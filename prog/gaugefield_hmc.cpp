@@ -138,7 +138,9 @@ void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer){
 	//NOTE: One needs only rho_iter -1 here since the last iteration is saved in gf...
 	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
 	//	or use the intermediate cl_mem obj gf_unsmeared. This is initialized in the smear_gaugefield function
-	cl_mem * smeared_gfs = new cl_mem [rho_iter -1];
+	cl_mem * smeared_gfs;
+	if(rho_iter > 0) smeared_gfs = new cl_mem [rho_iter -1];
+	else smeared_gfs = NULL;
 		
 	if(get_parameters()->get_use_smearing() == true) {
 		size_t gfsize = get_parameters()->get_gf_buf_size();
