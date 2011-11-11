@@ -24,7 +24,7 @@ void Opencl_Module_Ran::init_random_arrays()
 void Opencl_Module_Ran::fill_collect_options(stringstream* collect_options)
 {
 	Opencl_Module::fill_collect_options(collect_options);
-	if(get_parameters()->get_use_same_rnd_numbers() ) *collect_options <<  " -D_SAME_RND_NUMBERS_=";
+	if(get_parameters()->get_use_same_rnd_numbers() ) *collect_options <<  " -D_SAME_RND_NUMBERS_ ";
 	return;
 }
 
