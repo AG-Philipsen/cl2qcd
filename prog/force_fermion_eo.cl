@@ -7,7 +7,7 @@
 //	ODD corresponds to case where an odd site of Y is connected to an even site of X (because if x is odd x+mu is even) 
 //	EVEN is just the other way around.
 //The difference to the non-eo kernel is that one has to calculate the eo position of the "plus" spinor out of the neighbour coordinates on each occasion. This is done just like in the dslash_eo kernel!
-__kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorfield * Y, __global  spinorfield * X, __global  ae * out, int evenodd)
+__kernel void fermion_force_eoprec(__global ocl_s_gaugefield * field, __global  spinorfield * Y, __global  spinorfield * X, __global  ae * out, int evenodd)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);

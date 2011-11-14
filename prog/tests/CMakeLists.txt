@@ -224,6 +224,37 @@ target_link_libraries(f_fermion_gpu
 	einhard)
 add_test(F_fermion_gpu f_fermion_gpu)
 
+add_executable(f_fermion_eo_gpu
+	Force_fermion_eo_GPU.cpp
+	../host_geometry.cpp
+	../host_operations_complex.cpp
+	../host_operations_gaugefield.cpp
+	../host_operations_su3matrix.cpp
+	../host_operations_matrix.cpp
+	../gaugefield_hybrid.cpp
+	../inputparameters.cpp
+	../host_readgauge.cpp
+	../host_random.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../opencl_module_ran.cpp
+	../opencl_module_spinors.cpp
+	../opencl_module_fermions.cpp
+	../opencl_module_hmc.cpp
+	../host_use_timer.cpp
+	../host_writegaugefield.cpp
+	../exceptions.cpp
+	../logger.cpp)
+target_link_libraries(f_fermion_eo_gpu
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	crypto
+	einhard)
+add_test(F_fermion_eo_gpu f_fermion_eo_gpu)
+
 add_executable(f_update_gpu
 	Force_update_GPU.cpp
 	../host_geometry.cpp
