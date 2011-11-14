@@ -49,7 +49,7 @@ public:
 	hmc_float get_squarenorm(int which);
 	void verify(hmc_float, hmc_float);	
 	void runTestKernel(int evenodd);
-
+        void reset_outfield();
 private:
 	void fill_buffers();
 	void clear_buffers();
@@ -78,38 +78,61 @@ BOOST_AUTO_TEST_CASE( F_FERMION ){
 	logger.info() << "|phi_odd_1|^2:";
 	hmc_float cpu_back3 = cpu.get_squarenorm(2);
 	logger.info() << "|phi_odd_2|^2:";
-	hmc_float cpu_back4 = cpu.get_squarenorm(4);
+	hmc_float cpu_back4 = cpu.get_squarenorm(3);
 	cpu.runTestKernel(EVEN);
 	logger.info() << "|force (even)|^2:";
 	hmc_float cpu_res;
 	cpu_res = cpu.get_squarenorm(4);
+	cpu.reset_outfield();
 	cpu.runTestKernel(ODD);
-	logger.info() << "|force (even)|^2:";
+	logger.info() << "|force (odd)|^2:";
 	hmc_float cpu_res2;
 	cpu_res2 = cpu.get_squarenorm(4);
+	cpu.runTestKernel(EVEN);
+	logger.info() << "|force (even) + force (odd)|^2  (without setting the outvector to zero before):";
+	hmc_float cpu_res3;
+	cpu_res3 = cpu.get_squarenorm(4);
 	BOOST_MESSAGE("Tested CPU");
 
 	logger.info() << "Init GPU device";
 	//params.print_info_inverter("m_gpu");
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	Dummyfield gpu(CL_DEVICE_TYPE_GPU);
 	logger.info() << "gaugeobservables: ";
-	dummy.print_gaugeobservables_from_task(0, 0);
-	logger.info() << "|phi_1|^2:";
-	hmc_float gpu_back = dummy.get_squarenorm(0);
-	logger.info() << "|phi_2|^2:";
-	hmc_float gpu_back2 = dummy.get_squarenorm(1);
-	dummy.runTestKernel(EVEN);
-	logger.info() << "|M phi|^2:";
+	gpu.print_gaugeobservables_from_task(0, 0);
+	logger.info() << "|phi_even_1|^2:";
+	hmc_float gpu_back = gpu.get_squarenorm(0);
+	logger.info() << "|phi_even_2|^2:";
+	hmc_float gpu_back2 = gpu.get_squarenorm(1);
+	logger.info() << "|phi_odd_1|^2:";
+	hmc_float gpu_back3 = gpu.get_squarenorm(2);
+	logger.info() << "|phi_odd_2|^2:";
+	hmc_float gpu_back4 = gpu.get_squarenorm(3);
+	gpu.runTestKernel(EVEN);
+	logger.info() << "|force (even)|^2:";
 	hmc_float gpu_res;
-	gpu_res = dummy.get_squarenorm(2);
+	gpu_res = gpu.get_squarenorm(4);
+	gpu.reset_outfield();
+	gpu.runTestKernel(ODD);
+	logger.info() << "|force (odd)|^2:";
+	hmc_float gpu_res2;
+	gpu_res2 = gpu.get_squarenorm(4);
+	gpu.runTestKernel(EVEN);
+	logger.info() << "|force (even) + force (odd)|^2 (without setting the outvector to zero before):";
+	hmc_float gpu_res3;
+	gpu_res3 = gpu.get_squarenorm(4);
 	BOOST_MESSAGE("Tested GPU");
 
 	logger.info() << "Compare CPU and GPU results";
 	logger.info() << "Input vectors:";
 	cpu.verify(cpu_back, gpu_back);
 	cpu.verify(cpu_back2, gpu_back2);
+	cpu.verify(cpu_back3, gpu_back3);
+	cpu.verify(cpu_back4, gpu_back4);
 	logger.info() << "Output vectors:";
 	cpu.verify(cpu_res, gpu_res);
+	cpu.verify(cpu_res2, gpu_res2);
+	cpu.verify(cpu_res3, gpu_res3);
+
 }
 
 void Dummyfield::init_tasks()
@@ -162,6 +185,14 @@ void fill_with_one(hmc_float * sf_in, int size)
 {
 	for(int i = 0; i < size; ++i) {
 	  sf_in[i] = 1.;
+	}
+	return;
+}
+
+void fill_with_zero(hmc_float * sf_in, int size)
+{
+	for(int i = 0; i < size; ++i) {
+	  sf_in[i] = 0.;
 	}
 	return;
 }
@@ -283,6 +314,14 @@ void fill_sf_with_random(spinor * sf_in1, spinor * sf_in2, int size, int switche
 }
 
 
+void Dummyfield::reset_outfield(){
+  size_t ae_buf_size = get_parameters()->get_gm_buf_size();
+  int err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out, CL_TRUE, 0, ae_buf_size, sf_out, 0, 0, NULL);
+  BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+  return;
+}
+
 void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
@@ -317,9 +356,11 @@ void Dummyfield::fill_buffers()
 	BOOST_REQUIRE(sf_in3);
 	BOOST_REQUIRE(sf_in4);
 	
-	fill_with_one(sf_out, NUM_ELEMENTS_AE);
+	fill_with_zero(sf_out, NUM_ELEMENTS_AE);
 
-	size_t sf_buf_size = get_parameters()->get_sf_buf_size();
+	size_t sf_buf_size;
+	if(get_parameters()->get_use_eo() == true) sf_buf_size = get_parameters()->get_eo_sf_buf_size();
+	else sf_buf_size = get_parameters()->get_eo_sf_buf_size();
 	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
 	//create buffer for sf on device (and copy sf_in to both for convenience)
 
@@ -339,10 +380,10 @@ void Dummyfield::fill_buffers()
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in4, CL_TRUE, 0, sf_buf_size, sf_in4, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
 	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, ae_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out, CL_TRUE, 0, ae_buf_size, sf_out, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	this->reset_outfield();
 
 	//create buffer for squarenorm on device
 	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
@@ -364,7 +405,7 @@ void Device::fill_kernels()
 
 	ae_sqn = createKernel("gaugemomentum_squarenorm") << basic_fermion_code << "types_hmc.h" << "operations_gaugemomentum.cl" << "gaugemomentum_squarenorm.cl";
 
-	testKernel = createKernel("fermion_force_eoprec") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
+	testKernel = createKernel("fermion_force_eoprec") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 
 }
 
@@ -470,7 +511,7 @@ void Dummyfield::runTestKernel(int evenodd)
 {
 	int gs, ls;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = get_parameters()->get_spinorfieldsize();
+		gs = get_parameters()->get_eoprec_spinorfieldsize();
 		ls = 64;
 	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
 		gs = opencl_modules[0]->get_max_compute_units();
