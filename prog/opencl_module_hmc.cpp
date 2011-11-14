@@ -608,9 +608,6 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			M_tm_inverse_sitediagonal_minus_device(get_clmem_tmp_eoprec_1(), get_clmem_tmp_eoprec_2());
 			sax_eoprec_device(get_clmem_tmp_eoprec_2(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
 		}
-		logger.debug() << "\t\tcalc even-odd fermion_force...";
-		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eoprec, clmem_tmp_eoprec_1)
-		fermion_force_eoprec_device(clmem_phi_inv_eoprec,  get_clmem_tmp_eoprec_1(), EVEN);
 	
 		if(logger.beDebug()){
 			this->convert_from_eoprec_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), get_clmem_inout());
@@ -618,6 +615,10 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			print_info_inv_field(get_clmem_tmp_eoprec_1(), true, "\tX_odd ");
 			print_info_inv_field(get_clmem_inout(), false, "\tX = (X_even, X_odd) ");
 		}
+
+		logger.debug() << "\t\tcalc eoprec fermion_force F(Y_even, X_odd)...";
+		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eoprec, clmem_tmp_eoprec_1)
+		fermion_force_eoprec_device(clmem_phi_inv_eoprec,  get_clmem_tmp_eoprec_1(), EVEN);
 
 		//calculate Y_odd
 		//therefore, clmem_tmp_eoprec_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
@@ -631,9 +632,6 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			M_tm_inverse_sitediagonal_minus_device(get_clmem_tmp_eoprec_1(), get_clmem_tmp_eoprec_2());
 			sax_eoprec_device(get_clmem_tmp_eoprec_2(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
 		}
-		logger.debug() << "\t\tcalc even-odd fermion_force...";
-		//Calc F(Y_odd, X_even) = F(clmem_tmp_eoprec_1, clmem_inout_eoprec)
-		fermion_force_eoprec_device(get_clmem_tmp_eoprec_1(), get_clmem_inout_eoprec(), ODD);
 
 		if(logger.beDebug()){
 			this->convert_from_eoprec_device(clmem_phi_inv_eoprec, get_clmem_tmp_eoprec_1(), clmem_phi_inv);
@@ -641,6 +639,10 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			print_info_inv_field(get_clmem_tmp_eoprec_1(), true, "\tY_odd ");
 			print_info_inv_field(clmem_phi_inv, false, "\tY = (Y_even, Yodd) ");
 		}
+
+		logger.debug() << "\t\tcalc eoprec fermion_force F(Y_odd, X_even)...";
+		//Calc F(Y_odd, X_even) = F(clmem_tmp_eoprec_1, clmem_inout_eoprec)
+		fermion_force_eoprec_device(get_clmem_tmp_eoprec_1(), get_clmem_inout_eoprec(), ODD);
 	}
 	else{
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield 
@@ -740,9 +742,6 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		//CP: this always calls fermion_force(Y,X) with Y = clmem_phi_inv, X = clmem_inout
 		fermion_force_device();
 	}
-// 	logger.debug() << "\t\tcalc fermion_force...";
-// 	//CP: this always calls fermion_force(Y,X) with Y = clmem_phi_inv, X = clmem_inout
-// 	fermion_force_device();
 }
 
 void Opencl_Module_Hmc::calc_gauge_force()
@@ -1071,12 +1070,23 @@ void Opencl_Module_Hmc::fermion_force_eoprec_device(cl_mem Y, cl_mem X, int even
 	clerr = clSetKernelArg(fermion_force_eoprec, 3, sizeof(cl_mem), &clmem_force);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(fermion_force_eoprec, 3, sizeof(int), &evenodd);
+	clerr = clSetKernelArg(fermion_force_eoprec, 4, sizeof(int), &evenodd);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	
 	enqueueKernel( fermion_force_eoprec , gs2, ls2);
 
-
+	if(logger.beDebug()){
+	  cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
+	  hmc_float resid;
+	  this->set_float_to_gaugemomentum_squarenorm_device(clmem_force, force_tmp);
+	  get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
+	  logger.debug() <<  "\teoprec force:\t" << resid;
+	  int clerr = clReleaseMemObject(force_tmp);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+	  if(resid != resid){
+	    throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
+	  }
+	}
 }
 
 void Opencl_Module_Hmc::stout_smeared_fermion_force_device(cl_mem * gf_intermediate)
