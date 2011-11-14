@@ -607,12 +607,17 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			M_tm_inverse_sitediagonal_minus_device(get_clmem_tmp_eoprec_1(), get_clmem_tmp_eoprec_2());
 			sax_eoprec_device(get_clmem_tmp_eoprec_2(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
 		}
-// 		this->convert_from_eoprec_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), get_clmem_inout());
-
 		logger.debug() << "\t\tcalc even-odd fermion_force...";
 		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eoprec, clmem_tmp_eoprec_1)
-		fermion_force_eoprec_device(clmem_phi_inv_eoporec,  get_clmem_tmp_eoprec_1(), EVEN);
+		fermion_force_eoprec_device(clmem_phi_inv_eoprec,  get_clmem_tmp_eoprec_1(), EVEN);
 	
+		if(logger.beDebug()){
+			this->convert_from_eoprec_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), get_clmem_inout());
+			print_info_inv_field(get_clmem_inout_eoprec(), true, "\tX_even ");
+			print_info_inv_field(get_clmem_tmp_eoprec_1(), true, "\tX_odd ");
+			print_info_inv_field(get_clmem_inout(), false, "\tX = (X_even, X_odd) ");
+		}
+
 		//calculate Y_odd
 		//therefore, clmem_tmp_eoprec_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
 		//	this is used as a default in the force-function.
@@ -625,11 +630,16 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			M_tm_inverse_sitediagonal_minus_device(get_clmem_tmp_eoprec_1(), get_clmem_tmp_eoprec_2());
 			sax_eoprec_device(get_clmem_tmp_eoprec_2(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
 		}
-// 		this->convert_from_eoprec_device(clmem_phi_inv_eoprec, get_clmem_tmp_eoprec_1(), clmem_phi_inv);
-		
 		logger.debug() << "\t\tcalc even-odd fermion_force...";
 		//Calc F(Y_odd, X_even) = F(clmem_tmp_eoprec_1, clmem_inout_eoprec)
 		fermion_force_eoprec_device(get_clmem_tmp_eoprec_1(), get_clmem_inout_eoprec(), ODD);
+
+		if(logger.beDebug()){
+			this->convert_from_eoprec_device(clmem_phi_inv_eoprec, get_clmem_tmp_eoprec_1(), clmem_phi_inv);
+			print_info_inv_field(clmem_phi_inv_eoprec, true, "\tY_even ");
+			print_info_inv_field(get_clmem_tmp_eoprec_1(), true, "\tY_odd ");
+			print_info_inv_field(clmem_phi_inv, false, "\tY = (Y_even, Yodd) ");
+		}
 	}
 	else{
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield 
