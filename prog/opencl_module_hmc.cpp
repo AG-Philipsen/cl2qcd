@@ -609,6 +609,12 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		}
 		this->convert_from_eoprec_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), get_clmem_inout());
 		
+			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tforce 1 ");
+			if(logger.beDebug()) print_info_inv_field(get_clmem_tmp_eoprec_1(), true, "\tforce 2 ");
+
+			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tnon-eo force 1 ");
+
+
 		//calculate Y_odd
 		//therefore, clmem_tmp_eoprec_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
 		//	this is used as a default in the force-function.
@@ -622,6 +628,13 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			sax_eoprec_device(get_clmem_tmp_eoprec_2(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
 		}
 		this->convert_from_eoprec_device(clmem_phi_inv_eoprec, get_clmem_tmp_eoprec_1(), clmem_phi_inv);
+
+			if(logger.beDebug()) print_info_inv_field(clmem_phi_inv_eoprec, true, "\tforce 3 ");
+			if(logger.beDebug()) print_info_inv_field(get_clmem_tmp_eoprec_1(), true, "\tforce 4 ");
+
+			if(logger.beDebug()) print_info_inv_field(clmem_phi_inv, false, "\tnon-eo force 2 ");
+
+
 	}
 	else{
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield 
