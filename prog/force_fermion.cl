@@ -2,7 +2,11 @@
 __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorfield * Y, __global  spinorfield * X, __global  ae * out)
 {
 	int id = get_global_id(0);
-	if(id == 0) {
+	int global_size = get_global_size(0);
+
+	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size)
+	{
+		st_index pos = (id_tmp % 2 == 0) ? get_even_site(id_tmp / 2) : get_odd_site(id_tmp / 2);
 
 		Matrixsu3 U;
 		Matrix3x3 v1, v2, tmp;
@@ -16,8 +20,9 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 		hmc_complex bc_tmp;
 		int dir;
 		//main loop
-		for(int t = 0; t < NTIME; t++) {
-			for(int n = 0; n < VOLSPACE; n++) {
+		int n = pos.space;
+		int t = pos.time;
+
 				y = get_spinor_from_field(Y, n, t);
 				///////////////////////////////////
 				// Calculate gamma_5 y
@@ -290,7 +295,5 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				out_tmp = tr_lambda_u(v1);
 				update_gaugemomentum(out_tmp, 1., global_link_pos_down, out);
 
-			}
-		}
 	}
 }
