@@ -28,8 +28,9 @@ Matrixsu2_pauli SU2Update(const hmc_float alpha, __global hmc_ocl_ran * rnd)
 
 void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id)
 {
-	Matrix3x3 staplematrix = calc_staple(gaugefield, pos, t, mu);
-/*
+  Matrix3x3 staplematrix;
+ 
+#ifdef _ANISO_
 	//Compute staple, comprises whole anisotropy
 	if (mu==0){
 	  staplematrix = calc_staple(gaugefield, pos, t, mu);
@@ -45,7 +46,10 @@ void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const int mu
 	  staplematrix_tau = multiply_matrix3x3_by_real (staplematrix_tau, XI_0 );
 	  staplematrix = add_matrix3x3 ( staplematrix_sigma, staplematrix_tau );
 	}
-*/
+#else
+	staplematrix = calc_staple(gaugefield, pos, t, mu);
+#endif
+
 	Matrixsu3 U = get_matrixsu3(gaugefield, pos, t, mu);
 	U = project_su3(U);
 
@@ -89,8 +93,8 @@ void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const int mu
 
 void inline perform_overrelaxing(__global ocl_s_gaugefield* gaugefield, const int mu, __global hmc_ocl_ran * rnd, int pos, int t, int id)
 {
-	Matrix3x3 staplematrix = calc_staple(gaugefield, pos, t, mu);
-/*
+	Matrix3x3 staplematrix;
+#ifdef _ANISO_
 	//Compute staple, comprises whole anisotropy
 	if (mu==0){
 	  staplematrix = calc_staple(gaugefield, pos, t, mu);
@@ -106,8 +110,9 @@ void inline perform_overrelaxing(__global ocl_s_gaugefield* gaugefield, const in
 	  staplematrix_tau = multiply_matrix3x3_by_real (staplematrix_tau, XI_0 );
 	  staplematrix = add_matrix3x3 ( staplematrix_sigma, staplematrix_tau );
 	}
-*/
-
+#else
+	staplematrix = calc_staple(gaugefield, pos, t, mu);
+#endif
 	Matrixsu3 U = get_matrixsu3(gaugefield, pos, t, mu);
 	U = project_su3(U);
 

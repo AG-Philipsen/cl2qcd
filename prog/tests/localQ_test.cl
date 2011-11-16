@@ -13,10 +13,12 @@ __kernel void localQ_test(__global ocl_s_gaugefield * field, __global hmc_float 
 		Matrix3x3 V;
 		hmc_float res = 0.;
 
-		for(int mu = 0; mu < NDIM; mu++) {
+		//NOTE: The kernel crashes on ATI GPUs if one start with mu=0 here, although this does not make any sense since the nu-loop then does not contribute!!!
+		for(int mu = 1; mu < NDIM; mu++) {
 			for(int nu = 0; nu < mu; nu++) {
-				Matrixsu3 tmp =	local_plaquette(field,pos.space,pos.time, mu, nu);
-				res += trace_matrixsu3(tmp).re;
+				Matrix3x3 tmp;
+				tmp = 	local_Q_plaquette(field,pos.space,pos.time, mu, nu);
+				res += trace_matrix3x3(tmp).re;
 		}}
 
 		int global_pos = get_global_pos(pos.space, pos.time);

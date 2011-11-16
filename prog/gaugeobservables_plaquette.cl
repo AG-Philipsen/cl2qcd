@@ -29,14 +29,14 @@ __kernel void plaquette(__global ocl_s_gaugefield * field, __global hmc_float * 
 	for(id = id_tmp; id < VOLSPACE * NTIME; id += global_size) {
 		st_index pos = (id < VOLSPACE * NTIME / 2) ? get_even_site(id) : get_odd_site(id - (VOLSPACE * NTIME / 2));
 
-		//mu = 1
-		for(int mu = 0; mu < NDIM; mu++) {
+		for(int mu = 1; mu < NDIM; mu++) {
 			for(int nu = 0; nu < mu; nu++) {
-				prod = local_plaquette(field, pos.space, pos.time, mu, nu );
-				tmpfloat = trace_matrixsu3(prod).re;
+                         	prod = local_plaquette(field, pos.space, pos.time, mu, nu );
+			        
+                                tmpfloat = trace_matrixsu3(prod).re;
 				plaq += tmpfloat;
-				//mu ==0 raus
-				if(mu == 0 || nu == 0) {
+
+				if(nu == 0) {
 					tplaq += tmpfloat;
 				} else {
 					splaq += tmpfloat;
