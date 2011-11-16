@@ -42,7 +42,12 @@ hmc_float const hmc_one_f = static_cast<hmc_float>(1);
 typedef struct {
 	hmc_float re;
 	hmc_float im;
-} hmc_complex;
+} hmc_complex
+#ifdef _USEDOUBLEPREC_
+__attribute__((aligned(16)));
+#else
+__attribute__((aligned(8)));
+#endif
 typedef struct {
 	hmc_complex e00;
 	hmc_complex e01;

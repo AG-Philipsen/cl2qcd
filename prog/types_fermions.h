@@ -12,15 +12,24 @@ typedef struct {
 	hmc_complex e0;
 	hmc_complex e1;
 	hmc_complex e2;
-
-} su3vec;
+} su3vec
+#ifdef _USEDOUBLEPREC_
+__attribute__((aligned(16)));
+#else
+__attribute__((aligned(8)));
+#endif
 
 typedef struct {
 	su3vec e0;
 	su3vec e1;
 	su3vec e2;
 	su3vec e3;
-} spinor;
+} spinor
+#ifdef _USEDOUBLEPREC_
+__attribute__((aligned(32)));
+#else
+__attribute__((aligned(16)));
+#endif
 
 typedef struct {
 	su3vec e0;
