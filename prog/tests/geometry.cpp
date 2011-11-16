@@ -30,7 +30,7 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-		Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
+	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
 
 		init(1, device_type, &params);
 	};
@@ -83,7 +83,7 @@ void Device::fill_kernels()
 	Opencl_Module::fill_kernels();
 
 	//to this end, one has to set the needed files by hand
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "opencl_geometry.cl";
+	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl";
 	testKernel = createKernel("geometry_test") << basic_opencl_code << "tests/geometry_test.cl";
 }
 
