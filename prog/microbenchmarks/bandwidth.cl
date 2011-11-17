@@ -144,33 +144,42 @@ __kernel void copySpinor( __global spinor * const restrict out, __global const s
 	}
 }
 
+hmc_complex make_complex(const hmc_float left, const hmc_float right)
+{
+	return (hmc_complex) {left, right};
+}
+
+su3vec make_su3vec(const hmc_complex e0, const hmc_complex e1, const hmc_complex e2)
+{
+	return (su3vec) {e0, e1, e2};
+}
+
+spinor make_spinor(const su3vec e0, const su3vec e1, const su3vec e2, const su3vec e3)
+{
+	return (spinor) {e0, e1, e2, e3};
+}
+
 spinor peekSpinorSOA(__global const hmc_float * const restrict in, const size_t idx, const ulong elems)
 {
-	return (spinor) {
-		{
-			// su3vec = 3 * cplx
-			{
-				in[ 0 * elems + idx], in[ 1 * elems + idx]
-			},
-			{ in[ 2 * elems + idx], in[ 3 * elems + idx] },
-			{ in[ 4 * elems + idx], in[ 5 * elems + idx] },
-		}, {
-			// su3vec = 3 * cplx
-			{ in[ 6 * elems + idx], in[ 7 * elems + idx] },
-			{ in[ 8 * elems + idx], in[ 9 * elems + idx] },
-			{ in[10 * elems + idx], in[11 * elems + idx] },
-		}, {
-			// su3vec = 3 * cplx
-			{ in[12 * elems + idx], in[13 * elems + idx] },
-			{ in[14 * elems + idx], in[15 * elems + idx] },
-			{ in[16 * elems + idx], in[17 * elems + idx] },
-		}, {
-			// su3vec = 3 * cplx
-			{ in[18 * elems + idx], in[19 * elems + idx] },
-			{ in[20 * elems + idx], in[21 * elems + idx] },
-			{ in[22 * elems + idx], in[23 * elems + idx] },
-		}
-	};
+	return make_spinor(
+		make_su3vec(
+			make_complex(in[ 0 * elems + idx], in[ 1 * elems + idx]),
+			make_complex(in[ 2 * elems + idx], in[ 3 * elems + idx]),
+			make_complex(in[ 4 * elems + idx], in[ 5 * elems + idx])
+		), make_su3vec(
+			make_complex(in[ 6 * elems + idx], in[ 7 * elems + idx]),
+			make_complex(in[ 8 * elems + idx], in[ 9 * elems + idx]),
+			make_complex(in[10 * elems + idx], in[11 * elems + idx])
+		), make_su3vec(
+			make_complex(in[12 * elems + idx], in[13 * elems + idx]),
+			make_complex(in[14 * elems + idx], in[15 * elems + idx]),
+			make_complex(in[16 * elems + idx], in[17 * elems + idx])
+		), make_su3vec(
+			make_complex(in[18 * elems + idx], in[19 * elems + idx]),
+			make_complex(in[20 * elems + idx], in[21 * elems + idx]),
+			make_complex(in[22 * elems + idx], in[23 * elems + idx])
+		)
+	);
 }
 
 void pokeSpinorSOA(__global hmc_float * const restrict out, const size_t idx, const spinor val, const ulong elems)
@@ -210,14 +219,7 @@ void pokeSpinorSOA(__global hmc_float * const restrict out, const size_t idx, co
 
 __kernel void copySpinorSOA( __global hmc_float * const restrict out, __global const hmc_float * const restrict in, const ulong elems, const ulong threads_per_group )
 {
-	size_t local_id = get_local_id(0);
-
-	if( local_id >= threads_per_group )
-		return;
-
-	size_t id = get_group_id(0) * threads_per_group + local_id;
-
-	for( size_t i = id; i < elems;  i += threads_per_group * get_num_groups(0) ) {
+	for( size_t i = get_global_id(0); i < elems;  i += get_global_size(0) ) {
 		spinor tmp = peekSpinorSOA(in, i, elems);
 		pokeSpinorSOA(out, i, tmp, elems);
 	}
