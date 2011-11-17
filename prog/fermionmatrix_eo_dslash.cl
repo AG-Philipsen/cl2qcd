@@ -6,7 +6,7 @@
 #ifdef _USEGPU_
 __attribute__((reqd_work_group_size(128, 1, 1)))
 #endif
-__kernel void dslash_eoprec(__global const spinorfield_eoprec * const restrict in, __global const spinorfield_eoprec * const restrict out, __global const ocl_s_gaugefield * const restrict field, const int evenodd)
+__kernel void dslash_eoprec(__global const hmc_float * const restrict in, __global const hmc_float * const restrict out, __global const hmc_float * const restrict field, const int evenodd)
 {
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -28,6 +28,6 @@ __kernel void dslash_eoprec(__global const spinorfield_eoprec * const restrict i
 		out_tmp2 = dslash_eoprec_local_3(in, field, pos.space, pos.time);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 
-		put_spinor_to_eoprec_field(out_tmp, out, id_tmp);
+		putSpinorSOA_eo(out, id_tmp, out_tmp);
 	}
 }

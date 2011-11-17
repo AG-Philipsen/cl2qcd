@@ -5,7 +5,7 @@
 //"local" dslash working on a particular link (n,t) of an eoprec field
 //NOTE: each component is multiplied by +KAPPA, so the resulting spinor has to be mutliplied by -1 to obtain the correct dslash!!!
 //the difference to the "normal" dslash is that the coordinates of the neighbors have to be transformed into an eoprec index
-spinor inline dslash_eoprec_local_0(__global const spinorfield_eoprec * const restrict in, __global ocl_s_gaugefield const * const restrict field, const int n, const int t)
+spinor inline dslash_eoprec_local_0(__global const hmc_float * const restrict in, __global hmc_float const * const restrict field, const int n, const int t)
 {
 	spinor out_tmp, plus;
 	int dir, nn, nn_eo;
@@ -25,8 +25,8 @@ spinor inline dslash_eoprec_local_0(__global const spinorfield_eoprec * const re
 	nn = (t + 1) % NTIME;
 	//transform normal indices to eoprec index
 	nn_eo = get_n_eoprec(n, nn);
-	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_global_link_pos(dir, n, t)];
+	plus = getSpinorSOA_eo(in, nn_eo);
+	U = getSU3SOA(field, get_global_link_pos(dir, n, t));
 	//if chemical potential is activated, U has to be multiplied by appropiate factor
 #ifdef _CP_REAL_
 	U = multiply_matrixsu3_by_real (U, EXPCPR);
@@ -65,8 +65,8 @@ spinor inline dslash_eoprec_local_0(__global const spinorfield_eoprec * const re
 	nn = (t - 1 + NTIME) % NTIME;
 	//transform normal indices to eoprec index
 	nn_eo = get_n_eoprec(n, nn);
-	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_global_link_pos(dir, n, nn)];
+	plus = getSpinorSOA_eo(in, nn_eo);
+	U = getSU3SOA(field, get_global_link_pos(dir, n, nn));
 	//if chemical potential is activated, U has to be multiplied by appropiate factor
 	//this is the same as at mu=0 in the imag. case, since U is taken to be U^+ later:
 	//  (exp(iq)U)^+ = exp(-iq)U^+
@@ -108,7 +108,7 @@ spinor inline dslash_eoprec_local_0(__global const spinorfield_eoprec * const re
 	return out_tmp;
 }
 
-spinor inline dslash_eoprec_local_1(__global const spinorfield_eoprec * const restrict in, __global ocl_s_gaugefield const * const restrict field, const int n, const int t)
+spinor inline dslash_eoprec_local_1(__global const hmc_float * const restrict in, __global hmc_float  const * const restrict field, const int n, const int t)
 {
 	spinor out_tmp, plus;
 	int dir, nn, nn_eo;
@@ -129,8 +129,8 @@ spinor inline dslash_eoprec_local_1(__global const spinorfield_eoprec * const re
 	nn = get_neighbor(n, dir);
 	//transform normal indices to eoprec index
 	nn_eo = get_n_eoprec(nn, t);
-	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_global_link_pos(dir, n, t)];
+	plus = getSpinorSOA_eo(in, nn_eo);
+	U = getSU3SOA(field, get_global_link_pos(dir, n, t));
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = KAPPA_SPATIAL_IM;
 	/////////////////////////////////
@@ -158,8 +158,8 @@ spinor inline dslash_eoprec_local_1(__global const spinorfield_eoprec * const re
 	nn = get_lower_neighbor(n, dir);
 	//transform normal indices to eoprec index
 	nn_eo = get_n_eoprec(nn, t);
-	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_global_link_pos(dir, nn, t)];
+	plus = getSpinorSOA_eo(in, nn_eo);
+	U = getSU3SOA(field, get_global_link_pos(dir, nn, t));
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = MKAPPA_SPATIAL_IM;
@@ -186,7 +186,7 @@ spinor inline dslash_eoprec_local_1(__global const spinorfield_eoprec * const re
 	return out_tmp;
 }
 
-spinor inline dslash_eoprec_local_2(__global const spinorfield_eoprec * const restrict in, __global ocl_s_gaugefield const * const restrict field, const int n, const int t)
+spinor inline dslash_eoprec_local_2(__global const hmc_float * const restrict in, __global hmc_float const * const restrict field, const int n, const int t)
 {
 	spinor out_tmp, plus;
 	int dir, nn, nn_eo;
@@ -206,8 +206,8 @@ spinor inline dslash_eoprec_local_2(__global const spinorfield_eoprec * const re
 	nn = get_neighbor(n, dir);
 	//transform normal indices to eoprec index
 	nn_eo = get_n_eoprec(nn, t);
-	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_global_link_pos(dir, n, t)];
+	plus = getSpinorSOA_eo(in, nn_eo);
+	U = getSU3SOA(field, get_global_link_pos(dir, n, t));
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = KAPPA_SPATIAL_IM;
 	///////////////////////////////////
@@ -235,8 +235,8 @@ spinor inline dslash_eoprec_local_2(__global const spinorfield_eoprec * const re
 	nn = get_lower_neighbor(n, dir);
 	//transform normal indices to eoprec index
 	nn_eo = get_n_eoprec(nn, t);
-	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_global_link_pos(dir, nn, t)];
+	plus = getSpinorSOA_eo(in, nn_eo);
+	U = getSU3SOA(field, get_global_link_pos(dir, nn, t));
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = MKAPPA_SPATIAL_IM;
@@ -263,7 +263,7 @@ spinor inline dslash_eoprec_local_2(__global const spinorfield_eoprec * const re
 	return out_tmp;
 }
 
-spinor inline dslash_eoprec_local_3(__global const spinorfield_eoprec * const restrict in, __global ocl_s_gaugefield const * const restrict field, const int n, const int t)
+spinor inline dslash_eoprec_local_3(__global const hmc_float * const restrict in, __global hmc_float const * const restrict field, const int n, const int t)
 {
 	spinor out_tmp, plus;
 	int dir, nn, nn_eo;
@@ -283,8 +283,8 @@ spinor inline dslash_eoprec_local_3(__global const spinorfield_eoprec * const re
 	nn = get_neighbor(n, dir);
 	//transform normal indices to eoprec index
 	nn_eo = get_n_eoprec(nn, t);
-	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_global_link_pos(dir, n, t)];
+	plus = getSpinorSOA_eo(in, nn_eo);
+	U = getSU3SOA(field, get_global_link_pos(dir, n, t));
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = KAPPA_SPATIAL_IM;
 	///////////////////////////////////
@@ -312,8 +312,8 @@ spinor inline dslash_eoprec_local_3(__global const spinorfield_eoprec * const re
 	nn = get_lower_neighbor(n, dir);
 	//transform normal indices to eoprec index
 	nn_eo = get_n_eoprec(nn, t);
-	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_global_link_pos(dir, nn, t)];
+	plus = getSpinorSOA_eo(in, nn_eo);
+	U = getSU3SOA(field, get_global_link_pos(dir, nn, t));
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = MKAPPA_SPATIAL_IM;
