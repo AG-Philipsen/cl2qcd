@@ -29,8 +29,10 @@ enum copyType {
 	type_float,
 	type_su3,
 	type_su3SOA,
+	type_su3SOcplxA,
 	type_spinor,
 	type_spinorSOA,
+	type_spinorSOcplxA,
 	type_spinorLocal
 };
 
@@ -43,8 +45,10 @@ private:
 	cl_kernel floatKernel;
 	cl_kernel su3Kernel;
 	cl_kernel su3SOAKernel;
+	cl_kernel su3SOcplxAKernel;
 	cl_kernel spinorKernel;
 	cl_kernel spinorSOAKernel;
+	cl_kernel spinorSOcplxAKernel;
 	cl_kernel spinorLocalKernel;
 
 	template<typename T> void runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, cl_mem in, cl_mem out);
@@ -111,13 +115,15 @@ int main(int argc, char** argv)
 	type_map["float"] = type_float;
 	type_map["su3"] = type_su3;
 	type_map["su3SOA"] = type_su3SOA;
+	type_map["su3SOcplxA"] = type_su3SOcplxA;
 	type_map["spinor"] = type_spinor;
 	type_map["spinorSOA"] = type_spinorSOA;
+	type_map["spinorSOcplxA"] = type_spinorSOcplxA;
 	type_map["spinorLocal"] = type_spinorLocal;
 
 	const copyType copy_type = type_map[vm["type"].as<std::string>()];
 	if(!copy_type) {
-		logger.error() << "Please select one of the following types: float(default), su3, su3SOA, spinor, spinorSOA, spinorLocal";
+		logger.error() << "Please select one of the following types: float(default), su3, su3SOA, su3SOcplxA, spinor, spinorSOA, spinorSOcplxA, spinorLocal";
 		return 1;
 	}
 	logger.info() << "Using " << vm["type"].as<std::string>() << " as load/store datatype";
@@ -238,8 +244,10 @@ void Device::fill_kernels()
 	floatKernel = createKernel("copyFloat") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 	su3Kernel = createKernel("copySU3") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 	su3SOAKernel = createKernel("copySU3SOA") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
+	su3SOcplxAKernel = createKernel("copySU3SOcplxA") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 	spinorKernel = createKernel("copySpinor") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 	spinorSOAKernel = createKernel("copySpinorSOA") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
+	spinorSOcplxAKernel = createKernel("copySpinorSOcplxA") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 	spinorLocalKernel = createKernel("copySpinorLocal") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 }
 
@@ -258,8 +266,10 @@ void Device::clear_kernels()
 	clReleaseKernel(floatKernel);
 	clReleaseKernel(su3Kernel);
 	clReleaseKernel(su3SOAKernel);
+	clReleaseKernel(su3SOcplxAKernel);
 	clReleaseKernel(spinorKernel);
 	clReleaseKernel(spinorSOAKernel);
+	clReleaseKernel(spinorSOcplxAKernel);
 	clReleaseKernel(spinorLocalKernel);
 }
 
@@ -276,11 +286,17 @@ void Device::runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_g
 		case type_su3SOA:
 			runKernel<Matrixsu3>(groups, threads_per_group, elems, su3SOAKernel, in, out);
 			return;
+		case type_su3SOcplxA:
+			runKernel<Matrixsu3>(groups, threads_per_group, elems, su3SOcplxAKernel, in, out);
+			return;
 		case type_spinor:
 			runKernel<spinor>(groups, threads_per_group, elems, spinorKernel, in, out);
 			return;
 		case type_spinorSOA:
 			runKernel<spinor>(groups, threads_per_group, elems, spinorSOAKernel, in, out);
+			return;
+		case type_spinorSOcplxA:
+			runKernel<spinor>(groups, threads_per_group, elems, spinorSOcplxAKernel, in, out);
 			return;
 		case type_spinorLocal:
 			runKernel<spinor>(groups, threads_per_group, elems, spinorLocalKernel, in, out);
@@ -370,8 +386,10 @@ size_t getTypeSize(copyType type)
 			return sizeof(hmc_float);
 		case type_su3:
 		case type_su3SOA:
+		case type_su3SOcplxA:
 			return sizeof(Matrixsu3);
 		case type_spinor:
+		case type_spinorSOcplxA:
 		case type_spinorSOA:
 		case type_spinorLocal:
 			return sizeof(spinor);

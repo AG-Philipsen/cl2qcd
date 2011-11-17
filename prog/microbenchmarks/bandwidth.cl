@@ -86,6 +86,49 @@ __kernel void copySU3SOA( __global hmc_float * const restrict out, __global cons
 	}
 }
 
+Matrixsu3 peekSU3SOcplxA(__global const hmc_complex * const restrict in, const size_t idx, const ulong elems)
+{
+	return (Matrixsu3) {
+		in[0 * elems + idx],
+		in[1 * elems + idx],
+		in[2 * elems + idx],
+		in[3 * elems + idx],
+		in[4 * elems + idx],
+		in[5 * elems + idx],
+		in[7 * elems + idx],
+		in[8 * elems + idx],
+		in[9 * elems + idx]
+	};
+}
+
+void pokeSU3SOcplxA(__global hmc_complex * const restrict out, const size_t idx, const Matrixsu3 val, const ulong elems)
+{
+	out[0 * elems + idx] = val.e00;
+	out[1 * elems + idx] = val.e01;
+	out[2 * elems + idx] = val.e02;
+	out[3 * elems + idx] = val.e10;
+	out[4 * elems + idx] = val.e11;
+	out[5 * elems + idx] = val.e12;
+	out[6 * elems + idx] = val.e20;
+	out[7 * elems + idx] = val.e21;
+	out[8 * elems + idx] = val.e22;
+}
+
+__kernel void copySU3SOcplxA( __global hmc_complex * const restrict out, __global const hmc_complex * const restrict in, const ulong elems, const ulong threads_per_group )
+{
+	size_t local_id = get_local_id(0);
+
+	if( local_id >= threads_per_group )
+		return;
+
+	size_t id = get_group_id(0) * threads_per_group + local_id;
+
+	for( size_t i = id; i < elems;  i += threads_per_group * get_num_groups(0) ) {
+		Matrixsu3 tmp = peekSU3SOcplxA(in, i, elems);
+		pokeSU3SOcplxA(out, i, tmp, elems);
+	}
+}
+
 __kernel void copySpinor( __global spinor * const restrict out, __global const spinor * const restrict in, const ulong elems, const ulong threads_per_group )
 {
 	size_t local_id = get_local_id(0);
@@ -177,6 +220,71 @@ __kernel void copySpinorSOA( __global hmc_float * const restrict out, __global c
 	for( size_t i = id; i < elems;  i += threads_per_group * get_num_groups(0) ) {
 		spinor tmp = peekSpinorSOA(in, i, elems);
 		pokeSpinorSOA(out, i, tmp, elems);
+	}
+}
+
+spinor peekSpinorSOcplxA(__global const hmc_complex * const restrict in, const size_t idx, const ulong elems)
+{
+	return (spinor) {
+		{
+			// su3vec = 3 * cplx
+			in[ 0 * elems + idx],
+			  in[ 1 * elems + idx],
+			  in[ 2 * elems + idx]
+		}, {
+			// su3vec = 3 * cplx
+			in[ 3 * elems + idx],
+			in[ 4 * elems + idx],
+			in[ 5 * elems + idx]
+		}, {
+			// su3vec = 3 * cplx
+			in[ 6 * elems + idx],
+			in[ 7 * elems + idx],
+			in[ 8 * elems + idx]
+		}, {
+			// su3vec = 3 * cplx
+			in[ 9 * elems + idx],
+			in[10 * elems + idx],
+			in[11 * elems + idx]
+		}
+	};
+}
+
+void pokeSpinorSOcplxA(__global hmc_complex * const restrict out, const size_t idx, const spinor val, const ulong elems)
+{
+	// su3vec = 3 * cplx
+	out[ 0 * elems + idx] = val.e0.e0;
+	out[ 1 * elems + idx] = val.e0.e1;
+	out[ 2 * elems + idx] = val.e0.e2;
+
+	// su3vec = 3 * cplx
+	out[ 3 * elems + idx] = val.e1.e0;
+	out[ 4 * elems + idx] = val.e1.e1;
+	out[ 5 * elems + idx] = val.e1.e2;
+
+	// su3vec = 3 * cplx
+	out[ 6 * elems + idx] = val.e2.e0;
+	out[ 7 * elems + idx] = val.e2.e1;
+	out[ 8 * elems + idx] = val.e2.e2;
+
+	// su3vec = 3 * cplx
+	out[ 9 * elems + idx] = val.e3.e0;
+	out[10 * elems + idx] = val.e3.e1;
+	out[11 * elems + idx] = val.e3.e2;
+}
+
+__kernel void copySpinorSOcplxA( __global hmc_complex * const restrict out, __global const hmc_complex * const restrict in, const ulong elems, const ulong threads_per_group )
+{
+	size_t local_id = get_local_id(0);
+
+	if( local_id >= threads_per_group )
+		return;
+
+	size_t id = get_group_id(0) * threads_per_group + local_id;
+
+	for( size_t i = id; i < elems;  i += threads_per_group * get_num_groups(0) ) {
+		spinor tmp = peekSpinorSOcplxA(in, i, elems);
+		pokeSpinorSOcplxA(out, i, tmp, elems);
 	}
 }
 
