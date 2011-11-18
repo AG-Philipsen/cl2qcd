@@ -45,10 +45,8 @@ dpSpinor make_dpSpinor(const aligned16DpSu3vec e0, const aligned16DpSu3vec e1, c
 	return (dpSpinor) {e0, e1, e2, e3};
 }
 
-dpSpinor getDpSpinorFullestSOA(__global const hmc_float * const restrict in, const size_t i)
+dpSpinor getDpSpinorFullestSOA(__global const hmc_float * const restrict in, const size_t i, const size_t stride)
 {
-	const size_t stride = get_global_size(0);
-
 	return make_dpSpinor(make_aligned16DpSu3vec(make_alignedDpComplex(in[ 0 * stride + i], in[ 1 * stride + i]),
 	                                            make_alignedDpComplex(in[ 2 * stride + i], in[ 3 * stride + i]),
 	                                            make_alignedDpComplex(in[ 4 * stride + i], in[ 5 * stride + i])),
@@ -62,9 +60,8 @@ dpSpinor getDpSpinorFullestSOA(__global const hmc_float * const restrict in, con
 	                                            make_alignedDpComplex(in[20 * stride + i], in[21 * stride + i]),
 	                                            make_alignedDpComplex(in[22 * stride + i], in[23 * stride + i])));
 }
-void putDpSpinorFullestSOA(__global hmc_float * const restrict out, const size_t i, const dpSpinor val)
+void putDpSpinorFullestSOA(__global hmc_float * const restrict out, const size_t i, const dpSpinor val, const size_t stride)
 {
-	const size_t stride = get_global_size(0);
 	out[ 0 * stride + i] = val.e0.e0.re;
 	out[ 1 * stride + i] = val.e0.e0.im;
 	out[ 2 * stride + i] = val.e0.e1.re;
@@ -94,7 +91,7 @@ void putDpSpinorFullestSOA(__global hmc_float * const restrict out, const size_t
 __kernel void copyDpSpinorFullestSOARestricted(__global hmc_float * const restrict out, __global const hmc_float * const restrict in, const ulong elems, const ulong dummy)
 {
 	for(size_t i = get_global_id(0); i < elems; i += get_global_size(0)) {
-		dpSpinor tmp = getDpSpinorFullestSOA(in, i);
-		putDpSpinorFullestSOA(out, i, tmp);
+		dpSpinor tmp = getDpSpinorFullestSOA(in, i, elems);
+		putDpSpinorFullestSOA(out, i, tmp, elems);
 	}
 }
