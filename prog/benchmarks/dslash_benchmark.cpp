@@ -48,8 +48,8 @@ int main(int argc, char* argv[])
 		init_timer.reset();
 		Gaugefield_inverter gaugefield;
 
-		//one needs 2 tasks here since the correlator-module produces the sources...
-		int numtasks = 2;
+		//one needs 1 task here 
+		int numtasks = 1;
 		if(parameters.get_num_dev() != 2 )
 			logger.warn() << "Only 1 device demanded by benchmark executable. All calculations performed on primary device.";
 
@@ -64,33 +64,7 @@ int main(int argc, char* argv[])
 		}
 
 		logger.trace() << "Init gaugefield" ;
-		logger.trace() << "NOTE: to speed up the benchmark exec. here, unecessary kernels are not initialized...";
-		//gaugefield.init(numtasks, primary_device, &parameters);
-
-		//this is essentially the code from the gaugefield_hybrid init function...
-		logger.trace() << "Initialize gaugefield";
-
-		//how many tasks (devices with different purpose) do we need:
-		gaugefield.set_num_tasks(numtasks);
-		//LZ: for now assume that there is only one device per task
-
-		//input parameters
-		gaugefield.set_parameters(&parameters);
-
-		//allocate memory for private gaugefield on host and initialize (cold start, read in, future: hot start)
-		Matrixsu3 * gf_tmp  = new Matrixsu3[gaugefield.get_num_gaugefield_elems()];
-		gaugefield.set_sgf(gf_tmp);
-		gaugefield.init_gaugefield();
-
-		gaugefield.init_devicetypearray(primary_device);
-		gaugefield.init_opencl();
-
-		gaugefield.init_tasks();
-
-		//this has to be done anyways...
-		gaugefield.copy_gaugefield_to_all_tasks();
-
-		//end of filled in code...
+		gaugefield.init(numtasks, primary_device, &parameters);
 
 		logger.info() << "Gaugeobservables:";
 		gaugefield.print_gaugeobservables(0);
@@ -149,8 +123,6 @@ int main(int argc, char* argv[])
 		//print times from the devices...
 		logger.info() << "## Device: Solver";
 		(gaugefield.get_task_solver())->print_copy_times(totaltime);
-		logger.info() << "## Device: Correlator";
-		(gaugefield.get_task_correlator())->print_copy_times(totaltime);
 		
 		//CP: this is just a fist version and will go into an own file later
 		stringstream profiling_out;

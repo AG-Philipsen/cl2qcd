@@ -81,7 +81,7 @@ add_executable( dslash_benchmark
 	../host_operations_su3matrix.cpp
 	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
-	../gaugefield_inverter.cpp
+	gaugefield_dslash_benchmark.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
 	../opencl_module.cpp
