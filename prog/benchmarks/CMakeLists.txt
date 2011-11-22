@@ -73,6 +73,39 @@ target_link_libraries( inverter_benchmarks
 	einhard
 )
 
+add_executable( dslash_benchmark
+	dslash_benchmark.cpp
+	../host_geometry.cpp
+	../host_operations_complex.cpp
+	../host_operations_gaugefield.cpp
+	../host_operations_su3matrix.cpp
+	../host_operations_matrix.cpp
+	../gaugefield_hybrid.cpp
+	../gaugefield_inverter.cpp
+	../inputparameters.cpp
+	../host_readgauge.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../opencl_module_fermions.cpp
+	../opencl_module_correlator.cpp
+	../host_use_timer.cpp
+	../host_writegaugefield.cpp
+	../logger.cpp
+	../exceptions.cpp
+	../opencl_module_spinors.cpp
+	../opencl_module_ran.cpp
+	../host_random.cpp
+)
+target_link_libraries( dslash_benchmark
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	crypto
+	einhard
+)
+
 add_executable( hmc_benchmarks
 	hmc_benchmarks.cpp
 	../host_geometry.cpp

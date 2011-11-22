@@ -237,16 +237,6 @@ void Opencl_Module_Fermions::clear_kernels()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 
-
-	return;
-}
-
-void Opencl_Module_Fermions::clear_buffers()
-{
-	Opencl_Module_Spinors::clear_buffers();
-
-	cl_uint clerr = CL_SUCCESS;
-
 	if(get_parameters()->get_use_eo()) {
 		clerr = clReleaseKernel(dslash_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -256,13 +246,24 @@ void Opencl_Module_Fermions::clear_buffers()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 
+
+	return;
+}
+
+void Opencl_Module_Fermions::clear_buffers()
+{
+	Opencl_Module_Spinors::clear_buffers();
+	
+	cl_uint clerr = CL_SUCCESS;
+
+	
 	clerr = clReleaseMemObject(clmem_inout);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_source);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-
+	
 	if(get_parameters()->get_use_eo()) {
 		clerr = clReleaseMemObject(clmem_inout_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
@@ -291,7 +292,7 @@ void Opencl_Module_Fermions::clear_buffers()
 			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		}
 	}
-
+	
 	clerr = clReleaseMemObject(clmem_rho);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_rho_next);
@@ -317,7 +318,7 @@ void Opencl_Module_Fermions::clear_buffers()
 		clerr = clReleaseMemObject(clmem_trueresid);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	}
-
+	
 	return;
 }
 
@@ -542,12 +543,13 @@ void Opencl_Module_Fermions::gamma5_eoprec_device(cl_mem inout)
 
 void Opencl_Module_Fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd)
 {
-	int eo = evenodd;
+        int eo = evenodd;
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(dslash_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
+
 	int clerr = clSetKernelArg(dslash_eoprec, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
