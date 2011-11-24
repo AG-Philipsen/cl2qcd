@@ -453,45 +453,43 @@ Matrix3x3 calc_staple_tau (__global ocl_s_gaugefield* field, const int pos, cons
 }
 
 // TODO document
-Matrixsu3 getSU3SOA(__global const hmc_float * const restrict in, const size_t idx)
+Matrixsu3 getSU3SOA(__global const hmc_float * const restrict in, const uint idx)
 {
-	const size_t elems = NDIM * VOL4D;
 	return (Matrixsu3) {
 		{
-			in[ 0 * elems + idx], in[ 1 * elems + idx]
+			in[ 0 * GAUGEFIELD_STRIDE + idx], in[ 1 * GAUGEFIELD_STRIDE + idx]
 		},
-		{ in[ 2 * elems + idx], in[ 3 * elems + idx] },
-		{ in[ 4 * elems + idx], in[ 5 * elems + idx] },
-		{ in[ 6 * elems + idx], in[ 7 * elems + idx] },
-		{ in[ 8 * elems + idx], in[ 9 * elems + idx] },
-		{ in[10 * elems + idx], in[11 * elems + idx] },
-		{ in[12 * elems + idx], in[13 * elems + idx] },
-		{ in[14 * elems + idx], in[15 * elems + idx] },
-		{ in[16 * elems + idx], in[17 * elems + idx] }
+		{ in[ 2 * GAUGEFIELD_STRIDE + idx], in[ 3 * GAUGEFIELD_STRIDE + idx] },
+		{ in[ 4 * GAUGEFIELD_STRIDE + idx], in[ 5 * GAUGEFIELD_STRIDE + idx] },
+		{ in[ 6 * GAUGEFIELD_STRIDE + idx], in[ 7 * GAUGEFIELD_STRIDE + idx] },
+		{ in[ 8 * GAUGEFIELD_STRIDE + idx], in[ 9 * GAUGEFIELD_STRIDE + idx] },
+		{ in[10 * GAUGEFIELD_STRIDE + idx], in[11 * GAUGEFIELD_STRIDE + idx] },
+		{ in[12 * GAUGEFIELD_STRIDE + idx], in[13 * GAUGEFIELD_STRIDE + idx] },
+		{ in[14 * GAUGEFIELD_STRIDE + idx], in[15 * GAUGEFIELD_STRIDE + idx] },
+		{ in[16 * GAUGEFIELD_STRIDE + idx], in[17 * GAUGEFIELD_STRIDE + idx] }
 	};
 }
 
 // TODO document
-void putSU3SOA(__global hmc_float * const restrict out, const size_t idx, const Matrixsu3 val)
+void putSU3SOA(__global hmc_float * const restrict out, const uint idx, const Matrixsu3 val)
 {
-	const size_t elems = NDIM * VOL4D;
-	out[ 0 * elems + idx] = val.e00.re;
-	out[ 1 * elems + idx] = val.e00.im;
-	out[ 2 * elems + idx] = val.e01.re;
-	out[ 3 * elems + idx] = val.e01.im;
-	out[ 4 * elems + idx] = val.e02.re;
-	out[ 5 * elems + idx] = val.e02.im;
-	out[ 6 * elems + idx] = val.e10.re;
-	out[ 7 * elems + idx] = val.e10.im;
-	out[ 8 * elems + idx] = val.e11.re;
-	out[ 9 * elems + idx] = val.e11.im;
-	out[10 * elems + idx] = val.e12.re;
-	out[11 * elems + idx] = val.e12.im;
-	out[12 * elems + idx] = val.e20.re;
-	out[13 * elems + idx] = val.e20.im;
-	out[14 * elems + idx] = val.e21.re;
-	out[15 * elems + idx] = val.e21.im;
-	out[16 * elems + idx] = val.e22.re;
-	out[17 * elems + idx] = val.e22.im;
+	out[ 0 * GAUGEFIELD_STRIDE + idx] = val.e00.re;
+	out[ 1 * GAUGEFIELD_STRIDE + idx] = val.e00.im;
+	out[ 2 * GAUGEFIELD_STRIDE + idx] = val.e01.re;
+	out[ 3 * GAUGEFIELD_STRIDE + idx] = val.e01.im;
+	out[ 4 * GAUGEFIELD_STRIDE + idx] = val.e02.re;
+	out[ 5 * GAUGEFIELD_STRIDE + idx] = val.e02.im;
+	out[ 6 * GAUGEFIELD_STRIDE + idx] = val.e10.re;
+	out[ 7 * GAUGEFIELD_STRIDE + idx] = val.e10.im;
+	out[ 8 * GAUGEFIELD_STRIDE + idx] = val.e11.re;
+	out[ 9 * GAUGEFIELD_STRIDE + idx] = val.e11.im;
+	out[10 * GAUGEFIELD_STRIDE + idx] = val.e12.re;
+	out[11 * GAUGEFIELD_STRIDE + idx] = val.e12.im;
+	out[12 * GAUGEFIELD_STRIDE + idx] = val.e20.re;
+	out[13 * GAUGEFIELD_STRIDE + idx] = val.e20.im;
+	out[14 * GAUGEFIELD_STRIDE + idx] = val.e21.re;
+	out[15 * GAUGEFIELD_STRIDE + idx] = val.e21.im;
+	out[16 * GAUGEFIELD_STRIDE + idx] = val.e22.re;
+	out[17 * GAUGEFIELD_STRIDE + idx] = val.e22.im;
 }
 

@@ -126,6 +126,11 @@ public:
 	void M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out);
 	void dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd);
 
+	// SOA conversion
+	void convertGaugefieldToSOA_device(cl_mem out, cl_mem in);
+	void convertSpinorfieldToSOA_eo_device(cl_mem out, cl_mem in);
+	void convertSpinorfieldFromSOA_eo_device(cl_mem out, cl_mem in);
+
 	//    solver operations
 	//    non-eoprec
 	/// this calls the solver according to parameter settings using the fermionmatrix f
@@ -226,6 +231,10 @@ private:
 	cl_kernel M_tm_sitediagonal_minus;
 	cl_kernel M_tm_inverse_sitediagonal_minus;
 	cl_kernel dslash_eoprec;
+	cl_kernel convertSpinorfieldToSOA_eo;
+	cl_kernel convertSpinorfieldFromSOA_eo;
+	cl_kernel convertGaugefieldToSOA;
+	cl_kernel convertGaugefieldFromSOA;
 	//CP: variables for normal solver
 	cl_mem clmem_inout;
 	cl_mem clmem_rn;
@@ -267,6 +276,9 @@ private:
 	cl_mem clmem_resid;
 	cl_mem clmem_trueresid;
 
+	cl_mem spinorfield_soa_eo_1;
+	cl_mem spinorfield_soa_eo_2;
+	cl_mem gaugefield_soa;
 };
 
 #endif //OPENCLMODULEFERMIONSH

@@ -425,6 +425,15 @@ protected:
 protected:
 	inputparameters* parameters;
 
+	/**
+	 * Calculate the proper stride for SOA storage.
+	 *
+	 * \param The number of elements in the array.
+	 * \param The size of the datatype used for the array.
+	 * \return The proper stride in elements of the storage array.
+	 */
+	cl_ulong calculateStride(const cl_ulong elems, const cl_ulong baseTypeSize);
+
 private:
 
 	cl_platform_id platform;

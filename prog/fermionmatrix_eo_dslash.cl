@@ -6,7 +6,7 @@
 #ifdef _USEGPU_
 __attribute__((reqd_work_group_size(128, 1, 1)))
 #endif
-__kernel void dslash_eoprec(__global const hmc_float * const restrict in, __global const hmc_float * const restrict out, __global const hmc_float * const restrict field, const int evenodd)
+__kernel void dslash_eoprec(__global const hmc_float * const restrict in, __global hmc_float * const restrict out, __global const hmc_float * const restrict field, const int evenodd)
 {
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -29,5 +29,31 @@ __kernel void dslash_eoprec(__global const hmc_float * const restrict in, __glob
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 
 		putSpinorSOA_eo(out, id_tmp, out_tmp);
+	}
+}
+
+__kernel void convertSpinorfieldToSOA_eo(__global hmc_float * const restrict out, __global const spinor * const restrict in)
+{
+	for(uint i = get_global_id(0); i < EOPREC_SPINORFIELDSIZE; i += get_global_size(0)) {
+		putSpinorSOA_eo(out, i, in[i]);
+	}
+}
+__kernel void convertSpinorfieldFromSOA_eo(__global spinor * const restrict out, __global const hmc_float * const restrict in)
+{
+	for(uint i = get_global_id(0); i < EOPREC_SPINORFIELDSIZE; i += get_global_size(0)) {
+		out[i] = getSpinorSOA_eo(in, i);
+	}
+}
+
+__kernel void convertGaugefieldToSOA(__global hmc_float * const restrict out, __global const Matrixsu3 * const restrict in)
+{
+	for(uint i = get_global_id(0); i < NDIM * VOL4D; i += get_global_size(0)) {
+		putSU3SOA(out, i, in[i]);
+	}
+}
+__kernel void convertGaugefieldFromSOA(__global Matrixsu3 * const restrict out, __global const hmc_float * const restrict in)
+{
+	for(uint i = get_global_id(0); i < NDIM * VOL4D; i += get_global_size(0)) {
+		out[i] = getSU3SOA(in, i);
 	}
 }

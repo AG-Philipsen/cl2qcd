@@ -144,6 +144,7 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 		*collect_options << " -DRHO=" << get_parameters()->get_rho();
 		*collect_options << " -DRHO_ITER=" << get_parameters()->get_rho_iter();
 	}
+	*collect_options << " -DGAUGEFIELD_STRIDE=" << calculateStride(get_parameters()->get_vol4d() * NDIM, sizeof(hmc_float));
 	*collect_options << " -I" << SOURCEDIR;
 
 	return;
@@ -1156,3 +1157,19 @@ void Opencl_Module::unsmear_gaugefield(cl_mem gf)
 	if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	return;
 }
+
+cl_ulong Opencl_Module::calculateStride(const cl_ulong elems, const cl_ulong baseTypeSize)
+{
+	// Align stride to (N * 16 + 8) KiB
+	// TODO this is optimal for AMD HD 5870, also adjust for others
+//	const ulong stride_bytes = ((elems * baseTypeSize + 0x1FFF) & 0xFFFFFFFFFFFFC000L) | 0x2000;
+//	const ulong stride_elems = stride_bytes / baseTypeSize;
+//	return stride_elems;
+	// alternative alignment, 1K, but never 16K
+	ulong stride_bytes = ((elems * baseTypeSize + 0x03FF) & 0xFFFFFFFFFFFFFC00L);
+	if((stride_bytes | 0x3FFFL) == 0) // 16 KiB
+		stride_bytes |= 0x400L; // + 1KiB
+	const ulong stride_elems = stride_bytes / baseTypeSize;
+	return stride_elems;
+}
+
