@@ -225,15 +225,20 @@ void Dummyfield::fill_buffers()
 
 	cl_context context = opencl_modules[0]->get_context();
 
-	logger.info() << "Allocating buffers of " << maxMemSize << " bytes.";
+	// kernels might stride, always overallocate memory
+	// e.g. spinor might pad up to 24 * 8 KiB = 128 KiB -> 1 MiB should be save
+	size_t pad_buf = 1024 * 1024;
+	size_t allocMemSize = maxMemSize + pad_buf;
 
-	in = clCreateBuffer(context, CL_MEM_READ_ONLY, maxMemSize, 0, &err );
+	logger.info() << "Allocating buffers of " << allocMemSize << " bytes.";
+
+	in = clCreateBuffer(context, CL_MEM_READ_ONLY, allocMemSize, 0, &err );
 	if(err) {
 		logger.fatal() << "Unable to allocate memory on device";
 		throw Opencl_Error(err);
 	}
 
-	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, maxMemSize, 0, &err );
+	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, allocMemSize, 0, &err );
 	if(err) {
 		logger.fatal() << "Unable to allocate memory on device";
 		throw Opencl_Error(err);
