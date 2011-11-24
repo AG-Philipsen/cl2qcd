@@ -1167,9 +1167,13 @@ cl_ulong Opencl_Module::calculateStride(const cl_ulong elems, const cl_ulong bas
 //	return stride_elems;
 	// alternative alignment, 1K, but never 16K
 	ulong stride_bytes = ((elems * baseTypeSize + 0x03FF) & 0xFFFFFFFFFFFFFC00L);
-	if((stride_bytes | 0x3FFFL) == 0) // 16 KiB
+	logger.debug() << "Elems: " << elems << " Base Type Size: " << baseTypeSize << " Stride bytes: " << stride_bytes;
+	if((stride_bytes & 0x3FFFL) == 0) { // 16 KiB
 		stride_bytes |= 0x400L; // + 1KiB
+		logger.warn() << "stride was aligned to 16 KiB – corrected!";
+	}
 	const ulong stride_elems = stride_bytes / baseTypeSize;
+	logger.debug() << "Stride is " << stride_elems << " elems (" << stride_bytes << " bytes). Stride % 16k = " << stride_bytes % 16 * 1024;
 	return stride_elems;
 }
 
