@@ -9,12 +9,12 @@
  * \param The size of the datatype used for the array.
  * \return The proper stride in elements of the storage array.
  */
-size_t calculateStride(const size_t elems, const size_t baseTypeSize)
+ulong calculateStride(const ulong elems, const ulong baseTypeSize)
 {
 	// Align stride to (N * 16 + 8) KiB
 	// TODO this is optimal for AMD HD 5870, also adjust for others
-	const size_t stride_bytes = ((elems * baseTypeSize + 0x1FFF) & 0xFFFFC000) | 0x2000;
-	const size_t stride_elems = stride_bytes / baseTypeSize;
+	const ulong stride_bytes = ((elems * baseTypeSize + 0x1FFF) & 0xFFFFFFFFFFFFC000L) | 0x2000;
+	const ulong stride_elems = stride_bytes / baseTypeSize;
 	return stride_elems;
 }
 
@@ -48,7 +48,7 @@ __kernel void copySU3( __global Matrixsu3 * const restrict out, __global const M
 	}
 }
 
-Matrixsu3 peekSU3SOA(__global const hmc_float * const restrict in, const size_t idx, const size_t stride)
+Matrixsu3 peekSU3SOA(__global const hmc_float * const restrict in, const size_t idx, const ulong stride)
 {
 	return (Matrixsu3) {
 		{
@@ -65,7 +65,7 @@ Matrixsu3 peekSU3SOA(__global const hmc_float * const restrict in, const size_t 
 	};
 }
 
-void pokeSU3SOA(__global hmc_float * const restrict out, const size_t idx, const Matrixsu3 val, const size_t stride)
+void pokeSU3SOA(__global hmc_float * const restrict out, const size_t idx, const Matrixsu3 val, const ulong stride)
 {
 	out[ 0 * stride + idx] = val.e00.re;
 	out[ 1 * stride + idx] = val.e00.im;
@@ -95,7 +95,7 @@ __kernel void copySU3SOA( __global hmc_float * const restrict out, __global cons
 		return;
 
 	const size_t id = get_group_id(0) * threads_per_group + local_id;
-	const size_t stride = calculateStride(elems, sizeof(hmc_float));
+	const ulong stride = calculateStride(elems, sizeof(hmc_float));
 
 	for( size_t i = id; i < elems;  i += threads_per_group * get_num_groups(0) ) {
 		Matrixsu3 tmp = peekSU3SOA(in, i, stride);
@@ -103,7 +103,7 @@ __kernel void copySU3SOA( __global hmc_float * const restrict out, __global cons
 	}
 }
 
-Matrixsu3 peekSU3SOcplxA(__global const hmc_complex * const restrict in, const size_t idx, const size_t stride)
+Matrixsu3 peekSU3SOcplxA(__global const hmc_complex * const restrict in, const size_t idx, const ulong stride)
 {
 	return (Matrixsu3) {
 		in[0 * stride + idx],
@@ -118,7 +118,7 @@ Matrixsu3 peekSU3SOcplxA(__global const hmc_complex * const restrict in, const s
 	};
 }
 
-void pokeSU3SOcplxA(__global hmc_complex * const restrict out, const size_t idx, const Matrixsu3 val, const size_t stride)
+void pokeSU3SOcplxA(__global hmc_complex * const restrict out, const size_t idx, const Matrixsu3 val, const ulong stride)
 {
 	out[0 * stride + idx] = val.e00;
 	out[1 * stride + idx] = val.e01;
@@ -139,7 +139,7 @@ __kernel void copySU3SOcplxA( __global hmc_complex * const restrict out, __globa
 		return;
 
 	const size_t id = get_group_id(0) * threads_per_group + local_id;
-	const size_t stride = calculateStride(elems, sizeof(hmc_complex));
+	const ulong stride = calculateStride(elems, sizeof(hmc_complex));
 
 	for( size_t i = id; i < elems;  i += threads_per_group * get_num_groups(0) ) {
 		Matrixsu3 tmp = peekSU3SOcplxA(in, i, stride);
@@ -183,7 +183,7 @@ spinor make_spinor(const su3vec e0, const su3vec e1, const su3vec e2, const su3v
 	};
 }
 
-spinor peekSpinorSOA(__global const hmc_float * const restrict in, const size_t idx, const size_t stride)
+spinor peekSpinorSOA(__global const hmc_float * const restrict in, const size_t idx, const ulong stride)
 {
 	return make_spinor(
 	  make_su3vec(
@@ -206,7 +206,7 @@ spinor peekSpinorSOA(__global const hmc_float * const restrict in, const size_t 
 	);
 }
 
-void pokeSpinorSOA(__global hmc_float * const restrict out, const size_t idx, const spinor val, const size_t stride)
+void pokeSpinorSOA(__global hmc_float * const restrict out, const size_t idx, const spinor val, const ulong stride)
 {
 	// su3vec = 3 * cplx
 	out[ 0 * stride + idx] = val.e0.e0.re;
@@ -249,14 +249,14 @@ __kernel void copySpinorSOA( __global hmc_float * const restrict out, __global c
 		return;
 
 	size_t id = get_group_id(0) * threads_per_group + local_id;
-	const size_t stride = calculateStride(elems, sizeof(hmc_float));
+	const ulong stride = calculateStride(elems, sizeof(hmc_float));
 	for( size_t i = id; i < elems;  i += get_global_size(0) ) {
 		spinor tmp = peekSpinorSOA(in, i, stride);
 		pokeSpinorSOA(out, i, tmp, stride);
 	}
 }
 
-spinor peekSpinorSOcplxA(__global const hmc_complex * const restrict in, const size_t idx, const size_t stride)
+spinor peekSpinorSOcplxA(__global const hmc_complex * const restrict in, const size_t idx, const ulong stride)
 {
 	return (spinor) {
 		{
@@ -283,7 +283,7 @@ spinor peekSpinorSOcplxA(__global const hmc_complex * const restrict in, const s
 	};
 }
 
-void pokeSpinorSOcplxA(__global hmc_complex * const restrict out, const size_t idx, const spinor val, const size_t stride)
+void pokeSpinorSOcplxA(__global hmc_complex * const restrict out, const size_t idx, const spinor val, const ulong stride)
 {
 	// su3vec = 3 * cplx
 	out[ 0 * stride + idx] = val.e0.e0;
@@ -314,7 +314,7 @@ __kernel void copySpinorSOcplxA( __global hmc_complex * const restrict out, __gl
 		return;
 
 	const size_t id = get_group_id(0) * threads_per_group + local_id;
-	const size_t stride = calculateStride(elems, sizeof(hmc_complex));
+	const ulong stride = calculateStride(elems, sizeof(hmc_complex));
 
 	for( size_t i = id; i < elems;  i += threads_per_group * get_num_groups(0) ) {
 		spinor tmp = peekSpinorSOcplxA(in, i, stride);
