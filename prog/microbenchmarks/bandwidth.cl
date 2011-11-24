@@ -13,7 +13,13 @@ ulong calculateStride(const ulong elems, const ulong baseTypeSize)
 {
 	// Align stride to (N * 16 + 8) KiB
 	// TODO this is optimal for AMD HD 5870, also adjust for others
-	const ulong stride_bytes = ((elems * baseTypeSize + 0x1FFF) & 0xFFFFFFFFFFFFC000L) | 0x2000;
+//	const ulong stride_bytes = ((elems * baseTypeSize + 0x1FFF) & 0xFFFFFFFFFFFFC000L) | 0x2000;
+//	const ulong stride_elems = stride_bytes / baseTypeSize;
+//	return stride_elems;
+	// alternative alignment, 1K, but never 16K
+	ulong stride_bytes = ((elems * baseTypeSize + 0x03FF) & 0xFFFFFFFFFFFFFC00L);
+	if(stride_bytes | 0x3FFFL == 0) // 16 KiB
+		stride_bytes |= 0x400L; // + 1KiB
 	const ulong stride_elems = stride_bytes / baseTypeSize;
 	return stride_elems;
 }
