@@ -1162,16 +1162,16 @@ cl_ulong Opencl_Module::calculateStride(const cl_ulong elems, const cl_ulong bas
 {
 	// Align stride to (N * 16 + 8) KiB
 	// TODO this is optimal for AMD HD 5870, also adjust for others
-	ulong stride_bytes = ((elems * baseTypeSize + 0x1FFF) & 0xFFFFFFFFFFFFC000L) | 0x2000;
-	logger.debug() << "Elems: " << elems << " Base Type Size: " << baseTypeSize << " Stride bytes: " << stride_bytes;
+//	ulong stride_bytes = ((elems * baseTypeSize + 0x1FFF) & 0xFFFFFFFFFFFFC000L) | 0x2000;
+//	logger.debug() << "Elems: " << elems << " Base Type Size: " << baseTypeSize << " Stride bytes: " << stride_bytes;
 
 	// alternative alignment, 1K, but never 16K
-//	ulong stride_bytes = ((elems * baseTypeSize + 0x03FF) & 0xFFFFFFFFFFFFFC00L);
-//	logger.debug() << "Elems: " << elems << " Base Type Size: " << baseTypeSize << " Stride bytes: " << stride_bytes;
-//	if((stride_bytes & 0x3FFFL) == 0) { // 16 KiB
-//		stride_bytes |= 0x400L; // + 1KiB
-//		logger.warn() << "stride was aligned to 16 KiB – corrected!";
-//	}
+	ulong stride_bytes = ((elems * baseTypeSize + 0x03FF) & 0xFFFFFFFFFFFFFC00L);
+	logger.debug() << "Elems: " << elems << " Base Type Size: " << baseTypeSize << " Stride bytes: " << stride_bytes;
+	if((stride_bytes & 0x3FFFL) == 0) { // 16 KiB
+		stride_bytes |= 0x400L; // + 1KiB
+		logger.warn() << "stride was aligned to 16 KiB – corrected!";
+	}
 
 	const ulong stride_elems = stride_bytes / baseTypeSize;
 	stride_bytes = stride_elems * baseTypeSize;
