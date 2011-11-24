@@ -5,6 +5,7 @@
 find_package(Boost 1.33.0 REQUIRED COMPONENTS program_options)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
+add_definitions( -D_PROFILING_ )
 
 add_executable( bandwidth
 	bandwidth.cpp
