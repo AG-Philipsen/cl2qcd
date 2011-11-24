@@ -149,8 +149,8 @@ void Opencl_Module_Fermions::fill_buffers()
 			clmem_tmp_eoprec_2 = create_rw_buffer(eoprec_spinorfield_size);
 	}
 	// SOA buffers
-	spinorfield_soa_eo_1 = create_rw_buffer(spinorfield_size + 1024 * 1024); // sufficient room for padding: TODO only request as much as required
-	spinorfield_soa_eo_2 = create_rw_buffer(spinorfield_size + 1024 * 1024); // sufficient room for padding: TODO only request as much as required
+	spinorfield_soa_eo_1 = create_rw_buffer(eoprec_spinorfield_size + 1024 * 1024); // sufficient room for padding: TODO only request as much as required
+	spinorfield_soa_eo_2 = create_rw_buffer(eoprec_spinorfield_size + 1024 * 1024); // sufficient room for padding: TODO only request as much as required
 	gaugefield_soa = create_rw_buffer(NDIM * get_parameters()->get_vol4d() * sizeof(Matrixsu3) + 1024 * 1024); // sufficient room for padding: TODO only request as much as required
 
 

@@ -1176,6 +1176,6 @@ cl_ulong Opencl_Module::calculateStride(const cl_ulong elems, const cl_ulong bas
 	const ulong stride_elems = stride_bytes / baseTypeSize;
 	stride_bytes = stride_elems * baseTypeSize;
 	logger.debug() << "Stride is " << stride_elems << " elems (" << stride_bytes << " bytes). Stride % 16k = " << stride_bytes % (16 * 1024);
-//	return stride_elems;
+	return stride_elems;
 }
 
