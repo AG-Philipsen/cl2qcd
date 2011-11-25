@@ -1530,6 +1530,18 @@ usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 	if (strcmp(in, "ps_correlator") == 0) {
 		return &this->timer_ps_correlator;
 	}
+	if(strcmp(in, "convertSpinorfieldToSOA_eo") == 0) {
+		return &timer_convertSpinorfieldToSOA_eo;
+	}
+	if(strcmp(in, "convertSpinorfieldFromSOA_eo") == 0) {
+		return &timer_convertSpinorfieldFromSOA_eo;
+	}
+	if(strcmp(in, "convertGaugefieldToSOA") == 0) {
+		return &timer_convertGaugefieldToSOA;
+	}
+	if(strcmp(in, "convertGaugefieldFromSOA") == 0) {
+		return &timer_convertGaugefieldFromSOA;
+	}
 
 	//if the kernelname has not matched, return NULL
 	else {
@@ -1590,6 +1602,18 @@ int Opencl_Module_Fermions::get_read_write_size(const char * in, inputparameters
 	if (strcmp(in, "dslash_eoprec") == 0) {
 		//this kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
 		return (C * 12 * (8+1) + C * 8 * R) * D * Seo;
+	}
+	if(strcmp(in, "convertSpinorfieldToSOA_eo") == 0) {
+		return 2 * Seo * 24 * D;
+	}
+	if(strcmp(in, "convertSpinorfieldFromSOA_eo") == 0) {
+		return 2 * Seo * 24 * D;
+	}
+	if(strcmp(in, "convertGaugefieldToSOA") == 0) {
+		return 2 * parameters->get_vol4d() * NDIM * R;
+	}
+	if(strcmp(in, "convertGaugefieldFromSOA") == 0) {
+		return 2 * parameters->get_vol4d() * NDIM * R;
 	}
 	return 0;
 }
@@ -1678,6 +1702,14 @@ void Opencl_Module_Fermions::print_profiling(std::string filename, int number)
 	kernelName = "M_tm_inverse_sitediagonal_minus";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 	kernelName = "dslash_eoprec";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	kernelName = "convertSpinorfieldToSOA_eo";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	kernelName = "convertSpinorfieldFromSOA_eo";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	kernelName = "convertGaugefieldToSOA";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	kernelName = "convertGaugefieldFromSOA";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
 }
 #endif

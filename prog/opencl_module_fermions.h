@@ -185,6 +185,10 @@ protected:
 	usetimer timer_dslash_eoprec;
 	usetimer timer_M_tm_sitediagonal_minus;
 	usetimer timer_M_tm_inverse_sitediagonal_minus;
+	usetimer timer_convertSpinorfieldToSOA_eo;
+	usetimer timer_convertSpinorfieldFromSOA_eo;
+	usetimer timer_convertGaugefieldToSOA;
+	usetimer timer_convertGaugefieldFromSOA;
 
 	/**
 	 * Return the timer connected to a specific kernel.
