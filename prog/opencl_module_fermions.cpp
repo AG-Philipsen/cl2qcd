@@ -1100,7 +1100,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 			//cout << resid << endl;
 
 			if(resid < prec) {
-							return iter;
+			                                return iter;
 			}
 			//v = A*p
 			f(this, clmem_p_eoprec, clmem_v_eoprec, gf);
