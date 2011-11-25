@@ -1610,10 +1610,10 @@ int Opencl_Module_Fermions::get_read_write_size(const char * in, inputparameters
 		return 2 * Seo * 24 * D;
 	}
 	if(strcmp(in, "convertGaugefieldToSOA") == 0) {
-		return 2 * parameters->get_vol4d() * NDIM * R;
+		return 2 * parameters->get_vol4d() * NDIM * R * C;
 	}
 	if(strcmp(in, "convertGaugefieldFromSOA") == 0) {
-		return 2 * parameters->get_vol4d() * NDIM * R;
+		return 2 * parameters->get_vol4d() * NDIM * R * C;
 	}
 	return 0;
 }
