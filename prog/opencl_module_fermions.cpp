@@ -248,7 +248,7 @@ void Opencl_Module_Fermions::clear_kernels()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 
-	if(get_parameters()->get_use_eo() == true) {
+	if(get_parameters()->get_use_eo()) {
 		clerr = clReleaseKernel(dslash_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(M_tm_sitediagonal);
@@ -280,7 +280,7 @@ void Opencl_Module_Fermions::clear_buffers()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-
+	
 	if(get_parameters()->get_use_eo()) {
 		clerr = clReleaseMemObject(clmem_inout_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
@@ -315,7 +315,7 @@ void Opencl_Module_Fermions::clear_buffers()
 		clerr = clReleaseMemObject(gaugefield_soa);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	}
-
+	
 	clerr = clReleaseMemObject(clmem_rho);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_rho_next);
@@ -341,7 +341,7 @@ void Opencl_Module_Fermions::clear_buffers()
 		clerr = clReleaseMemObject(clmem_trueresid);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	}
-
+	
 	return;
 }
 

@@ -170,7 +170,7 @@ public:
 	 */
 	void print_info_inv_field(cl_mem in, bool eo, std::string msg);
 
-protected:
+	//protected:
 
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
