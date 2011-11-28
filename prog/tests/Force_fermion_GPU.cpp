@@ -135,6 +135,71 @@ void fill_sf_with_one(spinor * sf_in, int size)
 	return;
 }
 
+void fill_sf_with_float(spinor * sf_in, int size, hmc_float val)
+{
+	for(int i = 0; i < size; ++i) {
+		sf_in[i].e0.e0.re = val;
+		sf_in[i].e0.e1.re = val;
+		sf_in[i].e0.e2.re = val;
+		sf_in[i].e1.e0.re = val;
+		sf_in[i].e1.e1.re = val;
+		sf_in[i].e1.e2.re = val;
+		sf_in[i].e2.e0.re = val;
+		sf_in[i].e2.e1.re = val;
+		sf_in[i].e2.e2.re = val;
+		sf_in[i].e3.e0.re = val;
+		sf_in[i].e3.e1.re = val;
+		sf_in[i].e3.e2.re = val;
+
+		sf_in[i].e0.e0.im = val;
+		sf_in[i].e0.e1.im = val;
+		sf_in[i].e0.e2.im = val;
+		sf_in[i].e1.e0.im = val;
+		sf_in[i].e1.e1.im = val;
+		sf_in[i].e1.e2.im = val;
+		sf_in[i].e2.e0.im = val;
+		sf_in[i].e2.e1.im = val;
+		sf_in[i].e2.e2.im = val;
+		sf_in[i].e3.e0.im = val;
+		sf_in[i].e3.e1.im = val;
+		sf_in[i].e3.e2.im = val;
+	}
+	return;
+}
+
+void fill_sf_with_pos(spinor * sf_in, int size)
+{hmc_float val;
+	for(int i = 0; i < size; ++i) {
+	  val = i;
+		sf_in[i].e0.e0.re = val;
+		sf_in[i].e0.e1.re = val;
+		sf_in[i].e0.e2.re = val;
+		sf_in[i].e1.e0.re = val;
+		sf_in[i].e1.e1.re = val;
+		sf_in[i].e1.e2.re = val;
+		sf_in[i].e2.e0.re = val;
+		sf_in[i].e2.e1.re = val;
+		sf_in[i].e2.e2.re = val;
+		sf_in[i].e3.e0.re = val;
+		sf_in[i].e3.e1.re = val;
+		sf_in[i].e3.e2.re = val;
+
+		sf_in[i].e0.e0.im = val;
+		sf_in[i].e0.e1.im = val;
+		sf_in[i].e0.e2.im = val;
+		sf_in[i].e1.e0.im = val;
+		sf_in[i].e1.e1.im = val;
+		sf_in[i].e1.e2.im = val;
+		sf_in[i].e2.e0.im = val;
+		sf_in[i].e2.e1.im = val;
+		sf_in[i].e2.e2.im = val;
+		sf_in[i].e3.e0.im = val;
+		sf_in[i].e3.e1.im = val;
+		sf_in[i].e3.e2.im = val;
+	}
+	return;
+}
+
 void fill_with_one(hmc_float * sf_in, int size)
 {
 	for(int i = 0; i < size; ++i) {
@@ -143,70 +208,48 @@ void fill_with_one(hmc_float * sf_in, int size)
 	return;
 }
 
-void fill_sf_with_random(spinor * sf_in, int size, int switcher)
+void fill_with_zero(hmc_float * sf_in, int size)
 {
-  if(switcher == 1){ Random rnd_loc(123456);
 	for(int i = 0; i < size; ++i) {
-		sf_in[i].e0.e0.re = rnd_loc.doub();
-		sf_in[i].e0.e1.re = rnd_loc.doub();
-		sf_in[i].e0.e2.re = rnd_loc.doub();
-		sf_in[i].e1.e0.re = rnd_loc.doub();
-		sf_in[i].e1.e1.re = rnd_loc.doub();
-		sf_in[i].e1.e2.re = rnd_loc.doub();
-		sf_in[i].e2.e0.re = rnd_loc.doub();
-		sf_in[i].e2.e1.re = rnd_loc.doub();
-		sf_in[i].e2.e2.re = rnd_loc.doub();
-		sf_in[i].e3.e0.re = rnd_loc.doub();
-		sf_in[i].e3.e1.re = rnd_loc.doub();
-		sf_in[i].e3.e2.re = rnd_loc.doub();
-
-		sf_in[i].e0.e0.im = rnd_loc.doub();
-		sf_in[i].e0.e1.im = rnd_loc.doub();
-		sf_in[i].e0.e2.im = rnd_loc.doub();
-		sf_in[i].e1.e0.im = rnd_loc.doub();
-		sf_in[i].e1.e1.im = rnd_loc.doub();
-		sf_in[i].e1.e2.im = rnd_loc.doub();
-		sf_in[i].e2.e0.im = rnd_loc.doub();
-		sf_in[i].e2.e1.im = rnd_loc.doub();
-		sf_in[i].e2.e2.im = rnd_loc.doub();
-		sf_in[i].e3.e0.im = rnd_loc.doub();
-		sf_in[i].e3.e1.im = rnd_loc.doub();
-		sf_in[i].e3.e2.im = rnd_loc.doub();
+	  sf_in[i] = 0.;
 	}
-    }
-  else if (switcher == 2){ Random rnd_loc(789101);
-	for(int i = 0; i < size; ++i) {
-		sf_in[i].e0.e0.re = rnd_loc.doub();
-		sf_in[i].e0.e1.re = rnd_loc.doub();
-		sf_in[i].e0.e2.re = rnd_loc.doub();
-		sf_in[i].e1.e0.re = rnd_loc.doub();
-		sf_in[i].e1.e1.re = rnd_loc.doub();
-		sf_in[i].e1.e2.re = rnd_loc.doub();
-		sf_in[i].e2.e0.re = rnd_loc.doub();
-		sf_in[i].e2.e1.re = rnd_loc.doub();
-		sf_in[i].e2.e2.re = rnd_loc.doub();
-		sf_in[i].e3.e0.re = rnd_loc.doub();
-		sf_in[i].e3.e1.re = rnd_loc.doub();
-		sf_in[i].e3.e2.re = rnd_loc.doub();
-
-		sf_in[i].e0.e0.im = rnd_loc.doub();
-		sf_in[i].e0.e1.im = rnd_loc.doub();
-		sf_in[i].e0.e2.im = rnd_loc.doub();
-		sf_in[i].e1.e0.im = rnd_loc.doub();
-		sf_in[i].e1.e1.im = rnd_loc.doub();
-		sf_in[i].e1.e2.im = rnd_loc.doub();
-		sf_in[i].e2.e0.im = rnd_loc.doub();
-		sf_in[i].e2.e1.im = rnd_loc.doub();
-		sf_in[i].e2.e2.im = rnd_loc.doub();
-		sf_in[i].e3.e0.im = rnd_loc.doub();
-		sf_in[i].e3.e1.im = rnd_loc.doub();
-		sf_in[i].e3.e2.im = rnd_loc.doub();
-	}
-      }
-
-
-
 	return;
+}
+
+
+
+void fill_sf_with_random(spinor * sf_in, int size, int seed)
+{
+  //  Random rnd_loc(seed);
+  for(int i = 0; i < size; ++i) {
+  Random rnd_loc(seed);
+    sf_in[i].e0.e0.re = rnd_loc.doub();
+    sf_in[i].e0.e1.re = rnd_loc.doub();
+    sf_in[i].e0.e2.re = rnd_loc.doub();
+    sf_in[i].e1.e0.re = rnd_loc.doub();
+    sf_in[i].e1.e1.re = rnd_loc.doub();
+    sf_in[i].e1.e2.re = rnd_loc.doub();
+    sf_in[i].e2.e0.re = rnd_loc.doub();
+    sf_in[i].e2.e1.re = rnd_loc.doub();
+    sf_in[i].e2.e2.re = rnd_loc.doub();
+    sf_in[i].e3.e0.re = rnd_loc.doub();
+    sf_in[i].e3.e1.re = rnd_loc.doub();
+    sf_in[i].e3.e2.re = rnd_loc.doub();
+
+    sf_in[i].e0.e0.im = rnd_loc.doub();
+    sf_in[i].e0.e1.im = rnd_loc.doub();
+    sf_in[i].e0.e2.im = rnd_loc.doub();
+    sf_in[i].e1.e0.im = rnd_loc.doub();
+    sf_in[i].e1.e1.im = rnd_loc.doub();
+    sf_in[i].e1.e2.im = rnd_loc.doub();
+    sf_in[i].e2.e0.im = rnd_loc.doub();
+    sf_in[i].e2.e1.im = rnd_loc.doub();
+    sf_in[i].e2.e2.im = rnd_loc.doub();
+    sf_in[i].e3.e0.im = rnd_loc.doub();
+    sf_in[i].e3.e1.im = rnd_loc.doub();
+    sf_in[i].e3.e2.im = rnd_loc.doub();
+  }
+  return;
 }
 
 
@@ -234,13 +277,24 @@ void Dummyfield::fill_buffers()
 	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
 	}
 	else {
-	  fill_sf_with_random(sf_in1, NUM_ELEMENTS_SF, 1);
-	  fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 2);
+	  fill_sf_with_random(sf_in1, NUM_ELEMENTS_SF, 123456);
+	  fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 789101);
 	}
+	
+	//fill with zeros
+	hmc_float val = 0.;
+	hmc_float val2 = 0.;
+	fill_sf_with_float(sf_in1, NUM_ELEMENTS_SF, val);
+	fill_sf_with_float(sf_in2, NUM_ELEMENTS_SF, val2);
+	
+
+	fill_sf_with_pos(sf_in1,2/* NUM_ELEMENTS_SF*/);
+	fill_sf_with_pos(sf_in2,2/* NUM_ELEMENTS_SF*/);
+
 	BOOST_REQUIRE(sf_in1);
 	BOOST_REQUIRE(sf_in2);
 
-	fill_with_one(sf_out, NUM_ELEMENTS_AE);
+	fill_with_zero(sf_out, NUM_ELEMENTS_AE);
 
 	size_t sf_buf_size = get_parameters()->get_sf_buf_size();
 	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
