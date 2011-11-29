@@ -69,9 +69,6 @@ int main(int argc, char* argv[])
 		logger.info() << "Gaugeobservables:";
 		gaugefield.print_gaugeobservables(0);
 
-		//here, only the dslash should be benchmarked. Therefore, one does not need most of the mem-object
-		//clear buffers of task_inverter...
-		gaugefield.get_task_solver()->clear_buffers();
 		//init needed buffers again
 		//these are: 2 eoprec spinorfield, 1 gaugefield
 		size_t eoprec_spinorfield_size = sizeof(spinor) * gaugefield.get_task_solver()->get_parameters()->get_eoprec_spinorfieldsize();
