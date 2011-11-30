@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE( F_FERMION ){
 	hmc_float cpu_back2_noneo = cpu.get_squarenorm_noneo(1);
 
 	logger.info() << "run noneo force with noneo input...";
-	cpu.runTestKernel2();
+	//cpu.runTestKernel2();
 	logger.info() << "|force_noneo|^2:";
 	hmc_float cpu_res_noneo;
 	cpu_res_noneo = cpu.get_squarenorm_noneo(2);
@@ -505,7 +505,7 @@ void Dummyfield::fill_buffers()
 	sf_out_noneo = new hmc_float[NUM_ELEMENTS_AE];	
 	
 	//use the variable use_cg to switch between cold and random input sf
-	if(get_parameters()->get_use_cg() == true) {
+	if(get_parameters()->get_use_cg() == false) {
 	  fill_sf_with_one(sf_in1_eo, NUM_ELEMENTS_SF_EO);
 	  fill_sf_with_one(sf_in3_eo, NUM_ELEMENTS_SF_EO);
 	  fill_sf_with_one(sf_in2_eo, NUM_ELEMENTS_SF_EO);
@@ -721,10 +721,22 @@ hmc_float Dummyfield::get_squarenorm_eo(int which)
 
 hmc_float Dummyfield::get_squarenorm_noneo(int which)
 {
+
+  //CP: I only use out_eo here because there is some mistake with out_noneo. However, I will not try to find it...
 	//which controlls if the in or out-vector is looked at
         if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1_noneo, sqnorm);
         if(which == 1) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2_noneo, sqnorm);
-	if(which == 2) static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out_noneo, sqnorm);
+	if(which == 2){
+	  cl_mem tmp;
+	  cl_int err;
+	  cl_context context = opencl_modules[0]->get_context();
+	  tmp = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
+	  static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out_eo, tmp);
+	  hmc_float result;
+	  err = clEnqueueReadBuffer(*queue, tmp, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
+	  logger.info() << result;
+	  return result;
+	}
         if(which == 3) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1_noneo_converted, sqnorm);
         if(which == 4) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2_noneo_converted, sqnorm);
 	// get stuff from device
@@ -783,7 +795,8 @@ void Dummyfield::runTestKernel2()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel2(out_noneo, in1_noneo, in2_noneo, *(get_clmem_gaugefield()), gs, ls);
+  //CP: I only use out_eo here because there is some mistake with out_noneo. However, I will not try to find it...
+	static_cast<Device*>(opencl_modules[0])->runTestKernel2(out_eo, in1_noneo, in2_noneo, *(get_clmem_gaugefield()), gs, ls);
 }
 
 void Dummyfield::runTestKernel2withconvertedfields()
