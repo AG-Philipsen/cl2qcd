@@ -22,9 +22,9 @@
 
 /** The floating precision type used by hmc, can be 32 or 64 bit. */
 #ifdef _USEDOUBLEPREC_
-typedef double hmc_float;
+typedef double hmc_float __attribute__((aligned(8)));
 #else
-typedef float hmc_float;
+typedef float hmc_float __attribute__((aligned(4)));
 #endif
 
 /** An OpenCL-compatible constant 1.
