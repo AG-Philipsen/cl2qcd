@@ -12,20 +12,20 @@ __kernel void dslash_eoprec(__global const spinorfield_eoprec * const restrict i
 	int id = get_global_id(0);
 
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
-		st_index pos = (evenodd == ODD) ? get_even_site(id_tmp) : get_odd_site(id_tmp);
+		st_idx pos = (evenodd == ODD) ? get_even_st_idx(id_tmp) : get_odd_st_idx(id_tmp);
 
 		spinor out_tmp = set_spinor_zero();
 		spinor out_tmp2;
 
 		//calc dslash (this includes mutliplication with kappa)
 
-		out_tmp2 = dslash_eoprec_local_0(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_eoprec_local_0(in, field, pos);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_eoprec_local_1(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_eoprec_local_1(in, field, pos);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_eoprec_local_2(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_eoprec_local_2(in, field, pos);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_eoprec_local_3(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_eoprec_local_3(in, field, pos);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 
 		put_spinor_to_eoprec_field(out_tmp, out, id_tmp);

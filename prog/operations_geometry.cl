@@ -155,6 +155,137 @@ coord_full get_coord_full(const site_idx in){
   return res;
 }
 
+////////////////////////////////////////////////////////////////
+// Even/Odd functions
+// NOTE: These explicitely rely on the geometric conventions
+// and should be reconsidered if the former are changed!!
+////////////////////////////////////////////////////////////////
+
+/**
+ * Even-Odd preconditioning means applying a chessboard to the lattice, 
+ * and distinguish between black and white (even/odd) sites.
+ * this can be done in a 2D plane. Going to 4D then means to repeat this
+ * 2D plane alternating even and odd sites.
+ * 
+ * Schematically one has (assume 4x4 plane, x: even, o: odd):
+ * oxox
+ * xoxo
+ * oxox
+ * xoxo
+ * 
+ * Take a look at the coordinates (call them w (ordinate) and t (abscise) ):
+ * w/t | 0 | 1 | 2 | 3 | 
+ *   0 | x | o | x | o |
+ *   1 | o | x | o | x |
+ *   2 | x | o | x | o |
+ *   3 | o | x | o | x |
+ *
+ * Assume that a coordinate in the plane is calculated as pos = t + w*4
+ * Then, the coordinates of the even and odd sites are:
+ * even|odd
+ * 0|1
+ * 2|3
+ * 5|4
+ * 7|6
+ * 9|8
+ * 11|10
+ * 12|13
+ * 14|15
+ * 
+ * One can see a regular pattern, which can be described by the functions
+ * f_even:2*w + int(2w/4)
+ * f_odd: 1 + 2*w - int(2w/4)
+ * Thus, given an index pair (w,t) one can map it to an even or odd site
+ * by pos = f_even/odd(w) + 4*2*t, assuming that t runs only from 0 to 2
+ * (half lattice size).
+ * Extending this to 4D (call additional coordinates g1,g2) can be done
+ * by alternating between f_even and f_odd, depending on g1 and g2.
+ * E.g. one can do that via (g1 + g2)%2 and (g1 + g2 + 1)%2 prefactors.
+ * Extending these consideratios to arbitrary lattice extend is straightforward.
+ * NOTE: In general, a 4D site is even or odd if (x+y+z+t)%2 is 0 or 1.
+ * However, in general one wants to have a loop over all even or odd sites.
+ * Then this condition is not applicable, if not one loops over ALL sites and
+ * just leaves out the ones where the condition is not fulfilled.
+ * Since we do not want to create a possibly big table to map loop-variable
+ * -> even/odd site we will use the pattern above for that!
+ */
+
+/** returns eo-vector component from st_idx */
+site_idx get_eo_site_idx_from_st_idx(st_idx in)
+{
+  return get_site_idx(in) / 2;
+}
+
+/** the functions mentioned above 
+ * @todo this may be generalized because it relys on the current geometric conventions!!
+ */
+site_idx calc_even_spatial_idx(coord_full in){
+  return 
+    (uint)((in.z + in.w    ) % 2) * (1 + 2 * in.x - (uint) (2 * in.x / NSPACE)) + 
+    (uint)((in.w + in.z + 1) % 2) * (    2 * in.x + (uint) (2 * in.x / NSPACE)) + 
+    2 * NSPACE * in.y + 
+    NSPACE * NSPACE * in.z;
+}
+site_idx calc_odd_spatial_idx(coord_full in){
+  return 
+    (uint)((in.z + in.w + 1) % 2) * (1 + 2 * in.x - (uint) (2 * in.x / NSPACE)) + 
+    (uint)((in.w + in.z    ) % 2) * (    2 * in.x + (uint) (2 * in.x / NSPACE)) + 
+    2 * NSPACE * in.y + 
+    NSPACE * NSPACE * in.z;
+}
+
+/**
+ * this takes a eo_site_idx (0..VOL4D/2) and returns its 4 coordinates
+ * under the assumption that even-odd preconditioning is applied in the
+ * x-y-plane as described above.
+ * This is done for convenience since x and y direction have
+ * the same extent.
+ * Use the convention:
+ *site_idx = x + y*NS + z*NS*NS + t*NS*NS*NS
+ *= site_idx_spatial + t*VOLSPACE
+ *and
+ *spatial_idx = x * NS^XDIR-1 + y * NS^YDIR-1 + z * NS^ZDIR-1
+ *= x + y * NS + z * NS^2
+ *
+ * Then one can "dissect" the site_idx i according to 
+ * t= i/VOLSPACE/2
+ * z = (i-t*VOLSPACE/2)/(NS*NS/2)
+ * y = (i-t*VOLSPACE/2 - z*NS*NS/2) / NS
+ * x = (i-t*VOLSPACE/2 - z*NS*NS/2 - y*NS)
+ * As mentioned above, y is taken to run from 0..NS/2
+ */
+coord_full dissect_eo_site_idx(const site_idx idx){
+  coord_full tmp;
+  tmp.x = idx;
+  tmp.w = (int)(idx / (VOLSPACE / 2));
+  tmp.x -= tmp.w * VOLSPACE / 2;
+  tmp.z = (int)(tmp.x / (NSPACE * NSPACE / 2));
+  tmp.x -= tmp.z * NSPACE * NSPACE / 2;
+  tmp.y = (int)(tmp.x / NSPACE);
+  tmp.x -= tmp.y * NSPACE;
+  return tmp;
+}
+
+/** given an eo site_idx (0..VOL4D/2), returns corresponding even site_idx */
+st_idx get_even_st_idx(const site_idx idx)
+{
+  coord_full tmp = dissect_eo_site_idx(idx);
+    st_idx res;
+  res.space = calc_even_spatial_idx(tmp);
+  res.time = tmp.w;
+  return res;
+}
+
+/** given an eo site_idx (0..VOL4D/2), returns corresponding odd site_idx */
+st_idx get_odd_st_idx(const site_idx idx)
+{
+  coord_full tmp = dissect_eo_site_idx(idx);
+    st_idx res;
+  res.space = calc_odd_spatial_idx(tmp);
+  res.time = tmp.w;
+  return res;
+}
+
 ////////////////////////////////////////////////////////////////////
 // Get positions of neighbours
 // These functions do not rely explicitely on geometric convetions
@@ -170,167 +301,134 @@ coord_temporal get_lower_neighbor_temporal(const coord_temporal ntime){
   return (ntime - 1 + NTIME) % NTIME;
 }
 
+/** returns idx of neighbor in spatial direction dir given a spatial idx */
+site_idx get_neighbor_spatial(const spatial_idx nspace, const dir_idx dir)
+{
+  coord_spatial coord = get_coord_spatial(nspace);
+  switch(dir) {
+  case XDIR:
+    coord.x = (coord.x + 1) % NSPACE;
+    break;
+  case YDIR:
+    coord.y = (coord.y + 1) % NSPACE;
+    break;
+  case ZDIR:
+    coord.z = (coord.z + 1) % NSPACE;
+    break;
+  }
+  return get_spatial_idx(coord);
+}
+
+/** returns idx of lower neighbor in spatial direction dir given a spatial idx */
+site_idx get_lower_neighbor_spatial(const spatial_idx nspace, const dir_idx dir)
+{
+  coord_spatial coord = get_coord_spatial(nspace);
+  switch(dir) {
+  case XDIR:
+    coord.x = (coord.x - 1 + NSPACE) % NSPACE;
+    break;
+  case YDIR:
+    coord.y = (coord.y - 1 + NSPACE) % NSPACE;
+    break;
+  case ZDIR:
+    coord.z = (coord.z - 1 + NSPACE) % NSPACE;
+    break;
+  }
+  return get_spatial_idx(coord);
+}
+
+/** returns the st_idx of the neighbor in direction dir given a st_idx. */
+st_idx get_neighbor_from_st_idx(const st_idx in, const dir_idx dir){
+  st_idx tmp = in;
+  if(dir == TDIR) tmp.time = get_neighbor_temporal(in.time);
+  else tmp.space = get_neighbor_spatial(in.space, dir);
+  return tmp;
+}
+
+/** returns the st_idx of the lower neighbor in direction dir given a st_idx. */
+st_idx get_lower_neighbor_from_st_idx(const st_idx in, const dir_idx dir){
+  st_idx tmp = in;
+  if(dir == TDIR) tmp.time = get_lower_neighbor_temporal(in.time);
+  else tmp.space = get_lower_neighbor_spatial(in.space, dir);
+  return tmp;
+}
+
+////////////////////////////////////////////////////////////////
+// Accessing spinor elements
+////////////////////////////////////////////////////////////////
+
+uint spinor_color(uint spinor_element)
+{
+  return (uint)(spinor_element / NSPIN);
+}
+
+uint spinor_spin(uint spinor_element, uint color)
+{
+  return spinor_element - NSPIN * color;
+}
+
+uint spinor_element(uint alpha, uint color)
+{
+  return alpha + NSPIN * color;
+}
+
 ///////////////////////////////////////////////////////////////////
-// Old functions
+// Older functions and types which still appear in the code
+// CP: I simply directed them back to the newer functions
 //////////////////////////////////////////////////////////////////
 
 int inline get_global_pos(int spacepos, int t)
 {
-	return spacepos + VOLSPACE * t;
+  st_idx tmp = {spacepos, t};
+  return get_site_idx(tmp);
 }
 
 int inline get_global_link_pos(int mu, int spacepos, int t)
 {
-	return mu + NDIM * get_global_pos(spacepos, t);
-}
-
-//old version, this can be deleted soon:
-int inline ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t)
-{
-	return c + 2 * a + 2 * NC * b + 2 * NC * NC * mu + 2 * NC * NC * NDIM * spacepos + 2 * NC * NC * NDIM * VOLSPACE * t;
-}
-
-int inline ocl_su3matrix_element(int a, int b)
-{
-	return a + NC * b;
+  st_idx tmp = {spacepos, t};
+  return get_link_idx(mu, tmp);
 }
 
 /**
  * An index type storing space (index) and time (coordinate) seperate.
  *
- * @todo Check name and types for suitability
+ * @NOTE for convenience I changed this simply to "st_idx"
  */
-typedef struct {
-	size_t space;
-	uint time;
-} st_index;
+typedef st_idx st_index;
 
-//it is assumed that idx iterates only over half the number of sites
-st_index get_even_site(const size_t idx)
+st_index inline get_even_site(const size_t idx)
 {
-	uint4 tmp;
-	tmp.x = idx;
-	tmp.w = (int)(idx / (VOLSPACE / 2));
-	tmp.x -= tmp.w * VOLSPACE / 2;
-	tmp.z = (int)(tmp.x / (NSPACE * NSPACE / 2));
-	tmp.x -= tmp.z * NSPACE * NSPACE / 2;
-	tmp.y = (int)(tmp.x / NSPACE);
-	tmp.x -= tmp.y * NSPACE;
-
-	st_index res;
-	res.space = (uint)((tmp.z + tmp.w) % 2) * (1 + 2 * tmp.x - (uint) (2 * tmp.x / NSPACE)) + (uint)((tmp.w + tmp.z + 1) % 2) * (2 * tmp.x + (uint) (2 * tmp.x / NSPACE)) + 2 * NSPACE * tmp.y + NSPACE * NSPACE * tmp.z;
-	res.time = tmp.w;
-
-	return res;
+  return get_even_st_idx(idx);
 }
 
-//it is assumed that idx iterates only over half the number of sites
-st_index get_odd_site(const size_t idx)
+st_index inline get_odd_site(const size_t idx)
 {
-	uint4 tmp;
-	tmp.x = idx;
-	tmp.w = (int)(idx / (VOLSPACE / 2));
-	tmp.x -= tmp.w * VOLSPACE / 2;
-	tmp.z = (int)(tmp.x / (NSPACE * NSPACE / 2));
-	tmp.x -= tmp.z * NSPACE * NSPACE / 2;
-	tmp.y = (int)(tmp.x / NSPACE);
-	tmp.x -= tmp.y * NSPACE;
-
-	st_index res;
-	res.space =  (uint)((tmp.z + tmp.w + 1) % 2) * (1 + 2 * tmp.x - (uint) (2 * tmp.x / NSPACE)) + (uint)((tmp.w + tmp.z) % 2) * (2 * tmp.x + (uint) (2 * tmp.x / NSPACE)) + 2 * NSPACE * tmp.y + NSPACE * NSPACE * tmp.z;
-	res.time = tmp.w;
-
-	return res;
+  return get_odd_st_idx(idx);
 }
 
-size_t get_nspace(const uint3 coord)
+size_t inline get_nspace(const uint3 coord)
 {
-	return (coord.x +  NSPACE * coord.y + NSPACE * NSPACE * coord.z);
+  return (size_t) get_spatial_idx(coord);
 }
 
-int get_spacecoord(const int nspace, const int dir)
+uint3  inline get_allspacecoord(const size_t nspace)
 {
-	int res = nspace / (NSPACE * NSPACE);
-	if(dir == 3) return res;
-	int acc = res;
-	res = nspace / NSPACE - NSPACE * acc;
-	if(dir == 2) return res;
-	acc = NSPACE * acc + res;
-	res = nspace - NSPACE * acc;
-	return res;
+  return get_coord_spatial(nspace);
 }
 
-uint3 get_allspacecoord(const size_t nspace)
+size_t inline get_neighbor(const size_t nspace, const uint dir)
 {
-	uint3 coord;
-	coord.z = nspace / NSPACE / NSPACE;
-	int acc = coord.z;
-	coord.y = nspace / NSPACE - NSPACE * acc;
-	acc = NSPACE * acc + coord.y;
-	coord.x = nspace - NSPACE * acc;
-	return coord;
+  return get_neighbor_spatial(nspace, dir);
 }
 
-size_t get_neighbor(const size_t nspace, const uint dir)
+size_t inline get_lower_neighbor(const size_t nspace, const uint dir)
 {
-	uint3 coord = get_allspacecoord(nspace);
-	switch(dir) {
-		case 1:
-			coord.x = (coord.x + 1) % NSPACE;
-			break;
-		case 2:
-			coord.y = (coord.y + 1) % NSPACE;
-			break;
-		case 3:
-			coord.z = (coord.z + 1) % NSPACE;
-			break;
-	}
-	return get_nspace(coord);
+  return get_lower_neighbor_spatial(nspace, dir);
 }
 
-size_t get_lower_neighbor(const size_t nspace, const uint dir)
+int inline get_n_eoprec(int spacepos, int timepos)
 {
-	uint3 coord = get_allspacecoord(nspace);
-	switch(dir) {
-		case 1:
-			coord.x = (coord.x + NSPACE - 1) % NSPACE;
-			break;
-		case 2:
-			coord.y = (coord.y + NSPACE - 1) % NSPACE;
-			break;
-		case 3:
-			coord.z = (coord.z + NSPACE - 1) % NSPACE;
-			break;
-	}
-	return get_nspace(coord);
+  st_idx tmp = {spacepos, timepos};
+  return get_eo_site_idx_from_st_idx(tmp);
 }
 
-int spinor_color(int spinor_element)
-{
-	return (int)(spinor_element / NSPIN);
-}
-
-int spinor_spin(int spinor_element, int color)
-{
-	return spinor_element - NSPIN * color;
-}
-
-int spinor_element(int alpha, int color)
-{
-	return alpha + NSPIN * color;
-}
-
-int get_n_eoprec(int spacepos, int timepos)
-{
-	return get_global_pos(spacepos, timepos) / 2;
-}
-
-int eoprec_spinor_field_element(int alpha, int color, int n_eoprec)
-{
-	return alpha + NSPIN * color + NSPIN * NC * n_eoprec;
-}
-
-int spinor_field_element(int alpha, int color, int nspace, int t)
-{
-	return alpha + NSPIN * color + NSPIN * NC * (get_global_pos(nspace, t));
-}
