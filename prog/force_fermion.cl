@@ -43,7 +43,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 		///////////////////////////////////
 		//mu = +0
 		global_link_pos = get_global_link_pos(dir, n, t);
-		nn = (t + 1) % NTIME;
+		nn = get_neighbor_temporal(t);
 		plus = get_spinor_from_field(X, n, nn);
 		U = get_matrixsu3(field, n, t, dir);
 		//if chemical potential is activated, U has to be multiplied by appropiate factor
@@ -81,7 +81,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 
 		/////////////////////////////////////
 		//mu = -0
-		nn = (t + NTIME - 1) % NTIME;
+		nn = get_lower_neighbor_temporal(t);
 		global_link_pos_down = get_global_link_pos(dir, n, nn);
 		plus = get_spinor_from_field(X, n, nn);
 		U = get_matrixsu3(field, n, nn, dir);
@@ -153,7 +153,9 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 		v2 = multiply_matrix3x3_dagger (tmp, v1);
 		v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 		out_tmp = tr_lambda_u(v1);
+
 		update_gaugemomentum(out_tmp, 1., global_link_pos, out);
+
 		///////////////////////////////////
 		//mu = -1
 		nn = get_lower_neighbor(n, dir);
@@ -173,7 +175,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 		phia = su3vec_dim_i(y.e0, y.e3);
 		phib = su3vec_dim_i(y.e1, y.e2);
 
-		v1 = tr_v_times_u_dagger(psia, phia, psib, phib);
+	       	v1 = tr_v_times_u_dagger(psia, phia, psib, phib);
 		tmp = matrix_su3to3x3(U);
 		v2 = multiply_matrix3x3_dagger (tmp, v1);
 		v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);

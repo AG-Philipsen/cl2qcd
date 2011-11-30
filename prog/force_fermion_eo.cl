@@ -50,7 +50,7 @@ __kernel void fermion_force_eoprec(__global ocl_s_gaugefield * field, __global  
 		///////////////////////////////////
 		//mu = +0
 		global_link_pos = get_global_link_pos(dir, n, t);
-		nn = (t + 1) % NTIME;
+		nn = get_neighbor_temporal(t);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(n, nn);
 		plus = get_spinor_from_eoprec_field(X, nn_eo);
@@ -90,7 +90,7 @@ __kernel void fermion_force_eoprec(__global ocl_s_gaugefield * field, __global  
 
 		/////////////////////////////////////
 		//mu = -0
-		nn = (t + NTIME - 1) % NTIME;
+		nn = get_lower_neighbor_temporal(t);
 		global_link_pos_down = get_global_link_pos(dir, n, nn);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(n, nn);

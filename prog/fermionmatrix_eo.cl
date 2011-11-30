@@ -22,7 +22,7 @@ spinor inline dslash_eoprec_local_0(__global const spinorfield_eoprec * const re
 	dir = 0;
 	///////////////////////////////////
 	//mu = +0
-	nn = (t + 1) % NTIME;
+	nn = get_neighbor_temporal(t);
 	//transform normal indices to eoprec index
 	nn_eo = get_n_eoprec(n, nn);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
@@ -62,7 +62,7 @@ spinor inline dslash_eoprec_local_0(__global const spinorfield_eoprec * const re
 
 	/////////////////////////////////////
 	//mu = -0
-	nn = (t - 1 + NTIME) % NTIME;
+	nn = get_lower_neighbor_temporal(t);
 	//transform normal indices to eoprec index
 	nn_eo = get_n_eoprec(n, nn);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
