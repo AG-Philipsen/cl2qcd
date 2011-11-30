@@ -861,7 +861,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			//if rho is too small the algorithm will get stuck and will never converge!!
-			if(abs(check.re) < prec && abs(check.im) < prec ) {
+			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
 				return -iter;
 			}
 			//tmp1 = rho_next/rho = (rhat, rn)/..
@@ -977,7 +977,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			//if rho is too small the algorithm will get stuck and will never converge!!
-			if(abs(check.re) < prec && abs(check.im) < prec ) {
+			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
 				return -iter;
 			}
 			//tmp1 = rho_next/rho = (rhat, rn)/..
@@ -1030,7 +1030,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 			//check if algorithm is stuck
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
-			if(abs(check.re) < prec && abs(check.im) < prec) {
+			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
 							return -iter;
 			}		
 			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
@@ -1130,7 +1130,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 			//check if algorithm is stuck
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
-			if(abs(check.re) < prec && abs(check.im) < prec) {
+			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
 							return -iter;
 			}		
 
