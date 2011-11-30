@@ -48,7 +48,7 @@ spinor dslash_local_0(__global spinorfield * in, __global ocl_s_gaugefield * fie
 	dir = 0;
 	///////////////////////////////////
 	//mu = +0
-	nn = (t + 1) % NTIME;
+	nn = get_neighbor_temporal(t);
 	plus = get_spinor_from_field(in, n, nn);
 	U = field[get_global_link_pos(dir, n, t)];
 	//if chemical potential is activated, U has to be multiplied by appropiate factor
@@ -86,7 +86,7 @@ spinor dslash_local_0(__global spinorfield * in, __global ocl_s_gaugefield * fie
 
 	/////////////////////////////////////
 	//mu = -0
-	nn = (t - 1 + NTIME) % NTIME;
+	nn = get_lower_neighbor_temporal(t);
 	plus = get_spinor_from_field(in, n, nn);
 	U = field[get_global_link_pos(dir, n, nn)];
 	//if chemical potential is activated, U has to be multiplied by appropiate factor
