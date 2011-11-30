@@ -63,13 +63,16 @@ typedef struct {
 /**
  * The following conventions are used in tmlqcd:
  * #define TDIR 0
- * #define XDIR 3
+ * #define XDIR 1
  * #define YDIR 2
- * #define ZDIR 1
- * (NS: spatial extent, NT: temporal extent, NDIM: # directions, VOL4D: lattice volume, VOLSPACE: spatial volume)
- * A spatial idx is adressed as spatial_idx(x,y,z) = x * NS^(XDIR-1) + y * NS^(YDIR-1) + z * NS^(ZDIR-1) (same)
+ * #define ZDIR 3    (same)
+ * A spatial idx is adressed as spatial_idx(x,y,z) = x * NS^(3-XDIR) + y * NS^(3-YDIR) + z * NS^(3-ZDIR) (different)
  * A site idx is addressed as site_idx(x,y,z,t) = spatial_idx(x,y,z) + t * VOLSPACE (same)
  * A link idx is addressed as an array with 2 indices.
+ * @NOTE: This is more consistent then our convention because it yields
+ *    site_idx = x * NS^(3-XDIR) + y * NS^(3-YDIR) + z * NS^(3-ZDIR) + t * NS^(3-TDIR)
+ * whereas ours gives
+ *    site_idx = x * NS^(XDIR-1) + y * NS^(YDIR-1) + z * NS^(ZDIR-1) + t * NS^(3-TDIR)
  */
 
 ////////////////////////////////////////////////////////////////
