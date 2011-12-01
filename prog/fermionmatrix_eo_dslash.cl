@@ -47,13 +47,23 @@ __kernel void convertSpinorfieldFromSOA_eo(__global spinor * const restrict out,
 
 __kernel void convertGaugefieldToSOA(__global hmc_float * const restrict out, __global const Matrixsu3 * const restrict in)
 {
-	for(uint i = get_global_id(0); i < NDIM * VOL4D; i += get_global_size(0)) {
-		putSU3SOA(out, i, in[i]);
+	// we need to take care of index converion. in the AOS storage the dimension is the continious index
+	// in the soa storage we want the space indices to be continuous and have the dimension as outermost.
+	for(uint d = 0; d < NDIM; ++d) {
+		for(uint s = get_global_id(0); s < VOL4D; s += get_global_size(0)) {
+			Matrixsu3 tmp = in[d + NDIM * s];
+			putSU3SOA(out, d * VOL4D + s, tmp);
+		}
 	}
 }
 __kernel void convertGaugefieldFromSOA(__global Matrixsu3 * const restrict out, __global const hmc_float * const restrict in)
 {
-	for(uint i = get_global_id(0); i < NDIM * VOL4D; i += get_global_size(0)) {
-		out[i] = getSU3SOA(in, i);
+	// we need to take care of index converion. in the AOS storage the dimension is the continious index
+	// in the soa storage we want the space indices to be continuous and have the dimension as outermost.
+	for(uint d = 0; d < NDIM; ++d) {
+		for(uint s = get_global_id(0); s < VOL4D; s += get_global_size(0)) {
+			Matrixsu3 tmp = getSU3SOA(in, d * VOL4D + s);
+			out[d + NDIM * s] = tmp;
+		}
 	}
 }

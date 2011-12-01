@@ -14,6 +14,12 @@ int inline get_global_link_pos(int mu, int spacepos, int t)
 	return mu + NDIM * get_global_pos(spacepos, t);
 }
 
+// TODO replace above by this
+int inline get_global_link_pos_SOA(int mu, int spacepos, int t)
+{
+	return mu * VOL4D + get_global_pos(spacepos, t);
+}
+
 //old version, this can be deleted soon:
 int inline ocl_gaugefield_element(int c, int a, int b, int mu, int spacepos, int t)
 {
@@ -34,6 +40,15 @@ typedef struct {
 	size_t space;
 	uint time;
 } st_index;
+
+st_index get_site(const size_t idx)
+{
+	// assuming non-eo
+	st_index res;
+	res.space = idx % VOLSPACE;
+	res.time = idx / VOLSPACE;
+	return res;
+}
 
 //it is assumed that idx iterates only over half the number of sites
 st_index get_even_site(const size_t idx)
