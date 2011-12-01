@@ -217,6 +217,84 @@ void fill_sf_with_float(spinor * sf_in, int size, hmc_float val)
         return;
 }
 
+spinor fill_spinor_with_specific_float(hmc_float val){
+  spinor tmp;
+
+	  tmp.e0.e0.re =  1./2. * 1./2. * val;
+	  tmp.e0.e1.re =  1./2. * 1./4. *val;
+	  tmp.e0.e2.re =  1./2. * 1./6. *val;
+	  tmp.e0.e0.im =  1./2. * 1./3. *val;
+	  tmp.e0.e1.im =  1./2. * 1./5. *val;
+	  tmp.e0.e2.im =  1./2. * 1./7. *val;
+
+	  tmp.e1.e0.re =  1./8. * 1./2. *val;
+	  tmp.e1.e1.re =  1./8. * 1./4. *val;
+	  tmp.e1.e2.re =  1./8. * 1./6. *val;
+	  tmp.e1.e0.im =  1./8. * 1./3. * val;
+	  tmp.e1.e1.im =  1./8. * 1./5. *val;
+	  tmp.e1.e2.im =  1./8. * 1./7. *val;
+
+	  tmp.e2.e0.re =  1./9. * 1./2. *val;
+	  tmp.e2.e1.re =  1./9. * 1./4. *val;
+	  tmp.e2.e2.re =  1./9. * 1./6. *val;
+	  tmp.e2.e0.im =  1./9. * 1./3. *val;
+	  tmp.e2.e1.im =  1./9. * 1./5. *val;
+	  tmp.e2.e2.im =  1./9. * 1./7. *val;
+
+	  tmp.e3.e0.re =  1./11. * 1./2. *val;
+	  tmp.e3.e1.re =  1./11. * 1./4. *val;
+	  tmp.e3.e2.re =  1./11. * 1./6. *val;
+	  tmp.e3.e0.im =  1./11. * 1./3. *val;
+	  tmp.e3.e1.im =  1./11. * 1./5. *val;
+	  tmp.e3.e2.im =  1./11. * 1./7. *val;
+
+  return tmp;
+}
+
+//this function fills every lattice site with a specific value depending 
+//on its site index. 
+void fill_noneo_sf_with_specific_float(spinor * sf_in, int size, inputparameters * params)
+{
+  uint x,y,z,t;
+  uint ns = params->get_ns();
+  uint nt = params->get_nt();
+  for(x = 0;  x < params->get_ns(); x++) {
+    for(y = 0;  y < params->get_ns();  y++) {
+      for(z = 0;  z < params->get_ns();  z++) {
+        for(t = 0; t < params->get_nt(); ++t) {
+	  //this has to match the conventions in operations_geometry.cl!!!!
+	  int i = t* ns*ns*ns +x*ns*ns + y* ns + z;
+          
+          hmc_float val = 17./(i+1);
+
+	  sf_in[i] = fill_spinor_with_specific_float(val);
+
+        }}}}
+  return;
+}
+
+void fill_eo_sf_with_specific_float(spinor * sf_even, spinor * sf_odd, int size, inputparameters * params)
+{
+  uint x,y,z,t;
+  uint ns = params->get_ns();
+  uint nt = params->get_nt();
+  for(x = 0;  x < params->get_ns(); x++) {
+    for(y = 0;  y < params->get_ns();  y++) {
+      for(z = 0;  z < params->get_ns();  z++) {
+        for(t = 0; t < params->get_nt(); ++t) {
+	  //this has to match the conventions in operations_geometry.cl!!!!
+	  int i = t* ns*ns*ns +x*ns*ns + y* ns + z;
+          hmc_float val = 17./(i+1);
+
+	  //distinguish between even and odd fields
+	  if( (t+x+y+z)%2 == 0)
+	    sf_even[i/2] = fill_spinor_with_specific_float(val);
+	  else
+	    sf_odd[i/2] = fill_spinor_with_specific_float(val);
+        }}}}
+  return;
+}
+
 
 void fill_with_one(hmc_float * sf_in, int size)
 {
@@ -505,7 +583,7 @@ void Dummyfield::fill_buffers()
 	sf_out_noneo = new hmc_float[NUM_ELEMENTS_AE];	
 	
 	//use the variable use_cg to switch between cold and random input sf
-	if(get_parameters()->get_use_cg() == false) {
+	if(get_parameters()->get_use_cg() == true) {
 	  fill_sf_with_one(sf_in1_eo, NUM_ELEMENTS_SF_EO);
 	  fill_sf_with_one(sf_in3_eo, NUM_ELEMENTS_SF_EO);
 	  fill_sf_with_one(sf_in2_eo, NUM_ELEMENTS_SF_EO);
@@ -519,6 +597,13 @@ void Dummyfield::fill_buffers()
 	  fill_sf_with_random_noneo(sf_in1_noneo, NUM_ELEMENTS_SF_NON_EO, 123456, get_parameters());
 	  fill_sf_with_random_noneo(sf_in2_noneo, NUM_ELEMENTS_SF_NON_EO, 789101, get_parameters());
 	}
+
+	fill_eo_sf_with_specific_float(sf_in1_eo, sf_in2_eo, NUM_ELEMENTS_SF_EO, get_parameters());
+	fill_eo_sf_with_specific_float(sf_in3_eo, sf_in4_eo, NUM_ELEMENTS_SF_EO, get_parameters());
+	fill_noneo_sf_with_specific_float(sf_in1_noneo, NUM_ELEMENTS_SF_NON_EO, get_parameters());
+	fill_noneo_sf_with_specific_float(sf_in2_noneo, NUM_ELEMENTS_SF_NON_EO, get_parameters());
+
+
 	BOOST_REQUIRE(sf_in1_eo);
 	BOOST_REQUIRE(sf_in2_eo);
 	BOOST_REQUIRE(sf_in3_eo);
