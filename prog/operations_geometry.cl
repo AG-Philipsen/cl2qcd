@@ -80,26 +80,50 @@ typedef struct {
 // defined above (w/o even-odd functions!!)
 ////////////////////////////////////////////////////////////////
 
+/** 
+ * with this set to false or true, one can switch between our original convention and 
+ * the one from tmlqcd.
+ * our original:
+ * spatial_idx = x + NS * y + NS*NS * z
+ * tmlqcd:
+ * spatial_idx = z + NS * y + NS*NS * x
+ * NOTE: the ifs and elses used here should be removed by the compiler
+ *       Nevertheless, one could also change to a permanent convention here
+ */
+#define TMLQCD_CONV false
+
 /** spatial coordinates <-> spatial_idx
- *using the convention:
- *spatial_idx = x + NS * y + NS*NS * z
  *@todo this can be generalize using the definitions of the spatial directions
  *see  http://stackoverflow.com/questions/101439/the-most-efficient-way-to-implement-an-integer-based-power-function-powint-int 
  */
-// spatial_idx get_nspace(const coord_spatial coord)
 spatial_idx get_spatial_idx(const coord_spatial coord)
 {
-  return (coord.x +  NSPACE * coord.y + NSPACE * NSPACE * coord.z);
-  // return (coord.x * NSPACE^(XDIR-1) + coord.y * NSPACE^(YDIR-1) + coord.z * NSPACE^(ZDIR-1) );
+  bool tmp = TMLQCD_CONV;
+  if( tmp ){
+    return (coord.z +  NSPACE * coord.y + NSPACE * NSPACE * coord.x);
+  }
+  else{
+    return (coord.x +  NSPACE * coord.y + NSPACE * NSPACE * coord.z);
+  }
 }
 coord_spatial get_coord_spatial(const spatial_idx nspace)
 {
   coord_spatial coord;
-  coord.z = nspace / NSPACE / NSPACE;
-  uint acc = coord.z;
-  coord.y = nspace / NSPACE - NSPACE * acc;
-  acc = NSPACE * acc + coord.y;
-  coord.x = nspace - NSPACE * acc;
+  bool tmp = TMLQCD_CONV;
+  if( tmp ){
+    coord.x = nspace / NSPACE / NSPACE;
+    uint acc = coord.x;
+    coord.y = nspace / NSPACE - NSPACE * acc;
+    acc = NSPACE * acc + coord.y;
+    coord.z = nspace - NSPACE * acc;
+  }
+  else{
+    coord.z = nspace / NSPACE / NSPACE;
+    uint acc = coord.z;
+    coord.y = nspace / NSPACE - NSPACE * acc;
+    acc = NSPACE * acc + coord.y;
+    coord.x = nspace - NSPACE * acc;
+  }
   return coord;
 }
 
@@ -223,24 +247,47 @@ site_idx get_eo_site_idx_from_st_idx(st_idx in)
  * @todo this may be generalized because it relys on the current geometric conventions!!
  */
 site_idx calc_even_spatial_idx(coord_full in){
-  return 
+  coord_full tmp;
+  bool switcher = TMLQCD_CONV;
+  if(switcher){
+    return 
+    (uint)((in.x + in.w    ) % 2) * (1 + 2 * in.z - (uint) (2 * in.z / NSPACE)) + 
+    (uint)((in.w + in.x + 1) % 2) * (    2 * in.z + (uint) (2 * in.z / NSPACE)) + 
+    2 * NSPACE * in.y + 
+    NSPACE * NSPACE * in.x;
+  }
+  else{
+    return 
     (uint)((in.z + in.w    ) % 2) * (1 + 2 * in.x - (uint) (2 * in.x / NSPACE)) + 
     (uint)((in.w + in.z + 1) % 2) * (    2 * in.x + (uint) (2 * in.x / NSPACE)) + 
     2 * NSPACE * in.y + 
     NSPACE * NSPACE * in.z;
+  }
 }
 site_idx calc_odd_spatial_idx(coord_full in){
-  return 
+  coord_full tmp;
+  bool switcher = TMLQCD_CONV;
+  if(switcher){
+    return 
+    (uint)((in.x + in.w + 1) % 2) * (1 + 2 * in.z - (uint) (2 * in.z / NSPACE)) + 
+    (uint)((in.w + in.x    ) % 2) * (    2 * in.z + (uint) (2 * in.z / NSPACE)) + 
+    2 * NSPACE * in.y + 
+    NSPACE * NSPACE * in.x;
+  }
+  else{
+    return 
     (uint)((in.z + in.w + 1) % 2) * (1 + 2 * in.x - (uint) (2 * in.x / NSPACE)) + 
     (uint)((in.w + in.z    ) % 2) * (    2 * in.x + (uint) (2 * in.x / NSPACE)) + 
     2 * NSPACE * in.y + 
     NSPACE * NSPACE * in.z;
+  }
 }
 
 /**
  * this takes a eo_site_idx (0..VOL4D/2) and returns its 4 coordinates
  * under the assumption that even-odd preconditioning is applied in the
  * x-y-plane as described above.
+ * This is moved to the z-y plane if the tmlqcd conventions are used.
  * This is done for convenience since x and y direction have
  * the same extent.
  * Use the convention:
@@ -259,13 +306,24 @@ site_idx calc_odd_spatial_idx(coord_full in){
  */
 coord_full dissect_eo_site_idx(const site_idx idx){
   coord_full tmp;
-  tmp.x = idx;
-  tmp.w = (int)(idx / (VOLSPACE / 2));
-  tmp.x -= tmp.w * VOLSPACE / 2;
-  tmp.z = (int)(tmp.x / (NSPACE * NSPACE / 2));
-  tmp.x -= tmp.z * NSPACE * NSPACE / 2;
-  tmp.y = (int)(tmp.x / NSPACE);
-  tmp.x -= tmp.y * NSPACE;
+  bool switcher = TMLQCD_CONV;
+  if(switcher) {
+    tmp.z = idx;
+    tmp.w = (int)(idx / (VOLSPACE / 2));
+    tmp.z -= tmp.w * VOLSPACE / 2;
+    tmp.x = (int)(tmp.z / (NSPACE * NSPACE / 2));
+    tmp.z -= tmp.x * NSPACE * NSPACE / 2;
+    tmp.y = (int)(tmp.z / NSPACE);
+    tmp.z -= tmp.y * NSPACE;
+  } else{
+    tmp.x = idx;
+    tmp.w = (int)(idx / (VOLSPACE / 2));
+    tmp.x -= tmp.w * VOLSPACE / 2;
+    tmp.z = (int)(tmp.x / (NSPACE * NSPACE / 2));
+    tmp.x -= tmp.z * NSPACE * NSPACE / 2;
+    tmp.y = (int)(tmp.x / NSPACE);
+    tmp.x -= tmp.y * NSPACE;
+  }
   return tmp;
 }
 
