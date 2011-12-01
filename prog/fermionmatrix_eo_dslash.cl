@@ -52,7 +52,9 @@ __kernel void convertGaugefieldToSOA(__global hmc_float * const restrict out, __
 	for(uint d = 0; d < NDIM; ++d) {
 		for(uint s = get_global_id(0); s < VOL4D; s += get_global_size(0)) {
 			Matrixsu3 tmp = in[d + NDIM * s];
-			putSU3SOA(out, d * VOL4D + s, tmp);
+
+			const st_index site = get_site(s);
+			putSU3SOA(out, get_global_link_pos_SOA(d, site.space, site.time), tmp);
 		}
 	}
 }
@@ -62,7 +64,9 @@ __kernel void convertGaugefieldFromSOA(__global Matrixsu3 * const restrict out, 
 	// in the soa storage we want the space indices to be continuous and have the dimension as outermost.
 	for(uint d = 0; d < NDIM; ++d) {
 		for(uint s = get_global_id(0); s < VOL4D; s += get_global_size(0)) {
-			Matrixsu3 tmp = getSU3SOA(in, d * VOL4D + s);
+			const st_index site = get_site(s);
+			Matrixsu3 tmp = getSU3SOA(in, get_global_link_pos_SOA(d, site.space, site.time));
+
 			out[d + NDIM * s] = tmp;
 		}
 	}

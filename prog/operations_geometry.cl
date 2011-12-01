@@ -4,6 +4,10 @@
 
 //opencl_geometry.cl
 
+// forward decleration
+int get_n_eoprec(int spacepos, int timepos);
+uint3 get_allspacecoord(const size_t nspace);
+
 int inline get_global_pos(int spacepos, int t)
 {
 	return spacepos + VOLSPACE * t;
@@ -15,9 +19,13 @@ int inline get_global_link_pos(int mu, int spacepos, int t)
 }
 
 // TODO replace above by this
-int inline get_global_link_pos_SOA(int mu, int spacepos, int t)
+size_t inline get_global_link_pos_SOA(uint mu, uint spacepos, uint t)
 {
-	return mu * VOL4D + get_global_pos(spacepos, t);
+	// check if the site is odd (either spacepos or t odd)
+	// if yes offset everything by half the number of sites (number of sites is always even...)
+	uint3 spacecoord = get_allspacecoord(spacepos);
+	size_t odd = (spacecoord.x ^ spacecoord.y ^ spacecoord.z ^ t) & 0x1 ? (VOL4D / 2) : 0;
+	return mu * VOL4D + odd + get_n_eoprec(spacepos, t);
 }
 
 //old version, this can be deleted soon:
