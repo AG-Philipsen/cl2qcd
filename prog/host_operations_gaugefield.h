@@ -55,14 +55,6 @@ void get_su3matrix(hmc_su3matrix* out, hmc_complex * in, int spacepos, int timep
 void put_su3matrix(hmc_complex * field, hmc_su3matrix * in, int spacepos, int timepos, int mu, const inputparameters * const parameters); //cl
 
 /**
- * Adjoin all SU3 matrices in a gaugefield.
- *
- * @param[in] in Gaugefield to read the SU3 matrices from
- * @param[out] out Gaugefield to store the matrices to
- */
-void adjoin_su3(hmc_complex * in, hmc_complex * out, const inputparameters * const parameters);
-
-/**
  * Calculate the part of the (temporal) polyakov loop local to the given spatial index.
  *
  * @param[in] field The gaugefield to use
@@ -81,15 +73,6 @@ Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const inputparameters * const
  * @param[in] nu The second direction to use
  */
 Matrixsu3 local_plaquette(Matrixsu3 * field, int n, int t, int mu, int nu, const inputparameters * const params);
-
-// copy-functions within cpu memory, gaugefield-related layers
-/**
- * Create a copy of the gaugefield.
- *
- * @param[in] source The gaugefield to copy
- * @param[ou] dest The storage location for the copy
- */
-void copy_gaugefield(hmc_complex * source, hmc_complex * dest, const inputparameters * const params);
 
 void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, int mu, const inputparameters * const parameters);
 

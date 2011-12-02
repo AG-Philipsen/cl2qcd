@@ -26,6 +26,8 @@ void adjoin_su3matrix(hmc_su3matrix * mat);
  * @return The trace
  */
 hmc_complex trace_su3matrix(hmc_su3matrix * mat);
+hmc_complex trace_Matrixsu3(Matrixsu3 mat);
+
 /**
  * Calculate the determinant of the given SU3 matrix.
  *
@@ -56,12 +58,6 @@ void unit_su3matrix(hmc_su3matrix * u);
 
 Matrixsu3 unit_matrixsu3();
 
-/**
- * Replace the given matrix by a random matrix.
- *
- * @param[out] mat The matrix to replace by a random one
- */
-void random_su3matrix(hmc_su3matrix * u);
 /**
  * Replace the given matrix by a zero matrix.
  *
@@ -105,7 +101,5 @@ void multiply_staplematrix(hmc_staplematrix *out, hmc_su3matrix *p, hmc_staplema
  * @param[in] q The SU3 matrix to add to the accumulation
  */
 void accumulate_su3matrices_add(hmc_staplematrix *p, hmc_su3matrix *q);
-
-hmc_complex trace_Matrixsu3(Matrixsu3 mat);
 
 #endif

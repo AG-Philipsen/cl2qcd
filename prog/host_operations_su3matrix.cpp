@@ -110,11 +110,6 @@ void unit_su3matrix(hmc_su3matrix * u)
 	}
 }
 
-void random_su3matrix(hmc_su3matrix *)
-{
-	throw Print_Error_Message("random su3matrix needs to be implemented...");
-}
-
 void multiply_su3matrices(hmc_su3matrix *out, hmc_su3matrix *p, hmc_su3matrix *q)
 {
 	for(int i = 0; i < NC; i++) {

@@ -1,33 +1,5 @@
 #include "host_operations_gaugefield.h"
 
-void set_gaugefield_cold(hmc_complex * field, const inputparameters * const parameters)
-{
-	for(int t = 0; t < parameters->get_nt(); t++) {
-		for(int n = 0; n < parameters->get_volspace(); n++) {
-			for(int mu = 0; mu < NDIM; mu++) {
-				hmc_su3matrix tmp;
-				unit_su3matrix(&tmp);
-				put_su3matrix(field, &tmp, n, t, mu, parameters);
-			}
-		}
-	}
-	return;
-}
-
-void set_gaugefield_hot(hmc_complex * field, const inputparameters * const parameters)
-{
-	for(int t = 0; t < parameters->get_nt(); t++) {
-		for(int n = 0; n < parameters->get_volspace(); n++) {
-			for(int mu = 0; mu < NDIM; mu++) {
-				hmc_su3matrix tmp;
-				random_su3matrix(&tmp);
-				put_su3matrix(field, &tmp, n, t, mu, parameters);
-			}
-		}
-	}
-	return;
-}
-
 Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const inputparameters * const parameters){
 	Matrixsu3 tmp;
 	size_t link_pos = get_global_link_pos(spacepos, mu, timepos, parameters);
