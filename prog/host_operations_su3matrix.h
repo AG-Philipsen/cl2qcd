@@ -11,7 +11,6 @@
 #include "types.h"
 #include "host_geometry.h"
 #include "host_operations_complex.h"
-#include "host_operations_matrix.h"
 #include <cmath>
 
 /**

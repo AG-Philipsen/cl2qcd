@@ -183,11 +183,5 @@ typedef struct {
 #define F_1_S3  0.577350269189626
 #endif
 
-
-
-
-
-
-
 #endif /* _TYPESH_ */
 
