@@ -315,7 +315,7 @@ public:
 	* @param[in] check Size of the ILDG field.
 	* @todo Replace hmc_gaugefield type by s_gaugefield type (LZ)
 	*/
-	void copy_gaugefield_from_ildg_format(hmc_complex * gaugefield, hmc_float * gaugefield_tmp, int check, const inputparameters * const params);
+	void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check, const inputparameters * const params);
 	/**
 	* Create the IDLG representation of the given gaugefield.
 	*

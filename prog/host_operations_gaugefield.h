@@ -21,8 +21,6 @@ LZ: Note that the following section provides functions that work on the old hmc_
     For the new format (s_gaugefield) they can still be used in combination with the corresponding copy to/from
     functions that exist in the Gaugefield class.
 ****************************************************************************************************/
-
-
 /**
  * Retrieve an SU3 matrix form the gaugefield
  *
@@ -92,5 +90,9 @@ Matrixsu3 local_plaquette(Matrixsu3 * field, int n, int t, int mu, int nu, const
  * @param[ou] dest The storage location for the copy
  */
 void copy_gaugefield(hmc_complex * source, hmc_complex * dest, const inputparameters * const params);
+
+void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, int mu, const inputparameters * const parameters);
+
+Matrixsu3 convert_hmc_matrixsu3_to_Matrixsu3(hmc_su3matrix in);
 
 #endif

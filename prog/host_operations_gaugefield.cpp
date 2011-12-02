@@ -35,6 +35,11 @@ Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const
 	return tmp;
 }
 
+void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, int mu, const inputparameters * const parameters){
+	size_t link_pos = get_global_link_pos(spacepos, mu, timepos, parameters);
+	field[link_pos] = in;
+}
+
 //this is a temporal thing...
 void get_su3matrix_tmp(hmc_su3matrix * out, Matrixsu3 * in, int spacepos, int timepos, int mu, const inputparameters * const parameters)
 {
