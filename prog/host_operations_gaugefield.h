@@ -136,21 +136,4 @@ void local_plaquette(hmc_complex * field, hmc_su3matrix * prod, int n, int t, in
  */
 void copy_gaugefield(hmc_complex * source, hmc_complex * dest, const inputparameters * const params);
 
-/**
- * Calculates the Q-plaquette (Clover discretization) at the given spacetime-point and directions
- *  --   --
- * |  | |  |
- *  --   --
- *  --   --
- * |  | |  |
- *  --   --
- * @param[in] field The gaugefield to use
- * @param[out] out The local part of the Qplaquette
- * @param[in] n The spatial index to use
- * @param[in] t The temporal index to use
- * @param[in] mu The first direction to use
- * @param[in] nu The second direction to use
- */
-void local_Q_plaquette(hmc_3x3matrix * out, hmc_complex * field, int n, int t, int mu, int nu, const inputparameters * const params);
-
 #endif
