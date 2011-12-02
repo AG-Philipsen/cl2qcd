@@ -308,17 +308,12 @@ void Gaugefield_hybrid::init_gaugefield()
 {
 	if((get_parameters())->get_startcondition() == START_FROM_SOURCE) {
 		sourcefileparameters parameters_source;
-
-		//hmc_gaugefield for filetransfer, initialize here, because otherwise it is not needed
- 		hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
-		//tmp gauge field
+		//tmp hmc_gaugefield for filetransfer
 		hmc_float * gaugefield_tmp;
 		gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * parameters->get_nt() * parameters->get_volspace());
 		parameters_source.readsourcefile(&(get_parameters()->sourcefile)[0], get_parameters()->get_prec(), &gaugefield_tmp);
-		copy_gaugefield_from_ildg_format(gftmp, gaugefield_tmp, parameters_source.num_entries_source, parameters);
- 		copy_gaugefield_to_s_gaugefield (get_sgf(), gftmp);
+		copy_gaugefield_from_ildg_format(get_sgf(), gaugefield_tmp, parameters_source.num_entries_source, parameters);
 		free(gaugefield_tmp);
- 		delete[] gftmp;
 	}
 	if(get_parameters()->get_startcondition() == COLD_START) {
 		set_gaugefield_cold(get_sgf());
@@ -686,8 +681,13 @@ void Gaugefield_hybrid::copy_from_ocl_format(Matrixsu3* gaugefield, ocl_s_gaugef
 	return;
 }
 
-void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(hmc_complex * gaugefield, hmc_float * gaugefield_tmp, int check, const inputparameters * const parameters)
+void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check, const inputparameters * const parameters)
 {
+
+	//tmp gaugefield. this can be deleted if convert_to_s... is not needed anymore below...
+	hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
+
+
 	//little check if arrays are big enough
 	if (parameters->get_vol4d() *NDIM*NC*NC * 2 != check) {
 		std::stringstream errstr;
@@ -721,7 +721,7 @@ void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(hmc_complex * gaugefiel
 								cter++;
 							}
 						}
-						put_su3matrix(gaugefield, &tmp, spacepos, t, (l + 1) % NDIM, parameters);
+						put_su3matrix(gftmp, &tmp, spacepos, t, (l + 1) % NDIM, parameters);
 						/*
 						//CP: This did not work because there is a non-trivial mapping going on in put_su3matrix
 						//which needs to be cleared!!!
@@ -741,6 +741,10 @@ void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(hmc_complex * gaugefiel
 		errstr << "Error in setting gaugefield to source values! there were " << cter * 2 << " vals set and not " << check << ".";
 		throw Print_Error_Message(errstr.str(), __FILE__, __LINE__);
 	}
+
+	copy_gaugefield_to_s_gaugefield (gaugefield, gftmp);
+
+	delete [] gftmp;
 
 	return;
 }
