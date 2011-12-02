@@ -28,22 +28,6 @@ void set_gaugefield_hot(hmc_complex * field, const inputparameters * const param
 	return;
 }
 
-hmc_complex global_trace_su3(hmc_complex * field, int mu, const inputparameters * const parameters)
-{
-	hmc_complex sum;
-	sum.re = 0;
-	sum.im = 0;
-	for(int t = 0; t < parameters->get_nt(); t++) {
-		for(int n = 0; n < parameters->get_volspace(); n++) {
-			hmc_su3matrix tmp;
-			get_su3matrix(&tmp, field, n, t, mu, parameters);
-			sum.re += trace_su3matrix(&tmp).re;
-			sum.im += trace_su3matrix(&tmp).im;
-		}
-	}
-	return sum;
-}
-
 void get_su3matrix(hmc_su3matrix * out, hmc_complex * in, int spacepos, int timepos, int mu, const inputparameters * const parameters)
 {
 	for(int a = 0; a < NC; a++) {

@@ -179,34 +179,3 @@ hmc_complex trace_su3matrix(hmc_su3matrix * mat)
 	return trace;
 }
 
-void gaugefield_apply_bc(hmc_su3matrix * in, hmc_float theta)
-{
-	hmc_float tmp1, tmp2;
-	for(int a = 0; a < NC; a++) {
-		for(int b = 0; b < NC; b++) {
-			tmp1 = ((*in)[a][b]).re;
-			tmp2 = ((*in)[a][b]).im;
-			((*in)[a][b]).re = cos(theta) * tmp1 - sin(theta) * tmp2;
-			((*in)[a][b]).im = sin(theta) * tmp1 + cos(theta) * tmp2;
-		}
-	}
-}
-
-// replace link in with e^(mu.re)*(cos(mu.im) + i*sin(mu.im))
-void gaugefield_apply_chem_pot(hmc_su3matrix * u, hmc_su3matrix * udagger, hmc_float chem_pot_re, hmc_float chem_pot_im)
-{
-	hmc_float tmp1, tmp2;
-	for(int a = 0; a < NC; a++) {
-		for(int b = 0; b < NC; b++) {
-			tmp1 = ((*u)[a][b]).re;
-			tmp2 = ((*u)[a][b]).im;
-			((*u)[a][b]).re = exp(chem_pot_re) * ( cos(chem_pot_im) * tmp1 - sin(chem_pot_im) * tmp2 );
-			((*u)[a][b]).im = exp(chem_pot_re) * ( sin(chem_pot_im) * tmp1 + cos(chem_pot_im) * tmp2 );
-			tmp1 = ((*udagger)[a][b]).re;
-			tmp2 = ((*udagger)[a][b]).im;
-			((*udagger)[a][b]).re = exp(-chem_pot_re) * ( cos(chem_pot_im) * tmp1 + sin(chem_pot_im) * tmp2 );
-			((*udagger)[a][b]).im = exp(-chem_pot_re) * ( -sin(chem_pot_im) * tmp1 + cos(chem_pot_im) * tmp2 );
-		}
-	}
-}
-

@@ -63,15 +63,6 @@ void put_su3matrix(hmc_complex * field, hmc_su3matrix * in, int spacepos, int ti
  * @param[out] out Gaugefield to store the matrices to
  */
 void adjoin_su3(hmc_complex * in, hmc_complex * out, const inputparameters * const parameters);
-/**
- * Sum up the traces of all SU3 matrices in on direction of the gaugefield.
- *
- * @param field The gaugefield to sum over
- * @param mu The direction to sum over
- */
-hmc_complex global_trace_su3(hmc_complex * field, int mu, const inputparameters * const parameters);
-
-
 
 /**
  * Calculate the part of the (temporal) polyakov loop local to the given spatial index.

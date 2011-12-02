@@ -88,51 +88,6 @@ void adjoint_3x3matrix (hmc_3x3matrix * out, hmc_3x3matrix *q);
 * @param[in] mat2 matrix2 to compare
 */
 void absoluteDifference_3x3_matrix(hmc_float *result, hmc_3x3matrix *mat1, hmc_3x3matrix *mat2);
-/**
-* Multiplies a T_i SU(3) generator (i.e. 1/2 lambda_i) by a generic 3x3 matrix
-* WARNING: the generator index here runs from ONE to EIGHT !
-* Hard-coded operations on single components!
-* test it
-* @param[out] out the result, T_i * M
-* @param[in]  gen_index index i (1--8) of the generator T_i
-* @param[in]  in input matrix M
-*/
-void multiply_generator_3x3matrix (hmc_3x3matrix * out, int gen_index, hmc_3x3matrix *in);
-
-/**
-* Multiplies a generic 3x3 matrix by a T_i SU(3) generator (i.e. 1/2 lambda_i)
-* WARNING: the generator index here runs from ONE to EIGHT !
-* Hard-coded operations on single components!
-* test it
-* @param[out] out the result, M * T_i
-* @param[in]  in input matrix M
-* @param[in]  gen_index index i (1--8) of the generator T_i
-*/
-void multiply_3x3matrix_generator (hmc_3x3matrix * out, hmc_3x3matrix *in, int gen_index);
-
-/**
-* Multiplies a T_i SU(3) generator (i.e. 1/2 lambda_i) by a SU(3) matrix
-* WARNING: the generator index here runs from ONE to EIGHT !
-* Relies on the "general 3x3 matrix" corresponding function
-* The result is in any case a GENERIC 3x3 matrix
-* test it
-* @param[out] out the result, T_i * M
-* @param[in]  gen_index index i (1--8) of the generator T_i
-* @param[in]  in input matrix M
-*/
-void multiply_generator_su3matrix (hmc_3x3matrix * out, int gen_index, hmc_su3matrix *in);
-
-/**
-* Multiplies a SU(3) matrix by a T_i SU(3) generator (i.e. 1/2 lambda_i)
-* WARNING: the generator index here runs from ONE to EIGHT !
-* Relies on the "general 3x3 matrix" corresponding function
-* The result is in any case a GENERIC 3x3 matrix
-* test it
-* @param[out] out the result, T_i * M
-* @param[in]  in input matrix M
-* @param[in]  gen_index index i (1--8) of the generator T_i
-*/
-void multiply_su3matrix_generator (hmc_3x3matrix * out, hmc_su3matrix *in, int gen_index);
 
 #endif
 
