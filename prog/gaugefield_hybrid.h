@@ -323,7 +323,7 @@ public:
 	* @param[in] source The gaugefield in the internal representation
 	* @todo Replace hmc_gaugefield type by s_gaugefield type (LZ)
 	*/
-	void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_complex * source, const inputparameters * const params);
+	void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source, const inputparameters * const params);
 	/**
 	* Create a representation of the gaugefield usable by the OpenCL kernels.
 	*

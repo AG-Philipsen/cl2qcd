@@ -540,7 +540,7 @@ void Gaugefield_hybrid::save(string outputfile)
 
 	hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
 	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
-	copy_gaugefield_to_ildg_format(gaugefield_buf, gftmp, parameters);
+	copy_gaugefield_to_ildg_format(gaugefield_buf, get_sgf(), parameters);
 
 	hmc_float plaq = plaquette();
 
@@ -551,7 +551,6 @@ void Gaugefield_hybrid::save(string outputfile)
 	write_gaugefield ( gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NTIME, get_parameters()->get_prec(), number, plaq, get_parameters()->get_beta(), get_parameters()->get_kappa(), get_parameters()->get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
 
 	delete[] gaugefield_buf;
-	delete[] gftmp;
 }
 
 
@@ -749,8 +748,13 @@ void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield,
 	return;
 }
 
-void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_complex * source, const inputparameters * const parameters)
+void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source_in, const inputparameters * const parameters)
 {
+
+	hmc_complex* source = new hmc_complex[get_num_hmc_gaugefield_elems()];
+	copy_s_gaugefield_to_gaugefield(source, source_in);
+
+
 
 	int cter = 0;
 	const size_t NSPACE = parameters->get_ns();
@@ -783,6 +787,7 @@ void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_com
 		}
 	}
 
+	delete[] source_in;
 	return;
 }
 
