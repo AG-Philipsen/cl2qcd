@@ -1,14 +1,12 @@
 /** @file
  * Handling of lattice geometry.
  *
- * @todo The conventions used here must be the same as in the opencl code.
- * 	Therefore, include the same file here!!!
+ * @todo The conventions used here must be the same as in the opencl code. How can this be done automatically?
  */
 #ifndef _GEOMETRYH_
 #define _GEOMETRYH_
 
 #include "globaldefs.h"
-#include <cstdlib>
 #include <cmath>
 #include "inputparameters.h"
 
@@ -25,23 +23,6 @@
  * @param Spatial index
  */
 int get_nspace(int* coord, const inputparameters * const params);
-/**
- * Calculate the cartesian coordinates of the given spatial index.
- *
- * @param nspace Spatial index
- * @param dir The dimension for which to retrieve the cartisian coordinate
- * @param Cartesian coordinate of nspace in dimension dir.
- */
-int get_spacecoord(int nspace, int dir, const inputparameters * const params);
-
-/**
- * Calculate the next spatial index in a given direction.
- *
- * @param nspace The spatial index to start with
- * @param dir The dimension in which to move
- * @return Index of the next site in the given direction
- */
-int get_neighbor(int nspace, int dir, const inputparameters * const params);
 
 /**
  * Get the non-even-odd-preconditioned index of a site based on the spatial and temporal
