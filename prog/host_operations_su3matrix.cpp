@@ -179,3 +179,13 @@ hmc_complex trace_su3matrix(hmc_su3matrix * mat)
 	return trace;
 }
 
+hmc_complex trace_Matrixsu3(Matrixsu3 mat)
+{
+	hmc_complex trace;
+	trace.re = 0;
+	trace.im = 0;
+	complexaccumulate(&trace, &mat.e00);
+	complexaccumulate(&trace, &mat.e11);
+	complexaccumulate(&trace, &mat.e22);
+	return trace;
+}

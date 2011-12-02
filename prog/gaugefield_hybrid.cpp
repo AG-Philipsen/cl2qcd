@@ -340,7 +340,6 @@ void Gaugefield_hybrid::set_gaugefield_cold(Matrixsu3 * field)
 	}
 }
 
-
 //Implement this
 void Gaugefield_hybrid::set_gaugefield_hot(Matrixsu3 *)
 {
@@ -385,7 +384,6 @@ void Gaugefield_hybrid::synchronize(int ntask_reference)
 		if(ntask != ntask_reference) copy_gaugefield_to_task(ntask);
 	}
 }
-
 
 void Gaugefield_hybrid::copy_gaugefield_from_task(int ntask)
 {
@@ -568,134 +566,6 @@ hmc_float Gaugefield_hybrid::plaquette()
 	hmc_float sdummy;
 	//LZ: calculation of tdummy and sdummy is unnecessary for this function, chance to speed up a little bit...
 	return plaquette(&tdummy, &sdummy);
-}
-
-hmc_float Gaugefield_hybrid::plaquette(hmc_float* tplaq, hmc_float* splaq)
-{
-	hmc_float plaq = 0;
-	*tplaq = 0;
-	*splaq = 0;
-
-	//CP: new method that is not working right now since elementary matrix-function using structs are missing on the host
-	/*
-	Matrixsu3 prod;
-
-	for(int t = 0; t < NTIME; t++) {
-	  for(int n = 0; n < VOLSPACE; n++) {
-	    for(int mu = 0; mu < NDIM; mu++) {
-	  for(int nu = 0; nu < mu; nu++) {
-	    prod = local_plaquette(get_sgf(), pos, t, mu, nu );
-	    hmc_float tmpfloat = trace_matrixsu3(prod).re;
-	    plaq += tmpfloat;
-	    if(mu == 0 || nu == 0) {
-	          tplaq += tmpfloat;
-	    } else {
-	    splaq += tmpfloat;
-	    }
-	  }
-	      }
-	  }
-	}
-	*/
-	//CP: old method, this should be replaced!!
-	//LZ: for now it works because I have inserted the copy_to/from routines...
-	//LZ: eventually, someone should implement the "structured operations" for the host
-
-	hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
-	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
-
-
-	for(int t = 0; t < parameters->get_nt(); t++) {
-		for(int n = 0; n < parameters->get_volspace(); n++) {
-			for(int mu = 0; mu < NDIM; mu++) {
-				for(int nu = 0; nu < mu; nu++) {
-					hmc_su3matrix prod;
-					local_plaquette(gftmp, &prod, n, t, mu, nu, parameters );
-					hmc_float tmpfloat = trace_su3matrix(&prod).re;
-					plaq += tmpfloat;
-					if(mu == 0 || nu == 0) {
-						*tplaq += tmpfloat;
-					} else {
-						*splaq += tmpfloat;
-					}
-				}
-			}
-		}
-	}
-
-	delete[] gftmp;
-
-	*tplaq /= static_cast<hmc_float>(get_parameters()->get_vol4d() * NC * (NDIM - 1));
-	*splaq /= static_cast<hmc_float>(get_parameters()->get_vol4d() * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
-	return plaq * 2.0 / static_cast<hmc_float>(get_parameters()->get_vol4d() * NDIM * (NDIM - 1) * NC);
-}
-
-
-hmc_complex Gaugefield_hybrid::polyakov()
-{
-
-	hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
-	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
-
-	hmc_complex res;
-	res.re = 0;
-	res.im = 0;
-	for(int n = 0; n < parameters->get_volspace(); n++) {
-		hmc_su3matrix prod;
-		local_polyakov(gftmp, &prod, n, parameters);
-		hmc_complex tmpcomplex = trace_su3matrix(&prod);
-		complexaccumulate(&res, &tmpcomplex);
-	}
-
-	delete[] gftmp;
-
-	res.re /= static_cast<hmc_float>(NC * parameters->get_volspace());
-	res.im /= static_cast<hmc_float>(NC * parameters->get_volspace());
-	return res;
-}
-
-
-hmc_complex Gaugefield_hybrid::spatial_polyakov(int dir)
-{
-	const size_t NSPACE = parameters->get_ns();
-	const size_t NTIME = parameters->get_nt();
-
-	hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
-	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
-
-	//assuming dir=1,2, or 3
-	hmc_complex res;
-	res.re = 0;
-	res.im = 0;
-	for(size_t x1 = 0; x1 < NSPACE; x1++) {
-		for(size_t x2 = 0; x2 < NSPACE; x2++) {
-			for(size_t t = 0; t < NTIME; t++) {
-				hmc_su3matrix prod;
-				unit_su3matrix(&prod);
-				for(size_t xpol = 0; xpol < NSPACE; xpol++) {
-					hmc_su3matrix tmp;
-					int coord[NDIM];
-					coord[0] = t;
-					coord[dir] = xpol;
-					int next = (dir % (NDIM - 1)) + 1;
-					coord[next] = x1;
-					int nnext = (next % (NDIM - 1)) + 1;
-					coord[nnext] = x2;
-					int pos = get_nspace(coord, parameters);
-					get_su3matrix(&tmp, gftmp, pos, t, dir, parameters);
-					accumulate_su3matrix_prod(&prod, &tmp);
-				}
-				hmc_complex tmpcomplex = trace_su3matrix(&prod);
-				complexaccumulate(&res, &tmpcomplex);
-			}
-		}
-	}
-
-	delete[] gftmp;
-
-	res.re /= static_cast<hmc_float>(NC * NSPACE * NSPACE * NTIME);
-	res.im /= static_cast<hmc_float>(NC * NSPACE * NSPACE * NTIME);
-	return res;
 }
 
 void Gaugefield_hybrid::print_gaugeobservables(int iter)
@@ -903,4 +773,49 @@ void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_com
 	return;
 }
 
+hmc_float Gaugefield_hybrid::plaquette(hmc_float* tplaq, hmc_float* splaq)
+{
+	hmc_float plaq = 0;
+	*tplaq = 0;
+	*splaq = 0;
+
+	for(int t = 0; t < parameters->get_nt(); t++) {
+		for(int n = 0; n < parameters->get_volspace(); n++) {
+			for(int mu = 0; mu < NDIM; mu++) {
+				for(int nu = 0; nu < mu; nu++) {
+					Matrixsu3 prod;
+					prod = local_plaquette(get_sgf(), n, t, mu, nu, parameters );
+					hmc_float tmpfloat = trace_Matrixsu3(prod).re;
+					plaq += tmpfloat;
+					if(mu == 0 || nu == 0) {
+						*tplaq += tmpfloat;
+					} else {
+						*splaq += tmpfloat;
+					}
+				}
+			}
+		}
+	}
+
+	*tplaq /= static_cast<hmc_float>(get_parameters()->get_vol4d() * NC * (NDIM - 1));
+	*splaq /= static_cast<hmc_float>(get_parameters()->get_vol4d() * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
+	return plaq * 2.0 / static_cast<hmc_float>(get_parameters()->get_vol4d() * NDIM * (NDIM - 1) * NC);
+}
+
+hmc_complex Gaugefield_hybrid::polyakov()
+{
+	hmc_complex res;
+	res.re = 0;
+	res.im = 0;
+	for(int n = 0; n < parameters->get_volspace(); n++) {
+		Matrixsu3 prod;
+		prod = local_polyakov(get_sgf(), n, parameters);
+		hmc_complex tmpcomplex = trace_Matrixsu3(prod);
+		complexaccumulate(&res, &tmpcomplex);
+	}
+
+	res.re /= static_cast<hmc_float>(NC * parameters->get_volspace());
+	res.im /= static_cast<hmc_float>(NC * parameters->get_volspace());
+	return res;
+}
 

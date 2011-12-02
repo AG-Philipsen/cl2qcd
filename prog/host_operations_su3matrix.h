@@ -107,4 +107,6 @@ void multiply_staplematrix(hmc_staplematrix *out, hmc_su3matrix *p, hmc_staplema
  */
 void accumulate_su3matrices_add(hmc_staplematrix *p, hmc_su3matrix *q);
 
+hmc_complex trace_Matrixsu3(Matrixsu3 mat);
+
 #endif

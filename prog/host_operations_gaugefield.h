@@ -68,21 +68,21 @@ void adjoin_su3(hmc_complex * in, hmc_complex * out, const inputparameters * con
  * Calculate the part of the (temporal) polyakov loop local to the given spatial index.
  *
  * @param[in] field The gaugefield to use
- * @param[out] The local part of the polyakov
+ * @return The local part of the polyakov
  * @param[in] n The spatial index to use
  */
-void local_polyakov(hmc_complex * field, hmc_su3matrix * prod, int n, const inputparameters * const parameters);
+Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const inputparameters * const parameters);
 /**
  * Calculate the part of the plaquette local to the given coordinates.
  *
  * @param[in] field The gaugefield to use
- * @param[out] The local part of the plaquette
+ * @return The local part of the plaquette
  * @param[in] n The spatial index to use
  * @param[in] t The temporal index to use
  * @param[in] mu The first direction to use
  * @param[in] nu The second direction to use
  */
-void local_plaquette(hmc_complex * field, hmc_su3matrix * prod, int n, int t, int mu, int nu, const inputparameters * const params);
+Matrixsu3 local_plaquette(Matrixsu3 * field, int n, int t, int mu, int nu, const inputparameters * const params);
 
 // copy-functions within cpu memory, gaugefield-related layers
 /**
