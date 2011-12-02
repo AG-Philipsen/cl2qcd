@@ -137,12 +137,3 @@ Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu,
 	res = convert_hmc_matrixsu3_to_Matrixsu3(prod);	
 	return res;
 }
-
-size_t get_hmc_gaugefield_index(size_t m, size_t n, size_t spacepos, size_t timepos, size_t mu, const inputparameters * const parameters)
-{
-	const size_t VOLSPACE = parameters->get_volspace();
-	const size_t NTIME = parameters->get_nt();
-	size_t result = (mu * VOLSPACE + spacepos ) * NTIME + timepos;
-	result += (m * NC + n) * NDIM * VOLSPACE * NTIME;
-	return result;
-}

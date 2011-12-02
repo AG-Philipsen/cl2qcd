@@ -44,4 +44,15 @@ int get_global_pos(int spacepos, int t, const inputparameters * const params);
  */
 int get_global_link_pos(int mu, int spacepos, int t, const inputparameters * const params);
 
+/**
+ * Retrieve an SU3 matrix form the gaugefield
+ *
+ * @param[in] spacepos Spatial index of the matrix to retrieve
+ * @param[in] timepos Temporal index of the matrix to retrieve
+ * @param[in] mu Direction of the matrix to retrieve
+ * @return The index to be applied on the gaugefield in [NC][NC][NDIM][VOLSPACE][NTIME]
+ *         or [NC*(NC-1)][NDIM][VOLSPACE][NTIME] format, depending on whether REC12 is enabled.
+ */
+size_t get_hmc_gaugefield_index(size_t m, size_t n, size_t spacepos, size_t timepos, size_t mu, const inputparameters * const parameters);
+
 #endif /* _GEOMETRYH_ */

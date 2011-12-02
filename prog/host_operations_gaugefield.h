@@ -24,17 +24,6 @@ LZ: Note that the following section provides functions that work on the old hmc_
 /**
  * Retrieve an SU3 matrix form the gaugefield
  *
- * @param[in] spacepos Spatial index of the matrix to retrieve
- * @param[in] timepos Temporal index of the matrix to retrieve
- * @param[in] mu Direction of the matrix to retrieve
- * @return The index to be applied on the gaugefield in [NC][NC][NDIM][VOLSPACE][NTIME]
- *         or [NC*(NC-1)][NDIM][VOLSPACE][NTIME] format, depending on whether REC12 is enabled.
- */
-size_t get_hmc_gaugefield_index(size_t m, size_t n, size_t spacepos, size_t timepos, size_t mu, const inputparameters * const parameters);
-
-/**
- * Retrieve an SU3 matrix form the gaugefield
- *
  * @param[out] out SU3 matrix to write the result to
  * @param[in] gaugefield from which to retrieve the SU3 matrix
  * @param[in] spacepos Spatial index of the matrix to retrieve
