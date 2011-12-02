@@ -166,6 +166,43 @@ void Dummyfield::finalize_opencl()
 	Gaugefield_hybrid::finalize_opencl();
 }
 
+//it is assumed that idx iterates only over half the number of sites
+void get_even_site(int idx, int * out_space, int * out_t, const inputparameters * const params)
+{
+	const size_t NSPACE = params->get_ns();
+	const size_t VOLSPACE = params->get_volspace();
+	int x, y, z, t;
+	x = idx;
+	t = (int)(idx / (VOLSPACE / 2));
+	x -= t * VOLSPACE / 2;
+	z = (int)(x / (NSPACE * NSPACE / 2));		
+	x -= z * NSPACE * NSPACE / 2;
+	y = (int)(x / NSPACE);
+	x -= y * NSPACE;
+	(*out_space) =  (int)((z + t) % 2) * (1 + 2 * x - (int) (2 * x / NSPACE)) + (int)((t + z + 1) % 2) * (2 * x + (int) (2 * x / NSPACE)) + 2 * NSPACE * y + NSPACE * NSPACE * z;
+	(*out_t) = t;
+}
+
+//it is assumed that idx iterates only over half the number of sites
+
+void get_odd_site(int idx, int * out_space, int * out_t, const inputparameters * const params)
+{
+	const size_t NSPACE = params->get_ns();
+	const size_t VOLSPACE = params->get_volspace();
+	int x, y, z, t;
+	x = idx;
+	t = (int)(idx / (VOLSPACE / 2));
+	x -= t * VOLSPACE / 2;
+	z = (int)(x / (NSPACE * NSPACE / 2));
+	x -= z * NSPACE * NSPACE / 2;
+	y = (int)(x / NSPACE);
+	x -= y * NSPACE;
+
+	(*out_space) =  (int)((z + t + 1) % 2) * (1 + 2 * x - (int) (2 * x / NSPACE)) + (int)((t + z) % 2) * (2 * x + (int) (2 * x / NSPACE)) + 2 * NSPACE * y + NSPACE * NSPACE * z;
+	(*out_t) = t;
+}
+
+
 void fill_sf_with_one(spinor * sf_in1, int size)
 {
 	for(int i = 0; i < size; ++i) {
