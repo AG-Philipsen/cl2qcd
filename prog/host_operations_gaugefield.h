@@ -72,7 +72,7 @@ Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const inputparameters * const
  * @param[in] mu The first direction to use
  * @param[in] nu The second direction to use
  */
-Matrixsu3 local_plaquette(Matrixsu3 * field, int n, int t, int mu, int nu, const inputparameters * const params);
+Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu, const inputparameters * const parameters);
 
 void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, int mu, const inputparameters * const parameters);
 

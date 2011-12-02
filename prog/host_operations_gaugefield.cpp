@@ -81,34 +81,56 @@ Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const inputparameters * const
 	return res;
 }
 
-Matrixsu3 local_plaquette(Matrixsu3 * field, int n, int t, int mu, int nu, const inputparameters * const parameters)
+//CP: I introduced explicit calculations of the neighbors because this does not rely on any geometric conventions!
+Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu, const inputparameters * const parameters)
 {
 	Matrixsu3 res;
+	//coordinates of neighbors
+	int coord[NDIM];
+	coord[0] = coord_in[0];
+	coord[1] = coord_in[1];
+	coord[2] = coord_in[2];
+	coord[3] = coord_in[3];
+	//spatial index
+	int n;
 	
 	//using the old methods
 	hmc_su3matrix prod, tmp;
 	const size_t NTIME = parameters->get_nt();
+	const size_t NSPACE = parameters->get_ns();
 	//u_mu(x)
-	get_su3matrix_tmp(&prod, field, n, t, mu, parameters);
+	n = get_nspace(coord_in, parameters);
+	get_su3matrix_tmp(&prod, field, n, coord[0], mu, parameters);
 	//u_nu(x+mu)
 	if(mu == 0) {
-		int newt = (t + 1) % NTIME; //(haha)
-		get_su3matrix_tmp(&tmp, field, n, newt, nu, parameters);
+		coord[mu] = (coord_in[mu] + 1) % NTIME;
+		n = get_nspace(coord, parameters);
+		get_su3matrix_tmp(&tmp, field, n, coord[mu], nu, parameters);
+		coord[mu] = coord_in[mu];
 	} else {
-		get_su3matrix_tmp(&tmp, field, get_neighbor(n, mu, parameters), t, nu, parameters);
+		coord[mu] = (coord_in[mu] + 1) % NSPACE;
+		int newn = get_nspace(coord, parameters);
+		get_su3matrix_tmp(&tmp, field, newn, coord[0], nu, parameters);
+		coord[mu] = coord_in[mu];
 	}
 	accumulate_su3matrix_prod(&prod, &tmp);
 	//adjoint(u_mu(x+nu))
 	if(nu == 0) {
-		int newt = (t + 1) % NTIME;
-		get_su3matrix_tmp(&tmp, field, n, newt, mu, parameters);
+		coord[nu] = (coord_in[nu] + 1) % NTIME;
+		n = get_nspace(coord, parameters);
+		get_su3matrix_tmp(&tmp, field, n, coord[nu], mu, parameters);
+		coord[nu] = coord_in[nu];
 	} else {
-		get_su3matrix_tmp(&tmp, field, get_neighbor(n, nu, parameters), t, mu, parameters);
+		coord[nu] = (coord_in[nu] + 1) % NSPACE;
+		int newn = get_nspace(coord, parameters);
+		get_su3matrix_tmp(&tmp, field, newn, coord[0], mu, parameters);
+		coord[nu] = coord_in[nu];
 	}
 	adjoin_su3matrix(&tmp);
 	accumulate_su3matrix_prod(&prod, &tmp);
 	//adjoint(u_nu(x))
-	get_su3matrix_tmp(&tmp, field, n, t, nu, parameters);
+	n = get_nspace(coord_in, parameters);
+	get_su3matrix_tmp(&tmp, field, n, coord[0], nu, parameters);
 	adjoin_su3matrix(&tmp);
 	accumulate_su3matrix_prod(&prod, &tmp);
 

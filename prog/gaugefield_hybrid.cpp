@@ -787,19 +787,28 @@ hmc_float Gaugefield_hybrid::plaquette(hmc_float* tplaq, hmc_float* splaq)
 	hmc_float plaq = 0;
 	*tplaq = 0;
 	*splaq = 0;
-
+	int coord[NDIM];
+	
 	for(int t = 0; t < parameters->get_nt(); t++) {
-		for(int n = 0; n < parameters->get_volspace(); n++) {
-			for(int mu = 0; mu < NDIM; mu++) {
-				for(int nu = 0; nu < mu; nu++) {
-					Matrixsu3 prod;
-					prod = local_plaquette(get_sgf(), n, t, mu, nu, parameters );
-					hmc_float tmpfloat = trace_Matrixsu3(prod).re;
-					plaq += tmpfloat;
-					if(mu == 0 || nu == 0) {
-						*tplaq += tmpfloat;
-					} else {
-						*splaq += tmpfloat;
+		for(int x = 0; x < parameters->get_ns(); x++) {
+			for(int y = 0; y < parameters->get_ns(); y++) {
+				for(int z = 0; z < parameters->get_ns(); z++) {
+					for(int mu = 0; mu < NDIM; mu++) {
+						for(int nu = 0; nu < mu; nu++) {
+							coord[0] = t;
+							coord[1] = x;
+							coord[2] = y;
+							coord[3] = z;
+							Matrixsu3 prod;
+							prod = local_plaquette(get_sgf(), coord, mu, nu, parameters );
+							hmc_float tmpfloat = trace_Matrixsu3(prod).re;
+							plaq += tmpfloat;
+							if(mu == 0 || nu == 0) {
+								*tplaq += tmpfloat;
+							} else {
+								*splaq += tmpfloat;
+							}
+						}
 					}
 				}
 			}
