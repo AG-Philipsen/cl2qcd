@@ -306,6 +306,41 @@ public:
 	 * Get the number of elements in the gaugefield.
 	 */
 	size_t get_num_gaugefield_elems() const;
+	
+	/**
+	* Create the gaugefield from an array of floats as used by by ILDG.
+	*
+	* @param[out] gaugefield Pointer to the new storage location.
+	* @param[in] gaugefield_tmp Field in IDLG format
+	* @param[in] check Size of the ILDG field.
+	* @todo Replace hmc_gaugefield type by s_gaugefield type (LZ)
+	*/
+	void copy_gaugefield_from_ildg_format(hmc_complex * gaugefield, hmc_float * gaugefield_tmp, int check, const inputparameters * const params);
+	/**
+	* Create the IDLG representation of the given gaugefield.
+	*
+	* @param[out] dest The location to store the ILDG representation to
+	* @param[in] source The gaugefield in the internal representation
+	* @todo Replace hmc_gaugefield type by s_gaugefield type (LZ)
+	*/
+	void copy_gaugefield_to_ildg_format(hmc_float * dest, hmc_complex * source, const inputparameters * const params);
+	/**
+	* Create a representation of the gaugefield usable by the OpenCL kernels.
+	*
+	* @param[in] host_gaugefield The gaugefield in the internal representation
+	* @param[out] gaugefield The location to store the OpenCL kernel compatible representation to
+	*/
+	void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield, const inputparameters * const params);
+
+	/**
+	* Transform the gaugefield representation used by the OpenCL kernels into the normal one.
+	*
+	* @param[in] gaugefield The gaugefield in the representation used by the OpenCL kernels
+	* @param[out] host_gaugefield The location to store the gaugefield to
+	*/
+	void copy_from_ocl_format(Matrixsu3* gaugefield, ocl_s_gaugefield* host_gaugefield, const inputparameters * const params);
+		
+		
 
 #ifdef _PROFILING_
 	void print_profiling(std::string filename);
