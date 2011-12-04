@@ -55,4 +55,16 @@ int get_global_link_pos(int mu, int spacepos, int t, const inputparameters * con
  */
 size_t get_hmc_gaugefield_index(size_t m, size_t n, size_t spacepos, size_t timepos, size_t mu, const inputparameters * const parameters);
 
+/**
+ * This returns the index of a single su3 matrix entry in the ildg format
+ * which is [NT][NZ][NY][NX][NDIMENSION][NCOLOR][NCOLOR][2]
+ */
+size_t get_su3_idx_ildg_format(size_t n, size_t m, size_t x, size_t y, size_t z, size_t t, size_t mu, const inputparameters * const parameters);
+
+/**
+ * This returns the link index in the ildg format
+ * which is [NT][NZ][NY][NX][NDIMENSION][NCOLOR][NCOLOR][2]
+ */
+size_t get_link_idx_ildg_format(size_t x, size_t y, size_t z, size_t t, size_t mu, const inputparameters * const parameters);
+
 #endif /* _GEOMETRYH_ */

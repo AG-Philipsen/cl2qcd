@@ -335,9 +335,9 @@ void Gaugefield_hybrid::set_gaugefield_cold(Matrixsu3 * field)
 	}
 }
 
-//Implement this
 void Gaugefield_hybrid::set_gaugefield_hot(Matrixsu3 *)
 {
+  /// @todo Implement this
 	throw Print_Error_Message("Hot start not yet implemented.", __FILE__, __LINE__);
 }
 
@@ -359,7 +359,8 @@ void Gaugefield_hybrid::copy_gaugefield_to_task(int ntask)
 
 	copy_to_ocl_format(host_gaugefield, get_sgf(), parameters);
 
-	cl_int clerr = clEnqueueWriteBuffer(queue[ntask], clmem_gaugefield, CL_TRUE, 0, get_num_gaugefield_elems() * sizeof(ocl_s_gaugefield), host_gaugefield, 0, 0, NULL);
+		cl_int clerr = clEnqueueWriteBuffer(queue[ntask], clmem_gaugefield, CL_TRUE, 0, get_num_gaugefield_elems() * sizeof(ocl_s_gaugefield), host_gaugefield, 0, 0, NULL);
+
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 
 	free(host_gaugefield);
@@ -682,10 +683,8 @@ void Gaugefield_hybrid::copy_from_ocl_format(Matrixsu3* gaugefield, ocl_s_gaugef
 
 void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check, const inputparameters * const parameters)
 {
-
 	//tmp gaugefield. this can be deleted if convert_to_s... is not needed anymore below...
 	hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
-
 
 	//little check if arrays are big enough
 	if (parameters->get_vol4d() *NDIM*NC*NC * 2 != check) {
@@ -694,32 +693,32 @@ void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield,
 		throw Print_Error_Message(errstr.str(), __FILE__, __LINE__);
 	}
 
-	const size_t VOLSPACE = parameters->get_volspace();
 	const size_t NSPACE = parameters->get_ns();
-
 	int cter = 0;
-	//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
 	for (int t = 0; t < parameters->get_nt(); t++) {
-		//if the alg is known to be correct, the next three for-loops could also be changed to one
-		for (size_t i = 0; i < NSPACE; i++) {
-			for (size_t j = 0; j < NSPACE; j++) {
-				for (size_t k = 0; k < NSPACE; k++) {
+		for (size_t x = 0; x < NSPACE; x++) {
+			for (size_t y = 0; y < NSPACE; y++) {
+				for (size_t z = 0; z < NSPACE; z++) {
 					for (int l = 0; l < NDIM; l++) {
 						//save current link in hmc_su3matrix tmp (NOTE: this is a complex array, not a struct!!)
-						int spacepos = k + j * NSPACE + i * NSPACE * NSPACE;
-						int globalpos = l + spacepos * NDIM + t * VOLSPACE * NDIM;
 						hmc_su3matrix tmp;
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
-								//ildg-std: [NT][NZ][NY][NX][NDIMENSION][NCOLOR][NCOLOR][2]
-								//which is stored in one single array here
-								//skip NC*NC*2 cmplx numbers
-								int pos = 2 * n + 2 * m * NC + globalpos * NC * NC * 2;
+							        int pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters); 
 								tmp[m][n].re = gaugefield_tmp[pos];
 								tmp[m][n].im = gaugefield_tmp[pos + 1];
 								cter++;
 							}
 						}
+						//store su3matrix tmp in our format
+						//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
+						//CP: interchange x<->z temporarily because spacepos has to be z + y * NSPACE + x * NSPACE * NSPACE!!
+						int coord[4];
+						coord[0] = t;
+						coord[1] = z;
+						coord[2] = y;
+						coord[3] = x;
+						int spacepos = get_nspace(coord, parameters);//z + y * NSPACE + x * NSPACE * NSPACE;
 						put_su3matrix(gftmp, &tmp, spacepos, t, (l + 1) % NDIM, parameters);
 						/*
 						//CP: This did not work because there is a non-trivial mapping going on in put_su3matrix
@@ -750,35 +749,30 @@ void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield,
 
 void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source_in, const inputparameters * const parameters)
 {
-
 	hmc_complex* source = new hmc_complex[get_num_hmc_gaugefield_elems()];
 	copy_s_gaugefield_to_gaugefield(source, source_in);
 
-
-
-	int cter = 0;
 	const size_t NSPACE = parameters->get_ns();
-
-	//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
 	for (int t = 0; t < parameters->get_nt(); t++) {
-		//if the alg is known to be correct, the next three for-loops could also be changed to one
-		for (size_t i = 0; i < NSPACE; i++) {
-			for (size_t j = 0; j < NSPACE; j++) {
-				for (size_t k = 0; k < NSPACE; k++) {
+		for (size_t x = 0; x < NSPACE; x++) {
+			for (size_t y = 0; y < NSPACE; y++) {
+				for (size_t z = 0; z < NSPACE; z++) {
 					for (int l = 0; l < NDIM; l++) {
-						int spacepos = k + j * NSPACE + i * NSPACE * NSPACE;
-						int globalpos = l + spacepos * NDIM + t * parameters->get_volspace() * NDIM;
+						//our def: hmc_gaugefield [NC][NC][NDIM][VOLSPACE][NTIME]([2]), last one implicit for complex
+						//CP: interchange x<->z temporarily because spacepos has to be z + y * NSPACE + x * NSPACE * NSPACE!!
+						int coord[4];
+						coord[0] = t;
+						coord[1] = z;
+						coord[2] = y;
+						coord[3] = x;
+						int spacepos = get_nspace(coord, parameters);
 						hmc_su3matrix tmp;
 						get_su3matrix(&tmp, source, spacepos, t, (l + 1) % NDIM, parameters);
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
-								//ildg-std: [NT][NZ][NY][NX][NDIMENSION][NCOLOR][NCOLOR][2]
-								//which is stored in one single array here
-								//skip NC*NC*2 cmplx numbers
-								int pos = 2 * n + 2 * m * NC + globalpos * NC * NC * 2;
+							        size_t pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters); 
 								dest[pos]     = tmp[m][n].re;
 								dest[pos + 1] = tmp[m][n].im;
-								cter++;
 							}
 						}
 					}
