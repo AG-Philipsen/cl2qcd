@@ -354,7 +354,7 @@ void Gaugefield_hybrid::copy_gaugefield_to_task(int ntask)
 		logger.warn() << "Index out of range, copy_gaugefield_to_device does nothing.";
 		return;
 	}
-	cl_int clerr = clEnqueueWriteBuffer(queue[ntask], clmem_gaugefield, CL_TRUE, 0, get_num_gaugefield_elems() * sizeof(ocl_s_gaugefield), get_sgf(), 0, 0, NULL);
+	cl_int clerr = clEnqueueWriteBuffer(queue[ntask], clmem_gaugefield, CL_TRUE, 0, get_num_gaugefield_elems() * sizeof(Matrixsu3), get_sgf(), 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 }
 
@@ -379,7 +379,7 @@ void Gaugefield_hybrid::copy_gaugefield_from_task(int ntask)
 		logger.warn() << "Index out of range, copy_gaugefield_from_device does nothing.";
 		return;
 	}
-	cl_int clerr = clEnqueueReadBuffer(queue[ntask], clmem_gaugefield, CL_TRUE, 0, get_num_gaugefield_elems() * sizeof(ocl_s_gaugefield), get_sgf(), 0, NULL, NULL);
+	cl_int clerr = clEnqueueReadBuffer(queue[ntask], clmem_gaugefield, CL_TRUE, 0, get_num_gaugefield_elems() * sizeof(Matrixsu3), get_sgf(), 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueReadBuffer", __FILE__, __LINE__);
 }
 
