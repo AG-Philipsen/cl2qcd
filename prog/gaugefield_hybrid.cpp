@@ -354,16 +354,8 @@ void Gaugefield_hybrid::copy_gaugefield_to_task(int ntask)
 		logger.warn() << "Index out of range, copy_gaugefield_to_device does nothing.";
 		return;
 	}
-
-	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(get_num_gaugefield_elems() * sizeof(ocl_s_gaugefield));
-
-	copy_to_ocl_format(host_gaugefield, get_sgf(), parameters);
-
-		cl_int clerr = clEnqueueWriteBuffer(queue[ntask], clmem_gaugefield, CL_TRUE, 0, get_num_gaugefield_elems() * sizeof(ocl_s_gaugefield), host_gaugefield, 0, 0, NULL);
-
+	cl_int clerr = clEnqueueWriteBuffer(queue[ntask], clmem_gaugefield, CL_TRUE, 0, get_num_gaugefield_elems() * sizeof(ocl_s_gaugefield), get_sgf(), 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
-
-	free(host_gaugefield);
 }
 
 void Gaugefield_hybrid::synchronize(int ntask_reference)
@@ -387,15 +379,8 @@ void Gaugefield_hybrid::copy_gaugefield_from_task(int ntask)
 		logger.warn() << "Index out of range, copy_gaugefield_from_device does nothing.";
 		return;
 	}
-
-	ocl_s_gaugefield* host_gaugefield =  (ocl_s_gaugefield*) malloc(get_num_gaugefield_elems() * sizeof(ocl_s_gaugefield));
-
-	cl_int clerr = clEnqueueReadBuffer(queue[ntask], clmem_gaugefield, CL_TRUE, 0, get_num_gaugefield_elems() * sizeof(ocl_s_gaugefield), host_gaugefield, 0, NULL, NULL);
+	cl_int clerr = clEnqueueReadBuffer(queue[ntask], clmem_gaugefield, CL_TRUE, 0, get_num_gaugefield_elems() * sizeof(ocl_s_gaugefield), get_sgf(), 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueReadBuffer", __FILE__, __LINE__);
-
-	copy_from_ocl_format(get_sgf(), host_gaugefield, parameters);
-
-	free(host_gaugefield);
 }
 
 cl_device_id Gaugefield_hybrid::get_device_for_task(int ntask)
@@ -649,36 +634,6 @@ Matrixsu3 Gaugefield_hybrid::get_from_gaugefield(const Matrixsu3 * field, const 
 size_t Gaugefield_hybrid::get_num_gaugefield_elems() const
 {
 	return NDIM * parameters->get_volspace() * parameters->get_nt();
-}
-
-void Gaugefield_hybrid::copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield, const inputparameters * const parameters)
-{
-	const size_t NSPACE = parameters->get_ns();
-	const size_t NTIME = parameters->get_nt();
-	for(size_t spacepos = 0; spacepos < NSPACE * NSPACE * NSPACE; spacepos++) {
-		for(size_t t = 0; t < NTIME; t++) {
-			for(int mu = 0; mu < NDIM; mu++) {
-				const size_t index = get_global_link_pos(mu, spacepos, t, parameters);
-				host_gaugefield[index] = gaugefield[index];
-			}
-		}
-	}
-	return;
-}
-
-void Gaugefield_hybrid::copy_from_ocl_format(Matrixsu3* gaugefield, ocl_s_gaugefield* host_gaugefield, const inputparameters * const parameters)
-{
-	const size_t NSPACE = parameters->get_ns();
-	const size_t NTIME = parameters->get_nt();
-	for(size_t spacepos = 0; spacepos < NSPACE * NSPACE * NSPACE; spacepos++) {
-		for(size_t t = 0; t < NTIME; t++) {
-			for(int mu = 0; mu < NDIM; mu++) {
-				const size_t index = get_global_link_pos(mu, spacepos, t, parameters);
-				gaugefield[index] = host_gaugefield[index];
-			}
-		}
-	}
-	return;
 }
 
 void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check, const inputparameters * const parameters)
