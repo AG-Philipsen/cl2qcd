@@ -27,7 +27,6 @@ add_executable(su2su3extend
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
@@ -54,7 +53,6 @@ add_executable(geometry
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
@@ -81,7 +79,6 @@ add_executable(saxsbypz
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
@@ -108,7 +105,6 @@ add_executable(m_gpu
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
@@ -138,7 +134,6 @@ add_executable(m_eo_gpu
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
@@ -168,7 +163,6 @@ add_executable(f_gauge_gpu
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
@@ -199,7 +193,6 @@ add_executable(f_fermion_gpu
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
@@ -230,7 +223,6 @@ add_executable(f_fermion_eo_gpu
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
@@ -261,7 +253,6 @@ add_executable(f_fermion_compare_non_eo_eo_gpu
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
@@ -292,7 +283,6 @@ add_executable(f_update_gpu
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
@@ -323,7 +313,6 @@ add_executable(gf_update_gpu
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
@@ -354,7 +343,6 @@ add_executable(calc_staple
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
@@ -381,7 +369,6 @@ add_executable(stout_smear
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
@@ -408,7 +395,6 @@ add_executable(localQ
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
@@ -450,7 +436,6 @@ add_executable(complex_mem_access
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp

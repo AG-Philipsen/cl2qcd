@@ -117,8 +117,6 @@ struct Matrixsu3 {
 	hmc_complex e22;
 };
 
-typedef Matrixsu3 ocl_s_gaugefield;
-
 #endif // ifndef _INKERNEL_
 
 typedef hmc_complex hmc_ocl_su3matrix;
@@ -182,12 +180,6 @@ typedef struct {
 /** 1/sqrt(3) */
 #define F_1_S3  0.577350269189626
 #endif
-
-
-
-
-
-
 
 #endif /* _TYPESH_ */
 

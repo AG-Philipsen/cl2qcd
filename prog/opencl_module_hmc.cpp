@@ -616,7 +616,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			this->convert_from_eoprec_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), sf_tmp);
 			print_info_inv_field(get_clmem_inout_eoprec(), true, "\tX_even ");
 			print_info_inv_field(get_clmem_tmp_eoprec_1(), true, "\tX_odd ");
-			print_info_inv_field(get_clmem_inout(), false, "\tX = (X_even, X_odd) ");
+			print_info_inv_field(sf_tmp, false, "\tX = (X_even, X_odd) ");
 			int clerr = clReleaseMemObject(sf_tmp);
 			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		}
@@ -746,6 +746,10 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			}
 			else logger.debug() << "\t\t\tsolver solved in "<< converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
+		}
+		if(logger.beDebug()){
+		  print_info_inv_field(clmem_phi_inv, false, "\tY ");
+			print_info_inv_field(get_clmem_inout(), false, "\tX ");
 		}
 		logger.debug() << "\t\tcalc fermion_force...";
 		//CP: this always calls fermion_force(Y,X) with Y = clmem_phi_inv, X = clmem_inout

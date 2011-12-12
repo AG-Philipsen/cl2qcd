@@ -117,111 +117,6 @@ Matrixsu3 project_su3(const Matrixsu3 U)
 	return out; 
 }
 
-/*
-Matrixsu3 project_su3(const Matrixsu3 U)
-{
-  
-        Matrixsu3 out;
-
-	//Extract initial vectors
-	hmc_complex a[NC];
-	hmc_complex b[NC];
-	hmc_complex c[NC];
-
-	a[0] = U.e00;
-	a[1] = U.e01;
-	a[2] = U.e02;
-	b[0] = U.e10;
-	b[1] = U.e11;
-	b[2] = U.e12;
-	c[0] = U.e20;
-	c[1] = U.e21;
-	c[2] = U.e22;
-
-	//New SU3-Matrix
-	//first vector
-	//norm
-	hmc_float norm = 0.;
-	for (int i = 0; i < NC; i++) {
-		hmc_complex tmp = complexconj(a[i]);
-		tmp = complexmult (a[i], tmp);
-		norm += tmp.re;
-	}
-	norm = 1. / sqrt(norm);
-	//rescale
-	for (int i = 0; i < NC; i++) {
-		a[i].re *= norm;
-		a[i].im *= norm;
-	}
-
-	//second vector
-	//orthogonal vector
-	hmc_complex factor;
-	factor.re = 0.0;
-	factor.im = 0.0;
-	for (int i = 0; i < NC; i++) {
-		hmc_complex tmp;
-		tmp = complexconj (b[i]);
-		tmp = complexmult (a[i], tmp);
-		factor = complexadd (factor, tmp);
-	}
-	for (int i = 0; i < NC; i++) {
-		hmc_complex tmp;
-		tmp = complexmult(factor, a[i]);
-		b[i] = complexsubtract(b[i], tmp);
-	}
-
-	//norm
-	norm = 0.;
-	for (int i = 0; i < NC; i++) {
-		hmc_complex tmp;
-		tmp = complexconj(b[i]);
-		tmp = complexmult (b[i], tmp);
-		norm +=  tmp.re;
-	}
-	norm = 1. / sqrt(norm);
-	//rescale
-	for  (int i = 0; i < NC; i++) {
-		b[i].re *= norm;
-		b[i].im *= norm;
-	}
-
-	//third vector
-	//orthogonal vector
-	hmc_complex tmp;
-	hmc_complex tmp2;
-	tmp = complexmult(a[1], b[2]);
-	tmp = complexconj(tmp);
-	tmp2 = complexmult(a[2], b[1]);
-	tmp2 = complexconj(tmp2);
-	c[0] = complexsubtract(tmp, tmp2);
-	tmp = complexmult(a[2], b[0]);
-	tmp = complexconj(tmp);
-	tmp2 = complexmult(a[0], b[2]);
-	tmp2 = complexconj(tmp2);
-	c[1] = complexsubtract(tmp, tmp2);
-	tmp = complexmult(a[0], b[1]);
-	tmp = complexconj(tmp);
-	tmp2 = complexmult(a[1], b[0]);
-	tmp2 = complexconj(tmp2);
-	c[2] = complexsubtract(tmp, tmp2);
-	//Set new values to matrix
-	out.e20 = c[0];
-	out.e21 = c[1];
-	out.e22 = c[2];
-
-	//Set new values to matrix
-	out.e00 = a[0];
-	out.e10 = b[0];
-	out.e01 = a[1];
-	out.e11 = b[1];
-	out.e02 = a[2];
-	out.e12 = b[2];
-
-	return out; 
-}
-*/
-
 Matrixsu2 reduction (const Matrix3x3 src, const int rand)
 {
 	Matrixsu2 out;
@@ -304,14 +199,14 @@ Matrixsu3 local_plaquette(__global ocl_s_gaugefield * field, const int n, const 
 	Matrixsu3 out;
 	int4 pos;
 	if(mu == 0) {
-		pos.x = (t + 1) % NTIME;
+	        pos.x = get_neighbor_temporal(t);
 		pos.y = n;
 	} else {
 		pos.x = t;
 		pos.y = get_neighbor(n, mu);
 	}
 	if(nu == 0) {
-		pos.z = (t + 1) % NTIME;
+                pos.z = get_neighbor_temporal(t);
 		pos.w = n;
 	} else {
 		pos.z = t;
@@ -335,7 +230,7 @@ Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, cons
 	int4 coord;
 	if(mu == 0){
 		coord.x = n;
-		coord.y = (t-1+NTIME)%NTIME;
+		coord.y = get_lower_neighbor_temporal(t);
 	}
 	else{
 		coord.x = get_lower_neighbor(n, mu);
@@ -346,7 +241,7 @@ Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, cons
 	//third plaquette is at pos-mu-nu
 	if(nu == 0) {
 		coord.z = coord.x;
-		coord.w = (coord.y-1+NTIME)%NTIME;
+		coord.w = get_lower_neighbor_temporal(coord.y);
 	}
 	else{
 		coord.z = get_lower_neighbor(coord.x, nu);
@@ -357,7 +252,7 @@ Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, cons
 	//fourth plaquette is at pos-nu
 	if(nu == 0) {
 		coord.x = n;
-		coord.y = (t-1+NTIME)%NTIME;
+		coord.y = get_lower_neighbor_temporal(t);
 	}
 	else{
 		coord.x = get_lower_neighbor(n, nu);
@@ -378,14 +273,14 @@ Matrix3x3 local_staple(__global ocl_s_gaugefield * field, const int n, const int
 	//first staple
 	//calculate the coordinates for the matrices. this is the same as with	the plaquette
 	if(mu == 0) {
-		pos.x = (t + 1) % NTIME;
+  	        pos.x = get_neighbor_temporal(t);
 		pos.y = n;
 	} else {
 	        pos.x = t;
 		pos.y = get_neighbor(n, mu);
 	}
 	if(nu == 0) {
-		pos.z = (t + 1) % NTIME;
+	        pos.z = get_neighbor_temporal(t);
 		pos.w = n;
 	} else {
 		pos.z = t;
@@ -398,14 +293,14 @@ Matrix3x3 local_staple(__global ocl_s_gaugefield * field, const int n, const int
 
 	//second staple
 	if(mu == 0) {
-		 pos.x = (t + 1) % NTIME;
+	         pos.x = get_neighbor_temporal(t);
 		 pos.y = get_lower_neighbor(n, nu);
 		 pos.z = t;
 		 pos.w = get_lower_neighbor(n, nu);
 	} else if (nu == 0) {
-	  	 pos.x = (t - 1 + NTIME) % NTIME;
+	         pos.x = get_lower_neighbor_temporal(t);
 		 pos.y = get_neighbor(n, mu);
-		 pos.z = (t-1+NTIME)% NTIME;
+		 pos.z = get_lower_neighbor_temporal(t);
 		 pos.w = n;
 	} else {
 		 pos.x = t;

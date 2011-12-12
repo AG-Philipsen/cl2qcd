@@ -68,7 +68,6 @@ add_executable( heatbath
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
 	host_operations_su3matrix.cpp
-	host_operations_matrix.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
 	host_use_timer.cpp
@@ -99,7 +98,6 @@ add_executable( transportcoefficient
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
 	host_operations_su3matrix.cpp
-	host_operations_matrix.cpp
 	gaugefield_hybrid.cpp
 	gaugefield_heatbath_kappa.cpp
 	inputparameters.cpp
@@ -131,7 +129,6 @@ add_executable( inverter
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
 	host_operations_su3matrix.cpp
-	host_operations_matrix.cpp
 	gaugefield_hybrid.cpp
 	gaugefield_inverter.cpp
 	inputparameters.cpp
@@ -165,7 +162,6 @@ add_executable( hmc
 	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
 	host_operations_su3matrix.cpp
-	host_operations_matrix.cpp
 	gaugefield_hybrid.cpp
 	gaugefield_hmc.cpp
 	inputparameters.cpp

@@ -11,7 +11,6 @@
 #include "types.h"
 #include "host_geometry.h"
 #include "host_operations_complex.h"
-#include "host_operations_matrix.h"
 #include <cmath>
 
 /**
@@ -27,6 +26,8 @@ void adjoin_su3matrix(hmc_su3matrix * mat);
  * @return The trace
  */
 hmc_complex trace_su3matrix(hmc_su3matrix * mat);
+hmc_complex trace_Matrixsu3(Matrixsu3 mat);
+
 /**
  * Calculate the determinant of the given SU3 matrix.
  *
@@ -57,12 +58,6 @@ void unit_su3matrix(hmc_su3matrix * u);
 
 Matrixsu3 unit_matrixsu3();
 
-/**
- * Replace the given matrix by a random matrix.
- *
- * @param[out] mat The matrix to replace by a random one
- */
-void random_su3matrix(hmc_su3matrix * u);
 /**
  * Replace the given matrix by a zero matrix.
  *
@@ -106,34 +101,5 @@ void multiply_staplematrix(hmc_staplematrix *out, hmc_su3matrix *p, hmc_staplema
  * @param[in] q The SU3 matrix to add to the accumulation
  */
 void accumulate_su3matrices_add(hmc_staplematrix *p, hmc_su3matrix *q);
-
-/**
- * Apply Boundary Conditions to a SU(3)-Matrix.
- * This corresponds to multiplying each component of the matrix by a (complex) factor of /f$\exp(i*\theta) /f$.
- * /f$\theta = 0/f$ are 'periodic' BC.
- * /f$\theta = \Pi/f$ are 'antiperiodic' BC.
- *
- * @param[in,out] in SU(3)-Matrix to be changed
- * @param[in] theta angle /f$\theta/f$
- * @return void
- * @todo the calculation involves sin- and cos-evaluations. Perhaps one should optimize this for the two special cases mentioned above.
- *
- */
-void gaugefield_apply_bc(hmc_su3matrix * in, hmc_float theta);
-
-/**
- * Apply (complex) chemical Potential /f$\mu/f$ simultaneously to two SU(3)-Matrices.
- * This corresponds to multiplying each component of the matrix by a (complex) factor of /f$\exp(\mu) /f$.
- *
- * @param[in,out] u SU(3)-Matrix to be changed
- * @param[in,out] udagger SU(3)-Matrix to be changed
- * @param[in] chem_pot_re real part of /f$\mu/f$
- * @param[in] chem_pot_im imaginary part of /f$\mu/f$
- * @return void
- * @remark In the OpenCL-part this function is explicitly splitted into real and imaginary chemical potential.
- * @remark Two Matrices are updated simultaneously since /f$\mu/f$ is usually applied in the /f$\notD/f$-operation involving two links.
- */
-void gaugefield_apply_chem_pot(hmc_su3matrix * u, hmc_su3matrix * udagger, hmc_float chem_pot_re, hmc_float chem_pot_im);
-
 
 #endif

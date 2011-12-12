@@ -351,7 +351,7 @@ void Dummyfield::fill_buffers()
 	  fill_sf_with_random(sf_in1, sf_in2, NUM_ELEMENTS_SF, 123456);
 	  fill_sf_with_random(sf_in3, sf_in4, NUM_ELEMENTS_SF, 789101);
 	}
-	
+	/*
 	//filll with zeros
 	hmc_float val = 0.;
 	hmc_float val2 = 0.;
@@ -359,11 +359,11 @@ void Dummyfield::fill_buffers()
 	fill_sf_with_float(sf_in2, NUM_ELEMENTS_SF, val);
 	fill_sf_with_float(sf_in3, NUM_ELEMENTS_SF, val2);
 	fill_sf_with_float(sf_in4, NUM_ELEMENTS_SF, val2);
-	
+	*/
 
-	fill_sf_with_pos(sf_in1,2/* NUM_ELEMENTS_SF*/);
+	//fill_sf_with_pos(sf_in1,2/* NUM_ELEMENTS_SF*/);
 	//fill_sf_with_pos(sf_in2, NUM_ELEMENTS_SF);
-	fill_sf_with_pos(sf_in3, 2/*NUM_ELEMENTS_SF*/);
+	//fill_sf_with_pos(sf_in3, 2/*NUM_ELEMENTS_SF*/);
 	//fill_sf_with_pos(sf_in4, NUM_ELEMENTS_SF);
 
 	BOOST_REQUIRE(sf_in1);

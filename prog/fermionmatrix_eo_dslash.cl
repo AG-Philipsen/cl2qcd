@@ -9,20 +9,20 @@ __kernel void dslash_eoprec(__global const hmc_complex * const restrict in, __gl
 	int id = get_global_id(0);
 
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
-		st_index pos = (evenodd == ODD) ? get_even_site(id_tmp) : get_odd_site(id_tmp);
+		st_idx pos = (evenodd == ODD) ? get_even_st_idx(id_tmp) : get_odd_st_idx(id_tmp);
 
 		spinor out_tmp = set_spinor_zero();
 		spinor out_tmp2;
 
 		//calc dslash (this includes mutliplication with kappa)
 
-		out_tmp2 = dslash_eoprec_local_0(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_eoprec_local_0(in, field, pos);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_eoprec_local_1(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_eoprec_local_1(in, field, pos);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_eoprec_local_2(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_eoprec_local_2(in, field, pos);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_eoprec_local_3(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_eoprec_local_3(in, field, pos);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 
 		putSpinorSOA_eo(out, id_tmp, out_tmp);
@@ -47,11 +47,11 @@ __kernel void convertGaugefieldToSOA(__global hmc_complex * const restrict out, 
 	// we need to take care of index converion. in the AOS storage the dimension is the continious index
 	// in the soa storage we want the space indices to be continuous and have the dimension as outermost.
 	for(uint d = 0; d < NDIM; ++d) {
-		for(uint s = get_global_id(0); s < VOL4D; s += get_global_size(0)) {
+		for(site_idx s = get_global_id(0); s < VOL4D; s += get_global_size(0)) {
 			Matrixsu3 tmp = in[d + NDIM * s];
 
-			const st_index site = get_site(s);
-			putSU3SOA(out, get_global_link_pos_SOA(d, site.space, site.time), tmp);
+			const st_idx site = get_st_idx_from_site_idx(s);
+			putSU3SOA(out, get_link_idx_SOA(d, site), tmp);
 		}
 	}
 }
@@ -60,9 +60,9 @@ __kernel void convertGaugefieldFromSOA(__global Matrixsu3 * const restrict out, 
 	// we need to take care of index converion. in the AOS storage the dimension is the continious index
 	// in the soa storage we want the space indices to be continuous and have the dimension as outermost.
 	for(uint d = 0; d < NDIM; ++d) {
-		for(uint s = get_global_id(0); s < VOL4D; s += get_global_size(0)) {
-			const st_index site = get_site(s);
-			Matrixsu3 tmp = getSU3SOA(in, get_global_link_pos_SOA(d, site.space, site.time));
+		for(site_idx s = get_global_id(0); s < VOL4D; s += get_global_size(0)) {
+			const st_idx site = get_st_idx_from_site_idx(s);
+			Matrixsu3 tmp = getSU3SOA(in, get_link_idx_SOA(d, site));
 
 			out[d + NDIM * s] = tmp;
 		}

@@ -15,7 +15,6 @@ add_executable( heatbath_benchmarks
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
 	../host_use_timer.cpp
@@ -46,7 +45,6 @@ add_executable( inverter_benchmarks
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../gaugefield_inverter.cpp
 	../inputparameters.cpp
@@ -79,7 +77,6 @@ add_executable( dslash_benchmark
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	gaugefield_dslash_benchmark.cpp
 	../inputparameters.cpp
@@ -112,7 +109,6 @@ add_executable( hmc_benchmarks
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../gaugefield_hmc.cpp
 	../inputparameters.cpp

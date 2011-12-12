@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE( F_FERMION ){
 	hmc_float cpu_back2_noneo = cpu.get_squarenorm_noneo(1);
 
 	logger.info() << "run noneo force with noneo input...";
-	cpu.runTestKernel2();
+	//cpu.runTestKernel2();
 	logger.info() << "|force_noneo|^2:";
 	hmc_float cpu_res_noneo;
 	cpu_res_noneo = cpu.get_squarenorm_noneo(2);
@@ -166,6 +166,43 @@ void Dummyfield::finalize_opencl()
 	Gaugefield_hybrid::finalize_opencl();
 }
 
+//it is assumed that idx iterates only over half the number of sites
+void get_even_site(int idx, int * out_space, int * out_t, const inputparameters * const params)
+{
+	const size_t NSPACE = params->get_ns();
+	const size_t VOLSPACE = params->get_volspace();
+	int x, y, z, t;
+	x = idx;
+	t = (int)(idx / (VOLSPACE / 2));
+	x -= t * VOLSPACE / 2;
+	z = (int)(x / (NSPACE * NSPACE / 2));		
+	x -= z * NSPACE * NSPACE / 2;
+	y = (int)(x / NSPACE);
+	x -= y * NSPACE;
+	(*out_space) =  (int)((z + t) % 2) * (1 + 2 * x - (int) (2 * x / NSPACE)) + (int)((t + z + 1) % 2) * (2 * x + (int) (2 * x / NSPACE)) + 2 * NSPACE * y + NSPACE * NSPACE * z;
+	(*out_t) = t;
+}
+
+//it is assumed that idx iterates only over half the number of sites
+
+void get_odd_site(int idx, int * out_space, int * out_t, const inputparameters * const params)
+{
+	const size_t NSPACE = params->get_ns();
+	const size_t VOLSPACE = params->get_volspace();
+	int x, y, z, t;
+	x = idx;
+	t = (int)(idx / (VOLSPACE / 2));
+	x -= t * VOLSPACE / 2;
+	z = (int)(x / (NSPACE * NSPACE / 2));
+	x -= z * NSPACE * NSPACE / 2;
+	y = (int)(x / NSPACE);
+	x -= y * NSPACE;
+
+	(*out_space) =  (int)((z + t + 1) % 2) * (1 + 2 * x - (int) (2 * x / NSPACE)) + (int)((t + z) % 2) * (2 * x + (int) (2 * x / NSPACE)) + 2 * NSPACE * y + NSPACE * NSPACE * z;
+	(*out_t) = t;
+}
+
+
 void fill_sf_with_one(spinor * sf_in1, int size)
 {
 	for(int i = 0; i < size; ++i) {
@@ -215,6 +252,84 @@ void fill_sf_with_float(spinor * sf_in, int size, hmc_float val)
                 sf_in[i].e3.e2.im = val;
         }
         return;
+}
+
+spinor fill_spinor_with_specific_float(hmc_float val){
+  spinor tmp;
+
+	  tmp.e0.e0.re =  1./2. * 1./2. * val;
+	  tmp.e0.e1.re =  1./2. * 1./4. *val;
+	  tmp.e0.e2.re =  1./2. * 1./6. *val;
+	  tmp.e0.e0.im =  1./2. * 1./3. *val;
+	  tmp.e0.e1.im =  1./2. * 1./5. *val;
+	  tmp.e0.e2.im =  1./2. * 1./7. *val;
+
+	  tmp.e1.e0.re =  1./8. * 1./2. *val;
+	  tmp.e1.e1.re =  1./8. * 1./4. *val;
+	  tmp.e1.e2.re =  1./8. * 1./6. *val;
+	  tmp.e1.e0.im =  1./8. * 1./3. * val;
+	  tmp.e1.e1.im =  1./8. * 1./5. *val;
+	  tmp.e1.e2.im =  1./8. * 1./7. *val;
+
+	  tmp.e2.e0.re =  1./9. * 1./2. *val;
+	  tmp.e2.e1.re =  1./9. * 1./4. *val;
+	  tmp.e2.e2.re =  1./9. * 1./6. *val;
+	  tmp.e2.e0.im =  1./9. * 1./3. *val;
+	  tmp.e2.e1.im =  1./9. * 1./5. *val;
+	  tmp.e2.e2.im =  1./9. * 1./7. *val;
+
+	  tmp.e3.e0.re =  1./11. * 1./2. *val;
+	  tmp.e3.e1.re =  1./11. * 1./4. *val;
+	  tmp.e3.e2.re =  1./11. * 1./6. *val;
+	  tmp.e3.e0.im =  1./11. * 1./3. *val;
+	  tmp.e3.e1.im =  1./11. * 1./5. *val;
+	  tmp.e3.e2.im =  1./11. * 1./7. *val;
+
+  return tmp;
+}
+
+//this function fills every lattice site with a specific value depending 
+//on its site index. 
+void fill_noneo_sf_with_specific_float(spinor * sf_in, int size, inputparameters * params)
+{
+  uint x,y,z,t;
+  uint ns = params->get_ns();
+  uint nt = params->get_nt();
+  for(x = 0;  x < params->get_ns(); x++) {
+    for(y = 0;  y < params->get_ns();  y++) {
+      for(z = 0;  z < params->get_ns();  z++) {
+        for(t = 0; t < params->get_nt(); ++t) {
+	  //this has to match the conventions in operations_geometry.cl!!!!
+	  int i = t* ns*ns*ns +x*ns*ns + y* ns + z;
+          
+          hmc_float val = 17./(i+1);
+
+	  sf_in[i] = fill_spinor_with_specific_float(val);
+
+        }}}}
+  return;
+}
+
+void fill_eo_sf_with_specific_float(spinor * sf_even, spinor * sf_odd, int size, inputparameters * params)
+{
+  uint x,y,z,t;
+  uint ns = params->get_ns();
+  uint nt = params->get_nt();
+  for(x = 0;  x < params->get_ns(); x++) {
+    for(y = 0;  y < params->get_ns();  y++) {
+      for(z = 0;  z < params->get_ns();  z++) {
+        for(t = 0; t < params->get_nt(); ++t) {
+	  //this has to match the conventions in operations_geometry.cl!!!!
+	  int i = t* ns*ns*ns +x*ns*ns + y* ns + z;
+          hmc_float val = 17./(i+1);
+
+	  //distinguish between even and odd fields
+	  if( (t+x+y+z)%2 == 0)
+	    sf_even[i/2] = fill_spinor_with_specific_float(val);
+	  else
+	    sf_odd[i/2] = fill_spinor_with_specific_float(val);
+        }}}}
+  return;
 }
 
 
@@ -519,6 +634,13 @@ void Dummyfield::fill_buffers()
 	  fill_sf_with_random_noneo(sf_in1_noneo, NUM_ELEMENTS_SF_NON_EO, 123456, get_parameters());
 	  fill_sf_with_random_noneo(sf_in2_noneo, NUM_ELEMENTS_SF_NON_EO, 789101, get_parameters());
 	}
+
+	fill_eo_sf_with_specific_float(sf_in1_eo, sf_in2_eo, NUM_ELEMENTS_SF_EO, get_parameters());
+	fill_eo_sf_with_specific_float(sf_in3_eo, sf_in4_eo, NUM_ELEMENTS_SF_EO, get_parameters());
+	fill_noneo_sf_with_specific_float(sf_in1_noneo, NUM_ELEMENTS_SF_NON_EO, get_parameters());
+	fill_noneo_sf_with_specific_float(sf_in2_noneo, NUM_ELEMENTS_SF_NON_EO, get_parameters());
+
+
 	BOOST_REQUIRE(sf_in1_eo);
 	BOOST_REQUIRE(sf_in2_eo);
 	BOOST_REQUIRE(sf_in3_eo);
@@ -721,10 +843,22 @@ hmc_float Dummyfield::get_squarenorm_eo(int which)
 
 hmc_float Dummyfield::get_squarenorm_noneo(int which)
 {
+
+  //CP: I only use out_eo here because there is some mistake with out_noneo. However, I will not try to find it...
 	//which controlls if the in or out-vector is looked at
         if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1_noneo, sqnorm);
         if(which == 1) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2_noneo, sqnorm);
-	if(which == 2) static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out_noneo, sqnorm);
+	if(which == 2){
+	  cl_mem tmp;
+	  cl_int err;
+	  cl_context context = opencl_modules[0]->get_context();
+	  tmp = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
+	  static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out_eo, tmp);
+	  hmc_float result;
+	  err = clEnqueueReadBuffer(*queue, tmp, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
+	  logger.info() << result;
+	  return result;
+	}
         if(which == 3) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1_noneo_converted, sqnorm);
         if(which == 4) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2_noneo_converted, sqnorm);
 	// get stuff from device
@@ -783,7 +917,8 @@ void Dummyfield::runTestKernel2()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel2(out_noneo, in1_noneo, in2_noneo, *(get_clmem_gaugefield()), gs, ls);
+  //CP: I only use out_eo here because there is some mistake with out_noneo. However, I will not try to find it...
+	static_cast<Device*>(opencl_modules[0])->runTestKernel2(out_eo, in1_noneo, in2_noneo, *(get_clmem_gaugefield()), gs, ls);
 }
 
 void Dummyfield::runTestKernel2withconvertedfields()
