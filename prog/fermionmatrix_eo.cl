@@ -113,7 +113,7 @@ spinor inline dslash_eoprec_local_0(__global const spinorfield_eoprec * const re
 
 spinor inline dslash_eoprec_local_1(__global const spinorfield_eoprec * const restrict in, __global ocl_s_gaugefield const * const restrict field, const st_idx idx_arg)
 {
-  	//this is used to save the idx of the neighbors
+	//this is used to save the idx of the neighbors
 	st_idx idx_tmp;
 
 	spinor out_tmp, plus;
@@ -133,7 +133,7 @@ spinor inline dslash_eoprec_local_1(__global const spinorfield_eoprec * const re
 
 	///////////////////////////////////
 	// mu = +1
- 	idx_tmp = get_neighbor_from_st_idx(idx_arg, dir);
+	idx_tmp = get_neighbor_from_st_idx(idx_arg, dir);
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
@@ -196,7 +196,7 @@ spinor inline dslash_eoprec_local_1(__global const spinorfield_eoprec * const re
 spinor inline dslash_eoprec_local_2(__global const spinorfield_eoprec * const restrict in, __global ocl_s_gaugefield const * const restrict field, const st_idx idx_arg)
 {
 	//this is used to save the idx of the neighbors
-	st_idx idx_tmp;  
+	st_idx idx_tmp;
 
 	spinor out_tmp, plus;
 	dir_idx dir;
@@ -214,7 +214,7 @@ spinor inline dslash_eoprec_local_2(__global const spinorfield_eoprec * const re
 
 	///////////////////////////////////
 	// mu = +2
- 	idx_tmp = get_neighbor_from_st_idx(idx_arg, dir);
+	idx_tmp = get_neighbor_from_st_idx(idx_arg, dir);
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
@@ -277,7 +277,7 @@ spinor inline dslash_eoprec_local_2(__global const spinorfield_eoprec * const re
 spinor inline dslash_eoprec_local_3(__global const spinorfield_eoprec * const restrict in, __global ocl_s_gaugefield const * const restrict field, const st_idx idx_arg)
 {
 	//this is used to save the idx of the neighbors
-	st_idx idx_tmp;  
+	st_idx idx_tmp;
 
 	spinor out_tmp, plus;
 	dir_idx dir;
@@ -295,7 +295,7 @@ spinor inline dslash_eoprec_local_3(__global const spinorfield_eoprec * const re
 
 	///////////////////////////////////
 	// mu = +3
- 	idx_tmp = get_neighbor_from_st_idx(idx_arg, dir);
+	idx_tmp = get_neighbor_from_st_idx(idx_arg, dir);
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
