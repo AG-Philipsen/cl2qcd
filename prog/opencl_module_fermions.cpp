@@ -76,7 +76,7 @@ void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
 	*collect_options << " -DKAPPA_TEMPORAL_IM=" << kappa_tmp*sin(tmp_temporal);
 	*collect_options << " -DMKAPPA_TEMPORAL_IM=" << -kappa_tmp*sin(tmp_temporal);
 
-	*collect_options << " -DEOPREC_SPINORFIELD_STRIDE=" << calculateStride(get_parameters()->get_eoprec_spinorfieldsize(), sizeof(hmc_float));
+	*collect_options << " -DEOPREC_SPINORFIELD_STRIDE=" << calculateStride(get_parameters()->get_eoprec_spinorfieldsize(), sizeof(hmc_complex));
 
 	switch (get_parameters()->get_fermact()) {
 		case TWISTEDMASS :
@@ -145,13 +145,14 @@ void Opencl_Module_Fermions::fill_buffers()
 		clmem_source_odd = create_rw_buffer(eoprec_spinorfield_size);
 		clmem_tmp_eoprec_1 = create_rw_buffer(eoprec_spinorfield_size);
 		//this field is used only with twistedmass
-		if(get_parameters()->get_fermact() == TWISTEDMASS)
+		if(get_parameters()->get_fermact() == TWISTEDMASS) {
 			clmem_tmp_eoprec_2 = create_rw_buffer(eoprec_spinorfield_size);
+		}
 	}
 	// SOA buffers
-	spinorfield_soa_eo_1 = create_rw_buffer(calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_float)) * 24 * sizeof(hmc_float)); // sufficient room for padding: TODO only request as much as required
-	spinorfield_soa_eo_2 = create_rw_buffer(calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_float)) * 24 * sizeof(hmc_float)); // sufficient room for padding: TODO only request as much as required
-	gaugefield_soa = create_rw_buffer(calculateStride(NDIM * get_parameters()->get_vol4d(), sizeof(hmc_float)) * 18 * sizeof(hmc_float)); // sufficient room for padding: TODO only request as much as required
+	spinorfield_soa_eo_1 = create_rw_buffer(calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex));
+	spinorfield_soa_eo_2 = create_rw_buffer(calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex));
+	gaugefield_soa = create_rw_buffer(calculateStride(NDIM * get_parameters()->get_vol4d(), sizeof(hmc_complex)) * 9 * sizeof(hmc_complex));
 
 
 	logger.debug() << "create buffers for complex and real numbers";
@@ -308,14 +309,15 @@ void Opencl_Module_Fermions::clear_buffers()
 			clerr = clReleaseMemObject(clmem_tmp_eoprec_2);
 			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		}
-		clerr = clReleaseMemObject(spinorfield_soa_eo_1);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(spinorfield_soa_eo_2);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(gaugefield_soa);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	}
-	
+
+	clerr = clReleaseMemObject(spinorfield_soa_eo_1);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	clerr = clReleaseMemObject(spinorfield_soa_eo_2);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	clerr = clReleaseMemObject(gaugefield_soa);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+
 	clerr = clReleaseMemObject(clmem_rho);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_rho_next);
@@ -1601,7 +1603,8 @@ int Opencl_Module_Fermions::get_read_write_size(const char * in, inputparameters
 	}
 	if (strcmp(in, "dslash_eoprec") == 0) {
 		//this kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
-		return (C * 12 * (8+1) + C * 8 * R) * D * Seo;
+		const unsigned int dirs = 4;
+		return (C * 12 * (2*dirs+1) + C * 2*dirs * R) * D * Seo;
 	}
 	if(strcmp(in, "convertSpinorfieldToSOA_eo") == 0) {
 		return 2 * Seo * 24 * D;
