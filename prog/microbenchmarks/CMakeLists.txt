@@ -13,7 +13,6 @@ add_executable( bandwidth
 	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../host_operations_su3matrix.cpp
-	../host_operations_matrix.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
