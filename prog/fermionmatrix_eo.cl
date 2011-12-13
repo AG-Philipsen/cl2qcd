@@ -29,7 +29,7 @@ spinor inline dslash_eoprec_local_0(__global const hmc_complex * const restrict 
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
 	plus = getSpinorSOA_eo(in, nn_eo);
-	U = getSU3SOA(field, get_link_idx_SOA(dir, idx_tmp));
+	U = getSU3SOA(field, get_link_idx_SOA(dir, idx_arg));
 	//if chemical potential is activated, U has to be multiplied by appropiate factor
 #ifdef _CP_REAL_
 	U = multiply_matrixsu3_by_real (U, EXPCPR);
@@ -137,7 +137,7 @@ spinor inline dslash_eoprec_local_1(__global const hmc_complex * const restrict 
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
 	plus = getSpinorSOA_eo(in, nn_eo);
-	U = getSU3SOA(field, get_link_idx_SOA(dir, idx_tmp));
+	U = getSU3SOA(field, get_link_idx_SOA(dir, idx_arg));
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = KAPPA_SPATIAL_IM;
 	/////////////////////////////////
@@ -218,7 +218,7 @@ spinor inline dslash_eoprec_local_2(__global const hmc_complex * const restrict 
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
 	plus = getSpinorSOA_eo(in, nn_eo);
-	U = getSU3SOA(field, get_link_idx_SOA(dir, idx_tmp));
+	U = getSU3SOA(field, get_link_idx_SOA(dir, idx_arg));
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = KAPPA_SPATIAL_IM;
 	///////////////////////////////////
@@ -299,7 +299,7 @@ spinor inline dslash_eoprec_local_3(__global const hmc_complex * const restrict 
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
 	plus = getSpinorSOA_eo(in, nn_eo);
-	U = getSU3SOA(field, get_link_idx_SOA(dir, idx_tmp));
+	U = getSU3SOA(field, get_link_idx_SOA(dir, idx_arg));
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = KAPPA_SPATIAL_IM;
 	///////////////////////////////////
