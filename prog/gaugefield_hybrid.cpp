@@ -736,7 +736,7 @@ void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixs
 		}
 	}
 
-	delete[] source_in;
+	delete[] source;
 	return;
 }
 
