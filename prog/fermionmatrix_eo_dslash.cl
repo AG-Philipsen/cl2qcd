@@ -16,13 +16,13 @@ __kernel void dslash_eoprec(__global const hmc_complex * const restrict in, __gl
 
 		//calc dslash (this includes mutliplication with kappa)
 
-		out_tmp2 = dslash_eoprec_local_0(in, field, pos);
+		out_tmp2 = dslash_eoprec_unified_local(in, field, pos, TDIR);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_eoprec_local_1(in, field, pos);
+		out_tmp2 = dslash_eoprec_unified_local(in, field, pos, XDIR);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_eoprec_local_2(in, field, pos);
+		out_tmp2 = dslash_eoprec_unified_local(in, field, pos, YDIR);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_eoprec_local_3(in, field, pos);
+		out_tmp2 = dslash_eoprec_unified_local(in, field, pos, ZDIR);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 
 		putSpinorSOA_eo(out, id_tmp, out_tmp);
