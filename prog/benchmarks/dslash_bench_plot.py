@@ -47,6 +47,7 @@ def main(datafile):
 	ax1.set_xlabel('Lattice Size')
 	ax1.set_ylabel('Bandwidth GB/s')
 	ax2.set_ylabel('Gflops')
+	ax1.set_ylim(bottom=1)
 	ax2.set_ylim(ax1.get_ylim())
 	fig.legend((line1, line2),
 	           ('Bandwidth', 'Gflops'))
