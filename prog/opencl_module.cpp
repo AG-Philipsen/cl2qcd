@@ -326,6 +326,20 @@ void Opencl_Module::get_buffer_from_device(cl_mem source, void * dest, size_t si
 
 void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
 {
+	cl_int clerr;
+
+	if(logger.beTrace()) {
+		size_t nameSize;
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &nameSize );
+		if( clerr == CL_SUCCESS ) {
+			char* name = new char[nameSize];
+			clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, nameSize, name, &nameSize );
+			if( clerr == CL_SUCCESS )
+				logger.trace() << "Queued Kernel: " << name;
+			delete[] name;
+		}
+	}
+
 	///@todo make this properly handle multiple dimensions
 	// decide on work-sizes
 	size_t local_work_size;
@@ -336,7 +350,7 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 
 	// query the work group size specified at compile time (if any)
 	size_t compile_work_group_size[3];
-	cl_int clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 3 * sizeof(size_t), compile_work_group_size, NULL );
+	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 3 * sizeof(size_t), compile_work_group_size, NULL );
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
 
 	const size_t * const local_work_size_p = (compile_work_group_size[0] == 0) ? &local_work_size : &compile_work_group_size[0];
@@ -432,9 +446,22 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 
 void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size)
 {
+	cl_int clerr;
+
+	if(logger.beTrace()) {
+		size_t nameSize;
+		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &nameSize );
+		if( clerr == CL_SUCCESS ) {
+			char* name = new char[nameSize];
+			clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, nameSize, name, &nameSize );
+			if( clerr == CL_SUCCESS )
+				logger.trace() << "Queued Kernel: " << name;
+			delete[] name;
+		}
+	}
+	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr, "clGetKernelInfo", __FILE__, __LINE__);
 	cl_int clerr_enqueue = CL_SUCCESS;
 #ifdef _PROFILING_
-	cl_int clerr = CL_SUCCESS;
 	cl_event event;
 	clerr_enqueue = clEnqueueNDRangeKernel(get_queue(), kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, &event); //clerr evaluated below
 	if(clerr_enqueue == CL_SUCCESS) {
