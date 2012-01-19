@@ -800,7 +800,8 @@ hmc_complex Gaugefield_hybrid::polyakov()
 		Matrixsu3 prod;
 		prod = local_polyakov(get_sgf(), n, parameters);
 		hmc_complex tmpcomplex = trace_matrixsu3(prod);
-		complexaccumulate(&res, &tmpcomplex);
+		res.re += tmpcomplex.re;
+		res.im += tmpcomplex.im;
 	}
 
 	res.re /= static_cast<hmc_float>(NC * parameters->get_volspace());

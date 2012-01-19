@@ -71,7 +71,7 @@ void gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma){
 	// SL: this fills real and imaginary part of a vector of "length" complex numbers
 	//     with components drawn with a Gaussian distribution and variance sigma
 	for(int idx=0;idx<length;idx++){
-		gaussianNormalPair(&vector[idx].re,&vector[idx].im);
+	        gaussianNormalPair(&vector[idx].re,&vector[idx].im);
 		vector[idx].re*=sigma;
 		vector[idx].im*=sigma;
 	}
