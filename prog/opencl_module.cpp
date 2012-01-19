@@ -949,7 +949,7 @@ usetimer* Opencl_Module::get_timer(const char * in)
 	}
 }
 
-int Opencl_Module::get_read_write_size(const char * in, inputparameters * parameters)
+int Opencl_Module::get_read_write_size(const char * in)
 {
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
@@ -996,7 +996,7 @@ int Opencl_Module::get_read_write_size(const char * in, inputparameters * parame
 	return 0;
 }
 
-int Opencl_Module::get_flop_size(const char * in, inputparameters * parameters)
+int Opencl_Module::get_flop_size(const char * in)
 {
 	const size_t VOL4D = parameters->get_vol4d();
 	const size_t VOLSPACE = parameters->get_volspace();
@@ -1071,15 +1071,15 @@ void Opencl_Module::print_profiling(std::string filename, int number)
 	print_profile_header(filename, number);
 	const char * kernelName;
 	kernelName = "polyakov";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "polyakov_reduction";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "plaquette";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "plaquette_reduction";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "stout_smear";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 }
 #endif
 

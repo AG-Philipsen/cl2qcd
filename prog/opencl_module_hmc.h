@@ -142,7 +142,7 @@ protected:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual int get_read_write_size(char * in, inputparameters * parameters);
+	virtual int get_read_write_size(char * in);
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -150,7 +150,7 @@ protected:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual int get_flop_size(const char * in, inputparameters * parameters);
+	virtual int get_flop_size(const char * in);
 
 	/**
 	 * Print the profiling information to a file.

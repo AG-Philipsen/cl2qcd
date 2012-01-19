@@ -200,9 +200,9 @@ usetimer* Opencl_Module_Heatbath::get_timer(const char * in)
 	}
 }
 
-int Opencl_Module_Heatbath::get_read_write_size(const char * in, inputparameters * parameters)
+int Opencl_Module_Heatbath::get_read_write_size(const char * in)
 {
-	int result = Opencl_Module_Ran::get_read_write_size(in, parameters);
+	int result = Opencl_Module_Ran::get_read_write_size(in);
 	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
@@ -221,9 +221,9 @@ int Opencl_Module_Heatbath::get_read_write_size(const char * in, inputparameters
 	return 0;
 }
 
-int Opencl_Module_Heatbath::get_flop_size(const char * in, inputparameters * parameters)
+int Opencl_Module_Heatbath::get_flop_size(const char * in)
 {
-	int result = Opencl_Module_Ran::get_flop_size(in, parameters);
+	int result = Opencl_Module_Ran::get_flop_size(in);
 	if (result != 0) return result;
 	const size_t VOL4D = parameters->get_vol4d();
 	int S;
@@ -249,13 +249,13 @@ void Opencl_Module_Heatbath::print_profiling(std::string filename, int number)
 	Opencl_Module_Ran::print_profiling(filename, number);
 	const char * kernelName;
 	kernelName = "heatbath_even";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "heatbath_odd";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "overrelax_even";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "overrelax_odd";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 }
 
 #endif

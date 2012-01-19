@@ -140,7 +140,7 @@ int main(int argc, char* argv[])
 		//print only dslash-infos
 		const char * kernelName;
 		kernelName = "dslash_eoprec";
-		gaugefield.get_task_solver()->Opencl_Module::print_profiling(profiling_out.str(), kernelName, (*gaugefield.get_task_solver()->get_timer(kernelName)).getTime(), (*gaugefield.get_task_solver()->get_timer(kernelName)).getNumMeas(), gaugefield.get_task_solver()->get_read_write_size(kernelName, &parameters), gaugefield.get_task_solver()->get_flop_size(kernelName, &parameters )) ;
+		gaugefield.get_task_solver()->Opencl_Module::print_profiling(profiling_out.str(), kernelName, (*gaugefield.get_task_solver()->get_timer(kernelName)).getTime(), (*gaugefield.get_task_solver()->get_timer(kernelName)).getNumMeas(), gaugefield.get_task_solver()->get_read_write_size(kernelName), gaugefield.get_task_solver()->get_flop_size(kernelName)) ;
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// free variables
