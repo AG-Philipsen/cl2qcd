@@ -10,9 +10,6 @@
 #include "globaldefs.h"
 #include "types.h"
 #include "host_geometry.h"
-#include "host_operations_complex.h"
-#include "host_operations_su3matrix.h"
-// #include "host_operations_gaugemomentum.h"
 #include "inputparameters.h"
 #include <cmath>
 
@@ -66,5 +63,7 @@ Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu,
 void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, int mu, const inputparameters * const parameters);
 
 Matrixsu3 convert_hmc_matrixsu3_to_Matrixsu3(hmc_su3matrix in);
+
+Matrixsu3 unit_matrixsu3();
 
 #endif

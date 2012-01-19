@@ -740,6 +740,19 @@ void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixs
 	return;
 }
 
+//taken from the opencl files                                                                                                                                
+hmc_complex trace_matrixsu3(const Matrixsu3 p)
+{
+  hmc_complex out;
+  out.re = p.e00.re;
+  out.im = p.e00.im;
+  out.re += p.e11.re;
+  out.im += p.e11.im;
+  out.re += p.e22.re;
+  out.im += p.e22.im;
+  return out;
+}
+
 hmc_float Gaugefield_hybrid::plaquette(hmc_float* tplaq, hmc_float* splaq)
 {
 	hmc_float plaq = 0;
@@ -759,7 +772,7 @@ hmc_float Gaugefield_hybrid::plaquette(hmc_float* tplaq, hmc_float* splaq)
 							coord[3] = z;
 							Matrixsu3 prod;
 							prod = local_plaquette(get_sgf(), coord, mu, nu, parameters );
-							hmc_float tmpfloat = trace_Matrixsu3(prod).re;
+							hmc_float tmpfloat = trace_matrixsu3(prod).re;
 							plaq += tmpfloat;
 							if(mu == 0 || nu == 0) {
 								*tplaq += tmpfloat;
@@ -786,7 +799,7 @@ hmc_complex Gaugefield_hybrid::polyakov()
 	for(int n = 0; n < parameters->get_volspace(); n++) {
 		Matrixsu3 prod;
 		prod = local_polyakov(get_sgf(), n, parameters);
-		hmc_complex tmpcomplex = trace_Matrixsu3(prod);
+		hmc_complex tmpcomplex = trace_matrixsu3(prod);
 		complexaccumulate(&res, &tmpcomplex);
 	}
 

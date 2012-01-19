@@ -12,8 +12,6 @@
 
 #include "globaldefs.h"
 #include "types.h"
-#include "host_operations_complex.h"
-#include "host_operations_gaugefield.h"
 #include "host_geometry.h"
 #include "host_use_timer.h"
 
