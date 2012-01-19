@@ -2,13 +2,13 @@
 
 Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const inputparameters * const parameters){
 	Matrixsu3 tmp;
-	size_t link_pos = get_global_link_pos(spacepos, mu, timepos, parameters);
+	size_t link_pos = get_global_link_pos(mu, spacepos, timepos, parameters);
 	tmp = in[link_pos];
 	return tmp;
 }
 
 void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, int mu, const inputparameters * const parameters){
-	size_t link_pos = get_global_link_pos(spacepos, mu, timepos, parameters);
+  size_t link_pos = get_global_link_pos(mu, spacepos, timepos, parameters);
 	field[link_pos] = in;
 }
 
