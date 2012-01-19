@@ -47,7 +47,7 @@ public:
 	 *
 	 */
 	~Opencl_Module() {
-		
+
 	}
 
 	/**
@@ -294,7 +294,7 @@ public:
 	 * @param in Name of the kernel under consideration.
 	 */
 	virtual int get_flop_size(const char * in, inputparameters * parameters);
-	
+
 	/**
 	 * Print the profiling information of a specific kernel to a file.
 	 *
@@ -388,7 +388,7 @@ public:
 	 * This replaces the stout smeared gaugefield with the unsmeared one
 	 */
 	void unsmear_gaugefield(cl_mem gf);
-	
+
 	usetimer * get_copy_to();
 	usetimer * get_copy_on();
 
@@ -449,7 +449,7 @@ private:
 
 	//this is used to save the unsmeared gaugefield if smearing is used
 	cl_mem gf_unsmeared;
-	
+
 	//since this is only applicated to the gaugefield, this should be here...
 	cl_kernel stout_smear;
 

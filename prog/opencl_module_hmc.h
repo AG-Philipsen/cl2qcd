@@ -89,7 +89,7 @@ public:
 	cl_mem get_clmem_new_u();
 	cl_mem get_clmem_phi();
 	cl_mem get_clmem_phi_eoprec();
-	
+
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
 	void md_update_spinorfield();
@@ -113,7 +113,7 @@ public:
 	void fermion_force_eoprec_device(cl_mem Y, cl_mem X, int evenodd);
 	void stout_smeared_fermion_force_device(cl_mem * gf_intermediate);
 	hmc_float calc_s_fermion();
-	
+
 protected:
 
 #ifdef _PROFILING_
@@ -129,7 +129,7 @@ protected:
 	usetimer timer_set_zero_gaugemomentum;
 	usetimer timer_gaugemomentum_squarenorm;
 	usetimer timer_stout_smear_fermion_force;
-	
+
 	/**
 	 * Return the timer connected to a specific kernel.
 	 *
@@ -151,7 +151,7 @@ protected:
 	 * @param in Name of the kernel under consideration.
 	 */
 	virtual int get_flop_size(const char * in, inputparameters * parameters);
-	
+
 	/**
 	 * Print the profiling information to a file.
 	 *

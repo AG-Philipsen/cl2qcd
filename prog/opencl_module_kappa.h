@@ -37,59 +37,59 @@
  */
 class Opencl_Module_Kappa : public Opencl_Module {
 public:
-  /**
-   * Collect the compiler options for OpenCL.
-   * Virtual method, allows to include more options in inherited classes.
-   */
-  virtual void fill_collect_options(stringstream* collect_options);
-  
-  /**
-   * Collect the buffers to generate for OpenCL.
-   * Virtual method, allows to include more buffers in inherited classes.
-   */
-  virtual void fill_buffers();
-  
-  /**
-   * Collect the kernels for OpenCL.
-   * Virtual method, allows to include more kernels in inherited classes.
-   */
-  virtual void fill_kernels();
+	/**
+	 * Collect the compiler options for OpenCL.
+	 * Virtual method, allows to include more options in inherited classes.
+	 */
+	virtual void fill_collect_options(stringstream* collect_options);
 
-  /**
-   * Clear out the kernels,
-   * Virtual method, allows to clear additional kernels in inherited classes.
-   */
-  virtual void clear_kernels();
-  
-  /**
-   * Clear out the buffers,
-   * Virtual method, allows to clear additional buffers in inherited classes.
-   */
-  virtual void clear_buffers();
+	/**
+	 * Collect the buffers to generate for OpenCL.
+	 * Virtual method, allows to include more buffers in inherited classes.
+	 */
+	virtual void fill_buffers();
 
-  /**
-   * Run the calculation of kappa clover. No OpenCL barrier.
-   * @TODO remove beta
-   */
-  void run_kappa_clover(const hmc_float beta);
+	/**
+	 * Collect the kernels for OpenCL.
+	 * Virtual method, allows to include more kernels in inherited classes.
+	 */
+	virtual void fill_kernels();
 
-  /**
-   * Copy kappa_clover from device to host and return it
-   * @return kappa_clover
-   */
-  hmc_float get_kappa_clover();
+	/**
+	 * Clear out the kernels,
+	 * Virtual method, allows to clear additional kernels in inherited classes.
+	 */
+	virtual void clear_kernels();
 
-  /**
-   * Add specific work_size determination for this child class
-   */
-  virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
+	/**
+	 * Clear out the buffers,
+	 * Virtual method, allows to clear additional buffers in inherited classes.
+	 */
+	virtual void clear_buffers();
 
- protected:
+	/**
+	 * Run the calculation of kappa clover. No OpenCL barrier.
+	 * @TODO remove beta
+	 */
+	void run_kappa_clover(const hmc_float beta);
 
- private:
-  cl_mem clmem_kappa_clover;
-  cl_mem clmem_kappa_clover_buf_glob;
-  cl_kernel kappa_clover_gpu;
+	/**
+	 * Copy kappa_clover from device to host and return it
+	 * @return kappa_clover
+	 */
+	hmc_float get_kappa_clover();
+
+	/**
+	 * Add specific work_size determination for this child class
+	 */
+	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
+
+protected:
+
+private:
+	cl_mem clmem_kappa_clover;
+	cl_mem clmem_kappa_clover_buf_glob;
+	cl_kernel kappa_clover_gpu;
 
 
 };
