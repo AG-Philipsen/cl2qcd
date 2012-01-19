@@ -317,8 +317,6 @@ protected:
 	Opencl_Module ** opencl_modules;
 	cl_command_queue* queue;
 
-	size_t get_num_hmc_gaugefield_elems();
-
 private:
 	inputparameters* parameters;
 	Matrixsu3 * sgf;

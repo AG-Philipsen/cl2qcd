@@ -566,11 +566,6 @@ void Gaugefield_hybrid::print_profiling(std::string filename)
 }
 #endif
 
-size_t Gaugefield_hybrid::get_num_hmc_gaugefield_elems()
-{
-	return NC * NC * NDIM * parameters->get_volspace() * parameters->get_nt();
-}
-
 void Gaugefield_hybrid::set_to_gaugefield(Matrixsu3 * field, const size_t mu, const size_t x, const size_t t, const Matrixsu3 val)
 {
 	field[get_global_link_pos(mu, x, t, parameters)] = val;
@@ -583,7 +578,8 @@ Matrixsu3 Gaugefield_hybrid::get_from_gaugefield(const Matrixsu3 * field, const 
 
 size_t Gaugefield_hybrid::get_num_gaugefield_elems() const
 {
-	return NDIM * parameters->get_volspace() * parameters->get_nt();
+        //this is NDIM * volspace * nt
+	return parameters->get_gaugemomentasize();
 }
 
 void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check, const inputparameters * const parameters)
