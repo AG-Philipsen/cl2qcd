@@ -12,35 +12,35 @@ using namespace std;
  * This is needed to be able to pass different fermionmatrices as
  *  arguments to class-functions.
  */
-void M_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+void M::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->M(in, out, gf);
 }
-void Qplus_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+void Qplus::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Qplus(in, out, gf);
 }
-void Qminus_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+void Qminus::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Qminus(in, out, gf);
 }
-void QplusQminus_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+void QplusQminus::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->QplusQminus(in, out, gf);
 }
-void Aee_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+void Aee::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Aee(in, out, gf);
 }
-void Qplus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+void Qplus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Qplus_eoprec(in, out, gf);
 }
-void Qminus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+void Qminus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Qminus_eoprec(in, out, gf);
 }
-void QplusQminus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+void QplusQminus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->QplusQminus_eoprec(in, out, gf);
 }
@@ -629,7 +629,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 	enqueueKernel(M_tm_sitediagonal_minus , gs2, ls2);
 }
 
-int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	int debug = 0;
 	int old = 1;
@@ -644,7 +644,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				set_zero_spinorfield_device(clmem_v);
 				set_zero_spinorfield_device(clmem_p);
-				f(this, inout, clmem_rn, gf);
+				f(inout, clmem_rn, gf);
 
 				saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
 				copy_buffer_on_device(clmem_rn, clmem_rhat, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
@@ -710,7 +710,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 				set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 			}
 
-			f(this, clmem_p, clmem_v, gf);
+			f(clmem_p, clmem_v, gf);
 
 ////////////////////////////////////
 //collect all variables if debug is enabled
@@ -754,7 +754,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 			saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
 
-			f(this, clmem_s, clmem_t, gf);
+			f(clmem_s, clmem_t, gf);
 
 			set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
 			//!!CP: this can also be global_squarenorm
@@ -810,7 +810,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 //    cout << "resid at iter " << iter << " is: " << resid << endl;
 
 			if(resid < prec) {
-				f(this, inout, clmem_aux, gf);
+				f(inout, clmem_aux, gf);
 				saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
 				set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
@@ -846,7 +846,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 				set_zero_spinorfield_device(clmem_v);
 				set_zero_spinorfield_device(clmem_p);
 				//initial r_n
-				f(this, inout, clmem_rn, gf);
+				f(inout, clmem_rn, gf);
 				saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
 				//rhat = r_n
 				copy_buffer_on_device(clmem_rn, clmem_rhat, get_parameters()->get_sf_buf_size());
@@ -881,7 +881,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p);
 
 			//v = A*p
-			f(this, clmem_p, clmem_v, gf);
+			f(clmem_p, clmem_v, gf);
 			//tmp1 = (rhat, v)
 			set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1);
 			//alpha = rho/tmp1 = (..)/(rhat, v)
@@ -889,7 +889,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			//s = - alpha * v - r_n
 			saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
 			//t = A s
-			f(this, clmem_s, clmem_t, gf);
+			f(clmem_s, clmem_t, gf);
 			//tmp1 = (t, s)
 			set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
 			//!!CP: this can also be global_squarenorm, but one needs a complex number here
@@ -910,7 +910,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 
 			if(resid < prec) {
 				//aux = A inout
-				f(this, inout, clmem_aux, gf);
+				f(inout, clmem_aux, gf);
 				//aux = -aux + source
 				saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
 				//trueresid = (aux, aux)
@@ -934,7 +934,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				//initial r_n, saved in p
-				f(this, inout, clmem_rn, gf);
+				f(inout, clmem_rn, gf);
 				saxpy_device(clmem_rn, source, clmem_one, clmem_p);
 				//rhat = p
 				copy_buffer_on_device(clmem_p, clmem_rhat, get_parameters()->get_sf_buf_size());
@@ -951,7 +951,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 				return iter;
 			}
 			//v = A*p
-			f(this, clmem_p, clmem_v, gf);
+			f(clmem_p, clmem_v, gf);
 			//tmp1 = (rhat, v)
 			set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1);
 			//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
@@ -959,7 +959,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			//s = - alpha * v - r_n
 			saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
 			//t = A s
-			f(this, clmem_s, clmem_t, gf);
+			f(clmem_s, clmem_t, gf);
 			//tmp1 = (t, s)
 			set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
 			//!!CP: this can also be global_squarenorm, but one needs a complex number here
@@ -1001,7 +1001,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 	return 0;
 }
 
-int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
 	if (get_parameters()->get_use_bicgstab_save() == true) {
@@ -1014,7 +1014,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 				set_zero_spinorfield_eoprec_device(clmem_v_eoprec);
 				set_zero_spinorfield_eoprec_device(clmem_p_eoprec);
 
-				f(this, inout, clmem_rn_eoprec, gf);
+				f(inout, clmem_rn_eoprec, gf);
 
 				saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
 
@@ -1044,14 +1044,14 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec);
 
-			f(this, clmem_p_eoprec, clmem_v_eoprec, gf);
+			f(clmem_p_eoprec, clmem_v_eoprec, gf);
 
 			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
 			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 
 			saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec);
 
-			f(this, clmem_s_eoprec, clmem_t_eoprec, gf);
+			f(clmem_s_eoprec, clmem_t_eoprec, gf);
 
 			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1);
 			//!!CP: can this also be global_squarenorm??
@@ -1066,7 +1066,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
 			if(resid < prec) {
-				f(this, inout, clmem_aux_eoprec, gf);
+				f(inout, clmem_aux_eoprec, gf);
 				saxpy_eoprec_device(clmem_aux_eoprec, source, clmem_one, clmem_aux_eoprec);
 
 				set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid);
@@ -1087,7 +1087,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				//initial r_n, saved in p
-				f(this, inout, clmem_rn_eoprec, gf);
+				f(inout, clmem_rn_eoprec, gf);
 				saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_p_eoprec);
 				//rhat = p
 				copy_buffer_on_device(clmem_p_eoprec, clmem_rhat_eoprec, get_parameters()->get_eo_sf_buf_size());
@@ -1107,7 +1107,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 				return iter;
 			}
 			//v = A*p
-			f(this, clmem_p_eoprec, clmem_v_eoprec, gf);
+			f(clmem_p_eoprec, clmem_v_eoprec, gf);
 			//tmp1 = (rhat, v)
 			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
 			//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
@@ -1115,7 +1115,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 			//s = - alpha * v - r_n
 			saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec);
 			//t = A s
-			f(this, clmem_s_eoprec, clmem_t_eoprec, gf);
+			f(clmem_s_eoprec, clmem_t_eoprec, gf);
 			//tmp1 = (t, s)
 			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1);
 			//!!CP: this can also be global_squarenorm, but one needs a complex number here
@@ -1157,14 +1157,14 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 	return 0;
 }
 
-int Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	//CP: here I do not use clmem_rnhat anymore and saved one scalar_product (omega)
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
 	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter ++) {
 		if(iter % get_parameters()->get_iter_refresh() == 0) {
 			//rn = A*inout
-			f(this, inout, clmem_rn, gf);
+			f(inout, clmem_rn, gf);
 			//rn = source - A*inout
 			saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
 			//p = rn
@@ -1176,7 +1176,7 @@ int Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem sour
 			copy_buffer_on_device(clmem_rho_next, clmem_omega, sizeof(hmc_complex));
 		}
 		//v = A pn
-		f(this, clmem_p, clmem_v, gf);
+		f(clmem_p, clmem_v, gf);
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		set_complex_to_scalar_product_device(clmem_p, clmem_v, clmem_rho);
 		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
@@ -1212,14 +1212,14 @@ int Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem sour
 	return -1;
 }
 
-int Opencl_Module_Fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::cg_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	//this corresponds to the above function
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
 	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter ++) {
 		if(iter % get_parameters()->get_iter_refresh() == 0) {
 			//rn = A*inout
-			f(this, inout, clmem_rn_eoprec, gf);
+			f(inout, clmem_rn_eoprec, gf);
 			//rn = source - A*inout
 			saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
 			//p = rn
@@ -1231,7 +1231,7 @@ int Opencl_Module_Fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_m
 			copy_buffer_on_device(clmem_rho_next, clmem_omega, sizeof(hmc_complex));
 		}
 		//v = A pn
-		f(this, clmem_p_eoprec, clmem_v_eoprec, gf);
+		f(clmem_p_eoprec, clmem_v_eoprec, gf);
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		set_complex_to_scalar_product_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rho);
 		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
@@ -1268,7 +1268,7 @@ int Opencl_Module_Fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_m
 }
 
 
-void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer)
+void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer)
 {
 	/** This solves the sparse-matrix system
 	 *  A x = b

@@ -88,39 +88,41 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 	else
 		num_sources = get_parameters()->get_num_sources();
 
+	Opencl_Module_Fermions * solver = get_task_solver();
+
 	//allocate host-memory for tmp-buffer
 	size_t sfsize = get_parameters()->get_spinorfieldsize() * sizeof(spinor);
 	spinor* sftmp = new spinor [get_parameters()->get_spinorfieldsize()];
 
 	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
-	cl_mem clmem_res = get_task_solver()->create_rw_buffer(spinorfield_size);
+	cl_mem clmem_res = solver->create_rw_buffer(spinorfield_size);
 
 	//apply stout smearing if wanted
 	if(get_parameters()->get_use_smearing() == true) {
-		get_task_solver()->smear_gaugefield(*get_clmem_gaugefield(), NULL);
+		solver->smear_gaugefield(*get_clmem_gaugefield(), NULL);
 	}
 
+	::Aee f_eo(solver);
+	::M f_neo(solver);
+	Matrix_Function & f = (use_eo) ? static_cast<Matrix_Function &>(f_eo) : static_cast<Matrix_Function &>(f_neo);
 
 	for(int k = 0; k < num_sources; k++) {
 		//copy source from to device
 		//NOTE: this is a blocking call!
 		logger.debug() << "copy pointsource between devices";
-		get_task_solver()->copy_buffer_to_device(&source_buffer[k*get_parameters()->get_vol4d()], get_clmem_source(), sfsize);
+		solver->copy_buffer_to_device(&source_buffer[k*get_parameters()->get_vol4d()], get_clmem_source(), sfsize);
 
 		logger.debug() << "calling solver..";
-		if(use_eo == false)
-			get_task_solver()->solver(M_call, clmem_res, get_clmem_source(), *get_clmem_gaugefield(), solver_timer);
-		else
-			get_task_solver()->solver(Aee_call, clmem_res, get_clmem_source(), *get_clmem_gaugefield(), solver_timer);
+		solver->solver(f, clmem_res, get_clmem_source(), *get_clmem_gaugefield(), solver_timer);
 
 		//add solution to solution-buffer
 		//NOTE: this is a blocking call!
 		logger.debug() << "add solution...";
-		get_task_solver()->get_buffer_from_device(clmem_res, &solution_buffer[k*get_parameters()->get_vol4d()], sfsize);
+		solver->get_buffer_from_device(clmem_res, &solution_buffer[k*get_parameters()->get_vol4d()], sfsize);
 	}
 
 	if(get_parameters()->get_use_smearing() == true) {
-		get_task_solver()->unsmear_gaugefield(*get_clmem_gaugefield());
+		solver->unsmear_gaugefield(*get_clmem_gaugefield());
 	}
 
 	delete [] sftmp;
