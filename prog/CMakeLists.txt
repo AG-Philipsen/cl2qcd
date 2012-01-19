@@ -65,7 +65,6 @@ configure_file( rand_seeds rand_seeds COPYONLY )
 add_executable( heatbath
 	heatbath.cpp
 	host_geometry.cpp
-	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
 	inputparameters.cpp
 	host_readgauge.cpp
@@ -94,7 +93,6 @@ target_link_libraries( heatbath
 add_executable( transportcoefficient
 	transportcoefficient.cpp
 	host_geometry.cpp
-	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
 	gaugefield_hybrid.cpp
 	gaugefield_heatbath_kappa.cpp
@@ -124,7 +122,6 @@ target_link_libraries( transportcoefficient
 add_executable( inverter
 	inverter.cpp
 	host_geometry.cpp
-	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
 	gaugefield_hybrid.cpp
 	gaugefield_inverter.cpp
@@ -156,7 +153,6 @@ target_link_libraries( inverter
 add_executable( hmc
 	hmc.cpp
 	host_geometry.cpp
-	host_operations_complex.cpp
 	host_operations_gaugefield.cpp
 	gaugefield_hybrid.cpp
 	gaugefield_hmc.cpp

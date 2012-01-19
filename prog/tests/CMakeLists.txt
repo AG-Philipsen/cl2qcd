@@ -24,7 +24,6 @@ add_test(Crypto cryptoLibTest)
 add_executable(su2su3extend
 	su2su3extend.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
@@ -49,7 +48,6 @@ add_test(Su2su3extend su2su3extend)
 add_executable(geometry
 	geometry.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
@@ -74,7 +72,6 @@ add_test(geometry geometry)
 add_executable(saxsbypz
 	saxsbypz.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
@@ -99,7 +96,6 @@ add_test(Saxsbypz saxsbypz)
 add_executable(m_gpu
 	M_GPU.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
@@ -127,7 +123,6 @@ add_test(M_gpu m_gpu)
 add_executable(m_eo_gpu
 	M_eo_GPU.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
@@ -155,7 +150,6 @@ add_test(M_eo_gpu m_eo_gpu)
 add_executable(f_gauge_gpu
 	F_gauge_GPU.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
@@ -184,7 +178,6 @@ add_test(F_gauge_gpu f_gauge_gpu)
 add_executable(f_fermion_gpu
 	Force_fermion_GPU.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
@@ -213,7 +206,6 @@ add_test(F_fermion_gpu f_fermion_gpu)
 add_executable(f_fermion_eo_gpu
 	Force_fermion_eo_GPU.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
@@ -242,7 +234,6 @@ add_test(F_fermion_eo_gpu f_fermion_eo_gpu)
 add_executable(f_fermion_compare_non_eo_eo_gpu
 	Force_fermion_compare_non_eo_eo_GPU.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
@@ -271,7 +262,6 @@ add_test(F_fermion_compare_non_eo_eo_gpu f_fermion_compare_non_eo_eo_gpu)
 add_executable(f_update_gpu
 	Force_update_GPU.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
@@ -300,7 +290,6 @@ add_test(F_update_gpu f_update_gpu)
 add_executable(gf_update_gpu
 	GF_update_GPU.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
@@ -329,7 +318,6 @@ add_test(Gf_update_gpu gf_update_gpu)
 add_executable(calc_staple
 	Calc_staple_test.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
@@ -354,7 +342,6 @@ add_test(Calc_staple calc_staple)
 add_executable(stout_smear
 	Stout_Smear_test.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
@@ -379,7 +366,6 @@ add_test(Stout_smear stout_smear)
 add_executable(localQ
 	local_Q_test.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
@@ -419,7 +405,6 @@ add_test(Heatbath7_GPU_SP ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testH
 add_executable(complex_mem_access
 	complex_mem_access.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp
