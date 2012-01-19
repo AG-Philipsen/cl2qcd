@@ -453,54 +453,6 @@ cl_device_type Gaugefield_hybrid::get_device_type(int ntask)
 	return devicetypes[ntask];
 }
 
-void Gaugefield_hybrid::copy_gaugefield_to_s_gaugefield (Matrixsu3 * sgfo, hmc_complex * gf)
-{
-	const size_t NTIME = parameters->get_nt();
-	for (int d = 0; d < NDIM; d++) {
-		for (int n = 0; n < parameters->get_volspace(); n++) {
-			for (size_t t = 0; t < NTIME; t++) {
-				hmc_su3matrix srcElem;
-				get_su3matrix(&srcElem, gf, n, t, d, parameters);
-				Matrixsu3 destElem;
-				destElem.e00 = srcElem[0][0];
-				destElem.e01 = srcElem[0][1];
-				destElem.e02 = srcElem[0][2];
-				destElem.e10 = srcElem[1][0];
-				destElem.e11 = srcElem[1][1];
-				destElem.e12 = srcElem[1][2];
-				destElem.e20 = srcElem[2][0];
-				destElem.e21 = srcElem[2][1];
-				destElem.e22 = srcElem[2][2];
-				set_to_gaugefield(sgfo, d, n, t, destElem);
-			}
-		}
-	}
-}
-
-void Gaugefield_hybrid::copy_s_gaugefield_to_gaugefield(hmc_complex * gf, Matrixsu3 * sgfo)
-{
-	const size_t NTIME = parameters->get_nt();
-	for (int d = 0; d < NDIM; d++) {
-		for (int n = 0; n < parameters->get_volspace(); n++) {
-			for (size_t t = 0; t < NTIME; t++) {
-				hmc_su3matrix destElem;
-				Matrixsu3 srcElem = get_from_gaugefield(sgfo, d, n, t);
-				destElem[0][0] = srcElem.e00;
-				destElem[0][1] = srcElem.e01;
-				destElem[0][2] = srcElem.e02;
-				destElem[1][0] = srcElem.e10;
-				destElem[1][1] = srcElem.e11;
-				destElem[1][2] = srcElem.e12;
-				destElem[2][0] = srcElem.e20;
-				destElem[2][1] = srcElem.e21;
-				destElem[2][2] = srcElem.e22;
-				put_su3matrix(gf, &destElem, n, t, d, parameters);
-			}
-		}
-	}
-}
-
-
 void Gaugefield_hybrid::save(int number)
 {
 	//LZ: generalize the following to larger numbers, if necessary...
@@ -524,8 +476,6 @@ void Gaugefield_hybrid::save(string outputfile)
 	//these are not yet used...
 	hmc_float c2_rec = 0, epsilonbar = 0, mubar = 0;
 
-	hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
-	copy_s_gaugefield_to_gaugefield(gftmp, get_sgf());
 	copy_gaugefield_to_ildg_format(gaugefield_buf, get_sgf(), parameters);
 
 	hmc_float plaq = plaquette();
@@ -636,11 +586,31 @@ size_t Gaugefield_hybrid::get_num_gaugefield_elems() const
 	return NDIM * parameters->get_volspace() * parameters->get_nt();
 }
 
+void Gaugefield_hybrid::copy_s_gaugefield_to_gaugefield(hmc_complex * gf, Matrixsu3 * sgfo)
+{
+  const size_t NTIME = parameters->get_nt();
+	for (int d = 0; d < NDIM; d++) {
+		for (int n = 0; n < parameters->get_volspace(); n++) {
+			for (size_t t = 0; t < NTIME; t++) {
+				hmc_su3matrix destElem;
+				Matrixsu3 srcElem = get_from_gaugefield(sgfo, d, n, t);
+				destElem[0][0] = srcElem.e00;
+				destElem[0][1] = srcElem.e01;
+				destElem[0][2] = srcElem.e02;
+				destElem[1][0] = srcElem.e10;
+				destElem[1][1] = srcElem.e11;
+				destElem[1][2] = srcElem.e12;
+				destElem[2][0] = srcElem.e20;
+				destElem[2][1] = srcElem.e21;
+				destElem[2][2] = srcElem.e22;
+				put_su3matrix(gf, &destElem, n, t, d, parameters);
+			}
+		}
+	}
+}
+
 void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check, const inputparameters * const parameters)
 {
-	//tmp gaugefield. this can be deleted if convert_to_s... is not needed anymore below...
-	hmc_complex* gftmp = new hmc_complex[get_num_hmc_gaugefield_elems()];
-
 	//little check if arrays are big enough
 	if (parameters->get_vol4d() *NDIM*NC*NC * 2 != check) {
 		std::stringstream errstr;
@@ -673,16 +643,21 @@ void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield,
 						coord[1] = z;
 						coord[2] = y;
 						coord[3] = x;
-						int spacepos = get_nspace(coord, parameters);//z + y * NSPACE + x * NSPACE * NSPACE;
-						put_su3matrix(gftmp, &tmp, spacepos, t, (l + 1) % NDIM, parameters);
-						/*
-						//CP: This did not work because there is a non-trivial mapping going on in put_su3matrix
-						//which needs to be cleared!!!
-						//convert tmp to Matrixsu3 type and store it in the gaugefield
-						Matrixsu3 tmp2;
-						tmp2 = convert_hmc_matrixsu3_to_Matrixsu3(tmp);
-						put_matrixsu3(gaugefield, tmp2, spacepos, t, (l + 1) % NDIM, parameters);
-						*/
+						int spacepos = get_nspace(coord, parameters);
+
+						//copy hmc_su3matrix to Matrixsu3 format
+						Matrixsu3 destElem;
+						destElem.e00 = tmp[0][0];
+						destElem.e01 = tmp[0][1];
+						destElem.e02 = tmp[0][2];
+						destElem.e10 = tmp[1][0];
+						destElem.e11 = tmp[1][1];
+						destElem.e12 = tmp[1][2];
+						destElem.e20 = tmp[2][0];
+						destElem.e21 = tmp[2][1];
+						destElem.e22 = tmp[2][2];
+
+						set_to_gaugefield(gaugefield, (l+1)%NDIM, spacepos, t, destElem);
 					}
 				}
 			}
@@ -694,10 +669,6 @@ void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield,
 		errstr << "Error in setting gaugefield to source values! there were " << cter * 2 << " vals set and not " << check << ".";
 		throw Print_Error_Message(errstr.str(), __FILE__, __LINE__);
 	}
-
-	copy_gaugefield_to_s_gaugefield (gaugefield, gftmp);
-
-	delete [] gftmp;
 
 	return;
 }
