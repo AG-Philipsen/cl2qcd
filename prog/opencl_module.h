@@ -17,7 +17,7 @@
 #endif
 
 #include "host_geometry.h"
-#include "host_operations_complex.h"
+#include "host_random.h"
 #include "host_operations_gaugefield.h"
 #include "globaldefs.h"
 #include "types.h"
