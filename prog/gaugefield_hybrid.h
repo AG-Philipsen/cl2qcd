@@ -208,16 +208,6 @@ public:
 	 */
 	cl_device_type get_device_type(int ntask);
 
-
-	// host gaugefield operations
-	/**
-	 * Copies the gaugefield from structure array format to pure array format
-	 * @param[in] sgf array of structs
-	 * @param[out] gf pure array
-	 */
-	void copy_s_gaugefield_to_gaugefield (hmc_complex * gf, Matrixsu3 * sgfo);
-
-
 	// output methods
 	/**
 	 * Save gaugefield to a file with name conf.number

@@ -586,29 +586,6 @@ size_t Gaugefield_hybrid::get_num_gaugefield_elems() const
 	return NDIM * parameters->get_volspace() * parameters->get_nt();
 }
 
-void Gaugefield_hybrid::copy_s_gaugefield_to_gaugefield(hmc_complex * gf, Matrixsu3 * sgfo)
-{
-  const size_t NTIME = parameters->get_nt();
-	for (int d = 0; d < NDIM; d++) {
-		for (int n = 0; n < parameters->get_volspace(); n++) {
-			for (size_t t = 0; t < NTIME; t++) {
-				hmc_su3matrix destElem;
-				Matrixsu3 srcElem = get_from_gaugefield(sgfo, d, n, t);
-				destElem[0][0] = srcElem.e00;
-				destElem[0][1] = srcElem.e01;
-				destElem[0][2] = srcElem.e02;
-				destElem[1][0] = srcElem.e10;
-				destElem[1][1] = srcElem.e11;
-				destElem[1][2] = srcElem.e12;
-				destElem[2][0] = srcElem.e20;
-				destElem[2][1] = srcElem.e21;
-				destElem[2][2] = srcElem.e22;
-				put_su3matrix(gf, &destElem, n, t, d, parameters);
-			}
-		}
-	}
-}
-
 void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check, const inputparameters * const parameters)
 {
 	//little check if arrays are big enough
@@ -675,9 +652,6 @@ void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield,
 
 void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source_in, const inputparameters * const parameters)
 {
-	hmc_complex* source = new hmc_complex[get_num_hmc_gaugefield_elems()];
-	copy_s_gaugefield_to_gaugefield(source, source_in);
-
 	const size_t NSPACE = parameters->get_ns();
 	for (int t = 0; t < parameters->get_nt(); t++) {
 		for (size_t x = 0; x < NSPACE; x++) {
@@ -692,13 +666,24 @@ void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixs
 						coord[2] = y;
 						coord[3] = x;
 						int spacepos = get_nspace(coord, parameters);
-						hmc_su3matrix tmp;
-						get_su3matrix(&tmp, source, spacepos, t, (l + 1) % NDIM, parameters);
+						hmc_su3matrix destElem;
+						
+						Matrixsu3 srcElem = get_from_gaugefield(source_in, (l+1) %NDIM, spacepos, t);
+						destElem[0][0] = srcElem.e00;
+						destElem[0][1] = srcElem.e01;
+						destElem[0][2] = srcElem.e02;
+						destElem[1][0] = srcElem.e10;
+						destElem[1][1] = srcElem.e11;
+						destElem[1][2] = srcElem.e12;
+						destElem[2][0] = srcElem.e20;
+						destElem[2][1] = srcElem.e21;
+						destElem[2][2] = srcElem.e22;
+						
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
 							        size_t pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters); 
-								dest[pos]     = tmp[m][n].re;
-								dest[pos + 1] = tmp[m][n].im;
+								dest[pos]     = destElem[m][n].re;
+								dest[pos + 1] = destElem[m][n].im;
 							}
 						}
 					}
@@ -707,7 +692,6 @@ void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixs
 		}
 	}
 
-	delete[] source;
 	return;
 }
 
