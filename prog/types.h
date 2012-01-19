@@ -98,13 +98,6 @@ hmc_complex const hmc_complex_i = {0., 1.};
 //also CPU
 #ifndef _INKERNEL_
 
-/** A generic SU3 matrix */
-typedef hmc_complex hmc_su3matrix [NC][NC];
-/** A matrix representing a staple */
-typedef hmc_su3matrix hmc_staplematrix;
-/** A generic 3x3 matrix */
-typedef hmc_complex hmc_3x3matrix[3][3];
-
 struct Matrixsu3 {
 	hmc_complex e00;
 	hmc_complex e01;
@@ -118,11 +111,6 @@ struct Matrixsu3 {
 };
 
 #endif // ifndef _INKERNEL_
-
-typedef hmc_complex hmc_ocl_su3matrix;
-typedef hmc_complex hmc_ocl_3x3matrix;
-typedef hmc_complex hmc_ocl_staplematrix;
-typedef hmc_float hmc_ocl_gaugefield;
 
 #ifdef _INKERNEL_
 

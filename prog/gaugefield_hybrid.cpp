@@ -598,8 +598,8 @@ void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield,
 			for (size_t y = 0; y < NSPACE; y++) {
 				for (size_t z = 0; z < NSPACE; z++) {
 					for (int l = 0; l < NDIM; l++) {
-						//save current link in hmc_su3matrix tmp (NOTE: this is a complex array, not a struct!!)
-						hmc_su3matrix tmp;
+						//save current link in a complex array
+						hmc_complex tmp [NC][NC];
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
 							        int pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters); 
@@ -662,7 +662,7 @@ void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixs
 						coord[2] = y;
 						coord[3] = x;
 						int spacepos = get_nspace(coord, parameters);
-						hmc_su3matrix destElem;
+						hmc_complex destElem [NC][NC];
 						
 						Matrixsu3 srcElem = get_from_gaugefield(source_in, (l+1) %NDIM, spacepos, t);
 						destElem[0][0] = srcElem.e00;

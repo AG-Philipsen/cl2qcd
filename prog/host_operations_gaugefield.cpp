@@ -146,7 +146,7 @@ void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, i
   size_t link_pos = get_global_link_pos(mu, spacepos, timepos, parameters);
 	field[link_pos] = in;
 }
-
+/*
 void get_su3matrix(hmc_su3matrix * out, hmc_complex * in, int spacepos, int timepos, int mu, const inputparameters * const parameters)
 {
 	for(int a = 0; a < NC; a++) {
@@ -167,7 +167,7 @@ void put_su3matrix(hmc_complex * field, hmc_su3matrix * in, int spacepos, int ti
 	}
 	return;
 }
-
+*/
 Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const inputparameters * const parameters)
 {
         Matrixsu3 res, prod;
