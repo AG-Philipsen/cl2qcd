@@ -106,6 +106,32 @@ Matrixsu3 multiply_matrixsu3_dagger(const Matrixsu3 p, const Matrixsu3 q)
   return out;
 }
 
+Matrixsu3 unit_matrixsu3()
+{
+  Matrixsu3 out;
+  out.e00.re = 1.;
+  out.e00.im = 0.;
+  out.e01.re = 0.;
+  out.e01.im = 0.;
+  out.e02.re = 0.;
+  out.e02.im = 0.;
+
+  out.e10.re = 0.;
+  out.e10.im = 0.;
+  out.e11.re = 1.;
+  out.e11.im = 0.;
+  out.e12.re = 0.;
+  out.e12.im = 0.;
+
+  out.e20.re = 0.;
+  out.e20.im = 0.;
+  out.e21.re = 0.;
+  out.e21.im = 0.;
+  out.e22.re = 1.;
+  out.e22.im = 0.;
+
+  return out;
+}
 
 
 
@@ -120,23 +146,7 @@ void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, i
   size_t link_pos = get_global_link_pos(mu, spacepos, timepos, parameters);
 	field[link_pos] = in;
 }
-/*
-//this is a temporal thing...
-void get_su3matrix_tmp(hmc_su3matrix * out, Matrixsu3 * in, int spacepos, int timepos, int mu, const inputparameters * const parameters)
-{
-	Matrixsu3 tmp = get_matrixsu3(in, spacepos, timepos, mu, parameters);
-	(*out)[0][0] = tmp.e00;
-	(*out)[0][1] = tmp.e01;
-	(*out)[0][2] = tmp.e02;
-	(*out)[1][0] = tmp.e10;
-	(*out)[1][1] = tmp.e11;
-	(*out)[1][2] = tmp.e12;
-	(*out)[2][0] = tmp.e20;
-	(*out)[2][1] = tmp.e21;
-	(*out)[2][2] = tmp.e22;
-	return;
-}
-*/
+
 void get_su3matrix(hmc_su3matrix * out, hmc_complex * in, int spacepos, int timepos, int mu, const inputparameters * const parameters)
 {
 	for(int a = 0; a < NC; a++) {
@@ -157,22 +167,7 @@ void put_su3matrix(hmc_complex * field, hmc_su3matrix * in, int spacepos, int ti
 	}
 	return;
 }
-/*
-//temporal:
-Matrixsu3 convert_hmc_matrixsu3_to_Matrixsu3(hmc_su3matrix in){
-	Matrixsu3 res;
-	res.e00 = in[0][0];
-	res.e01 = in[0][1];
-	res.e02 = in[0][2];
-	res.e10 = in[1][0];
-	res.e11 = in[1][1];
-	res.e12 = in[1][2];
-	res.e20 = in[2][0];
-	res.e21 = in[2][1];
-	res.e22 = in[2][2];
-	return res;
-}
-*/
+
 Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const inputparameters * const parameters)
 {
         Matrixsu3 res, prod;
