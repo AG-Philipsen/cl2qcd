@@ -14,7 +14,6 @@
 
 #include "globaldefs.h"
 #include "types.h"
-#include "host_operations_complex.h"
 #include "host_operations_gaugefield.h"
 #include "inputparameters.h"
 #include "host_readgauge.h"
@@ -209,22 +208,6 @@ public:
 	 */
 	cl_device_type get_device_type(int ntask);
 
-
-	// host gaugefield operations
-	/**
-	 * Copies the gaugefield from pure array format to structure array format
-	 * @param[in] gf pure array
-	 * @param[out] sgf array of structs
-	 */
-	void copy_gaugefield_to_s_gaugefield (Matrixsu3 * sgfo, hmc_complex * gf);
-	/**
-	 * Copies the gaugefield from structure array format to pure array format
-	 * @param[in] sgf array of structs
-	 * @param[out] gf pure array
-	 */
-	void copy_s_gaugefield_to_gaugefield (hmc_complex * gf, Matrixsu3 * sgfo);
-
-
 	// output methods
 	/**
 	 * Save gaugefield to a file with name conf.number
@@ -324,23 +307,6 @@ public:
 	* @todo Replace hmc_gaugefield type by s_gaugefield type (LZ)
 	*/
 	void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source, const inputparameters * const params);
-	/**
-	* Create a representation of the gaugefield usable by the OpenCL kernels.
-	*
-	* @param[in] host_gaugefield The gaugefield in the internal representation
-	* @param[out] gaugefield The location to store the OpenCL kernel compatible representation to
-	*/
-	void copy_to_ocl_format(ocl_s_gaugefield* host_gaugefield, Matrixsu3* gaugefield, const inputparameters * const params);
-
-	/**
-	* Transform the gaugefield representation used by the OpenCL kernels into the normal one.
-	*
-	* @param[in] gaugefield The gaugefield in the representation used by the OpenCL kernels
-	* @param[out] host_gaugefield The location to store the gaugefield to
-	*/
-	void copy_from_ocl_format(Matrixsu3* gaugefield, ocl_s_gaugefield* host_gaugefield, const inputparameters * const params);
-		
-		
 
 #ifdef _PROFILING_
 	void print_profiling(std::string filename);
@@ -350,8 +316,6 @@ protected:
 	cl_device_type* devicetypes;
 	Opencl_Module ** opencl_modules;
 	cl_command_queue* queue;
-
-	size_t get_num_hmc_gaugefield_elems();
 
 private:
 	inputparameters* parameters;

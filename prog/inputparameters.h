@@ -94,7 +94,7 @@ public:
 	int get_integrationsteps2() const;
 	hmc_float get_solver_prec() const;
 	hmc_float get_force_prec() const;
-        int get_iter_refresh() const;
+	int get_iter_refresh() const;
 	bool get_saveconfigs() const;
 	int get_savefrequency() const;
 	int get_writefrequency() const;
@@ -152,7 +152,6 @@ public:
 
 	bool get_use_same_rnd_numbers() const;
 	bool get_profile_solver() const;
-#ifdef _PROFILING_
 	int get_mat_size() const;
 	int get_float_size() const;
 	int get_flop_su3_su3() const;
@@ -163,7 +162,7 @@ public:
 	int get_flop_su3_spinor() const;
 	int get_flop_spinor_spinor() const;
 	int get_flop_spinor_sqnorm() const;
-#endif
+
 	/////////////////////////////////////////////////////
 	// printing-functions for the different executables
 	/**
@@ -282,7 +281,6 @@ private:
 	bool print_to_screen;
 	bool use_autotuning;
 
-#ifdef _PROFILING_
 	//parameters that describe the size of datatypes in bytes
 	int mat_size;
 	int float_size;
@@ -295,7 +293,6 @@ private:
 	int flop_su3_spinor;
 	int flop_gamma_spinor;
 	int flop_spinor_sqnorm;
-#endif
 
 	//more specific ones
 	hmc_float kappa;

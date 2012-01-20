@@ -93,13 +93,13 @@ BOOST_AUTO_TEST_CASE( F_FERMION ){
 
 	logger.info() << "eo input:";
 	logger.info() << "|phi_even_1|^2:";
-	hmc_float cpu_back_eo = cpu.get_squarenorm_eo(0);
+	//hmc_float cpu_back_eo = cpu.get_squarenorm_eo(0);
 	logger.info() << "|phi_even_2|^2:";
-	hmc_float cpu_back2_eo = cpu.get_squarenorm_eo(1);
+	//hmc_float cpu_back2_eo = cpu.get_squarenorm_eo(1);
 	logger.info() << "|phi_odd_1|^2:";
-	hmc_float cpu_back3_eo = cpu.get_squarenorm_eo(2);
+	//hmc_float cpu_back3_eo = cpu.get_squarenorm_eo(2);
 	logger.info() << "|phi_odd_2|^2:";
-	hmc_float cpu_back4_eo = cpu.get_squarenorm_eo(3);
+	//hmc_float cpu_back4_eo = cpu.get_squarenorm_eo(3);
 	
 	logger.info() << "run eo force on EVEN and ODD sites...";
 	cpu.runTestKernel(EVEN);
@@ -290,11 +290,10 @@ spinor fill_spinor_with_specific_float(hmc_float val){
 
 //this function fills every lattice site with a specific value depending 
 //on its site index. 
-void fill_noneo_sf_with_specific_float(spinor * sf_in, int size, inputparameters * params)
+void fill_noneo_sf_with_specific_float(spinor * sf_in, inputparameters * params)
 {
-  uint x,y,z,t;
-  uint ns = params->get_ns();
-  uint nt = params->get_nt();
+  int x,y,z,t;
+  int ns = params->get_ns();
   for(x = 0;  x < params->get_ns(); x++) {
     for(y = 0;  y < params->get_ns();  y++) {
       for(z = 0;  z < params->get_ns();  z++) {
@@ -310,11 +309,10 @@ void fill_noneo_sf_with_specific_float(spinor * sf_in, int size, inputparameters
   return;
 }
 
-void fill_eo_sf_with_specific_float(spinor * sf_even, spinor * sf_odd, int size, inputparameters * params)
+void fill_eo_sf_with_specific_float(spinor * sf_even, spinor * sf_odd, inputparameters * params)
 {
-  uint x,y,z,t;
-  uint ns = params->get_ns();
-  uint nt = params->get_nt();
+  int x,y,z,t;
+  int ns = params->get_ns();
   for(x = 0;  x < params->get_ns(); x++) {
     for(y = 0;  y < params->get_ns();  y++) {
       for(z = 0;  z < params->get_ns();  z++) {
@@ -536,7 +534,7 @@ void print_spinor(spinor in1, spinor in2){
   return;
 }
 
-void compare_vectors(spinor * in1, spinor * in2, int size, inputparameters * params){
+void compare_vectors(spinor * in1, spinor * in2, int size){
   bool check;
   //int n, t;
   //int nodd, todd;
@@ -584,10 +582,10 @@ void compare_vectors(spinor * in1, spinor * in2, int size, inputparameters * par
 
 void Dummyfield::verify_converted_vectors(){
   logger.info()<< "\tcompare in1_noneo with in1_noneo_converted";
-  compare_vectors(sf_in1_noneo, sf_in1_noneo_converted, get_parameters()->get_spinorfieldsize(), get_parameters());
+  compare_vectors(sf_in1_noneo, sf_in1_noneo_converted, get_parameters()->get_spinorfieldsize());
 
   logger.info()<< "\tcompare in2_noneo with in2_noneo_converted";
-  compare_vectors(sf_in2_noneo, sf_in2_noneo_converted, get_parameters()->get_spinorfieldsize(), get_parameters());
+  compare_vectors(sf_in2_noneo, sf_in2_noneo_converted, get_parameters()->get_spinorfieldsize());
 
   return;
 }
@@ -635,10 +633,10 @@ void Dummyfield::fill_buffers()
 	  fill_sf_with_random_noneo(sf_in2_noneo, NUM_ELEMENTS_SF_NON_EO, 789101, get_parameters());
 	}
 
-	fill_eo_sf_with_specific_float(sf_in1_eo, sf_in2_eo, NUM_ELEMENTS_SF_EO, get_parameters());
-	fill_eo_sf_with_specific_float(sf_in3_eo, sf_in4_eo, NUM_ELEMENTS_SF_EO, get_parameters());
-	fill_noneo_sf_with_specific_float(sf_in1_noneo, NUM_ELEMENTS_SF_NON_EO, get_parameters());
-	fill_noneo_sf_with_specific_float(sf_in2_noneo, NUM_ELEMENTS_SF_NON_EO, get_parameters());
+	fill_eo_sf_with_specific_float(sf_in1_eo, sf_in2_eo, get_parameters());
+	fill_eo_sf_with_specific_float(sf_in3_eo, sf_in4_eo, get_parameters());
+	fill_noneo_sf_with_specific_float(sf_in1_noneo, get_parameters());
+	fill_noneo_sf_with_specific_float(sf_in2_noneo, get_parameters());
 
 
 	BOOST_REQUIRE(sf_in1_eo);
@@ -887,7 +885,7 @@ void Dummyfield::verify(hmc_float cpu, hmc_float gpu){
 
 void Dummyfield::runTestKernel(int evenodd)
 {
-	int gs, ls;
+	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = get_parameters()->get_eoprec_spinorfieldsize();
 		ls = 64;
@@ -909,7 +907,7 @@ void Dummyfield::runTestKernel(int evenodd)
 
 void Dummyfield::runTestKernel2()
 {
-	int gs, ls;
+	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = get_parameters()->get_spinorfieldsize();
 		ls = 64;
@@ -923,7 +921,7 @@ void Dummyfield::runTestKernel2()
 
 void Dummyfield::runTestKernel2withconvertedfields()
 {
-	int gs, ls;
+	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = get_parameters()->get_spinorfieldsize();
 		ls = 64;

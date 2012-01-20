@@ -17,7 +17,6 @@
 #endif
 
 #include "host_geometry.h"
-#include "host_operations_complex.h"
 #include "host_operations_gaugefield.h"
 #include "globaldefs.h"
 #include "types.h"
@@ -90,7 +89,7 @@ public:
 	cl_mem get_clmem_new_u();
 	cl_mem get_clmem_phi();
 	cl_mem get_clmem_phi_eoprec();
-	
+
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
 	void md_update_spinorfield();
@@ -114,7 +113,7 @@ public:
 	void fermion_force_eoprec_device(cl_mem Y, cl_mem X, int evenodd);
 	void stout_smeared_fermion_force_device(cl_mem * gf_intermediate);
 	hmc_float calc_s_fermion();
-	
+
 protected:
 
 #ifdef _PROFILING_
@@ -130,7 +129,7 @@ protected:
 	usetimer timer_set_zero_gaugemomentum;
 	usetimer timer_gaugemomentum_squarenorm;
 	usetimer timer_stout_smear_fermion_force;
-	
+
 	/**
 	 * Return the timer connected to a specific kernel.
 	 *
@@ -139,21 +138,6 @@ protected:
 	virtual usetimer* get_timer(char * in);
 
 	/**
-	 * Return amount of bytes read and written by a specific kernel per call.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual int get_read_write_size(char * in, inputparameters * parameters);
-
-	/**
-	 * Return amount of Floating point operations performed by a specific kernel per call.
-	 * NOTE: this is meant to be the "netto" amount in order to be comparable.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual int get_flop_size(const char * in, inputparameters * parameters);
-	
-	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
@@ -161,6 +145,21 @@ protected:
 	void virtual print_profiling(std::string filename, int number);
 
 #endif
+
+	/**
+	 * Return amount of bytes read and written by a specific kernel per call.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual int get_read_write_size(char * in);
+
+	/**
+	 * Return amount of Floating point operations performed by a specific kernel per call.
+	 * NOTE: this is meant to be the "netto" amount in order to be comparable.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual int get_flop_size(const char * in);
 
 protected:
 private:

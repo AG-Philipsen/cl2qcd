@@ -26,19 +26,19 @@ int main(int argc, char* argv[])
 		//get name for file to which correlators are to be stored
 		stringstream corr_fn;
 		switch ( parameters.get_startcondition() ) {
-		case START_FROM_SOURCE :
-		  corr_fn << parameters.sourcefile << "_correlators.dat" ;
-		  break;
-		case HOT_START :
-		  corr_fn << "conf.hot_correlators.dat" ;
-		  break;
-		case COLD_START :
-		  corr_fn << "conf.cold_correlators.dat" ;
-		  break;
+			case START_FROM_SOURCE :
+				corr_fn << parameters.sourcefile << "_correlators.dat" ;
+				break;
+			case HOT_START :
+				corr_fn << "conf.hot_correlators.dat" ;
+				break;
+			case COLD_START :
+				corr_fn << "conf.cold_correlators.dat" ;
+				break;
 		}
 
-		if(parameters.get_profile_solver() == false){
-		  logger.warn()<<"solver times will not be measured!";
+		if(parameters.get_profile_solver() == false) {
+			logger.warn() << "solver times will not be measured!";
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 		init_timer.reset();
 		Gaugefield_inverter gaugefield;
 
-		//one needs 1 task here 
+		//one needs 1 task here
 		int numtasks = 1;
 		if(parameters.get_num_dev() != 2 )
 			logger.warn() << "Only 1 device demanded by benchmark executable. All calculations performed on primary device.";
@@ -92,8 +92,8 @@ int main(int argc, char* argv[])
 
 		logger.trace() << "Perform " << hmc_iter << "of dslash benchmarking (EVEN + ODD) for each step";
 		for(iter = 0; iter < hmc_iter; iter ++) {
-		  gaugefield.get_task_solver()->dslash_eoprec_device(sf1, sf2, gf, EVEN);
-		  gaugefield.get_task_solver()->dslash_eoprec_device(sf1, sf2, gf, ODD);
+			gaugefield.get_task_solver()->dslash_eoprec_device(sf1, sf2, gf, EVEN);
+			gaugefield.get_task_solver()->dslash_eoprec_device(sf1, sf2, gf, ODD);
 		}
 		logger.trace() << "dslash benchmarking done" ;
 		perform_timer.add();
@@ -120,7 +120,7 @@ int main(int argc, char* argv[])
 		//print times from the devices...
 		logger.info() << "## Device: Solver";
 		(gaugefield.get_task_solver())->print_copy_times(totaltime);
-		
+
 		//CP: this is just a fist version and will go into an own file later
 		stringstream profiling_out;
 		profiling_out << argv[0] << "_profiling_data";
@@ -137,14 +137,14 @@ int main(int argc, char* argv[])
 		//print only dslash-infos
 		const char * kernelName;
 		kernelName = "dslash_eoprec";
-		gaugefield.get_task_solver()->Opencl_Module::print_profiling(profiling_out.str(), kernelName, (*gaugefield.get_task_solver()->get_timer(kernelName)).getTime(), (*gaugefield.get_task_solver()->get_timer(kernelName)).getNumMeas(), gaugefield.get_task_solver()->get_read_write_size(kernelName, &parameters), gaugefield.get_task_solver()->get_flop_size(kernelName, &parameters )) ;
+		gaugefield.get_task_solver()->Opencl_Module::print_profiling(profiling_out.str(), kernelName, (*gaugefield.get_task_solver()->get_timer(kernelName)).getTime(), (*gaugefield.get_task_solver()->get_timer(kernelName)).getNumMeas(), gaugefield.get_task_solver()->get_read_write_size(kernelName), gaugefield.get_task_solver()->get_flop_size(kernelName)) ;
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// free variables
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
+
 		gaugefield.finalize();
-		
+
 	} //try
 	//exceptions from Opencl classes
 	catch (Opencl_Error& e) {

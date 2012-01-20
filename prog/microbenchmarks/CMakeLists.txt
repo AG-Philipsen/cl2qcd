@@ -10,7 +10,6 @@ add_definitions( -D_PROFILING_ )
 add_executable( bandwidth
 	bandwidth.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../inputparameters.cpp

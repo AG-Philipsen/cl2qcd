@@ -12,7 +12,6 @@ endif( PERFORM_PROFILING )
 add_executable( heatbath_benchmarks
 	heatbath_benchmarks.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../inputparameters.cpp
 	../host_readgauge.cpp
@@ -41,7 +40,6 @@ target_link_libraries( heatbath_benchmarks
 add_executable( inverter_benchmarks
 	inverter_benchmarks.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../gaugefield_inverter.cpp
@@ -72,7 +70,6 @@ target_link_libraries( inverter_benchmarks
 add_executable( dslash_benchmark
 	dslash_benchmark.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	gaugefield_dslash_benchmark.cpp
@@ -103,7 +100,6 @@ target_link_libraries( dslash_benchmark
 add_executable( hmc_benchmarks
 	hmc_benchmarks.cpp
 	../host_geometry.cpp
-	../host_operations_complex.cpp
 	../host_operations_gaugefield.cpp
 	../gaugefield_hybrid.cpp
 	../gaugefield_hmc.cpp

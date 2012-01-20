@@ -199,8 +199,7 @@ void Device::runTestKernel(cl_mem gf, cl_mem out, int gs, int ls)
 
 void Dummyfield::runTestKernel()
 {
-	hmc_float res; 
-	int gs, ls;
+	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = get_parameters()->get_vol4d();
 		ls = 64;
@@ -223,6 +222,7 @@ void Dummyfield::get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc
 //this is just out of laziness, a copy of the function above
 void Dummyfield::get_gaugeobservables_from_task(int dummy, int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol)
 {
+  dummy = 0;
 	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range", __FILE__, __LINE__);
 	opencl_modules[ntask]->gaugeobservables(out, plaq, tplaq, splaq, pol);
 }

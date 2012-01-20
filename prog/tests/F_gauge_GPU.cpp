@@ -255,7 +255,7 @@ void Dummyfield::fill_buffers()
 	*/
 	fill_with_zero(sf_out, NUM_ELEMENTS_AE);
 
-	size_t sf_buf_size = get_parameters()->get_sf_buf_size();
+	//size_t sf_buf_size = get_parameters()->get_sf_buf_size();
 	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
 	//create buffer for sf on device (and copy sf_in to both for convenience)
 	/*
@@ -379,7 +379,7 @@ void Dummyfield::verify(hmc_float cpu, hmc_float gpu){
 
 void Dummyfield::runTestKernel()
 {
-	int gs, ls;
+	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = get_parameters()->get_spinorfieldsize();
 		ls = 64;

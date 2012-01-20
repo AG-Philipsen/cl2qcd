@@ -446,7 +446,7 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 
 void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size)
 {
-	cl_int clerr;
+	cl_int clerr = CL_SUCCESS;
 
 	if(logger.beTrace()) {
 		size_t nameSize;
@@ -874,7 +874,9 @@ void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
 
 void Opencl_Module::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
 {
-	/// @todo use kernelname
+        //Query kernel name
+        string kernelname = get_kernel_name(kernel);
+
 	size_t local_work_size;
 	if( dev_type == CL_DEVICE_TYPE_GPU )
 		local_work_size = Opencl_Module::get_numthreads(); /// @todo have local work size depend on kernel properties (and device? autotune?)
@@ -948,7 +950,9 @@ usetimer* Opencl_Module::get_timer(const char * in)
 	}
 }
 
-int Opencl_Module::get_read_write_size(const char * in, inputparameters * parameters)
+#endif
+
+int Opencl_Module::get_read_write_size(const char * in)
 {
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
@@ -995,7 +999,7 @@ int Opencl_Module::get_read_write_size(const char * in, inputparameters * parame
 	return 0;
 }
 
-int Opencl_Module::get_flop_size(const char * in, inputparameters * parameters)
+int Opencl_Module::get_flop_size(const char * in)
 {
 	const size_t VOL4D = parameters->get_vol4d();
 	const size_t VOLSPACE = parameters->get_volspace();
@@ -1051,6 +1055,8 @@ void Opencl_Module::print_profiling(std::string filename, const char * kernelNam
 	return;
 }
 
+#ifdef _PROFILING_
+
 void print_profile_header(std::string filename, int number)
 {
 	//write to stream
@@ -1070,15 +1076,15 @@ void Opencl_Module::print_profiling(std::string filename, int number)
 	print_profile_header(filename, number);
 	const char * kernelName;
 	kernelName = "polyakov";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "polyakov_reduction";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "plaquette";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "plaquette_reduction";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "stout_smear";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 }
 #endif
 

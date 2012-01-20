@@ -22,7 +22,7 @@ public:
 		finalize();
 	};
 
-  void runTestKernel(cl_mem in, cl_mem out, cl_mem gf, int gs, int ls);
+  void runTestKernel(cl_mem in, cl_mem out, int gs, int ls);
 	void fill_kernels();
   void set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out);
 	void clear_kernels();
@@ -219,7 +219,7 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls)
+void Device::runTestKernel(cl_mem out, cl_mem in, int gs, int ls)
 {
 	cl_int err;
 	hmc_float eps = 0.12;
@@ -315,7 +315,7 @@ void Dummyfield::verify_result(hmc_float cpu, hmc_float gpu){
 
 void Dummyfield::runTestKernel()
 {
-	int gs, ls;
+	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = get_parameters()->get_spinorfieldsize();
 		ls = 64;
@@ -323,6 +323,6 @@ void Dummyfield::runTestKernel()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in, *(get_clmem_gaugefield()), gs, ls);
+	static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in, gs, ls);
 }
 

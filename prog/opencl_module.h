@@ -17,7 +17,7 @@
 #endif
 
 #include "host_geometry.h"
-#include "host_operations_complex.h"
+#include "host_random.h"
 #include "host_operations_gaugefield.h"
 #include "globaldefs.h"
 #include "types.h"
@@ -47,7 +47,7 @@ public:
 	 *
 	 */
 	~Opencl_Module() {
-		
+
 	}
 
 	/**
@@ -281,11 +281,14 @@ public:
 	virtual usetimer* get_timer(const char * in);
 
 	/**
-	 * Return amount of bytes read and written by a specific kernel per call.
+	 * Print the profiling information to a file.
 	 *
-	 * @param in Name of the kernel under consideration.
+	 * @param filename Name of file where data is appended.
+	 * @param number task-id
 	 */
-	virtual int get_read_write_size(const char * in, inputparameters * parameters);
+	void virtual print_profiling(std::string filename, int number);
+
+#endif
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -293,8 +296,15 @@ public:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual int get_flop_size(const char * in, inputparameters * parameters);
-	
+	virtual int get_flop_size(const char * in);
+
+	/**
+	 * Return amount of bytes read and written by a specific kernel per call.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual int get_read_write_size(const char * in);
+
 	/**
 	 * Print the profiling information of a specific kernel to a file.
 	 *
@@ -306,16 +316,6 @@ public:
 	 * @param flop_size amount of flops performed by the kernel
 	 */
 	void print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, int read_write_size, int flop_size);
-
-	/**
-	 * Print the profiling information to a file.
-	 *
-	 * @param filename Name of file where data is appended.
-	 * @param number task-id
-	 */
-	void virtual print_profiling(std::string filename, int number);
-
-#endif
 
 	/**
 	 * Enqueue the given kernel on the device. Local work size will be determined
@@ -388,7 +388,7 @@ public:
 	 * This replaces the stout smeared gaugefield with the unsmeared one
 	 */
 	void unsmear_gaugefield(cl_mem gf);
-	
+
 	usetimer * get_copy_to();
 	usetimer * get_copy_on();
 
@@ -458,7 +458,7 @@ private:
 
 	//this is used to save the unsmeared gaugefield if smearing is used
 	cl_mem gf_unsmeared;
-	
+
 	//since this is only applicated to the gaugefield, this should be here...
 	cl_kernel stout_smear;
 

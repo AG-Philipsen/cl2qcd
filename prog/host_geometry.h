@@ -10,10 +10,11 @@
 #include <cmath>
 #include "inputparameters.h"
 
-//coord[0] = t
-//coord[1] = x
-//coord[2] = y
-//coord[3] = z
+/** Identify each spacetime direction */
+#define TDIR 0
+#define XDIR 1
+#define YDIR 2
+#define ZDIR 3
 
 /**
  * Calculate the spatial index of the given cartesian coordinates.
@@ -43,17 +44,6 @@ int get_global_pos(int spacepos, int t, const inputparameters * const params);
  * @return Global index
  */
 int get_global_link_pos(int mu, int spacepos, int t, const inputparameters * const params);
-
-/**
- * Retrieve an SU3 matrix form the gaugefield
- *
- * @param[in] spacepos Spatial index of the matrix to retrieve
- * @param[in] timepos Temporal index of the matrix to retrieve
- * @param[in] mu Direction of the matrix to retrieve
- * @return The index to be applied on the gaugefield in [NC][NC][NDIM][VOLSPACE][NTIME]
- *         or [NC*(NC-1)][NDIM][VOLSPACE][NTIME] format, depending on whether REC12 is enabled.
- */
-size_t get_hmc_gaugefield_index(size_t m, size_t n, size_t spacepos, size_t timepos, size_t mu, const inputparameters * const parameters);
 
 /**
  * This returns the index of a single su3 matrix entry in the ildg format

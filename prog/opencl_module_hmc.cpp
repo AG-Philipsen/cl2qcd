@@ -20,7 +20,7 @@ void Opencl_Module_Hmc::fill_buffers()
 
 	Opencl_Module_Fermions::fill_buffers();
 	///@todo CP: some of the above buffers are not used and can be deleted again!! especially in the eoprec-case
-	
+
 	int spinorfield_size = get_parameters()->get_sf_buf_size();
 	int eoprec_spinorfield_size = get_parameters()->get_eo_sf_buf_size();
 	int gaugemomentum_size = get_parameters()->get_gm_buf_size();
@@ -33,12 +33,11 @@ void Opencl_Module_Hmc::fill_buffers()
 
 	logger.trace() << "Create buffer for HMC...";
 	clmem_force = create_rw_buffer(gaugemomentum_size);
-	if(get_parameters()->get_use_eo() == true){
+	if(get_parameters()->get_use_eo() == true) {
 		///@TODO in this case, the objects cl_mem_inout, source, tmp from the fermions module can be released again!!
 		clmem_phi_inv_eoprec = create_rw_buffer(eoprec_spinorfield_size);
 		clmem_phi_eoprec = create_rw_buffer(eoprec_spinorfield_size);
-	} 
-	else{
+	} else {
 		///@TODO in this case, the object cl_mem_source from the fermions module can be released again!!
 		clmem_phi = create_rw_buffer(spinorfield_size);
 		clmem_phi_inv = create_rw_buffer(spinorfield_size);
@@ -61,12 +60,11 @@ void Opencl_Module_Hmc::fill_kernels()
 	basic_hmc_code = basic_fermion_code << "types_hmc.h";
 
 	//init kernels for HMC
-	if(get_parameters()->get_use_eo() == true){
+	if(get_parameters()->get_use_eo() == true) {
 		generate_gaussian_spinorfield_eoprec = createKernel("generate_gaussian_spinorfield_eoprec") << basic_hmc_code << "random.cl" << "spinorfield_eo_gaussian.cl";
 		fermion_force_eoprec = createKernel("fermion_force_eoprec") << basic_hmc_code << "operations_gaugemomentum.cl" << "operations_spinorfiel\
 d_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
-	}
-	else{
+	} else {
 		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_hmc_code << "random.cl" << "spinorfield_gaussian.cl";
 	}
 	fermion_force = createKernel("fermion_force") << basic_hmc_code << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion.cl";
@@ -75,7 +73,7 @@ d_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 	md_update_gaugefield = createKernel("md_update_gaugefield") << basic_hmc_code << "md_update_gaugefield.cl";
 	md_update_gaugemomenta = createKernel("md_update_gaugemomenta") << basic_hmc_code << "operations_gaugemomentum.cl" << "md_update_gaugemomenta.cl";
 	gauge_force = createKernel("gauge_force") << basic_hmc_code << "operations_gaugemomentum.cl" << "force_gauge.cl";
-	
+
 	if(get_parameters()->get_use_smearing() == true) {
 		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_hmc_code << "force_fermion_stout_smear.cl";
 	}
@@ -91,13 +89,12 @@ void Opencl_Module_Hmc::clear_kernels()
 	cl_uint clerr = CL_SUCCESS;
 
 	logger.debug() << "release HMC-kernels.." ;
-	if(get_parameters()->get_use_eo() == true){
+	if(get_parameters()->get_use_eo() == true) {
 		clerr = clReleaseKernel(generate_gaussian_spinorfield_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(fermion_force_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	}
-	else{
+	} else {
 		clerr = clReleaseKernel(generate_gaussian_spinorfield);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(fermion_force);
@@ -142,13 +139,12 @@ void Opencl_Module_Hmc::clear_buffers()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_force);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	if(get_parameters()->get_use_eo() == true){
+	if(get_parameters()->get_use_eo() == true) {
 		clerr = clReleaseMemObject(clmem_phi_inv_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_phi_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	}
-	else{
+	} else {
 		clerr = clReleaseMemObject(clmem_phi_inv);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_phi);
@@ -235,9 +231,11 @@ usetimer* Opencl_Module_Hmc::get_timer(char * in)
 	}
 }
 
-int Opencl_Module_Hmc::get_read_write_size(char * in, inputparameters * parameters)
+#endif
+
+int Opencl_Module_Hmc::get_read_write_size(char * in)
 {
-	int result = Opencl_Module_Fermions::get_read_write_size(in, parameters);
+	int result = Opencl_Module_Fermions::get_read_write_size(in);
 	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
@@ -284,9 +282,9 @@ int Opencl_Module_Hmc::get_read_write_size(char * in, inputparameters * paramete
 	return 0;
 }
 
-int Opencl_Module_Hmc::get_flop_size(const char * in, inputparameters * parameters)
+int Opencl_Module_Hmc::get_flop_size(const char * in)
 {
-	int result = Opencl_Module_Fermions::get_flop_size(in, parameters);
+	int result = Opencl_Module_Fermions::get_flop_size(in);
 	if (result != 0) return result;
 	int S;
 	if((*parameters).get_use_eo() == 1)
@@ -330,32 +328,34 @@ int Opencl_Module_Hmc::get_flop_size(const char * in, inputparameters * paramete
 	return 0;
 }
 
+#ifdef _PROFILING_
+
 void Opencl_Module_Hmc::print_profiling(std::string filename, int number)
 {
 	Opencl_Module_Fermions::print_profiling(filename, number);
 	char * kernelName;
 	kernelName = "generate_gaussian_spinorfield";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "generate_gaussian_spinorfield_eoprec";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "generate_gaussian_gaugemomenta";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "md_update_gaugefield";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "md_update_gaugemomenta";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "gauge_force";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "fermion_force";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "fermion_force_eoprec";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "set_zero_gaugemomentum";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "gaugemomentum_squarenorm";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "stout_smear_fermion_force";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 }
 #endif
 
@@ -378,26 +378,26 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device()
 
 	enqueueKernel( generate_gaussian_gaugemomenta , gs2, ls2);
 
-	if(logger.beDebug()){
-	  cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
-	  hmc_float resid;
-	  this->set_float_to_gaugemomentum_squarenorm_device(clmem_p, force_tmp);
-	  get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
-	  logger.debug() <<  "\tgaussian gaugemomenta:\t" << resid;
-	  int clerr = clReleaseMemObject(force_tmp);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	  if(resid != resid){
-	    throw Print_Error_Message("calculation of gaussian gm gave nan! Aborting...", __FILE__, __LINE__);
-	  }
+	if(logger.beDebug()) {
+		cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
+		hmc_float resid;
+		this->set_float_to_gaugemomentum_squarenorm_device(clmem_p, force_tmp);
+		get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
+		logger.debug() <<  "\tgaussian gaugemomenta:\t" << resid;
+		int clerr = clReleaseMemObject(force_tmp);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of gaussian gm gave nan! Aborting...", __FILE__, __LINE__);
+		}
 	}
 
 }
 
-void Opencl_Module_Hmc::generate_spinorfield_gaussian(){
-	if(get_parameters()->get_use_eo()== true){
+void Opencl_Module_Hmc::generate_spinorfield_gaussian()
+{
+	if(get_parameters()->get_use_eo() == true) {
 		this->generate_gaussian_spinorfield_eoprec_device();
-	}
-	else{
+	} else {
 		this->generate_gaussian_spinorfield_device();
 	}
 	return;
@@ -419,17 +419,17 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_device()
 
 	enqueueKernel(generate_gaussian_spinorfield  , gs2, ls2);
 
-	if(logger.beDebug()){
-	  cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
-	  hmc_float resid;
-	  this->set_float_to_global_squarenorm_device(clmem_phi_inv, force_tmp);
-	  get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
-	  logger.debug() <<  "\tinit gaussian spinorfield:\t" << resid;
-	  int clerr = clReleaseMemObject(force_tmp);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	  if(resid != resid){
-	    throw Print_Error_Message("calculation of gaussian spinorfield gave nan! Aborting...", __FILE__, __LINE__);
-	  }
+	if(logger.beDebug()) {
+		cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
+		hmc_float resid;
+		this->set_float_to_global_squarenorm_device(clmem_phi_inv, force_tmp);
+		get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
+		logger.debug() <<  "\tinit gaussian spinorfield:\t" << resid;
+		int clerr = clReleaseMemObject(force_tmp);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of gaussian spinorfield gave nan! Aborting...", __FILE__, __LINE__);
+		}
 	}
 
 }
@@ -450,17 +450,17 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_eoprec_device()
 
 	enqueueKernel(generate_gaussian_spinorfield_eoprec  , gs2, ls2);
 
-	if(logger.beDebug()){
-	  cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
-	  hmc_float resid;
-	  this->set_float_to_global_squarenorm_eoprec_device(clmem_phi_inv_eoprec, force_tmp);
-	  get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
-	  logger.debug() <<  "\tinit gaussian spinorfield:\t" << resid;
-	  int clerr = clReleaseMemObject(force_tmp);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	  if(resid != resid){
-	    throw Print_Error_Message("calculation of gaussian spinorfield gave nan! Aborting...", __FILE__, __LINE__);
-	  }
+	if(logger.beDebug()) {
+		cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
+		hmc_float resid;
+		this->set_float_to_global_squarenorm_eoprec_device(clmem_phi_inv_eoprec, force_tmp);
+		get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
+		logger.debug() <<  "\tinit gaussian spinorfield:\t" << resid;
+		int clerr = clReleaseMemObject(force_tmp);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of gaussian spinorfield gave nan! Aborting...", __FILE__, __LINE__);
+		}
 	}
 
 }
@@ -470,11 +470,10 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//  which then has to be the source of the inversion
-	if(get_parameters()->get_use_eo() == true){
-	  Opencl_Module_Fermions::Qplus_eoprec (clmem_phi_inv_eoprec, clmem_phi_eoprec , *get_gaugefield());
+	if(get_parameters()->get_use_eo() == true) {
+		Opencl_Module_Fermions::Qplus_eoprec (clmem_phi_inv_eoprec, clmem_phi_eoprec , *get_gaugefield());
 		if(logger.beDebug()) print_info_inv_field(clmem_phi_eoprec, true, "\tinit field after update ");
-	}
-	else{
+	} else {
 		Opencl_Module_Fermions::Qplus(clmem_phi_inv, clmem_phi , *get_gaugefield());
 		if(logger.beDebug()) print_info_inv_field(clmem_phi, false, "\tinit field after update ");
 	}
@@ -487,15 +486,15 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 	 * @NOTE The force is up to this point always calculated using "non-eoprec" spinorfields.
 	 * This is done this way since one would not save any operations using eoprec-fields, but would need
 	 * another kernel instead.
-	 * Therefore, the eoprec-fields are converted back to the normal format. 
+	 * Therefore, the eoprec-fields are converted back to the normal format.
 	 * However, using an eoprec-force holds the possibility of saving memory, which would be relevant
 	 * on e.g. a GPU.
-	 * @NOTE A dummy-kernel and corresponding calling function is already implemented if one wishes to 
-	 * 	change this one day.
+	 * @NOTE A dummy-kernel and corresponding calling function is already implemented if one wishes to
+	 *  change this one day.
 	 */
-	if(get_parameters()->get_use_eo() == true){
+	if(get_parameters()->get_use_eo() == true) {
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
-		if(get_parameters()->get_use_cg() == true) { 
+		if(get_parameters()->get_use_cg() == true) {
 			/**
 			* The first inversion calculates
 			* X_even = phi = (Qplusminus_eoprec)^-1 psi
@@ -513,22 +512,20 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			set_eoprec_spinorfield_cold_device(get_clmem_inout_eoprec());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::cg_eoprec(QplusQminus_eoprec_call, this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u, get_parameters()->get_force_prec());
-			if (converged < 0){
+			converged = Opencl_Module_Fermions::cg_eoprec(::QplusQminus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u, get_parameters()->get_force_prec());
+			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
-			}
-			else logger.debug() << "\t\t\tsolver solved in "<< converged << " iterations!";
+			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
 
 			/**
 			 * Y_even is now just
-			 * 	Y_even = (Qminus_eoprec) X_even = (Qminus_eoprec) (Qplusminus_eoprec)^-1 psi =
-			 * 		= (Qplus_eoprec)^-1 psi
+			 *  Y_even = (Qminus_eoprec) X_even = (Qminus_eoprec) (Qplusminus_eoprec)^-1 psi =
+			 *    = (Qplus_eoprec)^-1 psi
 			 */
 			Opencl_Module_Fermions::Qminus_eoprec(this->get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, this->clmem_new_u);
-		} 
-		else {
+		} else {
 			///@todo if wanted, solvertimer has to be used here..
 			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab with eoprec.";
 			/**
@@ -551,14 +548,13 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
 			if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eoprec(), true, "\tsource before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab_eoprec(Qplus_eoprec_call, this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u, get_parameters()->get_force_prec());
-			if (converged < 0){
+			converged = Opencl_Module_Fermions::bicgstab_eoprec(::Qplus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u, get_parameters()->get_force_prec());
+			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
-			}
-			else logger.debug() << "\t\t\tsolver solved in "<< converged << " iterations!";
+			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
-			
+
 			//store this result in clmem_phi_inv
 			copy_buffer_on_device(get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, get_parameters()->get_eo_sf_buf_size());
 
@@ -579,38 +575,36 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			set_eoprec_spinorfield_cold_device(get_clmem_inout_eoprec());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab_eoprec(Qminus_eoprec_call, get_clmem_inout_eoprec(), get_clmem_source_even(), clmem_new_u, get_parameters()->get_force_prec());
-			if (converged < 0){
+			converged = Opencl_Module_Fermions::bicgstab_eoprec(::Qminus_eoprec(this), get_clmem_inout_eoprec(), get_clmem_source_even(), clmem_new_u, get_parameters()->get_force_prec());
+			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
-			}
-			else logger.debug() << "\t\t\tsolver solved in "<< converged << " iterations!";
+			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
 		}
 		/**
 		 * At this point, one has calculated X_even and Y_odd.
 		 * If one has a fermionmatrix
-		 * 	M = R + D
+		 *  M = R + D
 		 * these are:
-		 * 	X_odd = -R(-mu)_inv D X_even
-		 * 	Y_odd = -R(mu)_inv D Y_even
+		 *  X_odd = -R(-mu)_inv D X_even
+		 *  Y_odd = -R(mu)_inv D Y_even
 		 */
-		
+
 		///@NOTE the following calculations could also go in a new function for convenience
 		//calculate X_odd
 		//therefore, clmem_tmp_eoprec_1 is used as intermediate state. The result is saved in clmem_inout, since
-		//	this is used as a default in the force-function.
-		if(get_parameters()->get_fermact() == WILSON){
+		//  this is used as a default in the force-function.
+		if(get_parameters()->get_fermact() == WILSON) {
 			dslash_eoprec_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
 			sax_eoprec_device(get_clmem_tmp_eoprec_1(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
-		}
-		else if(get_parameters()->get_fermact() == TWISTEDMASS){
+		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
 			dslash_eoprec_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
 			M_tm_inverse_sitediagonal_minus_device(get_clmem_tmp_eoprec_1(), get_clmem_tmp_eoprec_2());
 			sax_eoprec_device(get_clmem_tmp_eoprec_2(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
 		}
-	
-		if(logger.beDebug()){
+
+		if(logger.beDebug()) {
 			int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
 			cl_mem sf_tmp = create_rw_buffer(spinorfield_size);
 			this->convert_from_eoprec_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), sf_tmp);
@@ -627,18 +621,17 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 		//calculate Y_odd
 		//therefore, clmem_tmp_eoprec_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
-		//	this is used as a default in the force-function.
-		if(get_parameters()->get_fermact() == WILSON){
+		//  this is used as a default in the force-function.
+		if(get_parameters()->get_fermact() == WILSON) {
 			dslash_eoprec_device(clmem_phi_inv_eoprec, get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
 			sax_eoprec_device(get_clmem_tmp_eoprec_1(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
-		}
-		else if(get_parameters()->get_fermact() == TWISTEDMASS){
+		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
 			dslash_eoprec_device(clmem_phi_inv_eoprec, get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
 			M_tm_inverse_sitediagonal_minus_device(get_clmem_tmp_eoprec_1(), get_clmem_tmp_eoprec_2());
 			sax_eoprec_device(get_clmem_tmp_eoprec_2(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
 		}
 
-		if(logger.beDebug()){
+		if(logger.beDebug()) {
 			int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
 			cl_mem sf_tmp = create_rw_buffer(spinorfield_size);
 			this->convert_from_eoprec_device(clmem_phi_inv_eoprec, get_clmem_tmp_eoprec_1(), sf_tmp);
@@ -652,10 +645,9 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		logger.debug() << "\t\tcalc eoprec fermion_force F(Y_odd, X_even)...";
 		//Calc F(Y_odd, X_even) = F(clmem_tmp_eoprec_1, clmem_inout_eoprec)
 		fermion_force_eoprec_device(get_clmem_tmp_eoprec_1(), get_clmem_inout_eoprec(), ODD);
-	}
-	else{
-		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield 
-		if(get_parameters()->get_use_cg() == true) { 
+	} else {
+		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
+		if(get_parameters()->get_use_cg() == true) {
 			/**
 			* The first inversion calculates
 			* X = phi = (Qplusminus)^-1 psi
@@ -674,21 +666,20 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			converged = Opencl_Module_Fermions::cg(QplusQminus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_force_prec());
-			if (converged < 0){
+			converged = Opencl_Module_Fermions::cg(::QplusQminus(this), this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_force_prec());
+			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
-			}
-			else logger.debug() << "\t\t\tsolver solved in "<< converged << " iterations!";
+			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
 
 			/**
 			 * Y is now just
-			 * 	Y = (Qminus) X = (Qminus) (Qplusminus)^-1 psi =
-			 * 		= (Qplus)^-1 psi
+			 *  Y = (Qminus) X = (Qminus) (Qplusminus)^-1 psi =
+			 *    = (Qplus)^-1 psi
 			 */
 			Opencl_Module_Fermions::Qminus(this->get_clmem_inout(), clmem_phi_inv, this->clmem_new_u);
-			
+
 		} else  {
 			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab without eoprec";
 
@@ -711,12 +702,11 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			converged = Opencl_Module_Fermions::bicgstab(Qplus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_force_prec());
-			if (converged < 0){
+			converged = Opencl_Module_Fermions::bicgstab(::Qplus(this), this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_force_prec());
+			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
-			}
-			else logger.debug() << "\t\t\tsolver solved in "<< converged << " iterations!";
+			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
 
 			//store this result in clmem_phi_inv
@@ -739,16 +729,15 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			set_spinorfield_cold_device(get_clmem_inout());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab(Qminus_call, get_clmem_inout(), get_clmem_source(), clmem_new_u, get_parameters()->get_force_prec());
-			if (converged < 0){
+			converged = Opencl_Module_Fermions::bicgstab(::Qminus(this), get_clmem_inout(), get_clmem_source(), clmem_new_u, get_parameters()->get_force_prec());
+			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
-			}
-			else logger.debug() << "\t\t\tsolver solved in "<< converged << " iterations!";
+			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
 		}
-		if(logger.beDebug()){
-		  print_info_inv_field(clmem_phi_inv, false, "\tY ");
+		if(logger.beDebug()) {
+			print_info_inv_field(clmem_phi_inv, false, "\tY ");
 			print_info_inv_field(get_clmem_inout(), false, "\tX ");
 		}
 		logger.debug() << "\t\tcalc fermion_force...";
@@ -763,31 +752,30 @@ void Opencl_Module_Hmc::calc_gauge_force()
 	gauge_force_device();
 }
 
-hmc_float Opencl_Module_Hmc::calc_s_fermion(){
+hmc_float Opencl_Module_Hmc::calc_s_fermion()
+{
 	logger.debug() << "calc final fermion energy...";
 	//this function essentially performs the same steps as in the force-calculation, but with higher precision.
-	//	therefore, comments are deleted here...
-	//	Furthermore, in the bicgstab-case, the second inversions are not needed
+	//  therefore, comments are deleted here...
+	//  Furthermore, in the bicgstab-case, the second inversions are not needed
 	int converged = -1;
-	if(get_parameters()->get_use_eo() == true){
+	if(get_parameters()->get_use_eo() == true) {
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
-		if(get_parameters()->get_use_cg() == true) { 
+		if(get_parameters()->get_use_cg() == true) {
 			logger.debug() << "\t\t\tstart solver";
 
 			set_eoprec_spinorfield_cold_device(get_clmem_inout_eoprec());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::cg_eoprec(QplusQminus_eoprec_call, this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u, get_parameters()->get_solver_prec());
-			if (converged < 0){
+			converged = Opencl_Module_Fermions::cg_eoprec(::QplusQminus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u, get_parameters()->get_solver_prec());
+			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
-			}
-			else logger.debug() << "\t\t\tsolver solved in "<< converged << " iterations!";
+			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
 
 			Opencl_Module_Fermions::Qminus_eoprec(this->get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, this->clmem_new_u);
-		} 
-		else {
+		} else {
 			logger.debug() << "\t\t\tstart solver";
 
 			/** @todo at the moment, we can only put in a cold spinorfield
@@ -798,21 +786,19 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion(){
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
 			if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eoprec(), true, "\tsource before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab_eoprec(Qplus_eoprec_call, this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u, get_parameters()->get_solver_prec());
-			if (converged < 0){
+			converged = Opencl_Module_Fermions::bicgstab_eoprec(::Qplus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u, get_parameters()->get_solver_prec());
+			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
-			}
-			else logger.debug() << "\t\t\tsolver solved in "<< converged << " iterations!";
+			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
-			
+
 			//store this result in clmem_phi_inv
 			copy_buffer_on_device(get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, get_parameters()->get_eo_sf_buf_size());
 
 		}
-	}
-	else{
-		if(get_parameters()->get_use_cg() == true) { 
+	} else {
+		if(get_parameters()->get_use_cg() == true) {
 			logger.debug() << "\t\t\tstart solver";
 
 			/** @todo at the moment, we can only put in a cold spinorfield
@@ -821,16 +807,15 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion(){
 			set_spinorfield_cold_device(get_clmem_inout());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::cg(QplusQminus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_solver_prec());
-			if (converged < 0){
+			converged = Opencl_Module_Fermions::cg(::QplusQminus(this), this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_solver_prec());
+			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
-			}
-			else logger.debug() << "\t\t\tsolver solved in "<< converged << " iterations!";
+			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
 
 			Opencl_Module_Fermions::Qminus(this->get_clmem_inout(), clmem_phi_inv, this->clmem_new_u);
-			
+
 		} else  {
 
 			logger.debug() << "\t\t\tstart solver";
@@ -841,23 +826,21 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion(){
 			set_spinorfield_cold_device(get_clmem_inout());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab(Qplus_call, this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_solver_prec());
-			if (converged < 0){
+			converged = Opencl_Module_Fermions::bicgstab(::Qplus(this), this->get_clmem_inout(), this->get_clmem_phi(), this->clmem_new_u, get_parameters()->get_solver_prec());
+			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
-			}
-			else logger.debug() << "\t\t\tsolver solved in "<< converged << " iterations!";
+			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
 
 			//store this result in clmem_phi_inv
 			copy_buffer_on_device(get_clmem_inout(), clmem_phi_inv, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
 		}
 	}
-	
-	if(get_parameters()->get_use_eo() == true){
+
+	if(get_parameters()->get_use_eo() == true) {
 		set_float_to_global_squarenorm_eoprec_device(clmem_phi_inv_eoprec, clmem_s_fermion);
-	}
-	else{
+	} else {
 		set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_s_fermion);
 	}
 	hmc_float tmp;
@@ -947,10 +930,9 @@ void Opencl_Module_Hmc::calc_spinorfield_init_energy()
 {
 	//Suppose the initial spinorfield is saved in phi_inv
 	//  it is created in generate_gaussian_spinorfield_device
-	if(get_parameters()->get_use_eo() == true){
+	if(get_parameters()->get_use_eo() == true) {
 		Opencl_Module_Fermions::set_float_to_global_squarenorm_eoprec_device(clmem_phi_inv_eoprec, clmem_energy_init);
-	}
-	else{
+	} else {
 		Opencl_Module_Fermions::set_float_to_global_squarenorm_device(clmem_phi_inv, clmem_energy_init);
 	}
 }
@@ -1029,7 +1011,7 @@ void Opencl_Module_Hmc::gauge_force_device()
 void Opencl_Module_Hmc::fermion_force_device()
 {
 	//fermion_force(field, Y, X, out);
-  cl_mem tmp = get_clmem_inout();
+	cl_mem tmp = get_clmem_inout();
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -1049,17 +1031,17 @@ void Opencl_Module_Hmc::fermion_force_device()
 
 	enqueueKernel( fermion_force , gs2, ls2);
 
-	if(logger.beDebug()){
-	  cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
-	  hmc_float resid;
-	  this->set_float_to_gaugemomentum_squarenorm_device(clmem_force, force_tmp);
-	  get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
-	  logger.debug() <<  "\tforce:\t" << resid;
-	  int clerr = clReleaseMemObject(force_tmp);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	  if(resid != resid){
-	    throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
-	  }
+	if(logger.beDebug()) {
+		cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
+		hmc_float resid;
+		this->set_float_to_gaugemomentum_squarenorm_device(clmem_force, force_tmp);
+		get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
+		logger.debug() <<  "\tforce:\t" << resid;
+		int clerr = clReleaseMemObject(force_tmp);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
+		}
 	}
 }
 
@@ -1085,20 +1067,20 @@ void Opencl_Module_Hmc::fermion_force_eoprec_device(cl_mem Y, cl_mem X, int even
 
 	clerr = clSetKernelArg(fermion_force_eoprec, 4, sizeof(int), &evenodd);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	enqueueKernel( fermion_force_eoprec , gs2, ls2);
 
-	if(logger.beDebug()){
-	  cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
-	  hmc_float resid;
-	  this->set_float_to_gaugemomentum_squarenorm_device(clmem_force, force_tmp);
-	  get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
-	  logger.debug() <<  "\teoprec force:\t" << resid;
-	  int clerr = clReleaseMemObject(force_tmp);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	  if(resid != resid){
-	    throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
-	  }
+	if(logger.beDebug()) {
+		cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
+		hmc_float resid;
+		this->set_float_to_gaugemomentum_squarenorm_device(clmem_force, force_tmp);
+		get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
+		logger.debug() <<  "\teoprec force:\t" << resid;
+		int clerr = clReleaseMemObject(force_tmp);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
+		}
 	}
 }
 

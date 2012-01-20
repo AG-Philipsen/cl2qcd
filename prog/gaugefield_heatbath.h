@@ -14,7 +14,6 @@
 
 #include "globaldefs.h"
 #include "types.h"
-#include "host_operations_complex.h"
 #include "host_operations_gaugefield.h"
 #include "inputparameters.h"
 #include "host_readgauge.h"

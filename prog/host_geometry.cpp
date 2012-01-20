@@ -22,15 +22,6 @@ int get_global_link_pos(int mu, int spacepos, int t, const inputparameters * con
 	return mu + NDIM * get_global_pos(spacepos, t, params);
 }
 
-size_t get_hmc_gaugefield_index(size_t m, size_t n, size_t spacepos, size_t timepos, size_t mu, const inputparameters * const parameters)
-{
-	const size_t VOLSPACE = parameters->get_volspace();
-	const size_t NTIME = parameters->get_nt();
-	size_t result = (mu * VOLSPACE + spacepos ) * NTIME + timepos;
-	result += (m * NC + n) * NDIM * VOLSPACE * NTIME;
-	return result;
-}
-
 size_t get_su3_idx_ildg_format(size_t n, size_t m, size_t x, size_t y, size_t z, size_t t, size_t mu, const inputparameters * const parameters){
         //ildg-std: [NT][NZ][NY][NX][NDIMENSION][NCOLOR][NCOLOR][2]
         size_t link_idx_ildg = get_link_idx_ildg_format(x,y,z,t,mu, parameters);        
@@ -43,6 +34,5 @@ size_t get_link_idx_ildg_format(size_t x, size_t y, size_t z, size_t t, size_t m
 	const size_t NSPACE = parameters->get_ns();
 	size_t spacepos_ildg = z + y * NSPACE + x * NSPACE * NSPACE;
 	size_t link_idx_ildg = mu + spacepos_ildg * NDIM + t * VOLSPACE * NDIM;
-
         return link_idx_ildg;
 }

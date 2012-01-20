@@ -17,7 +17,6 @@
 #endif
 
 #include "host_geometry.h"
-#include "host_operations_complex.h"
 #include "host_operations_gaugefield.h"
 #include "globaldefs.h"
 #include "types.h"
@@ -39,15 +38,85 @@ class Opencl_Module_Fermions;
  * to another function inside this class.
  * This type points to a helper-function, which then calls the wanted function.
  */
-typedef void (*matrix_function_call) (Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
-void M_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
-void Qplus_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
-void Qminus_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
-void QplusQminus_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
-void Aee_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
-void Qplus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
-void Qminus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
-void QplusQminus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf);
+class Matrix_Function {
+protected:
+	Opencl_Module_Fermions * that;
+
+	Matrix_Function(Opencl_Module_Fermions * that) : that(that) { };
+
+public:
+	/**
+	 * Invoke the matrix function.
+	 */
+	virtual void operator() (cl_mem in, cl_mem out, cl_mem gf) const = 0;
+
+	/**
+	 * Get the net flops performed by this function.
+	 */
+	virtual cl_ulong get_Flops() const = 0;
+
+	/**
+	 * Get the net bytes read / written by this function.
+	 */
+	virtual cl_ulong get_Bytes() const = 0;
+};
+
+class M : public Matrix_Function {
+public:
+	M(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
+};
+class Qplus : public Matrix_Function {
+public:
+	Qplus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
+};
+class Qminus : public Matrix_Function {
+public:
+	Qminus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
+};
+class QplusQminus : public Matrix_Function {
+public:
+	QplusQminus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
+};
+class Aee : public Matrix_Function {
+public:
+	Aee(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
+};
+class Qplus_eoprec : public Matrix_Function {
+public:
+	Qplus_eoprec(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
+};
+class Qminus_eoprec : public Matrix_Function {
+public:
+	Qminus_eoprec(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
+};
+class QplusQminus_eoprec : public Matrix_Function {
+public:
+	QplusQminus_eoprec(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
+};
 
 /**
  * An OpenCL device
@@ -134,20 +203,20 @@ public:
 	//    solver operations
 	//    non-eoprec
 	/// this calls the solver according to parameter settings using the fermionmatrix f
-	void solver(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer);
+	void solver(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer);
 	/**
 	* the solvers return the number of iterations needed if it converged,
 	* -1 if it did not converge within cgmax
 	* -iter if the algorithm got stuck at some point
 	*/
 	/// this executes the bicgstab on the device, using the fermionmatrix f
-	int bicgstab(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
+	int bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
 	/// this executes the cg on the device, using the fermionmatrix f
-	int cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
+	int cg(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
 	//    eoprec
 	/// this executes the eoprec bicgstab on the device, using the fermionmatrix f
-	int bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
-	int cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
+	int bicgstab_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
+	int cg_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
 
 	/////////////////////////////////////////////////
 	//functions to get private variables
@@ -198,21 +267,6 @@ public:
 	virtual usetimer* get_timer(const char * in);
 
 	/**
-	 * Return amount of bytes read and written by a specific kernel per call.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual int get_read_write_size(const char * in, inputparameters * parameters);
-
-	/**
-	 * Return amount of Floating point operations performed by a specific kernel per call.
-	 * NOTE: this is meant to be the "netto" amount in order to be comparable.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual int get_flop_size(const char * in, inputparameters * parameters);
-	
-	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
@@ -220,6 +274,21 @@ public:
 	void virtual print_profiling(std::string filename, int number);
 
 #endif
+
+	/**
+	 * Return amount of bytes read and written by a specific kernel per call.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual int get_read_write_size(const char * in);
+
+	/**
+	 * Return amount of Floating point operations performed by a specific kernel per call.
+	 * NOTE: this is meant to be the "netto" amount in order to be comparable.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual int get_flop_size(const char * in);
 
 private:
 	////////////////////////////////////

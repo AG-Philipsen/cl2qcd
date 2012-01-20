@@ -149,7 +149,7 @@ void Dummyfield::finalize_opencl()
 	Gaugefield_hybrid::finalize_opencl();
 }
 
-void fill_sf_with_one(spinor * sf_in1, spinor * sf_in2, int size)
+void fill_sf_with_one(spinor * sf_in1, int size)
 {
 	for(int i = 0; i < size; ++i) {
 		sf_in1[i].e0.e0 = hmc_complex_one;
@@ -344,8 +344,8 @@ void Dummyfield::fill_buffers()
 
 	//use the variable use_cg to switch between cold and random input sf
 	if(get_parameters()->get_use_cg() == true) {
-	  fill_sf_with_one(sf_in1, sf_in2, NUM_ELEMENTS_SF);
-	  fill_sf_with_one(sf_in3, sf_in4, NUM_ELEMENTS_SF);
+	  fill_sf_with_one(sf_in1, NUM_ELEMENTS_SF);
+	  fill_sf_with_one(sf_in3, NUM_ELEMENTS_SF);
 	}
 	else {
 	  fill_sf_with_random(sf_in1, sf_in2, NUM_ELEMENTS_SF, 123456);
@@ -524,7 +524,7 @@ void Dummyfield::verify(hmc_float cpu, hmc_float gpu){
 
 void Dummyfield::runTestKernel(int evenodd)
 {
-	int gs, ls;
+	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = get_parameters()->get_eoprec_spinorfieldsize();
 		ls = 64;

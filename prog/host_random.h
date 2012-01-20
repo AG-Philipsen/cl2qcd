@@ -93,4 +93,21 @@ void init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seed
 /** Construct new SU2 matrix using improved alg by Kennedy Pendleton */
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha);
 
+/**
+ * Fill the real and imaginary parts of complex numbers in an
+ * array with components drawn from a Gaussian distribution.
+ *
+ * \param[out] vector An array of complex numbers to write to
+ * \param[in] length The amount of complex numbers to be copied
+ * \param[in] sigma The variance of the Gaussian distribution
+ */
+void gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma);
+/**
+ * Generate two independent normal standard real numbers
+ *
+ * \param[out] z1 A real number
+ * \param[out] z2 A real number
+ */
+void gaussianNormalPair(hmc_float * z1, hmc_float * z2);
+
 #endif /* _RANDOMH_ */
