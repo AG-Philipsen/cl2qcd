@@ -1306,6 +1306,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 		//CP: these have to be on the host
 		hmc_float resid;
 		hmc_float trueresid;
+		unsigned retests = 0;
 		int cgmax = get_parameters()->get_cgmax();
 		for(int iter = 0; iter < cgmax; iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
@@ -1364,6 +1365,8 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
 			if(resid < prec) {
+				++retests;
+
 				f(inout, clmem_aux_eoprec, gf);
 				saxpy_eoprec_device(clmem_aux_eoprec, source, clmem_one, clmem_aux_eoprec);
 
@@ -1371,12 +1374,27 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
 				//cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
 				if(trueresid < prec) {
+					// report on performance
 					if(logger.beInfo()) {
 						// we are always synchroneous here, as we had to recieve the residium from the device
 						uint64_t duration = timer.getTime();
-						// TODO calculate flops + bandwidth and return
-						logger.info() << "BiCGstab completed in " << duration / 1000 << " ms.";
+
+						// calculate flops
+						unsigned refreshs = iter / get_parameters()->get_iter_refresh() + 1;
+						cl_ulong mf_flops = f.get_Flops();
+
+						cl_ulong total_flops = 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 3 * get_flop_size("product") + 2 * get_flop_size("saxsbypz_eoprec") + 2 * mf_flops + 2 * get_flop_size("saxpy") + get_flop_size("global_squarenorm_eoprec");
+						total_flops *= iter;
+
+						total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec"));
+
+						total_flops += retests * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("global_squarenorm_eoprec"));
+
+						// report performanc
+						logger.info() << "BiCGstab_save completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops.";
 					}
+
+					// we are done here
 					return iter;
 				} else {
 //					cout << "trueresiduum not small enough" <<endl;
@@ -1413,13 +1431,25 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			//cout << resid << endl;
 
 			if(resid < prec) {
+				// report on performance
 				if(logger.beInfo()) {
 					// we are always synchroneous here, as we had to recieve the residium from the device
 					uint64_t duration = timer.getTime();
-					// TODO calculate flops + bandwidth and return
 
-					logger.info() << "BiCG completed in " << duration / 1000 << " ms.";
+					// calculate flops
+					unsigned refreshs = iter / get_parameters()->get_iter_refresh() + 1;
+					cl_ulong mf_flops = f.get_Flops();
+
+					cl_ulong total_flops = get_flop_size("global_squarenorm_eoprec") + 2 * mf_flops + 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 2 * get_flop_size("saxpy_eoprec") + 2 * get_flop_size("saxsbypz_eoprec") + 3 * get_flop_size("product");
+					total_flops *= iter;
+
+					total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
+
+					// report performanc
+					logger.info() << "BiCGstab completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops.";
 				}
+
+				// we are done here
 				return iter;
 			}
 			//v = A*p
