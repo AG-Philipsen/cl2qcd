@@ -141,7 +141,7 @@ Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const
 }
 
 void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, int mu, const inputparameters * const parameters){
-  size_t link_pos = get_global_link_pos(mu, spacepos, timepos, parameters);
+        size_t link_pos = get_global_link_pos(mu, spacepos, timepos, parameters);
 	field[link_pos] = in;
 }
 
@@ -150,7 +150,7 @@ Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const inputparameters * const
         Matrixsu3 res, prod;
 	res = unit_matrixsu3();
 	for(int t = 0; t < parameters->get_nt(); t++) {
-		prod = get_matrixsu3(field, n, t, 0, parameters);
+		prod = get_matrixsu3(field, n, t, TDIR, parameters);
 		res = multiply_matrixsu3(res, prod);
 	}
 	return res;
@@ -162,10 +162,10 @@ Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu,
         Matrixsu3 res, tmp;
 	//coordinates of neighbors
 	int coord[NDIM];
-	coord[0] = coord_in[0];
-	coord[1] = coord_in[1];
-	coord[2] = coord_in[2];
-	coord[3] = coord_in[3];
+	coord[TDIR] = coord_in[TDIR];
+	coord[XDIR] = coord_in[XDIR];
+	coord[YDIR] = coord_in[YDIR];
+	coord[ZDIR] = coord_in[ZDIR];
 	//spatial index
 	int n;
 	
@@ -173,9 +173,9 @@ Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu,
 	const size_t NSPACE = parameters->get_ns();
 	//u_mu(x)
 	n = get_nspace(coord_in, parameters);
-	res = get_matrixsu3(field, n, coord[0], mu, parameters);
+	res = get_matrixsu3(field, n, coord[TDIR], mu, parameters);
 	//u_nu(x+mu)
-	if(mu == 0) {
+	if(mu == TDIR) {
 		coord[mu] = (coord_in[mu] + 1) % NTIME;
 		n = get_nspace(coord, parameters);
 		tmp = get_matrixsu3(field, n, coord[mu], nu, parameters);
@@ -183,13 +183,13 @@ Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu,
 	} else {
 		coord[mu] = (coord_in[mu] + 1) % NSPACE;
 		int newn = get_nspace(coord, parameters);
-		tmp = get_matrixsu3(field, newn, coord[0], nu, parameters);
+		tmp = get_matrixsu3(field, newn, coord[TDIR], nu, parameters);
 		coord[mu] = coord_in[mu];
 	}
 	//accumulate_su3matrix_prod(&prod, &tmp);
 	res = multiply_matrixsu3(res, tmp);
 	//adjoint(u_mu(x+nu))
-	if(nu == 0) {
+	if(nu == TDIR) {
 		coord[nu] = (coord_in[nu] + 1) % NTIME;
 		n = get_nspace(coord, parameters);
 	        tmp = get_matrixsu3(field, n, coord[nu], mu, parameters);
@@ -197,14 +197,14 @@ Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu,
 	} else {
 		coord[nu] = (coord_in[nu] + 1) % NSPACE;
 		int newn = get_nspace(coord, parameters);
-	        tmp = get_matrixsu3(field, newn, coord[0], mu, parameters);
+	        tmp = get_matrixsu3(field, newn, coord[TDIR], mu, parameters);
 		coord[nu] = coord_in[nu];
 	}
 	res = multiply_matrixsu3_dagger(res, tmp);
 
 	//adjoint(u_nu(x))
 	n = get_nspace(coord_in, parameters);
-        tmp = get_matrixsu3(field, n, coord[0], nu, parameters);
+        tmp = get_matrixsu3(field, n, coord[TDIR], nu, parameters);
 	res = multiply_matrixsu3_dagger(res, tmp);
 
 	return res;
