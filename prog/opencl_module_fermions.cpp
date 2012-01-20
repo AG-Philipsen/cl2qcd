@@ -1296,7 +1296,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
-	if (get_parameters()->get_use_bicgstab_save() == true) {
+	if (get_parameters()->get_use_bicgstab_save()) {
 		//CP: these have to be on the host
 		hmc_float resid;
 		hmc_float trueresid;
@@ -1372,10 +1372,9 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			}
 		}
 		return -1;
-	}
-	//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
-	//  In particular this version does not perform the check if the "real" residuum is sufficiently small!
-	if (get_parameters()->get_use_bicgstab_save() != true) {
+	} else {
+		//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
+		//  In particular this version does not perform the check if the "real" residuum is sufficiently small!
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				//initial r_n, saved in p
