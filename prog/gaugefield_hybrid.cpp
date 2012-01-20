@@ -335,10 +335,16 @@ void Gaugefield_hybrid::set_gaugefield_cold(Matrixsu3 * field)
 	}
 }
 
-void Gaugefield_hybrid::set_gaugefield_hot(Matrixsu3 *)
+void Gaugefield_hybrid::set_gaugefield_hot(Matrixsu3 * field)
 {
-  /// @todo Implement this
-	throw Print_Error_Message("Hot start not yet implemented.", __FILE__, __LINE__);
+	for(int t = 0; t < parameters->get_nt(); t++) {
+		for(int n = 0; n < parameters->get_volspace(); n++) {
+			for(int mu = 0; mu < NDIM; mu++) {
+				const Matrixsu3 tmp = random_matrixsu3();
+				set_to_gaugefield(field, mu, n, t, tmp);
+			}
+		}
+	}
 }
 
 void Gaugefield_hybrid::copy_gaugefield_to_all_tasks()
