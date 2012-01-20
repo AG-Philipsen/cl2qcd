@@ -97,4 +97,11 @@ uint64_t divide(uint64_t a, int b);
  */
 float percent(uint64_t a, uint64_t b);
 
+/**
+ * Callback function that resets the passed klepsydra timer on event completion.
+ *
+ * For use with clSetEventCallback
+ */
+void resetTimerOnComplete(cl_event event, cl_int event_command_exec_status, void * data);
+
 #endif

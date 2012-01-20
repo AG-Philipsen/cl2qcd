@@ -1297,6 +1297,12 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 {
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
 	if (get_parameters()->get_use_bicgstab_save()) {
+		cl_event start_event;
+		klepsydra::Monotonic timer;
+		if(logger.beInfo()) {
+			clEnqueueMarker(get_queue(), &start_event);
+			clSetEventCallback(start_event, CL_COMPLETE, resetTimerOnComplete, &timer);
+		}
 		//CP: these have to be on the host
 		hmc_float resid;
 		hmc_float trueresid;
@@ -1365,6 +1371,12 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
 				//cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
 				if(trueresid < prec) {
+					if(logger.beInfo()) {
+						// we are always synchroneous here, as we had to recieve the residium from the device
+						uint64_t duration = timer.getTime();
+						// TODO calculate flops + bandwidth and return
+						logger.info() << "BiCGstab completed in " << duration / 1000 << " ms.";
+					}
 					return iter;
 				} else {
 //					cout << "trueresiduum not small enough" <<endl;
@@ -1375,6 +1387,12 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 	} else {
 		//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
 		//  In particular this version does not perform the check if the "real" residuum is sufficiently small!
+		cl_event start_event;
+		klepsydra::Monotonic timer;
+		if(logger.beInfo()) {
+			clEnqueueMarker(get_queue(), &start_event);
+			clSetEventCallback(start_event, CL_COMPLETE, resetTimerOnComplete, &timer);
+		}
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				//initial r_n, saved in p
@@ -1395,6 +1413,13 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			//cout << resid << endl;
 
 			if(resid < prec) {
+				if(logger.beInfo()) {
+					// we are always synchroneous here, as we had to recieve the residium from the device
+					uint64_t duration = timer.getTime();
+					// TODO calculate flops + bandwidth and return
+
+					logger.info() << "BiCG completed in " << duration / 1000 << " ms.";
+				}
 				return iter;
 			}
 			//v = A*p

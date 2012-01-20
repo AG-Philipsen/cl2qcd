@@ -96,3 +96,11 @@ uint64_t get_kernel_submit_overhead_time(cl_event event)
 	return tmp;
 }
 
+void resetTimerOnComplete(cl_event event, cl_int event_command_exec_status, void * data)
+{
+	// complete is currently the only possible status, but just be sure
+	if(event_command_exec_status == CL_COMPLETE) {
+		klepsydra::Timer * timer = static_cast<klepsydra::Timer *>(data);
+		timer->reset();
+	}
+}
