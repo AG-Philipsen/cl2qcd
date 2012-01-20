@@ -12,38 +12,330 @@ using namespace std;
  * This is needed to be able to pass different fermionmatrices as
  *  arguments to class-functions.
  */
-void M_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+void M::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->M(in, out, gf);
 }
-void Qplus_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+cl_ulong M::get_Flops() const
+{
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			return that->get_flop_size("M_wilson");
+		case TWISTEDMASS:
+			return that->get_flop_size("M_tm_plus");
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+}
+cl_ulong M::get_Bytes() const
+{
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			return that->get_read_write_size("M_wilson");
+		case TWISTEDMASS:
+			return that->get_read_write_size("M_tm_plus");
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+}
+
+void Qplus::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Qplus(in, out, gf);
 }
-void Qminus_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+cl_ulong Qplus::get_Flops() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = that->get_flop_size("M_wilson");
+			break;
+		case TWISTEDMASS:
+			res = that->get_flop_size("M_tm_plus");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_flop_size("gamma5");
+	return res;
+}
+cl_ulong Qplus::get_Bytes() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = that->get_read_write_size("M_wilson");
+			break;
+		case TWISTEDMASS:
+			res = that->get_read_write_size("M_tm_plus");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_read_write_size("gamma5");
+	return res;
+}
+
+void Qminus::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Qminus(in, out, gf);
 }
-void QplusQminus_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+cl_ulong Qminus::get_Flops() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = that->get_flop_size("M_wilson");
+			break;
+		case TWISTEDMASS:
+			res = that->get_flop_size("M_tm_minus");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_flop_size("gamma5");
+	return res;
+}
+cl_ulong Qminus::get_Bytes() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = that->get_read_write_size("M_wilson");
+			break;
+		case TWISTEDMASS:
+			res = that->get_read_write_size("M_tm_minus");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_read_write_size("gamma5");
+	return res;
+}
+
+void QplusQminus::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->QplusQminus(in, out, gf);
 }
-void Aee_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+cl_ulong QplusQminus::get_Flops() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_flop_size("M_wilson");
+			break;
+		case TWISTEDMASS:
+			res = that->get_flop_size("M_tm_plus");
+			res += that->get_flop_size("M_tm_minus");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += 2 * that->get_flop_size("gamma5");
+	return res;
+}
+cl_ulong QplusQminus::get_Bytes() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_read_write_size("M_wilson");
+			break;
+		case TWISTEDMASS:
+			res = that->get_read_write_size("M_tm_plus");
+			res += that->get_read_write_size("M_tm_minus");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += 2 * that->get_read_write_size("gamma5");
+	return res;
+}
+
+void Aee::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Aee(in, out, gf);
 }
-void Qplus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+cl_ulong Aee::get_Flops() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("saxpy_eoprec");
+			break;
+		case TWISTEDMASS:
+			res = 2 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("M_tm_inverse_sitediagonal");
+			res += that->get_flop_size("M_tm_sitediagonal");
+			res += that->get_flop_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	return res;
+}
+cl_ulong Aee::get_Bytes() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("saxpy_eoprec");
+			break;
+		case TWISTEDMASS:
+			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("M_tm_inverse_sitediagonal");
+			res += that->get_read_write_size("M_tm_sitediagonal");
+			res += that->get_read_write_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	return res;
+}
+
+void Qplus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Qplus_eoprec(in, out, gf);
 }
-void Qminus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+cl_ulong Qplus_eoprec::get_Flops() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("saxpy_eoprec");
+			break;
+		case TWISTEDMASS:
+			res = 2 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("M_tm_inverse_sitediagonal");
+			res += that->get_flop_size("M_tm_sitediagonal");
+			res += that->get_flop_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_flop_size("gamma5_eoprec");
+	return res;
+}
+cl_ulong Qplus_eoprec::get_Bytes() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("saxpy_eoprec");
+			break;
+		case TWISTEDMASS:
+			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("M_tm_inverse_sitediagonal");
+			res += that->get_read_write_size("M_tm_sitediagonal");
+			res += that->get_read_write_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_flop_size("gamma5_eoprec");
+	return res;
+}
+
+void Qminus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Qminus_eoprec(in, out, gf);
 }
-void QplusQminus_eoprec_call(Opencl_Module_Fermions* that, cl_mem in, cl_mem out, cl_mem gf)
+cl_ulong Qminus_eoprec::get_Flops() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("saxpy_eoprec");
+			break;
+		case TWISTEDMASS:
+			res = 2 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("M_tm_inverse_sitediagonal_minus");
+			res += that->get_flop_size("M_tm_sitediagonal_minus");
+			res += that->get_flop_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_flop_size("gamma5_eoprec");
+	return res;
+}
+cl_ulong Qminus_eoprec::get_Bytes() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("saxpy_eoprec");
+			break;
+		case TWISTEDMASS:
+			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("M_tm_inverse_sitediagonal_minus");
+			res += that->get_read_write_size("M_tm_sitediagonal_minus");
+			res += that->get_read_write_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_flop_size("gamma5_eoprec");
+	return res;
+}
+
+void QplusQminus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->QplusQminus_eoprec(in, out, gf);
 }
+cl_ulong QplusQminus_eoprec::get_Flops() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("saxpy_eoprec");
+			res *= 2;
+			break;
+		case TWISTEDMASS:
+			res = 4 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("M_tm_inverse_sitediagonal");
+			res += that->get_flop_size("M_tm_sitediagonal");
+			res += that->get_flop_size("M_tm_inverse_sitediagonal_minus");
+			res += that->get_flop_size("M_tm_sitediagonal_minus");
+			res += 2 * that->get_flop_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += 2 * that->get_flop_size("gamma5_eoprec");
+	return res;
+}
+cl_ulong QplusQminus_eoprec::get_Bytes() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("saxpy_eoprec");
+			res *= 2;
+			break;
+		case TWISTEDMASS:
+			res = 4 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("M_tm_inverse_sitediagonal");
+			res += that->get_read_write_size("M_tm_sitediagonal");
+			res += that->get_read_write_size("M_tm_inverse_sitediagonal_minus");
+			res += that->get_read_write_size("M_tm_sitediagonal_minus");
+			res += 2 * that->get_read_write_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += 2 * that->get_flop_size("gamma5_eoprec");
+	return res;
+}
+
 
 void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
 {
@@ -629,7 +921,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 	enqueueKernel(M_tm_sitediagonal_minus , gs2, ls2);
 }
 
-int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	int debug = 0;
 	int old = 1;
@@ -644,7 +936,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				set_zero_spinorfield_device(clmem_v);
 				set_zero_spinorfield_device(clmem_p);
-				f(this, inout, clmem_rn, gf);
+				f(inout, clmem_rn, gf);
 
 				saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
 				copy_buffer_on_device(clmem_rn, clmem_rhat, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
@@ -710,7 +1002,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 				set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 			}
 
-			f(this, clmem_p, clmem_v, gf);
+			f(clmem_p, clmem_v, gf);
 
 ////////////////////////////////////
 //collect all variables if debug is enabled
@@ -754,7 +1046,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 			saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
 
-			f(this, clmem_s, clmem_t, gf);
+			f(clmem_s, clmem_t, gf);
 
 			set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
 			//!!CP: this can also be global_squarenorm
@@ -810,7 +1102,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 //    cout << "resid at iter " << iter << " is: " << resid << endl;
 
 			if(resid < prec) {
-				f(this, inout, clmem_aux, gf);
+				f(inout, clmem_aux, gf);
 				saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
 				set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
@@ -846,7 +1138,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 				set_zero_spinorfield_device(clmem_v);
 				set_zero_spinorfield_device(clmem_p);
 				//initial r_n
-				f(this, inout, clmem_rn, gf);
+				f(inout, clmem_rn, gf);
 				saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
 				//rhat = r_n
 				copy_buffer_on_device(clmem_rn, clmem_rhat, get_parameters()->get_sf_buf_size());
@@ -881,7 +1173,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p);
 
 			//v = A*p
-			f(this, clmem_p, clmem_v, gf);
+			f(clmem_p, clmem_v, gf);
 			//tmp1 = (rhat, v)
 			set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1);
 			//alpha = rho/tmp1 = (..)/(rhat, v)
@@ -889,7 +1181,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			//s = - alpha * v - r_n
 			saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
 			//t = A s
-			f(this, clmem_s, clmem_t, gf);
+			f(clmem_s, clmem_t, gf);
 			//tmp1 = (t, s)
 			set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
 			//!!CP: this can also be global_squarenorm, but one needs a complex number here
@@ -910,7 +1202,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 
 			if(resid < prec) {
 				//aux = A inout
-				f(this, inout, clmem_aux, gf);
+				f(inout, clmem_aux, gf);
 				//aux = -aux + source
 				saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
 				//trueresid = (aux, aux)
@@ -934,7 +1226,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				//initial r_n, saved in p
-				f(this, inout, clmem_rn, gf);
+				f(inout, clmem_rn, gf);
 				saxpy_device(clmem_rn, source, clmem_one, clmem_p);
 				//rhat = p
 				copy_buffer_on_device(clmem_p, clmem_rhat, get_parameters()->get_sf_buf_size());
@@ -951,7 +1243,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 				return iter;
 			}
 			//v = A*p
-			f(this, clmem_p, clmem_v, gf);
+			f(clmem_p, clmem_v, gf);
 			//tmp1 = (rhat, v)
 			set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1);
 			//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
@@ -959,7 +1251,7 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 			//s = - alpha * v - r_n
 			saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
 			//t = A s
-			f(this, clmem_s, clmem_t, gf);
+			f(clmem_s, clmem_t, gf);
 			//tmp1 = (t, s)
 			set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
 			//!!CP: this can also be global_squarenorm, but one needs a complex number here
@@ -1001,20 +1293,27 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 	return 0;
 }
 
-int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
-	if (get_parameters()->get_use_bicgstab_save() == true) {
+	if (get_parameters()->get_use_bicgstab_save()) {
+		cl_event start_event;
+		klepsydra::Monotonic timer;
+		if(logger.beInfo()) {
+			clEnqueueMarker(get_queue(), &start_event);
+			clSetEventCallback(start_event, CL_COMPLETE, resetTimerOnComplete, &timer);
+		}
 		//CP: these have to be on the host
 		hmc_float resid;
 		hmc_float trueresid;
+		unsigned retests = 0;
 		int cgmax = get_parameters()->get_cgmax();
 		for(int iter = 0; iter < cgmax; iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				set_zero_spinorfield_eoprec_device(clmem_v_eoprec);
 				set_zero_spinorfield_eoprec_device(clmem_p_eoprec);
 
-				f(this, inout, clmem_rn_eoprec, gf);
+				f(inout, clmem_rn_eoprec, gf);
 
 				saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
 
@@ -1044,14 +1343,14 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec);
 
-			f(this, clmem_p_eoprec, clmem_v_eoprec, gf);
+			f(clmem_p_eoprec, clmem_v_eoprec, gf);
 
 			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
 			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 
 			saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec);
 
-			f(this, clmem_s_eoprec, clmem_t_eoprec, gf);
+			f(clmem_s_eoprec, clmem_t_eoprec, gf);
 
 			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1);
 			//!!CP: can this also be global_squarenorm??
@@ -1066,13 +1365,36 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
 			if(resid < prec) {
-				f(this, inout, clmem_aux_eoprec, gf);
+				++retests;
+
+				f(inout, clmem_aux_eoprec, gf);
 				saxpy_eoprec_device(clmem_aux_eoprec, source, clmem_one, clmem_aux_eoprec);
 
 				set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid);
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
 				//cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
 				if(trueresid < prec) {
+					// report on performance
+					if(logger.beInfo()) {
+						// we are always synchroneous here, as we had to recieve the residium from the device
+						uint64_t duration = timer.getTime();
+
+						// calculate flops
+						unsigned refreshs = iter / get_parameters()->get_iter_refresh() + 1;
+						cl_ulong mf_flops = f.get_Flops();
+
+						cl_ulong total_flops = 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 3 * get_flop_size("product") + 2 * get_flop_size("saxsbypz_eoprec") + 2 * mf_flops + 2 * get_flop_size("saxpy") + get_flop_size("global_squarenorm_eoprec");
+						total_flops *= iter;
+
+						total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec"));
+
+						total_flops += retests * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("global_squarenorm_eoprec"));
+
+						// report performanc
+						logger.info() << "BiCGstab_save completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops.";
+					}
+
+					// we are done here
 					return iter;
 				} else {
 //					cout << "trueresiduum not small enough" <<endl;
@@ -1080,14 +1402,19 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 			}
 		}
 		return -1;
-	}
-	//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
-	//  In particular this version does not perform the check if the "real" residuum is sufficiently small!
-	if (get_parameters()->get_use_bicgstab_save() != true) {
+	} else {
+		//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
+		//  In particular this version does not perform the check if the "real" residuum is sufficiently small!
+		cl_event start_event;
+		klepsydra::Monotonic timer;
+		if(logger.beInfo()) {
+			clEnqueueMarker(get_queue(), &start_event);
+			clSetEventCallback(start_event, CL_COMPLETE, resetTimerOnComplete, &timer);
+		}
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				//initial r_n, saved in p
-				f(this, inout, clmem_rn_eoprec, gf);
+				f(inout, clmem_rn_eoprec, gf);
 				saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_p_eoprec);
 				//rhat = p
 				copy_buffer_on_device(clmem_p_eoprec, clmem_rhat_eoprec, get_parameters()->get_eo_sf_buf_size());
@@ -1104,10 +1431,29 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 			//cout << resid << endl;
 
 			if(resid < prec) {
+				// report on performance
+				if(logger.beInfo()) {
+					// we are always synchroneous here, as we had to recieve the residium from the device
+					uint64_t duration = timer.getTime();
+
+					// calculate flops
+					unsigned refreshs = iter / get_parameters()->get_iter_refresh() + 1;
+					cl_ulong mf_flops = f.get_Flops();
+
+					cl_ulong total_flops = get_flop_size("global_squarenorm_eoprec") + 2 * mf_flops + 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 2 * get_flop_size("saxpy_eoprec") + 2 * get_flop_size("saxsbypz_eoprec") + 3 * get_flop_size("product");
+					total_flops *= iter;
+
+					total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
+
+					// report performanc
+					logger.info() << "BiCGstab completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops.";
+				}
+
+				// we are done here
 				return iter;
 			}
 			//v = A*p
-			f(this, clmem_p_eoprec, clmem_v_eoprec, gf);
+			f(clmem_p_eoprec, clmem_v_eoprec, gf);
 			//tmp1 = (rhat, v)
 			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
 			//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
@@ -1115,7 +1461,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 			//s = - alpha * v - r_n
 			saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec);
 			//t = A s
-			f(this, clmem_s_eoprec, clmem_t_eoprec, gf);
+			f(clmem_s_eoprec, clmem_t_eoprec, gf);
 			//tmp1 = (t, s)
 			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1);
 			//!!CP: this can also be global_squarenorm, but one needs a complex number here
@@ -1157,14 +1503,14 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 	return 0;
 }
 
-int Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	//CP: here I do not use clmem_rnhat anymore and saved one scalar_product (omega)
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
 	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter ++) {
 		if(iter % get_parameters()->get_iter_refresh() == 0) {
 			//rn = A*inout
-			f(this, inout, clmem_rn, gf);
+			f(inout, clmem_rn, gf);
 			//rn = source - A*inout
 			saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
 			//p = rn
@@ -1176,7 +1522,7 @@ int Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem sour
 			copy_buffer_on_device(clmem_rho_next, clmem_omega, sizeof(hmc_complex));
 		}
 		//v = A pn
-		f(this, clmem_p, clmem_v, gf);
+		f(clmem_p, clmem_v, gf);
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		set_complex_to_scalar_product_device(clmem_p, clmem_v, clmem_rho);
 		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
@@ -1212,14 +1558,14 @@ int Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem sour
 	return -1;
 }
 
-int Opencl_Module_Fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::cg_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	//this corresponds to the above function
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
 	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter ++) {
 		if(iter % get_parameters()->get_iter_refresh() == 0) {
 			//rn = A*inout
-			f(this, inout, clmem_rn_eoprec, gf);
+			f(inout, clmem_rn_eoprec, gf);
 			//rn = source - A*inout
 			saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
 			//p = rn
@@ -1231,7 +1577,7 @@ int Opencl_Module_Fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_m
 			copy_buffer_on_device(clmem_rho_next, clmem_omega, sizeof(hmc_complex));
 		}
 		//v = A pn
-		f(this, clmem_p_eoprec, clmem_v_eoprec, gf);
+		f(clmem_p_eoprec, clmem_v_eoprec, gf);
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		set_complex_to_scalar_product_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rho);
 		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
@@ -1268,7 +1614,7 @@ int Opencl_Module_Fermions::cg_eoprec(matrix_function_call f, cl_mem inout, cl_m
 }
 
 
-void Opencl_Module_Fermions::solver(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer)
+void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer)
 {
 	/** This solves the sparse-matrix system
 	 *  A x = b
@@ -1457,10 +1803,11 @@ usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 		return NULL;
 	}
 }
+#endif
 
-int Opencl_Module_Fermions::get_read_write_size(const char * in, inputparameters * parameters)
+int Opencl_Module_Fermions::get_read_write_size(const char * in)
 {
-	int result = Opencl_Module_Spinors::get_read_write_size(in, parameters);
+	int result = Opencl_Module_Spinors::get_read_write_size(in);
 	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
@@ -1529,9 +1876,9 @@ int flop_dslash_per_site(inputparameters * parameters)
 
 }
 
-int Opencl_Module_Fermions::get_flop_size(const char * in, inputparameters * parameters)
+int Opencl_Module_Fermions::get_flop_size(const char * in)
 {
-	int result = Opencl_Module_Spinors::get_flop_size(in, parameters);
+	int result = Opencl_Module_Spinors::get_flop_size(in);
 	if (result != 0) return result;
 	int S = get_parameters()->get_spinorfieldsize();
 	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
@@ -1577,29 +1924,30 @@ int Opencl_Module_Fermions::get_flop_size(const char * in, inputparameters * par
 	return 0;
 }
 
+#ifdef _PROFILING_
 void Opencl_Module_Fermions::print_profiling(std::string filename, int number)
 {
 	Opencl_Module_Spinors::print_profiling(filename, number);
 	const char * kernelName;
 	kernelName = "M_wilson";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "gamma5";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "M_tm_plus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "M_tm_minus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "gamma5_eoprec";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "M_tm_sitediagonal";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "M_tm_inverse_sitediagonal";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "M_tm_sitediagonal_minus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "M_tm_inverse_sitediagonal_minus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "dslash_eoprec";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 }
 #endif

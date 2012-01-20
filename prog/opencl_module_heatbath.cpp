@@ -12,8 +12,8 @@ void Opencl_Module_Heatbath::fill_collect_options(stringstream* collect_options)
 	Opencl_Module_Ran::fill_collect_options(collect_options);
 	*collect_options <<  " -DBETA=" << get_parameters()->get_beta();
 	if(get_parameters()->get_use_aniso() == true) {
-	*collect_options << " -D_ANISO_";
-	*collect_options <<  " -DXI_0=" << get_parameters()->get_xi_0();
+		*collect_options << " -D_ANISO_";
+		*collect_options <<  " -DXI_0=" << get_parameters()->get_xi_0();
 	}
 
 	return;
@@ -37,7 +37,7 @@ void Opencl_Module_Heatbath::fill_kernels()
 	heatbath_odd = createKernel("heatbath_odd") << basic_opencl_code << "random.cl" << "operations_heatbath.cl" << "heatbath_odd.cl";
 
 	logger.debug() << "Create overrelax kernels...";
-	overrelax_even = createKernel("overrelax_even") << basic_opencl_code << "random.cl" << "operations_heatbath.cl"<< "overrelax_even.cl";
+	overrelax_even = createKernel("overrelax_even") << basic_opencl_code << "random.cl" << "operations_heatbath.cl" << "overrelax_even.cl";
 	overrelax_odd = createKernel("overrelax_odd") << basic_opencl_code << "random.cl" << "operations_heatbath.cl" << "overrelax_odd.cl";
 
 	return;
@@ -199,10 +199,11 @@ usetimer* Opencl_Module_Heatbath::get_timer(const char * in)
 		return NULL;
 	}
 }
+#endif
 
-int Opencl_Module_Heatbath::get_read_write_size(const char * in, inputparameters * parameters)
+int Opencl_Module_Heatbath::get_read_write_size(const char * in)
 {
-	int result = Opencl_Module_Ran::get_read_write_size(in, parameters);
+	int result = Opencl_Module_Ran::get_read_write_size(in);
 	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
@@ -216,14 +217,14 @@ int Opencl_Module_Heatbath::get_read_write_size(const char * in, inputparameters
 	//this is the same as in the function above
 	if ( (strcmp(in, "heatbath_even") == 0 ) || (strcmp(in, "heatbath_odd") == 0) || (strcmp(in, "overrelax_even") == 0) || (strcmp(in, "overrelax_odd") == 0)) {
 		//this kernel reads ingredients for 1 staple plus 1 su3matrix and writes 1 su3-matrix
-		return VOL4D/2 * D * R * (6*(NDIM-1) + 1 + 1 );
+		return VOL4D / 2 * D * R * (6 * (NDIM - 1) + 1 + 1 );
 	}
 	return 0;
 }
 
-int Opencl_Module_Heatbath::get_flop_size(const char * in, inputparameters * parameters)
+int Opencl_Module_Heatbath::get_flop_size(const char * in)
 {
-	int result = Opencl_Module_Ran::get_flop_size(in, parameters);
+	int result = Opencl_Module_Ran::get_flop_size(in);
 	if (result != 0) return result;
 	const size_t VOL4D = parameters->get_vol4d();
 	int S;
@@ -235,27 +236,29 @@ int Opencl_Module_Heatbath::get_flop_size(const char * in, inputparameters * par
 	///@NOTE: I do not distinguish between su3 and 3x3 matrices. This is a difference if one use e.g. REC12, but here one wants to have the "netto" flops for comparability.
 	if ( (strcmp(in, "heatbath_even") == 0 ) || (strcmp(in, "heatbath_odd") == 0) ) {
 		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2_ND-1 su3_add) plus NC*(2*su3_su3 80 flops for the su2 update)
-		return VOL4D * (4*(NDIM-1) * get_parameters()->get_flop_su3_su3() + 2*(NDIM-1) * 18 + NC*(2* get_parameters()->get_flop_su3_su3() + 80));
+		return VOL4D * (4 * (NDIM - 1) * get_parameters()->get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * get_parameters()->get_flop_su3_su3() + 80));
 	}
 	if ( (strcmp(in, "overrelax_even") == 0) || (strcmp(in, "overrelax_odd") == 0)) {
 		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2_ND-1 su3_add) plus NC*(2*su3_su3 58 flops for the su2 update)
-		return VOL4D * (4*(NDIM-1) * get_parameters()->get_flop_su3_su3() + 2*(NDIM-1) * 18 + NC*(2* get_parameters()->get_flop_su3_su3() + 58));
+		return VOL4D * (4 * (NDIM - 1) * get_parameters()->get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * get_parameters()->get_flop_su3_su3() + 58));
 	}
 	return 0;
 }
+
+#ifdef _PROFILING_
 
 void Opencl_Module_Heatbath::print_profiling(std::string filename, int number)
 {
 	Opencl_Module_Ran::print_profiling(filename, number);
 	const char * kernelName;
 	kernelName = "heatbath_even";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "heatbath_odd";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "overrelax_even";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "overrelax_odd";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName, parameters), this->get_flop_size(kernelName, parameters) );
+	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 }
 
 #endif
