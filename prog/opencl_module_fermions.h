@@ -50,72 +50,72 @@ public:
 	 */
 	virtual void operator() (cl_mem in, cl_mem out, cl_mem gf) const = 0;
 
-//		/**
-//		 * Get the net flops performed by this function.
-//		 */
-//		virtual cl_ulong get_Flops() const = 0;
+	/**
+	 * Get the net flops performed by this function.
+	 */
+	virtual cl_ulong get_Flops() const = 0;
 
-//		/**
-//		 * Get the net bytes read / written by this function.
-//		 */
-//		virtual cl_ulong get_Bytes() const = 0;
+	/**
+	 * Get the net bytes read / written by this function.
+	 */
+	virtual cl_ulong get_Bytes() const = 0;
 };
 
 class M : public Matrix_Function {
 public:
 	M(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
 	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
-//		cl_ulong get_Flops() const;
-//		cl_ulong get_Bytes() const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
 };
 class Qplus : public Matrix_Function {
 public:
 	Qplus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
 	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
-//		cl_ulong get_Flops() const;
-//		cl_ulong get_Bytes() const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
 };
 class Qminus : public Matrix_Function {
 public:
 	Qminus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
 	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
-//		cl_ulong get_Flops() const;
-//		cl_ulong get_Bytes() const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
 };
 class QplusQminus : public Matrix_Function {
 public:
 	QplusQminus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
 	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
-//		cl_ulong get_Flops() const;
-//		cl_ulong get_Bytes() const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
 };
 class Aee : public Matrix_Function {
 public:
 	Aee(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
 	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
-//		cl_ulong get_Flops() const;
-//		cl_ulong get_Bytes() const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
 };
 class Qplus_eoprec : public Matrix_Function {
 public:
 	Qplus_eoprec(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
 	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
-//		cl_ulong get_Flops() const;
-//		cl_ulong get_Bytes() const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
 };
 class Qminus_eoprec : public Matrix_Function {
 public:
 	Qminus_eoprec(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
 	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
-//		cl_ulong get_Flops() const;
-//		cl_ulong get_Bytes() const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
 };
 class QplusQminus_eoprec : public Matrix_Function {
 public:
 	QplusQminus_eoprec(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
 	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
-//		cl_ulong get_Flops() const;
-//		cl_ulong get_Bytes() const;
+	cl_ulong get_Flops() const;
+	cl_ulong get_Bytes() const;
 };
 
 /**
@@ -258,6 +258,15 @@ public:
 	virtual usetimer* get_timer(const char * in);
 
 	/**
+	 * Print the profiling information to a file.
+	 *
+	 * @param filename Name of file where data is appended.
+	 */
+	void virtual print_profiling(std::string filename, int number);
+
+#endif
+
+	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
@@ -271,15 +280,6 @@ public:
 	 * @param in Name of the kernel under consideration.
 	 */
 	virtual int get_flop_size(const char * in);
-
-	/**
-	 * Print the profiling information to a file.
-	 *
-	 * @param filename Name of file where data is appended.
-	 */
-	void virtual print_profiling(std::string filename, int number);
-
-#endif
 
 private:
 	////////////////////////////////////

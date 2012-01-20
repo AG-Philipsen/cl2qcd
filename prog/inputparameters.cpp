@@ -39,7 +39,6 @@ void inputparameters::set_defaults()
 	host_seed = 4815162342;
 	use_autotuning = false;
 
-#ifdef _PROFILING_
 	mat_size = 9;
 	float_size = 8;
 	//complex_add is 2 fl. operations. There is no variable for that!
@@ -66,7 +65,7 @@ void inputparameters::set_defaults()
 	flop_spinor_spinor = NDIM * NC * flop_complex_mult + (NDIM * NC - 1) * 2;
 	//  NDIM * NC * 0.5 complex_mult + ( NDIM * NC -1 ) real adds
 	flop_spinor_sqnorm = NDIM * NC * flop_complex_mult * 0.5 + (NC * NDIM - 1);
-#endif
+
 	//gaugefield parameters
 	beta = 4.0;
 	theta_gaugefield = 0.;
@@ -929,7 +928,6 @@ bool inputparameters::get_use_same_rnd_numbers() const
 	return use_same_rnd_numbers;
 }
 
-#ifdef _PROFILING_
 int inputparameters::get_mat_size() const
 {
 	return mat_size;
@@ -970,7 +968,6 @@ int inputparameters::get_flop_spinor_sqnorm() const
 {
 	return flop_spinor_sqnorm;
 }
-#endif
 
 bool inputparameters::get_use_autotuning() const
 {

@@ -138,6 +138,15 @@ protected:
 	virtual usetimer* get_timer(char * in);
 
 	/**
+	 * Print the profiling information to a file.
+	 *
+	 * @param filename Name of file where data is appended.
+	 */
+	void virtual print_profiling(std::string filename, int number);
+
+#endif
+
+	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
@@ -151,15 +160,6 @@ protected:
 	 * @param in Name of the kernel under consideration.
 	 */
 	virtual int get_flop_size(const char * in);
-
-	/**
-	 * Print the profiling information to a file.
-	 *
-	 * @param filename Name of file where data is appended.
-	 */
-	void virtual print_profiling(std::string filename, int number);
-
-#endif
 
 protected:
 private:

@@ -949,6 +949,8 @@ usetimer* Opencl_Module::get_timer(const char * in)
 	}
 }
 
+#endif
+
 int Opencl_Module::get_read_write_size(const char * in)
 {
 	//Depending on the compile-options, one has different sizes...
@@ -1051,6 +1053,8 @@ void Opencl_Module::print_profiling(std::string filename, const char * kernelNam
 	out.close();
 	return;
 }
+
+#ifdef _PROFILING_
 
 void print_profile_header(std::string filename, int number)
 {

@@ -199,6 +199,7 @@ usetimer* Opencl_Module_Heatbath::get_timer(const char * in)
 		return NULL;
 	}
 }
+#endif
 
 int Opencl_Module_Heatbath::get_read_write_size(const char * in)
 {
@@ -243,6 +244,8 @@ int Opencl_Module_Heatbath::get_flop_size(const char * in)
 	}
 	return 0;
 }
+
+#ifdef _PROFILING_
 
 void Opencl_Module_Heatbath::print_profiling(std::string filename, int number)
 {

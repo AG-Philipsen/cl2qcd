@@ -281,11 +281,14 @@ public:
 	virtual usetimer* get_timer(const char * in);
 
 	/**
-	 * Return amount of bytes read and written by a specific kernel per call.
+	 * Print the profiling information to a file.
 	 *
-	 * @param in Name of the kernel under consideration.
+	 * @param filename Name of file where data is appended.
+	 * @param number task-id
 	 */
-	virtual int get_read_write_size(const char * in);
+	void virtual print_profiling(std::string filename, int number);
+
+#endif
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -294,6 +297,13 @@ public:
 	 * @param in Name of the kernel under consideration.
 	 */
 	virtual int get_flop_size(const char * in);
+
+	/**
+	 * Return amount of bytes read and written by a specific kernel per call.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual int get_read_write_size(const char * in);
 
 	/**
 	 * Print the profiling information of a specific kernel to a file.
@@ -306,16 +316,6 @@ public:
 	 * @param flop_size amount of flops performed by the kernel
 	 */
 	void print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, int read_write_size, int flop_size);
-
-	/**
-	 * Print the profiling information to a file.
-	 *
-	 * @param filename Name of file where data is appended.
-	 * @param number task-id
-	 */
-	void virtual print_profiling(std::string filename, int number);
-
-#endif
 
 	/**
 	 * Enqueue the given kernel on the device. Local work size will be determined

@@ -631,6 +631,8 @@ usetimer* Opencl_Module_Spinors::get_timer(const char * in)
 	}
 }
 
+#endif
+
 int Opencl_Module_Spinors::get_read_write_size(const char * in)
 {
 	int result = Opencl_Module_Ran::get_read_write_size(in);
@@ -826,6 +828,8 @@ int Opencl_Module_Spinors::get_flop_size(const char * in)
 	}
 	return 0;
 }
+
+#ifdef _PROFILING_
 
 void Opencl_Module_Spinors::print_profiling(std::string filename, int number)
 {

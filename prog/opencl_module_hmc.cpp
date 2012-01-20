@@ -231,6 +231,8 @@ usetimer* Opencl_Module_Hmc::get_timer(char * in)
 	}
 }
 
+#endif
+
 int Opencl_Module_Hmc::get_read_write_size(char * in)
 {
 	int result = Opencl_Module_Fermions::get_read_write_size(in);
@@ -325,6 +327,8 @@ int Opencl_Module_Hmc::get_flop_size(const char * in)
 	}
 	return 0;
 }
+
+#ifdef _PROFILING_
 
 void Opencl_Module_Hmc::print_profiling(std::string filename, int number)
 {

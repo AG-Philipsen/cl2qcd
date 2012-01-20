@@ -16,34 +16,326 @@ void M::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->M(in, out, gf);
 }
+cl_ulong M::get_Flops() const
+{
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			return that->get_flop_size("M_wilson");
+		case TWISTEDMASS:
+			return that->get_flop_size("M_tm_plus");
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+}
+cl_ulong M::get_Bytes() const
+{
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			return that->get_read_write_size("M_wilson");
+		case TWISTEDMASS:
+			return that->get_read_write_size("M_tm_plus");
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+}
+
 void Qplus::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Qplus(in, out, gf);
 }
+cl_ulong Qplus::get_Flops() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = that->get_flop_size("M_wilson");
+			break;
+		case TWISTEDMASS:
+			res = that->get_flop_size("M_tm_plus");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_flop_size("gamma5");
+	return res;
+}
+cl_ulong Qplus::get_Bytes() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = that->get_read_write_size("M_wilson");
+			break;
+		case TWISTEDMASS:
+			res = that->get_read_write_size("M_tm_plus");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_read_write_size("gamma5");
+	return res;
+}
+
 void Qminus::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Qminus(in, out, gf);
 }
+cl_ulong Qminus::get_Flops() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = that->get_flop_size("M_wilson");
+			break;
+		case TWISTEDMASS:
+			res = that->get_flop_size("M_tm_minus");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_flop_size("gamma5");
+	return res;
+}
+cl_ulong Qminus::get_Bytes() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = that->get_read_write_size("M_wilson");
+			break;
+		case TWISTEDMASS:
+			res = that->get_read_write_size("M_tm_minus");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_read_write_size("gamma5");
+	return res;
+}
+
 void QplusQminus::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->QplusQminus(in, out, gf);
 }
+cl_ulong QplusQminus::get_Flops() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_flop_size("M_wilson");
+			break;
+		case TWISTEDMASS:
+			res = that->get_flop_size("M_tm_plus");
+			res += that->get_flop_size("M_tm_minus");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += 2 * that->get_flop_size("gamma5");
+	return res;
+}
+cl_ulong QplusQminus::get_Bytes() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_read_write_size("M_wilson");
+			break;
+		case TWISTEDMASS:
+			res = that->get_read_write_size("M_tm_plus");
+			res += that->get_read_write_size("M_tm_minus");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += 2 * that->get_read_write_size("gamma5");
+	return res;
+}
+
 void Aee::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Aee(in, out, gf);
 }
+cl_ulong Aee::get_Flops() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("saxpy_eoprec");
+			break;
+		case TWISTEDMASS:
+			res = 2 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("M_tm_inverse_sitediagonal");
+			res += that->get_flop_size("M_tm_sitediagonal");
+			res += that->get_flop_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	return res;
+}
+cl_ulong Aee::get_Bytes() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("saxpy_eoprec");
+			break;
+		case TWISTEDMASS:
+			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("M_tm_inverse_sitediagonal");
+			res += that->get_read_write_size("M_tm_sitediagonal");
+			res += that->get_read_write_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	return res;
+}
+
 void Qplus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Qplus_eoprec(in, out, gf);
 }
+cl_ulong Qplus_eoprec::get_Flops() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("saxpy_eoprec");
+			break;
+		case TWISTEDMASS:
+			res = 2 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("M_tm_inverse_sitediagonal");
+			res += that->get_flop_size("M_tm_sitediagonal");
+			res += that->get_flop_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_flop_size("gamma5_eoprec");
+	return res;
+}
+cl_ulong Qplus_eoprec::get_Bytes() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("saxpy_eoprec");
+			break;
+		case TWISTEDMASS:
+			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("M_tm_inverse_sitediagonal");
+			res += that->get_read_write_size("M_tm_sitediagonal");
+			res += that->get_read_write_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_flop_size("gamma5_eoprec");
+	return res;
+}
+
 void Qminus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Qminus_eoprec(in, out, gf);
 }
+cl_ulong Qminus_eoprec::get_Flops() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("saxpy_eoprec");
+			break;
+		case TWISTEDMASS:
+			res = 2 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("M_tm_inverse_sitediagonal_minus");
+			res += that->get_flop_size("M_tm_sitediagonal_minus");
+			res += that->get_flop_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_flop_size("gamma5_eoprec");
+	return res;
+}
+cl_ulong Qminus_eoprec::get_Bytes() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("saxpy_eoprec");
+			break;
+		case TWISTEDMASS:
+			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("M_tm_inverse_sitediagonal_minus");
+			res += that->get_read_write_size("M_tm_sitediagonal_minus");
+			res += that->get_read_write_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += that->get_flop_size("gamma5_eoprec");
+	return res;
+}
+
 void QplusQminus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->QplusQminus_eoprec(in, out, gf);
 }
+cl_ulong QplusQminus_eoprec::get_Flops() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("saxpy_eoprec");
+			res *= 2;
+			break;
+		case TWISTEDMASS:
+			res = 4 * that->get_flop_size("dslash_eoprec");
+			res += that->get_flop_size("M_tm_inverse_sitediagonal");
+			res += that->get_flop_size("M_tm_sitediagonal");
+			res += that->get_flop_size("M_tm_inverse_sitediagonal_minus");
+			res += that->get_flop_size("M_tm_sitediagonal_minus");
+			res += 2 * that->get_flop_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += 2 * that->get_flop_size("gamma5_eoprec");
+	return res;
+}
+cl_ulong QplusQminus_eoprec::get_Bytes() const
+{
+	cl_ulong res;
+	switch(that->get_parameters()->get_fermact()) {
+		case WILSON:
+			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("saxpy_eoprec");
+			res *= 2;
+			break;
+		case TWISTEDMASS:
+			res = 4 * that->get_read_write_size("dslash_eoprec");
+			res += that->get_read_write_size("M_tm_inverse_sitediagonal");
+			res += that->get_read_write_size("M_tm_sitediagonal");
+			res += that->get_read_write_size("M_tm_inverse_sitediagonal_minus");
+			res += that->get_read_write_size("M_tm_sitediagonal_minus");
+			res += 2 * that->get_read_write_size("saxpy_eoprec");
+			break;
+		default:
+			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+	}
+	res += 2 * that->get_flop_size("gamma5_eoprec");
+	return res;
+}
+
 
 void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
 {
@@ -1457,6 +1749,7 @@ usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 		return NULL;
 	}
 }
+#endif
 
 int Opencl_Module_Fermions::get_read_write_size(const char * in)
 {
@@ -1577,6 +1870,7 @@ int Opencl_Module_Fermions::get_flop_size(const char * in)
 	return 0;
 }
 
+#ifdef _PROFILING_
 void Opencl_Module_Fermions::print_profiling(std::string filename, int number)
 {
 	Opencl_Module_Spinors::print_profiling(filename, number);
