@@ -27,16 +27,6 @@ typedef double hmc_float __attribute__((aligned(8)));
 typedef float hmc_float __attribute__((aligned(4)));
 #endif
 
-/** An OpenCL-compatible constant 1.
- * @todo this is rediculous, 1.0(f) is way more readable, let the
- *       compiler do the optimizations.
- */
-#ifdef _INKERNEL_
-__constant hmc_float hmc_one_f = 1.0f;
-#else
-hmc_float const hmc_one_f = static_cast<hmc_float>(1);
-#endif
-
 /** Complex number type, precision is the same as for hmc_float */
 #ifdef _INKERNEL_
 typedef struct {
@@ -95,25 +85,9 @@ hmc_complex const hmc_complex_zero = {0., 0.};
 hmc_complex const hmc_complex_i = {0., 1.};
 #endif
 
-//also CPU
-#ifndef _INKERNEL_
-
-struct Matrixsu3 {
-	hmc_complex e00;
-	hmc_complex e01;
-	hmc_complex e02;
-	hmc_complex e10;
-	hmc_complex e11;
-	hmc_complex e12;
-	hmc_complex e20;
-	hmc_complex e21;
-	hmc_complex e22;
-};
-
-#endif // ifndef _INKERNEL_
-
+//matrix definitions
 #ifdef _INKERNEL_
-
+//a generic 3x3 matrix
 typedef struct {
 	hmc_complex e00;
 	hmc_complex e01;
@@ -125,20 +99,32 @@ typedef struct {
 	hmc_complex e21;
 	hmc_complex e22;
 } Matrix3x3;
-
+//an su3 matrix
 typedef struct {
-	hmc_complex e00;
-	hmc_complex e01;
-	hmc_complex e02;
-	hmc_complex e10;
-	hmc_complex e11;
-	hmc_complex e12;
-	hmc_complex e20;
-	hmc_complex e21;
-	hmc_complex e22;
+  hmc_complex e00;
+  hmc_complex e01;
+  hmc_complex e02;
+  hmc_complex e10;
+  hmc_complex e11;
+  hmc_complex e12;
+  hmc_complex e20;
+  hmc_complex e21;
+  hmc_complex e22;
 } Matrixsu3;
-
-#endif  //ifdef _INKERNEL_
+#else
+//an su3 matrix_
+struct Matrixsu3 {
+  hmc_complex e00;
+  hmc_complex e01;
+  hmc_complex e02;
+  hmc_complex e10;
+  hmc_complex e11;
+  hmc_complex e12;
+  hmc_complex e20;
+  hmc_complex e21;
+  hmc_complex e22;
+};
+#endif // ifdef _INKERNEL_
 
 typedef Matrixsu3 ocl_s_gaugefield;
 
@@ -158,16 +144,6 @@ typedef struct {
 	hmc_float e6;
 	hmc_float e7;
 } ae;
-
-#ifdef _INKERNEL_
-// Definition of numeric constants for the symmetric structure constants d_ijk of su(3) suited for OpenCL
-/** 1/2 */
-#define F_1_2  0.5
-/** 1/(2*sqrt(3)) */
-#define F_1_2S3 0.288675134594813
-/** 1/sqrt(3) */
-#define F_1_S3  0.577350269189626
-#endif
 
 #endif /* _TYPESH_ */
 
