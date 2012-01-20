@@ -94,7 +94,7 @@ public:
 	int get_integrationsteps2() const;
 	hmc_float get_solver_prec() const;
 	hmc_float get_force_prec() const;
-        int get_iter_refresh() const;
+	int get_iter_refresh() const;
 	bool get_saveconfigs() const;
 	int get_savefrequency() const;
 	int get_writefrequency() const;

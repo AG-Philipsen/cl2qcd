@@ -45,27 +45,27 @@ void inputparameters::set_defaults()
 	//complex_add is 2 fl. operations. There is no variable for that!
 	//( a_re * b_re - b_im * a_im , a_re * b_im + a_im * b_re )
 	flop_complex_mult = 6;
-	//	1 entry: NC * complex mults and NC-1 complex adds
-	//	NC*NC entries total
-	flop_su3_su3 = (flop_complex_mult * NC + (NC-1) * 2) * NC * NC;
-	//	1 entry: NC * complex mults and NC-1 complex adds
-	//	NC entries total
-	flop_su3_su3vec = (flop_complex_mult * NC + (NC-1) * 2) * NC;
-	//	NC * complex adds
-	flop_su3trace = (NC-1) * 2;
-	//	in prinicple, a gamma_matrix is a complex NDIM * NDIM matrix acting on NDIM vectors, 
-	//		which then again have NC entries for each of the NDIM entries.
-	//		the matrix-mult alone are (flop_complex_mult * NDIM + (NDIM-1) * 2) * NDIM
-	//		but for each such operation one has NC complex multiplications in addition.
-	//		@TODO: gamma real??
-	//		@TODO: simplifications possible!!
-	flop_gamma_spinor = (flop_complex_mult * NDIM + (NDIM-1) * 2) * NDIM * NC * flop_complex_mult;
-	//	NDIM * flop_su3_su3vec
+	//  1 entry: NC * complex mults and NC-1 complex adds
+	//  NC*NC entries total
+	flop_su3_su3 = (flop_complex_mult * NC + (NC - 1) * 2) * NC * NC;
+	//  1 entry: NC * complex mults and NC-1 complex adds
+	//  NC entries total
+	flop_su3_su3vec = (flop_complex_mult * NC + (NC - 1) * 2) * NC;
+	//  NC * complex adds
+	flop_su3trace = (NC - 1) * 2;
+	//  in prinicple, a gamma_matrix is a complex NDIM * NDIM matrix acting on NDIM vectors,
+	//    which then again have NC entries for each of the NDIM entries.
+	//    the matrix-mult alone are (flop_complex_mult * NDIM + (NDIM-1) * 2) * NDIM
+	//    but for each such operation one has NC complex multiplications in addition.
+	//    @TODO: gamma real??
+	//    @TODO: simplifications possible!!
+	flop_gamma_spinor = (flop_complex_mult * NDIM + (NDIM - 1) * 2) * NDIM * NC * flop_complex_mult;
+	//  NDIM * flop_su3_su3vec
 	flop_su3_spinor = NDIM * flop_su3_su3vec;
-	//	NDIM * NC * complex_mult + ( NDIM * NC -1 ) complex adds
-	flop_spinor_spinor = NDIM * NC * flop_complex_mult + (NDIM * NC -1) * 2;
-	//	NDIM * NC * 0.5 complex_mult + ( NDIM * NC -1 ) real adds
-	flop_spinor_sqnorm = NDIM * NC * flop_complex_mult * 0.5 + (NC * NDIM -1);
+	//  NDIM * NC * complex_mult + ( NDIM * NC -1 ) complex adds
+	flop_spinor_spinor = NDIM * NC * flop_complex_mult + (NDIM * NC - 1) * 2;
+	//  NDIM * NC * 0.5 complex_mult + ( NDIM * NC -1 ) real adds
+	flop_spinor_sqnorm = NDIM * NC * flop_complex_mult * 0.5 + (NC * NDIM - 1);
 #endif
 	//gaugefield parameters
 	beta = 4.0;
@@ -124,7 +124,7 @@ void inputparameters::set_defaults()
 
 	use_same_rnd_numbers = false;
 	profile_solver = false;
-	
+
 	return;
 }
 
@@ -190,7 +190,7 @@ void inputparameters::readfile(const char* ifn)
 
 			if(line.find("sol_pr") != std::string::npos) val_assign(&solver_prec, line);
 			if(line.find("force_pr") != std::string::npos) val_assign(&force_prec, line);
-			
+
 			if(line.find("writefrequency") != std::string::npos) val_assign(&writefrequency, line);
 			if(line.find("savefrequency") != std::string::npos) val_assign(&savefrequency, line);
 			if(line.find("saveconfigs") != std::string::npos) bool_assign(&saveconfigs, line);
@@ -266,7 +266,10 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("correlator_direction") != std::string::npos) val_assign(&corr_dir, line);
 
 			if(line.find("use_same_rnd_numbers") != std::string::npos) bool_assign(&use_same_rnd_numbers, line);
-			if(line.find("taketimeofsol") != std::string::npos) {cout << line << endl;bool_assign(&profile_solver, line);}
+			if(line.find("taketimeofsol") != std::string::npos) {
+				cout << line << endl;
+				bool_assign(&profile_solver, line);
+			}
 
 		}
 
@@ -439,7 +442,7 @@ void inputparameters::solver_assign(bool * out, std::string line)
 		(*out) = false;
 		this->use_bicgstab_save = true;
 		return;
-	}	
+	}
 	if(value.find("BiCGStab") != std::string::npos) {
 		(*out) = false;
 		return;
@@ -665,20 +668,20 @@ int inputparameters::get_nt() const
 
 int inputparameters::get_xi() const
 {
-  int tmp;
-  if (use_aniso == 0)
-    tmp = 1;
-  else
-    tmp = xi;
-  return tmp;
+	int tmp;
+	if (use_aniso == 0)
+		tmp = 1;
+	else
+		tmp = xi;
+	return tmp;
 }
 
 hmc_float inputparameters::get_xi_0() const
 {
-  hmc_float aniso = hmc_float (get_xi());
-  hmc_float eta = (1.002503*aniso*aniso*aniso + .39100*aniso*aniso + 1.47130*aniso - 0.19231) /
-  (aniso*aniso*aniso + 0.26287*aniso*aniso + 1.59008*aniso - 0.18224);
-  return aniso / (1.+(1.-1./aniso)*eta/6. * (1-0.55055 *2*NC/beta)/(1-0.77810 *2*NC/beta)*2*NC/beta );
+	hmc_float aniso = hmc_float (get_xi());
+	hmc_float eta = (1.002503 * aniso * aniso * aniso + .39100 * aniso * aniso + 1.47130 * aniso - 0.19231) /
+	                (aniso * aniso * aniso + 0.26287 * aniso * aniso + 1.59008 * aniso - 0.18224);
+	return aniso / (1. + (1. - 1. / aniso) * eta / 6. * (1 - 0.55055 * 2 * NC / beta) / (1 - 0.77810 * 2 * NC / beta) * 2 * NC / beta );
 }
 
 int inputparameters::get_prec() const
@@ -789,7 +792,7 @@ bool inputparameters::get_use_gpu() const
 
 bool inputparameters::get_use_aniso() const
 {
-  return use_aniso;
+	return use_aniso;
 }
 
 int inputparameters::get_volspace() const
@@ -1022,10 +1025,10 @@ void inputparameters::print_info_global() const
 	} else {
 		logger.info() << "## USE GPU: OFF";
 	}
-	if(this->get_use_aniso() == true){
-	        logger.info() << "## USE ANISOTROPY: ON";
+	if(this->get_use_aniso() == true) {
+		logger.info() << "## USE ANISOTROPY: ON";
 	} else {
-	        logger.info() << "## USE ANISOTROPY: OFF";
+		logger.info() << "## USE ANISOTROPY: OFF";
 	}
 	logger.info() << "## Number of devices demanded for calculations: " << this->get_num_dev()  ;
 	logger.info() << "## **********************************************************";
@@ -1073,10 +1076,10 @@ void inputparameters::print_info_global(ostream* os) const
 	} else {
 		*os << "## USE GPU: OFF"  << endl;
 	}
-	if(this->get_use_aniso() == true){
-	        *os << "## USE ANISOTROPY: ON";
+	if(this->get_use_aniso() == true) {
+		*os << "## USE ANISOTROPY: ON";
 	} else {
-	        *os << "## USE ANISOTROPY: OFF";
+		*os << "## USE ANISOTROPY: OFF";
 	}
 	*os  << "## Number of devices demanded for calculations: " << this->get_num_dev()  << endl;
 	*os  << "## **********************************************************" << endl;
@@ -1216,7 +1219,7 @@ void inputparameters::print_info_fermion() const
 	}
 	if(this->get_use_cg() == true)
 		logger.info() << "## Use CG-solver for inversions" ;
-	if(this->get_use_cg() == false){
+	if(this->get_use_cg() == false) {
 		if(this->get_use_bicgstab_save() == false)
 			logger.info() << "## Use BiCGStab for inversions";
 		else
@@ -1231,7 +1234,7 @@ void inputparameters::print_info_fermion() const
 	logger.info() << "## iter_refresh  = " << this->get_iter_refresh();
 
 	if(this->get_profile_solver() == true)
-	        logger.warn()<< "## Profiling of solver activated. This may influence the overall performance time!";
+		logger.warn() << "## Profiling of solver activated. This may influence the overall performance time!";
 
 	//print extra warning if BC are set to default since this is a serious source of errors...
 	if ( this->get_theta_fermion_spatial() == 0. && this->get_theta_fermion_temporal() == 0.) {
@@ -1285,7 +1288,7 @@ void inputparameters::print_info_fermion(ostream * os) const
 	}
 	if(this->get_use_cg() == true)
 		*os << "## Use CG-solver for inversions"  << endl;
-	if(this->get_use_cg() == false){
+	if(this->get_use_cg() == false) {
 		if(this->get_use_bicgstab_save() == false)
 			*os << "## Use BiCGStab for inversions" << endl;
 		else
@@ -1300,7 +1303,7 @@ void inputparameters::print_info_fermion(ostream * os) const
 	*os << "## iter_refresh  = " << this->get_iter_refresh() << endl;
 
 	if(this->get_profile_solver() == true)
-	        *os << "## Profiling of solver activated. This may influence the overall performance time!" << endl;
+		*os << "## Profiling of solver activated. This may influence the overall performance time!" << endl;
 
 	//print extra warning if BC are set to default since this is a serious source of errors...
 	if ( this->get_theta_fermion_spatial() == 0. && this->get_theta_fermion_temporal() == 0.) {
