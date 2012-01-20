@@ -160,8 +160,8 @@ void Device::runTestKernel(cl_mem gf, cl_mem out, int gs, int ls)
 
 hmc_float Dummyfield::runTestKernel()
 {
-	hmc_float res; 
-	int gs, ls;
+	hmc_float res = 0; 
+	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = get_parameters()->get_vol4d();
 		ls = 64;

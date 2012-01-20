@@ -31,11 +31,11 @@ int main(int argc, char* argv[])
 	// Initialization
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	cl_int err;
+	//cl_int err;
 
 	init_timer.reset();
 	sourcefileparameters parameters_source;
-	hmc_observables obs;
+	//hmc_observables obs;
 
 	Gaugefield_hmc gaugefield;
 

@@ -306,7 +306,7 @@ int Opencl_Module_Correlator::get_read_write_size(const char * in, inputparamete
 	}
 	if (strcmp(in, "correlator_ps_z") == 0 ) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
-		int size_buffer;
+		int size_buffer = 0;
 		int num_sources = get_parameters()->get_num_sources();
 		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
 		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
@@ -314,7 +314,7 @@ int Opencl_Module_Correlator::get_read_write_size(const char * in, inputparamete
 	}
 	if (strcmp(in, "correlator_sc_z") == 0) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
-		int size_buffer;
+		int size_buffer = 0;
 		int num_sources = get_parameters()->get_num_sources();
 		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
 		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
@@ -322,7 +322,7 @@ int Opencl_Module_Correlator::get_read_write_size(const char * in, inputparamete
 	}
 	if (strcmp(in, "correlator_vx_z") == 0) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
-		int size_buffer;
+		int size_buffer = 0;
 		int num_sources = get_parameters()->get_num_sources();
 		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
 		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
@@ -330,7 +330,7 @@ int Opencl_Module_Correlator::get_read_write_size(const char * in, inputparamete
 	}
 	if (strcmp(in, "correlator_vy_z") == 0) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
-		int size_buffer;
+		int size_buffer = 0;
 		int num_sources = get_parameters()->get_num_sources();
 		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
 		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
@@ -338,7 +338,7 @@ int Opencl_Module_Correlator::get_read_write_size(const char * in, inputparamete
 	}
 	if (strcmp(in, "correlator_vz_z") == 0) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
-		int size_buffer;
+		int size_buffer = 0;
 		int num_sources = get_parameters()->get_num_sources();
 		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
 		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
@@ -346,7 +346,7 @@ int Opencl_Module_Correlator::get_read_write_size(const char * in, inputparamete
 	}
 	if (strcmp(in, "correlator_ax_z") == 0) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
-		int size_buffer;
+		int size_buffer = 0;
 		int num_sources = get_parameters()->get_num_sources();
 		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
 		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
@@ -354,7 +354,7 @@ int Opencl_Module_Correlator::get_read_write_size(const char * in, inputparamete
 	}
 	if (strcmp(in, "correlator_ay_z") == 0) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
-		int size_buffer;
+		int size_buffer = 0;
 		int num_sources = get_parameters()->get_num_sources();
 		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
 		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
@@ -362,7 +362,7 @@ int Opencl_Module_Correlator::get_read_write_size(const char * in, inputparamete
 	}
 	if (strcmp(in, "correlator_az_z") == 0) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
-		int size_buffer;
+		int size_buffer = 0;
 		int num_sources = get_parameters()->get_num_sources();
 		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
 		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();

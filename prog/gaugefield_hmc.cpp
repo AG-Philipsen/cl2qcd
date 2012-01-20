@@ -3,8 +3,8 @@
 
 Opencl_Module_Hmc* Gaugefield_hmc::get_task_hmc(int dev)
 {
-	//if more than one device is used, the element dev from the array must be called here!!
-	return (Opencl_Module_Hmc*)opencl_modules[task_hmc];
+	//@todo: if more than one device is used, the element dev from the array must be called here!!
+	return (Opencl_Module_Hmc*)opencl_modules[dev];
 }
 
 void Gaugefield_hmc::init_tasks()
@@ -287,7 +287,7 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		hmc_float stepsize = get_parameters()->get_tau() / ((hmc_float) steps1);
 		hmc_float stepsize2 = get_parameters()->get_tau() / ((hmc_float) steps2);
 		hmc_float stepsize_half = 0.5 * stepsize;
-		hmc_float stepsize2_half = 0.5 * stepsize2;
+		//hmc_float stepsize2_half = 0.5 * stepsize2;
 		hmc_float lambda_times_stepsize = stepsize*get_parameters()->get_lambda1();
 		hmc_float one_minus_2_lambda = 1. - 2.*get_parameters()->get_lambda1();
 		hmc_float lambda_times_stepsize2 = stepsize2*get_parameters()->get_lambda2();

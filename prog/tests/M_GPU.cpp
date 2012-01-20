@@ -305,7 +305,7 @@ void Dummyfield::verify(hmc_float cpu, hmc_float gpu){
 
 void Dummyfield::runTestKernel()
 {
-	int gs, ls;
+	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = get_parameters()->get_spinorfieldsize();
 		ls = 64;

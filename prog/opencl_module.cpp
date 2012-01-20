@@ -445,7 +445,7 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 
 void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size)
 {
-	cl_int clerr;
+	cl_int clerr = CL_SUCCESS;
 
 	if(logger.beTrace()) {
 		size_t nameSize;
@@ -873,7 +873,9 @@ void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
 
 void Opencl_Module::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
 {
-	/// @todo use kernelname
+        //Query kernel name
+        string kernelname = get_kernel_name(kernel);
+
 	size_t local_work_size;
 	if( dev_type == CL_DEVICE_TYPE_GPU )
 		local_work_size = Opencl_Module::get_numthreads(); /// @todo have local work size depend on kernel properties (and device? autotune?)

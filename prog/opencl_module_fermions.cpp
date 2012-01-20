@@ -997,6 +997,8 @@ int Opencl_Module_Fermions::bicgstab( matrix_function_call f, cl_mem inout, cl_m
 		}
 		return -1;
 	}
+	//this return cannot be reached and is inserted to remove a warning
+	return 0;
 }
 
 int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
@@ -1151,6 +1153,8 @@ int Opencl_Module_Fermions::bicgstab_eoprec(matrix_function_call f, cl_mem inout
 		}
 		return -1;
 	}
+	//this return cannot be reached and is inserted to remove a warning
+	return 0;
 }
 
 int Opencl_Module_Fermions::cg(matrix_function_call f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
