@@ -48,6 +48,17 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 # maybe even patch this during install step
 add_definitions( -DSOURCEDIR="${CMAKE_SOURCE_DIR}" )
 
+# Add code version to the code
+# we need to include the binary dir as the custom target will create a header
+# there
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+add_custom_target(git_commit_id_header ALL DEPENDS git_commit_id )
+add_custom_command(OUTPUT git_commit_id
+                   COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/GenerateGitVersion.cmake)
+set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/gitcommitid.h
+                            PROPERTIES GENERATED TRUE
+                            HEADER_FILE_ONLY TRUE)
+
 # Don't compile in debug output if compiling for release
 if( CMAKE_BUILD_TYPE STREQUAL "Release" )
 	add_definitions( -DNDEBUG )

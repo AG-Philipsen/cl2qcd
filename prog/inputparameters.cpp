@@ -2,6 +2,8 @@
 
 #include "host_geometry.h"
 
+#include "gitcommitid.h"
+
 void inputparameters::set_defaults()
 {
 	//global parameters
@@ -1002,6 +1004,7 @@ bool inputparameters::get_reversibility_check() const
 
 void inputparameters::print_info_global() const
 {
+	logger.info() << "## Build based on commit: " << GIT_COMMIT_ID;
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Global parameters:";
 	logger.info() << "## NSPACE:  " << this->get_ns();
@@ -1053,6 +1056,7 @@ void inputparameters::print_info_global() const
 
 void inputparameters::print_info_global(ostream* os) const
 {
+	*os  << "## Build based on commit: " << GIT_COMMIT_ID << endl;
 	*os  << "## **********************************************************" << endl;
 	*os  << "## Global parameters:" << endl;
 	*os  << "## NSPACE:  " << this->get_ns() << endl;
