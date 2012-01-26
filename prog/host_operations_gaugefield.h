@@ -10,6 +10,7 @@
 #include "globaldefs.h"
 #include "types.h"
 #include "host_geometry.h"
+#include "host_random.h"
 #include "inputparameters.h"
 #include <cmath>
 
@@ -56,5 +57,7 @@ void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, i
 Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const inputparameters * const parameters);
 
 Matrixsu3 unit_matrixsu3();
+
+Matrixsu3 random_matrixsu3();
 
 #endif
