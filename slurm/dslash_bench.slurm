@@ -19,7 +19,25 @@ srun hostname
 # check gpu
 srun aticonfig --odgc --odgt --adapter=all
 
+# blablabla
+srun aticonfig --od-enable
+# modify gpu clock to factory defaults
+srun aticonfig --odsc 850,1200
+
+# check gpu again
+srun aticonfig --odgc --odgt --adapter=all
+
+echo "---------------------------"
+
 srun ../../benchmarks/dslash_bench.py
+
+echo "---------------------------"
+
+# Reset clocks to default
+srun aticonfig --odsc 750,1100
+
+# done messing with clocks
+srun aticonfig --od-disable
 
 # check gpu again
 srun aticonfig --odgc --odgt --adapter=all
