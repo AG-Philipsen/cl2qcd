@@ -377,9 +377,6 @@ void Opencl_Module_Spinors::set_complex_to_scalar_product_device(cl_mem a, cl_me
 
 	enqueueKernel(scalar_product , gs2, ls2);
 
-	/// @todo Here the wait is needed. Replace this call by a clWaitForEvents!
-	clerr = clFinish(get_queue());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -413,8 +410,7 @@ void Opencl_Module_Spinors::set_complex_to_scalar_product_eoprec_device(cl_mem a
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( scalar_product_eoprec, gs2, ls2);
-	clerr = clFinish(get_queue());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
+
 
 	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -486,9 +482,6 @@ void Opencl_Module_Spinors::set_float_to_global_squarenorm_device(cl_mem a, cl_m
 
 	enqueueKernel(global_squarenorm , gs2, ls2);
 
-	/// @todo Here the wait is needed. Replace this call by a clWaitForEvents!
-	clerr = clFinish(get_queue());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -521,9 +514,6 @@ void Opencl_Module_Spinors::set_float_to_global_squarenorm_eoprec_device(cl_mem 
 
 	enqueueKernel( global_squarenorm_eoprec, gs2, ls2);
 
-	/// @todo Here the wait is needed. Replace this call by a clWaitForEvents!
-	clFinish(get_queue());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
