@@ -861,7 +861,6 @@ void Opencl_Module_Fermions::gamma5_eoprec_device(cl_mem inout)
 void Opencl_Module_Fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd)
 {
 	// convert input to SOA. TODO move to proper place, does not have to be done every time
-	convertGaugefieldToSOA_device(gaugefield_soa, gf);
 	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, in);
 
 	cl_int eo = evenodd;
@@ -956,6 +955,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 {
 	int debug = 0;
 	int old = 1;
+
 	if(old == 0) {
 		if(debug) cout << "debug-output at bicgstab is activated" << endl;
 		int cgmax = get_parameters()->get_cgmax();
@@ -1658,6 +1658,9 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 
 	if(get_parameters()->get_profile_solver() ) (*solvertimer).reset();
 	if(get_parameters()->get_use_eo() == true) {
+		// make sure SOA is in proper format for dslash_eoprec
+		convertGaugefieldToSOA_device(gaugefield_soa, gf);
+
 		/**
 		 * If even-odd-preconditioning is used, the inversion is split up
 		 * into even and odd parts using Schur decomposition, assigning the

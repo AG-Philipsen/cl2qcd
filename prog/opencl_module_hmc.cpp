@@ -492,6 +492,8 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 	 * @NOTE A dummy-kernel and corresponding calling function is already implemented if one wishes to
 	 *  change this one day.
 	 */
+	// make sure SOA is in proper format for dslash
+	convertGaugefieldToSOA_device(gaugefield_soa, clmem_new_u);
 	if(get_parameters()->get_use_eo() == true) {
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 		if(get_parameters()->get_use_cg() == true) {
@@ -590,6 +592,9 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		 *  X_odd = -R(-mu)_inv D X_even
 		 *  Y_odd = -R(mu)_inv D Y_even
 		 */
+
+		/** @fixme below usages of dslash should work, but only because we use bicgstab above
+		           proper implementation needs to make sure this is always the case */
 
 		///@NOTE the following calculations could also go in a new function for convenience
 		//calculate X_odd

@@ -351,6 +351,8 @@ private:
 
 	cl_mem spinorfield_soa_eo_1;
 	cl_mem spinorfield_soa_eo_2;
+
+protected:
 	cl_mem gaugefield_soa;
 };
 
