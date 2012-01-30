@@ -172,6 +172,8 @@ protected:
 	cl_mem clmem_scalar_product_buf_glob;
 	cl_mem clmem_global_squarenorm_buf_glob;
 
+	cl_mem spinorfield_soa_eo_1;
+	cl_mem spinorfield_soa_eo_2;
 
 	//BLAS
 	cl_kernel set_spinorfield_cold;

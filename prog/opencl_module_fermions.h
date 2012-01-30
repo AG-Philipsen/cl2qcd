@@ -349,9 +349,6 @@ private:
 	cl_mem clmem_resid;
 	cl_mem clmem_trueresid;
 
-	cl_mem spinorfield_soa_eo_1;
-	cl_mem spinorfield_soa_eo_2;
-
 protected:
 	cl_mem gaugefield_soa;
 };

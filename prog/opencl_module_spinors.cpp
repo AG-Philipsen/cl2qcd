@@ -25,6 +25,13 @@ void Opencl_Module_Spinors::fill_buffers()
 	clmem_global_squarenorm_buf_glob = 0;
 	clmem_scalar_product_buf_glob = 0;
 
+	spinorfield_soa_eo_1 = 0;
+	spinorfield_soa_eo_2 = 0;
+	if(get_parameters()->get_use_eo() == true) {
+		// SOA buffers
+		spinorfield_soa_eo_1 = create_rw_buffer(calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex));
+		spinorfield_soa_eo_2 = create_rw_buffer(calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex));
+	}
 
 	return;
 }
@@ -122,6 +129,15 @@ void Opencl_Module_Spinors::clear_buffers()
 	}
 	if(clmem_global_squarenorm_buf_glob != 0) {
 		clerr = clReleaseMemObject(clmem_global_squarenorm_buf_glob);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	}
+
+	if(spinorfield_soa_eo_1) {
+		clerr = clReleaseMemObject(spinorfield_soa_eo_1);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	}
+	if(spinorfield_soa_eo_2) {
+		clerr = clReleaseMemObject(spinorfield_soa_eo_2);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	}
 

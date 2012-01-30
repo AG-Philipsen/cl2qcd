@@ -441,9 +441,6 @@ void Opencl_Module_Fermions::fill_buffers()
 			clmem_tmp_eoprec_2 = create_rw_buffer(eoprec_spinorfield_size);
 		}
 	}
-	// SOA buffers
-	spinorfield_soa_eo_1 = create_rw_buffer(calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex));
-	spinorfield_soa_eo_2 = create_rw_buffer(calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex));
 	gaugefield_soa = create_rw_buffer(calculateStride(NDIM * get_parameters()->get_vol4d(), sizeof(hmc_complex)) * 9 * sizeof(hmc_complex));
 
 
@@ -603,10 +600,6 @@ void Opencl_Module_Fermions::clear_buffers()
 		}
 	}
 
-	clerr = clReleaseMemObject(spinorfield_soa_eo_1);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	clerr = clReleaseMemObject(spinorfield_soa_eo_2);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(gaugefield_soa);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 
