@@ -197,8 +197,6 @@ public:
 
 	// SOA conversion
 	void convertGaugefieldToSOA_device(cl_mem out, cl_mem in);
-	void convertSpinorfieldToSOA_eo_device(cl_mem out, cl_mem in);
-	void convertSpinorfieldFromSOA_eo_device(cl_mem out, cl_mem in);
 
 	//    solver operations
 	//    non-eoprec
@@ -254,8 +252,6 @@ public:
 	usetimer timer_dslash_eoprec;
 	usetimer timer_M_tm_sitediagonal_minus;
 	usetimer timer_M_tm_inverse_sitediagonal_minus;
-	usetimer timer_convertSpinorfieldToSOA_eo;
-	usetimer timer_convertSpinorfieldFromSOA_eo;
 	usetimer timer_convertGaugefieldToSOA;
 	usetimer timer_convertGaugefieldFromSOA;
 
@@ -304,8 +300,6 @@ private:
 	cl_kernel M_tm_sitediagonal_minus;
 	cl_kernel M_tm_inverse_sitediagonal_minus;
 	cl_kernel dslash_eoprec;
-	cl_kernel convertSpinorfieldToSOA_eo;
-	cl_kernel convertSpinorfieldFromSOA_eo;
 	cl_kernel convertGaugefieldToSOA;
 	cl_kernel convertGaugefieldFromSOA;
 	//CP: variables for normal solver

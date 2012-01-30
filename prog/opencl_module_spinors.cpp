@@ -13,7 +13,7 @@ void Opencl_Module_Spinors::fill_collect_options(stringstream* collect_options)
 	Opencl_Module_Ran::fill_collect_options(collect_options);
 	*collect_options << " -D_FERMIONS_" << " -DSPINORSIZE=" << get_parameters()->get_spinorsize() << " -DHALFSPINORSIZE=" << get_parameters()->get_halfspinorsize()
 	                 << " -DSPINORFIELDSIZE=" << get_parameters()->get_spinorfieldsize() << " -DEOPREC_SPINORFIELDSIZE=" << get_parameters()->get_eoprec_spinorfieldsize();
-	return;
+	*collect_options << " -DEOPREC_SPINORFIELD_STRIDE=" << calculateStride(get_parameters()->get_eoprec_spinorfieldsize(), sizeof(hmc_complex));
 }
 
 
@@ -56,8 +56,8 @@ void Opencl_Module_Spinors::fill_kernels()
 	product = createKernel("product") << basic_opencl_code << "complex_product.cl";
 
 	if(get_parameters()->get_use_eo() == true) {
-		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
-		convert_to_eoprec = createKernel("convert_to_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
+		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_convert.cl";
+		convert_to_eoprec = createKernel("convert_to_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_convert.cl";
 		set_eoprec_spinorfield_cold = createKernel("set_eoprec_spinorfield_cold") << basic_fermion_code << "spinorfield_eo_cold.cl";
 		saxpy_eoprec = createKernel("saxpy_eoprec") << basic_fermion_code << "spinorfield_eo_saxpy.cl";
 		sax_eoprec = createKernel("sax_eoprec") << basic_fermion_code << "spinorfield_eo_sax.cl";
@@ -65,6 +65,8 @@ void Opencl_Module_Spinors::fill_kernels()
 		scalar_product_eoprec = createKernel("scalar_product_eoprec") << basic_fermion_code << "spinorfield_eo_scalar_product.cl";
 		set_zero_spinorfield_eoprec = createKernel("set_zero_spinorfield_eoprec") << basic_fermion_code << "spinorfield_eo_zero.cl";
 		global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "spinorfield_eo_squarenorm.cl";
+		convertSpinorfieldToSOA_eo = createKernel("convertSpinorfieldToSOA_eo") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_convert.cl";
+		convertSpinorfieldFromSOA_eo = createKernel("convertSpinorfieldFromSOA_eo") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_convert.cl";
 	}
 
 	return;
@@ -110,6 +112,10 @@ void Opencl_Module_Spinors::clear_kernels()
 		clerr = clReleaseKernel(set_zero_spinorfield_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(global_squarenorm_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(convertSpinorfieldToSOA_eo);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(convertSpinorfieldFromSOA_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 
@@ -566,6 +572,37 @@ void Opencl_Module_Spinors::set_zero_spinorfield_eoprec_device(cl_mem x)
 	enqueueKernel( set_zero_spinorfield_eoprec, gs2, ls2);
 }
 
+void Opencl_Module_Spinors::convertSpinorfieldToSOA_eo_device(cl_mem out, cl_mem in)
+{
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(convertSpinorfieldToSOA_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+
+	//set arguments
+	int clerr = clSetKernelArg(convertSpinorfieldToSOA_eo, 0, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(convertSpinorfieldToSOA_eo, 1, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel(convertSpinorfieldToSOA_eo, gs2, ls2);
+}
+
+void Opencl_Module_Spinors::convertSpinorfieldFromSOA_eo_device(cl_mem out, cl_mem in)
+{
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(convertSpinorfieldFromSOA_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+
+	//set arguments
+	int clerr = clSetKernelArg(convertSpinorfieldFromSOA_eo, 0, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(convertSpinorfieldFromSOA_eo, 1, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel(convertSpinorfieldFromSOA_eo, gs2, ls2);
+}
 
 #ifdef _PROFILING_
 usetimer* Opencl_Module_Spinors::get_timer(const char * in)
@@ -632,7 +669,14 @@ usetimer* Opencl_Module_Spinors::get_timer(const char * in)
 	}
 	if (strcmp(in, "product") == 0) {
 		return &this->timer_product;
-	} else {
+	}
+	if(strcmp(in, "convertSpinorfieldToSOA_eo") == 0) {
+		return &timer_convertSpinorfieldToSOA_eo;
+	}
+	if(strcmp(in, "convertSpinorfieldFromSOA_eo") == 0) {
+		return &timer_convertSpinorfieldFromSOA_eo;
+	}
+	else {
 		return NULL;
 	}
 }
@@ -745,6 +789,12 @@ int Opencl_Module_Spinors::get_read_write_size(const char * in)
 	if (strcmp(in, "product") == 0) {
 		//this kernel reads 2 complex numbers and writes 1 complex number
 		return C * D * (2 + 1);
+	}
+	if(strcmp(in, "convertSpinorfieldToSOA_eo") == 0) {
+		return 2 * Seo * 24 * D;
+	}
+	if(strcmp(in, "convertSpinorfieldFromSOA_eo") == 0) {
+		return 2 * Seo * 24 * D;
 	}
 	return 0;
 }
@@ -881,6 +931,10 @@ void Opencl_Module_Spinors::print_profiling(std::string filename, int number)
 	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "product";
 	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+	kernelName = "convertSpinorfieldToSOA_eo";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+	kernelName = "convertSpinorfieldFromSOA_eo";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 
 }
 #endif

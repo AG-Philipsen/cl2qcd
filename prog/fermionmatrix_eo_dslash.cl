@@ -29,19 +29,6 @@ __kernel void dslash_eoprec(__global const hmc_complex * const restrict in, __gl
 	}
 }
 
-__kernel void convertSpinorfieldToSOA_eo(__global hmc_complex * const restrict out, __global const spinor * const restrict in)
-{
-	for(uint i = get_global_id(0); i < EOPREC_SPINORFIELDSIZE; i += get_global_size(0)) {
-		putSpinorSOA_eo(out, i, in[i]);
-	}
-}
-__kernel void convertSpinorfieldFromSOA_eo(__global spinor * const restrict out, __global const hmc_complex * const restrict in)
-{
-	for(uint i = get_global_id(0); i < EOPREC_SPINORFIELDSIZE; i += get_global_size(0)) {
-		out[i] = getSpinorSOA_eo(in, i);
-	}
-}
-
 __kernel void convertGaugefieldToSOA(__global hmc_complex * const restrict out, __global const Matrixsu3 * const restrict in)
 {
 	// we need to take care of index converion. in the AOS storage the dimension is the continious index

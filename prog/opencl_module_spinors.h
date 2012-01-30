@@ -102,6 +102,9 @@ public:
 	void set_spinorfield_cold_device(cl_mem inout);
 	void set_eoprec_spinorfield_cold_device(cl_mem inout);
 
+	void convertSpinorfieldToSOA_eo_device(cl_mem out, cl_mem in);
+	void convertSpinorfieldFromSOA_eo_device(cl_mem out, cl_mem in);
+
 #ifdef _PROFILING_
 
 	//BLAS
@@ -134,6 +137,9 @@ public:
 
 	//Observables
 	usetimer timer_ps_correlator;
+
+	usetimer timer_convertSpinorfieldToSOA_eo;
+	usetimer timer_convertSpinorfieldFromSOA_eo;
 
 	/**
 	 * Return the timer connected to a specific kernel.
@@ -206,6 +212,8 @@ protected:
 
 private:
 
+	cl_kernel convertSpinorfieldToSOA_eo;
+	cl_kernel convertSpinorfieldFromSOA_eo;
 };
 
 #endif //OPENCLMODULSPINORSH

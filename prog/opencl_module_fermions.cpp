@@ -368,8 +368,6 @@ void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
 	*collect_options << " -DKAPPA_TEMPORAL_IM=" << kappa_tmp*sin(tmp_temporal);
 	*collect_options << " -DMKAPPA_TEMPORAL_IM=" << -kappa_tmp*sin(tmp_temporal);
 
-	*collect_options << " -DEOPREC_SPINORFIELD_STRIDE=" << calculateStride(get_parameters()->get_eoprec_spinorfieldsize(), sizeof(hmc_complex));
-
 	switch (get_parameters()->get_fermact()) {
 		case TWISTEDMASS :
 			*collect_options << " -DMU=" << get_parameters()->get_mu();
@@ -509,8 +507,6 @@ void Opencl_Module_Fermions::fill_kernels()
 			M_tm_inverse_sitediagonal_minus = createKernel("M_tm_inverse_sitediagonal_minus") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
 		}
 		dslash_eoprec = createKernel("dslash_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
-		convertSpinorfieldToSOA_eo = createKernel("convertSpinorfieldToSOA_eo") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
-		convertSpinorfieldFromSOA_eo = createKernel("convertSpinorfieldFromSOA_eo") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 		convertGaugefieldToSOA = createKernel("convertGaugefieldToSOA") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 		convertGaugefieldFromSOA = createKernel("convertGaugefieldFromSOA") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 		gamma5_eoprec = createKernel("gamma5_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
@@ -544,10 +540,6 @@ void Opencl_Module_Fermions::clear_kernels()
 		clerr = clReleaseKernel(M_tm_sitediagonal);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(M_tm_inverse_sitediagonal);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(convertSpinorfieldToSOA_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(convertSpinorfieldFromSOA_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(convertGaugefieldToSOA);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -1800,38 +1792,6 @@ void Opencl_Module_Fermions::convertGaugefieldToSOA_device(cl_mem out, cl_mem in
 	enqueueKernel(convertGaugefieldToSOA, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::convertSpinorfieldToSOA_eo_device(cl_mem out, cl_mem in)
-{
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(convertSpinorfieldToSOA_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
-
-	//set arguments
-	int clerr = clSetKernelArg(convertSpinorfieldToSOA_eo, 0, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(convertSpinorfieldToSOA_eo, 1, sizeof(cl_mem), &in);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	enqueueKernel(convertSpinorfieldToSOA_eo, gs2, ls2);
-}
-
-void Opencl_Module_Fermions::convertSpinorfieldFromSOA_eo_device(cl_mem out, cl_mem in)
-{
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(convertSpinorfieldFromSOA_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
-
-	//set arguments
-	int clerr = clSetKernelArg(convertSpinorfieldFromSOA_eo, 0, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(convertSpinorfieldFromSOA_eo, 1, sizeof(cl_mem), &in);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	enqueueKernel(convertSpinorfieldFromSOA_eo, gs2, ls2);
-}
-
 
 #ifdef _PROFILING_
 usetimer* Opencl_Module_Fermions::get_timer(const char * in)
@@ -1872,12 +1832,6 @@ usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 	}
 	if (strcmp(in, "ps_correlator") == 0) {
 		return &this->timer_ps_correlator;
-	}
-	if(strcmp(in, "convertSpinorfieldToSOA_eo") == 0) {
-		return &timer_convertSpinorfieldToSOA_eo;
-	}
-	if(strcmp(in, "convertSpinorfieldFromSOA_eo") == 0) {
-		return &timer_convertSpinorfieldFromSOA_eo;
 	}
 	if(strcmp(in, "convertGaugefieldToSOA") == 0) {
 		return &timer_convertGaugefieldToSOA;
@@ -1947,12 +1901,6 @@ int Opencl_Module_Fermions::get_read_write_size(const char * in)
 		//this kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
 		const unsigned int dirs = 4;
 		return (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
-	}
-	if(strcmp(in, "convertSpinorfieldToSOA_eo") == 0) {
-		return 2 * Seo * 24 * D;
-	}
-	if(strcmp(in, "convertSpinorfieldFromSOA_eo") == 0) {
-		return 2 * Seo * 24 * D;
 	}
 	if(strcmp(in, "convertGaugefieldToSOA") == 0) {
 		return 2 * parameters->get_vol4d() * NDIM * R * C * D;
@@ -2049,10 +1997,6 @@ void Opencl_Module_Fermions::print_profiling(std::string filename, int number)
 	kernelName = "M_tm_inverse_sitediagonal_minus";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "dslash_eoprec";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "convertSpinorfieldToSOA_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "convertSpinorfieldFromSOA_eo";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "convertGaugefieldToSOA";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
