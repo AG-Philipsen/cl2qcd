@@ -28,11 +28,13 @@ void Opencl_Module_Spinors::fill_buffers()
 	spinorfield_soa_eo_1 = 0;
 	spinorfield_soa_eo_2 = 0;
 	spinorfield_soa_eo_3 = 0;
+	spinorfield_soa_eo_4 = 0;
 	if(get_parameters()->get_use_eo() == true) {
 		// SOA buffers
 		spinorfield_soa_eo_1 = create_rw_buffer(calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex));
 		spinorfield_soa_eo_2 = create_rw_buffer(calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex));
 		spinorfield_soa_eo_3 = create_rw_buffer(calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex));
+		spinorfield_soa_eo_4 = create_rw_buffer(calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex));
 	}
 
 	return;
@@ -63,7 +65,7 @@ void Opencl_Module_Spinors::fill_kernels()
 		set_eoprec_spinorfield_cold = createKernel("set_eoprec_spinorfield_cold") << basic_fermion_code << "spinorfield_eo_cold.cl";
 		saxpy_eoprec = createKernel("saxpy_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_saxpy.cl";
 		sax_eoprec = createKernel("sax_eoprec") << basic_fermion_code << "spinorfield_eo_sax.cl";
-		saxsbypz_eoprec = createKernel("saxsbypz_eoprec") << basic_fermion_code << "spinorfield_eo_saxsbypz.cl";
+		saxsbypz_eoprec = createKernel("saxsbypz_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_saxsbypz.cl";
 		scalar_product_eoprec = createKernel("scalar_product_eoprec") << basic_fermion_code << "spinorfield_eo_scalar_product.cl";
 		set_zero_spinorfield_eoprec = createKernel("set_zero_spinorfield_eoprec") << basic_fermion_code << "spinorfield_eo_zero.cl";
 		global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "spinorfield_eo_squarenorm.cl";
@@ -148,8 +150,12 @@ void Opencl_Module_Spinors::clear_buffers()
 		clerr = clReleaseMemObject(spinorfield_soa_eo_2);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	}
-	if(spinorfield_soa_eo_1) {
+	if(spinorfield_soa_eo_3) {
 		clerr = clReleaseMemObject(spinorfield_soa_eo_3);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	}
+	if(spinorfield_soa_eo_4) {
+		clerr = clReleaseMemObject(spinorfield_soa_eo_4);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	}
 
@@ -362,18 +368,23 @@ void Opencl_Module_Spinors::saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem
 
 void Opencl_Module_Spinors::saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out)
 {
+	// convert input to SOA. TODO move to proper place, does not have to be done every time
+	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, x);
+	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_2, y);
+	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_3, z);
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(saxsbypz_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(saxsbypz_eoprec, 0, sizeof(cl_mem), &x);
+	int clerr = clSetKernelArg(saxsbypz_eoprec, 0, sizeof(cl_mem), &spinorfield_soa_eo_1);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxsbypz_eoprec, 1, sizeof(cl_mem), &y);
+	clerr = clSetKernelArg(saxsbypz_eoprec, 1, sizeof(cl_mem), &spinorfield_soa_eo_2);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxsbypz_eoprec, 2, sizeof(cl_mem), &z);
+	clerr = clSetKernelArg(saxsbypz_eoprec, 2, sizeof(cl_mem), &spinorfield_soa_eo_3);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(saxsbypz_eoprec, 3, sizeof(cl_mem), &alpha);
@@ -382,10 +393,12 @@ void Opencl_Module_Spinors::saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z,
 	clerr = clSetKernelArg(saxsbypz_eoprec, 4, sizeof(cl_mem), &beta);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(saxsbypz_eoprec, 5, sizeof(cl_mem), &out);
+	clerr = clSetKernelArg(saxsbypz_eoprec, 5, sizeof(cl_mem), &spinorfield_soa_eo_4);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( saxsbypz_eoprec, gs2, ls2);
+
+	convertSpinorfieldFromSOA_eo_device(out, spinorfield_soa_eo_4);
 }
 
 void Opencl_Module_Spinors::set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out)

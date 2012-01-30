@@ -181,6 +181,7 @@ protected:
 	cl_mem spinorfield_soa_eo_1;
 	cl_mem spinorfield_soa_eo_2;
 	cl_mem spinorfield_soa_eo_3;
+	cl_mem spinorfield_soa_eo_4;
 
 	//BLAS
 	cl_kernel set_spinorfield_cold;
