@@ -68,7 +68,7 @@ void Opencl_Module_Spinors::fill_kernels()
 		saxsbypz_eoprec = createKernel("saxsbypz_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_saxsbypz.cl";
 		scalar_product_eoprec = createKernel("scalar_product_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_scalar_product.cl";
 		set_zero_spinorfield_eoprec = createKernel("set_zero_spinorfield_eoprec") << basic_fermion_code << "spinorfield_eo_zero.cl";
-		global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "spinorfield_eo_squarenorm.cl";
+		global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_squarenorm.cl";
 		convertSpinorfieldToSOA_eo = createKernel("convertSpinorfieldToSOA_eo") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_convert.cl";
 		convertSpinorfieldFromSOA_eo = createKernel("convertSpinorfieldFromSOA_eo") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_convert.cl";
 	}
@@ -546,6 +546,9 @@ void Opencl_Module_Spinors::set_float_to_global_squarenorm_device(cl_mem a, cl_m
 
 void Opencl_Module_Spinors::set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_mem out)
 {
+	// convert input to SOA. TODO move to proper place, does not have to be done every time
+	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, a);
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -554,7 +557,7 @@ void Opencl_Module_Spinors::set_float_to_global_squarenorm_eoprec_device(cl_mem 
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
 	if( clmem_global_squarenorm_buf_glob == 0 ) clmem_global_squarenorm_buf_glob = create_rw_buffer(global_buf_size_float);
 
-	int clerr = clSetKernelArg(global_squarenorm_eoprec, 0, sizeof(cl_mem), &a);
+	int clerr = clSetKernelArg(global_squarenorm_eoprec, 0, sizeof(cl_mem), &spinorfield_soa_eo_1);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	//CP: these do not have to be args of the function since they are global objects to the class opencl??

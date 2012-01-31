@@ -1,11 +1,10 @@
 // hmc_float squarenorm, return in result
 // --> use 2 kernels: 1 for the summation in one block and 1 for summation over blockresults
-__kernel void global_squarenorm_eoprec( __global spinorfield_eoprec *x, __global hmc_float* result, __local hmc_float* result_local )
+__kernel void global_squarenorm_eoprec( __global const spinorfield_eoprec * const restrict x, __global hmc_float * const restrict result, __local hmc_float * const restrict result_local )
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
-	int num_groups = get_num_groups(0);
 	int group_id = get_group_id (0);
 	int idx = get_local_id(0);
 
@@ -13,7 +12,7 @@ __kernel void global_squarenorm_eoprec( __global spinorfield_eoprec *x, __global
 	sum = 0.;
 
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
-		spinor x_tmp = x[id_tmp];
+		spinor x_tmp = getSpinorSOA_eo(x, id_tmp);
 		hmc_float tmp = spinor_squarenorm(x_tmp);
 		sum += tmp;
 	}
