@@ -66,7 +66,7 @@ void Opencl_Module_Spinors::fill_kernels()
 		saxpy_eoprec = createKernel("saxpy_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_saxpy.cl";
 		sax_eoprec = createKernel("sax_eoprec") << basic_fermion_code << "spinorfield_eo_sax.cl";
 		saxsbypz_eoprec = createKernel("saxsbypz_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_saxsbypz.cl";
-		scalar_product_eoprec = createKernel("scalar_product_eoprec") << basic_fermion_code << "spinorfield_eo_scalar_product.cl";
+		scalar_product_eoprec = createKernel("scalar_product_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_scalar_product.cl";
 		set_zero_spinorfield_eoprec = createKernel("set_zero_spinorfield_eoprec") << basic_fermion_code << "spinorfield_eo_zero.cl";
 		global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "spinorfield_eo_squarenorm.cl";
 		convertSpinorfieldToSOA_eo = createKernel("convertSpinorfieldToSOA_eo") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_convert.cl";
@@ -437,6 +437,10 @@ void Opencl_Module_Spinors::set_complex_to_scalar_product_device(cl_mem a, cl_me
 
 void Opencl_Module_Spinors::set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_mem b, cl_mem out)
 {
+	// convert input to SOA. TODO move to proper place, does not have to be done every time
+	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, a);
+	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_2, b);
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -445,10 +449,10 @@ void Opencl_Module_Spinors::set_complex_to_scalar_product_eoprec_device(cl_mem a
 	if( clmem_scalar_product_buf_glob == 0 ) clmem_scalar_product_buf_glob = create_rw_buffer(global_buf_size_complex);
 
 	//set arguments
-	int clerr = clSetKernelArg(scalar_product_eoprec, 0, sizeof(cl_mem), &a);
+	int clerr = clSetKernelArg(scalar_product_eoprec, 0, sizeof(cl_mem), &spinorfield_soa_eo_1);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(scalar_product_eoprec, 1, sizeof(cl_mem), &b);
+	clerr = clSetKernelArg(scalar_product_eoprec, 1, sizeof(cl_mem), &spinorfield_soa_eo_2);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product_eoprec, 2, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
