@@ -324,21 +324,27 @@ void Opencl_Module_Spinors::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha
 
 void Opencl_Module_Spinors::sax_eoprec_device(cl_mem x, cl_mem alpha, cl_mem out)
 {
+	// convert input to SOA. TODO move to proper place, does not have to be done every time
+	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, x);
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(sax_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(sax_eoprec, 0, sizeof(cl_mem), &x);
+	int clerr = clSetKernelArg(sax_eoprec, 0, sizeof(cl_mem), &spinorfield_soa_eo_1);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(sax_eoprec, 1, sizeof(cl_mem), &alpha);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(sax_eoprec, 2, sizeof(cl_mem), &out);
+	clerr = clSetKernelArg(sax_eoprec, 2, sizeof(cl_mem), &spinorfield_soa_eo_2);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( sax_eoprec, gs2, ls2);
+
+	// convert output from SOA. TODO move to proper place, does not have to be done every time
+	convertSpinorfieldFromSOA_eo_device(out, spinorfield_soa_eo_2);
 }
 
 void Opencl_Module_Spinors::saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out)
