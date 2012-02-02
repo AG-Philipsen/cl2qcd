@@ -1,11 +1,7 @@
-__kernel void generate_gaussian_spinorfield_eoprec(__global spinorfield * in, __global hmc_ocl_ran * rnd)
+__kernel void generate_gaussian_spinorfield_eoprec(__global hmc_complex * const restrict out, __global hmc_ocl_ran * const restrict rnd)
 {
-	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
-	int loc_idx = get_local_id(0);
-	int num_groups = get_num_groups(0);
-	int group_id = get_group_id (0);
 	int n, t;
 	hmc_complex tmp;
 	//sigma has to be 0.5 here
@@ -60,6 +56,6 @@ __kernel void generate_gaussian_spinorfield_eoprec(__global spinorfield * in, __
 		//multiply by sigma
 		out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));
 
-		in[id_tmp] = out_tmp;
+		putSpinorSOA_eo(out, id_tmp, out_tmp);
 	}
 }

@@ -442,13 +442,16 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_eoprec_device()
 	this->get_work_sizes(generate_gaussian_spinorfield_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	//this is always applied to clmem_phi_inv_eoporec, which can be done since the gaussian field is only needed in the beginning
-	int clerr = clSetKernelArg(generate_gaussian_spinorfield_eoprec, 0, sizeof(cl_mem), &clmem_phi_inv_eoprec);
+	int clerr = clSetKernelArg(generate_gaussian_spinorfield_eoprec, 0, sizeof(cl_mem), &spinorfield_soa_eo_1);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(generate_gaussian_spinorfield_eoprec, 1, sizeof(cl_mem), get_clmem_rndarray());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(generate_gaussian_spinorfield_eoprec  , gs2, ls2);
+	enqueueKernel(generate_gaussian_spinorfield_eoprec, gs2, ls2);
+
+	// convert output from SOA. TODO move to proper place, does not have to be done every time
+	convertSpinorfieldFromSOA_eo_device(clmem_phi_inv_eoprec, spinorfield_soa_eo_1);
 
 	if(logger.beDebug()) {
 		cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
