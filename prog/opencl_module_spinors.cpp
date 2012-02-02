@@ -608,10 +608,12 @@ void Opencl_Module_Spinors::set_zero_spinorfield_eoprec_device(cl_mem x)
 	cl_uint num_groups;
 	this->get_work_sizes(set_zero_spinorfield_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(set_zero_spinorfield_eoprec, 0, sizeof(cl_mem), &x);
+	int clerr = clSetKernelArg(set_zero_spinorfield_eoprec, 0, sizeof(cl_mem), &spinorfield_soa_eo_1);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( set_zero_spinorfield_eoprec, gs2, ls2);
+
+	convertSpinorfieldFromSOA_eo_device(x, spinorfield_soa_eo_1);
 }
 
 void Opencl_Module_Spinors::convertSpinorfieldToSOA_eo_device(cl_mem out, cl_mem in)
