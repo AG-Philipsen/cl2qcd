@@ -711,8 +711,7 @@ usetimer* Opencl_Module_Spinors::get_timer(const char * in)
 	}
 	if(strcmp(in, "convertSpinorfieldFromSOA_eo") == 0) {
 		return &timer_convertSpinorfieldFromSOA_eo;
-	}
-	else {
+	} else {
 		return NULL;
 	}
 }
