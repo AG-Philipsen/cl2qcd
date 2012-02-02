@@ -45,6 +45,9 @@ void Opencl_Module_Spinors::fill_kernels()
 	Opencl_Module_Ran::fill_kernels();
 
 	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
+	if(get_parameters()->get_use_eo()) {
+		basic_fermion_code = basic_fermion_code << "operations_spinorfield_eo.cl";
+	}
 
 	set_spinorfield_cold = createKernel("set_spinorfield_cold") << basic_fermion_code << "spinorfield_cold.cl";
 	saxpy = createKernel("saxpy") << basic_fermion_code << "spinorfield_saxpy.cl";
@@ -60,17 +63,17 @@ void Opencl_Module_Spinors::fill_kernels()
 	product = createKernel("product") << basic_opencl_code << "complex_product.cl";
 
 	if(get_parameters()->get_use_eo() == true) {
-		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_convert.cl";
-		convert_to_eoprec = createKernel("convert_to_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_convert.cl";
+		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
+		convert_to_eoprec = createKernel("convert_to_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		set_eoprec_spinorfield_cold = createKernel("set_eoprec_spinorfield_cold") << basic_fermion_code << "spinorfield_eo_cold.cl";
-		saxpy_eoprec = createKernel("saxpy_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_saxpy.cl";
+		saxpy_eoprec = createKernel("saxpy_eoprec") << basic_fermion_code << "spinorfield_eo_saxpy.cl";
 		sax_eoprec = createKernel("sax_eoprec") << basic_fermion_code << "spinorfield_eo_sax.cl";
-		saxsbypz_eoprec = createKernel("saxsbypz_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_saxsbypz.cl";
-		scalar_product_eoprec = createKernel("scalar_product_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_scalar_product.cl";
+		saxsbypz_eoprec = createKernel("saxsbypz_eoprec") << basic_fermion_code << "spinorfield_eo_saxsbypz.cl";
+		scalar_product_eoprec = createKernel("scalar_product_eoprec") << basic_fermion_code << "spinorfield_eo_scalar_product.cl";
 		set_zero_spinorfield_eoprec = createKernel("set_zero_spinorfield_eoprec") << basic_fermion_code << "spinorfield_eo_zero.cl";
-		global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_squarenorm.cl";
-		convertSpinorfieldToSOA_eo = createKernel("convertSpinorfieldToSOA_eo") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_convert.cl";
-		convertSpinorfieldFromSOA_eo = createKernel("convertSpinorfieldFromSOA_eo") << basic_fermion_code << "operations_spinorfield_eo.cl" << "spinorfield_eo_convert.cl";
+		global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "spinorfield_eo_squarenorm.cl";
+		convertSpinorfieldToSOA_eo = createKernel("convertSpinorfieldToSOA_eo") << basic_fermion_code << "spinorfield_eo_convert.cl";
+		convertSpinorfieldFromSOA_eo = createKernel("convertSpinorfieldFromSOA_eo") << basic_fermion_code << "spinorfield_eo_convert.cl";
 	}
 
 	return;
