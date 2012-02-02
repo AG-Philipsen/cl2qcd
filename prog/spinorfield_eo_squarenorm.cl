@@ -26,16 +26,16 @@ __kernel void global_squarenorm_eoprec( __global const hmc_complex * const restr
 		(result_local[idx]) = sum;
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 64)
-			result_local[idx%64] += result_local[idx];
+			result_local[idx % 64] += result_local[idx];
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 32)
-			result_local[idx-32] += result_local[idx];
+			result_local[idx - 32] += result_local[idx];
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 16)
-			result_local[idx-16] += result_local[idx];
+			result_local[idx - 16] += result_local[idx];
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 8)
-			result_local[idx-8] += result_local[idx];
+			result_local[idx - 8] += result_local[idx];
 		barrier(CLK_LOCAL_MEM_FENCE);
 		//thread 0 sums up the result_local and stores it in array result
 		if (idx == 0) {

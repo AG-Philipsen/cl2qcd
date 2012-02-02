@@ -33,23 +33,23 @@ __kernel void scalar_product_eoprec( __global const hmc_complex  * const restric
 
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 64) {
-			result_local[idx%64].re += result_local[idx].re;
-			result_local[idx%64].im += result_local[idx].im;
+			result_local[idx % 64].re += result_local[idx].re;
+			result_local[idx % 64].im += result_local[idx].im;
 		}
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 32) {
-			result_local[idx-32].re += result_local[idx].re;
-			result_local[idx-32].im += result_local[idx].im;
+			result_local[idx - 32].re += result_local[idx].re;
+			result_local[idx - 32].im += result_local[idx].im;
 		}
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 16) {
-			result_local[idx-16].re += result_local[idx].re;
-			result_local[idx-16].im += result_local[idx].im;
+			result_local[idx - 16].re += result_local[idx].re;
+			result_local[idx - 16].im += result_local[idx].im;
 		}
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 8) {
-			result_local[idx-8].re += result_local[idx].re;
-			result_local[idx-8].im += result_local[idx].im;
+			result_local[idx - 8].re += result_local[idx].re;
+			result_local[idx - 8].im += result_local[idx].im;
 		}
 		barrier(CLK_LOCAL_MEM_FENCE);
 		//thread 0 sums up the result_local and stores it in array result
