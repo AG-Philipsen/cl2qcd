@@ -832,15 +832,21 @@ void Opencl_Module_Fermions::QplusQminus_eoprec(cl_mem in, cl_mem out, cl_mem gf
 //explicit eoprec fermionmatrix functions
 void Opencl_Module_Fermions::gamma5_eoprec_device(cl_mem inout)
 {
+	// convert input to SOA. TODO move to proper place, does not have to be done every time
+	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, inout);
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(gamma5_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(gamma5_eoprec, 0, sizeof(cl_mem), &inout);
+	int clerr = clSetKernelArg(gamma5_eoprec, 0, sizeof(cl_mem), &spinorfield_soa_eo_1);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( gamma5_eoprec, gs2, ls2);
+
+	// convert output from SOA. TODO move to proper place, does not have to be done every time
+	convertSpinorfieldFromSOA_eo_device(inout, spinorfield_soa_eo_2);
 }
 
 void Opencl_Module_Fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd)
