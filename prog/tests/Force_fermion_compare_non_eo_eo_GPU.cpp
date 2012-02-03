@@ -726,18 +726,7 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
-	Opencl_Module::fill_kernels();
-
-	//to this end, one has to set the needed files by hand
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
-	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl" << "operations_spinorfield_eo.cl";
-	//  basic_hmc_code = basic_fermion_code << "types_hmc.h";
-
-	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
-	global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "spinorfield_eo_squarenorm.cl";
-	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
+	Opencl_Module_Hmc::fill_kernels();
 
 	ae_sqn = createKernel("gaugemomentum_squarenorm") << basic_fermion_code << "types_hmc.h" << "operations_gaugemomentum.cl" << "gaugemomentum_squarenorm.cl";
 
@@ -780,6 +769,10 @@ void Device::clear_kernels()
 
 void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls, int evenodd)
 {
+	// convert input to SOA. TODO move to proper place, does not have to be done every time
+	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, in1);
+	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_2, in2);
+
 	cl_int err;
 	int eo;
 	if(evenodd == ODD)
@@ -788,9 +781,9 @@ void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs
 		eo = EVEN;
 	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &gf);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &in1);
+	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &spinorfield_soa_eo_1);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &in2);
+	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &spinorfield_soa_eo_2);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 3, sizeof(cl_mem), &out);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);

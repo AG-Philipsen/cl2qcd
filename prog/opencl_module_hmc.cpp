@@ -1054,6 +1054,10 @@ void Opencl_Module_Hmc::fermion_force_device()
 
 void Opencl_Module_Hmc::fermion_force_eoprec_device(cl_mem Y, cl_mem X, int evenodd)
 {
+	// convert input to SOA. TODO move to proper place, does not have to be done every time
+	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, Y);
+	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_2, X);
+
 	//fermion_force(field, Y, X, out);
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -1063,10 +1067,10 @@ void Opencl_Module_Hmc::fermion_force_eoprec_device(cl_mem Y, cl_mem X, int even
 	int clerr = clSetKernelArg(fermion_force_eoprec, 0, sizeof(cl_mem), &clmem_new_u);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(fermion_force_eoprec, 1, sizeof(cl_mem), &Y);
+	clerr = clSetKernelArg(fermion_force_eoprec, 1, sizeof(cl_mem), &spinorfield_soa_eo_1);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(fermion_force_eoprec, 2, sizeof(cl_mem), &X);
+	clerr = clSetKernelArg(fermion_force_eoprec, 2, sizeof(cl_mem), &spinorfield_soa_eo_2);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(fermion_force_eoprec, 3, sizeof(cl_mem), &clmem_force);

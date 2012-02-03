@@ -443,6 +443,10 @@ void Device::clear_kernels()
 
 void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls, int evenodd)
 {
+	// convert input to SOA. TODO move to proper place, does not have to be done every time
+	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, in1);
+	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_2, in2);
+
 	cl_int err;
 	int eo;
 	if(evenodd == ODD)
@@ -451,9 +455,9 @@ void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs
 		eo = EVEN;
 	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &gf);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &in1);
+	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &spinorfield_soa_eo_1);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &in2);
+	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &spinorfield_soa_eo_2);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 3, sizeof(cl_mem), &out);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);

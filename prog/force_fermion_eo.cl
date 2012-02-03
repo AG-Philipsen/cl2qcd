@@ -7,7 +7,7 @@
 //	ODD corresponds to case where an odd site of Y is connected to an even site of X (because if x is odd x+mu is even)
 //	EVEN is just the other way around.
 //The difference to the non-eo kernel is that one has to calculate the eo position of the "plus" spinor out of the neighbour coordinates on each occasion. This is done just like in the dslash_eo kernel!
-__kernel void fermion_force_eoprec(__global ocl_s_gaugefield * field, __global  spinorfield * Y, __global  spinorfield * X, __global  ae * out, int evenodd)
+__kernel void fermion_force_eoprec(__global const ocl_s_gaugefield * const restrict field, __global const hmc_complex * const restrict Y, __global const hmc_complex * const restrict X, __global ae * const restrict out, int evenodd)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);
@@ -31,7 +31,7 @@ __kernel void fermion_force_eoprec(__global ocl_s_gaugefield * field, __global  
 		int t = pos.time;
 		int nn_eo;
 
-		y = get_spinor_from_eoprec_field(Y, id_tmp);
+		y = getSpinorSOA_eo(Y, id_tmp);
 		///////////////////////////////////
 		// Calculate gamma_5 y
 		///////////////////////////////////
@@ -52,7 +52,7 @@ __kernel void fermion_force_eoprec(__global ocl_s_gaugefield * field, __global  
 		nn = get_neighbor_temporal(t);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(n, nn);
-		plus = get_spinor_from_eoprec_field(X, nn_eo);
+		plus = getSpinorSOA_eo(X, nn_eo);
 		U = get_matrixsu3(field, n, t, dir);
 		//if chemical potential is activated, U has to be multiplied by appropiate factor
 #ifdef _CP_REAL_
@@ -93,7 +93,7 @@ __kernel void fermion_force_eoprec(__global ocl_s_gaugefield * field, __global  
 		global_link_pos_down = get_global_link_pos(dir, n, nn);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(n, nn);
-		plus = get_spinor_from_eoprec_field(X, nn_eo);
+		plus = getSpinorSOA_eo(X, nn_eo);
 		U = get_matrixsu3(field, n, nn, dir);
 		//if chemical potential is activated, U has to be multiplied by appropiate factor
 		//this is the same as at mu=0 in the imag. case, since U is taken to be U^+ later:
@@ -144,7 +144,7 @@ __kernel void fermion_force_eoprec(__global ocl_s_gaugefield * field, __global  
 		nn = get_neighbor(n, dir);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
-		plus = get_spinor_from_eoprec_field(X, nn_eo);
+		plus = getSpinorSOA_eo(X, nn_eo);
 		U = get_matrixsu3(field, n, t, dir);
 		/////////////////////////////////
 		//Calculate (1 - gamma_1) y
@@ -172,7 +172,7 @@ __kernel void fermion_force_eoprec(__global ocl_s_gaugefield * field, __global  
 		global_link_pos_down = get_global_link_pos(dir, nn, t);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
-		plus = get_spinor_from_eoprec_field(X, nn_eo);
+		plus = getSpinorSOA_eo(X, nn_eo);
 		U = get_matrixsu3(field, nn, t, dir);
 		///////////////////////////////////
 		// Calculate (1 + gamma_1) y
@@ -205,7 +205,7 @@ __kernel void fermion_force_eoprec(__global ocl_s_gaugefield * field, __global  
 		nn = get_neighbor(n, dir);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
-		plus = get_spinor_from_eoprec_field(X, nn_eo);
+		plus = getSpinorSOA_eo(X, nn_eo);
 		U = get_matrixsu3(field, n, t, dir);
 		///////////////////////////////////
 		// Calculate (1 - gamma_2) y
@@ -233,7 +233,7 @@ __kernel void fermion_force_eoprec(__global ocl_s_gaugefield * field, __global  
 		global_link_pos_down = get_global_link_pos(dir, nn, t);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
-		plus = get_spinor_from_eoprec_field(X, nn_eo);
+		plus = getSpinorSOA_eo(X, nn_eo);
 		U = get_matrixsu3(field, nn, t, dir);
 
 		///////////////////////////////////
@@ -267,7 +267,7 @@ __kernel void fermion_force_eoprec(__global ocl_s_gaugefield * field, __global  
 		nn = get_neighbor(n, dir);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
-		plus = get_spinor_from_eoprec_field(X, nn_eo);
+		plus = getSpinorSOA_eo(X, nn_eo);
 		U = get_matrixsu3(field, n, t, dir);
 
 		///////////////////////////////////
@@ -296,7 +296,7 @@ __kernel void fermion_force_eoprec(__global ocl_s_gaugefield * field, __global  
 		global_link_pos_down = get_global_link_pos(dir, nn, t);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
-		plus = get_spinor_from_eoprec_field(X, nn_eo);
+		plus = getSpinorSOA_eo(X, nn_eo);
 		U = get_matrixsu3(field, nn, t, dir);
 
 		///////////////////////////////////
