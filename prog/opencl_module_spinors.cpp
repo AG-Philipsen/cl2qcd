@@ -31,6 +31,7 @@ void Opencl_Module_Spinors::fill_buffers()
 	spinorfield_soa_eo_4 = 0;
 	if(get_parameters()->get_use_eo() == true) {
 		// SOA buffers
+		logger.trace() << "Initializing scratch SOA fields";
 		spinorfield_soa_eo_1 = create_rw_buffer(calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex));
 		spinorfield_soa_eo_2 = create_rw_buffer(calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex));
 		spinorfield_soa_eo_3 = create_rw_buffer(calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex));

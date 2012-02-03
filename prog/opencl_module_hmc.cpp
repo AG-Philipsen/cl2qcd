@@ -62,8 +62,7 @@ void Opencl_Module_Hmc::fill_kernels()
 	//init kernels for HMC
 	if(get_parameters()->get_use_eo() == true) {
 		generate_gaussian_spinorfield_eoprec = createKernel("generate_gaussian_spinorfield_eoprec") << basic_hmc_code << "random.cl" << "spinorfield_eo_gaussian.cl";
-		fermion_force_eoprec = createKernel("fermion_force_eoprec") << basic_hmc_code << "operations_gaugemomentum.cl" << "operations_spinorfiel\
-d_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
+		fermion_force_eoprec = createKernel("fermion_force_eoprec") << basic_hmc_code << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 	} else {
 		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_hmc_code << "random.cl" << "spinorfield_gaussian.cl";
 	}
