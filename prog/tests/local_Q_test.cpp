@@ -73,14 +73,14 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	logger.info() << "Init GPU device";
 	//params.print_info_inverter("m_gpu");
 	logger.fatal() << "GPU does not work at the moment!";
-	/*	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	/*  Dummyfield dummy(CL_DEVICE_TYPE_GPU);
 	logger.info() << "gaugeobservables: ";
 	dummy.print_gaugeobservables_from_task(0, 0);
 	hmc_float gpu_back = dummy.runTestKernel();
 	BOOST_MESSAGE("Tested GPU");
 	*/
 	hmc_float gpu_back;
-	logger.info()<<"cpu: " << cpu_back << "\tgpu: " << gpu_back;
+	logger.info() << "cpu: " << cpu_back << "\tgpu: " << gpu_back;
 
 	BOOST_MESSAGE(cpu_back << ' ' << gpu_back);
 	BOOST_CHECK_CLOSE(cpu_back, gpu_back, 1e-8);
@@ -113,23 +113,23 @@ void Dummyfield::fill_buffers()
 	host_out = new hmc_float[NUM_ELEMENTS];
 	BOOST_REQUIRE(host_out);
 
-	size_t buf_size = NUM_ELEMENTS*sizeof(hmc_float);
+	size_t buf_size = NUM_ELEMENTS * sizeof(hmc_float);
 	out = clCreateBuffer(context, CL_MEM_READ_ONLY , buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	
+
 }
 
 void Device::fill_kernels()
 {
 	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
- 	Opencl_Module::fill_kernels();
+	Opencl_Module::fill_kernels();
 
 	//to this end, one has to set the needed files by hand
-  	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
+	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
 	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-	
+
 	testKernel = createKernel("localQ_test") << basic_opencl_code  << "/tests/localQ_test.cl";
-  
+
 }
 
 void Dummyfield::clear_buffers()
@@ -160,7 +160,7 @@ void Device::runTestKernel(cl_mem gf, cl_mem out, int gs, int ls)
 
 hmc_float Dummyfield::runTestKernel()
 {
-	hmc_float res = 0; 
+	hmc_float res = 0;
 	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = get_parameters()->get_vol4d();
@@ -170,15 +170,15 @@ hmc_float Dummyfield::runTestKernel()
 		ls = 1;
 	}
 	static_cast<Device*>(opencl_modules[0])->runTestKernel(*(get_clmem_gaugefield()), out, gs, ls);
-	
+
 	int NUM_ELEMENTS = params.get_vol4d();
 	//copy the result of the kernel to host
-	size_t size = NUM_ELEMENTS*sizeof(hmc_float);
+	size_t size = NUM_ELEMENTS * sizeof(hmc_float);
 	cl_int clerr = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), out, CL_TRUE, 0, size, host_out, 0, NULL, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueReadBuffer", __FILE__, __LINE__);
-	
+
 	//sum up all elements in the result buffer
-	for(int i = 0; i<NUM_ELEMENTS; i++){
+	for(int i = 0; i < NUM_ELEMENTS; i++) {
 		res += host_out[i];
 	}
 	return res;

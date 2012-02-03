@@ -33,7 +33,7 @@ public:
 	};
 
 
-  void runTestKernel(cl_mem gf, cl_mem out, int gs, int ls);
+	void runTestKernel(cl_mem gf, cl_mem out, int gs, int ls);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -57,14 +57,14 @@ public:
 	virtual void finalize_opencl();
 
 	void get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol);
-        void get_gaugeobservables_from_task(int dummy, int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol);
+	void get_gaugeobservables_from_task(int dummy, int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol);
 	void runTestKernel();
 
 private:
 	void fill_buffers();
 	void clear_buffers();
 	inputparameters params;
-  cl_mem out;
+	cl_mem out;
 };
 
 BOOST_AUTO_TEST_CASE( STAPLE_TEST )
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	logger.info() << "plaq: " << plaq_gpu << "\t" << tplaq_gpu  << "\t" << splaq_gpu  << "\t" << pol_gpu.re  << "\t" << pol_gpu.im ;
 	BOOST_MESSAGE("Tested GPU");
 
-	logger.info()<<"test results:";
+	logger.info() << "test results:";
 	logger.info() << "plaq: CPU: " << plaq_cpu << "\tGPU: " << plaq_gpu;
 	BOOST_MESSAGE(plaq_cpu << ' ' << plaq_gpu);
 	BOOST_CHECK_CLOSE(plaq_cpu, plaq_gpu, 1e-8);
@@ -132,49 +132,49 @@ void Dummyfield::finalize_opencl()
 void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-	
-  cl_int err;
 
-  cl_context context = opencl_modules[0]->get_context();
+	cl_int err;
 
-  int NUM_ELEMENTS = get_num_gaugefield_elems();//params.get_vol4d() * NDIM;
+	cl_context context = opencl_modules[0]->get_context();
 
-  
-  Matrixsu3 *  gf_tmp  = new Matrixsu3[get_num_gaugefield_elems()];
-  //fill tmp gf with ones
-  set_gaugefield_cold(gf_tmp);
+	int NUM_ELEMENTS = get_num_gaugefield_elems();//params.get_vol4d() * NDIM;
 
 
-  size_t buf_size = NUM_ELEMENTS*sizeof(Matrixsu3);
-  out = clCreateBuffer(context, CL_MEM_READ_ONLY , buf_size, 0, &err );
-  BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	Matrixsu3 *  gf_tmp  = new Matrixsu3[get_num_gaugefield_elems()];
+	//fill tmp gf with ones
+	set_gaugefield_cold(gf_tmp);
 
-  //copy cold tmp gf to the device
-  err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out, CL_TRUE, 0, buf_size, gf_tmp, 0, 0, NULL);
-  BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
-  delete[] gf_tmp;
+	size_t buf_size = NUM_ELEMENTS * sizeof(Matrixsu3);
+	out = clCreateBuffer(context, CL_MEM_READ_ONLY , buf_size, 0, &err );
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	//copy cold tmp gf to the device
+	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out, CL_TRUE, 0, buf_size, gf_tmp, 0, 0, NULL);
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	delete[] gf_tmp;
 
 }
 
 void Device::fill_kernels()
 {
 	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
- 	Opencl_Module::fill_kernels();
+	Opencl_Module::fill_kernels();
 
 	//to this end, one has to set the needed files by hand
-  basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
+	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
 	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-	
+
 	//this has to be the same as in opencl_module
-        // in fact, the kernel has already been build in the above call!!
-  testKernel = createKernel("stout_smear") << basic_opencl_code  <<  "tests/operations_gaugemomentum.cl" << "stout_smear.cl";
+	// in fact, the kernel has already been build in the above call!!
+	testKernel = createKernel("stout_smear") << basic_opencl_code  <<  "tests/operations_gaugemomentum.cl" << "stout_smear.cl";
 }
 
 void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-  clReleaseMemObject(out);
+	clReleaseMemObject(out);
 }
 
 void Device::clear_kernels()
@@ -186,7 +186,7 @@ void Device::clear_kernels()
 void Device::runTestKernel(cl_mem gf, cl_mem out, int gs, int ls)
 {
 	cl_int err;
-	err = clSetKernelArg(testKernel, 0, sizeof(int),&iter  );
+	err = clSetKernelArg(testKernel, 0, sizeof(int), &iter  );
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &gf);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
@@ -222,7 +222,7 @@ void Dummyfield::get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc
 //this is just out of laziness, a copy of the function above
 void Dummyfield::get_gaugeobservables_from_task(int dummy, int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol)
 {
-  dummy = 0;
+	dummy = 0;
 	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range", __FILE__, __LINE__);
 	opencl_modules[ntask]->gaugeobservables(out, plaq, tplaq, splaq, pol);
 }

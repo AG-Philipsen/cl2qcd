@@ -14,7 +14,7 @@ class Device : public Opencl_Module_Hmc {
 
 	cl_kernel testKernel;
 	cl_kernel testKernel2;
-  cl_kernel ae_sqn;
+	cl_kernel ae_sqn;
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Hmc() {
 		Opencl_Module_Hmc::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
@@ -23,10 +23,10 @@ public:
 		finalize();
 	};
 
-  void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, int evenodd);
-  void runTestKernel2(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls);
+	void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, int evenodd);
+	void runTestKernel2(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls);
 	void fill_kernels();
-  void set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out);
+	void set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out);
 	void clear_kernels();
 };
 
@@ -50,41 +50,42 @@ public:
 
 	hmc_float get_squarenorm_eo(int which);
 	hmc_float get_squarenorm_noneo(int which);
-	void verify(hmc_float, hmc_float);	
-  void verify_converted_vectors();
+	void verify(hmc_float, hmc_float);
+	void verify_converted_vectors();
 	void runTestKernel(int evenodd);
 	void runTestKernel2();
 	void runTestKernel2withconvertedfields();
-  void reset_outfield_eo();
-  void reset_outfield_noneo();
-  void convert_to_noneo(spinor * sf_noneo, spinor* eo1, spinor * eo2);
+	void reset_outfield_eo();
+	void reset_outfield_noneo();
+	void convert_to_noneo(spinor * sf_noneo, spinor* eo1, spinor * eo2);
 private:
 	void fill_buffers();
 	void clear_buffers();
 	inputparameters params;
-  cl_mem in1_eo, in2_eo, in3_eo, in4_eo, out_eo;
-  cl_mem in1_noneo, in2_noneo, out_noneo;
-  cl_mem in1_noneo_converted, in2_noneo_converted;
+	cl_mem in1_eo, in2_eo, in3_eo, in4_eo, out_eo;
+	cl_mem in1_noneo, in2_noneo, out_noneo;
+	cl_mem in1_noneo_converted, in2_noneo_converted;
 	spinor * sf_in1_noneo;
-  spinor * sf_in2_noneo;	
+	spinor * sf_in2_noneo;
 	spinor * sf_in1_noneo_converted;
-  spinor * sf_in2_noneo_converted;	
+	spinor * sf_in2_noneo_converted;
 	hmc_float * sf_out_noneo;
 	cl_mem sqnorm;
 	spinor * sf_in1_eo;
-  spinor * sf_in2_eo;
+	spinor * sf_in2_eo;
 	spinor * sf_in3_eo;
-  spinor * sf_in4_eo;
+	spinor * sf_in4_eo;
 	hmc_float * sf_out_eo;
 	Matrixsu3 * gf_in;
 
 };
 
-BOOST_AUTO_TEST_CASE( F_FERMION ){
-	
+BOOST_AUTO_TEST_CASE( F_FERMION )
+{
+
 	logger.info() << "Perform test only on CPU";
 	logger.info() << "\tOther tests for fermion force shall test equivalence of GPU and CPU...";
-	
+
 	logger.info() << "Init CPU device";
 	//params.print_info_inverter("m_gpu");
 	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
@@ -100,7 +101,7 @@ BOOST_AUTO_TEST_CASE( F_FERMION ){
 	//hmc_float cpu_back3_eo = cpu.get_squarenorm_eo(2);
 	logger.info() << "|phi_odd_2|^2:";
 	//hmc_float cpu_back4_eo = cpu.get_squarenorm_eo(3);
-	
+
 	logger.info() << "run eo force on EVEN and ODD sites...";
 	cpu.runTestKernel(EVEN);
 	cpu.runTestKernel(ODD);
@@ -143,11 +144,11 @@ BOOST_AUTO_TEST_CASE( F_FERMION ){
 	cpu.verify_converted_vectors();
 	logger.info() << "Output vectors:";
 	logger.info() << "eo and noneo_converted:";
- 	cpu.verify(cpu_res_eo, cpu_res_noneo_converted);
+	cpu.verify(cpu_res_eo, cpu_res_noneo_converted);
 	logger.info() << "noneo and noneo_converted:";
- 	cpu.verify(cpu_res_noneo_converted, cpu_res_noneo);
+	cpu.verify(cpu_res_noneo_converted, cpu_res_noneo);
 	logger.info() << "eo and noneo:";
- 	cpu.verify(cpu_res_eo, cpu_res_noneo);
+	cpu.verify(cpu_res_eo, cpu_res_noneo);
 
 
 }
@@ -175,7 +176,7 @@ void get_even_site(int idx, int * out_space, int * out_t, const inputparameters 
 	x = idx;
 	t = (int)(idx / (VOLSPACE / 2));
 	x -= t * VOLSPACE / 2;
-	z = (int)(x / (NSPACE * NSPACE / 2));		
+	z = (int)(x / (NSPACE * NSPACE / 2));
 	x -= z * NSPACE * NSPACE / 2;
 	y = (int)(x / NSPACE);
 	x -= y * NSPACE;
@@ -218,123 +219,130 @@ void fill_sf_with_one(spinor * sf_in1, int size)
 		sf_in1[i].e3.e0 = hmc_complex_one;
 		sf_in1[i].e3.e1 = hmc_complex_one;
 		sf_in1[i].e3.e2 = hmc_complex_one;
-		}
+	}
 	return;
 }
 
 void fill_sf_with_float(spinor * sf_in, int size, hmc_float val)
 {
-        for(int i = 0; i < size; ++i) {
-                sf_in[i].e0.e0.re = val;
-                sf_in[i].e0.e1.re = val;
-                sf_in[i].e0.e2.re = val;
-                sf_in[i].e1.e0.re = val;
-                sf_in[i].e1.e1.re = val;
-                sf_in[i].e1.e2.re = val;
-                sf_in[i].e2.e0.re = val;
-                sf_in[i].e2.e1.re = val;
-                sf_in[i].e2.e2.re = val;
-                sf_in[i].e3.e0.re = val;
-                sf_in[i].e3.e1.re = val;
-                sf_in[i].e3.e2.re = val;
+	for(int i = 0; i < size; ++i) {
+		sf_in[i].e0.e0.re = val;
+		sf_in[i].e0.e1.re = val;
+		sf_in[i].e0.e2.re = val;
+		sf_in[i].e1.e0.re = val;
+		sf_in[i].e1.e1.re = val;
+		sf_in[i].e1.e2.re = val;
+		sf_in[i].e2.e0.re = val;
+		sf_in[i].e2.e1.re = val;
+		sf_in[i].e2.e2.re = val;
+		sf_in[i].e3.e0.re = val;
+		sf_in[i].e3.e1.re = val;
+		sf_in[i].e3.e2.re = val;
 
-                sf_in[i].e0.e0.im = val;
-                sf_in[i].e0.e1.im = val;
-                sf_in[i].e0.e2.im = val;
-                sf_in[i].e1.e0.im = val;
-                sf_in[i].e1.e1.im = val;
-                sf_in[i].e1.e2.im = val;
-                sf_in[i].e2.e0.im = val;
-                sf_in[i].e2.e1.im = val;
-                sf_in[i].e2.e2.im = val;
-                sf_in[i].e3.e0.im = val;
-                sf_in[i].e3.e1.im = val;
-                sf_in[i].e3.e2.im = val;
-        }
-        return;
+		sf_in[i].e0.e0.im = val;
+		sf_in[i].e0.e1.im = val;
+		sf_in[i].e0.e2.im = val;
+		sf_in[i].e1.e0.im = val;
+		sf_in[i].e1.e1.im = val;
+		sf_in[i].e1.e2.im = val;
+		sf_in[i].e2.e0.im = val;
+		sf_in[i].e2.e1.im = val;
+		sf_in[i].e2.e2.im = val;
+		sf_in[i].e3.e0.im = val;
+		sf_in[i].e3.e1.im = val;
+		sf_in[i].e3.e2.im = val;
+	}
+	return;
 }
 
-spinor fill_spinor_with_specific_float(hmc_float val){
-  spinor tmp;
+spinor fill_spinor_with_specific_float(hmc_float val)
+{
+	spinor tmp;
 
-	  tmp.e0.e0.re =  1./2. * 1./2. * val;
-	  tmp.e0.e1.re =  1./2. * 1./4. *val;
-	  tmp.e0.e2.re =  1./2. * 1./6. *val;
-	  tmp.e0.e0.im =  1./2. * 1./3. *val;
-	  tmp.e0.e1.im =  1./2. * 1./5. *val;
-	  tmp.e0.e2.im =  1./2. * 1./7. *val;
+	tmp.e0.e0.re =  1. / 2. * 1. / 2. * val;
+	tmp.e0.e1.re =  1. / 2. * 1. / 4. *val;
+	tmp.e0.e2.re =  1. / 2. * 1. / 6. *val;
+	tmp.e0.e0.im =  1. / 2. * 1. / 3. *val;
+	tmp.e0.e1.im =  1. / 2. * 1. / 5. *val;
+	tmp.e0.e2.im =  1. / 2. * 1. / 7. *val;
 
-	  tmp.e1.e0.re =  1./8. * 1./2. *val;
-	  tmp.e1.e1.re =  1./8. * 1./4. *val;
-	  tmp.e1.e2.re =  1./8. * 1./6. *val;
-	  tmp.e1.e0.im =  1./8. * 1./3. * val;
-	  tmp.e1.e1.im =  1./8. * 1./5. *val;
-	  tmp.e1.e2.im =  1./8. * 1./7. *val;
+	tmp.e1.e0.re =  1. / 8. * 1. / 2. *val;
+	tmp.e1.e1.re =  1. / 8. * 1. / 4. *val;
+	tmp.e1.e2.re =  1. / 8. * 1. / 6. *val;
+	tmp.e1.e0.im =  1. / 8. * 1. / 3. * val;
+	tmp.e1.e1.im =  1. / 8. * 1. / 5. *val;
+	tmp.e1.e2.im =  1. / 8. * 1. / 7. *val;
 
-	  tmp.e2.e0.re =  1./9. * 1./2. *val;
-	  tmp.e2.e1.re =  1./9. * 1./4. *val;
-	  tmp.e2.e2.re =  1./9. * 1./6. *val;
-	  tmp.e2.e0.im =  1./9. * 1./3. *val;
-	  tmp.e2.e1.im =  1./9. * 1./5. *val;
-	  tmp.e2.e2.im =  1./9. * 1./7. *val;
+	tmp.e2.e0.re =  1. / 9. * 1. / 2. *val;
+	tmp.e2.e1.re =  1. / 9. * 1. / 4. *val;
+	tmp.e2.e2.re =  1. / 9. * 1. / 6. *val;
+	tmp.e2.e0.im =  1. / 9. * 1. / 3. *val;
+	tmp.e2.e1.im =  1. / 9. * 1. / 5. *val;
+	tmp.e2.e2.im =  1. / 9. * 1. / 7. *val;
 
-	  tmp.e3.e0.re =  1./11. * 1./2. *val;
-	  tmp.e3.e1.re =  1./11. * 1./4. *val;
-	  tmp.e3.e2.re =  1./11. * 1./6. *val;
-	  tmp.e3.e0.im =  1./11. * 1./3. *val;
-	  tmp.e3.e1.im =  1./11. * 1./5. *val;
-	  tmp.e3.e2.im =  1./11. * 1./7. *val;
+	tmp.e3.e0.re =  1. / 11. * 1. / 2. *val;
+	tmp.e3.e1.re =  1. / 11. * 1. / 4. *val;
+	tmp.e3.e2.re =  1. / 11. * 1. / 6. *val;
+	tmp.e3.e0.im =  1. / 11. * 1. / 3. *val;
+	tmp.e3.e1.im =  1. / 11. * 1. / 5. *val;
+	tmp.e3.e2.im =  1. / 11. * 1. / 7. *val;
 
-  return tmp;
+	return tmp;
 }
 
-//this function fills every lattice site with a specific value depending 
-//on its site index. 
+//this function fills every lattice site with a specific value depending
+//on its site index.
 void fill_noneo_sf_with_specific_float(spinor * sf_in, inputparameters * params)
 {
-  int x,y,z,t;
-  int ns = params->get_ns();
-  for(x = 0;  x < params->get_ns(); x++) {
-    for(y = 0;  y < params->get_ns();  y++) {
-      for(z = 0;  z < params->get_ns();  z++) {
-        for(t = 0; t < params->get_nt(); ++t) {
-	  //this has to match the conventions in operations_geometry.cl!!!!
-	  int i = t* ns*ns*ns +x*ns*ns + y* ns + z;
-          
-          hmc_float val = 17./(i+1);
+	int x, y, z, t;
+	int ns = params->get_ns();
+	for(x = 0;  x < params->get_ns(); x++) {
+		for(y = 0;  y < params->get_ns();  y++) {
+			for(z = 0;  z < params->get_ns();  z++) {
+				for(t = 0; t < params->get_nt(); ++t) {
+					//this has to match the conventions in operations_geometry.cl!!!!
+					int i = t * ns * ns * ns + x * ns * ns + y * ns + z;
 
-	  sf_in[i] = fill_spinor_with_specific_float(val);
+					hmc_float val = 17. / (i + 1);
 
-        }}}}
-  return;
+					sf_in[i] = fill_spinor_with_specific_float(val);
+
+				}
+			}
+		}
+	}
+	return;
 }
 
 void fill_eo_sf_with_specific_float(spinor * sf_even, spinor * sf_odd, inputparameters * params)
 {
-  int x,y,z,t;
-  int ns = params->get_ns();
-  for(x = 0;  x < params->get_ns(); x++) {
-    for(y = 0;  y < params->get_ns();  y++) {
-      for(z = 0;  z < params->get_ns();  z++) {
-        for(t = 0; t < params->get_nt(); ++t) {
-	  //this has to match the conventions in operations_geometry.cl!!!!
-	  int i = t* ns*ns*ns +x*ns*ns + y* ns + z;
-          hmc_float val = 17./(i+1);
+	int x, y, z, t;
+	int ns = params->get_ns();
+	for(x = 0;  x < params->get_ns(); x++) {
+		for(y = 0;  y < params->get_ns();  y++) {
+			for(z = 0;  z < params->get_ns();  z++) {
+				for(t = 0; t < params->get_nt(); ++t) {
+					//this has to match the conventions in operations_geometry.cl!!!!
+					int i = t * ns * ns * ns + x * ns * ns + y * ns + z;
+					hmc_float val = 17. / (i + 1);
 
-	  //distinguish between even and odd fields
-	  if( (t+x+y+z)%2 == 0)
-	    sf_even[i/2] = fill_spinor_with_specific_float(val);
-	  else
-	    sf_odd[i/2] = fill_spinor_with_specific_float(val);
-        }}}}
-  return;
+					//distinguish between even and odd fields
+					if( (t + x + y + z) % 2 == 0)
+						sf_even[i / 2] = fill_spinor_with_specific_float(val);
+					else
+						sf_odd[i / 2] = fill_spinor_with_specific_float(val);
+				}
+			}
+		}
+	}
+	return;
 }
 
 
 void fill_with_one(hmc_float * sf_in, int size)
 {
 	for(int i = 0; i < size; ++i) {
-	  sf_in[i] = 1.;
+		sf_in[i] = 1.;
 	}
 	return;
 }
@@ -342,7 +350,7 @@ void fill_with_one(hmc_float * sf_in, int size)
 void fill_with_zero(hmc_float * sf_in, int size)
 {
 	for(int i = 0; i < size; ++i) {
-	  sf_in[i] = 0.;
+		sf_in[i] = 0.;
 	}
 	return;
 }
@@ -376,9 +384,9 @@ void fill_sf_with_random_eo(spinor * sf_in1, spinor * sf_in2, int size, int seed
 		sf_in1[i].e3.e0.im = rnd_loc.doub();
 		sf_in1[i].e3.e1.im = rnd_loc.doub();
 		sf_in1[i].e3.e2.im = rnd_loc.doub();
-		
-		//		sf_in2[i] = sf_in1[i];
-		
+
+		//    sf_in2[i] = sf_in1[i];
+
 		sf_in2[i].e0.e0.re = rnd_loc.doub();
 		sf_in2[i].e0.e1.re = rnd_loc.doub();
 		sf_in2[i].e0.e2.re = rnd_loc.doub();
@@ -411,183 +419,190 @@ void fill_sf_with_random_eo(spinor * sf_in1, spinor * sf_in2, int size, int seed
 void fill_sf_with_random_noneo(spinor * sf_in, int size, int seed, inputparameters * params)
 {
 	Random rnd_loc(seed);
-	  //the simple for loop through the vector does not give the right vector compared to the eo-converted one...
-	  //this is because if the vector is simply filled with random numbers, the nontrivial
-	  //even-odd structure is not contained!!
-	//However, one gets the same content if one uses a loop over the eoprec spinorfieldsize and then 
+	//the simple for loop through the vector does not give the right vector compared to the eo-converted one...
+	//this is because if the vector is simply filled with random numbers, the nontrivial
+	//even-odd structure is not contained!!
+	//However, one gets the same content if one uses a loop over the eoprec spinorfieldsize and then
 	//updates 2 spinors at ones
-	for(int i = 0; i < size/2; i++) {
-	  int n,t,global_pos;
-	  get_even_site(i, &n, &t, params);
-	  global_pos = get_global_pos(n,t,params);
-	  sf_in[global_pos].e0.e0.re = rnd_loc.doub();
-	  sf_in[global_pos].e0.e1.re = rnd_loc.doub();
-	  sf_in[global_pos].e0.e2.re = rnd_loc.doub();
-	  sf_in[global_pos].e1.e0.re = rnd_loc.doub();
-	  sf_in[global_pos].e1.e1.re = rnd_loc.doub();
-	  sf_in[global_pos].e1.e2.re = rnd_loc.doub();
-	  sf_in[global_pos].e2.e0.re = rnd_loc.doub();
-	  sf_in[global_pos].e2.e1.re = rnd_loc.doub();
-	  sf_in[global_pos].e2.e2.re = rnd_loc.doub();
-	  sf_in[global_pos].e3.e0.re = rnd_loc.doub();
-	  sf_in[global_pos].e3.e1.re = rnd_loc.doub();
-	  sf_in[global_pos].e3.e2.re = rnd_loc.doub();
-	  
-	  sf_in[global_pos].e0.e0.im = rnd_loc.doub();
-	  sf_in[global_pos].e0.e1.im = rnd_loc.doub();
-	  sf_in[global_pos].e0.e2.im = rnd_loc.doub();
-	  sf_in[global_pos].e1.e0.im = rnd_loc.doub();
-	  sf_in[global_pos].e1.e1.im = rnd_loc.doub();
-	  sf_in[global_pos].e1.e2.im = rnd_loc.doub();
-	  sf_in[global_pos].e2.e0.im = rnd_loc.doub();
-	  sf_in[global_pos].e2.e1.im = rnd_loc.doub();
-	  sf_in[global_pos].e2.e2.im = rnd_loc.doub();
-	  sf_in[global_pos].e3.e0.im = rnd_loc.doub();
-	  sf_in[global_pos].e3.e1.im = rnd_loc.doub();
-	  sf_in[global_pos].e3.e2.im = rnd_loc.doub();
+	for(int i = 0; i < size / 2; i++) {
+		int n, t, global_pos;
+		get_even_site(i, &n, &t, params);
+		global_pos = get_global_pos(n, t, params);
+		sf_in[global_pos].e0.e0.re = rnd_loc.doub();
+		sf_in[global_pos].e0.e1.re = rnd_loc.doub();
+		sf_in[global_pos].e0.e2.re = rnd_loc.doub();
+		sf_in[global_pos].e1.e0.re = rnd_loc.doub();
+		sf_in[global_pos].e1.e1.re = rnd_loc.doub();
+		sf_in[global_pos].e1.e2.re = rnd_loc.doub();
+		sf_in[global_pos].e2.e0.re = rnd_loc.doub();
+		sf_in[global_pos].e2.e1.re = rnd_loc.doub();
+		sf_in[global_pos].e2.e2.re = rnd_loc.doub();
+		sf_in[global_pos].e3.e0.re = rnd_loc.doub();
+		sf_in[global_pos].e3.e1.re = rnd_loc.doub();
+		sf_in[global_pos].e3.e2.re = rnd_loc.doub();
 
-	  get_odd_site(i, &n, &t, params);
-	  global_pos = get_global_pos(n,t,params);
-	  sf_in[global_pos].e0.e0.re = rnd_loc.doub();
-	  sf_in[global_pos].e0.e1.re = rnd_loc.doub();
-	  sf_in[global_pos].e0.e2.re = rnd_loc.doub();
-	  sf_in[global_pos].e1.e0.re = rnd_loc.doub();
-	  sf_in[global_pos].e1.e1.re = rnd_loc.doub();
-	  sf_in[global_pos].e1.e2.re = rnd_loc.doub();
-	  sf_in[global_pos].e2.e0.re = rnd_loc.doub();
-	  sf_in[global_pos].e2.e1.re = rnd_loc.doub();
-	  sf_in[global_pos].e2.e2.re = rnd_loc.doub();
-	  sf_in[global_pos].e3.e0.re = rnd_loc.doub();
-	  sf_in[global_pos].e3.e1.re = rnd_loc.doub();
-	  sf_in[global_pos].e3.e2.re = rnd_loc.doub();
-	  
-	  sf_in[global_pos].e0.e0.im = rnd_loc.doub();
-	  sf_in[global_pos].e0.e1.im = rnd_loc.doub();
-	  sf_in[global_pos].e0.e2.im = rnd_loc.doub();
-	  sf_in[global_pos].e1.e0.im = rnd_loc.doub();
-	  sf_in[global_pos].e1.e1.im = rnd_loc.doub();
-	  sf_in[global_pos].e1.e2.im = rnd_loc.doub();
-	  sf_in[global_pos].e2.e0.im = rnd_loc.doub();
-	  sf_in[global_pos].e2.e1.im = rnd_loc.doub();
-	  sf_in[global_pos].e2.e2.im = rnd_loc.doub();
-	  sf_in[global_pos].e3.e0.im = rnd_loc.doub();
-	  sf_in[global_pos].e3.e1.im = rnd_loc.doub();
-	  sf_in[global_pos].e3.e2.im = rnd_loc.doub();
+		sf_in[global_pos].e0.e0.im = rnd_loc.doub();
+		sf_in[global_pos].e0.e1.im = rnd_loc.doub();
+		sf_in[global_pos].e0.e2.im = rnd_loc.doub();
+		sf_in[global_pos].e1.e0.im = rnd_loc.doub();
+		sf_in[global_pos].e1.e1.im = rnd_loc.doub();
+		sf_in[global_pos].e1.e2.im = rnd_loc.doub();
+		sf_in[global_pos].e2.e0.im = rnd_loc.doub();
+		sf_in[global_pos].e2.e1.im = rnd_loc.doub();
+		sf_in[global_pos].e2.e2.im = rnd_loc.doub();
+		sf_in[global_pos].e3.e0.im = rnd_loc.doub();
+		sf_in[global_pos].e3.e1.im = rnd_loc.doub();
+		sf_in[global_pos].e3.e2.im = rnd_loc.doub();
+
+		get_odd_site(i, &n, &t, params);
+		global_pos = get_global_pos(n, t, params);
+		sf_in[global_pos].e0.e0.re = rnd_loc.doub();
+		sf_in[global_pos].e0.e1.re = rnd_loc.doub();
+		sf_in[global_pos].e0.e2.re = rnd_loc.doub();
+		sf_in[global_pos].e1.e0.re = rnd_loc.doub();
+		sf_in[global_pos].e1.e1.re = rnd_loc.doub();
+		sf_in[global_pos].e1.e2.re = rnd_loc.doub();
+		sf_in[global_pos].e2.e0.re = rnd_loc.doub();
+		sf_in[global_pos].e2.e1.re = rnd_loc.doub();
+		sf_in[global_pos].e2.e2.re = rnd_loc.doub();
+		sf_in[global_pos].e3.e0.re = rnd_loc.doub();
+		sf_in[global_pos].e3.e1.re = rnd_loc.doub();
+		sf_in[global_pos].e3.e2.re = rnd_loc.doub();
+
+		sf_in[global_pos].e0.e0.im = rnd_loc.doub();
+		sf_in[global_pos].e0.e1.im = rnd_loc.doub();
+		sf_in[global_pos].e0.e2.im = rnd_loc.doub();
+		sf_in[global_pos].e1.e0.im = rnd_loc.doub();
+		sf_in[global_pos].e1.e1.im = rnd_loc.doub();
+		sf_in[global_pos].e1.e2.im = rnd_loc.doub();
+		sf_in[global_pos].e2.e0.im = rnd_loc.doub();
+		sf_in[global_pos].e2.e1.im = rnd_loc.doub();
+		sf_in[global_pos].e2.e2.im = rnd_loc.doub();
+		sf_in[global_pos].e3.e0.im = rnd_loc.doub();
+		sf_in[global_pos].e3.e1.im = rnd_loc.doub();
+		sf_in[global_pos].e3.e2.im = rnd_loc.doub();
 	}
 	return;
 }
 
-void Dummyfield::convert_to_noneo(spinor * sf_noneo, spinor* eo1, spinor * eo2){
-  
-  int pos, t;
-  for(int n = 0; n < get_parameters()->get_eoprec_spinorfieldsize(); n++) {
-    get_even_site(n, &pos, &t, get_parameters());
-    sf_noneo[get_global_pos(pos, t, get_parameters())] = eo1[n];
-    get_odd_site(n, &pos, &t, get_parameters());
-    sf_noneo[get_global_pos(pos, t, get_parameters())] = eo2[n];
-  }
-  return;
+void Dummyfield::convert_to_noneo(spinor * sf_noneo, spinor* eo1, spinor * eo2)
+{
+
+	int pos, t;
+	for(int n = 0; n < get_parameters()->get_eoprec_spinorfieldsize(); n++) {
+		get_even_site(n, &pos, &t, get_parameters());
+		sf_noneo[get_global_pos(pos, t, get_parameters())] = eo1[n];
+		get_odd_site(n, &pos, &t, get_parameters());
+		sf_noneo[get_global_pos(pos, t, get_parameters())] = eo2[n];
+	}
+	return;
 }
 
-void Dummyfield::reset_outfield_eo(){
-  size_t ae_buf_size = get_parameters()->get_gm_buf_size();
-  int err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_eo, CL_TRUE, 0, ae_buf_size, sf_out_eo, 0, 0, NULL);
-  BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+void Dummyfield::reset_outfield_eo()
+{
+	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
+	int err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_eo, CL_TRUE, 0, ae_buf_size, sf_out_eo, 0, 0, NULL);
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
-  return;
+	return;
 }
 
-void Dummyfield::reset_outfield_noneo(){
-  size_t ae_buf_size = get_parameters()->get_gm_buf_size();
-  int err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_noneo, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, NULL);
-  BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+void Dummyfield::reset_outfield_noneo()
+{
+	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
+	int err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_noneo, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, NULL);
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
-  return;
+	return;
 }
 
-bool compare_entries(hmc_complex in1, hmc_complex in2){
-  if(abs(in1.re - in2.re) > 1e-8) {
-    cout << "\treal entries DO NOT match: in1: " << in1.re << "\tin2: " << in2.re << endl;
-    return false;
-  }
-  if (abs(in1.im - in2.im) > 1e-8){
-    cout << "\timag entries DO NOT match: in1: " << in1.im << "\tin2: " << in2.im << endl;
-    return false;
-  }
-  return true;
+bool compare_entries(hmc_complex in1, hmc_complex in2)
+{
+	if(abs(in1.re - in2.re) > 1e-8) {
+		cout << "\treal entries DO NOT match: in1: " << in1.re << "\tin2: " << in2.re << endl;
+		return false;
+	}
+	if (abs(in1.im - in2.im) > 1e-8) {
+		cout << "\timag entries DO NOT match: in1: " << in1.im << "\tin2: " << in2.im << endl;
+		return false;
+	}
+	return true;
 }
 
-void print_spinor(spinor in1, spinor in2){
-  cout << endl;
-  cout << "(" << in1.e0.e0.re << "),(" << in1.e0.e0.im << ") : (" << in2.e0.e0.re << "),(" << in2.e0.e0.im << ")"  << endl;
-  cout << "(" << in1.e0.e1.re << "),(" << in1.e0.e1.im << ") : (" << in2.e0.e1.re << "),(" << in2.e0.e1.im << ")"  << endl;
-  cout << "(" << in1.e0.e2.re << "),(" << in1.e0.e2.im << ") : (" << in2.e0.e2.re << "),(" << in2.e0.e2.im << ")"  << endl;
-  cout << "(" << in1.e1.e0.re << "),(" << in1.e1.e0.im << ") : (" << in2.e1.e0.re << "),(" << in2.e1.e0.im << ")"  << endl;
-  cout << "(" << in1.e1.e1.re << "),(" << in1.e1.e1.im << ") : (" << in2.e1.e1.re << "),(" << in2.e1.e1.im << ")"  << endl;
-  cout << "(" << in1.e1.e2.re << "),(" << in1.e1.e2.im << ") : (" << in2.e1.e2.re << "),(" << in2.e1.e2.im << ")"  << endl;
-  cout << "(" << in1.e2.e0.re << "),(" << in1.e2.e0.im << ") : (" << in2.e2.e0.re << "),(" << in2.e2.e0.im << ")"  << endl;
-  cout << "(" << in1.e2.e1.re << "),(" << in1.e2.e1.im << ") : (" << in2.e2.e1.re << "),(" << in2.e2.e1.im << ")"  << endl;
-  cout << "(" << in1.e2.e2.re << "),(" << in1.e2.e2.im << ") : (" << in2.e2.e2.re << "),(" << in2.e2.e2.im << ")"  << endl;
-  cout << "(" << in1.e3.e0.re << "),(" << in1.e3.e0.im << ") : (" << in2.e3.e0.re << "),(" << in2.e3.e0.im << ")"  << endl;
-  cout << "(" << in1.e3.e1.re << "),(" << in1.e3.e1.im << ") : (" << in2.e3.e1.re << "),(" << in2.e3.e1.im << ")"  << endl;
-  cout << "(" << in1.e3.e2.re << "),(" << in1.e3.e2.im << ") : (" << in2.e3.e2.re << "),(" << in2.e3.e2.im << ")"  << endl;
-  return;
+void print_spinor(spinor in1, spinor in2)
+{
+	cout << endl;
+	cout << "(" << in1.e0.e0.re << "),(" << in1.e0.e0.im << ") : (" << in2.e0.e0.re << "),(" << in2.e0.e0.im << ")"  << endl;
+	cout << "(" << in1.e0.e1.re << "),(" << in1.e0.e1.im << ") : (" << in2.e0.e1.re << "),(" << in2.e0.e1.im << ")"  << endl;
+	cout << "(" << in1.e0.e2.re << "),(" << in1.e0.e2.im << ") : (" << in2.e0.e2.re << "),(" << in2.e0.e2.im << ")"  << endl;
+	cout << "(" << in1.e1.e0.re << "),(" << in1.e1.e0.im << ") : (" << in2.e1.e0.re << "),(" << in2.e1.e0.im << ")"  << endl;
+	cout << "(" << in1.e1.e1.re << "),(" << in1.e1.e1.im << ") : (" << in2.e1.e1.re << "),(" << in2.e1.e1.im << ")"  << endl;
+	cout << "(" << in1.e1.e2.re << "),(" << in1.e1.e2.im << ") : (" << in2.e1.e2.re << "),(" << in2.e1.e2.im << ")"  << endl;
+	cout << "(" << in1.e2.e0.re << "),(" << in1.e2.e0.im << ") : (" << in2.e2.e0.re << "),(" << in2.e2.e0.im << ")"  << endl;
+	cout << "(" << in1.e2.e1.re << "),(" << in1.e2.e1.im << ") : (" << in2.e2.e1.re << "),(" << in2.e2.e1.im << ")"  << endl;
+	cout << "(" << in1.e2.e2.re << "),(" << in1.e2.e2.im << ") : (" << in2.e2.e2.re << "),(" << in2.e2.e2.im << ")"  << endl;
+	cout << "(" << in1.e3.e0.re << "),(" << in1.e3.e0.im << ") : (" << in2.e3.e0.re << "),(" << in2.e3.e0.im << ")"  << endl;
+	cout << "(" << in1.e3.e1.re << "),(" << in1.e3.e1.im << ") : (" << in2.e3.e1.re << "),(" << in2.e3.e1.im << ")"  << endl;
+	cout << "(" << in1.e3.e2.re << "),(" << in1.e3.e2.im << ") : (" << in2.e3.e2.re << "),(" << in2.e3.e2.im << ")"  << endl;
+	return;
 }
 
-void compare_vectors(spinor * in1, spinor * in2, int size){
-  bool check;
-  //int n, t;
-  //int nodd, todd;
-  for(int i = 0; i<size; i++){
-    //    get_even_site(i/2, &n, &t, params);
-    //get_odd_site(i/2, &nodd, &todd, params);
-    //    cout << "\npos: " << i << "\teoidx: " <<  i/2 << " even: " << "(" << n << "," << t << ") " << endl;
-    //print_spinor(in1[i] , in2[i]);
-    check = compare_entries(in1[i].e0.e0, in2[i].e0.e0);
-    if(!check) cout << "\terror occured at " << i << endl;
-    check = compare_entries(in1[i].e0.e1, in2[i].e0.e1);
-    if(!check) cout << "\terror occured at " << i << endl;
-    check = compare_entries(in1[i].e0.e2, in2[i].e0.e2);
-    if(!check) cout << "\terror occured at " << i << endl;
-    check = compare_entries(in1[i].e1.e0, in2[i].e1.e0);
-    if(!check) cout << "\terror occured at " << i << endl;
-    check = compare_entries(in1[i].e1.e1, in2[i].e1.e1);
-    if(!check) cout << "\terror occured at " << i << endl;
-    check = compare_entries(in1[i].e1.e2, in2[i].e1.e2);
-    if(!check) cout << "\terror occured at " << i << endl;
-    check = compare_entries(in1[i].e2.e0, in2[i].e2.e0);
-    if(!check) cout << "\terror occured at " << i << endl;
-    check = compare_entries(in1[i].e2.e1, in2[i].e2.e1);
-    if(!check) cout << "\terror occured at " << i << endl;
-    check = compare_entries(in1[i].e2.e2, in2[i].e2.e2);
-    if(!check) cout << "\terror occured at " << i << endl;
-    check = compare_entries(in1[i].e3.e0, in2[i].e3.e0);
-    if(!check) cout << "\terror occured at " << i << endl;
-    check = compare_entries(in1[i].e3.e1, in2[i].e3.e1);
-    if(!check) cout << "\terror occured at " << i << endl;
-    check = compare_entries(in1[i].e3.e2, in2[i].e3.e2);
-    if(!check) cout << "\terror occured at " << i << endl;
-    /*
-    cout << "\npos: " << i << "\teoidx: " << i/2 << " odd: (" << nodd << "," << todd << ")" << endl;
-    print_spinor(in1[i+1] , in2[i+1]);
-    check = compare_entries(in1[i+1].e0.e0, in2[i+1].e0.e0);
+void compare_vectors(spinor * in1, spinor * in2, int size)
+{
+	bool check;
+	//int n, t;
+	//int nodd, todd;
+	for(int i = 0; i < size; i++) {
+		//    get_even_site(i/2, &n, &t, params);
+		//get_odd_site(i/2, &nodd, &todd, params);
+		//    cout << "\npos: " << i << "\teoidx: " <<  i/2 << " even: " << "(" << n << "," << t << ") " << endl;
+		//print_spinor(in1[i] , in2[i]);
+		check = compare_entries(in1[i].e0.e0, in2[i].e0.e0);
+		if(!check) cout << "\terror occured at " << i << endl;
+		check = compare_entries(in1[i].e0.e1, in2[i].e0.e1);
+		if(!check) cout << "\terror occured at " << i << endl;
+		check = compare_entries(in1[i].e0.e2, in2[i].e0.e2);
+		if(!check) cout << "\terror occured at " << i << endl;
+		check = compare_entries(in1[i].e1.e0, in2[i].e1.e0);
+		if(!check) cout << "\terror occured at " << i << endl;
+		check = compare_entries(in1[i].e1.e1, in2[i].e1.e1);
+		if(!check) cout << "\terror occured at " << i << endl;
+		check = compare_entries(in1[i].e1.e2, in2[i].e1.e2);
+		if(!check) cout << "\terror occured at " << i << endl;
+		check = compare_entries(in1[i].e2.e0, in2[i].e2.e0);
+		if(!check) cout << "\terror occured at " << i << endl;
+		check = compare_entries(in1[i].e2.e1, in2[i].e2.e1);
+		if(!check) cout << "\terror occured at " << i << endl;
+		check = compare_entries(in1[i].e2.e2, in2[i].e2.e2);
+		if(!check) cout << "\terror occured at " << i << endl;
+		check = compare_entries(in1[i].e3.e0, in2[i].e3.e0);
+		if(!check) cout << "\terror occured at " << i << endl;
+		check = compare_entries(in1[i].e3.e1, in2[i].e3.e1);
+		if(!check) cout << "\terror occured at " << i << endl;
+		check = compare_entries(in1[i].e3.e2, in2[i].e3.e2);
+		if(!check) cout << "\terror occured at " << i << endl;
+		/*
+		cout << "\npos: " << i << "\teoidx: " << i/2 << " odd: (" << nodd << "," << todd << ")" << endl;
+		print_spinor(in1[i+1] , in2[i+1]);
+		check = compare_entries(in1[i+1].e0.e0, in2[i+1].e0.e0);
 
-    if(!check){
-      cout << "\terror occured at " << i << endl;
-    }
-    */
-  }
-  return;
+		if(!check){
+		  cout << "\terror occured at " << i << endl;
+		}
+		*/
+	}
+	return;
 }
 
-void Dummyfield::verify_converted_vectors(){
-  logger.info()<< "\tcompare in1_noneo with in1_noneo_converted";
-  compare_vectors(sf_in1_noneo, sf_in1_noneo_converted, get_parameters()->get_spinorfieldsize());
+void Dummyfield::verify_converted_vectors()
+{
+	logger.info() << "\tcompare in1_noneo with in1_noneo_converted";
+	compare_vectors(sf_in1_noneo, sf_in1_noneo_converted, get_parameters()->get_spinorfieldsize());
 
-  logger.info()<< "\tcompare in2_noneo with in2_noneo_converted";
-  compare_vectors(sf_in2_noneo, sf_in2_noneo_converted, get_parameters()->get_spinorfieldsize());
+	logger.info() << "\tcompare in2_noneo with in2_noneo_converted";
+	compare_vectors(sf_in2_noneo, sf_in2_noneo_converted, get_parameters()->get_spinorfieldsize());
 
-  return;
+	return;
 }
 
 void Dummyfield::fill_buffers()
@@ -603,7 +618,7 @@ void Dummyfield::fill_buffers()
 	NUM_ELEMENTS_SF_EO =  params.get_eoprec_spinorfieldsize();
 	NUM_ELEMENTS_SF_NON_EO =  params.get_spinorfieldsize();
 
-	int NUM_ELEMENTS_AE = params.get_gaugemomentasize()*params.get_su3algebrasize();
+	int NUM_ELEMENTS_AE = params.get_gaugemomentasize() * params.get_su3algebrasize();
 
 	sf_in1_eo = new spinor[NUM_ELEMENTS_SF_EO];
 	sf_in2_eo = new spinor[NUM_ELEMENTS_SF_EO];
@@ -615,22 +630,21 @@ void Dummyfield::fill_buffers()
 	sf_in2_noneo = new spinor[NUM_ELEMENTS_SF_NON_EO];
 	sf_in1_noneo_converted = new spinor[NUM_ELEMENTS_SF_NON_EO];
 	sf_in2_noneo_converted = new spinor[NUM_ELEMENTS_SF_NON_EO];
-	sf_out_noneo = new hmc_float[NUM_ELEMENTS_AE];	
-	
+	sf_out_noneo = new hmc_float[NUM_ELEMENTS_AE];
+
 	//use the variable use_cg to switch between cold and random input sf
 	if(get_parameters()->get_use_cg() == true) {
-	  fill_sf_with_one(sf_in1_eo, NUM_ELEMENTS_SF_EO);
-	  fill_sf_with_one(sf_in3_eo, NUM_ELEMENTS_SF_EO);
-	  fill_sf_with_one(sf_in2_eo, NUM_ELEMENTS_SF_EO);
-	  fill_sf_with_one(sf_in4_eo, NUM_ELEMENTS_SF_EO);
-	  fill_sf_with_one(sf_in1_noneo, NUM_ELEMENTS_SF_NON_EO);
-	  fill_sf_with_one(sf_in2_noneo, NUM_ELEMENTS_SF_NON_EO);
-	}
-	else {
-	  fill_sf_with_random_eo(sf_in1_eo, sf_in2_eo, NUM_ELEMENTS_SF_EO, 123456);
-	  fill_sf_with_random_eo(sf_in3_eo, sf_in4_eo, NUM_ELEMENTS_SF_EO, 789101);
-	  fill_sf_with_random_noneo(sf_in1_noneo, NUM_ELEMENTS_SF_NON_EO, 123456, get_parameters());
-	  fill_sf_with_random_noneo(sf_in2_noneo, NUM_ELEMENTS_SF_NON_EO, 789101, get_parameters());
+		fill_sf_with_one(sf_in1_eo, NUM_ELEMENTS_SF_EO);
+		fill_sf_with_one(sf_in3_eo, NUM_ELEMENTS_SF_EO);
+		fill_sf_with_one(sf_in2_eo, NUM_ELEMENTS_SF_EO);
+		fill_sf_with_one(sf_in4_eo, NUM_ELEMENTS_SF_EO);
+		fill_sf_with_one(sf_in1_noneo, NUM_ELEMENTS_SF_NON_EO);
+		fill_sf_with_one(sf_in2_noneo, NUM_ELEMENTS_SF_NON_EO);
+	} else {
+		fill_sf_with_random_eo(sf_in1_eo, sf_in2_eo, NUM_ELEMENTS_SF_EO, 123456);
+		fill_sf_with_random_eo(sf_in3_eo, sf_in4_eo, NUM_ELEMENTS_SF_EO, 789101);
+		fill_sf_with_random_noneo(sf_in1_noneo, NUM_ELEMENTS_SF_NON_EO, 123456, get_parameters());
+		fill_sf_with_random_noneo(sf_in2_noneo, NUM_ELEMENTS_SF_NON_EO, 789101, get_parameters());
 	}
 
 	fill_eo_sf_with_specific_float(sf_in1_eo, sf_in2_eo, get_parameters());
@@ -644,10 +658,10 @@ void Dummyfield::fill_buffers()
 	BOOST_REQUIRE(sf_in3_eo);
 	BOOST_REQUIRE(sf_in4_eo);
 	BOOST_REQUIRE(sf_in1_noneo);
-	BOOST_REQUIRE(sf_in2_noneo);	
+	BOOST_REQUIRE(sf_in2_noneo);
 	BOOST_REQUIRE(sf_in1_noneo_converted);
-	BOOST_REQUIRE(sf_in2_noneo_converted);	
-	
+	BOOST_REQUIRE(sf_in2_noneo_converted);
+
 	fill_with_zero(sf_out_eo, NUM_ELEMENTS_AE);
 	fill_with_zero(sf_out_noneo, NUM_ELEMENTS_AE);
 
@@ -702,10 +716,10 @@ void Dummyfield::fill_buffers()
 	out_noneo = clCreateBuffer(context, CL_MEM_WRITE_ONLY, ae_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_noneo, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);	
-	
-	this->reset_outfield_noneo();	
-	
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	this->reset_outfield_noneo();
+
 	//create buffer for squarenorm on device
 	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 }
@@ -713,13 +727,13 @@ void Dummyfield::fill_buffers()
 void Device::fill_kernels()
 {
 	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
- 	Opencl_Module::fill_kernels();
+	Opencl_Module::fill_kernels();
 
 	//to this end, one has to set the needed files by hand
 	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
 	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
-	//	basic_hmc_code = basic_fermion_code << "types_hmc.h";
+	//  basic_hmc_code = basic_fermion_code << "types_hmc.h";
 
 	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
 	global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "spinorfield_eo_squarenorm.cl";
@@ -729,8 +743,8 @@ void Device::fill_kernels()
 
 	testKernel = createKernel("fermion_force_eoprec") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 
-	testKernel2 = createKernel("fermion_force") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion.cl";	
-	
+	testKernel2 = createKernel("fermion_force") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion.cl";
+
 }
 
 void Dummyfield::clear_buffers()
@@ -749,14 +763,14 @@ void Dummyfield::clear_buffers()
 	delete[] sf_in3_eo;
 	delete[] sf_in4_eo;
 	delete[] sf_out_eo;
-	
+
 	clReleaseMemObject(in1_noneo);
 	clReleaseMemObject(in2_noneo);
 	clReleaseMemObject(out_noneo);
-	
+
 	delete[] sf_in1_noneo;
 	delete[] sf_in2_noneo;
-	delete[] sf_out_noneo;	
+	delete[] sf_out_noneo;
 }
 
 void Device::clear_kernels()
@@ -770,9 +784,9 @@ void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs
 	cl_int err;
 	int eo;
 	if(evenodd == ODD)
-		eo=ODD;
+		eo = ODD;
 	else
-		eo=EVEN;
+		eo = EVEN;
 	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &gf);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &in1);
@@ -783,7 +797,7 @@ void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 4, sizeof(int), &eo);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	
+
 	enqueueKernel(testKernel, gs, ls);
 }
 
@@ -805,21 +819,21 @@ void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int g
 //this is a copy of "set_float_to_gaugemomentum_squarenorm_device"
 void Device::set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out)
 {
-  //__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
-  //query work-sizes for kernel
-  size_t ls2, gs2;
-  cl_uint num_groups;
-  this->get_work_sizes(ae_sqn, this->get_device_type(), &ls2, &gs2, &num_groups);
-  //set arguments
-  //__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
-  int clerr = clSetKernelArg(ae_sqn, 0, sizeof(cl_mem), &clmem_in);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(ae_sqn, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
+	int clerr = clSetKernelArg(ae_sqn, 0, sizeof(cl_mem), &clmem_in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  //  /** @todo add reduction */
-  clerr = clSetKernelArg(ae_sqn,  1, sizeof(cl_mem), &clmem_out);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	//  /** @todo add reduction */
+	clerr = clSetKernelArg(ae_sqn,  1, sizeof(cl_mem), &clmem_out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  enqueueKernel(ae_sqn  , gs2, ls2);
+	enqueueKernel(ae_sqn  , gs2, ls2);
 }
 
 
@@ -842,23 +856,23 @@ hmc_float Dummyfield::get_squarenorm_eo(int which)
 hmc_float Dummyfield::get_squarenorm_noneo(int which)
 {
 
-  //CP: I only use out_eo here because there is some mistake with out_noneo. However, I will not try to find it...
+	//CP: I only use out_eo here because there is some mistake with out_noneo. However, I will not try to find it...
 	//which controlls if the in or out-vector is looked at
-        if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1_noneo, sqnorm);
-        if(which == 1) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2_noneo, sqnorm);
-	if(which == 2){
-	  cl_mem tmp;
-	  cl_int err;
-	  cl_context context = opencl_modules[0]->get_context();
-	  tmp = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
-	  static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out_eo, tmp);
-	  hmc_float result;
-	  err = clEnqueueReadBuffer(*queue, tmp, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
-	  logger.info() << result;
-	  return result;
+	if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1_noneo, sqnorm);
+	if(which == 1) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2_noneo, sqnorm);
+	if(which == 2) {
+		cl_mem tmp;
+		cl_int err;
+		cl_context context = opencl_modules[0]->get_context();
+		tmp = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
+		static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out_eo, tmp);
+		hmc_float result;
+		err = clEnqueueReadBuffer(*queue, tmp, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
+		logger.info() << result;
+		return result;
 	}
-        if(which == 3) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1_noneo_converted, sqnorm);
-        if(which == 4) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2_noneo_converted, sqnorm);
+	if(which == 3) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1_noneo_converted, sqnorm);
+	if(which == 4) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2_noneo_converted, sqnorm);
 	// get stuff from device
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
@@ -868,19 +882,20 @@ hmc_float Dummyfield::get_squarenorm_noneo(int which)
 }
 
 //identify cpu: eo and gpu: noneo results
-void Dummyfield::verify(hmc_float cpu, hmc_float gpu){
-  //this is too much required, since rounding errors can occur
-  //  BOOST_REQUIRE_EQUAL(cpu, gpu);
-  //instead, test if the two number agree within some percent
-  hmc_float dev = (cpu - gpu)/cpu/100.;
-  if(abs(dev) < 1e-10){
-    logger.info() << "eo and non-eo result agree within accuary of " << 1e-10;
-        logger.info() << "eo: " << cpu << "\tnoneo: " << gpu;
-  }else{
-    logger.info() << "eo and noneo result DO NOT agree within accuary of " << 1e-10;
-    logger.info() << "eo: " << cpu << "\tnoneo: " << gpu;
-    BOOST_REQUIRE_EQUAL(1,0);
-  }
+void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
+{
+	//this is too much required, since rounding errors can occur
+	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
+	//instead, test if the two number agree within some percent
+	hmc_float dev = (cpu - gpu) / cpu / 100.;
+	if(abs(dev) < 1e-10) {
+		logger.info() << "eo and non-eo result agree within accuary of " << 1e-10;
+		logger.info() << "eo: " << cpu << "\tnoneo: " << gpu;
+	} else {
+		logger.info() << "eo and noneo result DO NOT agree within accuary of " << 1e-10;
+		logger.info() << "eo: " << cpu << "\tnoneo: " << gpu;
+		BOOST_REQUIRE_EQUAL(1, 0);
+	}
 }
 
 void Dummyfield::runTestKernel(int evenodd)
@@ -895,11 +910,10 @@ void Dummyfield::runTestKernel(int evenodd)
 	}
 	//interprete Y = (in1_eo, in2_eo) X = (in3_eo, in4_eo)
 	//Y_odd = in2_eo, Y_even = in1_eo, X_odd = in4_eo, X_even = in3_eo
-	if(evenodd==ODD){
+	if(evenodd == ODD) {
 		//this is then force(Y_odd, X_even) == force(in2, in3)
 		static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in2_eo, in3_eo, *(get_clmem_gaugefield()), gs, ls, evenodd);
-	}
-	else{
+	} else {
 		//this is then force(Y_even, X_odd) == force(in1, in4)
 		static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in1_eo, in4_eo, *(get_clmem_gaugefield()), gs, ls, evenodd);
 	}
@@ -915,7 +929,7 @@ void Dummyfield::runTestKernel2()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-  //CP: I only use out_eo here because there is some mistake with out_noneo. However, I will not try to find it...
+	//CP: I only use out_eo here because there is some mistake with out_noneo. However, I will not try to find it...
 	static_cast<Device*>(opencl_modules[0])->runTestKernel2(out_eo, in1_noneo, in2_noneo, *(get_clmem_gaugefield()), gs, ls);
 }
 
