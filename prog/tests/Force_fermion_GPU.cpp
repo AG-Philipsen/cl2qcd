@@ -263,9 +263,7 @@ void Dummyfield::fill_buffers()
 
 	cl_context context = opencl_modules[0]->get_context();
 
-	int NUM_ELEMENTS_SF;
-	if(get_parameters()->get_use_eo() == true) NUM_ELEMENTS_SF =  params.get_eoprec_spinorfieldsize();
-	else NUM_ELEMENTS_SF =  params.get_spinorfieldsize();
+	int NUM_ELEMENTS_SF = params.get_spinorfieldsize();
 
 	int NUM_ELEMENTS_AE = params.get_gaugemomentasize() * params.get_su3algebrasize();
 

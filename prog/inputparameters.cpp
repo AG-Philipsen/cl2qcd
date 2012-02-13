@@ -816,11 +816,6 @@ int inputparameters::get_sf_buf_size() const
 	return sf_buf_size;
 }
 
-int inputparameters::get_eo_sf_buf_size() const
-{
-	return eo_sf_buf_size;
-}
-
 int inputparameters::get_gf_buf_size() const
 {
 	return gf_buf_size;
@@ -1384,7 +1379,6 @@ void inputparameters::set_settings_global()
 
 	//set sizes of buffers
 	this->sf_buf_size = this->spinorfieldsize * sizeof(spinor);
-	this->eo_sf_buf_size = this->eoprec_spinorfieldsize * sizeof(spinor);
 	this->gf_buf_size = this->gaugefieldsize * sizeof(hmc_complex);
 	this->gm_buf_size = this->gaugemomentasize * sizeof(ae);
 }

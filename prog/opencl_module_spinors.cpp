@@ -982,3 +982,15 @@ void Opencl_Module_Spinors::print_profiling(std::string filename, int number)
 
 }
 #endif
+
+size_t Opencl_Module_Spinors::get_eoprec_spinorfield_buffer_size()
+{
+	return sizeof(spinor) * get_parameters()->get_eoprec_spinorfieldsize();
+}
+
+void Opencl_Module_Spinors::copy_to_eoprec_spinorfield_buffer(cl_mem buf, const spinor * const source)
+{
+	cl_int clerr = clEnqueueWriteBuffer(get_queue(), buf, CL_TRUE, 0, sizeof(spinor) * parameters->get_eoprec_spinorfieldsize(), source, 0, 0, NULL);
+	if(clerr != CL_SUCCESS)
+		throw Opencl_Error(clerr, "Failed to send spinorfield to device");
+}

@@ -22,7 +22,7 @@ void Opencl_Module_Hmc::fill_buffers()
 	///@todo CP: some of the above buffers are not used and can be deleted again!! especially in the eoprec-case
 
 	int spinorfield_size = get_parameters()->get_sf_buf_size();
-	int eoprec_spinorfield_size = get_parameters()->get_eo_sf_buf_size();
+	int eoprec_spinorfield_size = get_eoprec_spinorfield_buffer_size();
 	int gaugemomentum_size = get_parameters()->get_gm_buf_size();
 	int gaugefield_size = get_parameters()->get_gf_buf_size();
 	int float_size = sizeof(hmc_float);
@@ -560,7 +560,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
 
 			//store this result in clmem_phi_inv
-			copy_buffer_on_device(get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, get_parameters()->get_eo_sf_buf_size());
+			copy_buffer_on_device(get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, get_eoprec_spinorfield_buffer_size());
 
 			/**
 			 * Now, one has to calculate
@@ -572,7 +572,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			 */
 
 			//copy former solution to clmem_source
-			copy_buffer_on_device(get_clmem_inout_eoprec(), get_clmem_source_even(), get_parameters()->get_eo_sf_buf_size());
+			copy_buffer_on_device(get_clmem_inout_eoprec(), get_clmem_source_even(), get_eoprec_spinorfield_buffer_size());
 			logger.debug() << "\t\t\tstart solver";
 
 			//this sets clmem_inout cold as trial-solution
@@ -801,7 +801,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
 
 			//store this result in clmem_phi_inv
-			copy_buffer_on_device(get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, get_parameters()->get_eo_sf_buf_size());
+			copy_buffer_on_device(get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, get_eoprec_spinorfield_buffer_size());
 
 		}
 	} else {

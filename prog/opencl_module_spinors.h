@@ -105,6 +105,22 @@ public:
 	void convertSpinorfieldToSOA_eo_device(cl_mem out, cl_mem in);
 	void convertSpinorfieldFromSOA_eo_device(cl_mem out, cl_mem in);
 
+	/**
+	 * Query the size required for a buffer to contain an even-odd spinorfield
+	 * in the format used by the implementation.
+	 *
+	 * @return The buffer size in bytes
+	 */
+	size_t get_eoprec_spinorfield_buffer_size();
+	/**
+	 * Copy an even-odd preconditioned spinorfield to the given buffer.
+	 *
+	 * @param buf A buffer of at least get_eoprec_spinorfield_buffer_size() bytes which will
+	 *            be filled with the spinorfield in an implementation chosen format.
+	 * @param source An array of spinors representing an even-odd field.
+	 */
+	void copy_to_eoprec_spinorfield_buffer(cl_mem buf, const spinor * const source);
+
 #ifdef _PROFILING_
 
 	//BLAS

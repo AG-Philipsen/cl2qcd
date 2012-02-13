@@ -120,10 +120,6 @@ public:
 	/**
 	 * Return the size of the buffer in bytes.
 	 */
-	int get_eo_sf_buf_size() const;
-	/**
-	 * Return the size of the buffer in bytes.
-	 */
 	int get_gf_buf_size() const;
 	/**
 	 * Return the size of the buffer in bytes.
@@ -267,7 +263,6 @@ private:
 	int gaugefieldsize;
 	//sizes of fieldbuffers
 	int sf_buf_size;
-	int eo_sf_buf_size;
 	int gf_buf_size;
 	int gm_buf_size;
 

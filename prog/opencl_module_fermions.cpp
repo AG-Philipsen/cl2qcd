@@ -394,7 +394,7 @@ void Opencl_Module_Fermions::fill_buffers()
 	int clerr = CL_SUCCESS;
 
 	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
-	int eoprec_spinorfield_size = sizeof(spinor) * get_parameters()->get_eoprec_spinorfieldsize();
+	int eoprec_spinorfield_buffer_size = get_eoprec_spinorfield_buffer_size();
 	int complex_size = sizeof(hmc_complex);
 	int float_size = sizeof(hmc_float);
 
@@ -418,25 +418,25 @@ void Opencl_Module_Fermions::fill_buffers()
 	} else {
 		//LZ only use the following if we want to apply even odd preconditioning
 		logger.debug() << "init solver eoprec-spinorfield-buffers";
-		clmem_rn_eoprec = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_rhat_eoprec = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_v_eoprec = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_p_eoprec = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_s_eoprec = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_t_eoprec = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_aux_eoprec = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_rn_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_rhat_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_v_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_p_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_s_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_t_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_aux_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
 
 	} //end if: eoprec
 
 	if(get_parameters()->get_use_eo() == true) {
 		logger.debug() << "init general eoprec-spinorfield-buffers";
-		clmem_inout_eoprec = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_source_even = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_source_odd = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_tmp_eoprec_1 = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_inout_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_source_even = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_source_odd = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_tmp_eoprec_1 = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		//this field is used only with twistedmass
 		if(get_parameters()->get_fermact() == TWISTEDMASS) {
-			clmem_tmp_eoprec_2 = create_rw_buffer(eoprec_spinorfield_size);
+			clmem_tmp_eoprec_2 = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		}
 	}
 	gaugefield_soa = create_rw_buffer(calculateStride(NDIM * get_parameters()->get_vol4d(), sizeof(hmc_complex)) * 9 * sizeof(hmc_complex));
@@ -1367,7 +1367,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 				//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 				//cout << "init residuum:\t" << resid << endl;
 
-				copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, get_parameters()->get_eo_sf_buf_size());
+				copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, get_eoprec_spinorfield_buffer_size());
 
 				copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
 				copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex));
@@ -1463,9 +1463,9 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 				f(inout, clmem_rn_eoprec, gf);
 				saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_p_eoprec);
 				//rhat = p
-				copy_buffer_on_device(clmem_p_eoprec, clmem_rhat_eoprec, get_parameters()->get_eo_sf_buf_size());
+				copy_buffer_on_device(clmem_p_eoprec, clmem_rhat_eoprec, get_eoprec_spinorfield_buffer_size());
 				//r_n = p
-				copy_buffer_on_device(clmem_p_eoprec, clmem_rn_eoprec, get_parameters()->get_eo_sf_buf_size());
+				copy_buffer_on_device(clmem_p_eoprec, clmem_rn_eoprec, get_eoprec_spinorfield_buffer_size());
 				//rho = (rhat, rn)
 				set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho);
 			}
@@ -1615,7 +1615,7 @@ int Opencl_Module_Fermions::cg_eoprec(const Matrix_Function & f, cl_mem inout, c
 			//rn = source - A*inout
 			saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
 			//p = rn
-			copy_buffer_on_device(clmem_rn_eoprec, clmem_p_eoprec, get_parameters()->get_eo_sf_buf_size());
+			copy_buffer_on_device(clmem_rn_eoprec, clmem_p_eoprec, get_eoprec_spinorfield_buffer_size());
 			//omega = (rn,rn)
 			set_complex_to_scalar_product_eoprec_device(clmem_rn_eoprec, clmem_rn_eoprec, clmem_omega);
 		} else {
