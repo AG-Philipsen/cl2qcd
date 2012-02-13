@@ -832,38 +832,29 @@ void Opencl_Module_Fermions::QplusQminus_eoprec(cl_mem in, cl_mem out, cl_mem gf
 //explicit eoprec fermionmatrix functions
 void Opencl_Module_Fermions::gamma5_eoprec_device(cl_mem inout)
 {
-	// convert input to SOA. TODO move to proper place, does not have to be done every time
-	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, inout);
-
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(gamma5_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(gamma5_eoprec, 0, sizeof(cl_mem), &spinorfield_soa_eo_1);
+	int clerr = clSetKernelArg(gamma5_eoprec, 0, sizeof(cl_mem), &inout);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( gamma5_eoprec, gs2, ls2);
-
-	// convert output from SOA. TODO move to proper place, does not have to be done every time
-	convertSpinorfieldFromSOA_eo_device(inout, spinorfield_soa_eo_2);
 }
 
 void Opencl_Module_Fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd)
 {
-	// convert input to SOA. TODO move to proper place, does not have to be done every time
-	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, in);
-
 	cl_int eo = evenodd;
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(dslash_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(dslash_eoprec, 0, sizeof(cl_mem), &spinorfield_soa_eo_1);
+	int clerr = clSetKernelArg(dslash_eoprec, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(dslash_eoprec, 1, sizeof(cl_mem), &spinorfield_soa_eo_2);
+	clerr = clSetKernelArg(dslash_eoprec, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(dslash_eoprec, 2, sizeof(cl_mem), &gaugefield_soa);
@@ -873,97 +864,70 @@ void Opencl_Module_Fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem 
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(dslash_eoprec , gs2, ls2);
-
-	// convert output from SOA. TODO move to proper place, does not have to be done every time
-	convertSpinorfieldFromSOA_eo_device(out, spinorfield_soa_eo_2);
 }
 
 void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out)
 {
-	// convert input to SOA. TODO move to proper place, does not have to be done every time
-	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, in);
-
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(M_tm_inverse_sitediagonal, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 0, sizeof(cl_mem), &spinorfield_soa_eo_1);
+	int clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 1, sizeof(cl_mem), &spinorfield_soa_eo_2);
+	clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( M_tm_inverse_sitediagonal, gs2, ls2);
-
-	// convert output from SOA. TODO move to proper place, does not have to be done every time
-	convertSpinorfieldFromSOA_eo_device(out, spinorfield_soa_eo_2);
 }
 
 void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out)
 {
-	// convert input to SOA. TODO move to proper place, does not have to be done every time
-	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, in);
-
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(M_tm_sitediagonal, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(M_tm_sitediagonal, 0, sizeof(cl_mem), &spinorfield_soa_eo_1);
+	int clerr = clSetKernelArg(M_tm_sitediagonal, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(M_tm_sitediagonal, 1, sizeof(cl_mem), &spinorfield_soa_eo_2);
+	clerr = clSetKernelArg(M_tm_sitediagonal, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(M_tm_sitediagonal , gs2, ls2);
-
-	// convert output from SOA. TODO move to proper place, does not have to be done every time
-	convertSpinorfieldFromSOA_eo_device(out, spinorfield_soa_eo_2);
 }
 
 void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out)
 {
-	// convert input to SOA. TODO move to proper place, does not have to be done every time
-	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, in);
-
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(M_tm_inverse_sitediagonal_minus, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(M_tm_inverse_sitediagonal_minus, 0, sizeof(cl_mem), &spinorfield_soa_eo_1);
+	int clerr = clSetKernelArg(M_tm_inverse_sitediagonal_minus, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(M_tm_inverse_sitediagonal_minus, 1, sizeof(cl_mem), &spinorfield_soa_eo_2);
+	clerr = clSetKernelArg(M_tm_inverse_sitediagonal_minus, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( M_tm_inverse_sitediagonal_minus, gs2, ls2);
-
-	// convert output from SOA. TODO move to proper place, does not have to be done every time
-	convertSpinorfieldFromSOA_eo_device(out, spinorfield_soa_eo_2);
 }
 
 void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out)
 {
-	// convert input to SOA. TODO move to proper place, does not have to be done every time
-	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, in);
-
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(M_tm_sitediagonal_minus, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(M_tm_sitediagonal_minus, 0, sizeof(cl_mem), &spinorfield_soa_eo_1);
+	int clerr = clSetKernelArg(M_tm_sitediagonal_minus, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(M_tm_sitediagonal_minus, 1, sizeof(cl_mem), &spinorfield_soa_eo_2);
+	clerr = clSetKernelArg(M_tm_sitediagonal_minus, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(M_tm_sitediagonal_minus , gs2, ls2);
-
-	// convert output from SOA. TODO move to proper place, does not have to be done every time
-	convertSpinorfieldFromSOA_eo_device(out, spinorfield_soa_eo_2);
 }
 
 int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)

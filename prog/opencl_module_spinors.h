@@ -40,6 +40,8 @@
  */
 class Opencl_Module_Spinors : public Opencl_Module_Ran {
 public:
+	Opencl_Module_Spinors();
+
 	/**
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
@@ -101,9 +103,6 @@ public:
 	void create_point_source_eoprec_device(cl_mem inout_even, cl_mem inout_odd, cl_mem gf, int i, int spacepos, int timepos);
 	void set_spinorfield_cold_device(cl_mem inout);
 	void set_eoprec_spinorfield_cold_device(cl_mem inout);
-
-	void convertSpinorfieldToSOA_eo_device(cl_mem out, cl_mem in);
-	void convertSpinorfieldFromSOA_eo_device(cl_mem out, cl_mem in);
 
 	/**
 	 * Query the size required for a buffer to contain an even-odd spinorfield
@@ -194,11 +193,6 @@ protected:
 	cl_mem clmem_scalar_product_buf_glob;
 	cl_mem clmem_global_squarenorm_buf_glob;
 
-	cl_mem spinorfield_soa_eo_1;
-	cl_mem spinorfield_soa_eo_2;
-	cl_mem spinorfield_soa_eo_3;
-	cl_mem spinorfield_soa_eo_4;
-
 	//BLAS
 	cl_kernel set_spinorfield_cold;
 	cl_kernel saxpy;
@@ -232,6 +226,11 @@ private:
 
 	cl_kernel convertSpinorfieldToSOA_eo;
 	cl_kernel convertSpinorfieldFromSOA_eo;
+
+	size_t eoprec_spinorfield_buf_size;
+
+	void convertSpinorfieldToSOA_eo_device(cl_mem out, cl_mem in);
+	void convertSpinorfieldFromSOA_eo_device(cl_mem out, cl_mem in);
 };
 
 #endif //OPENCLMODULSPINORSH

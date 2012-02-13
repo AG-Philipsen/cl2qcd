@@ -441,16 +441,13 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_eoprec_device()
 	this->get_work_sizes(generate_gaussian_spinorfield_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
 	//this is always applied to clmem_phi_inv_eoporec, which can be done since the gaussian field is only needed in the beginning
-	int clerr = clSetKernelArg(generate_gaussian_spinorfield_eoprec, 0, sizeof(cl_mem), &spinorfield_soa_eo_1);
+	int clerr = clSetKernelArg(generate_gaussian_spinorfield_eoprec, 0, sizeof(cl_mem), &clmem_phi_inv_eoprec);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(generate_gaussian_spinorfield_eoprec, 1, sizeof(cl_mem), get_clmem_rndarray());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(generate_gaussian_spinorfield_eoprec, gs2, ls2);
-
-	// convert output from SOA. TODO move to proper place, does not have to be done every time
-	convertSpinorfieldFromSOA_eo_device(clmem_phi_inv_eoprec, spinorfield_soa_eo_1);
 
 	if(logger.beDebug()) {
 		cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
@@ -1054,10 +1051,6 @@ void Opencl_Module_Hmc::fermion_force_device()
 
 void Opencl_Module_Hmc::fermion_force_eoprec_device(cl_mem Y, cl_mem X, int evenodd)
 {
-	// convert input to SOA. TODO move to proper place, does not have to be done every time
-	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_1, Y);
-	convertSpinorfieldToSOA_eo_device(spinorfield_soa_eo_2, X);
-
 	//fermion_force(field, Y, X, out);
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -1067,10 +1060,10 @@ void Opencl_Module_Hmc::fermion_force_eoprec_device(cl_mem Y, cl_mem X, int even
 	int clerr = clSetKernelArg(fermion_force_eoprec, 0, sizeof(cl_mem), &clmem_new_u);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(fermion_force_eoprec, 1, sizeof(cl_mem), &spinorfield_soa_eo_1);
+	clerr = clSetKernelArg(fermion_force_eoprec, 1, sizeof(cl_mem), &Y);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(fermion_force_eoprec, 2, sizeof(cl_mem), &spinorfield_soa_eo_2);
+	clerr = clSetKernelArg(fermion_force_eoprec, 2, sizeof(cl_mem), &X);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(fermion_force_eoprec, 3, sizeof(cl_mem), &clmem_force);
