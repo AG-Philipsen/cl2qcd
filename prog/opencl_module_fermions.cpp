@@ -1464,6 +1464,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			}
 			//v = A*p
 			f(clmem_p_eoprec, clmem_v_eoprec, gf);
+			clFlush(get_queue());
 			//tmp1 = (rhat, v)
 			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
 			//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
@@ -1504,6 +1505,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 			//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
 			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec);
+			clFlush(get_queue());
 			//rho_next = rho
 			copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
 		}
