@@ -1305,6 +1305,8 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 
 int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
+	cl_int clerr = CL_SUCCESS;
+
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
 	if (get_parameters()->get_use_bicgstab_save()) {
 		cl_event start_event;
@@ -1464,7 +1466,10 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			}
 			//v = A*p
 			f(clmem_p_eoprec, clmem_v_eoprec, gf);
-			clFlush(get_queue());
+			clerr = clFlush(get_queue());
+			if(clerr) {
+				throw Opencl_Error(clerr, "Failed to flush command queue");
+			}
 			//tmp1 = (rhat, v)
 			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
 			//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
@@ -1505,7 +1510,10 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 			//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
 			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec);
-			clFlush(get_queue());
+			clerr = clFlush(get_queue());
+			if(clerr) {
+				throw Opencl_Error(clerr, "Failed to flush command queue");
+			}
 			//rho_next = rho
 			copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
 		}
