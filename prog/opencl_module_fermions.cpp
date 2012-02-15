@@ -1386,7 +1386,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 						unsigned refreshs = iter / get_parameters()->get_iter_refresh() + 1;
 						cl_ulong mf_flops = f.get_Flops();
 
-						cl_ulong total_flops = 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 3 * get_flop_size("product") + 2 * get_flop_size("saxsbypz_eoprec") + 2 * mf_flops + 2 * get_flop_size("saxpy") + get_flop_size("global_squarenorm_eoprec");
+						cl_ulong total_flops = 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 3 * get_flop_size("product") + 2 * get_flop_size("saxsbypz_eoprec") + 2 * mf_flops + 2 * get_flop_size("saxpy_eoprec") + get_flop_size("global_squarenorm_eoprec");
 						total_flops *= iter;
 
 						total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec"));
@@ -1566,6 +1566,13 @@ int Opencl_Module_Fermions::cg_eoprec(const Matrix_Function & f, cl_mem inout, c
 {
 	//this corresponds to the above function
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
+	klepsydra::Monotonic timer;
+	if(logger.beInfo()) {
+		cl_event start_event;
+		clEnqueueMarker(get_queue(), &start_event);
+		clSetEventCallback(start_event, CL_COMPLETE, resetTimerOnComplete, &timer);
+		clReleaseEvent(start_event);
+	}
 	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter ++) {
 		if(iter % get_parameters()->get_iter_refresh() == 0) {
 			//rn = A*inout
@@ -1603,8 +1610,27 @@ int Opencl_Module_Fermions::cg_eoprec(const Matrix_Function & f, cl_mem inout, c
 
 		logger.debug() << "resid: " << resid;
 
-		if(resid < prec)
+		if(resid < prec) {
+			// report on performance
+			if(logger.beInfo()) {
+				// we are always synchroneous here, as we had to recieve the residium from the device
+				uint64_t duration = timer.getTime();
+
+				// calculate flops
+				unsigned refreshs = iter / get_parameters()->get_iter_refresh() + 1;
+				cl_ulong mf_flops = f.get_Flops();
+
+				cl_ulong total_flops = mf_flops + 3 * get_flop_size("scalar_product_eoprec") + 2 * get_flop_size("ratio") + 2 * get_flop_size("product") + 3 * get_flop_size("saxpy_eoprec");
+				total_flops *= iter;
+
+				total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
+
+				// report performanc
+				logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops.";
+			}
+
 			return iter;
+		}
 
 		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
 		set_complex_to_scalar_product_eoprec_device(clmem_rn_eoprec, clmem_rn_eoprec, clmem_rho_next);
