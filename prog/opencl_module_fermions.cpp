@@ -1099,7 +1099,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-//    cout << "resid at iter " << iter << " is: " << resid << endl;
+			logger.debug() << "resid: " << resid;
 
 			if(resid < prec) {
 				f(inout, clmem_aux, gf);
@@ -1364,6 +1364,8 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
+			logger.debug() << "resid: " << resid;
+
 			if(resid < prec) {
 				++retests;
 
@@ -1428,7 +1430,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			hmc_float resid;
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-			//cout << resid << endl;
+			logger.debug() << "resid: " << resid;
 
 			if(resid < prec) {
 				// report on performance
@@ -1542,7 +1544,7 @@ int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem s
 		//set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-		//cout << "resid: " << resid << endl;
+		logger.debug() << "resid: " << resid;
 
 		if(resid < prec)
 			return iter;
@@ -1597,7 +1599,7 @@ int Opencl_Module_Fermions::cg_eoprec(const Matrix_Function & f, cl_mem inout, c
 		//set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-		// cout << "resid: " << resid << endl;
+		logger.debug() << "resid: " << resid;
 
 		if(resid < prec)
 			return iter;
