@@ -1,0 +1,28 @@
+##################################################################
+##	This is 
+##		inverter_test_input_5
+##	At the moment, it calculates the ps-correlator and 
+##	prints it to screen.
+##		NOTE: The solver will not converge since cgmax 
+##		is too small to speed up the test!
+##	Find the reference for the pseudo-scalar correlator
+##	in this directory (inverter_test_ref).
+##
+##################################################################
+NS=4
+NT=4
+use_rec12=0
+use_gpu=0
+prec=64
+
+kappa=.05
+mu=.4
+cgmax=1000
+beta=6
+startcondition=cold
+savefrequency=10
+fermact=TWISTEDMASS
+
+use_evenodd=no
+
+solver=CG
