@@ -45,10 +45,10 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 			plus = get_spinor_from_field(X, n, nn);
 			U = get_matrixsu3(field, n, t, dir);
 			//if chemical potential is activated, U has to be multiplied by appropiate factor
-#ifdef _  CP_REAL_
+#ifdef _CP_REAL_
 			U = multiply_matrixsu3_by_real (U, EXPCPR);
 #endif
-#ifdef _  CP_IMAG_
+#ifdef _CP_IMAG_
 			hmc_complex cpi_tmp = {COSCPI, SINCPI};
 			U = multiply_matrixsu3_by_complex (U, cpi_tmp );
 #endif
@@ -152,11 +152,6 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				psib = su3vec_acc_i(plus.e1, plus.e2);
 				phia = su3vec_acc_i(y.e0, y.e3);
 				phib = su3vec_acc_i(y.e1, y.e2);
-
-				v1 = tr_v_times_u_dagger(phia, psia, phib, psib);
-				tmp = matrix_su3to3x3(U);
-				v2 = multiply_matrix3x3_dagger (tmp, v1);
-				v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 			} else if( dir == 2 ) {
 				///////////////////////////////////
 				// Calculate (1 - gamma_2) y
@@ -170,11 +165,6 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				psib = su3vec_dim(plus.e1, plus.e2);
 				phia = su3vec_acc(y.e0, y.e3);
 				phib = su3vec_dim(y.e1, y.e2);
-
-				v1 = tr_v_times_u_dagger(phia, psia, phib, psib);
-				tmp = matrix_su3to3x3(U);
-				v2 = multiply_matrix3x3_dagger (tmp, v1);
-				v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 			} else { // dir == 3
 				///////////////////////////////////
 				// Calculate (1 - gamma_3) y
@@ -188,12 +178,12 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				psib = su3vec_dim_i(plus.e1, plus.e3);
 				phia = su3vec_acc_i(y.e0, y.e2);
 				phib = su3vec_dim_i(y.e1, y.e3);
-
-				v1 = tr_v_times_u_dagger(phia, psia, phib, psib);
-				tmp = matrix_su3to3x3(U);
-				v2 = multiply_matrix3x3_dagger (tmp, v1);
-				v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 			}
+
+			v1 = tr_v_times_u_dagger(phia, psia, phib, psib);
+			tmp = matrix_su3to3x3(U);
+			v2 = multiply_matrix3x3_dagger (tmp, v1);
+			v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 			out_tmp = tr_lambda_u(v1);
 
 			update_gaugemomentum(out_tmp, 1., global_link_pos, out);
@@ -218,11 +208,6 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				psib = su3vec_dim_i(plus.e1, plus.e2);
 				phia = su3vec_dim_i(y.e0, y.e3);
 				phib = su3vec_dim_i(y.e1, y.e2);
-
-				v1 = tr_v_times_u_dagger(psia, phia, psib, phib);
-				tmp = matrix_su3to3x3(U);
-				v2 = multiply_matrix3x3_dagger (tmp, v1);
-				v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 			} else if( dir == 2 ) {
 				///////////////////////////////////
 				// Calculate (1 + gamma_2) y
@@ -236,11 +221,6 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				psib = su3vec_acc(plus.e1, plus.e2);
 				phia = su3vec_dim(y.e0, y.e3);
 				phib = su3vec_acc(y.e1, y.e2);
-
-				v1 = tr_v_times_u_dagger(psia, phia, psib, phib);
-				tmp = matrix_su3to3x3(U);
-				v2 = multiply_matrix3x3_dagger (tmp, v1);
-				v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 			} else { // dir == 3
 				///////////////////////////////////
 				// Calculate (1 + gamma_3) y
@@ -254,12 +234,13 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 				psib = su3vec_acc_i(plus.e1, plus.e3);
 				phia = su3vec_dim_i(y.e0, y.e2);
 				phib = su3vec_acc_i(y.e1, y.e3);
-
-				v1 = tr_v_times_u_dagger(psia, phia, psib, phib);
-				tmp = matrix_su3to3x3(U);
-				v2 = multiply_matrix3x3_dagger (tmp, v1);
-				v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 			}
+
+			v1 = tr_v_times_u_dagger(psia, phia, psib, phib);
+			tmp = matrix_su3to3x3(U);
+			v2 = multiply_matrix3x3_dagger (tmp, v1);
+			v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
+
 			out_tmp = tr_lambda_u(v1);
 			update_gaugemomentum(out_tmp, 1., global_link_pos, out);
 		}
