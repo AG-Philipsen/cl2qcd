@@ -18,11 +18,12 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 		su3vec psia, psib, phia, phib;
 		spinor y, plus;
 		int nn;
-		ae out_tmp;
 		//this is used to save the BC-conditions...
 		hmc_complex bc_tmp;
 		int n = pos.space;
 		int t = pos.time;
+
+		ae ae_tmp = out[global_link_pos];
 
 		if(dir == 0) {
 			y = get_spinor_from_field(Y, n, t);
@@ -74,27 +75,14 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 			tmp = matrix_su3to3x3(U);
 			v2 = multiply_matrix3x3_dagger (tmp, v1);
 			v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
-			out_tmp = tr_lambda_u(v1);
-			update_gaugemomentum(out_tmp, 1., global_link_pos, out);
+
+			ae_tmp = acc_factor_times_algebraelement(ae_tmp, 1., tr_lambda_u(v1));
 
 			/////////////////////////////////////
 			//mu = -0
 			y = get_spinor_from_field(Y, n, nn);
 			y = gamma5_local(y);
 			plus = get_spinor_from_field(X, n, t);
-			U = get_matrixsu3(field, n, t, dir);
-			//if chemical potential is activated, U has to be multiplied by appropiate factor
-			//this is the same as at mu=0 in the imag. case, since U is taken to be U^+ later:
-			//  (exp(iq)U)^+ = exp(-iq)U^+
-			//as it should be
-			//in the real case, one has to take exp(q) -> exp(-q)
-#ifdef _  CP_REAL_
-			U = multiply_matrixsu3_by_real (U, MEXPCPR);
-#endif
-#ifdef _  CP_IMAG_
-			hmc_complex cpi_tmp = {COSCPI, SINCPI};
-			U = multiply_matrixsu3_by_complex (U, cpi_tmp );
-#endif
 			///////////////////////////////////
 			// Calculate psi/phi = (1 + gamma_0) y
 			// with 1 + gamma_0:
@@ -111,11 +99,10 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 			// v1 = Tr(psi*phi_dagger)
 			v1 = tr_v_times_u_dagger(psia, phia, psib, phib);
 			//U*v1 = U*(phi_a)
-			tmp = matrix_su3to3x3(U);
 			v2 = multiply_matrix3x3_dagger (tmp, v1);
 			v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
-			out_tmp = tr_lambda_u(v1);
-			update_gaugemomentum(out_tmp, 1., global_link_pos, out);
+
+			ae_tmp = acc_factor_times_algebraelement(ae_tmp, 1., tr_lambda_u(v1));
 
 		} else {
 			y = get_spinor_from_field(Y, n, t);
@@ -184,16 +171,14 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 			tmp = matrix_su3to3x3(U);
 			v2 = multiply_matrix3x3_dagger (tmp, v1);
 			v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
-			out_tmp = tr_lambda_u(v1);
 
-			update_gaugemomentum(out_tmp, 1., global_link_pos, out);
+			ae_tmp = acc_factor_times_algebraelement(ae_tmp, 1., tr_lambda_u(v1));
 
 			///////////////////////////////////
 			//mu = -1
 			y = get_spinor_from_field(Y, nn, t);
 			y = gamma5_local(y);
 			plus = get_spinor_from_field(X, n, t);
-			U = get_matrixsu3(field, n, t, dir);
 
 			if( dir == 1 ) {
 				///////////////////////////////////
@@ -237,12 +222,11 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 			}
 
 			v1 = tr_v_times_u_dagger(psia, phia, psib, phib);
-			tmp = matrix_su3to3x3(U);
 			v2 = multiply_matrix3x3_dagger (tmp, v1);
 			v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
 
-			out_tmp = tr_lambda_u(v1);
-			update_gaugemomentum(out_tmp, 1., global_link_pos, out);
+			ae_tmp = acc_factor_times_algebraelement(ae_tmp, 1., tr_lambda_u(v1));
 		}
+		out[global_link_pos] = ae_tmp;
 	}
 }
