@@ -7,8 +7,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);
 
-	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size)
-	{
+	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 		st_index pos = (id_tmp % 2 == 0) ? get_even_site(id_tmp / 2) : get_odd_site(id_tmp / 2);
 
 		Matrixsu3 U;
@@ -175,7 +174,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 		phia = su3vec_dim_i(y.e0, y.e3);
 		phib = su3vec_dim_i(y.e1, y.e2);
 
-	       	v1 = tr_v_times_u_dagger(psia, phia, psib, phib);
+		v1 = tr_v_times_u_dagger(psia, phia, psib, phib);
 		tmp = matrix_su3to3x3(U);
 		v2 = multiply_matrix3x3_dagger (tmp, v1);
 		v1 = multiply_matrix3x3_by_complex(v2, bc_tmp);
