@@ -1,5 +1,3 @@
-import inspect
-
 #name of the executable
 executable = 'dslash_benchmark'
 
@@ -84,4 +82,3 @@ NT=28
 NT=32
 """
 ]
-

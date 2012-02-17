@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 from subprocess import *
-import re
 import sys
 import os
-import math
 import shutil
 import dslash_bench_defs
+from tempfile import NamedTemporaryFile
 
 def main():
 
@@ -48,10 +47,10 @@ def main():
 				args = ['./' + executable] + sys.argv[1:]
 			else:
 				# open file "tmpaaaaaaaa", deleting whatever content was in it before
-				f = open('tmpaaaaaaaa', 'w')
+				f = NamedTemporaryFile(delete=False);
 				f.write(input_glob + input_var1[iteration1] + input_var2[iteration2])
 				f.close()
-				args = ['./' + executable] + ['tmpaaaaaaaa']
+				args = ['./' + executable] + [f.name]
 
 			# run the prog
 			if(stdout):
@@ -64,7 +63,7 @@ def main():
 				if(backup):
 					# save inputfile to a different file
 					backupname = 'input_' + str(iteration)
-					shutil.copy('tmpaaaaaaaa', backupname)
+					shutil.copy(f.name, backupname)
 
 			if subject.returncode == 0:
 				print "\tProgram completed successfully"
@@ -73,7 +72,7 @@ def main():
 				continue
 
 	if(switch == 0):
-		os.remove('tmpaaaaaaaa')
+		os.remove(f.name)
 
 
 if __name__ == '__main__':
