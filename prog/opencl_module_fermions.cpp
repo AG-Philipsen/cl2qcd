@@ -507,7 +507,7 @@ void Opencl_Module_Fermions::fill_kernels()
 			M_tm_inverse_sitediagonal_minus = createKernel("M_tm_inverse_sitediagonal_minus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
 		}
 		dslash_eoprec = createKernel("dslash_eoprec") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
-		convertGaugefieldToSOA = createKernel("convertGaugefieldToSOA") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
+		convertGaugefieldToSOA_kernel = createKernel("convertGaugefieldToSOA") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 		convertGaugefieldFromSOA = createKernel("convertGaugefieldFromSOA") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 		gamma5_eoprec = createKernel("gamma5_eoprec") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
 	}
@@ -541,7 +541,7 @@ void Opencl_Module_Fermions::clear_kernels()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(M_tm_inverse_sitediagonal);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(convertGaugefieldToSOA);
+		clerr = clReleaseKernel(convertGaugefieldToSOA_kernel);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(convertGaugefieldFromSOA);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -1810,20 +1810,24 @@ void Opencl_Module_Fermions::print_info_inv_field(cl_mem in, bool eo, std::strin
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 }
 
+void Opencl_Module_Fermions::convertGaugefieldToSOA()
+{
+	convertGaugefieldToSOA_device(gaugefield_soa, *get_gaugefield());
+}
 void Opencl_Module_Fermions::convertGaugefieldToSOA_device(cl_mem out, cl_mem in)
 {
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(convertGaugefieldToSOA, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(convertGaugefieldToSOA_kernel, this->get_device_type(), &ls2, &gs2, &num_groups);
 
 	//set arguments
-	int clerr = clSetKernelArg(convertGaugefieldToSOA, 0, sizeof(cl_mem), &out);
+	int clerr = clSetKernelArg(convertGaugefieldToSOA_kernel, 0, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(convertGaugefieldToSOA, 1, sizeof(cl_mem), &in);
+	clerr = clSetKernelArg(convertGaugefieldToSOA_kernel, 1, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(convertGaugefieldToSOA, gs2, ls2);
+	enqueueKernel(convertGaugefieldToSOA_kernel, gs2, ls2);
 }
 
 

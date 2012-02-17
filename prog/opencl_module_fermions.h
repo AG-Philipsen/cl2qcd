@@ -196,6 +196,7 @@ public:
 	void dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd);
 
 	// SOA conversion
+	void convertGaugefieldToSOA();
 	void convertGaugefieldToSOA_device(cl_mem out, cl_mem in);
 
 	//    solver operations
@@ -300,7 +301,7 @@ private:
 	cl_kernel M_tm_sitediagonal_minus;
 	cl_kernel M_tm_inverse_sitediagonal_minus;
 	cl_kernel dslash_eoprec;
-	cl_kernel convertGaugefieldToSOA;
+	cl_kernel convertGaugefieldToSOA_kernel;
 	cl_kernel convertGaugefieldFromSOA;
 	//CP: variables for normal solver
 	cl_mem clmem_inout;
