@@ -1,5 +1,5 @@
 #name of the executable
-executable = 'dslash_benchmark'
+executable = 'inverter'
 
 #debugging options:
 #print more information
@@ -7,7 +7,7 @@ debug = 0
 #print executable-output to stdout
 stdout = 1
 #save result file under a different name for backup
-backup = 1
+backup = 0
 
 input_glob = """#global settings
 prec=64
@@ -22,11 +22,14 @@ kappa=0.05
 mu=0.2
 corr_dir=3
 ThetaT=1.
+
+cgmax=100
+startcondition=cold
+savefrequency=10
+fermact=TWISTEDMASS
 use_evenodd=yes
 
-#this controls hows many bencharking steps are performed
-#   NOTE: times 2, for each step EVEN and ODD is performed!!
-hmcsteps=5000
+solver=BICGSTAB
 """
 
 #arrays for the different tests, this is not nice, but a quick workaround
