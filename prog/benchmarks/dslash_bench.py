@@ -10,7 +10,7 @@ import dslash_bench_defs
 
 def main():
 
-	#some needed vars that are defined in the file dslash_bench_defs.py for convenience
+	# some needed vars that are defined in the file dslash_bench_defs.py for convenience
 	input_glob = dslash_bench_defs.input_glob
 	input_var1 = dslash_bench_defs.input_var1
 	input_var2 = dslash_bench_defs.input_var2
@@ -20,7 +20,7 @@ def main():
 	executable = dslash_bench_defs.executable
 
 	switch = 0
-	#check if input-file is given at argv[1]
+	# check if input-file is given at argv[1]
 	if(len(sys.argv) != 2):
 		print "no input- or reference-file given. Perform all existing benchmarks!"
 	else:
@@ -28,7 +28,7 @@ def main():
 		print "\tbenchmarking \"" + executable + "\" using inputfile \"" + sys.argv[1] 
 		switch = 1
 		
-	#performs as many tests as specified in the defs-file
+	# performs as many tests as specified in the defs-file
 	if(switch == 0):
 		size1 = len(input_var1)
 		size2 = len(input_var2)
@@ -41,28 +41,28 @@ def main():
 			iteration = iteration1*size2 + iteration2
  			size = size1*size2
 			print '\tbenchmark %i of %i'% (iteration+1,  size)
-			
-		        #select input-file if wished, otherwise create one
+
+			# select input-file if wished, otherwise create one
 			if(switch == 1):
 				inputfile = sys.argv[1:]
 				args = ['./' + executable] + sys.argv[1:]
 			else:
-			        #open file "tmpaaaaaaaa", deleting whatever content was in it before
+				# open file "tmpaaaaaaaa", deleting whatever content was in it before
 				f = open('tmpaaaaaaaa', 'w')
 				f.write(input_glob + input_var1[iteration1] + input_var2[iteration2])
-	  			f.close()
+				f.close()
 				args = ['./' + executable] + ['tmpaaaaaaaa']
-				
-		        #run the prog 
+
+			# run the prog
 			if(stdout):
 				subject =  Popen(args)
 			else:
 				subject =  Popen(args, stdout=PIPE)
-		
+
 			subject.wait()
 			if(switch == 0):
 				if(backup):
-		                        #save inputfile to a different file
+					# save inputfile to a different file
 					backupname = 'input_' + str(iteration)
 					shutil.copy('tmpaaaaaaaa', backupname)
 
