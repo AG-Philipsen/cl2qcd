@@ -15,7 +15,8 @@ __kernel void md_update_gaugemomenta(hmc_float eps, __global ae * p_inout, __glo
 	int group_id = get_group_id (0);
 
 	for(int id_tmp = id; id_tmp < GAUGEMOMENTASIZE; id_tmp += global_size) {
-		update_gaugemomentum(force_in[id_tmp], eps, id_tmp, p_inout);
+	  //	  if(id%4 != 0) continue;
+	  update_gaugemomentum(force_in[id_tmp], eps, id_tmp, p_inout);
 	}
 
 }

@@ -16,6 +16,8 @@ __kernel void md_update_gaugefield(hmc_float eps, __global ae * p_in, __global o
 	Matrixsu3 tmp;
 	Matrixsu3 tmp2;
 
+	//return;
+
 	//CP: it is GAUGEMOMENTASIZE = NDIM * SPINORFIELDSIZE
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 		/** @todo this must be done more efficient */

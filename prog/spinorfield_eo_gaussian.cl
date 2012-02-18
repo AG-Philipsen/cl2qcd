@@ -19,46 +19,65 @@ __kernel void generate_gaussian_spinorfield_eoprec(__global spinorfield * in, __
 
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 
+	  //	  if(id_tmp != 0 && id_tmp != 0) {
+	  //  out_tmp = set_spinor_zero();
+	  //}
+	  //else{  
+	  //  printf("at %i\n", id_tmp);
 		//CP: there are 12 complex elements in the spinor
 		tmp = gaussianNormalPair(&rnd[id]);
 		out_tmp.e0.e0.re = tmp.re;
 		out_tmp.e0.e0.im = tmp.im;
+		//printf("%f %f\n", tmp.re, tmp.im);
 		tmp = gaussianNormalPair(&rnd[id]);
 		out_tmp.e0.e1.re = tmp.re;
 		out_tmp.e0.e1.im = tmp.im;
+		//printf("%f %f\n", tmp.re, tmp.im);
 		tmp = gaussianNormalPair(&rnd[id]);
 		out_tmp.e0.e2.re = tmp.re;
 		out_tmp.e0.e2.im = tmp.im;
+		//printf("%f %f\n", tmp.re, tmp.im);
 		tmp = gaussianNormalPair(&rnd[id]);
 		out_tmp.e1.e0.re = tmp.re;
 		out_tmp.e1.e0.im = tmp.im;
+		//printf("%f %f\n", tmp.re, tmp.im);
 		tmp = gaussianNormalPair(&rnd[id]);
 		out_tmp.e1.e1.re = tmp.re;
 		out_tmp.e1.e1.im = tmp.im;
+		//printf("%f %f\n", tmp.re, tmp.im);
 		tmp = gaussianNormalPair(&rnd[id]);
 		out_tmp.e1.e2.re = tmp.re;
 		out_tmp.e1.e2.im = tmp.im;
+		//printf("%f %f\n", tmp.re, tmp.im);
 		tmp = gaussianNormalPair(&rnd[id]);
 		out_tmp.e2.e0.re = tmp.re;
 		out_tmp.e2.e0.im = tmp.im;
+		//printf("%f %f\n", tmp.re, tmp.im);
 		tmp = gaussianNormalPair(&rnd[id]);
 		out_tmp.e2.e1.re = tmp.re;
 		out_tmp.e2.e1.im = tmp.im;
+		//printf("%f %f\n", tmp.re, tmp.im);
 		tmp = gaussianNormalPair(&rnd[id]);
 		out_tmp.e2.e2.re = tmp.re;
 		out_tmp.e2.e2.im = tmp.im;
+		//printf("%f %f\n", tmp.re, tmp.im);
 		tmp = gaussianNormalPair(&rnd[id]);
 		out_tmp.e3.e0.re = tmp.re;
 		out_tmp.e3.e0.im = tmp.im;
+		//printf("%f %f\n", tmp.re, tmp.im);
 		tmp = gaussianNormalPair(&rnd[id]);
 		out_tmp.e3.e1.re = tmp.re;
 		out_tmp.e3.e1.im = tmp.im;
+		//printf("%f %f\n", tmp.re, tmp.im);
 		tmp = gaussianNormalPair(&rnd[id]);
 		out_tmp.e3.e2.re = tmp.re;
 		out_tmp.e3.e2.im = tmp.im;
+		//printf("%f %f\n", tmp.re, tmp.im);
 
+		//}
+	
 		//multiply by sigma
-		out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));
+	  	out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));
 
 		in[id_tmp] = out_tmp;
 	}

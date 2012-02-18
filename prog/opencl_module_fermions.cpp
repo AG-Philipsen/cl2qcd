@@ -756,11 +756,49 @@ void Opencl_Module_Fermions::Aee(cl_mem in, cl_mem out, cl_mem gf)
 		dslash_eoprec_device(clmem_tmp_eoprec_1, out, gf, even);
 		saxpy_eoprec_device(out, in, clmem_one, out);
 	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
-		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
+	  dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
+	  	M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
 		dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even);
 		M_tm_sitediagonal_device(in, clmem_tmp_eoprec_1);
-		saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
+				saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
+
+		//without dslash
+		//M_tm_inverse_sitediagonal_device(in, clmem_tmp_eoprec_1);
+	        //M_tm_sitediagonal_device(in, out);
+		//		saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
+		//saxpy_eoprec_device(clmem_tmp_eoprec_1, out , clmem_one, out); 
+
+		//apply only one dslash
+	  //	  dslash_eoprec_device(in, out, gf, odd);
+
+
+		//M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
+	        //M_tm_sitediagonal_device(in, out);
+		//saxpy_eoprec_device(clmem_tmp_eoprec_2, out , clmem_one, out); 
+
+		//one more
+	  //  dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
+	  //	M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, out);
+
+		//two more
+		//dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
+		//M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
+		//dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even);
+
+		//three more
+		//dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
+		//M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
+		//dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even);
+
+		//four more
+		//dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
+		//dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, gf, even);
+		//M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_2, out);
+
+		//five more
+		//dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
+		//dslash_eoprec_device(clmem_tmp_eoprec_1, out, gf, even);
+
 	}
 }
 
@@ -1745,16 +1783,23 @@ cl_mem Opencl_Module_Fermions::get_clmem_minusone()
 	return clmem_minusone;
 }
 
-void Opencl_Module_Fermions::print_info_inv_field(cl_mem in, bool eo, std::string msg)
+cl_mem Opencl_Module_Fermions::get_clmem_one()
+{
+	return clmem_one;
+}
+
+hmc_float Opencl_Module_Fermions::print_info_inv_field(cl_mem in, bool eo, std::string msg)
 {
 	cl_mem clmem_sqnorm_tmp = create_rw_buffer(sizeof(hmc_float));
 	hmc_float tmp;
 	if(eo) set_float_to_global_squarenorm_eoprec_device(in, clmem_sqnorm_tmp);
 	else set_float_to_global_squarenorm_device(in, clmem_sqnorm_tmp);
 	get_buffer_from_device(clmem_sqnorm_tmp, &tmp, sizeof(hmc_float));
-	logger.debug() << msg << tmp;
+	cout.precision(10);
+	logger.debug() << std::scientific << msg << tmp;
 	int clerr = clReleaseMemObject(clmem_sqnorm_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	return tmp;
 }
 
 #ifdef _PROFILING_

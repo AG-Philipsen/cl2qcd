@@ -27,7 +27,7 @@ __kernel void dslash_eoprec(__global const spinorfield_eoprec * const restrict i
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 		out_tmp2 = dslash_eoprec_local_3(in, field, pos);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-
+		
 		put_spinor_to_eoprec_field(out_tmp, out, id_tmp);
 	}
 }

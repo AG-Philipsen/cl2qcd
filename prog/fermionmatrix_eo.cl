@@ -29,7 +29,7 @@ spinor inline dslash_eoprec_local_0(__global const spinorfield_eoprec * const re
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_link_idx(dir, idx_tmp)];
+	U = field[get_link_idx(dir, idx_arg)];
 	//if chemical potential is activated, U has to be multiplied by appropiate factor
 #ifdef _CP_REAL_
 	U = multiply_matrixsu3_by_real (U, EXPCPR);
@@ -107,7 +107,21 @@ spinor inline dslash_eoprec_local_0(__global const spinorfield_eoprec * const re
 	psi = su3vec_times_complex(phi, bc_tmp);
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e3 = su3vec_dim(out_tmp.e3, psi);
+	
+	/* int n, t; */
+	/* n = idx_arg.space; */
+	/* t = idx_arg.time; */
 
+	/* if(nn_eo == 0){ */
+	/*   //print_matrixsu3(U); */
+	/*   printf("dslash at site: %i %i %i\n", n,t, get_global_pos(n,t)); */
+	/* printf("sq: %.20f\n", spinor_squarenorm(out_tmp)); */
+	/* printf("neighbor: %i %i\n", idx_tmp.space, idx_tmp.time); */
+	//printf("eo idx: %i \n", nn_eo);
+
+	//print_spinor(out_tmp);
+
+	//}
 	return out_tmp;
 }
 
@@ -137,7 +151,7 @@ spinor inline dslash_eoprec_local_1(__global const spinorfield_eoprec * const re
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_link_idx(dir, idx_tmp)];
+	U = field[get_link_idx(dir, idx_arg)];
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = KAPPA_SPATIAL_IM;
 	/////////////////////////////////
@@ -218,7 +232,7 @@ spinor inline dslash_eoprec_local_2(__global const spinorfield_eoprec * const re
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_link_idx(dir, idx_tmp)];
+	U = field[get_link_idx(dir, idx_arg)];
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = KAPPA_SPATIAL_IM;
 	///////////////////////////////////
@@ -299,7 +313,7 @@ spinor inline dslash_eoprec_local_3(__global const spinorfield_eoprec * const re
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_link_idx(dir, idx_tmp)];
+	U = field[get_link_idx(dir, idx_arg)];
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = KAPPA_SPATIAL_IM;
 	///////////////////////////////////

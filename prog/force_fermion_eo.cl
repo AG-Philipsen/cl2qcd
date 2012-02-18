@@ -15,7 +15,7 @@ __kernel void fermion_force_eoprec(__global ocl_s_gaugefield * field, __global  
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size)
 	{
 		//caculate (pos,time) out of id_tmp depending on evenodd
-		st_index pos = (evenodd == EVEN) ? get_even_site(id_tmp) : get_odd_site(id_tmp);
+		st_index pos = (evenodd == ODD) ? get_even_site(id_tmp) : get_odd_site(id_tmp);
 
 		Matrixsu3 U;
 		Matrix3x3 v1, v2, tmp;

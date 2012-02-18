@@ -15,19 +15,35 @@ __kernel void generate_gaussian_gaugemomenta(__global ae * out, __global hmc_ocl
        global_size = 1;
 #endif
 
+       bool switcher = true;
+       if(switcher) printf("setting gaugemomenta to zero initially...\n");
+
 	for(int id_tmp = id; id_tmp < GAUGEMOMENTASIZE; id_tmp += global_size) {
-		//CP: there are 8 elements in ae
+    	        if(switcher){
+		  //CP: there are 8 elements in ae
+		  out[id_tmp].e0 = 0.;
+		  out[id_tmp].e1 =  0.;
+		  out[id_tmp].e2 =  0.;
+		  out[id_tmp].e3 =  0.;
+		  out[id_tmp].e4 =  0.;
+		  out[id_tmp].e5 =  0.;
+		  out[id_tmp].e6 =  0.;
+		  out[id_tmp].e7 =  0.;
+		  continue;
+		}
+
+		//CP: THERE ARE 8 ELEMENTS IN AE
 		tmp = gaussianNormalPair(&rnd[id]);
 		out[id_tmp].e0 = tmp.re;
-		out[id_tmp].e1 = tmp.im;
+		out[id_tmp].e1 =  tmp.im;
 		tmp = gaussianNormalPair(&rnd[id]);
-		out[id_tmp].e2 = tmp.re;
-		out[id_tmp].e3 = tmp.im;
+		out[id_tmp].e2 =  tmp.re;
+		out[id_tmp].e3 =  tmp.im;
 		tmp = gaussianNormalPair(&rnd[id]);
-		out[id_tmp].e4 = tmp.re;
-		out[id_tmp].e5 = tmp.im;
+		out[id_tmp].e4 =  tmp.re;
+		out[id_tmp].e5 =  tmp.im;
 		tmp = gaussianNormalPair(&rnd[id]);
-		out[id_tmp].e6 = tmp.re;
-		out[id_tmp].e7 = tmp.im;
+		out[id_tmp].e6 =  tmp.re;
+		out[id_tmp].e7 =  tmp.im;
 	}
 }
