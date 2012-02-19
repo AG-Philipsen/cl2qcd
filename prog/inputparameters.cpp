@@ -116,7 +116,9 @@ void inputparameters::set_defaults()
 	integrationsteps2 = integrationsteps1;
 	hmcsteps = 10;
 	num_timescales = 1;
-	integrator = LEAPFROG;
+	integrator1 = LEAPFROG;
+	integrator2 = LEAPFROG;
+	//this is the optimal value...
 	lambda1 = 0.1931833275037836;
 	lambda2 = 0.1931833275037836;
 
@@ -222,7 +224,10 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("fermionaction") != std::string::npos) fermact_assign(&fermact, line);
 			if(line.find("fermact") != std::string::npos) fermact_assign(&fermact, line);
 
-			if(line.find("integrator") != std::string::npos) integrator_assign(&integrator, line);
+			if(line.find("integrator1") != std::string::npos) integrator_assign(&integrator1, line);
+			if(line.find("integrator2") != std::string::npos) integrator_assign(&integrator2, line);
+			if(line.find("lambda1") != std::string::npos) val_assign(&lambda1, line);
+			if(line.find("lambda2") != std::string::npos) val_assign(&lambda2, line);
 
 			if(line.find("evenodd") != std::string::npos) bool_assign(&use_eo, line);
 			if(line.find("even_odd") != std::string::npos) bool_assign(&use_eo, line);
@@ -746,9 +751,16 @@ int inputparameters::get_fermact() const
 	return fermact;
 }
 
-int inputparameters::get_integrator() const
+int inputparameters::get_integrator(int which) const
 {
-	return integrator;
+	if(which == 1)
+		return integrator1;
+	else if (which == 2)
+		return integrator2;
+	else{
+		logger.fatal() << "cant make sense out of desired integrator number...\nAborting...";
+		exit(EXIT_INPUTPARAMETERS);
+	}
 }
 
 int inputparameters::get_num_timescales() const
@@ -1345,9 +1357,9 @@ void inputparameters::print_info_hmc(char* progname) const
 	logger.info() << "## integrationsteps1  = " << this->get_integrationsteps1();
 	//get integrator name
 	string integrator_name;
-	if(this->get_integrator() == LEAPFROG)
+	if(this->get_integrator(1) == LEAPFROG)
 		integrator_name = "LEAPFROG";
-	else if (this->get_integrator() == TWOMN)
+	else if (this->get_integrator(1) == TWOMN)
 		integrator_name = "2MN";
 	else {
 		logger.fatal() << "Fail in getting integrator information!";
@@ -1359,9 +1371,9 @@ void inputparameters::print_info_hmc(char* progname) const
 	if(this->get_num_timescales() == 2){
 		logger.info() << "## integrationsteps2  = " << this->get_integrationsteps2();
 		//get integrator name
-		if(this->get_integrator() == LEAPFROG)
+		if(this->get_integrator(2) == LEAPFROG)
 			integrator_name = "LEAPFROG";
-		else if (this->get_integrator() == TWOMN)
+		else if (this->get_integrator(2) == TWOMN)
 			integrator_name = "2MN";
 		else {
 			logger.fatal() << "Fail in getting integrator information!";

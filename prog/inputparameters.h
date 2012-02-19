@@ -145,7 +145,7 @@ public:
 	int get_source_pos_spatial() const;
 	int get_source_pos_temporal() const;
 	int get_corr_dir() const;
-	int get_integrator() const;
+	int get_integrator(int which) const;
 	int get_num_timescales() const;
 	hmc_float get_lambda1() const;
 	hmc_float get_lambda2() const;
@@ -340,7 +340,8 @@ private:
 	int pointsource_z;
 	int pointsource_t;
 	int corr_dir;
-	int integrator;
+	int integrator1;
+	int integrator2;
 	void val_assign(hmc_float* out, std::string line);
 	void val_assign(int * out, std::string line);
 	void sourcefilenumber_assign(std::string * out);
