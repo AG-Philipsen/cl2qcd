@@ -166,10 +166,23 @@ void Gaugefield_hmc::md_update_gaugefield(hmc_float eps){
 }
 
 void Gaugefield_hmc::integrator(usetimer * solvertimer){
-	if(get_parameters()->get_integrator() == LEAPFROG){
+	//CP: at the moment, one can only use the same type of integrator if one uses more then one timescale...
+	if (get_parameters()->get_num_timescales() == 2) {
+		if(!( get_parameters()->get_integrator(1) == LEAPFROG && get_parameters()->get_integrator(2) == LEAPFROG )){
+			logger.fatal() << "Different timescales must use the same integrator up to now!\nAborting...";
+			exit(1);
+		}
+	}
+	if (get_parameters()->get_num_timescales() == 2) {
+		if(!( get_parameters()->get_integrator(1) == TWOMN && get_parameters()->get_integrator(2) == TWOMN )){
+			logger.fatal() << "Different timescales must use the same integrator up to now!\nAborting...";
+			exit(1);
+		}
+	}
+	if(get_parameters()->get_integrator(1) == LEAPFROG){
 		this->leapfrog(solvertimer);
 	}
-	else if(get_parameters()->get_integrator() == TWOMN){
+	else if(get_parameters()->get_integrator(1) == TWOMN){
 		this->twomn(solvertimer);
 	}
 	return;
