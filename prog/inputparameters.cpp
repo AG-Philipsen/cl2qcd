@@ -1401,9 +1401,9 @@ void inputparameters::print_info_hmc(char* progname, ostream* os) const
 	*os << "## integrationsteps1  = " << this->get_integrationsteps1() << '\n';
 	//get integrator name
 	string integrator_name;
-	if(this->get_integrator() == LEAPFROG)
+	if(this->get_integrator(1) == LEAPFROG)
 		integrator_name = "LEAPFROG";
-	else if (this->get_integrator() == TWOMN)
+	else if (this->get_integrator(1) == TWOMN)
 		integrator_name = "2MN";
 	else {
 		logger.fatal() << "Fail in getting integrator information!";
@@ -1415,9 +1415,9 @@ void inputparameters::print_info_hmc(char* progname, ostream* os) const
 	if(this->get_num_timescales() == 2){
 		*os << "## integrationsteps2  = " << this->get_integrationsteps2()<< '\n';
 		//get integrator name
-		if(this->get_integrator() == LEAPFROG)
+		if(this->get_integrator(2) == LEAPFROG)
 			integrator_name = "LEAPFROG";
-		else if (this->get_integrator() == TWOMN)
+		else if (this->get_integrator(2) == TWOMN)
 			integrator_name = "2MN";
 		else {
 			logger.fatal() << "Fail in getting integrator information!";
