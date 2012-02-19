@@ -51,7 +51,7 @@ inline void nr3_init_state( hmc_ocl_ran * const state, const cl_ulong seed )
 	//CP: if one wants to compare exact numbers to the tmlqcd code, one 
 	//    should use these to have the same seeds for the random numbers
 	///@todo take this out in the end
-	bool compare_to_tmlqcd = true;
+	bool compare_to_tmlqcd = false;
 	if(compare_to_tmlqcd){
 	  CLU_VEC(*state, 0) = 1234567;
 	  CLU_VEC(*state, 1)= 8912345;

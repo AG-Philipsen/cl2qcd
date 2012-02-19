@@ -333,8 +333,8 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 		if( clerr == CL_SUCCESS ) {
 			char* name = new char[nameSize];
 			clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, nameSize, name, &nameSize );
-			//if( clerr == CL_SUCCESS )
-			//	logger.trace() << "Queued Kernel: " << name;
+			if( clerr == CL_SUCCESS )
+				logger.trace() << "Queued Kernel: " << name;
 			delete[] name;
 		}
 	}
@@ -453,8 +453,8 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 		if( clerr == CL_SUCCESS ) {
 			char* name = new char[nameSize];
 			clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, nameSize, name, &nameSize );
-			//if( clerr == CL_SUCCESS )
-			//	logger.trace() << "Queued Kernel: " << name;
+			if( clerr == CL_SUCCESS )
+				logger.trace() << "Queued Kernel: " << name;
 			delete[] name;
 		}
 	}

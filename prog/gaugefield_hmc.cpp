@@ -45,17 +45,13 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 	size_t gfsize = get_parameters()->get_gf_buf_size();
 	size_t gmsize = get_parameters()->get_gm_buf_size();
 
-	get_task_hmc(0)->copy_buffer_on_device(*(get_task_hmc(0)->get_gaugefield()), get_task_hmc(0)->get_clmem_new_u(), gfsize);
-
 	logger.debug() << "\tinit spinorfield and gaugemomentum" ;
 	this->init_gaugemomentum_spinorfield();
 	
 	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
 	//copy u->u' p->p' for the integrator
-	//	get_task_hmc(0)->copy_buffer_on_device(*(get_task_hmc(0)->get_gaugefield()), get_task_hmc(0)->get_clmem_new_u(), gfsize);
+	get_task_hmc(0)->copy_buffer_on_device(*(get_task_hmc(0)->get_gaugefield()), get_task_hmc(0)->get_clmem_new_u(), gfsize);
 	get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_p(), get_task_hmc(0)->get_clmem_new_p(), gmsize);
-	
-
 
 	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
 	this->integrator(solver_timer);
@@ -115,12 +111,8 @@ void Gaugefield_hmc::calc_total_force(usetimer * solvertimer)
 }
 
 void Gaugefield_hmc::md_update_gaugemomentum(hmc_float eps, usetimer * solvertimer){
-  //	calc_total_force(solvertimer);
-  get_task_hmc(0)->set_zero_clmem_force_device();
-  get_task_hmc(0)->calc_gauge_force();
-	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
-  get_task_hmc(0)->set_zero_clmem_force_device();
-  this->fermion_forces_call(solvertimer);
+	get_task_hmc(0)->set_zero_clmem_force_device();
+	calc_total_force(solvertimer);
 	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
 	return;
 }

@@ -9,7 +9,7 @@ spinor inline dslash_eoprec_local_0(__global const spinorfield_eoprec * const re
 {
 	spinor out_tmp, plus;
 	//this is used to save the idx of the neighbors
-	st_idx idx_tmp;
+	st_idx idx_neigh;
 	dir_idx dir;
 	site_idx nn_eo;
 	su3vec psi, phi;
@@ -25,9 +25,9 @@ spinor inline dslash_eoprec_local_0(__global const spinorfield_eoprec * const re
 	dir = TDIR;
 	///////////////////////////////////
 	//mu = +0
-	idx_tmp = get_neighbor_from_st_idx(idx_arg, dir);
+	idx_neigh = get_neighbor_from_st_idx(idx_arg, dir);
 	//transform normal indices to eoprec index
-	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
+	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
 	U = field[get_link_idx(dir, idx_arg)];
 	//if chemical potential is activated, U has to be multiplied by appropiate factor
@@ -65,11 +65,11 @@ spinor inline dslash_eoprec_local_0(__global const spinorfield_eoprec * const re
 
 	/////////////////////////////////////
 	//mu = -0
-	idx_tmp = get_lower_neighbor_from_st_idx(idx_arg, dir);
+	idx_neigh = get_lower_neighbor_from_st_idx(idx_arg, dir);
 	//transform normal indices to eoprec index
-	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
+	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_link_idx(dir, idx_tmp)];
+	U = field[get_link_idx(dir, idx_neigh)];
 	//if chemical potential is activated, U has to be multiplied by appropiate factor
 	//this is the same as at mu=0 in the imag. case, since U is taken to be U^+ later:
 	//  (exp(iq)U)^+ = exp(-iq)U^+
@@ -108,27 +108,13 @@ spinor inline dslash_eoprec_local_0(__global const spinorfield_eoprec * const re
 	out_tmp.e1 = su3vec_acc(out_tmp.e1, psi);
 	out_tmp.e3 = su3vec_dim(out_tmp.e3, psi);
 	
-	/* int n, t; */
-	/* n = idx_arg.space; */
-	/* t = idx_arg.time; */
-
-	/* if(nn_eo == 0){ */
-	/*   //print_matrixsu3(U); */
-	/*   printf("dslash at site: %i %i %i\n", n,t, get_global_pos(n,t)); */
-	/* printf("sq: %.20f\n", spinor_squarenorm(out_tmp)); */
-	/* printf("neighbor: %i %i\n", idx_tmp.space, idx_tmp.time); */
-	//printf("eo idx: %i \n", nn_eo);
-
-	//print_spinor(out_tmp);
-
-	//}
 	return out_tmp;
 }
 
 spinor inline dslash_eoprec_local_1(__global const spinorfield_eoprec * const restrict in, __global ocl_s_gaugefield const * const restrict field, const st_idx idx_arg)
 {
 	//this is used to save the idx of the neighbors
-	st_idx idx_tmp;
+	st_idx idx_neigh;
 
 	spinor out_tmp, plus;
 	dir_idx dir;
@@ -147,9 +133,9 @@ spinor inline dslash_eoprec_local_1(__global const spinorfield_eoprec * const re
 
 	///////////////////////////////////
 	// mu = +1
-	idx_tmp = get_neighbor_from_st_idx(idx_arg, dir);
+	idx_neigh = get_neighbor_from_st_idx(idx_arg, dir);
 	//transform normal indices to eoprec index
-	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
+	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
 	U = field[get_link_idx(dir, idx_arg)];
 	bc_tmp.re = KAPPA_SPATIAL_RE;
@@ -176,11 +162,11 @@ spinor inline dslash_eoprec_local_1(__global const spinorfield_eoprec * const re
 
 	///////////////////////////////////
 	//mu = -1
-	idx_tmp = get_lower_neighbor_from_st_idx(idx_arg, dir);
+	idx_neigh = get_lower_neighbor_from_st_idx(idx_arg, dir);
 	//transform normal indices to eoprec index
-	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
+	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_link_idx(dir, idx_tmp)];
+	U = field[get_link_idx(dir, idx_neigh)];
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = MKAPPA_SPATIAL_IM;
@@ -210,7 +196,7 @@ spinor inline dslash_eoprec_local_1(__global const spinorfield_eoprec * const re
 spinor inline dslash_eoprec_local_2(__global const spinorfield_eoprec * const restrict in, __global ocl_s_gaugefield const * const restrict field, const st_idx idx_arg)
 {
 	//this is used to save the idx of the neighbors
-	st_idx idx_tmp;
+	st_idx idx_neigh;
 
 	spinor out_tmp, plus;
 	dir_idx dir;
@@ -228,9 +214,9 @@ spinor inline dslash_eoprec_local_2(__global const spinorfield_eoprec * const re
 
 	///////////////////////////////////
 	// mu = +2
-	idx_tmp = get_neighbor_from_st_idx(idx_arg, dir);
+	idx_neigh = get_neighbor_from_st_idx(idx_arg, dir);
 	//transform normal indices to eoprec index
-	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
+	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
 	U = field[get_link_idx(dir, idx_arg)];
 	bc_tmp.re = KAPPA_SPATIAL_RE;
@@ -257,11 +243,11 @@ spinor inline dslash_eoprec_local_2(__global const spinorfield_eoprec * const re
 
 	///////////////////////////////////
 	//mu = -2
-	idx_tmp = get_lower_neighbor_from_st_idx(idx_arg, dir);
+	idx_neigh = get_lower_neighbor_from_st_idx(idx_arg, dir);
 	//transform normal indices to eoprec index
-	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
+	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_link_idx(dir, idx_tmp)];
+	U = field[get_link_idx(dir, idx_neigh)];
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = MKAPPA_SPATIAL_IM;
@@ -291,7 +277,7 @@ spinor inline dslash_eoprec_local_2(__global const spinorfield_eoprec * const re
 spinor inline dslash_eoprec_local_3(__global const spinorfield_eoprec * const restrict in, __global ocl_s_gaugefield const * const restrict field, const st_idx idx_arg)
 {
 	//this is used to save the idx of the neighbors
-	st_idx idx_tmp;
+	st_idx idx_neigh;
 
 	spinor out_tmp, plus;
 	dir_idx dir;
@@ -309,9 +295,9 @@ spinor inline dslash_eoprec_local_3(__global const spinorfield_eoprec * const re
 
 	///////////////////////////////////
 	// mu = +3
-	idx_tmp = get_neighbor_from_st_idx(idx_arg, dir);
+	idx_neigh = get_neighbor_from_st_idx(idx_arg, dir);
 	//transform normal indices to eoprec index
-	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
+	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
 	U = field[get_link_idx(dir, idx_arg)];
 	bc_tmp.re = KAPPA_SPATIAL_RE;
@@ -338,11 +324,11 @@ spinor inline dslash_eoprec_local_3(__global const spinorfield_eoprec * const re
 
 	///////////////////////////////////
 	//mu = -3
-	idx_tmp = get_lower_neighbor_from_st_idx(idx_arg, dir);
+	idx_neigh = get_lower_neighbor_from_st_idx(idx_arg, dir);
 	//transform normal indices to eoprec index
-	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
+	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = get_spinor_from_eoprec_field(in, nn_eo);
-	U = field[get_link_idx(dir, idx_tmp)];
+	U = field[get_link_idx(dir, idx_neigh)];
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = MKAPPA_SPATIAL_IM;
