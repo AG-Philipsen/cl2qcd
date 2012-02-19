@@ -261,20 +261,30 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		int steps = get_parameters()->get_integrationsteps1();
 		hmc_float stepsize = get_parameters()->get_tau() / ((hmc_float) steps);
 		hmc_float stepsize_half = 0.5 * stepsize;
-		hmc_float lambda_times_stepsize = stepsize*get_parameters()->get_lambda1();
-		hmc_float one_minus_2_lambda = 1. - 2.*get_parameters()->get_lambda1();
+		hmc_float lambda_times_stepsize = stepsize*0.19;//get_parameters()->get_lambda1();
+		hmc_float one_minus_2_lambda = 1. - 2.*0.19;//get_parameters()->get_lambda1();
+		hmc_float one_minus_2_lambda_times_stepsize = one_minus_2_lambda * stepsize;
 		
+		if(logger.beDebug()){
+		  logger.debug()<< "2mn parameters:";
+		  logger.debug() << "stepsize: " << stepsize;
+		  logger.debug() << "stepsize_half: " << stepsize_half;
+		  logger.debug() << "lambda*stepsize " << lambda_times_stepsize;
+		  logger.debug() << "1-2lambda: " << one_minus_2_lambda;
+		}
+
+
 		logger.debug() << "\t\tinitial step:";
 		md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
 		md_update_gaugefield(stepsize_half);
-		md_update_gaugemomentum(one_minus_2_lambda, solvertimer);
+		md_update_gaugemomentum(one_minus_2_lambda_times_stepsize, solvertimer);
 		md_update_gaugefield(stepsize_half);
 		
 		if(steps > 1) logger.debug() << "\t\tperform " << steps - 1 << " intermediate steps " ;
 		for(int k = 1; k < steps; k++) {
 			md_update_gaugemomentum(2.*lambda_times_stepsize, solvertimer);
 			md_update_gaugefield(stepsize_half);
-			md_update_gaugemomentum(one_minus_2_lambda, solvertimer);
+			md_update_gaugemomentum(one_minus_2_lambda_times_stepsize, solvertimer);
 			md_update_gaugefield(stepsize_half);
 		}
 		logger.debug() << "\t\tfinal step" ;
@@ -301,6 +311,8 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		hmc_float one_minus_2_lambda = 1. - 2.*get_parameters()->get_lambda1();
 		hmc_float lambda_times_stepsize2 = stepsize2*get_parameters()->get_lambda2();
 		hmc_float one_minus_2_lambda2 = 1. - 2.*get_parameters()->get_lambda2();
+		hmc_float one_minus_2_lambda_times_stepsize = one_minus_2_lambda * stepsize;
+		hmc_float one_minus_2_lambda2_times_stepsize = one_minus_2_lambda2 * stepsize;
 
 		logger.debug() << "\t\tinitial step:";
 		//this corresponds to V_s2(lambda*deltaTau)
@@ -310,17 +322,17 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		for(int l = 0; l < m; l++) {
 			md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
 			md_update_gaugefield(stepsize_half);
-			md_update_gaugemomentum(one_minus_2_lambda, solvertimer);
+			md_update_gaugemomentum(one_minus_2_lambda_times_stepsize, solvertimer);
 			md_update_gaugefield(stepsize_half);
 			md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
 		}
 		//this corresponds to V_s2( ( 1 - 2lambda) *deltaTau)
-		md_update_gaugemomentum_fermion(one_minus_2_lambda2, solvertimer);
+		md_update_gaugemomentum_fermion(one_minus_2_lambda2_times_stepsize, solvertimer);
 		//now, m steps "more" are performed for the gauge-part (again)
 		for(int l = 0; l < m; l++) {
 			md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
 			md_update_gaugefield(stepsize_half);
-			md_update_gaugemomentum(one_minus_2_lambda, solvertimer);
+			md_update_gaugemomentum(one_minus_2_lambda_times_stepsize, solvertimer);
 			md_update_gaugefield(stepsize_half);
 			md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
 		}
@@ -333,15 +345,15 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 			for(int l = 0; l < m; l++) {
 				md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
 				md_update_gaugefield(stepsize_half);
-				md_update_gaugemomentum(one_minus_2_lambda, solvertimer);
+				md_update_gaugemomentum(one_minus_2_lambda_times_stepsize, solvertimer);
 				md_update_gaugefield(stepsize_half);
 				md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
 			}
-			md_update_gaugemomentum_fermion(one_minus_2_lambda2, solvertimer);
+			md_update_gaugemomentum_fermion(one_minus_2_lambda2_times_stepsize, solvertimer);
 			for(int l = 0; l < m; l++) {
 				md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
 				md_update_gaugefield(stepsize_half);
-				md_update_gaugemomentum(one_minus_2_lambda, solvertimer);
+				md_update_gaugemomentum(one_minus_2_lambda_times_stepsize, solvertimer);
 				md_update_gaugefield(stepsize_half);
 				md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
 			}
@@ -349,7 +361,7 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		logger.debug() << "\t\tfinal step" ;
 		//this corresponds to the missing V_s2(lambda*deltaTau)
 		md_update_gaugemomentum_fermion(lambda_times_stepsize2, solvertimer);
-		logger.debug() << "\t\tfinished leapfrog";
+		logger.debug() << "\t\tfinished 2MN";
 	}
 	else 
 		Print_Error_Message("More than 2 timescales is not implemented yet. Aborting...");
