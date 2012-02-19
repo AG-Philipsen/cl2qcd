@@ -1137,7 +1137,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-//    cout << "resid at iter " << iter << " is: " << resid << endl;
+			logger.debug() << "resid: " << resid;
 
 			if(resid < prec) {
 				f(inout, clmem_aux, gf);
@@ -1335,11 +1335,12 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 {
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
 	if (get_parameters()->get_use_bicgstab_save()) {
-		cl_event start_event;
 		klepsydra::Monotonic timer;
 		if(logger.beInfo()) {
+			cl_event start_event;
 			clEnqueueMarker(get_queue(), &start_event);
 			clSetEventCallback(start_event, CL_COMPLETE, resetTimerOnComplete, &timer);
+			clReleaseEvent(start_event);
 		}
 		//CP: these have to be on the host
 		hmc_float resid;
@@ -1402,6 +1403,8 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
+			logger.debug() << "resid: " << resid;
+
 			if(resid < prec) {
 				++retests;
 
@@ -1421,7 +1424,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 						unsigned refreshs = iter / get_parameters()->get_iter_refresh() + 1;
 						cl_ulong mf_flops = f.get_Flops();
 
-						cl_ulong total_flops = 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 3 * get_flop_size("product") + 2 * get_flop_size("saxsbypz_eoprec") + 2 * mf_flops + 2 * get_flop_size("saxpy") + get_flop_size("global_squarenorm_eoprec");
+						cl_ulong total_flops = 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 3 * get_flop_size("product") + 2 * get_flop_size("saxsbypz_eoprec") + 2 * mf_flops + 2 * get_flop_size("saxpy_eoprec") + get_flop_size("global_squarenorm_eoprec");
 						total_flops *= iter;
 
 						total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec"));
@@ -1443,11 +1446,12 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 	} else {
 		//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
 		//  In particular this version does not perform the check if the "real" residuum is sufficiently small!
-		cl_event start_event;
 		klepsydra::Monotonic timer;
 		if(logger.beInfo()) {
+			cl_event start_event;
 			clEnqueueMarker(get_queue(), &start_event);
 			clSetEventCallback(start_event, CL_COMPLETE, resetTimerOnComplete, &timer);
+			clReleaseEvent(start_event);
 		}
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
@@ -1466,7 +1470,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			hmc_float resid;
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-			//cout << resid << endl;
+			logger.debug() << "resid: " << resid;
 
 			if(resid < prec) {
 				// report on performance
@@ -1580,7 +1584,7 @@ int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem s
 		//set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-		//cout << "resid: " << resid << endl;
+		logger.debug() << "resid: " << resid;
 
 		if(resid < prec)
 			return iter;
@@ -1600,6 +1604,13 @@ int Opencl_Module_Fermions::cg_eoprec(const Matrix_Function & f, cl_mem inout, c
 {
 	//this corresponds to the above function
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
+	klepsydra::Monotonic timer;
+	if(logger.beInfo()) {
+		cl_event start_event;
+		clEnqueueMarker(get_queue(), &start_event);
+		clSetEventCallback(start_event, CL_COMPLETE, resetTimerOnComplete, &timer);
+		clReleaseEvent(start_event);
+	}
 	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter ++) {
 		if(iter % get_parameters()->get_iter_refresh() == 0) {
 			//rn = A*inout
@@ -1635,10 +1646,29 @@ int Opencl_Module_Fermions::cg_eoprec(const Matrix_Function & f, cl_mem inout, c
 		//set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-		// cout << "resid: " << resid << endl;
+		logger.debug() << "resid: " << resid;
 
-		if(resid < prec)
+		if(resid < prec) {
+			// report on performance
+			if(logger.beInfo()) {
+				// we are always synchroneous here, as we had to recieve the residium from the device
+				uint64_t duration = timer.getTime();
+
+				// calculate flops
+				unsigned refreshs = iter / get_parameters()->get_iter_refresh() + 1;
+				cl_ulong mf_flops = f.get_Flops();
+
+				cl_ulong total_flops = mf_flops + 3 * get_flop_size("scalar_product_eoprec") + 2 * get_flop_size("ratio") + 2 * get_flop_size("product") + 3 * get_flop_size("saxpy_eoprec");
+				total_flops *= iter;
+
+				total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
+
+				// report performanc
+				logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops.";
+			}
+
 			return iter;
+		}
 
 		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
 		set_complex_to_scalar_product_eoprec_device(clmem_rn_eoprec, clmem_rn_eoprec, clmem_rho_next);
