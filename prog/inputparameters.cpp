@@ -1343,8 +1343,34 @@ void inputparameters::print_info_hmc(char* progname) const
 	logger.info() << "## HMC steps  = " << this->get_hmcsteps();
 	logger.info() << "## # Timescales  = " << this->get_num_timescales();
 	logger.info() << "## integrationsteps1  = " << this->get_integrationsteps1();
-	if(this->get_num_timescales() == 2)
+	//get integrator name
+	string integrator_name;
+	if(this->get_integrator() == LEAPFROG)
+		integrator_name = "LEAPFROG";
+	else if (this->get_integrator() == TWOMN)
+		integrator_name = "2MN";
+	else {
+		logger.fatal() << "Fail in getting integrator information!";
+		logger.fatal() << "Aborting...";
+		exit(EXIT_INPUTPARAMETERS);
+	}
+	logger.info() << "## integrator1 = " << integrator_name;
+	logger.info() << "## lambda1 = " << get_lambda1();
+	if(this->get_num_timescales() == 2){
 		logger.info() << "## integrationsteps2  = " << this->get_integrationsteps2();
+		//get integrator name
+		if(this->get_integrator() == LEAPFROG)
+			integrator_name = "LEAPFROG";
+		else if (this->get_integrator() == TWOMN)
+			integrator_name = "2MN";
+		else {
+			logger.fatal() << "Fail in getting integrator information!";
+			logger.fatal() << "Aborting...";
+			exit(EXIT_INPUTPARAMETERS);
+		}
+		logger.info() << "## integrator2 = " << integrator_name;
+		logger.info() << "## lambda1 = " << get_lambda1();
+	}
 	logger.info() << "## **********************************************************";
 	logger.info() << "## precision used HMC-inversions = " << this->get_force_prec();
 	return;
