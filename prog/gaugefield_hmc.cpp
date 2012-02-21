@@ -126,6 +126,7 @@ void Gaugefield_hmc::md_update_gaugemomentum(hmc_float eps, usetimer * solvertim
 }
 
 void Gaugefield_hmc::md_update_gaugemomentum_gauge(hmc_float eps){
+  		logger.debug() << "update gauge with " << eps;
 	get_task_hmc(0)->set_zero_clmem_force_device();
 	get_task_hmc(0)->calc_gauge_force();
 	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
@@ -133,6 +134,7 @@ void Gaugefield_hmc::md_update_gaugemomentum_gauge(hmc_float eps){
 }
 
 void Gaugefield_hmc::md_update_gaugemomentum_fermion(hmc_float eps, usetimer * solvertimer){
+  		logger.debug() << "update fermion with " << eps;
 	get_task_hmc(0)->set_zero_clmem_force_device();
 	this->fermion_forces_call(solvertimer);
 	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
@@ -169,6 +171,7 @@ void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer){
 }
 
 void Gaugefield_hmc::md_update_gaugefield(hmc_float eps){
+    		logger.debug() << "update gf with " << eps;
 	get_task_hmc(0)->md_update_gaugefield_device(eps);
 	return;
 }
@@ -206,46 +209,41 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 		logger.debug() << "\t\tfinished leapfrog";
 	} 
 	else if (get_parameters()->get_num_timescales() == 2) {
-		int steps1 = get_parameters()->get_integrationsteps1();
-		int steps2 = get_parameters()->get_integrationsteps2();
-		
-		int mult = steps1 % steps2;
-		if( mult != 0) Print_Error_Message("integrationsteps1 must be a multiple of integrationssteps2, nothing else is implemented yet. Aborting...");
-		
-		//this is the number of int.steps for the fermion during one gauge-int.step
-		//this is done after hep-lat/0209037. See also hep-lat/0506011v2 for a more advanced version
-		int m = steps1/steps2;
-		
-		//this uses 2 timescales (more is not implemented yet): timescale1 for the gauge-part, timescale2 for the fermion part
-		hmc_float stepsize = get_parameters()->get_tau() / ((hmc_float) steps1);
-		hmc_float stepsize2 = get_parameters()->get_tau() / ((hmc_float) steps2);
-		hmc_float stepsize_half = 0.5 * stepsize;
-		hmc_float stepsize2_half = 0.5 * stepsize2;
+		logger.debug() << "start leapfrog with 2 timescales..";
+		//this uses 2 timescales (more is not implemented yet): timescale0 for the gauge-part, timescale1 for the fermion part
+ 		//this is done after hep-lat/0209037. See also hep-lat/0506011v2 for a more advanced version		
+
+		int n0 = get_parameters()->get_integrationsteps1();
+		int n1 = get_parameters()->get_integrationsteps2();
+		hmc_float deltaTau1 = get_parameters()->get_tau() / ((hmc_float) n1);
+		hmc_float deltaTau0 = deltaTau1 / ( (hmc_float) n0 );
+		hmc_float deltaTau0_half = 0.5 * deltaTau0;
+		hmc_float deltaTau1_half = 0.5 * deltaTau1;
 
 		logger.debug() << "\t\tinitial step:";
 		//this corresponds to V_s2(deltaTau/2)
-		md_update_gaugemomentum_fermion(stepsize2_half, solvertimer);
+		md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer);
 		//now, m steps "more" are performed for the gauge-part
 		//this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
-		for(int l = 0; l < m; l++) {
-			md_update_gaugemomentum_gauge(stepsize_half);
-			md_update_gaugefield(stepsize2);
-			md_update_gaugemomentum_gauge(stepsize_half);
+		for(int l = 0; l < n0; l++) {
+			md_update_gaugemomentum_gauge(deltaTau0_half);
+			md_update_gaugefield(deltaTau0);
+			md_update_gaugemomentum_gauge(deltaTau0_half);
 		}
-		if(steps2 > 1) logger.debug() << "\t\tperform " << steps2 - 1 << " intermediate steps " ;
-		for(int k = 1; k < steps2; k++) {
+		if(n1 > 1) logger.debug() << "\t\tperform " << n1 - 1 << " intermediate steps " ;
+		for(int k = 1; k < n1; k++) {
 			//this corresponds to V_s2(deltaTau)
-			md_update_gaugemomentum_fermion(stepsize2, solvertimer);
-			for(int l = 0; l < m; l++) {
+			md_update_gaugemomentum_fermion(deltaTau1, solvertimer);
+			for(int l = 0; l < n0; l++) {
 				//this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
-				md_update_gaugemomentum_gauge(stepsize_half);
-				md_update_gaugefield(stepsize2);
-				md_update_gaugemomentum_gauge(stepsize_half);
+				md_update_gaugemomentum_gauge(deltaTau0_half);
+				md_update_gaugefield(deltaTau0);
+				md_update_gaugemomentum_gauge(deltaTau0_half);
 			}
 		}
 		logger.debug() << "\t\tfinal step" ;
 		//this corresponds to the missing V_s2(deltaTau/2)
-		md_update_gaugemomentum_fermion(stepsize2_half, solvertimer);
+		md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer);
 		logger.debug() << "\t\tfinished 2MN";
 	}
 	else 
@@ -292,75 +290,69 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		logger.debug() << "\t\tfinished 2MN";
 	} 
 	else if (get_parameters()->get_num_timescales() == 2) {
-		int steps1 = get_parameters()->get_integrationsteps1();
-		int steps2 = get_parameters()->get_integrationsteps2();
-		
-		int mult = steps1 % steps2;
-		if( mult != 0) Print_Error_Message("integrationsteps1 must be a multiple of integrationssteps2, nothing else is implemented yet. Aborting...");
-		
-		//this is the number of int.steps for the fermion during one gauge-int.step
-		//this is done after hep-lat/0209037. See also hep-lat/0506011v2 for a more advanced version		
-		int m = steps1/steps2;
+ 		//this is done after hep-lat/0209037. See also hep-lat/0506011v2 for a more advanced version		
+		int n0 = get_parameters()->get_integrationsteps1();
+		int n1 = get_parameters()->get_integrationsteps2();
 		
 		//this uses 2 timescales (more is not implemented yet): timescale1 for the gauge-part, timescale2 for the fermion part
-		hmc_float stepsize = get_parameters()->get_tau() / ((hmc_float) steps1);
-		hmc_float stepsize2 = get_parameters()->get_tau() / ((hmc_float) steps2);
-		hmc_float stepsize_half = 0.5 * stepsize;
-		//hmc_float stepsize2_half = 0.5 * stepsize2;
-		hmc_float lambda_times_stepsize = stepsize*get_parameters()->get_lambda1();
+		hmc_float deltaTau1 = get_parameters()->get_tau() / ((hmc_float) n1);
+		//NOTE: With 2MN, the stepsize for the lower integration step is deltaTau1/(2 N0)!!
+		hmc_float deltaTau0= deltaTau1 / ( 2.* (hmc_float) n0 );
+		hmc_float deltaTau0_half = 0.5 * deltaTau0;
+		//hmc_float deltaTau1_half = 0.5 * deltaTau1;
+		hmc_float lambda_times_deltaTau0= deltaTau0*get_parameters()->get_lambda1();
 		hmc_float one_minus_2_lambda = 1. - 2.*get_parameters()->get_lambda1();
-		hmc_float lambda_times_stepsize2 = stepsize2*get_parameters()->get_lambda2();
+		hmc_float lambda_times_deltaTau1 = deltaTau1*get_parameters()->get_lambda2();
 		hmc_float one_minus_2_lambda2 = 1. - 2.*get_parameters()->get_lambda2();
-		hmc_float one_minus_2_lambda_times_stepsize = one_minus_2_lambda * stepsize;
-		hmc_float one_minus_2_lambda2_times_stepsize = one_minus_2_lambda2 * stepsize;
+		hmc_float one_minus_2_lambda_times_deltaTau0= one_minus_2_lambda * deltaTau0;
+		hmc_float one_minus_2_lambda2_times_deltaTau1 = one_minus_2_lambda2 * deltaTau1;
 
 		logger.debug() << "\t\tinitial step:";
 		//this corresponds to V_s2(lambda*deltaTau)
-		md_update_gaugemomentum_fermion(lambda_times_stepsize2, solvertimer);
-		//now, m steps "more" are performed for the gauge-part
+		md_update_gaugemomentum_fermion(lambda_times_deltaTau1, solvertimer);
+		//now, n0 steps "more" are performed for the gauge-part
 		//this corresponds to [exp(lambda*eps T(V_gauge) ) exp( eps/2 V ) exp( (1 - 2lamdba) *eps T(V_gauge) ) exp( eps/2 V ) exp( lamdba*eps T(V_gauge) ) ]^m
-		for(int l = 0; l < m; l++) {
-			md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
-			md_update_gaugefield(stepsize_half);
-			md_update_gaugemomentum(one_minus_2_lambda_times_stepsize, solvertimer);
-			md_update_gaugefield(stepsize_half);
-			md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
+		for(int l = 0; l < n0; l++) {
+			md_update_gaugemomentum_gauge(lambda_times_deltaTau0);
+			md_update_gaugefield(deltaTau0_half);
+			md_update_gaugemomentum_gauge(one_minus_2_lambda_times_deltaTau0);
+			md_update_gaugefield(deltaTau0_half);
+			md_update_gaugemomentum_gauge(lambda_times_deltaTau0);
 		}
 		//this corresponds to V_s2( ( 1 - 2lambda) *deltaTau)
-		md_update_gaugemomentum_fermion(one_minus_2_lambda2_times_stepsize, solvertimer);
+		md_update_gaugemomentum_fermion(one_minus_2_lambda2_times_deltaTau1, solvertimer);
 		//now, m steps "more" are performed for the gauge-part (again)
-		for(int l = 0; l < m; l++) {
-			md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
-			md_update_gaugefield(stepsize_half);
-			md_update_gaugemomentum(one_minus_2_lambda_times_stepsize, solvertimer);
-			md_update_gaugefield(stepsize_half);
-			md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
+		for(int l = 0; l < n0; l++) {
+			md_update_gaugemomentum_gauge(lambda_times_deltaTau0);
+			md_update_gaugefield(deltaTau0_half);
+			md_update_gaugemomentum_gauge(one_minus_2_lambda_times_deltaTau0);
+			md_update_gaugefield(deltaTau0_half);
+			md_update_gaugemomentum_gauge(lambda_times_deltaTau0);
 		}
 		//the last V_s2(lambda*deltaTau) can be pulled into the intermediate steps
-		
-		if(steps2 > 1) logger.debug() << "\t\tperform " << steps2 - 1 << " intermediate steps " ;
-		for(int k = 1; k < steps2; k++) {
+		if(n1 > 1) logger.debug() << "\t\tperform " << n1 - 1 << " intermediate steps " ;
+		for(int k = 1; k < n1; k++) {
 			//this corresponds to V_s2(deltaTau)
-			md_update_gaugemomentum_fermion(2.*lambda_times_stepsize2, solvertimer);
-			for(int l = 0; l < m; l++) {
-				md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
-				md_update_gaugefield(stepsize_half);
-				md_update_gaugemomentum(one_minus_2_lambda_times_stepsize, solvertimer);
-				md_update_gaugefield(stepsize_half);
-				md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
+			md_update_gaugemomentum_fermion(2.*lambda_times_deltaTau1, solvertimer);
+			for(int l = 0; l < n0; l++) {
+				md_update_gaugemomentum_gauge(lambda_times_deltaTau0);
+				md_update_gaugefield(deltaTau0_half);
+				md_update_gaugemomentum_gauge(one_minus_2_lambda_times_deltaTau0);
+				md_update_gaugefield(deltaTau0_half);
+				md_update_gaugemomentum_gauge(lambda_times_deltaTau0);
 			}
-			md_update_gaugemomentum_fermion(one_minus_2_lambda2_times_stepsize, solvertimer);
-			for(int l = 0; l < m; l++) {
-				md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
-				md_update_gaugefield(stepsize_half);
-				md_update_gaugemomentum(one_minus_2_lambda_times_stepsize, solvertimer);
-				md_update_gaugefield(stepsize_half);
-				md_update_gaugemomentum(lambda_times_stepsize, solvertimer);
+			md_update_gaugemomentum_fermion(one_minus_2_lambda2_times_deltaTau1, solvertimer);
+			for(int l = 0; l < n0; l++) {
+				md_update_gaugemomentum_gauge(lambda_times_deltaTau0);
+				md_update_gaugefield(deltaTau0_half);
+				md_update_gaugemomentum_gauge(one_minus_2_lambda_times_deltaTau0);
+				md_update_gaugefield(deltaTau0_half);
+				md_update_gaugemomentum_gauge(lambda_times_deltaTau0);
 			}
 		}
 		logger.debug() << "\t\tfinal step" ;
 		//this corresponds to the missing V_s2(lambda*deltaTau)
-		md_update_gaugemomentum_fermion(lambda_times_stepsize2, solvertimer);
+		md_update_gaugemomentum_fermion(lambda_times_deltaTau1, solvertimer);
 		logger.debug() << "\t\tfinished 2MN";
 	}
 	else 

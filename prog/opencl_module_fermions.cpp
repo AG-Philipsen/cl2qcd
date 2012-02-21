@@ -1403,7 +1403,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-			logger.debug() << "resid: " << resid;
+			//logger.debug() << "resid: " << resid;
 
 			if(resid < prec) {
 				++retests;
@@ -1470,7 +1470,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			hmc_float resid;
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-			logger.debug() << "resid: " << resid;
+			//logger.debug() << "resid: " << resid;
 
 			if(resid < prec) {
 				// report on performance
