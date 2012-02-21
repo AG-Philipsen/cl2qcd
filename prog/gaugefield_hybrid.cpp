@@ -619,9 +619,9 @@ void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield,
 						//CP: interchange x<->z temporarily because spacepos has to be z + y * NSPACE + x * NSPACE * NSPACE!!
 						int coord[4];
 						coord[0] = t;
-						coord[1] = x;
+						coord[1] = z;
 						coord[2] = y;
-						coord[3] = z;
+						coord[3] = x;
 						int spacepos = get_nspace(coord, parameters);
 
 						//copy hmc_su3matrix to Matrixsu3 format

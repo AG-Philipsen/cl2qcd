@@ -45,17 +45,13 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 	size_t gfsize = get_parameters()->get_gf_buf_size();
 	size_t gmsize = get_parameters()->get_gm_buf_size();
 
-	get_task_hmc(0)->copy_buffer_on_device(*(get_task_hmc(0)->get_gaugefield()), get_task_hmc(0)->get_clmem_new_u(), gfsize);
-
 	logger.debug() << "\tinit spinorfield and gaugemomentum" ;
 	this->init_gaugemomentum_spinorfield();
 	
 	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
 	//copy u->u' p->p' for the integrator
-	//	get_task_hmc(0)->copy_buffer_on_device(*(get_task_hmc(0)->get_gaugefield()), get_task_hmc(0)->get_clmem_new_u(), gfsize);
+	get_task_hmc(0)->copy_buffer_on_device(*(get_task_hmc(0)->get_gaugefield()), get_task_hmc(0)->get_clmem_new_u(), gfsize);
 	get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_p(), get_task_hmc(0)->get_clmem_new_p(), gmsize);
-	
-
 
 	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
 	this->integrator(solver_timer);
@@ -115,12 +111,8 @@ void Gaugefield_hmc::calc_total_force(usetimer * solvertimer)
 }
 
 void Gaugefield_hmc::md_update_gaugemomentum(hmc_float eps, usetimer * solvertimer){
-  //	calc_total_force(solvertimer);
-  get_task_hmc(0)->set_zero_clmem_force_device();
-  get_task_hmc(0)->calc_gauge_force();
-	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
-  get_task_hmc(0)->set_zero_clmem_force_device();
-  this->fermion_forces_call(solvertimer);
+	get_task_hmc(0)->set_zero_clmem_force_device();
+	calc_total_force(solvertimer);
 	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
 	return;
 }
@@ -177,10 +169,23 @@ void Gaugefield_hmc::md_update_gaugefield(hmc_float eps){
 }
 
 void Gaugefield_hmc::integrator(usetimer * solvertimer){
-	if(get_parameters()->get_integrator() == LEAPFROG){
+	//CP: at the moment, one can only use the same type of integrator if one uses more then one timescale...
+	if (get_parameters()->get_num_timescales() == 2) {
+		if(!( get_parameters()->get_integrator(1) == LEAPFROG && get_parameters()->get_integrator(2) == LEAPFROG )){
+			logger.fatal() << "Different timescales must use the same integrator up to now!\nAborting...";
+			exit(1);
+		}
+	}
+	if (get_parameters()->get_num_timescales() == 2) {
+		if(!( get_parameters()->get_integrator(1) == TWOMN && get_parameters()->get_integrator(2) == TWOMN )){
+			logger.fatal() << "Different timescales must use the same integrator up to now!\nAborting...";
+			exit(1);
+		}
+	}
+	if(get_parameters()->get_integrator(1) == LEAPFROG){
 		this->leapfrog(solvertimer);
 	}
-	else if(get_parameters()->get_integrator() == TWOMN){
+	else if(get_parameters()->get_integrator(1) == TWOMN){
 		this->twomn(solvertimer);
 	}
 	return;
@@ -191,6 +196,7 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already when this function is called the first time
 
 	if(get_parameters()->get_num_timescales() == 1) {
+		logger.debug() << "\t\tstarting leapfrog...";
 		//this is the simplest case, just using 1 timescale
 		int steps = get_parameters()->get_integrationsteps1();
 		hmc_float stepsize = get_parameters()->get_tau() / ((hmc_float) steps);
@@ -206,7 +212,7 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 		logger.debug() << "\t\tfinal step" ;
 		md_update_gaugefield(stepsize);
 		md_update_gaugemomentum(stepsize_half, solvertimer);
-		logger.debug() << "\t\tfinished leapfrog";
+		logger.debug() << "\t\t...finished leapfrog";
 	} 
 	else if (get_parameters()->get_num_timescales() == 2) {
 		logger.debug() << "start leapfrog with 2 timescales..";
@@ -253,8 +259,8 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 void Gaugefield_hmc::twomn(usetimer * solvertimer)
 {
 	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already
-
 	if(get_parameters()->get_num_timescales() == 1) {
+		logger.debug() << "\t\tstarting 2MN...";
 		//this is the simplest case, just using 1 timescale
 		int steps = get_parameters()->get_integrationsteps1();
 		hmc_float stepsize = get_parameters()->get_tau() / ((hmc_float) steps);
@@ -262,15 +268,6 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		hmc_float lambda_times_stepsize = stepsize*0.19;//get_parameters()->get_lambda1();
 		hmc_float one_minus_2_lambda = 1. - 2.*0.19;//get_parameters()->get_lambda1();
 		hmc_float one_minus_2_lambda_times_stepsize = one_minus_2_lambda * stepsize;
-		
-		if(logger.beDebug()){
-		  logger.debug()<< "2mn parameters:";
-		  logger.debug() << "stepsize: " << stepsize;
-		  logger.debug() << "stepsize_half: " << stepsize_half;
-		  logger.debug() << "lambda*stepsize " << lambda_times_stepsize;
-		  logger.debug() << "1-2lambda: " << one_minus_2_lambda;
-		}
-
 
 		logger.debug() << "\t\tinitial step:";
 		md_update_gaugemomentum(lambda_times_stepsize, solvertimer);

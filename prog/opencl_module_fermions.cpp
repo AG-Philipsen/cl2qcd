@@ -756,49 +756,11 @@ void Opencl_Module_Fermions::Aee(cl_mem in, cl_mem out, cl_mem gf)
 		dslash_eoprec_device(clmem_tmp_eoprec_1, out, gf, even);
 		saxpy_eoprec_device(out, in, clmem_one, out);
 	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-	  dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
-	  	M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
+		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
+		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
 		dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even);
 		M_tm_sitediagonal_device(in, clmem_tmp_eoprec_1);
-				saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
-
-		//without dslash
-		//M_tm_inverse_sitediagonal_device(in, clmem_tmp_eoprec_1);
-	        //M_tm_sitediagonal_device(in, out);
-		//		saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
-		//saxpy_eoprec_device(clmem_tmp_eoprec_1, out , clmem_one, out); 
-
-		//apply only one dslash
-	  //	  dslash_eoprec_device(in, out, gf, odd);
-
-
-		//M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
-	        //M_tm_sitediagonal_device(in, out);
-		//saxpy_eoprec_device(clmem_tmp_eoprec_2, out , clmem_one, out); 
-
-		//one more
-	  //  dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
-	  //	M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, out);
-
-		//two more
-		//dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
-		//M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
-		//dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even);
-
-		//three more
-		//dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
-		//M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
-		//dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even);
-
-		//four more
-		//dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
-		//dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, gf, even);
-		//M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_2, out);
-
-		//five more
-		//dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
-		//dslash_eoprec_device(clmem_tmp_eoprec_1, out, gf, even);
-
+		saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
 	}
 }
 

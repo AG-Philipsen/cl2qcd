@@ -90,7 +90,7 @@ typedef struct {
  * NOTE: the ifs and elses used here should be removed by the compiler
  *       Nevertheless, one could also change to a permanent convention here
  */
-#define TMLQCD_CONV true
+#define TMLQCD_CONV false
 
 /** spatial coordinates <-> spatial_idx
  *@todo this can be generalize using the definitions of the spatial directions
