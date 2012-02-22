@@ -150,6 +150,7 @@ public:
 	int get_num_timescales() const;
 	hmc_float get_lambda0() const;
 	hmc_float get_lambda1() const;
+	hmc_float get_lambda2() const;
 
 	bool get_use_same_rnd_numbers() const;
 	bool get_profile_solver() const;
@@ -333,6 +334,7 @@ private:
 	int integrationsteps2;
 	hmc_float lambda0;
 	hmc_float lambda1;
+	hmc_float lambda2;
 	bool use_cg;
 	bool use_bicgstab_save;
 	bool use_pointsource;
@@ -344,6 +346,7 @@ private:
 	int corr_dir;
 	int integrator0;
 	int integrator1;
+	int integrator2;
 	void val_assign(hmc_float* out, std::string line);
 	void val_assign(int * out, std::string line);
 	void sourcefilenumber_assign(std::string * out);
