@@ -76,8 +76,6 @@ private:
 	spinor * sf_in3_eo;
 	spinor * sf_in4_eo;
 	hmc_float * sf_out_eo;
-	Matrixsu3 * gf_in;
-
 };
 
 BOOST_AUTO_TEST_CASE( F_FERMION )

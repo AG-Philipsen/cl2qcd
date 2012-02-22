@@ -1,7 +1,7 @@
 #input file 1 for f_gauge_test
 
+# set startcondition to cold or hot to start with different gaugefield
 startcondition=continue
-#startcondition=cold
 sourcefile=conf.00200
 
 kappa=0.15
