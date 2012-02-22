@@ -90,6 +90,7 @@ public:
 	int get_heatbathsteps() const;
 	int get_overrelaxsteps() const;
 	int get_hmcsteps() const;
+	int get_integrationsteps2() const;
 	int get_integrationsteps1() const;
 	int get_integrationsteps0() const;
 	hmc_float get_solver_prec() const;
@@ -329,6 +330,7 @@ private:
 	int num_timescales;
 	int integrationsteps0;
 	int integrationsteps1;
+	int integrationsteps2;
 	hmc_float lambda0;
 	hmc_float lambda1;
 	bool use_cg;

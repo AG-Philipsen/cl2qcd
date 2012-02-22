@@ -730,6 +730,10 @@ int inputparameters::get_integrationsteps1() const
 	return integrationsteps1;
 }
 
+int inputparameters::get_integrationsteps2() const
+{
+	return integrationsteps2;
+}
 
 int inputparameters::get_writefrequency() const
 {
