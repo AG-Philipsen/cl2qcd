@@ -61,8 +61,6 @@ def main(datafile):
 	ax1.set_xlabel('Lattice Size')
 	ax1.set_ylabel('Gflops')
 	ax1.set_ylim(bottom=1)
-	fig.legend((line1),
-	           ('Gflops'))
 
 	plt.show()
 
