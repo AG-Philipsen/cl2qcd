@@ -65,6 +65,8 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
 {
 	logger.info() << "Init CPU device";
 	//params.print_info_inverter("m_gpu");
+	// reset RNG
+	rnd = Random(13);
 	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables_from_task(0, 0);
@@ -85,6 +87,8 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
 
 	logger.info() << "Init GPU device";
 	//params.print_info_inverter("m_gpu");
+	// reset RNG
+	rnd = Random(13);
 	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
 	logger.info() << "gaugeobservables: ";
 	dummy.print_gaugeobservables_from_task(0, 0);
