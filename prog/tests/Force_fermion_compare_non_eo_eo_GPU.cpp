@@ -634,24 +634,16 @@ void Dummyfield::fill_buffers()
 
 	//use the variable use_cg to switch between cold and random input sf
 	if(get_parameters()->get_use_cg() == true) {
-		fill_sf_with_one(sf_in1_eo, NUM_ELEMENTS_SF_EO);
-		fill_sf_with_one(sf_in3_eo, NUM_ELEMENTS_SF_EO);
-		fill_sf_with_one(sf_in2_eo, NUM_ELEMENTS_SF_EO);
-		fill_sf_with_one(sf_in4_eo, NUM_ELEMENTS_SF_EO);
-		fill_sf_with_one(sf_in1_noneo, NUM_ELEMENTS_SF_NON_EO);
-		fill_sf_with_one(sf_in2_noneo, NUM_ELEMENTS_SF_NON_EO);
+		fill_eo_sf_with_specific_float(sf_in1_eo, sf_in2_eo, get_parameters());
+		fill_eo_sf_with_specific_float(sf_in3_eo, sf_in4_eo, get_parameters());
+		fill_noneo_sf_with_specific_float(sf_in1_noneo, get_parameters());
+		fill_noneo_sf_with_specific_float(sf_in2_noneo, get_parameters());
 	} else {
 		fill_sf_with_random_eo(sf_in1_eo, sf_in2_eo, NUM_ELEMENTS_SF_EO, 123456);
 		fill_sf_with_random_eo(sf_in3_eo, sf_in4_eo, NUM_ELEMENTS_SF_EO, 789101);
 		fill_sf_with_random_noneo(sf_in1_noneo, NUM_ELEMENTS_SF_NON_EO, 123456, get_parameters());
 		fill_sf_with_random_noneo(sf_in2_noneo, NUM_ELEMENTS_SF_NON_EO, 789101, get_parameters());
 	}
-
-	fill_eo_sf_with_specific_float(sf_in1_eo, sf_in2_eo, get_parameters());
-	fill_eo_sf_with_specific_float(sf_in3_eo, sf_in4_eo, get_parameters());
-	fill_noneo_sf_with_specific_float(sf_in1_noneo, get_parameters());
-	fill_noneo_sf_with_specific_float(sf_in2_noneo, get_parameters());
-
 
 	BOOST_REQUIRE(sf_in1_eo);
 	BOOST_REQUIRE(sf_in2_eo);
