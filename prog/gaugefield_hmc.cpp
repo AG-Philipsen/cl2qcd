@@ -218,31 +218,37 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 		hmc_float deltaTau0_half = 0.5 * deltaTau0;
 		hmc_float deltaTau1_half = 0.5 * deltaTau1;
 
-		logger.debug() << "\t\tinitial step:";
-		//this corresponds to V_s2(deltaTau/2)
-		md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer);
-		//now, m steps "more" are performed for the gauge-part
-		//this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
-		for(int l = 0; l < n0; l++) {
-			md_update_gaugemomentum_gauge(deltaTau0_half);
-			md_update_gaugefield(deltaTau0);
-			md_update_gaugemomentum_gauge(deltaTau0_half);
-		}
-		if(n1 > 1) logger.debug() << "\t\tperform " << n1 - 1 << " intermediate steps " ;
-		for(int k = 1; k < n1; k++) {
-			//this corresponds to V_s2(deltaTau)
-			md_update_gaugemomentum_fermion(deltaTau1, solvertimer);
-			for(int l = 0; l < n0; l++) {
-				//this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
-				md_update_gaugemomentum_gauge(deltaTau0_half);
-				md_update_gaugefield(deltaTau0);
-				md_update_gaugemomentum_gauge(deltaTau0_half);
-			}
-		}
-		logger.debug() << "\t\tfinal step" ;
-		//this corresponds to the missing V_s2(deltaTau/2)
-		md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer);
+                logger.debug() << "\t\tinitial step:";
+                //this corresponds to V_s2(deltaTau/2)                            
+                md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer);
+                //now, m steps "more" are performed for the gauge-part                
+                //this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m  
+                for(int l = 0; l < n0; l++) {
+		     if(l == 0) md_update_gaugemomentum_gauge(deltaTau0_half);
+		     md_update_gaugefield(deltaTau0);
+		     //one has to include the case of n1=1 here
+		     if(l == n0-1 && n1 > 1) md_update_gaugemomentum_gauge(deltaTau0);
+		     else if(l == n0-1 && n1 == 1) md_update_gaugemomentum_gauge(deltaTau0_half);
+		     else md_update_gaugemomentum_gauge(deltaTau0);
+                }
+                if(n1 > 1) logger.debug() << "\t\tperform " << n1 - 1 << " intermediate steps " ;
+                for(int k = 1; k < n1; k++) {
+		     //this corresponds to V_s2(deltaTau)   
+		     md_update_gaugemomentum_fermion(deltaTau1, solvertimer);
+		     for(int l = 0; l < n0; l++) {
+		          //this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m
+		          // where the first half_step has been carried out above already
+		          md_update_gaugefield(deltaTau0);
+			  //md_update_gaugemomentum_gauge(deltaTau0_half);
+			  if(l == n0-1 && k == n1-1) md_update_gaugemomentum_gauge(deltaTau0_half);
+			  else md_update_gaugemomentum_gauge(deltaTau0);
+		     }
+                }
+                logger.debug() << "\t\tfinal step" ;
+                //this corresponds to the missing V_s2(deltaTau/2)                                        
+                md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer);
 		logger.debug() << "\t\tfinished leapfrog";
+		
 	}
 	else 
 		Print_Error_Message("More than 2 timescales is not implemented yet. Aborting...");
