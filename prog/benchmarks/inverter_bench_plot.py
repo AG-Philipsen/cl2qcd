@@ -13,9 +13,9 @@ def main(datafile):
 
 	raw_times = []
 	raw_gflops = []
-	nextRun = False
 
 	for line in open(datafile, 'r'):
+		nextRun = False
 		match = re.match(r'^\[\d\d:\d\d:\d\d\] INFO: ## NSPACE:\s+(\d+)', line)
 		if match:
 			nspace = int(match.group(1))
