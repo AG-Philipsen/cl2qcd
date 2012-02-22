@@ -348,7 +348,9 @@ void Dummyfield::fill_buffers()
 	//use the variable use_cg to switch between cold and random input sf
 	if(get_parameters()->get_use_cg() == true) {
 		fill_sf_with_one(sf_in1, NUM_ELEMENTS_SF);
+		fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
 		fill_sf_with_one(sf_in3, NUM_ELEMENTS_SF);
+		fill_sf_with_one(sf_in4, NUM_ELEMENTS_SF);
 	} else {
 		fill_sf_with_random(sf_in1, sf_in2, NUM_ELEMENTS_SF, 123456);
 		fill_sf_with_random(sf_in3, sf_in4, NUM_ELEMENTS_SF, 789101);
