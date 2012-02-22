@@ -133,6 +133,14 @@ void Gaugefield_hmc::md_update_gaugemomentum_fermion(hmc_float eps, usetimer * s
 	return;
 }
 
+void Gaugefield_hmc::md_update_gaugemomentum_detratio(hmc_float eps, usetimer * solvertimer){
+	logger.debug() << "update detratio with " << eps;
+	get_task_hmc(0)->set_zero_clmem_force_device();
+	this->detratio_forces_call(solvertimer);
+	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
+	return;
+}
+
 void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer){
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
@@ -160,6 +168,10 @@ void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer){
 			if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		}
 	}
+}
+
+void Gaugefield_hmc::detratio_forces_call(usetimer * solvertimer){
+	logger.info() << "det ratio has not been implemented yet...";
 }
 
 void Gaugefield_hmc::md_update_gaugefield(hmc_float eps){
@@ -218,12 +230,12 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 		hmc_float deltaTau0_half = 0.5 * deltaTau0;
 		hmc_float deltaTau1_half = 0.5 * deltaTau1;
 
-                logger.debug() << "\t\tinitial step:";
-                //this corresponds to V_s2(deltaTau/2)                            
-                md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer);
-                //now, m steps "more" are performed for the gauge-part                
-                //this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m  
-                for(int l = 0; l < n0; l++) {
+		logger.debug() << "\t\tinitial step:";
+		//this corresponds to V_s2(deltaTau/2)                            
+		md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer);
+		//now, m steps "more" are performed for the gauge-part                
+		//this corresponds to [V_s1(deltaTau/2/m) V_t(deltaTau/m) V_s1(deltaTau/2/m) ]^m  
+		for(int l = 0; l < n0; l++) {
 		     if(l == 0) md_update_gaugemomentum_gauge(deltaTau0_half);
 		     md_update_gaugefield(deltaTau0);
 		     //one has to include the case of n1=1 here
