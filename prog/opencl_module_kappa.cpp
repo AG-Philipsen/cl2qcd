@@ -52,15 +52,13 @@ void Opencl_Module_Kappa::run_kappa_clover(const hmc_float beta)
 
 	if(clmem_kappa_clover == NULL) {
 		cout << "Create buffer for transport coefficient kappa_clover..." << endl;
-		clmem_kappa_clover = clCreateBuffer(get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float) * global_work_size, 0, &clerr);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
+		clmem_kappa_clover = create_rw_buffer(sizeof(hmc_float) * global_work_size);
 	}
 
 	if(clmem_kappa_clover_buf_glob == NULL) {
 		cout << "Create scratch buffer..." << endl;
 		int global_buf_size_float = sizeof(hmc_float) * num_groups;
-		clmem_kappa_clover_buf_glob = clCreateBuffer(get_context(), CL_MEM_READ_WRITE, global_buf_size_float, 0, &clerr);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
+		clmem_kappa_clover_buf_glob = create_rw_buffer(global_buf_size_float);
 	}
 
 	clerr = clSetKernelArg(kappa_clover_gpu, 0, sizeof(cl_mem), get_gaugefield());
