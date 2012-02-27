@@ -149,53 +149,48 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 	return;
 }
 
+cl_mem Opencl_Module::createBuffer(cl_mem_flags flags, size_t size)
+{
+	createBuffer(flags, size, 0);
+}
+
+cl_mem Opencl_Module::createBuffer(cl_mem_flags flags, size_t size, void * host_pointer)
+{
+	cl_int clerr;
+	cl_mem tmp = clCreateBuffer(ocl_context, flags, size, host_pointer, &clerr);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
+	return tmp;
+}
+
 
 cl_mem Opencl_Module::create_rw_buffer(size_t size)
 {
-	cl_int clerr;
-	cl_mem tmp = clCreateBuffer(get_context(), CL_MEM_READ_WRITE, size, 0, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
-	return tmp;
+	return createBuffer(CL_MEM_READ_WRITE, size);
 }
 
 cl_mem Opencl_Module::create_wo_buffer(size_t size)
 {
-	cl_int clerr;
-	cl_mem tmp = clCreateBuffer(get_context(), CL_MEM_WRITE_ONLY, size, 0, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
-	return tmp;
+	return createBuffer(CL_MEM_WRITE_ONLY, size);
 }
 
 cl_mem Opencl_Module::create_ro_buffer(size_t size)
 {
-	cl_int clerr;
-	cl_mem tmp = clCreateBuffer(get_context(), CL_MEM_READ_ONLY, size, 0, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
-	return tmp;
+	return createBuffer(CL_MEM_READ_ONLY, size);
 }
 
 cl_mem Opencl_Module::create_uhp_buffer(size_t size, void *host_pointer)
 {
-	cl_int clerr;
-	cl_mem tmp = clCreateBuffer(get_context(), CL_MEM_USE_HOST_PTR, size, host_pointer, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
-	return tmp;
+	return createBuffer(CL_MEM_USE_HOST_PTR, size, host_pointer);
 }
 
 cl_mem Opencl_Module::create_ahp_buffer(size_t size, void *host_pointer)
 {
-	cl_int clerr;
-	cl_mem tmp = clCreateBuffer(get_context(), CL_MEM_ALLOC_HOST_PTR, size, host_pointer, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
-	return tmp;
+	return createBuffer(CL_MEM_ALLOC_HOST_PTR, size, host_pointer);
 }
 
 cl_mem Opencl_Module::create_chp_buffer(size_t size, void *host_pointer)
 {
-	cl_int clerr;
-	cl_mem tmp = clCreateBuffer(get_context(), CL_MEM_COPY_HOST_PTR, size, host_pointer, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
-	return tmp;
+	return createBuffer(CL_MEM_COPY_HOST_PTR, size, host_pointer);
 }
 
 void Opencl_Module::fill_buffers()
