@@ -47,7 +47,7 @@ public:
 	 *
 	 */
 	~Opencl_Module() {
-
+		delete[] device_name;
 	}
 
 	/**
@@ -442,6 +442,7 @@ private:
 
 	cl_device_id device;
 	cl_device_type device_type;
+	char * device_name;
 
 	cl_mem clmem_plaq;
 	cl_mem clmem_plaq_buf_glob;
