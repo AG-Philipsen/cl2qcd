@@ -228,13 +228,12 @@ public:
 
 	/**
 	 *  This calls
-	 *    clCreateBuffer(context, CL_MEM_ALLOC_HOST_PTR, size, host_pointer, &clerr);
+	 *    clCreateBuffer(context, CL_MEM_ALLOC_HOST_PTR, size, 0, &clerr);
 	 *  and returns a pointer to a cl_mem-object located on the host and allocats memory on the host
 	 *  if clerr is HMC_SUCCESS
 	 *  @param size size of buffer
-	 *  @param host_pointer pointer to memory on host
 	 */
-	cl_mem create_ahp_buffer(size_t size, void *host_pointer);
+	cl_mem create_ahp_buffer(size_t size);
 
 	/**
 	 *  This calls

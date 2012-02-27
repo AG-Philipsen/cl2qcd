@@ -183,9 +183,9 @@ cl_mem Opencl_Module::create_uhp_buffer(size_t size, void *host_pointer)
 	return createBuffer(CL_MEM_USE_HOST_PTR, size, host_pointer);
 }
 
-cl_mem Opencl_Module::create_ahp_buffer(size_t size, void *host_pointer)
+cl_mem Opencl_Module::create_ahp_buffer(size_t size)
 {
-	return createBuffer(CL_MEM_ALLOC_HOST_PTR, size, host_pointer);
+	return createBuffer(CL_MEM_ALLOC_HOST_PTR, size);
 }
 
 cl_mem Opencl_Module::create_chp_buffer(size_t size, void *host_pointer)
