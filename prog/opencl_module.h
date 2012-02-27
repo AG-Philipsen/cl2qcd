@@ -47,7 +47,7 @@ public:
 	 *
 	 */
 	~Opencl_Module() {
-
+		delete[] device_name;
 	}
 
 	/**
@@ -228,13 +228,12 @@ public:
 
 	/**
 	 *  This calls
-	 *    clCreateBuffer(context, CL_MEM_ALLOC_HOST_PTR, size, host_pointer, &clerr);
+	 *    clCreateBuffer(context, CL_MEM_ALLOC_HOST_PTR, size, 0, &clerr);
 	 *  and returns a pointer to a cl_mem-object located on the host and allocats memory on the host
 	 *  if clerr is HMC_SUCCESS
 	 *  @param size size of buffer
-	 *  @param host_pointer pointer to memory on host
 	 */
-	cl_mem create_ahp_buffer(size_t size, void *host_pointer);
+	cl_mem create_ahp_buffer(size_t size);
 
 	/**
 	 *  This calls
@@ -397,6 +396,12 @@ public:
 	 */
 	void print_copy_times(uint64_t totaltime);
 
+	/**
+	 * Internal bookeeping function. Only public so it can be called from
+	 * C-style callback functions.
+	 */
+	void markMemReleased(bool host, size_t size);
+
 protected:
 	/**
 	 * A set of source files used by all kernels.
@@ -437,6 +442,7 @@ private:
 
 	cl_device_id device;
 	cl_device_type device_type;
+	char * device_name;
 
 	cl_mem clmem_plaq;
 	cl_mem clmem_plaq_buf_glob;
@@ -466,6 +472,23 @@ private:
 
 	int numthreads;
 
+	// memory usage tracing
+	size_t allocated_bytes;
+	size_t max_allocated_bytes;
+	size_t allocated_hostptr_bytes;
+
+	/**
+	 * Create an OpenCL buffer object with the given flags,
+	 * track memory usage and check errors.
+	 */
+	cl_mem createBuffer(cl_mem_flags flags, size_t size);
+
+	/**
+	 * Create an OpenCL buffer backed by host memory
+	 * with the given flags,
+	 * track memory usage and check errors.
+	 */
+	cl_mem createBuffer(cl_mem_flags flags, size_t size, void * host_ptr);
 };
 
 #endif //OPENCLMODULEH
