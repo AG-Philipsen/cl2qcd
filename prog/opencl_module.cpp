@@ -41,6 +41,13 @@ void Opencl_Module::init(cl_command_queue queue, cl_mem* clmem_gaugefield, input
 			throw Print_Error_Message("Could not retrive proper CL_DEVICE_TYPE...", __FILE__, __LINE__);
 	}
 
+	// initialize memory usage tracking
+	// the gaugefield object is created externally, but as every opencl module will access it using
+	// an own command queue it must be accounted for
+	allocated_bytes = parameters->get_gaugemomentasize() * sizeof(Matrixsu3);
+	max_allocated_bytes = allocated_bytes;
+	allocated_hostptr_bytes = 0;
+
 	this->fill_buffers();
 	this->fill_kernels();
 }
@@ -151,14 +158,60 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 
 cl_mem Opencl_Module::createBuffer(cl_mem_flags flags, size_t size)
 {
-	createBuffer(flags, size, 0);
+	return createBuffer(flags, size, 0);
+}
+
+void Opencl_Module::markMemReleased(bool host, size_t size)
+{
+	if(host) {
+		allocated_hostptr_bytes -= size;
+	} else {
+		allocated_bytes -= size;
+	}
+	logger.trace() << "Memory usage: " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
+}
+
+struct MemObjectReleaseInfo {
+	size_t bytes;
+	bool host;
+	Opencl_Module * module;
+
+	MemObjectReleaseInfo(size_t bytes, bool host, Opencl_Module * module)
+		: bytes(bytes), host(host), module(module) { };
+};
+
+void memObjectReleased(cl_mem memobj, void * user_data)
+{
+	MemObjectReleaseInfo * release_info = static_cast<MemObjectReleaseInfo *>(user_data);
+	release_info->module->markMemReleased(release_info->host, release_info->bytes);
+	delete release_info;
 }
 
 cl_mem Opencl_Module::createBuffer(cl_mem_flags flags, size_t size, void * host_pointer)
 {
+	logger.trace() << "Allocating " << size << " bytes.";
+
+	// create buffer object
 	cl_int clerr;
 	cl_mem tmp = clCreateBuffer(ocl_context, flags, size, host_pointer, &clerr);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
+
+	// take care of memory usage bookkeeping
+	bool host = (flags & CL_MEM_ALLOC_HOST_PTR) || (flags & CL_MEM_USE_HOST_PTR);
+	if(host) {
+		allocated_hostptr_bytes += size;
+	} else {
+		allocated_bytes += size;
+	}
+	MemObjectReleaseInfo * releaseInfo = new MemObjectReleaseInfo(size, host, this);
+	clerr = clSetMemObjectDestructorCallback(tmp, memObjectReleased, releaseInfo);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateMemObjectDestructorCallback", __FILE__, __LINE__);
+	if(allocated_bytes >= max_allocated_bytes) {
+		max_allocated_bytes = allocated_bytes;
+	}
+
+	logger.trace() << "Memory usage: " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
+
 	return tmp;
 }
 

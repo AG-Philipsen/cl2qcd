@@ -396,6 +396,12 @@ public:
 	 */
 	void print_copy_times(uint64_t totaltime);
 
+	/**
+	 * Internal bookeeping function. Only public so it can be called from
+	 * C-style callback functions.
+	 */
+	void markMemReleased(bool host, size_t size);
+
 protected:
 	/**
 	 * A set of source files used by all kernels.
@@ -464,6 +470,11 @@ private:
 	usetimer copy_on;
 
 	int numthreads;
+
+	// memory usage tracing
+	size_t allocated_bytes;
+	size_t max_allocated_bytes;
+	size_t allocated_hostptr_bytes;
 
 	/**
 	 * Create an OpenCL buffer object with the given flags,
