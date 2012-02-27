@@ -873,8 +873,8 @@ void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
 
 void Opencl_Module::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
 {
-        //Query kernel name
-        string kernelname = get_kernel_name(kernel);
+	//Query kernel name
+	string kernelname = get_kernel_name(kernel);
 
 	size_t local_work_size;
 	if( dev_type == CL_DEVICE_TYPE_GPU )
