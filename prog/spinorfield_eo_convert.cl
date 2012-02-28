@@ -27,14 +27,14 @@ __kernel void convert_from_eoprec(__global spinor const * const restrict even, _
 	return;
 }
 
-__kernel void convertSpinorfieldToSOA_eo(__global hmc_complex * const restrict out, __global const spinor * const restrict in)
+__kernel void convertSpinorfieldToSOA_eo(__global spinorStorageType * const restrict out, __global const spinor * const restrict in)
 {
 	for(uint i = get_global_id(0); i < EOPREC_SPINORFIELDSIZE; i += get_global_size(0)) {
 		putSpinorSOA_eo(out, i, in[i]);
 	}
 }
 
-__kernel void convertSpinorfieldFromSOA_eo(__global spinor * const restrict out, __global const hmc_complex * const restrict in)
+__kernel void convertSpinorfieldFromSOA_eo(__global spinor * const restrict out, __global const spinorStorageType * const restrict in)
 {
 	for(uint i = get_global_id(0); i < EOPREC_SPINORFIELDSIZE; i += get_global_size(0)) {
 		out[i] = getSpinorSOA_eo(in, i);

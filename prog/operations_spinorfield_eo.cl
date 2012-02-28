@@ -3,7 +3,7 @@
  */
 
 // TODO document
-spinor getSpinorSOA_eo(__global const hmc_complex * const restrict in, const uint idx)
+spinor getSpinorSOA_eo(__global const spinorStorageType * const restrict in, const uint idx)
 {
 	return (spinor) {
 		{
@@ -23,7 +23,7 @@ spinor getSpinorSOA_eo(__global const hmc_complex * const restrict in, const uin
 }
 
 // TODO document
-void putSpinorSOA_eo(__global hmc_complex * const restrict out, const uint idx, const spinor val)
+void putSpinorSOA_eo(__global spinorStorageType * const restrict out, const uint idx, const spinor val)
 {
 	// su3vec = 3 * cplx
 	out[ 0 * EOPREC_SPINORFIELD_STRIDE + idx] = val.e0.e0;

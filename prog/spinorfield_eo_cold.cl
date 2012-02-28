@@ -1,4 +1,4 @@
-__kernel void set_eoprec_spinorfield_cold(__global hmc_complex * const restrict out)
+__kernel void set_eoprec_spinorfield_cold(__global spinorStorageType * const restrict out)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);

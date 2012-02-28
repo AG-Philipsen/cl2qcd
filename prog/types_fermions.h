@@ -38,5 +38,10 @@ typedef struct {
 
 typedef spinor spinorfield;
 
+/**
+ * The type used for storing spinors on the device.
+ */
+typedef hmc_complex spinorStorageType;
+
 #endif /* _TYPES_FERMIONSH_ */
 

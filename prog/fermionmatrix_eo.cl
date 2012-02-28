@@ -5,7 +5,7 @@
 //"local" dslash working on a particular link (n,t) of an eoprec field
 //NOTE: each component is multiplied by +KAPPA, so the resulting spinor has to be mutliplied by -1 to obtain the correct dslash!!!
 //the difference to the "normal" dslash is that the coordinates of the neighbors have to be transformed into an eoprec index
-spinor dslash_eoprec_unified_local(__global const hmc_complex * const restrict in, __global hmc_complex  const * const restrict field, const st_idx idx_arg, const dir_idx dir)
+spinor dslash_eoprec_unified_local(__global const spinorStorageType * const restrict in, __global hmc_complex  const * const restrict field, const st_idx idx_arg, const dir_idx dir)
 {
 	//this is used to save the idx of the neighbors
 	st_idx idx_neigh;

@@ -1,6 +1,6 @@
 // hmc_float squarenorm, return in result
 // --> use 2 kernels: 1 for the summation in one block and 1 for summation over blockresults
-__kernel void global_squarenorm_eoprec( __global const hmc_complex * const restrict x, __global hmc_float * const restrict result, __local hmc_float * const restrict result_local )
+__kernel void global_squarenorm_eoprec( __global const spinorStorageType * const restrict x, __global hmc_float * const restrict result, __local hmc_float * const restrict result_local )
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);

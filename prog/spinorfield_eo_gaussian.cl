@@ -1,4 +1,4 @@
-__kernel void generate_gaussian_spinorfield_eoprec(__global hmc_complex * const restrict out, __global hmc_ocl_ran * const restrict rnd)
+__kernel void generate_gaussian_spinorfield_eoprec(__global spinorStorageType * const restrict out, __global hmc_ocl_ran * const restrict rnd)
 {
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);

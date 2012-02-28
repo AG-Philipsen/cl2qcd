@@ -1,4 +1,4 @@
-__kernel void create_point_source_eoprec(__global hmc_complex * const restrict out, int i, int n)
+__kernel void create_point_source_eoprec(__global spinorStorageType * const restrict out, int i, int n)
 {
 	int id = get_global_id(0);
 	if(id == 0) {

@@ -1,5 +1,5 @@
 //alpha*x + beta*y + z
-__kernel void saxsbypz_eoprec(__global const hmc_complex * const restrict x, __global const hmc_complex * const restrict y, __global const hmc_complex * const restrict z, __global const hmc_complex * const restrict alpha, __global hmc_complex * beta, __global hmc_complex * const restrict out)
+__kernel void saxsbypz_eoprec(__global const spinorStorageType * const restrict x, __global const spinorStorageType * const restrict y, __global const spinorStorageType * const restrict z, __global const hmc_complex * const restrict alpha, __global hmc_complex * beta, __global spinorStorageType * const restrict out)
 {
 	const int id = get_global_id(0);
 	const int global_size = get_global_size(0);
