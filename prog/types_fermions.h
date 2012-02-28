@@ -37,7 +37,6 @@ typedef struct {
 } halfspinor;
 
 typedef spinor spinorfield;
-typedef spinor spinorfield_eoprec;
 
 #endif /* _TYPES_FERMIONSH_ */
 
