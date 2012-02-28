@@ -9,19 +9,29 @@ using namespace std;
 
 void Opencl_Module::init(cl_command_queue queue, cl_mem* clmem_gaugefield, inputparameters* params, int maxcomp, string double_ext)
 {
-
 	set_queue(queue);
+
+	// get device
+	cl_int clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_DEVICE, sizeof(cl_device_id), &device, NULL);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetCommandQueueInfo", __FILE__, __LINE__);
+
+	// get device name
+	size_t device_name_bytes;
+	clerr = clGetDeviceInfo(device, CL_DEVICE_NAME, 0, NULL, &device_name_bytes );
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
+	device_name = new char[device_name_bytes];
+	clerr = clGetDeviceInfo(device, CL_DEVICE_NAME, device_name_bytes, device_name, NULL );
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
+
+	logger.debug() << "Device is " << device_name;
+
 	set_gaugefield(clmem_gaugefield);
 	set_parameters(params);
 
 	set_device_double_extension(double_ext);
 	set_max_compute_units(maxcomp);
 
-	cl_uint clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ocl_context, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetCommandQueueInfo", __FILE__, __LINE__);
-
-
-	clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_DEVICE, sizeof(cl_device_id), &device, NULL);
+	clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ocl_context, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetCommandQueueInfo", __FILE__, __LINE__);
 
 	clerr = clGetDeviceInfo(device, CL_DEVICE_TYPE, sizeof(cl_device_type), &device_type, NULL);
@@ -40,6 +50,14 @@ void Opencl_Module::init(cl_command_queue queue, cl_mem* clmem_gaugefield, input
 		default :
 			throw Print_Error_Message("Could not retrive proper CL_DEVICE_TYPE...", __FILE__, __LINE__);
 	}
+
+	// initialize memory usage tracking
+	// the gaugefield object is created externally, but as every opencl module will access it using
+	// an own command queue it must be accounted for
+	allocated_bytes = parameters->get_gaugemomentasize() * sizeof(Matrixsu3);
+	max_allocated_bytes = allocated_bytes;
+	allocated_hostptr_bytes = 0;
+	logger.trace() << "Initial memory usage (" << device_name << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes << " (Assuming stored gaugefield";
 
 	this->fill_buffers();
 	this->fill_kernels();
@@ -150,53 +168,94 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 	return;
 }
 
+cl_mem Opencl_Module::createBuffer(cl_mem_flags flags, size_t size)
+{
+	return createBuffer(flags, size, 0);
+}
+
+void Opencl_Module::markMemReleased(bool host, size_t size)
+{
+	if(host) {
+		allocated_hostptr_bytes -= size;
+	} else {
+		allocated_bytes -= size;
+	}
+	logger.trace() << "Memory usage (" << device_name << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
+}
+
+struct MemObjectReleaseInfo {
+	size_t bytes;
+	bool host;
+	Opencl_Module * module;
+
+	MemObjectReleaseInfo(size_t bytes, bool host, Opencl_Module * module)
+		: bytes(bytes), host(host), module(module) { };
+};
+
+void memObjectReleased(cl_mem, void * user_data)
+{
+	MemObjectReleaseInfo * release_info = static_cast<MemObjectReleaseInfo *>(user_data);
+	release_info->module->markMemReleased(release_info->host, release_info->bytes);
+	delete release_info;
+}
+
+cl_mem Opencl_Module::createBuffer(cl_mem_flags flags, size_t size, void * host_pointer)
+{
+	logger.trace() << "Allocating " << size << " bytes.";
+
+	// create buffer object
+	cl_int clerr;
+	cl_mem tmp = clCreateBuffer(ocl_context, flags, size, host_pointer, &clerr);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
+
+	// take care of memory usage bookkeeping
+	bool host = (flags & CL_MEM_ALLOC_HOST_PTR) || (flags & CL_MEM_USE_HOST_PTR);
+	if(host) {
+		allocated_hostptr_bytes += size;
+	} else {
+		allocated_bytes += size;
+	}
+	MemObjectReleaseInfo * releaseInfo = new MemObjectReleaseInfo(size, host, this);
+	clerr = clSetMemObjectDestructorCallback(tmp, memObjectReleased, releaseInfo);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateMemObjectDestructorCallback", __FILE__, __LINE__);
+	if(allocated_bytes >= max_allocated_bytes) {
+		max_allocated_bytes = allocated_bytes;
+	}
+
+	logger.trace() << "Memory usage (" << device_name << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
+
+	return tmp;
+}
+
 
 cl_mem Opencl_Module::create_rw_buffer(size_t size)
 {
-	cl_int clerr;
-	cl_mem tmp = clCreateBuffer(get_context(), CL_MEM_READ_WRITE, size, 0, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
-	return tmp;
+	return createBuffer(CL_MEM_READ_WRITE, size);
 }
 
 cl_mem Opencl_Module::create_wo_buffer(size_t size)
 {
-	cl_int clerr;
-	cl_mem tmp = clCreateBuffer(get_context(), CL_MEM_WRITE_ONLY, size, 0, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
-	return tmp;
+	return createBuffer(CL_MEM_WRITE_ONLY, size);
 }
 
 cl_mem Opencl_Module::create_ro_buffer(size_t size)
 {
-	cl_int clerr;
-	cl_mem tmp = clCreateBuffer(get_context(), CL_MEM_READ_ONLY, size, 0, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
-	return tmp;
+	return createBuffer(CL_MEM_READ_ONLY, size);
 }
 
 cl_mem Opencl_Module::create_uhp_buffer(size_t size, void *host_pointer)
 {
-	cl_int clerr;
-	cl_mem tmp = clCreateBuffer(get_context(), CL_MEM_USE_HOST_PTR, size, host_pointer, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
-	return tmp;
+	return createBuffer(CL_MEM_USE_HOST_PTR, size, host_pointer);
 }
 
-cl_mem Opencl_Module::create_ahp_buffer(size_t size, void *host_pointer)
+cl_mem Opencl_Module::create_ahp_buffer(size_t size)
 {
-	cl_int clerr;
-	cl_mem tmp = clCreateBuffer(get_context(), CL_MEM_ALLOC_HOST_PTR, size, host_pointer, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
-	return tmp;
+	return createBuffer(CL_MEM_ALLOC_HOST_PTR, size);
 }
 
 cl_mem Opencl_Module::create_chp_buffer(size_t size, void *host_pointer)
 {
-	cl_int clerr;
-	cl_mem tmp = clCreateBuffer(get_context(), CL_MEM_COPY_HOST_PTR, size, host_pointer, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
-	return tmp;
+	return createBuffer(CL_MEM_COPY_HOST_PTR, size, host_pointer);
 }
 
 void Opencl_Module::fill_buffers()
@@ -290,6 +349,8 @@ void Opencl_Module::clear_buffers()
 		clerr = clReleaseMemObject(clmem_polyakov_buf_glob);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	}
+
+	logger.info() << "Maximum memory used (" << device_name << "): " << max_allocated_bytes << " bytes";
 
 	return;
 }
@@ -596,20 +657,6 @@ void Opencl_Module::printResourceRequirements(const cl_kernel kernel)
 	if( strcmp("AMD Accelerated Parallel Processing", platform_name) == 0
 	    && device_type == CL_DEVICE_TYPE_GPU ) {
 
-		// get device name
-		size_t device_name_bytes;
-		clerr = clGetDeviceInfo( device, CL_DEVICE_NAME, 0, NULL, &device_name_bytes );
-		if( clerr ) {
-			logger.error() << "Failed to get name of OpenCL device: ";
-			return;
-		}
-		char * device_name = new char[device_name_bytes];
-		clerr = clGetDeviceInfo( device, CL_DEVICE_NAME, device_name_bytes, device_name, NULL );
-		if( clerr ) {
-			logger.error() << "Failed to get name of OpenCL device: ";
-			return;
-		}
-
 		logger.trace() << "Retrieving information for device " << device_name;
 
 		size_t bytesInKernelName;
@@ -692,7 +739,6 @@ void Opencl_Module::printResourceRequirements(const cl_kernel kernel)
 		logger.debug() << "Kernel: " << kernelName << " - " << gp_regs << " GPRs, " << scratch_regs << " scratch registers, "
 		               << static_local_bytes << " bytes statically allocated local memory";
 
-		delete[] device_name;
 	} else {
 		logger.trace() << "No AMD-GPU -> not scanning for kernel resource requirements";
 	}
@@ -874,8 +920,8 @@ void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
 
 void Opencl_Module::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
 {
-        //Query kernel name
-        string kernelname = get_kernel_name(kernel);
+	//Query kernel name
+	string kernelname = get_kernel_name(kernel);
 
 	size_t local_work_size;
 	if( dev_type == CL_DEVICE_TYPE_GPU )

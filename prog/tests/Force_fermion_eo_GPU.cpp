@@ -69,6 +69,8 @@ BOOST_AUTO_TEST_CASE( F_FERMION )
 {
 	logger.info() << "Init CPU device";
 	//params.print_info_inverter("m_gpu");
+	// reset RNG
+	rnd = Random(13);
 	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables_from_task(0, 0);
@@ -97,6 +99,8 @@ BOOST_AUTO_TEST_CASE( F_FERMION )
 
 	logger.info() << "Init GPU device";
 	//params.print_info_inverter("m_gpu");
+	// reset RNG
+	rnd = Random(13);
 	Dummyfield gpu(CL_DEVICE_TYPE_GPU);
 	logger.info() << "gaugeobservables: ";
 	gpu.print_gaugeobservables_from_task(0, 0);
@@ -348,7 +352,9 @@ void Dummyfield::fill_buffers()
 	//use the variable use_cg to switch between cold and random input sf
 	if(get_parameters()->get_use_cg() == true) {
 		fill_sf_with_one(sf_in1, NUM_ELEMENTS_SF);
+		fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
 		fill_sf_with_one(sf_in3, NUM_ELEMENTS_SF);
+		fill_sf_with_one(sf_in4, NUM_ELEMENTS_SF);
 	} else {
 		fill_sf_with_random(sf_in1, sf_in2, NUM_ELEMENTS_SF, 123456);
 		fill_sf_with_random(sf_in3, sf_in4, NUM_ELEMENTS_SF, 789101);

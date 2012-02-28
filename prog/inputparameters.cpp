@@ -112,11 +112,15 @@ void inputparameters::set_defaults()
 	//HMC specific parameters
 	tau = 0.5;
 	reversibility_check = false;
-	integrationsteps1 = 10;
-	integrationsteps2 = integrationsteps1;
+	integrationsteps0 = 10;
+	integrationsteps1 = integrationsteps0;
 	hmcsteps = 10;
 	num_timescales = 1;
-	integrator = LEAPFROG;
+	integrator0 = LEAPFROG;
+	integrator1 = LEAPFROG;
+	integrator2 = LEAPFROG;
+	//this is the optimal value...
+	lambda0 = 0.1931833275037836;
 	lambda1 = 0.1931833275037836;
 	lambda2 = 0.1931833275037836;
 
@@ -213,6 +217,7 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("oversteps") != std::string::npos) val_assign(&overrelaxsteps, line);
 			if(line.find("hmcsteps") != std::string::npos) val_assign(&hmcsteps, line);
 			if(line.find("iter_refresh") != std::string::npos) val_assign(&iter_refresh, line);
+			if(line.find("integrationsteps0") != std::string::npos) val_assign(&integrationsteps0, line);
 			if(line.find("integrationsteps1") != std::string::npos) val_assign(&integrationsteps1, line);
 			if(line.find("integrationsteps2") != std::string::npos) val_assign(&integrationsteps2, line);
 			if(line.find("num_timescales") != std::string::npos) val_assign(&num_timescales, line);
@@ -222,7 +227,12 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("fermionaction") != std::string::npos) fermact_assign(&fermact, line);
 			if(line.find("fermact") != std::string::npos) fermact_assign(&fermact, line);
 
-			if(line.find("integrator") != std::string::npos) integrator_assign(&integrator, line);
+			if(line.find("integrator0") != std::string::npos) integrator_assign(&integrator0, line);
+			if(line.find("integrator1") != std::string::npos) integrator_assign(&integrator1, line);
+			if(line.find("integrator2") != std::string::npos) integrator_assign(&integrator2, line);
+			if(line.find("lambda0") != std::string::npos) val_assign(&lambda0, line);
+			if(line.find("lambda1") != std::string::npos) val_assign(&lambda1, line);
+			if(line.find("lambda2") != std::string::npos) val_assign(&lambda2, line);
 
 			if(line.find("evenodd") != std::string::npos) bool_assign(&use_eo, line);
 			if(line.find("even_odd") != std::string::npos) bool_assign(&use_eo, line);
@@ -642,6 +652,11 @@ hmc_float inputparameters::get_rho() const
 	return rho;
 }
 
+hmc_float inputparameters::get_lambda0() const
+{
+	return lambda0;
+}
+
 hmc_float inputparameters::get_lambda1() const
 {
 	return lambda1;
@@ -715,6 +730,11 @@ int inputparameters::get_hmcsteps() const
 	return hmcsteps;
 }
 
+int inputparameters::get_integrationsteps0() const
+{
+	return integrationsteps0;
+}
+
 int inputparameters::get_integrationsteps1() const
 {
 	return integrationsteps1;
@@ -724,7 +744,6 @@ int inputparameters::get_integrationsteps2() const
 {
 	return integrationsteps2;
 }
-
 
 int inputparameters::get_writefrequency() const
 {
@@ -746,9 +765,18 @@ int inputparameters::get_fermact() const
 	return fermact;
 }
 
-int inputparameters::get_integrator() const
+int inputparameters::get_integrator(int which) const
 {
-	return integrator;
+	if(which == 0)
+		return integrator0;
+	else if (which == 1)
+		return integrator1;
+	else if (which == 2)
+		return integrator1;
+	else{
+		logger.fatal() << "cant make sense out of desired integrator number...\nAborting...";
+		exit(EXIT_INPUTPARAMETERS);
+	}
 }
 
 int inputparameters::get_num_timescales() const
@@ -1337,9 +1365,50 @@ void inputparameters::print_info_hmc(char* progname) const
 	logger.info() << "## tau  = " << this->get_tau();
 	logger.info() << "## HMC steps  = " << this->get_hmcsteps();
 	logger.info() << "## # Timescales  = " << this->get_num_timescales();
-	logger.info() << "## integrationsteps1  = " << this->get_integrationsteps1();
-	if(this->get_num_timescales() == 2)
+	logger.info() << "## integrationsteps0  = " << this->get_integrationsteps0();
+	//get integrator name
+	string integrator_name;
+	if(this->get_integrator(0) == LEAPFROG)
+		integrator_name = "LEAPFROG";
+	else if (this->get_integrator(1) == TWOMN)
+		integrator_name = "2MN";
+	else {
+		logger.fatal() << "Fail in getting integrator information!";
+		logger.fatal() << "Aborting...";
+		exit(EXIT_INPUTPARAMETERS);
+	}
+	logger.info() << "## integrator0 = " << integrator_name;
+	logger.info() << "## lambda0 = " << get_lambda0();
+	if(this->get_num_timescales() == 2){
+		logger.info() << "## integrationsteps1  = " << this->get_integrationsteps1();
+		//get integrator name
+		if(this->get_integrator(1) == LEAPFROG)
+			integrator_name = "LEAPFROG";
+		else if (this->get_integrator(1) == TWOMN)
+			integrator_name = "2MN";
+		else {
+			logger.fatal() << "Fail in getting integrator information!";
+			logger.fatal() << "Aborting...";
+			exit(EXIT_INPUTPARAMETERS);
+		}
+		logger.info() << "## integrator1 = " << integrator_name;
+		logger.info() << "## lambda1 = " << get_lambda1();
+	}
+	if(this->get_num_timescales() == 3){
 		logger.info() << "## integrationsteps2  = " << this->get_integrationsteps2();
+		//get integrator name
+		if(this->get_integrator(2) == LEAPFROG)
+			integrator_name = "LEAPFROG";
+		else if (this->get_integrator(2) == TWOMN)
+			integrator_name = "2MN";
+		else {
+			logger.fatal() << "Fail in getting integrator information!";
+			logger.fatal() << "Aborting...";
+			exit(EXIT_INPUTPARAMETERS);
+		}
+		logger.info() << "## integrator2 = " << integrator_name;
+		logger.info() << "## lambda2 = " << get_lambda2();
+	}
 	logger.info() << "## **********************************************************";
 	logger.info() << "## precision used HMC-inversions = " << this->get_force_prec();
 	return;
@@ -1356,8 +1425,49 @@ void inputparameters::print_info_hmc(char* progname, ostream* os) const
 	*os << "## HMC steps  = " << this->get_hmcsteps() << '\n';
 	*os << "## # Timescales  = " << this->get_num_timescales() << '\n';
 	*os << "## integrationsteps1  = " << this->get_integrationsteps1() << '\n';
-	if(this->get_num_timescales() == 2)
-		*os << "## integrationsteps2  = " << this->get_integrationsteps2() << '\n';
+	//get integrator name
+	string integrator_name;
+	if(this->get_integrator(0) == LEAPFROG)
+		integrator_name = "LEAPFROG";
+	else if (this->get_integrator(0) == TWOMN)
+		integrator_name = "2MN";
+	else {
+		logger.fatal() << "Fail in getting integrator information!";
+		logger.fatal() << "Aborting...";
+		exit(EXIT_INPUTPARAMETERS);
+	}
+	*os << "## integrator0 = " << integrator_name<< '\n';
+	*os << "## lambda0 = " << get_lambda0()<< '\n';
+	if(this->get_num_timescales() == 2){
+		*os << "## integrationsteps1  = " << this->get_integrationsteps1()<< '\n';
+		//get integrator name
+		if(this->get_integrator(1) == LEAPFROG)
+			integrator_name = "LEAPFROG";
+		else if (this->get_integrator(1) == TWOMN)
+			integrator_name = "2MN";
+		else {
+			logger.fatal() << "Fail in getting integrator information!";
+			logger.fatal() << "Aborting...";
+			exit(EXIT_INPUTPARAMETERS);
+		}
+		*os << "## integrator1 = " << integrator_name<< '\n';
+		*os << "## lambda1 = " << get_lambda1()<< '\n';
+	}
+	if(this->get_num_timescales() == 3){
+		*os << "## integrationsteps2  = " << this->get_integrationsteps2()<< '\n';
+		//get integrator name
+		if(this->get_integrator(2) == LEAPFROG)
+			integrator_name = "LEAPFROG";
+		else if (this->get_integrator(2) == TWOMN)
+			integrator_name = "2MN";
+		else {
+			logger.fatal() << "Fail in getting integrator information!";
+			logger.fatal() << "Aborting...";
+			exit(EXIT_INPUTPARAMETERS);
+		}
+		*os << "## integrator2 = " << integrator_name<< '\n';
+		*os << "## lambda2 = " << get_lambda2()<< '\n';
+	}
 	*os << "## **********************************************************\n";
 	*os << "## precision used HMC-inversions = " << this->get_force_prec() << '\n';
 	*os << std::endl;

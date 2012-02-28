@@ -90,8 +90,9 @@ public:
 	int get_heatbathsteps() const;
 	int get_overrelaxsteps() const;
 	int get_hmcsteps() const;
-	int get_integrationsteps1() const;
 	int get_integrationsteps2() const;
+	int get_integrationsteps1() const;
+	int get_integrationsteps0() const;
 	hmc_float get_solver_prec() const;
 	hmc_float get_force_prec() const;
 	int get_iter_refresh() const;
@@ -141,8 +142,9 @@ public:
 	int get_source_pos_spatial() const;
 	int get_source_pos_temporal() const;
 	int get_corr_dir() const;
-	int get_integrator() const;
+	int get_integrator(int which) const;
 	int get_num_timescales() const;
+	hmc_float get_lambda0() const;
 	hmc_float get_lambda1() const;
 	hmc_float get_lambda2() const;
 
@@ -322,8 +324,10 @@ private:
 	bool saveconfigs;
 	int writefrequency;
 	int num_timescales;
+	int integrationsteps0;
 	int integrationsteps1;
 	int integrationsteps2;
+	hmc_float lambda0;
 	hmc_float lambda1;
 	hmc_float lambda2;
 	bool use_cg;
@@ -335,7 +339,9 @@ private:
 	int pointsource_z;
 	int pointsource_t;
 	int corr_dir;
-	int integrator;
+	int integrator0;
+	int integrator1;
+	int integrator2;
 	void val_assign(hmc_float* out, std::string line);
 	void val_assign(int * out, std::string line);
 	void sourcefilenumber_assign(std::string * out);

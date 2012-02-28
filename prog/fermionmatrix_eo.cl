@@ -8,7 +8,7 @@
 spinor dslash_eoprec_unified_local(__global const hmc_complex * const restrict in, __global hmc_complex  const * const restrict field, const st_idx idx_arg, const dir_idx dir)
 {
 	//this is used to save the idx of the neighbors
-	st_idx idx_tmp;
+	st_idx idx_neigh;
 
 	spinor out_tmp, plus;
 	site_idx nn_eo;
@@ -20,9 +20,9 @@ spinor dslash_eoprec_unified_local(__global const hmc_complex * const restrict i
 
 	///////////////////////////////////
 	// mu = +dir
-	idx_tmp = get_neighbor_from_st_idx(idx_arg, dir);
+	idx_neigh = get_neighbor_from_st_idx(idx_arg, dir);
 	//transform normal indices to eoprec index
-	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
+	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = getSpinorSOA_eo(in, nn_eo);
 	U = getSU3SOA(field, get_link_idx_SOA(dir, idx_arg));
 	bc_tmp.re = KAPPA_SPATIAL_RE;
@@ -120,15 +120,13 @@ spinor dslash_eoprec_unified_local(__global const hmc_complex * const restrict i
 		out_tmp.e3 = su3vec_acc(out_tmp.e3, psi);
 	}
 
-
-
 	///////////////////////////////////
 	//mu = -dir
-	idx_tmp = get_lower_neighbor_from_st_idx(idx_arg, dir);
+	idx_neigh = get_lower_neighbor_from_st_idx(idx_arg, dir);
 	//transform normal indices to eoprec index
-	nn_eo = get_eo_site_idx_from_st_idx(idx_tmp);
+	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = getSpinorSOA_eo(in, nn_eo);
-	U = getSU3SOA(field, get_link_idx_SOA(dir, idx_tmp));
+	U = getSU3SOA(field, get_link_idx_SOA(dir, idx_neigh));
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = MKAPPA_SPATIAL_IM;

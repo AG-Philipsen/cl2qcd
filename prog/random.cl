@@ -106,7 +106,7 @@ hmc_complex inline gaussianNormalPair(__global hmc_ocl_ran * rnd)
 //  hmc_float u2 = 1.0 - ocl_new_ran(rnd);
 	hmc_float u2 = ocl_new_ran(rnd);
 	//CP: this is the standard Box-Müller way:
-	hmc_float p  = sqrt(-2 * log(u1));
+	hmc_float p  = sqrt(- 2.* log(u1));
 	//CP: without the 2, one gets sigma = 0.5 rightaway, this is done in tmlqcd
 	//hmc_float p  = sqrt(-log(u1));
 
