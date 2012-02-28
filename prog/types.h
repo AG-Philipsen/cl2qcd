@@ -128,6 +128,8 @@ struct Matrixsu3 {
 
 typedef Matrixsu3 ocl_s_gaugefield;
 
+typedef hmc_complex Matrixsu3StorageType;
+
 #ifndef _INKERNEL_
 /** Storage type for state of the random number generator */
 typedef cl_ulong4 hmc_ocl_ran;
