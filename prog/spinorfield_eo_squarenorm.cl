@@ -12,7 +12,7 @@ __kernel void global_squarenorm_eoprec( __global const spinorStorageType * const
 	sum = 0.;
 
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
-		spinor x_tmp = getSpinorSOA_eo(x, id_tmp);
+		spinor x_tmp = getSpinor_eo(x, id_tmp);
 		hmc_float tmp = spinor_squarenorm(x_tmp);
 		sum += tmp;
 	}

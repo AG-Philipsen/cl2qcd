@@ -3,7 +3,7 @@
  */
 
 // TODO document
-spinor getSpinorSOA_eo(__global const spinorStorageType * const restrict in, const uint idx)
+spinor getSpinor_eo(__global const spinorStorageType * const restrict in, const uint idx)
 {
 #ifdef _USE_SOA_
 	return (spinor) {
@@ -27,7 +27,7 @@ spinor getSpinorSOA_eo(__global const spinorStorageType * const restrict in, con
 }
 
 // TODO document
-void putSpinorSOA_eo(__global spinorStorageType * const restrict out, const uint idx, const spinor val)
+void putSpinor_eo(__global spinorStorageType * const restrict out, const uint idx, const spinor val)
 {
 #ifdef _USE_SOA_
 	// su3vec = 3 * cplx

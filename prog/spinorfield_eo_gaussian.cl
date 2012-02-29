@@ -55,6 +55,6 @@ __kernel void generate_gaussian_spinorfield_eoprec(__global spinorStorageType * 
 		//multiply by sigma
 		out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));
 
-		putSpinorSOA_eo(out, id_tmp, out_tmp);
+		putSpinor_eo(out, id_tmp, out_tmp);
 	}
 }

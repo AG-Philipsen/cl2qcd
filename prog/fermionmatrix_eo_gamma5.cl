@@ -6,8 +6,8 @@ __kernel void gamma5_eoprec(__global spinorStorageType * const restrict inout)
 
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 
-		out_tmp = getSpinorSOA_eo(inout, id_tmp);
+		out_tmp = getSpinor_eo(inout, id_tmp);
 		out_tmp = gamma5_local(out_tmp);
-		putSpinorSOA_eo(inout, id_tmp, out_tmp);
+		putSpinor_eo(inout, id_tmp, out_tmp);
 	}
 }

@@ -31,7 +31,7 @@ __kernel void fermion_force_eoprec(__global const ocl_s_gaugefield * const restr
 		int t = pos.time;
 		int nn_eo;
 
-		y = getSpinorSOA_eo(Y, id_tmp);
+		y = getSpinor_eo(Y, id_tmp);
 		///////////////////////////////////
 		// Calculate gamma_5 y
 		///////////////////////////////////
@@ -52,7 +52,7 @@ __kernel void fermion_force_eoprec(__global const ocl_s_gaugefield * const restr
 		nn = get_neighbor_temporal(t);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(n, nn);
-		plus = getSpinorSOA_eo(X, nn_eo);
+		plus = getSpinor_eo(X, nn_eo);
 		U = get_matrixsu3(field, n, t, dir);
 		//if chemical potential is activated, U has to be multiplied by appropiate factor
 #ifdef _CP_REAL_
@@ -93,7 +93,7 @@ __kernel void fermion_force_eoprec(__global const ocl_s_gaugefield * const restr
 		global_link_pos_down = get_global_link_pos(dir, n, nn);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(n, nn);
-		plus = getSpinorSOA_eo(X, nn_eo);
+		plus = getSpinor_eo(X, nn_eo);
 		U = get_matrixsu3(field, n, nn, dir);
 		//if chemical potential is activated, U has to be multiplied by appropiate factor
 		//this is the same as at mu=0 in the imag. case, since U is taken to be U^+ later:
@@ -144,7 +144,7 @@ __kernel void fermion_force_eoprec(__global const ocl_s_gaugefield * const restr
 		nn = get_neighbor(n, dir);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
-		plus = getSpinorSOA_eo(X, nn_eo);
+		plus = getSpinor_eo(X, nn_eo);
 		U = get_matrixsu3(field, n, t, dir);
 		/////////////////////////////////
 		//Calculate (1 - gamma_1) y
@@ -172,7 +172,7 @@ __kernel void fermion_force_eoprec(__global const ocl_s_gaugefield * const restr
 		global_link_pos_down = get_global_link_pos(dir, nn, t);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
-		plus = getSpinorSOA_eo(X, nn_eo);
+		plus = getSpinor_eo(X, nn_eo);
 		U = get_matrixsu3(field, nn, t, dir);
 		///////////////////////////////////
 		// Calculate (1 + gamma_1) y
@@ -205,7 +205,7 @@ __kernel void fermion_force_eoprec(__global const ocl_s_gaugefield * const restr
 		nn = get_neighbor(n, dir);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
-		plus = getSpinorSOA_eo(X, nn_eo);
+		plus = getSpinor_eo(X, nn_eo);
 		U = get_matrixsu3(field, n, t, dir);
 		///////////////////////////////////
 		// Calculate (1 - gamma_2) y
@@ -233,7 +233,7 @@ __kernel void fermion_force_eoprec(__global const ocl_s_gaugefield * const restr
 		global_link_pos_down = get_global_link_pos(dir, nn, t);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
-		plus = getSpinorSOA_eo(X, nn_eo);
+		plus = getSpinor_eo(X, nn_eo);
 		U = get_matrixsu3(field, nn, t, dir);
 
 		///////////////////////////////////
@@ -267,7 +267,7 @@ __kernel void fermion_force_eoprec(__global const ocl_s_gaugefield * const restr
 		nn = get_neighbor(n, dir);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
-		plus = getSpinorSOA_eo(X, nn_eo);
+		plus = getSpinor_eo(X, nn_eo);
 		U = get_matrixsu3(field, n, t, dir);
 
 		///////////////////////////////////
@@ -296,7 +296,7 @@ __kernel void fermion_force_eoprec(__global const ocl_s_gaugefield * const restr
 		global_link_pos_down = get_global_link_pos(dir, nn, t);
 		//transform normal indices to eoprec index
 		nn_eo = get_n_eoprec(nn, t);
-		plus = getSpinorSOA_eo(X, nn_eo);
+		plus = getSpinor_eo(X, nn_eo);
 		U = get_matrixsu3(field, nn, t, dir);
 
 		///////////////////////////////////

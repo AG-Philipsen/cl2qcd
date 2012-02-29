@@ -11,10 +11,10 @@ __kernel void M_tm_sitediagonal(__global const spinorStorageType * const restric
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 		out_tmp = set_spinor_zero();
 		//get input spinor
-		plus = getSpinorSOA_eo(in, id_tmp);
+		plus = getSpinor_eo(in, id_tmp);
 		//Diagonalpart:
 		out_tmp = M_diag_tm_local(plus, twistfactor, twistfactor_minus);
-		putSpinorSOA_eo(out, id_tmp, out_tmp);
+		putSpinor_eo(out, id_tmp, out_tmp);
 	}
 }
 
@@ -32,12 +32,12 @@ __kernel void M_tm_inverse_sitediagonal(__global const spinorStorageType * const
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 		out_tmp = set_spinor_zero();
 		//get input spinor
-		plus = getSpinorSOA_eo(in, id_tmp);
+		plus = getSpinor_eo(in, id_tmp);
 		//Diagonalpart, here the twisted factor give the inverse matrix:
 		out_tmp = M_diag_tm_local(plus, twistfactor_minus, twistfactor);
 		hmc_float denom = 1. / (1. + MUBAR * MUBAR);
 		out_tmp = real_multiply_spinor(out_tmp, denom);
-		putSpinorSOA_eo(out, id_tmp, out_tmp);
+		putSpinor_eo(out, id_tmp, out_tmp);
 	}
 }
 
@@ -54,10 +54,10 @@ __kernel void M_tm_sitediagonal_minus(__global const spinorStorageType * const r
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 		out_tmp = set_spinor_zero();
 		//get input spinor
-		plus = getSpinorSOA_eo(in, id_tmp);
+		plus = getSpinor_eo(in, id_tmp);
 		//Diagonalpart:
 		out_tmp = M_diag_tm_local(plus, twistfactor_minus, twistfactor);
-		putSpinorSOA_eo(out, id_tmp, out_tmp);
+		putSpinor_eo(out, id_tmp, out_tmp);
 	}
 }
 
@@ -73,12 +73,12 @@ __kernel void M_tm_inverse_sitediagonal_minus(__global const spinorStorageType *
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 		out_tmp = set_spinor_zero();
 		//get input spinor
-		plus = getSpinorSOA_eo(in, id_tmp);
+		plus = getSpinor_eo(in, id_tmp);
 		//Diagonalpart, here the twisted factor give the inverse matrix:
 		out_tmp = M_diag_tm_local(plus, twistfactor, twistfactor_minus);
 		hmc_float denom = 1. / (1. + MUBAR * MUBAR);
 		out_tmp = real_multiply_spinor(out_tmp, denom);
-		putSpinorSOA_eo(out, id_tmp, out_tmp);
+		putSpinor_eo(out, id_tmp, out_tmp);
 	}
 }
 

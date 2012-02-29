@@ -64,7 +64,7 @@ __kernel void create_point_source_eoprec(__global spinorStorageType * const rest
 				break;
 		}
 
-		putSpinorSOA_eo(out, pos, tmp);
+		putSpinor_eo(out, pos, tmp);
 	}
 	return;
 }

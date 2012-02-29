@@ -25,7 +25,7 @@ __kernel void dslash_eoprec(__global const spinorStorageType * const restrict in
 		out_tmp2 = dslash_eoprec_unified_local(in, field, pos, ZDIR);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 
-		putSpinorSOA_eo(out, id_tmp, out_tmp);
+		putSpinor_eo(out, id_tmp, out_tmp);
 	}
 }
 
