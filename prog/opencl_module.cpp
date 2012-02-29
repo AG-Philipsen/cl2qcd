@@ -40,25 +40,21 @@ void Opencl_Module::init(cl_command_queue queue, cl_mem* clmem_gaugefield, input
 	clerr = clGetDeviceInfo(device, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 
+	// different devices need different strategies for optimal performance
 	switch ( device_type ) {
 		case CL_DEVICE_TYPE_GPU :
 			numthreads = 128;
+			use_soa = true;
+			logger.debug() << "Device should use SOA storage format.";
 			break;
 		case CL_DEVICE_TYPE_CPU :
 			numthreads = 1;
+			use_soa = false;
+			logger.debug() << "Device should use AOS storage format.";
 			break;
 		default :
 			throw Print_Error_Message("Could not retrive proper CL_DEVICE_TYPE...", __FILE__, __LINE__);
 	}
-
-	// different devices need different strategies for optimal performance
-#ifdef _USE_SOA_
-	use_soa = true;
-	logger.debug() << "Device should use SOA storage format.";
-#else
-	use_soa = false;
-	logger.debug() << "Device should use AOS storage format.";
-#endif
 
 	// initialize memory usage tracking
 	// the gaugefield object is created externally, but as every opencl module will access it using
