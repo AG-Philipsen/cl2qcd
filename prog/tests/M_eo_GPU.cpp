@@ -231,12 +231,15 @@ void Device::clear_kernels()
 
 void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls)
 {
+	if(use_soa) {
+		gf = gaugefield_soa;
+	}
 	cl_int err;
 	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &in);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &out);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &gaugefield_soa);
+	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &gf);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	int odd = 0;
 	err = clSetKernelArg(testKernel, 3, sizeof(int), &odd);

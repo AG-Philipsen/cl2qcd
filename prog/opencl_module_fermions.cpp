@@ -439,8 +439,12 @@ void Opencl_Module_Fermions::fill_buffers()
 			clmem_tmp_eoprec_2 = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		}
 	}
-	gaugefield_soa = create_rw_buffer(calculateStride(NDIM * get_parameters()->get_vol4d(), sizeof(hmc_complex)) * 9 * sizeof(hmc_complex));
 
+	if(use_soa) {
+		gaugefield_soa = create_rw_buffer(calculateStride(NDIM * get_parameters()->get_vol4d(), sizeof(hmc_complex)) * 9 * sizeof(hmc_complex));
+	} else {
+		gaugefield_soa = 0; // make sure this can always be recognized as uninitialized
+	}
 
 	logger.debug() << "create buffers for complex and real numbers";
 	clmem_rho = create_rw_buffer(complex_size);
@@ -592,8 +596,11 @@ void Opencl_Module_Fermions::clear_buffers()
 		}
 	}
 
-	clerr = clReleaseMemObject(gaugefield_soa);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	if(gaugefield_soa) {
+		clerr = clReleaseMemObject(gaugefield_soa);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		gaugefield_soa = 0;
+	}
 
 	clerr = clReleaseMemObject(clmem_rho);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
@@ -845,6 +852,10 @@ void Opencl_Module_Fermions::gamma5_eoprec_device(cl_mem inout)
 
 void Opencl_Module_Fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd)
 {
+	if(use_soa) {
+		gf = gaugefield_soa;
+	}
+
 	cl_int eo = evenodd;
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -857,7 +868,7 @@ void Opencl_Module_Fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem 
 	clerr = clSetKernelArg(dslash_eoprec, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(dslash_eoprec, 2, sizeof(cl_mem), &gaugefield_soa);
+	clerr = clSetKernelArg(dslash_eoprec, 2, sizeof(cl_mem), &gf);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(dslash_eoprec, 3, sizeof(cl_int), &eo);
@@ -1823,18 +1834,21 @@ void Opencl_Module_Fermions::convertGaugefieldToSOA()
 }
 void Opencl_Module_Fermions::convertGaugefieldToSOA_device(cl_mem out, cl_mem in)
 {
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(convertGaugefieldToSOA_kernel, this->get_device_type(), &ls2, &gs2, &num_groups);
+	// if we are not using SOA do nothing
+	if(use_soa) {
+		size_t ls2, gs2;
+		cl_uint num_groups;
+		this->get_work_sizes(convertGaugefieldToSOA_kernel, this->get_device_type(), &ls2, &gs2, &num_groups);
 
-	//set arguments
-	int clerr = clSetKernelArg(convertGaugefieldToSOA_kernel, 0, sizeof(cl_mem), &out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		//set arguments
+		int clerr = clSetKernelArg(convertGaugefieldToSOA_kernel, 0, sizeof(cl_mem), &out);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(convertGaugefieldToSOA_kernel, 1, sizeof(cl_mem), &in);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		clerr = clSetKernelArg(convertGaugefieldToSOA_kernel, 1, sizeof(cl_mem), &in);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(convertGaugefieldToSOA_kernel, gs2, ls2);
+		enqueueKernel(convertGaugefieldToSOA_kernel, gs2, ls2);
+	}
 }
 
 
