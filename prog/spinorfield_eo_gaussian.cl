@@ -51,9 +51,9 @@ __kernel void generate_gaussian_spinorfield_eoprec(__global spinorStorageType * 
 		tmp = gaussianNormalPair(&rnd[id]);
 		out_tmp.e3.e2.re = tmp.re;
 		out_tmp.e3.e2.im = tmp.im;
-	
+
 		//multiply by sigma
-	  	out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));
+		out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));
 
 		putSpinorSOA_eo(out, id_tmp, out_tmp);
 	}
