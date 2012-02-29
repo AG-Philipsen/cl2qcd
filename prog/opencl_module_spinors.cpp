@@ -160,11 +160,17 @@ void Opencl_Module_Spinors::get_work_sizes(const cl_kernel kernel, cl_device_typ
 
 void Opencl_Module_Spinors::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out)
 {
-	cl_mem tmp1 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
-	cl_mem tmp2 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
+	cl_mem tmp1, tmp2;
+	if(use_soa) {
+		tmp1 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
+		tmp2 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
 
-	convertSpinorfieldFromSOA_eo_device(tmp1, in1);
-	convertSpinorfieldFromSOA_eo_device(tmp2, in2);
+		convertSpinorfieldFromSOA_eo_device(tmp1, in1);
+		convertSpinorfieldFromSOA_eo_device(tmp2, in2);
+	} else {
+		tmp1 = in1;
+		tmp2 = in2;
+	}
 
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -182,14 +188,22 @@ void Opencl_Module_Spinors::convert_from_eoprec_device(cl_mem in1, cl_mem in2, c
 
 	enqueueKernel(convert_from_eoprec, gs2, ls2);
 
-	clReleaseMemObject(tmp1);
-	clReleaseMemObject(tmp2);
+	if(use_soa) {
+		clReleaseMemObject(tmp1);
+		clReleaseMemObject(tmp2);
+	}
 }
 
 void Opencl_Module_Spinors::convert_to_eoprec_device(cl_mem out1, cl_mem out2, cl_mem in)
 {
-	cl_mem tmp1 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
-	cl_mem tmp2 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
+	cl_mem tmp1, tmp2;
+	if(use_soa) {
+		tmp1 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
+		tmp2 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
+	} else {
+		tmp1 = out1;
+		tmp2 = out2;
+	}
 
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -207,11 +221,13 @@ void Opencl_Module_Spinors::convert_to_eoprec_device(cl_mem out1, cl_mem out2, c
 
 	enqueueKernel(convert_to_eoprec , gs2, ls2);
 
-	convertSpinorfieldToSOA_eo_device(out1, tmp1);
-	convertSpinorfieldToSOA_eo_device(out2, tmp2);
+	if(use_soa) {
+		convertSpinorfieldToSOA_eo_device(out1, tmp1);
+		convertSpinorfieldToSOA_eo_device(out2, tmp2);
 
-	clReleaseMemObject(tmp1);
-	clReleaseMemObject(tmp2);
+		clReleaseMemObject(tmp1);
+		clReleaseMemObject(tmp2);
+	}
 }
 
 //BLAS-functions
@@ -945,7 +961,11 @@ void Opencl_Module_Spinors::print_profiling(std::string filename, int number)
 size_t Opencl_Module_Spinors::get_eoprec_spinorfield_buffer_size()
 {
 	if(!eoprec_spinorfield_buf_size) {
-		eoprec_spinorfield_buf_size = calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex);
+		if(use_soa) {
+			eoprec_spinorfield_buf_size = calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex);
+		} else {
+			eoprec_spinorfield_buf_size = parameters->get_eoprec_spinorfieldsize() * sizeof(spinor);
+		}
 	}
 	return eoprec_spinorfield_buf_size;
 }

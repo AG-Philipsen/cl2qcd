@@ -70,6 +70,11 @@ if( USE_DOUBLE_PRECISION )
 	add_definitions( -D_USEDOUBLEPREC_ )
 endif( USE_DOUBLE_PRECISION )
 
+option( USE_SOA "Use SOA data storage" ON )
+if( USE_SOA )
+	add_definitions( -D_USE_SOA_ )
+endif( USE_SOA )
+
 # default random number seed
 configure_file( rand_seeds rand_seeds COPYONLY )
 

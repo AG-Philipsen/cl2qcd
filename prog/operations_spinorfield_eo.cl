@@ -5,6 +5,7 @@
 // TODO document
 spinor getSpinorSOA_eo(__global const spinorStorageType * const restrict in, const uint idx)
 {
+#ifdef _USE_SOA_
 	return (spinor) {
 		{
 			// su3vec = 3 * cplx
@@ -20,11 +21,15 @@ spinor getSpinorSOA_eo(__global const spinorStorageType * const restrict in, con
 			in[ 9 * EOPREC_SPINORFIELD_STRIDE + idx], in[10 * EOPREC_SPINORFIELD_STRIDE + idx], in[11 * EOPREC_SPINORFIELD_STRIDE + idx]
 		}
 	};
+#else
+	return in[idx];
+#endif
 }
 
 // TODO document
 void putSpinorSOA_eo(__global spinorStorageType * const restrict out, const uint idx, const spinor val)
 {
+#ifdef _USE_SOA_
 	// su3vec = 3 * cplx
 	out[ 0 * EOPREC_SPINORFIELD_STRIDE + idx] = val.e0.e0;
 	out[ 1 * EOPREC_SPINORFIELD_STRIDE + idx] = val.e0.e1;
@@ -44,4 +49,7 @@ void putSpinorSOA_eo(__global spinorStorageType * const restrict out, const uint
 	out[ 9 * EOPREC_SPINORFIELD_STRIDE + idx] = val.e3.e0;
 	out[10 * EOPREC_SPINORFIELD_STRIDE + idx] = val.e3.e1;
 	out[11 * EOPREC_SPINORFIELD_STRIDE + idx] = val.e3.e2;
+#else
+	out[idx] = val;
+#endif
 }

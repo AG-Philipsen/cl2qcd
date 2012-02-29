@@ -431,6 +431,11 @@ protected:
 	inputparameters* parameters;
 
 	/**
+	 * Whether this device uses SOA storage
+	 */
+	bool use_soa;
+
+	/**
 	 * Calculate the proper stride for SOA storage.
 	 *
 	 * \param The number of elements in the array.

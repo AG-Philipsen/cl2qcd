@@ -51,6 +51,15 @@ void Opencl_Module::init(cl_command_queue queue, cl_mem* clmem_gaugefield, input
 			throw Print_Error_Message("Could not retrive proper CL_DEVICE_TYPE...", __FILE__, __LINE__);
 	}
 
+	// different devices need different strategies for optimal performance
+#ifdef _USE_SOA_
+	use_soa = true;
+	logger.debug() << "Device should use SOA storage format.";
+#else
+	use_soa = false;
+	logger.debug() << "Device should use AOS storage format.";
+#endif
+
 	// initialize memory usage tracking
 	// the gaugefield object is created externally, but as every opencl module will access it using
 	// an own command queue it must be accounted for
@@ -164,6 +173,10 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 	}
 	*collect_options << " -DGAUGEFIELD_STRIDE=" << calculateStride(get_parameters()->get_vol4d() * NDIM, sizeof(hmc_complex));
 	*collect_options << " -I" << SOURCEDIR;
+
+	if(use_soa) {
+		*collect_options << " -D_USE_SOA_";
+	}
 
 	return;
 }
