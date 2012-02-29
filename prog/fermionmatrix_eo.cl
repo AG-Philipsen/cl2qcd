@@ -24,7 +24,7 @@ spinor dslash_eoprec_unified_local(__global const spinorStorageType * const rest
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = getSpinor_eo(in, nn_eo);
-	U = getSU3SOA(field, get_link_idx_SOA(dir, idx_arg));
+	U = getSU3(field, get_link_idx_SOA(dir, idx_arg));
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = KAPPA_SPATIAL_IM;
 	if(dir == XDIR) {
@@ -126,7 +126,7 @@ spinor dslash_eoprec_unified_local(__global const spinorStorageType * const rest
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = getSpinor_eo(in, nn_eo);
-	U = getSU3SOA(field, get_link_idx_SOA(dir, idx_neigh));
+	U = getSU3(field, get_link_idx_SOA(dir, idx_neigh));
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp.re = KAPPA_SPATIAL_RE;
 	bc_tmp.im = MKAPPA_SPATIAL_IM;

@@ -38,7 +38,7 @@ __kernel void convertGaugefieldToSOA(__global Matrixsu3StorageType * const restr
 			Matrixsu3 tmp = in[d + NDIM * s];
 
 			const st_idx site = get_st_idx_from_site_idx(s);
-			putSU3SOA(out, get_link_idx_SOA(d, site), tmp);
+			putSU3(out, get_link_idx_SOA(d, site), tmp);
 		}
 	}
 }
@@ -49,7 +49,7 @@ __kernel void convertGaugefieldFromSOA(__global Matrixsu3 * const restrict out, 
 	for(uint d = 0; d < NDIM; ++d) {
 		for(site_idx s = get_global_id(0); s < VOL4D; s += get_global_size(0)) {
 			const st_idx site = get_st_idx_from_site_idx(s);
-			Matrixsu3 tmp = getSU3SOA(in, get_link_idx_SOA(d, site));
+			Matrixsu3 tmp = getSU3(in, get_link_idx_SOA(d, site));
 
 			out[d + NDIM * s] = tmp;
 		}

@@ -345,7 +345,7 @@ Matrix3x3 calc_staple_tau (__global ocl_s_gaugefield* field, const int pos, cons
 }
 
 // TODO document
-Matrixsu3 getSU3SOA(__global const Matrixsu3StorageType * const restrict in, const uint idx)
+Matrixsu3 getSU3(__global const Matrixsu3StorageType * const restrict in, const uint idx)
 {
 #ifdef _USE_SOA_
 	return (Matrixsu3) {
@@ -365,7 +365,7 @@ Matrixsu3 getSU3SOA(__global const Matrixsu3StorageType * const restrict in, con
 }
 
 // TODO document
-void putSU3SOA(__global Matrixsu3StorageType * const restrict out, const uint idx, const Matrixsu3 val)
+void putSU3(__global Matrixsu3StorageType * const restrict out, const uint idx, const Matrixsu3 val)
 {
 #ifdef _USE_SOA_
 	out[0 * GAUGEFIELD_STRIDE + idx] = val.e00;

@@ -165,6 +165,11 @@ st_idx inline get_st_idx_from_link_idx(const link_idx in)
 	return tmp;
 }
 
+/**
+ * @todo this be done in the normla get_link_idx-function,
+ *       but therefore potential SOA (even-odded) gaugefield
+ *       needs to be used everywhere.
+ */
 site_idx inline get_link_idx_SOA(const dir_idx mu, const st_idx in)
 {
 #ifdef _USE_SOA_
