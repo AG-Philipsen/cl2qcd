@@ -1,4 +1,4 @@
-__kernel void generate_gaussian_spinorfield(__global spinorfield * in, __global hmc_ocl_ran * rnd)
+__kernel void generate_gaussian_spinorfield(__global spinorfield * out, __global hmc_ocl_ran * rnd)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -62,6 +62,6 @@ __kernel void generate_gaussian_spinorfield(__global spinorfield * in, __global 
 		//multiply by sigma
 		out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));
 
-		put_spinor_to_field(out_tmp, in, pos.space, pos.time);
+		put_spinor_to_field(out_tmp, out, pos.space, pos.time);
 	}
 }
