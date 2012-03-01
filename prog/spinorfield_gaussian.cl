@@ -13,8 +13,8 @@ __kernel void generate_gaussian_spinorfield(__global spinorfield * out, __global
 	spinor out_tmp;
 
 #ifdef _SAME_RND_NUMBERS_
-       if(id>0) return;
-       global_size = 1;
+	if(id > 0) return;
+	global_size = 1;
 #endif
 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {

@@ -9,8 +9,8 @@ __kernel void generate_gaussian_spinorfield_eoprec(__global spinorfield * out, _
 
 	//if one wants to compare rnd numbers as from a single threaded program
 #ifdef _SAME_RND_NUMBERS_
-       if(id>0) return;
-       global_size = 1;
+	if(id > 0) return;
+	global_size = 1;
 #endif
 
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
@@ -51,9 +51,9 @@ __kernel void generate_gaussian_spinorfield_eoprec(__global spinorfield * out, _
 		tmp = gaussianNormalPair(&rnd[id]);
 		out_tmp.e3.e2.re = tmp.re;
 		out_tmp.e3.e2.im = tmp.im;
-	
+
 		//multiply by sigma
-	  	out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));
+		out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));
 
 		out[id_tmp] = out_tmp;
 	}
