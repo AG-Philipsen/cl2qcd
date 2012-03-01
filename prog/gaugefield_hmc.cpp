@@ -45,13 +45,17 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 	size_t gfsize = get_parameters()->get_gf_buf_size();
 	size_t gmsize = get_parameters()->get_gm_buf_size();
 
+	// copy u->u' p->p' for the integrator
+	// new_u is used in some debug code of the gaugemomentum-initialization. therefore we need to copy it before
+	// p is modified in the initialization, therefore we cannot copy it now
+	get_task_hmc(0)->copy_buffer_on_device(*(get_task_hmc(0)->get_gaugefield()), get_task_hmc(0)->get_clmem_new_u(), gfsize);
+
 	logger.debug() << "\tinit spinorfield and gaugemomentum" ;
 	this->init_gaugemomentum_spinorfield();
 
 	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
-	//copy u->u' p->p' for the integrator
-	get_task_hmc(0)->copy_buffer_on_device(*(get_task_hmc(0)->get_gaugefield()), get_task_hmc(0)->get_clmem_new_u(), gfsize);
 	get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_p(), get_task_hmc(0)->get_clmem_new_p(), gmsize);
+
 
 	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
 	this->integrator(solver_timer);
