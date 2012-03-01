@@ -7,7 +7,7 @@
 
 #ifndef _INKERNEL_
 //CP: define struct for observables
-struct hmc_observables{
+struct hmc_observables {
 	hmc_float plaq;
 	hmc_float tplaq;
 	hmc_float splaq;
