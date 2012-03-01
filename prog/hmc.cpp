@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 		/** @todo think about what is a senseful filename*/
 		stringstream gaugeout_name;
 		gaugeout_name << "hmc_output";
-		
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Initialization
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,9 +63,9 @@ int main(int argc, char* argv[])
 		perform_timer.reset();
 		/** @todo usage of solver_timer has to be checked. No output yet */
 		usetimer solver_timer;
-		
+
 		int hmc_iter = parameters.get_hmcsteps();
-		int iter;	
+		int iter;
 		hmc_float acc_rate = 0.;
 		int writefreq = parameters.get_writefrequency();
 		int savefreq = parameters.get_savefrequency();
@@ -83,11 +83,11 @@ int main(int argc, char* argv[])
 			if( ( (iter + 1) % writefreq ) == 0 ) {
 				gaugefield.print_hmcobservables(obs, iter, gaugeout_name.str());
 				//print (some info) to stdout if needed:
-				//				gaugefield.print_hmcobservables(obs, iter);
+				//        gaugefield.print_hmcobservables(obs, iter);
 			}
 			if( parameters.get_saveconfigs() == true && ( (iter + 1) % savefreq ) == 0 ) {
 				//CP: I dont think this is necessary at the moment...
-// 				gaugefield.synchronize(0);
+//        gaugefield.synchronize(0);
 				gaugefield.save(iter);
 			}
 		}
