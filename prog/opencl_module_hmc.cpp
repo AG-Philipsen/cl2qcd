@@ -160,6 +160,15 @@ void Opencl_Module_Hmc::get_work_sizes(const cl_kernel kernel, cl_device_type de
 {
 	Opencl_Module_Fermions::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
 
+	// kernels that use random numbers must not exceed the size of the random state array
+	if(kernel == generate_gaussian_gaugemomenta
+	   || kernel == generate_gaussian_spinorfield
+	   || kernel == generate_gaussian_spinorfield_eoprec) {
+		if(*gs > get_num_rndstates()) {
+			*gs = get_num_rndstates();
+		}
+	}
+
 	return;
 }
 
