@@ -381,7 +381,6 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device()
 	cl_uint num_groups;
 	this->get_work_sizes(generate_gaussian_gaugemomenta, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	//this is always applied to clmem_new_p
 	int clerr = clSetKernelArg(generate_gaussian_gaugemomenta, 0, sizeof(cl_mem), &clmem_p);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
