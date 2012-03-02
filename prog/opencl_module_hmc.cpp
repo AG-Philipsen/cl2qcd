@@ -22,7 +22,7 @@ void Opencl_Module_Hmc::fill_buffers()
 	///@todo CP: some of the above buffers are not used and can be deleted again!! especially in the eoprec-case
 
 	int spinorfield_size = get_parameters()->get_sf_buf_size();
-	int eoprec_spinorfield_size = get_parameters()->get_eo_sf_buf_size();
+	int eoprec_spinorfield_size = get_eoprec_spinorfield_buffer_size();
 	int gaugemomentum_size = get_parameters()->get_gm_buf_size();
 	int gaugefield_size = get_parameters()->get_gf_buf_size();
 	int float_size = sizeof(hmc_float);
@@ -65,8 +65,7 @@ void Opencl_Module_Hmc::fill_kernels()
 	//init kernels for HMC
 	if(get_parameters()->get_use_eo() == true) {
 		generate_gaussian_spinorfield_eoprec = createKernel("generate_gaussian_spinorfield_eoprec") << basic_hmc_code << "random.cl" << "spinorfield_eo_gaussian.cl";
-		fermion_force_eoprec = createKernel("fermion_force_eoprec") << basic_hmc_code << "operations_gaugemomentum.cl" << "operations_spinorfiel\
-d_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
+		fermion_force_eoprec = createKernel("fermion_force_eoprec") << basic_hmc_code << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 	} else {
 		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_hmc_code << "random.cl" << "spinorfield_gaussian.cl";
 	}
@@ -495,7 +494,7 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_eoprec_device()
 	clerr = clSetKernelArg(generate_gaussian_spinorfield_eoprec, 1, sizeof(cl_mem), get_clmem_rndarray());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(generate_gaussian_spinorfield_eoprec  , gs2, ls2);
+	enqueueKernel(generate_gaussian_spinorfield_eoprec, gs2, ls2);
 
 	if(logger.beDebug()) {
 		cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
@@ -523,6 +522,7 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//  which then has to be the source of the inversion
 	if(get_parameters()->get_use_eo() == true) {
+		convertGaugefieldToSOA_device(gaugefield_soa, *get_gaugefield());
 		Opencl_Module_Fermions::Qplus_eoprec (clmem_phi_inv_eoprec, clmem_phi_eoprec , *get_gaugefield());
 		if(logger.beDebug()) print_info_inv_field(clmem_phi_eoprec, true, "\tinit field after update ");
 	} else {
@@ -544,6 +544,8 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 	 * @NOTE A dummy-kernel and corresponding calling function is already implemented if one wishes to
 	 *  change this one day.
 	 */
+	// make sure SOA is in proper format for dslash
+	convertGaugefieldToSOA_device(gaugefield_soa, clmem_new_u);
 	if(get_parameters()->get_use_eo() == true) {
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 		if(get_parameters()->get_use_cg() == true) {
@@ -609,7 +611,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			//if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\t\t\tinv. field after inversion ");
 
 			//store this result in clmem_phi_inv
-			copy_buffer_on_device(get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, get_parameters()->get_eo_sf_buf_size());
+			copy_buffer_on_device(get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, get_eoprec_spinorfield_buffer_size());
 
 			/**
 			 * Now, one has to calculate
@@ -622,8 +624,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 			//logger.debug() << "\t\tcalc X_even...";
 			//copy former solution to clmem_source
-			copy_buffer_on_device(get_clmem_inout_eoprec(), get_clmem_source_even(), get_parameters()->get_eo_sf_buf_size());
-			//logger.debug() << "\t\t\tstart solver";
+			copy_buffer_on_device(get_clmem_inout_eoprec(), get_clmem_source_even(), get_eoprec_spinorfield_buffer_size());
 
 			//this sets clmem_inout cold as trial-solution
 			set_eoprec_spinorfield_cold_device(get_clmem_inout_eoprec());
@@ -645,6 +646,9 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		 *  X_odd = -R(-mu)_inv D X_even
 		 *  Y_odd = -R(mu)_inv D Y_even
 		 */
+
+		/** @fixme below usages of dslash should work, but only because we use bicgstab above
+		           proper implementation needs to make sure this is always the case */
 
 		///@NOTE the following calculations could also go in a new function for convenience
 		//calculate X_odd
@@ -996,6 +1000,7 @@ void Opencl_Module_Hmc::calc_gauge_force()
 hmc_float Opencl_Module_Hmc::calc_s_fermion()
 {
 	logger.debug() << "calc final fermion energy...";
+	convertGaugefieldToSOA_device(gaugefield_soa, clmem_new_u);
 	//this function essentially performs the same steps as in the force-calculation, but with higher precision.
 	//  therefore, comments are deleted here...
 	//  Furthermore, in the bicgstab-case, the second inversions are not needed
@@ -1035,7 +1040,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
 
 			//store this result in clmem_phi_inv
-			copy_buffer_on_device(get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, get_parameters()->get_eo_sf_buf_size());
+			copy_buffer_on_device(get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, get_eoprec_spinorfield_buffer_size());
 
 		}
 	} else {

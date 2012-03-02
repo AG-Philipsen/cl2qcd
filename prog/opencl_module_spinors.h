@@ -40,6 +40,8 @@
  */
 class Opencl_Module_Spinors : public Opencl_Module_Ran {
 public:
+	Opencl_Module_Spinors();
+
 	/**
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
@@ -102,6 +104,22 @@ public:
 	void set_spinorfield_cold_device(cl_mem inout);
 	void set_eoprec_spinorfield_cold_device(cl_mem inout);
 
+	/**
+	 * Query the size required for a buffer to contain an even-odd spinorfield
+	 * in the format used by the implementation.
+	 *
+	 * @return The buffer size in bytes
+	 */
+	size_t get_eoprec_spinorfield_buffer_size();
+	/**
+	 * Copy an even-odd preconditioned spinorfield to the given buffer.
+	 *
+	 * @param buf A buffer of at least get_eoprec_spinorfield_buffer_size() bytes which will
+	 *            be filled with the spinorfield in an implementation chosen format.
+	 * @param source An array of spinors representing an even-odd field.
+	 */
+	void copy_to_eoprec_spinorfield_buffer(cl_mem buf, const spinor * const source);
+
 #ifdef _PROFILING_
 
 	//BLAS
@@ -134,6 +152,9 @@ public:
 
 	//Observables
 	usetimer timer_ps_correlator;
+
+	usetimer timer_convertSpinorfieldToSOA_eo;
+	usetimer timer_convertSpinorfieldFromSOA_eo;
 
 	/**
 	 * Return the timer connected to a specific kernel.
@@ -172,7 +193,6 @@ protected:
 	cl_mem clmem_scalar_product_buf_glob;
 	cl_mem clmem_global_squarenorm_buf_glob;
 
-
 	//BLAS
 	cl_kernel set_spinorfield_cold;
 	cl_kernel saxpy;
@@ -204,6 +224,13 @@ protected:
 
 private:
 
+	cl_kernel convertSpinorfieldToSOA_eo;
+	cl_kernel convertSpinorfieldFromSOA_eo;
+
+	size_t eoprec_spinorfield_buf_size;
+
+	void convertSpinorfieldToSOA_eo_device(cl_mem out, cl_mem in);
+	void convertSpinorfieldFromSOA_eo_device(cl_mem out, cl_mem in);
 };
 
 #endif //OPENCLMODULSPINORSH

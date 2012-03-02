@@ -381,27 +381,25 @@ void Dummyfield::fill_buffers()
 
 	fill_with_zero(sf_out, NUM_ELEMENTS_AE);
 
-	size_t sf_buf_size;
-	if(get_parameters()->get_use_eo() == true) sf_buf_size = get_parameters()->get_eo_sf_buf_size();
-	else sf_buf_size = get_parameters()->get_eo_sf_buf_size();
 	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
 	//create buffer for sf on device (and copy sf_in to both for convenience)
 
-	in1 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
+	Opencl_Module_Spinors * spinor_module = static_cast<Opencl_Module_Spinors*>(opencl_modules[0]);
+	size_t sf_eoprec_buffer_size = spinor_module->get_eoprec_spinorfield_buffer_size();
+	//create buffer for sf on device (and copy sf_in to both for convenience)
+
+	in1 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in2 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
+	in2 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in3 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
+	in3 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in4 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
+	in4 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in1, CL_TRUE, 0, sf_buf_size, sf_in1, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in2, CL_TRUE, 0, sf_buf_size, sf_in2, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in3, CL_TRUE, 0, sf_buf_size, sf_in3, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in4, CL_TRUE, 0, sf_buf_size, sf_in4, 0, 0, NULL);
+	spinor_module->copy_to_eoprec_spinorfield_buffer(in1, sf_in1);
+	spinor_module->copy_to_eoprec_spinorfield_buffer(in2, sf_in2);
+	spinor_module->copy_to_eoprec_spinorfield_buffer(in3, sf_in3);
+	spinor_module->copy_to_eoprec_spinorfield_buffer(in4, sf_in4);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, ae_buf_size, 0, &err );
@@ -414,21 +412,11 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
-	Opencl_Module::fill_kernels();
-
-	//to this end, one has to set the needed files by hand
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
-	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
-	//  basic_hmc_code = basic_fermion_code << "types_hmc.h";
-
-	global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "spinorfield_eo_squarenorm.cl";
-	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
+	Opencl_Module_Hmc::fill_kernels();
 
 	ae_sqn = createKernel("gaugemomentum_squarenorm") << basic_fermion_code << "types_hmc.h" << "operations_gaugemomentum.cl" << "gaugemomentum_squarenorm.cl";
 
-	testKernel = createKernel("fermion_force_eoprec") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
+	testKernel = createKernel("fermion_force_eoprec") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 
 }
 
@@ -453,7 +441,8 @@ void Dummyfield::clear_buffers()
 void Device::clear_kernels()
 {
 	clReleaseKernel(testKernel);
-	Opencl_Module::clear_kernels();
+	clReleaseKernel(ae_sqn);
+	Opencl_Module_Hmc::clear_kernels();
 }
 
 void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls, int evenodd)

@@ -15,8 +15,8 @@ class Device : public Opencl_Module_Fermions {
 	cl_kernel testKernel;
 
 public:
-	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Fermions() {
-		Opencl_Module_Fermions::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, cl_mem * gf, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Fermions() {
+		Opencl_Module_Fermions::init(queue, gf, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -36,6 +36,9 @@ public:
 		params.readfile(tmp.str().c_str());
 
 		init(1, device_type, &params);
+
+		// make sure SOA is in proper format for dslash_eoprec
+		static_cast<Device*>(opencl_modules[0])->convertGaugefieldToSOA();
 	};
 
 	virtual void init_tasks();
@@ -50,11 +53,9 @@ private:
 	void clear_buffers();
 	inputparameters params;
 	cl_mem in, out;
+	cl_mem even_in, odd_in;
 	cl_mem sqnorm;
 	spinor * sf_in;
-	spinor * sf_out;
-	Matrixsu3 * gf_in;
-
 };
 
 
@@ -96,7 +97,7 @@ BOOST_AUTO_TEST_CASE( DSLASH_EOPREC )
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0));
+	opencl_modules[0] = new Device(queue[0], get_clmem_gaugefield(), get_parameters(), get_max_compute_units(0), get_double_ext(0));
 
 	fill_buffers();
 }
@@ -168,12 +169,9 @@ void Dummyfield::fill_buffers()
 
 	cl_context context = opencl_modules[0]->get_context();
 
-	int NUM_ELEMENTS_SF;
-	if(get_parameters()->get_use_eo() == true) NUM_ELEMENTS_SF =  params.get_eoprec_spinorfieldsize();
-	else NUM_ELEMENTS_SF =  params.get_spinorfieldsize();
+	int NUM_ELEMENTS_SF =  params.get_spinorfieldsize();
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_out = new spinor[NUM_ELEMENTS_SF];
 
 	//use the variable use_cg to switch between cold and random input sf
 	if(get_parameters()->get_use_cg() == true) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
@@ -181,15 +179,24 @@ void Dummyfield::fill_buffers()
 	BOOST_REQUIRE(sf_in);
 
 	size_t sf_buf_size = get_parameters()->get_sf_buf_size();
+	Device * dev = static_cast<Device*>(opencl_modules[0]);
 	//create buffer for sf on device (and copy sf_in to both for convenience)
 	in = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in, CL_TRUE, 0, sf_buf_size, sf_in, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(dev->get_queue(), in, CL_TRUE, 0, sf_buf_size, sf_in, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sf_buf_size, 0, &err );
+	out = clCreateBuffer(context, CL_MEM_READ_WRITE, sf_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out, CL_TRUE, 0, sf_buf_size, sf_in, 0, 0, NULL);
+
+	size_t eo_buf_size = dev->get_eoprec_spinorfield_buffer_size();
+	even_in = clCreateBuffer(context, CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	odd_in = clCreateBuffer(context, CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	out = clCreateBuffer(context, CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	dev->convert_to_eoprec_device(even_in, odd_in, in);
 
 	//create buffer for squarenorm on device
 	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
@@ -197,19 +204,10 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
-	Opencl_Module::fill_kernels();
+	Opencl_Module_Fermions::fill_kernels();
 
 	//to this end, one has to set the needed files by hand
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
-	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
-
-	global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "spinorfield_eo_squarenorm.cl";
-	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
-
-	testKernel = createKernel("dslash_eoprec") << basic_fermion_code << "operations_spinorfield_eo.cl"/* << "fermionmatrix.cl"*/ << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
-
+	testKernel = createKernel("dslash_eoprec") << basic_fermion_code << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 }
 
 void Dummyfield::clear_buffers()
@@ -217,21 +215,25 @@ void Dummyfield::clear_buffers()
 	// don't invoke parent function as we don't require the original buffers
 
 	clReleaseMemObject(in);
+	clReleaseMemObject(odd_in);
+	clReleaseMemObject(even_in);
 	clReleaseMemObject(out);
 	clReleaseMemObject(sqnorm);
 
 	delete[] sf_in;
-	delete[] sf_out;
 }
 
 void Device::clear_kernels()
 {
 	clReleaseKernel(testKernel);
-	Opencl_Module::clear_kernels();
+	Opencl_Module_Fermions::clear_kernels();
 }
 
 void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls)
 {
+	if(use_soa) {
+		gf = gaugefield_soa;
+	}
 	cl_int err;
 	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &in);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
@@ -249,13 +251,14 @@ void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls)
 hmc_float Dummyfield::get_squarenorm(int which)
 {
 	//which controlls if the in or out-vector is looked at
-	if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_eoprec_device(in, sqnorm);
+	if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_eoprec_device(even_in, sqnorm);
 	if(which == 1) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_eoprec_device(out, sqnorm);
 	// get stuff from device
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << result;
+
 	return result;
 }
 
@@ -269,7 +272,7 @@ void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
 		logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
 	else {
 		logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
-		BOOST_REQUIRE_EQUAL(1, 0);
+		BOOST_REQUIRE_EQUAL(cpu, gpu);
 	}
 }
 
@@ -284,6 +287,6 @@ void Dummyfield::runTestKernel()
 		ls = 1;
 	}
 	logger.info() << "test kernel with global_work_size: " << gs << " and local_work_size: " << ls;
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in, *(get_clmem_gaugefield()), gs, ls);
+	static_cast<Device*>(opencl_modules[0])->runTestKernel(out, even_in, *(get_clmem_gaugefield()), gs, ls);
 }
 

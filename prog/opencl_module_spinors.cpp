@@ -13,7 +13,7 @@ void Opencl_Module_Spinors::fill_collect_options(stringstream* collect_options)
 	Opencl_Module_Ran::fill_collect_options(collect_options);
 	*collect_options << " -D_FERMIONS_" << " -DSPINORSIZE=" << get_parameters()->get_spinorsize() << " -DHALFSPINORSIZE=" << get_parameters()->get_halfspinorsize()
 	                 << " -DSPINORFIELDSIZE=" << get_parameters()->get_spinorfieldsize() << " -DEOPREC_SPINORFIELDSIZE=" << get_parameters()->get_eoprec_spinorfieldsize();
-	return;
+	*collect_options << " -DEOPREC_SPINORFIELD_STRIDE=" << calculateStride(get_parameters()->get_eoprec_spinorfieldsize(), sizeof(hmc_complex));
 }
 
 
@@ -25,7 +25,6 @@ void Opencl_Module_Spinors::fill_buffers()
 	clmem_global_squarenorm_buf_glob = 0;
 	clmem_scalar_product_buf_glob = 0;
 
-
 	return;
 }
 
@@ -34,6 +33,9 @@ void Opencl_Module_Spinors::fill_kernels()
 	Opencl_Module_Ran::fill_kernels();
 
 	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
+	if(get_parameters()->get_use_eo()) {
+		basic_fermion_code = basic_fermion_code << "operations_spinorfield_eo.cl";
+	}
 
 	set_spinorfield_cold = createKernel("set_spinorfield_cold") << basic_fermion_code << "spinorfield_cold.cl";
 	saxpy = createKernel("saxpy") << basic_fermion_code << "spinorfield_saxpy.cl";
@@ -58,6 +60,8 @@ void Opencl_Module_Spinors::fill_kernels()
 		scalar_product_eoprec = createKernel("scalar_product_eoprec") << basic_fermion_code << "spinorfield_eo_scalar_product.cl";
 		set_zero_spinorfield_eoprec = createKernel("set_zero_spinorfield_eoprec") << basic_fermion_code << "spinorfield_eo_zero.cl";
 		global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "spinorfield_eo_squarenorm.cl";
+		convertSpinorfieldToSOA_eo = createKernel("convertSpinorfieldToSOA_eo") << basic_fermion_code << "spinorfield_eo_convert.cl";
+		convertSpinorfieldFromSOA_eo = createKernel("convertSpinorfieldFromSOA_eo") << basic_fermion_code << "spinorfield_eo_convert.cl";
 	}
 
 	return;
@@ -103,6 +107,10 @@ void Opencl_Module_Spinors::clear_kernels()
 		clerr = clReleaseKernel(set_zero_spinorfield_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(global_squarenorm_eoprec);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(convertSpinorfieldToSOA_eo);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(convertSpinorfieldFromSOA_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 
@@ -152,40 +160,74 @@ void Opencl_Module_Spinors::get_work_sizes(const cl_kernel kernel, cl_device_typ
 
 void Opencl_Module_Spinors::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out)
 {
+	cl_mem tmp1, tmp2;
+	if(use_soa) {
+		tmp1 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
+		tmp2 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
+
+		convertSpinorfieldFromSOA_eo_device(tmp1, in1);
+		convertSpinorfieldFromSOA_eo_device(tmp2, in2);
+	} else {
+		tmp1 = in1;
+		tmp2 = in2;
+	}
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(convert_from_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(convert_from_eoprec, 0, sizeof(cl_mem), &in1);
+	int clerr = clSetKernelArg(convert_from_eoprec, 0, sizeof(cl_mem), &tmp1);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(convert_from_eoprec, 1, sizeof(cl_mem), &in2);
+	clerr = clSetKernelArg(convert_from_eoprec, 1, sizeof(cl_mem), &tmp2);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(convert_from_eoprec, 2, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(convert_from_eoprec , gs2, ls2);
+	enqueueKernel(convert_from_eoprec, gs2, ls2);
+
+	if(use_soa) {
+		clReleaseMemObject(tmp1);
+		clReleaseMemObject(tmp2);
+	}
 }
 
 void Opencl_Module_Spinors::convert_to_eoprec_device(cl_mem out1, cl_mem out2, cl_mem in)
 {
+	cl_mem tmp1, tmp2;
+	if(use_soa) {
+		tmp1 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
+		tmp2 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
+	} else {
+		tmp1 = out1;
+		tmp2 = out2;
+	}
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(convert_to_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(convert_to_eoprec, 0, sizeof(cl_mem), &out1);
+	int clerr = clSetKernelArg(convert_to_eoprec, 0, sizeof(cl_mem), &tmp1);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(convert_to_eoprec, 1, sizeof(cl_mem), &out2);
+	clerr = clSetKernelArg(convert_to_eoprec, 1, sizeof(cl_mem), &tmp2);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(convert_to_eoprec, 2, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(convert_to_eoprec , gs2, ls2);
+
+	if(use_soa) {
+		convertSpinorfieldToSOA_eo_device(out1, tmp1);
+		convertSpinorfieldToSOA_eo_device(out2, tmp2);
+
+		clReleaseMemObject(tmp1);
+		clReleaseMemObject(tmp2);
+	}
 }
 
 //BLAS-functions
@@ -550,6 +592,37 @@ void Opencl_Module_Spinors::set_zero_spinorfield_eoprec_device(cl_mem x)
 	enqueueKernel( set_zero_spinorfield_eoprec, gs2, ls2);
 }
 
+void Opencl_Module_Spinors::convertSpinorfieldToSOA_eo_device(cl_mem out, cl_mem in)
+{
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(convertSpinorfieldToSOA_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+
+	//set arguments
+	int clerr = clSetKernelArg(convertSpinorfieldToSOA_eo, 0, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(convertSpinorfieldToSOA_eo, 1, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel(convertSpinorfieldToSOA_eo, gs2, ls2);
+}
+
+void Opencl_Module_Spinors::convertSpinorfieldFromSOA_eo_device(cl_mem out, cl_mem in)
+{
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(convertSpinorfieldFromSOA_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+
+	//set arguments
+	int clerr = clSetKernelArg(convertSpinorfieldFromSOA_eo, 0, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(convertSpinorfieldFromSOA_eo, 1, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel(convertSpinorfieldFromSOA_eo, gs2, ls2);
+}
 
 #ifdef _PROFILING_
 usetimer* Opencl_Module_Spinors::get_timer(const char * in)
@@ -616,6 +689,12 @@ usetimer* Opencl_Module_Spinors::get_timer(const char * in)
 	}
 	if (strcmp(in, "product") == 0) {
 		return &this->timer_product;
+	}
+	if(strcmp(in, "convertSpinorfieldToSOA_eo") == 0) {
+		return &timer_convertSpinorfieldToSOA_eo;
+	}
+	if(strcmp(in, "convertSpinorfieldFromSOA_eo") == 0) {
+		return &timer_convertSpinorfieldFromSOA_eo;
 	} else {
 		return NULL;
 	}
@@ -729,6 +808,12 @@ int Opencl_Module_Spinors::get_read_write_size(const char * in)
 	if (strcmp(in, "product") == 0) {
 		//this kernel reads 2 complex numbers and writes 1 complex number
 		return C * D * (2 + 1);
+	}
+	if(strcmp(in, "convertSpinorfieldToSOA_eo") == 0) {
+		return 2 * Seo * 24 * D;
+	}
+	if(strcmp(in, "convertSpinorfieldFromSOA_eo") == 0) {
+		return 2 * Seo * 24 * D;
 	}
 	return 0;
 }
@@ -865,6 +950,37 @@ void Opencl_Module_Spinors::print_profiling(std::string filename, int number)
 	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "product";
 	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+	kernelName = "convertSpinorfieldToSOA_eo";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+	kernelName = "convertSpinorfieldFromSOA_eo";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 
 }
 #endif
+
+size_t Opencl_Module_Spinors::get_eoprec_spinorfield_buffer_size()
+{
+	if(!eoprec_spinorfield_buf_size) {
+		if(use_soa) {
+			eoprec_spinorfield_buf_size = calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex);
+		} else {
+			eoprec_spinorfield_buf_size = parameters->get_eoprec_spinorfieldsize() * sizeof(spinor);
+		}
+	}
+	return eoprec_spinorfield_buf_size;
+}
+
+void Opencl_Module_Spinors::copy_to_eoprec_spinorfield_buffer(cl_mem buf, const spinor * const source)
+{
+	cl_mem tmp = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
+	cl_int clerr = clEnqueueWriteBuffer(get_queue(), tmp, CL_TRUE, 0, sizeof(spinor) * parameters->get_eoprec_spinorfieldsize(), source, 0, 0, NULL);
+	if(clerr != CL_SUCCESS)
+		throw Opencl_Error(clerr, "Failed to send spinorfield to device");
+
+	convertSpinorfieldToSOA_eo_device(buf, tmp);
+}
+
+Opencl_Module_Spinors::Opencl_Module_Spinors() : Opencl_Module_Ran(), eoprec_spinorfield_buf_size(0)
+{
+}
+

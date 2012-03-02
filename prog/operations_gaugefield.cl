@@ -7,8 +7,8 @@
 
 Matrixsu3 project_su3(const Matrixsu3 U)
 {
-  
-        Matrixsu3 out;
+
+	Matrixsu3 out;
 
 	//Extract initial vectors
 	hmc_complex a[NC];
@@ -83,7 +83,7 @@ Matrixsu3 project_su3(const Matrixsu3 U)
 	tmp = complexconj(a[2]);
 	tmp2 = complexconj (b[1]);
 	tmp = complexmult (tmp, tmp2);
-	c[0] = complexsubtract (c[0],tmp);
+	c[0] = complexsubtract (c[0], tmp);
 
 	tmp = complexconj(a[2]);
 	tmp2 = complexconj (b[0]);
@@ -91,7 +91,7 @@ Matrixsu3 project_su3(const Matrixsu3 U)
 	tmp = complexconj(a[0]);
 	tmp2 = complexconj (b[2]);
 	tmp =  complexmult (tmp, tmp2);
-	c[1] = complexsubtract (c[1],tmp);
+	c[1] = complexsubtract (c[1], tmp);
 
 	tmp = complexconj(a[0]);
 	tmp2 = complexconj (b[1]);
@@ -99,13 +99,13 @@ Matrixsu3 project_su3(const Matrixsu3 U)
 	tmp = complexconj(a[1]);
 	tmp2 = complexconj (b[0]);
 	tmp =  complexmult (tmp, tmp2);
-	c[2] = complexsubtract (c[2],tmp);
+	c[2] = complexsubtract (c[2], tmp);
 
 	//Set new values to matrix
 	out.e02 = c[0];
 	out.e12 = c[1];
 	out.e22 = c[2];
- 
+
 	//Set new values to matrix
 	out.e01 = b[0];
 	out.e11 = b[1];
@@ -114,7 +114,7 @@ Matrixsu3 project_su3(const Matrixsu3 U)
 	out.e10 = a[1];
 	out.e20 = a[2];
 
-	return out; 
+	return out;
 }
 
 Matrixsu2 reduction (const Matrix3x3 src, const int rand)
@@ -199,14 +199,14 @@ Matrixsu3 local_plaquette(__global ocl_s_gaugefield * field, const int n, const 
 	Matrixsu3 out;
 	int4 pos;
 	if(mu == 0) {
-	        pos.x = get_neighbor_temporal(t);
+		pos.x = get_neighbor_temporal(t);
 		pos.y = n;
 	} else {
 		pos.x = t;
 		pos.y = get_neighbor(n, mu);
 	}
 	if(nu == 0) {
-                pos.z = get_neighbor_temporal(t);
+		pos.z = get_neighbor_temporal(t);
 		pos.w = n;
 	} else {
 		pos.z = t;
@@ -228,11 +228,10 @@ Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, cons
 	qplaq = add_matrix3x3(qplaq, matrix_su3to3x3(tmp));
 	//second plaquette is at pos - mu
 	int4 coord;
-	if(mu == 0){
+	if(mu == 0) {
 		coord.x = n;
 		coord.y = get_lower_neighbor_temporal(t);
-	}
-	else{
+	} else {
 		coord.x = get_lower_neighbor(n, mu);
 		coord.y = t;
 	}
@@ -242,8 +241,7 @@ Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, cons
 	if(nu == 0) {
 		coord.z = coord.x;
 		coord.w = get_lower_neighbor_temporal(coord.y);
-	}
-	else{
+	} else {
 		coord.z = get_lower_neighbor(coord.x, nu);
 		coord.w = coord.y;
 	}
@@ -253,8 +251,7 @@ Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, cons
 	if(nu == 0) {
 		coord.x = n;
 		coord.y = get_lower_neighbor_temporal(t);
-	}
-	else{
+	} else {
 		coord.x = get_lower_neighbor(n, nu);
 		coord.y = t;
 	}
@@ -271,16 +268,16 @@ Matrix3x3 local_staple(__global ocl_s_gaugefield * field, const int n, const int
 	int4 pos;
 
 	//first staple
-	//calculate the coordinates for the matrices. this is the same as with	the plaquette
+	//calculate the coordinates for the matrices. this is the same as with  the plaquette
 	if(mu == 0) {
-  	        pos.x = get_neighbor_temporal(t);
+		pos.x = get_neighbor_temporal(t);
 		pos.y = n;
 	} else {
-	        pos.x = t;
+		pos.x = t;
 		pos.y = get_neighbor(n, mu);
 	}
 	if(nu == 0) {
-	        pos.z = get_neighbor_temporal(t);
+		pos.z = get_neighbor_temporal(t);
 		pos.w = n;
 	} else {
 		pos.z = t;
@@ -288,27 +285,27 @@ Matrix3x3 local_staple(__global ocl_s_gaugefield * field, const int n, const int
 	}
 	Matrixsu3 tmp = multiply_matrixsu3_dagger(get_matrixsu3(field, pos.y, pos.x, nu), get_matrixsu3(field, pos.w, pos.z, mu) );
 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, n, t, nu) );
-	
+
 	Matrix3x3 out = matrix_su3to3x3(tmp);
 
 	//second staple
 	if(mu == 0) {
-	         pos.x = get_neighbor_temporal(t);
-		 pos.y = get_lower_neighbor(n, nu);
-		 pos.z = t;
-		 pos.w = get_lower_neighbor(n, nu);
+		pos.x = get_neighbor_temporal(t);
+		pos.y = get_lower_neighbor(n, nu);
+		pos.z = t;
+		pos.w = get_lower_neighbor(n, nu);
 	} else if (nu == 0) {
-	         pos.x = get_lower_neighbor_temporal(t);
-		 pos.y = get_neighbor(n, mu);
-		 pos.z = get_lower_neighbor_temporal(t);
-		 pos.w = n;
+		pos.x = get_lower_neighbor_temporal(t);
+		pos.y = get_neighbor(n, mu);
+		pos.z = get_lower_neighbor_temporal(t);
+		pos.w = n;
 	} else {
-		 pos.x = t;
-	       	 pos.y = get_neighbor(get_lower_neighbor(n, nu), mu);
-		 pos.z = t;
-		 pos.w = get_lower_neighbor(n, nu);
+		pos.x = t;
+		pos.y = get_neighbor(get_lower_neighbor(n, nu), mu);
+		pos.z = t;
+		pos.w = get_lower_neighbor(n, nu);
 	}
-	tmp = multiply_matrixsu3_dagger_dagger(get_matrixsu3(field, pos.y, pos.x, nu), get_matrixsu3(field, pos.w,pos.z, mu) );
+	tmp = multiply_matrixsu3_dagger_dagger(get_matrixsu3(field, pos.y, pos.x, nu), get_matrixsu3(field, pos.w, pos.z, mu) );
 	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.w, pos.z, nu) );
 
 	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
@@ -320,7 +317,7 @@ Matrix3x3 calc_staple(__global ocl_s_gaugefield* field, const int pos, const int
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
-	for(int i = 0; i < NDIM-1; i++) {
+	for(int i = 0; i < NDIM - 1; i++) {
 		int nu = (mu_in + i + 1) % NDIM;
 		staple = add_matrix3x3(staple,  local_staple(field, pos, t, mu_in, nu ));
 	}
@@ -332,9 +329,9 @@ Matrix3x3 calc_staple_sigma (__global ocl_s_gaugefield* field, const int pos, co
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
-	for(int i = 0; i < NDIM-1; i++) {
+	for(int i = 0; i < NDIM - 1; i++) {
 		int nu = (mu_in + i + 1) % NDIM;
-		if(nu!=0)
+		if(nu != 0)
 			staple = add_matrix3x3(staple,  local_staple(field, pos, t, mu_in, nu ));
 	}
 	return staple;
@@ -346,3 +343,42 @@ Matrix3x3 calc_staple_tau (__global ocl_s_gaugefield* field, const int pos, cons
 	int nu = 0;
 	return local_staple(field, pos, t, mu_in, nu );
 }
+
+// TODO document
+Matrixsu3 getSU3(__global const Matrixsu3StorageType * const restrict in, const uint idx)
+{
+#ifdef _USE_SOA_
+	return (Matrixsu3) {
+		in[0 * GAUGEFIELD_STRIDE + idx],
+		   in[1 * GAUGEFIELD_STRIDE + idx],
+		   in[2 * GAUGEFIELD_STRIDE + idx],
+		   in[3 * GAUGEFIELD_STRIDE + idx],
+		   in[4 * GAUGEFIELD_STRIDE + idx],
+		   in[5 * GAUGEFIELD_STRIDE + idx],
+		   in[6 * GAUGEFIELD_STRIDE + idx],
+		   in[7 * GAUGEFIELD_STRIDE + idx],
+		   in[8 * GAUGEFIELD_STRIDE + idx]
+	   };
+#else
+	return in[idx];
+#endif
+}
+
+// TODO document
+void putSU3(__global Matrixsu3StorageType * const restrict out, const uint idx, const Matrixsu3 val)
+{
+#ifdef _USE_SOA_
+	out[0 * GAUGEFIELD_STRIDE + idx] = val.e00;
+	out[1 * GAUGEFIELD_STRIDE + idx] = val.e01;
+	out[2 * GAUGEFIELD_STRIDE + idx] = val.e02;
+	out[3 * GAUGEFIELD_STRIDE + idx] = val.e10;
+	out[4 * GAUGEFIELD_STRIDE + idx] = val.e11;
+	out[5 * GAUGEFIELD_STRIDE + idx] = val.e12;
+	out[6 * GAUGEFIELD_STRIDE + idx] = val.e20;
+	out[7 * GAUGEFIELD_STRIDE + idx] = val.e21;
+	out[8 * GAUGEFIELD_STRIDE + idx] = val.e22;
+#else
+	out[idx] = val;
+#endif
+}
+

@@ -42,7 +42,7 @@ public:
 	virtual void finalize_opencl();
 
 	hmc_float get_squarenorm(int which);
-	void verify(hmc_float, hmc_float);	
+	void verify(hmc_float, hmc_float);
 	void runTestKernel();
 
 private:
@@ -57,7 +57,8 @@ private:
 
 };
 
-BOOST_AUTO_TEST_CASE( M_TM ){
+BOOST_AUTO_TEST_CASE( M_TM )
+{
 	logger.info() << "Init CPU device";
 	//params.print_info_inverter("m_gpu");
 	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
@@ -93,32 +94,32 @@ BOOST_AUTO_TEST_CASE( M_TM ){
 
 // BOOST_AUTO_TEST_CASE( CPU )
 // {
-// 	logger.info() << "Init dummy device";
-// 	//params.print_info_inverter("m_gpu");
-// 	Dummyfield dummy(CL_DEVICE_TYPE_CPU);
-// 	logger.info() << "gaugeobservables: ";
-// 	dummy.print_gaugeobservables_from_task(0, 0);
-// 	logger.info() << "|phi|^2:";
-// 	dummy.verify(0);
-// 	dummy.runTestKernel();
-// 	logger.info() << "|M phi|^2:";
-// 	dummy.verify(1);
-// 	BOOST_MESSAGE("Tested CPU");
+//  logger.info() << "Init dummy device";
+//  //params.print_info_inverter("m_gpu");
+//  Dummyfield dummy(CL_DEVICE_TYPE_CPU);
+//  logger.info() << "gaugeobservables: ";
+//  dummy.print_gaugeobservables_from_task(0, 0);
+//  logger.info() << "|phi|^2:";
+//  dummy.verify(0);
+//  dummy.runTestKernel();
+//  logger.info() << "|M phi|^2:";
+//  dummy.verify(1);
+//  BOOST_MESSAGE("Tested CPU");
 // }
-// 
+//
 // BOOST_AUTO_TEST_CASE( GPU )
 // {
-// 	logger.info() << "Init dummy device";
-// 	//params.print_info_inverter("m_gpu");
-// 	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
-// 	logger.info() << "gaugeobservables: ";
-// 	dummy.print_gaugeobservables_from_task(0, 0);
-// 	logger.info() << "|phi|^2:";
-// 	dummy.verify(0);
-// 	dummy.runTestKernel();
-// 	logger.info() << "|M phi|^2:";
-// 	dummy.verify(1);
-// 	BOOST_MESSAGE("Tested GPU");
+//  logger.info() << "Init dummy device";
+//  //params.print_info_inverter("m_gpu");
+//  Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+//  logger.info() << "gaugeobservables: ";
+//  dummy.print_gaugeobservables_from_task(0, 0);
+//  logger.info() << "|phi|^2:";
+//  dummy.verify(0);
+//  dummy.runTestKernel();
+//  logger.info() << "|M phi|^2:";
+//  dummy.verify(1);
+//  BOOST_MESSAGE("Tested GPU");
 // }
 
 void Dummyfield::init_tasks()
@@ -236,12 +237,12 @@ void Device::fill_kernels()
 	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
 	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
 
-// 	if(get_device_type() == CL_DEVICE_TYPE_GPU)
-// 		//    testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix_GPU.cl";
-// 		testKernel = createKernel("M_tm_plus")  << "tests/m_tm_plus_GPU_full.cl";
-// 	if(get_device_type() == CL_DEVICE_TYPE_CPU)
-// 		// testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
-// 		testKernel = createKernel("M_tm_plus")  << "tests/m_tm_plus_GPU_full.cl";
+//  if(get_device_type() == CL_DEVICE_TYPE_GPU)
+//    //    testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix_GPU.cl";
+//    testKernel = createKernel("M_tm_plus")  << "tests/m_tm_plus_GPU_full.cl";
+//  if(get_device_type() == CL_DEVICE_TYPE_CPU)
+//    // testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
+//    testKernel = createKernel("M_tm_plus")  << "tests/m_tm_plus_GPU_full.cl";
 	testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
 
 }
@@ -280,7 +281,7 @@ void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls)
 hmc_float Dummyfield::get_squarenorm(int which)
 {
 	//which controlls if the in or out-vector is looked at
-        if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in, sqnorm);
+	if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in, sqnorm);
 	if(which == 1) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(out, sqnorm);
 	// get stuff from device
 	hmc_float result;
@@ -290,17 +291,18 @@ hmc_float Dummyfield::get_squarenorm(int which)
 	return result;
 }
 
-void Dummyfield::verify(hmc_float cpu, hmc_float gpu){
-  //this is too much required, since rounding errors can occur
-  //  BOOST_REQUIRE_EQUAL(cpu, gpu);
-  //instead, test if the two number agree within some percent
-  hmc_float dev = (cpu - gpu)/cpu/100.;
-  if(dev < 1e-10)
-    logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
-  else{
-    logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
-    BOOST_REQUIRE_EQUAL(1,0);
-  }
+void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
+{
+	//this is too much required, since rounding errors can occur
+	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
+	//instead, test if the two number agree within some percent
+	hmc_float dev = (cpu - gpu) / cpu / 100.;
+	if(dev < 1e-10)
+		logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
+	else {
+		logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
+		BOOST_REQUIRE_EQUAL(1, 0);
+	}
 }
 
 void Dummyfield::runTestKernel()

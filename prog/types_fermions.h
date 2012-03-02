@@ -37,7 +37,15 @@ typedef struct {
 } halfspinor;
 
 typedef spinor spinorfield;
-typedef spinor spinorfield_eoprec;
+
+/**
+ * The type used for storing spinors on the device.
+ */
+#ifdef _USE_SOA_
+typedef hmc_complex spinorStorageType;
+#else
+typedef spinor spinorStorageType;
+#endif
 
 #endif /* _TYPES_FERMIONSH_ */
 

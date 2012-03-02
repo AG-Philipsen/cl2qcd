@@ -13,7 +13,7 @@ std::string const version = "0.1";
 class Device : public Opencl_Module_Hmc {
 
 	cl_kernel testKernel;
-  cl_kernel ae_sqn;
+	cl_kernel ae_sqn;
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Hmc() {
 		Opencl_Module_Hmc::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
@@ -22,9 +22,9 @@ public:
 		finalize();
 	};
 
-  void runTestKernel(cl_mem in, cl_mem out, int gs, int ls);
+	void runTestKernel(cl_mem in, cl_mem out, int gs, int ls);
 	void fill_kernels();
-  void set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out);
+	void set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out);
 	void clear_kernels();
 };
 
@@ -47,23 +47,24 @@ public:
 	virtual void finalize_opencl();
 
 	hmc_float get_squarenorm(int which);
-	void verify(hmc_float, hmc_float);	
-	void verify_result(hmc_float, hmc_float);	
+	void verify(hmc_float, hmc_float);
+	void verify_result(hmc_float, hmc_float);
 	void runTestKernel();
 
 private:
 	void fill_buffers();
 	void clear_buffers();
 	inputparameters params;
-  cl_mem in, out;
+	cl_mem in, out;
 	cl_mem sqnorm;
-  hmc_float * gm_in;
+	hmc_float * gm_in;
 	hmc_float * gm_out;
 	Matrixsu3 * gf_in;
 
 };
 
-BOOST_AUTO_TEST_CASE( F_UPDATE ){
+BOOST_AUTO_TEST_CASE( F_UPDATE )
+{
 	logger.info() << "Init CPU device";
 	//params.print_info_inverter("m_gpu");
 	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
@@ -119,23 +120,24 @@ void Dummyfield::finalize_opencl()
 void fill_with_one(hmc_float * sf_in, int size)
 {
 	for(int i = 0; i < size; ++i) {
-	  sf_in[i] = 1.;
+		sf_in[i] = 1.;
 	}
 	return;
 }
 
 void fill_with_random(hmc_float * sf_in, int size, int switcher)
 {
-  if(switcher == 1){ Random rnd_loc(123456);
-	for(int i = 0; i < size; ++i) {
-		sf_in[i] = rnd_loc.doub();
+	if(switcher == 1) {
+		Random rnd_loc(123456);
+		for(int i = 0; i < size; ++i) {
+			sf_in[i] = rnd_loc.doub();
+		}
+	} else if (switcher == 2) {
+		Random rnd_loc(789101);
+		for(int i = 0; i < size; ++i) {
+			sf_in[i] = rnd_loc.doub();
+		}
 	}
-    }
-  else if (switcher == 2){ Random rnd_loc(789101);
-	for(int i = 0; i < size; ++i) {
-		sf_in[i] = rnd_loc.doub();
-	}
-      }
 	return;
 }
 
@@ -148,19 +150,18 @@ void Dummyfield::fill_buffers()
 
 	cl_context context = opencl_modules[0]->get_context();
 
-	int NUM_ELEMENTS_AE = params.get_gaugemomentasize()*params.get_su3algebrasize();
+	int NUM_ELEMENTS_AE = params.get_gaugemomentasize() * params.get_su3algebrasize();
 
 	gm_in = new hmc_float[NUM_ELEMENTS_AE];
 	gm_out = new hmc_float[NUM_ELEMENTS_AE];
 
 	//use the variable use_cg to switch between cold and random input sf
 	if(get_parameters()->get_use_cg() == true) {
-	  fill_with_one(gm_in, NUM_ELEMENTS_AE);
-	  fill_with_one(gm_out, NUM_ELEMENTS_AE);
-	}
-	else {
-	  fill_with_random(gm_in, NUM_ELEMENTS_AE, 1);
-	  fill_with_random(gm_out, NUM_ELEMENTS_AE, 2);
+		fill_with_one(gm_in, NUM_ELEMENTS_AE);
+		fill_with_one(gm_out, NUM_ELEMENTS_AE);
+	} else {
+		fill_with_random(gm_in, NUM_ELEMENTS_AE, 1);
+		fill_with_random(gm_out, NUM_ELEMENTS_AE, 2);
 	}
 	BOOST_REQUIRE(gm_in);
 	BOOST_REQUIRE(gm_out);
@@ -184,13 +185,13 @@ void Dummyfield::fill_buffers()
 void Device::fill_kernels()
 {
 	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
- 	Opencl_Module::fill_kernels();
+	Opencl_Module::fill_kernels();
 
 	//to this end, one has to set the needed files by hand
 	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
 	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
-	//	basic_hmc_code = basic_fermion_code << "types_hmc.h";
+	//  basic_hmc_code = basic_fermion_code << "types_hmc.h";
 
 	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
 	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
@@ -236,28 +237,28 @@ void Device::runTestKernel(cl_mem out, cl_mem in, int gs, int ls)
 //this is a copy of "set_float_to_gaugemomentum_squarenorm_device"
 void Device::set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out)
 {
-  //__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
-  //query work-sizes for kernel
-  size_t ls2, gs2;
-  cl_uint num_groups;
-  this->get_work_sizes(ae_sqn, this->get_device_type(), &ls2, &gs2, &num_groups);
-  //set arguments
-  //__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
-  int clerr = clSetKernelArg(ae_sqn, 0, sizeof(cl_mem), &clmem_in);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(ae_sqn, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
+	int clerr = clSetKernelArg(ae_sqn, 0, sizeof(cl_mem), &clmem_in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  //  /** @todo add reduction */
-  clerr = clSetKernelArg(ae_sqn,  1, sizeof(cl_mem), &clmem_out);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	//  /** @todo add reduction */
+	clerr = clSetKernelArg(ae_sqn,  1, sizeof(cl_mem), &clmem_out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-  enqueueKernel(ae_sqn  , gs2, ls2);
+	enqueueKernel(ae_sqn  , gs2, ls2);
 }
 
 
 hmc_float Dummyfield::get_squarenorm(int which)
 {
 	//which controlls if the in or out-vector is looked at
-        if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in, sqnorm);
+	if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in, sqnorm);
 	if(which == 1) static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out, sqnorm);
 	// get stuff from device
 	hmc_float result;
@@ -267,48 +268,50 @@ hmc_float Dummyfield::get_squarenorm(int which)
 	return result;
 }
 
-void Dummyfield::verify(hmc_float cpu, hmc_float gpu){
-  //this is too much required, since rounding errors can occur
-  //  BOOST_REQUIRE_EQUAL(cpu, gpu);
-  //instead, test if the two number agree within some percent
-  hmc_float dev = (cpu - gpu)/cpu/100.;
-  if(dev < 1e-10)
-    logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
-  else{
-    logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
-    logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
-    BOOST_REQUIRE_EQUAL(1,0);
-  }
+void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
+{
+	//this is too much required, since rounding errors can occur
+	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
+	//instead, test if the two number agree within some percent
+	hmc_float dev = (cpu - gpu) / cpu / 100.;
+	if(dev < 1e-10)
+		logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
+	else {
+		logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
+		logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
+		BOOST_REQUIRE_EQUAL(1, 0);
+	}
 
 }
 
-void Dummyfield::verify_result(hmc_float cpu, hmc_float gpu){
-  //this is too much required, since rounding errors can occur
-  //  BOOST_REQUIRE_EQUAL(cpu, gpu);
-  //instead, test if the two number agree within some percent
-  hmc_float dev = (cpu - gpu)/cpu/100.;
-  if(dev < 1e-10)
-    logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
-  else{
-    logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
-    logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
-    BOOST_REQUIRE_EQUAL(1,0);
-  }
-  //in addition, calculate the result again on the host
-  hmc_float host_res = 0.;
-  for(int i = 0; i < params.get_gaugemomentasize()*params.get_su3algebrasize();i++){
-    hmc_float tmp = gm_out[i] + gm_in[i]*0.12;
-    host_res += tmp*tmp;
-  }
-  logger.info() << "the actual result computed on the host is:\t" << host_res;
-  dev = (cpu - host_res)/cpu/100.;
-  if(dev < 1e-10)
-    logger.info() << "CPU and GPU result agree with the actual result within accuary of " << 1e-10;
-  else{
-    logger.info() << "CPU and GPU result DO NOT agree with the actual result within accuary of " << 1e-10;
-    logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
-    BOOST_REQUIRE_EQUAL(1,0);
-  }
+void Dummyfield::verify_result(hmc_float cpu, hmc_float gpu)
+{
+	//this is too much required, since rounding errors can occur
+	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
+	//instead, test if the two number agree within some percent
+	hmc_float dev = (cpu - gpu) / cpu / 100.;
+	if(dev < 1e-10)
+		logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
+	else {
+		logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
+		logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
+		BOOST_REQUIRE_EQUAL(1, 0);
+	}
+	//in addition, calculate the result again on the host
+	hmc_float host_res = 0.;
+	for(int i = 0; i < params.get_gaugemomentasize()*params.get_su3algebrasize(); i++) {
+		hmc_float tmp = gm_out[i] + gm_in[i] * 0.12;
+		host_res += tmp * tmp;
+	}
+	logger.info() << "the actual result computed on the host is:\t" << host_res;
+	dev = (cpu - host_res) / cpu / 100.;
+	if(dev < 1e-10)
+		logger.info() << "CPU and GPU result agree with the actual result within accuary of " << 1e-10;
+	else {
+		logger.info() << "CPU and GPU result DO NOT agree with the actual result within accuary of " << 1e-10;
+		logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
+		BOOST_REQUIRE_EQUAL(1, 0);
+	}
 
 
 }
