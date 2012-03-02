@@ -29,6 +29,14 @@ class Invalid_Fermact {
   std::string error_message;
 };
 
+class Invalid_Gaugeact {
+ public:
+  Invalid_Gaugeact();
+  std::string what();
+ private:
+  std::string error_message;
+};
+
 class Invalid_Parameters  {
  public:
   Invalid_Parameters(std::string descr, std::string expected, std::string found);

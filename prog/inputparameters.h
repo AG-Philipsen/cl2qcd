@@ -73,6 +73,7 @@ public:
 	bool get_use_gpu() const;
 	bool get_use_eo() const;
 	bool get_use_aniso() const;
+	bool get_use_rectangles() const;
 	int get_cgmax() const;
 	/**
 	 * The precision to be used for gaugefield storage in bits.
@@ -100,6 +101,7 @@ public:
 	int get_savefrequency() const;
 	int get_writefrequency() const;
 	int get_fermact() const;
+	int get_gaugeact() const;
 	void display_sourcefile() const;
 	void display_sourcefilenumber() const;
 	int get_num_dev() const;
@@ -151,7 +153,8 @@ public:
 	hmc_float get_lambda0() const;
 	hmc_float get_lambda1() const;
 	hmc_float get_lambda2() const;
-
+	hmc_float get_c0() const;
+	hmc_float get_c1() const;
 	bool get_use_same_rnd_numbers() const;
 	bool get_profile_solver() const;
 	int get_mat_size() const;
@@ -240,6 +243,16 @@ public:
 	void print_info_fermion(ostream * os) const;
 
 	/**
+	 *
+	 */
+	void print_info_gauge() const;
+
+	/**
+	 *
+	 */
+	void print_info_gauge(ostream * os) const;
+	
+	/**
 	 * check inputparameters against compile settings
 	 * NOTE: In the end, this is propably not needed anymore, but for now it is a safety net
 	 */
@@ -319,6 +332,7 @@ private:
 	int num_dev;
 	int cgmax;
 	int fermact;
+	int gaugeact;
 	int prec;
 	int startcondition;
 	int thermalizationsteps;
@@ -338,6 +352,12 @@ private:
 	bool use_cg;
 	bool use_bicgstab_save;
 	bool use_pointsource;
+	bool use_rectangles;
+	hmc_float c0;
+	hmc_float c1;
+	hmc_float c0_default_wilson;
+	hmc_float c1_default_tlsym;
+	hmc_float calc_c0_tlsym(hmc_float c1);
 	int num_sources;
 	int pointsource_x;
 	int pointsource_y;
@@ -352,6 +372,7 @@ private:
 	void sourcefilenumber_assign(std::string * out);
 	void startcond_assign(int * out, std::string line);
 	void fermact_assign(int * out, std::string line);
+	void gaugeact_assign(int * out, std::string line);
 	void integrator_assign(int * out, std::string line);
 	void val_assign(std::string * out, std::string line);
 	void bool_assign(bool * out, std::string line);

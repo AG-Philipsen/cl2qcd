@@ -27,9 +27,11 @@
 
 #endif //_INKERNEL_
 
+//define actions
 #define WILSON 0
 #define CLOVER 1
 #define TWISTEDMASS 2
+#define TLSYM 1
 
 #define LEAPFROG 0
 #define TWOMN 1

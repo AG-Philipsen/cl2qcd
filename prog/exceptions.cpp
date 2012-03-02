@@ -31,6 +31,13 @@ Invalid_Fermact::Invalid_Fermact(int fermact, bool muset, bool cswset){
   return;
 }
 
+Invalid_Gaugeact::Invalid_Gaugeact(){
+
+  error_message = "Invalid setting for gauge sector: ";
+
+  return;
+}
+
 std::string Invalid_Fermact::what(){
   return error_message;
 }

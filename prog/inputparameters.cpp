@@ -73,7 +73,13 @@ void inputparameters::set_defaults()
 	theta_gaugefield = 0.;
 	rho = 0.;
 	rho_iter = 0;
-
+	gaugeact = WILSON;
+	use_rectangles = false;
+	c0 = 1.;
+	c1 = 0.;
+	c0_default_wilson = 1.;
+	c1_default_tlsym = -0.083333333;
+	
 	//heatbath parameters
 	thermalizationsteps = 0;
 	heatbathsteps = 1000;
@@ -142,6 +148,8 @@ void inputparameters::readfile(const char* ifn)
 
 		bool muset  = false;
 		bool cswset = false;
+		bool gaugeactset = false;
+		bool c1set = false;
 
 		while (infile.good()) {
 			char linebuf[256];
@@ -227,6 +235,16 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("fermionaction") != std::string::npos) fermact_assign(&fermact, line);
 			if(line.find("fermact") != std::string::npos) fermact_assign(&fermact, line);
 
+			if(line.find("gaugeaction") != std::string::npos) gaugeact_assign(&gaugeact, line);
+			if(line.find("gaugeact") != std::string::npos) gaugeact_assign(&gaugeact, line);
+
+			if(line.find("c1") != std::string::npos) {
+				val_assign(&c1, line);
+				c1set = true;
+				//in the case that the gaugeact has been set before, one has to recalculate c0
+				this->calc_c0_tlsym(this->get_c1());
+			}
+		
 			if(line.find("integrator0") != std::string::npos) integrator_assign(&integrator0, line);
 			if(line.find("integrator1") != std::string::npos) integrator_assign(&integrator1, line);
 			if(line.find("integrator2") != std::string::npos) integrator_assign(&integrator2, line);
@@ -284,11 +302,16 @@ void inputparameters::readfile(const char* ifn)
 
 		}
 
+		//check for wrong settings in fermionaction
 		if( ( (muset  == true) && (fermact != TWISTEDMASS) ) ||
 		    ( (cswset == true) && (fermact != CLOVER     ) ) ||
 		    ( (cswset == true) && (muset   == true       ) )  )
 			throw Invalid_Fermact(fermact, muset, cswset);
-
+		//check for wrong settings in gaugeaction
+		if( ( (use_rectangles  == true) && (gaugeact != TLSYM) ) ||
+		    ( (use_rectangles  == false) && (gaugeact == TLSYM) ) )
+			throw Invalid_Gaugeact();
+		
 		//check the read-in values against the compile time values
 		this->set_settings_global();
 		this->check_settings_global();
@@ -311,6 +334,9 @@ void inputparameters::readfile(const char* ifn)
 		exit(EXIT_INPUTPARAMETERS);
 	} catch (Invalid_Fermact& e) {
 		logger.fatal() << e.what();
+		logger.fatal() << "Aborting.";
+		exit(EXIT_INPUTPARAMETERS);
+	} catch (Invalid_Gaugeact& ) {
 		logger.fatal() << "Aborting.";
 		exit(EXIT_INPUTPARAMETERS);
 	}
@@ -405,6 +431,51 @@ void inputparameters::fermact_assign(int * out, std::string line)
 	}
 	if(value.find("Clover") != std::string::npos) {
 		(*out) = CLOVER;
+		return;
+	}
+	if(value.find("WILSON") != std::string::npos) {
+		(*out) = WILSON;
+		return;
+	}
+	if(value.find("Wilson") != std::string::npos) {
+		(*out) = WILSON;
+		return;
+	}
+	if(value.find("wilson") != std::string::npos) {
+		(*out) = WILSON;
+		return;
+	}
+	if(value.find("unimproved") != std::string::npos) {
+		(*out) = WILSON;
+		return;
+	}
+	throw line;
+	return;
+}
+
+void inputparameters::gaugeact_assign(int * out, std::string line)
+{
+	size_t pos = line.find("=");
+	std::string value = line.substr(pos + 1);
+
+	if(value.find("TLSYM") != std::string::npos) {
+		(*out) = TLSYM;
+		bool_assign(&use_rectangles, "1");
+		return;
+	}
+	if(value.find("tlsym") != std::string::npos) {
+		(*out) = TLSYM;
+		bool_assign(&use_rectangles, "1");
+		return;
+	}
+	if(value.find("Tlsym") != std::string::npos) {
+		(*out) = TLSYM;
+		bool_assign(&use_rectangles, "1");
+		return;
+	}
+	if(value.find("TLsym") != std::string::npos) {
+		(*out) = TLSYM;
+		bool_assign(&use_rectangles, "1");
 		return;
 	}
 	if(value.find("WILSON") != std::string::npos) {
@@ -587,6 +658,21 @@ hmc_float inputparameters::get_kappa() const
 	return kappa;
 }
 
+hmc_float inputparameters::calc_c0_tlsym(hmc_float c1)
+{
+	return 1. - 8.*c1;
+}
+
+hmc_float inputparameters::get_c0() const
+{
+	return c0;
+}
+
+hmc_float inputparameters::get_c1() const
+{
+	return c1;
+}
+
 void inputparameters::set_mubar_negative()
 {
 	mubar *= -1.;
@@ -765,6 +851,11 @@ int inputparameters::get_fermact() const
 	return fermact;
 }
 
+int inputparameters::get_gaugeact() const
+{
+	return gaugeact;
+}
+
 int inputparameters::get_integrator(int which) const
 {
 	if(which == 0)
@@ -812,6 +903,11 @@ bool inputparameters::get_use_eo() const
 bool inputparameters::get_use_rec12() const
 {
 	return use_rec12;
+}
+
+bool inputparameters::get_use_rectangles() const
+{
+	return use_rectangles;
 }
 
 bool inputparameters::get_use_gpu() const
@@ -1340,6 +1436,35 @@ void inputparameters::print_info_fermion(ostream * os) const
 	}
 }
 
+void inputparameters::print_info_gauge(ostream* os) const
+{
+	*os<< "## **********************************************************"<< endl;
+	*os<< "## Gauge parameters:"<< endl;
+	*os<< "##" << endl;
+	if(this->get_gaugeact() == WILSON) {
+		*os<<  "## gauge action: unimproved Wilson"<< endl;
+	}
+	if(this->get_gaugeact() == TLSYM) {
+		*os<<  "## gauge action: tree level Symanzik"<< endl;
+		*os<< "## c0  = " << this->get_c0()<< endl;
+		*os<< "## c1  = " << this->get_c1()<< endl;
+	}
+}
+
+void inputparameters::print_info_gauge() const
+{
+	logger.info() << "## **********************************************************";
+	logger.info() << "## Gauge parameters:";
+	logger.info() << "##" ;
+	if(this->get_gaugeact() == WILSON) {
+		logger.info() <<  "## gauge action: unimproved Wilson";
+	}
+	if(this->get_gaugeact() == TLSYM) {
+		logger.info() <<  "## gauge action: tree level Symanzik";
+		logger.info() << "## c0  = " << this->get_c0();
+		logger.info() << "## c1  = " << this->get_c1();
+	}
+}
 
 void inputparameters::print_info_inverter(char* progname) const
 {
@@ -1365,6 +1490,7 @@ void inputparameters::print_info_hmc(char* progname) const
 	logger.info() << "## Starting hmc program, executable name: " << progname ;
 	this->print_info_global();
 	this->print_info_fermion();
+	this->print_info_gauge();
 	logger.info() << "##  ";
 	logger.info() << "## HMC parameters: " ;
 	logger.info() << "## tau  = " << this->get_tau();
@@ -1424,6 +1550,7 @@ void inputparameters::print_info_hmc(char* progname, ostream* os) const
 	*os << "## Starting hmc program, executable name: " << progname << endl;
 	this->print_info_global(os);
 	this->print_info_fermion(os);
+	this->print_info_gauge(os);
 	*os << "##  " << '\n';
 	*os << "## HMC parameters: "  << '\n';
 	*os << "## tau  = " << this->get_tau() << '\n';
