@@ -1850,6 +1850,7 @@ int Opencl_Module_Fermions::get_read_write_size(const char * in)
 	int D = (*parameters).get_float_size();
 	//this returns the number of entries in an su3-matrix
 	int R = (*parameters).get_mat_size();
+	//this is the number of spinors in the system (or number of sites)
 	int S = get_parameters()->get_spinorfieldsize();
 	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
 	//factor for complex numbers

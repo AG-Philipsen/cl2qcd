@@ -1429,7 +1429,7 @@ void inputparameters::print_info_hmc(char* progname, ostream* os) const
 	*os << "## tau  = " << this->get_tau() << '\n';
 	*os << "## HMC steps  = " << this->get_hmcsteps() << '\n';
 	*os << "## # Timescales  = " << this->get_num_timescales() << '\n';
-	*os << "## integrationsteps1  = " << this->get_integrationsteps1() << '\n';
+	*os << "## integrationsteps0  = " << this->get_integrationsteps0() << '\n';
 	//get integrator name
 	string integrator_name;
 	if(this->get_integrator(0) == LEAPFROG)

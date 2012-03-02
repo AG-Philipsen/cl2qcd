@@ -209,6 +209,8 @@ int Opencl_Module_Heatbath::get_read_write_size(const char * in)
 	int D = (*parameters).get_float_size();
 	int R = (*parameters).get_mat_size();
 	int S;
+	//factor for complex numbers
+	int C = 2;
 	const size_t VOL4D = parameters->get_vol4d();
 	if((*parameters).get_use_eo() == 1)
 		S = get_parameters()->get_eoprec_spinorfieldsize();
@@ -217,7 +219,7 @@ int Opencl_Module_Heatbath::get_read_write_size(const char * in)
 	//this is the same as in the function above
 	if ( (strcmp(in, "heatbath_even") == 0 ) || (strcmp(in, "heatbath_odd") == 0) || (strcmp(in, "overrelax_even") == 0) || (strcmp(in, "overrelax_odd") == 0)) {
 		//this kernel reads ingredients for 1 staple plus 1 su3matrix and writes 1 su3-matrix
-		return VOL4D / 2 * D * R * (6 * (NDIM - 1) + 1 + 1 );
+		return VOL4D / 2 * C * D * R * (6 * (NDIM - 1) + 1 + 1 );
 	}
 	return 0;
 }

@@ -249,44 +249,61 @@ int Opencl_Module_Hmc::get_read_write_size(char * in)
 {
 	int result = Opencl_Module_Fermions::get_read_write_size(in);
 	if (result != 0) return result;
-	//Depending on the compile-options, one has different sizes...
+//Depending on the compile-options, one has different sizes...
 	int D = (*parameters).get_float_size();
+	//this returns the number of entries in an su3-matrix
 	int R = (*parameters).get_mat_size();
-	int S;
-	if((*parameters).get_use_eo() == 1)
-		S = get_parameters()->get_eoprec_spinorfieldsize();
-	else
-		S = get_parameters()->get_spinorfieldsize();
+	//this is the number of spinors in the system (or number of sites)
+	int S = get_parameters()->get_spinorfieldsize();
+	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	//this is the number of links in the system (and of gaugemomenta)
+	int G = get_parameters()->get_gaugemomentasize();
+	//factor for complex numbers
+	int C = 2;
 	//this is the same as in the function above
+	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
+	//NOTE: 1 ae has NC*NC-1 = 8 real entries
+	int A = get_parameters()->get_su3algebrasize();
 	if (strcmp(in, "generate_gaussian_spinorfield") == 0) {
-		return 10000000000000000000;
+		//this kernel writes 1 spinor
+		return ( 12 * C ) * D * S;
 	}
 	if (strcmp(in, "generate_gaussian_spinorfield_eoprec") == 0) {
-		return 10000000000000000000;
+		//this kernel writes 1 spinor
+		return ( 12 * C ) * D * Seo;
 	}
 	if (strcmp(in, "generate_gaussian_gaugemomenta") == 0) {
-		return 10000000000000000000;
+		//this kernel writes 1 ae
+		return (A) * D * G;
 	}
 	if (strcmp(in, "md_update_gaugefield") == 0) {
-		return 10000000000000000000;
+		//this kernel reads 1 ae and 1 su3 matrix and writes 1 su3 matrix for every link
+		return (A + (1 + 1) * R * C) * D * G;
 	}
 	if (strcmp(in, "md_update_gaugemomenta") == 0) {
-		return 10000000000000000000;
+		//this kernel reads 2 ae and writes 1 ae per link
+		return ((2+1) * A) * D * G;
 	}
 	if (strcmp(in, "gauge_force") == 0) {
-		return 10000000000000000000;
+		//this kernel reads ingredients for 1 staple plus 1 su3matrix and writes 1 ae for every link
+		return G * D * (R * ( 6 * (NDIM - 1) + 1 ) + A );
 	}
 	if (strcmp(in, "fermion_force") == 0) {
-		return 10000000000000000000;
+		//this kernel reads 16 spinors, 8 su3matrices and writes 8 ae per site
+		//NOTE: the kernel now runs over all ae, but this must be equivalent!
+		return (C * 12 * (16) + C * 8 * R + 8 * A) * D * S;
 	}
 	if (strcmp(in, "fermion_force_eoprec") == 0) {
-		return 10000000000000000000;
+		//this kernel reads 16 spinors, 8 su3matrices and writes 1 ae per site
+		return (C * 12 * (16) + C * 8 * R + 8 * A) * D * Seo;
 	}
 	if (strcmp(in, "set_zero_gaugemomentum;") == 0) {
-		return 10000000000000000000;
+		//this kernel writes 1 ae per link
+		return G * D * A;
 	}
 	if (strcmp(in, "gaugemomentum_squarenorm") == 0) {
-		return 10000000000000000000;
+		//this kernel reads 1 ae and writes 1 float per link
+		return G * D * ( A + 1);
 	}
 	if (strcmp(in, "stout_smear_fermion_force") == 0) {
 		return 10000000000000000000;
