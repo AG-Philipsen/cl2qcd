@@ -326,9 +326,9 @@ void fill_eo_sf_with_specific_float(spinor * sf_even, spinor * sf_odd, inputpara
 
 					//distinguish between even and odd fields
 					if( (t + x + y + z) % 2 == 0)
-						sf_even[i/2] = fill_spinor_with_specific_float(val);
+						sf_even[i / 2] = fill_spinor_with_specific_float(val);
 					else
-						sf_odd[i/2] = fill_spinor_with_specific_float(val);
+						sf_odd[i / 2] = fill_spinor_with_specific_float(val);
 				}
 			}
 		}
@@ -527,7 +527,7 @@ bool compare_entries(hmc_complex in1, hmc_complex in2)
 	return true;
 }
 
-void print_spinor(spinor in1, spinor in2)
+void print_spinor(const spinor in1, const spinor in2)
 {
 	cout << endl;
 	cout << "(" << in1.e0.e0.re << "),(" << in1.e0.e0.im << ") : (" << in2.e0.e0.re << "),(" << in2.e0.e0.im << ")"  << endl;
@@ -655,28 +655,25 @@ void Dummyfield::fill_buffers()
 	fill_with_zero(sf_out_eo, NUM_ELEMENTS_AE);
 	fill_with_zero(sf_out_noneo, NUM_ELEMENTS_AE);
 
-	size_t sf_buf_size_eo, sf_buf_size_noneo;
-	sf_buf_size_eo = get_parameters()->get_eo_sf_buf_size();
+	size_t sf_buf_size_noneo;
 	sf_buf_size_noneo = get_parameters()->get_sf_buf_size();
 	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
+	Opencl_Module_Spinors * spinor_module = static_cast<Opencl_Module_Spinors*>(opencl_modules[0]);
+	size_t sf_eoprec_buffer_size = spinor_module->get_eoprec_spinorfield_buffer_size();
 	//create buffer for sf on device (and copy sf_in to both for convenience)
 
-	in1_eo = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size_eo, 0, &err );
+	in1_eo = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in2_eo = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size_eo, 0, &err );
+	in2_eo = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in3_eo = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size_eo, 0, &err );
+	in3_eo = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in4_eo = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size_eo, 0, &err );
+	in4_eo = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in1_eo, CL_TRUE, 0, sf_buf_size_eo, sf_in1_eo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in2_eo, CL_TRUE, 0, sf_buf_size_eo, sf_in2_eo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in3_eo, CL_TRUE, 0, sf_buf_size_eo, sf_in3_eo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in4_eo, CL_TRUE, 0, sf_buf_size_eo, sf_in4_eo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	spinor_module->copy_to_eoprec_spinorfield_buffer(in1_eo, sf_in1_eo);
+	spinor_module->copy_to_eoprec_spinorfield_buffer(in2_eo, sf_in2_eo);
+	spinor_module->copy_to_eoprec_spinorfield_buffer(in3_eo, sf_in3_eo);
+	spinor_module->copy_to_eoprec_spinorfield_buffer(in4_eo, sf_in4_eo);
 
 	out_eo = clCreateBuffer(context, CL_MEM_WRITE_ONLY, ae_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
@@ -695,17 +692,17 @@ void Dummyfield::fill_buffers()
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	in2_noneo_converted = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size_noneo, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in1_noneo, CL_TRUE, 0, sf_buf_size_noneo, sf_in1_noneo, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), in1_noneo, CL_TRUE, 0, sf_buf_size_noneo, sf_in1_noneo, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in2_noneo, CL_TRUE, 0, sf_buf_size_noneo, sf_in2_noneo, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), in2_noneo, CL_TRUE, 0, sf_buf_size_noneo, sf_in2_noneo, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in1_noneo_converted, CL_TRUE, 0, sf_buf_size_noneo, sf_in1_noneo_converted, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), in1_noneo_converted, CL_TRUE, 0, sf_buf_size_noneo, sf_in1_noneo_converted, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in2_noneo_converted, CL_TRUE, 0, sf_buf_size_noneo, sf_in2_noneo_converted, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), in2_noneo_converted, CL_TRUE, 0, sf_buf_size_noneo, sf_in2_noneo_converted, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	out_noneo = clCreateBuffer(context, CL_MEM_WRITE_ONLY, ae_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_noneo, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), out_noneo, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	this->reset_outfield_noneo();
@@ -716,25 +713,13 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
-	Opencl_Module::fill_kernels();
-
-	//to this end, one has to set the needed files by hand
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
-	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
-	//  basic_hmc_code = basic_fermion_code << "types_hmc.h";
-
-	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
-	global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "spinorfield_eo_squarenorm.cl";
-	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
+	Opencl_Module_Hmc::fill_kernels();
 
 	ae_sqn = createKernel("gaugemomentum_squarenorm") << basic_fermion_code << "types_hmc.h" << "operations_gaugemomentum.cl" << "gaugemomentum_squarenorm.cl";
 
-	testKernel = createKernel("fermion_force_eoprec") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "operations_spinorfield_eo.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
+	testKernel = createKernel("fermion_force_eoprec") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 
 	testKernel2 = createKernel("fermion_force") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion.cl";
-
 }
 
 void Dummyfield::clear_buffers()

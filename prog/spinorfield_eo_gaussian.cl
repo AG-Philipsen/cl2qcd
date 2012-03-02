@@ -1,4 +1,4 @@
-__kernel void generate_gaussian_spinorfield_eoprec(__global spinorfield * out, __global hmc_ocl_ran * rnd)
+__kernel void generate_gaussian_spinorfield_eoprec(__global spinorStorageType * const restrict out, __global hmc_ocl_ran * const restrict rnd)
 {
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -55,6 +55,6 @@ __kernel void generate_gaussian_spinorfield_eoprec(__global spinorfield * out, _
 		//multiply by sigma
 		out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));
 
-		out[id_tmp] = out_tmp;
+		putSpinor_eo(out, id_tmp, out_tmp);
 	}
 }

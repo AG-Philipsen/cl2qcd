@@ -144,6 +144,9 @@ st_idx inline get_st_idx_from_site_idx(const site_idx in)
 	return tmp;
 }
 
+/** returns eo-vector component from st_idx */
+site_idx get_eo_site_idx_from_st_idx(st_idx in);
+
 /**
  * (st_idx, dir_idx) -> link_idx and
  * link_idx -> st_idx, respectively.
@@ -160,6 +163,24 @@ st_idx inline get_st_idx_from_link_idx(const link_idx in)
 	site_idx idx_tmp = in / NDIM;
 	tmp = get_st_idx_from_site_idx(idx_tmp);
 	return tmp;
+}
+
+/**
+ * @todo this be done in the normla get_link_idx-function,
+ *       but therefore potential SOA (even-odded) gaugefield
+ *       needs to be used everywhere.
+ */
+site_idx inline get_link_idx_SOA(const dir_idx mu, const st_idx in)
+{
+#ifdef _USE_SOA_
+	const uint3 space = get_coord_spatial(in.space);
+	// check if the site is odd (either spacepos or t odd)
+	// if yes offset everything by half the number of sites (number of sites is always even...)
+	site_idx odd = (space.x ^ space.y ^ space.z ^ in.time) & 0x1 ? (VOL4D / 2) : 0;
+	return mu * VOL4D + odd + get_eo_site_idx_from_st_idx(in);
+#else
+	return get_link_idx(mu, in);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////

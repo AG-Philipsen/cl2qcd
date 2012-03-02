@@ -18,7 +18,7 @@ ulong calculateStride(const ulong elems, const ulong baseTypeSize)
 //	return stride_elems;
 	// alternative alignment, 1K, but never 16K
 	ulong stride_bytes = ((elems * baseTypeSize + 0x03FF) & 0xFFFFFFFFFFFFFC00L);
-	if(stride_bytes | 0x3FFFL == 0) // 16 KiB
+	if(stride_bytes & 0x3FFFL == 0) // 16 KiB
 		stride_bytes |= 0x400L; // + 1KiB
 	const ulong stride_elems = stride_bytes / baseTypeSize;
 	return stride_elems;

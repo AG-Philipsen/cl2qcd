@@ -40,12 +40,17 @@ void Opencl_Module::init(cl_command_queue queue, cl_mem* clmem_gaugefield, input
 	clerr = clGetDeviceInfo(device, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 
+	// different devices need different strategies for optimal performance
 	switch ( device_type ) {
 		case CL_DEVICE_TYPE_GPU :
 			numthreads = 128;
+			use_soa = true;
+			logger.debug() << "Device should use SOA storage format.";
 			break;
 		case CL_DEVICE_TYPE_CPU :
 			numthreads = 1;
+			use_soa = false;
+			logger.debug() << "Device should use AOS storage format.";
 			break;
 		default :
 			throw Print_Error_Message("Could not retrive proper CL_DEVICE_TYPE...", __FILE__, __LINE__);
@@ -162,7 +167,12 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 		*collect_options << " -DRHO=" << get_parameters()->get_rho();
 		*collect_options << " -DRHO_ITER=" << get_parameters()->get_rho_iter();
 	}
+	*collect_options << " -DGAUGEFIELD_STRIDE=" << calculateStride(get_parameters()->get_vol4d() * NDIM, sizeof(hmc_complex));
 	*collect_options << " -I" << SOURCEDIR;
+
+	if(use_soa) {
+		*collect_options << " -D_USE_SOA_";
+	}
 
 	return;
 }
@@ -1235,3 +1245,25 @@ void Opencl_Module::unsmear_gaugefield(cl_mem gf)
 	if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	return;
 }
+
+cl_ulong Opencl_Module::calculateStride(const cl_ulong elems, const cl_ulong baseTypeSize)
+{
+	// Align stride to (N * 16 + 8) KiB
+	// TODO this is optimal for AMD HD 5870, also adjust for others
+//	ulong stride_bytes = ((elems * baseTypeSize + 0x1FFF) & 0xFFFFFFFFFFFFC000L) | 0x2000;
+//	logger.debug() << "Elems: " << elems << " Base Type Size: " << baseTypeSize << " Stride bytes: " << stride_bytes;
+
+	// alternative alignment, 1K, but never 16K
+	ulong stride_bytes = ((elems * baseTypeSize + 0x03FF) & 0xFFFFFFFFFFFFFC00L);
+	logger.debug() << "Elems: " << elems << " Base Type Size: " << baseTypeSize << " Stride bytes: " << stride_bytes;
+	if((stride_bytes & 0x3FFFL) == 0) { // 16 KiB
+		stride_bytes |= 0x400L; // + 1KiB
+		logger.warn() << "stride was aligned to 16 KiB – corrected!";
+	}
+
+	const ulong stride_elems = stride_bytes / baseTypeSize;
+	stride_bytes = stride_elems * baseTypeSize;
+	logger.debug() << "Stride is " << stride_elems << " elems (" << stride_bytes << " bytes). Stride % 16k = " << stride_bytes % (16 * 1024);
+	return stride_elems;
+}
+
