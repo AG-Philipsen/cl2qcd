@@ -15,7 +15,12 @@ spinor dslash_eoprec_unified_local(__global const spinorStorageType * const rest
 	su3vec psi, phi;
 	Matrixsu3 U;
 	//this is used to save the BC-conditions...
-	hmc_complex bc_tmp;
+	hmc_complex bc_tmp = (dir == TDIR) ? (hmc_complex) {
+		KAPPA_TEMPORAL_RE, KAPPA_TEMPORAL_IM
+} :
+	(hmc_complex) {
+		KAPPA_SPATIAL_RE, KAPPA_SPATIAL_IM
+	};
 	out_tmp = set_spinor_zero();
 
 	///////////////////////////////////
@@ -25,8 +30,6 @@ spinor dslash_eoprec_unified_local(__global const spinorStorageType * const rest
 	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = getSpinor_eo(in, nn_eo);
 	U = getSU3(field, get_link_idx_SOA(dir, idx_arg));
-	bc_tmp.re = KAPPA_SPATIAL_RE;
-	bc_tmp.im = KAPPA_SPATIAL_IM;
 	if(dir == XDIR) {
 		/////////////////////////////////
 		//Calculate (1 - gamma_1) y
@@ -128,8 +131,12 @@ spinor dslash_eoprec_unified_local(__global const spinorStorageType * const rest
 	plus = getSpinor_eo(in, nn_eo);
 	U = getSU3(field, get_link_idx_SOA(dir, idx_neigh));
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
-	bc_tmp.re = KAPPA_SPATIAL_RE;
-	bc_tmp.im = MKAPPA_SPATIAL_IM;
+	bc_tmp = (dir == TDIR) ? (hmc_complex) {
+		KAPPA_TEMPORAL_RE, MKAPPA_TEMPORAL_IM
+} :
+	(hmc_complex) {
+		KAPPA_SPATIAL_RE, MKAPPA_SPATIAL_IM
+	};
 	if(dir == XDIR) {
 		///////////////////////////////////
 		// Calculate (1 + gamma_1) y
