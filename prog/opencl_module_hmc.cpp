@@ -486,6 +486,7 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//  which then has to be the source of the inversion
 	if(get_parameters()->get_use_eo() == true) {
+		convertGaugefieldToSOA_device(gaugefield_soa, *get_gaugefield());
 		Opencl_Module_Fermions::Qplus_eoprec (clmem_phi_inv_eoprec, clmem_phi_eoprec , *get_gaugefield());
 		if(logger.beDebug()) print_info_inv_field(clmem_phi_eoprec, true, "\tinit field after update ");
 	} else {
@@ -964,6 +965,7 @@ void Opencl_Module_Hmc::calc_gauge_force()
 hmc_float Opencl_Module_Hmc::calc_s_fermion()
 {
 	logger.debug() << "calc final fermion energy...";
+	convertGaugefieldToSOA_device(gaugefield_soa, clmem_new_u);
 	//this function essentially performs the same steps as in the force-calculation, but with higher precision.
 	//  therefore, comments are deleted here...
 	//  Furthermore, in the bicgstab-case, the second inversions are not needed
