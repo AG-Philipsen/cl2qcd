@@ -388,6 +388,8 @@ Matrixsu3 build_su3_from_ae_times_real(ae in, hmc_float eps)
 	return v;
 }
 
+//CP: I counted a total of 327 + 1 su3*su3 (this can be get centrally from inputparameters) flops for this function
+//NOTE: I inserted intermediate counts for orientation
 Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 {
 	//this is the method taken from tmqlcd. It is a cut-off series.
@@ -395,10 +397,12 @@ Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 	//Here, the stepsize factor is multiplied in right away!!
 	//Also, a factor of 0.5 is taken out to fit the different trace-definition from tmqlcd
 	hmc_float halfeps = epsilon;// *F_1_2;
+	//CP: this performs 25 flops
 	const Matrixsu3 v = build_su3_from_ae_times_real(inn, halfeps);
 
 	// calculates v^2
 	const Matrixsu3 v2 = multiply_matrixsu3(v, v);
+	//CP: a,b are 40 flops
 	const hmc_float a = 0.5 * (v2.e00.re + v2.e11.re + v2.e22.re);
 	// 1/3 imaginary part of tr v*v2
 	const hmc_float b = 0.33333333333333333 *
@@ -425,6 +429,7 @@ Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 	 * without it the GPU performs a wrong number of loop iterations.
 	 * See http://code.compeng.uni-frankfurt.de/issues/211 and http://forums.amd.com/forum/messageview.cfm?catid=390&threadid=155815 .
 	 */
+	//CP: this is 13 * 10 = 130 flops
 #pragma unroll 13
 	for(size_t i = 0; i < 13; ++i) {
 		hmc_complex a1p;
@@ -441,6 +446,7 @@ Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 	}
 
 	// vr = a0 + a1*v + a2*v2
+	//CP: these are 132 flops
 	Matrixsu3 vr;
 	vr.e00.re = a0.re + a1.re * v.e00.re - a1.im * v.e00.im + a2.re * v2.e00.re - a2.im * v2.e00.im;
 	vr.e00.im = a0.im + a1.re * v.e00.im + a1.im * v.e00.re + a2.re * v2.e00.im + a2.im * v2.e00.re;

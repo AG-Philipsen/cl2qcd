@@ -290,7 +290,7 @@ int Opencl_Module_Hmc::get_read_write_size(char * in)
 	}
 	if (strcmp(in, "fermion_force") == 0) {
 		//this kernel reads 16 spinors, 8 su3matrices and writes 8 ae per site
-		//NOTE: the kernel now runs over all ae, but this must be equivalent!
+		//NOTE: the kernel now runs over all ae instead of all sites, but this must be equivalent!
 		return (C * 12 * (16) + C * 8 * R + 8 * A) * D * S;
 	}
 	if (strcmp(in, "fermion_force_eoprec") == 0) {
@@ -315,41 +315,60 @@ int Opencl_Module_Hmc::get_flop_size(const char * in)
 {
 	int result = Opencl_Module_Fermions::get_flop_size(in);
 	if (result != 0) return result;
-	int S;
-	if((*parameters).get_use_eo() == 1)
-		S = get_parameters()->get_eoprec_spinorfieldsize();
-	else
-		S = get_parameters()->get_spinorfieldsize();
+	//this is the number of spinors in the system (or number of sites)
+	int S = get_parameters()->get_spinorfieldsize();
+	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	//this is the number of links in the system (and of gaugemomenta)
+	int G = get_parameters()->get_gaugemomentasize();
+	//NOTE: 1 ae has NC*NC-1 = 8 real entries
+	int A = get_parameters()->get_su3algebrasize();
+	//this returns the number of entries in an su3-matrix
+	int R = (*parameters).get_mat_size();
 	//this is the same as in the function above
 	if (strcmp(in, "generate_gaussian_spinorfield") == 0) {
-		return 10000000000000000000;
+		//this kernel performs 12 multiplications per site
+		///@todo ? I did not count the gaussian normal pair production, which is very complicated...
+		return 12 * S;
 	}
 	if (strcmp(in, "generate_gaussian_spinorfield_eoprec") == 0) {
-		return 10000000000000000000;
+		//this kernel performs 12 multiplications per site
+		///@todo ? I did not count the gaussian normal pair production, which is very complicated...
+		return 12 * Seo;
 	}
 	if (strcmp(in, "generate_gaussian_gaugemomenta") == 0) {
-		return 10000000000000000000;
+		//this kernel performs 0 multiplications per site
+		///@todo ? I did not count the gaussian normal pair production, which is very complicated...
+		return 0;
 	}
 	if (strcmp(in, "md_update_gaugefield") == 0) {
-		return 10000000000000000000;
+		//this kernel performs one exp(i ae) ( = 327 flops + 1 su3 mult ) and 1 su3 mult per link
+		return (get_parameters()->get_flop_su3_su3() * ( 1+ 1)  + 327 ) * G;
 	}
 	if (strcmp(in, "md_update_gaugemomenta") == 0) {
-		return 10000000000000000000;
+		//this kernel performs 1 real mult and 1 real add per ae
+		return (1 + 1) * A * G;
 	}
 	if (strcmp(in, "gauge_force") == 0) {
-		return 10000000000000000000;
+		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2_ND-1 su3_add), 1 su3*su3, 1 tr_lambda_u (19 flops) plus 8 add and 8 mult per ae 
+		return ( 4 * (NDIM - 1) * get_parameters()->get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + 1 * get_parameters()->get_flop_su3_su3() + 19  + A * ( 1 + 1 )
+		) * G;
 	}
 	if (strcmp(in, "fermion_force") == 0) {
-		return 10000000000000000000;
+		//this kernel performs NDIM * ( 4 * su3vec_acc (6 flops) + tr(v*u) (126 flops) + tr_lambda_u(19 flops) + update_ae(8*2 flops) + su3*su3 + su3*complex (flop_complex_mult * R ) ) per site
+		//NOTE: the kernel now runs over all ae instead of all sites, but this must be equivalent!
+		return Seo * NDIM * ( 4 * 6 + 126 + 19 + 8*2 + get_parameters()->get_flop_su3_su3() + get_parameters()->get_flop_complex_mult() * R );
 	}
 	if (strcmp(in, "fermion_force_eoprec") == 0) {
-		return 10000000000000000000;
+		//this kernel performs NDIM * ( 4 * su3vec_acc (6 flops) + tr(v*u) (126 flops) + tr_lambda_u(19 flops) + update_ae(8*2 flops) + su3*su3 + su3*complex (flop_complex_mult * R ) ) per site
+		return Seo * NDIM * ( 4 * 6 + 126 + 19 + 8*2 + get_parameters()->get_flop_su3_su3() + get_parameters()->get_flop_complex_mult() * R );
 	}
 	if (strcmp(in, "set_zero_gaugemomentum;") == 0) {
-		return 10000000000000000000;
+		//this kernel performs 0 mults
+		return 0;
 	}
 	if (strcmp(in, "gaugemomentum_squarenorm") == 0) {
-		return 10000000000000000000;
+		//this kernel performs 8 real mults and 8-1 real adds per ae
+		return (8 + 7) * A * G;
 	}
 	if (strcmp(in, "stout_smear_fermion_force") == 0) {
 		return 10000000000000000000;
@@ -779,7 +798,6 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		}
 
 		if(logger.beDebug() && debug_hard) {
-			int clerr = CL_SUCCESS;
 			logger.debug() << "\t\t\tperform checks on eo force:";
 			logger.debug() << "\t\t\tF(x_e, x_o):";
 			this->set_zero_clmem_force_device();
