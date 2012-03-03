@@ -173,6 +173,10 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 	if(use_soa) {
 		*collect_options << " -D_USE_SOA_";
 	}
+	
+	if(get_parameters()->get_use_rectangles() == true){
+		*collect_options <<  " -D_USE_RECT_" ;
+	}
 
 	return;
 }
@@ -274,6 +278,7 @@ void Opencl_Module::fill_buffers()
 	clmem_plaq = create_rw_buffer(sizeof(hmc_float));
 	clmem_splaq = create_rw_buffer(sizeof(hmc_float));
 	clmem_tplaq = create_rw_buffer(sizeof(hmc_float));
+	clmem_rect = create_rw_buffer(sizeof(hmc_float));
 	clmem_polyakov = create_rw_buffer(sizeof(hmc_complex));
 
 	// scratch buffers for gauge observable will be created on demand
@@ -281,7 +286,8 @@ void Opencl_Module::fill_buffers()
 	clmem_tplaq_buf_glob = 0;
 	clmem_splaq_buf_glob = 0;
 	clmem_polyakov_buf_glob = 0;
-
+	clmem_rect_buf_glob = 0;
+	
 	return;
 }
 
@@ -293,10 +299,12 @@ void Opencl_Module::fill_kernels()
 	logger.debug() << "Create gaugeobservables kernels...";
 	plaquette = createKernel("plaquette") << basic_opencl_code << "gaugeobservables_plaquette.cl";
 	plaquette_reduction = createKernel("plaquette_reduction") << basic_opencl_code << "gaugeobservables_plaquette.cl";
-
+	if(get_parameters()->get_use_rectangles() == true) {
+		rectangles = createKernel("rectangles") << basic_opencl_code << "gaugeobservables_rectangles.cl";
+		rectangles_reduction = createKernel("rectangles_reduction") << basic_opencl_code << "gaugeobservables_rectangles.cl";
+	}
 	polyakov = createKernel("polyakov") << basic_opencl_code << "gaugeobservables_polyakov.cl";
 	polyakov_reduction = createKernel("polyakov_reduction") << basic_opencl_code << "gaugeobservables_polyakov.cl";
-	//only init if if wanted
 	if(get_parameters()->get_use_smearing() == true) {
 		stout_smear = createKernel("stout_smear") << basic_opencl_code << "operations_gaugemomentum.cl" << "stout_smear.cl";
 	}
@@ -315,6 +323,12 @@ void Opencl_Module::clear_kernels()
 	clerr = clReleaseKernel(plaquette_reduction);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(polyakov_reduction);
+	if(get_parameters()->get_use_rectangles() == true) {
+		clerr = clReleaseKernel(rectangles);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		clerr = clReleaseKernel(rectangles_reduction);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	if(get_parameters()->get_use_smearing() == true) {
 		clerr = clReleaseKernel(stout_smear);
@@ -339,6 +353,9 @@ void Opencl_Module::clear_buffers()
 	clerr = clReleaseMemObject(clmem_splaq);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 
+	clerr = clReleaseMemObject(clmem_rect);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+	
 	clerr = clReleaseMemObject(clmem_polyakov);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 
@@ -352,6 +369,10 @@ void Opencl_Module::clear_buffers()
 	}
 	if(clmem_splaq_buf_glob) {
 		clerr = clReleaseMemObject(clmem_splaq_buf_glob);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+	}
+	if(clmem_rect_buf_glob) {
+		clerr = clReleaseMemObject(clmem_rect_buf_glob);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	}
 	if(clmem_polyakov_buf_glob) {
@@ -824,6 +845,50 @@ void Opencl_Module::plaquette_device(cl_mem gf)
 
 }
 
+void Opencl_Module::rectangles_device(cl_mem gf)
+{
+	//query work-sizes for kernel
+	size_t ls, gs;
+	cl_uint num_groups;
+	this->get_work_sizes(rectangles, this->get_device_type(), &ls, &gs, &num_groups);
+
+	int global_buf_size_float = sizeof(hmc_float) * num_groups;
+	int global_buf_size_complex = sizeof(hmc_complex) * num_groups;
+
+	if( clmem_rect_buf_glob == 0 ) clmem_plaq_buf_glob = create_rw_buffer(global_buf_size_float);
+
+	int buf_loc_size_float = sizeof(hmc_float) * ls;
+
+	//set arguments
+	// run local rectangles calculation and first part of reduction
+	int clerr = clSetKernelArg(rectangles, 0, sizeof(cl_mem), &gf);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(rectangles, 1, sizeof(cl_mem), &clmem_plaq_buf_glob);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(rectangles, 2, buf_loc_size_float, NULL);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel(rectangles, gs, ls);
+
+	// run second part of rectangles reduction
+
+	this->get_work_sizes(rectangles_reduction, this->get_device_type(), &ls, &gs, &num_groups);
+	
+	clerr = clSetKernelArg(rectangles_reduction, 0, sizeof(cl_mem), &clmem_rect_buf_glob);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(rectangles_reduction, 3, sizeof(cl_mem), &clmem_rect);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(rectangles_reduction, 6, sizeof(cl_uint), &num_groups);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+
+	///@todo improve
+	ls = 1;
+	gs = 1;
+	enqueueKernel(rectangles_reduction, gs, ls);
+
+}
+
 void Opencl_Module::polyakov_device(cl_mem gf)
 {
 	//query work-sizes for kernel
@@ -902,6 +967,20 @@ void Opencl_Module::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float 
 	pol_out->im = pol.im;
 }
 
+void Opencl_Module::gaugeobservables_rectangles(cl_mem gf, hmc_float * rect_out)
+{
+	//measure plaquette
+	rectangles_device(gf);
+
+	//read out values
+	hmc_float rect = 0.;
+	//NOTE: these are blocking calls!
+	get_buffer_from_device(clmem_rect, &rect, sizeof(hmc_float));
+
+	//NOTE: the rectangle value has not been normalized since it is mostly used for the HMC where one needs the absolute value
+	(*rect_out) = rect;
+}
+
 TmpClKernel Opencl_Module::createKernel(const char * const kernel_name)
 {
 	stringstream collect_options;
@@ -926,6 +1005,8 @@ void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
 
 	return;
 }
+
+
 
 void Opencl_Module::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
 {
@@ -996,6 +1077,12 @@ usetimer* Opencl_Module::get_timer(const char * in)
 	if (strcmp(in, "plaquette") == 0) {
 		return &(this->timer_plaquette);
 	}
+	if (strcmp(in, "rectangles_reduction") == 0) {
+		return &(this->timer_rectangles_reduction);
+	}
+	if (strcmp(in, "rectangles") == 0) {
+		return &(this->timer_rectangles);
+	}
 	if (strcmp(in, "stout_smear") == 0) {
 		return &(this->timer_stout_smear);
 	}
@@ -1047,6 +1134,12 @@ int Opencl_Module::get_read_write_size(const char * in)
 		this->get_work_sizes(polyakov_reduction, this->get_device_type(), &ls2, &gs2, &num_groups);
 		return (num_groups + 1 ) * 3 * C * D;
 	}
+	if (strcmp(in, "rectangles") == 0) {
+		return 1000000000000000000000;
+	}
+	if (strcmp(in, "rectangles_reduction") == 0) {
+		return 1000000000000000000000;
+	}
 	if (strcmp(in, "stout_smear") == 0) {
 		//this kernel reads in a complete gaugefield + a staple on each site and writes out a complete gaugefield
 		return VOL4D * NDIM * D * R * (6 * (NDIM - 1) + 1 + 1 );
@@ -1070,6 +1163,12 @@ int Opencl_Module::get_flop_size(const char * in)
 		return VOL4D * NDIM * (NDIM - 1) * ( 3 + NC);
 	}
 	if (strcmp(in, "plaquette_reduction") == 0) {
+		return 1000000000000000000000;
+	}
+	if (strcmp(in, "rectangles") == 0) {
+		return 1000000000000000000000;
+	}
+	if (strcmp(in, "rectangles_reduction") == 0) {
 		return 1000000000000000000000;
 	}
 	if (strcmp(in, "stout_smear") == 0) {
@@ -1135,6 +1234,8 @@ void Opencl_Module::print_profiling(std::string filename, int number)
 	kernelName = "polyakov_reduction";
 	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "plaquette";
+	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+	kernelName = "rectangles";
 	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "plaquette_reduction";
 	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );

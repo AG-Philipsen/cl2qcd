@@ -13,7 +13,7 @@ void Opencl_Module_Hmc::fill_collect_options(stringstream* collect_options)
 	*collect_options <<  " -DBETA=" << get_parameters()->get_beta() << " -DGAUGEMOMENTASIZE=" << get_parameters()->get_gaugemomentasize();
 	//in case of tlsym gauge action
 	if(get_parameters()->get_use_rectangles() == true){
-		*collect_options <<  " -D_USE_RECT_" << " -DC0=" << get_parameters()->get_c0() << " -DC1=" << get_parameters()->get_c1();
+		*collect_options <<  " -DC0=" << get_parameters()->get_c0() << " -DC1=" << get_parameters()->get_c1();
 	}
 	return;
 }
@@ -1016,6 +1016,9 @@ void Opencl_Module_Hmc::calc_gauge_force()
 {
 	logger.debug() << "\t\tcalc gauge_force...";
 	gauge_force_device();
+	if(get_parameters()->get_use_rectangles() == true){
+		gauge_force_tlsym_device();
+	}
 }
 
 hmc_float Opencl_Module_Hmc::calc_s_fermion()
@@ -1119,6 +1122,9 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 {
 	//Calc Hamiltonian
 	logger.debug() << "Calculate Hamiltonian";
+	hmc_float deltaH = 0.;
+	hmc_float s_old = 0.;
+	hmc_float s_new = 0.;
 
 	//Gauge-Part
 	hmc_float tplaq, splaq, plaq;
@@ -1131,11 +1137,27 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	//plaq has to be divided by the norm-factor and multiplied by NC
 	//  (because this is in the defintion of the gauge action and not in the normalization) to get s_gauge
 	hmc_float factor = 2.0 / static_cast<hmc_float>(parameters->get_vol4d() * NDIM * (NDIM - 1) );
+	if(get_parameters()->get_use_rectangles() == true){
+		hmc_float rect_new = 0.;
+		hmc_float rect = 0.;
+		Opencl_Module::gaugeobservables_rectangles(*get_gaugefield(), &rect);
+		Opencl_Module::gaugeobservables_rectangles(clmem_new_u, &rect_new);
+		hmc_float c0 = get_parameters()->get_c0();
+		hmc_float c1 = get_parameters()->get_c1();
+		//NOTE: the plaq part has been divided by NC above
+		deltaH = - beta * ( c0 * (plaq - plaq_new) / factor + c1/NC * ( rect - rect_new )  );
+		s_old = - beta * ( c0 * (plaq) / factor + c1/NC * ( rect )  );
+		s_new = - beta * ( c0 * (plaq_new) / factor + c1/NC * ( rect_new )  );
+		
+	} else{
 	/** NOTE: the minus here is introduced to fit tmlqcd!!! */
-	hmc_float deltaH = -(plaq - plaq_new) * beta / factor;
-
-	logger.debug() << "\tS_gauge(old field) = " << setprecision(10) << plaq << "\t" << plaq* beta  / factor;
-	logger.debug() << "\tS_gauge(new field) = " << setprecision(10) << plaq_new << "\t" << plaq_new* beta / factor;
+		deltaH = -(plaq - plaq_new) * beta / factor;
+		s_old = -(plaq ) * beta / factor;
+		s_new = -(plaq_new) * beta / factor;
+	}
+	
+	logger.debug() << "\tS_gauge(old field) = " << setprecision(10) << s_old;
+	logger.debug() << "\tS_gauge(new field) = " << setprecision(10) << s_new;
 	logger.debug() << "\tdeltaS_gauge = " << setprecision(10) << deltaH;
 
 	//Gaugemomentum-Part

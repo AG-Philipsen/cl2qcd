@@ -219,6 +219,33 @@ Matrixsu3 local_plaquette(__global ocl_s_gaugefield * field, const int n, const 
 	return out;
 }
 
+//calculate rectangle-matrix at site n,t in direction mu and nu
+Matrixsu3 local_rectangles(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
+{
+	Matrixsu3 out;
+	int4 pos;
+// 	if(mu == 0) {
+// 		pos.x = get_neighbor_temporal(t);
+// 		pos.y = n;
+// 	} else {
+// 		pos.x = t;
+// 		pos.y = get_neighbor(n, mu);
+// 	}
+// 	if(nu == 0) {
+// 		pos.z = get_neighbor_temporal(t);
+// 		pos.w = n;
+// 	} else {
+// 		pos.z = t;
+// 		pos.w = get_neighbor(n, nu);
+// 	}
+// 	out = multiply_matrixsu3 (get_matrixsu3(field, n, t, mu), get_matrixsu3(field, pos.y, pos.x, nu)      );
+// 	out = multiply_matrixsu3_dagger(out, get_matrixsu3(field, pos.w, pos.z, mu) );
+// 	out = multiply_matrixsu3_dagger(out, get_matrixsu3(field, n, t, nu) );
+
+	return out;
+}
+
+
 Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
 {
 	//the Q-plaquette is a sum over four normal plaquettes

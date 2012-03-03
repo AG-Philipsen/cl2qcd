@@ -150,11 +150,24 @@ public:
 	 */
 	void gaugeobservables(cl_mem gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
 	/**
+	 * Calculate rectangles of a specific gaugefield (on device).
+	 *
+	 * @param[in] gf gaugefield to measure on
+	 * @param[out] plaq Storage for result of rectangles calculation
+	 */
+	void gaugeobservables_rectangles(cl_mem gf, hmc_float * const rect);
+	/**
 	 * Calculate plaquette for a specific gaugefield (on device).
 	 *
 	 * @param[in] gf gaugefield to measure on
 	 */
 	void plaquette_device(cl_mem gf);
+	/**
+	 * Calculate rectangles for a specific gaugefield (on device).
+	 *
+	 * @param[in] gf gaugefield to measure on
+	 */
+	void rectangles_device(cl_mem gf);
 	/**
 	 * Calculate Polyakov loop for a specific gaugefield (on device).
 	 *
@@ -268,6 +281,8 @@ public:
 	//CP: if PROFILING is activated, one needs a timer for each kernel
 	usetimer timer_plaquette;
 	usetimer timer_plaquette_reduction;
+	usetimer timer_rectangles;
+	usetimer timer_rectangles_reduction;
 	usetimer timer_polyakov;
 	usetimer timer_polyakov_reduction;
 
@@ -464,6 +479,8 @@ private:
 	cl_mem clmem_tplaq_buf_glob;
 	cl_mem clmem_splaq;
 	cl_mem clmem_tplaq;
+	cl_mem clmem_rect;
+	cl_mem clmem_rect_buf_glob;
 	cl_mem clmem_polyakov;
 	cl_mem clmem_polyakov_buf_glob;
 
@@ -475,6 +492,8 @@ private:
 
 	cl_kernel plaquette;
 	cl_kernel plaquette_reduction;
+	cl_kernel rectangles;
+	cl_kernel rectangles_reduction;
 	cl_kernel polyakov;
 	cl_kernel polyakov_reduction;
 
