@@ -109,6 +109,7 @@ public:
 	void md_update_gaugefield_device(hmc_float eps);
 	void set_zero_clmem_force_device();
 	void gauge_force_device();
+	void gauge_force_tlsym_device();
 	void fermion_force_device();
 	void fermion_force_eoprec_device(cl_mem Y, cl_mem X, int evenodd);
 	void stout_smeared_fermion_force_device(cl_mem * gf_intermediate);
@@ -124,6 +125,7 @@ protected:
 	usetimer timer_md_update_gaugefield;
 	usetimer timer_md_update_gaugemomenta;
 	usetimer timer_gauge_force;
+	usetimer timer_gauge_force_tlsym;
 	usetimer timer_fermion_force;
 	usetimer timer_fermion_force_eoprec;
 	usetimer timer_set_zero_gaugemomentum;
@@ -171,6 +173,7 @@ private:
 	cl_kernel md_update_gaugefield;
 	cl_kernel md_update_gaugemomenta;
 	cl_kernel gauge_force;
+	cl_kernel gauge_force_tlsym;
 	cl_kernel fermion_force;
 	cl_kernel fermion_force_eoprec;
 	cl_kernel stout_smear_fermion_force;

@@ -79,7 +79,9 @@ void Opencl_Module_Hmc::fill_kernels()
 	md_update_gaugefield = createKernel("md_update_gaugefield") << basic_hmc_code << "md_update_gaugefield.cl";
 	md_update_gaugemomenta = createKernel("md_update_gaugemomenta") << basic_hmc_code << "operations_gaugemomentum.cl" << "md_update_gaugemomenta.cl";
 	gauge_force = createKernel("gauge_force") << basic_hmc_code << "operations_gaugemomentum.cl" << "force_gauge.cl";
-
+	if(get_parameters()->get_use_rectangles() == true) {
+		gauge_force_tlsym = createKernel("gauge_force_tlsym") << basic_hmc_code << "operations_gaugemomentum.cl" << "force_gauge_tlsym.cl";
+	}
 	if(get_parameters()->get_use_smearing() == true) {
 		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_hmc_code << "force_fermion_stout_smear.cl";
 	}
@@ -114,6 +116,10 @@ void Opencl_Module_Hmc::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(gauge_force);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	if(get_parameters()->get_use_rectangles() == true){
+		clerr = clReleaseKernel(gauge_force_tlsym);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
 	clerr = clReleaseKernel(set_zero_gaugemomentum);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	if(get_parameters()->get_use_smearing() == true) {
@@ -225,6 +231,9 @@ usetimer* Opencl_Module_Hmc::get_timer(char * in)
 	if (strcmp(in, "gauge_force") == 0) {
 		return &this->timer_gauge_force;
 	}
+	if (strcmp(in, "gauge_force_tlsym") == 0) {
+		return &this->timer_gauge_force_tlsym;
+	}
 	if (strcmp(in, "fermion_force") == 0) {
 		return &this->timer_fermion_force;
 	}
@@ -291,6 +300,9 @@ int Opencl_Module_Hmc::get_read_write_size(char * in)
 		//this kernel reads ingredients for 1 staple plus 1 su3matrix and writes 1 ae for every link
 		return G * D * (R * ( 6 * (NDIM - 1) + 1 ) + A );
 	}
+	if (strcmp(in, "gauge_force_tlsym") == 0) {
+		return 10000000000000000000;
+	}
 	if (strcmp(in, "fermion_force") == 0) {
 		//this kernel reads 16 spinors, 8 su3matrices and writes 8 ae per site
 		//NOTE: the kernel now runs over all ae instead of all sites, but this must be equivalent!
@@ -356,6 +368,9 @@ int Opencl_Module_Hmc::get_flop_size(const char * in)
 		return ( 4 * (NDIM - 1) * get_parameters()->get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + 1 * get_parameters()->get_flop_su3_su3() + 19  + A * ( 1 + 1 )
 		) * G;
 	}
+	if (strcmp(in, "gauge_force_tlsym") == 0) {
+		return 10000000000000000000;
+	}
 	if (strcmp(in, "fermion_force") == 0) {
 		//this kernel performs NDIM * ( 4 * su3vec_acc (6 flops) + tr(v*u) (126 flops) + tr_lambda_u(19 flops) + update_ae(8*2 flops) + su3*su3 + su3*complex (flop_complex_mult * R ) ) per site
 		//NOTE: the kernel now runs over all ae instead of all sites, but this must be equivalent!
@@ -396,6 +411,8 @@ void Opencl_Module_Hmc::print_profiling(std::string filename, int number)
 	kernelName = "md_update_gaugemomenta";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "gauge_force";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+	kernelName = "gauge_force_tlsym";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "fermion_force";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
@@ -1301,6 +1318,69 @@ void Opencl_Module_Hmc::gauge_force_device()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 		enqueueKernel( gauge_force , gs2, ls2);
+
+		cl_mem check_force_tmp = create_rw_buffer(sizeof(hmc_float));
+		hmc_float check_force_energy = 0.;
+		this->set_float_to_gaugemomentum_squarenorm_device(force2, check_force_tmp);
+		get_buffer_from_device(check_force_tmp, &check_force_energy, sizeof(hmc_float));
+		//logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
+		int clerr = clReleaseMemObject(check_force_tmp);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		if(check_force_energy != check_force_energy) {
+			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
+		}
+		clerr = clReleaseMemObject(force2);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+	}
+
+}
+
+void Opencl_Module_Hmc::gauge_force_tlsym_device()
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(gauge_force_tlsym, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(gauge_force_tlsym, 0, sizeof(cl_mem), &clmem_new_u);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(gauge_force_tlsym, 1, sizeof(cl_mem), &clmem_force);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel( gauge_force_tlsym , gs2, ls2);
+
+	if(logger.beDebug()) {
+		cl_mem gauge_force_tlsym_tmp = create_rw_buffer(sizeof(hmc_float));
+		hmc_float gauge_force_tlsym_energy = 0.;
+		this->set_float_to_gaugemomentum_squarenorm_device(clmem_force, gauge_force_tlsym_tmp);
+		get_buffer_from_device(gauge_force_tlsym_tmp, &gauge_force_tlsym_energy, sizeof(hmc_float));
+
+		//logger.debug() <<  "\t\t\tgauge force tlsym:\t" << gauge_force_tlsym_energy;
+
+		int clerr = clReleaseMemObject(gauge_force_tlsym_tmp);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		if(gauge_force_tlsym_energy != gauge_force_tlsym_energy) {
+			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
+
+	//recalculate force with local buffer to get only this contribution to the force vector
+	if(logger.beDebug()) {
+		int gaugemomentum_size = get_parameters()->get_gm_buf_size();
+		cl_mem force2;
+		force2 = create_rw_buffer(gaugemomentum_size);
+		//init new buffer to zero
+		this->get_work_sizes(md_update_gaugemomenta, this->get_device_type(), &ls2, &gs2, &num_groups);
+		clerr = clSetKernelArg(set_zero_gaugemomentum, 0, sizeof(cl_mem), &force2);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		enqueueKernel( set_zero_gaugemomentum , gs2, ls2);
+
+		//re-calculate force
+		clerr = clSetKernelArg(gauge_force_tlsym, 1, sizeof(cl_mem), &force2);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+		enqueueKernel( gauge_force_tlsym , gs2, ls2);
 
 		cl_mem check_force_tmp = create_rw_buffer(sizeof(hmc_float));
 		hmc_float check_force_energy = 0.;
