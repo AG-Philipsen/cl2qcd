@@ -18,6 +18,7 @@ void inputparameters::set_defaults()
 	use_chem_pot_re = false;
 	use_chem_pot_im = false;
 	use_smearing = false;
+	use_mp = false;
 	nspace = 4;
 	ntime = 8;
 	volspace = nspace * nspace * nspace;
@@ -91,7 +92,11 @@ void inputparameters::set_defaults()
 	kappa = 0.125;
 	mu = 0.006;
 	csw = 0.;
+	kappa_mp = 0.125;
+	mu_mp = 0.006;
+	csw_mp = 0.;
 	cgmax = 1000;
+	cgmax_mp = cgmax;
 	theta_fermion_spatial = 0.;
 	theta_fermion_temporal = 0.;
 	chem_pot_re = 0.;
@@ -99,7 +104,9 @@ void inputparameters::set_defaults()
 	use_eo = true;
 	//at the moment, only 2 solvers are implemented..
 	use_cg = false;
+	use_cg_mp = use_cg;
 	use_bicgstab_save = false;
+	use_bicgstab_save_mp = use_bicgstab_save;
 	use_pointsource = true;
 	num_sources = 12;
 	pointsource_x = 0;
@@ -114,6 +121,7 @@ void inputparameters::set_defaults()
 	force_prec = 1e-8;
 #endif
 	iter_refresh = 100;
+	iter_refresh_mp = iter_refresh;
 
 	//HMC specific parameters
 	tau = 0.5;
@@ -148,6 +156,8 @@ void inputparameters::readfile(const char* ifn)
 
 		bool muset  = false;
 		bool cswset = false;
+		bool csw_mpset = false;
+		bool mu_mpset = false;
 		bool c1set = false;
 
 		while (infile.good()) {
@@ -161,18 +171,39 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("#") != std::string::npos) continue; //allow comments
 
 			if(	line.find("kappa") != std::string::npos ||
-					line.find("Kappa") != std::string::npos ) val_assign(&kappa, line);
+					line.find("Kappa") != std::string::npos ) {
+					if(	line.find("mp") != std::string::npos || 
+							line.find("MP") != std::string::npos || 
+							line.find("Mp") != std::string::npos )
+						val_assign(&kappa_mp, line);
+					else
+						val_assign(&kappa, line);
+			}
 			if(	line.find("mu") != std::string::npos || 
 					line.find("Mu") != std::string::npos) {
-				val_assign(&mu, line);
-				muset = true;
+					if(	line.find("mp") != std::string::npos || 
+							line.find("MP") != std::string::npos || 
+							line.find("Mp") != std::string::npos ) {
+						val_assign(&mu_mp, line);
+						mu_mpset = true;
+					} else{
+						val_assign(&mu, line);
+						muset = true;
+					}
 			}
 			if(	line.find("csw") != std::string::npos ||
 					line.find("Csw") != std::string::npos) {
-				val_assign(&csw, line);
-				cswset = true;
+					if(	line.find("mp") != std::string::npos || 
+							line.find("MP") != std::string::npos || 
+							line.find("Mp") != std::string::npos ) {
+						val_assign(&csw_mp, line);
+						csw_mpset = true;
+					} else {
+						val_assign(&csw, line);
+						cswset = true;
+					}
 			}
-
+			
 			if(	line.find("beta") != std::string::npos ||
 					line.find("Beta") != std::string::npos) val_assign(&beta, line);
 
@@ -189,12 +220,29 @@ void inputparameters::readfile(const char* ifn)
 
 			if(	line.find("cgmax") != std::string::npos || 
 					line.find("CGmax") != std::string::npos ||
-					line.find("Cgmax") != std::string::npos	) val_assign(&cgmax, line);
+					line.find("Cgmax") != std::string::npos	) {
+				if(	line.find("mp") != std::string::npos || 
+						line.find("MP") != std::string::npos || 
+						line.find("Mp") != std::string::npos ){
+					val_assign(&cgmax_mp, line);
+				} else {
+					val_assign(&cgmax, line);
+				}
+			}
 
 			if(	line.find("Solver") != std::string::npos ||
 					line.find("solver") != std::string::npos ||
-					line.find("SOLVER") != std::string::npos	) solver_assign(&use_cg, line);
-
+					line.find("SOLVER") != std::string::npos	) {
+				if(	line.find("mp") != std::string::npos || 
+						line.find("MP") != std::string::npos || 
+						line.find("Mp") != std::string::npos ){
+					cout << "here" << endl;
+					solver_assign(&use_cg_mp, line, true);
+				} else {
+					solver_assign(&use_cg, line, false);
+				}
+			}
+		
 			if(line.find("sol_pr") != std::string::npos) val_assign(&solver_prec, line);
 			if(line.find("force_pr") != std::string::npos) val_assign(&force_prec, line);
 
@@ -228,7 +276,19 @@ void inputparameters::readfile(const char* ifn)
 
 			if(	line.find("fermaction") 		!= std::string::npos	||
 					line.find("fermionaction")	!= std::string::npos	||
-					line.find("fermact") 				!= std::string::npos 	) fermact_assign(&fermact, line);
+					line.find("fermact") 				!= std::string::npos 	) {
+				if(	line.find("mp") != std::string::npos || 
+							line.find("MP") != std::string::npos || 
+							line.find("Mp") != std::string::npos ) {
+					fermact_assign(&fermact_mp, line);
+				} else{
+					fermact_assign(&fermact, line);
+				}
+			}
+			
+			if(	line.find("fermaction_mp") 		!= std::string::npos	||
+					line.find("fermionaction_mp")	!= std::string::npos	||
+					line.find("fermact_mp") 				!= std::string::npos 	) fermact_assign(&fermact_mp, line);
 
 			if(	line.find("gaugeaction") 	!= std::string::npos ||
 					line.find("gaugeact") 		!= std::string::npos ) {
@@ -259,6 +319,12 @@ void inputparameters::readfile(const char* ifn)
 					line.find("even-odd-preconditioning") != std::string::npos ||
 					line.find("use_eo") != std::string::npos ||
 					line.find("use_evenodd") != std::string::npos ) bool_assign(&use_eo, line);
+			
+			if(	line.find("use_mp") != std::string::npos	||
+					line.find("use_mass-preconditioning") != std::string::npos ||
+					line.find("use_MP") != std::string::npos ||
+					line.find("use_massprec") != std::string::npos ||
+					line.find("use_mass-prec") != std::string::npos  ) bool_assign(&use_mp, line);
 
 			if(	line.find("use_rec12") != std::string::npos ||
 					line.find("REC12") != std::string::npos) bool_assign(&use_rec12, line);
@@ -303,7 +369,6 @@ void inputparameters::readfile(const char* ifn)
 				cout << line << endl;
 				bool_assign(&profile_solver, line);
 			}
-
 		}
 
 		//check for wrong settings in fermionaction
@@ -311,6 +376,10 @@ void inputparameters::readfile(const char* ifn)
 		    ( (cswset == true) && (fermact != CLOVER     ) ) ||
 		    ( (cswset == true) && (muset   == true       ) )  )
 			throw Invalid_Fermact(fermact, muset, cswset);
+		if( ( (mu_mpset  == true) && (fermact_mp != TWISTEDMASS) ) ||
+		    ( (csw_mpset == true) && (fermact_mp != CLOVER     ) ) ||
+		    ( (csw_mpset == true) && (mu_mpset   == true       ) )  )
+			throw Invalid_Fermact(fermact_mp, mu_mpset, csw_mpset);
 		//check for wrong settings in gaugeaction
 		if( ( (use_rectangles  == true) && (gaugeact != TLSYM) ) ||
 		    ( (use_rectangles  == false) && (gaugeact == TLSYM) ) )
@@ -461,19 +530,23 @@ void inputparameters::gaugeact_assign(int * out, std::string line, bool mu1set)
 	return;
 }
 
-void inputparameters::solver_assign(bool * out, std::string line)
+void inputparameters::solver_assign(bool * out, std::string line, bool mp)
 {
 	size_t pos = line.find("=");
 	std::string value = line.substr(pos + 1);
 	//LZ: note that the ordering of false/true is crucial here
 	//    as any "bicgstab" hit will also be a "cg" hit...
 	//    and any "bicgstab_save" hit will also be a "bicgcgstab" hit...
+	cout << value << endl;
 	if(	value.find("BiCGStab_save") != std::string::npos ||
 			value.find("bicgstab_save") != std::string::npos ||	
 			value.find("BICGSTAB_save") != std::string::npos ||	
 			value.find("BICGSTAB_SAVE") != std::string::npos ) {
 		(*out) = false;
-		this->use_bicgstab_save = true;
+		if(mp)
+			this->use_bicgstab_save_mp = true;
+		else
+			this->use_bicgstab_save = true;
 		return;
 	}
 	if(	value.find("BiCGStab") != std::string::npos ||
@@ -486,8 +559,10 @@ void inputparameters::solver_assign(bool * out, std::string line)
 			value.find("cg") != std::string::npos ||
 			value.find("CG") != std::string::npos ) {
 		(*out) = true;
+	cout << "!" << endl;
 		return;
 	}
+	cout << "throw" << endl;
 	throw line;
 	return;
 }
@@ -554,6 +629,11 @@ hmc_float inputparameters::get_kappa() const
 	return kappa;
 }
 
+hmc_float inputparameters::get_kappa_mp() const
+{
+	return kappa_mp;
+}
+
 void inputparameters::calc_c0_tlsym(hmc_float c1)
 {
 	c0 =  1. - 8.*c1;
@@ -580,9 +660,19 @@ void inputparameters::calc_mubar()
 	mubar = 2.*kappa * mu;
 }
 
+void inputparameters::calc_mubar_mp()
+{
+	mubar_mp = 2.*kappa_mp * mu_mp;
+}
+
 hmc_float inputparameters::get_mubar() const
 {
 	return mubar;
+}
+
+hmc_float inputparameters::get_mubar_mp() const
+{
+	return mubar_mp;
 }
 
 hmc_float inputparameters::get_theta_fermion_spatial() const
@@ -605,11 +695,15 @@ hmc_float inputparameters::get_beta() const
 	return beta;
 }
 
+hmc_float inputparameters::get_mu_mp() const
+{
+	return mu_mp;
+}
+
 hmc_float inputparameters::get_mu() const
 {
 	return mu;
 }
-
 hmc_float inputparameters::get_tau() const
 {
 	return tau;
@@ -618,6 +712,11 @@ hmc_float inputparameters::get_tau() const
 hmc_float inputparameters::get_csw() const
 {
 	return csw;
+}
+
+hmc_float inputparameters::get_csw_mp() const
+{
+	return csw_mp;
 }
 
 hmc_float inputparameters::get_chem_pot_re() const
@@ -654,6 +753,11 @@ hmc_float inputparameters::get_lambda(int number) const
 int inputparameters::get_cgmax() const
 {
 	return cgmax;
+}
+
+int inputparameters::get_cgmax_mp() const
+{
+	return cgmax_mp;
 }
 
 int inputparameters::get_ns() const
@@ -750,6 +854,11 @@ int inputparameters::get_fermact() const
 	return fermact;
 }
 
+int inputparameters::get_fermact_mp() const
+{
+	return fermact_mp;
+}
+
 int inputparameters::get_gaugeact() const
 {
 	return gaugeact;
@@ -798,6 +907,11 @@ void inputparameters::display_sourcefilenumber() const
 bool inputparameters::get_use_eo() const
 {
 	return use_eo;
+}
+
+bool inputparameters::get_use_mp() const
+{
+	return use_mp;
 }
 
 bool inputparameters::get_use_rec12() const
@@ -914,9 +1028,19 @@ bool inputparameters::get_use_cg() const
 	return use_cg;
 }
 
+bool inputparameters::get_use_cg_mp() const
+{
+	return use_cg_mp;
+}
+
 bool inputparameters::get_use_bicgstab_save() const
 {
 	return use_bicgstab_save;
+}
+
+bool inputparameters::get_use_bicgstab_save_mp() const
+{
+	return use_bicgstab_save_mp;
 }
 
 bool inputparameters::get_use_pointsource() const
@@ -1014,6 +1138,11 @@ hmc_float inputparameters::get_force_prec() const
 int inputparameters::get_iter_refresh() const
 {
 	return iter_refresh;
+}
+
+int inputparameters::get_iter_refresh_mp() const
+{
+	return iter_refresh_mp;
 }
 
 bool inputparameters::get_reversibility_check() const
@@ -1229,6 +1358,11 @@ void inputparameters::print_info_fermion() const
 	}
 	logger.info() << "##" ;
 	logger.info() << "## Inverter parameters:";
+	logger.info() << "## precision for inversions = " << this->get_solver_prec();
+	if(this->get_use_eo() == true)
+		logger.info() << "## Use even-odd preconditioning" ;
+	if(this->get_use_eo() == false)
+		logger.info() << "## Do NOT use even-odd preconditioning";
 	if(this->get_use_pointsource() == true) {
 		logger.info() << "## Use pointsource for inversion" ;
 		logger.info() << "## Position (x,y,z,t): " << pointsource_x << " " <<  pointsource_y << " " <<  pointsource_z << " " <<  pointsource_t;
@@ -1245,11 +1379,6 @@ void inputparameters::print_info_fermion() const
 		else
 			logger.info() << "## Use BiCGStab-SAVE for inversions";
 	}
-	logger.info() << "## precision for inversions = " << this->get_solver_prec();
-	if(this->get_use_eo() == true)
-		logger.info() << "## Use even-odd preconditioning" ;
-	if(this->get_use_eo() == false)
-		logger.info() << "## Do NOT use even-odd preconditioning";
 	logger.info() << "## cgmax  = " << this->get_cgmax();
 	logger.info() << "## iter_refresh  = " << this->get_iter_refresh();
 
@@ -1298,6 +1427,11 @@ void inputparameters::print_info_fermion(ostream * os) const
 	}
 	*os  << "##" << endl;
 	*os  << "## Inverter parameters:" << endl;
+	*os << "## precision for inversions = " << this->get_solver_prec() << endl;
+	if(this->get_use_eo() == true)
+		*os  << "## Use even-odd preconditioning" << endl;
+	if(this->get_use_eo() == false)
+		*os  << "## Do NOT use even-odd preconditioning" << endl;
 	if(this->get_use_pointsource() == true) {
 		*os  << "## Use pointsource for inversion"  << endl;
 		*os  << "## Position (x,y,z,t): " << pointsource_x << " " <<  pointsource_y << " " <<  pointsource_z << " " <<  pointsource_t  << endl;
@@ -1314,11 +1448,6 @@ void inputparameters::print_info_fermion(ostream * os) const
 		else
 			*os << "## Use BiCGStab-SAVE for inversions" << endl;
 	}
-	*os << "## precision for inversions = " << this->get_solver_prec() << endl;
-	if(this->get_use_eo() == true)
-		*os  << "## Use even-odd preconditioning" << endl;
-	if(this->get_use_eo() == false)
-		*os  << "## Do NOT use even-odd preconditioning" << endl;
 	*os << "## cgmax  = " << this->get_cgmax() << endl;
 	*os << "## iter_refresh  = " << this->get_iter_refresh() << endl;
 
@@ -1436,6 +1565,36 @@ void inputparameters::print_info_hmc(char* progname) const
 	for(int i = 0; i< this->get_num_timescales(); i++){
 		print_info_integrator(i);
 	}
+	if(this->get_use_mp() == true){
+		logger.info() << "##  ";
+		logger.info() <<  "## use mass preconditioning:";
+		if(this->get_fermact_mp() == WILSON) {
+			logger.info() <<  "## mp action: unimproved Wilson";
+			logger.info() << "## kappa_mp  = " << this->get_kappa_mp();
+		}
+		if(this->get_fermact_mp() == TWISTEDMASS) {
+			logger.info() <<  "## mp action: twisted mass Wilson";
+			logger.info() << "## kappa_mp  = " << this->get_kappa_mp();
+			logger.info() << "## mu_mp     = " << this->get_mu_mp();
+		}
+		if(this->get_fermact_mp() == CLOVER) {
+			logger.info() <<  "## mp action: clover Wilson";
+			logger.info() << "## kappa_mp  = " << this->get_kappa_mp();
+			logger.info() << "## csw_mp   = " << this->get_csw_mp();
+		}
+		logger.info() << "##" ;
+		if(this->get_use_cg_mp() == true)
+		logger.info() << "## Use CG-solver for mp inversions" ;
+		if(this->get_use_cg_mp() == false) {
+			if(this->get_use_bicgstab_save_mp() == false)
+				logger.info() << "## Use BiCGStab for mp inversions";
+			else
+				logger.info() << "## Use BiCGStab-SAVE for mp inversions";
+		}
+		logger.info() << "## cgmax_mp  = " << this->get_cgmax_mp();
+		logger.info() << "## iter_refresh_mp  = " << this->get_iter_refresh_mp();
+		logger.info() << "##" ;
+	}
 	logger.info() << "## **********************************************************";
 	return;
 }
@@ -1457,6 +1616,36 @@ void inputparameters::print_info_hmc(char* progname, ostream* os) const
 	//integrator infos
 	for(int i = 0; i< this->get_num_timescales(); i++){
 		print_info_integrator(os, i);
+	}
+	if(this->get_use_mp() == true){
+		*os << "##  " << '\n';
+		*os<<  "## use mass preconditioning:"  << '\n';
+		if(this->get_fermact_mp() == WILSON) {
+			*os<<  "## mp action: unimproved Wilson"  << '\n';
+			*os<< "## kappa_mp  = " << this->get_kappa_mp()  << '\n';
+		}
+		if(this->get_fermact_mp() == TWISTEDMASS) {
+			*os<<  "## mp action: twisted mass Wilson"  << '\n';
+			*os<< "## kappa_mp  = " << this->get_kappa_mp()  << '\n';
+			*os<< "## mu_mp     = " << this->get_mu_mp()  << '\n';
+		}
+		if(this->get_fermact_mp() == CLOVER) {
+			*os<<  "## mp action: clover Wilson";
+			*os<< "## kappa_mp  = " << this->get_kappa_mp()  << '\n';
+			*os<< "## csw_mp   = " << this->get_csw_mp()  << '\n';
+		}
+		*os<< "##"  << endl;
+		if(this->get_use_cg_mp() == true)
+		*os<< "## Use CG-solver for mp inversions"  << '\n';
+		if(this->get_use_cg_mp() == false) {
+			if(this->get_use_bicgstab_save_mp() == false)
+				*os<< "## Use BiCGStab for mp inversions"  << '\n';
+			else
+				*os<< "## Use BiCGStab-SAVE for mp inversions"  << '\n';
+		}
+		*os<< "## cgmax_mp  = " << this->get_cgmax_mp()  << '\n';
+		*os<< "## iter_refresh_mp  = " << this->get_iter_refresh_mp()  << '\n';
+		*os<< "##"  << '\n';
 	}
 	*os << "## **********************************************************" << '\n';
 	return;

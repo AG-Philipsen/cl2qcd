@@ -53,9 +53,13 @@ public:
 	 */
 	void set_defaults();
 	hmc_float get_kappa() const;
+	hmc_float get_kappa_mp() const;
 	void set_mubar_negative();
+	void set_mubar_mp_negative();
 	void calc_mubar();
+	void calc_mubar_mp();
 	hmc_float get_mubar() const;
+	hmc_float get_mubar_mp() const;
 	hmc_float get_beta() const;
 	hmc_float get_tau() const;
 	hmc_float get_theta_fermion_spatial() const;
@@ -63,6 +67,8 @@ public:
 	hmc_float get_theta_gaugefield() const;
 	hmc_float get_mu() const;
 	hmc_float get_csw() const;
+	hmc_float get_mu_mp() const;
+	hmc_float get_csw_mp() const;
 	hmc_float get_chem_pot_re() const;
 	hmc_float get_chem_pot_im() const;
 	int get_nt() const;
@@ -72,9 +78,11 @@ public:
 	bool get_use_rec12() const;
 	bool get_use_gpu() const;
 	bool get_use_eo() const;
+	bool get_use_mp() const;
 	bool get_use_aniso() const;
 	bool get_use_rectangles() const;
 	int get_cgmax() const;
+	int get_cgmax_mp() const;
 	/**
 	 * The precision to be used for gaugefield storage in bits.
 	 *
@@ -95,10 +103,12 @@ public:
 	hmc_float get_solver_prec() const;
 	hmc_float get_force_prec() const;
 	int get_iter_refresh() const;
+	int get_iter_refresh_mp() const;
 	bool get_saveconfigs() const;
 	int get_savefrequency() const;
 	int get_writefrequency() const;
 	int get_fermact() const;
+	int get_fermact_mp() const;
 	int get_gaugeact() const;
 	void display_sourcefile() const;
 	void display_sourcefilenumber() const;
@@ -134,7 +144,9 @@ public:
 	hmc_float get_rho() const;
 	int get_rho_iter() const;
 	bool get_use_cg() const;
+	bool get_use_cg_mp() const;
 	bool get_use_bicgstab_save() const;
+	bool get_use_bicgstab_save_mp() const;
 	bool get_use_autotuning() const;
 	bool get_use_pointsource() const;
 	bool get_reversibility_check() const;
@@ -287,6 +299,7 @@ private:
 	int gf_buf_size;
 	int gm_buf_size;
 
+	//various options
 	bool use_rec12;
 	bool use_gpu;
 	bool use_aniso;
@@ -296,6 +309,8 @@ private:
 	bool use_smearing;
 	bool print_to_screen;
 	bool use_autotuning;
+	//masspreconditioning
+	bool use_mp;
 
 	//parameters that describe the size of datatypes in bytes
 	int mat_size;
@@ -311,12 +326,19 @@ private:
 	int flop_spinor_sqnorm;
 
 	//more specific ones
-	hmc_float kappa;
 	hmc_float beta;
 	int xi;
+	
+	//fermion parameters
+	hmc_float kappa;
 	hmc_float mu;
 	hmc_float mubar;
 	hmc_float csw;
+	//parameters for the mass prenditioning field
+	hmc_float kappa_mp;
+	hmc_float mu_mp;
+	hmc_float mubar_mp;
+	hmc_float csw_mp;
 	hmc_float theta_fermion_spatial;
 	hmc_float theta_fermion_temporal;
 	hmc_float theta_gaugefield;
@@ -327,12 +349,15 @@ private:
 	hmc_float solver_prec;
 	hmc_float force_prec;
 	int iter_refresh;
+	int iter_refresh_mp;
 	int rho_iter;
 	bool reversibility_check;
 	long long host_seed;
 	int num_dev;
 	int cgmax;
+	int cgmax_mp;
 	int fermact;
+	int fermact_mp;
 	int gaugeact;
 	int prec;
 	int startcondition;
@@ -351,7 +376,9 @@ private:
 	hmc_float lambda1;
 	hmc_float lambda2;
 	bool use_cg;
+	bool use_cg_mp;
 	bool use_bicgstab_save;
+	bool use_bicgstab_save_mp;
 	bool use_pointsource;
 	bool use_rectangles;
 	hmc_float c0;
@@ -377,7 +404,7 @@ private:
 	void integrator_assign(int * out, std::string line);
 	void val_assign(std::string * out, std::string line);
 	void bool_assign(bool * out, std::string line);
-	void solver_assign(bool * out, std::string line);
+	void solver_assign(bool * out, std::string line, bool mp);
 
 	//this can bee used to generate rnd-fields with only one thread
 	bool use_same_rnd_numbers;
