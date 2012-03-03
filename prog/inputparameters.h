@@ -91,9 +91,6 @@ public:
 	int get_heatbathsteps() const;
 	int get_overrelaxsteps() const;
 	int get_hmcsteps() const;
-	int get_integrationsteps2() const;
-	int get_integrationsteps1() const;
-	int get_integrationsteps0() const;
 	int get_integrationsteps(int number) const;
 	hmc_float get_solver_prec() const;
 	hmc_float get_force_prec() const;
@@ -147,9 +144,6 @@ public:
 	int get_corr_dir() const;
 	int get_integrator(int which) const;
 	int get_num_timescales() const;
-	hmc_float get_lambda0() const;
-	hmc_float get_lambda1() const;
-	hmc_float get_lambda2() const;
 	hmc_float get_lambda(int number) const;
 	hmc_float get_c0() const;
 	hmc_float get_c1() const;

@@ -220,7 +220,7 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 
 	if(get_parameters()->get_num_timescales() == 1) {
 		logger.debug() << "\t\tstarting leapfrog...";
-		int n0 = get_parameters()->get_integrationsteps0();
+		int n0 = get_parameters()->get_integrationsteps(0);
 		hmc_float deltaTau0 = get_parameters()->get_tau() / ((hmc_float) n0);
 		hmc_float deltaTau0_half = 0.5 * deltaTau0;
 
@@ -239,8 +239,8 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 		logger.debug() << "start leapfrog with 2 timescales..";
 		//this uses 2 timescales (more is not implemented yet): timescale0 for the gauge-part, timescale1 for the fermion part
 		//this is done after hep-lat/0209037. See also hep-lat/0506011v2 for a more advanced version
-		int n0 = get_parameters()->get_integrationsteps0();
-		int n1 = get_parameters()->get_integrationsteps1();
+		int n0 = get_parameters()->get_integrationsteps(0);
+		int n1 = get_parameters()->get_integrationsteps(1);
 		hmc_float deltaTau1 = get_parameters()->get_tau() / ((hmc_float) n1);
 		hmc_float deltaTau0 = deltaTau1 / ( (hmc_float) n0 );
 		hmc_float deltaTau0_half = 0.5 * deltaTau0;
@@ -278,9 +278,9 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 	} else if (get_parameters()->get_num_timescales() == 3) {
 		logger.debug() << "start leapfrog with 3 timescales..";
 		//just like with 2 timescales...
-		int n0 = get_parameters()->get_integrationsteps0();
-		int n1 = get_parameters()->get_integrationsteps1();
-		int n2 = get_parameters()->get_integrationsteps2();
+		int n0 = get_parameters()->get_integrationsteps(0);
+		int n1 = get_parameters()->get_integrationsteps(1);
+		int n2 = get_parameters()->get_integrationsteps(2);
 		hmc_float deltaTau2 = get_parameters()->get_tau() / ((hmc_float) n2);
 		hmc_float deltaTau1 = deltaTau2 / ( (hmc_float) n1 );
 		hmc_float deltaTau0 = deltaTau1 / ( (hmc_float) n0 );
@@ -328,11 +328,11 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already
 	if(get_parameters()->get_num_timescales() == 1) {
 		logger.debug() << "\t\tstarting 2MN...";
-		int n0 = get_parameters()->get_integrationsteps0();
+		int n0 = get_parameters()->get_integrationsteps(0);
 		hmc_float deltaTau0 = get_parameters()->get_tau() / ((hmc_float) n0);
 		hmc_float deltaTau0_half = 0.5 * deltaTau0;
-		hmc_float lambda_times_deltaTau0 = deltaTau0 * get_parameters()->get_lambda0();
-		hmc_float one_minus_2_lambda = 1. - 2.*get_parameters()->get_lambda0();
+		hmc_float lambda_times_deltaTau0 = deltaTau0 * get_parameters()->get_lambda(0);
+		hmc_float one_minus_2_lambda = 1. - 2.*get_parameters()->get_lambda(0);
 		hmc_float one_minus_2_lambda_times_deltaTau0 = one_minus_2_lambda * deltaTau0;
 
 		logger.debug() << "\t\tinitial step:";
@@ -353,8 +353,8 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		logger.debug() << "\t\tfinished 2MN";
 	} else if (get_parameters()->get_num_timescales() == 2) {
 		//this is done after hep-lat/0209037. See also hep-lat/0506011v2 for a more advanced version
-		int n0 = get_parameters()->get_integrationsteps0();
-		int n1 = get_parameters()->get_integrationsteps1();
+		int n0 = get_parameters()->get_integrationsteps(0);
+		int n1 = get_parameters()->get_integrationsteps(1);
 
 		//this uses 2 timescales (more is not implemented yet): timescale1 for the gauge-part, timescale2 for the fermion part
 		hmc_float deltaTau1 = get_parameters()->get_tau() / ((hmc_float) n1);
@@ -362,10 +362,10 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		hmc_float deltaTau0 = deltaTau1 / ( 2.* (hmc_float) n0 );
 		hmc_float deltaTau0_half = 0.5 * deltaTau0;
 		//hmc_float deltaTau1_half = 0.5 * deltaTau1;
-		hmc_float lambda0_times_deltaTau0 = deltaTau0 * get_parameters()->get_lambda0();
-		hmc_float lambda1_times_deltaTau1 = deltaTau1 * get_parameters()->get_lambda1();
-		hmc_float one_minus_2_lambda0 = 1. - 2.*get_parameters()->get_lambda0();
-		hmc_float one_minus_2_lambda1 = 1. - 2.*get_parameters()->get_lambda1();
+		hmc_float lambda0_times_deltaTau0 = deltaTau0 * get_parameters()->get_lambda(0);
+		hmc_float lambda1_times_deltaTau1 = deltaTau1 * get_parameters()->get_lambda(1);
+		hmc_float one_minus_2_lambda0 = 1. - 2.*get_parameters()->get_lambda(0);
+		hmc_float one_minus_2_lambda1 = 1. - 2.*get_parameters()->get_lambda(1);
 		hmc_float one_minus_2_lambda0_times_deltaTau0 = one_minus_2_lambda0 * deltaTau0;
 		hmc_float one_minus_2_lambda1_times_deltaTau1 = one_minus_2_lambda1 * deltaTau1;
 
@@ -419,9 +419,9 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		logger.debug() << "\t\tfinished 2MN";
 	} else if (get_parameters()->get_num_timescales() == 3) {
 		//just like with 2 timescales...
-		int n0 = get_parameters()->get_integrationsteps0();
-		int n1 = get_parameters()->get_integrationsteps1();
-		int n2 = get_parameters()->get_integrationsteps2();
+		int n0 = get_parameters()->get_integrationsteps(0);
+		int n1 = get_parameters()->get_integrationsteps(1);
+		int n2 = get_parameters()->get_integrationsteps(2);
 
 		hmc_float deltaTau2 = get_parameters()->get_tau() / ((hmc_float) n2);
 		//NOTE: With 2MN, the stepsize for the lower integration step is deltaTau1/(2 Ni-1)!!
@@ -430,12 +430,12 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		hmc_float deltaTau1_half = 0.5 * deltaTau1;
 		hmc_float deltaTau0_half = 0.5 * deltaTau0;
 		//hmc_float deltaTau1_half = 0.5 * deltaTau1;
-		hmc_float lambda0_times_deltaTau0 = deltaTau0 * get_parameters()->get_lambda0();
-		hmc_float lambda1_times_deltaTau1 = deltaTau1 * get_parameters()->get_lambda1();
-		hmc_float lambda2_times_deltaTau2 = deltaTau2 * get_parameters()->get_lambda2();
-		hmc_float one_minus_2_lambda0 = 1. - 2.*get_parameters()->get_lambda0();
-		hmc_float one_minus_2_lambda1 = 1. - 2.*get_parameters()->get_lambda1();
-		hmc_float one_minus_2_lambda2 = 1. - 2.*get_parameters()->get_lambda2();
+		hmc_float lambda0_times_deltaTau0 = deltaTau0 * get_parameters()->get_lambda(0);
+		hmc_float lambda1_times_deltaTau1 = deltaTau1 * get_parameters()->get_lambda(1);
+		hmc_float lambda2_times_deltaTau2 = deltaTau2 * get_parameters()->get_lambda(2);
+		hmc_float one_minus_2_lambda0 = 1. - 2.*get_parameters()->get_lambda(0);
+		hmc_float one_minus_2_lambda1 = 1. - 2.*get_parameters()->get_lambda(1);
+		hmc_float one_minus_2_lambda2 = 1. - 2.*get_parameters()->get_lambda(2);
 		hmc_float one_minus_2_lambda0_times_deltaTau0 = one_minus_2_lambda0 * deltaTau0;
 		hmc_float one_minus_2_lambda1_times_deltaTau1 = one_minus_2_lambda1 * deltaTau1;
 		hmc_float one_minus_2_lambda2_times_deltaTau2 = one_minus_2_lambda2 * deltaTau2;

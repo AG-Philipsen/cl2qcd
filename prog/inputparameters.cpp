@@ -635,21 +635,6 @@ hmc_float inputparameters::get_rho() const
 	return rho;
 }
 
-hmc_float inputparameters::get_lambda0() const
-{
-	return lambda0;
-}
-
-hmc_float inputparameters::get_lambda1() const
-{
-	return lambda1;
-}
-
-hmc_float inputparameters::get_lambda2() const
-{
-	return lambda2;
-}
-
 hmc_float inputparameters::get_lambda(int number) const
 {
 	switch (number) {
@@ -727,21 +712,6 @@ int inputparameters::get_overrelaxsteps() const
 int inputparameters::get_hmcsteps() const
 {
 	return hmcsteps;
-}
-
-int inputparameters::get_integrationsteps0() const
-{
-	return integrationsteps0;
-}
-
-int inputparameters::get_integrationsteps1() const
-{
-	return integrationsteps1;
-}
-
-int inputparameters::get_integrationsteps2() const
-{
-	return integrationsteps2;
 }
 
 int inputparameters::get_integrationsteps(int number) const
