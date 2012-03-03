@@ -94,6 +94,7 @@ public:
 	int get_integrationsteps2() const;
 	int get_integrationsteps1() const;
 	int get_integrationsteps0() const;
+	int get_integrationsteps(int number) const;
 	hmc_float get_solver_prec() const;
 	hmc_float get_force_prec() const;
 	int get_iter_refresh() const;
@@ -149,6 +150,7 @@ public:
 	hmc_float get_lambda0() const;
 	hmc_float get_lambda1() const;
 	hmc_float get_lambda2() const;
+	hmc_float get_lambda(int number) const;
 	hmc_float get_c0() const;
 	hmc_float get_c1() const;
 	bool get_use_same_rnd_numbers() const;
@@ -247,6 +249,16 @@ public:
 	 *
 	 */
 	void print_info_gauge(ostream * os) const;
+	
+	/**
+	 *
+	 */
+	void print_info_integrator(int number) const;
+
+	/**
+	 *
+	 */
+	void print_info_integrator(ostream * os, int number) const;	
 	
 	/**
 	 * check inputparameters against compile settings
@@ -352,7 +364,7 @@ private:
 	hmc_float c1;
 	hmc_float c0_default_wilson;
 	hmc_float c1_default_tlsym;
-	hmc_float calc_c0_tlsym(hmc_float c1);
+	void calc_c0_tlsym(hmc_float c1);
 	int num_sources;
 	int pointsource_x;
 	int pointsource_y;
@@ -367,7 +379,7 @@ private:
 	void sourcefilenumber_assign(std::string * out);
 	void startcond_assign(int * out, std::string line);
 	void fermact_assign(int * out, std::string line);
-	void gaugeact_assign(int * out, std::string line);
+	void gaugeact_assign(int * out, std::string line, bool mu1set);
 	void integrator_assign(int * out, std::string line);
 	void val_assign(std::string * out, std::string line);
 	void bool_assign(bool * out, std::string line);
