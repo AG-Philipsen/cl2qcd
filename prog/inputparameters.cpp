@@ -159,46 +159,41 @@ void inputparameters::readfile(const char* ifn)
 				logger.fatal() << "The file contains a line longer than 255 characters - bailing out";
 			}
 			if(line.find("#") != std::string::npos) continue; //allow comments
-			if(line.find("kappa") != std::string::npos) val_assign(&kappa, line);
-			if(line.find("Kappa") != std::string::npos) val_assign(&kappa, line);
-			if(line.find("mu") != std::string::npos) {
+			if(	line.find("kappa") != std::string::npos ||
+					line.find("Kappa") != std::string::npos ) val_assign(&kappa, line);
+			if(	line.find("mu") != std::string::npos || 
+					line.find("Mu") != std::string::npos) {
 				val_assign(&mu, line);
 				muset = true;
 			}
-			if(line.find("Mu") != std::string::npos) {
-				val_assign(&mu, line);
-				muset = true;
-			}
-			if(line.find("csw") != std::string::npos) {
+			if(	line.find("csw") != std::string::npos ||
+					line.find("Csw") != std::string::npos) {
 				val_assign(&csw, line);
 				cswset = true;
 			}
-			if(line.find("Csw") != std::string::npos) {
-				val_assign(&csw, line);
-				cswset = true;
-			}
-			if(line.find("beta") != std::string::npos) val_assign(&beta, line);
-			if(line.find("tau") != std::string::npos) val_assign(&tau, line);
-			if(line.find("Beta") != std::string::npos) val_assign(&beta, line);
 
-			if(line.find("theta_fermion_spatial") != std::string::npos) val_assign(&theta_fermion_spatial, line);
-			if(line.find("theta_fermion_temporal") != std::string::npos) val_assign(&theta_fermion_temporal, line);
-			if(line.find("theta_spatial") != std::string::npos) val_assign(&theta_fermion_spatial, line);
-			if(line.find("theta_temporal") != std::string::npos) val_assign(&theta_fermion_temporal, line);
-			if(line.find("theta_s") != std::string::npos) val_assign(&theta_fermion_spatial, line);
-			if(line.find("theta_t") != std::string::npos) val_assign(&theta_fermion_temporal, line);
-			if(line.find("thetas") != std::string::npos) val_assign(&theta_fermion_spatial, line);
-			if(line.find("thetat") != std::string::npos) val_assign(&theta_fermion_temporal, line);
-			if(line.find("ThetaS") != std::string::npos) val_assign(&theta_fermion_spatial, line);
-			if(line.find("ThetaT") != std::string::npos) val_assign(&theta_fermion_temporal, line);
+			if(	line.find("beta") != std::string::npos ||
+					line.find("Beta") != std::string::npos) val_assign(&beta, line);
+			if(	line.find("tau") != std::string::npos) val_assign(&tau, line);
 
-			if(line.find("cgmax") != std::string::npos) val_assign(&cgmax, line);
-			if(line.find("CGmax") != std::string::npos) val_assign(&cgmax, line);
-			if(line.find("Cgmax") != std::string::npos) val_assign(&cgmax, line);
+			if(	line.find("theta_fermion_spatial") != std::string::npos || 
+					line.find("theta_spatial") != std::string::npos ||
+					line.find("theta_s") != std::string::npos ||
+					line.find("thetas") != std::string::npos ||
+					line.find("ThetaS") != std::string::npos	) val_assign(&theta_fermion_spatial, line);
+			
+			if(	line.find("theta_fermion_temporal") != std::string::npos ||
+					line.find("theta_temporal") != std::string::npos ||
+					line.find("theta_t") != std::string::npos ||
+					line.find("ThetaT") != std::string::npos ) val_assign(&theta_fermion_temporal, line);
 
-			if(line.find("Solver") != std::string::npos) solver_assign(&use_cg, line);
-			if(line.find("solver") != std::string::npos) solver_assign(&use_cg, line);
-			if(line.find("SOLVER") != std::string::npos) solver_assign(&use_cg, line);
+			if(	line.find("cgmax") != std::string::npos || 
+					line.find("CGmax") != std::string::npos ||
+					line.find("Cgmax") != std::string::npos	) val_assign(&cgmax, line);
+
+			if(	line.find("Solver") != std::string::npos ||
+					line.find("solver") != std::string::npos ||
+					line.find("SOLVER") != std::string::npos	) solver_assign(&use_cg, line);
 
 			if(line.find("sol_pr") != std::string::npos) val_assign(&solver_prec, line);
 			if(line.find("force_pr") != std::string::npos) val_assign(&force_prec, line);
@@ -230,14 +225,12 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("num_timescales") != std::string::npos) val_assign(&num_timescales, line);
 			if(line.find("num_dev") != std::string::npos) val_assign(&num_dev, line);
 
-			if(line.find("fermaction") != std::string::npos) fermact_assign(&fermact, line);
-			if(line.find("fermionaction") != std::string::npos) fermact_assign(&fermact, line);
-			if(line.find("fermact") != std::string::npos) fermact_assign(&fermact, line);
+			if(	line.find("fermaction") 		!= std::string::npos	||
+					line.find("fermionaction")	!= std::string::npos	||
+					line.find("fermact") 				!= std::string::npos 	) fermact_assign(&fermact, line);
 
-			if(line.find("gaugeaction") != std::string::npos) {
-				gaugeact_assign(&gaugeact, line, c1set);
-			}
-			if(line.find("gaugeact") != std::string::npos){
+			if(	line.find("gaugeaction") 	!= std::string::npos ||
+					line.find("gaugeact") 		!= std::string::npos ) {
 				gaugeact_assign(&gaugeact, line, c1set);
 			}
 
@@ -254,27 +247,30 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("lambda1") != std::string::npos) val_assign(&lambda1, line);
 			if(line.find("lambda2") != std::string::npos) val_assign(&lambda2, line);
 
-			if(line.find("evenodd") != std::string::npos) bool_assign(&use_eo, line);
-			if(line.find("even_odd") != std::string::npos) bool_assign(&use_eo, line);
-			if(line.find("even-odd") != std::string::npos) bool_assign(&use_eo, line);
-			if(line.find("even-odd-preconditioning") != std::string::npos) bool_assign(&use_eo, line);
-			if(line.find("use_eo") != std::string::npos) bool_assign(&use_eo, line);
-			if(line.find("use_evenodd") != std::string::npos) bool_assign(&use_eo, line);
-			if(line.find("use_rec12") != std::string::npos) bool_assign(&use_rec12, line);
-			if(line.find("REC12") != std::string::npos) bool_assign(&use_rec12, line);
-			if(line.find("use_gpu") != std::string::npos) bool_assign(&use_gpu, line);
-			if(line.find("GPU") != std::string::npos) bool_assign(&use_gpu, line);
+			if(	line.find("evenodd") != std::string::npos	||
+					line.find("even-odd") != std::string::npos ||
+					line.find("even_odd") != std::string::npos ||
+					line.find("even-odd-preconditioning") != std::string::npos ||
+					line.find("use_eo") != std::string::npos ||
+					line.find("use_evenodd") != std::string::npos ) bool_assign(&use_eo, line);
 
-			if(line.find("NS") != std::string::npos) val_assign(&nspace, line);
-			if(line.find("NSPACE") != std::string::npos) val_assign(&nspace, line);
-			if(line.find("NT") != std::string::npos) val_assign(&ntime, line);
-			if(line.find("NTIME") != std::string::npos) val_assign(&ntime, line);
-			if(line.find("XI") != std::string::npos) val_assign(&xi, line);
-			if(line.find("xi") != std::string::npos) val_assign(&xi, line);
-			if(line.find("Xi") != std::string::npos) val_assign(&xi, line);
-			if(line.find("anisotropy") != std::string::npos) val_assign(&xi, line);
-			if(line.find("Anisotropy") != std::string::npos) val_assign(&xi, line);
-			if(line.find("use_aniso") != std::string::npos) bool_assign(&use_aniso, line);
+			if(	line.find("use_rec12") != std::string::npos ||
+					line.find("REC12") != std::string::npos) bool_assign(&use_rec12, line);
+			
+			if(	line.find("use_gpu") != std::string::npos ||
+					line.find("GPU") != std::string::npos  ) bool_assign(&use_gpu, line);
+
+			if(	line.find("NS") != std::string::npos ||	
+					line.find("NSPACE") != std::string::npos) val_assign(&nspace, line);
+			if(	line.find("NT") != std::string::npos ||
+					line.find("NTIME") != std::string::npos) val_assign(&ntime, line);
+
+			if(	line.find("XI") != std::string::npos ||
+					line.find("xi") != std::string::npos ||
+					line.find("Xi") != std::string::npos) val_assign(&xi, line);
+			if(	line.find("anisotropy") != std::string::npos ||
+					line.find("Anisotropy") != std::string::npos ||
+					line.find("use_aniso") != std::string::npos) bool_assign(&use_aniso, line);
 
 			if(line.find("print_to_screen") != std::string::npos) bool_assign(&print_to_screen, line);
 
@@ -407,47 +403,23 @@ void inputparameters::fermact_assign(int * out, std::string line)
 	size_t pos = line.find("=");
 	std::string value = line.substr(pos + 1);
 
-	if(value.find("TWISTEDMASS") != std::string::npos) {
+	if(	value.find("TWISTEDMASS") != std::string::npos	||
+			value.find("twistedmass") != std::string::npos	||
+			value.find("Twistedmass") != std::string::npos	||
+			value.find("TwistedMass") != std::string::npos	) {
 		(*out) = TWISTEDMASS;
 		return;
 	}
-	if(value.find("twistedmass") != std::string::npos) {
-		(*out) = TWISTEDMASS;
-		return;
-	}
-	if(value.find("Twistedmass") != std::string::npos) {
-		(*out) = TWISTEDMASS;
-		return;
-	}
-	if(value.find("TwistedMass") != std::string::npos) {
-		(*out) = TWISTEDMASS;
-		return;
-	}
-	if(value.find("clover") != std::string::npos) {
+	if(	value.find("clover") != std::string::npos	||
+			value.find("CLOVER") != std::string::npos ||
+			value.find("Clover") != std::string::npos ) {
 		(*out) = CLOVER;
 		return;
 	}
-	if(value.find("CLOVER") != std::string::npos) {
-		(*out) = CLOVER;
-		return;
-	}
-	if(value.find("Clover") != std::string::npos) {
-		(*out) = CLOVER;
-		return;
-	}
-	if(value.find("WILSON") != std::string::npos) {
-		(*out) = WILSON;
-		return;
-	}
-	if(value.find("Wilson") != std::string::npos) {
-		(*out) = WILSON;
-		return;
-	}
-	if(value.find("wilson") != std::string::npos) {
-		(*out) = WILSON;
-		return;
-	}
-	if(value.find("unimproved") != std::string::npos) {
+	if(	value.find("WILSON") != std::string::npos ||
+			value.find("Wilson") != std::string::npos ||
+			value.find("wilson") != std::string::npos ||
+			value.find("unimproved") != std::string::npos ) {
 		(*out) = WILSON;
 		return;
 	}
@@ -460,7 +432,10 @@ void inputparameters::gaugeact_assign(int * out, std::string line, bool mu1set)
 	size_t pos = line.find("=");
 	std::string value = line.substr(pos + 1);
 
-	if(value.find("TLSYM") != std::string::npos) {
+	if(	value.find("TLSYM") != std::string::npos	||
+			value.find("tlsym") != std::string::npos	||
+			value.find("Tlsym") != std::string::npos	||
+			value.find("TLsym") != std::string::npos	) {
 		(*out) = TLSYM;
 		bool_assign(&use_rectangles, "1");
 		if(!mu1set){
@@ -469,46 +444,10 @@ void inputparameters::gaugeact_assign(int * out, std::string line, bool mu1set)
 		}
 		return;
 	}
-	if(value.find("tlsym") != std::string::npos) {
-		(*out) = TLSYM;
-		bool_assign(&use_rectangles, "1");
-		if(!mu1set){
-			c1 = c1_default_tlsym;
-			calc_c0_tlsym(c1_default_tlsym);
-		}
-		return;
-	}
-	if(value.find("Tlsym") != std::string::npos) {
-		(*out) = TLSYM;
-		bool_assign(&use_rectangles, "1");
-		if(!mu1set){
-			c1 = c1_default_tlsym;
-			calc_c0_tlsym(c1_default_tlsym);
-		}
-		return;
-	}
-	if(value.find("TLsym") != std::string::npos) {
-		(*out) = TLSYM;
-		bool_assign(&use_rectangles, "1");
-		if(!mu1set){
-			c1 = c1_default_tlsym;
-			calc_c0_tlsym(c1_default_tlsym);
-		}
-		return;
-	}
-	if(value.find("WILSON") != std::string::npos) {
-		(*out) = WILSON;
-		return;
-	}
-	if(value.find("Wilson") != std::string::npos) {
-		(*out) = WILSON;
-		return;
-	}
-	if(value.find("wilson") != std::string::npos) {
-		(*out) = WILSON;
-		return;
-	}
-	if(value.find("unimproved") != std::string::npos) {
+	if(	value.find("WILSON") != std::string::npos	||
+			value.find("Wilson") != std::string::npos	||
+			value.find("wilson") != std::string::npos	||
+			value.find("unimproved") != std::string::npos	) {
 		(*out) = WILSON;
 		return;
 	}
