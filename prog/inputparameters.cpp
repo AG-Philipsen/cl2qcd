@@ -159,6 +159,7 @@ void inputparameters::readfile(const char* ifn)
 				logger.fatal() << "The file contains a line longer than 255 characters - bailing out";
 			}
 			if(line.find("#") != std::string::npos) continue; //allow comments
+
 			if(	line.find("kappa") != std::string::npos ||
 					line.find("Kappa") != std::string::npos ) val_assign(&kappa, line);
 			if(	line.find("mu") != std::string::npos || 
@@ -174,7 +175,6 @@ void inputparameters::readfile(const char* ifn)
 
 			if(	line.find("beta") != std::string::npos ||
 					line.find("Beta") != std::string::npos) val_assign(&beta, line);
-			if(	line.find("tau") != std::string::npos) val_assign(&tau, line);
 
 			if(	line.find("theta_fermion_spatial") != std::string::npos || 
 					line.find("theta_spatial") != std::string::npos ||
@@ -201,8 +201,10 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("writefrequency") != std::string::npos) val_assign(&writefrequency, line);
 			if(line.find("savefrequency") != std::string::npos) val_assign(&savefrequency, line);
 			if(line.find("saveconfigs") != std::string::npos) bool_assign(&saveconfigs, line);
-			if(line.find("prec") != std::string::npos) val_assign(&prec, line);
-			if(line.find("Prec") != std::string::npos) val_assign(&prec, line);
+			
+			if(	line.find("prec") != std::string::npos ||
+					line.find("Prec") != std::string::npos ) val_assign(&prec, line);
+
 			if(line.find("readsource") != std::string::npos) startcond_assign(&startcondition, line);
 			if(line.find("startcondition") != std::string::npos) startcond_assign(&startcondition, line);
 			if(line.find("sourcefile") != std::string::npos) {
@@ -210,19 +212,18 @@ void inputparameters::readfile(const char* ifn)
 				sourcefilenumber_assign(&sourcefilenumber);
 			}
 
-			if(line.find("thermalizationsteps") != std::string::npos) val_assign(&thermalizationsteps, line);
 			if(line.find("heatbathsteps") != std::string::npos) val_assign(&heatbathsteps, line);
-			if(line.find("thermsteps") != std::string::npos) val_assign(&thermalizationsteps, line);
-			if(line.find("thermalization") != std::string::npos) val_assign(&thermalizationsteps, line);
-			if(line.find("overrelaxsteps") != std::string::npos) val_assign(&overrelaxsteps, line);
-			if(line.find("overrelax") != std::string::npos) val_assign(&overrelaxsteps, line);
-			if(line.find("oversteps") != std::string::npos) val_assign(&overrelaxsteps, line);
-			if(line.find("hmcsteps") != std::string::npos) val_assign(&hmcsteps, line);
+
+			if(	line.find("thermalizationsteps") != std::string::npos ||
+					line.find("thermsteps") != std::string::npos ||
+					line.find("thermalization") != std::string::npos ) val_assign(&thermalizationsteps, line);
+
+			if(	line.find("overrelaxsteps") != std::string::npos ||
+					line.find("overrelax") != std::string::npos ||
+					line.find("oversteps") != std::string::npos ) val_assign(&overrelaxsteps, line);
+
 			if(line.find("iter_refresh") != std::string::npos) val_assign(&iter_refresh, line);
-			if(line.find("integrationsteps0") != std::string::npos) val_assign(&integrationsteps0, line);
-			if(line.find("integrationsteps1") != std::string::npos) val_assign(&integrationsteps1, line);
-			if(line.find("integrationsteps2") != std::string::npos) val_assign(&integrationsteps2, line);
-			if(line.find("num_timescales") != std::string::npos) val_assign(&num_timescales, line);
+
 			if(line.find("num_dev") != std::string::npos) val_assign(&num_dev, line);
 
 			if(	line.find("fermaction") 		!= std::string::npos	||
@@ -233,13 +234,18 @@ void inputparameters::readfile(const char* ifn)
 					line.find("gaugeact") 		!= std::string::npos ) {
 				gaugeact_assign(&gaugeact, line, c1set);
 			}
-
 			if(line.find("c1") != std::string::npos) {
 				val_assign(&c1, line);
 				c1set = true;
 				this->calc_c0_tlsym(this->get_c1());
 			}
-		
+			
+			if(line.find("hmcsteps") != std::string::npos) val_assign(&hmcsteps, line);
+			if(	line.find("tau") != std::string::npos) val_assign(&tau, line);
+			if(line.find("integrationsteps0") != std::string::npos) val_assign(&integrationsteps0, line);
+			if(line.find("integrationsteps1") != std::string::npos) val_assign(&integrationsteps1, line);
+			if(line.find("integrationsteps2") != std::string::npos) val_assign(&integrationsteps2, line);
+			if(line.find("num_timescales") != std::string::npos) val_assign(&num_timescales, line);
 			if(line.find("integrator0") != std::string::npos) integrator_assign(&integrator0, line);
 			if(line.find("integrator1") != std::string::npos) integrator_assign(&integrator1, line);
 			if(line.find("integrator2") != std::string::npos) integrator_assign(&integrator2, line);
@@ -462,51 +468,26 @@ void inputparameters::solver_assign(bool * out, std::string line)
 	//LZ: note that the ordering of false/true is crucial here
 	//    as any "bicgstab" hit will also be a "cg" hit...
 	//    and any "bicgstab_save" hit will also be a "bicgcgstab" hit...
-	if(value.find("BiCGStab_save") != std::string::npos) {
+	if(	value.find("BiCGStab_save") != std::string::npos ||
+			value.find("bicgstab_save") != std::string::npos ||	
+			value.find("BICGSTAB_save") != std::string::npos ||	
+			value.find("BICGSTAB_SAVE") != std::string::npos ) {
 		(*out) = false;
 		this->use_bicgstab_save = true;
 		return;
 	}
-	if(value.find("bicgstab_save") != std::string::npos) {
-		(*out) = false;
-		this->use_bicgstab_save = true;
-		return;
-	}
-	if(value.find("BICGSTAB_save") != std::string::npos) {
-		(*out) = false;
-		this->use_bicgstab_save = true;
-		return;
-	}
-	if(value.find("BICGSTAB_SAVE") != std::string::npos) {
-		(*out) = false;
-		this->use_bicgstab_save = true;
-		return;
-	}
-	if(value.find("BiCGStab") != std::string::npos) {
+	if(	value.find("BiCGStab") != std::string::npos ||
+			value.find("bicgstab") != std::string::npos ||
+			value.find("BICGSTAB") != std::string::npos ) {
 		(*out) = false;
 		return;
 	}
-	if(value.find("bicgstab") != std::string::npos) {
-		(*out) = false;
-		return;
-	}
-	if(value.find("BICGSTAB") != std::string::npos) {
-		(*out) = false;
-		return;
-	}
-	if(value.find("Cg") != std::string::npos) {
+	if(	value.find("Cg") != std::string::npos ||
+			value.find("cg") != std::string::npos ||
+			value.find("CG") != std::string::npos ) {
 		(*out) = true;
 		return;
 	}
-	if(value.find("cg") != std::string::npos) {
-		(*out) = true;
-		return;
-	}
-	if(value.find("CG") != std::string::npos) {
-		(*out) = true;
-		return;
-	}
-
 	throw line;
 	return;
 }
@@ -516,19 +497,13 @@ void inputparameters::integrator_assign(int * out, std::string line)
 	size_t pos = line.find("=");
 	std::string value = line.substr(pos + 1);
 
-	if(value.find("LEAPFROG") != std::string::npos) {
+	if(	value.find("LEAPFROG") != std::string::npos ||
+			value.find("leapfrog") != std::string::npos) {
 		(*out) = LEAPFROG;
 		return;
 	}
-	if(value.find("leapfrog") != std::string::npos) {
-		(*out) = LEAPFROG;
-		return;
-	}
-	if(value.find("2MN") != std::string::npos) {
-		(*out) = TWOMN;
-		return;
-	}
-	if(value.find("2mn") != std::string::npos) {
+	if(	value.find("2MN") != std::string::npos ||
+			value.find("2mn") != std::string::npos) {
 		(*out) = TWOMN;
 		return;
 	}
@@ -541,59 +516,23 @@ void inputparameters::bool_assign(bool * out, std::string line)
 	size_t pos = line.find("=");
 	std::string value = line.substr(pos + 1);
 
-	if(value.find("1") != std::string::npos) {
+	if(	value.find("1") != std::string::npos ||
+			value.find("on") != std::string::npos ||
+			value.find("ON") != std::string::npos ||
+			value.find("yes") != std::string::npos ||
+			value.find("TRUE") != std::string::npos ||
+			value.find("true") != std::string::npos ||
+			value.find("True") != std::string::npos ) {
 		(*out) = true;
 		return;
 	}
-	if(value.find("on") != std::string::npos) {
-		(*out) = true;
-		return;
-	}
-	if(value.find("ON") != std::string::npos) {
-		(*out) = true;
-		return;
-	}
-	if(value.find("yes") != std::string::npos) {
-		(*out) = true;
-		return;
-	}
-	if(value.find("TRUE") != std::string::npos) {
-		(*out) = true;
-		return;
-	}
-	if(value.find("true") != std::string::npos) {
-		(*out) = true;
-		return;
-	}
-	if(value.find("True") != std::string::npos) {
-		(*out) = true;
-		return;
-	}
-	if(value.find("0") != std::string::npos) {
-		(*out) = false;
-		return;
-	}
-	if(value.find("off") != std::string::npos) {
-		(*out) = false;
-		return;
-	}
-	if(value.find("OFF") != std::string::npos) {
-		(*out) = false;
-		return;
-	}
-	if(value.find("no") != std::string::npos) {
-		(*out) = false;
-		return;
-	}
-	if(value.find("false") != std::string::npos) {
-		(*out) = false;
-		return;
-	}
-	if(value.find("FALSE") != std::string::npos) {
-		(*out) = false;
-		return;
-	}
-	if(value.find("False") != std::string::npos) {
+	if(	value.find("0") != std::string::npos ||
+			value.find("off") != std::string::npos ||
+			value.find("OFF") != std::string::npos ||
+			value.find("no") != std::string::npos ||
+			value.find("false") != std::string::npos ||
+			value.find("FALSE") != std::string::npos ||
+			value.find("False") != std::string::npos ) {
 		(*out) = false;
 		return;
 	}
