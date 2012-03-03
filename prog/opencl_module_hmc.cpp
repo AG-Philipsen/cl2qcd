@@ -11,6 +11,10 @@ void Opencl_Module_Hmc::fill_collect_options(stringstream* collect_options)
 {
 	Opencl_Module_Fermions::fill_collect_options(collect_options);
 	*collect_options <<  " -DBETA=" << get_parameters()->get_beta() << " -DGAUGEMOMENTASIZE=" << get_parameters()->get_gaugemomentasize();
+	//in case of tlsym gauge action
+	if(get_parameters()->get_use_rectangles() == true){
+		*collect_options <<  " -D_USE_RECT_" << " -DC0=" << get_parameters()->get_c0() << " -DC1=" << get_parameters()->get_c1();
+	}
 	return;
 }
 
