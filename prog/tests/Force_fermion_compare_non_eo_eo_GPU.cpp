@@ -92,13 +92,13 @@ BOOST_AUTO_TEST_CASE( F_FERMION )
 
 	logger.info() << "eo input:";
 	logger.info() << "|phi_even_1|^2:";
-	//hmc_float cpu_back_eo = cpu.get_squarenorm_eo(0);
+	hmc_float cpu_back_eo = cpu.get_squarenorm_eo(0);
 	logger.info() << "|phi_even_2|^2:";
-	//hmc_float cpu_back2_eo = cpu.get_squarenorm_eo(1);
+	hmc_float cpu_back2_eo = cpu.get_squarenorm_eo(1);
 	logger.info() << "|phi_odd_1|^2:";
-	//hmc_float cpu_back3_eo = cpu.get_squarenorm_eo(2);
+	hmc_float cpu_back3_eo = cpu.get_squarenorm_eo(2);
 	logger.info() << "|phi_odd_2|^2:";
-	//hmc_float cpu_back4_eo = cpu.get_squarenorm_eo(3);
+	hmc_float cpu_back4_eo = cpu.get_squarenorm_eo(3);
 
 	logger.info() << "run eo force on EVEN and ODD sites...";
 	cpu.runTestKernel(EVEN);
@@ -114,23 +114,24 @@ BOOST_AUTO_TEST_CASE( F_FERMION )
 	hmc_float cpu_back2_noneo = cpu.get_squarenorm_noneo(1);
 
 	logger.info() << "run noneo force with noneo input...";
-	//cpu.runTestKernel2();
+	cpu.reset_outfield_noneo();
+	cpu.runTestKernel2();
 	logger.info() << "|force_noneo|^2:";
 	hmc_float cpu_res_noneo;
-	cpu_res_noneo = cpu.get_squarenorm_noneo(2);
+	cpu_res_noneo = cpu.get_squarenorm_noneo(4);
 
 	logger.info() << "converted non-eo input:";
 	logger.info() << "|phi_1|^2:";
-	hmc_float cpu_back_noneo_converted = cpu.get_squarenorm_noneo(3);
+	hmc_float cpu_back_noneo_converted = cpu.get_squarenorm_noneo(2);
 	logger.info() << "|phi_2|^2:";
-	hmc_float cpu_back2_noneo_converted = cpu.get_squarenorm_noneo(4);
+	hmc_float cpu_back2_noneo_converted = cpu.get_squarenorm_noneo(3);
 
 	cpu.reset_outfield_noneo();
 	logger.info() << "run noneo force with converted eo input...";
 	cpu.runTestKernel2withconvertedfields();
 	logger.info() << "|force_noneo|^2:";
 	hmc_float cpu_res_noneo_converted;
-	cpu_res_noneo_converted = cpu.get_squarenorm_noneo(2);
+	cpu_res_noneo_converted = cpu.get_squarenorm_noneo(4);
 
 	BOOST_MESSAGE("Tested CPU");
 
@@ -830,12 +831,12 @@ hmc_float Dummyfield::get_squarenorm_eo(int which)
 
 hmc_float Dummyfield::get_squarenorm_noneo(int which)
 {
-
-	//CP: I only use out_eo here because there is some mistake with out_noneo. However, I will not try to find it...
 	//which controlls if the in or out-vector is looked at
 	if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1_noneo, sqnorm);
 	if(which == 1) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2_noneo, sqnorm);
-	if(which == 2) {
+	if(which == 2) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1_noneo_converted, sqnorm);
+	if(which == 3) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2_noneo_converted, sqnorm);
+	if(which == 4) {
 		cl_mem tmp;
 		cl_int err;
 		cl_context context = opencl_modules[0]->get_context();
@@ -846,8 +847,6 @@ hmc_float Dummyfield::get_squarenorm_noneo(int which)
 		logger.info() << result;
 		return result;
 	}
-	if(which == 3) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1_noneo_converted, sqnorm);
-	if(which == 4) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2_noneo_converted, sqnorm);
 	// get stuff from device
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
@@ -905,7 +904,7 @@ void Dummyfield::runTestKernel2()
 		ls = 1;
 	}
 	//CP: I only use out_eo here because there is some mistake with out_noneo. However, I will not try to find it...
-	static_cast<Device*>(opencl_modules[0])->runTestKernel2(out_eo, in1_noneo, in2_noneo, *(get_clmem_gaugefield()), gs, ls);
+	static_cast<Device*>(opencl_modules[0])->runTestKernel2(out_noneo, in1_noneo, in2_noneo, *(get_clmem_gaugefield()), gs, ls);
 }
 
 void Dummyfield::runTestKernel2withconvertedfields()
