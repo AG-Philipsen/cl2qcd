@@ -44,6 +44,7 @@ target_link_libraries(su2su3extend
 	crypto
 	einhard)
 add_test(Su2su3extend su2su3extend)
+add_dependencies(su2su3extend git_commit_id_header)
 
 add_executable(geometry
 	geometry.cpp
@@ -68,6 +69,7 @@ target_link_libraries(geometry
 	crypto
 	einhard)
 add_test(geometry geometry)
+add_dependencies(geometry git_commit_id_header)
 
 add_executable(saxsbypz
 	saxsbypz.cpp
@@ -92,6 +94,7 @@ target_link_libraries(saxsbypz
 	crypto
 	einhard)
 add_test(Saxsbypz saxsbypz)
+add_dependencies(saxsbypz git_commit_id_header)
 
 add_executable(m_gpu
 	M_GPU.cpp
@@ -119,6 +122,7 @@ target_link_libraries(m_gpu
 	crypto
 	einhard)
 add_test(M_gpu m_gpu)
+add_dependencies(m_gpu git_commit_id_header)
 
 add_executable(m_eo_gpu
 	M_eo_GPU.cpp
@@ -146,6 +150,7 @@ target_link_libraries(m_eo_gpu
 	crypto
 	einhard)
 add_test(M_eo_gpu m_eo_gpu)
+add_dependencies(m_eo_gpu git_commit_id_header)
 
 add_executable(f_gauge_gpu
 	F_gauge_GPU.cpp
@@ -174,6 +179,7 @@ target_link_libraries(f_gauge_gpu
 	crypto
 	einhard)
 add_test(F_gauge_gpu f_gauge_gpu)
+add_dependencies(f_gauge_gpu git_commit_id_header)
 
 add_executable(f_fermion_gpu
 	Force_fermion_GPU.cpp
@@ -202,6 +208,7 @@ target_link_libraries(f_fermion_gpu
 	crypto
 	einhard)
 add_test(F_fermion_gpu f_fermion_gpu)
+add_dependencies(f_fermion_gpu git_commit_id_header)
 
 add_executable(f_fermion_eo_gpu
 	Force_fermion_eo_GPU.cpp
@@ -230,6 +237,7 @@ target_link_libraries(f_fermion_eo_gpu
 	crypto
 	einhard)
 add_test(F_fermion_eo_gpu f_fermion_eo_gpu)
+add_dependencies(f_fermion_eo_gpu git_commit_id_header)
 
 add_executable(f_fermion_compare_non_eo_eo_gpu
 	Force_fermion_compare_non_eo_eo_GPU.cpp
@@ -258,6 +266,7 @@ target_link_libraries(f_fermion_compare_non_eo_eo_gpu
 	crypto
 	einhard)
 add_test(F_fermion_compare_non_eo_eo_gpu f_fermion_compare_non_eo_eo_gpu)
+add_dependencies(f_fermion_compare_non_eo_eo_gpu git_commit_id_header)
 
 add_executable(f_update_gpu
 	Force_update_GPU.cpp
@@ -286,6 +295,7 @@ target_link_libraries(f_update_gpu
 	crypto
 	einhard)
 add_test(F_update_gpu f_update_gpu)
+add_dependencies(f_update_gpu git_commit_id_header)
 
 add_executable(gf_update_gpu
 	GF_update_GPU.cpp
@@ -314,6 +324,7 @@ target_link_libraries(gf_update_gpu
 	crypto
 	einhard)
 add_test(Gf_update_gpu gf_update_gpu)
+add_dependencies(gf_update_gpu git_commit_id_header)
 
 add_executable(calc_staple
 	Calc_staple_test.cpp
@@ -338,6 +349,7 @@ target_link_libraries(calc_staple
 	crypto
 	einhard)
 add_test(Calc_staple calc_staple)
+add_dependencies(calc_staple git_commit_id_header)
 
 add_executable(stout_smear
 	Stout_Smear_test.cpp
@@ -362,6 +374,7 @@ target_link_libraries(stout_smear
 	crypto
 	einhard)
 add_test(Stout_smear stout_smear)
+add_dependencies(stout_smear git_commit_id_header)
 
 add_executable(localQ
 	local_Q_test.cpp
@@ -386,6 +399,7 @@ target_link_libraries(localQ
 	crypto
 	einhard)
 add_test(LocalQ localQ)
+add_dependencies(localQ git_commit_id_header)
 
 
 # ignore some tests
@@ -429,3 +443,4 @@ target_link_libraries(complex_mem_access
 	crypto
 	einhard)
 add_test(MemoryAccessViaComplex complex_mem_access)
+add_dependencies(complex_mem_access git_commit_id_header)

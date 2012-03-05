@@ -100,6 +100,7 @@ target_link_libraries( heatbath
 	einhard
 	crypto
 )
+add_dependencies(heatbath git_commit_id_header)
 
 add_executable( transportcoefficient
 	transportcoefficient.cpp
@@ -129,6 +130,7 @@ target_link_libraries( transportcoefficient
 	einhard
 	crypto
 )
+add_dependencies(transportcoefficient git_commit_id_header)
 
 add_executable( inverter
 	inverter.cpp
@@ -160,6 +162,7 @@ target_link_libraries( inverter
 	einhard
 	crypto
 )
+add_dependencies(inverter git_commit_id_header)
 
 add_executable( hmc
 	hmc.cpp
@@ -181,7 +184,6 @@ add_executable( hmc
 	opencl_module_ran.cpp
 	host_random.cpp
 )
-
 target_link_libraries( hmc
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
@@ -191,6 +193,7 @@ target_link_libraries( hmc
 	einhard
 	crypto
 )
+add_dependencies(hmc git_commit_id_header)
 
 add_library( klepsydra
 	klepsydra/timer.cpp
