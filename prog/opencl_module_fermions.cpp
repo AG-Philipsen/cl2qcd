@@ -831,8 +831,21 @@ void Opencl_Module_Fermions::Qminus_eoprec(cl_mem in, cl_mem out, cl_mem gf)
 
 void Opencl_Module_Fermions::QplusQminus_eoprec(cl_mem in, cl_mem out, cl_mem gf)
 {
-	Qminus_eoprec(in, clmem_tmp_eoprec_1, gf);
-	Qplus_eoprec(clmem_tmp_eoprec_1, out, gf);
+	//CP: this is the original call, which fails because Qminus_eo and Qplus_eo both use clmem_tmp_eoprec_1,2 as intermediate fields themselves          
+	//Qminus_eoprec(in, clmem_tmp_eoprec_1, gf);                                                                                                         
+	//Qplus_eoprec(clmem_tmp_eoprec_1, out, gf);                                                                                                         
+	
+	//CP: Init tmp spinorfield                                                                                                                           
+	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
+	cl_mem sf_eo_tmp;
+	sf_eo_tmp = create_rw_buffer(spinorfield_size);
+	
+	Qminus_eoprec(in, sf_eo_tmp, gf);
+	Qplus_eoprec(sf_eo_tmp, out, gf);
+	
+	int clerr = clReleaseMemObject(sf_eo_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+	
 	return;
 }
 
