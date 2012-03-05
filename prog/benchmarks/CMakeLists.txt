@@ -39,6 +39,7 @@ if( PERFORM_PROFILING )
 		crypto
 		einhard
 	)
+	add_dependencies(heatbath_benchmarks git_commit_id_header)
 
 	add_executable( inverter_benchmarks
 		inverter_benchmarks.cpp
@@ -69,6 +70,7 @@ if( PERFORM_PROFILING )
 		crypto
 		einhard
 	)
+	add_dependencies(inverter_benchmarks git_commit_id_header)
 
 	add_executable( dslash_benchmark
 		dslash_benchmark.cpp
@@ -99,6 +101,7 @@ if( PERFORM_PROFILING )
 		crypto
 		einhard
 	)
+	add_dependencies(dslash_benchmark git_commit_id_header)
 
 	add_executable( hmc_benchmarks
 		hmc_benchmarks.cpp
@@ -129,5 +132,6 @@ if( PERFORM_PROFILING )
 		crypto
 		einhard
 	)
+	add_dependencies(hmc_benchmarks git_commit_id_header)
 
 endif( PERFORM_PROFILING )

@@ -31,5 +31,4 @@ target_link_libraries( bandwidth
 	crypto
 	einhard
 )
-
-
+add_dependencies(bandwidth git_commit_id_header)
