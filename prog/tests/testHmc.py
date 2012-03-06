@@ -26,7 +26,7 @@ def main():
 	# open tmp file to save the output of the hmc
 	# NOTE: stdout=PIPE does not work here, apparently no output file is created then
 	proc_output = open('./hmc_proc_output', 'w')
-	subject = Popen(['./hmc'] + sys.argv[2:], stdout = proc_output)
+	subject = Popen(['../hmc'] + sys.argv[2:], stdout = proc_output)
 	subject.wait()
 	if subject.returncode == 0:
 		#print "Program completed successfully"
