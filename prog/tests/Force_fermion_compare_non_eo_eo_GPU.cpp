@@ -841,7 +841,7 @@ hmc_float Dummyfield::get_squarenorm_noneo(int which)
 		cl_int err;
 		cl_context context = opencl_modules[0]->get_context();
 		tmp = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
-		static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out_eo, tmp);
+		static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out_noneo, tmp);
 		hmc_float result;
 		err = clEnqueueReadBuffer(*queue, tmp, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 		logger.info() << result;
