@@ -1134,7 +1134,11 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
 			logger.debug() << "resid: " << resid;
-
+			//test if resid is NAN
+			if(resid != resid){
+				logger.fatal() << "\tNAN occured in bicgstab!";
+				return -iter;
+			}
 			if(resid < prec) {
 				f(inout, clmem_aux, gf);
 				saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
@@ -1233,7 +1237,11 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
 //			cout << "resid at iter " << iter << " is: " << resid << endl;
-
+			//test if resid is NAN
+			if(resid != resid){
+				logger.fatal() << "\tNAN occured in bicgstab!";
+				return -iter;
+			}
 			if(resid < prec) {
 				//aux = A inout
 				f(inout, clmem_aux, gf);
@@ -1273,6 +1281,11 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 			hmc_float resid;
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+			//test if resid is NAN
+			if(resid != resid){
+				logger.fatal() << "\tNAN occured in bicgstab!";
+				return -iter;
+			}
 			if(resid < prec) {
 				return iter;
 			}
@@ -1401,8 +1414,12 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-			//logger.debug() << "resid: " << resid;
-
+			logger.debug() << "resid: " << resid;
+			//test if resid is NAN
+			if(resid != resid){
+				logger.fatal() << "\tNAN occured in bicgstab_eo!";
+				return -iter;
+			}
 			if(resid < prec) {
 				++retests;
 
@@ -1468,8 +1485,12 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			hmc_float resid;
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-			//logger.debug() << "resid: " << resid;
-
+			logger.debug() << "resid: " << resid;
+			//test if resid is NAN
+			if(resid != resid){
+				logger.fatal() << "\tNAN occured in bicgstab_eo!";
+				return -iter;
+			}
 			if(resid < prec) {
 				// report on performance
 				if(logger.beInfo()) {
@@ -1591,7 +1612,11 @@ int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem s
 		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
 		logger.debug() << "resid: " << resid;
-
+		//test if resid is NAN
+		if(resid != resid){
+			logger.fatal() << "\tNAN occured in cg!";
+			return -iter;
+		}
 		if(resid < prec)
 			return iter;
 
@@ -1653,7 +1678,11 @@ int Opencl_Module_Fermions::cg_eoprec(const Matrix_Function & f, cl_mem inout, c
 		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
 		logger.debug() << "resid: " << resid;
-
+		//test if resid is NAN
+		if(resid != resid){
+			logger.fatal() << "\tNAN occured in cg_eo!";
+			return -iter;
+		}
 		if(resid < prec) {
 			// report on performance
 			if(logger.beInfo()) {
