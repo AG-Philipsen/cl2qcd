@@ -245,7 +245,7 @@ Matrixsu3 local_rectangles(__global ocl_s_gaugefield * field, const int n, const
 	}
 	//(x2, y2) = i + mu + nu = (x,y) + nu
 	if(nu == 0) {
-		pos2.x = get_neighbor_temporal(pos2.x);
+		pos2.x = get_neighbor_temporal(pos.x);
 		pos2.y = pos.y;
 	} else {
 		pos2.x = pos.x;
@@ -363,6 +363,282 @@ Matrix3x3 local_staple(__global ocl_s_gaugefield * field, const int n, const int
 	return out;
 }
 
+/**This calculates the rectangles staple in nu direction given a direction mu of the link
+ *	under consideration. There are six ingredients to the staple 
+ *	(I write them in a way that they form a path, altough this is not really necessary since they are under a trace):
+ *	1.	U_nu(x + mu) * U_nu(x + mu + nu) * Udagger_mu(x + nu + nu) * Udagger_nu(x + nu) * Udagger_nu(x)
+ *	2.	U_nu(x - nu) * U_mu(x + mu) * Udagger_nu(x - nu + mu + mu) Udagger_mu(x - nu + mu) Udagger_mu(x - nu)
+ *	->	U_mu(x + mu) * Udagger_nu(x - nu + mu + mu) Udagger_mu(x - nu + mu) Udagger_mu(x - nu) * U_nu(x - nu)
+ *	3.	U_nu(x - mu - nu) * U_mu(x - mu) * Udagger_nu(x - nu + mu) * Udagger_mu(x - nu) * Udagger_mu(x - mu - nu)
+ *	->	Udagger_nu(x - nu + mu) * Udagger_mu(x - nu) * Udagger_mu(x - mu - nu) * U_nu(x - mu - nu) * U_mu(x - mu)
+ *	4.	U_mu(x - nu - nu) * U_nu(x - nu - nu + mu) * U_nu(x - nu + mu) * Udagger_nu(x - nu) * Udagger_nu(x - nu - nu)
+ *	->	Udagger_nu(x - nu) * Udagger_nu(x - nu - nu) * U_mu(x - nu - nu) * U_nu(x - nu - nu + mu) * U_nu(x - nu + mu)
+ *	5.	U_nu(x - mu) * U_mu(x - mu + nu) * U_mu(x + nu) * Udagger_nu(x + mu) * Udagger_mu(x - mu)
+ *	->	Udagger_mu(x - mu) * U_nu(x - mu) * U_mu(x - mu + nu) * U_mu(x + nu) * Udagger_nu(x + mu)
+ *	6.	U_nu(x) * U_mu(x + nu) * U_mu(x + nu + mu) * Udagger_nu(x + mu + mu) * Udagger_mu(x + mu)
+ */
+Matrix3x3 local_rectangles_staple(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
+{
+	int4 pos;
+	int4 pos2;
+	site_idx start_point;
+
+	//first ingredient
+	//1.	U_nu(x + mu) * U_nu(x + mu + nu) * Udagger_mu(x + nu + nu) * Udagger_nu(x + nu) * Udagger_nu(x)
+	//calculate the coordinates for the matrices. this is the same as with  the rectangles
+	//(x, y) = i + mu (call the site idx "x" "i" for now)
+	
+	if(mu == 0) {
+		pos.x = get_neighbor_temporal(t);
+		pos.y = n;
+	} else {
+		pos.x = t;
+		pos.y = get_neighbor(n, mu);
+	}
+	//(w,z) = x + nu
+	if(nu == 0) {
+		pos.z = get_neighbor_temporal(t);
+		pos.w = n;
+	} else {
+		pos.z = t;
+		pos.w = get_neighbor(n, nu);
+	}
+	//(x2, y2) = i + mu + nu = (x,y) + nu
+	if(nu == 0) {
+		pos2.x = get_neighbor_temporal(pos.x);
+		pos2.y = pos.y;
+	} else {
+		pos2.x = pos.x;
+		pos2.y = get_neighbor(pos.y, nu);
+	}
+	//(w2, z2) = i + nu + nu = (w,z) + nu
+	if(nu == 0) {
+		pos2.z = get_neighbor_temporal(pos.z);
+		pos2.w = pos.w;
+	} else {
+		pos2.z = pos.z;
+		pos2.w = get_neighbor(pos.w, nu);
+	}	
+	
+	Matrixsu3 tmp  = multiply_matrixsu3 (get_matrixsu3(field, pos.y, pos.x, nu), get_matrixsu3(field, pos2.y, pos2.x, nu)      );
+	tmp = multiply_matrixsu3_dagger(out, get_matrixsu3(field, pos2.w, pos2.z, mu) );
+	tmp = multiply_matrixsu3_dagger(out, get_matrixsu3(field, pos.w, pos.z, nu) );
+	tmp = multiply_matrixsu3_dagger(out, get_matrixsu3(field, n, t, nu) );	
+
+	Matrix3x3 out = matrix_su3to3x3(tmp);
+
+	//second ingredient
+	//2.	U_mu(x + mu) * Udagger_nu(x - nu + mu + mu) Udagger_mu(x - nu + mu) Udagger_mu(x - nu) * U_nu(x - nu)
+	//calculate the coordinates for the matrices. this is the same as with  the rectangles
+	//(x, y) = i + mu (call the site idx "x" "i" for now)
+	if(mu == 0) {
+		pos.x = get_neighbor_temporal(t);
+		pos.y = n;
+	} else {
+		pos.x = t;
+		pos.y = get_neighbor_spatial(n, mu);
+	}
+	//(w,z) = i - nu
+	if(nu == 0) {
+		pos.z = get_lower_neighbor_temporal(t);
+		pos.w = n;
+	} else {
+		pos.z = t;
+		pos.w = get_lower_neighbor_spatial(n, nu);
+	}
+	//(x2, y2) = i + mu - nu = (x,y) - nu
+	if(nu == 0) {
+		pos2.x = get_lower_neighbor_temporal(pos.x);
+		pos2.y = pos.y;
+	} else {
+		pos2.x = pos.x;
+		pos2.y = get_lower_neighbor_spatial(pos.y, nu);
+	}
+	//(w2, z2) = i + mu - nu + mu = (x,y) - nu + mu = (x2,y2) + mu
+	if(mu == 0) {
+		pos2.z = get_neighbor_temporal(pos2.x);
+		pos2.w = pos2.w;
+	} else {
+		pos2.z = pos2.z;
+		pos2.w = get_neighbor(pos2.y, mu);
+	}	
+	
+	tmp = multiply_matrixsu3_dagger(get_matrixsu3(field, pos.y, pos.x, mu), get_matrixsu3(field, pos2.w, pos2.z, nu)      );
+	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos2.y, pos2.x, mu) );
+	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos.w, pos.z, mu) );
+	tmp = multiply_matrixsu3_(tmp, get_matrixsu3(field, pos.w, pos.z, nu) );	
+
+	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
+
+	//3. Udagger_nu(x - nu + mu) * Udagger_mu(x - nu) * Udagger_mu(x - mu - nu) * U_nu(x - mu - nu) * U_mu(x - mu)
+	//(x, y) = i - mu (call the site idx "x" "i" for now)
+	if(mu == 0) {
+		pos.x = get_lower_neighbor_temporal(t);
+		pos.y = n;
+	} else {
+		pos.x = t;
+		pos.y = get_lower_neighbor_spatial(n, mu);
+	}
+	//(w,z) = i - nu
+	if(nu == 0) {
+		pos.z = get_lower_neighbor_temporal(t);
+		pos.w = n;
+	} else {
+		pos.z = t;
+		pos.w = get_lower_neighbor_spatial(n, nu);
+	}
+	//(x2, y2) = i - mu - nu = (x,y) - nu
+	if(nu == 0) {
+		pos2.x = get_lower_neighbor_temporal(pos.x);
+		pos2.y = pos.y;
+	} else {
+		pos2.x = pos.x;
+		pos2.y = get_lower_neighbor_spatial(pos.y, nu);
+	}
+	//(w2, z2) = i - nu + mu = (w,z) + mu
+	if(mu == 0) {
+		pos2.z = get_neighbor_temporal(pos.z);
+		pos2.w = pos.w;
+	} else {
+		pos2.z = pos.z;
+		pos2.w = get_neighbor(pos.w, mu);
+	}	
+	
+	tmp = multiply_matrixsu3_dagger_dagger(get_matrixsu3(field, pos2.w, pos2.z, nu), get_matrixsu3(field, pos.w, pos.z, mu)      );
+	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos2.y, pos2.x, mu) );
+	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos2.y; pos2.x, nu) );
+	tmp = multiply_matrixsu3_(tmp, get_matrixsu3(field, pos.y, pos.x, mu) );	
+
+	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
+	
+	//4. Udagger_nu(x - nu) * Udagger_nu(x - nu - nu) * U_mu(x - nu - nu) * U_nu(x - nu - nu + mu) * U_nu(x - nu + mu)
+	//(x, y) = i - nu (call the site idx "x" "i" for now)
+	if(nu == 0) {
+		pos.x = get_lower_neighbor_temporal(t);
+		pos.y = n;
+	} else {
+		pos.x = t;
+		pos.y = get_lower_neighbor_spatial(n, nu);
+	}
+	//(w,z) = i - nu - nu = (x,y) - nu
+	if(nu == 0) {
+		pos.z = get_lower_neighbor_temporal(pos.x);
+		pos.w = pos.y;
+	} else {
+		pos.z = pos.x;
+		pos.w = get_lower_neighbor_spatial(pos.y, nu);
+	}
+	//(x2, y2) = i - nu + mu = (x,y) + mu
+	if(mu == 0) {
+		pos2.x = get_neighbor_temporal(pos.x);
+		pos2.y = pos.y;
+	} else {
+		pos2.x = pos.x;
+		pos2.y = get_neighbor_spatial(pos.y, mu);
+	}
+	//(w2, z2) = i - nu  - nu + mu = (w,z) + mu
+	if(mu == 0) {
+		pos2.z = get_neighbor_temporal(pos.z);
+		pos2.w = pos.w;
+	} else {
+		pos2.z = pos.z;
+		pos2.w = get_neighbor(pos.w, mu);
+	}	
+	
+	tmp = multiply_matrixsu3_dagger_dagger(get_matrixsu3(field, pos.y, pos.x, nu), get_matrixsu3(field, pos.w, pos.z, u)      );
+	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.z, pos.w, mu) );
+	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos2.w; pos2.z, nu) );
+	tmp = multiply_matrixsu3_(tmp, get_matrixsu3(field, pos2.y, pos2.x, nu) );	
+
+	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
+	
+	//5. Udagger_mu(x - mu) * U_nu(x - mu) * U_mu(x - mu + nu) * U_mu(x + nu) * Udagger_nu(x + mu)
+	//(x, y) = i - mu (call the site idx "x" "i" for now)
+	if(mu == 0) {
+		pos.x = get_lower_neighbor_temporal(t);
+		pos.y = n;
+	} else {
+		pos.x = t;
+		pos.y = get_lower_neighbor_spatial(n, mu);
+	}
+	//(w,z) = i + nu
+	if(nu == 0) {
+		pos.z = get_neighbor_temporal(t);
+		pos.w = n;
+	} else {
+		pos.z = t;
+		pos.w = get_neighbor_spatial(n, nu);
+	}
+	//(x2, y2) = i - mu + nu = (x,y) + nu
+	if(nu == 0) {
+		pos2.x = get_neighbor_temporal(pos.x);
+		pos2.y = pos.y;
+	} else {
+		pos2.x = pos.x;
+		pos2.y = get_neighbor_spatial(pos.y, nu);
+	}
+	//(w2, z2) = i + mu
+	if(mu == 0) {
+		pos2.z = get_neighbor_temporal(t);
+		pos2.w = n;
+	} else {
+		pos2.z = t;
+		pos2.w = get_neighbor(n, mu);
+	}	
+	
+	//TODO: there is no function Udagger * U up to now!!!!
+// 	tmp = multiply_matrixsu3_dagger_dagger(get_matrixsu3(field, pos2.w, pos2.z, nu), get_matrixsu3(field, pos.w, pos.z, mu)      );
+// 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos2.y, pos2.x, mu) );
+// 	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos2.y; pos2.x, nu) );
+// 	tmp = multiply_matrixsu3_(tmp, get_matrixsu3(field, pos.y, pos.x, mu) );	
+// 
+// 	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
+	
+	//6.	U_nu(x) * U_mu(x + nu) * U_mu(x + nu + mu) * Udagger_nu(x + mu + mu) * Udagger_mu(x + mu)
+	//(x, y) = i + mu (call the site idx "x" "i" for now)
+	if(mu == 0) {
+		pos.x = get_neighbor_temporal(t);
+		pos.y = n;
+	} else {
+		pos.x = t;
+		pos.y = get_neighbor(n, mu);
+	}
+	//(w,z) = x + nu
+	if(nu == 0) {
+		pos.z = get_neighbor_temporal(t);
+		pos.w = n;
+	} else {
+		pos.z = t;
+		pos.w = get_neighbor(n, nu);
+	}
+	//(x2, y2) = i + mu + nu = (x,y) + nu
+	if(nu == 0) {
+		pos2.x = get_neighbor_temporal(pos.x);
+		pos2.y = pos.y;
+	} else {
+		pos2.x = pos.x;
+		pos2.y = get_neighbor(pos.y, nu);
+	}
+	//(w2, z2) = i + mu + mu = (x,y) + mu
+	if(mu == 0) {
+		pos2.z = get_neighbor_temporal(pos.x);
+		pos2.w = pos.y;
+	} else {
+		pos2.z = pos.x;
+		pos2.w = get_neighbor(pos.y, mu);
+	}	
+	
+	tmp = multiply_matrixsu3 (get_matrixsu3(field, n, t, nu), get_matrixsu3(field, pos.w, pos.z, mu)      );
+	tmp = multiply_matrixsu3 (out, get_matrixsu3(field, pos2.y, pos2.x, mu) );
+	tmp = multiply_matrixsu3_dagger(out, get_matrixsu3(field, pos2.w, pos2.z, nu) );
+	tmp = multiply_matrixsu3_dagger(out, get_matrixsu3(field, pos.y, pos.x, mu) );	
+
+	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
+	
+	return out;
+}
+
+
 Matrix3x3 calc_staple(__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
 {
 	Matrix3x3 staple = zero_matrix3x3();
@@ -392,6 +668,18 @@ Matrix3x3 calc_staple_tau (__global ocl_s_gaugefield* field, const int pos, cons
 {
 	int nu = 0;
 	return local_staple(field, pos, t, mu_in, nu );
+}
+
+//this is the rectangles staple
+Matrix3x3 calc_rectangles_staple(__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
+{
+	Matrix3x3 staple = zero_matrix3x3();
+	//iterate through the three directions other than mu
+	for(int i = 0; i < NDIM - 1; i++) {
+		int nu = (mu_in + i + 1) % NDIM;
+		staple = add_matrix3x3(staple,  local_rectangles_staple(field, pos, t, mu_in, nu ));
+	}
+	return staple;
 }
 
 // TODO document
