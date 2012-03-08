@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 		}
 
 		//check if correlator-device is a GPU and in that case exit because the kernels are not meant to be executed there
-		if ( parameters.get_use_gpu() == false && parameters.get_num_dev() == 2){
+		if ( parameters.get_use_gpu() == false && parameters.get_num_dev() == 2) {
 			throw Print_Error_Message("GPU cannot be used for correlator-calculation.", __FILE__, __LINE__);
 		}
 
@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
 			}
 			print_solver_profiling(profiling_out.str());
 		}
-		
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// free variables
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////

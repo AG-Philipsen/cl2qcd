@@ -26,19 +26,19 @@ int main(int argc, char* argv[])
 		//get name for file to which correlators are to be stored
 		stringstream corr_fn;
 		switch ( parameters.get_startcondition() ) {
-		case START_FROM_SOURCE :
-		  corr_fn << parameters.sourcefile << "_correlators.dat" ;
-		  break;
-		case HOT_START :
-		  corr_fn << "conf.hot_correlators.dat" ;
-		  break;
-		case COLD_START :
-		  corr_fn << "conf.cold_correlators.dat" ;
-		  break;
+			case START_FROM_SOURCE :
+				corr_fn << parameters.sourcefile << "_correlators.dat" ;
+				break;
+			case HOT_START :
+				corr_fn << "conf.hot_correlators.dat" ;
+				break;
+			case COLD_START :
+				corr_fn << "conf.cold_correlators.dat" ;
+				break;
 		}
 
-		if(parameters.get_profile_solver() == false){
-		  logger.warn()<<"solver times will not be measured!";
+		if(parameters.get_profile_solver() == false) {
+			logger.warn() << "solver times will not be measured!";
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,17 +82,17 @@ int main(int argc, char* argv[])
 
 		logger.trace() << "Perform " << hmc_iter << "of benchmarking";
 		for(iter = 0; iter < hmc_iter; iter ++) {
-		  //CP: these are esssentially the same actions as the "normal" inverter performs...
-		  logger.info() << "Perform inversion on device.." ;
+			//CP: these are esssentially the same actions as the "normal" inverter performs...
+			logger.info() << "Perform inversion on device.." ;
 
-		  gaugefield.create_sources();
-		  gaugefield.perform_inversion(&solver_timer);
-		  
-		  //flavour_doublet_correlators does a sync at the beginning
-		  gaugefield.flavour_doublet_correlators(corr_fn.str());
-		  
-		  logger.trace() << "Inversion done" ;
-		  
+			gaugefield.create_sources();
+			gaugefield.perform_inversion(&solver_timer);
+
+			//flavour_doublet_correlators does a sync at the beginning
+			gaugefield.flavour_doublet_correlators(corr_fn.str());
+
+			logger.trace() << "Inversion done" ;
+
 		}
 		logger.trace() << "inverter-benchmarking done" ;
 		perform_timer.add();
@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
 		(gaugefield.get_task_solver())->print_copy_times(totaltime);
 		logger.info() << "## Device: Correlator";
 		(gaugefield.get_task_correlator())->print_copy_times(totaltime);
-		
+
 		//CP: this is just a fist version and will go into an own file later
 		stringstream profiling_out;
 		profiling_out << argv[0] << "_profiling_data";
@@ -128,9 +128,9 @@ int main(int argc, char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// free variables
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
+
 		gaugefield.finalize();
-		
+
 	} //try
 	//exceptions from Opencl classes
 	catch (Opencl_Error& e) {

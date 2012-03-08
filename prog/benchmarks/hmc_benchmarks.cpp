@@ -61,24 +61,24 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	perform_timer.reset();
-	//CP: this is taken from gaugefield_hmc. However, I took out all parts out of the loop that have to do with changing the fields in order to always perform the same HMC step. 
+	//CP: this is taken from gaugefield_hmc. However, I took out all parts out of the loop that have to do with changing the fields in order to always perform the same HMC step.
 	int hmc_iter = parameters.get_hmcsteps();
 	int iter;
 	//This is the random-number generator for the metropolis-step
 	Random hmc_rnd_gen (parameters.get_host_seed());
 	hmc_float rnd_number = hmc_rnd_gen.doub();
-        usetimer solver_timer;
+	usetimer solver_timer;
 	hmc_observables obs;
 
 	logger.debug() << "\tinit spinorfield and gaugemomentum" ;
 	gaugefield.init_gaugemomentum_spinorfield();
-	
+
 	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
 	size_t gfsize = parameters.get_gf_buf_size();
-	size_t gmsize = parameters.get_gm_buf_size();	
+	size_t gmsize = parameters.get_gm_buf_size();
 	//copy u->u' p->p' for the integrator
 	gaugefield.get_task_hmc(0)->copy_buffer_on_device(*(gaugefield.get_task_hmc(0)->get_gaugefield()), gaugefield.get_task_hmc(0)->get_clmem_new_u(), gfsize);
-	gaugefield.get_task_hmc(0)->copy_buffer_on_device(gaugefield.get_task_hmc(0)->get_clmem_p(), gaugefield.get_task_hmc(0)->get_clmem_new_p(), gmsize);		
+	gaugefield.get_task_hmc(0)->copy_buffer_on_device(gaugefield.get_task_hmc(0)->get_clmem_p(), gaugefield.get_task_hmc(0)->get_clmem_new_p(), gmsize);
 	logger.trace() << "Perform " << hmc_iter << "of benchmarking";
 	for(iter = 0; iter < hmc_iter; iter ++) {
 		//here, clmem_phi is inverted several times and stored in clmem_phi_inv

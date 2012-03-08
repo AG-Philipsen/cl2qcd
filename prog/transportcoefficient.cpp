@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		init_timer.reset();
-		
+
 		Gaugefield_heatbath_kappa gaugefield;
 		int numtasks = 2;
 
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 		cl_device_type primary_device_type = CL_DEVICE_TYPE_GPU;
 
 		gaugefield.init(numtasks, primary_device_type, &parameters);
-		
+
 		init_timer.add();
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -45,11 +45,11 @@ int main(int argc, char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		perform_timer.reset();
-		
+
 		logger.trace() << "Start thermalization" ;
 		int ntherm = parameters.get_thermalizationsteps();
-		if(ntherm > 0) gaugefield.perform_heatbath(ntherm,0);
-		
+		if(ntherm > 0) gaugefield.perform_heatbath(ntherm, 0);
+
 		logger.info() << "Start hybrid heatbath and tk_kappa";
 		//first output is considered to be zeroth iteration
 		int iter = 0;
@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 		//    gaugefield.print_gaugeobservables_from_task(iter,0);
 		//    gaugefield.print_gaugeobservables_from_task(iter,1);
 		gaugefield.print_gaugeobservables(iter, gaugeout_name.str());
-		gaugefield.print_kappa(iter,"kappa_clover.dat");
+		gaugefield.print_kappa(iter, "kappa_clover.dat");
 
 		for(iter = 2; iter < parameters.get_heatbathsteps() / nheat_frequency; iter++) {
 			gaugefield.perform_tasks(parameters.get_writefrequency(), parameters.get_overrelaxsteps());
@@ -78,13 +78,13 @@ int main(int argc, char* argv[])
 			//    gaugefield.print_gaugeobservables_from_task(iter,0);
 			//    gaugefield.print_gaugeobservables_from_task(iter,1);
 			gaugefield.print_gaugeobservables(iter, gaugeout_name.str());
-			gaugefield.print_kappa(iter,"kappa_clover.dat");
+			gaugefield.print_kappa(iter, "kappa_clover.dat");
 		}
 
 		gaugefield.save("conf.save");
 		logger.trace() << "... done";
 		perform_timer.add();
-		
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Final Output
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
 		(gaugefield.get_task_heatbath())->print_copy_times(totaltime);
 		logger.info() << "## Device: Kappa";
 		(gaugefield.get_task_kappa())->print_copy_times(totaltime);
-		
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// free variables
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////

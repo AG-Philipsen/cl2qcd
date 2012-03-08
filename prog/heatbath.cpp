@@ -2,9 +2,9 @@
 
 int main(int argc, char* argv[])
 {
-  try {
+	try {
 
-		if(argc != 2) throw Print_Error_Message("Need file name for input parameters",__FILE__,__LINE__);
+		if(argc != 2) throw Print_Error_Message("Need file name for input parameters", __FILE__, __LINE__);
 
 		char* inputfile = argv[1];
 		inputparameters parameters;
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 		gaugefield.init(1, primary_device_type, &parameters);
 		logger.trace() << "initial gaugeobservables: ";
 		gaugefield.print_gaugeobservables(0);
-	
+
 		init_timer.add();
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -50,10 +50,10 @@ int main(int argc, char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		perform_timer.reset();
-		
+
 		logger.trace() << "Start thermalization" ;
 		int ntherm = parameters.get_thermalizationsteps();
-		for(int iter = 0; iter<ntherm; iter++) gaugefield.perform_tasks(0);
+		for(int iter = 0; iter < ntherm; iter++) gaugefield.perform_tasks(0);
 
 		int nsteps = parameters.get_heatbathsteps();
 		int overrelaxsteps = parameters.get_overrelaxsteps();
@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 				gaugefield.synchronize(0);
 				gaugefield.print_gaugeobservables_from_task(i, 0, gaugeout_name.str());
 			}
-			if( parameters.get_saveconfigs()==true && ( (i + 1) % savefreq ) == 0 ) {
+			if( parameters.get_saveconfigs() == true && ( (i + 1) % savefreq ) == 0 ) {
 				gaugefield.synchronize(0);
 				gaugefield.save(i);
 			}
@@ -97,22 +97,20 @@ int main(int argc, char* argv[])
 		gaugefield.finalize();
 
 
-  } //try
-  //exceptions from Opencl classes
-  catch (Opencl_Error& e) {
-    logger.fatal()<<e.what();
-    exit(1);
-  }
-  catch (File_Exception& fe) {
-    logger.fatal()<<"Could not open file: "<<fe.get_filename();
-    logger.fatal()<<"Aborting.";
-    exit(1);
-  }
-  catch (Print_Error_Message& em) {
-    logger.fatal()<<em.what();
-    exit(1);
-  }
+	} //try
+	//exceptions from Opencl classes
+	catch (Opencl_Error& e) {
+		logger.fatal() << e.what();
+		exit(1);
+	} catch (File_Exception& fe) {
+		logger.fatal() << "Could not open file: " << fe.get_filename();
+		logger.fatal() << "Aborting.";
+		exit(1);
+	} catch (Print_Error_Message& em) {
+		logger.fatal() << em.what();
+		exit(1);
+	}
 
 	return 0;
-	
+
 }
