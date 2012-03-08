@@ -164,6 +164,10 @@ st_idx inline get_st_idx_from_link_idx(const link_idx in)
 	tmp = get_st_idx_from_site_idx(idx_tmp);
 	return tmp;
 }
+dir_idx inline get_dir_idx_from_link_idx(const link_idx in)
+{
+	return in % NDIM;
+}
 
 /**
  * @todo this be done in the normla get_link_idx-function,

@@ -7,11 +7,9 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);
 
-	for(int global_link_pos = id; global_link_pos < GAUGEMOMENTASIZE; global_link_pos += global_size) {
-		int dir = global_link_pos / SPINORFIELDSIZE;
-		int site_idx = global_link_pos % SPINORFIELDSIZE;
-
-		st_index pos = (site_idx % 2 == 0) ? get_even_site(site_idx / 2) : get_odd_site(site_idx / 2);
+	for(link_idx global_link_pos = id; global_link_pos < GAUGEMOMENTASIZE; global_link_pos += global_size) {
+		st_idx pos = get_st_idx_from_link_idx(global_link_pos);
+		dir_idx dir = get_dir_idx_from_link_idx(global_link_pos);
 
 		Matrixsu3 U;
 		Matrix3x3 v1, v2, tmp;
