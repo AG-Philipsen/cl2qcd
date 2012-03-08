@@ -616,14 +616,16 @@ void Dummyfield::verify_converted_vectors()
 	return;
 }
 
-void compare_ae_vectors(hmc_float * in1, hmc_float * in2, int size)
+bool compare_ae_vectors(hmc_float * in1, hmc_float * in2, int size)
 {
 	bool check;
+	bool returner = true;
 	for(int i = 0; i < size; i++) {
 		check = compare_entries_float(in1[i], in2[i]);
 		if(!check) cout << "\terror occured at " << i << endl;
+		if(!check && returner == true) returner = false;
 	}
-	return;
+	return returner;
 }
 
 void Dummyfield::verify_ae_vectors()
@@ -636,7 +638,14 @@ void Dummyfield::verify_ae_vectors()
 	err = clEnqueueReadBuffer(*queue, out_noneo, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << "\tcompare out_noneo with out_eo";
-	compare_ae_vectors(sf_out_noneo, sf_out_eo, NUM_ELEMENTS_AE);
+	bool check = compare_ae_vectors(sf_out_noneo, sf_out_eo, NUM_ELEMENTS_AE);
+
+	if(check) {
+	        logger.info() << "eo and non-eo result vectors agree ";
+	} else {
+		logger.info() << "eo and noneo result vectors DO NOT agree ";
+		BOOST_REQUIRE_EQUAL(1, 0);
+	}
 
 	return;
 }
