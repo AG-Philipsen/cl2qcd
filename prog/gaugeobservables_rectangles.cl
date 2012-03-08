@@ -1,7 +1,9 @@
 /** @file
- * Plaquette calculation kernels
+ * Rectangles calculation kernels.
+ * This is very similar to the Plaquette kernel.
+ * It is:
+ * 	Rectangles = \sum_{sites} \sum_{mu \neq nu} local_rectangles (i, mu, nu)
  */
-
 __kernel void rectangles(__global ocl_s_gaugefield * field, __global hmc_float * rect_out, __local hmc_float * rect_loc)
 {
 
@@ -25,8 +27,8 @@ __kernel void rectangles(__global ocl_s_gaugefield * field, __global hmc_float *
 	for(id = id_tmp; id < VOLSPACE * NTIME; id += global_size) {
 		st_index pos = (id < VOLSPACE * NTIME / 2) ? get_even_site(id) : get_odd_site(id - (VOLSPACE * NTIME / 2));
 
-		for(int mu = 1; mu < NDIM; mu++) {
-			for(int nu = 0; nu < mu; nu++) {
+		for(int mu = 0; mu < NDIM; mu++) {
+			for(int nu = 0; nu < NDIM; nu++) {
 				prod = local_rectangles(field, pos.space, pos.time, mu, nu );
 				tmpfloat = trace_matrixsu3(prod).re;
 				rect += tmpfloat;

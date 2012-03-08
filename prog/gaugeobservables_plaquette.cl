@@ -1,5 +1,7 @@
 /** @file
  * Plaquette calculation kernels
+ * It is:
+ * 	Plaquette = \sum_{sites} \sum_{mu > nu} local_plaquette (i, mu, nu)
  */
 
 __kernel void plaquette(__global ocl_s_gaugefield * field, __global hmc_float * plaq_out, __global hmc_float* tplaq_out, __global hmc_float* splaq_out, __local hmc_float * plaq_loc, __local hmc_float* tplaq_loc, __local hmc_float* splaq_loc)

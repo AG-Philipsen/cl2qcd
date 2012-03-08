@@ -219,28 +219,51 @@ Matrixsu3 local_plaquette(__global ocl_s_gaugefield * field, const int n, const 
 	return out;
 }
 
-//calculate rectangle-matrix at site n,t in direction mu and nu
+//calculate rectangle-matrix at site i = (n,t) in direction mu and nu
+//	The rectangle is then: U_mu(i) * U_nu(i+mu) * U_nu(i + mu + nu) * U_mu(i + nu + nu)dagger * U_nu(i + nu)dagger * U_nu(i)dagger  
 Matrixsu3 local_rectangles(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
 {
 	Matrixsu3 out;
 	int4 pos;
-// 	if(mu == 0) {
-// 		pos.x = get_neighbor_temporal(t);
-// 		pos.y = n;
-// 	} else {
-// 		pos.x = t;
-// 		pos.y = get_neighbor(n, mu);
-// 	}
-// 	if(nu == 0) {
-// 		pos.z = get_neighbor_temporal(t);
-// 		pos.w = n;
-// 	} else {
-// 		pos.z = t;
-// 		pos.w = get_neighbor(n, nu);
-// 	}
-// 	out = multiply_matrixsu3 (get_matrixsu3(field, n, t, mu), get_matrixsu3(field, pos.y, pos.x, nu)      );
-// 	out = multiply_matrixsu3_dagger(out, get_matrixsu3(field, pos.w, pos.z, mu) );
-// 	out = multiply_matrixsu3_dagger(out, get_matrixsu3(field, n, t, nu) );
+	int4 pos2;
+	//calc positions of neighbors
+	//(x,y) = i + mu
+	if(mu == 0) {
+		pos.x = get_neighbor_temporal(t);
+		pos.y = n;
+	} else {
+		pos.x = t;
+		pos.y = get_neighbor(n, mu);
+	}
+	//(w,z) = i + nu
+	if(nu == 0) {
+		pos.z = get_neighbor_temporal(t);
+		pos.w = n;
+	} else {
+		pos.z = t;
+		pos.w = get_neighbor(n, nu);
+	}
+	//(x2, y2) = i + mu + nu = (x,y) + nu
+	if(nu == 0) {
+		pos2.x = get_neighbor_temporal(pos2.x);
+		pos2.y = pos.y;
+	} else {
+		pos2.x = pos.x;
+		pos2.y = get_neighbor(pos.y, nu);
+	}
+	//(w2, z2) = i + nu + nu = (w,z) + nu
+	if(nu == 0) {
+		pos2.z = get_neighbor_temporal(pos.z);
+		pos2.w = pos.w;
+	} else {
+		pos2.z = pos.z;
+		pos2.w = get_neighbor(pos.w, nu);
+	}
+	out = multiply_matrixsu3 (get_matrixsu3(field, n, t, mu), get_matrixsu3(field, pos.y, pos.x, nu)      );
+	out = multiply_matrixsu3 (out, get_matrixsu3(field, pos2.y, pos2.x, nu)      );
+	out = multiply_matrixsu3_dagger(out, get_matrixsu3(field, pos2.w, pos2.z, mu) );
+	out = multiply_matrixsu3_dagger(out, get_matrixsu3(field, pos.w, pos.z, nu) );
+	out = multiply_matrixsu3_dagger(out, get_matrixsu3(field, n, t, nu) );
 
 	return out;
 }
