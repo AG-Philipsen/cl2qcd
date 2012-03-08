@@ -177,7 +177,6 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 	if(get_parameters()->get_use_rectangles() == true){
 		*collect_options <<  " -D_USE_RECT_" ;
 	}
-
 	return;
 }
 
@@ -855,7 +854,7 @@ void Opencl_Module::rectangles_device(cl_mem gf)
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
 	int global_buf_size_complex = sizeof(hmc_complex) * num_groups;
 
-	if( clmem_rect_buf_glob == 0 ) clmem_plaq_buf_glob = create_rw_buffer(global_buf_size_float);
+	if( clmem_rect_buf_glob == 0 ) clmem_rect_buf_glob = create_rw_buffer(global_buf_size_float);
 
 	int buf_loc_size_float = sizeof(hmc_float) * ls;
 
@@ -863,7 +862,7 @@ void Opencl_Module::rectangles_device(cl_mem gf)
 	// run local rectangles calculation and first part of reduction
 	int clerr = clSetKernelArg(rectangles, 0, sizeof(cl_mem), &gf);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(rectangles, 1, sizeof(cl_mem), &clmem_plaq_buf_glob);
+	clerr = clSetKernelArg(rectangles, 1, sizeof(cl_mem), &clmem_rect_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(rectangles, 2, buf_loc_size_float, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -876,9 +875,9 @@ void Opencl_Module::rectangles_device(cl_mem gf)
 	
 	clerr = clSetKernelArg(rectangles_reduction, 0, sizeof(cl_mem), &clmem_rect_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(rectangles_reduction, 3, sizeof(cl_mem), &clmem_rect);
+	clerr = clSetKernelArg(rectangles_reduction, 1, sizeof(cl_mem), &clmem_rect);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(rectangles_reduction, 6, sizeof(cl_uint), &num_groups);
+	clerr = clSetKernelArg(rectangles_reduction, 2, sizeof(cl_uint), &num_groups);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 

@@ -383,6 +383,9 @@ Matrix3x3 local_rectangles_staple(__global ocl_s_gaugefield * field, const int n
 	int4 pos2;
 	site_idx start_point;
 
+	//CP: Currently, this function causes a segfault. For now, return a zero matrix
+	Matrix3x3 temporary = zero_matrix3x3();
+	return temporary;
 	//first ingredient
 	//1.	U_nu(x + mu) * U_nu(x + mu + nu) * Udagger_mu(x + nu + nu) * Udagger_nu(x + nu) * Udagger_nu(x)
 	//calculate the coordinates for the matrices. this is the same as with  the rectangles

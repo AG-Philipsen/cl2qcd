@@ -80,8 +80,8 @@ __kernel void rectangles_reduction(__global hmc_float* rect_buf, __global hmc_fl
 {
 	int id = get_global_id(0);
 	if(id == 0) {
-		for (uint i = 1; i < bufElems; i++) {
-			rect_buf[0]  += rect_buf[i];
+	        for (uint i = 1; i < bufElems; i++) {
+		        rect_buf[0]  += rect_buf[i];
 		}
 		(*rect)  = rect_buf[0];
 	}
