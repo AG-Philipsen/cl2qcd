@@ -11,7 +11,7 @@
 /**
  * Singleton logger instance for logging to stdout.
  */
-extern einhard::Logger<einhard::ALL> logger;
+extern einhard::Logger<einhard::LOG_LEVEL> logger;
 
 
 #endif //_LOGGERHPP_

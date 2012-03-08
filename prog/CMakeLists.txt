@@ -59,6 +59,10 @@ set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/gitcommitid.h
                             PROPERTIES GENERATED TRUE
                             HEADER_FILE_ONLY TRUE)
 
+# Allow to choose the default log level
+set(LOG_LEVEL "ALL" CACHE STRING "The minimum log level for output to be written. Options are: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF. Note that some tests will break if INFO messages are not logged.")
+add_definitions(-DLOG_LEVEL=${LOG_LEVEL})
+
 # Don't compile in debug output if compiling for release
 if( CMAKE_BUILD_TYPE STREQUAL "Release" )
 	add_definitions( -DNDEBUG )

@@ -6,4 +6,4 @@
 
 #include "logger.hpp"
 
-einhard::Logger<einhard::ALL> logger(einhard::ALL);
+einhard::Logger<einhard::LOG_LEVEL> logger(einhard::ALL);
