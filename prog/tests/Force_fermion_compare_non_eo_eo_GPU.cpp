@@ -52,6 +52,7 @@ public:
 	hmc_float get_squarenorm_noneo(int which);
 	void verify(hmc_float, hmc_float);
 	void verify_converted_vectors();
+	void verify_ae_vectors();
 	void runTestKernel(int evenodd);
 	void runTestKernel2();
 	void runTestKernel2withconvertedfields();
@@ -70,12 +71,12 @@ private:
 	spinor * sf_in1_noneo_converted;
 	spinor * sf_in2_noneo_converted;
 	hmc_float * sf_out_noneo;
+	hmc_float * sf_out_eo;
 	cl_mem sqnorm;
 	spinor * sf_in1_eo;
 	spinor * sf_in2_eo;
 	spinor * sf_in3_eo;
 	spinor * sf_in4_eo;
-	hmc_float * sf_out_eo;
 };
 
 BOOST_AUTO_TEST_CASE( F_FERMION )
@@ -528,6 +529,15 @@ bool compare_entries(hmc_complex in1, hmc_complex in2)
 	return true;
 }
 
+bool compare_entries_float(hmc_float in1, hmc_float in2)
+{
+	if(abs(in1 - in2) > 1e-8) {
+		cout << "\tentries DO NOT match: in1: " << in1 << "\tin2: " << in2 << endl;
+		return false;
+	}
+	return true;
+}
+
 void print_spinor(const spinor in1, const spinor in2)
 {
 	cout << endl;
@@ -600,6 +610,30 @@ void Dummyfield::verify_converted_vectors()
 
 	logger.info() << "\tcompare in2_noneo with in2_noneo_converted";
 	compare_vectors(sf_in2_noneo, sf_in2_noneo_converted, get_parameters()->get_spinorfieldsize());
+
+	return;
+}
+
+void compare_ae_vectors(hmc_float * in1, hmc_float * in2, int size)
+{
+	bool check;
+	for(int i = 0; i < size; i++) {
+		check = compare_entries_float(in1[i], in2[i]);
+		if(!check) cout << "\terror occured at " << i << endl;
+	}
+	return;
+}
+
+void Dummyfield::verify_ae_vectors()
+{
+	//read out the vectors on the device
+	int NUM_ELEMENTS_AE = params.get_gaugemomentasize() * params.get_su3algebrasize();
+	cl_int err = clEnqueueReadBuffer(*queue, out_eo, CL_TRUE, 0, NUM_ELEMENTS_AE, &sf_out_eo, 0, 0, 0);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	err = clEnqueueReadBuffer(*queue, out_noneo, CL_TRUE, 0, NUM_ELEMENTS_AE, &sf_out_noneo, 0, 0, 0);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	logger.info() << "\tcompare out_noneo with out_eo";
+	compare_ae_vectors(sf_out_noneo, sf_out_eo, NUM_ELEMENTS_AE);
 
 	return;
 }
