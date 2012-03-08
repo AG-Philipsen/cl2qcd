@@ -61,8 +61,11 @@ set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/gitcommitid.h
 
 # Allow to choose the default log level
 set(LOG_LEVEL "ALL" CACHE STRING "The minimum log level for output to be written. Options are: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF. Note that some tests will break if INFO messages are not logged.")
+string(REGEX MATCH "^(ALL)|(TRACE)|(DEBUG)|(INFO)|(WARN)|(ERROR)|(FATAL)|(OFF)$" TMP "${LOG_LEVEL}")
+if(TMP STREQUAL "")
+	message(SEND_ERROR "LOG_LEVEL must be one of ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL or OFF. \"${LOG_LEVEL}\" is not a valid value.")
+endif(TMP STREQUAL "")
 add_definitions(-DLOG_LEVEL=${LOG_LEVEL})
-
 # Don't compile in debug output if compiling for release
 if( CMAKE_BUILD_TYPE STREQUAL "Release" )
 	add_definitions( -DNDEBUG )
