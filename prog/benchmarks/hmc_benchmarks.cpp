@@ -1,14 +1,30 @@
 #include "../hmc.h"
 
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+
 int main(int argc, char* argv[])
 {
+	po::options_description desc("Allowed options");
+	desc.add_options()
+	("help,h", "Produce this help message")
+	("input-file", po::value<std::string>()->required(), "File containing the input parameters")
+	("log-level", po::value<std::string>(), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF");
+	po::positional_options_description pos_opts;
+	pos_opts.add("input-file", 1);
+	po::variables_map vm;
+	po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);
+	if( vm.count( "help" ) ) { // see http://stackoverflow.com/questions/5395503/required-and-optional-arguments-using-boost-library-program-options as to why this is done before po::notifiy(vm)
+		std::cout << desc << '\n';
+		return 0;
+	}
+	po::notify(vm); // checks whether all required arguments are set
 
-	if(argc != 2) {
-		logger.fatal() << "need file name for input parameters";
-		throw File_Exception("No file given");
+	if(vm.count("log-level")) {
+		switchLogLevel(vm["log-level"].as<std::string>());
 	}
 
-	char* inputfile = argv[1];
+	const char* inputfile = vm["input-file"].as<std::string>().c_str();
 	inputparameters parameters;
 	parameters.readfile(inputfile);
 	parameters.print_info_hmc(argv[0]);
@@ -61,24 +77,24 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	perform_timer.reset();
-	//CP: this is taken from gaugefield_hmc. However, I took out all parts out of the loop that have to do with changing the fields in order to always perform the same HMC step. 
+	//CP: this is taken from gaugefield_hmc. However, I took out all parts out of the loop that have to do with changing the fields in order to always perform the same HMC step.
 	int hmc_iter = parameters.get_hmcsteps();
 	int iter;
 	//This is the random-number generator for the metropolis-step
 	Random hmc_rnd_gen (parameters.get_host_seed());
 	hmc_float rnd_number = hmc_rnd_gen.doub();
-        usetimer solver_timer;
+	usetimer solver_timer;
 	hmc_observables obs;
 
 	logger.debug() << "\tinit spinorfield and gaugemomentum" ;
 	gaugefield.init_gaugemomentum_spinorfield();
-	
+
 	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
 	size_t gfsize = parameters.get_gf_buf_size();
-	size_t gmsize = parameters.get_gm_buf_size();	
+	size_t gmsize = parameters.get_gm_buf_size();
 	//copy u->u' p->p' for the integrator
 	gaugefield.get_task_hmc(0)->copy_buffer_on_device(*(gaugefield.get_task_hmc(0)->get_gaugefield()), gaugefield.get_task_hmc(0)->get_clmem_new_u(), gfsize);
-	gaugefield.get_task_hmc(0)->copy_buffer_on_device(gaugefield.get_task_hmc(0)->get_clmem_p(), gaugefield.get_task_hmc(0)->get_clmem_new_p(), gmsize);		
+	gaugefield.get_task_hmc(0)->copy_buffer_on_device(gaugefield.get_task_hmc(0)->get_clmem_p(), gaugefield.get_task_hmc(0)->get_clmem_new_p(), gmsize);
 	logger.trace() << "Perform " << hmc_iter << "of benchmarking";
 	for(iter = 0; iter < hmc_iter; iter ++) {
 		//here, clmem_phi is inverted several times and stored in clmem_phi_inv

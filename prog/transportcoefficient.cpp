@@ -1,12 +1,31 @@
 #include "transportcoefficient.h"
 
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+
 int main(int argc, char* argv[])
 {
 	try {
+		po::options_description desc("Allowed options");
+		desc.add_options()
+		("help,h", "Produce this help message")
+		("input-file", po::value<std::string>()->required(), "File containing the input parameters")
+		("log-level", po::value<std::string>(), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF");
+		po::positional_options_description pos_opts;
+		pos_opts.add("input-file", 1);
+		po::variables_map vm;
+		po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);
+		if( vm.count( "help" ) ) { // see http://stackoverflow.com/questions/5395503/required-and-optional-arguments-using-boost-library-program-options as to why this is done before po::notifiy(vm)
+			std::cout << desc << '\n';
+			return 0;
+		}
+		po::notify(vm); // checks whether all required arguments are set
 
-		if(argc != 2) throw Print_Error_Message("Need file name for input parameters", __FILE__, __LINE__);
+		if(vm.count("log-level")) {
+			switchLogLevel(vm["log-level"].as<std::string>());
+		}
 
-		char* inputfile = argv[1];
+		const char* inputfile = vm["input-file"].as<std::string>().c_str();
 		inputparameters parameters;
 		parameters.readfile(inputfile);
 		parameters.print_info_tkkappa(argv[0]);
@@ -29,7 +48,7 @@ int main(int argc, char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		init_timer.reset();
-		
+
 		Gaugefield_heatbath_kappa gaugefield;
 		int numtasks = 2;
 
@@ -37,7 +56,7 @@ int main(int argc, char* argv[])
 		cl_device_type primary_device_type = CL_DEVICE_TYPE_GPU;
 
 		gaugefield.init(numtasks, primary_device_type, &parameters);
-		
+
 		init_timer.add();
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -45,11 +64,11 @@ int main(int argc, char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		perform_timer.reset();
-		
+
 		logger.trace() << "Start thermalization" ;
 		int ntherm = parameters.get_thermalizationsteps();
-		if(ntherm > 0) gaugefield.perform_heatbath(ntherm,0);
-		
+		if(ntherm > 0) gaugefield.perform_heatbath(ntherm, 0);
+
 		logger.info() << "Start hybrid heatbath and tk_kappa";
 		//first output is considered to be zeroth iteration
 		int iter = 0;
@@ -69,7 +88,7 @@ int main(int argc, char* argv[])
 		//    gaugefield.print_gaugeobservables_from_task(iter,0);
 		//    gaugefield.print_gaugeobservables_from_task(iter,1);
 		gaugefield.print_gaugeobservables(iter, gaugeout_name.str());
-		gaugefield.print_kappa(iter,"kappa_clover.dat");
+		gaugefield.print_kappa(iter, "kappa_clover.dat");
 
 		for(iter = 2; iter < parameters.get_heatbathsteps() / nheat_frequency; iter++) {
 			gaugefield.perform_tasks(parameters.get_writefrequency(), parameters.get_overrelaxsteps());
@@ -78,13 +97,13 @@ int main(int argc, char* argv[])
 			//    gaugefield.print_gaugeobservables_from_task(iter,0);
 			//    gaugefield.print_gaugeobservables_from_task(iter,1);
 			gaugefield.print_gaugeobservables(iter, gaugeout_name.str());
-			gaugefield.print_kappa(iter,"kappa_clover.dat");
+			gaugefield.print_kappa(iter, "kappa_clover.dat");
 		}
 
 		gaugefield.save("conf.save");
 		logger.trace() << "... done";
 		perform_timer.add();
-		
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Final Output
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +116,7 @@ int main(int argc, char* argv[])
 		(gaugefield.get_task_heatbath())->print_copy_times(totaltime);
 		logger.info() << "## Device: Kappa";
 		(gaugefield.get_task_kappa())->print_copy_times(totaltime);
-		
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// free variables
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////

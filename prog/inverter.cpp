@@ -1,12 +1,31 @@
 #include "inverter.h"
 
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+
 int main(int argc, char* argv[])
 {
 	try {
+		po::options_description desc("Allowed options");
+		desc.add_options()
+		("help,h", "Produce this help message")
+		("input-file", po::value<std::string>()->required(), "File containing the input parameters")
+		("log-level", po::value<std::string>(), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF");
+		po::positional_options_description pos_opts;
+		pos_opts.add("input-file", 1);
+		po::variables_map vm;
+		po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);
+		if( vm.count( "help" ) ) { // see http://stackoverflow.com/questions/5395503/required-and-optional-arguments-using-boost-library-program-options as to why this is done before po::notifiy(vm)
+			std::cout << desc << '\n';
+			return 0;
+		}
+		po::notify(vm); // checks whether all required arguments are set
 
-		if(argc != 2) throw Print_Error_Message("Need file name for input parameters", __FILE__, __LINE__);
+		if(vm.count("log-level")) {
+			switchLogLevel(vm["log-level"].as<std::string>());
+		}
 
-		char* inputfile = argv[1];
+		const char* inputfile = vm["input-file"].as<std::string>().c_str();
 		inputparameters parameters;
 		parameters.readfile(inputfile);
 		parameters.print_info_inverter(argv[0]);
@@ -57,7 +76,7 @@ int main(int argc, char* argv[])
 		}
 
 		//check if correlator-device is a GPU and in that case exit because the kernels are not meant to be executed there
-		if ( parameters.get_use_gpu() == false && parameters.get_num_dev() == 2){
+		if ( parameters.get_use_gpu() == false && parameters.get_num_dev() == 2) {
 			throw Print_Error_Message("GPU cannot be used for correlator-calculation.", __FILE__, __LINE__);
 		}
 
@@ -113,7 +132,7 @@ int main(int argc, char* argv[])
 			}
 			print_solver_profiling(profiling_out.str());
 		}
-		
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// free variables
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////

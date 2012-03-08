@@ -1,15 +1,31 @@
 #include "../inverter.h"
 
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+
 int main(int argc, char* argv[])
 {
 	try {
+		po::options_description desc("Allowed options");
+		desc.add_options()
+		("help,h", "Produce this help message")
+		("input-file", po::value<std::string>()->required(), "File containing the input parameters")
+		("log-level", po::value<std::string>(), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF");
+		po::positional_options_description pos_opts;
+		pos_opts.add("input-file", 1);
+		po::variables_map vm;
+		po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);
+		if( vm.count( "help" ) ) { // see http://stackoverflow.com/questions/5395503/required-and-optional-arguments-using-boost-library-program-options as to why this is done before po::notifiy(vm)
+			std::cout << desc << '\n';
+			return 0;
+		}
+		po::notify(vm); // checks whether all required arguments are set
 
-		if(argc != 2) {
-			logger.fatal() << "need file name for input parameters";
-			throw File_Exception("No file given");
+		if(vm.count("log-level")) {
+			switchLogLevel(vm["log-level"].as<std::string>());
 		}
 
-		char* inputfile = argv[1];
+		const char* inputfile = vm["input-file"].as<std::string>().c_str();
 		inputparameters parameters;
 		parameters.readfile(inputfile);
 		parameters.print_info_inverter(argv[0]);
@@ -26,19 +42,19 @@ int main(int argc, char* argv[])
 		//get name for file to which correlators are to be stored
 		stringstream corr_fn;
 		switch ( parameters.get_startcondition() ) {
-		case START_FROM_SOURCE :
-		  corr_fn << parameters.sourcefile << "_correlators.dat" ;
-		  break;
-		case HOT_START :
-		  corr_fn << "conf.hot_correlators.dat" ;
-		  break;
-		case COLD_START :
-		  corr_fn << "conf.cold_correlators.dat" ;
-		  break;
+			case START_FROM_SOURCE :
+				corr_fn << parameters.sourcefile << "_correlators.dat" ;
+				break;
+			case HOT_START :
+				corr_fn << "conf.hot_correlators.dat" ;
+				break;
+			case COLD_START :
+				corr_fn << "conf.cold_correlators.dat" ;
+				break;
 		}
 
-		if(parameters.get_profile_solver() == false){
-		  logger.warn()<<"solver times will not be measured!";
+		if(parameters.get_profile_solver() == false) {
+			logger.warn() << "solver times will not be measured!";
 		}
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,17 +98,17 @@ int main(int argc, char* argv[])
 
 		logger.trace() << "Perform " << hmc_iter << "of benchmarking";
 		for(iter = 0; iter < hmc_iter; iter ++) {
-		  //CP: these are esssentially the same actions as the "normal" inverter performs...
-		  logger.info() << "Perform inversion on device.." ;
+			//CP: these are esssentially the same actions as the "normal" inverter performs...
+			logger.info() << "Perform inversion on device.." ;
 
-		  gaugefield.create_sources();
-		  gaugefield.perform_inversion(&solver_timer);
-		  
-		  //flavour_doublet_correlators does a sync at the beginning
-		  gaugefield.flavour_doublet_correlators(corr_fn.str());
-		  
-		  logger.trace() << "Inversion done" ;
-		  
+			gaugefield.create_sources();
+			gaugefield.perform_inversion(&solver_timer);
+
+			//flavour_doublet_correlators does a sync at the beginning
+			gaugefield.flavour_doublet_correlators(corr_fn.str());
+
+			logger.trace() << "Inversion done" ;
+
 		}
 		logger.trace() << "inverter-benchmarking done" ;
 		perform_timer.add();
@@ -109,7 +125,7 @@ int main(int argc, char* argv[])
 		(gaugefield.get_task_solver())->print_copy_times(totaltime);
 		logger.info() << "## Device: Correlator";
 		(gaugefield.get_task_correlator())->print_copy_times(totaltime);
-		
+
 		//CP: this is just a fist version and will go into an own file later
 		stringstream profiling_out;
 		profiling_out << argv[0] << "_profiling_data";
@@ -128,9 +144,9 @@ int main(int argc, char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// free variables
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
+
 		gaugefield.finalize();
-		
+
 	} //try
 	//exceptions from Opencl classes
 	catch (Opencl_Error& e) {
