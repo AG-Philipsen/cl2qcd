@@ -1,15 +1,26 @@
 #include "../inverter.h"
 
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+
 int main(int argc, char* argv[])
 {
 	try {
-
-		if(argc != 2) {
-			logger.fatal() << "need file name for input parameters";
-			throw File_Exception("No file given");
+		po::options_description desc("Allowed options");
+		desc.add_options()
+		("help,h", "Produce this help message")
+		("input-file", po::value<std::string>()->required(), "File containing the input parameters");
+		po::positional_options_description pos_opts;
+		pos_opts.add("input-file", 1);
+		po::variables_map vm;
+		po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);
+		if( vm.count( "help" ) ) { // see http://stackoverflow.com/questions/5395503/required-and-optional-arguments-using-boost-library-program-options as to why this is done before po::notifiy(vm)
+			std::cout << desc << '\n';
+			return 0;
 		}
+		po::notify(vm); // checks whether all required arguments are set
 
-		char* inputfile = argv[1];
+		const char* inputfile = vm["input-file"].as<std::string>().c_str();
 		inputparameters parameters;
 		parameters.readfile(inputfile);
 		parameters.print_info_inverter(argv[0]);

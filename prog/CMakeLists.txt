@@ -40,7 +40,7 @@ if( LIBXML2_DEFINITIONS )
 	add_definitions( ${LIBXML2_DEFINITIONS} )
 endif( LIBXML2_DEFINITIONS )
 
-find_package(Boost 1.35.0 REQUIRED COMPONENTS regex filesystem system)
+find_package(Boost 1.35.0 REQUIRED COMPONENTS regex filesystem system program_options)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 # Define where to find the OpenCL kernels
