@@ -149,6 +149,8 @@ BOOST_AUTO_TEST_CASE( F_FERMION )
 	cpu.verify(cpu_res_noneo_converted, cpu_res_noneo);
 	logger.info() << "eo and noneo:";
 	cpu.verify(cpu_res_eo, cpu_res_noneo);
+	logger.info() << "Compare non-eo and eo solution vectors entry by entry:";
+	cpu.verify_ae_vectors();
 
 
 }
@@ -628,9 +630,10 @@ void Dummyfield::verify_ae_vectors()
 {
 	//read out the vectors on the device
 	int NUM_ELEMENTS_AE = params.get_gaugemomentasize() * params.get_su3algebrasize();
-	cl_int err = clEnqueueReadBuffer(*queue, out_eo, CL_TRUE, 0, NUM_ELEMENTS_AE, &sf_out_eo, 0, 0, 0);
+	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
+	cl_int err = clEnqueueReadBuffer(*queue, out_eo, CL_TRUE, 0,  ae_buf_size, sf_out_eo, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clEnqueueReadBuffer(*queue, out_noneo, CL_TRUE, 0, NUM_ELEMENTS_AE, &sf_out_noneo, 0, 0, 0);
+	err = clEnqueueReadBuffer(*queue, out_noneo, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << "\tcompare out_noneo with out_eo";
 	compare_ae_vectors(sf_out_noneo, sf_out_eo, NUM_ELEMENTS_AE);
