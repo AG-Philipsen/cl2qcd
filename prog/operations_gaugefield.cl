@@ -587,12 +587,13 @@ Matrix3x3 local_rectangles_staple(__global ocl_s_gaugefield * field, const int n
 	}	
 	
 	//TODO: there is no function Udagger * U up to now!!!!
-// 	tmp = multiply_matrixsu3_dagger_dagger(get_matrixsu3(field, pos2.w, pos2.z, nu), get_matrixsu3(field, pos.w, pos.z, mu)      );
-// 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos2.y, pos2.x, mu) );
-// 	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos2.y; pos2.x, nu) );
-// 	tmp = multiply_matrixsu3_(tmp, get_matrixsu3(field, pos.y, pos.x, mu) );	
-// 
-// 	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
+	tmp = adjoint_matrixsu3( get_matrixsu3(field, pos.y, pos.x, mu) );
+	tmp = multiply_matrixsu3( tmp, get_matrixsu3(field, pos.y, pos.x, nu) );
+	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos2.y, pos2.x, mu) );
+	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.w; pos.z, mu) );
+	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos2.w, pos2.z, nu) );	
+
+	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
 	
 	//6.	U_nu(x) * U_mu(x + nu) * U_mu(x + nu + mu) * Udagger_nu(x + mu + mu) * Udagger_mu(x + mu)
 	//(x, y) = i + mu (call the site idx "x" "i" for now)
