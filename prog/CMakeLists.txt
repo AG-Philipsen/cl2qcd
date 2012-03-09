@@ -215,6 +215,9 @@ add_library( einhard
 # Add crypto stuff
 add_subdirectory( crypto )
 
+# Random number generation lib
+add_subdirectory(ranluxcl)
+
 # Documentation
 #include(FindDoxygen)
 find_package( Doxygen QUIET )
