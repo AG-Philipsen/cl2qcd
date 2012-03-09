@@ -327,7 +327,7 @@ cl_float *ReadReferenceFile(size_t &NumVals, bool Verbose){
 	//Reads reference values from binary file.
 
 	std::string FileName;
-	FileName = "ranluxclref.binary";
+	FileName = SOURCEDIR "/ranluxcl/ranluxclref.binary";
 
 	// get file size using stat
 	struct stat result;
