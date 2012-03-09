@@ -27,7 +27,7 @@ public:
 	};
 
 	//for rectangles
-	void runTestKernel(cl_mem out, cl_mem gf, int gs, int ls);
+        void runTestKernel(cl_mem out, cl_mem gf, int gs, int ls);
 	//for force_gauge_tlsym
 	void runTestKernel2(cl_mem out, cl_mem gf, int gs, int ls);
 	void fill_kernels();
@@ -217,9 +217,11 @@ void Device::clear_kernels()
 
 void Device::runTestKernel(cl_mem out, cl_mem gf, int gs, int ls)
 {
+	logger.trace() << "start with testKernel";
+
 	cl_int err;
 	
-	int num_groups = gs / ls;
+	cl_uint num_groups = (gs + ls - 1) / ls;
 	
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
 	
@@ -243,19 +245,23 @@ void Device::runTestKernel(cl_mem out, cl_mem gf, int gs, int ls)
 
 	clerr = clSetKernelArg(testKernel_b, 0, sizeof(cl_mem), &clmem_rect_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(testKernel_b, 1, sizeof(cl_mem), out);
+	clerr = clSetKernelArg(testKernel_b, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(testKernel_b, 2, sizeof(cl_uint), &num_groups);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(testKernel_b, 1, 1);	
-	
+
 	clReleaseMemObject(clmem_rect_buf_glob);
+
+	logger.trace() << "done with testKernel";
 	
 }
 
 void Device::runTestKernel2(cl_mem out, cl_mem gf, int gs, int ls)
 {
+	logger.trace() << "start with testKernel2";
+
 	cl_int err;
 	err = clSetKernelArg(testKernel2, 0, sizeof(cl_mem), &gf);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
@@ -263,6 +269,8 @@ void Device::runTestKernel2(cl_mem out, cl_mem gf, int gs, int ls)
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
 	enqueueKernel(testKernel2, gs, ls);
+
+	logger.trace() << "done with testKernel2";
 }
 
 
@@ -335,7 +343,7 @@ void Dummyfield::runTestKernel()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(out,  *(get_clmem_gaugefield()), gs, ls);
+	static_cast<Device*>(opencl_modules[0])->runTestKernel(rect_value,  *(get_clmem_gaugefield()), gs, ls);
 }
 
 void Dummyfield::runTestKernel2()
