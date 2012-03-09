@@ -1,4 +1,4 @@
-__kernel void generate_gaussian_spinorfield(__global spinorfield * out, __global hmc_ocl_ran * rnd)
+__kernel void generate_gaussian_spinorfield(__global spinorfield * out, __global rngStateStorageType * rngStates)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -17,45 +17,47 @@ __kernel void generate_gaussian_spinorfield(__global spinorfield * out, __global
 	global_size = 1;
 #endif
 
+	hmc_ocl_ran rnd = loadRngState(rngStates);
+
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 		/** @todo this must be done more efficient */
 		st_index pos = (id_tmp < VOLSPACE * NTIME / 2) ? get_even_site(id_tmp) : get_odd_site(id_tmp - (VOLSPACE * NTIME / 2));
 
 		//CP: there are 12 complex elements in the spinor
-		tmp = gaussianNormalPair(&rnd[id]);
+		tmp = gaussianNormalPair(&rnd);
 		out_tmp.e0.e0.re = tmp.re;
 		out_tmp.e0.e0.im = tmp.im;
-		tmp = gaussianNormalPair(&rnd[id]);
+		tmp = gaussianNormalPair(&rnd);
 		out_tmp.e0.e1.re = tmp.re;
 		out_tmp.e0.e1.im = tmp.im;
-		tmp = gaussianNormalPair(&rnd[id]);
+		tmp = gaussianNormalPair(&rnd);
 		out_tmp.e0.e2.re = tmp.re;
 		out_tmp.e0.e2.im = tmp.im;
-		tmp = gaussianNormalPair(&rnd[id]);
+		tmp = gaussianNormalPair(&rnd);
 		out_tmp.e1.e0.re = tmp.re;
 		out_tmp.e1.e0.im = tmp.im;
-		tmp = gaussianNormalPair(&rnd[id]);
+		tmp = gaussianNormalPair(&rnd);
 		out_tmp.e1.e1.re = tmp.re;
 		out_tmp.e1.e1.im = tmp.im;
-		tmp = gaussianNormalPair(&rnd[id]);
+		tmp = gaussianNormalPair(&rnd);
 		out_tmp.e1.e2.re = tmp.re;
 		out_tmp.e1.e2.im = tmp.im;
-		tmp = gaussianNormalPair(&rnd[id]);
+		tmp = gaussianNormalPair(&rnd);
 		out_tmp.e2.e0.re = tmp.re;
 		out_tmp.e2.e0.im = tmp.im;
-		tmp = gaussianNormalPair(&rnd[id]);
+		tmp = gaussianNormalPair(&rnd);
 		out_tmp.e2.e1.re = tmp.re;
 		out_tmp.e2.e1.im = tmp.im;
-		tmp = gaussianNormalPair(&rnd[id]);
+		tmp = gaussianNormalPair(&rnd);
 		out_tmp.e2.e2.re = tmp.re;
 		out_tmp.e2.e2.im = tmp.im;
-		tmp = gaussianNormalPair(&rnd[id]);
+		tmp = gaussianNormalPair(&rnd);
 		out_tmp.e3.e0.re = tmp.re;
 		out_tmp.e3.e0.im = tmp.im;
-		tmp = gaussianNormalPair(&rnd[id]);
+		tmp = gaussianNormalPair(&rnd);
 		out_tmp.e3.e1.re = tmp.re;
 		out_tmp.e3.e1.im = tmp.im;
-		tmp = gaussianNormalPair(&rnd[id]);
+		tmp = gaussianNormalPair(&rnd);
 		out_tmp.e3.e2.re = tmp.re;
 		out_tmp.e3.e2.im = tmp.im;
 
@@ -64,4 +66,6 @@ __kernel void generate_gaussian_spinorfield(__global spinorfield * out, __global
 
 		put_spinor_to_field(out_tmp, out, pos.space, pos.time);
 	}
+
+	storeRngState(rngStates, rnd);
 }
