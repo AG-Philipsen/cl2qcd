@@ -13,6 +13,9 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
+# Have the user asked for tests
+enable_testing()
+
 # make the compiler bitchy
 if(CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wdisabled-optimization -std=c++0x")
@@ -240,7 +243,6 @@ if(BUILD_MICROBENCHMARKS)
 endif(BUILD_MICROBENCHMARKS)
 
 # Take care of unit tests
-enable_testing()
 add_subdirectory(tests)
 
 # Benchmarking
