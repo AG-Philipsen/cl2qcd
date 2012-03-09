@@ -1,6 +1,6 @@
 ##################################################################
 ##	This is 
-##		hmc_test_input_1
+##		hmc_test_input_5
 ##	It performs one hmc-step with tau = 0.01 starting from
 ##	a cold config
 ##
@@ -23,17 +23,13 @@ use_evenodd=yes
 
 #solver-parameters
 use_evenodd=yes
-solver=bicgstab
+solver=cg
 
 #HMC-parameters
 hmcsteps=1
-num_timescales=3
+num_timescales=1
 tau=0.01
 integrator0=2MN
-integrationsteps0=2
-integrator1=2MN
-integrationsteps1=5
-integrator2=2MN
-integrationsteps2=2
+integrationsteps0=10
 
 

@@ -1,6 +1,6 @@
 ##################################################################
 ##	This is 
-##		hmc_test_input_1
+##		hmc_test_input_2
 ##	It performs one hmc-step with tau = 0.01 starting from
 ##	a cold config
 ##
@@ -11,25 +11,22 @@ use_rec12=0
 use_gpu=0
 prec=64
 
-kappa=.15
-mu=4.
+kappa=.1
+mu=0.5
 cgmax=1000
-beta=6
+beta=5.69
 startcondition=cold
-savefrequency=10
 fermact=TWISTEDMASS
 
-use_evenodd=yes
-
 #solver-parameters
-use_evenodd=yes
+use_evenodd=no
 solver=bicgstab
 
 #HMC-parameters
 hmcsteps=1
 num_timescales=1
 tau=0.01
-integrator0=2MN
-integrationsteps0=10
+integrator0=LEAPFROG
+integrationsteps0=12
 
 
