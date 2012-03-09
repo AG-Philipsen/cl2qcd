@@ -314,6 +314,9 @@ hmc_float Dummyfield::get_rect()
 	cl_int err = clEnqueueReadBuffer(*queue, rect_value, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << result;
+	hmc_float norm =  NDIM * (NDIM-1) * NC *  get_parameters()->get_vol4d();
+	  logger.info() << "in the correct normalization (12*VOL*NC = " << norm << ") this reads:";
+	logger.info() << result / norm;
 	return result;
 }
 
