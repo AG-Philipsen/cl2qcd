@@ -173,8 +173,8 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 	if(use_soa) {
 		*collect_options << " -D_USE_SOA_";
 	}
-	
-	if(get_parameters()->get_use_rectangles() == true){
+
+	if(get_parameters()->get_use_rectangles() == true) {
 		*collect_options <<  " -D_USE_RECT_" ;
 	}
 	return;
@@ -286,7 +286,7 @@ void Opencl_Module::fill_buffers()
 	clmem_splaq_buf_glob = 0;
 	clmem_polyakov_buf_glob = 0;
 	clmem_rect_buf_glob = 0;
-	
+
 	return;
 }
 
@@ -354,7 +354,7 @@ void Opencl_Module::clear_buffers()
 
 	clerr = clReleaseMemObject(clmem_rect);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	
+
 	clerr = clReleaseMemObject(clmem_polyakov);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 
@@ -872,7 +872,7 @@ void Opencl_Module::rectangles_device(cl_mem gf)
 	// run second part of rectangles reduction
 
 	this->get_work_sizes(rectangles_reduction, this->get_device_type(), &ls, &gs, &num_groups);
-	
+
 	clerr = clSetKernelArg(rectangles_reduction, 0, sizeof(cl_mem), &clmem_rect_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(rectangles_reduction, 1, sizeof(cl_mem), &clmem_rect);
@@ -1316,10 +1316,10 @@ void Opencl_Module::smear_gaugefield(cl_mem gf, cl_mem * gf_intermediate)
 		stout_smear_device(gf, gf_intermediate[0]);
 		//perform rho_iter -2 intermediate steps
 		for(int i = 1; i < get_parameters()->get_rho_iter() - 1; i++) {
-			stout_smear_device(gf_intermediate[i-1], gf_intermediate[i]);
+			stout_smear_device(gf_intermediate[i - 1], gf_intermediate[i]);
 		}
 		//the last step results in the smeared gf
-		stout_smear_device(gf_intermediate[get_parameters()->get_rho_iter() -1 ], gf);
+		stout_smear_device(gf_intermediate[get_parameters()->get_rho_iter() - 1 ], gf);
 	} else {
 		//one needs a temporary gf to apply the smearing to
 		cl_mem gf_tmp;
@@ -1354,14 +1354,14 @@ cl_ulong Opencl_Module::calculateStride(const cl_ulong elems, const cl_ulong bas
 //	logger.debug() << "Elems: " << elems << " Base Type Size: " << baseTypeSize << " Stride bytes: " << stride_bytes;
 
 	// alternative alignment, 1K, but never 16K
-	ulong stride_bytes = ((elems * baseTypeSize + 0x03FF) & 0xFFFFFFFFFFFFFC00L);
+	cl_ulong stride_bytes = ((elems * baseTypeSize + 0x03FF) & 0xFFFFFFFFFFFFFC00L);
 	logger.debug() << "Elems: " << elems << " Base Type Size: " << baseTypeSize << " Stride bytes: " << stride_bytes;
 	if((stride_bytes & 0x3FFFL) == 0) { // 16 KiB
 		stride_bytes |= 0x400L; // + 1KiB
 		logger.warn() << "stride was aligned to 16 KiB – corrected!";
 	}
 
-	const ulong stride_elems = stride_bytes / baseTypeSize;
+	const cl_ulong stride_elems = stride_bytes / baseTypeSize;
 	stride_bytes = stride_elems * baseTypeSize;
 	logger.debug() << "Stride is " << stride_elems << " elems (" << stride_bytes << " bytes). Stride % 16k = " << stride_bytes % (16 * 1024);
 	return stride_elems;

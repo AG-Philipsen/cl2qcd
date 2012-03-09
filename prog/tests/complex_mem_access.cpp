@@ -102,7 +102,7 @@ void Dummyfield::fill_buffers()
 	BOOST_REQUIRE(h_complex);
 
 	for(int i = 0; i < params.get_vol4d(); ++i) {
-		hmc_complex tmp = { (cl_double) i, (cl_double) (params.get_vol4d() - i) };
+		hmc_complex tmp = { (hmc_float) i, (hmc_float) (params.get_vol4d() - i) };
 		h_complex[i] = tmp;
 	}
 	d_readComplex = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, params.get_vol4d() * sizeof(hmc_complex), h_complex, &err);
