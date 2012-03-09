@@ -10,7 +10,7 @@ The reference values are loaded from the file ranluxclref.binary.
 */
 
 //OpenCL header
-#include <CL/cl.hpp>
+#include "CL/cl.hpp"
 
 //Standard headers
 #include <string>
@@ -532,16 +532,16 @@ int main(int argc, char *argv[])
 	std::cout << "Building OpenCL program: ";
 	std::string BuildOptions;
 	std::string BuildLog;
-	std::string FileName = "ranluxcltest_kernels.cl";
+	std::string FileName = SOURCEDIR "/ranluxcl/ranluxcltest_kernels.cl";
 
-	BuildOptions += "-I . "; //Search for include files in current directory
+	BuildOptions += "-I" SOURCEDIR "/ranluxcl"; //Search for include files in current directory
 
 	//Used to get exact same sequence as original implementation (for correctness check). Should generally
 	//NOT be set in other programs, to ensure parallel generators aren't in initially correlated states.
-	BuildOptions += " -D RANLUXCL_NO_WARMUP ";
+	BuildOptions += " -DRANLUXCL_NO_WARMUP ";
 
 	//Set luxury value. If this is not defined the highest (4) is used by default.
-	BuildOptions += " -D RANLUXCL_LUX=" + to_string(lux);
+	BuildOptions += " -DRANLUXCL_LUX=" + to_string(lux);
 
 	Compile_OpenCL_Code(BuildOptions, FileName, context, program, 1);
 
