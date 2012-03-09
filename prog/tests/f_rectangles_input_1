@@ -3,7 +3,7 @@
 # set startcondition to cold or hot to start with different gaugefield
 startcondition=continue
 sourcefile=conf.00200
-startcondition=cold
+#startcondition=cold
 
 NS=4
 NT=4
