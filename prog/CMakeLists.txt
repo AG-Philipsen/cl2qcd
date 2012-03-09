@@ -30,6 +30,13 @@ endif(CMAKE_COMPILER_IS_GNUCC)
 # make sure we can compile agains opencl
 find_package( OpenCL REQUIRED )
 include_directories( SYSTEM ${OPENCL_INCLUDE_DIRS} )
+# work around OpenCL implementations not shipping c++ bindings
+if( NOT OPENCL_HAS_CPP_BINDINGS )
+	message(STATUS "No OpenCL CPP bindings found, using hack" )
+	include_directories( SYSTEM hacks/cl_hpp )
+elseif( NOT OPENCL_HAS_CPP_BINDINGS )
+	message (STATUS "OpenCL CPP bindings found" )
+endif( NOT OPENCL_HAS_CPP_BINDINGS )
 
 find_package( LIME REQUIRED )
 include_directories( SYSTEM ${LIME_INCLUDE_DIR} )
