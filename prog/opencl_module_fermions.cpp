@@ -1171,6 +1171,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 	}
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
 	else if (get_parameters()->get_use_bicgstab_save() == true) {
+		hmc_float resid;
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				set_zero_spinorfield_device(clmem_v);
@@ -1192,6 +1193,8 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			//if rho is too small the algorithm will get stuck and will never converge!!
 			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
+			        //print the last residuum
+			        logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 				return -iter;
 			}
 			//tmp1 = rho_next/rho = (rhat, rn)/..
@@ -1233,7 +1236,6 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			saxsbypz_device(clmem_p, clmem_s, inout, clmem_alpha, clmem_omega, inout);
 			//resid = (rn,rn)
 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
-			hmc_float resid;
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
 //			cout << "resid at iter " << iter << " is: " << resid << endl;
@@ -1265,6 +1267,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 	//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
 	//  In particular this version does not perform the check if the "real" residuum is sufficiently small!
 	else if (get_parameters()->get_use_bicgstab_save() != true) {
+	        hmc_float resid;
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				//initial r_n, saved in p
@@ -1279,7 +1282,6 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			}
 			//resid = (rn,rn)
 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
-			hmc_float resid;
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 			//test if resid is NAN
 			if(resid != resid){
@@ -1317,6 +1319,8 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			//if rho is too small the algorithm will get stuck and will never converge!!
 			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
+			        //print the last residuum
+			        logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 				return -iter;
 			}
 			//tmp1 = rho_next/rho = (rhat, rn)/..
@@ -1382,6 +1386,8 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
+			        //print the last residuum
+			        logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 				return -iter;
 			}
 			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
@@ -1544,6 +1550,8 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
+			        //print the last residuum
+			        logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 				return -iter;
 			}
 
