@@ -183,7 +183,7 @@ void Device::fill_kernels()
 
 	testKernel = createKernel("rectangles") << basic_fermion_code << "gaugeobservables_rectangles.cl";	
 	testKernel_b = createKernel("rectangles_reduction") << basic_opencl_code << "gaugeobservables_rectangles.cl";
-	
+        //at the time of writing this kernel, the OpenCL compiler crashed the kernel using optimizations	
 	testKernel2 = createKernel("gauge_force_tlsym", "-cl-opt-disable") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "force_gauge_tlsym.cl";
 
 }

@@ -80,7 +80,8 @@ void Opencl_Module_Hmc::fill_kernels()
 	md_update_gaugemomenta = createKernel("md_update_gaugemomenta") << basic_hmc_code << "operations_gaugemomentum.cl" << "md_update_gaugemomenta.cl";
 	gauge_force = createKernel("gauge_force") << basic_hmc_code << "operations_gaugemomentum.cl" << "force_gauge.cl";
 	if(get_parameters()->get_use_rectangles() == true) {
-		gauge_force_tlsym = createKernel("gauge_force_tlsym") << basic_hmc_code << "operations_gaugemomentum.cl" << "force_gauge_tlsym.cl";
+	        //at the time of writing this kernel, the OpenCL compiler crashed the kernel using optimizations
+	        gauge_force_tlsym = createKernel("gauge_force_tlsym", "-cl-opt-disable") << basic_hmc_code << "operations_gaugemomentum.cl" << "force_gauge_tlsym.cl";
 	}
 	if(get_parameters()->get_use_smearing() == true) {
 		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_hmc_code << "force_fermion_stout_smear.cl";
@@ -1158,7 +1159,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	
 	logger.debug() << "\tS_gauge(old field) = " << setprecision(10) << s_old;
 	logger.debug() << "\tS_gauge(new field) = " << setprecision(10) << s_new;
-	logger.debug() << "\tdeltaS_gauge = " << setprecision(10) << deltaH;
+	logger.info() << "\tdeltaS_gauge = " << setprecision(10) << deltaH;
 
 	//Gaugemomentum-Part
 	hmc_float p2, new_p2;
@@ -1171,7 +1172,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 
 	logger.debug() << "\tS_gaugemom(old field) = " << setprecision(10) << 0.5 * p2;
 	logger.debug() << "\tS_gaugemom(new field) = " << setprecision(10) << 0.5 * new_p2;
-	logger.debug() << "\tdeltaS_gaugemom = " << setprecision(10) << 0.5 * (p2 - new_p2);
+	logger.info() << "\tdeltaS_gaugemom = " << setprecision(10) << 0.5 * (p2 - new_p2);
 
 	//Fermion-Part:
 	hmc_float spinor_energy_init, s_fermion;
@@ -1183,7 +1184,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 
 	logger.debug() << "\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
 	logger.debug() << "\tS_ferm(new field) = " << setprecision(10) << s_fermion;
-	logger.debug() << "\tdeltaS_ferm = " << spinor_energy_init - s_fermion;
+	logger.info() << "\tdeltaS_ferm = " << spinor_energy_init - s_fermion;
 
 	//Metropolis-Part
 	hmc_float compare_prob;
@@ -1192,7 +1193,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	} else {
 		compare_prob = 1.0;
 	}
-	logger.debug() << "\tdeltaH = " << deltaH << "\tAcc-Prop = " << compare_prob;
+	logger.info() << "\tdeltaH = " << deltaH << "\tAcc-Prop = " << compare_prob;
 	hmc_observables tmp;
 	if(rnd <= compare_prob) {
 		tmp.accept = 1;
