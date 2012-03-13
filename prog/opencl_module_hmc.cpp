@@ -544,7 +544,7 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 	//  which then has to be the source of the inversion
 	if(get_parameters()->get_use_eo() == true) {
 		convertGaugefieldToSOA_device(gaugefield_soa, *get_gaugefield());
-		Opencl_Module_Fermions::Qplus_eoprec (clmem_phi_inv_eoprec, clmem_phi_eoprec , *get_gaugefield());
+		Opencl_Module_Fermions::Qplus_eo (clmem_phi_inv_eoprec, clmem_phi_eoprec , *get_gaugefield());
 		if(logger.beDebug()) print_info_inv_field(clmem_phi_eoprec, true, "\tinit field after update ");
 	} else {
 		Opencl_Module_Fermions::Qplus(clmem_phi_inv, clmem_phi , *get_gaugefield());
@@ -599,7 +599,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			 *  Y_even = (Qminus_eoprec) X_even = (Qminus_eoprec) (Qplusminus_eoprec)^-1 psi =
 			 *    = (Qplus_eoprec)^-1 psi
 			 */
-			Opencl_Module_Fermions::Qminus_eoprec(this->get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, this->clmem_new_u);
+			Opencl_Module_Fermions::Qminus_eo(this->get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, this->clmem_new_u);
 		} else {
 			///@todo if wanted, solvertimer has to be used here..
 			//logger.debug() << "\t\tcalc fermion force ingredients using bicgstab with eoprec.";
@@ -1044,7 +1044,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field after inversion ");
 
-			Opencl_Module_Fermions::Qminus_eoprec(this->get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, this->clmem_new_u);
+			Opencl_Module_Fermions::Qminus_eo(this->get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, this->clmem_new_u);
 		} else {
 			logger.debug() << "\t\t\tstart solver";
 

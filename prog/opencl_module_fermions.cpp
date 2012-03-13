@@ -197,7 +197,7 @@ cl_ulong Aee::get_Bytes() const
 
 void Qplus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
-	that->Qplus_eoprec(in, out, gf);
+	that->Qplus_eo(in, out, gf);
 }
 cl_ulong Qplus_eoprec::get_Flops() const
 {
@@ -242,7 +242,7 @@ cl_ulong Qplus_eoprec::get_Bytes() const
 
 void Qminus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
-	that->Qminus_eoprec(in, out, gf);
+	that->Qminus_eo(in, out, gf);
 }
 cl_ulong Qminus_eoprec::get_Flops() const
 {
@@ -287,7 +287,7 @@ cl_ulong Qminus_eoprec::get_Bytes() const
 
 void QplusQminus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
-	that->QplusQminus_eoprec(in, out, gf);
+	that->QplusQminus_eo(in, out, gf);
 }
 cl_ulong QplusQminus_eoprec::get_Flops() const
 {
@@ -815,21 +815,21 @@ void Opencl_Module_Fermions::Aee_minus(cl_mem in, cl_mem out, cl_mem gf)
 	}
 }
 
-void Opencl_Module_Fermions::Qplus_eoprec(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::Qplus_eo(cl_mem in, cl_mem out, cl_mem gf)
 {
 	Aee(in, out, gf);
 	gamma5_eo_device(out);
 	return;
 }
 
-void Opencl_Module_Fermions::Qminus_eoprec(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::Qminus_eo(cl_mem in, cl_mem out, cl_mem gf)
 {
 	Aee_minus(in, out, gf);
 	gamma5_eo_device(out);
 	return;
 }
 
-void Opencl_Module_Fermions::QplusQminus_eoprec(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf)
 {
 	//CP: this is the original call, which fails because Qminus_eo and Qplus_eo both use clmem_tmp_eoprec_1,2 as intermediate fields themselves          
 	//Qminus_eoprec(in, clmem_tmp_eoprec_1, gf);                                                                                                         
@@ -840,8 +840,8 @@ void Opencl_Module_Fermions::QplusQminus_eoprec(cl_mem in, cl_mem out, cl_mem gf
 	cl_mem sf_eo_tmp;
 	sf_eo_tmp = create_rw_buffer(spinorfield_size);
 	
-	Qminus_eoprec(in, sf_eo_tmp, gf);
-	Qplus_eoprec(sf_eo_tmp, out, gf);
+	Qminus_eo(in, sf_eo_tmp, gf);
+	Qplus_eo(sf_eo_tmp, out, gf);
 	
 	int clerr = clReleaseMemObject(sf_eo_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);

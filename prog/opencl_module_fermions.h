@@ -182,9 +182,9 @@ public:
 	void gamma5_device(cl_mem inout);
 	//    eoprec
 	//        compound
-	void Qplus_eoprec(cl_mem in, cl_mem out, cl_mem gf);
-	void Qminus_eoprec(cl_mem in, cl_mem out, cl_mem gf);
-	void QplusQminus_eoprec(cl_mem in, cl_mem out, cl_mem gf);
+	void Qplus_eo(cl_mem in, cl_mem out, cl_mem gf);
+	void Qminus_eo(cl_mem in, cl_mem out, cl_mem gf);
+	void QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf);
 	void Aee(cl_mem in, cl_mem out, cl_mem gf);
 	void Aee_minus(cl_mem in, cl_mem out, cl_mem gf);
 	//        explicit
