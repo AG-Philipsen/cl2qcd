@@ -521,6 +521,28 @@ void inputparameters::gaugeact_assign(int * out, std::string line, bool mu1set)
 		}
 		return;
 	}
+	if(	value.find("IWASAKI") != std::string::npos	||
+			value.find("iwasaki") != std::string::npos	||
+			value.find("Iwasaki") != std::string::npos 	) {
+		(*out) = IWASAKI;
+		bool_assign(&use_rectangles, "1");
+		if(!mu1set){
+			c1 = c1_default_iwasaki;
+			calc_c0_tlsym(c1_default_iwasaki);
+		}
+		return;
+	}
+	if(	value.find("DBW2") != std::string::npos	||
+			value.find("dbw2") != std::string::npos	||
+			value.find("Dbw2") != std::string::npos	) {
+		(*out) = DBW2;
+		bool_assign(&use_rectangles, "1");
+		if(!mu1set){
+			c1 = c1_default_dbw2;
+			calc_c0_tlsym(c1_default_dbw2);
+		}
+		return;
+	}
 	if(	value.find("WILSON") != std::string::npos	||
 			value.find("Wilson") != std::string::npos	||
 			value.find("wilson") != std::string::npos	||
