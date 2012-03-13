@@ -3,7 +3,7 @@
 //	ODD corresponds to the D_oe case: Dslash acts on even indices (the "x+mu" in the formulae) and the function
 //	saves the outcoming spinor with an odd index.
 //	EVEN is then D_eo.
-__kernel void dslash_eoprec(__global const spinorStorageType * const restrict in, __global spinorStorageType * const restrict out, __global const Matrixsu3StorageType * const restrict field, const int evenodd)
+__kernel void dslash_eo(__global const spinorStorageType * const restrict in, __global spinorStorageType * const restrict out, __global const Matrixsu3StorageType * const restrict field, const int evenodd)
 {
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);

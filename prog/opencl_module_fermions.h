@@ -251,7 +251,7 @@ public:
 	usetimer timer_gamma5_eo;
 	usetimer timer_M_tm_sitediagonal;
 	usetimer timer_M_tm_inverse_sitediagonal;
-	usetimer timer_dslash_eoprec;
+	usetimer timer_dslash_eo;
 	usetimer timer_M_tm_sitediagonal_minus;
 	usetimer timer_M_tm_inverse_sitediagonal_minus;
 	usetimer timer_convertGaugefieldToSOA;
@@ -301,7 +301,7 @@ private:
 	cl_kernel M_tm_inverse_sitediagonal;
 	cl_kernel M_tm_sitediagonal_minus;
 	cl_kernel M_tm_inverse_sitediagonal_minus;
-	cl_kernel dslash_eoprec;
+	cl_kernel dslash_eo;
 	cl_kernel convertGaugefieldToSOA_kernel;
 	cl_kernel convertGaugefieldFromSOA;
 	//CP: variables for normal solver
