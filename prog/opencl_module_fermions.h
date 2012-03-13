@@ -214,8 +214,8 @@ public:
 	int cg(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
 	//    eo
 	/// this executes the eo bicgstab on the device, using the fermionmatrix f
-	int bicgstab_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
-	int cg_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
+	int bicgstab_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
+	int cg_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
 
 	/////////////////////////////////////////////////
 	//functions to get private variables

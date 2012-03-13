@@ -1344,7 +1344,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 	return 0;
 }
 
-int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	cl_int clerr = CL_SUCCESS;
 
@@ -1639,7 +1639,7 @@ int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem s
 	return -1;
 }
 
-int Opencl_Module_Fermions::cg_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	//this corresponds to the above function
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
@@ -1770,9 +1770,9 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 		logger.debug() << "start eoprec-inversion";
 		//even solution
 		if(get_parameters()->get_use_cg() == true)
-			converged = cg_eoprec(f, clmem_inout_eoprec, clmem_source_even, gf, get_parameters()->get_solver_prec());
+			converged = cg_eo(f, clmem_inout_eoprec, clmem_source_even, gf, get_parameters()->get_solver_prec());
 		else
-			converged = bicgstab_eoprec(f, this->get_clmem_inout_eoprec(), clmem_source_even, gf, get_parameters()->get_solver_prec());
+			converged = bicgstab_eo(f, this->get_clmem_inout_eoprec(), clmem_source_even, gf, get_parameters()->get_solver_prec());
 
 		//odd solution
 		/** The odd solution is obtained from the even one according to:
