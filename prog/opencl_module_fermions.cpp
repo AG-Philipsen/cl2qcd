@@ -863,7 +863,7 @@ void Opencl_Module_Fermions::gamma5_eo_device(cl_mem inout)
 	enqueueKernel( gamma5_eo, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd)
+void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa)
 {
 	if(use_soa) {
 		gf = gaugefield_soa;
@@ -890,7 +890,7 @@ void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, 
 	enqueueKernel(dslash_eo , gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out)
+void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mu)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -906,7 +906,7 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem 
 	enqueueKernel( M_tm_inverse_sitediagonal, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out)
+void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mu)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -922,7 +922,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out)
 	enqueueKernel(M_tm_sitediagonal , gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out)
+void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mu)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -938,7 +938,7 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, c
 	enqueueKernel( M_tm_inverse_sitediagonal_minus, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out)
+void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mu)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;

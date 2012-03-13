@@ -189,11 +189,11 @@ public:
 	void Aee_minus(cl_mem in, cl_mem out, cl_mem gf);
 	//        explicit
 	void gamma5_eo_device(cl_mem inout);
-	void M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out);
-	void M_tm_sitediagonal_device(cl_mem in, cl_mem out);
-	void M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out);
-	void M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out);
-	void dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd);
+	void M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mu = ARG_DEF);
+	void M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mu = ARG_DEF);
+	void M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mu = ARG_DEF);
+	void M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mu = ARG_DEF);
+	void dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa = ARG_DEF);
 
 	// SOA conversion
 	void convertGaugefieldToSOA();
