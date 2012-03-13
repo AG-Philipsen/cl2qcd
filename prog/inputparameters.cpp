@@ -80,7 +80,9 @@ void inputparameters::set_defaults()
 	c1 = 0.;
 	c0_default_wilson = 1.;
 	c1_default_tlsym = -0.083333333;
-	
+	c1_default_iwasaki = -0.331;
+	c1_default_dbw2 = -1.4069;
+
 	//heatbath parameters
 	thermalizationsteps = 0;
 	heatbathsteps = 1000;

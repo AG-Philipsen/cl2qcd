@@ -385,6 +385,8 @@ private:
 	hmc_float c1;
 	hmc_float c0_default_wilson;
 	hmc_float c1_default_tlsym;
+	hmc_float c1_default_iwasaki;
+	hmc_float c1_default_dbw2;
 	void calc_c0_tlsym(hmc_float c1);
 	int num_sources;
 	int pointsource_x;
