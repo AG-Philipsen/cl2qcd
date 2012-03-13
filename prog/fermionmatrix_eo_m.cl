@@ -1,4 +1,4 @@
-__kernel void M_tm_sitediagonal(__global const spinorStorageType * const restrict in, __global spinorStorageType * const restrict out)
+__kernel void M_tm_sitediagonal(__global const spinorStorageType * const restrict in, __global spinorStorageType * const restrict out, hmc_float mubar_in)
 {
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -18,7 +18,7 @@ __kernel void M_tm_sitediagonal(__global const spinorStorageType * const restric
 	}
 }
 
-__kernel void M_tm_inverse_sitediagonal(__global const spinorStorageType * const restrict in, __global spinorStorageType * const restrict out)
+__kernel void M_tm_inverse_sitediagonal(__global const spinorStorageType * const restrict in, __global spinorStorageType * const restrict out, hmc_float mubar_in)
 {
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -41,7 +41,7 @@ __kernel void M_tm_inverse_sitediagonal(__global const spinorStorageType * const
 	}
 }
 
-__kernel void M_tm_sitediagonal_minus(__global const spinorStorageType * const restrict in, __global spinorStorageType * const restrict out)
+__kernel void M_tm_sitediagonal_minus(__global const spinorStorageType * const restrict in, __global spinorStorageType * const restrict out, hmc_float mubar_in)
 {
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -61,7 +61,7 @@ __kernel void M_tm_sitediagonal_minus(__global const spinorStorageType * const r
 	}
 }
 
-__kernel void M_tm_inverse_sitediagonal_minus(__global const spinorStorageType * const restrict in, __global spinorStorageType * const restrict out)
+__kernel void M_tm_inverse_sitediagonal_minus(__global const spinorStorageType * const restrict in, __global spinorStorageType * const restrict out, hmc_float mubar_in)
 {
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);

@@ -710,7 +710,7 @@ void Opencl_Module_Fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, h
 	enqueueKernel( M_wilson, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mu )
+void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
 	//get kappa
 	hmc_float kappa_tmp;
@@ -718,9 +718,9 @@ void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, 
 	else kappa_tmp = kappa;
 	
 	//get mu
-	hmc_float mu_tmp;
-	if(mu == ARG_DEF) mu_tmp = get_parameters()->get_mu();
-	else mu_tmp = mu;
+	hmc_float mubar_tmp;
+	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	else mubar_tmp = mubar;
 	
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -739,13 +739,13 @@ void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, 
 	clerr = clSetKernelArg(M_tm_plus, 3, sizeof(hmc_float), &kappa_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(M_tm_plus, 4, sizeof(hmc_float), &mu_tmp);
+	clerr = clSetKernelArg(M_tm_plus, 4, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	
 	enqueueKernel( M_tm_plus, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mu )
+void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
 	//get kappa
 	hmc_float kappa_tmp;
@@ -753,9 +753,9 @@ void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf,
 	else kappa_tmp = kappa;
 	
 	//get mu
-	hmc_float mu_tmp;
-	if(mu == ARG_DEF) mu_tmp = get_parameters()->get_mu();
-	else mu_tmp = mu;
+	hmc_float mubar_tmp;
+	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	else mubar_tmp = mubar;
 	
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -774,7 +774,7 @@ void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf,
 	clerr = clSetKernelArg(M_tm_minus, 3, sizeof(hmc_float), &kappa_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(M_tm_minus, 4, sizeof(hmc_float), &mu_tmp);
+	clerr = clSetKernelArg(M_tm_minus, 4, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	
 	enqueueKernel( M_tm_minus, gs2, ls2);
@@ -932,15 +932,18 @@ void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, 
 	clerr = clSetKernelArg(dslash_eo, 3, sizeof(cl_int), &eo);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(dslash_eo, 4, sizeof(hmc_float), &kappa_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);	
+	
 	enqueueKernel(dslash_eo , gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mu)
+void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mubar)
 {
 	//get mu
-	hmc_float mu_tmp;
-	if(mu == ARG_DEF) mu_tmp = get_parameters()->get_mu();
-	else mu_tmp = mu;
+	hmc_float mubar_tmp;
+	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	else mubar_tmp = mubar;
 	
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -953,15 +956,18 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem 
 	clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 2, sizeof(hmc_float), &mubar_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);	
+	
 	enqueueKernel( M_tm_inverse_sitediagonal, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mu)
+void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mubar)
 {
 	//get mu
-	hmc_float mu_tmp;
-	if(mu == ARG_DEF) mu_tmp = get_parameters()->get_mu();
-	else mu_tmp = mu;
+	hmc_float mubar_tmp;
+	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	else mubar_tmp = mubar;
 	
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -974,15 +980,18 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc
 	clerr = clSetKernelArg(M_tm_sitediagonal, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(M_tm_sitediagonal, 2, sizeof(hmc_float), &mubar_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	
 	enqueueKernel(M_tm_sitediagonal , gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mu)
+void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mubar)
 {
 	//get mu
-	hmc_float mu_tmp;
-	if(mu == ARG_DEF) mu_tmp = get_parameters()->get_mu();
-	else mu_tmp = mu;
+	hmc_float mubar_tmp;
+	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	else mubar_tmp = mubar;
 	
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -995,15 +1004,18 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, c
 	clerr = clSetKernelArg(M_tm_inverse_sitediagonal_minus, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(M_tm_inverse_sitediagonal_minus, 2, sizeof(hmc_float), &mubar_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	
 	enqueueKernel( M_tm_inverse_sitediagonal_minus, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mu)
+void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mubar)
 {
 	//get mu
-	hmc_float mu_tmp;
-	if(mu == ARG_DEF) mu_tmp = get_parameters()->get_mu();
-	else mu_tmp = mu;
+	hmc_float mubar_tmp;
+	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	else mubar_tmp = mubar;
 	
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -1016,6 +1028,9 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 	clerr = clSetKernelArg(M_tm_sitediagonal_minus, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(M_tm_sitediagonal_minus, 2, sizeof(hmc_float), &mubar_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	
 	enqueueKernel(M_tm_sitediagonal_minus , gs2, ls2);
 }
 

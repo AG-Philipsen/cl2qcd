@@ -177,8 +177,8 @@ public:
 	void QplusQminus(cl_mem in, cl_mem out, cl_mem gf);
 	//        explicit
 	void M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF);
-	void M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mu = ARG_DEF);
-	void M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mu = ARG_DEF);
+	void M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	void gamma5_device(cl_mem inout);
 	//    eo
 	//        compound
@@ -189,10 +189,10 @@ public:
 	void Aee_minus(cl_mem in, cl_mem out, cl_mem gf);
 	//        explicit
 	void gamma5_eo_device(cl_mem inout);
-	void M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mu = ARG_DEF);
-	void M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mu = ARG_DEF);
-	void M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mu = ARG_DEF);
-	void M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mu = ARG_DEF);
+	void M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
+	void M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
+	void M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
+	void M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
 	void dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa = ARG_DEF);
 
 	// SOA conversion
