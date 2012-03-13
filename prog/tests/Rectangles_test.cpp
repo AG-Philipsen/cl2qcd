@@ -193,7 +193,7 @@ void Device::fill_kernels()
 	testKernel = createKernel("rectangles") << basic_fermion_code << "gaugeobservables_rectangles.cl";	
 	testKernel_b = createKernel("rectangles_reduction") << basic_opencl_code << "gaugeobservables_rectangles.cl";
 	
-	testKernel2 = createKernel("gauge_force_tlsym") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "force_gauge_tlsym.cl";
+	testKernel2 = createKernel("gauge_force_tlsym", "-cl-opt-disable") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "force_gauge_tlsym.cl";
 
 }
 
