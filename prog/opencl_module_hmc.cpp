@@ -678,10 +678,10 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		//therefore, clmem_tmp_eoprec_1 is used as intermediate state. The result is saved in clmem_inout, since
 		//  this is used as a default in the force-function.
 		if(get_parameters()->get_fermact() == WILSON) {
-			dslash_eoprec_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
+			dslash_eo_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
 			sax_eoprec_device(get_clmem_tmp_eoprec_1(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
 		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-			dslash_eoprec_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
+			dslash_eo_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
 			M_tm_inverse_sitediagonal_minus_device(get_clmem_tmp_eoprec_1(), get_clmem_tmp_eoprec_2());
 			sax_eoprec_device(get_clmem_tmp_eoprec_2(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
 		}
@@ -720,10 +720,10 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
 		//  this is used as a default in the force-function.
 		if(get_parameters()->get_fermact() == WILSON) {
-			dslash_eoprec_device(clmem_phi_inv_eo, get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
+			dslash_eo_device(clmem_phi_inv_eo, get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
 			sax_eoprec_device(get_clmem_tmp_eoprec_1(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
 		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-			dslash_eoprec_device(clmem_phi_inv_eo, get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
+			dslash_eo_device(clmem_phi_inv_eo, get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
 			M_tm_inverse_sitediagonal_device(get_clmem_tmp_eoprec_1(), get_clmem_tmp_eoprec_2());
 			sax_eoprec_device(get_clmem_tmp_eoprec_2(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
 		}

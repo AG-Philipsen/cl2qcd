@@ -193,7 +193,7 @@ public:
 	void M_tm_sitediagonal_device(cl_mem in, cl_mem out);
 	void M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out);
 	void M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out);
-	void dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd);
+	void dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd);
 
 	// SOA conversion
 	void convertGaugefieldToSOA();

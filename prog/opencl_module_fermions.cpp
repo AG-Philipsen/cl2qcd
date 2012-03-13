@@ -769,13 +769,13 @@ void Opencl_Module_Fermions::Aee(cl_mem in, cl_mem out, cl_mem gf)
 	 */
 	if(get_parameters()->get_fermact() == WILSON) {
 		//in this case, the diagonal matrix is just 1 and falls away.
-		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
-		dslash_eoprec_device(clmem_tmp_eoprec_1, out, gf, even);
+		dslash_eo_device(in, clmem_tmp_eoprec_1, gf, odd);
+		dslash_eo_device(clmem_tmp_eoprec_1, out, gf, even);
 		saxpy_eoprec_device(out, in, clmem_one, out);
 	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
+		dslash_eo_device(in, clmem_tmp_eoprec_1, gf, odd);
 		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
-		dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even);
+		dslash_eo_device(clmem_tmp_eoprec_2, out, gf, even);
 		M_tm_sitediagonal_device(in, clmem_tmp_eoprec_1);
 		saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
 	}
@@ -803,13 +803,13 @@ void Opencl_Module_Fermions::Aee_minus(cl_mem in, cl_mem out, cl_mem gf)
 	 */
 	if(get_parameters()->get_fermact() == WILSON) {
 		//in this case, the diagonal matrix is just 1 and falls away.
-		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
-		dslash_eoprec_device(clmem_tmp_eoprec_1, out, gf, even);
+		dslash_eo_device(in, clmem_tmp_eoprec_1, gf, odd);
+		dslash_eo_device(clmem_tmp_eoprec_1, out, gf, even);
 		saxpy_eoprec_device(out, in, clmem_one, out);
 	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
+		dslash_eo_device(in, clmem_tmp_eoprec_1, gf, odd);
 		M_tm_inverse_sitediagonal_minus_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
-		dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even);
+		dslash_eo_device(clmem_tmp_eoprec_2, out, gf, even);
 		M_tm_sitediagonal_minus_device(in, clmem_tmp_eoprec_1);
 		saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
 	}
@@ -863,7 +863,7 @@ void Opencl_Module_Fermions::gamma5_eo_device(cl_mem inout)
 	enqueueKernel( gamma5_eo, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd)
+void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd)
 {
 	if(use_soa) {
 		gf = gaugefield_soa;
@@ -1756,11 +1756,11 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 		if(get_parameters()->get_fermact() == WILSON) {
 			//in this case, the diagonal matrix is just 1 and falls away.
 			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1);
-			dslash_eoprec_device(clmem_source_odd, clmem_tmp_eoprec_1, gf, EVEN);
+			dslash_eo_device(clmem_source_odd, clmem_tmp_eoprec_1, gf, EVEN);
 			saxpy_eoprec_device(clmem_source_even, clmem_tmp_eoprec_1, clmem_one, clmem_source_even);
 		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
 			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1);
-			dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, gf, EVEN);
+			dslash_eo_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, gf, EVEN);
 			saxpy_eoprec_device(clmem_source_even, clmem_tmp_eoprec_2, clmem_one, clmem_source_even);
 		}
 
@@ -1780,10 +1780,10 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 		 */
 		if(get_parameters()->get_fermact() == WILSON) {
 			//in this case, the diagonal matrix is just 1 and falls away.
-			dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_1, gf, ODD);
+			dslash_eo_device(clmem_inout_eoprec, clmem_tmp_eoprec_1, gf, ODD);
 			saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_source_odd, clmem_one, clmem_tmp_eoprec_1);
 		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-			dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_2, gf, ODD);
+			dslash_eo_device(clmem_inout_eoprec, clmem_tmp_eoprec_2, gf, ODD);
 			M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_2, clmem_tmp_eoprec_1);
 			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2);
 			saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, clmem_one, clmem_tmp_eoprec_1);
