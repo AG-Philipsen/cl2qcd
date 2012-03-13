@@ -216,7 +216,7 @@ cl_ulong Qplus_eoprec::get_Flops() const
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
 	}
-	res += that->get_flop_size("gamma5_eoprec");
+	res += that->get_flop_size("gamma5_eo");
 	return res;
 }
 cl_ulong Qplus_eoprec::get_Bytes() const
@@ -236,7 +236,7 @@ cl_ulong Qplus_eoprec::get_Bytes() const
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
 	}
-	res += that->get_flop_size("gamma5_eoprec");
+	res += that->get_flop_size("gamma5_eo");
 	return res;
 }
 
@@ -261,7 +261,7 @@ cl_ulong Qminus_eoprec::get_Flops() const
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
 	}
-	res += that->get_flop_size("gamma5_eoprec");
+	res += that->get_flop_size("gamma5_eo");
 	return res;
 }
 cl_ulong Qminus_eoprec::get_Bytes() const
@@ -281,7 +281,7 @@ cl_ulong Qminus_eoprec::get_Bytes() const
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
 	}
-	res += that->get_flop_size("gamma5_eoprec");
+	res += that->get_flop_size("gamma5_eo");
 	return res;
 }
 
@@ -309,7 +309,7 @@ cl_ulong QplusQminus_eoprec::get_Flops() const
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
 	}
-	res += 2 * that->get_flop_size("gamma5_eoprec");
+	res += 2 * that->get_flop_size("gamma5_eo");
 	return res;
 }
 cl_ulong QplusQminus_eoprec::get_Bytes() const
@@ -332,7 +332,7 @@ cl_ulong QplusQminus_eoprec::get_Bytes() const
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
 	}
-	res += 2 * that->get_flop_size("gamma5_eoprec");
+	res += 2 * that->get_flop_size("gamma5_eo");
 	return res;
 }
 
@@ -513,7 +513,7 @@ void Opencl_Module_Fermions::fill_kernels()
 		dslash_eoprec = createKernel("dslash_eoprec") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 		convertGaugefieldToSOA_kernel = createKernel("convertGaugefieldToSOA") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 		convertGaugefieldFromSOA = createKernel("convertGaugefieldFromSOA") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
-		gamma5_eoprec = createKernel("gamma5_eoprec") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
+		gamma5_eo = createKernel("gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
 	}
 	return;
 }
@@ -855,12 +855,12 @@ void Opencl_Module_Fermions::gamma5_eoprec_device(cl_mem inout)
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(gamma5_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(gamma5_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(gamma5_eoprec, 0, sizeof(cl_mem), &inout);
+	int clerr = clSetKernelArg(gamma5_eo, 0, sizeof(cl_mem), &inout);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( gamma5_eoprec, gs2, ls2);
+	enqueueKernel( gamma5_eo, gs2, ls2);
 }
 
 void Opencl_Module_Fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd)
@@ -1921,8 +1921,8 @@ usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 	if (strcmp(in, "M_tm_minus") == 0) {
 		return &this->timer_M_tm_minus;
 	}
-	if (strcmp(in, "gamma5_eoprec") == 0) {
-		return &this->timer_gamma5_eoprec;
+	if (strcmp(in, "gamma5_eo") == 0) {
+		return &this->timer_gamma5_eo;
 	}
 	if (strcmp(in, "dslash_eoprec") == 0) {
 		return &this->timer_dslash_eoprec;
@@ -1987,7 +1987,7 @@ int Opencl_Module_Fermions::get_read_write_size(const char * in)
 		//this kernel reads 9 spinors, 8 su3matrices and writes 1 spinor:
 		return (C * 12 * (9 + 1) + C * 8 * R) * D * S;
 	}
-	if (strcmp(in, "gamma5_eoprec") == 0) {
+	if (strcmp(in, "gamma5_eo") == 0) {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
@@ -2057,7 +2057,7 @@ int Opencl_Module_Fermions::get_flop_size(const char * in)
 		//this kernel performs ND*NC complex mults and one dslash on each site and adds the results
 		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * get_parameters()->get_flop_complex_mult() + NC * NDIM * 2 );
 	}
-	if (strcmp(in, "gamma5_eoprec") == 0) {
+	if (strcmp(in, "gamma5_eo") == 0) {
 		//this kernel performs ND*NC*2/2 real mults
 		return Seo * NDIM * NC;
 	}
@@ -2096,7 +2096,7 @@ void Opencl_Module_Fermions::print_profiling(std::string filename, int number)
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "M_tm_minus";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "gamma5_eoprec";
+	kernelName = "gamma5_eo";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "M_tm_sitediagonal";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );

@@ -1,4 +1,4 @@
-__kernel void gamma5_eoprec(__global spinorStorageType * const restrict inout)
+__kernel void gamma5_eo(__global spinorStorageType * const restrict inout)
 {
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);

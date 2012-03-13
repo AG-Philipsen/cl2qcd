@@ -248,7 +248,7 @@ public:
 	usetimer timer_gamma5;
 	usetimer timer_M_tm_plus;
 	usetimer timer_M_tm_minus;
-	usetimer timer_gamma5_eoprec;
+	usetimer timer_gamma5_eo;
 	usetimer timer_M_tm_sitediagonal;
 	usetimer timer_M_tm_inverse_sitediagonal;
 	usetimer timer_dslash_eoprec;
@@ -296,7 +296,7 @@ private:
 	cl_kernel gamma5;
 	cl_kernel M_tm_plus;
 	cl_kernel M_tm_minus;
-	cl_kernel gamma5_eoprec;
+	cl_kernel gamma5_eo;
 	cl_kernel M_tm_sitediagonal;
 	cl_kernel M_tm_inverse_sitediagonal;
 	cl_kernel M_tm_sitediagonal_minus;
