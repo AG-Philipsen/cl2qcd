@@ -463,7 +463,7 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device()
 void Opencl_Module_Hmc::generate_spinorfield_gaussian()
 {
 	if(get_parameters()->get_use_eo() == true) {
-		this->generate_gaussian_spinorfield_eoprec_device();
+		this->generate_gaussian_spinorfield_eo_device();
 	} else {
 		this->generate_gaussian_spinorfield_device();
 	}
@@ -501,7 +501,7 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_device()
 
 }
 
-void Opencl_Module_Hmc::generate_gaussian_spinorfield_eoprec_device()
+void Opencl_Module_Hmc::generate_gaussian_spinorfield_eo_device()
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -530,8 +530,8 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_eoprec_device()
 		}
 		logger.debug() << "\t\tforce calculated from gaussian spinorfield:";
 		this->set_zero_clmem_force_device();
-		fermion_force_eoprec_device(clmem_phi_inv_eo,  clmem_phi_inv_eo, EVEN);
-		fermion_force_eoprec_device(clmem_phi_inv_eo,  clmem_phi_inv_eo, ODD);
+		fermion_force_eo_device(clmem_phi_inv_eo,  clmem_phi_inv_eo, EVEN);
+		fermion_force_eo_device(clmem_phi_inv_eo,  clmem_phi_inv_eo, ODD);
 		this->set_zero_clmem_force_device();
 	}
 
@@ -712,7 +712,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 		//logger.debug() << "\t\tcalc eo fermion_force F(Y_even, X_odd)...";
 		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, clmem_tmp_eoprec_1)
-		fermion_force_eoprec_device(clmem_phi_inv_eo,  get_clmem_tmp_eoprec_1(), EVEN);
+		fermion_force_eo_device(clmem_phi_inv_eo,  get_clmem_tmp_eoprec_1(), EVEN);
 
 		//calculate Y_odd
 		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
@@ -728,7 +728,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 		//logger.debug() << "\t\tcalc eoprec fermion_force F(Y_odd, X_even)...";
 		//Calc F(Y_odd, X_even) = F(clmem_tmp_eo_1, clmem_inout_eo)
-		fermion_force_eoprec_device(get_clmem_tmp_eoprec_1(), get_clmem_inout_eoprec(), ODD);
+		fermion_force_eo_device(get_clmem_tmp_eoprec_1(), get_clmem_inout_eoprec(), ODD);
 
 		if(logger.beDebug() && debug_hard) {
 			int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
@@ -826,40 +826,40 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			logger.debug() << "\t\t\tperform checks on eo force:";
 			logger.debug() << "\t\t\tF(x_e, x_o):";
 			this->set_zero_clmem_force_device();
-			fermion_force_eoprec_device(x_eo_tmp, x_eo_tmp2, EVEN);
+			fermion_force_eo_device(x_eo_tmp, x_eo_tmp2, EVEN);
 			logger.debug() << "\t\t\tF(x_e, y_o):";
 			this->set_zero_clmem_force_device();
-			fermion_force_eoprec_device(x_eo_tmp, y_eo_tmp2, EVEN);
+			fermion_force_eo_device(x_eo_tmp, y_eo_tmp2, EVEN);
 			logger.debug() << "\t\t\tF(x_e, y_e):";
 			this->set_zero_clmem_force_device();
-			fermion_force_eoprec_device(x_eo_tmp, y_eo_tmp, ODD);
+			fermion_force_eo_device(x_eo_tmp, y_eo_tmp, ODD);
 			logger.debug() << "\t\t\tF(y_e, y_o):";
 			this->set_zero_clmem_force_device();
-			fermion_force_eoprec_device(y_eo_tmp, y_eo_tmp2, EVEN);
+			fermion_force_eo_device(y_eo_tmp, y_eo_tmp2, EVEN);
 			logger.debug() << "\t\t\tF(y_e, x_o):";
 			this->set_zero_clmem_force_device();
-			fermion_force_eoprec_device(y_eo_tmp, x_eo_tmp2, EVEN);
+			fermion_force_eo_device(y_eo_tmp, x_eo_tmp2, EVEN);
 			logger.debug() << "\t\t\tF(y_e, x_e):";
 			this->set_zero_clmem_force_device();
-			fermion_force_eoprec_device(y_eo_tmp, x_eo_tmp, ODD);
+			fermion_force_eo_device(y_eo_tmp, x_eo_tmp, ODD);
 			logger.debug() << "\t\t\tF(x_o, x_e):";
 			this->set_zero_clmem_force_device();
-			fermion_force_eoprec_device(x_eo_tmp2, x_eo_tmp, ODD);
+			fermion_force_eo_device(x_eo_tmp2, x_eo_tmp, ODD);
 			logger.debug() << "\t\t\tF(x_o, y_e):";
 			this->set_zero_clmem_force_device();
-			fermion_force_eoprec_device(x_eo_tmp2, y_eo_tmp, ODD);
+			fermion_force_eo_device(x_eo_tmp2, y_eo_tmp, ODD);
 			logger.debug() << "\t\t\tF(x_o, y_o):";
 			this->set_zero_clmem_force_device();
-			fermion_force_eoprec_device(x_eo_tmp2, y_eo_tmp2, EVEN);
+			fermion_force_eo_device(x_eo_tmp2, y_eo_tmp2, EVEN);
 			logger.debug() << "\t\t\tF(y_o, x_e):";
 			this->set_zero_clmem_force_device();
-			fermion_force_eoprec_device(y_eo_tmp2, x_eo_tmp, ODD);
+			fermion_force_eo_device(y_eo_tmp2, x_eo_tmp, ODD);
 			logger.debug() << "\t\t\tF(y_o, x_o):";
 			this->set_zero_clmem_force_device();
-			fermion_force_eoprec_device(y_eo_tmp2, x_eo_tmp2, EVEN);
+			fermion_force_eo_device(y_eo_tmp2, x_eo_tmp2, EVEN);
 			logger.debug() << "\t\t\tF(y_o, y_e):";
 			this->set_zero_clmem_force_device();
-			fermion_force_eoprec_device(y_eo_tmp2, y_eo_tmp, ODD);
+			fermion_force_eo_device(y_eo_tmp2, y_eo_tmp, ODD);
 			this->set_zero_clmem_force_device();
 		}
 
@@ -1489,7 +1489,7 @@ void Opencl_Module_Hmc::fermion_force_device()
 
 }
 
-void Opencl_Module_Hmc::fermion_force_eoprec_device(cl_mem Y, cl_mem X, int evenodd)
+void Opencl_Module_Hmc::fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd)
 {
 	//fermion_force(field, Y, X, out);
 	//query work-sizes for kernel
