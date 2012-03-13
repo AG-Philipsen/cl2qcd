@@ -683,7 +683,7 @@ void Opencl_Module_Fermions::QplusQminus(cl_mem in, cl_mem out, cl_mem gf)
 }
 
 //explicit fermionmatrix-kernel calling functions
-void Opencl_Module_Fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -702,7 +702,7 @@ void Opencl_Module_Fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf)
 	enqueueKernel( M_wilson, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mu )
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -721,7 +721,7 @@ void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf)
 	enqueueKernel( M_tm_plus, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mu )
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;

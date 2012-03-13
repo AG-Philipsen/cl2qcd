@@ -176,9 +176,9 @@ public:
 	void Qminus(cl_mem in, cl_mem out, cl_mem gf);
 	void QplusQminus(cl_mem in, cl_mem out, cl_mem gf);
 	//        explicit
-	void M_wilson_device(cl_mem in, cl_mem out, cl_mem gf);
-	void M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf);
-	void M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf);
+	void M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF);
+	void M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mu = ARG_DEF);
+	void M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mu = ARG_DEF);
 	void gamma5_device(cl_mem inout);
 	//    eo
 	//        compound
