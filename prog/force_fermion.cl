@@ -2,7 +2,7 @@
  * @file kernel for the non-eo fermion force
  */
 
-__kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorfield * Y, __global  spinorfield * X, __global  ae * out)
+__kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorfield * Y, __global  spinorfield * X, __global  ae * out, hmc_float kappa_in)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);
