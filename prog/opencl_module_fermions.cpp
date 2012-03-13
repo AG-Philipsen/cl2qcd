@@ -368,20 +368,6 @@ void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
 	*collect_options << " -DKAPPA_TEMPORAL_IM=" << kappa_tmp*sin(tmp_temporal);
 	*collect_options << " -DMKAPPA_TEMPORAL_IM=" << -kappa_tmp*sin(tmp_temporal);
 
-	switch (get_parameters()->get_fermact()) {
-		case TWISTEDMASS :
-			*collect_options << " -DMU=" << get_parameters()->get_mu();
-			get_parameters()->calc_mubar();
-			*collect_options << " -DMUBAR=" << get_parameters()->get_mubar();
-			get_parameters()->set_mubar_negative();
-			*collect_options << " -DMMUBAR=" << get_parameters()->get_mubar();
-			get_parameters()->set_mubar_negative();
-			break;
-		case CLOVER :
-			*collect_options << " -DCSW=" << get_parameters()->get_csw();
-			break;
-	}
-
 	return;
 }
 
