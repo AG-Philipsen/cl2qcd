@@ -223,7 +223,7 @@ public:
 	cl_mem get_clmem_source();
 	cl_mem get_clmem_tmp();
 
-	cl_mem get_clmem_inout_eoprec();
+	cl_mem get_clmem_inout_eo();
 	cl_mem get_clmem_tmp_eo_1();
 	cl_mem get_clmem_tmp_eo_2();
 	cl_mem get_clmem_source_even();
@@ -317,7 +317,7 @@ private:
 	cl_mem clmem_tmp;
 
 	//CP: variables for eo solver
-	cl_mem clmem_inout_eoprec;
+	cl_mem clmem_inout_eo;
 	cl_mem clmem_source;
 	cl_mem clmem_source_even;
 	cl_mem clmem_source_odd;

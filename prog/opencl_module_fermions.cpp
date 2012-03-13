@@ -430,7 +430,7 @@ void Opencl_Module_Fermions::fill_buffers()
 
 	if(get_parameters()->get_use_eo() == true) {
 		logger.debug() << "init general eoprec-spinorfield-buffers";
-		clmem_inout_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_inout_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		clmem_source_even = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		clmem_source_odd = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		clmem_tmp_eo_1 = create_rw_buffer(eoprec_spinorfield_buffer_size);
@@ -568,7 +568,7 @@ void Opencl_Module_Fermions::clear_buffers()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 
 	if(get_parameters()->get_use_eo()) {
-		clerr = clReleaseMemObject(clmem_inout_eoprec);
+		clerr = clReleaseMemObject(clmem_inout_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_source_even);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
@@ -1623,13 +1623,13 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 
 		//Trial solution
 		///@todo this should go into a more general function
-		this->set_eoprec_spinorfield_cold_device(this->get_clmem_inout_eoprec());
+		this->set_eoprec_spinorfield_cold_device(this->get_clmem_inout_eo());
 		logger.debug() << "start eoprec-inversion";
 		//even solution
 		if(get_parameters()->get_use_cg() == true)
-			converged = cg_eo(f, clmem_inout_eoprec, clmem_source_even, gf, get_parameters()->get_solver_prec());
+			converged = cg_eo(f, clmem_inout_eo, clmem_source_even, gf, get_parameters()->get_solver_prec());
 		else
-			converged = bicgstab_eo(f, this->get_clmem_inout_eoprec(), clmem_source_even, gf, get_parameters()->get_solver_prec());
+			converged = bicgstab_eo(f, this->get_clmem_inout_eo(), clmem_source_even, gf, get_parameters()->get_solver_prec());
 
 		//odd solution
 		/** The odd solution is obtained from the even one according to:
@@ -1637,17 +1637,17 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 		 */
 		if(get_parameters()->get_fermact() == WILSON) {
 			//in this case, the diagonal matrix is just 1 and falls away.
-			dslash_eo_device(clmem_inout_eoprec, clmem_tmp_eo_1, gf, ODD);
+			dslash_eo_device(clmem_inout_eo, clmem_tmp_eo_1, gf, ODD);
 			saxpy_eoprec_device(clmem_tmp_eo_1, clmem_source_odd, clmem_one, clmem_tmp_eo_1);
 		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-			dslash_eo_device(clmem_inout_eoprec, clmem_tmp_eo_2, gf, ODD);
+			dslash_eo_device(clmem_inout_eo, clmem_tmp_eo_2, gf, ODD);
 			M_tm_inverse_sitediagonal_device(clmem_tmp_eo_2, clmem_tmp_eo_1);
 			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eo_2);
 			saxpy_eoprec_device(clmem_tmp_eo_1, clmem_tmp_eo_2, clmem_one, clmem_tmp_eo_1);
 		}
 		//CP: whole solution
 		//CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eo_1
-		convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eo_1, inout);
+		convert_from_eoprec_device(clmem_inout_eo, clmem_tmp_eo_1, inout);
 	} else {
 		//Trial solution
 		///@todo this should go into a more general function
@@ -1686,9 +1686,9 @@ cl_mem Opencl_Module_Fermions::get_clmem_tmp()
 	return clmem_tmp;
 }
 
-cl_mem Opencl_Module_Fermions::get_clmem_inout_eoprec()
+cl_mem Opencl_Module_Fermions::get_clmem_inout_eo()
 {
-	return clmem_inout_eoprec;
+	return clmem_inout_eo;
 }
 
 cl_mem Opencl_Module_Fermions::get_clmem_tmp_eo_1()
