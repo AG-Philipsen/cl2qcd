@@ -40,7 +40,7 @@ void Opencl_Module_Hmc::fill_buffers()
 	if(get_parameters()->get_use_eo() == true) {
 		///@TODO in this case, the objects cl_mem_inout, source, tmp from the fermions module can be released again!!
 		clmem_phi_inv_eoprec = create_rw_buffer(eoprec_spinorfield_size);
-		clmem_phi_eoprec = create_rw_buffer(eoprec_spinorfield_size);
+		clmem_phi_eo = create_rw_buffer(eoprec_spinorfield_size);
 		//in debug-mode, this field is currently used temporarily...
 		if(logger.beDebug()) clmem_phi_inv = create_rw_buffer(spinorfield_size);
 	} else {
@@ -154,7 +154,7 @@ void Opencl_Module_Hmc::clear_buffers()
 	if(get_parameters()->get_use_eo() == true) {
 		clerr = clReleaseMemObject(clmem_phi_inv_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_phi_eoprec);
+		clerr = clReleaseMemObject(clmem_phi_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	} else {
 		clerr = clReleaseMemObject(clmem_phi_inv);
@@ -204,9 +204,9 @@ cl_mem Opencl_Module_Hmc::get_clmem_phi()
 	return clmem_phi;
 }
 
-cl_mem Opencl_Module_Hmc::get_clmem_phi_eoprec()
+cl_mem Opencl_Module_Hmc::get_clmem_phi_eo()
 {
-	return clmem_phi_eoprec;
+	return clmem_phi_eo;
 }
 
 #ifdef _PROFILING_
@@ -544,8 +544,8 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 	//  which then has to be the source of the inversion
 	if(get_parameters()->get_use_eo() == true) {
 		convertGaugefieldToSOA_device(gaugefield_soa, *get_gaugefield());
-		Opencl_Module_Fermions::Qplus_eo (clmem_phi_inv_eoprec, clmem_phi_eoprec , *get_gaugefield());
-		if(logger.beDebug()) print_info_inv_field(clmem_phi_eoprec, true, "\tinit field after update ");
+		Opencl_Module_Fermions::Qplus_eo (clmem_phi_inv_eoprec, clmem_phi_eo , *get_gaugefield());
+		if(logger.beDebug()) print_info_inv_field(clmem_phi_eo, true, "\tinit field after update ");
 	} else {
 		Opencl_Module_Fermions::Qplus(clmem_phi_inv, clmem_phi , *get_gaugefield());
 		if(logger.beDebug()) print_info_inv_field(clmem_phi, false, "\tinit field after update ");
@@ -587,7 +587,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			set_eoprec_spinorfield_cold_device(get_clmem_inout_eoprec());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\t\t\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::cg_eoprec(::QplusQminus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u, get_parameters()->get_force_prec());
+			converged = Opencl_Module_Fermions::cg_eoprec(::QplusQminus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eo(), this->clmem_new_u, get_parameters()->get_force_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -623,8 +623,8 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			gamma5_eo_device(get_clmem_inout_eoprec());
 
 			//if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\t\t\tinv. field before inversion ");
-			//if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eoprec(), true, "\t\t\tsource before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab_eoprec(::Qplus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u, get_parameters()->get_force_prec());
+			//if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eo(), true, "\t\t\tsource before inversion ");
+			converged = Opencl_Module_Fermions::bicgstab_eoprec(::Qplus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eo(), this->clmem_new_u, get_parameters()->get_force_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1037,7 +1037,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 			set_eoprec_spinorfield_cold_device(get_clmem_inout_eoprec());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::cg_eoprec(::QplusQminus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u, get_parameters()->get_solver_prec());
+			converged = Opencl_Module_Fermions::cg_eoprec(::QplusQminus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eo(), this->clmem_new_u, get_parameters()->get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1055,8 +1055,8 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 			gamma5_eo_device(get_clmem_inout_eoprec());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
-			if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eoprec(), true, "\tsource before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab_eoprec(::Qplus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eoprec(), this->clmem_new_u, get_parameters()->get_solver_prec());
+			if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eo(), true, "\tsource before inversion ");
+			converged = Opencl_Module_Fermions::bicgstab_eoprec(::Qplus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eo(), this->clmem_new_u, get_parameters()->get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
