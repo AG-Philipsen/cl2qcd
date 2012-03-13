@@ -16,13 +16,13 @@ __kernel void dslash_eo(__global const spinorStorageType * const restrict in, __
 
 		//calc dslash (this includes mutliplication with kappa)
 
-		out_tmp2 = dslash_eoprec_unified_local(in, field, pos, TDIR);
+		out_tmp2 = dslash_eoprec_unified_local(in, field, pos, TDIR, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_eoprec_unified_local(in, field, pos, XDIR);
+		out_tmp2 = dslash_eoprec_unified_local(in, field, pos, XDIR, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_eoprec_unified_local(in, field, pos, YDIR);
+		out_tmp2 = dslash_eoprec_unified_local(in, field, pos, YDIR, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_eoprec_unified_local(in, field, pos, ZDIR);
+		out_tmp2 = dslash_eoprec_unified_local(in, field, pos, ZDIR, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 
 		putSpinor_eo(out, id_tmp, out_tmp);

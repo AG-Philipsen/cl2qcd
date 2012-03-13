@@ -27,13 +27,13 @@ __kernel void M_tm_minus(__global spinorfield * in, __global ocl_s_gaugefield * 
 		//Diagonalpart: this is normal tm-diagonal matrix with negative imaginary part
 		out_tmp = M_diag_tm_local(plus, twistfactor_minus, twistfactor);
 		//calc dslash (this includes mutliplication with kappa)
-		out_tmp2 = dslash_local_0(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_local_0(in, field, pos.space, pos.time, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_local_1(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_local_1(in, field, pos.space, pos.time, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_local_2(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_local_2(in, field, pos.space, pos.time, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_local_3(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_local_3(in, field, pos.space, pos.time, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 
 		put_spinor_to_field(out_tmp, out, pos.space, pos.time);
