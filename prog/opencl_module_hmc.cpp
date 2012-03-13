@@ -23,7 +23,7 @@ void Opencl_Module_Hmc::fill_buffers()
 {
 
 	Opencl_Module_Fermions::fill_buffers();
-	///@todo CP: some of the above buffers are not used and can be deleted again!! especially in the eoprec-case
+	///@todo CP: some of the above buffers are not used and can be deleted again!! especially in the eo-case
 
 	int spinorfield_size = get_parameters()->get_sf_buf_size();
 	int eoprec_spinorfield_size = get_eoprec_spinorfield_buffer_size();
@@ -556,11 +556,11 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 {
 	int converged = -1;
 	/**
-	 * @NOTE The force is up to this point always calculated using "non-eoprec" spinorfields.
-	 * This is done this way since one would not save any operations using eoprec-fields, but would need
+	 * @NOTE The force is up to this point always calculated using "non-eo" spinorfields.
+	 * This is done this way since one would not save any operations using eo-fields, but would need
 	 * another kernel instead.
-	 * Therefore, the eoprec-fields are converted back to the normal format.
-	 * However, using an eoprec-force holds the possibility of saving memory, which would be relevant
+	 * Therefore, the eo-fields are converted back to the normal format.
+	 * However, using an eo-force holds the possibility of saving memory, which would be relevant
 	 * on e.g. a GPU.
 	 * @NOTE A dummy-kernel and corresponding calling function is already implemented if one wishes to
 	 *  change this one day.
@@ -572,9 +572,9 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		if(get_parameters()->get_use_cg() == true) {
 			/**
 			* The first inversion calculates
-			* X_even = phi = (Qplusminus_eoprec)^-1 psi
+			* X_even = phi = (Qplusminus_eo)^-1 psi
 			* out of
-			* Qplusminus_eoprec phi_even = psi
+			* Qplusminus_eo phi_even = psi
 			*/
 			logger.debug() << "\t\t\tstart solver";
 
@@ -596,18 +596,18 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 			/**
 			 * Y_even is now just
-			 *  Y_even = (Qminus_eoprec) X_even = (Qminus_eoprec) (Qplusminus_eoprec)^-1 psi =
-			 *    = (Qplus_eoprec)^-1 psi
+			 *  Y_even = (Qminus_eo) X_even = (Qminus_eo) (Qplusminus_eo)^-1 psi =
+			 *    = (Qplus_eo)^-1 psi
 			 */
 			Opencl_Module_Fermions::Qminus_eo(this->get_clmem_inout_eoprec(), clmem_phi_inv_eoprec, this->clmem_new_u);
 		} else {
 			///@todo if wanted, solvertimer has to be used here..
-			//logger.debug() << "\t\tcalc fermion force ingredients using bicgstab with eoprec.";
+			//logger.debug() << "\t\tcalc fermion force ingredients using bicgstab with eo.";
 			/**
 			* The first inversion calculates
-			* Y_even = phi = (Qplus_eoprec)^-1 psi
+			* Y_even = phi = (Qplus_eo)^-1 psi
 			* out of
-			* Qplus_eoprec phi = psi
+			* Qplus_eo phi = psi
 			* This is also the energy of the final field!
 			*/
 			//logger.debug() << "\t\tcalc Y_even...";
@@ -636,11 +636,11 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 			/**
 			 * Now, one has to calculate
-			 * X = (Qminus_eoprec)^-1 Y = (Qminus_eoprec)^-1 (Qplus_eoprec)^-1 psi = (QplusQminus_eoprec)^-1 psi ??
+			 * X = (Qminus_eo)^-1 Y = (Qminus_eo)^-1 (Qplus_eo)^-1 psi = (QplusQminus_eo)^-1 psi ??
 			 * out of
-			 * Qminus_eoprec clmem_inout_eoprec = clmem_phi_inv_eoprec
+			 * Qminus_eo clmem_inout_eo = clmem_phi_inv_eo
 			 * Therefore, when calculating the final energy of the spinorfield,
-			 *  one can just take clmem_phi_inv_eoprec (see also above)!!
+			 *  one can just take clmem_phi_inv_eo (see also above)!!
 			 */
 
 			//logger.debug() << "\t\tcalc X_even...";
@@ -710,12 +710,12 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			print_info_inv_field(x_eo_tmp2, true, "\t\t\tx_odd:\t");
 		}
 
-		//logger.debug() << "\t\tcalc eoprec fermion_force F(Y_even, X_odd)...";
+		//logger.debug() << "\t\tcalc eo fermion_force F(Y_even, X_odd)...";
 		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eoprec, clmem_tmp_eoprec_1)
 		fermion_force_eoprec_device(clmem_phi_inv_eoprec,  get_clmem_tmp_eoprec_1(), EVEN);
 
 		//calculate Y_odd
-		//therefore, clmem_tmp_eoprec_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
+		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
 		//  this is used as a default in the force-function.
 		if(get_parameters()->get_fermact() == WILSON) {
 			dslash_eoprec_device(clmem_phi_inv_eoprec, get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
@@ -727,7 +727,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 		}
 
 		//logger.debug() << "\t\tcalc eoprec fermion_force F(Y_odd, X_even)...";
-		//Calc F(Y_odd, X_even) = F(clmem_tmp_eoprec_1, clmem_inout_eoprec)
+		//Calc F(Y_odd, X_even) = F(clmem_tmp_eo_1, clmem_inout_eo)
 		fermion_force_eoprec_device(get_clmem_tmp_eoprec_1(), get_clmem_inout_eoprec(), ODD);
 
 		if(logger.beDebug() && debug_hard) {
@@ -947,7 +947,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			Opencl_Module_Fermions::Qminus(this->get_clmem_inout(), clmem_phi_inv, this->clmem_new_u);
 
 		} else  {
-			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab without eoprec";
+			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab without eo";
 
 			/**
 			* The first inversion calculates
