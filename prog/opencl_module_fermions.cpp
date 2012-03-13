@@ -420,11 +420,11 @@ void Opencl_Module_Fermions::fill_buffers()
 		logger.debug() << "init solver eoprec-spinorfield-buffers";
 		clmem_rn_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		clmem_rhat_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_v_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_p_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_s_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_t_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_aux_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_v_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_p_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_s_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_t_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_aux_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
 
 	} //end if: eoprec
 
@@ -578,15 +578,15 @@ void Opencl_Module_Fermions::clear_buffers()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_rhat_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_v_eoprec);
+		clerr = clReleaseMemObject(clmem_v_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_p_eoprec);
+		clerr = clReleaseMemObject(clmem_p_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_s_eoprec);
+		clerr = clReleaseMemObject(clmem_s_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_t_eoprec);
+		clerr = clReleaseMemObject(clmem_t_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_aux_eoprec);
+		clerr = clReleaseMemObject(clmem_aux_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_tmp_eoprec_1);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
@@ -1227,8 +1227,8 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 		int cgmax = get_parameters()->get_cgmax();
 		for(int iter = 0; iter < cgmax; iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
-				set_zero_spinorfield_eoprec_device(clmem_v_eoprec);
-				set_zero_spinorfield_eoprec_device(clmem_p_eoprec);
+				set_zero_spinorfield_eoprec_device(clmem_v_eo);
+				set_zero_spinorfield_eoprec_device(clmem_p_eo);
 
 				f(inout, clmem_rn_eoprec, gf);
 
@@ -1256,25 +1256,25 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 
 			set_complex_to_product_device(clmem_beta, clmem_omega, clmem_tmp1);
 			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
-			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec);
+			saxsbypz_eoprec_device(clmem_p_eo, clmem_v_eo, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eo);
 
-			f(clmem_p_eoprec, clmem_v_eoprec, gf);
+			f(clmem_p_eo, clmem_v_eo, gf);
 
-			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
+			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eo, clmem_tmp1);
 			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 
-			saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec);
+			saxpy_eoprec_device(clmem_v_eo, clmem_rn_eoprec, clmem_alpha, clmem_s_eo);
 
-			f(clmem_s_eoprec, clmem_t_eoprec, gf);
+			f(clmem_s_eo, clmem_t_eo, gf);
 
-			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1);
+			set_complex_to_scalar_product_eoprec_device(clmem_t_eo, clmem_s_eo, clmem_tmp1);
 			//!!CP: can this also be global_squarenorm??
-			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_t_eoprec, clmem_tmp2);
+			set_complex_to_scalar_product_eoprec_device(clmem_t_eo, clmem_t_eo, clmem_tmp2);
 			set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
 
-			saxpy_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_omega, clmem_rn_eoprec);
+			saxpy_eoprec_device(clmem_t_eo, clmem_s_eo, clmem_omega, clmem_rn_eoprec);
 
-			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_s_eoprec, inout, clmem_alpha, clmem_omega, inout);
+			saxsbypz_eoprec_device(clmem_p_eo, clmem_s_eo, inout, clmem_alpha, clmem_omega, inout);
 
 			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
@@ -1288,10 +1288,10 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 			if(resid < prec) {
 				++retests;
 
-				f(inout, clmem_aux_eoprec, gf);
-				saxpy_eoprec_device(clmem_aux_eoprec, source, clmem_one, clmem_aux_eoprec);
+				f(inout, clmem_aux_eo, gf);
+				saxpy_eoprec_device(clmem_aux_eo, source, clmem_one, clmem_aux_eo);
 
-				set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid);
+				set_float_to_global_squarenorm_eoprec_device(clmem_aux_eo, clmem_trueresid);
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
 				logger.debug() << "\ttrueresiduum:\t" << trueresid;
 				if(trueresid < prec) {
@@ -1335,11 +1335,11 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				//initial r_n, saved in p
 				f(inout, clmem_rn_eoprec, gf);
-				saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_p_eoprec);
+				saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_p_eo);
 				//rhat = p
-				copy_buffer_on_device(clmem_p_eoprec, clmem_rhat_eoprec, get_eoprec_spinorfield_buffer_size());
+				copy_buffer_on_device(clmem_p_eo, clmem_rhat_eoprec, get_eoprec_spinorfield_buffer_size());
 				//r_n = p
-				copy_buffer_on_device(clmem_p_eoprec, clmem_rn_eoprec, get_eoprec_spinorfield_buffer_size());
+				copy_buffer_on_device(clmem_p_eo, clmem_rn_eoprec, get_eoprec_spinorfield_buffer_size());
 				//rho = (rhat, rn)
 				set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho);
 			}
@@ -1377,30 +1377,30 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 				return iter;
 			}
 			//v = A*p
-			f(clmem_p_eoprec, clmem_v_eoprec, gf);
+			f(clmem_p_eo, clmem_v_eo, gf);
 			clerr = clFlush(get_queue());
 			if(clerr) {
 				throw Opencl_Error(clerr, "Failed to flush command queue");
 			}
 			//tmp1 = (rhat, v)
-			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
+			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eo, clmem_tmp1);
 			//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
 			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 			//s = - alpha * v - r_n
-			saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec);
+			saxpy_eoprec_device(clmem_v_eo, clmem_rn_eoprec, clmem_alpha, clmem_s_eo);
 			//t = A s
-			f(clmem_s_eoprec, clmem_t_eoprec, gf);
+			f(clmem_s_eo, clmem_t_eo, gf);
 			//tmp1 = (t, s)
-			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1);
+			set_complex_to_scalar_product_eoprec_device(clmem_t_eo, clmem_s_eo, clmem_tmp1);
 			//!!CP: this can also be global_squarenorm, but one needs a complex number here
 			//tmp2 = (t,t)
-			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_t_eoprec, clmem_tmp2);
+			set_complex_to_scalar_product_eoprec_device(clmem_t_eo, clmem_t_eo, clmem_tmp2);
 			//omega = tmp1/tmp2 = (t,s)/(t,t)
 			set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
 			//inout = alpha*p + omega * s + inout
-			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_s_eoprec, inout, clmem_alpha, clmem_omega, inout);
+			saxsbypz_eoprec_device(clmem_p_eo, clmem_s_eo, inout, clmem_alpha, clmem_omega, inout);
 			//r_n = - omega*t - s
-			saxpy_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_omega, clmem_rn_eoprec);
+			saxpy_eoprec_device(clmem_t_eo, clmem_s_eo, clmem_omega, clmem_rn_eoprec);
 			//rho_next = (rhat, rn)
 			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next);
 			//check if algorithm is stuck
@@ -1423,7 +1423,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 			//tmp2 = -tmp1
 			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 			//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
-			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec);
+			saxsbypz_eoprec_device(clmem_p_eo, clmem_v_eo, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eo);
 			clerr = clFlush(get_queue());
 			if(clerr) {
 				throw Opencl_Error(clerr, "Failed to flush command queue");
@@ -1514,7 +1514,7 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_me
 			//rn = source - A*inout
 			saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
 			//p = rn
-			copy_buffer_on_device(clmem_rn_eoprec, clmem_p_eoprec, get_eoprec_spinorfield_buffer_size());
+			copy_buffer_on_device(clmem_rn_eoprec, clmem_p_eo, get_eoprec_spinorfield_buffer_size());
 			//omega = (rn,rn)
 			set_complex_to_scalar_product_eoprec_device(clmem_rn_eoprec, clmem_rn_eoprec, clmem_omega);
 		} else {
@@ -1522,16 +1522,16 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_me
 			copy_buffer_on_device(clmem_rho_next, clmem_omega, sizeof(hmc_complex));
 		}
 		//v = A pn
-		f(clmem_p_eoprec, clmem_v_eoprec, gf);
+		f(clmem_p_eo, clmem_v_eo, gf);
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
-		set_complex_to_scalar_product_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rho);
+		set_complex_to_scalar_product_eoprec_device(clmem_p_eo, clmem_v_eo, clmem_rho);
 		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
 		set_complex_to_product_device(clmem_alpha, clmem_minusone, clmem_tmp1);
 
 		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
-		saxpy_eoprec_device(clmem_p_eoprec, inout, clmem_tmp1, inout);
+		saxpy_eoprec_device(clmem_p_eo, inout, clmem_tmp1, inout);
 		//rn+1 = rn - alpha*v -> rhat
-		saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_rn_eoprec);
+		saxpy_eoprec_device(clmem_v_eo, clmem_rn_eoprec, clmem_alpha, clmem_rn_eoprec);
 
 		//calc residuum
 		//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
@@ -1576,7 +1576,7 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_me
 
 		//pn+1 = rn+1 + beta*pn
 		set_complex_to_product_device(clmem_beta, clmem_minusone, clmem_tmp2);
-		saxpy_eoprec_device(clmem_p_eoprec, clmem_rn_eoprec, clmem_tmp2, clmem_p_eoprec);
+		saxpy_eoprec_device(clmem_p_eo, clmem_rn_eoprec, clmem_tmp2, clmem_p_eo);
 	}
 	return -1;
 }

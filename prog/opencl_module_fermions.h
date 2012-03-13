@@ -323,11 +323,11 @@ private:
 	cl_mem clmem_source_odd;
 	cl_mem clmem_rn_eoprec;
 	cl_mem clmem_rhat_eoprec;
-	cl_mem clmem_v_eoprec;
-	cl_mem clmem_p_eoprec;
-	cl_mem clmem_s_eoprec;
-	cl_mem clmem_t_eoprec;
-	cl_mem clmem_aux_eoprec;
+	cl_mem clmem_v_eo;
+	cl_mem clmem_p_eo;
+	cl_mem clmem_s_eo;
+	cl_mem clmem_t_eo;
+	cl_mem clmem_aux_eo;
 	cl_mem clmem_tmp_eoprec_1;
 	cl_mem clmem_tmp_eoprec_2;
 
@@ -341,7 +341,6 @@ private:
 	cl_mem clmem_one;
 	cl_mem clmem_minusone;
 
-	cl_mem clmem_kappa_cmplx;// = {kappa, 0.};
 	cl_mem clmem_resid;
 	cl_mem clmem_trueresid;
 
