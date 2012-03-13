@@ -69,7 +69,7 @@ void Opencl_Module_Hmc::fill_kernels()
 	//init kernels for HMC
 	if(get_parameters()->get_use_eo() == true) {
 		generate_gaussian_spinorfield_eo = createKernel("generate_gaussian_spinorfield_eo") << basic_hmc_code << "random.cl" << "spinorfield_eo_gaussian.cl";
-		fermion_force_eoprec = createKernel("fermion_force_eoprec") << basic_hmc_code << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
+		fermion_force_eo = createKernel("fermion_force_eo") << basic_hmc_code << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 	} else {
 		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_hmc_code << "random.cl" << "spinorfield_gaussian.cl";
 	}
@@ -100,7 +100,7 @@ void Opencl_Module_Hmc::clear_kernels()
 	if(get_parameters()->get_use_eo() == true) {
 		clerr = clReleaseKernel(generate_gaussian_spinorfield_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(fermion_force_eoprec);
+		clerr = clReleaseKernel(fermion_force_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	} else {
 		clerr = clReleaseKernel(generate_gaussian_spinorfield);
@@ -240,8 +240,8 @@ usetimer* Opencl_Module_Hmc::get_timer(char * in)
 	if (strcmp(in, "fermion_force") == 0) {
 		return &this->timer_fermion_force;
 	}
-	if (strcmp(in, "fermion_force_eoprec") == 0) {
-		return &this->timer_fermion_force_eoprec;
+	if (strcmp(in, "fermion_force_eo") == 0) {
+		return &this->timer_fermion_force_eo;
 	}
 	if (strcmp(in, "set_zero_gaugemomentum") == 0) {
 		return &this->timer_set_zero_gaugemomentum;
@@ -311,7 +311,7 @@ int Opencl_Module_Hmc::get_read_write_size(char * in)
 		//NOTE: the kernel now runs over all ae instead of all sites, but this must be equivalent!
 		return (C * 12 * (16) + C * 8 * R + 8 * A) * D * S;
 	}
-	if (strcmp(in, "fermion_force_eoprec") == 0) {
+	if (strcmp(in, "fermion_force_eo") == 0) {
 		//this kernel reads 16 spinors, 8 su3matrices and writes 1 ae per site
 		return (C * 12 * (16) + C * 8 * R + 8 * A) * D * Seo;
 	}
@@ -379,7 +379,7 @@ int Opencl_Module_Hmc::get_flop_size(const char * in)
 		//NOTE: the kernel now runs over all ae instead of all sites, but this must be equivalent!
 		return Seo * NDIM * ( 4 * 6 + 126 + 19 + 8*2 + get_parameters()->get_flop_su3_su3() + get_parameters()->get_flop_complex_mult() * R );
 	}
-	if (strcmp(in, "fermion_force_eoprec") == 0) {
+	if (strcmp(in, "fermion_force_eo") == 0) {
 		//this kernel performs NDIM * ( 4 * su3vec_acc (6 flops) + tr(v*u) (126 flops) + tr_lambda_u(19 flops) + update_ae(8*2 flops) + su3*su3 + su3*complex (flop_complex_mult * R ) ) per site
 		return Seo * NDIM * ( 4 * 6 + 126 + 19 + 8*2 + get_parameters()->get_flop_su3_su3() + get_parameters()->get_flop_complex_mult() * R );
 	}
@@ -419,7 +419,7 @@ void Opencl_Module_Hmc::print_profiling(std::string filename, int number)
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "fermion_force";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "fermion_force_eoprec";
+	kernelName = "fermion_force_eo";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "set_zero_gaugemomentum";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
@@ -1497,24 +1497,24 @@ void Opencl_Module_Hmc::fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd)
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(fermion_force_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(fermion_force_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(fermion_force_eoprec, 0, sizeof(cl_mem), &clmem_new_u);
+	int clerr = clSetKernelArg(fermion_force_eo, 0, sizeof(cl_mem), &clmem_new_u);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(fermion_force_eoprec, 1, sizeof(cl_mem), &Y);
+	clerr = clSetKernelArg(fermion_force_eo, 1, sizeof(cl_mem), &Y);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(fermion_force_eoprec, 2, sizeof(cl_mem), &X);
+	clerr = clSetKernelArg(fermion_force_eo, 2, sizeof(cl_mem), &X);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(fermion_force_eoprec, 3, sizeof(cl_mem), &clmem_force);
+	clerr = clSetKernelArg(fermion_force_eo, 3, sizeof(cl_mem), &clmem_force);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(fermion_force_eoprec, 4, sizeof(int), &evenodd);
+	clerr = clSetKernelArg(fermion_force_eo, 4, sizeof(int), &evenodd);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( fermion_force_eoprec , gs2, ls2);
+	enqueueKernel( fermion_force_eo , gs2, ls2);
 
 	if(logger.beDebug()) {
 		cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
@@ -1542,10 +1542,10 @@ void Opencl_Module_Hmc::fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd)
 		enqueueKernel( set_zero_gaugemomentum , gs2, ls2);
 
 		//re-calculate force
-		clerr = clSetKernelArg(fermion_force_eoprec, 3, sizeof(cl_mem), &force2);
+		clerr = clSetKernelArg(fermion_force_eo, 3, sizeof(cl_mem), &force2);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-		enqueueKernel( fermion_force_eoprec , gs2, ls2);
+		enqueueKernel( fermion_force_eo , gs2, ls2);
 
 		cl_mem check_force_tmp = create_rw_buffer(sizeof(hmc_float));
 		hmc_float check_force_energy = 0.;
