@@ -675,15 +675,15 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 		///@NOTE the following calculations could also go in a new function for convenience
 		//calculate X_odd
-		//therefore, clmem_tmp_eoprec_1 is used as intermediate state. The result is saved in clmem_inout, since
+		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_inout, since
 		//  this is used as a default in the force-function.
 		if(get_parameters()->get_fermact() == WILSON) {
-			dslash_eo_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
-			sax_eoprec_device(get_clmem_tmp_eoprec_1(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
+			dslash_eo_device(get_clmem_inout_eoprec(), get_clmem_tmp_eo_1(), clmem_new_u, ODD);
+			sax_eoprec_device(get_clmem_tmp_eo_1(), get_clmem_minusone(), get_clmem_tmp_eo_1());
 		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-			dslash_eo_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
-			M_tm_inverse_sitediagonal_minus_device(get_clmem_tmp_eoprec_1(), get_clmem_tmp_eoprec_2());
-			sax_eoprec_device(get_clmem_tmp_eoprec_2(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
+			dslash_eo_device(get_clmem_inout_eoprec(), get_clmem_tmp_eo_1(), clmem_new_u, ODD);
+			M_tm_inverse_sitediagonal_minus_device(get_clmem_tmp_eo_1(), get_clmem_tmp_eo_2());
+			sax_eoprec_device(get_clmem_tmp_eo_2(), get_clmem_minusone(), get_clmem_tmp_eo_1());
 		}
 
 		/**
@@ -700,37 +700,37 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			x_eo_tmp = create_rw_buffer(eo_spinorfield_size);
 			x_eo_tmp2 = create_rw_buffer(eo_spinorfield_size);
 
-			this->convert_from_eoprec_device(get_clmem_inout_eoprec(), get_clmem_tmp_eoprec_1(), x_tmp);
+			this->convert_from_eoprec_device(get_clmem_inout_eoprec(), get_clmem_tmp_eo_1(), x_tmp);
 			print_info_inv_field(get_clmem_inout_eoprec(), true, "\t\t\t\tX_even ");
-			print_info_inv_field(get_clmem_tmp_eoprec_1(), true, "\t\t\t\tX_odd ");
+			print_info_inv_field(get_clmem_tmp_eo_1(), true, "\t\t\t\tX_odd ");
 			print_info_inv_field(x_tmp, false, "\t\t\t\tX = (X_even, X_odd) ");
 
 			//save x_even and x_odd temporarily
 			copy_buffer_on_device(get_clmem_inout_eoprec(), x_eo_tmp, eo_spinorfield_size);
-			copy_buffer_on_device(get_clmem_tmp_eoprec_1(), x_eo_tmp2, eo_spinorfield_size);
+			copy_buffer_on_device(get_clmem_tmp_eo_1(), x_eo_tmp2, eo_spinorfield_size);
 			print_info_inv_field(x_eo_tmp, true, "\t\t\tx_even:\t");
 			print_info_inv_field(x_eo_tmp2, true, "\t\t\tx_odd:\t");
 		}
 
 		//logger.debug() << "\t\tcalc eo fermion_force F(Y_even, X_odd)...";
-		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, clmem_tmp_eoprec_1)
-		fermion_force_eo_device(clmem_phi_inv_eo,  get_clmem_tmp_eoprec_1(), EVEN);
+		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, clmem_tmp_eo_1)
+		fermion_force_eo_device(clmem_phi_inv_eo,  get_clmem_tmp_eo_1(), EVEN);
 
 		//calculate Y_odd
 		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
 		//  this is used as a default in the force-function.
 		if(get_parameters()->get_fermact() == WILSON) {
-			dslash_eo_device(clmem_phi_inv_eo, get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
-			sax_eoprec_device(get_clmem_tmp_eoprec_1(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
+			dslash_eo_device(clmem_phi_inv_eo, get_clmem_tmp_eo_1(), clmem_new_u, ODD);
+			sax_eoprec_device(get_clmem_tmp_eo_1(), get_clmem_minusone(), get_clmem_tmp_eo_1());
 		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-			dslash_eo_device(clmem_phi_inv_eo, get_clmem_tmp_eoprec_1(), clmem_new_u, ODD);
-			M_tm_inverse_sitediagonal_device(get_clmem_tmp_eoprec_1(), get_clmem_tmp_eoprec_2());
-			sax_eoprec_device(get_clmem_tmp_eoprec_2(), get_clmem_minusone(), get_clmem_tmp_eoprec_1());
+			dslash_eo_device(clmem_phi_inv_eo, get_clmem_tmp_eo_1(), clmem_new_u, ODD);
+			M_tm_inverse_sitediagonal_device(get_clmem_tmp_eo_1(), get_clmem_tmp_eo_2());
+			sax_eoprec_device(get_clmem_tmp_eo_2(), get_clmem_minusone(), get_clmem_tmp_eo_1());
 		}
 
 		//logger.debug() << "\t\tcalc eoprec fermion_force F(Y_odd, X_even)...";
 		//Calc F(Y_odd, X_even) = F(clmem_tmp_eo_1, clmem_inout_eo)
-		fermion_force_eo_device(get_clmem_tmp_eoprec_1(), get_clmem_inout_eoprec(), ODD);
+		fermion_force_eo_device(get_clmem_tmp_eo_1(), get_clmem_inout_eoprec(), ODD);
 
 		if(logger.beDebug() && debug_hard) {
 			int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
@@ -741,14 +741,14 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			//tmp field for differences
 			cl_mem sf_diff = create_rw_buffer(eo_spinorfield_size);
 
-			this->convert_from_eoprec_device(clmem_phi_inv_eo, get_clmem_tmp_eoprec_1(), y_tmp);
+			this->convert_from_eoprec_device(clmem_phi_inv_eo, get_clmem_tmp_eo_1(), y_tmp);
 			print_info_inv_field(clmem_phi_inv_eo, true, "\t\t\t\tY_even ");
-			print_info_inv_field(get_clmem_tmp_eoprec_1(), true, "\t\t\t\tY_odd ");
+			print_info_inv_field(get_clmem_tmp_eo_1(), true, "\t\t\t\tY_odd ");
 			print_info_inv_field(y_tmp, false, "\t\t\t\tY = (Y_even, Yodd) ");
 
 			//save y_even and y_odd temporarily
 			copy_buffer_on_device(clmem_phi_inv_eo, y_eo_tmp, eo_spinorfield_size);
-			copy_buffer_on_device(get_clmem_tmp_eoprec_1(), y_eo_tmp2, eo_spinorfield_size);
+			copy_buffer_on_device(get_clmem_tmp_eo_1(), y_eo_tmp2, eo_spinorfield_size);
 			print_info_inv_field(y_eo_tmp, true, "\t\t\ty_even:\t");
 			print_info_inv_field(y_eo_tmp2, true, "\t\t\ty_odd:\t");
 

@@ -224,8 +224,8 @@ public:
 	cl_mem get_clmem_tmp();
 
 	cl_mem get_clmem_inout_eoprec();
-	cl_mem get_clmem_tmp_eoprec_1();
-	cl_mem get_clmem_tmp_eoprec_2();
+	cl_mem get_clmem_tmp_eo_1();
+	cl_mem get_clmem_tmp_eo_2();
 	cl_mem get_clmem_source_even();
 	cl_mem get_clmem_source_odd();
 
@@ -321,15 +321,15 @@ private:
 	cl_mem clmem_source;
 	cl_mem clmem_source_even;
 	cl_mem clmem_source_odd;
-	cl_mem clmem_rn_eoprec;
-	cl_mem clmem_rhat_eoprec;
+	cl_mem clmem_rn_eo;
+	cl_mem clmem_rhat_eo;
 	cl_mem clmem_v_eo;
 	cl_mem clmem_p_eo;
 	cl_mem clmem_s_eo;
 	cl_mem clmem_t_eo;
 	cl_mem clmem_aux_eo;
-	cl_mem clmem_tmp_eoprec_1;
-	cl_mem clmem_tmp_eoprec_2;
+	cl_mem clmem_tmp_eo_1;
+	cl_mem clmem_tmp_eo_2;
 
 	cl_mem clmem_rho;
 	cl_mem clmem_rho_next;
