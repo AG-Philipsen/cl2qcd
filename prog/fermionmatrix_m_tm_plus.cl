@@ -12,8 +12,8 @@ __kernel void M_tm_plus(__global spinorfield * in, __global ocl_s_gaugefield * f
 	spinor out_tmp, out_tmp2;
 	spinor plus;
 
-	hmc_complex twistfactor = {1., MUBAR};
-	hmc_complex twistfactor_minus = {1., MMUBAR};
+	hmc_complex twistfactor = {1., mubar_in};
+	hmc_complex twistfactor_minus = {1., -1.*mubar_in};
 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 
