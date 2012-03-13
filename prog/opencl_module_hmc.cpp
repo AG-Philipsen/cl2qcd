@@ -620,7 +620,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			  * Trial solution for the spinorfield
 			  */
 			set_zero_spinorfield_eoprec_device(get_clmem_inout_eoprec());
-			gamma5_eoprec_device(get_clmem_inout_eoprec());
+			gamma5_eo_device(get_clmem_inout_eoprec());
 
 			//if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\t\t\tinv. field before inversion ");
 			//if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eoprec(), true, "\t\t\tsource before inversion ");
@@ -1052,7 +1052,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 			  * or a point-source spinorfield as trial-solution
 			  */
 			set_zero_spinorfield_eoprec_device(get_clmem_inout_eoprec());
-			gamma5_eoprec_device(get_clmem_inout_eoprec());
+			gamma5_eo_device(get_clmem_inout_eoprec());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
 			if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eoprec(), true, "\tsource before inversion ");

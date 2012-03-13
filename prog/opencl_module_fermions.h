@@ -188,7 +188,7 @@ public:
 	void Aee(cl_mem in, cl_mem out, cl_mem gf);
 	void Aee_minus(cl_mem in, cl_mem out, cl_mem gf);
 	//        explicit
-	void gamma5_eoprec_device(cl_mem inout);
+	void gamma5_eo_device(cl_mem inout);
 	void M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out);
 	void M_tm_sitediagonal_device(cl_mem in, cl_mem out);
 	void M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out);

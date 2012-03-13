@@ -818,14 +818,14 @@ void Opencl_Module_Fermions::Aee_minus(cl_mem in, cl_mem out, cl_mem gf)
 void Opencl_Module_Fermions::Qplus_eoprec(cl_mem in, cl_mem out, cl_mem gf)
 {
 	Aee(in, out, gf);
-	gamma5_eoprec_device(out);
+	gamma5_eo_device(out);
 	return;
 }
 
 void Opencl_Module_Fermions::Qminus_eoprec(cl_mem in, cl_mem out, cl_mem gf)
 {
 	Aee_minus(in, out, gf);
-	gamma5_eoprec_device(out);
+	gamma5_eo_device(out);
 	return;
 }
 
@@ -850,7 +850,7 @@ void Opencl_Module_Fermions::QplusQminus_eoprec(cl_mem in, cl_mem out, cl_mem gf
 }
 
 //explicit eoprec fermionmatrix functions
-void Opencl_Module_Fermions::gamma5_eoprec_device(cl_mem inout)
+void Opencl_Module_Fermions::gamma5_eo_device(cl_mem inout)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
