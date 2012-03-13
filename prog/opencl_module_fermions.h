@@ -96,23 +96,23 @@ public:
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
 };
-class Qplus_eoprec : public Matrix_Function {
+class Qplus_eo : public Matrix_Function {
 public:
-	Qplus_eoprec(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	Qplus_eo(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
 	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
 };
-class Qminus_eoprec : public Matrix_Function {
+class Qminus_eo : public Matrix_Function {
 public:
-	Qminus_eoprec(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	Qminus_eo(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
 	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
 };
-class QplusQminus_eoprec : public Matrix_Function {
+class QplusQminus_eo : public Matrix_Function {
 public:
-	QplusQminus_eoprec(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	QplusQminus_eo(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
 	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
@@ -169,7 +169,7 @@ public:
 
 
 	//    fermionmatrix operations
-	//    non-eoprec
+	//    non-eo
 	//        compound
 	void M(cl_mem in, cl_mem out, cl_mem gf);
 	void Qplus(cl_mem in, cl_mem out, cl_mem gf);
@@ -180,7 +180,7 @@ public:
 	void M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf);
 	void M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf);
 	void gamma5_device(cl_mem inout);
-	//    eoprec
+	//    eo
 	//        compound
 	void Qplus_eo(cl_mem in, cl_mem out, cl_mem gf);
 	void Qminus_eo(cl_mem in, cl_mem out, cl_mem gf);
@@ -200,7 +200,7 @@ public:
 	void convertGaugefieldToSOA_device(cl_mem out, cl_mem in);
 
 	//    solver operations
-	//    non-eoprec
+	//    non-eo
 	/// this calls the solver according to parameter settings using the fermionmatrix f
 	void solver(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer);
 	/**
@@ -212,8 +212,8 @@ public:
 	int bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
 	/// this executes the cg on the device, using the fermionmatrix f
 	int cg(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
-	//    eoprec
-	/// this executes the eoprec bicgstab on the device, using the fermionmatrix f
+	//    eo
+	/// this executes the eo bicgstab on the device, using the fermionmatrix f
 	int bicgstab_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
 	int cg_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
 
@@ -316,7 +316,7 @@ private:
 	//this is needed in QplusQminus as a temporary field
 	cl_mem clmem_tmp;
 
-	//CP: variables for eoprec solver
+	//CP: variables for eo solver
 	cl_mem clmem_inout_eoprec;
 	cl_mem clmem_source;
 	cl_mem clmem_source_even;

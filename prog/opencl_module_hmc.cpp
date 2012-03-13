@@ -589,7 +589,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			set_eoprec_spinorfield_cold_device(get_clmem_inout_eoprec());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\t\t\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::cg_eoprec(::QplusQminus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eo(), this->clmem_new_u, get_parameters()->get_force_prec());
+			converged = Opencl_Module_Fermions::cg_eoprec(::QplusQminus_eo(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eo(), this->clmem_new_u, get_parameters()->get_force_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -626,7 +626,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 			//if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\t\t\tinv. field before inversion ");
 			//if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eo(), true, "\t\t\tsource before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab_eoprec(::Qplus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eo(), this->clmem_new_u, get_parameters()->get_force_prec());
+			converged = Opencl_Module_Fermions::bicgstab_eoprec(::Qplus_eo(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eo(), this->clmem_new_u, get_parameters()->get_force_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -654,7 +654,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 			//if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\t\t\tinv. field before inversion ");
 			//if(logger.beDebug()) print_info_inv_field(get_clmem_source_even(), true, "\t\t\tsource before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab_eoprec(::Qminus_eoprec(this), get_clmem_inout_eoprec(), get_clmem_source_even(), clmem_new_u, get_parameters()->get_force_prec());
+			converged = Opencl_Module_Fermions::bicgstab_eoprec(::Qminus_eo(this), get_clmem_inout_eoprec(), get_clmem_source_even(), clmem_new_u, get_parameters()->get_force_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1037,7 +1037,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 			set_eoprec_spinorfield_cold_device(get_clmem_inout_eoprec());
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::cg_eoprec(::QplusQminus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eo(), this->clmem_new_u, get_parameters()->get_solver_prec());
+			converged = Opencl_Module_Fermions::cg_eoprec(::QplusQminus_eo(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eo(), this->clmem_new_u, get_parameters()->get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1056,7 +1056,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eoprec(), true, "\tinv. field before inversion ");
 			if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eo(), true, "\tsource before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab_eoprec(::Qplus_eoprec(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eo(), this->clmem_new_u, get_parameters()->get_solver_prec());
+			converged = Opencl_Module_Fermions::bicgstab_eoprec(::Qplus_eo(this), this->get_clmem_inout_eoprec(), this->get_clmem_phi_eo(), this->clmem_new_u, get_parameters()->get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";

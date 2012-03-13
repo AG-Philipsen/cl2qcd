@@ -195,11 +195,11 @@ cl_ulong Aee::get_Bytes() const
 	return res;
 }
 
-void Qplus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
+void Qplus_eo::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Qplus_eo(in, out, gf);
 }
-cl_ulong Qplus_eoprec::get_Flops() const
+cl_ulong Qplus_eo::get_Flops() const
 {
 	cl_ulong res;
 	switch(that->get_parameters()->get_fermact()) {
@@ -219,7 +219,7 @@ cl_ulong Qplus_eoprec::get_Flops() const
 	res += that->get_flop_size("gamma5_eo");
 	return res;
 }
-cl_ulong Qplus_eoprec::get_Bytes() const
+cl_ulong Qplus_eo::get_Bytes() const
 {
 	cl_ulong res;
 	switch(that->get_parameters()->get_fermact()) {
@@ -240,11 +240,11 @@ cl_ulong Qplus_eoprec::get_Bytes() const
 	return res;
 }
 
-void Qminus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
+void Qminus_eo::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->Qminus_eo(in, out, gf);
 }
-cl_ulong Qminus_eoprec::get_Flops() const
+cl_ulong Qminus_eo::get_Flops() const
 {
 	cl_ulong res;
 	switch(that->get_parameters()->get_fermact()) {
@@ -264,7 +264,7 @@ cl_ulong Qminus_eoprec::get_Flops() const
 	res += that->get_flop_size("gamma5_eo");
 	return res;
 }
-cl_ulong Qminus_eoprec::get_Bytes() const
+cl_ulong Qminus_eo::get_Bytes() const
 {
 	cl_ulong res;
 	switch(that->get_parameters()->get_fermact()) {
@@ -285,11 +285,11 @@ cl_ulong Qminus_eoprec::get_Bytes() const
 	return res;
 }
 
-void QplusQminus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
+void QplusQminus_eo::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
 	that->QplusQminus_eo(in, out, gf);
 }
-cl_ulong QplusQminus_eoprec::get_Flops() const
+cl_ulong QplusQminus_eo::get_Flops() const
 {
 	cl_ulong res;
 	switch(that->get_parameters()->get_fermact()) {
@@ -312,7 +312,7 @@ cl_ulong QplusQminus_eoprec::get_Flops() const
 	res += 2 * that->get_flop_size("gamma5_eo");
 	return res;
 }
-cl_ulong QplusQminus_eoprec::get_Bytes() const
+cl_ulong QplusQminus_eo::get_Bytes() const
 {
 	cl_ulong res;
 	switch(that->get_parameters()->get_fermact()) {
@@ -832,8 +832,8 @@ void Opencl_Module_Fermions::Qminus_eo(cl_mem in, cl_mem out, cl_mem gf)
 void Opencl_Module_Fermions::QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf)
 {
 	//CP: this is the original call, which fails because Qminus_eo and Qplus_eo both use clmem_tmp_eoprec_1,2 as intermediate fields themselves          
-	//Qminus_eoprec(in, clmem_tmp_eoprec_1, gf);                                                                                                         
-	//Qplus_eoprec(clmem_tmp_eoprec_1, out, gf);                                                                                                         
+	//Qminus_eo(in, clmem_tmp_eoprec_1, gf);                                                                                                         
+	//Qplus_eo(clmem_tmp_eoprec_1, out, gf);                                                                                                         
 	
 	//CP: Init tmp spinorfield                                                                                                                           
 	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
