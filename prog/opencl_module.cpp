@@ -980,9 +980,12 @@ void Opencl_Module::gaugeobservables_rectangles(cl_mem gf, hmc_float * rect_out)
 	(*rect_out) = rect;
 }
 
-TmpClKernel Opencl_Module::createKernel(const char * const kernel_name)
+TmpClKernel Opencl_Module::createKernel(const char * const kernel_name, const char * const build_opts)
 {
 	stringstream collect_options;
+	if(build_opts) {
+		collect_options << build_opts << ' ';
+	}
 	this->fill_collect_options(&collect_options);
 	return TmpClKernel(kernel_name, collect_options.str(), get_context(), &device, 1);
 }

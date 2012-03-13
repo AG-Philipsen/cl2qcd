@@ -433,7 +433,7 @@ protected:
 	 *
 	 * @param kernel_name The name of the kernel to create.
 	 */
-	TmpClKernel createKernel(const char * const kernel_name);
+	TmpClKernel createKernel(const char * const kernel_name, const char * const build_opts = 0);
 
 	/**
 	 * Get number of threads
