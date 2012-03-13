@@ -685,6 +685,11 @@ void Opencl_Module_Fermions::QplusQminus(cl_mem in, cl_mem out, cl_mem gf)
 //explicit fermionmatrix-kernel calling functions
 void Opencl_Module_Fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa)
 {
+	//get kappa
+	hmc_float kappa_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	else kappa_tmp = kappa;
+	
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -704,6 +709,16 @@ void Opencl_Module_Fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, h
 
 void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mu )
 {
+	//get kappa
+	hmc_float kappa_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	else kappa_tmp = kappa;
+	
+	//get mu
+	hmc_float mu_tmp;
+	if(mu == ARG_DEF) mu_tmp = get_parameters()->get_mu();
+	else mu_tmp = mu;
+	
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -723,6 +738,16 @@ void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, 
 
 void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mu )
 {
+	//get kappa
+	hmc_float kappa_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	else kappa_tmp = kappa;
+	
+	//get mu
+	hmc_float mu_tmp;
+	if(mu == ARG_DEF) mu_tmp = get_parameters()->get_mu();
+	else mu_tmp = mu;
+	
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -865,6 +890,11 @@ void Opencl_Module_Fermions::gamma5_eo_device(cl_mem inout)
 
 void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa)
 {
+	//get kappa
+	hmc_float kappa_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	else kappa_tmp = kappa;
+	
 	if(use_soa) {
 		gf = gaugefield_soa;
 	}
@@ -892,6 +922,11 @@ void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, 
 
 void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mu)
 {
+	//get mu
+	hmc_float mu_tmp;
+	if(mu == ARG_DEF) mu_tmp = get_parameters()->get_mu();
+	else mu_tmp = mu;
+	
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -908,6 +943,11 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem 
 
 void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mu)
 {
+	//get mu
+	hmc_float mu_tmp;
+	if(mu == ARG_DEF) mu_tmp = get_parameters()->get_mu();
+	else mu_tmp = mu;
+	
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -924,6 +964,11 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc
 
 void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mu)
 {
+	//get mu
+	hmc_float mu_tmp;
+	if(mu == ARG_DEF) mu_tmp = get_parameters()->get_mu();
+	else mu_tmp = mu;
+	
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -940,6 +985,11 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, c
 
 void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mu)
 {
+	//get mu
+	hmc_float mu_tmp;
+	if(mu == ARG_DEF) mu_tmp = get_parameters()->get_mu();
+	else mu_tmp = mu;
+	
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
