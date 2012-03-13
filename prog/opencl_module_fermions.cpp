@@ -368,6 +368,16 @@ void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
 	*collect_options << " -DKAPPA_TEMPORAL_IM=" << kappa_tmp*sin(tmp_temporal);
 	*collect_options << " -DMKAPPA_TEMPORAL_IM=" << -kappa_tmp*sin(tmp_temporal);
 
+	*collect_options << " -DSPATIAL_RE=" << cos(tmp_spatial);
+	*collect_options << " -DMSPATIAL_RE=" << -cos(tmp_spatial);
+	*collect_options << " -DSPATIAL_IM=" << sin(tmp_spatial);
+	*collect_options << " -DM_SPATIAL_IM=" << -sin(tmp_spatial);
+
+	*collect_options << " -D_TEMPORAL_RE=" << cos(tmp_temporal);
+	*collect_options << " -DM_TEMPORAL_RE=" << -cos(tmp_temporal);
+	*collect_options << " -D_TEMPORAL_IM=" << sin(tmp_temporal);
+	*collect_options << " -DM_TEMPORAL_IM=" << -sin(tmp_temporal);	
+	
 	return;
 }
 

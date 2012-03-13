@@ -59,8 +59,8 @@ spinor dslash_local_0(__global spinorfield * in, __global ocl_s_gaugefield * fie
 	hmc_complex cpi_tmp = {COSCPI, SINCPI};
 	U = multiply_matrixsu3_by_complex (U, cpi_tmp );
 #endif
-	bc_tmp.re = KAPPA_TEMPORAL_RE;
-	bc_tmp.im = KAPPA_TEMPORAL_IM;
+	bc_tmp.re = kappa_in * TEMPORAL_RE;
+	bc_tmp.im = kappa_in * TEMPORAL_IM;
 	///////////////////////////////////
 	// Calculate psi/phi = (1 - gamma_0) plus/y
 	// with 1 - gamma_0:
@@ -102,8 +102,8 @@ spinor dslash_local_0(__global spinorfield * in, __global ocl_s_gaugefield * fie
 	U = multiply_matrixsu3_by_complex (U, cpi_tmp );
 #endif
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
-	bc_tmp.re = KAPPA_TEMPORAL_RE;
-	bc_tmp.im = MKAPPA_TEMPORAL_IM;
+	bc_tmp.re = kappa_in * TEMPORAL_RE;
+	bc_tmp.im = kappa_in * MTEMPORAL_IM;
 	///////////////////////////////////
 	// Calculate psi/phi = (1 + gamma_0) y
 	// with 1 + gamma_0:
@@ -151,8 +151,8 @@ spinor dslash_local_1(__global spinorfield * in, __global ocl_s_gaugefield * fie
 	nn = get_neighbor(n, dir);
 	plus = get_spinor_from_field(in, nn, t);
 	U = field[get_global_link_pos(dir, n, t)];
-	bc_tmp.re = KAPPA_SPATIAL_RE;
-	bc_tmp.im = KAPPA_SPATIAL_IM;
+	bc_tmp.re = kappa_in * SPATIAL_RE;
+	bc_tmp.im = kappa_in * SPATIAL_IM;
 	/////////////////////////////////
 	//Calculate (1 - gamma_1) y
 	//with 1 - gamma_1:
@@ -179,8 +179,8 @@ spinor dslash_local_1(__global spinorfield * in, __global ocl_s_gaugefield * fie
 	plus = get_spinor_from_field(in, nn, t);
 	U = field[get_global_link_pos(dir, nn, t)];
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
-	bc_tmp.re = KAPPA_SPATIAL_RE;
-	bc_tmp.im = MKAPPA_SPATIAL_IM;
+	bc_tmp.re = kappa_in * SPATIAL_RE;
+	bc_tmp.im = kappa_in * MSPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 + gamma_1) y
 	// with 1 + gamma_1:
@@ -225,8 +225,8 @@ spinor dslash_local_2(__global spinorfield * in, __global ocl_s_gaugefield * fie
 	nn = get_neighbor(n, dir);
 	plus = get_spinor_from_field(in, nn, t);
 	U = field[get_global_link_pos(dir, n, t)];
-	bc_tmp.re = KAPPA_SPATIAL_RE;
-	bc_tmp.im = KAPPA_SPATIAL_IM;
+	bc_tmp.re = kappa_in * SPATIAL_RE;
+	bc_tmp.im = kappa_in * SPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 - gamma_2) y
 	// with 1 - gamma_2:
@@ -253,8 +253,8 @@ spinor dslash_local_2(__global spinorfield * in, __global ocl_s_gaugefield * fie
 	plus = get_spinor_from_field(in,  nn, t);
 	U = field[get_global_link_pos(dir, nn, t)];
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
-	bc_tmp.re = KAPPA_SPATIAL_RE;
-	bc_tmp.im = MKAPPA_SPATIAL_IM;
+	bc_tmp.re = kappa_in * SPATIAL_RE;
+	bc_tmp.im = kappa_in * MSPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 + gamma_2) y
 	// with 1 + gamma_2:
@@ -298,8 +298,8 @@ spinor dslash_local_3(__global spinorfield * in, __global ocl_s_gaugefield * fie
 	nn = get_neighbor(n, dir);
 	plus = get_spinor_from_field(in, nn, t);
 	U = field[get_global_link_pos(dir, n, t)];
-	bc_tmp.re = KAPPA_SPATIAL_RE;
-	bc_tmp.im = KAPPA_SPATIAL_IM;
+	bc_tmp.re = kappa_in * SPATIAL_RE;
+	bc_tmp.im = kappa_in * SPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 - gamma_3) y
 	// with 1 - gamma_3:
@@ -326,8 +326,8 @@ spinor dslash_local_3(__global spinorfield * in, __global ocl_s_gaugefield * fie
 	plus = get_spinor_from_field(in, nn, t);
 	U = field[get_global_link_pos(dir, nn, t)];
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
-	bc_tmp.re = KAPPA_SPATIAL_RE;
-	bc_tmp.im = MKAPPA_SPATIAL_IM;
+	bc_tmp.re = kappa_in * SPATIAL_RE;
+	bc_tmp.im = kappa_in * MSPATIAL_IM;
 	///////////////////////////////////
 	// Calculate (1 + gamma_3) y
 	// with 1 + gamma_3:
