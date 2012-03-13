@@ -897,14 +897,13 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 
 			//calculate non-eo force
 			this->set_zero_clmem_force_device();
-			//CP: this always calls fermion_force(Y,X) with Y = clmem_phi_inv, X = clmem_inout
 			copy_buffer_on_device(x_tmp, clmem_phi_inv, get_parameters()->get_sf_buf_size());
 			copy_buffer_on_device(y_tmp, get_clmem_inout(), get_parameters()->get_sf_buf_size());
 
 			print_info_inv_field(clmem_phi_inv, false, "\t\t\tx before:\t");
 			print_info_inv_field(get_clmem_inout(), false, "\t\t\ty before:\t");
 
-			fermion_force_device();
+			fermion_force_device(clmem_phi_inv, get_clmem_inout());
 
 			print_info_inv_field(clmem_phi_inv, false, "\t\t\tx after:\t");
 			print_info_inv_field(get_clmem_inout(), false, "\t\t\ty after:\t");
@@ -1009,8 +1008,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 			print_info_inv_field(get_clmem_inout(), false, "\tX ");
 		}
 		logger.debug() << "\t\tcalc fermion_force...";
-		//CP: this always calls fermion_force(Y,X) with Y = clmem_phi_inv, X = clmem_inout
-		fermion_force_device();
+		fermion_force_device(clmem_phi_inv, get_clmem_inout());
 	}
 }
 
@@ -1422,7 +1420,7 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device()
 
 }
 
-void Opencl_Module_Hmc::fermion_force_device()
+void Opencl_Module_Hmc::fermion_force_device(cl_mem Y, cl_mem X, hmc_float kappa)
 {
 	//fermion_force(field, Y, X, out);
 	cl_mem tmp = get_clmem_inout();
