@@ -1,7 +1,7 @@
 /**
  * @file M_tm_minus this is the "total" twisted-mass fermionmatrix (no evenodd) for the lower flavor
  */
-__kernel void M_tm_minus(__global spinorfield * in, __global ocl_s_gaugefield * field, __global spinorfield * out)
+__kernel void M_tm_minus(__global spinorfield * in, __global ocl_s_gaugefield * field, __global spinorfield * out, hmc_float kappa_in, hmc_float mu_in)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
