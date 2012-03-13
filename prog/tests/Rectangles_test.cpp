@@ -73,6 +73,9 @@ private:
 
 BOOST_AUTO_TEST_CASE( F_GAUGE )
 {
+        //this is the value of the force measured in tmlqcd for the same config
+        hmc_float ref_value = 4080.6745694080;
+
 	logger.info() << "Init CPU device";
 	//params.print_info_inverter("m_gpu");
 	// reset RNG
@@ -87,43 +90,31 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
 	logger.info() << "|f_gauge|^2:";
 	hmc_float cpu_res;
 	cpu_res = cpu.get_squarenorm(2);
+ 	logger.info() << "Compare CPU result and reference value";
+	cpu.verify(cpu_res, ref_value);
 
 	BOOST_MESSAGE("Tested CPU");
 
-// 	logger.info() << "Init GPU device";
-// 	//params.print_info_inverter("m_gpu");
-// 	// reset RNG
-// 	rnd = Random(13);
-// 	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
-// 	logger.info() << "gaugeobservables: ";
-// 	dummy.print_gaugeobservables_from_task(0, 0);
-// 	//these are not neede, since gauge-force operates on the gaugefield only
-// 	//NOTE: they are used for the fermion force!
-// 	/*  logger.info() << "|phi_1|^2:";
-// 	hmc_float gpu_back = dummy.get_squarenorm(0);
-// 	logger.info() << "|phi_2|^2:";
-// 	hmc_float gpu_back2 = dummy.get_squarenorm(1);
-// 	*/
-// 	dummy.runTestKernel();
-// 	logger.info() << "|f_gauge|^2:";
-// 	hmc_float gpu_res;
-// 	gpu_res = dummy.get_squarenorm(2);
-// 	BOOST_MESSAGE("Tested GPU");
-// 
-// 	logger.info() << "Compare CPU and GPU results";
-// 	/*//see above
-// 	logger.info() << "Input vectors:";
-// 	cpu.verify(cpu_back, gpu_back);
-// 	cpu.verify(cpu_back2, gpu_back2);
-// 	*/
-// 	logger.info() << "Output vectors:";
-// 	cpu.verify(cpu_res, gpu_res);
-// 	//if the gaugeconfig is cold, the force is zero!!
-// 	if(cpu.get_parameters()->get_startcondition() == COLD_START) {
-// 		logger.info() << "cold config used. Check if result is zero!!";
-// 		cpu.verify(cpu_res, 0.);
-// 		cpu.verify(gpu_res, 0.);
-// 	}
+ 	logger.info() << "Init GPU device";
+ 	//params.print_info_inverter("m_gpu");
+ 	// reset RNG
+ 	rnd = Random(13);
+ 	Dummyfield gpu(CL_DEVICE_TYPE_GPU);
+ 	logger.info() << "gaugeobservables: ";
+ 	gpu.print_gaugeobservables_from_task(0, 0);
+	logger.info() << "calc rectangles value";
+	gpu.runTestKernel();
+	hmc_float gpu_rect = gpu.get_rect();
+	gpu.runTestKernel2();
+	logger.info() << "|f_gauge|^2:";
+	hmc_float gpu_res;
+	gpu_res = cpu.get_squarenorm(2);
+
+ 	BOOST_MESSAGE("Tested GPU");
+ 
+ 	logger.info() << "Compare CPU and GPU results";
+ 	cpu.verify(cpu_res, gpu_res);
+ 	cpu.verify(cpu_rect, gpu_rect);
 }
 
 void Dummyfield::init_tasks()

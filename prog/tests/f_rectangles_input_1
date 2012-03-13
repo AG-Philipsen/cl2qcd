@@ -12,4 +12,4 @@ fermact=TWISTEDMASS
 solver=BICGSTAB
 
 gaugeact=tlsym
-
+beta= 5.69
