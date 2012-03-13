@@ -111,7 +111,7 @@ public:
 	void gauge_force_device();
 	void gauge_force_tlsym_device();
 	void fermion_force_device();
-	void fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd);
+	void fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd, hmc_float kappa = ARG_DEF);
 	void stout_smeared_fermion_force_device(cl_mem * gf_intermediate);
 	hmc_float calc_s_fermion();
 

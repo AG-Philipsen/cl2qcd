@@ -1491,8 +1491,14 @@ void Opencl_Module_Hmc::fermion_force_device()
 
 }
 
-void Opencl_Module_Hmc::fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd)
+//the argument kappa is set to ARG_DEF as default
+void Opencl_Module_Hmc::fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd, hmc_float kappa)
 {
+	//get kappa
+	hmc_float kappa_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	else kappa_tmp = kappa;
+	
 	//fermion_force(field, Y, X, out);
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -1514,6 +1520,9 @@ void Opencl_Module_Hmc::fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd)
 	clerr = clSetKernelArg(fermion_force_eo, 4, sizeof(int), &evenodd);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(fermion_force_eo, 5, sizeof(hmc_float), &kappa_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);	
+	
 	enqueueKernel( fermion_force_eo , gs2, ls2);
 
 	if(logger.beDebug()) {

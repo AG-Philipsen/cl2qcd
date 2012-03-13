@@ -40,6 +40,8 @@
 #define EVEN 0
 #define ODD 1
 
+#define ARG_DEF -1
+
 /**
  * PI
  * @todo Rather use PI from stdlib
