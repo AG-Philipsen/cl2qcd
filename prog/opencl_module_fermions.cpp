@@ -956,221 +956,8 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 
 int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
-	int debug = 0;
-	int old = 1;
-
-	if(old == 0) {
-		if(debug) cout << "debug-output at bicgstab is activated" << endl;
-		int cgmax = get_parameters()->get_cgmax();
-		//CP: these have to be on the host
-		hmc_float resid;
-		hmc_float trueresid;
-
-		for(int iter = 0; iter < cgmax; iter++) {
-			if(iter % get_parameters()->get_iter_refresh() == 0) {
-				set_zero_spinorfield_device(clmem_v);
-				set_zero_spinorfield_device(clmem_p);
-				f(inout, clmem_rn, gf);
-
-				saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
-				copy_buffer_on_device(clmem_rn, clmem_rhat, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
-
-				copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
-				copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex));
-				copy_buffer_on_device(clmem_one, clmem_rho, sizeof(hmc_complex));
-
-				//CP: calc initial residuum for output, this is not needed for the algorithm!!
-//      set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size);
-//			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-//      cout << "initial residuum at iter " << iter << " is: " << scientific << resid << endl;
-				//printf("initial residuum at iter %i is %.40e\n", iter, resid);
-			}
-
-////////////////////////////////////
-//collect all variables if debug is enabled
-			if(debug) {
-				hmc_complex omega;
-				hmc_complex rho;
-				hmc_complex rho_next;
-				hmc_complex tmp1;
-				hmc_complex tmp2;
-				hmc_complex beta;
-				hmc_complex alpha;
-
-				get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
-
-				cout << "debug output at start: " << endl;
-				cout << " rho: " << rho.re << "  " <<  rho.im << endl;
-				cout << " alpha: " << alpha.re << "  " <<  alpha.im << endl;
-				cout << " omega: " << omega.re << "  " <<  omega.im << endl;
-			}
-////////////////////////////////////
-
-			set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next);
-
-			if(debug) {
-				hmc_complex rho_next;
-				get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
-				cout << "(rhat, rn): " << rho_next.re << "  " <<  rho_next.im << endl;
-			}
-			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
-			copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
-			set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
-			set_complex_to_product_device(clmem_tmp1, clmem_tmp2, clmem_beta);
-
-			set_complex_to_product_device(clmem_beta, clmem_omega, clmem_tmp1);
-			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
-			saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p);
-
-			if(debug) {
-				hmc_complex rho_next;
-				set_complex_to_scalar_product_device(clmem_p, clmem_p, clmem_tmp2);
-				get_buffer_from_device(clmem_tmp2, &rho_next, sizeof(hmc_complex));
-				cout << "(p,p): " << rho_next.re << "  " <<  rho_next.im << endl;
-				set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
-			}
-
-			f(clmem_p, clmem_v, gf);
-
-////////////////////////////////////
-//collect all variables if debug is enabled
-			if(debug) {
-				hmc_complex omega;
-				hmc_complex rho;
-				hmc_complex rho_next;
-				hmc_complex tmp1;
-				hmc_complex tmp2;
-				hmc_complex beta;
-				hmc_complex alpha;
-
-				get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
-
-				cout << "debug output after first half: " << endl;
-				cout << " rho: " << rho.re << "  " <<  rho.im << endl;
-				cout << " rho_next: " << rho_next.re << "  " <<  rho_next.im << endl;
-				cout << " beta: " << beta.re << "  " <<  beta.im << endl;
-				cout << " alpha: " << alpha.re << "  " <<  alpha.im << endl;
-				cout << " omega: " << omega.re << "  " <<  omega.im << endl;
-				cout << " tmp1: " << tmp1.re << "  " <<  tmp1.im << endl;
-				cout << " tmp2: " << tmp2.re << "  " <<  tmp2.im << endl;
-			}
-////////////////////////////////////
-
-
-			set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1);
-
-			if(debug) {
-				hmc_complex rho_next;
-				get_buffer_from_device(clmem_tmp1, &rho_next, sizeof(hmc_complex));
-				cout << "(rhat, v): " << rho_next.re << "  " <<  rho_next.im << endl;
-			}
-
-			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
-			saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
-
-			f(clmem_s, clmem_t, gf);
-
-			set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
-			//!!CP: this can also be global_squarenorm
-			set_complex_to_scalar_product_device(clmem_t, clmem_t, clmem_tmp2);
-			set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
-
-			saxpy_device(clmem_t, clmem_s, clmem_omega, clmem_rn);
-
-			saxsbypz_device(clmem_p, clmem_s, inout, clmem_alpha, clmem_omega, inout);
-
-			if(debug) {
-				hmc_complex rho_next;
-				set_complex_to_scalar_product_device(inout, inout, clmem_omega);
-				get_buffer_from_device(clmem_omega, &rho_next, sizeof(hmc_complex));
-				cout << "(inout,inout): " << rho_next.re << "  " <<  rho_next.im << endl;
-				set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
-			}
-
-////////////////////////////////////
-//collect all variables if debug is enabled
-			if(debug) {
-				hmc_complex omega;
-				hmc_complex rho;
-				hmc_complex rho_next;
-				hmc_complex tmp1;
-				hmc_complex tmp2;
-				hmc_complex beta;
-				hmc_complex alpha;
-
-				get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
-
-				cout << "debug output after second half: " << endl;
-				cout << " rho: " << rho.re << "  " <<  rho.im << endl;
-				cout << " rho_next: " << rho_next.re << "  " <<  rho_next.im << endl;
-				cout << " beta: " << beta.re << "  " <<  beta.im << endl;
-				cout << " alpha: " << alpha.re << "  " <<  alpha.im << endl;
-				cout << " omega: " << omega.re << "  " <<  omega.im << endl;
-
-				cout << " tmp1: " << tmp1.re << "  " <<  tmp1.im << endl;
-				cout << " tmp2: " << tmp2.re << "  " <<  tmp2.im << endl;
-			}
-////////////////////////////////////
-
-			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
-			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-
-			logger.debug() << "resid: " << resid;
-			//test if resid is NAN
-			if(resid != resid){
-				logger.fatal() << "\tNAN occured in bicgstab!";
-				return -iter;
-			}
-			if(resid < prec) {
-				f(inout, clmem_aux, gf);
-				saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
-				set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
-				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
-//      cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << prec << endl;
-//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << prec << endl;
-				if(trueresid < prec)
-					return iter;
-				else {
-//        cout << "trueresiduum not small enough" <<endl;
-//        hmc_complex s_norm;
-//        //borrow clmem_alpha for this
-//        set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
-//        get_buffer_from_device(clmem_alpha, &s_norm, sizeof(hmc_complex));
-//        cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
-//        //reset value of alpha
-//        set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
-//        //check if |s|^2 is too small
-//        if(s_norm.re < prec){
-//          cout << "|s|^2 is too small to continue..." << endl;
-// //           return;
-//        }
-				}
-			} else {
-//      printf("residuum at iter%i is:\t%.10e\n", iter, resid);//cout << "residuum:\t" << resid << endl;
-			}
-		}
-		return -1;
-	}
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
-	else if (get_parameters()->get_use_bicgstab_save() == true) {
+	if (get_parameters()->get_use_bicgstab_save() == true) {
 		hmc_float resid;
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
@@ -1238,7 +1025,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-//			cout << "resid at iter " << iter << " is: " << resid << endl;
+			logger.debug() << "resid: " << resid;
 			//test if resid is NAN
 			if(resid != resid){
 				logger.fatal() << "\tNAN occured in bicgstab!";
@@ -1253,13 +1040,9 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 				set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
 				hmc_float trueresid;
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
-//				cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << prec << endl;
-//        cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << prec << endl;
+				logger.debug() << "\tsolver converged! true resid:\t" << trueresid;
 				if(trueresid < prec)
 					return iter;
-				else {
-//					cout << "trueresiduum not small enough" <<endl;
-				}
 			}
 		}
 		return -1;
@@ -1371,10 +1154,6 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 
 				saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
 
-				//set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
-				//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-				//cout << "init residuum:\t" << resid << endl;
-
 				copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, get_eoprec_spinorfield_buffer_size());
 
 				copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
@@ -1386,8 +1165,8 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
-			        //print the last residuum
-			        logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
+				//print the last residuum
+				logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 				return -iter;
 			}
 			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
@@ -1434,7 +1213,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 
 				set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid);
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
-				//cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
+				logger.debug() << "\ttrueresiduum:\t" << trueresid;
 				if(trueresid < prec) {
 					// report on performance
 					if(logger.beInfo()) {
@@ -1458,9 +1237,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 
 					// we are done here
 					return iter;
-				} else {
-//					cout << "trueresiduum not small enough" <<endl;
-				}
+				} 
 			}
 		}
 		return -1;
