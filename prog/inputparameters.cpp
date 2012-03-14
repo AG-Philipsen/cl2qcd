@@ -80,7 +80,9 @@ void inputparameters::set_defaults()
 	c1 = 0.;
 	c0_default_wilson = 1.;
 	c1_default_tlsym = -0.083333333;
-	
+	c1_default_iwasaki = -0.331;
+	c1_default_dbw2 = -1.4069;
+
 	//heatbath parameters
 	thermalizationsteps = 0;
 	heatbathsteps = 1000;
@@ -520,6 +522,28 @@ void inputparameters::gaugeact_assign(int * out, std::string line, bool mu1set)
 		if(!mu1set){
 			c1 = c1_default_tlsym;
 			calc_c0_tlsym(c1_default_tlsym);
+		}
+		return;
+	}
+	if(	value.find("IWASAKI") != std::string::npos	||
+			value.find("iwasaki") != std::string::npos	||
+			value.find("Iwasaki") != std::string::npos 	) {
+		(*out) = IWASAKI;
+		bool_assign(&use_rectangles, "1");
+		if(!mu1set){
+			c1 = c1_default_iwasaki;
+			calc_c0_tlsym(c1_default_iwasaki);
+		}
+		return;
+	}
+	if(	value.find("DBW2") != std::string::npos	||
+			value.find("dbw2") != std::string::npos	||
+			value.find("Dbw2") != std::string::npos	) {
+		(*out) = DBW2;
+		bool_assign(&use_rectangles, "1");
+		if(!mu1set){
+			c1 = c1_default_dbw2;
+			calc_c0_tlsym(c1_default_dbw2);
 		}
 		return;
 	}

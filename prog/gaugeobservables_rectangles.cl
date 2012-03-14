@@ -29,6 +29,7 @@ __kernel void rectangles(__global ocl_s_gaugefield * field, __global hmc_float *
 
 		for(int mu = 0; mu < NDIM; mu++) {
 			for(int nu = 0; nu < NDIM; nu++) {
+			        if(nu == mu) continue;
 				prod = local_rectangles(field, pos.space, pos.time, mu, nu );
 				tmpfloat = trace_matrixsu3(prod).re;
 				rect += tmpfloat;
