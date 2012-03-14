@@ -19,7 +19,7 @@ def main(datafile):
 		if match:
 			ntime = int(match.group(1))
 		floatpattern = r'[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?'
-		match = re.match(r'\s*dslash_eoprec\s+\d+\s+\d+\s+\d+\s+\d+\s+(' + floatpattern + ')\s(' + floatpattern + ')', line)
+		match = re.match(r'\s*dslash_eo\s+\d+\s+\d+\s+\d+\s+\d+\s+(' + floatpattern + ')\s(' + floatpattern + ')', line)
 		if match:
 			print match
 			bandwidth = float(match.group(1))
