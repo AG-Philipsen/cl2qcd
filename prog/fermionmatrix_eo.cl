@@ -132,10 +132,10 @@ spinor dslash_eoprec_unified_local(__global const spinorStorageType * const rest
 	U = getSU3(field, get_link_idx_SOA(dir, idx_neigh));
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp = (dir == TDIR) ? (hmc_complex) {
-		kappa_in * TEMPORAL_RE, 1. * kappa_in * TEMPORAL_IM
+		kappa_in * TEMPORAL_RE, kappa_in * MTEMPORAL_IM
 } :
 	(hmc_complex) {
-		kappa_in * SPATIAL_RE, -1.*kappa_in * SPATIAL_IM
+		kappa_in * SPATIAL_RE, kappa_in * MSPATIAL_IM
 	};
 	if(dir == XDIR) {
 		///////////////////////////////////
