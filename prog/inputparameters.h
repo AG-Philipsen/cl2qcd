@@ -171,6 +171,12 @@ public:
 	int get_flop_su3_spinor() const;
 	int get_flop_spinor_spinor() const;
 	int get_flop_spinor_sqnorm() const;
+	int get_plaq_norm() const;
+	int get_tplaq_norm() const;
+	int get_splaq_norm() const;
+	int get_rect_norm() const;
+	int get_poly_norm() const;
+	void set_gauge_norm_factors();
 
 	/////////////////////////////////////////////////////
 	// printing-functions for the different executables
@@ -407,6 +413,11 @@ private:
 	void val_assign(std::string * out, std::string line);
 	void bool_assign(bool * out, std::string line);
 	void solver_assign(bool * out, std::string line, bool mp);
+	int plaq_norm;
+	int tplaq_norm;
+	int splaq_norm;
+	int rect_norm;
+	int poly_norm;
 
 	//this can bee used to generate rnd-fields with only one thread
 	bool use_same_rnd_numbers;

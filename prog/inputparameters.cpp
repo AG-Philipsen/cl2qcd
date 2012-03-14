@@ -145,7 +145,19 @@ void inputparameters::set_defaults()
 
 	use_same_rnd_numbers = false;
 	profile_solver = false;
+	
+	return;
+}
 
+void inputparameters::set_gauge_norm_factors() {
+	
+	//set normalization factors for gauge observables
+	plaq_norm = (this->get_volspace() * NDIM * (NDIM - 1) * NC) / 2.;
+	tplaq_norm = (this->get_volspace() * NC * (NDIM - 1));
+	splaq_norm = (this->get_volspace() * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
+	rect_norm = NDIM * (NDIM-1) * NC *  this->get_vol4d();
+	poly_norm = (NC * this->get_volspace());
+	
 	return;
 }
 
@@ -1176,6 +1188,31 @@ int inputparameters::get_iter_refresh_mp() const
 bool inputparameters::get_reversibility_check() const
 {
 	return reversibility_check;
+}
+
+int inputparameters::get_plaq_norm() const
+{
+	return plaq_norm;
+}
+
+int inputparameters::get_tplaq_norm() const
+{
+	return tplaq_norm;
+}
+
+int inputparameters::get_splaq_norm() const
+{
+	return splaq_norm;
+}
+
+int inputparameters::get_poly_norm() const
+{
+	return poly_norm;
+}
+
+int inputparameters::get_rect_norm() const
+{
+	return rect_norm;
 }
 
 void inputparameters::print_info_global() const
