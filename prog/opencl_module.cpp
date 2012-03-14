@@ -942,10 +942,9 @@ void Opencl_Module::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float 
 	get_buffer_from_device(clmem_tplaq, &tplaq, sizeof(hmc_float));
 	get_buffer_from_device(clmem_splaq, &splaq, sizeof(hmc_float));
 
-	const size_t VOL4D = parameters->get_vol4d();
-	tplaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1));
-	splaq /= static_cast<hmc_float>(VOL4D * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
-	plaq  /= static_cast<hmc_float>(VOL4D * NDIM * (NDIM - 1) * NC) / 2.;
+	tplaq /= static_cast<hmc_float> ( get_parameters()->get_tplaq_norm() ); 
+	splaq /= static_cast<hmc_float> ( get_parameters()->get_splaq_norm() ); 
+	plaq  /= static_cast<hmc_float> ( get_parameters()->get_plaq_norm() ); 
 
 	(*plaq_out) = plaq;
 	(*splaq_out) = splaq;
@@ -959,8 +958,8 @@ void Opencl_Module::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float 
 	//NOTE: this is a blocking call!
 	get_buffer_from_device(clmem_polyakov, &pol, sizeof(hmc_complex));
 
-	pol.re /= static_cast<hmc_float>(NC * parameters->get_volspace());
-	pol.im /= static_cast<hmc_float>(NC * parameters->get_volspace());
+	pol.re /= static_cast<hmc_float> ( get_parameters()->get_poly_norm() );
+	pol.im /= static_cast<hmc_float> ( get_parameters()->get_poly_norm() );
 
 	pol_out->re = pol.re;
 	pol_out->im = pol.im;
