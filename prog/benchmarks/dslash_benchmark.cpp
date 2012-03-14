@@ -112,8 +112,8 @@ int main(int argc, char* argv[])
 
 		logger.trace() << "Perform " << hmc_iter << "of dslash benchmarking (EVEN + ODD) for each step";
 		for(iter = 0; iter < hmc_iter; iter ++) {
-			gaugefield.get_task_solver()->dslash_eoprec_device(sf1, sf2, gf, EVEN);
-			gaugefield.get_task_solver()->dslash_eoprec_device(sf1, sf2, gf, ODD);
+			gaugefield.get_task_solver()->dslash_eo_device(sf1, sf2, gf, EVEN);
+			gaugefield.get_task_solver()->dslash_eo_device(sf1, sf2, gf, ODD);
 		}
 		logger.trace() << "dslash benchmarking done" ;
 		perform_timer.add();
