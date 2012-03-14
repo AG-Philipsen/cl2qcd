@@ -595,6 +595,8 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
+			//add number of inverter iterations to counter
+			get_parameters()->acc_iter1(abs(converged));
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eo(), true, "\t\t\tinv. field after inversion ");
 
 			/**
@@ -633,7 +635,9 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			//if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eo(), true, "\t\t\tinv. field after inversion ");
-
+			//add number of inverter iterations to counter
+			get_parameters()->acc_iter1(abs(converged));
+			
 			//store this result in clmem_phi_inv
 			copy_buffer_on_device(get_clmem_inout_eo(), clmem_phi_inv_eo, get_eoprec_spinorfield_buffer_size());
 
@@ -661,6 +665,8 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			//if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eo(), true, "\t\t\tinv. field after inversion ");
+			//add number of inverter iterations to counter
+			get_parameters()->acc_iter1(abs(converged));
 		}
 		/**
 		 * At this point, one has calculated X_odd and Y_odd.
@@ -940,7 +946,9 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
-
+			//add number of inverter iterations to counter
+			get_parameters()->acc_iter1(abs(converged));
+			
 			/**
 			 * Y is now just
 			 *  Y = (Qminus) X = (Qminus) (Qplusminus)^-1 psi =
@@ -976,7 +984,9 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
-
+			//add number of inverter iterations to counter
+			get_parameters()->acc_iter1(abs(converged));
+			
 			//store this result in clmem_phi_inv
 			copy_buffer_on_device(get_clmem_inout(), clmem_phi_inv, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
 
@@ -1003,6 +1013,9 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
+			//add number of inverter iterations to counter
+			get_parameters()->acc_iter1(abs(converged));
+			
 		}
 		if(logger.beDebug()) {
 			print_info_inv_field(clmem_phi_inv, false, "\tY ");
@@ -1044,7 +1057,9 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eo(), true, "\tinv. field after inversion ");
-
+			//add number of inverter iterations to counter
+			get_parameters()->acc_iter0(abs(converged));
+			
 			Opencl_Module_Fermions::Qminus_eo(this->get_clmem_inout_eo(), clmem_phi_inv_eo, this->clmem_new_u);
 		} else {
 			logger.debug() << "\t\t\tstart solver";
@@ -1063,6 +1078,8 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout_eo(), true, "\tinv. field after inversion ");
+			//add number of inverter iterations to counter
+			get_parameters()->acc_iter0(abs(converged));
 
 			//store this result in clmem_phi_inv
 			copy_buffer_on_device(get_clmem_inout_eo(), clmem_phi_inv_eo, get_eoprec_spinorfield_buffer_size());
@@ -1084,7 +1101,9 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
-
+			//add number of inverter iterations to counter
+			get_parameters()->acc_iter0(abs(converged));
+			
 			Opencl_Module_Fermions::Qminus(this->get_clmem_inout(), clmem_phi_inv, this->clmem_new_u);
 
 		} else  {
@@ -1103,7 +1122,9 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) print_info_inv_field(get_clmem_inout(), false, "\tinv. field after inversion ");
-
+			//add number of inverter iterations to counter
+			get_parameters()->acc_iter0(abs(converged));
+			
 			//store this result in clmem_phi_inv
 			copy_buffer_on_device(get_clmem_inout(), clmem_phi_inv, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
 		}
