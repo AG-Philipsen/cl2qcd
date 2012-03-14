@@ -185,9 +185,13 @@ void inputparameters::readfile(const char* ifn)
 							line.find("MP") != std::string::npos || 
 							line.find("Mp") != std::string::npos ) {
 						val_assign(&mu_mp, line);
+						//calculate mubar
+						this->calc_mubar_mp();
 						mu_mpset = true;
 					} else{
 						val_assign(&mu, line);
+						//calculate mubar
+						this->calc_mubar();
 						muset = true;
 					}
 			}
