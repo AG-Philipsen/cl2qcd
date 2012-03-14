@@ -36,8 +36,8 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 			nn = get_neighbor_temporal(t);
 
 			//the 2 here comes from Tr(lambda_ij) = 2delta_ij
-			bc_tmp.re = 2.*KAPPA_TEMPORAL_RE;
-			bc_tmp.im = 2.*KAPPA_TEMPORAL_IM;
+			bc_tmp.re = 2.* kappa_in * TEMPORAL_RE;
+			bc_tmp.im = 2.* kappa_in * TEMPORAL_IM;
 
 			///////////////////////////////////
 			//mu = +0
@@ -114,8 +114,8 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 			//mu = 1
 			/////////////////////////////////
 			//this stays the same for all spatial directions at the moment
-			bc_tmp.re = 2.*KAPPA_SPATIAL_RE;
-			bc_tmp.im = 2.*KAPPA_SPATIAL_IM;
+			bc_tmp.re = 2.* kappa_in * SPATIAL_RE;
+			bc_tmp.im = 2.* kappa_in * SPATIAL_IM;
 
 			/////////////////////////////////
 			//mu = +1
