@@ -1139,7 +1139,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	Opencl_Module::gaugeobservables(clmem_new_u, &plaq_new,  &tplaq_new, &splaq_new, &poly_new);
 	//plaq has to be divided by the norm-factor and multiplied by NC
 	//  (because this is in the defintion of the gauge action and not in the normalization) to get s_gauge
-	hmc_float factor = 2.0 / static_cast<hmc_float>(parameters->get_vol4d() * NDIM * (NDIM - 1) );
+	hmc_float factor = 1.* NC /(get_parameters()->get_plaq_norm());
 	if(get_parameters()->get_use_rectangles() == true){
 		Opencl_Module::gaugeobservables_rectangles(*get_gaugefield(), &rect);
 		Opencl_Module::gaugeobservables_rectangles(clmem_new_u, &rect_new);
@@ -1203,7 +1203,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 		tmp.poly = poly_new;
 		tmp.deltaH = deltaH;
 		tmp.prob = compare_prob;
-		if(get_parameters()->get_use_rectangles() ) tmp.rectangles = rect_new;
+		if(get_parameters()->get_use_rectangles() ) tmp.rectangles = rect_new / get_parameters()->get_rect_norm();
 	} else {
 		tmp.accept = 0;
 		tmp.plaq = plaq;
@@ -1212,7 +1212,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 		tmp.poly = poly;
 		tmp.deltaH = deltaH;
 		tmp.prob = compare_prob;
-		if(get_parameters()->get_use_rectangles() ) tmp.rectangles = rect;
+		if(get_parameters()->get_use_rectangles() ) tmp.rectangles = rect / get_parameters()->get_rect_norm();
 	}
 
 	return tmp;
