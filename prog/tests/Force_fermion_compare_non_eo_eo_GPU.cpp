@@ -23,8 +23,8 @@ public:
 		finalize();
 	};
 
-	void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, int evenodd);
-	void runTestKernel2(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls);
+        void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, int evenodd, hmc_float kappa);
+        void runTestKernel2(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, hmc_float kapppa);
 	void fill_kernels();
 	void set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out);
 	void clear_kernels();
@@ -764,7 +764,7 @@ void Device::fill_kernels()
 
 	ae_sqn = createKernel("gaugemomentum_squarenorm") << basic_fermion_code << "types_hmc.h" << "operations_gaugemomentum.cl" << "gaugemomentum_squarenorm.cl";
 
-	testKernel = createKernel("fermion_force_eoprec") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
+	testKernel = createKernel("fermion_force_eo") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 
 	testKernel2 = createKernel("fermion_force") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion.cl";
 }
@@ -801,7 +801,7 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls, int evenodd)
+void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls, int evenodd, hmc_float kappa)
 {
 	cl_int err;
 	int eo;
@@ -819,11 +819,13 @@ void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 4, sizeof(int), &eo);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	err = clSetKernelArg(testKernel, 5, sizeof(hmc_float), &kappa);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
 	enqueueKernel(testKernel, gs, ls);
 }
 
-void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls)
+void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls, hmc_float kappa)
 {
 	cl_int err;
 	err = clSetKernelArg(testKernel2, 0, sizeof(cl_mem), &gf);
@@ -833,6 +835,8 @@ void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int g
 	err = clSetKernelArg(testKernel2, 2, sizeof(cl_mem), &in2);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel2, 3, sizeof(cl_mem), &out);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	err = clSetKernelArg(testKernel2, 4, sizeof(hmc_float), &kappa);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
 	enqueueKernel(testKernel2, gs, ls);
@@ -932,10 +936,10 @@ void Dummyfield::runTestKernel(int evenodd)
 	//Y_odd = in2_eo, Y_even = in1_eo, X_odd = in4_eo, X_even = in3_eo
 	if(evenodd == ODD) {
 		//this is then force(Y_odd, X_even) == force(in2, in3)
-		static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in2_eo, in3_eo, *(get_clmem_gaugefield()), gs, ls, evenodd);
+	  static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in2_eo, in3_eo, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
 	} else {
 		//this is then force(Y_even, X_odd) == force(in1, in4)
-		static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in1_eo, in4_eo, *(get_clmem_gaugefield()), gs, ls, evenodd);
+	  static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in1_eo, in4_eo, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
 	}
 }
 
@@ -950,7 +954,7 @@ void Dummyfield::runTestKernel2()
 		ls = 1;
 	}
 	//CP: I only use out_eo here because there is some mistake with out_noneo. However, I will not try to find it...
-	static_cast<Device*>(opencl_modules[0])->runTestKernel2(out_noneo, in1_noneo, in2_noneo, *(get_clmem_gaugefield()), gs, ls);
+	static_cast<Device*>(opencl_modules[0])->runTestKernel2(out_noneo, in1_noneo, in2_noneo, *(get_clmem_gaugefield()), gs, ls, get_parameters()->get_kappa());
 }
 
 void Dummyfield::runTestKernel2withconvertedfields()
@@ -963,5 +967,5 @@ void Dummyfield::runTestKernel2withconvertedfields()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel2(out_noneo, in1_noneo_converted, in2_noneo_converted, *(get_clmem_gaugefield()), gs, ls);
+	static_cast<Device*>(opencl_modules[0])->runTestKernel2(out_noneo, in1_noneo_converted, in2_noneo_converted, *(get_clmem_gaugefield()), gs, ls, get_parameters()->get_kappa());
 }
