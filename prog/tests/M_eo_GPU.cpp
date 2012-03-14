@@ -22,7 +22,7 @@ public:
 		finalize();
 	};
 
-	void runTestKernel(cl_mem in, cl_mem out, cl_mem gf, int gs, int ls);
+        void runTestKernel(cl_mem in, cl_mem out, cl_mem gf, int gs, int ls, hmc_float kappa);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -207,7 +207,7 @@ void Device::fill_kernels()
 	Opencl_Module_Fermions::fill_kernels();
 
 	//to this end, one has to set the needed files by hand
-	testKernel = createKernel("dslash_eoprec") << basic_fermion_code << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
+	testKernel = createKernel("dslash_eo") << basic_fermion_code << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 }
 
 void Dummyfield::clear_buffers()
@@ -229,7 +229,7 @@ void Device::clear_kernels()
 	Opencl_Module_Fermions::clear_kernels();
 }
 
-void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls)
+void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls, hmc_float kappa)
 {
 	if(use_soa) {
 		gf = gaugefield_soa;
@@ -243,6 +243,8 @@ void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls)
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	int odd = 0;
 	err = clSetKernelArg(testKernel, 3, sizeof(int), &odd);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	err = clSetKernelArg(testKernel, 4, sizeof(hmc_float), &kappa);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
 	enqueueKernel(testKernel, gs, ls);
@@ -287,6 +289,6 @@ void Dummyfield::runTestKernel()
 		ls = 1;
 	}
 	logger.info() << "test kernel with global_work_size: " << gs << " and local_work_size: " << ls;
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(out, even_in, *(get_clmem_gaugefield()), gs, ls);
+	static_cast<Device*>(opencl_modules[0])->runTestKernel(out, even_in, *(get_clmem_gaugefield()), gs, ls, get_parameters()->get_kappa());
 }
 

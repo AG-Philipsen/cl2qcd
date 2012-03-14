@@ -22,7 +22,7 @@ public:
 		finalize();
 	};
 
-	void runTestKernel(cl_mem in, cl_mem out, cl_mem gf, int gs, int ls);
+        void runTestKernel(cl_mem in, cl_mem out, cl_mem gf, int gs, int ls, hmc_float kappa, hmc_float mubar);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -265,7 +265,7 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls)
+void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
 {
 	cl_int err;
 	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &in);
@@ -273,6 +273,10 @@ void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls)
 	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &out);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &gf);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	err = clSetKernelArg(testKernel, 3, sizeof(hmc_float), &kappa);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	err = clSetKernelArg(testKernel, 4, sizeof(hmc_float), &mubar);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
 	enqueueKernel(testKernel, gs, ls);
@@ -315,6 +319,6 @@ void Dummyfield::runTestKernel()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in, *(get_clmem_gaugefield()), gs, ls);
+	static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in, *(get_clmem_gaugefield()), gs, ls, get_parameters()->get_kappa(), get_parameters()->get_mubar());
 }
 
