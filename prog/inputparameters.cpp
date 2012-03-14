@@ -94,9 +94,13 @@ void inputparameters::set_defaults()
 	kappa = 0.125;
 	mu = 0.006;
 	csw = 0.;
+	iter0 = 0;
+	iter1 = 0;
 	kappa_mp = 0.125;
 	mu_mp = 0.006;
 	csw_mp = 0.;
+	iter0_mp = 0;
+	iter1_mp = 0;
 	cgmax = 1000;
 	cgmax_mp = cgmax;
 	theta_fermion_spatial = 0.;
@@ -668,6 +672,79 @@ void inputparameters::val_assign(std::string * out, std::string line)
 hmc_float inputparameters::get_kappa() const
 {
 	return kappa;
+}
+
+int inputparameters::get_iter0() const
+{
+	return iter0;
+}
+
+int inputparameters::get_iter1() const
+{
+	return iter1;
+}
+
+int inputparameters::get_iter0_mp() const
+{
+	return iter0_mp;
+}
+
+int inputparameters::get_iter1_mp() const
+{
+	return iter1_mp;
+}
+
+void inputparameters::reset_iter0()
+{
+	iter0 = 0;
+}
+
+void inputparameters::reset_iter1()
+{
+	iter1 = 0;
+}
+
+void inputparameters::reset_iter0_mp() 
+{
+	iter0_mp = 0;
+}
+
+void inputparameters::reset_iter1_mp()
+{
+	iter1_mp = 0;
+}
+
+void inputparameters::reset_inversion_counters(){
+	this->reset_iter0();
+	this->reset_iter1();
+	if( this->get_use_mp() ) {
+		this->reset_iter0_mp();
+		this->reset_iter1_mp();
+	}
+}
+
+void inputparameters::acc_iter0(int acc)
+{
+	iter0 += acc;
+	return;
+}
+
+void inputparameters::acc_iter1(int acc)
+{
+	iter1 += acc;
+	return;
+}
+
+void inputparameters::acc_iter1_mp(int acc)
+{
+	iter1_mp += acc;
+	return;
+}
+
+void inputparameters::acc_iter0_mp(int acc)
+{
+	iter0_mp += acc;
+	return;
 }
 
 hmc_float inputparameters::get_kappa_mp() const

@@ -54,6 +54,19 @@ public:
 	void set_defaults();
 	hmc_float get_kappa() const;
 	hmc_float get_kappa_mp() const;
+	int get_iter0() const;
+	int get_iter1() const;
+	int get_iter0_mp() const;
+	int get_iter1_mp() const;
+	void reset_iter0();
+	void reset_iter1();
+	void reset_iter0_mp();
+	void reset_iter1_mp();
+	void reset_inversion_counters();
+	void acc_iter0(int acc);
+	void acc_iter1(int acc);
+	void acc_iter0_mp(int acc);
+	void acc_iter1_mp(int acc);
 	void set_mubar_negative();
 	void set_mubar_mp_negative();
 	void calc_mubar();
@@ -340,11 +353,15 @@ private:
 	hmc_float mu;
 	hmc_float mubar;
 	hmc_float csw;
+	int iter0;
+	int iter1;
 	//parameters for the mass prenditioning field
 	hmc_float kappa_mp;
 	hmc_float mu_mp;
 	hmc_float mubar_mp;
 	hmc_float csw_mp;
+	int iter0_mp;
+	int iter1_mp;
 	hmc_float theta_fermion_spatial;
 	hmc_float theta_fermion_temporal;
 	hmc_float theta_gaugefield;

@@ -42,6 +42,9 @@ void Gaugefield_hmc::finalize_opencl()
 
 void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* solver_timer)
 {
+	//reset the counters for the inversions
+	get_parameters()->reset_inversion_counters();
+	
 	size_t gfsize = get_parameters()->get_gf_buf_size();
 	size_t gmsize = get_parameters()->get_gm_buf_size();
 
@@ -94,6 +97,11 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::st
 	hmcout << "\t" << obs.poly.re << "\t" << obs.poly.im << "\t" << sqrt(obs.poly.re * obs.poly.re + obs.poly.im * obs.poly.im);
 	//print deltaH, exp(deltaH), acceptance-propability, accept (yes or no)
 	hmcout <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept;
+	//print number of iterations used in inversions with full and force precision
+	hmcout << "\t" << get_parameters()->get_iter0() << "\t" << get_parameters()->get_iter1();
+	if(get_parameters()->get_use_mp() ){
+		hmcout << "\t" << get_parameters()->get_iter0_mp() << "\t" << get_parameters()->get_iter1_mp();
+	}
 	if(get_parameters()->get_use_rectangles() ){
 		//print rectangle value
 		hmcout << "\t" << obs.rectangles;
