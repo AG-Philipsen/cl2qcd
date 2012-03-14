@@ -1137,18 +1137,16 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	//In this call, the observables are calculated already with appropiate Weighting factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC)
 	Opencl_Module::gaugeobservables(*get_gaugefield(), &plaq,  &tplaq, &splaq, &poly);
 	Opencl_Module::gaugeobservables(clmem_new_u, &plaq_new,  &tplaq_new, &splaq_new, &poly_new);
-	//plaq has to be divided by the norm-factor and multiplied by NC
-	//  (because this is in the defintion of the gauge action and not in the normalization) to get s_gauge
-	hmc_float factor = 1.* NC /(get_parameters()->get_plaq_norm());
+	//plaq has to be divided by the norm-factor to get s_gauge
+	hmc_float factor = 1. /(get_parameters()->get_plaq_norm());
 	if(get_parameters()->get_use_rectangles() == true){
 		Opencl_Module::gaugeobservables_rectangles(*get_gaugefield(), &rect);
 		Opencl_Module::gaugeobservables_rectangles(clmem_new_u, &rect_new);
 		hmc_float c0 = get_parameters()->get_c0();
 		hmc_float c1 = get_parameters()->get_c1();
-		//NOTE: the plaq part has been divided by NC above
-		deltaH = - beta * ( c0 * (plaq - plaq_new) / factor + c1/NC * ( rect - rect_new )  );
-		s_old = - beta * ( c0 * (plaq) / factor + c1/NC * ( rect )  );
-		s_new = - beta * ( c0 * (plaq_new) / factor + c1/NC * ( rect_new )  );
+		deltaH = - beta * ( c0 * (plaq - plaq_new) / factor + c1 * ( rect - rect_new )  );
+		s_old = - beta * ( c0 * (plaq) / factor + c1 * ( rect )  );
+		s_new = - beta * ( c0 * (plaq_new) / factor + c1 * ( rect_new )  );
 		
 	} else{
 	/** NOTE: the minus here is introduced to fit tmlqcd!!! */

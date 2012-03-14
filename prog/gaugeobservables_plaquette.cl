@@ -36,6 +36,7 @@ __kernel void plaquette(__global ocl_s_gaugefield * field, __global hmc_float * 
                          	prod = local_plaquette(field, pos.space, pos.time, mu, nu );
 			        
                                 tmpfloat = trace_matrixsu3(prod).re;
+				tmpfloat /= NC;
 				plaq += tmpfloat;
 
 				if(nu == 0) {

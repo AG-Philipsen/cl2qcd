@@ -32,7 +32,7 @@ __kernel void rectangles(__global ocl_s_gaugefield * field, __global hmc_float *
 			        if(nu == mu) continue;
 				prod = local_rectangles(field, pos.space, pos.time, mu, nu );
 				tmpfloat = trace_matrixsu3(prod).re;
-				rect += tmpfloat;
+				rect += tmpfloat/NC;
 			}
 		}
 	}

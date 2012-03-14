@@ -152,9 +152,9 @@ void inputparameters::set_defaults()
 void inputparameters::set_gauge_norm_factors() {
 	
 	//set normalization factors for gauge observables
-	plaq_norm = (this->get_vol4d() * NDIM * (NDIM - 1) * NC) / 2.;
-	tplaq_norm = (this->get_vol4d() * NC * (NDIM - 1));
-	splaq_norm = (this->get_vol4d() * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
+	plaq_norm = (this->get_vol4d() * NDIM * (NDIM - 1) ) / 2.;
+	tplaq_norm = (this->get_vol4d() * (NDIM - 1));
+	splaq_norm = (this->get_vol4d() * (NDIM - 1) * (NDIM - 2)) / 2. ;
 	rect_norm = NDIM * (NDIM-1) * NC *  this->get_vol4d();
 	poly_norm = (NC * this->get_volspace());
 	
