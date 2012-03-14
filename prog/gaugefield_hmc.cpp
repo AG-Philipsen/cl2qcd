@@ -82,15 +82,23 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::st
 {
 	hmc_float exp_deltaH = exp(obs.deltaH);
 	logger.trace() << "Observables: " << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq << "\t" << obs.poly.re << "\t" << obs.poly.im <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept ;
-//  printf("Observables:%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\n",iter,obs.plaq,obs.tplaq,obs.splaq,obs.poly.re,obs.poly.im,obs.deltaH, exp_deltaH, obs.prob, obs.accept );
 	std::fstream hmcout;
 	hmcout.open(filename.c_str(), std::ios::out | std::ios::app);
 	if(!hmcout.is_open()) throw File_Exception(filename);
 	hmcout.width(8);
 	hmcout << iter;
-	hmcout << "\t";
 	hmcout.precision(15);
-	hmcout << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq << "\t" << obs.poly.re << "\t" << obs.poly.im << "\t" << sqrt(obs.poly.re * obs.poly.re + obs.poly.im * obs.poly.im) <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept << std::endl;
+	//print plaquette (plaq, tplaq, splaq)
+	hmcout << "\t" << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq;
+	//print polyakov loop (re, im, abs)
+	hmcout << "\t" << obs.poly.re << "\t" << obs.poly.im << "\t" << sqrt(obs.poly.re * obs.poly.re + obs.poly.im * obs.poly.im);
+	//print deltaH, exp(deltaH), acceptance-propability, accept (yes or no)
+	hmcout <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept;
+	if(get_parameters()->get_use_rectangles() ){
+		//print rectangle value
+		hmcout << "\t" << obs.rectangles;
+	}
+	hmcout << std::endl;
 	hmcout.close();
 	return;
 }

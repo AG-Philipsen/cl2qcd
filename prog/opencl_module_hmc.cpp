@@ -1130,6 +1130,8 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	//Gauge-Part
 	hmc_float tplaq, splaq, plaq;
 	hmc_float tplaq_new, splaq_new, plaq_new;
+	hmc_float rect_new = 0.;
+	hmc_float rect = 0.;
 	hmc_complex poly;
 	hmc_complex poly_new;
 	//In this call, the observables are calculated already with appropiate Weighting factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC)
@@ -1139,8 +1141,6 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	//  (because this is in the defintion of the gauge action and not in the normalization) to get s_gauge
 	hmc_float factor = 2.0 / static_cast<hmc_float>(parameters->get_vol4d() * NDIM * (NDIM - 1) );
 	if(get_parameters()->get_use_rectangles() == true){
-		hmc_float rect_new = 0.;
-		hmc_float rect = 0.;
 		Opencl_Module::gaugeobservables_rectangles(*get_gaugefield(), &rect);
 		Opencl_Module::gaugeobservables_rectangles(clmem_new_u, &rect_new);
 		hmc_float c0 = get_parameters()->get_c0();
@@ -1203,6 +1203,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 		tmp.poly = poly_new;
 		tmp.deltaH = deltaH;
 		tmp.prob = compare_prob;
+		if(get_parameters()->get_use_rectangles() ) tmp.rectangles = rect_new;
 	} else {
 		tmp.accept = 0;
 		tmp.plaq = plaq;
@@ -1211,6 +1212,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 		tmp.poly = poly;
 		tmp.deltaH = deltaH;
 		tmp.prob = compare_prob;
+		if(get_parameters()->get_use_rectangles() ) tmp.rectangles = rect;
 	}
 
 	return tmp;
