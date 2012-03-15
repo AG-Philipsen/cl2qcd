@@ -5,9 +5,9 @@
 #SBATCH --job-name=OpTiMaL_dslash_bench
 #SBATCH --mem-per-cpu=400
 #SBATCH --mail-type=ALL
-#SBATCH --partition=parallel
+#SBATCH --partition=test
 #SBATCH --gres=gpu
-#SBATCH --time=0-02:00:00
+#SBATCH --time=0-01:00:00
 #SBATCH --dependency=singleton
 #
 
