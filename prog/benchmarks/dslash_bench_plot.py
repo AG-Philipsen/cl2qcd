@@ -31,10 +31,21 @@ def main(datafile):
 	for run in runs:
 		print '{0[0]:>5}   {0[1]:>5}   {0[2]:>5}   {0[3]:>5}'.format(run)
 
-	runs = np.array(runs)
+	runs = np.array(sorted(runs, key=lambda p: p[0]**3 * p[1]))
 
 	xpos = map(lambda (x,y): int(x)**3 * int(y), runs[:,0:2])
-	xtics = map(lambda (x,y): '{0}^3x{1}'.format(int(x), int(y)), runs[:,0:2])
+	xtic_pos = xpos[:]
+	xtic_label = map(lambda (x,y): '{0}^3x{1}'.format(int(x), int(y)), runs[:,0:2])
+
+	# make sure tics don't overlapp
+	min_delta = 10000
+	i = len(xtic_pos) - 1
+	while i > 0:
+		if xtic_pos[i] < xtic_pos[i-1] + min_delta:
+			del xtic_pos[i-1]
+			del xtic_label[i-1]
+		i -= 1
+
 
 	fig = plt.figure()
 	ax1 = fig.add_subplot(111)
@@ -42,8 +53,8 @@ def main(datafile):
 	line1 = ax1.plot(xpos, runs[:,2], 'r.', label='Bandwidth')
 	line2 = ax2.plot(xpos, runs[:,3], 'b.', label='Gflops')
 	ax1.set_title('Dslash Performance')
-	ax1.set_xticks(xpos)
-	ax1.set_xticklabels(xtics, rotation=90)
+	ax1.set_xticks(xtic_pos)
+	ax1.set_xticklabels(xtic_label, rotation=90)
 	ax1.set_xlabel('Lattice Size')
 	ax1.set_ylabel('Bandwidth GB/s')
 	ax2.set_ylabel('Gflops')
