@@ -19,11 +19,11 @@ def main(datafile):
 		if match:
 			ntime = int(match.group(1))
 		floatpattern = r'[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?'
-		match = re.match(r'\s*dslash_eo\s+\d+\s+\d+\s+\d+\s+\d+\s+(' + floatpattern + ')\s(' + floatpattern + ')', line)
+		match = re.match(r'\s*dslash_(eo|eoprec)\s+\d+\s+\d+\s+\d+\s+\d+\s+(' + floatpattern + ')\s(' + floatpattern + ')', line)
 		if match:
 			print match
-			bandwidth = float(match.group(1))
-			gflops = float(match.group(5))
+			bandwidth = float(match.group(2))
+			gflops = float(match.group(6))
 			runs.append((nspace, ntime, bandwidth, gflops))
 
 	# dump data to cli
