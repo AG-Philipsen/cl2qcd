@@ -14,7 +14,7 @@ linestyles = ['r.', 'b.', 'r*', 'b*', 'g.', 'k.', 'r,', 'b,', 'g,', 'k,', 'g*', 
 
 FileData = namedtuple('FileData', ['label', 'runs', 'xpos'])
 
-def main(datafiles, filelabels):
+def main(datafiles, filelabels, output=None):
 
 	filedatas = []
 
@@ -61,7 +61,8 @@ def main(datafiles, filelabels):
 	xtic_label = map(lambda (p, x, y): '{0}^3x{1}'.format(int(x), int(y)), xtic_pos)
 	xtic_pos = map(lambda (p, x, y): p, xtic_pos)
 
-	fig = plt.figure()
+	fig = plt.figure(figsize=(10,4))
+	fig.subplots_adjust(bottom=0.28)
 	ax1 = fig.add_subplot(111)
 	ax2 = ax1.twinx()
 	lines = []
@@ -84,12 +85,16 @@ def main(datafiles, filelabels):
 	ax2.set_ylim(ax1.get_ylim())
 	fig.legend(lines, labels)
 
-	plt.show()
+	if output:
+		plt.savefig(output)
+	else:
+		plt.show()
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Plot output from dslash_bench.py runs')
 	parser.add_argument('--labels', metavar='LABEL', nargs='*', help='Labels to mark the line from each input file.')
 	parser.add_argument('files', metavar='FILE', nargs='*')
+	parser.add_argument('-o', '--output', metavar='FILE', default=None, help='File to dump the plot to')
 	args = parser.parse_args()
 
 	if args.labels and len(args.files) != len(args.labels):
@@ -105,4 +110,4 @@ if __name__ == '__main__':
 	else:
 		labels = args.files
 
-	main(datafiles, labels)
+	main(datafiles, labels, args.output)
