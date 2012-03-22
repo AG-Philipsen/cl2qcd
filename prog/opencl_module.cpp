@@ -45,12 +45,14 @@ void Opencl_Module::init(cl_command_queue queue, cl_mem* clmem_gaugefield, input
 		case CL_DEVICE_TYPE_GPU :
 			numthreads = 128;
 			use_soa = true;
-			logger.debug() << "Device should use SOA storage format.";
+			use_blocked_loops = false;
+			logger.debug() << "Device should use SOA storage format and strided loops.";
 			break;
 		case CL_DEVICE_TYPE_CPU :
 			numthreads = 1;
 			use_soa = false;
-			logger.debug() << "Device should use AOS storage format.";
+			use_blocked_loops = true;
+			logger.debug() << "Device should use AOS storage format and blocked loops.";
 			break;
 		default :
 			throw Print_Error_Message("Could not retrive proper CL_DEVICE_TYPE...", __FILE__, __LINE__);
@@ -172,6 +174,10 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 
 	if(use_soa) {
 		*collect_options << " -D_USE_SOA_";
+	}
+
+	if(use_blocked_loops) {
+		*collect_options << " -D_USE_BLOCKED_LOOPS_";
 	}
 
 	if(get_parameters()->get_use_rectangles() == true) {
