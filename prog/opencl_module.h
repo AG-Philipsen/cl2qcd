@@ -449,6 +449,10 @@ protected:
 	 * Whether this device uses SOA storage
 	 */
 	bool use_soa;
+	/**
+	 * Whether this device prefers blocks loops to strided ones
+	 */
+	bool use_blocked_loops;
 
 	/**
 	 * Calculate the proper stride for SOA storage.

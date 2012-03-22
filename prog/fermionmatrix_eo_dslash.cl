@@ -3,12 +3,11 @@
 //	ODD corresponds to the D_oe case: Dslash acts on even indices (the "x+mu" in the formulae) and the function
 //	saves the outcoming spinor with an odd index.
 //	EVEN is then D_eo.
+
 __kernel void dslash_eo(__global const spinorStorageType * const restrict in, __global spinorStorageType * const restrict out, __global const Matrixsu3StorageType * const restrict field, const int evenodd, hmc_float kappa_in)
 {
-	int global_size = get_global_size(0);
-	int id = get_global_id(0);
-
-	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
+//	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
+	PARALLEL_FOR(id_tmp, EOPREC_SPINORFIELDSIZE) {
 		st_idx pos = (evenodd == ODD) ? get_even_st_idx(id_tmp) : get_odd_st_idx(id_tmp);
 
 		spinor out_tmp = set_spinor_zero();
