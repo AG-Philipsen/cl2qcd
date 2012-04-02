@@ -1607,21 +1607,30 @@ void Opencl_Module_Hmc::stout_smeared_fermion_force_device(cl_mem * gf_intermedi
 	//set arguments
 }
 
-void Opencl_Module_Hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out)
+void Opencl_Module_Hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clmem_in, cl_mem out)
 {
 	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(gaugemomentum_squarenorm, this->get_device_type(), &ls2, &gs2, &num_groups);
-	//set arguments
-	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
+
+	int global_buf_size_float = sizeof(hmc_float) * num_groups;
+	cl_mem  clmem_global_squarenorm_buf_glob = create_rw_buffer(global_buf_size_float);
+
 	int clerr = clSetKernelArg(gaugemomentum_squarenorm, 0, sizeof(cl_mem), &clmem_in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-//  /** @todo add reduction */
-	clerr = clSetKernelArg(gaugemomentum_squarenorm, 1, sizeof(cl_mem), &clmem_out);
+	clerr = clSetKernelArg(gaugemomentum_squarenorm, 1, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
+	clerr = clSetKernelArg(gaugemomentum_squarenorm, 2, sizeof(hmc_float) * ls2, NULL);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	enqueueKernel(gaugemomentum_squarenorm  , gs2, ls2);
+
+	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	enqueueKernel(global_squarenorm_reduction, gs2, ls2);
+
+	clReleaseMemObject(clmem_global_squarenorm_buf_glob);
 }
