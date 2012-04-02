@@ -15,11 +15,8 @@ ae set_zero_ae()
 /** @todo memset... */
 __kernel void set_zero_gaugemomentum(__global ae * in)
 {
-	int id = get_global_id(0);
-	if(id == 0) {
-		for(int i = 0; i < GAUGEMOMENTASIZE; i++) {
-			in[i] = set_zero_ae();
-		}
+	PARALLEL_FOR(i, GAUGEMOMENTASIZE) {
+		in[i] = set_zero_ae();
 	}
 }
 
