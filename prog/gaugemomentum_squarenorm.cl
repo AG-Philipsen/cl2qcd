@@ -13,22 +13,23 @@ __kernel void gaugemomentum_squarenorm(__global const ae * const restrict in, __
 	if(local_size == 1) {
 		out[ group_id ] = sum;
 	} else {
+		// FIXME ensure local size is 128!!!
 		// sync threads
 		barrier(CLK_LOCAL_MEM_FENCE);
 		//reduction
 		result_local[idx] = sum;
 		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 64)
-			result_local[idx % 64] += result_local[idx];
+		if (idx < 64)
+			result_local[idx] += result_local[idx + 64];
 		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 32)
-			result_local[idx - 32] += result_local[idx];
+		if (idx < 32)
+			result_local[idx] += result_local[idx + 32];
 		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 16)
-			result_local[idx - 16] += result_local[idx];
+		if (idx < 16)
+			result_local[idx] += result_local[idx + 16];
 		barrier(CLK_LOCAL_MEM_FENCE);
-		if (idx >= 8)
-			result_local[idx - 8] += result_local[idx];
+		if (idx < 8)
+			result_local[idx] += result_local[idx + 8];
 		barrier(CLK_LOCAL_MEM_FENCE);
 		//thread 0 sums up the result_local and stores it in array result
 		if (idx == 0) {
