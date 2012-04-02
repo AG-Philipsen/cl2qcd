@@ -14,7 +14,6 @@ class Device : public Opencl_Module_Hmc {
 
 	cl_kernel testKernel;
 	cl_kernel testKernel2;
-	cl_kernel ae_sqn;
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Hmc() {
 		Opencl_Module_Hmc::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
@@ -26,7 +25,6 @@ public:
         void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, int evenodd, hmc_float kappa);
         void runTestKernel2(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, hmc_float kapppa);
 	void fill_kernels();
-	void set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out);
 	void clear_kernels();
 };
 
@@ -762,8 +760,6 @@ void Device::fill_kernels()
 {
 	Opencl_Module_Hmc::fill_kernels();
 
-	ae_sqn = createKernel("gaugemomentum_squarenorm") << basic_fermion_code << "types_hmc.h" << "operations_gaugemomentum.cl" << "gaugemomentum_squarenorm.cl";
-
 	testKernel = createKernel("fermion_force_eo") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 
 	testKernel2 = createKernel("fermion_force") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion.cl";
@@ -842,27 +838,6 @@ void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int g
 	enqueueKernel(testKernel2, gs, ls);
 }
 
-//this is a copy of "set_float_to_gaugemomentum_squarenorm_device"
-void Device::set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out)
-{
-	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(ae_sqn, this->get_device_type(), &ls2, &gs2, &num_groups);
-	//set arguments
-	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
-	int clerr = clSetKernelArg(ae_sqn, 0, sizeof(cl_mem), &clmem_in);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	//  /** @todo add reduction */
-	clerr = clSetKernelArg(ae_sqn,  1, sizeof(cl_mem), &clmem_out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	enqueueKernel(ae_sqn  , gs2, ls2);
-}
-
-
 hmc_float Dummyfield::get_squarenorm_eo(int which)
 {
 	//which controlls if the in or out-vector is looked at
@@ -870,7 +845,7 @@ hmc_float Dummyfield::get_squarenorm_eo(int which)
 	if(which == 1) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_eoprec_device(in2_eo, sqnorm);
 	if(which == 2) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_eoprec_device(in3_eo, sqnorm);
 	if(which == 3) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_eoprec_device(in4_eo, sqnorm);
-	if(which == 4) static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out_eo, sqnorm);
+	if(which == 4) static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out_eo, sqnorm);
 	// get stuff from device
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
@@ -891,7 +866,7 @@ hmc_float Dummyfield::get_squarenorm_noneo(int which)
 		cl_int err;
 		cl_context context = opencl_modules[0]->get_context();
 		tmp = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
-		static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out_noneo, tmp);
+		static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out_noneo, tmp);
 		hmc_float result;
 		err = clEnqueueReadBuffer(*queue, tmp, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 		logger.info() << result;

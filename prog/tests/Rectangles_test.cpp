@@ -17,7 +17,6 @@ class Device : public Opencl_Module_Hmc {
 	cl_kernel testKernel_b;
 	//for force_gauge_tlsym
 	cl_kernel testKernel2;
-	cl_kernel ae_sqn;
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Hmc() {
 		Opencl_Module_Hmc::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
@@ -31,7 +30,6 @@ public:
 	//for force_gauge_tlsym
 	void runTestKernel2(cl_mem out, cl_mem gf, int gs, int ls);
 	void fill_kernels();
-	void set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out);
 	void clear_kernels();
 };
 
@@ -108,7 +106,7 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
 	gpu.runTestKernel2();
 	logger.info() << "|f_gauge|^2:";
 	hmc_float gpu_res;
-	gpu_res = cpu.get_squarenorm(2);
+	gpu_res = gpu.get_squarenorm(2);
 
  	BOOST_MESSAGE("Tested GPU");
  
@@ -168,18 +166,7 @@ void Dummyfield::fill_buffers()
 void Device::fill_kernels()
 {
 	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
-	Opencl_Module::fill_kernels();
-
-	//to this end, one has to set the needed files by hand
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
-	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
-	//  basic_hmc_code = basic_fermion_code << "types_hmc.h";
-
-	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
-	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
-
-	ae_sqn = createKernel("gaugemomentum_squarenorm") << basic_fermion_code << "types_hmc.h" << "operations_gaugemomentum.cl" << "gaugemomentum_squarenorm.cl";
+	Opencl_Module_Hmc::fill_kernels();
 
 	testKernel = createKernel("rectangles") << basic_fermion_code << "gaugeobservables_rectangles.cl";	
 	testKernel_b = createKernel("rectangles_reduction") << basic_opencl_code << "gaugeobservables_rectangles.cl";
@@ -265,31 +252,10 @@ void Device::runTestKernel2(cl_mem out, cl_mem gf, int gs, int ls)
 }
 
 
-//this is a copy of "set_float_to_gaugemomentum_squarenorm_device"
-void Device::set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out)
-{
-	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(ae_sqn, this->get_device_type(), &ls2, &gs2, &num_groups);
-	//set arguments
-	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
-	int clerr = clSetKernelArg(ae_sqn, 0, sizeof(cl_mem), &clmem_in);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	//  /** @todo add reduction */
-	clerr = clSetKernelArg(ae_sqn,  1, sizeof(cl_mem), &clmem_out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	enqueueKernel(ae_sqn  , gs2, ls2);
-}
-
-
 hmc_float Dummyfield::get_squarenorm(int which)
 {
 	//which controlls if the in or out-vector is looked at
-	if(which == 2) static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out, sqnorm);
+	if(which == 2) static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
 	// get stuff from device
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
