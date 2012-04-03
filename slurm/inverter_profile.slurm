@@ -5,7 +5,7 @@
 #SBATCH --job-name=OpTiMaL_profile
 #SBATCH --mem-per-cpu=400
 #SBATCH --mail-type=ALL
-#SBATCH --partition=parallel
+#SBATCH --partition=test
 #SBATCH --gres=gpu
 #SBATCH --time=0-00:15:00
 #SBATCH --dependency=singleton
