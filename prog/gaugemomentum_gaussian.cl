@@ -1,5 +1,5 @@
 /** @todo rewrite gaussianComplexVector to handle structs??*/
-__kernel void generate_gaussian_gaugemomenta(__global ae * const restrict out, __global rngStateStorageType * const restrict rngStates)
+__kernel void generate_gaussian_gaugemomenta(__global aeStorageType * const restrict out, __global rngStateStorageType * const restrict rngStates)
 {
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
@@ -13,18 +13,22 @@ __kernel void generate_gaussian_gaugemomenta(__global ae * const restrict out, _
 #endif
 	for(int id_tmp = id; id_tmp < GAUGEMOMENTASIZE; id_tmp += global_size) {
 		//CP: THERE ARE 8 ELEMENTS IN AE
+		ae new_ae;
+
 		tmp = gaussianNormalPair(&rnd);
-		out[id_tmp].e0 = tmp.re;
-		out[id_tmp].e1 =  tmp.im;
+		new_ae.e0 = tmp.re;
+		new_ae.e1 =  tmp.im;
 		tmp = gaussianNormalPair(&rnd);
-		out[id_tmp].e2 =  tmp.re;
-		out[id_tmp].e3 =  tmp.im;
+		new_ae.e2 =  tmp.re;
+		new_ae.e3 =  tmp.im;
 		tmp = gaussianNormalPair(&rnd);
-		out[id_tmp].e4 =  tmp.re;
-		out[id_tmp].e5 =  tmp.im;
+		new_ae.e4 =  tmp.re;
+		new_ae.e5 =  tmp.im;
 		tmp = gaussianNormalPair(&rnd);
-		out[id_tmp].e6 =  tmp.re;
-		out[id_tmp].e7 =  tmp.im;
+		new_ae.e6 =  tmp.re;
+		new_ae.e7 =  tmp.im;
+
+		putAe(out, id_tmp, new_ae);
 	}
 
 	storeRngState(rngStates, rnd);

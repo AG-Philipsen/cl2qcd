@@ -44,6 +44,8 @@
 class Opencl_Module_Hmc : public Opencl_Module_Fermions {
 public:
 
+	Opencl_Module_Hmc() : Opencl_Module_Fermions(), gaugemomentum_buf_size(0) { };
+
 	// OpenCL specific methods needed for building/compiling the OpenCL program
 	/**
 	 * Collect the compiler options for OpenCL.
@@ -115,6 +117,14 @@ public:
 	void stout_smeared_fermion_force_device(cl_mem * gf_intermediate);
 	hmc_float calc_s_fermion();
 
+	/**
+	 * Query the size required for storage of a gaugemomentum buffer
+	 * in the format used by the implementation.
+	 *
+	 * @return The buffer size in bytes
+	 */
+	size_t get_gaugemomentum_buffer_size();
+
 protected:
 
 #ifdef _PROFILING_
@@ -163,7 +173,6 @@ protected:
 	 */
 	virtual int get_flop_size(const char * in);
 
-protected:
 private:
 
 	//kernels
@@ -201,6 +210,8 @@ private:
 	cl_mem clmem_phi_eo;
 
 	ClSourcePackage basic_hmc_code;
+
+	size_t gaugemomentum_buf_size;
 
 };
 

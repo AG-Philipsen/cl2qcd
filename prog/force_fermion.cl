@@ -2,7 +2,7 @@
  * @file kernel for the non-eo fermion force
  */
 
-__kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorfield * Y, __global  spinorfield * X, __global  ae * out, hmc_float kappa_in)
+__kernel void fermion_force(__global const ocl_s_gaugefield * const restrict field, __global const spinorfield * const restrict Y, __global const spinorfield * const restrict X, __global aeStorageType * const restrict out, const hmc_float kappa_in)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);
@@ -21,7 +21,7 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 		int n = pos.space;
 		int t = pos.time;
 
-		ae ae_tmp = out[global_link_pos];
+		ae ae_tmp = getAe(out, global_link_pos);
 
 		if(dir == 0) {
 			y = get_spinor_from_field(Y, n, t);
@@ -225,6 +225,6 @@ __kernel void fermion_force(__global ocl_s_gaugefield * field, __global  spinorf
 
 			ae_tmp = acc_factor_times_algebraelement(ae_tmp, 1., tr_lambda_u(v1));
 		}
-		out[global_link_pos] = ae_tmp;
+		putAe(out, global_link_pos, ae_tmp);
 	}
 }

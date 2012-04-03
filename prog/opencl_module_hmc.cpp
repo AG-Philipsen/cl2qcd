@@ -15,6 +15,9 @@ void Opencl_Module_Hmc::fill_collect_options(stringstream* collect_options)
 	if(get_parameters()->get_use_rectangles() == true) {
 		*collect_options <<  " -DC0=" << get_parameters()->get_c0() << " -DC1=" << get_parameters()->get_c1();
 	}
+	if(use_soa) {
+		*collect_options << " -DGAUGEMOMENTA_STRIDE=" << calculateStride(get_parameters()->get_gaugemomentasize(), sizeof(hmc_float));
+	}
 	return;
 }
 
@@ -27,7 +30,7 @@ void Opencl_Module_Hmc::fill_buffers()
 
 	int spinorfield_size = get_parameters()->get_sf_buf_size();
 	int eoprec_spinorfield_size = get_eoprec_spinorfield_buffer_size();
-	int gaugemomentum_size = get_parameters()->get_gm_buf_size();
+	int gaugemomentum_size = get_gaugemomentum_buffer_size();
 	int gaugefield_size = get_parameters()->get_gf_buf_size();
 	int float_size = sizeof(hmc_float);
 	hmc_complex one = hmc_complex_one;
@@ -64,31 +67,29 @@ void Opencl_Module_Hmc::fill_kernels()
 {
 	Opencl_Module_Fermions::fill_kernels();
 
-	basic_hmc_code = basic_fermion_code << "types_hmc.h";
+	basic_hmc_code = basic_fermion_code << "types_hmc.h" << "operations_gaugemomentum.cl";
 
 	//init kernels for HMC
 	if(get_parameters()->get_use_eo() == true) {
 		generate_gaussian_spinorfield_eo = createKernel("generate_gaussian_spinorfield_eo") << basic_hmc_code << "random.cl" << "spinorfield_eo_gaussian.cl";
-		fermion_force_eo = createKernel("fermion_force_eo") << basic_hmc_code << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
+		fermion_force_eo = createKernel("fermion_force_eo") << basic_hmc_code << "fermionmatrix.cl" << "force_fermion_eo.cl";
 	} else {
 		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_hmc_code << "random.cl" << "spinorfield_gaussian.cl";
 	}
-	fermion_force = createKernel("fermion_force") << basic_hmc_code << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion.cl";
-	set_zero_gaugemomentum = createKernel("set_zero_gaugemomentum") << basic_hmc_code << "gaugemomentum_zero.cl";
+	fermion_force = createKernel("fermion_force") << basic_hmc_code << "fermionmatrix.cl" << "force_fermion.cl";
+	set_zero_gaugemomentum = createKernel("set_zero_gaugemomentum") << basic_hmc_code <<  "gaugemomentum_zero.cl";
 	generate_gaussian_gaugemomenta = createKernel("generate_gaussian_gaugemomenta") << basic_hmc_code << "random.cl" << "gaugemomentum_gaussian.cl";
 	md_update_gaugefield = createKernel("md_update_gaugefield") << basic_hmc_code << "md_update_gaugefield.cl";
-	md_update_gaugemomenta = createKernel("md_update_gaugemomenta") << basic_hmc_code << "operations_gaugemomentum.cl" << "md_update_gaugemomenta.cl";
-	gauge_force = createKernel("gauge_force") << basic_hmc_code << "operations_gaugemomentum.cl" << "force_gauge.cl";
+	md_update_gaugemomenta = createKernel("md_update_gaugemomenta") << basic_hmc_code  << "md_update_gaugemomenta.cl";
+	gauge_force = createKernel("gauge_force") << basic_hmc_code  << "force_gauge.cl";
 	if(get_parameters()->get_use_rectangles() == true) {
 		//at the time of writing this kernel, the OpenCL compiler crashed the kernel using optimizations
-		gauge_force_tlsym = createKernel("gauge_force_tlsym", "-cl-opt-disable") << basic_hmc_code << "operations_gaugemomentum.cl" << "force_gauge_tlsym.cl";
+		gauge_force_tlsym = createKernel("gauge_force_tlsym", "-cl-opt-disable") << basic_hmc_code << "force_gauge_tlsym.cl";
 	}
 	if(get_parameters()->get_use_smearing() == true) {
 		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_hmc_code << "force_fermion_stout_smear.cl";
 	}
-	gaugemomentum_squarenorm = createKernel("gaugemomentum_squarenorm") << basic_hmc_code << "operations_gaugemomentum.cl" << "gaugemomentum_squarenorm.cl";
-
-	return;
+	gaugemomentum_squarenorm = createKernel("gaugemomentum_squarenorm") << basic_hmc_code << "gaugemomentum_squarenorm.cl";
 }
 
 void Opencl_Module_Hmc::clear_kernels()
@@ -1348,7 +1349,7 @@ void Opencl_Module_Hmc::gauge_force_device()
 
 	//recalculate force with local buffer to get only this contribution to the force vector
 	if(logger.beDebug()) {
-		int gaugemomentum_size = get_parameters()->get_gm_buf_size();
+		int gaugemomentum_size = get_gaugemomentum_buffer_size();
 		cl_mem force2;
 		force2 = create_rw_buffer(gaugemomentum_size);
 		//init new buffer to zero
@@ -1411,7 +1412,7 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device()
 
 	//recalculate force with local buffer to get only this contribution to the force vector
 	if(logger.beDebug()) {
-		int gaugemomentum_size = get_parameters()->get_gm_buf_size();
+		int gaugemomentum_size = get_gaugemomentum_buffer_size();
 		cl_mem force2;
 		force2 = create_rw_buffer(gaugemomentum_size);
 		//init new buffer to zero
@@ -1487,7 +1488,7 @@ void Opencl_Module_Hmc::fermion_force_device(cl_mem Y, cl_mem X, hmc_float kappa
 
 	//recalculate force with local buffer to get only this contribution to the force vector
 	if(logger.beDebug()) {
-		int gaugemomentum_size = get_parameters()->get_gm_buf_size();
+		int gaugemomentum_size = get_gaugemomentum_buffer_size();
 		cl_mem force2;
 		force2 = create_rw_buffer(gaugemomentum_size);
 		//init new buffer to zero
@@ -1568,7 +1569,7 @@ void Opencl_Module_Hmc::fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd,
 
 	//recalculate force with local buffer, giving only this contribution to the force
 	if(logger.beDebug()) {
-		int gaugemomentum_size = get_parameters()->get_gm_buf_size();
+		int gaugemomentum_size = get_gaugemomentum_buffer_size();
 		cl_mem force2;
 		force2 = create_rw_buffer(gaugemomentum_size);
 		//init new buffer to zero
@@ -1633,4 +1634,16 @@ void Opencl_Module_Hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clme
 	enqueueKernel(global_squarenorm_reduction, gs2, ls2);
 
 	clReleaseMemObject(clmem_global_squarenorm_buf_glob);
+}
+
+size_t Opencl_Module_Hmc::get_gaugemomentum_buffer_size()
+{
+	if(!gaugemomentum_buf_size) {
+		if(use_soa) {
+			gaugemomentum_buf_size = calculateStride(parameters->get_gaugemomentasize(), sizeof(hmc_float)) * sizeof(ae);
+		} else {
+			gaugemomentum_buf_size = parameters->get_gaugemomentasize() * sizeof(ae);
+		}
+	}
+	return gaugemomentum_buf_size;
 }

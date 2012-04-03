@@ -9,6 +9,41 @@ void print_ae(ae in)
 }
 #endif
 
+ae getAe(__global const aeStorageType * const restrict in, const size_t idx)
+{
+#ifdef _USE_SOA_
+	return (ae) {
+		in[0 * GAUGEMOMENTA_STRIDE + idx],
+		   in[1 * GAUGEMOMENTA_STRIDE + idx],
+		   in[2 * GAUGEMOMENTA_STRIDE + idx],
+		   in[3 * GAUGEMOMENTA_STRIDE + idx],
+		   in[4 * GAUGEMOMENTA_STRIDE + idx],
+		   in[5 * GAUGEMOMENTA_STRIDE + idx],
+		   in[6 * GAUGEMOMENTA_STRIDE + idx],
+		   in[7 * GAUGEMOMENTA_STRIDE + idx]
+	};
+#else
+	return in[idx];
+#endif
+}
+
+void putAe(__global aeStorageType * const restrict out, const size_t idx, const ae val)
+{
+#ifdef _USE_SOA_
+	out[0 * GAUGEMOMENTA_STRIDE + idx] = val.e0;
+	out[1 * GAUGEMOMENTA_STRIDE + idx] = val.e1;
+	out[2 * GAUGEMOMENTA_STRIDE + idx] = val.e2;
+	out[3 * GAUGEMOMENTA_STRIDE + idx] = val.e3;
+	out[4 * GAUGEMOMENTA_STRIDE + idx] = val.e4;
+	out[5 * GAUGEMOMENTA_STRIDE + idx] = val.e5;
+	out[6 * GAUGEMOMENTA_STRIDE + idx] = val.e6;
+	out[7 * GAUGEMOMENTA_STRIDE + idx] = val.e7;
+#else
+	out[idx] = val;
+#endif
+}
+
+
 hmc_float ae_squarenorm(ae in)
 {
 	hmc_float result =
@@ -51,11 +86,11 @@ ae acc_algebraelement(ae in, ae force_in)
 	return tmp;
 }
 
-void update_gaugemomentum(ae in, hmc_float factor, int global_link_pos, __global ae * out)
+void update_gaugemomentum(ae in, hmc_float factor, int global_link_pos, __global aeStorageType * out)
 {
-	ae tmp = out[global_link_pos];
+	ae tmp = getAe(out, global_link_pos);
 	tmp = acc_factor_times_algebraelement(tmp, factor, in);
-	out[global_link_pos] = tmp;
+	putAe(out, global_link_pos, tmp);
 }
 
 //calculates the trace of i times generator times 3x3-matrix and stores this in a su3-algebraelement

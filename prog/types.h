@@ -151,5 +151,10 @@ typedef struct {
 	hmc_float e7;
 } ae;
 
-#endif /* _TYPESH_ */
+#ifdef _USE_SOA_
+typedef hmc_float aeStorageType;
+#else
+typedef ae aeStorageType;
+#endif
 
+#endif /* _TYPESH_ */

@@ -1,9 +1,9 @@
 /** @todo add args for reduction... */
-__kernel void gaugemomentum_squarenorm(__global const ae * const restrict in, __global hmc_float * const restrict out, __local hmc_float * const restrict result_local)
+__kernel void gaugemomentum_squarenorm(__global const aeStorageType * const restrict in, __global hmc_float * const restrict out, __local hmc_float * const restrict result_local)
 {
 	hmc_float sum = 0.f;
 	PARALLEL_FOR(i, GAUGEMOMENTASIZE) {
-		sum += ae_squarenorm(in[i]);
+		sum += ae_squarenorm(getAe(in, i));
 	}
 
 	const size_t group_id = get_group_id(0);

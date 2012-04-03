@@ -8,7 +8,7 @@
 
 //this kernel is meant to be the one that updates the force with all needed ingredients already computed
 //	it takes the force field (out) and <fill in>
-__kernel void stout_smear_fermion_force(__global  ae * out)
+__kernel void stout_smear_fermion_force(__global aeStorageType * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);

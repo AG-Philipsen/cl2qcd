@@ -46,7 +46,7 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 	get_parameters()->reset_inversion_counters();
 
 	size_t gfsize = get_parameters()->get_gf_buf_size();
-	size_t gmsize = get_parameters()->get_gm_buf_size();
+	size_t gmsize = get_task_hmc(0)->get_gaugemomentum_buffer_size();
 
 	// copy u->u' p->p' for the integrator
 	// new_u is used in some debug code of the gaugemomentum-initialization. therefore we need to copy it before
