@@ -21,7 +21,7 @@ public:
 		finalize();
 	};
 
-  void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, int evenodd, hmc_float kappa);
+	void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, int evenodd, hmc_float kappa);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -513,7 +513,7 @@ void Dummyfield::runTestKernel(int evenodd)
 		static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in2, in3, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
 	} else {
 		//this is then force(Y_even, X_odd) == force(in1, in4)
- 	        static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in1, in4, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
+		static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in1, in4, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
 	}
 }
 

@@ -21,7 +21,7 @@ public:
 		finalize();
 	};
 
-        void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, hmc_float);
+	void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, hmc_float);
 	void fill_kernels();
 	void clear_kernels();
 };

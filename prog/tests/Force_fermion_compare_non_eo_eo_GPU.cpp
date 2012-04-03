@@ -22,8 +22,8 @@ public:
 		finalize();
 	};
 
-        void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, int evenodd, hmc_float kappa);
-        void runTestKernel2(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, hmc_float kapppa);
+	void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, int evenodd, hmc_float kappa);
+	void runTestKernel2(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, hmc_float kapppa);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -639,7 +639,7 @@ void Dummyfield::verify_ae_vectors()
 	bool check = compare_ae_vectors(sf_out_noneo, sf_out_eo, NUM_ELEMENTS_AE);
 
 	if(check) {
-	        logger.info() << "eo and non-eo result vectors agree ";
+		logger.info() << "eo and non-eo result vectors agree ";
 	} else {
 		logger.info() << "eo and noneo result vectors DO NOT agree ";
 		BOOST_REQUIRE_EQUAL(1, 0);
@@ -911,10 +911,10 @@ void Dummyfield::runTestKernel(int evenodd)
 	//Y_odd = in2_eo, Y_even = in1_eo, X_odd = in4_eo, X_even = in3_eo
 	if(evenodd == ODD) {
 		//this is then force(Y_odd, X_even) == force(in2, in3)
-	  static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in2_eo, in3_eo, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
+		static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in2_eo, in3_eo, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
 	} else {
 		//this is then force(Y_even, X_odd) == force(in1, in4)
-	  static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in1_eo, in4_eo, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
+		static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in1_eo, in4_eo, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
 	}
 }
 
