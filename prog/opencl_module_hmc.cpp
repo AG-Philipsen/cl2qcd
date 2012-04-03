@@ -1031,6 +1031,7 @@ void Opencl_Module_Hmc::calc_gauge_force()
 	logger.debug() << "\t\tcalc gauge_force...";
 	gauge_force_device();
 	if(get_parameters()->get_use_rectangles() == true){
+	        logger.debug() << "\t\tcalc rect gauge_force...";
 		gauge_force_tlsym_device();
 	}
 }
@@ -1194,17 +1195,18 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	logger.info() << "\tdeltaS_gaugemom = " << setprecision(10) << 0.5 * (p2 - new_p2);
 
 	//Fermion-Part:
-	hmc_float spinor_energy_init, s_fermion;
-	//initial energy has been computed in the beginning...
-	Opencl_Module_Hmc::get_buffer_from_device(clmem_energy_init, &spinor_energy_init, sizeof(hmc_float));
-	// sum_links phi*_i (M^+M)_ij^-1 phi_j
-	s_fermion = calc_s_fermion();
-	deltaH += spinor_energy_init - s_fermion;
-
-	logger.debug() << "\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
-	logger.debug() << "\tS_ferm(new field) = " << setprecision(10) << s_fermion;
-	logger.info() << "\tdeltaS_ferm = " << spinor_energy_init - s_fermion;
-
+	if(! get_parameters()->get_use_gauge_only() ){
+    	        hmc_float spinor_energy_init, s_fermion;
+		//initial energy has been computed in the beginning...
+		Opencl_Module_Hmc::get_buffer_from_device(clmem_energy_init, &spinor_energy_init, sizeof(hmc_float));
+		// sum_links phi*_i (M^+M)_ij^-1 phi_j
+		s_fermion = calc_s_fermion();
+		deltaH += spinor_energy_init - s_fermion;
+		
+		logger.debug() << "\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
+		logger.debug() << "\tS_ferm(new field) = " << setprecision(10) << s_fermion;
+		logger.info() << "\tdeltaS_ferm = " << spinor_energy_init - s_fermion;
+	}
 	//Metropolis-Part
 	hmc_float compare_prob;
 	if(deltaH < 0) {
@@ -1400,7 +1402,7 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device()
 		this->set_float_to_gaugemomentum_squarenorm_device(clmem_force, gauge_force_tlsym_tmp);
 		get_buffer_from_device(gauge_force_tlsym_tmp, &gauge_force_tlsym_energy, sizeof(hmc_float));
 
-		//logger.debug() <<  "\t\t\tgauge force tlsym:\t" << gauge_force_tlsym_energy;
+		logger.debug() <<  "\t\t\tgauge force tlsym:\t" << gauge_force_tlsym_energy;
 
 		int clerr = clReleaseMemObject(gauge_force_tlsym_tmp);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
@@ -1430,7 +1432,7 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device()
 		hmc_float check_force_energy = 0.;
 		this->set_float_to_gaugemomentum_squarenorm_device(force2, check_force_tmp);
 		get_buffer_from_device(check_force_tmp, &check_force_energy, sizeof(hmc_float));
-		//logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
+		logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
 		int clerr = clReleaseMemObject(check_force_tmp);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		if(check_force_energy != check_force_energy) {
