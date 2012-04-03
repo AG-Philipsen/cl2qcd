@@ -500,20 +500,12 @@ void Dummyfield::convert_to_noneo(spinor * sf_noneo, spinor* eo1, spinor * eo2)
 
 void Dummyfield::reset_outfield_eo()
 {
-	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
-	int err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_eo, CL_TRUE, 0, ae_buf_size, sf_out_eo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	return;
+	static_cast<Device*>(opencl_modules[0])->importGaugemomentumBuffer(out_eo, reinterpret_cast<ae*>(sf_out_eo));
 }
 
 void Dummyfield::reset_outfield_noneo()
 {
-	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
-	int err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_noneo, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	return;
+	static_cast<Device*>(opencl_modules[0])->importGaugemomentumBuffer(out_noneo, reinterpret_cast<ae*>(sf_out_noneo));
 }
 
 bool compare_entries(hmc_complex in1, hmc_complex in2)
@@ -630,11 +622,9 @@ void Dummyfield::verify_ae_vectors()
 {
 	//read out the vectors on the device
 	int NUM_ELEMENTS_AE = params.get_gaugemomentasize() * params.get_su3algebrasize();
-	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
-	cl_int err = clEnqueueReadBuffer(*queue, out_eo, CL_TRUE, 0,  ae_buf_size, sf_out_eo, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clEnqueueReadBuffer(*queue, out_noneo, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	Device* device = static_cast<Device*>(opencl_modules[0]);
+	device->exportGaugemomentumBuffer(reinterpret_cast<ae*>(sf_out_eo), out_eo);
+	device->exportGaugemomentumBuffer(reinterpret_cast<ae*>(sf_out_noneo), out_noneo);
 	logger.info() << "\tcompare out_noneo with out_eo";
 	bool check = compare_ae_vectors(sf_out_noneo, sf_out_eo, NUM_ELEMENTS_AE);
 
@@ -702,8 +692,8 @@ void Dummyfield::fill_buffers()
 
 	size_t sf_buf_size_noneo;
 	sf_buf_size_noneo = get_parameters()->get_sf_buf_size();
-	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
-	Opencl_Module_Spinors * spinor_module = static_cast<Opencl_Module_Spinors*>(opencl_modules[0]);
+	Device * spinor_module = static_cast<Device*>(opencl_modules[0]);
+	size_t ae_buf_size = spinor_module->get_gaugemomentum_buffer_size();
 	size_t sf_eoprec_buffer_size = spinor_module->get_eoprec_spinorfield_buffer_size();
 	//create buffer for sf on device (and copy sf_in to both for convenience)
 
@@ -737,18 +727,17 @@ void Dummyfield::fill_buffers()
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	in2_noneo_converted = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size_noneo, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), in1_noneo, CL_TRUE, 0, sf_buf_size_noneo, sf_in1_noneo, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(spinor_module->get_queue(), in1_noneo, CL_TRUE, 0, sf_buf_size_noneo, sf_in1_noneo, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), in2_noneo, CL_TRUE, 0, sf_buf_size_noneo, sf_in2_noneo, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(spinor_module->get_queue(), in2_noneo, CL_TRUE, 0, sf_buf_size_noneo, sf_in2_noneo, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), in1_noneo_converted, CL_TRUE, 0, sf_buf_size_noneo, sf_in1_noneo_converted, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(spinor_module->get_queue(), in1_noneo_converted, CL_TRUE, 0, sf_buf_size_noneo, sf_in1_noneo_converted, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), in2_noneo_converted, CL_TRUE, 0, sf_buf_size_noneo, sf_in2_noneo_converted, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(spinor_module->get_queue(), in2_noneo_converted, CL_TRUE, 0, sf_buf_size_noneo, sf_in2_noneo_converted, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	out_noneo = clCreateBuffer(context, CL_MEM_WRITE_ONLY, ae_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), out_noneo, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	spinor_module->importGaugemomentumBuffer(out_noneo, reinterpret_cast<ae*>(sf_out_noneo));
 
 	this->reset_outfield_noneo();
 

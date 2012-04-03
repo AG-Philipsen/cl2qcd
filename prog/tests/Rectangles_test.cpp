@@ -150,12 +150,11 @@ void Dummyfield::fill_buffers()
 	sf_out = new hmc_float[NUM_ELEMENTS_AE];
 	fill_with_zero(sf_out, NUM_ELEMENTS_AE);
 
-	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
+	Device * device = static_cast<Device*>(opencl_modules[0]);
 
-	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, ae_buf_size, 0, &err );
+	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, device->get_gaugemomentum_buffer_size(), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out, CL_TRUE, 0, ae_buf_size, sf_out, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(sf_out));
 
 	//create buffer for squarenorm on device
 	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);

@@ -164,17 +164,17 @@ void Dummyfield::fill_buffers()
 	BOOST_REQUIRE(gm_in);
 	BOOST_REQUIRE(gm_out);
 
-	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
+	Device * device = static_cast<Device*>(opencl_modules[0]);
+
+	size_t ae_buf_size = device->get_gaugemomentum_buffer_size();
 	//create buffer for sf on device (and copy sf_in to both for convenience)
 
-	in = clCreateBuffer(context, CL_MEM_READ_ONLY , ae_buf_size, 0, &err );
+	in = clCreateBuffer(context, CL_MEM_READ_WRITE , ae_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in, CL_TRUE, 0, ae_buf_size, gm_in, 0, 0, NULL);
+	device->importGaugemomentumBuffer(in, reinterpret_cast<ae*>(gm_in));
+	out = clCreateBuffer(context, CL_MEM_READ_WRITE, ae_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, ae_buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out, CL_TRUE, 0, ae_buf_size, gm_out, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(gm_out));
 
 	//create buffer for squarenorm on device
 	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
@@ -186,7 +186,6 @@ void Device::fill_kernels()
 	Opencl_Module_Hmc::fill_kernels();
 
 	testKernel = createKernel("md_update_gaugemomenta") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "md_update_gaugemomenta.cl";
-
 }
 
 void Dummyfield::clear_buffers()
@@ -224,7 +223,7 @@ void Device::runTestKernel(cl_mem out, cl_mem in, int gs, int ls)
 hmc_float Dummyfield::get_squarenorm(int which)
 {
 	//which controlls if the in or out-vector is looked at
-	if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in, sqnorm);
+	if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(in, sqnorm);
 	if(which == 1) static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
 	// get stuff from device
 	hmc_float result;

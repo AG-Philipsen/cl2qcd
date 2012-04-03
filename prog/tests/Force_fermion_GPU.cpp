@@ -296,21 +296,21 @@ void Dummyfield::fill_buffers()
 	fill_with_zero(ae_out, NUM_ELEMENTS_AE);
 
 	size_t sf_buf_size = get_parameters()->get_sf_buf_size();
-	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
 	//create buffer for sf on device (and copy sf_in to both for convenience)
+
+	Device * device = static_cast<Device*>(opencl_modules[0]);
 
 	in1 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	in2 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in1, CL_TRUE, 0, sf_buf_size, sf_in1, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(device->get_queue(), in1, CL_TRUE, 0, sf_buf_size, sf_in1, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in2, CL_TRUE, 0, sf_buf_size, sf_in2, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(device->get_queue(), in2, CL_TRUE, 0, sf_buf_size, sf_in2, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	out = clCreateBuffer(context, CL_MEM_READ_WRITE, ae_buf_size, 0, &err );
+	out = clCreateBuffer(context, CL_MEM_READ_WRITE, device->get_gaugemomentum_buffer_size(), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out, CL_TRUE, 0, ae_buf_size, ae_out, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(ae_out));
 
 	//create buffer for squarenorm on device
 	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
