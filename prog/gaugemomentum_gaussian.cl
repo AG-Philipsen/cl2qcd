@@ -8,8 +8,8 @@ __kernel void generate_gaussian_gaugemomenta(__global ae * const restrict out, _
 
 	hmc_complex tmp;
 #ifdef _SAME_RND_NUMBERS_
-       if(id>0) return;
-       global_size = 1;
+	if(id > 0) return;
+	global_size = 1;
 #endif
 	for(int id_tmp = id; id_tmp < GAUGEMOMENTASIZE; id_tmp += global_size) {
 		//CP: THERE ARE 8 ELEMENTS IN AE

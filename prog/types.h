@@ -101,28 +101,28 @@ typedef struct {
 } Matrix3x3;
 //an su3 matrix
 typedef struct {
-  hmc_complex e00;
-  hmc_complex e01;
-  hmc_complex e02;
-  hmc_complex e10;
-  hmc_complex e11;
-  hmc_complex e12;
-  hmc_complex e20;
-  hmc_complex e21;
-  hmc_complex e22;
+	hmc_complex e00;
+	hmc_complex e01;
+	hmc_complex e02;
+	hmc_complex e10;
+	hmc_complex e11;
+	hmc_complex e12;
+	hmc_complex e20;
+	hmc_complex e21;
+	hmc_complex e22;
 } Matrixsu3;
 #else
 //an su3 matrix_
 struct Matrixsu3 {
-  hmc_complex e00;
-  hmc_complex e01;
-  hmc_complex e02;
-  hmc_complex e10;
-  hmc_complex e11;
-  hmc_complex e12;
-  hmc_complex e20;
-  hmc_complex e21;
-  hmc_complex e22;
+	hmc_complex e00;
+	hmc_complex e01;
+	hmc_complex e02;
+	hmc_complex e10;
+	hmc_complex e11;
+	hmc_complex e12;
+	hmc_complex e20;
+	hmc_complex e21;
+	hmc_complex e22;
 };
 #endif // ifdef _INKERNEL_
 

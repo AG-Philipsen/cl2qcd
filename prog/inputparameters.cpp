@@ -149,19 +149,20 @@ void inputparameters::set_defaults()
 
 	use_same_rnd_numbers = false;
 	profile_solver = false;
-	
+
 	return;
 }
 
-void inputparameters::set_gauge_norm_factors() {
-	
+void inputparameters::set_gauge_norm_factors()
+{
+
 	//set normalization factors for gauge observables
 	plaq_norm = (this->get_vol4d() * NDIM * (NDIM - 1) ) / 2.;
 	tplaq_norm = (this->get_vol4d() * (NDIM - 1));
 	splaq_norm = (this->get_vol4d() * (NDIM - 1) * (NDIM - 2)) / 2. ;
-	rect_norm = NDIM * (NDIM-1) * NC *  this->get_vol4d();
+	rect_norm = NDIM * (NDIM - 1) * NC *  this->get_vol4d();
 	poly_norm = (NC * this->get_volspace());
-	
+
 	return;
 }
 
@@ -188,92 +189,92 @@ void inputparameters::readfile(const char* ifn)
 			}
 			if(line.find("#") != std::string::npos) continue; //allow comments
 
-			if(	line.find("kappa") != std::string::npos ||
-					line.find("Kappa") != std::string::npos ) {
-					if(	line.find("mp") != std::string::npos || 
-							line.find("MP") != std::string::npos || 
-							line.find("Mp") != std::string::npos )
-						val_assign(&kappa_mp, line);
-					else
-						val_assign(&kappa, line);
+			if( line.find("kappa") != std::string::npos ||
+			    line.find("Kappa") != std::string::npos ) {
+				if( line.find("mp") != std::string::npos ||
+				    line.find("MP") != std::string::npos ||
+				    line.find("Mp") != std::string::npos )
+					val_assign(&kappa_mp, line);
+				else
+					val_assign(&kappa, line);
 			}
-			if(	line.find("mu") != std::string::npos || 
-					line.find("Mu") != std::string::npos) {
-					if(	line.find("mp") != std::string::npos || 
-							line.find("MP") != std::string::npos || 
-							line.find("Mp") != std::string::npos ) {
-						val_assign(&mu_mp, line);
-						//calculate mubar
-						this->calc_mubar_mp();
-						mu_mpset = true;
-					} else{
-						val_assign(&mu, line);
-						//calculate mubar
-						this->calc_mubar();
-						muset = true;
-					}
+			if( line.find("mu") != std::string::npos ||
+			    line.find("Mu") != std::string::npos) {
+				if( line.find("mp") != std::string::npos ||
+				    line.find("MP") != std::string::npos ||
+				    line.find("Mp") != std::string::npos ) {
+					val_assign(&mu_mp, line);
+					//calculate mubar
+					this->calc_mubar_mp();
+					mu_mpset = true;
+				} else {
+					val_assign(&mu, line);
+					//calculate mubar
+					this->calc_mubar();
+					muset = true;
+				}
 			}
-			if(	line.find("csw") != std::string::npos ||
-					line.find("Csw") != std::string::npos) {
-					if(	line.find("mp") != std::string::npos || 
-							line.find("MP") != std::string::npos || 
-							line.find("Mp") != std::string::npos ) {
-						val_assign(&csw_mp, line);
-						csw_mpset = true;
-					} else {
-						val_assign(&csw, line);
-						cswset = true;
-					}
+			if( line.find("csw") != std::string::npos ||
+			    line.find("Csw") != std::string::npos) {
+				if( line.find("mp") != std::string::npos ||
+				    line.find("MP") != std::string::npos ||
+				    line.find("Mp") != std::string::npos ) {
+					val_assign(&csw_mp, line);
+					csw_mpset = true;
+				} else {
+					val_assign(&csw, line);
+					cswset = true;
+				}
 			}
-			
-			if(	line.find("beta") != std::string::npos ||
-					line.find("Beta") != std::string::npos) val_assign(&beta, line);
 
-			if(	line.find("theta_fermion_spatial") != std::string::npos || 
-					line.find("theta_spatial") != std::string::npos ||
-					line.find("theta_s") != std::string::npos ||
-					line.find("thetas") != std::string::npos ||
-					line.find("ThetaS") != std::string::npos	) val_assign(&theta_fermion_spatial, line);
-			
-			if(	line.find("theta_fermion_temporal") != std::string::npos ||
-					line.find("theta_temporal") != std::string::npos ||
-					line.find("theta_t") != std::string::npos ||
-					line.find("ThetaT") != std::string::npos ) val_assign(&theta_fermion_temporal, line);
+			if( line.find("beta") != std::string::npos ||
+			    line.find("Beta") != std::string::npos) val_assign(&beta, line);
 
-			if(	line.find("cgmax") != std::string::npos || 
-					line.find("CGmax") != std::string::npos ||
-					line.find("Cgmax") != std::string::npos	) {
-				if(	line.find("mp") != std::string::npos || 
-						line.find("MP") != std::string::npos || 
-						line.find("Mp") != std::string::npos ){
+			if( line.find("theta_fermion_spatial") != std::string::npos ||
+			    line.find("theta_spatial") != std::string::npos ||
+			    line.find("theta_s") != std::string::npos ||
+			    line.find("thetas") != std::string::npos ||
+			    line.find("ThetaS") != std::string::npos  ) val_assign(&theta_fermion_spatial, line);
+
+			if( line.find("theta_fermion_temporal") != std::string::npos ||
+			    line.find("theta_temporal") != std::string::npos ||
+			    line.find("theta_t") != std::string::npos ||
+			    line.find("ThetaT") != std::string::npos ) val_assign(&theta_fermion_temporal, line);
+
+			if( line.find("cgmax") != std::string::npos ||
+			    line.find("CGmax") != std::string::npos ||
+			    line.find("Cgmax") != std::string::npos ) {
+				if( line.find("mp") != std::string::npos ||
+				    line.find("MP") != std::string::npos ||
+				    line.find("Mp") != std::string::npos ) {
 					val_assign(&cgmax_mp, line);
 				} else {
 					val_assign(&cgmax, line);
 				}
 			}
 
-			if(	line.find("Solver") != std::string::npos ||
-					line.find("solver") != std::string::npos ||
-					line.find("SOLVER") != std::string::npos	) {
-				if(	line.find("mp") != std::string::npos || 
-						line.find("MP") != std::string::npos || 
-						line.find("Mp") != std::string::npos ){
+			if( line.find("Solver") != std::string::npos ||
+			    line.find("solver") != std::string::npos ||
+			    line.find("SOLVER") != std::string::npos  ) {
+				if( line.find("mp") != std::string::npos ||
+				    line.find("MP") != std::string::npos ||
+				    line.find("Mp") != std::string::npos ) {
 					cout << "here" << endl;
 					solver_assign(&use_cg_mp, line, true);
 				} else {
 					solver_assign(&use_cg, line, false);
 				}
 			}
-		
+
 			if(line.find("sol_pr") != std::string::npos) val_assign(&solver_prec, line);
 			if(line.find("force_pr") != std::string::npos) val_assign(&force_prec, line);
 
 			if(line.find("writefrequency") != std::string::npos) val_assign(&writefrequency, line);
 			if(line.find("savefrequency") != std::string::npos) val_assign(&savefrequency, line);
 			if(line.find("saveconfigs") != std::string::npos) bool_assign(&saveconfigs, line);
-			
-			if(	line.find("prec") != std::string::npos ||
-					line.find("Prec") != std::string::npos ) val_assign(&prec, line);
+
+			if( line.find("prec") != std::string::npos ||
+			    line.find("Prec") != std::string::npos ) val_assign(&prec, line);
 
 			if(line.find("readsource") != std::string::npos) startcond_assign(&startcondition, line);
 			if(line.find("startcondition") != std::string::npos) startcond_assign(&startcondition, line);
@@ -284,36 +285,36 @@ void inputparameters::readfile(const char* ifn)
 
 			if(line.find("heatbathsteps") != std::string::npos) val_assign(&heatbathsteps, line);
 
-			if(	line.find("thermalizationsteps") != std::string::npos ||
-					line.find("thermsteps") != std::string::npos ||
-					line.find("thermalization") != std::string::npos ) val_assign(&thermalizationsteps, line);
+			if( line.find("thermalizationsteps") != std::string::npos ||
+			    line.find("thermsteps") != std::string::npos ||
+			    line.find("thermalization") != std::string::npos ) val_assign(&thermalizationsteps, line);
 
-			if(	line.find("overrelaxsteps") != std::string::npos ||
-					line.find("overrelax") != std::string::npos ||
-					line.find("oversteps") != std::string::npos ) val_assign(&overrelaxsteps, line);
+			if( line.find("overrelaxsteps") != std::string::npos ||
+			    line.find("overrelax") != std::string::npos ||
+			    line.find("oversteps") != std::string::npos ) val_assign(&overrelaxsteps, line);
 
 			if(line.find("iter_refresh") != std::string::npos) val_assign(&iter_refresh, line);
 
 			if(line.find("num_dev") != std::string::npos) val_assign(&num_dev, line);
 
-			if(	line.find("fermaction") 		!= std::string::npos	||
-					line.find("fermionaction")	!= std::string::npos	||
-					line.find("fermact") 				!= std::string::npos 	) {
-				if(	line.find("mp") != std::string::npos || 
-							line.find("MP") != std::string::npos || 
-							line.find("Mp") != std::string::npos ) {
+			if( line.find("fermaction")     != std::string::npos  ||
+			    line.find("fermionaction")  != std::string::npos  ||
+			    line.find("fermact")        != std::string::npos  ) {
+				if( line.find("mp") != std::string::npos ||
+				    line.find("MP") != std::string::npos ||
+				    line.find("Mp") != std::string::npos ) {
 					fermact_assign(&fermact_mp, line);
-				} else{
+				} else {
 					fermact_assign(&fermact, line);
 				}
 			}
-			
-			if(	line.find("fermaction_mp") 		!= std::string::npos	||
-					line.find("fermionaction_mp")	!= std::string::npos	||
-					line.find("fermact_mp") 				!= std::string::npos 	) fermact_assign(&fermact_mp, line);
 
-			if(	line.find("gaugeaction") 	!= std::string::npos ||
-					line.find("gaugeact") 		!= std::string::npos ) {
+			if( line.find("fermaction_mp")    != std::string::npos  ||
+			    line.find("fermionaction_mp") != std::string::npos  ||
+			    line.find("fermact_mp")         != std::string::npos  ) fermact_assign(&fermact_mp, line);
+
+			if( line.find("gaugeaction")  != std::string::npos ||
+			    line.find("gaugeact")     != std::string::npos ) {
 				gaugeact_assign(&gaugeact, line, c1set);
 			}
 			if(line.find("c1") != std::string::npos) {
@@ -321,9 +322,9 @@ void inputparameters::readfile(const char* ifn)
 				c1set = true;
 				this->calc_c0_tlsym(this->get_c1());
 			}
-			
+
 			if(line.find("hmcsteps") != std::string::npos) val_assign(&hmcsteps, line);
-			if(	line.find("tau") != std::string::npos) val_assign(&tau, line);
+			if( line.find("tau") != std::string::npos) val_assign(&tau, line);
 			if(line.find("integrationsteps0") != std::string::npos) val_assign(&integrationsteps0, line);
 			if(line.find("integrationsteps1") != std::string::npos) val_assign(&integrationsteps1, line);
 			if(line.find("integrationsteps2") != std::string::npos) val_assign(&integrationsteps2, line);
@@ -335,36 +336,36 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("lambda1") != std::string::npos) val_assign(&lambda1, line);
 			if(line.find("lambda2") != std::string::npos) val_assign(&lambda2, line);
 
-			if(	line.find("evenodd") != std::string::npos	||
-					line.find("even-odd") != std::string::npos ||
-					line.find("even_odd") != std::string::npos ||
-					line.find("even-odd-preconditioning") != std::string::npos ||
-					line.find("use_eo") != std::string::npos ||
-					line.find("use_evenodd") != std::string::npos ) bool_assign(&use_eo, line);
-			
-			if(	line.find("use_mp") != std::string::npos	||
-					line.find("use_mass-preconditioning") != std::string::npos ||
-					line.find("use_MP") != std::string::npos ||
-					line.find("use_massprec") != std::string::npos ||
-					line.find("use_mass-prec") != std::string::npos  ) bool_assign(&use_mp, line);
+			if( line.find("evenodd") != std::string::npos ||
+			    line.find("even-odd") != std::string::npos ||
+			    line.find("even_odd") != std::string::npos ||
+			    line.find("even-odd-preconditioning") != std::string::npos ||
+			    line.find("use_eo") != std::string::npos ||
+			    line.find("use_evenodd") != std::string::npos ) bool_assign(&use_eo, line);
 
-			if(	line.find("use_rec12") != std::string::npos ||
-					line.find("REC12") != std::string::npos) bool_assign(&use_rec12, line);
-			
-			if(	line.find("use_gpu") != std::string::npos ||
-					line.find("GPU") != std::string::npos  ) bool_assign(&use_gpu, line);
+			if( line.find("use_mp") != std::string::npos  ||
+			    line.find("use_mass-preconditioning") != std::string::npos ||
+			    line.find("use_MP") != std::string::npos ||
+			    line.find("use_massprec") != std::string::npos ||
+			    line.find("use_mass-prec") != std::string::npos  ) bool_assign(&use_mp, line);
 
-			if(	line.find("NS") != std::string::npos ||	
-					line.find("NSPACE") != std::string::npos) val_assign(&nspace, line);
-			if(	line.find("NT") != std::string::npos ||
-					line.find("NTIME") != std::string::npos) val_assign(&ntime, line);
+			if( line.find("use_rec12") != std::string::npos ||
+			    line.find("REC12") != std::string::npos) bool_assign(&use_rec12, line);
 
-			if(	line.find("XI") != std::string::npos ||
-					line.find("xi") != std::string::npos ||
-					line.find("Xi") != std::string::npos) val_assign(&xi, line);
-			if(	line.find("anisotropy") != std::string::npos ||
-					line.find("Anisotropy") != std::string::npos ||
-					line.find("use_aniso") != std::string::npos) bool_assign(&use_aniso, line);
+			if( line.find("use_gpu") != std::string::npos ||
+			    line.find("GPU") != std::string::npos  ) bool_assign(&use_gpu, line);
+
+			if( line.find("NS") != std::string::npos ||
+			    line.find("NSPACE") != std::string::npos) val_assign(&nspace, line);
+			if( line.find("NT") != std::string::npos ||
+			    line.find("NTIME") != std::string::npos) val_assign(&ntime, line);
+
+			if( line.find("XI") != std::string::npos ||
+			    line.find("xi") != std::string::npos ||
+			    line.find("Xi") != std::string::npos) val_assign(&xi, line);
+			if( line.find("anisotropy") != std::string::npos ||
+			    line.find("Anisotropy") != std::string::npos ||
+			    line.find("use_aniso") != std::string::npos) bool_assign(&use_aniso, line);
 
 			if(line.find("print_to_screen") != std::string::npos) bool_assign(&print_to_screen, line);
 
@@ -406,7 +407,7 @@ void inputparameters::readfile(const char* ifn)
 		if( ( (use_rectangles  == true) && (gaugeact != TLSYM) ) ||
 		    ( (use_rectangles  == false) && (gaugeact == TLSYM) ) )
 			throw Invalid_Gaugeact();
-		
+
 		//check the read-in values against the compile time values
 		this->set_settings_global();
 		this->check_settings_global();
@@ -501,23 +502,23 @@ void inputparameters::fermact_assign(int * out, std::string line)
 	size_t pos = line.find("=");
 	std::string value = line.substr(pos + 1);
 
-	if(	value.find("TWISTEDMASS") != std::string::npos	||
-			value.find("twistedmass") != std::string::npos	||
-			value.find("Twistedmass") != std::string::npos	||
-			value.find("TwistedMass") != std::string::npos	) {
+	if( value.find("TWISTEDMASS") != std::string::npos  ||
+	    value.find("twistedmass") != std::string::npos  ||
+	    value.find("Twistedmass") != std::string::npos  ||
+	    value.find("TwistedMass") != std::string::npos  ) {
 		(*out) = TWISTEDMASS;
 		return;
 	}
-	if(	value.find("clover") != std::string::npos	||
-			value.find("CLOVER") != std::string::npos ||
-			value.find("Clover") != std::string::npos ) {
+	if( value.find("clover") != std::string::npos ||
+	    value.find("CLOVER") != std::string::npos ||
+	    value.find("Clover") != std::string::npos ) {
 		(*out) = CLOVER;
 		return;
 	}
-	if(	value.find("WILSON") != std::string::npos ||
-			value.find("Wilson") != std::string::npos ||
-			value.find("wilson") != std::string::npos ||
-			value.find("unimproved") != std::string::npos ) {
+	if( value.find("WILSON") != std::string::npos ||
+	    value.find("Wilson") != std::string::npos ||
+	    value.find("wilson") != std::string::npos ||
+	    value.find("unimproved") != std::string::npos ) {
 		(*out) = WILSON;
 		return;
 	}
@@ -530,44 +531,44 @@ void inputparameters::gaugeact_assign(int * out, std::string line, bool mu1set)
 	size_t pos = line.find("=");
 	std::string value = line.substr(pos + 1);
 
-	if(	value.find("TLSYM") != std::string::npos	||
-			value.find("tlsym") != std::string::npos	||
-			value.find("Tlsym") != std::string::npos	||
-			value.find("TLsym") != std::string::npos	) {
+	if( value.find("TLSYM") != std::string::npos  ||
+	    value.find("tlsym") != std::string::npos  ||
+	    value.find("Tlsym") != std::string::npos  ||
+	    value.find("TLsym") != std::string::npos  ) {
 		(*out) = TLSYM;
 		bool_assign(&use_rectangles, "1");
-		if(!mu1set){
+		if(!mu1set) {
 			c1 = c1_default_tlsym;
 			calc_c0_tlsym(c1_default_tlsym);
 		}
 		return;
 	}
-	if(	value.find("IWASAKI") != std::string::npos	||
-			value.find("iwasaki") != std::string::npos	||
-			value.find("Iwasaki") != std::string::npos 	) {
+	if( value.find("IWASAKI") != std::string::npos  ||
+	    value.find("iwasaki") != std::string::npos  ||
+	    value.find("Iwasaki") != std::string::npos  ) {
 		(*out) = IWASAKI;
 		bool_assign(&use_rectangles, "1");
-		if(!mu1set){
+		if(!mu1set) {
 			c1 = c1_default_iwasaki;
 			calc_c0_tlsym(c1_default_iwasaki);
 		}
 		return;
 	}
-	if(	value.find("DBW2") != std::string::npos	||
-			value.find("dbw2") != std::string::npos	||
-			value.find("Dbw2") != std::string::npos	) {
+	if( value.find("DBW2") != std::string::npos ||
+	    value.find("dbw2") != std::string::npos ||
+	    value.find("Dbw2") != std::string::npos ) {
 		(*out) = DBW2;
 		bool_assign(&use_rectangles, "1");
-		if(!mu1set){
+		if(!mu1set) {
 			c1 = c1_default_dbw2;
 			calc_c0_tlsym(c1_default_dbw2);
 		}
 		return;
 	}
-	if(	value.find("WILSON") != std::string::npos	||
-			value.find("Wilson") != std::string::npos	||
-			value.find("wilson") != std::string::npos	||
-			value.find("unimproved") != std::string::npos	) {
+	if( value.find("WILSON") != std::string::npos ||
+	    value.find("Wilson") != std::string::npos ||
+	    value.find("wilson") != std::string::npos ||
+	    value.find("unimproved") != std::string::npos ) {
 		(*out) = WILSON;
 		return;
 	}
@@ -583,10 +584,10 @@ void inputparameters::solver_assign(bool * out, std::string line, bool mp)
 	//    as any "bicgstab" hit will also be a "cg" hit...
 	//    and any "bicgstab_save" hit will also be a "bicgcgstab" hit...
 	cout << value << endl;
-	if(	value.find("BiCGStab_save") != std::string::npos ||
-			value.find("bicgstab_save") != std::string::npos ||	
-			value.find("BICGSTAB_save") != std::string::npos ||	
-			value.find("BICGSTAB_SAVE") != std::string::npos ) {
+	if( value.find("BiCGStab_save") != std::string::npos ||
+	    value.find("bicgstab_save") != std::string::npos ||
+	    value.find("BICGSTAB_save") != std::string::npos ||
+	    value.find("BICGSTAB_SAVE") != std::string::npos ) {
 		(*out) = false;
 		if(mp)
 			this->use_bicgstab_save_mp = true;
@@ -594,17 +595,17 @@ void inputparameters::solver_assign(bool * out, std::string line, bool mp)
 			this->use_bicgstab_save = true;
 		return;
 	}
-	if(	value.find("BiCGStab") != std::string::npos ||
-			value.find("bicgstab") != std::string::npos ||
-			value.find("BICGSTAB") != std::string::npos ) {
+	if( value.find("BiCGStab") != std::string::npos ||
+	    value.find("bicgstab") != std::string::npos ||
+	    value.find("BICGSTAB") != std::string::npos ) {
 		(*out) = false;
 		return;
 	}
-	if(	value.find("Cg") != std::string::npos ||
-			value.find("cg") != std::string::npos ||
-			value.find("CG") != std::string::npos ) {
+	if( value.find("Cg") != std::string::npos ||
+	    value.find("cg") != std::string::npos ||
+	    value.find("CG") != std::string::npos ) {
 		(*out) = true;
-	cout << "!" << endl;
+		cout << "!" << endl;
 		return;
 	}
 	cout << "throw" << endl;
@@ -617,13 +618,13 @@ void inputparameters::integrator_assign(int * out, std::string line)
 	size_t pos = line.find("=");
 	std::string value = line.substr(pos + 1);
 
-	if(	value.find("LEAPFROG") != std::string::npos ||
-			value.find("leapfrog") != std::string::npos) {
+	if( value.find("LEAPFROG") != std::string::npos ||
+	    value.find("leapfrog") != std::string::npos) {
 		(*out) = LEAPFROG;
 		return;
 	}
-	if(	value.find("2MN") != std::string::npos ||
-			value.find("2mn") != std::string::npos) {
+	if( value.find("2MN") != std::string::npos ||
+	    value.find("2mn") != std::string::npos) {
 		(*out) = TWOMN;
 		return;
 	}
@@ -636,23 +637,23 @@ void inputparameters::bool_assign(bool * out, std::string line)
 	size_t pos = line.find("=");
 	std::string value = line.substr(pos + 1);
 
-	if(	value.find("1") != std::string::npos ||
-			value.find("on") != std::string::npos ||
-			value.find("ON") != std::string::npos ||
-			value.find("yes") != std::string::npos ||
-			value.find("TRUE") != std::string::npos ||
-			value.find("true") != std::string::npos ||
-			value.find("True") != std::string::npos ) {
+	if( value.find("1") != std::string::npos ||
+	    value.find("on") != std::string::npos ||
+	    value.find("ON") != std::string::npos ||
+	    value.find("yes") != std::string::npos ||
+	    value.find("TRUE") != std::string::npos ||
+	    value.find("true") != std::string::npos ||
+	    value.find("True") != std::string::npos ) {
 		(*out) = true;
 		return;
 	}
-	if(	value.find("0") != std::string::npos ||
-			value.find("off") != std::string::npos ||
-			value.find("OFF") != std::string::npos ||
-			value.find("no") != std::string::npos ||
-			value.find("false") != std::string::npos ||
-			value.find("FALSE") != std::string::npos ||
-			value.find("False") != std::string::npos ) {
+	if( value.find("0") != std::string::npos ||
+	    value.find("off") != std::string::npos ||
+	    value.find("OFF") != std::string::npos ||
+	    value.find("no") != std::string::npos ||
+	    value.find("false") != std::string::npos ||
+	    value.find("FALSE") != std::string::npos ||
+	    value.find("False") != std::string::npos ) {
 		(*out) = false;
 		return;
 	}
@@ -704,7 +705,7 @@ void inputparameters::reset_iter1()
 	iter1 = 0;
 }
 
-void inputparameters::reset_iter0_mp() 
+void inputparameters::reset_iter0_mp()
 {
 	iter0_mp = 0;
 }
@@ -714,7 +715,8 @@ void inputparameters::reset_iter1_mp()
 	iter1_mp = 0;
 }
 
-void inputparameters::reset_inversion_counters(){
+void inputparameters::reset_inversion_counters()
+{
 	this->reset_iter0();
 	this->reset_iter1();
 	if( this->get_use_mp() ) {
@@ -992,9 +994,9 @@ int inputparameters::get_integrator(int which) const
 		case 2:
 			return integrator2;
 		default:
-		logger.fatal() << "cant make sense out of desired integrator number...\nAborting...";
-		exit(EXIT_INPUTPARAMETERS);
-	}	
+			logger.fatal() << "cant make sense out of desired integrator number...\nAborting...";
+			exit(EXIT_INPUTPARAMETERS);
+	}
 }
 
 int inputparameters::get_num_timescales() const
@@ -1605,16 +1607,16 @@ void inputparameters::print_info_fermion(ostream * os) const
 
 void inputparameters::print_info_gauge(ostream* os) const
 {
-	*os<< "## **********************************************************"<< endl;
-	*os<< "## Gauge parameters:"<< endl;
-	*os<< "##" << endl;
+	*os << "## **********************************************************" << endl;
+	*os << "## Gauge parameters:" << endl;
+	*os << "##" << endl;
 	if(this->get_gaugeact() == WILSON) {
-		*os<<  "## gauge action: unimproved Wilson"<< endl;
+		*os <<  "## gauge action: unimproved Wilson" << endl;
 	}
 	if(this->get_gaugeact() == TLSYM) {
-		*os<<  "## gauge action: tree level Symanzik"<< endl;
-		*os<< "## c0  = " << this->get_c0()<< endl;
-		*os<< "## c1  = " << this->get_c1()<< endl;
+		*os <<  "## gauge action: tree level Symanzik" << endl;
+		*os << "## c0  = " << this->get_c0() << endl;
+		*os << "## c1  = " << this->get_c1() << endl;
 	}
 }
 
@@ -1651,7 +1653,8 @@ void inputparameters::print_info_inverter(char* progname, ostream* os) const
 	return;
 }
 
-void inputparameters::print_info_integrator(int number) const {
+void inputparameters::print_info_integrator(int number) const
+{
 	string integrator_name;
 	bool print_lambda = false;
 	if(this->get_integrator(number) == LEAPFROG)
@@ -1659,8 +1662,7 @@ void inputparameters::print_info_integrator(int number) const {
 	else if (this->get_integrator(number) == TWOMN) {
 		integrator_name = "2MN";
 		print_lambda = true;
-	}
-	else {
+	} else {
 		logger.fatal() << "Fail in getting integrator information!";
 		logger.fatal() << "Aborting...";
 		exit(EXIT_INPUTPARAMETERS);
@@ -1670,7 +1672,8 @@ void inputparameters::print_info_integrator(int number) const {
 	if(print_lambda) logger.info() << "## lambda" << number << " = " << get_lambda(number);
 }
 
-void inputparameters::print_info_integrator(ostream* os, int number) const {
+void inputparameters::print_info_integrator(ostream* os, int number) const
+{
 	string integrator_name;
 	bool print_lambda = false;
 	if(this->get_integrator(number) == LEAPFROG)
@@ -1678,15 +1681,14 @@ void inputparameters::print_info_integrator(ostream* os, int number) const {
 	else if (this->get_integrator(number) == TWOMN) {
 		integrator_name = "2MN";
 		print_lambda = true;
-	}
-	else {
+	} else {
 		logger.fatal() << "Fail in getting integrator information!";
 		logger.fatal() << "Aborting...";
 		exit(EXIT_INPUTPARAMETERS);
 	}
-	*os<< "## integrator" << number << " = " << integrator_name << endl;
-	*os<< "## integrationsteps" << number << " = " << this->get_integrationsteps(number) << endl;
-	if(print_lambda) *os<< "## lambda" << number << " = " << get_lambda(number) << endl;
+	*os << "## integrator" << number << " = " << integrator_name << endl;
+	*os << "## integrationsteps" << number << " = " << this->get_integrationsteps(number) << endl;
+	if(print_lambda) *os << "## lambda" << number << " = " << get_lambda(number) << endl;
 }
 
 void inputparameters::print_info_hmc(char* progname) const
@@ -1705,10 +1707,10 @@ void inputparameters::print_info_hmc(char* progname) const
 	logger.info() << "##  ";
 	logger.info() << "## # Timescales  = " << this->get_num_timescales();
 	//integrator infos
-	for(int i = 0; i< this->get_num_timescales(); i++){
+	for(int i = 0; i < this->get_num_timescales(); i++) {
 		print_info_integrator(i);
 	}
-	if(this->get_use_mp() == true){
+	if(this->get_use_mp() == true) {
 		logger.info() << "##  ";
 		logger.info() <<  "## use mass preconditioning:";
 		if(this->get_fermact_mp() == WILSON) {
@@ -1727,7 +1729,7 @@ void inputparameters::print_info_hmc(char* progname) const
 		}
 		logger.info() << "##" ;
 		if(this->get_use_cg_mp() == true)
-		logger.info() << "## Use CG-solver for mp inversions" ;
+			logger.info() << "## Use CG-solver for mp inversions" ;
 		if(this->get_use_cg_mp() == false) {
 			if(this->get_use_bicgstab_save_mp() == false)
 				logger.info() << "## Use BiCGStab for mp inversions";
@@ -1757,38 +1759,38 @@ void inputparameters::print_info_hmc(char* progname, ostream* os) const
 	*os << "##  " << '\n';
 	*os << "## # Timescales  = " << this->get_num_timescales() << '\n';
 	//integrator infos
-	for(int i = 0; i< this->get_num_timescales(); i++){
+	for(int i = 0; i < this->get_num_timescales(); i++) {
 		print_info_integrator(os, i);
 	}
-	if(this->get_use_mp() == true){
+	if(this->get_use_mp() == true) {
 		*os << "##  " << '\n';
-		*os<<  "## use mass preconditioning:"  << '\n';
+		*os <<  "## use mass preconditioning:"  << '\n';
 		if(this->get_fermact_mp() == WILSON) {
-			*os<<  "## mp action: unimproved Wilson"  << '\n';
-			*os<< "## kappa_mp  = " << this->get_kappa_mp()  << '\n';
+			*os <<  "## mp action: unimproved Wilson"  << '\n';
+			*os << "## kappa_mp  = " << this->get_kappa_mp()  << '\n';
 		}
 		if(this->get_fermact_mp() == TWISTEDMASS) {
-			*os<<  "## mp action: twisted mass Wilson"  << '\n';
-			*os<< "## kappa_mp  = " << this->get_kappa_mp()  << '\n';
-			*os<< "## mu_mp     = " << this->get_mu_mp()  << '\n';
+			*os <<  "## mp action: twisted mass Wilson"  << '\n';
+			*os << "## kappa_mp  = " << this->get_kappa_mp()  << '\n';
+			*os << "## mu_mp     = " << this->get_mu_mp()  << '\n';
 		}
 		if(this->get_fermact_mp() == CLOVER) {
-			*os<<  "## mp action: clover Wilson";
-			*os<< "## kappa_mp  = " << this->get_kappa_mp()  << '\n';
-			*os<< "## csw_mp   = " << this->get_csw_mp()  << '\n';
+			*os <<  "## mp action: clover Wilson";
+			*os << "## kappa_mp  = " << this->get_kappa_mp()  << '\n';
+			*os << "## csw_mp   = " << this->get_csw_mp()  << '\n';
 		}
-		*os<< "##"  << endl;
+		*os << "##"  << endl;
 		if(this->get_use_cg_mp() == true)
-		*os<< "## Use CG-solver for mp inversions"  << '\n';
+			*os << "## Use CG-solver for mp inversions"  << '\n';
 		if(this->get_use_cg_mp() == false) {
 			if(this->get_use_bicgstab_save_mp() == false)
-				*os<< "## Use BiCGStab for mp inversions"  << '\n';
+				*os << "## Use BiCGStab for mp inversions"  << '\n';
 			else
-				*os<< "## Use BiCGStab-SAVE for mp inversions"  << '\n';
+				*os << "## Use BiCGStab-SAVE for mp inversions"  << '\n';
 		}
-		*os<< "## cgmax_mp  = " << this->get_cgmax_mp()  << '\n';
-		*os<< "## iter_refresh_mp  = " << this->get_iter_refresh_mp()  << '\n';
-		*os<< "##"  << '\n';
+		*os << "## cgmax_mp  = " << this->get_cgmax_mp()  << '\n';
+		*os << "## iter_refresh_mp  = " << this->get_iter_refresh_mp()  << '\n';
+		*os << "##"  << '\n';
 	}
 	*os << "## **********************************************************" << '\n';
 	return;

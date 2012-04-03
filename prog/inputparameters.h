@@ -274,7 +274,7 @@ public:
 	 *
 	 */
 	void print_info_gauge(ostream * os) const;
-	
+
 	/**
 	 *
 	 */
@@ -283,8 +283,8 @@ public:
 	/**
 	 *
 	 */
-	void print_info_integrator(ostream * os, int number) const;	
-	
+	void print_info_integrator(ostream * os, int number) const;
+
 	/**
 	 * check inputparameters against compile settings
 	 * NOTE: In the end, this is propably not needed anymore, but for now it is a safety net
@@ -347,7 +347,7 @@ private:
 	//more specific ones
 	hmc_float beta;
 	int xi;
-	
+
 	//fermion parameters
 	hmc_float kappa;
 	hmc_float mu;
