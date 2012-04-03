@@ -160,8 +160,8 @@ void inputparameters::set_gauge_norm_factors() {
 	plaq_norm = (this->get_vol4d() * NDIM * (NDIM - 1) ) / 2.;
 	tplaq_norm = (this->get_vol4d() * (NDIM - 1));
 	splaq_norm = (this->get_vol4d() * (NDIM - 1) * (NDIM - 2)) / 2. ;
-	rect_norm = NDIM * (NDIM-1) * NC *  this->get_vol4d();
-	poly_norm = (NC * this->get_volspace());
+	rect_norm = NDIM * (NDIM-1) * this->get_vol4d();
+	poly_norm = (this->get_volspace());
 	
 	return;
 }
@@ -328,12 +328,14 @@ void inputparameters::readfile(const char* ifn)
 					line.find("gaugeact") 		!= std::string::npos ) {
 				gaugeact_assign(&gaugeact, line, c1set);
 			}
+			//@todo: this is taken out because the expression is positive also for "rec12"
+			/*
 			if(line.find("c1") != std::string::npos) {
 				val_assign(&c1, line);
 				c1set = true;
 				this->calc_c0_tlsym(this->get_c1());
 			}
-			
+			*/
 			if(line.find("hmcsteps") != std::string::npos) val_assign(&hmcsteps, line);
 			if(	line.find("tau") != std::string::npos) val_assign(&tau, line);
 			if(line.find("integrationsteps0") != std::string::npos) val_assign(&integrationsteps0, line);
@@ -415,8 +417,8 @@ void inputparameters::readfile(const char* ifn)
 		    ( (csw_mpset == true) && (mu_mpset   == true       ) )  )
 			throw Invalid_Fermact(fermact_mp, mu_mpset, csw_mpset);
 		//check for wrong settings in gaugeaction
-		if( ( (use_rectangles  == true) && (gaugeact != TLSYM) ) ||
-		    ( (use_rectangles  == false) && (gaugeact == TLSYM) ) )
+		if( ( (use_rectangles  == true) && (gaugeact == WILSON) ) ||
+		    ( (use_rectangles  == false) && ( (gaugeact == TLSYM) || (gaugeact == DBW2) || (gaugeact == IWASAKI) ) ) )
 			throw Invalid_Gaugeact();
 		
 		//check the read-in values against the compile time values
