@@ -90,6 +90,13 @@ void Opencl_Module_Hmc::fill_kernels()
 		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_hmc_code << "force_fermion_stout_smear.cl";
 	}
 	gaugemomentum_squarenorm = createKernel("gaugemomentum_squarenorm") << basic_hmc_code << "gaugemomentum_squarenorm.cl";
+	if(use_soa) {
+		gaugemomentum_convert_to_soa = createKernel("gaugemomentum_convert_to_soa") << basic_hmc_code << "gaugemomentum_convert.cl";
+		gaugemomentum_convert_from_soa = createKernel("gaugemomentum_convert_from_soa") << basic_hmc_code << "gaugemomentum_convert.cl";
+	} else {
+		gaugemomentum_convert_to_soa = 0;
+		gaugemomentum_convert_from_soa = 0;
+	}
 }
 
 void Opencl_Module_Hmc::clear_kernels()
@@ -1646,4 +1653,55 @@ size_t Opencl_Module_Hmc::get_gaugemomentum_buffer_size()
 		}
 	}
 	return gaugemomentum_buf_size;
+}
+
+void Opencl_Module_Hmc::importGaugemomentumBuffer(const cl_mem dest, const ae * const data)
+{
+	cl_int clerr;
+	if(use_soa) {
+		const size_t aos_size = parameters->get_gaugemomentasize() * sizeof(ae);
+		cl_mem tmp = create_ro_buffer(aos_size);
+		clerr = clEnqueueWriteBuffer(get_queue(), tmp, CL_TRUE, 0, aos_size, data, 0, 0, NULL);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
+
+		size_t ls2, gs2;
+		cl_uint num_groups;
+		this->get_work_sizes(gaugemomentum_convert_to_soa, this->get_device_type(), &ls2, &gs2, &num_groups);
+		clerr = clSetKernelArg(gaugemomentum_convert_to_soa, 0, sizeof(cl_mem), &dest);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		clerr = clSetKernelArg(gaugemomentum_convert_to_soa, 1, sizeof(cl_mem), &tmp);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		enqueueKernel(gaugemomentum_convert_to_soa, gs2, ls2);
+
+		clReleaseMemObject(tmp);
+	} else {
+		clerr = clEnqueueWriteBuffer(get_queue(), dest, CL_TRUE, 0, get_gaugemomentum_buffer_size(), data, 0, 0, NULL);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
+	}
+}
+
+void Opencl_Module_Hmc::exportGaugemomentumBuffer(ae * const dest, const cl_mem buf)
+{
+	cl_int clerr;
+	if(use_soa) {
+		const size_t aos_size = parameters->get_gaugemomentasize() * sizeof(ae);
+		cl_mem tmp = create_wo_buffer(aos_size);
+
+		size_t ls2, gs2;
+		cl_uint num_groups;
+		this->get_work_sizes(gaugemomentum_convert_from_soa, this->get_device_type(), &ls2, &gs2, &num_groups);
+		clerr = clSetKernelArg(gaugemomentum_convert_from_soa, 0, sizeof(cl_mem), &tmp);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		clerr = clSetKernelArg(gaugemomentum_convert_from_soa, 1, sizeof(cl_mem), &buf);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		enqueueKernel(gaugemomentum_convert_from_soa, gs2, ls2);
+
+		clerr = clEnqueueReadBuffer(get_queue(), tmp, CL_TRUE, 0, aos_size, dest, 0, 0, NULL);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
+
+		clReleaseMemObject(tmp);
+	} else {
+		clerr = clEnqueueReadBuffer(get_queue(), buf, CL_TRUE, 0, get_gaugemomentum_buffer_size(), dest, 0, 0, NULL);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
+	}
 }

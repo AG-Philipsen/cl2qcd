@@ -125,6 +125,25 @@ public:
 	 */
 	size_t get_gaugemomentum_buffer_size();
 
+	/**
+	 * Import data from the gaugemomenta array into the given buffer.
+	 *
+	 * The data in the buffer will be stored in the device specific format.
+	 *
+	 * @param[out] dest The buffer to write to in the device specific format
+	 * @param[in] data The data to write to the buffer
+	 */
+	void importGaugemomentumBuffer(const cl_mem dest, const ae * const data);
+	/**
+	 * Export data from the given buffer into a normal gaugemomentum array.
+	 *
+	 * The data in the buffer is assumed to be in the device specific format.
+	 *
+	 * @param[out] dest An array that the buffer data can be written to.
+	 * @param[in] data A buffer containing the data in the device specific format.
+	 */
+	void exportGaugemomentumBuffer(ae * const dest, const cl_mem buf);
+
 protected:
 
 #ifdef _PROFILING_
@@ -188,6 +207,8 @@ private:
 	cl_kernel stout_smear_fermion_force;
 	cl_kernel set_zero_gaugemomentum;
 	cl_kernel gaugemomentum_squarenorm;
+	cl_kernel gaugemomentum_convert_to_soa;
+	cl_kernel gaugemomentum_convert_from_soa;
 
 	//variables
 	//initial energy of the (gaussian) spinorfield
