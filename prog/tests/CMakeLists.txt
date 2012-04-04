@@ -177,6 +177,35 @@ target_link_libraries(m_eo_gpu
 add_test(M_eo_gpu m_eo_gpu)
 add_dependencies(m_eo_gpu git_commit_id_header)
 
+add_executable(m_compare_noneo_eo
+	M_compare_noneo_eo.cpp
+	../host_geometry.cpp
+	../host_operations_gaugefield.cpp
+	../gaugefield_hybrid.cpp
+	../inputparameters.cpp
+	../host_readgauge.cpp
+	../host_random.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../opencl_module_ran.cpp
+	../opencl_module_spinors.cpp
+	../opencl_module_fermions.cpp
+	../opencl_module_hmc.cpp
+	../host_use_timer.cpp
+	../host_writegaugefield.cpp
+	../exceptions.cpp
+	../logger.cpp)
+target_link_libraries(m_compare_noneo_eo
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	crypto
+	einhard)
+add_test(M_compare_noneo_eo m_compare_noneo_eo)
+add_dependencies(m_compare_noneo_eo git_commit_id_header)
+
 add_executable(f_gauge_gpu
 	F_gauge_GPU.cpp
 	../host_geometry.cpp
