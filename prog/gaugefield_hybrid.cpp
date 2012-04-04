@@ -584,7 +584,7 @@ Matrixsu3 Gaugefield_hybrid::get_from_gaugefield(const Matrixsu3 * field, const 
 
 size_t Gaugefield_hybrid::get_num_gaugefield_elems() const
 {
-        //this is NDIM * volspace * nt
+	//this is NDIM * volspace * nt
 	return parameters->get_gaugemomentasize();
 }
 
@@ -608,7 +608,7 @@ void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield,
 						hmc_complex tmp [NC][NC];
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
-							        int pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters); 
+								int pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters);
 								tmp[m][n].re = gaugefield_tmp[pos];
 								tmp[m][n].im = gaugefield_tmp[pos + 1];
 								cter++;
@@ -636,7 +636,7 @@ void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield,
 						destElem.e21 = tmp[2][1];
 						destElem.e22 = tmp[2][2];
 
-						set_to_gaugefield(gaugefield, (l+1)%NDIM, spacepos, t, destElem);
+						set_to_gaugefield(gaugefield, (l + 1) % NDIM, spacepos, t, destElem);
 					}
 				}
 			}
@@ -669,8 +669,8 @@ void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixs
 						coord[3] = x;
 						int spacepos = get_nspace(coord, parameters);
 						hmc_complex destElem [NC][NC];
-						
-						Matrixsu3 srcElem = get_from_gaugefield(source_in, (l+1) %NDIM, spacepos, t);
+
+						Matrixsu3 srcElem = get_from_gaugefield(source_in, (l + 1) % NDIM, spacepos, t);
 						destElem[0][0] = srcElem.e00;
 						destElem[0][1] = srcElem.e01;
 						destElem[0][2] = srcElem.e02;
@@ -680,10 +680,10 @@ void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixs
 						destElem[2][0] = srcElem.e20;
 						destElem[2][1] = srcElem.e21;
 						destElem[2][2] = srcElem.e22;
-						
+
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
-							        size_t pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters); 
+								size_t pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters);
 								dest[pos]     = destElem[m][n].re;
 								dest[pos + 1] = destElem[m][n].im;
 							}
@@ -697,17 +697,17 @@ void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixs
 	return;
 }
 
-//taken from the opencl files                                                                                                                                
+//taken from the opencl files
 hmc_complex trace_matrixsu3(const Matrixsu3 p)
 {
-  hmc_complex out;
-  out.re = p.e00.re;
-  out.im = p.e00.im;
-  out.re += p.e11.re;
-  out.im += p.e11.im;
-  out.re += p.e22.re;
-  out.im += p.e22.im;
-  return out;
+	hmc_complex out;
+	out.re = p.e00.re;
+	out.im = p.e00.im;
+	out.re += p.e11.re;
+	out.im += p.e11.im;
+	out.re += p.e22.re;
+	out.im += p.e22.im;
+	return out;
 }
 
 hmc_float Gaugefield_hybrid::plaquette(hmc_float* tplaq, hmc_float* splaq)
@@ -716,7 +716,7 @@ hmc_float Gaugefield_hybrid::plaquette(hmc_float* tplaq, hmc_float* splaq)
 	*tplaq = 0;
 	*splaq = 0;
 	int coord[NDIM];
-	
+
 	for(int t = 0; t < parameters->get_nt(); t++) {
 		for(int x = 0; x < parameters->get_ns(); x++) {
 			for(int y = 0; y < parameters->get_ns(); y++) {

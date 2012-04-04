@@ -289,7 +289,7 @@ public:
 	 * Get the number of elements in the gaugefield.
 	 */
 	size_t get_num_gaugefield_elems() const;
-	
+
 	/**
 	* Create the gaugefield from an array of floats as used by by ILDG.
 	*

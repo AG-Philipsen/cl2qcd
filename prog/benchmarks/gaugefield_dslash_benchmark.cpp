@@ -13,7 +13,7 @@ Opencl_Module_Correlator* Gaugefield_inverter::get_task_correlator()
 
 void Gaugefield_inverter::init_tasks()
 {
-  //this is changed compared to "gaugefield_inverter.cpp" because not all kernels are needed
+	//this is changed compared to "gaugefield_inverter.cpp" because not all kernels are needed
 
 	task_solver = 0;
 	task_correlator = 1;
@@ -33,17 +33,17 @@ void Gaugefield_inverter::init_tasks()
 
 void Gaugefield_inverter::delete_variables()
 {
-  //Gaugefield_hybrid::delete_variables();
+	//Gaugefield_hybrid::delete_variables();
 }
 
 void Gaugefield_inverter::finalize_opencl()
 {
-  // task_correlator is not finalized because it is not initialized!!
-  for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-    if (ntask == task_correlator) continue;
-    opencl_modules[ntask]->finalize();
-  }
+	// task_correlator is not finalized because it is not initialized!!
+	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
+		if (ntask == task_correlator) continue;
+		opencl_modules[ntask]->finalize();
+	}
 
-  Gaugefield_hybrid::finalize_opencl();
+	Gaugefield_hybrid::finalize_opencl();
 }
 
