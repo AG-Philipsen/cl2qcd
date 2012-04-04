@@ -114,6 +114,7 @@ void inputparameters::set_defaults()
 	use_bicgstab_save = false;
 	use_bicgstab_save_mp = use_bicgstab_save;
 	use_pointsource = true;
+	use_gauge_only = false;
 	num_sources = 12;
 	pointsource_x = 0;
 	pointsource_y = 0;
@@ -159,8 +160,8 @@ void inputparameters::set_gauge_norm_factors() {
 	plaq_norm = (this->get_vol4d() * NDIM * (NDIM - 1) ) / 2.;
 	tplaq_norm = (this->get_vol4d() * (NDIM - 1));
 	splaq_norm = (this->get_vol4d() * (NDIM - 1) * (NDIM - 2)) / 2. ;
-	rect_norm = NDIM * (NDIM-1) * NC *  this->get_vol4d();
-	poly_norm = (NC * this->get_volspace());
+	rect_norm = NDIM * (NDIM-1) * this->get_vol4d();
+	poly_norm = (this->get_volspace());
 	
 	return;
 }
@@ -271,6 +272,17 @@ void inputparameters::readfile(const char* ifn)
 			if(line.find("writefrequency") != std::string::npos) val_assign(&writefrequency, line);
 			if(line.find("savefrequency") != std::string::npos) val_assign(&savefrequency, line);
 			if(line.find("saveconfigs") != std::string::npos) bool_assign(&saveconfigs, line);
+
+			if( line.find("gauge_only") != std::string::npos ||
+			    line.find("Gauge_only") != std::string::npos ||
+			    line.find("only gauge") != std::string::npos ||
+			    line.find("only Gauge") != std::string::npos ||
+			    line.find("Pure Gauge Theory") != std::string::npos ||
+			    line.find("PGT") != std::string::npos ||
+			    line.find("PureGaugeTheory") != std::string::npos ||
+			    line.find("PureGauge") != std::string::npos ||
+			    line.find("puregauge") != std::string::npos ||
+			    line.find("Only Gauge") != std::string::npos ) bool_assign(&use_gauge_only, line);
 			
 			if(	line.find("prec") != std::string::npos ||
 					line.find("Prec") != std::string::npos ) val_assign(&prec, line);
@@ -316,12 +328,14 @@ void inputparameters::readfile(const char* ifn)
 					line.find("gaugeact") 		!= std::string::npos ) {
 				gaugeact_assign(&gaugeact, line, c1set);
 			}
+			//@todo: this is taken out because the expression is positive also for "rec12"
+			/*
 			if(line.find("c1") != std::string::npos) {
 				val_assign(&c1, line);
 				c1set = true;
 				this->calc_c0_tlsym(this->get_c1());
 			}
-			
+			*/
 			if(line.find("hmcsteps") != std::string::npos) val_assign(&hmcsteps, line);
 			if(	line.find("tau") != std::string::npos) val_assign(&tau, line);
 			if(line.find("integrationsteps0") != std::string::npos) val_assign(&integrationsteps0, line);
@@ -403,8 +417,8 @@ void inputparameters::readfile(const char* ifn)
 		    ( (csw_mpset == true) && (mu_mpset   == true       ) )  )
 			throw Invalid_Fermact(fermact_mp, mu_mpset, csw_mpset);
 		//check for wrong settings in gaugeaction
-		if( ( (use_rectangles  == true) && (gaugeact != TLSYM) ) ||
-		    ( (use_rectangles  == false) && (gaugeact == TLSYM) ) )
+		if( ( (use_rectangles  == true) && (gaugeact == WILSON) ) ||
+		    ( (use_rectangles  == false) && ( (gaugeact == TLSYM) || (gaugeact == DBW2) || (gaugeact == IWASAKI) ) ) )
 			throw Invalid_Gaugeact();
 		
 		//check the read-in values against the compile time values
@@ -1050,6 +1064,11 @@ bool inputparameters::get_use_gpu() const
 bool inputparameters::get_use_aniso() const
 {
 	return use_aniso;
+}
+
+bool inputparameters::get_use_gauge_only() const
+{
+	return use_gauge_only;
 }
 
 int inputparameters::get_volspace() const
@@ -1704,6 +1723,13 @@ void inputparameters::print_info_hmc(char* progname) const
 	logger.info() << "## precision used in HMC-inversions = " << this->get_force_prec();
 	logger.info() << "##  ";
 	logger.info() << "## # Timescales  = " << this->get_num_timescales();
+	if(this->get_use_gauge_only() && this->get_num_timescales() == 1){
+	        logger.info() << "## use PureGaugeTheory in HMC!";
+	}
+	else if (this->get_use_gauge_only() && this->get_num_timescales() > 1){
+	        logger.fatal() << "PureGaugeTheory can only be used with one timescale!\nPlease change the input-file!\nAborting...";
+		exit(EXIT_INPUTPARAMETERS);
+	}
 	//integrator infos
 	for(int i = 0; i< this->get_num_timescales(); i++){
 		print_info_integrator(i);
@@ -1756,6 +1782,13 @@ void inputparameters::print_info_hmc(char* progname, ostream* os) const
 	*os << "## precision used HMC-inversions = " << this->get_force_prec() << '\n';
 	*os << "##  " << '\n';
 	*os << "## # Timescales  = " << this->get_num_timescales() << '\n';
+	if(this->get_use_gauge_only() && this->get_num_timescales() == 1){
+	        *os << "## use PureGaugeTheory in HMC!" << endl;
+	}
+	else if (this->get_use_gauge_only() && this->get_num_timescales() > 1){
+	        *os << "PureGaugeTheory can only be used with one timescale!\nPlease change the input-file!\nAborting..." << endl;
+		exit(EXIT_INPUTPARAMETERS);
+	}
 	//integrator infos
 	for(int i = 0; i< this->get_num_timescales(); i++){
 		print_info_integrator(os, i);
