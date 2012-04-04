@@ -188,11 +188,6 @@ public:
 	 */
 	cl_device_id get_device_for_task(int ntask);
 	/**
-	 * Returns pointer to cl_mem gaugefield
-	 * @return Pointer to cl_mem gaugefield
-	 */
-	cl_mem* get_clmem_gaugefield();
-	/**
 	 * Return max_compute units for task ntask
 	 * @param[in] ntask number of target task
 	 */
@@ -332,9 +327,6 @@ private:
 
 	string* device_double_extension;
 	cl_uint* max_compute_units;
-
-	cl_mem clmem_gaugefield;
-
 };
 
 #endif /* _GAUGEFIELDHYBRIDH_ */

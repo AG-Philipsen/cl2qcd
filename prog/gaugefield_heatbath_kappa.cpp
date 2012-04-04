@@ -24,10 +24,10 @@ void Gaugefield_heatbath_kappa::init_tasks()
 
 	//LZ: right now, each task carries exactly one opencl device -> thus the below allocation with [1]. Could be generalized in future
 	opencl_modules[task_kappa] = new Opencl_Module_Kappa[1];
-	get_task_kappa()->init(queue[task_kappa], get_clmem_gaugefield(), get_parameters(), get_max_compute_units(task_kappa), get_double_ext(task_kappa));
+	get_task_kappa()->init(queue[task_kappa], get_parameters(), get_max_compute_units(task_kappa), get_double_ext(task_kappa));
 
 	opencl_modules[task_heatbath] = new Opencl_Module_Heatbath[1];
-	get_task_heatbath()->init(queue[task_heatbath], get_clmem_gaugefield(), get_parameters(), get_max_compute_units(task_heatbath), get_double_ext(task_heatbath));
+	get_task_heatbath()->init(queue[task_heatbath], get_parameters(), get_max_compute_units(task_heatbath), get_double_ext(task_heatbath));
 
 	return;
 }

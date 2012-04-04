@@ -15,7 +15,7 @@ void Gaugefield_hmc::init_tasks()
 
 	//LZ: right now, each task carries exactly one opencl device -> thus the below allocation with [1]. Could be generalized in future
 	opencl_modules[task_hmc] = new Opencl_Module_Hmc[1];
-	get_task_hmc(0)->init(queue[task_hmc], get_clmem_gaugefield(), get_parameters(), get_max_compute_units(task_hmc), get_double_ext(task_hmc));
+	get_task_hmc(0)->init(queue[task_hmc], get_parameters(), get_max_compute_units(task_hmc), get_double_ext(task_hmc));
 
 	return;
 }
@@ -45,13 +45,13 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 	//reset the counters for the inversions
 	get_parameters()->reset_inversion_counters();
 
-	size_t gfsize = get_parameters()->get_gf_buf_size();
+	size_t gfsize = get_task_hmc(0)->getGaugefieldBufferSize();
 	size_t gmsize = get_task_hmc(0)->get_gaugemomentum_buffer_size();
 
 	// copy u->u' p->p' for the integrator
 	// new_u is used in some debug code of the gaugemomentum-initialization. therefore we need to copy it before
 	// p is modified in the initialization, therefore we cannot copy it now
-	get_task_hmc(0)->copy_buffer_on_device(*(get_task_hmc(0)->get_gaugefield()), get_task_hmc(0)->get_clmem_new_u(), gfsize);
+	get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_gaugefield(), get_task_hmc(0)->get_clmem_new_u(), gfsize);
 
 	logger.debug() << "\tinit spinorfield and gaugemomentum" ;
 	this->init_gaugemomentum_spinorfield();
@@ -70,7 +70,7 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 
 	if((*obs).accept == 1) {
 		// perform the change nonprimed->primed !
-		get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_new_u(), *(get_task_hmc(0)->get_gaugefield()), gfsize);
+		get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_new_u(), get_task_hmc(0)->get_gaugefield(), gfsize);
 		get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_new_p(), get_task_hmc(0)->get_clmem_p(), gmsize);
 		logger.debug() << "\t\tnew configuration accepted" ;
 	} else {
@@ -179,15 +179,15 @@ void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer)
 	else smeared_gfs = NULL;
 
 	if(get_parameters()->get_use_smearing() == true) {
-		size_t gfsize = get_parameters()->get_gf_buf_size();
+		size_t gfsize = get_task_hmc(0)->getGaugefieldBufferSize();
 		for(int i = 0; i < rho_iter; i++)
 			smeared_gfs[i] = get_task_hmc(0)->create_rw_buffer(gfsize);
-		get_task_hmc(0)->smear_gaugefield(*(get_task_hmc(0)->get_gaugefield()), smeared_gfs);
+		get_task_hmc(0)->smear_gaugefield(get_task_hmc(0)->get_gaugefield(), smeared_gfs);
 	}
 	get_task_hmc(0)->calc_fermion_force(solvertimer);
 	if(get_parameters()->get_use_smearing() == true) {
 		get_task_hmc(0)->stout_smeared_fermion_force_device(smeared_gfs);
-		get_task_hmc(0)->unsmear_gaugefield(*(get_task_hmc(0)->get_gaugefield()));
+		get_task_hmc(0)->unsmear_gaugefield(get_task_hmc(0)->get_gaugefield());
 		for(int i = 0; i < rho_iter; i++) {
 			cl_int clerr = clReleaseMemObject(smeared_gfs[i]);
 			if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);

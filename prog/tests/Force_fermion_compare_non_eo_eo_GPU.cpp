@@ -16,7 +16,7 @@ class Device : public Opencl_Module_Hmc {
 	cl_kernel testKernel2;
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Hmc() {
-		Opencl_Module_Hmc::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+		Opencl_Module_Hmc::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -898,12 +898,13 @@ void Dummyfield::runTestKernel(int evenodd)
 	}
 	//interprete Y = (in1_eo, in2_eo) X = (in3_eo, in4_eo)
 	//Y_odd = in2_eo, Y_even = in1_eo, X_odd = in4_eo, X_even = in3_eo
+	Device * device = static_cast<Device*>(opencl_modules[0]);
 	if(evenodd == ODD) {
 		//this is then force(Y_odd, X_even) == force(in2, in3)
-		static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in2_eo, in3_eo, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
+		device->runTestKernel(out_eo, in2_eo, in3_eo, device->get_gaugefield(), gs, ls, evenodd, get_parameters()->get_kappa());
 	} else {
 		//this is then force(Y_even, X_odd) == force(in1, in4)
-		static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in1_eo, in4_eo, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
+		device->runTestKernel(out_eo, in1_eo, in4_eo, device->get_gaugefield(), gs, ls, evenodd, get_parameters()->get_kappa());
 	}
 }
 
@@ -918,7 +919,8 @@ void Dummyfield::runTestKernel2()
 		ls = 1;
 	}
 	//CP: I only use out_eo here because there is some mistake with out_noneo. However, I will not try to find it...
-	static_cast<Device*>(opencl_modules[0])->runTestKernel2(out_noneo, in1_noneo, in2_noneo, *(get_clmem_gaugefield()), gs, ls, get_parameters()->get_kappa());
+	Device * device = static_cast<Device*>(opencl_modules[0]);
+	device->runTestKernel2(out_noneo, in1_noneo, in2_noneo, device->get_gaugefield(), gs, ls, get_parameters()->get_kappa());
 }
 
 void Dummyfield::runTestKernel2withconvertedfields()
@@ -931,5 +933,6 @@ void Dummyfield::runTestKernel2withconvertedfields()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel2(out_noneo, in1_noneo_converted, in2_noneo_converted, *(get_clmem_gaugefield()), gs, ls, get_parameters()->get_kappa());
+	Device * device = static_cast<Device*>(opencl_modules[0]);
+	device->runTestKernel2(out_noneo, in1_noneo_converted, in2_noneo_converted, device->get_gaugefield(), gs, ls, get_parameters()->get_kappa());
 }

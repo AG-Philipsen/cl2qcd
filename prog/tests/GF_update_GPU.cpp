@@ -21,7 +21,7 @@ class Device : public Opencl_Module_Hmc {
 	cl_kernel testKernel;
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Hmc() {
-		Opencl_Module_Hmc::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+		Opencl_Module_Hmc::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -254,14 +254,14 @@ void Dummyfield::runTestKernel()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(in, *(get_clmem_gaugefield()), gs, ls);
+	Device * device = static_cast<Device*>(opencl_modules[0]);
+	device->runTestKernel(in, device->get_gaugefield(), gs, ls);
 }
 
 
 void Dummyfield::get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol)
 {
 	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range", __FILE__, __LINE__);
-	cl_mem gf = *get_clmem_gaugefield();
-	opencl_modules[ntask]->gaugeobservables(gf, plaq, tplaq, splaq, pol);
+	opencl_modules[ntask]->gaugeobservables(plaq, tplaq, splaq, pol);
 }
 

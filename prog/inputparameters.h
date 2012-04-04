@@ -144,10 +144,6 @@ public:
 	/**
 	 * Return the size of the buffer in bytes.
 	 */
-	int get_gf_buf_size() const;
-	/**
-	 * Return the size of the buffer in bytes.
-	 */
 	bool get_use_chem_pot_re() const;
 	bool get_use_chem_pot_im() const;
 	bool get_use_smearing() const;
@@ -314,7 +310,6 @@ private:
 	int gaugefieldsize;
 	//sizes of fieldbuffers
 	int sf_buf_size;
-	int gf_buf_size;
 
 	//various options
 	bool use_rec12;

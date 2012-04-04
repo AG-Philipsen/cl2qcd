@@ -15,8 +15,8 @@ class Device : public Opencl_Module_Fermions {
 	cl_kernel testKernel;
 
 public:
-	Device(cl_command_queue queue, cl_mem * gf, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Fermions() {
-		Opencl_Module_Fermions::init(queue, gf, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Fermions() {
+		Opencl_Module_Fermions::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE( DSLASH_EOPREC )
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(queue[0], get_clmem_gaugefield(), get_parameters(), get_max_compute_units(0), get_double_ext(0));
+	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0));
 
 	fill_buffers();
 }
@@ -289,6 +289,7 @@ void Dummyfield::runTestKernel()
 		ls = 1;
 	}
 	logger.info() << "test kernel with global_work_size: " << gs << " and local_work_size: " << ls;
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(out, even_in, *(get_clmem_gaugefield()), gs, ls, get_parameters()->get_kappa());
+	Device * device = static_cast<Device*>(opencl_modules[0]);
+	device->runTestKernel(out, even_in, device->get_gaugefield(), gs, ls, get_parameters()->get_kappa());
 }
 

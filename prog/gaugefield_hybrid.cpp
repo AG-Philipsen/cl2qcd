@@ -193,12 +193,6 @@ void Gaugefield_hybrid::init_opencl()
 #endif
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateCommandQueue", __FILE__, __LINE__);
 	}
-
-
-	//context-wide buffers
-	logger.trace() << "Creating gaugefield buffer...";
-	clmem_gaugefield = clCreateBuffer(context, CL_MEM_READ_WRITE, get_num_gaugefield_elems() * sizeof(Matrixsu3), 0, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateBuffer", __FILE__, __LINE__);
 }
 
 void Gaugefield_hybrid::init_devices(int ndev)
@@ -248,7 +242,7 @@ void Gaugefield_hybrid::init_tasks()
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
 		//this is initialized with length 1, meaning one assumes one device per task
 		opencl_modules[ntask] = new Opencl_Module[1];
-		opencl_modules[ntask]->init(queue[ntask], &clmem_gaugefield, get_parameters(), max_compute_units[ntask], get_double_ext(ntask));
+		opencl_modules[ntask]->init(queue[ntask], get_parameters(), max_compute_units[ntask], get_double_ext(ntask));
 	}
 }
 
@@ -291,9 +285,6 @@ void Gaugefield_hybrid::finalize_opencl()
 
 	//  tasks->clear_kernels();
 	//  tasks->clear_buffers();
-
-	clerr = clReleaseMemObject(clmem_gaugefield);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
 		clerr = clReleaseCommandQueue(queue[ntask]);
@@ -360,17 +351,17 @@ void Gaugefield_hybrid::copy_gaugefield_to_task(int ntask)
 		logger.warn() << "Index out of range, copy_gaugefield_to_device does nothing.";
 		return;
 	}
-	cl_int clerr = clEnqueueWriteBuffer(queue[ntask], clmem_gaugefield, CL_TRUE, 0, get_num_gaugefield_elems() * sizeof(Matrixsu3), get_sgf(), 0, 0, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
+	opencl_modules[ntask]->importGaugefield(get_sgf());
 }
 
 void Gaugefield_hybrid::synchronize(int ntask_reference)
 {
+	logger.debug() << "Syncrhonizing to data of task " << ntask_reference;
 	if(ntask_reference < 0 || ntask_reference > get_num_tasks() ) {
 		logger.warn() << "Index out of range, synchronize_gaugefield does nothing.";
 		return;
 	}
-	clFinish(queue[ntask_reference]);
+	//clFinish(queue[ntask_reference]);
 	copy_gaugefield_from_task(ntask_reference);
 
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
@@ -385,19 +376,13 @@ void Gaugefield_hybrid::copy_gaugefield_from_task(int ntask)
 		logger.warn() << "Index out of range, copy_gaugefield_from_device does nothing.";
 		return;
 	}
-	cl_int clerr = clEnqueueReadBuffer(queue[ntask], clmem_gaugefield, CL_TRUE, 0, get_num_gaugefield_elems() * sizeof(Matrixsu3), get_sgf(), 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueReadBuffer", __FILE__, __LINE__);
+	opencl_modules[ntask]->exportGaugefield(get_sgf());
 }
 
 cl_device_id Gaugefield_hybrid::get_device_for_task(int ntask)
 {
 	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("task index out of range", __FILE__, __LINE__);
 	return devices[device_id_for_task[ntask]];
-}
-
-cl_mem* Gaugefield_hybrid::get_clmem_gaugefield()
-{
-	return &clmem_gaugefield;
 }
 
 void Gaugefield_hybrid::set_num_tasks (int num)
@@ -537,8 +522,7 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask)
 	hmc_float tplaq = 0;
 	hmc_float splaq = 0;
 	hmc_complex pol;
-	cl_mem gf = *get_clmem_gaugefield();
-	opencl_modules[ntask]->gaugeobservables(gf, &plaq, &tplaq, &splaq, &pol);
+	opencl_modules[ntask]->gaugeobservables(&plaq, &tplaq, &splaq, &pol);
 	logger.info() << iter << '\t' << plaq << '\t' << tplaq << '\t' << splaq << '\t' << pol.re << '\t' << pol.im << '\t' << sqrt(pol.re * pol.re + pol.im * pol.im);
 }
 
@@ -549,8 +533,7 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask, st
 	hmc_float tplaq = 0;
 	hmc_float splaq = 0;
 	hmc_complex pol;
-	cl_mem gf = *get_clmem_gaugefield();
-	opencl_modules[ntask]->gaugeobservables(gf, &plaq, &tplaq, &splaq, &pol);
+	opencl_modules[ntask]->gaugeobservables(&plaq, &tplaq, &splaq, &pol);
 	std::fstream gaugeout;
 	gaugeout.open(filename.c_str(), std::ios::out | std::ios::app);
 	if(!gaugeout.is_open()) throw File_Exception(filename);

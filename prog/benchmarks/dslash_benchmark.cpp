@@ -92,10 +92,9 @@ int main(int argc, char* argv[])
 		//init needed buffers again
 		//these are: 2 eoprec spinorfield, 1 gaugefield
 		size_t eoprec_spinorfield_buffer_size = gaugefield.get_task_solver()->get_eoprec_spinorfield_buffer_size();
-		size_t gf_size = gaugefield.get_task_solver()->get_parameters()->get_gf_buf_size();
 		cl_mem sf1, sf2, gf;
 
-		gf = gaugefield.get_task_solver()->create_rw_buffer(gf_size);
+		gf = gaugefield.get_task_solver()->create_rw_buffer(gaugefield.get_task_solver()->getGaugefieldBufferSize());
 		sf1 = gaugefield.get_task_solver()->create_rw_buffer(eoprec_spinorfield_buffer_size);
 		sf2 = gaugefield.get_task_solver()->create_rw_buffer(eoprec_spinorfield_buffer_size);
 

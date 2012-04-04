@@ -31,7 +31,7 @@ void Opencl_Module_Hmc::fill_buffers()
 	int spinorfield_size = get_parameters()->get_sf_buf_size();
 	int eoprec_spinorfield_size = get_eoprec_spinorfield_buffer_size();
 	int gaugemomentum_size = get_gaugemomentum_buffer_size();
-	int gaugefield_size = get_parameters()->get_gf_buf_size();
+	int gaugefield_size = getGaugefieldBufferSize();
 	int float_size = sizeof(hmc_float);
 	hmc_complex one = hmc_complex_one;
 	hmc_complex minusone = hmc_complex_minusone;
@@ -554,11 +554,11 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//  which then has to be the source of the inversion
 	if(get_parameters()->get_use_eo() == true) {
-		convertGaugefieldToSOA_device(gaugefield_soa, *get_gaugefield());
-		Opencl_Module_Fermions::Qplus_eo (clmem_phi_inv_eo, clmem_phi_eo , *get_gaugefield());
+		convertGaugefieldToSOA_device(gaugefield_soa, get_gaugefield());
+		Opencl_Module_Fermions::Qplus_eo (clmem_phi_inv_eo, clmem_phi_eo , get_gaugefield());
 		if(logger.beDebug()) print_info_inv_field(clmem_phi_eo, true, "\tinit field after update ");
 	} else {
-		Opencl_Module_Fermions::Qplus(clmem_phi_inv, clmem_phi , *get_gaugefield());
+		Opencl_Module_Fermions::Qplus(clmem_phi_inv, clmem_phi , get_gaugefield());
 		if(logger.beDebug()) print_info_inv_field(clmem_phi, false, "\tinit field after update ");
 	}
 }
@@ -1164,12 +1164,12 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	hmc_complex poly;
 	hmc_complex poly_new;
 	//In this call, the observables are calculated already with appropiate Weighting factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC)
-	Opencl_Module::gaugeobservables(*get_gaugefield(), &plaq,  &tplaq, &splaq, &poly);
+	Opencl_Module::gaugeobservables(get_gaugefield(), &plaq,  &tplaq, &splaq, &poly);
 	Opencl_Module::gaugeobservables(clmem_new_u, &plaq_new,  &tplaq_new, &splaq_new, &poly_new);
 	//plaq has to be divided by the norm-factor to get s_gauge
 	hmc_float factor = 1. / (get_parameters()->get_plaq_norm());
 	if(get_parameters()->get_use_rectangles() == true) {
-		Opencl_Module::gaugeobservables_rectangles(*get_gaugefield(), &rect);
+		Opencl_Module::gaugeobservables_rectangles(get_gaugefield(), &rect);
 		Opencl_Module::gaugeobservables_rectangles(clmem_new_u, &rect_new);
 		hmc_float c0 = get_parameters()->get_c0();
 		hmc_float c1 = get_parameters()->get_c1();

@@ -80,7 +80,8 @@ void Opencl_Module_Heatbath::run_heatbath()
 	cl_uint num_groups;
 	this->get_work_sizes(heatbath_even, this->get_device_type(), &ls, &global_work_size, &num_groups);
 
-	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), get_gaugefield());
+	cl_mem gf = get_gaugefield();
+	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), &gf);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(heatbath_even, 2, sizeof(cl_mem), get_clmem_rndarray());
@@ -95,7 +96,7 @@ void Opencl_Module_Heatbath::run_heatbath()
 
 	this->get_work_sizes(heatbath_odd, this->get_device_type(), &ls, &global_work_size, &num_groups);
 
-	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), get_gaugefield());
+	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), &gf);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(heatbath_odd, 2, sizeof(cl_mem), get_clmem_rndarray());
@@ -122,7 +123,8 @@ void Opencl_Module_Heatbath::run_overrelax()
 	cl_uint num_groups;
 	this->get_work_sizes(overrelax_even, this->get_device_type(), &ls, &global_work_size, &num_groups);
 
-	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), get_gaugefield());
+	cl_mem gf = get_gaugefield();
+	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), &gf);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(overrelax_even, 2, sizeof(cl_mem), get_clmem_rndarray());
@@ -137,7 +139,7 @@ void Opencl_Module_Heatbath::run_overrelax()
 
 	this->get_work_sizes(overrelax_odd, this->get_device_type(), &ls, &global_work_size, &num_groups);
 
-	clerr = clSetKernelArg(overrelax_odd, 0, sizeof(cl_mem), get_gaugefield());
+	clerr = clSetKernelArg(overrelax_odd, 0, sizeof(cl_mem), &gf);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(overrelax_odd, 2, sizeof(cl_mem), get_clmem_rndarray());

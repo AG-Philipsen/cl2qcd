@@ -19,7 +19,7 @@ class Device : public Opencl_Module_Hmc {
 	cl_kernel testKernel2;
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Hmc() {
-		Opencl_Module_Hmc::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+		Opencl_Module_Hmc::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -303,7 +303,8 @@ void Dummyfield::runTestKernel()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(rect_value,  *(get_clmem_gaugefield()), gs, ls);
+	Device * device = static_cast<Device*>(opencl_modules[0]);
+	device->runTestKernel(rect_value, device->get_gaugefield(), gs, ls);
 }
 
 void Dummyfield::runTestKernel2()
@@ -316,5 +317,6 @@ void Dummyfield::runTestKernel2()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel2(out,  *(get_clmem_gaugefield()), gs, ls);
+	Device * device = static_cast<Device*>(opencl_modules[0]);
+	device->runTestKernel2(out, device->get_gaugefield(), gs, ls);
 }

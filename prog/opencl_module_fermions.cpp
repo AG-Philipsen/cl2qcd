@@ -1719,7 +1719,7 @@ hmc_float Opencl_Module_Fermions::print_info_inv_field(cl_mem in, bool eo, std::
 
 void Opencl_Module_Fermions::convertGaugefieldToSOA()
 {
-	convertGaugefieldToSOA_device(gaugefield_soa, *get_gaugefield());
+	convertGaugefieldToSOA_device(gaugefield_soa, get_gaugefield());
 }
 void Opencl_Module_Fermions::convertGaugefieldToSOA_device(cl_mem out, cl_mem in)
 {

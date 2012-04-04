@@ -33,10 +33,10 @@ void Gaugefield_inverter::init_tasks()
 
 	//LZ: right now, each task carries exactly one opencl device -> thus the below allocation with [1]. Could be generalized in future
 	opencl_modules[task_solver] = new Opencl_Module_Fermions[1];
-	get_task_solver()->init(queue[task_solver], get_clmem_gaugefield(), get_parameters(), get_max_compute_units(task_solver), get_double_ext(task_solver));
+	get_task_solver()->init(queue[task_solver], get_parameters(), get_max_compute_units(task_solver), get_double_ext(task_solver));
 
 	opencl_modules[task_correlator] = new Opencl_Module_Correlator[1];
-	get_task_correlator()->init(queue[task_correlator], get_clmem_gaugefield(), get_parameters(), get_max_compute_units(task_correlator), get_double_ext(task_correlator));
+	get_task_correlator()->init(queue[task_correlator], get_parameters(), get_max_compute_units(task_correlator), get_double_ext(task_correlator));
 
 
 	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
@@ -99,7 +99,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 
 	//apply stout smearing if wanted
 	if(get_parameters()->get_use_smearing() == true) {
-		solver->smear_gaugefield(*get_clmem_gaugefield(), NULL);
+		solver->smear_gaugefield(solver->get_gaugefield(), NULL);
 	}
 
 	::Aee f_eo(solver);
@@ -113,7 +113,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 		solver->copy_buffer_to_device(&source_buffer[k * get_parameters()->get_vol4d()], get_clmem_source(), sfsize);
 
 		logger.debug() << "calling solver..";
-		solver->solver(f, clmem_res, get_clmem_source(), *get_clmem_gaugefield(), solver_timer);
+		solver->solver(f, clmem_res, get_clmem_source(), solver->get_gaugefield(), solver_timer);
 
 		//add solution to solution-buffer
 		//NOTE: this is a blocking call!
@@ -122,7 +122,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 	}
 
 	if(get_parameters()->get_use_smearing() == true) {
-		solver->unsmear_gaugefield(*get_clmem_gaugefield());
+		solver->unsmear_gaugefield(solver->get_gaugefield());
 	}
 
 	delete [] sftmp;
