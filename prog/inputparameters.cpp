@@ -93,11 +93,13 @@ void inputparameters::set_defaults()
 	fermact = WILSON;
 	kappa = 0.125;
 	mu = 0.006;
+	this->calc_mubar();
 	csw = 0.;
 	iter0 = 0;
 	iter1 = 0;
 	kappa_mp = 0.125;
 	mu_mp = 0.006;
+	this->calc_mubar_mp();
 	csw_mp = 0.;
 	iter0_mp = 0;
 	iter1_mp = 0;
