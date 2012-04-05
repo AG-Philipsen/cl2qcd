@@ -2,7 +2,7 @@
  * Rectangles calculation kernels.
  * This is very similar to the Plaquette kernel.
  * It is:
- * 	Rectangles = \sum_{sites} \sum_{mu \neq nu} local_rectangles (i, mu, nu)
+ *  Rectangles = \sum_{sites} \sum_{mu \neq nu} local_rectangles (i, mu, nu)
  */
 __kernel void rectangles(__global ocl_s_gaugefield * field, __global hmc_float * rect_out, __local hmc_float * rect_loc)
 {
@@ -29,10 +29,10 @@ __kernel void rectangles(__global ocl_s_gaugefield * field, __global hmc_float *
 
 		for(int mu = 0; mu < NDIM; mu++) {
 			for(int nu = 0; nu < NDIM; nu++) {
-			        if(nu == mu) continue;
+				if(nu == mu) continue;
 				prod = local_rectangles(field, pos.space, pos.time, mu, nu );
 				tmpfloat = trace_matrixsu3(prod).re;
-				rect += tmpfloat/NC;
+				rect += tmpfloat / NC;
 			}
 		}
 	}
@@ -46,19 +46,19 @@ __kernel void rectangles(__global ocl_s_gaugefield * field, __global hmc_float *
 
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 64) {
-			rect_loc[ idx%64 ]  += rect_loc[ idx ];
+			rect_loc[ idx % 64 ]  += rect_loc[ idx ];
 		}
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 32) {
-			rect_loc[ idx-32 ]  += rect_loc[ idx ];
+			rect_loc[ idx - 32 ]  += rect_loc[ idx ];
 		}
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 16) {
-			rect_loc[ idx-16 ]  += rect_loc[ idx ];
+			rect_loc[ idx - 16 ]  += rect_loc[ idx ];
 		}
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 8) {
-			rect_loc[ idx-8 ]  += rect_loc[ idx ];
+			rect_loc[ idx - 8 ]  += rect_loc[ idx ];
 		}
 		barrier(CLK_LOCAL_MEM_FENCE);
 		//thread 0 sums up the result_local and stores it in array result
@@ -81,8 +81,8 @@ __kernel void rectangles_reduction(__global hmc_float* rect_buf, __global hmc_fl
 {
 	int id = get_global_id(0);
 	if(id == 0) {
-	        for (uint i = 1; i < bufElems; i++) {
-		        rect_buf[0]  += rect_buf[i];
+		for (uint i = 1; i < bufElems; i++) {
+			rect_buf[0]  += rect_buf[i];
 		}
 		(*rect)  = rect_buf[0];
 	}

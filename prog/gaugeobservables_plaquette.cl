@@ -1,7 +1,7 @@
 /** @file
  * Plaquette calculation kernels
  * It is:
- * 	Plaquette = \sum_{sites} \sum_{mu > nu} local_plaquette (i, mu, nu)
+ *  Plaquette = \sum_{sites} \sum_{mu > nu} local_plaquette (i, mu, nu)
  */
 
 __kernel void plaquette(__global ocl_s_gaugefield * field, __global hmc_float * plaq_out, __global hmc_float* tplaq_out, __global hmc_float* splaq_out, __local hmc_float * plaq_loc, __local hmc_float* tplaq_loc, __local hmc_float* splaq_loc)
@@ -33,9 +33,9 @@ __kernel void plaquette(__global ocl_s_gaugefield * field, __global hmc_float * 
 
 		for(int mu = 1; mu < NDIM; mu++) {
 			for(int nu = 0; nu < mu; nu++) {
-                         	prod = local_plaquette(field, pos.space, pos.time, mu, nu );
-			        
-                                tmpfloat = trace_matrixsu3(prod).re;
+				prod = local_plaquette(field, pos.space, pos.time, mu, nu );
+
+				tmpfloat = trace_matrixsu3(prod).re;
 				tmpfloat /= NC;
 				plaq += tmpfloat;
 
@@ -61,27 +61,27 @@ __kernel void plaquette(__global ocl_s_gaugefield * field, __global hmc_float * 
 
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 64) {
-			plaq_loc[ idx%64 ]  += plaq_loc[ idx ];
-			tplaq_loc[ idx%64 ] += tplaq_loc[ idx ];
-			splaq_loc[ idx%64 ] += splaq_loc[ idx ];
+			plaq_loc[ idx % 64 ]  += plaq_loc[ idx ];
+			tplaq_loc[ idx % 64 ] += tplaq_loc[ idx ];
+			splaq_loc[ idx % 64 ] += splaq_loc[ idx ];
 		}
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 32) {
-			plaq_loc[ idx-32 ]  += plaq_loc[ idx ];
-			tplaq_loc[ idx-32 ] += tplaq_loc[ idx ];
-			splaq_loc[ idx-32 ] += splaq_loc[ idx ];
+			plaq_loc[ idx - 32 ]  += plaq_loc[ idx ];
+			tplaq_loc[ idx - 32 ] += tplaq_loc[ idx ];
+			splaq_loc[ idx - 32 ] += splaq_loc[ idx ];
 		}
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 16) {
-			plaq_loc[ idx-16 ]  += plaq_loc[ idx ];
-			tplaq_loc[ idx-16 ] += tplaq_loc[ idx ];
-			splaq_loc[ idx-16 ] += splaq_loc[ idx ];
+			plaq_loc[ idx - 16 ]  += plaq_loc[ idx ];
+			tplaq_loc[ idx - 16 ] += tplaq_loc[ idx ];
+			splaq_loc[ idx - 16 ] += splaq_loc[ idx ];
 		}
 		barrier(CLK_LOCAL_MEM_FENCE);
 		if (idx >= 8) {
-			plaq_loc[ idx-8 ]  += plaq_loc[ idx ];
-			tplaq_loc[ idx-8 ] += tplaq_loc[ idx ];
-			splaq_loc[ idx-8 ] += splaq_loc[ idx ];
+			plaq_loc[ idx - 8 ]  += plaq_loc[ idx ];
+			tplaq_loc[ idx - 8 ] += tplaq_loc[ idx ];
+			splaq_loc[ idx - 8 ] += splaq_loc[ idx ];
 		}
 		barrier(CLK_LOCAL_MEM_FENCE);
 		//thread 0 sums up the result_local and stores it in array result

@@ -42,8 +42,8 @@ __kernel void polyakov(__global ocl_s_gaugefield * field, __global hmc_complex *
 		Matrixsu3 prod;
 		prod = local_polyakov(field, id);
 		tmpcomplex = trace_matrixsu3(prod);
-		(tmp_pol).re += tmpcomplex.re/NC;
-		(tmp_pol).im += tmpcomplex.im/NC;
+		(tmp_pol).re += tmpcomplex.re / NC;
+		(tmp_pol).im += tmpcomplex.im / NC;
 	}
 
 	//reduction
