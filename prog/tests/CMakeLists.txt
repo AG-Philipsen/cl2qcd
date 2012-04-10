@@ -121,6 +121,31 @@ target_link_libraries(saxsbypz
 add_test(Saxsbypz saxsbypz)
 add_dependencies(saxsbypz git_commit_id_header)
 
+add_executable(gaugefield_observables
+	gaugefield_observables.cpp
+	../host_geometry.cpp
+	../host_operations_gaugefield.cpp
+	../gaugefield_hybrid.cpp
+	../inputparameters.cpp
+	../host_readgauge.cpp
+	../host_random.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../host_use_timer.cpp
+	../host_writegaugefield.cpp
+	../exceptions.cpp
+	../logger.cpp)
+target_link_libraries(gaugefield_observables
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	crypto
+	einhard)
+add_test(Gaugeobservables gaugefield_observables)
+add_dependencies(gaugefield_observables git_commit_id_header)
+
 add_executable(m_gpu
 	M_GPU.cpp
 	../host_geometry.cpp
