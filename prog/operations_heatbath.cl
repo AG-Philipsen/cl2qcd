@@ -26,7 +26,7 @@ Matrixsu2_pauli SU2Update(const hmc_float alpha, hmc_ocl_ran * rnd)
 	return out;
 }
 
-void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const int mu, hmc_ocl_ran * rnd, int pos, int t, int id)
+void inline perform_heatbath(__global Matrixsu3StorageType * gaugefield, const int mu, hmc_ocl_ran * rnd, int pos, int t, int id)
 {
 	Matrix3x3 staplematrix;
 
@@ -91,7 +91,7 @@ void inline perform_heatbath(__global ocl_s_gaugefield* gaugefield, const int mu
 
 }
 
-void inline perform_overrelaxing(__global ocl_s_gaugefield* gaugefield, const int mu, hmc_ocl_ran * rnd, int pos, int t, int id)
+void inline perform_overrelaxing(__global Matrixsu3StorageType * gaugefield, const int mu, hmc_ocl_ran * rnd, int pos, int t, int id)
 {
 	Matrix3x3 staplematrix;
 #ifdef _ANISO_

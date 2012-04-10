@@ -5,7 +5,7 @@
 
 //operations_kappa.cl
 
-__kernel void T_clover_diag_partial(__global ocl_s_gaugefield* gaugefield, __global hmc_float * v_tau, __global hmc_float * v_spatial,
+__kernel void T_clover_diag_partial(__global Matrixsu3StorageType * gaugefield, __global hmc_float * v_tau, __global hmc_float * v_spatial,
                                     __global hmc_float * w_tau,  __global hmc_float * w_spatial,
                                     const int mom_dir)
 {

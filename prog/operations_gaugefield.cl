@@ -4,6 +4,54 @@
 
 //operations_gaugefield.cl
 
+// TODO document
+Matrixsu3 getSU3(__global const Matrixsu3StorageType * const restrict in, const uint idx)
+{
+#ifdef _USE_SOA_
+	return (Matrixsu3) {
+		in[0 * GAUGEFIELD_STRIDE + idx],
+		   in[1 * GAUGEFIELD_STRIDE + idx],
+		   in[2 * GAUGEFIELD_STRIDE + idx],
+		   in[3 * GAUGEFIELD_STRIDE + idx],
+		   in[4 * GAUGEFIELD_STRIDE + idx],
+		   in[5 * GAUGEFIELD_STRIDE + idx],
+		   in[6 * GAUGEFIELD_STRIDE + idx],
+		   in[7 * GAUGEFIELD_STRIDE + idx],
+		   in[8 * GAUGEFIELD_STRIDE + idx]
+	};
+#else
+	//printf("%i\n", idx);
+	return in[idx];
+#endif
+}
+
+// TODO document
+void putSU3(__global Matrixsu3StorageType * const restrict out, const uint idx, const Matrixsu3 val)
+{
+#ifdef _USE_SOA_
+	out[0 * GAUGEFIELD_STRIDE + idx] = val.e00;
+	out[1 * GAUGEFIELD_STRIDE + idx] = val.e01;
+	out[2 * GAUGEFIELD_STRIDE + idx] = val.e02;
+	out[3 * GAUGEFIELD_STRIDE + idx] = val.e10;
+	out[4 * GAUGEFIELD_STRIDE + idx] = val.e11;
+	out[5 * GAUGEFIELD_STRIDE + idx] = val.e12;
+	out[6 * GAUGEFIELD_STRIDE + idx] = val.e20;
+	out[7 * GAUGEFIELD_STRIDE + idx] = val.e21;
+	out[8 * GAUGEFIELD_STRIDE + idx] = val.e22;
+#else
+	out[idx] = val;
+#endif
+}
+
+Matrixsu3 get_matrixsu3(__global const Matrixsu3StorageType * const restrict field, const int spacepos, const int timepos, const int mu)
+{
+	return getSU3(field, get_global_link_pos(mu, spacepos, timepos));
+}
+
+void put_matrixsu3(__global Matrixsu3StorageType  * const restrict field, const Matrixsu3 in, const int spacepos, const int timepos, const int mu)
+{
+	putSU3(field, get_global_link_pos(mu, spacepos, timepos), in);
+}
 
 Matrixsu3 project_su3(const Matrixsu3 U)
 {
@@ -181,7 +229,7 @@ Matrixsu3 extend (const int random, Matrixsu2 src)
 }
 
 //calculate polyakov-loop matrix at spatial site n in time-direction
-Matrixsu3 local_polyakov(__global ocl_s_gaugefield * field, const int n)
+Matrixsu3 local_polyakov(__global Matrixsu3StorageType * field, const int n)
 {
 	Matrixsu3 out;
 	out = unit_matrixsu3();
@@ -194,7 +242,7 @@ Matrixsu3 local_polyakov(__global ocl_s_gaugefield * field, const int n)
 }
 
 //calculate plaquette-matrix at site n,t in direction mu and nu
-Matrixsu3 local_plaquette(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
+Matrixsu3 local_plaquette(__global Matrixsu3StorageType * field, const int n, const int t, const int mu, const int nu )
 {
 	Matrixsu3 out;
 	int4 pos;
@@ -221,7 +269,7 @@ Matrixsu3 local_plaquette(__global ocl_s_gaugefield * field, const int n, const 
 
 //calculate rectangle-matrix at site i = (n,t) in direction mu and nu
 //	The rectangle is then: U_mu(i) * U_nu(i+mu) * U_nu(i + mu + nu) * U_mu(i + nu + nu)dagger * U_nu(i + nu)dagger * U_nu(i)dagger
-Matrixsu3 local_rectangles(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
+Matrixsu3 local_rectangles(__global Matrixsu3StorageType * field, const int n, const int t, const int mu, const int nu )
 {
 	Matrixsu3 out;
 	int4 pos;
@@ -269,7 +317,7 @@ Matrixsu3 local_rectangles(__global ocl_s_gaugefield * field, const int n, const
 }
 
 
-Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
+Matrix3x3 local_Q_plaquette(__global Matrixsu3StorageType * field, const int n, const int t, const int mu, const int nu )
 {
 	//the Q-plaquette is a sum over four normal plaquettes
 	Matrix3x3 qplaq = zero_matrix3x3();
@@ -313,7 +361,7 @@ Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, cons
 //this calculates the staple in nu direction given a direction mu of the link
 //     under consideration:
 //     s = U_nu(x + mu) * Udagger_mu(x + nu) * Udagger_nu(x) + Udagger_nu(x+mu - nu) * Udagger_mu(x-nu) * U_nu(x - nu)
-Matrix3x3 local_staple(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
+Matrix3x3 local_staple(__global Matrixsu3StorageType * field, const int n, const int t, const int mu, const int nu )
 {
 	int4 pos;
 
@@ -381,7 +429,7 @@ Matrix3x3 local_staple(__global ocl_s_gaugefield * field, const int n, const int
  *  6.  U_nu(x) * U_mu(x + nu) * U_mu(x + nu + mu) * Udagger_nu(x + mu + mu) * Udagger_mu(x + mu)
  *  ^+  U_mu(x + mu)  U_nu(x + mu + mu) Udagger_mu(x + nu + mu) Udagger_mu(x + nu) Udagger_nu(x)
  */
-Matrix3x3 local_rectangles_staple(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
+Matrix3x3 local_rectangles_staple(__global Matrixsu3StorageType * field, const int n, const int t, const int mu, const int nu )
 {
 	int4 pos;
 	int4 pos2;
@@ -643,7 +691,7 @@ Matrix3x3 local_rectangles_staple(__global ocl_s_gaugefield * field, const int n
 	return out;
 }
 
-Matrix3x3 calc_staple(__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
+Matrix3x3 calc_staple(__global Matrixsu3StorageType * field, const int pos, const int t, const int mu_in)
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
@@ -655,7 +703,7 @@ Matrix3x3 calc_staple(__global ocl_s_gaugefield* field, const int pos, const int
 }
 
 //this is the staple only in the spatial directions only
-Matrix3x3 calc_staple_sigma (__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
+Matrix3x3 calc_staple_sigma (__global Matrixsu3StorageType * field, const int pos, const int t, const int mu_in)
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
@@ -668,14 +716,14 @@ Matrix3x3 calc_staple_sigma (__global ocl_s_gaugefield* field, const int pos, co
 }
 
 //this is the staple only in temporal direction only
-Matrix3x3 calc_staple_tau (__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
+Matrix3x3 calc_staple_tau (__global Matrixsu3StorageType * field, const int pos, const int t, const int mu_in)
 {
 	int nu = 0;
 	return local_staple(field, pos, t, mu_in, nu );
 }
 
 //this is the rectangles staple
-Matrix3x3 calc_rectangles_staple(__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
+Matrix3x3 calc_rectangles_staple(__global Matrixsu3StorageType * field, const int pos, const int t, const int mu_in)
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
@@ -686,42 +734,3 @@ Matrix3x3 calc_rectangles_staple(__global ocl_s_gaugefield* field, const int pos
 
 	return staple;
 }
-
-// TODO document
-Matrixsu3 getSU3(__global const Matrixsu3StorageType * const restrict in, const uint idx)
-{
-#ifdef _USE_SOA_
-	return (Matrixsu3) {
-		in[0 * GAUGEFIELD_STRIDE + idx],
-		   in[1 * GAUGEFIELD_STRIDE + idx],
-		   in[2 * GAUGEFIELD_STRIDE + idx],
-		   in[3 * GAUGEFIELD_STRIDE + idx],
-		   in[4 * GAUGEFIELD_STRIDE + idx],
-		   in[5 * GAUGEFIELD_STRIDE + idx],
-		   in[6 * GAUGEFIELD_STRIDE + idx],
-		   in[7 * GAUGEFIELD_STRIDE + idx],
-		   in[8 * GAUGEFIELD_STRIDE + idx]
-	};
-#else
-	return in[idx];
-#endif
-}
-
-// TODO document
-void putSU3(__global Matrixsu3StorageType * const restrict out, const uint idx, const Matrixsu3 val)
-{
-#ifdef _USE_SOA_
-	out[0 * GAUGEFIELD_STRIDE + idx] = val.e00;
-	out[1 * GAUGEFIELD_STRIDE + idx] = val.e01;
-	out[2 * GAUGEFIELD_STRIDE + idx] = val.e02;
-	out[3 * GAUGEFIELD_STRIDE + idx] = val.e10;
-	out[4 * GAUGEFIELD_STRIDE + idx] = val.e11;
-	out[5 * GAUGEFIELD_STRIDE + idx] = val.e12;
-	out[6 * GAUGEFIELD_STRIDE + idx] = val.e20;
-	out[7 * GAUGEFIELD_STRIDE + idx] = val.e21;
-	out[8 * GAUGEFIELD_STRIDE + idx] = val.e22;
-#else
-	out[idx] = val;
-#endif
-}
-

@@ -290,6 +290,8 @@ public:
 	usetimer timer_rectangles_reduction;
 	usetimer timer_polyakov;
 	usetimer timer_polyakov_reduction;
+	usetimer timer_convertGaugefieldToSOA;
+	usetimer timer_convertGaugefieldFromSOA;
 
 	usetimer timer_stout_smear;
 	/**
@@ -548,6 +550,8 @@ private:
 	cl_kernel rectangles_reduction;
 	cl_kernel polyakov;
 	cl_kernel polyakov_reduction;
+	cl_kernel convertGaugefieldToSOA;
+	cl_kernel convertGaugefieldFromSOA;
 
 	//bunch of timers
 	//this is used to measure data-transfer to and from the device
@@ -574,6 +578,9 @@ private:
 	 * track memory usage and check errors.
 	 */
 	cl_mem createBuffer(cl_mem_flags flags, size_t size, void * host_ptr);
+
+	void convertGaugefieldToSOA_device(cl_mem out, cl_mem in);
+	void convertGaugefieldFromSOA_device(cl_mem out, cl_mem in);
 };
 
 #endif //OPENCLMODULEH

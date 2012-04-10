@@ -59,7 +59,7 @@ void Dummyfield::finalize_opencl()
 
 void Device::fill_kernels()
 {
-
+	Opencl_Module::fill_kernels();
 #ifdef _USEDOUBLEPREC_
 	logger.info() << "init saxsbypz kernels to see if the compiler does strange things...";
 	logger.info() << "\thmc_float = double";
@@ -75,5 +75,7 @@ void Device::fill_kernels()
 void Device::clear_kernels()
 {
 	clReleaseKernel(testKernel);
+
+	Opencl_Module::clear_kernels();
 }
 

@@ -1,4 +1,4 @@
-__kernel void gauge_force_tlsym(__global const ocl_s_gaugefield * const restrict field, __global aeStorageType * const restrict out)
+__kernel void gauge_force_tlsym(__global const Matrixsu3StorageType * const restrict field, __global aeStorageType * const restrict out)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);

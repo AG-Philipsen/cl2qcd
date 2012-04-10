@@ -17,7 +17,7 @@ __kernel void polyakov_reduction(__global hmc_complex* poly_buf,  __global hmc_c
 	return;
 }
 
-__kernel void polyakov(__global ocl_s_gaugefield * field, __global hmc_complex * out, __local hmc_complex * out_loc)
+__kernel void polyakov(__global Matrixsu3StorageType * field, __global hmc_complex * out, __local hmc_complex * out_loc)
 {
 
 	int id;

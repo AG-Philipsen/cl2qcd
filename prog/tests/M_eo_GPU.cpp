@@ -36,9 +36,6 @@ public:
 		params.readfile(tmp.str().c_str());
 
 		init(1, device_type, &params);
-
-		// make sure SOA is in proper format for dslash_eoprec
-		static_cast<Device*>(opencl_modules[0])->convertGaugefieldToSOA();
 	};
 
 	virtual void init_tasks();
@@ -231,9 +228,6 @@ void Device::clear_kernels()
 
 void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls, hmc_float kappa)
 {
-	if(use_soa) {
-		gf = gaugefield_soa;
-	}
 	cl_int err;
 	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &in);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);

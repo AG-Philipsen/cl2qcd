@@ -126,8 +126,6 @@ struct Matrixsu3 {
 };
 #endif // ifdef _INKERNEL_
 
-typedef Matrixsu3 ocl_s_gaugefield;
-
 #ifdef _USE_SOA_
 typedef hmc_complex Matrixsu3StorageType;
 #else

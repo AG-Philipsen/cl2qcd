@@ -1,4 +1,4 @@
-__kernel void heatbath_even(__global ocl_s_gaugefield * gaugefield, const int mu, __global rngStateStorageType * rngStates)
+__kernel void heatbath_even(__global Matrixsu3StorageType * gaugefield, const int mu, __global rngStateStorageType * rngStates)
 {
 	int id, id_tmp, size;
 	id_tmp = get_global_id(0);

@@ -4,7 +4,7 @@
  * It is:
  *  Rectangles = \sum_{sites} \sum_{mu \neq nu} local_rectangles (i, mu, nu)
  */
-__kernel void rectangles(__global ocl_s_gaugefield * field, __global hmc_float * rect_out, __local hmc_float * rect_loc)
+__kernel void rectangles(__global Matrixsu3StorageType * field, __global hmc_float * rect_out, __local hmc_float * rect_loc)
 {
 
 	int id;
