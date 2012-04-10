@@ -1203,14 +1203,14 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	logger.info() << "\tdeltaS_gaugemom = " << setprecision(10) << 0.5 * (p2 - new_p2);
 
 	//Fermion-Part:
-	if(! get_parameters()->get_use_gauge_only() ){
-    	        hmc_float spinor_energy_init, s_fermion;
+	if(! get_parameters()->get_use_gauge_only() ) {
+		hmc_float spinor_energy_init, s_fermion;
 		//initial energy has been computed in the beginning...
 		Opencl_Module_Hmc::get_buffer_from_device(clmem_energy_init, &spinor_energy_init, sizeof(hmc_float));
 		// sum_links phi*_i (M^+M)_ij^-1 phi_j
 		s_fermion = calc_s_fermion();
 		deltaH += spinor_energy_init - s_fermion;
-		
+
 		logger.debug() << "\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
 		logger.debug() << "\tS_ferm(new field) = " << setprecision(10) << s_fermion;
 		logger.info() << "\tdeltaS_ferm = " << spinor_energy_init - s_fermion;

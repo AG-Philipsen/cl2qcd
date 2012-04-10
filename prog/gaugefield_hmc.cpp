@@ -127,7 +127,7 @@ void Gaugefield_hmc::calc_total_force(usetimer * solvertimer)
 	//CP: make sure that the output field is set to zero
 	get_task_hmc(0)->set_zero_clmem_force_device();
 	if(!get_parameters()->get_use_gauge_only() )
-	    this->fermion_forces_call(solvertimer);
+		this->fermion_forces_call(solvertimer);
 	get_task_hmc(0)->calc_gauge_force();
 }
 

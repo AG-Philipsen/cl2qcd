@@ -163,7 +163,7 @@ void inputparameters::set_gauge_norm_factors()
 	plaq_norm = (this->get_vol4d() * NDIM * (NDIM - 1) ) / 2.;
 	tplaq_norm = (this->get_vol4d() * (NDIM - 1));
 	splaq_norm = (this->get_vol4d() * (NDIM - 1) * (NDIM - 2)) / 2. ;
-	rect_norm = NDIM * (NDIM-1) * this->get_vol4d();
+	rect_norm = NDIM * (NDIM - 1) * this->get_vol4d();
 	poly_norm = (this->get_volspace());
 }
 
@@ -284,9 +284,9 @@ void inputparameters::readfile(const char* ifn)
 			    line.find("PureGauge") != std::string::npos ||
 			    line.find("puregauge") != std::string::npos ||
 			    line.find("Only Gauge") != std::string::npos ) bool_assign(&use_gauge_only, line);
-			
-			if(	line.find("prec") != std::string::npos ||
-					line.find("Prec") != std::string::npos ) val_assign(&prec, line);
+
+			if( line.find("prec") != std::string::npos ||
+			    line.find("Prec") != std::string::npos ) val_assign(&prec, line);
 
 			if(line.find("readsource") != std::string::npos) startcond_assign(&startcondition, line);
 			if(line.find("startcondition") != std::string::npos) startcond_assign(&startcondition, line);
@@ -332,9 +332,9 @@ void inputparameters::readfile(const char* ifn)
 			//@todo: this is taken out because the expression is positive also for "rec12"
 			/*
 			if(line.find("c1") != std::string::npos) {
-				val_assign(&c1, line);
-				c1set = true;
-				this->calc_c0_tlsym(this->get_c1());
+			  val_assign(&c1, line);
+			  c1set = true;
+			  this->calc_c0_tlsym(this->get_c1());
 			}
 			*/
 			if(line.find("hmcsteps") != std::string::npos) val_assign(&hmcsteps, line);
@@ -1716,11 +1716,10 @@ void inputparameters::print_info_hmc(char* progname) const
 	logger.info() << "## precision used in HMC-inversions = " << this->get_force_prec();
 	logger.info() << "##  ";
 	logger.info() << "## # Timescales  = " << this->get_num_timescales();
-	if(this->get_use_gauge_only() && this->get_num_timescales() == 1){
-	        logger.info() << "## use PureGaugeTheory in HMC!";
-	}
-	else if (this->get_use_gauge_only() && this->get_num_timescales() > 1){
-	        logger.fatal() << "PureGaugeTheory can only be used with one timescale!\nPlease change the input-file!\nAborting...";
+	if(this->get_use_gauge_only() && this->get_num_timescales() == 1) {
+		logger.info() << "## use PureGaugeTheory in HMC!";
+	} else if (this->get_use_gauge_only() && this->get_num_timescales() > 1) {
+		logger.fatal() << "PureGaugeTheory can only be used with one timescale!\nPlease change the input-file!\nAborting...";
 		exit(EXIT_INPUTPARAMETERS);
 	}
 	//integrator infos
@@ -1775,11 +1774,10 @@ void inputparameters::print_info_hmc(char* progname, ostream* os) const
 	*os << "## precision used HMC-inversions = " << this->get_force_prec() << '\n';
 	*os << "##  " << '\n';
 	*os << "## # Timescales  = " << this->get_num_timescales() << '\n';
-	if(this->get_use_gauge_only() && this->get_num_timescales() == 1){
-	        *os << "## use PureGaugeTheory in HMC!" << endl;
-	}
-	else if (this->get_use_gauge_only() && this->get_num_timescales() > 1){
-	        *os << "PureGaugeTheory can only be used with one timescale!\nPlease change the input-file!\nAborting..." << endl;
+	if(this->get_use_gauge_only() && this->get_num_timescales() == 1) {
+		*os << "## use PureGaugeTheory in HMC!" << endl;
+	} else if (this->get_use_gauge_only() && this->get_num_timescales() > 1) {
+		*os << "PureGaugeTheory can only be used with one timescale!\nPlease change the input-file!\nAborting..." << endl;
 		exit(EXIT_INPUTPARAMETERS);
 	}
 	//integrator infos
