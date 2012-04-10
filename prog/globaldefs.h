@@ -41,6 +41,9 @@
 //EVEN ODD
 #define EVEN 0
 #define ODD 1
+#define OE 0
+#define EO 1
+
 
 #define ARG_DEF -1
 

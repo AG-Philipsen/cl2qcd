@@ -94,6 +94,7 @@ public:
 	bool get_use_mp() const;
 	bool get_use_aniso() const;
 	bool get_use_rectangles() const;
+	bool get_use_gauge_only() const;
 	int get_cgmax() const;
 	int get_cgmax_mp() const;
 	/**
@@ -397,6 +398,7 @@ private:
 	bool use_bicgstab_save_mp;
 	bool use_pointsource;
 	bool use_rectangles;
+	bool use_gauge_only;
 	hmc_float c0;
 	hmc_float c1;
 	hmc_float c0_default_wilson;
