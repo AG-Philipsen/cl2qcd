@@ -6,12 +6,12 @@ __kernel void polyakov_reduction(__global hmc_complex* poly_buf,  __global hmc_c
 {
 	int id = get_global_id(0);
 	if(id == 0) {
-		for (int i = 1; i < bufElems; i++) {
-			poly_buf[0].re += poly_buf[i].re;
-			poly_buf[0].im += poly_buf[i].im;
+		hmc_complex sum = hmc_complex_zero;
+		for (int i = 0; i < bufElems; i++) {
+			sum.re += poly_buf[i].re;
+			sum.im += poly_buf[i].im;
 		}
-		(*poly).re = (poly_buf[0]).re;
-		(*poly).im = (poly_buf[0]).im;
+		*poly = sum;
 	}
 
 	return;
@@ -42,8 +42,8 @@ __kernel void polyakov(__global ocl_s_gaugefield * field, __global hmc_complex *
 		Matrixsu3 prod;
 		prod = local_polyakov(field, id);
 		tmpcomplex = trace_matrixsu3(prod);
-		(tmp_pol).re += tmpcomplex.re/NC;
-		(tmp_pol).im += tmpcomplex.im/NC;
+		(tmp_pol).re += tmpcomplex.re / NC;
+		(tmp_pol).im += tmpcomplex.im / NC;
 	}
 
 	//reduction
