@@ -120,8 +120,15 @@ hmc_complex inline gaussianNormalPair(hmc_ocl_ran * rnd)
 {
 	// Box-Muller method, cartesian form, for extracting two independent normal standard real numbers
 	hmc_complex tmp;
-	hmc_float u1 = 1.0 - ocl_new_ran(rnd);
-//  hmc_float u2 = 1.0 - ocl_new_ran(rnd);
+	hmc_float u1_tmp;
+	//CP: if u1 == 1., p will be "inf"
+	do{
+	  u1_tmp = ocl_new_ran(rnd);
+	  if(u1_tmp < 1.) break;
+	} while (1>0);
+
+	hmc_float u1 = 1.0 - u1_tmp;
+	//  hmc_float u2 = 1.0 - ocl_new_ran(rnd);
 	hmc_float u2 = ocl_new_ran(rnd);
 	//CP: this is the standard Box-Müller way:
 	hmc_float p  = sqrt(- 2.* log(u1));

@@ -460,6 +460,41 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device()
 		if(resid != resid) {
 			throw Print_Error_Message("calculation of gaussian gm gave nan! Aborting...", __FILE__, __LINE__);
 		}
+		if(resid == INFINITY) {
+		  bool writeout = false;
+		  if(writeout){
+		    //create buffer to store ae-field
+		    size_t ae_size = get_parameters()->get_gm_buf_size();
+		    
+		    int ae_num = get_parameters()->get_su3algebrasize() * get_parameters()->get_vol4d() * NDIM;
+		    hmc_float * ae_tmp;
+		  
+		    ae_tmp = (hmc_float*) malloc(ae_size);
+		    
+		    //get buffer from device
+		    cout << "copy buffer to host" << endl;
+		    get_buffer_from_device(clmem_p, (void*) ae_tmp, ae_size);
+		    //write out to file
+		    ofstream out("clmem_p_at_inf"); 
+		    if(!out) { 
+		      cout << "Cannot open file.\n"; 
+		    } 
+		    for(int i = 0; i< ae_num; i++){
+		      out << i/8 << "\t" << ae_tmp[i] << endl;
+		    }
+		    out.close();
+		    
+		    //calc sqnorm of ae_tmp
+		    hmc_float sqnorm = 0.;
+		    for(int i = 0; i< ae_num; i++){
+		      sqnorm += ae_tmp[i] * ae_tmp[i];
+		    }
+		    cout << "sqnrom: " << sqnorm << endl;
+		    free(ae_tmp);
+		  }
+		  throw Print_Error_Message("calculation of gaussian gm gave inf! Aborting...", __FILE__, __LINE__);
+		}
+
 	}
 
 }
