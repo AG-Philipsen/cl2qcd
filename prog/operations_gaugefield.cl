@@ -699,6 +699,7 @@ Matrix3x3 calc_staple(__global const Matrixsu3StorageType * const restrict field
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
+#pragma unroll 3 // unroll required for proper register reuse when using newer Catalysts on Cypress
 	for(int i = 0; i < NDIM - 1; i++) {
 		int nu = (mu_in + i + 1) % NDIM;
 		staple = add_matrix3x3(staple,  local_staple(field, pos, t, mu_in, nu ));
@@ -711,6 +712,7 @@ Matrix3x3 calc_staple_sigma (__global const Matrixsu3StorageType * const restric
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
+#pragma unroll 3 // unroll required for proper register reuse when using newer Catalysts on Cypress
 	for(int i = 0; i < NDIM - 1; i++) {
 		int nu = (mu_in + i + 1) % NDIM;
 		if(nu != 0)
@@ -731,6 +733,7 @@ Matrix3x3 calc_rectangles_staple(__global const Matrixsu3StorageType * const res
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
+#pragma unroll 3 // unroll required for proper register reuse when using newer Catalysts on Cypress
 	for(int i = 0; i < NDIM - 1 ; i++) {
 		int nu = (mu_in + i + 1) % NDIM;
 		staple = add_matrix3x3(staple,  local_rectangles_staple(field, pos, t, mu_in, nu ));
