@@ -2,7 +2,7 @@
  * @file operations on algebraelements
  */
 
-#ifdef cl_amd_printf
+#ifdef ENABLE_PRINTF
 void print_ae(ae in)
 {
 	printf("%f, %f, %f, %f, %f, %f, %f, %f\n", in.e0, in.e1, in.e2, in.e3, in.e4, in.e5, in.e6, in.e7);

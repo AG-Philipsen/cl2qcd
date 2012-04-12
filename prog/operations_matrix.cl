@@ -5,7 +5,7 @@
 //operations_matrix.cl
 
 
-#ifdef cl_amd_printf
+#ifdef ENABLE_PRINTF
 void print_matrix3x3(Matrix3x3 in)
 {
 	printf("(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n",
