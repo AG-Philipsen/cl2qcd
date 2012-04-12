@@ -117,7 +117,7 @@ void putAe(__global aeStorageType * const restrict out, const size_t idx, const 
 #endif
 }
 
-void update_gaugemomentum(ae in, hmc_float factor, int global_link_pos, __global aeStorageType * out)
+void update_gaugemomentum(const ae in, const hmc_float factor, const int global_link_pos, __global aeStorageType * const restrict out)
 {
 	ae tmp = getAe(out, global_link_pos);
 	tmp = acc_factor_times_algebraelement(tmp, factor, in);
