@@ -226,6 +226,11 @@ Matrixsu3 extend (const int random, Matrixsu2 src)
 			out.e22 = src.e11;
 			return out;
 	}
+
+	return (Matrixsu3) { {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)},
+		{nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)},
+		{nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}
+	};
 }
 
 //calculate polyakov-loop matrix at spatial site n in time-direction
@@ -433,7 +438,6 @@ Matrix3x3 local_rectangles_staple(__global const Matrixsu3StorageType * const re
 {
 	int4 pos;
 	int4 pos2;
-	site_idx start_point;
 	Matrix3x3 out = zero_matrix3x3();
 	Matrixsu3 tmp = zero_matrixsu3();
 
