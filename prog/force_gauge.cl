@@ -1,12 +1,9 @@
 __kernel void gauge_force(__global const Matrixsu3StorageType * const restrict field, __global aeStorageType * const restrict out)
 {
-	int id = get_global_id(0);
-	int global_size = get_global_size(0);
-
 	//Gauge force is factor*Im(i Tr(T_i U V))
 	//   with T_i being the SU3-Generator in i-th direction and V the staplematrix
 	//   and the factor being - beta / NC (for standard Wilson-action) and -c0 * beta / NC (for tlSym)
-	for(int id_tmp = id; id_tmp < VOL4D * NDIM; id_tmp += global_size) {
+	PARALLEL_FOR(id_tmp, VOL4D * NDIM) {
 		//calc link-pos and mu out of the index
 		//NOTE: this is not necessarily equal to the geometric  conventions, one just needs a one-to-one correspondence between thread-id and (n,t,mu) here
 		int2 pos_tmp;
