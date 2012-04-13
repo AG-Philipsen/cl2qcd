@@ -519,14 +519,26 @@ void Opencl_Module_Fermions::clear_kernels()
 		clerr = clReleaseKernel(M_tm_minus);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
+	if(gamma5) {
+		clerr = clReleaseKernel(gamma5);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
 
 	if(get_parameters()->get_use_eo()) {
 		clerr = clReleaseKernel(dslash_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(M_tm_sitediagonal);
+		clerr = clReleaseKernel(gamma5_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(M_tm_inverse_sitediagonal);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		if(get_parameters()->get_fermact() == TWISTEDMASS) {
+		  clerr = clReleaseKernel(M_tm_sitediagonal);
+		  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		  clerr = clReleaseKernel(M_tm_inverse_sitediagonal);
+		  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		  clerr = clReleaseKernel(M_tm_sitediagonal_minus);
+		  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		  clerr = clReleaseKernel(M_tm_inverse_sitediagonal_minus);
+		  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		}
 		clerr = clReleaseKernel(convertGaugefieldToSOA_kernel);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(convertGaugefieldFromSOA);
