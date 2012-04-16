@@ -149,7 +149,6 @@ public:
 	/**
 	 * Return the size of the buffer in bytes.
 	 */
-	int get_gm_buf_size() const;
 	bool get_use_chem_pot_re() const;
 	bool get_use_chem_pot_im() const;
 	bool get_use_smearing() const;
@@ -275,7 +274,7 @@ public:
 	 *
 	 */
 	void print_info_gauge(ostream * os) const;
-	
+
 	/**
 	 *
 	 */
@@ -284,8 +283,8 @@ public:
 	/**
 	 *
 	 */
-	void print_info_integrator(ostream * os, int number) const;	
-	
+	void print_info_integrator(ostream * os, int number) const;
+
 	/**
 	 * check inputparameters against compile settings
 	 * NOTE: In the end, this is propably not needed anymore, but for now it is a safety net
@@ -317,7 +316,6 @@ private:
 	//sizes of fieldbuffers
 	int sf_buf_size;
 	int gf_buf_size;
-	int gm_buf_size;
 
 	//various options
 	bool use_rec12;
@@ -348,7 +346,7 @@ private:
 	//more specific ones
 	hmc_float beta;
 	int xi;
-	
+
 	//fermion parameters
 	hmc_float kappa;
 	hmc_float mu;

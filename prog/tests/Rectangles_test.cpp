@@ -17,7 +17,6 @@ class Device : public Opencl_Module_Hmc {
 	cl_kernel testKernel_b;
 	//for force_gauge_tlsym
 	cl_kernel testKernel2;
-	cl_kernel ae_sqn;
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Hmc() {
 		Opencl_Module_Hmc::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
@@ -27,11 +26,10 @@ public:
 	};
 
 	//for rectangles
-        void runTestKernel(cl_mem out, cl_mem gf, int gs, int ls);
+	void runTestKernel(cl_mem out, cl_mem gf, int gs, int ls);
 	//for force_gauge_tlsym
 	void runTestKernel2(cl_mem out, cl_mem gf, int gs, int ls);
 	void fill_kernels();
-	void set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out);
 	void clear_kernels();
 };
 
@@ -73,8 +71,8 @@ private:
 
 BOOST_AUTO_TEST_CASE( F_GAUGE )
 {
-        //this is the value of the force measured in tmlqcd for the same config
-        hmc_float ref_value = 4080.6745694080;
+	//this is the value of the force measured in tmlqcd for the same config
+	hmc_float ref_value = 4080.6745694080;
 
 	logger.info() << "Init CPU device";
 	//params.print_info_inverter("m_gpu");
@@ -90,31 +88,31 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
 	logger.info() << "|f_gauge|^2:";
 	hmc_float cpu_res;
 	cpu_res = cpu.get_squarenorm(2);
- 	logger.info() << "Compare CPU result and reference value";
+	logger.info() << "Compare CPU result and reference value";
 	cpu.verify(cpu_res, ref_value);
 
 	BOOST_MESSAGE("Tested CPU");
 
- 	logger.info() << "Init GPU device";
- 	//params.print_info_inverter("m_gpu");
- 	// reset RNG
- 	rnd = Random(13);
- 	Dummyfield gpu(CL_DEVICE_TYPE_GPU);
- 	logger.info() << "gaugeobservables: ";
- 	gpu.print_gaugeobservables_from_task(0, 0);
+	logger.info() << "Init GPU device";
+	//params.print_info_inverter("m_gpu");
+	// reset RNG
+	rnd = Random(13);
+	Dummyfield gpu(CL_DEVICE_TYPE_GPU);
+	logger.info() << "gaugeobservables: ";
+	gpu.print_gaugeobservables_from_task(0, 0);
 	logger.info() << "calc rectangles value";
 	gpu.runTestKernel();
 	hmc_float gpu_rect = gpu.get_rect();
 	gpu.runTestKernel2();
 	logger.info() << "|f_gauge|^2:";
 	hmc_float gpu_res;
-	gpu_res = cpu.get_squarenorm(2);
+	gpu_res = gpu.get_squarenorm(2);
 
- 	BOOST_MESSAGE("Tested GPU");
- 
- 	logger.info() << "Compare CPU and GPU results";
- 	cpu.verify(cpu_res, gpu_res);
- 	cpu.verify(cpu_rect, gpu_rect);
+	BOOST_MESSAGE("Tested GPU");
+
+	logger.info() << "Compare CPU and GPU results";
+	cpu.verify(cpu_res, gpu_res);
+	cpu.verify(cpu_rect, gpu_rect);
 }
 
 void Dummyfield::init_tasks()
@@ -152,12 +150,11 @@ void Dummyfield::fill_buffers()
 	sf_out = new hmc_float[NUM_ELEMENTS_AE];
 	fill_with_zero(sf_out, NUM_ELEMENTS_AE);
 
-	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
+	Device * device = static_cast<Device*>(opencl_modules[0]);
 
-	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, ae_buf_size, 0, &err );
+	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, device->get_gaugemomentum_buffer_size(), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out, CL_TRUE, 0, ae_buf_size, sf_out, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(sf_out));
 
 	//create buffer for squarenorm on device
 	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
@@ -168,22 +165,11 @@ void Dummyfield::fill_buffers()
 void Device::fill_kernels()
 {
 	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
-	Opencl_Module::fill_kernels();
+	Opencl_Module_Hmc::fill_kernels();
 
-	//to this end, one has to set the needed files by hand
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
-	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
-	//  basic_hmc_code = basic_fermion_code << "types_hmc.h";
-
-	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
-	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
-
-	ae_sqn = createKernel("gaugemomentum_squarenorm") << basic_fermion_code << "types_hmc.h" << "operations_gaugemomentum.cl" << "gaugemomentum_squarenorm.cl";
-
-	testKernel = createKernel("rectangles") << basic_fermion_code << "gaugeobservables_rectangles.cl";	
+	testKernel = createKernel("rectangles") << basic_fermion_code << "gaugeobservables_rectangles.cl";
 	testKernel_b = createKernel("rectangles_reduction") << basic_opencl_code << "gaugeobservables_rectangles.cl";
-        //at the time of writing this kernel, the OpenCL compiler crashed the kernel using optimizations	
+	//at the time of writing this kernel, the OpenCL compiler crashed the kernel using optimizations
 	testKernel2 = createKernel("gauge_force_tlsym", "-cl-opt-disable") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "force_gauge_tlsym.cl";
 
 }
@@ -211,16 +197,16 @@ void Device::runTestKernel(cl_mem out, cl_mem gf, int gs, int ls)
 	logger.trace() << "start with testKernel";
 
 	cl_int err;
-	
+
 	cl_uint num_groups = (gs + ls - 1) / ls;
-	
+
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
-	
+
 	cl_mem clmem_rect_buf_glob = 0;
 	if( clmem_rect_buf_glob == 0 ) clmem_rect_buf_glob = create_rw_buffer(global_buf_size_float);
 
-	int buf_loc_size_float = sizeof(hmc_float) * ls;	
-	
+	int buf_loc_size_float = sizeof(hmc_float) * ls;
+
 	//set arguments
 	// run local rectangles calculation and first part of reduction
 	int clerr = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &gf);
@@ -241,12 +227,12 @@ void Device::runTestKernel(cl_mem out, cl_mem gf, int gs, int ls)
 	clerr = clSetKernelArg(testKernel_b, 2, sizeof(cl_uint), &num_groups);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(testKernel_b, 1, 1);	
+	enqueueKernel(testKernel_b, 1, 1);
 
 	clReleaseMemObject(clmem_rect_buf_glob);
 
 	logger.trace() << "done with testKernel";
-	
+
 }
 
 void Device::runTestKernel2(cl_mem out, cl_mem gf, int gs, int ls)
@@ -265,31 +251,10 @@ void Device::runTestKernel2(cl_mem out, cl_mem gf, int gs, int ls)
 }
 
 
-//this is a copy of "set_float_to_gaugemomentum_squarenorm_device"
-void Device::set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out)
-{
-	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(ae_sqn, this->get_device_type(), &ls2, &gs2, &num_groups);
-	//set arguments
-	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
-	int clerr = clSetKernelArg(ae_sqn, 0, sizeof(cl_mem), &clmem_in);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	//  /** @todo add reduction */
-	clerr = clSetKernelArg(ae_sqn,  1, sizeof(cl_mem), &clmem_out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	enqueueKernel(ae_sqn  , gs2, ls2);
-}
-
-
 hmc_float Dummyfield::get_squarenorm(int which)
 {
 	//which controlls if the in or out-vector is looked at
-	if(which == 2) static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out, sqnorm);
+	if(which == 2) static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
 	// get stuff from device
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
@@ -306,9 +271,9 @@ hmc_float Dummyfield::get_rect()
 	cl_int err = clEnqueueReadBuffer(*queue, rect_value, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << result;
-	hmc_float norm =  NDIM * (NDIM-1) * NC *  get_parameters()->get_vol4d();
-	  logger.info() << "in the correct normalization (12*VOL*NC = " << norm << ") this reads:";
-	  logger.info() << result / norm;
+	hmc_float norm =  NDIM * (NDIM - 1) * NC *  get_parameters()->get_vol4d();
+	logger.info() << "in the correct normalization (12*VOL*NC = " << norm << ") this reads:";
+	logger.info() << result / norm;
 	return result;
 }
 

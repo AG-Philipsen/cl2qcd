@@ -44,6 +44,8 @@
 class Opencl_Module_Hmc : public Opencl_Module_Fermions {
 public:
 
+	Opencl_Module_Hmc() : Opencl_Module_Fermions(), gaugemomentum_buf_size(0) { };
+
 	// OpenCL specific methods needed for building/compiling the OpenCL program
 	/**
 	 * Collect the compiler options for OpenCL.
@@ -115,6 +117,33 @@ public:
 	void stout_smeared_fermion_force_device(cl_mem * gf_intermediate);
 	hmc_float calc_s_fermion();
 
+	/**
+	 * Query the size required for storage of a gaugemomentum buffer
+	 * in the format used by the implementation.
+	 *
+	 * @return The buffer size in bytes
+	 */
+	size_t get_gaugemomentum_buffer_size();
+
+	/**
+	 * Import data from the gaugemomenta array into the given buffer.
+	 *
+	 * The data in the buffer will be stored in the device specific format.
+	 *
+	 * @param[out] dest The buffer to write to in the device specific format
+	 * @param[in] data The data to write to the buffer
+	 */
+	void importGaugemomentumBuffer(const cl_mem dest, const ae * const data);
+	/**
+	 * Export data from the given buffer into a normal gaugemomentum array.
+	 *
+	 * The data in the buffer is assumed to be in the device specific format.
+	 *
+	 * @param[out] dest An array that the buffer data can be written to.
+	 * @param[in] data A buffer containing the data in the device specific format.
+	 */
+	void exportGaugemomentumBuffer(ae * const dest, const cl_mem buf);
+
 protected:
 
 #ifdef _PROFILING_
@@ -163,7 +192,6 @@ protected:
 	 */
 	virtual int get_flop_size(const char * in);
 
-protected:
 private:
 
 	//kernels
@@ -179,6 +207,8 @@ private:
 	cl_kernel stout_smear_fermion_force;
 	cl_kernel set_zero_gaugemomentum;
 	cl_kernel gaugemomentum_squarenorm;
+	cl_kernel gaugemomentum_convert_to_soa;
+	cl_kernel gaugemomentum_convert_from_soa;
 
 	//variables
 	//initial energy of the (gaussian) spinorfield
@@ -201,6 +231,8 @@ private:
 	cl_mem clmem_phi_eo;
 
 	ClSourcePackage basic_hmc_code;
+
+	size_t gaugemomentum_buf_size;
 
 };
 

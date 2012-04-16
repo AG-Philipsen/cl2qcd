@@ -948,9 +948,9 @@ void Opencl_Module::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float 
 	get_buffer_from_device(clmem_tplaq, &tplaq, sizeof(hmc_float));
 	get_buffer_from_device(clmem_splaq, &splaq, sizeof(hmc_float));
 
-	tplaq /= static_cast<hmc_float> ( get_parameters()->get_tplaq_norm() ); 
-	splaq /= static_cast<hmc_float> ( get_parameters()->get_splaq_norm() ); 
-	plaq  /= static_cast<hmc_float> ( get_parameters()->get_plaq_norm() ); 
+	tplaq /= static_cast<hmc_float> ( get_parameters()->get_tplaq_norm() );
+	splaq /= static_cast<hmc_float> ( get_parameters()->get_splaq_norm() );
+	plaq  /= static_cast<hmc_float> ( get_parameters()->get_plaq_norm() );
 
 	(*plaq_out) = plaq;
 	(*splaq_out) = splaq;

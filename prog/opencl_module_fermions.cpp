@@ -353,7 +353,7 @@ void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
 	//CP: These are the BCs in spatial and temporal direction
 	hmc_float tmp_spatial = (get_parameters()->get_theta_fermion_spatial() * PI) / ( (hmc_float) get_parameters()->get_ns());
 	hmc_float tmp_temporal = (get_parameters()->get_theta_fermion_temporal() * PI) / ( (hmc_float) get_parameters()->get_nt());
-       	//BC: on the corners in each direction: exp(i theta) -> on each site exp(i theta*PI /LATEXTENSION) = cos(tmp2) + isin(tmp2)
+	//BC: on the corners in each direction: exp(i theta) -> on each site exp(i theta*PI /LATEXTENSION) = cos(tmp2) + isin(tmp2)
 	*collect_options << " -DSPATIAL_RE=" << cos(tmp_spatial);
 	*collect_options << " -DMSPATIAL_RE=" << -cos(tmp_spatial);
 	*collect_options << " -DSPATIAL_IM=" << sin(tmp_spatial);
@@ -362,8 +362,8 @@ void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
 	*collect_options << " -DTEMPORAL_RE=" << cos(tmp_temporal);
 	*collect_options << " -DMTEMPORAL_RE=" << -cos(tmp_temporal);
 	*collect_options << " -DTEMPORAL_IM=" << sin(tmp_temporal);
-	*collect_options << " -DMTEMPORAL_IM=" << -sin(tmp_temporal);	
-	
+	*collect_options << " -DMTEMPORAL_IM=" << -sin(tmp_temporal);
+
 	return;
 }
 
@@ -683,7 +683,7 @@ void Opencl_Module_Fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, h
 	hmc_float kappa_tmp;
 	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
 	else kappa_tmp = kappa;
-	
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -700,7 +700,7 @@ void Opencl_Module_Fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, h
 
 	clerr = clSetKernelArg(M_wilson, 3, sizeof(hmc_float), &kappa_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	enqueueKernel( M_wilson, gs2, ls2);
 }
 
@@ -710,12 +710,12 @@ void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, 
 	hmc_float kappa_tmp;
 	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
 	else kappa_tmp = kappa;
-	
+
 	//get mu
 	hmc_float mubar_tmp;
 	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
 	else mubar_tmp = mubar;
-	
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -735,7 +735,7 @@ void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, 
 
 	clerr = clSetKernelArg(M_tm_plus, 4, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	enqueueKernel( M_tm_plus, gs2, ls2);
 }
 
@@ -745,12 +745,12 @@ void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf,
 	hmc_float kappa_tmp;
 	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
 	else kappa_tmp = kappa;
-	
+
 	//get mu
 	hmc_float mubar_tmp;
 	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
 	else mubar_tmp = mubar;
-	
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -770,7 +770,7 @@ void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf,
 
 	clerr = clSetKernelArg(M_tm_minus, 4, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	enqueueKernel( M_tm_minus, gs2, ls2);
 }
 
@@ -865,21 +865,21 @@ void Opencl_Module_Fermions::Qminus_eo(cl_mem in, cl_mem out, cl_mem gf)
 
 void Opencl_Module_Fermions::QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf)
 {
-	//CP: this is the original call, which fails because Qminus_eo and Qplus_eo both use clmem_tmp_eo_1,2 as intermediate fields themselves          
-	//Qminus_eo(in, clmem_tmp_eo_1, gf);                                                                                                         
-	//Qplus_eo(clmem_tmp_eo_1, out, gf);                                                                                                         
-	
-	//CP: Init tmp spinorfield                                                                                                                           
+	//CP: this is the original call, which fails because Qminus_eo and Qplus_eo both use clmem_tmp_eo_1,2 as intermediate fields themselves
+	//Qminus_eo(in, clmem_tmp_eo_1, gf);
+	//Qplus_eo(clmem_tmp_eo_1, out, gf);
+
+	//CP: Init tmp spinorfield
 	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
 	cl_mem sf_eo_tmp;
 	sf_eo_tmp = create_rw_buffer(spinorfield_size);
-	
+
 	Qminus_eo(in, sf_eo_tmp, gf);
 	Qplus_eo(sf_eo_tmp, out, gf);
-	
+
 	int clerr = clReleaseMemObject(sf_eo_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	
+
 	return;
 }
 
@@ -903,7 +903,7 @@ void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, 
 	hmc_float kappa_tmp;
 	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
 	else kappa_tmp = kappa;
-	
+
 	if(use_soa) {
 		gf = gaugefield_soa;
 	}
@@ -927,8 +927,8 @@ void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, 
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(dslash_eo, 4, sizeof(hmc_float), &kappa_tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);	
-	
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
 	enqueueKernel(dslash_eo , gs2, ls2);
 }
 
@@ -938,7 +938,7 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem 
 	hmc_float mubar_tmp;
 	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
 	else mubar_tmp = mubar;
-	
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -951,8 +951,8 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem 
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 2, sizeof(hmc_float), &mubar_tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);	
-	
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
 	enqueueKernel( M_tm_inverse_sitediagonal, gs2, ls2);
 }
 
@@ -962,7 +962,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc
 	hmc_float mubar_tmp;
 	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
 	else mubar_tmp = mubar;
-	
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -976,7 +976,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc
 
 	clerr = clSetKernelArg(M_tm_sitediagonal, 2, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	enqueueKernel(M_tm_sitediagonal , gs2, ls2);
 }
 
@@ -986,7 +986,7 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, c
 	hmc_float mubar_tmp;
 	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
 	else mubar_tmp = mubar;
-	
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -1000,7 +1000,7 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, c
 
 	clerr = clSetKernelArg(M_tm_inverse_sitediagonal_minus, 2, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	enqueueKernel( M_tm_inverse_sitediagonal_minus, gs2, ls2);
 }
 
@@ -1010,7 +1010,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 	hmc_float mubar_tmp;
 	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
 	else mubar_tmp = mubar;
-	
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -1024,7 +1024,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 
 	clerr = clSetKernelArg(M_tm_sitediagonal_minus, 2, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	
+
 	enqueueKernel(M_tm_sitediagonal_minus , gs2, ls2);
 }
 
@@ -1054,8 +1054,8 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			//if rho is too small the algorithm will get stuck and will never converge!!
 			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
-			        //print the last residuum
-			        logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
+				//print the last residuum
+				logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 				return -iter;
 			}
 			//tmp1 = rho_next/rho = (rhat, rn)/..
@@ -1101,7 +1101,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 
 			logger.debug() << "resid: " << resid;
 			//test if resid is NAN
-			if(resid != resid){
+			if(resid != resid) {
 				logger.fatal() << "\tNAN occured in bicgstab!";
 				return -iter;
 			}
@@ -1124,7 +1124,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 	//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
 	//  In particular this version does not perform the check if the "real" residuum is sufficiently small!
 	else if (get_parameters()->get_use_bicgstab_save() != true) {
-	        hmc_float resid;
+		hmc_float resid;
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				//initial r_n, saved in p
@@ -1141,7 +1141,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 			//test if resid is NAN
-			if(resid != resid){
+			if(resid != resid) {
 				logger.fatal() << "\tNAN occured in bicgstab!";
 				return -iter;
 			}
@@ -1176,8 +1176,8 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			//if rho is too small the algorithm will get stuck and will never converge!!
 			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
-			        //print the last residuum
-			        logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
+				//print the last residuum
+				logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 				return -iter;
 			}
 			//tmp1 = rho_next/rho = (rhat, rn)/..
@@ -1275,7 +1275,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 
 			logger.debug() << "resid: " << resid;
 			//test if resid is NAN
-			if(resid != resid){
+			if(resid != resid) {
 				logger.fatal() << "\tNAN occured in bicgstab_eo!";
 				return -iter;
 			}
@@ -1311,7 +1311,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 
 					// we are done here
 					return iter;
-				} 
+				}
 			}
 		}
 		return -1;
@@ -1344,7 +1344,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 
 			logger.debug() << "resid: " << resid;
 			//test if resid is NAN
-			if(resid != resid){
+			if(resid != resid) {
 				logger.fatal() << "\tNAN occured in bicgstab_eo!";
 				return -iter;
 			}
@@ -1401,8 +1401,8 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
-			        //print the last residuum
-			        logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
+				//print the last residuum
+				logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 				return -iter;
 			}
 
@@ -1472,7 +1472,7 @@ int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem s
 
 		logger.debug() << "resid: " << resid;
 		//test if resid is NAN
-		if(resid != resid){
+		if(resid != resid) {
 			logger.fatal() << "\tNAN occured in cg!";
 			return -iter;
 		}
@@ -1538,7 +1538,7 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_me
 
 		logger.debug() << "resid: " << resid;
 		//test if resid is NAN
-		if(resid != resid){
+		if(resid != resid) {
 			logger.fatal() << "\tNAN occured in cg_eo!";
 			return -iter;
 		}

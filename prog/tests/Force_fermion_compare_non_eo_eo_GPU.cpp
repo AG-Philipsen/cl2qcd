@@ -14,7 +14,6 @@ class Device : public Opencl_Module_Hmc {
 
 	cl_kernel testKernel;
 	cl_kernel testKernel2;
-	cl_kernel ae_sqn;
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Hmc() {
 		Opencl_Module_Hmc::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
@@ -23,10 +22,9 @@ public:
 		finalize();
 	};
 
-        void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, int evenodd, hmc_float kappa);
-        void runTestKernel2(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, hmc_float kapppa);
+	void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, int evenodd, hmc_float kappa);
+	void runTestKernel2(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, hmc_float kapppa);
 	void fill_kernels();
-	void set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out);
 	void clear_kernels();
 };
 
@@ -502,20 +500,12 @@ void Dummyfield::convert_to_noneo(spinor * sf_noneo, spinor* eo1, spinor * eo2)
 
 void Dummyfield::reset_outfield_eo()
 {
-	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
-	int err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_eo, CL_TRUE, 0, ae_buf_size, sf_out_eo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	return;
+	static_cast<Device*>(opencl_modules[0])->importGaugemomentumBuffer(out_eo, reinterpret_cast<ae*>(sf_out_eo));
 }
 
 void Dummyfield::reset_outfield_noneo()
 {
-	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
-	int err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_noneo, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	return;
+	static_cast<Device*>(opencl_modules[0])->importGaugemomentumBuffer(out_noneo, reinterpret_cast<ae*>(sf_out_noneo));
 }
 
 bool compare_entries(hmc_complex in1, hmc_complex in2)
@@ -632,16 +622,14 @@ void Dummyfield::verify_ae_vectors()
 {
 	//read out the vectors on the device
 	int NUM_ELEMENTS_AE = params.get_gaugemomentasize() * params.get_su3algebrasize();
-	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
-	cl_int err = clEnqueueReadBuffer(*queue, out_eo, CL_TRUE, 0,  ae_buf_size, sf_out_eo, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clEnqueueReadBuffer(*queue, out_noneo, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	Device* device = static_cast<Device*>(opencl_modules[0]);
+	device->exportGaugemomentumBuffer(reinterpret_cast<ae*>(sf_out_eo), out_eo);
+	device->exportGaugemomentumBuffer(reinterpret_cast<ae*>(sf_out_noneo), out_noneo);
 	logger.info() << "\tcompare out_noneo with out_eo";
 	bool check = compare_ae_vectors(sf_out_noneo, sf_out_eo, NUM_ELEMENTS_AE);
 
 	if(check) {
-	        logger.info() << "eo and non-eo result vectors agree ";
+		logger.info() << "eo and non-eo result vectors agree ";
 	} else {
 		logger.info() << "eo and noneo result vectors DO NOT agree ";
 		BOOST_REQUIRE_EQUAL(1, 0);
@@ -704,8 +692,8 @@ void Dummyfield::fill_buffers()
 
 	size_t sf_buf_size_noneo;
 	sf_buf_size_noneo = get_parameters()->get_sf_buf_size();
-	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
-	Opencl_Module_Spinors * spinor_module = static_cast<Opencl_Module_Spinors*>(opencl_modules[0]);
+	Device * spinor_module = static_cast<Device*>(opencl_modules[0]);
+	size_t ae_buf_size = spinor_module->get_gaugemomentum_buffer_size();
 	size_t sf_eoprec_buffer_size = spinor_module->get_eoprec_spinorfield_buffer_size();
 	//create buffer for sf on device (and copy sf_in to both for convenience)
 
@@ -739,18 +727,17 @@ void Dummyfield::fill_buffers()
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	in2_noneo_converted = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size_noneo, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), in1_noneo, CL_TRUE, 0, sf_buf_size_noneo, sf_in1_noneo, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(spinor_module->get_queue(), in1_noneo, CL_TRUE, 0, sf_buf_size_noneo, sf_in1_noneo, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), in2_noneo, CL_TRUE, 0, sf_buf_size_noneo, sf_in2_noneo, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(spinor_module->get_queue(), in2_noneo, CL_TRUE, 0, sf_buf_size_noneo, sf_in2_noneo, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), in1_noneo_converted, CL_TRUE, 0, sf_buf_size_noneo, sf_in1_noneo_converted, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(spinor_module->get_queue(), in1_noneo_converted, CL_TRUE, 0, sf_buf_size_noneo, sf_in1_noneo_converted, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), in2_noneo_converted, CL_TRUE, 0, sf_buf_size_noneo, sf_in2_noneo_converted, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(spinor_module->get_queue(), in2_noneo_converted, CL_TRUE, 0, sf_buf_size_noneo, sf_in2_noneo_converted, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	out_noneo = clCreateBuffer(context, CL_MEM_WRITE_ONLY, ae_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), out_noneo, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	spinor_module->importGaugemomentumBuffer(out_noneo, reinterpret_cast<ae*>(sf_out_noneo));
 
 	this->reset_outfield_noneo();
 
@@ -761,8 +748,6 @@ void Dummyfield::fill_buffers()
 void Device::fill_kernels()
 {
 	Opencl_Module_Hmc::fill_kernels();
-
-	ae_sqn = createKernel("gaugemomentum_squarenorm") << basic_fermion_code << "types_hmc.h" << "operations_gaugemomentum.cl" << "gaugemomentum_squarenorm.cl";
 
 	testKernel = createKernel("fermion_force_eo") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
 
@@ -842,27 +827,6 @@ void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int g
 	enqueueKernel(testKernel2, gs, ls);
 }
 
-//this is a copy of "set_float_to_gaugemomentum_squarenorm_device"
-void Device::set_float_to_gm_squarenorm_device(cl_mem clmem_in, cl_mem clmem_out)
-{
-	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(ae_sqn, this->get_device_type(), &ls2, &gs2, &num_groups);
-	//set arguments
-	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
-	int clerr = clSetKernelArg(ae_sqn, 0, sizeof(cl_mem), &clmem_in);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	//  /** @todo add reduction */
-	clerr = clSetKernelArg(ae_sqn,  1, sizeof(cl_mem), &clmem_out);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	enqueueKernel(ae_sqn  , gs2, ls2);
-}
-
-
 hmc_float Dummyfield::get_squarenorm_eo(int which)
 {
 	//which controlls if the in or out-vector is looked at
@@ -870,7 +834,7 @@ hmc_float Dummyfield::get_squarenorm_eo(int which)
 	if(which == 1) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_eoprec_device(in2_eo, sqnorm);
 	if(which == 2) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_eoprec_device(in3_eo, sqnorm);
 	if(which == 3) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_eoprec_device(in4_eo, sqnorm);
-	if(which == 4) static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out_eo, sqnorm);
+	if(which == 4) static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out_eo, sqnorm);
 	// get stuff from device
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
@@ -891,7 +855,7 @@ hmc_float Dummyfield::get_squarenorm_noneo(int which)
 		cl_int err;
 		cl_context context = opencl_modules[0]->get_context();
 		tmp = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
-		static_cast<Device*>(opencl_modules[0])->set_float_to_gm_squarenorm_device(out_noneo, tmp);
+		static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out_noneo, tmp);
 		hmc_float result;
 		err = clEnqueueReadBuffer(*queue, tmp, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 		logger.info() << result;
@@ -936,10 +900,10 @@ void Dummyfield::runTestKernel(int evenodd)
 	//Y_odd = in2_eo, Y_even = in1_eo, X_odd = in4_eo, X_even = in3_eo
 	if(evenodd == ODD) {
 		//this is then force(Y_odd, X_even) == force(in2, in3)
-	  static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in2_eo, in3_eo, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
+		static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in2_eo, in3_eo, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
 	} else {
 		//this is then force(Y_even, X_odd) == force(in1, in4)
-	  static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in1_eo, in4_eo, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
+		static_cast<Device*>(opencl_modules[0])->runTestKernel(out_eo, in1_eo, in4_eo, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
 	}
 }
 

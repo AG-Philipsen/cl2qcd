@@ -44,9 +44,9 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 {
 	//reset the counters for the inversions
 	get_parameters()->reset_inversion_counters();
-	
+
 	size_t gfsize = get_parameters()->get_gf_buf_size();
-	size_t gmsize = get_parameters()->get_gm_buf_size();
+	size_t gmsize = get_task_hmc(0)->get_gaugemomentum_buffer_size();
 
 	// copy u->u' p->p' for the integrator
 	// new_u is used in some debug code of the gaugemomentum-initialization. therefore we need to copy it before
@@ -99,10 +99,10 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::st
 	hmcout <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept;
 	//print number of iterations used in inversions with full and force precision
 	hmcout << "\t" << get_parameters()->get_iter0() << "\t" << get_parameters()->get_iter1();
-	if(get_parameters()->get_use_mp() ){
+	if(get_parameters()->get_use_mp() ) {
 		hmcout << "\t" << get_parameters()->get_iter0_mp() << "\t" << get_parameters()->get_iter1_mp();
 	}
-	if(get_parameters()->get_use_rectangles() ){
+	if(get_parameters()->get_use_rectangles() ) {
 		//print rectangle value
 		hmcout << "\t" << obs.rectangles;
 	}
@@ -176,7 +176,7 @@ void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer)
 	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
 	//  or use the intermediate cl_mem obj gf_unsmeared. This is initialized in the smear_gaugefield function
 	cl_mem * smeared_gfs;
-	if(rho_iter > 0) smeared_gfs = new cl_mem [rho_iter -1];
+	if(rho_iter > 0) smeared_gfs = new cl_mem [rho_iter - 1];
 	else smeared_gfs = NULL;
 
 	if(get_parameters()->get_use_smearing() == true) {

@@ -16,12 +16,12 @@ void print_matrixsu3(Matrixsu3 in)
 
 
 
-Matrixsu3 get_matrixsu3( __global ocl_s_gaugefield * field, const int spacepos, const int timepos, const int mu)
+Matrixsu3 get_matrixsu3( __global const ocl_s_gaugefield * const restrict field, const int spacepos, const int timepos, const int mu)
 {
 	return field [get_global_link_pos(mu, spacepos, timepos)];
 }
 
-void put_matrixsu3(__global ocl_s_gaugefield * field, const Matrixsu3 in, const int spacepos, const int timepos, const int mu)
+void put_matrixsu3(__global ocl_s_gaugefield * const restrict field, const Matrixsu3 in, const int spacepos, const int timepos, const int mu)
 {
 	field [get_global_link_pos(mu, spacepos, timepos)] = in;
 }
