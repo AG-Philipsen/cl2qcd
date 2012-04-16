@@ -12,14 +12,10 @@ hmc_float sum_up_matrix3x3(Matrix3x3 in){
 }
 
 
-__kernel void staple_test(__global ocl_s_gaugefield * field, __global hmc_float * out)
+__kernel void staple_test(__global Matrixsu3StorageType * field, __global hmc_float * out)
 {
-	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
-	int loc_idx = get_local_id(0);
-	int num_groups = get_num_groups(0);
-	int group_id = get_group_id (0);
 
 	for(int id_tmp = id; id_tmp < VOL4D; id_tmp += global_size) {
 		st_index pos = (id_tmp % 2 == 0) ? get_even_site(id_tmp / 2) : get_odd_site(id_tmp / 2);

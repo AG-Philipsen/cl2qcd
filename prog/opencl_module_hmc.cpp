@@ -31,7 +31,7 @@ void Opencl_Module_Hmc::fill_buffers()
 	int spinorfield_size = get_parameters()->get_sf_buf_size();
 	int eoprec_spinorfield_size = get_eoprec_spinorfield_buffer_size();
 	int gaugemomentum_size = get_gaugemomentum_buffer_size();
-	int gaugefield_size = get_parameters()->get_gf_buf_size();
+	int gaugefield_size = getGaugefieldBufferSize();
 	int float_size = sizeof(hmc_float);
 	hmc_complex one = hmc_complex_one;
 	hmc_complex minusone = hmc_complex_minusone;
@@ -601,11 +601,10 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//  which then has to be the source of the inversion
 	if(get_parameters()->get_use_eo() == true) {
-		convertGaugefieldToSOA_device(gaugefield_soa, *get_gaugefield());
-		Opencl_Module_Fermions::Qplus_eo (clmem_phi_inv_eo, clmem_phi_eo , *get_gaugefield());
+		Opencl_Module_Fermions::Qplus_eo (clmem_phi_inv_eo, clmem_phi_eo , get_gaugefield());
 		if(logger.beDebug()) print_info_inv_field(clmem_phi_eo, true, "\tinit field after update ");
 	} else {
-		Opencl_Module_Fermions::Qplus(clmem_phi_inv, clmem_phi , *get_gaugefield());
+		Opencl_Module_Fermions::Qplus(clmem_phi_inv, clmem_phi , get_gaugefield());
 		if(logger.beDebug()) print_info_inv_field(clmem_phi, false, "\tinit field after update ");
 	}
 }
@@ -624,7 +623,6 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 	 *  change this one day.
 	 */
 	// make sure SOA is in proper format for dslash
-	convertGaugefieldToSOA_device(gaugefield_soa, clmem_new_u);
 	if(get_parameters()->get_use_eo() == true) {
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 		if(get_parameters()->get_use_cg() == true) {
@@ -1085,7 +1083,7 @@ void Opencl_Module_Hmc::calc_gauge_force()
 {
 	logger.debug() << "\t\tcalc gauge_force...";
 	gauge_force_device();
-	if(get_parameters()->get_use_rectangles() == true){
+	if(get_parameters()->get_use_rectangles() == true) {
 		logger.debug() << "\t\tcalc rect gauge_force...";
 		gauge_force_tlsym_device();
 	}
@@ -1094,7 +1092,6 @@ void Opencl_Module_Hmc::calc_gauge_force()
 hmc_float Opencl_Module_Hmc::calc_s_fermion()
 {
 	logger.debug() << "calc final fermion energy...";
-	convertGaugefieldToSOA_device(gaugefield_soa, clmem_new_u);
 	//this function essentially performs the same steps as in the force-calculation, but with higher precision.
 	//  therefore, comments are deleted here...
 	//  Furthermore, in the bicgstab-case, the second inversions are not needed
@@ -1212,12 +1209,12 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	hmc_complex poly;
 	hmc_complex poly_new;
 	//In this call, the observables are calculated already with appropiate Weighting factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC)
-	Opencl_Module::gaugeobservables(*get_gaugefield(), &plaq,  &tplaq, &splaq, &poly);
+	Opencl_Module::gaugeobservables(get_gaugefield(), &plaq,  &tplaq, &splaq, &poly);
 	Opencl_Module::gaugeobservables(clmem_new_u, &plaq_new,  &tplaq_new, &splaq_new, &poly_new);
 	//plaq has to be divided by the norm-factor to get s_gauge
 	hmc_float factor = 1. / (get_parameters()->get_plaq_norm());
 	if(get_parameters()->get_use_rectangles() == true) {
-		Opencl_Module::gaugeobservables_rectangles(*get_gaugefield(), &rect);
+		Opencl_Module::gaugeobservables_rectangles(get_gaugefield(), &rect);
 		Opencl_Module::gaugeobservables_rectangles(clmem_new_u, &rect_new);
 		hmc_float c0 = get_parameters()->get_c0();
 		hmc_float c1 = get_parameters()->get_c1();
@@ -1250,14 +1247,14 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	logger.info() << "\tdeltaS_gaugemom = " << setprecision(10) << 0.5 * (p2 - new_p2);
 
 	//Fermion-Part:
-	if(! get_parameters()->get_use_gauge_only() ){
-    	        hmc_float spinor_energy_init, s_fermion;
+	if(! get_parameters()->get_use_gauge_only() ) {
+		hmc_float spinor_energy_init, s_fermion;
 		//initial energy has been computed in the beginning...
 		Opencl_Module_Hmc::get_buffer_from_device(clmem_energy_init, &spinor_energy_init, sizeof(hmc_float));
 		// sum_links phi*_i (M^+M)_ij^-1 phi_j
 		s_fermion = calc_s_fermion();
 		deltaH += spinor_energy_init - s_fermion;
-		
+
 		logger.debug() << "\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
 		logger.debug() << "\tS_ferm(new field) = " << setprecision(10) << s_fermion;
 		logger.info() << "\tdeltaS_ferm = " << spinor_energy_init - s_fermion;

@@ -6,7 +6,7 @@
  * u_out = exp(i eps p_in) u_in
  */
 
-__kernel void md_update_gaugefield(const hmc_float eps, __global const aeStorageType * const restrict p_in, __global ocl_s_gaugefield * const restrict u_inout)
+__kernel void md_update_gaugefield(const hmc_float eps, __global const aeStorageType * const restrict p_in, __global Matrixsu3StorageType * const restrict u_inout)
 {
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);

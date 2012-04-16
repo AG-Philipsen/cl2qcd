@@ -94,11 +94,9 @@ int main(int argc, char* argv[])
 	gaugefield.init_gaugemomentum_spinorfield();
 
 	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
-	size_t gfsize = parameters.get_gf_buf_size();
-	size_t gmsize = gaugefield.get_task_hmc(0)->get_gaugemomentum_buffer_size();
 	//copy u->u' p->p' for the integrator
-	gaugefield.get_task_hmc(0)->copy_buffer_on_device(*(gaugefield.get_task_hmc(0)->get_gaugefield()), gaugefield.get_task_hmc(0)->get_clmem_new_u(), gfsize);
-	gaugefield.get_task_hmc(0)->copy_buffer_on_device(gaugefield.get_task_hmc(0)->get_clmem_p(), gaugefield.get_task_hmc(0)->get_clmem_new_p(), gmsize);
+	gaugefield.get_task_hmc(0)->copy_buffer_on_device(gaugefield.get_task_hmc(0)->get_gaugefield(), gaugefield.get_task_hmc(0)->get_clmem_new_u(), gaugefield.get_task_hmc(0)->getGaugefieldBufferSize());
+	gaugefield.get_task_hmc(0)->copy_buffer_on_device(gaugefield.get_task_hmc(0)->get_clmem_p(), gaugefield.get_task_hmc(0)->get_clmem_new_p(), gaugefield.get_task_hmc(0)->get_gaugemomentum_buffer_size());
 	logger.trace() << "Perform " << hmc_iter << "of benchmarking";
 	for(iter = 0; iter < hmc_iter; iter ++) {
 		//here, clmem_phi is inverted several times and stored in clmem_phi_inv

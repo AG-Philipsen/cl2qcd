@@ -26,7 +26,7 @@ class Device : public Opencl_Module {
 	cl_kernel testKernel;
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module() {
-		Opencl_Module::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+		Opencl_Module::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -144,14 +144,12 @@ void Dummyfield::fill_buffers()
 	//fill tmp gf with ones
 	set_gaugefield_cold(gf_tmp);
 
+	Device * device = static_cast<Device*>(opencl_modules[0]);
 
-	size_t buf_size = NUM_ELEMENTS * sizeof(Matrixsu3);
-	out = clCreateBuffer(context, CL_MEM_READ_ONLY , buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	out = device->create_rw_buffer(device->getGaugefieldBufferSize());
 
 	//copy cold tmp gf to the device
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out, CL_TRUE, 0, buf_size, gf_tmp, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	device->importGaugefield(out, gf_tmp);
 
 	delete[] gf_tmp;
 
@@ -207,7 +205,8 @@ void Dummyfield::runTestKernel()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(*(get_clmem_gaugefield()), out, gs, ls);
+	Device * device = static_cast<Device*>(opencl_modules[0]);
+	device->runTestKernel(device->get_gaugefield(), out, gs, ls);
 
 	return;
 }
@@ -215,8 +214,7 @@ void Dummyfield::runTestKernel()
 void Dummyfield::get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol)
 {
 	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range", __FILE__, __LINE__);
-	cl_mem gf = *get_clmem_gaugefield();
-	opencl_modules[ntask]->gaugeobservables(gf, plaq, tplaq, splaq, pol);
+	opencl_modules[ntask]->gaugeobservables(plaq, tplaq, splaq, pol);
 }
 
 //this is just out of laziness, a copy of the function above

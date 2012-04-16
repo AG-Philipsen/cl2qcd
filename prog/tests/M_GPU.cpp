@@ -16,13 +16,13 @@ class Device : public Opencl_Module_Fermions {
 
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Fermions() {
-		Opencl_Module_Fermions::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+		Opencl_Module_Fermions::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
 	};
 
-        void runTestKernel(cl_mem in, cl_mem out, cl_mem gf, int gs, int ls, hmc_float kappa, hmc_float mubar);
+	void runTestKernel(cl_mem in, cl_mem out, int gs, int ls, hmc_float kappa, hmc_float mubar);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -53,8 +53,6 @@ private:
 	cl_mem sqnorm;
 	spinor * sf_in;
 	spinor * sf_out;
-	Matrixsu3 * gf_in;
-
 };
 
 BOOST_AUTO_TEST_CASE( M_TM )
@@ -69,7 +67,7 @@ BOOST_AUTO_TEST_CASE( M_TM )
 	cpu.runTestKernel();
 	logger.info() << "|M phi|^2:";
 	hmc_float cpu_res;
-	cpu_res = cpu.get_squarenorm(1);
+	cpu.print_gaugeobservables_from_task(0, 0);
 	BOOST_MESSAGE("Tested CPU");
 
 	logger.info() << "Init GPU device";
@@ -197,9 +195,7 @@ void Dummyfield::fill_buffers()
 
 	cl_context context = opencl_modules[0]->get_context();
 
-	int NUM_ELEMENTS_SF;
-	if(get_parameters()->get_use_eo() == true) NUM_ELEMENTS_SF =  params.get_eoprec_spinorfieldsize();
-	else NUM_ELEMENTS_SF =  params.get_spinorfieldsize();
+	size_t NUM_ELEMENTS_SF =  params.get_spinorfieldsize();
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_out = new spinor[NUM_ELEMENTS_SF];
@@ -210,12 +206,13 @@ void Dummyfield::fill_buffers()
 	BOOST_REQUIRE(sf_in);
 
 	size_t sf_buf_size = get_parameters()->get_sf_buf_size();
+	logger.warn() << sf_buf_size;
 	//create buffer for sf on device (and copy sf_in to both for convenience)
-	in = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
+	in = clCreateBuffer(context, CL_MEM_READ_WRITE, sf_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in, CL_TRUE, 0, sf_buf_size, sf_in, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sf_buf_size, 0, &err );
+	out = clCreateBuffer(context, CL_MEM_READ_WRITE, sf_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out, CL_TRUE, 0, sf_buf_size, sf_in, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
@@ -226,23 +223,8 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
-	Opencl_Module::fill_kernels();
+	Opencl_Module_Fermions::fill_kernels();
 
-	//to this end, one has to set the needed files by hand
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
-	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
-
-	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
-	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
-
-//  if(get_device_type() == CL_DEVICE_TYPE_GPU)
-//    //    testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix_GPU.cl";
-//    testKernel = createKernel("M_tm_plus")  << "tests/m_tm_plus_GPU_full.cl";
-//  if(get_device_type() == CL_DEVICE_TYPE_CPU)
-//    // testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
-//    testKernel = createKernel("M_tm_plus")  << "tests/m_tm_plus_GPU_full.cl";
 	testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
 
 }
@@ -265,14 +247,15 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
+void Device::runTestKernel(cl_mem out, cl_mem in, int gs, int ls, hmc_float kappa, hmc_float mubar)
 {
+	cl_mem gf = get_gaugefield();
 	cl_int err;
 	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &in);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &out);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &gf);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &out);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 3, sizeof(hmc_float), &kappa);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
@@ -292,6 +275,7 @@ hmc_float Dummyfield::get_squarenorm(int which)
 	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << result;
+
 	return result;
 }
 
@@ -305,7 +289,7 @@ void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
 		logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
 	else {
 		logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
-		BOOST_REQUIRE_EQUAL(1, 0);
+		BOOST_REQUIRE_EQUAL(cpu, gpu);
 	}
 }
 
@@ -319,6 +303,7 @@ void Dummyfield::runTestKernel()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in, *(get_clmem_gaugefield()), gs, ls, get_parameters()->get_kappa(), get_parameters()->get_mubar());
+	Device * device = static_cast<Device*>(opencl_modules[0]);
+	device->runTestKernel(out, in, gs, ls, get_parameters()->get_kappa(), get_parameters()->get_mubar());
 }
 

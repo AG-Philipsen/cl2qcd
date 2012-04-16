@@ -121,6 +121,31 @@ target_link_libraries(saxsbypz
 add_test(Saxsbypz saxsbypz)
 add_dependencies(saxsbypz git_commit_id_header)
 
+add_executable(gaugefield_convert
+	gaugefield_convert.cpp
+	../host_geometry.cpp
+	../host_operations_gaugefield.cpp
+	../gaugefield_hybrid.cpp
+	../inputparameters.cpp
+	../host_readgauge.cpp
+	../host_random.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../host_use_timer.cpp
+	../host_writegaugefield.cpp
+	../exceptions.cpp
+	../logger.cpp)
+target_link_libraries(gaugefield_convert
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	crypto
+	einhard)
+add_test(Gaugefield_Conversion gaugefield_convert)
+add_dependencies(gaugefield_convert git_commit_id_header)
+
 add_executable(gaugefield_observables
 	gaugefield_observables.cpp
 	../host_geometry.cpp
@@ -508,7 +533,6 @@ target_link_libraries(localQ
 	einhard)
 add_test(LocalQ localQ)
 add_dependencies(localQ git_commit_id_header)
-
 
 # ignore some tests
 configure_file(CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)

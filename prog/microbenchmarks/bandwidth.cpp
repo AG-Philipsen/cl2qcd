@@ -57,7 +57,7 @@ private:
 
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module() {
-		Opencl_Module::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+		Opencl_Module::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
 	virtual void fill_kernels();
 	virtual void clear_kernels();

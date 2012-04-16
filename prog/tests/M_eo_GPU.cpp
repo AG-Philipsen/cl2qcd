@@ -15,14 +15,14 @@ class Device : public Opencl_Module_Fermions {
 	cl_kernel testKernel;
 
 public:
-	Device(cl_command_queue queue, cl_mem * gf, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Fermions() {
-		Opencl_Module_Fermions::init(queue, gf, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Fermions() {
+		Opencl_Module_Fermions::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
 	};
 
-        void runTestKernel(cl_mem in, cl_mem out, cl_mem gf, int gs, int ls, hmc_float kappa);
+	void runTestKernel(cl_mem in, cl_mem out, cl_mem gf, int gs, int ls, hmc_float kappa);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -36,9 +36,6 @@ public:
 		params.readfile(tmp.str().c_str());
 
 		init(1, device_type, &params);
-
-		// make sure SOA is in proper format for dslash_eoprec
-		static_cast<Device*>(opencl_modules[0])->convertGaugefieldToSOA();
 	};
 
 	virtual void init_tasks();
@@ -97,7 +94,7 @@ BOOST_AUTO_TEST_CASE( DSLASH_EOPREC )
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(queue[0], get_clmem_gaugefield(), get_parameters(), get_max_compute_units(0), get_double_ext(0));
+	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0));
 
 	fill_buffers();
 }
@@ -231,9 +228,6 @@ void Device::clear_kernels()
 
 void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls, hmc_float kappa)
 {
-	if(use_soa) {
-		gf = gaugefield_soa;
-	}
 	cl_int err;
 	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &in);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
@@ -289,6 +283,7 @@ void Dummyfield::runTestKernel()
 		ls = 1;
 	}
 	logger.info() << "test kernel with global_work_size: " << gs << " and local_work_size: " << ls;
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(out, even_in, *(get_clmem_gaugefield()), gs, ls, get_parameters()->get_kappa());
+	Device * device = static_cast<Device*>(opencl_modules[0]);
+	device->runTestKernel(out, even_in, device->get_gaugefield(), gs, ls, get_parameters()->get_kappa());
 }
 

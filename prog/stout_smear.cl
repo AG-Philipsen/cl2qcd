@@ -3,7 +3,7 @@
  */
 
 //this is done after Phys. Rev. D69, 0545501 (Morningstar, Peardon) and the tmlqcd-analogue (stout_smear.c)
-__kernel void stout_smear(int const iter, __global ocl_s_gaugefield * in, __global ocl_s_gaugefield * out)
+__kernel void stout_smear(int const iter, __global Matrixsu3StorageType * in, __global Matrixsu3StorageType * out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);

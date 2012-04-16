@@ -41,7 +41,7 @@ public:
 	 * Empty constructor.
 	 *
 	 */
-	Opencl_Module() {};
+	Opencl_Module() : gaugefield_bytes(0) {};
 	/**
 	 * Destructor, calls finalize().
 	 *
@@ -59,12 +59,11 @@ public:
 	 * Initialize everything. First method to be called.
 	 *
 	 * @param[in] queue OpenCL command queue
-	 * @param[in] clmem_gaugefield OpenCL buffer that contains the gaugefield
 	 * @param[in] params instance of inputparameters
 	 * @param[in] maxcomp maximum_compute_units for device
 	 * @param[in] double_ext OpenCL double extension for device (AMD or KHR)
 	 */
-	void init(cl_command_queue queue, cl_mem* clmem_gaugefield, inputparameters* params, int maxcomp, string double_ext);
+	void init(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext);
 
 	// set and get methods
 	/**
@@ -83,15 +82,10 @@ public:
 	 */
 	cl_command_queue get_queue();
 	/**
-	 * Set the gaugefield buffer
-	 * @param[in] clmem_gaugefield pointer to OpenCL buffer
-	 */
-	void set_gaugefield(cl_mem* clmem_gaugefield);
-	/**
 	 * Get a pointer to the gaugefield buffer
 	 * @return ocl_gaugefield OpenCL buffer with gaugefield
 	 */
-	cl_mem* get_gaugefield();
+	cl_mem get_gaugefield();
 	/**
 	 * Set inputparameters
 	 * @param params Pointer to inputparameters
@@ -142,11 +136,22 @@ public:
 	/**
 	 * Calculate plaquette and polyakov of a specific gaugefield (on device).
 	 *
-	 * @param[in] gf gaugefield to measure on
 	 * @param[out] plaq Storage for result of plaquette calculation
 	 * @param[out] tplaq Storage for result of plaquette calculation
 	 * @param[out] splaq Storage for result of plaquette calculation
 	 * @param[out] pol Storage for result of polyakov calculation
+	 */
+	void gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
+	/**
+	 * Calculate plaquette and polyakov of a specific gaugefield (on device).
+	 *
+	 * @param[in]  gf    The gaugefield on which to compute the observables
+	 * @param[out] plaq  Storage for result of plaquette calculation
+	 * @param[out] tplaq Storage for result of plaquette calculation
+	 * @param[out] splaq Storage for result of plaquette calculation
+	 * @param[out] pol   Storage for result of polyakov calculation
+	 *
+	 * @todo Should not be public
 	 */
 	void gaugeobservables(cl_mem gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
 	/**
@@ -285,6 +290,8 @@ public:
 	usetimer timer_rectangles_reduction;
 	usetimer timer_polyakov;
 	usetimer timer_polyakov_reduction;
+	usetimer timer_convertGaugefieldToSOA;
+	usetimer timer_convertGaugefieldFromSOA;
 
 	usetimer timer_stout_smear;
 	/**
@@ -417,6 +424,44 @@ public:
 	 */
 	void markMemReleased(bool host, size_t size);
 
+	/**
+	 * Import the gaugefield data into the OpenCL buffer using the device
+	 * specific storage format.
+	 *
+	 * @param[in]  data       The gaugefield data to import into the OpenCL buffer
+	 * @param[out] gaugefield The OpenCL buffer to writ the gaugefield data to in the device specific format
+	 */
+	void importGaugefield(const Matrixsu3 * const data);
+
+	/**
+	 * Import the gaugefield data into the OpenCL buffer using the device
+	 * specific storage format.
+	 *
+	 * @param[out] gaugefield The OpenCL buffer to writ the gaugefield data to in the device specific format
+	 * @param[in]  data       The gaugefield data to import into the OpenCL buffer
+	 *
+	 * @todo should not be public
+	 */
+	void importGaugefield(cl_mem gaugefield, const Matrixsu3 * const data);
+
+	/**
+	 * Export the gaugefield from the OpenCL buffer, that uses a device
+	 * specific storage format, into the given pointer using the generic
+	 * storage format.
+	 *
+	 * @param[out] dest The array to store the gaugefield in
+	 */
+	void exportGaugefield(Matrixsu3 * const dest);
+
+	/**
+	 * Get the size required to store a gaugefield in the device specific storage format.
+	 *
+	 * @return gaugefield size in bytes
+	 *
+	 * @todo should not be public
+	 */
+	size_t getGaugefieldBufferSize();
+
 protected:
 	/**
 	 * A set of source files used by all kernels.
@@ -442,7 +487,6 @@ protected:
 	 */
 	int get_numthreads();
 
-protected:
 	inputparameters* parameters;
 
 	/**
@@ -468,7 +512,13 @@ private:
 	cl_platform_id platform;
 	cl_context ocl_context;
 	cl_command_queue ocl_queue;
-	cl_mem* ocl_gaugefield;
+	cl_mem gaugefield;
+	/**
+	 * Gaugefield buffer size in bytes.
+	 *
+	 * To ensure proper initialization *ONLY* access via getGaugefieldBufferSize()!
+	 */
+	size_t gaugefield_bytes;
 
 	cl_uint max_compute_units;
 	string device_double_extension;
@@ -500,6 +550,8 @@ private:
 	cl_kernel rectangles_reduction;
 	cl_kernel polyakov;
 	cl_kernel polyakov_reduction;
+	cl_kernel convertGaugefieldToSOA;
+	cl_kernel convertGaugefieldFromSOA;
 
 	//bunch of timers
 	//this is used to measure data-transfer to and from the device
@@ -526,6 +578,9 @@ private:
 	 * track memory usage and check errors.
 	 */
 	cl_mem createBuffer(cl_mem_flags flags, size_t size, void * host_ptr);
+
+	void convertGaugefieldToSOA_device(cl_mem out, cl_mem in);
+	void convertGaugefieldFromSOA_device(cl_mem out, cl_mem in);
 };
 
 #endif //OPENCLMODULEH

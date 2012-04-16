@@ -195,10 +195,6 @@ public:
 	void M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
 	void dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa = ARG_DEF);
 
-	// SOA conversion
-	void convertGaugefieldToSOA();
-	void convertGaugefieldToSOA_device(cl_mem out, cl_mem in);
-
 	//    solver operations
 	//    non-eo
 	/// this calls the solver according to parameter settings using the fermionmatrix f
@@ -254,8 +250,6 @@ public:
 	usetimer timer_dslash_eo;
 	usetimer timer_M_tm_sitediagonal_minus;
 	usetimer timer_M_tm_inverse_sitediagonal_minus;
-	usetimer timer_convertGaugefieldToSOA;
-	usetimer timer_convertGaugefieldFromSOA;
 
 	/**
 	 * Return the timer connected to a specific kernel.
@@ -302,8 +296,6 @@ private:
 	cl_kernel M_tm_sitediagonal_minus;
 	cl_kernel M_tm_inverse_sitediagonal_minus;
 	cl_kernel dslash_eo;
-	cl_kernel convertGaugefieldToSOA_kernel;
-	cl_kernel convertGaugefieldFromSOA;
 	//CP: variables for normal solver
 	cl_mem clmem_inout;
 	cl_mem clmem_rn;
@@ -343,9 +335,6 @@ private:
 
 	cl_mem clmem_resid;
 	cl_mem clmem_trueresid;
-
-protected:
-	cl_mem gaugefield_soa;
 };
 
 #endif //OPENCLMODULEFERMIONSH

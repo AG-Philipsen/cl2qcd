@@ -29,7 +29,7 @@ spinor dslash_eoprec_unified_local(__global const spinorStorageType * const rest
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = getSpinor_eo(in, nn_eo);
-	U = getSU3(field, get_link_idx_SOA(dir, idx_arg));
+	U = getSU3(field, get_link_idx(dir, idx_arg));
 	if(dir == XDIR) {
 		/////////////////////////////////
 		//Calculate (1 - gamma_1) y
@@ -129,7 +129,7 @@ spinor dslash_eoprec_unified_local(__global const spinorStorageType * const rest
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = getSpinor_eo(in, nn_eo);
-	U = getSU3(field, get_link_idx_SOA(dir, idx_neigh));
+	U = getSU3(field, get_link_idx(dir, idx_neigh));
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp = (dir == TDIR) ? (hmc_complex) {
 		kappa_in * TEMPORAL_RE, kappa_in * MTEMPORAL_IM

@@ -15,7 +15,7 @@ class Device : public Opencl_Module_Hmc {
 	cl_kernel testKernel;
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Hmc() {
-		Opencl_Module_Hmc::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+		Opencl_Module_Hmc::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -503,12 +503,13 @@ void Dummyfield::runTestKernel(int evenodd)
 	}
 	//interprete Y = (in1, in2) X = (in3, in4)
 	//Y_odd = in2, Y_even = in1, X_odd = in4, X_even = in3
+	Device * device = static_cast<Device*>(opencl_modules[0]);
 	if(evenodd == ODD) {
 		//this is then force(Y_odd, X_even) == force(in2, in3)
-		static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in2, in3, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
+		device->runTestKernel(out, in2, in3, device->get_gaugefield(), gs, ls, evenodd, get_parameters()->get_kappa());
 	} else {
 		//this is then force(Y_even, X_odd) == force(in1, in4)
-		static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in1, in4, *(get_clmem_gaugefield()), gs, ls, evenodd, get_parameters()->get_kappa());
+		device->runTestKernel(out, in1, in4, device->get_gaugefield(), gs, ls, evenodd, get_parameters()->get_kappa());
 	}
 }
 

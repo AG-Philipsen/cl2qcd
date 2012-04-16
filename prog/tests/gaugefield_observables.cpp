@@ -46,8 +46,7 @@ BOOST_AUTO_TEST_CASE(CPU_cold)
 	// get device colutions
 	hmc_float dev_plaq, dev_tplaq, dev_splaq;
 	hmc_complex dev_pol;
-	Opencl_Module * dev = dummy.getDevice();
-	dev->gaugeobservables(*dummy.get_clmem_gaugefield(), &dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
+	dummy.getDevice()->gaugeobservables(&dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
 
 	// verify
 	BOOST_REQUIRE_CLOSE(ref_plaq,   dev_plaq,     0.1f);
@@ -71,8 +70,7 @@ BOOST_AUTO_TEST_CASE(CPU_hot)
 	// get device colutions
 	hmc_float dev_plaq, dev_tplaq, dev_splaq;
 	hmc_complex dev_pol;
-	Opencl_Module * dev = dummy.getDevice();
-	dev->gaugeobservables(*dummy.get_clmem_gaugefield(), &dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
+	dummy.getDevice()->gaugeobservables(&dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
 
 	// verify
 	BOOST_REQUIRE_CLOSE(ref_plaq,   dev_plaq,     0.1f);
@@ -96,8 +94,7 @@ BOOST_AUTO_TEST_CASE(GPU_cold)
 	// get device colutions
 	hmc_float dev_plaq, dev_tplaq, dev_splaq;
 	hmc_complex dev_pol;
-	Opencl_Module * dev = dummy.getDevice();
-	dev->gaugeobservables(*dummy.get_clmem_gaugefield(), &dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
+	dummy.getDevice()->gaugeobservables(&dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
 
 	// verify
 	BOOST_REQUIRE_CLOSE(ref_plaq,   dev_plaq,     0.1f);
@@ -121,8 +118,7 @@ BOOST_AUTO_TEST_CASE(GPU_hot)
 	// get device colutions
 	hmc_float dev_plaq, dev_tplaq, dev_splaq;
 	hmc_complex dev_pol;
-	Opencl_Module * dev = dummy.getDevice();
-	dev->gaugeobservables(*dummy.get_clmem_gaugefield(), &dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
+	dummy.getDevice()->gaugeobservables(&dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
 
 	// verify
 	BOOST_REQUIRE_CLOSE(ref_plaq,   dev_plaq,     0.1f);
