@@ -226,10 +226,15 @@ Matrixsu3 extend (const int random, Matrixsu2 src)
 			out.e22 = src.e11;
 			return out;
 	}
+
+	return (Matrixsu3) { {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)},
+		{nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)},
+		{nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}
+	};
 }
 
 //calculate polyakov-loop matrix at spatial site n in time-direction
-Matrixsu3 local_polyakov(__global Matrixsu3StorageType * field, const int n)
+Matrixsu3 local_polyakov(__global const Matrixsu3StorageType * const restrict field, const int n)
 {
 	Matrixsu3 out;
 	out = unit_matrixsu3();
@@ -242,7 +247,7 @@ Matrixsu3 local_polyakov(__global Matrixsu3StorageType * field, const int n)
 }
 
 //calculate plaquette-matrix at site n,t in direction mu and nu
-Matrixsu3 local_plaquette(__global Matrixsu3StorageType * field, const int n, const int t, const int mu, const int nu )
+Matrixsu3 local_plaquette(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
 {
 	Matrixsu3 out;
 	int4 pos;
@@ -269,7 +274,7 @@ Matrixsu3 local_plaquette(__global Matrixsu3StorageType * field, const int n, co
 
 //calculate rectangle-matrix at site i = (n,t) in direction mu and nu
 //	The rectangle is then: U_mu(i) * U_nu(i+mu) * U_nu(i + mu + nu) * U_mu(i + nu + nu)dagger * U_nu(i + nu)dagger * U_nu(i)dagger
-Matrixsu3 local_rectangles(__global Matrixsu3StorageType * field, const int n, const int t, const int mu, const int nu )
+Matrixsu3 local_rectangles(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
 {
 	Matrixsu3 out;
 	int4 pos;
@@ -317,7 +322,7 @@ Matrixsu3 local_rectangles(__global Matrixsu3StorageType * field, const int n, c
 }
 
 
-Matrix3x3 local_Q_plaquette(__global Matrixsu3StorageType * field, const int n, const int t, const int mu, const int nu )
+Matrix3x3 local_Q_plaquette(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
 {
 	//the Q-plaquette is a sum over four normal plaquettes
 	Matrix3x3 qplaq = zero_matrix3x3();
@@ -361,7 +366,7 @@ Matrix3x3 local_Q_plaquette(__global Matrixsu3StorageType * field, const int n, 
 //this calculates the staple in nu direction given a direction mu of the link
 //     under consideration:
 //     s = U_nu(x + mu) * Udagger_mu(x + nu) * Udagger_nu(x) + Udagger_nu(x+mu - nu) * Udagger_mu(x-nu) * U_nu(x - nu)
-Matrix3x3 local_staple(__global Matrixsu3StorageType * field, const int n, const int t, const int mu, const int nu )
+Matrix3x3 local_staple(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
 {
 	int4 pos;
 
@@ -429,11 +434,10 @@ Matrix3x3 local_staple(__global Matrixsu3StorageType * field, const int n, const
  *  6.  U_nu(x) * U_mu(x + nu) * U_mu(x + nu + mu) * Udagger_nu(x + mu + mu) * Udagger_mu(x + mu)
  *  ^+  U_mu(x + mu)  U_nu(x + mu + mu) Udagger_mu(x + nu + mu) Udagger_mu(x + nu) Udagger_nu(x)
  */
-Matrix3x3 local_rectangles_staple(__global Matrixsu3StorageType * field, const int n, const int t, const int mu, const int nu )
+Matrix3x3 local_rectangles_staple(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
 {
 	int4 pos;
 	int4 pos2;
-	site_idx start_point;
 	Matrix3x3 out = zero_matrix3x3();
 	Matrixsu3 tmp = zero_matrixsu3();
 
@@ -691,10 +695,11 @@ Matrix3x3 local_rectangles_staple(__global Matrixsu3StorageType * field, const i
 	return out;
 }
 
-Matrix3x3 calc_staple(__global Matrixsu3StorageType * field, const int pos, const int t, const int mu_in)
+Matrix3x3 calc_staple(__global const Matrixsu3StorageType * const restrict field, const int pos, const int t, const int mu_in)
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
+#pragma unroll 3 // unroll required for proper register reuse when using newer Catalysts on Cypress
 	for(int i = 0; i < NDIM - 1; i++) {
 		int nu = (mu_in + i + 1) % NDIM;
 		staple = add_matrix3x3(staple,  local_staple(field, pos, t, mu_in, nu ));
@@ -703,10 +708,11 @@ Matrix3x3 calc_staple(__global Matrixsu3StorageType * field, const int pos, cons
 }
 
 //this is the staple only in the spatial directions only
-Matrix3x3 calc_staple_sigma (__global Matrixsu3StorageType * field, const int pos, const int t, const int mu_in)
+Matrix3x3 calc_staple_sigma (__global const Matrixsu3StorageType * const restrict field, const int pos, const int t, const int mu_in)
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
+#pragma unroll 3 // unroll required for proper register reuse when using newer Catalysts on Cypress
 	for(int i = 0; i < NDIM - 1; i++) {
 		int nu = (mu_in + i + 1) % NDIM;
 		if(nu != 0)
@@ -716,17 +722,18 @@ Matrix3x3 calc_staple_sigma (__global Matrixsu3StorageType * field, const int po
 }
 
 //this is the staple only in temporal direction only
-Matrix3x3 calc_staple_tau (__global Matrixsu3StorageType * field, const int pos, const int t, const int mu_in)
+Matrix3x3 calc_staple_tau (__global const Matrixsu3StorageType * const restrict field, const int pos, const int t, const int mu_in)
 {
 	int nu = 0;
 	return local_staple(field, pos, t, mu_in, nu );
 }
 
 //this is the rectangles staple
-Matrix3x3 calc_rectangles_staple(__global Matrixsu3StorageType * field, const int pos, const int t, const int mu_in)
+Matrix3x3 calc_rectangles_staple(__global const Matrixsu3StorageType * const restrict field, const int pos, const int t, const int mu_in)
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
+#pragma unroll 3 // unroll required for proper register reuse when using newer Catalysts on Cypress
 	for(int i = 0; i < NDIM - 1 ; i++) {
 		int nu = (mu_in + i + 1) % NDIM;
 		staple = add_matrix3x3(staple,  local_rectangles_staple(field, pos, t, mu_in, nu ));

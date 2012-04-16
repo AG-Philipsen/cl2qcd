@@ -2,7 +2,7 @@
  * @file operations on algebraelements
  */
 
-#ifdef cl_amd_printf
+#ifdef ENABLE_PRINTF
 void print_ae(ae in)
 {
 	printf("%f, %f, %f, %f, %f, %f, %f, %f\n", in.e0, in.e1, in.e2, in.e3, in.e4, in.e5, in.e6, in.e7);
@@ -117,7 +117,7 @@ void putAe(__global aeStorageType * const restrict out, const size_t idx, const 
 #endif
 }
 
-void update_gaugemomentum(ae in, hmc_float factor, int global_link_pos, __global aeStorageType * out)
+void update_gaugemomentum(const ae in, const hmc_float factor, const int global_link_pos, __global aeStorageType * const restrict out)
 {
 	ae tmp = getAe(out, global_link_pos);
 	tmp = acc_factor_times_algebraelement(tmp, factor, in);

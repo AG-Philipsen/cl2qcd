@@ -38,28 +38,36 @@ __kernel void geometry_test()
 					//test get_spacecoord
 					uint3 coord_test = get_coord_spatial(glob_pos);
 					if(coord.x != coord_test.x || coord.y != coord_test.y || coord.z != coord_test.z) {
+#ifdef ENABLE_PRINTF
 						printf("ERROR at get_spacecoord at x = %i y = %i z = %i t = %i\n", x, y, z, t);
+#endif
 						return;
 					}
 
 					//test get_allspacecoord
 					coord_test = get_allspacecoord(ns);
 					if(coord.x != coord_test.x || coord.y != coord_test.y || coord.z != coord_test.z) {
+#ifdef ENABLE_PRINTF
 						printf("ERROR at get_allspacecoord at x = %i y = %i z = %i t = %i\n", x, y, z, t);
+#endif
 						return;
 					}
 
 					//test get_nspace
 					int nspace_test = x + NSPACE * y + NSPACE * NSPACE * z;
 					if(nspace_test != get_nspace(coord)) {
+#ifdef ENABLE_PRINTF
 						printf("ERROR at get_nspace at x = %i y = %i z = %i t = %i\n", x, y, z, t);
+#endif
 						return;
 					}
 
 					//test get_global_pos
 					int tmp = ns + VOLSPACE * t;
 					if(get_global_pos(ns, t) != tmp) {
+#ifdef ENABLE_PRINTF
 						printf("ERROR at get_global_pos at x = %i y = %i z = %i t = %i\n", x, y, z, t);
+#endif
 						return;
 					}
 
@@ -68,13 +76,17 @@ __kernel void geometry_test()
 					if(glob_pos % 2 == 0) {
 						idx = get_even_site(glob_pos);
 						if(idx.space != ns || idx.time != t) {
+#ifdef ENABLE_PRINTF
 							printf("ERROR at get_even_site at x = %i y = %i z = %i t = %i\n", x, y, z, t);
+#endif
 							return;
 						}
 					} else if(glob_pos % 2 == 1) {
 						idx = get_odd_site(glob_pos);
 						if(idx.space != ns || idx.time != t) {
+#ifdef ENABLE_PRINTF
 							printf("ERROR at get_odd_site at x = %i y = %i z = %i t = %i\n", x, y, z, t);
+#endif
 							return;
 						}
 					}
@@ -93,14 +105,18 @@ __kernel void geometry_test()
 					ns_up = get_neighbor(ns, mu);
 					coord.x = (x + 1) % NSPACE;
 					if( get_global_pos(ns_up, t) != get_global_pos(get_nspace(coord), t) ) {
+#ifdef ENABLE_PRINTF
 						printf("ERROR at mu = %i in direction %i\n", mu, dir);
+#endif
 						return;
 					}
 					dir = -1;
 					ns_dn = get_lower_neighbor(ns, mu);
 					coord.x = (x - 1 + NSPACE) % NSPACE;
 					if( get_global_pos(ns_dn, t) != get_global_pos(get_nspace(coord), t) ) {
+#ifdef ENABLE_PRINTF
 						printf("ERROR at mu = %i in direction %i\n", mu, dir);
+#endif
 						return;
 					}
 					coord.x = x;
@@ -111,14 +127,18 @@ __kernel void geometry_test()
 					ns_up = get_neighbor(ns, mu);
 					coord.y = (y + 1) % NSPACE;
 					if( get_global_pos(ns_up, t) != get_global_pos(get_nspace(coord), t) ) {
+#ifdef ENABLE_PRINTF
 						printf("ERROR at mu = %i in direction %i\n", mu, dir);
+#endif
 						return;
 					}
 					dir = -1;
 					ns_dn = get_lower_neighbor(ns, mu);
 					coord.y = (y - 1 + NSPACE) % NSPACE;
 					if( get_global_pos(ns_dn, t) != get_global_pos(get_nspace(coord), t) ) {
+#ifdef ENABLE_PRINTF
 						printf("ERROR at mu = %i in direction %i\n", mu, dir);
+#endif
 						return;
 					}
 					coord.y = y;
@@ -129,14 +149,18 @@ __kernel void geometry_test()
 					ns_up = get_neighbor(ns, mu);
 					coord.z = (z + 1) % NSPACE;
 					if( get_global_pos(ns_up, t) != get_global_pos(get_nspace(coord), t) ) {
+#ifdef ENABLE_PRINTF
 						printf("ERROR at mu = %i in direction %i\n", mu, dir);
+#endif
 						return;
 					}
 					dir = -1;
 					ns_dn = get_lower_neighbor(ns, mu);
 					coord.z = (z - 1 + NSPACE) % NSPACE;
 					if( get_global_pos(ns_dn, t) != get_global_pos(get_nspace(coord), t) ) {
+#ifdef ENABLE_PRINTF
 						printf("ERROR at mu = %i in direction %i\n", mu, dir);
+#endif
 						return;
 					}
 					coord.z = z;

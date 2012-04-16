@@ -270,7 +270,6 @@ site_idx get_eo_site_idx_from_st_idx(st_idx in)
  */
 site_idx calc_even_spatial_idx(coord_full in)
 {
-	coord_full tmp;
 	bool switcher = TMLQCD_CONV;
 	if(switcher) {
 		return
@@ -288,7 +287,6 @@ site_idx calc_even_spatial_idx(coord_full in)
 }
 site_idx calc_odd_spatial_idx(coord_full in)
 {
-	coord_full tmp;
 	bool switcher = TMLQCD_CONV;
 	if(switcher) {
 		return

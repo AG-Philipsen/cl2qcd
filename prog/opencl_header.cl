@@ -4,7 +4,7 @@
 
 //opencl_header.cl
 
-#ifdef cl_amd_printf
+#ifdef ENABLE_PRINTF
 // we def out anything using printf if unsupported,
 // therefore we also don't need to enable printf
 #pragma OPENCL EXTENSION cl_amd_printf : enable
