@@ -26,7 +26,7 @@ Matrixsu2_pauli SU2Update(const hmc_float alpha, hmc_ocl_ran * rnd)
 	return out;
 }
 
-void inline perform_heatbath(__global Matrixsu3StorageType * gaugefield, const int mu, hmc_ocl_ran * rnd, int pos, int t, int id)
+void inline perform_heatbath(__global Matrixsu3StorageType * gaugefield, const int mu, hmc_ocl_ran * rnd, int pos, int t)
 {
 	Matrix3x3 staplematrix;
 
@@ -54,7 +54,7 @@ void inline perform_heatbath(__global Matrixsu3StorageType * gaugefield, const i
 	U = project_su3(U);
 
 	int order[3];
-	random_1_2_3(order, &rnd[id]);
+	random_1_2_3(order, rnd);
 
 	for(int i = 0; i < NC; i++) {
 		Matrix3x3 W = matrix_su3to3x3 (U);
@@ -71,7 +71,7 @@ void inline perform_heatbath(__global Matrixsu3StorageType * gaugefield, const i
 
 		hmc_float beta_new =  2.*BETA / NC * k;
 
-		Matrixsu2_pauli r_pauli = SU2Update(beta_new, &rnd[id]);
+		Matrixsu2_pauli r_pauli = SU2Update(beta_new, rnd);
 
 		w.e00.re = (r_pauli.e00 * w_pauli.e00 + r_pauli.e01 * w_pauli.e01 + r_pauli.e10 * w_pauli.e10 + r_pauli.e11 * w_pauli.e11 ) / k;
 		w.e00.im = (w_pauli.e00 * r_pauli.e11 - w_pauli.e11 * r_pauli.e00 + r_pauli.e01 * w_pauli.e10 - r_pauli.e10 * w_pauli.e01 ) / k;
@@ -91,7 +91,7 @@ void inline perform_heatbath(__global Matrixsu3StorageType * gaugefield, const i
 
 }
 
-void inline perform_overrelaxing(__global Matrixsu3StorageType * gaugefield, const int mu, hmc_ocl_ran * rnd, int pos, int t, int id)
+void inline perform_overrelaxing(__global Matrixsu3StorageType * gaugefield, const int mu, hmc_ocl_ran * rnd, int pos, int t)
 {
 	Matrix3x3 staplematrix;
 #ifdef _ANISO_
@@ -117,7 +117,7 @@ void inline perform_overrelaxing(__global Matrixsu3StorageType * gaugefield, con
 	U = project_su3(U);
 
 	int order[3];
-	random_1_2_3(order, &rnd[id]);
+	random_1_2_3(order, rnd);
 
 	for(int i = 0; i < NC; i++) {
 		Matrix3x3 W = matrix_su3to3x3 (U);

@@ -12,7 +12,7 @@ __kernel void overrelax_odd(__global Matrixsu3StorageType * gaugefield, const in
 
 	for(id = id_tmp; id < VOLSPACE * NTIME / 2; id += size) {
 		st_index pos = get_odd_site(id);
-		perform_overrelaxing(gaugefield, mu, &rnd, pos.space, pos.time, id_tmp);
+		perform_overrelaxing(gaugefield, mu, &rnd, pos.space, pos.time);
 	}
 
 	storeRngState(rngStates, rnd);
