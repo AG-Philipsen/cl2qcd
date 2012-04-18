@@ -87,8 +87,8 @@ void Opencl_Module_Heatbath::run_heatbath()
 	clerr = clSetKernelArg(heatbath_even, 2, sizeof(cl_mem), get_clmem_rndarray());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	for(int i = 0; i < NDIM; i++) {
-		clerr = clSetKernelArg(heatbath_even, 1, sizeof(int), &i);
+	for(cl_int i = 0; i < NDIM; i++) {
+		clerr = clSetKernelArg(heatbath_even, 1, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 		enqueueKernel(heatbath_even, global_work_size);
@@ -102,8 +102,8 @@ void Opencl_Module_Heatbath::run_heatbath()
 	clerr = clSetKernelArg(heatbath_odd, 2, sizeof(cl_mem), get_clmem_rndarray());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	for(int i = 0; i < NDIM; i++) {
-		clerr = clSetKernelArg(heatbath_odd, 1, sizeof(int), &i);
+	for(cl_int i = 0; i < NDIM; i++) {
+		clerr = clSetKernelArg(heatbath_odd, 1, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 		enqueueKernel(heatbath_odd, global_work_size);
 	}
@@ -111,8 +111,6 @@ void Opencl_Module_Heatbath::run_heatbath()
 	// do not wait for kernel to finish...
 	//  clerr = clFinish(get_queue());
 	//  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
-	return;
-
 }
 
 void Opencl_Module_Heatbath::run_overrelax()
@@ -130,8 +128,8 @@ void Opencl_Module_Heatbath::run_overrelax()
 	clerr = clSetKernelArg(overrelax_even, 2, sizeof(cl_mem), get_clmem_rndarray());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	for(int i = 0; i < NDIM; i++) {
-		clerr = clSetKernelArg(overrelax_even, 1, sizeof(int), &i);
+	for(cl_int i = 0; i < NDIM; i++) {
+		clerr = clSetKernelArg(overrelax_even, 1, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 		enqueueKernel(overrelax_even, global_work_size);
@@ -145,8 +143,8 @@ void Opencl_Module_Heatbath::run_overrelax()
 	clerr = clSetKernelArg(overrelax_odd, 2, sizeof(cl_mem), get_clmem_rndarray());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	for(int i = 0; i < NDIM; i++) {
-		clerr = clSetKernelArg(overrelax_odd, 1, sizeof(int), &i);
+	for(cl_int i = 0; i < NDIM; i++) {
+		clerr = clSetKernelArg(overrelax_odd, 1, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 		enqueueKernel(overrelax_odd, global_work_size);
@@ -155,7 +153,6 @@ void Opencl_Module_Heatbath::run_overrelax()
 	//do not wait for kernel to finish
 	//  clerr = clFinish(get_queue());
 	//  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
-	return;
 }
 
 void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
