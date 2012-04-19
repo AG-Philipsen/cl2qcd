@@ -111,11 +111,6 @@ void Opencl_Module_Heatbath::run_heatbath()
 		clerr = clSetKernelArg(heatbath_even_hack, 2, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 		enqueueKernel(heatbath_even_hack, global_work_size, ls);
-
-		hmc_float plaq, tplaq, splaq;
-		hmc_complex pol;
-		gaugeobservables(&plaq, &tplaq, &splaq, &pol);
-		logger.debug() << i << " " << plaq << " " << tplaq << " " << splaq << " " << pol.re << " " << pol.im;
 	}
 
 	this->get_work_sizes(heatbath_odd, this->get_device_type(), &ls, &global_work_size, &num_groups);
@@ -140,11 +135,6 @@ void Opencl_Module_Heatbath::run_heatbath()
 		clerr = clSetKernelArg(heatbath_odd_hack, 2, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 		enqueueKernel(heatbath_odd_hack, global_work_size, ls);
-
-		hmc_float plaq, tplaq, splaq;
-		hmc_complex pol;
-		gaugeobservables(&plaq, &tplaq, &splaq, &pol);
-		logger.debug() << -i << " " << plaq << " " << tplaq << " " << splaq << " " << pol.re << " " << pol.im;
 	}
 
 	clerr = clReleaseMemObject(tmp);
