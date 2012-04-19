@@ -117,7 +117,8 @@ void random_1_2_3(int * const restrict seq, hmc_ocl_ran * const restrict state)
 	seq[2] = 3;
 }
 
-int3 rand123(hmc_ocl_ran * const restrict state) {
+int3 rand123(hmc_ocl_ran * const restrict state)
+{
 	int3 res;
 	res.x = random_int(3, state);
 	res.y = (res.x + (nr3_int64(state) % 2) + 1) % 3;
@@ -134,10 +135,10 @@ hmc_complex inline gaussianNormalPair(hmc_ocl_ran * const restrict rnd)
 	hmc_complex tmp;
 	hmc_float u1_tmp;
 	//CP: if u1 == 1., p will be "inf"
-	do{
-	  u1_tmp = ocl_new_ran(rnd);
-	  if(u1_tmp < 1.) break;
-	} while (1>0);
+	do {
+		u1_tmp = ocl_new_ran(rnd);
+		if(u1_tmp < 1.) break;
+	} while (1 > 0);
 
 	hmc_float u1 = 1.0 - u1_tmp;
 	//  hmc_float u2 = 1.0 - ocl_new_ran(rnd);
