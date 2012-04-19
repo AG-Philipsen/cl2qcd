@@ -507,9 +507,6 @@ protected:
 	 */
 	cl_ulong calculateStride(const cl_ulong elems, const cl_ulong baseTypeSize);
 
-protected:
-	cl_mem gaugefield;
-
 private:
 
 	cl_platform_id platform;
@@ -528,6 +525,8 @@ private:
 	cl_device_id device;
 	cl_device_type device_type;
 	char * device_name;
+
+	cl_mem gaugefield;
 
 	cl_mem clmem_plaq;
 	cl_mem clmem_plaq_buf_glob;
