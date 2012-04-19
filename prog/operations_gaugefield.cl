@@ -226,11 +226,11 @@ Matrixsu3 extend (const int random, Matrixsu2 src)
 			out.e22 = src.e11;
 			return out;
 	}
-
-	return (Matrixsu3) { {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)},
-		{nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)},
-		{nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}
-	};
+//
+//	return (Matrixsu3) { {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)},
+//		{nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)},
+//		{nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}
+//	};
 }
 
 //calculate polyakov-loop matrix at spatial site n in time-direction

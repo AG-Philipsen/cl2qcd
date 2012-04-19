@@ -26,41 +26,46 @@ Matrixsu2_pauli SU2Update(const hmc_float alpha, hmc_ocl_ran * rnd)
 	return out;
 }
 
-void inline perform_heatbath(__global Matrixsu3StorageType * gaugefield, const int mu, hmc_ocl_ran * rnd, int pos, int t)
+void inline perform_heatbath(__global Matrixsu3StorageType * const restrict dest_gaugefield, __global const Matrixsu3StorageType * const restrict src_gaugefield, const int mu, hmc_ocl_ran * const restrict rnd, const int pos, const int t)
 {
 	Matrix3x3 staplematrix;
 
 #ifdef _ANISO_
 	//Compute staple, comprises whole anisotropy
 	if (mu == 0) {
-		staplematrix = calc_staple(gaugefield, pos, t, mu);
+		staplematrix = calc_staple(src_gaugefield, pos, t, mu);
 		staplematrix = multiply_matrix3x3_by_real (staplematrix, XI_0 );
 	}
 
 	else {
 		Matrix3x3 staplematrix_sigma;
 		Matrix3x3 staplematrix_tau;
-		staplematrix_sigma = calc_staple_sigma(gaugefield, pos, t, mu);
+		staplematrix_sigma = calc_staple_sigma(src_gaugefield, pos, t, mu);
 		staplematrix_sigma = multiply_matrix3x3_by_real (staplematrix_sigma, 1 / XI_0 );
-		staplematrix_tau = calc_staple_tau(gaugefield, pos, t, mu);
+		staplematrix_tau = calc_staple_tau(src_gaugefield, pos, t, mu);
 		staplematrix_tau = multiply_matrix3x3_by_real (staplematrix_tau, XI_0 );
 		staplematrix = add_matrix3x3 ( staplematrix_sigma, staplematrix_tau );
 	}
 #else
-	staplematrix = calc_staple(gaugefield, pos, t, mu);
+	staplematrix = calc_staple(src_gaugefield, pos, t, mu);
 #endif
 
-	Matrixsu3 U = get_matrixsu3(gaugefield, pos, t, mu);
+	Matrixsu3 U = get_matrixsu3(src_gaugefield, pos, t, mu);
 	U = project_su3(U);
 
-	int order[3];
-	random_1_2_3(order, rnd);
+	int3 order = rand123(rnd);
+	//random_1_2_3(order, rnd);
+//	order[0] = 1;
+//	order[0] = 2;
+//	order[0] = 3;
 
 	for(int i = 0; i < NC; i++) {
+		int order_i = (i == 0) ? order.x : ((i == 1) ? order.y : order.z);
+
 		Matrix3x3 W = matrix_su3to3x3 (U);
 		W = multiply_matrix3x3 (W, staplematrix);
 
-		Matrixsu2 w = reduction(W, order[i]);
+		Matrixsu2 w = reduction(W, order_i);
 
 		Matrixsu2_pauli w_pauli;
 		w_pauli.e00 = 0.5 * (w.e00.re + w.e11.re);
@@ -82,48 +87,53 @@ void inline perform_heatbath(__global Matrixsu3StorageType * gaugefield, const i
 		w.e11.re = (r_pauli.e00 * w_pauli.e00 + r_pauli.e01 * w_pauli.e01 + r_pauli.e10 * w_pauli.e10 + r_pauli.e11 * w_pauli.e11 ) / k;
 		w.e11.im = -(w_pauli.e00 * r_pauli.e11 - w_pauli.e11 * r_pauli.e00 + r_pauli.e01 * w_pauli.e10 - r_pauli.e10 * w_pauli.e01 ) / k;
 
-		Matrixsu3 extW = extend (order[i], w);
+		Matrixsu3 extW = extend (order_i, w);
+
 
 		U = multiply_matrixsu3 (extW, U);
 	}
 
-	put_matrixsu3(gaugefield, U, pos, t, mu);
+	put_matrixsu3(dest_gaugefield, U, pos, t, mu);
 
 }
 
-void inline perform_overrelaxing(__global Matrixsu3StorageType * gaugefield, const int mu, hmc_ocl_ran * rnd, int pos, int t)
+void inline perform_overrelaxing(__global Matrixsu3StorageType * const restrict dest_gaugefield, __global const Matrixsu3StorageType * const restrict src_gaugefield, const int mu, hmc_ocl_ran * const restrict rnd, const int pos, const int t)
 {
 	Matrix3x3 staplematrix;
 #ifdef _ANISO_
 	//Compute staple, comprises whole anisotropy
 	if (mu == 0) {
-		staplematrix = calc_staple(gaugefield, pos, t, mu);
+		staplematrix = calc_staple(src_gaugefield, pos, t, mu);
 		staplematrix = multiply_matrix3x3_by_real (staplematrix, XI_0 );
 	}
 
 	else {
 		Matrix3x3 staplematrix_sigma;
 		Matrix3x3 staplematrix_tau;
-		staplematrix_sigma = calc_staple_sigma(gaugefield, pos, t, mu);
+		staplematrix_sigma = calc_staple_sigma(src_gaugefield, pos, t, mu);
 		staplematrix_sigma = multiply_matrix3x3_by_real (staplematrix_sigma, 1 / XI_0 );
-		staplematrix_tau = calc_staple_tau(gaugefield, pos, t, mu);
+		staplematrix_tau = calc_staple_tau(src_gaugefield, pos, t, mu);
 		staplematrix_tau = multiply_matrix3x3_by_real (staplematrix_tau, XI_0 );
 		staplematrix = add_matrix3x3 ( staplematrix_sigma, staplematrix_tau );
 	}
 #else
-	staplematrix = calc_staple(gaugefield, pos, t, mu);
+	staplematrix = calc_staple(src_gaugefield, pos, t, mu);
 #endif
-	Matrixsu3 U = get_matrixsu3(gaugefield, pos, t, mu);
+	Matrixsu3 U = get_matrixsu3(src_gaugefield, pos, t, mu);
 	U = project_su3(U);
 
-	int order[3];
-	random_1_2_3(order, rnd);
+	int3 order = rand123(rnd);
+	//random_1_2_3(order, rnd);
+//	order[0] = 1;
+//	order[0] = 2;
+//	order[0] = 3;
 
 	for(int i = 0; i < NC; i++) {
+		int order_i = (i == 0) ? order.x : ((i == 1) ? order.y : order.z);
 		Matrix3x3 W = matrix_su3to3x3 (U);
 		W = multiply_matrix3x3 (W, staplematrix);
 
-		Matrixsu2 w = reduction(W, order[i]);
+		Matrixsu2 w = reduction(W, order_i);
 
 		Matrixsu2_pauli w_pauli;
 		w_pauli.e00 = 0.5 * (w.e00.re + w.e11.re);
@@ -141,9 +151,9 @@ void inline perform_overrelaxing(__global Matrixsu3StorageType * gaugefield, con
 		w.e11.re = (w_pauli.e00 * w_pauli.e00 - w_pauli.e01 * w_pauli.e01 - w_pauli.e10 * w_pauli.e10 - w_pauli.e11 * w_pauli.e11) / k / k;
 		w.e11.im = (2.*w_pauli.e00 * w_pauli.e11) / k / k;
 
-		Matrixsu3 extW = extend (order[i], w);
+		Matrixsu3 extW = extend (order_i, w);
 		U = multiply_matrixsu3(extW, U);
 	}
 
-	put_matrixsu3(gaugefield, U, pos, t, mu);
+	put_matrixsu3(dest_gaugefield, U, pos, t, mu);
 }

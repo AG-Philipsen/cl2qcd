@@ -507,12 +507,14 @@ protected:
 	 */
 	cl_ulong calculateStride(const cl_ulong elems, const cl_ulong baseTypeSize);
 
+protected:
+	cl_mem gaugefield;
+
 private:
 
 	cl_platform_id platform;
 	cl_context ocl_context;
 	cl_command_queue ocl_queue;
-	cl_mem gaugefield;
 	/**
 	 * Gaugefield buffer size in bytes.
 	 *
