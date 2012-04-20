@@ -70,16 +70,15 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	cpu.print_gaugeobservables_from_task(0, 0);
 	hmc_float cpu_back = cpu.runTestKernel();
 	BOOST_MESSAGE("Tested CPU");
+
 	logger.info() << "Init GPU device";
 	//params.print_info_inverter("m_gpu");
-	logger.fatal() << "GPU does not work at the moment!";
-	/*  Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
 	logger.info() << "gaugeobservables: ";
 	dummy.print_gaugeobservables_from_task(0, 0);
 	hmc_float gpu_back = dummy.runTestKernel();
 	BOOST_MESSAGE("Tested GPU");
-	*/
-	hmc_float gpu_back;
+
 	logger.info() << "cpu: " << cpu_back << "\tgpu: " << gpu_back;
 
 	BOOST_MESSAGE(cpu_back << ' ' << gpu_back);
