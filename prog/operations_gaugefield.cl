@@ -189,6 +189,11 @@ Matrixsu2 reduction (const Matrix3x3 src, const int rand)
 
 Matrixsu3 extend (const int random, Matrixsu2 src)
 {
+// Yes, it is poor madness having two different variants for CPU and GPU at this place.
+// However, on Catalyst 12.3 the default value of the switch statement messes up the GPU
+// results and the if-else change trigges a SEGFAULT in a completely different place of
+// the heatbath kernel when running on the CPU.
+#ifdef _USEGPU_
 	if(random == 1) {
 		Matrixsu3 out;
 		out.e00 = src.e00;
@@ -231,6 +236,50 @@ Matrixsu3 extend (const int random, Matrixsu2 src)
 			{nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}
 		};
 	}
+#else // _USEGPU_
+	Matrixsu3 out;
+
+	switch(random) {
+		case 1:
+			out.e00 = src.e00;
+			out.e01 = src.e01;
+			out.e02 = hmc_complex_zero;
+			out.e10 = src.e10;
+			out.e11 = src.e11;
+			out.e12 = hmc_complex_zero;
+			out.e20 = hmc_complex_zero;
+			out.e21 = hmc_complex_zero;
+			out.e22 = hmc_complex_one;
+			return out;
+		case 2:
+			out.e00 = hmc_complex_one;
+			out.e01 = hmc_complex_zero;
+			out.e02 = hmc_complex_zero;
+			out.e10 = hmc_complex_zero;
+			out.e11 = src.e00;
+			out.e12 = src.e01;
+			out.e20 = hmc_complex_zero;
+			out.e21 = src.e10;
+			out.e22 = src.e11;
+			return out;
+		case 3:
+			out.e00 = src.e00;
+			out.e01 = hmc_complex_zero;
+			out.e02 = src.e01;
+			out.e10 = hmc_complex_zero;
+			out.e11 = hmc_complex_one;
+			out.e12 = hmc_complex_zero;
+			out.e20 = src.e10;
+			out.e21 = hmc_complex_zero;
+			out.e22 = src.e11;
+			return out;
+	}
+
+	return (Matrixsu3) { {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)},
+		{nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)},
+		{nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}
+	};
+#endif // _USEGPU_
 }
 
 //calculate polyakov-loop matrix at spatial site n in time-direction
