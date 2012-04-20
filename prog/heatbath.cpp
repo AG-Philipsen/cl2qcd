@@ -88,7 +88,6 @@ int main(int argc, char* argv[])
 		for(int i = 0; i < nsteps; i++) {
 			gaugefield.perform_tasks(overrelaxsteps);
 			if( ( (i + 1) % writefreq ) == 0 ) {
-				gaugefield.synchronize(0);
 				gaugefield.print_gaugeobservables_from_task(i, 0, gaugeout_name.str());
 			}
 			if( parameters.get_saveconfigs() == true && ( (i + 1) % savefreq ) == 0 ) {

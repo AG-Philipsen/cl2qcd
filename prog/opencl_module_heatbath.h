@@ -91,6 +91,8 @@ private:
 	cl_kernel heatbath_even;
 	cl_kernel overrelax_odd;
 	cl_kernel overrelax_even;
+	cl_kernel heatbath_odd_hack;
+	cl_kernel heatbath_even_hack;
 
 
 #ifdef _PROFILING_

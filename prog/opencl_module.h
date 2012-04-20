@@ -512,7 +512,6 @@ private:
 	cl_platform_id platform;
 	cl_context ocl_context;
 	cl_command_queue ocl_queue;
-	cl_mem gaugefield;
 	/**
 	 * Gaugefield buffer size in bytes.
 	 *
@@ -526,6 +525,8 @@ private:
 	cl_device_id device;
 	cl_device_type device_type;
 	char * device_name;
+
+	cl_mem gaugefield;
 
 	cl_mem clmem_plaq;
 	cl_mem clmem_plaq_buf_glob;
