@@ -2,6 +2,65 @@
 
 #include <cstdio>
 
+/** Seed for the singleton random number generator rnd */
+const unsigned long long int seed = 500000;
+
+/** Utility 64-bit integer for random number generation */
+typedef unsigned long long int Ullong;
+/** Utility 32-bit integer for random number generation */
+typedef unsigned int Uint;
+
+/** The Random number generator described in Numerical Recipes 3 */
+struct Random {
+
+	/** Random number state */
+	Ullong u, v, w;
+
+	/**
+	 * Initializes the random number generator.
+	 *
+	 * @param j Seed for the random number generator state
+	 */
+	Random(Ullong j) : v(4101842887655102017LL), w(1) {
+		u = j ^ v;
+		int64();
+		v = u;
+		int64();
+		w = v;
+		int64();
+	}
+
+	/**
+	 * Generate a random 64-bit integer.
+	 */
+	inline Ullong int64() {
+		u = u * 2862933555777941757LL + 7046029254386353087LL;
+		v ^= v >> 17;
+		v ^= v << 31;
+		v ^= v >> 8;
+		w = 4294957665U * (w & 0xffffffff) + (w >> 32);
+		Ullong x = u ^ (u << 21);
+		x ^= x >> 35;
+		x ^= x << 4;
+		return (x + v) ^ w;
+	}
+	/**
+	 * Generate a random 64-bit floating point number.
+	 */
+	inline double doub() {
+		return 5.42101086242752217E-20 * int64();
+	}
+	/**
+	 * Generate a random 32-bit integer.
+	 */
+	inline Uint int32() {
+		return (Uint)int64();
+	}
+};
+
+/** The singleton single-threaded random number generator */
+Random rnd(seed);
+
 inline int random_123 ()
 {
 	return rnd.int64() % 3 + 1;
@@ -143,4 +202,14 @@ void gaussianNormalPair(hmc_float * z1, hmc_float * z2)
 	*z2 = p * sin(2 * PI * u2);
 	return;
 	// SL: not yet tested
+}
+
+void prng_init(uint32_t seed)
+{
+	rnd = Random(seed);
+}
+
+double prng_double()
+{
+	return rnd.doub();
 }

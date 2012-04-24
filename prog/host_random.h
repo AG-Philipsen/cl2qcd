@@ -15,64 +15,19 @@
 #include "host_geometry.h"
 #include "host_use_timer.h"
 
-/** Utility 64-bit integer for random number generation */
-typedef unsigned long long int Ullong;
-/** Utility 32-bit integer for random number generation */
-typedef unsigned int Uint;
+/**
+ * Seed the host prng.
+ *
+ * @param seed Seed for the underlying PRNG. Be aware of restrictions!
+ */
+void prng_init(uint32_t seed);
 
-/** Seed for the singleton random number generator rnd */
-const unsigned long long int seed = 500000;
-
-/** The Random number generator described in Numerical Recipes 3 */
-struct Random {
-
-	/** Random number state */
-	Ullong u, v, w;
-
-	/**
-	 * Initializes the random number generator.
-	 *
-	 * @param j Seed for the random number generator state
-	 */
-	Random(Ullong j) : v(4101842887655102017LL), w(1) {
-		u = j ^ v;
-		int64();
-		v = u;
-		int64();
-		w = v;
-		int64();
-	}
-
-	/**
-	 * Generate a random 64-bit integer.
-	 */
-	inline Ullong int64() {
-		u = u * 2862933555777941757LL + 7046029254386353087LL;
-		v ^= v >> 17;
-		v ^= v << 31;
-		v ^= v >> 8;
-		w = 4294957665U * (w & 0xffffffff) + (w >> 32);
-		Ullong x = u ^ (u << 21);
-		x ^= x >> 35;
-		x ^= x << 4;
-		return (x + v) ^ w;
-	}
-	/**
-	 * Generate a random 64-bit floating point number.
-	 */
-	inline double doub() {
-		return 5.42101086242752217E-20 * int64();
-	}
-	/**
-	 * Generate a random 32-bit integer.
-	 */
-	inline Uint int32() {
-		return (Uint)int64();
-	}
-};
-
-/** The singleton single-threaded random number generator */
-extern Random rnd;
+/**
+ * Get a double precision random number from the generator
+ *
+ * @return A double precision number in [0, 1)
+ */
+double prng_double();
 
 /**
  * Get 1,2,3 in random order

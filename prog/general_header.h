@@ -36,9 +36,6 @@
 
 using namespace std;
 
-//global random number generator
-Random rnd (seed);
-
 //these can be used to measure times on the host spent on gaugeobservables
 usetimer poly_timer;
 usetimer plaq_timer;

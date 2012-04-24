@@ -6,7 +6,6 @@
 #define BOOST_TEST_MODULE Fermionforce
 #include <boost/test/unit_test.hpp>
 
-Random rnd(15);
 extern std::string const version;
 std::string const version = "0.1";
 
@@ -66,7 +65,7 @@ BOOST_AUTO_TEST_CASE( F_FERMION )
 	logger.info() << "Init CPU device";
 	//params.print_info_inverter("m_gpu");
 	// reset RNG
-	rnd = Random(13);
+	prng_init(13);
 	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables_from_task(0, 0);
@@ -82,7 +81,7 @@ BOOST_AUTO_TEST_CASE( F_FERMION )
 	logger.info() << "Init GPU device";
 	//params.print_info_inverter("m_gpu");
 	// reset RNG
-	rnd = Random(13);
+	prng_init(13);
 	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
 	logger.info() << "gaugeobservables: ";
 	dummy.print_gaugeobservables_from_task(0, 0);
@@ -224,32 +223,32 @@ void fill_sf_with_random(spinor * sf_in, int size, int seed)
 {
 	//  Random rnd_loc(seed);
 	for(int i = 0; i < size; ++i) {
-		Random rnd_loc(seed);
-		sf_in[i].e0.e0.re = rnd_loc.doub();
-		sf_in[i].e0.e1.re = rnd_loc.doub();
-		sf_in[i].e0.e2.re = rnd_loc.doub();
-		sf_in[i].e1.e0.re = rnd_loc.doub();
-		sf_in[i].e1.e1.re = rnd_loc.doub();
-		sf_in[i].e1.e2.re = rnd_loc.doub();
-		sf_in[i].e2.e0.re = rnd_loc.doub();
-		sf_in[i].e2.e1.re = rnd_loc.doub();
-		sf_in[i].e2.e2.re = rnd_loc.doub();
-		sf_in[i].e3.e0.re = rnd_loc.doub();
-		sf_in[i].e3.e1.re = rnd_loc.doub();
-		sf_in[i].e3.e2.re = rnd_loc.doub();
+		prng_init(seed);
+		sf_in[i].e0.e0.re = prng_double();
+		sf_in[i].e0.e1.re = prng_double();
+		sf_in[i].e0.e2.re = prng_double();
+		sf_in[i].e1.e0.re = prng_double();
+		sf_in[i].e1.e1.re = prng_double();
+		sf_in[i].e1.e2.re = prng_double();
+		sf_in[i].e2.e0.re = prng_double();
+		sf_in[i].e2.e1.re = prng_double();
+		sf_in[i].e2.e2.re = prng_double();
+		sf_in[i].e3.e0.re = prng_double();
+		sf_in[i].e3.e1.re = prng_double();
+		sf_in[i].e3.e2.re = prng_double();
 
-		sf_in[i].e0.e0.im = rnd_loc.doub();
-		sf_in[i].e0.e1.im = rnd_loc.doub();
-		sf_in[i].e0.e2.im = rnd_loc.doub();
-		sf_in[i].e1.e0.im = rnd_loc.doub();
-		sf_in[i].e1.e1.im = rnd_loc.doub();
-		sf_in[i].e1.e2.im = rnd_loc.doub();
-		sf_in[i].e2.e0.im = rnd_loc.doub();
-		sf_in[i].e2.e1.im = rnd_loc.doub();
-		sf_in[i].e2.e2.im = rnd_loc.doub();
-		sf_in[i].e3.e0.im = rnd_loc.doub();
-		sf_in[i].e3.e1.im = rnd_loc.doub();
-		sf_in[i].e3.e2.im = rnd_loc.doub();
+		sf_in[i].e0.e0.im = prng_double();
+		sf_in[i].e0.e1.im = prng_double();
+		sf_in[i].e0.e2.im = prng_double();
+		sf_in[i].e1.e0.im = prng_double();
+		sf_in[i].e1.e1.im = prng_double();
+		sf_in[i].e1.e2.im = prng_double();
+		sf_in[i].e2.e0.im = prng_double();
+		sf_in[i].e2.e1.im = prng_double();
+		sf_in[i].e2.e2.im = prng_double();
+		sf_in[i].e3.e0.im = prng_double();
+		sf_in[i].e3.e1.im = prng_double();
+		sf_in[i].e3.e2.im = prng_double();
 	}
 	return;
 }

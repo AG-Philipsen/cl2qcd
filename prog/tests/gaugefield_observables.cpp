@@ -7,7 +7,6 @@
 #include "../opencl_module.h"
 #include "../gaugefield_hybrid.h"
 
-Random rnd(15);
 extern std::string const version;
 std::string const version = "0.1";
 

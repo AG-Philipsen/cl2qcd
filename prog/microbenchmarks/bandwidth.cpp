@@ -19,8 +19,6 @@ namespace po = boost::program_options;
 extern std::string const version;
 std::string const version = "0.1";
 
-Random rnd(15);
-
 /**
  * Selector type for the base type of the copy operations.
  */

@@ -6,7 +6,6 @@
 #define BOOST_TEST_MODULE SU2 SU3 Extend
 #include <boost/test/unit_test.hpp>
 
-Random rnd(15);
 extern std::string const version;
 std::string const version = "0.1";
 

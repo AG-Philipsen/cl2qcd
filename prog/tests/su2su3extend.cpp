@@ -9,7 +9,6 @@
 #define NUM_ELEMENTS 1024
 #define LOCAL_SIZE 128
 
-Random rnd(15);
 extern std::string const version;
 std::string const version = "0.1";
 
