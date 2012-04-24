@@ -66,15 +66,6 @@ inline int random_123 ()
 	return rnd.int64() % 3 + 1;
 }
 
-void random_1_2_3 (int rand[3])
-{
-	rand[0] = random_123();
-	do {
-		rand[1] = random_123();
-	} while (rand[1] == rand[0]);
-	rand[2] = 6 - rand[1] - rand[0];
-}
-
 #if defined(__APPLE__) && !defined(CL_VERSION_1_1)
 #define CLU_VEC( vec, idx ) (vec)[idx]
 #else
@@ -158,6 +149,16 @@ void init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seed
 	return;
 }
 
+void prng_init(uint32_t seed)
+{
+	rnd = Random(seed);
+}
+
+double prng_double()
+{
+	return rnd.doub();
+}
+
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha)
 {
 	hmc_float delta;
@@ -175,8 +176,6 @@ void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha)
 	dst[2] = sqrt(1. - a0 * a0) * cos(theta) * sin(phi);
 	dst[3] = sqrt(1. - a0 * a0) * sin(theta);
 }
-
-
 
 void gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma)
 {
@@ -204,12 +203,11 @@ void gaussianNormalPair(hmc_float * z1, hmc_float * z2)
 	// SL: not yet tested
 }
 
-void prng_init(uint32_t seed)
+void random_1_2_3 (int rand[3])
 {
-	rnd = Random(seed);
-}
-
-double prng_double()
-{
-	return rnd.doub();
+	rand[0] = random_123();
+	do {
+		rand[1] = random_123();
+	} while (rand[1] == rand[0]);
+	rand[2] = 6 - rand[1] - rand[0];
 }
