@@ -48,14 +48,14 @@ inline void nr3_init_state( hmc_ocl_ran * const state, const cl_ulong seed )
 	CLU_VEC(*state, 2) = CLU_VEC(*state, 1);
 	nr3_int64( state );
 
-	//CP: if one wants to compare exact numbers to the tmlqcd code, one 
+	//CP: if one wants to compare exact numbers to the tmlqcd code, one
 	//    should use these to have the same seeds for the random numbers
 	///@todo take this out in the end
 	bool compare_to_tmlqcd = false;
-	if(compare_to_tmlqcd){
-	  CLU_VEC(*state, 0) = 1234567;
-	  CLU_VEC(*state, 1)= 8912345;
-	  CLU_VEC(*state, 2)= 6789123;
+	if(compare_to_tmlqcd) {
+		CLU_VEC(*state, 0) = 1234567;
+		CLU_VEC(*state, 1) = 8912345;
+		CLU_VEC(*state, 2) = 6789123;
 	}
 
 }
@@ -119,26 +119,28 @@ void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha)
 
 
 
-void gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma){
+void gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma)
+{
 
-    // SL: this fills real and imaginary part of a vector of "length" complex numbers
-    //     with components drawn with a Gaussian distribution and variance sigma
-    for(int idx=0;idx<length;idx++){
-	gaussianNormalPair(&vector[idx].re,&vector[idx].im);
-	vector[idx].re*=sigma;
-	vector[idx].im*=sigma;
-        }
-    return;
-    // SL: not yet tested
+	// SL: this fills real and imaginary part of a vector of "length" complex numbers
+	//     with components drawn with a Gaussian distribution and variance sigma
+	for(int idx = 0; idx < length; idx++) {
+		gaussianNormalPair(&vector[idx].re, &vector[idx].im);
+		vector[idx].re *= sigma;
+		vector[idx].im *= sigma;
+	}
+	return;
+	// SL: not yet tested
 }
 
-void gaussianNormalPair(hmc_float * z1, hmc_float * z2){
-    // Box-Muller method, cartesian form, for extracting two independent normal standard real numbers
-    hmc_float u1 = 1.0 - rnd.doub();
-    hmc_float u2 = 1.0 - rnd.doub();
-    hmc_float p  = sqrt(-2*log(u1));
-    *z1 = p * cos(2*PI*u2);
-    *z2 = p * sin(2*PI*u2);
-    return;
-    // SL: not yet tested
+void gaussianNormalPair(hmc_float * z1, hmc_float * z2)
+{
+	// Box-Muller method, cartesian form, for extracting two independent normal standard real numbers
+	hmc_float u1 = 1.0 - rnd.doub();
+	hmc_float u2 = 1.0 - rnd.doub();
+	hmc_float p  = sqrt(-2 * log(u1));
+	*z1 = p * cos(2 * PI * u2);
+	*z2 = p * sin(2 * PI * u2);
+	return;
+	// SL: not yet tested
 }
