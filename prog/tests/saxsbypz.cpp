@@ -16,7 +16,7 @@ class Device : public Opencl_Module {
 
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module() {
-		Opencl_Module::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+		Opencl_Module::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -59,7 +59,7 @@ void Dummyfield::finalize_opencl()
 
 void Device::fill_kernels()
 {
-
+	Opencl_Module::fill_kernels();
 #ifdef _USEDOUBLEPREC_
 	logger.info() << "init saxsbypz kernels to see if the compiler does strange things...";
 	logger.info() << "\thmc_float = double";
@@ -75,5 +75,7 @@ void Device::fill_kernels()
 void Device::clear_kernels()
 {
 	clReleaseKernel(testKernel);
+
+	Opencl_Module::clear_kernels();
 }
 

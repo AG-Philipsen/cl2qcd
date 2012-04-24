@@ -2,7 +2,7 @@
  * @file operations on algebraelements
  */
 
-#ifdef cl_amd_printf
+#ifdef ENABLE_PRINTF
 void print_ae(ae in)
 {
 	printf("%f, %f, %f, %f, %f, %f, %f, %f\n", in.e0, in.e1, in.e2, in.e3, in.e4, in.e5, in.e6, in.e7);
@@ -51,13 +51,6 @@ ae acc_algebraelement(ae in, ae force_in)
 	return tmp;
 }
 
-void update_gaugemomentum(ae in, hmc_float factor, int global_link_pos, __global ae * out)
-{
-	ae tmp = out[global_link_pos];
-	tmp = acc_factor_times_algebraelement(tmp, factor, in);
-	out[global_link_pos] = tmp;
-}
-
 //calculates the trace of i times generator times 3x3-matrix and stores this in a su3-algebraelement
 ae tr_lambda_u(Matrix3x3 in)
 {
@@ -88,3 +81,47 @@ ae ae_times_factor(ae in, hmc_float factor)
 
 	return tmp;
 }
+
+#ifdef GAUGEMOMENTASIZE // we only need the ifdef so we can use the non-field functions without having the field defined
+ae getAe(__global const aeStorageType * const restrict in, const size_t idx)
+{
+#ifdef _USE_SOA_
+	return (ae) {
+		in[0 * GAUGEMOMENTA_STRIDE + idx],
+		   in[1 * GAUGEMOMENTA_STRIDE + idx],
+		   in[2 * GAUGEMOMENTA_STRIDE + idx],
+		   in[3 * GAUGEMOMENTA_STRIDE + idx],
+		   in[4 * GAUGEMOMENTA_STRIDE + idx],
+		   in[5 * GAUGEMOMENTA_STRIDE + idx],
+		   in[6 * GAUGEMOMENTA_STRIDE + idx],
+		   in[7 * GAUGEMOMENTA_STRIDE + idx]
+	};
+#else
+	return in[idx];
+#endif
+}
+
+void putAe(__global aeStorageType * const restrict out, const size_t idx, const ae val)
+{
+#ifdef _USE_SOA_
+	out[0 * GAUGEMOMENTA_STRIDE + idx] = val.e0;
+	out[1 * GAUGEMOMENTA_STRIDE + idx] = val.e1;
+	out[2 * GAUGEMOMENTA_STRIDE + idx] = val.e2;
+	out[3 * GAUGEMOMENTA_STRIDE + idx] = val.e3;
+	out[4 * GAUGEMOMENTA_STRIDE + idx] = val.e4;
+	out[5 * GAUGEMOMENTA_STRIDE + idx] = val.e5;
+	out[6 * GAUGEMOMENTA_STRIDE + idx] = val.e6;
+	out[7 * GAUGEMOMENTA_STRIDE + idx] = val.e7;
+#else
+	out[idx] = val;
+#endif
+}
+
+void update_gaugemomentum(const ae in, const hmc_float factor, const int global_link_pos, __global aeStorageType * const restrict out)
+{
+	ae tmp = getAe(out, global_link_pos);
+	tmp = acc_factor_times_algebraelement(tmp, factor, in);
+	putAe(out, global_link_pos, tmp);
+}
+
+#endif

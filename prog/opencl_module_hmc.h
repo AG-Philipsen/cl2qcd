@@ -44,6 +44,8 @@
 class Opencl_Module_Hmc : public Opencl_Module_Fermions {
 public:
 
+	Opencl_Module_Hmc() : Opencl_Module_Fermions(), gaugemomentum_buf_size(0) { };
+
 	// OpenCL specific methods needed for building/compiling the OpenCL program
 	/**
 	 * Collect the compiler options for OpenCL.
@@ -88,7 +90,7 @@ public:
 	cl_mem get_clmem_new_p();
 	cl_mem get_clmem_new_u();
 	cl_mem get_clmem_phi();
-	cl_mem get_clmem_phi_eoprec();
+	cl_mem get_clmem_phi_eo();
 
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
@@ -104,30 +106,57 @@ public:
 	void set_float_to_gaugemomentum_squarenorm_device(cl_mem in, cl_mem out);
 	void generate_gaussian_gaugemomenta_device();
 	void generate_gaussian_spinorfield_device();
-	void generate_gaussian_spinorfield_eoprec_device();
+	void generate_gaussian_spinorfield_eo_device();
 	void md_update_gaugemomentum_device(hmc_float eps);
 	void md_update_gaugefield_device(hmc_float eps);
 	void set_zero_clmem_force_device();
 	void gauge_force_device();
 	void gauge_force_tlsym_device();
-	void fermion_force_device();
-	void fermion_force_eoprec_device(cl_mem Y, cl_mem X, int evenodd);
+	void fermion_force_device(cl_mem Y, cl_mem X, hmc_float kappa = ARG_DEF);
+	void fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd, hmc_float kappa = ARG_DEF);
 	void stout_smeared_fermion_force_device(cl_mem * gf_intermediate);
 	hmc_float calc_s_fermion();
+
+	/**
+	 * Query the size required for storage of a gaugemomentum buffer
+	 * in the format used by the implementation.
+	 *
+	 * @return The buffer size in bytes
+	 */
+	size_t get_gaugemomentum_buffer_size();
+
+	/**
+	 * Import data from the gaugemomenta array into the given buffer.
+	 *
+	 * The data in the buffer will be stored in the device specific format.
+	 *
+	 * @param[out] dest The buffer to write to in the device specific format
+	 * @param[in] data The data to write to the buffer
+	 */
+	void importGaugemomentumBuffer(const cl_mem dest, const ae * const data);
+	/**
+	 * Export data from the given buffer into a normal gaugemomentum array.
+	 *
+	 * The data in the buffer is assumed to be in the device specific format.
+	 *
+	 * @param[out] dest An array that the buffer data can be written to.
+	 * @param[in] data A buffer containing the data in the device specific format.
+	 */
+	void exportGaugemomentumBuffer(ae * const dest, const cl_mem buf);
 
 protected:
 
 #ifdef _PROFILING_
 
 	usetimer timer_generate_gaussian_spinorfield;
-	usetimer timer_generate_gaussian_spinorfield_eoprec;
+	usetimer timer_generate_gaussian_spinorfield_eo;
 	usetimer timer_generate_gaussian_gaugemomenta;
 	usetimer timer_md_update_gaugefield;
 	usetimer timer_md_update_gaugemomenta;
 	usetimer timer_gauge_force;
 	usetimer timer_gauge_force_tlsym;
 	usetimer timer_fermion_force;
-	usetimer timer_fermion_force_eoprec;
+	usetimer timer_fermion_force_eo;
 	usetimer timer_set_zero_gaugemomentum;
 	usetimer timer_gaugemomentum_squarenorm;
 	usetimer timer_stout_smear_fermion_force;
@@ -163,22 +192,23 @@ protected:
 	 */
 	virtual int get_flop_size(const char * in);
 
-protected:
 private:
 
 	//kernels
 	cl_kernel generate_gaussian_spinorfield;
-	cl_kernel generate_gaussian_spinorfield_eoprec;
+	cl_kernel generate_gaussian_spinorfield_eo;
 	cl_kernel generate_gaussian_gaugemomenta;
 	cl_kernel md_update_gaugefield;
 	cl_kernel md_update_gaugemomenta;
 	cl_kernel gauge_force;
 	cl_kernel gauge_force_tlsym;
 	cl_kernel fermion_force;
-	cl_kernel fermion_force_eoprec;
+	cl_kernel fermion_force_eo;
 	cl_kernel stout_smear_fermion_force;
 	cl_kernel set_zero_gaugemomentum;
 	cl_kernel gaugemomentum_squarenorm;
+	cl_kernel gaugemomentum_convert_to_soa;
+	cl_kernel gaugemomentum_convert_from_soa;
 
 	//variables
 	//initial energy of the (gaussian) spinorfield
@@ -195,12 +225,14 @@ private:
 	cl_mem clmem_force;
 	//inverted spinorfield
 	cl_mem clmem_phi_inv;
-	cl_mem clmem_phi_inv_eoprec;
+	cl_mem clmem_phi_inv_eo;
 	//D(gaussian spinorfield)
 	cl_mem clmem_phi;
-	cl_mem clmem_phi_eoprec;
+	cl_mem clmem_phi_eo;
 
 	ClSourcePackage basic_hmc_code;
+
+	size_t gaugemomentum_buf_size;
 
 };
 

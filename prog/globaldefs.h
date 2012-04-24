@@ -32,6 +32,8 @@
 #define CLOVER 1
 #define TWISTEDMASS 2
 #define TLSYM 1
+#define IWASAKI 2
+#define DBW2 3
 
 #define LEAPFROG 0
 #define TWOMN 1
@@ -39,6 +41,11 @@
 //EVEN ODD
 #define EVEN 0
 #define ODD 1
+#define OE 0
+#define EO 1
+
+
+#define ARG_DEF -1
 
 /**
  * PI

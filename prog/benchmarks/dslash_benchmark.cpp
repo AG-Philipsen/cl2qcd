@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
 		po::options_description desc("Allowed options");
 		desc.add_options()
 		("help,h", "Produce this help message")
-		("input-file", po::value<std::string>()->required(), "File containing the input parameters")
+		("input-file", po::value<std::string>(), "File containing the input parameters")
 		("log-level", po::value<std::string>(), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF");
 		po::positional_options_description pos_opts;
 		pos_opts.add("input-file", 1);
@@ -23,6 +23,10 @@ int main(int argc, char* argv[])
 
 		if(vm.count("log-level")) {
 			switchLogLevel(vm["log-level"].as<std::string>());
+		}
+
+		if(!vm.count("input-file")) {
+			logger.fatal() << "No input file specified. Please specify a file containing the input parameters.";
 		}
 
 		const char* inputfile = vm["input-file"].as<std::string>().c_str();
@@ -88,10 +92,9 @@ int main(int argc, char* argv[])
 		//init needed buffers again
 		//these are: 2 eoprec spinorfield, 1 gaugefield
 		size_t eoprec_spinorfield_buffer_size = gaugefield.get_task_solver()->get_eoprec_spinorfield_buffer_size();
-		size_t gf_size = gaugefield.get_task_solver()->get_parameters()->get_gf_buf_size();
 		cl_mem sf1, sf2, gf;
 
-		gf = gaugefield.get_task_solver()->create_rw_buffer(gf_size);
+		gf = gaugefield.get_task_solver()->create_rw_buffer(gaugefield.get_task_solver()->getGaugefieldBufferSize());
 		sf1 = gaugefield.get_task_solver()->create_rw_buffer(eoprec_spinorfield_buffer_size);
 		sf2 = gaugefield.get_task_solver()->create_rw_buffer(eoprec_spinorfield_buffer_size);
 
@@ -108,8 +111,8 @@ int main(int argc, char* argv[])
 
 		logger.trace() << "Perform " << hmc_iter << "of dslash benchmarking (EVEN + ODD) for each step";
 		for(iter = 0; iter < hmc_iter; iter ++) {
-			gaugefield.get_task_solver()->dslash_eoprec_device(sf1, sf2, gf, EVEN);
-			gaugefield.get_task_solver()->dslash_eoprec_device(sf1, sf2, gf, ODD);
+			gaugefield.get_task_solver()->dslash_eo_device(sf1, sf2, gf, EVEN);
+			gaugefield.get_task_solver()->dslash_eo_device(sf1, sf2, gf, ODD);
 		}
 		logger.trace() << "dslash benchmarking done" ;
 		perform_timer.add();
@@ -152,7 +155,7 @@ int main(int argc, char* argv[])
 
 		//print only dslash-infos
 		const char * kernelName;
-		kernelName = "dslash_eoprec";
+		kernelName = "dslash_eo";
 		gaugefield.get_task_solver()->Opencl_Module::print_profiling(profiling_out.str(), kernelName, (*gaugefield.get_task_solver()->get_timer(kernelName)).getTime(), (*gaugefield.get_task_solver()->get_timer(kernelName)).getNumMeas(), gaugefield.get_task_solver()->get_read_write_size(kernelName), gaugefield.get_task_solver()->get_flop_size(kernelName)) ;
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////

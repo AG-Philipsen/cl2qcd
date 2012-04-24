@@ -3,7 +3,7 @@
  */
 //operations_matrix_su3.cl
 
-#ifdef cl_amd_printf
+#ifdef ENABLE_PRINTF
 void print_matrixsu3(Matrixsu3 in)
 {
 	printf("(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n(%f,%f) (%f,%f) (%f,%f)\n",
@@ -13,18 +13,6 @@ void print_matrixsu3(Matrixsu3 in)
 	printf("\n");
 }
 #endif
-
-
-
-Matrixsu3 get_matrixsu3( __global ocl_s_gaugefield * field, const int spacepos, const int timepos, const int mu)
-{
-	return field [get_global_link_pos(mu, spacepos, timepos)];
-}
-
-void put_matrixsu3(__global ocl_s_gaugefield * field, const Matrixsu3 in, const int spacepos, const int timepos, const int mu)
-{
-	field [get_global_link_pos(mu, spacepos, timepos)] = in;
-}
 
 Matrixsu3 copy_matrixsu3(const Matrixsu3 in)
 {

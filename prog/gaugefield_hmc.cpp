@@ -15,7 +15,7 @@ void Gaugefield_hmc::init_tasks()
 
 	//LZ: right now, each task carries exactly one opencl device -> thus the below allocation with [1]. Could be generalized in future
 	opencl_modules[task_hmc] = new Opencl_Module_Hmc[1];
-	get_task_hmc(0)->init(queue[task_hmc], get_clmem_gaugefield(), get_parameters(), get_max_compute_units(task_hmc), get_double_ext(task_hmc));
+	get_task_hmc(0)->init(queue[task_hmc], get_parameters(), get_max_compute_units(task_hmc), get_double_ext(task_hmc));
 
 	return;
 }
@@ -42,13 +42,16 @@ void Gaugefield_hmc::finalize_opencl()
 
 void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* solver_timer)
 {
-	size_t gfsize = get_parameters()->get_gf_buf_size();
-	size_t gmsize = get_parameters()->get_gm_buf_size();
+	//reset the counters for the inversions
+	get_parameters()->reset_inversion_counters();
+
+	size_t gfsize = get_task_hmc(0)->getGaugefieldBufferSize();
+	size_t gmsize = get_task_hmc(0)->get_gaugemomentum_buffer_size();
 
 	// copy u->u' p->p' for the integrator
 	// new_u is used in some debug code of the gaugemomentum-initialization. therefore we need to copy it before
 	// p is modified in the initialization, therefore we cannot copy it now
-	get_task_hmc(0)->copy_buffer_on_device(*(get_task_hmc(0)->get_gaugefield()), get_task_hmc(0)->get_clmem_new_u(), gfsize);
+	get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_gaugefield(), get_task_hmc(0)->get_clmem_new_u(), gfsize);
 
 	logger.debug() << "\tinit spinorfield and gaugemomentum" ;
 	this->init_gaugemomentum_spinorfield();
@@ -67,7 +70,7 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 
 	if((*obs).accept == 1) {
 		// perform the change nonprimed->primed !
-		get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_new_u(), *(get_task_hmc(0)->get_gaugefield()), gfsize);
+		get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_new_u(), get_task_hmc(0)->get_gaugefield(), gfsize);
 		get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_new_p(), get_task_hmc(0)->get_clmem_p(), gmsize);
 		logger.debug() << "\t\tnew configuration accepted" ;
 	} else {
@@ -82,15 +85,28 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::st
 {
 	hmc_float exp_deltaH = exp(obs.deltaH);
 	logger.trace() << "Observables: " << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq << "\t" << obs.poly.re << "\t" << obs.poly.im <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept ;
-//  printf("Observables:%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%d\n",iter,obs.plaq,obs.tplaq,obs.splaq,obs.poly.re,obs.poly.im,obs.deltaH, exp_deltaH, obs.prob, obs.accept );
 	std::fstream hmcout;
 	hmcout.open(filename.c_str(), std::ios::out | std::ios::app);
 	if(!hmcout.is_open()) throw File_Exception(filename);
 	hmcout.width(8);
 	hmcout << iter;
-	hmcout << "\t";
 	hmcout.precision(15);
-	hmcout << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq << "\t" << obs.poly.re << "\t" << obs.poly.im << "\t" << sqrt(obs.poly.re * obs.poly.re + obs.poly.im * obs.poly.im) <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept << std::endl;
+	//print plaquette (plaq, tplaq, splaq)
+	hmcout << "\t" << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq;
+	//print polyakov loop (re, im, abs)
+	hmcout << "\t" << obs.poly.re << "\t" << obs.poly.im << "\t" << sqrt(obs.poly.re * obs.poly.re + obs.poly.im * obs.poly.im);
+	//print deltaH, exp(deltaH), acceptance-propability, accept (yes or no)
+	hmcout <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept;
+	//print number of iterations used in inversions with full and force precision
+	hmcout << "\t" << get_parameters()->get_iter0() << "\t" << get_parameters()->get_iter1();
+	if(get_parameters()->get_use_mp() ) {
+		hmcout << "\t" << get_parameters()->get_iter0_mp() << "\t" << get_parameters()->get_iter1_mp();
+	}
+	if(get_parameters()->get_use_rectangles() ) {
+		//print rectangle value
+		hmcout << "\t" << obs.rectangles;
+	}
+	hmcout << std::endl;
 	hmcout.close();
 	return;
 }
@@ -110,7 +126,8 @@ void Gaugefield_hmc::calc_total_force(usetimer * solvertimer)
 {
 	//CP: make sure that the output field is set to zero
 	get_task_hmc(0)->set_zero_clmem_force_device();
-	this->fermion_forces_call(solvertimer);
+	if(!get_parameters()->get_use_gauge_only() )
+		this->fermion_forces_call(solvertimer);
 	get_task_hmc(0)->calc_gauge_force();
 }
 
@@ -159,19 +176,19 @@ void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer)
 	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
 	//  or use the intermediate cl_mem obj gf_unsmeared. This is initialized in the smear_gaugefield function
 	cl_mem * smeared_gfs;
-	if(rho_iter > 0) smeared_gfs = new cl_mem [rho_iter -1];
+	if(rho_iter > 0) smeared_gfs = new cl_mem [rho_iter - 1];
 	else smeared_gfs = NULL;
 
 	if(get_parameters()->get_use_smearing() == true) {
-		size_t gfsize = get_parameters()->get_gf_buf_size();
+		size_t gfsize = get_task_hmc(0)->getGaugefieldBufferSize();
 		for(int i = 0; i < rho_iter; i++)
 			smeared_gfs[i] = get_task_hmc(0)->create_rw_buffer(gfsize);
-		get_task_hmc(0)->smear_gaugefield(*(get_task_hmc(0)->get_gaugefield()), smeared_gfs);
+		get_task_hmc(0)->smear_gaugefield(get_task_hmc(0)->get_gaugefield(), smeared_gfs);
 	}
 	get_task_hmc(0)->calc_fermion_force(solvertimer);
 	if(get_parameters()->get_use_smearing() == true) {
 		get_task_hmc(0)->stout_smeared_fermion_force_device(smeared_gfs);
-		get_task_hmc(0)->unsmear_gaugefield(*(get_task_hmc(0)->get_gaugefield()));
+		get_task_hmc(0)->unsmear_gaugefield(get_task_hmc(0)->get_gaugefield());
 		for(int i = 0; i < rho_iter; i++) {
 			cl_int clerr = clReleaseMemObject(smeared_gfs[i]);
 			if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);

@@ -1,7 +1,7 @@
 /**
  * @file M_tm_minus this is the "total" twisted-mass fermionmatrix (no evenodd) for the lower flavor
  */
-__kernel void M_tm_minus(__global spinorfield * in, __global ocl_s_gaugefield * field, __global spinorfield * out)
+__kernel void M_tm_minus(__global spinorfield * in, __global Matrixsu3StorageType * field, __global spinorfield * out, hmc_float kappa_in, hmc_float mubar_in)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -12,8 +12,8 @@ __kernel void M_tm_minus(__global spinorfield * in, __global ocl_s_gaugefield * 
 	spinor out_tmp, out_tmp2;
 	spinor plus;
 
-	hmc_complex twistfactor = {1., MUBAR};
-	hmc_complex twistfactor_minus = {1., MMUBAR};
+	hmc_complex twistfactor = {1., mubar_in};
+	hmc_complex twistfactor_minus = {1., -1.*mubar_in};
 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 
@@ -27,13 +27,13 @@ __kernel void M_tm_minus(__global spinorfield * in, __global ocl_s_gaugefield * 
 		//Diagonalpart: this is normal tm-diagonal matrix with negative imaginary part
 		out_tmp = M_diag_tm_local(plus, twistfactor_minus, twistfactor);
 		//calc dslash (this includes mutliplication with kappa)
-		out_tmp2 = dslash_local_0(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_local_0(in, field, pos.space, pos.time, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_local_1(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_local_1(in, field, pos.space, pos.time, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_local_2(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_local_2(in, field, pos.space, pos.time, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_local_3(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_local_3(in, field, pos.space, pos.time, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 
 		put_spinor_to_field(out_tmp, out, pos.space, pos.time);

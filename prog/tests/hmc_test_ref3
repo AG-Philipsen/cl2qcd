@@ -1,0 +1,11 @@
+0.818443237376726
+## reference plaquette value for the HMC test in PureGaugeTheory starting from a cold config
+## When making the test, the output was:
+## test nr	output
+## 13	0        0.818443237376726       0.824030726202582       0.81285574855087        0.545247206822287       -0.012614493658464      
+0.545393107765184	-0.000663499841493831   0.999336720225852       0.999336720225852       1       0       0
+
+
+
+
+

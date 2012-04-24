@@ -1,0 +1,21 @@
+#global settings
+NS=4
+NT=4
+prec=64
+
+#fermion-parameters
+beta=5.69
+startcondition=cold
+# startcondition=continue
+sourcefile=conf.00200
+
+#HMC-parameters
+hmcsteps=1
+integrationsteps0=2000
+num_timescales=1
+tau=0.5
+
+#gauge parameters
+gaugeact=wilson
+puregauge=true
+

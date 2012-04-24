@@ -96,23 +96,23 @@ public:
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
 };
-class Qplus_eoprec : public Matrix_Function {
+class Qplus_eo : public Matrix_Function {
 public:
-	Qplus_eoprec(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	Qplus_eo(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
 	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
 };
-class Qminus_eoprec : public Matrix_Function {
+class Qminus_eo : public Matrix_Function {
 public:
-	Qminus_eoprec(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	Qminus_eo(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
 	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
 };
-class QplusQminus_eoprec : public Matrix_Function {
+class QplusQminus_eo : public Matrix_Function {
 public:
-	QplusQminus_eoprec(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	QplusQminus_eo(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
 	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
@@ -169,38 +169,34 @@ public:
 
 
 	//    fermionmatrix operations
-	//    non-eoprec
+	//    non-eo
 	//        compound
 	void M(cl_mem in, cl_mem out, cl_mem gf);
 	void Qplus(cl_mem in, cl_mem out, cl_mem gf);
 	void Qminus(cl_mem in, cl_mem out, cl_mem gf);
 	void QplusQminus(cl_mem in, cl_mem out, cl_mem gf);
 	//        explicit
-	void M_wilson_device(cl_mem in, cl_mem out, cl_mem gf);
-	void M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf);
-	void M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf);
+	void M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF);
+	void M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	void gamma5_device(cl_mem inout);
-	//    eoprec
+	//    eo
 	//        compound
-	void Qplus_eoprec(cl_mem in, cl_mem out, cl_mem gf);
-	void Qminus_eoprec(cl_mem in, cl_mem out, cl_mem gf);
-	void QplusQminus_eoprec(cl_mem in, cl_mem out, cl_mem gf);
+	void Qplus_eo(cl_mem in, cl_mem out, cl_mem gf);
+	void Qminus_eo(cl_mem in, cl_mem out, cl_mem gf);
+	void QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf);
 	void Aee(cl_mem in, cl_mem out, cl_mem gf);
 	void Aee_minus(cl_mem in, cl_mem out, cl_mem gf);
 	//        explicit
-	void gamma5_eoprec_device(cl_mem inout);
-	void M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out);
-	void M_tm_sitediagonal_device(cl_mem in, cl_mem out);
-	void M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out);
-	void M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out);
-	void dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd);
-
-	// SOA conversion
-	void convertGaugefieldToSOA();
-	void convertGaugefieldToSOA_device(cl_mem out, cl_mem in);
+	void gamma5_eo_device(cl_mem inout);
+	void M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
+	void M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
+	void M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
+	void M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
+	void dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa = ARG_DEF);
 
 	//    solver operations
-	//    non-eoprec
+	//    non-eo
 	/// this calls the solver according to parameter settings using the fermionmatrix f
 	void solver(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer);
 	/**
@@ -212,10 +208,10 @@ public:
 	int bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
 	/// this executes the cg on the device, using the fermionmatrix f
 	int cg(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
-	//    eoprec
-	/// this executes the eoprec bicgstab on the device, using the fermionmatrix f
-	int bicgstab_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
-	int cg_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
+	//    eo
+	/// this executes the eo bicgstab on the device, using the fermionmatrix f
+	int bicgstab_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
+	int cg_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
 
 	/////////////////////////////////////////////////
 	//functions to get private variables
@@ -223,9 +219,9 @@ public:
 	cl_mem get_clmem_source();
 	cl_mem get_clmem_tmp();
 
-	cl_mem get_clmem_inout_eoprec();
-	cl_mem get_clmem_tmp_eoprec_1();
-	cl_mem get_clmem_tmp_eoprec_2();
+	cl_mem get_clmem_inout_eo();
+	cl_mem get_clmem_tmp_eo_1();
+	cl_mem get_clmem_tmp_eo_2();
 	cl_mem get_clmem_source_even();
 	cl_mem get_clmem_source_odd();
 
@@ -248,14 +244,12 @@ public:
 	usetimer timer_gamma5;
 	usetimer timer_M_tm_plus;
 	usetimer timer_M_tm_minus;
-	usetimer timer_gamma5_eoprec;
+	usetimer timer_gamma5_eo;
 	usetimer timer_M_tm_sitediagonal;
 	usetimer timer_M_tm_inverse_sitediagonal;
-	usetimer timer_dslash_eoprec;
+	usetimer timer_dslash_eo;
 	usetimer timer_M_tm_sitediagonal_minus;
 	usetimer timer_M_tm_inverse_sitediagonal_minus;
-	usetimer timer_convertGaugefieldToSOA;
-	usetimer timer_convertGaugefieldFromSOA;
 
 	/**
 	 * Return the timer connected to a specific kernel.
@@ -296,14 +290,12 @@ private:
 	cl_kernel gamma5;
 	cl_kernel M_tm_plus;
 	cl_kernel M_tm_minus;
-	cl_kernel gamma5_eoprec;
+	cl_kernel gamma5_eo;
 	cl_kernel M_tm_sitediagonal;
 	cl_kernel M_tm_inverse_sitediagonal;
 	cl_kernel M_tm_sitediagonal_minus;
 	cl_kernel M_tm_inverse_sitediagonal_minus;
-	cl_kernel dslash_eoprec;
-	cl_kernel convertGaugefieldToSOA_kernel;
-	cl_kernel convertGaugefieldFromSOA;
+	cl_kernel dslash_eo;
 	//CP: variables for normal solver
 	cl_mem clmem_inout;
 	cl_mem clmem_rn;
@@ -316,20 +308,20 @@ private:
 	//this is needed in QplusQminus as a temporary field
 	cl_mem clmem_tmp;
 
-	//CP: variables for eoprec solver
-	cl_mem clmem_inout_eoprec;
+	//CP: variables for eo solver
+	cl_mem clmem_inout_eo;
 	cl_mem clmem_source;
 	cl_mem clmem_source_even;
 	cl_mem clmem_source_odd;
-	cl_mem clmem_rn_eoprec;
-	cl_mem clmem_rhat_eoprec;
-	cl_mem clmem_v_eoprec;
-	cl_mem clmem_p_eoprec;
-	cl_mem clmem_s_eoprec;
-	cl_mem clmem_t_eoprec;
-	cl_mem clmem_aux_eoprec;
-	cl_mem clmem_tmp_eoprec_1;
-	cl_mem clmem_tmp_eoprec_2;
+	cl_mem clmem_rn_eo;
+	cl_mem clmem_rhat_eo;
+	cl_mem clmem_v_eo;
+	cl_mem clmem_p_eo;
+	cl_mem clmem_s_eo;
+	cl_mem clmem_t_eo;
+	cl_mem clmem_aux_eo;
+	cl_mem clmem_tmp_eo_1;
+	cl_mem clmem_tmp_eo_2;
 
 	cl_mem clmem_rho;
 	cl_mem clmem_rho_next;
@@ -341,12 +333,8 @@ private:
 	cl_mem clmem_one;
 	cl_mem clmem_minusone;
 
-	cl_mem clmem_kappa_cmplx;// = {kappa, 0.};
 	cl_mem clmem_resid;
 	cl_mem clmem_trueresid;
-
-protected:
-	cl_mem gaugefield_soa;
 };
 
 #endif //OPENCLMODULEFERMIONSH

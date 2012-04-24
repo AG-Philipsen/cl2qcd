@@ -3,7 +3,7 @@
  */
 
 
-#ifdef cl_amd_printf
+#ifdef ENABLE_PRINTF
 void print_su3vec(su3vec in)
 {
 	printf("(%f,%f)\t(%f,%f)\t(%f,%f)", in.e0.re, in.e0.im, in.e1.re, in.e1.im, in.e2.re, in.e2.im);
@@ -23,7 +23,7 @@ void print_spinor(spinor in)
 #endif
 
 
-spinor get_spinor_from_field(__global spinorfield* in, int n, int t)
+spinor get_spinor_from_field(__global const spinorfield * const restrict in, const int n, const int t)
 {
 	int pos = get_global_pos(n, t);
 	spinor out;
@@ -31,7 +31,7 @@ spinor get_spinor_from_field(__global spinorfield* in, int n, int t)
 	return out;
 }
 
-void put_spinor_to_field(spinor in, __global spinorfield* out, int n, int t)
+void put_spinor_to_field(const spinor in, __global spinorfield * const restrict out, const int n, const int t)
 {
 	int pos = get_global_pos(n, t);
 	out[pos] = in;

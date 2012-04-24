@@ -22,8 +22,8 @@ void Gaugefield_inverter::init_tasks()
 
 	size_t bufsize = num_sources * get_parameters()->get_spinorfieldsize() * sizeof(spinor);
 	logger.debug() << "allocate memory for solution-buffer on host of size " << bufsize / 1024. / 1024. / 1024. << " GByte";
-	solution_buffer = new spinor [num_sources*get_parameters()->get_spinorfieldsize()];
-	source_buffer = new spinor [num_sources*get_parameters()->get_spinorfieldsize()];
+	solution_buffer = new spinor [num_sources * get_parameters()->get_spinorfieldsize()];
+	source_buffer = new spinor [num_sources * get_parameters()->get_spinorfieldsize()];
 
 	task_solver = 0;
 	task_correlator = 1;
@@ -33,10 +33,10 @@ void Gaugefield_inverter::init_tasks()
 
 	//LZ: right now, each task carries exactly one opencl device -> thus the below allocation with [1]. Could be generalized in future
 	opencl_modules[task_solver] = new Opencl_Module_Fermions[1];
-	get_task_solver()->init(queue[task_solver], get_clmem_gaugefield(), get_parameters(), get_max_compute_units(task_solver), get_double_ext(task_solver));
+	get_task_solver()->init(queue[task_solver], get_parameters(), get_max_compute_units(task_solver), get_double_ext(task_solver));
 
 	opencl_modules[task_correlator] = new Opencl_Module_Correlator[1];
-	get_task_correlator()->init(queue[task_correlator], get_clmem_gaugefield(), get_parameters(), get_max_compute_units(task_correlator), get_double_ext(task_correlator));
+	get_task_correlator()->init(queue[task_correlator], get_parameters(), get_max_compute_units(task_correlator), get_double_ext(task_correlator));
 
 
 	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
@@ -99,7 +99,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 
 	//apply stout smearing if wanted
 	if(get_parameters()->get_use_smearing() == true) {
-		solver->smear_gaugefield(*get_clmem_gaugefield(), NULL);
+		solver->smear_gaugefield(solver->get_gaugefield(), NULL);
 	}
 
 	::Aee f_eo(solver);
@@ -110,19 +110,19 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 		//copy source from to device
 		//NOTE: this is a blocking call!
 		logger.debug() << "copy pointsource between devices";
-		solver->copy_buffer_to_device(&source_buffer[k*get_parameters()->get_vol4d()], get_clmem_source(), sfsize);
+		solver->copy_buffer_to_device(&source_buffer[k * get_parameters()->get_vol4d()], get_clmem_source(), sfsize);
 
 		logger.debug() << "calling solver..";
-		solver->solver(f, clmem_res, get_clmem_source(), *get_clmem_gaugefield(), solver_timer);
+		solver->solver(f, clmem_res, get_clmem_source(), solver->get_gaugefield(), solver_timer);
 
 		//add solution to solution-buffer
 		//NOTE: this is a blocking call!
 		logger.debug() << "add solution...";
-		solver->get_buffer_from_device(clmem_res, &solution_buffer[k*get_parameters()->get_vol4d()], sfsize);
+		solver->get_buffer_from_device(clmem_res, &solution_buffer[k * get_parameters()->get_vol4d()], sfsize);
 	}
 
 	if(get_parameters()->get_use_smearing() == true) {
-		solver->unsmear_gaugefield(*get_clmem_gaugefield());
+		solver->unsmear_gaugefield(solver->get_gaugefield());
 	}
 
 	delete [] sftmp;
@@ -300,7 +300,7 @@ void Gaugefield_inverter::create_sources()
 		for(int k = 0; k < 12; k++) {
 			get_task_correlator()->create_point_source_device(get_clmem_source(), k, get_parameters()->get_source_pos_spatial(), get_parameters()->get_source_pos_temporal());
 			logger.debug() << "copy pointsource to host";
-			get_task_correlator()->get_buffer_from_device(get_clmem_source(), &source_buffer[k*get_parameters()->get_vol4d()], sfsize);
+			get_task_correlator()->get_buffer_from_device(get_clmem_source(), &source_buffer[k * get_parameters()->get_vol4d()], sfsize);
 		}
 	} else {
 		logger.debug() << "start creating stochastic-sources...";
@@ -308,7 +308,7 @@ void Gaugefield_inverter::create_sources()
 		for(int k = 0; k < num_sources; k++) {
 			get_task_correlator()->create_stochastic_source_device(get_clmem_source());
 			logger.debug() << "copy stochastic-source to host";
-			get_task_correlator()->get_buffer_from_device(get_clmem_source(), &source_buffer[k*get_parameters()->get_vol4d()], sfsize);
+			get_task_correlator()->get_buffer_from_device(get_clmem_source(), &source_buffer[k * get_parameters()->get_vol4d()], sfsize);
 		}
 	}
 }

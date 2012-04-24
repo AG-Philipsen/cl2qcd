@@ -7,7 +7,7 @@
 //	ODD corresponds to case where an odd site of Y is connected to an even site of X (because if x is odd x+mu is even)
 //	EVEN is just the other way around.
 //The difference to the non-eo kernel is that one has to calculate the eo position of the "plus" spinor out of the neighbour coordinates on each occasion. This is done just like in the dslash_eo kernel!
-__kernel void fermion_force_eoprec(__global const ocl_s_gaugefield * const restrict field, __global const spinorStorageType * const restrict Y, __global const spinorStorageType * const restrict X, __global ae * const restrict out, int evenodd)
+__kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restrict field, __global const spinorStorageType * const restrict Y, __global const spinorStorageType * const restrict X, __global aeStorageType * const restrict out, int evenodd, hmc_float kappa_in)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);
@@ -43,8 +43,8 @@ __kernel void fermion_force_eoprec(__global const ocl_s_gaugefield * const restr
 		///////////////////////////////////
 		dir = 0;
 		//the 2 here comes from Tr(lambda_ij) = 2delta_ij
-		bc_tmp.re = 2.*KAPPA_TEMPORAL_RE;
-		bc_tmp.im = 2.*KAPPA_TEMPORAL_IM;
+		bc_tmp.re = 2.* kappa_in * TEMPORAL_RE;
+		bc_tmp.im = 2.* kappa_in * TEMPORAL_IM;
 
 		///////////////////////////////////
 		//mu = +0
@@ -135,8 +135,8 @@ __kernel void fermion_force_eoprec(__global const ocl_s_gaugefield * const restr
 		/////////////////////////////////
 		dir = 1;
 		//this stays the same for all spatial directions at the moment
-		bc_tmp.re = 2.*KAPPA_SPATIAL_RE;
-		bc_tmp.im = 2.*KAPPA_SPATIAL_IM;
+		bc_tmp.re = 2.* kappa_in * SPATIAL_RE;
+		bc_tmp.im = 2.* kappa_in * SPATIAL_IM;
 
 		/////////////////////////////////
 		//mu = +1

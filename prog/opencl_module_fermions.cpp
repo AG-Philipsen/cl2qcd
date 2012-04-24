@@ -161,11 +161,11 @@ cl_ulong Aee::get_Flops() const
 	cl_ulong res;
 	switch(that->get_parameters()->get_fermact()) {
 		case WILSON:
-			res = 2 * that->get_flop_size("dslash_eoprec");
+			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("saxpy_eoprec");
 			break;
 		case TWISTEDMASS:
-			res = 2 * that->get_flop_size("dslash_eoprec");
+			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("M_tm_inverse_sitediagonal");
 			res += that->get_flop_size("M_tm_sitediagonal");
 			res += that->get_flop_size("saxpy_eoprec");
@@ -180,11 +180,11 @@ cl_ulong Aee::get_Bytes() const
 	cl_ulong res;
 	switch(that->get_parameters()->get_fermact()) {
 		case WILSON:
-			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("saxpy_eoprec");
 			break;
 		case TWISTEDMASS:
-			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("M_tm_inverse_sitediagonal");
 			res += that->get_read_write_size("M_tm_sitediagonal");
 			res += that->get_read_write_size("saxpy_eoprec");
@@ -195,20 +195,20 @@ cl_ulong Aee::get_Bytes() const
 	return res;
 }
 
-void Qplus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
+void Qplus_eo::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
-	that->Qplus_eoprec(in, out, gf);
+	that->Qplus_eo(in, out, gf);
 }
-cl_ulong Qplus_eoprec::get_Flops() const
+cl_ulong Qplus_eo::get_Flops() const
 {
 	cl_ulong res;
 	switch(that->get_parameters()->get_fermact()) {
 		case WILSON:
-			res = 2 * that->get_flop_size("dslash_eoprec");
+			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("saxpy_eoprec");
 			break;
 		case TWISTEDMASS:
-			res = 2 * that->get_flop_size("dslash_eoprec");
+			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("M_tm_inverse_sitediagonal");
 			res += that->get_flop_size("M_tm_sitediagonal");
 			res += that->get_flop_size("saxpy_eoprec");
@@ -216,19 +216,19 @@ cl_ulong Qplus_eoprec::get_Flops() const
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
 	}
-	res += that->get_flop_size("gamma5_eoprec");
+	res += that->get_flop_size("gamma5_eo");
 	return res;
 }
-cl_ulong Qplus_eoprec::get_Bytes() const
+cl_ulong Qplus_eo::get_Bytes() const
 {
 	cl_ulong res;
 	switch(that->get_parameters()->get_fermact()) {
 		case WILSON:
-			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("saxpy_eoprec");
 			break;
 		case TWISTEDMASS:
-			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("M_tm_inverse_sitediagonal");
 			res += that->get_read_write_size("M_tm_sitediagonal");
 			res += that->get_read_write_size("saxpy_eoprec");
@@ -236,24 +236,24 @@ cl_ulong Qplus_eoprec::get_Bytes() const
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
 	}
-	res += that->get_flop_size("gamma5_eoprec");
+	res += that->get_flop_size("gamma5_eo");
 	return res;
 }
 
-void Qminus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
+void Qminus_eo::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
-	that->Qminus_eoprec(in, out, gf);
+	that->Qminus_eo(in, out, gf);
 }
-cl_ulong Qminus_eoprec::get_Flops() const
+cl_ulong Qminus_eo::get_Flops() const
 {
 	cl_ulong res;
 	switch(that->get_parameters()->get_fermact()) {
 		case WILSON:
-			res = 2 * that->get_flop_size("dslash_eoprec");
+			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("saxpy_eoprec");
 			break;
 		case TWISTEDMASS:
-			res = 2 * that->get_flop_size("dslash_eoprec");
+			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("M_tm_inverse_sitediagonal_minus");
 			res += that->get_flop_size("M_tm_sitediagonal_minus");
 			res += that->get_flop_size("saxpy_eoprec");
@@ -261,19 +261,19 @@ cl_ulong Qminus_eoprec::get_Flops() const
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
 	}
-	res += that->get_flop_size("gamma5_eoprec");
+	res += that->get_flop_size("gamma5_eo");
 	return res;
 }
-cl_ulong Qminus_eoprec::get_Bytes() const
+cl_ulong Qminus_eo::get_Bytes() const
 {
 	cl_ulong res;
 	switch(that->get_parameters()->get_fermact()) {
 		case WILSON:
-			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("saxpy_eoprec");
 			break;
 		case TWISTEDMASS:
-			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("M_tm_inverse_sitediagonal_minus");
 			res += that->get_read_write_size("M_tm_sitediagonal_minus");
 			res += that->get_read_write_size("saxpy_eoprec");
@@ -281,25 +281,25 @@ cl_ulong Qminus_eoprec::get_Bytes() const
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
 	}
-	res += that->get_flop_size("gamma5_eoprec");
+	res += that->get_flop_size("gamma5_eo");
 	return res;
 }
 
-void QplusQminus_eoprec::operator()(cl_mem in, cl_mem out, cl_mem gf) const
+void QplusQminus_eo::operator()(cl_mem in, cl_mem out, cl_mem gf) const
 {
-	that->QplusQminus_eoprec(in, out, gf);
+	that->QplusQminus_eo(in, out, gf);
 }
-cl_ulong QplusQminus_eoprec::get_Flops() const
+cl_ulong QplusQminus_eo::get_Flops() const
 {
 	cl_ulong res;
 	switch(that->get_parameters()->get_fermact()) {
 		case WILSON:
-			res = 2 * that->get_flop_size("dslash_eoprec");
+			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("saxpy_eoprec");
 			res *= 2;
 			break;
 		case TWISTEDMASS:
-			res = 4 * that->get_flop_size("dslash_eoprec");
+			res = 4 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("M_tm_inverse_sitediagonal");
 			res += that->get_flop_size("M_tm_sitediagonal");
 			res += that->get_flop_size("M_tm_inverse_sitediagonal_minus");
@@ -309,20 +309,20 @@ cl_ulong QplusQminus_eoprec::get_Flops() const
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
 	}
-	res += 2 * that->get_flop_size("gamma5_eoprec");
+	res += 2 * that->get_flop_size("gamma5_eo");
 	return res;
 }
-cl_ulong QplusQminus_eoprec::get_Bytes() const
+cl_ulong QplusQminus_eo::get_Bytes() const
 {
 	cl_ulong res;
 	switch(that->get_parameters()->get_fermact()) {
 		case WILSON:
-			res = 2 * that->get_read_write_size("dslash_eoprec");
+			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("saxpy_eoprec");
 			res *= 2;
 			break;
 		case TWISTEDMASS:
-			res = 4 * that->get_read_write_size("dslash_eoprec");
+			res = 4 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("M_tm_inverse_sitediagonal");
 			res += that->get_read_write_size("M_tm_sitediagonal");
 			res += that->get_read_write_size("M_tm_inverse_sitediagonal_minus");
@@ -332,7 +332,7 @@ cl_ulong QplusQminus_eoprec::get_Bytes() const
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
 	}
-	res += 2 * that->get_flop_size("gamma5_eoprec");
+	res += 2 * that->get_flop_size("gamma5_eo");
 	return res;
 }
 
@@ -350,37 +350,19 @@ void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
 			break;
 	}
 
-	//CP: give kappa and its negative value
-	hmc_float kappa_tmp = get_parameters()->get_kappa();
-	*collect_options << " -DKAPPA=" << kappa_tmp;
-	*collect_options << " -DMKAPPA=" << -kappa_tmp;
-	//CP: These are the kappas including BC in spatial and temporal direction
+	//CP: These are the BCs in spatial and temporal direction
 	hmc_float tmp_spatial = (get_parameters()->get_theta_fermion_spatial() * PI) / ( (hmc_float) get_parameters()->get_ns());
 	hmc_float tmp_temporal = (get_parameters()->get_theta_fermion_temporal() * PI) / ( (hmc_float) get_parameters()->get_nt());
 	//BC: on the corners in each direction: exp(i theta) -> on each site exp(i theta*PI /LATEXTENSION) = cos(tmp2) + isin(tmp2)
-	*collect_options << " -DKAPPA_SPATIAL_RE=" << kappa_tmp*cos(tmp_spatial);
-	*collect_options << " -DMKAPPA_SPATIAL_RE=" << -kappa_tmp*cos(tmp_spatial);
-	*collect_options << " -DKAPPA_SPATIAL_IM=" << kappa_tmp*sin(tmp_spatial);
-	*collect_options << " -DMKAPPA_SPATIAL_IM=" << -kappa_tmp*sin(tmp_spatial);
+	*collect_options << " -DSPATIAL_RE=" << cos(tmp_spatial);
+	*collect_options << " -DMSPATIAL_RE=" << -cos(tmp_spatial);
+	*collect_options << " -DSPATIAL_IM=" << sin(tmp_spatial);
+	*collect_options << " -DMSPATIAL_IM=" << -sin(tmp_spatial);
 
-	*collect_options << " -DKAPPA_TEMPORAL_RE=" << kappa_tmp*cos(tmp_temporal);
-	*collect_options << " -DMKAPPA_TEMPORAL_RE=" << -kappa_tmp*cos(tmp_temporal);
-	*collect_options << " -DKAPPA_TEMPORAL_IM=" << kappa_tmp*sin(tmp_temporal);
-	*collect_options << " -DMKAPPA_TEMPORAL_IM=" << -kappa_tmp*sin(tmp_temporal);
-
-	switch (get_parameters()->get_fermact()) {
-		case TWISTEDMASS :
-			*collect_options << " -DMU=" << get_parameters()->get_mu();
-			get_parameters()->calc_mubar();
-			*collect_options << " -DMUBAR=" << get_parameters()->get_mubar();
-			get_parameters()->set_mubar_negative();
-			*collect_options << " -DMMUBAR=" << get_parameters()->get_mubar();
-			get_parameters()->set_mubar_negative();
-			break;
-		case CLOVER :
-			*collect_options << " -DCSW=" << get_parameters()->get_csw();
-			break;
-	}
+	*collect_options << " -DTEMPORAL_RE=" << cos(tmp_temporal);
+	*collect_options << " -DMTEMPORAL_RE=" << -cos(tmp_temporal);
+	*collect_options << " -DTEMPORAL_IM=" << sin(tmp_temporal);
+	*collect_options << " -DMTEMPORAL_IM=" << -sin(tmp_temporal);
 
 	return;
 }
@@ -418,32 +400,26 @@ void Opencl_Module_Fermions::fill_buffers()
 	} else {
 		//LZ only use the following if we want to apply even odd preconditioning
 		logger.debug() << "init solver eoprec-spinorfield-buffers";
-		clmem_rn_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_rhat_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_v_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_p_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_s_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_t_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_aux_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_rn_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_rhat_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_v_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_p_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_s_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_t_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_aux_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
 
 	} //end if: eoprec
 
 	if(get_parameters()->get_use_eo() == true) {
 		logger.debug() << "init general eoprec-spinorfield-buffers";
-		clmem_inout_eoprec = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_inout_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		clmem_source_even = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		clmem_source_odd = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_tmp_eoprec_1 = create_rw_buffer(eoprec_spinorfield_buffer_size);
+		clmem_tmp_eo_1 = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		//this field is used only with twistedmass
 		if(get_parameters()->get_fermact() == TWISTEDMASS) {
-			clmem_tmp_eoprec_2 = create_rw_buffer(eoprec_spinorfield_buffer_size);
+			clmem_tmp_eo_2 = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		}
-	}
-
-	if(use_soa) {
-		gaugefield_soa = create_rw_buffer(calculateStride(NDIM * get_parameters()->get_vol4d(), sizeof(hmc_complex)) * 9 * sizeof(hmc_complex));
-	} else {
-		gaugefield_soa = 0; // make sure this can always be recognized as uninitialized
 	}
 
 	logger.debug() << "create buffers for complex and real numbers";
@@ -473,10 +449,6 @@ void Opencl_Module_Fermions::fill_buffers()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 	clerr = clEnqueueWriteBuffer(get_queue(), clmem_trueresid, CL_TRUE, 0, float_size, &zero, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
-
-
-
-	return;
 }
 
 void Opencl_Module_Fermions::fill_kernels()
@@ -510,10 +482,8 @@ void Opencl_Module_Fermions::fill_kernels()
 			M_tm_sitediagonal_minus = createKernel("M_tm_sitediagonal_minus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
 			M_tm_inverse_sitediagonal_minus = createKernel("M_tm_inverse_sitediagonal_minus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
 		}
-		dslash_eoprec = createKernel("dslash_eoprec") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
-		convertGaugefieldToSOA_kernel = createKernel("convertGaugefieldToSOA") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
-		convertGaugefieldFromSOA = createKernel("convertGaugefieldFromSOA") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
-		gamma5_eoprec = createKernel("gamma5_eoprec") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
+		dslash_eo = createKernel("dslash_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
+		gamma5_eo = createKernel("gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
 	}
 	return;
 }
@@ -537,18 +507,26 @@ void Opencl_Module_Fermions::clear_kernels()
 		clerr = clReleaseKernel(M_tm_minus);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
+	if(gamma5) {
+		clerr = clReleaseKernel(gamma5);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
 
 	if(get_parameters()->get_use_eo()) {
-		clerr = clReleaseKernel(dslash_eoprec);
+		clerr = clReleaseKernel(dslash_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(M_tm_sitediagonal);
+		clerr = clReleaseKernel(gamma5_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(M_tm_inverse_sitediagonal);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(convertGaugefieldToSOA_kernel);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		clerr = clReleaseKernel(convertGaugefieldFromSOA);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		if(get_parameters()->get_fermact() == TWISTEDMASS) {
+			clerr = clReleaseKernel(M_tm_sitediagonal);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+			clerr = clReleaseKernel(M_tm_inverse_sitediagonal);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+			clerr = clReleaseKernel(M_tm_sitediagonal_minus);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+			clerr = clReleaseKernel(M_tm_inverse_sitediagonal_minus);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+		}
 	}
 
 	return;
@@ -568,38 +546,32 @@ void Opencl_Module_Fermions::clear_buffers()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 
 	if(get_parameters()->get_use_eo()) {
-		clerr = clReleaseMemObject(clmem_inout_eoprec);
+		clerr = clReleaseMemObject(clmem_inout_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_source_even);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_source_odd);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_rn_eoprec);
+		clerr = clReleaseMemObject(clmem_rn_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_rhat_eoprec);
+		clerr = clReleaseMemObject(clmem_rhat_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_v_eoprec);
+		clerr = clReleaseMemObject(clmem_v_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_p_eoprec);
+		clerr = clReleaseMemObject(clmem_p_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_s_eoprec);
+		clerr = clReleaseMemObject(clmem_s_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_t_eoprec);
+		clerr = clReleaseMemObject(clmem_t_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_aux_eoprec);
+		clerr = clReleaseMemObject(clmem_aux_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_tmp_eoprec_1);
+		clerr = clReleaseMemObject(clmem_tmp_eo_1);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		if(get_parameters()->get_fermact() == TWISTEDMASS) {
-			clerr = clReleaseMemObject(clmem_tmp_eoprec_2);
+			clerr = clReleaseMemObject(clmem_tmp_eo_2);
 			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		}
-	}
-
-	if(gaugefield_soa) {
-		clerr = clReleaseMemObject(gaugefield_soa);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		gaugefield_soa = 0;
 	}
 
 	clerr = clReleaseMemObject(clmem_rho);
@@ -683,8 +655,13 @@ void Opencl_Module_Fermions::QplusQminus(cl_mem in, cl_mem out, cl_mem gf)
 }
 
 //explicit fermionmatrix-kernel calling functions
-void Opencl_Module_Fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa)
 {
+	//get kappa
+	hmc_float kappa_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	else kappa_tmp = kappa;
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -699,11 +676,24 @@ void Opencl_Module_Fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf)
 	clerr = clSetKernelArg(M_wilson, 2, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(M_wilson, 3, sizeof(hmc_float), &kappa_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
 	enqueueKernel( M_wilson, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
+	//get kappa
+	hmc_float kappa_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	else kappa_tmp = kappa;
+
+	//get mu
+	hmc_float mubar_tmp;
+	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	else mubar_tmp = mubar;
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -718,11 +708,27 @@ void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf)
 	clerr = clSetKernelArg(M_tm_plus, 2, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(M_tm_plus, 3, sizeof(hmc_float), &kappa_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(M_tm_plus, 4, sizeof(hmc_float), &mubar_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
 	enqueueKernel( M_tm_plus, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
+	//get kappa
+	hmc_float kappa_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	else kappa_tmp = kappa;
+
+	//get mu
+	hmc_float mubar_tmp;
+	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	else mubar_tmp = mubar;
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -735,6 +741,12 @@ void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf)
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(M_tm_minus, 2, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(M_tm_minus, 3, sizeof(hmc_float), &kappa_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(M_tm_minus, 4, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel( M_tm_minus, gs2, ls2);
@@ -769,15 +781,15 @@ void Opencl_Module_Fermions::Aee(cl_mem in, cl_mem out, cl_mem gf)
 	 */
 	if(get_parameters()->get_fermact() == WILSON) {
 		//in this case, the diagonal matrix is just 1 and falls away.
-		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
-		dslash_eoprec_device(clmem_tmp_eoprec_1, out, gf, even);
+		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd);
+		dslash_eo_device(clmem_tmp_eo_1, out, gf, even);
 		saxpy_eoprec_device(out, in, clmem_one, out);
 	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
-		M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
-		dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even);
-		M_tm_sitediagonal_device(in, clmem_tmp_eoprec_1);
-		saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
+		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd);
+		M_tm_inverse_sitediagonal_device(clmem_tmp_eo_1, clmem_tmp_eo_2);
+		dslash_eo_device(clmem_tmp_eo_2, out, gf, even);
+		M_tm_sitediagonal_device(in, clmem_tmp_eo_1);
+		saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
 	}
 }
 
@@ -803,95 +815,104 @@ void Opencl_Module_Fermions::Aee_minus(cl_mem in, cl_mem out, cl_mem gf)
 	 */
 	if(get_parameters()->get_fermact() == WILSON) {
 		//in this case, the diagonal matrix is just 1 and falls away.
-		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
-		dslash_eoprec_device(clmem_tmp_eoprec_1, out, gf, even);
+		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd);
+		dslash_eo_device(clmem_tmp_eo_1, out, gf, even);
 		saxpy_eoprec_device(out, in, clmem_one, out);
 	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-		dslash_eoprec_device(in, clmem_tmp_eoprec_1, gf, odd);
-		M_tm_inverse_sitediagonal_minus_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2);
-		dslash_eoprec_device(clmem_tmp_eoprec_2, out, gf, even);
-		M_tm_sitediagonal_minus_device(in, clmem_tmp_eoprec_1);
-		saxpy_eoprec_device(out, clmem_tmp_eoprec_1, clmem_one, out);
+		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd);
+		M_tm_inverse_sitediagonal_minus_device(clmem_tmp_eo_1, clmem_tmp_eo_2);
+		dslash_eo_device(clmem_tmp_eo_2, out, gf, even);
+		M_tm_sitediagonal_minus_device(in, clmem_tmp_eo_1);
+		saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
 	}
 }
 
-void Opencl_Module_Fermions::Qplus_eoprec(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::Qplus_eo(cl_mem in, cl_mem out, cl_mem gf)
 {
 	Aee(in, out, gf);
-	gamma5_eoprec_device(out);
+	gamma5_eo_device(out);
 	return;
 }
 
-void Opencl_Module_Fermions::Qminus_eoprec(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::Qminus_eo(cl_mem in, cl_mem out, cl_mem gf)
 {
 	Aee_minus(in, out, gf);
-	gamma5_eoprec_device(out);
+	gamma5_eo_device(out);
 	return;
 }
 
-void Opencl_Module_Fermions::QplusQminus_eoprec(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf)
 {
-	//CP: this is the original call, which fails because Qminus_eo and Qplus_eo both use clmem_tmp_eoprec_1,2 as intermediate fields themselves          
-	//Qminus_eoprec(in, clmem_tmp_eoprec_1, gf);                                                                                                         
-	//Qplus_eoprec(clmem_tmp_eoprec_1, out, gf);                                                                                                         
-	
-	//CP: Init tmp spinorfield                                                                                                                           
+	//CP: this is the original call, which fails because Qminus_eo and Qplus_eo both use clmem_tmp_eo_1,2 as intermediate fields themselves
+	//Qminus_eo(in, clmem_tmp_eo_1, gf);
+	//Qplus_eo(clmem_tmp_eo_1, out, gf);
+
+	//CP: Init tmp spinorfield
 	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
 	cl_mem sf_eo_tmp;
 	sf_eo_tmp = create_rw_buffer(spinorfield_size);
-	
-	Qminus_eoprec(in, sf_eo_tmp, gf);
-	Qplus_eoprec(sf_eo_tmp, out, gf);
-	
+
+	Qminus_eo(in, sf_eo_tmp, gf);
+	Qplus_eo(sf_eo_tmp, out, gf);
+
 	int clerr = clReleaseMemObject(sf_eo_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	
+
 	return;
 }
 
 //explicit eoprec fermionmatrix functions
-void Opencl_Module_Fermions::gamma5_eoprec_device(cl_mem inout)
+void Opencl_Module_Fermions::gamma5_eo_device(cl_mem inout)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(gamma5_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(gamma5_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(gamma5_eoprec, 0, sizeof(cl_mem), &inout);
+	int clerr = clSetKernelArg(gamma5_eo, 0, sizeof(cl_mem), &inout);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( gamma5_eoprec, gs2, ls2);
+	enqueueKernel( gamma5_eo, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::dslash_eoprec_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd)
+void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa)
 {
-	if(use_soa) {
-		gf = gaugefield_soa;
-	}
+	//get kappa
+	hmc_float kappa_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	else kappa_tmp = kappa;
 
 	cl_int eo = evenodd;
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(dslash_eoprec, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(dslash_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(dslash_eoprec, 0, sizeof(cl_mem), &in);
+	int clerr = clSetKernelArg(dslash_eo, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(dslash_eoprec, 1, sizeof(cl_mem), &out);
+	clerr = clSetKernelArg(dslash_eo, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(dslash_eoprec, 2, sizeof(cl_mem), &gf);
+	clerr = clSetKernelArg(dslash_eo, 2, sizeof(cl_mem), &gf);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(dslash_eoprec, 3, sizeof(cl_int), &eo);
+	clerr = clSetKernelArg(dslash_eo, 3, sizeof(cl_int), &eo);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(dslash_eoprec , gs2, ls2);
+	clerr = clSetKernelArg(dslash_eo, 4, sizeof(hmc_float), &kappa_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel(dslash_eo , gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out)
+void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mubar)
 {
+	//get mu
+	hmc_float mubar_tmp;
+	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	else mubar_tmp = mubar;
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -903,11 +924,19 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem 
 	clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 2, sizeof(hmc_float), &mubar_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
 	enqueueKernel( M_tm_inverse_sitediagonal, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out)
+void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mubar)
 {
+	//get mu
+	hmc_float mubar_tmp;
+	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	else mubar_tmp = mubar;
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -919,11 +948,19 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out)
 	clerr = clSetKernelArg(M_tm_sitediagonal, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(M_tm_sitediagonal, 2, sizeof(hmc_float), &mubar_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
 	enqueueKernel(M_tm_sitediagonal , gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out)
+void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mubar)
 {
+	//get mu
+	hmc_float mubar_tmp;
+	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	else mubar_tmp = mubar;
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -935,11 +972,19 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, c
 	clerr = clSetKernelArg(M_tm_inverse_sitediagonal_minus, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(M_tm_inverse_sitediagonal_minus, 2, sizeof(hmc_float), &mubar_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
 	enqueueKernel( M_tm_inverse_sitediagonal_minus, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out)
+void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mubar)
 {
+	//get mu
+	hmc_float mubar_tmp;
+	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	else mubar_tmp = mubar;
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -951,226 +996,16 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 	clerr = clSetKernelArg(M_tm_sitediagonal_minus, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
+	clerr = clSetKernelArg(M_tm_sitediagonal_minus, 2, sizeof(hmc_float), &mubar_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
 	enqueueKernel(M_tm_sitediagonal_minus , gs2, ls2);
 }
 
 int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
-	int debug = 0;
-	int old = 1;
-
-	if(old == 0) {
-		if(debug) cout << "debug-output at bicgstab is activated" << endl;
-		int cgmax = get_parameters()->get_cgmax();
-		//CP: these have to be on the host
-		hmc_float resid;
-		hmc_float trueresid;
-
-		for(int iter = 0; iter < cgmax; iter++) {
-			if(iter % get_parameters()->get_iter_refresh() == 0) {
-				set_zero_spinorfield_device(clmem_v);
-				set_zero_spinorfield_device(clmem_p);
-				f(inout, clmem_rn, gf);
-
-				saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
-				copy_buffer_on_device(clmem_rn, clmem_rhat, sizeof(spinor) * get_parameters()->get_spinorfieldsize());
-
-				copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
-				copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex));
-				copy_buffer_on_device(clmem_one, clmem_rho, sizeof(hmc_complex));
-
-				//CP: calc initial residuum for output, this is not needed for the algorithm!!
-//      set_float_to_global_squarenorm_device(clmem_rn, clmem_resid, local_work_size, global_work_size);
-//			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-//      cout << "initial residuum at iter " << iter << " is: " << scientific << resid << endl;
-				//printf("initial residuum at iter %i is %.40e\n", iter, resid);
-			}
-
-////////////////////////////////////
-//collect all variables if debug is enabled
-			if(debug) {
-				hmc_complex omega;
-				hmc_complex rho;
-				hmc_complex rho_next;
-				hmc_complex tmp1;
-				hmc_complex tmp2;
-				hmc_complex beta;
-				hmc_complex alpha;
-
-				get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
-
-				cout << "debug output at start: " << endl;
-				cout << " rho: " << rho.re << "  " <<  rho.im << endl;
-				cout << " alpha: " << alpha.re << "  " <<  alpha.im << endl;
-				cout << " omega: " << omega.re << "  " <<  omega.im << endl;
-			}
-////////////////////////////////////
-
-			set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho_next);
-
-			if(debug) {
-				hmc_complex rho_next;
-				get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
-				cout << "(rhat, rn): " << rho_next.re << "  " <<  rho_next.im << endl;
-			}
-			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
-			copy_buffer_on_device(clmem_rho_next, clmem_rho, sizeof(hmc_complex));
-			set_complex_to_ratio_device(clmem_alpha, clmem_omega, clmem_tmp2);
-			set_complex_to_product_device(clmem_tmp1, clmem_tmp2, clmem_beta);
-
-			set_complex_to_product_device(clmem_beta, clmem_omega, clmem_tmp1);
-			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
-			saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p);
-
-			if(debug) {
-				hmc_complex rho_next;
-				set_complex_to_scalar_product_device(clmem_p, clmem_p, clmem_tmp2);
-				get_buffer_from_device(clmem_tmp2, &rho_next, sizeof(hmc_complex));
-				cout << "(p,p): " << rho_next.re << "  " <<  rho_next.im << endl;
-				set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
-			}
-
-			f(clmem_p, clmem_v, gf);
-
-////////////////////////////////////
-//collect all variables if debug is enabled
-			if(debug) {
-				hmc_complex omega;
-				hmc_complex rho;
-				hmc_complex rho_next;
-				hmc_complex tmp1;
-				hmc_complex tmp2;
-				hmc_complex beta;
-				hmc_complex alpha;
-
-				get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
-
-				cout << "debug output after first half: " << endl;
-				cout << " rho: " << rho.re << "  " <<  rho.im << endl;
-				cout << " rho_next: " << rho_next.re << "  " <<  rho_next.im << endl;
-				cout << " beta: " << beta.re << "  " <<  beta.im << endl;
-				cout << " alpha: " << alpha.re << "  " <<  alpha.im << endl;
-				cout << " omega: " << omega.re << "  " <<  omega.im << endl;
-				cout << " tmp1: " << tmp1.re << "  " <<  tmp1.im << endl;
-				cout << " tmp2: " << tmp2.re << "  " <<  tmp2.im << endl;
-			}
-////////////////////////////////////
-
-
-			set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1);
-
-			if(debug) {
-				hmc_complex rho_next;
-				get_buffer_from_device(clmem_tmp1, &rho_next, sizeof(hmc_complex));
-				cout << "(rhat, v): " << rho_next.re << "  " <<  rho_next.im << endl;
-			}
-
-			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
-			saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
-
-			f(clmem_s, clmem_t, gf);
-
-			set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
-			//!!CP: this can also be global_squarenorm
-			set_complex_to_scalar_product_device(clmem_t, clmem_t, clmem_tmp2);
-			set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
-
-			saxpy_device(clmem_t, clmem_s, clmem_omega, clmem_rn);
-
-			saxsbypz_device(clmem_p, clmem_s, inout, clmem_alpha, clmem_omega, inout);
-
-			if(debug) {
-				hmc_complex rho_next;
-				set_complex_to_scalar_product_device(inout, inout, clmem_omega);
-				get_buffer_from_device(clmem_omega, &rho_next, sizeof(hmc_complex));
-				cout << "(inout,inout): " << rho_next.re << "  " <<  rho_next.im << endl;
-				set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
-			}
-
-////////////////////////////////////
-//collect all variables if debug is enabled
-			if(debug) {
-				hmc_complex omega;
-				hmc_complex rho;
-				hmc_complex rho_next;
-				hmc_complex tmp1;
-				hmc_complex tmp2;
-				hmc_complex beta;
-				hmc_complex alpha;
-
-				get_buffer_from_device(clmem_omega, &omega, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_rho, &rho, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_rho_next, &rho_next, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_tmp1, &tmp1, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_tmp2, &tmp2, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_beta, &beta, sizeof(hmc_complex));
-				get_buffer_from_device(clmem_alpha, &alpha, sizeof(hmc_complex));
-
-				cout << "debug output after second half: " << endl;
-				cout << " rho: " << rho.re << "  " <<  rho.im << endl;
-				cout << " rho_next: " << rho_next.re << "  " <<  rho_next.im << endl;
-				cout << " beta: " << beta.re << "  " <<  beta.im << endl;
-				cout << " alpha: " << alpha.re << "  " <<  alpha.im << endl;
-				cout << " omega: " << omega.re << "  " <<  omega.im << endl;
-
-				cout << " tmp1: " << tmp1.re << "  " <<  tmp1.im << endl;
-				cout << " tmp2: " << tmp2.re << "  " <<  tmp2.im << endl;
-			}
-////////////////////////////////////
-
-			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
-			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-
-			logger.debug() << "resid: " << resid;
-			//test if resid is NAN
-			if(resid != resid){
-				logger.fatal() << "\tNAN occured in bicgstab!";
-				return -iter;
-			}
-			if(resid < prec) {
-				f(inout, clmem_aux, gf);
-				saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
-				set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
-				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
-//      cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << prec << endl;
-//      cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << prec << endl;
-				if(trueresid < prec)
-					return iter;
-				else {
-//        cout << "trueresiduum not small enough" <<endl;
-//        hmc_complex s_norm;
-//        //borrow clmem_alpha for this
-//        set_complex_to_scalar_product_device(clmem_s, clmem_s, clmem_alpha, localsize, globalsize);
-//        get_buffer_from_device(clmem_alpha, &s_norm, sizeof(hmc_complex));
-//        cout << "|s|^2: " << s_norm.re << "  " <<  s_norm.im << endl;
-//        //reset value of alpha
-//        set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
-//        //check if |s|^2 is too small
-//        if(s_norm.re < prec){
-//          cout << "|s|^2 is too small to continue..." << endl;
-// //           return;
-//        }
-				}
-			} else {
-//      printf("residuum at iter%i is:\t%.10e\n", iter, resid);//cout << "residuum:\t" << resid << endl;
-			}
-		}
-		return -1;
-	}
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
-	else if (get_parameters()->get_use_bicgstab_save() == true) {
+	if (get_parameters()->get_use_bicgstab_save() == true) {
 		hmc_float resid;
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
@@ -1193,8 +1028,8 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			//if rho is too small the algorithm will get stuck and will never converge!!
 			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
-			        //print the last residuum
-			        logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
+				//print the last residuum
+				logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 				return -iter;
 			}
 			//tmp1 = rho_next/rho = (rhat, rn)/..
@@ -1238,9 +1073,9 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-//			cout << "resid at iter " << iter << " is: " << resid << endl;
+			logger.debug() << "resid: " << resid;
 			//test if resid is NAN
-			if(resid != resid){
+			if(resid != resid) {
 				logger.fatal() << "\tNAN occured in bicgstab!";
 				return -iter;
 			}
@@ -1253,13 +1088,9 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 				set_float_to_global_squarenorm_device(clmem_aux, clmem_trueresid);
 				hmc_float trueresid;
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
-//				cout << "\tsolver converged! residuum:\t" << resid << " is smaller than " << prec << endl;
-//        cout << "\ttrueresiduum:\t" << trueresid << " has to be smaller than " << prec << endl;
+				logger.debug() << "\tsolver converged! true resid:\t" << trueresid;
 				if(trueresid < prec)
 					return iter;
-				else {
-//					cout << "trueresiduum not small enough" <<endl;
-				}
 			}
 		}
 		return -1;
@@ -1267,7 +1098,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 	//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
 	//  In particular this version does not perform the check if the "real" residuum is sufficiently small!
 	else if (get_parameters()->get_use_bicgstab_save() != true) {
-	        hmc_float resid;
+		hmc_float resid;
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				//initial r_n, saved in p
@@ -1284,7 +1115,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 			//test if resid is NAN
-			if(resid != resid){
+			if(resid != resid) {
 				logger.fatal() << "\tNAN occured in bicgstab!";
 				return -iter;
 			}
@@ -1319,8 +1150,8 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			//if rho is too small the algorithm will get stuck and will never converge!!
 			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
-			        //print the last residuum
-			        logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
+				//print the last residuum
+				logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 				return -iter;
 			}
 			//tmp1 = rho_next/rho = (rhat, rn)/..
@@ -1344,7 +1175,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 	return 0;
 }
 
-int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	cl_int clerr = CL_SUCCESS;
 
@@ -1364,30 +1195,26 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 		int cgmax = get_parameters()->get_cgmax();
 		for(int iter = 0; iter < cgmax; iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
-				set_zero_spinorfield_eoprec_device(clmem_v_eoprec);
-				set_zero_spinorfield_eoprec_device(clmem_p_eoprec);
+				set_zero_spinorfield_eoprec_device(clmem_v_eo);
+				set_zero_spinorfield_eoprec_device(clmem_p_eo);
 
-				f(inout, clmem_rn_eoprec, gf);
+				f(inout, clmem_rn_eo, gf);
 
-				saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
+				saxpy_eoprec_device(clmem_rn_eo, source, clmem_one, clmem_rn_eo);
 
-				//set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
-				//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-				//cout << "init residuum:\t" << resid << endl;
-
-				copy_buffer_on_device(clmem_rn_eoprec, clmem_rhat_eoprec, get_eoprec_spinorfield_buffer_size());
+				copy_buffer_on_device(clmem_rn_eo, clmem_rhat_eo, get_eoprec_spinorfield_buffer_size());
 
 				copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
 				copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex));
 				copy_buffer_on_device(clmem_one, clmem_rho, sizeof(hmc_complex));
 			}
-			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next);
+			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eo, clmem_rn_eo, clmem_rho_next);
 			//check if algorithm is stuck
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
-			        //print the last residuum
-			        logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
+				//print the last residuum
+				logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 				return -iter;
 			}
 			set_complex_to_ratio_device(clmem_rho_next, clmem_rho, clmem_tmp1);
@@ -1397,44 +1224,44 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 
 			set_complex_to_product_device(clmem_beta, clmem_omega, clmem_tmp1);
 			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
-			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec);
+			saxsbypz_eoprec_device(clmem_p_eo, clmem_v_eo, clmem_rn_eo, clmem_beta, clmem_tmp2, clmem_p_eo);
 
-			f(clmem_p_eoprec, clmem_v_eoprec, gf);
+			f(clmem_p_eo, clmem_v_eo, gf);
 
-			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
+			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eo, clmem_v_eo, clmem_tmp1);
 			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 
-			saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec);
+			saxpy_eoprec_device(clmem_v_eo, clmem_rn_eo, clmem_alpha, clmem_s_eo);
 
-			f(clmem_s_eoprec, clmem_t_eoprec, gf);
+			f(clmem_s_eo, clmem_t_eo, gf);
 
-			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1);
+			set_complex_to_scalar_product_eoprec_device(clmem_t_eo, clmem_s_eo, clmem_tmp1);
 			//!!CP: can this also be global_squarenorm??
-			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_t_eoprec, clmem_tmp2);
+			set_complex_to_scalar_product_eoprec_device(clmem_t_eo, clmem_t_eo, clmem_tmp2);
 			set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
 
-			saxpy_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_omega, clmem_rn_eoprec);
+			saxpy_eoprec_device(clmem_t_eo, clmem_s_eo, clmem_omega, clmem_rn_eo);
 
-			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_s_eoprec, inout, clmem_alpha, clmem_omega, inout);
+			saxsbypz_eoprec_device(clmem_p_eo, clmem_s_eo, inout, clmem_alpha, clmem_omega, inout);
 
-			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
+			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eo, clmem_resid);
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
 			logger.debug() << "resid: " << resid;
 			//test if resid is NAN
-			if(resid != resid){
+			if(resid != resid) {
 				logger.fatal() << "\tNAN occured in bicgstab_eo!";
 				return -iter;
 			}
 			if(resid < prec) {
 				++retests;
 
-				f(inout, clmem_aux_eoprec, gf);
-				saxpy_eoprec_device(clmem_aux_eoprec, source, clmem_one, clmem_aux_eoprec);
+				f(inout, clmem_aux_eo, gf);
+				saxpy_eoprec_device(clmem_aux_eo, source, clmem_one, clmem_aux_eo);
 
-				set_float_to_global_squarenorm_eoprec_device(clmem_aux_eoprec, clmem_trueresid);
+				set_float_to_global_squarenorm_eoprec_device(clmem_aux_eo, clmem_trueresid);
 				get_buffer_from_device(clmem_trueresid, &trueresid, sizeof(hmc_float));
-				//cout << "residuum:\t" << resid << "\ttrueresiduum:\t" << trueresid << endl;
+				logger.debug() << "\ttrueresiduum:\t" << trueresid;
 				if(trueresid < prec) {
 					// report on performance
 					if(logger.beInfo()) {
@@ -1458,8 +1285,6 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 
 					// we are done here
 					return iter;
-				} else {
-//					cout << "trueresiduum not small enough" <<endl;
 				}
 			}
 		}
@@ -1477,23 +1302,23 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				//initial r_n, saved in p
-				f(inout, clmem_rn_eoprec, gf);
-				saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_p_eoprec);
+				f(inout, clmem_rn_eo, gf);
+				saxpy_eoprec_device(clmem_rn_eo, source, clmem_one, clmem_p_eo);
 				//rhat = p
-				copy_buffer_on_device(clmem_p_eoprec, clmem_rhat_eoprec, get_eoprec_spinorfield_buffer_size());
+				copy_buffer_on_device(clmem_p_eo, clmem_rhat_eo, get_eoprec_spinorfield_buffer_size());
 				//r_n = p
-				copy_buffer_on_device(clmem_p_eoprec, clmem_rn_eoprec, get_eoprec_spinorfield_buffer_size());
+				copy_buffer_on_device(clmem_p_eo, clmem_rn_eo, get_eoprec_spinorfield_buffer_size());
 				//rho = (rhat, rn)
-				set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho);
+				set_complex_to_scalar_product_eoprec_device(clmem_rhat_eo, clmem_rn_eo, clmem_rho);
 			}
 			//resid = (rn,rn)
-			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eoprec, clmem_resid);
+			set_float_to_global_squarenorm_eoprec_device(clmem_rn_eo, clmem_resid);
 			hmc_float resid;
 			get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
 			logger.debug() << "resid: " << resid;
 			//test if resid is NAN
-			if(resid != resid){
+			if(resid != resid) {
 				logger.fatal() << "\tNAN occured in bicgstab_eo!";
 				return -iter;
 			}
@@ -1520,38 +1345,38 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 				return iter;
 			}
 			//v = A*p
-			f(clmem_p_eoprec, clmem_v_eoprec, gf);
+			f(clmem_p_eo, clmem_v_eo, gf);
 			clerr = clFlush(get_queue());
 			if(clerr) {
 				throw Opencl_Error(clerr, "Failed to flush command queue");
 			}
 			//tmp1 = (rhat, v)
-			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_v_eoprec, clmem_tmp1);
+			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eo, clmem_v_eo, clmem_tmp1);
 			//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
 			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 			//s = - alpha * v - r_n
-			saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_s_eoprec);
+			saxpy_eoprec_device(clmem_v_eo, clmem_rn_eo, clmem_alpha, clmem_s_eo);
 			//t = A s
-			f(clmem_s_eoprec, clmem_t_eoprec, gf);
+			f(clmem_s_eo, clmem_t_eo, gf);
 			//tmp1 = (t, s)
-			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_tmp1);
+			set_complex_to_scalar_product_eoprec_device(clmem_t_eo, clmem_s_eo, clmem_tmp1);
 			//!!CP: this can also be global_squarenorm, but one needs a complex number here
 			//tmp2 = (t,t)
-			set_complex_to_scalar_product_eoprec_device(clmem_t_eoprec, clmem_t_eoprec, clmem_tmp2);
+			set_complex_to_scalar_product_eoprec_device(clmem_t_eo, clmem_t_eo, clmem_tmp2);
 			//omega = tmp1/tmp2 = (t,s)/(t,t)
 			set_complex_to_ratio_device(clmem_tmp1, clmem_tmp2, clmem_omega);
 			//inout = alpha*p + omega * s + inout
-			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_s_eoprec, inout, clmem_alpha, clmem_omega, inout);
+			saxsbypz_eoprec_device(clmem_p_eo, clmem_s_eo, inout, clmem_alpha, clmem_omega, inout);
 			//r_n = - omega*t - s
-			saxpy_eoprec_device(clmem_t_eoprec, clmem_s_eoprec, clmem_omega, clmem_rn_eoprec);
+			saxpy_eoprec_device(clmem_t_eo, clmem_s_eo, clmem_omega, clmem_rn_eo);
 			//rho_next = (rhat, rn)
-			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eoprec, clmem_rn_eoprec, clmem_rho_next);
+			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eo, clmem_rn_eo, clmem_rho_next);
 			//check if algorithm is stuck
 			hmc_complex check;
 			get_buffer_from_device(clmem_rho_next, &check, sizeof(hmc_complex));
 			if(abs(check.re) < 1e-25 && abs(check.im) < 1e-25 ) {
-			        //print the last residuum
-			        logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
+				//print the last residuum
+				logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 				return -iter;
 			}
 
@@ -1566,7 +1391,7 @@ int Opencl_Module_Fermions::bicgstab_eoprec(const Matrix_Function & f, cl_mem in
 			//tmp2 = -tmp1
 			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 			//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
-			saxsbypz_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rn_eoprec, clmem_beta, clmem_tmp2, clmem_p_eoprec);
+			saxsbypz_eoprec_device(clmem_p_eo, clmem_v_eo, clmem_rn_eo, clmem_beta, clmem_tmp2, clmem_p_eo);
 			clerr = clFlush(get_queue());
 			if(clerr) {
 				throw Opencl_Error(clerr, "Failed to flush command queue");
@@ -1621,7 +1446,7 @@ int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem s
 
 		logger.debug() << "resid: " << resid;
 		//test if resid is NAN
-		if(resid != resid){
+		if(resid != resid) {
 			logger.fatal() << "\tNAN occured in cg!";
 			return -iter;
 		}
@@ -1639,7 +1464,7 @@ int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem s
 	return -1;
 }
 
-int Opencl_Module_Fermions::cg_eoprec(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
 {
 	//this corresponds to the above function
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
@@ -1653,32 +1478,32 @@ int Opencl_Module_Fermions::cg_eoprec(const Matrix_Function & f, cl_mem inout, c
 	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter ++) {
 		if(iter % get_parameters()->get_iter_refresh() == 0) {
 			//rn = A*inout
-			f(inout, clmem_rn_eoprec, gf);
+			f(inout, clmem_rn_eo, gf);
 			//rn = source - A*inout
-			saxpy_eoprec_device(clmem_rn_eoprec, source, clmem_one, clmem_rn_eoprec);
+			saxpy_eoprec_device(clmem_rn_eo, source, clmem_one, clmem_rn_eo);
 			//p = rn
-			copy_buffer_on_device(clmem_rn_eoprec, clmem_p_eoprec, get_eoprec_spinorfield_buffer_size());
+			copy_buffer_on_device(clmem_rn_eo, clmem_p_eo, get_eoprec_spinorfield_buffer_size());
 			//omega = (rn,rn)
-			set_complex_to_scalar_product_eoprec_device(clmem_rn_eoprec, clmem_rn_eoprec, clmem_omega);
+			set_complex_to_scalar_product_eoprec_device(clmem_rn_eo, clmem_rn_eo, clmem_omega);
 		} else {
 			//update omega
 			copy_buffer_on_device(clmem_rho_next, clmem_omega, sizeof(hmc_complex));
 		}
 		//v = A pn
-		f(clmem_p_eoprec, clmem_v_eoprec, gf);
+		f(clmem_p_eo, clmem_v_eo, gf);
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
-		set_complex_to_scalar_product_eoprec_device(clmem_p_eoprec, clmem_v_eoprec, clmem_rho);
+		set_complex_to_scalar_product_eoprec_device(clmem_p_eo, clmem_v_eo, clmem_rho);
 		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
 		set_complex_to_product_device(clmem_alpha, clmem_minusone, clmem_tmp1);
 
 		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
-		saxpy_eoprec_device(clmem_p_eoprec, inout, clmem_tmp1, inout);
+		saxpy_eoprec_device(clmem_p_eo, inout, clmem_tmp1, inout);
 		//rn+1 = rn - alpha*v -> rhat
-		saxpy_eoprec_device(clmem_v_eoprec, clmem_rn_eoprec, clmem_alpha, clmem_rn_eoprec);
+		saxpy_eoprec_device(clmem_v_eo, clmem_rn_eo, clmem_alpha, clmem_rn_eo);
 
 		//calc residuum
 		//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
-		set_complex_to_scalar_product_eoprec_device(clmem_rn_eoprec, clmem_rn_eoprec, clmem_rho_next);
+		set_complex_to_scalar_product_eoprec_device(clmem_rn_eo, clmem_rn_eo, clmem_rho_next);
 		hmc_float resid;
 		get_buffer_from_device(clmem_rho_next, &resid, sizeof(hmc_float));
 		//this is the orig. call
@@ -1687,7 +1512,7 @@ int Opencl_Module_Fermions::cg_eoprec(const Matrix_Function & f, cl_mem inout, c
 
 		logger.debug() << "resid: " << resid;
 		//test if resid is NAN
-		if(resid != resid){
+		if(resid != resid) {
 			logger.fatal() << "\tNAN occured in cg_eo!";
 			return -iter;
 		}
@@ -1714,12 +1539,12 @@ int Opencl_Module_Fermions::cg_eoprec(const Matrix_Function & f, cl_mem inout, c
 		}
 
 		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
-		set_complex_to_scalar_product_eoprec_device(clmem_rn_eoprec, clmem_rn_eoprec, clmem_rho_next);
+		set_complex_to_scalar_product_eoprec_device(clmem_rn_eo, clmem_rn_eo, clmem_rho_next);
 		set_complex_to_ratio_device(clmem_rho_next, clmem_omega, clmem_beta);
 
 		//pn+1 = rn+1 + beta*pn
 		set_complex_to_product_device(clmem_beta, clmem_minusone, clmem_tmp2);
-		saxpy_eoprec_device(clmem_p_eoprec, clmem_rn_eoprec, clmem_tmp2, clmem_p_eoprec);
+		saxpy_eoprec_device(clmem_p_eo, clmem_rn_eo, clmem_tmp2, clmem_p_eo);
 	}
 	return -1;
 }
@@ -1738,9 +1563,6 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 
 	if(get_parameters()->get_profile_solver() ) (*solvertimer).reset();
 	if(get_parameters()->get_use_eo() == true) {
-		// make sure SOA is in proper format for dslash_eoprec
-		convertGaugefieldToSOA_device(gaugefield_soa, gf);
-
 		/**
 		 * If even-odd-preconditioning is used, the inversion is split up
 		 * into even and odd parts using Schur decomposition, assigning the
@@ -1755,24 +1577,24 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 		 */
 		if(get_parameters()->get_fermact() == WILSON) {
 			//in this case, the diagonal matrix is just 1 and falls away.
-			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1);
-			dslash_eoprec_device(clmem_source_odd, clmem_tmp_eoprec_1, gf, EVEN);
-			saxpy_eoprec_device(clmem_source_even, clmem_tmp_eoprec_1, clmem_one, clmem_source_even);
+			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eo_1);
+			dslash_eo_device(clmem_source_odd, clmem_tmp_eo_1, gf, EVEN);
+			saxpy_eoprec_device(clmem_source_even, clmem_tmp_eo_1, clmem_one, clmem_source_even);
 		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_1);
-			dslash_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, gf, EVEN);
-			saxpy_eoprec_device(clmem_source_even, clmem_tmp_eoprec_2, clmem_one, clmem_source_even);
+			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eo_1);
+			dslash_eo_device(clmem_tmp_eo_1, clmem_tmp_eo_2, gf, EVEN);
+			saxpy_eoprec_device(clmem_source_even, clmem_tmp_eo_2, clmem_one, clmem_source_even);
 		}
 
 		//Trial solution
 		///@todo this should go into a more general function
-		this->set_eoprec_spinorfield_cold_device(this->get_clmem_inout_eoprec());
+		this->set_eoprec_spinorfield_cold_device(this->get_clmem_inout_eo());
 		logger.debug() << "start eoprec-inversion";
 		//even solution
 		if(get_parameters()->get_use_cg() == true)
-			converged = cg_eoprec(f, clmem_inout_eoprec, clmem_source_even, gf, get_parameters()->get_solver_prec());
+			converged = cg_eo(f, clmem_inout_eo, clmem_source_even, gf, get_parameters()->get_solver_prec());
 		else
-			converged = bicgstab_eoprec(f, this->get_clmem_inout_eoprec(), clmem_source_even, gf, get_parameters()->get_solver_prec());
+			converged = bicgstab_eo(f, this->get_clmem_inout_eo(), clmem_source_even, gf, get_parameters()->get_solver_prec());
 
 		//odd solution
 		/** The odd solution is obtained from the even one according to:
@@ -1780,17 +1602,17 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 		 */
 		if(get_parameters()->get_fermact() == WILSON) {
 			//in this case, the diagonal matrix is just 1 and falls away.
-			dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_1, gf, ODD);
-			saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_source_odd, clmem_one, clmem_tmp_eoprec_1);
+			dslash_eo_device(clmem_inout_eo, clmem_tmp_eo_1, gf, ODD);
+			saxpy_eoprec_device(clmem_tmp_eo_1, clmem_source_odd, clmem_one, clmem_tmp_eo_1);
 		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-			dslash_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_2, gf, ODD);
-			M_tm_inverse_sitediagonal_device(clmem_tmp_eoprec_2, clmem_tmp_eoprec_1);
-			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eoprec_2);
-			saxpy_eoprec_device(clmem_tmp_eoprec_1, clmem_tmp_eoprec_2, clmem_one, clmem_tmp_eoprec_1);
+			dslash_eo_device(clmem_inout_eo, clmem_tmp_eo_2, gf, ODD);
+			M_tm_inverse_sitediagonal_device(clmem_tmp_eo_2, clmem_tmp_eo_1);
+			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eo_2);
+			saxpy_eoprec_device(clmem_tmp_eo_1, clmem_tmp_eo_2, clmem_one, clmem_tmp_eo_1);
 		}
 		//CP: whole solution
-		//CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eoprec_1
-		convert_from_eoprec_device(clmem_inout_eoprec, clmem_tmp_eoprec_1, inout);
+		//CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eo_1
+		convert_from_eoprec_device(clmem_inout_eo, clmem_tmp_eo_1, inout);
 	} else {
 		//Trial solution
 		///@todo this should go into a more general function
@@ -1829,19 +1651,19 @@ cl_mem Opencl_Module_Fermions::get_clmem_tmp()
 	return clmem_tmp;
 }
 
-cl_mem Opencl_Module_Fermions::get_clmem_inout_eoprec()
+cl_mem Opencl_Module_Fermions::get_clmem_inout_eo()
 {
-	return clmem_inout_eoprec;
+	return clmem_inout_eo;
 }
 
-cl_mem Opencl_Module_Fermions::get_clmem_tmp_eoprec_1()
+cl_mem Opencl_Module_Fermions::get_clmem_tmp_eo_1()
 {
-	return clmem_tmp_eoprec_1;
+	return clmem_tmp_eo_1;
 }
 
-cl_mem Opencl_Module_Fermions::get_clmem_tmp_eoprec_2()
+cl_mem Opencl_Module_Fermions::get_clmem_tmp_eo_2()
 {
-	return clmem_tmp_eoprec_2;
+	return clmem_tmp_eo_2;
 }
 
 cl_mem Opencl_Module_Fermions::get_clmem_source_even()
@@ -1878,30 +1700,6 @@ hmc_float Opencl_Module_Fermions::print_info_inv_field(cl_mem in, bool eo, std::
 	return tmp;
 }
 
-void Opencl_Module_Fermions::convertGaugefieldToSOA()
-{
-	convertGaugefieldToSOA_device(gaugefield_soa, *get_gaugefield());
-}
-void Opencl_Module_Fermions::convertGaugefieldToSOA_device(cl_mem out, cl_mem in)
-{
-	// if we are not using SOA do nothing
-	if(use_soa) {
-		size_t ls2, gs2;
-		cl_uint num_groups;
-		this->get_work_sizes(convertGaugefieldToSOA_kernel, this->get_device_type(), &ls2, &gs2, &num_groups);
-
-		//set arguments
-		int clerr = clSetKernelArg(convertGaugefieldToSOA_kernel, 0, sizeof(cl_mem), &out);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-		clerr = clSetKernelArg(convertGaugefieldToSOA_kernel, 1, sizeof(cl_mem), &in);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-		enqueueKernel(convertGaugefieldToSOA_kernel, gs2, ls2);
-	}
-}
-
-
 #ifdef _PROFILING_
 usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 {
@@ -1921,11 +1719,11 @@ usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 	if (strcmp(in, "M_tm_minus") == 0) {
 		return &this->timer_M_tm_minus;
 	}
-	if (strcmp(in, "gamma5_eoprec") == 0) {
-		return &this->timer_gamma5_eoprec;
+	if (strcmp(in, "gamma5_eo") == 0) {
+		return &this->timer_gamma5_eo;
 	}
-	if (strcmp(in, "dslash_eoprec") == 0) {
-		return &this->timer_dslash_eoprec;
+	if (strcmp(in, "dslash_eo") == 0) {
+		return &this->timer_dslash_eo;
 	}
 	if (strcmp(in, "M_tm_sitediagonal") == 0) {
 		return &this->timer_M_tm_sitediagonal;
@@ -1941,12 +1739,6 @@ usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 	}
 	if (strcmp(in, "ps_correlator") == 0) {
 		return &this->timer_ps_correlator;
-	}
-	if(strcmp(in, "convertGaugefieldToSOA") == 0) {
-		return &timer_convertGaugefieldToSOA;
-	}
-	if(strcmp(in, "convertGaugefieldFromSOA") == 0) {
-		return &timer_convertGaugefieldFromSOA;
 	}
 
 	//if the kernelname has not matched, return NULL
@@ -1987,7 +1779,7 @@ int Opencl_Module_Fermions::get_read_write_size(const char * in)
 		//this kernel reads 9 spinors, 8 su3matrices and writes 1 spinor:
 		return (C * 12 * (9 + 1) + C * 8 * R) * D * S;
 	}
-	if (strcmp(in, "gamma5_eoprec") == 0) {
+	if (strcmp(in, "gamma5_eo") == 0) {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
@@ -2007,16 +1799,10 @@ int Opencl_Module_Fermions::get_read_write_size(const char * in)
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
-	if (strcmp(in, "dslash_eoprec") == 0) {
+	if (strcmp(in, "dslash_eo") == 0) {
 		//this kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
 		const unsigned int dirs = 4;
 		return (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
-	}
-	if(strcmp(in, "convertGaugefieldToSOA") == 0) {
-		return 2 * parameters->get_vol4d() * NDIM * R * C * D;
-	}
-	if(strcmp(in, "convertGaugefieldFromSOA") == 0) {
-		return 2 * parameters->get_vol4d() * NDIM * R * C * D;
 	}
 	return 0;
 }
@@ -2057,7 +1843,7 @@ int Opencl_Module_Fermions::get_flop_size(const char * in)
 		//this kernel performs ND*NC complex mults and one dslash on each site and adds the results
 		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * get_parameters()->get_flop_complex_mult() + NC * NDIM * 2 );
 	}
-	if (strcmp(in, "gamma5_eoprec") == 0) {
+	if (strcmp(in, "gamma5_eo") == 0) {
 		//this kernel performs ND*NC*2/2 real mults
 		return Seo * NDIM * NC;
 	}
@@ -2077,7 +1863,7 @@ int Opencl_Module_Fermions::get_flop_size(const char * in)
 		//this kernel performs ND*NC complex mults and ND*NC*2 real mults
 		return Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() + NC * NDIM * 2 );
 	}
-	if (strcmp(in, "dslash_eoprec") == 0) {
+	if (strcmp(in, "dslash_eo") == 0) {
 		return Seo * flop_dslash_per_site(get_parameters());
 	}
 	return 0;
@@ -2096,7 +1882,7 @@ void Opencl_Module_Fermions::print_profiling(std::string filename, int number)
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "M_tm_minus";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "gamma5_eoprec";
+	kernelName = "gamma5_eo";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "M_tm_sitediagonal";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
@@ -2106,11 +1892,7 @@ void Opencl_Module_Fermions::print_profiling(std::string filename, int number)
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "M_tm_inverse_sitediagonal_minus";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "dslash_eoprec";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "convertGaugefieldToSOA";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "convertGaugefieldFromSOA";
+	kernelName = "dslash_eo";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 }
 #endif

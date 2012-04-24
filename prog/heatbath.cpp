@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
 		po::options_description desc("Allowed options");
 		desc.add_options()
 		("help,h", "Produce this help message")
-		("input-file", po::value<std::string>()->required(), "File containing the input parameters")
+		("input-file", po::value<std::string>(), "File containing the input parameters")
 		("log-level", po::value<std::string>(), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF");
 		po::positional_options_description pos_opts;
 		pos_opts.add("input-file", 1);
@@ -23,6 +23,10 @@ int main(int argc, char* argv[])
 
 		if(vm.count("log-level")) {
 			switchLogLevel(vm["log-level"].as<std::string>());
+		}
+
+		if(!vm.count("input-file")) {
+			logger.fatal() << "No input file specified. Please specify a file containing the input parameters.";
 		}
 
 		const char* inputfile = vm["input-file"].as<std::string>().c_str();
@@ -84,7 +88,6 @@ int main(int argc, char* argv[])
 		for(int i = 0; i < nsteps; i++) {
 			gaugefield.perform_tasks(overrelaxsteps);
 			if( ( (i + 1) % writefreq ) == 0 ) {
-				gaugefield.synchronize(0);
 				gaugefield.print_gaugeobservables_from_task(i, 0, gaugeout_name.str());
 			}
 			if( parameters.get_saveconfigs() == true && ( (i + 1) % savefreq ) == 0 ) {

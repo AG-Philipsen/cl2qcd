@@ -146,6 +146,8 @@ st_idx inline get_st_idx_from_site_idx(const site_idx in)
 
 /** returns eo-vector component from st_idx */
 site_idx get_eo_site_idx_from_st_idx(st_idx in);
+st_idx get_odd_st_idx(const site_idx idx);
+st_idx get_even_st_idx(const site_idx idx);
 
 /**
  * (st_idx, dir_idx) -> link_idx and
@@ -153,37 +155,33 @@ site_idx get_eo_site_idx_from_st_idx(st_idx in);
  *using the convention:
  *link_idx = mu + NDIM * site_idx
  */
-link_idx inline get_link_idx(const dir_idx mu, const st_idx in)
+link_idx inline get_link_idx_SOA(const dir_idx mu, const st_idx in)
 {
-	return mu + NDIM * get_site_idx(in);
-}
-st_idx inline get_st_idx_from_link_idx(const link_idx in)
-{
-	st_idx tmp;
-	site_idx idx_tmp = in / NDIM;
-	tmp = get_st_idx_from_site_idx(idx_tmp);
-	return tmp;
-}
-dir_idx inline get_dir_idx_from_link_idx(const link_idx in)
-{
-	return in % NDIM;
-}
-
-/**
- * @todo this be done in the normla get_link_idx-function,
- *       but therefore potential SOA (even-odded) gaugefield
- *       needs to be used everywhere.
- */
-site_idx inline get_link_idx_SOA(const dir_idx mu, const st_idx in)
-{
-#ifdef _USE_SOA_
 	const uint3 space = get_coord_spatial(in.space);
 	// check if the site is odd (either spacepos or t odd)
 	// if yes offset everything by half the number of sites (number of sites is always even...)
 	site_idx odd = (space.x ^ space.y ^ space.z ^ in.time) & 0x1 ? (VOL4D / 2) : 0;
 	return mu * VOL4D + odd + get_eo_site_idx_from_st_idx(in);
+}
+link_idx inline get_link_idx_AOS(const dir_idx mu, const st_idx in)
+{
+	return mu + NDIM * get_site_idx(in);
+}
+link_idx inline get_link_idx(const dir_idx mu, const st_idx in)
+{
+#ifdef _USE_SOA_
+	return get_link_idx_SOA(mu, in);
 #else
-	return get_link_idx(mu, in);
+	return get_link_idx_AOS(mu, in);
+#endif
+}
+
+dir_idx inline get_dir_idx_from_link_idx(const link_idx in)
+{
+#ifdef _USE_SOA_
+	return in / NDIM;
+#else
+	return in % NDIM;
 #endif
 }
 
@@ -272,7 +270,6 @@ site_idx get_eo_site_idx_from_st_idx(st_idx in)
  */
 site_idx calc_even_spatial_idx(coord_full in)
 {
-	coord_full tmp;
 	bool switcher = TMLQCD_CONV;
 	if(switcher) {
 		return
@@ -290,7 +287,6 @@ site_idx calc_even_spatial_idx(coord_full in)
 }
 site_idx calc_odd_spatial_idx(coord_full in)
 {
-	coord_full tmp;
 	bool switcher = TMLQCD_CONV;
 	if(switcher) {
 		return

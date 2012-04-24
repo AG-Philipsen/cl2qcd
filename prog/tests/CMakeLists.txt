@@ -121,6 +121,56 @@ target_link_libraries(saxsbypz
 add_test(Saxsbypz saxsbypz)
 add_dependencies(saxsbypz git_commit_id_header)
 
+add_executable(gaugefield_convert
+	gaugefield_convert.cpp
+	../host_geometry.cpp
+	../host_operations_gaugefield.cpp
+	../gaugefield_hybrid.cpp
+	../inputparameters.cpp
+	../host_readgauge.cpp
+	../host_random.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../host_use_timer.cpp
+	../host_writegaugefield.cpp
+	../exceptions.cpp
+	../logger.cpp)
+target_link_libraries(gaugefield_convert
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	crypto
+	einhard)
+add_test(Gaugefield_Conversion gaugefield_convert)
+add_dependencies(gaugefield_convert git_commit_id_header)
+
+add_executable(gaugefield_observables
+	gaugefield_observables.cpp
+	../host_geometry.cpp
+	../host_operations_gaugefield.cpp
+	../gaugefield_hybrid.cpp
+	../inputparameters.cpp
+	../host_readgauge.cpp
+	../host_random.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../host_use_timer.cpp
+	../host_writegaugefield.cpp
+	../exceptions.cpp
+	../logger.cpp)
+target_link_libraries(gaugefield_observables
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	crypto
+	einhard)
+add_test(Gaugeobservables gaugefield_observables)
+add_dependencies(gaugefield_observables git_commit_id_header)
+
 add_executable(m_gpu
 	M_GPU.cpp
 	../host_geometry.cpp
@@ -177,6 +227,35 @@ target_link_libraries(m_eo_gpu
 add_test(M_eo_gpu m_eo_gpu)
 add_dependencies(m_eo_gpu git_commit_id_header)
 
+add_executable(m_compare_noneo_eo
+	M_compare_noneo_eo.cpp
+	../host_geometry.cpp
+	../host_operations_gaugefield.cpp
+	../gaugefield_hybrid.cpp
+	../inputparameters.cpp
+	../host_readgauge.cpp
+	../host_random.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../opencl_module_ran.cpp
+	../opencl_module_spinors.cpp
+	../opencl_module_fermions.cpp
+	../opencl_module_hmc.cpp
+	../host_use_timer.cpp
+	../host_writegaugefield.cpp
+	../exceptions.cpp
+	../logger.cpp)
+target_link_libraries(m_compare_noneo_eo
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	crypto
+	einhard)
+add_test(M_compare_noneo_eo m_compare_noneo_eo)
+add_dependencies(m_compare_noneo_eo git_commit_id_header)
+
 add_executable(f_gauge_gpu
 	F_gauge_GPU.cpp
 	../host_geometry.cpp
@@ -205,6 +284,35 @@ target_link_libraries(f_gauge_gpu
 	einhard)
 add_test(F_gauge_gpu f_gauge_gpu)
 add_dependencies(f_gauge_gpu git_commit_id_header)
+
+add_executable(rectangles_test
+	Rectangles_test.cpp
+	../host_geometry.cpp
+	../host_operations_gaugefield.cpp
+	../gaugefield_hybrid.cpp
+	../inputparameters.cpp
+	../host_readgauge.cpp
+	../host_random.cpp
+	../opencl_module.cpp
+	../opencl_compiler.cpp
+	../opencl_module_ran.cpp
+	../opencl_module_spinors.cpp
+	../opencl_module_fermions.cpp
+	../opencl_module_hmc.cpp
+	../host_use_timer.cpp
+	../host_writegaugefield.cpp
+	../exceptions.cpp
+	../logger.cpp)
+target_link_libraries(rectangles_test
+	${OPENCL_LIBRARIES}
+	${LIME_LIBRARIES}
+	${LIBXML2_LIBRARIES}
+	${Boost_LIBRARIES}
+	klepsydra
+	crypto
+	einhard)
+add_test(Rectangles_test rectangles_test)
+add_dependencies(rectangles_test git_commit_id_header)
 
 add_executable(f_fermion_gpu
 	Force_fermion_GPU.cpp
@@ -426,7 +534,6 @@ target_link_libraries(localQ
 add_test(LocalQ localQ)
 add_dependencies(localQ git_commit_id_header)
 
-
 # ignore some tests
 configure_file(CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
 
@@ -452,9 +559,16 @@ add_test(Heatbath7_GPU_SP ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testH
 ## LF: Leapfrog
 ## 2MN: 2mn
 ## XTS: X timescales
+## CONF: starting from config
 add_test(HMC1_CPU_TM_EO_LF_1TS ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testHmc.py ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_input_1)
 add_test(HMC2_CPU_TM_NONEO_LF_1TS ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testHmc.py ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_input_2)
 add_test(HMC3_CPU_TM_EO_2MN_1TS ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testHmc.py ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_input_3)
 add_test(HMC5_CPU_TM_EO_LF_CG_1TS ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testHmc.py ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_input_5)
 add_test(HMC7_CPU_TM_EO_2MN_2TS ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testHmc.py ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_input_7)
 add_test(HMC9_CPU_TM_EO_2MN_3TS ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testHmc.py ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_ref ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_input_9)
+add_test(HMC11_CPU_TM_EO_LF_1TS_CONF ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testHmc.py ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_ref2  ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_input_11)
+add_test(HMC12_CPU_TM_NONEO_LF_1TS_CONF ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testHmc.py ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_ref2 ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_input_12)
+add_test(HMC13_CPU_PGT_NONEO_LF_1TS_COLD ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testHmc.py ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_ref3 ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_input_13)
+add_test(HMC14_CPU_PGT_RECT_NONEO_LF_1TS_COLD ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testHmc.py ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_ref4 ${CMAKE_CURRENT_SOURCE_DIR}/hmc_test_input_14)
+
+

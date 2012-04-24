@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 	po::options_description desc("Allowed options");
 	desc.add_options()
 	("help,h", "Produce this help message")
-	("input-file", po::value<std::string>()->required(), "File containing the input parameters")
+	("input-file", po::value<std::string>(), "File containing the input parameters")
 	("log-level", po::value<std::string>(), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF");
 	po::positional_options_description pos_opts;
 	pos_opts.add("input-file", 1);
@@ -22,6 +22,10 @@ int main(int argc, char* argv[])
 
 	if(vm.count("log-level")) {
 		switchLogLevel(vm["log-level"].as<std::string>());
+	}
+
+	if(!vm.count("input-file")) {
+		logger.fatal() << "No input file specified. Please specify a file containing the input parameters.";
 	}
 
 	const char* inputfile = vm["input-file"].as<std::string>().c_str();
@@ -90,11 +94,9 @@ int main(int argc, char* argv[])
 	gaugefield.init_gaugemomentum_spinorfield();
 
 	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
-	size_t gfsize = parameters.get_gf_buf_size();
-	size_t gmsize = parameters.get_gm_buf_size();
 	//copy u->u' p->p' for the integrator
-	gaugefield.get_task_hmc(0)->copy_buffer_on_device(*(gaugefield.get_task_hmc(0)->get_gaugefield()), gaugefield.get_task_hmc(0)->get_clmem_new_u(), gfsize);
-	gaugefield.get_task_hmc(0)->copy_buffer_on_device(gaugefield.get_task_hmc(0)->get_clmem_p(), gaugefield.get_task_hmc(0)->get_clmem_new_p(), gmsize);
+	gaugefield.get_task_hmc(0)->copy_buffer_on_device(gaugefield.get_task_hmc(0)->get_gaugefield(), gaugefield.get_task_hmc(0)->get_clmem_new_u(), gaugefield.get_task_hmc(0)->getGaugefieldBufferSize());
+	gaugefield.get_task_hmc(0)->copy_buffer_on_device(gaugefield.get_task_hmc(0)->get_clmem_p(), gaugefield.get_task_hmc(0)->get_clmem_new_p(), gaugefield.get_task_hmc(0)->get_gaugemomentum_buffer_size());
 	logger.trace() << "Perform " << hmc_iter << "of benchmarking";
 	for(iter = 0; iter < hmc_iter; iter ++) {
 		//here, clmem_phi is inverted several times and stored in clmem_phi_inv

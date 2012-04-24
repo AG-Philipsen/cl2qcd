@@ -54,6 +54,19 @@ public:
 	void set_defaults();
 	hmc_float get_kappa() const;
 	hmc_float get_kappa_mp() const;
+	int get_iter0() const;
+	int get_iter1() const;
+	int get_iter0_mp() const;
+	int get_iter1_mp() const;
+	void reset_iter0();
+	void reset_iter1();
+	void reset_iter0_mp();
+	void reset_iter1_mp();
+	void reset_inversion_counters();
+	void acc_iter0(int acc);
+	void acc_iter1(int acc);
+	void acc_iter0_mp(int acc);
+	void acc_iter1_mp(int acc);
 	void set_mubar_negative();
 	void set_mubar_mp_negative();
 	void calc_mubar();
@@ -81,6 +94,7 @@ public:
 	bool get_use_mp() const;
 	bool get_use_aniso() const;
 	bool get_use_rectangles() const;
+	bool get_use_gauge_only() const;
 	int get_cgmax() const;
 	int get_cgmax_mp() const;
 	/**
@@ -131,11 +145,6 @@ public:
 	/**
 	 * Return the size of the buffer in bytes.
 	 */
-	int get_gf_buf_size() const;
-	/**
-	 * Return the size of the buffer in bytes.
-	 */
-	int get_gm_buf_size() const;
 	bool get_use_chem_pot_re() const;
 	bool get_use_chem_pot_im() const;
 	bool get_use_smearing() const;
@@ -171,6 +180,12 @@ public:
 	int get_flop_su3_spinor() const;
 	int get_flop_spinor_spinor() const;
 	int get_flop_spinor_sqnorm() const;
+	int get_plaq_norm() const;
+	int get_tplaq_norm() const;
+	int get_splaq_norm() const;
+	int get_rect_norm() const;
+	int get_poly_norm() const;
+	void set_gauge_norm_factors();
 
 	/////////////////////////////////////////////////////
 	// printing-functions for the different executables
@@ -255,7 +270,7 @@ public:
 	 *
 	 */
 	void print_info_gauge(ostream * os) const;
-	
+
 	/**
 	 *
 	 */
@@ -264,8 +279,8 @@ public:
 	/**
 	 *
 	 */
-	void print_info_integrator(ostream * os, int number) const;	
-	
+	void print_info_integrator(ostream * os, int number) const;
+
 	/**
 	 * check inputparameters against compile settings
 	 * NOTE: In the end, this is propably not needed anymore, but for now it is a safety net
@@ -296,8 +311,6 @@ private:
 	int gaugefieldsize;
 	//sizes of fieldbuffers
 	int sf_buf_size;
-	int gf_buf_size;
-	int gm_buf_size;
 
 	//various options
 	bool use_rec12;
@@ -328,17 +341,21 @@ private:
 	//more specific ones
 	hmc_float beta;
 	int xi;
-	
+
 	//fermion parameters
 	hmc_float kappa;
 	hmc_float mu;
 	hmc_float mubar;
 	hmc_float csw;
+	int iter0;
+	int iter1;
 	//parameters for the mass prenditioning field
 	hmc_float kappa_mp;
 	hmc_float mu_mp;
 	hmc_float mubar_mp;
 	hmc_float csw_mp;
+	int iter0_mp;
+	int iter1_mp;
 	hmc_float theta_fermion_spatial;
 	hmc_float theta_fermion_temporal;
 	hmc_float theta_gaugefield;
@@ -381,10 +398,13 @@ private:
 	bool use_bicgstab_save_mp;
 	bool use_pointsource;
 	bool use_rectangles;
+	bool use_gauge_only;
 	hmc_float c0;
 	hmc_float c1;
 	hmc_float c0_default_wilson;
 	hmc_float c1_default_tlsym;
+	hmc_float c1_default_iwasaki;
+	hmc_float c1_default_dbw2;
 	void calc_c0_tlsym(hmc_float c1);
 	int num_sources;
 	int pointsource_x;
@@ -405,6 +425,11 @@ private:
 	void val_assign(std::string * out, std::string line);
 	void bool_assign(bool * out, std::string line);
 	void solver_assign(bool * out, std::string line, bool mp);
+	int plaq_norm;
+	int tplaq_norm;
+	int splaq_norm;
+	int rect_norm;
+	int poly_norm;
 
 	//this can bee used to generate rnd-fields with only one thread
 	bool use_same_rnd_numbers;

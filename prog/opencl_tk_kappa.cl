@@ -4,7 +4,7 @@
 
 //opencl_tk_kappa.cl
 
-__kernel void kappa_karsch_gpu(__global ocl_s_gaugefield* gaugefield, const hmc_float beta, __global hmc_float * kappa_karsch_val)
+__kernel void kappa_karsch_gpu(__global Matrixsu3StorageType * gaugefield, const hmc_float beta, __global hmc_float * kappa_karsch_val)
 {
 
 	//Compute diagonal spatial components of the energy-momentum-tensor
@@ -91,7 +91,7 @@ __kernel void kappa_karsch_gpu(__global ocl_s_gaugefield* gaugefield, const hmc_
 
 
 
-__kernel void kappa_clover_gpu (__global ocl_s_gaugefield* gaugefield, const hmc_float beta,  __global hmc_float * kappa_clover_val)
+__kernel void kappa_clover_gpu (__global Matrixsu3StorageType * gaugefield, const hmc_float beta,  __global hmc_float * kappa_clover_val)
 {
 
 	//Energy-momentum-tensor in clover-discretization

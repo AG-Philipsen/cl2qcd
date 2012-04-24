@@ -4,7 +4,7 @@
 
 //opencl_header.cl
 
-#ifdef cl_amd_printf
+#ifdef ENABLE_PRINTF
 // we def out anything using printf if unsupported,
 // therefore we also don't need to enable printf
 #pragma OPENCL EXTENSION cl_amd_printf : enable
@@ -23,3 +23,11 @@
 #include "globaldefs.h" //NDIM, NSPIN, NC
 #include "types.h"
 
+#ifdef _USE_BLOCKED_LOOPS_
+#define PARALLEL_FOR(VAR, LIMIT) \
+size_t _block_size = (LIMIT + get_global_size(0) - 1) / get_global_size(0); \
+for(size_t VAR = get_global_id(0) * _block_size; VAR < (get_global_id(0) + 1) * _block_size && VAR < LIMIT; ++VAR)
+#else
+#define PARALLEL_FOR(VAR, LIMIT) \
+for(size_t VAR = get_global_id(0); VAR < LIMIT; VAR += get_global_size(0))
+#endif

@@ -15,13 +15,13 @@ class Device : public Opencl_Module_Hmc {
 	cl_kernel testKernel;
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Hmc() {
-		Opencl_Module_Hmc::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+		Opencl_Module_Hmc::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
 	};
 
-	void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls);
+	void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, hmc_float);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -296,21 +296,21 @@ void Dummyfield::fill_buffers()
 	fill_with_zero(ae_out, NUM_ELEMENTS_AE);
 
 	size_t sf_buf_size = get_parameters()->get_sf_buf_size();
-	size_t ae_buf_size = get_parameters()->get_gm_buf_size();
 	//create buffer for sf on device (and copy sf_in to both for convenience)
+
+	Device * device = static_cast<Device*>(opencl_modules[0]);
 
 	in1 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	in2 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in1, CL_TRUE, 0, sf_buf_size, sf_in1, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(device->get_queue(), in1, CL_TRUE, 0, sf_buf_size, sf_in1, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in2, CL_TRUE, 0, sf_buf_size, sf_in2, 0, 0, NULL);
+	err = clEnqueueWriteBuffer(device->get_queue(), in2, CL_TRUE, 0, sf_buf_size, sf_in2, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	out = clCreateBuffer(context, CL_MEM_READ_WRITE, ae_buf_size, 0, &err );
+	out = clCreateBuffer(context, CL_MEM_READ_WRITE, device->get_gaugemomentum_buffer_size(), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out, CL_TRUE, 0, ae_buf_size, ae_out, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(ae_out));
 
 	//create buffer for squarenorm on device
 	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
@@ -345,7 +345,7 @@ void Device::clear_kernels()
 	Opencl_Module_Hmc::clear_kernels();
 }
 
-void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls)
+void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls, hmc_float kappa)
 {
 	cl_int err;
 	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &gf);
@@ -355,6 +355,8 @@ void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs
 	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &in2);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 3, sizeof(cl_mem), &out);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	err = clSetKernelArg(testKernel, 4, sizeof(hmc_float), &kappa);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
 	enqueueKernel(testKernel, gs, ls);
@@ -400,5 +402,6 @@ void Dummyfield::runTestKernel()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(out, in1, in2, *(get_clmem_gaugefield()), gs, ls);
+	Device * device = static_cast<Device*>(opencl_modules[0]);
+	device->runTestKernel(out, in1, in2, device->get_gaugefield(), gs, ls, get_parameters()->get_kappa());
 }

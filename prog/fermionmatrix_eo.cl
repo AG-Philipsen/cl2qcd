@@ -5,7 +5,7 @@
 //"local" dslash working on a particular link (n,t) of an eoprec field
 //NOTE: each component is multiplied by +KAPPA, so the resulting spinor has to be mutliplied by -1 to obtain the correct dslash!!!
 //the difference to the "normal" dslash is that the coordinates of the neighbors have to be transformed into an eoprec index
-spinor dslash_eoprec_unified_local(__global const spinorStorageType * const restrict in, __global Matrixsu3StorageType  const * const restrict field, const st_idx idx_arg, const dir_idx dir)
+spinor dslash_eoprec_unified_local(__global const spinorStorageType * const restrict in, __global Matrixsu3StorageType  const * const restrict field, const st_idx idx_arg, const dir_idx dir, hmc_float kappa_in)
 {
 	//this is used to save the idx of the neighbors
 	st_idx idx_neigh;
@@ -16,10 +16,10 @@ spinor dslash_eoprec_unified_local(__global const spinorStorageType * const rest
 	Matrixsu3 U;
 	//this is used to save the BC-conditions...
 	hmc_complex bc_tmp = (dir == TDIR) ? (hmc_complex) {
-		KAPPA_TEMPORAL_RE, KAPPA_TEMPORAL_IM
+		kappa_in * TEMPORAL_RE, kappa_in * TEMPORAL_IM
 } :
 	(hmc_complex) {
-		KAPPA_SPATIAL_RE, KAPPA_SPATIAL_IM
+		kappa_in * SPATIAL_RE, kappa_in * SPATIAL_IM
 	};
 	out_tmp = set_spinor_zero();
 
@@ -29,7 +29,7 @@ spinor dslash_eoprec_unified_local(__global const spinorStorageType * const rest
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = getSpinor_eo(in, nn_eo);
-	U = getSU3(field, get_link_idx_SOA(dir, idx_arg));
+	U = getSU3(field, get_link_idx(dir, idx_arg));
 	if(dir == XDIR) {
 		/////////////////////////////////
 		//Calculate (1 - gamma_1) y
@@ -129,13 +129,13 @@ spinor dslash_eoprec_unified_local(__global const spinorStorageType * const rest
 	//transform normal indices to eoprec index
 	nn_eo = get_eo_site_idx_from_st_idx(idx_neigh);
 	plus = getSpinor_eo(in, nn_eo);
-	U = getSU3(field, get_link_idx_SOA(dir, idx_neigh));
+	U = getSU3(field, get_link_idx(dir, idx_neigh));
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp = (dir == TDIR) ? (hmc_complex) {
-		KAPPA_TEMPORAL_RE, MKAPPA_TEMPORAL_IM
+		kappa_in * TEMPORAL_RE, kappa_in * MTEMPORAL_IM
 } :
 	(hmc_complex) {
-		KAPPA_SPATIAL_RE, MKAPPA_SPATIAL_IM
+		kappa_in * SPATIAL_RE, kappa_in * MSPATIAL_IM
 	};
 	if(dir == XDIR) {
 		///////////////////////////////////

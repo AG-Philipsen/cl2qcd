@@ -15,6 +15,7 @@ struct hmc_observables {
 	hmc_float deltaH;
 	hmc_float prob;
 	int accept;
+	hmc_float rectangles;
 };
 #endif
 

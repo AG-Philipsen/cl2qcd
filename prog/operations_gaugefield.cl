@@ -4,6 +4,54 @@
 
 //operations_gaugefield.cl
 
+// TODO document
+Matrixsu3 getSU3(__global const Matrixsu3StorageType * const restrict in, const uint idx)
+{
+#ifdef _USE_SOA_
+	return (Matrixsu3) {
+		in[0 * GAUGEFIELD_STRIDE + idx],
+		   in[1 * GAUGEFIELD_STRIDE + idx],
+		   in[2 * GAUGEFIELD_STRIDE + idx],
+		   in[3 * GAUGEFIELD_STRIDE + idx],
+		   in[4 * GAUGEFIELD_STRIDE + idx],
+		   in[5 * GAUGEFIELD_STRIDE + idx],
+		   in[6 * GAUGEFIELD_STRIDE + idx],
+		   in[7 * GAUGEFIELD_STRIDE + idx],
+		   in[8 * GAUGEFIELD_STRIDE + idx]
+	};
+#else
+	//printf("%i\n", idx);
+	return in[idx];
+#endif
+}
+
+// TODO document
+void putSU3(__global Matrixsu3StorageType * const restrict out, const uint idx, const Matrixsu3 val)
+{
+#ifdef _USE_SOA_
+	out[0 * GAUGEFIELD_STRIDE + idx] = val.e00;
+	out[1 * GAUGEFIELD_STRIDE + idx] = val.e01;
+	out[2 * GAUGEFIELD_STRIDE + idx] = val.e02;
+	out[3 * GAUGEFIELD_STRIDE + idx] = val.e10;
+	out[4 * GAUGEFIELD_STRIDE + idx] = val.e11;
+	out[5 * GAUGEFIELD_STRIDE + idx] = val.e12;
+	out[6 * GAUGEFIELD_STRIDE + idx] = val.e20;
+	out[7 * GAUGEFIELD_STRIDE + idx] = val.e21;
+	out[8 * GAUGEFIELD_STRIDE + idx] = val.e22;
+#else
+	out[idx] = val;
+#endif
+}
+
+Matrixsu3 get_matrixsu3(__global const Matrixsu3StorageType * const restrict field, const int spacepos, const int timepos, const int mu)
+{
+	return getSU3(field, get_global_link_pos(mu, spacepos, timepos));
+}
+
+void put_matrixsu3(__global Matrixsu3StorageType  * const restrict field, const Matrixsu3 in, const int spacepos, const int timepos, const int mu)
+{
+	putSU3(field, get_global_link_pos(mu, spacepos, timepos), in);
+}
 
 Matrixsu3 project_su3(const Matrixsu3 U)
 {
@@ -141,6 +189,54 @@ Matrixsu2 reduction (const Matrix3x3 src, const int rand)
 
 Matrixsu3 extend (const int random, Matrixsu2 src)
 {
+// Yes, it is poor madness having two different variants for CPU and GPU at this place.
+// However, on Catalyst 12.3 the default value of the switch statement messes up the GPU
+// results and the if-else change trigges a SEGFAULT in a completely different place of
+// the heatbath kernel when running on the CPU.
+#ifdef _USEGPU_
+	if(random == 1) {
+		Matrixsu3 out;
+		out.e00 = src.e00;
+		out.e01 = src.e01;
+		out.e02 = hmc_complex_zero;
+		out.e10 = src.e10;
+		out.e11 = src.e11;
+		out.e12 = hmc_complex_zero;
+		out.e20 = hmc_complex_zero;
+		out.e21 = hmc_complex_zero;
+		out.e22 = hmc_complex_one;
+		return out;
+	} else if(random == 2) {
+		Matrixsu3 out;
+		out.e00 = hmc_complex_one;
+		out.e01 = hmc_complex_zero;
+		out.e02 = hmc_complex_zero;
+		out.e10 = hmc_complex_zero;
+		out.e11 = src.e00;
+		out.e12 = src.e01;
+		out.e20 = hmc_complex_zero;
+		out.e21 = src.e10;
+		out.e22 = src.e11;
+		return out;
+	} else if(random == 3) {
+		Matrixsu3 out;
+		out.e00 = src.e00;
+		out.e01 = hmc_complex_zero;
+		out.e02 = src.e01;
+		out.e10 = hmc_complex_zero;
+		out.e11 = hmc_complex_one;
+		out.e12 = hmc_complex_zero;
+		out.e20 = src.e10;
+		out.e21 = hmc_complex_zero;
+		out.e22 = src.e11;
+		return out;
+	} else {
+		return (Matrixsu3) { {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)},
+			{nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)},
+			{nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}
+		};
+	}
+#else // _USEGPU_
 	Matrixsu3 out;
 
 	switch(random) {
@@ -178,10 +274,16 @@ Matrixsu3 extend (const int random, Matrixsu2 src)
 			out.e22 = src.e11;
 			return out;
 	}
+
+	return (Matrixsu3) { {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)},
+		{nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)},
+		{nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}, {nan((uint) 0), nan((uint) 0)}
+	};
+#endif // _USEGPU_
 }
 
 //calculate polyakov-loop matrix at spatial site n in time-direction
-Matrixsu3 local_polyakov(__global ocl_s_gaugefield * field, const int n)
+Matrixsu3 local_polyakov(__global const Matrixsu3StorageType * const restrict field, const int n)
 {
 	Matrixsu3 out;
 	out = unit_matrixsu3();
@@ -194,7 +296,7 @@ Matrixsu3 local_polyakov(__global ocl_s_gaugefield * field, const int n)
 }
 
 //calculate plaquette-matrix at site n,t in direction mu and nu
-Matrixsu3 local_plaquette(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
+Matrixsu3 local_plaquette(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
 {
 	Matrixsu3 out;
 	int4 pos;
@@ -220,8 +322,8 @@ Matrixsu3 local_plaquette(__global ocl_s_gaugefield * field, const int n, const 
 }
 
 //calculate rectangle-matrix at site i = (n,t) in direction mu and nu
-//	The rectangle is then: U_mu(i) * U_nu(i+mu) * U_nu(i + mu + nu) * U_mu(i + nu + nu)dagger * U_nu(i + nu)dagger * U_nu(i)dagger  
-Matrixsu3 local_rectangles(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
+//	The rectangle is then: U_mu(i) * U_nu(i+mu) * U_nu(i + mu + nu) * U_mu(i + nu + nu)dagger * U_nu(i + nu)dagger * U_nu(i)dagger
+Matrixsu3 local_rectangles(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
 {
 	Matrixsu3 out;
 	int4 pos;
@@ -269,7 +371,7 @@ Matrixsu3 local_rectangles(__global ocl_s_gaugefield * field, const int n, const
 }
 
 
-Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
+Matrix3x3 local_Q_plaquette(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
 {
 	//the Q-plaquette is a sum over four normal plaquettes
 	Matrix3x3 qplaq = zero_matrix3x3();
@@ -313,7 +415,7 @@ Matrix3x3 local_Q_plaquette(__global ocl_s_gaugefield * field, const int n, cons
 //this calculates the staple in nu direction given a direction mu of the link
 //     under consideration:
 //     s = U_nu(x + mu) * Udagger_mu(x + nu) * Udagger_nu(x) + Udagger_nu(x+mu - nu) * Udagger_mu(x-nu) * U_nu(x - nu)
-Matrix3x3 local_staple(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
+Matrix3x3 local_staple(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
 {
 	int4 pos;
 
@@ -363,34 +465,35 @@ Matrix3x3 local_staple(__global ocl_s_gaugefield * field, const int n, const int
 	return out;
 }
 
-/**This calculates the rectangles staple in nu direction given a direction mu of the link
- *	under consideration. There are six ingredients to the staple 
- *	(I write them in a way that they form a path, altough this is not really necessary since they are under a trace):
- *	1.	U_nu(x + mu) * U_nu(x + mu + nu) * Udagger_mu(x + nu + nu) * Udagger_nu(x + nu) * Udagger_nu(x)
- *	2.	U_nu(x - nu) * U_mu(x + mu) * Udagger_nu(x - nu + mu + mu) Udagger_mu(x - nu + mu) Udagger_mu(x - nu)
- *	->	U_mu(x + mu) * Udagger_nu(x - nu + mu + mu) Udagger_mu(x - nu + mu) Udagger_mu(x - nu) * U_nu(x - nu)
- *	3.	U_nu(x - mu - nu) * U_mu(x - mu) * Udagger_nu(x - nu + mu) * Udagger_mu(x - nu) * Udagger_mu(x - mu - nu)
- *	->	Udagger_nu(x - nu + mu) * Udagger_mu(x - nu) * Udagger_mu(x - mu - nu) * U_nu(x - mu - nu) * U_mu(x - mu)
- *	4.	U_mu(x - nu - nu) * U_nu(x - nu - nu + mu) * U_nu(x - nu + mu) * Udagger_nu(x - nu) * Udagger_nu(x - nu - nu)
- *	->	Udagger_nu(x - nu) * Udagger_nu(x - nu - nu) * U_mu(x - nu - nu) * U_nu(x - nu - nu + mu) * U_nu(x - nu + mu)
- *	5.	U_nu(x - mu) * U_mu(x - mu + nu) * U_mu(x + nu) * Udagger_nu(x + mu) * Udagger_mu(x - mu)
- *	->	Udagger_mu(x - mu) * U_nu(x - mu) * U_mu(x - mu + nu) * U_mu(x + nu) * Udagger_nu(x + mu)
- *	6.	U_nu(x) * U_mu(x + nu) * U_mu(x + nu + mu) * Udagger_nu(x + mu + mu) * Udagger_mu(x + mu)
+/**     This calculates the rectangles staple in nu direction given a direction mu of the link
+ *  under consideration. There are six ingredients to the staple
+ *  (I write them in a way that they form a path, altough this is not really necessary since they are under a trace):
+ *  1.  U_nu(x + mu) * U_nu(x + mu + nu) * Udagger_mu(x + nu + nu) * Udagger_nu(x + nu) * Udagger_nu(x)
+ *  2.  U_nu(x - nu) * U_mu(x + mu) * Udagger_nu(x - nu + mu + mu) Udagger_mu(x - nu + mu) Udagger_mu(x - nu)
+ *  ->  U_mu(x + mu) * Udagger_nu(x - nu + mu + mu) Udagger_mu(x - nu + mu) Udagger_mu(x - nu) * U_nu(x - nu)
+ *  3.  U_nu(x - mu - nu) * U_mu(x - mu) * Udagger_nu(x - nu + mu) * Udagger_mu(x - nu) * Udagger_mu(x - mu - nu)
+ *  ->  Udagger_nu(x - nu + mu) * Udagger_mu(x - nu) * Udagger_mu(x - mu - nu) * U_nu(x - mu - nu) * U_mu(x - mu)
+ *      NOTE: The last three have to be "daggered"
+ *  4.  U_mu(x - nu - nu) * U_nu(x - nu - nu + mu) * U_nu(x - nu + mu) * Udagger_nu(x - nu) * Udagger_nu(x - nu - nu)
+ *  ->  Udagger_nu(x - nu) * Udagger_nu(x - nu - nu) * U_mu(x - nu - nu) * U_nu(x - nu - nu + mu) * U_nu(x - nu + mu)
+ *  ^+  Udagger_nu(x - nu + mu) * Udagger_nu(x - nu - nu + mu) * Udagger_mu(x - nu - nu) * Ud_nu(x - nu - nu) * U_nu(x - nu)
+ *  5.  U_nu(x - mu) * U_mu(x - mu + nu) * U_mu(x + nu) * Udagger_nu(x + mu) * Udagger_mu(x - mu)
+ *  ->  Udagger_mu(x - mu) * U_nu(x - mu) * U_mu(x - mu + nu) * U_mu(x + nu) * Udagger_nu(x + mu)
+ *  ^+  U_nu(x + mu) * Udagger_mu(x + nu) * Udagger_mu(x - mu + nu) * Udagger_nu(x - mu) * U_mu(x - mu)
+ *  6.  U_nu(x) * U_mu(x + nu) * U_mu(x + nu + mu) * Udagger_nu(x + mu + mu) * Udagger_mu(x + mu)
+ *  ^+  U_mu(x + mu)  U_nu(x + mu + mu) Udagger_mu(x + nu + mu) Udagger_mu(x + nu) Udagger_nu(x)
  */
-Matrix3x3 local_rectangles_staple(__global ocl_s_gaugefield * field, const int n, const int t, const int mu, const int nu )
+Matrix3x3 local_rectangles_staple(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
 {
 	int4 pos;
 	int4 pos2;
-	site_idx start_point;
+	Matrix3x3 out = zero_matrix3x3();
+	Matrixsu3 tmp = zero_matrixsu3();
 
-	//CP: Currently, this function causes a segfault. For now, return a zero matrix
-	Matrix3x3 temporary = zero_matrix3x3();
-	return temporary;
 	//first ingredient
-	//1.	U_nu(x + mu) * U_nu(x + mu + nu) * Udagger_mu(x + nu + nu) * Udagger_nu(x + nu) * Udagger_nu(x)
+	//1.  U_nu(x + mu) * U_nu(x + mu + nu) * Udagger_mu(x + nu + nu) * Udagger_nu(x + nu) * Udagger_nu(x)
 	//calculate the coordinates for the matrices. this is the same as with  the rectangles
 	//(x, y) = i + mu (call the site idx "x" "i" for now)
-	
 	if(mu == 0) {
 		pos.x = get_neighbor_temporal(t);
 		pos.y = n;
@@ -421,17 +524,17 @@ Matrix3x3 local_rectangles_staple(__global ocl_s_gaugefield * field, const int n
 	} else {
 		pos2.z = pos.z;
 		pos2.w = get_neighbor(pos.w, nu);
-	}	
-	
-	Matrixsu3 tmp = multiply_matrixsu3 (get_matrixsu3(field, pos.y, pos.x, nu), get_matrixsu3(field, pos2.y, pos2.x, nu)      );
+	}
+
+	tmp = multiply_matrixsu3 (get_matrixsu3(field, pos.y, pos.x, nu), get_matrixsu3(field, pos2.y, pos2.x, nu)      );
 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos2.w, pos2.z, mu) );
 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos.w, pos.z, nu) );
-	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, n, t, nu) );	
+	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, n, t, nu) );
 
-	Matrix3x3 out = matrix_su3to3x3(tmp);
+	out = matrix_su3to3x3(tmp);
 
 	//second ingredient
-	//2.	U_mu(x + mu) * Udagger_nu(x - nu + mu + mu) Udagger_mu(x - nu + mu) Udagger_mu(x - nu) * U_nu(x - nu)
+	//2.  U_mu(x + mu) * Udagger_nu(x - nu + mu + mu) Udagger_mu(x - nu + mu) Udagger_mu(x - nu) * U_nu(x - nu)
 	//calculate the coordinates for the matrices. this is the same as with  the rectangles
 	//(x, y) = i + mu (call the site idx "x" "i" for now)
 	if(mu == 0) {
@@ -460,16 +563,16 @@ Matrix3x3 local_rectangles_staple(__global ocl_s_gaugefield * field, const int n
 	//(w2, z2) = i + mu - nu + mu = (x,y) - nu + mu = (x2,y2) + mu
 	if(mu == 0) {
 		pos2.z = get_neighbor_temporal(pos2.x);
-		pos2.w = pos2.w;
+		pos2.w = pos2.y;
 	} else {
-		pos2.z = pos2.z;
+		pos2.z = pos2.x;
 		pos2.w = get_neighbor(pos2.y, mu);
-	}	
-	
+	}
+
 	tmp = multiply_matrixsu3_dagger(get_matrixsu3(field, pos.y, pos.x, mu), get_matrixsu3(field, pos2.w, pos2.z, nu)      );
 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos2.y, pos2.x, mu) );
 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos.w, pos.z, mu) );
-	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.w, pos.z, nu) );	
+	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.w, pos.z, nu) );
 
 	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
 
@@ -505,16 +608,17 @@ Matrix3x3 local_rectangles_staple(__global ocl_s_gaugefield * field, const int n
 	} else {
 		pos2.z = pos.z;
 		pos2.w = get_neighbor(pos.w, mu);
-	}	
-	
+	}
+
 	tmp = multiply_matrixsu3_dagger_dagger(get_matrixsu3(field, pos2.w, pos2.z, nu), get_matrixsu3(field, pos.w, pos.z, mu)      );
 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos2.y, pos2.x, mu) );
 	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos2.y, pos2.x, nu) );
-	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.y, pos.x, mu) );	
+	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.y, pos.x, mu) );
 
 	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
-	
-	//4. Udagger_nu(x - nu) * Udagger_nu(x - nu - nu) * U_mu(x - nu - nu) * U_nu(x - nu - nu + mu) * U_nu(x - nu + mu)
+
+
+	//4. Udagger_nu(x - nu + mu) * Udagger_nu(x - nu - nu + mu) * Udagger_mu(x - nu - nu) * Ud_nu(x - nu - nu) * U_nu(x - nu)
 	//(x, y) = i - nu (call the site idx "x" "i" for now)
 	if(nu == 0) {
 		pos.x = get_lower_neighbor_temporal(t);
@@ -546,16 +650,16 @@ Matrix3x3 local_rectangles_staple(__global ocl_s_gaugefield * field, const int n
 	} else {
 		pos2.z = pos.z;
 		pos2.w = get_neighbor(pos.w, mu);
-	}	
-	
-	tmp = multiply_matrixsu3_dagger_dagger(get_matrixsu3(field, pos.y, pos.x, nu), get_matrixsu3(field, pos.w, pos.z, nu)      );
-	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.z, pos.w, mu) );
-	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos2.w, pos2.z, nu) );
-	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos2.y, pos2.x, nu) );	
+	}
+
+	tmp = multiply_matrixsu3_dagger_dagger(get_matrixsu3(field, pos2.y, pos2.x, nu), get_matrixsu3(field, pos2.w, pos2.z, nu)      );
+	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos.w, pos.z, mu) );
+	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.w, pos.z, nu) );
+	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.y, pos.x, nu) );
 
 	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
-	
-	//5. Udagger_mu(x - mu) * U_nu(x - mu) * U_mu(x - mu + nu) * U_mu(x + nu) * Udagger_nu(x + mu)
+
+	//5.    U_nu(x + mu) * Udagger_mu(x + nu) * Udagger_mu(x - mu + nu) * Udagger_nu(x - mu) * U_mu(x - mu)
 	//(x, y) = i - mu (call the site idx "x" "i" for now)
 	if(mu == 0) {
 		pos.x = get_lower_neighbor_temporal(t);
@@ -587,18 +691,16 @@ Matrix3x3 local_rectangles_staple(__global ocl_s_gaugefield * field, const int n
 	} else {
 		pos2.z = t;
 		pos2.w = get_neighbor(n, mu);
-	}	
-	
-	//TODO: there is no function Udagger * U up to now!!!!
-	tmp = adjoint_matrixsu3( get_matrixsu3(field, pos.y, pos.x, mu) );
-	tmp = multiply_matrixsu3( tmp, get_matrixsu3(field, pos.y, pos.x, nu) );
-	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos2.y, pos2.x, mu) );
-	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.w, pos.z, mu) );
-	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos2.w, pos2.z, nu) );	
+	}
+
+	tmp = multiply_matrixsu3_dagger( get_matrixsu3(field, pos2.w, pos2.z, nu), get_matrixsu3(field, pos.w, pos.z, mu) );
+	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos2.y, pos2.x, mu) );
+	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos.y, pos.x, nu) );
+	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.y, pos.x, mu) );
 
 	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
-	
-	//6.	U_nu(x) * U_mu(x + nu) * U_mu(x + nu + mu) * Udagger_nu(x + mu + mu) * Udagger_mu(x + mu)
+
+	//6.  U_mu(x + mu)  U_nu(x + mu + mu) Udagger_mu(x + nu + mu) Udagger_mu(x + nu) Udagger_nu(x)
 	//(x, y) = i + mu (call the site idx "x" "i" for now)
 	if(mu == 0) {
 		pos.x = get_neighbor_temporal(t);
@@ -630,23 +732,23 @@ Matrix3x3 local_rectangles_staple(__global ocl_s_gaugefield * field, const int n
 	} else {
 		pos2.z = pos.x;
 		pos2.w = get_neighbor(pos.y, mu);
-	}	
-	
-	tmp = multiply_matrixsu3 (get_matrixsu3(field, n, t, nu), get_matrixsu3(field, pos.w, pos.z, mu)      );
-	tmp = multiply_matrixsu3 (tmp, get_matrixsu3(field, pos2.y, pos2.x, mu) );
-	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos2.w, pos2.z, nu) );
-	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos.y, pos.x, mu) );	
+	}
+
+	tmp = multiply_matrixsu3 (get_matrixsu3(field, pos.y, pos.x, mu), get_matrixsu3(field, pos2.w, pos2.z, nu)      );
+	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos2.y, pos2.x, mu) );
+	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos.w, pos.z, mu) );
+	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, n, t, nu) );
 
 	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
-	
+
 	return out;
 }
 
-
-Matrix3x3 calc_staple(__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
+Matrix3x3 calc_staple(__global const Matrixsu3StorageType * const restrict field, const int pos, const int t, const int mu_in)
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
+#pragma unroll 3 // unroll required for proper register reuse when using newer Catalysts on Cypress
 	for(int i = 0; i < NDIM - 1; i++) {
 		int nu = (mu_in + i + 1) % NDIM;
 		staple = add_matrix3x3(staple,  local_staple(field, pos, t, mu_in, nu ));
@@ -655,10 +757,11 @@ Matrix3x3 calc_staple(__global ocl_s_gaugefield* field, const int pos, const int
 }
 
 //this is the staple only in the spatial directions only
-Matrix3x3 calc_staple_sigma (__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
+Matrix3x3 calc_staple_sigma (__global const Matrixsu3StorageType * const restrict field, const int pos, const int t, const int mu_in)
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
+#pragma unroll 3 // unroll required for proper register reuse when using newer Catalysts on Cypress
 	for(int i = 0; i < NDIM - 1; i++) {
 		int nu = (mu_in + i + 1) % NDIM;
 		if(nu != 0)
@@ -668,59 +771,22 @@ Matrix3x3 calc_staple_sigma (__global ocl_s_gaugefield* field, const int pos, co
 }
 
 //this is the staple only in temporal direction only
-Matrix3x3 calc_staple_tau (__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
+Matrix3x3 calc_staple_tau (__global const Matrixsu3StorageType * const restrict field, const int pos, const int t, const int mu_in)
 {
 	int nu = 0;
 	return local_staple(field, pos, t, mu_in, nu );
 }
 
 //this is the rectangles staple
-Matrix3x3 calc_rectangles_staple(__global ocl_s_gaugefield* field, const int pos, const int t, const int mu_in)
+Matrix3x3 calc_rectangles_staple(__global const Matrixsu3StorageType * const restrict field, const int pos, const int t, const int mu_in)
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
-	for(int i = 0; i < NDIM - 1; i++) {
+#pragma unroll 3 // unroll required for proper register reuse when using newer Catalysts on Cypress
+	for(int i = 0; i < NDIM - 1 ; i++) {
 		int nu = (mu_in + i + 1) % NDIM;
 		staple = add_matrix3x3(staple,  local_rectangles_staple(field, pos, t, mu_in, nu ));
 	}
+
 	return staple;
 }
-
-// TODO document
-Matrixsu3 getSU3(__global const Matrixsu3StorageType * const restrict in, const uint idx)
-{
-#ifdef _USE_SOA_
-	return (Matrixsu3) {
-		in[0 * GAUGEFIELD_STRIDE + idx],
-		   in[1 * GAUGEFIELD_STRIDE + idx],
-		   in[2 * GAUGEFIELD_STRIDE + idx],
-		   in[3 * GAUGEFIELD_STRIDE + idx],
-		   in[4 * GAUGEFIELD_STRIDE + idx],
-		   in[5 * GAUGEFIELD_STRIDE + idx],
-		   in[6 * GAUGEFIELD_STRIDE + idx],
-		   in[7 * GAUGEFIELD_STRIDE + idx],
-		   in[8 * GAUGEFIELD_STRIDE + idx]
-	   };
-#else
-	return in[idx];
-#endif
-}
-
-// TODO document
-void putSU3(__global Matrixsu3StorageType * const restrict out, const uint idx, const Matrixsu3 val)
-{
-#ifdef _USE_SOA_
-	out[0 * GAUGEFIELD_STRIDE + idx] = val.e00;
-	out[1 * GAUGEFIELD_STRIDE + idx] = val.e01;
-	out[2 * GAUGEFIELD_STRIDE + idx] = val.e02;
-	out[3 * GAUGEFIELD_STRIDE + idx] = val.e10;
-	out[4 * GAUGEFIELD_STRIDE + idx] = val.e11;
-	out[5 * GAUGEFIELD_STRIDE + idx] = val.e12;
-	out[6 * GAUGEFIELD_STRIDE + idx] = val.e20;
-	out[7 * GAUGEFIELD_STRIDE + idx] = val.e21;
-	out[8 * GAUGEFIELD_STRIDE + idx] = val.e22;
-#else
-	out[idx] = val;
-#endif
-}
-

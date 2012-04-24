@@ -2,7 +2,7 @@
  * @file M normal Wilson fermionmatrix
  */
 
-__kernel void M_wilson(__global spinorfield * in, __global ocl_s_gaugefield * field, __global spinorfield * out)
+__kernel void M_wilson(__global spinorfield * in, __global Matrixsu3StorageType * field, __global spinorfield * out, hmc_float kappa_in)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -21,13 +21,13 @@ __kernel void M_wilson(__global spinorfield * in, __global ocl_s_gaugefield * fi
 		//Diagonalpart: (this is simple here)
 		out_tmp = get_spinor_from_field(in, pos.space, pos.time);
 		//calc dslash (this includes mutliplication with kappa)
-		out_tmp2 = dslash_local_0(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_local_0(in, field, pos.space, pos.time, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_local_1(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_local_1(in, field, pos.space, pos.time, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_local_2(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_local_2(in, field, pos.space, pos.time, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
-		out_tmp2 = dslash_local_3(in, field, pos.space, pos.time);
+		out_tmp2 = dslash_local_3(in, field, pos.space, pos.time, kappa_in);
 		out_tmp = spinor_dim(out_tmp, out_tmp2);
 
 		put_spinor_to_field(out_tmp, out, pos.space, pos.time);

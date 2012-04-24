@@ -21,7 +21,7 @@ class Device : public Opencl_Module {
 	cl_kernel testKernel;
 public:
 	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module() {
-		Opencl_Module::init(queue, 0, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+		Opencl_Module::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -70,16 +70,15 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	cpu.print_gaugeobservables_from_task(0, 0);
 	hmc_float cpu_back = cpu.runTestKernel();
 	BOOST_MESSAGE("Tested CPU");
+
 	logger.info() << "Init GPU device";
 	//params.print_info_inverter("m_gpu");
-	logger.fatal() << "GPU does not work at the moment!";
-	/*  Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
 	logger.info() << "gaugeobservables: ";
 	dummy.print_gaugeobservables_from_task(0, 0);
 	hmc_float gpu_back = dummy.runTestKernel();
 	BOOST_MESSAGE("Tested GPU");
-	*/
-	hmc_float gpu_back;
+
 	logger.info() << "cpu: " << cpu_back << "\tgpu: " << gpu_back;
 
 	BOOST_MESSAGE(cpu_back << ' ' << gpu_back);
@@ -169,7 +168,8 @@ hmc_float Dummyfield::runTestKernel()
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
-	static_cast<Device*>(opencl_modules[0])->runTestKernel(*(get_clmem_gaugefield()), out, gs, ls);
+	Device * device = static_cast<Device*>(opencl_modules[0]);
+	device->runTestKernel(device->get_gaugefield(), out, gs, ls);
 
 	int NUM_ELEMENTS = params.get_vol4d();
 	//copy the result of the kernel to host
