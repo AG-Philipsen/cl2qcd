@@ -1,0 +1,43 @@
+
+********************************************************************************
+
+                          ranlux --- version 3.3
+
+********************************************************************************
+
+This version coincides with version 3.0 apart from a small syntactical 
+changes
+
+
+Documentation
+-------------
+
+guide.ps       User's guide for the programs in this directory
+
+notes.ps       Description of the underlying algorithms and references
+
+
+Programs
+--------
+
+ranlxd.c       File containing the double precision generator plus
+               utility programs
+
+ranlxs.c       File containing the single precision generator plus
+               utility programs
+
+testlx.c       Main program to test whether the generators work properly
+               on the chosen machine and with the chosen compiler options
+
+
+Include files
+-------------
+
+ranlxd.h       Function allusions (prototypes) of the externally 
+               accessible functions in the file ranlxd.c
+
+ranlxc.h       Function allusions (prototypes) of the externally 
+               accessible functions in the file ranlxc.c
+
+
+********************************************************************************

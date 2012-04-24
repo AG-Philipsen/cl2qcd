@@ -226,6 +226,7 @@ add_library( einhard
 add_subdirectory( crypto )
 
 # Random number generation lib
+add_subdirectory(ranlux)
 add_subdirectory(ranluxcl)
 
 # Documentation
