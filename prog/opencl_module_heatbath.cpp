@@ -137,12 +137,12 @@ void Opencl_Module_Heatbath::run_heatbath()
 		enqueueKernel(heatbath_odd_hack, global_work_size, ls);
 	}
 
+	// wait for kernel to finish to avoid hangups on AMD
+	clerr = clFinish(get_queue());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
+
 	clerr = clReleaseMemObject(tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-
-	// do not wait for kernel to finish...
-	//  clerr = clFinish(get_queue());
-	//  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
 }
 
 void Opencl_Module_Heatbath::run_overrelax()
@@ -171,11 +171,11 @@ void Opencl_Module_Heatbath::run_overrelax()
 	for(cl_int i = 0; i < NDIM; i++) {
 		clerr = clSetKernelArg(overrelax_even, 2, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-		enqueueKernel(overrelax_even, global_work_size);
+		enqueueKernel(overrelax_even, global_work_size, ls);
 
 		clerr = clSetKernelArg(heatbath_even_hack, 2, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-		enqueueKernel(heatbath_even_hack, global_work_size);
+		enqueueKernel(heatbath_even_hack, global_work_size, ls);
 	}
 
 	this->get_work_sizes(overrelax_odd, this->get_device_type(), &ls, &global_work_size, &num_groups);
@@ -196,19 +196,19 @@ void Opencl_Module_Heatbath::run_overrelax()
 	for(cl_int i = 0; i < NDIM; i++) {
 		clerr = clSetKernelArg(overrelax_odd, 2, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-		enqueueKernel(overrelax_odd, global_work_size);
+		enqueueKernel(overrelax_odd, global_work_size, ls);
 
 		clerr = clSetKernelArg(heatbath_odd_hack, 2, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-		enqueueKernel(heatbath_odd_hack, global_work_size);
+		enqueueKernel(heatbath_odd_hack, global_work_size, ls);
 	}
+
+	// wait for kernel to finish to avoid hangups on AMD
+	clerr = clFinish(get_queue());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
 
 	clerr = clReleaseMemObject(tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-
-	//do not wait for kernel to finish
-	//  clerr = clFinish(get_queue());
-	//  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
 }
 
 void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
@@ -227,7 +227,7 @@ void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, cl_device_ty
 			*gs = min(get_max_compute_units(), this->Opencl_Module_Ran::get_num_rndstates());
 		}
 		*ls = Opencl_Module::get_numthreads();
-		*num_groups = 0;
+		*num_groups = *gs / *ls;
 	}
 	return;
 }
