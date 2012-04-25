@@ -87,6 +87,14 @@ if( USE_DOUBLE_PRECISION )
 	add_definitions( -D_USEDOUBLEPREC_ )
 endif( USE_DOUBLE_PRECISION )
 
+# allow to choose a PRNG
+set(PRNG "NR3" CACHE STRING "The pseudo random number generator to use. Options are: NR3")
+if(PRNG STREQUAL "NR3")
+	add_definitions(-DUSE_PRNG_NR3)
+else(PRNG STREQUAL "NR3")
+	message(SEND_ERROR "PRNG must be NR3. \"${PRNG}\" is not a valid value.")
+endif(PRNG STREQUAL "NR3")
+
 # default random number seed
 configure_file( rand_seeds rand_seeds COPYONLY )
 

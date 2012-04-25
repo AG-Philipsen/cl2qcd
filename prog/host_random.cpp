@@ -5,6 +5,7 @@
 /** Seed for the singleton random number generator rnd */
 const unsigned long long int seed = 500000;
 
+#ifdef USE_PRNG_NR3
 /** Utility 64-bit integer for random number generation */
 typedef unsigned long long int Ullong;
 /** Utility 32-bit integer for random number generation */
@@ -65,6 +66,10 @@ inline int random_123 ()
 {
 	return rnd.int64() % 3 + 1;
 }
+
+#endif // USE_PRNG_NR3
+
+// FIXME GPU PRNG should also respect selection
 
 #if defined(__APPLE__) && !defined(CL_VERSION_1_1)
 #define CLU_VEC( vec, idx ) (vec)[idx]
@@ -151,12 +156,20 @@ void init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seed
 
 void prng_init(uint32_t seed)
 {
+#ifdef USE_PRNG_NR3
 	rnd = Random(seed);
+#else // USE_PRNG_NR3
+#error 'No implemented PRNG chosen'
+#endif // USE_PRNG_NR3
 }
 
 double prng_double()
 {
+#ifdef USE_PRNG_NR3
 	return rnd.doub();
+#else // USE_PRNG_NR3
+#error 'No implemented PRNG chosen'
+#endif // USE_PRNG_NR3
 }
 
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha)
@@ -164,6 +177,7 @@ void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha)
 	hmc_float delta;
 	hmc_float a0 ;
 	hmc_float eta ;
+#ifdef USE_PRNG_NR3
 	do {
 		delta = -log(rnd.doub()) / alpha * pow(cos(2. * PI * rnd.doub()), 2.) - log(rnd.doub()) / alpha;
 		a0 = 1. - delta;
@@ -171,6 +185,9 @@ void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha)
 	} while ( (1. - 0.5 * delta) < eta * eta);
 	hmc_float phi = 2.*PI * rnd.doub();
 	hmc_float theta = asin(2.*rnd.doub() - 1.);
+#else // USE_PRNG_NR3
+#error 'No implemented PRNG chosen'
+#endif // USE_PRNG_NR3
 	dst[0] = a0;
 	dst[1] = sqrt(1. - a0 * a0) * cos(theta) * cos(phi);
 	dst[2] = sqrt(1. - a0 * a0) * cos(theta) * sin(phi);
@@ -193,9 +210,13 @@ void gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma)
 
 void gaussianNormalPair(hmc_float * z1, hmc_float * z2)
 {
+#ifdef USE_PRNG_NR3
 	// Box-Muller method, cartesian form, for extracting two independent normal standard real numbers
 	hmc_float u1 = 1.0 - rnd.doub();
 	hmc_float u2 = 1.0 - rnd.doub();
+#else // USE_PRNG_NR3
+#error 'No implemented PRNG chosen'
+#endif // USE_PRNG_NR3
 	hmc_float p  = sqrt(-2 * log(u1));
 	*z1 = p * cos(2 * PI * u2);
 	*z2 = p * sin(2 * PI * u2);
@@ -205,9 +226,13 @@ void gaussianNormalPair(hmc_float * z1, hmc_float * z2)
 
 void random_1_2_3 (int rand[3])
 {
+#ifdef USE_PRNG_NR3
 	rand[0] = random_123();
 	do {
 		rand[1] = random_123();
 	} while (rand[1] == rand[0]);
 	rand[2] = 6 - rand[1] - rand[0];
+#else // USE_PRNG_NR3
+#error 'No implemented PRNG chosen'
+#endif // USE_PRNG_NR3
 }
