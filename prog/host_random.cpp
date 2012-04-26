@@ -3,7 +3,9 @@
 #include <cstdio>
 
 #ifdef USE_PRNG_RANLUX
+extern "C" {
 #include "ranlux/ranlxd.h"
+}
 #endif // USE_PRNG_RANLUX
 
 /** Seed for the singleton random number generator rnd */

@@ -91,8 +91,10 @@ endif( USE_DOUBLE_PRECISION )
 set(PRNG "Ranlux" CACHE STRING "The pseudo random number generator to use. Options are: Ranlux (default) and NR3")
 if(PRNG STREQUAL "NR3")
 	add_definitions(-DUSE_PRNG_NR3)
+	set(PRNG_LIBRARIES "")
 elseif(PRNG STREQUAL "Ranlux")
 	add_definitions(-DUSE_PRNG_RANLUX)
+	set(PRNG_LIBRARIES ranlux)
 else(PRNG STREQUAL "NR3")
 	message(SEND_ERROR "PRNG must be Ranlux (default) or NR3. \"${PRNG}\" is not a valid value.")
 endif(PRNG STREQUAL "NR3")
@@ -126,6 +128,7 @@ target_link_libraries( heatbath
 	klepsydra
 	einhard
 	crypto
+	${PRNG_LIBRARIES}
 )
 add_dependencies(heatbath git_commit_id_header)
 
@@ -156,6 +159,7 @@ target_link_libraries( transportcoefficient
 	klepsydra
 	einhard
 	crypto
+	${PRNG_LIBRARIES}
 )
 add_dependencies(transportcoefficient git_commit_id_header)
 
@@ -188,6 +192,7 @@ target_link_libraries( inverter
 	klepsydra
 	einhard
 	crypto
+	${PRNG_LIBRARIES}
 )
 add_dependencies(inverter git_commit_id_header)
 
@@ -219,6 +224,7 @@ target_link_libraries( hmc
 	klepsydra
 	einhard
 	crypto
+	${PRNG_LIBRARIES}
 )
 add_dependencies(hmc git_commit_id_header)
 

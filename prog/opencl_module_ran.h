@@ -68,12 +68,6 @@ public:
 	virtual void clear_buffers();
 
 	/**
-	 * Initialize random arrays.
-	 * Called by fill_buffers() so that the arrays are available "in time"
-	 */
-	void init_random_arrays();
-
-	/**
 	 * Get cl_mem object rndarray
 	 * @return rndarray
 	 */
@@ -90,6 +84,11 @@ protected:
 	 * @return num_rndstates
 	 */
 	int get_num_rndstates();
+
+	/**
+	 * A set of sources required to use the PRNG.
+	 */
+	ClSourcePackage prng_code;
 
 private:
 

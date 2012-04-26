@@ -38,6 +38,7 @@ if( PERFORM_PROFILING )
 		klepsydra
 		crypto
 		einhard
+		${PRNG_LIBRARIES}
 	)
 	add_dependencies(heatbath_benchmarks git_commit_id_header)
 
@@ -69,6 +70,7 @@ if( PERFORM_PROFILING )
 		klepsydra
 		crypto
 		einhard
+		${PRNG_LIBRARIES}
 	)
 	add_dependencies(inverter_benchmarks git_commit_id_header)
 
@@ -100,6 +102,7 @@ if( PERFORM_PROFILING )
 		klepsydra
 		crypto
 		einhard
+		${PRNG_LIBRARIES}
 	)
 	add_dependencies(dslash_benchmark git_commit_id_header)
 
@@ -131,6 +134,7 @@ if( PERFORM_PROFILING )
 		klepsydra
 		crypto
 		einhard
+		${PRNG_LIBRARIES}
 	)
 	add_dependencies(hmc_benchmarks git_commit_id_header)
 

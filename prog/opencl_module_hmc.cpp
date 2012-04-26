@@ -71,14 +71,14 @@ void Opencl_Module_Hmc::fill_kernels()
 
 	//init kernels for HMC
 	if(get_parameters()->get_use_eo() == true) {
-		generate_gaussian_spinorfield_eo = createKernel("generate_gaussian_spinorfield_eo") << basic_hmc_code << "random.cl" << "spinorfield_eo_gaussian.cl";
+		generate_gaussian_spinorfield_eo = createKernel("generate_gaussian_spinorfield_eo") << basic_hmc_code << prng_code << "spinorfield_eo_gaussian.cl";
 		fermion_force_eo = createKernel("fermion_force_eo") << basic_hmc_code << "fermionmatrix.cl" << "force_fermion_eo.cl";
 	} else {
-		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_hmc_code << "random.cl" << "spinorfield_gaussian.cl";
+		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_hmc_code << prng_code << "spinorfield_gaussian.cl";
 	}
 	fermion_force = createKernel("fermion_force") << basic_hmc_code << "fermionmatrix.cl" << "force_fermion.cl";
 	set_zero_gaugemomentum = createKernel("set_zero_gaugemomentum") << basic_hmc_code <<  "gaugemomentum_zero.cl";
-	generate_gaussian_gaugemomenta = createKernel("generate_gaussian_gaugemomenta") << basic_hmc_code << "random.cl" << "gaugemomentum_gaussian.cl";
+	generate_gaussian_gaugemomenta = createKernel("generate_gaussian_gaugemomenta") << basic_hmc_code << prng_code << "gaugemomentum_gaussian.cl";
 	md_update_gaugefield = createKernel("md_update_gaugefield") << basic_hmc_code << "md_update_gaugefield.cl";
 	md_update_gaugemomenta = createKernel("md_update_gaugemomenta") << basic_hmc_code  << "md_update_gaugemomenta.cl";
 	gauge_force = createKernel("gauge_force") << basic_hmc_code  << "force_gauge.cl";

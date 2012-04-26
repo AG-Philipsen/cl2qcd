@@ -7,8 +7,25 @@
 
 using namespace std;
 
-void Opencl_Module_Ran::init_random_arrays()
+void Opencl_Module_Ran::fill_collect_options(stringstream* collect_options)
 {
+	Opencl_Module::fill_collect_options(collect_options);
+	if(get_parameters()->get_use_same_rnd_numbers() ) *collect_options <<  " -D_SAME_RND_NUMBERS_ ";
+#ifdef USE_PRNG_NR3
+	*collect_options << " -DUSE_PRNG_NR3";
+#elif defined(USE_PRNG_RANLUX)
+	*collect_options << " -DUSE_PRNG_RANLUX -DRANLUXCL_MAXWORKITEMS=" << num_rndstates;
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
+}
+
+
+void Opencl_Module_Ran::fill_buffers()
+{
+
+	Opencl_Module::fill_buffers();
+
 #ifdef USE_PRNG_NR3
 	// Prepare random number arrays, for each task and device separately
 	if(get_device_type() == CL_DEVICE_TYPE_GPU)
@@ -18,43 +35,52 @@ void Opencl_Module_Ran::init_random_arrays()
 	rndarray = new nr3_state_dev[num_rndstates];
 	sizeof_rndarray = sizeof(nr3_state_dev) * num_rndstates;
 	nr3_init_seeds(rndarray, "rand_seeds", num_rndstates);
-#else // USE_PRNG_NR3
-#error No implemented PRNG selected
-#endif // USE_PRNG_NR3
-}
 
-
-void Opencl_Module_Ran::fill_collect_options(stringstream* collect_options)
-{
-	Opencl_Module::fill_collect_options(collect_options);
-	if(get_parameters()->get_use_same_rnd_numbers() ) *collect_options <<  " -D_SAME_RND_NUMBERS_ ";
-#ifdef USE_PRNG_NR3
-	*collect_options << " -DUSE_PRNG_NR3";
-#else // USE_PRNG_NR3
-#error No implemented PRNG selected
-#endif // USE_PRNG_NR3
-}
-
-
-void Opencl_Module_Ran::fill_buffers()
-{
-
-	Opencl_Module::fill_buffers();
-	init_random_arrays();
-
-#ifdef USE_PRNG_NR3
 	logger.trace() << "Create buffer for random numbers...";
 	clmem_rndarray = create_rw_buffer(sizeof(nr3_state_dev) * get_num_rndstates());
 	this->copy_rndstate_to_device(rndarray);
-#else // USE_PRNG_NR3
+#elif defined(USE_PRNG_RANLUX)
+	// make num of random states equal to default num of global threads
+	// TODO make this somewhat more automatic (avoid code duplication)
+	if(this->get_device_type() == CL_DEVICE_TYPE_GPU)
+		num_rndstates = 4 * Opencl_Module::get_numthreads() * get_max_compute_units();
+	else
+		num_rndstates = get_max_compute_units();
+
+	logger.trace() << "Create buffer for random numbers...";
+	clmem_rndarray = create_rw_buffer(7 * num_rndstates * sizeof(cl_float4));
+	// kernels are not filled yet, so delay filling until kernel creation
+#else // USE_PRNG_XXX
 #error No implemented PRNG selected
-#endif // USE_PRNG_NR3
+#endif // USE_PRNG_XXX
 }
 
 void Opencl_Module_Ran::fill_kernels()
 {
 	Opencl_Module::fill_kernels();
-	return;
+
+#ifdef USE_PRNG_NR3
+	prng_code = ClSourcePackage() << "random.cl";
+#elif defined(USE_PRNG_RANLUX)
+	prng_code = ClSourcePackage() << "ranluxcl/ranluxcl.cl" << "random.cl";
+	cl_kernel init_kernel = createKernel("prng_ranlux_init") << basic_opencl_code << prng_code << "random_ranlux_init.cl";
+	cl_int clerr;
+	size_t ls, gs;
+	cl_uint num_groups;
+	this->get_work_sizes(init_kernel, this->get_device_type(), &ls, &gs, &num_groups);
+	cl_uint seed = 1; //@ FIXME set proper value
+	clerr = clSetKernelArg(init_kernel, 0, sizeof(cl_uint), &seed);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(init_kernel, 1, sizeof(cl_mem), &clmem_rndarray);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	enqueueKernel(init_kernel, gs, ls);
+	clerr = clFinish(get_queue());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
+	clerr = clReleaseKernel(init_kernel);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
 }
 
 void Opencl_Module_Ran::clear_kernels()
@@ -69,9 +95,11 @@ void Opencl_Module_Ran::clear_buffers()
 
 #ifdef USE_PRNG_NR3
 	delete [] rndarray;
-#else // USE_PRNG_NR3
+#elif defined(USE_PRNG_RANLUX)
+	// nothing to do
+#else // USE_PRNG_XXX
 #error No implemented PRNG selected
-#endif // USE_PRNG_NR3
+#endif // USE_PRNG_XXX
 
 	cl_int clerr = CL_SUCCESS;
 

@@ -33,14 +33,14 @@ void Opencl_Module_Heatbath::fill_kernels()
 	Opencl_Module_Ran::fill_kernels();
 
 	logger.debug() << "Create heatbath kernels...";
-	heatbath_even = createKernel("heatbath_even") << basic_opencl_code << "random.cl" << "operations_heatbath.cl" << "heatbath_even.cl";
-	heatbath_odd = createKernel("heatbath_odd") << basic_opencl_code << "random.cl" << "operations_heatbath.cl" << "heatbath_odd.cl";
-	heatbath_even_hack = createKernel("heatbath_even_hack") << basic_opencl_code << "random.cl" << "operations_heatbath.cl" << "heatbath_even.cl";
-	heatbath_odd_hack = createKernel("heatbath_odd_hack") << basic_opencl_code << "random.cl" << "operations_heatbath.cl" << "heatbath_odd.cl";
+	heatbath_even = createKernel("heatbath_even") << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_even.cl";
+	heatbath_odd = createKernel("heatbath_odd") << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_odd.cl";
+	heatbath_even_hack = createKernel("heatbath_even_hack") << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_even.cl";
+	heatbath_odd_hack = createKernel("heatbath_odd_hack") << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_odd.cl";
 
 	logger.debug() << "Create overrelax kernels...";
-	overrelax_even = createKernel("overrelax_even") << basic_opencl_code << "random.cl" << "operations_heatbath.cl" << "overrelax_even.cl";
-	overrelax_odd = createKernel("overrelax_odd") << basic_opencl_code << "random.cl" << "operations_heatbath.cl" << "overrelax_odd.cl";
+	overrelax_even = createKernel("overrelax_even") << basic_opencl_code << prng_code << "operations_heatbath.cl" << "overrelax_even.cl";
+	overrelax_odd = createKernel("overrelax_odd") << basic_opencl_code << prng_code << "operations_heatbath.cl" << "overrelax_odd.cl";
 
 	return;
 }

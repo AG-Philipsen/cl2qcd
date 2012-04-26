@@ -4,7 +4,7 @@
 
 //operations_heatbath.cl
 
-Matrixsu2_pauli SU2Update(const hmc_float alpha, prng_state * rnd)
+Matrixsu2_pauli SU2Update(const hmc_float alpha, prng_state * const restrict rnd)
 {
 	Matrixsu2_pauli out;
 
@@ -17,7 +17,7 @@ Matrixsu2_pauli SU2Update(const hmc_float alpha, prng_state * rnd)
 		a0 = 1. - delta;
 		eta = rands.w;
 	} while ( (1. - 0.5 * delta) < eta * eta);
-	prng_synchronize();
+	prng_synchronize(rnd);
 
 	double4 rands = prng_double4(rnd);
 	hmc_float phi = 2.*PI * rands.x;
