@@ -31,7 +31,7 @@ inline ulong nr3_int64(prng_state * state )
  * @param[in,out] state Pointer to this threads random number generator state in global memory
  * @return A pseudo-random float
  */
-inline double ocl_new_ran(prng_state * state)
+inline double nr3_double(prng_state * state)
 {
 	return 5.42101086242752217E-20 * nr3_int64( state );
 }
@@ -117,13 +117,13 @@ hmc_complex inline gaussianNormalPair(prng_state * const restrict rnd)
 	hmc_float u1_tmp;
 	//CP: if u1 == 1., p will be "inf"
 	do {
-		u1_tmp = ocl_new_ran(rnd);
+		u1_tmp = nr3_double(rnd);
 		if(u1_tmp < 1.) break;
 	} while (1 > 0);
 
 	hmc_float u1 = 1.0 - u1_tmp;
-	//  hmc_float u2 = 1.0 - ocl_new_ran(rnd);
-	hmc_float u2 = ocl_new_ran(rnd);
+	//  hmc_float u2 = 1.0 - nr3_double(rnd);
+	hmc_float u2 = nr3_double(rnd);
 	//CP: this is the standard Box-Müller way:
 	hmc_float p  = sqrt(- 2.* log(u1));
 	//CP: without the 2, one gets sigma = 0.5 rightaway, this is done in tmlqcd
