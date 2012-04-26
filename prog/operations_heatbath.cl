@@ -12,14 +12,16 @@ Matrixsu2_pauli SU2Update(const hmc_float alpha, prng_state * rnd)
 	hmc_float a0 ;
 	hmc_float eta ;
 	do {
-		delta = -log(prng_double(rnd)) / alpha * pow(cos((hmc_float)(2.f * PI * prng_double(rnd))), (hmc_float) 2.f) - log(prng_double(rnd)) / alpha;
+		double4 rands = prng_double4(rnd);
+		delta = -log(rands.x) / alpha * pow(cos((hmc_float)(2.f * PI * rands.y)), (hmc_float) 2.f) - log(rands.z) / alpha;
 		a0 = 1. - delta;
-		eta = prng_double(rnd);
+		eta = rands.w;
 	} while ( (1. - 0.5 * delta) < eta * eta);
 	prng_synchronize();
 
-	hmc_float phi = 2.*PI * prng_double(rnd);
-	hmc_float theta = asin((hmc_float)(2.f * prng_double(rnd) - 1.f));
+	double4 rands = prng_double4(rnd);
+	hmc_float phi = 2.*PI * rands.x;
+	hmc_float theta = asin((hmc_float)(2.f * rands.y - 1.f));
 	out.e00 = a0;
 	out.e01 = sqrt(1.f - a0 * a0) * cos(theta) * cos(phi);
 	out.e10 = sqrt(1.f - a0 * a0) * cos(theta) * sin(phi);

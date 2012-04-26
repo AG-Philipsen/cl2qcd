@@ -87,6 +87,20 @@ double prng_double(prng_state * const restrict state)
 }
 
 /**
+ * Draw 4 double precision floating point numbers.
+ *
+ * Depending on the PRNG this might be more efficient than pulling multiple numbers via seperate calls.
+ *
+ * @param[in] range Upper bound for the drawn number, nummber will be one less than this at maximum
+ * @param[in,out] state Pointer to this threads random number generator state in global memory
+ * @return A pseudo-random integer
+ */
+double4 prng_double4(prng_state * const restrict state)
+{
+	return (double4) (nr3_double(state), nr3_double(state), nr3_double(state), nr3_double(state));
+}
+
+/**
  * Get PRNG back into a SIMD-friendly state in case different threads requested different amounts
  * of random numbers.
  */
