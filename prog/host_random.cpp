@@ -62,11 +62,6 @@ struct Random {
 /** The singleton single-threaded random number generator */
 Random rnd(seed);
 
-inline int random_123 ()
-{
-	return rnd.int64() % 3 + 1;
-}
-
 #endif // USE_PRNG_NR3
 
 // FIXME GPU PRNG should also respect selection
@@ -222,17 +217,4 @@ void gaussianNormalPair(hmc_float * z1, hmc_float * z2)
 	*z2 = p * sin(2 * PI * u2);
 	return;
 	// SL: not yet tested
-}
-
-void random_1_2_3 (int rand[3])
-{
-#ifdef USE_PRNG_NR3
-	rand[0] = random_123();
-	do {
-		rand[1] = random_123();
-	} while (rand[1] == rand[0]);
-	rand[2] = 6 - rand[1] - rand[0];
-#else // USE_PRNG_NR3
-#error 'No implemented PRNG chosen'
-#endif // USE_PRNG_NR3
 }

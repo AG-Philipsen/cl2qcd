@@ -29,13 +29,6 @@ void prng_init(uint32_t seed);
  */
 double prng_double();
 
-/**
- * Get 1,2,3 in random order
- *
- * @param[out] rand Storage location for the result
- */
-void random_1_2_3 (int rand[3]);
-
 /** Storage type for state of the device random number generator */
 typedef cl_ulong4 prng_state_dev;
 
