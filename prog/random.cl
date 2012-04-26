@@ -63,16 +63,38 @@ void storeRngState(__global rngStateStorageType * const restrict states, const p
 }
 
 /**
- * Draw a 32-bit random integer in the range [0,range) using the algorithm described in Numerical Recipes 3.
+ * Draw a 32-bit random integer in the range [0,range).
  *
  * @param[in] range Upper bound for the drawn number, nummber will be one less than this at maximum
  * @param[in,out] state Pointer to this threads random number generator state in global memory
  * @return A pseudo-random integer
  */
-int random_int( int range, prng_state* state )
+uint prng_int32(uint range, prng_state * const restrict state)
 {
-	return (nr3_int64( state ) % range);
+	return nr3_int64(state) % range;
 }
+
+/**
+ * Draw a double precision floating point number.
+ *
+ * @param[in] range Upper bound for the drawn number, nummber will be one less than this at maximum
+ * @param[in,out] state Pointer to this threads random number generator state in global memory
+ * @return A pseudo-random integer
+ */
+double prng_double(prng_state * const restrict state)
+{
+	return nr3_double(state);
+}
+
+/**
+ * Get PRNG back into a SIMD-friendly state in case different threads requested different amounts
+ * of random numbers.
+ */
+void prng_synchronize()
+{
+	// nothing to do for NR3
+}
+
 /**
  * Get 1,2,3 in random order
  *
@@ -101,7 +123,7 @@ int3 random_1_2_3(prng_state * const restrict state)
 	// 3. as above the remaing number by difference to the fixed sum of 0+1+2=3.
 
 	int3 res;
-	res.x = random_int(3, state);
+	res.x = nr3_int64(state) % 3;
 	res.y = (res.x + (nr3_int64(state) % 2) + 1) % 3;
 	res.z = 3 - res.x - res.y;
 	++res;
