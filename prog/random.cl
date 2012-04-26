@@ -49,17 +49,17 @@ inline uint nr3_int32(hmc_ocl_ran * state )
 /**
  * Read the random number generate state from global mamory
  */
-hmc_ocl_ran loadRngState(__global const rngStateStorageType * const restrict states)
+void loadRngState(hmc_ocl_ran * const restrict state, __global const rngStateStorageType * const restrict states)
 {
-	return states[get_global_id(0)];
+	*state = states[get_global_id(0)];
 }
 
 /**
  * Read the random number generate state from global mamory
  */
-void storeRngState(__global rngStateStorageType * const restrict states, const hmc_ocl_ran state)
+void storeRngState(__global rngStateStorageType * const restrict states, const hmc_ocl_ran * const restrict state)
 {
-	states[get_global_id(0)] = state;
+	states[get_global_id(0)] = *state;
 }
 
 /**
