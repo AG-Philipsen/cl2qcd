@@ -73,7 +73,7 @@ Random rnd(seed);
 #endif
 
 //CP: NR3-PRNG converted for OpenCL by MB
-inline cl_ulong nr3_int64(prng_state_dev * state )
+inline cl_ulong nr3_int64(nr3_state_dev * state)
 {
 	CLU_VEC(*state, 0) = CLU_VEC(*state, 0) * 2862933555777941757L + 7046029254386353087L;
 	CLU_VEC(*state, 1) ^= CLU_VEC(*state, 1) >> 17;
@@ -86,7 +86,7 @@ inline cl_ulong nr3_int64(prng_state_dev * state )
 	return (tmp + CLU_VEC(*state, 1)) ^ CLU_VEC(*state, 2);
 }
 
-inline void nr3_init_state(prng_state_dev * const state, const cl_ulong seed )
+inline void nr3_init_state(nr3_state_dev * const state, const cl_ulong seed )
 {
 	CLU_VEC(*state, 1) = 4101842887655102017L;
 	CLU_VEC(*state, 2) = 1;
@@ -110,7 +110,7 @@ inline void nr3_init_state(prng_state_dev * const state, const cl_ulong seed )
 
 }
 
-void init_random_seeds(prng_state_dev * const hmc_rndarray, char const * const seedfile, int const num_rndstates)
+void nr3_init_seeds(nr3_state_dev * const hmc_rndarray, char const * const seedfile, int const num_rndstates)
 {
 	const cl_ulong MAX_SEED = 4101842887655102017L;
 

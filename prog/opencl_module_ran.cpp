@@ -14,9 +14,9 @@ void Opencl_Module_Ran::init_random_arrays()
 		num_rndstates = 5120;
 	else
 		num_rndstates = 64;
-	rndarray = new prng_state_dev[num_rndstates];
-	sizeof_rndarray = sizeof(prng_state_dev) * num_rndstates;
-	init_random_seeds(rndarray, "rand_seeds", num_rndstates);
+	rndarray = new nr3_state_dev[num_rndstates];
+	sizeof_rndarray = sizeof(nr3_state_dev) * num_rndstates;
+	nr3_init_seeds(rndarray, "rand_seeds", num_rndstates);
 	return;
 }
 
@@ -36,7 +36,7 @@ void Opencl_Module_Ran::fill_buffers()
 	init_random_arrays();
 
 	logger.trace() << "Create buffer for random numbers...";
-	clmem_rndarray = create_rw_buffer(sizeof(prng_state_dev) * get_num_rndstates());
+	clmem_rndarray = create_rw_buffer(sizeof(nr3_state_dev) * get_num_rndstates());
 	this->copy_rndstate_to_device(rndarray);
 	return;
 }
@@ -68,16 +68,16 @@ void Opencl_Module_Ran::clear_buffers()
 }
 
 
-void Opencl_Module_Ran::copy_rndstate_to_device(prng_state_dev* rndarray)
+void Opencl_Module_Ran::copy_rndstate_to_device(nr3_state_dev* rndarray)
 {
-	cl_int clerr = clEnqueueWriteBuffer(get_queue(), clmem_rndarray, CL_TRUE, 0, sizeof(prng_state_dev) * get_num_rndstates(), rndarray, 0, 0, NULL);
+	cl_int clerr = clEnqueueWriteBuffer(get_queue(), clmem_rndarray, CL_TRUE, 0, sizeof(nr3_state_dev) * get_num_rndstates(), rndarray, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 	return;
 }
 
-void Opencl_Module_Ran::copy_rndstate_from_device(prng_state_dev* rndarray)
+void Opencl_Module_Ran::copy_rndstate_from_device(nr3_state_dev* rndarray)
 {
-	cl_int clerr = clEnqueueReadBuffer(get_queue(), clmem_rndarray, CL_TRUE, 0, sizeof(prng_state_dev) * get_num_rndstates(), rndarray, 0, 0, NULL);
+	cl_int clerr = clEnqueueReadBuffer(get_queue(), clmem_rndarray, CL_TRUE, 0, sizeof(nr3_state_dev) * get_num_rndstates(), rndarray, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueReadBuffer", __FILE__, __LINE__);
 
 	return;
