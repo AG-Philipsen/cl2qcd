@@ -64,7 +64,7 @@ Random rnd(seed);
 
 #endif // USE_PRNG_NR3
 
-// FIXME GPU PRNG should also respect selection
+#ifdef USE_PRNG_NR3 // seperate ifdef, cuz this is the GPU generator
 
 #if defined(__APPLE__) && !defined(CL_VERSION_1_1)
 #define CLU_VEC( vec, idx ) (vec)[idx]
@@ -148,6 +148,8 @@ void nr3_init_seeds(nr3_state_dev * const hmc_rndarray, char const * const seedf
 
 	return;
 }
+
+#endif // USE_PRNG_NR3
 
 void prng_init(uint32_t seed)
 {

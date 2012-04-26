@@ -3,10 +3,15 @@
  */
 //opencl_random.cl
 
+#ifdef USE_PRNG_NR3
 /** Type for random number generator state */
 typedef ulong4 prng_state;
 typedef prng_state rngStateStorageType;
+#else // USE_PRNG_NR3
+#error No implemented PRNG selected
+#endif // USE_PRNG_NR3
 
+#ifdef USE_PRNG_NR3
 /**
  * Draw a 64-bit random integer using the algorithm described in Numerical Recipes 3.
  *
@@ -45,13 +50,20 @@ inline uint nr3_int32(prng_state * state )
 {
 	return (uint) nr3_int64( state );
 }
+#else // USE_PRNG_NR3
+#error No implemented PRNG selected
+#endif // USE_PRNG_NR3
 
 /**
  * Read the random number generate state from global mamory
  */
 void prng_loadState(prng_state * const restrict state, __global const rngStateStorageType * const restrict states)
 {
+#ifdef USE_PRNG_NR3
 	*state = states[get_global_id(0)];
+#else // USE_PRNG_NR3
+#error No implemented PRNG selected
+#endif // USE_PRNG_NR3
 }
 
 /**
@@ -59,7 +71,11 @@ void prng_loadState(prng_state * const restrict state, __global const rngStateSt
  */
 void prng_storeState(__global rngStateStorageType * const restrict states, const prng_state * const restrict state)
 {
+#ifdef USE_PRNG_NR3
 	states[get_global_id(0)] = *state;
+#else // USE_PRNG_NR3
+#error No implemented PRNG selected
+#endif // USE_PRNG_NR3
 }
 
 /**
@@ -71,7 +87,11 @@ void prng_storeState(__global rngStateStorageType * const restrict states, const
  */
 uint prng_int32(uint range, prng_state * const restrict state)
 {
+#ifdef USE_PRNG_NR3
 	return nr3_int64(state) % range;
+#else // USE_PRNG_NR3
+#error No implemented PRNG selected
+#endif // USE_PRNG_NR3
 }
 
 /**
@@ -83,7 +103,11 @@ uint prng_int32(uint range, prng_state * const restrict state)
  */
 double prng_double(prng_state * const restrict state)
 {
+#ifdef USE_PRNG_NR3
 	return nr3_double(state);
+#else // USE_PRNG_NR3
+#error No implemented PRNG selected
+#endif // USE_PRNG_NR3
 }
 
 /**
@@ -97,7 +121,11 @@ double prng_double(prng_state * const restrict state)
  */
 double4 prng_double4(prng_state * const restrict state)
 {
+#ifdef USE_PRNG_NR3
 	return (double4) (nr3_double(state), nr3_double(state), nr3_double(state), nr3_double(state));
+#else // USE_PRNG_NR3
+#error No implemented PRNG selected
+#endif // USE_PRNG_NR3
 }
 
 /**
@@ -106,7 +134,11 @@ double4 prng_double4(prng_state * const restrict state)
  */
 void prng_synchronize()
 {
+#ifdef USE_PRNG_NR3
 	// nothing to do for NR3
+#else // USE_PRNG_NR3
+#error No implemented PRNG selected
+#endif // USE_PRNG_NR3
 }
 
 /**
@@ -136,18 +168,23 @@ int3 prng_123(prng_state * const restrict state)
 	//    note how this keeps the probabilities correct by doing only a 50% roll and then a bijective mapping.
 	// 3. as above the remaing number by difference to the fixed sum of 0+1+2=3.
 
+#ifdef USE_PRNG_NR3
 	int3 res;
 	res.x = nr3_int64(state) % 3;
 	res.y = (res.x + (nr3_int64(state) % 2) + 1) % 3;
 	res.z = 3 - res.x - res.y;
 	++res;
 	return res;
+#else // USE_PRNG_NR3
+#error No implemented PRNG selected
+#endif // USE_PRNG_NR3
 }
 /**
  * Get a normal distributed complex number
  */
 hmc_complex inline gaussianNormalPair(prng_state * const restrict rnd)
 {
+#ifdef USE_PRNG_NR3
 	// Box-Muller method, cartesian form, for extracting two independent normal standard real numbers
 	hmc_complex tmp;
 	hmc_float u1_tmp;
@@ -169,4 +206,7 @@ hmc_complex inline gaussianNormalPair(prng_state * const restrict rnd)
 	tmp.re = p * cos(2 * PI * u2);
 	tmp.im = p * sin(2 * PI * u2);
 	return tmp;
+#else // USE_PRNG_NR3
+#error No implemented PRNG selected
+#endif // USE_PRNG_NR3
 }

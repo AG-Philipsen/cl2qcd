@@ -29,6 +29,7 @@ void prng_init(uint32_t seed);
  */
 double prng_double();
 
+#ifdef USE_PRNG_NR3
 /** Storage type for state of the device random number generator */
 typedef cl_ulong4 nr3_state_dev;
 
@@ -40,6 +41,7 @@ typedef cl_ulong4 nr3_state_dev;
  * @param[in,out] inittime Timer to add execution time to
  */
 void nr3_init_seeds(nr3_state_dev * const hmc_rndarray, char const * const seedfile, int const num_rndstates);
+#endif // USE_PRNG_NR3
 
 /** Construct new SU2 matrix using improved alg by Kennedy Pendleton */
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha);

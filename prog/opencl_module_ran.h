@@ -90,14 +90,13 @@ protected:
 	 * @return num_rndstates
 	 */
 	int get_num_rndstates();
-	nr3_state_dev* rndarray;
-	size_t sizeof_rndarray;
 
 private:
 
 	int num_rndstates;
 	cl_mem clmem_rndarray;
 
+#ifdef USE_PRNG_NR3
 	/**
 	 * Copy the RNG state to the appropriate OpenCL buffer.
 	 *
@@ -115,6 +114,10 @@ private:
 	 *         @li HMC_SUCCESS otherwise
 	 */
 	void copy_rndstate_from_device(nr3_state_dev* rndarray);
+
+	nr3_state_dev* rndarray;
+	size_t sizeof_rndarray;
+#endif // USE_PRNG_NR3
 };
 
 #endif //OPENCLMODULERANH
