@@ -17,7 +17,7 @@ __kernel void generate_gaussian_spinorfield(__global spinorfield * out, __global
 	global_size = 1;
 #endif
 
-	hmc_ocl_ran rnd;
+	prng_state rnd;
 	loadRngState(&rnd, rngStates);
 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {

@@ -4,8 +4,8 @@
 //opencl_random.cl
 
 /** Type for random number generator state */
-typedef ulong4 hmc_ocl_ran;
-typedef hmc_ocl_ran rngStateStorageType;
+typedef ulong4 prng_state;
+typedef prng_state rngStateStorageType;
 
 /**
  * Draw a 64-bit random integer using the algorithm described in Numerical Recipes 3.
@@ -13,7 +13,7 @@ typedef hmc_ocl_ran rngStateStorageType;
  * @param[in,out] state Pointer to this threads random number generator state in global memory.
  * @return A pseudo-random integer
  */
-inline ulong nr3_int64(hmc_ocl_ran * state )
+inline ulong nr3_int64(prng_state * state )
 {
 	(*state).x = (*state).x * 2862933555777941757L + 7046029254386353087L;
 	(*state).y ^= (*state).y >> 17;
@@ -31,7 +31,7 @@ inline ulong nr3_int64(hmc_ocl_ran * state )
  * @param[in,out] state Pointer to this threads random number generator state in global memory
  * @return A pseudo-random float
  */
-inline float ocl_new_ran(hmc_ocl_ran * state)
+inline float ocl_new_ran(prng_state * state)
 {
 	return 5.42101086242752217E-20f * nr3_int64( state );
 }
@@ -41,7 +41,7 @@ inline float ocl_new_ran(hmc_ocl_ran * state)
  * @param[in,out] state Pointer to this threads random number generator state in global memory
  * @return A pseudo-random integer
  */
-inline uint nr3_int32(hmc_ocl_ran * state )
+inline uint nr3_int32(prng_state * state )
 {
 	return (uint) nr3_int64( state );
 }
@@ -49,7 +49,7 @@ inline uint nr3_int32(hmc_ocl_ran * state )
 /**
  * Read the random number generate state from global mamory
  */
-void loadRngState(hmc_ocl_ran * const restrict state, __global const rngStateStorageType * const restrict states)
+void loadRngState(prng_state * const restrict state, __global const rngStateStorageType * const restrict states)
 {
 	*state = states[get_global_id(0)];
 }
@@ -57,7 +57,7 @@ void loadRngState(hmc_ocl_ran * const restrict state, __global const rngStateSto
 /**
  * Read the random number generate state from global mamory
  */
-void storeRngState(__global rngStateStorageType * const restrict states, const hmc_ocl_ran * const restrict state)
+void storeRngState(__global rngStateStorageType * const restrict states, const prng_state * const restrict state)
 {
 	states[get_global_id(0)] = *state;
 }
@@ -69,7 +69,7 @@ void storeRngState(__global rngStateStorageType * const restrict states, const h
  * @param[in,out] state Pointer to this threads random number generator state in global memory
  * @return A pseudo-random integer
  */
-int random_int( int range, hmc_ocl_ran* state )
+int random_int( int range, prng_state* state )
 {
 	return (nr3_int64( state ) % range);
 }
@@ -79,7 +79,7 @@ int random_int( int range, hmc_ocl_ran* state )
  * @param[in,out] rnd Pointer to this threads random number generator state in global memory
  * @return A random permutation of 1,2,3 in x,y,z.
  */
-int3 random_1_2_3(hmc_ocl_ran * const restrict state)
+int3 random_1_2_3(prng_state * const restrict state)
 {
 	/// @todo using uint3 as a return type instead of using an arg for return value
 	/// would reduce register usage on cypress by two GPR
@@ -110,7 +110,7 @@ int3 random_1_2_3(hmc_ocl_ran * const restrict state)
 /**
  * Get a normal distributed complex number
  */
-hmc_complex inline gaussianNormalPair(hmc_ocl_ran * const restrict rnd)
+hmc_complex inline gaussianNormalPair(prng_state * const restrict rnd)
 {
 	// Box-Muller method, cartesian form, for extracting two independent normal standard real numbers
 	hmc_complex tmp;

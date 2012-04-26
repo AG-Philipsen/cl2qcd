@@ -4,7 +4,7 @@ __kernel void generate_gaussian_gaugemomenta(__global aeStorageType * const rest
 	int global_size = get_global_size(0);
 	int id = get_global_id(0);
 
-	hmc_ocl_ran rnd;
+	prng_state rnd;
 	loadRngState(&rnd, rngStates);
 
 	hmc_complex tmp;

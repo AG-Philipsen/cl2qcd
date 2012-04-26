@@ -4,7 +4,7 @@
 
 __kernel void overrelax_even(__global Matrixsu3StorageType * const restrict dest_gaugefield, __global const Matrixsu3StorageType * const restrict src_gaugefield, const int mu, __global rngStateStorageType * const restrict rngStates)
 {
-	hmc_ocl_ran rnd;
+	prng_state rnd;
 	loadRngState(&rnd, rngStates);
 
 	PARALLEL_FOR(id, VOLSPACE * NTIME / 2) {
