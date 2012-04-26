@@ -31,9 +31,9 @@ inline ulong nr3_int64(prng_state * state )
  * @param[in,out] state Pointer to this threads random number generator state in global memory
  * @return A pseudo-random float
  */
-inline float ocl_new_ran(prng_state * state)
+inline double ocl_new_ran(prng_state * state)
 {
-	return 5.42101086242752217E-20f * nr3_int64( state );
+	return 5.42101086242752217E-20 * nr3_int64( state );
 }
 /**
  * Draw a 32-bit random integer using the algorithm described in Numerical Recipes 3.
