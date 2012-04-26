@@ -2,6 +2,10 @@
 
 #include <cstdio>
 
+#ifdef USE_PRNG_RANLUX
+#include "ranlux/ranlxd.h"
+#endif // USE_PRNG_RANLUX
+
 /** Seed for the singleton random number generator rnd */
 const unsigned long long int seed = 500000;
 
@@ -155,18 +159,25 @@ void prng_init(uint32_t seed)
 {
 #ifdef USE_PRNG_NR3
 	rnd = Random(seed);
-#else // USE_PRNG_NR3
-#error 'No implemented PRNG chosen'
-#endif // USE_PRNG_NR3
+#elif defined(USE_PRNG_RANLUX)
+	// use maximum luxury level, should not be performance critical anyways
+	rlxd_init(2, seed);
+#else // USE_PRNG_XXX
+#error No implemented PRNG chosen
+#endif // USE_PRNG_XXX
 }
 
 double prng_double()
 {
 #ifdef USE_PRNG_NR3
 	return rnd.doub();
-#else // USE_PRNG_NR3
-#error 'No implemented PRNG chosen'
-#endif // USE_PRNG_NR3
+#elif defined(USE_PRNG_RANLUX)
+	double tmp;
+	ranlxd(&tmp, 1);
+	return tmp;
+#else // USE_PRNG_XXX
+#error No implemented PRNG chosen
+#endif // USE_PRNG_XXX
 }
 
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha)
@@ -182,9 +193,21 @@ void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha)
 	} while ( (1. - 0.5 * delta) < eta * eta);
 	hmc_float phi = 2.*PI * rnd.doub();
 	hmc_float theta = asin(2.*rnd.doub() - 1.);
-#else // USE_PRNG_NR3
-#error 'No implemented PRNG chosen'
-#endif // USE_PRNG_NR3
+#elif defined(USE_PRNG_RANLUX)
+	do {
+		double tmp[4];
+		ranlxd(tmp, 4);
+		delta = -log(tmp[0]) / alpha * pow(cos(2. * PI * tmp[1]), 2.) - log(tmp[2]) / alpha;
+		a0 = 1. - delta;
+		eta = tmp[3];
+	} while ( (1. - 0.5 * delta) < eta * eta);
+	double tmp[2];
+	ranlxd(tmp, 2);
+	hmc_float phi = 2.*PI * tmp[0];
+	hmc_float theta = asin(2.*tmp[1] - 1.);
+#else // USE_PRNG_XXX
+#error No implemented PRNG chosen
+#endif // USE_PRNG_XXX
 	dst[0] = a0;
 	dst[1] = sqrt(1. - a0 * a0) * cos(theta) * cos(phi);
 	dst[2] = sqrt(1. - a0 * a0) * cos(theta) * sin(phi);
@@ -211,12 +234,16 @@ void gaussianNormalPair(hmc_float * z1, hmc_float * z2)
 	// Box-Muller method, cartesian form, for extracting two independent normal standard real numbers
 	hmc_float u1 = 1.0 - rnd.doub();
 	hmc_float u2 = 1.0 - rnd.doub();
-#else // USE_PRNG_NR3
-#error 'No implemented PRNG chosen'
-#endif // USE_PRNG_NR3
+#elif defined(USE_PRNG_RANLUX)
+	double tmp[2];
+	ranlxd(tmp, 2);
+	hmc_float u1 = 1.0 - tmp[0];
+	hmc_float u2 = 1.0 - tmp[1];
+#else // USE_PRNG_XXX
+#error No implemented PRNG chosen
+#endif // USE_PRNG_XXX
 	hmc_float p  = sqrt(-2 * log(u1));
 	*z1 = p * cos(2 * PI * u2);
 	*z2 = p * sin(2 * PI * u2);
-	return;
 	// SL: not yet tested
 }
