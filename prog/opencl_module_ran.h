@@ -74,24 +74,6 @@ public:
 	void init_random_arrays();
 
 	/**
-	 * Copy the RNG state to the appropriate OpenCL buffer.
-	 *
-	 * @param host_rndarray The RNG state to copy
-	 *         @li HMC_OCLERROR if OpenCL operations fail
-	 *         @li HMC_SUCCESS otherwise
-	 */
-	void copy_rndarray_to_device(prng_state_dev* host_rndarray);
-
-	/**
-	 * Copy the RNG state from the OpenCL buffer.
-	 *
-	 * @param[out] rndarray The RNG copy target
-	 *         @li HMC_OCLERROR if OpenCL operations fail
-	 *         @li HMC_SUCCESS otherwise
-	 */
-	void copy_rndarray_from_device(prng_state_dev* rndarray);
-
-	/**
 	 * Get cl_mem object rndarray
 	 * @return rndarray
 	 */
@@ -116,6 +98,23 @@ private:
 	int num_rndstates;
 	cl_mem clmem_rndarray;
 
+	/**
+	 * Copy the RNG state to the appropriate OpenCL buffer.
+	 *
+	 * @param host_rndarray The RNG state to copy
+	 *         @li HMC_OCLERROR if OpenCL operations fail
+	 *         @li HMC_SUCCESS otherwise
+	 */
+	void copy_rndstate_to_device(prng_state_dev* host_rndarray);
+
+	/**
+	 * Copy the RNG state from the OpenCL buffer.
+	 *
+	 * @param[out] rndarray The RNG copy target
+	 *         @li HMC_OCLERROR if OpenCL operations fail
+	 *         @li HMC_SUCCESS otherwise
+	 */
+	void copy_rndstate_from_device(prng_state_dev* rndarray);
 };
 
 #endif //OPENCLMODULERANH
