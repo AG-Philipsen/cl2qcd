@@ -18,7 +18,7 @@ __kernel void generate_gaussian_spinorfield(__global spinorfield * out, __global
 #endif
 
 	prng_state rnd;
-	loadRngState(&rnd, rngStates);
+	prng_loadState(&rnd, rngStates);
 
 	for(int id_tmp = id; id_tmp < SPINORFIELDSIZE; id_tmp += global_size) {
 		/** @todo this must be done more efficient */
@@ -68,5 +68,5 @@ __kernel void generate_gaussian_spinorfield(__global spinorfield * out, __global
 		put_spinor_to_field(out_tmp, out, pos.space, pos.time);
 	}
 
-	storeRngState(rngStates, &rnd);
+	prng_storeState(rngStates, &rnd);
 }

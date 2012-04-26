@@ -5,7 +5,7 @@ __kernel void generate_gaussian_gaugemomenta(__global aeStorageType * const rest
 	int id = get_global_id(0);
 
 	prng_state rnd;
-	loadRngState(&rnd, rngStates);
+	prng_loadState(&rnd, rngStates);
 
 	hmc_complex tmp;
 #ifdef _SAME_RND_NUMBERS_
@@ -32,5 +32,5 @@ __kernel void generate_gaussian_gaugemomenta(__global aeStorageType * const rest
 		putAe(out, id_tmp, new_ae);
 	}
 
-	storeRngState(rngStates, &rnd);
+	prng_storeState(rngStates, &rnd);
 }

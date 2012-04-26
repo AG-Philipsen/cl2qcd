@@ -14,7 +14,7 @@ __kernel void generate_gaussian_spinorfield_eo(__global spinorStorageType * cons
 #endif
 
 	prng_state rnd;
-	loadRngState(&rnd, rngStates);
+	prng_loadState(&rnd, rngStates);
 
 	for(int id_tmp = id; id_tmp < EOPREC_SPINORFIELDSIZE; id_tmp += global_size) {
 		//CP: there are 12 complex elements in the spinor
@@ -61,5 +61,5 @@ __kernel void generate_gaussian_spinorfield_eo(__global spinorStorageType * cons
 		putSpinor_eo(out, id_tmp, out_tmp);
 	}
 
-	storeRngState(rngStates, &rnd);
+	prng_storeState(rngStates, &rnd);
 }

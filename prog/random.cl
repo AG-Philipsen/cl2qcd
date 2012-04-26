@@ -49,7 +49,7 @@ inline uint nr3_int32(prng_state * state )
 /**
  * Read the random number generate state from global mamory
  */
-void loadRngState(prng_state * const restrict state, __global const rngStateStorageType * const restrict states)
+void prng_loadState(prng_state * const restrict state, __global const rngStateStorageType * const restrict states)
 {
 	*state = states[get_global_id(0)];
 }
@@ -57,7 +57,7 @@ void loadRngState(prng_state * const restrict state, __global const rngStateStor
 /**
  * Read the random number generate state from global mamory
  */
-void storeRngState(__global rngStateStorageType * const restrict states, const prng_state * const restrict state)
+void prng_storeState(__global rngStateStorageType * const restrict states, const prng_state * const restrict state)
 {
 	states[get_global_id(0)] = *state;
 }
@@ -101,7 +101,7 @@ void prng_synchronize()
  * @param[in,out] rnd Pointer to this threads random number generator state in global memory
  * @return A random permutation of 1,2,3 in x,y,z.
  */
-int3 random_1_2_3(prng_state * const restrict state)
+int3 prng_123(prng_state * const restrict state)
 {
 	/// @todo using uint3 as a return type instead of using an arg for return value
 	/// would reduce register usage on cypress by two GPR

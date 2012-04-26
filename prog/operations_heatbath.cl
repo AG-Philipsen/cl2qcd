@@ -55,7 +55,7 @@ void inline perform_heatbath(__global Matrixsu3StorageType * const restrict dest
 	Matrixsu3 U = get_matrixsu3(src_gaugefield, pos, t, mu);
 	U = project_su3(U);
 
-	int3 order = random_1_2_3(rnd);
+	int3 order = prng_123(rnd);
 
 	for(int i = 0; i < NC; i++) {
 		int order_i = (i == 0) ? order.x : ((i == 1) ? order.y : order.z);
@@ -120,7 +120,7 @@ void inline perform_overrelaxing(__global Matrixsu3StorageType * const restrict 
 	Matrixsu3 U = get_matrixsu3(src_gaugefield, pos, t, mu);
 	U = project_su3(U);
 
-	int3 order = random_1_2_3(rnd);
+	int3 order = prng_123(rnd);
 
 	for(int i = 0; i < NC; i++) {
 		int order_i = (i == 0) ? order.x : ((i == 1) ? order.y : order.z);
