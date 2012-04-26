@@ -36,6 +36,9 @@ double prng_double();
  */
 void random_1_2_3 (int rand[3]);
 
+/** Storage type for state of the device random number generator */
+typedef cl_ulong4 prng_state_dev;
+
 /**
  * init the given array with seeds for parallel random number generation on an OpenCL device
  *
@@ -43,7 +46,7 @@ void random_1_2_3 (int rand[3]);
  * @param[in] file The file containing the binary seed
  * @param[in,out] inittime Timer to add execution time to
  */
-void init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seedfile, int const num_rndstates);
+void init_random_seeds(prng_state_dev * const hmc_rndarray, char const * const seedfile, int const num_rndstates);
 
 /** Construct new SU2 matrix using improved alg by Kennedy Pendleton */
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha);
