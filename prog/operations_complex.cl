@@ -43,19 +43,6 @@ hmc_complex complexdivide(hmc_complex numerator, hmc_complex denominator)
 	return res;
 }
 
-//this is deprecated...
-// void gaussianComplexVector(__global hmc_complex * vector, int length, hmc_float sigma, __global hmc_ocl_ran * rnd){
-//  // SL: this fills real and imaginary part of a vector of "length" complex numbers
-//  //     with components drawn with a Gaussian distribution and variance sigma
-//  for(int idx=0;idx<length;idx++){
-//    gaussianNormalPair(&vector[idx].re,&vector[idx].im);
-//    vector[idx].re*=sigma;
-//    vector[idx].im*=sigma;
-//  }
-//  return HMC_SUCCESS;
-//  // SL: not yet tested
-// }
-
 /** This type can be used to store hmc_complex as it has the same size in bytes */
 #ifdef _USEDOUBLEPREC_
 typedef float4 hmc_complex_store_type;
