@@ -69,6 +69,10 @@ void Opencl_Module_Ran::fill_kernels()
 	cl_uint num_groups;
 	this->get_work_sizes(init_kernel, this->get_device_type(), &ls, &gs, &num_groups);
 	cl_uint seed = get_parameters()->get_host_seed() + 1 + device_rank; // +1 ensures that seed is not equal even if host and device seed are both 0
+	if(seed > (10e9 / gs)) { // see ranluxcl source as to why
+		/// @todo upgrade to newer ranluxcl to avoid this restcition
+		throw Invalid_Parameters("Host seed is too large!", "<< 10e9", get_parameters()->get_host_seed());
+	}
 	clerr = clSetKernelArg(init_kernel, 0, sizeof(cl_uint), &seed);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(init_kernel, 1, sizeof(cl_mem), &clmem_rndarray);
