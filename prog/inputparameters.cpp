@@ -39,7 +39,7 @@ void inputparameters::set_defaults()
 	sourcefilenumber = "00000";
 	print_to_screen = false;
 	//This is obvious!!!
-	host_seed = 4815162342;
+	host_seed = 4815;
 	use_autotuning = false;
 
 	mat_size = 9;
