@@ -85,8 +85,8 @@ int main(int argc, char* argv[])
 	int hmc_iter = parameters.get_hmcsteps();
 	int iter;
 	//This is the random-number generator for the metropolis-step
-	Random hmc_rnd_gen (parameters.get_host_seed());
-	hmc_float rnd_number = hmc_rnd_gen.doub();
+	prng_init(parameters.get_host_seed());
+	hmc_float rnd_number = prng_double();
 	usetimer solver_timer;
 	hmc_observables obs;
 

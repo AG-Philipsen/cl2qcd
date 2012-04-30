@@ -71,14 +71,14 @@ void Opencl_Module_Hmc::fill_kernels()
 
 	//init kernels for HMC
 	if(get_parameters()->get_use_eo() == true) {
-		generate_gaussian_spinorfield_eo = createKernel("generate_gaussian_spinorfield_eo") << basic_hmc_code << "random.cl" << "spinorfield_eo_gaussian.cl";
+		generate_gaussian_spinorfield_eo = createKernel("generate_gaussian_spinorfield_eo") << basic_hmc_code << prng_code << "spinorfield_eo_gaussian.cl";
 		fermion_force_eo = createKernel("fermion_force_eo") << basic_hmc_code << "fermionmatrix.cl" << "force_fermion_eo.cl";
 	} else {
-		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_hmc_code << "random.cl" << "spinorfield_gaussian.cl";
+		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_hmc_code << prng_code << "spinorfield_gaussian.cl";
 	}
 	fermion_force = createKernel("fermion_force") << basic_hmc_code << "fermionmatrix.cl" << "force_fermion.cl";
 	set_zero_gaugemomentum = createKernel("set_zero_gaugemomentum") << basic_hmc_code <<  "gaugemomentum_zero.cl";
-	generate_gaussian_gaugemomenta = createKernel("generate_gaussian_gaugemomenta") << basic_hmc_code << "random.cl" << "gaugemomentum_gaussian.cl";
+	generate_gaussian_gaugemomenta = createKernel("generate_gaussian_gaugemomenta") << basic_hmc_code << prng_code << "gaugemomentum_gaussian.cl";
 	md_update_gaugefield = createKernel("md_update_gaugefield") << basic_hmc_code << "md_update_gaugefield.cl";
 	md_update_gaugemomenta = createKernel("md_update_gaugemomenta") << basic_hmc_code  << "md_update_gaugemomenta.cl";
 	gauge_force = createKernel("gauge_force") << basic_hmc_code  << "force_gauge.cl";
@@ -469,50 +469,50 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device()
 			throw Print_Error_Message("calculation of gaussian gm gave nan! Aborting...", __FILE__, __LINE__);
 		}
 		if(resid == INFINITY) {
-		  bool writeout = false;
-		  if(writeout){
-		    //create buffer to store ae-field
-		    int ae_num = parameters->get_gaugemomentasize();
-		  
-			ae * ae_tmp = new ae[ae_num];
-		    
-		    //get buffer from device
-		    cout << "copy buffer to host" << endl;
-			exportGaugemomentumBuffer(ae_tmp, clmem_p);
+			bool writeout = false;
+			if(writeout) {
+				//create buffer to store ae-field
+				int ae_num = parameters->get_gaugemomentasize();
 
-		    //write out to file
-		    ofstream out("clmem_p_at_inf"); 
-		    if(!out) { 
-		      cout << "Cannot open file.\n"; 
-		    } 
-		    for(int i = 0; i< ae_num; i++){
-		      out << i << "\t" << ae_tmp[i].e0 << endl;
-		      out << i << "\t" << ae_tmp[i].e1 << endl;
-		      out << i << "\t" << ae_tmp[i].e2 << endl;
-		      out << i << "\t" << ae_tmp[i].e3 << endl;
-		      out << i << "\t" << ae_tmp[i].e4 << endl;
-		      out << i << "\t" << ae_tmp[i].e5 << endl;
-		      out << i << "\t" << ae_tmp[i].e6 << endl;
-		      out << i << "\t" << ae_tmp[i].e7 << endl;
-		    }
-		    out.close();
-		    
-		    //calc sqnorm of ae_tmp
-		    hmc_float sqnorm = 0.;
-		    for(int i = 0; i< ae_num; i++){
-		      sqnorm += ae_tmp[i].e0 * ae_tmp[i].e0;
-		      sqnorm += ae_tmp[i].e1 * ae_tmp[i].e1;
-		      sqnorm += ae_tmp[i].e2 * ae_tmp[i].e2;
-		      sqnorm += ae_tmp[i].e3 * ae_tmp[i].e3;
-		      sqnorm += ae_tmp[i].e4 * ae_tmp[i].e4;
-		      sqnorm += ae_tmp[i].e5 * ae_tmp[i].e5;
-		      sqnorm += ae_tmp[i].e6 * ae_tmp[i].e6;
-		      sqnorm += ae_tmp[i].e7 * ae_tmp[i].e7;
-		    }
-		    cout << "sqnrom: " << sqnorm << endl;
-		    free(ae_tmp);
-		  }
-		  throw Print_Error_Message("calculation of gaussian gm gave inf! Aborting...", __FILE__, __LINE__);
+				ae * ae_tmp = new ae[ae_num];
+
+				//get buffer from device
+				cout << "copy buffer to host" << endl;
+				exportGaugemomentumBuffer(ae_tmp, clmem_p);
+
+				//write out to file
+				ofstream out("clmem_p_at_inf");
+				if(!out) {
+					cout << "Cannot open file.\n";
+				}
+				for(int i = 0; i < ae_num; i++) {
+					out << i << "\t" << ae_tmp[i].e0 << endl;
+					out << i << "\t" << ae_tmp[i].e1 << endl;
+					out << i << "\t" << ae_tmp[i].e2 << endl;
+					out << i << "\t" << ae_tmp[i].e3 << endl;
+					out << i << "\t" << ae_tmp[i].e4 << endl;
+					out << i << "\t" << ae_tmp[i].e5 << endl;
+					out << i << "\t" << ae_tmp[i].e6 << endl;
+					out << i << "\t" << ae_tmp[i].e7 << endl;
+				}
+				out.close();
+
+				//calc sqnorm of ae_tmp
+				hmc_float sqnorm = 0.;
+				for(int i = 0; i < ae_num; i++) {
+					sqnorm += ae_tmp[i].e0 * ae_tmp[i].e0;
+					sqnorm += ae_tmp[i].e1 * ae_tmp[i].e1;
+					sqnorm += ae_tmp[i].e2 * ae_tmp[i].e2;
+					sqnorm += ae_tmp[i].e3 * ae_tmp[i].e3;
+					sqnorm += ae_tmp[i].e4 * ae_tmp[i].e4;
+					sqnorm += ae_tmp[i].e5 * ae_tmp[i].e5;
+					sqnorm += ae_tmp[i].e6 * ae_tmp[i].e6;
+					sqnorm += ae_tmp[i].e7 * ae_tmp[i].e7;
+				}
+				cout << "sqnrom: " << sqnorm << endl;
+				free(ae_tmp);
+			}
+			throw Print_Error_Message("calculation of gaussian gm gave inf! Aborting...", __FILE__, __LINE__);
 		}
 
 	}

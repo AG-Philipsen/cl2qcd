@@ -42,7 +42,9 @@ target_link_libraries(complex_mem_access
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(MemoryAccessViaComplex complex_mem_access)
 add_dependencies(complex_mem_access git_commit_id_header)
 
@@ -67,7 +69,9 @@ target_link_libraries(su2su3extend
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(Su2su3extend su2su3extend)
 add_dependencies(su2su3extend git_commit_id_header)
 
@@ -92,7 +96,9 @@ target_link_libraries(geometry
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(geometry geometry)
 add_dependencies(geometry git_commit_id_header)
 
@@ -117,7 +123,9 @@ target_link_libraries(saxsbypz
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(Saxsbypz saxsbypz)
 add_dependencies(saxsbypz git_commit_id_header)
 
@@ -142,7 +150,9 @@ target_link_libraries(gaugefield_convert
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(Gaugefield_Conversion gaugefield_convert)
 add_dependencies(gaugefield_convert git_commit_id_header)
 
@@ -167,7 +177,9 @@ target_link_libraries(gaugefield_observables
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(Gaugeobservables gaugefield_observables)
 add_dependencies(gaugefield_observables git_commit_id_header)
 
@@ -195,7 +207,9 @@ target_link_libraries(m_gpu
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(M_gpu m_gpu)
 add_dependencies(m_gpu git_commit_id_header)
 
@@ -223,7 +237,9 @@ target_link_libraries(m_eo_gpu
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(M_eo_gpu m_eo_gpu)
 add_dependencies(m_eo_gpu git_commit_id_header)
 
@@ -252,7 +268,9 @@ target_link_libraries(m_compare_noneo_eo
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(M_compare_noneo_eo m_compare_noneo_eo)
 add_dependencies(m_compare_noneo_eo git_commit_id_header)
 
@@ -281,7 +299,9 @@ target_link_libraries(f_gauge_gpu
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(F_gauge_gpu f_gauge_gpu)
 add_dependencies(f_gauge_gpu git_commit_id_header)
 
@@ -310,7 +330,9 @@ target_link_libraries(rectangles_test
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(Rectangles_test rectangles_test)
 add_dependencies(rectangles_test git_commit_id_header)
 
@@ -339,7 +361,9 @@ target_link_libraries(f_fermion_gpu
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(F_fermion_gpu f_fermion_gpu)
 add_dependencies(f_fermion_gpu git_commit_id_header)
 
@@ -368,7 +392,9 @@ target_link_libraries(f_fermion_eo_gpu
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(F_fermion_eo_gpu f_fermion_eo_gpu)
 add_dependencies(f_fermion_eo_gpu git_commit_id_header)
 
@@ -397,7 +423,9 @@ target_link_libraries(f_fermion_compare_non_eo_eo_gpu
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(F_fermion_compare_non_eo_eo_gpu f_fermion_compare_non_eo_eo_gpu)
 add_dependencies(f_fermion_compare_non_eo_eo_gpu git_commit_id_header)
 
@@ -426,7 +454,9 @@ target_link_libraries(f_update_gpu
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(F_update_gpu f_update_gpu)
 add_dependencies(f_update_gpu git_commit_id_header)
 
@@ -455,7 +485,9 @@ target_link_libraries(gf_update_gpu
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(Gf_update_gpu gf_update_gpu)
 add_dependencies(gf_update_gpu git_commit_id_header)
 
@@ -480,7 +512,9 @@ target_link_libraries(calc_staple
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(Calc_staple calc_staple)
 add_dependencies(calc_staple git_commit_id_header)
 
@@ -505,7 +539,9 @@ target_link_libraries(stout_smear
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(Stout_smear stout_smear)
 add_dependencies(stout_smear git_commit_id_header)
 
@@ -530,7 +566,9 @@ target_link_libraries(localQ
 	${Boost_LIBRARIES}
 	klepsydra
 	crypto
-	einhard)
+	einhard
+	${PRNG_LIBRARIES}
+)
 add_test(LocalQ localQ)
 add_dependencies(localQ git_commit_id_header)
 

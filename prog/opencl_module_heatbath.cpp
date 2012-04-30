@@ -32,17 +32,28 @@ void Opencl_Module_Heatbath::fill_kernels()
 {
 	Opencl_Module_Ran::fill_kernels();
 
+	stringstream extraopts("");
+#ifdef USE_PRNG_RANLUX
+	// Catalyst 12.4 misoptimizes the kernels to not terminate on the CPU...
+	if(get_device_type() == CL_DEVICE_TYPE_CPU) {
+		extraopts << "-cl-opt-disable ";
+	};
+#endif
+	string extraopts_string = extraopts.str();
+	const char * extraopts_c = extraopts_string.c_str();
+	logger.debug() << "Extra build options: " << extraopts_c;
+
 	logger.debug() << "Create heatbath kernels...";
-	heatbath_even = createKernel("heatbath_even") << basic_opencl_code << "random.cl" << "operations_heatbath.cl" << "heatbath_even.cl";
-	heatbath_odd = createKernel("heatbath_odd") << basic_opencl_code << "random.cl" << "operations_heatbath.cl" << "heatbath_odd.cl";
-	heatbath_even_hack = createKernel("heatbath_even_hack") << basic_opencl_code << "random.cl" << "operations_heatbath.cl" << "heatbath_even.cl";
-	heatbath_odd_hack = createKernel("heatbath_odd_hack") << basic_opencl_code << "random.cl" << "operations_heatbath.cl" << "heatbath_odd.cl";
+	heatbath_even = createKernel("heatbath_even", extraopts_c) << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_even.cl";
+	heatbath_odd = createKernel("heatbath_odd", extraopts_c) << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_odd.cl";
+	heatbath_even_hack = createKernel("heatbath_even_hack", extraopts_c) << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_even.cl";
+	heatbath_odd_hack = createKernel("heatbath_odd_hack", extraopts_c) << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_odd.cl";
 
 	logger.debug() << "Create overrelax kernels...";
-	overrelax_even = createKernel("overrelax_even") << basic_opencl_code << "random.cl" << "operations_heatbath.cl" << "overrelax_even.cl";
-	overrelax_odd = createKernel("overrelax_odd") << basic_opencl_code << "random.cl" << "operations_heatbath.cl" << "overrelax_odd.cl";
+	overrelax_even = createKernel("overrelax_even", extraopts_c) << basic_opencl_code << prng_code << "operations_heatbath.cl" << "overrelax_even.cl";
+	overrelax_odd = createKernel("overrelax_odd", extraopts_c) << basic_opencl_code << prng_code << "operations_heatbath.cl" << "overrelax_odd.cl";
 
-	return;
+	logger.debug() << "Extra build options used: " << extraopts_c;
 }
 
 void Opencl_Module_Heatbath::clear_kernels()

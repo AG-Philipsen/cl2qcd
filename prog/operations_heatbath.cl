@@ -4,7 +4,7 @@
 
 //operations_heatbath.cl
 
-Matrixsu2_pauli SU2Update(const hmc_float alpha, hmc_ocl_ran * rnd)
+Matrixsu2_pauli SU2Update(const hmc_float alpha, prng_state * const restrict rnd)
 {
 	Matrixsu2_pauli out;
 
@@ -12,12 +12,16 @@ Matrixsu2_pauli SU2Update(const hmc_float alpha, hmc_ocl_ran * rnd)
 	hmc_float a0 ;
 	hmc_float eta ;
 	do {
-		delta = -log(ocl_new_ran(rnd)) / alpha * pow(cos((hmc_float)(2.f * PI * ocl_new_ran(rnd))), (hmc_float) 2.f) - log(ocl_new_ran(rnd)) / alpha;
+		double4 rands = prng_double4(rnd);
+		delta = -log(rands.x) / alpha * pow(cos((hmc_float)(2.f * PI * rands.y)), (hmc_float) 2.f) - log(rands.z) / alpha;
 		a0 = 1. - delta;
-		eta = ocl_new_ran(rnd);
+		eta = rands.w;
 	} while ( (1. - 0.5 * delta) < eta * eta);
-	hmc_float phi = 2.*PI * ocl_new_ran(rnd);
-	hmc_float theta = asin((hmc_float)(2.f * ocl_new_ran(rnd) - 1.f));
+	prng_synchronize(rnd);
+
+	double4 rands = prng_double4(rnd);
+	hmc_float phi = 2.*PI * rands.x;
+	hmc_float theta = asin((hmc_float)(2.f * rands.y - 1.f));
 	out.e00 = a0;
 	out.e01 = sqrt(1.f - a0 * a0) * cos(theta) * cos(phi);
 	out.e10 = sqrt(1.f - a0 * a0) * cos(theta) * sin(phi);
@@ -26,7 +30,7 @@ Matrixsu2_pauli SU2Update(const hmc_float alpha, hmc_ocl_ran * rnd)
 	return out;
 }
 
-void inline perform_heatbath(__global Matrixsu3StorageType * const restrict dest_gaugefield, __global const Matrixsu3StorageType * const restrict src_gaugefield, const int mu, hmc_ocl_ran * const restrict rnd, const int pos, const int t)
+void inline perform_heatbath(__global Matrixsu3StorageType * const restrict dest_gaugefield, __global const Matrixsu3StorageType * const restrict src_gaugefield, const int mu, prng_state * const restrict rnd, const int pos, const int t)
 {
 	Matrix3x3 staplematrix;
 
@@ -53,7 +57,7 @@ void inline perform_heatbath(__global Matrixsu3StorageType * const restrict dest
 	Matrixsu3 U = get_matrixsu3(src_gaugefield, pos, t, mu);
 	U = project_su3(U);
 
-	int3 order = random_1_2_3(rnd);
+	int3 order = prng_123(rnd);
 
 	for(int i = 0; i < NC; i++) {
 		int order_i = (i == 0) ? order.x : ((i == 1) ? order.y : order.z);
@@ -93,7 +97,7 @@ void inline perform_heatbath(__global Matrixsu3StorageType * const restrict dest
 
 }
 
-void inline perform_overrelaxing(__global Matrixsu3StorageType * const restrict dest_gaugefield, __global const Matrixsu3StorageType * const restrict src_gaugefield, const int mu, hmc_ocl_ran * const restrict rnd, const int pos, const int t)
+void inline perform_overrelaxing(__global Matrixsu3StorageType * const restrict dest_gaugefield, __global const Matrixsu3StorageType * const restrict src_gaugefield, const int mu, prng_state * const restrict rnd, const int pos, const int t)
 {
 	Matrix3x3 staplematrix;
 #ifdef _ANISO_
@@ -118,7 +122,7 @@ void inline perform_overrelaxing(__global Matrixsu3StorageType * const restrict 
 	Matrixsu3 U = get_matrixsu3(src_gaugefield, pos, t, mu);
 	U = project_su3(U);
 
-	int3 order = random_1_2_3(rnd);
+	int3 order = prng_123(rnd);
 
 	for(int i = 0; i < NC; i++) {
 		int order_i = (i == 0) ? order.x : ((i == 1) ? order.y : order.z);

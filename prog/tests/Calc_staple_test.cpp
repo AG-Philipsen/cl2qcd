@@ -6,7 +6,6 @@
 #define BOOST_TEST_MODULE staple_test
 #include <boost/test/unit_test.hpp>
 
-Random rnd(15);
 extern std::string const version;
 std::string const version = "0.1";
 
@@ -20,8 +19,8 @@ class Device : public Opencl_Module {
 
 	cl_kernel testKernel;
 public:
-	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module() {
-		Opencl_Module::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int dev_rank) : Opencl_Module() {
+		Opencl_Module::init(queue, params, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -66,7 +65,7 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	logger.info() << "Init CPU device";
 	//params.print_info_inverter("m_gpu");
 	// reset RNG
-	rnd = Random(13);
+	prng_init(13);
 	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables_from_task(0, 0);
@@ -76,7 +75,7 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	logger.info() << "Init GPU device";
 	//params.print_info_inverter("m_gpu");
 	// reset RNG
-	rnd = Random(13);
+	prng_init(13);
 	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
 	logger.info() << "gaugeobservables: ";
 	dummy.print_gaugeobservables_from_task(0, 0);
@@ -100,7 +99,7 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0));
+	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0), 0);
 
 	fill_buffers();
 }

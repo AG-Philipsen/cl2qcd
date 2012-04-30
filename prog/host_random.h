@@ -15,71 +15,23 @@
 #include "host_geometry.h"
 #include "host_use_timer.h"
 
-/** Utility 64-bit integer for random number generation */
-typedef unsigned long long int Ullong;
-/** Utility 32-bit integer for random number generation */
-typedef unsigned int Uint;
-
-/** Seed for the singleton random number generator rnd */
-const unsigned long long int seed = 500000;
-
-/** The Random number generator described in Numerical Recipes 3 */
-struct Random {
-
-	/** Random number state */
-	Ullong u, v, w;
-
-	/**
-	 * Initializes the random number generator.
-	 *
-	 * @param j Seed for the random number generator state
-	 */
-	Random(Ullong j) : v(4101842887655102017LL), w(1) {
-		u = j ^ v;
-		int64();
-		v = u;
-		int64();
-		w = v;
-		int64();
-	}
-
-	/**
-	 * Generate a random 64-bit integer.
-	 */
-	inline Ullong int64() {
-		u = u * 2862933555777941757LL + 7046029254386353087LL;
-		v ^= v >> 17;
-		v ^= v << 31;
-		v ^= v >> 8;
-		w = 4294957665U * (w & 0xffffffff) + (w >> 32);
-		Ullong x = u ^ (u << 21);
-		x ^= x >> 35;
-		x ^= x << 4;
-		return (x + v) ^ w;
-	}
-	/**
-	 * Generate a random 64-bit floating point number.
-	 */
-	inline double doub() {
-		return 5.42101086242752217E-20 * int64();
-	}
-	/**
-	 * Generate a random 32-bit integer.
-	 */
-	inline Uint int32() {
-		return (Uint)int64();
-	}
-};
-
-/** The singleton single-threaded random number generator */
-extern Random rnd;
+/**
+ * Seed the host prng.
+ *
+ * @param seed Seed for the underlying PRNG. Be aware of restrictions!
+ */
+void prng_init(uint32_t seed);
 
 /**
- * Get 1,2,3 in random order
+ * Get a double precision random number from the generator
  *
- * @param[out] rand Storage location for the result
+ * @return A double precision number in [0, 1)
  */
-void random_1_2_3 (int rand[3]);
+double prng_double();
+
+#ifdef USE_PRNG_NR3
+/** Storage type for state of the device random number generator */
+typedef cl_ulong4 nr3_state_dev;
 
 /**
  * init the given array with seeds for parallel random number generation on an OpenCL device
@@ -88,7 +40,8 @@ void random_1_2_3 (int rand[3]);
  * @param[in] file The file containing the binary seed
  * @param[in,out] inittime Timer to add execution time to
  */
-void init_random_seeds(hmc_ocl_ran * const hmc_rndarray, char const * const seedfile, int const num_rndstates);
+void nr3_init_seeds(nr3_state_dev * const hmc_rndarray, char const * const seedfile, int const num_rndstates);
+#endif // USE_PRNG_NR3
 
 /** Construct new SU2 matrix using improved alg by Kennedy Pendleton */
 void SU2Update(hmc_float dst [su2_entries], const hmc_float alpha);

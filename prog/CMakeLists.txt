@@ -13,6 +13,9 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
+# Have the user asked for tests
+enable_testing()
+
 # make the compiler bitchy
 if(CMAKE_COMPILER_IS_GNUCXX)
 	set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wdisabled-optimization -std=c++0x")
@@ -30,6 +33,13 @@ endif(CMAKE_COMPILER_IS_GNUCC)
 # make sure we can compile agains opencl
 find_package( OpenCL REQUIRED )
 include_directories( SYSTEM ${OPENCL_INCLUDE_DIRS} )
+# work around OpenCL implementations not shipping c++ bindings
+if( NOT OPENCL_HAS_CPP_BINDINGS )
+	message(STATUS "No OpenCL CPP bindings found, using hack" )
+	include_directories( SYSTEM hacks/cl_hpp )
+elseif( NOT OPENCL_HAS_CPP_BINDINGS )
+	message (STATUS "OpenCL CPP bindings found" )
+endif( NOT OPENCL_HAS_CPP_BINDINGS )
 
 find_package( LIME REQUIRED )
 include_directories( SYSTEM ${LIME_INCLUDE_DIR} )
@@ -77,6 +87,18 @@ if( USE_DOUBLE_PRECISION )
 	add_definitions( -D_USEDOUBLEPREC_ )
 endif( USE_DOUBLE_PRECISION )
 
+# allow to choose a PRNG
+set(PRNG "Ranlux" CACHE STRING "The pseudo random number generator to use. Options are: Ranlux (default) and NR3")
+if(PRNG STREQUAL "NR3")
+	add_definitions(-DUSE_PRNG_NR3)
+	set(PRNG_LIBRARIES "")
+elseif(PRNG STREQUAL "Ranlux")
+	add_definitions(-DUSE_PRNG_RANLUX)
+	set(PRNG_LIBRARIES ranlux)
+else(PRNG STREQUAL "NR3")
+	message(SEND_ERROR "PRNG must be Ranlux (default) or NR3. \"${PRNG}\" is not a valid value.")
+endif(PRNG STREQUAL "NR3")
+
 # default random number seed
 configure_file( rand_seeds rand_seeds COPYONLY )
 
@@ -106,6 +128,7 @@ target_link_libraries( heatbath
 	klepsydra
 	einhard
 	crypto
+	${PRNG_LIBRARIES}
 )
 add_dependencies(heatbath git_commit_id_header)
 
@@ -136,6 +159,7 @@ target_link_libraries( transportcoefficient
 	klepsydra
 	einhard
 	crypto
+	${PRNG_LIBRARIES}
 )
 add_dependencies(transportcoefficient git_commit_id_header)
 
@@ -168,6 +192,7 @@ target_link_libraries( inverter
 	klepsydra
 	einhard
 	crypto
+	${PRNG_LIBRARIES}
 )
 add_dependencies(inverter git_commit_id_header)
 
@@ -199,6 +224,7 @@ target_link_libraries( hmc
 	klepsydra
 	einhard
 	crypto
+	${PRNG_LIBRARIES}
 )
 add_dependencies(hmc git_commit_id_header)
 
@@ -215,6 +241,10 @@ add_library( einhard
 # Add crypto stuff
 add_subdirectory( crypto )
 
+# Random number generation lib
+add_subdirectory(ranlux)
+add_subdirectory(ranluxcl)
+
 # Documentation
 #include(FindDoxygen)
 find_package( Doxygen QUIET )
@@ -230,7 +260,6 @@ if(BUILD_MICROBENCHMARKS)
 endif(BUILD_MICROBENCHMARKS)
 
 # Take care of unit tests
-enable_testing()
 add_subdirectory(tests)
 
 # Benchmarking

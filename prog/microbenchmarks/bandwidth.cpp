@@ -19,8 +19,6 @@ namespace po = boost::program_options;
 extern std::string const version;
 std::string const version = "0.1";
 
-Random rnd(15);
-
 /**
  * Selector type for the base type of the copy operations.
  */
@@ -56,8 +54,8 @@ private:
 	template<typename T> void runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, cl_mem in, cl_mem out);
 
 public:
-	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module() {
-		Opencl_Module::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int dev_rank) : Opencl_Module() {
+		Opencl_Module::init(queue, params, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
 	};
 	virtual void fill_kernels();
 	virtual void clear_kernels();
@@ -386,7 +384,7 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0));
+	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0), 0);
 
 	fill_buffers();
 }

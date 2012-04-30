@@ -6,7 +6,6 @@
 #define BOOST_TEST_MODULE force_update
 #include <boost/test/unit_test.hpp>
 
-Random rnd(15);
 extern std::string const version;
 std::string const version = "0.1";
 
@@ -14,8 +13,8 @@ class Device : public Opencl_Module_Hmc {
 
 	cl_kernel testKernel;
 public:
-	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Hmc() {
-		Opencl_Module_Hmc::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc() {
+		Opencl_Module_Hmc::init(queue, params, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -104,7 +103,7 @@ BOOST_AUTO_TEST_CASE( F_UPDATE )
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0));
+	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0), 0);
 
 	fill_buffers();
 }
@@ -126,14 +125,14 @@ void fill_with_one(hmc_float * sf_in, int size)
 void fill_with_random(hmc_float * sf_in, int size, int switcher)
 {
 	if(switcher == 1) {
-		Random rnd_loc(123456);
+		prng_init(123456);
 		for(int i = 0; i < size; ++i) {
-			sf_in[i] = rnd_loc.doub();
+			sf_in[i] = prng_double();
 		}
 	} else if (switcher == 2) {
-		Random rnd_loc(789101);
+		prng_init(789101);
 		for(int i = 0; i < size; ++i) {
-			sf_in[i] = rnd_loc.doub();
+			sf_in[i] = prng_double();
 		}
 	}
 	return;

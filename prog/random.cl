@@ -3,17 +3,25 @@
  */
 //opencl_random.cl
 
+#ifdef USE_PRNG_NR3
 /** Type for random number generator state */
-typedef ulong4 hmc_ocl_ran;
-typedef hmc_ocl_ran rngStateStorageType;
+typedef ulong4 prng_state;
+typedef prng_state rngStateStorageType;
+#elif defined(USE_PRNG_RANLUX)
+typedef ranluxcl_state_t prng_state;
+typedef float4 rngStateStorageType;
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
 
+#ifdef USE_PRNG_NR3
 /**
  * Draw a 64-bit random integer using the algorithm described in Numerical Recipes 3.
  *
  * @param[in,out] state Pointer to this threads random number generator state in global memory.
  * @return A pseudo-random integer
  */
-inline ulong nr3_int64(hmc_ocl_ran * state )
+inline ulong nr3_int64(prng_state * state )
 {
 	(*state).x = (*state).x * 2862933555777941757L + 7046029254386353087L;
 	(*state).y ^= (*state).y >> 17;
@@ -31,9 +39,9 @@ inline ulong nr3_int64(hmc_ocl_ran * state )
  * @param[in,out] state Pointer to this threads random number generator state in global memory
  * @return A pseudo-random float
  */
-inline float ocl_new_ran(hmc_ocl_ran * state)
+inline double nr3_double(prng_state * state)
 {
-	return 5.42101086242752217E-20f * nr3_int64( state );
+	return 5.42101086242752217E-20 * nr3_int64( state );
 }
 /**
  * Draw a 32-bit random integer using the algorithm described in Numerical Recipes 3.
@@ -41,45 +49,121 @@ inline float ocl_new_ran(hmc_ocl_ran * state)
  * @param[in,out] state Pointer to this threads random number generator state in global memory
  * @return A pseudo-random integer
  */
-inline uint nr3_int32(hmc_ocl_ran * state )
+inline uint nr3_int32(prng_state * state )
 {
 	return (uint) nr3_int64( state );
 }
+#endif // USE_PRNG_NR3
 
 /**
  * Read the random number generate state from global mamory
  */
-hmc_ocl_ran loadRngState(__global const rngStateStorageType * const restrict states)
+void prng_loadState(prng_state * const restrict state, __global rngStateStorageType * const restrict states)
 {
-	return states[get_global_id(0)];
+#ifdef USE_PRNG_NR3
+	*state = states[get_global_id(0)];
+#elif defined(USE_PRNG_RANLUX)
+	ranluxcl_download_seed(state, states);
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
 }
 
 /**
  * Read the random number generate state from global mamory
  */
-void storeRngState(__global rngStateStorageType * const restrict states, const hmc_ocl_ran state)
+void prng_storeState(__global rngStateStorageType * const restrict states, prng_state * const restrict state)
 {
-	states[get_global_id(0)] = state;
+#ifdef USE_PRNG_NR3
+	states[get_global_id(0)] = *state;
+#elif defined(USE_PRNG_RANLUX)
+	ranluxcl_upload_seed(state, states);
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
 }
 
 /**
- * Draw a 32-bit random integer in the range [0,range) using the algorithm described in Numerical Recipes 3.
+ * Draw a 32-bit random integer in the range [0,range).
  *
  * @param[in] range Upper bound for the drawn number, nummber will be one less than this at maximum
  * @param[in,out] state Pointer to this threads random number generator state in global memory
  * @return A pseudo-random integer
  */
-int random_int( int range, hmc_ocl_ran* state )
+uint prng_int32(uint range, prng_state * const restrict state)
 {
-	return (nr3_int64( state ) % range);
+#ifdef USE_PRNG_NR3
+	return nr3_int64(state) % range;
+#elif defined(USE_PRNG_RANLUX)
+	float4 tmp = ranluxcl(state);
+	return tmp.x * range;
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
 }
+
+/**
+ * Draw a double precision floating point number.
+ *
+ * @param[in] range Upper bound for the drawn number, nummber will be one less than this at maximum
+ * @param[in,out] state Pointer to this threads random number generator state in global memory
+ * @return A pseudo-random integer
+ */
+double prng_double(prng_state * const restrict state)
+{
+#ifdef USE_PRNG_NR3
+	return nr3_double(state);
+#elif defined(USE_PRNG_RANLUX)
+	float4 tmp = ranluxcl(state);
+	return tmp.x;
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
+}
+
+/**
+ * Draw 4 double precision floating point numbers.
+ *
+ * Depending on the PRNG this might be more efficient than pulling multiple numbers via seperate calls.
+ *
+ * @param[in] range Upper bound for the drawn number, nummber will be one less than this at maximum
+ * @param[in,out] state Pointer to this threads random number generator state in global memory
+ * @return A pseudo-random integer
+ */
+double4 prng_double4(prng_state * const restrict state)
+{
+#ifdef USE_PRNG_NR3
+	return (double4) (nr3_double(state), nr3_double(state), nr3_double(state), nr3_double(state));
+#elif defined(USE_PRNG_RANLUX)
+	float4 tmp = ranluxcl(state);
+	return (double4) (tmp.x, tmp.y, tmp.z, tmp.w);
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
+}
+
+/**
+ * Get PRNG back into a SIMD-friendly state in case different threads requested different amounts
+ * of random numbers.
+ */
+void prng_synchronize(prng_state * const restrict state)
+{
+#ifdef USE_PRNG_NR3
+	// nothing to do for NR3
+#elif defined(USE_PRNG_RANLUX)
+	ranluxcl_synchronize(state);
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
+}
+
 /**
  * Get 1,2,3 in random order
  *
  * @param[in,out] rnd Pointer to this threads random number generator state in global memory
  * @return A random permutation of 1,2,3 in x,y,z.
  */
-int3 random_1_2_3(hmc_ocl_ran * const restrict state)
+int3 prng_123(prng_state * const restrict state)
 {
 	/// @todo using uint3 as a return type instead of using an arg for return value
 	/// would reduce register usage on cypress by two GPR
@@ -100,30 +184,43 @@ int3 random_1_2_3(hmc_ocl_ran * const restrict state)
 	//    note how this keeps the probabilities correct by doing only a 50% roll and then a bijective mapping.
 	// 3. as above the remaing number by difference to the fixed sum of 0+1+2=3.
 
+#ifdef USE_PRNG_NR3
 	int3 res;
-	res.x = random_int(3, state);
+	res.x = nr3_int64(state) % 3;
 	res.y = (res.x + (nr3_int64(state) % 2) + 1) % 3;
 	res.z = 3 - res.x - res.y;
 	++res;
 	return res;
+#elif defined(USE_PRNG_RANLUX)
+	float4 tmp = ranluxcl(state);
+	int3 res;
+	res.x = tmp.x * 3.f;
+	res.y = (res.x + (int) (tmp.y * 2) + 1) % 3;
+	res.z = 3 - res.x - res.y;
+	++res;
+	return res;
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
 }
 /**
  * Get a normal distributed complex number
  */
-hmc_complex inline gaussianNormalPair(hmc_ocl_ran * const restrict rnd)
+hmc_complex inline gaussianNormalPair(prng_state * const restrict rnd)
 {
+#ifdef USE_PRNG_NR3
 	// Box-Muller method, cartesian form, for extracting two independent normal standard real numbers
 	hmc_complex tmp;
 	hmc_float u1_tmp;
 	//CP: if u1 == 1., p will be "inf"
 	do {
-		u1_tmp = ocl_new_ran(rnd);
+		u1_tmp = nr3_double(rnd);
 		if(u1_tmp < 1.) break;
 	} while (1 > 0);
 
 	hmc_float u1 = 1.0 - u1_tmp;
-	//  hmc_float u2 = 1.0 - ocl_new_ran(rnd);
-	hmc_float u2 = ocl_new_ran(rnd);
+	//  hmc_float u2 = 1.0 - nr3_double(rnd);
+	hmc_float u2 = nr3_double(rnd);
 	//CP: this is the standard Box-Müller way:
 	hmc_float p  = sqrt(- 2.* log(u1));
 	//CP: without the 2, one gets sigma = 0.5 rightaway, this is done in tmlqcd
@@ -133,4 +230,30 @@ hmc_complex inline gaussianNormalPair(hmc_ocl_ran * const restrict rnd)
 	tmp.re = p * cos(2 * PI * u2);
 	tmp.im = p * sin(2 * PI * u2);
 	return tmp;
+#elif defined(USE_PRNG_RANLUX)
+	// TODO update to current ranluxcl!
+	//double4 tmp = ranluxcl64norm(state);
+	//return (hmc_complex) {tmp.x, tmp.y};
+
+	// LEGEACY CODE
+	// Box-Muller method, cartesian form, for extracting two independent normal standard real numbers
+	float4 rands = ranluxcl(rnd);
+
+	//CP: if u1 == 1., p will be "inf"
+	hmc_float u1 = 1.0 - rands.x;
+	//  hmc_float u2 = 1.0 - nr3_double(rnd);
+	hmc_float u2 = rands.y;
+	//CP: this is the standard Box-Müller way:
+	hmc_float p  = sqrt(- 2.* log(u1));
+	//CP: without the 2, one gets sigma = 0.5 rightaway, this is done in tmlqcd
+	//hmc_float p  = sqrt(-log(u1));
+
+	//CP: in tmlqcd, sin and cos are interchanged!!
+	hmc_complex tmp;
+	tmp.re = p * cos(2 * PI * u2);
+	tmp.im = p * sin(2 * PI * u2);
+	return tmp;
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
 }

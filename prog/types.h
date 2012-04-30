@@ -132,11 +132,6 @@ typedef hmc_complex Matrixsu3StorageType;
 typedef Matrixsu3 Matrixsu3StorageType;
 #endif
 
-#ifndef _INKERNEL_
-/** Storage type for state of the random number generator */
-typedef cl_ulong4 hmc_ocl_ran;
-#endif /* _INKERNEL_ */
-
 //CP: this an algebraelement
 typedef struct {
 	hmc_float e0;

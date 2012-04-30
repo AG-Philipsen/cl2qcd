@@ -6,7 +6,6 @@
 #define BOOST_TEST_MODULE Fermionforce_compare_noneo_eo
 #include <boost/test/unit_test.hpp>
 
-Random rnd(15);
 extern std::string const version;
 std::string const version = "0.1";
 
@@ -15,8 +14,8 @@ class Device : public Opencl_Module_Hmc {
 	cl_kernel testKernel;
 	cl_kernel testKernel2;
 public:
-	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext) : Opencl_Module_Hmc() {
-		Opencl_Module_Hmc::init(queue, params, maxcomp, double_ext); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc() {
+		Opencl_Module_Hmc::init(queue, params, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -156,7 +155,7 @@ BOOST_AUTO_TEST_CASE( F_FERMION )
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0));
+	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0), 0);
 
 	fill_buffers();
 }
@@ -357,68 +356,68 @@ void fill_with_zero(hmc_float * sf_in, int size)
 
 void fill_sf_with_random_eo(spinor * sf_in1, spinor * sf_in2, int size, int seed)
 {
-	Random rnd_loc(seed);
+	prng_init(seed);
 	for(int i = 0; i < size; ++i) {
-		sf_in1[i].e0.e0.re = rnd_loc.doub();
-		sf_in1[i].e0.e1.re = rnd_loc.doub();
-		sf_in1[i].e0.e2.re = rnd_loc.doub();
-		sf_in1[i].e1.e0.re = rnd_loc.doub();
-		sf_in1[i].e1.e1.re = rnd_loc.doub();
-		sf_in1[i].e1.e2.re = rnd_loc.doub();
-		sf_in1[i].e2.e0.re = rnd_loc.doub();
-		sf_in1[i].e2.e1.re = rnd_loc.doub();
-		sf_in1[i].e2.e2.re = rnd_loc.doub();
-		sf_in1[i].e3.e0.re = rnd_loc.doub();
-		sf_in1[i].e3.e1.re = rnd_loc.doub();
-		sf_in1[i].e3.e2.re = rnd_loc.doub();
+		sf_in1[i].e0.e0.re = prng_double();
+		sf_in1[i].e0.e1.re = prng_double();
+		sf_in1[i].e0.e2.re = prng_double();
+		sf_in1[i].e1.e0.re = prng_double();
+		sf_in1[i].e1.e1.re = prng_double();
+		sf_in1[i].e1.e2.re = prng_double();
+		sf_in1[i].e2.e0.re = prng_double();
+		sf_in1[i].e2.e1.re = prng_double();
+		sf_in1[i].e2.e2.re = prng_double();
+		sf_in1[i].e3.e0.re = prng_double();
+		sf_in1[i].e3.e1.re = prng_double();
+		sf_in1[i].e3.e2.re = prng_double();
 
-		sf_in1[i].e0.e0.im = rnd_loc.doub();
-		sf_in1[i].e0.e1.im = rnd_loc.doub();
-		sf_in1[i].e0.e2.im = rnd_loc.doub();
-		sf_in1[i].e1.e0.im = rnd_loc.doub();
-		sf_in1[i].e1.e1.im = rnd_loc.doub();
-		sf_in1[i].e1.e2.im = rnd_loc.doub();
-		sf_in1[i].e2.e0.im = rnd_loc.doub();
-		sf_in1[i].e2.e1.im = rnd_loc.doub();
-		sf_in1[i].e2.e2.im = rnd_loc.doub();
-		sf_in1[i].e3.e0.im = rnd_loc.doub();
-		sf_in1[i].e3.e1.im = rnd_loc.doub();
-		sf_in1[i].e3.e2.im = rnd_loc.doub();
+		sf_in1[i].e0.e0.im = prng_double();
+		sf_in1[i].e0.e1.im = prng_double();
+		sf_in1[i].e0.e2.im = prng_double();
+		sf_in1[i].e1.e0.im = prng_double();
+		sf_in1[i].e1.e1.im = prng_double();
+		sf_in1[i].e1.e2.im = prng_double();
+		sf_in1[i].e2.e0.im = prng_double();
+		sf_in1[i].e2.e1.im = prng_double();
+		sf_in1[i].e2.e2.im = prng_double();
+		sf_in1[i].e3.e0.im = prng_double();
+		sf_in1[i].e3.e1.im = prng_double();
+		sf_in1[i].e3.e2.im = prng_double();
 
 		//    sf_in2[i] = sf_in1[i];
 
-		sf_in2[i].e0.e0.re = rnd_loc.doub();
-		sf_in2[i].e0.e1.re = rnd_loc.doub();
-		sf_in2[i].e0.e2.re = rnd_loc.doub();
-		sf_in2[i].e1.e0.re = rnd_loc.doub();
-		sf_in2[i].e1.e1.re = rnd_loc.doub();
-		sf_in2[i].e1.e2.re = rnd_loc.doub();
-		sf_in2[i].e2.e0.re = rnd_loc.doub();
-		sf_in2[i].e2.e1.re = rnd_loc.doub();
-		sf_in2[i].e2.e2.re = rnd_loc.doub();
-		sf_in2[i].e3.e0.re = rnd_loc.doub();
-		sf_in2[i].e3.e1.re = rnd_loc.doub();
-		sf_in2[i].e3.e2.re = rnd_loc.doub();
+		sf_in2[i].e0.e0.re = prng_double();
+		sf_in2[i].e0.e1.re = prng_double();
+		sf_in2[i].e0.e2.re = prng_double();
+		sf_in2[i].e1.e0.re = prng_double();
+		sf_in2[i].e1.e1.re = prng_double();
+		sf_in2[i].e1.e2.re = prng_double();
+		sf_in2[i].e2.e0.re = prng_double();
+		sf_in2[i].e2.e1.re = prng_double();
+		sf_in2[i].e2.e2.re = prng_double();
+		sf_in2[i].e3.e0.re = prng_double();
+		sf_in2[i].e3.e1.re = prng_double();
+		sf_in2[i].e3.e2.re = prng_double();
 
-		sf_in2[i].e0.e0.im = rnd_loc.doub();
-		sf_in2[i].e0.e1.im = rnd_loc.doub();
-		sf_in2[i].e0.e2.im = rnd_loc.doub();
-		sf_in2[i].e1.e0.im = rnd_loc.doub();
-		sf_in2[i].e1.e1.im = rnd_loc.doub();
-		sf_in2[i].e1.e2.im = rnd_loc.doub();
-		sf_in2[i].e2.e0.im = rnd_loc.doub();
-		sf_in2[i].e2.e1.im = rnd_loc.doub();
-		sf_in2[i].e2.e2.im = rnd_loc.doub();
-		sf_in2[i].e3.e0.im = rnd_loc.doub();
-		sf_in2[i].e3.e1.im = rnd_loc.doub();
-		sf_in2[i].e3.e2.im = rnd_loc.doub();
+		sf_in2[i].e0.e0.im = prng_double();
+		sf_in2[i].e0.e1.im = prng_double();
+		sf_in2[i].e0.e2.im = prng_double();
+		sf_in2[i].e1.e0.im = prng_double();
+		sf_in2[i].e1.e1.im = prng_double();
+		sf_in2[i].e1.e2.im = prng_double();
+		sf_in2[i].e2.e0.im = prng_double();
+		sf_in2[i].e2.e1.im = prng_double();
+		sf_in2[i].e2.e2.im = prng_double();
+		sf_in2[i].e3.e0.im = prng_double();
+		sf_in2[i].e3.e1.im = prng_double();
+		sf_in2[i].e3.e2.im = prng_double();
 	}
 	return;
 }
 
 void fill_sf_with_random_noneo(spinor * sf_in, int size, int seed, inputparameters * params)
 {
-	Random rnd_loc(seed);
+	prng_init(seed);
 	//the simple for loop through the vector does not give the right vector compared to the eo-converted one...
 	//this is because if the vector is simply filled with random numbers, the nontrivial
 	//even-odd structure is not contained!!
@@ -428,59 +427,59 @@ void fill_sf_with_random_noneo(spinor * sf_in, int size, int seed, inputparamete
 		int n, t, global_pos;
 		get_even_site(i, &n, &t, params);
 		global_pos = get_global_pos(n, t, params);
-		sf_in[global_pos].e0.e0.re = rnd_loc.doub();
-		sf_in[global_pos].e0.e1.re = rnd_loc.doub();
-		sf_in[global_pos].e0.e2.re = rnd_loc.doub();
-		sf_in[global_pos].e1.e0.re = rnd_loc.doub();
-		sf_in[global_pos].e1.e1.re = rnd_loc.doub();
-		sf_in[global_pos].e1.e2.re = rnd_loc.doub();
-		sf_in[global_pos].e2.e0.re = rnd_loc.doub();
-		sf_in[global_pos].e2.e1.re = rnd_loc.doub();
-		sf_in[global_pos].e2.e2.re = rnd_loc.doub();
-		sf_in[global_pos].e3.e0.re = rnd_loc.doub();
-		sf_in[global_pos].e3.e1.re = rnd_loc.doub();
-		sf_in[global_pos].e3.e2.re = rnd_loc.doub();
+		sf_in[global_pos].e0.e0.re = prng_double();
+		sf_in[global_pos].e0.e1.re = prng_double();
+		sf_in[global_pos].e0.e2.re = prng_double();
+		sf_in[global_pos].e1.e0.re = prng_double();
+		sf_in[global_pos].e1.e1.re = prng_double();
+		sf_in[global_pos].e1.e2.re = prng_double();
+		sf_in[global_pos].e2.e0.re = prng_double();
+		sf_in[global_pos].e2.e1.re = prng_double();
+		sf_in[global_pos].e2.e2.re = prng_double();
+		sf_in[global_pos].e3.e0.re = prng_double();
+		sf_in[global_pos].e3.e1.re = prng_double();
+		sf_in[global_pos].e3.e2.re = prng_double();
 
-		sf_in[global_pos].e0.e0.im = rnd_loc.doub();
-		sf_in[global_pos].e0.e1.im = rnd_loc.doub();
-		sf_in[global_pos].e0.e2.im = rnd_loc.doub();
-		sf_in[global_pos].e1.e0.im = rnd_loc.doub();
-		sf_in[global_pos].e1.e1.im = rnd_loc.doub();
-		sf_in[global_pos].e1.e2.im = rnd_loc.doub();
-		sf_in[global_pos].e2.e0.im = rnd_loc.doub();
-		sf_in[global_pos].e2.e1.im = rnd_loc.doub();
-		sf_in[global_pos].e2.e2.im = rnd_loc.doub();
-		sf_in[global_pos].e3.e0.im = rnd_loc.doub();
-		sf_in[global_pos].e3.e1.im = rnd_loc.doub();
-		sf_in[global_pos].e3.e2.im = rnd_loc.doub();
+		sf_in[global_pos].e0.e0.im = prng_double();
+		sf_in[global_pos].e0.e1.im = prng_double();
+		sf_in[global_pos].e0.e2.im = prng_double();
+		sf_in[global_pos].e1.e0.im = prng_double();
+		sf_in[global_pos].e1.e1.im = prng_double();
+		sf_in[global_pos].e1.e2.im = prng_double();
+		sf_in[global_pos].e2.e0.im = prng_double();
+		sf_in[global_pos].e2.e1.im = prng_double();
+		sf_in[global_pos].e2.e2.im = prng_double();
+		sf_in[global_pos].e3.e0.im = prng_double();
+		sf_in[global_pos].e3.e1.im = prng_double();
+		sf_in[global_pos].e3.e2.im = prng_double();
 
 		get_odd_site(i, &n, &t, params);
 		global_pos = get_global_pos(n, t, params);
-		sf_in[global_pos].e0.e0.re = rnd_loc.doub();
-		sf_in[global_pos].e0.e1.re = rnd_loc.doub();
-		sf_in[global_pos].e0.e2.re = rnd_loc.doub();
-		sf_in[global_pos].e1.e0.re = rnd_loc.doub();
-		sf_in[global_pos].e1.e1.re = rnd_loc.doub();
-		sf_in[global_pos].e1.e2.re = rnd_loc.doub();
-		sf_in[global_pos].e2.e0.re = rnd_loc.doub();
-		sf_in[global_pos].e2.e1.re = rnd_loc.doub();
-		sf_in[global_pos].e2.e2.re = rnd_loc.doub();
-		sf_in[global_pos].e3.e0.re = rnd_loc.doub();
-		sf_in[global_pos].e3.e1.re = rnd_loc.doub();
-		sf_in[global_pos].e3.e2.re = rnd_loc.doub();
+		sf_in[global_pos].e0.e0.re = prng_double();
+		sf_in[global_pos].e0.e1.re = prng_double();
+		sf_in[global_pos].e0.e2.re = prng_double();
+		sf_in[global_pos].e1.e0.re = prng_double();
+		sf_in[global_pos].e1.e1.re = prng_double();
+		sf_in[global_pos].e1.e2.re = prng_double();
+		sf_in[global_pos].e2.e0.re = prng_double();
+		sf_in[global_pos].e2.e1.re = prng_double();
+		sf_in[global_pos].e2.e2.re = prng_double();
+		sf_in[global_pos].e3.e0.re = prng_double();
+		sf_in[global_pos].e3.e1.re = prng_double();
+		sf_in[global_pos].e3.e2.re = prng_double();
 
-		sf_in[global_pos].e0.e0.im = rnd_loc.doub();
-		sf_in[global_pos].e0.e1.im = rnd_loc.doub();
-		sf_in[global_pos].e0.e2.im = rnd_loc.doub();
-		sf_in[global_pos].e1.e0.im = rnd_loc.doub();
-		sf_in[global_pos].e1.e1.im = rnd_loc.doub();
-		sf_in[global_pos].e1.e2.im = rnd_loc.doub();
-		sf_in[global_pos].e2.e0.im = rnd_loc.doub();
-		sf_in[global_pos].e2.e1.im = rnd_loc.doub();
-		sf_in[global_pos].e2.e2.im = rnd_loc.doub();
-		sf_in[global_pos].e3.e0.im = rnd_loc.doub();
-		sf_in[global_pos].e3.e1.im = rnd_loc.doub();
-		sf_in[global_pos].e3.e2.im = rnd_loc.doub();
+		sf_in[global_pos].e0.e0.im = prng_double();
+		sf_in[global_pos].e0.e1.im = prng_double();
+		sf_in[global_pos].e0.e2.im = prng_double();
+		sf_in[global_pos].e1.e0.im = prng_double();
+		sf_in[global_pos].e1.e1.im = prng_double();
+		sf_in[global_pos].e1.e2.im = prng_double();
+		sf_in[global_pos].e2.e0.im = prng_double();
+		sf_in[global_pos].e2.e1.im = prng_double();
+		sf_in[global_pos].e2.e2.im = prng_double();
+		sf_in[global_pos].e3.e0.im = prng_double();
+		sf_in[global_pos].e3.e1.im = prng_double();
+		sf_in[global_pos].e3.e2.im = prng_double();
 	}
 	return;
 }

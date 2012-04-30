@@ -30,5 +30,6 @@ target_link_libraries( bandwidth
 	klepsydra
 	crypto
 	einhard
+	${PRNG_LIBRARIES}
 )
 add_dependencies(bandwidth git_commit_id_header)

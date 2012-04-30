@@ -68,30 +68,6 @@ public:
 	virtual void clear_buffers();
 
 	/**
-	 * Initialize random arrays.
-	 * Called by fill_buffers() so that the arrays are available "in time"
-	 */
-	void init_random_arrays();
-
-	/**
-	 * Copy the RNG state to the appropriate OpenCL buffer.
-	 *
-	 * @param host_rndarray The RNG state to copy
-	 *         @li HMC_OCLERROR if OpenCL operations fail
-	 *         @li HMC_SUCCESS otherwise
-	 */
-	void copy_rndarray_to_device(hmc_ocl_ran* host_rndarray);
-
-	/**
-	 * Copy the RNG state from the OpenCL buffer.
-	 *
-	 * @param[out] rndarray The RNG copy target
-	 *         @li HMC_OCLERROR if OpenCL operations fail
-	 *         @li HMC_SUCCESS otherwise
-	 */
-	void copy_rndarray_from_device(hmc_ocl_ran* rndarray);
-
-	/**
 	 * Get cl_mem object rndarray
 	 * @return rndarray
 	 */
@@ -108,14 +84,39 @@ protected:
 	 * @return num_rndstates
 	 */
 	int get_num_rndstates();
-	hmc_ocl_ran* rndarray;
-	size_t sizeof_rndarray;
+
+	/**
+	 * A set of sources required to use the PRNG.
+	 */
+	ClSourcePackage prng_code;
 
 private:
 
 	int num_rndstates;
 	cl_mem clmem_rndarray;
 
+#ifdef USE_PRNG_NR3
+	/**
+	 * Copy the RNG state to the appropriate OpenCL buffer.
+	 *
+	 * @param host_rndarray The RNG state to copy
+	 *         @li HMC_OCLERROR if OpenCL operations fail
+	 *         @li HMC_SUCCESS otherwise
+	 */
+	void copy_rndstate_to_device(nr3_state_dev* host_rndarray);
+
+	/**
+	 * Copy the RNG state from the OpenCL buffer.
+	 *
+	 * @param[out] rndarray The RNG copy target
+	 *         @li HMC_OCLERROR if OpenCL operations fail
+	 *         @li HMC_SUCCESS otherwise
+	 */
+	void copy_rndstate_from_device(nr3_state_dev* rndarray);
+
+	nr3_state_dev* rndarray;
+	size_t sizeof_rndarray;
+#endif // USE_PRNG_NR3
 };
 
 #endif //OPENCLMODULERANH

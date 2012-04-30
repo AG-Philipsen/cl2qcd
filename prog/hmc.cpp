@@ -89,14 +89,14 @@ int main(int argc, char* argv[])
 		int writefreq = parameters.get_writefrequency();
 		int savefreq = parameters.get_savefrequency();
 		//This is the random-number generator for the metropolis-step
-		Random hmc_rnd_gen (parameters.get_host_seed());
+		prng_init(parameters.get_host_seed());
 
 		logger.trace() << "perform HMC on device(s)... ";
 
 		//main hmc-loop
 		for(iter = 0; iter < hmc_iter; iter ++) {
 			//generate new random-number for Metropolis step
-			hmc_float rnd_number = hmc_rnd_gen.doub();
+			hmc_float rnd_number = prng_double();
 			gaugefield.perform_hmc_step(&obs, iter, rnd_number, &solver_timer);
 			acc_rate += obs.accept;
 			if( ( (iter + 1) % writefreq ) == 0 ) {
