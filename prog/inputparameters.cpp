@@ -406,6 +406,8 @@ void inputparameters::readfile(const char* ifn)
 				cout << line << endl;
 				bool_assign(&profile_solver, line);
 			}
+
+			if(line.find("host_seed") != std::string::npos) val_assign(&host_seed, line);
 		}
 
 		//check for wrong settings in fermionaction
@@ -463,6 +465,14 @@ void inputparameters::val_assign(hmc_float * out, std::string line)
 }
 
 void inputparameters::val_assign(int * out, std::string line)
+{
+	size_t pos = line.find("=");
+	std::string value = line.substr(pos + 1);
+	(*out) = atoi(value.c_str());
+	return;
+}
+
+void inputparameters::val_assign(unsigned int * out, std::string line)
 {
 	size_t pos = line.find("=");
 	std::string value = line.substr(pos + 1);
@@ -1138,7 +1148,7 @@ bool inputparameters::get_use_smearing() const
 	return use_smearing;
 }
 
-int inputparameters::get_host_seed() const
+unsigned int inputparameters::get_host_seed() const
 {
 	return host_seed;
 }

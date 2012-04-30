@@ -149,7 +149,7 @@ public:
 	bool get_use_chem_pot_im() const;
 	bool get_use_smearing() const;
 	bool get_print_to_screen() const;
-	int get_host_seed() const;
+	unsigned int get_host_seed() const;
 	hmc_float get_rho() const;
 	int get_rho_iter() const;
 	bool get_use_cg() const;
@@ -369,7 +369,7 @@ private:
 	int iter_refresh_mp;
 	int rho_iter;
 	bool reversibility_check;
-	long long host_seed;
+	unsigned int host_seed;
 	int num_dev;
 	int cgmax;
 	int cgmax_mp;
@@ -417,6 +417,7 @@ private:
 	int integrator2;
 	void val_assign(hmc_float* out, std::string line);
 	void val_assign(int * out, std::string line);
+	void val_assign(unsigned int * out, std::string line);
 	void sourcefilenumber_assign(std::string * out);
 	void startcond_assign(int * out, std::string line);
 	void fermact_assign(int * out, std::string line);
