@@ -15,7 +15,7 @@ void Gaugefield_hmc::init_tasks()
 
 	//LZ: right now, each task carries exactly one opencl device -> thus the below allocation with [1]. Could be generalized in future
 	opencl_modules[task_hmc] = new Opencl_Module_Hmc[1];
-	get_task_hmc(0)->init(queue[task_hmc], get_parameters(), get_max_compute_units(task_hmc), get_double_ext(task_hmc));
+	get_task_hmc(0)->init(queue[task_hmc], get_parameters(), get_max_compute_units(task_hmc), get_double_ext(task_hmc), task_hmc);
 
 	return;
 }

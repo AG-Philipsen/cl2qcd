@@ -242,7 +242,7 @@ void Gaugefield_hybrid::init_tasks()
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
 		//this is initialized with length 1, meaning one assumes one device per task
 		opencl_modules[ntask] = new Opencl_Module[1];
-		opencl_modules[ntask]->init(queue[ntask], get_parameters(), max_compute_units[ntask], get_double_ext(ntask));
+		opencl_modules[ntask]->init(queue[ntask], get_parameters(), max_compute_units[ntask], get_double_ext(ntask), ntask);
 	}
 }
 

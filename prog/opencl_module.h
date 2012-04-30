@@ -62,8 +62,9 @@ public:
 	 * @param[in] params instance of inputparameters
 	 * @param[in] maxcomp maximum_compute_units for device
 	 * @param[in] double_ext OpenCL double extension for device (AMD or KHR)
+	 * @param[in] device_rank Unique (to the program) identifier for this device
 	 */
-	void init(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext);
+	void init(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int device_rank);
 
 	// set and get methods
 	/**
@@ -506,6 +507,11 @@ protected:
 	 * \return The proper stride in elements of the storage array.
 	 */
 	cl_ulong calculateStride(const cl_ulong elems, const cl_ulong baseTypeSize);
+
+	/**
+	 * An identifier for this device unique within the program.
+	 */
+	unsigned int device_rank;
 
 private:
 

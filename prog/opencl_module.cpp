@@ -7,9 +7,11 @@
 
 using namespace std;
 
-void Opencl_Module::init(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext)
+void Opencl_Module::init(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int device_rank)
 {
 	set_queue(queue);
+
+	this->device_rank = device_rank;
 
 	// get device
 	cl_int clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_DEVICE, sizeof(cl_device_id), &device, NULL);
