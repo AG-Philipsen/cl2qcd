@@ -583,7 +583,8 @@ cl_program TmpClKernel::loadBinary(std::string md5, cl_device_id device) const
 	}
 
 	// read binary from file
-	std::ifstream inputfile(binaryfile.string());
+	std::string bf = binaryfile.string();
+	std::ifstream inputfile(bf.c_str());
 	if(!inputfile.is_open()) {
 		return 0; // 0 is not a valid program object
 	}
