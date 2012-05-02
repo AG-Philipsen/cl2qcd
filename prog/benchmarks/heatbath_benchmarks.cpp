@@ -105,18 +105,18 @@ int main(int argc, char* argv[])
 	general_time_output(&total_timer, &init_timer, &perform_timer, &plaq_timer, &poly_timer);
 
 	//CP: this is just a fist version and will go into an own file later
-	stringstream profiling_out;
-	profiling_out << argv[0] << "_profiling_data";
+	string profiling_out;
+	profiling_out = string(argv[0]) + string("_profiling_data");
 
 	fstream prof_file;
-	prof_file.open(profiling_out.str(), std::ios::out | std::ios::app);
+	prof_file.open(profiling_out.c_str(), std::ios::out | std::ios::app);
 	if(prof_file.is_open()) {
 		parameters.print_info_heatbath(argv[0], &prof_file);
 		prof_file.close();
 	} else {
 		logger.warn() << "Could not open " << profiling_out;
 	}
-	gaugefield.print_profiling(profiling_out.str());
+	gaugefield.print_profiling(profiling_out);
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// free variables
