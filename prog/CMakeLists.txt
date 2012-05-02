@@ -17,18 +17,18 @@ endif(NOT CMAKE_BUILD_TYPE)
 enable_testing()
 
 # make the compiler bitchy
-if(CMAKE_COMPILER_IS_GNUCXX)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER MATCHES "/clang\\+\\+$")
 	set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wdisabled-optimization -std=c++0x")
 	set(CMAKE_CXX_FLAGS_RELEASE   "-O3")
 	set(CMAKE_CXX_FLAGS_DEBUG     "-g -O0 -fno-reorder-blocks -fno-schedule-insns -fno-inline")
 	set(CMAKE_CXX_FLAGS_DEBUGFULL "-g3 -fno-linline")
-endif(CMAKE_COMPILER_IS_GNUCXX)
-if(CMAKE_COMPILER_IS_GNUCC)
+endif(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER MATCHES "/clang\\+\\+$")
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER MATCHES "/clang\\+\\+$")
 	set(CMAKE_C_FLAGS             "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Wc++-compat -Wdisabled-optimization -std=c99")
 	set(CMAKE_C_FLAGS_RELEASE     "-O3")
 	set(CMAKE_C_FLAGS_DEBUG       "-g -O0 -fno-reorder-blocks -fno-schedule-insns -fno-inline")
 	set(CMAKE_C_FLAGS_DEBUGFULL   "-g3 -fno-linline")
-endif(CMAKE_COMPILER_IS_GNUCC)
+endif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER MATCHES "/clang\\+\\+$")
 
 # make sure we can compile agains opencl
 find_package( OpenCL REQUIRED )
