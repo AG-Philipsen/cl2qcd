@@ -383,21 +383,27 @@ void fill_with_one(hmc_float * sf_in, int size)
 	return;
 }
 
+hmc_complex make_complex(const hmc_float re, const hmc_float im)
+{
+	const hmc_complex tmp = {re, im};
+	return tmp;
+}
+
 void fill_with_zero(spinor * sf_in, int size)
 {
 	for(int i = 0; i < size; ++i) {
-		sf_in[i].e0.e0 = {0., 0.};
-		sf_in[i].e0.e1 = {0., 0.};
-		sf_in[i].e0.e2 = {0., 0.};
-		sf_in[i].e1.e0 = {0., 0.};
-		sf_in[i].e1.e1 = {0., 0.};
-		sf_in[i].e1.e2 = {0., 0.};
-		sf_in[i].e2.e0 = {0., 0.};
-		sf_in[i].e2.e1 = {0., 0.};
-		sf_in[i].e2.e2 = {0., 0.};
-		sf_in[i].e3.e0 = {0., 0.};
-		sf_in[i].e3.e1 = {0., 0.};
-		sf_in[i].e3.e2 = {0., 0.};
+		sf_in[i].e0.e0 = make_complex(0., 0.);
+		sf_in[i].e0.e1 = make_complex(0., 0.);
+		sf_in[i].e0.e2 = make_complex(0., 0.);
+		sf_in[i].e1.e0 = make_complex(0., 0.);
+		sf_in[i].e1.e1 = make_complex(0., 0.);
+		sf_in[i].e1.e2 = make_complex(0., 0.);
+		sf_in[i].e2.e0 = make_complex(0., 0.);
+		sf_in[i].e2.e1 = make_complex(0., 0.);
+		sf_in[i].e2.e2 = make_complex(0., 0.);
+		sf_in[i].e3.e0 = make_complex(0., 0.);
+		sf_in[i].e3.e1 = make_complex(0., 0.);
+		sf_in[i].e3.e2 = make_complex(0., 0.);
 	}
 	return;
 }
