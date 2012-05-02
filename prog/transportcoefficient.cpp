@@ -10,7 +10,8 @@ int main(int argc, char* argv[])
 		desc.add_options()
 		("help,h", "Produce this help message")
 		("input-file", po::value<std::string>(), "File containing the input parameters")
-		("log-level", po::value<std::string>(), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF");
+		("log-level", po::value<std::string>(), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF")
+		("disable-ocl-compiler-opt", "Disable OpenCL compiler from performing optimizations (adds -cl-disable-opt)");
 		po::positional_options_description pos_opts;
 		pos_opts.add("input-file", 1);
 		po::variables_map vm;
@@ -30,7 +31,7 @@ int main(int argc, char* argv[])
 		}
 
 		const char* inputfile = vm["input-file"].as<std::string>().c_str();
-		inputparameters parameters;
+		inputparameters parameters(vm.count("disable-ocl-compiler-opt"));
 		parameters.readfile(inputfile);
 		parameters.print_info_tkkappa(argv[0]);
 
