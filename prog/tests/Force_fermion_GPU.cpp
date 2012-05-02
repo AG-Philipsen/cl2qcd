@@ -209,10 +209,17 @@ void fill_with_one(hmc_float * sf_in, int size)
 	return;
 }
 
+ae make_ae(hmc_float e1, hmc_float e2, hmc_float e3, hmc_float e4,
+           hmc_float e5, hmc_float e6, hmc_float e7, hmc_float e8)
+{
+	ae tmp = {e1, e2, e3, e4, e5, e6, e7, e8};
+	return tmp;
+};
+
 void fill_with_zero(ae * ae, int size)
 {
 	for(int i = 0; i < size; ++i) {
-		ae[i] = {0., 0., 0., 0., 0., 0., 0., 0.};
+		ae[i] = make_ae(0., 0., 0., 0., 0., 0., 0., 0.);
 	}
 	return;
 }
