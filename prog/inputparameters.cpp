@@ -1869,3 +1869,8 @@ void inputparameters::check_settings_global() const
 		exit(EXIT_INPUTPARAMETERS);
 	}
 }
+
+bool inputparameters::isOclCompilerOptDisabled() const
+{
+	return disable_ocl_compiler_opt;
+}

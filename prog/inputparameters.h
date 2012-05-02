@@ -34,8 +34,10 @@ class inputparameters {
 public:
 	/**
 	 * Default constructor loads default values.
+	 *
+	 * @param disable_ocl_compiler_opt Prevent opencl compiler from performing code optimizations
 	 */
-	inputparameters() {
+	inputparameters(bool disable_ocl_compiler_opt = false) : disable_ocl_compiler_opt(disable_ocl_compiler_opt) {
 		set_defaults();
 	};
 	/**
@@ -296,6 +298,11 @@ public:
 	//this is out of laziness
 	std::string sourcefile;
 	std::string sourcefilenumber;
+
+	/**
+	 * Check whether OpenCL compiler shall be prevented from performing optimizations.
+	 */
+	bool isOclCompilerOptDisabled() const;
 private:
 	//general parameters
 	int nspace;
@@ -436,6 +443,7 @@ private:
 	bool use_same_rnd_numbers;
 	//this can be used to measure the time the solver takes
 	bool profile_solver;
+	bool disable_ocl_compiler_opt;
 };
 
 #endif /* _INPUTPARAMETERSH_ */
