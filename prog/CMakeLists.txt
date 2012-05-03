@@ -8,6 +8,8 @@ project( OpTiMaL )
 # we have some custom CMake stuff
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+include(Macros)
+
 # if a user doesn't specify anything he probably isn't interested in debug information
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
@@ -19,13 +21,13 @@ enable_testing()
 # make the compiler bitchy
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER MATCHES "/clang\\+\\+$")
 	set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wdisabled-optimization -std=c++0x")
-	set(CMAKE_CXX_FLAGS_RELEASE   "-O3")
+	set(CMAKE_CXX_FLAGS_RELEASE   "-O4") # LTO on clang, gcc will fall back to O3
 	set(CMAKE_CXX_FLAGS_DEBUG     "-g -O0 -fno-reorder-blocks -fno-schedule-insns -fno-inline")
 	set(CMAKE_CXX_FLAGS_DEBUGFULL "-g3 -fno-linline")
 endif(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER MATCHES "/clang\\+\\+$")
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER MATCHES "/clang\\+\\+$")
 	set(CMAKE_C_FLAGS             "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Wc++-compat -Wdisabled-optimization -std=c99")
-	set(CMAKE_C_FLAGS_RELEASE     "-O3")
+	set(CMAKE_C_FLAGS_RELEASE     "-O4") # LTO on clang, gcc will fall back to O3
 	set(CMAKE_C_FLAGS_DEBUG       "-g -O0 -fno-reorder-blocks -fno-schedule-insns -fno-inline")
 	set(CMAKE_C_FLAGS_DEBUGFULL   "-g3 -fno-linline")
 endif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER MATCHES "/clang\\+\\+$")
@@ -102,121 +104,33 @@ endif(PRNG STREQUAL "NR3")
 # default random number seed
 configure_file( rand_seeds rand_seeds COPYONLY )
 
-add_executable( heatbath
-	heatbath.cpp
-	host_geometry.cpp
-	host_operations_gaugefield.cpp
-	inputparameters.cpp
-	host_readgauge.cpp
-	host_use_timer.cpp
-	host_writegaugefield.cpp
-	host_random.cpp
-	logger.cpp
+# Definition of the core application
+set_abs_paths(OPTIMAL_FILES
 	exceptions.cpp
-	gaugefield_hybrid.cpp
 	gaugefield_heatbath.cpp
-	opencl_module.cpp
-	opencl_module_ran.cpp
-	opencl_module_heatbath.cpp
-	opencl_compiler.cpp
-)
-target_link_libraries( heatbath
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
-	${Boost_LIBRARIES}
-	klepsydra
-	einhard
-	crypto
-	${PRNG_LIBRARIES}
-)
-add_dependencies(heatbath git_commit_id_header)
-
-add_executable( transportcoefficient
-	transportcoefficient.cpp
-	host_geometry.cpp
-	host_operations_gaugefield.cpp
-	gaugefield_hybrid.cpp
 	gaugefield_heatbath_kappa.cpp
-	inputparameters.cpp
-	host_readgauge.cpp
-	host_random.cpp
-	host_use_timer.cpp
-	host_writegaugefield.cpp
-	logger.cpp
-	exceptions.cpp
-	opencl_module.cpp
-	opencl_module_ran.cpp
-	opencl_module_heatbath.cpp
-	opencl_module_kappa.cpp
-	opencl_compiler.cpp
-)
-target_link_libraries( transportcoefficient
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
-	${Boost_LIBRARIES}
-	klepsydra
-	einhard
-	crypto
-	${PRNG_LIBRARIES}
-)
-add_dependencies(transportcoefficient git_commit_id_header)
-
-add_executable( inverter
-	inverter.cpp
-	host_geometry.cpp
-	host_operations_gaugefield.cpp
+	gaugefield_hmc.cpp
 	gaugefield_hybrid.cpp
 	gaugefield_inverter.cpp
-	inputparameters.cpp
-	host_readgauge.cpp
-	opencl_module.cpp
-	opencl_compiler.cpp
-	opencl_module_fermions.cpp
-	opencl_module_correlator.cpp
-	host_use_timer.cpp
-	host_writegaugefield.cpp
-	logger.cpp
-	exceptions.cpp
-	opencl_module_spinors.cpp
-	opencl_module_ran.cpp
-	host_random.cpp
-)
-
-target_link_libraries( inverter
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
-	${Boost_LIBRARIES}
-	klepsydra
-	einhard
-	crypto
-	${PRNG_LIBRARIES}
-)
-add_dependencies(inverter git_commit_id_header)
-
-add_executable( hmc
-	hmc.cpp
 	host_geometry.cpp
 	host_operations_gaugefield.cpp
-	gaugefield_hybrid.cpp
-	gaugefield_hmc.cpp
-	inputparameters.cpp
+	host_random.cpp
 	host_readgauge.cpp
-	opencl_module.cpp
-	opencl_compiler.cpp
-	opencl_module_fermions.cpp
-	opencl_module_hmc.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
+	inputparameters.cpp
 	logger.cpp
-	exceptions.cpp
-	opencl_module_spinors.cpp
+	opencl_compiler.cpp
+	opencl_module.cpp
+	opencl_module_correlator.cpp
+	opencl_module_fermions.cpp
+	opencl_module_hmc.cpp
+	opencl_module_heatbath.cpp
+	opencl_module_kappa.cpp
 	opencl_module_ran.cpp
-	host_random.cpp
+	opencl_module_spinors.cpp
 )
-target_link_libraries( hmc
+set(OPTIMAL_USED_LIBS
 	${OPENCL_LIBRARIES}
 	${LIME_LIBRARIES}
 	${LIBXML2_LIBRARIES}
@@ -226,17 +140,32 @@ target_link_libraries( hmc
 	crypto
 	${PRNG_LIBRARIES}
 )
-add_dependencies(hmc git_commit_id_header)
+add_library(optimal ${OPTIMAL_FILES})
+target_link_libraries(optimal ${OPTIMAL_USED_LIBS})
+add_dependencies(optimal git_commit_id_header)
 
-add_library( klepsydra
+# The actual executables (frontends)
+add_executable(heatbath heatbath.cpp)
+target_link_libraries(heatbath optimal)
+
+add_executable(transportcoefficient transportcoefficient.cpp)
+target_link_libraries(transportcoefficient optimal)
+
+add_executable(inverter inverter.cpp)
+target_link_libraries(inverter optimal)
+
+add_executable(hmc hmc.cpp)
+target_link_libraries(hmc optimal)
+
+# Utilities
+add_library(klepsydra
 	klepsydra/timer.cpp
-	klepsydra/monotonic.cpp )
+	klepsydra/monotonic.cpp)
 if(NOT CMAKE_HOST_APPLE)
-	target_link_libraries( klepsydra rt )
+	target_link_libraries(klepsydra rt)
 endif(NOT CMAKE_HOST_APPLE)
 
-add_library( einhard
-	einhard/einhard.cpp )
+add_library(einhard einhard/einhard.cpp)
 
 # Add crypto stuff
 add_subdirectory( crypto )
@@ -247,7 +176,7 @@ add_subdirectory(ranluxcl)
 
 # Documentation
 #include(FindDoxygen)
-find_package( Doxygen QUIET )
+find_package(Doxygen QUIET)
 if(DOXYGEN_FOUND)
     add_subdirectory(doc)
 else(DOXYGEN_FOUND)

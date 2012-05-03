@@ -21,556 +21,138 @@ add_executable(cryptoLibTest crypto.cpp)
 target_link_libraries(cryptoLibTest ${Boost_LIBRARIES} crypto)
 add_test(Crypto cryptoLibTest)
 
-add_executable(complex_mem_access
-	complex_mem_access.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(complex_mem_access complex_mem_access.cpp)
 target_link_libraries(complex_mem_access
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(MemoryAccessViaComplex complex_mem_access)
-add_dependencies(complex_mem_access git_commit_id_header)
 
-add_executable(su2su3extend
-	su2su3extend.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(su2su3extend su2su3extend.cpp)
 target_link_libraries(su2su3extend
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(Su2su3extend su2su3extend)
-add_dependencies(su2su3extend git_commit_id_header)
 
-add_executable(geometry
-	geometry.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(geometry geometry.cpp)
 target_link_libraries(geometry
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(geometry geometry)
-add_dependencies(geometry git_commit_id_header)
 
-add_executable(saxsbypz
-	saxsbypz.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(saxsbypz saxsbypz.cpp)
 target_link_libraries(saxsbypz
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(Saxsbypz saxsbypz)
-add_dependencies(saxsbypz git_commit_id_header)
 
-add_executable(gaugefield_convert
-	gaugefield_convert.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(gaugefield_convert gaugefield_convert.cpp)
 target_link_libraries(gaugefield_convert
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(Gaugefield_Conversion gaugefield_convert)
-add_dependencies(gaugefield_convert git_commit_id_header)
 
-add_executable(gaugefield_observables
-	gaugefield_observables.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(gaugefield_observables gaugefield_observables.cpp)
 target_link_libraries(gaugefield_observables
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(Gaugeobservables gaugefield_observables)
-add_dependencies(gaugefield_observables git_commit_id_header)
 
-add_executable(m_gpu
-	M_GPU.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../opencl_module_ran.cpp
-	../opencl_module_spinors.cpp
-	../opencl_module_fermions.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(m_gpu M_GPU.cpp)
 target_link_libraries(m_gpu
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(M_gpu m_gpu)
-add_dependencies(m_gpu git_commit_id_header)
 
-add_executable(m_eo_gpu
-	M_eo_GPU.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../opencl_module_ran.cpp
-	../opencl_module_spinors.cpp
-	../opencl_module_fermions.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(m_eo_gpu M_eo_GPU.cpp)
 target_link_libraries(m_eo_gpu
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(M_eo_gpu m_eo_gpu)
-add_dependencies(m_eo_gpu git_commit_id_header)
 
-add_executable(m_compare_noneo_eo
-	M_compare_noneo_eo.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../opencl_module_ran.cpp
-	../opencl_module_spinors.cpp
-	../opencl_module_fermions.cpp
-	../opencl_module_hmc.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(m_compare_noneo_eo M_compare_noneo_eo.cpp)
 target_link_libraries(m_compare_noneo_eo
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(M_compare_noneo_eo m_compare_noneo_eo)
-add_dependencies(m_compare_noneo_eo git_commit_id_header)
 
-add_executable(f_gauge_gpu
-	F_gauge_GPU.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../opencl_module_ran.cpp
-	../opencl_module_spinors.cpp
-	../opencl_module_fermions.cpp
-	../opencl_module_hmc.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(f_gauge_gpu F_gauge_GPU.cpp)
 target_link_libraries(f_gauge_gpu
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(F_gauge_gpu f_gauge_gpu)
-add_dependencies(f_gauge_gpu git_commit_id_header)
 
-add_executable(rectangles_test
-	Rectangles_test.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../opencl_module_ran.cpp
-	../opencl_module_spinors.cpp
-	../opencl_module_fermions.cpp
-	../opencl_module_hmc.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(rectangles_test Rectangles_test.cpp)
 target_link_libraries(rectangles_test
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(Rectangles_test rectangles_test)
-add_dependencies(rectangles_test git_commit_id_header)
 
-add_executable(f_fermion_gpu
-	Force_fermion_GPU.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../opencl_module_ran.cpp
-	../opencl_module_spinors.cpp
-	../opencl_module_fermions.cpp
-	../opencl_module_hmc.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(f_fermion_gpu Force_fermion_GPU.cpp)
 target_link_libraries(f_fermion_gpu
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(F_fermion_gpu f_fermion_gpu)
-add_dependencies(f_fermion_gpu git_commit_id_header)
 
-add_executable(f_fermion_eo_gpu
-	Force_fermion_eo_GPU.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../opencl_module_ran.cpp
-	../opencl_module_spinors.cpp
-	../opencl_module_fermions.cpp
-	../opencl_module_hmc.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(f_fermion_eo_gpu Force_fermion_eo_GPU.cpp)
 target_link_libraries(f_fermion_eo_gpu
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(F_fermion_eo_gpu f_fermion_eo_gpu)
-add_dependencies(f_fermion_eo_gpu git_commit_id_header)
 
-add_executable(f_fermion_compare_non_eo_eo_gpu
-	Force_fermion_compare_non_eo_eo_GPU.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../opencl_module_ran.cpp
-	../opencl_module_spinors.cpp
-	../opencl_module_fermions.cpp
-	../opencl_module_hmc.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(f_fermion_compare_non_eo_eo_gpu Force_fermion_compare_non_eo_eo_GPU.cpp)
 target_link_libraries(f_fermion_compare_non_eo_eo_gpu
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(F_fermion_compare_non_eo_eo_gpu f_fermion_compare_non_eo_eo_gpu)
-add_dependencies(f_fermion_compare_non_eo_eo_gpu git_commit_id_header)
 
-add_executable(f_update_gpu
-	Force_update_GPU.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../opencl_module_ran.cpp
-	../opencl_module_spinors.cpp
-	../opencl_module_fermions.cpp
-	../opencl_module_hmc.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(f_update_gpu Force_update_GPU.cpp)
 target_link_libraries(f_update_gpu
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(F_update_gpu f_update_gpu)
-add_dependencies(f_update_gpu git_commit_id_header)
 
-add_executable(gf_update_gpu
-	GF_update_GPU.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../opencl_module_ran.cpp
-	../opencl_module_spinors.cpp
-	../opencl_module_fermions.cpp
-	../opencl_module_hmc.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(gf_update_gpu GF_update_GPU.cpp)
 target_link_libraries(gf_update_gpu
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(Gf_update_gpu gf_update_gpu)
-add_dependencies(gf_update_gpu git_commit_id_header)
 
-add_executable(calc_staple
-	Calc_staple_test.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(calc_staple Calc_staple_test.cpp)
 target_link_libraries(calc_staple
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(Calc_staple calc_staple)
-add_dependencies(calc_staple git_commit_id_header)
 
-add_executable(stout_smear
-	Stout_Smear_test.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(stout_smear Stout_Smear_test.cpp)
 target_link_libraries(stout_smear
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(Stout_smear stout_smear)
-add_dependencies(stout_smear git_commit_id_header)
 
-add_executable(localQ
-	local_Q_test.cpp
-	../host_geometry.cpp
-	../host_operations_gaugefield.cpp
-	../gaugefield_hybrid.cpp
-	../inputparameters.cpp
-	../host_readgauge.cpp
-	../host_random.cpp
-	../opencl_module.cpp
-	../opencl_compiler.cpp
-	../host_use_timer.cpp
-	../host_writegaugefield.cpp
-	../exceptions.cpp
-	../logger.cpp)
+add_executable(localQ local_Q_test.cpp)
 target_link_libraries(localQ
-	${OPENCL_LIBRARIES}
-	${LIME_LIBRARIES}
-	${LIBXML2_LIBRARIES}
+	optimal
 	${Boost_LIBRARIES}
-	klepsydra
-	crypto
-	einhard
-	${PRNG_LIBRARIES}
 )
 add_test(LocalQ localQ)
-add_dependencies(localQ git_commit_id_header)
 
 # ignore some tests
 configure_file(CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
