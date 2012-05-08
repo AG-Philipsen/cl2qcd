@@ -68,10 +68,10 @@ int main(int argc, char* argv[])
 		init_timer.reset();
 		Gaugefield_inverter gaugefield;
 
-		//one needs 1 task here
-		int numtasks = 1;
-		if(parameters.get_num_dev() != 2 )
-			logger.warn() << "Only 1 device demanded by benchmark executable. All calculations performed on primary device.";
+		//one needs 2 task here
+		int numtasks = 2;
+		if(parameters.get_num_dev() != numtasks )
+			logger.warn() << "Exactly 2 devices demanded by benchmark executable. All calculations performed on primary device.";
 
 		cl_device_type primary_device;
 		switch ( parameters.get_use_gpu() ) {
