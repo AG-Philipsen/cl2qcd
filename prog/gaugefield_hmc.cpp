@@ -550,12 +550,12 @@ void Gaugefield_hmc::init_gaugemomentum_spinorfield()
 	  //init/update spinorfield phi
 	  get_task_hmc(0)->generate_spinorfield_gaussian();
 	  //calc init energy for spinorfield
-	  get_task_hmc(0)->calc_spinorfield_init_energy(get_task_hmc(0)->get_clmem_energy_init());
+	  get_task_hmc(0)->calc_spinorfield_init_energy(get_task_hmc(0)->get_clmem_s_fermion_init());
 	  get_task_hmc(0)->md_update_spinorfield();
 	  if(get_parameters()->get_use_mp() ) {
 	    get_task_hmc(0)->generate_spinorfield_gaussian();
 	    //calc init energy for mass-prec spinorfield (this is the same as for the spinorfield above)
-	    get_task_hmc(0)->calc_spinorfield_init_energy(get_task_hmc(0)->get_clmem_energy_mp_init());
+	    get_task_hmc(0)->calc_spinorfield_init_energy(get_task_hmc(0)->get_clmem_s_fermion_mp_init());
 	    get_task_hmc(0)->md_update_spinorfield();
 	  }
 	}

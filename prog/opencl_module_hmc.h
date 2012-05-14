@@ -93,8 +93,8 @@ public:
 	cl_mem get_clmem_phi_eo();
 	cl_mem get_clmem_phi_mp();
 	cl_mem get_clmem_phi_mp_eo();
-	cl_mem get_clmem_energy_init();
-  	cl_mem get_clmem_energy_mp_init();
+	cl_mem get_clmem_s_fermion_init();
+  	cl_mem get_clmem_s_fermion_mp_init();
 
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
@@ -217,8 +217,8 @@ private:
 
 	//variables
 	//initial energy of the (gaussian) spinorfield
-	cl_mem clmem_energy_init;
-	cl_mem clmem_energy_mp_init;
+	cl_mem clmem_s_fermion_init;
+	cl_mem clmem_s_fermion_mp_init;
 	//squarenorm temps
 	cl_mem clmem_p2;
 	cl_mem clmem_new_p2;

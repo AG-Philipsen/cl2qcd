@@ -61,9 +61,9 @@ void Opencl_Module_Hmc::fill_buffers()
 	clmem_new_u = create_rw_buffer(gaugefield_size);
 	clmem_p = create_rw_buffer(gaugemomentum_size);
 	clmem_new_p = create_rw_buffer(gaugemomentum_size);
-	clmem_energy_init = create_rw_buffer(float_size);
+	clmem_s_fermion_init = create_rw_buffer(float_size);
 	if(get_parameters()->get_use_mp() ){
-	  clmem_energy_mp_init = create_rw_buffer(float_size);
+	  clmem_s_fermion_mp_init = create_rw_buffer(float_size);
 	}
 	clmem_p2 = create_rw_buffer(float_size);
 	clmem_new_p2 = create_rw_buffer(float_size);
@@ -155,7 +155,7 @@ void Opencl_Module_Hmc::clear_buffers()
 	cl_uint clerr = CL_SUCCESS;
 
 	logger.debug() << "release HMC-variables.." ;
-	clerr = clReleaseMemObject(clmem_energy_init);
+	clerr = clReleaseMemObject(clmem_s_fermion_init);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_p2);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
@@ -237,14 +237,14 @@ cl_mem Opencl_Module_Hmc::get_clmem_phi_mp_eo()
 	return clmem_phi_mp_eo;
 }
 
-cl_mem Opencl_Module_Hmc::get_clmem_energy_init()
+cl_mem Opencl_Module_Hmc::get_clmem_s_fermion_init()
 {
-	return clmem_energy_init;
+	return clmem_s_fermion_init;
 }
 
-cl_mem Opencl_Module_Hmc::get_clmem_energy_mp_init()
+cl_mem Opencl_Module_Hmc::get_clmem_s_fermion_mp_init()
 {
-	return clmem_energy_mp_init;
+	return clmem_s_fermion_mp_init;
 }
 
 #ifdef _PROFILING_
@@ -1359,7 +1359,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	if(! get_parameters()->get_use_gauge_only() ) {
 		hmc_float spinor_energy_init, s_fermion;
 		//initial energy has been computed in the beginning...
-		Opencl_Module_Hmc::get_buffer_from_device(clmem_energy_init, &spinor_energy_init, sizeof(hmc_float));
+		Opencl_Module_Hmc::get_buffer_from_device(clmem_s_fermion_init, &spinor_energy_init, sizeof(hmc_float));
 		// sum_links phi*_i (M^+M)_ij^-1 phi_j
 		s_fermion = calc_s_fermion();
 		deltaH += spinor_energy_init - s_fermion;
