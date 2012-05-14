@@ -46,16 +46,25 @@ void Opencl_Module_Hmc::fill_buffers()
 		clmem_phi_eo = create_rw_buffer(eoprec_spinorfield_size);
 		//in debug-mode, this field is currently used temporarily...
 		if(logger.beDebug()) clmem_phi_inv = create_rw_buffer(spinorfield_size);
+		if(get_parameters()->get_use_mp() ){
+		  clmem_phi_mp = create_rw_buffer(eoprec_spinorfield_size);
+		}
 	} else {
 		///@TODO in this case, the object cl_mem_source from the fermions module can be released again!!
 		clmem_phi = create_rw_buffer(spinorfield_size);
 		clmem_phi_inv = create_rw_buffer(spinorfield_size);
+		if(get_parameters()->get_use_mp() ){
+		  clmem_phi_mp_eo = create_rw_buffer(eoprec_spinorfield_size);
+		}
 	}
 
 	clmem_new_u = create_rw_buffer(gaugefield_size);
 	clmem_p = create_rw_buffer(gaugemomentum_size);
 	clmem_new_p = create_rw_buffer(gaugemomentum_size);
 	clmem_energy_init = create_rw_buffer(float_size);
+	if(get_parameters()->get_use_mp() ){
+	  clmem_energy_mp_init = create_rw_buffer(float_size);
+	}
 	clmem_p2 = create_rw_buffer(float_size);
 	clmem_new_p2 = create_rw_buffer(float_size);
 	clmem_s_fermion = create_rw_buffer(float_size);

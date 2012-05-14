@@ -546,8 +546,11 @@ void Gaugefield_hmc::init_gaugemomentum_spinorfield()
 {
 	//init gauge_momenta, saved in clmem_p
 	get_task_hmc(0)->generate_gaussian_gaugemomenta_device();
-	//init/update spinorfield phi
-	get_task_hmc(0)->generate_spinorfield_gaussian();
+	if(! get_parameters()->get_use_gauge_only() ) {
+	  //init/update spinorfield phi
+	  get_task_hmc(0)->generate_spinorfield_gaussian();
+	  
+	}
 	get_task_hmc(0)->calc_spinorfield_init_energy();
 	get_task_hmc(0)->md_update_spinorfield();
 }
