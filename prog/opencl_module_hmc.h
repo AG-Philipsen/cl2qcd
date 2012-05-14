@@ -91,13 +91,16 @@ public:
 	cl_mem get_clmem_new_u();
 	cl_mem get_clmem_phi();
 	cl_mem get_clmem_phi_eo();
+	cl_mem get_clmem_energy_init();
+  	cl_mem get_clmem_energy_mp_init();
 
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
 	void md_update_spinorfield();
+	void md_update_spinorfield_mp();
 	void generate_spinorfield_gaussian();
 	hmc_observables metropolis(hmc_float rnd, hmc_float beta);
-	void calc_spinorfield_init_energy();
+	void calc_spinorfield_init_energy(cl_mem dest);
 	void calc_gauge_force();
 	void calc_fermion_force(usetimer * solvertimer);
 
@@ -213,6 +216,7 @@ private:
 	//variables
 	//initial energy of the (gaussian) spinorfield
 	cl_mem clmem_energy_init;
+	cl_mem clmem_energy_mp_init;
 	//squarenorm temps
 	cl_mem clmem_p2;
 	cl_mem clmem_new_p2;
@@ -228,7 +232,9 @@ private:
 	cl_mem clmem_phi_inv_eo;
 	//D(gaussian spinorfield)
 	cl_mem clmem_phi;
+	cl_mem clmem_phi_mp;
 	cl_mem clmem_phi_eo;
+	cl_mem clmem_phi_mp_eo;
 
 	ClSourcePackage basic_hmc_code;
 
