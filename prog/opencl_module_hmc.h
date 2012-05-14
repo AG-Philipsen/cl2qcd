@@ -91,6 +91,8 @@ public:
 	cl_mem get_clmem_new_u();
 	cl_mem get_clmem_phi();
 	cl_mem get_clmem_phi_eo();
+	cl_mem get_clmem_phi_mp();
+	cl_mem get_clmem_phi_mp_eo();
 	cl_mem get_clmem_energy_init();
   	cl_mem get_clmem_energy_mp_init();
 

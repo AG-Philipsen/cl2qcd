@@ -227,6 +227,16 @@ cl_mem Opencl_Module_Hmc::get_clmem_phi_eo()
 	return clmem_phi_eo;
 }
 
+cl_mem Opencl_Module_Hmc::get_clmem_phi_mp()
+{
+	return clmem_phi_mp;
+}
+
+cl_mem Opencl_Module_Hmc::get_clmem_phi_mp_eo()
+{
+	return clmem_phi_mp_eo;
+}
+
 cl_mem Opencl_Module_Hmc::get_clmem_energy_init()
 {
 	return clmem_energy_init;
@@ -635,11 +645,76 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp()
 	//  which then has to be the source of the inversion
   //in the mass preconditioning case, this is a bit more complicated and involves an inversion
 	if(get_parameters()->get_use_eo() == true) {
-		Opencl_Module_Fermions::Qplus_eo (clmem_phi_inv_eo, clmem_phi_mp_eo , get_gaugefield());
-		if(logger.beDebug()) print_info_inv_field(clmem_phi_mp_eo, true, "\tinit field after update ");
+	  //CP: Init tmp spinorfield
+	  int spinorfield_size = sizeof(spinor) * get_parameters()->get_eoprec_spinorfieldsize();
+	  cl_mem sf_eo_tmp;
+	  sf_eo_tmp = create_rw_buffer(spinorfield_size);
+
+	  //sf_eo_tmp = Qplus_eo(heavy_mass) phi_inv_eo
+	  Opencl_Module_Fermions::Qplus_eo (clmem_phi_inv_eo, sf_eo_tmp , get_gaugefield());
+
+	  //Now one needs ( Qplus_eo )^-1 (light_mass) using sf_eo_tmp as source to get phi_mp_eo
+	  //use always bicgstab here
+	  logger.debug() << "\t\t\tstart solver";
+	  
+	  /** @todo at the moment, we can only put in a cold spinorfield
+	   * or a point-source spinorfield as trial-solution
+	   */
+	  set_zero_spinorfield_eoprec_device(get_clmem_phi_mp_eo());
+	  gamma5_eo_device(get_clmem_phi_mp_eo());
+
+	  int converged = -1;
+	  if(logger.beDebug()) print_info_inv_field(get_clmem_phi_mp_eo(), true, "\tinv. field before inversion ");
+	  if(logger.beDebug()) print_info_inv_field(sf_eo_tmp, true, "\tsource before inversion ");
+	  converged = Opencl_Module_Fermions::bicgstab_eo(::Qplus_eo(this), this->get_clmem_phi_mp_eo(), sf_eo_tmp, this->clmem_new_u, get_parameters()->get_solver_prec());
+	  if (converged < 0) {
+	    if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
+	    else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
+	  } else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
+	  if(logger.beDebug()) print_info_inv_field(get_clmem_phi_mp_eo(), true, "\tinv. field after inversion ");
+	  //add number of inverter iterations to counter
+	  get_parameters()->acc_iter0(abs(converged));
+	  if(logger.beDebug()) print_info_inv_field(clmem_phi_mp_eo, true, "\tinit field after update ");
+
+	  int clerr = clReleaseMemObject(sf_eo_tmp);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+
 	} else {
-		Opencl_Module_Fermions::Qplus(clmem_phi_inv, clmem_phi_mp , get_gaugefield());
-		if(logger.beDebug()) print_info_inv_field(clmem_phi_mp, false, "\tinit field after update ");
+
+	  //CP: Init tmp spinorfield
+	  int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
+	  cl_mem sf_tmp;
+	  sf_tmp = create_rw_buffer(spinorfield_size);
+
+	  //sf_tmp = Qplus(heavy_mass) phi_inv
+	  Opencl_Module_Fermions::Qplus (clmem_phi_inv, sf_tmp , get_gaugefield());
+
+	  //Now one needs ( Qplus )^-1 (light_mass) using sf_eo_tmp as source to get phi_mp
+	  //use always bicgstab here
+	  logger.debug() << "\t\t\tstart solver";
+	  
+	  /** @todo at the moment, we can only put in a cold spinorfield
+	   * or a point-source spinorfield as trial-solution
+	   */
+	  set_zero_spinorfield_device(get_clmem_phi_mp());
+	  gamma5_device(get_clmem_phi_mp());
+
+	  int converged = -1;
+	  if(logger.beDebug()) print_info_inv_field(get_clmem_phi_mp(), true, "\tinv. field before inversion ");
+	  if(logger.beDebug()) print_info_inv_field(sf_tmp, true, "\tsource before inversion ");
+	  converged = Opencl_Module_Fermions::bicgstab(::Qplus(this), this->get_clmem_phi_mp(), sf_tmp, this->clmem_new_u, get_parameters()->get_solver_prec());
+	  if (converged < 0) {
+	    if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
+	    else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
+	  } else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
+	  if(logger.beDebug()) print_info_inv_field(get_clmem_phi_mp_eo(), true, "\tinv. field after inversion ");
+	  //add number of inverter iterations to counter
+	  get_parameters()->acc_iter0(abs(converged));
+	  if(logger.beDebug()) print_info_inv_field(clmem_phi_mp, false, "\tinit field after update ");
+
+	  int clerr = clReleaseMemObject(sf_tmp);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+
 	}
 }
 
