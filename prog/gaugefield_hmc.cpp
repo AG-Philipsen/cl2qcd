@@ -198,7 +198,33 @@ void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer)
 
 void Gaugefield_hmc::detratio_forces_call(usetimer * solvertimer)
 {
-	logger.info() << "det ratio has not been implemented yet...";
+	logger.info() << "det ratio force call...";
+	//in case of stout-smearing we need every intermediate field for the force calculation
+	//NOTE: if smearing is not used, this is just 0
+	int rho_iter = get_parameters()->get_rho_iter();
+	//array to save the intermediate fields
+	//NOTE: One needs only rho_iter -1 here since the last iteration is saved in gf...
+	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
+	//  or use the intermediate cl_mem obj gf_unsmeared. This is initialized in the smear_gaugefield function
+	cl_mem * smeared_gfs;
+	if(rho_iter > 0) smeared_gfs = new cl_mem [rho_iter - 1];
+	else smeared_gfs = NULL;
+
+	if(get_parameters()->get_use_smearing() == true) {
+		size_t gfsize = get_task_hmc(0)->getGaugefieldBufferSize();
+		for(int i = 0; i < rho_iter; i++)
+			smeared_gfs[i] = get_task_hmc(0)->create_rw_buffer(gfsize);
+		get_task_hmc(0)->smear_gaugefield(get_task_hmc(0)->get_gaugefield(), smeared_gfs);
+	}
+	get_task_hmc(0)->calc_fermion_force(solvertimer);
+	if(get_parameters()->get_use_smearing() == true) {
+		get_task_hmc(0)->stout_smeared_fermion_force_device(smeared_gfs);
+		get_task_hmc(0)->unsmear_gaugefield(get_task_hmc(0)->get_gaugefield());
+		for(int i = 0; i < rho_iter; i++) {
+			cl_int clerr = clReleaseMemObject(smeared_gfs[i]);
+			if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		}
+	}
 }
 
 void Gaugefield_hmc::md_update_gaugefield(hmc_float eps)

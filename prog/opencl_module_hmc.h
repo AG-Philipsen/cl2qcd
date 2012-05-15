@@ -105,6 +105,7 @@ public:
 	void calc_spinorfield_init_energy(cl_mem dest);
 	void calc_gauge_force();
 	void calc_fermion_force(usetimer * solvertimer);
+	void calc_fermion_force_detratio(usetimer * solvertimer);
 
 	///////////////////////////////////////////////////
 	//Methods on device
