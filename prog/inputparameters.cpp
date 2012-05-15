@@ -91,6 +91,7 @@ void inputparameters::set_defaults()
 
 	//fermionic parameters
 	fermact = WILSON;
+	fermact_mp = WILSON;
 	kappa = 0.125;
 	mu = 0.006;
 	this->calc_mubar();
