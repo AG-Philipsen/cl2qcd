@@ -650,9 +650,6 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 
 void Opencl_Module_Hmc::md_update_spinorfield_mp()
 {
-
-  logger.info() << "updating mass-prec field";
-
 	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//  which then has to be the source of the inversion
@@ -734,16 +731,6 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp()
 void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer)
 {
 	int converged = -1;
-	/**
-	 * @NOTE The force is up to this point always calculated using "non-eo" spinorfields.
-	 * This is done this way since one would not save any operations using eo-fields, but would need
-	 * another kernel instead.
-	 * Therefore, the eo-fields are converted back to the normal format.
-	 * However, using an eo-force holds the possibility of saving memory, which would be relevant
-	 * on e.g. a GPU.
-	 * @NOTE A dummy-kernel and corresponding calling function is already implemented if one wishes to
-	 *  change this one day.
-	 */
 	// make sure SOA is in proper format for dslash
 	if(get_parameters()->get_use_eo() == true) {
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
