@@ -47,14 +47,14 @@ void Opencl_Module_Hmc::fill_buffers()
 		//in debug-mode, this field is currently used temporarily...
 		if(logger.beDebug()) clmem_phi_inv = create_rw_buffer(spinorfield_size);
 		if(get_parameters()->get_use_mp() ){
-		  clmem_phi_mp = create_rw_buffer(eoprec_spinorfield_size);
+		  clmem_phi_mp_eo = create_rw_buffer(eoprec_spinorfield_size);
 		}
 	} else {
 		///@TODO in this case, the object cl_mem_source from the fermions module can be released again!!
 		clmem_phi = create_rw_buffer(spinorfield_size);
 		clmem_phi_inv = create_rw_buffer(spinorfield_size);
 		if(get_parameters()->get_use_mp() ){
-		  clmem_phi_mp_eo = create_rw_buffer(eoprec_spinorfield_size);
+		  clmem_phi_mp = create_rw_buffer(spinorfield_size);
 		}
 	}
 
@@ -157,6 +157,8 @@ void Opencl_Module_Hmc::clear_buffers()
 	logger.debug() << "release HMC-variables.." ;
 	clerr = clReleaseMemObject(clmem_s_fermion_init);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+	clerr = clReleaseMemObject(clmem_s_fermion_mp_init);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_p2);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_new_p2);
@@ -174,11 +176,19 @@ void Opencl_Module_Hmc::clear_buffers()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_phi_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		if(get_parameters()->get_use_mp() ){
+		  clerr = clReleaseMemObject(clmem_phi_mp_eo);
+		  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		}
 	} else {
 		clerr = clReleaseMemObject(clmem_phi_inv);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(clmem_phi);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		if(get_parameters()->get_use_mp() ){
+		  clerr = clReleaseMemObject(clmem_phi_mp);
+		  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		}
 	}
 	return;
 }
@@ -640,6 +650,9 @@ void Opencl_Module_Hmc::md_update_spinorfield()
 
 void Opencl_Module_Hmc::md_update_spinorfield_mp()
 {
+
+  logger.info() << "updating mass-prec field";
+
 	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//  which then has to be the source of the inversion
@@ -661,6 +674,7 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp()
 	   * or a point-source spinorfield as trial-solution
 	   */
 	  set_zero_spinorfield_eoprec_device(get_clmem_phi_mp_eo());
+
 	  gamma5_eo_device(get_clmem_phi_mp_eo());
 
 	  int converged = -1;
@@ -680,7 +694,6 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp()
 	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 
 	} else {
-
 	  //CP: Init tmp spinorfield
 	  int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
 	  cl_mem sf_tmp;
@@ -689,7 +702,7 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp()
 	  //sf_tmp = Qplus(heavy_mass) phi_inv
 	  Opencl_Module_Fermions::Qplus (clmem_phi_inv, sf_tmp , get_gaugefield());
 
-	  //Now one needs ( Qplus )^-1 (light_mass) using sf_eo_tmp as source to get phi_mp
+	  //Now one needs ( Qplus )^-1 (light_mass) using sf_tmp as source to get phi_mp
 	  //use always bicgstab here
 	  logger.debug() << "\t\t\tstart solver";
 	  
@@ -700,21 +713,21 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp()
 	  gamma5_device(get_clmem_phi_mp());
 
 	  int converged = -1;
-	  if(logger.beDebug()) print_info_inv_field(get_clmem_phi_mp(), true, "\tinv. field before inversion ");
-	  if(logger.beDebug()) print_info_inv_field(sf_tmp, true, "\tsource before inversion ");
+	  if(logger.beDebug()) print_info_inv_field(get_clmem_phi_mp(), false, "\tinv. field before inversion ");
+	  if(logger.beDebug()) print_info_inv_field(sf_tmp, false, "\tsource before inversion ");
+
 	  converged = Opencl_Module_Fermions::bicgstab(::Qplus(this), this->get_clmem_phi_mp(), sf_tmp, this->clmem_new_u, get_parameters()->get_solver_prec());
 	  if (converged < 0) {
 	    if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 	    else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 	  } else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-	  if(logger.beDebug()) print_info_inv_field(get_clmem_phi_mp_eo(), true, "\tinv. field after inversion ");
+	  if(logger.beDebug()) print_info_inv_field(get_clmem_phi_mp(), false, "\tinv. field after inversion ");
 	  //add number of inverter iterations to counter
 	  get_parameters()->acc_iter0(abs(converged));
 	  if(logger.beDebug()) print_info_inv_field(clmem_phi_mp, false, "\tinit field after update ");
-
+	  
 	  int clerr = clReleaseMemObject(sf_tmp);
 	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-
 	}
 }
 

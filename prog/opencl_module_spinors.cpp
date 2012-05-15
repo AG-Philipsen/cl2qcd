@@ -524,7 +524,6 @@ void Opencl_Module_Spinors::set_float_to_global_squarenorm_device(cl_mem a, cl_m
 
 	enqueueKernel(global_squarenorm , gs2, ls2);
 
-
 	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
