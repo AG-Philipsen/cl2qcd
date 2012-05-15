@@ -48,7 +48,7 @@ public:
 	/**
 	 * Invoke the matrix function.
 	 */
-	virtual void operator() (cl_mem in, cl_mem out, cl_mem gf) const = 0;
+	virtual void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const = 0;
 
 	/**
 	 * Get the net flops performed by this function.
@@ -64,56 +64,56 @@ public:
 class M : public Matrix_Function {
 public:
 	M(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
 };
 class Qplus : public Matrix_Function {
 public:
 	Qplus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
 };
 class Qminus : public Matrix_Function {
 public:
 	Qminus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
 };
 class QplusQminus : public Matrix_Function {
 public:
 	QplusQminus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
 };
 class Aee : public Matrix_Function {
 public:
 	Aee(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
 };
 class Qplus_eo : public Matrix_Function {
 public:
 	Qplus_eo(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
 };
 class Qminus_eo : public Matrix_Function {
 public:
 	Qminus_eo(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
 };
 class QplusQminus_eo : public Matrix_Function {
 public:
 	QplusQminus_eo(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf) const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
 	cl_ulong get_Flops() const;
 	cl_ulong get_Bytes() const;
 };
@@ -205,13 +205,13 @@ public:
 	* -iter if the algorithm got stuck at some point
 	*/
 	/// this executes the bicgstab on the device, using the fermionmatrix f
-	int bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
+	int bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	/// this executes the cg on the device, using the fermionmatrix f
-	int cg(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
+	int cg(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	//    eo
 	/// this executes the eo bicgstab on the device, using the fermionmatrix f
-	int bicgstab_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
-	int cg_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec);
+	int bicgstab_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	int cg_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 
 	/////////////////////////////////////////////////
 	//functions to get private variables

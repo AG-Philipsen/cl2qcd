@@ -12,9 +12,9 @@ using namespace std;
  * This is needed to be able to pass different fermionmatrices as
  *  arguments to class-functions.
  */
-void M::operator()(cl_mem in, cl_mem out, cl_mem gf) const
+void M::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa, hmc_float mubar) const
 {
-	that->M(in, out, gf);
+	that->M(in, out, gf, kappa, mubar);
 }
 cl_ulong M::get_Flops() const
 {
@@ -39,9 +39,9 @@ cl_ulong M::get_Bytes() const
 	}
 }
 
-void Qplus::operator()(cl_mem in, cl_mem out, cl_mem gf) const
+void Qplus::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa, hmc_float mubar) const
 {
-	that->Qplus(in, out, gf);
+	that->Qplus(in, out, gf, kappa, mubar);
 }
 cl_ulong Qplus::get_Flops() const
 {
@@ -76,9 +76,9 @@ cl_ulong Qplus::get_Bytes() const
 	return res;
 }
 
-void Qminus::operator()(cl_mem in, cl_mem out, cl_mem gf) const
+void Qminus::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa, hmc_float mubar) const
 {
-	that->Qminus(in, out, gf);
+	that->Qminus(in, out, gf, kappa, mubar);
 }
 cl_ulong Qminus::get_Flops() const
 {
@@ -113,9 +113,9 @@ cl_ulong Qminus::get_Bytes() const
 	return res;
 }
 
-void QplusQminus::operator()(cl_mem in, cl_mem out, cl_mem gf) const
+void QplusQminus::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa, hmc_float mubar) const
 {
-	that->QplusQminus(in, out, gf);
+	that->QplusQminus(in, out, gf, kappa, mubar);
 }
 cl_ulong QplusQminus::get_Flops() const
 {
@@ -152,9 +152,9 @@ cl_ulong QplusQminus::get_Bytes() const
 	return res;
 }
 
-void Aee::operator()(cl_mem in, cl_mem out, cl_mem gf) const
+void Aee::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa, hmc_float mubar) const
 {
-	that->Aee(in, out, gf);
+	that->Aee(in, out, gf, kappa, mubar);
 }
 cl_ulong Aee::get_Flops() const
 {
@@ -195,9 +195,9 @@ cl_ulong Aee::get_Bytes() const
 	return res;
 }
 
-void Qplus_eo::operator()(cl_mem in, cl_mem out, cl_mem gf) const
+void Qplus_eo::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa, hmc_float mubar) const
 {
-	that->Qplus_eo(in, out, gf);
+	that->Qplus_eo(in, out, gf, kappa, mubar);
 }
 cl_ulong Qplus_eo::get_Flops() const
 {
@@ -240,9 +240,9 @@ cl_ulong Qplus_eo::get_Bytes() const
 	return res;
 }
 
-void Qminus_eo::operator()(cl_mem in, cl_mem out, cl_mem gf) const
+void Qminus_eo::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa, hmc_float mubar) const
 {
-	that->Qminus_eo(in, out, gf);
+	that->Qminus_eo(in, out, gf, kappa, mubar);
 }
 cl_ulong Qminus_eo::get_Flops() const
 {
@@ -285,9 +285,9 @@ cl_ulong Qminus_eo::get_Bytes() const
 	return res;
 }
 
-void QplusQminus_eo::operator()(cl_mem in, cl_mem out, cl_mem gf) const
+void QplusQminus_eo::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa, hmc_float mubar) const
 {
-	that->QplusQminus_eo(in, out, gf);
+	that->QplusQminus_eo(in, out, gf, kappa, mubar);
 }
 cl_ulong QplusQminus_eo::get_Flops() const
 {
@@ -1003,7 +1003,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 	enqueueKernel(M_tm_sitediagonal_minus , gs2, ls2);
 }
 
-int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
 	if (get_parameters()->get_use_bicgstab_save() == true) {
@@ -1013,7 +1013,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 				set_zero_spinorfield_device(clmem_v);
 				set_zero_spinorfield_device(clmem_p);
 				//initial r_n
-				f(inout, clmem_rn, gf);
+				f(inout, clmem_rn, gf, kappa, mubar);
 				saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
 				//rhat = r_n
 				copy_buffer_on_device(clmem_rn, clmem_rhat, get_parameters()->get_sf_buf_size());
@@ -1050,7 +1050,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			saxsbypz_device(clmem_p, clmem_v, clmem_rn, clmem_beta, clmem_tmp2, clmem_p);
 
 			//v = A*p
-			f(clmem_p, clmem_v, gf);
+			f(clmem_p, clmem_v, gf, kappa, mubar);
 			//tmp1 = (rhat, v)
 			set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1);
 			//alpha = rho/tmp1 = (..)/(rhat, v)
@@ -1058,7 +1058,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			//s = - alpha * v - r_n
 			saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
 			//t = A s
-			f(clmem_s, clmem_t, gf);
+			f(clmem_s, clmem_t, gf, kappa, mubar);
 			//tmp1 = (t, s)
 			set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
 			//!!CP: this can also be global_squarenorm, but one needs a complex number here
@@ -1082,7 +1082,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			}
 			if(resid < prec) {
 				//aux = A inout
-				f(inout, clmem_aux, gf);
+				f(inout, clmem_aux, gf, kappa, mubar);
 				//aux = -aux + source
 				saxpy_device(clmem_aux, source, clmem_one, clmem_aux);
 				//trueresid = (aux, aux)
@@ -1103,7 +1103,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				//initial r_n, saved in p
-				f(inout, clmem_rn, gf);
+				f(inout, clmem_rn, gf, kappa, mubar);
 				saxpy_device(clmem_rn, source, clmem_one, clmem_p);
 				//rhat = p
 				copy_buffer_on_device(clmem_p, clmem_rhat, get_parameters()->get_sf_buf_size());
@@ -1124,7 +1124,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 				return iter;
 			}
 			//v = A*p
-			f(clmem_p, clmem_v, gf);
+			f(clmem_p, clmem_v, gf, kappa, mubar);
 			//tmp1 = (rhat, v)
 			set_complex_to_scalar_product_device(clmem_rhat, clmem_v, clmem_tmp1);
 			//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
@@ -1132,7 +1132,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 			//s = - alpha * v - r_n
 			saxpy_device(clmem_v, clmem_rn, clmem_alpha, clmem_s);
 			//t = A s
-			f(clmem_s, clmem_t, gf);
+			f(clmem_s, clmem_t, gf, kappa, mubar);
 			//tmp1 = (t, s)
 			set_complex_to_scalar_product_device(clmem_t, clmem_s, clmem_tmp1);
 			//!!CP: this can also be global_squarenorm, but one needs a complex number here
@@ -1176,7 +1176,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 	return 0;
 }
 
-int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
 	cl_int clerr = CL_SUCCESS;
 
@@ -1199,7 +1199,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 				set_zero_spinorfield_eoprec_device(clmem_v_eo);
 				set_zero_spinorfield_eoprec_device(clmem_p_eo);
 
-				f(inout, clmem_rn_eo, gf);
+				f(inout, clmem_rn_eo, gf, kappa, mubar);
 
 				saxpy_eoprec_device(clmem_rn_eo, source, clmem_one, clmem_rn_eo);
 
@@ -1227,14 +1227,14 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 			set_complex_to_product_device(clmem_minusone, clmem_tmp1, clmem_tmp2);
 			saxsbypz_eoprec_device(clmem_p_eo, clmem_v_eo, clmem_rn_eo, clmem_beta, clmem_tmp2, clmem_p_eo);
 
-			f(clmem_p_eo, clmem_v_eo, gf);
+			f(clmem_p_eo, clmem_v_eo, gf, kappa, mubar);
 
 			set_complex_to_scalar_product_eoprec_device(clmem_rhat_eo, clmem_v_eo, clmem_tmp1);
 			set_complex_to_ratio_device (clmem_rho, clmem_tmp1, clmem_alpha);
 
 			saxpy_eoprec_device(clmem_v_eo, clmem_rn_eo, clmem_alpha, clmem_s_eo);
 
-			f(clmem_s_eo, clmem_t_eo, gf);
+			f(clmem_s_eo, clmem_t_eo, gf, kappa, mubar);
 
 			set_complex_to_scalar_product_eoprec_device(clmem_t_eo, clmem_s_eo, clmem_tmp1);
 			//!!CP: can this also be global_squarenorm??
@@ -1257,7 +1257,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 			if(resid < prec) {
 				++retests;
 
-				f(inout, clmem_aux_eo, gf);
+				f(inout, clmem_aux_eo, gf, kappa, mubar);
 				saxpy_eoprec_device(clmem_aux_eo, source, clmem_one, clmem_aux_eo);
 
 				set_float_to_global_squarenorm_eoprec_device(clmem_aux_eo, clmem_trueresid);
@@ -1303,7 +1303,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
 			if(iter % get_parameters()->get_iter_refresh() == 0) {
 				//initial r_n, saved in p
-				f(inout, clmem_rn_eo, gf);
+				f(inout, clmem_rn_eo, gf, kappa, mubar);
 				saxpy_eoprec_device(clmem_rn_eo, source, clmem_one, clmem_p_eo);
 				//rhat = p
 				copy_buffer_on_device(clmem_p_eo, clmem_rhat_eo, get_eoprec_spinorfield_buffer_size());
@@ -1346,7 +1346,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 				return iter;
 			}
 			//v = A*p
-			f(clmem_p_eo, clmem_v_eo, gf);
+			f(clmem_p_eo, clmem_v_eo, gf, kappa, mubar);
 			clerr = clFlush(get_queue());
 			if(clerr) {
 				throw Opencl_Error(clerr, "Failed to flush command queue");
@@ -1358,7 +1358,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 			//s = - alpha * v - r_n
 			saxpy_eoprec_device(clmem_v_eo, clmem_rn_eo, clmem_alpha, clmem_s_eo);
 			//t = A s
-			f(clmem_s_eo, clmem_t_eo, gf);
+			f(clmem_s_eo, clmem_t_eo, gf, kappa, mubar);
 			//tmp1 = (t, s)
 			set_complex_to_scalar_product_eoprec_device(clmem_t_eo, clmem_s_eo, clmem_tmp1);
 			//!!CP: this can also be global_squarenorm, but one needs a complex number here
@@ -1406,14 +1406,14 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 	return 0;
 }
 
-int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
 	//CP: here I do not use clmem_rnhat anymore and saved one scalar_product (omega)
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
 	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter ++) {
 		if(iter % get_parameters()->get_iter_refresh() == 0) {
 			//rn = A*inout
-			f(inout, clmem_rn, gf);
+			f(inout, clmem_rn, gf, kappa, mubar);
 			//rn = source - A*inout
 			saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
 			//p = rn
@@ -1425,7 +1425,7 @@ int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem s
 			copy_buffer_on_device(clmem_rho_next, clmem_omega, sizeof(hmc_complex));
 		}
 		//v = A pn
-		f(clmem_p, clmem_v, gf);
+		f(clmem_p, clmem_v, gf, kappa, mubar);
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		set_complex_to_scalar_product_device(clmem_p, clmem_v, clmem_rho);
 		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
@@ -1465,7 +1465,7 @@ int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem s
 	return -1;
 }
 
-int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec)
+int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
 	//this corresponds to the above function
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
@@ -1479,7 +1479,7 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_me
 	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter ++) {
 		if(iter % get_parameters()->get_iter_refresh() == 0) {
 			//rn = A*inout
-			f(inout, clmem_rn_eo, gf);
+			f(inout, clmem_rn_eo, gf, kappa, mubar);
 			//rn = source - A*inout
 			saxpy_eoprec_device(clmem_rn_eo, source, clmem_one, clmem_rn_eo);
 			//p = rn
@@ -1491,7 +1491,7 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_me
 			copy_buffer_on_device(clmem_rho_next, clmem_omega, sizeof(hmc_complex));
 		}
 		//v = A pn
-		f(clmem_p_eo, clmem_v_eo, gf);
+		f(clmem_p_eo, clmem_v_eo, gf, kappa, mubar);
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		set_complex_to_scalar_product_eoprec_device(clmem_p_eo, clmem_v_eo, clmem_rho);
 		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
