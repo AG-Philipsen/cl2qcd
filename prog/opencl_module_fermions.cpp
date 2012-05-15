@@ -613,45 +613,45 @@ void Opencl_Module_Fermions::get_work_sizes(const cl_kernel kernel, cl_device_ty
 
 
 //compound fermionmatrix-functions without eoprec
-void Opencl_Module_Fermions::M(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::M(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
 
 	if(get_parameters()->get_fermact() == WILSON) {
 		//in the pure Wilson case there is just one fermionmatrix
-		M_wilson_device(in, out, gf);
+	  M_wilson_device(in, out, gf, kappa);
 	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-		M_tm_plus_device(in, out, gf);
+	  M_tm_plus_device(in, out, gf, kappa, mubar);
 	}
 }
 
-void Opencl_Module_Fermions::Qplus(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::Qplus(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
 	if(get_parameters()->get_fermact() == WILSON) {
 		//in the pure Wilson case there is just one fermionmatrix
-		M_wilson_device(in, out, gf);
+	  M_wilson_device(in, out, gf, kappa);
 	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-		M_tm_plus_device(in, out, gf);
-	}
-	gamma5_device(out);
-}
-
-void Opencl_Module_Fermions::Qminus(cl_mem in, cl_mem out, cl_mem gf)
-{
-	if(get_parameters()->get_fermact() == WILSON) {
-		//in the pure Wilson case there is just one fermionmatrix
-		M_wilson_device(in, out, gf);
-	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-		M_tm_minus_device(in, out, gf);
+	  M_tm_plus_device(in, out, gf, kappa, mubar);
 	}
 	gamma5_device(out);
 }
 
-void Opencl_Module_Fermions::QplusQminus(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::Qminus(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
+{
+	if(get_parameters()->get_fermact() == WILSON) {
+		//in the pure Wilson case there is just one fermionmatrix
+	  M_wilson_device(in, out, gf, kappa);
+	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
+	  M_tm_minus_device(in, out, gf, kappa, mubar);
+	}
+	gamma5_device(out);
+}
+
+void Opencl_Module_Fermions::QplusQminus(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
 	/** @todo one could save one field here if an additional copying would be included in the end...
 	 * or the field should be created in here, local */
-	Qminus(in, clmem_tmp, gf);
-	Qplus(clmem_tmp, out, gf);
+  Qminus(in, clmem_tmp, gf, kappa, mubar);
+  Qplus(clmem_tmp, out, gf, kappa, mubar);
 }
 
 //explicit fermionmatrix-kernel calling functions
@@ -766,7 +766,7 @@ void Opencl_Module_Fermions::gamma5_device(cl_mem inout)
 }
 
 //compound fermionmatrix-functions with eoprec
-void Opencl_Module_Fermions::Aee(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::Aee(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
 	int even = EVEN;
 	int odd = ODD;
@@ -781,14 +781,14 @@ void Opencl_Module_Fermions::Aee(cl_mem in, cl_mem out, cl_mem gf)
 	 */
 	if(get_parameters()->get_fermact() == WILSON) {
 		//in this case, the diagonal matrix is just 1 and falls away.
-		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd);
-		dslash_eo_device(clmem_tmp_eo_1, out, gf, even);
+	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+	  dslash_eo_device(clmem_tmp_eo_1, out, gf, even, kappa);
 		saxpy_eoprec_device(out, in, clmem_one, out);
 	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd);
-		M_tm_inverse_sitediagonal_device(clmem_tmp_eo_1, clmem_tmp_eo_2);
-		dslash_eo_device(clmem_tmp_eo_2, out, gf, even);
-		M_tm_sitediagonal_device(in, clmem_tmp_eo_1);
+	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+	  M_tm_inverse_sitediagonal_device(clmem_tmp_eo_1, clmem_tmp_eo_2, mubar);
+	  dslash_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
+	  M_tm_sitediagonal_device(in, clmem_tmp_eo_1, mubar);
 		saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
 	}
 }
@@ -798,7 +798,7 @@ void Opencl_Module_Fermions::Aee(cl_mem in, cl_mem out, cl_mem gf)
  *  flavour, which essentially means mu -> -mu in the tm-case and
  *  no changes in the wilson case.
  */
-void Opencl_Module_Fermions::Aee_minus(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::Aee_minus(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
 	int even = EVEN;
 	int odd = ODD;
@@ -814,34 +814,34 @@ void Opencl_Module_Fermions::Aee_minus(cl_mem in, cl_mem out, cl_mem gf)
 	 * Aee_minus = R_e(-mu) - D_eo R_o(-mu)_inv D_oe
 	 */
 	if(get_parameters()->get_fermact() == WILSON) {
-		//in this case, the diagonal matrix is just 1 and falls away.
-		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd);
-		dslash_eo_device(clmem_tmp_eo_1, out, gf, even);
-		saxpy_eoprec_device(out, in, clmem_one, out);
+	  //in this case, the diagonal matrix is just 1 and falls away.
+	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+	  dslash_eo_device(clmem_tmp_eo_1, out, gf, even, kappa);
+	  saxpy_eoprec_device(out, in, clmem_one, out);
 	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd);
-		M_tm_inverse_sitediagonal_minus_device(clmem_tmp_eo_1, clmem_tmp_eo_2);
-		dslash_eo_device(clmem_tmp_eo_2, out, gf, even);
-		M_tm_sitediagonal_minus_device(in, clmem_tmp_eo_1);
-		saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
+	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+	  M_tm_inverse_sitediagonal_minus_device(clmem_tmp_eo_1, clmem_tmp_eo_2, mubar);
+	  dslash_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
+	  M_tm_sitediagonal_minus_device(in, clmem_tmp_eo_1, mubar);
+	  saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
 	}
 }
 
-void Opencl_Module_Fermions::Qplus_eo(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::Qplus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
-	Aee(in, out, gf);
-	gamma5_eo_device(out);
-	return;
+  Aee(in, out, gf, kappa, mubar);
+  gamma5_eo_device(out);
+  return;
 }
 
-void Opencl_Module_Fermions::Qminus_eo(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::Qminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
-	Aee_minus(in, out, gf);
-	gamma5_eo_device(out);
-	return;
+  Aee_minus(in, out, gf, kappa, mubar);
+  gamma5_eo_device(out);
+  return;
 }
 
-void Opencl_Module_Fermions::QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf)
+void Opencl_Module_Fermions::QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
 	//CP: this is the original call, which fails because Qminus_eo and Qplus_eo both use clmem_tmp_eo_1,2 as intermediate fields themselves
 	//Qminus_eo(in, clmem_tmp_eo_1, gf);
@@ -853,8 +853,8 @@ void Opencl_Module_Fermions::QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf)
 	cl_mem sf_eo_tmp;
 	sf_eo_tmp = create_rw_buffer(spinorfield_size);
 
-	Qminus_eo(in, sf_eo_tmp, gf);
-	Qplus_eo(sf_eo_tmp, out, gf);
+	Qminus_eo(in, sf_eo_tmp, gf, kappa, mubar);
+	Qplus_eo(sf_eo_tmp, out, gf, kappa, mubar);
 
 	int clerr = clReleaseMemObject(sf_eo_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);

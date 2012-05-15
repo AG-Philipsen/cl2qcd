@@ -171,10 +171,10 @@ public:
 	//    fermionmatrix operations
 	//    non-eo
 	//        compound
-	void M(cl_mem in, cl_mem out, cl_mem gf);
-	void Qplus(cl_mem in, cl_mem out, cl_mem gf);
-	void Qminus(cl_mem in, cl_mem out, cl_mem gf);
-	void QplusQminus(cl_mem in, cl_mem out, cl_mem gf);
+	void M(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void Qplus(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void Qminus(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void QplusQminus(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	//        explicit
 	void M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF);
 	void M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
@@ -182,11 +182,11 @@ public:
 	void gamma5_device(cl_mem inout);
 	//    eo
 	//        compound
-	void Qplus_eo(cl_mem in, cl_mem out, cl_mem gf);
-	void Qminus_eo(cl_mem in, cl_mem out, cl_mem gf);
-	void QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf);
-	void Aee(cl_mem in, cl_mem out, cl_mem gf);
-	void Aee_minus(cl_mem in, cl_mem out, cl_mem gf);
+	void Qplus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void Qminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void Aee(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void Aee_minus(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	//        explicit
 	void gamma5_eo_device(cl_mem inout);
 	void M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
