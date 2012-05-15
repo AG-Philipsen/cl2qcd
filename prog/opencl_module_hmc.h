@@ -104,7 +104,7 @@ public:
 	hmc_observables metropolis(hmc_float rnd, hmc_float beta);
 	void calc_spinorfield_init_energy(cl_mem dest);
 	void calc_gauge_force();
-	void calc_fermion_force(usetimer * solvertimer);
+	void calc_fermion_force(usetimer * solvertimer, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	void calc_fermion_force_detratio(usetimer * solvertimer);
 
 	///////////////////////////////////////////////////

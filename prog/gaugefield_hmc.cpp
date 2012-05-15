@@ -148,11 +148,11 @@ void Gaugefield_hmc::md_update_gaugemomentum_gauge(hmc_float eps)
 	return;
 }
 
-void Gaugefield_hmc::md_update_gaugemomentum_fermion(hmc_float eps, usetimer * solvertimer)
+void Gaugefield_hmc::md_update_gaugemomentum_fermion(hmc_float eps, usetimer * solvertimer, hmc_float kappa, hmc_float mubar)
 {
 	logger.debug() << "update fermion with " << eps;
 	get_task_hmc(0)->set_zero_clmem_force_device();
-	this->fermion_forces_call(solvertimer);
+	this->fermion_forces_call(solvertimer, kappa, mubar);
 	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
 	return;
 }
@@ -166,7 +166,7 @@ void Gaugefield_hmc::md_update_gaugemomentum_detratio(hmc_float eps, usetimer * 
 	return;
 }
 
-void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer)
+void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer, hmc_float kappa, hmc_float mubar)
 {
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
@@ -185,7 +185,7 @@ void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer)
 			smeared_gfs[i] = get_task_hmc(0)->create_rw_buffer(gfsize);
 		get_task_hmc(0)->smear_gaugefield(get_task_hmc(0)->get_gaugefield(), smeared_gfs);
 	}
-	get_task_hmc(0)->calc_fermion_force(solvertimer);
+	get_task_hmc(0)->calc_fermion_force(solvertimer, kappa, mubar);
 	if(get_parameters()->get_use_smearing() == true) {
 		get_task_hmc(0)->stout_smeared_fermion_force_device(smeared_gfs);
 		get_task_hmc(0)->unsmear_gaugefield(get_task_hmc(0)->get_gaugefield());
@@ -216,7 +216,7 @@ void Gaugefield_hmc::detratio_forces_call(usetimer * solvertimer)
 			smeared_gfs[i] = get_task_hmc(0)->create_rw_buffer(gfsize);
 		get_task_hmc(0)->smear_gaugefield(get_task_hmc(0)->get_gaugefield(), smeared_gfs);
 	}
-	get_task_hmc(0)->calc_fermion_force(solvertimer);
+	get_task_hmc(0)->calc_fermion_force_detratio(solvertimer);
 	if(get_parameters()->get_use_smearing() == true) {
 		get_task_hmc(0)->stout_smeared_fermion_force_device(smeared_gfs);
 		get_task_hmc(0)->unsmear_gaugefield(get_task_hmc(0)->get_gaugefield());
@@ -331,11 +331,15 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 		hmc_float deltaTau1_half = 0.5 * deltaTau1;
 		hmc_float deltaTau2_half = 0.5 * deltaTau2;
 
+		//In this case one has to call the "normal" md_update_gaugemomentum_fermion with the heavier mass
+		hmc_float kappa_tmp = get_parameters()->get_kappa_mp();
+		hmc_float mubar_tmp = get_parameters()->get_mubar_mp();
+
 		logger.debug() << "\t\tinitial step:";
 		md_update_gaugemomentum_detratio(deltaTau2_half, solvertimer);
 		//now, n1 steps "more" are performed for the fermion-part
 		for(int l = 0; l < n1; l++) {
-			if(l == 0) md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer);
+		  if(l == 0) md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer, kappa_tmp, mubar_tmp);
 			//now, n0 steps "more" are performed for the gauge-part
 			for(int j = 0; j < n0; j++) {
 				if(l == 0) md_update_gaugemomentum_gauge(deltaTau0_half);
@@ -343,7 +347,7 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 				if(l == n1 - 1 && j == n0 - 1 && n1 == 1) md_update_gaugemomentum_gauge(deltaTau0_half);
 				else md_update_gaugemomentum_gauge(deltaTau0);
 			}
-			if(l == n1 - 1 && n2 == 1) md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer);
+			if(l == n1 - 1 && n2 == 1) md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer, kappa_tmp, mubar_tmp);
 			else md_update_gaugemomentum_fermion(deltaTau1, solvertimer);
 		}
 		if(n2 > 1) logger.debug() << "\t\tperform " << n2 - 1 << " intermediate steps " ;
@@ -355,8 +359,8 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 					if(k == n1 - 1 && j == n0 - 1 && l == n1 - 1) md_update_gaugemomentum_gauge(deltaTau0_half);
 					else md_update_gaugemomentum_gauge(deltaTau0);
 				}
-				if(l == n1 - 1 && k == n2 - 1) md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer);
-				else md_update_gaugemomentum_fermion(deltaTau1, solvertimer);
+				if(l == n1 - 1 && k == n2 - 1) md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer, kappa_tmp, mubar_tmp);
+				else md_update_gaugemomentum_fermion(deltaTau1, solvertimer, kappa_tmp, mubar_tmp);
 			}
 		}
 		logger.debug() << "\t\tfinal step" ;
@@ -483,9 +487,13 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		hmc_float one_minus_2_lambda1_times_deltaTau1 = one_minus_2_lambda1 * deltaTau1;
 		hmc_float one_minus_2_lambda2_times_deltaTau2 = one_minus_2_lambda2 * deltaTau2;
 
+		//In this case one has to call the "normal" md_update_gaugemomentum_fermion with the heavier mass
+		hmc_float kappa = get_parameters()->get_kappa_mp();
+		hmc_float mubar = get_parameters()->get_mubar_mp();
+
 		md_update_gaugemomentum_detratio(lambda2_times_deltaTau2, solvertimer);
 		for(int l = 0; l < n1; l++) {
-			if(l == 0) md_update_gaugemomentum_fermion(lambda1_times_deltaTau1, solvertimer);
+		  if(l == 0) md_update_gaugemomentum_fermion(lambda1_times_deltaTau1, solvertimer, kappa, mubar);
 			for(int j = 0; j < n0; j++) {
 				if(j == 0) md_update_gaugemomentum_gauge(lambda0_times_deltaTau0);
 				md_update_gaugefield(deltaTau0_half);
@@ -493,14 +501,14 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 				md_update_gaugefield(deltaTau0_half);
 				md_update_gaugemomentum_gauge(2.*lambda0_times_deltaTau0);
 			}
-			md_update_gaugemomentum_fermion(one_minus_2_lambda1_times_deltaTau1, solvertimer);
+			md_update_gaugemomentum_fermion(one_minus_2_lambda1_times_deltaTau1, solvertimer, kappa, mubar);
 			for(int j = 0; j < n0; j++) {
 				md_update_gaugefield(deltaTau0_half);
 				md_update_gaugemomentum_gauge(one_minus_2_lambda0_times_deltaTau0);
 				md_update_gaugefield(deltaTau0_half);
 				md_update_gaugemomentum_gauge(2.*lambda0_times_deltaTau0);
 			}
-			md_update_gaugemomentum_fermion(2.*lambda1_times_deltaTau1, solvertimer);
+			md_update_gaugemomentum_fermion(2.*lambda1_times_deltaTau1, solvertimer, kappa, mubar);
 		}
 		md_update_gaugemomentum_detratio(one_minus_2_lambda2_times_deltaTau2, solvertimer);
 		for(int l = 0; l < n1; l++) {
@@ -510,7 +518,7 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 				md_update_gaugefield(deltaTau0_half);
 				md_update_gaugemomentum_gauge(2.*lambda0_times_deltaTau0);
 			}
-			md_update_gaugemomentum_fermion(one_minus_2_lambda1_times_deltaTau1, solvertimer);
+			md_update_gaugemomentum_fermion(one_minus_2_lambda1_times_deltaTau1, solvertimer, kappa, mubar);
 			for(int j = 0; j < n0; j++) {
 				md_update_gaugefield(deltaTau0_half);
 				md_update_gaugemomentum_gauge(one_minus_2_lambda0_times_deltaTau0);
@@ -518,8 +526,8 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 				if(l == n1 - 1 && j == n0 - 1 && n1 == 1) md_update_gaugemomentum_gauge(lambda0_times_deltaTau0);
 				else md_update_gaugemomentum_gauge(2.*lambda0_times_deltaTau0);
 			}
-			if(l == n1 - 1 && n2 == 1) md_update_gaugemomentum_fermion(lambda1_times_deltaTau1, solvertimer);
-			else md_update_gaugemomentum_fermion(2.*lambda1_times_deltaTau1, solvertimer);
+			if(l == n1 - 1 && n2 == 1) md_update_gaugemomentum_fermion(lambda1_times_deltaTau1, solvertimer, kappa, mubar);
+			else md_update_gaugemomentum_fermion(2.*lambda1_times_deltaTau1, solvertimer, kappa, mubar);
 		}
 		if(n2 > 1) logger.debug() << "\t\tperform " << n2 - 1 << " intermediate steps " ;
 		for(int k = 1; k < n2; k++) {
@@ -532,14 +540,14 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 					md_update_gaugefield(deltaTau0_half);
 					md_update_gaugemomentum_gauge(2.*lambda0_times_deltaTau0);
 				}
-				md_update_gaugemomentum_fermion(one_minus_2_lambda1_times_deltaTau1, solvertimer);
+				md_update_gaugemomentum_fermion(one_minus_2_lambda1_times_deltaTau1, solvertimer, kappa, mubar);
 				for(int j = 0; j < n0; j++) {
 					md_update_gaugefield(deltaTau0_half);
 					md_update_gaugemomentum_gauge(one_minus_2_lambda0_times_deltaTau0);
 					md_update_gaugefield(deltaTau0_half);
 					md_update_gaugemomentum_gauge(2.*lambda0_times_deltaTau0);
 				}
-				md_update_gaugemomentum_fermion(2.*lambda1_times_deltaTau1, solvertimer);
+				md_update_gaugemomentum_fermion(2.*lambda1_times_deltaTau1, solvertimer, kappa, mubar);
 			}
 			md_update_gaugemomentum_detratio(one_minus_2_lambda2_times_deltaTau2, solvertimer);
 			for(int l = 0; l < n1; l++) {
@@ -549,7 +557,7 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 					md_update_gaugefield(deltaTau0_half);
 					md_update_gaugemomentum_gauge(2.*lambda0_times_deltaTau0);
 				}
-				md_update_gaugemomentum_fermion(one_minus_2_lambda1_times_deltaTau1, solvertimer);
+				md_update_gaugemomentum_fermion(one_minus_2_lambda1_times_deltaTau1, solvertimer, kappa, mubar);
 				for(int j = 0; j < n0; j++) {
 					md_update_gaugefield(deltaTau0_half);
 					md_update_gaugemomentum_gauge(one_minus_2_lambda0_times_deltaTau0);
@@ -557,8 +565,8 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 					if(l == n1 - 1 && j == n1 - 1 && k == n2 - 1) md_update_gaugemomentum_gauge(lambda0_times_deltaTau0);
 					else md_update_gaugemomentum_gauge(2.*lambda0_times_deltaTau0);
 				}
-				if(l == n1 - 1 && k == n2 - 1) md_update_gaugemomentum_fermion(lambda1_times_deltaTau1, solvertimer);
-				else md_update_gaugemomentum_fermion(2.*lambda1_times_deltaTau1, solvertimer);
+				if(l == n1 - 1 && k == n2 - 1) md_update_gaugemomentum_fermion(lambda1_times_deltaTau1, solvertimer, kappa, mubar);
+				else md_update_gaugemomentum_fermion(2.*lambda1_times_deltaTau1, solvertimer, kappa, mubar);
 			}
 		}
 		logger.debug() << "\t\tfinal step" ;
