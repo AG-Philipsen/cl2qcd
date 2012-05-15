@@ -92,7 +92,7 @@ int main(int argc, char* argv[])
 		//This is the random-number generator for the metropolis-step
 		prng_init(parameters.get_host_seed());
 
-		logger.trace() << "perform HMC on device(s)... ";
+		logger.info() << "perform HMC on device(s)... ";
 
 		//main hmc-loop
 		for(iter = 0; iter < hmc_iter; iter ++) {
@@ -111,8 +111,8 @@ int main(int argc, char* argv[])
 				gaugefield.save(iter);
 			}
 		}
-		logger.trace() << "HMC done";
-		logger.trace() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acc_rate, hmc_iter) << "%";
+		logger.info() << "HMC done";
+		logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acc_rate, hmc_iter) << "%";
 		perform_timer.add();
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
