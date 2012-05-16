@@ -98,8 +98,8 @@ public:
 
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
-	void md_update_spinorfield();
-	void md_update_spinorfield_mp();
+	void md_update_spinorfield(hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void md_update_spinorfield_mp(usetimer * solvertimer);
 	void generate_spinorfield_gaussian();
 	hmc_observables metropolis(hmc_float rnd, hmc_float beta);
 	void calc_spinorfield_init_energy(cl_mem dest);

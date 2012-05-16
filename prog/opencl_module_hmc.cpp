@@ -634,22 +634,23 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_eo_device()
 
 }
 
-void Opencl_Module_Hmc::md_update_spinorfield()
+void Opencl_Module_Hmc::md_update_spinorfield(hmc_float kappa, hmc_float mubar)
 {
 	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//  which then has to be the source of the inversion
 	if(get_parameters()->get_use_eo() == true) {
-		Opencl_Module_Fermions::Qplus_eo (clmem_phi_inv_eo, clmem_phi_eo , get_gaugefield());
+	  Opencl_Module_Fermions::Qplus_eo (clmem_phi_inv_eo, clmem_phi_eo , get_gaugefield(), kappa, mubar);
 		if(logger.beDebug()) print_info_inv_field(clmem_phi_eo, true, "\tinit field after update ");
 	} else {
-		Opencl_Module_Fermions::Qplus(clmem_phi_inv, clmem_phi , get_gaugefield());
+	  Opencl_Module_Fermions::Qplus(clmem_phi_inv, clmem_phi , get_gaugefield(), kappa, mubar);
 		if(logger.beDebug()) print_info_inv_field(clmem_phi, false, "\tinit field after update ");
 	}
 }
 
-void Opencl_Module_Hmc::md_update_spinorfield_mp()
+void Opencl_Module_Hmc::md_update_spinorfield_mp(usetimer * solvertimer)
 {
+  ///@todo solvertimer is not used here yet...
 	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//  which then has to be the source of the inversion
@@ -1190,7 +1191,6 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer)
 {
 	int converged = -1;
-	// make sure SOA is in proper format for dslash
 	if(get_parameters()->get_use_eo() == true) {
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 		if(get_parameters()->get_use_cg() == true) {
@@ -1995,9 +1995,9 @@ void Opencl_Module_Hmc::calc_spinorfield_init_energy(cl_mem dest)
 	//Suppose the initial spinorfield is saved in phi_inv
 	//  it is created in generate_gaussian_spinorfield_device
 	if(get_parameters()->get_use_eo() == true) {
-		Opencl_Module_Fermions::set_float_to_global_squarenorm_eoprec_device(clmem_phi_inv_eo, dest);
+	  Opencl_Module_Fermions::set_float_to_global_squarenorm_eoprec_device(clmem_phi_inv_eo, dest);
 	} else {
-		Opencl_Module_Fermions::set_float_to_global_squarenorm_device(clmem_phi_inv, dest);
+	  Opencl_Module_Fermions::set_float_to_global_squarenorm_device(clmem_phi_inv, dest);
 	}
 }
 

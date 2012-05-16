@@ -82,7 +82,7 @@ public:
 	void md_update_gaugemomentum_fermion(hmc_float eps, usetimer * solvertimer, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	void md_update_gaugemomentum_detratio(hmc_float eps, usetimer * solvertimer);
 	void md_update_gaugefield(hmc_float eps);
-	void init_gaugemomentum_spinorfield();
+	void init_gaugemomentum_spinorfield(usetimer * solvertimer);
 
 	/**
 	 * See hep-lat/0505020 for more infos on integrators.

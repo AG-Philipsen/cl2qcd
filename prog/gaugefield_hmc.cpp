@@ -54,11 +54,10 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 	get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_gaugefield(), get_task_hmc(0)->get_clmem_new_u(), gfsize);
 
 	logger.debug() << "\tinit spinorfield and gaugemomentum" ;
-	this->init_gaugemomentum_spinorfield();
+	this->init_gaugemomentum_spinorfield(solver_timer);
 
 	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
 	get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_p(), get_task_hmc(0)->get_clmem_new_p(), gmsize);
-
 
 	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
 	this->integrator(solver_timer);
@@ -576,7 +575,7 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		Print_Error_Message("More than 3 timescales is not implemented yet. Aborting...");
 }
 
-void Gaugefield_hmc::init_gaugemomentum_spinorfield()
+void Gaugefield_hmc::init_gaugemomentum_spinorfield(usetimer * solvertimer)
 {
 	//init gauge_momenta, saved in clmem_p
 	get_task_hmc(0)->generate_gaussian_gaugemomenta_device();
@@ -585,12 +584,18 @@ void Gaugefield_hmc::init_gaugemomentum_spinorfield()
 	  get_task_hmc(0)->generate_spinorfield_gaussian();
 	  //calc init energy for spinorfield
 	  get_task_hmc(0)->calc_spinorfield_init_energy(get_task_hmc(0)->get_clmem_s_fermion_init());
-	  get_task_hmc(0)->md_update_spinorfield();
 	  if(get_parameters()->get_use_mp() ) {
+	    //update spinorfield with heavy mass: det(kappa_mp, mu_mp)
+	    get_task_hmc(0)->md_update_spinorfield(get_parameters()->get_kappa_mp(), get_parameters()->get_mubar_mp());
 	    get_task_hmc(0)->generate_spinorfield_gaussian();
 	    //calc init energy for mass-prec spinorfield (this is the same as for the spinorfield above)
 	    get_task_hmc(0)->calc_spinorfield_init_energy(get_task_hmc(0)->get_clmem_s_fermion_mp_init());
-	    get_task_hmc(0)->md_update_spinorfield_mp();
+	    //update detratio spinorfield: det(kappa, mu) / det(kappa_mp, mu_mp)
+	    get_task_hmc(0)->md_update_spinorfield_mp(solvertimer);
+	  }
+	  else{
+	    //update spinorfield: det(kappa, mu)
+	    get_task_hmc(0)->md_update_spinorfield(get_parameters()->get_kappa(), get_parameters()->get_mubar());
 	  }
 	}
 }
