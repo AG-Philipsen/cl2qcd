@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 	hmc_observables obs;
 
 	logger.debug() << "\tinit spinorfield and gaugemomentum" ;
-	gaugefield.init_gaugemomentum_spinorfield();
+	gaugefield.init_gaugemomentum_spinorfield(&solver_timer);
 
 	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
 	//copy u->u' p->p' for the integrator
