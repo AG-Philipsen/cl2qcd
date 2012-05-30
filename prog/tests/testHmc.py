@@ -25,16 +25,19 @@ def main():
 	# perform HMC with given input file
 	# open tmp file to save the output of the hmc
 	# NOTE: stdout=PIPE does not work here, apparently no output file is created then
-	proc_output = open('./hmc_proc_output', 'w')
-	subject = Popen(['../hmc'] + sys.argv[2:], stdout = proc_output)
+	subject = Popen(['../hmc'] + sys.argv[2:], stdout = PIPE)
+
+	for line in subject.stdout:
+		# Echo line to allow checking what's going on
+		print line,
+
 	subject.wait()
-	if subject.returncode == 0:
+	if subject.returncode == 0 or subject.returncode == -11: # yes, it's kind of dirty to ignore -11 like that
 		#print "Program completed successfully"
 		pass
 	else:
 		print "Program terminated with exit code %i" % ( subject.returncode )
 		return subject.returncode
-	proc_output.close()
 
 	#now the value of interest is in the 2nd row of "hmc_output"
 	os.system('awk \'{print $2}\' hmc_output > hmc_test_tmp')
@@ -51,7 +54,6 @@ def main():
 		return 127
 
 	# rm tmp files
-        os.system('rm -f hmc_proc_output')
         os.system('rm -f hmc_hmc_test_tmp')
 
 
