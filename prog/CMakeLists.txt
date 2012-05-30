@@ -42,6 +42,8 @@ if( NOT OPENCL_HAS_CPP_BINDINGS )
 elseif( NOT OPENCL_HAS_CPP_BINDINGS )
 	message (STATUS "OpenCL CPP bindings found" )
 endif( NOT OPENCL_HAS_CPP_BINDINGS )
+# make sure we can uses OpenCL 1.1 features on AMD APP 2.7
+add_definitions(-DCL_USE_DEPRECATED_OPENCL_1_1_APIS)
 
 find_package( LIME REQUIRED )
 include_directories( SYSTEM ${LIME_INCLUDE_DIR} )
