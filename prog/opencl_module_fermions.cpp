@@ -1782,7 +1782,6 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 		 */
 		if(get_parameters()->get_fermact() == WILSON) {
 			//in this case, the diagonal matrix is just 1 and falls away.
-			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eo_1);
 			dslash_eo_device(clmem_source_odd, clmem_tmp_eo_1, gf, EVEN);
 			saxpy_eoprec_device(clmem_source_even, clmem_tmp_eo_1, clmem_one, clmem_source_even);
 		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
