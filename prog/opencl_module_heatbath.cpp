@@ -46,8 +46,6 @@ void Opencl_Module_Heatbath::fill_kernels()
 	logger.debug() << "Create heatbath kernels...";
 	heatbath_even = createKernel("heatbath_even", extraopts_c) << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_even.cl";
 	heatbath_odd = createKernel("heatbath_odd", extraopts_c) << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_odd.cl";
-	heatbath_even_hack = createKernel("heatbath_even_hack", extraopts_c) << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_even.cl";
-	heatbath_odd_hack = createKernel("heatbath_odd_hack", extraopts_c) << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_odd.cl";
 
 	logger.debug() << "Create overrelax kernels...";
 	overrelax_even = createKernel("overrelax_even", extraopts_c) << basic_opencl_code << prng_code << "operations_heatbath.cl" << "overrelax_even.cl";
@@ -66,12 +64,6 @@ void Opencl_Module_Heatbath::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 
 	clerr = clReleaseKernel(heatbath_odd);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-
-	clerr = clReleaseKernel(heatbath_even_hack);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-
-	clerr = clReleaseKernel(heatbath_odd_hack);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 
 	clerr = clReleaseKernel(overrelax_even);
