@@ -141,6 +141,10 @@ public:
 	 */
 	virtual void fill_buffers();
 	/**
+	 * Collect the buffers related to the solver.
+	 */
+	void fill_solver_buffers();
+	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
@@ -155,6 +159,10 @@ public:
 	 * Virtual method, allows to clear additional buffers in inherited classes.
 	 */
 	virtual void clear_buffers();
+	/**
+	 * Clear out the buffers related to the solver
+	 */
+	virtual void clear_solver_buffers();
 
 	/**
 	 * comutes work-sizes for a kernel
