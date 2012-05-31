@@ -370,7 +370,6 @@ void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
 
 void Opencl_Module_Fermions::fill_buffers()
 {
-
 	Opencl_Module_Spinors::fill_buffers();
 
 	int clerr = CL_SUCCESS;
@@ -385,31 +384,6 @@ void Opencl_Module_Fermions::fill_buffers()
 	clmem_tmp = create_rw_buffer(spinorfield_size);
 	clmem_source = create_rw_buffer(spinorfield_size);
 
-	logger.debug() << "init solver spinorfield-buffers";
-	///@todo some buffers can be saved here if only cg is used
-	if(get_parameters()->get_use_eo() == false) {
-		//these are only used in a non-eoprec solver
-		clmem_rn = create_rw_buffer(spinorfield_size);
-		clmem_rhat = create_rw_buffer(spinorfield_size);
-		clmem_v = create_rw_buffer(spinorfield_size);
-		clmem_p = create_rw_buffer(spinorfield_size);
-		clmem_s = create_rw_buffer(spinorfield_size);
-		clmem_t = create_rw_buffer(spinorfield_size);
-		clmem_aux = create_rw_buffer(spinorfield_size);
-
-	} else {
-		//LZ only use the following if we want to apply even odd preconditioning
-		logger.debug() << "init solver eoprec-spinorfield-buffers";
-		clmem_rn_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_rhat_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_v_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_p_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_s_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_t_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		clmem_aux_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
-
-	} //end if: eoprec
-
 	if(get_parameters()->get_use_eo() == true) {
 		logger.debug() << "init general eoprec-spinorfield-buffers";
 		clmem_inout_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
@@ -420,35 +394,13 @@ void Opencl_Module_Fermions::fill_buffers()
 		if(get_parameters()->get_fermact() == TWISTEDMASS) {
 			clmem_tmp_eo_2 = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		}
+		else
+		  clmem_tmp_eo_2 = 0;
 	}
 
-	logger.debug() << "create buffers for complex and real numbers";
-	clmem_rho = create_rw_buffer(complex_size);
-	clmem_rho_next = create_rw_buffer(complex_size);
-	clmem_alpha = create_rw_buffer(complex_size);
-	clmem_omega = create_rw_buffer(complex_size);
-	clmem_beta = create_rw_buffer(complex_size);
-	clmem_tmp1 = create_rw_buffer(complex_size);
-	clmem_tmp2 = create_rw_buffer(complex_size);
-	clmem_one = create_rw_buffer(complex_size);
-	clmem_minusone = create_rw_buffer(complex_size);
-	clmem_resid = create_rw_buffer(float_size);
-	clmem_trueresid = create_rw_buffer(float_size);
+	//fill buffers for solver
+	this->fill_solver_buffers();
 
-	logger.debug() << "write contents to some buffers";
-	hmc_complex one = hmc_complex_one;
-	hmc_complex minusone = hmc_complex_minusone;
-	clerr = clEnqueueWriteBuffer(get_queue(), clmem_one, CL_TRUE, 0, complex_size, &one, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
-
-	clerr = clEnqueueWriteBuffer(get_queue(), clmem_minusone, CL_TRUE, 0, complex_size, &minusone, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
-
-	hmc_complex zero = hmc_complex_zero;
-	clerr = clEnqueueWriteBuffer(get_queue(), clmem_resid, CL_TRUE, 0, float_size, &zero, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
-	clerr = clEnqueueWriteBuffer(get_queue(), clmem_trueresid, CL_TRUE, 0, float_size, &zero, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 }
 
 void Opencl_Module_Fermions::fill_solver_buffers()
@@ -513,144 +465,6 @@ void Opencl_Module_Fermions::fill_solver_buffers()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 	
 	logger.trace() << "init solver buffers done...";
-}
-
-void Opencl_Module_Fermions::clear_solver_buffers()
-{
-	cl_uint clerr = CL_SUCCESS;
-
-	if(get_parameters()->get_use_eo()) {
-	  if(clmem_rn_eo) {
-	    clerr = clReleaseMemObject(clmem_rn_eo);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_rn_eo = 0;
-	  }
-	  if(clmem_rhat_eo) {
-		clerr = clReleaseMemObject(clmem_rhat_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clmem_rhat_eo = 0;
-	  }
-	  if(clmem_v_eo) {
-	    clerr = clReleaseMemObject(clmem_v_eo);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_v_eo = 0;
-	  }
-	  if(clmem_p_eo) {
-		clerr = clReleaseMemObject(clmem_p_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clmem_p_eo = 0;
-	  }
-	  if(clmem_s_eo) {
-		clerr = clReleaseMemObject(clmem_s_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clmem_s_eo = 0;
-	  }
-	  if(clmem_t_eo) {
-	    clerr = clReleaseMemObject(clmem_t_eo);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_t_eo = 0;
-	  }
-	  if(clmem_aux_eo) {
-		clerr = clReleaseMemObject(clmem_aux_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clmem_aux_eo = 0;
-	  }
-	}
-	else{
-	  if(clmem_rn) {
-	    clerr = clReleaseMemObject(clmem_rn);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_rn = 0;
-	  }
-	  if(clmem_rhat) {
-		clerr = clReleaseMemObject(clmem_rhat);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clmem_rhat = 0;
-	  }
-	  if(clmem_v) {
-	    clerr = clReleaseMemObject(clmem_v);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_v = 0;
-	  }
-	  if(clmem_p) {
-		clerr = clReleaseMemObject(clmem_p);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clmem_p = 0;
-	  }
-	  if(clmem_s) {
-		clerr = clReleaseMemObject(clmem_s);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clmem_s = 0;
-	  }
-	  if(clmem_t) {
-	    clerr = clReleaseMemObject(clmem_t);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_t = 0;
-	  }
-	  if(clmem_aux) {
-		clerr = clReleaseMemObject(clmem_aux);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clmem_aux = 0;
-	  }
-	}
-
-	if(clmem_rho) {
-	  clerr = clReleaseMemObject(clmem_rho);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_rho = 0;
-	}
-	if(clmem_rho_next) {
-	  clerr = clReleaseMemObject(clmem_rho_next);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_rho_next = 0;
-	}
-	if(clmem_alpha) {
-	  clerr = clReleaseMemObject(clmem_alpha);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_alpha = 0;
-	}
-	if(clmem_omega) {
-	  clerr = clReleaseMemObject(clmem_omega);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_omega = 0;
-	}
-	if(clmem_beta) {
-	  clerr = clReleaseMemObject(clmem_beta);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_beta = 0;
-	}
-	if(clmem_tmp1) {
-	  clerr = clReleaseMemObject(clmem_tmp1);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_tmp1 = 0;
-	}
-	if(clmem_tmp2) {
-	  clerr = clReleaseMemObject(clmem_tmp2);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_tmp2 = 0;
-	}
-	if(clmem_one) {
-	  clerr = clReleaseMemObject(clmem_one);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_one = 0;
-	}
-	if(clmem_minusone) {
-	  clerr = clReleaseMemObject(clmem_minusone);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_minusone = 0;
-	}
-	if(clmem_resid) {
-	  clerr = clReleaseMemObject(clmem_resid);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_resid = 0;
-	}
-	if(clmem_trueresid) {
-		clerr = clReleaseMemObject(clmem_trueresid);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clmem_trueresid = 0;
-	}
-
-	return;
 }
 
 
@@ -741,72 +555,196 @@ void Opencl_Module_Fermions::clear_buffers()
 
 	cl_uint clerr = CL_SUCCESS;
 
-	clerr = clReleaseMemObject(clmem_inout);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	clerr = clReleaseMemObject(clmem_source);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	clerr = clReleaseMemObject(clmem_tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	logger.trace() << "clear general fermion buffer...";
+
+	if(clmem_inout) {
+	  clerr = clReleaseMemObject(clmem_inout);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_inout = 0;
+	}
+	if(clmem_source) {
+	  clerr = clReleaseMemObject(clmem_source);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_source = 0;
+	}
+	if(clmem_tmp) {
+	  clerr = clReleaseMemObject(clmem_tmp);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_tmp = 0;
+	}
 
 	if(get_parameters()->get_use_eo()) {
-		clerr = clReleaseMemObject(clmem_inout_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_source_even);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_source_odd);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_rn_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_rhat_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_v_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_p_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_s_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_t_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_aux_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(clmem_tmp_eo_1);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		if(get_parameters()->get_fermact() == TWISTEDMASS) {
-			clerr = clReleaseMemObject(clmem_tmp_eo_2);
-			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		}
+	  if(clmem_inout_eo){
+	    clerr = clReleaseMemObject(clmem_inout_eo);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_inout_eo = 0;
+	  }
+	  if(clmem_source_even){
+	    clerr = clReleaseMemObject(clmem_source_even);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_source_even = 0;
+	  }
+	  if(clmem_source_odd){
+	    clerr = clReleaseMemObject(clmem_source_odd);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_source_odd = 0;
+	  }
+	  if(clmem_tmp_eo_1){
+	    clerr = clReleaseMemObject(clmem_tmp_eo_1);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_tmp_eo_1 = 0;
+	  }
+	  if(clmem_tmp_eo_2){
+	    clerr = clReleaseMemObject(clmem_tmp_eo_2);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_tmp_eo_2 = 0;
+	  }
 	}
-
-	clerr = clReleaseMemObject(clmem_rho);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	clerr = clReleaseMemObject(clmem_rho_next);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	clerr = clReleaseMemObject(clmem_alpha);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	clerr = clReleaseMemObject(clmem_omega);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	clerr = clReleaseMemObject(clmem_beta);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	clerr = clReleaseMemObject(clmem_tmp1);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	clerr = clReleaseMemObject(clmem_tmp2);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	clerr = clReleaseMemObject(clmem_one);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	clerr = clReleaseMemObject(clmem_minusone);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	clerr = clReleaseMemObject(clmem_resid);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-
-	if(clmem_trueresid) {
-		clerr = clReleaseMemObject(clmem_trueresid);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	}
+	//clear solver buffers
+	this->clear_solver_buffers();
 
 	return;
 }
 
+void Opencl_Module_Fermions::clear_solver_buffers()
+{
+	cl_uint clerr = CL_SUCCESS;
 
+	logger.trace() << "clear solver buffer...";
+
+	if(get_parameters()->get_use_eo()) {
+	  if(clmem_rn_eo) {
+	    clerr = clReleaseMemObject(clmem_rn_eo);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_rn_eo = 0;
+	  }
+	  if(clmem_rhat_eo) {
+	    clerr = clReleaseMemObject(clmem_rhat_eo);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_rhat_eo = 0;
+	  }
+	  if(clmem_v_eo) {
+	    clerr = clReleaseMemObject(clmem_v_eo);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_v_eo = 0;
+	  }
+	  if(clmem_p_eo) {
+	    clerr = clReleaseMemObject(clmem_p_eo);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_p_eo = 0;
+	  }
+	  if(clmem_s_eo) {
+	    clerr = clReleaseMemObject(clmem_s_eo);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_s_eo = 0;
+	  }
+	  if(clmem_t_eo) {
+	    clerr = clReleaseMemObject(clmem_t_eo);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_t_eo = 0;
+	  }
+	  if(clmem_aux_eo) {
+	    clerr = clReleaseMemObject(clmem_aux_eo);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_aux_eo = 0;
+	  }
+	}
+	else{
+	  if(clmem_rn) {
+	    clerr = clReleaseMemObject(clmem_rn);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_rn = 0;
+	  }
+	  if(clmem_rhat) {
+	    clerr = clReleaseMemObject(clmem_rhat);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_rhat = 0;
+	  }
+	  if(clmem_v) {
+	    clerr = clReleaseMemObject(clmem_v);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_v = 0;
+	  }
+	  if(clmem_p) {
+	    clerr = clReleaseMemObject(clmem_p);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_p = 0;
+	  }
+	  if(clmem_s) {
+	    clerr = clReleaseMemObject(clmem_s);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_s = 0;
+	  }
+	  if(clmem_t) {
+	    clerr = clReleaseMemObject(clmem_t);
+	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	    clmem_t = 0;
+	  }
+	  if(clmem_aux) {
+		clerr = clReleaseMemObject(clmem_aux);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		clmem_aux = 0;
+	  }
+	}
+
+	if(clmem_rho) {
+	  clerr = clReleaseMemObject(clmem_rho);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_rho = 0;
+	}
+	if(clmem_rho_next) {
+	  clerr = clReleaseMemObject(clmem_rho_next);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_rho_next = 0;
+	}
+	if(clmem_omega) {
+	  clerr = clReleaseMemObject(clmem_omega);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_omega = 0;
+	}
+	if(clmem_beta) {
+	  clerr = clReleaseMemObject(clmem_beta);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_beta = 0;
+	}
+	if(clmem_tmp2) {
+	  clerr = clReleaseMemObject(clmem_tmp2);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_tmp2 = 0;
+	}
+	if(clmem_one) {
+	  clerr = clReleaseMemObject(clmem_one);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_one = 0;
+	}
+	if(clmem_resid) {
+	  clerr = clReleaseMemObject(clmem_resid);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_resid = 0;
+	}
+	if(clmem_trueresid) {
+	  clerr = clReleaseMemObject(clmem_trueresid);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_trueresid = 0;
+	}
+	if(clmem_alpha) {
+	  clerr = clReleaseMemObject(clmem_alpha);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_alpha = 0;
+	}
+	if(clmem_tmp1) {
+	  clerr = clReleaseMemObject(clmem_tmp1);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_tmp1 = 0;
+	}
+	if(clmem_minusone) {
+	  clerr = clReleaseMemObject(clmem_minusone);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_minusone = 0;
+	}
+
+	return;
+}
 
 void Opencl_Module_Fermions::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
 {
