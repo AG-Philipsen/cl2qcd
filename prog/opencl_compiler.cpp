@@ -334,8 +334,23 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel, const cl_dev
 		std::fstream isafile;
 		isafile.open(filename.c_str());
 		if(!isafile.is_open()) {
-			logger.error() << "Could not open ISA file. Aborting...";
-			return;
+			logger.debug() << "Could not find ISA file under traditional name. Trying new name (Catalyst 12.4 and up).";
+			std::stringstream tmp;
+			tmp << "\\.\\/_temp_\\d+_" << device_name << '_' << kernelName << "\\.isa";
+			boost::regex file_pattern(tmp.str(), boost::regex::icase);
+
+			for(fs::directory_iterator i(fs::path(".")); i != fs::directory_iterator(); ++i) {
+				std::string tmp = i->string();
+				if(regex_match(tmp, file_pattern)) {
+					isafile.open(tmp.c_str());
+					break;
+				}
+			}
+
+			if(!isafile.is_open()) {
+				logger.error() << "Could not open ISA file. Aborting...";
+				return;
+			}
 		}
 
 		isafile.seekg(0, std::ios::end);

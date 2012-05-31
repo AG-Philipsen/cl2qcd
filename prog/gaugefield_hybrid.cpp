@@ -76,6 +76,7 @@ void Gaugefield_hybrid::init_opencl()
 	// in debug scenarios make the compiler dump the compile results
 	if( logger.beDebug() ) {
 		setenv("GPU_DUMP_DEVICE_KERNEL", "3", 0); // can be overriden from outside
+		setenv("AMD_OCL_BUILD_OPTIONS_APPEND", "-save-temps", 0); // can be overriden from outside
 	}
 
 	//Initialize OpenCL,
