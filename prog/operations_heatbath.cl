@@ -98,29 +98,29 @@ void inline perform_heatbath(__global Matrixsu3StorageType * const restrict gaug
 
 }
 
-void inline perform_overrelaxing(__global Matrixsu3StorageType * const restrict dest_gaugefield, __global const Matrixsu3StorageType * const restrict src_gaugefield, const int mu, prng_state * const restrict rnd, const int pos, const int t)
+void inline perform_overrelaxing(__global Matrixsu3StorageType * const restrict gaugefield, const int mu, prng_state * const restrict rnd, const int pos, const int t)
 {
 	Matrix3x3 staplematrix;
 #ifdef _ANISO_
 	//Compute staple, comprises whole anisotropy
 	if (mu == 0) {
-		staplematrix = calc_staple(src_gaugefield, pos, t, mu);
+		staplematrix = calc_staple(gaugefield, pos, t, mu);
 		staplematrix = multiply_matrix3x3_by_real (staplematrix, XI_0 );
 	}
 
 	else {
 		Matrix3x3 staplematrix_sigma;
 		Matrix3x3 staplematrix_tau;
-		staplematrix_sigma = calc_staple_sigma(src_gaugefield, pos, t, mu);
+		staplematrix_sigma = calc_staple_sigma(gaugefield, pos, t, mu);
 		staplematrix_sigma = multiply_matrix3x3_by_real (staplematrix_sigma, 1 / XI_0 );
-		staplematrix_tau = calc_staple_tau(src_gaugefield, pos, t, mu);
+		staplematrix_tau = calc_staple_tau(gaugefield, pos, t, mu);
 		staplematrix_tau = multiply_matrix3x3_by_real (staplematrix_tau, XI_0 );
 		staplematrix = add_matrix3x3 ( staplematrix_sigma, staplematrix_tau );
 	}
 #else
-	staplematrix = calc_staple(src_gaugefield, pos, t, mu);
+	staplematrix = calc_staple(gaugefield, pos, t, mu);
 #endif
-	Matrixsu3 U = get_matrixsu3(src_gaugefield, pos, t, mu);
+	Matrixsu3 U = get_matrixsu3(gaugefield, pos, t, mu);
 	U = project_su3(U);
 
 	int3 order = prng_123(rnd);
@@ -152,5 +152,5 @@ void inline perform_overrelaxing(__global Matrixsu3StorageType * const restrict 
 		U = multiply_matrixsu3(extW, U);
 	}
 
-	put_matrixsu3(dest_gaugefield, U, pos, t, mu);
+	put_matrixsu3(gaugefield, U, pos, t, mu);
 }
