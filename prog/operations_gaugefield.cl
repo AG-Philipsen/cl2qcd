@@ -5,7 +5,7 @@
 //operations_gaugefield.cl
 
 // TODO document
-Matrixsu3 getSU3(__global const Matrixsu3StorageType * const restrict in, const uint idx)
+inline Matrixsu3 getSU3(__global const Matrixsu3StorageType * const restrict in, const uint idx)
 {
 #ifdef _USE_SOA_
 	return (Matrixsu3) {
@@ -26,7 +26,7 @@ Matrixsu3 getSU3(__global const Matrixsu3StorageType * const restrict in, const 
 }
 
 // TODO document
-void putSU3(__global Matrixsu3StorageType * const restrict out, const uint idx, const Matrixsu3 val)
+inline void putSU3(__global Matrixsu3StorageType * const restrict out, const uint idx, const Matrixsu3 val)
 {
 #ifdef _USE_SOA_
 	out[0 * GAUGEFIELD_STRIDE + idx] = val.e00;
@@ -43,14 +43,16 @@ void putSU3(__global Matrixsu3StorageType * const restrict out, const uint idx, 
 #endif
 }
 
-Matrixsu3 get_matrixsu3(__global const Matrixsu3StorageType * const restrict field, const int spacepos, const int timepos, const int mu)
+inline Matrixsu3 get_matrixsu3(__global const Matrixsu3StorageType * const restrict field, const int spacepos, const int timepos, const int mu)
 {
-	return getSU3(field, get_global_link_pos(mu, spacepos, timepos));
+	uint idx = get_global_link_pos(mu, spacepos, timepos);
+	return getSU3(field, idx);
 }
 
-void put_matrixsu3(__global Matrixsu3StorageType  * const restrict field, const Matrixsu3 in, const int spacepos, const int timepos, const int mu)
+inline void put_matrixsu3(__global Matrixsu3StorageType  * const restrict field, const Matrixsu3 in, const int spacepos, const int timepos, const int mu)
 {
-	putSU3(field, get_global_link_pos(mu, spacepos, timepos), in);
+	uint idx = get_global_link_pos(mu, spacepos, timepos);
+	putSU3(field, idx, in);
 }
 
 Matrixsu3 project_su3(const Matrixsu3 U)
