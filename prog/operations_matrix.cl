@@ -16,7 +16,7 @@ void print_matrix3x3(Matrix3x3 in)
 }
 #endif
 
-Matrix3x3 zero_matrix3x3 ()
+inline Matrix3x3 zero_matrix3x3 ()
 {
 	Matrix3x3 out;
 	out.e00.re = 0.;
@@ -41,7 +41,7 @@ Matrix3x3 zero_matrix3x3 ()
 	return out;
 }
 
-Matrix3x3 identity_matrix3x3 ()
+inline Matrix3x3 identity_matrix3x3 ()
 {
 	Matrix3x3 out;
 	out.e00.re = 1.;
@@ -66,7 +66,7 @@ Matrix3x3 identity_matrix3x3 ()
 	return out;
 }
 
-Matrix3x3 multiply_matrix3x3_by_real (Matrix3x3 in, hmc_float factor)
+inline Matrix3x3 multiply_matrix3x3_by_real (Matrix3x3 in, hmc_float factor)
 {
 	Matrix3x3 out = in;
 	out.e00.re *= factor;
@@ -91,7 +91,7 @@ Matrix3x3 multiply_matrix3x3_by_real (Matrix3x3 in, hmc_float factor)
 	return out;
 }
 
-Matrix3x3 multiply_matrix3x3_by_complex (Matrix3x3 in, hmc_complex factor)
+inline Matrix3x3 multiply_matrix3x3_by_complex (Matrix3x3 in, hmc_complex factor)
 {
 	Matrix3x3 out;
 
@@ -108,7 +108,7 @@ Matrix3x3 multiply_matrix3x3_by_complex (Matrix3x3 in, hmc_complex factor)
 	return out;
 }
 
-Matrix3x3 multiply_matrix3x3 (const Matrix3x3 p, const Matrix3x3 q)
+inline Matrix3x3 multiply_matrix3x3 (const Matrix3x3 p, const Matrix3x3 q)
 {
 	Matrix3x3 out;
 	out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e10.re + p.e02.re * q.e20.re
@@ -159,7 +159,7 @@ Matrix3x3 multiply_matrix3x3 (const Matrix3x3 p, const Matrix3x3 q)
 	return out;
 }
 
-Matrix3x3 multiply_matrix3x3_dagger(const Matrix3x3 p, const Matrix3x3 q)
+inline Matrix3x3 multiply_matrix3x3_dagger(const Matrix3x3 p, const Matrix3x3 q)
 {
 	Matrix3x3 out;
 
@@ -211,7 +211,7 @@ Matrix3x3 multiply_matrix3x3_dagger(const Matrix3x3 p, const Matrix3x3 q)
 }
 
 //this returns p^dagger*q^dagger
-Matrix3x3 multiply_matrix3x3_dagger_dagger(const Matrix3x3 p, const Matrix3x3 q)
+inline Matrix3x3 multiply_matrix3x3_dagger_dagger(const Matrix3x3 p, const Matrix3x3 q)
 {
 	Matrix3x3 out;
 
@@ -316,7 +316,7 @@ Matrix3x3 multiply_matrix3x3_dagger_dagger(const Matrix3x3 p, const Matrix3x3 q)
 }
 
 
-Matrix3x3 add_matrix3x3 ( const Matrix3x3 p, const Matrix3x3 q)
+inline Matrix3x3 add_matrix3x3 ( const Matrix3x3 p, const Matrix3x3 q)
 {
 	Matrix3x3 out;
 	out.e00.re = p.e00.re + q.e00.re;
@@ -343,7 +343,7 @@ Matrix3x3 add_matrix3x3 ( const Matrix3x3 p, const Matrix3x3 q)
 	return out;
 }
 
-Matrix3x3 subtract_matrix3x3 ( const Matrix3x3 p, const Matrix3x3 q)
+inline Matrix3x3 subtract_matrix3x3 ( const Matrix3x3 p, const Matrix3x3 q)
 {
 	Matrix3x3 out;
 	out.e00.re = p.e00.re - q.e00.re;
@@ -370,7 +370,7 @@ Matrix3x3 subtract_matrix3x3 ( const Matrix3x3 p, const Matrix3x3 q)
 	return out;
 }
 
-Matrix3x3 subtract_matrix3x3_dagger (const Matrix3x3 p, const Matrix3x3 q)
+inline Matrix3x3 subtract_matrix3x3_dagger (const Matrix3x3 p, const Matrix3x3 q)
 {
 	Matrix3x3 out;
 
@@ -398,7 +398,7 @@ Matrix3x3 subtract_matrix3x3_dagger (const Matrix3x3 p, const Matrix3x3 q)
 	return out;
 }
 
-Matrix3x3 copy_matrix3x3(const Matrix3x3 p)
+inline Matrix3x3 copy_matrix3x3(const Matrix3x3 p)
 {
 	Matrix3x3 out;
 	out.e00.re = p.e00.re;
@@ -425,7 +425,7 @@ Matrix3x3 copy_matrix3x3(const Matrix3x3 p)
 	return out;
 }
 
-hmc_complex trace_matrix3x3 (const Matrix3x3 p)
+inline hmc_complex trace_matrix3x3 (const Matrix3x3 p)
 {
 	hmc_complex out;
 	out.re = p.e00.re;
@@ -438,7 +438,7 @@ hmc_complex trace_matrix3x3 (const Matrix3x3 p)
 	return out;
 }
 
-Matrix3x3 adjoint_matrix3x3 (const Matrix3x3 p)
+inline Matrix3x3 adjoint_matrix3x3 (const Matrix3x3 p)
 {
 
 	Matrix3x3 out;
@@ -468,7 +468,7 @@ Matrix3x3 adjoint_matrix3x3 (const Matrix3x3 p)
 
 }
 
-Matrix3x3 matrix_su3to3x3 (const Matrixsu3 p)
+inline Matrix3x3 matrix_su3to3x3 (const Matrixsu3 p)
 {
 
 	Matrix3x3 out;
@@ -497,7 +497,7 @@ Matrix3x3 matrix_su3to3x3 (const Matrixsu3 p)
 }
 
 
-Matrixsu3 matrix_3x3tosu3 (const Matrix3x3 p)
+inline Matrixsu3 matrix_3x3tosu3 (const Matrix3x3 p)
 {
 
 	Matrixsu3 out;
@@ -525,7 +525,7 @@ Matrixsu3 matrix_3x3tosu3 (const Matrix3x3 p)
 	return out;
 }
 
-hmc_float absoluteDifference_matrix3x3(Matrix3x3 mat1, Matrix3x3 mat2)
+inline hmc_float absoluteDifference_matrix3x3(Matrix3x3 mat1, Matrix3x3 mat2)
 {
 	hmc_float result = 0.0;
 
@@ -551,7 +551,7 @@ hmc_float absoluteDifference_matrix3x3(Matrix3x3 mat1, Matrix3x3 mat2)
 	return result;
 }
 
-Matrixsu3 project_anti_herm(Matrix3x3 in)
+inline Matrixsu3 project_anti_herm(Matrix3x3 in)
 {
 	Matrixsu3 tmp;
 	hmc_float tr_omega ;

@@ -4,7 +4,7 @@
 
 //operations_heatbath.cl
 
-Matrixsu2_pauli SU2Update(const hmc_float alpha, prng_state * const restrict rnd)
+inline Matrixsu2_pauli SU2Update(const hmc_float alpha, prng_state * const restrict rnd)
 {
 	Matrixsu2_pauli out;
 
@@ -59,6 +59,7 @@ void inline perform_heatbath(__global Matrixsu3StorageType * const restrict dest
 
 	int3 order = prng_123(rnd);
 
+#pragma unroll 1
 	for(int i = 0; i < NC; i++) {
 		int order_i = (i == 0) ? order.x : ((i == 1) ? order.y : order.z);
 

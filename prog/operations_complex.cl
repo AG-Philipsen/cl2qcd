@@ -4,13 +4,13 @@
 
 //opencl_operations_complex.cl
 
-hmc_complex complexconj(hmc_complex in)
+inline hmc_complex complexconj(hmc_complex in)
 {
 	in.im = -(in.im);
 	return in;
 }
 
-hmc_complex complexmult(const hmc_complex a, const hmc_complex b)
+inline hmc_complex complexmult(const hmc_complex a, const hmc_complex b)
 {
 	hmc_complex res;
 	res.re = a.re * b.re - a.im * b.im;
@@ -18,7 +18,7 @@ hmc_complex complexmult(const hmc_complex a, const hmc_complex b)
 	return res;
 }
 
-hmc_complex complexadd(hmc_complex a, hmc_complex b)
+inline hmc_complex complexadd(hmc_complex a, hmc_complex b)
 {
 	hmc_complex res;
 	res.re = a.re + b.re;
@@ -26,7 +26,7 @@ hmc_complex complexadd(hmc_complex a, hmc_complex b)
 	return res;
 }
 
-hmc_complex complexsubtract(hmc_complex a, hmc_complex b)
+inline hmc_complex complexsubtract(hmc_complex a, hmc_complex b)
 {
 	hmc_complex res;
 	res.re = a.re - b.re;
@@ -34,7 +34,7 @@ hmc_complex complexsubtract(hmc_complex a, hmc_complex b)
 	return res;
 }
 
-hmc_complex complexdivide(hmc_complex numerator, hmc_complex denominator)
+inline hmc_complex complexdivide(hmc_complex numerator, hmc_complex denominator)
 {
 	hmc_float norm = denominator.re * denominator.re + denominator.im * denominator.im;
 	hmc_complex res;
@@ -58,7 +58,7 @@ typedef float2 hmc_complex_store_type;
  *
  * @todo make this only be used on APP 2.5
  */
-hmc_complex complexLoadHack(__global const hmc_complex * p)
+inline hmc_complex complexLoadHack(__global const hmc_complex * p)
 {
 	union {
 		hmc_complex_store_type v;

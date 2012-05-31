@@ -14,7 +14,7 @@ void print_matrixsu3(Matrixsu3 in)
 }
 #endif
 
-Matrixsu3 copy_matrixsu3(const Matrixsu3 in)
+inline Matrixsu3 copy_matrixsu3(const Matrixsu3 in)
 {
 	Matrixsu3 out;
 
@@ -42,7 +42,7 @@ Matrixsu3 copy_matrixsu3(const Matrixsu3 in)
 	return out;
 }
 
-Matrixsu3 unit_matrixsu3()
+inline Matrixsu3 unit_matrixsu3()
 {
 	Matrixsu3 out;
 	out.e00.re = 1.;
@@ -70,7 +70,7 @@ Matrixsu3 unit_matrixsu3()
 }
 
 
-Matrixsu3 zero_matrixsu3()
+inline Matrixsu3 zero_matrixsu3()
 {
 	Matrixsu3 out;
 	out.e00.re = 0.;
@@ -97,7 +97,7 @@ Matrixsu3 zero_matrixsu3()
 	return out;
 }
 
-Matrixsu3 multiply_matrixsu3(const Matrixsu3 p, const Matrixsu3 q)
+inline Matrixsu3 multiply_matrixsu3(const Matrixsu3 p, const Matrixsu3 q)
 {
 	Matrixsu3 out;
 
@@ -149,7 +149,7 @@ Matrixsu3 multiply_matrixsu3(const Matrixsu3 p, const Matrixsu3 q)
 	return out;
 }
 
-Matrixsu3 multiply_matrixsu3_dagger(const Matrixsu3 p, const Matrixsu3 q)
+inline Matrixsu3 multiply_matrixsu3_dagger(const Matrixsu3 p, const Matrixsu3 q)
 {
 	Matrixsu3 out;
 
@@ -201,7 +201,7 @@ Matrixsu3 multiply_matrixsu3_dagger(const Matrixsu3 p, const Matrixsu3 q)
 	return out;
 }
 
-Matrixsu3 multiply_matrixsu3_dagger_dagger(const Matrixsu3 p, const Matrixsu3 q)
+inline Matrixsu3 multiply_matrixsu3_dagger_dagger(const Matrixsu3 p, const Matrixsu3 q)
 {
 	Matrixsu3 out;
 
@@ -253,7 +253,7 @@ Matrixsu3 multiply_matrixsu3_dagger_dagger(const Matrixsu3 p, const Matrixsu3 q)
 	return out;
 }
 
-Matrixsu3 adjoint_matrixsu3(const Matrixsu3 p)
+inline Matrixsu3 adjoint_matrixsu3(const Matrixsu3 p)
 {
 	Matrixsu3 out;
 	out.e00.re = p.e00.re;
@@ -283,7 +283,7 @@ Matrixsu3 adjoint_matrixsu3(const Matrixsu3 p)
 	return out;
 }
 
-hmc_complex trace_matrixsu3(const Matrixsu3 p)
+inline hmc_complex trace_matrixsu3(const Matrixsu3 p)
 {
 	hmc_complex out;
 	out.re = p.e00.re;
@@ -295,7 +295,7 @@ hmc_complex trace_matrixsu3(const Matrixsu3 p)
 	return out;
 }
 
-hmc_complex det_matrixsu3(const Matrixsu3 p)
+inline hmc_complex det_matrixsu3(const Matrixsu3 p)
 {
 
 	hmc_complex out;
@@ -324,7 +324,7 @@ hmc_complex det_matrixsu3(const Matrixsu3 p)
 /** @todo recheck the factor 0.5 (or F_1_2) that has been deleted here */
 
 //this build a su3-matrix from an algebraelement!!
-Matrixsu3 build_su3_from_ae(ae in)
+inline Matrixsu3 build_su3_from_ae(ae in)
 {
 	Matrixsu3 v;
 
@@ -350,7 +350,7 @@ Matrixsu3 build_su3_from_ae(ae in)
 }
 
 //this build a su3-matrix from an algebraelement and in addition multiplies it by a real number!!
-Matrixsu3 build_su3_from_ae_times_real(ae in, hmc_float eps)
+inline Matrixsu3 build_su3_from_ae_times_real(ae in, hmc_float eps)
 {
 	Matrixsu3 v;
 
@@ -378,7 +378,7 @@ Matrixsu3 build_su3_from_ae_times_real(ae in, hmc_float eps)
 
 //CP: I counted a total of 327 + 1 su3*su3 (this can be get centrally from inputparameters) flops for this function
 //NOTE: I inserted intermediate counts for orientation
-Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
+inline Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 {
 	//this is the method taken from tmqlcd. It is a cut-off series.
 	//original in tmlqcd: _make_su3(v,p);
@@ -459,7 +459,7 @@ Matrixsu3 build_su3matrix_by_exponentiation(ae inn, hmc_float epsilon)
 }
 
 //scale a su3 matrix by a real factor
-Matrixsu3 multiply_matrixsu3_by_real (Matrixsu3 in, hmc_float factor)
+inline Matrixsu3 multiply_matrixsu3_by_real (Matrixsu3 in, hmc_float factor)
 {
 	Matrixsu3 out = in;
 	out.e00.re *= factor;
@@ -484,7 +484,7 @@ Matrixsu3 multiply_matrixsu3_by_real (Matrixsu3 in, hmc_float factor)
 	return out;
 }
 
-Matrixsu3 multiply_matrixsu3_by_complex (Matrixsu3 in, hmc_complex factor)
+inline Matrixsu3 multiply_matrixsu3_by_complex (Matrixsu3 in, hmc_complex factor)
 {
 	Matrixsu3 out;
 	out.e00 = complexmult(in.e00, factor);
