@@ -116,10 +116,6 @@ void Opencl_Module_Heatbath::run_heatbath()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 		enqueueKernel(heatbath_odd, global_work_size, ls);
 	}
-
-	// wait for kernel to finish to avoid hangups on AMD
-	clerr = clFinish(get_queue());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
 }
 
 void Opencl_Module_Heatbath::run_overrelax()
@@ -156,10 +152,6 @@ void Opencl_Module_Heatbath::run_overrelax()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 		enqueueKernel(overrelax_odd, global_work_size, ls);
 	}
-
-	// wait for kernel to finish to avoid hangups on AMD
-	clerr = clFinish(get_queue());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
 }
 
 void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
