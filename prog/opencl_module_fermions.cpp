@@ -398,6 +398,16 @@ void Opencl_Module_Fermions::fill_buffers()
 		  clmem_tmp_eo_2 = 0;
 	}
 
+	clmem_one = create_rw_buffer(complex_size);
+	clmem_minusone = create_rw_buffer(complex_size);
+	//fill buffers with one and minusone
+	hmc_complex one = hmc_complex_one;
+	hmc_complex minusone = hmc_complex_minusone;
+	clerr = clEnqueueWriteBuffer(get_queue(), clmem_one, CL_TRUE, 0, complex_size, &one, 0, 0, NULL);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
+	clerr = clEnqueueWriteBuffer(get_queue(), clmem_minusone, CL_TRUE, 0, complex_size, &minusone, 0, 0, NULL);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
+
 	//fill buffers for solver
 	this->fill_solver_buffers();
 
@@ -444,19 +454,10 @@ void Opencl_Module_Fermions::fill_solver_buffers()
 	clmem_beta = create_rw_buffer(complex_size);
 	clmem_tmp1 = create_rw_buffer(complex_size);
 	clmem_tmp2 = create_rw_buffer(complex_size);
-	clmem_one = create_rw_buffer(complex_size);
-	clmem_minusone = create_rw_buffer(complex_size);
 	clmem_resid = create_rw_buffer(float_size);
 	clmem_trueresid = create_rw_buffer(float_size);
 
 	logger.debug() << "write contents to some buffers";
-	hmc_complex one = hmc_complex_one;
-	hmc_complex minusone = hmc_complex_minusone;
-	clerr = clEnqueueWriteBuffer(get_queue(), clmem_one, CL_TRUE, 0, complex_size, &one, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
-
-	clerr = clEnqueueWriteBuffer(get_queue(), clmem_minusone, CL_TRUE, 0, complex_size, &minusone, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 
 	hmc_complex zero = hmc_complex_zero;
 	clerr = clEnqueueWriteBuffer(get_queue(), clmem_resid, CL_TRUE, 0, float_size, &zero, 0, 0, NULL);
@@ -600,6 +601,18 @@ void Opencl_Module_Fermions::clear_buffers()
 	    clmem_tmp_eo_2 = 0;
 	  }
 	}
+	
+	if(clmem_minusone) {
+	  clerr = clReleaseMemObject(clmem_minusone);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_minusone = 0;
+	}
+	if(clmem_one) {
+	  clerr = clReleaseMemObject(clmem_one);
+	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+	  clmem_one = 0;
+	}
+		
 	//clear solver buffers
 	this->clear_solver_buffers();
 
@@ -686,7 +699,7 @@ void Opencl_Module_Fermions::clear_solver_buffers()
 		clmem_aux = 0;
 	  }
 	}
-
+	
 	if(clmem_rho) {
 	  clerr = clReleaseMemObject(clmem_rho);
 	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
@@ -712,11 +725,6 @@ void Opencl_Module_Fermions::clear_solver_buffers()
 	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	  clmem_tmp2 = 0;
 	}
-	if(clmem_one) {
-	  clerr = clReleaseMemObject(clmem_one);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_one = 0;
-	}
 	if(clmem_resid) {
 	  clerr = clReleaseMemObject(clmem_resid);
 	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
@@ -736,11 +744,6 @@ void Opencl_Module_Fermions::clear_solver_buffers()
 	  clerr = clReleaseMemObject(clmem_tmp1);
 	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 	  clmem_tmp1 = 0;
-	}
-	if(clmem_minusone) {
-	  clerr = clReleaseMemObject(clmem_minusone);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_minusone = 0;
 	}
 
 	return;
@@ -1732,11 +1735,16 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 		///@todo this should go into a more general function
 		this->set_eoprec_spinorfield_cold_device(this->get_clmem_inout_eo());
 		logger.debug() << "start eoprec-inversion";
+		//make sure buffer are initialised
+		this->fill_solver_buffers();
 		//even solution
 		if(get_parameters()->get_use_cg() == true)
 			converged = cg_eo(f, clmem_inout_eo, clmem_source_even, gf, get_parameters()->get_solver_prec());
 		else
 			converged = bicgstab_eo(f, this->get_clmem_inout_eo(), clmem_source_even, gf, get_parameters()->get_solver_prec());
+
+		//release solver buffers
+		this->clear_solver_buffers();
 
 		//odd solution
 		/** The odd solution is obtained from the even one according to:
