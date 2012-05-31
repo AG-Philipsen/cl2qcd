@@ -95,65 +95,39 @@ void Opencl_Module_Heatbath::run_heatbath()
 {
 	cl_int clerr = CL_SUCCESS;
 
-	cl_mem tmp = create_rw_buffer(getGaugefieldBufferSize());
 	cl_mem src = get_gaugefield();
 
 	size_t global_work_size, ls;
 	cl_uint num_groups;
 	this->get_work_sizes(heatbath_even, this->get_device_type(), &ls, &global_work_size, &num_groups);
 
-	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), &tmp);
+	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), &src);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(heatbath_even, 1, sizeof(cl_mem), &src);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(heatbath_even, 3, sizeof(cl_mem), get_clmem_rndarray());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(heatbath_even_hack, 0, sizeof(cl_mem), &src);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(heatbath_even_hack, 1, sizeof(cl_mem), &tmp);
+	clerr = clSetKernelArg(heatbath_even, 2, sizeof(cl_mem), get_clmem_rndarray());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	for(cl_int i = 0; i < NDIM; i++) {
-		clerr = clSetKernelArg(heatbath_even, 2, sizeof(cl_int), &i);
+		clerr = clSetKernelArg(heatbath_even, 1, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 		enqueueKernel(heatbath_even, global_work_size, ls);
-
-		clerr = clSetKernelArg(heatbath_even_hack, 2, sizeof(cl_int), &i);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-		enqueueKernel(heatbath_even_hack, global_work_size, ls);
 	}
 
 	this->get_work_sizes(heatbath_odd, this->get_device_type(), &ls, &global_work_size, &num_groups);
 
-	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), &tmp);
+	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), &src);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(heatbath_odd, 1, sizeof(cl_mem), &src);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(heatbath_odd, 3, sizeof(cl_mem), get_clmem_rndarray());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(heatbath_odd_hack, 0, sizeof(cl_mem), &src);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(heatbath_odd_hack, 1, sizeof(cl_mem), &tmp);
+	clerr = clSetKernelArg(heatbath_odd, 2, sizeof(cl_mem), get_clmem_rndarray());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	for(cl_int i = 0; i < NDIM; i++) {
-		clerr = clSetKernelArg(heatbath_odd, 2, sizeof(cl_int), &i);
+		clerr = clSetKernelArg(heatbath_odd, 1, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 		enqueueKernel(heatbath_odd, global_work_size, ls);
-
-		clerr = clSetKernelArg(heatbath_odd_hack, 2, sizeof(cl_int), &i);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-		enqueueKernel(heatbath_odd_hack, global_work_size, ls);
 	}
 
 	// wait for kernel to finish to avoid hangups on AMD
 	clerr = clFinish(get_queue());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
-
-	clerr = clReleaseMemObject(tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 }
 
 void Opencl_Module_Heatbath::run_overrelax()
