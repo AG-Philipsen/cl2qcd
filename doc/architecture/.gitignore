@@ -1,0 +1,6 @@
+*.aux
+*.log
+*.tdo
+*.toc
+architecture.pdf
+architecture.synctex.gz
