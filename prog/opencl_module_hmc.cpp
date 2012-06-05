@@ -157,8 +157,10 @@ void Opencl_Module_Hmc::clear_buffers()
 	logger.debug() << "release HMC-variables.." ;
 	clerr = clReleaseMemObject(clmem_s_fermion_init);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	clerr = clReleaseMemObject(clmem_s_fermion_mp_init);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+	if(get_parameters()->get_use_mp() ){
+		clerr = clReleaseMemObject(clmem_s_fermion_mp_init);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+	}
 	clerr = clReleaseMemObject(clmem_p2);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	clerr = clReleaseMemObject(clmem_new_p2);
