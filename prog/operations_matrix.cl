@@ -486,8 +486,8 @@ inline Matrix3x3 matrix_su3to3x3 (const Matrixsu3 p)
 {
 	return (Matrix3x3) {
 		p.e00, p.e01, p.e02,
-		p.e10, p.e11, p.e12,
-		p.e20, p.e21, p.e22
+		       p.e10, p.e11, p.e12,
+		       p.e20, p.e21, p.e22
 	};
 }
 
@@ -496,8 +496,8 @@ inline Matrixsu3 matrix_3x3tosu3 (const Matrix3x3 p)
 {
 	return (Matrixsu3) {
 		p.e00, p.e01, p.e02,
-		p.e10, p.e11, p.e12,
-		p.e20, p.e21, p.e22
+		       p.e10, p.e11, p.e12,
+		       p.e20, p.e21, p.e22
 	};
 }
 
