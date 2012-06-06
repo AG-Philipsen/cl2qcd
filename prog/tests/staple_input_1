@@ -1,4 +1,4 @@
-#input file 1 for f_gauge_test
+#input file 1 for staple_test
 
 startcondition=continue
 sourcefile=conf.00200

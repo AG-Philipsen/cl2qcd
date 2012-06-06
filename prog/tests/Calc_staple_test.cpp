@@ -34,14 +34,9 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
-		std::stringstream tmp;
-#ifdef _USEDOUBLEPREC_
-		tmp << SOURCEDIR << "/tests/f_gauge_input_1";
-#else
-		tmp << SOURCEDIR << "/tests/f_gauge_input_1_single";
-#endif
-		params.readfile(tmp.str().c_str());
+	Dummyfield(cl_device_type device_type, std::string input) : Gaugefield_hybrid() {
+		std::string src = std::string(SOURCEDIR) + "/tests/" + input;
+		params.readfile(src.c_str());
 
 		init(1, device_type, &params);
 	};
@@ -66,7 +61,7 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	//params.print_info_inverter("m_gpu");
 	// reset RNG
 	prng_init(13);
-	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
+	Dummyfield cpu(CL_DEVICE_TYPE_CPU, "staple_input_1");
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables_from_task(0, 0);
 	hmc_float cpu_back = cpu.runTestKernel();
@@ -76,7 +71,7 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	//params.print_info_inverter("m_gpu");
 	// reset RNG
 	prng_init(13);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, "staple_input_1");
 	logger.info() << "gaugeobservables: ";
 	dummy.print_gaugeobservables_from_task(0, 0);
 	hmc_float gpu_back = dummy.runTestKernel();
