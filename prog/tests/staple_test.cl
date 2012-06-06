@@ -1,5 +1,5 @@
 //this calculates the sum of all elements in the matrix
-hmc_float sum_up_matrix3x3(Matrix3x3 in)
+hmc_float sum_up_matrix3x3(const Matrix3x3 in)
 {
 	return in.e00.re + in.e00.im +
 	       in.e01.re + in.e01.im +
@@ -13,13 +13,10 @@ hmc_float sum_up_matrix3x3(Matrix3x3 in)
 }
 
 
-__kernel void staple_test(__global Matrixsu3StorageType * field, __global hmc_float * out)
+__kernel void staple_test(__global const Matrixsu3StorageType * const restrict field, __global hmc_float * const restrict out)
 {
-	int global_size = get_global_size(0);
-	int id = get_global_id(0);
-
-	for(int id_tmp = id; id_tmp < VOL4D; id_tmp += global_size) {
-		st_index pos = (id_tmp % 2 == 0) ? get_even_site(id_tmp / 2) : get_odd_site(id_tmp / 2);
+	PARALLEL_FOR(id, VOL4D) {
+		st_index pos = (id % 2 == 0) ? get_even_site(id / 2) : get_odd_site(id / 2);
 		Matrix3x3 V;
 		hmc_float res = 0;
 		hmc_float res2;
