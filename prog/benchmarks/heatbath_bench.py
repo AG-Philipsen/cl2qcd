@@ -10,7 +10,7 @@ from tempfile import NamedTemporaryFile
 
 EXECUTABLE = "heatbath_benchmarks"
 
-NS = (16, 24, 32, 64)
+NS = (16, 24, 32, 48)
 NT = NS
 
 INPUT_TEMPLATE = """
