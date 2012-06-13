@@ -14,7 +14,7 @@ linestyles = ['r.', 'b.', 'r*', 'b*', 'g.', 'k.', 'r,', 'b,', 'g,', 'k,', 'g*', 
 
 FileData = namedtuple('FileData', ['label', 'runs', 'xpos'])
 
-def main(datafiles, filelabels, output=None, metric='both'):
+def main(datafiles, filelabels, output=None, metric='both', add_title=True):
 
 	filedatas = []
 
@@ -86,7 +86,8 @@ def main(datafiles, filelabels, output=None, metric='both'):
 			labels.append(data.label + ' Gflops')
 			linestyle += 1
 
-	ax1.set_title('Dslash Performance')
+	if add_title:
+		ax1.set_title('Dslash Performance')
 	ax1.set_xticks(xtic_pos)
 	ax1.set_xticklabels(xtic_label, rotation=90)
 	ax1.set_xlabel('Lattice Size')
@@ -112,6 +113,7 @@ if __name__ == '__main__':
 	parser.add_argument('files', metavar='FILE', nargs='*')
 	parser.add_argument('-o', '--output', metavar='FILE', default=None, help='File to dump the plot to')
 	parser.add_argument('--metric', default='both', help='Output gflops, gbytes or both')
+	parser.add_argument('--notitle', default=False, action='store_true', help='Suppress plot title')
 	args = parser.parse_args()
 
 	if args.labels and len(args.files) != len(args.labels):
@@ -131,4 +133,4 @@ if __name__ == '__main__':
 		print 'Metric must be gflops, gbytes or both.'
 		sys.exit(1)
 
-	main(datafiles, labels, args.output, args.metric)
+	main(datafiles, labels, args.output, args.metric, not args.notitle)
