@@ -33,8 +33,9 @@ inline ulong nr3_int64(prng_state * state )
 	tmp ^= tmp << 4;
 	return (tmp + (*state).y) ^ (*state).z;
 }
+#ifdef _USEDOUBLEPREC_
 /**
- * Draw a 32-bit random float using the algorithm described in Numerical Recipes 3.
+ * Draw a 64-bit random float using the algorithm described in Numerical Recipes 3.
  *
  * @param[in,out] state Pointer to this threads random number generator state in global memory
  * @return A pseudo-random float
@@ -42,6 +43,17 @@ inline ulong nr3_int64(prng_state * state )
 inline double nr3_double(prng_state * state)
 {
 	return 5.42101086242752217E-20 * nr3_int64( state );
+}
+#endif /* _USEDOUBLEPREC_ */
+/**
+ * Draw a 42-bit random float using the algorithm described in Numerical Recipes 3.
+ *
+ * @param[in,out] state Pointer to this threads random number generator state in global memory
+ * @return A pseudo-random float
+ */
+inline float nr3_float(prng_state * state)
+{
+	return 5.328306437e-10 * nr3_int32( state );
 }
 /**
  * Draw a 32-bit random integer using the algorithm described in Numerical Recipes 3.
@@ -102,6 +114,7 @@ uint prng_int32(uint range, prng_state * const restrict state)
 #endif // USE_PRNG_XXX
 }
 
+#ifdef _USEDOUBLEPREC_
 /**
  * Draw a double precision floating point number.
  *
@@ -120,7 +133,28 @@ double prng_double(prng_state * const restrict state)
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
 }
+#endif
 
+/**
+ * Draw a single precision floating point number.
+ *
+ * @param[in] range Upper bound for the drawn number, nummber will be one less than this at maximum
+ * @param[in,out] state Pointer to this threads random number generator state in global memory
+ * @return A pseudo-random integer
+ */
+float prng_float(prng_state * const restrict state)
+{
+#ifdef USE_PRNG_NR3
+	return nr3_float(state);
+#elif defined(USE_PRNG_RANLUX)
+	float4 tmp = ranluxcl(state);
+	return tmp.x;
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
+}
+
+#ifdef _USEDOUBLEPREC_
 /**
  * Draw 4 double precision floating point numbers.
  *
@@ -137,6 +171,27 @@ double4 prng_double4(prng_state * const restrict state)
 #elif defined(USE_PRNG_RANLUX)
 	float4 tmp = ranluxcl(state);
 	return (double4) (tmp.x, tmp.y, tmp.z, tmp.w);
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
+}
+#endif /* _USEDOUBLEPREC */
+
+/**
+ * Draw 4 single precision floating point numbers.
+ *
+ * Depending on the PRNG this might be more efficient than pulling multiple numbers via seperate calls.
+ *
+ * @param[in] range Upper bound for the drawn number, nummber will be one less than this at maximum
+ * @param[in,out] state Pointer to this threads random number generator state in global memory
+ * @return A pseudo-random integer
+ */
+float4 prng_float4(prng_state * const restrict state)
+{
+#ifdef USE_PRNG_NR3
+	return (float4) (nr3_float(state), nr3_float(state), nr3_float(state), nr3_float(state));
+#elif defined(USE_PRNG_RANLUX)
+	return ranluxcl(state);
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
@@ -214,13 +269,21 @@ hmc_complex inline gaussianNormalPair(prng_state * const restrict rnd)
 	hmc_float u1_tmp;
 	//CP: if u1 == 1., p will be "inf"
 	do {
+#ifdef _USE_DOUBLE_PREC_
 		u1_tmp = nr3_double(rnd);
+#else
+		u1_tmp = nr3_float(rnd);
+#endif
 		if(u1_tmp < 1.) break;
 	} while (1 > 0);
 
 	hmc_float u1 = 1.0 - u1_tmp;
 	//  hmc_float u2 = 1.0 - nr3_double(rnd);
+#ifdef _USE_DOUBLE_PREC_
 	hmc_float u2 = nr3_double(rnd);
+#else
+	hmc_float u2 = nr3_float(rnd);
+#endif
 	//CP: this is the standard Box-Müller way:
 	hmc_float p  = sqrt(- 2.* log(u1));
 	//CP: without the 2, one gets sigma = 0.5 rightaway, this is done in tmlqcd
@@ -241,7 +304,7 @@ hmc_complex inline gaussianNormalPair(prng_state * const restrict rnd)
 
 	//CP: if u1 == 1., p will be "inf"
 	hmc_float u1 = 1.0 - rands.x;
-	//  hmc_float u2 = 1.0 - nr3_double(rnd);
+	//  hmc_float u3 = 1.0 - nr3_double(rnd);
 	hmc_float u2 = rands.y;
 	//CP: this is the standard Box-Müller way:
 	hmc_float p  = sqrt(- 2.* log(u1));
