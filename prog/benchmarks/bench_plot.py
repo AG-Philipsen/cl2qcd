@@ -95,7 +95,9 @@ def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title
 		ax1.set_ylabel('Gflops')
 	ax1.set_ylim(bottom=1)
 	if metric == 'both':
-		ax2.set_ylim(ax1.get_ylim())
+		max_lim = (0, max(ax1.get_ylim()[1], ax2.get_ylim()[1]))
+		ax1.set_ylim(max_lim)
+		ax2.set_ylim(max_lim)
 	fig.legend(lines, labels)
 
 	if output:
