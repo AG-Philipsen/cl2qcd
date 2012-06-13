@@ -14,7 +14,7 @@ linestyles = ['r.', 'b.', 'r*', 'b*', 'g.', 'k.', 'r,', 'b,', 'g,', 'k,', 'g*', 
 
 FileData = namedtuple('FileData', ['label', 'runs', 'xpos'])
 
-def main(datafiles, filelabels, output=None):
+def main(datafiles, filelabels, output=None, metric='both'):
 
 	filedatas = []
 
@@ -51,7 +51,7 @@ def main(datafiles, filelabels, output=None):
 	xtic_pos.sort(key=lambda e: e[0])
 	print xtic_pos
 	# make sure tics don't overlapp
-	min_delta = 10000
+	min_delta = 30000
 	i = len(xtic_pos) - 1
 	while i > 0:
 		if xtic_pos[i][0] < xtic_pos[i-1][0] + min_delta:
@@ -64,25 +64,41 @@ def main(datafiles, filelabels, output=None):
 	fig = plt.figure(figsize=(10,4))
 	fig.subplots_adjust(bottom=0.28)
 	ax1 = fig.add_subplot(111)
-	ax2 = ax1.twinx()
+	if metric is 'both':
+		ax2 = ax1.twinx()
 	lines = []
 	labels = []
 	linestyle = 0
 	for data in filedatas:
-		lines.append(ax1.plot(data.xpos, data.runs[:,2], linestyles[linestyle]))
-		labels.append(data.label + ' Bandwidth')
-		linestyle += 1
-		lines.append(ax2.plot(data.xpos, data.runs[:,3], linestyles[linestyle]))
-		labels.append(data.label + ' Gflops')
-		linestyle += 1
+		if metric == 'gflops':
+			lines.append(ax1.plot(data.xpos, data.runs[:,3], linestyles[linestyle]))
+			labels.append(data.label)
+			linestyle += 1
+		elif metric == 'gbytes':
+			lines.append(ax1.plot(data.xpos, data.runs[:,2], linestyles[linestyle]))
+			labels.append(data.label)
+			linestyle += 1
+		else:
+			lines.append(ax1.plot(data.xpos, data.runs[:,2], linestyles[linestyle]))
+			labels.append(data.label + ' Bandwidth')
+			linestyle += 1
+			lines.append(ax2.plot(data.xpos, data.runs[:,3], linestyles[linestyle]))
+			labels.append(data.label + ' Gflops')
+			linestyle += 1
+
 	ax1.set_title('Dslash Performance')
 	ax1.set_xticks(xtic_pos)
 	ax1.set_xticklabels(xtic_label, rotation=90)
 	ax1.set_xlabel('Lattice Size')
-	ax1.set_ylabel('Bandwidth GB/s')
-	ax2.set_ylabel('Gflops')
+	if metric in ('both', 'gbytes'):
+		ax1.set_ylabel('Bandwidth GB/s')
+	if metric == ('both'):
+		ax2.set_ylabel('Gflops')
+	if metric == ('gflops'):
+		ax1.set_ylabel('Gflops')
 	ax1.set_ylim(bottom=1)
-	ax2.set_ylim(ax1.get_ylim())
+	if metric == 'both':
+		ax2.set_ylim(ax1.get_ylim())
 	fig.legend(lines, labels)
 
 	if output:
@@ -95,6 +111,7 @@ if __name__ == '__main__':
 	parser.add_argument('--labels', metavar='LABEL', nargs='*', help='Labels to mark the line from each input file.')
 	parser.add_argument('files', metavar='FILE', nargs='*')
 	parser.add_argument('-o', '--output', metavar='FILE', default=None, help='File to dump the plot to')
+	parser.add_argument('--metric', default='both', help='Output gflops, gbytes or both')
 	args = parser.parse_args()
 
 	if args.labels and len(args.files) != len(args.labels):
@@ -110,4 +127,8 @@ if __name__ == '__main__':
 	else:
 		labels = args.files
 
-	main(datafiles, labels, args.output)
+	if not args.metric in ('gflops', 'gbytes', 'both'):
+		print 'Metric must be gflops, gbytes or both.'
+		sys.exit(1)
+
+	main(datafiles, labels, args.output, args.metric)
