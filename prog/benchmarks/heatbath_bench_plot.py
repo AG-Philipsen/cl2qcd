@@ -8,7 +8,7 @@ import argparse
 from bench_plot import main
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser(description='Plot output from dslash_bench.py runs')
+	parser = argparse.ArgumentParser(description='Plot output from heatpath_bench.py runs')
 	parser.add_argument('--labels', metavar='LABEL', nargs='*', help='Labels to mark the line from each input file.')
 	parser.add_argument('files', metavar='FILE', nargs='*')
 	parser.add_argument('-o', '--output', metavar='FILE', default=None, help='File to dump the plot to')
@@ -22,7 +22,7 @@ if __name__ == '__main__':
 	if args.files:
 		datafiles = args.files
 	else:
-		datafiles = ['dslash_benchmark_profiling_data']
+		datafiles = ['heatbath_benchmark_profiling_data']
 
 	if args.labels:
 		labels = args.labels
@@ -33,4 +33,5 @@ if __name__ == '__main__':
 		print 'Metric must be gflops, gbytes or both.'
 		sys.exit(1)
 
-	main(datafiles, labels, r'dslash_(eo|eoprec)', args.output, args.metric, False if args.notitle else 'Dslash Performance')
+	main(datafiles, labels, r'heatbath_(odd|even)', args.output, args.metric, False if args.notitle else 'Heatbath Performance')
+

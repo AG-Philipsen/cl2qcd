@@ -12,14 +12,22 @@ inline Matrixsu2_pauli SU2Update(const hmc_float alpha, prng_state * const restr
 	hmc_float a0 ;
 	hmc_float eta ;
 	do {
+#ifdef _USEDOUBLEPREC_
 		double4 rands = prng_double4(rnd);
+#else
+		float4 rands = prng_float4(rnd);
+#endif
 		delta = -log(rands.x) / alpha * pow(cos((hmc_float)(2.f * PI * rands.y)), (hmc_float) 2.f) - log(rands.z) / alpha;
 		a0 = 1. - delta;
 		eta = rands.w;
 	} while ( (1. - 0.5 * delta) < eta * eta);
 	prng_synchronize(rnd);
 
+#ifdef _USEDOUBLEPREC_
 	double4 rands = prng_double4(rnd);
+#else
+	float4 rands = prng_float4(rnd);
+#endif
 	hmc_float phi = 2.*PI * rands.x;
 	hmc_float theta = asin((hmc_float)(2.f * rands.y - 1.f));
 	out.e00 = a0;
