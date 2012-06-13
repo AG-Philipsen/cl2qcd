@@ -37,7 +37,7 @@ def main(datafiles, filelabels, output=None):
 				runs.append((nspace, ntime, bandwidth, gflops))
 
 		# dump data to cli
-		print 'NTIME   NSPACE    GB/S   GFLOPS'
+		print 'NSPACE   NTIME    GB/S   GFLOPS'
 		for run in runs:
 			print '{0[0]:>5}   {0[1]:>5}   {0[2]:>5}   {0[3]:>5}'.format(run)
 
