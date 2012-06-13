@@ -310,19 +310,19 @@ usetimer* Opencl_Module_Hmc::get_timer(char * in)
 
 #endif
 
-int Opencl_Module_Hmc::get_read_write_size(char * in)
+size_t Opencl_Module_Hmc::get_read_write_size(char * in)
 {
-	int result = Opencl_Module_Fermions::get_read_write_size(in);
+	size_t result = Opencl_Module_Fermions::get_read_write_size(in);
 	if (result != 0) return result;
 //Depending on the compile-options, one has different sizes...
-	int D = (*parameters).get_float_size();
+	size_t D = (*parameters).get_float_size();
 	//this returns the number of entries in an su3-matrix
-	int R = (*parameters).get_mat_size();
+	size_t R = (*parameters).get_mat_size();
 	//this is the number of spinors in the system (or number of sites)
-	int S = get_parameters()->get_spinorfieldsize();
-	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	size_t S = get_parameters()->get_spinorfieldsize();
+	size_t Seo = get_parameters()->get_eoprec_spinorfieldsize();
 	//this is the number of links in the system (and of gaugemomenta)
-	int G = get_parameters()->get_gaugemomentasize();
+	size_t G = get_parameters()->get_gaugemomentasize();
 	//factor for complex numbers
 	int C = 2;
 	//this is the same as in the function above

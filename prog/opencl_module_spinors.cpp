@@ -701,16 +701,16 @@ usetimer* Opencl_Module_Spinors::get_timer(const char * in)
 
 #endif
 
-int Opencl_Module_Spinors::get_read_write_size(const char * in)
+size_t Opencl_Module_Spinors::get_read_write_size(const char * in)
 {
-	int result = Opencl_Module_Ran::get_read_write_size(in);
+	size_t result = Opencl_Module_Ran::get_read_write_size(in);
 	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
-	int D = (*parameters).get_float_size();
+	size_t D = (*parameters).get_float_size();
 	//this returns the number of entries in an su3-matrix
-	int R = (*parameters).get_mat_size();
-	int S = get_parameters()->get_spinorfieldsize();
-	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	size_t R = (*parameters).get_mat_size();
+	size_t S = get_parameters()->get_spinorfieldsize();
+	size_t Seo = get_parameters()->get_eoprec_spinorfieldsize();
 	//factor for complex numbers
 	int C = 2;
 	//this is the same as in the function above

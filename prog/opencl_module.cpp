@@ -1116,11 +1116,11 @@ usetimer* Opencl_Module::get_timer(const char * in)
 
 #endif
 
-int Opencl_Module::get_read_write_size(const char * in)
+size_t Opencl_Module::get_read_write_size(const char * in)
 {
 	//Depending on the compile-options, one has different sizes...
-	int D = (*parameters).get_float_size();
-	int R = (*parameters).get_mat_size();
+	size_t D = (*parameters).get_float_size();
+	size_t R = (*parameters).get_mat_size();
 	//factor for complex numbers
 	int C = 2;
 	const size_t VOL4D = parameters->get_vol4d();
@@ -1205,7 +1205,7 @@ int Opencl_Module::get_flop_size(const char * in)
 	return 0;
 }
 
-void Opencl_Module::print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, int read_write_size, int flop_size)
+void Opencl_Module::print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, size_t read_write_size, int flop_size)
 {
 	hmc_float bandwidth = 0.;
 	hmc_float flops = 0.;

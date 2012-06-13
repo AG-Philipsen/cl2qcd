@@ -187,14 +187,14 @@ usetimer* Opencl_Module_Heatbath::get_timer(const char * in)
 }
 #endif
 
-int Opencl_Module_Heatbath::get_read_write_size(const char * in)
+size_t Opencl_Module_Heatbath::get_read_write_size(const char * in)
 {
-	int result = Opencl_Module_Ran::get_read_write_size(in);
+	size_t result = Opencl_Module_Ran::get_read_write_size(in);
 	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
-	int D = (*parameters).get_float_size();
-	int R = (*parameters).get_mat_size();
-	int S;
+	size_t D = (*parameters).get_float_size();
+	size_t R = (*parameters).get_mat_size();
+	size_t S;
 	//factor for complex numbers
 	int C = 2;
 	const size_t VOL4D = parameters->get_vol4d();
