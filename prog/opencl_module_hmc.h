@@ -197,7 +197,7 @@ protected:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual int get_flop_size(const char * in);
+	virtual uint64_t get_flop_size(const char * in);
 
 private:
 

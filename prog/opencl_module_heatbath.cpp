@@ -210,12 +210,12 @@ size_t Opencl_Module_Heatbath::get_read_write_size(const char * in)
 	return 0;
 }
 
-int Opencl_Module_Heatbath::get_flop_size(const char * in)
+uint64_t Opencl_Module_Heatbath::get_flop_size(const char * in)
 {
-	int result = Opencl_Module_Ran::get_flop_size(in);
+	uint64_t result = Opencl_Module_Ran::get_flop_size(in);
 	if (result != 0) return result;
 	const size_t VOL4D = parameters->get_vol4d();
-	int S;
+	uint64_t S;
 	if((*parameters).get_use_eo() == 1)
 		S = get_parameters()->get_eoprec_spinorfieldsize();
 	else

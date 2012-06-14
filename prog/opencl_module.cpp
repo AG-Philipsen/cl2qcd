@@ -1175,7 +1175,7 @@ size_t Opencl_Module::get_read_write_size(const char * in)
 	return 0;
 }
 
-int Opencl_Module::get_flop_size(const char * in)
+uint64_t Opencl_Module::get_flop_size(const char * in)
 {
 	const size_t VOL4D = parameters->get_vol4d();
 	const size_t VOLSPACE = parameters->get_volspace();
@@ -1205,7 +1205,7 @@ int Opencl_Module::get_flop_size(const char * in)
 	return 0;
 }
 
-void Opencl_Module::print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, size_t read_write_size, int flop_size)
+void Opencl_Module::print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, size_t read_write_size, uint64_t flop_size)
 {
 	hmc_float bandwidth = 0.;
 	hmc_float flops = 0.;

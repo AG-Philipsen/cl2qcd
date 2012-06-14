@@ -379,19 +379,19 @@ size_t Opencl_Module_Hmc::get_read_write_size(char * in)
 	return 0;
 }
 
-int Opencl_Module_Hmc::get_flop_size(const char * in)
+uint64_t Opencl_Module_Hmc::get_flop_size(const char * in)
 {
-	int result = Opencl_Module_Fermions::get_flop_size(in);
+	uint64_t result = Opencl_Module_Fermions::get_flop_size(in);
 	if (result != 0) return result;
 	//this is the number of spinors in the system (or number of sites)
-	int S = get_parameters()->get_spinorfieldsize();
-	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	uint64_t S = get_parameters()->get_spinorfieldsize();
+	uint64_t Seo = get_parameters()->get_eoprec_spinorfieldsize();
 	//this is the number of links in the system (and of gaugemomenta)
-	int G = get_parameters()->get_gaugemomentasize();
+	uint64_t G = get_parameters()->get_gaugemomentasize();
 	//NOTE: 1 ae has NC*NC-1 = 8 real entries
-	int A = get_parameters()->get_su3algebrasize();
+	uint64_t A = get_parameters()->get_su3algebrasize();
 	//this returns the number of entries in an su3-matrix
-	int R = (*parameters).get_mat_size();
+	uint64_t R = (*parameters).get_mat_size();
 	//this is the same as in the function above
 	if (strcmp(in, "generate_gaussian_spinorfield") == 0) {
 		//this kernel performs 12 multiplications per site

@@ -817,12 +817,12 @@ size_t Opencl_Module_Spinors::get_read_write_size(const char * in)
 	return 0;
 }
 
-int Opencl_Module_Spinors::get_flop_size(const char * in)
+uint64_t Opencl_Module_Spinors::get_flop_size(const char * in)
 {
-	int result = Opencl_Module_Ran::get_flop_size(in);
+	uint64_t result = Opencl_Module_Ran::get_flop_size(in);
 	if (result != 0) return result;
-	int S = get_parameters()->get_spinorfieldsize();
-	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	uint64_t S = get_parameters()->get_spinorfieldsize();
+	uint64_t Seo = get_parameters()->get_eoprec_spinorfieldsize();
 	//this is the same as in the function above
 	if (strcmp(in, "set_spinorfield_cold") == 0) {
 		//this kernel performs 1. / sqrt((12.f * VOL4D)) and real_multiply_spinor for each site
