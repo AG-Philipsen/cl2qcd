@@ -47,7 +47,8 @@ def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title
 	xtic_pos.sort(key=lambda e: e[0])
 	print xtic_pos
 	# make sure tics don't overlapp
-	min_delta = 30000
+	max_xtics = 30
+	min_delta = (xtic_pos[-1][0] - xtic_pos[0][0]) / max_xtics
 	i = len(xtic_pos) - 1
 	while i > 0:
 		if xtic_pos[i][0] < xtic_pos[i-1][0] + min_delta:
