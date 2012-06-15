@@ -67,18 +67,18 @@ def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title
 	linestyle = 0
 	for data in filedatas:
 		if metric == 'gflops':
-			lines.append(ax1.plot(data.xpos, data.runs[:,3], linestyles[linestyle]))
+			lines.append(ax1.plot(data.xpos, data.runs[:,3], linestyles[linestyle], markersize=15))
 			labels.append(data.label)
 			linestyle += 1
 		elif metric == 'gbytes':
-			lines.append(ax1.plot(data.xpos, data.runs[:,2], linestyles[linestyle]))
+			lines.append(ax1.plot(data.xpos, data.runs[:,2], linestyles[linestyle], markersize=15))
 			labels.append(data.label)
 			linestyle += 1
 		else:
-			lines.append(ax1.plot(data.xpos, data.runs[:,2], linestyles[linestyle]))
+			lines.append(ax1.plot(data.xpos, data.runs[:,2], linestyles[linestyle], markersize=15))
 			labels.append(data.label + ' Bandwidth')
 			linestyle += 1
-			lines.append(ax2.plot(data.xpos, data.runs[:,3], linestyles[linestyle]))
+			lines.append(ax2.plot(data.xpos, data.runs[:,3], linestyles[linestyle], markersize=15))
 			labels.append(data.label + ' Gflops')
 			linestyle += 1
 
