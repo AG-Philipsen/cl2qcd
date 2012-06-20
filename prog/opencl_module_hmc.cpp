@@ -352,7 +352,9 @@ int Opencl_Module_Hmc::get_read_write_size(char * in)
 		return G * D * (R * C * ( 6 * (NDIM - 1) + 1 ) + A );
 	}
 	if (strcmp(in, "gauge_force_tlsym") == 0) {
-		return 10000000000000000000;
+		//this kernel reads ingredients for 1 rect-staple plus 1 su3matrix and writes 1 ae for every link
+		//the rect staple is the same as the normal staple, but with 3 add. contributions and 2 add. matrices in each contribution, so instead of 2 * 3 = 6, one reads 6 * 5 matrices in each direction
+		return G * D * (R * C * ( 6 * 5 * (NDIM -1 ) + 1 ) + A );
 	}
 	if (strcmp(in, "fermion_force") == 0) {
 		//this kernel reads 16 spinors, 8 su3matrices and writes 8 ae per site
@@ -415,12 +417,15 @@ int Opencl_Module_Hmc::get_flop_size(const char * in)
 		return (1 + 1) * A * G;
 	}
 	if (strcmp(in, "gauge_force") == 0) {
-		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2_ND-1 su3_add), 1 su3*su3, 1 tr_lambda_u (19 flops) plus 8 add and 8 mult per ae
+		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2*ND-1 su3_add), 1 su3*su3, 1 tr_lambda_u (19 flops) plus 8 add and 8 mult per ae
 		return ( 4 * (NDIM - 1) * get_parameters()->get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + 1 * get_parameters()->get_flop_su3_su3() + 19  + A * ( 1 + 1 )
 		       ) * G;
 	}
 	if (strcmp(in, "gauge_force_tlsym") == 0) {
-		return 10000000000000000000;
+		//this kernel calculates 1 rect-staple (= 24*ND-1 su3_su3 + 6*ND-1 su3_add), 1 su3*su3, 1 tr_lambda_u (19 flops) plus 8 add and 8 mult per ae
+		//24 = 6 contr. per dir, 4 mat_mat per contr. 
+		return ( 24 * (NDIM - 1) * get_parameters()->get_flop_su3_su3() + 6 * (NDIM - 1) * 18 + 1 * get_parameters()->get_flop_su3_su3() + 19  + A * ( 1 + 1 )
+		       ) * G;
 	}
 	if (strcmp(in, "fermion_force") == 0) {
 		//this kernel performs NDIM * ( 4 * su3vec_acc (6 flops) + tr(v*u) (126 flops) + tr_lambda_u(19 flops) + update_ae(8*2 flops) + su3*su3 + su3*complex (flop_complex_mult * R ) ) per site
