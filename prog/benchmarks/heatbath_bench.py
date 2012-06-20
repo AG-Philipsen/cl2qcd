@@ -11,7 +11,7 @@ from tempfile import NamedTemporaryFile
 EXECUTABLE = "heatbath_benchmarks"
 
 NS = (16, 24, 32, 48)
-NT = NS
+NT = (4, 8, 12, 16, 24, 32, 48)
 
 INPUT_TEMPLATE = """
 ##################################################################
