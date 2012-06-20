@@ -12,14 +12,22 @@ inline Matrixsu2_pauli SU2Update(const hmc_float alpha, prng_state * const restr
 	hmc_float a0 ;
 	hmc_float eta ;
 	do {
+#ifdef _USEDOUBLEPREC_
 		double4 rands = prng_double4(rnd);
+#else
+		float4 rands = prng_float4(rnd);
+#endif
 		delta = -log(rands.x) / alpha * pow(cos((hmc_float)(2.f * PI * rands.y)), (hmc_float) 2.f) - log(rands.z) / alpha;
 		a0 = 1. - delta;
 		eta = rands.w;
 	} while ( (1. - 0.5 * delta) < eta * eta);
 	prng_synchronize(rnd);
 
+#ifdef _USEDOUBLEPREC_
 	double4 rands = prng_double4(rnd);
+#else
+	float4 rands = prng_float4(rnd);
+#endif
 	hmc_float phi = 2.*PI * rands.x;
 	hmc_float theta = asin((hmc_float)(2.f * rands.y - 1.f));
 	out.e00 = a0;
@@ -38,16 +46,16 @@ void inline perform_heatbath(__global Matrixsu3StorageType * const restrict gaug
 	//Compute staple, comprises whole anisotropy
 	if (mu == 0) {
 		staplematrix = calc_staple(gaugefield, pos, t, mu);
-		staplematrix = multiply_matrix3x3_by_real (staplematrix, XI_0 );
+		staplematrix = scale_matrix3x3_by_real (&staplematrix, XI_0 );
 	}
 
 	else {
 		Matrix3x3 staplematrix_sigma;
 		Matrix3x3 staplematrix_tau;
 		staplematrix_sigma = calc_staple_sigma(gaugefield, pos, t, mu);
-		staplematrix_sigma = multiply_matrix3x3_by_real (staplematrix_sigma, 1 / XI_0 );
+		staplematrix_sigma = scale_matrix3x3_by_real (&staplematrix_sigma, 1 / XI_0 );
 		staplematrix_tau = calc_staple_tau(gaugefield, pos, t, mu);
-		staplematrix_tau = multiply_matrix3x3_by_real (staplematrix_tau, XI_0 );
+		staplematrix_tau = scale_matrix3x3_by_real (&staplematrix_tau, XI_0 );
 		staplematrix = add_matrix3x3 ( staplematrix_sigma, staplematrix_tau );
 	}
 #else

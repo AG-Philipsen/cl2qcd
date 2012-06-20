@@ -34,14 +34,9 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
-		std::stringstream tmp;
-#ifdef _USEDOUBLEPREC_
-		tmp << SOURCEDIR << "/tests/f_gauge_input_1";
-#else
-		tmp << SOURCEDIR << "/tests/f_gauge_input_1_single";
-#endif
-		params.readfile(tmp.str().c_str());
+	Dummyfield(cl_device_type device_type, std::string input) : Gaugefield_hybrid() {
+		std::string src = std::string(SOURCEDIR) + "/tests/" + input;
+		params.readfile(src.c_str());
 
 		init(1, device_type, &params);
 	};
@@ -66,34 +61,36 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	//params.print_info_inverter("m_gpu");
 	// reset RNG
 	prng_init(13);
-	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
+	Dummyfield cpu(CL_DEVICE_TYPE_CPU, "staple_input_1");
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables_from_task(0, 0);
 	hmc_float cpu_back = cpu.runTestKernel();
+	BOOST_CHECK_CLOSE(-1.39070784162e+02, cpu_back, 1e-8);
 	BOOST_MESSAGE("Tested CPU");
 
 	logger.info() << "Init GPU device";
 	//params.print_info_inverter("m_gpu");
 	// reset RNG
 	prng_init(13);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, "staple_input_1");
 	logger.info() << "gaugeobservables: ";
 	dummy.print_gaugeobservables_from_task(0, 0);
 	hmc_float gpu_back = dummy.runTestKernel();
+	BOOST_CHECK_CLOSE(-1.39070784162e+02, gpu_back, 1e-8);
 	//u_res = dummy.get_squarenorm(1);
 	BOOST_MESSAGE("Tested GPU");
 
-	logger.info() << "cpu: " << cpu_back << "\tgpu: " << gpu_back;
+	logger.info() << "cpu: " << std::scientific << std::setprecision(11) << cpu_back << "\tgpu: " << gpu_back;
 
-	BOOST_MESSAGE(cpu_back << ' ' << gpu_back);
 	BOOST_CHECK_CLOSE(cpu_back, gpu_back, 1e-8);
 
 	//CP: in case of a cold config, the result is calculable easily
-	if(dummy.get_parameters()->get_startcondition() == COLD_START) {
-		hmc_float host_res = 18 * NDIM * dummy.get_parameters()->get_vol4d();
-		BOOST_CHECK_CLOSE(cpu_back, host_res , 1e-8);
-	}
+	Dummyfield cpu_cold(CL_DEVICE_TYPE_CPU, "staple_input_1_cold");
+	hmc_float cold_back = cpu_cold.runTestKernel();
+	hmc_float cold_ref = 18 * NDIM * dummy.get_parameters()->get_vol4d();
+	BOOST_CHECK_CLOSE(cold_back, cold_ref, 1e-8);
 
+	// TODO test further input files, especially larger sizes and anisotropic case
 }
 
 void Dummyfield::init_tasks()

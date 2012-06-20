@@ -1898,17 +1898,17 @@ usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 }
 #endif
 
-int Opencl_Module_Fermions::get_read_write_size(const char * in)
+size_t Opencl_Module_Fermions::get_read_write_size(const char * in)
 {
-	int result = Opencl_Module_Spinors::get_read_write_size(in);
+	size_t result = Opencl_Module_Spinors::get_read_write_size(in);
 	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
-	int D = (*parameters).get_float_size();
+	size_t D = (*parameters).get_float_size();
 	//this returns the number of entries in an su3-matrix
-	int R = (*parameters).get_mat_size();
+	size_t R = (*parameters).get_mat_size();
 	//this is the number of spinors in the system (or number of sites)
-	int S = get_parameters()->get_spinorfieldsize();
-	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	size_t S = get_parameters()->get_spinorfieldsize();
+	size_t Seo = get_parameters()->get_eoprec_spinorfieldsize();
 	//factor for complex numbers
 	int C = 2;
 	//this is the same as in the function above
@@ -1971,12 +1971,12 @@ int flop_dslash_per_site(inputparameters * parameters)
 
 }
 
-int Opencl_Module_Fermions::get_flop_size(const char * in)
+uint64_t Opencl_Module_Fermions::get_flop_size(const char * in)
 {
-	int result = Opencl_Module_Spinors::get_flop_size(in);
+	uint64_t result = Opencl_Module_Spinors::get_flop_size(in);
 	if (result != 0) return result;
-	int S = get_parameters()->get_spinorfieldsize();
-	int Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	uint64_t S = get_parameters()->get_spinorfieldsize();
+	uint64_t Seo = get_parameters()->get_eoprec_spinorfieldsize();
 	if (strcmp(in, "M_wilson") == 0) {
 		//this kernel performs one dslash on each site and adds this to a spinor
 		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * get_parameters()->get_flop_complex_mult() + NC * NDIM * 2 );

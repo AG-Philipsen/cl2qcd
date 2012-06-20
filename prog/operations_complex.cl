@@ -18,7 +18,7 @@ inline hmc_complex complexmult(const hmc_complex a, const hmc_complex b)
 	return res;
 }
 
-inline hmc_complex complexadd(hmc_complex a, hmc_complex b)
+inline hmc_complex complexadd(const hmc_complex a, const hmc_complex b)
 {
 	hmc_complex res;
 	res.re = a.re + b.re;
@@ -26,7 +26,7 @@ inline hmc_complex complexadd(hmc_complex a, hmc_complex b)
 	return res;
 }
 
-inline hmc_complex complexsubtract(hmc_complex a, hmc_complex b)
+inline hmc_complex complexsubtract(const hmc_complex a, const hmc_complex b)
 {
 	hmc_complex res;
 	res.re = a.re - b.re;
@@ -34,7 +34,7 @@ inline hmc_complex complexsubtract(hmc_complex a, hmc_complex b)
 	return res;
 }
 
-inline hmc_complex complexdivide(hmc_complex numerator, hmc_complex denominator)
+inline hmc_complex complexdivide(const hmc_complex numerator, const hmc_complex denominator)
 {
 	hmc_float norm = denominator.re * denominator.re + denominator.im * denominator.im;
 	hmc_complex res;

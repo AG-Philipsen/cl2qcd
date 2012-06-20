@@ -57,6 +57,8 @@ def main():
 				subject =  Popen(args)
 			else:
 				subject =  Popen(args, stdout=PIPE)
+				for line in subject.stdout:
+					pass
 
 			subject.wait()
 			if(switch == 0):

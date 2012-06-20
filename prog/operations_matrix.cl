@@ -18,55 +18,23 @@ void print_matrix3x3(Matrix3x3 in)
 
 inline Matrix3x3 zero_matrix3x3 ()
 {
-	Matrix3x3 out;
-	out.e00.re = 0.;
-	out.e00.im = 0.;
-	out.e01.re = 0.;
-	out.e01.im = 0.;
-	out.e02.re = 0.;
-	out.e02.im = 0.;
-	out.e10.re = 0.;
-	out.e10.im = 0.;
-	out.e11.re = 0.;
-	out.e11.im = 0.;
-	out.e12.re = 0.;
-	out.e12.im = 0.;
-	out.e20.re = 0.;
-	out.e20.im = 0.;
-	out.e21.re = 0.;
-	out.e21.im = 0.;
-	out.e22.re = 0.;
-	out.e22.im = 0.;
-
-	return out;
+	return (Matrix3x3) {
+		{0., 0.}, {0., 0.}, {0., 0.},
+		{0., 0.}, {0., 0.}, {0., 0.},
+		{0., 0.}, {0., 0.}, {0., 0.}
+	};
 }
 
 inline Matrix3x3 identity_matrix3x3 ()
 {
-	Matrix3x3 out;
-	out.e00.re = 1.;
-	out.e00.im = 0.;
-	out.e01.re = 0.;
-	out.e01.im = 0.;
-	out.e02.re = 0.;
-	out.e02.im = 0.;
-	out.e10.re = 0.;
-	out.e10.im = 0.;
-	out.e11.re = 1.;
-	out.e11.im = 0.;
-	out.e12.re = 0.;
-	out.e12.im = 0.;
-	out.e20.re = 0.;
-	out.e20.im = 0.;
-	out.e21.re = 0.;
-	out.e21.im = 0.;
-	out.e22.re = 1.;
-	out.e22.im = 0.;
-
-	return out;
+	return (Matrix3x3) {
+		{1., 0.}, {0., 0.}, {0., 0.},
+		{0., 0.}, {1., 0.}, {0., 0.},
+		{0., 0.}, {0., 0.}, {1., 0.}
+	};
 }
 
-inline Matrix3x3 multiply_matrix3x3_by_real (Matrix3x3 in, hmc_float factor)
+inline Matrix3x3 multiply_matrix3x3_by_real (const Matrix3x3 in, const hmc_float factor)
 {
 	Matrix3x3 out = in;
 	out.e00.re *= factor;
@@ -89,6 +57,28 @@ inline Matrix3x3 multiply_matrix3x3_by_real (Matrix3x3 in, hmc_float factor)
 	out.e22.im *= factor;
 
 	return out;
+}
+
+inline void scale_matrix3x3_by_real (Matrix3x3 * const restrict inout, const hmc_float factor)
+{
+	inout->e00.re *= factor;
+	inout->e00.im *= factor;
+	inout->e01.re *= factor;
+	inout->e01.im *= factor;
+	inout->e02.re *= factor;
+	inout->e02.im *= factor;
+	inout->e10.re *= factor;
+	inout->e10.im *= factor;
+	inout->e11.re *= factor;
+	inout->e11.im *= factor;
+	inout->e12.re *= factor;
+	inout->e12.im *= factor;
+	inout->e20.re *= factor;
+	inout->e20.im *= factor;
+	inout->e21.re *= factor;
+	inout->e21.im *= factor;
+	inout->e22.re *= factor;
+	inout->e22.im *= factor;
 }
 
 inline Matrix3x3 multiply_matrix3x3_by_complex (Matrix3x3 in, hmc_complex factor)
@@ -343,6 +333,30 @@ inline Matrix3x3 add_matrix3x3 ( const Matrix3x3 p, const Matrix3x3 q)
 	return out;
 }
 
+inline void aggregate_matrix3x3(Matrix3x3 * const restrict p, const Matrix3x3 q)
+{
+	p->e00.re += q.e00.re;
+	p->e00.im += q.e00.im;
+	p->e01.re += q.e01.re;
+	p->e01.im += q.e01.im;
+	p->e02.re += q.e02.re;
+	p->e02.im += q.e02.im;
+
+	p->e10.re += q.e10.re;
+	p->e10.im += q.e10.im;
+	p->e11.re += q.e11.re;
+	p->e11.im += q.e11.im;
+	p->e12.re += q.e12.re;
+	p->e12.im += q.e12.im;
+
+	p->e20.re += q.e20.re;
+	p->e20.im += q.e20.im;
+	p->e21.re += q.e21.re;
+	p->e21.im += q.e21.im;
+	p->e22.re += q.e22.re;
+	p->e22.im += q.e22.im;
+}
+
 inline Matrix3x3 subtract_matrix3x3 ( const Matrix3x3 p, const Matrix3x3 q)
 {
 	Matrix3x3 out;
@@ -470,59 +484,21 @@ inline Matrix3x3 adjoint_matrix3x3 (const Matrix3x3 p)
 
 inline Matrix3x3 matrix_su3to3x3 (const Matrixsu3 p)
 {
-
-	Matrix3x3 out;
-	out.e00.re = p.e00.re;
-	out.e00.im = p.e00.im;
-	out.e01.re = p.e01.re;
-	out.e01.im = p.e01.im;
-	out.e02.re = p.e02.re;
-	out.e02.im = p.e02.im;
-
-	out.e10.re = p.e10.re;
-	out.e10.im = p.e10.im;
-	out.e11.re = p.e11.re;
-	out.e11.im = p.e11.im;
-	out.e12.re = p.e12.re;
-	out.e12.im = p.e12.im;
-
-	out.e20.re = p.e20.re;
-	out.e20.im = p.e20.im;
-	out.e21.re = p.e21.re;
-	out.e21.im = p.e21.im;
-	out.e22.re = p.e22.re;
-	out.e22.im = p.e22.im;
-
-	return out;
+	return (Matrix3x3) {
+		p.e00, p.e01, p.e02,
+		       p.e10, p.e11, p.e12,
+		       p.e20, p.e21, p.e22
+	};
 }
 
 
 inline Matrixsu3 matrix_3x3tosu3 (const Matrix3x3 p)
 {
-
-	Matrixsu3 out;
-	out.e00.re = p.e00.re;
-	out.e00.im = p.e00.im;
-	out.e01.re = p.e01.re;
-	out.e01.im = p.e01.im;
-	out.e02.re = p.e02.re;
-	out.e02.im = p.e02.im;
-
-	out.e10.re = p.e10.re;
-	out.e10.im = p.e10.im;
-	out.e11.re = p.e11.re;
-	out.e11.im = p.e11.im;
-	out.e12.re = p.e12.re;
-	out.e12.im = p.e12.im;
-
-	out.e20.re = p.e20.re;
-	out.e20.im = p.e20.im;
-	out.e21.re = p.e21.re;
-	out.e21.im = p.e21.im;
-	out.e22.re = p.e22.re;
-	out.e22.im = p.e22.im;
-
-	return out;
+	return (Matrixsu3) {
+		p.e00, p.e01, p.e02,
+		       p.e10, p.e11, p.e12,
+		       p.e20, p.e21, p.e22
+	};
 }
 
 inline hmc_float absoluteDifference_matrix3x3(Matrix3x3 mat1, Matrix3x3 mat2)

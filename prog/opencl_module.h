@@ -318,14 +318,14 @@ public:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual int get_flop_size(const char * in);
+	virtual uint64_t get_flop_size(const char * in);
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual int get_read_write_size(const char * in);
+	virtual size_t get_read_write_size(const char * in);
 
 	/**
 	 * Print the profiling information of a specific kernel to a file.
@@ -337,7 +337,7 @@ public:
 	 * @param read_write_size number of bytes read and written by the kernel
 	 * @param flop_size amount of flops performed by the kernel
 	 */
-	void print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, int read_write_size, int flop_size);
+	void print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, size_t read_write_size, uint64_t flop_size);
 
 	/**
 	 * Enqueue the given kernel on the device. Local work size will be determined

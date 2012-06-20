@@ -417,7 +417,7 @@ inline Matrix3x3 local_Q_plaquette(__global const Matrixsu3StorageType * const r
 //this calculates the staple in nu direction given a direction mu of the link
 //     under consideration:
 //     s = U_nu(x + mu) * Udagger_mu(x + nu) * Udagger_nu(x) + Udagger_nu(x+mu - nu) * Udagger_mu(x-nu) * U_nu(x - nu)
-inline Matrix3x3 local_staple(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
+inline void local_staple(Matrix3x3 * const restrict aggregate, __global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
 {
 	int4 pos;
 
@@ -437,10 +437,11 @@ inline Matrix3x3 local_staple(__global const Matrixsu3StorageType * const restri
 		pos.z = t;
 		pos.w = get_neighbor(n, nu);
 	}
-	Matrixsu3 tmp = multiply_matrixsu3_dagger(get_matrixsu3(field, pos.y, pos.x, nu), get_matrixsu3(field, pos.w, pos.z, mu) );
+	Matrixsu3 tmp = get_matrixsu3(field, pos.y, pos.x, nu);
+	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos.w, pos.z, mu));
 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, n, t, nu) );
 
-	Matrix3x3 out = matrix_su3to3x3(tmp);
+	aggregate_matrix3x3(aggregate, matrix_su3to3x3(tmp));
 
 	//second staple
 	if(mu == 0) {
@@ -459,12 +460,11 @@ inline Matrix3x3 local_staple(__global const Matrixsu3StorageType * const restri
 		pos.z = t;
 		pos.w = get_lower_neighbor(n, nu);
 	}
-	tmp = multiply_matrixsu3_dagger_dagger(get_matrixsu3(field, pos.y, pos.x, nu), get_matrixsu3(field, pos.w, pos.z, mu) );
+	tmp = get_matrixsu3(field, pos.y, pos.x, nu);
+	tmp = multiply_matrixsu3_dagger_dagger(tmp, get_matrixsu3(field, pos.w, pos.z, mu));
 	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.w, pos.z, nu) );
 
-	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
-
-	return out;
+	aggregate_matrix3x3(aggregate, matrix_su3to3x3(tmp));
 }
 
 /**     This calculates the rectangles staple in nu direction given a direction mu of the link
@@ -750,10 +750,10 @@ inline Matrix3x3 calc_staple(__global const Matrixsu3StorageType * const restric
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
-#pragma unroll 1 // unroll required for proper register reuse when using newer Catalysts on Cypress
+#pragma unroll 3 // unroll required for proper register reuse when using newer Catalysts on Cypress
 	for(int i = 0; i < NDIM - 1; i++) {
 		int nu = (mu_in + i + 1) % NDIM;
-		staple = add_matrix3x3(staple,  local_staple(field, pos, t, mu_in, nu ));
+		local_staple(&staple, field, pos, t, mu_in, nu );
 	}
 	return staple;
 }
@@ -763,11 +763,12 @@ inline Matrix3x3 calc_staple_sigma (__global const Matrixsu3StorageType * const 
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
-#pragma unroll 1 // unroll required for proper register reuse when using newer Catalysts on Cypress
+#pragma unroll 3 // unroll required for proper register reuse when using newer Catalysts on Cypress
 	for(int i = 0; i < NDIM - 1; i++) {
 		int nu = (mu_in + i + 1) % NDIM;
-		if(nu != 0)
-			staple = add_matrix3x3(staple,  local_staple(field, pos, t, mu_in, nu ));
+		if(nu != 0) {
+			local_staple(&staple, field, pos, t, mu_in, nu );
+		}
 	}
 	return staple;
 }
@@ -776,7 +777,9 @@ inline Matrix3x3 calc_staple_sigma (__global const Matrixsu3StorageType * const 
 inline Matrix3x3 calc_staple_tau (__global const Matrixsu3StorageType * const restrict field, const int pos, const int t, const int mu_in)
 {
 	int nu = 0;
-	return local_staple(field, pos, t, mu_in, nu );
+	Matrix3x3 staple = zero_matrix3x3();
+	local_staple(&staple, field, pos, t, mu_in, nu );
+	return staple;
 }
 
 //this is the rectangles staple

@@ -42,6 +42,8 @@ void Gaugefield_hmc::finalize_opencl()
 
 void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* solver_timer)
 {
+	klepsydra::Monotonic step_timer;
+
 	//reset the counters for the inversions
 	get_parameters()->reset_inversion_counters();
 
@@ -76,6 +78,7 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 		logger.debug() << "\t\tnew configuration rejected" ;
 	}
 	logger.trace() << "\tfinished HMC trajectory " << iter ;
+	logger.info() << "HMC step duration (ms): " << step_timer.getTime() / 1e3f;
 
 	return;
 }

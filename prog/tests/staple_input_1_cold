@@ -1,7 +1,6 @@
 #input file 1 for staple_test
 
-startcondition=continue
-sourcefile=conf.00200
+startcondition=cold
 
 use_eo=false
 NS=4
@@ -9,3 +8,4 @@ NT=4
 fermact=TWISTEDMASS
 #this set the init-spinorfield to random values
 use_cg=false
+
