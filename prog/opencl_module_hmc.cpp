@@ -349,7 +349,7 @@ int Opencl_Module_Hmc::get_read_write_size(char * in)
 	}
 	if (strcmp(in, "gauge_force") == 0) {
 		//this kernel reads ingredients for 1 staple plus 1 su3matrix and writes 1 ae for every link
-		return G * D * (R * ( 6 * (NDIM - 1) + 1 ) + A );
+		return G * D * (R * C * ( 6 * (NDIM - 1) + 1 ) + A );
 	}
 	if (strcmp(in, "gauge_force_tlsym") == 0) {
 		return 10000000000000000000;
