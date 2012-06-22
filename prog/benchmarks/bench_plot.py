@@ -11,7 +11,7 @@ linestyles = ['r.', 'b.', 'r*', 'b*', 'g.', 'k.', 'r,', 'b,', 'g,', 'k,', 'g*', 
 
 FileData = namedtuple('FileData', ['label', 'runs', 'xpos'])
 
-def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title=False):
+def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title=False, maxSize=None):
 
 	filedatas = []
 
@@ -28,6 +28,9 @@ def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title
 			floatpattern = r'[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?'
 			match = re.match(r'\s*(' + kernelpattern + ')\s+\d+\s+\d+\s+\d+\s+\d+\s+(?P<bandwidth>' + floatpattern + ')\s(?P<gflops>' + floatpattern + ')', line)
 			if match:
+				if maxSize and nspace**3 * ntime > maxSize:
+					continue
+
 				bandwidth = float(match.group('bandwidth'))
 				gflops = float(match.group('gflops'))
 				runs.append((nspace, ntime, bandwidth, gflops))
