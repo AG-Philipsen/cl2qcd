@@ -27,8 +27,13 @@
 #define PARALLEL_FOR(VAR, LIMIT) \
 size_t _block_size = (LIMIT + get_global_size(0) - 1) / get_global_size(0); \
 for(size_t VAR = get_global_id(0) * _block_size; VAR < (get_global_id(0) + 1) * _block_size && VAR < LIMIT; ++VAR)
-#else
+#else /* _USE_BLOCKED_LOOPS_ */
+#if (NSPACE / 24 ) * 24 == NSPACE /* On Cypress with APP 2.6 we need different strategies for NSPACE % 24 == 0 and NSPACE % 16 == 0 */
+#define PARALLEL_FOR(VAR, LIMIT) \
+for(size_t VAR = get_global_id(0); VAR < LIMIT; VAR += get_global_size(0))
+#else /* NSPACE % 24 == 0 */
 #define PARALLEL_FOR(VAR, LIMIT) \
 size_t _global_size = get_global_size(0); /* required to avoid performance regression an Cypress with APP 2.6 */ \
 for(size_t VAR = get_global_id(0); VAR < LIMIT; VAR += _global_size)
-#endif
+#endif /* NSPACE % 24 == 0 */
+#endif /* _USE_BLOCKED_LOOPS_ */
