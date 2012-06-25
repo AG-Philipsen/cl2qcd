@@ -93,7 +93,7 @@ void Opencl_Module_Hmc::fill_kernels()
 	gauge_force = createKernel("gauge_force") << basic_hmc_code  << "force_gauge.cl";
 	if(get_parameters()->get_use_rectangles() == true) {
 		//at the time of writing this kernel, the OpenCL compiler crashed the kernel using optimizations
-		gauge_force_tlsym = createKernel("gauge_force_tlsym", "-cl-opt-disable") << basic_hmc_code << "force_gauge_tlsym.cl";
+		gauge_force_tlsym = createKernel("gauge_force_tlsym") << basic_hmc_code << "force_gauge_tlsym.cl";
 	}
 	if(get_parameters()->get_use_smearing() == true) {
 		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_hmc_code << "force_fermion_stout_smear.cl";
