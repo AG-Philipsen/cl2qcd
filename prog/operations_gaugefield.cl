@@ -787,7 +787,7 @@ inline Matrix3x3 calc_rectangles_staple(__global const Matrixsu3StorageType * co
 {
 	Matrix3x3 staple = zero_matrix3x3();
 	//iterate through the three directions other than mu
-#pragma unroll 1 // unroll required for proper register reuse when using newer Catalysts on Cypress
+#pragma unroll 3 // unroll required for proper register reuse when using newer Catalysts on Cypress
 	for(int i = 0; i < NDIM - 1 ; i++) {
 		int nu = (mu_in + i + 1) % NDIM;
 		staple = add_matrix3x3(staple,  local_rectangles_staple(field, pos, t, mu_in, nu ));
