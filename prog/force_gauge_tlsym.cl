@@ -4,8 +4,8 @@ __kernel void gauge_force_tlsym(__global const Matrixsu3StorageType * const rest
 	int global_size = get_global_size(0);
 
 #ifndef _USE_RECT_
-	//this kernel should not be called if rectangles are not activated...
-	return;
+	//this kernel should not be called if rectangles are not activated
+#error should not be used if rect is deactivated
 #endif
 
 	//tlSym improved Gauge force is factor*Im(i Tr(T_i U V))
