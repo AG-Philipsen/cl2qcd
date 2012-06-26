@@ -3,9 +3,6 @@ __attribute__((reqd_work_group_size(128, 1, 1)))
 #endif
 __kernel void gauge_force_tlsym(__global const Matrixsu3StorageType * const restrict field, __global aeStorageType * const restrict out)
 {
-	int id = get_global_id(0);
-	int global_size = get_global_size(0);
-
 #ifndef _USE_RECT_
 	//this kernel should not be called if rectangles are not activated
 #error should not be used if rect is deactivated
