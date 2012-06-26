@@ -260,8 +260,9 @@ cl_mem Opencl_Module_Hmc::get_clmem_s_fermion_mp_init()
 }
 
 #ifdef _PROFILING_
-usetimer* Opencl_Module_Hmc::get_timer(char * in)
+usetimer* Opencl_Module_Hmc::get_timer(const char * in)
 {
+	logger.trace() << "Opencl_Module_Hmc::get_timer(char*)";
 	usetimer *noop = NULL;
 	noop = Opencl_Module_Fermions::get_timer(in);
 	if(noop != NULL) return noop;

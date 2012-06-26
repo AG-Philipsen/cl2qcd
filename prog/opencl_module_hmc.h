@@ -173,7 +173,7 @@ protected:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual usetimer* get_timer(char * in);
+	virtual usetimer* get_timer(const char * in);
 
 	/**
 	 * Print the profiling information to a file.

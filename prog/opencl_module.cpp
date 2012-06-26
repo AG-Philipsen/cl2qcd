@@ -505,7 +505,7 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 		//Second Method: Nasty workaround
 		//noop is used in case the kernel is not recognized
 		usetimer *noop = NULL;
-		noop = Opencl_Module::get_timer(kernelName);
+		noop = this->get_timer(kernelName);
 		if(noop == NULL)
 			logger.error() << "get_timer(" << kernelName << ") did not return a timer!";
 		else
@@ -587,8 +587,7 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 		//Second Method: Nasty workaround
 		//noop is used in case the kernel is not recognized
 		usetimer *noop = NULL;
-//  noop = Opencl_Module::get_timer(kernelName);
-		noop = get_timer(kernelName);
+		noop = this->get_timer(kernelName);
 		if(noop == NULL)
 			logger.error() << "get_timer (" << kernelName << ") did not return a timer!";
 		else
@@ -1081,6 +1080,7 @@ usetimer * Opencl_Module::get_copy_to()
 #ifdef _PROFILING_
 usetimer* Opencl_Module::get_timer(const char * in)
 {
+	logger.trace() << "Opencl_Module::get_timer(char*)";
 	if (strcmp(in, "polyakov_reduction") == 0) {
 		return &(this->timer_polyakov_reduction);
 	}

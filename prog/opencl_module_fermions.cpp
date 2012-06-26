@@ -1853,6 +1853,7 @@ hmc_float Opencl_Module_Fermions::print_info_inv_field(cl_mem in, bool eo, std::
 #ifdef _PROFILING_
 usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 {
+	logger.trace() << "Opencl_Module_Fermions::get_timer(char*)";
 	usetimer *noop = NULL;
 	noop = Opencl_Module_Spinors::get_timer(in);
 	if(noop != NULL) return noop;

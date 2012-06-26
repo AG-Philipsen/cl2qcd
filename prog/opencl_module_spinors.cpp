@@ -626,6 +626,7 @@ void Opencl_Module_Spinors::convertSpinorfieldFromSOA_eo_device(cl_mem out, cl_m
 #ifdef _PROFILING_
 usetimer* Opencl_Module_Spinors::get_timer(const char * in)
 {
+	logger.trace() << "Opencl_Module_Spinors::get_timer(char*)";
 	usetimer *noop = NULL;
 	noop = Opencl_Module_Ran::get_timer(in);
 	if(noop != NULL) return noop;
