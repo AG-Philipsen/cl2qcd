@@ -310,7 +310,7 @@ void Dummyfield::runTestKernel2()
 	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = get_parameters()->get_spinorfieldsize();
-		ls = 64;
+		ls = 128;
 	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
