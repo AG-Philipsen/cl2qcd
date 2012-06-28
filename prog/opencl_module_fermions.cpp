@@ -1426,7 +1426,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 						total_flops += retests * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("global_squarenorm_eoprec"));
 
 						// report performanc
-						logger.info() << "BiCGstab_save completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops.";
+						logger.info() << "BiCGstab_save completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
 					}
 
 					// we are done here
@@ -1484,7 +1484,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 					total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
 
 					// report performanc
-					logger.info() << "BiCGstab completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops.";
+					logger.info() << "BiCGstab completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
 				}
 
 				// we are done here
@@ -1678,7 +1678,7 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_me
 				total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
 
 				// report performanc
-				logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops.";
+				logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
 			}
 
 			return iter;
