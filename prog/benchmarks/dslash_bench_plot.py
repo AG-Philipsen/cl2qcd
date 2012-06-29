@@ -14,6 +14,7 @@ if __name__ == '__main__':
 	parser.add_argument('-o', '--output', metavar='FILE', default=None, help='File to dump the plot to')
 	parser.add_argument('--metric', default='both', help='Output gflops, gbytes or both')
 	parser.add_argument('--notitle', default=False, action='store_true', help='Suppress plot title')
+	parser.add_argument('--title', default='Overrelax Performance', help='Title to use for the plot')
 	parser.add_argument('--maxSize', type=int, help='Maximum lattice size to plot');
 	args = parser.parse_args()
 
@@ -34,4 +35,4 @@ if __name__ == '__main__':
 		print 'Metric must be gflops, gbytes or both.'
 		sys.exit(1)
 
-	main(datafiles, labels, r'dslash_(eo|eoprec)', args.output, args.metric, False if args.notitle else 'Dslash Performance', args.maxSize)
+	main(datafiles, labels, r'dslash_(eo|eoprec)', args.output, args.metric, False if args.notitle else args.title, args.maxSize)
