@@ -224,11 +224,11 @@ uint64_t Opencl_Module_Heatbath::get_flop_size(const char * in)
 	///@NOTE: I do not distinguish between su3 and 3x3 matrices. This is a difference if one use e.g. REC12, but here one wants to have the "netto" flops for comparability.
 	if ( (strcmp(in, "heatbath_even") == 0 ) || (strcmp(in, "heatbath_odd") == 0) ) {
 		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2_ND-1 su3_add) plus NC*(2*su3_su3 80 flops for the su2 update)
-		return VOL4D * (4 * (NDIM - 1) * get_parameters()->get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * get_parameters()->get_flop_su3_su3() + 80));
+		return VOL4D / 2 * (4 * (NDIM - 1) * get_parameters()->get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * get_parameters()->get_flop_su3_su3() + 80));
 	}
 	if ( (strcmp(in, "overrelax_even") == 0) || (strcmp(in, "overrelax_odd") == 0)) {
 		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2_ND-1 su3_add) plus NC*(2*su3_su3 58 flops for the su2 update)
-		return VOL4D * (4 * (NDIM - 1) * get_parameters()->get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * get_parameters()->get_flop_su3_su3() + 58));
+		return VOL4D / 2 * (4 * (NDIM - 1) * get_parameters()->get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * get_parameters()->get_flop_su3_su3() + 58));
 	}
 	return 0;
 }
