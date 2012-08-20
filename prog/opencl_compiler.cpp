@@ -12,10 +12,7 @@
 #include <cstring>
 #include "crypto/md5.h"
 
-// be ok, with rather old versions of boost filesystem
-// in principle the below code should also work with version 3,
-// but this should ensure proper behavious if version 3 is not available
-#define BOOST_FILESYSTEM_VERSION 2
+#define BOOST_FILESYSTEM_VERSION 3
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 /// @todo quite some of this code could be simplified by moving from pure fstream to boost::filesystem equivalents
@@ -340,7 +337,7 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel, const cl_dev
 			boost::regex file_pattern(tmp.str(), boost::regex::icase);
 
 			for(fs::directory_iterator i(fs::path(".")); i != fs::directory_iterator(); ++i) {
-				std::string tmp = i->string();
+				std::string tmp = i->path().string();
 				if(regex_match(tmp, file_pattern)) {
 					isafile.open(tmp.c_str());
 					break;
