@@ -1,8 +1,5 @@
 message(STATUS "Building Tests")
 
-set(Boost_USE_STATIC_LIBS   OFF)
-find_package(Boost 1.34.0 REQUIRED COMPONENTS unit_test_framework)
-
 find_package(PythonInterp REQUIRED)
 
 # default random number seed
