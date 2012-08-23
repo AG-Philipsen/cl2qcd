@@ -6,10 +6,9 @@
 # Collect all code in this part of the source tree
 #
 
-set_abs_paths(META_FILES
+add_library(meta
 	inputparameters.cpp
 )
-add_library(meta ${META_FILES})
 
 #
 # Definition of tets
