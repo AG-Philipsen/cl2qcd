@@ -143,10 +143,14 @@ set(OPTIMAL_USED_LIBS
 	${PRNG_LIBRARIES}
 )
 
+# add all modules
 add_subdirectory(meta)
+set(OPTIMAL_MODULES
+	meta
+)
 
 add_library(optimal ${OPTIMAL_FILES})
-target_link_libraries(optimal meta ${OPTIMAL_USED_LIBS})
+target_link_libraries(optimal ${OPTIMAL_MODULES} ${OPTIMAL_USED_LIBS})
 add_dependencies(optimal git_commit_id_header)
 
 # The actual executables (frontends)
