@@ -9,7 +9,7 @@
 #define BOOST_TEST_MODULE meta::Inputparameters
 #include <boost/test/unit_test.hpp>
 
-#include "inputparameters.h"
+#include "inputparameters.hpp"
 
 #include "../types.h"
 

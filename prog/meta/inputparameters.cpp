@@ -2,7 +2,7 @@
  * Input file handling implementation
  */
 
-#include "inputparameters.h"
+#include "inputparameters.hpp"
 
 #include <map>
 #include <iostream>

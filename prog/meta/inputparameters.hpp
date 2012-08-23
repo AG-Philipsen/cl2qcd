@@ -2,8 +2,8 @@
  * Input file handling
  */
 
-#ifndef _META_INPUTPARAMETERS_H_
-#define _META_INPUTPARAMETERS_H_
+#ifndef _META_INPUTPARAMETERS_HPP_
+#define _META_INPUTPARAMETERS_HPP_
 
 #include <vector>
 #include <string>
