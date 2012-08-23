@@ -14,10 +14,8 @@ add_library(meta
 # Definition of tets
 #
 
-add_executable(inputparameters_test inputparameters_test.cpp)
-target_link_libraries(inputparameters_test
-		optimal)
 configure_file(test_input_1 test_input_1 COPYONLY)
 configure_file(test_input_2 test_input_2 COPYONLY)
-add_test(meta::Inputparameters inputparameters_test)
+
+add_unit_test(meta::Inputparameters inputparameters_test)
 
