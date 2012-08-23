@@ -150,6 +150,7 @@ add_dependencies(optimal git_commit_id_header)
 # add all modules
 add_modules(optimal
 	meta
+	hardware
 )
 
 # The actual executables (frontends)

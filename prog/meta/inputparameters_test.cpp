@@ -1,10 +1,12 @@
 /** @file
  * Testcases for the Inputparameters class
+ *
+ * (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
  */
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Inputparameters
+#define BOOST_TEST_MODULE meta::Inputparameters
 #include <boost/test/unit_test.hpp>
 
 #include "inputparameters.h"
