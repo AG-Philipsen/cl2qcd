@@ -42,6 +42,11 @@ namespace hardware {
 		 */
 		bool is_double_supported();
 
+		// non-copyable
+		Device& operator=(const Device&) = delete;
+		Device(const Device&) = delete;
+		Device() = delete;
+
 	private:
 		/**
 		 * The OpenCL context to be used by this device.
