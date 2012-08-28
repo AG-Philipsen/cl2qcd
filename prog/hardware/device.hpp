@@ -17,6 +17,11 @@
 
 namespace hardware {
 
+	namespace buffers {
+		// forward declaration for friend relation
+		class Buffer;
+	}
+
 	/**
 	 * Representation of an OpenCL device we are working on.
 	 *
@@ -24,6 +29,8 @@ namespace hardware {
 	 * its hardware.
 	 */
 	class Device {
+
+	friend hardware::buffers::Buffer;
 
 	public:
 		/**
