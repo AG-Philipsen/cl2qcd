@@ -1685,7 +1685,6 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_me
 		}
 
 		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
-		set_complex_to_scalar_product_eoprec_device(clmem_rn_eo, clmem_rn_eo, clmem_rho_next);
 		set_complex_to_ratio_device(clmem_rho_next, clmem_omega, clmem_beta);
 
 		//pn+1 = rn+1 + beta*pn
