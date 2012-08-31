@@ -8,7 +8,9 @@
 #include <vector>
 #include <string>
 
-
+/**
+ * This namespace contains generic utility code required by the other packages.
+ */
 namespace meta {
 
 	/**

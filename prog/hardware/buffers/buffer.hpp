@@ -10,6 +10,10 @@
 #include "../device.hpp"
 
 namespace hardware {
+	/**
+	 * This namespace contains all buffers, physically representing fields
+	 * of specific data on the device.
+	 */
 	namespace buffers {
 	
 		/**

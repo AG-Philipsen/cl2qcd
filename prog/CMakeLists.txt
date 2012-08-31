@@ -107,6 +107,15 @@ endif(PRNG STREQUAL "NR3")
 # default random number seed
 configure_file( rand_seeds rand_seeds COPYONLY )
 
+# which directories contain documentation relevant stuff
+# modules will add their files to this list
+set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
+	${CMAKE_SOURCE_DIR}
+	${CMAKE_SOURCE_DIR}/klepsydra
+	${CMAKE_SOURCE_DIR}/einhard
+	${CMAKE_SOURCE_DIR}/crypto
+)
+
 # Definition of the core application
 set_abs_paths(OPTIMAL_FILES
 	exceptions.cpp
@@ -180,15 +189,6 @@ add_subdirectory( crypto )
 add_subdirectory(ranlux)
 add_subdirectory(ranluxcl)
 
-# Documentation
-#include(FindDoxygen)
-find_package(Doxygen QUIET)
-if(DOXYGEN_FOUND)
-    add_subdirectory(doc)
-else(DOXYGEN_FOUND)
-    message(STATUS "WARNING: Failed to find Doxygen - won't build documentation")
-endif(DOXYGEN_FOUND)
-
 option(BUILD_MICROBENCHMARKS "Build micro benchmarks" OFF)
 if(BUILD_MICROBENCHMARKS)
 	add_subdirectory(microbenchmarks)
@@ -202,3 +202,13 @@ option(BUILD_BENCHMARKS "Build benchmarks" OFF)
 if(BUILD_BENCHMARKS)
 	add_subdirectory(benchmarks)
 endif(BUILD_BENCHMARKS)
+
+# Documentation
+#include(FindDoxygen)
+find_package(Doxygen QUIET)
+if(DOXYGEN_FOUND)
+    add_subdirectory(doc)
+else(DOXYGEN_FOUND)
+    message(STATUS "WARNING: Failed to find Doxygen - won't build documentation")
+endif(DOXYGEN_FOUND)
+

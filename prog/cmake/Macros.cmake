@@ -21,6 +21,7 @@ macro(add_modules DEST MODULE)
 	list(REMOVE_AT _MODULES 0) # get rid of dest value
 	foreach(_MODULE ${_MODULES})
 		add_subdirectory(${_MODULE})
+		set_property(GLOBAL APPEND PROPERTY DOC_SOURCE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/${_MODULE}")
 	endforeach()
 	target_link_libraries(${DEST} ${_MODULES})
 endmacro()
