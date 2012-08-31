@@ -1610,6 +1610,9 @@ int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem s
 	return -1;
 }
 
+//define this bool temporarily here
+bool speedup = true;
+
 int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
 	//this corresponds to the above function
@@ -1637,59 +1640,118 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_me
 		}
 		//v = A pn
 		f(clmem_p_eo, clmem_v_eo, gf, kappa, mubar);
-		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
-		set_complex_to_scalar_product_eoprec_device(clmem_p_eo, clmem_v_eo, clmem_rho);
-		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
-		set_complex_to_product_device(clmem_alpha, clmem_minusone, clmem_tmp1);
 
-		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
-		saxpy_eoprec_device(clmem_p_eo, inout, clmem_tmp1, inout);
-		//rn+1 = rn - alpha*v -> rhat
-		saxpy_eoprec_device(clmem_v_eo, clmem_rn_eo, clmem_alpha, clmem_rn_eo);
+		//switch between original version and kernel merged one
+		if(!speedup){
+		  //alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
+		  set_complex_to_scalar_product_eoprec_device(clmem_p_eo, clmem_v_eo, clmem_rho);
+		  set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
+		  set_complex_to_product_device(clmem_alpha, clmem_minusone, clmem_tmp1);
+		  
+		  //xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
+		  saxpy_eoprec_device(clmem_p_eo, inout, clmem_tmp1, inout);
+		  //rn+1 = rn - alpha*v -> rhat
+		  saxpy_eoprec_device(clmem_v_eo, clmem_rn_eo, clmem_alpha, clmem_rn_eo);
+		  
+		  //calc residuum
+		  //NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
+		  set_complex_to_scalar_product_eoprec_device(clmem_rn_eo, clmem_rn_eo, clmem_rho_next);
+		  hmc_float resid;
+		  get_buffer_from_device(clmem_rho_next, &resid, sizeof(hmc_float));
+		  //this is the orig. call
+		  //set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
+		  //get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+		  
+		  logger.debug() << "resid: " << resid;
+		  //test if resid is NAN
+		  if(resid != resid) {
+		    logger.fatal() << "\tNAN occured in cg_eo!";
+		    return -iter;
+		  }
+		  if(resid < prec) {
+		    // report on performance
+		    if(logger.beInfo()) {
+		      // we are always synchroneous here, as we had to recieve the residium from the device
+		      uint64_t duration = timer.getTime();
+		      
+		      // calculate flops
+		      unsigned refreshs = iter / get_parameters()->get_iter_refresh() + 1;
+		      cl_ulong mf_flops = f.get_Flops();
+		      
+		      cl_ulong total_flops = mf_flops + 3 * get_flop_size("scalar_product_eoprec") + 2 * get_flop_size("ratio") + 2 * get_flop_size("product") + 3 * get_flop_size("saxpy_eoprec");
+		      total_flops *= iter;
+		      
+		      total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
+		      
+		      // report performanc
+		      logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+		    }
+		    
+		    return iter;
+		  }
 
-		//calc residuum
-		//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
-		set_complex_to_scalar_product_eoprec_device(clmem_rn_eo, clmem_rn_eo, clmem_rho_next);
-		hmc_float resid;
-		get_buffer_from_device(clmem_rho_next, &resid, sizeof(hmc_float));
-		//this is the orig. call
-		//set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
-		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-
-		logger.debug() << "resid: " << resid;
-		//test if resid is NAN
-		if(resid != resid) {
-			logger.fatal() << "\tNAN occured in cg_eo!";
-			return -iter;
+		  //beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
+		  set_complex_to_ratio_device(clmem_rho_next, clmem_omega, clmem_beta);
+		  
+		  //pn+1 = rn+1 + beta*pn
+		  set_complex_to_product_device(clmem_beta, clmem_minusone, clmem_tmp2);
+		  saxpy_eoprec_device(clmem_p_eo, clmem_rn_eo, clmem_tmp2, clmem_p_eo);
 		}
-		if(resid < prec) {
-			// report on performance
-			if(logger.beInfo()) {
-				// we are always synchroneous here, as we had to recieve the residium from the device
-				uint64_t duration = timer.getTime();
+		else{
+		  //alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
+		  set_complex_to_scalar_product_eoprec_device(clmem_p_eo, clmem_v_eo, clmem_rho);
+		  set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
+		  set_complex_to_product_device(clmem_alpha, clmem_minusone, clmem_tmp1);
+		  
+		  //xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
+		  saxpy_eoprec_device(clmem_p_eo, inout, clmem_tmp1, inout);
+		  //rn+1 = rn - alpha*v -> rhat
+		  saxpy_eoprec_device(clmem_v_eo, clmem_rn_eo, clmem_alpha, clmem_rn_eo);
+		  
+		  //calc residuum
+		  //NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
+		  set_complex_to_scalar_product_eoprec_device(clmem_rn_eo, clmem_rn_eo, clmem_rho_next);
+		  hmc_float resid;
+		  get_buffer_from_device(clmem_rho_next, &resid, sizeof(hmc_float));
+		  //this is the orig. call
+		  //set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
+		  //get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+		  
+		  logger.debug() << "resid: " << resid;
+		  //test if resid is NAN
+		  if(resid != resid) {
+		    logger.fatal() << "\tNAN occured in cg_eo!";
+		    return -iter;
+		  }
+		  if(resid < prec) {
+		    // report on performance
+		    if(logger.beInfo()) {
+		      // we are always synchroneous here, as we had to recieve the residium from the device
+		      uint64_t duration = timer.getTime();
+		      
+		      // calculate flops
+		      unsigned refreshs = iter / get_parameters()->get_iter_refresh() + 1;
+		      cl_ulong mf_flops = f.get_Flops();
+		      
+		      cl_ulong total_flops = mf_flops + 3 * get_flop_size("scalar_product_eoprec") + 2 * get_flop_size("ratio") + 2 * get_flop_size("product") + 3 * get_flop_size("saxpy_eoprec");
+		      total_flops *= iter;
+		      
+		      total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
+		      
+		      // report performanc
+		      logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+		    }
+		    
+		    return iter;
+		  }
 
-				// calculate flops
-				unsigned refreshs = iter / get_parameters()->get_iter_refresh() + 1;
-				cl_ulong mf_flops = f.get_Flops();
-
-				cl_ulong total_flops = mf_flops + 3 * get_flop_size("scalar_product_eoprec") + 2 * get_flop_size("ratio") + 2 * get_flop_size("product") + 3 * get_flop_size("saxpy_eoprec");
-				total_flops *= iter;
-
-				total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
-
-				// report performanc
-				logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
-			}
-
-			return iter;
+		  //beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
+		  set_complex_to_ratio_device(clmem_rho_next, clmem_omega, clmem_beta);
+		  
+		  //pn+1 = rn+1 + beta*pn
+		  set_complex_to_product_device(clmem_beta, clmem_minusone, clmem_tmp2);
+		  saxpy_eoprec_device(clmem_p_eo, clmem_rn_eo, clmem_tmp2, clmem_p_eo);
 		}
-
-		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
-		set_complex_to_ratio_device(clmem_rho_next, clmem_omega, clmem_beta);
-
-		//pn+1 = rn+1 + beta*pn
-		set_complex_to_product_device(clmem_beta, clmem_minusone, clmem_tmp2);
-		saxpy_eoprec_device(clmem_p_eo, clmem_rn_eo, clmem_tmp2, clmem_p_eo);
 	}
 	return -1;
 }
