@@ -970,7 +970,6 @@ void Opencl_Module_Fermions::Aee_minus(cl_mem in, cl_mem out, cl_mem gf, hmc_flo
 	  M_tm_sitediagonal_minus_device(in, clmem_tmp_eo_1, mubar);
 	  saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
 	}
-	gamma5_eo_device(out);
 }
 
 //merged fermionmatrix-functions with eoprec
@@ -999,6 +998,7 @@ void Opencl_Module_Fermions::Aee_AND_gamma5_eo(cl_mem in, cl_mem out, cl_mem gf,
 	  M_tm_sitediagonal_device(in, clmem_tmp_eo_1, mubar);
 		saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
 	}
+	gamma5_eo_device(out);
 }
 
 
