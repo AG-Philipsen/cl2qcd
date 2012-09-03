@@ -1174,6 +1174,41 @@ void Opencl_Module_Fermions::dslash_AND_M_tm_inverse_sitediagonal_eo_device(cl_m
 	enqueueKernel(dslash_AND_M_tm_inverse_sitediagonal_eo , gs2, ls2);
 }
 
+void Opencl_Module_Fermions::dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa, hmc_float mubar)
+{
+	//get kappa
+  hmc_float kappa_tmp, mubar_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	else kappa_tmp = kappa;
+	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	else mubar_tmp = kappa;
+
+	cl_int eo = evenodd;
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, 0, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, 1, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, 2, sizeof(cl_mem), &gf);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, 3, sizeof(cl_int), &eo);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, 4, sizeof(hmc_float), &kappa_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, 5, sizeof(hmc_float), &mubar_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel(dslash_AND_M_tm_inverse_sitediagonal_minus_eo , gs2, ls2);
+}
 
 void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mubar)
 {
@@ -1221,6 +1256,54 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(M_tm_sitediagonal , gs2, ls2);
+}
+
+void Opencl_Module_Fermions::M_tm_sitediagonal_AND_gamma5_eo_device(cl_mem in, cl_mem out, hmc_float mubar)
+{
+	//get mu
+	hmc_float mubar_tmp;
+	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	else mubar_tmp = mubar;
+
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(M_tm_sitediagonal_AND_gamma5_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(M_tm_sitediagonal_AND_gamma5_eo, 0, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(M_tm_sitediagonal_AND_gamma5_eo, 1, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(M_tm_sitediagonal_AND_gamma5_eo, 2, sizeof(hmc_float), &mubar_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel(M_tm_sitediagonal_AND_gamma5_eo , gs2, ls2);
+}
+
+void Opencl_Module_Fermions::M_tm_sitediagonal_minus_AND_gamma5_eo_device(cl_mem in, cl_mem out, hmc_float mubar)
+{
+	//get mu
+	hmc_float mubar_tmp;
+	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	else mubar_tmp = mubar;
+
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(M_tm_sitediagonal_minus_AND_gamma5_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(M_tm_sitediagonal_minus_AND_gamma5_eo, 0, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(M_tm_sitediagonal_minus_AND_gamma5_eo, 1, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(M_tm_sitediagonal_minus_AND_gamma5_eo, 2, sizeof(hmc_float), &mubar_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel(M_tm_sitediagonal_minus_AND_gamma5_eo , gs2, ls2);
 }
 
 void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mubar)
