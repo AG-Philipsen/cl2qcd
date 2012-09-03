@@ -320,7 +320,7 @@ private:
 	cl_kernel dslash_AND_M_tm_inverse_sitediagonal_eo;
 	cl_kernel dslash_AND_M_tm_inverse_sitediagonal_minus_eo;
 	cl_kernel M_tm_sitediagonal_AND_gamma5_eo;
-;	cl_kernel M_tm_sitediagonal_AND_minus_gamma5_eo;
+;	cl_kernel M_tm_sitediagonal_minus_AND_gamma5_eo;
 	//CP: variables for normal solver
 	cl_mem clmem_inout;
 	cl_mem clmem_rn;
