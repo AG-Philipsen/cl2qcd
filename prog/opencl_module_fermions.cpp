@@ -970,12 +970,47 @@ void Opencl_Module_Fermions::Aee_minus(cl_mem in, cl_mem out, cl_mem gf, hmc_flo
 	  M_tm_sitediagonal_minus_device(in, clmem_tmp_eo_1, mubar);
 	  saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
 	}
+	gamma5_eo_device(out);
 }
+
+//merged fermionmatrix-functions with eoprec
+void Opencl_Module_Fermions::Aee_AND_gamma5_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
+{
+	int even = EVEN;
+	int odd = ODD;
+
+	/**
+	 * This is the even-odd preconditioned fermion matrix with the
+	 * non-trivial inversion on the even sites (see DeGran/DeTar p. 174).
+	 * If one has fermionmatrix
+	 *  M = R + D,
+	 * then Aee is:
+	 * Aee = R_e - D_eo R_o_inv D_oe
+	 */
+	if(get_parameters()->get_fermact() == WILSON) {
+		//in this case, the diagonal matrix is just 1 and falls away.
+	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+	  dslash_eo_device(clmem_tmp_eo_1, out, gf, even, kappa);
+		saxpy_eoprec_device(out, in, clmem_one, out);
+	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
+	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+	  M_tm_inverse_sitediagonal_device(clmem_tmp_eo_1, clmem_tmp_eo_2, mubar);
+	  dslash_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
+	  M_tm_sitediagonal_device(in, clmem_tmp_eo_1, mubar);
+		saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
+	}
+}
+
 
 void Opencl_Module_Fermions::Qplus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
-  Aee(in, out, gf, kappa, mubar);
-  gamma5_eo_device(out);
+  bool merge_kernels = false;
+  if(!merge_kernels){
+    Aee(in, out, gf, kappa, mubar);
+    gamma5_eo_device(out);
+  } else{
+    Aee_AND_gamma5_eo(in, out, gf, kappa, mubar);
+  }
   return;
 }
 
