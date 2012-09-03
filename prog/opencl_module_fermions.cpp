@@ -2087,14 +2087,17 @@ usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 	if (strcmp(in, "dslash_AND_gamma5_eo") == 0) {
 		return &this->timer_dslash_AND_gamma5_eo;
 	}
-	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_minuseo") == 0) {
+	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_eo") == 0) {
+		return &this->timer_dslash_AND_M_tm_inverse_sitediagonal_eo;
+	}
+	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_minus_eo") == 0) {
 		return &this->timer_dslash_AND_M_tm_inverse_sitediagonal_minus_eo;
 	}
 	if (strcmp(in, "M_tm_sitediagonal_AND_gamma5") == 0) {
-		return &this->timer_M_tm_sitediagonal_AND_gamma5;
+		return &this->timer_M_tm_sitediagonal_AND_gamma5_eo;
 	}
 	if (strcmp(in, "M_tm_sitediagonal_minus_AND_gamma5") == 0) {
-		return &this->timer_M_tm_sitediagonal_minus_AND_gamma5;
+		return &this->timer_M_tm_sitediagonal_minus_AND_gamma5_eo;
 	}
 
 	//if the kernelname has not matched, return NULL
@@ -2181,11 +2184,11 @@ size_t Opencl_Module_Fermions::get_read_write_size(const char * in)
 		//the merged kernel reads 8 spinors, 8 su3matrices and writes 1 spinor, thus it is the same as the dslash
 		return  (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_AND_gamma5") == 0) {
+	if (strcmp(in, "M_tm_sitediagonal_AND_gamma5_eo") == 0) {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_minus_AND_gamma5") == 0) {
+	if (strcmp(in, "M_tm_sitediagonal_minus_AND_gamma5_eo") == 0) {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
@@ -2260,11 +2263,11 @@ uint64_t Opencl_Module_Fermions::get_flop_size(const char * in)
 	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_minus_eo") == 0) {
 	  return Seo * flop_dslash_per_site(get_parameters()) + Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() + NC * NDIM * 2  );
 	}
-	if (strcmp(in, "M_tm_sitediagonal_AND_gamma5") == 0) {
+	if (strcmp(in, "M_tm_sitediagonal_AND_gamma5_eo") == 0) {
 		//this kernel performs ND*NC complex mults and  ND*NC*2/2 real mults
 		return Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() ) + Seo * NDIM * NC ;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_minus_AND_gamma5") == 0) {
+	if (strcmp(in, "M_tm_sitediagonal_minus_AND_gamma5_eo") == 0) {
 		//this kernel performs ND*NC complex mults  ND*NC*2/2 real mults
 		return Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() ) +  Seo * NDIM * NC;
 	}
