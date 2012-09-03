@@ -205,6 +205,7 @@ public:
 	//        merged
 	void Aee_AND_gamma5_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	void dslash_AND_gamma5_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa = ARG_DEF);
+	void dslash_AND_M_tm_inverse_sitediagonal_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 
 	//    solver operations
 	//    non-eo
@@ -262,6 +263,7 @@ public:
 	usetimer timer_M_tm_sitediagonal_minus;
 	usetimer timer_M_tm_inverse_sitediagonal_minus;
 	usetimer timer_dslash_AND_gamma5_eo;
+	usetimer timer_dslash_AND_M_tm_inverse_sitediagonal_eo;
 
 	/**
 	 * Return the timer connected to a specific kernel.
@@ -309,6 +311,7 @@ private:
 	cl_kernel M_tm_inverse_sitediagonal_minus;
 	cl_kernel dslash_eo;
 	cl_kernel dslash_AND_gamma5_eo;
+	cl_kernel dslash_AND_M_tm_inverse_sitediagonal_eo;
 	//CP: variables for normal solver
 	cl_mem clmem_inout;
 	cl_mem clmem_rn;
