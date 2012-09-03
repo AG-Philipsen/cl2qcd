@@ -115,6 +115,11 @@ int main(int argc, char* argv[])
 
 		}
 		logger.trace() << "inverter-benchmarking done" ;
+
+		if(parameters.get_profile_solver() == true){
+		  logger.info() << "Inverter took " << solver_timer.getTime() << " ms";
+		}
+
 		perform_timer.add();
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
