@@ -31,6 +31,9 @@ void inputparameters::set_defaults()
 	gaugemomentasize = NDIM * vol4d;
 	gaugefieldsize = NC * NC * NDIM * vol4d;
 
+	use_merge_kernels_fermion = false;
+	use_merge_kernels_spinor = false;
+
 	startcondition = COLD_START;
 	saveconfigs = false;
 	writefrequency = 1;
@@ -419,6 +422,11 @@ void inputparameters::readfile(const char* ifn)
 			  found ++;
 			}
 			
+			if(line.find("use_merge_kernels_spinor") != std::string::npos || 
+			   line.find("merge_kernels_spinor") != std::string::npos) {bool_assign(&use_merge_kernels_spinor, line); found ++;}
+			if(line.find("use_merge_kernels_fermion") != std::string::npos ||
+			   line.find("merge_kernels_fermion") != std::string::npos) {bool_assign(&use_merge_kernels_fermion, line); found ++;}
+
 			if(line.find("host_seed") != std::string::npos) {val_assign(&host_seed, line); found ++;}
 			//give error if line was not recognized or recognized multiple times
 			if(found == 0){
@@ -1070,6 +1078,17 @@ void inputparameters::display_sourcefilenumber() const
 	cout << sourcefilenumber;
 }
 
+bool inputparameters::get_use_merge_kernels_fermion() const
+{
+  return use_merge_kernels_fermion;
+}
+
+bool inputparameters::get_use_merge_kernels_spinor() const
+{
+  return use_merge_kernels_spinor;
+}
+
+
 bool inputparameters::get_use_eo() const
 {
 	return use_eo;
@@ -1572,6 +1591,12 @@ void inputparameters::print_info_fermion() const
 	if(this->get_profile_solver() == true)
 		logger.warn() << "## Profiling of solver activated. This may influence the overall performance time!";
 
+	if(this->get_use_merge_kernels_fermion() == true)
+		logger.info() << "## Use merged fermionmatrix kernels where implemented!!";
+
+	if(this->get_use_merge_kernels_spinor() == true)
+		logger.info() << "## Use merged spinor kernels where implemented!!";
+
 	//print extra warning if BC are set to default since this is a serious source of errors...
 	if ( this->get_theta_fermion_spatial() == 0. && this->get_theta_fermion_temporal() == 0.) {
 		logger.warn() << "\nNOTE: BCs have been set to periodic values by default!!\nTo change this use e.g. ThetaT/ThetaS in the input-file.\n";
@@ -1640,6 +1665,13 @@ void inputparameters::print_info_fermion(ostream * os) const
 
 	if(this->get_profile_solver() == true)
 		*os << "## Profiling of solver activated. This may influence the overall performance time!" << endl;
+
+	if(this->get_use_merge_kernels_fermion() == true)
+	  *os << "## Use merged fermionmatrix kernels where implemented!!" << endl;
+
+	if(this->get_use_merge_kernels_spinor() == true)
+	  *os << "## Use merged spinor kernels where implemented!!"<< endl;
+
 
 	//print extra warning if BC are set to default since this is a serious source of errors...
 	if ( this->get_theta_fermion_spatial() == 0. && this->get_theta_fermion_temporal() == 0.) {
