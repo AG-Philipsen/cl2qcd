@@ -62,11 +62,10 @@ void Opencl_Module_Spinors::fill_kernels()
 		global_squarenorm_eoprec = createKernel("global_squarenorm_eoprec") << basic_fermion_code << "spinorfield_eo_squarenorm.cl";
 		convertSpinorfieldToSOA_eo = createKernel("convertSpinorfieldToSOA_eo") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		convertSpinorfieldFromSOA_eo = createKernel("convertSpinorfieldFromSOA_eo") << basic_fermion_code << "spinorfield_eo_convert.cl";
-	}
-
-	bool MERGE_KERNEL = true;
-	if(MERGE_KERNEL){
-	  saxpy_AND_squarenorm_eo = createKernel("saxpy_AND_squarenorm_eo") << basic_fermion_code << "spinorfield_eo_saxpy_AND_squarenorm.cl";
+		//merged kernels
+		if (get_parameters()->get_use_merge_kernels_fermion() == true){
+		  saxpy_AND_squarenorm_eo = createKernel("saxpy_AND_squarenorm_eo") << basic_fermion_code << "spinorfield_eo_saxpy_AND_squarenorm.cl";
+		}
 	}
 
 	return;

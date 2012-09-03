@@ -502,8 +502,8 @@ void Opencl_Module_Fermions::fill_kernels()
 		}
 		dslash_eo = createKernel("dslash_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 		gamma5_eo = createKernel("gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
-		bool merge_kernels = true;
-		if (merge_kernels){
+		//merged kernels
+		if (get_parameters()->get_use_merge_kernels_fermion() == true){
 		  dslash_AND_gamma5_eo = createKernel("dslash_AND_gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_gamma5.cl";
 		  dslash_AND_M_tm_inverse_sitediagonal_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal.cl";
 		  dslash_AND_M_tm_inverse_sitediagonal_minus_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_minus_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal_minus.cl";
@@ -1072,8 +1072,7 @@ void Opencl_Module_Fermions::Aee_minus_AND_gamma5_eo(cl_mem in, cl_mem out, cl_m
 
 void Opencl_Module_Fermions::Qplus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
-  bool merge_kernels = true;
-  if(!merge_kernels){
+  if(get_parameters()->get_use_merge_kernels_fermion() == false){
     Aee(in, out, gf, kappa, mubar);
     gamma5_eo_device(out);
   } else{
@@ -1084,8 +1083,7 @@ void Opencl_Module_Fermions::Qplus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_floa
 
 void Opencl_Module_Fermions::Qminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
-  bool merge_kernels = true;
-  if(!merge_kernels){
+  if(get_parameters()->get_use_merge_kernels_fermion() == false){
     Aee_minus(in, out, gf, kappa, mubar);
     gamma5_eo_device(out);
   } else{
@@ -1905,9 +1903,7 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_me
 		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
 		saxpy_eoprec_device(clmem_p_eo, inout, clmem_tmp1, inout);
 		//switch between original version and kernel merged one
-		//define this bool temporarily here
-		bool speedup = false;
-		if(!speedup){
+		if(get_parameters()->get_use_merge_kernels_spinor() == false){
 		  //rn+1 = rn - alpha*v -> rhat
 		  saxpy_eoprec_device(clmem_v_eo, clmem_rn_eo, clmem_alpha, clmem_rn_eo);
 		  
