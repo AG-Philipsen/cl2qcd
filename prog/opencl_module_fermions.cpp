@@ -507,8 +507,8 @@ void Opencl_Module_Fermions::fill_kernels()
 		  dslash_AND_gamma5_eo = createKernel("dslash_AND_gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_gamma5.cl";
 		  dslash_AND_M_tm_inverse_sitediagonal_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal.cl";
 		  dslash_AND_M_tm_inverse_sitediagonal_minus_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_minus_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal_minus.cl";
-		  M_tm_sitediagonal_AND_gamma5_eo = createKernel("M_tm_sitediagonal_AND_gamma5") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
-		  M_tm_sitediagonal_minus_AND_gamma5_eo = createKernel("M_tm_sitediagonal_minus_AND_gamma5") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
+		  M_tm_sitediagonal_AND_gamma5_eo = createKernel("M_tm_sitediagonal_AND_gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
+		  M_tm_sitediagonal_minus_AND_gamma5_eo = createKernel("M_tm_sitediagonal_minus_AND_gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
 		}
 
 	}
@@ -1015,8 +1015,56 @@ void Opencl_Module_Fermions::Aee_AND_gamma5_eo(cl_mem in, cl_mem out, cl_mem gf,
 	  gamma5_eo_device(out);
 	  */
 	  dslash_AND_gamma5_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
+	  /*
 	  M_tm_sitediagonal_device(in, clmem_tmp_eo_1, mubar);
 	  gamma5_eo_device(clmem_tmp_eo_1);
+	  */
+	  M_tm_sitediagonal_AND_gamma5_eo_device(in, clmem_tmp_eo_1, mubar); 
+	  saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
+	}
+}
+
+/**
+ *  This is the equivalent of the above function, but for the lower
+ *  flavour, which essentially means mu -> -mu in the tm-case and
+ *  no changes in the wilson case.
+ */
+void Opencl_Module_Fermions::Aee_minus_AND_gamma5_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
+{
+	int even = EVEN;
+	int odd = ODD;
+
+	/**
+	 * This is the even-odd preconditioned fermion matrix with the
+	 * non-trivial inversion on the even sites (see DeGran/DeTar p. 174).
+	 * If one has fermionmatrix
+	 *  M = R + D,
+	 * then Aee is:
+	 * Aee = R_e - D_eo R_o_inv D_oe
+	 */
+	if(get_parameters()->get_fermact() == WILSON) {
+	  //in this case, the diagonal matrix is just 1 and falls away.
+	  //this case has not been adjusted for the merged kernels yet...
+	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+	  dslash_eo_device(clmem_tmp_eo_1, out, gf, even, kappa);
+	  saxpy_eoprec_device(out, in, clmem_one, out);
+	  gamma5_eo_device(out);
+	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
+	  /*
+	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+	  M_tm_inverse_sitediagonal_minus_device(clmem_tmp_eo_1, clmem_tmp_eo_2, mubar);
+	  */
+	  dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(in, clmem_tmp_eo_2, gf, odd, kappa, mubar);
+	  /*
+	  dslash_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
+	  gamma5_eo_device(out);
+	  */
+	  dslash_AND_gamma5_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
+	  /*
+	  M_tm_sitediagonal_minus_device(in, clmem_tmp_eo_1, mubar);
+	  gamma5_eo_device(clmem_tmp_eo_1);
+	  */
+	  M_tm_sitediagonal_minus_AND_gamma5_eo_device(in, clmem_tmp_eo_1, mubar); 
 	  saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
 	}
 }
@@ -1036,8 +1084,13 @@ void Opencl_Module_Fermions::Qplus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_floa
 
 void Opencl_Module_Fermions::Qminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
-  Aee_minus(in, out, gf, kappa, mubar);
-  gamma5_eo_device(out);
+  bool merge_kernels = true;
+  if(!merge_kernels){
+    Aee_minus(in, out, gf, kappa, mubar);
+    gamma5_eo_device(out);
+  } else{
+    Aee_minus_AND_gamma5_eo(in, out, gf, kappa, mubar);
+  }
   return;
 }
 
@@ -2179,10 +2232,10 @@ usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_minus_eo") == 0) {
 		return &this->timer_dslash_AND_M_tm_inverse_sitediagonal_minus_eo;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_AND_gamma5") == 0) {
+	if (strcmp(in, "M_tm_sitediagonal_AND_gamma5_eo") == 0) {
 		return &this->timer_M_tm_sitediagonal_AND_gamma5_eo;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_minus_AND_gamma5") == 0) {
+	if (strcmp(in, "M_tm_sitediagonal_minus_AND_gamma5_eo") == 0) {
 		return &this->timer_M_tm_sitediagonal_minus_AND_gamma5_eo;
 	}
 
@@ -2386,6 +2439,8 @@ void Opencl_Module_Fermions::print_profiling(std::string filename, int number)
 	kernelName = "dslash_eo";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "dslash_AND_gamma5_eo";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+	kernelName = "dslash_AND_M_tm_inverse_sitediagonal_eo";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "dslash_AND_M_tm_inverse_sitediagonal_minus_eo";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
