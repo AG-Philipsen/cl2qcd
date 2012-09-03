@@ -1002,8 +1002,11 @@ void Opencl_Module_Fermions::Aee_AND_gamma5_eo(cl_mem in, cl_mem out, cl_mem gf,
 	  saxpy_eoprec_device(out, in, clmem_one, out);
 	  gamma5_eo_device(out);
 	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
+	  /*
 	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
 	  M_tm_inverse_sitediagonal_device(clmem_tmp_eo_1, clmem_tmp_eo_2, mubar);
+	  */
+	  dslash_AND_M_tm_inverse_sitediagonal_eo_device(in, clmem_tmp_eo_2, gf, odd, kappa, mubar);
 	  /*
 	  dslash_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
 	  gamma5_eo_device(out);
