@@ -987,18 +987,21 @@ void Opencl_Module_Fermions::Aee_AND_gamma5_eo(cl_mem in, cl_mem out, cl_mem gf,
 	 * Aee = R_e - D_eo R_o_inv D_oe
 	 */
 	if(get_parameters()->get_fermact() == WILSON) {
-		//in this case, the diagonal matrix is just 1 and falls away.
+	  //in this case, the diagonal matrix is just 1 and falls away.
+	  //this case has not been adjusted for the merged kernels yet...
 	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
 	  dslash_eo_device(clmem_tmp_eo_1, out, gf, even, kappa);
-		saxpy_eoprec_device(out, in, clmem_one, out);
+	  saxpy_eoprec_device(out, in, clmem_one, out);
+	  gamma5_eo_device(out);
 	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
 	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
 	  M_tm_inverse_sitediagonal_device(clmem_tmp_eo_1, clmem_tmp_eo_2, mubar);
 	  dslash_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
+	  gamma5_eo_device(out);
 	  M_tm_sitediagonal_device(in, clmem_tmp_eo_1, mubar);
-		saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
+	  gamma5_eo_device(clmem_tmp_eo_1);
+	  saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
 	}
-	gamma5_eo_device(out);
 }
 
 
