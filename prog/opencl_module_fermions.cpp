@@ -502,7 +502,14 @@ void Opencl_Module_Fermions::fill_kernels()
 		}
 		dslash_eo = createKernel("dslash_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 		gamma5_eo = createKernel("gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
+		bool merge_kernels = true;
+		if (merge_kernels){
+		  dslash_AND_gamma5_eo = createKernel("dslash_AND_gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_gamma5.cl";
+		}
+
 	}
+
+
 	return;
 }
 
@@ -2002,6 +2009,9 @@ usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 	if (strcmp(in, "ps_correlator") == 0) {
 		return &this->timer_ps_correlator;
 	}
+	if (strcmp(in, "dslash_AND_gamma5_eo") == 0) {
+		return &this->timer_dslash_AND_gamma5_eo;
+	}
 
 	//if the kernelname has not matched, return NULL
 	else {
@@ -2066,6 +2076,13 @@ size_t Opencl_Module_Fermions::get_read_write_size(const char * in)
 		const unsigned int dirs = 4;
 		return (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
 	}
+	if (strcmp(in, "dslash_AND_gamma5_eo") == 0) {
+		//the dslash kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
+		const unsigned int dirs = 4;
+		//the gamma5 kernel reads 1 spinor and writes 1 spinor:
+		//the merged kernel reads 8 spinors, 8 su3matrices and writes 1 spinor, thus it is the same as the dslash
+		return  (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
+	}
 	return 0;
 }
 
@@ -2128,6 +2145,9 @@ uint64_t Opencl_Module_Fermions::get_flop_size(const char * in)
 	if (strcmp(in, "dslash_eo") == 0) {
 		return Seo * flop_dslash_per_site(get_parameters());
 	}
+	if (strcmp(in, "dslash_AND_gamma5_eo") == 0) {
+		return Seo * flop_dslash_per_site(get_parameters()) +  Seo * NDIM * NC;
+	}
 	return 0;
 }
 
@@ -2155,6 +2175,8 @@ void Opencl_Module_Fermions::print_profiling(std::string filename, int number)
 	kernelName = "M_tm_inverse_sitediagonal_minus";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "dslash_eo";
+	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+	kernelName = "dslash_AND_gamma5_eo";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 }
 #endif

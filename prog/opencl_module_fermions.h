@@ -260,6 +260,7 @@ public:
 	usetimer timer_dslash_eo;
 	usetimer timer_M_tm_sitediagonal_minus;
 	usetimer timer_M_tm_inverse_sitediagonal_minus;
+	usetimer timer_dslash_AND_gamma5_eo;
 
 	/**
 	 * Return the timer connected to a specific kernel.
@@ -306,6 +307,7 @@ private:
 	cl_kernel M_tm_sitediagonal_minus;
 	cl_kernel M_tm_inverse_sitediagonal_minus;
 	cl_kernel dslash_eo;
+	cl_kernel dslash_AND_gamma5_eo;
 	//CP: variables for normal solver
 	cl_mem clmem_inout;
 	cl_mem clmem_rn;
