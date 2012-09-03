@@ -18,8 +18,8 @@ startcondition=cold
 
 #fermion settings
 fermact=TWISTEDMASS
-kappa=0.05
-mu=0.2
+kappa=0.2
+mu=0.02
 corr_dir=3
 ThetaT=1.
 
@@ -37,14 +37,14 @@ solver=CG
 
 #arrays for the different tests, this is not nice, but a quick workaround
 #the programm will perform tests with all members of this list if no input-file is given
-input_var1 = ["""
+input_var1 = [#"""
 #variable settings depending on test
-NS=16
+#NS=16
+#"""#,
+"""
+#variable settings depending on test
+NS=24
 """#,
-#"""
-#variable settings depending on test
-#NS=24
-#""",
 #"""
 #variable settings depending on test
 #NS=32

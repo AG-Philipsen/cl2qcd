@@ -104,6 +104,9 @@ public:
 	void set_spinorfield_cold_device(cl_mem inout);
 	void set_eoprec_spinorfield_cold_device(cl_mem inout);
 
+	//    merged kernel calls
+	void saxpy_AND_squarenorm_eo_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, cl_mem sq_out);
+
 	/**
 	 * Query the size required for a buffer to contain an even-odd spinorfield
 	 * in the format used by the implementation.
@@ -155,6 +158,9 @@ public:
 
 	usetimer timer_convertSpinorfieldToSOA_eo;
 	usetimer timer_convertSpinorfieldFromSOA_eo;
+
+	//merged kernels
+	usetimer timer_saxpy_AND_squarenorm_eo;
 
 	/**
 	 * Return the timer connected to a specific kernel.
@@ -219,6 +225,9 @@ protected:
 	//Single
 	cl_kernel ratio;
 	cl_kernel product;
+
+	//merged kernels
+	cl_kernel saxpy_AND_squarenorm_eo;
 
 	ClSourcePackage basic_fermion_code;
 

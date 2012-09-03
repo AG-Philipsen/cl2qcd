@@ -1697,6 +1697,7 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_me
 		  set_complex_to_product_device(clmem_beta, clmem_minusone, clmem_tmp2);
 		  saxpy_eoprec_device(clmem_p_eo, clmem_rn_eo, clmem_tmp2, clmem_p_eo);
 		}
+		//speed up version with kernel merging
 		else{
 		  //alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
 		  set_complex_to_scalar_product_eoprec_device(clmem_p_eo, clmem_v_eo, clmem_rho);
@@ -1705,12 +1706,22 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_me
 		  
 		  //xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
 		  saxpy_eoprec_device(clmem_p_eo, inout, clmem_tmp1, inout);
+		  //merge two calls:
 		  //rn+1 = rn - alpha*v -> rhat
+		  //and
+		  //rho_next = |rhat|^2
+		  //rho_next is a complex number, set its imag to zero
+		  hmc_complex zero = hmc_complex_zero;
+		  int clerr = clEnqueueWriteBuffer(get_queue(), clmem_rho_next, CL_TRUE, 0, sizeof(hmc_complex), &zero, 0, 0, NULL);
+		  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
+		  saxpy_AND_squarenorm_eo_device(clmem_v_eo, clmem_rn_eo, clmem_alpha, clmem_rn_eo, clmem_rho_next);
+
+		  /*
 		  saxpy_eoprec_device(clmem_v_eo, clmem_rn_eo, clmem_alpha, clmem_rn_eo);
-		  
 		  //calc residuum
 		  //NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
 		  set_complex_to_scalar_product_eoprec_device(clmem_rn_eo, clmem_rn_eo, clmem_rho_next);
+		  */
 		  hmc_float resid;
 		  get_buffer_from_device(clmem_rho_next, &resid, sizeof(hmc_float));
 		  //this is the orig. call

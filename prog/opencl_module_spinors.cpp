@@ -64,6 +64,11 @@ void Opencl_Module_Spinors::fill_kernels()
 		convertSpinorfieldFromSOA_eo = createKernel("convertSpinorfieldFromSOA_eo") << basic_fermion_code << "spinorfield_eo_convert.cl";
 	}
 
+	bool MERGE_KERNEL = true;
+	if(MERGE_KERNEL){
+	  saxpy_AND_squarenorm_eo = createKernel("saxpy_AND_squarenorm_eo") << basic_fermion_code << "spinorfield_eo_saxpy_AND_squarenorm.cl";
+	}
+
 	return;
 }
 
@@ -623,6 +628,50 @@ void Opencl_Module_Spinors::convertSpinorfieldFromSOA_eo_device(cl_mem out, cl_m
 	enqueueKernel(convertSpinorfieldFromSOA_eo, gs2, ls2);
 }
 
+// merged kernel calls
+void Opencl_Module_Spinors::saxpy_AND_squarenorm_eo_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, cl_mem sq_out)
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(saxpy_AND_squarenorm_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(saxpy_AND_squarenorm_eo, 0, sizeof(cl_mem), &x);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_AND_squarenorm_eo, 1, sizeof(cl_mem), &y);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_AND_squarenorm_eo, 2, sizeof(cl_mem), &alpha);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_AND_squarenorm_eo, 3, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	//init local buffer for reduction
+	int global_buf_size_float = sizeof(hmc_float) * num_groups;
+	if( clmem_global_squarenorm_buf_glob == 0 ) clmem_global_squarenorm_buf_glob = create_rw_buffer(global_buf_size_float);
+
+	clerr = clSetKernelArg(saxpy_AND_squarenorm_eo, 4, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(saxpy_AND_squarenorm_eo, 5, sizeof(hmc_float) * ls2, NULL);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel( saxpy_AND_squarenorm_eo, gs2, ls2);
+
+	//perform reduction
+	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), &sq_out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel( global_squarenorm_reduction, gs2, ls2);
+}
+
+
+
 #ifdef _PROFILING_
 usetimer* Opencl_Module_Spinors::get_timer(const char * in)
 {
@@ -695,7 +744,11 @@ usetimer* Opencl_Module_Spinors::get_timer(const char * in)
 	}
 	if(strcmp(in, "convertSpinorfieldFromSOA_eo") == 0) {
 		return &timer_convertSpinorfieldFromSOA_eo;
-	} else {
+	} 
+	if (strcmp(in, "saxpy_AND_squarenorm_eo") == 0) {
+		return &this->timer_saxpy_AND_squarenorm_eo;
+	}
+	else {
 		return NULL;
 	}
 }
@@ -815,6 +868,14 @@ size_t Opencl_Module_Spinors::get_read_write_size(const char * in)
 	if(strcmp(in, "convertSpinorfieldFromSOA_eo") == 0) {
 		return 2 * Seo * 24 * D;
 	}
+	//merged kernels
+	if (strcmp(in, "saxpy_AND_squarenorm_eo") == 0) {
+		//the saxpy kernel reads 2 spinor, 2 complex number and writes 1 spinor per site
+		//the squarenorm kernel reads 1 spinor and writes 1 real number
+		// with the merging, the reading falls away
+		/// @NOTE: here, the local reduction is not taken into account
+		return C * D * Seo * (12 * (2 + 1) + 2)    +  D * Seo * ( 1 );
+	}
 	return 0;
 }
 
@@ -901,6 +962,14 @@ uint64_t Opencl_Module_Spinors::get_flop_size(const char * in)
 	if (strcmp(in, "product") == 0) {
 		return get_parameters()->get_flop_complex_mult();
 	}
+	//merged kernels
+	if (strcmp(in, "saxpy_AND_squarenorm_eo") == 0) {
+		//the saxpy kernel performs on each site spinor_times_complex and spinor_add
+		//the squarenorm kernel performs spinor_squarenorm on each site and then adds S-1 complex numbers
+		return Seo * (NDIM * NC * ( get_parameters()->get_flop_complex_mult() + 2) )  + Seo * get_parameters()->get_flop_spinor_sqnorm() + (S - 1) * 2;
+	}
+
+
 	return 0;
 }
 
@@ -908,6 +977,7 @@ uint64_t Opencl_Module_Spinors::get_flop_size(const char * in)
 
 void Opencl_Module_Spinors::print_profiling(std::string filename, int number)
 {
+  ///@todo Why is that opencl_module_ran here? Should it be spinor?
 	Opencl_Module_Ran::print_profiling(filename, number);
 	const char * kernelName;
 	kernelName = "set_spinorfield_cold";
@@ -954,6 +1024,8 @@ void Opencl_Module_Spinors::print_profiling(std::string filename, int number)
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "convertSpinorfieldFromSOA_eo";
 	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+	kernelName = "saxpy_AND_squarenorm_eo";
+	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 
 }
 #endif
