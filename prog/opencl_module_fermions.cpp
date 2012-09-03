@@ -1097,6 +1097,37 @@ void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, 
 	enqueueKernel(dslash_eo , gs2, ls2);
 }
 
+void Opencl_Module_Fermions::dslash_AND_gamma5_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa)
+{
+	//get kappa
+	hmc_float kappa_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	else kappa_tmp = kappa;
+
+	cl_int eo = evenodd;
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(dslash_AND_gamma5_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(dslash_AND_gamma5_eo, 0, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(dslash_AND_gamma5_eo, 1, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(dslash_AND_gamma5_eo, 2, sizeof(cl_mem), &gf);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(dslash_AND_gamma5_eo, 3, sizeof(cl_int), &eo);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(dslash_AND_gamma5_eo, 4, sizeof(hmc_float), &kappa_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel(dslash_AND_gamma5_eo , gs2, ls2);
+}
+
 void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mubar)
 {
 	//get mu
