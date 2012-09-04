@@ -7,12 +7,9 @@
 #
 
 add_library(code
-	opencl_module.cpp
 )
 
 #
 # Definition of tets
 #
-
-add_unit_test(hardware::code::OpenclModule opencl_module_test)
 

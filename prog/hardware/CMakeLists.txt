@@ -12,7 +12,6 @@ add_library(hardware
 )
 add_modules(hardware
 	buffers
-	code
 )
 
 #
