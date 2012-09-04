@@ -54,7 +54,7 @@ if( LIBXML2_DEFINITIONS )
 	add_definitions( ${LIBXML2_DEFINITIONS} )
 endif( LIBXML2_DEFINITIONS )
 
-find_package(Boost 1.35.0 REQUIRED COMPONENTS regex filesystem system program_options)
+find_package(Boost 1.35.0 REQUIRED COMPONENTS regex filesystem system program_options unit_test_framework)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 # Define where to find the OpenCL kernels
@@ -142,9 +142,16 @@ set(OPTIMAL_USED_LIBS
 	crypto
 	${PRNG_LIBRARIES}
 )
+
 add_library(optimal ${OPTIMAL_FILES})
-target_link_libraries(optimal ${OPTIMAL_USED_LIBS})
+target_link_libraries(optimal ${OPTIMAL_MODULES} ${OPTIMAL_USED_LIBS})
 add_dependencies(optimal git_commit_id_header)
+
+# add all modules
+add_modules(optimal
+	meta
+	hardware
+)
 
 # The actual executables (frontends)
 add_executable(heatbath heatbath.cpp)
