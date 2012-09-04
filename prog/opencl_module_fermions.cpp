@@ -1000,6 +1000,7 @@ void Opencl_Module_Fermions::Aee_AND_gamma5_eo(cl_mem in, cl_mem out, cl_mem gf,
 	if(get_parameters()->get_fermact() == WILSON) {
 	  //in this case, the diagonal matrix is just 1 and falls away.
 	  //this case has not been adjusted for the merged kernels yet...
+	  logger.warning() << "No merged kernels implemented for pure Wilson case!";
 	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
 	  dslash_eo_device(clmem_tmp_eo_1, out, gf, even, kappa);
 	  saxpy_eoprec_device(out, in, clmem_one, out);
@@ -1045,6 +1046,7 @@ void Opencl_Module_Fermions::Aee_minus_AND_gamma5_eo(cl_mem in, cl_mem out, cl_m
 	if(get_parameters()->get_fermact() == WILSON) {
 	  //in this case, the diagonal matrix is just 1 and falls away.
 	  //this case has not been adjusted for the merged kernels yet...
+	  logger.warning() << "No merged kernels implemented for pure Wilson case!";
 	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
 	  dslash_eo_device(clmem_tmp_eo_1, out, gf, even, kappa);
 	  saxpy_eoprec_device(out, in, clmem_one, out);
