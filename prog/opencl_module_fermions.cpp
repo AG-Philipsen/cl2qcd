@@ -1094,13 +1094,8 @@ void Opencl_Module_Fermions::Qminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_flo
 
 void Opencl_Module_Fermions::QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
-	//CP: this is the original call, which fails because Qminus_eo and Qplus_eo both use clmem_tmp_eo_1,2 as intermediate fields themselves
-	//Qminus_eo(in, clmem_tmp_eo_1, gf);
-	//Qplus_eo(clmem_tmp_eo_1, out, gf);
-
 	//CP: Init tmp spinorfield
-  ///@todo this must be get_eoprec_spinorfieldsize() !!!!!!!!!!!
-	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
+	int spinorfield_size = sizeof(spinor) * get_parameters()->get_eoprec_spinorfieldsize();
 	cl_mem sf_eo_tmp;
 	sf_eo_tmp = create_rw_buffer(spinorfield_size);
 
