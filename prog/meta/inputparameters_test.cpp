@@ -114,6 +114,8 @@ void checkDefaults(const Inputparameters params)
 
 	BOOST_REQUIRE_EQUAL(params.get_use_same_rnd_numbers(), false);
 	BOOST_REQUIRE_EQUAL(params.get_profile_solver(), false);
+
+	BOOST_REQUIRE_EQUAL(params.is_ocl_compiler_opt_disabled(), false);
 }
 
 BOOST_AUTO_TEST_CASE(defaults)
@@ -258,6 +260,12 @@ BOOST_AUTO_TEST_CASE(command_line4)
 	BOOST_REQUIRE_THROW(Inputparameters(2, _params), Inputparameters::parse_aborted);
 }
 
+BOOST_AUTO_TEST_CASE(command_line5)
+{
+	const char* _params[] = {"foo", "--disable-ocl-compiler-opt=true"};
+	Inputparameters params(2, _params);
+	BOOST_REQUIRE_EQUAL(params.is_ocl_compiler_opt_disabled(), true);
+}
 
 BOOST_AUTO_TEST_CASE(help)
 {

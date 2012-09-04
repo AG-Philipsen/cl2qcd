@@ -460,7 +460,9 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("corr_dir", po::value<int>(&corr_dir)->default_value(3), "Direction for the correlator")
 
 	("use_same_rnd_numbers", po::value<bool>(&use_same_rnd_numbers)->default_value(false), "Use random numbers compatible with a scalar version. SLOW!")
-	("profile_solver", po::value<bool>(&profile_solver)->default_value(false));
+	("profile_solver", po::value<bool>(&profile_solver)->default_value(false))
+
+	("disable-ocl-compiler-opt", po::value<bool>(&ocl_compiler_opt_disabled)->default_value(false), "Disable OpenCL compiler from performing optimizations (adds -cl-disable-opt)");
 
 	po::options_description desc;
 	desc.add(cmd_opts).add(config);

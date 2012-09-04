@@ -132,6 +132,8 @@ namespace meta {
 			bool get_use_same_rnd_numbers() const noexcept;
 			bool get_profile_solver() const noexcept;
 
+			bool is_ocl_compiler_opt_disabled() const noexcept;
+
 		private:
 			size_t precision;
 
@@ -226,6 +228,8 @@ namespace meta {
 
 			bool use_same_rnd_numbers;
 			bool profile_solver;
+
+			bool ocl_compiler_opt_disabled;
 	};
 }
 
