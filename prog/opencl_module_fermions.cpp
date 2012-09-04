@@ -1096,18 +1096,18 @@ void Opencl_Module_Fermions::Qminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_flo
 
 void Opencl_Module_Fermions::QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
-	//CP: Init tmp spinorfield
-	int spinorfield_size = sizeof(spinor) * get_parameters()->get_eoprec_spinorfieldsize();
-	cl_mem sf_eo_tmp;
-	sf_eo_tmp = create_rw_buffer(spinorfield_size);
-
-	Qminus_eo(in, sf_eo_tmp, gf, kappa, mubar);
-	Qplus_eo(sf_eo_tmp, out, gf, kappa, mubar);
-
-	int clerr = clReleaseMemObject(sf_eo_tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-
-	return;
+  //CP: this should be an eoprec-sized field. However, this induces problems in the CG algorithm!!!
+  size_t spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
+  cl_mem sf_eo_tmp;
+  sf_eo_tmp = create_rw_buffer(spinorfield_size);
+  
+  Qminus_eo(in, sf_eo_tmp, gf, kappa, mubar);
+  Qplus_eo(sf_eo_tmp, out, gf, kappa, mubar);
+  
+  int clerr = clReleaseMemObject(sf_eo_tmp);
+  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+  
+  return;
 }
 
 //explicit eoprec fermionmatrix functions
