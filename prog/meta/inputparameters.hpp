@@ -61,7 +61,7 @@ namespace meta {
 			bool get_saveconfigs() const noexcept;
 			int get_writefrequency() const noexcept;
 			int get_savefrequency() const noexcept;
-			std::string get_sourcefilenumber() const noexcept;
+			std::string get_sourcefile() const noexcept;
 			bool get_print_to_screen() const noexcept;
 			//This is obvious!!!
 			uint64_t get_host_seed() const noexcept;
@@ -150,7 +150,7 @@ namespace meta {
 			bool saveconfigs;
 			int writefrequency;
 			int savefrequency;
-			std::string sourcefilenumber;
+			std::string sourcefile;
 			bool print_to_screen;
 			//This is obvious!!!
 			uint64_t host_seed;

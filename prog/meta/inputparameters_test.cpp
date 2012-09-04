@@ -34,7 +34,7 @@ void checkDefaults(const Inputparameters params)
 	BOOST_REQUIRE_EQUAL(params.get_saveconfigs(), false);
 	BOOST_REQUIRE_EQUAL(params.get_writefrequency(), 1);
 	BOOST_REQUIRE_EQUAL(params.get_savefrequency(), 100);
-	BOOST_REQUIRE_EQUAL(params.get_sourcefilenumber(), "00000");
+	BOOST_REQUIRE_EQUAL(params.get_sourcefile(), "conf.00000");
 	BOOST_REQUIRE_EQUAL(params.get_print_to_screen(), false);
 	//This is obvious!!!
 	BOOST_REQUIRE_EQUAL(params.get_host_seed(), 4815);
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_saveconfigs(), true);
 	BOOST_REQUIRE_EQUAL(params.get_writefrequency(), 10);
 	BOOST_REQUIRE_EQUAL(params.get_savefrequency(), 10);
-	BOOST_REQUIRE_EQUAL(params.get_sourcefilenumber(), "11111");
+	BOOST_REQUIRE_EQUAL(params.get_sourcefile(), "conf.11111");
 	BOOST_REQUIRE_EQUAL(params.get_print_to_screen(), true);
 	//This is obvious!!!
 	BOOST_REQUIRE_EQUAL(params.get_host_seed(), 42);

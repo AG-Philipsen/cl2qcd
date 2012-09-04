@@ -86,9 +86,9 @@ int Inputparameters::get_savefrequency() const noexcept
 {
 	return savefrequency;
 }
-std::string Inputparameters::get_sourcefilenumber() const noexcept
+std::string Inputparameters::get_sourcefile() const noexcept
 {
-	return sourcefilenumber;
+	return sourcefile;
 }
 bool Inputparameters::get_print_to_screen() const noexcept
 {
@@ -382,7 +382,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("saveconfigs", po::value<bool>(&saveconfigs)->default_value(false))
 	("writefrequency", po::value<int>(&writefrequency)->default_value(1))
 	("savefrequency", po::value<int>(&savefrequency)->default_value(100))
-	("sourcefile", po::value<std::string>(&sourcefilenumber)->default_value("00000"))
+	("sourcefile", po::value<std::string>(&sourcefile)->default_value("conf.00000"))
 	("print_to_screen", po::value<bool>(&print_to_screen)->default_value(false))
 	//This is obvious!!!
 	("host_seed", po::value<uint64_t>(&host_seed)->default_value(4815))
