@@ -8,6 +8,7 @@
 
 add_library(meta
 	inputparameters.cpp
+	util.cpp
 )
 
 #
