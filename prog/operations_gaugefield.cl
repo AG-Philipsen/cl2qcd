@@ -8,22 +8,42 @@
 inline Matrixsu3 getSU3(__global const Matrixsu3StorageType * const restrict in, const uint idx)
 {
 #ifdef _USE_SOA_
-	return (Matrixsu3) {
-		in[0 * GAUGEFIELD_STRIDE + idx],
-		   in[1 * GAUGEFIELD_STRIDE + idx],
-		   in[2 * GAUGEFIELD_STRIDE + idx],
-		   in[3 * GAUGEFIELD_STRIDE + idx],
-		   in[4 * GAUGEFIELD_STRIDE + idx],
-		   in[5 * GAUGEFIELD_STRIDE + idx],
-		   in[6 * GAUGEFIELD_STRIDE + idx],
-		   in[7 * GAUGEFIELD_STRIDE + idx],
-		   in[8 * GAUGEFIELD_STRIDE + idx]
-	};
-#else
-	//printf("%i\n", idx);
-	return in[idx];
+#ifdef _USE_REC12_
+  //CP: this should be the most straightforward implementation                                                                                               
+  return (Matrixsu3) {
+    in[0 * GAUGEFIELD_STRIDE + idx],
+      in[1 * GAUGEFIELD_STRIDE + idx],
+      in[2 * GAUGEFIELD_STRIDE + idx],
+      in[3 * GAUGEFIELD_STRIDE + idx],
+      in[4 * GAUGEFIELD_STRIDE + idx],
+      in[5 * GAUGEFIELD_STRIDE + idx],
+      complexsubtract( complexmult(in[1 * GAUGEFIELD_STRIDE + idx], in[5 * GAUGEFIELD_STRIDE + idx]),  complexmult(in[2 * GAUGEFIELD_STRIDE + idx], in[4 * G\
+AUGEFIELD_STRIDE + idx]) ),
+      complexsubtract( complexmult(in[2 * GAUGEFIELD_STRIDE + idx], in[3 * GAUGEFIELD_STRIDE + idx]),  complexmult(in[0 * GAUGEFIELD_STRIDE + idx], in[5 * G\
+AUGEFIELD_STRIDE + idx]) ),
+      complexsubtract( complexmult(in[0 * GAUGEFIELD_STRIDE + idx], in[4 * GAUGEFIELD_STRIDE + idx]),  complexmult(in[1 * GAUGEFIELD_STRIDE + idx], in[3 * G\
+AUGEFIELD_STRIDE + idx]) )
+      };
+#else // _USE_REC12_                                                                                                                                         
+  return (Matrixsu3) {
+    in[0 * GAUGEFIELD_STRIDE + idx],
+      in[1 * GAUGEFIELD_STRIDE + idx],
+      in[2 * GAUGEFIELD_STRIDE + idx],
+      in[3 * GAUGEFIELD_STRIDE + idx],
+      in[4 * GAUGEFIELD_STRIDE + idx],
+      in[5 * GAUGEFIELD_STRIDE + idx],
+      in[6 * GAUGEFIELD_STRIDE + idx],
+      in[7 * GAUGEFIELD_STRIDE + idx],
+      in[8 * GAUGEFIELD_STRIDE + idx]
+      };
+#endif
+#else // _USE_SOA_                                                                                                                                           
+        //printf("%i\n", idx);                                                                                                                               
+        return in[idx];
 #endif
 }
+
+
 
 // TODO document
 inline void putSU3(__global Matrixsu3StorageType * const restrict out, const uint idx, const Matrixsu3 val)
