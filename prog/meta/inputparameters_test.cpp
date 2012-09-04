@@ -96,17 +96,18 @@ void checkDefaults(const Inputparameters params)
 	//HMC specific parameters
 	BOOST_REQUIRE_EQUAL(params.get_tau(), 0.5);
 	BOOST_REQUIRE_EQUAL(params.get_reversibility_check(), false);
-	BOOST_REQUIRE_EQUAL(params.get_integrationsteps0(), 10);
-	BOOST_REQUIRE_EQUAL(params.get_integrationsteps1(), 10);
+	BOOST_REQUIRE_EQUAL(params.get_integrationsteps(0), 10);
+	BOOST_REQUIRE_EQUAL(params.get_integrationsteps(1), 10);
+	BOOST_REQUIRE_EQUAL(params.get_integrationsteps(2), 10);
 	BOOST_REQUIRE_EQUAL(params.get_hmcsteps(), 10);
 	BOOST_REQUIRE_EQUAL(params.get_num_timescales(), 1);
-	BOOST_REQUIRE_EQUAL(params.get_integrator0(), Inputparameters::leapfrog);
-	BOOST_REQUIRE_EQUAL(params.get_integrator1(), Inputparameters::leapfrog);
-	BOOST_REQUIRE_EQUAL(params.get_integrator2(), Inputparameters::leapfrog);
+	BOOST_REQUIRE_EQUAL(params.get_integrator(0), Inputparameters::leapfrog);
+	BOOST_REQUIRE_EQUAL(params.get_integrator(1), Inputparameters::leapfrog);
+	BOOST_REQUIRE_EQUAL(params.get_integrator(2), Inputparameters::leapfrog);
 	//this is the optimal value...
-	BOOST_REQUIRE_EQUAL(params.get_lambda0(), 0.1931833275037836);
-	BOOST_REQUIRE_EQUAL(params.get_lambda1(), 0.1931833275037836);
-	BOOST_REQUIRE_EQUAL(params.get_lambda2(), 0.1931833275037836);
+	BOOST_REQUIRE_EQUAL(params.get_lambda(0), 0.1931833275037836);
+	BOOST_REQUIRE_EQUAL(params.get_lambda(1), 0.1931833275037836);
+	BOOST_REQUIRE_EQUAL(params.get_lambda(2), 0.1931833275037836);
 
 	//direction for the correlator
 	BOOST_REQUIRE_EQUAL(params.get_corr_dir(), 3);
@@ -208,17 +209,18 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	//HMC specific parameters
 	BOOST_REQUIRE_EQUAL(params.get_tau(), 0.51234);
 	BOOST_REQUIRE_EQUAL(params.get_reversibility_check(), true);
-	BOOST_REQUIRE_EQUAL(params.get_integrationsteps0(), 103);
-	BOOST_REQUIRE_EQUAL(params.get_integrationsteps1(), 5);
+	BOOST_REQUIRE_EQUAL(params.get_integrationsteps(0), 103);
+	BOOST_REQUIRE_EQUAL(params.get_integrationsteps(1), 5);
+	BOOST_REQUIRE_EQUAL(params.get_integrationsteps(2), 10);
 	BOOST_REQUIRE_EQUAL(params.get_hmcsteps(), 98);
 	BOOST_REQUIRE_EQUAL(params.get_num_timescales(), 3);
-	BOOST_REQUIRE_EQUAL(params.get_integrator0(), Inputparameters::twomn);
-	BOOST_REQUIRE_EQUAL(params.get_integrator1(), Inputparameters::leapfrog);
-	BOOST_REQUIRE_EQUAL(params.get_integrator2(), Inputparameters::twomn);
+	BOOST_REQUIRE_EQUAL(params.get_integrator(0), Inputparameters::twomn);
+	BOOST_REQUIRE_EQUAL(params.get_integrator(1), Inputparameters::leapfrog);
+	BOOST_REQUIRE_EQUAL(params.get_integrator(2), Inputparameters::twomn);
 	//this is the optimal value...
-	BOOST_REQUIRE_EQUAL(params.get_lambda0(), 0.11931833275037836);
-	BOOST_REQUIRE_EQUAL(params.get_lambda1(), 0.21931833275037836);
-	BOOST_REQUIRE_EQUAL(params.get_lambda2(), 0.31931833275037836);
+	BOOST_REQUIRE_EQUAL(params.get_lambda(0), 0.11931833275037836);
+	BOOST_REQUIRE_EQUAL(params.get_lambda(1), 0.21931833275037836);
+	BOOST_REQUIRE_EQUAL(params.get_lambda(2), 0.31931833275037836);
 
 	//direction for the correlator
 	BOOST_REQUIRE_EQUAL(params.get_corr_dir(), 2);

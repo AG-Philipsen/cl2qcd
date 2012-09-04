@@ -119,17 +119,12 @@ namespace meta {
 			//HMC specific parameters
 			double get_tau() const noexcept;
 			bool get_reversibility_check() const noexcept;
-			int get_integrationsteps0() const noexcept;
-			int get_integrationsteps1() const noexcept;
+			int get_integrationsteps(size_t timescale) const noexcept;
 			int get_hmcsteps() const noexcept;
 			int get_num_timescales() const noexcept;
-			integrator get_integrator0() const noexcept;
-			integrator get_integrator1() const noexcept;
-			integrator get_integrator2() const noexcept;
+			integrator get_integrator(size_t timescale) const noexcept;
 			//this is the optimal value...
-			double get_lambda0() const noexcept;
-			double get_lambda1() const noexcept;
-			double get_lambda2() const noexcept;
+			double get_lambda(size_t timescale) const noexcept;
 
 			//direction for the correlator
 			int get_corr_dir() const noexcept;
@@ -215,6 +210,7 @@ namespace meta {
 			bool reversibility_check;
 			int integrationsteps0;
 			int integrationsteps1;
+			int integrationsteps2;
 			int hmcsteps;
 			int num_timescales;
 			integrator integrator0;

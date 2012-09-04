@@ -24,3 +24,11 @@ bool meta::get_use_rectangles(const Inputparameters& params)
 			return false;
 	}
 }
+hmc_float meta::get_mubar(const Inputparameters& params)
+{
+	return 2. * params.get_kappa() * params.get_mu();
+}
+hmc_float meta::get_mubar_mp(const Inputparameters& params)
+{
+	return 2. * params.get_kappa_mp() * params.get_mu_mp();
+}

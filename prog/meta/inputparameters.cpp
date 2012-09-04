@@ -7,6 +7,7 @@
 #include <map>
 #include <iostream>
 #include <fstream>
+#include <stdexcept>
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
 namespace po = boost::program_options;
@@ -284,13 +285,18 @@ bool Inputparameters::get_reversibility_check() const noexcept
 {
 	return reversibility_check;
 }
-int Inputparameters::get_integrationsteps0() const noexcept
+int Inputparameters::get_integrationsteps(size_t timescale) const noexcept
 {
-	return integrationsteps0;
-}
-int Inputparameters::get_integrationsteps1() const noexcept
-{
-	return integrationsteps1;
+	switch(timescale) {
+		case 0:
+			return integrationsteps0;
+		case 1:
+			return integrationsteps1;
+		case 2:
+			return integrationsteps2;
+		default:
+			throw std::out_of_range("No such timescale");
+	}
 }
 int Inputparameters::get_hmcsteps() const noexcept
 {
@@ -300,30 +306,32 @@ int Inputparameters::get_num_timescales() const noexcept
 {
 	return num_timescales;
 }
-Inputparameters::integrator Inputparameters::get_integrator0() const noexcept
+Inputparameters::integrator Inputparameters::get_integrator(size_t timescale) const noexcept
 {
-	return integrator0;
-}
-Inputparameters::integrator Inputparameters::get_integrator1() const noexcept
-{
-	return integrator1;
-}
-Inputparameters::integrator Inputparameters::get_integrator2() const noexcept
-{
-	return integrator2;
+	switch(timescale) {
+		case 0:
+			return integrator0;
+		case 1:
+			return integrator1;
+		case 2:
+			return integrator2;
+		default:
+			throw std::out_of_range("No such timescale");
+	}
 }
 //this is the optimal value...
-double Inputparameters::get_lambda0() const noexcept
+double Inputparameters::get_lambda(size_t timescale) const noexcept
 {
-	return lambda0;
-}
-double Inputparameters::get_lambda1() const noexcept
-{
-	return lambda1;
-}
-double Inputparameters::get_lambda2() const noexcept
-{
-	return lambda2;
+	switch(timescale) {
+		case 0:
+			return lambda0;
+		case 1:
+			return lambda1;
+		case 2:
+			return lambda2;
+		default:
+			throw std::out_of_range("No such timescale");
+	}
 }
 
 //direction for the correlator
@@ -438,6 +446,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("reversibility_check", po::value<bool>(&reversibility_check)->default_value(false))
 	("integrationsteps0", po::value<int>(&integrationsteps0)->default_value(10))
 	("integrationsteps1", po::value<int>(&integrationsteps1)->default_value(10))
+	("integrationsteps2", po::value<int>(&integrationsteps2)->default_value(10))
 	("hmcsteps", po::value<int>(&hmcsteps)->default_value(10))
 	("num_timescales", po::value<int>(&num_timescales)->default_value(1))
 	("integrator0", po::value<std::string>()->default_value("leapfrog"))
