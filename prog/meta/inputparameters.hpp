@@ -134,6 +134,9 @@ namespace meta {
 
 			bool is_ocl_compiler_opt_disabled() const noexcept;
 
+			bool get_use_merge_kernels_fermion() const noexcept;
+			bool get_use_merge_kernels_spinor() const noexcept;
+
 		private:
 			size_t precision;
 
@@ -230,6 +233,9 @@ namespace meta {
 			bool profile_solver;
 
 			bool ocl_compiler_opt_disabled;
+
+			bool use_merge_kernels_fermion;
+			bool use_merge_kernels_spinor;
 	};
 }
 
