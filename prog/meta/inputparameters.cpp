@@ -349,6 +349,11 @@ bool Inputparameters::get_profile_solver() const noexcept
 	return profile_solver;
 }
 
+std::string Inputparameters::get_log_level() const noexcept
+{
+	return log_level;
+}
+
 Inputparameters::Inputparameters(int argc, const char** argv)
 {
 	/**
@@ -465,7 +470,9 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("disable-ocl-compiler-opt", po::value<bool>(&ocl_compiler_opt_disabled)->default_value(false), "Disable OpenCL compiler from performing optimizations (adds -cl-disable-opt)")
 
 	("use_merge_kernels_spinor", po::value<bool>(&use_merge_kernels_spinor)->default_value(false), "Use kernel merging for spinor kernels")
-	("use_merge_kernels_fermion", po::value<bool>(&use_merge_kernels_fermion)->default_value(false), "Use kernel merging for fermion kernels");
+	("use_merge_kernels_fermion", po::value<bool>(&use_merge_kernels_fermion)->default_value(false), "Use kernel merging for fermion kernels")
+
+	("log-level", po::value<std::string>(&log_level)->default_value("ALL"), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF");
 
 	po::options_description desc;
 	desc.add(cmd_opts).add(config);

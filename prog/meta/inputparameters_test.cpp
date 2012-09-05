@@ -119,6 +119,8 @@ void checkDefaults(const Inputparameters params)
 
 	BOOST_REQUIRE_EQUAL(params.get_use_merge_kernels_spinor(), false);
 	BOOST_REQUIRE_EQUAL(params.get_use_merge_kernels_fermion(), false);
+
+	BOOST_REQUIRE_EQUAL(params.get_log_level(), "ALL");
 }
 
 BOOST_AUTO_TEST_CASE(defaults)
@@ -271,6 +273,13 @@ BOOST_AUTO_TEST_CASE(command_line5)
 	const char* _params[] = {"foo", "--disable-ocl-compiler-opt=true"};
 	Inputparameters params(2, _params);
 	BOOST_REQUIRE_EQUAL(params.is_ocl_compiler_opt_disabled(), true);
+}
+
+BOOST_AUTO_TEST_CASE(command_line5)
+{
+	const char* _params[] = {"foo", "--log_level=ERROR"};
+	Inputparameters params(2, _params);
+	BOOST_REQUIRE_EQUAL(params.get_log_level(), "ERROR");
 }
 
 BOOST_AUTO_TEST_CASE(help)
