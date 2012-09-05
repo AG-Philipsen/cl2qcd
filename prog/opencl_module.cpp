@@ -178,9 +178,9 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 	if(get_parameters()->get_use_rectangles() == true) {
 		*collect_options <<  " -D_USE_RECT_" ;
 	}
-	//CP: for now, this is hardcoded
-	//REC12 usage
-	//*collect_options <<  " -D_USE_REC12_" ;
+	if(get_parameters()->get_use_rec12() == true){
+	  *collect_options <<  " -D_USE_REC12_" ;
+	} 
 
 	return;
 }

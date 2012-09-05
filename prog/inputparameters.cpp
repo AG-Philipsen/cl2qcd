@@ -1913,8 +1913,6 @@ void inputparameters::check_settings_global() const
 		if( this->get_prec() != 32) throw Invalid_Parameters("Numerical precision", "32", this->get_prec());
 #endif
 
-		if( this->get_use_rec12() == true) throw Invalid_Parameters("Reconstruct12.", "OFF", "ON");
-
 	}//try
 	catch (Invalid_Parameters& e) {
 		logger.fatal() << "Error in check_setting_global():";
