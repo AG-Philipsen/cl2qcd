@@ -14,7 +14,7 @@ startcondition = continue
 saveconfigs = true
 writefrequency = 10
 savefrequency = 10
-sourcefile = 11111
+sourcefile = conf.11111
 print_to_screen = true
 host_seed = 42
 

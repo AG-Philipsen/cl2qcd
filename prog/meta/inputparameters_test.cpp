@@ -281,7 +281,7 @@ BOOST_AUTO_TEST_CASE(command_line5)
 
 BOOST_AUTO_TEST_CASE(command_line6)
 {
-	const char* _params[] = {"foo", "--log_level=ERROR"};
+	const char* _params[] = {"foo", "--log-level=ERROR"};
 	Inputparameters params(2, _params);
 	BOOST_REQUIRE_EQUAL(params.get_log_level(), "ERROR");
 }
