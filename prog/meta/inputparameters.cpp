@@ -353,6 +353,11 @@ bool Inputparameters::get_profile_solver() const noexcept
 	return profile_solver;
 }
 
+bool Inputparameters::is_ocl_compiler_opt_disabled() const noexcept
+{
+	return ocl_compiler_opt_disabled;
+}
+
 std::string Inputparameters::get_log_level() const noexcept
 {
 	return log_level;
