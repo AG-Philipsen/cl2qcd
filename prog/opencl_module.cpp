@@ -171,7 +171,7 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 	if(meta::get_use_rectangles(get_parameters()) == true) {
 		*collect_options <<  " -D_USE_RECT_" ;
 	}
-	if(get_parameters()->get_use_rec12() == true) {
+	if(get_parameters().get_use_rec12() == true) {
 		*collect_options <<  " -D_USE_REC12_" ;
 	}
 
