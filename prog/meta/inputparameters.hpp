@@ -137,6 +137,7 @@ namespace meta {
 
 			bool get_use_merge_kernels_fermion() const noexcept;
 			bool get_use_merge_kernels_spinor() const noexcept;
+			bool get_use_rec12() const noexcept;
 
 			std::string get_log_level() const noexcept;
 
@@ -240,6 +241,7 @@ namespace meta {
 
 			bool use_merge_kernels_fermion;
 			bool use_merge_kernels_spinor;
+			bool use_rec12;
 
 			std::string log_level;
 	};

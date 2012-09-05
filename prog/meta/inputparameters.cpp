@@ -357,6 +357,18 @@ std::string Inputparameters::get_log_level() const noexcept
 {
 	return log_level;
 }
+bool Inputparameters::get_use_merge_kernels_fermion() const noexcept
+{
+	return use_merge_kernels_fermion;
+}
+bool Inputparameters::get_use_merge_kernels_spinor() const noexcept
+{
+	return use_merge_kernels_spinor;
+}
+bool Inputparameters::get_use_rec12() const noexcept
+{
+	return use_rec12;
+}
 
 Inputparameters::Inputparameters(int argc, const char** argv)
 {
@@ -476,6 +488,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 
 	("use_merge_kernels_spinor", po::value<bool>(&use_merge_kernels_spinor)->default_value(false), "Use kernel merging for spinor kernels")
 	("use_merge_kernels_fermion", po::value<bool>(&use_merge_kernels_fermion)->default_value(false), "Use kernel merging for fermion kernels")
+	("use_rec12", po::value<bool>(&use_rec12)->default_value(false), "Use reconstruct 12 compression for SU3 matrices")
 
 	("log-level", po::value<std::string>(&log_level)->default_value("ALL"), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF");
 
