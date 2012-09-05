@@ -15,7 +15,6 @@
 #include "globaldefs.h"
 #include "types.h"
 #include "host_operations_gaugefield.h"
-#include "inputparameters.h"
 #include "host_readgauge.h"
 #include "host_writegaugefield.h"
 #include "host_use_timer.h"
@@ -36,17 +35,20 @@
 
 
 /**
- * Version number.
- */
-extern string const version;
-
-/**
  * Class for the gaugefield. Includes initialization, device management for two devices doing a heatbath and tk calculation.
  *
  * @class Gaugefield
  */
 class Gaugefield_heatbath_kappa : public Gaugefield_hybrid {
 public:
+	/**
+	 * Create a new kappa heatbath gaugefield.
+	 *
+	 * \param params The input parameters of the application
+	 */
+	Gaugefield_heatbath_kappa(const meta::Inputparameters& params)
+		: Gaugefield_hybrid(params) { };
+
 	//init functions
 	/**
 	 * Initialize tasks

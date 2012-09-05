@@ -15,7 +15,6 @@
 #include "globaldefs.h"
 #include "types.h"
 #include "host_operations_gaugefield.h"
-#include "inputparameters.h"
 #include "host_readgauge.h"
 #include "host_writegaugefield.h"
 #include "host_use_timer.h"
@@ -34,17 +33,19 @@
 
 
 /**
- * Version number.
- */
-extern string const version;
-
-/**
  * Class for the gaugefield. Includes initialization, device management for multiple devices.
  *
  * @class Gaugefield_inverter
  */
 class Gaugefield_hmc : public Gaugefield_hybrid {
 public:
+	/**
+	 * Create a new HMC gaugefield.
+	 *
+	 * \param params The input parameters of the application
+	 */
+	Gaugefield_hmc(const meta::Inputparameters& params)
+		: Gaugefield_hybrid(params) { };
 
 	/**
 	 * Initialize class.
@@ -133,6 +134,13 @@ protected:
 private:
 
 	int task_hmc;
+
+	meta::Counter inversions0;
+	meta::Counter inversions1;
+	meta::Counter inversions_mp0;
+	meta::Counter inversions_mp1;
+
+	void reset_inversion_counters() noexcept;
 
 };
 

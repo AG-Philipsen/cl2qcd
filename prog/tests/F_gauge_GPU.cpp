@@ -1,6 +1,8 @@
 #include "../opencl_module_hmc.h"
 #include "../gaugefield_hybrid.h"
 
+#include "../meta/util.hpp"
+
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE Gaugeforce
@@ -12,9 +14,10 @@ std::string const version = "0.1";
 class Device : public Opencl_Module_Hmc {
 
 	cl_kernel testKernel;
+	meta::Counter counter1, counter2, counter3, counter4;
 public:
-	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc() {
-		Opencl_Module_Hmc::init(queue, params, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc(params, &counter1, &counter2, &counter3, &counter4) {
+		Opencl_Module_Hmc::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -25,19 +28,19 @@ public:
 	void clear_kernels();
 };
 
+const std::string SOURCEFILE = std::string(SOURCEDIR)
+#ifdef _USEDOUBLEPREC_
+                               + "/tests/f_gauge_input_1";
+#else
+                               + "/tests/f_gauge_input_1_single";
+#endif
+const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
+
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
-		std::stringstream tmp;
-#ifdef _USEDOUBLEPREC_
-		tmp << SOURCEDIR << "/tests/f_gauge_input_1";
-#else
-		tmp << SOURCEDIR << "/tests/f_gauge_input_1_single";
-#endif
-		params.readfile(tmp.str().c_str());
-
-		init(1, device_type, &params);
+	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(meta::Inputparameters(2, PARAMS)) {
+		init(1, device_type);
 	};
 
 	virtual void init_tasks();
@@ -50,7 +53,6 @@ public:
 private:
 	void fill_buffers();
 	void clear_buffers();
-	inputparameters params;
 	cl_mem out;
 	cl_mem sqnorm;
 	Matrixsu3 * gf_in;
@@ -111,7 +113,7 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
 	logger.info() << "Output vectors:";
 	cpu.verify(cpu_res, gpu_res);
 	//if the gaugeconfig is cold, the force is zero!!
-	if(cpu.get_parameters()->get_startcondition() == COLD_START) {
+	if(cpu.get_parameters().get_startcondition() == COLD_START) {
 		logger.info() << "cold config used. Check if result is zero!!";
 		cpu.verify(cpu_res, 0.);
 		cpu.verify(gpu_res, 0.);
@@ -236,16 +238,16 @@ void Dummyfield::fill_buffers()
 	cl_context context = opencl_modules[0]->get_context();
 
 	int NUM_ELEMENTS_SF;
-	if(get_parameters()->get_use_eo() == true) NUM_ELEMENTS_SF =  params.get_eoprec_spinorfieldsize();
-	else NUM_ELEMENTS_SF =  params.get_spinorfieldsize();
+	if(get_parameters().get_use_eo() == true) NUM_ELEMENTS_SF =  meta::get_eoprec_spinorfieldsize(get_parameters());
+	else NUM_ELEMENTS_SF =  meta::get_spinorfieldsize(get_parameters());
 
-	int NUM_ELEMENTS_AE = params.get_gaugemomentasize() * params.get_su3algebrasize();
+	int NUM_ELEMENTS_AE = meta::get_vol4d(get_parameters()) * NDIM * meta::get_su3algebrasize();
 
 
 	sf_out = new hmc_float[NUM_ELEMENTS_AE];
 	/*
 	//use the variable use_cg to switch between cold and random input sf
-	if(get_parameters()->get_use_cg() == true) {
+	if(get_parameters().get_use_cg() == true) {
 	  fill_sf_with_one(sf_in1, NUM_ELEMENTS_SF);
 	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
 	}
@@ -259,7 +261,7 @@ void Dummyfield::fill_buffers()
 	fill_with_zero(sf_out, NUM_ELEMENTS_AE);
 
 	Device * device = static_cast<Device*>(opencl_modules[0]);
-	//size_t sf_buf_size = get_parameters()->get_sf_buf_size();
+	//size_t sf_buf_size = get_parameters().get_sf_buf_size();
 	//create buffer for sf on device (and copy sf_in to both for convenience)
 	/*
 	in1 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
@@ -351,7 +353,7 @@ void Dummyfield::runTestKernel()
 {
 	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = get_parameters()->get_spinorfieldsize();
+		gs = meta::get_spinorfieldsize(get_parameters());
 		ls = 64;
 	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
 		gs = opencl_modules[0]->get_max_compute_units();

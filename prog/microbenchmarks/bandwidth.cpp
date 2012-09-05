@@ -14,6 +14,9 @@
 #include "../logger.hpp"
 #include "../exceptions.h"
 
+#include "../types_fermions.h"
+
+
 namespace po = boost::program_options;
 
 extern std::string const version;
@@ -23,16 +26,16 @@ std::string const version = "0.1";
  * Selector type for the base type of the copy operations.
  */
 enum copyType {
-	type_invalid,
-	type_float,
-	type_su3,
-	type_su3SOA,
-	type_su3SOcplxA,
-	type_spinor,
-	type_spinorSOA,
-	type_spinorSOcplxA,
-	type_spinorLocal,
-	type_spinorSOApy
+  type_invalid,
+  type_float,
+  type_su3,
+  type_su3SOA,
+  type_su3SOcplxA,
+  type_spinor,
+  type_spinorSOA,
+  type_spinorSOcplxA,
+  type_spinorLocal,
+  type_spinorSOApy
 };
 
 size_t getTypeSize(copyType type);
@@ -40,7 +43,6 @@ size_t getTypeSize(copyType type);
 class Device : public Opencl_Module {
 
 private:
-	inputparameters params;
 	cl_kernel floatKernel;
 	cl_kernel su3Kernel;
 	cl_kernel su3SOAKernel;
@@ -54,8 +56,8 @@ private:
 	template<typename T> void runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, cl_mem in, cl_mem out);
 
 public:
-	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int dev_rank) : Opencl_Module() {
-		Opencl_Module::init(queue, params, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module(params) {
+		Opencl_Module::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
 	};
 	virtual void fill_kernels();
 	virtual void clear_kernels();
@@ -69,8 +71,9 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type, size_t maxMemSize) : Gaugefield_hybrid(), maxMemSize(maxMemSize) {
-		init(1, device_type, &params);
+	Dummyfield(cl_device_type device_type, size_t maxMemSize)
+		: Gaugefield_hybrid(meta::Inputparameters(0, 0)), maxMemSize(maxMemSize) {
+		init(1, device_type);
 	};
 
 	virtual void init_tasks();
@@ -82,7 +85,6 @@ private:
 	void verify(hmc_complex, hmc_complex);
 	void fill_buffers();
 	void clear_buffers();
-	inputparameters params;
 	cl_mem in, out;
 	size_t maxMemSize;
 };
@@ -313,7 +315,7 @@ void Device::runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_g
 			runKernel<spinor>(groups, threads_per_group, elems, spinorLocalKernel, in, out);
 			return;
 		default:
-			throw invalid_argument("runKernel has not been implemented for this type");
+			throw std::invalid_argument("runKernel has not been implemented for this type");
 	}
 }
 
@@ -378,7 +380,7 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 
 	// format is: #groups #threads per group #elements #copied memory in bytes #copy time in mus #bandwidth in megabytes
 	// FIXME sizeof can give broken results in case of aligned types (gross size not equal to net content size)
-	cout << groups * threads_per_group << ' ' << groups << ' ' << threads_per_group << ' ' << elems << ' ' << elems * sizeof(T) << ' ' << kernelTime << ' ' << (2 * elems * sizeof(T) / eventTime)   << ' ' << eventTime << endl;
+	std::cout << groups * threads_per_group << ' ' << groups << ' ' << threads_per_group << ' ' << elems << ' ' << elems * sizeof(T) << ' ' << kernelTime << ' ' << (2 * elems * sizeof(T) / eventTime)   << ' ' << eventTime << std::endl;
 }
 
 void Dummyfield::init_tasks()
@@ -416,6 +418,6 @@ size_t getTypeSize(copyType type)
 		case type_spinorLocal:
 			return sizeof(spinor);
 		default:
-			throw invalid_argument("getTypeSize has not been implemented for this type.");
+			throw std::invalid_argument("getTypeSize has not been implemented for this type.");
 	}
 }

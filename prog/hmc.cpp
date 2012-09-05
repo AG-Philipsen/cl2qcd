@@ -1,40 +1,19 @@
 #include "hmc.h"
 
-#include <boost/program_options.hpp>
-namespace po = boost::program_options;
+#include "meta/util.hpp"
 
-int main(int argc, char* argv[])
+int main(int argc, const char* argv[])
 {
 	try {
-		po::options_description desc("Allowed options");
-		desc.add_options()
-		("help,h", "Produce this help message")
-		("input-file", po::value<std::string>(), "File containing the input parameters")
-		("log-level", po::value<std::string>(), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF")
-		("disable-ocl-compiler-opt", "Disable OpenCL compiler from performing optimizations (adds -cl-disable-opt)");
-		po::positional_options_description pos_opts;
-		pos_opts.add("input-file", 1);
-		po::variables_map vm;
-		po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);
-		if( vm.count( "help" ) ) { // see http://stackoverflow.com/questions/5395503/required-and-optional-arguments-using-boost-library-program-options as to why this is done before po::notifiy(vm)
-			std::cout << desc << '\n';
-			return 0;
-		}
-		po::notify(vm); // checks whether all required arguments are set
+		meta::Inputparameters parameters(argc, argv);
+		switchLogLevel(parameters.get_log_level());
 
-		if(vm.count("log-level")) {
-			switchLogLevel(vm["log-level"].as<std::string>());
-		}
-
-		const char* inputfile = vm["input-file"].as<std::string>().c_str();
-		inputparameters parameters(vm.count("disable-ocl-compiler-opt"));
-		parameters.readfile(inputfile);
-		parameters.print_info_hmc(argv[0]);
+		meta::print_info_hmc(argv[0], parameters);
 
 		ofstream ofile;
 		ofile.open("hmc.log");
 		if(ofile.is_open()) {
-			parameters.print_info_hmc(argv[0], &ofile);
+			meta::print_info_hmc(argv[0], &ofile, parameters);
 			ofile.close();
 		} else {
 			logger.warn() << "Could not log file for hmc.";
@@ -51,11 +30,11 @@ int main(int argc, char* argv[])
 
 		init_timer.reset();
 		hmc_observables obs;
-		Gaugefield_hmc gaugefield;
+		Gaugefield_hmc gaugefield(parameters);
 
 		//use 1 task: the hmc-algorithm
 		int numtasks = 1;
-		if(parameters.get_num_dev() == 2 )
+		if(parameters.get_device_count() == 2 )
 			logger.warn() << "Only 1 device demanded by input file. All calculations performed on primary device.";
 
 		cl_device_type primary_device;
@@ -69,7 +48,7 @@ int main(int argc, char* argv[])
 		}
 
 		logger.trace() << "Init gaugefield" ;
-		gaugefield.init(numtasks, primary_device, &parameters);
+		gaugefield.init(numtasks, primary_device);
 
 
 		logger.info() << "Gaugeobservables:";

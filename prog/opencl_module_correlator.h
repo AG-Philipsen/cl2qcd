@@ -21,7 +21,6 @@
 #include "globaldefs.h"
 #include "types.h"
 #include "host_use_timer.h"
-#include "inputparameters.h"
 #include "opencl_compiler.hpp"
 
 #include "opencl_module.h"
@@ -45,8 +44,9 @@ public:
 	 * Default constructor, does nothing but make sure some pointer point to 0.
 	 *
 	 */
-	Opencl_Module_Correlator()
-		: create_point_source(0), create_stochastic_source(0),
+	Opencl_Module_Correlator(const meta::Inputparameters& params)
+		: Opencl_Module_Spinors(params),
+		  create_point_source(0), create_stochastic_source(0),
 		  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0),
 		  clmem_source(0), clmem_corr() { };
 
@@ -55,7 +55,7 @@ public:
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual void fill_collect_options(stringstream* collect_options);
+	virtual void fill_collect_options(std::stringstream* collect_options);
 	/**
 	 * Collect the buffers to generate for OpenCL.
 	 * Virtual method, allows to include more buffers in inherited classes.
@@ -99,7 +99,7 @@ public:
 	 * @param[in] which string that identifies the correlator (ps or sc, vx, vy, vz, ax, ay, az)
 	 * @return correlator_kernel
 	 */
-	cl_kernel get_correlator_kernel(string which);
+	cl_kernel get_correlator_kernel(std::string which);
 
 	/////////////////////////////////////////////////
 	//functions to get private variables

@@ -1,39 +1,12 @@
 #include "heatbath.h"
 
-#include <boost/program_options.hpp>
-namespace po = boost::program_options;
+#include "meta/util.hpp"
 
-int main(int argc, char* argv[])
+int main(int argc, const char* argv[])
 {
 	try {
-		po::options_description desc("Allowed options");
-		desc.add_options()
-		("help,h", "Produce this help message")
-		("input-file", po::value<std::string>(), "File containing the input parameters")
-		("log-level", po::value<std::string>(), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF")
-		("disable-ocl-compiler-opt", "Disable OpenCL compiler from performing optimizations (adds -cl-disable-opt)");
-		po::positional_options_description pos_opts;
-		pos_opts.add("input-file", 1);
-		po::variables_map vm;
-		po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);
-		if( vm.count( "help" ) ) { // see http://stackoverflow.com/questions/5395503/required-and-optional-arguments-using-boost-library-program-options as to why this is done before po::notifiy(vm)
-			std::cout << desc << '\n';
-			return 0;
-		}
-		po::notify(vm); // checks whether all required arguments are set
-
-		if(vm.count("log-level")) {
-			switchLogLevel(vm["log-level"].as<std::string>());
-		}
-
-		if(!vm.count("input-file")) {
-			logger.fatal() << "No input file specified. Please specify a file containing the input parameters.";
-		}
-
-		const char* inputfile = vm["input-file"].as<std::string>().c_str();
-		inputparameters parameters(vm.count("disable-ocl-compiler-opt"));
-		parameters.readfile(inputfile);
-		parameters.print_info_heatbath(argv[0]);
+		meta::Inputparameters parameters(argc, argv);
+		switchLogLevel(parameters.get_log_level());
 
 		//name of file to store gauge observables
 		stringstream gaugeout_name;
@@ -42,7 +15,7 @@ int main(int argc, char* argv[])
 		fstream logfile;
 		logfile.open("heatbath.log", std::ios::out | std::ios::app);
 		if(logfile.is_open()) {
-			parameters.print_info_heatbath(argv[0], &logfile);
+			meta::print_info_heatbath(argv[0], &logfile, parameters);
 			logfile.close();
 		} else {
 			throw File_Exception("heatbath.log");
@@ -54,7 +27,7 @@ int main(int argc, char* argv[])
 
 		init_timer.reset();
 
-		Gaugefield_heatbath gaugefield;
+		Gaugefield_heatbath gaugefield(parameters);
 
 		cl_device_type primary_device_type;
 		//check whether GPU should be used
@@ -63,7 +36,7 @@ int main(int argc, char* argv[])
 		} else {
 			primary_device_type = CL_DEVICE_TYPE_CPU;
 		}
-		gaugefield.init(1, primary_device_type, &parameters);
+		gaugefield.init(1, primary_device_type);
 		logger.trace() << "initial gaugeobservables: ";
 		gaugefield.print_gaugeobservables(0);
 

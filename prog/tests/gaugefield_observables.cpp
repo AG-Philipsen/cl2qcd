@@ -6,27 +6,27 @@
 
 #include "../opencl_module.h"
 #include "../gaugefield_hybrid.h"
+#include "../meta/util.hpp"
 
 extern std::string const version;
 std::string const version = "0.1";
 
+const std::string SOURCEFILE = std::string(SOURCEDIR)
+#ifdef _USEDOUBLEPREC_
+                               + "/tests/f_gauge_input_1";
+#else
+                               + "/tests/f_gauge_input_1_single";
+#endif
+const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
+
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
-		std::stringstream tmp;
-#ifdef _USEDOUBLEPREC_
-		tmp << SOURCEDIR << "/tests/f_gauge_input_1";
-#else
-		tmp << SOURCEDIR << "/tests/f_gauge_input_1_single";
-#endif
-		params.readfile(tmp.str().c_str());
-		init(1, device_type, &params);
+	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(meta::Inputparameters(2, PARAMS)) {
+		init(1, device_type);
 	};
 
 	Opencl_Module * getDevice() const;
-private:
-	inputparameters params;
 };
 
 //gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);

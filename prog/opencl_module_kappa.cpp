@@ -4,14 +4,15 @@
 #include <boost/regex.hpp>
 
 #include "logger.hpp"
+#include "meta/util.hpp"
 
 using namespace std;
 
 void Opencl_Module_Kappa::fill_collect_options(stringstream* collect_options)
 {
 	Opencl_Module::fill_collect_options(collect_options);
-	*collect_options <<  " -DBETA=" << get_parameters()->get_beta();
-	*collect_options <<  " -DXI_0=" << get_parameters()->get_xi_0();
+	*collect_options <<  " -DBETA=" << get_parameters().get_beta();
+	*collect_options <<  " -DXI_0=" << meta::get_xi_0(get_parameters());
 
 	return;
 }

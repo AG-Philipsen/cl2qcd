@@ -14,8 +14,8 @@ class Device : public Opencl_Module {
 	cl_kernel testKernel;
 
 public:
-	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int dev_rank) : Opencl_Module() {
-		Opencl_Module::init(queue, params, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module(params) {
+		Opencl_Module::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -28,15 +28,13 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
-		init(1, device_type, &params);
+	Dummyfield(cl_device_type device_type)
+		: Gaugefield_hybrid(meta::Inputparameters(0, 0)) {
+		init(1, device_type);
 	};
 
 	virtual void init_tasks();
 	virtual void finalize_opencl();
-
-private:
-	inputparameters params;
 };
 
 BOOST_AUTO_TEST_CASE( GPU )

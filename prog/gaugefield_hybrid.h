@@ -15,7 +15,7 @@
 #include "globaldefs.h"
 #include "types.h"
 #include "host_operations_gaugefield.h"
-#include "inputparameters.h"
+#include "meta/inputparameters.hpp"
 #include "host_readgauge.h"
 #include "host_writegaugefield.h"
 #include "host_use_timer.h"
@@ -33,8 +33,10 @@
 
 /**
  * Version number.
+ *
+ * @deprecated move this into some specific header or so
  */
-extern string const version;
+extern std::string const version;
 
 /**
  * Class for the gaugefield. Includes initialization, device management for multiple devices.
@@ -45,15 +47,23 @@ class Gaugefield_hybrid {
 public:
 
 	//constructor is empty
+	/**
+	 * Create a new gaugefield.
+	 *
+	 * @param[in] params points to an instance of inputparameters
+	 */
+	Gaugefield_hybrid(const meta::Inputparameters& params)
+		: parameters(params) { };
 
 	//init functions
 	/**
 	 * Initialize class.
 	 * @param[in] numtasks sets the number of different tasks
 	 * @param[in] primary_device_type defines which device type (CPU/GPU) is to be preferred
-	 * @param[in] input_parameters points to an instance of inputparameters
+	 *
+	 * @deprecated move to constructor
 	 */
-	void init(int numtasks, cl_device_type primary_device_type, inputparameters* input_parameters);
+	void init(int numtasks, cl_device_type primary_device_type);
 	/**
 	 * Initialize class.
 	 * Helper function called by init()
@@ -163,15 +173,10 @@ public:
 	 */
 	int get_num_tasks ();
 	/**
-	 * Sets private member * parameters
-	 * @param[in] parameters
-	 */
-	void set_parameters (inputparameters * parameters_val);
-	/**
 	 * Returns private member * parameters
 	 * @return parameters
 	 */
-	inputparameters * get_parameters ();
+	const meta::Inputparameters& get_parameters ();
 	/**
 	 * Sets private member gaugefield u (structures)
 	 */
@@ -196,7 +201,7 @@ public:
 	 * Return OpenCL double extension for device units for task ntask
 	 * @param[in] ntask number of target task
 	 */
-	string get_double_ext(int ntask);
+	std::string get_double_ext(int ntask);
 	/**
 	 * Returns device type for given task.
 	 * @param[in] ntask id of target task
@@ -213,7 +218,7 @@ public:
 	 * Save gaugefield to a file with given name
 	 * @param[in] outputfile name of file
 	 */
-	void save(string outputfile);
+	void save(std::string outputfile);
 	/**
 	 * Return plaquette value (calculated from host gaugefield)
 	 */
@@ -293,7 +298,7 @@ public:
 	* @param[in] check Size of the ILDG field.
 	* @todo Replace hmc_gaugefield type by s_gaugefield type (LZ)
 	*/
-	void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check, const inputparameters * const params);
+	void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check);
 	/**
 	* Create the IDLG representation of the given gaugefield.
 	*
@@ -301,7 +306,7 @@ public:
 	* @param[in] source The gaugefield in the internal representation
 	* @todo Replace hmc_gaugefield type by s_gaugefield type (LZ)
 	*/
-	void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source, const inputparameters * const params);
+	void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source);
 
 #ifdef _PROFILING_
 	void print_profiling(std::string filename);
@@ -313,7 +318,7 @@ protected:
 	cl_command_queue* queue;
 
 private:
-	inputparameters* parameters;
+	const meta::Inputparameters& parameters;
 	Matrixsu3 * sgf;
 	int num_tasks;
 	int num_devices;
@@ -325,7 +330,7 @@ private:
 	cl_device_id* devices;
 
 
-	string* device_double_extension;
+	std::string* device_double_extension;
 	cl_uint* max_compute_units;
 };
 

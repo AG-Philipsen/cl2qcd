@@ -1,5 +1,6 @@
 #include "../opencl_module_fermions.h"
 #include "../gaugefield_hybrid.h"
+#include "../meta/util.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -14,8 +15,8 @@ class Device : public Opencl_Module_Fermions {
 	cl_kernel testKernel;
 
 public:
-	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int dev_rank) : Opencl_Module_Fermions() {
-		Opencl_Module_Fermions::init(queue, params, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Fermions(params) {
+		Opencl_Module_Fermions::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -26,15 +27,14 @@ public:
 	void clear_kernels();
 };
 
+const std::string SOURCEFILE = std::string(SOURCEDIR) + "/tests/m_gpu_input_1";
+const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
+
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
-		std::stringstream tmp;
-		tmp << SOURCEDIR << "/tests/m_gpu_input_1";
-		params.readfile(tmp.str().c_str());
-
-		init(1, device_type, &params);
+	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(meta::Inputparameters(2, PARAMS)) {
+		init(1, device_type);
 	};
 
 	virtual void init_tasks();
@@ -47,7 +47,6 @@ public:
 private:
 	void fill_buffers();
 	void clear_buffers();
-	inputparameters params;
 	cl_mem in, out;
 	cl_mem sqnorm;
 	spinor * sf_in;
@@ -194,17 +193,17 @@ void Dummyfield::fill_buffers()
 
 	cl_context context = opencl_modules[0]->get_context();
 
-	size_t NUM_ELEMENTS_SF =  params.get_spinorfieldsize();
+	size_t NUM_ELEMENTS_SF =  meta::get_spinorfieldsize(get_parameters());
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_out = new spinor[NUM_ELEMENTS_SF];
 
 	//use the variable use_cg to switch between cold and random input sf
-	if(get_parameters()->get_use_cg() == true) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	if(get_parameters().get_use_cg() == true) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
 	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
 	BOOST_REQUIRE(sf_in);
 
-	size_t sf_buf_size = get_parameters()->get_sf_buf_size();
+	size_t sf_buf_size = NUM_ELEMENTS_SF * sizeof(spinor);
 	logger.warn() << sf_buf_size;
 	//create buffer for sf on device (and copy sf_in to both for convenience)
 	in = clCreateBuffer(context, CL_MEM_READ_WRITE, sf_buf_size, 0, &err );
@@ -296,13 +295,13 @@ void Dummyfield::runTestKernel()
 {
 	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = get_parameters()->get_spinorfieldsize();
+		gs = meta::get_spinorfieldsize(get_parameters());
 		ls = 64;
 	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
 	Device * device = static_cast<Device*>(opencl_modules[0]);
-	device->runTestKernel(out, in, gs, ls, get_parameters()->get_kappa(), get_parameters()->get_mubar());
+	device->runTestKernel(out, in, gs, ls, get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
 }
 

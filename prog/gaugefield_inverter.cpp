@@ -1,5 +1,7 @@
 #include "gaugefield_inverter.h"
 
+#include "meta/util.hpp"
+
 
 Opencl_Module_Fermions* Gaugefield_inverter::get_task_solver()
 {
@@ -15,15 +17,15 @@ void Gaugefield_inverter::init_tasks()
 {
 	//allocate host-memory for solution- and source-buffer
 	int num_sources;
-	if(get_parameters()->get_use_pointsource() == true)
+	if(get_parameters().get_use_pointsource() == true)
 		num_sources = 12;
 	else
-		num_sources = get_parameters()->get_num_sources();
+		num_sources = get_parameters().get_num_sources();
 
-	size_t bufsize = num_sources * get_parameters()->get_spinorfieldsize() * sizeof(spinor);
+	size_t bufsize = num_sources * meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
 	logger.debug() << "allocate memory for solution-buffer on host of size " << bufsize / 1024. / 1024. / 1024. << " GByte";
-	solution_buffer = new spinor [num_sources * get_parameters()->get_spinorfieldsize()];
-	source_buffer = new spinor [num_sources * get_parameters()->get_spinorfieldsize()];
+	solution_buffer = new spinor [num_sources * meta::get_spinorfieldsize(get_parameters())];
+	source_buffer = new spinor [num_sources * meta::get_spinorfieldsize(get_parameters())];
 
 	task_solver = 0;
 	task_correlator = 1;
@@ -32,14 +34,14 @@ void Gaugefield_inverter::init_tasks()
 
 
 	//LZ: right now, each task carries exactly one opencl device -> thus the below allocation with [1]. Could be generalized in future
-	opencl_modules[task_solver] = new Opencl_Module_Fermions[1];
-	get_task_solver()->init(queue[task_solver], get_parameters(), get_max_compute_units(task_solver), get_double_ext(task_solver), task_solver);
+	opencl_modules[task_solver] = new Opencl_Module_Fermions(get_parameters());
+	get_task_solver()->init(queue[task_solver], get_max_compute_units(task_solver), get_double_ext(task_solver), task_solver);
 
-	opencl_modules[task_correlator] = new Opencl_Module_Correlator[1];
-	get_task_correlator()->init(queue[task_correlator], get_parameters(), get_max_compute_units(task_correlator), get_double_ext(task_correlator), task_correlator);
+	opencl_modules[task_correlator] = new Opencl_Module_Correlator(get_parameters());
+	get_task_correlator()->init(queue[task_correlator], get_max_compute_units(task_correlator), get_double_ext(task_correlator), task_correlator);
 
 
-	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
+	int spinorfield_size = sizeof(spinor) * meta::get_spinorfieldsize(get_parameters());
 
 	clmem_corr = get_task_correlator()->create_rw_buffer(spinorfield_size * num_sources);
 	clmem_source = get_task_correlator()->create_rw_buffer(spinorfield_size);
@@ -73,40 +75,40 @@ void Gaugefield_inverter::finalize_opencl()
 
 void Gaugefield_inverter::sync_solution_buffer()
 {
-	size_t sfsize = 12 * get_parameters()->get_spinorfieldsize() * sizeof(spinor);
+	size_t sfsize = 12 * meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
 	get_task_correlator()->copy_buffer_to_device(solution_buffer, get_clmem_corr(), sfsize);
 }
 
 void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 {
-	int use_eo = get_parameters()->get_use_eo();
+	int use_eo = get_parameters().get_use_eo();
 
 	//decide on type of sources
 	int num_sources;
-	if(get_parameters()->get_use_pointsource() == true)
+	if(get_parameters().get_use_pointsource() == true)
 		num_sources = 12;
 	else
-		num_sources = get_parameters()->get_num_sources();
+		num_sources = get_parameters().get_num_sources();
 
 	Opencl_Module_Fermions * solver = get_task_solver();
 
 	//allocate host-memory for tmp-buffer
-	size_t sfsize = get_parameters()->get_spinorfieldsize() * sizeof(spinor);
-	spinor* sftmp = new spinor [get_parameters()->get_spinorfieldsize()];
+	size_t sfsize = meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
+	spinor* sftmp = new spinor [meta::get_spinorfieldsize(get_parameters())];
 
-	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
+	int spinorfield_size = sizeof(spinor) * meta::get_spinorfieldsize(get_parameters());
 	cl_mem clmem_res = solver->create_rw_buffer(spinorfield_size);
 
 	//apply stout smearing if wanted
-	if(get_parameters()->get_use_smearing() == true) {
+	if(get_parameters().get_use_smearing() == true) {
 		solver->smear_gaugefield(solver->get_gaugefield(), NULL);
 	}
 
 	//for CG, one needs a hermitian matrix...
-	if(get_parameters()->get_use_cg() == true){
-	  logger.fatal() << "CG usage requires a hermitian matrix. This is not implemented yet...";
-	  //the call shoul be like this
-	  //::QplusQminus_eo f_eo(solver); 
+	if(get_parameters().get_use_cg() == true) {
+		logger.fatal() << "CG usage requires a hermitian matrix. This is not implemented yet...";
+		//the call shoul be like this
+		//::QplusQminus_eo f_eo(solver);
 	}
 	::Aee f_eo(solver);
 	::M f_neo(solver);
@@ -116,7 +118,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 		//copy source from to device
 		//NOTE: this is a blocking call!
 		logger.debug() << "copy pointsource between devices";
-		solver->copy_buffer_to_device(&source_buffer[k * get_parameters()->get_vol4d()], get_clmem_source(), sfsize);
+		solver->copy_buffer_to_device(&source_buffer[k * meta::get_vol4d(get_parameters())], get_clmem_source(), sfsize);
 
 		logger.debug() << "calling solver..";
 		solver->solver(f, clmem_res, get_clmem_source(), solver->get_gaugefield(), solver_timer);
@@ -124,10 +126,10 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 		//add solution to solution-buffer
 		//NOTE: this is a blocking call!
 		logger.debug() << "add solution...";
-		solver->get_buffer_from_device(clmem_res, &solution_buffer[k * get_parameters()->get_vol4d()], sfsize);
+		solver->get_buffer_from_device(clmem_res, &solution_buffer[k * meta::get_vol4d(get_parameters())], sfsize);
 	}
 
-	if(get_parameters()->get_use_smearing() == true) {
+	if(get_parameters().get_use_smearing() == true) {
 		solver->unsmear_gaugefield(solver->get_gaugefield());
 	}
 
@@ -136,8 +138,10 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 }
 
-void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
+void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 {
+	using namespace std;
+
 	//for now, make sure clmem_corr is properly filled; maybe later we can increase performance a bit by playing with this...
 	sync_solution_buffer();
 
@@ -148,7 +152,7 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 	of.open(corr_fn.c_str(), ios_base::app);
 	if( !of.is_open() ) throw File_Exception(corr_fn);
 	of << "# flavour doublet correlators" << endl;
-	if(get_parameters()->get_corr_dir() == 3) {
+	if(get_parameters().get_corr_dir() == 3) {
 		of << "# format: J P z real complex"  << endl;
 		of << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), z spatial distance, value (aggregate x y z)" << endl;
 	} else {
@@ -158,16 +162,16 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 
 
 	int num_corr_entries =  0;
-	switch (get_parameters()->get_corr_dir()) {
+	switch (get_parameters().get_corr_dir()) {
 		case 0 :
-			num_corr_entries = get_parameters()->get_nt();
+			num_corr_entries = get_parameters().get_ntime();
 			break;
 		case 3 :
-			num_corr_entries = get_parameters()->get_ns();
+			num_corr_entries = get_parameters().get_nspace();
 			break;
 		default :
 			stringstream errmsg;
-			errmsg << "Correlator direction " << get_parameters()->get_corr_dir() << " has not been implemented.";
+			errmsg << "Correlator direction " << get_parameters().get_corr_dir() << " has not been implemented.";
 			throw Print_Error_Message(errmsg.str());
 	}
 
@@ -300,21 +304,21 @@ void Gaugefield_inverter::flavour_doublet_correlators(string corr_fn)
 void Gaugefield_inverter::create_sources()
 {
 	//create sources on the correlator-device and save them on the host
-	size_t sfsize = get_parameters()->get_spinorfieldsize() * sizeof(spinor);
-	if(get_parameters()->get_use_pointsource() == true) {
+	size_t sfsize = meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
+	if(get_parameters().get_use_pointsource() == true) {
 		logger.debug() << "start creating point-sources...";
 		for(int k = 0; k < 12; k++) {
-			get_task_correlator()->create_point_source_device(get_clmem_source(), k, get_parameters()->get_source_pos_spatial(), get_parameters()->get_source_pos_temporal());
+			get_task_correlator()->create_point_source_device(get_clmem_source(), k, meta::get_source_pos_spatial(get_parameters()), get_parameters().get_pointsource_t());
 			logger.debug() << "copy pointsource to host";
-			get_task_correlator()->get_buffer_from_device(get_clmem_source(), &source_buffer[k * get_parameters()->get_vol4d()], sfsize);
+			get_task_correlator()->get_buffer_from_device(get_clmem_source(), &source_buffer[k * meta::get_vol4d(get_parameters())], sfsize);
 		}
 	} else {
 		logger.debug() << "start creating stochastic-sources...";
-		int num_sources = get_parameters()->get_num_sources();
+		int num_sources = get_parameters().get_num_sources();
 		for(int k = 0; k < num_sources; k++) {
 			get_task_correlator()->create_stochastic_source_device(get_clmem_source());
 			logger.debug() << "copy stochastic-source to host";
-			get_task_correlator()->get_buffer_from_device(get_clmem_source(), &source_buffer[k * get_parameters()->get_vol4d()], sfsize);
+			get_task_correlator()->get_buffer_from_device(get_clmem_source(), &source_buffer[k * meta::get_vol4d(get_parameters())], sfsize);
 		}
 	}
 }

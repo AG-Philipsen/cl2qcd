@@ -21,7 +21,6 @@
 #include "types.h"
 #include "host_use_timer.h"
 #include "host_random.h"
-#include "inputparameters.h"
 #include "opencl_compiler.hpp"
 
 #include "opencl_module.h"
@@ -39,10 +38,17 @@
 class Opencl_Module_Heatbath : public Opencl_Module_Ran {
 public:
 	/**
+	 * Empty constructor.
+	 *
+	 * @param[in] params points to an instance of inputparameters
+	 */
+	Opencl_Module_Heatbath(const meta::Inputparameters& params)
+		: Opencl_Module_Ran(params) {};
+	/**
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual void fill_collect_options(stringstream* collect_options);
+	virtual void fill_collect_options(std::stringstream* collect_options);
 
 	/**
 	 * Collect the buffers to generate for OpenCL.

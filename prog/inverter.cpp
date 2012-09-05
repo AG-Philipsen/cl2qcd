@@ -1,44 +1,19 @@
 #include "inverter.h"
 
-#include <boost/program_options.hpp>
-namespace po = boost::program_options;
+#include "meta/util.hpp"
 
-int main(int argc, char* argv[])
+int main(int argc, const char* argv[])
 {
 	try {
-		po::options_description desc("Allowed options");
-		desc.add_options()
-		("help,h", "Produce this help message")
-		("input-file", po::value<std::string>(), "File containing the input parameters")
-		("log-level", po::value<std::string>(), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF")
-		("disable-ocl-compiler-opt", "Disable OpenCL compiler from performing optimizations (adds -cl-disable-opt)");
-		po::positional_options_description pos_opts;
-		pos_opts.add("input-file", 1);
-		po::variables_map vm;
-		po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_opts).run(), vm);
-		if( vm.count( "help" ) ) { // see http://stackoverflow.com/questions/5395503/required-and-optional-arguments-using-boost-library-program-options as to why this is done before po::notifiy(vm)
-			std::cout << desc << '\n';
-			return 0;
-		}
-		po::notify(vm); // checks whether all required arguments are set
+		meta::Inputparameters parameters(argc, argv);
+		switchLogLevel(parameters.get_log_level());
 
-		if(vm.count("log-level")) {
-			switchLogLevel(vm["log-level"].as<std::string>());
-		}
-
-		if(!vm.count("input-file")) {
-			logger.fatal() << "No input file specified. Please specify a file containing the input parameters.";
-		}
-
-		const char* inputfile = vm["input-file"].as<std::string>().c_str();
-		inputparameters parameters(vm.count("disable-ocl-compiler-opt"));
-		parameters.readfile(inputfile);
-		parameters.print_info_inverter(argv[0]);
+		meta::print_info_inverter(argv[0], parameters);
 
 		ofstream ofile;
 		ofile.open("inverter.log");
 		if(ofile.is_open()) {
-			parameters.print_info_inverter(argv[0], &ofile);
+			meta::print_info_inverter(argv[0], &ofile, parameters);
 			ofile.close();
 		} else {
 			logger.warn() << "Could not open log file for inverter.";
@@ -48,7 +23,7 @@ int main(int argc, char* argv[])
 		stringstream corr_fn;
 		switch ( parameters.get_startcondition() ) {
 			case START_FROM_SOURCE :
-				corr_fn << parameters.sourcefile << "_correlators.dat" ;
+				corr_fn << parameters.get_sourcefile() << "_correlators.dat" ;
 				break;
 			case HOT_START :
 				corr_fn << "conf.hot_correlators.dat" ;
@@ -63,11 +38,11 @@ int main(int argc, char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		init_timer.reset();
-		Gaugefield_inverter gaugefield;
+		Gaugefield_inverter gaugefield(parameters);
 
 		//use 2 devices: one for solver, one for correlator
 		int numtasks = 2;
-		if(parameters.get_num_dev() != 2 )
+		if(parameters.get_device_count() != 2 )
 			logger.warn() << "Only 1 device demanded by input file. All calculations performed on primary device.";
 
 		cl_device_type primary_device;
@@ -81,12 +56,12 @@ int main(int argc, char* argv[])
 		}
 
 		//check if correlator-device is a GPU and in that case exit because the kernels are not meant to be executed there
-		if ( parameters.get_use_gpu() == false && parameters.get_num_dev() == 2) {
+		if ( parameters.get_use_gpu() == false && parameters.get_device_count() == 2) {
 			throw Print_Error_Message("GPU cannot be used for correlator-calculation.", __FILE__, __LINE__);
 		}
 
 		logger.trace() << "Init gaugefield" ;
-		gaugefield.init(numtasks, primary_device, &parameters);
+		gaugefield.init(numtasks, primary_device);
 
 		logger.info() << "Gaugeobservables:";
 		gaugefield.print_gaugeobservables(0);
@@ -130,7 +105,7 @@ int main(int argc, char* argv[])
 			fstream prof_file;
 			prof_file.open(profiling_out.c_str(), std::ios::out | std::ios::app);
 			if(prof_file.is_open()) {
-				parameters.print_info_inverter(argv[0], &prof_file);
+				meta::print_info_inverter(argv[0], &prof_file, parameters);
 				prof_file.close();
 			} else {
 				logger.warn() << "Could not open " << profiling_out;

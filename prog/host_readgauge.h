@@ -59,17 +59,17 @@ void get_XML_info_simple(xmlTextReaderPtr reader, int numbers[6], char * field);
 void get_XML_infos(const char * filename, int * prec, int * lx, int * ly, int * lz, int *lt, int * flavours, char * field_out );
 
 // get XML Infos: file to be read + parameters
-void read_meta_data(char * file, int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries,
+void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries,
                          int * flavours, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
                          char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, int * fermion);
 
 void read_binary_data_single(char * file, float * numArray, int num_entries, int filelength );
 
-void read_data_single(char * file, float * num_array_single, int num_entries);
+void read_data_single(const char * file, float * num_array_single, int num_entries);
 
 void read_binary_data_double(char * file, double * numArray, int num_entries, int filelength );
 
-void read_data_double(char * file, double * num_array_double, int num_entries);
+void read_data_double(const char * file, double * num_array_double, int num_entries);
 
 void read_tmlqcd_file(char * file,
                            int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries, int * flavours,
@@ -94,7 +94,7 @@ public:
 	 * @param[in] precision The precision expected for the gaugefield.
 	 * @param[out] array    The loaded gaugefield
 	 */
-	void readsourcefile(char * file, int precision, hmc_float ** array);
+	void readsourcefile(const char * file, int precision, hmc_float ** array);
 	void set_defaults();
 	void val_assign_source(int * out, int in);
 	void val_assign_source(hmc_float * out, hmc_float in);

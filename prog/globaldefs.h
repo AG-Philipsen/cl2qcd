@@ -16,24 +16,12 @@
 
 #ifndef _INKERNEL_
 
-#define SPINORSIZE NSPIN*NC
-#define HALFSPINORSIZE NSPIN/2*NC
-#define SU3ALGEBRASIZE NC*NC-1
-
 //startconditions:
 #define START_FROM_SOURCE 2
 #define COLD_START 0
 #define HOT_START 1
 
 #endif //_INKERNEL_
-
-//define actions
-#define WILSON 0
-#define CLOVER 1
-#define TWISTEDMASS 2
-#define TLSYM 1
-#define IWASAKI 2
-#define DBW2 3
 
 #define LEAPFROG 0
 #define TWOMN 1

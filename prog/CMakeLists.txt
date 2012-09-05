@@ -120,7 +120,6 @@ set_abs_paths(OPTIMAL_FILES
 	host_readgauge.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
-	inputparameters.cpp
 	logger.cpp
 	opencl_compiler.cpp
 	opencl_module.cpp

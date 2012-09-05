@@ -1,6 +1,8 @@
 #include "../opencl_module_hmc.h"
 #include "../gaugefield_hybrid.h"
 
+#include "../meta/util.hpp"
+
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE Fermionforce_eo
@@ -12,9 +14,10 @@ std::string const version = "0.1";
 class Device : public Opencl_Module_Hmc {
 
 	cl_kernel testKernel;
+	meta::Counter counter1, counter2, counter3, counter4;
 public:
-	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc() {
-		Opencl_Module_Hmc::init(queue, params, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc(params, &counter1, &counter2, &counter3, &counter4) {
+		Opencl_Module_Hmc::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -25,19 +28,18 @@ public:
 	void clear_kernels();
 };
 
+const std::string SOURCEFILE = std::string(SOURCEDIR)
+#ifdef _USEDOUBLEPREC_
+                               + "/tests/f_fermion_eo_input_1";
+#else
+                               + "/tests/f_fermion_eo_input_1_single";
+#endif
+const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
-		std::stringstream tmp;
-#ifdef _USEDOUBLEPREC_
-		tmp << SOURCEDIR << "/tests/f_fermion_eo_input_1";
-#else
-		tmp << SOURCEDIR << "/tests/f_fermion_eo_input_1_single";
-#endif
-		params.readfile(tmp.str().c_str());
-
-		init(1, device_type, &params);
+	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(meta::Inputparameters(2, PARAMS)) {
+		init(1, device_type);
 	};
 
 	virtual void init_tasks();
@@ -50,7 +52,6 @@ public:
 private:
 	void fill_buffers();
 	void clear_buffers();
-	inputparameters params;
 	cl_mem in1, in2, in3, in4, out;
 	cl_mem sqnorm;
 	spinor * sf_in1;
@@ -331,10 +332,10 @@ void Dummyfield::fill_buffers()
 	cl_context context = opencl_modules[0]->get_context();
 
 	int NUM_ELEMENTS_SF;
-	if(get_parameters()->get_use_eo() == true) NUM_ELEMENTS_SF =  params.get_eoprec_spinorfieldsize();
-	else NUM_ELEMENTS_SF =  params.get_spinorfieldsize();
+	if(get_parameters().get_use_eo() == true) NUM_ELEMENTS_SF =  meta::get_eoprec_spinorfieldsize(get_parameters());
+	else NUM_ELEMENTS_SF =  get_spinorfieldsize(get_parameters());
 
-	int NUM_ELEMENTS_AE = params.get_gaugemomentasize() * params.get_su3algebrasize();
+	int NUM_ELEMENTS_AE = meta::get_vol4d(get_parameters()) * NDIM * meta::get_su3algebrasize();
 
 	sf_in1 = new spinor[NUM_ELEMENTS_SF];
 	sf_in2 = new spinor[NUM_ELEMENTS_SF];
@@ -343,7 +344,7 @@ void Dummyfield::fill_buffers()
 	sf_out = new hmc_float[NUM_ELEMENTS_AE];
 
 	//use the variable use_cg to switch between cold and random input sf
-	if(get_parameters()->get_use_cg() == true) {
+	if(get_parameters().get_use_cg() == true) {
 		fill_sf_with_one(sf_in1, NUM_ELEMENTS_SF);
 		fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
 		fill_sf_with_one(sf_in3, NUM_ELEMENTS_SF);
@@ -494,7 +495,7 @@ void Dummyfield::runTestKernel(int evenodd)
 {
 	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = get_parameters()->get_eoprec_spinorfieldsize();
+		gs = meta::get_eoprec_spinorfieldsize(get_parameters());
 		ls = 64;
 	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
 		gs = opencl_modules[0]->get_max_compute_units();
@@ -505,10 +506,10 @@ void Dummyfield::runTestKernel(int evenodd)
 	Device * device = static_cast<Device*>(opencl_modules[0]);
 	if(evenodd == ODD) {
 		//this is then force(Y_odd, X_even) == force(in2, in3)
-		device->runTestKernel(out, in2, in3, device->get_gaugefield(), gs, ls, evenodd, get_parameters()->get_kappa());
+		device->runTestKernel(out, in2, in3, device->get_gaugefield(), gs, ls, evenodd, get_parameters().get_kappa());
 	} else {
 		//this is then force(Y_even, X_odd) == force(in1, in4)
-		device->runTestKernel(out, in1, in4, device->get_gaugefield(), gs, ls, evenodd, get_parameters()->get_kappa());
+		device->runTestKernel(out, in1, in4, device->get_gaugefield(), gs, ls, evenodd, get_parameters().get_kappa());
 	}
 }
 
