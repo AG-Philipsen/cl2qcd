@@ -21,6 +21,7 @@ void checkDefaults(const Inputparameters params)
 
 	BOOST_REQUIRE_EQUAL(params.get_selected_devices().size(), 0);
 	BOOST_REQUIRE_EQUAL(params.get_device_count(), 0);
+	BOOST_REQUIRE_EQUAL(params.get_use_gpu(), true);
 
 	BOOST_REQUIRE_EQUAL(params.get_use_aniso(), false);
 	BOOST_REQUIRE_EQUAL(params.get_use_chem_pot_re(), false);
@@ -146,6 +147,7 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_precision(), 32);
 	BOOST_REQUIRE_EQUAL(params.get_selected_devices().size(), 0);
 	BOOST_REQUIRE_EQUAL(params.get_device_count(), 1);
+	BOOST_REQUIRE_EQUAL(params.get_use_gpu(), false);
 
 	BOOST_REQUIRE_EQUAL(params.get_use_aniso(), true);
 	BOOST_REQUIRE_EQUAL(params.get_use_chem_pot_re(), true);

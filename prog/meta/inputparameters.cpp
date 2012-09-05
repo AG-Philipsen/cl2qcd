@@ -40,6 +40,10 @@ int Inputparameters::get_device_count() const noexcept
 {
 	return device_count;
 }
+bool Inputparameters::get_use_gpu() const noexcept
+{
+	return use_gpu;
+}
 
 bool Inputparameters::get_use_aniso() const noexcept
 {
@@ -374,6 +378,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 
 	("device,d", po::value<std::vector<int>>(&selected_devices), "ID of a divice to use. Can be specified multiple times.")
 	("num_dev", po::value<int>(&device_count)->default_value(0), "Maximum number of devices to use.")
+	("use_gpu", po::value<bool>(&use_gpu)->default_value(true), "Use GPUs")
 
 	("use_aniso", po::value<bool>(&use_aniso)->default_value(false))
 	("use_chem_pot_re", po::value<bool>(&use_chem_pot_re)->default_value(false))
