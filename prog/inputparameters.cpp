@@ -185,8 +185,8 @@ void inputparameters::readfile(const char* ifn)
 		bool c1set = false;
 
 		while (infile.good()) {
-		  //use this to see if a line is found or if it is found more then once
-		  int found = 0;
+			//use this to see if a line is found or if it is found more then once
+			int found = 0;
 			char linebuf[256];
 			infile.getline(linebuf, 256);
 			std::string line(linebuf);
@@ -196,96 +196,125 @@ void inputparameters::readfile(const char* ifn)
 			}
 			if(line.find("#") != std::string::npos) continue; //allow comments
 			//CP: this does not work...
-			//			if(line.find("") != std::string::npos) continue; //skip emtpy lines
+			//      if(line.find("") != std::string::npos) continue; //skip emtpy lines
 
 			if( line.find("kappa") != std::string::npos ||
 			    line.find("Kappa") != std::string::npos ) {
-			  if( line.find("mp") != std::string::npos ||
-			      line.find("MP") != std::string::npos ||
-			      line.find("Mp") != std::string::npos )
-			    {val_assign(&kappa_mp, line); found ++;}
-			  else
-			    {val_assign(&kappa, line); found ++;}
+				if( line.find("mp") != std::string::npos ||
+				    line.find("MP") != std::string::npos ||
+				    line.find("Mp") != std::string::npos ) {
+					val_assign(&kappa_mp, line);
+					found ++;
+				} else {
+					val_assign(&kappa, line);
+					found ++;
+				}
 			}
 			if( line.find("mu") != std::string::npos ||
 			    line.find("Mu") != std::string::npos) {
-			  if( line.find("mp") != std::string::npos ||
-			      line.find("MP") != std::string::npos ||
-			      line.find("Mp") != std::string::npos ) {
-			    val_assign(&mu_mp, line);
-			    //calculate mubar
-			    this->calc_mubar_mp();
-			    mu_mpset = true;
-			    found ++;
-			  } else {
-			    val_assign(&mu, line);
-			    //calculate mubar
-			    this->calc_mubar();
-			    muset = true;
-			    found ++;
-			  }
+				if( line.find("mp") != std::string::npos ||
+				    line.find("MP") != std::string::npos ||
+				    line.find("Mp") != std::string::npos ) {
+					val_assign(&mu_mp, line);
+					//calculate mubar
+					this->calc_mubar_mp();
+					mu_mpset = true;
+					found ++;
+				} else {
+					val_assign(&mu, line);
+					//calculate mubar
+					this->calc_mubar();
+					muset = true;
+					found ++;
+				}
 			}
 			if( line.find("csw") != std::string::npos ||
 			    line.find("Csw") != std::string::npos) {
-			  if( line.find("mp") != std::string::npos ||
-			      line.find("MP") != std::string::npos ||
-			      line.find("Mp") != std::string::npos ) {
-			    val_assign(&csw_mp, line);
-			    csw_mpset = true;
-			    found ++;
-			  } else {
-			    val_assign(&csw, line);
-			    cswset = true;
-			    found ++;
-			  }
+				if( line.find("mp") != std::string::npos ||
+				    line.find("MP") != std::string::npos ||
+				    line.find("Mp") != std::string::npos ) {
+					val_assign(&csw_mp, line);
+					csw_mpset = true;
+					found ++;
+				} else {
+					val_assign(&csw, line);
+					cswset = true;
+					found ++;
+				}
 			}
-			
+
 			if( line.find("beta") != std::string::npos ||
-			    line.find("Beta") != std::string::npos) {val_assign(&beta, line); found ++;}
-			
+			    line.find("Beta") != std::string::npos) {
+				val_assign(&beta, line);
+				found ++;
+			}
+
 			if( line.find("theta_fermion_spatial") != std::string::npos ||
 			    line.find("theta_spatial") != std::string::npos ||
 			    line.find("theta_s") != std::string::npos ||
 			    line.find("thetas") != std::string::npos ||
-			    line.find("ThetaS") != std::string::npos  ) {val_assign(&theta_fermion_spatial, line); found ++;}
-			
+			    line.find("ThetaS") != std::string::npos  ) {
+				val_assign(&theta_fermion_spatial, line);
+				found ++;
+			}
+
 			if( line.find("theta_fermion_temporal") != std::string::npos ||
 			    line.find("theta_temporal") != std::string::npos ||
 			    line.find("theta_t") != std::string::npos ||
-			    line.find("ThetaT") != std::string::npos ) {val_assign(&theta_fermion_temporal, line); found ++;}
-			
+			    line.find("ThetaT") != std::string::npos ) {
+				val_assign(&theta_fermion_temporal, line);
+				found ++;
+			}
+
 			if( line.find("cgmax") != std::string::npos ||
 			    line.find("CGmax") != std::string::npos ||
 			    line.find("Cgmax") != std::string::npos ) {
-			  if( line.find("mp") != std::string::npos ||
-			      line.find("MP") != std::string::npos ||
-			      line.find("Mp") != std::string::npos ) {
-			    val_assign(&cgmax_mp, line); found ++;
-			  } else {
-			    val_assign(&cgmax, line); found ++;
-			  }
+				if( line.find("mp") != std::string::npos ||
+				    line.find("MP") != std::string::npos ||
+				    line.find("Mp") != std::string::npos ) {
+					val_assign(&cgmax_mp, line);
+					found ++;
+				} else {
+					val_assign(&cgmax, line);
+					found ++;
+				}
 			}
-			
+
 			if( line.find("Solver") != std::string::npos ||
 			    line.find("solver") != std::string::npos ||
 			    line.find("SOLVER") != std::string::npos  ) {
-			  if( line.find("mp") != std::string::npos ||
-			      line.find("MP") != std::string::npos ||
-			      line.find("Mp") != std::string::npos ) {
-			    solver_assign(&use_cg_mp, line, true);
-			    found ++;
-			  } else {
-			    solver_assign(&use_cg, line, false);
-			    found ++;
-			  }
+				if( line.find("mp") != std::string::npos ||
+				    line.find("MP") != std::string::npos ||
+				    line.find("Mp") != std::string::npos ) {
+					solver_assign(&use_cg_mp, line, true);
+					found ++;
+				} else {
+					solver_assign(&use_cg, line, false);
+					found ++;
+				}
 			}
-			if(line.find("sol_pr") != std::string::npos) {val_assign(&solver_prec, line); found ++;}
-			if(line.find("force_pr") != std::string::npos) {val_assign(&force_prec, line); found ++;}
-			
-			if(line.find("writefrequency") != std::string::npos) {val_assign(&writefrequency, line); found ++;}
-			if(line.find("savefrequency") != std::string::npos) {val_assign(&savefrequency, line); found ++;}
-			if(line.find("saveconfigs") != std::string::npos) {bool_assign(&saveconfigs, line); found ++;}
-			
+			if(line.find("sol_pr") != std::string::npos) {
+				val_assign(&solver_prec, line);
+				found ++;
+			}
+			if(line.find("force_pr") != std::string::npos) {
+				val_assign(&force_prec, line);
+				found ++;
+			}
+
+			if(line.find("writefrequency") != std::string::npos) {
+				val_assign(&writefrequency, line);
+				found ++;
+			}
+			if(line.find("savefrequency") != std::string::npos) {
+				val_assign(&savefrequency, line);
+				found ++;
+			}
+			if(line.find("saveconfigs") != std::string::npos) {
+				bool_assign(&saveconfigs, line);
+				found ++;
+			}
+
 			if( line.find("gauge_only") != std::string::npos ||
 			    line.find("Gauge_only") != std::string::npos ||
 			    line.find("only gauge") != std::string::npos ||
@@ -295,54 +324,84 @@ void inputparameters::readfile(const char* ifn)
 			    line.find("PureGaugeTheory") != std::string::npos ||
 			    line.find("PureGauge") != std::string::npos ||
 			    line.find("puregauge") != std::string::npos ||
-			    line.find("Only Gauge") != std::string::npos ) {bool_assign(&use_gauge_only, line); found ++;}
-			
-			if(line.find("prec") != std::string::npos ||
-			   line.find("Prec") != std::string::npos ) {val_assign(&prec, line); found ++;}
-			
-			if(line.find("readsource") != std::string::npos) {startcond_assign(&startcondition, line); found ++;}
-			if(line.find("startcondition") != std::string::npos) {startcond_assign(&startcondition, line); found ++;}
-			if(line.find("sourcefile") != std::string::npos) {
-			  val_assign(&sourcefile, line);
-			  sourcefilenumber_assign(&sourcefilenumber);
-			  found ++;
+			    line.find("Only Gauge") != std::string::npos ) {
+				bool_assign(&use_gauge_only, line);
+				found ++;
 			}
-			if(line.find("heatbathsteps") != std::string::npos) {val_assign(&heatbathsteps, line); found ++;}
-			
+
+			if(line.find("prec") != std::string::npos ||
+			   line.find("Prec") != std::string::npos ) {
+				val_assign(&prec, line);
+				found ++;
+			}
+
+			if(line.find("readsource") != std::string::npos) {
+				startcond_assign(&startcondition, line);
+				found ++;
+			}
+			if(line.find("startcondition") != std::string::npos) {
+				startcond_assign(&startcondition, line);
+				found ++;
+			}
+			if(line.find("sourcefile") != std::string::npos) {
+				val_assign(&sourcefile, line);
+				sourcefilenumber_assign(&sourcefilenumber);
+				found ++;
+			}
+			if(line.find("heatbathsteps") != std::string::npos) {
+				val_assign(&heatbathsteps, line);
+				found ++;
+			}
+
 			if( line.find("thermalizationsteps") != std::string::npos ||
 			    line.find("thermsteps") != std::string::npos ||
-			    line.find("thermalization") != std::string::npos ) {val_assign(&thermalizationsteps, line); found ++;}
-			
+			    line.find("thermalization") != std::string::npos ) {
+				val_assign(&thermalizationsteps, line);
+				found ++;
+			}
+
 			if( line.find("overrelaxsteps") != std::string::npos ||
 			    line.find("overrelax") != std::string::npos ||
-			    line.find("oversteps") != std::string::npos ) {val_assign(&overrelaxsteps, line); found ++;}
-			
-			if(line.find("iter_refresh") != std::string::npos) {val_assign(&iter_refresh, line); found ++;}
-			
-			if(line.find("num_dev") != std::string::npos) {val_assign(&num_dev, line); found ++;}
-			
+			    line.find("oversteps") != std::string::npos ) {
+				val_assign(&overrelaxsteps, line);
+				found ++;
+			}
+
+			if(line.find("iter_refresh") != std::string::npos) {
+				val_assign(&iter_refresh, line);
+				found ++;
+			}
+
+			if(line.find("num_dev") != std::string::npos) {
+				val_assign(&num_dev, line);
+				found ++;
+			}
+
 			if( line.find("fermaction")     != std::string::npos  ||
 			    line.find("fermionaction")  != std::string::npos  ||
 			    line.find("fermact")        != std::string::npos  ) {
-			  if( line.find("mp") != std::string::npos ||
-			      line.find("MP") != std::string::npos ||
-			      line.find("Mp") != std::string::npos ) {
-			    fermact_assign(&fermact_mp, line);
-			    found ++;
-			  } else {
-			    fermact_assign(&fermact, line);
-			    found ++;
-			  }
+				if( line.find("mp") != std::string::npos ||
+				    line.find("MP") != std::string::npos ||
+				    line.find("Mp") != std::string::npos ) {
+					fermact_assign(&fermact_mp, line);
+					found ++;
+				} else {
+					fermact_assign(&fermact, line);
+					found ++;
+				}
 			}
-		
+
 			if( line.find("fermaction_mp")    != std::string::npos  ||
 			    line.find("fermionaction_mp") != std::string::npos  ||
-			    line.find("fermact_mp")         != std::string::npos  )  {fermact_assign(&fermact_mp, line); found ++;}
-			
+			    line.find("fermact_mp")         != std::string::npos  )  {
+				fermact_assign(&fermact_mp, line);
+				found ++;
+			}
+
 			if( line.find("gaugeaction")  != std::string::npos ||
 			    line.find("gaugeact")     != std::string::npos ) {
-			  gaugeact_assign(&gaugeact, line, c1set);
-			  found ++;
+				gaugeact_assign(&gaugeact, line, c1set);
+				found ++;
 			}
 			//@todo: this is taken out because the expression is positive also for "rec12"
 			/*
@@ -352,91 +411,208 @@ void inputparameters::readfile(const char* ifn)
 			  this->calc_c0_tlsym(this->get_c1());
 			  }
 			*/
-			if(line.find("hmcsteps") != std::string::npos) {val_assign(&hmcsteps, line); found ++;}
-			if( line.find("tau") != std::string::npos) {val_assign(&tau, line); found ++;}
-			if(line.find("integrationsteps0") != std::string::npos) {val_assign(&integrationsteps0, line); found ++;}
-			if(line.find("integrationsteps1") != std::string::npos) {val_assign(&integrationsteps1, line); found ++;}
-			if(line.find("integrationsteps2") != std::string::npos) {val_assign(&integrationsteps2, line); found ++;}
-			if(line.find("num_timescales") != std::string::npos) {val_assign(&num_timescales, line); found ++;}
-			if(line.find("integrator0") != std::string::npos) {integrator_assign(&integrator0, line); found ++;}
-			if(line.find("integrator1") != std::string::npos) {integrator_assign(&integrator1, line); found ++;}
-			if(line.find("integrator2") != std::string::npos) {integrator_assign(&integrator2, line); found ++;}
-			if(line.find("lambda0") != std::string::npos) {val_assign(&lambda0, line); found ++;}
-			if(line.find("lambda1") != std::string::npos) {val_assign(&lambda1, line); found ++;}
-			if(line.find("lambda2") != std::string::npos) {val_assign(&lambda2, line); found ++;}
-			
+			if(line.find("hmcsteps") != std::string::npos) {
+				val_assign(&hmcsteps, line);
+				found ++;
+			}
+			if( line.find("tau") != std::string::npos) {
+				val_assign(&tau, line);
+				found ++;
+			}
+			if(line.find("integrationsteps0") != std::string::npos) {
+				val_assign(&integrationsteps0, line);
+				found ++;
+			}
+			if(line.find("integrationsteps1") != std::string::npos) {
+				val_assign(&integrationsteps1, line);
+				found ++;
+			}
+			if(line.find("integrationsteps2") != std::string::npos) {
+				val_assign(&integrationsteps2, line);
+				found ++;
+			}
+			if(line.find("num_timescales") != std::string::npos) {
+				val_assign(&num_timescales, line);
+				found ++;
+			}
+			if(line.find("integrator0") != std::string::npos) {
+				integrator_assign(&integrator0, line);
+				found ++;
+			}
+			if(line.find("integrator1") != std::string::npos) {
+				integrator_assign(&integrator1, line);
+				found ++;
+			}
+			if(line.find("integrator2") != std::string::npos) {
+				integrator_assign(&integrator2, line);
+				found ++;
+			}
+			if(line.find("lambda0") != std::string::npos) {
+				val_assign(&lambda0, line);
+				found ++;
+			}
+			if(line.find("lambda1") != std::string::npos) {
+				val_assign(&lambda1, line);
+				found ++;
+			}
+			if(line.find("lambda2") != std::string::npos) {
+				val_assign(&lambda2, line);
+				found ++;
+			}
+
 			if( line.find("evenodd") != std::string::npos ||
 			    line.find("even-odd") != std::string::npos ||
 			    line.find("even_odd") != std::string::npos ||
 			    line.find("even-odd-preconditioning") != std::string::npos ||
 			    line.find("use_eo") != std::string::npos ||
-			    line.find("use_evenodd") != std::string::npos ) {bool_assign(&use_eo, line); found ++;}
-			
+			    line.find("use_evenodd") != std::string::npos ) {
+				bool_assign(&use_eo, line);
+				found ++;
+			}
+
 			if( line.find("use_mp") != std::string::npos  ||
 			    line.find("use_mass-preconditioning") != std::string::npos ||
 			    line.find("use_MP") != std::string::npos ||
 			    line.find("use_massprec") != std::string::npos ||
-			    line.find("use_mass-prec") != std::string::npos  ) {bool_assign(&use_mp, line); found ++;}
-			
+			    line.find("use_mass-prec") != std::string::npos  ) {
+				bool_assign(&use_mp, line);
+				found ++;
+			}
+
 			if( line.find("use_rec12") != std::string::npos ||
-			    line.find("REC12") != std::string::npos){ bool_assign(&use_rec12, line); found ++;}
-			
+			    line.find("REC12") != std::string::npos) {
+				bool_assign(&use_rec12, line);
+				found ++;
+			}
+
 			if( line.find("use_gpu") != std::string::npos ||
-			    line.find("GPU") != std::string::npos  ) {bool_assign(&use_gpu, line); found ++;}
-			
+			    line.find("GPU") != std::string::npos  ) {
+				bool_assign(&use_gpu, line);
+				found ++;
+			}
+
 			if( line.find("NS") != std::string::npos ||
-			    line.find("NSPACE") != std::string::npos) {val_assign(&nspace, line); found ++;}
+			    line.find("NSPACE") != std::string::npos) {
+				val_assign(&nspace, line);
+				found ++;
+			}
 			if( line.find("NT") != std::string::npos ||
-			    line.find("NTIME") != std::string::npos) {val_assign(&ntime, line); found ++;}
-			
+			    line.find("NTIME") != std::string::npos) {
+				val_assign(&ntime, line);
+				found ++;
+			}
+
 			if( line.find("XI") != std::string::npos ||
 			    line.find("xi") != std::string::npos ||
-			    line.find("Xi") != std::string::npos) {val_assign(&xi, line); found ++;}
+			    line.find("Xi") != std::string::npos) {
+				val_assign(&xi, line);
+				found ++;
+			}
 			if( line.find("anisotropy") != std::string::npos ||
 			    line.find("Anisotropy") != std::string::npos ||
-			    line.find("use_aniso") != std::string::npos) {bool_assign(&use_aniso, line); found ++;}
-			
-			if(line.find("print_to_screen") != std::string::npos) {bool_assign(&print_to_screen, line); found ++;}
-			
-			if(line.find("use_pointsource") != std::string::npos) {bool_assign(&use_pointsource, line); found ++;}
-			if(line.find("num_sources") != std::string::npos) {val_assign(&num_sources, line); found ++;}
-			if(line.find("pointsource_x") != std::string::npos) {val_assign(&pointsource_x, line); found ++;}
-			if(line.find("pointsource_y") != std::string::npos) {val_assign(&pointsource_y, line); found ++;}
-			if(line.find("pointsource_z") != std::string::npos) {val_assign(&pointsource_z, line); found ++;}
-			if(line.find("pointsource_t") != std::string::npos) {val_assign(&pointsource_t, line); found ++;}
-			
-			if(line.find("use_smearing") != std::string::npos) {bool_assign(&use_smearing, line); found ++;}
-			if(line.find("rho") != std::string::npos) {val_assign(&rho, line); found ++;}
-			if(line.find("rho_iter") != std::string::npos) {val_assign(&rho_iter, line); found ++;}
-			if(line.find("reversibility_check") != std::string::npos) {bool_assign(&reversibility_check, line); found ++;}
-			if(line.find("rev_check") != std::string::npos) {bool_assign(&reversibility_check, line); found ++;}
-			
-			if(line.find("autotuning") != std::string::npos) {bool_assign(&use_autotuning, line); found ++;}
-			
-			if(line.find("corr_dir") != std::string::npos) {val_assign(&corr_dir, line); found ++;}
-			if(line.find("correlator_direction") != std::string::npos) {val_assign(&corr_dir, line); found ++;}
-			
-			if(line.find("use_same_rnd_numbers") != std::string::npos) {bool_assign(&use_same_rnd_numbers, line); found ++;}
-			if(line.find("taketimeofsol") != std::string::npos) {
-			  bool_assign(&profile_solver, line);
-			  found ++;
+			    line.find("use_aniso") != std::string::npos) {
+				bool_assign(&use_aniso, line);
+				found ++;
 			}
-			
-			if(line.find("use_merge_kernels_spinor") != std::string::npos || 
-			   line.find("merge_kernels_spinor") != std::string::npos) {bool_assign(&use_merge_kernels_spinor, line); found ++;}
-			if(line.find("use_merge_kernels_fermion") != std::string::npos ||
-			   line.find("merge_kernels_fermion") != std::string::npos) {bool_assign(&use_merge_kernels_fermion, line); found ++;}
 
-			if(line.find("host_seed") != std::string::npos) {val_assign(&host_seed, line); found ++;}
-			//give error if line was not recognized or recognized multiple times
-			if(found == 0){
-			  logger.fatal() << "could not make sense of line:\n\t\"" << line << "\"\nin input file";
+			if(line.find("print_to_screen") != std::string::npos) {
+				bool_assign(&print_to_screen, line);
+				found ++;
 			}
-			if(found > 1){
-			  logger.fatal() << "line:\n\t\"" << line << "\"\nwas matched mutliple times in input file";
+
+			if(line.find("use_pointsource") != std::string::npos) {
+				bool_assign(&use_pointsource, line);
+				found ++;
+			}
+			if(line.find("num_sources") != std::string::npos) {
+				val_assign(&num_sources, line);
+				found ++;
+			}
+			if(line.find("pointsource_x") != std::string::npos) {
+				val_assign(&pointsource_x, line);
+				found ++;
+			}
+			if(line.find("pointsource_y") != std::string::npos) {
+				val_assign(&pointsource_y, line);
+				found ++;
+			}
+			if(line.find("pointsource_z") != std::string::npos) {
+				val_assign(&pointsource_z, line);
+				found ++;
+			}
+			if(line.find("pointsource_t") != std::string::npos) {
+				val_assign(&pointsource_t, line);
+				found ++;
+			}
+
+			if(line.find("use_smearing") != std::string::npos) {
+				bool_assign(&use_smearing, line);
+				found ++;
+			}
+			if(line.find("rho") != std::string::npos) {
+				val_assign(&rho, line);
+				found ++;
+			}
+			if(line.find("rho_iter") != std::string::npos) {
+				val_assign(&rho_iter, line);
+				found ++;
+			}
+			if(line.find("reversibility_check") != std::string::npos) {
+				bool_assign(&reversibility_check, line);
+				found ++;
+			}
+			if(line.find("rev_check") != std::string::npos) {
+				bool_assign(&reversibility_check, line);
+				found ++;
+			}
+
+			if(line.find("autotuning") != std::string::npos) {
+				bool_assign(&use_autotuning, line);
+				found ++;
+			}
+
+			if(line.find("corr_dir") != std::string::npos) {
+				val_assign(&corr_dir, line);
+				found ++;
+			}
+			if(line.find("correlator_direction") != std::string::npos) {
+				val_assign(&corr_dir, line);
+				found ++;
+			}
+
+			if(line.find("use_same_rnd_numbers") != std::string::npos) {
+				bool_assign(&use_same_rnd_numbers, line);
+				found ++;
+			}
+			if(line.find("taketimeofsol") != std::string::npos) {
+				bool_assign(&profile_solver, line);
+				found ++;
+			}
+
+			if(line.find("use_merge_kernels_spinor") != std::string::npos ||
+			   line.find("merge_kernels_spinor") != std::string::npos) {
+				bool_assign(&use_merge_kernels_spinor, line);
+				found ++;
+			}
+			if(line.find("use_merge_kernels_fermion") != std::string::npos ||
+			   line.find("merge_kernels_fermion") != std::string::npos) {
+				bool_assign(&use_merge_kernels_fermion, line);
+				found ++;
+			}
+
+			if(line.find("host_seed") != std::string::npos) {
+				val_assign(&host_seed, line);
+				found ++;
+			}
+			//give error if line was not recognized or recognized multiple times
+			if(found == 0) {
+				logger.fatal() << "could not make sense of line:\n\t\"" << line << "\"\nin input file";
+			}
+			if(found > 1) {
+				logger.fatal() << "line:\n\t\"" << line << "\"\nwas matched mutliple times in input file";
 			}
 		}
-	
+
 		//check for wrong settings in fermionaction
 		if( ( (muset  == true) && (fermact != TWISTEDMASS) ) ||
 		    ( (cswset == true) && (fermact != CLOVER     ) ) ||
@@ -451,8 +627,8 @@ void inputparameters::readfile(const char* ifn)
 		    ( (use_rectangles  == false) && ( (gaugeact == TLSYM) || (gaugeact == DBW2) || (gaugeact == IWASAKI) ) ) )
 			throw Invalid_Gaugeact();
 		//check for wrong settings in hmc parameters
-		if( ( use_mp == false) && (num_timescales == 3) ){
-		  bool_assign(&use_mp, "true"); 
+		if( ( use_mp == false) && (num_timescales == 3) ) {
+			bool_assign(&use_mp, "true");
 		}
 		//check the read-in values against the compile time values
 		this->set_settings_global();
@@ -1080,12 +1256,12 @@ void inputparameters::display_sourcefilenumber() const
 
 bool inputparameters::get_use_merge_kernels_fermion() const
 {
-  return use_merge_kernels_fermion;
+	return use_merge_kernels_fermion;
 }
 
 bool inputparameters::get_use_merge_kernels_spinor() const
 {
-  return use_merge_kernels_spinor;
+	return use_merge_kernels_spinor;
 }
 
 
@@ -1667,10 +1843,10 @@ void inputparameters::print_info_fermion(ostream * os) const
 		*os << "## Profiling of solver activated. This may influence the overall performance time!" << endl;
 
 	if(this->get_use_merge_kernels_fermion() == true)
-	  *os << "## Use merged fermionmatrix kernels where implemented!!" << endl;
+		*os << "## Use merged fermionmatrix kernels where implemented!!" << endl;
 
 	if(this->get_use_merge_kernels_spinor() == true)
-	  *os << "## Use merged spinor kernels where implemented!!"<< endl;
+		*os << "## Use merged spinor kernels where implemented!!" << endl;
 
 
 	//print extra warning if BC are set to default since this is a serious source of errors...
@@ -1912,8 +2088,6 @@ void inputparameters::check_settings_global() const
 #else
 		if( this->get_prec() != 32) throw Invalid_Parameters("Numerical precision", "32", this->get_prec());
 #endif
-
-		if( this->get_use_rec12() == true) throw Invalid_Parameters("Reconstruct12.", "OFF", "ON");
 
 	}//try
 	catch (Invalid_Parameters& e) {

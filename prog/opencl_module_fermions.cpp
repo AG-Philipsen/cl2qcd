@@ -1095,8 +1095,9 @@ void Opencl_Module_Fermions::Qminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_flo
 
 void Opencl_Module_Fermions::QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
-	//CP: Init tmp spinorfield
-	int spinorfield_size = sizeof(spinor) * meta::get_eoprec_spinorfieldsize(get_parameters());
+	//CP: this should be an eoprec-sized field. However, this induces problems in the CG algorithm!!!
+	//MB: This is because of padding, the eoprec buffer size shoulw always be queried from Opencl_Module_Spinor
+	size_t spinorfield_size = get_eoprec_spinorfield_buffer_size();
 	cl_mem sf_eo_tmp;
 	sf_eo_tmp = create_rw_buffer(spinorfield_size);
 
