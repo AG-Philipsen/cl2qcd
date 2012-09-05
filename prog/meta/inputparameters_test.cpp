@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE(command_line5)
 	BOOST_REQUIRE_EQUAL(params.is_ocl_compiler_opt_disabled(), true);
 }
 
-BOOST_AUTO_TEST_CASE(command_line5)
+BOOST_AUTO_TEST_CASE(command_line6)
 {
 	const char* _params[] = {"foo", "--log_level=ERROR"};
 	Inputparameters params(2, _params);
