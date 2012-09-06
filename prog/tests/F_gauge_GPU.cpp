@@ -29,9 +29,9 @@ class Dummyfield : public Gaugefield_hybrid {
 
 public:
 	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
-		std::stringstream tmp;
+	  std::stringstream tmp;
 #ifdef _USEDOUBLEPREC_
-		tmp << SOURCEDIR << "/tests/f_gauge_input_1";
+	  tmp << SOURCEDIR << "/tests/f_gauge_input_1";
 #else
 		tmp << SOURCEDIR << "/tests/f_gauge_input_1_single";
 #endif
@@ -45,6 +45,7 @@ public:
 
 	hmc_float get_squarenorm(int which);
 	void verify(hmc_float, hmc_float);
+	void verify_ref(hmc_float, hmc_float);
 	void runTestKernel();
 
 private:
@@ -60,6 +61,11 @@ private:
 
 BOOST_AUTO_TEST_CASE( F_GAUGE )
 {
+  hmc_float ref_val;
+  logger.info() << "Test CPU and GPU version of kernel";
+  logger.info() << "\tf_gauge";
+  logger.info() << "against reference value";
+
 	logger.info() << "Init CPU device";
 	//params.print_info_inverter("m_gpu");
 	// reset RNG
@@ -67,18 +73,10 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
 	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables_from_task(0, 0);
-	//these are not neede, since gauge-force operates on the gaugefield only
-	/*
-	logger.info() << "|phi_1|^2:";
-	hmc_float cpu_back = cpu.get_squarenorm(0);
-	logger.info() << "|phi_2|^2:";
-	hmc_float cpu_back2 = cpu.get_squarenorm(1);
-	*/
 	cpu.runTestKernel();
 	logger.info() << "|f_gauge|^2:";
 	hmc_float cpu_res;
 	cpu_res = cpu.get_squarenorm(2);
-
 
 	BOOST_MESSAGE("Tested CPU");
 
@@ -89,33 +87,32 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
 	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
 	logger.info() << "gaugeobservables: ";
 	dummy.print_gaugeobservables_from_task(0, 0);
-	//these are not neede, since gauge-force operates on the gaugefield only
-	//NOTE: they are used for the fermion force!
-	/*  logger.info() << "|phi_1|^2:";
-	hmc_float gpu_back = dummy.get_squarenorm(0);
-	logger.info() << "|phi_2|^2:";
-	hmc_float gpu_back2 = dummy.get_squarenorm(1);
-	*/
 	dummy.runTestKernel();
 	logger.info() << "|f_gauge|^2:";
 	hmc_float gpu_res;
 	gpu_res = dummy.get_squarenorm(2);
 	BOOST_MESSAGE("Tested GPU");
 
-	logger.info() << "Compare CPU and GPU results";
-	/*//see above
-	logger.info() << "Input vectors:";
-	cpu.verify(cpu_back, gpu_back);
-	cpu.verify(cpu_back2, gpu_back2);
-	*/
-	logger.info() << "Output vectors:";
-	cpu.verify(cpu_res, gpu_res);
-	//if the gaugeconfig is cold, the force is zero!!
+	logger.info() << "Choosing reference value";
+	//CP: I will not check if cpu and gpu have different starting conditions, this should never be the case...
 	if(cpu.get_parameters()->get_startcondition() == COLD_START) {
-		logger.info() << "cold config used. Check if result is zero!!";
-		cpu.verify(cpu_res, 0.);
-		cpu.verify(gpu_res, 0.);
+	  logger.info() << "Use cold config..." ;
+	  ref_val = 0.;
+	} else{
+	  logger.info() << "Use specific config..";
+	  logger.warn() << "The reference value has to be adjusted manually if this config is changed!";
+	  ref_val = 52723.3;
 	}
+	logger.info() << "reference value:\t" << ref_val;
+
+	logger.info() << "Compare CPU result to reference value";
+	cpu.verify_ref(cpu_res, ref_val);
+	logger.info() << "Compare GPU result to reference value";
+	cpu.verify_ref(gpu_res, ref_val);
+
+	logger.info() << "Compare CPU and GPU results";
+	cpu.verify(cpu_res, gpu_res);
+
 }
 
 void Dummyfield::init_tasks()
@@ -343,6 +340,22 @@ void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
 	} else {
 		logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
 		logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
+		BOOST_REQUIRE_EQUAL(1, 0);
+	}
+}
+
+void Dummyfield::verify_ref(hmc_float in, hmc_float ref)
+{
+	//this is too much required, since rounding errors can occur
+	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
+	//instead, test if the two number agree within some percent
+	hmc_float dev = (abs(in) - abs(ref)) / in / 100.;
+	if(abs(dev) < 1e-10) {
+		logger.info() << "Input and reference value agree within accuary of " << 1e-10;
+		logger.info() << "in: " << in << "\tref: " << ref;
+	} else {
+		logger.info() << "Input and reference value DO NOT agree within accuary of " << 1e-10;
+		logger.info() << "in: " << in << "\tref: " << ref;
 		BOOST_REQUIRE_EQUAL(1, 0);
 	}
 }
