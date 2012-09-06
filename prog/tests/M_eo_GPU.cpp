@@ -29,11 +29,12 @@ public:
 
 const std::string SOURCEFILE = std::string(SOURCEDIR) + "/tests/m_eo_gpu_input_1";
 const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
+const meta::Inputparameters INPUT(2, PARAMS);
 
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(meta::Inputparameters(2, PARAMS)) {
+	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(INPUT) {
 		init(1, device_type);
 	};
 

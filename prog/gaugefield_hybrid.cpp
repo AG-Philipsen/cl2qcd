@@ -553,7 +553,8 @@ void Gaugefield_hybrid::print_profiling(std::string filename)
 
 void Gaugefield_hybrid::set_to_gaugefield(Matrixsu3 * field, const size_t mu, const size_t x, const size_t t, const Matrixsu3 val)
 {
-	field[get_global_link_pos(mu, x, t, parameters)] = val;
+	size_t pos = get_global_link_pos(mu, x, t, parameters);
+	field[pos] = val;
 }
 
 Matrixsu3 Gaugefield_hybrid::get_from_gaugefield(const Matrixsu3 * field, const size_t mu, const size_t x, const size_t t) const

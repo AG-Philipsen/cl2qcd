@@ -25,11 +25,13 @@ public:
 	void clear_kernels();
 };
 
+const meta::Inputparameters INPUT(0, 0);
+
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
 	Dummyfield(cl_device_type device_type)
-		: Gaugefield_hybrid(meta::Inputparameters(0, 0)) {
+		: Gaugefield_hybrid(INPUT) {
 		init(1, device_type);
 	};
 

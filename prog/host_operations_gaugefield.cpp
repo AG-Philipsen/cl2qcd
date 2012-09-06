@@ -244,7 +244,7 @@ Matrixsu3 random_matrixsu3()
 	return out;
 }
 
-Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const meta::Inputparameters parameters)
+Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const meta::Inputparameters& parameters)
 {
 	Matrixsu3 tmp;
 	size_t link_pos = get_global_link_pos(mu, spacepos, timepos, parameters);
@@ -252,13 +252,13 @@ Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const
 	return tmp;
 }
 
-void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, int mu, const meta::Inputparameters parameters)
+void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, int mu, const meta::Inputparameters& parameters)
 {
 	size_t link_pos = get_global_link_pos(mu, spacepos, timepos, parameters);
 	field[link_pos] = in;
 }
 
-Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const meta::Inputparameters parameters)
+Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const meta::Inputparameters& parameters)
 {
 	Matrixsu3 res, prod;
 	res = unit_matrixsu3();
@@ -270,7 +270,7 @@ Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const meta::Inputparameters p
 }
 
 //CP: I introduced explicit calculations of the neighbors because this does not rely on any geometric conventions!
-Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu, const meta::Inputparameters parameters)
+Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu, const meta::Inputparameters& parameters)
 {
 	Matrixsu3 res, tmp;
 	//coordinates of neighbors

@@ -35,11 +35,12 @@ const std::string SOURCEFILE = std::string(SOURCEDIR)
                                + "/tests/f_gauge_input_1_single";
 #endif
 const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
+const meta::Inputparameters INPUT(2, PARAMS);
 
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(meta::Inputparameters(2, PARAMS)) {
+	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(INPUT) {
 		init(1, device_type);
 	};
 
