@@ -574,8 +574,11 @@ static Inputparameters::startcondition get_startcondition(std::string s)
 	boost::algorithm::to_lower(s);
 	std::map<std::string, Inputparameters::startcondition> m;
 	m["cold_start"] = Inputparameters::cold_start;
+	m["cold"] = Inputparameters::cold_start;
 	m["hot_start"] = Inputparameters::hot_start;
+	m["hot"] = Inputparameters::hot_start;
 	m["start_from_source"] = Inputparameters::start_from_source;
+	m["source"] = Inputparameters::start_from_source;
 	m["continue"] = Inputparameters::start_from_source;
 
 	Inputparameters::startcondition a = m[s];
