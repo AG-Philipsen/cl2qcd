@@ -108,8 +108,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 	  //the call shoul be like this
 	  //::QplusQminus_eo f_eo(solver); 
 	}
-	//::Aee f_eo(solver);
-	::QplusQminus_eo f_eo(solver); 
+	::Aee f_eo(solver);
 	::M f_neo(solver);
 	Matrix_Function & f = (use_eo) ? static_cast<Matrix_Function &>(f_eo) : static_cast<Matrix_Function &>(f_neo);
 
