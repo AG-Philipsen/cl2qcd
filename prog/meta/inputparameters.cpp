@@ -610,4 +610,6 @@ static void add_option_aliases(meta::ConfigFileNormalizer * const normalizer)
 	normalizer->add_alias("NS", "nspace");
 	normalizer->add_alias("NT", "ntime");
 	normalizer->add_alias("use_evenodd", "use_eo");
+	normalizer->add_alias("thermsteps", "thermalizationsteps");
+	normalizer->add_alias("thermalization", "thermalizationsteps");
 }
