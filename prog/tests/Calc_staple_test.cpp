@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	BOOST_CHECK_CLOSE(cpu_back, gpu_back, 1e-8);
 
 	//CP: in case of a cold config, the result is calculable easily
-	src = std::string(SOURCEDIR) + "/tests/" + "staple_input_cold1";
+	src = std::string(SOURCEDIR) + "/tests/" + "staple_input_1_cold";
 	const char* _params_cpu_cold[] = {"foo", src.c_str(), "--use_gpu=false"};
 	meta::Inputparameters params_cpu_cold = meta::Inputparameters(3, _params_cpu_cold);
 	Dummyfield cpu_cold(CL_DEVICE_TYPE_CPU, params_cpu_cold);
