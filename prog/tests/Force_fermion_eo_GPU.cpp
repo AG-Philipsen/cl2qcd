@@ -344,7 +344,7 @@ void Dummyfield::fill_buffers()
 	sf_out = new hmc_float[NUM_ELEMENTS_AE];
 
 	//use the variable use_cg to switch between cold and random input sf
-	if(get_parameters().get_use_cg() == true) {
+	if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 		fill_sf_with_one(sf_in1, NUM_ELEMENTS_SF);
 		fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
 		fill_sf_with_one(sf_in3, NUM_ELEMENTS_SF);

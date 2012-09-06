@@ -105,7 +105,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 	}
 
 	//for CG, one needs a hermitian matrix...
-	if(get_parameters().get_use_cg() == true) {
+	if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 		logger.fatal() << "CG usage requires a hermitian matrix. This is not implemented yet...";
 		//the call shoul be like this
 		//::QplusQminus_eo f_eo(solver);

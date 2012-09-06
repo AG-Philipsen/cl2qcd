@@ -73,10 +73,7 @@ void checkDefaults(const Inputparameters params)
 	BOOST_REQUIRE_EQUAL(params.get_chem_pot_im(), 0.);
 	BOOST_REQUIRE_EQUAL(params.get_use_eo(), true);
 	//at the moment, only 2 solvers are implemented..
-	BOOST_REQUIRE_EQUAL(params.get_use_cg(), false);
-	BOOST_REQUIRE_EQUAL(params.get_use_cg_mp(), false);
-	BOOST_REQUIRE_EQUAL(params.get_use_bicgstab_save(), false);
-	BOOST_REQUIRE_EQUAL(params.get_use_bicgstab_save_mp(), false);
+	BOOST_REQUIRE_EQUAL(params.get_solver(), Inputparameters::bicgstab);
 	BOOST_REQUIRE_EQUAL(params.get_use_pointsource(), true);
 	BOOST_REQUIRE_EQUAL(params.get_use_gauge_only(), false);
 	BOOST_REQUIRE_EQUAL(params.get_num_sources(), 12);
@@ -200,10 +197,7 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_chem_pot_im(), 0.12);
 	BOOST_REQUIRE_EQUAL(params.get_use_eo(), false);
 	//at the moment, only 2 solvers are implemented..
-	BOOST_REQUIRE_EQUAL(params.get_use_cg(), true);
-	BOOST_REQUIRE_EQUAL(params.get_use_cg_mp(), false);
-	BOOST_REQUIRE_EQUAL(params.get_use_bicgstab_save(), true);
-	BOOST_REQUIRE_EQUAL(params.get_use_bicgstab_save_mp(), false);
+	BOOST_REQUIRE_EQUAL(params.get_solver(), Inputparameters::cg);
 	BOOST_REQUIRE_EQUAL(params.get_use_pointsource(), false);
 	BOOST_REQUIRE_EQUAL(params.get_use_gauge_only(), true);
 	BOOST_REQUIRE_EQUAL(params.get_num_sources(), 3);

@@ -51,10 +51,7 @@ chem_pot_re = 0.11
 chem_pot_im = 0.12
 use_eo = false
 # at the moment, only 2 solvers are implemented..
-use_cg = true
-use_cg_mp = false
-use_bicgstab_save = true
-use_bicgstab_save_mp = false
+solver = cg
 use_pointsource = false
 use_gauge_only = true
 num_sources = 3

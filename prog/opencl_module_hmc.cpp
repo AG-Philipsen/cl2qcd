@@ -743,7 +743,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 	int converged = -1;
 	if(get_parameters().get_use_eo() == true) {
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
-		if(get_parameters().get_use_cg() == true) {
+		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			/**
 			 * The first inversion calculates
 			 * X_even = phi = (Qplusminus_eo)^-1 psi
@@ -1092,7 +1092,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 		}
 	} else {
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
-		if(get_parameters().get_use_cg() == true) {
+		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			/**
 			 * The first inversion calculates
 			 * X = phi = (Qplusminus)^-1 psi
@@ -1223,7 +1223,7 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer)
 		sf_eo_tmp = create_rw_buffer(spinorfield_size);
 		//the source is now Q_2^+ phi = sf_eo_tmp
 		Opencl_Module_Fermions::Qplus_eo (this->get_clmem_phi_eo(), sf_eo_tmp , get_gaugefield(), kappa2, mubar2);
-		if(get_parameters().get_use_cg() == true) {
+		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			/**
 			 * The first inversion calculates
 			 * X_even = phi = (Qplusminus_eo)^-1 sf_eo_tmp = (Qplusminus_eo)^-1 Q_2^+ phi
@@ -1401,7 +1401,7 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer)
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 		//the source is now Q_2^+ phi = sf_tmp
 		Opencl_Module_Fermions::Qplus (this->get_clmem_phi(), sf_tmp , get_gaugefield(), kappa2, mubar2);
-		if(get_parameters().get_use_cg() == true) {
+		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			/**
 			 * The first inversion calculates
 			 * X = phi = (Qplusminus)^-1 sf_tmp
@@ -1538,7 +1538,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 	int converged = -1;
 	if(get_parameters().get_use_eo() == true) {
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
-		if(get_parameters().get_use_cg() == true) {
+		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			logger.debug() << "\t\t\tstart solver";
 
 			set_eoprec_spinorfield_cold_device(get_clmem_inout_eo());
@@ -1579,7 +1579,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 
 		}
 	} else {
-		if(get_parameters().get_use_cg() == true) {
+		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			logger.debug() << "\t\t\tstart solver";
 
 			/** @todo at the moment, we can only put in a cold spinorfield
@@ -1648,7 +1648,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion_mp()
 
 		//sf_eo_tmp = Qplus_eo(heavy_mass) phi_mp_eo
 		Opencl_Module_Fermions::Qplus_eo (this->get_clmem_phi_mp_eo(), sf_eo_tmp , get_gaugefield(), get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
-		if(get_parameters().get_use_cg() == true) {
+		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			logger.debug() << "\t\t\tstart solver";
 			set_eoprec_spinorfield_cold_device(get_clmem_inout_eo());
 
@@ -1696,7 +1696,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion_mp()
 
 		//sf_eo_tmp = Qplus(light_mass) phi_mp
 		Opencl_Module_Fermions::Qplus (this->get_clmem_phi_mp(), sf_tmp , get_gaugefield(), get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
-		if(get_parameters().get_use_cg() == true) {
+		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			logger.debug() << "\t\t\tstart solver";
 
 			/** @todo at the moment, we can only put in a cold spinorfield

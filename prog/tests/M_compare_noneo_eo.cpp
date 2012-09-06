@@ -836,7 +836,7 @@ void Dummyfield::fill_buffers()
 	sf_out_noneo_converted = new spinor[NUM_ELEMENTS_SF_NON_EO];
 
 	//use the variable use_cg to switch between cold and random input sf
-	if(get_parameters().get_use_cg() == true) {
+	if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 		fill_eo_sf_with_specific_float(sf_in1_eo, sf_in2_eo, get_parameters());
 		fill_noneo_sf_with_specific_float(sf_in_noneo, get_parameters());
 	} else {

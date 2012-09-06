@@ -29,6 +29,10 @@ static Inputparameters::integrator get_integrator(std::string);
  */
 static Inputparameters::startcondition get_startcondition(std::string);
 /**
+ * Get the solver describe by the given string.
+ */
+static Inputparameters::solver get_solver(std::string);
+/**
  * Adds all alternative option names to the ConfigFileNormlizer instance
  */
 static void add_option_aliases(meta::ConfigFileNormalizer * const);
@@ -223,23 +227,6 @@ bool Inputparameters::get_use_eo() const noexcept
 {
 	return use_eo;
 }
-//at the moment, only 2 solvers are implemented..
-bool Inputparameters::get_use_cg() const noexcept
-{
-	return use_cg;
-}
-bool Inputparameters::get_use_cg_mp() const noexcept
-{
-	return use_cg_mp;
-}
-bool Inputparameters::get_use_bicgstab_save() const noexcept
-{
-	return use_bicgstab_save;
-}
-bool Inputparameters::get_use_bicgstab_save_mp() const noexcept
-{
-	return use_bicgstab_save_mp;
-}
 bool Inputparameters::get_use_pointsource() const noexcept
 {
 	return use_pointsource;
@@ -284,6 +271,14 @@ int Inputparameters::get_iter_refresh() const noexcept
 int Inputparameters::get_iter_refresh_mp() const noexcept
 {
 	return iter_refresh_mp;
+}
+Inputparameters::solver Inputparameters::get_solver() const noexcept
+{
+	return _solver;
+}
+Inputparameters::solver Inputparameters::get_solver_mp() const noexcept
+{
+	return _solver_mp;
 }
 
 //HMC specific parameters
@@ -452,11 +447,8 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("chem_pot_re", po::value<double>(&chem_pot_re)->default_value(0.))
 	("chem_pot_im", po::value<double>(&chem_pot_im)->default_value(0.))
 	("use_eo", po::value<bool>(&use_eo)->default_value(true))
-	// at the moment, only 2 solvers are implemented..
-	("use_cg", po::value<bool>(&use_cg)->default_value(false)) // TODO maybe better have solver = ...
-	("use_cg_mp", po::value<bool>(&use_cg_mp)->default_value(false))
-	("use_bicgstab_save", po::value<bool>(&use_bicgstab_save)->default_value(false))
-	("use_bicgstab_save_mp", po::value<bool>(&use_bicgstab_save_mp)->default_value(false))
+	("solver", po::value<std::string>()->default_value("bicgstab"))
+	("solver_mp", po::value<std::string>()->default_value("bicgstab"))
 	("use_pointsource", po::value<bool>(&use_pointsource)->default_value(true))
 	("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
 	("num_sources", po::value<int>(&num_sources)->default_value(12))
@@ -539,6 +531,8 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	integrator0 = ::get_integrator(vm["integrator0"].as<std::string>());
 	integrator1 = ::get_integrator(vm["integrator1"].as<std::string>());
 	integrator2 = ::get_integrator(vm["integrator2"].as<std::string>());
+	_solver = ::get_solver(vm["solver"].as<std::string>());
+	_solver_mp = ::get_solver(vm["solver_mp"].as<std::string>());
 }
 
 static Inputparameters::action get_action(std::string s)
@@ -589,6 +583,21 @@ static Inputparameters::startcondition get_startcondition(std::string s)
 		return a;
 	} else {
 		std::cout << s << " is not a valid startcondition." << std::endl;
+		throw Inputparameters::parse_aborted();
+	}
+}
+static Inputparameters::solver get_solver(std::string s)
+{
+	boost::algorithm::to_lower(s);
+	std::map<std::string, Inputparameters::solver> m;
+	m["cg"] = Inputparameters::cg;
+	m["bicgstab"] = Inputparameters::bicgstab;
+	m["bicgstab_save"] = Inputparameters::bicgstab_save;
+	Inputparameters::solver a = m[s];
+	if(a) {
+		return a;
+	} else {
+		std::cout << s << " is not a valid solver." << std::endl;
 		throw Inputparameters::parse_aborted();
 	}
 }

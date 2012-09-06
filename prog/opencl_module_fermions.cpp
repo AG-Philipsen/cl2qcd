@@ -1405,7 +1405,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
-	if (get_parameters().get_use_bicgstab_save() == true) {
+	if (get_parameters().get_solver() == meta::Inputparameters::bicgstab_save) {
 		hmc_float resid;
 		for(int iter = 0; iter < get_parameters().get_cgmax(); iter++) {
 			if(iter % get_parameters().get_iter_refresh() == 0) {
@@ -1497,7 +1497,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 	}
 	//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
 	//  In particular this version does not perform the check if the "real" residuum is sufficiently small!
-	else if (get_parameters().get_use_bicgstab_save() != true) {
+	else if (get_parameters().get_solver() == meta::Inputparameters::bicgstab_save) {
 		hmc_float resid;
 		for(int iter = 0; iter < get_parameters().get_cgmax(); iter++) {
 			if(iter % get_parameters().get_iter_refresh() == 0) {
@@ -1580,7 +1580,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 	cl_int clerr = CL_SUCCESS;
 
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
-	if (get_parameters().get_use_bicgstab_save()) {
+	if (get_parameters().get_solver() == meta::Inputparameters::bicgstab_save) {
 		klepsydra::Monotonic timer;
 		if(logger.beInfo()) {
 			cl_event start_event;
@@ -2005,7 +2005,7 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 		//make sure buffer are initialised
 		this->fill_solver_buffers();
 		//even solution
-		if(get_parameters().get_use_cg() == true)
+		if(get_parameters().get_solver() == meta::Inputparameters::cg)
 			converged = cg_eo(f, clmem_inout_eo, clmem_source_even, gf, get_parameters().get_solver_prec());
 		else
 			converged = bicgstab_eo(f, this->get_clmem_inout_eo(), clmem_source_even, gf, get_parameters().get_solver_prec());
@@ -2035,7 +2035,7 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 		///@todo this should go into a more general function
 		this->set_spinorfield_cold_device(inout);
 
-		if(get_parameters().get_use_cg() == true)
+		if(get_parameters().get_solver() == meta::Inputparameters::cg)
 			converged = cg(f, inout, source, gf, get_parameters().get_solver_prec());
 		else
 			converged = bicgstab(f, inout, source, gf, get_parameters().get_solver_prec());

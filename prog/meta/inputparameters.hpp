@@ -24,6 +24,7 @@ namespace meta {
 			enum action { wilson = 1, clover, twistedmass, tlsym, iwasaki, dbw2 };
 			enum integrator { leapfrog = 1, twomn };
 			enum startcondition { cold_start = 1, hot_start, start_from_source };
+			enum solver { cg = 1, bicgstab, bicgstab_save };
 
 			/**
 			 * The parsing of the input parameters aborted for some reason.
@@ -100,10 +101,8 @@ namespace meta {
 			double get_chem_pot_im() const noexcept;
 			bool get_use_eo() const noexcept;
 			//at the moment, only 2 solvers are implemented..
-			bool get_use_cg() const noexcept;
-			bool get_use_cg_mp() const noexcept;
-			bool get_use_bicgstab_save() const noexcept;
-			bool get_use_bicgstab_save_mp() const noexcept;
+			solver get_solver() const noexcept;
+			solver get_solver_mp() const noexcept;
 			bool get_use_pointsource() const noexcept;
 			bool get_use_gauge_only() const noexcept;
 			int get_num_sources() const noexcept;
@@ -198,10 +197,8 @@ namespace meta {
 			double chem_pot_im;
 			bool use_eo;
 			//at the moment, only 2 solvers are implemented..
-			bool use_cg;
-			bool use_cg_mp;
-			bool use_bicgstab_save;
-			bool use_bicgstab_save_mp;
+			solver _solver;
+			solver _solver_mp;
 			bool use_pointsource;
 			bool use_gauge_only;
 			int num_sources;

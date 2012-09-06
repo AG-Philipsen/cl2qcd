@@ -241,13 +241,16 @@ static void print_info_fermion(const meta::Inputparameters& params)
 		logger.info() << "## Use stochastic sources for inversion" ;
 		logger.info() << "## Number of sources: " << params.get_num_sources();
 	}
-	if(params.get_use_cg() == true)
-		logger.info() << "## Use CG-solver for inversions" ;
-	if(params.get_use_cg() == false) {
-		if(params.get_use_bicgstab_save() == false)
+	switch(params.get_solver()) {
+		case Inputparameters::cg:
+			logger.info() << "## Use CG-solver for inversions" ;
+			break;
+		case Inputparameters::bicgstab:
 			logger.info() << "## Use BiCGStab for inversions";
-		else
+			break;
+		case Inputparameters::bicgstab_save:
 			logger.info() << "## Use BiCGStab-SAVE for inversions";
+			break;
 	}
 	logger.info() << "## cgmax  = " << params.get_cgmax();
 	logger.info() << "## iter_refresh  = " << params.get_iter_refresh();
@@ -318,13 +321,16 @@ static void print_info_fermion(std::ostream * os, const meta::Inputparameters& p
 		*os  << "## Use stochastic sources for inversion"  << endl;
 		*os  << "## Number of sources: " << params.get_num_sources()  << endl;
 	}
-	if(params.get_use_cg() == true)
-		*os << "## Use CG-solver for inversions"  << endl;
-	if(params.get_use_cg() == false) {
-		if(params.get_use_bicgstab_save() == false)
-			*os << "## Use BiCGStab for inversions" << endl;
-		else
-			*os << "## Use BiCGStab-SAVE for inversions" << endl;
+	switch(params.get_solver()) {
+		case Inputparameters::cg:
+			*os << "## Use CG-solver for inversions" ;
+			break;
+		case Inputparameters::bicgstab:
+			*os << "## Use BiCGStab for inversions";
+			break;
+		case Inputparameters::bicgstab_save:
+			*os << "## Use BiCGStab-SAVE for inversions";
+			break;
 	}
 	*os << "## cgmax  = " << params.get_cgmax() << endl;
 	*os << "## iter_refresh  = " << params.get_iter_refresh() << endl;
@@ -482,13 +488,16 @@ void meta::print_info_hmc(const char* progname, const Inputparameters& params)
 			logger.info() << "## csw_mp   = " << params.get_csw_mp();
 		}
 		logger.info() << "##" ;
-		if(params.get_use_cg_mp() == true)
-			logger.info() << "## Use CG-solver for mp inversions" ;
-		if(params.get_use_cg_mp() == false) {
-			if(params.get_use_bicgstab_save_mp() == false)
+		switch(params.get_solver_mp()) {
+			case Inputparameters::cg:
+				logger.info() << "## Use CG-solver for mp inversions" ;
+				break;
+			case Inputparameters::bicgstab:
 				logger.info() << "## Use BiCGStab for mp inversions";
-			else
+				break;
+			case Inputparameters::bicgstab_save:
 				logger.info() << "## Use BiCGStab-SAVE for mp inversions";
+				break;
 		}
 		logger.info() << "## cgmax_mp  = " << params.get_cgmax_mp();
 		logger.info() << "## iter_refresh_mp  = " << params.get_iter_refresh_mp();
@@ -540,13 +549,16 @@ void meta::print_info_hmc(const char* progname, std::ostream* os, const Inputpar
 			*os << "## csw_mp   = " << params.get_csw_mp()  << '\n';
 		}
 		*os << "##"  << endl;
-		if(params.get_use_cg_mp() == true)
-			*os << "## Use CG-solver for mp inversions"  << '\n';
-		if(params.get_use_cg_mp() == false) {
-			if(params.get_use_bicgstab_save_mp() == false)
-				*os << "## Use BiCGStab for mp inversions"  << '\n';
-			else
-				*os << "## Use BiCGStab-SAVE for mp inversions"  << '\n';
+		switch(params.get_solver_mp()) {
+			case Inputparameters::cg:
+				*os << "## Use CG-solver for mp inversions" ;
+				break;
+			case Inputparameters::bicgstab:
+				*os << "## Use BiCGStab for mp inversions";
+				break;
+			case Inputparameters::bicgstab_save:
+				*os << "## Use BiCGStab-SAVE for mp inversions";
+				break;
 		}
 		*os << "## cgmax_mp  = " << params.get_cgmax_mp()  << '\n';
 		*os << "## iter_refresh_mp  = " << params.get_iter_refresh_mp()  << '\n';

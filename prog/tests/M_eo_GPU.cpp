@@ -169,7 +169,7 @@ void Dummyfield::fill_buffers()
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 
 	//use the variable use_cg to switch between cold and random input sf
-	if(get_parameters().get_use_cg() == true) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	if(get_parameters().get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
 	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
 	BOOST_REQUIRE(sf_in);
 
