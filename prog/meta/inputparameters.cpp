@@ -406,7 +406,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("nspace", po::value<int>(&nspace)->default_value(4))
 	("ntime", po::value<int>(&ntime)->default_value(8))
 
-	("startcondition", po::value<std::string>()->default_value("start_from_source"))
+	("startcondition", po::value<std::string>()->default_value("cold_start"))
 	("saveconfigs", po::value<bool>(&saveconfigs)->default_value(false))
 	("writefrequency", po::value<int>(&writefrequency)->default_value(1))
 	("savefrequency", po::value<int>(&savefrequency)->default_value(100))

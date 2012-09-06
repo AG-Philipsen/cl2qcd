@@ -31,7 +31,7 @@ void checkDefaults(const Inputparameters params)
 	BOOST_REQUIRE_EQUAL(params.get_nspace(), 4);
 	BOOST_REQUIRE_EQUAL(params.get_ntime(), 8);
 
-	BOOST_REQUIRE_EQUAL(params.get_startcondition(), Inputparameters::start_from_source);
+	BOOST_REQUIRE_EQUAL(params.get_startcondition(), Inputparameters::cold);
 	BOOST_REQUIRE_EQUAL(params.get_saveconfigs(), false);
 	BOOST_REQUIRE_EQUAL(params.get_writefrequency(), 1);
 	BOOST_REQUIRE_EQUAL(params.get_savefrequency(), 100);
