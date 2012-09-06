@@ -1497,7 +1497,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 	}
 	//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
 	//  In particular this version does not perform the check if the "real" residuum is sufficiently small!
-	else if (get_parameters().get_solver() == meta::Inputparameters::bicgstab_save) {
+	else if (get_parameters().get_solver() == meta::Inputparameters::bicgstab) {
 		hmc_float resid;
 		for(int iter = 0; iter < get_parameters().get_cgmax(); iter++) {
 			if(iter % get_parameters().get_iter_refresh() == 0) {
@@ -1571,8 +1571,8 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 		}
 		return -1;
 	}
-	//this return cannot be reached and is inserted to remove a warning
-	return 0;
+	logger.fatal() << "This line should never be reached! Program logic is inconsistent!";
+	throw std::logic_error("Somebody goofed up - the solver you selected is not implemented.");
 }
 
 int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
@@ -1801,8 +1801,6 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 		}
 		return -1;
 	}
-	//this return cannot be reached and is inserted to remove a warning
-	return 0;
 }
 
 int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
