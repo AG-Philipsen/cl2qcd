@@ -560,6 +560,7 @@ static Inputparameters::integrator get_integrator(std::string s)
 	std::map<std::string, Inputparameters::integrator> m;
 	m["leapfrog"] = Inputparameters::leapfrog;
 	m["twomn"] = Inputparameters::twomn;
+	m["2mn"] = Inputparameters::twomn;
 
 	Inputparameters::integrator a = m[s];
 	if(a) {
@@ -612,4 +613,6 @@ static void add_option_aliases(meta::ConfigFileNormalizer * const normalizer)
 	normalizer->add_alias("use_evenodd", "use_eo");
 	normalizer->add_alias("thermsteps", "thermalizationsteps");
 	normalizer->add_alias("thermalization", "thermalizationsteps");
+	normalizer->add_alias("puregauge", "use_gauge_only");
+	normalizer->add_alias("PGT", "use_gauge_only");
 }

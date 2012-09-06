@@ -19,8 +19,6 @@ startcondition=cold
 savefrequency=10
 fermact=TWISTEDMASS
 
-use_evenodd=yes
-
 #solver-parameters
 use_evenodd=yes
 solver=bicgstab
@@ -32,6 +30,6 @@ tau=0.01
 integrator0=2MN
 integrationsteps0=2
 integrator1=2MN
-integrationsteps0=10
+integrationsteps1=10
 
 

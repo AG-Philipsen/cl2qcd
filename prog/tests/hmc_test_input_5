@@ -19,8 +19,6 @@ startcondition=cold
 savefrequency=10
 fermact=TWISTEDMASS
 
-use_evenodd=yes
-
 #solver-parameters
 use_evenodd=yes
 solver=cg
