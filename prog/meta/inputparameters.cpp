@@ -6,11 +6,13 @@
 
 #include <map>
 #include <iostream>
-#include <fstream>
+#include <sstream>
 #include <stdexcept>
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
 namespace po = boost::program_options;
+
+#include "config_file_normalizer.hpp"
 
 using namespace meta;
 
@@ -26,6 +28,10 @@ static Inputparameters::integrator get_integrator(std::string);
  * Get the startcondition describe by the given string.
  */
 static Inputparameters::startcondition get_startcondition(std::string);
+/**
+ * Adds all alternative option names to the ConfigFileNormlizer instance
+ */
+static void add_option_aliases(meta::ConfigFileNormalizer * const);
 
 size_t Inputparameters::get_precision() const noexcept
 {
@@ -508,17 +514,19 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	}
 
 	if(vm.count("input-file")) {
+		std::string config_file = vm["input-file"].as<std::string>();
+		ConfigFileNormalizer normalizer;
+		add_option_aliases(&normalizer);
 		// add stuff from input file
-		const std::string config_file_name = vm["input-file"].as<std::string>();
-		std::ifstream config_file(config_file_name.c_str());
-		if(!config_file.is_open()) {
-			std::cout << "Failed to open file " << config_file_name << std::endl;
+		std::string normalized_file;
+		try {
+			normalized_file = normalizer(config_file);
+		} catch(std::invalid_argument) {
+			std::cout << "Invalid config file " << config_file << std::endl;
 			throw Inputparameters::parse_aborted();
 		}
-
-		// TODO add custom parser to handle other writings for the given parameters
-
-		po::store(po::parse_config_file(config_file, config, false), vm);
+		std::istringstream normalized_file_stream(normalized_file);
+		po::store(po::parse_config_file(normalized_file_stream, config, false), vm);
 	}
 
 	po::notify(vm); // checks whether all required arguments are set
@@ -583,4 +591,10 @@ static Inputparameters::startcondition get_startcondition(std::string s)
 		std::cout << s << " is not a valid startcondition." << std::endl;
 		throw Inputparameters::parse_aborted();
 	}
+}
+
+static void add_option_aliases(meta::ConfigFileNormalizer * const normalizer)
+{
+	normalizer->add_alias("NS", "nspace");
+	normalizer->add_alias("NT", "ntime");
 }
