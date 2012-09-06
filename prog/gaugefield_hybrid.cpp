@@ -267,7 +267,7 @@ void Gaugefield_hybrid::delete_variables()
 	delete [] devicetypes;
 
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-		delete [] opencl_modules[ntask];
+		delete opencl_modules[ntask];
 	}
 	delete [] opencl_modules;
 }
