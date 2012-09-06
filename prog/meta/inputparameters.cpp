@@ -422,7 +422,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("gaugeact", po::value<std::string>()->default_value("wilson"))
 
 	//heatbath parameters
-	("thermalizationsteps", po::value<int>(&thermalizationsteps)->default_value(0))
+	("thermalization", po::value<int>(&thermalizationsteps)->default_value(0))
 	("heatbathsteps", po::value<int>(&heatbathsteps)->default_value(1000))
 	("overrelaxsteps", po::value<int>(&overrelaxsteps)->default_value(1))
 	("xi", po::value<int>(&xi)->default_value(1))
@@ -611,8 +611,8 @@ static void add_option_aliases(meta::ConfigFileNormalizer * const normalizer)
 	normalizer->add_alias("NS", "nspace");
 	normalizer->add_alias("NT", "ntime");
 	normalizer->add_alias("use_evenodd", "use_eo");
-	normalizer->add_alias("thermsteps", "thermalizationsteps");
-	normalizer->add_alias("thermalization", "thermalizationsteps");
+	normalizer->add_alias("thermsteps", "thermalization");
+	normalizer->add_alias("thermalizationsteps", "thermalization");
 	normalizer->add_alias("puregauge", "use_gauge_only");
 	normalizer->add_alias("PGT", "use_gauge_only");
 }
