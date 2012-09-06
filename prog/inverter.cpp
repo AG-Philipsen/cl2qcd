@@ -22,13 +22,13 @@ int main(int argc, const char* argv[])
 		//get name for file to which correlators are to be stored
 		stringstream corr_fn;
 		switch ( parameters.get_startcondition() ) {
-			case START_FROM_SOURCE :
+			case meta::Inputparameters::start_from_source :
 				corr_fn << parameters.get_sourcefile() << "_correlators.dat" ;
 				break;
-			case HOT_START :
+			case meta::Inputparameters::hot_start :
 				corr_fn << "conf.hot_correlators.dat" ;
 				break;
-			case COLD_START :
+			case meta::Inputparameters::cold_start :
 				corr_fn << "conf.cold_correlators.dat" ;
 				break;
 		}

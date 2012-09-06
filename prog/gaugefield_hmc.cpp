@@ -253,10 +253,13 @@ void Gaugefield_hmc::integrator(usetimer * solvertimer)
 			exit(1);
 		}
 	}
-	if(get_parameters().get_integrator(0) == LEAPFROG) {
-		this->leapfrog(solvertimer);
-	} else if(get_parameters().get_integrator(0) == TWOMN) {
-		this->twomn(solvertimer);
+	switch(get_parameters().get_integrator(0)) {
+		case meta::Inputparameters::leapfrog:
+			this->leapfrog(solvertimer);
+			break;
+		case meta::Inputparameters::twomn:
+			this->twomn(solvertimer);
+			break;
 	}
 	return;
 }

@@ -297,20 +297,23 @@ void Gaugefield_hybrid::finalize_opencl()
 
 void Gaugefield_hybrid::init_gaugefield()
 {
-	if(get_parameters().get_startcondition() == START_FROM_SOURCE) {
-		sourcefileparameters parameters_source;
-		//tmp hmc_gaugefield for filetransfer
-		hmc_float * gaugefield_tmp;
-		gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * parameters.get_ntime() * meta::get_volspace(parameters));
-		parameters_source.readsourcefile(get_parameters().get_sourcefile().c_str(), get_parameters().get_precision(), &gaugefield_tmp);
-		copy_gaugefield_from_ildg_format(get_sgf(), gaugefield_tmp, parameters_source.num_entries_source);
-		free(gaugefield_tmp);
-	}
-	if(get_parameters().get_startcondition() == COLD_START) {
-		set_gaugefield_cold(get_sgf());
-	}
-	if(get_parameters().get_startcondition() == HOT_START) {
-		set_gaugefield_hot(get_sgf());
+	switch(get_parameters().get_startcondition()) {
+		case meta::Inputparameters::start_from_source: {
+			sourcefileparameters parameters_source;
+			//tmp hmc_gaugefield for filetransfer
+			hmc_float * gaugefield_tmp;
+			gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * parameters.get_ntime() * meta::get_volspace(parameters));
+			parameters_source.readsourcefile(get_parameters().get_sourcefile().c_str(), get_parameters().get_precision(), &gaugefield_tmp);
+			copy_gaugefield_from_ildg_format(get_sgf(), gaugefield_tmp, parameters_source.num_entries_source);
+			free(gaugefield_tmp);
+		}
+		break;
+		case meta::Inputparameters::cold_start:
+			set_gaugefield_cold(get_sgf());
+			break;
+		case meta::Inputparameters::hot_start:
+			set_gaugefield_hot(get_sgf());
+			break;
 	}
 }
 

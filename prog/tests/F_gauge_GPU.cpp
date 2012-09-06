@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
 	logger.info() << "Output vectors:";
 	cpu.verify(cpu_res, gpu_res);
 	//if the gaugeconfig is cold, the force is zero!!
-	if(cpu.get_parameters().get_startcondition() == COLD_START) {
+	if(cpu.get_parameters().get_startcondition() == meta::Inputparameters::cold_start) {
 		logger.info() << "cold config used. Check if result is zero!!";
 		cpu.verify(cpu_res, 0.);
 		cpu.verify(gpu_res, 0.);

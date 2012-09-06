@@ -14,18 +14,6 @@
 /** Number of dimensions of the lattice */
 #define NDIM 4
 
-#ifndef _INKERNEL_
-
-//startconditions:
-#define START_FROM_SOURCE 2
-#define COLD_START 0
-#define HOT_START 1
-
-#endif //_INKERNEL_
-
-#define LEAPFROG 0
-#define TWOMN 1
-
 //EVEN ODD
 #define EVEN 0
 #define ODD 1

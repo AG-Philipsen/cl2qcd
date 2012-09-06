@@ -54,15 +54,18 @@ static void print_info_global(const meta::Inputparameters& params)
 	logger.info() << "## SvConf:  " << params.get_saveconfigs();
 	logger.info() << "## WrFreq:  " << params.get_writefrequency();
 	logger.info() << "## SvFreq:  " << params.get_savefrequency();
-	if (params.get_startcondition() == START_FROM_SOURCE) {
-		std::string sf = params.get_sourcefile();
-		logger.info() << "## sourcefile = " << sf;
-	}
-	if (params.get_startcondition() == COLD_START) {
-		logger.info() << "## cold start";
-	}
-	if (params.get_startcondition() == HOT_START) {
-		logger.info() << "## hot start";
+	switch(params.get_startcondition()) {
+		case Inputparameters::start_from_source: {
+			std::string sf = params.get_sourcefile();
+			logger.info() << "## sourcefile = " << sf;
+		}
+		break;
+		case Inputparameters::cold_start:
+			logger.info() << "## cold start";
+			break;
+		case Inputparameters::hot_start:
+			logger.info() << "## hot start";
+			break;
 	}
 	if(params.get_use_smearing() == 1) {
 		logger.info() << "## **********************************************************";
@@ -108,15 +111,18 @@ static void print_info_global(std::ostream* os, const meta::Inputparameters& par
 	*os  << "## SvConf:  " << params.get_saveconfigs() << endl;
 	*os  << "## WrFreq:  " << params.get_writefrequency() << endl;
 	*os  << "## SvFreq:  " << params.get_savefrequency() << endl;
-	if (params.get_startcondition() == START_FROM_SOURCE) {
-		string sf = params.get_sourcefile();
-		*os  << "## sourcefile = " << sf << endl;
-	}
-	if (params.get_startcondition() == COLD_START) {
-		*os  << "## cold start" << endl;
-	}
-	if (params.get_startcondition() == HOT_START) {
-		*os  << "## hot start" << endl;
+	switch(params.get_startcondition()) {
+		case Inputparameters::start_from_source: {
+			std::string sf = params.get_sourcefile();
+			*os << "## sourcefile = " << sf;
+		}
+		break;
+		case Inputparameters::cold_start:
+			*os << "## cold start";
+			break;
+		case Inputparameters::hot_start:
+			*os << "## hot start";
+			break;
 	}
 	if(params.get_use_smearing() == true) {
 		*os  << "## **********************************************************" << endl;
@@ -409,15 +415,18 @@ static void print_info_integrator(int number, const meta::Inputparameters& param
 
 	string integrator_name;
 	bool print_lambda = false;
-	if(params.get_integrator(number) == LEAPFROG)
-		integrator_name = "LEAPFROG";
-	else if (params.get_integrator(number) == TWOMN) {
-		integrator_name = "2MN";
-		print_lambda = true;
-	} else {
-		logger.fatal() << "Fail in getting integrator information!";
-		logger.fatal() << "Aborting...";
-		throw out_of_range("Unknown integrator");
+	switch(params.get_integrator(number)) {
+		case Inputparameters::leapfrog:
+			integrator_name = "LEAPFROG";
+			break;
+		case Inputparameters::twomn:
+			integrator_name = "2MN";
+			print_lambda = true;
+			break;
+		default:
+			logger.fatal() << "Fail in getting integrator information!";
+			logger.fatal() << "Aborting...";
+			throw out_of_range("Unknown integrator");
 	}
 	logger.info() << "## integrator" << number << " = " << integrator_name;
 	logger.info() << "## integrationsteps" << number << " = " << params.get_integrationsteps(number);
@@ -430,15 +439,18 @@ static void print_info_integrator(std::ostream* os, int number, const meta::Inpu
 
 	string integrator_name;
 	bool print_lambda = false;
-	if(params.get_integrator(number) == LEAPFROG)
-		integrator_name = "LEAPFROG";
-	else if (params.get_integrator(number) == TWOMN) {
-		integrator_name = "2MN";
-		print_lambda = true;
-	} else {
-		logger.fatal() << "Fail in getting integrator information!";
-		logger.fatal() << "Aborting...";
-		throw out_of_range("Unknown integrator");
+	switch(params.get_integrator(number)) {
+		case Inputparameters::leapfrog:
+			integrator_name = "LEAPFROG";
+			break;
+		case Inputparameters::twomn:
+			integrator_name = "2MN";
+			print_lambda = true;
+			break;
+		default:
+			logger.fatal() << "Fail in getting integrator information!";
+			logger.fatal() << "Aborting...";
+			throw out_of_range("Unknown integrator");
 	}
 	*os << "## integrator" << number << " = " << integrator_name << endl;
 	*os << "## integrationsteps" << number << " = " << params.get_integrationsteps(number) << endl;
