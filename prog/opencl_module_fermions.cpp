@@ -344,7 +344,7 @@ void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
 
 	switch (get_parameters().get_fermact()) {
 		case meta::Inputparameters::twistedmass :
-			*collect_options << " -D_meta::Inputparameters::twistedmass_";
+			*collect_options << " -D_TWISTEDMASS_";
 			break;
 		case meta::Inputparameters::clover :
 			*collect_options << " -D_CLOVER_";
