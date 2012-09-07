@@ -54,19 +54,19 @@ public:
 	 * Initialize tasks
 	 * Called by init()
 	 */
-	virtual void init_tasks();
+	virtual void init_tasks() override;
 
 	// proper finish
 	/**
 	 * Free variables
 	 * Called by finalize()
 	 */
-	virtual void delete_variables();
+	virtual void delete_variables() override;
 	/**
 	 * Free variables
 	 * Called by finalize()
 	 */
-	virtual void finalize_opencl();
+	virtual void finalize_opencl() override;
 
 	// do the real work
 	/**

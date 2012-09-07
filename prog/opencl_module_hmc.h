@@ -60,27 +60,27 @@ public:
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual void fill_collect_options(std::stringstream* collect_options);
+	virtual void fill_collect_options(std::stringstream* collect_options) override;
 	/**
 	 * Collect the buffers to generate for OpenCL.
 	 * Virtual method, allows to include more buffers in inherited classes.
 	 */
-	virtual void fill_buffers();
+	virtual void fill_buffers() override;
 	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
-	virtual void fill_kernels();
+	virtual void fill_kernels() override;
 	/**
 	 * Clear out the kernels,
 	 * Virtual method, allows to clear additional kernels in inherited classes.
 	 */
-	virtual void clear_kernels();
+	virtual void clear_kernels() override;
 	/**
 	 * Clear out the buffers,
 	 * Virtual method, allows to clear additional buffers in inherited classes.
 	 */
-	virtual void clear_buffers();
+	virtual void clear_buffers() override;
 
 	/**
 	 * comutes work-sizes for a kernel
@@ -91,7 +91,7 @@ public:
 	 * @param dev_type type of device on which the kernel should be executed
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
-	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
+	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups) override;
 
 	////////////////////////////////////////////////////
 	//get members
@@ -182,14 +182,14 @@ protected:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual usetimer* get_timer(const char * in);
+	virtual usetimer* get_timer(const char * in) override;
 
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 */
-	void virtual print_profiling(std::string filename, int number);
+	void virtual print_profiling(std::string filename, int number) override;
 
 #endif
 
@@ -198,7 +198,7 @@ protected:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual size_t get_read_write_size(char * in);
+	virtual size_t get_read_write_size(const char * in) override;
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -206,7 +206,7 @@ protected:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual uint64_t get_flop_size(const char * in);
+	virtual uint64_t get_flop_size(const char * in) override;
 
 private:
 

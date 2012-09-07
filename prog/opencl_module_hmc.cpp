@@ -312,7 +312,7 @@ usetimer* Opencl_Module_Hmc::get_timer(const char * in)
 
 #endif
 
-size_t Opencl_Module_Hmc::get_read_write_size(char * in)
+size_t Opencl_Module_Hmc::get_read_write_size(const char * in)
 {
 	size_t result = Opencl_Module_Fermions::get_read_write_size(in);
 	if (result != 0) return result;
