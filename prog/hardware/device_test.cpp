@@ -30,3 +30,8 @@ for(Device * device : devices) {
 		device->is_double_supported();
 	}
 }
+
+BOOST_AUTO_TEST_CASE(compile)
+{
+	BOOST_FAIL("not implemented");
+}
