@@ -10,6 +10,10 @@
 #include "../meta/inputparameters.hpp"
 #include "device.hpp"
 
+/**
+ * This namespace contains potentially hardware specific code managing the system,
+ * it's devices and the physical representations of data as well as their actual manipulations.
+ */
 namespace hardware {
 
 	/**

@@ -10,7 +10,8 @@
 #include <sstream>
 #include "../logger.hpp"
 
-hardware::System::System(const meta::Inputparameters& params) : params(params)
+hardware::System::System(const meta::Inputparameters& params)
+	: params(params)
 {
 	using namespace hardware;
 
@@ -104,4 +105,3 @@ std::string hardware::OpenclException::what()
 {
 	return error_message;
 }
-
