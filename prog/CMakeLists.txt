@@ -54,7 +54,8 @@ if( LIBXML2_DEFINITIONS )
 	add_definitions( ${LIBXML2_DEFINITIONS} )
 endif( LIBXML2_DEFINITIONS )
 
-find_package(Boost 1.35.0 REQUIRED COMPONENTS regex filesystem system program_options unit_test_framework)
+# requrie 1.49 as boost-regex of 1.46 can't be compiled with c++11-enabled g++-4.7
+find_package(Boost 1.49.0 REQUIRED COMPONENTS regex filesystem system program_options unit_test_framework)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 # Define where to find the OpenCL kernels
