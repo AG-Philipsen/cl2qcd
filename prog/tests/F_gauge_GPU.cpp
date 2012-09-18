@@ -28,7 +28,6 @@ public:
 	void clear_kernels();
 };
 
-
 const std::string SOURCEFILE = std::string(SOURCEDIR)
 #ifdef _USEDOUBLEPREC_
   + "/tests/f_gauge_input_1";
@@ -59,7 +58,6 @@ private:
 	void clear_buffers();
 	cl_mem out;
 	cl_mem sqnorm;
-	Matrixsu3 * gf_in;
 	hmc_float * sf_out;
 
 };
@@ -71,53 +69,52 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
   logger.info() << "\tf_gauge";
   logger.info() << "against reference value";
 
-	logger.info() << "Init CPU device";
-	//params.print_info_inverter("m_gpu");
-	// reset RNG
-	prng_init(13);
-	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
-	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables_from_task(0, 0);
-	cpu.runTestKernel();
-	logger.info() << "|f_gauge|^2:";
-	hmc_float cpu_res;
-	cpu_res = cpu.get_squarenorm(2);
-
-	BOOST_MESSAGE("Tested CPU");
-
-	logger.info() << "Init GPU device";
-	//params.print_info_inverter("m_gpu");
-	// reset RNG
-	prng_init(13);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
-	logger.info() << "gaugeobservables: ";
-	dummy.print_gaugeobservables_from_task(0, 0);
-	dummy.runTestKernel();
-	logger.info() << "|f_gauge|^2:";
-	hmc_float gpu_res;
-	gpu_res = dummy.get_squarenorm(2);
-	BOOST_MESSAGE("Tested GPU");
-
-
-	logger.info() << "Choosing reference value";
-	//CP: I will not check if cpu and gpu have different starting conditions, this should never be the case...
-	if(cpu.get_parameters().get_startcondition() == meta::Inputparameters::cold_start) {
-	  logger.info() << "Use cold config..." ;
-	  ref_val = 0.;
-	} else{
-	  logger.info() << "Use specific config..";
-	  logger.warn() << "The reference value has to be adjusted manually if this config is changed!";
-	  ref_val = 52723.3;
-	}
-	logger.info() << "reference value:\t" << ref_val;
-
-	logger.info() << "Compare CPU result to reference value";
-	cpu.verify_ref(cpu_res, ref_val);
-	logger.info() << "Compare GPU result to reference value";
-	cpu.verify_ref(gpu_res, ref_val);
-
-	logger.info() << "Compare CPU and GPU results";
-	cpu.verify(cpu_res, gpu_res);
+  logger.info() << "Init CPU device";
+  //params.print_info_inverter("m_gpu");
+  // reset RNG
+  prng_init(13);
+  Dummyfield cpu(CL_DEVICE_TYPE_CPU);
+  logger.info() << "gaugeobservables: ";
+  cpu.print_gaugeobservables_from_task(0, 0);
+  cpu.runTestKernel();
+  logger.info() << "|f_gauge|^2:";
+  hmc_float cpu_res;
+  cpu_res = cpu.get_squarenorm(2);
+  
+  BOOST_MESSAGE("Tested CPU");
+  
+  logger.info() << "Init GPU device";
+  //params.print_info_inverter("m_gpu");
+  // reset RNG
+  prng_init(13);
+  Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+  logger.info() << "gaugeobservables: ";
+  dummy.print_gaugeobservables_from_task(0, 0);
+  dummy.runTestKernel();
+  logger.info() << "|f_gauge|^2:";
+  hmc_float gpu_res;
+  gpu_res = dummy.get_squarenorm(2);
+  BOOST_MESSAGE("Tested GPU");
+  
+  logger.info() << "Choosing reference value";
+  //CP: I will not check if cpu and gpu have different starting conditions, this should never be the case...
+  if(cpu.get_parameters().get_startcondition() == meta::Inputparameters::cold_start) {
+    logger.info() << "Use cold config..." ;
+    ref_val = 0.;
+  } else{
+    logger.info() << "Use specific config..";
+    logger.warn() << "The reference value has to be adjusted manually if this config is changed!";
+    ref_val = 52723.3;
+  }
+  logger.info() << "reference value:\t" << ref_val;
+  
+  logger.info() << "Compare CPU result to reference value";
+  cpu.verify_ref(cpu_res, ref_val);
+  logger.info() << "Compare GPU result to reference value";
+  cpu.verify_ref(gpu_res, ref_val);
+  
+  logger.info() << "Compare CPU and GPU results";
+  cpu.verify(cpu_res, gpu_res);
 
 }
 
@@ -135,25 +132,6 @@ void Dummyfield::finalize_opencl()
 	Gaugefield_hybrid::finalize_opencl();
 }
 
-void fill_sf_with_one(spinor * sf_in, int size)
-{
-	for(int i = 0; i < size; ++i) {
-		sf_in[i].e0.e0 = hmc_complex_one;
-		sf_in[i].e0.e1 = hmc_complex_one;
-		sf_in[i].e0.e2 = hmc_complex_one;
-		sf_in[i].e1.e0 = hmc_complex_one;
-		sf_in[i].e1.e1 = hmc_complex_one;
-		sf_in[i].e1.e2 = hmc_complex_one;
-		sf_in[i].e2.e0 = hmc_complex_one;
-		sf_in[i].e2.e1 = hmc_complex_one;
-		sf_in[i].e2.e2 = hmc_complex_one;
-		sf_in[i].e3.e0 = hmc_complex_one;
-		sf_in[i].e3.e1 = hmc_complex_one;
-		sf_in[i].e3.e2 = hmc_complex_one;
-	}
-	return;
-}
-
 void fill_with_zero(hmc_float * sf_in, int size)
 {
 	for(int i = 0; i < size; ++i) {
@@ -162,118 +140,18 @@ void fill_with_zero(hmc_float * sf_in, int size)
 	return;
 }
 
-void fill_sf_with_random(spinor * sf_in, int size, int switcher)
-{
-	if(switcher == 1) {
-		prng_init(123456);
-		for(int i = 0; i < size; ++i) {
-			sf_in[i].e0.e0.re = prng_double();
-			sf_in[i].e0.e1.re = prng_double();
-			sf_in[i].e0.e2.re = prng_double();
-			sf_in[i].e1.e0.re = prng_double();
-			sf_in[i].e1.e1.re = prng_double();
-			sf_in[i].e1.e2.re = prng_double();
-			sf_in[i].e2.e0.re = prng_double();
-			sf_in[i].e2.e1.re = prng_double();
-			sf_in[i].e2.e2.re = prng_double();
-			sf_in[i].e3.e0.re = prng_double();
-			sf_in[i].e3.e1.re = prng_double();
-			sf_in[i].e3.e2.re = prng_double();
-
-			sf_in[i].e0.e0.im = prng_double();
-			sf_in[i].e0.e1.im = prng_double();
-			sf_in[i].e0.e2.im = prng_double();
-			sf_in[i].e1.e0.im = prng_double();
-			sf_in[i].e1.e1.im = prng_double();
-			sf_in[i].e1.e2.im = prng_double();
-			sf_in[i].e2.e0.im = prng_double();
-			sf_in[i].e2.e1.im = prng_double();
-			sf_in[i].e2.e2.im = prng_double();
-			sf_in[i].e3.e0.im = prng_double();
-			sf_in[i].e3.e1.im = prng_double();
-			sf_in[i].e3.e2.im = prng_double();
-		}
-	} else if (switcher == 2) {
-		prng_init(789101);
-		for(int i = 0; i < size; ++i) {
-			sf_in[i].e0.e0.re = prng_double();
-			sf_in[i].e0.e1.re = prng_double();
-			sf_in[i].e0.e2.re = prng_double();
-			sf_in[i].e1.e0.re = prng_double();
-			sf_in[i].e1.e1.re = prng_double();
-			sf_in[i].e1.e2.re = prng_double();
-			sf_in[i].e2.e0.re = prng_double();
-			sf_in[i].e2.e1.re = prng_double();
-			sf_in[i].e2.e2.re = prng_double();
-			sf_in[i].e3.e0.re = prng_double();
-			sf_in[i].e3.e1.re = prng_double();
-			sf_in[i].e3.e2.re = prng_double();
-
-			sf_in[i].e0.e0.im = prng_double();
-			sf_in[i].e0.e1.im = prng_double();
-			sf_in[i].e0.e2.im = prng_double();
-			sf_in[i].e1.e0.im = prng_double();
-			sf_in[i].e1.e1.im = prng_double();
-			sf_in[i].e1.e2.im = prng_double();
-			sf_in[i].e2.e0.im = prng_double();
-			sf_in[i].e2.e1.im = prng_double();
-			sf_in[i].e2.e2.im = prng_double();
-			sf_in[i].e3.e0.im = prng_double();
-			sf_in[i].e3.e1.im = prng_double();
-			sf_in[i].e3.e2.im = prng_double();
-		}
-	}
-
-
-
-	return;
-}
-
-
 void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-
 	cl_int err;
-
 	cl_context context = opencl_modules[0]->get_context();
-
-	int NUM_ELEMENTS_SF;
-	if(get_parameters().get_use_eo() == true) NUM_ELEMENTS_SF =  meta::get_eoprec_spinorfieldsize(get_parameters());
-	else NUM_ELEMENTS_SF =  meta::get_spinorfieldsize(get_parameters());
 
 	int NUM_ELEMENTS_AE = meta::get_vol4d(get_parameters()) * NDIM * meta::get_su3algebrasize();
 
-
 	sf_out = new hmc_float[NUM_ELEMENTS_AE];
-	/*
-	//use the variable use_cg to switch between cold and random input sf
-	if(get_parameters().get_use_cg() == true) {
-	  fill_sf_with_one(sf_in1, NUM_ELEMENTS_SF);
-	  fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
-	}
-	else {
-	  fill_sf_with_random(sf_in1, NUM_ELEMENTS_SF, 1);
-	  fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 2);
-	}
-	BOOST_REQUIRE(sf_in1);
-	BOOST_REQUIRE(sf_in2);
-	*/
 	fill_with_zero(sf_out, NUM_ELEMENTS_AE);
 
 	Device * device = static_cast<Device*>(opencl_modules[0]);
-	//size_t sf_buf_size = get_parameters().get_sf_buf_size();
-	//create buffer for sf on device (and copy sf_in to both for convenience)
-	/*
-	in1 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in2 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in1, CL_TRUE, 0, sf_buf_size, sf_in1, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), in2, CL_TRUE, 0, sf_buf_size, sf_in2, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	*/
 	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, device->get_gaugemomentum_buffer_size(), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(sf_out));
@@ -294,12 +172,8 @@ void Device::fill_kernels()
 void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-
-
 	clReleaseMemObject(out);
 	clReleaseMemObject(sqnorm);
-
-
 	delete[] sf_out;
 }
 
@@ -322,10 +196,7 @@ void Device::runTestKernel(cl_mem out, cl_mem gf, int gs, int ls)
 
 hmc_float Dummyfield::get_squarenorm(int which)
 {
-	//which controlls if the in or out-vector is looked at
-	//if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1, sqnorm);
-	//if(which == 1) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2, sqnorm);
-	if(which == 2) static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+	static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
 	// get stuff from device
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
