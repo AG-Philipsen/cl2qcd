@@ -81,12 +81,12 @@ target_link_libraries(m_compare_noneo_eo
 )
 add_test(M_compare_noneo_eo m_compare_noneo_eo)
 
-add_executable(f_gauge_gpu F_gauge_GPU.cpp)
-target_link_libraries(f_gauge_gpu
+add_executable(f_gauge F_gauge_GPU.cpp)
+target_link_libraries(f_gauge
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(F_gauge_gpu f_gauge_gpu)
+add_test(F_gauge f_gauge)
 
 add_executable(rectangles_test Rectangles_test.cpp)
 target_link_libraries(rectangles_test
