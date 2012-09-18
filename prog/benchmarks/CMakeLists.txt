@@ -9,7 +9,7 @@ if(PERFORM_PROFILING)
 
 	# the executables should include the same files as the "original" ones (see main CMakeLists.txt)
 	add_library(optimal_profile ${OPTIMAL_FILES})
-	target_link_libraries(optimal_profile ${OPTIMAL_USED_LIBS} meta)
+	target_link_libraries(optimal_profile meta ${OPTIMAL_USED_LIBS})
 	add_dependencies(optimal_profile git_commit_id_header)
 
 	add_executable(heatbath_benchmarks heatbath_benchmarks.cpp)
