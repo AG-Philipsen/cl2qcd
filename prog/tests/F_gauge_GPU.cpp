@@ -157,8 +157,8 @@ bool Dummyfield::verify(hmc_float cpu, hmc_float gpu, hmc_float prec)
 	//this is too much required, since rounding errors can occur
 	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
 	//instead, test if the two number agree up to some precision prec
-	hmc_float dev = (abs(cpu) - abs(gpu)) / cpu;
-	if(abs(dev) < prec) {
+	hmc_float dev = (fabs(cpu) - fabs(gpu)) / cpu;
+	if(fabs(dev) < prec) {
 		return true;
 	} else {
 		return false;
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
   logger.info() << "|f_gauge|^2:";
   hmc_float gpu_res;
   gpu_res = dummy.get_squarenorm();
-  logger.info() << cpu_res;
+  logger.info() << gpu_res;
   BOOST_MESSAGE("Tested GPU");
   
   logger.info() << "Choosing reference value";
@@ -276,7 +276,7 @@ BOOST_AUTO_TEST_CASE( F_GAUGE_REC12 )
   logger.info() << "|f_gauge|^2:";
   hmc_float gpu_res;
   gpu_res = dummy.get_squarenorm();
-  logger.info() << cpu_res;
+  logger.info() << gpu_res;
   BOOST_MESSAGE("Tested GPU");
   
   logger.info() << "Choosing reference value";
