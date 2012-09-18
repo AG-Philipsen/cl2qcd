@@ -13,6 +13,7 @@ add_library(meta
 	counter.cpp
 	config_file_normalizer.cpp
 )
+add_dependencies(meta git_commit_id_header)
 
 #
 # Definition of tets
