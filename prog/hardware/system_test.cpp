@@ -61,3 +61,8 @@ for(Device * device : devices) {
 	const std::vector<Device*>& devices4 = system4.get_devices();
 	BOOST_REQUIRE_EQUAL(devices4.size(), 1);
 }
+
+BOOST_AUTO_TEST_CASE(dump_source_if_debugging)
+{
+	BOOST_FAIL("not implemented");
+}

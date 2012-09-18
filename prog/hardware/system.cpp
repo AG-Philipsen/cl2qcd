@@ -15,6 +15,12 @@ hardware::System::System(const meta::Inputparameters& params)
 {
 	using namespace hardware;
 
+	// in debug scenarios make the compiler dump the compile results
+	if( logger.beDebug() ) {
+		setenv("GPU_DUMP_DEVICE_KERNEL", "3", 0); // can be overriden from outside
+		setenv("AMD_OCL_BUILD_OPTIONS_APPEND", "-save-temps", 0); // can be overriden from outside
+	}
+
 	//LZ: for now, stick to one platform without any further checks...
 	cl_platform_id platform;
 	cl_int err = clGetPlatformIDs(1, &platform, 0);
