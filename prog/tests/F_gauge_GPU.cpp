@@ -48,9 +48,8 @@ public:
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
-	hmc_float get_squarenorm(int which);
-	void verify(hmc_float, hmc_float);
-	void verify_ref(hmc_float, hmc_float);
+	hmc_float get_squarenorm();
+  bool verify(hmc_float, hmc_float, hmc_float);
 	void runTestKernel();
 
 private:
@@ -70,30 +69,25 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
   logger.info() << "against reference value";
 
   logger.info() << "Init CPU device";
-  //params.print_info_inverter("m_gpu");
-  // reset RNG
-  prng_init(13);
   Dummyfield cpu(CL_DEVICE_TYPE_CPU);
   logger.info() << "gaugeobservables: ";
   cpu.print_gaugeobservables_from_task(0, 0);
   cpu.runTestKernel();
   logger.info() << "|f_gauge|^2:";
   hmc_float cpu_res;
-  cpu_res = cpu.get_squarenorm(2);
-  
+  cpu_res = cpu.get_squarenorm();
+  logger.info() << cpu_res;
   BOOST_MESSAGE("Tested CPU");
   
   logger.info() << "Init GPU device";
-  //params.print_info_inverter("m_gpu");
-  // reset RNG
-  prng_init(13);
   Dummyfield dummy(CL_DEVICE_TYPE_GPU);
   logger.info() << "gaugeobservables: ";
   dummy.print_gaugeobservables_from_task(0, 0);
   dummy.runTestKernel();
   logger.info() << "|f_gauge|^2:";
   hmc_float gpu_res;
-  gpu_res = dummy.get_squarenorm(2);
+  gpu_res = dummy.get_squarenorm();
+  logger.info() << cpu_res;
   BOOST_MESSAGE("Tested GPU");
   
   logger.info() << "Choosing reference value";
@@ -107,15 +101,35 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
     ref_val = 52723.3;
   }
   logger.info() << "reference value:\t" << ref_val;
-  
+
+  hmc_float prec = 1e-10;  
+  logger.info() << "acceptance precision: " << prec;
   logger.info() << "Compare CPU result to reference value";
-  cpu.verify_ref(cpu_res, ref_val);
+  bool res1 = cpu.verify(cpu_res, ref_val, prec);
+  if(res1) {
+    logger.info() << "CPU and reference value agree within accuary of " << 1e-10;
+  } else {
+    logger.info() << "CPU and reference value DO NOT agree within accuary of " << 1e-10;
+    BOOST_REQUIRE_EQUAL(1, 0);
+  }
+
   logger.info() << "Compare GPU result to reference value";
-  cpu.verify_ref(gpu_res, ref_val);
+  bool res2 = cpu.verify(gpu_res, ref_val, prec);
+  if(res2) {
+    logger.info() << "GPU and reference value agree within accuary of " << 1e-10;
+  } else {
+    logger.info() << "GPU and reference value DO NOT agree within accuary of " << 1e-10;
+    BOOST_REQUIRE_EQUAL(1, 0);
+  }
   
   logger.info() << "Compare CPU and GPU results";
-  cpu.verify(cpu_res, gpu_res);
-
+  bool res3 = cpu.verify(cpu_res, gpu_res, prec);
+  if(res3) {
+    logger.info() << "CPU and GPU result agree within accuary of " << prec;
+  } else {
+    logger.info() << "CPU and GPU result DO NOT agree within accuary of " << prec;
+    BOOST_REQUIRE_EQUAL(1, 0);
+  }
 }
 
 void Dummyfield::init_tasks()
@@ -147,7 +161,6 @@ void Dummyfield::fill_buffers()
 	cl_context context = opencl_modules[0]->get_context();
 
 	int NUM_ELEMENTS_AE = meta::get_vol4d(get_parameters()) * NDIM * meta::get_su3algebrasize();
-
 	sf_out = new hmc_float[NUM_ELEMENTS_AE];
 	fill_with_zero(sf_out, NUM_ELEMENTS_AE);
 
@@ -166,7 +179,6 @@ void Device::fill_kernels()
 	Opencl_Module_Hmc::fill_kernels();
 
 	testKernel = createKernel("gauge_force") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "force_gauge.cl";
-
 }
 
 void Dummyfield::clear_buffers()
@@ -194,46 +206,27 @@ void Device::runTestKernel(cl_mem out, cl_mem gf, int gs, int ls)
 	enqueueKernel(testKernel, gs, ls);
 }
 
-hmc_float Dummyfield::get_squarenorm(int which)
+hmc_float Dummyfield::get_squarenorm()
 {
+  //this always call the gaugemomentum sqnorm kernel
 	static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
 	// get stuff from device
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	logger.info() << result;
 	return result;
 }
 
-void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
+bool Dummyfield::verify(hmc_float cpu, hmc_float gpu, hmc_float prec)
 {
 	//this is too much required, since rounding errors can occur
 	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
-	//instead, test if the two number agree within some percent
-	hmc_float dev = (abs(cpu) - abs(gpu)) / cpu / 100.;
-	if(abs(dev) < 1e-10) {
-		logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
-		logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
+	//instead, test if the two number agree up to some precision prec
+	hmc_float dev = (abs(cpu) - abs(gpu)) / cpu;
+	if(abs(dev) < prec) {
+		return true;
 	} else {
-		logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
-		logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
-		BOOST_REQUIRE_EQUAL(1, 0);
-	}
-}
-
-void Dummyfield::verify_ref(hmc_float in, hmc_float ref)
-{
-	//this is too much required, since rounding errors can occur
-	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
-	//instead, test if the two number agree within some percent
-	hmc_float dev = (abs(in) - abs(ref)) / in / 100.;
-	if(abs(dev) < 1e-10) {
-		logger.info() << "Input and reference value agree within accuary of " << 1e-10;
-		logger.info() << "in: " << in << "\tref: " << ref;
-	} else {
-		logger.info() << "Input and reference value DO NOT agree within accuary of " << 1e-10;
-		logger.info() << "in: " << in << "\tref: " << ref;
-		BOOST_REQUIRE_EQUAL(1, 0);
+		return false;
 	}
 }
 
