@@ -9,6 +9,7 @@
 
 extern std::string const version;
 std::string const version = "0.1";
+std::string const exec_name = "f_tlsym";
 
 class Device : public Opencl_Module_Hmc {
 
@@ -46,12 +47,13 @@ const meta::Inputparameters INPUT(2, PARAMS);
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(INPUT) {
-		init(1, device_type);
-	};
-
-	virtual void init_tasks();
-	virtual void finalize_opencl();
+  Dummyfield(cl_device_type device_type, meta::Inputparameters inputfile) : Gaugefield_hybrid(inputfile) {
+    init(1, device_type);
+    meta::print_info_hmc(exec_name.c_str(), inputfile);
+  };
+  
+  virtual void init_tasks();
+  virtual void finalize_opencl();
 
 	hmc_float get_squarenorm();
 	hmc_float get_rect();
@@ -204,10 +206,10 @@ hmc_float Dummyfield::get_rect()
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(*queue, rect_value, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	logger.info() << result;
-	hmc_float norm =  NDIM * (NDIM - 1) * NC *  meta::get_vol4d(get_parameters());
-	logger.info() << "in the correct normalization (12*VOL*NC = " << norm << ") this reads:";
-	logger.info() << result / norm;
+	//logger.info() << result;
+	//hmc_float norm =  NDIM * (NDIM - 1) * NC *  meta::get_vol4d(get_parameters());
+	//logger.info() << "in the correct normalization (12*VOL*NC = " << norm << ") this reads:";
+	//logger.info() << result / norm;
 	return result;
 }
 
@@ -257,15 +259,19 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
 {
   logger.info() << "Test CPU and GPU version of kernel";
   logger.info() << "\tf_tlsym";
+  logger.info() << "and";
+  logger.info() << "\trectangles";
   logger.info() << "against reference value";
+  logger.info() << "(this is done in one test right now because both kernels use similar functions...";
   
   logger.info() << "Init CPU device";
-  Dummyfield cpu(CL_DEVICE_TYPE_CPU);
+  Dummyfield cpu(CL_DEVICE_TYPE_CPU, INPUT);
   logger.info() << "gaugeobservables: ";
   cpu.print_gaugeobservables_from_task(0, 0);
-  logger.info() << "calc rectangles value";
+  logger.info() << "calc rectangles value:";
   cpu.runTestKernel();
   hmc_float cpu_rect = cpu.get_rect();
+  logger.info() << cpu_rect;
   cpu.runTestKernel2();
   logger.info() << "|f_gauge|^2:";
   hmc_float cpu_res;
@@ -274,12 +280,13 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
   BOOST_MESSAGE("Tested CPU");
 
   logger.info() << "Init GPU device";
-  Dummyfield gpu(CL_DEVICE_TYPE_GPU);
+  Dummyfield gpu(CL_DEVICE_TYPE_GPU, INPUT);
   logger.info() << "gaugeobservables: ";
   gpu.print_gaugeobservables_from_task(0, 0);
-  logger.info() << "calc rectangles value";
+  logger.info() << "calc rectangles value:";
   gpu.runTestKernel();
   hmc_float gpu_rect = gpu.get_rect();
+  logger.info() << gpu_rect;
   gpu.runTestKernel2();
   logger.info() << "|f_gauge|^2:";
   hmc_float gpu_res;
@@ -289,14 +296,25 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
 
   logger.info() << "Choosing reference value";
   //this is the value of the force measured in tmlqcd for the same config
-  hmc_float ref_value = 4080.6745694080;
-  logger.info() << "reference value:\t" << ref_value;
+  hmc_float force_ref_value = 4080.6745694080;
+  hmc_float rect_ref_value = 1103.2398401620;
+  logger.info() << "reference value force:\t" << force_ref_value;
+  logger.info() << "reference value rect:\t" << rect_ref_value;
 
   hmc_float prec = 1e-10;  
   logger.info() << "acceptance precision: " << prec;
   logger.info() << "Compare CPU result to reference value";
-  bool res1 = cpu.verify(cpu_res, ref_value, prec);
-  if(res1) {
+  logger.info() << "rect:";
+  bool res1a = cpu.verify(cpu_rect, rect_ref_value, prec);
+  if(res1a) {
+    logger.info() << "CPU and reference value agree within accuary of " << prec;
+  } else {
+    logger.info() << "CPU and reference value DO NOT agree within accuary of " << prec;
+    BOOST_REQUIRE_EQUAL(1, 0);
+  }
+  logger.info() << "force:";
+  bool res1b = cpu.verify(cpu_res, force_ref_value, prec);
+  if(res1b) {
     logger.info() << "CPU and reference value agree within accuary of " << prec;
   } else {
     logger.info() << "CPU and reference value DO NOT agree within accuary of " << prec;
@@ -304,8 +322,17 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
   }
 
   logger.info() << "Compare GPU result to reference value";
-  bool res2 = gpu.verify(gpu_res, ref_value, prec);
-  if(res2) {
+  logger.info() << "rect:";
+  bool res2a = gpu.verify(gpu_rect, rect_ref_value, prec);
+  if(res2a) {
+    logger.info() << "GPU and reference value agree within accuary of " << prec;
+  } else {
+    logger.info() << "GPU and reference value DO NOT agree within accuary of " << prec;
+    BOOST_REQUIRE_EQUAL(1, 0);
+  }
+  logger.info() << "force:";
+  bool res2b = gpu.verify(gpu_res, rect_ref_value, prec);
+  if(res2b) {
     logger.info() << "GPU and reference value agree within accuary of " << prec;
   } else {
     logger.info() << "GPU and reference value DO NOT agree within accuary of " << prec;
@@ -313,8 +340,17 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
   }
 
   logger.info() << "Compare CPU and GPU results";
-  bool res3 = cpu.verify(cpu_res, gpu_res, prec);
-  if(res3) {
+  logger.info() << "rect:";
+  bool res3a = cpu.verify(cpu_rect, gpu_rect, prec);
+  if(res3a) {
+    logger.info() << "CPU and GPU result agree within accuary of " << prec;
+  } else {
+    logger.info() << "CPU and GPU result DO NOT agree within accuary of " << prec;
+    BOOST_REQUIRE_EQUAL(1, 0);
+  }
+  logger.info() << "force:";
+  bool res3b = cpu.verify(cpu_res, gpu_res, prec);
+  if(res3b) {
     logger.info() << "CPU and GPU result agree within accuary of " << prec;
   } else {
     logger.info() << "CPU and GPU result DO NOT agree within accuary of " << prec;
