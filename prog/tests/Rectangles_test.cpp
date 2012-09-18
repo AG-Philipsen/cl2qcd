@@ -53,9 +53,9 @@ public:
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
-	hmc_float get_squarenorm(int which);
+	hmc_float get_squarenorm();
 	hmc_float get_rect();
-	void verify(hmc_float, hmc_float);
+  bool verify(hmc_float, hmc_float, hmc_float);
 	void runTestKernel();
 	void runTestKernel2();
 
@@ -69,52 +69,6 @@ private:
 	hmc_float * sf_out;
 
 };
-
-BOOST_AUTO_TEST_CASE( F_GAUGE )
-{
-	//this is the value of the force measured in tmlqcd for the same config
-	hmc_float ref_value = 4080.6745694080;
-
-	logger.info() << "Init CPU device";
-	//params.print_info_inverter("m_gpu");
-	// reset RNG
-	prng_init(13);
-	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
-	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables_from_task(0, 0);
-	logger.info() << "calc rectangles value";
-	cpu.runTestKernel();
-	hmc_float cpu_rect = cpu.get_rect();
-	cpu.runTestKernel2();
-	logger.info() << "|f_gauge|^2:";
-	hmc_float cpu_res;
-	cpu_res = cpu.get_squarenorm(2);
-	logger.info() << "Compare CPU result and reference value";
-	cpu.verify(cpu_res, ref_value);
-
-	BOOST_MESSAGE("Tested CPU");
-
-	logger.info() << "Init GPU device";
-	//params.print_info_inverter("m_gpu");
-	// reset RNG
-	prng_init(13);
-	Dummyfield gpu(CL_DEVICE_TYPE_GPU);
-	logger.info() << "gaugeobservables: ";
-	gpu.print_gaugeobservables_from_task(0, 0);
-	logger.info() << "calc rectangles value";
-	gpu.runTestKernel();
-	hmc_float gpu_rect = gpu.get_rect();
-	gpu.runTestKernel2();
-	logger.info() << "|f_gauge|^2:";
-	hmc_float gpu_res;
-	gpu_res = gpu.get_squarenorm(2);
-
-	BOOST_MESSAGE("Tested GPU");
-
-	logger.info() << "Compare CPU and GPU results";
-	cpu.verify(cpu_res, gpu_res);
-	cpu.verify(cpu_rect, gpu_rect);
-}
 
 void Dummyfield::init_tasks()
 {
@@ -141,18 +95,13 @@ void fill_with_zero(hmc_float * sf_in, int size)
 void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-
 	cl_int err;
-
 	cl_context context = opencl_modules[0]->get_context();
-
 	int NUM_ELEMENTS_AE = meta::get_vol4d(get_parameters()) * NDIM * meta::get_su3algebrasize();
-
 	sf_out = new hmc_float[NUM_ELEMENTS_AE];
 	fill_with_zero(sf_out, NUM_ELEMENTS_AE);
 
 	Device * device = static_cast<Device*>(opencl_modules[0]);
-
 	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, device->get_gaugemomentum_buffer_size(), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(sf_out));
@@ -177,11 +126,9 @@ void Device::fill_kernels()
 void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-
 	clReleaseMemObject(out);
 	clReleaseMemObject(sqnorm);
 	clReleaseMemObject(rect_value);
-
 	delete[] sf_out;
 }
 
@@ -195,16 +142,11 @@ void Device::clear_kernels()
 void Device::runTestKernel(cl_mem out, cl_mem gf, int gs, int ls)
 {
 	logger.trace() << "start with testKernel";
-
 	cl_int err;
-
 	cl_uint num_groups = (gs + ls - 1) / ls;
-
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
-
 	cl_mem clmem_rect_buf_glob = 0;
 	if( clmem_rect_buf_glob == 0 ) clmem_rect_buf_glob = create_rw_buffer(global_buf_size_float);
-
 	int buf_loc_size_float = sizeof(hmc_float) * ls;
 
 	//set arguments
@@ -228,9 +170,7 @@ void Device::runTestKernel(cl_mem out, cl_mem gf, int gs, int ls)
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(testKernel_b, 1, 1);
-
 	clReleaseMemObject(clmem_rect_buf_glob);
-
 	logger.trace() << "done with testKernel";
 
 }
@@ -238,29 +178,23 @@ void Device::runTestKernel(cl_mem out, cl_mem gf, int gs, int ls)
 void Device::runTestKernel2(cl_mem out, cl_mem gf, int gs, int ls)
 {
 	logger.trace() << "start with testKernel2";
-
 	cl_int err;
 	err = clSetKernelArg(testKernel2, 0, sizeof(cl_mem), &gf);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel2, 1, sizeof(cl_mem), &out);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-
 	enqueueKernel(testKernel2, gs, ls);
-
 	logger.trace() << "done with testKernel2";
 }
 
 
-hmc_float Dummyfield::get_squarenorm(int which)
+hmc_float Dummyfield::get_squarenorm()
 {
-	//which controlls if the in or out-vector is looked at
-	if(which == 2) static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+	static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
 	// get stuff from device
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	logger.info() << result;
-	printf("%.10f\n", result);
 	return result;
 }
 
@@ -277,19 +211,16 @@ hmc_float Dummyfield::get_rect()
 	return result;
 }
 
-void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
+bool Dummyfield::verify(hmc_float cpu, hmc_float gpu, hmc_float prec)
 {
 	//this is too much required, since rounding errors can occur
 	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
-	//instead, test if the two number agree within some percent
-	hmc_float dev = (abs(cpu) - abs(gpu)) / cpu / 100.;
-	if(abs(dev) < 1e-10) {
-		logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
-		logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
+	//instead, test if the two number agree up to some precision prec
+	hmc_float dev = (abs(cpu) - abs(gpu)) / cpu;
+	if(abs(dev) < prec) {
+		return true;
 	} else {
-		logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
-		logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
-		BOOST_REQUIRE_EQUAL(1, 0);
+		return false;
 	}
 }
 
@@ -320,3 +251,74 @@ void Dummyfield::runTestKernel2()
 	Device * device = static_cast<Device*>(opencl_modules[0]);
 	device->runTestKernel2(out, device->get_gaugefield(), gs, ls);
 }
+
+
+BOOST_AUTO_TEST_CASE( F_GAUGE )
+{
+  logger.info() << "Test CPU and GPU version of kernel";
+  logger.info() << "\tf_tlsym";
+  logger.info() << "against reference value";
+  
+  logger.info() << "Init CPU device";
+  Dummyfield cpu(CL_DEVICE_TYPE_CPU);
+  logger.info() << "gaugeobservables: ";
+  cpu.print_gaugeobservables_from_task(0, 0);
+  logger.info() << "calc rectangles value";
+  cpu.runTestKernel();
+  hmc_float cpu_rect = cpu.get_rect();
+  cpu.runTestKernel2();
+  logger.info() << "|f_gauge|^2:";
+  hmc_float cpu_res;
+  cpu_res = cpu.get_squarenorm();
+  logger.info() << cpu_res;
+  BOOST_MESSAGE("Tested CPU");
+
+  logger.info() << "Init GPU device";
+  Dummyfield gpu(CL_DEVICE_TYPE_GPU);
+  logger.info() << "gaugeobservables: ";
+  gpu.print_gaugeobservables_from_task(0, 0);
+  logger.info() << "calc rectangles value";
+  gpu.runTestKernel();
+  hmc_float gpu_rect = gpu.get_rect();
+  gpu.runTestKernel2();
+  logger.info() << "|f_gauge|^2:";
+  hmc_float gpu_res;
+  gpu_res = gpu.get_squarenorm();
+  logger.info() << gpu_res;
+  BOOST_MESSAGE("Tested GPU");
+
+  logger.info() << "Choosing reference value";
+  //this is the value of the force measured in tmlqcd for the same config
+  hmc_float ref_value = 4080.6745694080;
+  logger.info() << "reference value:\t" << ref_value;
+
+  hmc_float prec = 1e-10;  
+  logger.info() << "acceptance precision: " << prec;
+  logger.info() << "Compare CPU result to reference value";
+  bool res1 = cpu.verify(cpu_res, ref_value, prec);
+  if(res1) {
+    logger.info() << "CPU and reference value agree within accuary of " << prec;
+  } else {
+    logger.info() << "CPU and reference value DO NOT agree within accuary of " << prec;
+    BOOST_REQUIRE_EQUAL(1, 0);
+  }
+
+  logger.info() << "Compare GPU result to reference value";
+  bool res2 = gpu.verify(gpu_res, ref_value, prec);
+  if(res2) {
+    logger.info() << "GPU and reference value agree within accuary of " << prec;
+  } else {
+    logger.info() << "GPU and reference value DO NOT agree within accuary of " << prec;
+    BOOST_REQUIRE_EQUAL(1, 0);
+  }
+
+  logger.info() << "Compare CPU and GPU results";
+  bool res3 = cpu.verify(cpu_res, gpu_res, prec);
+  if(res3) {
+    logger.info() << "CPU and GPU result agree within accuary of " << prec;
+  } else {
+    logger.info() << "CPU and GPU result DO NOT agree within accuary of " << prec;
+    BOOST_REQUIRE_EQUAL(1, 0);
+  }
+}
+
