@@ -102,6 +102,13 @@ target_link_libraries(rectangles_test
 )
 add_test(Rectangles_test rectangles_test)
 
+add_executable(rectangles_test_rec12 Rectangles_test.cpp)
+target_link_libraries(rectangles_test_rec12
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(Rectangles_test_rec12 rectangles_test_rec12)
+
 add_executable(f_fermion_gpu Force_fermion_GPU.cpp)
 target_link_libraries(f_fermion_gpu
 	optimal
