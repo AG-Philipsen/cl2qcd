@@ -151,6 +151,13 @@ target_link_libraries(calc_staple
 )
 add_test(Calc_staple calc_staple)
 
+add_executable(calc_staple_rec12 Calc_staple_test.cpp)
+target_link_libraries(calc_staple_rec12
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(Calc_staple_rec12 calc_staple_rec12)
+
 add_executable(stout_smear Stout_Smear_test.cpp)
 target_link_libraries(stout_smear
 	optimal

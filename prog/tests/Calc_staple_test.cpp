@@ -157,7 +157,9 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
   Dummyfield cpu(CL_DEVICE_TYPE_CPU, params_cpu);
   logger.info() << "gaugeobservables: ";
   cpu.print_gaugeobservables_from_task(0, 0);
+  logger.info() << "running test kernel";
   hmc_float cpu_back = cpu.runTestKernel();
+  logger.info() << cpu_back;
   BOOST_MESSAGE("Tested CPU");
   
   logger.info() << "Init GPU device";
@@ -167,7 +169,64 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
   Dummyfield dummy(CL_DEVICE_TYPE_GPU, params_gpu);
   logger.info() << "gaugeobservables: ";
   dummy.print_gaugeobservables_from_task(0, 0);
+  logger.info() << "running test kernel";
   hmc_float gpu_back = dummy.runTestKernel();
+  logger.info() << gpu_back;
+  BOOST_MESSAGE("Tested GPU");
+  
+  logger.info() << "Choosing reference value";
+  hmc_float ref_val = -1.39070784162e+02;
+  logger.info() << "reference value:\t" << ref_val;
+  logger.info() << "Compare CPU result to reference value";
+  BOOST_CHECK_CLOSE(ref_val, cpu_back, 1e-8);
+  logger.info() << "Compare GPU result to reference value";
+  BOOST_CHECK_CLOSE(ref_val, gpu_back, 1e-8);
+  logger.info() << "Compare CPU result to GPU result";
+  BOOST_CHECK_CLOSE(cpu_back, gpu_back, 1e-8);
+  
+  logger.info() << "cpu: " << std::scientific << std::setprecision(11) << cpu_back << "\tgpu: " << gpu_back;
+  
+  //CP: in case of a cold config, the result is calculable easily
+  logger.info() << "checking cold case...";
+  src = std::string(SOURCEDIR) + "/tests/" + "staple_input_1_cold";
+  const char* _params_cpu_cold[] = {"foo", src.c_str(), "--use_gpu=false"};
+  meta::Inputparameters params_cpu_cold = meta::Inputparameters(3, _params_cpu_cold);
+  Dummyfield cpu_cold(CL_DEVICE_TYPE_CPU, params_cpu_cold);
+  hmc_float cold_back = cpu_cold.runTestKernel();
+  hmc_float cold_ref = 18 * NDIM * meta::get_vol4d(dummy.get_parameters());
+  BOOST_CHECK_CLOSE(cold_back, cold_ref, 1e-8);
+  
+  // TODO test further input files, especially larger sizes and anisotropic case
+}
+
+BOOST_AUTO_TEST_CASE( STAPLE_TEST_REC12 )
+{
+  logger.info() << "Test CPU and GPU version of kernel";
+  logger.info() << "\tcalc_staple";
+  logger.info() << "against reference value";
+
+  logger.info() << "Init CPU device";
+  std::string src = std::string(SOURCEDIR) + "/tests/" + "staple_input_rec12_1";
+  const char* _params_cpu[] = {"foo", src.c_str(), "--use_gpu=false"};
+  meta::Inputparameters params_cpu(3, _params_cpu);
+  Dummyfield cpu(CL_DEVICE_TYPE_CPU, params_cpu);
+  logger.info() << "gaugeobservables: ";
+  cpu.print_gaugeobservables_from_task(0, 0);
+  logger.info() << "running test kernel";
+  hmc_float cpu_back = cpu.runTestKernel();
+  logger.info() << cpu_back;
+  BOOST_MESSAGE("Tested CPU");
+  
+  logger.info() << "Init GPU device";
+  src = std::string(SOURCEDIR) + "/tests/" + "staple_input_rec12_1";
+  const char* _params_gpu[] = {"foo", src.c_str(), "--use_gpu=true"};
+  meta::Inputparameters params_gpu = meta::Inputparameters(3, _params_gpu);
+  Dummyfield dummy(CL_DEVICE_TYPE_GPU, params_gpu);
+  logger.info() << "gaugeobservables: ";
+  dummy.print_gaugeobservables_from_task(0, 0);
+  logger.info() << "running test kernel";
+  hmc_float gpu_back = dummy.runTestKernel();
+  logger.info() << gpu_back;
   BOOST_MESSAGE("Tested GPU");
   
   logger.info() << "Choosing reference value";
@@ -183,9 +242,8 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
   
   logger.info() << "cpu: " << std::scientific << std::setprecision(11) << cpu_back << "\tgpu: " << gpu_back;
   
-  BOOST_CHECK_CLOSE(cpu_back, gpu_back, 1e-8);
-  
   //CP: in case of a cold config, the result is calculable easily
+  logger.info() << "checking cold case...";
   src = std::string(SOURCEDIR) + "/tests/" + "staple_input_1_cold";
   const char* _params_cpu_cold[] = {"foo", src.c_str(), "--use_gpu=false"};
   meta::Inputparameters params_cpu_cold = meta::Inputparameters(3, _params_cpu_cold);
