@@ -88,6 +88,13 @@ target_link_libraries(f_gauge
 )
 add_test(F_gauge f_gauge)
 
+add_executable(f_gauge_rec12 F_gauge_GPU.cpp)
+target_link_libraries(f_gauge_rec12
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(F_gauge_REC12 f_gauge)
+
 add_executable(rectangles_test Rectangles_test.cpp)
 target_link_libraries(rectangles_test
 	optimal

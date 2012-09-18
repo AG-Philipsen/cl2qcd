@@ -1,0 +1,14 @@
+#input file for f_gauge_test using rec12 in single prec
+
+startcondition=cold
+#sourcefile=conf.00200
+
+prec=32
+
+rec12=true
+use_eo=false
+NS=4
+NT=4
+fermact=TWISTEDMASS
+#this set the init-spinorfield to random values
+solver=BICGstab

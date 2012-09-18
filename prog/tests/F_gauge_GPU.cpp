@@ -9,23 +9,22 @@
 #include <boost/test/unit_test.hpp>
 
 extern std::string const version;
+std::string const exec_name = "f_gauge";
 std::string const version = "0.1";
 
 class Device : public Opencl_Module_Hmc {
-
-	cl_kernel testKernel;
-	meta::Counter counter1, counter2, counter3, counter4;
+  cl_kernel testKernel;
+  meta::Counter counter1, counter2, counter3, counter4;
 public:
-	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc(params, &counter1, &counter2, &counter3, &counter4) {
-		Opencl_Module_Hmc::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
-	};
-	~Device() {
-		finalize();
-	};
-
-	void runTestKernel(cl_mem out, cl_mem gf, int gs, int ls);
-	void fill_kernels();
-	void clear_kernels();
+  Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc(params, &counter1, &counter2, &counter3, &counter4) {
+    Opencl_Module_Hmc::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+  };
+  ~Device() {
+    finalize();
+  };
+  void runTestKernel(cl_mem out, cl_mem gf, int gs, int ls);
+  void fill_kernels();
+  void clear_kernels();
 };
 
 const std::string SOURCEFILE = std::string(SOURCEDIR)
@@ -35,30 +34,38 @@ const std::string SOURCEFILE = std::string(SOURCEDIR)
  + "/tests/f_gauge_input_1_single";
 #endif
 
+const std::string SOURCEFILE_REC12 = std::string(SOURCEDIR)
+#ifdef _USEDOUBLEPREC_
+  + "/tests/f_gauge_input_rec12";
+#else
+ + "/tests/f_gauge_input_rec12_single";
+#endif
+
 const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
 const meta::Inputparameters INPUT(2, PARAMS);
 
+const char * PARAMS_REC12[] = {"foo", SOURCEFILE_REC12.c_str()};
+const meta::Inputparameters INPUT_REC12(2, PARAMS_REC12);
+
 class Dummyfield : public Gaugefield_hybrid {
-
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(INPUT) {
-		init(1, device_type);
-	};
-
-	virtual void init_tasks();
-	virtual void finalize_opencl();
-
-	hmc_float get_squarenorm();
+  Dummyfield(cl_device_type device_type, meta::Inputparameters inputfile) : Gaugefield_hybrid(inputfile) {
+    init(1, device_type);
+    meta::print_info_hmc(exec_name.c_str(), inputfile);
+  };
+  virtual void init_tasks();
+  virtual void finalize_opencl();
+  
+  hmc_float get_squarenorm();
   bool verify(hmc_float, hmc_float, hmc_float);
-	void runTestKernel();
-
+  void runTestKernel();
+  
 private:
-	void fill_buffers();
-	void clear_buffers();
-	cl_mem out;
-	cl_mem sqnorm;
-	hmc_float * sf_out;
-
+  void fill_buffers();
+  void clear_buffers();
+  cl_mem out;
+  cl_mem sqnorm;
+  hmc_float * sf_out;
 };
 
 BOOST_AUTO_TEST_CASE( F_GAUGE )
@@ -69,7 +76,7 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
   logger.info() << "against reference value";
 
   logger.info() << "Init CPU device";
-  Dummyfield cpu(CL_DEVICE_TYPE_CPU);
+  Dummyfield cpu(CL_DEVICE_TYPE_CPU, INPUT);
   logger.info() << "gaugeobservables: ";
   cpu.print_gaugeobservables_from_task(0, 0);
   cpu.runTestKernel();
@@ -80,7 +87,78 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
   BOOST_MESSAGE("Tested CPU");
   
   logger.info() << "Init GPU device";
-  Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+  Dummyfield dummy(CL_DEVICE_TYPE_GPU, INPUT);
+  logger.info() << "gaugeobservables: ";
+  dummy.print_gaugeobservables_from_task(0, 0);
+  dummy.runTestKernel();
+  logger.info() << "|f_gauge|^2:";
+  hmc_float gpu_res;
+  gpu_res = dummy.get_squarenorm();
+  logger.info() << cpu_res;
+  BOOST_MESSAGE("Tested GPU");
+  
+  logger.info() << "Choosing reference value";
+  //CP: I will not check if cpu and gpu have different starting conditions, this should never be the case...
+  if(cpu.get_parameters().get_startcondition() == meta::Inputparameters::cold_start) {
+    logger.info() << "Use cold config..." ;
+    ref_val = 0.;
+  } else{
+    logger.info() << "Use specific config..";
+    logger.warn() << "The reference value has to be adjusted manually if this config is changed!";
+    ref_val = 52723.3;
+  }
+  logger.info() << "reference value:\t" << ref_val;
+
+  hmc_float prec = 1e-10;  
+  logger.info() << "acceptance precision: " << prec;
+  logger.info() << "Compare CPU result to reference value";
+  bool res1 = cpu.verify(cpu_res, ref_val, prec);
+  if(res1) {
+    logger.info() << "CPU and reference value agree within accuary of " << 1e-10;
+  } else {
+    logger.info() << "CPU and reference value DO NOT agree within accuary of " << 1e-10;
+    BOOST_REQUIRE_EQUAL(1, 0);
+  }
+
+  logger.info() << "Compare GPU result to reference value";
+  bool res2 = cpu.verify(gpu_res, ref_val, prec);
+  if(res2) {
+    logger.info() << "GPU and reference value agree within accuary of " << 1e-10;
+  } else {
+    logger.info() << "GPU and reference value DO NOT agree within accuary of " << 1e-10;
+    BOOST_REQUIRE_EQUAL(1, 0);
+  }
+  
+  logger.info() << "Compare CPU and GPU results";
+  bool res3 = cpu.verify(cpu_res, gpu_res, prec);
+  if(res3) {
+    logger.info() << "CPU and GPU result agree within accuary of " << prec;
+  } else {
+    logger.info() << "CPU and GPU result DO NOT agree within accuary of " << prec;
+    BOOST_REQUIRE_EQUAL(1, 0);
+  }
+}
+
+BOOST_AUTO_TEST_CASE( F_GAUGE_REC12 )
+{
+  hmc_float ref_val;
+  logger.info() << "Test CPU and GPU version of kernel";
+  logger.info() << "\tf_gauge";
+  logger.info() << "against reference value";
+
+  logger.info() << "Init CPU device";
+  Dummyfield cpu(CL_DEVICE_TYPE_CPU, INPUT_REC12);
+  logger.info() << "gaugeobservables: ";
+  cpu.print_gaugeobservables_from_task(0, 0);
+  cpu.runTestKernel();
+  logger.info() << "|f_gauge|^2:";
+  hmc_float cpu_res;
+  cpu_res = cpu.get_squarenorm();
+  logger.info() << cpu_res;
+  BOOST_MESSAGE("Tested CPU");
+  
+  logger.info() << "Init GPU device";
+  Dummyfield dummy(CL_DEVICE_TYPE_GPU, INPUT_REC12);
   logger.info() << "gaugeobservables: ";
   dummy.print_gaugeobservables_from_task(0, 0);
   dummy.runTestKernel();
@@ -177,7 +255,6 @@ void Device::fill_kernels()
 {
 	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
 	Opencl_Module_Hmc::fill_kernels();
-
 	testKernel = createKernel("gauge_force") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "force_gauge.cl";
 }
 
