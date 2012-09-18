@@ -31,7 +31,7 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type, const meta::Inputparameters& params) : Gaugefield_hybrid(params) {
+	Dummyfield(cl_device_type device_type, const hardware::System * system) : Gaugefield_hybrid(system) {
 
 		init(1, device_type);
 	};
@@ -51,7 +51,8 @@ BOOST_AUTO_TEST_CASE( GEOMETRY_CPU )
 {
 	const char* _params[] = {"foo", "--use_gpu=false"};
 	meta::Inputparameters params(2, _params);
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU, params);
+	hardware::System system(params);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system);
 	dummy.runTestKernel();
 }
 
@@ -59,7 +60,8 @@ BOOST_AUTO_TEST_CASE( GEOMETRY_GPU )
 {
 	const char* _params[] = {"foo", "--use_gpu=true"};
 	meta::Inputparameters params(2, _params);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU, params);
+	hardware::System system(params);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system);
 	dummy.runTestKernel();
 }
 

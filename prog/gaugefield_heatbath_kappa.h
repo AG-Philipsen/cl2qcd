@@ -46,8 +46,8 @@ public:
 	 *
 	 * \param params The input parameters of the application
 	 */
-	Gaugefield_heatbath_kappa(const meta::Inputparameters& params)
-		: Gaugefield_hybrid(params) { };
+	Gaugefield_heatbath_kappa(const hardware::System * system)
+		: Gaugefield_hybrid(system) { };
 
 	//init functions
 	/**

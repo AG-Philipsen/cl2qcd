@@ -38,7 +38,8 @@ int main(int argc, const char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		init_timer.reset();
-		Gaugefield_inverter gaugefield(parameters);
+		hardware::System system(parameters);
+		Gaugefield_inverter gaugefield(&system);
 
 		//use 2 devices: one for solver, one for correlator
 		int numtasks = 2;

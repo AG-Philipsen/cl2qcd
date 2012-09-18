@@ -45,7 +45,8 @@ int main(int argc, const char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		init_timer.reset();
-		Gaugefield_inverter gaugefield(parameters);
+		hardware::System system(parameters);
+		Gaugefield_inverter gaugefield(&system);
 
 		//one needs 2 tasks here since the correlator-module produces the sources...
 		int numtasks = 2;

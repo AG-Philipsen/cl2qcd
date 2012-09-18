@@ -30,7 +30,9 @@ int main(int argc, const char* argv[])
 
 		init_timer.reset();
 		hmc_observables obs;
-		Gaugefield_hmc gaugefield(parameters);
+
+		hardware::System system(parameters);
+		Gaugefield_hmc gaugefield(&system);
 
 		//use 1 task: the hmc-algorithm
 		int numtasks = 1;

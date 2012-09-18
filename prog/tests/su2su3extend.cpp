@@ -32,8 +32,8 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type, const meta::Inputparameters& params)
-		: Gaugefield_hybrid(params) {
+	Dummyfield(cl_device_type device_type, const hardware::System * system)
+		: Gaugefield_hybrid(system) {
 		init(1, device_type);
 	};
 
@@ -59,7 +59,8 @@ BOOST_AUTO_TEST_CASE( CPU )
 {
 	const char* _params_cpu[] = {"foo", "--use_gpu=false"};
 	meta::Inputparameters params_cpu(2, _params_cpu);
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU, params_cpu);
+	hardware::System system(params_cpu);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system);
 	dummy.runExtendKernel();
 	dummy.verify();
 	BOOST_MESSAGE("Tested CPU");
@@ -69,7 +70,8 @@ BOOST_AUTO_TEST_CASE( GPU )
 {
 	const char* _params_gpu[] = {"foo", "--use_gpu=true"};
 	meta::Inputparameters params_gpu(2, _params_gpu);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU, params_gpu);
+	hardware::System system(params_gpu);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system);
 	dummy.runExtendKernel();
 	dummy.verify();
 	BOOST_MESSAGE("Tested GPU");

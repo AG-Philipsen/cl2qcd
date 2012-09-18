@@ -36,8 +36,8 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type, const meta::Inputparameters& params)
-		: Gaugefield_hybrid(params) {
+	Dummyfield(cl_device_type device_type, const hardware::System * system)
+		: Gaugefield_hybrid(system) {
 		init(1, device_type);
 	};
 
@@ -63,7 +63,8 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	std::string src = std::string(SOURCEDIR) + "/tests/" + "staple_input_1";
 	const char* _params_cpu[] = {"foo", src.c_str(), "--use_gpu=false"};
 	meta::Inputparameters params_cpu(3, _params_cpu);
-	Dummyfield cpu(CL_DEVICE_TYPE_CPU, params_cpu);
+	hardware::System system_cpu(params_cpu);
+	Dummyfield cpu(CL_DEVICE_TYPE_CPU, &system_cpu);
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables_from_task(0, 0);
 	hmc_float cpu_back = cpu.runTestKernel();
@@ -77,7 +78,8 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	src = std::string(SOURCEDIR) + "/tests/" + "staple_input_1";
 	const char* _params_gpu[] = {"foo", src.c_str(), "--use_gpu=true"};
 	meta::Inputparameters params_gpu = meta::Inputparameters(3, _params_gpu);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU, params_gpu);
+	hardware::System system_gpu(params_gpu);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system_gpu);
 	logger.info() << "gaugeobservables: ";
 	dummy.print_gaugeobservables_from_task(0, 0);
 	hmc_float gpu_back = dummy.runTestKernel();
@@ -93,7 +95,8 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	src = std::string(SOURCEDIR) + "/tests/" + "staple_input_1_cold";
 	const char* _params_cpu_cold[] = {"foo", src.c_str(), "--use_gpu=false"};
 	meta::Inputparameters params_cpu_cold = meta::Inputparameters(3, _params_cpu_cold);
-	Dummyfield cpu_cold(CL_DEVICE_TYPE_CPU, params_cpu_cold);
+	hardware::System system_cpu_old(params_cpu);
+	Dummyfield cpu_cold(CL_DEVICE_TYPE_CPU, &system_cpu_old);
 	hmc_float cold_back = cpu_cold.runTestKernel();
 	hmc_float cold_ref = 18 * NDIM * meta::get_vol4d(dummy.get_parameters());
 	BOOST_CHECK_CLOSE(cold_back, cold_ref, 1e-8);

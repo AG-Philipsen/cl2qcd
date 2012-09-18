@@ -44,8 +44,8 @@ public:
 	 *
 	 * \param params The input parameters of the application
 	 */
-	Gaugefield_inverter(const meta::Inputparameters& params)
-		: Gaugefield_hybrid(params) { };
+	Gaugefield_inverter(const hardware::System * system)
+		: Gaugefield_hybrid(system) { };
 
 	/**
 	 * Initialize class.

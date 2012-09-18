@@ -40,7 +40,7 @@ const meta::Inputparameters INPUT(2, PARAMS);
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(INPUT) {
+	Dummyfield(cl_device_type device_type, const hardware::System * system) : Gaugefield_hybrid(system) {
 		init(1, device_type);
 	};
 
@@ -71,7 +71,8 @@ BOOST_AUTO_TEST_CASE( F_FERMION )
 	//params.print_info_inverter("m_gpu");
 	// reset RNG
 	prng_init(13);
-	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
+	hardware::System system_cpu(INPUT);
+	Dummyfield cpu(CL_DEVICE_TYPE_CPU, &system_cpu);
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables_from_task(0, 0);
 	logger.info() << "|phi_even_1|^2:";
@@ -101,7 +102,8 @@ BOOST_AUTO_TEST_CASE( F_FERMION )
 	//params.print_info_inverter("m_gpu");
 	// reset RNG
 	prng_init(13);
-	Dummyfield gpu(CL_DEVICE_TYPE_GPU);
+	hardware::System system_gpu(INPUT);
+	Dummyfield gpu(CL_DEVICE_TYPE_GPU, &system_gpu);
 	logger.info() << "gaugeobservables: ";
 	gpu.print_gaugeobservables_from_task(0, 0);
 	logger.info() << "|phi_even_1|^2:";

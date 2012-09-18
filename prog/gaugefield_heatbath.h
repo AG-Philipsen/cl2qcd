@@ -42,8 +42,8 @@ public:
 	/**
 	 * Create a gaugefield for the given parameters
 	 */
-	Gaugefield_heatbath(const meta::Inputparameters& params)
-		: Gaugefield_hybrid(params) { };
+	Gaugefield_heatbath(const hardware::System * system)
+		: Gaugefield_hybrid(system) { };
 	//init functions
 	/**
 	 * Initialize tasks

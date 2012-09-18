@@ -30,8 +30,8 @@ const meta::Inputparameters INPUT(0, 0);
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type)
-		: Gaugefield_hybrid(INPUT) {
+	Dummyfield(cl_device_type device_type, const hardware::System * system)
+		: Gaugefield_hybrid(system) {
 		init(1, device_type);
 	};
 
@@ -41,7 +41,8 @@ public:
 
 BOOST_AUTO_TEST_CASE( GPU )
 {
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	hardware::System system(INPUT);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system);
 	BOOST_MESSAGE("Tested GPU");
 }
 

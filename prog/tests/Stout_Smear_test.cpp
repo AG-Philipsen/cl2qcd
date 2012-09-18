@@ -50,7 +50,7 @@ const meta::Inputparameters INPUT(2, PARAMS);
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(INPUT) {
+	Dummyfield(cl_device_type device_type, const hardware::System * system) : Gaugefield_hybrid(system) {
 		init(1, device_type);
 	};
 
@@ -76,7 +76,8 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	hmc_complex pol_gpu;
 
 	logger.info() << "Init CPU device";
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU);
+	hardware::System system_cpu(INPUT);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system_cpu);
 	logger.info() << "gaugeobservables of in field before: ";
 	dummy.print_gaugeobservables_from_task(0, 0);
 	logger.info() << "gaugeobservables of out field before: ";
@@ -91,7 +92,8 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	BOOST_MESSAGE("Tested CPU");
 
 	logger.info() << "Init GPU device";
-	Dummyfield gpu(CL_DEVICE_TYPE_GPU);
+	hardware::System system_gpu(INPUT);
+	Dummyfield gpu(CL_DEVICE_TYPE_GPU, &system_gpu);
 	logger.info() << "gaugeobservables of in field before: ";
 	gpu.print_gaugeobservables_from_task(0, 0);
 	logger.info() << "gaugeobservables of out field before: ";

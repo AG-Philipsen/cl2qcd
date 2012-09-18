@@ -12,18 +12,14 @@
 #include <string>
 #include <vector>
 
+#include "hardware/system.hpp"
+
 #include "globaldefs.h"
 #include "types.h"
 #include "host_operations_gaugefield.h"
-#include "meta/inputparameters.hpp"
 #include "host_readgauge.h"
 #include "host_writegaugefield.h"
 #include "host_use_timer.h"
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
 
 #include "exceptions.h"
 #include "opencl_module.h"
@@ -52,8 +48,8 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Gaugefield_hybrid(const meta::Inputparameters& params)
-		: parameters(params) { };
+	Gaugefield_hybrid(const hardware::System * system)
+		: system(system), parameters(system->get_inputparameters()) { };
 
 	//init functions
 	/**
@@ -318,6 +314,7 @@ protected:
 	cl_command_queue* queue;
 
 private:
+	const hardware::System * system;
 	const meta::Inputparameters& parameters;
 	Matrixsu3 * sgf;
 	int num_tasks;

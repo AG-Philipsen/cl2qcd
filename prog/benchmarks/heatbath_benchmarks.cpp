@@ -40,7 +40,8 @@ int main(int argc, const char* argv[])
 	init_timer.reset();
 	sourcefileparameters parameters_source;
 
-	Gaugefield_heatbath gaugefield(parameters);
+	hardware::System system(parameters);
+	Gaugefield_heatbath gaugefield(&system);
 
 	cl_device_type primary_device_type;
 	//check whether GPU should be used
