@@ -4,10 +4,11 @@
 #include <boost/regex.hpp>
 
 #include "logger.hpp"
+#include "meta/util.hpp"
 
 using namespace std;
 
-void Opencl_Module::init(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int device_rank)
+void Opencl_Module::init(cl_command_queue queue, int maxcomp, string double_ext, unsigned int device_rank)
 {
 	set_queue(queue);
 
@@ -26,8 +27,6 @@ void Opencl_Module::init(cl_command_queue queue, inputparameters* params, int ma
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 
 	logger.debug() << "Device is " << device_name;
-
-	set_parameters(params);
 
 	set_device_double_extension(double_ext);
 	set_max_compute_units(maxcomp);
@@ -101,13 +100,7 @@ cl_mem Opencl_Module::get_gaugefield()
 	return gaugefield;
 }
 
-void Opencl_Module::set_parameters(inputparameters* params)
-{
-	parameters = params;
-	return;
-}
-
-inputparameters* Opencl_Module::get_parameters()
+const meta::Inputparameters& Opencl_Module::get_parameters()
 {
 	return parameters;
 }
@@ -130,12 +123,12 @@ cl_platform_id Opencl_Module::get_platform()
 
 void Opencl_Module::fill_collect_options(stringstream* collect_options)
 {
-	*collect_options << "-D_INKERNEL_ -DNSPACE=" << get_parameters()->get_ns() << " -DNTIME=" << get_parameters()->get_nt() << " -DVOLSPACE=" << get_parameters()->get_volspace() << " -DVOL4D=" << get_parameters()->get_vol4d();
+	*collect_options << "-D_INKERNEL_ -DNSPACE=" << get_parameters().get_nspace() << " -DNTIME=" << get_parameters().get_ntime() << " -DVOLSPACE=" << meta::get_volspace(get_parameters()) << " -DVOL4D=" << meta::get_vol4d(get_parameters());
 
 	//this is needed for hmc_ocl_su3matrix
 	*collect_options << " -DSU3SIZE=" << NC*NC << " -DSTAPLEMATRIXSIZE=" << NC*NC;
 
-	if(get_parameters()->get_prec() == 64) {
+	if(get_parameters().get_precision() == 64) {
 		*collect_options << " -D_USEDOUBLEPREC_";
 		if( device_double_extension.empty() ) {
 			logger.warn() << "Warning: Undefined extension for use of double.";
@@ -145,25 +138,25 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 	}
 	if( device_type == CL_DEVICE_TYPE_GPU )
 		*collect_options << " -D_USEGPU_";
-	if(get_parameters()->get_use_chem_pot_re() == true) {
+	if(get_parameters().get_use_chem_pot_re() == true) {
 		*collect_options << " -D_CP_REAL_";
-		*collect_options << " -DCPR=" << get_parameters()->get_chem_pot_re();
-		*collect_options << " -DEXPCPR=" << exp(get_parameters()->get_chem_pot_re() );
-		*collect_options << " -DMEXPCPR=" << exp(-1.*get_parameters()->get_chem_pot_re() );
+		*collect_options << " -DCPR=" << get_parameters().get_chem_pot_re();
+		*collect_options << " -DEXPCPR=" << exp(get_parameters().get_chem_pot_re() );
+		*collect_options << " -DMEXPCPR=" << exp(-1.*get_parameters().get_chem_pot_re() );
 	}
-	if(get_parameters()->get_use_chem_pot_im() == true) {
+	if(get_parameters().get_use_chem_pot_im() == true) {
 		*collect_options << " -D_CP_IMAG_";
-		*collect_options << " -DCPI=" << get_parameters()->get_chem_pot_im();
-		*collect_options << " -DCOSCPI=" << cos( get_parameters()->get_chem_pot_im() );
-		*collect_options << " -DSINCPI=" << sin( get_parameters()->get_chem_pot_im() );
+		*collect_options << " -DCPI=" << get_parameters().get_chem_pot_im();
+		*collect_options << " -DCOSCPI=" << cos( get_parameters().get_chem_pot_im() );
+		*collect_options << " -DSINCPI=" << sin( get_parameters().get_chem_pot_im() );
 	}
-	if(get_parameters()->get_use_smearing() == true) {
+	if(get_parameters().get_use_smearing() == true) {
 		*collect_options << " -D_USE_SMEARING_";
-		*collect_options << " -DRHO=" << get_parameters()->get_rho();
-		*collect_options << " -DRHO_ITER=" << get_parameters()->get_rho_iter();
+		*collect_options << " -DRHO=" << get_parameters().get_rho();
+		*collect_options << " -DRHO_ITER=" << get_parameters().get_rho_iter();
 	}
 	if(use_soa) {
-		*collect_options << " -DGAUGEFIELD_STRIDE=" << calculateStride(get_parameters()->get_vol4d() * NDIM, sizeof(hmc_complex));
+		*collect_options << " -DGAUGEFIELD_STRIDE=" << calculateStride(meta::get_vol4d(get_parameters()) * NDIM, sizeof(hmc_complex));
 	}
 	*collect_options << " -I" << SOURCEDIR;
 
@@ -175,12 +168,12 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 		*collect_options << " -D_USE_BLOCKED_LOOPS_";
 	}
 
-	if(get_parameters()->get_use_rectangles() == true) {
+	if(meta::get_use_rectangles(get_parameters()) == true) {
 		*collect_options <<  " -D_USE_RECT_" ;
 	}
-	if(get_parameters()->get_use_rec12() == true){
-	  *collect_options <<  " -D_USE_REC12_" ;
-	} 
+	if(get_parameters().get_use_rec12() == true) {
+		*collect_options <<  " -D_USE_REC12_" ;
+	}
 
 	return;
 }
@@ -305,13 +298,13 @@ void Opencl_Module::fill_kernels()
 	logger.debug() << "Create gaugeobservables kernels...";
 	plaquette = createKernel("plaquette") << basic_opencl_code << "gaugeobservables_plaquette.cl";
 	plaquette_reduction = createKernel("plaquette_reduction") << basic_opencl_code << "gaugeobservables_plaquette.cl";
-	if(get_parameters()->get_use_rectangles() == true) {
+	if(meta::get_use_rectangles(get_parameters()) == true) {
 		rectangles = createKernel("rectangles") << basic_opencl_code << "gaugeobservables_rectangles.cl";
 		rectangles_reduction = createKernel("rectangles_reduction") << basic_opencl_code << "gaugeobservables_rectangles.cl";
 	}
 	polyakov = createKernel("polyakov") << basic_opencl_code << "gaugeobservables_polyakov.cl";
 	polyakov_reduction = createKernel("polyakov_reduction") << basic_opencl_code << "gaugeobservables_polyakov.cl";
-	if(get_parameters()->get_use_smearing() == true) {
+	if(get_parameters().get_use_smearing() == true) {
 		stout_smear = createKernel("stout_smear") << basic_opencl_code << "operations_gaugemomentum.cl" << "stout_smear.cl";
 	}
 	convertGaugefieldToSOA = createKernel("convertGaugefieldToSOA") << basic_opencl_code << "gaugefield_convert.cl";
@@ -331,14 +324,14 @@ void Opencl_Module::clear_kernels()
 	clerr = clReleaseKernel(plaquette_reduction);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(polyakov_reduction);
-	if(get_parameters()->get_use_rectangles() == true) {
+	if(meta::get_use_rectangles(get_parameters()) == true) {
 		clerr = clReleaseKernel(rectangles);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(rectangles_reduction);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	if(get_parameters()->get_use_smearing() == true) {
+	if(get_parameters().get_use_smearing() == true) {
 		clerr = clReleaseKernel(stout_smear);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
@@ -957,9 +950,9 @@ void Opencl_Module::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float 
 	get_buffer_from_device(clmem_tplaq, &tplaq, sizeof(hmc_float));
 	get_buffer_from_device(clmem_splaq, &splaq, sizeof(hmc_float));
 
-	tplaq /= static_cast<hmc_float> ( get_parameters()->get_tplaq_norm() );
-	splaq /= static_cast<hmc_float> ( get_parameters()->get_splaq_norm() );
-	plaq  /= static_cast<hmc_float> ( get_parameters()->get_plaq_norm() );
+	tplaq /= static_cast<hmc_float> ( meta::get_tplaq_norm(get_parameters()) );
+	splaq /= static_cast<hmc_float> ( meta::get_splaq_norm(get_parameters()) );
+	plaq  /= static_cast<hmc_float> ( meta::get_plaq_norm(get_parameters()) );
 
 	(*plaq_out) = plaq;
 	(*splaq_out) = splaq;
@@ -973,8 +966,8 @@ void Opencl_Module::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float 
 	//NOTE: this is a blocking call!
 	get_buffer_from_device(clmem_polyakov, &pol, sizeof(hmc_complex));
 
-	pol.re /= static_cast<hmc_float> ( get_parameters()->get_poly_norm() );
-	pol.im /= static_cast<hmc_float> ( get_parameters()->get_poly_norm() );
+	pol.re /= static_cast<hmc_float> ( meta::get_poly_norm(get_parameters()) );
+	pol.im /= static_cast<hmc_float> ( meta::get_poly_norm(get_parameters()) );
 
 	pol_out->re = pol.re;
 	pol_out->im = pol.im;
@@ -997,7 +990,7 @@ void Opencl_Module::gaugeobservables_rectangles(cl_mem gf, hmc_float * rect_out)
 TmpClKernel Opencl_Module::createKernel(const char * const kernel_name, const char * const build_opts)
 {
 	stringstream collect_options;
-	if(get_parameters()->isOclCompilerOptDisabled()) {
+	if(get_parameters().is_ocl_compiler_opt_disabled()) {
 		collect_options << "-cl-opt-disable ";
 	}
 	if(build_opts) {
@@ -1123,11 +1116,11 @@ usetimer* Opencl_Module::get_timer(const char * in)
 size_t Opencl_Module::get_read_write_size(const char * in)
 {
 	//Depending on the compile-options, one has different sizes...
-	size_t D = (*parameters).get_float_size();
-	size_t R = (*parameters).get_mat_size();
+	size_t D = meta::get_float_size(parameters);
+	size_t R = meta::get_mat_size(parameters);
 	//factor for complex numbers
 	int C = 2;
-	const size_t VOL4D = parameters->get_vol4d();
+	const size_t VOL4D = meta::get_vol4d(get_parameters());
 	if (strcmp(in, "polyakov") == 0) {
 		//this kernel reads NTIME*VOLSPACE=VOL4D su3matrices and writes NUM_GROUPS complex numbers
 		//query work-sizes for kernel to get num_groups
@@ -1171,21 +1164,21 @@ size_t Opencl_Module::get_read_write_size(const char * in)
 		return VOL4D * NDIM * D * R * (6 * (NDIM - 1) + 1 + 1 );
 	}
 	if(strcmp(in, "convertGaugefieldToSOA") == 0) {
-		return 2 * parameters->get_vol4d() * NDIM * R * C * D;
+		return 2 * meta::get_vol4d(get_parameters()) * NDIM * R * C * D;
 	}
 	if(strcmp(in, "convertGaugefieldFromSOA") == 0) {
-		return 2 * parameters->get_vol4d() * NDIM * R * C * D;
+		return 2 * meta::get_vol4d(get_parameters()) * NDIM * R * C * D;
 	}
 	return 0;
 }
 
 uint64_t Opencl_Module::get_flop_size(const char * in)
 {
-	const size_t VOL4D = parameters->get_vol4d();
-	const size_t VOLSPACE = parameters->get_volspace();
+	const size_t VOL4D = meta::get_vol4d(get_parameters());
+	const size_t VOLSPACE = meta::get_volspace(get_parameters());
 	if (strcmp(in, "polyakov") == 0) {
 		//this kernel performs NTIME -1 su3matrix-multiplications, takes a complex trace and adds these real values over VOLSPACE
-		return VOLSPACE * ( (parameters->get_nt() - 1) * parameters->get_flop_su3_su3() + parameters->get_flop_su3trace() ) ;
+		return VOLSPACE * ( (parameters.get_ntime() - 1) * meta::get_flop_su3_su3() + meta::get_flop_su3trace()) ;
 	}
 	if (strcmp(in, "polyakov_reduction") == 0) {
 		return 1000000000000000000000;
@@ -1218,7 +1211,7 @@ void Opencl_Module::print_profiling(std::string filename, const char * kernelNam
 	//check if kernel has been called at all
 	if(calls_total != 0 && time_total != 0) {
 		avg_time = (uint64_t) ( ( (float) time_total ) / ((float) calls_total) );
-		avg_time_site = (uint64_t) ( ( (float) time_total ) / ((float) (calls_total * parameters->get_vol4d())) );
+		avg_time_site = (uint64_t) ( ( (float) time_total ) / ((float) (calls_total * meta::get_vol4d(get_parameters()))) );
 		//Bandwidth in GB/s: 1e-3 = 1e6 (museconds) * 1e-9 (GByte)
 		bandwidth = (hmc_float) read_write_size / (hmc_float) time_total * (hmc_float) calls_total * 1e-3;
 		flops = (hmc_float) flop_size / (hmc_float) time_total * (hmc_float) calls_total * 1e-3;
@@ -1349,26 +1342,26 @@ void Opencl_Module::smear_gaugefield(cl_mem gf, cl_mem * gf_intermediate)
 	bool save_inter;
 	if(gf_intermediate == NULL) save_inter = false;
 	else save_inter = true;
-	logger.debug() << "\t\tperform " << get_parameters()->get_rho_iter() << " steps of stout-smearing to the gaugefield...";
+	logger.debug() << "\t\tperform " << get_parameters().get_rho_iter() << " steps of stout-smearing to the gaugefield...";
 	if(save_inter == true) {
 		//the first step is applied to the original gf
 		stout_smear_device(gf, gf_intermediate[0]);
 		//perform rho_iter -2 intermediate steps
-		for(int i = 1; i < get_parameters()->get_rho_iter() - 1; i++) {
+		for(int i = 1; i < get_parameters().get_rho_iter() - 1; i++) {
 			stout_smear_device(gf_intermediate[i - 1], gf_intermediate[i]);
 		}
 		//the last step results in the smeared gf
-		stout_smear_device(gf_intermediate[get_parameters()->get_rho_iter() - 1 ], gf);
+		stout_smear_device(gf_intermediate[get_parameters().get_rho_iter() - 1 ], gf);
 	} else {
 		//one needs a temporary gf to apply the smearing to
 		cl_mem gf_tmp;
 		gf_tmp = create_rw_buffer(gfsize);
-		for(int i = 0; i < get_parameters()->get_rho_iter(); i++) {
+		for(int i = 0; i < get_parameters().get_rho_iter(); i++) {
 			if(i / 2) stout_smear_device(gf, gf_tmp);
 			else stout_smear_device(gf_tmp, gf);
 		}
 		//if rho_iter is odd one has to copy ones more
-		if(get_parameters()->get_rho_iter() / 2 == 1) copy_buffer_on_device(gf_tmp, gf, gfsize);
+		if(get_parameters().get_rho_iter() / 2 == 1) copy_buffer_on_device(gf_tmp, gf, gfsize);
 		cl_int clerr = clReleaseMemObject(gf_tmp);
 		if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	}
@@ -1410,9 +1403,9 @@ size_t Opencl_Module::getGaugefieldBufferSize()
 {
 	if(gaugefield_bytes == 0) {
 		if(use_soa) {
-			gaugefield_bytes = calculateStride(NDIM * get_parameters()->get_vol4d(), sizeof(hmc_complex)) * sizeof(Matrixsu3);
+			gaugefield_bytes = calculateStride(NDIM * meta::get_vol4d(get_parameters()), sizeof(hmc_complex)) * sizeof(Matrixsu3);
 		} else {
-			gaugefield_bytes = get_parameters()->get_vol4d() * NDIM * sizeof(Matrixsu3);
+			gaugefield_bytes = meta::get_vol4d(get_parameters()) * NDIM * sizeof(Matrixsu3);
 		}
 	}
 	return gaugefield_bytes;
@@ -1426,7 +1419,7 @@ void Opencl_Module::importGaugefield(cl_mem gaugefield, const Matrixsu3 * const 
 {
 	logger.trace() << "Import gaugefield to device";
 	if(use_soa) {
-		size_t aos_bytes = get_parameters()->get_vol4d() * NDIM * sizeof(Matrixsu3);
+		size_t aos_bytes = meta::get_vol4d(get_parameters()) * NDIM * sizeof(Matrixsu3);
 		cl_mem tmp = create_ro_buffer(aos_bytes);
 
 		cl_int clerr = clEnqueueWriteBuffer(get_queue(), tmp, CL_TRUE, 0, aos_bytes, data, 0, 0, 0);
@@ -1445,7 +1438,7 @@ void Opencl_Module::exportGaugefield(Matrixsu3 * const dest)
 {
 	logger.trace() << "Exporting gaugefield from device";
 	if(use_soa) {
-		size_t aos_bytes = get_parameters()->get_vol4d() * NDIM * sizeof(Matrixsu3);
+		size_t aos_bytes = meta::get_vol4d(get_parameters()) * NDIM * sizeof(Matrixsu3);
 		cl_mem tmp = create_wo_buffer(aos_bytes);
 
 		convertGaugefieldFromSOA_device(tmp, gaugefield);

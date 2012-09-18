@@ -4,6 +4,7 @@
 #include <boost/regex.hpp>
 
 #include "logger.hpp"
+#include "meta/util.hpp"
 
 using namespace std;
 
@@ -18,24 +19,24 @@ void M::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa, hmc_float 
 }
 cl_ulong M::get_Flops() const
 {
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			return that->get_flop_size("M_wilson");
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			return that->get_flop_size("M_tm_plus");
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 }
 cl_ulong M::get_Bytes() const
 {
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			return that->get_read_write_size("M_wilson");
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			return that->get_read_write_size("M_tm_plus");
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 }
 
@@ -46,15 +47,15 @@ void Qplus::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa, hmc_fl
 cl_ulong Qplus::get_Flops() const
 {
 	cl_ulong res;
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			res = that->get_flop_size("M_wilson");
 			break;
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			res = that->get_flop_size("M_tm_plus");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 	res += that->get_flop_size("gamma5");
 	return res;
@@ -62,15 +63,15 @@ cl_ulong Qplus::get_Flops() const
 cl_ulong Qplus::get_Bytes() const
 {
 	cl_ulong res;
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			res = that->get_read_write_size("M_wilson");
 			break;
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			res = that->get_read_write_size("M_tm_plus");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 	res += that->get_read_write_size("gamma5");
 	return res;
@@ -83,15 +84,15 @@ void Qminus::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa, hmc_f
 cl_ulong Qminus::get_Flops() const
 {
 	cl_ulong res;
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			res = that->get_flop_size("M_wilson");
 			break;
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			res = that->get_flop_size("M_tm_minus");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 	res += that->get_flop_size("gamma5");
 	return res;
@@ -99,15 +100,15 @@ cl_ulong Qminus::get_Flops() const
 cl_ulong Qminus::get_Bytes() const
 {
 	cl_ulong res;
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			res = that->get_read_write_size("M_wilson");
 			break;
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			res = that->get_read_write_size("M_tm_minus");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 	res += that->get_read_write_size("gamma5");
 	return res;
@@ -120,16 +121,16 @@ void QplusQminus::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa, 
 cl_ulong QplusQminus::get_Flops() const
 {
 	cl_ulong res;
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			res = 2 * that->get_flop_size("M_wilson");
 			break;
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			res = that->get_flop_size("M_tm_plus");
 			res += that->get_flop_size("M_tm_minus");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 	res += 2 * that->get_flop_size("gamma5");
 	return res;
@@ -137,16 +138,16 @@ cl_ulong QplusQminus::get_Flops() const
 cl_ulong QplusQminus::get_Bytes() const
 {
 	cl_ulong res;
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			res = 2 * that->get_read_write_size("M_wilson");
 			break;
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			res = that->get_read_write_size("M_tm_plus");
 			res += that->get_read_write_size("M_tm_minus");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 	res += 2 * that->get_read_write_size("gamma5");
 	return res;
@@ -159,38 +160,38 @@ void Aee::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa, hmc_floa
 cl_ulong Aee::get_Flops() const
 {
 	cl_ulong res;
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("saxpy_eoprec");
 			break;
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("M_tm_inverse_sitediagonal");
 			res += that->get_flop_size("M_tm_sitediagonal");
 			res += that->get_flop_size("saxpy_eoprec");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 	return res;
 }
 cl_ulong Aee::get_Bytes() const
 {
 	cl_ulong res;
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("saxpy_eoprec");
 			break;
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("M_tm_inverse_sitediagonal");
 			res += that->get_read_write_size("M_tm_sitediagonal");
 			res += that->get_read_write_size("saxpy_eoprec");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 	return res;
 }
@@ -202,19 +203,19 @@ void Qplus_eo::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa, hmc
 cl_ulong Qplus_eo::get_Flops() const
 {
 	cl_ulong res;
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("saxpy_eoprec");
 			break;
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("M_tm_inverse_sitediagonal");
 			res += that->get_flop_size("M_tm_sitediagonal");
 			res += that->get_flop_size("saxpy_eoprec");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 	res += that->get_flop_size("gamma5_eo");
 	return res;
@@ -222,19 +223,19 @@ cl_ulong Qplus_eo::get_Flops() const
 cl_ulong Qplus_eo::get_Bytes() const
 {
 	cl_ulong res;
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("saxpy_eoprec");
 			break;
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("M_tm_inverse_sitediagonal");
 			res += that->get_read_write_size("M_tm_sitediagonal");
 			res += that->get_read_write_size("saxpy_eoprec");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 	res += that->get_flop_size("gamma5_eo");
 	return res;
@@ -247,19 +248,19 @@ void Qminus_eo::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa, hm
 cl_ulong Qminus_eo::get_Flops() const
 {
 	cl_ulong res;
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("saxpy_eoprec");
 			break;
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("M_tm_inverse_sitediagonal_minus");
 			res += that->get_flop_size("M_tm_sitediagonal_minus");
 			res += that->get_flop_size("saxpy_eoprec");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 	res += that->get_flop_size("gamma5_eo");
 	return res;
@@ -267,19 +268,19 @@ cl_ulong Qminus_eo::get_Flops() const
 cl_ulong Qminus_eo::get_Bytes() const
 {
 	cl_ulong res;
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("saxpy_eoprec");
 			break;
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("M_tm_inverse_sitediagonal_minus");
 			res += that->get_read_write_size("M_tm_sitediagonal_minus");
 			res += that->get_read_write_size("saxpy_eoprec");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 	res += that->get_flop_size("gamma5_eo");
 	return res;
@@ -292,13 +293,13 @@ void QplusQminus_eo::operator()(cl_mem in, cl_mem out, cl_mem gf, hmc_float kapp
 cl_ulong QplusQminus_eo::get_Flops() const
 {
 	cl_ulong res;
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("saxpy_eoprec");
 			res *= 2;
 			break;
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			res = 4 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("M_tm_inverse_sitediagonal");
 			res += that->get_flop_size("M_tm_sitediagonal");
@@ -307,7 +308,7 @@ cl_ulong QplusQminus_eo::get_Flops() const
 			res += 2 * that->get_flop_size("saxpy_eoprec");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 	res += 2 * that->get_flop_size("gamma5_eo");
 	return res;
@@ -315,13 +316,13 @@ cl_ulong QplusQminus_eo::get_Flops() const
 cl_ulong QplusQminus_eo::get_Bytes() const
 {
 	cl_ulong res;
-	switch(that->get_parameters()->get_fermact()) {
-		case WILSON:
+	switch(that->get_parameters().get_fermact()) {
+		case meta::Inputparameters::wilson:
 			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("saxpy_eoprec");
 			res *= 2;
 			break;
-		case TWISTEDMASS:
+		case meta::Inputparameters::twistedmass:
 			res = 4 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("M_tm_inverse_sitediagonal");
 			res += that->get_read_write_size("M_tm_sitediagonal");
@@ -330,7 +331,7 @@ cl_ulong QplusQminus_eo::get_Bytes() const
 			res += 2 * that->get_read_write_size("saxpy_eoprec");
 			break;
 		default:
-			throw Invalid_Parameters("Unkown fermion action!", "WILSON or TWISTEDMASS", that->get_parameters()->get_fermact());
+			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
 	}
 	res += 2 * that->get_flop_size("gamma5_eo");
 	return res;
@@ -341,18 +342,18 @@ void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
 {
 	Opencl_Module_Spinors::fill_collect_options(collect_options);
 
-	switch (get_parameters()->get_fermact()) {
-		case TWISTEDMASS :
+	switch (get_parameters().get_fermact()) {
+		case meta::Inputparameters::twistedmass :
 			*collect_options << " -D_TWISTEDMASS_";
 			break;
-		case CLOVER :
+		case meta::Inputparameters::clover :
 			*collect_options << " -D_CLOVER_";
 			break;
 	}
 
 	//CP: These are the BCs in spatial and temporal direction
-	hmc_float tmp_spatial = (get_parameters()->get_theta_fermion_spatial() * PI) / ( (hmc_float) get_parameters()->get_ns());
-	hmc_float tmp_temporal = (get_parameters()->get_theta_fermion_temporal() * PI) / ( (hmc_float) get_parameters()->get_nt());
+	hmc_float tmp_spatial = (get_parameters().get_theta_fermion_spatial() * PI) / ( (hmc_float) get_parameters().get_nspace());
+	hmc_float tmp_temporal = (get_parameters().get_theta_fermion_temporal() * PI) / ( (hmc_float) get_parameters().get_ntime());
 	//BC: on the corners in each direction: exp(i theta) -> on each site exp(i theta*PI /LATEXTENSION) = cos(tmp2) + isin(tmp2)
 	*collect_options << " -DSPATIAL_RE=" << cos(tmp_spatial);
 	*collect_options << " -DMSPATIAL_RE=" << -cos(tmp_spatial);
@@ -374,7 +375,7 @@ void Opencl_Module_Fermions::fill_buffers()
 
 	int clerr = CL_SUCCESS;
 
-	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
+	int spinorfield_size = sizeof(spinor) * meta::get_spinorfieldsize(get_parameters());
 	int eoprec_spinorfield_buffer_size = get_eoprec_spinorfield_buffer_size();
 	int complex_size = sizeof(hmc_complex);
 	int float_size = sizeof(hmc_float);
@@ -384,18 +385,17 @@ void Opencl_Module_Fermions::fill_buffers()
 	clmem_tmp = create_rw_buffer(spinorfield_size);
 	clmem_source = create_rw_buffer(spinorfield_size);
 
-	if(get_parameters()->get_use_eo() == true) {
+	if(get_parameters().get_use_eo() == true) {
 		logger.debug() << "init general eoprec-spinorfield-buffers";
 		clmem_inout_eo = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		clmem_source_even = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		clmem_source_odd = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		clmem_tmp_eo_1 = create_rw_buffer(eoprec_spinorfield_buffer_size);
 		//this field is used only with twistedmass
-		if(get_parameters()->get_fermact() == TWISTEDMASS) {
+		if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
 			clmem_tmp_eo_2 = create_rw_buffer(eoprec_spinorfield_buffer_size);
-		}
-		else
-		  clmem_tmp_eo_2 = 0;
+		} else
+			clmem_tmp_eo_2 = 0;
 	}
 
 	clmem_one = create_rw_buffer(complex_size);
@@ -417,14 +417,14 @@ void Opencl_Module_Fermions::fill_solver_buffers()
 {
 	int clerr = CL_SUCCESS;
 
-	int spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
+	int spinorfield_size = sizeof(spinor) * get_spinorfieldsize(get_parameters());
 	int eoprec_spinorfield_buffer_size = get_eoprec_spinorfield_buffer_size();
 	int complex_size = sizeof(hmc_complex);
 	int float_size = sizeof(hmc_float);
 
 	///@todo some buffers can be saved here if only cg is used
-	if(get_parameters()->get_use_eo() == false) {
-	  logger.debug() << "init solver spinorfield-buffers";
+	if(get_parameters().get_use_eo() == false) {
+		logger.debug() << "init solver spinorfield-buffers";
 		//these are only used in a non-eoprec solver
 		clmem_rn = create_rw_buffer(spinorfield_size);
 		clmem_rhat = create_rw_buffer(spinorfield_size);
@@ -464,7 +464,7 @@ void Opencl_Module_Fermions::fill_solver_buffers()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 	clerr = clEnqueueWriteBuffer(get_queue(), clmem_trueresid, CL_TRUE, 0, float_size, &zero, 0, 0, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
-	
+
 	logger.trace() << "init solver buffers done...";
 }
 
@@ -478,12 +478,12 @@ void Opencl_Module_Fermions::fill_kernels()
 	M_tm_minus = 0;
 
 	logger.debug() << "Create fermion kernels...";
-	if(get_parameters()->get_fermact() == WILSON) {
+	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 		M_wilson = createKernel("M_wilson") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m.cl";
-	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
+	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
 		M_tm_plus = createKernel("M_tm_plus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
 		M_tm_minus = createKernel("M_tm_minus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m_tm_minus.cl";
-	} else if(get_parameters()->get_fermact() == CLOVER) {
+	} else if(get_parameters().get_fermact() == meta::Inputparameters::clover) {
 		throw Print_Error_Message("no kernels for CLOVER-discretization implemented yet, aborting... ", __FILE__, __LINE__);
 	} else {
 		throw Print_Error_Message("there was a problem with which fermion-discretization to use, aborting... ", __FILE__, __LINE__);
@@ -493,8 +493,8 @@ void Opencl_Module_Fermions::fill_kernels()
 
 
 	//Kernels needed if eoprec is used
-	if(get_parameters()->get_use_eo() == true) {
-		if(get_parameters()->get_fermact() == TWISTEDMASS) {
+	if(get_parameters().get_use_eo() == true) {
+		if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
 			M_tm_sitediagonal = createKernel("M_tm_sitediagonal") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
 			M_tm_inverse_sitediagonal = createKernel("M_tm_inverse_sitediagonal") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
 			M_tm_sitediagonal_minus = createKernel("M_tm_sitediagonal_minus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
@@ -503,12 +503,12 @@ void Opencl_Module_Fermions::fill_kernels()
 		dslash_eo = createKernel("dslash_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 		gamma5_eo = createKernel("gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
 		//merged kernels
-		if (get_parameters()->get_use_merge_kernels_fermion() == true){
-		  dslash_AND_gamma5_eo = createKernel("dslash_AND_gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_gamma5.cl";
-		  dslash_AND_M_tm_inverse_sitediagonal_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal.cl";
-		  dslash_AND_M_tm_inverse_sitediagonal_minus_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_minus_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal_minus.cl";
-		  M_tm_sitediagonal_AND_gamma5_eo = createKernel("M_tm_sitediagonal_AND_gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
-		  M_tm_sitediagonal_minus_AND_gamma5_eo = createKernel("M_tm_sitediagonal_minus_AND_gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
+		if (get_parameters().get_use_merge_kernels_fermion() == true) {
+			dslash_AND_gamma5_eo = createKernel("dslash_AND_gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_gamma5.cl";
+			dslash_AND_M_tm_inverse_sitediagonal_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal.cl";
+			dslash_AND_M_tm_inverse_sitediagonal_minus_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_minus_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal_minus.cl";
+			M_tm_sitediagonal_AND_gamma5_eo = createKernel("M_tm_sitediagonal_AND_gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
+			M_tm_sitediagonal_minus_AND_gamma5_eo = createKernel("M_tm_sitediagonal_minus_AND_gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
 		}
 
 	}
@@ -541,12 +541,12 @@ void Opencl_Module_Fermions::clear_kernels()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 
-	if(get_parameters()->get_use_eo()) {
+	if(get_parameters().get_use_eo()) {
 		clerr = clReleaseKernel(dslash_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(gamma5_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-		if(get_parameters()->get_fermact() == TWISTEDMASS) {
+		if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
 			clerr = clReleaseKernel(M_tm_sitediagonal);
 			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 			clerr = clReleaseKernel(M_tm_inverse_sitediagonal);
@@ -570,60 +570,60 @@ void Opencl_Module_Fermions::clear_buffers()
 	logger.trace() << "clear general fermion buffer...";
 
 	if(clmem_inout) {
-	  clerr = clReleaseMemObject(clmem_inout);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_inout = 0;
+		clerr = clReleaseMemObject(clmem_inout);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		clmem_inout = 0;
 	}
 	if(clmem_source) {
-	  clerr = clReleaseMemObject(clmem_source);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_source = 0;
+		clerr = clReleaseMemObject(clmem_source);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		clmem_source = 0;
 	}
 	if(clmem_tmp) {
-	  clerr = clReleaseMemObject(clmem_tmp);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_tmp = 0;
+		clerr = clReleaseMemObject(clmem_tmp);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		clmem_tmp = 0;
 	}
 
-	if(get_parameters()->get_use_eo()) {
-	  if(clmem_inout_eo){
-	    clerr = clReleaseMemObject(clmem_inout_eo);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_inout_eo = 0;
-	  }
-	  if(clmem_source_even){
-	    clerr = clReleaseMemObject(clmem_source_even);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_source_even = 0;
-	  }
-	  if(clmem_source_odd){
-	    clerr = clReleaseMemObject(clmem_source_odd);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_source_odd = 0;
-	  }
-	  if(clmem_tmp_eo_1){
-	    clerr = clReleaseMemObject(clmem_tmp_eo_1);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_tmp_eo_1 = 0;
-	  }
-	  if(clmem_tmp_eo_2){
-	    clerr = clReleaseMemObject(clmem_tmp_eo_2);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_tmp_eo_2 = 0;
-	  }
+	if(get_parameters().get_use_eo()) {
+		if(clmem_inout_eo) {
+			clerr = clReleaseMemObject(clmem_inout_eo);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_inout_eo = 0;
+		}
+		if(clmem_source_even) {
+			clerr = clReleaseMemObject(clmem_source_even);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_source_even = 0;
+		}
+		if(clmem_source_odd) {
+			clerr = clReleaseMemObject(clmem_source_odd);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_source_odd = 0;
+		}
+		if(clmem_tmp_eo_1) {
+			clerr = clReleaseMemObject(clmem_tmp_eo_1);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_tmp_eo_1 = 0;
+		}
+		if(clmem_tmp_eo_2) {
+			clerr = clReleaseMemObject(clmem_tmp_eo_2);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_tmp_eo_2 = 0;
+		}
 	}
-	
+
 	if(clmem_minusone) {
-	  clerr = clReleaseMemObject(clmem_minusone);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_minusone = 0;
+		clerr = clReleaseMemObject(clmem_minusone);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		clmem_minusone = 0;
 	}
 	if(clmem_one) {
-	  clerr = clReleaseMemObject(clmem_one);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_one = 0;
+		clerr = clReleaseMemObject(clmem_one);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		clmem_one = 0;
 	}
-		
+
 	//clear solver buffers
 	this->clear_solver_buffers();
 
@@ -636,125 +636,124 @@ void Opencl_Module_Fermions::clear_solver_buffers()
 
 	logger.trace() << "clear solver buffer...";
 
-	if(get_parameters()->get_use_eo()) {
-	  if(clmem_rn_eo) {
-	    clerr = clReleaseMemObject(clmem_rn_eo);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_rn_eo = 0;
-	  }
-	  if(clmem_rhat_eo) {
-	    clerr = clReleaseMemObject(clmem_rhat_eo);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_rhat_eo = 0;
-	  }
-	  if(clmem_v_eo) {
-	    clerr = clReleaseMemObject(clmem_v_eo);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_v_eo = 0;
-	  }
-	  if(clmem_p_eo) {
-	    clerr = clReleaseMemObject(clmem_p_eo);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_p_eo = 0;
-	  }
-	  if(clmem_s_eo) {
-	    clerr = clReleaseMemObject(clmem_s_eo);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_s_eo = 0;
-	  }
-	  if(clmem_t_eo) {
-	    clerr = clReleaseMemObject(clmem_t_eo);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_t_eo = 0;
-	  }
-	  if(clmem_aux_eo) {
-	    clerr = clReleaseMemObject(clmem_aux_eo);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_aux_eo = 0;
-	  }
+	if(get_parameters().get_use_eo()) {
+		if(clmem_rn_eo) {
+			clerr = clReleaseMemObject(clmem_rn_eo);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_rn_eo = 0;
+		}
+		if(clmem_rhat_eo) {
+			clerr = clReleaseMemObject(clmem_rhat_eo);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_rhat_eo = 0;
+		}
+		if(clmem_v_eo) {
+			clerr = clReleaseMemObject(clmem_v_eo);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_v_eo = 0;
+		}
+		if(clmem_p_eo) {
+			clerr = clReleaseMemObject(clmem_p_eo);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_p_eo = 0;
+		}
+		if(clmem_s_eo) {
+			clerr = clReleaseMemObject(clmem_s_eo);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_s_eo = 0;
+		}
+		if(clmem_t_eo) {
+			clerr = clReleaseMemObject(clmem_t_eo);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_t_eo = 0;
+		}
+		if(clmem_aux_eo) {
+			clerr = clReleaseMemObject(clmem_aux_eo);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_aux_eo = 0;
+		}
+	} else {
+		if(clmem_rn) {
+			clerr = clReleaseMemObject(clmem_rn);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_rn = 0;
+		}
+		if(clmem_rhat) {
+			clerr = clReleaseMemObject(clmem_rhat);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_rhat = 0;
+		}
+		if(clmem_v) {
+			clerr = clReleaseMemObject(clmem_v);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_v = 0;
+		}
+		if(clmem_p) {
+			clerr = clReleaseMemObject(clmem_p);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_p = 0;
+		}
+		if(clmem_s) {
+			clerr = clReleaseMemObject(clmem_s);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_s = 0;
+		}
+		if(clmem_t) {
+			clerr = clReleaseMemObject(clmem_t);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_t = 0;
+		}
+		if(clmem_aux) {
+			clerr = clReleaseMemObject(clmem_aux);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+			clmem_aux = 0;
+		}
 	}
-	else{
-	  if(clmem_rn) {
-	    clerr = clReleaseMemObject(clmem_rn);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_rn = 0;
-	  }
-	  if(clmem_rhat) {
-	    clerr = clReleaseMemObject(clmem_rhat);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_rhat = 0;
-	  }
-	  if(clmem_v) {
-	    clerr = clReleaseMemObject(clmem_v);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_v = 0;
-	  }
-	  if(clmem_p) {
-	    clerr = clReleaseMemObject(clmem_p);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_p = 0;
-	  }
-	  if(clmem_s) {
-	    clerr = clReleaseMemObject(clmem_s);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_s = 0;
-	  }
-	  if(clmem_t) {
-	    clerr = clReleaseMemObject(clmem_t);
-	    if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	    clmem_t = 0;
-	  }
-	  if(clmem_aux) {
-		clerr = clReleaseMemObject(clmem_aux);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clmem_aux = 0;
-	  }
-	}
-	
+
 	if(clmem_rho) {
-	  clerr = clReleaseMemObject(clmem_rho);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_rho = 0;
+		clerr = clReleaseMemObject(clmem_rho);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		clmem_rho = 0;
 	}
 	if(clmem_rho_next) {
-	  clerr = clReleaseMemObject(clmem_rho_next);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_rho_next = 0;
+		clerr = clReleaseMemObject(clmem_rho_next);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		clmem_rho_next = 0;
 	}
 	if(clmem_omega) {
-	  clerr = clReleaseMemObject(clmem_omega);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_omega = 0;
+		clerr = clReleaseMemObject(clmem_omega);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		clmem_omega = 0;
 	}
 	if(clmem_beta) {
-	  clerr = clReleaseMemObject(clmem_beta);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_beta = 0;
+		clerr = clReleaseMemObject(clmem_beta);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		clmem_beta = 0;
 	}
 	if(clmem_tmp2) {
-	  clerr = clReleaseMemObject(clmem_tmp2);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_tmp2 = 0;
+		clerr = clReleaseMemObject(clmem_tmp2);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		clmem_tmp2 = 0;
 	}
 	if(clmem_resid) {
-	  clerr = clReleaseMemObject(clmem_resid);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_resid = 0;
+		clerr = clReleaseMemObject(clmem_resid);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		clmem_resid = 0;
 	}
 	if(clmem_trueresid) {
-	  clerr = clReleaseMemObject(clmem_trueresid);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_trueresid = 0;
+		clerr = clReleaseMemObject(clmem_trueresid);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		clmem_trueresid = 0;
 	}
 	if(clmem_alpha) {
-	  clerr = clReleaseMemObject(clmem_alpha);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_alpha = 0;
+		clerr = clReleaseMemObject(clmem_alpha);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		clmem_alpha = 0;
 	}
 	if(clmem_tmp1) {
-	  clerr = clReleaseMemObject(clmem_tmp1);
-	  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-	  clmem_tmp1 = 0;
+		clerr = clReleaseMemObject(clmem_tmp1);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
+		clmem_tmp1 = 0;
 	}
 
 	return;
@@ -772,32 +771,32 @@ void Opencl_Module_Fermions::get_work_sizes(const cl_kernel kernel, cl_device_ty
 void Opencl_Module_Fermions::M(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
 
-	if(get_parameters()->get_fermact() == WILSON) {
+	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 		//in the pure Wilson case there is just one fermionmatrix
-	  M_wilson_device(in, out, gf, kappa);
-	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-	  M_tm_plus_device(in, out, gf, kappa, mubar);
+		M_wilson_device(in, out, gf, kappa);
+	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
+		M_tm_plus_device(in, out, gf, kappa, mubar);
 	}
 }
 
 void Opencl_Module_Fermions::Qplus(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
-	if(get_parameters()->get_fermact() == WILSON) {
+	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 		//in the pure Wilson case there is just one fermionmatrix
-	  M_wilson_device(in, out, gf, kappa);
-	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-	  M_tm_plus_device(in, out, gf, kappa, mubar);
+		M_wilson_device(in, out, gf, kappa);
+	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
+		M_tm_plus_device(in, out, gf, kappa, mubar);
 	}
 	gamma5_device(out);
 }
 
 void Opencl_Module_Fermions::Qminus(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
-	if(get_parameters()->get_fermact() == WILSON) {
+	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 		//in the pure Wilson case there is just one fermionmatrix
-	  M_wilson_device(in, out, gf, kappa);
-	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-	  M_tm_minus_device(in, out, gf, kappa, mubar);
+		M_wilson_device(in, out, gf, kappa);
+	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
+		M_tm_minus_device(in, out, gf, kappa, mubar);
 	}
 	gamma5_device(out);
 }
@@ -806,8 +805,8 @@ void Opencl_Module_Fermions::QplusQminus(cl_mem in, cl_mem out, cl_mem gf, hmc_f
 {
 	/** @todo one could save one field here if an additional copying would be included in the end...
 	 * or the field should be created in here, local */
-  Qminus(in, clmem_tmp, gf, kappa, mubar);
-  Qplus(clmem_tmp, out, gf, kappa, mubar);
+	Qminus(in, clmem_tmp, gf, kappa, mubar);
+	Qplus(clmem_tmp, out, gf, kappa, mubar);
 }
 
 //explicit fermionmatrix-kernel calling functions
@@ -815,7 +814,7 @@ void Opencl_Module_Fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, h
 {
 	//get kappa
 	hmc_float kappa_tmp;
-	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
 	else kappa_tmp = kappa;
 
 	//query work-sizes for kernel
@@ -842,12 +841,12 @@ void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, 
 {
 	//get kappa
 	hmc_float kappa_tmp;
-	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
 	else kappa_tmp = kappa;
 
 	//get mu
 	hmc_float mubar_tmp;
-	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	if(mubar == ARG_DEF) mubar_tmp = meta::get_mubar(get_parameters());
 	else mubar_tmp = mubar;
 
 	//query work-sizes for kernel
@@ -877,12 +876,12 @@ void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf,
 {
 	//get kappa
 	hmc_float kappa_tmp;
-	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
 	else kappa_tmp = kappa;
 
 	//get mu
 	hmc_float mubar_tmp;
-	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	if(mubar == ARG_DEF) mubar_tmp = meta::get_mubar(get_parameters());
 	else mubar_tmp = mubar;
 
 	//query work-sizes for kernel
@@ -935,16 +934,16 @@ void Opencl_Module_Fermions::Aee(cl_mem in, cl_mem out, cl_mem gf, hmc_float kap
 	 * then Aee is:
 	 * Aee = R_e - D_eo R_o_inv D_oe
 	 */
-	if(get_parameters()->get_fermact() == WILSON) {
+	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 		//in this case, the diagonal matrix is just 1 and falls away.
-	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
-	  dslash_eo_device(clmem_tmp_eo_1, out, gf, even, kappa);
+		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+		dslash_eo_device(clmem_tmp_eo_1, out, gf, even, kappa);
 		saxpy_eoprec_device(out, in, clmem_one, out);
-	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
-	  M_tm_inverse_sitediagonal_device(clmem_tmp_eo_1, clmem_tmp_eo_2, mubar);
-	  dslash_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
-	  M_tm_sitediagonal_device(in, clmem_tmp_eo_1, mubar);
+	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
+		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+		M_tm_inverse_sitediagonal_device(clmem_tmp_eo_1, clmem_tmp_eo_2, mubar);
+		dslash_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
+		M_tm_sitediagonal_device(in, clmem_tmp_eo_1, mubar);
 		saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
 	}
 }
@@ -952,7 +951,7 @@ void Opencl_Module_Fermions::Aee(cl_mem in, cl_mem out, cl_mem gf, hmc_float kap
 /**
  *  This is the equivalent of the above function, but for the lower
  *  flavour, which essentially means mu -> -mu in the tm-case and
- *  no changes in the wilson case.
+ *  no changes in the meta::Inputparameters::wilson case.
  */
 void Opencl_Module_Fermions::Aee_minus(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
@@ -969,17 +968,17 @@ void Opencl_Module_Fermions::Aee_minus(cl_mem in, cl_mem out, cl_mem gf, hmc_flo
 	 * and Aee_minus is:
 	 * Aee_minus = R_e(-mu) - D_eo R_o(-mu)_inv D_oe
 	 */
-	if(get_parameters()->get_fermact() == WILSON) {
-	  //in this case, the diagonal matrix is just 1 and falls away.
-	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
-	  dslash_eo_device(clmem_tmp_eo_1, out, gf, even, kappa);
-	  saxpy_eoprec_device(out, in, clmem_one, out);
-	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
-	  M_tm_inverse_sitediagonal_minus_device(clmem_tmp_eo_1, clmem_tmp_eo_2, mubar);
-	  dslash_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
-	  M_tm_sitediagonal_minus_device(in, clmem_tmp_eo_1, mubar);
-	  saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
+	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
+		//in this case, the diagonal matrix is just 1 and falls away.
+		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+		dslash_eo_device(clmem_tmp_eo_1, out, gf, even, kappa);
+		saxpy_eoprec_device(out, in, clmem_one, out);
+	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
+		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+		M_tm_inverse_sitediagonal_minus_device(clmem_tmp_eo_1, clmem_tmp_eo_2, mubar);
+		dslash_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
+		M_tm_sitediagonal_minus_device(in, clmem_tmp_eo_1, mubar);
+		saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
 	}
 }
 
@@ -997,38 +996,38 @@ void Opencl_Module_Fermions::Aee_AND_gamma5_eo(cl_mem in, cl_mem out, cl_mem gf,
 	 * then Aee is:
 	 * Aee = R_e - D_eo R_o_inv D_oe
 	 */
-	if(get_parameters()->get_fermact() == WILSON) {
-	  //in this case, the diagonal matrix is just 1 and falls away.
-	  //this case has not been adjusted for the merged kernels yet...
-	  logger.warn() << "No merged kernels implemented for pure Wilson case!";
-	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
-	  dslash_eo_device(clmem_tmp_eo_1, out, gf, even, kappa);
-	  saxpy_eoprec_device(out, in, clmem_one, out);
-	  gamma5_eo_device(out);
-	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-	  /*
-	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
-	  M_tm_inverse_sitediagonal_device(clmem_tmp_eo_1, clmem_tmp_eo_2, mubar);
-	  */
-	  dslash_AND_M_tm_inverse_sitediagonal_eo_device(in, clmem_tmp_eo_2, gf, odd, kappa, mubar);
-	  /*
-	  dslash_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
-	  gamma5_eo_device(out);
-	  */
-	  dslash_AND_gamma5_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
-	  /*
-	  M_tm_sitediagonal_device(in, clmem_tmp_eo_1, mubar);
-	  gamma5_eo_device(clmem_tmp_eo_1);
-	  */
-	  M_tm_sitediagonal_AND_gamma5_eo_device(in, clmem_tmp_eo_1, mubar); 
-	  saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
+	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
+		//in this case, the diagonal matrix is just 1 and falls away.
+		//this case has not been adjusted for the merged kernels yet...
+		logger.warn() << "No merged kernels implemented for pure Wilson case!";
+		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+		dslash_eo_device(clmem_tmp_eo_1, out, gf, even, kappa);
+		saxpy_eoprec_device(out, in, clmem_one, out);
+		gamma5_eo_device(out);
+	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
+		/*
+		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+		M_tm_inverse_sitediagonal_device(clmem_tmp_eo_1, clmem_tmp_eo_2, mubar);
+		*/
+		dslash_AND_M_tm_inverse_sitediagonal_eo_device(in, clmem_tmp_eo_2, gf, odd, kappa, mubar);
+		/*
+		dslash_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
+		gamma5_eo_device(out);
+		*/
+		dslash_AND_gamma5_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
+		/*
+		M_tm_sitediagonal_device(in, clmem_tmp_eo_1, mubar);
+		gamma5_eo_device(clmem_tmp_eo_1);
+		*/
+		M_tm_sitediagonal_AND_gamma5_eo_device(in, clmem_tmp_eo_1, mubar);
+		saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
 	}
 }
 
 /**
  *  This is the equivalent of the above function, but for the lower
  *  flavour, which essentially means mu -> -mu in the tm-case and
- *  no changes in the wilson case.
+ *  no changes in the meta::Inputparameters::wilson case.
  */
 void Opencl_Module_Fermions::Aee_minus_AND_gamma5_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
@@ -1043,71 +1042,72 @@ void Opencl_Module_Fermions::Aee_minus_AND_gamma5_eo(cl_mem in, cl_mem out, cl_m
 	 * then Aee is:
 	 * Aee = R_e - D_eo R_o_inv D_oe
 	 */
-	if(get_parameters()->get_fermact() == WILSON) {
-	  //in this case, the diagonal matrix is just 1 and falls away.
-	  //this case has not been adjusted for the merged kernels yet...
-	  logger.warn() << "No merged kernels implemented for pure Wilson case!";
-	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
-	  dslash_eo_device(clmem_tmp_eo_1, out, gf, even, kappa);
-	  saxpy_eoprec_device(out, in, clmem_one, out);
-	  gamma5_eo_device(out);
-	} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
-	  /*
-	  dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
-	  M_tm_inverse_sitediagonal_minus_device(clmem_tmp_eo_1, clmem_tmp_eo_2, mubar);
-	  */
-	  dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(in, clmem_tmp_eo_2, gf, odd, kappa, mubar);
-	  /*
-	  dslash_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
-	  gamma5_eo_device(out);
-	  */
-	  dslash_AND_gamma5_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
-	  /*
-	  M_tm_sitediagonal_minus_device(in, clmem_tmp_eo_1, mubar);
-	  gamma5_eo_device(clmem_tmp_eo_1);
-	  */
-	  M_tm_sitediagonal_minus_AND_gamma5_eo_device(in, clmem_tmp_eo_1, mubar); 
-	  saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
+	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
+		//in this case, the diagonal matrix is just 1 and falls away.
+		//this case has not been adjusted for the merged kernels yet...
+		logger.warn() << "No merged kernels implemented for pure Wilson case!";
+		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+		dslash_eo_device(clmem_tmp_eo_1, out, gf, even, kappa);
+		saxpy_eoprec_device(out, in, clmem_one, out);
+		gamma5_eo_device(out);
+	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
+		/*
+		dslash_eo_device(in, clmem_tmp_eo_1, gf, odd, kappa);
+		M_tm_inverse_sitediagonal_minus_device(clmem_tmp_eo_1, clmem_tmp_eo_2, mubar);
+		*/
+		dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(in, clmem_tmp_eo_2, gf, odd, kappa, mubar);
+		/*
+		dslash_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
+		gamma5_eo_device(out);
+		*/
+		dslash_AND_gamma5_eo_device(clmem_tmp_eo_2, out, gf, even, kappa);
+		/*
+		M_tm_sitediagonal_minus_device(in, clmem_tmp_eo_1, mubar);
+		gamma5_eo_device(clmem_tmp_eo_1);
+		*/
+		M_tm_sitediagonal_minus_AND_gamma5_eo_device(in, clmem_tmp_eo_1, mubar);
+		saxpy_eoprec_device(out, clmem_tmp_eo_1, clmem_one, out);
 	}
 }
 
 
 void Opencl_Module_Fermions::Qplus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
-  if(get_parameters()->get_use_merge_kernels_fermion() == false){
-    Aee(in, out, gf, kappa, mubar);
-    gamma5_eo_device(out);
-  } else{
-    Aee_AND_gamma5_eo(in, out, gf, kappa, mubar);
-  }
-  return;
+	if(get_parameters().get_use_merge_kernels_fermion() == false) {
+		Aee(in, out, gf, kappa, mubar);
+		gamma5_eo_device(out);
+	} else {
+		Aee_AND_gamma5_eo(in, out, gf, kappa, mubar);
+	}
+	return;
 }
 
 void Opencl_Module_Fermions::Qminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
-  if(get_parameters()->get_use_merge_kernels_fermion() == false){
-    Aee_minus(in, out, gf, kappa, mubar);
-    gamma5_eo_device(out);
-  } else{
-    Aee_minus_AND_gamma5_eo(in, out, gf, kappa, mubar);
-  }
-  return;
+	if(get_parameters().get_use_merge_kernels_fermion() == false) {
+		Aee_minus(in, out, gf, kappa, mubar);
+		gamma5_eo_device(out);
+	} else {
+		Aee_minus_AND_gamma5_eo(in, out, gf, kappa, mubar);
+	}
+	return;
 }
 
 void Opencl_Module_Fermions::QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
 {
-  //CP: this should be an eoprec-sized field. However, this induces problems in the CG algorithm!!!
-  size_t spinorfield_size = sizeof(spinor) * get_parameters()->get_spinorfieldsize();
-  cl_mem sf_eo_tmp;
-  sf_eo_tmp = create_rw_buffer(spinorfield_size);
-  
-  Qminus_eo(in, sf_eo_tmp, gf, kappa, mubar);
-  Qplus_eo(sf_eo_tmp, out, gf, kappa, mubar);
-  
-  int clerr = clReleaseMemObject(sf_eo_tmp);
-  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-  
-  return;
+	//CP: this should be an eoprec-sized field. However, this induces problems in the CG algorithm!!!
+	//MB: This is because of padding, the eoprec buffer size shoulw always be queried from Opencl_Module_Spinor
+	size_t spinorfield_size = get_eoprec_spinorfield_buffer_size();
+	cl_mem sf_eo_tmp;
+	sf_eo_tmp = create_rw_buffer(spinorfield_size);
+
+	Qminus_eo(in, sf_eo_tmp, gf, kappa, mubar);
+	Qplus_eo(sf_eo_tmp, out, gf, kappa, mubar);
+
+	int clerr = clReleaseMemObject(sf_eo_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+
+	return;
 }
 
 //explicit eoprec fermionmatrix functions
@@ -1128,7 +1128,7 @@ void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, 
 {
 	//get kappa
 	hmc_float kappa_tmp;
-	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
 	else kappa_tmp = kappa;
 
 	cl_int eo = evenodd;
@@ -1159,7 +1159,7 @@ void Opencl_Module_Fermions::dslash_AND_gamma5_eo_device(cl_mem in, cl_mem out, 
 {
 	//get kappa
 	hmc_float kappa_tmp;
-	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
 	else kappa_tmp = kappa;
 
 	cl_int eo = evenodd;
@@ -1189,10 +1189,10 @@ void Opencl_Module_Fermions::dslash_AND_gamma5_eo_device(cl_mem in, cl_mem out, 
 void Opencl_Module_Fermions::dslash_AND_M_tm_inverse_sitediagonal_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa, hmc_float mubar)
 {
 	//get kappa
-  hmc_float kappa_tmp, mubar_tmp;
-	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	hmc_float kappa_tmp, mubar_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
 	else kappa_tmp = kappa;
-	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	if(mubar == ARG_DEF) mubar_tmp = meta::get_mubar(get_parameters());
 	else mubar_tmp = kappa;
 
 	cl_int eo = evenodd;
@@ -1225,10 +1225,10 @@ void Opencl_Module_Fermions::dslash_AND_M_tm_inverse_sitediagonal_eo_device(cl_m
 void Opencl_Module_Fermions::dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa, hmc_float mubar)
 {
 	//get kappa
-  hmc_float kappa_tmp, mubar_tmp;
-	if(kappa == ARG_DEF) kappa_tmp = get_parameters()->get_kappa();
+	hmc_float kappa_tmp, mubar_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
 	else kappa_tmp = kappa;
-	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	if(mubar == ARG_DEF) mubar_tmp = meta::get_mubar(get_parameters());
 	else mubar_tmp = kappa;
 
 	cl_int eo = evenodd;
@@ -1262,7 +1262,7 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem 
 {
 	//get mu
 	hmc_float mubar_tmp;
-	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	if(mubar == ARG_DEF) mubar_tmp = meta::get_mubar(get_parameters());
 	else mubar_tmp = mubar;
 
 	//query work-sizes for kernel
@@ -1286,7 +1286,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc
 {
 	//get mu
 	hmc_float mubar_tmp;
-	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	if(mubar == ARG_DEF) mubar_tmp = meta::get_mubar(get_parameters());
 	else mubar_tmp = mubar;
 
 	//query work-sizes for kernel
@@ -1310,7 +1310,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_AND_gamma5_eo_device(cl_mem in, c
 {
 	//get mu
 	hmc_float mubar_tmp;
-	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	if(mubar == ARG_DEF) mubar_tmp = meta::get_mubar(get_parameters());
 	else mubar_tmp = mubar;
 
 	//query work-sizes for kernel
@@ -1334,7 +1334,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_AND_gamma5_eo_device(cl_mem
 {
 	//get mu
 	hmc_float mubar_tmp;
-	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	if(mubar == ARG_DEF) mubar_tmp = meta::get_mubar(get_parameters());
 	else mubar_tmp = mubar;
 
 	//query work-sizes for kernel
@@ -1358,7 +1358,7 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, c
 {
 	//get mu
 	hmc_float mubar_tmp;
-	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	if(mubar == ARG_DEF) mubar_tmp = meta::get_mubar(get_parameters());
 	else mubar_tmp = mubar;
 
 	//query work-sizes for kernel
@@ -1382,7 +1382,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 {
 	//get mu
 	hmc_float mubar_tmp;
-	if(mubar == ARG_DEF) mubar_tmp = get_parameters()->get_mubar();
+	if(mubar == ARG_DEF) mubar_tmp = meta::get_mubar(get_parameters());
 	else mubar_tmp = mubar;
 
 	//query work-sizes for kernel
@@ -1405,17 +1405,17 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
-	if (get_parameters()->get_use_bicgstab_save() == true) {
+	if (get_parameters().get_solver() == meta::Inputparameters::bicgstab_save) {
 		hmc_float resid;
-		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
-			if(iter % get_parameters()->get_iter_refresh() == 0) {
+		for(int iter = 0; iter < get_parameters().get_cgmax(); iter++) {
+			if(iter % get_parameters().get_iter_refresh() == 0) {
 				set_zero_spinorfield_device(clmem_v);
 				set_zero_spinorfield_device(clmem_p);
 				//initial r_n
 				f(inout, clmem_rn, gf, kappa, mubar);
 				saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
 				//rhat = r_n
-				copy_buffer_on_device(clmem_rn, clmem_rhat, get_parameters()->get_sf_buf_size());
+				copy_buffer_on_device(clmem_rn, clmem_rhat, meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor));
 				//set some constants to 1
 				copy_buffer_on_device(clmem_one, clmem_alpha, sizeof(hmc_complex));
 				copy_buffer_on_device(clmem_one, clmem_omega, sizeof(hmc_complex));
@@ -1497,17 +1497,17 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 	}
 	//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
 	//  In particular this version does not perform the check if the "real" residuum is sufficiently small!
-	else if (get_parameters()->get_use_bicgstab_save() != true) {
+	else if (get_parameters().get_solver() == meta::Inputparameters::bicgstab) {
 		hmc_float resid;
-		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
-			if(iter % get_parameters()->get_iter_refresh() == 0) {
+		for(int iter = 0; iter < get_parameters().get_cgmax(); iter++) {
+			if(iter % get_parameters().get_iter_refresh() == 0) {
 				//initial r_n, saved in p
 				f(inout, clmem_rn, gf, kappa, mubar);
 				saxpy_device(clmem_rn, source, clmem_one, clmem_p);
 				//rhat = p
-				copy_buffer_on_device(clmem_p, clmem_rhat, get_parameters()->get_sf_buf_size());
+				copy_buffer_on_device(clmem_p, clmem_rhat, meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor));
 				//r_n = p
-				copy_buffer_on_device(clmem_p, clmem_rn, get_parameters()->get_sf_buf_size());
+				copy_buffer_on_device(clmem_p, clmem_rn, meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor));
 				//rho = (rhat, rn)
 				set_complex_to_scalar_product_device(clmem_rhat, clmem_rn, clmem_rho);
 			}
@@ -1571,8 +1571,8 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl
 		}
 		return -1;
 	}
-	//this return cannot be reached and is inserted to remove a warning
-	return 0;
+	logger.fatal() << "This line should never be reached! Program logic is inconsistent!";
+	throw std::logic_error("Somebody goofed up - the solver you selected is not implemented.");
 }
 
 int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
@@ -1580,7 +1580,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 	cl_int clerr = CL_SUCCESS;
 
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
-	if (get_parameters()->get_use_bicgstab_save()) {
+	if (get_parameters().get_solver() == meta::Inputparameters::bicgstab_save) {
 		klepsydra::Monotonic timer;
 		if(logger.beInfo()) {
 			cl_event start_event;
@@ -1592,9 +1592,9 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 		hmc_float resid;
 		hmc_float trueresid;
 		unsigned retests = 0;
-		int cgmax = get_parameters()->get_cgmax();
+		int cgmax = get_parameters().get_cgmax();
 		for(int iter = 0; iter < cgmax; iter++) {
-			if(iter % get_parameters()->get_iter_refresh() == 0) {
+			if(iter % get_parameters().get_iter_refresh() == 0) {
 				set_zero_spinorfield_eoprec_device(clmem_v_eo);
 				set_zero_spinorfield_eoprec_device(clmem_p_eo);
 
@@ -1669,7 +1669,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 						uint64_t duration = timer.getTime();
 
 						// calculate flops
-						unsigned refreshs = iter / get_parameters()->get_iter_refresh() + 1;
+						unsigned refreshs = iter / get_parameters().get_iter_refresh() + 1;
 						cl_ulong mf_flops = f.get_Flops();
 
 						cl_ulong total_flops = 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 3 * get_flop_size("product") + 2 * get_flop_size("saxsbypz_eoprec") + 2 * mf_flops + 2 * get_flop_size("saxpy_eoprec") + get_flop_size("global_squarenorm_eoprec");
@@ -1699,8 +1699,8 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 			clSetEventCallback(start_event, CL_COMPLETE, resetTimerOnComplete, &timer);
 			clReleaseEvent(start_event);
 		}
-		for(int iter = 0; iter < get_parameters()->get_cgmax(); iter++) {
-			if(iter % get_parameters()->get_iter_refresh() == 0) {
+		for(int iter = 0; iter < get_parameters().get_cgmax(); iter++) {
+			if(iter % get_parameters().get_iter_refresh() == 0) {
 				//initial r_n, saved in p
 				f(inout, clmem_rn_eo, gf, kappa, mubar);
 				saxpy_eoprec_device(clmem_rn_eo, source, clmem_one, clmem_p_eo);
@@ -1729,7 +1729,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 					uint64_t duration = timer.getTime();
 
 					// calculate flops
-					unsigned refreshs = iter / get_parameters()->get_iter_refresh() + 1;
+					unsigned refreshs = iter / get_parameters().get_iter_refresh() + 1;
 					cl_ulong mf_flops = f.get_Flops();
 
 					cl_ulong total_flops = get_flop_size("global_squarenorm_eoprec") + 2 * mf_flops + 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 2 * get_flop_size("saxpy_eoprec") + 2 * get_flop_size("saxsbypz_eoprec") + 3 * get_flop_size("product");
@@ -1801,22 +1801,20 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function & f, cl_mem inout,
 		}
 		return -1;
 	}
-	//this return cannot be reached and is inserted to remove a warning
-	return 0;
 }
 
 int Opencl_Module_Fermions::cg(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
 	//CP: here I do not use clmem_rnhat anymore and saved one scalar_product (omega)
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
-	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter ++) {
-		if(iter % get_parameters()->get_iter_refresh() == 0) {
+	for(int iter = 0; iter < get_parameters().get_cgmax(); iter ++) {
+		if(iter % get_parameters().get_iter_refresh() == 0) {
 			//rn = A*inout
 			f(inout, clmem_rn, gf, kappa, mubar);
 			//rn = source - A*inout
 			saxpy_device(clmem_rn, source, clmem_one, clmem_rn);
 			//p = rn
-			copy_buffer_on_device(clmem_rn, clmem_p, get_parameters()->get_sf_buf_size());
+			copy_buffer_on_device(clmem_rn, clmem_p, meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor));
 			//omega = (rn,rn)
 			set_complex_to_scalar_product_device(clmem_rn, clmem_rn, clmem_omega);
 		} else {
@@ -1875,8 +1873,8 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_me
 		clSetEventCallback(start_event, CL_COMPLETE, resetTimerOnComplete, &timer);
 		clReleaseEvent(start_event);
 	}
-	for(int iter = 0; iter < get_parameters()->get_cgmax(); iter ++) {
-		if(iter % get_parameters()->get_iter_refresh() == 0) {
+	for(int iter = 0; iter < get_parameters().get_cgmax(); iter ++) {
+		if(iter % get_parameters().get_iter_refresh() == 0) {
 			//rn = A*inout
 			f(inout, clmem_rn_eo, gf, kappa, mubar);
 			//rn = source - A*inout
@@ -1896,66 +1894,65 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function & f, cl_mem inout, cl_me
 		set_complex_to_scalar_product_eoprec_device(clmem_p_eo, clmem_v_eo, clmem_rho);
 		set_complex_to_ratio_device(clmem_omega, clmem_rho, clmem_alpha);
 		set_complex_to_product_device(clmem_alpha, clmem_minusone, clmem_tmp1);
-		
+
 		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
 		saxpy_eoprec_device(clmem_p_eo, inout, clmem_tmp1, inout);
 		//switch between original version and kernel merged one
-		if(get_parameters()->get_use_merge_kernels_spinor() == false){
-		  //rn+1 = rn - alpha*v -> rhat
-		  saxpy_eoprec_device(clmem_v_eo, clmem_rn_eo, clmem_alpha, clmem_rn_eo);
-		  
-		  //calc residuum
-		  //NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
-		  set_complex_to_scalar_product_eoprec_device(clmem_rn_eo, clmem_rn_eo, clmem_rho_next);
-		}
-		else{
-		  //merge two calls:
-		  //rn+1 = rn - alpha*v -> rhat
-		  //and
-		  //rho_next = |rhat|^2
-		  //rho_next is a complex number, set its imag to zero
-		  hmc_complex zero = hmc_complex_zero;
-		  int clerr = clEnqueueWriteBuffer(get_queue(), clmem_rho_next, CL_TRUE, 0, sizeof(hmc_complex), &zero, 0, 0, NULL);
-		  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
-		  saxpy_AND_squarenorm_eo_device(clmem_v_eo, clmem_rn_eo, clmem_alpha, clmem_rn_eo, clmem_rho_next);
+		if(get_parameters().get_use_merge_kernels_spinor() == false) {
+			//rn+1 = rn - alpha*v -> rhat
+			saxpy_eoprec_device(clmem_v_eo, clmem_rn_eo, clmem_alpha, clmem_rn_eo);
+
+			//calc residuum
+			//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
+			set_complex_to_scalar_product_eoprec_device(clmem_rn_eo, clmem_rn_eo, clmem_rho_next);
+		} else {
+			//merge two calls:
+			//rn+1 = rn - alpha*v -> rhat
+			//and
+			//rho_next = |rhat|^2
+			//rho_next is a complex number, set its imag to zero
+			hmc_complex zero = hmc_complex_zero;
+			int clerr = clEnqueueWriteBuffer(get_queue(), clmem_rho_next, CL_TRUE, 0, sizeof(hmc_complex), &zero, 0, 0, NULL);
+			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
+			saxpy_AND_squarenorm_eo_device(clmem_v_eo, clmem_rn_eo, clmem_alpha, clmem_rn_eo, clmem_rho_next);
 		}
 		hmc_float resid;
 		get_buffer_from_device(clmem_rho_next, &resid, sizeof(hmc_float));
 		//this is the orig. call
 		//set_float_to_global_squarenorm_device(clmem_rn, clmem_resid);
 		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
-		
+
 		logger.debug() << "resid: " << resid;
 		//test if resid is NAN
 		if(resid != resid) {
-		  logger.fatal() << "\tNAN occured in cg_eo!";
-		  return -iter;
+			logger.fatal() << "\tNAN occured in cg_eo!";
+			return -iter;
 		}
 		if(resid < prec) {
-		  // report on performance
-		  if(logger.beInfo()) {
-		    // we are always synchroneous here, as we had to recieve the residium from the device
-		    uint64_t duration = timer.getTime();
-		    
-		    // calculate flops
-		    unsigned refreshs = iter / get_parameters()->get_iter_refresh() + 1;
-		    cl_ulong mf_flops = f.get_Flops();
-		    
-		    cl_ulong total_flops = mf_flops + 3 * get_flop_size("scalar_product_eoprec") + 2 * get_flop_size("ratio") + 2 * get_flop_size("product") + 3 * get_flop_size("saxpy_eoprec");
-		    total_flops *= iter;
-		    
-		    total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
-		    
-		    // report performanc
-		    logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
-		  }
-		  
-		  return iter;
+			// report on performance
+			if(logger.beInfo()) {
+				// we are always synchroneous here, as we had to recieve the residium from the device
+				uint64_t duration = timer.getTime();
+
+				// calculate flops
+				unsigned refreshs = iter / get_parameters().get_iter_refresh() + 1;
+				cl_ulong mf_flops = f.get_Flops();
+
+				cl_ulong total_flops = mf_flops + 3 * get_flop_size("scalar_product_eoprec") + 2 * get_flop_size("ratio") + 2 * get_flop_size("product") + 3 * get_flop_size("saxpy_eoprec");
+				total_flops *= iter;
+
+				total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
+
+				// report performanc
+				logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+			}
+
+			return iter;
 		}
-		
+
 		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
 		set_complex_to_ratio_device(clmem_rho_next, clmem_omega, clmem_beta);
-		
+
 		//pn+1 = rn+1 + beta*pn
 		set_complex_to_product_device(clmem_beta, clmem_minusone, clmem_tmp2);
 		saxpy_eoprec_device(clmem_p_eo, clmem_rn_eo, clmem_tmp2, clmem_p_eo);
@@ -1975,8 +1972,8 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 	 */
 	int converged = -1;
 
-	if(get_parameters()->get_profile_solver() ) (*solvertimer).reset();
-	if(get_parameters()->get_use_eo() == true) {
+	if(get_parameters().get_profile_solver() ) (*solvertimer).reset();
+	if(get_parameters().get_use_eo() == true) {
 		/**
 		 * If even-odd-preconditioning is used, the inversion is split up
 		 * into even and odd parts using Schur decomposition, assigning the
@@ -1989,11 +1986,11 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 		 * This changes the even source according to (with A = M + D):
 		 *  b_e = b_e - D_eo M_inv b_o
 		 */
-		if(get_parameters()->get_fermact() == WILSON) {
+		if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 			//in this case, the diagonal matrix is just 1 and falls away.
 			dslash_eo_device(clmem_source_odd, clmem_tmp_eo_1, gf, EVEN);
 			saxpy_eoprec_device(clmem_source_even, clmem_tmp_eo_1, clmem_one, clmem_source_even);
-		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
+		} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
 			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eo_1);
 			dslash_eo_device(clmem_tmp_eo_1, clmem_tmp_eo_2, gf, EVEN);
 			saxpy_eoprec_device(clmem_source_even, clmem_tmp_eo_2, clmem_one, clmem_source_even);
@@ -2006,10 +2003,10 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 		//make sure buffer are initialised
 		this->fill_solver_buffers();
 		//even solution
-		if(get_parameters()->get_use_cg() == true)
-			converged = cg_eo(f, clmem_inout_eo, clmem_source_even, gf, get_parameters()->get_solver_prec());
+		if(get_parameters().get_solver() == meta::Inputparameters::cg)
+			converged = cg_eo(f, clmem_inout_eo, clmem_source_even, gf, get_parameters().get_solver_prec());
 		else
-			converged = bicgstab_eo(f, this->get_clmem_inout_eo(), clmem_source_even, gf, get_parameters()->get_solver_prec());
+			converged = bicgstab_eo(f, this->get_clmem_inout_eo(), clmem_source_even, gf, get_parameters().get_solver_prec());
 
 		//release solver buffers
 		this->clear_solver_buffers();
@@ -2018,11 +2015,11 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 		/** The odd solution is obtained from the even one according to:
 		 *  x_o = M_inv D x_e - M_inv b_o
 		 */
-		if(get_parameters()->get_fermact() == WILSON) {
+		if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 			//in this case, the diagonal matrix is just 1 and falls away.
 			dslash_eo_device(clmem_inout_eo, clmem_tmp_eo_1, gf, ODD);
 			saxpy_eoprec_device(clmem_tmp_eo_1, clmem_source_odd, clmem_one, clmem_tmp_eo_1);
-		} else if(get_parameters()->get_fermact() == TWISTEDMASS) {
+		} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
 			dslash_eo_device(clmem_inout_eo, clmem_tmp_eo_2, gf, ODD);
 			M_tm_inverse_sitediagonal_device(clmem_tmp_eo_2, clmem_tmp_eo_1);
 			M_tm_inverse_sitediagonal_device(clmem_source_odd, clmem_tmp_eo_2);
@@ -2036,12 +2033,12 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, cl_mem inout, cl_
 		///@todo this should go into a more general function
 		this->set_spinorfield_cold_device(inout);
 
-		if(get_parameters()->get_use_cg() == true)
-			converged = cg(f, inout, source, gf, get_parameters()->get_solver_prec());
+		if(get_parameters().get_solver() == meta::Inputparameters::cg)
+			converged = cg(f, inout, source, gf, get_parameters().get_solver_prec());
 		else
-			converged = bicgstab(f, inout, source, gf, get_parameters()->get_solver_prec());
+			converged = bicgstab(f, inout, source, gf, get_parameters().get_solver_prec());
 	}
-	if(get_parameters()->get_profile_solver() ) {
+	if(get_parameters().get_profile_solver() ) {
 		clFinish(get_queue());
 		(*solvertimer).add();
 	}
@@ -2187,12 +2184,12 @@ size_t Opencl_Module_Fermions::get_read_write_size(const char * in)
 	size_t result = Opencl_Module_Spinors::get_read_write_size(in);
 	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
-	size_t D = (*parameters).get_float_size();
+	size_t D = meta::get_float_size(parameters);
 	//this returns the number of entries in an su3-matrix
-	size_t R = (*parameters).get_mat_size();
+	size_t R = meta::get_mat_size(parameters);
 	//this is the number of spinors in the system (or number of sites)
-	size_t S = get_parameters()->get_spinorfieldsize();
-	size_t Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	size_t S = meta::get_spinorfieldsize(get_parameters());
+	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers
 	int C = 2;
 	//this is the same as in the function above
@@ -2270,16 +2267,16 @@ size_t Opencl_Module_Fermions::get_read_write_size(const char * in)
 	return 0;
 }
 
-int flop_dslash_per_site(inputparameters * parameters)
+int flop_dslash_per_site(const meta::Inputparameters & parameters)
 {
 	/** @NOTE: this is the "original" dslash without any simplifications, counting everything "full". this is a much too hight number!!
 	   *  //this kernel performs for each eo site a 2*NDIM sum over (1 + gamma_mu) * su3matrix * spinor
-	   *  //return  NDIM * 2 * ( get_parameters()->get_flop_su3_spinor() + get_parameters()->get_flop_gamma_spinor() ) ;
+	   *  //return  NDIM * 2 * ( get_parameters().get_flop_su3_spinor() + get_parameters().get_flop_gamma_spinor() ) ;
 	  @NOTE: However, in 0911.3191 the dslash_eo is quoted to perform 1320 flop per site
 	   *  If I count our implementation of the dslash-kernel, I get 1632 flop per site:
 	   *  //the kernel performs 6 su3vec_acc, 2 su3_su3vec and 2 su3vec_complex in NDIM * 2 directions per site
 	  */
-	return NDIM * 2 * (parameters->get_flop_su3_su3vec() * 2 + 6 * NC * 2 + 2 * NC * parameters->get_flop_complex_mult() );
+	return NDIM * 2 * (meta::get_flop_su3_su3vec() * 2 + 6 * NC * 2 + 2 * NC * meta::get_flop_complex_mult() );
 	/// I do not know for sure, but if one leaves out the 2 su3vec_complex operations in each directions one has almost 1320 flop per site. This would correspond to have the kappa in the diagonal matrix still.
 
 }
@@ -2288,11 +2285,11 @@ uint64_t Opencl_Module_Fermions::get_flop_size(const char * in)
 {
 	uint64_t result = Opencl_Module_Spinors::get_flop_size(in);
 	if (result != 0) return result;
-	uint64_t S = get_parameters()->get_spinorfieldsize();
-	uint64_t Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	size_t S = meta::get_spinorfieldsize(get_parameters());
+	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	if (strcmp(in, "M_wilson") == 0) {
 		//this kernel performs one dslash on each site and adds this to a spinor
-		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * get_parameters()->get_flop_complex_mult() + NC * NDIM * 2 );
+		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2 );
 	}
 	if (strcmp(in, "gamma5") == 0) {
 		//this kernel performs ND*NC*2/2 real mults
@@ -2300,11 +2297,11 @@ uint64_t Opencl_Module_Fermions::get_flop_size(const char * in)
 	}
 	if (strcmp(in, "M_tm_plus") == 0) {
 		//this kernel performs ND*NC complex mults and one dslash on each site and adds the results
-		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * get_parameters()->get_flop_complex_mult() + NC * NDIM * 2 );
+		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2 );
 	}
 	if (strcmp(in, "M_tm_minus") == 0) {
 		//this kernel performs ND*NC complex mults and one dslash on each site and adds the results
-		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * get_parameters()->get_flop_complex_mult() + NC * NDIM * 2 );
+		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2 );
 	}
 	if (strcmp(in, "gamma5_eo") == 0) {
 		//this kernel performs ND*NC*2/2 real mults
@@ -2312,19 +2309,19 @@ uint64_t Opencl_Module_Fermions::get_flop_size(const char * in)
 	}
 	if (strcmp(in, "M_tm_sitediagonal") == 0) {
 		//this kernel performs ND*NC complex mults
-		return Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() );
+		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() );
 	}
 	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0) {
 		//this kernel performs ND*NC complex mults and ND*NC*2 real mults
-		return Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() + NC * NDIM * 2  );
+		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2  );
 	}
 	if (strcmp(in, "M_tm_sitediagonal_minus") == 0) {
 		//this kernel performs ND*NC complex mults
-		return Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() );
+		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() );
 	}
 	if (strcmp(in, "M_tm_inverse_sitediagonal_minus") == 0) {
 		//this kernel performs ND*NC complex mults and ND*NC*2 real mults
-		return Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() + NC * NDIM * 2 );
+		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2 );
 	}
 	if (strcmp(in, "dslash_eo") == 0) {
 		return Seo * flop_dslash_per_site(get_parameters());
@@ -2333,18 +2330,18 @@ uint64_t Opencl_Module_Fermions::get_flop_size(const char * in)
 		return Seo * flop_dslash_per_site(get_parameters()) +  Seo * NDIM * NC;
 	}
 	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_eo") == 0) {
-	  return Seo * flop_dslash_per_site(get_parameters()) + Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() + NC * NDIM * 2  );
+		return Seo * flop_dslash_per_site(get_parameters()) + Seo * ( NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2  );
 	}
 	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_minus_eo") == 0) {
-	  return Seo * flop_dslash_per_site(get_parameters()) + Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() + NC * NDIM * 2  );
+		return Seo * flop_dslash_per_site(get_parameters()) + Seo * ( NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2  );
 	}
 	if (strcmp(in, "M_tm_sitediagonal_AND_gamma5_eo") == 0) {
 		//this kernel performs ND*NC complex mults and  ND*NC*2/2 real mults
-		return Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() ) + Seo * NDIM * NC ;
+		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() ) + Seo * NDIM * NC ;
 	}
 	if (strcmp(in, "M_tm_sitediagonal_minus_AND_gamma5_eo") == 0) {
 		//this kernel performs ND*NC complex mults  ND*NC*2/2 real mults
-		return Seo * ( NC * NDIM * get_parameters()->get_flop_complex_mult() ) +  Seo * NDIM * NC;
+		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() ) +  Seo * NDIM * NC;
 	}
 	return 0;
 }

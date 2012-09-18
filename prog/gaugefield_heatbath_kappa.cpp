@@ -23,11 +23,11 @@ void Gaugefield_heatbath_kappa::init_tasks()
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 
 	//LZ: right now, each task carries exactly one opencl device -> thus the below allocation with [1]. Could be generalized in future
-	opencl_modules[task_kappa] = new Opencl_Module_Kappa[1];
-	get_task_kappa()->init(queue[task_kappa], get_parameters(), get_max_compute_units(task_kappa), get_double_ext(task_kappa), task_kappa);
+	opencl_modules[task_kappa] = new Opencl_Module_Kappa(get_parameters());
+	get_task_kappa()->init(queue[task_kappa], get_max_compute_units(task_kappa), get_double_ext(task_kappa), task_kappa);
 
-	opencl_modules[task_heatbath] = new Opencl_Module_Heatbath[1];
-	get_task_heatbath()->init(queue[task_heatbath], get_parameters(), get_max_compute_units(task_heatbath), get_double_ext(task_heatbath), task_heatbath);
+	opencl_modules[task_heatbath] = new Opencl_Module_Heatbath(get_parameters());
+	get_task_heatbath()->init(queue[task_heatbath], get_max_compute_units(task_heatbath), get_double_ext(task_heatbath), task_heatbath);
 
 	return;
 }
@@ -54,7 +54,7 @@ void Gaugefield_heatbath_kappa::perform_tasks(int nheat, int nover)
 			get_task_heatbath()->run_overrelax();
 	}
 
-	get_task_kappa()->run_kappa_clover(get_parameters()->get_beta());
+	get_task_kappa()->run_kappa_clover(get_parameters().get_beta());
 
 	return;
 }
@@ -76,7 +76,7 @@ void Gaugefield_heatbath_kappa::perform_tasks(int nheat, int nover, int* nheat_o
 	time_for_heatbath = timer.getTime() / nheat;
 
 	timer.reset();
-	get_task_kappa()->run_kappa_clover(get_parameters()->get_beta());
+	get_task_kappa()->run_kappa_clover(get_parameters().get_beta());
 	timer.add();
 	time_for_kappa = timer.getTime();
 

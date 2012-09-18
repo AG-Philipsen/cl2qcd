@@ -4,6 +4,7 @@
 #include <boost/regex.hpp>
 
 #include "logger.hpp"
+#include "meta/util.hpp"
 
 using namespace std;
 
@@ -11,14 +12,14 @@ void Opencl_Module_Correlator::fill_collect_options(stringstream* collect_option
 {
 	Opencl_Module_Spinors::fill_collect_options(collect_options);
 	//CP: give kappa and its negative value
-	hmc_float kappa_tmp = get_parameters()->get_kappa();
+	hmc_float kappa_tmp = get_parameters().get_kappa();
 	*collect_options << " -DKAPPA=" << kappa_tmp;
 	*collect_options << " -DMKAPPA=" << -kappa_tmp;
 
-	if(get_parameters()->get_use_pointsource() == true)
+	if(get_parameters().get_use_pointsource() == true)
 		*collect_options << " -DNUM_SOURCES=" << 12;
 	else
-		*collect_options << " -DNUM_SOURCES=" << get_parameters()->get_num_sources();
+		*collect_options << " -DNUM_SOURCES=" << get_parameters().get_num_sources();
 
 	return;
 }
@@ -38,12 +39,12 @@ void Opencl_Module_Correlator::fill_kernels()
 	basic_correlator_code = basic_fermion_code;
 	logger.debug() << "Create correlator kernels...";
 
-	if(get_parameters()->get_use_pointsource() == true)
+	if(get_parameters().get_use_pointsource() == true)
 		create_point_source = createKernel("create_point_source") << basic_fermion_code << "spinorfield_point_source.cl";
 	else
 		create_stochastic_source = createKernel("create_stochastic_source") << basic_fermion_code << "spinorfield_stochastic_source.cl";
 
-	switch (get_parameters()->get_corr_dir()) {
+	switch (get_parameters().get_corr_dir()) {
 		case 0 :
 			correlator_ps = createKernel("correlator_ps_t") << basic_fermion_code << "fermionobservables.cl";
 			correlator_sc = createKernel("correlator_sc_t") << basic_fermion_code << "fermionobservables.cl";
@@ -66,7 +67,7 @@ void Opencl_Module_Correlator::fill_kernels()
 			break;
 		default:
 			stringstream errmsg;
-			errmsg << "Could not create correlator kernel as correlator direction " << get_parameters()->get_corr_dir() << " has not been implemented.";
+			errmsg << "Could not create correlator kernel as correlator direction " << get_parameters().get_corr_dir() << " has not been implemented.";
 			throw Print_Error_Message(errmsg.str());
 	}
 
@@ -118,7 +119,7 @@ void Opencl_Module_Correlator::get_work_sizes(const cl_kernel kernel, cl_device_
 	string kernelname = get_kernel_name(kernel);
 	if( kernelname.find("correlator") == 0 ) {
 		if(dev_type == CL_DEVICE_TYPE_GPU) {
-			*ls = get_parameters()->get_ns();
+			*ls = get_parameters().get_nspace();
 			*gs = *ls;
 			*num_groups = 1;
 		} else {
@@ -291,11 +292,11 @@ size_t Opencl_Module_Correlator::get_read_write_size(const char * in)
 	size_t result = Opencl_Module_Spinors::get_read_write_size(in);
 	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
-	size_t D = (*parameters).get_float_size();
+	size_t D = meta::get_float_size(parameters);
 	//this returns the number of entries in an su3-matrix
-	size_t R = (*parameters).get_mat_size();
-	size_t S = get_parameters()->get_spinorfieldsize();
-	size_t Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	size_t R = meta::get_mat_size(parameters);
+	size_t S = meta::get_spinorfieldsize(get_parameters());
+	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers
 	int C = 2;
 	//this is the same as in the function above
@@ -309,65 +310,65 @@ size_t Opencl_Module_Correlator::get_read_write_size(const char * in)
 	if (strcmp(in, "correlator_ps_z") == 0 ) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
-		int num_sources = get_parameters()->get_num_sources();
-		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
-		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		int num_sources = get_parameters().get_num_sources();
+		if(get_parameters().get_corr_dir() == 3) size_buffer = get_parameters().get_nspace();
+		if(get_parameters().get_corr_dir() == 0) size_buffer = get_parameters().get_ntime();
 		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
 	if (strcmp(in, "correlator_sc_z") == 0) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
-		int num_sources = get_parameters()->get_num_sources();
-		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
-		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		int num_sources = get_parameters().get_num_sources();
+		if(get_parameters().get_corr_dir() == 3) size_buffer = get_parameters().get_nspace();
+		if(get_parameters().get_corr_dir() == 0) size_buffer = get_parameters().get_ntime();
 		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
 	if (strcmp(in, "correlator_vx_z") == 0) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
-		int num_sources = get_parameters()->get_num_sources();
-		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
-		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		int num_sources = get_parameters().get_num_sources();
+		if(get_parameters().get_corr_dir() == 3) size_buffer = get_parameters().get_nspace();
+		if(get_parameters().get_corr_dir() == 0) size_buffer = get_parameters().get_ntime();
 		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
 	if (strcmp(in, "correlator_vy_z") == 0) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
-		int num_sources = get_parameters()->get_num_sources();
-		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
-		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		int num_sources = get_parameters().get_num_sources();
+		if(get_parameters().get_corr_dir() == 3) size_buffer = get_parameters().get_nspace();
+		if(get_parameters().get_corr_dir() == 0) size_buffer = get_parameters().get_ntime();
 		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
 	if (strcmp(in, "correlator_vz_z") == 0) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
-		int num_sources = get_parameters()->get_num_sources();
-		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
-		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		int num_sources = get_parameters().get_num_sources();
+		if(get_parameters().get_corr_dir() == 3) size_buffer = get_parameters().get_nspace();
+		if(get_parameters().get_corr_dir() == 0) size_buffer = get_parameters().get_ntime();
 		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
 	if (strcmp(in, "correlator_ax_z") == 0) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
-		int num_sources = get_parameters()->get_num_sources();
-		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
-		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		int num_sources = get_parameters().get_num_sources();
+		if(get_parameters().get_corr_dir() == 3) size_buffer = get_parameters().get_nspace();
+		if(get_parameters().get_corr_dir() == 0) size_buffer = get_parameters().get_ntime();
 		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
 	if (strcmp(in, "correlator_ay_z") == 0) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
-		int num_sources = get_parameters()->get_num_sources();
-		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
-		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		int num_sources = get_parameters().get_num_sources();
+		if(get_parameters().get_corr_dir() == 3) size_buffer = get_parameters().get_nspace();
+		if(get_parameters().get_corr_dir() == 0) size_buffer = get_parameters().get_ntime();
 		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
 	if (strcmp(in, "correlator_az_z") == 0) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
-		int num_sources = get_parameters()->get_num_sources();
-		if(get_parameters()->get_corr_dir() == 3) size_buffer = get_parameters()->get_ns();
-		if(get_parameters()->get_corr_dir() == 0) size_buffer = get_parameters()->get_nt();
+		int num_sources = get_parameters().get_num_sources();
+		if(get_parameters().get_corr_dir() == 3) size_buffer = get_parameters().get_nspace();
+		if(get_parameters().get_corr_dir() == 0) size_buffer = get_parameters().get_ntime();
 		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
 
@@ -378,8 +379,8 @@ uint64_t Opencl_Module_Correlator::get_flop_size(const char * in)
 {
 	uint64_t result = Opencl_Module_Spinors::get_flop_size(in);
 	if (result != 0) return result;
-	uint64_t S = get_parameters()->get_spinorfieldsize();
-	uint64_t Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	size_t S = meta::get_spinorfieldsize(get_parameters());
+	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
 	if (strcmp(in, "create_point_source") == 0) {
 		return 1000000000000000000000000;

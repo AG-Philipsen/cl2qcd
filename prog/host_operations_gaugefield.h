@@ -11,7 +11,7 @@
 #include "types.h"
 #include "host_geometry.h"
 #include "host_random.h"
-#include "inputparameters.h"
+#include "meta/inputparameters.hpp"
 #include <cmath>
 
 /**
@@ -21,7 +21,7 @@
  * @return The local part of the polyakov
  * @param[in] n The spatial index to use
  */
-Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const inputparameters * const parameters);
+Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const meta::Inputparameters& parameters);
 
 /**
  * Calculate the part of the plaquette local to the given coordinates.
@@ -33,7 +33,7 @@ Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const inputparameters * const
  * @param[in] mu The first direction to use
  * @param[in] nu The second direction to use
  */
-Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu, const inputparameters * const parameters);
+Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu, const meta::Inputparameters& parameters);
 
 /**
  * Stores an SU3 matrix to the gaugefield
@@ -44,7 +44,7 @@ Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu,
  * @param[in] timepos Temporal index of the matrix to store
  * @param[in] mu Direction of the matrix to store
  */
-void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, int mu, const inputparameters * const parameters);
+void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, int mu, const meta::Inputparameters& parameters);
 
 /**
  * Returns an SU3 matrix form the gaugefield
@@ -54,7 +54,7 @@ void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, i
  * @param[in] timepos Temporal index of the matrix to retrieve
  * @param[in] mu Direction of the matrix to retrieve
  */
-Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const inputparameters * const parameters);
+Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const meta::Inputparameters& parameters);
 
 Matrixsu3 unit_matrixsu3();
 

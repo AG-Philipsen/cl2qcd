@@ -4,263 +4,265 @@
 
 Matrixsu3 multiply_matrixsu3(const Matrixsu3 p, const Matrixsu3 q)
 {
-  Matrixsu3 out;
+	Matrixsu3 out;
 
-  out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e10.re + p.e02.re * q.e20.re
-    - p.e00.im * q.e00.im - p.e01.im * q.e10.im - p.e02.im * q.e20.im;
-  out.e00.im = p.e00.re * q.e00.im + p.e01.re * q.e10.im + p.e02.re * q.e20.im
-    + p.e00.im * q.e00.re + p.e01.im * q.e10.re + p.e02.im * q.e20.re;
+	out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e10.re + p.e02.re * q.e20.re
+	             - p.e00.im * q.e00.im - p.e01.im * q.e10.im - p.e02.im * q.e20.im;
+	out.e00.im = p.e00.re * q.e00.im + p.e01.re * q.e10.im + p.e02.re * q.e20.im
+	             + p.e00.im * q.e00.re + p.e01.im * q.e10.re + p.e02.im * q.e20.re;
 
-  out.e01.re = p.e00.re * q.e01.re + p.e01.re * q.e11.re + p.e02.re * q.e21.re
-    - p.e00.im * q.e01.im - p.e01.im * q.e11.im - p.e02.im * q.e21.im;
-  out.e01.im = p.e00.re * q.e01.im + p.e01.re * q.e11.im + p.e02.re * q.e21.im
-    + p.e00.im * q.e01.re + p.e01.im * q.e11.re + p.e02.im * q.e21.re;
+	out.e01.re = p.e00.re * q.e01.re + p.e01.re * q.e11.re + p.e02.re * q.e21.re
+	             - p.e00.im * q.e01.im - p.e01.im * q.e11.im - p.e02.im * q.e21.im;
+	out.e01.im = p.e00.re * q.e01.im + p.e01.re * q.e11.im + p.e02.re * q.e21.im
+	             + p.e00.im * q.e01.re + p.e01.im * q.e11.re + p.e02.im * q.e21.re;
 
-  out.e02.re = p.e00.re * q.e02.re + p.e01.re * q.e12.re + p.e02.re * q.e22.re
-    - p.e00.im * q.e02.im - p.e01.im * q.e12.im - p.e02.im * q.e22.im;
-  out.e02.im = p.e00.re * q.e02.im + p.e01.re * q.e12.im + p.e02.re * q.e22.im
-    + p.e00.im * q.e02.re + p.e01.im * q.e12.re + p.e02.im * q.e22.re;
+	out.e02.re = p.e00.re * q.e02.re + p.e01.re * q.e12.re + p.e02.re * q.e22.re
+	             - p.e00.im * q.e02.im - p.e01.im * q.e12.im - p.e02.im * q.e22.im;
+	out.e02.im = p.e00.re * q.e02.im + p.e01.re * q.e12.im + p.e02.re * q.e22.im
+	             + p.e00.im * q.e02.re + p.e01.im * q.e12.re + p.e02.im * q.e22.re;
 
-  out.e10.re = p.e10.re * q.e00.re + p.e11.re * q.e10.re + p.e12.re * q.e20.re
-    - p.e10.im * q.e00.im - p.e11.im * q.e10.im - p.e12.im * q.e20.im;
-  out.e10.im = p.e10.re * q.e00.im + p.e11.re * q.e10.im + p.e12.re * q.e20.im
-    + p.e10.im * q.e00.re + p.e11.im * q.e10.re + p.e12.im * q.e20.re;
+	out.e10.re = p.e10.re * q.e00.re + p.e11.re * q.e10.re + p.e12.re * q.e20.re
+	             - p.e10.im * q.e00.im - p.e11.im * q.e10.im - p.e12.im * q.e20.im;
+	out.e10.im = p.e10.re * q.e00.im + p.e11.re * q.e10.im + p.e12.re * q.e20.im
+	             + p.e10.im * q.e00.re + p.e11.im * q.e10.re + p.e12.im * q.e20.re;
 
-  out.e11.re = p.e10.re * q.e01.re + p.e11.re * q.e11.re + p.e12.re * q.e21.re
-    - p.e10.im * q.e01.im - p.e11.im * q.e11.im - p.e12.im * q.e21.im;
-  out.e11.im = p.e10.re * q.e01.im + p.e11.re * q.e11.im + p.e12.re * q.e21.im
-    + p.e10.im * q.e01.re + p.e11.im * q.e11.re + p.e12.im * q.e21.re;
+	out.e11.re = p.e10.re * q.e01.re + p.e11.re * q.e11.re + p.e12.re * q.e21.re
+	             - p.e10.im * q.e01.im - p.e11.im * q.e11.im - p.e12.im * q.e21.im;
+	out.e11.im = p.e10.re * q.e01.im + p.e11.re * q.e11.im + p.e12.re * q.e21.im
+	             + p.e10.im * q.e01.re + p.e11.im * q.e11.re + p.e12.im * q.e21.re;
 
-  out.e12.re = p.e10.re * q.e02.re + p.e11.re * q.e12.re + p.e12.re * q.e22.re
-    - p.e10.im * q.e02.im - p.e11.im * q.e12.im - p.e12.im * q.e22.im;
-  out.e12.im = p.e10.re * q.e02.im + p.e11.re * q.e12.im + p.e12.re * q.e22.im
-    + p.e10.im * q.e02.re + p.e11.im * q.e12.re + p.e12.im * q.e22.re;
+	out.e12.re = p.e10.re * q.e02.re + p.e11.re * q.e12.re + p.e12.re * q.e22.re
+	             - p.e10.im * q.e02.im - p.e11.im * q.e12.im - p.e12.im * q.e22.im;
+	out.e12.im = p.e10.re * q.e02.im + p.e11.re * q.e12.im + p.e12.re * q.e22.im
+	             + p.e10.im * q.e02.re + p.e11.im * q.e12.re + p.e12.im * q.e22.re;
 
-  out.e20.re = p.e20.re * q.e00.re + p.e21.re * q.e10.re + p.e22.re * q.e20.re
-    - p.e20.im * q.e00.im - p.e21.im * q.e10.im - p.e22.im * q.e20.im;
-  out.e20.im = p.e20.re * q.e00.im + p.e21.re * q.e10.im + p.e22.re * q.e20.im
-    + p.e20.im * q.e00.re + p.e21.im * q.e10.re + p.e22.im * q.e20.re;
+	out.e20.re = p.e20.re * q.e00.re + p.e21.re * q.e10.re + p.e22.re * q.e20.re
+	             - p.e20.im * q.e00.im - p.e21.im * q.e10.im - p.e22.im * q.e20.im;
+	out.e20.im = p.e20.re * q.e00.im + p.e21.re * q.e10.im + p.e22.re * q.e20.im
+	             + p.e20.im * q.e00.re + p.e21.im * q.e10.re + p.e22.im * q.e20.re;
 
-  out.e21.re = p.e20.re * q.e01.re + p.e21.re * q.e11.re + p.e22.re * q.e21.re
-    - p.e20.im * q.e01.im - p.e21.im * q.e11.im - p.e22.im * q.e21.im;
-  out.e21.im = p.e20.re * q.e01.im + p.e21.re * q.e11.im + p.e22.re * q.e21.im
-    + p.e20.im * q.e01.re + p.e21.im * q.e11.re + p.e22.im * q.e21.re;
+	out.e21.re = p.e20.re * q.e01.re + p.e21.re * q.e11.re + p.e22.re * q.e21.re
+	             - p.e20.im * q.e01.im - p.e21.im * q.e11.im - p.e22.im * q.e21.im;
+	out.e21.im = p.e20.re * q.e01.im + p.e21.re * q.e11.im + p.e22.re * q.e21.im
+	             + p.e20.im * q.e01.re + p.e21.im * q.e11.re + p.e22.im * q.e21.re;
 
-  out.e22.re = p.e20.re * q.e02.re + p.e21.re * q.e12.re + p.e22.re * q.e22.re
-    - p.e20.im * q.e02.im - p.e21.im * q.e12.im - p.e22.im * q.e22.im;
-  out.e22.im = p.e20.re * q.e02.im + p.e21.re * q.e12.im + p.e22.re * q.e22.im
-    + p.e20.im * q.e02.re + p.e21.im * q.e12.re + p.e22.im * q.e22.re;
+	out.e22.re = p.e20.re * q.e02.re + p.e21.re * q.e12.re + p.e22.re * q.e22.re
+	             - p.e20.im * q.e02.im - p.e21.im * q.e12.im - p.e22.im * q.e22.im;
+	out.e22.im = p.e20.re * q.e02.im + p.e21.re * q.e12.im + p.e22.re * q.e22.im
+	             + p.e20.im * q.e02.re + p.e21.im * q.e12.re + p.e22.im * q.e22.re;
 
-  return out;
+	return out;
 }
 
 Matrixsu3 multiply_matrixsu3_dagger(const Matrixsu3 p, const Matrixsu3 q)
 {
-  Matrixsu3 out;
+	Matrixsu3 out;
 
-  out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e01.re + p.e02.re * q.e02.re
-    + p.e00.im * q.e00.im + p.e01.im * q.e01.im + p.e02.im * q.e02.im;
-  out.e00.im = -p.e00.re * q.e00.im - p.e01.re * q.e01.im - p.e02.re * q.e02.im
-    + p.e00.im * q.e00.re + p.e01.im * q.e01.re + p.e02.im * q.e02.re;
+	out.e00.re = p.e00.re * q.e00.re + p.e01.re * q.e01.re + p.e02.re * q.e02.re
+	             + p.e00.im * q.e00.im + p.e01.im * q.e01.im + p.e02.im * q.e02.im;
+	out.e00.im = -p.e00.re * q.e00.im - p.e01.re * q.e01.im - p.e02.re * q.e02.im
+	             + p.e00.im * q.e00.re + p.e01.im * q.e01.re + p.e02.im * q.e02.re;
 
-  out.e01.re = p.e00.re * q.e10.re + p.e01.re * q.e11.re + p.e02.re * q.e12.re
-    + p.e00.im * q.e10.im + p.e01.im * q.e11.im + p.e02.im * q.e12.im;
-  out.e01.im = -p.e00.re * q.e10.im - p.e01.re * q.e11.im - p.e02.re * q.e12.im
-    + p.e00.im * q.e10.re + p.e01.im * q.e11.re + p.e02.im * q.e12.re;
+	out.e01.re = p.e00.re * q.e10.re + p.e01.re * q.e11.re + p.e02.re * q.e12.re
+	             + p.e00.im * q.e10.im + p.e01.im * q.e11.im + p.e02.im * q.e12.im;
+	out.e01.im = -p.e00.re * q.e10.im - p.e01.re * q.e11.im - p.e02.re * q.e12.im
+	             + p.e00.im * q.e10.re + p.e01.im * q.e11.re + p.e02.im * q.e12.re;
 
-  out.e02.re = p.e00.re * q.e20.re + p.e01.re * q.e21.re + p.e02.re * q.e22.re
-    + p.e00.im * q.e20.im + p.e01.im * q.e21.im + p.e02.im * q.e22.im;
-  out.e02.im = -p.e00.re * q.e20.im - p.e01.re * q.e21.im - p.e02.re * q.e22.im
-    + p.e00.im * q.e20.re + p.e01.im * q.e21.re + p.e02.im * q.e22.re;
+	out.e02.re = p.e00.re * q.e20.re + p.e01.re * q.e21.re + p.e02.re * q.e22.re
+	             + p.e00.im * q.e20.im + p.e01.im * q.e21.im + p.e02.im * q.e22.im;
+	out.e02.im = -p.e00.re * q.e20.im - p.e01.re * q.e21.im - p.e02.re * q.e22.im
+	             + p.e00.im * q.e20.re + p.e01.im * q.e21.re + p.e02.im * q.e22.re;
 
-  out.e10.re = p.e10.re * q.e00.re + p.e11.re * q.e01.re + p.e12.re * q.e02.re
-    + p.e10.im * q.e00.im + p.e11.im * q.e01.im + p.e12.im * q.e02.im;
-  out.e10.im = -p.e10.re * q.e00.im - p.e11.re * q.e01.im - p.e12.re * q.e02.im
-    + p.e10.im * q.e00.re + p.e11.im * q.e01.re + p.e12.im * q.e02.re;
+	out.e10.re = p.e10.re * q.e00.re + p.e11.re * q.e01.re + p.e12.re * q.e02.re
+	             + p.e10.im * q.e00.im + p.e11.im * q.e01.im + p.e12.im * q.e02.im;
+	out.e10.im = -p.e10.re * q.e00.im - p.e11.re * q.e01.im - p.e12.re * q.e02.im
+	             + p.e10.im * q.e00.re + p.e11.im * q.e01.re + p.e12.im * q.e02.re;
 
-  out.e11.re = p.e10.re * q.e10.re + p.e11.re * q.e11.re + p.e12.re * q.e12.re
-    + p.e10.im * q.e10.im + p.e11.im * q.e11.im + p.e12.im * q.e12.im;
-  out.e11.im = -p.e10.re * q.e10.im - p.e11.re * q.e11.im - p.e12.re * q.e12.im
-    + p.e10.im * q.e10.re + p.e11.im * q.e11.re + p.e12.im * q.e12.re;
+	out.e11.re = p.e10.re * q.e10.re + p.e11.re * q.e11.re + p.e12.re * q.e12.re
+	             + p.e10.im * q.e10.im + p.e11.im * q.e11.im + p.e12.im * q.e12.im;
+	out.e11.im = -p.e10.re * q.e10.im - p.e11.re * q.e11.im - p.e12.re * q.e12.im
+	             + p.e10.im * q.e10.re + p.e11.im * q.e11.re + p.e12.im * q.e12.re;
 
-  out.e12.re = p.e10.re * q.e20.re + p.e11.re * q.e21.re + p.e12.re * q.e22.re
-    + p.e10.im * q.e20.im + p.e11.im * q.e21.im + p.e12.im * q.e22.im;
-  out.e12.im = -p.e10.re * q.e20.im - p.e11.re * q.e21.im - p.e12.re * q.e22.im
-    + p.e10.im * q.e20.re + p.e11.im * q.e21.re + p.e12.im * q.e22.re;
+	out.e12.re = p.e10.re * q.e20.re + p.e11.re * q.e21.re + p.e12.re * q.e22.re
+	             + p.e10.im * q.e20.im + p.e11.im * q.e21.im + p.e12.im * q.e22.im;
+	out.e12.im = -p.e10.re * q.e20.im - p.e11.re * q.e21.im - p.e12.re * q.e22.im
+	             + p.e10.im * q.e20.re + p.e11.im * q.e21.re + p.e12.im * q.e22.re;
 
-  out.e20.re = p.e20.re * q.e00.re + p.e21.re * q.e01.re + p.e22.re * q.e02.re
-    + p.e20.im * q.e00.im + p.e21.im * q.e01.im + p.e22.im * q.e02.im;
-  out.e20.im = -p.e20.re * q.e00.im - p.e21.re * q.e01.im - p.e22.re * q.e02.im
-    + p.e20.im * q.e00.re + p.e21.im * q.e01.re + p.e22.im * q.e02.re;
+	out.e20.re = p.e20.re * q.e00.re + p.e21.re * q.e01.re + p.e22.re * q.e02.re
+	             + p.e20.im * q.e00.im + p.e21.im * q.e01.im + p.e22.im * q.e02.im;
+	out.e20.im = -p.e20.re * q.e00.im - p.e21.re * q.e01.im - p.e22.re * q.e02.im
+	             + p.e20.im * q.e00.re + p.e21.im * q.e01.re + p.e22.im * q.e02.re;
 
-  out.e21.re = p.e20.re * q.e10.re + p.e21.re * q.e11.re + p.e22.re * q.e12.re
-    + p.e20.im * q.e10.im + p.e21.im * q.e11.im + p.e22.im * q.e12.im;
-  out.e21.im = -p.e20.re * q.e10.im - p.e21.re * q.e11.im - p.e22.re * q.e12.im
-    + p.e20.im * q.e10.re + p.e21.im * q.e11.re + p.e22.im * q.e12.re;
+	out.e21.re = p.e20.re * q.e10.re + p.e21.re * q.e11.re + p.e22.re * q.e12.re
+	             + p.e20.im * q.e10.im + p.e21.im * q.e11.im + p.e22.im * q.e12.im;
+	out.e21.im = -p.e20.re * q.e10.im - p.e21.re * q.e11.im - p.e22.re * q.e12.im
+	             + p.e20.im * q.e10.re + p.e21.im * q.e11.re + p.e22.im * q.e12.re;
 
-  out.e22.re = p.e20.re * q.e20.re + p.e21.re * q.e21.re + p.e22.re * q.e22.re
-    + p.e20.im * q.e20.im + p.e21.im * q.e21.im + p.e22.im * q.e22.im;
-  out.e22.im = -p.e20.re * q.e20.im - p.e21.re * q.e21.im - p.e22.re * q.e22.im
-    + p.e20.im * q.e20.re + p.e21.im * q.e21.re + p.e22.im * q.e22.re;
+	out.e22.re = p.e20.re * q.e20.re + p.e21.re * q.e21.re + p.e22.re * q.e22.re
+	             + p.e20.im * q.e20.im + p.e21.im * q.e21.im + p.e22.im * q.e22.im;
+	out.e22.im = -p.e20.re * q.e20.im - p.e21.re * q.e21.im - p.e22.re * q.e22.im
+	             + p.e20.im * q.e20.re + p.e21.im * q.e21.re + p.e22.im * q.e22.re;
 
-  return out;
+	return out;
 }
 
 Matrixsu3 unit_matrixsu3()
 {
-  Matrixsu3 out;
-  out.e00.re = 1.;
-  out.e00.im = 0.;
-  out.e01.re = 0.;
-  out.e01.im = 0.;
-  out.e02.re = 0.;
-  out.e02.im = 0.;
+	Matrixsu3 out;
+	out.e00.re = 1.;
+	out.e00.im = 0.;
+	out.e01.re = 0.;
+	out.e01.im = 0.;
+	out.e02.re = 0.;
+	out.e02.im = 0.;
 
-  out.e10.re = 0.;
-  out.e10.im = 0.;
-  out.e11.re = 1.;
-  out.e11.im = 0.;
-  out.e12.re = 0.;
-  out.e12.im = 0.;
+	out.e10.re = 0.;
+	out.e10.im = 0.;
+	out.e11.re = 1.;
+	out.e11.im = 0.;
+	out.e12.re = 0.;
+	out.e12.im = 0.;
 
-  out.e20.re = 0.;
-  out.e20.im = 0.;
-  out.e21.re = 0.;
-  out.e21.im = 0.;
-  out.e22.re = 1.;
-  out.e22.im = 0.;
+	out.e20.re = 0.;
+	out.e20.im = 0.;
+	out.e21.re = 0.;
+	out.e21.im = 0.;
+	out.e22.re = 1.;
+	out.e22.im = 0.;
 
-  return out;
+	return out;
 }
 
 Matrixsu3 random_matrixsu3()
 {
-  //this is like project_su3 from operations_gaugefield.cl, only that you do it with gaussian su3 vectors
-  //taken also from the tmlqcd code
-  Matrixsu3 out;
-  hmc_complex a[NC];
-  hmc_complex b[NC];
-  hmc_complex c[NC];
+	//this is like project_su3 from operations_gaugefield.cl, only that you do it with gaussian su3 vectors
+	//taken also from the tmlqcd code
+	Matrixsu3 out;
+	hmc_complex a[NC];
+	hmc_complex b[NC];
+	hmc_complex c[NC];
 
-  //get gaussian vector
-  gaussianComplexVector(a, NC, 1.);
-  //get norm 1
-  hmc_float norm = 0;
-  for(int i = 0; i<NC; i++){
-    norm += a[i].re*a[i].re + a[i].im*a[i].im;
-  }
-  for(int i = 0; i<NC; i++){
-    a[i].re /=sqrt(norm);
-    a[i].im /=sqrt(norm);
-  }
+	//get gaussian vector
+	gaussianComplexVector(a, NC, 1.);
+	//get norm 1
+	hmc_float norm = 0;
+	for(int i = 0; i < NC; i++) {
+		norm += a[i].re * a[i].re + a[i].im * a[i].im;
+	}
+	for(int i = 0; i < NC; i++) {
+		a[i].re /= sqrt(norm);
+		a[i].im /= sqrt(norm);
+	}
 
-  for(;;){
-    //get another gaussian vector
-    gaussianComplexVector(b, NC, 1.);
-    //get norm 1                                                                                                                                            
-    norm = 0;
-    for(int i = 0; i<NC; i++){
-      norm += b[i].re*b[i].re + b[i].im*b[i].im;
-    }
-    for(int i = 0; i<NC; i++){
-      b[i].re /=sqrt(norm);
-      b[i].im /=sqrt(norm);
-    }
+	for(;;) {
+		//get another gaussian vector
+		gaussianComplexVector(b, NC, 1.);
+		//get norm 1
+		norm = 0;
+		for(int i = 0; i < NC; i++) {
+			norm += b[i].re * b[i].re + b[i].im * b[i].im;
+		}
+		for(int i = 0; i < NC; i++) {
+			b[i].re /= sqrt(norm);
+			b[i].im /= sqrt(norm);
+		}
 
-    //calculate a* times b
-    hmc_complex tmp = {0.,0.};
-    for(int i = 0; i<NC; i++){
-      tmp.re += a[i].re*b[i].re + a[i].im*b[i].im;
-      tmp.im += - a[i].im*b[i].re + a[i].re*b[i].im;
-    }
+		//calculate a* times b
+		hmc_complex tmp = {0., 0.};
+		for(int i = 0; i < NC; i++) {
+			tmp.re += a[i].re * b[i].re + a[i].im * b[i].im;
+			tmp.im += - a[i].im * b[i].re + a[i].re * b[i].im;
+		}
 
-    //project: b = tmp * a
-    b[0].re-=(tmp.re*a[0].re-tmp.im*a[0].im); 
-    b[0].im-=(tmp.re*a[0].im+tmp.im*a[0].re); 
-    b[1].re-=(tmp.re*a[1].re-tmp.im*a[1].im); 
-    b[1].im-=(tmp.re*a[1].im+tmp.im*a[1].re); 
-    b[2].re-=(tmp.re*a[2].re-tmp.im*a[2].im); 
-    b[2].im-=(tmp.re*a[2].im+tmp.im*a[2].re);
+		//project: b = tmp * a
+		b[0].re -= (tmp.re * a[0].re - tmp.im * a[0].im);
+		b[0].im -= (tmp.re * a[0].im + tmp.im * a[0].re);
+		b[1].re -= (tmp.re * a[1].re - tmp.im * a[1].im);
+		b[1].im -= (tmp.re * a[1].im + tmp.im * a[1].re);
+		b[2].re -= (tmp.re * a[2].re - tmp.im * a[2].im);
+		b[2].im -= (tmp.re * a[2].im + tmp.im * a[2].re);
 
-    //get norm
-    norm = 0;
-    for(int i = 0; i<NC; i++){
-      norm += b[i].re*b[i].re + b[i].im*b[i].im;
-    }
-    norm = sqrt(norm);
-    
-    //check if norm is zero
-    if (1.0!=(1.0+norm))
-      break;
-  }
+		//get norm
+		norm = 0;
+		for(int i = 0; i < NC; i++) {
+			norm += b[i].re * b[i].re + b[i].im * b[i].im;
+		}
+		norm = sqrt(norm);
 
-  // b = b/norm
-  hmc_float fact=1.0/norm;
-  b[0].re=fact*b[0].re;
-  b[0].im=fact*b[0].im;
-  b[1].re=fact*b[1].re;
-  b[1].im=fact*b[1].im;
-  b[2].re=fact*b[2].re;
-  b[2].im=fact*b[2].im;
+		//check if norm is zero
+		if (1.0 != (1.0 + norm))
+			break;
+	}
 
-  //3rd vector, this is reconstruct12!!
-  c[0].re= (a[1].re*b[2].re-a[1].im*b[2].im)
-    -(a[2].re*b[1].re-a[2].im*b[1].im);
-  c[0].im=-(a[1].re*b[2].im+a[1].im*b[2].re)
-    +(a[2].re*b[1].im+a[2].im*b[1].re);
+	// b = b/norm
+	hmc_float fact = 1.0 / norm;
+	b[0].re = fact * b[0].re;
+	b[0].im = fact * b[0].im;
+	b[1].re = fact * b[1].re;
+	b[1].im = fact * b[1].im;
+	b[2].re = fact * b[2].re;
+	b[2].im = fact * b[2].im;
 
-  c[1].re= (a[2].re*b[0].re-a[2].im*b[0].im)
-    -(a[0].re*b[2].re-a[0].im*b[2].im);
-  c[1].im=-(a[2].re*b[0].im+a[2].im*b[0].re)
-    +(a[0].re*b[2].im+a[0].im*b[2].re);
+	//3rd vector, this is reconstruct12!!
+	c[0].re = (a[1].re * b[2].re - a[1].im * b[2].im)
+	          - (a[2].re * b[1].re - a[2].im * b[1].im);
+	c[0].im = -(a[1].re * b[2].im + a[1].im * b[2].re)
+	          + (a[2].re * b[1].im + a[2].im * b[1].re);
 
-  c[2].re= (a[0].re*b[1].re-a[0].im*b[1].im)
-    -(a[1].re*b[0].re-a[1].im*b[0].im);
-  c[2].im=-(a[0].re*b[1].im+a[0].im*b[1].re)
-    +(a[1].re*b[0].im+a[1].im*b[0].re);
+	c[1].re = (a[2].re * b[0].re - a[2].im * b[0].im)
+	          - (a[0].re * b[2].re - a[0].im * b[2].im);
+	c[1].im = -(a[2].re * b[0].im + a[2].im * b[0].re)
+	          + (a[0].re * b[2].im + a[0].im * b[2].re);
 
-  //set values of matrix
-  out.e00.re = a[0].re;
-  out.e00.im = a[0].im;
-  out.e01.re = a[1].re;
-  out.e01.im = a[1].im;
-  out.e02.re = a[2].re;
-  out.e02.im = a[2].im;
+	c[2].re = (a[0].re * b[1].re - a[0].im * b[1].im)
+	          - (a[1].re * b[0].re - a[1].im * b[0].im);
+	c[2].im = -(a[0].re * b[1].im + a[0].im * b[1].re)
+	          + (a[1].re * b[0].im + a[1].im * b[0].re);
 
-  out.e10.re = b[0].re;
-  out.e10.im = b[0].im;
-  out.e11.re = b[1].re;
-  out.e11.im = b[1].im;
-  out.e12.re = b[2].re;
-  out.e12.im = b[2].im;
+	//set values of matrix
+	out.e00.re = a[0].re;
+	out.e00.im = a[0].im;
+	out.e01.re = a[1].re;
+	out.e01.im = a[1].im;
+	out.e02.re = a[2].re;
+	out.e02.im = a[2].im;
 
-  out.e20.re = c[0].re;
-  out.e20.im = c[0].im;
-  out.e21.re = c[1].re;
-  out.e21.im = c[1].im;
-  out.e22.re = c[2].re;
-  out.e22.im = c[2].im;
+	out.e10.re = b[0].re;
+	out.e10.im = b[0].im;
+	out.e11.re = b[1].re;
+	out.e11.im = b[1].im;
+	out.e12.re = b[2].re;
+	out.e12.im = b[2].im;
 
-  return out;
+	out.e20.re = c[0].re;
+	out.e20.im = c[0].im;
+	out.e21.re = c[1].re;
+	out.e21.im = c[1].im;
+	out.e22.re = c[2].re;
+	out.e22.im = c[2].im;
+
+	return out;
 }
 
-Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const inputparameters * const parameters){
+Matrixsu3 get_matrixsu3(Matrixsu3 * in, int spacepos, int timepos, int mu, const meta::Inputparameters& parameters)
+{
 	Matrixsu3 tmp;
 	size_t link_pos = get_global_link_pos(mu, spacepos, timepos, parameters);
 	tmp = in[link_pos];
 	return tmp;
 }
 
-void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, int mu, const inputparameters * const parameters){
-        size_t link_pos = get_global_link_pos(mu, spacepos, timepos, parameters);
+void put_matrixsu3(Matrixsu3 * field, Matrixsu3 in, int spacepos, int timepos, int mu, const meta::Inputparameters& parameters)
+{
+	size_t link_pos = get_global_link_pos(mu, spacepos, timepos, parameters);
 	field[link_pos] = in;
 }
 
-Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const inputparameters * const parameters)
+Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const meta::Inputparameters& parameters)
 {
-        Matrixsu3 res, prod;
+	Matrixsu3 res, prod;
 	res = unit_matrixsu3();
-	for(int t = 0; t < parameters->get_nt(); t++) {
+	for(int t = 0; t < parameters.get_ntime(); t++) {
 		prod = get_matrixsu3(field, n, t, TDIR, parameters);
 		res = multiply_matrixsu3(res, prod);
 	}
@@ -268,9 +270,9 @@ Matrixsu3 local_polyakov(Matrixsu3 * field, int n, const inputparameters * const
 }
 
 //CP: I introduced explicit calculations of the neighbors because this does not rely on any geometric conventions!
-Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu, const inputparameters * const parameters)
+Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu, const meta::Inputparameters& parameters)
 {
-        Matrixsu3 res, tmp;
+	Matrixsu3 res, tmp;
 	//coordinates of neighbors
 	int coord[NDIM];
 	coord[TDIR] = coord_in[TDIR];
@@ -279,9 +281,9 @@ Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu,
 	coord[ZDIR] = coord_in[ZDIR];
 	//spatial index
 	int n;
-	
-	const size_t NTIME = parameters->get_nt();
-	const size_t NSPACE = parameters->get_ns();
+
+	const size_t NTIME = parameters.get_ntime();
+	const size_t NSPACE = parameters.get_nspace();
 	//u_mu(x)
 	n = get_nspace(coord_in, parameters);
 	res = get_matrixsu3(field, n, coord[TDIR], mu, parameters);
@@ -303,19 +305,19 @@ Matrixsu3 local_plaquette(Matrixsu3 * field, int coord_in[NDIM], int mu, int nu,
 	if(nu == TDIR) {
 		coord[nu] = (coord_in[nu] + 1) % NTIME;
 		n = get_nspace(coord, parameters);
-	        tmp = get_matrixsu3(field, n, coord[nu], mu, parameters);
+		tmp = get_matrixsu3(field, n, coord[nu], mu, parameters);
 		coord[nu] = coord_in[nu];
 	} else {
 		coord[nu] = (coord_in[nu] + 1) % NSPACE;
 		int newn = get_nspace(coord, parameters);
-	        tmp = get_matrixsu3(field, newn, coord[TDIR], mu, parameters);
+		tmp = get_matrixsu3(field, newn, coord[TDIR], mu, parameters);
 		coord[nu] = coord_in[nu];
 	}
 	res = multiply_matrixsu3_dagger(res, tmp);
 
 	//adjoint(u_nu(x))
 	n = get_nspace(coord_in, parameters);
-        tmp = get_matrixsu3(field, n, coord[TDIR], nu, parameters);
+	tmp = get_matrixsu3(field, n, coord[TDIR], nu, parameters);
 	res = multiply_matrixsu3_dagger(res, tmp);
 
 	return res;

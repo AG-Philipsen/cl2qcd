@@ -15,7 +15,6 @@
 #include "globaldefs.h"
 #include "types.h"
 #include "host_operations_gaugefield.h"
-#include "inputparameters.h"
 #include "host_readgauge.h"
 #include "host_writegaugefield.h"
 #include "host_use_timer.h"
@@ -33,12 +32,6 @@
 
 #include "logger.hpp"
 
-
-/**
- * Version number.
- */
-extern string const version;
-
 /**
  * Class for the gaugefield. Includes initialization, device management for two devices doing a heatbath and tk calculation.
  *
@@ -46,6 +39,11 @@ extern string const version;
  */
 class Gaugefield_heatbath : public Gaugefield_hybrid {
 public:
+	/**
+	 * Create a gaugefield for the given parameters
+	 */
+	Gaugefield_heatbath(const meta::Inputparameters& params)
+		: Gaugefield_hybrid(params) { };
 	//init functions
 	/**
 	 * Initialize tasks

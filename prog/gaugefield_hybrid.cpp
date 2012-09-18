@@ -1,6 +1,8 @@
 #include "gaugefield_hybrid.h"
 
-void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type, inputparameters* input_parameters)
+#include "meta/util.hpp"
+
+void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type)
 {
 
 	logger.trace() << "Initialize gaugefield";
@@ -8,9 +10,6 @@ void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type, i
 	//how many tasks (devices with different purpose) do we need:
 	set_num_tasks(numtasks);
 	//LZ: for now assume that there is only one device per task
-
-	//input parameters
-	set_parameters(input_parameters);
 
 	//allocate memory for private gaugefield on host and initialize (cold start, read in, future: hot start)
 	sgf = new Matrixsu3[get_num_gaugefield_elems()];
@@ -42,12 +41,12 @@ void Gaugefield_hybrid::init_devicetypearray(cl_device_type primary_device_type)
 	} else if (get_num_tasks() == 2) {
 		devicetypes[0] = primary_device_type;
 		if(primary_device_type == CL_DEVICE_TYPE_GPU) {
-			if(get_parameters()->get_num_dev() == 1)
+			if(get_parameters().get_device_count() == 1)
 				devicetypes[1] = CL_DEVICE_TYPE_GPU;
 			else
 				devicetypes[1] = CL_DEVICE_TYPE_CPU;
 		} else {
-			if(get_parameters()->get_num_dev() == 1)
+			if(get_parameters().get_device_count() == 1)
 				devicetypes[1] = CL_DEVICE_TYPE_CPU;
 			else
 				devicetypes[1] = CL_DEVICE_TYPE_GPU;
@@ -151,10 +150,10 @@ void Gaugefield_hybrid::init_opencl()
 			logger.warn() << "Set of devices could not be mapped properly. Try what happens..." ;
 	}
 
-	int len = min( get_num_tasks(), get_num_devices() );
+	int len = std::min( get_num_tasks(), get_num_devices() );
 	queue                   = new cl_command_queue [get_num_tasks()];
 	devices                 = new cl_device_id     [len];
-	device_double_extension = new string  [len];
+	device_double_extension = new std::string  [len];
 	max_compute_units       = new cl_uint [len];
 
 	for(int ntask = 0; ntask < len; ntask++) {
@@ -242,8 +241,8 @@ void Gaugefield_hybrid::init_tasks()
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
 		//this is initialized with length 1, meaning one assumes one device per task
-		opencl_modules[ntask] = new Opencl_Module[1];
-		opencl_modules[ntask]->init(queue[ntask], get_parameters(), max_compute_units[ntask], get_double_ext(ntask), ntask);
+		opencl_modules[ntask] = new Opencl_Module(parameters);
+		opencl_modules[ntask]->init(queue[ntask], max_compute_units[ntask], get_double_ext(ntask), ntask);
 	}
 }
 
@@ -268,7 +267,7 @@ void Gaugefield_hybrid::delete_variables()
 	delete [] devicetypes;
 
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-		delete [] opencl_modules[ntask];
+		delete opencl_modules[ntask];
 	}
 	delete [] opencl_modules;
 }
@@ -298,27 +297,30 @@ void Gaugefield_hybrid::finalize_opencl()
 
 void Gaugefield_hybrid::init_gaugefield()
 {
-	if((get_parameters())->get_startcondition() == START_FROM_SOURCE) {
-		sourcefileparameters parameters_source;
-		//tmp hmc_gaugefield for filetransfer
-		hmc_float * gaugefield_tmp;
-		gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * parameters->get_nt() * parameters->get_volspace());
-		parameters_source.readsourcefile(&(get_parameters()->sourcefile)[0], get_parameters()->get_prec(), &gaugefield_tmp);
-		copy_gaugefield_from_ildg_format(get_sgf(), gaugefield_tmp, parameters_source.num_entries_source, parameters);
-		free(gaugefield_tmp);
-	}
-	if(get_parameters()->get_startcondition() == COLD_START) {
-		set_gaugefield_cold(get_sgf());
-	}
-	if(get_parameters()->get_startcondition() == HOT_START) {
-		set_gaugefield_hot(get_sgf());
+	switch(get_parameters().get_startcondition()) {
+		case meta::Inputparameters::start_from_source: {
+			sourcefileparameters parameters_source;
+			//tmp hmc_gaugefield for filetransfer
+			hmc_float * gaugefield_tmp;
+			gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * parameters.get_ntime() * meta::get_volspace(parameters));
+			parameters_source.readsourcefile(get_parameters().get_sourcefile().c_str(), get_parameters().get_precision(), &gaugefield_tmp);
+			copy_gaugefield_from_ildg_format(get_sgf(), gaugefield_tmp, parameters_source.num_entries_source);
+			free(gaugefield_tmp);
+		}
+		break;
+		case meta::Inputparameters::cold_start:
+			set_gaugefield_cold(get_sgf());
+			break;
+		case meta::Inputparameters::hot_start:
+			set_gaugefield_hot(get_sgf());
+			break;
 	}
 }
 
 void Gaugefield_hybrid::set_gaugefield_cold(Matrixsu3 * field)
 {
-	for(int t = 0; t < parameters->get_nt(); t++) {
-		for(int n = 0; n < parameters->get_volspace(); n++) {
+	for(int t = 0; t < parameters.get_ntime(); t++) {
+		for(size_t n = 0; n < meta::get_volspace(parameters); n++) {
 			for(int mu = 0; mu < NDIM; mu++) {
 				const Matrixsu3 tmp = unit_matrixsu3();
 				set_to_gaugefield(field, mu, n, t, tmp);
@@ -329,8 +331,8 @@ void Gaugefield_hybrid::set_gaugefield_cold(Matrixsu3 * field)
 
 void Gaugefield_hybrid::set_gaugefield_hot(Matrixsu3 * field)
 {
-	for(int t = 0; t < parameters->get_nt(); t++) {
-		for(int n = 0; n < parameters->get_volspace(); n++) {
+	for(int t = 0; t < parameters.get_ntime(); t++) {
+		for(size_t n = 0; n < meta::get_volspace(parameters); n++) {
 			for(int mu = 0; mu < NDIM; mu++) {
 				const Matrixsu3 tmp = random_matrixsu3();
 				set_to_gaugefield(field, mu, n, t, tmp);
@@ -402,22 +404,16 @@ int Gaugefield_hybrid::get_max_compute_units(int ntask)
 	return max_compute_units[device_id_for_task[ntask]];
 }
 
-string Gaugefield_hybrid::get_double_ext(int ntask)
+std::string Gaugefield_hybrid::get_double_ext(int ntask)
 {
 	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("rndarray index out of range", __FILE__, __LINE__);
 	return device_double_extension[device_id_for_task[ntask]];
 }
 
-inputparameters * Gaugefield_hybrid::get_parameters ()
+const meta::Inputparameters & Gaugefield_hybrid::get_parameters ()
 {
 	return  parameters;
 }
-
-void Gaugefield_hybrid::set_parameters (inputparameters * parameters_val)
-{
-	parameters = parameters_val;
-}
-
 
 Matrixsu3 * Gaugefield_hybrid::get_sgf ()
 {
@@ -447,6 +443,8 @@ cl_device_type Gaugefield_hybrid::get_device_type(int ntask)
 
 void Gaugefield_hybrid::save(int number)
 {
+	using namespace std;
+
 	//LZ: generalize the following to larger numbers, if necessary...
 	stringstream strnumber;
 	strnumber.fill('0');
@@ -459,24 +457,24 @@ void Gaugefield_hybrid::save(int number)
 }
 
 
-void Gaugefield_hybrid::save(string outputfile)
+void Gaugefield_hybrid::save(std::string outputfile)
 {
-	const size_t NTIME = parameters->get_nt();
-	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * parameters->get_volspace() * NTIME;
+	const size_t NTIME = parameters.get_ntime();
+	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(parameters) * NTIME;
 	hmc_float * gaugefield_buf = new hmc_float[gaugefield_buf_size];
 
 	//these are not yet used...
 	hmc_float c2_rec = 0, epsilonbar = 0, mubar = 0;
 
-	copy_gaugefield_to_ildg_format(gaugefield_buf, get_sgf(), parameters);
+	copy_gaugefield_to_ildg_format(gaugefield_buf, get_sgf());
 
 	hmc_float plaq = plaquette();
 
 	int number = 0;
 
-	const size_t NSPACE = parameters->get_ns();
+	const size_t NSPACE = parameters.get_nspace();
 
-	write_gaugefield ( gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NTIME, get_parameters()->get_prec(), number, plaq, get_parameters()->get_beta(), get_parameters()->get_kappa(), get_parameters()->get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
+	write_gaugefield ( gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NTIME, get_parameters().get_precision(), number, plaq, get_parameters().get_beta(), get_parameters().get_kappa(), get_parameters().get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
 
 	delete[] gaugefield_buf;
 }
@@ -558,7 +556,8 @@ void Gaugefield_hybrid::print_profiling(std::string filename)
 
 void Gaugefield_hybrid::set_to_gaugefield(Matrixsu3 * field, const size_t mu, const size_t x, const size_t t, const Matrixsu3 val)
 {
-	field[get_global_link_pos(mu, x, t, parameters)] = val;
+	size_t pos = get_global_link_pos(mu, x, t, parameters);
+	field[pos] = val;
 }
 
 Matrixsu3 Gaugefield_hybrid::get_from_gaugefield(const Matrixsu3 * field, const size_t mu, const size_t x, const size_t t) const
@@ -568,22 +567,21 @@ Matrixsu3 Gaugefield_hybrid::get_from_gaugefield(const Matrixsu3 * field, const 
 
 size_t Gaugefield_hybrid::get_num_gaugefield_elems() const
 {
-	//this is NDIM * volspace * nt
-	return parameters->get_gaugemomentasize();
+	return NDIM * meta::get_volspace(parameters) * parameters.get_ntime();
 }
 
-void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check, const inputparameters * const parameters)
+void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check)
 {
 	//little check if arrays are big enough
-	if (parameters->get_vol4d() *NDIM*NC*NC * 2 != check) {
+	if (meta::get_vol4d(parameters) *NDIM * NC * NC * 2 != check) {
 		std::stringstream errstr;
 		errstr << "Error in setting gaugefield to source values!!\nCheck global settings!!";
 		throw Print_Error_Message(errstr.str(), __FILE__, __LINE__);
 	}
 
-	const size_t NSPACE = parameters->get_ns();
+	const size_t NSPACE = parameters.get_nspace();
 	int cter = 0;
-	for (int t = 0; t < parameters->get_nt(); t++) {
+	for (int t = 0; t < parameters.get_ntime(); t++) {
 		for (size_t x = 0; x < NSPACE; x++) {
 			for (size_t y = 0; y < NSPACE; y++) {
 				for (size_t z = 0; z < NSPACE; z++) {
@@ -636,10 +634,10 @@ void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield,
 	return;
 }
 
-void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source_in, const inputparameters * const parameters)
+void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source_in)
 {
-	const size_t NSPACE = parameters->get_ns();
-	for (int t = 0; t < parameters->get_nt(); t++) {
+	const size_t NSPACE = parameters.get_nspace();
+	for (int t = 0; t < parameters.get_ntime(); t++) {
 		for (size_t x = 0; x < NSPACE; x++) {
 			for (size_t y = 0; y < NSPACE; y++) {
 				for (size_t z = 0; z < NSPACE; z++) {
@@ -701,10 +699,10 @@ hmc_float Gaugefield_hybrid::plaquette(hmc_float* tplaq, hmc_float* splaq)
 	*splaq = 0;
 	int coord[NDIM];
 
-	for(int t = 0; t < parameters->get_nt(); t++) {
-		for(int x = 0; x < parameters->get_ns(); x++) {
-			for(int y = 0; y < parameters->get_ns(); y++) {
-				for(int z = 0; z < parameters->get_ns(); z++) {
+	for(int t = 0; t < parameters.get_ntime(); t++) {
+		for(int x = 0; x < parameters.get_nspace(); x++) {
+			for(int y = 0; y < parameters.get_nspace(); y++) {
+				for(int z = 0; z < parameters.get_nspace(); z++) {
 					for(int mu = 0; mu < NDIM; mu++) {
 						for(int nu = 0; nu < mu; nu++) {
 							coord[0] = t;
@@ -727,9 +725,9 @@ hmc_float Gaugefield_hybrid::plaquette(hmc_float* tplaq, hmc_float* splaq)
 		}
 	}
 
-	*tplaq /= static_cast<hmc_float>(get_parameters()->get_vol4d() * NC * (NDIM - 1));
-	*splaq /= static_cast<hmc_float>(get_parameters()->get_vol4d() * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
-	return plaq * 2.0 / static_cast<hmc_float>(get_parameters()->get_vol4d() * NDIM * (NDIM - 1) * NC);
+	*tplaq /= static_cast<hmc_float>(meta::get_vol4d(parameters) * NC * (NDIM - 1));
+	*splaq /= static_cast<hmc_float>(meta::get_vol4d(parameters) * NC * (NDIM - 1) * (NDIM - 2)) / 2. ;
+	return plaq * 2.0 / static_cast<hmc_float>(meta::get_vol4d(parameters) * NDIM * (NDIM - 1) * NC);
 }
 
 hmc_complex Gaugefield_hybrid::polyakov()
@@ -737,7 +735,7 @@ hmc_complex Gaugefield_hybrid::polyakov()
 	hmc_complex res;
 	res.re = 0;
 	res.im = 0;
-	for(int n = 0; n < parameters->get_volspace(); n++) {
+	for(int n = 0; n < meta::get_volspace(parameters); n++) {
 		Matrixsu3 prod;
 		prod = local_polyakov(get_sgf(), n, parameters);
 		hmc_complex tmpcomplex = trace_matrixsu3(prod);
@@ -745,8 +743,8 @@ hmc_complex Gaugefield_hybrid::polyakov()
 		res.im += tmpcomplex.im;
 	}
 
-	res.re /= static_cast<hmc_float>(NC * parameters->get_volspace());
-	res.im /= static_cast<hmc_float>(NC * parameters->get_volspace());
+	res.re /= static_cast<hmc_float>(NC * meta::get_volspace(parameters));
+	res.im /= static_cast<hmc_float>(NC * meta::get_volspace(parameters));
 	return res;
 }
 

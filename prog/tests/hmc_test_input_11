@@ -10,7 +10,6 @@ kappa=.1
 mu=0.5
 cgmax=1000
 beta=5.69
-startcondition=cold
 startcondition=continue
 sourcefile=conf.00200
 savefrequency=100

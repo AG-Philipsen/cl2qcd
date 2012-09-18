@@ -4,16 +4,17 @@
 #include <boost/regex.hpp>
 
 #include "logger.hpp"
+#include "meta/util.hpp"
 
 using namespace std;
 
 void Opencl_Module_Heatbath::fill_collect_options(stringstream* collect_options)
 {
 	Opencl_Module_Ran::fill_collect_options(collect_options);
-	*collect_options <<  " -DBETA=" << get_parameters()->get_beta();
-	if(get_parameters()->get_use_aniso() == true) {
+	*collect_options <<  " -DBETA=" << get_parameters().get_beta();
+	if(get_parameters().get_use_aniso() == true) {
 		*collect_options << " -D_ANISO_";
-		*collect_options <<  " -DXI_0=" << get_parameters()->get_xi_0();
+		*collect_options <<  " -DXI_0=" << meta::get_xi_0(get_parameters());
 	}
 
 	return;
@@ -152,9 +153,9 @@ void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, cl_device_ty
 	//all of the following kernels are called with EnqueueKernel(gs), ls, num_groups are not needed!
 	if (kernelname.compare("heatbath_even") == 0 || kernelname.compare("heatbath_odd") == 0 || kernelname.compare("overrelax_even") == 0 || kernelname.compare("overrelax_odd") == 0) {
 		if( get_device_type() == CL_DEVICE_TYPE_GPU ) {
-			*gs = min(parameters->get_volspace() * parameters->get_nt() / 2, this->Opencl_Module_Ran::get_num_rndstates());
+			*gs = std::min(meta::get_volspace(parameters) * parameters.get_ntime() / 2, (size_t) this->Opencl_Module_Ran::get_num_rndstates());
 		} else {
-			*gs = min(get_max_compute_units(), this->Opencl_Module_Ran::get_num_rndstates());
+			*gs = std::min(get_max_compute_units(), this->Opencl_Module_Ran::get_num_rndstates());
 		}
 		*ls = Opencl_Module::get_numthreads();
 		*num_groups = *gs / *ls;
@@ -192,16 +193,16 @@ size_t Opencl_Module_Heatbath::get_read_write_size(const char * in)
 	size_t result = Opencl_Module_Ran::get_read_write_size(in);
 	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
-	size_t D = (*parameters).get_float_size();
-	size_t R = (*parameters).get_mat_size();
+	size_t D = meta::get_float_size(parameters);
+	size_t R = meta::get_mat_size(parameters);
 	size_t S;
 	//factor for complex numbers
 	int C = 2;
-	const size_t VOL4D = parameters->get_vol4d();
-	if((*parameters).get_use_eo() == 1)
-		S = get_parameters()->get_eoprec_spinorfieldsize();
+	const size_t VOL4D = meta::get_vol4d(parameters);
+	if(parameters.get_use_eo() == 1)
+		S = meta::get_eoprec_spinorfieldsize(get_parameters());
 	else
-		S = get_parameters()->get_spinorfieldsize();
+		S = meta::get_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
 	if ( (strcmp(in, "heatbath_even") == 0 ) || (strcmp(in, "heatbath_odd") == 0) || (strcmp(in, "overrelax_even") == 0) || (strcmp(in, "overrelax_odd") == 0)) {
 		//this kernel reads ingredients for 1 staple plus 1 su3matrix and writes 1 su3-matrix
@@ -214,21 +215,21 @@ uint64_t Opencl_Module_Heatbath::get_flop_size(const char * in)
 {
 	uint64_t result = Opencl_Module_Ran::get_flop_size(in);
 	if (result != 0) return result;
-	const size_t VOL4D = parameters->get_vol4d();
+	const size_t VOL4D = meta::get_vol4d(parameters);
 	uint64_t S;
-	if((*parameters).get_use_eo() == 1)
-		S = get_parameters()->get_eoprec_spinorfieldsize();
+	if(parameters.get_use_eo() == 1)
+		S = meta::get_eoprec_spinorfieldsize(get_parameters());
 	else
-		S = get_parameters()->get_spinorfieldsize();
+		S = meta::get_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
 	///@NOTE: I do not distinguish between su3 and 3x3 matrices. This is a difference if one use e.g. REC12, but here one wants to have the "netto" flops for comparability.
 	if ( (strcmp(in, "heatbath_even") == 0 ) || (strcmp(in, "heatbath_odd") == 0) ) {
 		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2_ND-1 su3_add) plus NC*(2*su3_su3 80 flops for the su2 update)
-		return VOL4D / 2 * (4 * (NDIM - 1) * get_parameters()->get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * get_parameters()->get_flop_su3_su3() + 80));
+		return VOL4D / 2 * (4 * (NDIM - 1) * meta::get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * meta::get_flop_su3_su3() + 80));
 	}
 	if ( (strcmp(in, "overrelax_even") == 0) || (strcmp(in, "overrelax_odd") == 0)) {
 		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2_ND-1 su3_add) plus NC*(2*su3_su3 58 flops for the su2 update)
-		return VOL4D / 2 * (4 * (NDIM - 1) * get_parameters()->get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * get_parameters()->get_flop_su3_su3() + 58));
+		return VOL4D / 2 * (4 * (NDIM - 1) * meta::get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * meta::get_flop_su3_su3() + 58));
 	}
 	return 0;
 }

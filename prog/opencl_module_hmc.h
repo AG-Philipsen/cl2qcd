@@ -22,7 +22,6 @@
 #include "types.h"
 #include "types_fermions.h"
 #include "host_use_timer.h"
-#include "inputparameters.h"
 #include "opencl_compiler.hpp"
 
 #include "opencl_module.h"
@@ -32,6 +31,8 @@
 #include "types_hmc.h"
 
 #include "exceptions.h"
+
+#include "meta/counter.hpp"
 
 /**
  * An OpenCL device
@@ -44,14 +45,22 @@
 class Opencl_Module_Hmc : public Opencl_Module_Fermions {
 public:
 
-	Opencl_Module_Hmc() : Opencl_Module_Fermions(), gaugemomentum_buf_size(0) { };
+	/**
+	 * Empty constructor.
+	 *
+	 * @param[in] params points to an instance of inputparameters
+	 */
+	Opencl_Module_Hmc(const meta::Inputparameters& params, meta::Counter * inversions0, meta::Counter * inversions1,
+	                  meta::Counter * inversions_mp0, meta::Counter * inversions_mp1)
+		: Opencl_Module_Fermions(params), gaugemomentum_buf_size(0),
+		  inversions0(inversions0), inversions1(inversions1), inversions_mp0(inversions_mp0), inversions_mp1(inversions_mp1) { }
 
 	// OpenCL specific methods needed for building/compiling the OpenCL program
 	/**
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual void fill_collect_options(stringstream* collect_options);
+	virtual void fill_collect_options(std::stringstream* collect_options);
 	/**
 	 * Collect the buffers to generate for OpenCL.
 	 * Virtual method, allows to include more buffers in inherited classes.
@@ -244,6 +253,10 @@ private:
 
 	size_t gaugemomentum_buf_size;
 
+	meta::Counter * const inversions0;
+	meta::Counter * const inversions1;
+	meta::Counter * const inversions_mp0;
+	meta::Counter * const inversions_mp1;
 };
 
 #endif //OPENCLMODULEHMCH

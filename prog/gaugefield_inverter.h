@@ -15,7 +15,6 @@
 #include "globaldefs.h"
 #include "types.h"
 #include "host_operations_gaugefield.h"
-#include "inputparameters.h"
 #include "host_readgauge.h"
 #include "host_writegaugefield.h"
 #include "host_use_timer.h"
@@ -33,12 +32,6 @@
 
 #include "logger.hpp"
 
-
-/**
- * Version number.
- */
-extern string const version;
-
 /**
  * Class for the gaugefield. Includes initialization, device management for multiple devices. Performs calculation of correlators.
  *
@@ -46,6 +39,13 @@ extern string const version;
  */
 class Gaugefield_inverter : public Gaugefield_hybrid {
 public:
+	/**
+	 * Create a new inverter gaugefield.
+	 *
+	 * \param params The input parameters of the application
+	 */
+	Gaugefield_inverter(const meta::Inputparameters& params)
+		: Gaugefield_hybrid(params) { };
 
 	/**
 	 * Initialize class.
@@ -79,7 +79,7 @@ public:
 	 * Calculate flavour multiplet correlators from private solution_buffer and store them to a file
 	 * @param[in] corr_fn filename
 	 */
-	void flavour_doublet_correlators(string corr_fn);
+	void flavour_doublet_correlators(std::string corr_fn);
 
 	// get methods
 	/**

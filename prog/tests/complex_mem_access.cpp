@@ -1,6 +1,8 @@
 #include "../opencl_module_spinors.h"
 #include "../gaugefield_hybrid.h"
 
+#include "../meta/util.hpp"
+
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE Memory Access using Complex
@@ -15,8 +17,8 @@ class Device : public Opencl_Module {
 	cl_kernel readComplex;
 
 public:
-	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int dev_rank) : Opencl_Module() {
-		Opencl_Module::init(queue, params, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module(params) {
+		Opencl_Module::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -31,8 +33,9 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
-		init(1, device_type, &params);
+	Dummyfield(cl_device_type device_type, const meta::Inputparameters& params)
+		: Gaugefield_hybrid(params) {
+		init(1, device_type);
 	};
 
 	virtual void init_tasks();
@@ -48,7 +51,6 @@ private:
 	void verify(hmc_complex, hmc_complex);
 	void fill_buffers();
 	void clear_buffers();
-	inputparameters params;
 	hmc_complex * h_complex;
 	cl_mem d_complex;
 	cl_mem d_readComplex;
@@ -57,7 +59,9 @@ private:
 
 BOOST_AUTO_TEST_CASE( CPU )
 {
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU);
+	const char* _params_cpu[] = {"foo", "--use_gpu=false"};
+	meta::Inputparameters params_cpu(2, _params_cpu);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU, params_cpu);
 	dummy.runFillKernel(hmc_complex_zero);
 	dummy.verifyFill(hmc_complex_zero);
 	dummy.runFillKernel(hmc_complex_one);
@@ -67,7 +71,9 @@ BOOST_AUTO_TEST_CASE( CPU )
 
 BOOST_AUTO_TEST_CASE( GPU )
 {
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	const char* _params_gpu[] = {"foo", "--use_gpu=true"};
+	meta::Inputparameters params_gpu(2, _params_gpu);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, params_gpu);
 	dummy.runFillKernel(hmc_complex_zero);
 	dummy.verifyFill(hmc_complex_zero);
 	dummy.runFillKernel(hmc_complex_one);
@@ -97,19 +103,19 @@ void Dummyfield::fill_buffers()
 
 	cl_context context = opencl_modules[0]->get_context();
 
-	h_complex = new hmc_complex[params.get_vol4d()];
+	h_complex = new hmc_complex[meta::get_vol4d(get_parameters())];
 	BOOST_REQUIRE(h_complex);
 
-	for(int i = 0; i < params.get_vol4d(); ++i) {
-		hmc_complex tmp = { (hmc_float) i, (hmc_float) (params.get_vol4d() - i) };
+	for(int i = 0; i < meta::get_vol4d(get_parameters()); ++i) {
+		hmc_complex tmp = { (hmc_float) i, (hmc_float) (meta::get_vol4d(get_parameters()) - i) };
 		h_complex[i] = tmp;
 	}
-	d_readComplex = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, params.get_vol4d() * sizeof(hmc_complex), h_complex, &err);
+	d_readComplex = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, meta::get_vol4d(get_parameters()) * sizeof(hmc_complex), h_complex, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	d_float2 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, params.get_vol4d() * sizeof(cl_float2), 0, &err);
+	d_float2 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, meta::get_vol4d(get_parameters()) * sizeof(cl_float2), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
-	d_complex = clCreateBuffer(context, CL_MEM_WRITE_ONLY, params.get_vol4d() * sizeof(hmc_complex), 0, &err );
+	d_complex = clCreateBuffer(context, CL_MEM_WRITE_ONLY, meta::get_vol4d(get_parameters()) * sizeof(hmc_complex), 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 }
 
@@ -168,10 +174,10 @@ void Dummyfield::verify(hmc_complex left, hmc_complex right)
 void Dummyfield::verifyFill(const hmc_complex value)
 {
 	// get stuff from device
-	cl_int err = clEnqueueReadBuffer(*queue, d_complex, CL_TRUE, 0, params.get_vol4d() * sizeof(hmc_complex), h_complex, 0, 0, 0);
+	cl_int err = clEnqueueReadBuffer(*queue, d_complex, CL_TRUE, 0, meta::get_vol4d(get_parameters()) * sizeof(hmc_complex), h_complex, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
-	for(int i = 0; i < params.get_vol4d(); ++i) {
+	for(int i = 0; i < meta::get_vol4d(get_parameters()); ++i) {
 		verify(value, h_complex[i]);
 	}
 }
@@ -191,12 +197,12 @@ void Dummyfield::verify(cl_float2 left, cl_float2 right)
 void Dummyfield::verifyRead()
 {
 	// get stuff from device
-	cl_float2 * h_float2 = new cl_float2[params.get_vol4d()];
-	cl_int err = clEnqueueReadBuffer(*queue, d_float2, CL_TRUE, 0, params.get_vol4d() * sizeof(cl_float2), h_float2, 0, 0, 0);
+	cl_float2 * h_float2 = new cl_float2[meta::get_vol4d(get_parameters())];
+	cl_int err = clEnqueueReadBuffer(*queue, d_float2, CL_TRUE, 0, meta::get_vol4d(get_parameters()) * sizeof(cl_float2), h_float2, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
-	for(int i = 0; i < params.get_vol4d(); ++i) {
-		cl_float2 ref = {(cl_float) i, (cl_float) (params.get_vol4d() - i)};
+	for(int i = 0; i < meta::get_vol4d(get_parameters()); ++i) {
+		cl_float2 ref = {(cl_float) i, (cl_float) (meta::get_vol4d(get_parameters()) - i)};
 		verify(ref, h_float2[i]);
 	}
 

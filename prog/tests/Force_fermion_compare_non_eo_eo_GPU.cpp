@@ -1,6 +1,8 @@
 #include "../opencl_module_hmc.h"
 #include "../gaugefield_hybrid.h"
 
+#include "../meta/util.hpp"
+
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE Fermionforce_compare_noneo_eo
@@ -13,9 +15,10 @@ class Device : public Opencl_Module_Hmc {
 
 	cl_kernel testKernel;
 	cl_kernel testKernel2;
+	meta::Counter counter1, counter2, counter3, counter4;
 public:
-	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc() {
-		Opencl_Module_Hmc::init(queue, params, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc(params, &counter1, &counter2, &counter3, &counter4) {
+		Opencl_Module_Hmc::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -27,19 +30,20 @@ public:
 	void clear_kernels();
 };
 
+const std::string SOURCEFILE = std::string(SOURCEDIR)
+#ifdef _USEDOUBLEPREC_
+                               + "/tests/f_fermion_eo_input_1";
+#else
+                               + "/tests/f_fermion_eo_input_1_single";
+#endif
+const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
+const meta::Inputparameters INPUT(2, PARAMS);
+
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
-		std::stringstream tmp;
-#ifdef _USEDOUBLEPREC_
-		tmp << SOURCEDIR << "/tests/f_fermion_eo_input_1";
-#else
-		tmp << SOURCEDIR << "/tests/f_fermion_eo_input_1_single";
-#endif
-		params.readfile(tmp.str().c_str());
-
-		init(1, device_type, &params);
+	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(INPUT) {
+		init(1, device_type);
 	};
 
 	virtual void init_tasks();
@@ -59,7 +63,6 @@ public:
 private:
 	void fill_buffers();
 	void clear_buffers();
-	inputparameters params;
 	cl_mem in1_eo, in2_eo, in3_eo, in4_eo, out_eo;
 	cl_mem in1_noneo, in2_noneo, out_noneo;
 	cl_mem in1_noneo_converted, in2_noneo_converted;
@@ -167,10 +170,10 @@ void Dummyfield::finalize_opencl()
 }
 
 //it is assumed that idx iterates only over half the number of sites
-void get_even_site(int idx, int * out_space, int * out_t, const inputparameters * const params)
+void get_even_site(int idx, int * out_space, int * out_t, const meta::Inputparameters& params)
 {
-	const size_t NSPACE = params->get_ns();
-	const size_t VOLSPACE = params->get_volspace();
+	const size_t NSPACE = params.get_nspace();
+	const size_t VOLSPACE = meta::get_volspace(params);
 	int x, y, z, t;
 	x = idx;
 	t = (int)(idx / (VOLSPACE / 2));
@@ -185,10 +188,10 @@ void get_even_site(int idx, int * out_space, int * out_t, const inputparameters 
 
 //it is assumed that idx iterates only over half the number of sites
 
-void get_odd_site(int idx, int * out_space, int * out_t, const inputparameters * const params)
+void get_odd_site(int idx, int * out_space, int * out_t, const meta::Inputparameters& params)
 {
-	const size_t NSPACE = params->get_ns();
-	const size_t VOLSPACE = params->get_volspace();
+	const size_t NSPACE = params.get_nspace();
+	const size_t VOLSPACE = meta::get_volspace(params);
 	int x, y, z, t;
 	x = idx;
 	t = (int)(idx / (VOLSPACE / 2));
@@ -291,14 +294,14 @@ spinor fill_spinor_with_specific_float(hmc_float val)
 
 //this function fills every lattice site with a specific value depending
 //on its site index.
-void fill_noneo_sf_with_specific_float(spinor * sf_in, inputparameters * params)
+void fill_noneo_sf_with_specific_float(spinor * sf_in, const meta::Inputparameters & params)
 {
 	int x, y, z, t;
-	int ns = params->get_ns();
-	for(x = 0;  x < params->get_ns(); x++) {
-		for(y = 0;  y < params->get_ns();  y++) {
-			for(z = 0;  z < params->get_ns();  z++) {
-				for(t = 0; t < params->get_nt(); ++t) {
+	int ns = params.get_nspace();
+	for(x = 0;  x < ns; x++) {
+		for(y = 0;  y < ns;  y++) {
+			for(z = 0;  z < ns;  z++) {
+				for(t = 0; t < params.get_ntime(); ++t) {
 					//this has to match the conventions in operations_geometry.cl!!!!
 					int i = t * ns * ns * ns + x * ns * ns + y * ns + z;
 
@@ -313,14 +316,14 @@ void fill_noneo_sf_with_specific_float(spinor * sf_in, inputparameters * params)
 	return;
 }
 
-void fill_eo_sf_with_specific_float(spinor * sf_even, spinor * sf_odd, inputparameters * params)
+void fill_eo_sf_with_specific_float(spinor * sf_even, spinor * sf_odd, const meta::Inputparameters & params)
 {
 	int x, y, z, t;
-	int ns = params->get_ns();
-	for(x = 0;  x < params->get_ns(); x++) {
-		for(y = 0;  y < params->get_ns();  y++) {
-			for(z = 0;  z < params->get_ns();  z++) {
-				for(t = 0; t < params->get_nt(); ++t) {
+	int ns = params.get_nspace();
+	for(x = 0;  x < ns; x++) {
+		for(y = 0;  y < ns;  y++) {
+			for(z = 0;  z < ns;  z++) {
+				for(t = 0; t < params.get_ntime(); ++t) {
 					//this has to match the conventions in operations_geometry.cl!!!!
 					int i = t * ns * ns * ns + x * ns * ns + y * ns + z;
 					hmc_float val = 17. / (i + 1);
@@ -415,7 +418,7 @@ void fill_sf_with_random_eo(spinor * sf_in1, spinor * sf_in2, int size, int seed
 	return;
 }
 
-void fill_sf_with_random_noneo(spinor * sf_in, int size, int seed, inputparameters * params)
+void fill_sf_with_random_noneo(spinor * sf_in, int size, int seed, const meta::Inputparameters & params)
 {
 	prng_init(seed);
 	//the simple for loop through the vector does not give the right vector compared to the eo-converted one...
@@ -488,7 +491,7 @@ void Dummyfield::convert_to_noneo(spinor * sf_noneo, spinor* eo1, spinor * eo2)
 {
 
 	int pos, t;
-	for(int n = 0; n < get_parameters()->get_eoprec_spinorfieldsize(); n++) {
+	for(int n = 0; n < meta::get_eoprec_spinorfieldsize(get_parameters()); n++) {
 		get_even_site(n, &pos, &t, get_parameters());
 		sf_noneo[get_global_pos(pos, t, get_parameters())] = eo1[n];
 		get_odd_site(n, &pos, &t, get_parameters());
@@ -509,6 +512,8 @@ void Dummyfield::reset_outfield_noneo()
 
 bool compare_entries(hmc_complex in1, hmc_complex in2)
 {
+	using namespace std;
+
 	if(abs(in1.re - in2.re) > 1e-8) {
 		cout << "\treal entries DO NOT match: in1: " << in1.re << "\tin2: " << in2.re << endl;
 		return false;
@@ -522,6 +527,8 @@ bool compare_entries(hmc_complex in1, hmc_complex in2)
 
 bool compare_entries_float(hmc_float in1, hmc_float in2)
 {
+	using namespace std;
+
 	if(abs(in1 - in2) > 1e-8) {
 		cout << "\tentries DO NOT match: in1: " << in1 << "\tin2: " << in2 << endl;
 		return false;
@@ -531,6 +538,8 @@ bool compare_entries_float(hmc_float in1, hmc_float in2)
 
 void print_spinor(const spinor in1, const spinor in2)
 {
+	using namespace std;
+
 	cout << endl;
 	cout << "(" << in1.e0.e0.re << "),(" << in1.e0.e0.im << ") : (" << in2.e0.e0.re << "),(" << in2.e0.e0.im << ")"  << endl;
 	cout << "(" << in1.e0.e1.re << "),(" << in1.e0.e1.im << ") : (" << in2.e0.e1.re << "),(" << in2.e0.e1.im << ")"  << endl;
@@ -549,6 +558,8 @@ void print_spinor(const spinor in1, const spinor in2)
 
 void compare_vectors(spinor * in1, spinor * in2, int size)
 {
+	using namespace std;
+
 	bool check;
 	//int n, t;
 	//int nodd, todd;
@@ -597,16 +608,18 @@ void compare_vectors(spinor * in1, spinor * in2, int size)
 void Dummyfield::verify_converted_vectors()
 {
 	logger.info() << "\tcompare in1_noneo with in1_noneo_converted";
-	compare_vectors(sf_in1_noneo, sf_in1_noneo_converted, get_parameters()->get_spinorfieldsize());
+	compare_vectors(sf_in1_noneo, sf_in1_noneo_converted, meta::get_spinorfieldsize(get_parameters()));
 
 	logger.info() << "\tcompare in2_noneo with in2_noneo_converted";
-	compare_vectors(sf_in2_noneo, sf_in2_noneo_converted, get_parameters()->get_spinorfieldsize());
+	compare_vectors(sf_in2_noneo, sf_in2_noneo_converted, meta::get_spinorfieldsize(get_parameters()));
 
 	return;
 }
 
 bool compare_ae_vectors(hmc_float * in1, hmc_float * in2, int size)
 {
+	using namespace std;
+
 	bool check;
 	bool returner = true;
 	for(int i = 0; i < size; i++) {
@@ -620,7 +633,7 @@ bool compare_ae_vectors(hmc_float * in1, hmc_float * in2, int size)
 void Dummyfield::verify_ae_vectors()
 {
 	//read out the vectors on the device
-	int NUM_ELEMENTS_AE = params.get_gaugemomentasize() * params.get_su3algebrasize();
+	int NUM_ELEMENTS_AE = meta::get_vol4d(get_parameters()) * NDIM * meta::get_su3algebrasize();
 	Device* device = static_cast<Device*>(opencl_modules[0]);
 	device->exportGaugemomentumBuffer(reinterpret_cast<ae*>(sf_out_eo), out_eo);
 	device->exportGaugemomentumBuffer(reinterpret_cast<ae*>(sf_out_noneo), out_noneo);
@@ -647,10 +660,10 @@ void Dummyfield::fill_buffers()
 
 	int NUM_ELEMENTS_SF_EO;
 	int NUM_ELEMENTS_SF_NON_EO;
-	NUM_ELEMENTS_SF_EO =  params.get_eoprec_spinorfieldsize();
-	NUM_ELEMENTS_SF_NON_EO =  params.get_spinorfieldsize();
+	NUM_ELEMENTS_SF_EO =  meta::get_eoprec_spinorfieldsize(get_parameters());
+	NUM_ELEMENTS_SF_NON_EO =  meta::get_spinorfieldsize(get_parameters());
 
-	int NUM_ELEMENTS_AE = params.get_gaugemomentasize() * params.get_su3algebrasize();
+	int NUM_ELEMENTS_AE = meta::get_vol4d(get_parameters()) * NDIM * meta::get_su3algebrasize();
 
 	sf_in1_eo = new spinor[NUM_ELEMENTS_SF_EO];
 	sf_in2_eo = new spinor[NUM_ELEMENTS_SF_EO];
@@ -665,7 +678,7 @@ void Dummyfield::fill_buffers()
 	sf_out_noneo = new hmc_float[NUM_ELEMENTS_AE];
 
 	//use the variable use_cg to switch between cold and random input sf
-	if(get_parameters()->get_use_cg() == true) {
+	if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 		fill_eo_sf_with_specific_float(sf_in1_eo, sf_in2_eo, get_parameters());
 		fill_eo_sf_with_specific_float(sf_in3_eo, sf_in4_eo, get_parameters());
 		fill_noneo_sf_with_specific_float(sf_in1_noneo, get_parameters());
@@ -690,7 +703,7 @@ void Dummyfield::fill_buffers()
 	fill_with_zero(sf_out_noneo, NUM_ELEMENTS_AE);
 
 	size_t sf_buf_size_noneo;
-	sf_buf_size_noneo = get_parameters()->get_sf_buf_size();
+	sf_buf_size_noneo = meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
 	Device * spinor_module = static_cast<Device*>(opencl_modules[0]);
 	size_t ae_buf_size = spinor_module->get_gaugemomentum_buffer_size();
 	size_t sf_eoprec_buffer_size = spinor_module->get_eoprec_spinorfield_buffer_size();
@@ -889,7 +902,7 @@ void Dummyfield::runTestKernel(int evenodd)
 {
 	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = get_parameters()->get_eoprec_spinorfieldsize();
+		gs = meta::get_eoprec_spinorfieldsize(get_parameters());
 		ls = 64;
 	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
 		gs = opencl_modules[0]->get_max_compute_units();
@@ -900,10 +913,10 @@ void Dummyfield::runTestKernel(int evenodd)
 	Device * device = static_cast<Device*>(opencl_modules[0]);
 	if(evenodd == ODD) {
 		//this is then force(Y_odd, X_even) == force(in2, in3)
-		device->runTestKernel(out_eo, in2_eo, in3_eo, device->get_gaugefield(), gs, ls, evenodd, get_parameters()->get_kappa());
+		device->runTestKernel(out_eo, in2_eo, in3_eo, device->get_gaugefield(), gs, ls, evenodd, get_parameters().get_kappa());
 	} else {
 		//this is then force(Y_even, X_odd) == force(in1, in4)
-		device->runTestKernel(out_eo, in1_eo, in4_eo, device->get_gaugefield(), gs, ls, evenodd, get_parameters()->get_kappa());
+		device->runTestKernel(out_eo, in1_eo, in4_eo, device->get_gaugefield(), gs, ls, evenodd, get_parameters().get_kappa());
 	}
 }
 
@@ -911,7 +924,7 @@ void Dummyfield::runTestKernel2()
 {
 	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = get_parameters()->get_spinorfieldsize();
+		gs = meta::get_spinorfieldsize(get_parameters());
 		ls = 64;
 	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
 		gs = opencl_modules[0]->get_max_compute_units();
@@ -919,19 +932,19 @@ void Dummyfield::runTestKernel2()
 	}
 	//CP: I only use out_eo here because there is some mistake with out_noneo. However, I will not try to find it...
 	Device * device = static_cast<Device*>(opencl_modules[0]);
-	device->runTestKernel2(out_noneo, in1_noneo, in2_noneo, device->get_gaugefield(), gs, ls, get_parameters()->get_kappa());
+	device->runTestKernel2(out_noneo, in1_noneo, in2_noneo, device->get_gaugefield(), gs, ls, get_parameters().get_kappa());
 }
 
 void Dummyfield::runTestKernel2withconvertedfields()
 {
 	int gs = 0, ls = 0;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = get_parameters()->get_spinorfieldsize();
+		gs = meta::get_spinorfieldsize(get_parameters());
 		ls = 64;
 	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}
 	Device * device = static_cast<Device*>(opencl_modules[0]);
-	device->runTestKernel2(out_noneo, in1_noneo_converted, in2_noneo_converted, device->get_gaugefield(), gs, ls, get_parameters()->get_kappa());
+	device->runTestKernel2(out_noneo, in1_noneo_converted, in2_noneo_converted, device->get_gaugefield(), gs, ls, get_parameters().get_kappa());
 }

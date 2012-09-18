@@ -1,0 +1,167 @@
+\documentclass[twoside,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[american,english]{babel}
+\usepackage{tikz-uml}
+\usepackage{listings}
+\lstset{language=C++,tabsize=2}
+\lstset{numbers=left, stepnumber=1, numbersep=5pt}
+\usepackage{units}
+\usepackage{rotating}
+\usepackage{todonotes}
+
+\title{\Optimal Architecture Overview}
+\author{Matthias Bach}
+
+\begin{document}
+
+\newcommand{\Optimal}{OpTiMaL~}
+\newcommand{\OpenCL}[0]{OpenCL\texttrademark~}
+\newcommand{\class}[1]{\emph{#1}}
+\newcommand{\package}[1]{\emph{#1}}
+
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+
+This document describes the next version of the \Optimal application architecture.
+While it imposes a major refactoring it is an evolution from the original architecture, focusing on cleaner separation of concepts, while retaining parts of the old architecture, like the \OpenCL modules.
+Those however now only exist to generate the \OpenCL code used by the other modules.
+Especially they are no longer responsible for managing the buffers used by the application and they no longer contain algorithms that operate on the data.
+
+\section{Overview}
+
+The code is now split into several packages.
+Each package represents a distinct level ob abstraction. Before going into any details look at the most high level grouping of the code.
+
+The package \package{Physics} contains everything required to describe the program logic.
+It is itself contains the sub packages \package{Lattices} and \package{Algorithms}.
+The first contains classes representing lattices of different type, e.g. a complete field of spinors, the latter contains algorithms that work on these objects, e.g. an Inverter.
+
+The package \package{Hardware} contains all code that is responsible for matching the logic of the application onto the actual hardware.
+Of this only the \class{System} class should be directly used by the application.
+Anything else is to actually implemented the types from the \package{Physics} package on the given system.
+Type safe \class{Buffer} classes are given that can be used by the classes in \package{Lattices} to store their data on the given hardware in proper formats.
+\todo[inline]{Buffer might actually be a template of which specializations exist for each type...}
+Note here, that the mapping does not have to be one-to-one, but a lattice class might store its data in multiple buffers, e.g. on multiple devices.
+
+The package \package{Meta} contains things that neither fit well into the \package{Physics} not into the \package{Hardware} package.
+For example the parsing and representation of input parameters is located here.
+Members of this package are expected to be used by the top level application as well as the \package{Physics} and the \package{Hardware} package.
+
+\begin{sidewaysfigure}
+\begin{tikzpicture}
+ 
+\begin{umlpackage}[]{Physics} 
+
+\begin{umlpackage}[y=10]{Lattices} 
+
+\umlemptyclass[x=0,y=2]{Gaugefield}
+
+\umlemptyclass[x=0,y=0]{Gaugemomenta}
+
+\umlemptyclass[x=3,y=0]{Spinorfield}
+
+\umlemptyclass[x=3,y=2]{Spinorfield\_eo}
+
+\end{umlpackage}
+
+\begin{umlpackage}[y=0]{Algorithms} 
+
+\umlemptyclass[x=0,y=2]{Heatbath}
+
+\umlemptyclass[x=0,y=0]{Hmc}
+
+\umlemptyclass[x=3,y=0]{Inverter}
+
+\end{umlpackage}
+
+\umlemptyclass[y=6]{PRNG}
+
+\end{umlpackage}
+
+
+
+\begin{umlpackage}[x=9, y=0]{Hardware} 
+
+\begin{umlpackage}[y=7]{Buffers} 
+
+\umlemptyclass[y=6]{Buffer}
+
+\umlemptyclass[y=4]{floatBuffer}
+
+\umlemptyclass[x=3, y=4]{complexBuffer}
+
+\umlemptyclass[y=2]{SU3Buffer}
+
+\umlemptyclass[x=3, y=2]{spinorBuffer}
+
+\umlemptyclass[y=0]{PRNGBuffer}
+
+\end{umlpackage}
+
+
+
+\begin{umlpackage}[]{Code} 
+
+\umlemptyclass[y=4]{OpenclModule}
+
+\umlemptyclass[y=4, x=3]{PRNG}
+
+\umlemptyclass[y=2]{Heatbath}
+
+\umlemptyclass[y=2, x=3]{Spinors}
+
+\umlemptyclass[y=0]{Fermions}
+
+\umlemptyclass[y=0, x=3]{Hmc}
+
+
+\end{umlpackage}
+
+\end{umlpackage}
+
+\begin{umlpackage}[x=18, y=9]{Hardware} 
+
+\umlemptyclass[y=2]{System}
+
+\umlemptyclass[y=0]{Device}
+
+\end{umlpackage}
+
+\begin{umlpackage}[x=18, y=0]{Meta}
+
+\umlemptyclass{Inputparameters}
+
+\end{umlpackage}
+
+\end{tikzpicture}
+
+\caption{High level class diagram of the \Optimal architecture. Be aware of the fact that the \package{Hardware} package has been split for layout reasons.}
+\label{cdOverview}
+
+\end{sidewaysfigure}
+
+\todo{The OpenclModules might be required to be refactored to match used datatypes}
+
+All of this objects are to be seen as resource-handlers. Therefore none of them should be copyable.
+
+How all those objects interact shall be explained using the example of the Inverter.
+An application will first create an \class{Inputparameters} object. It will then instantiate \class{System}, which will require the \class{Input parameters} object for its initialization.
+Afterwards the application can create \class{Gaugefield}s and \class{Spinorfield}s.
+These will again require the \class{System} instance for initialization. To perform the inversion the application will now create an \class{Inverter} object.
+Given a set of \class{Gaugefield}s and \class{Spinorfields}s this will perform the inversion.
+Note that the inversion is actually a solve. \todo{Might be better to have CG and BiCG classes.}
+
+The previous paragraph described the object interaction as it is observer from the top level application.
+The implementations of these objects add further interactions.
+Creation of objects from the \package{Lattices} package will cause the newly created objects to create \class{Buffer} instances on the devices described by the \class{Device} objects of the given \class{System} instance.
+In addition, creation and invocation of the \class{Inverter} object may cause the creation of additional objects from either the \package{Lattices} or \package{Buffer} package.
+Note however, that the latter should ideally be wrapped by some class living in the \package{Physics} package.
+Further, all objects in the \package{Physics} package will create objects from the \package{Code} package to perform their on device operations.\todo{It might make sense to somehow bundle this code generation to not instantiate kernels to often. Maybe specify required code objects on system creation.}
+
+\listoftodos
+
+\end{document}

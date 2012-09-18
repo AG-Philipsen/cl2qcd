@@ -15,7 +15,6 @@
 
 #include "globaldefs.h"
 #include "types.h"
-#include "inputparameters.h"
 #include "host_readgauge.h"
 #include "host_use_timer.h"
 #include "host_random.h"

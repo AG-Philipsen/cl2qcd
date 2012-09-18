@@ -5,6 +5,7 @@
 
 #include "../opencl_module.h"
 #include "../gaugefield_hybrid.h"
+#include "../meta/util.hpp"
 
 extern std::string const version;
 std::string const version = "0.1";
@@ -12,8 +13,8 @@ std::string const version = "0.1";
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
-		init(1, device_type, &params);
+	Dummyfield(cl_device_type device_type, const meta::Inputparameters& params) : Gaugefield_hybrid(params) {
+		init(1, device_type);
 	};
 
 	virtual void init_tasks();
@@ -28,12 +29,13 @@ public:
 private:
 	void fill_buffers();
 	void clear_buffers();
-	inputparameters params;
 };
 
 BOOST_AUTO_TEST_CASE(CPU_cold)
 {
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU);
+	const char* _params[] = {"foo", "--use_gpu=false"};
+	meta::Inputparameters params(2, _params);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU, params);
 	dummy.set_gaugefield_cold(dummy.in);
 
 	dummy.send();
@@ -44,7 +46,9 @@ BOOST_AUTO_TEST_CASE(CPU_cold)
 
 BOOST_AUTO_TEST_CASE(CPU_hot)
 {
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU);
+	const char* _params[] = {"foo", "--use_gpu=false"};
+	meta::Inputparameters params(2, _params);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU, params);
 	dummy.set_gaugefield_hot(dummy.in);
 
 	dummy.send();
@@ -55,7 +59,9 @@ BOOST_AUTO_TEST_CASE(CPU_hot)
 
 BOOST_AUTO_TEST_CASE(GPU_cold)
 {
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	const char* _params[] = {"foo", "--use_gpu=true"};
+	meta::Inputparameters params(2, _params);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, params);
 	dummy.set_gaugefield_cold(dummy.in);
 
 	dummy.send();
@@ -66,7 +72,9 @@ BOOST_AUTO_TEST_CASE(GPU_cold)
 
 BOOST_AUTO_TEST_CASE(GPU_hot)
 {
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	const char* _params[] = {"foo", "--use_gpu=true"};
+	meta::Inputparameters params(2, _params);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, params);
 	dummy.set_gaugefield_hot(dummy.in);
 
 	dummy.send();
@@ -78,8 +86,8 @@ BOOST_AUTO_TEST_CASE(GPU_hot)
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Opencl_Module();
-	opencl_modules[0]->init(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0), 0);
+	opencl_modules[0] = new Opencl_Module(get_parameters());
+	opencl_modules[0]->init(queue[0], get_max_compute_units(0), get_double_ext(0), 0);
 
 	fill_buffers();
 }
@@ -92,7 +100,7 @@ void Dummyfield::finalize_opencl()
 
 void Dummyfield::fill_buffers()
 {
-	const size_t NUM_ELEMENTS_AE = params.get_gaugemomentasize();
+	int NUM_ELEMENTS_AE = meta::get_vol4d(get_parameters()) * NDIM * meta::get_su3algebrasize();
 	in = new Matrixsu3[NUM_ELEMENTS_AE];
 	out = new Matrixsu3[NUM_ELEMENTS_AE];
 }
@@ -105,7 +113,7 @@ void Dummyfield::clear_buffers()
 
 void Dummyfield::verify()
 {
-	for(size_t i = 0; i < params.get_gaugemomentasize(); ++i) {
+	for(size_t i = 0; i < meta::get_vol4d(get_parameters()) * NDIM * meta::get_su3algebrasize(); ++i) {
 		BOOST_MESSAGE("Element " << i);
 		BOOST_REQUIRE_EQUAL(in[i].e00.re, out[i].e00.re);
 		BOOST_REQUIRE_EQUAL(in[i].e01.re, out[i].e01.re);

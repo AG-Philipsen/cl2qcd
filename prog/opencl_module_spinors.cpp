@@ -4,6 +4,7 @@
 #include <boost/regex.hpp>
 
 #include "logger.hpp"
+#include "meta/util.hpp"
 
 using namespace std;
 
@@ -11,9 +12,9 @@ using namespace std;
 void Opencl_Module_Spinors::fill_collect_options(stringstream* collect_options)
 {
 	Opencl_Module_Ran::fill_collect_options(collect_options);
-	*collect_options << " -D_FERMIONS_" << " -DSPINORSIZE=" << get_parameters()->get_spinorsize() << " -DHALFSPINORSIZE=" << get_parameters()->get_halfspinorsize()
-	                 << " -DSPINORFIELDSIZE=" << get_parameters()->get_spinorfieldsize() << " -DEOPREC_SPINORFIELDSIZE=" << get_parameters()->get_eoprec_spinorfieldsize();
-	*collect_options << " -DEOPREC_SPINORFIELD_STRIDE=" << calculateStride(get_parameters()->get_eoprec_spinorfieldsize(), sizeof(hmc_complex));
+	*collect_options << " -D_FERMIONS_"
+	                 << " -DSPINORFIELDSIZE=" << meta::get_spinorfieldsize(get_parameters()) << " -DEOPREC_SPINORFIELDSIZE=" << meta::get_eoprec_spinorfieldsize(get_parameters());
+	*collect_options << " -DEOPREC_SPINORFIELD_STRIDE=" << calculateStride(meta::get_eoprec_spinorfieldsize(get_parameters()), sizeof(hmc_complex));
 }
 
 
@@ -33,7 +34,7 @@ void Opencl_Module_Spinors::fill_kernels()
 	Opencl_Module_Ran::fill_kernels();
 
 	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
-	if(get_parameters()->get_use_eo()) {
+	if(get_parameters().get_use_eo()) {
 		basic_fermion_code = basic_fermion_code << "operations_spinorfield_eo.cl";
 	}
 
@@ -50,7 +51,7 @@ void Opencl_Module_Spinors::fill_kernels()
 	ratio = createKernel("ratio") << basic_opencl_code << "complex_ratio.cl";
 	product = createKernel("product") << basic_opencl_code << "complex_product.cl";
 
-	if(get_parameters()->get_use_eo() == true) {
+	if(get_parameters().get_use_eo() == true) {
 		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		convert_to_eoprec = createKernel("convert_to_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		set_eoprec_spinorfield_cold = createKernel("set_eoprec_spinorfield_cold") << basic_fermion_code << "spinorfield_eo_cold.cl";
@@ -63,8 +64,8 @@ void Opencl_Module_Spinors::fill_kernels()
 		convertSpinorfieldToSOA_eo = createKernel("convertSpinorfieldToSOA_eo") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		convertSpinorfieldFromSOA_eo = createKernel("convertSpinorfieldFromSOA_eo") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		//merged kernels
-		if (get_parameters()->get_use_merge_kernels_fermion() == true){
-		  saxpy_AND_squarenorm_eo = createKernel("saxpy_AND_squarenorm_eo") << basic_fermion_code << "spinorfield_eo_saxpy_AND_squarenorm.cl";
+		if (get_parameters().get_use_merge_kernels_fermion() == true) {
+			saxpy_AND_squarenorm_eo = createKernel("saxpy_AND_squarenorm_eo") << basic_fermion_code << "spinorfield_eo_saxpy_AND_squarenorm.cl";
 		}
 	}
 
@@ -101,7 +102,7 @@ void Opencl_Module_Spinors::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(product);
 
-	if(get_parameters()->get_use_eo()) {
+	if(get_parameters().get_use_eo()) {
 		clerr = clReleaseKernel(saxpy_eoprec);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(sax_eoprec);
@@ -166,8 +167,8 @@ void Opencl_Module_Spinors::convert_from_eoprec_device(cl_mem in1, cl_mem in2, c
 {
 	cl_mem tmp1, tmp2;
 	if(use_soa) {
-		tmp1 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
-		tmp2 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
+		tmp1 = create_rw_buffer(sizeof(spinor) * meta::get_eoprec_spinorfieldsize(get_parameters()));
+		tmp2 = create_rw_buffer(sizeof(spinor) * meta::get_eoprec_spinorfieldsize(get_parameters()));
 
 		convertSpinorfieldFromSOA_eo_device(tmp1, in1);
 		convertSpinorfieldFromSOA_eo_device(tmp2, in2);
@@ -202,8 +203,8 @@ void Opencl_Module_Spinors::convert_to_eoprec_device(cl_mem out1, cl_mem out2, c
 {
 	cl_mem tmp1, tmp2;
 	if(use_soa) {
-		tmp1 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
-		tmp2 = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
+		tmp1 = create_rw_buffer(sizeof(spinor) * meta::get_eoprec_spinorfieldsize(get_parameters()));
+		tmp2 = create_rw_buffer(sizeof(spinor) * meta::get_eoprec_spinorfieldsize(get_parameters()));
 	} else {
 		tmp1 = out1;
 		tmp2 = out2;
@@ -743,11 +744,10 @@ usetimer* Opencl_Module_Spinors::get_timer(const char * in)
 	}
 	if(strcmp(in, "convertSpinorfieldFromSOA_eo") == 0) {
 		return &timer_convertSpinorfieldFromSOA_eo;
-	} 
+	}
 	if (strcmp(in, "saxpy_AND_squarenorm_eo") == 0) {
 		return &this->timer_saxpy_AND_squarenorm_eo;
-	}
-	else {
+	} else {
 		return NULL;
 	}
 }
@@ -759,11 +759,11 @@ size_t Opencl_Module_Spinors::get_read_write_size(const char * in)
 	size_t result = Opencl_Module_Ran::get_read_write_size(in);
 	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
-	size_t D = (*parameters).get_float_size();
+	size_t D = meta::get_float_size(parameters);
 	//this returns the number of entries in an su3-matrix
-	size_t R = (*parameters).get_mat_size();
-	size_t S = get_parameters()->get_spinorfieldsize();
-	size_t Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	size_t R = meta::get_mat_size(parameters);
+	size_t S = meta::get_spinorfieldsize(get_parameters());
+	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers
 	int C = 2;
 	//this is the same as in the function above
@@ -882,8 +882,8 @@ uint64_t Opencl_Module_Spinors::get_flop_size(const char * in)
 {
 	uint64_t result = Opencl_Module_Ran::get_flop_size(in);
 	if (result != 0) return result;
-	uint64_t S = get_parameters()->get_spinorfieldsize();
-	uint64_t Seo = get_parameters()->get_eoprec_spinorfieldsize();
+	uint64_t S = meta::get_spinorfieldsize(get_parameters());
+	uint64_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
 	if (strcmp(in, "set_spinorfield_cold") == 0) {
 		//this kernel performs 1. / sqrt((12.f * VOL4D)) and real_multiply_spinor for each site
@@ -903,15 +903,15 @@ uint64_t Opencl_Module_Spinors::get_flop_size(const char * in)
 	}
 	if (strcmp(in, "saxpy") == 0) {
 		//this kernel performs on each site spinor_times_complex and spinor_add
-		return S * (NDIM * NC * ( get_parameters()->get_flop_complex_mult() + 2) );
+		return S * (NDIM * NC * ( meta::get_flop_complex_mult() + 2) );
 	}
 	if (strcmp(in, "sax") == 0) {
 		//this kernel performs on each site spinor_times_complex
-		return S * (NDIM * NC * ( get_parameters()->get_flop_complex_mult() ) );
+		return S * (NDIM * NC * ( meta::get_flop_complex_mult() ) );
 	}
 	if (strcmp(in, "saxsbypz") == 0) {
 		//this kernel performs on each 2 * site spinor_times_complex and 2 * spinor_add
-		return S * (NDIM * NC * 2 * ( get_parameters()->get_flop_complex_mult() + 2) );
+		return S * (NDIM * NC * 2 * ( meta::get_flop_complex_mult() + 2) );
 	}
 	if (strcmp(in, "set_zero_spinorfield") == 0) {
 		//this kernel does not do any flop
@@ -919,15 +919,15 @@ uint64_t Opencl_Module_Spinors::get_flop_size(const char * in)
 	}
 	if (strcmp(in, "saxpy_eoprec") == 0) {
 		//this kernel performs on each site spinor_times_complex and spinor_add
-		return Seo * (NDIM * NC * ( get_parameters()->get_flop_complex_mult() + 2) );
+		return Seo * (NDIM * NC * ( meta::get_flop_complex_mult() + 2) );
 	}
 	if (strcmp(in, "sax_eoprec") == 0) {
 		//this kernel performs on each site spinor_times_complex
-		return S * (NDIM * NC * ( get_parameters()->get_flop_complex_mult() ) );
+		return S * (NDIM * NC * ( meta::get_flop_complex_mult() ) );
 	}
 	if (strcmp(in, "saxsbypz_eoprec") == 0) {
 		//this kernel performs on each 2 * site spinor_times_complex and 2 * spinor_add
-		return Seo * (NDIM * NC * 2 * ( get_parameters()->get_flop_complex_mult() + 2) );
+		return Seo * (NDIM * NC * 2 * ( meta::get_flop_complex_mult() + 2) );
 	}
 	if (strcmp(in, "set_zero_spinorfield_eoprec") == 0) {
 		//this kernel does not do any flop
@@ -935,37 +935,37 @@ uint64_t Opencl_Module_Spinors::get_flop_size(const char * in)
 	}
 	if (strcmp(in, "scalar_product") == 0) {
 		//this kernel performs spinor*spinor on each site and then adds S-1 complex numbers
-		return S * get_parameters()->get_flop_spinor_spinor() + (S - 1) * 2;
+		return S * meta::get_flop_spinor_spinor() + (S - 1) * 2;
 	}
 	if (strcmp(in, "scalar_product_reduction") == 0) {
 		return 1000000000000000000000000;
 	}
 	if (strcmp(in, "global_squarenorm") == 0) {
 		//this kernel performs spinor_squarenorm on each site and then adds S-1 complex numbers
-		return S * get_parameters()->get_flop_spinor_sqnorm() + (S - 1) * 2;
+		return S * meta::get_flop_spinor_sqnorm() + (S - 1) * 2;
 	}
 	if (strcmp(in, "global_squarenorm_reduction") == 0) {
 		return 1000000000000000000000000;
 	}
 	if (strcmp(in, "scalar_product_eoprec") == 0) {
 		//this kernel performs spinor*spinor on each site and then adds S-1 complex numbers
-		return Seo * get_parameters()->get_flop_spinor_spinor() + (Seo - 1) * 2;
+		return Seo * meta::get_flop_spinor_spinor() + (Seo - 1) * 2;
 	}
 	if (strcmp(in, "global_squarenorm_eoprec") == 0) {
 		//this kernel performs spinor_squarenorm on each site and then adds S-1 complex numbers
-		return Seo * get_parameters()->get_flop_spinor_sqnorm() + (Seo - 1) * 2;
+		return Seo * meta::get_flop_spinor_sqnorm() + (Seo - 1) * 2;
 	}
 	if (strcmp(in, "ratio") == 0) {
 		return 11;
 	}
 	if (strcmp(in, "product") == 0) {
-		return get_parameters()->get_flop_complex_mult();
+		return meta::get_flop_complex_mult();
 	}
 	//merged kernels
 	if (strcmp(in, "saxpy_AND_squarenorm_eo") == 0) {
 		//the saxpy kernel performs on each site spinor_times_complex and spinor_add
 		//the squarenorm kernel performs spinor_squarenorm on each site and then adds S-1 complex numbers
-		return Seo * (NDIM * NC * ( get_parameters()->get_flop_complex_mult() + 2) )  + Seo * get_parameters()->get_flop_spinor_sqnorm() + (S - 1) * 2;
+		return Seo * (NDIM * NC * ( meta::get_flop_complex_mult() + 2) )  + Seo * meta::get_flop_spinor_sqnorm() + (S - 1) * 2;
 	}
 
 
@@ -976,7 +976,7 @@ uint64_t Opencl_Module_Spinors::get_flop_size(const char * in)
 
 void Opencl_Module_Spinors::print_profiling(std::string filename, int number)
 {
-  ///@todo Why is that opencl_module_ran here? Should it be spinor?
+	///@todo Why is that opencl_module_ran here? Should it be spinor?
 	Opencl_Module_Ran::print_profiling(filename, number);
 	const char * kernelName;
 	kernelName = "set_spinorfield_cold";
@@ -1033,9 +1033,9 @@ size_t Opencl_Module_Spinors::get_eoprec_spinorfield_buffer_size()
 {
 	if(!eoprec_spinorfield_buf_size) {
 		if(use_soa) {
-			eoprec_spinorfield_buf_size = calculateStride(parameters->get_eoprec_spinorfieldsize(), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex);
+			eoprec_spinorfield_buf_size = calculateStride(meta::get_eoprec_spinorfieldsize(get_parameters()), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex);
 		} else {
-			eoprec_spinorfield_buf_size = parameters->get_eoprec_spinorfieldsize() * sizeof(spinor);
+			eoprec_spinorfield_buf_size = meta::get_eoprec_spinorfieldsize(get_parameters()) * sizeof(spinor);
 		}
 	}
 	return eoprec_spinorfield_buf_size;
@@ -1043,15 +1043,16 @@ size_t Opencl_Module_Spinors::get_eoprec_spinorfield_buffer_size()
 
 void Opencl_Module_Spinors::copy_to_eoprec_spinorfield_buffer(cl_mem buf, const spinor * const source)
 {
-	cl_mem tmp = create_rw_buffer(sizeof(spinor) * parameters->get_eoprec_spinorfieldsize());
-	cl_int clerr = clEnqueueWriteBuffer(get_queue(), tmp, CL_TRUE, 0, sizeof(spinor) * parameters->get_eoprec_spinorfieldsize(), source, 0, 0, NULL);
+	cl_mem tmp = create_rw_buffer(sizeof(spinor) * meta::get_eoprec_spinorfieldsize(get_parameters()));
+	cl_int clerr = clEnqueueWriteBuffer(get_queue(), tmp, CL_TRUE, 0, sizeof(spinor) * meta::get_eoprec_spinorfieldsize(get_parameters()), source, 0, 0, NULL);
 	if(clerr != CL_SUCCESS)
 		throw Opencl_Error(clerr, "Failed to send spinorfield to device");
 
 	convertSpinorfieldToSOA_eo_device(buf, tmp);
 }
 
-Opencl_Module_Spinors::Opencl_Module_Spinors() : Opencl_Module_Ran(), eoprec_spinorfield_buf_size(0)
+Opencl_Module_Spinors::Opencl_Module_Spinors(const meta::Inputparameters& params)
+	: Opencl_Module_Ran(params), eoprec_spinorfield_buf_size(0)
 {
 }
 

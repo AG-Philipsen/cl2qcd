@@ -9,34 +9,34 @@ inline Matrixsu3 getSU3(__global const Matrixsu3StorageType * const restrict in,
 {
 #ifdef _USE_SOA_
 #ifdef _USE_REC12_
-  //CP: this should be the most straightforward implementation
-  return (Matrixsu3) {
-    in[0 * GAUGEFIELD_STRIDE + idx],
-      in[1 * GAUGEFIELD_STRIDE + idx],
-      in[2 * GAUGEFIELD_STRIDE + idx],
-      in[3 * GAUGEFIELD_STRIDE + idx],
-      in[4 * GAUGEFIELD_STRIDE + idx],
-      in[5 * GAUGEFIELD_STRIDE + idx],
-      complexsubtract( complexmult(in[1 * GAUGEFIELD_STRIDE + idx], in[5 * GAUGEFIELD_STRIDE + idx]),  complexmult(in[2 * GAUGEFIELD_STRIDE + idx], in[4 * GAUGEFIELD_STRIDE + idx]) ),
-      complexsubtract( complexmult(in[2 * GAUGEFIELD_STRIDE + idx], in[3 * GAUGEFIELD_STRIDE + idx]),  complexmult(in[0 * GAUGEFIELD_STRIDE + idx], in[5 * GAUGEFIELD_STRIDE + idx]) ),
-      complexsubtract( complexmult(in[0 * GAUGEFIELD_STRIDE + idx], in[4 * GAUGEFIELD_STRIDE + idx]),  complexmult(in[1 * GAUGEFIELD_STRIDE + idx], in[3 * GAUGEFIELD_STRIDE + idx]) )
-      };
+	//CP: this should be the most straightforward implementation
+	return (Matrixsu3) {
+		in[0 * GAUGEFIELD_STRIDE + idx],
+		   in[1 * GAUGEFIELD_STRIDE + idx],
+		   in[2 * GAUGEFIELD_STRIDE + idx],
+		   in[3 * GAUGEFIELD_STRIDE + idx],
+		   in[4 * GAUGEFIELD_STRIDE + idx],
+		   in[5 * GAUGEFIELD_STRIDE + idx],
+		   complexsubtract( complexmult(in[1 * GAUGEFIELD_STRIDE + idx], in[5 * GAUGEFIELD_STRIDE + idx]),  complexmult(in[2 * GAUGEFIELD_STRIDE + idx], in[4 * GAUGEFIELD_STRIDE + idx]) ),
+		   complexsubtract( complexmult(in[2 * GAUGEFIELD_STRIDE + idx], in[3 * GAUGEFIELD_STRIDE + idx]),  complexmult(in[0 * GAUGEFIELD_STRIDE + idx], in[5 * GAUGEFIELD_STRIDE + idx]) ),
+		   complexsubtract( complexmult(in[0 * GAUGEFIELD_STRIDE + idx], in[4 * GAUGEFIELD_STRIDE + idx]),  complexmult(in[1 * GAUGEFIELD_STRIDE + idx], in[3 * GAUGEFIELD_STRIDE + idx]) )
+	};
 #else // _USE_REC12_
-  return (Matrixsu3) {
-    in[0 * GAUGEFIELD_STRIDE + idx],
-      in[1 * GAUGEFIELD_STRIDE + idx],
-      in[2 * GAUGEFIELD_STRIDE + idx],
-      in[3 * GAUGEFIELD_STRIDE + idx],
-      in[4 * GAUGEFIELD_STRIDE + idx],
-      in[5 * GAUGEFIELD_STRIDE + idx],
-      in[6 * GAUGEFIELD_STRIDE + idx],
-      in[7 * GAUGEFIELD_STRIDE + idx],
-      in[8 * GAUGEFIELD_STRIDE + idx]
-      };
+	return (Matrixsu3) {
+		in[0 * GAUGEFIELD_STRIDE + idx],
+		   in[1 * GAUGEFIELD_STRIDE + idx],
+		   in[2 * GAUGEFIELD_STRIDE + idx],
+		   in[3 * GAUGEFIELD_STRIDE + idx],
+		   in[4 * GAUGEFIELD_STRIDE + idx],
+		   in[5 * GAUGEFIELD_STRIDE + idx],
+		   in[6 * GAUGEFIELD_STRIDE + idx],
+		   in[7 * GAUGEFIELD_STRIDE + idx],
+		   in[8 * GAUGEFIELD_STRIDE + idx]
+	};
 #endif // _USE_REC12_
 #else  // _USE_SOA_
-        //printf("%i\n", idx);
-        return in[idx];
+	//printf("%i\n", idx);
+	return in[idx];
 #endif
 }
 

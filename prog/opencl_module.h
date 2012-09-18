@@ -22,7 +22,7 @@
 #include "globaldefs.h"
 #include "types.h"
 #include "host_use_timer.h"
-#include "inputparameters.h"
+#include "meta/inputparameters.hpp"
 #include "opencl_compiler.hpp"
 
 #include "exceptions.h"
@@ -40,8 +40,10 @@ public:
 	/**
 	 * Empty constructor.
 	 *
+	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module() : gaugefield_bytes(0) {};
+	Opencl_Module(const meta::Inputparameters& params)
+		: parameters(params), gaugefield_bytes(0) {};
 	/**
 	 * Destructor, calls finalize().
 	 *
@@ -63,8 +65,10 @@ public:
 	 * @param[in] maxcomp maximum_compute_units for device
 	 * @param[in] double_ext OpenCL double extension for device (AMD or KHR)
 	 * @param[in] device_rank Unique (to the program) identifier for this device
+	 *
+	 * @deprecated To be replaced by a proper constructor
 	 */
-	void init(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int device_rank);
+	void init(cl_command_queue queue, int maxcomp, std::string double_ext, unsigned int device_rank);
 
 	// set and get methods
 	/**
@@ -88,15 +92,10 @@ public:
 	 */
 	cl_mem get_gaugefield();
 	/**
-	 * Set inputparameters
-	 * @param params Pointer to inputparameters
-	 */
-	void set_parameters(inputparameters* params);
-	/**
 	 * Get a pointer to inputparameters
 	 * @return parameters
 	 */
-	inputparameters* get_parameters();
+	const meta::Inputparameters& get_parameters();
 	/**
 	 * Get OpenCL device
 	 * @return device
@@ -116,12 +115,12 @@ public:
 	 * Set device_double_extension
 	 * @param double_ext "AMD" or "KHR"
 	 */
-	void set_device_double_extension(string double_ext);
+	void set_device_double_extension(std::string double_ext);
 	/**
 	 * Get the device_double_extension
 	 * @return double_extension
 	 */
-	string get_device_double_extension();
+	std::string get_device_double_extension();
 	/**
 	 * Get the maximum_compute_units
 	 * @return max_compute_units
@@ -186,7 +185,7 @@ public:
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual void fill_collect_options(stringstream* collect_options);
+	virtual void fill_collect_options(std::stringstream* collect_options);
 	/**
 	 * Collect the buffers to generate for OpenCL.
 	 * Virtual method, allows to include more buffers in inherited classes.
@@ -281,7 +280,7 @@ public:
 	 * @param[in] kernel
 	 * @return kernel_name
 	 */
-	string get_kernel_name(const cl_kernel kernel);
+	std::string get_kernel_name(const cl_kernel kernel);
 
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
@@ -488,7 +487,7 @@ protected:
 	 */
 	int get_numthreads();
 
-	inputparameters* parameters;
+	const meta::Inputparameters& parameters;
 
 	/**
 	 * Whether this device uses SOA storage
@@ -526,7 +525,7 @@ private:
 	size_t gaugefield_bytes;
 
 	cl_uint max_compute_units;
-	string device_double_extension;
+	std::string device_double_extension;
 
 	cl_device_id device;
 	cl_device_type device_type;

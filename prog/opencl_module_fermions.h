@@ -22,7 +22,6 @@
 #include "types.h"
 #include "types_fermions.h"
 #include "host_use_timer.h"
-#include "inputparameters.h"
 #include "opencl_compiler.hpp"
 
 #include "opencl_module.h"
@@ -128,13 +127,21 @@ public:
  */
 class Opencl_Module_Fermions : public Opencl_Module_Spinors {
 public:
+	/**
+	 * Empty constructor.
+	 *
+	 * @param[in] params points to an instance of inputparameters
+	 */
+	Opencl_Module_Fermions(const meta::Inputparameters& params)
+		: Opencl_Module_Spinors(params) { }
+
 
 	// OpenCL specific methods needed for building/compiling the OpenCL program
 	/**
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual void fill_collect_options(stringstream* collect_options);
+	virtual void fill_collect_options(std::stringstream* collect_options);
 	/**
 	 * Collect the buffers to generate for OpenCL.
 	 * Virtual method, allows to include more buffers in inherited classes.
@@ -321,7 +328,7 @@ private:
 	cl_kernel dslash_AND_M_tm_inverse_sitediagonal_eo;
 	cl_kernel dslash_AND_M_tm_inverse_sitediagonal_minus_eo;
 	cl_kernel M_tm_sitediagonal_AND_gamma5_eo;
-;	cl_kernel M_tm_sitediagonal_minus_AND_gamma5_eo;
+	cl_kernel M_tm_sitediagonal_minus_AND_gamma5_eo;
 	//CP: variables for normal solver
 	cl_mem clmem_inout;
 	cl_mem clmem_rn;

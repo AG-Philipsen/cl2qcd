@@ -1,6 +1,8 @@
 #include "../opencl_module_fermions.h"
 #include "../gaugefield_hybrid.h"
 
+#include "../meta/util.hpp"
+
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE Fermionmatrix
@@ -14,8 +16,8 @@ class Device : public Opencl_Module {
 	cl_kernel testKernel;
 
 public:
-	Device(cl_command_queue queue, inputparameters* params, int maxcomp, string double_ext, unsigned int dev_rank) : Opencl_Module() {
-		Opencl_Module::init(queue, params, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module(params) {
+		Opencl_Module::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -29,9 +31,9 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
+	Dummyfield(cl_device_type device_type, const meta::Inputparameters& params) : Gaugefield_hybrid(params) {
 
-		init(1, device_type, &params);
+		init(1, device_type);
 	};
 
 	virtual void init_tasks();
@@ -42,19 +44,23 @@ public:
 private:
 	void fill_buffers();
 	void clear_buffers();
-	inputparameters params;
 };
 
 
-BOOST_AUTO_TEST_CASE( GEOMETRY )
+BOOST_AUTO_TEST_CASE( GEOMETRY_CPU )
 {
-	logger.info() << "Init CPU device";
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU);
+	const char* _params[] = {"foo", "--use_gpu=false"};
+	meta::Inputparameters params(2, _params);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU, params);
 	dummy.runTestKernel();
-	logger.info() << "Init GPU device";
-	Dummyfield dummy2(CL_DEVICE_TYPE_GPU);
-	dummy2.runTestKernel();
-	BOOST_MESSAGE("Tested GEOMETRY");
+}
+
+BOOST_AUTO_TEST_CASE( GEOMETRY_GPU )
+{
+	const char* _params[] = {"foo", "--use_gpu=true"};
+	meta::Inputparameters params(2, _params);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, params);
+	dummy.runTestKernel();
 }
 
 void Dummyfield::init_tasks()
@@ -104,7 +110,7 @@ void Dummyfield::runTestKernel()
 {
 	int gs, ls;
 	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = get_parameters()->get_eoprec_spinorfieldsize();
+		gs = meta::get_eoprec_spinorfieldsize(get_parameters());
 		ls = 64;
 	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
 		gs = opencl_modules[0]->get_max_compute_units();

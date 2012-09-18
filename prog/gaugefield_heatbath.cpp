@@ -16,8 +16,8 @@ void Gaugefield_heatbath::init_tasks()
 	//this must be a pointer in general, since most likely not every entry in the array is of the same size
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 
-	opencl_modules[task_heatbath] = new Opencl_Module_Heatbath[1];
-	get_task_heatbath()->init(queue[task_heatbath], get_parameters(), get_max_compute_units(task_heatbath), get_double_ext(task_heatbath), task_heatbath);
+	opencl_modules[task_heatbath] = new Opencl_Module_Heatbath(get_parameters());
+	get_task_heatbath()->init(queue[task_heatbath], get_max_compute_units(task_heatbath), get_double_ext(task_heatbath), task_heatbath);
 
 	return;
 }

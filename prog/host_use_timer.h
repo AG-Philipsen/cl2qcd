@@ -12,8 +12,13 @@
 #include <sstream>
 //#include <boost/lexical_cast.hpp>
 
+#ifdef __APPLE__
+#include <OpenCL/cl.h>
+#else
+#include <CL/cl.h>
+#endif
+
 #include "globaldefs.h"
-#include "inputparameters.h"
 #include "klepsydra/klepsydra.hpp"
 
 extern char * benchmark_id;
