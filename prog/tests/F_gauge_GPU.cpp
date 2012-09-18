@@ -28,16 +28,14 @@ public:
 	void clear_kernels();
 };
 
-class Dummyfield : public Gaugefield_hybrid {
 
-public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid() {
-	  std::stringstream tmp;
+const std::string SOURCEFILE = std::string(SOURCEDIR)
 #ifdef _USEDOUBLEPREC_
-	  tmp << SOURCEDIR << "/tests/f_gauge_input_1";
+  + "/tests/f_gauge_input_1";
 #else
-                               + "/tests/f_gauge_input_1_single";
+ + "/tests/f_gauge_input_1_single";
 #endif
+
 const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
 const meta::Inputparameters INPUT(2, PARAMS);
 
@@ -103,7 +101,7 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
 
 	logger.info() << "Choosing reference value";
 	//CP: I will not check if cpu and gpu have different starting conditions, this should never be the case...
-	if(cpu.get_parameters()->get_startcondition() == COLD_START) {
+	if(cpu.get_parameters().get_startcondition() == meta::Inputparameters::cold_start) {
 	  logger.info() << "Use cold config..." ;
 	  ref_val = 0.;
 	} else{
