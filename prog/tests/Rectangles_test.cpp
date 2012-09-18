@@ -227,8 +227,8 @@ bool Dummyfield::verify(hmc_float cpu, hmc_float gpu, hmc_float prec)
 	//this is too much required, since rounding errors can occur
 	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
 	//instead, test if the two number agree up to some precision prec
-	hmc_float dev = (abs(cpu) - abs(gpu)) / cpu;
-	if(abs(dev) < prec) {
+	hmc_float dev = (fabs(cpu) - fabs(gpu)) / cpu;
+	if(fabs(dev) < prec) {
 		return true;
 	} else {
 		return false;
