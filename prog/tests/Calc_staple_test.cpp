@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 	src = std::string(SOURCEDIR) + "/tests/" + "staple_input_1_cold";
 	const char* _params_cpu_cold[] = {"foo", src.c_str(), "--use_gpu=false"};
 	meta::Inputparameters params_cpu_cold = meta::Inputparameters(3, _params_cpu_cold);
-	hardware::System system_cpu_old(params_cpu);
+	hardware::System system_cpu_old(params_cpu_cold);
 	Dummyfield cpu_cold(CL_DEVICE_TYPE_CPU, &system_cpu_old);
 	hmc_float cold_back = cpu_cold.runTestKernel();
 	hmc_float cold_ref = 18 * NDIM * meta::get_vol4d(dummy.get_parameters());
