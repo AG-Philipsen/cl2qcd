@@ -121,7 +121,6 @@ set_abs_paths(OPTIMAL_FILES
 	host_readgauge.cpp
 	host_use_timer.cpp
 	host_writegaugefield.cpp
-	logger.cpp
 	opencl_compiler.cpp
 	opencl_module.cpp
 	opencl_module_correlator.cpp
@@ -144,13 +143,12 @@ set(OPTIMAL_USED_LIBS
 )
 
 add_library(optimal ${OPTIMAL_FILES})
-target_link_libraries(optimal ${OPTIMAL_MODULES} ${OPTIMAL_USED_LIBS})
-
 # add all modules
 add_modules(optimal
-	meta
 	hardware
+	meta
 )
+target_link_libraries(optimal ${OPTIMAL_USED_LIBS})
 
 # The actual executables (frontends)
 add_executable(heatbath heatbath.cpp)
