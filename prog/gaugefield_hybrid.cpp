@@ -137,11 +137,6 @@ void Gaugefield_hybrid::init_opencl()
 		init_devices(ntask);
 	}
 
-	//Initilize context
-	logger.trace() << "Create context...";
-	context = clCreateContext(0, len, devices, 0, 0, &clerr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateContext", __FILE__, __LINE__);
-
 	//now we need a mapping between devices and tasks for the case of fewer devices than tasks
 	device_id_for_task = new int [len];
 	for(int ntask = 0 ; ntask < get_num_tasks() ; ntask++) {
@@ -159,6 +154,7 @@ void Gaugefield_hybrid::init_opencl()
 
 	//Initilize queues, one per task
 	// Note that it might be advantageous to combine tasks on the same device into the same queue, i.e. to have only one queue per device even for more devices
+	cl_context context = *system;
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
 		logger.trace() << "Create command queue for task #" << ntask << "...";
 
@@ -267,9 +263,6 @@ void Gaugefield_hybrid::finalize_opencl()
 		clerr = clReleaseCommandQueue(queue[ntask]);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseCommandQueue", __FILE__, __LINE__);
 	}
-
-	clerr = clReleaseContext(context);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseContext", __FILE__, __LINE__);
 }
 
 void Gaugefield_hybrid::init_gaugefield()

@@ -73,6 +73,13 @@ namespace hardware {
 		 */
 		operator cl_platform_id() const noexcept;
 
+		/**
+		 * Allow to use the context
+		 *
+		 * \deprected This is not meant for wider application and only there to ease transition to the new architecture
+		 */
+		operator cl_context() const noexcept;
+
 	private:
 
 		/**

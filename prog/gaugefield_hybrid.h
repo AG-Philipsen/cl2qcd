@@ -322,7 +322,6 @@ private:
 	int* device_id_for_task;
 
 	//OpenCL:
-	cl_context context;
 	cl_device_id* devices;
 
 

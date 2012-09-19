@@ -115,3 +115,8 @@ hardware::System::operator cl_platform_id() const noexcept
 {
 	return platform;
 }
+
+hardware::System::operator cl_context() const noexcept
+{
+	return context;
+}
