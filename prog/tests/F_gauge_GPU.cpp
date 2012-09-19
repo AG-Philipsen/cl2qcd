@@ -57,7 +57,6 @@ public:
   virtual void finalize_opencl();
   
   hmc_float get_squarenorm();
-  bool verify(hmc_float, hmc_float, hmc_float);
   void runTestKernel();
   
 private:
@@ -152,20 +151,6 @@ hmc_float Dummyfield::get_squarenorm()
 	return result;
 }
 
-bool Dummyfield::verify(hmc_float cpu, hmc_float gpu, hmc_float prec)
-{
-	//this is too much required, since rounding errors can occur
-	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
-	//instead, test if the two number agree up to some precision prec
-  hmc_float dev = (fabs(cpu) - fabs(gpu)) / fabs(cpu);
-  logger.info() << fabs(dev);
-	if(fabs(dev) < prec) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
 void Dummyfield::runTestKernel()
 {
 	int gs = 0, ls = 0;
@@ -186,6 +171,21 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
   logger.info() << "Test CPU and GPU version of kernel";
   logger.info() << "\tf_gauge";
   logger.info() << "against reference value";
+
+  logger.info() << "Choosing reference value";
+  //CP: I will not check if cpu and gpu have different starting conditions, this should never be the case...
+  if(cpu.get_parameters().get_startcondition() == meta::Inputparameters::cold_start) {
+    logger.info() << "Use cold config..." ;
+    ref_val = 0.;
+  } else{
+    logger.info() << "Use specific config..";
+    logger.warn() << "The reference value has to be adjusted manually if this config is changed!";
+    ref_val = 52723.299867438494;
+  }
+  logger.info() << "reference value:\t" << ref_val;
+
+  hmc_float prec = 1e-8;  
+  logger.info() << "acceptance precision: " << prec;
 
   logger.info() << "Init CPU device";
   Dummyfield cpu(CL_DEVICE_TYPE_CPU, INPUT);
@@ -209,20 +209,6 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
   logger.info() << gpu_res;
   BOOST_MESSAGE("Tested GPU");
   
-  logger.info() << "Choosing reference value";
-  //CP: I will not check if cpu and gpu have different starting conditions, this should never be the case...
-  if(cpu.get_parameters().get_startcondition() == meta::Inputparameters::cold_start) {
-    logger.info() << "Use cold config..." ;
-    ref_val = 0.;
-  } else{
-    logger.info() << "Use specific config..";
-    logger.warn() << "The reference value has to be adjusted manually if this config is changed!";
-    ref_val = 52723.299867438494;
-  }
-  logger.info() << "reference value:\t" << ref_val;
-
-  hmc_float prec = 1e-8;  
-  logger.info() << "acceptance precision: " << prec;
   logger.info() << "Compare CPU result to reference value";
   BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
 
@@ -239,6 +225,21 @@ BOOST_AUTO_TEST_CASE( F_GAUGE_REC12 )
   logger.info() << "Test CPU and GPU version of kernel";
   logger.info() << "\tf_gauge";
   logger.info() << "against reference value";
+
+  logger.info() << "Choosing reference value";
+  //CP: I will not check if cpu and gpu have different starting conditions, this should never be the case...
+  if(cpu.get_parameters().get_startcondition() == meta::Inputparameters::cold_start) {
+    logger.info() << "Use cold config..." ;
+    ref_val = 0.;
+  } else{
+    logger.info() << "Use specific config..";
+    logger.warn() << "The reference value has to be adjusted manually if this config is changed!";
+    ref_val = 52723.3;
+  }
+  logger.info() << "reference value:\t" << ref_val;
+
+  hmc_float prec = 1e-8;  
+  logger.info() << "acceptance precision: " << prec;
 
   logger.info() << "Init CPU device";
   Dummyfield cpu(CL_DEVICE_TYPE_CPU, INPUT_REC12);
@@ -262,25 +263,10 @@ BOOST_AUTO_TEST_CASE( F_GAUGE_REC12 )
   logger.info() << gpu_res;
   BOOST_MESSAGE("Tested GPU");
   
-  logger.info() << "Choosing reference value";
-  //CP: I will not check if cpu and gpu have different starting conditions, this should never be the case...
-  if(cpu.get_parameters().get_startcondition() == meta::Inputparameters::cold_start) {
-    logger.info() << "Use cold config..." ;
-    ref_val = 0.;
-  } else{
-    logger.info() << "Use specific config..";
-    logger.warn() << "The reference value has to be adjusted manually if this config is changed!";
-    ref_val = 52723.3;
-  }
-  logger.info() << "reference value:\t" << ref_val;
-
-  hmc_float prec = 1e-8;  
-  logger.info() << "acceptance precision: " << prec;
   logger.info() << "Compare CPU result to reference value";
   BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
 
   logger.info() << "Compare GPU result to reference value";
-  bool res2 = dummy.verify(gpu_res, ref_val, prec);
   BOOST_REQUIRE_CLOSE(gpu_res, ref_val, prec);
   
   logger.info() << "Compare CPU and GPU results";
