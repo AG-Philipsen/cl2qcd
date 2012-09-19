@@ -48,7 +48,7 @@ public:
 	 * Destructor, calls finalize().
 	 *
 	 */
-	~Opencl_Module() {
+	virtual ~Opencl_Module() {
 		delete[] device_name;
 	}
 
