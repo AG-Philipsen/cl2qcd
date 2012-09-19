@@ -1,6 +1,7 @@
 prec = 32
 num_dev = 1
 use_gpu = false
+use_cpu = false
 
 use_aniso = true
 use_chem_pot_re = true

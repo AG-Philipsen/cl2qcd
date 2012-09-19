@@ -50,6 +50,7 @@ namespace meta {
 			const std::vector<int> get_selected_devices() const noexcept;
 			int get_device_count() const noexcept;
 			bool get_use_gpu() const noexcept;
+			bool get_use_cpu() const noexcept;
 
 			bool get_use_aniso() const noexcept;
 			bool get_use_chem_pot_re() const noexcept;
@@ -146,6 +147,7 @@ namespace meta {
 			std::vector<int> selected_devices;
 			int device_count;
 			bool use_gpu;
+			bool use_cpu;
 
 			bool use_aniso;
 			bool use_chem_pot_re;
