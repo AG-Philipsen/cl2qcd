@@ -168,15 +168,24 @@ void Dummyfield::runTestKernel()
 BOOST_AUTO_TEST_CASE( F_GAUGE_CPU )
 {
   hmc_float ref_val;
-  logger.info() << "Test CPU version of kernel";
+  logger.info() << "Test kernel";
   logger.info() << "\tf_gauge";
   logger.info() << "against reference value";
 
   hmc_float prec = 1e-8;  
   logger.info() << "acceptance precision: " << prec;
 
-  logger.info() << "Init CPU device";
-  Dummyfield cpu(CL_DEVICE_TYPE_CPU, INPUT);
+  logger.info() << "Init device";
+  //get input file that has been passed as an argument 
+  const char* inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+  std::string src = std::string(SOURCEDIR) + "/tests/" + std::string(inputfile);
+  logger.info() << "inputfile used: " << src;
+  //get use_gpu = true/false that has been passed as an argument 
+  const char* gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+  logger.info() << "GPU usage: " << gpu_opt;
+  const char* _params_cpu[] = {"foo", src.c_str(), gpu_opt};
+  meta::Inputparameters params(3, _params_cpu);
+  Dummyfield cpu(CL_DEVICE_TYPE_CPU, params);
   logger.info() << "gaugeobservables: ";
   cpu.print_gaugeobservables_from_task(0, 0);
   cpu.runTestKernel();
@@ -196,7 +205,6 @@ BOOST_AUTO_TEST_CASE( F_GAUGE_CPU )
     ref_val = 52723.299867438494;
   }
   logger.info() << "reference value:\t" << ref_val;
-
 
   logger.info() << "Compare CPU result to reference value";
   BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
