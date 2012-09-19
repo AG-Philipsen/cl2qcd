@@ -33,6 +33,9 @@ BOOST_AUTO_TEST_CASE(devices)
 	meta::Inputparameters params(1, _params);
 	System system(params);
 
+	BOOST_REQUIRE(static_cast<const cl_platform_id>(system));
+	BOOST_REQUIRE(static_cast<const cl_context>(system));
+
 	// there should always be at least one device
 	// otherwise code or system is broken
 	// in both cases it is good to fail
