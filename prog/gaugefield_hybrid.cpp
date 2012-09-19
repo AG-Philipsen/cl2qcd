@@ -75,11 +75,19 @@ void Gaugefield_hybrid::init_opencl()
 	//Initialize OpenCL,
 	logger.trace() << "OpenCL being initialized...";
 
-	cl_uint num_devices_gpu;
-	cl_uint num_devices_cpu;
-	cl_platform_id platform = *system;
-	clerr = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices_gpu);
-	clerr = clGetDeviceIDs(platform, CL_DEVICE_TYPE_CPU, 0, NULL, &num_devices_cpu);
+	cl_uint num_devices_gpu = 0;
+	cl_uint num_devices_cpu = 0;
+for(auto device: system->get_devices()) {
+		switch(device->get_device_type()) {
+			case CL_DEVICE_TYPE_GPU:
+				++num_devices_gpu;
+				break;
+			case CL_DEVICE_TYPE_CPU:
+				++num_devices_cpu;
+				break;
+				// ignore other cases
+		}
+	}
 	logger.info() << "\tFound " << num_devices_gpu << " GPU(s) and " << num_devices_cpu << " CPU(s).";
 
 	//LZ: begin debug
@@ -138,7 +146,7 @@ void Gaugefield_hybrid::init_opencl()
 	}
 
 	//now we need a mapping between devices and tasks for the case of fewer devices than tasks
-	device_id_for_task = new int [len];
+	device_id_for_task = new int [get_num_tasks()];
 	for(int ntask = 0 ; ntask < get_num_tasks() ; ntask++) {
 		device_id_for_task[ntask] = ntask;
 	}
@@ -173,9 +181,18 @@ void Gaugefield_hybrid::init_devices(int ndev)
 
 	char info[512];
 
-	cl_platform_id platform = *system;
-	clerr = clGetDeviceIDs(platform, get_device_type(ndev), 1, &devices[ndev], NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceIDs", __FILE__, __LINE__);
+	// currently always use first device of proper type
+	// TODO use proper device
+	devices[ndev] = 0;
+for(auto device: system->get_devices()) {
+		if(device->get_device_type() == get_device_type(ndev)) {
+			devices[ndev] = device->get_id();
+			break;
+		}
+	}
+	if(devices[ndev] == 0) {
+		throw Print_Error_Message("Failed to find usable device for task " + ndev);
+	}
 
 	clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_NAME, 512 * sizeof(char), info, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
