@@ -32,8 +32,17 @@ hardware::System::System(const meta::Inputparameters& params, bool enable_profil
 		0
 	};
 
-	// TODO allow restriction of device type via input params
-	context = clCreateContextFromType(context_props, CL_DEVICE_TYPE_ALL, 0, 0, &err);
+	// restrict devices according to input parameters
+	cl_device_type enabled_types = 0;
+	if(params.get_use_gpu()) {
+		enabled_types |= CL_DEVICE_TYPE_GPU;
+	}
+	if(params.get_use_cpu()) {
+		enabled_types |= CL_DEVICE_TYPE_CPU;
+	}
+
+	// create devices
+	context = clCreateContextFromType(context_props, enabled_types, 0, 0, &err);
 	if(err) {
 		throw OpenclException(err, "clCreateContextFromType", __FILE__, __LINE__);
 	}
