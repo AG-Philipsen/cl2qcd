@@ -86,8 +86,10 @@ target_link_libraries(f_gauge
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(F_gauge f_gauge --run_test=F_GAUGE)
-add_test(F_gauge_REC12 f_gauge --run_test=F_GAUGE_REC12)
+add_test(F_gauge_CPU f_gauge --run_test=F_GAUGE_CPU)
+add_test(F_gauge_CPU_REC12 f_gauge --run_test=F_GAUGE_CPU_REC12)
+add_test(F_gauge_GPU f_gauge --run_test=F_GAUGE_GPU)
+add_test(F_gauge_GPU_REC12 f_gauge --run_test=F_GAUGE_GPU_REC12)
 
 add_executable(rectangles_test Rectangles_test.cpp)
 target_link_libraries(rectangles_test
