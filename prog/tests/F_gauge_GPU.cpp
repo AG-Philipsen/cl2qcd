@@ -157,7 +157,8 @@ bool Dummyfield::verify(hmc_float cpu, hmc_float gpu, hmc_float prec)
 	//this is too much required, since rounding errors can occur
 	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
 	//instead, test if the two number agree up to some precision prec
-	hmc_float dev = (fabs(cpu) - fabs(gpu)) / cpu;
+  hmc_float dev = (fabs(cpu) - fabs(gpu)) / fabs(cpu);
+  logger.info() << fabs(dev);
 	if(fabs(dev) < prec) {
 		return true;
 	} else {
@@ -216,38 +217,20 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
   } else{
     logger.info() << "Use specific config..";
     logger.warn() << "The reference value has to be adjusted manually if this config is changed!";
-    ref_val = 52723.3;
+    ref_val = 52723.299867438494;
   }
   logger.info() << "reference value:\t" << ref_val;
 
-  hmc_float prec = 1e-10;  
+  hmc_float prec = 1e-8;  
   logger.info() << "acceptance precision: " << prec;
   logger.info() << "Compare CPU result to reference value";
-  bool res1 = cpu.verify(cpu_res, ref_val, prec);
-  if(res1) {
-    logger.info() << "CPU and reference value agree within accuary of " << 1e-10;
-  } else {
-    logger.info() << "CPU and reference value DO NOT agree within accuary of " << 1e-10;
-    BOOST_REQUIRE_EQUAL(1, 0);
-  }
+  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
 
   logger.info() << "Compare GPU result to reference value";
-  bool res2 = cpu.verify(gpu_res, ref_val, prec);
-  if(res2) {
-    logger.info() << "GPU and reference value agree within accuary of " << 1e-10;
-  } else {
-    logger.info() << "GPU and reference value DO NOT agree within accuary of " << 1e-10;
-    BOOST_REQUIRE_EQUAL(1, 0);
-  }
+  BOOST_REQUIRE_CLOSE(gpu_res, ref_val, prec);
   
   logger.info() << "Compare CPU and GPU results";
-  bool res3 = cpu.verify(cpu_res, gpu_res, prec);
-  if(res3) {
-    logger.info() << "CPU and GPU result agree within accuary of " << prec;
-  } else {
-    logger.info() << "CPU and GPU result DO NOT agree within accuary of " << prec;
-    BOOST_REQUIRE_EQUAL(1, 0);
-  }
+  BOOST_REQUIRE_CLOSE(cpu_res, gpu_res, prec);
 }
 
 BOOST_AUTO_TEST_CASE( F_GAUGE_REC12 )
@@ -291,33 +274,16 @@ BOOST_AUTO_TEST_CASE( F_GAUGE_REC12 )
   }
   logger.info() << "reference value:\t" << ref_val;
 
-  hmc_float prec = 1e-10;  
+  hmc_float prec = 1e-8;  
   logger.info() << "acceptance precision: " << prec;
   logger.info() << "Compare CPU result to reference value";
-  bool res1 = cpu.verify(cpu_res, ref_val, prec);
-  if(res1) {
-    logger.info() << "CPU and reference value agree within accuary of " << 1e-10;
-  } else {
-    logger.info() << "CPU and reference value DO NOT agree within accuary of " << 1e-10;
-    BOOST_REQUIRE_EQUAL(1, 0);
-  }
+  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
 
   logger.info() << "Compare GPU result to reference value";
   bool res2 = dummy.verify(gpu_res, ref_val, prec);
-  if(res2) {
-    logger.info() << "GPU and reference value agree within accuary of " << 1e-10;
-  } else {
-    logger.info() << "GPU and reference value DO NOT agree within accuary of " << 1e-10;
-    BOOST_REQUIRE_EQUAL(1, 0);
-  }
+  BOOST_REQUIRE_CLOSE(gpu_res, ref_val, prec);
   
   logger.info() << "Compare CPU and GPU results";
-  bool res3 = cpu.verify(cpu_res, gpu_res, prec);
-  if(res3) {
-    logger.info() << "CPU and GPU result agree within accuary of " << prec;
-  } else {
-    logger.info() << "CPU and GPU result DO NOT agree within accuary of " << prec;
-    BOOST_REQUIRE_EQUAL(1, 0);
-  }
+  BOOST_REQUIRE_CLOSE(cpu_res, gpu_res, prec);
 }
 
