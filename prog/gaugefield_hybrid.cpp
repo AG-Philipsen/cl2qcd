@@ -72,36 +72,12 @@ void Gaugefield_hybrid::init_opencl()
 {
 	cl_int clerr = CL_SUCCESS;
 
-	// in debug scenarios make the compiler dump the compile results
-	if( logger.beDebug() ) {
-		setenv("GPU_DUMP_DEVICE_KERNEL", "3", 0); // can be overriden from outside
-		setenv("AMD_OCL_BUILD_OPTIONS_APPEND", "-save-temps", 0); // can be overriden from outside
-	}
-
 	//Initialize OpenCL,
 	logger.trace() << "OpenCL being initialized...";
 
-	cl_uint num_platforms;
-	//LZ: for now, stick to one platform without any further checks...
-	clerr = clGetPlatformIDs(1, &platform, &num_platforms);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetPlatformIDs", __FILE__, __LINE__);
-
-
-	//Cout Platforminfo
-	char info[512];
-	clerr = clGetPlatformInfo(platform, CL_PLATFORM_NAME, 512 * sizeof(char), info, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetPlatformInfo", __FILE__, __LINE__);
-	logger.info() << "\tCL_PLATFORM_NAME:     " << info;
-	clerr = clGetPlatformInfo(platform, CL_PLATFORM_VENDOR, 512 * sizeof(char), info, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetPlatformInfo", __FILE__, __LINE__);
-	logger.info() << "\tCL_PLATFORM_VENDOR:   " << info;
-	clerr = clGetPlatformInfo(platform, CL_PLATFORM_VERSION, 512 * sizeof(char), info, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetPlatformInfo", __FILE__, __LINE__);
-	logger.info() << "\tCL_PLATFORM_VERSION:  " << info;
-
-
 	cl_uint num_devices_gpu;
 	cl_uint num_devices_cpu;
+	cl_platform_id platform = *system;
 	clerr = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices_gpu);
 	clerr = clGetDeviceIDs(platform, CL_DEVICE_TYPE_CPU, 0, NULL, &num_devices_cpu);
 	logger.info() << "\tFound " << num_devices_gpu << " GPU(s) and " << num_devices_cpu << " CPU(s).";
@@ -201,6 +177,7 @@ void Gaugefield_hybrid::init_devices(int ndev)
 
 	char info[512];
 
+	cl_platform_id platform = *system;
 	clerr = clGetDeviceIDs(platform, get_device_type(ndev), 1, &devices[ndev], NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceIDs", __FILE__, __LINE__);
 

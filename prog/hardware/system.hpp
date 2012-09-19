@@ -66,6 +66,13 @@ namespace hardware {
 		System(const System&) = delete;
 		System() = delete;
 
+		/**
+		 * Allow to use the platform id
+		 *
+		 * \deprected This is not meant for wider application and only there to ease transition to the new architecture
+		 */
+		operator cl_platform_id() const noexcept;
+
 	private:
 
 		/**
@@ -82,6 +89,11 @@ namespace hardware {
 		 * The OpenCL context used by the application
 		 */
 		cl_context context;
+
+		/**
+		 * The platform used by this system.
+		 */
+		cl_platform_id platform;
 	};
 
 }
