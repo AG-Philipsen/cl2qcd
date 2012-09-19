@@ -40,7 +40,7 @@ int main(int argc, const char* argv[])
 	init_timer.reset();
 	sourcefileparameters parameters_source;
 
-	hardware::System system(parameters);
+	hardware::System system(parameters, true);
 	Gaugefield_heatbath gaugefield(&system);
 
 	cl_device_type primary_device_type;

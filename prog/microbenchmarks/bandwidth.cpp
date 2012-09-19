@@ -136,7 +136,7 @@ int main(int argc, char** argv)
 	}
 
 	meta::Inputparameters params(0, 0);
-	hardware::System system(params);
+	hardware::System system(params, true);
 
 	if(vm.count("stepelements")) {
 		logger.info() << "Sweeping element count for fixed thread count.";

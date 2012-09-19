@@ -10,7 +10,7 @@
 #include <sstream>
 #include "../logger.hpp"
 
-hardware::System::System(const meta::Inputparameters& params)
+hardware::System::System(const meta::Inputparameters& params, bool enable_profiling)
 	: params(params)
 {
 	using namespace hardware;
@@ -50,7 +50,7 @@ hardware::System::System(const meta::Inputparameters& params)
 	}
 
 	for(cl_uint i = 0; i < num_devices; ++i) {
-		Device * dev = new Device(context, device_ids[i], params);
+		Device * dev = new Device(context, device_ids[i], params, enable_profiling);
 #ifdef _USEDOUBLEPREC_
 		if(!dev->is_double_supported()) {
 			continue;

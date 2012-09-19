@@ -45,7 +45,7 @@ int main(int argc, const char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		init_timer.reset();
-		hardware::System system(parameters);
+		hardware::System system(parameters, true);
 		Gaugefield_inverter gaugefield(&system);
 
 		//one needs 2 task here

@@ -36,7 +36,7 @@ int main(int argc, const char* argv[])
 	sourcefileparameters parameters_source;
 	//hmc_observables obs;
 
-	hardware::System system(parameters);
+	hardware::System system(parameters, true);
 	Gaugefield_hmc gaugefield(&system);
 
 	int numtasks = 1;

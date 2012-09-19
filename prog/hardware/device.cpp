@@ -16,7 +16,7 @@ static size_t retrieve_num_compute_units(cl_device_id device_id);
 static cl_device_type retrieve_device_type(cl_device_id device_id);
 static bool retrieve_supports_double(cl_device_id device_id);
 
-hardware::Device::Device(cl_context context, cl_device_id device_id, const meta::Inputparameters& params)
+hardware::Device::Device(cl_context context, cl_device_id device_id, const meta::Inputparameters& params, bool enable_profiling)
 	: context(context), device_id(device_id), params(params),
 	  preferred_local_thread_num(retrieve_preferred_local_thread_num(device_id)),
 	  preferred_global_thread_num(retrieve_preferred_global_thread_num(device_id)),
@@ -24,7 +24,8 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 	  device_type(::retrieve_device_type(device_id)),
 	  supports_double(::retrieve_supports_double(device_id)),
 	  prefers_blocked_loops(device_type == CL_DEVICE_TYPE_CPU),
-	  name(retrieve_device_name(device_id))
+	  name(retrieve_device_name(device_id)),
+	  profiling_enabled(enable_profiling)
 {
 	logger.debug() << "Initializing " << retrieve_device_name(device_id);
 	bool available = retrieve_device_availability(device_id);
@@ -34,7 +35,7 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 
 	cl_int err;
 	logger.debug() << context << ' ' << device_id;
-	command_queue = clCreateCommandQueue(context, device_id, 0, &err);
+	command_queue = clCreateCommandQueue(context, device_id, profiling_enabled ? CL_QUEUE_PROFILING_ENABLE : 0, &err);
 	if(err) {
 		throw OpenclException(err, "clCreateCommandQueue", __FILE__, __LINE__);
 	}
@@ -273,4 +274,9 @@ size_t hardware::Device::recommend_stride(size_t elems, size_t type_size, size_t
 cl_device_id hardware::Device::get_id() const noexcept
 {
 	return device_id;
+}
+
+bool hardware::Device::is_profiling_enabled() const noexcept
+{
+	return profiling_enabled;
 }

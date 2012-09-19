@@ -35,3 +35,8 @@ BOOST_AUTO_TEST_CASE(compile)
 {
 	BOOST_FAIL("not implemented");
 }
+
+BOOST_AUTO_TEST_CASE(profiling)
+{
+	BOOST_FAIL("not implemented");
+}

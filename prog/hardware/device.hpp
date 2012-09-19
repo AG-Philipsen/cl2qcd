@@ -37,8 +37,9 @@ namespace hardware {
 		 * \param context context for the device
 		 * \param device_id id of the device to initialize
 		 * \param inputparams the input parameters of the application
+		 * \param enable_profiling enable profiling on this device
 		 */
-		Device(cl_context, cl_device_id, const meta::Inputparameters&);
+		Device(cl_context, cl_device_id, const meta::Inputparameters&, bool enable_profiling = false);
 
 		~Device();
 
@@ -125,6 +126,11 @@ namespace hardware {
 		 */
 		size_t recommend_stride(size_t elems, size_t type_size, size_t lane_count) const;
 
+		/**
+		 * Query whether profiling is enabled on this device.
+		 */
+		bool is_profiling_enabled() const noexcept;
+
 	private:
 		/**
 		 * The OpenCL context to be used by this device.
@@ -180,6 +186,11 @@ namespace hardware {
 		 * The name of this device
 		 */
 		const std::string name;
+
+		/**
+		 * Whether profiling is enabled
+		 */
+		const bool profiling_enabled;
 
 		/**
 		 * Allow easy use of the command queue
