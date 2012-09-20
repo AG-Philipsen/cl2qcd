@@ -488,7 +488,7 @@ int main(int argc, char *argv[])
 	bool UseGPU = 0;
 
 	//Reduce amount of work a bit if CPU is selected
-	size_t WorkgroupSizeCPU = 8;
+	size_t WorkgroupSizeCPU = 1;
 	size_t NumWorkitemsCPU = 512;
 
 	if(KernelCycles % 4 != 0){
