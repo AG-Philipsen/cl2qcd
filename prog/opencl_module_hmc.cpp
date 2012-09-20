@@ -2004,6 +2004,23 @@ void Opencl_Module_Hmc::gauge_force_device()
 
 }
 
+void Opencl_Module_Hmc::gauge_force_device(cl_mem gf, cl_mem out)
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(gauge_force, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(gauge_force, 0, sizeof(cl_mem), &gf);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(gauge_force, 1, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel( gauge_force , gs2, ls2);
+}
+
+
 void Opencl_Module_Hmc::gauge_force_tlsym_device()
 {
 	//query work-sizes for kernel

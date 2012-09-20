@@ -22,7 +22,6 @@ public:
   ~Device() {
     finalize();
   };
-  void runTestKernel(cl_mem out, cl_mem gf, int gs, int ls);
   void fill_kernels();
   void clear_kernels();
 };
@@ -118,17 +117,6 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel(cl_mem out, cl_mem gf, int gs, int ls)
-{
-	cl_int err;
-	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &gf);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &out);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-
-	enqueueKernel(testKernel, gs, ls);
-}
-
 hmc_float Dummyfield::get_squarenorm()
 {
   //this always call the gaugemomentum sqnorm kernel
@@ -142,16 +130,8 @@ hmc_float Dummyfield::get_squarenorm()
 
 void Dummyfield::runTestKernel()
 {
-	int gs = 0, ls = 0;
-	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = meta::get_spinorfieldsize(get_parameters());
-		ls = 64;
-	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = opencl_modules[0]->get_max_compute_units();
-		ls = 1;
-	}
-	Device * device = static_cast<Device*>(opencl_modules[0]);
-	device->runTestKernel(out, device->get_gaugefield(), gs, ls);
+  Device * device = static_cast<Device*>(opencl_modules[0]);
+  static_cast<Device*>(opencl_modules[0])->gauge_force_device( device->get_gaugefield()  ,out);
 }
 
 BOOST_AUTO_TEST_CASE( F_GAUGE )

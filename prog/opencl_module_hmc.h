@@ -126,6 +126,7 @@ public:
 	void md_update_gaugefield_device(hmc_float eps);
 	void set_zero_clmem_force_device();
 	void gauge_force_device();
+	void gauge_force_device(cl_mem gf, cl_mem out);
 	void gauge_force_tlsym_device();
 	void fermion_force_device(cl_mem Y, cl_mem X, hmc_float kappa = ARG_DEF);
 	void fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd, hmc_float kappa = ARG_DEF);
