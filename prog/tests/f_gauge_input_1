@@ -10,3 +10,6 @@ NT=4
 fermact=TWISTEDMASS
 #  set this to Cg to init the spinorfield to random values
 solver=BICGSTAB
+
+#this specifies the acceptance precision
+solver_prec=1e-8

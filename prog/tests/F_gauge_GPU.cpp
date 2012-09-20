@@ -27,26 +27,6 @@ public:
   void clear_kernels();
 };
 
-const std::string SOURCEFILE = std::string(SOURCEDIR)
-#ifdef _USEDOUBLEPREC_
-  + "/tests/f_gauge_input_1";
-#else
- + "/tests/f_gauge_input_1_single";
-#endif
-
-const std::string SOURCEFILE_REC12 = std::string(SOURCEDIR)
-#ifdef _USEDOUBLEPREC_
-  + "/tests/f_gauge_input_rec12";
-#else
- + "/tests/f_gauge_input_rec12_single";
-#endif
-
-const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
-const meta::Inputparameters INPUT(2, PARAMS);
-
-const char * PARAMS_REC12[] = {"foo", SOURCEFILE_REC12.c_str()};
-const meta::Inputparameters INPUT_REC12(2, PARAMS_REC12);
-
 class Dummyfield : public Gaugefield_hybrid {
 public:
   Dummyfield(meta::Inputparameters inputfile) : Gaugefield_hybrid(inputfile) {
@@ -174,15 +154,12 @@ void Dummyfield::runTestKernel()
 	device->runTestKernel(out, device->get_gaugefield(), gs, ls);
 }
 
-BOOST_AUTO_TEST_CASE( F_GAUGE_CPU )
+BOOST_AUTO_TEST_CASE( F_GAUGE )
 {
   hmc_float ref_val;
   logger.info() << "Test kernel";
   logger.info() << "\tf_gauge";
   logger.info() << "against reference value";
-
-  hmc_float prec = 1e-8;  
-  logger.info() << "acceptance precision: " << prec;
 
   //get input file that has been passed as an argument 
   const char* inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
@@ -203,7 +180,7 @@ BOOST_AUTO_TEST_CASE( F_GAUGE_CPU )
   cpu_res = cpu.get_squarenorm();
   logger.info() << cpu_res;
 
-  logger.info() << "Choosing reference value";
+  logger.info() << "Choosing reference value and acceptance precision";
   //CP: I will not check if cpu and gpu have different starting conditions, this should never be the case...
   if(cpu.get_parameters().get_startcondition() == meta::Inputparameters::cold_start) {
     logger.info() << "Use cold config..." ;
@@ -214,9 +191,11 @@ BOOST_AUTO_TEST_CASE( F_GAUGE_CPU )
     ref_val = 52723.299867438494;
   }
   logger.info() << "reference value:\t" << ref_val;
+  hmc_float prec = params.get_solver_prec();  
+  logger.info() << "acceptance precision: " << prec;
 
-  logger.info() << "Compare CPU result to reference value";
+  logger.info() << "Compare result to reference value";
   BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
   logger.info() << "Done";
-  BOOST_MESSAGE("Tested CPU");
+  BOOST_MESSAGE("Test done");
 }  
