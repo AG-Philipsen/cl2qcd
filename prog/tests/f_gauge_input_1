@@ -8,8 +8,8 @@ use_eo=false
 NS=4
 NT=4
 fermact=TWISTEDMASS
-#  set this to Cg to init the spinorfield to random values
-solver=BICGSTAB
 
 #this specifies the acceptance precision
 solver_prec=1e-8
+#reference value
+test_ref_val=52723.299867438494

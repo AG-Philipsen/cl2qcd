@@ -156,7 +156,6 @@ void Dummyfield::runTestKernel()
 
 BOOST_AUTO_TEST_CASE( F_GAUGE )
 {
-  hmc_float ref_val;
   logger.info() << "Test kernel";
   logger.info() << "\tf_gauge";
   logger.info() << "against reference value";
@@ -181,15 +180,7 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
   logger.info() << cpu_res;
 
   logger.info() << "Choosing reference value and acceptance precision";
-  //CP: I will not check if cpu and gpu have different starting conditions, this should never be the case...
-  if(cpu.get_parameters().get_startcondition() == meta::Inputparameters::cold_start) {
-    logger.info() << "Use cold config..." ;
-    ref_val = 0.;
-  } else{
-    logger.info() << "Use specific config..";
-    logger.warn() << "The reference value has to be adjusted manually if this config is changed!";
-    ref_val = 52723.299867438494;
-  }
+  hmc_float ref_val = params.get_test_ref_value();
   logger.info() << "reference value:\t" << ref_val;
   hmc_float prec = params.get_solver_prec();  
   logger.info() << "acceptance precision: " << prec;
