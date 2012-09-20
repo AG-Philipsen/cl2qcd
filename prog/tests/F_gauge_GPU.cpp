@@ -149,8 +149,9 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
   Dummyfield cpu(params);
   logger.info() << "gaugeobservables: ";
   cpu.print_gaugeobservables_from_task(0, 0);
+  logger.info() << "Run kernel";
   cpu.runTestKernel();
-  logger.info() << "|f_gauge|^2:";
+  logger.info() << "result:";
   hmc_float cpu_res;
   cpu_res = cpu.get_squarenorm();
   logger.info() << cpu_res;
