@@ -13,7 +13,6 @@ std::string const exec_name = "f_gauge";
 std::string const version = "0.1";
 
 class Device : public Opencl_Module_Hmc {
-  cl_kernel testKernel;
   meta::Counter counter1, counter2, counter3, counter4;
 public:
   Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc(params, &counter1, &counter2, &counter3, &counter4) {
@@ -98,9 +97,7 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
 	Opencl_Module_Hmc::fill_kernels();
-	testKernel = createKernel("gauge_force") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "force_gauge.cl";
 }
 
 void Dummyfield::clear_buffers()
@@ -113,7 +110,6 @@ void Dummyfield::clear_buffers()
 
 void Device::clear_kernels()
 {
-	clReleaseKernel(testKernel);
 	Opencl_Module::clear_kernels();
 }
 
