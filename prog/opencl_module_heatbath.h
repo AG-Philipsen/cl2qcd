@@ -42,8 +42,8 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Heatbath(const meta::Inputparameters& params)
-		: Opencl_Module_Ran(params) {};
+	Opencl_Module_Heatbath(const meta::Inputparameters& params, hardware::Device * device)
+		: Opencl_Module_Ran(params, device) {};
 	/**
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.

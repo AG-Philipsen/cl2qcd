@@ -10,11 +10,6 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
 
 #include "host_geometry.h"
 #include "host_random.h"
@@ -23,6 +18,7 @@
 #include "types.h"
 #include "host_use_timer.h"
 #include "meta/inputparameters.hpp"
+#include "hardware/device.hpp"
 #include "opencl_compiler.hpp"
 
 #include "exceptions.h"
@@ -42,8 +38,8 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module(const meta::Inputparameters& params)
-		: parameters(params), gaugefield_bytes(0) {};
+	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device)
+		: parameters(params), device(device), gaugefield_bytes(0) {};
 	/**
 	 * Destructor, calls finalize().
 	 *
@@ -100,7 +96,7 @@ public:
 	 * Get OpenCL device
 	 * @return device
 	 */
-	cl_device_id get_device();
+	hardware::Device * get_device();
 	/**
 	 * Get OpenCL device_type
 	 * @return device_type
@@ -514,6 +510,11 @@ protected:
 
 private:
 
+	/**
+	 * The device used by this module
+	 */
+	hardware::Device * const device;
+
 	cl_platform_id platform;
 	cl_context ocl_context;
 	cl_command_queue ocl_queue;
@@ -527,7 +528,6 @@ private:
 	cl_uint max_compute_units;
 	std::string device_double_extension;
 
-	cl_device_id device;
 	cl_device_type device_type;
 	char * device_name;
 

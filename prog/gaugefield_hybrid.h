@@ -187,7 +187,7 @@ public:
 	 * @param[in] ntask id for task
 	 * @return device cl_device_id for given task
 	 */
-	cl_device_id get_device_for_task(int ntask);
+	hardware::Device* get_device_for_task(int ntask);
 	/**
 	 * Return max_compute units for task ntask
 	 * @param[in] ntask number of target task
@@ -322,7 +322,8 @@ private:
 	int* device_id_for_task;
 
 	//OpenCL:
-	cl_device_id* devices;
+	cl_device_id* cl_devices;
+	hardware::Device** devices;
 
 
 	std::string* device_double_extension;

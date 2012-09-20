@@ -132,8 +132,8 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Fermions(const meta::Inputparameters& params)
-		: Opencl_Module_Spinors(params) { }
+	Opencl_Module_Fermions(const meta::Inputparameters& params, hardware::Device * device)
+		: Opencl_Module_Spinors(params, device) { }
 
 
 	// OpenCL specific methods needed for building/compiling the OpenCL program

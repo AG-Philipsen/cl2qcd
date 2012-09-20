@@ -1051,8 +1051,8 @@ void Opencl_Module_Spinors::copy_to_eoprec_spinorfield_buffer(cl_mem buf, const 
 	convertSpinorfieldToSOA_eo_device(buf, tmp);
 }
 
-Opencl_Module_Spinors::Opencl_Module_Spinors(const meta::Inputparameters& params)
-	: Opencl_Module_Ran(params), eoprec_spinorfield_buf_size(0)
+Opencl_Module_Spinors::Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device)
+	: Opencl_Module_Ran(params, device), eoprec_spinorfield_buf_size(0)
 {
 }
 

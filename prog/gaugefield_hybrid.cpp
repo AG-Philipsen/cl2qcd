@@ -136,7 +136,8 @@ for(auto device: system->get_devices()) {
 
 	int len = std::min( get_num_tasks(), get_num_devices() );
 	queue                   = new cl_command_queue [get_num_tasks()];
-	devices                 = new cl_device_id     [len];
+	devices                 = new hardware::Device*[len];
+	cl_devices              = new cl_device_id[len];
 	device_double_extension = new std::string  [len];
 	max_compute_units       = new cl_uint [len];
 
@@ -167,9 +168,9 @@ for(auto device: system->get_devices()) {
 		logger.trace() << "Create command queue for task #" << ntask << "...";
 
 #ifdef _PROFILING_
-		queue[ntask] = clCreateCommandQueue(context, get_device_for_task(ntask), CL_QUEUE_PROFILING_ENABLE, &clerr);
+		queue[ntask] = clCreateCommandQueue(context, get_device_for_task(ntask)->get_id(), CL_QUEUE_PROFILING_ENABLE, &clerr);
 #else
-		queue[ntask] = clCreateCommandQueue(context, get_device_for_task(ntask), 0, &clerr);
+		queue[ntask] = clCreateCommandQueue(context, get_device_for_task(ntask)->get_id(), 0, &clerr);
 #endif
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateCommandQueue", __FILE__, __LINE__);
 	}
@@ -186,7 +187,8 @@ void Gaugefield_hybrid::init_devices(int ndev)
 	devices[ndev] = 0;
 for(auto device: system->get_devices()) {
 		if(device->get_device_type() == get_device_type(ndev)) {
-			devices[ndev] = device->get_id();
+			cl_devices[ndev] = device->get_id();
+			devices[ndev] = device;
 			break;
 		}
 	}
@@ -194,24 +196,24 @@ for(auto device: system->get_devices()) {
 		throw Print_Error_Message("Failed to find usable device for task " + ndev);
 	}
 
-	clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_NAME, 512 * sizeof(char), info, NULL);
+	clerr = clGetDeviceInfo(cl_devices[ndev], CL_DEVICE_NAME, 512 * sizeof(char), info, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 	logger.info() << "\t\t\tCL_DEVICE_NAME:    " << info;
-	clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_VENDOR, 512 * sizeof(char), info, NULL);
+	clerr = clGetDeviceInfo(cl_devices[ndev], CL_DEVICE_VENDOR, 512 * sizeof(char), info, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 	logger.debug() << "\t\t\tCL_DEVICE_VENDOR:  " << info;
 	cl_device_type devtype;
-	clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_TYPE, sizeof(cl_device_type), &devtype, NULL);
+	clerr = clGetDeviceInfo(cl_devices[ndev], CL_DEVICE_TYPE, sizeof(cl_device_type), &devtype, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 	if(devtype == CL_DEVICE_TYPE_CPU) logger.info() << "\t\t\tCL_DEVICE_TYPE:    CPU";
 	if(devtype == CL_DEVICE_TYPE_GPU) logger.info() << "\t\t\tCL_DEVICE_TYPE:    GPU";
 	if(devtype == CL_DEVICE_TYPE_ACCELERATOR) logger.info() << "\t\t\tCL_DEVICE_TYPE:    ACCELERATOR";
 	if(devtype != CL_DEVICE_TYPE_CPU && devtype != CL_DEVICE_TYPE_GPU && devtype != CL_DEVICE_TYPE_ACCELERATOR)
 		throw Print_Error_Message("Unexpected CL_DEVICE_TYPE...", __FILE__, __LINE__);
-	clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_VERSION, 512 * sizeof(char), info, NULL);
+	clerr = clGetDeviceInfo(cl_devices[ndev], CL_DEVICE_VERSION, 512 * sizeof(char), info, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 	logger.debug() << "\t\t\tCL_DEVICE_VERSION: " << info;
-	clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_EXTENSIONS, 512 * sizeof(char), info, NULL);
+	clerr = clGetDeviceInfo(cl_devices[ndev], CL_DEVICE_EXTENSIONS, 512 * sizeof(char), info, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 	logger.debug() << "\t\t\tCL_DEVICE_EXTENSIONS: " << info;
 
@@ -219,7 +221,7 @@ for(auto device: system->get_devices()) {
 	if( strstr( info, "cl_khr_fp64" ) != NULL ) device_double_extension[ndev] = "KHR";
 
 	// figure out the number of "cores"
-	clerr = clGetDeviceInfo(devices[ndev], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units[ndev], NULL);
+	clerr = clGetDeviceInfo(cl_devices[ndev], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units[ndev], NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);;
 	logger.debug() << "\t\t\tCL_DEVICE_MAX_COMPUTE_UNITS: " << max_compute_units[ndev];
 }
@@ -231,7 +233,7 @@ void Gaugefield_hybrid::init_tasks()
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
 		//this is initialized with length 1, meaning one assumes one device per task
-		opencl_modules[ntask] = new Opencl_Module(parameters);
+		opencl_modules[ntask] = new Opencl_Module(parameters, get_device_for_task(ntask));
 		opencl_modules[ntask]->init(queue[ntask], max_compute_units[ntask], get_double_ext(ntask), ntask);
 	}
 }
@@ -250,6 +252,7 @@ void Gaugefield_hybrid::delete_variables()
 	delete [] sgf;
 
 	delete [] devices;
+	delete [] cl_devices;
 	delete [] queue;
 	delete [] device_double_extension;
 	delete [] max_compute_units;
@@ -369,7 +372,7 @@ void Gaugefield_hybrid::copy_gaugefield_from_task(int ntask)
 	opencl_modules[ntask]->exportGaugefield(get_sgf());
 }
 
-cl_device_id Gaugefield_hybrid::get_device_for_task(int ntask)
+hardware::Device* Gaugefield_hybrid::get_device_for_task(int ntask)
 {
 	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("task index out of range", __FILE__, __LINE__);
 	return devices[device_id_for_task[ntask]];

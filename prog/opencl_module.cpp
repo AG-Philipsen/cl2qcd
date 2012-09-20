@@ -15,15 +15,16 @@ void Opencl_Module::init(cl_command_queue queue, int maxcomp, string double_ext,
 	this->device_rank = device_rank;
 
 	// get device
-	cl_int clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_DEVICE, sizeof(cl_device_id), &device, NULL);
+	cl_device_id device_id = device->get_id();
+	cl_int clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_DEVICE, sizeof(cl_device_id), &device_id, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetCommandQueueInfo", __FILE__, __LINE__);
 
 	// get device name
 	size_t device_name_bytes;
-	clerr = clGetDeviceInfo(device, CL_DEVICE_NAME, 0, NULL, &device_name_bytes );
+	clerr = clGetDeviceInfo(device_id, CL_DEVICE_NAME, 0, NULL, &device_name_bytes );
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 	device_name = new char[device_name_bytes];
-	clerr = clGetDeviceInfo(device, CL_DEVICE_NAME, device_name_bytes, device_name, NULL );
+	clerr = clGetDeviceInfo(device_id, CL_DEVICE_NAME, device_name_bytes, device_name, NULL );
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 
 	logger.debug() << "Device is " << device_name;
@@ -34,10 +35,10 @@ void Opencl_Module::init(cl_command_queue queue, int maxcomp, string double_ext,
 	clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ocl_context, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetCommandQueueInfo", __FILE__, __LINE__);
 
-	clerr = clGetDeviceInfo(device, CL_DEVICE_TYPE, sizeof(cl_device_type), &device_type, NULL);
+	clerr = clGetDeviceInfo(device_id, CL_DEVICE_TYPE, sizeof(cl_device_type), &device_type, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 
-	clerr = clGetDeviceInfo(device, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform, NULL);
+	clerr = clGetDeviceInfo(device_id, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 
 	// different devices need different strategies for optimal performance
@@ -110,7 +111,7 @@ cl_device_type Opencl_Module::get_device_type()
 	return device_type;
 }
 
-cl_device_id Opencl_Module::get_device()
+hardware::Device * Opencl_Module::get_device()
 {
 	return device;
 }
@@ -444,7 +445,7 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 
 	// query the work group size specified at compile time (if any)
 	size_t compile_work_group_size[3];
-	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 3 * sizeof(size_t), compile_work_group_size, NULL );
+	clerr = clGetKernelWorkGroupInfo(kernel, device->get_id(), CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 3 * sizeof(size_t), compile_work_group_size, NULL );
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
 
 	const size_t * const local_work_size_p = (compile_work_group_size[0] == 0) ? &local_work_size : &compile_work_group_size[0];
@@ -636,13 +637,13 @@ void Opencl_Module::printResourceRequirements(const cl_kernel kernel)
 
 	// query the maximum work group size
 	size_t work_group_size;
-	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &work_group_size, NULL );
+	clerr = clGetKernelWorkGroupInfo(kernel, device->get_id(), CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &work_group_size, NULL );
 	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
 	logger.trace() << "  Maximum work group size: " << work_group_size;
 
 	// query the work group size specified at compile time (if any)
 	size_t compile_work_group_size[3];
-	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 3 * sizeof(size_t), compile_work_group_size, NULL );
+	clerr = clGetKernelWorkGroupInfo(kernel, device->get_id(), CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 3 * sizeof(size_t), compile_work_group_size, NULL );
 	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
 
 	if( compile_work_group_size[0] == 0 )
@@ -652,21 +653,21 @@ void Opencl_Module::printResourceRequirements(const cl_kernel kernel)
 
 #ifdef CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE // don't fail on OpenCL 1.0
 	// query the preferred WORK_GROUP_SIZE_MULTIPLE (OpenCL 1.1 only)
-	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(size_t), &work_group_size, NULL );
+	clerr = clGetKernelWorkGroupInfo(kernel, device->get_id(), CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(size_t), &work_group_size, NULL );
 	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
 	logger.trace() << "  Preferred work group size multiple: " << work_group_size;
 #endif
 
 	// query the local memory requirements
 	cl_ulong local_mem_size;
-	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_LOCAL_MEM_SIZE, sizeof(cl_ulong), &local_mem_size, NULL );
+	clerr = clGetKernelWorkGroupInfo(kernel, device->get_id(), CL_KERNEL_LOCAL_MEM_SIZE, sizeof(cl_ulong), &local_mem_size, NULL );
 	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
 	logger.trace() << "  Local memory size (bytes): " << local_mem_size;
 
 #ifdef CL_KERNEL_PRIVATE_MEM_SIZE // don't fail on OpenCL 1.0
 	// query the private memory required by the kernel (OpenCL 1.1 only)
 	cl_ulong private_mem_size;
-	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_PRIVATE_MEM_SIZE, sizeof(cl_ulong), &private_mem_size, NULL );
+	clerr = clGetKernelWorkGroupInfo(kernel, device->get_id(), CL_KERNEL_PRIVATE_MEM_SIZE, sizeof(cl_ulong), &private_mem_size, NULL );
 	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
 	logger.trace() << "  Private memory size (bytes): " << private_mem_size;
 #endif
@@ -997,7 +998,7 @@ TmpClKernel Opencl_Module::createKernel(const char * const kernel_name, const ch
 		collect_options << build_opts << ' ';
 	}
 	this->fill_collect_options(&collect_options);
-	return TmpClKernel(kernel_name, collect_options.str(), get_context(), device);
+	return TmpClKernel(kernel_name, collect_options.str(), get_context(), device->get_id());
 }
 
 void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)

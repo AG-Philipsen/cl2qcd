@@ -41,8 +41,8 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Kappa(const meta::Inputparameters& params)
-		: Opencl_Module(params) {};
+	Opencl_Module_Kappa(const meta::Inputparameters& params, hardware::Device * device)
+		: Opencl_Module(params, device) {};
 	/**
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.

@@ -44,7 +44,7 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Spinors(const meta::Inputparameters& params);
+	Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device);
 
 	/**
 	 * Collect the compiler options for OpenCL.

@@ -50,9 +50,9 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Hmc(const meta::Inputparameters& params, meta::Counter * inversions0, meta::Counter * inversions1,
+	Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device, meta::Counter * inversions0, meta::Counter * inversions1,
 	                  meta::Counter * inversions_mp0, meta::Counter * inversions_mp1)
-		: Opencl_Module_Fermions(params), gaugemomentum_buf_size(0),
+		: Opencl_Module_Fermions(params, device), gaugemomentum_buf_size(0),
 		  inversions0(inversions0), inversions1(inversions1), inversions_mp0(inversions_mp0), inversions_mp1(inversions_mp1) { }
 
 	// OpenCL specific methods needed for building/compiling the OpenCL program
