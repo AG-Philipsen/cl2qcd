@@ -342,16 +342,6 @@ public:
 	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
 
 	/**
-	 * Print resource requirements of a kernel object.
-	 *
-	 * All information is dumped to the trace.
-	 *
-	 * @param kernel The kernel of which to query the information.
-	 */
-	void printResourceRequirements(const cl_kernel kernel);
-
-
-	/**
 	 * Copy content of a buffer to another buffer inside a queue using
 	 *     clEnqueueCopyBuffer(queue, in, out, 0, 0, size , 0, 0, NULL);
 	 * @param in source
