@@ -45,7 +45,6 @@ public:
 	 *
 	 */
 	virtual ~Opencl_Module() {
-		delete[] device_name;
 	}
 
 	/**
@@ -86,11 +85,6 @@ public:
 	 * @return device
 	 */
 	hardware::Device * get_device();
-	/**
-	 * Get OpenCL device_type
-	 * @return device_type
-	 */
-	cl_device_type get_device_type();
 	/**
 	 * Get platform_id
 	 * @return platform
@@ -258,7 +252,7 @@ public:
 	 * @param dev_type type of device on which the kernel should be executed
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
-	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups);
 
 	/**
 	 * Return the kernel name as a string
@@ -524,9 +518,6 @@ private:
 
 	cl_uint max_compute_units;
 	std::string device_double_extension;
-
-	cl_device_type device_type;
-	char * device_name;
 
 	cl_mem gaugefield;
 

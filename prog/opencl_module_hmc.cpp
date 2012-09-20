@@ -196,9 +196,9 @@ void Opencl_Module_Hmc::clear_buffers()
 	return;
 }
 
-void Opencl_Module_Hmc::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
+void Opencl_Module_Hmc::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups)
 {
-	Opencl_Module_Fermions::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
+	Opencl_Module_Fermions::get_work_sizes(kernel, ls, gs, num_groups);
 
 	// kernels that use random numbers must not exceed the size of the random state array
 	if(kernel == generate_gaussian_gaugemomenta
@@ -495,7 +495,7 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device()
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(generate_gaussian_gaugemomenta, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(generate_gaussian_gaugemomenta, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(generate_gaussian_gaugemomenta, 0, sizeof(cl_mem), &clmem_p);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -582,7 +582,7 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_device()
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(generate_gaussian_spinorfield, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(generate_gaussian_spinorfield, &ls2, &gs2, &num_groups);
 	//set arguments
 	//this is always applied to clmem_phi_inv, which can be done since the gaussian field is only needed in the beginning
 	int clerr = clSetKernelArg(generate_gaussian_spinorfield, 0, sizeof(cl_mem), &clmem_phi_inv);
@@ -612,7 +612,7 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_eo_device()
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(generate_gaussian_spinorfield_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(generate_gaussian_spinorfield_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	//this is always applied to clmem_phi_inv_eoporec, which can be done since the gaussian field is only needed in the beginning
 	int clerr = clSetKernelArg(generate_gaussian_spinorfield_eo, 0, sizeof(cl_mem), &clmem_phi_inv_eo);
@@ -1880,7 +1880,7 @@ void Opencl_Module_Hmc::md_update_gaugemomentum_device(hmc_float eps)
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(md_update_gaugemomenta, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(md_update_gaugemomenta, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(md_update_gaugemomenta, 0, sizeof(hmc_float), &tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1912,7 +1912,7 @@ void Opencl_Module_Hmc::md_update_gaugefield_device(hmc_float eps)
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(md_update_gaugefield, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(md_update_gaugefield, &ls2, &gs2, &num_groups);
 	//set arguments
 	//this is always applied to clmem_force
 	int clerr = clSetKernelArg(md_update_gaugefield, 0, sizeof(hmc_float), &tmp);
@@ -1932,7 +1932,7 @@ void Opencl_Module_Hmc::set_zero_clmem_force_device()
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(set_zero_gaugemomentum, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(set_zero_gaugemomentum, &ls2, &gs2, &num_groups);
 	//set arguments
 	//this is always applied to clmem_force
 	int clerr = clSetKernelArg(set_zero_gaugemomentum, 0, sizeof(cl_mem), &clmem_force);
@@ -1946,7 +1946,7 @@ void Opencl_Module_Hmc::gauge_force_device()
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(gauge_force, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(gauge_force, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(gauge_force, 0, sizeof(cl_mem), &clmem_new_u);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1977,7 +1977,7 @@ void Opencl_Module_Hmc::gauge_force_device()
 		cl_mem force2;
 		force2 = create_rw_buffer(gaugemomentum_size);
 		//init new buffer to zero
-		this->get_work_sizes(md_update_gaugemomenta, this->get_device_type(), &ls2, &gs2, &num_groups);
+		this->get_work_sizes(md_update_gaugemomenta, &ls2, &gs2, &num_groups);
 		clerr = clSetKernelArg(set_zero_gaugemomentum, 0, sizeof(cl_mem), &force2);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 		enqueueKernel( set_zero_gaugemomentum , gs2, ls2);
@@ -2009,7 +2009,7 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device()
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(gauge_force_tlsym, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(gauge_force_tlsym, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(gauge_force_tlsym, 0, sizeof(cl_mem), &clmem_new_u);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -2040,7 +2040,7 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device()
 		cl_mem force2;
 		force2 = create_rw_buffer(gaugemomentum_size);
 		//init new buffer to zero
-		this->get_work_sizes(md_update_gaugemomenta, this->get_device_type(), &ls2, &gs2, &num_groups);
+		this->get_work_sizes(md_update_gaugemomenta, &ls2, &gs2, &num_groups);
 		clerr = clSetKernelArg(set_zero_gaugemomentum, 0, sizeof(cl_mem), &force2);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 		enqueueKernel( set_zero_gaugemomentum , gs2, ls2);
@@ -2077,7 +2077,7 @@ void Opencl_Module_Hmc::fermion_force_device(cl_mem Y, cl_mem X, hmc_float kappa
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(fermion_force, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(fermion_force, &ls2, &gs2, &num_groups);
 	//set arguments
 	//fermion_force(field, Y, X, out);
 	int clerr = clSetKernelArg(fermion_force, 0, sizeof(cl_mem), &clmem_new_u);
@@ -2116,7 +2116,7 @@ void Opencl_Module_Hmc::fermion_force_device(cl_mem Y, cl_mem X, hmc_float kappa
 		cl_mem force2;
 		force2 = create_rw_buffer(gaugemomentum_size);
 		//init new buffer to zero
-		this->get_work_sizes(md_update_gaugemomenta, this->get_device_type(), &ls2, &gs2, &num_groups);
+		this->get_work_sizes(md_update_gaugemomenta, &ls2, &gs2, &num_groups);
 		clerr = clSetKernelArg(set_zero_gaugemomentum, 0, sizeof(cl_mem), &force2);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 		enqueueKernel( set_zero_gaugemomentum , gs2, ls2);
@@ -2155,7 +2155,7 @@ void Opencl_Module_Hmc::fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd,
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(fermion_force_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(fermion_force_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(fermion_force_eo, 0, sizeof(cl_mem), &clmem_new_u);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -2197,7 +2197,7 @@ void Opencl_Module_Hmc::fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd,
 		cl_mem force2;
 		force2 = create_rw_buffer(gaugemomentum_size);
 		//init new buffer to zero
-		this->get_work_sizes(md_update_gaugemomenta, this->get_device_type(), &ls2, &gs2, &num_groups);
+		this->get_work_sizes(md_update_gaugemomenta, &ls2, &gs2, &num_groups);
 		clerr = clSetKernelArg(set_zero_gaugemomentum, 0, sizeof(cl_mem), &force2);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 		enqueueKernel( set_zero_gaugemomentum , gs2, ls2);
@@ -2228,7 +2228,7 @@ void Opencl_Module_Hmc::stout_smeared_fermion_force_device(cl_mem * gf_intermedi
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(stout_smear_fermion_force, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(stout_smear_fermion_force, &ls2, &gs2, &num_groups);
 	//set arguments
 }
 
@@ -2238,7 +2238,7 @@ void Opencl_Module_Hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clme
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(gaugemomentum_squarenorm, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(gaugemomentum_squarenorm, &ls2, &gs2, &num_groups);
 
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
 	cl_mem  clmem_global_squarenorm_buf_glob = create_rw_buffer(global_buf_size_float);
@@ -2283,7 +2283,7 @@ void Opencl_Module_Hmc::importGaugemomentumBuffer(const cl_mem dest, const ae * 
 
 		size_t ls2, gs2;
 		cl_uint num_groups;
-		this->get_work_sizes(gaugemomentum_convert_to_soa, this->get_device_type(), &ls2, &gs2, &num_groups);
+		this->get_work_sizes(gaugemomentum_convert_to_soa, &ls2, &gs2, &num_groups);
 		clerr = clSetKernelArg(gaugemomentum_convert_to_soa, 0, sizeof(cl_mem), &dest);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 		clerr = clSetKernelArg(gaugemomentum_convert_to_soa, 1, sizeof(cl_mem), &tmp);
@@ -2306,7 +2306,7 @@ void Opencl_Module_Hmc::exportGaugemomentumBuffer(ae * const dest, const cl_mem 
 
 		size_t ls2, gs2;
 		cl_uint num_groups;
-		this->get_work_sizes(gaugemomentum_convert_from_soa, this->get_device_type(), &ls2, &gs2, &num_groups);
+		this->get_work_sizes(gaugemomentum_convert_from_soa, &ls2, &gs2, &num_groups);
 		clerr = clSetKernelArg(gaugemomentum_convert_from_soa, 0, sizeof(cl_mem), &tmp);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 		clerr = clSetKernelArg(gaugemomentum_convert_from_soa, 1, sizeof(cl_mem), &buf);

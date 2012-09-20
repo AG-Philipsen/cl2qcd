@@ -759,9 +759,9 @@ void Opencl_Module_Fermions::clear_solver_buffers()
 	return;
 }
 
-void Opencl_Module_Fermions::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
+void Opencl_Module_Fermions::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups)
 {
-	Opencl_Module_Spinors::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
+	Opencl_Module_Spinors::get_work_sizes(kernel, ls, gs, num_groups);
 
 	return;
 }
@@ -820,7 +820,7 @@ void Opencl_Module_Fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, h
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_wilson, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_wilson, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_wilson, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -852,7 +852,7 @@ void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, 
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_plus, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_plus, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_plus, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -887,7 +887,7 @@ void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf,
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_minus, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_minus, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_minus, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -912,7 +912,7 @@ void Opencl_Module_Fermions::gamma5_device(cl_mem inout)
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(gamma5, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(gamma5, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(gamma5, 0, sizeof(cl_mem), &inout);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1116,7 +1116,7 @@ void Opencl_Module_Fermions::gamma5_eo_device(cl_mem inout)
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(gamma5_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(gamma5_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(gamma5_eo, 0, sizeof(cl_mem), &inout);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1135,7 +1135,7 @@ void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, 
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(dslash_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(dslash_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(dslash_eo, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1166,7 +1166,7 @@ void Opencl_Module_Fermions::dslash_AND_gamma5_eo_device(cl_mem in, cl_mem out, 
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(dslash_AND_gamma5_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(dslash_AND_gamma5_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(dslash_AND_gamma5_eo, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1199,7 +1199,7 @@ void Opencl_Module_Fermions::dslash_AND_M_tm_inverse_sitediagonal_eo_device(cl_m
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(dslash_AND_M_tm_inverse_sitediagonal_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(dslash_AND_M_tm_inverse_sitediagonal_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_eo, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1235,7 +1235,7 @@ void Opencl_Module_Fermions::dslash_AND_M_tm_inverse_sitediagonal_minus_eo_devic
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1268,7 +1268,7 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem 
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_inverse_sitediagonal, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_inverse_sitediagonal, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1292,7 +1292,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_sitediagonal, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_sitediagonal, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_sitediagonal, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1316,7 +1316,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_AND_gamma5_eo_device(cl_mem in, c
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_sitediagonal_AND_gamma5_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_sitediagonal_AND_gamma5_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_sitediagonal_AND_gamma5_eo, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1340,7 +1340,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_AND_gamma5_eo_device(cl_mem
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_sitediagonal_minus_AND_gamma5_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_sitediagonal_minus_AND_gamma5_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_sitediagonal_minus_AND_gamma5_eo, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1364,7 +1364,7 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, c
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_inverse_sitediagonal_minus, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_inverse_sitediagonal_minus, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_inverse_sitediagonal_minus, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1388,7 +1388,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_sitediagonal_minus, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_sitediagonal_minus, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_sitediagonal_minus, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);

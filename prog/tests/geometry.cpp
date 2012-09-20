@@ -111,10 +111,10 @@ void Device::runTestKernel(int gs, int ls)
 void Dummyfield::runTestKernel()
 {
 	int gs, ls;
-	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
+	if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = meta::get_eoprec_spinorfieldsize(get_parameters());
 		ls = 64;
-	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
+	} else if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_CPU) {
 		gs = opencl_modules[0]->get_max_compute_units();
 		ls = 1;
 	}

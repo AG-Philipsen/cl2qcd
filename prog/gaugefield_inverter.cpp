@@ -196,7 +196,7 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 	cl_mem result_az;
 	//LZ usually the correlator is calculated on CPU, then we don't need to copy all those buffers...
 	bool needcopy = true;
-	if( get_task_correlator()->get_device_type() == CL_DEVICE_TYPE_CPU ) {
+	if( get_task_correlator()->get_device()->get_device_type() == CL_DEVICE_TYPE_CPU ) {
 		needcopy = false;
 		result_ps = get_task_correlator()->create_uhp_buffer(buffersize, host_result_ps);
 		result_sc = get_task_correlator()->create_uhp_buffer(buffersize, host_result_sc);

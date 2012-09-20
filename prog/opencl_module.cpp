@@ -15,30 +15,19 @@ void Opencl_Module::init(int maxcomp, string double_ext, unsigned int device_ran
 	// get device
 	cl_device_id device_id = device->get_id();
 
-	// get device name
-	size_t device_name_bytes;
-	cl_int clerr = clGetDeviceInfo(device_id, CL_DEVICE_NAME, 0, NULL, &device_name_bytes );
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
-	device_name = new char[device_name_bytes];
-	clerr = clGetDeviceInfo(device_id, CL_DEVICE_NAME, device_name_bytes, device_name, NULL );
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
-
-	logger.debug() << "Device is " << device_name;
+	logger.debug() << "Device is " << device->get_name();
 
 	set_device_double_extension(double_ext);
 	set_max_compute_units(maxcomp);
 
-	clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ocl_context, NULL);
+	cl_int clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ocl_context, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetCommandQueueInfo", __FILE__, __LINE__);
-
-	clerr = clGetDeviceInfo(device_id, CL_DEVICE_TYPE, sizeof(cl_device_type), &device_type, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 
 	clerr = clGetDeviceInfo(device_id, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 
 	// different devices need different strategies for optimal performance
-	switch ( device_type ) {
+	switch ( device->get_device_type() ) {
 		case CL_DEVICE_TYPE_GPU :
 			numthreads = 128;
 			use_soa = true;
@@ -59,7 +48,7 @@ void Opencl_Module::init(int maxcomp, string double_ext, unsigned int device_ran
 	allocated_bytes = 0;
 	max_allocated_bytes = 0;
 	allocated_hostptr_bytes = 0;
-	logger.trace() << "Initial memory usage (" << device_name << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes << " (Assuming stored gaugefield";
+	logger.trace() << "Initial memory usage (" << device->get_name() << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes << " (Assuming stored gaugefield";
 
 	this->fill_buffers();
 	this->fill_kernels();
@@ -91,11 +80,6 @@ const meta::Inputparameters& Opencl_Module::get_parameters()
 	return parameters;
 }
 
-cl_device_type Opencl_Module::get_device_type()
-{
-	return device_type;
-}
-
 hardware::Device * Opencl_Module::get_device()
 {
 	return device;
@@ -122,7 +106,7 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 			*collect_options << " -D_DEVICE_DOUBLE_EXTENSION_" << device_double_extension << "_";
 		}
 	}
-	if( device_type == CL_DEVICE_TYPE_GPU )
+	if( device->get_device_type() == CL_DEVICE_TYPE_GPU )
 		*collect_options << " -D_USEGPU_";
 	if(get_parameters().get_use_chem_pot_re() == true) {
 		*collect_options << " -D_CP_REAL_";
@@ -176,7 +160,7 @@ void Opencl_Module::markMemReleased(bool host, size_t size)
 	} else {
 		allocated_bytes -= size;
 	}
-	logger.trace() << "Memory usage (" << device_name << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
+	logger.trace() << "Memory usage (" << device->get_name() << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
 }
 
 struct MemObjectReleaseInfo {
@@ -218,7 +202,7 @@ cl_mem Opencl_Module::createBuffer(cl_mem_flags flags, size_t size, void * host_
 		max_allocated_bytes = allocated_bytes;
 	}
 
-	logger.trace() << "Memory usage (" << device_name << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
+	logger.trace() << "Memory usage (" << device->get_name() << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
 
 	return tmp;
 }
@@ -371,7 +355,7 @@ void Opencl_Module::clear_buffers()
 
 	clReleaseMemObject(gaugefield);
 
-	logger.info() << "Maximum memory used (" << device_name << "): " << max_allocated_bytes << " bytes";
+	logger.info() << "Maximum memory used (" << device->get_name() << "): " << max_allocated_bytes << " bytes";
 }
 
 
@@ -423,7 +407,7 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 	///@todo make this properly handle multiple dimensions
 	// decide on work-sizes
 	size_t local_work_size;
-	if( device_type == CL_DEVICE_TYPE_GPU )
+	if( device->get_device_type() == CL_DEVICE_TYPE_GPU )
 		local_work_size = Opencl_Module::get_numthreads(); /// @todo have local work size depend on kernel properties (and device? autotune?)
 	else
 		local_work_size = 1; // nothing else makes sens on CPU
@@ -673,9 +657,9 @@ void Opencl_Module::printResourceRequirements(const cl_kernel kernel)
 	}
 
 	if( strcmp("AMD Accelerated Parallel Processing", platform_name) == 0
-	    && device_type == CL_DEVICE_TYPE_GPU ) {
+	    && device->get_device_type() == CL_DEVICE_TYPE_GPU ) {
 
-		logger.trace() << "Retrieving information for device " << device_name;
+		logger.trace() << "Retrieving information for device " << device->get_name();
 
 		size_t bytesInKernelName;
 		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
@@ -694,7 +678,7 @@ void Opencl_Module::printResourceRequirements(const cl_kernel kernel)
 
 		// retrieve some additinal info on the program
 		std::stringstream tmp;
-		tmp << kernelName << '_' << device_name << ".isa";
+		tmp << kernelName << '_' << device->get_name() << ".isa";
 		std::string filename = tmp.str();
 
 		logger.trace() << "Reading information from file " << filename;
@@ -769,7 +753,7 @@ void Opencl_Module::plaquette_device(cl_mem gf)
 	//query work-sizes for kernel
 	size_t ls, gs;
 	cl_uint num_groups;
-	this->get_work_sizes(plaquette, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(plaquette, &ls, &gs, &num_groups);
 
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
 	int global_buf_size_complex = sizeof(hmc_complex) * num_groups;
@@ -802,7 +786,7 @@ void Opencl_Module::plaquette_device(cl_mem gf)
 
 	// run second part of plaquette reduction
 
-	this->get_work_sizes(plaquette_reduction, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(plaquette_reduction, &ls, &gs, &num_groups);
 
 	clerr = clSetKernelArg(plaquette_reduction, 0, sizeof(cl_mem), &clmem_plaq_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -838,7 +822,7 @@ void Opencl_Module::rectangles_device(cl_mem gf)
 	//query work-sizes for kernel
 	size_t ls, gs;
 	cl_uint num_groups;
-	this->get_work_sizes(rectangles, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(rectangles, &ls, &gs, &num_groups);
 
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
 	int global_buf_size_complex = sizeof(hmc_complex) * num_groups;
@@ -860,7 +844,7 @@ void Opencl_Module::rectangles_device(cl_mem gf)
 
 	// run second part of rectangles reduction
 
-	this->get_work_sizes(rectangles_reduction, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(rectangles_reduction, &ls, &gs, &num_groups);
 
 	clerr = clSetKernelArg(rectangles_reduction, 0, sizeof(cl_mem), &clmem_rect_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -882,7 +866,7 @@ void Opencl_Module::polyakov_device(cl_mem gf)
 	//query work-sizes for kernel
 	size_t ls, gs;
 	cl_uint num_groups;
-	this->get_work_sizes(polyakov, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(polyakov, &ls, &gs, &num_groups);
 	int buf_loc_size_complex = sizeof(hmc_complex) * ls;
 
 	// local polyakov compuation and first part of reduction
@@ -899,7 +883,7 @@ void Opencl_Module::polyakov_device(cl_mem gf)
 
 	// second part of polyakov reduction
 
-	this->get_work_sizes(polyakov_reduction, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(polyakov_reduction, &ls, &gs, &num_groups);
 
 	clerr = clSetKernelArg(polyakov_reduction, 0, sizeof(cl_mem), &clmem_polyakov_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -991,7 +975,7 @@ void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
 	//query work-sizes for kernel
 	size_t ls, gs;
 	cl_uint num_groups;
-	this->get_work_sizes(stout_smear, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(stout_smear, &ls, &gs, &num_groups);
 
 	int clerr = clSetKernelArg(stout_smear, 0, sizeof(cl_mem), in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1006,19 +990,19 @@ void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
 
 
 
-void Opencl_Module::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
+void Opencl_Module::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups)
 {
 	//Query kernel name
 	string kernelname = get_kernel_name(kernel);
 
 	size_t local_work_size;
-	if( dev_type == CL_DEVICE_TYPE_GPU )
+	if( device->get_device_type() == CL_DEVICE_TYPE_GPU )
 		local_work_size = Opencl_Module::get_numthreads(); /// @todo have local work size depend on kernel properties (and device? autotune?)
 	else
 		local_work_size = 1; // nothing else makes sense on CPU
 
 	size_t global_work_size;
-	if( dev_type == CL_DEVICE_TYPE_GPU )
+	if( device->get_device_type() == CL_DEVICE_TYPE_GPU )
 		global_work_size = 4 * Opencl_Module::get_numthreads() * max_compute_units; /// @todo autotune
 	else
 		global_work_size = max_compute_units;
@@ -1112,7 +1096,7 @@ size_t Opencl_Module::get_read_write_size(const char * in)
 		//query work-sizes for kernel to get num_groups
 		size_t ls2, gs2;
 		cl_uint num_groups;
-		this->get_work_sizes(polyakov, this->get_device_type(), &ls2, &gs2, &num_groups);
+		this->get_work_sizes(polyakov, &ls2, &gs2, &num_groups);
 		return VOL4D * D * R + num_groups * C * D;
 	}
 	if (strcmp(in, "polyakov_reduction") == 0) {
@@ -1120,7 +1104,7 @@ size_t Opencl_Module::get_read_write_size(const char * in)
 		//query work-sizes for kernel to get num_groups
 		size_t ls2, gs2;
 		cl_uint num_groups;
-		this->get_work_sizes(polyakov_reduction, this->get_device_type(), &ls2, &gs2, &num_groups);
+		this->get_work_sizes(polyakov_reduction, &ls2, &gs2, &num_groups);
 		return (num_groups + 1 ) * C * D;
 	}
 	if (strcmp(in, "plaquette") == 0) {
@@ -1128,7 +1112,7 @@ size_t Opencl_Module::get_read_write_size(const char * in)
 		//query work-sizes for kernel to get num_groups
 		size_t ls2, gs2;
 		cl_uint num_groups;
-		this->get_work_sizes(plaquette, this->get_device_type(), &ls2, &gs2, &num_groups);
+		this->get_work_sizes(plaquette, &ls2, &gs2, &num_groups);
 		return C * 4 * 3 * VOL4D * D * R + 3 * D * num_groups;
 	}
 	if (strcmp(in, "plaquette_reduction") == 0) {
@@ -1136,7 +1120,7 @@ size_t Opencl_Module::get_read_write_size(const char * in)
 		//query work-sizes for kernel to get num_groups
 		size_t ls2, gs2;
 		cl_uint num_groups;
-		this->get_work_sizes(polyakov_reduction, this->get_device_type(), &ls2, &gs2, &num_groups);
+		this->get_work_sizes(polyakov_reduction, &ls2, &gs2, &num_groups);
 		return (num_groups + 1 ) * 3 * C * D;
 	}
 	if (strcmp(in, "rectangles") == 0) {
@@ -1443,7 +1427,7 @@ void Opencl_Module::convertGaugefieldToSOA_device(cl_mem out, cl_mem in)
 {
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(convertGaugefieldToSOA, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(convertGaugefieldToSOA, &ls2, &gs2, &num_groups);
 
 	//set arguments
 	int clerr = clSetKernelArg(convertGaugefieldToSOA, 0, sizeof(cl_mem), &out);
@@ -1459,7 +1443,7 @@ void Opencl_Module::convertGaugefieldFromSOA_device(cl_mem out, cl_mem in)
 {
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(convertGaugefieldFromSOA, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(convertGaugefieldFromSOA, &ls2, &gs2, &num_groups);
 
 	//set arguments
 	int clerr = clSetKernelArg(convertGaugefieldFromSOA, 0, sizeof(cl_mem), &out);

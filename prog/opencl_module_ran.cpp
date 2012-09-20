@@ -42,7 +42,7 @@ void Opencl_Module_Ran::fill_buffers()
 #elif defined(USE_PRNG_RANLUX)
 	// make num of random states equal to default num of global threads
 	// TODO make this somewhat more automatic (avoid code duplication)
-	if(this->get_device_type() == CL_DEVICE_TYPE_GPU)
+	if(get_device()->get_device_type() == CL_DEVICE_TYPE_GPU)
 		num_rndstates = 4 * Opencl_Module::get_numthreads() * get_max_compute_units();
 	else
 		num_rndstates = get_max_compute_units();
@@ -67,7 +67,7 @@ void Opencl_Module_Ran::fill_kernels()
 	cl_int clerr;
 	size_t ls, gs;
 	cl_uint num_groups;
-	this->get_work_sizes(init_kernel, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(init_kernel, &ls, &gs, &num_groups);
 	cl_uint seed = get_parameters().get_host_seed() + 1 + device_rank; // +1 ensures that seed is not equal even if host and device seed are both 0
 	if(seed > (10e9 / gs)) { // see ranluxcl source as to why
 		/// @todo upgrade to newer ranluxcl to avoid this restcition
@@ -140,8 +140,8 @@ cl_mem* Opencl_Module_Ran::get_clmem_rndarray()
 	return &clmem_rndarray;
 }
 
-void Opencl_Module_Ran::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
+void Opencl_Module_Ran::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups)
 {
-	Opencl_Module::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
+	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 	return;
 }

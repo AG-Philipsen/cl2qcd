@@ -292,3 +292,8 @@ void hardware::Device::synchronize() const
 		throw hardware::OpenclException(err, "Failed when waiting for OpenCL device to finish.", __FILE__, __LINE__);
 	}
 }
+
+std::string hardware::Device::get_name() const noexcept
+{
+	return name;
+}

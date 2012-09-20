@@ -79,7 +79,7 @@ void Opencl_Module_Heatbath::run_heatbath()
 
 	size_t global_work_size, ls;
 	cl_uint num_groups;
-	this->get_work_sizes(heatbath_even, this->get_device_type(), &ls, &global_work_size, &num_groups);
+	this->get_work_sizes(heatbath_even, &ls, &global_work_size, &num_groups);
 
 	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), &src);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -92,7 +92,7 @@ void Opencl_Module_Heatbath::run_heatbath()
 		enqueueKernel(heatbath_even, global_work_size, ls);
 	}
 
-	this->get_work_sizes(heatbath_odd, this->get_device_type(), &ls, &global_work_size, &num_groups);
+	this->get_work_sizes(heatbath_odd, &ls, &global_work_size, &num_groups);
 
 	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), &src);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -114,7 +114,7 @@ void Opencl_Module_Heatbath::run_overrelax()
 
 	size_t global_work_size, ls;
 	cl_uint num_groups;
-	this->get_work_sizes(overrelax_even, this->get_device_type(), &ls, &global_work_size, &num_groups);
+	this->get_work_sizes(overrelax_even, &ls, &global_work_size, &num_groups);
 
 	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), &src);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -127,7 +127,7 @@ void Opencl_Module_Heatbath::run_overrelax()
 		enqueueKernel(overrelax_even, global_work_size, ls);
 	}
 
-	this->get_work_sizes(overrelax_odd, this->get_device_type(), &ls, &global_work_size, &num_groups);
+	this->get_work_sizes(overrelax_odd, &ls, &global_work_size, &num_groups);
 
 	clerr = clSetKernelArg(overrelax_odd, 0, sizeof(cl_mem), &src);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -142,9 +142,9 @@ void Opencl_Module_Heatbath::run_overrelax()
 	}
 }
 
-void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
+void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups)
 {
-	Opencl_Module_Ran::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
+	Opencl_Module_Ran::get_work_sizes(kernel, ls, gs, num_groups);
 
 	//Query kernel name
 	string kernelname = get_kernel_name(kernel);
@@ -152,7 +152,7 @@ void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, cl_device_ty
 	//Query specific sizes for kernels if needed
 	//all of the following kernels are called with EnqueueKernel(gs), ls, num_groups are not needed!
 	if (kernelname.compare("heatbath_even") == 0 || kernelname.compare("heatbath_odd") == 0 || kernelname.compare("overrelax_even") == 0 || kernelname.compare("overrelax_odd") == 0) {
-		if( get_device_type() == CL_DEVICE_TYPE_GPU ) {
+		if( get_device()->get_device_type() == CL_DEVICE_TYPE_GPU ) {
 			*gs = std::min(meta::get_volspace(parameters) * parameters.get_ntime() / 2, (size_t) this->Opencl_Module_Ran::get_num_rndstates());
 		} else {
 			*gs = std::min(get_max_compute_units(), this->Opencl_Module_Ran::get_num_rndstates());

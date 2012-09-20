@@ -88,7 +88,7 @@ public:
 	/**
 	 * Add specific work_size determination for this child class
 	 */
-	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups) override;
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) override;
 
 protected:
 

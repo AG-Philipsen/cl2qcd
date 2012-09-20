@@ -88,10 +88,9 @@ public:
 	 * @param ls local-work-size
 	 * @param gs global-work-size
 	 * @param num_groups number of work groups
-	 * @param dev_type type of device on which the kernel should be executed
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
-	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups) override;
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) override;
 
 	////////////////////////////////////////////////////
 	//get members
