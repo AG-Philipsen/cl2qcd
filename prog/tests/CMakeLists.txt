@@ -81,12 +81,22 @@ target_link_libraries(m_compare_noneo_eo
 )
 add_test(M_compare_noneo_eo m_compare_noneo_eo)
 
+add_executable(calc_staple Calc_staple_test.cpp)
+target_link_libraries(calc_staple
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(Calc_staple_CPU calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=false)
+add_test(Calc_staple_CPU_REC12 calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_rec12_1 --use_gpu=false)
+add_test(Calc_staple_GPU calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=true)
+add_test(Calc_staple_GPU_REC12 calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_rec12_1 --use_gpu=true)
+
 add_executable(f_gauge F_gauge_GPU.cpp)
 target_link_libraries(f_gauge
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(F_gauge_CPU f_gauge --run_test=F_GAUGE_CPU ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=false)
+add_test(F_gauge_CPU f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=false)
 add_test(F_gauge_CPU_REC12 f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_rec12 --use_gpu=false)
 add_test(F_gauge_GPU f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=true)
 add_test(F_gauge_GPU_REC12 f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_rec12 --use_gpu=true)
@@ -139,20 +149,6 @@ target_link_libraries(gf_update_gpu
 	${Boost_LIBRARIES}
 )
 add_test(Gf_update_gpu gf_update_gpu)
-
-add_executable(calc_staple Calc_staple_test.cpp)
-target_link_libraries(calc_staple
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Calc_staple calc_staple)
-
-add_executable(calc_staple_rec12 Calc_staple_test.cpp)
-target_link_libraries(calc_staple_rec12
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Calc_staple_rec12 calc_staple_rec12)
 
 add_executable(stout_smear Stout_Smear_test.cpp)
 target_link_libraries(stout_smear

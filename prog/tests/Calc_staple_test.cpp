@@ -10,12 +10,7 @@
 
 extern std::string const version;
 std::string const version = "0.1";
-
-#define CLX_CHECK_CLOSE(left, right, precision) \
-{ \
-  BOOST_CHECK_CLOSE(left.re, right.re, precision); \
-  BOOST_CHECK_CLOSE(left.im, right.im, precision); \
-}
+std::string const exec_name = "staple_test";
 
 class Device : public Opencl_Module {
 
@@ -33,25 +28,34 @@ public:
 	void clear_kernels();
 };
 
+
 class Dummyfield : public Gaugefield_hybrid {
-
 public:
-	Dummyfield(cl_device_type device_type, const meta::Inputparameters& params)
-		: Gaugefield_hybrid(params) {
-		init(1, device_type);
-	};
-
-	virtual void init_tasks();
-	virtual void finalize_opencl();
-	hmc_float runTestKernel();
-
+  Dummyfield(meta::Inputparameters inputfile) : Gaugefield_hybrid(inputfile) {
+    cl_device_type primary_device;
+    switch ( inputfile.get_use_gpu() ) {
+    case true :
+      primary_device = CL_DEVICE_TYPE_GPU;
+      break;
+    case false :
+      primary_device = CL_DEVICE_TYPE_CPU;
+      break;
+    }
+    init(1, primary_device);
+    meta::print_info_hmc(exec_name.c_str(), inputfile);
+  };
+  virtual void init_tasks();
+  virtual void finalize_opencl();
+  
+  hmc_float get_squarenorm();
+  hmc_float runTestKernel();
+  
 private:
-	void fill_buffers();
-	void clear_buffers();
-	cl_mem out;
-	hmc_float * host_out;
+  void fill_buffers();
+  void clear_buffers();
+  cl_mem out;
+  hmc_float * host_out;
 };
-
 
 void Dummyfield::init_tasks()
 {
@@ -83,13 +87,7 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
 	Opencl_Module::fill_kernels();
-
-	//to this end, one has to set the needed files by hand
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
-	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-
 	testKernel = createKernel("staple_test") << basic_opencl_code  << "/tests/staple_test.cl";
 }
 
@@ -144,114 +142,41 @@ hmc_float Dummyfield::runTestKernel()
 	return res;
 }
 
+
 BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 {
-  logger.info() << "Test CPU and GPU version of kernel";
+  logger.info() << "Test kernel";
   logger.info() << "\tcalc_staple";
   logger.info() << "against reference value";
 
-  logger.info() << "Init CPU device";
-  std::string src = std::string(SOURCEDIR) + "/tests/" + "staple_input_1";
-  const char* _params_cpu[] = {"foo", src.c_str(), "--use_gpu=false"};
-  meta::Inputparameters params_cpu(3, _params_cpu);
-  Dummyfield cpu(CL_DEVICE_TYPE_CPU, params_cpu);
+  //get input file that has been passed as an argument                                                                                                                             
+  const char* inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+  logger.info() << "inputfile used: " << inputfile;
+  //get use_gpu = true/false that has been passed as an argument                                                                                                                   
+  const char* gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+  logger.info() << "GPU usage: " << gpu_opt;
+
+  logger.info() << "Init device";
+  const char* _params_cpu[] = {"foo", inputfile, gpu_opt};
+  meta::Inputparameters params(3, _params_cpu);
+  Dummyfield cpu(params);
   logger.info() << "gaugeobservables: ";
   cpu.print_gaugeobservables_from_task(0, 0);
+  logger.info() << "Run kernel";
   logger.info() << "running test kernel";
-  hmc_float cpu_back = cpu.runTestKernel();
-  logger.info() << cpu_back;
-  BOOST_MESSAGE("Tested CPU");
-  
-  logger.info() << "Init GPU device";
-  src = std::string(SOURCEDIR) + "/tests/" + "staple_input_1";
-  const char* _params_gpu[] = {"foo", src.c_str(), "--use_gpu=true"};
-  meta::Inputparameters params_gpu = meta::Inputparameters(3, _params_gpu);
-  Dummyfield dummy(CL_DEVICE_TYPE_GPU, params_gpu);
-  logger.info() << "gaugeobservables: ";
-  dummy.print_gaugeobservables_from_task(0, 0);
-  logger.info() << "running test kernel";
-  hmc_float gpu_back = dummy.runTestKernel();
-  logger.info() << gpu_back;
-  BOOST_MESSAGE("Tested GPU");
-  
-  logger.info() << "Choosing reference value";
-  hmc_float ref_val = -1.39070784162e+02;
-  logger.info() << "reference value:\t" << ref_val;
-  logger.info() << "Compare CPU result to reference value";
-  BOOST_CHECK_CLOSE(ref_val, cpu_back, 1e-8);
-  logger.info() << "Compare GPU result to reference value";
-  BOOST_CHECK_CLOSE(ref_val, gpu_back, 1e-8);
-  logger.info() << "Compare CPU result to GPU result";
-  BOOST_CHECK_CLOSE(cpu_back, gpu_back, 1e-8);
-  
-  logger.info() << "cpu: " << std::scientific << std::setprecision(11) << cpu_back << "\tgpu: " << gpu_back;
-  
-  //CP: in case of a cold config, the result is calculable easily
-  logger.info() << "checking cold case...";
-  src = std::string(SOURCEDIR) + "/tests/" + "staple_input_1_cold";
-  const char* _params_cpu_cold[] = {"foo", src.c_str(), "--use_gpu=false"};
-  meta::Inputparameters params_cpu_cold = meta::Inputparameters(3, _params_cpu_cold);
-  Dummyfield cpu_cold(CL_DEVICE_TYPE_CPU, params_cpu_cold);
-  hmc_float cold_back = cpu_cold.runTestKernel();
-  hmc_float cold_ref = 18 * NDIM * meta::get_vol4d(dummy.get_parameters());
-  BOOST_CHECK_CLOSE(cold_back, cold_ref, 1e-8);
-  
-  // TODO test further input files, especially larger sizes and anisotropic case
-}
+  hmc_float cpu_res = cpu.runTestKernel();
+  logger.info() << "result:";
+  logger.info() << cpu_res;
 
-BOOST_AUTO_TEST_CASE( STAPLE_TEST_REC12 )
-{
-  logger.info() << "Test CPU and GPU version of kernel";
-  logger.info() << "\tcalc_staple";
-  logger.info() << "against reference value";
-
-  logger.info() << "Init CPU device";
-  std::string src = std::string(SOURCEDIR) + "/tests/" + "staple_input_rec12_1";
-  const char* _params_cpu[] = {"foo", src.c_str(), "--use_gpu=false"};
-  meta::Inputparameters params_cpu(3, _params_cpu);
-  Dummyfield cpu(CL_DEVICE_TYPE_CPU, params_cpu);
-  logger.info() << "gaugeobservables: ";
-  cpu.print_gaugeobservables_from_task(0, 0);
-  logger.info() << "running test kernel";
-  hmc_float cpu_back = cpu.runTestKernel();
-  logger.info() << cpu_back;
-  BOOST_MESSAGE("Tested CPU");
-  
-  logger.info() << "Init GPU device";
-  src = std::string(SOURCEDIR) + "/tests/" + "staple_input_rec12_1";
-  const char* _params_gpu[] = {"foo", src.c_str(), "--use_gpu=true"};
-  meta::Inputparameters params_gpu = meta::Inputparameters(3, _params_gpu);
-  Dummyfield dummy(CL_DEVICE_TYPE_GPU, params_gpu);
-  logger.info() << "gaugeobservables: ";
-  dummy.print_gaugeobservables_from_task(0, 0);
-  logger.info() << "running test kernel";
-  hmc_float gpu_back = dummy.runTestKernel();
-  logger.info() << gpu_back;
-  BOOST_MESSAGE("Tested GPU");
-  
-  logger.info() << "Choosing reference value";
-  hmc_float ref_val = -1.39070784162e+02;
+  logger.info() << "Choosing reference value and acceptance precision";
+  hmc_float ref_val = params.get_test_ref_value();
   logger.info() << "reference value:\t" << ref_val;
-  logger.info() << "Compare CPU result to reference value";
-  BOOST_CHECK_CLOSE(ref_val, cpu_back, 1e-8);
-  logger.info() << "Compare GPU result to reference value";
-  BOOST_CHECK_CLOSE(ref_val, gpu_back, 1e-8);
-  logger.info() << "Compare CPU result to GPU result";
-  BOOST_CHECK_CLOSE(cpu_back, gpu_back, 1e-8);
-  logger.info() << "... results correct";
-  
-  logger.info() << "cpu: " << std::scientific << std::setprecision(11) << cpu_back << "\tgpu: " << gpu_back;
-  
-  //CP: in case of a cold config, the result is calculable easily
-  logger.info() << "checking cold case...";
-  src = std::string(SOURCEDIR) + "/tests/" + "staple_input_1_cold";
-  const char* _params_cpu_cold[] = {"foo", src.c_str(), "--use_gpu=false"};
-  meta::Inputparameters params_cpu_cold = meta::Inputparameters(3, _params_cpu_cold);
-  Dummyfield cpu_cold(CL_DEVICE_TYPE_CPU, params_cpu_cold);
-  hmc_float cold_back = cpu_cold.runTestKernel();
-  hmc_float cold_ref = 18 * NDIM * meta::get_vol4d(dummy.get_parameters());
-  BOOST_CHECK_CLOSE(cold_back, cold_ref, 1e-8);
-  
-  // TODO test further input files, especially larger sizes and anisotropic case
+  hmc_float prec = params.get_solver_prec();
+  logger.info() << "acceptance precision: " << prec;
+
+  logger.info() << "Compare result to reference value";
+  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+  logger.info() << "Done";
+  BOOST_MESSAGE("Test done");
 }
 

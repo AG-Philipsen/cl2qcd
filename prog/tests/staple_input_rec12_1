@@ -3,6 +3,7 @@
 startcondition=continue
 sourcefile=conf.00200
 
+use_rec12=true
 use_eo=false
 NS=4
 NT=4
