@@ -997,7 +997,7 @@ TmpClKernel Opencl_Module::createKernel(const char * const kernel_name, const ch
 		collect_options << build_opts << ' ';
 	}
 	this->fill_collect_options(&collect_options);
-	return TmpClKernel(kernel_name, collect_options.str(), get_context(), &device, 1);
+	return TmpClKernel(kernel_name, collect_options.str(), get_context(), device);
 }
 
 void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)

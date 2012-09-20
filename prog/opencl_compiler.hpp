@@ -79,11 +79,11 @@ public:
 	/**
 	 * All purpose constructor.
 	 */
-	TmpClKernel(const char * const kernel_name, const std::string build_options,
-	            const cl_context context, const cl_device_id * const devices, const size_t num_devices,
+	TmpClKernel(const std::string kernel_name, const std::string build_options,
+	            const cl_context context, cl_device_id device,
 	            const std::vector<const char *> files = std::vector<const char *>())
 		: kernel_name(kernel_name), build_options(build_options), context(context),
-		  devices(devices), num_devices(num_devices), files(files) { };
+		  device(device), files(files) { };
 
 	/**
 	 * Conversion operator to a real OpenCL kernel object, will trigger build.
@@ -104,7 +104,7 @@ private:
 	/**
 	 * The name of the kernel to compile.
 	 */
-	const char * const kernel_name;
+	const std::string kernel_name;
 
 	/**
 	 * The build options to use for the kernel.
@@ -117,14 +117,9 @@ private:
 	const cl_context context;
 
 	/**
-	 * The devices to compile for.
+	 * The device to compile for.
 	 */
-	const cl_device_id * const devices;
-
-	/**
-	 * The number of devices to compile for.
-	 */
-	const size_t num_devices;
+	cl_device_id device;
 
 	/**
 	 * The files required for compilation.
@@ -138,16 +133,16 @@ private:
 	 *
 	 * @param kernel The kernel of which to query the information.
 	 */
-	void printResourceRequirements(const cl_kernel kernel, const cl_device_id device) const;
+	void printResourceRequirements(const cl_kernel kernel) const;
 
 	/**
 	 * Generate an MD5 string uniquely identifying the OpenCL program binary.
 	 */
-	std::string generateMD5(cl_device_id device) const;
+	std::string generateMD5() const;
 
-	void dumpBinary(cl_program program, cl_device_id device, std::string md5) const;
+	void dumpBinary(cl_program program, std::string md5) const;
 
-	cl_program loadBinary(std::string md5, cl_device_id device) const;
+	cl_program loadBinary(std::string md5) const;
 };
 
 #endif /* _OPENCL_COMPILER_H_ */

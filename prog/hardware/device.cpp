@@ -187,7 +187,7 @@ TmpClKernel hardware::Device::create_kernel(const char * const kernel_name, std:
 	if(params.is_ocl_compiler_opt_disabled()) {
 		build_opts +=  " -cl-opt-disable";
 	}
-	return TmpClKernel(kernel_name, build_opts, context, &device_id, 1);
+	return TmpClKernel(kernel_name, build_opts, context, device_id);
 }
 
 void hardware::Device::enqueue_kernel(cl_kernel kernel) const
