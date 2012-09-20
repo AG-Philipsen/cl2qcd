@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE( PackageCreateEmpty )
 
 BOOST_AUTO_TEST_CASE( PackageAddFiles )
 {
-	const char * f1 = "foo", * f2 = "bar"; // define pointers for later comparison
+	std::string f1 = "foo", f2 = "bar"; // define pointers for later comparison
 	ClSourcePackage package = ClSourcePackage() << f1;
 
 	BOOST_REQUIRE_EQUAL(package.getFiles().size(), 1);
@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE( PackageAddFiles )
 
 	ClSourcePackage package2 = package << f2;
 
-	std::vector<const char *> files = package2.getFiles();
+	auto files = package2.getFiles();
 	BOOST_REQUIRE_EQUAL(files.size(), 2);
 	BOOST_REQUIRE_EQUAL(files[0], f1);
 	BOOST_REQUIRE_EQUAL(files[1], f2);

@@ -17,17 +17,17 @@
 namespace fs = boost::filesystem;
 /// @todo quite some of this code could be simplified by moving from pure fstream to boost::filesystem equivalents
 
-ClSourcePackage ClSourcePackage::operator <<(const char *file)
+ClSourcePackage ClSourcePackage::operator <<(const std::string& file)
 {
-	std::vector<const char*> tmp = this->files;
+	auto tmp = this->files;
 	tmp.push_back(file);
 	return ClSourcePackage(tmp, this->options);
 }
 
 ClSourcePackage ClSourcePackage::operator <<(const ClSourcePackage& package)
 {
-	std::vector<const char*> tmp = this->files;
-	const std::vector<const char*> other = package.files;
+	auto tmp = this->files;
+	const auto other = package.files;
 	tmp.insert(tmp.end(), other.begin(), other.end());
 	return ClSourcePackage(tmp, options + ' ' + package.options);
 }
@@ -39,7 +39,7 @@ ClSourcePackage ClSourcePackage::operator =(const ClSourcePackage& package)
 	return *this;
 }
 
-const std::vector<const char *> ClSourcePackage::getFiles() const
+const std::vector<std::string> ClSourcePackage::getFiles() const
 {
 	return files;
 }
@@ -154,9 +154,9 @@ TmpClKernel::operator cl_kernel() const
 	return kernel;
 }
 
-TmpClKernel TmpClKernel::operator <<(const char *file) const
+TmpClKernel TmpClKernel::operator <<(const std::string& file) const
 {
-	std::vector<const char*> tmp = this->files;
+	auto tmp = this->files;
 	tmp.push_back(file);
 
 	return TmpClKernel(kernel_name, build_options, context, device, tmp);
@@ -164,8 +164,8 @@ TmpClKernel TmpClKernel::operator <<(const char *file) const
 
 TmpClKernel TmpClKernel::operator <<(const ClSourcePackage& package) const
 {
-	std::vector<const char*> tmp = this->files;
-	const std::vector<const char*> other = package.getFiles();
+	auto tmp = this->files;
+	const auto other = package.getFiles();
 	tmp.insert(tmp.end(), other.begin(), other.end());
 
 	return TmpClKernel(kernel_name, build_options + ' ' + package.getOptions(), context, device, tmp);
@@ -495,9 +495,7 @@ std::string TmpClKernel::generateMD5() const
 
 	// add source information
 	for(size_t n = 0; n < files.size(); n++) {
-		const char* filename = files[n];
-		const unsigned int filename_len = strlen(filename);
-		md5_process(&md5_state, filename, filename_len);
+		md5_process(&md5_state, files[n].c_str(), files[n].length());
 	}
 
 	// build options

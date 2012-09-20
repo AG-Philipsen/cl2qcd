@@ -25,7 +25,7 @@ public:
 	/**
 	 * Create an empty package with the given options
 	 */
-	ClSourcePackage(std::string options = std::string()) : options(options) {};
+	ClSourcePackage(const std::string& options = std::string()) : files(std::vector<std::string>()), options(options) {};
 
 	/**
 	 * Copy constructor
@@ -40,12 +40,12 @@ public:
 	 * @param num How many filenames.
 	 * @param base Optionally a package to base this package on.
 	 */
-	ClSourcePackage(const std::vector<const char *>& files, std::string options) : files(files), options(options) {};
+	ClSourcePackage(const std::vector<std::string>& files, const std::string& options) : files(files), options(options) {};
 
 	/**
 	 * Add another source file to the list of sources.
 	 */
-	ClSourcePackage operator <<(const char *file);
+	ClSourcePackage operator <<(const std::string& file);
 
 	/**
 	 * Add a predefined group of packages.
@@ -60,7 +60,7 @@ public:
 	/**
 	 * Get the list of files within the package.
 	 */
-	const std::vector<const char *> getFiles() const;
+	const std::vector<std::string> getFiles() const;
 
 	/**
 	 * Get the list of files within the package.
@@ -71,7 +71,7 @@ private:
 	/**
 	 * Collection of all the filenames part of the package
 	 */
-	std::vector<const char *> files;
+	std::vector<std::string> files;
 	/**
 	 * Collection of all build options set for this package
 	 */
@@ -90,7 +90,7 @@ public:
 	 */
 	TmpClKernel(const std::string kernel_name, const std::string build_options,
 	            const cl_context context, cl_device_id device,
-	            const std::vector<const char *> files = std::vector<const char *>())
+	            const std::vector<std::string> files = std::vector<std::string>())
 		: kernel_name(kernel_name), build_options(build_options), context(context),
 		  device(device), files(files) { };
 
@@ -102,7 +102,7 @@ public:
 	/**
 	 * Add another source file to the list of sources.
 	 */
-	TmpClKernel operator <<(const char *file) const;
+	TmpClKernel operator <<(const std::string& file) const;
 
 	/**
 	 * Add a predefined group of packages.
@@ -133,7 +133,7 @@ private:
 	/**
 	 * The files required for compilation.
 	 */
-	const std::vector<const char *> files;
+	const std::vector<std::string> files;
 
 	/**
 	 * Print resource requirements of a kernel object.
