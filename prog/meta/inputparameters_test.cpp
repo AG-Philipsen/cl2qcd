@@ -112,6 +112,7 @@ void checkDefaults(const Inputparameters params)
 
 	BOOST_REQUIRE_EQUAL(params.get_use_same_rnd_numbers(), false);
 	BOOST_REQUIRE_EQUAL(params.get_profile_solver(), false);
+	BOOST_REQUIRE_EQUAL(params.get_test_ref_value(), 0.);
 
 	BOOST_REQUIRE_EQUAL(params.is_ocl_compiler_opt_disabled(), false);
 
@@ -231,6 +232,7 @@ BOOST_AUTO_TEST_CASE(input_file2)
 
 	BOOST_REQUIRE_EQUAL(params.get_use_same_rnd_numbers(), true);
 	BOOST_REQUIRE_EQUAL(params.get_profile_solver(), true);
+	BOOST_REQUIRE_EQUAL(params.get_test_ref_value(), 1.337);
 
 	BOOST_REQUIRE_EQUAL(params.get_use_merge_kernels_spinor(), true);
 	BOOST_REQUIRE_EQUAL(params.get_use_merge_kernels_fermion(), true);
