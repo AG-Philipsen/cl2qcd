@@ -23,14 +23,14 @@ class ClSourcePackage {
 
 public:
 	/**
-	 * Create an empty package
+	 * Create an empty package with the given options
 	 */
-	ClSourcePackage() {};
+	ClSourcePackage(std::string options = std::string()) : options(options) {};
 
 	/**
 	 * Copy constructor
 	 */
-	ClSourcePackage(const ClSourcePackage& src) : files(src.files) {};
+	ClSourcePackage(const ClSourcePackage& src) : files(src.files), options(src.options) {};
 
 	/**
 	 * Create a package based from an array of filenames and potentially
@@ -40,7 +40,7 @@ public:
 	 * @param num How many filenames.
 	 * @param base Optionally a package to base this package on.
 	 */
-	ClSourcePackage(const std::vector<const char *>& files) : files(files) {};
+	ClSourcePackage(const std::vector<const char *>& files, std::string options) : files(files), options(options) {};
 
 	/**
 	 * Add another source file to the list of sources.
@@ -62,11 +62,20 @@ public:
 	 */
 	const std::vector<const char *> getFiles() const;
 
+	/**
+	 * Get the list of files within the package.
+	 */
+	const std::string getOptions() const;
+
 private:
 	/**
-	 * Collection of all the filenames part of the packe
+	 * Collection of all the filenames part of the package
 	 */
 	std::vector<const char *> files;
+	/**
+	 * Collection of all build options set for this package
+	 */
+	std::string options;
 };
 
 /**

@@ -21,7 +21,7 @@ ClSourcePackage ClSourcePackage::operator <<(const char *file)
 {
 	std::vector<const char*> tmp = this->files;
 	tmp.push_back(file);
-	return ClSourcePackage(tmp);
+	return ClSourcePackage(tmp, this->options);
 }
 
 ClSourcePackage ClSourcePackage::operator <<(const ClSourcePackage& package)
@@ -29,18 +29,24 @@ ClSourcePackage ClSourcePackage::operator <<(const ClSourcePackage& package)
 	std::vector<const char*> tmp = this->files;
 	const std::vector<const char*> other = package.files;
 	tmp.insert(tmp.end(), other.begin(), other.end());
-	return ClSourcePackage(tmp);
+	return ClSourcePackage(tmp, options + ' ' + package.options);
 }
 
 ClSourcePackage ClSourcePackage::operator =(const ClSourcePackage& package)
 {
 	this->files = package.files;
+	this->options = package.options;
 	return *this;
 }
 
 const std::vector<const char *> ClSourcePackage::getFiles() const
 {
 	return files;
+}
+
+const std::string ClSourcePackage::getOptions() const
+{
+	return options;
 }
 
 
@@ -162,7 +168,7 @@ TmpClKernel TmpClKernel::operator <<(const ClSourcePackage& package) const
 	const std::vector<const char*> other = package.getFiles();
 	tmp.insert(tmp.end(), other.begin(), other.end());
 
-	return TmpClKernel(kernel_name, build_options, context, device, tmp);
+	return TmpClKernel(kernel_name, build_options + ' ' + package.getOptions(), context, device, tmp);
 }
 
 void TmpClKernel::printResourceRequirements(const cl_kernel kernel) const
