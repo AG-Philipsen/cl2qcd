@@ -135,7 +135,6 @@ for(auto device: system->get_devices()) {
 	}
 
 	int len = std::min( get_num_tasks(), get_num_devices() );
-	queue                   = new cl_command_queue [get_num_tasks()];
 	devices                 = new hardware::Device*[len];
 	cl_devices              = new cl_device_id[len];
 	device_double_extension = new std::string  [len];
@@ -159,20 +158,6 @@ for(auto device: system->get_devices()) {
 			default:
 				throw Print_Error_Message("Fewer devices than tasks but no proper mapping available.");
 		}
-	}
-
-	//Initilize queues, one per task
-	// Note that it might be advantageous to combine tasks on the same device into the same queue, i.e. to have only one queue per device even for more devices
-	cl_context context = *system;
-	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-		logger.trace() << "Create command queue for task #" << ntask << "...";
-
-#ifdef _PROFILING_
-		queue[ntask] = clCreateCommandQueue(context, get_device_for_task(ntask)->get_id(), CL_QUEUE_PROFILING_ENABLE, &clerr);
-#else
-		queue[ntask] = clCreateCommandQueue(context, get_device_for_task(ntask)->get_id(), 0, &clerr);
-#endif
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateCommandQueue", __FILE__, __LINE__);
 	}
 }
 
@@ -234,7 +219,7 @@ void Gaugefield_hybrid::init_tasks()
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
 		//this is initialized with length 1, meaning one assumes one device per task
 		opencl_modules[ntask] = new Opencl_Module(parameters, get_device_for_task(ntask));
-		opencl_modules[ntask]->init(queue[ntask], max_compute_units[ntask], get_double_ext(ntask), ntask);
+		opencl_modules[ntask]->init(max_compute_units[ntask], get_double_ext(ntask), ntask);
 	}
 }
 
@@ -253,7 +238,6 @@ void Gaugefield_hybrid::delete_variables()
 
 	delete [] devices;
 	delete [] cl_devices;
-	delete [] queue;
 	delete [] device_double_extension;
 	delete [] max_compute_units;
 
@@ -267,22 +251,7 @@ void Gaugefield_hybrid::delete_variables()
 
 void Gaugefield_hybrid::finalize_opencl()
 {
-	cl_int clerr = CL_SUCCESS;
 
-	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-		clerr = clFlush(queue[ntask]);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFlush", __FILE__, __LINE__);
-		clerr = clFinish(queue[ntask]);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
-	}
-
-	//  tasks->clear_kernels();
-	//  tasks->clear_buffers();
-
-	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-		clerr = clReleaseCommandQueue(queue[ntask]);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseCommandQueue", __FILE__, __LINE__);
-	}
 }
 
 void Gaugefield_hybrid::init_gaugefield()
@@ -354,11 +323,10 @@ void Gaugefield_hybrid::synchronize(int ntask_reference)
 		logger.warn() << "Index out of range, synchronize_gaugefield does nothing.";
 		return;
 	}
-	//clFinish(queue[ntask_reference]);
 	copy_gaugefield_from_task(ntask_reference);
 
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-		clFinish(queue[ntask]);
+		get_device_for_task(ntask)->synchronize();
 		if(ntask != ntask_reference) copy_gaugefield_to_task(ntask);
 	}
 }

@@ -8,20 +8,16 @@
 
 using namespace std;
 
-void Opencl_Module::init(cl_command_queue queue, int maxcomp, string double_ext, unsigned int device_rank)
+void Opencl_Module::init(int maxcomp, string double_ext, unsigned int device_rank)
 {
-	set_queue(queue);
-
 	this->device_rank = device_rank;
 
 	// get device
 	cl_device_id device_id = device->get_id();
-	cl_int clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_DEVICE, sizeof(cl_device_id), &device_id, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetCommandQueueInfo", __FILE__, __LINE__);
 
 	// get device name
 	size_t device_name_bytes;
-	clerr = clGetDeviceInfo(device_id, CL_DEVICE_NAME, 0, NULL, &device_name_bytes );
+	cl_int clerr = clGetDeviceInfo(device_id, CL_DEVICE_NAME, 0, NULL, &device_name_bytes );
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 	device_name = new char[device_name_bytes];
 	clerr = clGetDeviceInfo(device_id, CL_DEVICE_NAME, device_name_bytes, device_name, NULL );
@@ -84,17 +80,6 @@ cl_context Opencl_Module::get_context()
 	return ocl_context;
 }
 
-
-void Opencl_Module::set_queue(cl_command_queue queue)
-{
-	ocl_queue = queue;
-	return;
-}
-
-cl_command_queue Opencl_Module::get_queue()
-{
-	return ocl_queue;
-}
 
 cl_mem Opencl_Module::get_gaugefield()
 {
@@ -1484,4 +1469,9 @@ void Opencl_Module::convertGaugefieldFromSOA_device(cl_mem out, cl_mem in)
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(convertGaugefieldFromSOA, gs2, ls2);
+}
+
+cl_command_queue Opencl_Module::get_queue() const noexcept
+{
+	return device->get_queue();
 }

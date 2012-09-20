@@ -181,6 +181,10 @@ hardware::Device::operator cl_command_queue() const noexcept
 {
 	return command_queue;
 }
+cl_command_queue hardware::Device::get_queue() const noexcept
+{
+	return command_queue;
+}
 
 TmpClKernel hardware::Device::create_kernel(const char * const kernel_name, std::string build_opts) const
 {
@@ -279,4 +283,12 @@ cl_device_id hardware::Device::get_id() const noexcept
 bool hardware::Device::is_profiling_enabled() const noexcept
 {
 	return profiling_enabled;
+}
+
+void hardware::Device::synchronize() const
+{
+	cl_int err = clFinish(command_queue);
+	if(err) {
+		throw hardware::OpenclException(err, "Failed when waiting for OpenCL device to finish.", __FILE__, __LINE__);
+	}
 }

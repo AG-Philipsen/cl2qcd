@@ -311,7 +311,6 @@ public:
 protected:
 	cl_device_type* devicetypes;
 	Opencl_Module ** opencl_modules;
-	cl_command_queue* queue;
 
 private:
 	const hardware::System * system;

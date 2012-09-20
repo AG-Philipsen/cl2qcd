@@ -35,10 +35,10 @@ void Gaugefield_inverter::init_tasks()
 
 	//LZ: right now, each task carries exactly one opencl device -> thus the below allocation with [1]. Could be generalized in future
 	opencl_modules[task_solver] = new Opencl_Module_Fermions(get_parameters(), get_device_for_task(task_solver));
-	get_task_solver()->init(queue[task_solver], get_max_compute_units(task_solver), get_double_ext(task_solver), task_solver);
+	get_task_solver()->init(get_max_compute_units(task_solver), get_double_ext(task_solver), task_solver);
 
 	opencl_modules[task_correlator] = new Opencl_Module_Correlator(get_parameters(), get_device_for_task(task_correlator));
-	get_task_correlator()->init(queue[task_correlator], get_max_compute_units(task_correlator), get_double_ext(task_correlator), task_correlator);
+	get_task_correlator()->init(get_max_compute_units(task_correlator), get_double_ext(task_correlator), task_correlator);
 
 
 	int spinorfield_size = sizeof(spinor) * meta::get_spinorfieldsize(get_parameters());
@@ -227,9 +227,9 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ay"), get_clmem_corr(), result_ay);
 	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("az"), get_clmem_corr(), result_az);
 
-	//the correlator_device calcultions are all non-blocking, hence we need a barrier here:
+	//the correlator_device calcultions are all non-blocking, hence we need a barrier here: (why? -- MB)
 	if( needcopy == false )
-		clFinish(queue[task_correlator]);
+		get_device_for_task(task_correlator)->synchronize();
 
 	//the pseudo-scalar (J=0, P=1)
 	logger.info() << "pseudo scalar correlator:" ;

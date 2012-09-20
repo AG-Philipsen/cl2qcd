@@ -91,7 +91,7 @@ void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 	opencl_modules[0] = new Opencl_Module(get_parameters(), get_device_for_task(0));
-	opencl_modules[0]->init(queue[0], get_max_compute_units(0), get_double_ext(0), 0);
+	opencl_modules[0]->init(get_max_compute_units(0), get_double_ext(0), 0);
 
 	fill_buffers();
 }

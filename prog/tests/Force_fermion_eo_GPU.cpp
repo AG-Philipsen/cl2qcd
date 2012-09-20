@@ -16,8 +16,8 @@ class Device : public Opencl_Module_Hmc {
 	cl_kernel testKernel;
 	meta::Counter counter1, counter2, counter3, counter4;
 public:
-	Device(cl_command_queue queue, const meta::Inputparameters& params, hardware::Device * device, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc(params, device, &counter1, &counter2, &counter3, &counter4) {
-		Opencl_Module_Hmc::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(const meta::Inputparameters& params, hardware::Device * device, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc(params, device, &counter1, &counter2, &counter3, &counter4) {
+		Opencl_Module_Hmc::init(maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE( F_FERMION )
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(queue[0], get_parameters(), get_device_for_task(0), get_max_compute_units(0), get_double_ext(0), 0);
+	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0), get_max_compute_units(0), get_double_ext(0), 0);
 
 	fill_buffers();
 }
@@ -473,7 +473,7 @@ hmc_float Dummyfield::get_squarenorm(int which)
 	if(which == 4) static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
 	// get stuff from device
 	hmc_float result;
-	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
+	cl_int err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << result;
 	return result;

@@ -56,7 +56,6 @@ public:
 	/**
 	 * Initialize everything. First method to be called.
 	 *
-	 * @param[in] queue OpenCL command queue
 	 * @param[in] params instance of inputparameters
 	 * @param[in] maxcomp maximum_compute_units for device
 	 * @param[in] double_ext OpenCL double extension for device (AMD or KHR)
@@ -64,7 +63,7 @@ public:
 	 *
 	 * @deprecated To be replaced by a proper constructor
 	 */
-	void init(cl_command_queue queue, int maxcomp, std::string double_ext, unsigned int device_rank);
+	void init(int maxcomp, std::string double_ext, unsigned int device_rank);
 
 	// set and get methods
 	/**
@@ -72,16 +71,6 @@ public:
 	 * @return cl_context
 	 */
 	cl_context get_context();
-	/**
-	 * Set queue
-	 * @param[in] queue OpenCL command queue
-	 */
-	void set_queue(cl_command_queue queue);
-	/**
-	 * Return the OpenCL command queue
-	 * @return ocl_queue
-	 */
-	cl_command_queue get_queue();
 	/**
 	 * Get a pointer to the gaugefield buffer
 	 * @return ocl_gaugefield OpenCL buffer with gaugefield
@@ -508,6 +497,15 @@ protected:
 	 */
 	unsigned int device_rank;
 
+public:
+
+	/**
+	 * Get the queue used by this module
+	 *
+	 * @deprecated queueing shoudl be done via device or buffes
+	 */
+	cl_command_queue get_queue() const noexcept;
+
 private:
 
 	/**
@@ -517,7 +515,6 @@ private:
 
 	cl_platform_id platform;
 	cl_context ocl_context;
-	cl_command_queue ocl_queue;
 	/**
 	 * Gaugefield buffer size in bytes.
 	 *

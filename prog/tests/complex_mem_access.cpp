@@ -17,9 +17,9 @@ class Device : public Opencl_Module {
 	cl_kernel readComplex;
 
 public:
-	Device(cl_command_queue queue, const meta::Inputparameters& params, hardware::Device * device, int maxcomp, std::string double_ext, unsigned int dev_rank)
+	Device(const meta::Inputparameters& params, hardware::Device * device, int maxcomp, std::string double_ext, unsigned int dev_rank)
 		: Opencl_Module(params, device) {
-		Opencl_Module::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+		Opencl_Module::init(maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE( GPU )
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(queue[0], get_parameters(), get_device_for_task(0), get_max_compute_units(0), get_double_ext(0), 0);
+	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0), get_max_compute_units(0), get_double_ext(0), 0);
 
 	fill_buffers();
 }
@@ -177,7 +177,7 @@ void Dummyfield::verify(hmc_complex left, hmc_complex right)
 void Dummyfield::verifyFill(const hmc_complex value)
 {
 	// get stuff from device
-	cl_int err = clEnqueueReadBuffer(*queue, d_complex, CL_TRUE, 0, meta::get_vol4d(get_parameters()) * sizeof(hmc_complex), h_complex, 0, 0, 0);
+	cl_int err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), d_complex, CL_TRUE, 0, meta::get_vol4d(get_parameters()) * sizeof(hmc_complex), h_complex, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
 	for(int i = 0; i < meta::get_vol4d(get_parameters()); ++i) {
@@ -201,7 +201,7 @@ void Dummyfield::verifyRead()
 {
 	// get stuff from device
 	cl_float2 * h_float2 = new cl_float2[meta::get_vol4d(get_parameters())];
-	cl_int err = clEnqueueReadBuffer(*queue, d_float2, CL_TRUE, 0, meta::get_vol4d(get_parameters()) * sizeof(cl_float2), h_float2, 0, 0, 0);
+	cl_int err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), d_float2, CL_TRUE, 0, meta::get_vol4d(get_parameters()) * sizeof(cl_float2), h_float2, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
 	for(int i = 0; i < meta::get_vol4d(get_parameters()); ++i) {

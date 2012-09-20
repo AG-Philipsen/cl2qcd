@@ -16,6 +16,11 @@
 #include "../meta/inputparameters.hpp"
 #include "../opencl_compiler.hpp"
 
+/**
+ * Forward dekleration of friends
+ */
+class Opencl_Module;
+
 namespace hardware {
 
 	class OptimizationError {
@@ -29,6 +34,8 @@ namespace hardware {
 	 * its hardware.
 	 */
 	class Device {
+
+		friend ::Opencl_Module; // during refactoring this needs access to the ocl-queue
 
 	public:
 		/**
@@ -131,6 +138,11 @@ namespace hardware {
 		 */
 		bool is_profiling_enabled() const noexcept;
 
+		/**
+		 * Make sure all operations on this device are finished.
+		 */
+		void synchronize() const;
+
 	private:
 		/**
 		 * The OpenCL context to be used by this device.
@@ -196,6 +208,11 @@ namespace hardware {
 		 * Allow easy use of the command queue
 		 */
 		operator cl_command_queue() const noexcept;
+
+		/**
+		 * Allow easy use of the command queue
+		 */
+		cl_command_queue get_queue() const noexcept;
 	};
 }
 
