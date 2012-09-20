@@ -86,10 +86,10 @@ target_link_libraries(f_gauge
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(F_gauge_CPU f_gauge --run_test=F_GAUGE_CPU)
-add_test(F_gauge_CPU_REC12 f_gauge --run_test=F_GAUGE_CPU_REC12)
-add_test(F_gauge_GPU f_gauge --run_test=F_GAUGE_GPU)
-add_test(F_gauge_GPU_REC12 f_gauge --run_test=F_GAUGE_GPU_REC12)
+add_test(F_gauge_CPU f_gauge --run_test=F_GAUGE_CPU ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=false)
+add_test(F_gauge_CPU_REC12 f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_rec12 --use_gpu=false)
+add_test(F_gauge_GPU f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=true)
+add_test(F_gauge_GPU_REC12 f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_rec12 --use_gpu=true)
 
 add_executable(rectangles_test Rectangles_test.cpp)
 target_link_libraries(rectangles_test
