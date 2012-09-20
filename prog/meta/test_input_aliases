@@ -1,0 +1,6 @@
+NS=12
+NT=32
+use_evenodd=false
+thermsteps=13
+PGT=true
+test_ref_value=42.
