@@ -145,6 +145,14 @@ namespace hardware {
 		 */
 		void synchronize() const;
 
+		/**
+		 * Get the profiling data for all executions of the given kernel on this device.
+		 *
+		 * \param kernel The kernel for which to get the profiling data
+		 * \return Profiling data for the given kernel on this device
+		 */
+		ProfilingData getProfilingData(const cl_kernel& kernel) noexcept;
+
 	private:
 		/**
 		 * The OpenCL context to be used by this device.
