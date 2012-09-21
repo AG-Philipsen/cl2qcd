@@ -958,11 +958,6 @@ void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int g
 	cl_mem out_tmp_eo2 = clCreateBuffer(this->get_context(), CL_MEM_READ_WRITE , sf_eoprec_buffer_size, 0, &err );
 	cl_mem tmp_eo = clCreateBuffer(this->get_context(), CL_MEM_READ_WRITE , sf_eoprec_buffer_size, 0, &err );
 
-	int even = EVEN;
-	int odd = ODD;
-	int oe = OE;
-	int eo = EO;
-
 	//create -1 on device
 	cl_mem minusone = clCreateBuffer(this->get_context(), CL_MEM_READ_WRITE , sizeof(hmc_complex), 0, &err );
 	hmc_complex minusone_tmp = { -1., 0.};

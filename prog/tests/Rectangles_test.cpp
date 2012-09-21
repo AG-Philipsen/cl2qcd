@@ -198,8 +198,6 @@ void Device::runTestKernel(cl_mem out, cl_mem gf, int gs, int ls)
 {
 	logger.trace() << "start with testKernel";
 
-	cl_int err;
-
 	cl_uint num_groups = (gs + ls - 1) / ls;
 
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;

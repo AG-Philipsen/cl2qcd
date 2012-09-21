@@ -70,8 +70,6 @@ void Gaugefield_hybrid::init_devicetypearray(cl_device_type primary_device_type)
 
 void Gaugefield_hybrid::init_opencl()
 {
-	cl_int clerr = CL_SUCCESS;
-
 	//Initialize OpenCL,
 	logger.trace() << "OpenCL being initialized...";
 

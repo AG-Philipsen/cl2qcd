@@ -133,15 +133,6 @@ void Dummyfield::finalize_opencl()
 
 void Dummyfield::fill_buffers()
 {
-	// don't invoke parent function as we don't require the original buffers
-
-	cl_int err;
-
-	cl_context context = opencl_modules[0]->get_context();
-
-	int NUM_ELEMENTS = get_num_gaugefield_elems();//params.get_vol4d() * NDIM;
-
-
 	Matrixsu3 *  gf_tmp  = new Matrixsu3[get_num_gaugefield_elems()];
 	//fill tmp gf with ones
 	set_gaugefield_cold(gf_tmp);

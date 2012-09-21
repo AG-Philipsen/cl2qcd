@@ -46,15 +46,7 @@ int main(int argc, const char* argv[])
 		if(parameters.get_device_count() != 2 )
 			logger.warn() << "Only 1 device demanded by input file. All calculations performed on primary device.";
 
-		cl_device_type primary_device;
-		switch ( parameters.get_use_gpu() ) {
-			case true :
-				primary_device = CL_DEVICE_TYPE_GPU;
-				break;
-			case false :
-				primary_device = CL_DEVICE_TYPE_CPU;
-				break;
-		}
+		cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
 
 		//check if correlator-device is a GPU and in that case exit because the kernels are not meant to be executed there
 		if ( parameters.get_use_gpu() == false && parameters.get_device_count() == 2) {

@@ -30,14 +30,8 @@ int main(int argc, const char* argv[])
 		hardware::System system(parameters);
 		Gaugefield_heatbath gaugefield(&system);
 
-		cl_device_type primary_device_type;
-		//check whether GPU should be used
-		if(parameters.get_use_gpu() == true) {
-			primary_device_type = CL_DEVICE_TYPE_GPU;
-		} else {
-			primary_device_type = CL_DEVICE_TYPE_CPU;
-		}
-		gaugefield.init(1, primary_device_type);
+		cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
+		gaugefield.init(1, primary_device);
 		logger.trace() << "initial gaugeobservables: ";
 		gaugefield.print_gaugeobservables(0);
 
