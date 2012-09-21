@@ -164,21 +164,21 @@ void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, size_t * ls,
 }
 
 #ifdef _PROFILING_
-usetimer* Opencl_Module_Heatbath::get_timer(const char * in)
+usetimer* Opencl_Module_Heatbath::get_timer(const std::string& in)
 {
 	usetimer *noop = NULL;
 	noop = Opencl_Module_Ran::get_timer(in);
 	if(noop != NULL) return noop;
-	if (strcmp(in, "heatbath_even") == 0) {
+	if (in == "heatbath_even") {
 		return &this->timer_heatbath_even;
 	}
-	if (strcmp(in, "heatbath_odd") == 0) {
+	if (in == "heatbath_odd") {
 		return &this->timer_heatbath_odd;
 	}
-	if (strcmp(in, "overrelax_even") == 0) {
+	if (in == "overrelax_even") {
 		return &this->timer_overrelax_even;
 	}
-	if (strcmp(in, "overrelax_odd") == 0) {
+	if (in == "overrelax_odd") {
 		return &this->timer_overrelax_odd;
 	}
 	//if the kernelname has not matched, return NULL
@@ -188,7 +188,7 @@ usetimer* Opencl_Module_Heatbath::get_timer(const char * in)
 }
 #endif
 
-size_t Opencl_Module_Heatbath::get_read_write_size(const char * in)
+size_t Opencl_Module_Heatbath::get_read_write_size(const std::string& in)
 {
 	size_t result = Opencl_Module_Ran::get_read_write_size(in);
 	if (result != 0) return result;
@@ -204,14 +204,14 @@ size_t Opencl_Module_Heatbath::get_read_write_size(const char * in)
 	else
 		S = meta::get_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
-	if ( (strcmp(in, "heatbath_even") == 0 ) || (strcmp(in, "heatbath_odd") == 0) || (strcmp(in, "overrelax_even") == 0) || (strcmp(in, "overrelax_odd") == 0)) {
+	if ( (in == "heatbath_even" ) || (in == "heatbath_odd") || (in == "overrelax_even") || (in == "overrelax_odd")) {
 		//this kernel reads ingredients for 1 staple plus 1 su3matrix and writes 1 su3-matrix
 		return VOL4D / 2 * C * D * R * (6 * (NDIM - 1) + 1 + 1 );
 	}
 	return 0;
 }
 
-uint64_t Opencl_Module_Heatbath::get_flop_size(const char * in)
+uint64_t Opencl_Module_Heatbath::get_flop_size(const std::string& in)
 {
 	uint64_t result = Opencl_Module_Ran::get_flop_size(in);
 	if (result != 0) return result;
@@ -223,11 +223,11 @@ uint64_t Opencl_Module_Heatbath::get_flop_size(const char * in)
 		S = meta::get_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
 	///@NOTE: I do not distinguish between su3 and 3x3 matrices. This is a difference if one use e.g. REC12, but here one wants to have the "netto" flops for comparability.
-	if ( (strcmp(in, "heatbath_even") == 0 ) || (strcmp(in, "heatbath_odd") == 0) ) {
+	if ( (in == "heatbath_even" ) || (in == "heatbath_odd") ) {
 		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2_ND-1 su3_add) plus NC*(2*su3_su3 80 flops for the su2 update)
 		return VOL4D / 2 * (4 * (NDIM - 1) * meta::get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * meta::get_flop_su3_su3() + 80));
 	}
-	if ( (strcmp(in, "overrelax_even") == 0) || (strcmp(in, "overrelax_odd") == 0)) {
+	if ( (in == "overrelax_even") || (in == "overrelax_odd")) {
 		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2_ND-1 su3_add) plus NC*(2*su3_su3 58 flops for the su2 update)
 		return VOL4D / 2 * (4 * (NDIM - 1) * meta::get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * meta::get_flop_su3_su3() + 58));
 	}

@@ -2116,59 +2116,59 @@ hmc_float Opencl_Module_Fermions::print_info_inv_field(cl_mem in, bool eo, std::
 }
 
 #ifdef _PROFILING_
-usetimer* Opencl_Module_Fermions::get_timer(const char * in)
+usetimer* Opencl_Module_Fermions::get_timer(const std::string& in)
 {
 	logger.trace() << "Opencl_Module_Fermions::get_timer(char*)";
 	usetimer *noop = NULL;
 	noop = Opencl_Module_Spinors::get_timer(in);
 	if(noop != NULL) return noop;
 
-	if (strcmp(in, "M_wilson") == 0) {
+	if (in == "M_wilson") {
 		return &(this->timer_M_wilson);
 	}
-	if (strcmp(in, "gamma5") == 0) {
+	if (in == "gamma5") {
 		return &this->timer_gamma5;
 	}
-	if (strcmp(in, "M_tm_plus") == 0) {
+	if (in == "M_tm_plus") {
 		return &this->timer_M_tm_plus;
 	}
-	if (strcmp(in, "M_tm_minus") == 0) {
+	if (in == "M_tm_minus") {
 		return &this->timer_M_tm_minus;
 	}
-	if (strcmp(in, "gamma5_eo") == 0) {
+	if (in == "gamma5_eo") {
 		return &this->timer_gamma5_eo;
 	}
-	if (strcmp(in, "dslash_eo") == 0) {
+	if (in == "dslash_eo") {
 		return &this->timer_dslash_eo;
 	}
-	if (strcmp(in, "M_tm_sitediagonal") == 0) {
+	if (in == "M_tm_sitediagonal") {
 		return &this->timer_M_tm_sitediagonal;
 	}
-	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0) {
+	if (in == "M_tm_inverse_sitediagonal") {
 		return &this->timer_M_tm_inverse_sitediagonal;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_minus") == 0) {
+	if (in == "M_tm_sitediagonal_minus") {
 		return &this->timer_M_tm_sitediagonal_minus;
 	}
-	if (strcmp(in, "M_tm_inverse_sitediagonal_minus") == 0) {
+	if (in == "M_tm_inverse_sitediagonal_minus") {
 		return &this->timer_M_tm_inverse_sitediagonal_minus;
 	}
-	if (strcmp(in, "ps_correlator") == 0) {
+	if (in == "ps_correlator") {
 		return &this->timer_ps_correlator;
 	}
-	if (strcmp(in, "dslash_AND_gamma5_eo") == 0) {
+	if (in == "dslash_AND_gamma5_eo") {
 		return &this->timer_dslash_AND_gamma5_eo;
 	}
-	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_eo") == 0) {
+	if (in == "dslash_AND_M_tm_inverse_sitediagonal_eo") {
 		return &this->timer_dslash_AND_M_tm_inverse_sitediagonal_eo;
 	}
-	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_minus_eo") == 0) {
+	if (in == "dslash_AND_M_tm_inverse_sitediagonal_minus_eo") {
 		return &this->timer_dslash_AND_M_tm_inverse_sitediagonal_minus_eo;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_AND_gamma5_eo") == 0) {
+	if (in == "M_tm_sitediagonal_AND_gamma5_eo") {
 		return &this->timer_M_tm_sitediagonal_AND_gamma5_eo;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_minus_AND_gamma5_eo") == 0) {
+	if (in == "M_tm_sitediagonal_minus_AND_gamma5_eo") {
 		return &this->timer_M_tm_sitediagonal_minus_AND_gamma5_eo;
 	}
 
@@ -2179,7 +2179,7 @@ usetimer* Opencl_Module_Fermions::get_timer(const char * in)
 }
 #endif
 
-size_t Opencl_Module_Fermions::get_read_write_size(const char * in)
+size_t Opencl_Module_Fermions::get_read_write_size(const std::string& in)
 {
 	size_t result = Opencl_Module_Spinors::get_read_write_size(in);
 	if (result != 0) return result;
@@ -2194,73 +2194,73 @@ size_t Opencl_Module_Fermions::get_read_write_size(const char * in)
 	int C = 2;
 	//this is the same as in the function above
 	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
-	if (strcmp(in, "M_wilson") == 0) {
+	if (in == "M_wilson") {
 		//this kernel reads 9 spinors, 8 su3matrices and writes 1 spinor:
 		return (C * 12 * (9 + 1) + C * 8 * R) * D * S;
 	}
-	if (strcmp(in, "gamma5") == 0) {
+	if (in == "gamma5") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 2 * C * 12 * D * S;
 	}
-	if (strcmp(in, "M_tm_plus") == 0) {
+	if (in == "M_tm_plus") {
 		//this kernel reads 9 spinors, 8 su3matrices and writes 1 spinor:
 		return (C * 12 * (9 + 1) + C * 8 * R) * D * S;
 	}
-	if (strcmp(in, "M_tm_minus") == 0) {
+	if (in == "M_tm_minus") {
 		//this kernel reads 9 spinors, 8 su3matrices and writes 1 spinor:
 		return (C * 12 * (9 + 1) + C * 8 * R) * D * S;
 	}
-	if (strcmp(in, "gamma5_eo") == 0) {
+	if (in == "gamma5_eo") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
-	if (strcmp(in, "M_tm_sitediagonal") == 0) {
+	if (in == "M_tm_sitediagonal") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
-	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0) {
+	if (in == "M_tm_inverse_sitediagonal") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_minus") == 0) {
+	if (in == "M_tm_sitediagonal_minus") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
-	if (strcmp(in, "M_tm_inverse_sitediagonal_minus") == 0) {
+	if (in == "M_tm_inverse_sitediagonal_minus") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
-	if (strcmp(in, "dslash_eo") == 0) {
+	if (in == "dslash_eo") {
 		//this kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
 		const unsigned int dirs = 4;
 		return (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
 	}
-	if (strcmp(in, "dslash_AND_gamma5_eo") == 0) {
+	if (in == "dslash_AND_gamma5_eo") {
 		//the dslash kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
 		const unsigned int dirs = 4;
 		//the gamma5 kernel reads 1 spinor and writes 1 spinor:
 		//the merged kernel reads 8 spinors, 8 su3matrices and writes 1 spinor, thus it is the same as the dslash
 		return  (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
 	}
-	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_eo") == 0) {
+	if (in == "dslash_AND_M_tm_inverse_sitediagonal_eo") {
 		//the dslash kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
 		const unsigned int dirs = 4;
 		//the diag kernel reads 1 spinor and writes 1 spinor:
 		//the merged kernel reads 8 spinors, 8 su3matrices and writes 1 spinor, thus it is the same as the dslash
 		return  (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
 	}
-	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_minus_eo") == 0) {
+	if (in == "dslash_AND_M_tm_inverse_sitediagonal_minus_eo") {
 		//the dslash kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
 		const unsigned int dirs = 4;
 		//the diag kernel reads 1 spinor and writes 1 spinor:
 		//the merged kernel reads 8 spinors, 8 su3matrices and writes 1 spinor, thus it is the same as the dslash
 		return  (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_AND_gamma5_eo") == 0) {
+	if (in == "M_tm_sitediagonal_AND_gamma5_eo") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_minus_AND_gamma5_eo") == 0) {
+	if (in == "M_tm_sitediagonal_minus_AND_gamma5_eo") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
@@ -2281,65 +2281,65 @@ int flop_dslash_per_site(const meta::Inputparameters & parameters)
 
 }
 
-uint64_t Opencl_Module_Fermions::get_flop_size(const char * in)
+uint64_t Opencl_Module_Fermions::get_flop_size(const std::string& in)
 {
 	uint64_t result = Opencl_Module_Spinors::get_flop_size(in);
 	if (result != 0) return result;
 	size_t S = meta::get_spinorfieldsize(get_parameters());
 	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
-	if (strcmp(in, "M_wilson") == 0) {
+	if (in == "M_wilson") {
 		//this kernel performs one dslash on each site and adds this to a spinor
 		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2 );
 	}
-	if (strcmp(in, "gamma5") == 0) {
+	if (in == "gamma5") {
 		//this kernel performs ND*NC*2/2 real mults
 		return S * NDIM * NC;
 	}
-	if (strcmp(in, "M_tm_plus") == 0) {
+	if (in == "M_tm_plus") {
 		//this kernel performs ND*NC complex mults and one dslash on each site and adds the results
 		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2 );
 	}
-	if (strcmp(in, "M_tm_minus") == 0) {
+	if (in == "M_tm_minus") {
 		//this kernel performs ND*NC complex mults and one dslash on each site and adds the results
 		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2 );
 	}
-	if (strcmp(in, "gamma5_eo") == 0) {
+	if (in == "gamma5_eo") {
 		//this kernel performs ND*NC*2/2 real mults
 		return Seo * NDIM * NC;
 	}
-	if (strcmp(in, "M_tm_sitediagonal") == 0) {
+	if (in == "M_tm_sitediagonal") {
 		//this kernel performs ND*NC complex mults
 		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() );
 	}
-	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0) {
+	if (in == "M_tm_inverse_sitediagonal") {
 		//this kernel performs ND*NC complex mults and ND*NC*2 real mults
 		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2  );
 	}
-	if (strcmp(in, "M_tm_sitediagonal_minus") == 0) {
+	if (in == "M_tm_sitediagonal_minus") {
 		//this kernel performs ND*NC complex mults
 		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() );
 	}
-	if (strcmp(in, "M_tm_inverse_sitediagonal_minus") == 0) {
+	if (in == "M_tm_inverse_sitediagonal_minus") {
 		//this kernel performs ND*NC complex mults and ND*NC*2 real mults
 		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2 );
 	}
-	if (strcmp(in, "dslash_eo") == 0) {
+	if (in == "dslash_eo") {
 		return Seo * flop_dslash_per_site(get_parameters());
 	}
-	if (strcmp(in, "dslash_AND_gamma5_eo") == 0) {
+	if (in == "dslash_AND_gamma5_eo") {
 		return Seo * flop_dslash_per_site(get_parameters()) +  Seo * NDIM * NC;
 	}
-	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_eo") == 0) {
+	if (in == "dslash_AND_M_tm_inverse_sitediagonal_eo") {
 		return Seo * flop_dslash_per_site(get_parameters()) + Seo * ( NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2  );
 	}
-	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_minus_eo") == 0) {
+	if (in == "dslash_AND_M_tm_inverse_sitediagonal_minus_eo") {
 		return Seo * flop_dslash_per_site(get_parameters()) + Seo * ( NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2  );
 	}
-	if (strcmp(in, "M_tm_sitediagonal_AND_gamma5_eo") == 0) {
+	if (in == "M_tm_sitediagonal_AND_gamma5_eo") {
 		//this kernel performs ND*NC complex mults and  ND*NC*2/2 real mults
 		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() ) + Seo * NDIM * NC ;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_minus_AND_gamma5_eo") == 0) {
+	if (in == "M_tm_sitediagonal_minus_AND_gamma5_eo") {
 		//this kernel performs ND*NC complex mults  ND*NC*2/2 real mults
 		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() ) +  Seo * NDIM * NC;
 	}

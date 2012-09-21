@@ -468,12 +468,12 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 
 		//Second Method: Nasty workaround
 		//noop is used in case the kernel is not recognized
-		usetimer *noop = NULL;
-		noop = this->get_timer(kernelName);
-		if(noop == NULL)
+		usetimer *timer = NULL;
+		timer = this->get_timer(std::string(kernelName));
+		if(timer == NULL)
 			logger.error() << "get_timer(" << kernelName << ") did not return a timer!";
 		else
-			(*get_timer(kernelName)).add(get_kernel_exec_time(event));
+			timer->add(get_kernel_exec_time(event));
 
 		delete [] kernelName;
 
@@ -550,12 +550,12 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 
 		//Second Method: Nasty workaround
 		//noop is used in case the kernel is not recognized
-		usetimer *noop = NULL;
-		noop = this->get_timer(kernelName);
-		if(noop == NULL)
+		usetimer *timer = NULL;
+		timer = this->get_timer(std::string(kernelName));
+		if(timer == NULL)
 			logger.error() << "get_timer (" << kernelName << ") did not return a timer!";
 		else
-			(*get_timer(kernelName)).add(get_kernel_exec_time(event));
+			timer->add(get_kernel_exec_time(event));
 
 		delete [] kernelName;
 	}
@@ -883,34 +883,34 @@ usetimer * Opencl_Module::get_copy_to()
 }
 
 #ifdef _PROFILING_
-usetimer* Opencl_Module::get_timer(const char * in)
+usetimer* Opencl_Module::get_timer(const std::string& in)
 {
-	logger.trace() << "Opencl_Module::get_timer(char*)";
-	if (strcmp(in, "polyakov_reduction") == 0) {
+	logger.trace() << "Opencl_Module::get_timer(const std::string& in)";
+	if (in == "polyakov_reduction") {
 		return &(this->timer_polyakov_reduction);
 	}
-	if (strcmp(in, "polyakov") == 0) {
+	if (in == "polyakov") {
 		return &(this->timer_polyakov);
 	}
-	if (strcmp(in, "plaquette_reduction") == 0) {
+	if (in == "plaquette_reduction") {
 		return &(this->timer_plaquette_reduction);
 	}
-	if (strcmp(in, "plaquette") == 0) {
+	if (in == "plaquette") {
 		return &(this->timer_plaquette);
 	}
-	if (strcmp(in, "rectangles_reduction") == 0) {
+	if (in == "rectangles_reduction") {
 		return &(this->timer_rectangles_reduction);
 	}
-	if (strcmp(in, "rectangles") == 0) {
+	if (in == "rectangles") {
 		return &(this->timer_rectangles);
 	}
-	if (strcmp(in, "stout_smear") == 0) {
+	if (in == "stout_smear") {
 		return &(this->timer_stout_smear);
 	}
-	if(strcmp(in, "convertGaugefieldToSOA") == 0) {
+	if(in == "convertGaugefieldToSOA") {
 		return &timer_convertGaugefieldToSOA;
 	}
-	if(strcmp(in, "convertGaugefieldFromSOA") == 0) {
+	if(in == "convertGaugefieldFromSOA") {
 		return &timer_convertGaugefieldFromSOA;
 	}
 	//if the kernelname has not matched, return NULL
@@ -921,7 +921,7 @@ usetimer* Opencl_Module::get_timer(const char * in)
 
 #endif
 
-size_t Opencl_Module::get_read_write_size(const char * in)
+size_t Opencl_Module::get_read_write_size(const std::string& in)
 {
 	//Depending on the compile-options, one has different sizes...
 	size_t D = meta::get_float_size(parameters);
@@ -929,7 +929,7 @@ size_t Opencl_Module::get_read_write_size(const char * in)
 	//factor for complex numbers
 	int C = 2;
 	const size_t VOL4D = meta::get_vol4d(get_parameters());
-	if (strcmp(in, "polyakov") == 0) {
+	if (in == "polyakov") {
 		//this kernel reads NTIME*VOLSPACE=VOL4D su3matrices and writes NUM_GROUPS complex numbers
 		//query work-sizes for kernel to get num_groups
 		size_t ls2, gs2;
@@ -937,7 +937,7 @@ size_t Opencl_Module::get_read_write_size(const char * in)
 		this->get_work_sizes(polyakov, &ls2, &gs2, &num_groups);
 		return VOL4D * D * R + num_groups * C * D;
 	}
-	if (strcmp(in, "polyakov_reduction") == 0) {
+	if (in == "polyakov_reduction") {
 		//this kernel reads NUM_GROUPS complex numbers and writes 1 complex number
 		//query work-sizes for kernel to get num_groups
 		size_t ls2, gs2;
@@ -945,7 +945,7 @@ size_t Opencl_Module::get_read_write_size(const char * in)
 		this->get_work_sizes(polyakov_reduction, &ls2, &gs2, &num_groups);
 		return (num_groups + 1 ) * C * D;
 	}
-	if (strcmp(in, "plaquette") == 0) {
+	if (in == "plaquette") {
 		//this kernel reads in VOL4D * ND * (ND-1) su3matrices and writes 3*num_groups real numbers
 		//query work-sizes for kernel to get num_groups
 		size_t ls2, gs2;
@@ -953,7 +953,7 @@ size_t Opencl_Module::get_read_write_size(const char * in)
 		this->get_work_sizes(plaquette, &ls2, &gs2, &num_groups);
 		return C * 4 * 3 * VOL4D * D * R + 3 * D * num_groups;
 	}
-	if (strcmp(in, "plaquette_reduction") == 0) {
+	if (in == "plaquette_reduction") {
 		//this kernel reads 3*NUM_GROUPS real numbers and writes 3 real numbers
 		//query work-sizes for kernel to get num_groups
 		size_t ls2, gs2;
@@ -961,56 +961,56 @@ size_t Opencl_Module::get_read_write_size(const char * in)
 		this->get_work_sizes(polyakov_reduction, &ls2, &gs2, &num_groups);
 		return (num_groups + 1 ) * 3 * C * D;
 	}
-	if (strcmp(in, "rectangles") == 0) {
+	if (in == "rectangles") {
 		return 1000000000000000000000;
 	}
-	if (strcmp(in, "rectangles_reduction") == 0) {
+	if (in == "rectangles_reduction") {
 		return 1000000000000000000000;
 	}
-	if (strcmp(in, "stout_smear") == 0) {
+	if (in == "stout_smear") {
 		//this kernel reads in a complete gaugefield + a staple on each site and writes out a complete gaugefield
 		return VOL4D * NDIM * D * R * (6 * (NDIM - 1) + 1 + 1 );
 	}
-	if(strcmp(in, "convertGaugefieldToSOA") == 0) {
+	if(in == "convertGaugefieldToSOA") {
 		return 2 * meta::get_vol4d(get_parameters()) * NDIM * R * C * D;
 	}
-	if(strcmp(in, "convertGaugefieldFromSOA") == 0) {
+	if(in == "convertGaugefieldFromSOA") {
 		return 2 * meta::get_vol4d(get_parameters()) * NDIM * R * C * D;
 	}
 	return 0;
 }
 
-uint64_t Opencl_Module::get_flop_size(const char * in)
+uint64_t Opencl_Module::get_flop_size(const std::string& in)
 {
 	const size_t VOL4D = meta::get_vol4d(get_parameters());
 	const size_t VOLSPACE = meta::get_volspace(get_parameters());
-	if (strcmp(in, "polyakov") == 0) {
+	if (in == "polyakov") {
 		//this kernel performs NTIME -1 su3matrix-multiplications, takes a complex trace and adds these real values over VOLSPACE
 		return VOLSPACE * ( (parameters.get_ntime() - 1) * meta::get_flop_su3_su3() + meta::get_flop_su3trace()) ;
 	}
-	if (strcmp(in, "polyakov_reduction") == 0) {
+	if (in == "polyakov_reduction") {
 		return 1000000000000000000000;
 	}
-	if (strcmp(in, "plaquette") == 0) {
+	if (in == "plaquette") {
 		//this kernel performs 3 su3matrix-mutliplications, a real su3 trace and sums over VOL4D and mu and nu (nu<mu)
 		return VOL4D * NDIM * (NDIM - 1) * ( 3 + NC);
 	}
-	if (strcmp(in, "plaquette_reduction") == 0) {
+	if (in == "plaquette_reduction") {
 		return 1000000000000000000000;
 	}
-	if (strcmp(in, "rectangles") == 0) {
+	if (in == "rectangles") {
 		return 1000000000000000000000;
 	}
-	if (strcmp(in, "rectangles_reduction") == 0) {
+	if (in == "rectangles_reduction") {
 		return 1000000000000000000000;
 	}
-	if (strcmp(in, "stout_smear") == 0) {
+	if (in == "stout_smear") {
 		return 1000000000000000000000;
 	}
 	return 0;
 }
 
-void Opencl_Module::print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, size_t read_write_size, uint64_t flop_size)
+void Opencl_Module::print_profiling(std::string filename, const std::string& kernelName, uint64_t time_total, int calls_total, size_t read_write_size, uint64_t flop_size)
 {
 	hmc_float bandwidth = 0.;
 	hmc_float flops = 0.;
@@ -1061,7 +1061,7 @@ void Opencl_Module::print_profiling(std::string filename, int number)
 {
 	logger.trace() << "Printing Profiling-information to file \"" << filename << "\"";
 	print_profile_header(filename, number);
-	const char * kernelName;
+	std::string kernelName;
 	kernelName = "polyakov";
 	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
 	kernelName = "polyakov_reduction";

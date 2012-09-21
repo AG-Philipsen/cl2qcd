@@ -181,7 +181,7 @@ protected:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual usetimer* get_timer(const char * in) override;
+	virtual usetimer* get_timer(const std::string& in) override;
 
 	/**
 	 * Print the profiling information to a file.
@@ -197,7 +197,7 @@ protected:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual size_t get_read_write_size(const char * in) override;
+	virtual size_t get_read_write_size(const std::string& in) override;
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -205,7 +205,7 @@ protected:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual uint64_t get_flop_size(const char * in) override;
+	virtual uint64_t get_flop_size(const std::string& in) override;
 
 private:
 

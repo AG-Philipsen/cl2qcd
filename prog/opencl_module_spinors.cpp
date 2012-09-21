@@ -673,79 +673,79 @@ void Opencl_Module_Spinors::saxpy_AND_squarenorm_eo_device(cl_mem x, cl_mem y, c
 
 
 #ifdef _PROFILING_
-usetimer* Opencl_Module_Spinors::get_timer(const char * in)
+usetimer* Opencl_Module_Spinors::get_timer(const std::string& in)
 {
 	logger.trace() << "Opencl_Module_Spinors::get_timer(char*)";
 	usetimer *noop = NULL;
 	noop = Opencl_Module_Ran::get_timer(in);
 	if(noop != NULL) return noop;
-	if (strcmp(in, "set_spinorfield_cold") == 0) {
+	if (in == "set_spinorfield_cold") {
 		return &this->timer_set_spinorfield_cold;
 	}
-	if (strcmp(in, "set_eoprec_spinorfield_cold") == 0) {
+	if (in == "set_eoprec_spinorfield_cold") {
 		return &this->timer_set_eoprec_spinorfield_cold;
 	}
-	if (strcmp(in, "convert_from_eoprec") == 0) {
+	if (in == "convert_from_eoprec") {
 		return &this->timer_convert_from_eoprec;
 	}
-	if (strcmp(in, "convert_to_eoprec") == 0) {
+	if (in == "convert_to_eoprec") {
 		return &this->timer_convert_to_eoprec;
 	}
-	if (strcmp(in, "saxpy") == 0) {
+	if (in == "saxpy") {
 		return &(this->timer_saxpy);
 	}
-	if (strcmp(in, "sax") == 0) {
+	if (in == "sax") {
 		return &(this->timer_sax);
 	}
-	if (strcmp(in, "saxsbypz") == 0) {
+	if (in == "saxsbypz") {
 		return &this->timer_saxsbypz;
 	}
-	if (strcmp(in, "set_zero_spinorfield") == 0) {
+	if (in == "set_zero_spinorfield") {
 		return &this->timer_set_zero_spinorfield;
 	}
-	if (strcmp(in, "saxpy_eoprec") == 0) {
+	if (in == "saxpy_eoprec") {
 		return &this->timer_saxpy_eoprec;
 	}
-	if (strcmp(in, "sax_eoprec") == 0) {
+	if (in == "sax_eoprec") {
 		return &this->timer_sax_eoprec;
 	}
-	if (strcmp(in, "saxsbypz_eoprec") == 0) {
+	if (in == "saxsbypz_eoprec") {
 		return &this->timer_saxsbypz_eoprec;
 	}
-	if (strcmp(in, "set_zero_spinorfield_eoprec") == 0) {
+	if (in == "set_zero_spinorfield_eoprec") {
 		return &this->timer_set_zero_spinorfield_eoprec;
 	}
-	if (strcmp(in, "scalar_product") == 0) {
+	if (in == "scalar_product") {
 		return &this->timer_scalar_product;
 	}
-	if (strcmp(in, "scalar_product_reduction") == 0) {
+	if (in == "scalar_product_reduction") {
 		return &this->timer_scalar_product_reduction;
 	}
-	if (strcmp(in, "global_squarenorm") == 0) {
+	if (in == "global_squarenorm") {
 		return &this->timer_global_squarenorm;
 	}
-	if (strcmp(in, "global_squarenorm_reduction") == 0) {
+	if (in == "global_squarenorm_reduction") {
 		return &this->timer_global_squarenorm_reduction;
 	}
-	if (strcmp(in, "scalar_product_eoprec") == 0) {
+	if (in == "scalar_product_eoprec") {
 		return &this->timer_scalar_product_eoprec;
 	}
-	if (strcmp(in, "global_squarenorm_eoprec") == 0) {
+	if (in == "global_squarenorm_eoprec") {
 		return &this->timer_global_squarenorm_eoprec;
 	}
-	if (strcmp(in, "ratio") == 0) {
+	if (in == "ratio") {
 		return &this->timer_ratio;
 	}
-	if (strcmp(in, "product") == 0) {
+	if (in == "product") {
 		return &this->timer_product;
 	}
-	if(strcmp(in, "convertSpinorfieldToSOA_eo") == 0) {
+	if(in == "convertSpinorfieldToSOA_eo") {
 		return &timer_convertSpinorfieldToSOA_eo;
 	}
-	if(strcmp(in, "convertSpinorfieldFromSOA_eo") == 0) {
+	if(in == "convertSpinorfieldFromSOA_eo") {
 		return &timer_convertSpinorfieldFromSOA_eo;
 	}
-	if (strcmp(in, "saxpy_AND_squarenorm_eo") == 0) {
+	if (in == "saxpy_AND_squarenorm_eo") {
 		return &this->timer_saxpy_AND_squarenorm_eo;
 	} else {
 		return NULL;
@@ -754,7 +754,7 @@ usetimer* Opencl_Module_Spinors::get_timer(const char * in)
 
 #endif
 
-size_t Opencl_Module_Spinors::get_read_write_size(const char * in)
+size_t Opencl_Module_Spinors::get_read_write_size(const std::string& in)
 {
 	size_t result = Opencl_Module_Ran::get_read_write_size(in);
 	if (result != 0) return result;
@@ -768,61 +768,61 @@ size_t Opencl_Module_Spinors::get_read_write_size(const char * in)
 	int C = 2;
 	//this is the same as in the function above
 	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
-	if (strcmp(in, "set_spinorfield_cold") == 0) {
+	if (in == "set_spinorfield_cold") {
 		//this kernel writes 1 spinor
 		return C * 12 * D * S;
 	}
-	if (strcmp(in, "set_eoprec_spinorfield_cold") == 0) {
+	if (in == "set_eoprec_spinorfield_cold") {
 		//this kernel writes 1 spinor
 		return C * 12 * D * Seo;
 	}
-	if (strcmp(in, "convert_from_eoprec") == 0) {
+	if (in == "convert_from_eoprec") {
 		//this kernel reads 2 spinor and writes 2 spinors per site
 		///@todo is this right??
 		return 2 * 2 * C * 12 * D * Seo;
 	}
-	if (strcmp(in, "convert_to_eoprec") == 0) {
+	if (in == "convert_to_eoprec") {
 		//this kernel reads 2 spinor and writes 2 spinors per site
 		return 2 * 2 * C * 12 * D * Seo;
 	}
-	if (strcmp(in, "saxpy") == 0) {
+	if (in == "saxpy") {
 		//this kernel reads 2 spinor, 2 complex number and writes 1 spinor per site
 		return C * D * S * (12 * (2 + 1) + 2);
 	}
-	if (strcmp(in, "sax") == 0) {
+	if (in == "sax") {
 		//this kernel reads 1 spinor, 1 complex number and writes 1 spinor per site
 		return C * D * S * (12 * (1 + 1) + 1);
 	}
-	if (strcmp(in, "saxsbypz") == 0) {
+	if (in == "saxsbypz") {
 		//this kernel reads 3 spinor, 2 complex number and writes 1 spinor per site
 		return C * D * S * (12 * (3 + 1) + 2);
 	}
-	if (strcmp(in, "set_zero_spinorfield") == 0) {
+	if (in == "set_zero_spinorfield") {
 		//this kernel writes 1 spinor
 		return C * 12 * D * S;
 	}
-	if (strcmp(in, "saxpy_eoprec") == 0) {
+	if (in == "saxpy_eoprec") {
 		//this kernel reads 2 spinor, 1 complex number and writes 1 spinor per site
 		return C * D * Seo * (12 * (2 + 1) + 1);
 	}
-	if (strcmp(in, "sax_eoprec") == 0) {
+	if (in == "sax_eoprec") {
 		//this kernel reads 1 spinor, 1 complex number and writes 1 spinor per site
 		return C * D * Seo * (12 * (1 + 1) + 1);
 	}
-	if (strcmp(in, "saxsbypz_eoprec") == 0) {
+	if (in == "saxsbypz_eoprec") {
 		//this kernel reads 3 spinor, 2 complex number and writes 1 spinor per site
 		return C * D * Seo * (12 * (3 + 1) + 2);
 	}
-	if (strcmp(in, "set_zero_spinorfield_eoprec") == 0) {
+	if (in == "set_zero_spinorfield_eoprec") {
 		//this kernel writes 1 spinor
 		return C * 12 * D * Seo;
 	}
-	if (strcmp(in, "scalar_product") == 0) {
+	if (in == "scalar_product") {
 		//this kernel reads 2 spinors and writes 1 complex number
 		/// @NOTE: here, the local reduction is not taken into account
 		return C * D * S * ( 2 * 12  + 1 );
 	}
-	if (strcmp(in, "scalar_product_reduction") == 0) {
+	if (in == "scalar_product_reduction") {
 		//this kernel reads NUM_GROUPS complex numbers and writes 1 complex number
 		//query work-sizes for kernel to get num_groups
 		size_t ls2, gs2;
@@ -830,12 +830,12 @@ size_t Opencl_Module_Spinors::get_read_write_size(const char * in)
 		this->get_work_sizes(scalar_product_reduction, &ls2, &gs2, &num_groups);
 		return C * D * (num_groups + 1);
 	}
-	if (strcmp(in, "global_squarenorm") == 0) {
+	if (in == "global_squarenorm") {
 		//this kernel reads 1 spinor and writes 1 real number
 		/// @NOTE: here, the local reduction is not taken into account
 		return D * S * (C * 12  + 1 );
 	}
-	if (strcmp(in, "global_squarenorm_reduction") == 0) {
+	if (in == "global_squarenorm_reduction") {
 		//this kernel reads NUM_GROUPS real numbers and writes 1 real number
 		//query work-sizes for kernel to get num_groups
 		size_t ls2, gs2;
@@ -843,32 +843,32 @@ size_t Opencl_Module_Spinors::get_read_write_size(const char * in)
 		this->get_work_sizes(scalar_product_reduction, &ls2, &gs2, &num_groups);
 		return D * (num_groups + 1);
 	}
-	if (strcmp(in, "scalar_product_eoprec") == 0) {
+	if (in == "scalar_product_eoprec") {
 		//this kernel reads 2 spinors and writes 1 complex number
 		/// @NOTE: here, the local reduction is not taken into account
 		return C * D * Seo * ( 2 * 12  + 1 );
 	}
-	if (strcmp(in, "global_squarenorm_eoprec") == 0) {
+	if (in == "global_squarenorm_eoprec") {
 		//this kernel reads 1 spinor and writes 1 real number
 		/// @NOTE: here, the local reduction is not taken into account
 		return D * Seo * (C * 12  + 1 );
 	}
-	if (strcmp(in, "ratio") == 0) {
+	if (in == "ratio") {
 		//this kernel reads 2 complex numbers and writes 1 complex number
 		return C * D * (2 + 1);
 	}
-	if (strcmp(in, "product") == 0) {
+	if (in == "product") {
 		//this kernel reads 2 complex numbers and writes 1 complex number
 		return C * D * (2 + 1);
 	}
-	if(strcmp(in, "convertSpinorfieldToSOA_eo") == 0) {
+	if(in == "convertSpinorfieldToSOA_eo") {
 		return 2 * Seo * 24 * D;
 	}
-	if(strcmp(in, "convertSpinorfieldFromSOA_eo") == 0) {
+	if(in == "convertSpinorfieldFromSOA_eo") {
 		return 2 * Seo * 24 * D;
 	}
 	//merged kernels
-	if (strcmp(in, "saxpy_AND_squarenorm_eo") == 0) {
+	if (in == "saxpy_AND_squarenorm_eo") {
 		//the saxpy kernel reads 2 spinor, 2 complex number and writes 1 spinor per site
 		//the squarenorm kernel reads 1 spinor and writes 1 real number
 		// with the merging, the reading falls away
@@ -878,91 +878,91 @@ size_t Opencl_Module_Spinors::get_read_write_size(const char * in)
 	return 0;
 }
 
-uint64_t Opencl_Module_Spinors::get_flop_size(const char * in)
+uint64_t Opencl_Module_Spinors::get_flop_size(const std::string& in)
 {
 	uint64_t result = Opencl_Module_Ran::get_flop_size(in);
 	if (result != 0) return result;
 	uint64_t S = meta::get_spinorfieldsize(get_parameters());
 	uint64_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
-	if (strcmp(in, "set_spinorfield_cold") == 0) {
+	if (in == "set_spinorfield_cold") {
 		//this kernel performs 1. / sqrt((12.f * VOL4D)) and real_multiply_spinor for each site
 		return S * ( 3 + 24);
 	}
-	if (strcmp(in, "set_eoprec_spinorfield_cold") == 0) {
+	if (in == "set_eoprec_spinorfield_cold") {
 		//this kernel performs 1. / sqrt((12.f * VOL4D/2)) and real_multiply_spinor for each site
 		return Seo * ( 3 + 24);
 	}
-	if (strcmp(in, "convert_from_eoprec") == 0) {
+	if (in == "convert_from_eoprec") {
 		//this kernel does not perform any flop, he just copies memory
 		return 0;
 	}
-	if (strcmp(in, "convert_to_eoprec") == 0) {
+	if (in == "convert_to_eoprec") {
 		//this kernel does not perform any flop, he just copies memory
 		return 0;
 	}
-	if (strcmp(in, "saxpy") == 0) {
+	if (in == "saxpy") {
 		//this kernel performs on each site spinor_times_complex and spinor_add
 		return S * (NDIM * NC * ( meta::get_flop_complex_mult() + 2) );
 	}
-	if (strcmp(in, "sax") == 0) {
+	if (in == "sax") {
 		//this kernel performs on each site spinor_times_complex
 		return S * (NDIM * NC * ( meta::get_flop_complex_mult() ) );
 	}
-	if (strcmp(in, "saxsbypz") == 0) {
+	if (in == "saxsbypz") {
 		//this kernel performs on each 2 * site spinor_times_complex and 2 * spinor_add
 		return S * (NDIM * NC * 2 * ( meta::get_flop_complex_mult() + 2) );
 	}
-	if (strcmp(in, "set_zero_spinorfield") == 0) {
+	if (in == "set_zero_spinorfield") {
 		//this kernel does not do any flop
 		return 0;
 	}
-	if (strcmp(in, "saxpy_eoprec") == 0) {
+	if (in == "saxpy_eoprec") {
 		//this kernel performs on each site spinor_times_complex and spinor_add
 		return Seo * (NDIM * NC * ( meta::get_flop_complex_mult() + 2) );
 	}
-	if (strcmp(in, "sax_eoprec") == 0) {
+	if (in == "sax_eoprec") {
 		//this kernel performs on each site spinor_times_complex
 		return S * (NDIM * NC * ( meta::get_flop_complex_mult() ) );
 	}
-	if (strcmp(in, "saxsbypz_eoprec") == 0) {
+	if (in == "saxsbypz_eoprec") {
 		//this kernel performs on each 2 * site spinor_times_complex and 2 * spinor_add
 		return Seo * (NDIM * NC * 2 * ( meta::get_flop_complex_mult() + 2) );
 	}
-	if (strcmp(in, "set_zero_spinorfield_eoprec") == 0) {
+	if (in == "set_zero_spinorfield_eoprec") {
 		//this kernel does not do any flop
 		return 0;
 	}
-	if (strcmp(in, "scalar_product") == 0) {
+	if (in == "scalar_product") {
 		//this kernel performs spinor*spinor on each site and then adds S-1 complex numbers
 		return S * meta::get_flop_spinor_spinor() + (S - 1) * 2;
 	}
-	if (strcmp(in, "scalar_product_reduction") == 0) {
+	if (in == "scalar_product_reduction") {
 		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "global_squarenorm") == 0) {
+	if (in == "global_squarenorm") {
 		//this kernel performs spinor_squarenorm on each site and then adds S-1 complex numbers
 		return S * meta::get_flop_spinor_sqnorm() + (S - 1) * 2;
 	}
-	if (strcmp(in, "global_squarenorm_reduction") == 0) {
+	if (in == "global_squarenorm_reduction") {
 		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "scalar_product_eoprec") == 0) {
+	if (in == "scalar_product_eoprec") {
 		//this kernel performs spinor*spinor on each site and then adds S-1 complex numbers
 		return Seo * meta::get_flop_spinor_spinor() + (Seo - 1) * 2;
 	}
-	if (strcmp(in, "global_squarenorm_eoprec") == 0) {
+	if (in == "global_squarenorm_eoprec") {
 		//this kernel performs spinor_squarenorm on each site and then adds S-1 complex numbers
 		return Seo * meta::get_flop_spinor_sqnorm() + (Seo - 1) * 2;
 	}
-	if (strcmp(in, "ratio") == 0) {
+	if (in == "ratio") {
 		return 11;
 	}
-	if (strcmp(in, "product") == 0) {
+	if (in == "product") {
 		return meta::get_flop_complex_mult();
 	}
 	//merged kernels
-	if (strcmp(in, "saxpy_AND_squarenorm_eo") == 0) {
+	if (in == "saxpy_AND_squarenorm_eo") {
 		//the saxpy kernel performs on each site spinor_times_complex and spinor_add
 		//the squarenorm kernel performs spinor_squarenorm on each site and then adds S-1 complex numbers
 		return Seo * (NDIM * NC * ( meta::get_flop_complex_mult() + 2) )  + Seo * meta::get_flop_spinor_sqnorm() + (S - 1) * 2;

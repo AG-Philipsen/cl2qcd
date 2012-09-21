@@ -215,67 +215,67 @@ void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kern
 }
 
 #ifdef _PROFILING_
-usetimer* Opencl_Module_Correlator::get_timer(const char * in)
+usetimer* Opencl_Module_Correlator::get_timer(const std::string& in)
 {
 	usetimer *noop = NULL;
 	noop = Opencl_Module_Spinors::get_timer(in);
 	if(noop != NULL) return noop;
 
-	if (strcmp(in, "create_point_source") == 0) {
+	if (in == "create_point_source") {
 		return &this->timer_create_point_source;
 	}
-	if (strcmp(in, "create_stochastic_source") == 0) {
+	if (in == "create_stochastic_source") {
 		return &this->timer_create_stochastic_source;
 	}
 
 	//CP: only one direction is calculated at a time, therefore one can use the same timer for both directions
-	if (strcmp(in, "correlator_ps_z") == 0) {
+	if (in == "correlator_ps_z") {
 		return &this->timer_correlator_ps;
 	}
-	if (strcmp(in, "correlator_sc_z") == 0) {
+	if (in == "correlator_sc_z") {
 		return &this->timer_correlator_sc;
 	}
-	if (strcmp(in, "correlator_vx_z") == 0) {
+	if (in == "correlator_vx_z") {
 		return &this->timer_correlator_vx;
 	}
-	if (strcmp(in, "correlator_vy_z") == 0) {
+	if (in == "correlator_vy_z") {
 		return &this->timer_correlator_vy;
 	}
-	if (strcmp(in, "correlator_vz_z") == 0) {
+	if (in == "correlator_vz_z") {
 		return &this->timer_correlator_vz;
 	}
-	if (strcmp(in, "correlator_ax_z") == 0) {
+	if (in == "correlator_ax_z") {
 		return &this->timer_correlator_ax;
 	}
-	if (strcmp(in, "correlator_ay_z") == 0) {
+	if (in == "correlator_ay_z") {
 		return &this->timer_correlator_ay;
 	}
-	if (strcmp(in, "correlator_az_z") == 0) {
+	if (in == "correlator_az_z") {
 		return &this->timer_correlator_az;
 	}
 
-	if (strcmp(in, "correlator_ps_t") == 0) {
+	if (in == "correlator_ps_t") {
 		return &this->timer_correlator_ps;
 	}
-	if (strcmp(in, "correlator_sc_t") == 0) {
+	if (in == "correlator_sc_t") {
 		return &this->timer_correlator_sc;
 	}
-	if (strcmp(in, "correlator_vx_t") == 0) {
+	if (in == "correlator_vx_t") {
 		return &this->timer_correlator_vx;
 	}
-	if (strcmp(in, "correlator_vy_t") == 0) {
+	if (in == "correlator_vy_t") {
 		return &this->timer_correlator_vy;
 	}
-	if (strcmp(in, "correlator_vz_t") == 0) {
+	if (in == "correlator_vz_t") {
 		return &this->timer_correlator_vz;
 	}
-	if (strcmp(in, "correlator_ax_t") == 0) {
+	if (in == "correlator_ax_t") {
 		return &this->timer_correlator_ax;
 	}
-	if (strcmp(in, "correlator_ay_t") == 0) {
+	if (in == "correlator_ay_t") {
 		return &this->timer_correlator_ay;
 	}
-	if (strcmp(in, "correlator_az_t") == 0) {
+	if (in == "correlator_az_t") {
 		return &this->timer_correlator_az;
 	}
 
@@ -287,7 +287,7 @@ usetimer* Opencl_Module_Correlator::get_timer(const char * in)
 
 #endif
 
-size_t Opencl_Module_Correlator::get_read_write_size(const char * in)
+size_t Opencl_Module_Correlator::get_read_write_size(const std::string& in)
 {
 	size_t result = Opencl_Module_Spinors::get_read_write_size(in);
 	if (result != 0) return result;
@@ -301,13 +301,13 @@ size_t Opencl_Module_Correlator::get_read_write_size(const char * in)
 	int C = 2;
 	//this is the same as in the function above
 	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
-	if (strcmp(in, "create_point_source") == 0) {
+	if (in == "create_point_source") {
 		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "create_stochastic_source") == 0) {
+	if (in == "create_stochastic_source") {
 		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "correlator_ps_z") == 0 ) {
+	if (in == "correlator_ps_z" ) {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
 		int num_sources = get_parameters().get_num_sources();
@@ -315,7 +315,7 @@ size_t Opencl_Module_Correlator::get_read_write_size(const char * in)
 		if(get_parameters().get_corr_dir() == 0) size_buffer = get_parameters().get_ntime();
 		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
-	if (strcmp(in, "correlator_sc_z") == 0) {
+	if (in == "correlator_sc_z") {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
 		int num_sources = get_parameters().get_num_sources();
@@ -323,7 +323,7 @@ size_t Opencl_Module_Correlator::get_read_write_size(const char * in)
 		if(get_parameters().get_corr_dir() == 0) size_buffer = get_parameters().get_ntime();
 		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
-	if (strcmp(in, "correlator_vx_z") == 0) {
+	if (in == "correlator_vx_z") {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
 		int num_sources = get_parameters().get_num_sources();
@@ -331,7 +331,7 @@ size_t Opencl_Module_Correlator::get_read_write_size(const char * in)
 		if(get_parameters().get_corr_dir() == 0) size_buffer = get_parameters().get_ntime();
 		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
-	if (strcmp(in, "correlator_vy_z") == 0) {
+	if (in == "correlator_vy_z") {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
 		int num_sources = get_parameters().get_num_sources();
@@ -339,7 +339,7 @@ size_t Opencl_Module_Correlator::get_read_write_size(const char * in)
 		if(get_parameters().get_corr_dir() == 0) size_buffer = get_parameters().get_ntime();
 		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
-	if (strcmp(in, "correlator_vz_z") == 0) {
+	if (in == "correlator_vz_z") {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
 		int num_sources = get_parameters().get_num_sources();
@@ -347,7 +347,7 @@ size_t Opencl_Module_Correlator::get_read_write_size(const char * in)
 		if(get_parameters().get_corr_dir() == 0) size_buffer = get_parameters().get_ntime();
 		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
-	if (strcmp(in, "correlator_ax_z") == 0) {
+	if (in == "correlator_ax_z") {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
 		int num_sources = get_parameters().get_num_sources();
@@ -355,7 +355,7 @@ size_t Opencl_Module_Correlator::get_read_write_size(const char * in)
 		if(get_parameters().get_corr_dir() == 0) size_buffer = get_parameters().get_ntime();
 		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
-	if (strcmp(in, "correlator_ay_z") == 0) {
+	if (in == "correlator_ay_z") {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
 		int num_sources = get_parameters().get_num_sources();
@@ -363,7 +363,7 @@ size_t Opencl_Module_Correlator::get_read_write_size(const char * in)
 		if(get_parameters().get_corr_dir() == 0) size_buffer = get_parameters().get_ntime();
 		return num_sources * S * D * 12 * C + size_buffer * D;
 	}
-	if (strcmp(in, "correlator_az_z") == 0) {
+	if (in == "correlator_az_z") {
 		//this kernel reads NUM_SOURCES spinors and writes NSPACE/NTIME real numbers
 		int size_buffer = 0;
 		int num_sources = get_parameters().get_num_sources();
@@ -375,41 +375,41 @@ size_t Opencl_Module_Correlator::get_read_write_size(const char * in)
 	return 0;
 }
 
-uint64_t Opencl_Module_Correlator::get_flop_size(const char * in)
+uint64_t Opencl_Module_Correlator::get_flop_size(const std::string& in)
 {
 	uint64_t result = Opencl_Module_Spinors::get_flop_size(in);
 	if (result != 0) return result;
 	size_t S = meta::get_spinorfieldsize(get_parameters());
 	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
-	if (strcmp(in, "create_point_source") == 0) {
+	if (in == "create_point_source") {
 		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "create_stochastic_source") == 0) {
+	if (in == "create_stochastic_source") {
 		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "correlator_ps_z") == 0 ) {
+	if (in == "correlator_ps_z" ) {
 		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "correlator_sc_z") == 0) {
+	if (in == "correlator_sc_z") {
 		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "correlator_vx_z") == 0) {
+	if (in == "correlator_vx_z") {
 		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "correlator_vy_z") == 0) {
+	if (in == "correlator_vy_z") {
 		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "correlator_vz_z") == 0) {
+	if (in == "correlator_vz_z") {
 		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "correlator_ax_z") == 0) {
+	if (in == "correlator_ax_z") {
 		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "correlator_ay_z") == 0) {
+	if (in == "correlator_ay_z") {
 		return 1000000000000000000000000;
 	}
-	if (strcmp(in, "correlator_az_z") == 0) {
+	if (in == "correlator_az_z") {
 		return 1000000000000000000000000;
 	}
 

@@ -261,47 +261,47 @@ cl_mem Opencl_Module_Hmc::get_clmem_s_fermion_mp_init()
 }
 
 #ifdef _PROFILING_
-usetimer* Opencl_Module_Hmc::get_timer(const char * in)
+usetimer* Opencl_Module_Hmc::get_timer(const std::string& in)
 {
 	logger.trace() << "Opencl_Module_Hmc::get_timer(char*)";
 	usetimer *noop = NULL;
 	noop = Opencl_Module_Fermions::get_timer(in);
 	if(noop != NULL) return noop;
 
-	if (strcmp(in, "generate_gaussian_spinorfield") == 0) {
+	if (in == "generate_gaussian_spinorfield") {
 		return &this->timer_generate_gaussian_spinorfield;
 	}
-	if (strcmp(in, "generate_gaussian_spinorfield_eo") == 0) {
+	if (in == "generate_gaussian_spinorfield_eo") {
 		return &this->timer_generate_gaussian_spinorfield_eo;
 	}
-	if (strcmp(in, "generate_gaussian_gaugemomenta") == 0) {
+	if (in == "generate_gaussian_gaugemomenta") {
 		return &this->timer_generate_gaussian_gaugemomenta;
 	}
-	if (strcmp(in, "md_update_gaugefield") == 0) {
+	if (in == "md_update_gaugefield") {
 		return &this->timer_md_update_gaugefield;
 	}
-	if (strcmp(in, "md_update_gaugemomenta") == 0) {
+	if (in == "md_update_gaugemomenta") {
 		return &this->timer_md_update_gaugemomenta;
 	}
-	if (strcmp(in, "gauge_force") == 0) {
+	if (in == "gauge_force") {
 		return &this->timer_gauge_force;
 	}
-	if (strcmp(in, "gauge_force_tlsym") == 0) {
+	if (in == "gauge_force_tlsym") {
 		return &this->timer_gauge_force_tlsym;
 	}
-	if (strcmp(in, "fermion_force") == 0) {
+	if (in == "fermion_force") {
 		return &this->timer_fermion_force;
 	}
-	if (strcmp(in, "fermion_force_eo") == 0) {
+	if (in == "fermion_force_eo") {
 		return &this->timer_fermion_force_eo;
 	}
-	if (strcmp(in, "set_zero_gaugemomentum") == 0) {
+	if (in == "set_zero_gaugemomentum") {
 		return &this->timer_set_zero_gaugemomentum;
 	}
-	if (strcmp(in, "gaugemomentum_squarenorm") == 0) {
+	if (in == "gaugemomentum_squarenorm") {
 		return &this->timer_gaugemomentum_squarenorm;
 	}
-	if (strcmp(in, "stout_smear_fermion_force") == 0) {
+	if (in == "stout_smear_fermion_force") {
 		return &this->timer_stout_smear_fermion_force;
 	}
 	//if the kernelname has not matched, return NULL
@@ -312,7 +312,7 @@ usetimer* Opencl_Module_Hmc::get_timer(const char * in)
 
 #endif
 
-size_t Opencl_Module_Hmc::get_read_write_size(const char * in)
+size_t Opencl_Module_Hmc::get_read_write_size(const std::string& in)
 {
 	size_t result = Opencl_Module_Fermions::get_read_write_size(in);
 	if (result != 0) return result;
@@ -331,59 +331,59 @@ size_t Opencl_Module_Hmc::get_read_write_size(const char * in)
 	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
 	//NOTE: 1 ae has NC*NC-1 = 8 real entries
 	int A = meta::get_su3algebrasize();
-	if (strcmp(in, "generate_gaussian_spinorfield") == 0) {
+	if (in == "generate_gaussian_spinorfield") {
 		//this kernel writes 1 spinor
 		return ( 12 * C ) * D * S;
 	}
-	if (strcmp(in, "generate_gaussian_spinorfield_eo") == 0) {
+	if (in == "generate_gaussian_spinorfield_eo") {
 		//this kernel writes 1 spinor
 		return ( 12 * C ) * D * Seo;
 	}
-	if (strcmp(in, "generate_gaussian_gaugemomenta") == 0) {
+	if (in == "generate_gaussian_gaugemomenta") {
 		//this kernel writes 1 ae
 		return (A) * D * G;
 	}
-	if (strcmp(in, "md_update_gaugefield") == 0) {
+	if (in == "md_update_gaugefield") {
 		//this kernel reads 1 ae and 1 su3 matrix and writes 1 su3 matrix for every link
 		return (A + (1 + 1) * R * C) * D * G;
 	}
-	if (strcmp(in, "md_update_gaugemomenta") == 0) {
+	if (in == "md_update_gaugemomenta") {
 		//this kernel reads 2 ae and writes 1 ae per link
 		return ((2 + 1) * A) * D * G;
 	}
-	if (strcmp(in, "gauge_force") == 0) {
+	if (in == "gauge_force") {
 		//this kernel reads ingredients for 1 staple plus 1 su3matrix and writes 1 ae for every link
 		return G * D * (R * C * ( 6 * (NDIM - 1) + 1 ) + A );
 	}
-	if (strcmp(in, "gauge_force_tlsym") == 0) {
+	if (in == "gauge_force_tlsym") {
 		//this kernel reads ingredients for 1 rect-staple plus 1 su3matrix and writes 1 ae for every link
 		//the rect staple is the same as the normal staple, but with 3 add. contributions and 2 add. matrices in each contribution, so instead of 2 * 3 = 6, one reads 6 * 5 matrices in each direction
 		return G * D * (R * C * ( 6 * 5 * (NDIM - 1 ) + 1 ) + A );
 	}
-	if (strcmp(in, "fermion_force") == 0) {
+	if (in == "fermion_force") {
 		//this kernel reads 16 spinors, 8 su3matrices and writes 8 ae per site
 		//NOTE: the kernel now runs over all ae instead of all sites, but this must be equivalent!
 		return (C * 12 * (16) + C * 8 * R + 8 * A) * D * S;
 	}
-	if (strcmp(in, "fermion_force_eo") == 0) {
+	if (in == "fermion_force_eo") {
 		//this kernel reads 16 spinors, 8 su3matrices and writes 1 ae per site
 		return (C * 12 * (16) + C * 8 * R + 8 * A) * D * Seo;
 	}
-	if (strcmp(in, "set_zero_gaugemomentum;") == 0) {
+	if (in == "set_zero_gaugemomentum;") {
 		//this kernel writes 1 ae per link
 		return G * D * A;
 	}
-	if (strcmp(in, "gaugemomentum_squarenorm") == 0) {
+	if (in == "gaugemomentum_squarenorm") {
 		//this kernel reads 1 ae and writes 1 float per link
 		return G * D * ( A + 1);
 	}
-	if (strcmp(in, "stout_smear_fermion_force") == 0) {
+	if (in == "stout_smear_fermion_force") {
 		return 10000000000000000000;
 	}
 	return 0;
 }
 
-uint64_t Opencl_Module_Hmc::get_flop_size(const char * in)
+uint64_t Opencl_Module_Hmc::get_flop_size(const std::string& in)
 {
 	uint64_t result = Opencl_Module_Fermions::get_flop_size(in);
 	if (result != 0) return result;
@@ -397,58 +397,58 @@ uint64_t Opencl_Module_Hmc::get_flop_size(const char * in)
 	//this returns the number of entries in an su3-matrix
 	uint64_t R = meta::get_mat_size(parameters);
 	//this is the same as in the function above
-	if (strcmp(in, "generate_gaussian_spinorfield") == 0) {
+	if (in == "generate_gaussian_spinorfield") {
 		//this kernel performs 12 multiplications per site
 		///@todo ? I did not count the gaussian normal pair production, which is very complicated...
 		return 12 * S;
 	}
-	if (strcmp(in, "generate_gaussian_spinorfield_eo") == 0) {
+	if (in == "generate_gaussian_spinorfield_eo") {
 		//this kernel performs 12 multiplications per site
 		///@todo ? I did not count the gaussian normal pair production, which is very complicated...
 		return 12 * Seo;
 	}
-	if (strcmp(in, "generate_gaussian_gaugemomenta") == 0) {
+	if (in == "generate_gaussian_gaugemomenta") {
 		//this kernel performs 0 multiplications per site
 		///@todo ? I did not count the gaussian normal pair production, which is very complicated...
 		return 0;
 	}
-	if (strcmp(in, "md_update_gaugefield") == 0) {
+	if (in == "md_update_gaugefield") {
 		//this kernel performs one exp(i ae) ( = 327 flops + 1 su3 mult ) and 1 su3 mult per link
 		return (meta::get_flop_su3_su3() * ( 1 + 1)  + 327 ) * G;
 	}
-	if (strcmp(in, "md_update_gaugemomenta") == 0) {
+	if (in == "md_update_gaugemomenta") {
 		//this kernel performs 1 real mult and 1 real add per ae
 		return (1 + 1) * A * G;
 	}
-	if (strcmp(in, "gauge_force") == 0) {
+	if (in == "gauge_force") {
 		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2*ND-1 su3_add), 1 su3*su3, 1 tr_lambda_u (19 flops) plus 8 add and 8 mult per ae
 		return ( 4 * (NDIM - 1) * meta::get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + 1 * meta::get_flop_su3_su3() + 19  + A * ( 1 + 1 )
 		       ) * G;
 	}
-	if (strcmp(in, "gauge_force_tlsym") == 0) {
+	if (in == "gauge_force_tlsym") {
 		//this kernel calculates 1 rect-staple (= 24*ND-1 su3_su3 + 6*ND-1 su3_add), 1 su3*su3, 1 tr_lambda_u (19 flops) plus 8 add and 8 mult per ae
 		//24 = 6 contr. per dir, 4 mat_mat per contr.
 		return ( 24 * (NDIM - 1) * meta::get_flop_su3_su3() + 6 * (NDIM - 1) * 18 + 1 * meta::get_flop_su3_su3() + 19  + A * ( 1 + 1 )
 		       ) * G;
 	}
-	if (strcmp(in, "fermion_force") == 0) {
+	if (in == "fermion_force") {
 		//this kernel performs NDIM * ( 4 * su3vec_acc (6 flops) + tr(v*u) (126 flops) + tr_lambda_u(19 flops) + update_ae(8*2 flops) + su3*su3 + su3*complex (flop_complex_mult * R ) ) per site
 		//NOTE: the kernel now runs over all ae instead of all sites, but this must be equivalent!
 		return Seo * NDIM * ( 4 * 6 + 126 + 19 + 8 * 2 + meta::get_flop_su3_su3() + meta::get_flop_complex_mult() * R );
 	}
-	if (strcmp(in, "fermion_force_eo") == 0) {
+	if (in == "fermion_force_eo") {
 		//this kernel performs NDIM * ( 4 * su3vec_acc (6 flops) + tr(v*u) (126 flops) + tr_lambda_u(19 flops) + update_ae(8*2 flops) + su3*su3 + su3*complex (flop_complex_mult * R ) ) per site
 		return Seo * NDIM * ( 4 * 6 + 126 + 19 + 8 * 2 + meta::get_flop_su3_su3() + meta::get_flop_complex_mult() * R );
 	}
-	if (strcmp(in, "set_zero_gaugemomentum;") == 0) {
+	if (in == "set_zero_gaugemomentum;") {
 		//this kernel performs 0 mults
 		return 0;
 	}
-	if (strcmp(in, "gaugemomentum_squarenorm") == 0) {
+	if (in == "gaugemomentum_squarenorm") {
 		//this kernel performs 8 real mults and 8-1 real adds per ae
 		return (8 + 7) * A * G;
 	}
-	if (strcmp(in, "stout_smear_fermion_force") == 0) {
+	if (in == "stout_smear_fermion_force") {
 		return 10000000000000000000;
 	}
 	return 0;
