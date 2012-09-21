@@ -169,7 +169,7 @@ void Gaugefield_hybrid::init_devices(int ndev)
 	// TODO use proper device
 	devices[ndev] = 0;
 for(auto device: system->get_devices()) {
-		if(device->get_device_type() == get_device_type(ndev)) {
+		if(device->get_device_type() == devicetypes[ndev]) {
 			cl_devices[ndev] = device->get_id();
 			devices[ndev] = device;
 			break;
@@ -364,12 +364,6 @@ void Gaugefield_hybrid::set_num_devices(int num)
 int Gaugefield_hybrid::get_num_devices()
 {
 	return num_devices;
-}
-
-cl_device_type Gaugefield_hybrid::get_device_type(int ntask)
-{
-	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range", __FILE__, __LINE__);
-	return devicetypes[ntask];
 }
 
 void Gaugefield_hybrid::save(int number)

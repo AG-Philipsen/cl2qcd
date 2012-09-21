@@ -64,11 +64,6 @@ public:
 	 * Initialize class.
 	 * Helper function called by init()
 	 */
-	void init_devicetypearray(cl_device_type primary_device_type);
-	/**
-	 * Initialize class.
-	 * Helper function called by init()
-	 */
 	void init_opencl();
 	/**
 	 * Initialize devices.
@@ -188,11 +183,6 @@ public:
 	 * @return device cl_device_id for given task
 	 */
 	hardware::Device* get_device_for_task(int ntask);
-	/**
-	 * Returns device type for given task.
-	 * @param[in] ntask id of target task
-	 */
-	cl_device_type get_device_type(int ntask);
 
 	// output methods
 	/**
@@ -303,6 +293,12 @@ protected:
 	Opencl_Module ** opencl_modules;
 
 private:
+	/**
+	 * Initialize class.
+	 * Helper function called by init()
+	 */
+	void init_devicetypearray(cl_device_type primary_device_type);
+
 	const hardware::System * system;
 	const meta::Inputparameters& parameters;
 	Matrixsu3 * sgf;
