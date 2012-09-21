@@ -13,8 +13,10 @@
 #include <CL/cl.h>
 #endif
 
+#include <map>
 #include "../meta/inputparameters.hpp"
 #include "../opencl_compiler.hpp"
+#include "profiling_data.hpp"
 
 /**
  * Forward dekleration of friends
@@ -111,17 +113,17 @@ namespace hardware {
 		/**
 		 * Enqueue a kernel on the device using the default number of global threads
 		 */
-		void enqueue_kernel(const cl_kernel kernel) const;
+		void enqueue_kernel(const cl_kernel kernel);
 
 		/**
 		 * Enqueue a kernel on the device using the default number of local threads
 		 */
-		void enqueue_kernel(const cl_kernel kernel, size_t global_threads) const;
+		void enqueue_kernel(const cl_kernel kernel, size_t global_threads);
 
 		/**
 		 * Enqueue a kernel on the device using the default given threads specifications
 		 */
-		void enqueue_kernel(const cl_kernel kernel, size_t global_threads, size_t local_threads) const;
+		void enqueue_kernel(const cl_kernel kernel, size_t global_threads, size_t local_threads);
 
 		/**
 		 * Recommend a stride for the given number of elements of the given type
@@ -213,6 +215,11 @@ namespace hardware {
 		 * Allow easy use of the command queue
 		 */
 		cl_command_queue get_queue() const noexcept;
+
+		/**
+		 * Kernel profiling data
+		 */
+		std::map<cl_kernel, ProfilingData> profiling_data;
 	};
 }
 

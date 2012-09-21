@@ -25,7 +25,8 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 	  supports_double(::retrieve_supports_double(device_id)),
 	  prefers_blocked_loops(device_type == CL_DEVICE_TYPE_CPU),
 	  name(retrieve_device_name(device_id)),
-	  profiling_enabled(enable_profiling)
+	  profiling_enabled(enable_profiling),
+	  profiling_data()
 {
 	logger.debug() << "Initializing " << retrieve_device_name(device_id);
 	bool available = retrieve_device_availability(device_id);
@@ -194,21 +195,29 @@ TmpClKernel hardware::Device::create_kernel(const char * const kernel_name, std:
 	return TmpClKernel(kernel_name, build_opts, context, device_id);
 }
 
-void hardware::Device::enqueue_kernel(cl_kernel kernel) const
+void hardware::Device::enqueue_kernel(cl_kernel kernel)
 {
 	enqueue_kernel(kernel, get_preferred_global_thread_num());
 }
 
-void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads) const
+void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads)
 {
 	enqueue_kernel(kernel, global_threads, get_preferred_local_thread_num());
 }
 
-void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads, size_t local_threads) const
+void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads, size_t local_threads)
 {
-	cl_int clerr_enqueue = clEnqueueNDRangeKernel(command_queue, kernel, 1, 0, &global_threads, &local_threads, 0, 0, NULL);
+	// setup profiling if required
+	cl_event profiling_event;
+	// we only want to pass the event if we are actually profiling
+	// otherwise the API will write back data into a no longer valid object
+	cl_event * const profiling_event_p = profiling_enabled ? &profiling_event : 0;
 
-	if(clerr_enqueue != CL_SUCCESS) {
+	// queue kernel
+	cl_int clerr = clEnqueueNDRangeKernel(command_queue, kernel, 1, 0, &global_threads, &local_threads, 0, 0, profiling_event_p);
+
+	// check for errors
+	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting...";
 		logger.fatal() << "Some more information:";
 		logger.fatal() << "global_work_size: " << global_threads;
@@ -227,7 +236,18 @@ void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads, s
 			logger.error() << "Could not retrieve length of kernel name";
 		}
 
-		throw hardware::OpenclException(clerr_enqueue, "clEnqueueNDRangeKernel", __FILE__, __LINE__);
+		throw hardware::OpenclException(clerr, "clEnqueueNDRangeKernel", __FILE__, __LINE__);
+	}
+
+	// evaluate profiling if required
+	if(profiling_enabled) {
+		// collect the data of this kernel invocation
+		clerr = clWaitForEvents(1, &profiling_event);
+		if(clerr) {
+			throw hardware::OpenclException(clerr, "clWaitForEvents", __FILE__, __LINE__);
+		}
+
+		profiling_data[kernel] += profiling_event;
 	}
 }
 

@@ -9,6 +9,7 @@
 add_library(hardware
 	system.cpp
 	device.cpp
+	profiling_data.cpp
 )
 add_modules(hardware
 	buffers
@@ -20,3 +21,4 @@ add_modules(hardware
 
 add_unit_test(hardware::System system_test)
 add_unit_test(hardware::Device device_test)
+add_unit_test(hardware::ProfilingData profiling_data_test)
