@@ -80,17 +80,12 @@ public:
 	 */
 	cl_mem* get_clmem_rndarray();
 
-	/**
-	 * Add specific work_size determination for this child class
-	 */
-	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) override;
-
 protected:
 	/**
 	 * Get number of random states
 	 * @return num_rndstates
 	 */
-	int get_num_rndstates();
+	int get_num_rndstates() const noexcept;
 
 	/**
 	 * A set of sources required to use the PRNG.

@@ -179,7 +179,7 @@ public:
 	 * @param num_groups number of work groups
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
-	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) override;
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
 
 	//    fermionmatrix operations
@@ -262,35 +262,35 @@ public:
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
 	//fermionmatrix
-	usetimer timer_M_wilson;
-	usetimer timer_gamma5;
-	usetimer timer_M_tm_plus;
-	usetimer timer_M_tm_minus;
-	usetimer timer_gamma5_eo;
-	usetimer timer_M_tm_sitediagonal;
-	usetimer timer_M_tm_inverse_sitediagonal;
-	usetimer timer_dslash_eo;
-	usetimer timer_M_tm_sitediagonal_minus;
-	usetimer timer_M_tm_inverse_sitediagonal_minus;
-	usetimer timer_dslash_AND_gamma5_eo;
-	usetimer timer_dslash_AND_M_tm_inverse_sitediagonal_eo;
-	usetimer timer_dslash_AND_M_tm_inverse_sitediagonal_minus_eo;
-	usetimer timer_M_tm_sitediagonal_AND_gamma5_eo;
-	usetimer timer_M_tm_sitediagonal_minus_AND_gamma5_eo;
+	mutable usetimer timer_M_wilson;
+	mutable usetimer timer_gamma5;
+	mutable usetimer timer_M_tm_plus;
+	mutable usetimer timer_M_tm_minus;
+	mutable usetimer timer_gamma5_eo;
+	mutable usetimer timer_M_tm_sitediagonal;
+	mutable usetimer timer_M_tm_inverse_sitediagonal;
+	mutable usetimer timer_dslash_eo;
+	mutable usetimer timer_M_tm_sitediagonal_minus;
+	mutable usetimer timer_M_tm_inverse_sitediagonal_minus;
+	mutable usetimer timer_dslash_AND_gamma5_eo;
+	mutable usetimer timer_dslash_AND_M_tm_inverse_sitediagonal_eo;
+	mutable usetimer timer_dslash_AND_M_tm_inverse_sitediagonal_minus_eo;
+	mutable usetimer timer_M_tm_sitediagonal_AND_gamma5_eo;
+	mutable usetimer timer_M_tm_sitediagonal_minus_AND_gamma5_eo;
 
 	/**
 	 * Return the timer connected to a specific kernel.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual usetimer* get_timer(const std::string& in) override;
+	virtual usetimer* get_timer(const std::string& in) const override;
 
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 */
-	void virtual print_profiling(std::string filename, int number) override;
+	void virtual print_profiling(const std::string& filename, int number) override;
 
 #endif
 
@@ -299,7 +299,7 @@ public:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual size_t get_read_write_size(const std::string& in) override;
+	virtual size_t get_read_write_size(const std::string& in) const override;
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -307,7 +307,7 @@ public:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual uint64_t get_flop_size(const std::string& in) override;
+	virtual uint64_t get_flop_size(const std::string& in) const override;
 
 private:
 	////////////////////////////////////

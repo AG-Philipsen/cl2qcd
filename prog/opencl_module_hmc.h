@@ -90,7 +90,7 @@ public:
 	 * @param num_groups number of work groups
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
-	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) override;
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
 	////////////////////////////////////////////////////
 	//get members
@@ -163,32 +163,32 @@ protected:
 
 #ifdef _PROFILING_
 
-	usetimer timer_generate_gaussian_spinorfield;
-	usetimer timer_generate_gaussian_spinorfield_eo;
-	usetimer timer_generate_gaussian_gaugemomenta;
-	usetimer timer_md_update_gaugefield;
-	usetimer timer_md_update_gaugemomenta;
-	usetimer timer_gauge_force;
-	usetimer timer_gauge_force_tlsym;
-	usetimer timer_fermion_force;
-	usetimer timer_fermion_force_eo;
-	usetimer timer_set_zero_gaugemomentum;
-	usetimer timer_gaugemomentum_squarenorm;
-	usetimer timer_stout_smear_fermion_force;
+	mutable usetimer timer_generate_gaussian_spinorfield;
+	mutable usetimer timer_generate_gaussian_spinorfield_eo;
+	mutable usetimer timer_generate_gaussian_gaugemomenta;
+	mutable usetimer timer_md_update_gaugefield;
+	mutable usetimer timer_md_update_gaugemomenta;
+	mutable usetimer timer_gauge_force;
+	mutable usetimer timer_gauge_force_tlsym;
+	mutable usetimer timer_fermion_force;
+	mutable usetimer timer_fermion_force_eo;
+	mutable usetimer timer_set_zero_gaugemomentum;
+	mutable usetimer timer_gaugemomentum_squarenorm;
+	mutable usetimer timer_stout_smear_fermion_force;
 
 	/**
 	 * Return the timer connected to a specific kernel.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual usetimer* get_timer(const std::string& in) override;
+	virtual usetimer* get_timer(const std::string& in) const override;
 
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 */
-	void virtual print_profiling(std::string filename, int number) override;
+	void virtual print_profiling(const std::string& filename, int number) override;
 
 #endif
 
@@ -197,7 +197,7 @@ protected:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual size_t get_read_write_size(const std::string& in) override;
+	virtual size_t get_read_write_size(const std::string& in) const override;
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -205,7 +205,7 @@ protected:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual uint64_t get_flop_size(const std::string& in) override;
+	virtual uint64_t get_flop_size(const std::string& in) const override;
 
 private:
 

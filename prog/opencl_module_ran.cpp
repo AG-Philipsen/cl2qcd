@@ -131,7 +131,7 @@ void Opencl_Module_Ran::copy_rndstate_from_device(nr3_state_dev* rndarray)
 }
 #endif // USE_PRNG_NR3
 
-int Opencl_Module_Ran::get_num_rndstates()
+int Opencl_Module_Ran::get_num_rndstates() const noexcept
 {
 	return num_rndstates;
 }
@@ -139,10 +139,4 @@ int Opencl_Module_Ran::get_num_rndstates()
 cl_mem* Opencl_Module_Ran::get_clmem_rndarray()
 {
 	return &clmem_rndarray;
-}
-
-void Opencl_Module_Ran::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups)
-{
-	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
-	return;
 }

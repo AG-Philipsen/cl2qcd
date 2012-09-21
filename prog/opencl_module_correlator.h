@@ -85,7 +85,7 @@ public:
 	 * @param num_groups number of work groups
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
-	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) override;
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
 	void create_point_source_device(cl_mem inout, int i, int spacepos, int timepos);
 
@@ -108,24 +108,24 @@ public:
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
 
-	usetimer timer_create_point_source;
-	usetimer timer_create_stochastic_source;
+	mutable usetimer timer_create_point_source;
+	mutable usetimer timer_create_stochastic_source;
 
-	usetimer timer_correlator_ps;
-	usetimer timer_correlator_sc;
-	usetimer timer_correlator_vx;
-	usetimer timer_correlator_vy;
-	usetimer timer_correlator_vz;
-	usetimer timer_correlator_ax;
-	usetimer timer_correlator_ay;
-	usetimer timer_correlator_az;
+	mutable usetimer timer_correlator_ps;
+	mutable usetimer timer_correlator_sc;
+	mutable usetimer timer_correlator_vx;
+	mutable usetimer timer_correlator_vy;
+	mutable usetimer timer_correlator_vz;
+	mutable usetimer timer_correlator_ax;
+	mutable usetimer timer_correlator_ay;
+	mutable usetimer timer_correlator_az;
 
 	/**
 	 * Return the timer connected to a specific kernel.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual usetimer* get_timer(const std::string& in) override;
+	virtual usetimer* get_timer(const std::string& in) const override;
 
 	/**
 	 * Print the profiling information to a file.
@@ -133,7 +133,7 @@ public:
 	 * @param filename Name of file where data is appended.
 	 * @param number task-id
 	 */
-	void virtual print_profiling(std::string filename, int number) override;
+	void virtual print_profiling(const std::string& filename, int number) override;
 #endif
 
 	/**
@@ -141,7 +141,7 @@ public:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual size_t get_read_write_size(const std::string& in) override;
+	virtual size_t get_read_write_size(const std::string& in) const override;
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -149,7 +149,7 @@ public:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual uint64_t get_flop_size(const std::string& in) override;
+	virtual uint64_t get_flop_size(const std::string& in) const override;
 
 private:
 	////////////////////////////////////

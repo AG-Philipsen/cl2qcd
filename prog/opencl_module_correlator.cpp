@@ -111,7 +111,7 @@ void Opencl_Module_Correlator::clear_buffers()
 	return;
 }
 
-void Opencl_Module_Correlator::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups)
+void Opencl_Module_Correlator::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module_Spinors::get_work_sizes(kernel, ls, gs, num_groups);
 
@@ -215,7 +215,7 @@ void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kern
 }
 
 #ifdef _PROFILING_
-usetimer* Opencl_Module_Correlator::get_timer(const std::string& in)
+usetimer* Opencl_Module_Correlator::get_timer(const std::string& in) const
 {
 	usetimer *noop = NULL;
 	noop = Opencl_Module_Spinors::get_timer(in);
@@ -287,7 +287,7 @@ usetimer* Opencl_Module_Correlator::get_timer(const std::string& in)
 
 #endif
 
-size_t Opencl_Module_Correlator::get_read_write_size(const std::string& in)
+size_t Opencl_Module_Correlator::get_read_write_size(const std::string& in) const
 {
 	size_t result = Opencl_Module_Spinors::get_read_write_size(in);
 	if (result != 0) return result;
@@ -375,7 +375,7 @@ size_t Opencl_Module_Correlator::get_read_write_size(const std::string& in)
 	return 0;
 }
 
-uint64_t Opencl_Module_Correlator::get_flop_size(const std::string& in)
+uint64_t Opencl_Module_Correlator::get_flop_size(const std::string& in) const
 {
 	uint64_t result = Opencl_Module_Spinors::get_flop_size(in);
 	if (result != 0) return result;
@@ -418,33 +418,22 @@ uint64_t Opencl_Module_Correlator::get_flop_size(const std::string& in)
 
 #ifdef _PROFILING_
 
-void Opencl_Module_Correlator::print_profiling(std::string filename, int number)
+void Opencl_Module_Correlator::print_profiling(const std::string& filename, int number)
 {
 	Opencl_Module_Spinors::print_profiling(filename, number);
-	const char * kernelName;
 	if(create_point_source) {
-		kernelName = "create_point_source";
-		Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+		Opencl_Module::print_profiling(filename, create_point_source);
 	}
 	if(create_stochastic_source) {
-		kernelName = "create_stochastic_source";
-		Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+		Opencl_Module::print_profiling(filename, create_stochastic_source);
 	}
-	kernelName = "correlator_ps_z";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "correlator_sc_z";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "correlator_vx_z";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "correlator_vy_z";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "correlator_vz_z";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "correlator_ax_z";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "correlator_ay_z";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "correlator_az_z";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+	Opencl_Module::print_profiling(filename, correlator_ps);
+	Opencl_Module::print_profiling(filename, correlator_sc);
+	Opencl_Module::print_profiling(filename, correlator_vx);
+	Opencl_Module::print_profiling(filename, correlator_vy);
+	Opencl_Module::print_profiling(filename, correlator_vz);
+	Opencl_Module::print_profiling(filename, correlator_ax);
+	Opencl_Module::print_profiling(filename, correlator_ay);
+	Opencl_Module::print_profiling(filename, correlator_az);
 }
 #endif

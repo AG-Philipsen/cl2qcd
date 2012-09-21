@@ -125,10 +125,7 @@ int main(int argc, const char* argv[])
 			logger.warn() << "Could not open " << profiling_out;
 		}
 
-		//print only dslash-infos
-		const char * kernelName;
-		kernelName = "dslash_eo";
-		gaugefield.get_task_solver()->Opencl_Module::print_profiling(profiling_out, kernelName, (*gaugefield.get_task_solver()->get_timer(kernelName)).getTime(), (*gaugefield.get_task_solver()->get_timer(kernelName)).getNumMeas(), gaugefield.get_task_solver()->get_read_write_size(kernelName), gaugefield.get_task_solver()->get_flop_size(kernelName)) ;
+		gaugefield.get_task_solver()->Opencl_Module::print_profiling(profiling_out, 0) ;
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// free variables

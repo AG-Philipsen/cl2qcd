@@ -87,7 +87,7 @@ public:
 	/**
 	 * Add specific work_size determination for this child class
 	 */
-	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) override;
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
 protected:
 
@@ -101,17 +101,17 @@ private:
 
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
-	usetimer timer_heatbath_odd;
-	usetimer timer_heatbath_even;
-	usetimer timer_overrelax_odd;
-	usetimer timer_overrelax_even;
+	mutable usetimer timer_heatbath_odd;
+	mutable usetimer timer_heatbath_even;
+	mutable usetimer timer_overrelax_odd;
+	mutable usetimer timer_overrelax_even;
 
 	/**
 	 * Return the timer connected to a specific kernel.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual usetimer* get_timer(const std::string& in) override;
+	virtual usetimer* get_timer(const std::string& in) const override;
 
 	/**
 	 * Print the profiling information to a file.
@@ -119,7 +119,7 @@ private:
 	 * @param filename Name of file where data is appended.
 	 * @param parameters inputparameters
 	 */
-	void virtual print_profiling(std::string filename, int number) override;
+	void virtual print_profiling(const std::string& filename, int number) override;
 #endif
 
 	/**
@@ -127,7 +127,7 @@ private:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual size_t get_read_write_size(const std::string& in) override;
+	virtual size_t get_read_write_size(const std::string& in) const override;
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -135,7 +135,7 @@ private:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual uint64_t get_flop_size(const std::string& in) override;
+	virtual uint64_t get_flop_size(const std::string& in) const override;
 
 
 };

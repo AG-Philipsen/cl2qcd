@@ -74,12 +74,12 @@ public:
 	 * Get a pointer to inputparameters
 	 * @return parameters
 	 */
-	const meta::Inputparameters& get_parameters();
+	const meta::Inputparameters& get_parameters() const noexcept;
 	/**
 	 * Get OpenCL device
 	 * @return device
 	 */
-	hardware::Device * get_device();
+	hardware::Device * get_device() const noexcept;
 	/**
 	 * Get platform_id
 	 * @return platform
@@ -227,33 +227,33 @@ public:
 	 * @param dev_type type of device on which the kernel should be executed
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
-	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups);
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const;
 
 	/**
 	 * Return the kernel name as a string
 	 * @param[in] kernel
 	 * @return kernel_name
 	 */
-	std::string get_kernel_name(const cl_kernel kernel);
+	std::string get_kernel_name(const cl_kernel kernel) const;
 
 #ifdef _PROFILING_
 	//CP: if PROFILING is activated, one needs a timer for each kernel
-	usetimer timer_plaquette;
-	usetimer timer_plaquette_reduction;
-	usetimer timer_rectangles;
-	usetimer timer_rectangles_reduction;
-	usetimer timer_polyakov;
-	usetimer timer_polyakov_reduction;
-	usetimer timer_convertGaugefieldToSOA;
-	usetimer timer_convertGaugefieldFromSOA;
+	mutable usetimer timer_plaquette;
+	mutable usetimer timer_plaquette_reduction;
+	mutable usetimer timer_rectangles;
+	mutable usetimer timer_rectangles_reduction;
+	mutable usetimer timer_polyakov;
+	mutable usetimer timer_polyakov_reduction;
+	mutable usetimer timer_convertGaugefieldToSOA;
+	mutable usetimer timer_convertGaugefieldFromSOA;
 
-	usetimer timer_stout_smear;
+	mutable usetimer timer_stout_smear;
 	/**
 	 * Return the timer connected to a specific kernel.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual usetimer* get_timer(const std::string& in);
+	virtual usetimer* get_timer(const std::string& in) const;
 
 	/**
 	 * Print the profiling information to a file.
@@ -261,7 +261,7 @@ public:
 	 * @param filename Name of file where data is appended.
 	 * @param number task-id
 	 */
-	void virtual print_profiling(std::string filename, int number);
+	void virtual print_profiling(const std::string& filename, int number);
 
 #endif
 
@@ -271,26 +271,14 @@ public:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual uint64_t get_flop_size(const std::string& in);
+	virtual uint64_t get_flop_size(const std::string& in) const;
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual size_t get_read_write_size(const std::string& in);
-
-	/**
-	 * Print the profiling information of a specific kernel to a file.
-	 *
-	 * @param filename Name of file where data is appended.
-	 * @param kernelName Name of specific kernel.
-	 * @param time_total total execution time
-	 * @param calls_total total number of kernel calls
-	 * @param read_write_size number of bytes read and written by the kernel
-	 * @param flop_size amount of flops performed by the kernel
-	 */
-	void print_profiling(std::string filename, const std::string& kernelName, uint64_t time_total, int calls_total, size_t read_write_size, uint64_t flop_size);
+	virtual size_t get_read_write_size(const std::string& in) const;
 
 	/**
 	 * Enqueue the given kernel on the device. Local work size will be determined
@@ -429,7 +417,7 @@ protected:
 	 * @return int numthreads
 	 *
 	 */
-	int get_numthreads();
+	int get_numthreads() const noexcept;
 
 	const meta::Inputparameters& parameters;
 
@@ -450,6 +438,16 @@ protected:
 	 * \return The proper stride in elements of the storage array.
 	 */
 	cl_ulong calculateStride(const cl_ulong elems, const cl_ulong baseTypeSize);
+
+#ifdef _PROFILING_
+	/**
+	 * Print the profiling information for the given kernel to the given file.
+	 *
+	 * \param filename name of the file to print to
+	 * \param kernel the kernel whose information to pring
+	 */
+	void print_profiling(const std::string& filename, const cl_kernel& kernel) const;
+#endif /* _PROFILING_ */
 
 public:
 

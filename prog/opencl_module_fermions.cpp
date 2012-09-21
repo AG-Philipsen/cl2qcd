@@ -759,7 +759,7 @@ void Opencl_Module_Fermions::clear_solver_buffers()
 	return;
 }
 
-void Opencl_Module_Fermions::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups)
+void Opencl_Module_Fermions::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module_Spinors::get_work_sizes(kernel, ls, gs, num_groups);
 
@@ -2116,7 +2116,7 @@ hmc_float Opencl_Module_Fermions::print_info_inv_field(cl_mem in, bool eo, std::
 }
 
 #ifdef _PROFILING_
-usetimer* Opencl_Module_Fermions::get_timer(const std::string& in)
+usetimer* Opencl_Module_Fermions::get_timer(const std::string& in) const
 {
 	logger.trace() << "Opencl_Module_Fermions::get_timer(char*)";
 	usetimer *noop = NULL;
@@ -2179,7 +2179,7 @@ usetimer* Opencl_Module_Fermions::get_timer(const std::string& in)
 }
 #endif
 
-size_t Opencl_Module_Fermions::get_read_write_size(const std::string& in)
+size_t Opencl_Module_Fermions::get_read_write_size(const std::string& in) const
 {
 	size_t result = Opencl_Module_Spinors::get_read_write_size(in);
 	if (result != 0) return result;
@@ -2267,7 +2267,7 @@ size_t Opencl_Module_Fermions::get_read_write_size(const std::string& in)
 	return 0;
 }
 
-int flop_dslash_per_site(const meta::Inputparameters & parameters)
+static int flop_dslash_per_site(const meta::Inputparameters & parameters)
 {
 	/** @NOTE: this is the "original" dslash without any simplifications, counting everything "full". this is a much too hight number!!
 	   *  //this kernel performs for each eo site a 2*NDIM sum over (1 + gamma_mu) * su3matrix * spinor
@@ -2281,7 +2281,7 @@ int flop_dslash_per_site(const meta::Inputparameters & parameters)
 
 }
 
-uint64_t Opencl_Module_Fermions::get_flop_size(const std::string& in)
+uint64_t Opencl_Module_Fermions::get_flop_size(const std::string& in) const
 {
 	uint64_t result = Opencl_Module_Spinors::get_flop_size(in);
 	if (result != 0) return result;
@@ -2347,39 +2347,23 @@ uint64_t Opencl_Module_Fermions::get_flop_size(const std::string& in)
 }
 
 #ifdef _PROFILING_
-void Opencl_Module_Fermions::print_profiling(std::string filename, int number)
+void Opencl_Module_Fermions::print_profiling(const std::string& filename, int number)
 {
 	Opencl_Module_Spinors::print_profiling(filename, number);
-	const char * kernelName;
-	kernelName = "M_wilson";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "gamma5";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_plus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_minus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "gamma5_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_sitediagonal";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_inverse_sitediagonal";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_sitediagonal_minus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_inverse_sitediagonal_minus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "dslash_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "dslash_AND_gamma5_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "dslash_AND_M_tm_inverse_sitediagonal_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "dslash_AND_M_tm_inverse_sitediagonal_minus_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_sitediagonal_AND_gamma5_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_sitediagonal_minus_AND_gamma5_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+	Opencl_Module::print_profiling(filename, M_wilson);
+	Opencl_Module::print_profiling(filename, gamma5);
+	Opencl_Module::print_profiling(filename, M_tm_plus);
+	Opencl_Module::print_profiling(filename, M_tm_minus);
+	Opencl_Module::print_profiling(filename, gamma5_eo);
+	Opencl_Module::print_profiling(filename, M_tm_sitediagonal);
+	Opencl_Module::print_profiling(filename, M_tm_inverse_sitediagonal);
+	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_minus);
+	Opencl_Module::print_profiling(filename, M_tm_inverse_sitediagonal_minus);
+	Opencl_Module::print_profiling(filename, dslash_eo);
+	Opencl_Module::print_profiling(filename, dslash_AND_gamma5_eo);
+	Opencl_Module::print_profiling(filename, dslash_AND_M_tm_inverse_sitediagonal_eo);
+	Opencl_Module::print_profiling(filename, dslash_AND_M_tm_inverse_sitediagonal_minus_eo);
+	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_AND_gamma5_eo);
+	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_minus_AND_gamma5_eo);
 }
 #endif

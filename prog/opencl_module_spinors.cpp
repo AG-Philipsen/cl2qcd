@@ -142,7 +142,7 @@ void Opencl_Module_Spinors::clear_buffers()
 }
 
 
-void Opencl_Module_Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups)
+void Opencl_Module_Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module_Ran::get_work_sizes(kernel, ls, gs, num_groups);
 
@@ -673,7 +673,7 @@ void Opencl_Module_Spinors::saxpy_AND_squarenorm_eo_device(cl_mem x, cl_mem y, c
 
 
 #ifdef _PROFILING_
-usetimer* Opencl_Module_Spinors::get_timer(const std::string& in)
+usetimer* Opencl_Module_Spinors::get_timer(const std::string& in) const
 {
 	logger.trace() << "Opencl_Module_Spinors::get_timer(char*)";
 	usetimer *noop = NULL;
@@ -754,7 +754,7 @@ usetimer* Opencl_Module_Spinors::get_timer(const std::string& in)
 
 #endif
 
-size_t Opencl_Module_Spinors::get_read_write_size(const std::string& in)
+size_t Opencl_Module_Spinors::get_read_write_size(const std::string& in) const
 {
 	size_t result = Opencl_Module_Ran::get_read_write_size(in);
 	if (result != 0) return result;
@@ -878,7 +878,7 @@ size_t Opencl_Module_Spinors::get_read_write_size(const std::string& in)
 	return 0;
 }
 
-uint64_t Opencl_Module_Spinors::get_flop_size(const std::string& in)
+uint64_t Opencl_Module_Spinors::get_flop_size(const std::string& in) const
 {
 	uint64_t result = Opencl_Module_Ran::get_flop_size(in);
 	if (result != 0) return result;
@@ -974,58 +974,32 @@ uint64_t Opencl_Module_Spinors::get_flop_size(const std::string& in)
 
 #ifdef _PROFILING_
 
-void Opencl_Module_Spinors::print_profiling(std::string filename, int number)
+void Opencl_Module_Spinors::print_profiling(const std::string& filename, int number)
 {
-	///@todo Why is that opencl_module_ran here? Should it be spinor?
 	Opencl_Module_Ran::print_profiling(filename, number);
-	const char * kernelName;
-	kernelName = "set_spinorfield_cold";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "set_eoprec_spinorfield_cold";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "convert_from_eoprec";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "convert_to_eoprec";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "saxpy";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "sax";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "saxsbypz";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "set_zero_spinorfield";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "saxpy_eoprec";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "sax_eoprec";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "saxsbypz_eoprec";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "set_zero_spinorfield_eoprec";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "scalar_product";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "scalar_product_reduction";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "global_squarenorm";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "global_squarenorm_reduction";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "scalar_product_eoprec";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "global_squarenorm_eoprec";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "ratio";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "product";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "convertSpinorfieldToSOA_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "convertSpinorfieldFromSOA_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "saxpy_AND_squarenorm_eo";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-
+	Opencl_Module::print_profiling(filename, set_spinorfield_cold);
+	Opencl_Module::print_profiling(filename, set_eoprec_spinorfield_cold);
+	Opencl_Module::print_profiling(filename, convert_from_eoprec);
+	Opencl_Module::print_profiling(filename, convert_to_eoprec);
+	Opencl_Module::print_profiling(filename, saxpy);
+	Opencl_Module::print_profiling(filename, sax);
+	Opencl_Module::print_profiling(filename, saxsbypz);
+	Opencl_Module::print_profiling(filename, set_zero_spinorfield);
+	Opencl_Module::print_profiling(filename, saxpy_eoprec);
+	Opencl_Module::print_profiling(filename, sax_eoprec);
+	Opencl_Module::print_profiling(filename, saxsbypz_eoprec);
+	Opencl_Module::print_profiling(filename, set_zero_spinorfield_eoprec);
+	Opencl_Module::print_profiling(filename, scalar_product);
+	Opencl_Module::print_profiling(filename, scalar_product_reduction);
+	Opencl_Module::print_profiling(filename, global_squarenorm);
+	Opencl_Module::print_profiling(filename, global_squarenorm_reduction);
+	Opencl_Module::print_profiling(filename, scalar_product_eoprec);
+	Opencl_Module::print_profiling(filename, global_squarenorm_eoprec);
+	Opencl_Module::print_profiling(filename, ratio);
+	Opencl_Module::print_profiling(filename, product);
+	Opencl_Module::print_profiling(filename, convertSpinorfieldToSOA_eo);
+	Opencl_Module::print_profiling(filename, convertSpinorfieldFromSOA_eo);
+	Opencl_Module::print_profiling(filename, saxpy_AND_squarenorm_eo);
 }
 #endif
 

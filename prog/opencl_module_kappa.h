@@ -85,11 +85,6 @@ public:
 	 */
 	hmc_float get_kappa_clover();
 
-	/**
-	 * Add specific work_size determination for this child class
-	 */
-	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) override;
-
 protected:
 
 private:

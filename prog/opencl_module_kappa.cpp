@@ -118,10 +118,3 @@ void Opencl_Module_Kappa::clear_buffers()
 
 	return;
 }
-
-
-void Opencl_Module_Kappa::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups)
-{
-	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
-	return;
-}

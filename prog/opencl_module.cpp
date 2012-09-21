@@ -8,6 +8,19 @@
 
 using namespace std;
 
+static void print_profile_header(const std::string& filename, int number);
+/**
+ * Print the profiling information of a specific kernel to a file.
+ *
+ * @param filename Name of file where data is appended.
+ * @param kernelName Name of specific kernel.
+ * @param time_total total execution time
+ * @param calls_total total number of kernel calls
+ * @param read_write_size number of bytes read and written by the kernel
+ * @param flop_size amount of flops performed by the kernel
+ */
+static void print_profiling(const std::string& filename, const std::string& kernelName, uint64_t time_total, int calls_total, size_t read_write_size, uint64_t flop_size);
+
 void Opencl_Module::init()
 {
 	// get device
@@ -70,12 +83,12 @@ cl_mem Opencl_Module::get_gaugefield()
 	return gaugefield;
 }
 
-const meta::Inputparameters& Opencl_Module::get_parameters()
+const meta::Inputparameters& Opencl_Module::get_parameters() const noexcept
 {
 	return parameters;
 }
 
-hardware::Device * Opencl_Module::get_device()
+hardware::Device * Opencl_Module::get_device() const noexcept
 {
 	return device;
 }
@@ -828,7 +841,7 @@ void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
 
 
 
-void Opencl_Module::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups)
+void Opencl_Module::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	//Query kernel name
 	string kernelname = get_kernel_name(kernel);
@@ -856,7 +869,7 @@ void Opencl_Module::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t *
 	return;
 }
 
-string Opencl_Module::get_kernel_name(const cl_kernel kernel)
+string Opencl_Module::get_kernel_name(const cl_kernel kernel) const
 {
 	int clerr;
 	size_t bytesInKernelName;
@@ -883,7 +896,7 @@ usetimer * Opencl_Module::get_copy_to()
 }
 
 #ifdef _PROFILING_
-usetimer* Opencl_Module::get_timer(const std::string& in)
+usetimer* Opencl_Module::get_timer(const std::string& in) const
 {
 	logger.trace() << "Opencl_Module::get_timer(const std::string& in)";
 	if (in == "polyakov_reduction") {
@@ -921,7 +934,7 @@ usetimer* Opencl_Module::get_timer(const std::string& in)
 
 #endif
 
-size_t Opencl_Module::get_read_write_size(const std::string& in)
+size_t Opencl_Module::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
 	size_t D = meta::get_float_size(parameters);
@@ -980,7 +993,7 @@ size_t Opencl_Module::get_read_write_size(const std::string& in)
 	return 0;
 }
 
-uint64_t Opencl_Module::get_flop_size(const std::string& in)
+uint64_t Opencl_Module::get_flop_size(const std::string& in) const
 {
 	const size_t VOL4D = meta::get_vol4d(get_parameters());
 	const size_t VOLSPACE = meta::get_volspace(get_parameters());
@@ -1010,7 +1023,7 @@ uint64_t Opencl_Module::get_flop_size(const std::string& in)
 	return 0;
 }
 
-void Opencl_Module::print_profiling(std::string filename, const std::string& kernelName, uint64_t time_total, int calls_total, size_t read_write_size, uint64_t flop_size)
+static void print_profiling(const std::string& filename, const std::string& kernelName, uint64_t time_total, int calls_total, size_t read_write_size, uint64_t flop_size, uint64_t sites)
 {
 	hmc_float bandwidth = 0.;
 	hmc_float flops = 0.;
@@ -1019,7 +1032,7 @@ void Opencl_Module::print_profiling(std::string filename, const std::string& ker
 	//check if kernel has been called at all
 	if(calls_total != 0 && time_total != 0) {
 		avg_time = (uint64_t) ( ( (float) time_total ) / ((float) calls_total) );
-		avg_time_site = (uint64_t) ( ( (float) time_total ) / ((float) (calls_total * meta::get_vol4d(get_parameters()))) );
+		avg_time_site = (uint64_t) ( ( (float) time_total ) / ((float) (calls_total * sites)) );
 		//Bandwidth in GB/s: 1e-3 = 1e6 (museconds) * 1e-9 (GByte)
 		bandwidth = (hmc_float) read_write_size / (hmc_float) time_total * (hmc_float) calls_total * 1e-3;
 		flops = (hmc_float) flop_size / (hmc_float) time_total * (hmc_float) calls_total * 1e-3;
@@ -1044,7 +1057,7 @@ void Opencl_Module::print_profiling(std::string filename, const std::string& ker
 
 #ifdef _PROFILING_
 
-void print_profile_header(std::string filename, int number)
+static void print_profile_header(const std::string& filename, int number)
 {
 	//write to stream
 	fstream out;
@@ -1057,32 +1070,30 @@ void print_profile_header(std::string filename, int number)
 	return;
 }
 
-void Opencl_Module::print_profiling(std::string filename, int number)
+void Opencl_Module::print_profiling(const std::string& filename, const cl_kernel& kernel) const
+{
+	std::string kernel_name = get_kernel_name(kernel);
+	usetimer * const timer = this->get_timer(kernel_name);
+	::print_profiling(filename, kernel_name, timer->getTime(), timer->getNumMeas(), this->get_read_write_size(kernel_name), this->get_flop_size(kernel_name), meta::get_vol4d(get_parameters()));
+}
+
+void Opencl_Module::print_profiling(const std::string& filename, int number)
 {
 	logger.trace() << "Printing Profiling-information to file \"" << filename << "\"";
 	print_profile_header(filename, number);
-	std::string kernelName;
-	kernelName = "polyakov";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "polyakov_reduction";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "plaquette";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "rectangles";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "plaquette_reduction";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "stout_smear";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "convertGaugefieldToSOA";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "convertGaugefieldFromSOA";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+	print_profiling(filename, polyakov);
+	print_profiling(filename, polyakov_reduction);
+	print_profiling(filename, plaquette);
+	print_profiling(filename, rectangles);
+	print_profiling(filename, plaquette_reduction);
+	print_profiling(filename, stout_smear);
+	print_profiling(filename, convertGaugefieldToSOA);
+	print_profiling(filename, convertGaugefieldFromSOA);
 }
 #endif
 
 
-int Opencl_Module::get_numthreads()
+int Opencl_Module::get_numthreads() const noexcept
 {
 	return numthreads;
 }
