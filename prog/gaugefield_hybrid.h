@@ -189,11 +189,6 @@ public:
 	 */
 	hardware::Device* get_device_for_task(int ntask);
 	/**
-	 * Return max_compute units for task ntask
-	 * @param[in] ntask number of target task
-	 */
-	int get_max_compute_units(int ntask);
-	/**
 	 * Returns device type for given task.
 	 * @param[in] ntask id of target task
 	 */
@@ -318,9 +313,6 @@ private:
 	//OpenCL:
 	cl_device_id* cl_devices;
 	hardware::Device** devices;
-
-
-	cl_uint* max_compute_units;
 };
 
 #endif /* _GAUGEFIELDHYBRIDH_ */

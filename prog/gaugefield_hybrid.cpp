@@ -137,7 +137,6 @@ for(auto device: system->get_devices()) {
 	int len = std::min( get_num_tasks(), get_num_devices() );
 	devices                 = new hardware::Device*[len];
 	cl_devices              = new cl_device_id[len];
-	max_compute_units       = new cl_uint [len];
 
 	for(int ntask = 0; ntask < len; ntask++) {
 		logger.info() << "\tInitialize device #" << ntask << ":";
@@ -197,11 +196,6 @@ for(auto device: system->get_devices()) {
 	clerr = clGetDeviceInfo(cl_devices[ndev], CL_DEVICE_VERSION, 512 * sizeof(char), info, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 	logger.debug() << "\t\t\tCL_DEVICE_VERSION: " << info;
-
-	// figure out the number of "cores"
-	clerr = clGetDeviceInfo(cl_devices[ndev], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units[ndev], NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);;
-	logger.debug() << "\t\t\tCL_DEVICE_MAX_COMPUTE_UNITS: " << max_compute_units[ndev];
 }
 
 
@@ -231,7 +225,6 @@ void Gaugefield_hybrid::delete_variables()
 
 	delete [] devices;
 	delete [] cl_devices;
-	delete [] max_compute_units;
 
 	delete [] devicetypes;
 
@@ -346,12 +339,6 @@ void Gaugefield_hybrid::set_num_tasks (int num)
 int Gaugefield_hybrid::get_num_tasks ()
 {
 	return num_tasks;
-}
-
-int Gaugefield_hybrid::get_max_compute_units(int ntask)
-{
-	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("rndarray index out of range", __FILE__, __LINE__);
-	return max_compute_units[device_id_for_task[ntask]];
 }
 
 const meta::Inputparameters & Gaugefield_hybrid::get_parameters ()
