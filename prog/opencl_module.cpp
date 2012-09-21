@@ -8,17 +8,12 @@
 
 using namespace std;
 
-void Opencl_Module::init(int maxcomp, string double_ext, unsigned int device_rank)
+void Opencl_Module::init()
 {
-	this->device_rank = device_rank;
-
 	// get device
 	cl_device_id device_id = device->get_id();
 
 	logger.debug() << "Device is " << device->get_name();
-
-	set_device_double_extension(double_ext);
-	set_max_compute_units(maxcomp);
 
 	cl_int clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ocl_context, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetCommandQueueInfo", __FILE__, __LINE__);
@@ -100,11 +95,13 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 
 	if(get_parameters().get_precision() == 64) {
 		*collect_options << " -D_USEDOUBLEPREC_";
-		if( device_double_extension.empty() ) {
-			logger.warn() << "Warning: Undefined extension for use of double.";
-		} else {
-			*collect_options << " -D_DEVICE_DOUBLE_EXTENSION_" << device_double_extension << "_";
-		}
+		// TODO renable support for older AMD GPUs
+		//if( device_double_extension.empty() ) {
+		//  logger.warn() << "Warning: Undefined extension for use of double.";
+		//} else {
+		//  *collect_options << " -D_DEVICE_DOUBLE_EXTENSION_" << device_double_extension << "_";
+		//}
+		*collect_options << " -D_DEVICE_DOUBLE_EXTENSION_KHR_";
 	}
 	if( device->get_device_type() == CL_DEVICE_TYPE_GPU )
 		*collect_options << " -D_USEGPU_";
@@ -844,9 +841,9 @@ void Opencl_Module::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t *
 
 	size_t global_work_size;
 	if( device->get_device_type() == CL_DEVICE_TYPE_GPU )
-		global_work_size = 4 * Opencl_Module::get_numthreads() * max_compute_units; /// @todo autotune
+		global_work_size = 4 * Opencl_Module::get_numthreads() * device->get_num_compute_units(); /// @todo autotune
 	else
-		global_work_size = max_compute_units;
+		global_work_size = device->get_num_compute_units();
 
 	const cl_uint num_groups_tmp = (global_work_size + local_work_size - 1) / local_work_size;
 	global_work_size = local_work_size * num_groups_tmp;
@@ -1088,32 +1085,6 @@ void Opencl_Module::print_profiling(std::string filename, int number)
 int Opencl_Module::get_numthreads()
 {
 	return numthreads;
-}
-
-void Opencl_Module::set_max_compute_units(int maxcomp)
-{
-	max_compute_units = maxcomp;
-	return;
-}
-
-int Opencl_Module::get_max_compute_units()
-{
-	return max_compute_units;
-}
-
-void Opencl_Module::set_device_double_extension(string double_ext)
-{
-	if(double_ext.empty()) {
-		device_double_extension.clear();
-	} else {
-		device_double_extension.assign(double_ext);
-	}
-	return;
-}
-
-string Opencl_Module::get_device_double_extension()
-{
-	return device_double_extension;
 }
 
 void Opencl_Module::print_copy_times(uint64_t totaltime)

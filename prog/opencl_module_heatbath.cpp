@@ -155,7 +155,7 @@ void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, size_t * ls,
 		if( get_device()->get_device_type() == CL_DEVICE_TYPE_GPU ) {
 			*gs = std::min(meta::get_volspace(parameters) * parameters.get_ntime() / 2, (size_t) this->Opencl_Module_Ran::get_num_rndstates());
 		} else {
-			*gs = std::min(get_max_compute_units(), this->Opencl_Module_Ran::get_num_rndstates());
+			*gs = std::min(get_device()->get_num_compute_units(), static_cast<size_t>(this->Opencl_Module_Ran::get_num_rndstates()));
 		}
 		*ls = Opencl_Module::get_numthreads();
 		*num_groups = *gs / *ls;

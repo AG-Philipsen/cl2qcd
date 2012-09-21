@@ -57,7 +57,7 @@ private:
 
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module(params, device) {
-		Opencl_Module::init(maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+		Opencl_Module::init(); /* init in body for proper this-pointer */
 	};
 	virtual void fill_kernels();
 	virtual void clear_kernels();

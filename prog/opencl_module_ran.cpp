@@ -43,9 +43,9 @@ void Opencl_Module_Ran::fill_buffers()
 	// make num of random states equal to default num of global threads
 	// TODO make this somewhat more automatic (avoid code duplication)
 	if(get_device()->get_device_type() == CL_DEVICE_TYPE_GPU)
-		num_rndstates = 4 * Opencl_Module::get_numthreads() * get_max_compute_units();
+		num_rndstates = 4 * Opencl_Module::get_numthreads() * get_device()->get_num_compute_units();
 	else
-		num_rndstates = get_max_compute_units();
+		num_rndstates = get_device()->get_num_compute_units();
 
 	logger.trace() << "Create buffer for random numbers...";
 	clmem_rndarray = create_rw_buffer(7 * num_rndstates * sizeof(cl_float4));
@@ -68,7 +68,8 @@ void Opencl_Module_Ran::fill_kernels()
 	size_t ls, gs;
 	cl_uint num_groups;
 	this->get_work_sizes(init_kernel, &ls, &gs, &num_groups);
-	cl_uint seed = get_parameters().get_host_seed() + 1 + device_rank; // +1 ensures that seed is not equal even if host and device seed are both 0
+	// FIXME reenable device rank
+	cl_uint seed = get_parameters().get_host_seed() + 1;// + device_rank; // +1 ensures that seed is not equal even if host and device seed are both 0
 	if(seed > (10e9 / gs)) { // see ranluxcl source as to why
 		/// @todo upgrade to newer ranluxcl to avoid this restcition
 		throw Invalid_Parameters("Host seed is too large!", "<< 10e9", get_parameters().get_host_seed());

@@ -20,8 +20,8 @@ class Device : public Opencl_Module {
 
 	cl_kernel testKernel;
 public:
-	Device(const meta::Inputparameters& params, hardware::Device * device, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module(params, device) {
-		Opencl_Module::init(maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
+		Opencl_Module::init(); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0), get_max_compute_units(0), get_double_ext(0), 0);
+	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
 
 	fill_buffers();
 }
@@ -167,7 +167,7 @@ hmc_float Dummyfield::runTestKernel()
 		gs = meta::get_vol4d(get_parameters());
 		ls = 64;
 	} else {
-		gs = opencl_modules[0]->get_max_compute_units();
+		gs = get_device_for_task(0)->get_num_compute_units();
 		ls = 1;
 	}
 	Device * device = static_cast<Device*>(opencl_modules[0]);

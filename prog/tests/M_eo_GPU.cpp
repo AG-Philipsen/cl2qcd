@@ -15,8 +15,8 @@ class Device : public Opencl_Module_Fermions {
 	cl_kernel testKernel;
 
 public:
-	Device(const meta::Inputparameters& params, hardware::Device * device, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Fermions(params, device) {
-		Opencl_Module_Fermions::init(maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module_Fermions(params, device) {
+		Opencl_Module_Fermions::init(); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE( DSLASH_EOPREC )
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0), get_max_compute_units(0), get_double_ext(0), 0);
+	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
 
 	fill_buffers();
 }
@@ -280,7 +280,7 @@ void Dummyfield::runTestKernel()
 		gs = meta::get_eoprec_spinorfieldsize(get_parameters());
 		ls = 128;
 	} else if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = opencl_modules[0]->get_max_compute_units();
+		gs = get_device_for_task(0)->get_num_compute_units();
 		ls = 1;
 	}
 	logger.info() << "test kernel with global_work_size: " << gs << " and local_work_size: " << ls;

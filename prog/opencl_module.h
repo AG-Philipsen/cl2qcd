@@ -55,14 +55,9 @@ public:
 	/**
 	 * Initialize everything. First method to be called.
 	 *
-	 * @param[in] params instance of inputparameters
-	 * @param[in] maxcomp maximum_compute_units for device
-	 * @param[in] double_ext OpenCL double extension for device (AMD or KHR)
-	 * @param[in] device_rank Unique (to the program) identifier for this device
-	 *
 	 * @deprecated To be replaced by a proper constructor
 	 */
-	void init(int maxcomp, std::string double_ext, unsigned int device_rank);
+	void init();
 
 	// set and get methods
 	/**
@@ -90,26 +85,6 @@ public:
 	 * @return platform
 	 */
 	cl_platform_id get_platform();
-	/**
-	 * Set device_double_extension
-	 * @param double_ext "AMD" or "KHR"
-	 */
-	void set_device_double_extension(std::string double_ext);
-	/**
-	 * Get the device_double_extension
-	 * @return double_extension
-	 */
-	std::string get_device_double_extension();
-	/**
-	 * Get the maximum_compute_units
-	 * @return max_compute_units
-	 */
-	int get_max_compute_units();
-	/**
-	 * Set the maximum_compute_units
-	 * @return max_compute_units
-	 */
-	void set_max_compute_units(int maxcomp);
 
 	// methods which actually calculate something
 	/**
@@ -476,11 +451,6 @@ protected:
 	 */
 	cl_ulong calculateStride(const cl_ulong elems, const cl_ulong baseTypeSize);
 
-	/**
-	 * An identifier for this device unique within the program.
-	 */
-	unsigned int device_rank;
-
 public:
 
 	/**
@@ -505,9 +475,6 @@ private:
 	 * To ensure proper initialization *ONLY* access via getGaugefieldBufferSize()!
 	 */
 	size_t gaugefield_bytes;
-
-	cl_uint max_compute_units;
-	std::string device_double_extension;
 
 	cl_mem gaugefield;
 

@@ -16,8 +16,8 @@ class Device : public Opencl_Module_Hmc {
 	cl_kernel testKernel;
 	meta::Counter counter1, counter2, counter3, counter4;
 public:
-	Device(const meta::Inputparameters& params, hardware::Device * device, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc(params, device, &counter1, &counter2, &counter3, &counter4) {
-		Opencl_Module_Hmc::init(maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module_Hmc(params, device, &counter1, &counter2, &counter3, &counter4) {
+		Opencl_Module_Hmc::init(); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE( F_FERMION )
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0), get_max_compute_units(0), get_double_ext(0), 0);
+	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
 
 	fill_buffers();
 }
@@ -502,7 +502,7 @@ void Dummyfield::runTestKernel(int evenodd)
 		gs = meta::get_eoprec_spinorfieldsize(get_parameters());
 		ls = 64;
 	} else if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = opencl_modules[0]->get_max_compute_units();
+		gs = get_device_for_task(0)->get_num_compute_units();
 		ls = 1;
 	}
 	//interprete Y = (in1, in2) X = (in3, in4)
