@@ -56,7 +56,7 @@ private:
 	template<typename T> void runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, cl_mem in, cl_mem out);
 
 public:
-	Device(const meta::Inputparameters& params, hardware::Device * device, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module(params, device) {
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
 		Opencl_Module::init(); /* init in body for proper this-pointer */
 	};
 	virtual void fill_kernels();
@@ -389,7 +389,7 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0), get_max_compute_units(0), get_double_ext(0), 0);
+	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
 
 	fill_buffers();
 }
