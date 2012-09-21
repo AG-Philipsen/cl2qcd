@@ -4,3 +4,5 @@ use_evenodd=false
 thermsteps=13
 PGT=true
 test_ref_value=42.
+ThetaS = 3.
+ThetaT = 1.5

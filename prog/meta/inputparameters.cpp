@@ -621,4 +621,6 @@ static void add_option_aliases(meta::ConfigFileNormalizer * const normalizer)
 	normalizer->add_alias("puregauge", "use_gauge_only");
 	normalizer->add_alias("PGT", "use_gauge_only");
 	normalizer->add_alias("test_ref_value", "test_ref_val");
+	normalizer->add_alias("ThetaT", "theta_fermion_temporal");
+	normalizer->add_alias("ThetaS", "theta_fermion_spatial");
 }
