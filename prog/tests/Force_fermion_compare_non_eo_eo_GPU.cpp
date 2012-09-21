@@ -36,8 +36,8 @@ const std::string SOURCEFILE = std::string(SOURCEDIR)
 #else
                                + "/tests/f_fermion_eo_input_1_single";
 #endif
-const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
-const meta::Inputparameters INPUT(2, PARAMS);
+const char * PARAMS[] = {"foo", "--use_gpu=false", SOURCEFILE.c_str()};
+const meta::Inputparameters INPUT(3, PARAMS);
 
 class Dummyfield : public Gaugefield_hybrid {
 
