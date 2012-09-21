@@ -137,7 +137,6 @@ for(auto device: system->get_devices()) {
 	int len = std::min( get_num_tasks(), get_num_devices() );
 	devices                 = new hardware::Device*[len];
 	cl_devices              = new cl_device_id[len];
-	device_double_extension = new std::string  [len];
 	max_compute_units       = new cl_uint [len];
 
 	for(int ntask = 0; ntask < len; ntask++) {
@@ -198,12 +197,6 @@ for(auto device: system->get_devices()) {
 	clerr = clGetDeviceInfo(cl_devices[ndev], CL_DEVICE_VERSION, 512 * sizeof(char), info, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 	logger.debug() << "\t\t\tCL_DEVICE_VERSION: " << info;
-	clerr = clGetDeviceInfo(cl_devices[ndev], CL_DEVICE_EXTENSIONS, 512 * sizeof(char), info, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
-	logger.debug() << "\t\t\tCL_DEVICE_EXTENSIONS: " << info;
-
-	if( strstr( info, "cl_amd_fp64" ) != NULL ) device_double_extension[ndev] = "AMD";
-	if( strstr( info, "cl_khr_fp64" ) != NULL ) device_double_extension[ndev] = "KHR";
 
 	// figure out the number of "cores"
 	clerr = clGetDeviceInfo(cl_devices[ndev], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units[ndev], NULL);
@@ -238,7 +231,6 @@ void Gaugefield_hybrid::delete_variables()
 
 	delete [] devices;
 	delete [] cl_devices;
-	delete [] device_double_extension;
 	delete [] max_compute_units;
 
 	delete [] devicetypes;
@@ -360,12 +352,6 @@ int Gaugefield_hybrid::get_max_compute_units(int ntask)
 {
 	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("rndarray index out of range", __FILE__, __LINE__);
 	return max_compute_units[device_id_for_task[ntask]];
-}
-
-std::string Gaugefield_hybrid::get_double_ext(int ntask)
-{
-	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("rndarray index out of range", __FILE__, __LINE__);
-	return device_double_extension[device_id_for_task[ntask]];
 }
 
 const meta::Inputparameters & Gaugefield_hybrid::get_parameters ()

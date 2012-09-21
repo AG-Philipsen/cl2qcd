@@ -194,11 +194,6 @@ public:
 	 */
 	int get_max_compute_units(int ntask);
 	/**
-	 * Return OpenCL double extension for device units for task ntask
-	 * @param[in] ntask number of target task
-	 */
-	std::string get_double_ext(int ntask);
-	/**
 	 * Returns device type for given task.
 	 * @param[in] ntask id of target task
 	 */
@@ -325,7 +320,6 @@ private:
 	hardware::Device** devices;
 
 
-	std::string* device_double_extension;
 	cl_uint* max_compute_units;
 };
 
