@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE( M_TM )
 	hmc_float cpu_back = cpu.get_squarenorm(0);
 	cpu.runTestKernel();
 	logger.info() << "|M phi|^2:";
-	hmc_float cpu_res;
+	hmc_float cpu_res = cpu.get_squarenorm(1);
 	cpu.print_gaugeobservables_from_task(0, 0);
 	BOOST_MESSAGE("Tested CPU");
 
@@ -80,8 +80,7 @@ BOOST_AUTO_TEST_CASE( M_TM )
 	hmc_float gpu_back = dummy.get_squarenorm(0);
 	dummy.runTestKernel();
 	logger.info() << "|M phi|^2:";
-	hmc_float gpu_res;
-	gpu_res = dummy.get_squarenorm(1);
+	hmc_float gpu_res = dummy.get_squarenorm(1);
 	BOOST_MESSAGE("Tested GPU");
 
 	logger.info() << "Compare CPU and GPU results";
