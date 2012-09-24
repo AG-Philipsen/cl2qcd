@@ -14,7 +14,6 @@ std::string const exec_name = "f_fermion_eo_test";
 
 class Device : public Opencl_Module_Hmc {
 
-	cl_kernel testKernel;
 	meta::Counter counter1, counter2, counter3, counter4;
 public:
 	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc(params, &counter1, &counter2, &counter3, &counter4) {
@@ -24,7 +23,6 @@ public:
 		finalize();
 	};
 
-	void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, int evenodd, hmc_float kappa);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -253,11 +251,8 @@ void Dummyfield::reset_outfield()
 void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-
 	cl_int err;
-
 	cl_context context = opencl_modules[0]->get_context();
-
 	int NUM_ELEMENTS_SF;
 	if(get_parameters().get_use_eo() == true) NUM_ELEMENTS_SF =  meta::get_eoprec_spinorfieldsize(get_parameters());
 	else NUM_ELEMENTS_SF =  get_spinorfieldsize(get_parameters());
@@ -333,15 +328,11 @@ void Dummyfield::fill_buffers()
 void Device::fill_kernels()
 {
 	Opencl_Module_Hmc::fill_kernels();
-
-	testKernel = createKernel("fermion_force_eo") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
-
 }
 
 void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-
 	clReleaseMemObject(in1);
 	clReleaseMemObject(in2);
 	clReleaseMemObject(in3);
@@ -358,32 +349,7 @@ void Dummyfield::clear_buffers()
 
 void Device::clear_kernels()
 {
-	clReleaseKernel(testKernel);
 	Opencl_Module_Hmc::clear_kernels();
-}
-
-void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls, int evenodd, hmc_float kappa)
-{
-	cl_int err;
-	int eo;
-	if(evenodd == ODD)
-		eo = ODD;
-	else
-		eo = EVEN;
-	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &gf);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &in1);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &in2);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 3, sizeof(cl_mem), &out);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 4, sizeof(int), &eo);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 5, sizeof(hmc_float), &kappa);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-
-	enqueueKernel(testKernel, gs, ls);
 }
 
 hmc_float Dummyfield::get_squarenorm(int which)
@@ -403,24 +369,16 @@ hmc_float Dummyfield::get_squarenorm(int which)
 
 void Dummyfield::runTestKernel(int evenodd)
 {
-	int gs = 0, ls = 0;
-	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = meta::get_eoprec_spinorfieldsize(get_parameters());
-		ls = 64;
-	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = opencl_modules[0]->get_max_compute_units();
-		ls = 1;
-	}
-	//interprete Y = (in1, in2) X = (in3, in4)
-	//Y_odd = in2, Y_even = in1, X_odd = in4, X_even = in3
-	Device * device = static_cast<Device*>(opencl_modules[0]);
-	if(evenodd == ODD) {
-		//this is then force(Y_odd, X_even) == force(in2, in3)
-		device->runTestKernel(out, in2, in3, device->get_gaugefield(), gs, ls, evenodd, get_parameters().get_kappa());
-	} else {
-		//this is then force(Y_even, X_odd) == force(in1, in4)
-		device->runTestKernel(out, in1, in4, device->get_gaugefield(), gs, ls, evenodd, get_parameters().get_kappa());
-	}
+  //interprete Y = (in1, in2) X = (in3, in4)
+  //Y_odd = in2, Y_even = in1, X_odd = in4, X_even = in3
+  Device * device = static_cast<Device*>(opencl_modules[0]);
+  if(evenodd == ODD) {
+    //this is then force(Y_odd, X_even) == force(in2, in3)
+    device->fermion_force_eo_device(in2, in3, device->get_gaugefield(), out, evenodd, get_parameters().get_kappa() );
+  } else {
+    //this is then force(Y_even, X_odd) == force(in1, in4)
+    device->fermion_force_eo_device(in1, in4, device->get_gaugefield(), out, evenodd, get_parameters().get_kappa() );
+  }
 }
 
 BOOST_AUTO_TEST_CASE( F_FERMION_EO )
