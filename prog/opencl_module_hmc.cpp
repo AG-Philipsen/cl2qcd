@@ -2217,6 +2217,37 @@ void Opencl_Module_Hmc::fermion_force_device(cl_mem Y, cl_mem X, hmc_float kappa
 
 }
 
+void Opencl_Module_Hmc::fermion_force_device(cl_mem Y, cl_mem X, cl_mem gf, cl_mem out, hmc_float kappa)
+{
+	//get kappa
+	hmc_float kappa_tmp;
+	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
+	else kappa_tmp = kappa;
+
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(fermion_force, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	//fermion_force(field, Y, X, out);
+	int clerr = clSetKernelArg(fermion_force, 0, sizeof(cl_mem), &gf);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(fermion_force, 1, sizeof(cl_mem), &Y);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(fermion_force, 2, sizeof(cl_mem), &X);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(fermion_force, 3, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(fermion_force, 4, sizeof(hmc_float), &kappa_tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel( fermion_force , gs2, ls2);
+}
+
 //the argument kappa is set to ARG_DEF as default
 void Opencl_Module_Hmc::fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd, hmc_float kappa)
 {
