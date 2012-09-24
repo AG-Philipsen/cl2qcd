@@ -8,6 +8,7 @@ fermact=TWISTEDMASS
 solver=BICGSTAB
 startcondition=cold
 
+use_rec12=true
 
 #this specifies the acceptance precision
 solver_prec=1e-8

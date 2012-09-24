@@ -212,7 +212,7 @@ void Dummyfield::runTestKernel()
 BOOST_AUTO_TEST_CASE( DSLASH_EO )
 {
   logger.info() << "Test kernel";
-  logger.info() << "\tf_gauge";
+  logger.info() << "\tdslash_eo";
   logger.info() << "against reference value";
 
   //get input file that has been passed as an argument 
@@ -231,6 +231,7 @@ BOOST_AUTO_TEST_CASE( DSLASH_EO )
   logger.info() << "Run kernel";
   logger.info() << "|phi|^2:";
   hmc_float cpu_back = cpu.get_squarenorm(0);
+  logger.info() << cpu_back;
   cpu.runTestKernel();
   logger.info() << "result:";
   hmc_float cpu_res;
@@ -247,5 +248,4 @@ BOOST_AUTO_TEST_CASE( DSLASH_EO )
   BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
   logger.info() << "Done";
   BOOST_MESSAGE("Test done");
-
 }

@@ -142,7 +142,14 @@ target_link_libraries(dslash_eo
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(Dslash_eo_CPU dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_1 --use_gpu=false)
+add_test(Dslash_eo_CPU_1 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_1 --use_gpu=false)
+add_test(Dslash_eo_CPU_REC12_1 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_rec12_1 --use_gpu=false)
+add_test(Dslash_eo_GPU_1 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_1 --use_gpu=true)
+add_test(Dslash_eo_GPU_REC12_1 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_rec12_1 --use_gpu=true)
+add_test(Dslash_eo_CPU_2 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_2 --use_gpu=false)
+add_test(Dslash_eo_CPU_REC12_2 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_rec12_2 --use_gpu=false)
+add_test(Dslash_eo_GPU_2 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_2 --use_gpu=true)
+add_test(Dslash_eo_GPU_REC12_2 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_rec12_2 --use_gpu=true)
 
 add_executable(m_compare_noneo_eo M_compare_noneo_eo.cpp)
 target_link_libraries(m_compare_noneo_eo

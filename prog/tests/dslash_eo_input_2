@@ -6,10 +6,10 @@ NT=4
 fermact=TWISTEDMASS
 #this set the init-spinorfield to random values
 solver=BICGSTAB
-startcondition=cold
-
+startcondition=continue
+sourcefile=conf.00200
 
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=812.78344761473613
+test_ref_val=248.33751716161072
