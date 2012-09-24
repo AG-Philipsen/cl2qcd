@@ -80,19 +80,19 @@ add_test(F_gauge_CPU_REC12 f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_rec
 add_test(F_gauge_GPU f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=true)
 add_test(F_gauge_GPU_REC12 f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_rec12 --use_gpu=true)
 
-add_executable(rectangles_test Rectangles_test.cpp)
-target_link_libraries(rectangles_test
+add_executable(rectangles Rectangles_test.cpp)
+target_link_libraries(rectangles
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(Rectangles_test rectangles_test)
+add_test(Rectangles_CPU rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=false)
 
-add_executable(rectangles_test_rec12 Rectangles_test.cpp)
-target_link_libraries(rectangles_test_rec12
+add_executable(f_gauge_tlsym F_gauge_tlsym_test.cpp)
+target_link_libraries(f_gauge_tlsym
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(Rectangles_test_rec12 rectangles_test_rec12)
+add_test(F_gauge_tlsym_CPU f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=false)
 
 add_executable(localQ local_Q_test.cpp)
 target_link_libraries(localQ
