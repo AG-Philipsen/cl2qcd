@@ -28,10 +28,6 @@ public:
 	void clear_kernels();
 };
 
-const std::string SOURCEFILE = std::string(SOURCEDIR) + "/tests/m_gpu_input_1";
-const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
-const meta::Inputparameters INPUT(2, PARAMS);
-
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
@@ -53,7 +49,6 @@ public:
 	virtual void finalize_opencl();
 
 	hmc_float get_squarenorm(int which);
-	void verify(hmc_float, hmc_float);
 	void runTestKernel();
 
 private:
@@ -219,23 +214,8 @@ hmc_float Dummyfield::get_squarenorm(int which)
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	logger.info() << result;
 
 	return result;
-}
-
-void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
-{
-	//this is too much required, since rounding errors can occur
-	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
-	//instead, test if the two number agree within some percent
-	hmc_float dev = (cpu - gpu) / cpu / 100.;
-	if(dev < 1e-10)
-		logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
-	else {
-		logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
-		BOOST_REQUIRE_EQUAL(cpu, gpu);
-	}
 }
 
 void Dummyfield::runTestKernel()
@@ -291,36 +271,5 @@ BOOST_AUTO_TEST_CASE( M_TM )
   BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
   logger.info() << "Done";
   BOOST_MESSAGE("Test done");
-  /*
-	logger.info() << "Init CPU device";
-	//params.print_info_inverter("m_gpu");
-	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
-	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables_from_task(0, 0);
-	cpu.runTestKernel();
-	logger.info() << "|M phi|^2:";
-	hmc_float cpu_res;
-	cpu.print_gaugeobservables_from_task(0, 0);
-	BOOST_MESSAGE("Tested CPU");
-
-	logger.info() << "Init GPU device";
-	//params.print_info_inverter("m_gpu");
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
-	logger.info() << "gaugeobservables: ";
-	dummy.print_gaugeobservables_from_task(0, 0);
-	logger.info() << "|phi|^2:";
-	hmc_float gpu_back = dummy.get_squarenorm(0);
-	dummy.runTestKernel();
-	logger.info() << "|M phi|^2:";
-	hmc_float gpu_res;
-	gpu_res = dummy.get_squarenorm(1);
-	BOOST_MESSAGE("Tested GPU");
-
-	logger.info() << "Compare CPU and GPU results";
-	logger.info() << "Input vectors:";
-	cpu.verify(cpu_back, gpu_back);
-	logger.info() << "Output vectors:";
-	cpu.verify(cpu_res, gpu_res);
-  */
 }
 
