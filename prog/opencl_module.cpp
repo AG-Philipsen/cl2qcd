@@ -1010,7 +1010,7 @@ void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
 	int clerr = clSetKernelArg(stout_smear, 0, sizeof(cl_mem), in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(stout_smear, 0, sizeof(cl_mem), out);
+	clerr = clSetKernelArg(stout_smear, 1, sizeof(cl_mem), out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	enqueueKernel(stout_smear , gs, ls);
