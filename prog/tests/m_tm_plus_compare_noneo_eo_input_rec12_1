@@ -1,0 +1,17 @@
+#input file 1 for f_gauge_test
+
+# set startcondition to cold or hot to start with different gaugefield
+startcondition=continue
+sourcefile=conf.00200
+
+kappa=0.15
+mu=4.
+
+use_rec12=true
+
+use_eo=true
+NS=4
+NT=4
+fermact=TWISTEDMASS
+#with BICGSTAB, this set the init-spinorfield to random values
+solver=BICGSTAB
