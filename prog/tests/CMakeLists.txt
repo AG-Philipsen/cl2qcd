@@ -86,6 +86,9 @@ target_link_libraries(rectangles
 	${Boost_LIBRARIES}
 )
 add_test(Rectangles_CPU rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=false)
+add_test(Rectangles_CPU_REC12 rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_rec12_1 --use_gpu=false)
+add_test(Rectangles_GPU rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=true)
+add_test(Rectangles_GPU_REC12 rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_rec12_1 --use_gpu=true)
 
 add_executable(f_gauge_tlsym F_gauge_tlsym_test.cpp)
 target_link_libraries(f_gauge_tlsym
