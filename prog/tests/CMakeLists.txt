@@ -127,6 +127,14 @@ target_link_libraries(stout_smear
 )
 add_test(Stout_smear_CPU stout_smear ${CMAKE_CURRENT_SOURCE_DIR}/stout_smear_input_1 --use_gpu=false)
 
+add_executable(f_update F_update_test.cpp)
+target_link_libraries(f_update
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(F_update_CPU f_update ${CMAKE_CURRENT_SOURCE_DIR}/f_update_input_1  --use_gpu=false)
+add_test(F_update_GPU f_update ${CMAKE_CURRENT_SOURCE_DIR}/f_update_input_1  --use_gpu=true)
+
 add_executable(m_tm_plus M_tm_plus_test.cpp)
 target_link_libraries(m_tm_plus
 	optimal
@@ -181,13 +189,6 @@ target_link_libraries(f_fermion_compare_non_eo_eo_gpu
 	${Boost_LIBRARIES}
 )
 add_test(F_fermion_compare_non_eo_eo_gpu f_fermion_compare_non_eo_eo_gpu)
-
-add_executable(f_update_gpu Force_update_GPU.cpp)
-target_link_libraries(f_update_gpu
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(F_update_gpu f_update_gpu)
 
 # ignore some tests
 configure_file(CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
