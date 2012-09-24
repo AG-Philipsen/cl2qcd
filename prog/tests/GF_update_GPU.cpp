@@ -23,19 +23,9 @@ public:
 		finalize();
 	};
 
-	void runTestKernel(cl_mem in, cl_mem gf, int gs, int ls);
 	void fill_kernels();
 	void clear_kernels();
 };
-
-const std::string SOURCEFILE = std::string(SOURCEDIR)
-#ifdef _USEDOUBLEPREC_
-                               + "/tests/f_gauge_input_1";
-#else
-                               + "/tests/f_gauge_input_1_single";
-#endif
-const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
-const meta::Inputparameters INPUT(2, PARAMS);
 
 class Dummyfield : public Gaugefield_hybrid {
 
@@ -57,7 +47,7 @@ public:
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
-	hmc_float get_squarenorm(int which);
+	hmc_float get_squarenorm();
 	void get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol);
 	void runTestKernel();
 
@@ -67,10 +57,7 @@ private:
 	cl_mem in, out;
 	cl_mem sqnorm;
 	hmc_float * gm_in;
-	Matrixsu3 * gf_in;
-
 };
-
 
 void Dummyfield::init_tasks()
 {
@@ -94,40 +81,28 @@ void fill_with_one(hmc_float * sf_in, int size)
 	return;
 }
 
-void fill_with_random(hmc_float * sf_in, int size, int switcher)
+void fill_with_random(hmc_float * sf_in, int size)
 {
-	if(switcher == 1) {
-		prng_init(123456);
-		for(int i = 0; i < size; ++i) {
-			sf_in[i] = prng_double();
-		}
-	} else if (switcher == 2) {
-		prng_init(789101);
-		for(int i = 0; i < size; ++i) {
-			sf_in[i] = prng_double();
-		}
-	}
-	return;
+  prng_init(123456);
+  for(int i = 0; i < size; ++i) {
+    sf_in[i] = prng_double();
+  }
+  return;
 }
-
 
 void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-
 	cl_int err;
-
 	cl_context context = opencl_modules[0]->get_context();
-
 	int NUM_ELEMENTS_AE = meta::get_vol4d(get_parameters()) * NDIM * meta::get_su3algebrasize();
-
 	gm_in = new hmc_float[NUM_ELEMENTS_AE];
 
 	//use the variable use_cg to switch between cold and random input sf
 	if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 		fill_with_one(gm_in, NUM_ELEMENTS_AE);
 	} else {
-		fill_with_random(gm_in, NUM_ELEMENTS_AE, 1);
+		fill_with_random(gm_in, NUM_ELEMENTS_AE);
 	}
 	BOOST_REQUIRE(gm_in);
 
@@ -146,14 +121,11 @@ void Device::fill_kernels()
 {
 	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
 	Opencl_Module_Hmc::fill_kernels();
-
-	testKernel = createKernel("md_update_gaugefield") << basic_fermion_code << "types_hmc.h" << "operations_gaugemomentum.cl" << "md_update_gaugefield.cl";
 }
 
 void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-
 	clReleaseMemObject(in);
 	clReleaseMemObject(sqnorm);
 
@@ -166,46 +138,22 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel(cl_mem in, cl_mem gf, int gs, int ls)
+hmc_float Dummyfield::get_squarenorm()
 {
-	cl_int err;
-	hmc_float eps = .12;
-	err = clSetKernelArg(testKernel, 0, sizeof(hmc_float), &eps);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &in );
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &gf);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-
-	enqueueKernel(testKernel, gs, ls);
-}
-
-hmc_float Dummyfield::get_squarenorm(int which)
-{
-	//which controlls if the in or out-vector is looked at
-	if(which == 0) static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(in, sqnorm);
+	static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(in, sqnorm);
 	// get stuff from device
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	logger.info() << result;
 	return result;
 }
 
 void Dummyfield::runTestKernel()
 {
-	int gs, ls;
-	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = meta::get_spinorfieldsize(get_parameters());
-		ls = 64;
-	} else {
-		gs = opencl_modules[0]->get_max_compute_units();
-		ls = 1;
-	}
-	Device * device = static_cast<Device*>(opencl_modules[0]);
-	device->runTestKernel(in, device->get_gaugefield(), gs, ls);
+  hmc_float eps = 0.12;
+  Device * device = static_cast<Device*>(opencl_modules[0]);
+  static_cast<Device*>(opencl_modules[0])->md_update_gaugefield_device( in, device->get_gaugefield(), eps);
 }
-
 
 void Dummyfield::get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol)
 {
@@ -229,14 +177,13 @@ BOOST_AUTO_TEST_CASE( GF_UPDATE )
   logger.info() << "Init device";
   const char* _params_cpu[] = {"foo", inputfile, gpu_opt};
   meta::Inputparameters params(3, _params_cpu);
-  // reset RNG
-  prng_init(13);
   Dummyfield cpu(params);
 
   logger.info() << "gaugeobservables: ";
   cpu.print_gaugeobservables_from_task(0, 0);
   logger.info() << "|in|^2:";
-  hmc_float cpu_back = cpu.get_squarenorm(0);
+  hmc_float cpu_back = cpu.get_squarenorm();
+  logger.info() << cpu_back;
   cpu.runTestKernel();
   logger.info() << "gaugeobservables: ";
   cpu.print_gaugeobservables_from_task(0, 0);
