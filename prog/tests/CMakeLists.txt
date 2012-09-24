@@ -151,7 +151,7 @@ add_test(Dslash_eo_CPU_REC12_2 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_i
 add_test(Dslash_eo_GPU_2 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_2 --use_gpu=true)
 add_test(Dslash_eo_GPU_REC12_2 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_rec12_2 --use_gpu=true)
 
-add_executable(m_tm_plus_compare_noneo_eo M_compare_noneo_eo.cpp)
+add_executable(m_tm_plus_compare_noneo_eo M_tm_plus_compare_noneo_eo.cpp)
 target_link_libraries(m_tm_plus_compare_noneo_eo
 	optimal
 	${Boost_LIBRARIES}
