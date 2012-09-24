@@ -105,7 +105,10 @@ target_link_libraries(localQ
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(LocalQ localQ)
+add_test(LocalQ_CPU localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=false)
+add_test(LocalQ_CPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_rec12_1 --use_gpu=false)
+add_test(LocalQ_GPU localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true)
+add_test(LocalQ_GPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_rec12_1 --use_gpu=true)
 
 add_executable(gf_update_gpu GF_update_GPU.cpp)
 target_link_libraries(gf_update_gpu
