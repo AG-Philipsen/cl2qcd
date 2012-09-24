@@ -1,4 +1,4 @@
-#input file 1 for M_GPU-test
+#input file 1 for dslash_eo-test
 
 use_eo=true
 NS=4
@@ -7,3 +7,8 @@ fermact=TWISTEDMASS
 #this set the init-spinorfield to random values
 solver=BICGSTAB
 startcondition=cold
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=812.78344761473613

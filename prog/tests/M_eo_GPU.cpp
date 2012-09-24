@@ -9,6 +9,7 @@
 
 extern std::string const version;
 std::string const version = "0.1";
+std::string const exec_name = "dslash_eo";
 
 class Device : public Opencl_Module_Fermions {
 
@@ -27,16 +28,22 @@ public:
 	void clear_kernels();
 };
 
-const std::string SOURCEFILE = std::string(SOURCEDIR) + "/tests/m_eo_gpu_input_1";
-const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
-const meta::Inputparameters INPUT(2, PARAMS);
-
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(INPUT) {
-		init(1, device_type);
-	};
+  Dummyfield(meta::Inputparameters inputfile) : Gaugefield_hybrid(inputfile) {
+    cl_device_type primary_device;
+    switch ( inputfile.get_use_gpu() ) {
+    case true :
+      primary_device = CL_DEVICE_TYPE_GPU;
+      break;
+    case false :
+      primary_device = CL_DEVICE_TYPE_CPU;
+      break;
+    }
+    init(1, primary_device);
+    meta::print_info_inverter(exec_name.c_str(), inputfile);
+  };
 
 	virtual void init_tasks();
 	virtual void finalize_opencl();
@@ -54,41 +61,6 @@ private:
 	spinor * sf_in;
 };
 
-
-BOOST_AUTO_TEST_CASE( DSLASH_EOPREC )
-{
-	logger.info() << "Init CPU device";
-	//params.print_info_inverter("m_gpu");
-	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
-	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables_from_task(0, 0);
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back = cpu.get_squarenorm(0);
-	cpu.runTestKernel();
-	logger.info() << "|M phi|^2:";
-	hmc_float cpu_res;
-	cpu_res = cpu.get_squarenorm(1);
-	BOOST_MESSAGE("Tested CPU");
-
-	logger.info() << "Init GPU device";
-	//params.print_info_inverter("m_gpu");
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
-	logger.info() << "gaugeobservables: ";
-	dummy.print_gaugeobservables_from_task(0, 0);
-	logger.info() << "|phi|^2:";
-	hmc_float gpu_back = dummy.get_squarenorm(0);
-	dummy.runTestKernel();
-	logger.info() << "|M phi|^2:";
-	hmc_float gpu_res;
-	gpu_res = dummy.get_squarenorm(1);
-	BOOST_MESSAGE("Tested GPU");
-
-	logger.info() << "Compare CPU and GPU results";
-	logger.info() << "Input vectors:";
-	cpu.verify(cpu_back, gpu_back);
-	logger.info() << "Output vectors:";
-	cpu.verify(cpu_res, gpu_res);
-}
 
 void Dummyfield::init_tasks()
 {
@@ -252,23 +224,8 @@ hmc_float Dummyfield::get_squarenorm(int which)
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	logger.info() << result;
 
 	return result;
-}
-
-void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
-{
-	//this is too much required, since rounding errors can occur
-	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
-	//instead, test if the two number agree within some percent
-	hmc_float dev = (cpu - gpu) / cpu / 100.;
-	if(dev < 1e-10)
-		logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
-	else {
-		logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
-		BOOST_REQUIRE_EQUAL(cpu, gpu);
-	}
 }
 
 void Dummyfield::runTestKernel()
@@ -286,3 +243,44 @@ void Dummyfield::runTestKernel()
 	device->runTestKernel(out, even_in, device->get_gaugefield(), gs, ls, get_parameters().get_kappa());
 }
 
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO )
+{
+  logger.info() << "Test kernel";
+  logger.info() << "\tf_gauge";
+  logger.info() << "against reference value";
+
+  //get input file that has been passed as an argument 
+  const char* inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+  logger.info() << "inputfile used: " << inputfile;
+  //get use_gpu = true/false that has been passed as an argument 
+  const char* gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+  logger.info() << "GPU usage: " << gpu_opt;
+
+  logger.info() << "Init device";
+  const char* _params_cpu[] = {"foo", inputfile, gpu_opt};
+  meta::Inputparameters params(3, _params_cpu);
+  Dummyfield cpu(params);
+  logger.info() << "gaugeobservables: ";
+  cpu.print_gaugeobservables_from_task(0, 0);
+  logger.info() << "Run kernel";
+  logger.info() << "|phi|^2:";
+  hmc_float cpu_back = cpu.get_squarenorm(0);
+  cpu.runTestKernel();
+  logger.info() << "result:";
+  hmc_float cpu_res;
+  cpu_res = cpu.get_squarenorm(1);
+  logger.info() << cpu_res;
+
+  logger.info() << "Choosing reference value and acceptance precision";
+  hmc_float ref_val = params.get_test_ref_value();
+  logger.info() << "reference value:\t" << ref_val;
+  hmc_float prec = params.get_solver_prec();  
+  logger.info() << "acceptance precision: " << prec;
+
+  logger.info() << "Compare result to reference value";
+  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+  logger.info() << "Done";
+  BOOST_MESSAGE("Test done");
+
+}
