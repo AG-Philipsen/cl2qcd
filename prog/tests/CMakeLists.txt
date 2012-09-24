@@ -125,7 +125,7 @@ target_link_libraries(stout_smear
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(Stout_smear stout_smear)
+add_test(Stout_smear_CPU stout_smear ${CMAKE_CURRENT_SOURCE_DIR}/stout_smear_input_1 --use_gpu=false)
 
 add_executable(m_gpu M_GPU.cpp)
 target_link_libraries(m_gpu
