@@ -9,7 +9,7 @@
 
 extern std::string const version;
 std::string const version = "0.1";
-std::string const exec_name = "f_tlsym";
+std::string const exec_name = "rectangles";
 
 class Device : public Opencl_Module_Hmc {
 	meta::Counter counter1, counter2, counter3, counter4;
@@ -62,17 +62,12 @@ public:
   virtual void init_tasks();
   virtual void finalize_opencl();
 
-  hmc_float get_squarenorm();
   hmc_float get_rect();
-  void runTestKernel();
   
 private:
   void fill_buffers();
   void clear_buffers();
-  cl_mem out;
-  cl_mem sqnorm;
   cl_mem rect_value;
-  hmc_float * sf_out;
 };
 
 void Dummyfield::init_tasks()
@@ -89,31 +84,11 @@ void Dummyfield::finalize_opencl()
 	Gaugefield_hybrid::finalize_opencl();
 }
 
-void fill_with_zero(hmc_float * sf_in, int size)
-{
-	for(int i = 0; i < size; ++i) {
-		sf_in[i] = 0.;
-	}
-	return;
-}
-
 void Dummyfield::fill_buffers()
 {
-	// don't invoke parent function as we don't require the original buffers
+  	// don't invoke parent function as we don't require the original buffers
 	cl_int err;
 	cl_context context = opencl_modules[0]->get_context();
-	int NUM_ELEMENTS_AE = meta::get_vol4d(get_parameters()) * NDIM * meta::get_su3algebrasize();
-	sf_out = new hmc_float[NUM_ELEMENTS_AE];
-	fill_with_zero(sf_out, NUM_ELEMENTS_AE);
-
-	Device * device = static_cast<Device*>(opencl_modules[0]);
-	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, device->get_gaugemomentum_buffer_size(), 0, &err);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(sf_out));
-
-	//create buffer for squarenorm on device
-	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
-	//create buffer for value of rectangles
 	rect_value = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 }
 
@@ -125,25 +100,12 @@ void Device::fill_kernels()
 void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-	clReleaseMemObject(out);
-	clReleaseMemObject(sqnorm);
 	clReleaseMemObject(rect_value);
-	delete[] sf_out;
 }
 
 void Device::clear_kernels()
 {
 	Opencl_Module::clear_kernels();
-}
-
-hmc_float Dummyfield::get_squarenorm()
-{
-	static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
-	// get stuff from device
-	hmc_float result;
-	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	return result;
 }
 
 hmc_float Dummyfield::get_rect()
@@ -154,20 +116,11 @@ hmc_float Dummyfield::get_rect()
   return rect_out;
 }
 
-void Dummyfield::runTestKernel()
+BOOST_AUTO_TEST_CASE( RECTANGLES )
 {
-  Device * device = static_cast<Device*>(opencl_modules[0]);
-  static_cast<Device*>(opencl_modules[0])->gauge_force_tlsym_device( device->get_gaugefield()  ,out);
-}
-
-BOOST_AUTO_TEST_CASE( RECTANGLES)
-{
-  logger.info() << "Test CPU and GPU version of kernel";
-  logger.info() << "\tf_tlsym";
-  logger.info() << "and";
+  logger.info() << "Test kernel";
   logger.info() << "\trectangles";
-  logger.info() << "against reference values";
-  logger.info() << "(this is done in one test right now because both kernels use similar functions...)";
+  logger.info() << "against reference value";
 
   //get input file that has been passed as an argument 
   const char* inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
@@ -185,26 +138,15 @@ BOOST_AUTO_TEST_CASE( RECTANGLES)
   logger.info() << "calc rectangles value:";
   hmc_float cpu_rect = cpu.get_rect();
   logger.info() << cpu_rect;
-  cpu.runTestKernel();
-  logger.info() << "|f_gauge|^2:";
-  hmc_float cpu_res;
-  cpu_res = cpu.get_squarenorm();
-  logger.info() << cpu_res;
 
-  logger.info() << "Choosing reference value";
-  //this is the value of the force measured in tmlqcd for the same config
-  hmc_float force_ref_value = 4080.6745694080;
-  hmc_float rect_ref_value = 1103.2398401620;
-  logger.info() << "reference value force:\t" << force_ref_value;
-  logger.info() << "reference value rect:\t" << rect_ref_value;
-
-  hmc_float prec = 1e-10;  
+  logger.info() << "Choosing reference value and acceptance precision";
+  hmc_float ref_val = params.get_test_ref_value();
+  logger.info() << "reference value:\t" << ref_val;
+  hmc_float prec = params.get_solver_prec();
   logger.info() << "acceptance precision: " << prec;
-  logger.info() << "Compare CPU result to reference value";
-  logger.info() << "rect:";
-  BOOST_REQUIRE_CLOSE(cpu_rect, rect_ref_value, prec);
-  logger.info() << "force:";
-  BOOST_REQUIRE_CLOSE(cpu_res, force_ref_value, prec);
+
+  logger.info() << "Compare result to reference value";
+  BOOST_REQUIRE_CLOSE(cpu_rect, ref_val, prec);
   logger.info() << "Done";
   BOOST_MESSAGE("Test done");
 }
