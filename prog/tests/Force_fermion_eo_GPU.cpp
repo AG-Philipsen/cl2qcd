@@ -5,11 +5,12 @@
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Fermionforce_eo
+#define BOOST_TEST_MODULE F_fermion_eo
 #include <boost/test/unit_test.hpp>
 
 extern std::string const version;
 std::string const version = "0.1";
+std::string const exec_name = "f_fermion_eo_test";
 
 class Device : public Opencl_Module_Hmc {
 
@@ -28,27 +29,27 @@ public:
 	void clear_kernels();
 };
 
-const std::string SOURCEFILE = std::string(SOURCEDIR)
-#ifdef _USEDOUBLEPREC_
-                               + "/tests/f_fermion_eo_input_1";
-#else
-                               + "/tests/f_fermion_eo_input_1_single";
-#endif
-const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
-const meta::Inputparameters INPUT(2, PARAMS);
-
 class Dummyfield : public Gaugefield_hybrid {
 
-public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(INPUT) {
-		init(1, device_type);
-	};
-
+public:	
+  Dummyfield(meta::Inputparameters inputfile) : Gaugefield_hybrid(inputfile) {
+    cl_device_type primary_device;
+    switch ( inputfile.get_use_gpu() ) {
+    case true :
+      primary_device = CL_DEVICE_TYPE_GPU;
+      break;
+    case false :
+      primary_device = CL_DEVICE_TYPE_CPU;
+      break;
+    }
+    init(1, primary_device);
+    meta::print_info_hmc(exec_name.c_str(), inputfile);
+  };
+  
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
 	hmc_float get_squarenorm(int which);
-	void verify(hmc_float, hmc_float);
 	void runTestKernel(int evenodd);
 	void reset_outfield();
 private:
@@ -61,84 +62,8 @@ private:
 	spinor * sf_in3;
 	spinor * sf_in4;
 	hmc_float * sf_out;
-	Matrixsu3 * gf_in;
-
 };
 
-BOOST_AUTO_TEST_CASE( F_FERMION )
-{
-	logger.info() << "Init CPU device";
-	//params.print_info_inverter("m_gpu");
-	// reset RNG
-	prng_init(13);
-	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
-	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables_from_task(0, 0);
-	logger.info() << "|phi_even_1|^2:";
-	hmc_float cpu_back = cpu.get_squarenorm(0);
-	logger.info() << "|phi_even_2|^2:";
-	hmc_float cpu_back2 = cpu.get_squarenorm(1);
-	logger.info() << "|phi_odd_1|^2:";
-	hmc_float cpu_back3 = cpu.get_squarenorm(2);
-	logger.info() << "|phi_odd_2|^2:";
-	hmc_float cpu_back4 = cpu.get_squarenorm(3);
-	cpu.runTestKernel(EVEN);
-	logger.info() << "|force (even)|^2:";
-	hmc_float cpu_res;
-	cpu_res = cpu.get_squarenorm(4);
-	cpu.reset_outfield();
-	cpu.runTestKernel(ODD);
-	logger.info() << "|force (odd)|^2:";
-	hmc_float cpu_res2;
-	cpu_res2 = cpu.get_squarenorm(4);
-	cpu.runTestKernel(EVEN);
-	logger.info() << "|force (even) + force (odd)|^2  (without setting the outvector to zero before):";
-	hmc_float cpu_res3;
-	cpu_res3 = cpu.get_squarenorm(4);
-	BOOST_MESSAGE("Tested CPU");
-
-	logger.info() << "Init GPU device";
-	//params.print_info_inverter("m_gpu");
-	// reset RNG
-	prng_init(13);
-	Dummyfield gpu(CL_DEVICE_TYPE_GPU);
-	logger.info() << "gaugeobservables: ";
-	gpu.print_gaugeobservables_from_task(0, 0);
-	logger.info() << "|phi_even_1|^2:";
-	hmc_float gpu_back = gpu.get_squarenorm(0);
-	logger.info() << "|phi_even_2|^2:";
-	hmc_float gpu_back2 = gpu.get_squarenorm(1);
-	logger.info() << "|phi_odd_1|^2:";
-	hmc_float gpu_back3 = gpu.get_squarenorm(2);
-	logger.info() << "|phi_odd_2|^2:";
-	hmc_float gpu_back4 = gpu.get_squarenorm(3);
-	gpu.runTestKernel(EVEN);
-	logger.info() << "|force (even)|^2:";
-	hmc_float gpu_res;
-	gpu_res = gpu.get_squarenorm(4);
-	gpu.reset_outfield();
-	gpu.runTestKernel(ODD);
-	logger.info() << "|force (odd)|^2:";
-	hmc_float gpu_res2;
-	gpu_res2 = gpu.get_squarenorm(4);
-	gpu.runTestKernel(EVEN);
-	logger.info() << "|force (even) + force (odd)|^2 (without setting the outvector to zero before):";
-	hmc_float gpu_res3;
-	gpu_res3 = gpu.get_squarenorm(4);
-	BOOST_MESSAGE("Tested GPU");
-
-	logger.info() << "Compare CPU and GPU results";
-	logger.info() << "Input vectors:";
-	cpu.verify(cpu_back, gpu_back);
-	cpu.verify(cpu_back2, gpu_back2);
-	cpu.verify(cpu_back3, gpu_back3);
-	cpu.verify(cpu_back4, gpu_back4);
-	logger.info() << "Output vectors:";
-	cpu.verify(cpu_res, gpu_res);
-	cpu.verify(cpu_res2, gpu_res2);
-	cpu.verify(cpu_res3, gpu_res3);
-
-}
 
 void Dummyfield::init_tasks()
 {
@@ -473,24 +398,7 @@ hmc_float Dummyfield::get_squarenorm(int which)
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	logger.info() << result;
 	return result;
-}
-
-void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
-{
-	//this is too much required, since rounding errors can occur
-	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
-	//instead, test if the two number agree within some percent
-	hmc_float dev = (cpu - gpu) / cpu / 100.;
-	if(abs(dev) < 1e-10) {
-		logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
-		logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
-	} else {
-		logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
-		logger.info() << "cpu: " << cpu << "\tgpu: " << gpu;
-		BOOST_REQUIRE_EQUAL(1, 0);
-	}
 }
 
 void Dummyfield::runTestKernel(int evenodd)
@@ -515,3 +423,61 @@ void Dummyfield::runTestKernel(int evenodd)
 	}
 }
 
+BOOST_AUTO_TEST_CASE( F_FERMION_EO )
+{
+  logger.info() << "Test kernel";
+  logger.info() << "\tf_fermion_eo";
+  logger.info() << "against reference value";
+
+  //get input file that has been passed as an argument 
+  const char* inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+  logger.info() << "inputfile used: " << inputfile;
+  //get use_gpu = true/false that has been passed as an argument 
+  const char* gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+  logger.info() << "GPU usage: " << gpu_opt;
+
+  logger.info() << "Init device";
+  const char* _params_cpu[] = {"foo", inputfile, gpu_opt};
+  meta::Inputparameters params(3, _params_cpu);
+  Dummyfield cpu(params);
+  logger.info() << "gaugeobservables: ";
+  cpu.print_gaugeobservables_from_task(0, 0);
+
+  //switch according to "use_pointsource"
+  hmc_float cpu_res;
+  if(params.get_use_pointsource()){
+    logger.info() << "|phi_even_1|^2:";
+    hmc_float cpu_back = cpu.get_squarenorm(0);
+    logger.info() << cpu_back;
+    logger.info() << "|phi_even_2|^2:";
+    hmc_float cpu_back2 = cpu.get_squarenorm(1);
+    logger.info() << cpu_back2;
+    cpu.runTestKernel(EVEN);
+    logger.info() << "|force (even)|^2:";
+    cpu_res = cpu.get_squarenorm(4);    
+    logger.info() << cpu_res;
+  } else {
+    logger.info() << "|phi_odd_1|^2:";
+    hmc_float cpu_back3 = cpu.get_squarenorm(2);
+    logger.info() << cpu_back3;
+    logger.info() << "|phi_odd_2|^2:";
+    hmc_float cpu_back4 = cpu.get_squarenorm(3);
+    logger.info() << cpu_back4;
+    logger.info() << "Run kernel";
+    cpu.runTestKernel(ODD);
+    logger.info() << "|force (odd)|^2:";
+    cpu_res = cpu.get_squarenorm(4);
+    logger.info() << cpu_res;
+  }
+
+  logger.info() << "Choosing reference value and acceptance precision";
+  hmc_float ref_val = params.get_test_ref_value();
+  logger.info() << "reference value:\t" << ref_val;
+  hmc_float prec = params.get_solver_prec();  
+  logger.info() << "acceptance precision: " << prec;
+
+  logger.info() << "Compare result to reference value";
+  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+  logger.info() << "Done";
+  BOOST_MESSAGE("Test done");
+}

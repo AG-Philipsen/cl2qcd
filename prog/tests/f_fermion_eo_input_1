@@ -13,3 +13,12 @@ NT=4
 fermact=TWISTEDMASS
 #with BICGSTAB, this set the init-spinorfield to random values
 solver=BICGSTAB
+
+#with pointsource one can switch between "EVEN" and "ODD" as parameter for the kernel
+# true = EVEN, false = ODD
+use_pointsource=true
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=1603.9090840301101
