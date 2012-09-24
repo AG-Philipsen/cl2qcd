@@ -60,27 +60,6 @@ target_link_libraries(gaugefield_observables
 )
 add_test(Gaugeobservables gaugefield_observables)
 
-add_executable(m_gpu M_GPU.cpp)
-target_link_libraries(m_gpu
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(M_gpu m_gpu)
-
-add_executable(m_eo_gpu M_eo_GPU.cpp)
-target_link_libraries(m_eo_gpu
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(M_eo_gpu m_eo_gpu)
-
-add_executable(m_compare_noneo_eo M_compare_noneo_eo.cpp)
-target_link_libraries(m_compare_noneo_eo
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(M_compare_noneo_eo m_compare_noneo_eo)
-
 add_executable(calc_staple Calc_staple_test.cpp)
 target_link_libraries(calc_staple
 	optimal
@@ -115,6 +94,48 @@ target_link_libraries(rectangles_test_rec12
 )
 add_test(Rectangles_test_rec12 rectangles_test_rec12)
 
+add_executable(localQ local_Q_test.cpp)
+target_link_libraries(localQ
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(LocalQ localQ)
+
+add_executable(gf_update_gpu GF_update_GPU.cpp)
+target_link_libraries(gf_update_gpu
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(Gf_update_gpu gf_update_gpu)
+
+add_executable(stout_smear Stout_Smear_test.cpp)
+target_link_libraries(stout_smear
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(Stout_smear stout_smear)
+
+add_executable(m_gpu M_GPU.cpp)
+target_link_libraries(m_gpu
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(M_gpu m_gpu)
+
+add_executable(m_eo_gpu M_eo_GPU.cpp)
+target_link_libraries(m_eo_gpu
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(M_eo_gpu m_eo_gpu)
+
+add_executable(m_compare_noneo_eo M_compare_noneo_eo.cpp)
+target_link_libraries(m_compare_noneo_eo
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(M_compare_noneo_eo m_compare_noneo_eo)
+
 add_executable(f_fermion_gpu Force_fermion_GPU.cpp)
 target_link_libraries(f_fermion_gpu
 	optimal
@@ -142,27 +163,6 @@ target_link_libraries(f_update_gpu
 	${Boost_LIBRARIES}
 )
 add_test(F_update_gpu f_update_gpu)
-
-add_executable(gf_update_gpu GF_update_GPU.cpp)
-target_link_libraries(gf_update_gpu
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Gf_update_gpu gf_update_gpu)
-
-add_executable(stout_smear Stout_Smear_test.cpp)
-target_link_libraries(stout_smear
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Stout_smear stout_smear)
-
-add_executable(localQ local_Q_test.cpp)
-target_link_libraries(localQ
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(LocalQ localQ)
 
 # ignore some tests
 configure_file(CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
