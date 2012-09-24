@@ -169,7 +169,7 @@ add_test(M_tm_plus_compare_noneo_eo_CPU_REC12 m_tm_plus_compare_noneo_eo ${CMAKE
 add_test(M_tm_plus_compare_noneo_eo_GPU m_tm_plus_compare_noneo_eo ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_compare_noneo_eo_input_1 --use_gpu=true)
 add_test(M_tm_plus_compare_noneo_eo_GPU_REC12 m_tm_plus_compare_noneo_eo ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_compare_noneo_eo_input_rec12_1 --use_gpu=true)
 
-add_executable(f_fermion Force_fermion_GPU.cpp)
+add_executable(f_fermion F_fermion_test.cpp)
 target_link_libraries(f_fermion
 	optimal
 	${Boost_LIBRARIES}
