@@ -193,12 +193,12 @@ add_test(F_fermion_eo_GPU_2 f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_e
 add_test(F_fermion_eo_GPU_REC12_1 f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_rec12_1 --use_gpu=true)
 add_test(F_fermion_eo_GPU_REC12_2 f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_rec12_2 --use_gpu=true)
 
-add_executable(f_fermion_compare_non_eo_eo_gpu Force_fermion_compare_non_eo_eo_GPU.cpp)
-target_link_libraries(f_fermion_compare_non_eo_eo_gpu
+add_executable(f_fermion_compare_non_eo_eo F_fermion_compare_noneo_eo.cpp)
+target_link_libraries(f_fermion_compare_non_eo_eo
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(F_fermion_compare_non_eo_eo_gpu f_fermion_compare_non_eo_eo_gpu)
+add_test(F_fermion_compare_non_eo_eo_CPU f_fermion_compare_non_eo_eo  ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_compare_input_1 --use_gpu=false)
 
 # ignore some tests
 configure_file(CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
