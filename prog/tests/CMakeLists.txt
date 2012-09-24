@@ -110,12 +110,15 @@ add_test(LocalQ_CPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_rec12
 add_test(LocalQ_GPU localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true)
 add_test(LocalQ_GPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_rec12_1 --use_gpu=true)
 
-add_executable(gf_update_gpu GF_update_GPU.cpp)
-target_link_libraries(gf_update_gpu
+add_executable(gf_update GF_update_test.cpp)
+target_link_libraries(gf_update
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(Gf_update_gpu gf_update_gpu)
+add_test(Gf_update_CPU gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=false)
+add_test(Gf_update_CPU_REC12 gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_rec12_1 --use_gpu=false)
+add_test(Gf_update_GPU gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=true)
+add_test(Gf_update_GPU_REC12 gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_rec12_1 --use_gpu=true)
 
 add_executable(stout_smear Stout_Smear_test.cpp)
 target_link_libraries(stout_smear
