@@ -9,12 +9,7 @@
 
 extern std::string const version;
 std::string const version = "0.1";
-
-#define CLX_CHECK_CLOSE(left, right, precision) \
-{ \
-  BOOST_CHECK_CLOSE(left.re, right.re, precision); \
-  BOOST_CHECK_CLOSE(left.im, right.im, precision); \
-}
+std::string const exec_name = "gf_update_test";
 
 class Device : public Opencl_Module_Hmc {
 
@@ -45,9 +40,19 @@ const meta::Inputparameters INPUT(2, PARAMS);
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(INPUT) {
-		init(1, device_type);
-	};
+  Dummyfield(meta::Inputparameters inputfile) : Gaugefield_hybrid(inputfile) {
+    cl_device_type primary_device;
+    switch ( inputfile.get_use_gpu() ) {
+    case true :
+      primary_device = CL_DEVICE_TYPE_GPU;
+      break;
+    case false :
+      primary_device = CL_DEVICE_TYPE_CPU;
+      break;
+    }
+    init(1, primary_device);
+    meta::print_info_hmc(exec_name.c_str(), inputfile);
+  };
 
 	virtual void init_tasks();
 	virtual void finalize_opencl();
@@ -66,64 +71,6 @@ private:
 
 };
 
-BOOST_AUTO_TEST_CASE( F_UPDATE )
-{
-	logger.info() << "Init CPU device";
-	//params.print_info_inverter("m_gpu");
-	// reset RNG
-	prng_init(13);
-	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
-	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables_from_task(0, 0);
-	logger.info() << "|in|^2:";
-	hmc_float cpu_back = cpu.get_squarenorm(0);
-	cpu.runTestKernel();
-	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables_from_task(0, 0);
-
-	hmc_float plaq_cpu, tplaq_cpu, splaq_cpu;
-	hmc_complex pol_cpu;
-	cpu.get_gaugeobservables_from_task(0, &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
-
-	//u_res = cpu.get_squarenorm(1);
-	BOOST_MESSAGE("Tested CPU");
-
-	logger.info() << "Init GPU device";
-	//params.print_info_inverter("m_gpu");
-	// reset RNG
-	prng_init(13);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
-	logger.info() << "gaugeobservables: ";
-	dummy.print_gaugeobservables_from_task(0, 0);
-	logger.info() << "|in|^2:";
-	hmc_float gpu_back = dummy.get_squarenorm(0);
-	dummy.runTestKernel();
-	logger.info() << "gaugeobservables: ";
-	dummy.print_gaugeobservables_from_task(0, 0);
-
-	hmc_float plaq_gpu, tplaq_gpu, splaq_gpu;
-	hmc_complex pol_gpu;
-	dummy.get_gaugeobservables_from_task(0, &plaq_gpu, &tplaq_gpu, &splaq_gpu, &pol_gpu);
-
-	//c_float gpu_res;
-	//u_res = dummy.get_squarenorm(1);
-	BOOST_MESSAGE("Tested GPU");
-	/*
-	logger.info() << "Compare CPU and GPU results";
-	logger.info() << "Input vectors:";
-	cpu.verify(cpu_back, gpu_back);
-	cpu.verify(cpu_back2, gpu_back2);
-	logger.info() << "Output vectors:";
-	cpu.verify(cpu_res, gpu_res);
-	*/
-	BOOST_MESSAGE(cpu_back << ' ' << gpu_back);
-	BOOST_MESSAGE(plaq_cpu << ' ' << plaq_gpu);
-	BOOST_CHECK_CLOSE(cpu_back, gpu_back, 1e-8);
-	BOOST_CHECK_CLOSE(plaq_cpu, plaq_gpu, 1e-8);
-	BOOST_CHECK_CLOSE(tplaq_cpu, tplaq_gpu, 1e-8);
-	BOOST_CHECK_CLOSE(splaq_cpu, splaq_gpu, 1e-8);
-	CLX_CHECK_CLOSE(pol_cpu, pol_gpu, 1e-8);
-}
 
 void Dummyfield::init_tasks()
 {
@@ -266,3 +213,47 @@ void Dummyfield::get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc
 	opencl_modules[ntask]->gaugeobservables(plaq, tplaq, splaq, pol);
 }
 
+BOOST_AUTO_TEST_CASE( GF_UPDATE )
+{
+  logger.info() << "Test kernel";
+  logger.info() << "\tmd_update_gaugefield";
+  logger.info() << "against reference value";
+
+  //get input file that has been passed as an argument 
+  const char* inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+  logger.info() << "inputfile used: " << inputfile;
+  //get use_gpu = true/false that has been passed as an argument 
+  const char* gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+  logger.info() << "GPU usage: " << gpu_opt;
+
+  logger.info() << "Init device";
+  const char* _params_cpu[] = {"foo", inputfile, gpu_opt};
+  meta::Inputparameters params(3, _params_cpu);
+  // reset RNG
+  prng_init(13);
+  Dummyfield cpu(params);
+
+  logger.info() << "gaugeobservables: ";
+  cpu.print_gaugeobservables_from_task(0, 0);
+  logger.info() << "|in|^2:";
+  hmc_float cpu_back = cpu.get_squarenorm(0);
+  cpu.runTestKernel();
+  logger.info() << "gaugeobservables: ";
+  cpu.print_gaugeobservables_from_task(0, 0);
+  
+  hmc_float plaq_cpu, tplaq_cpu, splaq_cpu;
+  hmc_complex pol_cpu;
+  cpu.get_gaugeobservables_from_task(0, &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
+  BOOST_MESSAGE("Tested CPU");
+  
+  logger.info() << "Choosing reference value and acceptance precision";
+  hmc_float ref_val = params.get_test_ref_value();
+  logger.info() << "reference value:\t" << ref_val;
+  hmc_float prec = params.get_solver_prec();  
+  logger.info() << "acceptance precision: " << prec;
+
+  logger.info() << "Compare result to reference value";
+  BOOST_REQUIRE_CLOSE(plaq_cpu, ref_val, prec);
+  logger.info() << "Done";
+  BOOST_MESSAGE("Test done");
+}
