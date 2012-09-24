@@ -13,8 +13,6 @@ std::string const exec_name = "dslash_eo";
 
 class Device : public Opencl_Module_Fermions {
 
-	cl_kernel testKernel;
-
 public:
 	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Fermions(params) {
 		Opencl_Module_Fermions::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
@@ -23,7 +21,6 @@ public:
 		finalize();
 	};
 
-	void runTestKernel(cl_mem in, cl_mem out, cl_mem gf, int gs, int ls, hmc_float kappa);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -50,7 +47,6 @@ public:
 
 	hmc_float get_squarenorm(int which);
 	void runTestKernel();
-	void verify(hmc_float, hmc_float);
 
 private:
 	void fill_buffers();
@@ -173,15 +169,11 @@ void Dummyfield::fill_buffers()
 void Device::fill_kernels()
 {
 	Opencl_Module_Fermions::fill_kernels();
-
-	//to this end, one has to set the needed files by hand
-	testKernel = createKernel("dslash_eo") << basic_fermion_code << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 }
 
 void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-
 	clReleaseMemObject(in);
 	clReleaseMemObject(odd_in);
 	clReleaseMemObject(even_in);
@@ -193,26 +185,7 @@ void Dummyfield::clear_buffers()
 
 void Device::clear_kernels()
 {
-	clReleaseKernel(testKernel);
 	Opencl_Module_Fermions::clear_kernels();
-}
-
-void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls, hmc_float kappa)
-{
-	cl_int err;
-	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &in);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &out);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &gf);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	int odd = 0;
-	err = clSetKernelArg(testKernel, 3, sizeof(int), &odd);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 4, sizeof(hmc_float), &kappa);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-
-	enqueueKernel(testKernel, gs, ls);
 }
 
 hmc_float Dummyfield::get_squarenorm(int which)
@@ -230,17 +203,9 @@ hmc_float Dummyfield::get_squarenorm(int which)
 
 void Dummyfield::runTestKernel()
 {
-	int gs, ls;
-	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = meta::get_eoprec_spinorfieldsize(get_parameters());
-		ls = 128;
-	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = opencl_modules[0]->get_max_compute_units();
-		ls = 1;
-	}
-	logger.info() << "test kernel with global_work_size: " << gs << " and local_work_size: " << ls;
-	Device * device = static_cast<Device*>(opencl_modules[0]);
-	device->runTestKernel(out, even_in, device->get_gaugefield(), gs, ls, get_parameters().get_kappa());
+  int odd = 0;
+  Device * device = static_cast<Device*>(opencl_modules[0]);
+  static_cast<Device*>(opencl_modules[0])->dslash_eo_device( even_in, out, device->get_gaugefield(), odd, get_parameters().get_kappa() );
 }
 
 
