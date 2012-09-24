@@ -12,9 +12,6 @@ std::string const version = "0.1";
 std::string const exec_name = "m_tm_test";
 
 class Device : public Opencl_Module_Fermions {
-
-	cl_kernel testKernel;
-
 public:
 	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Fermions(params) {
 		Opencl_Module_Fermions::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
@@ -23,7 +20,6 @@ public:
 		finalize();
 	};
 
-	void runTestKernel(cl_mem in, cl_mem out, int gs, int ls, hmc_float kappa, hmc_float mubar);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -130,11 +126,8 @@ void fill_sf_with_random(spinor * sf_in, int size)
 void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-
 	cl_int err;
-
 	cl_context context = opencl_modules[0]->get_context();
-
 	size_t NUM_ELEMENTS_SF =  meta::get_spinorfieldsize(get_parameters());
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
@@ -164,15 +157,11 @@ void Dummyfield::fill_buffers()
 void Device::fill_kernels()
 {
 	Opencl_Module_Fermions::fill_kernels();
-
-	testKernel = createKernel("M_tm_plus") << basic_fermion_code  << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
-
 }
 
 void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-
 	clReleaseMemObject(in);
 	clReleaseMemObject(out);
 	clReleaseMemObject(sqnorm);
@@ -183,26 +172,7 @@ void Dummyfield::clear_buffers()
 
 void Device::clear_kernels()
 {
-	clReleaseKernel(testKernel);
 	Opencl_Module::clear_kernels();
-}
-
-void Device::runTestKernel(cl_mem out, cl_mem in, int gs, int ls, hmc_float kappa, hmc_float mubar)
-{
-	cl_mem gf = get_gaugefield();
-	cl_int err;
-	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &in);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &gf);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &out);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 3, sizeof(hmc_float), &kappa);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 4, sizeof(hmc_float), &mubar);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-
-	enqueueKernel(testKernel, gs, ls);
 }
 
 hmc_float Dummyfield::get_squarenorm(int which)
@@ -220,16 +190,8 @@ hmc_float Dummyfield::get_squarenorm(int which)
 
 void Dummyfield::runTestKernel()
 {
-	int gs = 0, ls = 0;
-	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = meta::get_spinorfieldsize(get_parameters());
-		ls = 64;
-	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = opencl_modules[0]->get_max_compute_units();
-		ls = 1;
-	}
-	Device * device = static_cast<Device*>(opencl_modules[0]);
-	device->runTestKernel(out, in, gs, ls, get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
+  Device * device = static_cast<Device*>(opencl_modules[0]);
+  static_cast<Device*>(opencl_modules[0])->M_tm_plus_device(in, out,  device->get_gaugefield(), get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
 }
 
 BOOST_AUTO_TEST_CASE( M_TM )
