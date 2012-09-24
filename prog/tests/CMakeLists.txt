@@ -132,7 +132,10 @@ target_link_libraries(m_tm_plus
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(M_tm_plus_CPU m_tm_plus  ${CMAKE_CURRENT_SOURCE_DIR}/m_gpu_input_1 --use_gpu=false)
+add_test(M_tm_plus_CPU m_tm_plus  ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_input_1 --use_gpu=false)
+add_test(M_tm_plus_CPU_REC12 m_tm_plus  ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_input_rec12_1 --use_gpu=false)
+add_test(M_tm_plus_GPU m_tm_plus  ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_input_1 --use_gpu=true)
+add_test(M_tm_plus_GPU_REC12 m_tm_plus  ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_input_rec12_1 --use_gpu=true)
 
 add_executable(m_eo_gpu M_eo_GPU.cpp)
 target_link_libraries(m_eo_gpu
