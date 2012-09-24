@@ -9,6 +9,7 @@
 
 extern std::string const version;
 std::string const version = "0.1";
+std::string const exec_name = "m_tm_test";
 
 class Device : public Opencl_Module_Fermions {
 
@@ -34,9 +35,19 @@ const meta::Inputparameters INPUT(2, PARAMS);
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(INPUT) {
-		init(1, device_type);
-	};
+  Dummyfield(meta::Inputparameters inputfile) : Gaugefield_hybrid(inputfile) {
+    cl_device_type primary_device;
+    switch ( inputfile.get_use_gpu() ) {
+    case true :
+      primary_device = CL_DEVICE_TYPE_GPU;
+      break;
+    case false :
+      primary_device = CL_DEVICE_TYPE_CPU;
+      break;
+    }
+    init(1, primary_device);
+    meta::print_info_hmc(exec_name.c_str(), inputfile);
+  };
 
 	virtual void init_tasks();
 	virtual void finalize_opencl();
@@ -53,71 +64,6 @@ private:
 	spinor * sf_in;
 	spinor * sf_out;
 };
-
-BOOST_AUTO_TEST_CASE( M_TM )
-{
-	logger.info() << "Init CPU device";
-	//params.print_info_inverter("m_gpu");
-	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
-	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables_from_task(0, 0);
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back = cpu.get_squarenorm(0);
-	cpu.runTestKernel();
-	logger.info() << "|M phi|^2:";
-	hmc_float cpu_res;
-	cpu.print_gaugeobservables_from_task(0, 0);
-	BOOST_MESSAGE("Tested CPU");
-
-	logger.info() << "Init GPU device";
-	//params.print_info_inverter("m_gpu");
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
-	logger.info() << "gaugeobservables: ";
-	dummy.print_gaugeobservables_from_task(0, 0);
-	logger.info() << "|phi|^2:";
-	hmc_float gpu_back = dummy.get_squarenorm(0);
-	dummy.runTestKernel();
-	logger.info() << "|M phi|^2:";
-	hmc_float gpu_res;
-	gpu_res = dummy.get_squarenorm(1);
-	BOOST_MESSAGE("Tested GPU");
-
-	logger.info() << "Compare CPU and GPU results";
-	logger.info() << "Input vectors:";
-	cpu.verify(cpu_back, gpu_back);
-	logger.info() << "Output vectors:";
-	cpu.verify(cpu_res, gpu_res);
-}
-
-// BOOST_AUTO_TEST_CASE( CPU )
-// {
-//  logger.info() << "Init dummy device";
-//  //params.print_info_inverter("m_gpu");
-//  Dummyfield dummy(CL_DEVICE_TYPE_CPU);
-//  logger.info() << "gaugeobservables: ";
-//  dummy.print_gaugeobservables_from_task(0, 0);
-//  logger.info() << "|phi|^2:";
-//  dummy.verify(0);
-//  dummy.runTestKernel();
-//  logger.info() << "|M phi|^2:";
-//  dummy.verify(1);
-//  BOOST_MESSAGE("Tested CPU");
-// }
-//
-// BOOST_AUTO_TEST_CASE( GPU )
-// {
-//  logger.info() << "Init dummy device";
-//  //params.print_info_inverter("m_gpu");
-//  Dummyfield dummy(CL_DEVICE_TYPE_GPU);
-//  logger.info() << "gaugeobservables: ";
-//  dummy.print_gaugeobservables_from_task(0, 0);
-//  logger.info() << "|phi|^2:";
-//  dummy.verify(0);
-//  dummy.runTestKernel();
-//  logger.info() << "|M phi|^2:";
-//  dummy.verify(1);
-//  BOOST_MESSAGE("Tested GPU");
-// }
 
 void Dummyfield::init_tasks()
 {
@@ -304,5 +250,77 @@ void Dummyfield::runTestKernel()
 	}
 	Device * device = static_cast<Device*>(opencl_modules[0]);
 	device->runTestKernel(out, in, gs, ls, get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
+}
+
+BOOST_AUTO_TEST_CASE( M_TM )
+{
+  logger.info() << "Test kernel";
+  logger.info() << "\tM_tm_plus";
+  logger.info() << "against reference value";
+
+  //get input file that has been passed as an argument 
+  const char* inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+  logger.info() << "inputfile used: " << inputfile;
+  //get use_gpu = true/false that has been passed as an argument 
+  const char* gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+  logger.info() << "GPU usage: " << gpu_opt;
+
+  logger.info() << "Init device";
+  const char* _params_cpu[] = {"foo", inputfile, gpu_opt};
+  meta::Inputparameters params(3, _params_cpu);
+  Dummyfield cpu(params);
+  logger.info() << "gaugeobservables: ";
+  cpu.print_gaugeobservables_from_task(0, 0);
+  logger.info() << "|phi|^2:";
+  hmc_float cpu_back = cpu.get_squarenorm(0);
+  logger.info() << cpu_back;
+  logger.info() << "Run kernel";
+  cpu.runTestKernel();
+  logger.info() << "result:";
+  hmc_float cpu_res;
+  cpu_res = cpu.get_squarenorm(1);
+  logger.info() << cpu_res;
+
+  logger.info() << "Choosing reference value and acceptance precision";
+  hmc_float ref_val = params.get_test_ref_value();
+  logger.info() << "reference value:\t" << ref_val;
+  hmc_float prec = params.get_solver_prec();  
+  logger.info() << "acceptance precision: " << prec;
+
+  logger.info() << "Compare result to reference value";
+  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+  logger.info() << "Done";
+  BOOST_MESSAGE("Test done");
+  /*
+	logger.info() << "Init CPU device";
+	//params.print_info_inverter("m_gpu");
+	Dummyfield cpu(CL_DEVICE_TYPE_CPU);
+	logger.info() << "gaugeobservables: ";
+	cpu.print_gaugeobservables_from_task(0, 0);
+	cpu.runTestKernel();
+	logger.info() << "|M phi|^2:";
+	hmc_float cpu_res;
+	cpu.print_gaugeobservables_from_task(0, 0);
+	BOOST_MESSAGE("Tested CPU");
+
+	logger.info() << "Init GPU device";
+	//params.print_info_inverter("m_gpu");
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	logger.info() << "gaugeobservables: ";
+	dummy.print_gaugeobservables_from_task(0, 0);
+	logger.info() << "|phi|^2:";
+	hmc_float gpu_back = dummy.get_squarenorm(0);
+	dummy.runTestKernel();
+	logger.info() << "|M phi|^2:";
+	hmc_float gpu_res;
+	gpu_res = dummy.get_squarenorm(1);
+	BOOST_MESSAGE("Tested GPU");
+
+	logger.info() << "Compare CPU and GPU results";
+	logger.info() << "Input vectors:";
+	cpu.verify(cpu_back, gpu_back);
+	logger.info() << "Output vectors:";
+	cpu.verify(cpu_res, gpu_res);
+  */
 }
 
