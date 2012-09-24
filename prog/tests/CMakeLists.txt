@@ -70,7 +70,7 @@ add_test(Calc_staple_CPU_REC12 calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_in
 add_test(Calc_staple_GPU calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=true)
 add_test(Calc_staple_GPU_REC12 calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_rec12_1 --use_gpu=true)
 
-add_executable(f_gauge F_gauge_GPU.cpp)
+add_executable(f_gauge F_gauge_test.cpp)
 target_link_libraries(f_gauge
 	optimal
 	${Boost_LIBRARIES}
@@ -96,6 +96,9 @@ target_link_libraries(f_gauge_tlsym
 	${Boost_LIBRARIES}
 )
 add_test(F_gauge_tlsym_CPU f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=false)
+add_test(F_gauge_tlsym_CPU_REC12 f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_rec12_1 --use_gpu=false)
+add_test(F_gauge_tlsym_GPU f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=true)
+add_test(F_gauge_tlsym_GPU_REC12 f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_rec12_1 --use_gpu=true)
 
 add_executable(localQ local_Q_test.cpp)
 target_link_libraries(localQ
