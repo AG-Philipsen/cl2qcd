@@ -186,8 +186,12 @@ target_link_libraries(f_fermion_eo
 )
 add_test(F_fermion_eo_CPU_1 f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_1 --use_gpu=false)
 add_test(F_fermion_eo_CPU_2 f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_2 --use_gpu=false)
+add_test(F_fermion_eo_CPU_REC12_1 f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_rec12_1 --use_gpu=false)
+add_test(F_fermion_eo_CPU_REC12_2 f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_rec12_2 --use_gpu=false)
 add_test(F_fermion_eo_GPU_1 f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_1 --use_gpu=true)
 add_test(F_fermion_eo_GPU_2 f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_2 --use_gpu=true)
+add_test(F_fermion_eo_GPU_REC12_1 f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_rec12_1 --use_gpu=true)
+add_test(F_fermion_eo_GPU_REC12_2 f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_rec12_2 --use_gpu=true)
 
 add_executable(f_fermion_compare_non_eo_eo_gpu Force_fermion_compare_non_eo_eo_GPU.cpp)
 target_link_libraries(f_fermion_compare_non_eo_eo_gpu
