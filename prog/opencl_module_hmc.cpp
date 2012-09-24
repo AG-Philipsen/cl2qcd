@@ -1905,6 +1905,25 @@ void Opencl_Module_Hmc::md_update_gaugemomentum_device(hmc_float eps)
 	}
 }
 
+void Opencl_Module_Hmc::md_update_gaugemomentum_device(cl_mem in, cl_mem out, hmc_float eps)
+{
+	//__kernel void md_update_gaugemomenta(hmc_float eps, __global ae * p_inout, __global ae* force_in){
+	hmc_float tmp = eps;
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(md_update_gaugemomenta, this->get_device_type(), &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(md_update_gaugemomenta, 0, sizeof(hmc_float), &tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(md_update_gaugemomenta, 1, sizeof(cl_mem), &out);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(md_update_gaugemomenta, 2, sizeof(cl_mem), &in);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	enqueueKernel(md_update_gaugemomenta , gs2, ls2);
+}
+
 void Opencl_Module_Hmc::md_update_gaugefield_device(hmc_float eps)
 {
 	// __kernel void md_update_gaugefield(hmc_float eps, __global ae * p_in, __global ocl_s_gaugefield * u_inout){

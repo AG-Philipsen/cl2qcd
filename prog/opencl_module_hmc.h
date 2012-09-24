@@ -123,6 +123,7 @@ public:
 	void generate_gaussian_spinorfield_device();
 	void generate_gaussian_spinorfield_eo_device();
 	void md_update_gaugemomentum_device(hmc_float eps);
+	void md_update_gaugemomentum_device(cl_mem, cl_mem, hmc_float eps);
 	void md_update_gaugefield_device(hmc_float eps);
 	void md_update_gaugefield_device(cl_mem, cl_mem, hmc_float eps);
 	void set_zero_clmem_force_device();
