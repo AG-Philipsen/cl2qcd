@@ -134,6 +134,7 @@ public:
 	void fermion_force_device(cl_mem Y, cl_mem X, hmc_float kappa = ARG_DEF);
 	void fermion_force_device(cl_mem Y, cl_mem X, cl_mem, cl_mem, hmc_float kappa = ARG_DEF);
 	void fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd, hmc_float kappa = ARG_DEF);
+	void fermion_force_eo_device(cl_mem Y, cl_mem X, cl_mem, cl_mem, int evenodd, hmc_float kappa = ARG_DEF);
 	void stout_smeared_fermion_force_device(cl_mem * gf_intermediate);
 	hmc_float calc_s_fermion();
 	hmc_float calc_s_fermion_mp();
