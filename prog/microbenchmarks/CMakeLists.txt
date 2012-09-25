@@ -6,7 +6,7 @@ if(PERFORM_PROFILING)
 
 	add_executable(bandwidth bandwidth.cpp)
 	target_link_libraries( bandwidth
-		optimal_profile
+		optimal
 	)
 
 endif(PERFORM_PROFILING)
