@@ -8,6 +8,9 @@ fermact=TWISTEDMASS
 solver=BICGSTAB
 startcondition=cold
 
+#with pointsource one can switch between "EVEN" and "ODD" as parameter for the kernel
+# true = EVEN, false = ODD
+use_pointsource=true
 
 #this specifies the acceptance precision
 solver_prec=1e-8

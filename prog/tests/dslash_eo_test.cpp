@@ -46,7 +46,7 @@ public:
 	virtual void finalize_opencl();
 
 	hmc_float get_squarenorm(int which);
-	void runTestKernel();
+	void runTestKernel(int even_odd);
 
 private:
 	void fill_buffers();
@@ -201,11 +201,11 @@ hmc_float Dummyfield::get_squarenorm(int which)
 	return result;
 }
 
-void Dummyfield::runTestKernel()
+void Dummyfield::runTestKernel(int even_odd)
 {
-  int odd = 0;
+  int odd_tmp = even_odd;
   Device * device = static_cast<Device*>(opencl_modules[0]);
-  static_cast<Device*>(opencl_modules[0])->dslash_eo_device( even_in, out, device->get_gaugefield(), odd, get_parameters().get_kappa() );
+  static_cast<Device*>(opencl_modules[0])->dslash_eo_device( even_in, out, device->get_gaugefield(), odd_tmp, get_parameters().get_kappa() );
 }
 
 
@@ -245,12 +245,19 @@ BOOST_AUTO_TEST_CASE( DSLASH_EO )
   logger.info() << "|phi|^2:";
   hmc_float cpu_back = cpu.get_squarenorm(0);
   logger.info() << cpu_back;
-  cpu.runTestKernel();
-  logger.info() << "result:";
-  hmc_float cpu_res;
-  cpu_res = cpu.get_squarenorm(1);
-  logger.info() << cpu_res;
 
+  //switch according to "use_pointsource"
+  hmc_float cpu_res;
+  if(params.get_use_pointsource()){
+    cpu.runTestKernel(EVEN);
+    cpu_res = cpu.get_squarenorm(1);    
+  } else {
+    cpu.runTestKernel(ODD);
+    cpu_res = cpu.get_squarenorm(1);
+  }
+  logger.info() << "result:";
+  logger.info() << cpu_res;
+  
   logger.info() << "Choosing reference value and acceptance precision";
   hmc_float ref_val = params.get_test_ref_value();
   logger.info() << "reference value:\t" << ref_val;
