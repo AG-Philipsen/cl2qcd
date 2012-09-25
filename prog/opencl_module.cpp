@@ -20,7 +20,7 @@ static void print_profile_header(const std::string& filename, int number);
  * @param read_write_size number of bytes read and written by the kernel
  * @param flop_size amount of flops performed by the kernel
  */
-static void print_profiling(const std::string& filename, const std::string& kernelName, uint64_t time_total, int calls_total, size_t read_write_size, uint64_t flop_size, uint64_t sites);
+static void print_profiling(const std::string& filename, const std::string& kernelName, const hardware::ProfilingData& data, size_t read_write_size, uint64_t flop_size, uint64_t sites);
 #endif /* _PROFILING_ */
 
 void Opencl_Module::init()
@@ -786,19 +786,19 @@ uint64_t Opencl_Module::get_flop_size(const std::string& in) const
 
 #ifdef _PROFILING_
 
-static void print_profiling(const std::string& filename, const std::string& kernelName, uint64_t time_total, int calls_total, size_t read_write_size, uint64_t flop_size, uint64_t sites)
+static void print_profiling(const std::string& filename, const std::string& kernelName, const hardware::ProfilingData& data, size_t read_write_size, uint64_t flop_size, uint64_t sites)
 {
 	hmc_float bandwidth = 0.;
 	hmc_float flops = 0.;
 	uint64_t avg_time = 0.;
 	uint64_t avg_time_site = 0.;
 	//check if kernel has been called at all
-	if(calls_total != 0 && time_total != 0) {
-		avg_time = (uint64_t) ( ( (float) time_total ) / ((float) calls_total) );
-		avg_time_site = (uint64_t) ( ( (float) time_total ) / ((float) (calls_total * sites)) );
+	if(data.get_num_values()) {
+		avg_time = (uint64_t) ( ( (float) data.get_total_time() ) / ((float) data.get_num_values() ) );
+		avg_time_site = (uint64_t) ( ( (float) data.get_total_time() ) / ((float) (data.get_num_values() * sites)) );
 		//Bandwidth in GB/s: 1e-3 = 1e6 (museconds) * 1e-9 (GByte)
-		bandwidth = (hmc_float) read_write_size / (hmc_float) time_total * (hmc_float) calls_total * 1e-3;
-		flops = (hmc_float) flop_size / (hmc_float) time_total * (hmc_float) calls_total * 1e-3;
+		bandwidth = (hmc_float) read_write_size / (hmc_float) data.get_total_time() * (hmc_float) data.get_num_values() * 1e-3;
+		flops = (hmc_float) flop_size / (hmc_float) data.get_total_time() * (hmc_float) data.get_num_values() * 1e-3;
 	}
 	float mega = 1024 * 1024;
 	//write to stream
@@ -813,7 +813,7 @@ static void print_profiling(const std::string& filename, const std::string& kern
 	logger.trace() << "*******************************************************************";
 	logger.trace() << "Fermion\t"<< setfill(' ') << setw(16)<< "BW[GB/s]\t" << setfill(' ') << setw(18) << "Re/Wr[MByte]\t" << setfill(' ') << setw(6)  << "Calls\t" << setfill(' ') << setw(10)  << "Time[mus]";
 	*/
-	out << kernelName << "\t" << time_total << "\t" << calls_total << "\t" << avg_time << "\t" << avg_time_site << "\t" << bandwidth << "\t" << flops << "\t" << (float) read_write_size / mega << "\t" << flop_size << std::endl;
+	out << kernelName << "\t" << data.get_total_time() << "\t" << data.get_num_values() << "\t" << avg_time << "\t" << avg_time_site << "\t" << bandwidth << "\t" << flops << "\t" << (float) read_write_size / mega << "\t" << flop_size << std::endl;
 	out.close();
 	return;
 }
@@ -833,9 +833,12 @@ static void print_profile_header(const std::string& filename, int number)
 
 void Opencl_Module::print_profiling(const std::string& filename, const cl_kernel& kernel) const
 {
-	std::string kernel_name = get_kernel_name(kernel);
-	usetimer * const timer = this->get_timer(kernel_name);
-	::print_profiling(filename, kernel_name, timer->getTime(), timer->getNumMeas(), this->get_read_write_size(kernel_name), this->get_flop_size(kernel_name), meta::get_vol4d(get_parameters()));
+	// only print info if kernel has been initialized
+	if(kernel) {
+		const std::string kernel_name = get_kernel_name(kernel);
+		const hardware::ProfilingData data = device->get_profiling_data(kernel);
+		::print_profiling(filename, kernel_name, data, this->get_read_write_size(kernel_name), this->get_flop_size(kernel_name), meta::get_vol4d(get_parameters()));
+	}
 }
 
 void Opencl_Module::print_profiling(const std::string& filename, int number)

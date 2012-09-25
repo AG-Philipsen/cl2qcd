@@ -158,7 +158,7 @@ namespace hardware {
 		 * \param kernel The kernel for which to get the profiling data
 		 * \return Profiling data for the given kernel on this device
 		 */
-		ProfilingData getProfilingData(const cl_kernel& kernel) noexcept;
+		ProfilingData get_profiling_data(const cl_kernel& kernel) noexcept;
 
 	private:
 		/**

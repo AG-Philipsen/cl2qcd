@@ -39,7 +39,8 @@ public:
 	 * @param[in] params points to an instance of inputparameters
 	 */
 	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device)
-		: parameters(params), device(device), gaugefield_bytes(0) {};
+		: parameters(params), device(device), gaugefield_bytes(0),
+		  stout_smear(0), rectangles(0), rectangles_reduction(0) {};
 	/**
 	 * Destructor, calls finalize().
 	 *

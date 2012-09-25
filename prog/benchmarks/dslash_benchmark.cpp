@@ -125,7 +125,7 @@ int main(int argc, const char* argv[])
 			logger.warn() << "Could not open " << profiling_out;
 		}
 
-		gaugefield.get_task_solver()->Opencl_Module::print_profiling(profiling_out, 0) ;
+		gaugefield.get_task_solver()->print_profiling(profiling_out, 0) ;
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// free variables

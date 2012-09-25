@@ -323,6 +323,6 @@ std::string hardware::Device::get_name() const noexcept
 	return name;
 }
 
-hardware::ProfilingData hardware::Device::getProfilingData(const cl_kernel& kernel) noexcept {
+hardware::ProfilingData hardware::Device::get_profiling_data(const cl_kernel& kernel) noexcept {
 	return profiling_data[kernel];
 }
