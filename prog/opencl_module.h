@@ -440,8 +440,6 @@ private:
 	//this is used to measure data-transfer on the device
 	usetimer copy_on;
 
-	int numthreads;
-
 	// memory usage tracing
 	size_t allocated_bytes;
 	size_t max_allocated_bytes;
