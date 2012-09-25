@@ -260,58 +260,6 @@ cl_mem Opencl_Module_Hmc::get_clmem_s_fermion_mp_init()
 	return clmem_s_fermion_mp_init;
 }
 
-#ifdef _PROFILING_
-usetimer* Opencl_Module_Hmc::get_timer(const std::string& in) const
-{
-	logger.trace() << "Opencl_Module_Hmc::get_timer(char*)";
-	usetimer *noop = NULL;
-	noop = Opencl_Module_Fermions::get_timer(in);
-	if(noop != NULL) return noop;
-
-	if (in == "generate_gaussian_spinorfield") {
-		return &this->timer_generate_gaussian_spinorfield;
-	}
-	if (in == "generate_gaussian_spinorfield_eo") {
-		return &this->timer_generate_gaussian_spinorfield_eo;
-	}
-	if (in == "generate_gaussian_gaugemomenta") {
-		return &this->timer_generate_gaussian_gaugemomenta;
-	}
-	if (in == "md_update_gaugefield") {
-		return &this->timer_md_update_gaugefield;
-	}
-	if (in == "md_update_gaugemomenta") {
-		return &this->timer_md_update_gaugemomenta;
-	}
-	if (in == "gauge_force") {
-		return &this->timer_gauge_force;
-	}
-	if (in == "gauge_force_tlsym") {
-		return &this->timer_gauge_force_tlsym;
-	}
-	if (in == "fermion_force") {
-		return &this->timer_fermion_force;
-	}
-	if (in == "fermion_force_eo") {
-		return &this->timer_fermion_force_eo;
-	}
-	if (in == "set_zero_gaugemomentum") {
-		return &this->timer_set_zero_gaugemomentum;
-	}
-	if (in == "gaugemomentum_squarenorm") {
-		return &this->timer_gaugemomentum_squarenorm;
-	}
-	if (in == "stout_smear_fermion_force") {
-		return &this->timer_stout_smear_fermion_force;
-	}
-	//if the kernelname has not matched, return NULL
-	else {
-		return NULL;
-	}
-}
-
-#endif
-
 size_t Opencl_Module_Hmc::get_read_write_size(const std::string& in) const
 {
 	size_t result = Opencl_Module_Fermions::get_read_write_size(in);

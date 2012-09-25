@@ -163,31 +163,6 @@ void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, size_t * ls,
 	return;
 }
 
-#ifdef _PROFILING_
-usetimer* Opencl_Module_Heatbath::get_timer(const std::string& in) const
-{
-	usetimer *noop = NULL;
-	noop = Opencl_Module_Ran::get_timer(in);
-	if(noop != NULL) return noop;
-	if (in == "heatbath_even") {
-		return &this->timer_heatbath_even;
-	}
-	if (in == "heatbath_odd") {
-		return &this->timer_heatbath_odd;
-	}
-	if (in == "overrelax_even") {
-		return &this->timer_overrelax_even;
-	}
-	if (in == "overrelax_odd") {
-		return &this->timer_overrelax_odd;
-	}
-	//if the kernelname has not matched, return NULL
-	else {
-		return NULL;
-	}
-}
-#endif
-
 size_t Opencl_Module_Heatbath::get_read_write_size(const std::string& in) const
 {
 	size_t result = Opencl_Module_Ran::get_read_write_size(in);

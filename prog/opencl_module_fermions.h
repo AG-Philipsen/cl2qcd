@@ -260,38 +260,12 @@ public:
 	//protected:
 
 #ifdef _PROFILING_
-	//CP: if PROFILING is activated, one needs a timer for each kernel
-	//fermionmatrix
-	mutable usetimer timer_M_wilson;
-	mutable usetimer timer_gamma5;
-	mutable usetimer timer_M_tm_plus;
-	mutable usetimer timer_M_tm_minus;
-	mutable usetimer timer_gamma5_eo;
-	mutable usetimer timer_M_tm_sitediagonal;
-	mutable usetimer timer_M_tm_inverse_sitediagonal;
-	mutable usetimer timer_dslash_eo;
-	mutable usetimer timer_M_tm_sitediagonal_minus;
-	mutable usetimer timer_M_tm_inverse_sitediagonal_minus;
-	mutable usetimer timer_dslash_AND_gamma5_eo;
-	mutable usetimer timer_dslash_AND_M_tm_inverse_sitediagonal_eo;
-	mutable usetimer timer_dslash_AND_M_tm_inverse_sitediagonal_minus_eo;
-	mutable usetimer timer_M_tm_sitediagonal_AND_gamma5_eo;
-	mutable usetimer timer_M_tm_sitediagonal_minus_AND_gamma5_eo;
-
-	/**
-	 * Return the timer connected to a specific kernel.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual usetimer* get_timer(const std::string& in) const override;
-
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 */
 	void virtual print_profiling(const std::string& filename, int number) override;
-
 #endif
 
 	/**

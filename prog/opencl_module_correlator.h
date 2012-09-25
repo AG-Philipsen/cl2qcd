@@ -106,27 +106,6 @@ public:
 	cl_mem get_clmem_source();
 
 #ifdef _PROFILING_
-	//CP: if PROFILING is activated, one needs a timer for each kernel
-
-	mutable usetimer timer_create_point_source;
-	mutable usetimer timer_create_stochastic_source;
-
-	mutable usetimer timer_correlator_ps;
-	mutable usetimer timer_correlator_sc;
-	mutable usetimer timer_correlator_vx;
-	mutable usetimer timer_correlator_vy;
-	mutable usetimer timer_correlator_vz;
-	mutable usetimer timer_correlator_ax;
-	mutable usetimer timer_correlator_ay;
-	mutable usetimer timer_correlator_az;
-
-	/**
-	 * Return the timer connected to a specific kernel.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual usetimer* get_timer(const std::string& in) const override;
-
 	/**
 	 * Print the profiling information to a file.
 	 *

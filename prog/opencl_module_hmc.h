@@ -162,34 +162,12 @@ public:
 protected:
 
 #ifdef _PROFILING_
-
-	mutable usetimer timer_generate_gaussian_spinorfield;
-	mutable usetimer timer_generate_gaussian_spinorfield_eo;
-	mutable usetimer timer_generate_gaussian_gaugemomenta;
-	mutable usetimer timer_md_update_gaugefield;
-	mutable usetimer timer_md_update_gaugemomenta;
-	mutable usetimer timer_gauge_force;
-	mutable usetimer timer_gauge_force_tlsym;
-	mutable usetimer timer_fermion_force;
-	mutable usetimer timer_fermion_force_eo;
-	mutable usetimer timer_set_zero_gaugemomentum;
-	mutable usetimer timer_gaugemomentum_squarenorm;
-	mutable usetimer timer_stout_smear_fermion_force;
-
-	/**
-	 * Return the timer connected to a specific kernel.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual usetimer* get_timer(const std::string& in) const override;
-
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 */
 	void virtual print_profiling(const std::string& filename, int number) override;
-
 #endif
 
 	/**

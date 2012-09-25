@@ -656,45 +656,6 @@ usetimer * Opencl_Module::get_copy_to()
 	return &copy_to;
 }
 
-#ifdef _PROFILING_
-usetimer* Opencl_Module::get_timer(const std::string& in) const
-{
-	logger.trace() << "Opencl_Module::get_timer(const std::string& in)";
-	if (in == "polyakov_reduction") {
-		return &(this->timer_polyakov_reduction);
-	}
-	if (in == "polyakov") {
-		return &(this->timer_polyakov);
-	}
-	if (in == "plaquette_reduction") {
-		return &(this->timer_plaquette_reduction);
-	}
-	if (in == "plaquette") {
-		return &(this->timer_plaquette);
-	}
-	if (in == "rectangles_reduction") {
-		return &(this->timer_rectangles_reduction);
-	}
-	if (in == "rectangles") {
-		return &(this->timer_rectangles);
-	}
-	if (in == "stout_smear") {
-		return &(this->timer_stout_smear);
-	}
-	if(in == "convertGaugefieldToSOA") {
-		return &timer_convertGaugefieldToSOA;
-	}
-	if(in == "convertGaugefieldFromSOA") {
-		return &timer_convertGaugefieldFromSOA;
-	}
-	//if the kernelname has not matched, return NULL
-	else {
-		return NULL;
-	}
-}
-
-#endif
-
 size_t Opencl_Module::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...

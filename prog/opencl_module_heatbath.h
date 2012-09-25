@@ -100,19 +100,6 @@ private:
 
 
 #ifdef _PROFILING_
-	//CP: if PROFILING is activated, one needs a timer for each kernel
-	mutable usetimer timer_heatbath_odd;
-	mutable usetimer timer_heatbath_even;
-	mutable usetimer timer_overrelax_odd;
-	mutable usetimer timer_overrelax_even;
-
-	/**
-	 * Return the timer connected to a specific kernel.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual usetimer* get_timer(const std::string& in) const override;
-
 	/**
 	 * Print the profiling information to a file.
 	 *

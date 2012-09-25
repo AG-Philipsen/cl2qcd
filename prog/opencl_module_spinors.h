@@ -128,58 +128,12 @@ public:
 	void copy_to_eoprec_spinorfield_buffer(cl_mem buf, const spinor * const source);
 
 #ifdef _PROFILING_
-
-	//BLAS
-	mutable usetimer timer_set_spinorfield_cold;
-	mutable usetimer timer_set_eoprec_spinorfield_cold;
-	mutable usetimer timer_convert_from_eoprec;
-	mutable usetimer timer_convert_to_eoprec;
-	mutable usetimer timer_saxpy;
-	mutable usetimer timer_sax;
-	mutable usetimer timer_saxsbypz;
-	mutable usetimer timer_set_zero_spinorfield;
-	mutable usetimer timer_create_point_source;
-	mutable usetimer timer_saxpy_eoprec;
-	mutable usetimer timer_sax_eoprec;
-	mutable usetimer timer_saxsbypz_eoprec;
-	mutable usetimer timer_set_zero_spinorfield_eoprec;
-	mutable usetimer timer_create_point_source_eoprec;
-
-	//Scalar Product
-	mutable usetimer timer_scalar_product;
-	mutable usetimer timer_scalar_product_reduction;
-	mutable usetimer timer_global_squarenorm;
-	mutable usetimer timer_global_squarenorm_reduction;
-	mutable usetimer timer_scalar_product_eoprec;
-	mutable usetimer timer_global_squarenorm_eoprec;
-
-	//Single
-	mutable usetimer timer_ratio;
-	mutable usetimer timer_product;
-
-	//Observables
-	mutable usetimer timer_ps_correlator;
-
-	mutable usetimer timer_convertSpinorfieldToSOA_eo;
-	mutable usetimer timer_convertSpinorfieldFromSOA_eo;
-
-	//merged kernels
-	mutable usetimer timer_saxpy_AND_squarenorm_eo;
-
-	/**
-	 * Return the timer connected to a specific kernel.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual usetimer* get_timer(const std::string& in) const override;
-
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 */
 	void virtual print_profiling(const std::string& filename, int number) override;
-
 #endif
 
 	/**
