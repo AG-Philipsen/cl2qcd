@@ -102,7 +102,7 @@ public:
 	cl_mem get_clmem_phi_mp();
 	cl_mem get_clmem_phi_mp_eo();
 	cl_mem get_clmem_s_fermion_init();
-  	cl_mem get_clmem_s_fermion_mp_init();
+	cl_mem get_clmem_s_fermion_mp_init();
 
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm

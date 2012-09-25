@@ -33,8 +33,8 @@ class Dummyfield : public Gaugefield_hybrid {
 public:
 	Dummyfield(const hardware::System * system) : Gaugefield_hybrid(system) {
 		auto inputfile = system->get_inputparameters();
-	  init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU);
-	  meta::print_info_hmc(exec_name.c_str(), inputfile);
+		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU);
+		meta::print_info_hmc(exec_name.c_str(), inputfile);
 	};
 	virtual void init_tasks();
 	virtual void finalize_opencl();
@@ -43,10 +43,10 @@ public:
 	hmc_float runTestKernel();
 
 private:
-  void fill_buffers();
-  void clear_buffers();
-  cl_mem out;
-  hmc_float * host_out;
+	void fill_buffers();
+	void clear_buffers();
+	cl_mem out;
+	hmc_float * host_out;
 };
 
 void Dummyfield::init_tasks()
@@ -137,52 +137,52 @@ hmc_float Dummyfield::runTestKernel()
 
 BOOST_AUTO_TEST_CASE( STAPLE_TEST )
 {
-  logger.info() << "Test kernel";
-  logger.info() << "\tcalc_staple";
-  logger.info() << "against reference value";
+	logger.info() << "Test kernel";
+	logger.info() << "\tcalc_staple";
+	logger.info() << "against reference value";
 
-  int param_expect = 4;
-  logger.info() << "expect parameters:";
-  logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
-  //get number of parameters
-  int num_par = boost::unit_test::framework::master_test_suite().argc;
-  if(num_par < param_expect){
-    logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
-    exit(-1);
-  }
+	int param_expect = 4;
+	logger.info() << "expect parameters:";
+	logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
+	//get number of parameters
+	int num_par = boost::unit_test::framework::master_test_suite().argc;
+	if(num_par < param_expect) {
+		logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
+		exit(-1);
+	}
 
-  //get input file that has been passed as an argument 
-  const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
-  logger.info() << "inputfile used: " << inputfile;
-  //get use_gpu = true/false that has been passed as an argument 
-  const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
-  logger.info() << "GPU usage: " << gpu_opt;
-  //get use_rec12 = true/false that has been passed as an argument 
-  const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
-  logger.info() << "rec12 usage: " << rec12_opt;
+	//get input file that has been passed as an argument
+	const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+	logger.info() << "inputfile used: " << inputfile;
+	//get use_gpu = true/false that has been passed as an argument
+	const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+	logger.info() << "GPU usage: " << gpu_opt;
+	//get use_rec12 = true/false that has been passed as an argument
+	const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
+	logger.info() << "rec12 usage: " << rec12_opt;
 
-  logger.info() << "Init device";
-  const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
-  meta::Inputparameters params(param_expect, _params_cpu);
-  hardware::System system(params);
-  Dummyfield cpu(&system);
-  logger.info() << "gaugeobservables: ";
-  cpu.print_gaugeobservables_from_task(0, 0);
-  logger.info() << "Run kernel";
-  logger.info() << "running test kernel";
-  hmc_float cpu_res = cpu.runTestKernel();
-  logger.info() << "result:";
-  logger.info() << cpu_res;
+	logger.info() << "Init device";
+	const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
+	meta::Inputparameters params(param_expect, _params_cpu);
+	hardware::System system(params);
+	Dummyfield cpu(&system);
+	logger.info() << "gaugeobservables: ";
+	cpu.print_gaugeobservables_from_task(0, 0);
+	logger.info() << "Run kernel";
+	logger.info() << "running test kernel";
+	hmc_float cpu_res = cpu.runTestKernel();
+	logger.info() << "result:";
+	logger.info() << cpu_res;
 
-  logger.info() << "Choosing reference value and acceptance precision";
-  hmc_float ref_val = params.get_test_ref_value();
-  logger.info() << "reference value:\t" << ref_val;
-  hmc_float prec = params.get_solver_prec();
-  logger.info() << "acceptance precision: " << prec;
+	logger.info() << "Choosing reference value and acceptance precision";
+	hmc_float ref_val = params.get_test_ref_value();
+	logger.info() << "reference value:\t" << ref_val;
+	hmc_float prec = params.get_solver_prec();
+	logger.info() << "acceptance precision: " << prec;
 
-  logger.info() << "Compare result to reference value";
-  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
-  logger.info() << "Done";
-  BOOST_MESSAGE("Test done");
+	logger.info() << "Compare result to reference value";
+	BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+	logger.info() << "Done";
+	BOOST_MESSAGE("Test done");
 }
 

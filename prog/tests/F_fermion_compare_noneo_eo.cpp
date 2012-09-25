@@ -36,7 +36,7 @@ class Dummyfield : public Gaugefield_hybrid {
 public:
 	Dummyfield(const hardware::System * system) : Gaugefield_hybrid(system) {
 		auto inputfile = system->get_inputparameters();
-		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU :CL_DEVICE_TYPE_CPU);
+		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU);
 		meta::print_info_hmc(exec_name.c_str(), inputfile);
 	};
 	virtual void init_tasks();
@@ -868,35 +868,35 @@ void Dummyfield::runTestKernel2withconvertedfields()
 
 BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO )
 {
-  logger.info() << "Compare f_fermion in eo and noneo version";
+	logger.info() << "Compare f_fermion in eo and noneo version";
 
-  int param_expect = 4;
-  logger.info() << "expect parameters:";
-  logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
-  //get number of parameters
-  int num_par = boost::unit_test::framework::master_test_suite().argc;
-  if(num_par < param_expect){
-    logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
-    exit(-1);
-  }
+	int param_expect = 4;
+	logger.info() << "expect parameters:";
+	logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
+	//get number of parameters
+	int num_par = boost::unit_test::framework::master_test_suite().argc;
+	if(num_par < param_expect) {
+		logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
+		exit(-1);
+	}
 
-  //get input file that has been passed as an argument 
-  const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
-  logger.info() << "inputfile used: " << inputfile;
-  //get use_gpu = true/false that has been passed as an argument 
-  const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
-  logger.info() << "GPU usage: " << gpu_opt;
-  //get use_rec12 = true/false that has been passed as an argument 
-  const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
-  logger.info() << "rec12 usage: " << rec12_opt;
+	//get input file that has been passed as an argument
+	const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+	logger.info() << "inputfile used: " << inputfile;
+	//get use_gpu = true/false that has been passed as an argument
+	const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+	logger.info() << "GPU usage: " << gpu_opt;
+	//get use_rec12 = true/false that has been passed as an argument
+	const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
+	logger.info() << "rec12 usage: " << rec12_opt;
 
-  logger.info() << "Init device";
-  const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
-  meta::Inputparameters params(param_expect, _params_cpu);
-  hardware::System system(params);
-  Dummyfield cpu(&system);
-  logger.info() << "gaugeobservables: ";
-  cpu.print_gaugeobservables_from_task(0, 0);
+	logger.info() << "Init device";
+	const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
+	meta::Inputparameters params(param_expect, _params_cpu);
+	hardware::System system(params);
+	Dummyfield cpu(&system);
+	logger.info() << "gaugeobservables: ";
+	cpu.print_gaugeobservables_from_task(0, 0);
 
 	logger.info() << "eo input:";
 	logger.info() << "|phi_even_1|^2:";
@@ -959,16 +959,16 @@ BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO )
 	logger.info() << "Compare non-eo and eo solution vectors entry by entry:";
 	cpu.verify_ae_vectors();
 	/*
-  logger.info() << "Choosing reference value and acceptance precision";
-  hmc_float ref_val = params.get_test_ref_value();
-  logger.info() << "reference value:\t" << ref_val;
-  hmc_float prec = params.get_solver_prec();  
-  logger.info() << "acceptance precision: " << prec;
+	logger.info() << "Choosing reference value and acceptance precision";
+	hmc_float ref_val = params.get_test_ref_value();
+	logger.info() << "reference value:\t" << ref_val;
+	hmc_float prec = params.get_solver_prec();
+	logger.info() << "acceptance precision: " << prec;
 
-  logger.info() << "Compare result to reference value";
-  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
-  logger.info() << "Done";
-  BOOST_MESSAGE("Test done");
+	logger.info() << "Compare result to reference value";
+	BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+	logger.info() << "Done";
+	BOOST_MESSAGE("Test done");
 	*/
 
 

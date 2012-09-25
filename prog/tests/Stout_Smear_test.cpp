@@ -100,7 +100,7 @@ void Device::fill_kernels()
 
 	//this has to be the same as in opencl_module
 	// in fact, the kernel has already been build in the above call!!
-	//	testKernel = createKernel("stout_smear") << basic_opencl_code  <<  "tests/operations_gaugemomentum.cl" << "stout_smear.cl";
+	//  testKernel = createKernel("stout_smear") << basic_opencl_code  <<  "tests/operations_gaugemomentum.cl" << "stout_smear.cl";
 }
 
 void Dummyfield::clear_buffers()
@@ -129,9 +129,9 @@ void Device::runTestKernel(cl_mem gf, cl_mem out, int gs, int ls)
 
 void Dummyfield::runTestKernel()
 {
-  //CP: this currently causes a segfault!!!
-  Device * device = static_cast<Device*>(opencl_modules[0]);
-  static_cast<Device*>(opencl_modules[0])->stout_smear_device( device->get_gaugefield()  ,out);
+	//CP: this currently causes a segfault!!!
+	Device * device = static_cast<Device*>(opencl_modules[0]);
+	static_cast<Device*>(opencl_modules[0])->stout_smear_device( device->get_gaugefield()  , out);
 
 	int gs = 0, ls = 0;
 	if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_GPU) {
@@ -141,9 +141,9 @@ void Dummyfield::runTestKernel()
 		gs = get_device_for_task(0)->get_num_compute_units();
 		ls = 1;
 	}
-	//	Device * device = static_cast<Device*>(opencl_modules[0]);
-	//	device->runTestKernel(device->get_gaugefield(), out, gs, ls);
-  
+	//  Device * device = static_cast<Device*>(opencl_modules[0]);
+	//  device->runTestKernel(device->get_gaugefield(), out, gs, ls);
+
 	return;
 }
 
@@ -163,64 +163,64 @@ void Dummyfield::get_gaugeobservables_from_task(int dummy, int ntask, hmc_float 
 
 BOOST_AUTO_TEST_CASE( STOUT_SMEAR )
 {
-  logger.info() << "Test kernel";
-  logger.info() << "\tstout_smear";
-  logger.info() << "against reference value";
+	logger.info() << "Test kernel";
+	logger.info() << "\tstout_smear";
+	logger.info() << "against reference value";
 
-  logger.fatal() << "A segfault appears when the kernel is called using the proper module fct! Exit..";
-  BOOST_REQUIRE_EQUAL(1., 0.);
+	logger.fatal() << "A segfault appears when the kernel is called using the proper module fct! Exit..";
+	BOOST_REQUIRE_EQUAL(1., 0.);
 
-  int param_expect = 4;
-  logger.info() << "expect parameters:";
-  logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
-  //get number of parameters
-  int num_par = boost::unit_test::framework::master_test_suite().argc;
-  if(num_par < param_expect){
-    logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
-    exit(-1);
-  }
+	int param_expect = 4;
+	logger.info() << "expect parameters:";
+	logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
+	//get number of parameters
+	int num_par = boost::unit_test::framework::master_test_suite().argc;
+	if(num_par < param_expect) {
+		logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
+		exit(-1);
+	}
 
-  //get input file that has been passed as an argument 
-  const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
-  logger.info() << "inputfile used: " << inputfile;
-  //get use_gpu = true/false that has been passed as an argument 
-  const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
-  logger.info() << "GPU usage: " << gpu_opt;
-  //get use_rec12 = true/false that has been passed as an argument 
-  const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
-  logger.info() << "rec12 usage: " << rec12_opt;
+	//get input file that has been passed as an argument
+	const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+	logger.info() << "inputfile used: " << inputfile;
+	//get use_gpu = true/false that has been passed as an argument
+	const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+	logger.info() << "GPU usage: " << gpu_opt;
+	//get use_rec12 = true/false that has been passed as an argument
+	const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
+	logger.info() << "rec12 usage: " << rec12_opt;
 
-  logger.info() << "Init device";
-  const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
-  meta::Inputparameters params(param_expect, _params_cpu);
-  hardware::System system(params);
-  Dummyfield dummy(&system);
+	logger.info() << "Init device";
+	const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
+	meta::Inputparameters params(param_expect, _params_cpu);
+	hardware::System system(params);
+	Dummyfield dummy(&system);
 
-  hmc_float plaq_cpu, tplaq_cpu, splaq_cpu;
-  hmc_complex pol_cpu;
-  hmc_float plaq_gpu, tplaq_gpu, splaq_gpu;
-  hmc_complex pol_gpu;
-  
-  logger.info() << "gaugeobservables of in field before: ";
-  dummy.print_gaugeobservables_from_task(0, 0);
-  logger.info() << "gaugeobservables of out field before: ";
-  dummy.get_gaugeobservables_from_task(0, 0, &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
-  logger.info() << "plaq: " << plaq_cpu << "\t" << tplaq_cpu  << "\t" << splaq_cpu  << "\t" << pol_cpu.re  << "\t" << pol_cpu.im ;
-  dummy.runTestKernel();
-  logger.info() << "gaugeobservables of in field after: ";
-  dummy.print_gaugeobservables_from_task(0, 0);
-  logger.info() << "gaugeobservables of out field after: ";
-  dummy.get_gaugeobservables_from_task(0, 0, &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
-  logger.info() << "plaq: " << plaq_cpu << "\t" << tplaq_cpu  << "\t" << splaq_cpu  << "\t" << pol_cpu.re  << "\t" << pol_cpu.im ;
+	hmc_float plaq_cpu, tplaq_cpu, splaq_cpu;
+	hmc_complex pol_cpu;
+	hmc_float plaq_gpu, tplaq_gpu, splaq_gpu;
+	hmc_complex pol_gpu;
 
-  logger.info() << "Choosing reference value and acceptance precision";
-  hmc_float ref_val = params.get_test_ref_value();
-  logger.info() << "reference value:\t" << ref_val;
-  hmc_float prec = params.get_solver_prec();  
-  logger.info() << "acceptance precision: " << prec;
+	logger.info() << "gaugeobservables of in field before: ";
+	dummy.print_gaugeobservables_from_task(0, 0);
+	logger.info() << "gaugeobservables of out field before: ";
+	dummy.get_gaugeobservables_from_task(0, 0, &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
+	logger.info() << "plaq: " << plaq_cpu << "\t" << tplaq_cpu  << "\t" << splaq_cpu  << "\t" << pol_cpu.re  << "\t" << pol_cpu.im ;
+	dummy.runTestKernel();
+	logger.info() << "gaugeobservables of in field after: ";
+	dummy.print_gaugeobservables_from_task(0, 0);
+	logger.info() << "gaugeobservables of out field after: ";
+	dummy.get_gaugeobservables_from_task(0, 0, &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
+	logger.info() << "plaq: " << plaq_cpu << "\t" << tplaq_cpu  << "\t" << splaq_cpu  << "\t" << pol_cpu.re  << "\t" << pol_cpu.im ;
 
-  logger.info() << "Compare result to reference value";
-  BOOST_REQUIRE_CLOSE(plaq_cpu, ref_val, prec);
-  logger.info() << "Done";
-  BOOST_MESSAGE("Test done");
+	logger.info() << "Choosing reference value and acceptance precision";
+	hmc_float ref_val = params.get_test_ref_value();
+	logger.info() << "reference value:\t" << ref_val;
+	hmc_float prec = params.get_solver_prec();
+	logger.info() << "acceptance precision: " << prec;
+
+	logger.info() << "Compare result to reference value";
+	BOOST_REQUIRE_CLOSE(plaq_cpu, ref_val, prec);
+	logger.info() << "Done";
+	BOOST_MESSAGE("Test done");
 }
