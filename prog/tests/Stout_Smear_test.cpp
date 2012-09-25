@@ -187,16 +187,29 @@ BOOST_AUTO_TEST_CASE( STOUT_SMEAR )
   logger.fatal() << "A segfault appears when the kernel is called using the proper module fct! Exit..";
   BOOST_REQUIRE_EQUAL(1., 0.);
 
+  int param_expect = 4;
+  logger.info() << "expect parameters:";
+  logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
+  //get number of parameters
+  int num_par = boost::unit_test::framework::master_test_suite().argc;
+  if(num_par < param_expect){
+    logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
+    exit(-1);
+  }
+
   //get input file that has been passed as an argument 
-  const char* inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+  const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
   logger.info() << "inputfile used: " << inputfile;
   //get use_gpu = true/false that has been passed as an argument 
-  const char* gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+  const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
   logger.info() << "GPU usage: " << gpu_opt;
+  //get use_rec12 = true/false that has been passed as an argument 
+  const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
+  logger.info() << "rec12 usage: " << rec12_opt;
 
   logger.info() << "Init device";
-  const char* _params_cpu[] = {"foo", inputfile, gpu_opt};
-  meta::Inputparameters params(3, _params_cpu);
+  const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
+  meta::Inputparameters params(param_expect, _params_cpu);
   Dummyfield dummy(params);
 
   hmc_float plaq_cpu, tplaq_cpu, splaq_cpu;

@@ -105,35 +105,35 @@ target_link_libraries(localQ
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(LocalQ_CPU localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=false)
-add_test(LocalQ_CPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_rec12_1 --use_gpu=false)
-add_test(LocalQ_GPU localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true)
-add_test(LocalQ_GPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_rec12_1 --use_gpu=true)
+add_test(LocalQ_1_CPU       localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=false --use_rec12=false)
+add_test(LocalQ_1_CPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=false --use_rec12=true)
+add_test(LocalQ_1_GPU       localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true  --use_rec12=false)
+add_test(LocalQ_1_GPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true  --use_rec12=true)
 
 add_executable(gf_update GF_update_test.cpp)
 target_link_libraries(gf_update
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(Gf_update_CPU gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=false)
-add_test(Gf_update_CPU_REC12 gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_rec12_1 --use_gpu=false)
-add_test(Gf_update_GPU gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=true)
-add_test(Gf_update_GPU_REC12 gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_rec12_1 --use_gpu=true)
+add_test(Gf_update_1_CPU       gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=false --use_rec12=false)
+add_test(Gf_update_1_CPU_REC12 gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=false --use_rec12=true)
+add_test(Gf_update_1_GPU       gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=true  --use_rec12=false)
+add_test(Gf_update_1_GPU_REC12 gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=true  --use_rec12=true)
 
 add_executable(stout_smear Stout_Smear_test.cpp)
 target_link_libraries(stout_smear
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(Stout_smear_CPU stout_smear ${CMAKE_CURRENT_SOURCE_DIR}/stout_smear_input_1 --use_gpu=false)
+add_test(Stout_smear_1_CPU       stout_smear ${CMAKE_CURRENT_SOURCE_DIR}/stout_smear_input_1 --use_gpu=false --use_rec12=false)
 
 add_executable(f_update F_update_test.cpp)
 target_link_libraries(f_update
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(F_update_CPU f_update ${CMAKE_CURRENT_SOURCE_DIR}/f_update_input_1  --use_gpu=false)
-add_test(F_update_GPU f_update ${CMAKE_CURRENT_SOURCE_DIR}/f_update_input_1  --use_gpu=true)
+add_test(F_update_1_CPU f_update ${CMAKE_CURRENT_SOURCE_DIR}/f_update_input_1  --use_gpu=false --use_rec12=false)
+add_test(F_update_1_GPU f_update ${CMAKE_CURRENT_SOURCE_DIR}/f_update_input_1  --use_gpu=true  --use_rec12=false)
 
 add_executable(m_tm_plus M_tm_plus_test.cpp)
 target_link_libraries(m_tm_plus
