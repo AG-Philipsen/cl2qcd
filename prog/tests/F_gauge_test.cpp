@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE( F_GAUGE )
 
   logger.info() << "Init device";
   const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
-  meta::Inputparameters params(4, _params_cpu);
+  meta::Inputparameters params(param_expect, _params_cpu);
   Dummyfield cpu(params);
   logger.info() << "gaugeobservables: ";
   cpu.print_gaugeobservables_from_task(0, 0);

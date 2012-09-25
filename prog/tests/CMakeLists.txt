@@ -65,10 +65,10 @@ target_link_libraries(calc_staple
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(Calc_staple_CPU calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=false)
-add_test(Calc_staple_CPU_REC12 calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_rec12_1 --use_gpu=false)
-add_test(Calc_staple_GPU calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=true)
-add_test(Calc_staple_GPU_REC12 calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_rec12_1 --use_gpu=true)
+add_test(Calc_staple_1_CPU       calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=false --use_rec12=false)
+add_test(Calc_staple_1_CPU_REC12 calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=false --use_rec12=true)
+add_test(Calc_staple_1_GPU       calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=true  --use_rec12=false)
+add_test(Calc_staple_1_GPU_REC12 calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=true  --use_rec12=true)
 
 add_executable(f_gauge F_gauge_test.cpp)
 target_link_libraries(f_gauge
@@ -85,20 +85,20 @@ target_link_libraries(rectangles
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(Rectangles_CPU rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=false)
-add_test(Rectangles_CPU_REC12 rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_rec12_1 --use_gpu=false)
-add_test(Rectangles_GPU rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=true)
-add_test(Rectangles_GPU_REC12 rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_rec12_1 --use_gpu=true)
+add_test(Rectangles_1_CPU       rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=false --use_rec12=false)
+add_test(Rectangles_1_CPU_REC12 rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=false --use_rec12=true)
+add_test(Rectangles_1_GPU       rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=true  --use_rec12=false)
+add_test(Rectangles_1_GPU_REC12 rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=true  --use_rec12=true)
 
 add_executable(f_gauge_tlsym F_gauge_tlsym_test.cpp)
 target_link_libraries(f_gauge_tlsym
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(F_gauge_tlsym_CPU f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=false)
-add_test(F_gauge_tlsym_CPU_REC12 f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_rec12_1 --use_gpu=false)
-add_test(F_gauge_tlsym_GPU f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=true)
-add_test(F_gauge_tlsym_GPU_REC12 f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_rec12_1 --use_gpu=true)
+add_test(F_gauge_tlsym_1_CPU       f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=false --use_rec12=false)
+add_test(F_gauge_tlsym_1_CPU_REC12 f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=false --use_rec12=true)
+add_test(F_gauge_tlsym_1_GPU       f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=true  --use_rec12=false)
+add_test(F_gauge_tlsym_1_GPU_REC12 f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=true  --use_rec12=true)
 
 add_executable(localQ local_Q_test.cpp)
 target_link_libraries(localQ

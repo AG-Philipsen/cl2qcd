@@ -23,26 +23,6 @@ public:
 	void fill_kernels();
 	void clear_kernels();
 };
-/*
-const std::string SOURCEFILE = std::string(SOURCEDIR)
-#ifdef _USEDOUBLEPREC_
-                               + "/tests/f_rectangles_input_1";
-#else
-                               + "/tests/f_rectangles_input_1_single";
-#endif
-const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
-const meta::Inputparameters INPUT(2, PARAMS);
-
-const std::string SOURCEFILE_REC12 = std::string(SOURCEDIR)
-#ifdef _USEDOUBLEPREC_
-                               + "/tests/f_rectangles_input_rec12";
-#else
-                               + "/tests/f_rectangles_input_rec12_single";
-#endif
-const char * PARAMS_REC12[] = {"foo", SOURCEFILE_REC12.c_str()};
-const meta::Inputparameters INPUT_REC12(2, PARAMS_REC12);
-*/
-
 
 class Dummyfield : public Gaugefield_hybrid {
 public:
@@ -122,16 +102,29 @@ BOOST_AUTO_TEST_CASE( RECTANGLES )
   logger.info() << "\trectangles";
   logger.info() << "against reference value";
 
+  int param_expect = 4;
+  logger.info() << "expect parameters:";
+  logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
+  //get number of parameters
+  int num_par = boost::unit_test::framework::master_test_suite().argc;
+  if(num_par < param_expect){
+    logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
+    exit(-1);
+  }
+
   //get input file that has been passed as an argument 
-  const char* inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+  const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
   logger.info() << "inputfile used: " << inputfile;
   //get use_gpu = true/false that has been passed as an argument 
-  const char* gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+  const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
   logger.info() << "GPU usage: " << gpu_opt;
+  //get use_rec12 = true/false that has been passed as an argument 
+  const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
+  logger.info() << "rec12 usage: " << rec12_opt;
 
   logger.info() << "Init device";
-  const char* _params[] = {"foo", inputfile, gpu_opt};
-  meta::Inputparameters params(3, _params);
+  const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
+  meta::Inputparameters params(param_expect, _params_cpu);
   Dummyfield cpu(params);
   logger.info() << "gaugeobservables: ";
   cpu.print_gaugeobservables_from_task(0, 0);
