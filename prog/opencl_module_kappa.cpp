@@ -71,7 +71,7 @@ void Opencl_Module_Kappa::run_kappa_clover(const hmc_float beta)
 	clerr = clSetKernelArg(kappa_clover_gpu, 2, sizeof(cl_mem), &clmem_kappa_clover_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(kappa_clover_gpu, global_work_size, local_work_size);
+	get_device()->enqueue_kernel(kappa_clover_gpu, global_work_size, local_work_size);
 
 	// wait for results to have been read back
 	//don't do that anymore ;-)

@@ -276,30 +276,6 @@ public:
 	virtual size_t get_read_write_size(const std::string& in) const;
 
 	/**
-	 * Enqueue the given kernel on the device. Local work size will be determined
-	 * automatically from device and kernel properties.
-	 *
-	 * @param kernel The kernel to execute.
-	 * @param global_work_size The number of threads to run.
-	 *
-	 * @todo local work size decision might need ot become less automatic
-	 * @todo global work size will also depend on device ...
-	 */
-	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size);
-
-	/**
-	 * Enqueue the given kernel on the device. Local work size will be determined
-	 * automatically from device and kernel properties.
-	 *
-	 * @param kernel The kernel to execute.
-	 * @param global_work_size The number of threads to run.
-	 *
-	 * @todo local work size decision might need ot become less automatic
-	 * @todo global work size will also depend on device ...
-	 */
-	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
-
-	/**
 	 * Copy content of a buffer to another buffer inside a queue using
 	 *     clEnqueueCopyBuffer(queue, in, out, 0, 0, size , 0, 0, NULL);
 	 * @param in source

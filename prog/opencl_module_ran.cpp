@@ -75,7 +75,7 @@ void Opencl_Module_Ran::fill_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(init_kernel, 1, sizeof(cl_mem), &clmem_rndarray);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	enqueueKernel(init_kernel, gs, ls);
+	get_device()->enqueue_kernel(init_kernel, gs, ls);
 	clerr = clFinish(get_queue());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
 	clerr = clReleaseKernel(init_kernel);

@@ -820,7 +820,7 @@ void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs
 	err = clSetKernelArg(testKernel, 5, sizeof(hmc_float), &kappa);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
-	enqueueKernel(testKernel, gs, ls);
+	get_device()->enqueue_kernel(testKernel, gs, ls);
 }
 
 void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls, hmc_float kappa)
@@ -837,7 +837,7 @@ void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int g
 	err = clSetKernelArg(testKernel2, 4, sizeof(hmc_float), &kappa);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
-	enqueueKernel(testKernel2, gs, ls);
+	get_device()->enqueue_kernel(testKernel2, gs, ls);
 }
 
 hmc_float Dummyfield::get_squarenorm_eo(int which)

@@ -216,7 +216,7 @@ void Device::runTestKernel(cl_mem out, cl_mem gf, int gs, int ls)
 	clerr = clSetKernelArg(testKernel, 2, buf_loc_size_float, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(testKernel, gs, ls);
+	get_device()->enqueue_kernel(testKernel, gs, ls);
 
 	// run second part of rectangles reduction
 
@@ -227,7 +227,7 @@ void Device::runTestKernel(cl_mem out, cl_mem gf, int gs, int ls)
 	clerr = clSetKernelArg(testKernel_b, 2, sizeof(cl_uint), &num_groups);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(testKernel_b, 1, 1);
+	get_device()->enqueue_kernel(testKernel_b, 1, 1);
 
 	clReleaseMemObject(clmem_rect_buf_glob);
 
@@ -245,7 +245,7 @@ void Device::runTestKernel2(cl_mem out, cl_mem gf, int gs, int ls)
 	err = clSetKernelArg(testKernel2, 1, sizeof(cl_mem), &out);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
-	enqueueKernel(testKernel2, gs, ls);
+	get_device()->enqueue_kernel(testKernel2, gs, ls);
 
 	logger.trace() << "done with testKernel2";
 }

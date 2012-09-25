@@ -182,7 +182,7 @@ void Opencl_Module_Correlator::create_point_source_device(cl_mem inout, int i, i
 	clerr = clSetKernelArg(create_point_source, 3, sizeof(int), &timepos);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( create_point_source, gs2, ls2);
+	get_device()->enqueue_kernel( create_point_source, gs2, ls2);
 }
 
 void Opencl_Module_Correlator::create_stochastic_source_device(cl_mem inout)
@@ -196,7 +196,7 @@ void Opencl_Module_Correlator::create_stochastic_source_device(cl_mem inout)
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	throw Opencl_Error(clerr, "stochastic source not yet implemented!!", __FILE__, __LINE__);
-	enqueueKernel( create_stochastic_source, gs2, ls2);
+	get_device()->enqueue_kernel( create_stochastic_source, gs2, ls2);
 }
 
 void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kernel, cl_mem in, cl_mem correlator)
@@ -211,7 +211,7 @@ void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kern
 	clerr = clSetKernelArg(correlator_kernel, 1, sizeof(cl_mem), &correlator);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(correlator_kernel , gs2, ls2);
+	get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
 }
 
 #ifdef _PROFILING_

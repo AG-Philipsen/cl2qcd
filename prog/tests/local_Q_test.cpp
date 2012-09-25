@@ -156,7 +156,7 @@ void Device::runTestKernel(cl_mem gf, cl_mem out, int gs, int ls)
 	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &out );
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
-	enqueueKernel(testKernel, gs, ls);
+	get_device()->enqueue_kernel(testKernel, gs, ls);
 }
 
 hmc_float Dummyfield::runTestKernel()

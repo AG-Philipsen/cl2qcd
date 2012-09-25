@@ -369,203 +369,6 @@ void Opencl_Module::get_buffer_from_device(cl_mem source, void * dest, size_t si
 	(*this->get_copy_to()).add();
 }
 
-void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
-{
-	cl_int clerr;
-
-	if(logger.beTrace()) {
-		size_t nameSize;
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &nameSize );
-		if( clerr == CL_SUCCESS ) {
-			char* name = new char[nameSize];
-			clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, nameSize, name, &nameSize );
-			if( clerr == CL_SUCCESS )
-				logger.trace() << "Queued Kernel: " << name << " (" << global_work_size << ')';
-			delete[] name;
-		}
-	}
-
-	///@todo make this properly handle multiple dimensions
-	// decide on work-sizes
-	size_t local_work_size = device->get_preferred_local_thread_num();
-
-	// query the work group size specified at compile time (if any)
-	size_t compile_work_group_size[3];
-	clerr = clGetKernelWorkGroupInfo(kernel, device->get_id(), CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 3 * sizeof(size_t), compile_work_group_size, NULL );
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
-
-	const size_t * const local_work_size_p = (compile_work_group_size[0] == 0) ? &local_work_size : &compile_work_group_size[0];
-
-	// make sure global_work_size is divisible by global_work_size
-	if( global_work_size % *local_work_size_p ) {
-		size_t bytesInKernelName;
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
-		if( clerr ) {
-			logger.error() << "Failed to query kernel name: ";
-			return;
-		}
-		char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
-		if( clerr ) {
-			logger.error() << "Failed to query kernel name: ";
-			return;
-		}
-
-		logger.fatal() << "Kernel " << kernelName << " can only be run with a global work size which is a multiple of " << *local_work_size_p << ". The requested size was " << global_work_size << '.';
-
-		delete [] kernelName;
-
-	}
-
-	cl_int clerr_enqueue = CL_SUCCESS;
-#ifdef _PROFILING_
-	cl_event event;
-	clerr_enqueue = clEnqueueNDRangeKernel(get_queue(), kernel, 1, 0, &global_work_size, local_work_size_p, 0, 0, &event); //clerr error handling below
-	if(clerr_enqueue == CL_SUCCESS) {
-
-		cl_int done = clWaitForEvents(1, &event);
-		if(done != CL_SUCCESS) throw Opencl_Error(clerr, "clWaitForEvents", __FILE__, __LINE__);
-
-		//CP: Now I have to get the right timer, called timer_"kernelname"
-		//First Method: Construct the explicit timername
-		size_t bytesInKernelName;
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
-		if( clerr ) {
-			logger.error() << "Failed to query kernel name: ";
-			return;
-		}
-
-		char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
-		if( clerr ) {
-			logger.error() << "Failed to query kernel name: ";
-			return;
-		}
-//  char timerName[7] = ("timer_");
-//  strcat(timerName, kernelName);
-//  //Problem: How to call the memory object?
-//  (this->timerName).add(get_kernel_exec_time(event));
-
-		//Second Method: Nasty workaround
-		//noop is used in case the kernel is not recognized
-		usetimer *timer = NULL;
-		timer = this->get_timer(std::string(kernelName));
-		if(timer == NULL)
-			logger.error() << "get_timer(" << kernelName << ") did not return a timer!";
-		else
-			timer->add(get_kernel_exec_time(event));
-
-		delete [] kernelName;
-
-	}
-#else
-	clerr_enqueue = clEnqueueNDRangeKernel(get_queue(), kernel, 1, 0, &global_work_size, local_work_size_p, 0, 0, NULL);
-#endif
-	if(clerr_enqueue != CL_SUCCESS) {
-		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting...";
-		logger.fatal() << "Some more information:";
-		logger.fatal() << "global_work_size: " << global_work_size;
-		logger.fatal() << "local_work_size:  " << *local_work_size_p;
-
-		size_t bytesInKernelName;
-		if(clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName) == CL_SUCCESS) {
-			char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
-			if(clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL) == CL_SUCCESS) {
-				logger.fatal() << "Failed kernel: " << kernelName;
-			} else {
-				logger.error() << "Could not retrieve kernel name";
-			}
-			delete [] kernelName;
-		} else {
-			logger.error() << "Could not retrieve length of kernel name";
-		}
-
-		throw Opencl_Error(clerr_enqueue, "clEnqueueNDRangeKernel", __FILE__, __LINE__);
-
-	}
-}
-
-void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size)
-{
-	cl_int clerr = CL_SUCCESS;
-
-	if(logger.beTrace()) {
-		size_t nameSize;
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &nameSize );
-		if( clerr == CL_SUCCESS ) {
-			char* name = new char[nameSize];
-			clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, nameSize, name, &nameSize );
-			if( clerr == CL_SUCCESS )
-				logger.trace() << "Queued Kernel: " << name << " (" << global_work_size << '/' << local_work_size << ')';
-			delete[] name;
-		}
-	}
-	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr, "clGetKernelInfo", __FILE__, __LINE__);
-	cl_int clerr_enqueue = CL_SUCCESS;
-#ifdef _PROFILING_
-	cl_event event;
-	clerr_enqueue = clEnqueueNDRangeKernel(get_queue(), kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, &event); //clerr evaluated below
-	if(clerr_enqueue == CL_SUCCESS) {
-		int done = clWaitForEvents(1, &event);
-		if(done != CL_SUCCESS) throw Opencl_Error(clerr, "clWaitForEvents", __FILE__, __LINE__);
-
-		//CP: Now I have to get the right timer, called timer_"kernelname"
-		//First Method: Construct the explicit timername
-		size_t bytesInKernelName;
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
-		if( clerr ) {
-			logger.error() << "Failed to query kernel name: ";
-			return;
-		}
-		char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
-		if( clerr ) {
-			logger.error() << "Failed to query kernel name: ";
-			return;
-		}
-		//  char timerName[7] = ("timer_");
-//  strcat(timerName, kernelName);
-//  //Problem: How to call the memory object?
-//  (this->timerName).add(get_kernel_exec_time(event));
-
-		//Second Method: Nasty workaround
-		//noop is used in case the kernel is not recognized
-		usetimer *timer = NULL;
-		timer = this->get_timer(std::string(kernelName));
-		if(timer == NULL)
-			logger.error() << "get_timer (" << kernelName << ") did not return a timer!";
-		else
-			timer->add(get_kernel_exec_time(event));
-
-		delete [] kernelName;
-	}
-#else
-	clerr_enqueue = clEnqueueNDRangeKernel(get_queue(), kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
-
-	if(clerr_enqueue != CL_SUCCESS) {
-		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting...";
-		logger.fatal() << "Some more information:";
-		logger.fatal() << "global_work_size: " << global_work_size;
-		logger.fatal() << "local_work_size:  " << local_work_size;
-
-		size_t bytesInKernelName;
-		if(clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName) == CL_SUCCESS) {
-			char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
-			if(clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL) == CL_SUCCESS) {
-				logger.fatal() << "Failed kernel: " << kernelName;
-			} else {
-				logger.error() << "Could not retrieve kernel name";
-			}
-			delete [] kernelName;
-		} else {
-			logger.error() << "Could not retrieve length of kernel name";
-		}
-
-		throw Opencl_Error(clerr_enqueue, "clEnqueueNDRangeKernel", __FILE__, __LINE__);
-	}
-}
-
 void Opencl_Module::plaquette_device(cl_mem gf)
 {
 	//query work-sizes for kernel
@@ -600,7 +403,7 @@ void Opencl_Module::plaquette_device(cl_mem gf)
 	clerr = clSetKernelArg(plaquette, 6, buf_loc_size_float, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(plaquette, gs, ls);
+	device->enqueue_kernel(plaquette, gs, ls);
 
 	// run second part of plaquette reduction
 
@@ -631,7 +434,7 @@ void Opencl_Module::plaquette_device(cl_mem gf)
 	///@todo improve
 	ls = 1;
 	gs = 1;
-	enqueueKernel(plaquette_reduction, gs, ls);
+	device->enqueue_kernel(plaquette_reduction, gs, ls);
 
 }
 
@@ -658,7 +461,7 @@ void Opencl_Module::rectangles_device(cl_mem gf)
 	clerr = clSetKernelArg(rectangles, 2, buf_loc_size_float, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(rectangles, gs, ls);
+	device->enqueue_kernel(rectangles, gs, ls);
 
 	// run second part of rectangles reduction
 
@@ -675,7 +478,7 @@ void Opencl_Module::rectangles_device(cl_mem gf)
 	///@todo improve
 	ls = 1;
 	gs = 1;
-	enqueueKernel(rectangles_reduction, gs, ls);
+	device->enqueue_kernel(rectangles_reduction, gs, ls);
 
 }
 
@@ -697,7 +500,7 @@ void Opencl_Module::polyakov_device(cl_mem gf)
 	clerr = clSetKernelArg(polyakov, 2, buf_loc_size_complex, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(polyakov, gs, ls);
+	device->enqueue_kernel(polyakov, gs, ls);
 
 	// second part of polyakov reduction
 
@@ -715,7 +518,7 @@ void Opencl_Module::polyakov_device(cl_mem gf)
 	///@todo improve
 	ls = 1;
 	gs = 1;
-	enqueueKernel(polyakov_reduction, gs, ls);
+	device->enqueue_kernel(polyakov_reduction, gs, ls);
 
 }
 
@@ -801,7 +604,7 @@ void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
 	clerr = clSetKernelArg(stout_smear, 0, sizeof(cl_mem), out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(stout_smear , gs, ls);
+	device->enqueue_kernel(stout_smear , gs, ls);
 
 	return;
 }
@@ -1212,7 +1015,7 @@ void Opencl_Module::convertGaugefieldToSOA_device(cl_mem out, cl_mem in)
 	clerr = clSetKernelArg(convertGaugefieldToSOA, 1, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(convertGaugefieldToSOA, gs2, ls2);
+	device->enqueue_kernel(convertGaugefieldToSOA, gs2, ls2);
 }
 
 void Opencl_Module::convertGaugefieldFromSOA_device(cl_mem out, cl_mem in)
@@ -1228,7 +1031,7 @@ void Opencl_Module::convertGaugefieldFromSOA_device(cl_mem out, cl_mem in)
 	clerr = clSetKernelArg(convertGaugefieldFromSOA, 1, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(convertGaugefieldFromSOA, gs2, ls2);
+	device->enqueue_kernel(convertGaugefieldFromSOA, gs2, ls2);
 }
 
 cl_command_queue Opencl_Module::get_queue() const noexcept

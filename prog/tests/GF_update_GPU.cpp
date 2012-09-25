@@ -232,7 +232,7 @@ void Device::runTestKernel(cl_mem in, cl_mem gf, int gs, int ls)
 	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &gf);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
-	enqueueKernel(testKernel, gs, ls);
+	get_device()->enqueue_kernel(testKernel, gs, ls);
 }
 
 hmc_float Dummyfield::get_squarenorm(int which)

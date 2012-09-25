@@ -105,7 +105,7 @@ void Device::clear_kernels()
 
 void Device::runTestKernel(int gs, int ls)
 {
-	enqueueKernel(testKernel, gs, ls);
+	get_device()->enqueue_kernel(testKernel, gs, ls);
 }
 
 void Dummyfield::runTestKernel()

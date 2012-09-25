@@ -191,7 +191,7 @@ void Opencl_Module_Spinors::convert_from_eoprec_device(cl_mem in1, cl_mem in2, c
 	clerr = clSetKernelArg(convert_from_eoprec, 2, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(convert_from_eoprec, gs2, ls2);
+	get_device()->enqueue_kernel(convert_from_eoprec, gs2, ls2);
 
 	if(get_device()->get_prefers_soa()) {
 		clReleaseMemObject(tmp1);
@@ -224,7 +224,7 @@ void Opencl_Module_Spinors::convert_to_eoprec_device(cl_mem out1, cl_mem out2, c
 	clerr = clSetKernelArg(convert_to_eoprec, 2, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(convert_to_eoprec , gs2, ls2);
+	get_device()->enqueue_kernel(convert_to_eoprec , gs2, ls2);
 
 	if(get_device()->get_prefers_soa()) {
 		convertSpinorfieldToSOA_eo_device(out1, tmp1);
@@ -255,7 +255,7 @@ void Opencl_Module_Spinors::saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_me
 	clerr = clSetKernelArg(saxpy, 3, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(saxpy , gs2, ls2);
+	get_device()->enqueue_kernel(saxpy , gs2, ls2);
 }
 
 void Opencl_Module_Spinors::sax_device(cl_mem x, cl_mem alpha, cl_mem out)
@@ -274,7 +274,7 @@ void Opencl_Module_Spinors::sax_device(cl_mem x, cl_mem alpha, cl_mem out)
 	clerr = clSetKernelArg(sax, 2, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(sax , gs2, ls2);
+	get_device()->enqueue_kernel(sax , gs2, ls2);
 }
 
 void Opencl_Module_Spinors::set_spinorfield_cold_device(cl_mem inout)
@@ -287,7 +287,7 @@ void Opencl_Module_Spinors::set_spinorfield_cold_device(cl_mem inout)
 	int clerr = clSetKernelArg(set_spinorfield_cold, 0, sizeof(cl_mem), &inout);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(set_spinorfield_cold , gs2, ls2);
+	get_device()->enqueue_kernel(set_spinorfield_cold , gs2, ls2);
 }
 
 void Opencl_Module_Spinors::set_eoprec_spinorfield_cold_device(cl_mem inout)
@@ -300,7 +300,7 @@ void Opencl_Module_Spinors::set_eoprec_spinorfield_cold_device(cl_mem inout)
 	int clerr = clSetKernelArg(set_eoprec_spinorfield_cold, 0, sizeof(cl_mem), &inout);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(set_eoprec_spinorfield_cold , gs2, ls2);
+	get_device()->enqueue_kernel(set_eoprec_spinorfield_cold , gs2, ls2);
 }
 
 void Opencl_Module_Spinors::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out)
@@ -322,7 +322,7 @@ void Opencl_Module_Spinors::saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha
 	clerr = clSetKernelArg(saxpy_eoprec, 3, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( saxpy_eoprec, gs2, ls2);
+	get_device()->enqueue_kernel( saxpy_eoprec, gs2, ls2);
 }
 
 void Opencl_Module_Spinors::sax_eoprec_device(cl_mem x, cl_mem alpha, cl_mem out)
@@ -341,7 +341,7 @@ void Opencl_Module_Spinors::sax_eoprec_device(cl_mem x, cl_mem alpha, cl_mem out
 	clerr = clSetKernelArg(sax_eoprec, 2, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( sax_eoprec, gs2, ls2);
+	get_device()->enqueue_kernel( sax_eoprec, gs2, ls2);
 }
 
 void Opencl_Module_Spinors::saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out)
@@ -369,7 +369,7 @@ void Opencl_Module_Spinors::saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem
 	clerr = clSetKernelArg(saxsbypz, 5, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( saxsbypz, gs2, ls2);
+	get_device()->enqueue_kernel( saxsbypz, gs2, ls2);
 }
 
 void Opencl_Module_Spinors::saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out)
@@ -397,7 +397,7 @@ void Opencl_Module_Spinors::saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z,
 	clerr = clSetKernelArg(saxsbypz_eoprec, 5, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( saxsbypz_eoprec, gs2, ls2);
+	get_device()->enqueue_kernel( saxsbypz_eoprec, gs2, ls2);
 }
 
 void Opencl_Module_Spinors::set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out)
@@ -422,7 +422,7 @@ void Opencl_Module_Spinors::set_complex_to_scalar_product_device(cl_mem a, cl_me
 	clerr = clSetKernelArg(scalar_product, 3, sizeof(hmc_complex) * ls2, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(scalar_product , gs2, ls2);
+	get_device()->enqueue_kernel(scalar_product , gs2, ls2);
 
 
 	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
@@ -431,7 +431,7 @@ void Opencl_Module_Spinors::set_complex_to_scalar_product_device(cl_mem a, cl_me
 	clerr = clSetKernelArg(scalar_product_reduction, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( scalar_product_reduction, gs2, ls2);
+	get_device()->enqueue_kernel( scalar_product_reduction, gs2, ls2);
 }
 
 void Opencl_Module_Spinors::set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_mem b, cl_mem out)
@@ -456,7 +456,7 @@ void Opencl_Module_Spinors::set_complex_to_scalar_product_eoprec_device(cl_mem a
 	clerr = clSetKernelArg(scalar_product_eoprec, 3, sizeof(hmc_complex) * ls2, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( scalar_product_eoprec, gs2, ls2);
+	get_device()->enqueue_kernel( scalar_product_eoprec, gs2, ls2);
 
 
 	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), &clmem_scalar_product_buf_glob);
@@ -465,7 +465,7 @@ void Opencl_Module_Spinors::set_complex_to_scalar_product_eoprec_device(cl_mem a
 	clerr = clSetKernelArg(scalar_product_reduction, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( scalar_product_reduction, gs2, ls2);
+	get_device()->enqueue_kernel( scalar_product_reduction, gs2, ls2);
 }
 
 
@@ -485,7 +485,7 @@ void Opencl_Module_Spinors::set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_m
 	clerr = clSetKernelArg(ratio, 2, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( ratio, gs2, ls2);
+	get_device()->enqueue_kernel( ratio, gs2, ls2);
 }
 
 void Opencl_Module_Spinors::set_complex_to_product_device(cl_mem a, cl_mem b, cl_mem out)
@@ -504,7 +504,7 @@ void Opencl_Module_Spinors::set_complex_to_product_device(cl_mem a, cl_mem b, cl
 	clerr = clSetKernelArg(product, 2, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(product , gs2, ls2);
+	get_device()->enqueue_kernel(product , gs2, ls2);
 }
 
 void Opencl_Module_Spinors::set_float_to_global_squarenorm_device(cl_mem a, cl_mem out)
@@ -527,7 +527,7 @@ void Opencl_Module_Spinors::set_float_to_global_squarenorm_device(cl_mem a, cl_m
 	clerr = clSetKernelArg(global_squarenorm, 2, sizeof(hmc_float) * ls2, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(global_squarenorm , gs2, ls2);
+	get_device()->enqueue_kernel(global_squarenorm , gs2, ls2);
 
 	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -535,7 +535,7 @@ void Opencl_Module_Spinors::set_float_to_global_squarenorm_device(cl_mem a, cl_m
 	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( global_squarenorm_reduction, gs2, ls2);
+	get_device()->enqueue_kernel( global_squarenorm_reduction, gs2, ls2);
 }
 
 void Opencl_Module_Spinors::set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_mem out)
@@ -558,7 +558,7 @@ void Opencl_Module_Spinors::set_float_to_global_squarenorm_eoprec_device(cl_mem 
 	clerr = clSetKernelArg(global_squarenorm_eoprec, 2, sizeof(hmc_float) * ls2, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( global_squarenorm_eoprec, gs2, ls2);
+	get_device()->enqueue_kernel( global_squarenorm_eoprec, gs2, ls2);
 
 
 	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
@@ -567,7 +567,7 @@ void Opencl_Module_Spinors::set_float_to_global_squarenorm_eoprec_device(cl_mem 
 	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), &out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( global_squarenorm_reduction, gs2, ls2);
+	get_device()->enqueue_kernel( global_squarenorm_reduction, gs2, ls2);
 }
 
 void Opencl_Module_Spinors::set_zero_spinorfield_device(cl_mem x)
@@ -580,7 +580,7 @@ void Opencl_Module_Spinors::set_zero_spinorfield_device(cl_mem x)
 	int clerr = clSetKernelArg(set_zero_spinorfield, 0, sizeof(cl_mem), &x);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(set_zero_spinorfield , gs2, ls2);
+	get_device()->enqueue_kernel(set_zero_spinorfield , gs2, ls2);
 }
 
 void Opencl_Module_Spinors::set_zero_spinorfield_eoprec_device(cl_mem x)
@@ -593,7 +593,7 @@ void Opencl_Module_Spinors::set_zero_spinorfield_eoprec_device(cl_mem x)
 	int clerr = clSetKernelArg(set_zero_spinorfield_eoprec, 0, sizeof(cl_mem), &x);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( set_zero_spinorfield_eoprec, gs2, ls2);
+	get_device()->enqueue_kernel( set_zero_spinorfield_eoprec, gs2, ls2);
 }
 
 void Opencl_Module_Spinors::convertSpinorfieldToSOA_eo_device(cl_mem out, cl_mem in)
@@ -609,7 +609,7 @@ void Opencl_Module_Spinors::convertSpinorfieldToSOA_eo_device(cl_mem out, cl_mem
 	clerr = clSetKernelArg(convertSpinorfieldToSOA_eo, 1, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(convertSpinorfieldToSOA_eo, gs2, ls2);
+	get_device()->enqueue_kernel(convertSpinorfieldToSOA_eo, gs2, ls2);
 }
 
 void Opencl_Module_Spinors::convertSpinorfieldFromSOA_eo_device(cl_mem out, cl_mem in)
@@ -625,7 +625,7 @@ void Opencl_Module_Spinors::convertSpinorfieldFromSOA_eo_device(cl_mem out, cl_m
 	clerr = clSetKernelArg(convertSpinorfieldFromSOA_eo, 1, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(convertSpinorfieldFromSOA_eo, gs2, ls2);
+	get_device()->enqueue_kernel(convertSpinorfieldFromSOA_eo, gs2, ls2);
 }
 
 // merged kernel calls
@@ -658,7 +658,7 @@ void Opencl_Module_Spinors::saxpy_AND_squarenorm_eo_device(cl_mem x, cl_mem y, c
 	clerr = clSetKernelArg(saxpy_AND_squarenorm_eo, 5, sizeof(hmc_float) * ls2, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( saxpy_AND_squarenorm_eo, gs2, ls2);
+	get_device()->enqueue_kernel( saxpy_AND_squarenorm_eo, gs2, ls2);
 
 	//perform reduction
 	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
@@ -667,7 +667,7 @@ void Opencl_Module_Spinors::saxpy_AND_squarenorm_eo_device(cl_mem x, cl_mem y, c
 	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), &sq_out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( global_squarenorm_reduction, gs2, ls2);
+	get_device()->enqueue_kernel( global_squarenorm_reduction, gs2, ls2);
 }
 
 

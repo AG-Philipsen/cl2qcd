@@ -154,7 +154,7 @@ void Device::runFillKernel(cl_mem out, hmc_complex value)
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(fillComplex, 1, sizeof(hmc_complex), &value);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	enqueueKernel(fillComplex, 1024);
+	get_device()->enqueue_kernel(fillComplex, 1024);
 }
 
 void Device::runReadKernel(cl_mem out, cl_mem in)
@@ -164,7 +164,7 @@ void Device::runReadKernel(cl_mem out, cl_mem in)
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(readComplex, 1, sizeof(cl_mem), &in);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	enqueueKernel(readComplex, 1024);
+	get_device()->enqueue_kernel(readComplex, 1024);
 }
 
 void Dummyfield::verify(hmc_complex left, hmc_complex right)
