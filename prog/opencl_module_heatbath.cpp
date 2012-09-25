@@ -157,7 +157,7 @@ void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, size_t * ls,
 		} else {
 			*gs = std::min(get_device()->get_num_compute_units(), static_cast<size_t>(this->Opencl_Module_Ran::get_num_rndstates()));
 		}
-		*ls = Opencl_Module::get_numthreads();
+		*ls = get_device()->get_preferred_local_thread_num();
 		*num_groups = *gs / *ls;
 	}
 	return;

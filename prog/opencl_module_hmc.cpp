@@ -16,7 +16,7 @@ void Opencl_Module_Hmc::fill_collect_options(stringstream* collect_options)
 	if(meta::get_use_rectangles(get_parameters()) == true) {
 		*collect_options <<  " -DC0=" << meta::get_c0(get_parameters()) << " -DC1=" << meta::get_c1(get_parameters());
 	}
-	if(use_soa) {
+	if(get_device()->get_prefers_soa()) {
 		*collect_options << " -DGAUGEMOMENTA_STRIDE=" << calculateStride(meta::get_vol4d(get_parameters()) * NDIM, sizeof(hmc_float));
 	}
 	return;
@@ -100,7 +100,7 @@ void Opencl_Module_Hmc::fill_kernels()
 		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_hmc_code << "force_fermion_stout_smear.cl";
 	}
 	gaugemomentum_squarenorm = createKernel("gaugemomentum_squarenorm") << basic_hmc_code << "gaugemomentum_squarenorm.cl";
-	if(use_soa) {
+	if(get_device()->get_prefers_soa()) {
 		gaugemomentum_convert_to_soa = createKernel("gaugemomentum_convert_to_soa") << basic_hmc_code << "gaugemomentum_convert.cl";
 		gaugemomentum_convert_from_soa = createKernel("gaugemomentum_convert_from_soa") << basic_hmc_code << "gaugemomentum_convert.cl";
 	} else {
@@ -2250,7 +2250,7 @@ void Opencl_Module_Hmc::set_float_to_gaugemomentum_squarenorm_device(cl_mem clme
 size_t Opencl_Module_Hmc::get_gaugemomentum_buffer_size()
 {
 	if(!gaugemomentum_buf_size) {
-		if(use_soa) {
+		if(get_device()->get_prefers_soa()) {
 			gaugemomentum_buf_size = calculateStride(meta::get_vol4d(parameters) * NDIM, sizeof(hmc_float)) * sizeof(ae);
 		} else {
 			gaugemomentum_buf_size = meta::get_vol4d(parameters) * NDIM * sizeof(ae);
@@ -2262,7 +2262,7 @@ size_t Opencl_Module_Hmc::get_gaugemomentum_buffer_size()
 void Opencl_Module_Hmc::importGaugemomentumBuffer(const cl_mem dest, const ae * const data)
 {
 	cl_int clerr;
-	if(use_soa) {
+	if(get_device()->get_prefers_soa()) {
 		const size_t aos_size = meta::get_vol4d(parameters) * NDIM * sizeof(ae);
 		cl_mem tmp = create_ro_buffer(aos_size);
 		clerr = clEnqueueWriteBuffer(get_queue(), tmp, CL_TRUE, 0, aos_size, data, 0, 0, NULL);
@@ -2287,7 +2287,7 @@ void Opencl_Module_Hmc::importGaugemomentumBuffer(const cl_mem dest, const ae * 
 void Opencl_Module_Hmc::exportGaugemomentumBuffer(ae * const dest, const cl_mem buf)
 {
 	cl_int clerr;
-	if(use_soa) {
+	if(get_device()->get_prefers_soa()) {
 		const size_t aos_size = meta::get_vol4d(parameters) * NDIM * sizeof(ae);
 		cl_mem tmp = create_wo_buffer(aos_size);
 

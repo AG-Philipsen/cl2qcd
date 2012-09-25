@@ -33,24 +33,6 @@ void Opencl_Module::init()
 	cl_int clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ocl_context, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetCommandQueueInfo", __FILE__, __LINE__);
 
-	// different devices need different strategies for optimal performance
-	switch ( device->get_device_type() ) {
-		case CL_DEVICE_TYPE_GPU :
-			numthreads = 128;
-			use_soa = true;
-			use_blocked_loops = false;
-			logger.debug() << "Device should use SOA storage format and strided loops.";
-			break;
-		case CL_DEVICE_TYPE_CPU :
-			numthreads = 1;
-			use_soa = false;
-			use_blocked_loops = true;
-			logger.debug() << "Device should use AOS storage format and blocked loops.";
-			break;
-		default :
-			throw Print_Error_Message("Could not retrive proper CL_DEVICE_TYPE...", __FILE__, __LINE__);
-	}
-
 	// initialize memory usage tracking
 	allocated_bytes = 0;
 	max_allocated_bytes = 0;
@@ -60,7 +42,6 @@ void Opencl_Module::init()
 	this->fill_buffers();
 	this->fill_kernels();
 }
-
 
 void Opencl_Module::finalize()
 {
@@ -128,16 +109,13 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 		*collect_options << " -DRHO=" << get_parameters().get_rho();
 		*collect_options << " -DRHO_ITER=" << get_parameters().get_rho_iter();
 	}
-	if(use_soa) {
+	if(device->get_prefers_soa()) {
 		*collect_options << " -DGAUGEFIELD_STRIDE=" << calculateStride(meta::get_vol4d(get_parameters()) * NDIM, sizeof(hmc_complex));
+		*collect_options << " -D_USE_SOA_";
 	}
 	*collect_options << " -I" << SOURCEDIR;
 
-	if(use_soa) {
-		*collect_options << " -D_USE_SOA_";
-	}
-
-	if(use_blocked_loops) {
+	if(device->get_prefers_blocked_loops()) {
 		*collect_options << " -D_USE_BLOCKED_LOOPS_";
 	}
 
@@ -409,11 +387,7 @@ void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_wo
 
 	///@todo make this properly handle multiple dimensions
 	// decide on work-sizes
-	size_t local_work_size;
-	if( device->get_device_type() == CL_DEVICE_TYPE_GPU )
-		local_work_size = Opencl_Module::get_numthreads(); /// @todo have local work size depend on kernel properties (and device? autotune?)
-	else
-		local_work_size = 1; // nothing else makes sens on CPU
+	size_t local_work_size = device->get_preferred_local_thread_num();
 
 	// query the work group size specified at compile time (if any)
 	size_t compile_work_group_size[3];
@@ -839,17 +813,8 @@ void Opencl_Module::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t *
 	//Query kernel name
 	string kernelname = get_kernel_name(kernel);
 
-	size_t local_work_size;
-	if( device->get_device_type() == CL_DEVICE_TYPE_GPU )
-		local_work_size = Opencl_Module::get_numthreads(); /// @todo have local work size depend on kernel properties (and device? autotune?)
-	else
-		local_work_size = 1; // nothing else makes sense on CPU
-
-	size_t global_work_size;
-	if( device->get_device_type() == CL_DEVICE_TYPE_GPU )
-		global_work_size = 4 * Opencl_Module::get_numthreads() * device->get_num_compute_units(); /// @todo autotune
-	else
-		global_work_size = device->get_num_compute_units();
+	size_t local_work_size = device->get_preferred_local_thread_num();
+	size_t global_work_size = device->get_preferred_global_thread_num();
 
 	const cl_uint num_groups_tmp = (global_work_size + local_work_size - 1) / local_work_size;
 	global_work_size = local_work_size * num_groups_tmp;
@@ -1086,11 +1051,6 @@ void Opencl_Module::print_profiling(const std::string& filename, int number)
 #endif
 
 
-int Opencl_Module::get_numthreads() const noexcept
-{
-	return numthreads;
-}
-
 void Opencl_Module::print_copy_times(uint64_t totaltime)
 {
 	//copy1 ^= copy_to_from_dev_time
@@ -1188,7 +1148,7 @@ cl_ulong Opencl_Module::calculateStride(const cl_ulong elems, const cl_ulong bas
 size_t Opencl_Module::getGaugefieldBufferSize()
 {
 	if(gaugefield_bytes == 0) {
-		if(use_soa) {
+		if(device->get_prefers_soa()) {
 			gaugefield_bytes = calculateStride(NDIM * meta::get_vol4d(get_parameters()), sizeof(hmc_complex)) * sizeof(Matrixsu3);
 		} else {
 			gaugefield_bytes = meta::get_vol4d(get_parameters()) * NDIM * sizeof(Matrixsu3);
@@ -1204,7 +1164,7 @@ void Opencl_Module::importGaugefield(const Matrixsu3 * const data)
 void Opencl_Module::importGaugefield(cl_mem gaugefield, const Matrixsu3 * const data)
 {
 	logger.trace() << "Import gaugefield to device";
-	if(use_soa) {
+	if(device->get_prefers_soa()) {
 		size_t aos_bytes = meta::get_vol4d(get_parameters()) * NDIM * sizeof(Matrixsu3);
 		cl_mem tmp = create_ro_buffer(aos_bytes);
 
@@ -1223,7 +1183,7 @@ void Opencl_Module::importGaugefield(cl_mem gaugefield, const Matrixsu3 * const 
 void Opencl_Module::exportGaugefield(Matrixsu3 * const dest)
 {
 	logger.trace() << "Exporting gaugefield from device";
-	if(use_soa) {
+	if(device->get_prefers_soa()) {
 		size_t aos_bytes = meta::get_vol4d(get_parameters()) * NDIM * sizeof(Matrixsu3);
 		cl_mem tmp = create_wo_buffer(aos_bytes);
 

@@ -166,7 +166,7 @@ void Opencl_Module_Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls, 
 void Opencl_Module_Spinors::convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out)
 {
 	cl_mem tmp1, tmp2;
-	if(use_soa) {
+	if(get_device()->get_prefers_soa()) {
 		tmp1 = create_rw_buffer(sizeof(spinor) * meta::get_eoprec_spinorfieldsize(get_parameters()));
 		tmp2 = create_rw_buffer(sizeof(spinor) * meta::get_eoprec_spinorfieldsize(get_parameters()));
 
@@ -193,7 +193,7 @@ void Opencl_Module_Spinors::convert_from_eoprec_device(cl_mem in1, cl_mem in2, c
 
 	enqueueKernel(convert_from_eoprec, gs2, ls2);
 
-	if(use_soa) {
+	if(get_device()->get_prefers_soa()) {
 		clReleaseMemObject(tmp1);
 		clReleaseMemObject(tmp2);
 	}
@@ -202,7 +202,7 @@ void Opencl_Module_Spinors::convert_from_eoprec_device(cl_mem in1, cl_mem in2, c
 void Opencl_Module_Spinors::convert_to_eoprec_device(cl_mem out1, cl_mem out2, cl_mem in)
 {
 	cl_mem tmp1, tmp2;
-	if(use_soa) {
+	if(get_device()->get_prefers_soa()) {
 		tmp1 = create_rw_buffer(sizeof(spinor) * meta::get_eoprec_spinorfieldsize(get_parameters()));
 		tmp2 = create_rw_buffer(sizeof(spinor) * meta::get_eoprec_spinorfieldsize(get_parameters()));
 	} else {
@@ -226,7 +226,7 @@ void Opencl_Module_Spinors::convert_to_eoprec_device(cl_mem out1, cl_mem out2, c
 
 	enqueueKernel(convert_to_eoprec , gs2, ls2);
 
-	if(use_soa) {
+	if(get_device()->get_prefers_soa()) {
 		convertSpinorfieldToSOA_eo_device(out1, tmp1);
 		convertSpinorfieldToSOA_eo_device(out2, tmp2);
 
@@ -1006,7 +1006,7 @@ void Opencl_Module_Spinors::print_profiling(const std::string& filename, int num
 size_t Opencl_Module_Spinors::get_eoprec_spinorfield_buffer_size()
 {
 	if(!eoprec_spinorfield_buf_size) {
-		if(use_soa) {
+		if(get_device()->get_prefers_soa()) {
 			eoprec_spinorfield_buf_size = calculateStride(meta::get_eoprec_spinorfieldsize(get_parameters()), sizeof(hmc_complex)) * 12 * sizeof(hmc_complex);
 		} else {
 			eoprec_spinorfield_buf_size = meta::get_eoprec_spinorfieldsize(get_parameters()) * sizeof(spinor);

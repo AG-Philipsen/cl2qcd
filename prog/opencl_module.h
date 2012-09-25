@@ -407,23 +407,7 @@ protected:
 	 */
 	TmpClKernel createKernel(const char * const kernel_name, const char * const build_opts = 0);
 
-	/**
-	 * Get number of threads
-	 * @return int numthreads
-	 *
-	 */
-	int get_numthreads() const noexcept;
-
 	const meta::Inputparameters& parameters;
-
-	/**
-	 * Whether this device uses SOA storage
-	 */
-	bool use_soa;
-	/**
-	 * Whether this device prefers blocks loops to strided ones
-	 */
-	bool use_blocked_loops;
 
 	/**
 	 * Calculate the proper stride for SOA storage.

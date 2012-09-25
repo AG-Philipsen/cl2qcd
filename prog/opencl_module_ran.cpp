@@ -42,10 +42,7 @@ void Opencl_Module_Ran::fill_buffers()
 #elif defined(USE_PRNG_RANLUX)
 	// make num of random states equal to default num of global threads
 	// TODO make this somewhat more automatic (avoid code duplication)
-	if(get_device()->get_device_type() == CL_DEVICE_TYPE_GPU)
-		num_rndstates = 4 * Opencl_Module::get_numthreads() * get_device()->get_num_compute_units();
-	else
-		num_rndstates = get_device()->get_num_compute_units();
+	num_rndstates = get_device()->get_preferred_global_thread_num();
 
 	logger.trace() << "Create buffer for random numbers...";
 	clmem_rndarray = create_rw_buffer(7 * num_rndstates * sizeof(cl_float4));
