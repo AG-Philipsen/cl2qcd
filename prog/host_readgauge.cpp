@@ -334,18 +334,18 @@ void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, i
 			tmp = fopen(tmp_file_name, "w");
 			if(tmp == NULL) throw Print_Error_Message("\t\terror in creating tmp file\n");
 
-			std::string buffer;
-			limeReaderReadData ((void*) buffer.c_str(), (n_uint64_t *) &nbytes, r);
-			char * buffer2 = new char[nbytes + 1];
-			strcpy(buffer2, buffer.c_str());
-			fwrite(buffer2, 1, sizeof(char)*nbytes, tmp);
+			char * buffer = new char[nbytes + 1];
+			int error = limeReaderReadData(buffer, &nbytes, r);
+			if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
+			fwrite(buffer, 1, nbytes, tmp);
 			fclose(tmp);
+			delete [] buffer;
+			buffer = 0;
 
 			get_inverter_infos(tmp_file_name, solvertype, epssq, noiter, kappa_solver, mu_solver, time_solver, hmcversion_solver, date_solver);
 			logger.trace() << "\tsuccesfully read InverterInfos" ;
 
 			remove(tmp_file_name);
-			delete [] buffer2;
 		}
 		//!!read XLF info, only FIRST fermion is read!!
 		if(strcmp (lime_types[1], lime_type) == 0 && switcher < 2 ) {
@@ -358,20 +358,17 @@ void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, i
 				throw Print_Error_Message("\t\terror in creating tmp file\n");
 			}
 			char * buffer = new char[nbytes + 1];
-			int error =
-			  limeReaderReadData ((void*) buffer, (n_uint64_t *) &nbytes, r);
+			int error = limeReaderReadData (buffer, &nbytes, r);
 			if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
-
-			char * buffer2 = new char[nbytes + 1];
-			strcpy(buffer2, buffer);
-			fwrite(buffer2, 1, sizeof(char)*nbytes, tmp);
+			fwrite(buffer, 1, nbytes, tmp);
 			fclose(tmp);
+			delete [] buffer;
+			buffer = 0;
 
 			get_XLF_infos(tmp_file_name, plaquettevalue, trajectorynr, beta, kappa, mu, c2_rec, time, hmcversion, mubar, epsilonbar, date);
 			logger.trace() << "\tsuccesfully read XLFInfos";
 
 			remove(tmp_file_name);
-			delete [] buffer2;
 		}
 		//!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
 		if(  (strcmp (lime_types[4], lime_type) == 0 || strcmp (lime_types[7], lime_type) == 0)  && switcher < 2 ) {
@@ -385,13 +382,12 @@ void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, i
 				throw Print_Error_Message("\t\terror in creating tmp file\n");
 			}
 			char * buffer = new char[nbytes + 1];
-			limeReaderReadData ((void*) buffer, (n_uint64_t *) &nbytes, r);
-
-			char * buffer2 = new char[nbytes + 1];
-			strcpy(buffer2, buffer);
-
-			fwrite(buffer2, 1, sizeof(char)*nbytes, tmp);
+			int error = limeReaderReadData (buffer, &nbytes, r);
+			if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
+			fwrite(buffer, 1, nbytes, tmp);
 			fclose(tmp);
+			delete[] buffer;
+			buffer = 0;
 
 			get_XML_infos(tmp_file_name, prec, lx, ly, lz, lt, flavours, field_out );
 			logger.trace() << "\tsuccesfully read XMLInfos";
@@ -407,7 +403,6 @@ void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, i
 				throw Print_Error_Message("\tError in read_meta_infos()");
 			}
 			remove(tmp_file_name);
-			delete [] buffer2;
 		}
 	}
 	limeDestroyReader(r);
@@ -858,7 +853,6 @@ void sourcefileparameters::readsourcefile(const char * file, int precision, hmc_
 
 	return;
 }
-
 
 void sourcefileparameters::val_assign_source(int * out, int in)
 {
