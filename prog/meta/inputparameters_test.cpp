@@ -292,6 +292,8 @@ BOOST_AUTO_TEST_CASE(aliases)
 	BOOST_REQUIRE_EQUAL(params.get_thermalizationsteps(), 13);
 	BOOST_REQUIRE_EQUAL(params.get_use_gauge_only(), true);
 	BOOST_REQUIRE_EQUAL(params.get_test_ref_value(), 42.);
+	BOOST_REQUIRE_EQUAL(params.get_theta_fermion_spatial(), 3.);
+	BOOST_REQUIRE_EQUAL(params.get_theta_fermion_temporal(), 1.5);
 }
 
 BOOST_AUTO_TEST_CASE(help)

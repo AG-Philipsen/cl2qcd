@@ -72,6 +72,7 @@
 
 // This C header is sadly required to check whether writing to a terminal or a file
 #include <stdio.h>
+#include <unistd.h>
 
 /**
  * This namespace contains all objects required for logging using Einhard.
