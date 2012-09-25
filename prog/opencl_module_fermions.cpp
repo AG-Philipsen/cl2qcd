@@ -2282,7 +2282,6 @@ uint64_t Opencl_Module_Fermions::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-#ifdef _PROFILING_
 void Opencl_Module_Fermions::print_profiling(const std::string& filename, int number)
 {
 	Opencl_Module_Spinors::print_profiling(filename, number);
@@ -2302,4 +2301,3 @@ void Opencl_Module_Fermions::print_profiling(const std::string& filename, int nu
 	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_AND_gamma5_eo);
 	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_minus_AND_gamma5_eo);
 }
-#endif

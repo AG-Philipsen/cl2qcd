@@ -343,8 +343,6 @@ uint64_t Opencl_Module_Correlator::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-#ifdef _PROFILING_
-
 void Opencl_Module_Correlator::print_profiling(const std::string& filename, int number)
 {
 	Opencl_Module_Spinors::print_profiling(filename, number);
@@ -363,4 +361,3 @@ void Opencl_Module_Correlator::print_profiling(const std::string& filename, int 
 	Opencl_Module::print_profiling(filename, correlator_ay);
 	Opencl_Module::print_profiling(filename, correlator_az);
 }
-#endif

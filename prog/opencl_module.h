@@ -232,8 +232,6 @@ public:
 	 */
 	std::string get_kernel_name(const cl_kernel kernel) const;
 
-#ifdef _PROFILING_
-
 	/**
 	 * Print the profiling information to a file.
 	 *
@@ -241,8 +239,6 @@ public:
 	 * @param number task-id
 	 */
 	void virtual print_profiling(const std::string& filename, int number);
-
-#endif
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -378,7 +374,6 @@ protected:
 	 */
 	cl_ulong calculateStride(const cl_ulong elems, const cl_ulong baseTypeSize);
 
-#ifdef _PROFILING_
 	/**
 	 * Print the profiling information for the given kernel to the given file.
 	 *
@@ -386,7 +381,6 @@ protected:
 	 * \param kernel the kernel whose information to pring
 	 */
 	void print_profiling(const std::string& filename, const cl_kernel& kernel) const;
-#endif /* _PROFILING_ */
 
 public:
 

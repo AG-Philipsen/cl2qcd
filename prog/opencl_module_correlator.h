@@ -105,7 +105,6 @@ public:
 	cl_mem get_clmem_corr();
 	cl_mem get_clmem_source();
 
-#ifdef _PROFILING_
 	/**
 	 * Print the profiling information to a file.
 	 *
@@ -113,7 +112,6 @@ public:
 	 * @param number task-id
 	 */
 	void virtual print_profiling(const std::string& filename, int number) override;
-#endif
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.

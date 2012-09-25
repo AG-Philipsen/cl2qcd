@@ -284,9 +284,7 @@ public:
 	*/
 	void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source);
 
-#ifdef _PROFILING_
 	void print_profiling(std::string filename);
-#endif
 
 protected:
 	cl_device_type* devicetypes;

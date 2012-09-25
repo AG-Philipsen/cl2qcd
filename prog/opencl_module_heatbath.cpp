@@ -209,8 +209,6 @@ uint64_t Opencl_Module_Heatbath::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-#ifdef _PROFILING_
-
 void Opencl_Module_Heatbath::print_profiling(const std::string& filename, int number)
 {
 	Opencl_Module_Ran::print_profiling(filename, number);
@@ -219,5 +217,3 @@ void Opencl_Module_Heatbath::print_profiling(const std::string& filename, int nu
 	Opencl_Module::print_profiling(filename, overrelax_even);
 	Opencl_Module::print_profiling(filename, overrelax_odd);
 }
-
-#endif

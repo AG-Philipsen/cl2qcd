@@ -99,7 +99,6 @@ private:
 	cl_kernel overrelax_even;
 
 
-#ifdef _PROFILING_
 	/**
 	 * Print the profiling information to a file.
 	 *
@@ -107,7 +106,6 @@ private:
 	 * @param parameters inputparameters
 	 */
 	void virtual print_profiling(const std::string& filename, int number) override;
-#endif
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.

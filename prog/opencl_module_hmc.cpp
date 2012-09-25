@@ -402,8 +402,6 @@ uint64_t Opencl_Module_Hmc::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-#ifdef _PROFILING_
-
 void Opencl_Module_Hmc::print_profiling(const std::string& filename, int number)
 {
 	Opencl_Module_Fermions::print_profiling(filename, number);
@@ -420,7 +418,6 @@ void Opencl_Module_Hmc::print_profiling(const std::string& filename, int number)
 	Opencl_Module::print_profiling(filename, gaugemomentum_squarenorm);
 	Opencl_Module::print_profiling(filename, stout_smear_fermion_force);
 }
-#endif
 
 ////////////////////////////////////////////////////
 //Methods needed for the HMC-algorithm

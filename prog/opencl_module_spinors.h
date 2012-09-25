@@ -127,14 +127,12 @@ public:
 	 */
 	void copy_to_eoprec_spinorfield_buffer(cl_mem buf, const spinor * const source);
 
-#ifdef _PROFILING_
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 */
 	void virtual print_profiling(const std::string& filename, int number) override;
-#endif
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.

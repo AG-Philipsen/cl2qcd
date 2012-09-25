@@ -888,8 +888,6 @@ uint64_t Opencl_Module_Spinors::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-#ifdef _PROFILING_
-
 void Opencl_Module_Spinors::print_profiling(const std::string& filename, int number)
 {
 	Opencl_Module_Ran::print_profiling(filename, number);
@@ -917,7 +915,6 @@ void Opencl_Module_Spinors::print_profiling(const std::string& filename, int num
 	Opencl_Module::print_profiling(filename, convertSpinorfieldFromSOA_eo);
 	Opencl_Module::print_profiling(filename, saxpy_AND_squarenorm_eo);
 }
-#endif
 
 size_t Opencl_Module_Spinors::get_eoprec_spinorfield_buffer_size()
 {

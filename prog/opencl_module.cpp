@@ -8,7 +8,6 @@
 
 using namespace std;
 
-#ifdef _PROFILING_
 static void print_profile_header(const std::string& filename, int number);
 /**
  * Print the profiling information of a specific kernel to a file.
@@ -21,7 +20,6 @@ static void print_profile_header(const std::string& filename, int number);
  * @param flop_size amount of flops performed by the kernel
  */
 static void print_profiling(const std::string& filename, const std::string& kernelName, const hardware::ProfilingData& data, size_t read_write_size, uint64_t flop_size, uint64_t sites);
-#endif /* _PROFILING_ */
 
 void Opencl_Module::init()
 {
@@ -745,8 +743,6 @@ uint64_t Opencl_Module::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-#ifdef _PROFILING_
-
 static void print_profiling(const std::string& filename, const std::string& kernelName, const hardware::ProfilingData& data, size_t read_write_size, uint64_t flop_size, uint64_t sites)
 {
 	hmc_float bandwidth = 0.;
@@ -815,8 +811,6 @@ void Opencl_Module::print_profiling(const std::string& filename, int number)
 	print_profiling(filename, convertGaugefieldToSOA);
 	print_profiling(filename, convertGaugefieldFromSOA);
 }
-#endif
-
 
 void Opencl_Module::print_copy_times(uint64_t totaltime)
 {

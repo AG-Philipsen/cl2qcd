@@ -467,7 +467,6 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask, st
 	gaugeout.close();
 }
 
-#ifdef _PROFILING_
 void Gaugefield_hybrid::print_profiling(std::string filename)
 {
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
@@ -475,7 +474,6 @@ void Gaugefield_hybrid::print_profiling(std::string filename)
 		opencl_modules[ntask]->print_profiling(filename, ntask);
 	}
 }
-#endif
 
 void Gaugefield_hybrid::set_to_gaugefield(Matrixsu3 * field, const size_t mu, const size_t x, const size_t t, const Matrixsu3 val)
 {

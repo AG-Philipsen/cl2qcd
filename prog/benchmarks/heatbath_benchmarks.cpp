@@ -7,11 +7,6 @@ namespace po = boost::program_options;
 
 int main(int argc, const char* argv[])
 {
-#ifndef _PROFILING_
-	logger.fatal() << "_PROFILING_ not defined, cannot perform benchmarks. Aborting...";
-	throw Print_Error_Message("_PROFILING_ not defined, cannot perform benchmarks. Aborting...");
-#endif
-
 //CP: This should be the same as the normal heatbath-executable
 /////////////////////////////////////////////////////////////////////////////////////////
 
