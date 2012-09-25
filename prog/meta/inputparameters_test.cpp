@@ -113,6 +113,7 @@ void checkDefaults(const Inputparameters params)
 
 	BOOST_REQUIRE_EQUAL(params.get_use_same_rnd_numbers(), false);
 	BOOST_REQUIRE_EQUAL(params.get_profile_solver(), false);
+	BOOST_REQUIRE_EQUAL(params.get_test_ref_value(), 0.);
 
 	BOOST_REQUIRE_EQUAL(params.is_ocl_compiler_opt_disabled(), false);
 
@@ -233,6 +234,7 @@ BOOST_AUTO_TEST_CASE(input_file2)
 
 	BOOST_REQUIRE_EQUAL(params.get_use_same_rnd_numbers(), true);
 	BOOST_REQUIRE_EQUAL(params.get_profile_solver(), true);
+	BOOST_REQUIRE_EQUAL(params.get_test_ref_value(), 1.337);
 
 	BOOST_REQUIRE_EQUAL(params.get_use_merge_kernels_spinor(), true);
 	BOOST_REQUIRE_EQUAL(params.get_use_merge_kernels_fermion(), true);
@@ -282,6 +284,20 @@ BOOST_AUTO_TEST_CASE(command_line6)
 	const char* _params[] = {"foo", "--log-level=ERROR"};
 	Inputparameters params(2, _params);
 	BOOST_REQUIRE_EQUAL(params.get_log_level(), "ERROR");
+}
+
+BOOST_AUTO_TEST_CASE(aliases)
+{
+	const char* _params[] = {"foo", "test_input_aliases"};
+	Inputparameters params(2, _params);
+	BOOST_REQUIRE_EQUAL(params.get_nspace(), 12);
+	BOOST_REQUIRE_EQUAL(params.get_ntime(), 32);
+	BOOST_REQUIRE_EQUAL(params.get_use_eo(), false);
+	BOOST_REQUIRE_EQUAL(params.get_thermalizationsteps(), 13);
+	BOOST_REQUIRE_EQUAL(params.get_use_gauge_only(), true);
+	BOOST_REQUIRE_EQUAL(params.get_test_ref_value(), 42.);
+	BOOST_REQUIRE_EQUAL(params.get_theta_fermion_spatial(), 3.);
+	BOOST_REQUIRE_EQUAL(params.get_theta_fermion_temporal(), 1.5);
 }
 
 BOOST_AUTO_TEST_CASE(help)

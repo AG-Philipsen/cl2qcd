@@ -15,7 +15,8 @@ if __name__ == '__main__':
 	parser.add_argument('--metric', default='both', help='Output gflops, gbytes or both')
 	parser.add_argument('--notitle', default=False, action='store_true', help='Suppress plot title')
 	parser.add_argument('--title', default='Overrelax Performance', help='Title to use for the plot')
-	parser.add_argument('--maxSize', type=int, help='Maximum lattice size to plot');
+	parser.add_argument('--maxSize', type=int, help='Maximum lattice size to plot')
+	parser.add_argument('--legend-pos', help='Position for the plot legend')
 	args = parser.parse_args()
 
 	if args.labels and len(args.files) != len(args.labels):
@@ -35,4 +36,4 @@ if __name__ == '__main__':
 		print 'Metric must be gflops, gbytes or both.'
 		sys.exit(1)
 
-	main(datafiles, labels, r'dslash_(eo|eoprec)', args.output, args.metric, False if args.notitle else args.title, args.maxSize)
+	main(datafiles, labels, r'dslash_(eo|eoprec)', args.output, args.metric, False if args.notitle else args.title, args.maxSize, args.legend_pos)

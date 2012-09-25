@@ -85,6 +85,7 @@ corr_dir = 2
 
 use_same_rnd_numbers = true
 profile_solver = true
+test_ref_val = 1.337
 
 use_merge_kernels_spinor = true
 use_merge_kernels_fermion = true

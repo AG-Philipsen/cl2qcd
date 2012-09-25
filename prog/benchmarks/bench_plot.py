@@ -11,7 +11,7 @@ linestyles = ['r.', 'b.', 'r*', 'b*', 'g.', 'k.', 'r,', 'b,', 'g,', 'k,', 'g*', 
 
 FileData = namedtuple('FileData', ['label', 'runs', 'xpos'])
 
-def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title=False, maxSize=None):
+def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title=False, maxSize=None, legend_pos = None):
 
 	filedatas = []
 
@@ -102,7 +102,11 @@ def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title
 		max_lim = (0, max(ax1.get_ylim()[1], ax2.get_ylim()[1]))
 		ax1.set_ylim(max_lim)
 		ax2.set_ylim(max_lim)
-	fig.legend(lines, labels)
+
+	extra_legend_args = {}
+	if legend_pos:
+		extra_legend_args['loc'] = legend_pos
+	legend = fig.legend(lines, labels, **extra_legend_args)
 
 	if output:
 		plt.savefig(output)
