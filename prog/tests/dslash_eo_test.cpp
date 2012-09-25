@@ -9,10 +9,9 @@
 
 extern std::string const version;
 std::string const version = "0.1";
+std::string const exec_name = "dslash_eo";
 
 class Device : public Opencl_Module_Fermions {
-
-	cl_kernel testKernel;
 
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module_Fermions(params, device) {
@@ -22,28 +21,24 @@ public:
 		finalize();
 	};
 
-	void runTestKernel(cl_mem in, cl_mem out, cl_mem gf, int gs, int ls, hmc_float kappa);
 	void fill_kernels();
 	void clear_kernels();
 };
 
-const std::string SOURCEFILE = std::string(SOURCEDIR) + "/tests/m_eo_gpu_input_1";
-const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
-const meta::Inputparameters INPUT(2, PARAMS);
-
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type, const hardware::System * system) : Gaugefield_hybrid(system) {
-		init(1, device_type);
+	Dummyfield(const hardware::System * system) : Gaugefield_hybrid(system) {
+		auto inputfile = system->get_inputparameters();
+		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU);
+		meta::print_info_inverter(exec_name.c_str(), inputfile);
 	};
 
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
 	hmc_float get_squarenorm(int which);
-	void runTestKernel();
-	void verify(hmc_float, hmc_float);
+	void runTestKernel(int even_odd);
 
 private:
 	void fill_buffers();
@@ -53,44 +48,6 @@ private:
 	cl_mem sqnorm;
 	spinor * sf_in;
 };
-
-
-BOOST_AUTO_TEST_CASE( DSLASH_EOPREC )
-{
-	logger.info() << "Init CPU device";
-	//params.print_info_inverter("m_gpu");
-	hardware::System system_cpu(INPUT);
-	Dummyfield cpu(CL_DEVICE_TYPE_CPU, &system_cpu);
-	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables_from_task(0, 0);
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back = cpu.get_squarenorm(0);
-	cpu.runTestKernel();
-	logger.info() << "|M phi|^2:";
-	hmc_float cpu_res;
-	cpu_res = cpu.get_squarenorm(1);
-	BOOST_MESSAGE("Tested CPU");
-
-	logger.info() << "Init GPU device";
-	//params.print_info_inverter("m_gpu");
-	hardware::System system_gpu(INPUT);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system_gpu);
-	logger.info() << "gaugeobservables: ";
-	dummy.print_gaugeobservables_from_task(0, 0);
-	logger.info() << "|phi|^2:";
-	hmc_float gpu_back = dummy.get_squarenorm(0);
-	dummy.runTestKernel();
-	logger.info() << "|M phi|^2:";
-	hmc_float gpu_res;
-	gpu_res = dummy.get_squarenorm(1);
-	BOOST_MESSAGE("Tested GPU");
-
-	logger.info() << "Compare CPU and GPU results";
-	logger.info() << "Input vectors:";
-	cpu.verify(cpu_back, gpu_back);
-	logger.info() << "Output vectors:";
-	cpu.verify(cpu_res, gpu_res);
-}
 
 void Dummyfield::init_tasks()
 {
@@ -203,15 +160,11 @@ void Dummyfield::fill_buffers()
 void Device::fill_kernels()
 {
 	Opencl_Module_Fermions::fill_kernels();
-
-	//to this end, one has to set the needed files by hand
-	testKernel = createKernel("dslash_eo") << basic_fermion_code << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
 }
 
 void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-
 	clReleaseMemObject(in);
 	clReleaseMemObject(odd_in);
 	clReleaseMemObject(even_in);
@@ -223,26 +176,7 @@ void Dummyfield::clear_buffers()
 
 void Device::clear_kernels()
 {
-	clReleaseKernel(testKernel);
 	Opencl_Module_Fermions::clear_kernels();
-}
-
-void Device::runTestKernel(cl_mem out, cl_mem in, cl_mem gf, int gs, int ls, hmc_float kappa)
-{
-	cl_int err;
-	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &in);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &out);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), &gf);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	int odd = 0;
-	err = clSetKernelArg(testKernel, 3, sizeof(int), &odd);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 4, sizeof(hmc_float), &kappa);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-
-	get_device()->enqueue_kernel(testKernel, gs, ls);
 }
 
 hmc_float Dummyfield::get_squarenorm(int which)
@@ -254,37 +188,76 @@ hmc_float Dummyfield::get_squarenorm(int which)
 	hmc_float result;
 	cl_int err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	logger.info() << result;
 
 	return result;
 }
 
-void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
+void Dummyfield::runTestKernel(int even_odd)
 {
-	//this is too much required, since rounding errors can occur
-	//  BOOST_REQUIRE_EQUAL(cpu, gpu);
-	//instead, test if the two number agree within some percent
-	hmc_float dev = (cpu - gpu) / cpu / 100.;
-	if(dev < 1e-10)
-		logger.info() << "CPU and GPU result agree within accuary of " << 1e-10;
-	else {
-		logger.info() << "CPU and GPU result DO NOT agree within accuary of " << 1e-10;
-		BOOST_REQUIRE_EQUAL(cpu, gpu);
-	}
+  int odd_tmp = even_odd;
+  Device * device = static_cast<Device*>(opencl_modules[0]);
+  static_cast<Device*>(opencl_modules[0])->dslash_eo_device( even_in, out, device->get_gaugefield(), odd_tmp, get_parameters().get_kappa() );
 }
 
-void Dummyfield::runTestKernel()
-{
-	int gs, ls;
-	if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = meta::get_eoprec_spinorfieldsize(get_parameters());
-		ls = 128;
-	} else if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = get_device_for_task(0)->get_num_compute_units();
-		ls = 1;
-	}
-	logger.info() << "test kernel with global_work_size: " << gs << " and local_work_size: " << ls;
-	Device * device = static_cast<Device*>(opencl_modules[0]);
-	device->runTestKernel(out, even_in, device->get_gaugefield(), gs, ls, get_parameters().get_kappa());
-}
 
+BOOST_AUTO_TEST_CASE( DSLASH_EO )
+{
+  logger.info() << "Test kernel";
+  logger.info() << "\tdslash_eo";
+  logger.info() << "against reference value";
+
+  int param_expect = 4;
+  logger.info() << "expect parameters:";
+  logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
+  //get number of parameters
+  int num_par = boost::unit_test::framework::master_test_suite().argc;
+  if(num_par < param_expect){
+    logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
+    exit(-1);
+  }
+
+  //get input file that has been passed as an argument 
+  const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+  logger.info() << "inputfile used: " << inputfile;
+  //get use_gpu = true/false that has been passed as an argument 
+  const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+  logger.info() << "GPU usage: " << gpu_opt;
+  //get use_rec12 = true/false that has been passed as an argument 
+  const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
+  logger.info() << "rec12 usage: " << rec12_opt;
+
+  logger.info() << "Init device";
+  const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
+  meta::Inputparameters params(param_expect, _params_cpu);
+  hardware::System system(params);
+  Dummyfield cpu(&system);
+  logger.info() << "gaugeobservables: ";
+  cpu.print_gaugeobservables_from_task(0, 0);
+  logger.info() << "Run kernel";
+  logger.info() << "|phi|^2:";
+  hmc_float cpu_back = cpu.get_squarenorm(0);
+  logger.info() << cpu_back;
+
+  //switch according to "use_pointsource"
+  hmc_float cpu_res;
+  if(params.get_use_pointsource()){
+    cpu.runTestKernel(EVEN);
+    cpu_res = cpu.get_squarenorm(1);    
+  } else {
+    cpu.runTestKernel(ODD);
+    cpu_res = cpu.get_squarenorm(1);
+  }
+  logger.info() << "result:";
+  logger.info() << cpu_res;
+  
+  logger.info() << "Choosing reference value and acceptance precision";
+  hmc_float ref_val = params.get_test_ref_value();
+  logger.info() << "reference value:\t" << ref_val;
+  hmc_float prec = params.get_solver_prec();  
+  logger.info() << "acceptance precision: " << prec;
+
+  logger.info() << "Compare result to reference value";
+  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+  logger.info() << "Done";
+  BOOST_MESSAGE("Test done");
+}

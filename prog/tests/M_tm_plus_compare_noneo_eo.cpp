@@ -9,6 +9,7 @@
 
 extern std::string const version;
 std::string const version = "0.1";
+std::string const exec_name = "M_compare_noneo_eo";
 
 //CP: this test is related to issue#282
 
@@ -29,20 +30,13 @@ public:
 	void clear_kernels();
 };
 
-const std::string SOURCEFILE = std::string(SOURCEDIR)
-#ifdef _USEDOUBLEPREC_
-                               + "/tests/f_fermion_eo_input_1";
-#else
-                               + "/tests/f_fermion_eo_input_1_single";
-#endif
-const char * PARAMS[] = {"foo", "--use_gpu=false", SOURCEFILE.c_str()};
-const meta::Inputparameters INPUT(3, PARAMS);
-
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type, const hardware::System * system) : Gaugefield_hybrid(system) {
-		init(1, device_type);
+	Dummyfield(const hardware::System * system) : Gaugefield_hybrid(system) {
+		auto inputfile = system->get_inputparameters();
+		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU);
+		meta::print_info_hmc(exec_name.c_str(), inputfile);
 	};
 
 	virtual void init_tasks();
@@ -90,107 +84,6 @@ private:
 
 	cl_mem sqnorm;
 };
-
-BOOST_AUTO_TEST_CASE( M_noneo_eo_test )
-{
-
-	logger.info() << "Perform test only on CPU";
-	logger.info() << "\tOther tests shall test equivalence of GPU and CPU...";
-
-	logger.info() << "Init CPU device";
-	//params.print_info_inverter("m_gpu");
-	hardware::System system(INPUT);
-	Dummyfield cpu(CL_DEVICE_TYPE_CPU, &system);
-
-	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables_from_task(0, 0);
-
-	logger.info() << "##";
-	logger.info() << "##";
-
-	logger.info() << "convert input vectors";
-	cpu.convert_input();
-	logger.info() << "non-eo input:";
-	logger.info() << "|phi|^2:";
-	hmc_float cpu_back_noneo = cpu.get_squarenorm_noneo(0);
-
-	logger.info() << "eo input:";
-	logger.info() << "|phi_even|^2:";
-	hmc_float cpu_back_eo = cpu.get_squarenorm_eo(0);
-	logger.info() << "|phi_odd|^2:";
-	hmc_float cpu_back2_eo = cpu.get_squarenorm_eo(1);
-
-	logger.info() << "converted noneo input:";
-	logger.info() << "|phi_conv|^2:";
-	hmc_float cpu_back_noneo_converted = cpu.get_squarenorm_noneo(1);
-
-	logger.info() << "converted eo input:";
-	logger.info() << "|phi_even_converted|^2:";
-	hmc_float cpu_back_eo_converted = cpu.get_squarenorm_eo(3);
-	logger.info() << "|phi_odd_converted|^2:";
-	hmc_float cpu_back2_eo_converted = cpu.get_squarenorm_eo(4);
-
-	logger.info() << "##";
-	logger.info() << "##";
-
-	logger.info() << "Compare input vectors";
-	cpu.verify(cpu_back_noneo_converted, cpu_back_noneo);
-	cpu.verify(cpu_back_eo_converted, cpu_back_eo);
-	cpu.verify(cpu_back2_eo_converted, cpu_back2_eo);
-	logger.info() << "\tCompare non-eo and eo-converted input vectors entry by entry:";
-	cpu.verify_converted_vectors();
-
-	logger.info() << "##";
-	logger.info() << "##";
-
-	logger.info() << "run noneo fermionmatrix with noneo input...";
-	cpu.reset_outfield_noneo();
-	cpu.runTestKernel();
-	logger.info() << "|M phi|^2:";
-	hmc_float cpu_res_noneo;
-	cpu_res_noneo = cpu.get_squarenorm_noneo(2);
-
-	cpu.reset_outfield_noneo_converted();
-	logger.info() << "run noneo fermionmatrix with converted eo input...";
-	cpu.runTestKernelwithconvertedfields();
-	logger.info() << "|M phi_converted|^2:";
-	hmc_float cpu_res_noneo_converted;
-	cpu_res_noneo_converted = cpu.get_squarenorm_noneo(3);
-
-	logger.info() << "run eo fermionmatrix...";
-	cpu.reset_outfield_eo();
-	cpu.runTestKernel2();
-	logger.info() << "|M_eo phi_eo|^2:";
-	hmc_float cpu_res_eo;
-	cpu_res_eo = cpu.get_squarenorm_eo(2);
-
-	logger.info() << "run eo fermionmatrix with converted noneo input...";
-	cpu.reset_outfield_eo_converted();
-	cpu.runTestKernel2withconvertedfields();
-	logger.info() << "|M_eo phi_eo_converted|^2:";
-	hmc_float cpu_res_eo_converted;
-	cpu_res_eo_converted = cpu.get_squarenorm_eo(5);
-
-	logger.info() << "##";
-	logger.info() << "##";
-
-	logger.info() << "Compare eo and non-eo CPU results";
-	logger.info() << "Compare output vectors:";
-	logger.info() << "\teo and noneo_converted:";
-	cpu.verify(cpu_res_eo, cpu_res_noneo_converted);
-	logger.info() << "\tnoneo and noneo_converted:";
-	cpu.verify(cpu_res_noneo_converted, cpu_res_noneo);
-	logger.info() << "\teo and noneo:";
-	cpu.verify(cpu_res_eo, cpu_res_noneo);
-	logger.info() << "\tnoneo and eo_converted:";
-	cpu.verify(cpu_res_noneo, cpu_res_eo_converted);
-	logger.info() << "\tCompare output vectors entry by entry:";
-	cpu.verify_output_vectors();
-
-	logger.info() << "##";
-	logger.info() << "##";
-	BOOST_MESSAGE("Tested CPU");
-}
 
 void Dummyfield::init_tasks()
 {
@@ -1110,4 +1003,152 @@ void Dummyfield::runTestKernelwithconvertedfields()
 	}
 	Device * device = static_cast<Device*>(opencl_modules[0]);
 	device->runTestKernel(out_noneo_converted, in_noneo_converted, device->get_gaugefield(), gs, ls, get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
+}
+
+BOOST_AUTO_TEST_CASE( M_noneo_eo_test )
+{
+
+  /*
+  logger.info() << "gaugeobservables: ";
+  cpu.print_gaugeobservables_from_task(0, 0);
+  logger.info() << "Run kernel";
+  cpu.runTestKernel();
+  logger.info() << "result:";
+  hmc_float cpu_res;
+  cpu_res = cpu.get_squarenorm();
+  logger.info() << cpu_res;
+
+  logger.info() << "Choosing reference value and acceptance precision";
+  hmc_float ref_val = params.get_test_ref_value();
+  logger.info() << "reference value:\t" << ref_val;
+  hmc_float prec = params.get_solver_prec();  
+  logger.info() << "acceptance precision: " << prec;
+
+  logger.info() << "Compare result to reference value";
+  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+  logger.info() << "Done";
+  BOOST_MESSAGE("Test done");
+  */
+  logger.info() << "Test equivalence of M_tm_plus in eo- and non-eo formulation";
+
+  int param_expect = 4;
+  logger.info() << "expect parameters:";
+  logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
+  //get number of parameters
+  int num_par = boost::unit_test::framework::master_test_suite().argc;
+  if(num_par < param_expect){
+    logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
+    exit(-1);
+  }
+
+  //get input file that has been passed as an argument 
+  const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+  logger.info() << "inputfile used: " << inputfile;
+  //get use_gpu = true/false that has been passed as an argument 
+  const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+  logger.info() << "GPU usage: " << gpu_opt;
+  //get use_rec12 = true/false that has been passed as an argument 
+  const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
+  logger.info() << "rec12 usage: " << rec12_opt;
+
+  logger.info() << "Init device";
+  const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
+  meta::Inputparameters params(param_expect, _params_cpu);
+  hardware::System system(params);
+  Dummyfield cpu(&system);
+
+  if (params.get_use_gpu()) {
+    logger.fatal() << "there is some problem with the input vectors if the GPU is used. To be checked!! Aborting..";
+    BOOST_REQUIRE_EQUAL(1., 0.);
+  }
+
+
+	logger.info() << "gaugeobservables: ";
+	cpu.print_gaugeobservables_from_task(0, 0);
+
+	logger.info() << "##";
+	logger.info() << "##";
+
+	logger.info() << "convert input vectors";
+	cpu.convert_input();
+	logger.info() << "non-eo input:";
+	logger.info() << "|phi|^2:";
+	hmc_float cpu_back_noneo = cpu.get_squarenorm_noneo(0);
+
+	logger.info() << "eo input:";
+	logger.info() << "|phi_even|^2:";
+	hmc_float cpu_back_eo = cpu.get_squarenorm_eo(0);
+	logger.info() << "|phi_odd|^2:";
+	hmc_float cpu_back2_eo = cpu.get_squarenorm_eo(1);
+
+	logger.info() << "converted noneo input:";
+	logger.info() << "|phi_conv|^2:";
+	hmc_float cpu_back_noneo_converted = cpu.get_squarenorm_noneo(1);
+
+	logger.info() << "converted eo input:";
+	logger.info() << "|phi_even_converted|^2:";
+	hmc_float cpu_back_eo_converted = cpu.get_squarenorm_eo(3);
+	logger.info() << "|phi_odd_converted|^2:";
+	hmc_float cpu_back2_eo_converted = cpu.get_squarenorm_eo(4);
+
+	logger.info() << "##";
+	logger.info() << "##";
+
+	logger.info() << "Compare input vectors";
+	cpu.verify(cpu_back_noneo_converted, cpu_back_noneo);
+	cpu.verify(cpu_back_eo_converted, cpu_back_eo);
+	cpu.verify(cpu_back2_eo_converted, cpu_back2_eo);
+	logger.info() << "\tCompare non-eo and eo-converted input vectors entry by entry:";
+	cpu.verify_converted_vectors();
+
+	logger.info() << "##";
+	logger.info() << "##";
+
+	logger.info() << "run noneo fermionmatrix with noneo input...";
+	cpu.reset_outfield_noneo();
+	cpu.runTestKernel();
+	logger.info() << "|M phi|^2:";
+	hmc_float cpu_res_noneo;
+	cpu_res_noneo = cpu.get_squarenorm_noneo(2);
+
+	cpu.reset_outfield_noneo_converted();
+	logger.info() << "run noneo fermionmatrix with converted eo input...";
+	cpu.runTestKernelwithconvertedfields();
+	logger.info() << "|M phi_converted|^2:";
+	hmc_float cpu_res_noneo_converted;
+	cpu_res_noneo_converted = cpu.get_squarenorm_noneo(3);
+
+	logger.info() << "run eo fermionmatrix...";
+	cpu.reset_outfield_eo();
+	cpu.runTestKernel2();
+	logger.info() << "|M_eo phi_eo|^2:";
+	hmc_float cpu_res_eo;
+	cpu_res_eo = cpu.get_squarenorm_eo(2);
+
+	logger.info() << "run eo fermionmatrix with converted noneo input...";
+	cpu.reset_outfield_eo_converted();
+	cpu.runTestKernel2withconvertedfields();
+	logger.info() << "|M_eo phi_eo_converted|^2:";
+	hmc_float cpu_res_eo_converted;
+	cpu_res_eo_converted = cpu.get_squarenorm_eo(5);
+
+	logger.info() << "##";
+	logger.info() << "##";
+
+	logger.info() << "Compare eo and non-eo CPU results";
+	logger.info() << "Compare output vectors:";
+	logger.info() << "\teo and noneo_converted:";
+	cpu.verify(cpu_res_eo, cpu_res_noneo_converted);
+	logger.info() << "\tnoneo and noneo_converted:";
+	cpu.verify(cpu_res_noneo_converted, cpu_res_noneo);
+	logger.info() << "\teo and noneo:";
+	cpu.verify(cpu_res_eo, cpu_res_noneo);
+	logger.info() << "\tnoneo and eo_converted:";
+	cpu.verify(cpu_res_noneo, cpu_res_eo_converted);
+	logger.info() << "\tCompare output vectors entry by entry:";
+	cpu.verify_output_vectors();
+
+	logger.info() << "##";
+	logger.info() << "##";
+	BOOST_MESSAGE("Test done");
 }

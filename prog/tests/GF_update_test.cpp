@@ -4,14 +4,16 @@
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Rectangles
+#define BOOST_TEST_MODULE gf_update
 #include <boost/test/unit_test.hpp>
 
 extern std::string const version;
 std::string const version = "0.1";
-std::string const exec_name = "rectangles";
+std::string const exec_name = "gf_update_test";
 
 class Device : public Opencl_Module_Hmc {
+
+	cl_kernel testKernel;
 	meta::Counter counter1, counter2, counter3, counter4;
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module_Hmc(params, device, &counter1, &counter2, &counter3, &counter4) {
@@ -20,26 +22,33 @@ public:
 	~Device() {
 		finalize();
 	};
+
 	void fill_kernels();
 	void clear_kernels();
 };
 
 class Dummyfield : public Gaugefield_hybrid {
+
 public:
 	Dummyfield(const hardware::System * system) : Gaugefield_hybrid(system) {
 		auto inputfile = system->get_inputparameters();
 		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU);
-		meta::print_info_hmc(exec_name.c_str(), inputfile);
-	};
-	virtual void init_tasks() override;
-	virtual void finalize_opencl() override;
+    meta::print_info_hmc(exec_name.c_str(), inputfile);
+  };
 
-	hmc_float get_rect();
+	virtual void init_tasks();
+	virtual void finalize_opencl();
+
+	hmc_float get_squarenorm();
+	void get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol);
+	void runTestKernel();
 
 private:
 	void fill_buffers();
 	void clear_buffers();
-	cl_mem rect_value;
+	cl_mem in, out;
+	cl_mem sqnorm;
+	hmc_float * gm_in;
 };
 
 void Dummyfield::init_tasks()
@@ -56,42 +65,98 @@ void Dummyfield::finalize_opencl()
 	Gaugefield_hybrid::finalize_opencl();
 }
 
+void fill_with_one(hmc_float * sf_in, int size)
+{
+	for(int i = 0; i < size; ++i) {
+		sf_in[i] = 1.;
+	}
+	return;
+}
+
+void fill_with_random(hmc_float * sf_in, int size)
+{
+  prng_init(123456);
+  for(int i = 0; i < size; ++i) {
+    sf_in[i] = prng_double();
+  }
+  return;
+}
+
 void Dummyfield::fill_buffers()
 {
-  	// don't invoke parent function as we don't require the original buffers
+	// don't invoke parent function as we don't require the original buffers
 	cl_int err;
 	cl_context context = opencl_modules[0]->get_context();
-	rect_value = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
+	int NUM_ELEMENTS_AE = meta::get_vol4d(get_parameters()) * NDIM * meta::get_su3algebrasize();
+	gm_in = new hmc_float[NUM_ELEMENTS_AE];
+
+	//use the variable use_cg to switch between cold and random input sf
+	if(get_parameters().get_solver() == meta::Inputparameters::cg) {
+		fill_with_one(gm_in, NUM_ELEMENTS_AE);
+	} else {
+		fill_with_random(gm_in, NUM_ELEMENTS_AE);
+	}
+	BOOST_REQUIRE(gm_in);
+
+	Device * device = static_cast<Device*>(opencl_modules[0]);
+	//create buffer for sf on device (and copy sf_in to both for convenience)
+
+	in = clCreateBuffer(context, CL_MEM_READ_ONLY, device->get_gaugemomentum_buffer_size(), 0, &err);
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	device->importGaugemomentumBuffer(in, reinterpret_cast<ae*>(gm_in));
+
+	//create buffer for squarenorm on device
+	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 }
 
 void Device::fill_kernels()
 {
+	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
 	Opencl_Module_Hmc::fill_kernels();
 }
 
 void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-	clReleaseMemObject(rect_value);
+	clReleaseMemObject(in);
+	clReleaseMemObject(sqnorm);
+
+	delete[] gm_in;
 }
 
 void Device::clear_kernels()
 {
+	clReleaseKernel(testKernel);
 	Opencl_Module::clear_kernels();
 }
 
-hmc_float Dummyfield::get_rect()
+hmc_float Dummyfield::get_squarenorm()
 {
-  hmc_float rect_out;
-  Device * device = static_cast<Device*>(opencl_modules[0]);
-  device->gaugeobservables_rectangles(device->get_gaugefield(), &rect_out);
-  return rect_out;
+	static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(in, sqnorm);
+	// get stuff from device
+	hmc_float result;
+	cl_int err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	return result;
 }
 
-BOOST_AUTO_TEST_CASE( RECTANGLES )
+void Dummyfield::runTestKernel()
+{
+  hmc_float eps = 0.12;
+  Device * device = static_cast<Device*>(opencl_modules[0]);
+  static_cast<Device*>(opencl_modules[0])->md_update_gaugefield_device( in, device->get_gaugefield(), eps);
+}
+
+void Dummyfield::get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol)
+{
+	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range", __FILE__, __LINE__);
+	opencl_modules[ntask]->gaugeobservables(plaq, tplaq, splaq, pol);
+}
+
+BOOST_AUTO_TEST_CASE( GF_UPDATE )
 {
   logger.info() << "Test kernel";
-  logger.info() << "\trectangles";
+  logger.info() << "\tmd_update_gaugefield";
   logger.info() << "against reference value";
 
   int param_expect = 4;
@@ -119,20 +184,29 @@ BOOST_AUTO_TEST_CASE( RECTANGLES )
   meta::Inputparameters params(param_expect, _params_cpu);
   hardware::System system(params);
   Dummyfield cpu(&system);
+
   logger.info() << "gaugeobservables: ";
   cpu.print_gaugeobservables_from_task(0, 0);
-  logger.info() << "calc rectangles value:";
-  hmc_float cpu_rect = cpu.get_rect();
-  logger.info() << cpu_rect;
-
+  logger.info() << "|in|^2:";
+  hmc_float cpu_back = cpu.get_squarenorm();
+  logger.info() << cpu_back;
+  cpu.runTestKernel();
+  logger.info() << "gaugeobservables: ";
+  cpu.print_gaugeobservables_from_task(0, 0);
+  
+  hmc_float plaq_cpu, tplaq_cpu, splaq_cpu;
+  hmc_complex pol_cpu;
+  cpu.get_gaugeobservables_from_task(0, &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
+  BOOST_MESSAGE("Tested CPU");
+  
   logger.info() << "Choosing reference value and acceptance precision";
   hmc_float ref_val = params.get_test_ref_value();
   logger.info() << "reference value:\t" << ref_val;
-  hmc_float prec = params.get_solver_prec();
+  hmc_float prec = params.get_solver_prec();  
   logger.info() << "acceptance precision: " << prec;
 
   logger.info() << "Compare result to reference value";
-  BOOST_REQUIRE_CLOSE(cpu_rect, ref_val, prec);
+  BOOST_REQUIRE_CLOSE(plaq_cpu, ref_val, prec);
   logger.info() << "Done";
   BOOST_MESSAGE("Test done");
 }

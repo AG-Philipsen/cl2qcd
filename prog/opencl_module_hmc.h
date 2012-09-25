@@ -122,12 +122,18 @@ public:
 	void generate_gaussian_spinorfield_device();
 	void generate_gaussian_spinorfield_eo_device();
 	void md_update_gaugemomentum_device(hmc_float eps);
+	void md_update_gaugemomentum_device(cl_mem, cl_mem, hmc_float eps);
 	void md_update_gaugefield_device(hmc_float eps);
+	void md_update_gaugefield_device(cl_mem, cl_mem, hmc_float eps);
 	void set_zero_clmem_force_device();
 	void gauge_force_device();
+	void gauge_force_device(cl_mem gf, cl_mem out);
 	void gauge_force_tlsym_device();
+	void gauge_force_tlsym_device(cl_mem gf, cl_mem out);
 	void fermion_force_device(cl_mem Y, cl_mem X, hmc_float kappa = ARG_DEF);
+	void fermion_force_device(cl_mem Y, cl_mem X, cl_mem, cl_mem, hmc_float kappa = ARG_DEF);
 	void fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd, hmc_float kappa = ARG_DEF);
+	void fermion_force_eo_device(cl_mem Y, cl_mem X, cl_mem, cl_mem, int evenodd, hmc_float kappa = ARG_DEF);
 	void stout_smeared_fermion_force_device(cl_mem * gf_intermediate);
 	hmc_float calc_s_fermion();
 	hmc_float calc_s_fermion_mp();

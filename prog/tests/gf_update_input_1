@@ -1,5 +1,6 @@
-#input file 1 for staple_test
+#input file 1 for f_gauge_test
 
+# set startcondition to cold or hot to start with different gaugefield
 startcondition=continue
 sourcefile=conf.00200
 
@@ -7,10 +8,10 @@ use_eo=false
 NS=4
 NT=4
 fermact=TWISTEDMASS
-#this set the init-spinorfield to random values
-solver=BICGSTAB
 
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=-139.07078416196205
+test_ref_val=0.55622180943874355
+
+

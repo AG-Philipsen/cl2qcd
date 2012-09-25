@@ -10,12 +10,6 @@
 extern std::string const version;
 std::string const version = "0.1";
 
-#define CLX_CHECK_CLOSE(left, right, precision) \
-{ \
-  BOOST_CHECK_CLOSE(left.re, right.re, precision); \
-  BOOST_CHECK_CLOSE(left.im, right.im, precision); \
-}
-
 class Device : public Opencl_Module {
 
 	cl_kernel testKernel;
@@ -32,20 +26,10 @@ public:
 	void clear_kernels();
 };
 
-const std::string SOURCEFILE = std::string(SOURCEDIR)
-#ifdef _USEDOUBLEPREC_
-                               + "/tests/f_gauge_input_1";
-#else
-                               + "/tests/f_gauge_input_1_single";
-#endif
-const char * PARAMS[] = {"foo", SOURCEFILE.c_str()};
-const meta::Inputparameters INPUT(2, PARAMS);
-
 class Dummyfield : public Gaugefield_hybrid {
-
 public:
-	Dummyfield(cl_device_type device_type, const hardware::System * system) : Gaugefield_hybrid(system) {
-		init(1, device_type);
+	Dummyfield(const hardware::System * system) : Gaugefield_hybrid(system) {
+		init(1, system->get_inputparameters().get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU);
 	};
 
 	virtual void init_tasks();
@@ -60,32 +44,6 @@ private:
 	hmc_float * host_out;
 
 };
-
-BOOST_AUTO_TEST_CASE( STAPLE_TEST )
-{
-	logger.info() << "Init CPU device";
-	//params.print_info_inverter("m_gpu");
-	hardware::System system_cpu(INPUT);
-	Dummyfield cpu(CL_DEVICE_TYPE_CPU, &system_cpu);
-	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables_from_task(0, 0);
-	hmc_float cpu_back = cpu.runTestKernel();
-	BOOST_MESSAGE("Tested CPU");
-
-	logger.info() << "Init GPU device";
-	//params.print_info_inverter("m_gpu");
-	hardware::System system_gpu(INPUT);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system_gpu);
-	logger.info() << "gaugeobservables: ";
-	dummy.print_gaugeobservables_from_task(0, 0);
-	hmc_float gpu_back = dummy.runTestKernel();
-	BOOST_MESSAGE("Tested GPU");
-
-	logger.info() << "cpu: " << cpu_back << "\tgpu: " << gpu_back;
-
-	BOOST_MESSAGE(cpu_back << ' ' << gpu_back);
-	BOOST_CHECK_CLOSE(cpu_back, gpu_back, 1e-8);
-}
 
 void Dummyfield::init_tasks()
 {
@@ -104,11 +62,8 @@ void Dummyfield::finalize_opencl()
 void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-
 	cl_int err;
-
 	cl_context context = opencl_modules[0]->get_context();
-
 	int NUM_ELEMENTS = meta::get_vol4d(get_parameters());
 
 	host_out = new hmc_float[NUM_ELEMENTS];
@@ -130,15 +85,12 @@ void Device::fill_kernels()
 	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 
 	testKernel = createKernel("localQ_test") << basic_opencl_code  << "/tests/localQ_test.cl";
-
 }
 
 void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-
 	clReleaseMemObject(out);
-
 	delete[] host_out;
 }
 
@@ -186,3 +138,54 @@ hmc_float Dummyfield::runTestKernel()
 	return res;
 }
 
+BOOST_AUTO_TEST_CASE( LOCAL_Q )
+{
+  logger.info() << "Test kernel";
+  logger.info() << "\tlocal_Q_test";
+  logger.info() << "against reference value";
+
+  int param_expect = 4;
+  logger.info() << "expect parameters:";
+  logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
+  //get number of parameters
+  int num_par = boost::unit_test::framework::master_test_suite().argc;
+  if(num_par < param_expect){
+    logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
+    exit(-1);
+  }
+
+  //get input file that has been passed as an argument 
+  const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+  logger.info() << "inputfile used: " << inputfile;
+  //get use_gpu = true/false that has been passed as an argument 
+  const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+  logger.info() << "GPU usage: " << gpu_opt;
+  //get use_rec12 = true/false that has been passed as an argument 
+  const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
+  logger.info() << "rec12 usage: " << rec12_opt;
+
+  logger.info() << "Init device";
+  const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
+  meta::Inputparameters params(param_expect, _params_cpu);
+  hardware::System system(params);
+  Dummyfield cpu(&system);
+  logger.info() << "gaugeobservables: ";
+  cpu.print_gaugeobservables_from_task(0, 0);
+  logger.info() << "Run kernel";
+  hmc_float cpu_res;
+  cpu_res = cpu.runTestKernel();
+  logger.info() << "result:";
+  logger.info() << cpu_res;
+
+  logger.info() << "Choosing reference value and acceptance precision";
+  hmc_float ref_val = params.get_test_ref_value();
+  logger.info() << "reference value:\t" << ref_val;
+  hmc_float prec = params.get_solver_prec();  
+  logger.info() << "acceptance precision: " << prec;
+
+  logger.info() << "Compare result to reference value";
+  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+  logger.info() << "Done";
+  BOOST_MESSAGE("Test done");
+
+}

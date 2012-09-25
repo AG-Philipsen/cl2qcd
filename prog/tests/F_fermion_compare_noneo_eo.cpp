@@ -5,11 +5,12 @@
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Fermionforce_compare_noneo_eo
+#define BOOST_TEST_MODULE F_fermion_compare_noneo_eo
 #include <boost/test/unit_test.hpp>
 
 extern std::string const version;
 std::string const version = "0.1";
+std::string const exec_name = "f_fermion_compare_eo_noneo_test";
 
 class Device : public Opencl_Module_Hmc {
 
@@ -30,22 +31,14 @@ public:
 	void clear_kernels();
 };
 
-const std::string SOURCEFILE = std::string(SOURCEDIR)
-#ifdef _USEDOUBLEPREC_
-                               + "/tests/f_fermion_eo_input_1";
-#else
-                               + "/tests/f_fermion_eo_input_1_single";
-#endif
-const char * PARAMS[] = {"foo", "--use_gpu=false", SOURCEFILE.c_str()};
-const meta::Inputparameters INPUT(3, PARAMS);
-
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type, const hardware::System * system) : Gaugefield_hybrid(system) {
-		init(1, device_type);
+	Dummyfield(const hardware::System * system) : Gaugefield_hybrid(system) {
+		auto inputfile = system->get_inputparameters();
+		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU :CL_DEVICE_TYPE_CPU);
+		meta::print_info_hmc(exec_name.c_str(), inputfile);
 	};
-
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
@@ -78,83 +71,6 @@ private:
 	spinor * sf_in3_eo;
 	spinor * sf_in4_eo;
 };
-
-BOOST_AUTO_TEST_CASE( F_FERMION )
-{
-
-	logger.info() << "Perform test only on CPU";
-	logger.info() << "\tOther tests for fermion force shall test equivalence of GPU and CPU...";
-
-	logger.info() << "Init CPU device";
-	//params.print_info_inverter("m_gpu");
-	hardware::System system(INPUT);
-	Dummyfield cpu(CL_DEVICE_TYPE_CPU, &system);
-	logger.info() << "gaugeobservables: ";
-	cpu.print_gaugeobservables_from_task(0, 0);
-
-	logger.info() << "eo input:";
-	logger.info() << "|phi_even_1|^2:";
-	hmc_float cpu_back_eo = cpu.get_squarenorm_eo(0);
-	logger.info() << "|phi_even_2|^2:";
-	hmc_float cpu_back2_eo = cpu.get_squarenorm_eo(1);
-	logger.info() << "|phi_odd_1|^2:";
-	hmc_float cpu_back3_eo = cpu.get_squarenorm_eo(2);
-	logger.info() << "|phi_odd_2|^2:";
-	hmc_float cpu_back4_eo = cpu.get_squarenorm_eo(3);
-
-	logger.info() << "run eo force on EVEN and ODD sites...";
-	cpu.runTestKernel(EVEN);
-	cpu.runTestKernel(ODD);
-	logger.info() << "|force (even) + force (odd)|^2:";
-	hmc_float cpu_res_eo;
-	cpu_res_eo = cpu.get_squarenorm_eo(4);
-
-	logger.info() << "non-eo input:";
-	logger.info() << "|phi_1|^2:";
-	hmc_float cpu_back_noneo = cpu.get_squarenorm_noneo(0);
-	logger.info() << "|phi_2|^2:";
-	hmc_float cpu_back2_noneo = cpu.get_squarenorm_noneo(1);
-
-	logger.info() << "run noneo force with noneo input...";
-	cpu.reset_outfield_noneo();
-	cpu.runTestKernel2();
-	logger.info() << "|force_noneo|^2:";
-	hmc_float cpu_res_noneo;
-	cpu_res_noneo = cpu.get_squarenorm_noneo(4);
-
-	logger.info() << "converted non-eo input:";
-	logger.info() << "|phi_1|^2:";
-	hmc_float cpu_back_noneo_converted = cpu.get_squarenorm_noneo(2);
-	logger.info() << "|phi_2|^2:";
-	hmc_float cpu_back2_noneo_converted = cpu.get_squarenorm_noneo(3);
-
-	cpu.reset_outfield_noneo();
-	logger.info() << "run noneo force with converted eo input...";
-	cpu.runTestKernel2withconvertedfields();
-	logger.info() << "|force_noneo|^2:";
-	hmc_float cpu_res_noneo_converted;
-	cpu_res_noneo_converted = cpu.get_squarenorm_noneo(4);
-
-	BOOST_MESSAGE("Tested CPU");
-
-	logger.info() << "Compare eo and non-eo CPU results";
-	logger.info() << "Input vectors (compare only converted eo vectors to noneo):";
-	cpu.verify(cpu_back_noneo_converted, cpu_back_noneo);
-	cpu.verify(cpu_back2_noneo_converted, cpu_back2_noneo);
-	logger.info() << "Compare non-eo and eo-converted input vectors entry by entry:";
-	cpu.verify_converted_vectors();
-	logger.info() << "Output vectors:";
-	logger.info() << "eo and noneo_converted:";
-	cpu.verify(cpu_res_eo, cpu_res_noneo_converted);
-	logger.info() << "noneo and noneo_converted:";
-	cpu.verify(cpu_res_noneo_converted, cpu_res_noneo);
-	logger.info() << "eo and noneo:";
-	cpu.verify(cpu_res_eo, cpu_res_noneo);
-	logger.info() << "Compare non-eo and eo solution vectors entry by entry:";
-	cpu.verify_ae_vectors();
-
-
-}
 
 void Dummyfield::init_tasks()
 {
@@ -948,4 +864,112 @@ void Dummyfield::runTestKernel2withconvertedfields()
 	}
 	Device * device = static_cast<Device*>(opencl_modules[0]);
 	device->runTestKernel2(out_noneo, in1_noneo_converted, in2_noneo_converted, device->get_gaugefield(), gs, ls, get_parameters().get_kappa());
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO )
+{
+  logger.info() << "Compare f_fermion in eo and noneo version";
+
+  int param_expect = 4;
+  logger.info() << "expect parameters:";
+  logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
+  //get number of parameters
+  int num_par = boost::unit_test::framework::master_test_suite().argc;
+  if(num_par < param_expect){
+    logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
+    exit(-1);
+  }
+
+  //get input file that has been passed as an argument 
+  const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+  logger.info() << "inputfile used: " << inputfile;
+  //get use_gpu = true/false that has been passed as an argument 
+  const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+  logger.info() << "GPU usage: " << gpu_opt;
+  //get use_rec12 = true/false that has been passed as an argument 
+  const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
+  logger.info() << "rec12 usage: " << rec12_opt;
+
+  logger.info() << "Init device";
+  const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
+  meta::Inputparameters params(param_expect, _params_cpu);
+  hardware::System system(params);
+  Dummyfield cpu(&system);
+  logger.info() << "gaugeobservables: ";
+  cpu.print_gaugeobservables_from_task(0, 0);
+
+	logger.info() << "eo input:";
+	logger.info() << "|phi_even_1|^2:";
+	hmc_float cpu_back_eo = cpu.get_squarenorm_eo(0);
+	logger.info() << "|phi_even_2|^2:";
+	hmc_float cpu_back2_eo = cpu.get_squarenorm_eo(1);
+	logger.info() << "|phi_odd_1|^2:";
+	hmc_float cpu_back3_eo = cpu.get_squarenorm_eo(2);
+	logger.info() << "|phi_odd_2|^2:";
+	hmc_float cpu_back4_eo = cpu.get_squarenorm_eo(3);
+
+	logger.info() << "run eo force on EVEN and ODD sites...";
+	cpu.runTestKernel(EVEN);
+	cpu.runTestKernel(ODD);
+	logger.info() << "|force (even) + force (odd)|^2:";
+	hmc_float cpu_res_eo;
+	cpu_res_eo = cpu.get_squarenorm_eo(4);
+
+	logger.info() << "non-eo input:";
+	logger.info() << "|phi_1|^2:";
+	hmc_float cpu_back_noneo = cpu.get_squarenorm_noneo(0);
+	logger.info() << "|phi_2|^2:";
+	hmc_float cpu_back2_noneo = cpu.get_squarenorm_noneo(1);
+
+	logger.info() << "run noneo force with noneo input...";
+	cpu.reset_outfield_noneo();
+	cpu.runTestKernel2();
+	logger.info() << "|force_noneo|^2:";
+	hmc_float cpu_res_noneo;
+	cpu_res_noneo = cpu.get_squarenorm_noneo(4);
+
+	logger.info() << "converted non-eo input:";
+	logger.info() << "|phi_1|^2:";
+	hmc_float cpu_back_noneo_converted = cpu.get_squarenorm_noneo(2);
+	logger.info() << "|phi_2|^2:";
+	hmc_float cpu_back2_noneo_converted = cpu.get_squarenorm_noneo(3);
+
+	cpu.reset_outfield_noneo();
+	logger.info() << "run noneo force with converted eo input...";
+	cpu.runTestKernel2withconvertedfields();
+	logger.info() << "|force_noneo|^2:";
+	hmc_float cpu_res_noneo_converted;
+	cpu_res_noneo_converted = cpu.get_squarenorm_noneo(4);
+
+	BOOST_MESSAGE("Tested CPU");
+
+	logger.info() << "Compare eo and non-eo CPU results";
+	logger.info() << "Input vectors (compare only converted eo vectors to noneo):";
+	cpu.verify(cpu_back_noneo_converted, cpu_back_noneo);
+	cpu.verify(cpu_back2_noneo_converted, cpu_back2_noneo);
+	logger.info() << "Compare non-eo and eo-converted input vectors entry by entry:";
+	cpu.verify_converted_vectors();
+	logger.info() << "Output vectors:";
+	logger.info() << "eo and noneo_converted:";
+	cpu.verify(cpu_res_eo, cpu_res_noneo_converted);
+	logger.info() << "noneo and noneo_converted:";
+	cpu.verify(cpu_res_noneo_converted, cpu_res_noneo);
+	logger.info() << "eo and noneo:";
+	cpu.verify(cpu_res_eo, cpu_res_noneo);
+	logger.info() << "Compare non-eo and eo solution vectors entry by entry:";
+	cpu.verify_ae_vectors();
+	/*
+  logger.info() << "Choosing reference value and acceptance precision";
+  hmc_float ref_val = params.get_test_ref_value();
+  logger.info() << "reference value:\t" << ref_val;
+  hmc_float prec = params.get_solver_prec();  
+  logger.info() << "acceptance precision: " << prec;
+
+  logger.info() << "Compare result to reference value";
+  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+  logger.info() << "Done";
+  BOOST_MESSAGE("Test done");
+	*/
+
+
 }

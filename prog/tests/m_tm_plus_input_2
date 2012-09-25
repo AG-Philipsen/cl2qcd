@@ -1,7 +1,4 @@
-#input file 1 for staple_test
-
-startcondition=continue
-sourcefile=conf.00200
+#input file 2 for M_GPU-test
 
 use_eo=false
 NS=4
@@ -10,7 +7,10 @@ fermact=TWISTEDMASS
 #this set the init-spinorfield to random values
 solver=BICGSTAB
 
+startcondition=continue
+sourcefile=conf.00200
+
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=-139.07078416196205
+test_ref_val=2570.8289204056637

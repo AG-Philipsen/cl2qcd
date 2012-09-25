@@ -1,9 +1,13 @@
 #input file 1 for M_GPU-test
 
-use_eo=true
+use_eo=false
 NS=4
 NT=4
 fermact=TWISTEDMASS
 #this set the init-spinorfield to random values
 solver=BICGSTAB
-startcondition=cold
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=634.45059559687354
