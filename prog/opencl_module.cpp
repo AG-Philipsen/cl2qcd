@@ -8,6 +8,7 @@
 
 using namespace std;
 
+#ifdef _PROFILING_
 static void print_profile_header(const std::string& filename, int number);
 /**
  * Print the profiling information of a specific kernel to a file.
@@ -19,7 +20,8 @@ static void print_profile_header(const std::string& filename, int number);
  * @param read_write_size number of bytes read and written by the kernel
  * @param flop_size amount of flops performed by the kernel
  */
-static void print_profiling(const std::string& filename, const std::string& kernelName, uint64_t time_total, int calls_total, size_t read_write_size, uint64_t flop_size);
+static void print_profiling(const std::string& filename, const std::string& kernelName, uint64_t time_total, int calls_total, size_t read_write_size, uint64_t flop_size, uint64_t sites);
+#endif /* _PROFILING_ */
 
 void Opencl_Module::init()
 {
@@ -30,9 +32,6 @@ void Opencl_Module::init()
 
 	cl_int clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ocl_context, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetCommandQueueInfo", __FILE__, __LINE__);
-
-	clerr = clGetDeviceInfo(device_id, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
 
 	// different devices need different strategies for optimal performance
 	switch ( device->get_device_type() ) {
@@ -92,12 +91,6 @@ hardware::Device * Opencl_Module::get_device() const noexcept
 {
 	return device;
 }
-
-cl_platform_id Opencl_Module::get_platform()
-{
-	return platform;
-}
-
 
 void Opencl_Module::fill_collect_options(stringstream* collect_options)
 {
@@ -1023,6 +1016,8 @@ uint64_t Opencl_Module::get_flop_size(const std::string& in) const
 	return 0;
 }
 
+#ifdef _PROFILING_
+
 static void print_profiling(const std::string& filename, const std::string& kernelName, uint64_t time_total, int calls_total, size_t read_write_size, uint64_t flop_size, uint64_t sites)
 {
 	hmc_float bandwidth = 0.;
@@ -1054,8 +1049,6 @@ static void print_profiling(const std::string& filename, const std::string& kern
 	out.close();
 	return;
 }
-
-#ifdef _PROFILING_
 
 static void print_profile_header(const std::string& filename, int number)
 {

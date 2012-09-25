@@ -80,11 +80,6 @@ public:
 	 * @return device
 	 */
 	hardware::Device * get_device() const noexcept;
-	/**
-	 * Get platform_id
-	 * @return platform
-	 */
-	cl_platform_id get_platform();
 
 	// methods which actually calculate something
 	/**
@@ -465,7 +460,6 @@ private:
 	 */
 	hardware::Device * const device;
 
-	cl_platform_id platform;
 	cl_context ocl_context;
 	/**
 	 * Gaugefield buffer size in bytes.
