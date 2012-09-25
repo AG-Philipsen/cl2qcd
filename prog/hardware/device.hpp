@@ -88,6 +88,13 @@ namespace hardware {
 		bool get_prefers_blocked_loops() const noexcept;
 
 		/**
+		 * Whether this device prefers SOA storage
+		 *
+		 * @todo This should be datatype specific
+		 */
+		bool get_prefers_soa() const noexcept;
+
+		/**
 		 * Get the name of this device
 		 */
 		std::string get_name() const noexcept;
@@ -203,6 +210,13 @@ namespace hardware {
 		 * Whether this device prefers blocked loops
 		 */
 		const bool prefers_blocked_loops;
+
+		/**
+		 * Whether this device prefers SOA storage
+		 *
+		 * @todo This should be datatype specific
+		 */
+		const bool prefers_soa;
 
 		/**
 		 * The name of this device

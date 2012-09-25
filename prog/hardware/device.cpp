@@ -24,6 +24,7 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 	  device_type(::retrieve_device_type(device_id)),
 	  supports_double(::retrieve_supports_double(device_id)),
 	  prefers_blocked_loops(device_type == CL_DEVICE_TYPE_CPU),
+	  prefers_soa(device_type == CL_DEVICE_TYPE_GPU),
 	  name(retrieve_device_name(device_id)),
 	  profiling_enabled(enable_profiling),
 	  profiling_data()
@@ -58,6 +59,10 @@ bool hardware::Device::get_prefers_blocked_loops() const noexcept
 	return prefers_blocked_loops;
 }
 
+bool hardware::Device::get_prefers_soa() const noexcept
+{
+	return prefers_soa;
+}
 
 static std::string retrieve_device_name(cl_device_id device_id)
 {
