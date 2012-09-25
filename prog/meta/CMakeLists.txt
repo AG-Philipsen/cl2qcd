@@ -20,6 +20,7 @@ add_library(meta
 
 configure_file(test_input_1 test_input_1 COPYONLY)
 configure_file(test_input_2 test_input_2 COPYONLY)
+configure_file(test_input_aliases test_input_aliases COPYONLY)
 
 add_unit_test(meta::Inputparameters inputparameters_test)
 add_unit_test(meta::ConfigFileNormalizer config_file_normalizer_test)
