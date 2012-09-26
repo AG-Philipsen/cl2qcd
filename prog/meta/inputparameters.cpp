@@ -113,7 +113,7 @@ bool Inputparameters::get_print_to_screen() const noexcept
 	return print_to_screen;
 }
 //This is obvious!!!
-uint64_t Inputparameters::get_host_seed() const noexcept
+uint32_t Inputparameters::get_host_seed() const noexcept
 {
 	return host_seed;
 }
@@ -422,7 +422,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("sourcefile", po::value<std::string>(&sourcefile)->default_value("conf.00000"))
 	("print_to_screen", po::value<bool>(&print_to_screen)->default_value(false))
 	//This is obvious!!!
-	("host_seed", po::value<uint64_t>(&host_seed)->default_value(4815))
+	("host_seed", po::value<uint32_t>(&host_seed)->default_value(4815))
 
 	//gaugefield parameters
 	("beta", po::value<double>(&beta)->default_value(4.0))

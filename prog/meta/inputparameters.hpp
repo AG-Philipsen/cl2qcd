@@ -69,7 +69,7 @@ namespace meta {
 			std::string get_sourcefile() const noexcept;
 			bool get_print_to_screen() const noexcept;
 			//This is obvious!!!
-			uint64_t get_host_seed() const noexcept;
+			uint32_t get_host_seed() const noexcept;
 
 			//gaugefield parameters
 			double get_beta() const noexcept;
@@ -167,7 +167,7 @@ namespace meta {
 			std::string sourcefile;
 			bool print_to_screen;
 			//This is obvious!!!
-			uint64_t host_seed;
+			uint32_t host_seed;
 
 			//gaugefield parameters
 			double beta;
