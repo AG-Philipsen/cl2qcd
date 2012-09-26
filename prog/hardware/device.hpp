@@ -25,6 +25,11 @@ class Opencl_Module;
 
 namespace hardware {
 
+	namespace buffers {
+		// forward declaration for friend relation
+		class Buffer;
+	}
+
 	class OptimizationError {
 		// thrown to indicate that optimization failed
 	};
@@ -38,6 +43,7 @@ namespace hardware {
 	class Device {
 
 		friend ::Opencl_Module; // during refactoring this needs access to the ocl-queue
+		friend hardware::buffers::Buffer;
 
 	public:
 		/**
