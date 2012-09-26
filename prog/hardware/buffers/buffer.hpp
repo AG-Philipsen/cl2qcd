@@ -10,10 +10,6 @@
 #include "../device.hpp"
 
 namespace hardware {
-	/**
-	 * This namespace contains all buffers, physically representing fields
-	 * of specific data on the device.
-	 */
 	namespace buffers {
 	
 		/**
@@ -47,12 +43,18 @@ namespace hardware {
 			 * This allows directly passing this class to
 			 * clSetKernelArg
 			 */
-			operator const cl_mem*() const;
+			operator const cl_mem*() const noexcept;
+
+			/**
+			 * Also have a function to get the cl buffer,
+			 * easier when having a pointer...
+			 */
+			const cl_mem* get_cl_buffer() const noexcept;
 	
 			/**
 			 * Get the buffer size in bytes
 			 */
-			size_t get_bytes() const;
+			size_t get_bytes() const noexcept;
 
 		private:
 			/**
@@ -64,6 +66,27 @@ namespace hardware {
 			 * The OpenCL buffer handle.
 			 */
 			const cl_mem cl_buffer;
+
+			/**
+			 * The OpenCL device the buffer is located on.
+			 */
+			Device * const device;
+
+		protected:
+			/**
+			 * Utility function for creation of custom load functions.
+			 *
+			 * Loads as many bytes as the buffer contains from the given pointer
+			 * into the buffer.
+			 */
+			void load(const void*) const;
+
+			/**
+			 * Utility function for creation of custom dump functions.
+			 * 
+			 * Stores the whole buffer into the given pointer
+			 */
+			void dump(void*) const;
 		};
 	}
 }
