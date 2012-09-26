@@ -72,11 +72,6 @@ void Opencl_Module_Ran::fill_kernels()
 #endif // USE_PRNG_XXX
 }
 
-void Opencl_Module_Ran::clear_kernels()
-{
-	Opencl_Module::clear_kernels();
-}
-
 void Opencl_Module_Ran::clear_buffers()
 {
 	Opencl_Module::clear_buffers();

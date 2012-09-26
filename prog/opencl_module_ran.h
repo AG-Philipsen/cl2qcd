@@ -65,12 +65,6 @@ public:
 	virtual void fill_kernels() override;
 
 	/**
-	 * Clear out the kernels,
-	 * Virtual method, allows to clear additional kernels in inherited classes.
-	 */
-	virtual void clear_kernels() override;
-
-	/**
 	 * Clear out the buffers,
 	 * Virtual method, allows to clear additional buffers in inherited classes.
 	 */
