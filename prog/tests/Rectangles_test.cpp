@@ -177,32 +177,3 @@ BOOST_AUTO_TEST_CASE( RECTANGLES )
   logger.info() << "Done";
   BOOST_MESSAGE("Test done");
 }
-
-runTest(int argc, const char* argv)
-{
-  logger.info() << "Test kernel";
-  logger.info() << "\trectangles";
-  logger.info() << "against reference value";
-
-  logger.info() << "Init device";
-  meta::Inputparameters params = create_parameters();
-  hardware::System system(params);
-  Dummyfield cpu(&system);
-
-  logger.info() << "calc rectangles value:";
-  hmc_float cpu_rect;
-  Device * device = cpu.get_device();
-  device->gaugeobservables_rectangles(device->get_gaugefield(), &cpu_rect);
-  logger.info() << cpu_rect;
-
-  logger.info() << "Choosing reference value and acceptance precision";
-  hmc_float ref_val = params.get_test_ref_value();
-  logger.info() << "reference value:\t" << ref_val;
-  hmc_float prec = params.get_solver_prec();
-  logger.info() << "acceptance precision: " << prec;
-
-  logger.info() << "Compare result to reference value";
-  BOOST_REQUIRE_CLOSE(cpu_rect, ref_val, prec);
-  logger.info() << "Done";
-  BOOST_MESSAGE("Test done");
-}
