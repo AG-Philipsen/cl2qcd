@@ -37,6 +37,7 @@ public:
 	virtual void finalize_opencl() override;
 
 	hmc_float get_rect();
+	Device * get_device();
 
 private:
 	void fill_buffers();
@@ -100,9 +101,9 @@ meta::Inputparameters create_parameters()
   logger.info() << "expect parameters:";
   logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
   //get number of parameters
-  char* inputfile;
-  char* gpu_opt;
-  char* rec12_opt;
+  const char* inputfile;
+  const char* gpu_opt;
+  const char* rec12_opt;
 
   int num_par = boost::unit_test::framework::master_test_suite().argc;
   if(num_par < param_expect){
@@ -142,7 +143,7 @@ meta::Inputparameters create_parameters()
     rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
     logger.info() << "rec12 usage: " << rec12_opt;
   }
-  const char* _params_cpu[] = {"foo", (const char*) inputfile, (const char*) gpu_opt,(const char*)  rec12_opt};
+  const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
   meta::Inputparameters params(param_expect, _params_cpu);
   return params;
 }
@@ -156,7 +157,37 @@ BOOST_AUTO_TEST_CASE( RECTANGLES )
 
   logger.info() << "Init device";
   meta::Inputparameters params = create_parameters();
-  Dummyfield cpu(params);
+  hardware::System system(params);
+  Dummyfield cpu(&system);
+
+  logger.info() << "calc rectangles value:";
+  hmc_float cpu_rect;
+  Device * device = cpu.get_device();
+  device->gaugeobservables_rectangles(device->get_gaugefield(), &cpu_rect);
+  logger.info() << cpu_rect;
+
+  logger.info() << "Choosing reference value and acceptance precision";
+  hmc_float ref_val = params.get_test_ref_value();
+  logger.info() << "reference value:\t" << ref_val;
+  hmc_float prec = params.get_solver_prec();
+  logger.info() << "acceptance precision: " << prec;
+
+  logger.info() << "Compare result to reference value";
+  BOOST_REQUIRE_CLOSE(cpu_rect, ref_val, prec);
+  logger.info() << "Done";
+  BOOST_MESSAGE("Test done");
+}
+
+runTest(int argc, const char* argv)
+{
+  logger.info() << "Test kernel";
+  logger.info() << "\trectangles";
+  logger.info() << "against reference value";
+
+  logger.info() << "Init device";
+  meta::Inputparameters params = create_parameters();
+  hardware::System system(params);
+  Dummyfield cpu(&system);
 
   logger.info() << "calc rectangles value:";
   hmc_float cpu_rect;
