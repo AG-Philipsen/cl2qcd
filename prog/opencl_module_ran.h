@@ -78,12 +78,6 @@ public:
 
 protected:
 	/**
-	 * Get number of random states
-	 * @return num_rndstates
-	 */
-	int get_num_rndstates() const noexcept;
-
-	/**
 	 * A set of sources required to use the PRNG.
 	 */
 	ClSourcePackage prng_code;

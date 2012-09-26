@@ -153,9 +153,9 @@ void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, size_t * ls,
 	//all of the following kernels are called with EnqueueKernel(gs), ls, num_groups are not needed!
 	if (kernelname.compare("heatbath_even") == 0 || kernelname.compare("heatbath_odd") == 0 || kernelname.compare("overrelax_even") == 0 || kernelname.compare("overrelax_odd") == 0) {
 		if( get_device()->get_device_type() == CL_DEVICE_TYPE_GPU ) {
-			*gs = std::min(meta::get_volspace(parameters) * parameters.get_ntime() / 2, (size_t) this->Opencl_Module_Ran::get_num_rndstates());
+			*gs = std::min(meta::get_volspace(parameters) * parameters.get_ntime() / 2, get_prng_buffer().get_elements());
 		} else {
-			*gs = std::min(get_device()->get_num_compute_units(), static_cast<size_t>(this->Opencl_Module_Ran::get_num_rndstates()));
+			*gs = std::min(get_device()->get_num_compute_units(), get_prng_buffer().get_elements());
 		}
 		*ls = get_device()->get_preferred_local_thread_num();
 		*num_groups = *gs / *ls;

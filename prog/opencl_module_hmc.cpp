@@ -204,8 +204,8 @@ void Opencl_Module_Hmc::get_work_sizes(const cl_kernel kernel, size_t * ls, size
 	if(kernel == generate_gaussian_gaugemomenta
 	   || kernel == generate_gaussian_spinorfield
 	   || kernel == generate_gaussian_spinorfield_eo) {
-		if(*gs > get_num_rndstates()) {
-			*gs = get_num_rndstates();
+		if(*gs > get_prng_buffer().get_elements()) {
+			*gs = get_prng_buffer().get_elements();
 		}
 	}
 

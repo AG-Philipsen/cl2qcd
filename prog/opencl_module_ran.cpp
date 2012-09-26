@@ -97,11 +97,6 @@ void Opencl_Module_Ran::copy_rndstate_from_device(nr3_state_dev* rndarray) const
 }
 #endif // USE_PRNG_NR3
 
-int Opencl_Module_Ran::get_num_rndstates() const noexcept
-{
-	return prng_buffer.get_elements();
-}
-
 const hardware::buffers::PRNGBuffer& Opencl_Module_Ran::get_prng_buffer() const noexcept
 {
 	return prng_buffer;
