@@ -83,7 +83,7 @@ void Opencl_Module_Heatbath::run_heatbath()
 
 	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), &src);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(heatbath_even, 2, sizeof(cl_mem), get_clmem_rndarray());
+	clerr = clSetKernelArg(heatbath_even, 2, sizeof(cl_mem), get_prng_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	for(cl_int i = 0; i < NDIM; i++) {
@@ -96,7 +96,7 @@ void Opencl_Module_Heatbath::run_heatbath()
 
 	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), &src);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(heatbath_odd, 2, sizeof(cl_mem), get_clmem_rndarray());
+	clerr = clSetKernelArg(heatbath_odd, 2, sizeof(cl_mem), get_prng_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	for(cl_int i = 0; i < NDIM; i++) {
@@ -118,7 +118,7 @@ void Opencl_Module_Heatbath::run_overrelax()
 
 	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), &src);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(overrelax_even, 2, sizeof(cl_mem), get_clmem_rndarray());
+	clerr = clSetKernelArg(overrelax_even, 2, sizeof(cl_mem), get_prng_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	for(cl_int i = 0; i < NDIM; i++) {
@@ -131,7 +131,7 @@ void Opencl_Module_Heatbath::run_overrelax()
 
 	clerr = clSetKernelArg(overrelax_odd, 0, sizeof(cl_mem), &src);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(overrelax_odd, 2, sizeof(cl_mem), get_clmem_rndarray());
+	clerr = clSetKernelArg(overrelax_odd, 2, sizeof(cl_mem), get_prng_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);

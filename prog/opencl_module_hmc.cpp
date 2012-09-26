@@ -432,7 +432,7 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device()
 	int clerr = clSetKernelArg(generate_gaussian_gaugemomenta, 0, sizeof(cl_mem), &clmem_p);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(generate_gaussian_gaugemomenta, 1, sizeof(cl_mem), get_clmem_rndarray());
+	clerr = clSetKernelArg(generate_gaussian_gaugemomenta, 1, sizeof(cl_mem), get_prng_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel( generate_gaussian_gaugemomenta , gs2, ls2);
@@ -520,7 +520,7 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_device()
 	int clerr = clSetKernelArg(generate_gaussian_spinorfield, 0, sizeof(cl_mem), &clmem_phi_inv);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(generate_gaussian_spinorfield, 1, sizeof(cl_mem), get_clmem_rndarray());
+	clerr = clSetKernelArg(generate_gaussian_spinorfield, 1, sizeof(cl_mem), get_prng_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(generate_gaussian_spinorfield  , gs2, ls2);
@@ -550,7 +550,7 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_eo_device()
 	int clerr = clSetKernelArg(generate_gaussian_spinorfield_eo, 0, sizeof(cl_mem), &clmem_phi_inv_eo);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(generate_gaussian_spinorfield_eo, 1, sizeof(cl_mem), get_clmem_rndarray());
+	clerr = clSetKernelArg(generate_gaussian_spinorfield_eo, 1, sizeof(cl_mem), get_prng_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(generate_gaussian_spinorfield_eo, gs2, ls2);

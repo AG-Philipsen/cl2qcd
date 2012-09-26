@@ -14,7 +14,7 @@ void Opencl_Module_Ran::fill_collect_options(stringstream* collect_options)
 #ifdef USE_PRNG_NR3
 	*collect_options << " -DUSE_PRNG_NR3";
 #elif defined(USE_PRNG_RANLUX)
-	*collect_options << " -DUSE_PRNG_RANLUX -DRANLUXCL_MAXWORKITEMS=" << num_rndstates;
+	*collect_options << " -DUSE_PRNG_RANLUX -DRANLUXCL_MAXWORKITEMS=" << prng_buffer.get_elements();
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
@@ -28,24 +28,11 @@ void Opencl_Module_Ran::fill_buffers()
 
 #ifdef USE_PRNG_NR3
 	// Prepare random number arrays, for each task and device separately
-	if(get_device_type() == CL_DEVICE_TYPE_GPU)
-		num_rndstates = 5120;
-	else
-		num_rndstates = 64;
+	const size_t num_rndstates = prng_buffer.get_elements();
 	rndarray = new nr3_state_dev[num_rndstates];
-	sizeof_rndarray = sizeof(nr3_state_dev) * num_rndstates;
 	nr3_init_seeds(rndarray, "rand_seeds", num_rndstates);
-
-	logger.trace() << "Create buffer for random numbers...";
-	clmem_rndarray = create_rw_buffer(sizeof(nr3_state_dev) * get_num_rndstates());
-	this->copy_rndstate_to_device(rndarray);
+	prng_buffer.load(rndarray);
 #elif defined(USE_PRNG_RANLUX)
-	// make num of random states equal to default num of global threads
-	// TODO make this somewhat more automatic (avoid code duplication)
-	num_rndstates = get_device()->get_preferred_global_thread_num();
-
-	logger.trace() << "Create buffer for random numbers...";
-	clmem_rndarray = create_rw_buffer(7 * num_rndstates * sizeof(cl_float4));
 	// kernels are not filled yet, so delay filling until kernel creation
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
@@ -73,7 +60,7 @@ void Opencl_Module_Ran::fill_kernels()
 	}
 	clerr = clSetKernelArg(init_kernel, 0, sizeof(cl_uint), &seed);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(init_kernel, 1, sizeof(cl_mem), &clmem_rndarray);
+	clerr = clSetKernelArg(init_kernel, 1, sizeof(cl_mem), prng_buffer);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	get_device()->enqueue_kernel(init_kernel, gs, ls);
 	clerr = clFinish(get_queue());
@@ -88,7 +75,6 @@ void Opencl_Module_Ran::fill_kernels()
 void Opencl_Module_Ran::clear_kernels()
 {
 	Opencl_Module::clear_kernels();
-	return;
 }
 
 void Opencl_Module_Ran::clear_buffers()
@@ -102,38 +88,26 @@ void Opencl_Module_Ran::clear_buffers()
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
-
-	cl_int clerr = CL_SUCCESS;
-
-	clerr = clReleaseMemObject(clmem_rndarray);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-
-	return;
 }
 
 #ifdef USE_PRNG_NR3
-void Opencl_Module_Ran::copy_rndstate_to_device(nr3_state_dev* rndarray)
+void Opencl_Module_Ran::copy_rndstate_to_device(nr3_state_dev* rndarray) const
 {
-	cl_int clerr = clEnqueueWriteBuffer(get_queue(), clmem_rndarray, CL_TRUE, 0, sizeof(nr3_state_dev) * get_num_rndstates(), rndarray, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
-	return;
+	prng_buffer.load(rndarray);
 }
 
-void Opencl_Module_Ran::copy_rndstate_from_device(nr3_state_dev* rndarray)
+void Opencl_Module_Ran::copy_rndstate_from_device(nr3_state_dev* rndarray) const
 {
-	cl_int clerr = clEnqueueReadBuffer(get_queue(), clmem_rndarray, CL_TRUE, 0, sizeof(nr3_state_dev) * get_num_rndstates(), rndarray, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueReadBuffer", __FILE__, __LINE__);
-
-	return;
+	prng_buffer.dump(rndarray);
 }
 #endif // USE_PRNG_NR3
 
 int Opencl_Module_Ran::get_num_rndstates() const noexcept
 {
-	return num_rndstates;
+	return prng_buffer.get_elements();
 }
 
-cl_mem* Opencl_Module_Ran::get_clmem_rndarray()
+const hardware::buffers::PRNGBuffer& Opencl_Module_Ran::get_prng_buffer() const noexcept
 {
-	return &clmem_rndarray;
+	return prng_buffer;
 }

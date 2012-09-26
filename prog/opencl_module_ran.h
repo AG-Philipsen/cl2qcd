@@ -27,6 +27,8 @@
 
 #include "exceptions.h"
 
+#include "hardware/buffers/prng_buffer.hpp"
+
 /**
  * An OpenCL device
  *
@@ -42,7 +44,7 @@ public:
 	 * @param[in] params points to an instance of inputparameters
 	 */
 	Opencl_Module_Ran(const meta::Inputparameters& params, hardware::Device * device)
-		: Opencl_Module(params, device) {};
+		: Opencl_Module(params, device), prng_buffer(device) {};
 
 	/**
 	 * Collect the compiler options for OpenCL.
@@ -78,7 +80,7 @@ public:
 	 * Get cl_mem object rndarray
 	 * @return rndarray
 	 */
-	cl_mem* get_clmem_rndarray();
+	const hardware::buffers::PRNGBuffer& get_prng_buffer() const noexcept;
 
 protected:
 	/**
@@ -94,8 +96,7 @@ protected:
 
 private:
 
-	int num_rndstates;
-	cl_mem clmem_rndarray;
+	const hardware::buffers::PRNGBuffer prng_buffer;
 
 #ifdef USE_PRNG_NR3
 	/**
@@ -105,7 +106,7 @@ private:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	void copy_rndstate_to_device(nr3_state_dev* host_rndarray);
+	void copy_rndstate_to_device(nr3_state_dev* host_rndarray) const;
 
 	/**
 	 * Copy the RNG state from the OpenCL buffer.
@@ -114,7 +115,7 @@ private:
 	 *         @li HMC_OCLERROR if OpenCL operations fail
 	 *         @li HMC_SUCCESS otherwise
 	 */
-	void copy_rndstate_from_device(nr3_state_dev* rndarray);
+	void copy_rndstate_from_device(nr3_state_dev* rndarray) const;
 
 	nr3_state_dev* rndarray;
 	size_t sizeof_rndarray;
