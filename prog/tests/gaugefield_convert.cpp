@@ -13,7 +13,7 @@ std::string const version = "0.1";
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type, const meta::Inputparameters& params) : Gaugefield_hybrid(params) {
+	Dummyfield(cl_device_type device_type, const hardware::System * system) : Gaugefield_hybrid(system) {
 		init(1, device_type);
 	};
 
@@ -35,7 +35,8 @@ BOOST_AUTO_TEST_CASE(CPU_cold)
 {
 	const char* _params[] = {"foo", "--use_gpu=false"};
 	meta::Inputparameters params(2, _params);
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU, params);
+	hardware::System system(params);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system);
 	dummy.set_gaugefield_cold(dummy.in);
 
 	dummy.send();
@@ -48,7 +49,8 @@ BOOST_AUTO_TEST_CASE(CPU_hot)
 {
 	const char* _params[] = {"foo", "--use_gpu=false"};
 	meta::Inputparameters params(2, _params);
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU, params);
+	hardware::System system(params);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system);
 	dummy.set_gaugefield_hot(dummy.in);
 
 	dummy.send();
@@ -61,7 +63,8 @@ BOOST_AUTO_TEST_CASE(GPU_cold)
 {
 	const char* _params[] = {"foo", "--use_gpu=true"};
 	meta::Inputparameters params(2, _params);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU, params);
+	hardware::System system(params);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system);
 	dummy.set_gaugefield_cold(dummy.in);
 
 	dummy.send();
@@ -74,7 +77,8 @@ BOOST_AUTO_TEST_CASE(GPU_hot)
 {
 	const char* _params[] = {"foo", "--use_gpu=true"};
 	meta::Inputparameters params(2, _params);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU, params);
+	hardware::System system(params);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system);
 	dummy.set_gaugefield_hot(dummy.in);
 
 	dummy.send();
@@ -86,8 +90,8 @@ BOOST_AUTO_TEST_CASE(GPU_hot)
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Opencl_Module(get_parameters());
-	opencl_modules[0]->init(queue[0], get_max_compute_units(0), get_double_ext(0), 0);
+	opencl_modules[0] = new Opencl_Module(get_parameters(), get_device_for_task(0));
+	opencl_modules[0]->init();
 
 	fill_buffers();
 }

@@ -14,8 +14,8 @@ class Device : public Opencl_Module {
 	cl_kernel testKernel;
 
 public:
-	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module(params) {
-		Opencl_Module::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
+		Opencl_Module::init(); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -30,8 +30,8 @@ const meta::Inputparameters INPUT(0, 0);
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type)
-		: Gaugefield_hybrid(INPUT) {
+	Dummyfield(cl_device_type device_type, const hardware::System * system)
+		: Gaugefield_hybrid(system) {
 		init(1, device_type);
 	};
 
@@ -41,14 +41,15 @@ public:
 
 BOOST_AUTO_TEST_CASE( GPU )
 {
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	hardware::System system(INPUT);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system);
 	BOOST_MESSAGE("Tested GPU");
 }
 
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0), 0);
+	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
 }
 
 void Dummyfield::finalize_opencl()

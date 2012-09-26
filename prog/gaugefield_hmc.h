@@ -44,28 +44,28 @@ public:
 	 *
 	 * \param params The input parameters of the application
 	 */
-	Gaugefield_hmc(const meta::Inputparameters& params)
-		: Gaugefield_hybrid(params) { };
+	Gaugefield_hmc(const hardware::System * system)
+		: Gaugefield_hybrid(system) { };
 
 	/**
 	 * Initialize class.
 	 * Helper function called by init()
 	 * Virtual to allow proper modification in inherited classes
 	 */
-	virtual void init_tasks();
+	virtual void init_tasks() override;
 
 	/**
 	 * Free gaugefield and device allocations.
 	 * Called by finalize().
 	 * Virtual to allow proper modification in inherited classes
 	 */
-	virtual void delete_variables();
+	virtual void delete_variables() override;
 	/**
 	 * Free gaugefield and device allocations.
 	 * Called by finalize().
 	 * Virtual to allow proper modification in inherited classes
 	 */
-	virtual void finalize_opencl();
+	virtual void finalize_opencl() override;
 
 
 	// the real job:

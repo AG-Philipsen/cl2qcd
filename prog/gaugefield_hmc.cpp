@@ -14,8 +14,8 @@ void Gaugefield_hmc::init_tasks()
 
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 
-	opencl_modules[task_hmc] = new Opencl_Module_Hmc(get_parameters(), &inversions0, &inversions1, &inversions_mp0, &inversions_mp1);
-	get_task_hmc(0)->init(queue[task_hmc], get_max_compute_units(task_hmc), get_double_ext(task_hmc), task_hmc);
+	opencl_modules[task_hmc] = new Opencl_Module_Hmc(get_parameters(), get_device_for_task(task_hmc), &inversions0, &inversions1, &inversions_mp0, &inversions_mp1);
+	get_task_hmc(0)->init();
 
 	return;
 }

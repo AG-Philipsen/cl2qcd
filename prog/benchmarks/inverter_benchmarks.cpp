@@ -45,22 +45,15 @@ int main(int argc, const char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		init_timer.reset();
-		Gaugefield_inverter gaugefield(parameters);
+		hardware::System system(parameters, true);
+		Gaugefield_inverter gaugefield(&system);
 
 		//one needs 2 tasks here since the correlator-module produces the sources...
 		int numtasks = 2;
 		if(parameters.get_device_count() != 2 )
 			logger.warn() << "Only 1 device demanded by benchmark executable. All calculations performed on primary device.";
 
-		cl_device_type primary_device;
-		switch ( parameters.get_use_gpu() ) {
-			case true :
-				primary_device = CL_DEVICE_TYPE_GPU;
-				break;
-			case false :
-				primary_device = CL_DEVICE_TYPE_CPU;
-				break;
-		}
+		cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
 
 		logger.trace() << "Init gaugefield" ;
 		gaugefield.init(numtasks, primary_device);

@@ -12,18 +12,14 @@
 #include <string>
 #include <vector>
 
+#include "hardware/system.hpp"
+
 #include "globaldefs.h"
 #include "types.h"
 #include "host_operations_gaugefield.h"
-#include "meta/inputparameters.hpp"
 #include "host_readgauge.h"
 #include "host_writegaugefield.h"
 #include "host_use_timer.h"
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
 
 #include "exceptions.h"
 #include "opencl_module.h"
@@ -52,8 +48,8 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Gaugefield_hybrid(const meta::Inputparameters& params)
-		: parameters(params) { };
+	Gaugefield_hybrid(const hardware::System * system)
+		: system(system), parameters(system->get_inputparameters()) { };
 
 	//init functions
 	/**
@@ -64,11 +60,6 @@ public:
 	 * @deprecated move to constructor
 	 */
 	void init(int numtasks, cl_device_type primary_device_type);
-	/**
-	 * Initialize class.
-	 * Helper function called by init()
-	 */
-	void init_devicetypearray(cl_device_type primary_device_type);
 	/**
 	 * Initialize class.
 	 * Helper function called by init()
@@ -191,22 +182,7 @@ public:
 	 * @param[in] ntask id for task
 	 * @return device cl_device_id for given task
 	 */
-	cl_device_id get_device_for_task(int ntask);
-	/**
-	 * Return max_compute units for task ntask
-	 * @param[in] ntask number of target task
-	 */
-	int get_max_compute_units(int ntask);
-	/**
-	 * Return OpenCL double extension for device units for task ntask
-	 * @param[in] ntask number of target task
-	 */
-	std::string get_double_ext(int ntask);
-	/**
-	 * Returns device type for given task.
-	 * @param[in] ntask id of target task
-	 */
-	cl_device_type get_device_type(int ntask);
+	hardware::Device* get_device_for_task(int ntask);
 
 	// output methods
 	/**
@@ -308,16 +284,20 @@ public:
 	*/
 	void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source);
 
-#ifdef _PROFILING_
 	void print_profiling(std::string filename);
-#endif
 
 protected:
 	cl_device_type* devicetypes;
 	Opencl_Module ** opencl_modules;
-	cl_command_queue* queue;
 
 private:
+	/**
+	 * Initialize class.
+	 * Helper function called by init()
+	 */
+	void init_devicetypearray(cl_device_type primary_device_type);
+
+	const hardware::System * system;
 	const meta::Inputparameters& parameters;
 	Matrixsu3 * sgf;
 	int num_tasks;
@@ -325,13 +305,8 @@ private:
 	int* device_id_for_task;
 
 	//OpenCL:
-	cl_platform_id platform;
-	cl_context context;
-	cl_device_id* devices;
-
-
-	std::string* device_double_extension;
-	cl_uint* max_compute_units;
+	cl_device_id* cl_devices;
+	hardware::Device** devices;
 };
 
 #endif /* _GAUGEFIELDHYBRIDH_ */

@@ -41,37 +41,37 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Kappa(const meta::Inputparameters& params)
-		: Opencl_Module(params) {};
+	Opencl_Module_Kappa(const meta::Inputparameters& params, hardware::Device * device)
+		: Opencl_Module(params, device) {};
 	/**
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual void fill_collect_options(std::stringstream* collect_options);
+	virtual void fill_collect_options(std::stringstream* collect_options) override;
 
 	/**
 	 * Collect the buffers to generate for OpenCL.
 	 * Virtual method, allows to include more buffers in inherited classes.
 	 */
-	virtual void fill_buffers();
+	virtual void fill_buffers() override;
 
 	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
-	virtual void fill_kernels();
+	virtual void fill_kernels() override;
 
 	/**
 	 * Clear out the kernels,
 	 * Virtual method, allows to clear additional kernels in inherited classes.
 	 */
-	virtual void clear_kernels();
+	virtual void clear_kernels() override;
 
 	/**
 	 * Clear out the buffers,
 	 * Virtual method, allows to clear additional buffers in inherited classes.
 	 */
-	virtual void clear_buffers();
+	virtual void clear_buffers() override;
 
 	/**
 	 * Run the calculation of kappa clover. No OpenCL barrier.
@@ -84,11 +84,6 @@ public:
 	 * @return kappa_clover
 	 */
 	hmc_float get_kappa_clover();
-
-	/**
-	 * Add specific work_size determination for this child class
-	 */
-	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
 
 protected:
 

@@ -14,6 +14,7 @@ NT=4
 use_rec12=0
 use_gpu=0
 prec=64
+num_dev = 1
 
 kappa=.15
 mu=4.

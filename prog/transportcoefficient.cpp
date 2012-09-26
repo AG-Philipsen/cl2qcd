@@ -29,13 +29,14 @@ int main(int argc, const char* argv[])
 
 		init_timer.reset();
 
-		Gaugefield_heatbath_kappa gaugefield(parameters);
+		hardware::System system(parameters);
+		Gaugefield_heatbath_kappa gaugefield(&system);
 		int numtasks = 2;
 
 		// this is the device type for the heatbath
-		cl_device_type primary_device_type = CL_DEVICE_TYPE_GPU;
+		cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
 
-		gaugefield.init(numtasks, primary_device_type);
+		gaugefield.init(numtasks, primary_device);
 
 		init_timer.add();
 

@@ -17,30 +17,36 @@
 namespace fs = boost::filesystem;
 /// @todo quite some of this code could be simplified by moving from pure fstream to boost::filesystem equivalents
 
-ClSourcePackage ClSourcePackage::operator <<(const char *file)
+ClSourcePackage ClSourcePackage::operator <<(const std::string& file)
 {
-	std::vector<const char*> tmp = this->files;
+	auto tmp = this->files;
 	tmp.push_back(file);
-	return ClSourcePackage(tmp);
+	return ClSourcePackage(tmp, this->options);
 }
 
 ClSourcePackage ClSourcePackage::operator <<(const ClSourcePackage& package)
 {
-	std::vector<const char*> tmp = this->files;
-	const std::vector<const char*> other = package.files;
+	auto tmp = this->files;
+	const auto other = package.files;
 	tmp.insert(tmp.end(), other.begin(), other.end());
-	return ClSourcePackage(tmp);
+	return ClSourcePackage(tmp, options + ' ' + package.options);
 }
 
 ClSourcePackage ClSourcePackage::operator =(const ClSourcePackage& package)
 {
 	this->files = package.files;
+	this->options = package.options;
 	return *this;
 }
 
-const std::vector<const char *> ClSourcePackage::getFiles() const
+const std::vector<std::string> ClSourcePackage::getFiles() const
 {
 	return files;
+}
+
+const std::string ClSourcePackage::getOptions() const
+{
+	return options;
 }
 
 
@@ -56,14 +62,9 @@ TmpClKernel::operator cl_kernel() const
 	size_t * source_sizes = new size_t[ files.size() ];
 
 	/// @todo seperate build for each device as otherwise cache is broken
-	std::string md5 = generateMD5(devices[0]);
+	std::string md5 = generateMD5();
 
-	cl_program program = 0;
-	if(num_devices == 1) {
-		program = loadBinary(md5, devices[0]);
-	} else {
-		logger.warn() << "Sorry, OpenCL binary caching is currently broken for your configuration.";
-	}
+	cl_program program = loadBinary(md5);
 
 	if(!program) {
 		logger.debug() << "Program not found in cache, building from source";
@@ -96,57 +97,54 @@ TmpClKernel::operator cl_kernel() const
 
 	logger.trace() << "Building kernel " << kernel_name << " using these options: " << build_options;
 
-	clerr = clBuildProgram(program, num_devices, devices, build_options.c_str(), 0, 0);
+	clerr = clBuildProgram(program, 1, &device, build_options.c_str(), 0, 0);
 	if(clerr != CL_SUCCESS && logger.beDebug()) {
 		logger.error() << "... failed with error " << clerr << ", but look at BuildLog and abort then.";
 	}
 
 	logger.trace() << "Finished building program";
 
-	// get build result for each device
-	for(size_t i = 0; i < num_devices; ++i) {
-		size_t logSize;
-		clerr |= clGetProgramBuildInfo(program, devices[i], CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);
-		if(logSize > 1 && logger.beDebug()) { // 0-terminated -> always at least one byte
-			logger.debug() << "Build Log:";
-			char* log = new char[logSize];
-			clerr |= clGetProgramBuildInfo(program, devices[i], CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
-			logger.debug() << log;
-			delete [] log;
-		}
-		if(clerr != CL_SUCCESS) {
-			logger.fatal() << "... failed, aborting.";
+	// get build result
+	size_t logSize;
+	clerr |= clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);
+	if(logSize > 1 && logger.beDebug()) { // 0-terminated -> always at least one byte
+		logger.debug() << "Build Log:";
+		char* log = new char[logSize];
+		clerr |= clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
+		logger.debug() << log;
+		delete [] log;
+	}
+	if(clerr != CL_SUCCESS) {
+		logger.fatal() << "... failed, aborting.";
 
-			// dump program source
-			size_t sourceSize;
-			clerr = clGetProgramInfo(program, CL_PROGRAM_SOURCE, 0, NULL, &sourceSize);
-			if(!clerr && sourceSize > 1 && logger.beDebug()) { // 0-terminated -> always at least one byte
-				char* source = new char[sourceSize];
-				clerr = clGetProgramInfo(program, CL_PROGRAM_SOURCE, sourceSize, source, &sourceSize);
-				if(!clerr) {
-					char const * const FILENAME = "broken_source.cl";
-					std::ofstream srcFile(FILENAME);
-					srcFile << source;
-					srcFile.close();
-					logger.debug() << "Dumped broken source to " << FILENAME;
-				}
-				delete[] source;
+		// dump program source
+		size_t sourceSize;
+		clerr = clGetProgramInfo(program, CL_PROGRAM_SOURCE, 0, NULL, &sourceSize);
+		if(!clerr && sourceSize > 1 && logger.beDebug()) { // 0-terminated -> always at least one byte
+			char* source = new char[sourceSize];
+			clerr = clGetProgramInfo(program, CL_PROGRAM_SOURCE, sourceSize, source, &sourceSize);
+			if(!clerr) {
+				char const * const FILENAME = "broken_source.cl";
+				std::ofstream srcFile(FILENAME);
+				srcFile << source;
+				srcFile.close();
+				logger.debug() << "Dumped broken source to " << FILENAME;
 			}
-
-			throw Opencl_Error(clerr, "clGetProgramBuildInfo", __FILE__, __LINE__);
+			delete[] source;
 		}
+
+		throw Opencl_Error(clerr, "clGetProgramBuildInfo", __FILE__, __LINE__);
 	}
 
 	// store built binary to working directory
-	dumpBinary(program, devices[0], md5);
+	dumpBinary(program, md5);
 
 	// extract kernel
-	cl_kernel kernel = clCreateKernel(program, kernel_name, &clerr);
+	cl_kernel kernel = clCreateKernel(program, kernel_name.c_str(), &clerr);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateKernel", __FILE__, __LINE__);
 
 	if( logger.beDebug() ) {
-		for(size_t i = 0; i < num_devices; ++i)
-			printResourceRequirements(kernel, devices[i]);
+		printResourceRequirements(kernel);
 	}
 
 	// make sure program get's cleaned up once kernel is released
@@ -156,24 +154,24 @@ TmpClKernel::operator cl_kernel() const
 	return kernel;
 }
 
-TmpClKernel TmpClKernel::operator <<(const char *file) const
+TmpClKernel TmpClKernel::operator <<(const std::string& file) const
 {
-	std::vector<const char*> tmp = this->files;
+	auto tmp = this->files;
 	tmp.push_back(file);
 
-	return TmpClKernel(kernel_name, build_options, context, devices, num_devices, tmp);
+	return TmpClKernel(kernel_name, build_options, context, device, tmp);
 }
 
 TmpClKernel TmpClKernel::operator <<(const ClSourcePackage& package) const
 {
-	std::vector<const char*> tmp = this->files;
-	const std::vector<const char*> other = package.getFiles();
+	auto tmp = this->files;
+	const auto other = package.getFiles();
 	tmp.insert(tmp.end(), other.begin(), other.end());
 
-	return TmpClKernel(kernel_name, build_options, context, devices, num_devices, tmp);
+	return TmpClKernel(kernel_name, build_options + ' ' + package.getOptions(), context, device, tmp);
 }
 
-void TmpClKernel::printResourceRequirements(const cl_kernel kernel, const cl_device_id device) const
+void TmpClKernel::printResourceRequirements(const cl_kernel kernel) const
 {
 	cl_int clerr;
 
@@ -409,7 +407,7 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel, const cl_dev
 	delete[] platform_vendor;
 }
 
-std::string TmpClKernel::generateMD5(cl_device_id device) const
+std::string TmpClKernel::generateMD5() const
 {
 	// Points to consider for a unique binary identification
 	//  * Device (Name + Driver Version): For simplicity assume we only compile for one device at a time (could also just add all devices)
@@ -497,9 +495,7 @@ std::string TmpClKernel::generateMD5(cl_device_id device) const
 
 	// add source information
 	for(size_t n = 0; n < files.size(); n++) {
-		const char* filename = files[n];
-		const unsigned int filename_len = strlen(filename);
-		md5_process(&md5_state, filename, filename_len);
+		md5_process(&md5_state, files[n].c_str(), files[n].length());
 	}
 
 	// build options
@@ -515,7 +511,7 @@ std::string TmpClKernel::generateMD5(cl_device_id device) const
 	return std::string(res);
 }
 
-void TmpClKernel::dumpBinary(cl_program program, cl_device_id device_id, std::string md5) const
+void TmpClKernel::dumpBinary(cl_program program, std::string md5) const
 {
 
 	cl_int clerr;
@@ -534,7 +530,7 @@ void TmpClKernel::dumpBinary(cl_program program, cl_device_id device_id, std::st
 	}
 
 	cl_uint device_index;
-	for(device_index = 0; device_index < (num_devices - 1) && device_id != devices[device_index]; ++device_index) {
+	for(device_index = 0; device_index < (num_devices - 1) && device != devices[device_index]; ++device_index) {
 		// we only want to find the abortion criteria
 	}
 
@@ -571,7 +567,7 @@ void TmpClKernel::dumpBinary(cl_program program, cl_device_id device_id, std::st
 	delete[] program_binaries_bytes;
 }
 
-cl_program TmpClKernel::loadBinary(std::string md5, cl_device_id device) const
+cl_program TmpClKernel::loadBinary(std::string md5) const
 {
 	/// @todo check whether any headers were modified
 	std::stringstream binaryfile_name;

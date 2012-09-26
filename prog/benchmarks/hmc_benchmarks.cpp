@@ -36,18 +36,11 @@ int main(int argc, const char* argv[])
 	sourcefileparameters parameters_source;
 	//hmc_observables obs;
 
-	Gaugefield_hmc gaugefield(parameters);
+	hardware::System system(parameters, true);
+	Gaugefield_hmc gaugefield(&system);
 
 	int numtasks = 1;
-	cl_device_type primary_device;
-	switch ( parameters.get_use_gpu() ) {
-		case true :
-			primary_device = CL_DEVICE_TYPE_GPU;
-			break;
-		case false :
-			primary_device = CL_DEVICE_TYPE_CPU;
-			break;
-	}
+	cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
 
 	logger.trace() << "init gaugefield" ;
 	gaugefield.init(numtasks, primary_device);

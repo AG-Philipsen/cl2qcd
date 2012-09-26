@@ -10,11 +10,6 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
 
 #include "host_geometry.h"
 #include "host_random.h"
@@ -23,6 +18,7 @@
 #include "types.h"
 #include "host_use_timer.h"
 #include "meta/inputparameters.hpp"
+#include "hardware/device.hpp"
 #include "opencl_compiler.hpp"
 
 #include "exceptions.h"
@@ -42,14 +38,14 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module(const meta::Inputparameters& params)
-		: parameters(params), gaugefield_bytes(0) {};
+	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device)
+		: parameters(params), device(device), gaugefield_bytes(0),
+		  stout_smear(0), rectangles(0), rectangles_reduction(0) {};
 	/**
 	 * Destructor, calls finalize().
 	 *
 	 */
-	~Opencl_Module() {
-		delete[] device_name;
+	virtual ~Opencl_Module() {
 	}
 
 	/**
@@ -60,15 +56,9 @@ public:
 	/**
 	 * Initialize everything. First method to be called.
 	 *
-	 * @param[in] queue OpenCL command queue
-	 * @param[in] params instance of inputparameters
-	 * @param[in] maxcomp maximum_compute_units for device
-	 * @param[in] double_ext OpenCL double extension for device (AMD or KHR)
-	 * @param[in] device_rank Unique (to the program) identifier for this device
-	 *
 	 * @deprecated To be replaced by a proper constructor
 	 */
-	void init(cl_command_queue queue, int maxcomp, std::string double_ext, unsigned int device_rank);
+	void init();
 
 	// set and get methods
 	/**
@@ -76,16 +66,6 @@ public:
 	 * @return cl_context
 	 */
 	cl_context get_context();
-	/**
-	 * Set queue
-	 * @param[in] queue OpenCL command queue
-	 */
-	void set_queue(cl_command_queue queue);
-	/**
-	 * Return the OpenCL command queue
-	 * @return ocl_queue
-	 */
-	cl_command_queue get_queue();
 	/**
 	 * Get a pointer to the gaugefield buffer
 	 * @return ocl_gaugefield OpenCL buffer with gaugefield
@@ -95,42 +75,12 @@ public:
 	 * Get a pointer to inputparameters
 	 * @return parameters
 	 */
-	const meta::Inputparameters& get_parameters();
+	const meta::Inputparameters& get_parameters() const noexcept;
 	/**
 	 * Get OpenCL device
 	 * @return device
 	 */
-	cl_device_id get_device();
-	/**
-	 * Get OpenCL device_type
-	 * @return device_type
-	 */
-	cl_device_type get_device_type();
-	/**
-	 * Get platform_id
-	 * @return platform
-	 */
-	cl_platform_id get_platform();
-	/**
-	 * Set device_double_extension
-	 * @param double_ext "AMD" or "KHR"
-	 */
-	void set_device_double_extension(std::string double_ext);
-	/**
-	 * Get the device_double_extension
-	 * @return double_extension
-	 */
-	std::string get_device_double_extension();
-	/**
-	 * Get the maximum_compute_units
-	 * @return max_compute_units
-	 */
-	int get_max_compute_units();
-	/**
-	 * Set the maximum_compute_units
-	 * @return max_compute_units
-	 */
-	void set_max_compute_units(int maxcomp);
+	hardware::Device * get_device() const noexcept;
 
 	// methods which actually calculate something
 	/**
@@ -273,33 +223,14 @@ public:
 	 * @param dev_type type of device on which the kernel should be executed
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
-	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const;
 
 	/**
 	 * Return the kernel name as a string
 	 * @param[in] kernel
 	 * @return kernel_name
 	 */
-	std::string get_kernel_name(const cl_kernel kernel);
-
-#ifdef _PROFILING_
-	//CP: if PROFILING is activated, one needs a timer for each kernel
-	usetimer timer_plaquette;
-	usetimer timer_plaquette_reduction;
-	usetimer timer_rectangles;
-	usetimer timer_rectangles_reduction;
-	usetimer timer_polyakov;
-	usetimer timer_polyakov_reduction;
-	usetimer timer_convertGaugefieldToSOA;
-	usetimer timer_convertGaugefieldFromSOA;
-
-	usetimer timer_stout_smear;
-	/**
-	 * Return the timer connected to a specific kernel.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual usetimer* get_timer(const char * in);
+	std::string get_kernel_name(const cl_kernel kernel) const;
 
 	/**
 	 * Print the profiling information to a file.
@@ -307,9 +238,7 @@ public:
 	 * @param filename Name of file where data is appended.
 	 * @param number task-id
 	 */
-	void virtual print_profiling(std::string filename, int number);
-
-#endif
+	void virtual print_profiling(const std::string& filename, int number);
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -317,60 +246,14 @@ public:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual uint64_t get_flop_size(const char * in);
+	virtual uint64_t get_flop_size(const std::string& in) const;
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual size_t get_read_write_size(const char * in);
-
-	/**
-	 * Print the profiling information of a specific kernel to a file.
-	 *
-	 * @param filename Name of file where data is appended.
-	 * @param kernelName Name of specific kernel.
-	 * @param time_total total execution time
-	 * @param calls_total total number of kernel calls
-	 * @param read_write_size number of bytes read and written by the kernel
-	 * @param flop_size amount of flops performed by the kernel
-	 */
-	void print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, size_t read_write_size, uint64_t flop_size);
-
-	/**
-	 * Enqueue the given kernel on the device. Local work size will be determined
-	 * automatically from device and kernel properties.
-	 *
-	 * @param kernel The kernel to execute.
-	 * @param global_work_size The number of threads to run.
-	 *
-	 * @todo local work size decision might need ot become less automatic
-	 * @todo global work size will also depend on device ...
-	 */
-	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size);
-
-	/**
-	 * Enqueue the given kernel on the device. Local work size will be determined
-	 * automatically from device and kernel properties.
-	 *
-	 * @param kernel The kernel to execute.
-	 * @param global_work_size The number of threads to run.
-	 *
-	 * @todo local work size decision might need ot become less automatic
-	 * @todo global work size will also depend on device ...
-	 */
-	void enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size);
-
-	/**
-	 * Print resource requirements of a kernel object.
-	 *
-	 * All information is dumped to the trace.
-	 *
-	 * @param kernel The kernel of which to query the information.
-	 */
-	void printResourceRequirements(const cl_kernel kernel);
-
+	virtual size_t get_read_write_size(const std::string& in) const;
 
 	/**
 	 * Copy content of a buffer to another buffer inside a queue using
@@ -480,23 +363,7 @@ protected:
 	 */
 	TmpClKernel createKernel(const char * const kernel_name, const char * const build_opts = 0);
 
-	/**
-	 * Get number of threads
-	 * @return int numthreads
-	 *
-	 */
-	int get_numthreads();
-
 	const meta::Inputparameters& parameters;
-
-	/**
-	 * Whether this device uses SOA storage
-	 */
-	bool use_soa;
-	/**
-	 * Whether this device prefers blocks loops to strided ones
-	 */
-	bool use_blocked_loops;
 
 	/**
 	 * Calculate the proper stride for SOA storage.
@@ -508,28 +375,36 @@ protected:
 	cl_ulong calculateStride(const cl_ulong elems, const cl_ulong baseTypeSize);
 
 	/**
-	 * An identifier for this device unique within the program.
+	 * Print the profiling information for the given kernel to the given file.
+	 *
+	 * \param filename name of the file to print to
+	 * \param kernel the kernel whose information to pring
 	 */
-	unsigned int device_rank;
+	void print_profiling(const std::string& filename, const cl_kernel& kernel) const;
+
+public:
+
+	/**
+	 * Get the queue used by this module
+	 *
+	 * @deprecated queueing shoudl be done via device or buffes
+	 */
+	cl_command_queue get_queue() const noexcept;
 
 private:
 
-	cl_platform_id platform;
+	/**
+	 * The device used by this module
+	 */
+	hardware::Device * const device;
+
 	cl_context ocl_context;
-	cl_command_queue ocl_queue;
 	/**
 	 * Gaugefield buffer size in bytes.
 	 *
 	 * To ensure proper initialization *ONLY* access via getGaugefieldBufferSize()!
 	 */
 	size_t gaugefield_bytes;
-
-	cl_uint max_compute_units;
-	std::string device_double_extension;
-
-	cl_device_id device;
-	cl_device_type device_type;
-	char * device_name;
 
 	cl_mem gaugefield;
 
@@ -564,8 +439,6 @@ private:
 	usetimer copy_to;
 	//this is used to measure data-transfer on the device
 	usetimer copy_on;
-
-	int numthreads;
 
 	// memory usage tracing
 	size_t allocated_bytes;

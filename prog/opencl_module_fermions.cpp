@@ -759,9 +759,9 @@ void Opencl_Module_Fermions::clear_solver_buffers()
 	return;
 }
 
-void Opencl_Module_Fermions::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
+void Opencl_Module_Fermions::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
-	Opencl_Module_Spinors::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
+	Opencl_Module_Spinors::get_work_sizes(kernel, ls, gs, num_groups);
 
 	return;
 }
@@ -820,7 +820,7 @@ void Opencl_Module_Fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, h
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_wilson, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_wilson, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_wilson, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -834,7 +834,7 @@ void Opencl_Module_Fermions::M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, h
 	clerr = clSetKernelArg(M_wilson, 3, sizeof(hmc_float), &kappa_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( M_wilson, gs2, ls2);
+	get_device()->enqueue_kernel( M_wilson, gs2, ls2);
 }
 
 void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
@@ -852,7 +852,7 @@ void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, 
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_plus, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_plus, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_plus, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -869,7 +869,7 @@ void Opencl_Module_Fermions::M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, 
 	clerr = clSetKernelArg(M_tm_plus, 4, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( M_tm_plus, gs2, ls2);
+	get_device()->enqueue_kernel( M_tm_plus, gs2, ls2);
 }
 
 void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa , hmc_float mubar )
@@ -887,7 +887,7 @@ void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf,
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_minus, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_minus, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_minus, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -904,7 +904,7 @@ void Opencl_Module_Fermions::M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf,
 	clerr = clSetKernelArg(M_tm_minus, 4, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( M_tm_minus, gs2, ls2);
+	get_device()->enqueue_kernel( M_tm_minus, gs2, ls2);
 }
 
 void Opencl_Module_Fermions::gamma5_device(cl_mem inout)
@@ -912,12 +912,12 @@ void Opencl_Module_Fermions::gamma5_device(cl_mem inout)
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(gamma5, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(gamma5, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(gamma5, 0, sizeof(cl_mem), &inout);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(gamma5 , gs2, ls2);
+	get_device()->enqueue_kernel(gamma5 , gs2, ls2);
 }
 
 //compound fermionmatrix-functions with eoprec
@@ -1116,12 +1116,12 @@ void Opencl_Module_Fermions::gamma5_eo_device(cl_mem inout)
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(gamma5_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(gamma5_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(gamma5_eo, 0, sizeof(cl_mem), &inout);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( gamma5_eo, gs2, ls2);
+	get_device()->enqueue_kernel( gamma5_eo, gs2, ls2);
 }
 
 void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa)
@@ -1135,7 +1135,7 @@ void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, 
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(dslash_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(dslash_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(dslash_eo, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1152,7 +1152,7 @@ void Opencl_Module_Fermions::dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, 
 	clerr = clSetKernelArg(dslash_eo, 4, sizeof(hmc_float), &kappa_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(dslash_eo , gs2, ls2);
+	get_device()->enqueue_kernel(dslash_eo , gs2, ls2);
 }
 
 void Opencl_Module_Fermions::dslash_AND_gamma5_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa)
@@ -1166,7 +1166,7 @@ void Opencl_Module_Fermions::dslash_AND_gamma5_eo_device(cl_mem in, cl_mem out, 
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(dslash_AND_gamma5_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(dslash_AND_gamma5_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(dslash_AND_gamma5_eo, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1183,7 +1183,7 @@ void Opencl_Module_Fermions::dslash_AND_gamma5_eo_device(cl_mem in, cl_mem out, 
 	clerr = clSetKernelArg(dslash_AND_gamma5_eo, 4, sizeof(hmc_float), &kappa_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(dslash_AND_gamma5_eo , gs2, ls2);
+	get_device()->enqueue_kernel(dslash_AND_gamma5_eo , gs2, ls2);
 }
 
 void Opencl_Module_Fermions::dslash_AND_M_tm_inverse_sitediagonal_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa, hmc_float mubar)
@@ -1199,7 +1199,7 @@ void Opencl_Module_Fermions::dslash_AND_M_tm_inverse_sitediagonal_eo_device(cl_m
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(dslash_AND_M_tm_inverse_sitediagonal_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(dslash_AND_M_tm_inverse_sitediagonal_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_eo, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1219,7 +1219,7 @@ void Opencl_Module_Fermions::dslash_AND_M_tm_inverse_sitediagonal_eo_device(cl_m
 	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_eo, 5, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(dslash_AND_M_tm_inverse_sitediagonal_eo , gs2, ls2);
+	get_device()->enqueue_kernel(dslash_AND_M_tm_inverse_sitediagonal_eo , gs2, ls2);
 }
 
 void Opencl_Module_Fermions::dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa, hmc_float mubar)
@@ -1235,7 +1235,7 @@ void Opencl_Module_Fermions::dslash_AND_M_tm_inverse_sitediagonal_minus_eo_devic
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1255,7 +1255,7 @@ void Opencl_Module_Fermions::dslash_AND_M_tm_inverse_sitediagonal_minus_eo_devic
 	clerr = clSetKernelArg(dslash_AND_M_tm_inverse_sitediagonal_minus_eo, 5, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(dslash_AND_M_tm_inverse_sitediagonal_minus_eo , gs2, ls2);
+	get_device()->enqueue_kernel(dslash_AND_M_tm_inverse_sitediagonal_minus_eo , gs2, ls2);
 }
 
 void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mubar)
@@ -1268,7 +1268,7 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem 
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_inverse_sitediagonal, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_inverse_sitediagonal, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1279,7 +1279,7 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem 
 	clerr = clSetKernelArg(M_tm_inverse_sitediagonal, 2, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( M_tm_inverse_sitediagonal, gs2, ls2);
+	get_device()->enqueue_kernel( M_tm_inverse_sitediagonal, gs2, ls2);
 }
 
 void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mubar)
@@ -1292,7 +1292,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_sitediagonal, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_sitediagonal, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_sitediagonal, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1303,7 +1303,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc
 	clerr = clSetKernelArg(M_tm_sitediagonal, 2, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(M_tm_sitediagonal , gs2, ls2);
+	get_device()->enqueue_kernel(M_tm_sitediagonal , gs2, ls2);
 }
 
 void Opencl_Module_Fermions::M_tm_sitediagonal_AND_gamma5_eo_device(cl_mem in, cl_mem out, hmc_float mubar)
@@ -1316,7 +1316,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_AND_gamma5_eo_device(cl_mem in, c
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_sitediagonal_AND_gamma5_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_sitediagonal_AND_gamma5_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_sitediagonal_AND_gamma5_eo, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1327,7 +1327,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_AND_gamma5_eo_device(cl_mem in, c
 	clerr = clSetKernelArg(M_tm_sitediagonal_AND_gamma5_eo, 2, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(M_tm_sitediagonal_AND_gamma5_eo , gs2, ls2);
+	get_device()->enqueue_kernel(M_tm_sitediagonal_AND_gamma5_eo , gs2, ls2);
 }
 
 void Opencl_Module_Fermions::M_tm_sitediagonal_minus_AND_gamma5_eo_device(cl_mem in, cl_mem out, hmc_float mubar)
@@ -1340,7 +1340,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_AND_gamma5_eo_device(cl_mem
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_sitediagonal_minus_AND_gamma5_eo, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_sitediagonal_minus_AND_gamma5_eo, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_sitediagonal_minus_AND_gamma5_eo, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1351,7 +1351,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_AND_gamma5_eo_device(cl_mem
 	clerr = clSetKernelArg(M_tm_sitediagonal_minus_AND_gamma5_eo, 2, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(M_tm_sitediagonal_minus_AND_gamma5_eo , gs2, ls2);
+	get_device()->enqueue_kernel(M_tm_sitediagonal_minus_AND_gamma5_eo , gs2, ls2);
 }
 
 void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mubar)
@@ -1364,7 +1364,7 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, c
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_inverse_sitediagonal_minus, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_inverse_sitediagonal_minus, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_inverse_sitediagonal_minus, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1375,7 +1375,7 @@ void Opencl_Module_Fermions::M_tm_inverse_sitediagonal_minus_device(cl_mem in, c
 	clerr = clSetKernelArg(M_tm_inverse_sitediagonal_minus, 2, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel( M_tm_inverse_sitediagonal_minus, gs2, ls2);
+	get_device()->enqueue_kernel( M_tm_inverse_sitediagonal_minus, gs2, ls2);
 }
 
 void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mubar)
@@ -1388,7 +1388,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(M_tm_sitediagonal_minus, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(M_tm_sitediagonal_minus, &ls2, &gs2, &num_groups);
 	//set arguments
 	int clerr = clSetKernelArg(M_tm_sitediagonal_minus, 0, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1399,7 +1399,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(cl_mem in, cl_mem ou
 	clerr = clSetKernelArg(M_tm_sitediagonal_minus, 2, sizeof(hmc_float), &mubar_tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(M_tm_sitediagonal_minus , gs2, ls2);
+	get_device()->enqueue_kernel(M_tm_sitediagonal_minus , gs2, ls2);
 }
 
 int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
@@ -2115,71 +2115,7 @@ hmc_float Opencl_Module_Fermions::print_info_inv_field(cl_mem in, bool eo, std::
 	return tmp;
 }
 
-#ifdef _PROFILING_
-usetimer* Opencl_Module_Fermions::get_timer(const char * in)
-{
-	logger.trace() << "Opencl_Module_Fermions::get_timer(char*)";
-	usetimer *noop = NULL;
-	noop = Opencl_Module_Spinors::get_timer(in);
-	if(noop != NULL) return noop;
-
-	if (strcmp(in, "M_wilson") == 0) {
-		return &(this->timer_M_wilson);
-	}
-	if (strcmp(in, "gamma5") == 0) {
-		return &this->timer_gamma5;
-	}
-	if (strcmp(in, "M_tm_plus") == 0) {
-		return &this->timer_M_tm_plus;
-	}
-	if (strcmp(in, "M_tm_minus") == 0) {
-		return &this->timer_M_tm_minus;
-	}
-	if (strcmp(in, "gamma5_eo") == 0) {
-		return &this->timer_gamma5_eo;
-	}
-	if (strcmp(in, "dslash_eo") == 0) {
-		return &this->timer_dslash_eo;
-	}
-	if (strcmp(in, "M_tm_sitediagonal") == 0) {
-		return &this->timer_M_tm_sitediagonal;
-	}
-	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0) {
-		return &this->timer_M_tm_inverse_sitediagonal;
-	}
-	if (strcmp(in, "M_tm_sitediagonal_minus") == 0) {
-		return &this->timer_M_tm_sitediagonal_minus;
-	}
-	if (strcmp(in, "M_tm_inverse_sitediagonal_minus") == 0) {
-		return &this->timer_M_tm_inverse_sitediagonal_minus;
-	}
-	if (strcmp(in, "ps_correlator") == 0) {
-		return &this->timer_ps_correlator;
-	}
-	if (strcmp(in, "dslash_AND_gamma5_eo") == 0) {
-		return &this->timer_dslash_AND_gamma5_eo;
-	}
-	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_eo") == 0) {
-		return &this->timer_dslash_AND_M_tm_inverse_sitediagonal_eo;
-	}
-	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_minus_eo") == 0) {
-		return &this->timer_dslash_AND_M_tm_inverse_sitediagonal_minus_eo;
-	}
-	if (strcmp(in, "M_tm_sitediagonal_AND_gamma5_eo") == 0) {
-		return &this->timer_M_tm_sitediagonal_AND_gamma5_eo;
-	}
-	if (strcmp(in, "M_tm_sitediagonal_minus_AND_gamma5_eo") == 0) {
-		return &this->timer_M_tm_sitediagonal_minus_AND_gamma5_eo;
-	}
-
-	//if the kernelname has not matched, return NULL
-	else {
-		return NULL;
-	}
-}
-#endif
-
-size_t Opencl_Module_Fermions::get_read_write_size(const char * in)
+size_t Opencl_Module_Fermions::get_read_write_size(const std::string& in) const
 {
 	size_t result = Opencl_Module_Spinors::get_read_write_size(in);
 	if (result != 0) return result;
@@ -2194,80 +2130,80 @@ size_t Opencl_Module_Fermions::get_read_write_size(const char * in)
 	int C = 2;
 	//this is the same as in the function above
 	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
-	if (strcmp(in, "M_wilson") == 0) {
+	if (in == "M_wilson") {
 		//this kernel reads 9 spinors, 8 su3matrices and writes 1 spinor:
 		return (C * 12 * (9 + 1) + C * 8 * R) * D * S;
 	}
-	if (strcmp(in, "gamma5") == 0) {
+	if (in == "gamma5") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 2 * C * 12 * D * S;
 	}
-	if (strcmp(in, "M_tm_plus") == 0) {
+	if (in == "M_tm_plus") {
 		//this kernel reads 9 spinors, 8 su3matrices and writes 1 spinor:
 		return (C * 12 * (9 + 1) + C * 8 * R) * D * S;
 	}
-	if (strcmp(in, "M_tm_minus") == 0) {
+	if (in == "M_tm_minus") {
 		//this kernel reads 9 spinors, 8 su3matrices and writes 1 spinor:
 		return (C * 12 * (9 + 1) + C * 8 * R) * D * S;
 	}
-	if (strcmp(in, "gamma5_eo") == 0) {
+	if (in == "gamma5_eo") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
-	if (strcmp(in, "M_tm_sitediagonal") == 0) {
+	if (in == "M_tm_sitediagonal") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
-	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0) {
+	if (in == "M_tm_inverse_sitediagonal") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_minus") == 0) {
+	if (in == "M_tm_sitediagonal_minus") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
-	if (strcmp(in, "M_tm_inverse_sitediagonal_minus") == 0) {
+	if (in == "M_tm_inverse_sitediagonal_minus") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
-	if (strcmp(in, "dslash_eo") == 0) {
+	if (in == "dslash_eo") {
 		//this kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
 		const unsigned int dirs = 4;
 		return (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
 	}
-	if (strcmp(in, "dslash_AND_gamma5_eo") == 0) {
+	if (in == "dslash_AND_gamma5_eo") {
 		//the dslash kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
 		const unsigned int dirs = 4;
 		//the gamma5 kernel reads 1 spinor and writes 1 spinor:
 		//the merged kernel reads 8 spinors, 8 su3matrices and writes 1 spinor, thus it is the same as the dslash
 		return  (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
 	}
-	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_eo") == 0) {
+	if (in == "dslash_AND_M_tm_inverse_sitediagonal_eo") {
 		//the dslash kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
 		const unsigned int dirs = 4;
 		//the diag kernel reads 1 spinor and writes 1 spinor:
 		//the merged kernel reads 8 spinors, 8 su3matrices and writes 1 spinor, thus it is the same as the dslash
 		return  (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
 	}
-	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_minus_eo") == 0) {
+	if (in == "dslash_AND_M_tm_inverse_sitediagonal_minus_eo") {
 		//the dslash kernel reads 8 spinors, 8 su3matrices and writes 1 spinor:
 		const unsigned int dirs = 4;
 		//the diag kernel reads 1 spinor and writes 1 spinor:
 		//the merged kernel reads 8 spinors, 8 su3matrices and writes 1 spinor, thus it is the same as the dslash
 		return  (C * 12 * (2 * dirs + 1) + C * 2 * dirs * R) * D * Seo;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_AND_gamma5_eo") == 0) {
+	if (in == "M_tm_sitediagonal_AND_gamma5_eo") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_minus_AND_gamma5_eo") == 0) {
+	if (in == "M_tm_sitediagonal_minus_AND_gamma5_eo") {
 		//this kernel reads 1 spinor and writes 1 spinor:
 		return 48 * D * Seo;
 	}
 	return 0;
 }
 
-int flop_dslash_per_site(const meta::Inputparameters & parameters)
+static int flop_dslash_per_site(const meta::Inputparameters & parameters)
 {
 	/** @NOTE: this is the "original" dslash without any simplifications, counting everything "full". this is a much too hight number!!
 	   *  //this kernel performs for each eo site a 2*NDIM sum over (1 + gamma_mu) * su3matrix * spinor
@@ -2281,105 +2217,87 @@ int flop_dslash_per_site(const meta::Inputparameters & parameters)
 
 }
 
-uint64_t Opencl_Module_Fermions::get_flop_size(const char * in)
+uint64_t Opencl_Module_Fermions::get_flop_size(const std::string& in) const
 {
 	uint64_t result = Opencl_Module_Spinors::get_flop_size(in);
 	if (result != 0) return result;
 	size_t S = meta::get_spinorfieldsize(get_parameters());
 	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
-	if (strcmp(in, "M_wilson") == 0) {
+	if (in == "M_wilson") {
 		//this kernel performs one dslash on each site and adds this to a spinor
 		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2 );
 	}
-	if (strcmp(in, "gamma5") == 0) {
+	if (in == "gamma5") {
 		//this kernel performs ND*NC*2/2 real mults
 		return S * NDIM * NC;
 	}
-	if (strcmp(in, "M_tm_plus") == 0) {
+	if (in == "M_tm_plus") {
 		//this kernel performs ND*NC complex mults and one dslash on each site and adds the results
 		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2 );
 	}
-	if (strcmp(in, "M_tm_minus") == 0) {
+	if (in == "M_tm_minus") {
 		//this kernel performs ND*NC complex mults and one dslash on each site and adds the results
 		return S * (flop_dslash_per_site(get_parameters()) + NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2 );
 	}
-	if (strcmp(in, "gamma5_eo") == 0) {
+	if (in == "gamma5_eo") {
 		//this kernel performs ND*NC*2/2 real mults
 		return Seo * NDIM * NC;
 	}
-	if (strcmp(in, "M_tm_sitediagonal") == 0) {
+	if (in == "M_tm_sitediagonal") {
 		//this kernel performs ND*NC complex mults
 		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() );
 	}
-	if (strcmp(in, "M_tm_inverse_sitediagonal") == 0) {
+	if (in == "M_tm_inverse_sitediagonal") {
 		//this kernel performs ND*NC complex mults and ND*NC*2 real mults
 		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2  );
 	}
-	if (strcmp(in, "M_tm_sitediagonal_minus") == 0) {
+	if (in == "M_tm_sitediagonal_minus") {
 		//this kernel performs ND*NC complex mults
 		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() );
 	}
-	if (strcmp(in, "M_tm_inverse_sitediagonal_minus") == 0) {
+	if (in == "M_tm_inverse_sitediagonal_minus") {
 		//this kernel performs ND*NC complex mults and ND*NC*2 real mults
 		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2 );
 	}
-	if (strcmp(in, "dslash_eo") == 0) {
+	if (in == "dslash_eo") {
 		return Seo * flop_dslash_per_site(get_parameters());
 	}
-	if (strcmp(in, "dslash_AND_gamma5_eo") == 0) {
+	if (in == "dslash_AND_gamma5_eo") {
 		return Seo * flop_dslash_per_site(get_parameters()) +  Seo * NDIM * NC;
 	}
-	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_eo") == 0) {
+	if (in == "dslash_AND_M_tm_inverse_sitediagonal_eo") {
 		return Seo * flop_dslash_per_site(get_parameters()) + Seo * ( NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2  );
 	}
-	if (strcmp(in, "dslash_AND_M_tm_inverse_sitediagonal_minus_eo") == 0) {
+	if (in == "dslash_AND_M_tm_inverse_sitediagonal_minus_eo") {
 		return Seo * flop_dslash_per_site(get_parameters()) + Seo * ( NC * NDIM * meta::get_flop_complex_mult() + NC * NDIM * 2  );
 	}
-	if (strcmp(in, "M_tm_sitediagonal_AND_gamma5_eo") == 0) {
+	if (in == "M_tm_sitediagonal_AND_gamma5_eo") {
 		//this kernel performs ND*NC complex mults and  ND*NC*2/2 real mults
 		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() ) + Seo * NDIM * NC ;
 	}
-	if (strcmp(in, "M_tm_sitediagonal_minus_AND_gamma5_eo") == 0) {
+	if (in == "M_tm_sitediagonal_minus_AND_gamma5_eo") {
 		//this kernel performs ND*NC complex mults  ND*NC*2/2 real mults
 		return Seo * ( NC * NDIM * meta::get_flop_complex_mult() ) +  Seo * NDIM * NC;
 	}
 	return 0;
 }
 
-#ifdef _PROFILING_
-void Opencl_Module_Fermions::print_profiling(std::string filename, int number)
+void Opencl_Module_Fermions::print_profiling(const std::string& filename, int number)
 {
 	Opencl_Module_Spinors::print_profiling(filename, number);
-	const char * kernelName;
-	kernelName = "M_wilson";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "gamma5";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_plus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_minus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "gamma5_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_sitediagonal";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_inverse_sitediagonal";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_sitediagonal_minus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_inverse_sitediagonal_minus";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "dslash_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "dslash_AND_gamma5_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "dslash_AND_M_tm_inverse_sitediagonal_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "dslash_AND_M_tm_inverse_sitediagonal_minus_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_sitediagonal_AND_gamma5_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "M_tm_sitediagonal_minus_AND_gamma5_eo";
-	Opencl_Module::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+	Opencl_Module::print_profiling(filename, M_wilson);
+	Opencl_Module::print_profiling(filename, gamma5);
+	Opencl_Module::print_profiling(filename, M_tm_plus);
+	Opencl_Module::print_profiling(filename, M_tm_minus);
+	Opencl_Module::print_profiling(filename, gamma5_eo);
+	Opencl_Module::print_profiling(filename, M_tm_sitediagonal);
+	Opencl_Module::print_profiling(filename, M_tm_inverse_sitediagonal);
+	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_minus);
+	Opencl_Module::print_profiling(filename, M_tm_inverse_sitediagonal_minus);
+	Opencl_Module::print_profiling(filename, dslash_eo);
+	Opencl_Module::print_profiling(filename, dslash_AND_gamma5_eo);
+	Opencl_Module::print_profiling(filename, dslash_AND_M_tm_inverse_sitediagonal_eo);
+	Opencl_Module::print_profiling(filename, dslash_AND_M_tm_inverse_sitediagonal_minus_eo);
+	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_AND_gamma5_eo);
+	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_minus_AND_gamma5_eo);
 }
-#endif

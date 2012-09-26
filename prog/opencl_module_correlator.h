@@ -44,8 +44,8 @@ public:
 	 * Default constructor, does nothing but make sure some pointer point to 0.
 	 *
 	 */
-	Opencl_Module_Correlator(const meta::Inputparameters& params)
-		: Opencl_Module_Spinors(params),
+	Opencl_Module_Correlator(const meta::Inputparameters& params, hardware::Device * device)
+		: Opencl_Module_Spinors(params, device),
 		  create_point_source(0), create_stochastic_source(0),
 		  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0),
 		  clmem_source(0), clmem_corr() { };
@@ -55,27 +55,27 @@ public:
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual void fill_collect_options(std::stringstream* collect_options);
+	virtual void fill_collect_options(std::stringstream* collect_options) override;
 	/**
 	 * Collect the buffers to generate for OpenCL.
 	 * Virtual method, allows to include more buffers in inherited classes.
 	 */
-	virtual void fill_buffers();
+	virtual void fill_buffers() override;
 	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
-	virtual void fill_kernels();
+	virtual void fill_kernels() override;
 	/**
 	 * Clear out the kernels,
 	 * Virtual method, allows to clear additional kernels in inherited classes.
 	 */
-	virtual void clear_kernels();
+	virtual void clear_kernels() override;
 	/**
 	 * Clear out the buffers,
 	 * Virtual method, allows to clear additional buffers in inherited classes.
 	 */
-	virtual void clear_buffers();
+	virtual void clear_buffers() override;
 
 	/**
 	 * comutes work-sizes for a kernel
@@ -83,10 +83,9 @@ public:
 	 * @param ls local-work-size
 	 * @param gs global-work-size
 	 * @param num_groups number of work groups
-	 * @param dev_type type of device on which the kernel should be executed
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
-	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
 	void create_point_source_device(cl_mem inout, int i, int spacepos, int timepos);
 
@@ -106,43 +105,20 @@ public:
 	cl_mem get_clmem_corr();
 	cl_mem get_clmem_source();
 
-#ifdef _PROFILING_
-	//CP: if PROFILING is activated, one needs a timer for each kernel
-
-	usetimer timer_create_point_source;
-	usetimer timer_create_stochastic_source;
-
-	usetimer timer_correlator_ps;
-	usetimer timer_correlator_sc;
-	usetimer timer_correlator_vx;
-	usetimer timer_correlator_vy;
-	usetimer timer_correlator_vz;
-	usetimer timer_correlator_ax;
-	usetimer timer_correlator_ay;
-	usetimer timer_correlator_az;
-
-	/**
-	 * Return the timer connected to a specific kernel.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual usetimer* get_timer(const char * in);
-
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 * @param number task-id
 	 */
-	void virtual print_profiling(std::string filename, int number);
-#endif
+	void virtual print_profiling(const std::string& filename, int number) override;
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual size_t get_read_write_size(const char * in);
+	virtual size_t get_read_write_size(const std::string& in) const override;
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -150,7 +126,7 @@ public:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual uint64_t get_flop_size(const char * in);
+	virtual uint64_t get_flop_size(const std::string& in) const override;
 
 private:
 	////////////////////////////////////

@@ -8,66 +8,38 @@
 
 using namespace std;
 
-void Opencl_Module::init(cl_command_queue queue, int maxcomp, string double_ext, unsigned int device_rank)
+static void print_profile_header(const std::string& filename, int number);
+/**
+ * Print the profiling information of a specific kernel to a file.
+ *
+ * @param filename Name of file where data is appended.
+ * @param kernelName Name of specific kernel.
+ * @param time_total total execution time
+ * @param calls_total total number of kernel calls
+ * @param read_write_size number of bytes read and written by the kernel
+ * @param flop_size amount of flops performed by the kernel
+ */
+static void print_profiling(const std::string& filename, const std::string& kernelName, const hardware::ProfilingData& data, size_t read_write_size, uint64_t flop_size, uint64_t sites);
+
+void Opencl_Module::init()
 {
-	set_queue(queue);
-
-	this->device_rank = device_rank;
-
 	// get device
-	cl_int clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_DEVICE, sizeof(cl_device_id), &device, NULL);
+	cl_device_id device_id = device->get_id();
+
+	logger.debug() << "Device is " << device->get_name();
+
+	cl_int clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ocl_context, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetCommandQueueInfo", __FILE__, __LINE__);
-
-	// get device name
-	size_t device_name_bytes;
-	clerr = clGetDeviceInfo(device, CL_DEVICE_NAME, 0, NULL, &device_name_bytes );
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
-	device_name = new char[device_name_bytes];
-	clerr = clGetDeviceInfo(device, CL_DEVICE_NAME, device_name_bytes, device_name, NULL );
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
-
-	logger.debug() << "Device is " << device_name;
-
-	set_device_double_extension(double_ext);
-	set_max_compute_units(maxcomp);
-
-	clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ocl_context, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetCommandQueueInfo", __FILE__, __LINE__);
-
-	clerr = clGetDeviceInfo(device, CL_DEVICE_TYPE, sizeof(cl_device_type), &device_type, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
-
-	clerr = clGetDeviceInfo(device, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetDeviceInfo", __FILE__, __LINE__);
-
-	// different devices need different strategies for optimal performance
-	switch ( device_type ) {
-		case CL_DEVICE_TYPE_GPU :
-			numthreads = 128;
-			use_soa = true;
-			use_blocked_loops = false;
-			logger.debug() << "Device should use SOA storage format and strided loops.";
-			break;
-		case CL_DEVICE_TYPE_CPU :
-			numthreads = 1;
-			use_soa = false;
-			use_blocked_loops = true;
-			logger.debug() << "Device should use AOS storage format and blocked loops.";
-			break;
-		default :
-			throw Print_Error_Message("Could not retrive proper CL_DEVICE_TYPE...", __FILE__, __LINE__);
-	}
 
 	// initialize memory usage tracking
 	allocated_bytes = 0;
 	max_allocated_bytes = 0;
 	allocated_hostptr_bytes = 0;
-	logger.trace() << "Initial memory usage (" << device_name << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes << " (Assuming stored gaugefield";
+	logger.trace() << "Initial memory usage (" << device->get_name() << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes << " (Assuming stored gaugefield";
 
 	this->fill_buffers();
 	this->fill_kernels();
 }
-
 
 void Opencl_Module::finalize()
 {
@@ -84,42 +56,20 @@ cl_context Opencl_Module::get_context()
 }
 
 
-void Opencl_Module::set_queue(cl_command_queue queue)
-{
-	ocl_queue = queue;
-	return;
-}
-
-cl_command_queue Opencl_Module::get_queue()
-{
-	return ocl_queue;
-}
-
 cl_mem Opencl_Module::get_gaugefield()
 {
 	return gaugefield;
 }
 
-const meta::Inputparameters& Opencl_Module::get_parameters()
+const meta::Inputparameters& Opencl_Module::get_parameters() const noexcept
 {
 	return parameters;
 }
 
-cl_device_type Opencl_Module::get_device_type()
-{
-	return device_type;
-}
-
-cl_device_id Opencl_Module::get_device()
+hardware::Device * Opencl_Module::get_device() const noexcept
 {
 	return device;
 }
-
-cl_platform_id Opencl_Module::get_platform()
-{
-	return platform;
-}
-
 
 void Opencl_Module::fill_collect_options(stringstream* collect_options)
 {
@@ -130,13 +80,15 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 
 	if(get_parameters().get_precision() == 64) {
 		*collect_options << " -D_USEDOUBLEPREC_";
-		if( device_double_extension.empty() ) {
-			logger.warn() << "Warning: Undefined extension for use of double.";
-		} else {
-			*collect_options << " -D_DEVICE_DOUBLE_EXTENSION_" << device_double_extension << "_";
-		}
+		// TODO renable support for older AMD GPUs
+		//if( device_double_extension.empty() ) {
+		//  logger.warn() << "Warning: Undefined extension for use of double.";
+		//} else {
+		//  *collect_options << " -D_DEVICE_DOUBLE_EXTENSION_" << device_double_extension << "_";
+		//}
+		*collect_options << " -D_DEVICE_DOUBLE_EXTENSION_KHR_";
 	}
-	if( device_type == CL_DEVICE_TYPE_GPU )
+	if( device->get_device_type() == CL_DEVICE_TYPE_GPU )
 		*collect_options << " -D_USEGPU_";
 	if(get_parameters().get_use_chem_pot_re() == true) {
 		*collect_options << " -D_CP_REAL_";
@@ -155,16 +107,13 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 		*collect_options << " -DRHO=" << get_parameters().get_rho();
 		*collect_options << " -DRHO_ITER=" << get_parameters().get_rho_iter();
 	}
-	if(use_soa) {
+	if(device->get_prefers_soa()) {
 		*collect_options << " -DGAUGEFIELD_STRIDE=" << calculateStride(meta::get_vol4d(get_parameters()) * NDIM, sizeof(hmc_complex));
+		*collect_options << " -D_USE_SOA_";
 	}
 	*collect_options << " -I" << SOURCEDIR;
 
-	if(use_soa) {
-		*collect_options << " -D_USE_SOA_";
-	}
-
-	if(use_blocked_loops) {
+	if(device->get_prefers_blocked_loops()) {
 		*collect_options << " -D_USE_BLOCKED_LOOPS_";
 	}
 
@@ -190,7 +139,7 @@ void Opencl_Module::markMemReleased(bool host, size_t size)
 	} else {
 		allocated_bytes -= size;
 	}
-	logger.trace() << "Memory usage (" << device_name << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
+	logger.trace() << "Memory usage (" << device->get_name() << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
 }
 
 struct MemObjectReleaseInfo {
@@ -232,7 +181,7 @@ cl_mem Opencl_Module::createBuffer(cl_mem_flags flags, size_t size, void * host_
 		max_allocated_bytes = allocated_bytes;
 	}
 
-	logger.trace() << "Memory usage (" << device_name << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
+	logger.trace() << "Memory usage (" << device->get_name() << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
 
 	return tmp;
 }
@@ -385,7 +334,7 @@ void Opencl_Module::clear_buffers()
 
 	clReleaseMemObject(gaugefield);
 
-	logger.info() << "Maximum memory used (" << device_name << "): " << max_allocated_bytes << " bytes";
+	logger.info() << "Maximum memory used (" << device->get_name() << "): " << max_allocated_bytes << " bytes";
 }
 
 
@@ -418,372 +367,12 @@ void Opencl_Module::get_buffer_from_device(cl_mem source, void * dest, size_t si
 	(*this->get_copy_to()).add();
 }
 
-void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_work_size)
-{
-	cl_int clerr;
-
-	if(logger.beTrace()) {
-		size_t nameSize;
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &nameSize );
-		if( clerr == CL_SUCCESS ) {
-			char* name = new char[nameSize];
-			clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, nameSize, name, &nameSize );
-			if( clerr == CL_SUCCESS )
-				logger.trace() << "Queued Kernel: " << name << " (" << global_work_size << ')';
-			delete[] name;
-		}
-	}
-
-	///@todo make this properly handle multiple dimensions
-	// decide on work-sizes
-	size_t local_work_size;
-	if( device_type == CL_DEVICE_TYPE_GPU )
-		local_work_size = Opencl_Module::get_numthreads(); /// @todo have local work size depend on kernel properties (and device? autotune?)
-	else
-		local_work_size = 1; // nothing else makes sens on CPU
-
-	// query the work group size specified at compile time (if any)
-	size_t compile_work_group_size[3];
-	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 3 * sizeof(size_t), compile_work_group_size, NULL );
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
-
-	const size_t * const local_work_size_p = (compile_work_group_size[0] == 0) ? &local_work_size : &compile_work_group_size[0];
-
-	// make sure global_work_size is divisible by global_work_size
-	if( global_work_size % *local_work_size_p ) {
-		size_t bytesInKernelName;
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
-		if( clerr ) {
-			logger.error() << "Failed to query kernel name: ";
-			return;
-		}
-		char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
-		if( clerr ) {
-			logger.error() << "Failed to query kernel name: ";
-			return;
-		}
-
-		logger.fatal() << "Kernel " << kernelName << " can only be run with a global work size which is a multiple of " << *local_work_size_p << ". The requested size was " << global_work_size << '.';
-
-		delete [] kernelName;
-
-	}
-
-	cl_int clerr_enqueue = CL_SUCCESS;
-#ifdef _PROFILING_
-	cl_event event;
-	clerr_enqueue = clEnqueueNDRangeKernel(get_queue(), kernel, 1, 0, &global_work_size, local_work_size_p, 0, 0, &event); //clerr error handling below
-	if(clerr_enqueue == CL_SUCCESS) {
-
-		cl_int done = clWaitForEvents(1, &event);
-		if(done != CL_SUCCESS) throw Opencl_Error(clerr, "clWaitForEvents", __FILE__, __LINE__);
-
-		//CP: Now I have to get the right timer, called timer_"kernelname"
-		//First Method: Construct the explicit timername
-		size_t bytesInKernelName;
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
-		if( clerr ) {
-			logger.error() << "Failed to query kernel name: ";
-			return;
-		}
-
-		char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
-		if( clerr ) {
-			logger.error() << "Failed to query kernel name: ";
-			return;
-		}
-//  char timerName[7] = ("timer_");
-//  strcat(timerName, kernelName);
-//  //Problem: How to call the memory object?
-//  (this->timerName).add(get_kernel_exec_time(event));
-
-		//Second Method: Nasty workaround
-		//noop is used in case the kernel is not recognized
-		usetimer *noop = NULL;
-		noop = this->get_timer(kernelName);
-		if(noop == NULL)
-			logger.error() << "get_timer(" << kernelName << ") did not return a timer!";
-		else
-			(*get_timer(kernelName)).add(get_kernel_exec_time(event));
-
-		delete [] kernelName;
-
-	}
-#else
-	clerr_enqueue = clEnqueueNDRangeKernel(get_queue(), kernel, 1, 0, &global_work_size, local_work_size_p, 0, 0, NULL);
-#endif
-	if(clerr_enqueue != CL_SUCCESS) {
-		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting...";
-		logger.fatal() << "Some more information:";
-		logger.fatal() << "global_work_size: " << global_work_size;
-		logger.fatal() << "local_work_size:  " << *local_work_size_p;
-
-		size_t bytesInKernelName;
-		if(clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName) == CL_SUCCESS) {
-			char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
-			if(clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL) == CL_SUCCESS) {
-				logger.fatal() << "Failed kernel: " << kernelName;
-			} else {
-				logger.error() << "Could not retrieve kernel name";
-			}
-			delete [] kernelName;
-		} else {
-			logger.error() << "Could not retrieve length of kernel name";
-		}
-
-		throw Opencl_Error(clerr_enqueue, "clEnqueueNDRangeKernel", __FILE__, __LINE__);
-
-	}
-}
-
-void Opencl_Module::enqueueKernel(const cl_kernel kernel, const size_t global_work_size, const size_t local_work_size)
-{
-	cl_int clerr = CL_SUCCESS;
-
-	if(logger.beTrace()) {
-		size_t nameSize;
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &nameSize );
-		if( clerr == CL_SUCCESS ) {
-			char* name = new char[nameSize];
-			clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, nameSize, name, &nameSize );
-			if( clerr == CL_SUCCESS )
-				logger.trace() << "Queued Kernel: " << name << " (" << global_work_size << '/' << local_work_size << ')';
-			delete[] name;
-		}
-	}
-	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr, "clGetKernelInfo", __FILE__, __LINE__);
-	cl_int clerr_enqueue = CL_SUCCESS;
-#ifdef _PROFILING_
-	cl_event event;
-	clerr_enqueue = clEnqueueNDRangeKernel(get_queue(), kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, &event); //clerr evaluated below
-	if(clerr_enqueue == CL_SUCCESS) {
-		int done = clWaitForEvents(1, &event);
-		if(done != CL_SUCCESS) throw Opencl_Error(clerr, "clWaitForEvents", __FILE__, __LINE__);
-
-		//CP: Now I have to get the right timer, called timer_"kernelname"
-		//First Method: Construct the explicit timername
-		size_t bytesInKernelName;
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
-		if( clerr ) {
-			logger.error() << "Failed to query kernel name: ";
-			return;
-		}
-		char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
-		if( clerr ) {
-			logger.error() << "Failed to query kernel name: ";
-			return;
-		}
-		//  char timerName[7] = ("timer_");
-//  strcat(timerName, kernelName);
-//  //Problem: How to call the memory object?
-//  (this->timerName).add(get_kernel_exec_time(event));
-
-		//Second Method: Nasty workaround
-		//noop is used in case the kernel is not recognized
-		usetimer *noop = NULL;
-		noop = this->get_timer(kernelName);
-		if(noop == NULL)
-			logger.error() << "get_timer (" << kernelName << ") did not return a timer!";
-		else
-			(*get_timer(kernelName)).add(get_kernel_exec_time(event));
-
-		delete [] kernelName;
-	}
-#else
-	clerr_enqueue = clEnqueueNDRangeKernel(get_queue(), kernel, 1, 0, &global_work_size, &local_work_size, 0, 0, NULL);
-#endif
-
-	if(clerr_enqueue != CL_SUCCESS) {
-		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting...";
-		logger.fatal() << "Some more information:";
-		logger.fatal() << "global_work_size: " << global_work_size;
-		logger.fatal() << "local_work_size:  " << local_work_size;
-
-		size_t bytesInKernelName;
-		if(clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName) == CL_SUCCESS) {
-			char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
-			if(clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL) == CL_SUCCESS) {
-				logger.fatal() << "Failed kernel: " << kernelName;
-			} else {
-				logger.error() << "Could not retrieve kernel name";
-			}
-			delete [] kernelName;
-		} else {
-			logger.error() << "Could not retrieve length of kernel name";
-		}
-
-		throw Opencl_Error(clerr_enqueue, "clEnqueueNDRangeKernel", __FILE__, __LINE__);
-	}
-}
-
-void Opencl_Module::printResourceRequirements(const cl_kernel kernel)
-{
-	cl_int clerr = CL_SUCCESS;
-
-	size_t nameSize;
-	clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &nameSize );
-	if( clerr == CL_SUCCESS ) {
-		char* name = new char[nameSize];
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, nameSize, name, &nameSize );
-		if( clerr == CL_SUCCESS )
-			logger.trace() << "Kernel: " << name;
-		delete[] name;
-	}
-	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr, "clGetKernelInfo", __FILE__, __LINE__);
-
-	// query the maximum work group size
-	size_t work_group_size;
-	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &work_group_size, NULL );
-	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
-	logger.trace() << "  Maximum work group size: " << work_group_size;
-
-	// query the work group size specified at compile time (if any)
-	size_t compile_work_group_size[3];
-	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_COMPILE_WORK_GROUP_SIZE, 3 * sizeof(size_t), compile_work_group_size, NULL );
-	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
-
-	if( compile_work_group_size[0] == 0 )
-		logger.trace() << "  No work group size specified at compile time.";
-	else
-		logger.trace() << "  Compile time work group size: (" << compile_work_group_size[0] << ", " << compile_work_group_size[1] << ", " << compile_work_group_size[2] << ')';
-
-#ifdef CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE // don't fail on OpenCL 1.0
-	// query the preferred WORK_GROUP_SIZE_MULTIPLE (OpenCL 1.1 only)
-	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, sizeof(size_t), &work_group_size, NULL );
-	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
-	logger.trace() << "  Preferred work group size multiple: " << work_group_size;
-#endif
-
-	// query the local memory requirements
-	cl_ulong local_mem_size;
-	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_LOCAL_MEM_SIZE, sizeof(cl_ulong), &local_mem_size, NULL );
-	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
-	logger.trace() << "  Local memory size (bytes): " << local_mem_size;
-
-#ifdef CL_KERNEL_PRIVATE_MEM_SIZE // don't fail on OpenCL 1.0
-	// query the private memory required by the kernel (OpenCL 1.1 only)
-	cl_ulong private_mem_size;
-	clerr = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_PRIVATE_MEM_SIZE, sizeof(cl_ulong), &private_mem_size, NULL );
-	if( clerr != CL_SUCCESS ) throw Opencl_Error(clerr, "clGetKernelWorkGroupInfo", __FILE__, __LINE__);
-	logger.trace() << "  Private memory size (bytes): " << private_mem_size;
-#endif
-
-	// the following only makes sense on AMD gpus ...
-
-	size_t platform_name_size;
-	clerr = clGetPlatformInfo(get_platform(), CL_PLATFORM_NAME, 0, NULL, &platform_name_size);
-	if( clerr ) {
-		logger.error() << "Failed to get name of OpenCL platform: ";
-		return;
-	}
-	char * platform_name = new char[platform_name_size];
-	clerr = clGetPlatformInfo(get_platform(), CL_PLATFORM_NAME, platform_name_size, platform_name, NULL);
-	if( clerr ) {
-		logger.error() << "Failed to get name of OpenCL platform: ";
-		return;
-	}
-
-	if( strcmp("AMD Accelerated Parallel Processing", platform_name) == 0
-	    && device_type == CL_DEVICE_TYPE_GPU ) {
-
-		logger.trace() << "Retrieving information for device " << device_name;
-
-		size_t bytesInKernelName;
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName);
-		if( clerr ) {
-			logger.error() << "Failed to query kernel name: ";
-			return;
-		}
-		char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
-		clerr = clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL);
-		if( clerr ) {
-			logger.error() << "Failed to query kernel name: ";
-			return;
-		}
-
-		logger.trace() << "Retrieving information for kernel " << kernelName;
-
-		// retrieve some additinal info on the program
-		std::stringstream tmp;
-		tmp << kernelName << '_' << device_name << ".isa";
-		std::string filename = tmp.str();
-
-		logger.trace() << "Reading information from file " << filename;
-
-		std::fstream isafile;
-		isafile.open(filename.c_str());
-		if(!isafile.is_open()) {
-			logger.error() << "Could not open ISA file. Aborting...";
-			return;
-		}
-
-		isafile.seekg(0, std::ios::end);
-		size_t isasize = isafile.tellg();
-		isafile.seekg(0, std::ios::beg);
-
-		char * isabytes = new char[isasize];
-
-		isafile.read( isabytes, isasize );
-
-		isafile.close();
-
-		std::string isa( isabytes );
-		delete[] isabytes;
-
-		unsigned int scratch_regs, gp_regs, static_local_bytes;
-
-		boost::smatch what;
-
-		// get scratch registers
-		boost::regex exScratch( "^MaxScratchRegsNeeded\\s*=\\s*(\\d*)$" );
-		if( boost::regex_search( isa, what, exScratch ) ) {
-			logger.trace() << what[0];
-			std::istringstream tmp( what[1] );
-			tmp >> scratch_regs;
-		} else {
-			logger.error() << "Scratch register usage section not found!";
-		}
-
-		// get GP registers
-		boost::regex exGPR( "^SQ_PGM_RESOURCES:NUM_GPRS\\s*=\\s*(\\d*)$" );
-		if( boost::regex_search( isa, what, exGPR ) ) {
-			logger.trace() << what[0];
-			std::istringstream tmp( what[1] );
-			tmp >> gp_regs;
-		} else {
-			logger.error() << "GPR usage section not found!";
-		}
-
-		// get GP registers
-		boost::regex exStatic( "^SQ_LDS_ALLOC:SIZE\\s*=\\s*(0x\\d*)$" );
-		if( boost::regex_search( isa, what, exStatic ) ) {
-			logger.trace() << what[0];
-			std::istringstream tmp( what[1] );
-			tmp >> std::hex >> static_local_bytes;
-			static_local_bytes *= 4; // value in file is in units of floats
-		} else {
-			logger.error() << "Static local memory allocation section not found!";
-		}
-
-		logger.debug() << "Kernel: " << kernelName << " - " << gp_regs << " GPRs, " << scratch_regs << " scratch registers, "
-		               << static_local_bytes << " bytes statically allocated local memory";
-
-	} else {
-		logger.trace() << "No AMD-GPU -> not scanning for kernel resource requirements";
-	}
-
-	delete[] platform_name;
-}
-
 void Opencl_Module::plaquette_device(cl_mem gf)
 {
 	//query work-sizes for kernel
 	size_t ls, gs;
 	cl_uint num_groups;
-	this->get_work_sizes(plaquette, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(plaquette, &ls, &gs, &num_groups);
 
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
 	int global_buf_size_complex = sizeof(hmc_complex) * num_groups;
@@ -812,11 +401,11 @@ void Opencl_Module::plaquette_device(cl_mem gf)
 	clerr = clSetKernelArg(plaquette, 6, buf_loc_size_float, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(plaquette, gs, ls);
+	device->enqueue_kernel(plaquette, gs, ls);
 
 	// run second part of plaquette reduction
 
-	this->get_work_sizes(plaquette_reduction, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(plaquette_reduction, &ls, &gs, &num_groups);
 
 	clerr = clSetKernelArg(plaquette_reduction, 0, sizeof(cl_mem), &clmem_plaq_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -843,7 +432,7 @@ void Opencl_Module::plaquette_device(cl_mem gf)
 	///@todo improve
 	ls = 1;
 	gs = 1;
-	enqueueKernel(plaquette_reduction, gs, ls);
+	device->enqueue_kernel(plaquette_reduction, gs, ls);
 
 }
 
@@ -852,7 +441,7 @@ void Opencl_Module::rectangles_device(cl_mem gf)
 	//query work-sizes for kernel
 	size_t ls, gs;
 	cl_uint num_groups;
-	this->get_work_sizes(rectangles, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(rectangles, &ls, &gs, &num_groups);
 
 	int global_buf_size_float = sizeof(hmc_float) * num_groups;
 	int global_buf_size_complex = sizeof(hmc_complex) * num_groups;
@@ -870,11 +459,11 @@ void Opencl_Module::rectangles_device(cl_mem gf)
 	clerr = clSetKernelArg(rectangles, 2, buf_loc_size_float, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(rectangles, gs, ls);
+	device->enqueue_kernel(rectangles, gs, ls);
 
 	// run second part of rectangles reduction
 
-	this->get_work_sizes(rectangles_reduction, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(rectangles_reduction, &ls, &gs, &num_groups);
 
 	clerr = clSetKernelArg(rectangles_reduction, 0, sizeof(cl_mem), &clmem_rect_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -887,7 +476,7 @@ void Opencl_Module::rectangles_device(cl_mem gf)
 	///@todo improve
 	ls = 1;
 	gs = 1;
-	enqueueKernel(rectangles_reduction, gs, ls);
+	device->enqueue_kernel(rectangles_reduction, gs, ls);
 
 }
 
@@ -896,7 +485,7 @@ void Opencl_Module::polyakov_device(cl_mem gf)
 	//query work-sizes for kernel
 	size_t ls, gs;
 	cl_uint num_groups;
-	this->get_work_sizes(polyakov, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(polyakov, &ls, &gs, &num_groups);
 	int buf_loc_size_complex = sizeof(hmc_complex) * ls;
 
 	// local polyakov compuation and first part of reduction
@@ -909,11 +498,11 @@ void Opencl_Module::polyakov_device(cl_mem gf)
 	clerr = clSetKernelArg(polyakov, 2, buf_loc_size_complex, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(polyakov, gs, ls);
+	device->enqueue_kernel(polyakov, gs, ls);
 
 	// second part of polyakov reduction
 
-	this->get_work_sizes(polyakov_reduction, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(polyakov_reduction, &ls, &gs, &num_groups);
 
 	clerr = clSetKernelArg(polyakov_reduction, 0, sizeof(cl_mem), &clmem_polyakov_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -927,7 +516,7 @@ void Opencl_Module::polyakov_device(cl_mem gf)
 	///@todo improve
 	ls = 1;
 	gs = 1;
-	enqueueKernel(polyakov_reduction, gs, ls);
+	device->enqueue_kernel(polyakov_reduction, gs, ls);
 
 }
 
@@ -997,7 +586,7 @@ TmpClKernel Opencl_Module::createKernel(const char * const kernel_name, const ch
 		collect_options << build_opts << ' ';
 	}
 	this->fill_collect_options(&collect_options);
-	return TmpClKernel(kernel_name, collect_options.str(), get_context(), &device, 1);
+	return device->create_kernel(kernel_name, collect_options.str());
 }
 
 void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
@@ -1005,7 +594,7 @@ void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
 	//query work-sizes for kernel
 	size_t ls, gs;
 	cl_uint num_groups;
-	this->get_work_sizes(stout_smear, this->get_device_type(), &ls, &gs, &num_groups);
+	this->get_work_sizes(stout_smear, &ls, &gs, &num_groups);
 
 	int clerr = clSetKernelArg(stout_smear, 0, sizeof(cl_mem), in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -1013,29 +602,20 @@ void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
 	clerr = clSetKernelArg(stout_smear, 1, sizeof(cl_mem), out);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(stout_smear , gs, ls);
+	device->enqueue_kernel(stout_smear , gs, ls);
 
 	return;
 }
 
 
 
-void Opencl_Module::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
+void Opencl_Module::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	//Query kernel name
 	string kernelname = get_kernel_name(kernel);
 
-	size_t local_work_size;
-	if( dev_type == CL_DEVICE_TYPE_GPU )
-		local_work_size = Opencl_Module::get_numthreads(); /// @todo have local work size depend on kernel properties (and device? autotune?)
-	else
-		local_work_size = 1; // nothing else makes sense on CPU
-
-	size_t global_work_size;
-	if( dev_type == CL_DEVICE_TYPE_GPU )
-		global_work_size = 4 * Opencl_Module::get_numthreads() * max_compute_units; /// @todo autotune
-	else
-		global_work_size = max_compute_units;
+	size_t local_work_size = device->get_preferred_local_thread_num();
+	size_t global_work_size = device->get_preferred_global_thread_num();
 
 	const cl_uint num_groups_tmp = (global_work_size + local_work_size - 1) / local_work_size;
 	global_work_size = local_work_size * num_groups_tmp;
@@ -1048,7 +628,7 @@ void Opencl_Module::get_work_sizes(const cl_kernel kernel, cl_device_type dev_ty
 	return;
 }
 
-string Opencl_Module::get_kernel_name(const cl_kernel kernel)
+string Opencl_Module::get_kernel_name(const cl_kernel kernel) const
 {
 	int clerr;
 	size_t bytesInKernelName;
@@ -1074,46 +654,7 @@ usetimer * Opencl_Module::get_copy_to()
 	return &copy_to;
 }
 
-#ifdef _PROFILING_
-usetimer* Opencl_Module::get_timer(const char * in)
-{
-	logger.trace() << "Opencl_Module::get_timer(char*)";
-	if (strcmp(in, "polyakov_reduction") == 0) {
-		return &(this->timer_polyakov_reduction);
-	}
-	if (strcmp(in, "polyakov") == 0) {
-		return &(this->timer_polyakov);
-	}
-	if (strcmp(in, "plaquette_reduction") == 0) {
-		return &(this->timer_plaquette_reduction);
-	}
-	if (strcmp(in, "plaquette") == 0) {
-		return &(this->timer_plaquette);
-	}
-	if (strcmp(in, "rectangles_reduction") == 0) {
-		return &(this->timer_rectangles_reduction);
-	}
-	if (strcmp(in, "rectangles") == 0) {
-		return &(this->timer_rectangles);
-	}
-	if (strcmp(in, "stout_smear") == 0) {
-		return &(this->timer_stout_smear);
-	}
-	if(strcmp(in, "convertGaugefieldToSOA") == 0) {
-		return &timer_convertGaugefieldToSOA;
-	}
-	if(strcmp(in, "convertGaugefieldFromSOA") == 0) {
-		return &timer_convertGaugefieldFromSOA;
-	}
-	//if the kernelname has not matched, return NULL
-	else {
-		return NULL;
-	}
-}
-
-#endif
-
-size_t Opencl_Module::get_read_write_size(const char * in)
+size_t Opencl_Module::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
 	size_t D = meta::get_float_size(parameters);
@@ -1121,100 +662,100 @@ size_t Opencl_Module::get_read_write_size(const char * in)
 	//factor for complex numbers
 	int C = 2;
 	const size_t VOL4D = meta::get_vol4d(get_parameters());
-	if (strcmp(in, "polyakov") == 0) {
+	if (in == "polyakov") {
 		//this kernel reads NTIME*VOLSPACE=VOL4D su3matrices and writes NUM_GROUPS complex numbers
 		//query work-sizes for kernel to get num_groups
 		size_t ls2, gs2;
 		cl_uint num_groups;
-		this->get_work_sizes(polyakov, this->get_device_type(), &ls2, &gs2, &num_groups);
+		this->get_work_sizes(polyakov, &ls2, &gs2, &num_groups);
 		return VOL4D * D * R + num_groups * C * D;
 	}
-	if (strcmp(in, "polyakov_reduction") == 0) {
+	if (in == "polyakov_reduction") {
 		//this kernel reads NUM_GROUPS complex numbers and writes 1 complex number
 		//query work-sizes for kernel to get num_groups
 		size_t ls2, gs2;
 		cl_uint num_groups;
-		this->get_work_sizes(polyakov_reduction, this->get_device_type(), &ls2, &gs2, &num_groups);
+		this->get_work_sizes(polyakov_reduction, &ls2, &gs2, &num_groups);
 		return (num_groups + 1 ) * C * D;
 	}
-	if (strcmp(in, "plaquette") == 0) {
+	if (in == "plaquette") {
 		//this kernel reads in VOL4D * ND * (ND-1) su3matrices and writes 3*num_groups real numbers
 		//query work-sizes for kernel to get num_groups
 		size_t ls2, gs2;
 		cl_uint num_groups;
-		this->get_work_sizes(plaquette, this->get_device_type(), &ls2, &gs2, &num_groups);
+		this->get_work_sizes(plaquette, &ls2, &gs2, &num_groups);
 		return C * 4 * 3 * VOL4D * D * R + 3 * D * num_groups;
 	}
-	if (strcmp(in, "plaquette_reduction") == 0) {
+	if (in == "plaquette_reduction") {
 		//this kernel reads 3*NUM_GROUPS real numbers and writes 3 real numbers
 		//query work-sizes for kernel to get num_groups
 		size_t ls2, gs2;
 		cl_uint num_groups;
-		this->get_work_sizes(polyakov_reduction, this->get_device_type(), &ls2, &gs2, &num_groups);
+		this->get_work_sizes(polyakov_reduction, &ls2, &gs2, &num_groups);
 		return (num_groups + 1 ) * 3 * C * D;
 	}
-	if (strcmp(in, "rectangles") == 0) {
+	if (in == "rectangles") {
 		return 1000000000000000000000;
 	}
-	if (strcmp(in, "rectangles_reduction") == 0) {
+	if (in == "rectangles_reduction") {
 		return 1000000000000000000000;
 	}
-	if (strcmp(in, "stout_smear") == 0) {
+	if (in == "stout_smear") {
 		//this kernel reads in a complete gaugefield + a staple on each site and writes out a complete gaugefield
 		return VOL4D * NDIM * D * R * (6 * (NDIM - 1) + 1 + 1 );
 	}
-	if(strcmp(in, "convertGaugefieldToSOA") == 0) {
+	if(in == "convertGaugefieldToSOA") {
 		return 2 * meta::get_vol4d(get_parameters()) * NDIM * R * C * D;
 	}
-	if(strcmp(in, "convertGaugefieldFromSOA") == 0) {
+	if(in == "convertGaugefieldFromSOA") {
 		return 2 * meta::get_vol4d(get_parameters()) * NDIM * R * C * D;
 	}
 	return 0;
 }
 
-uint64_t Opencl_Module::get_flop_size(const char * in)
+uint64_t Opencl_Module::get_flop_size(const std::string& in) const
 {
 	const size_t VOL4D = meta::get_vol4d(get_parameters());
 	const size_t VOLSPACE = meta::get_volspace(get_parameters());
-	if (strcmp(in, "polyakov") == 0) {
+	if (in == "polyakov") {
 		//this kernel performs NTIME -1 su3matrix-multiplications, takes a complex trace and adds these real values over VOLSPACE
 		return VOLSPACE * ( (parameters.get_ntime() - 1) * meta::get_flop_su3_su3() + meta::get_flop_su3trace()) ;
 	}
-	if (strcmp(in, "polyakov_reduction") == 0) {
+	if (in == "polyakov_reduction") {
 		return 1000000000000000000000;
 	}
-	if (strcmp(in, "plaquette") == 0) {
+	if (in == "plaquette") {
 		//this kernel performs 3 su3matrix-mutliplications, a real su3 trace and sums over VOL4D and mu and nu (nu<mu)
 		return VOL4D * NDIM * (NDIM - 1) * ( 3 + NC);
 	}
-	if (strcmp(in, "plaquette_reduction") == 0) {
+	if (in == "plaquette_reduction") {
 		return 1000000000000000000000;
 	}
-	if (strcmp(in, "rectangles") == 0) {
+	if (in == "rectangles") {
 		return 1000000000000000000000;
 	}
-	if (strcmp(in, "rectangles_reduction") == 0) {
+	if (in == "rectangles_reduction") {
 		return 1000000000000000000000;
 	}
-	if (strcmp(in, "stout_smear") == 0) {
+	if (in == "stout_smear") {
 		return 1000000000000000000000;
 	}
 	return 0;
 }
 
-void Opencl_Module::print_profiling(std::string filename, const char * kernelName, uint64_t time_total, int calls_total, size_t read_write_size, uint64_t flop_size)
+static void print_profiling(const std::string& filename, const std::string& kernelName, const hardware::ProfilingData& data, size_t read_write_size, uint64_t flop_size, uint64_t sites)
 {
 	hmc_float bandwidth = 0.;
 	hmc_float flops = 0.;
 	uint64_t avg_time = 0.;
 	uint64_t avg_time_site = 0.;
 	//check if kernel has been called at all
-	if(calls_total != 0 && time_total != 0) {
-		avg_time = (uint64_t) ( ( (float) time_total ) / ((float) calls_total) );
-		avg_time_site = (uint64_t) ( ( (float) time_total ) / ((float) (calls_total * meta::get_vol4d(get_parameters()))) );
+	if(data.get_num_values()) {
+		avg_time = (uint64_t) ( ( (float) data.get_total_time() ) / ((float) data.get_num_values() ) );
+		avg_time_site = (uint64_t) ( ( (float) data.get_total_time() ) / ((float) (data.get_num_values() * sites)) );
 		//Bandwidth in GB/s: 1e-3 = 1e6 (museconds) * 1e-9 (GByte)
-		bandwidth = (hmc_float) read_write_size / (hmc_float) time_total * (hmc_float) calls_total * 1e-3;
-		flops = (hmc_float) flop_size / (hmc_float) time_total * (hmc_float) calls_total * 1e-3;
+		bandwidth = (hmc_float) read_write_size / (hmc_float) data.get_total_time() * (hmc_float) data.get_num_values() * 1e-3;
+		flops = (hmc_float) flop_size / (hmc_float) data.get_total_time() * (hmc_float) data.get_num_values() * 1e-3;
 	}
 	float mega = 1024 * 1024;
 	//write to stream
@@ -1229,14 +770,12 @@ void Opencl_Module::print_profiling(std::string filename, const char * kernelNam
 	logger.trace() << "*******************************************************************";
 	logger.trace() << "Fermion\t"<< setfill(' ') << setw(16)<< "BW[GB/s]\t" << setfill(' ') << setw(18) << "Re/Wr[MByte]\t" << setfill(' ') << setw(6)  << "Calls\t" << setfill(' ') << setw(10)  << "Time[mus]";
 	*/
-	out << kernelName << "\t" << time_total << "\t" << calls_total << "\t" << avg_time << "\t" << avg_time_site << "\t" << bandwidth << "\t" << flops << "\t" << (float) read_write_size / mega << "\t" << flop_size << std::endl;
+	out << kernelName << "\t" << data.get_total_time() << "\t" << data.get_num_values() << "\t" << avg_time << "\t" << avg_time_site << "\t" << bandwidth << "\t" << flops << "\t" << (float) read_write_size / mega << "\t" << flop_size << std::endl;
 	out.close();
 	return;
 }
 
-#ifdef _PROFILING_
-
-void print_profile_header(std::string filename, int number)
+static void print_profile_header(const std::string& filename, int number)
 {
 	//write to stream
 	fstream out;
@@ -1249,60 +788,28 @@ void print_profile_header(std::string filename, int number)
 	return;
 }
 
-void Opencl_Module::print_profiling(std::string filename, int number)
+void Opencl_Module::print_profiling(const std::string& filename, const cl_kernel& kernel) const
+{
+	// only print info if kernel has been initialized
+	if(kernel) {
+		const std::string kernel_name = get_kernel_name(kernel);
+		const hardware::ProfilingData data = device->get_profiling_data(kernel);
+		::print_profiling(filename, kernel_name, data, this->get_read_write_size(kernel_name), this->get_flop_size(kernel_name), meta::get_vol4d(get_parameters()));
+	}
+}
+
+void Opencl_Module::print_profiling(const std::string& filename, int number)
 {
 	logger.trace() << "Printing Profiling-information to file \"" << filename << "\"";
 	print_profile_header(filename, number);
-	const char * kernelName;
-	kernelName = "polyakov";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "polyakov_reduction";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "plaquette";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "rectangles";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "plaquette_reduction";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "stout_smear";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "convertGaugefieldToSOA";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "convertGaugefieldFromSOA";
-	print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-}
-#endif
-
-
-int Opencl_Module::get_numthreads()
-{
-	return numthreads;
-}
-
-void Opencl_Module::set_max_compute_units(int maxcomp)
-{
-	max_compute_units = maxcomp;
-	return;
-}
-
-int Opencl_Module::get_max_compute_units()
-{
-	return max_compute_units;
-}
-
-void Opencl_Module::set_device_double_extension(string double_ext)
-{
-	if(double_ext.empty()) {
-		device_double_extension.clear();
-	} else {
-		device_double_extension.assign(double_ext);
-	}
-	return;
-}
-
-string Opencl_Module::get_device_double_extension()
-{
-	return device_double_extension;
+	print_profiling(filename, polyakov);
+	print_profiling(filename, polyakov_reduction);
+	print_profiling(filename, plaquette);
+	print_profiling(filename, rectangles);
+	print_profiling(filename, plaquette_reduction);
+	print_profiling(filename, stout_smear);
+	print_profiling(filename, convertGaugefieldToSOA);
+	print_profiling(filename, convertGaugefieldFromSOA);
 }
 
 void Opencl_Module::print_copy_times(uint64_t totaltime)
@@ -1402,7 +909,7 @@ cl_ulong Opencl_Module::calculateStride(const cl_ulong elems, const cl_ulong bas
 size_t Opencl_Module::getGaugefieldBufferSize()
 {
 	if(gaugefield_bytes == 0) {
-		if(use_soa) {
+		if(device->get_prefers_soa()) {
 			gaugefield_bytes = calculateStride(NDIM * meta::get_vol4d(get_parameters()), sizeof(hmc_complex)) * sizeof(Matrixsu3);
 		} else {
 			gaugefield_bytes = meta::get_vol4d(get_parameters()) * NDIM * sizeof(Matrixsu3);
@@ -1418,7 +925,7 @@ void Opencl_Module::importGaugefield(const Matrixsu3 * const data)
 void Opencl_Module::importGaugefield(cl_mem gaugefield, const Matrixsu3 * const data)
 {
 	logger.trace() << "Import gaugefield to device";
-	if(use_soa) {
+	if(device->get_prefers_soa()) {
 		size_t aos_bytes = meta::get_vol4d(get_parameters()) * NDIM * sizeof(Matrixsu3);
 		cl_mem tmp = create_ro_buffer(aos_bytes);
 
@@ -1437,7 +944,7 @@ void Opencl_Module::importGaugefield(cl_mem gaugefield, const Matrixsu3 * const 
 void Opencl_Module::exportGaugefield(Matrixsu3 * const dest)
 {
 	logger.trace() << "Exporting gaugefield from device";
-	if(use_soa) {
+	if(device->get_prefers_soa()) {
 		size_t aos_bytes = meta::get_vol4d(get_parameters()) * NDIM * sizeof(Matrixsu3);
 		cl_mem tmp = create_wo_buffer(aos_bytes);
 
@@ -1457,7 +964,7 @@ void Opencl_Module::convertGaugefieldToSOA_device(cl_mem out, cl_mem in)
 {
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(convertGaugefieldToSOA, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(convertGaugefieldToSOA, &ls2, &gs2, &num_groups);
 
 	//set arguments
 	int clerr = clSetKernelArg(convertGaugefieldToSOA, 0, sizeof(cl_mem), &out);
@@ -1466,14 +973,14 @@ void Opencl_Module::convertGaugefieldToSOA_device(cl_mem out, cl_mem in)
 	clerr = clSetKernelArg(convertGaugefieldToSOA, 1, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(convertGaugefieldToSOA, gs2, ls2);
+	device->enqueue_kernel(convertGaugefieldToSOA, gs2, ls2);
 }
 
 void Opencl_Module::convertGaugefieldFromSOA_device(cl_mem out, cl_mem in)
 {
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(convertGaugefieldFromSOA, this->get_device_type(), &ls2, &gs2, &num_groups);
+	this->get_work_sizes(convertGaugefieldFromSOA, &ls2, &gs2, &num_groups);
 
 	//set arguments
 	int clerr = clSetKernelArg(convertGaugefieldFromSOA, 0, sizeof(cl_mem), &out);
@@ -1482,5 +989,10 @@ void Opencl_Module::convertGaugefieldFromSOA_device(cl_mem out, cl_mem in)
 	clerr = clSetKernelArg(convertGaugefieldFromSOA, 1, sizeof(cl_mem), &in);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(convertGaugefieldFromSOA, gs2, ls2);
+	device->enqueue_kernel(convertGaugefieldFromSOA, gs2, ls2);
+}
+
+cl_command_queue Opencl_Module::get_queue() const noexcept
+{
+	return device->get_queue();
 }

@@ -23,14 +23,14 @@ class ClSourcePackage {
 
 public:
 	/**
-	 * Create an empty package
+	 * Create an empty package with the given options
 	 */
-	ClSourcePackage() {};
+	ClSourcePackage(const std::string& options = std::string()) : files(std::vector<std::string>()), options(options) {};
 
 	/**
 	 * Copy constructor
 	 */
-	ClSourcePackage(const ClSourcePackage& src) : files(src.files) {};
+	ClSourcePackage(const ClSourcePackage& src) : files(src.files), options(src.options) {};
 
 	/**
 	 * Create a package based from an array of filenames and potentially
@@ -40,12 +40,12 @@ public:
 	 * @param num How many filenames.
 	 * @param base Optionally a package to base this package on.
 	 */
-	ClSourcePackage(const std::vector<const char *>& files) : files(files) {};
+	ClSourcePackage(const std::vector<std::string>& files, const std::string& options) : files(files), options(options) {};
 
 	/**
 	 * Add another source file to the list of sources.
 	 */
-	ClSourcePackage operator <<(const char *file);
+	ClSourcePackage operator <<(const std::string& file);
 
 	/**
 	 * Add a predefined group of packages.
@@ -60,13 +60,22 @@ public:
 	/**
 	 * Get the list of files within the package.
 	 */
-	const std::vector<const char *> getFiles() const;
+	const std::vector<std::string> getFiles() const;
+
+	/**
+	 * Get the list of files within the package.
+	 */
+	const std::string getOptions() const;
 
 private:
 	/**
-	 * Collection of all the filenames part of the packe
+	 * Collection of all the filenames part of the package
 	 */
-	std::vector<const char *> files;
+	std::vector<std::string> files;
+	/**
+	 * Collection of all build options set for this package
+	 */
+	std::string options;
 };
 
 /**
@@ -79,11 +88,11 @@ public:
 	/**
 	 * All purpose constructor.
 	 */
-	TmpClKernel(const char * const kernel_name, const std::string build_options,
-	            const cl_context context, const cl_device_id * const devices, const size_t num_devices,
-	            const std::vector<const char *> files = std::vector<const char *>())
+	TmpClKernel(const std::string kernel_name, const std::string build_options,
+	            const cl_context context, cl_device_id device,
+	            const std::vector<std::string> files = std::vector<std::string>())
 		: kernel_name(kernel_name), build_options(build_options), context(context),
-		  devices(devices), num_devices(num_devices), files(files) { };
+		  device(device), files(files) { };
 
 	/**
 	 * Conversion operator to a real OpenCL kernel object, will trigger build.
@@ -93,7 +102,7 @@ public:
 	/**
 	 * Add another source file to the list of sources.
 	 */
-	TmpClKernel operator <<(const char *file) const;
+	TmpClKernel operator <<(const std::string& file) const;
 
 	/**
 	 * Add a predefined group of packages.
@@ -104,7 +113,7 @@ private:
 	/**
 	 * The name of the kernel to compile.
 	 */
-	const char * const kernel_name;
+	const std::string kernel_name;
 
 	/**
 	 * The build options to use for the kernel.
@@ -117,19 +126,14 @@ private:
 	const cl_context context;
 
 	/**
-	 * The devices to compile for.
+	 * The device to compile for.
 	 */
-	const cl_device_id * const devices;
-
-	/**
-	 * The number of devices to compile for.
-	 */
-	const size_t num_devices;
+	cl_device_id device;
 
 	/**
 	 * The files required for compilation.
 	 */
-	const std::vector<const char *> files;
+	const std::vector<std::string> files;
 
 	/**
 	 * Print resource requirements of a kernel object.
@@ -138,16 +142,16 @@ private:
 	 *
 	 * @param kernel The kernel of which to query the information.
 	 */
-	void printResourceRequirements(const cl_kernel kernel, const cl_device_id device) const;
+	void printResourceRequirements(const cl_kernel kernel) const;
 
 	/**
 	 * Generate an MD5 string uniquely identifying the OpenCL program binary.
 	 */
-	std::string generateMD5(cl_device_id device) const;
+	std::string generateMD5() const;
 
-	void dumpBinary(cl_program program, cl_device_id device, std::string md5) const;
+	void dumpBinary(cl_program program, std::string md5) const;
 
-	cl_program loadBinary(std::string md5, cl_device_id device) const;
+	cl_program loadBinary(std::string md5) const;
 };
 
 #endif /* _OPENCL_COMPILER_H_ */

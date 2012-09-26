@@ -17,8 +17,8 @@ class Device : public Opencl_Module {
 	cl_kernel extendKernel;
 
 public:
-	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module(params) {
-		Opencl_Module::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
+		Opencl_Module::init(); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -32,8 +32,8 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type, const meta::Inputparameters& params)
-		: Gaugefield_hybrid(params) {
+	Dummyfield(cl_device_type device_type, const hardware::System * system)
+		: Gaugefield_hybrid(system) {
 		init(1, device_type);
 	};
 
@@ -59,7 +59,8 @@ BOOST_AUTO_TEST_CASE( CPU )
 {
 	const char* _params_cpu[] = {"foo", "--use_gpu=false"};
 	meta::Inputparameters params_cpu(2, _params_cpu);
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU, params_cpu);
+	hardware::System system(params_cpu);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system);
 	dummy.runExtendKernel();
 	dummy.verify();
 	BOOST_MESSAGE("Tested CPU");
@@ -69,7 +70,8 @@ BOOST_AUTO_TEST_CASE( GPU )
 {
 	const char* _params_gpu[] = {"foo", "--use_gpu=true"};
 	meta::Inputparameters params_gpu(2, _params_gpu);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU, params_gpu);
+	hardware::System system(params_gpu);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system);
 	dummy.runExtendKernel();
 	dummy.verify();
 	BOOST_MESSAGE("Tested GPU");
@@ -78,7 +80,7 @@ BOOST_AUTO_TEST_CASE( GPU )
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0), 0);
+	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
 
 	fill_buffers();
 }
@@ -160,7 +162,7 @@ void Device::runExtendKernel(cl_mem out, cl_mem in, cl_mem d_rand, cl_ulong elem
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(extendKernel, 3, sizeof(cl_ulong), &elems);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	enqueueKernel(extendKernel, NUM_ELEMENTS);
+	get_device()->enqueue_kernel(extendKernel, NUM_ELEMENTS);
 }
 
 void Dummyfield::verify(hmc_complex left, hmc_complex right)
@@ -173,7 +175,7 @@ void Dummyfield::verify(hmc_complex left, hmc_complex right)
 void Dummyfield::verify()
 {
 	// get stuff from device
-	cl_int err = clEnqueueReadBuffer(*queue, out, CL_TRUE, 0, NUM_ELEMENTS * sizeof(Matrixsu3), h_out, 0, 0, 0);
+	cl_int err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), out, CL_TRUE, 0, NUM_ELEMENTS * sizeof(Matrixsu3), h_out, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
 	for(size_t i = 0; i < NUM_ELEMENTS; ++i) {

@@ -14,8 +14,8 @@ std::string const exec_name = "rectangles";
 class Device : public Opencl_Module_Hmc {
 	meta::Counter counter1, counter2, counter3, counter4;
 public:
-	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc(params, &counter1, &counter2, &counter3, &counter4) {
-		Opencl_Module_Hmc::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module_Hmc(params, device, &counter1, &counter2, &counter3, &counter4) {
+		Opencl_Module_Hmc::init(); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -26,36 +26,28 @@ public:
 
 class Dummyfield : public Gaugefield_hybrid {
 public:
-  Dummyfield(meta::Inputparameters inputfile) : Gaugefield_hybrid(inputfile) {
-    cl_device_type primary_device;
-    switch ( inputfile.get_use_gpu() ) {
-    case true :
-      primary_device = CL_DEVICE_TYPE_GPU;
-      break;
-    case false :
-      primary_device = CL_DEVICE_TYPE_CPU;
-      break;
-    }
-    init(1, primary_device);
-    meta::print_info_hmc(exec_name.c_str(), inputfile);
-    logger.info() << "gaugeobservables: ";
-    this->print_gaugeobservables_from_task(0, 0);
-  };
-  virtual void init_tasks();
-  virtual void finalize_opencl();
-  Device* get_device();
-  hmc_float get_rect();
-  
+	Dummyfield(const hardware::System * system) : Gaugefield_hybrid(system) {
+		auto inputfile = system->get_inputparameters();
+		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU);
+		meta::print_info_hmc(exec_name.c_str(), inputfile);
+		logger.info() << "gaugeobservables: ";
+		this->print_gaugeobservables_from_task(0, 0);
+	};
+	virtual void init_tasks() override;
+	virtual void finalize_opencl() override;
+
+	hmc_float get_rect();
+
 private:
-  void fill_buffers();
-  void clear_buffers();
-  cl_mem rect_value;
+	void fill_buffers();
+	void clear_buffers();
+	cl_mem rect_value;
 };
 
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0), 0);
+	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
 
 	fill_buffers();
 }
@@ -72,7 +64,7 @@ void Dummyfield::finalize_opencl()
 
 void Dummyfield::fill_buffers()
 {
-  	// don't invoke parent function as we don't require the original buffers
+	// don't invoke parent function as we don't require the original buffers
 	cl_int err;
 	cl_context context = opencl_modules[0]->get_context();
 	rect_value = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
@@ -96,10 +88,10 @@ void Device::clear_kernels()
 
 hmc_float Dummyfield::get_rect()
 {
-  hmc_float rect_out;
-  Device * device = static_cast<Device*>(opencl_modules[0]);
-  device->gaugeobservables_rectangles(device->get_gaugefield(), &rect_out);
-  return rect_out;
+	hmc_float rect_out;
+	Device * device = static_cast<Device*>(opencl_modules[0]);
+	device->gaugeobservables_rectangles(device->get_gaugefield(), &rect_out);
+	return rect_out;
 }
 
 meta::Inputparameters create_parameters()
@@ -183,4 +175,3 @@ BOOST_AUTO_TEST_CASE( RECTANGLES )
   logger.info() << "Done";
   BOOST_MESSAGE("Test done");
 }
-

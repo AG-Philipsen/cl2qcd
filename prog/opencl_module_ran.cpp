@@ -42,10 +42,7 @@ void Opencl_Module_Ran::fill_buffers()
 #elif defined(USE_PRNG_RANLUX)
 	// make num of random states equal to default num of global threads
 	// TODO make this somewhat more automatic (avoid code duplication)
-	if(this->get_device_type() == CL_DEVICE_TYPE_GPU)
-		num_rndstates = 4 * Opencl_Module::get_numthreads() * get_max_compute_units();
-	else
-		num_rndstates = get_max_compute_units();
+	num_rndstates = get_device()->get_preferred_global_thread_num();
 
 	logger.trace() << "Create buffer for random numbers...";
 	clmem_rndarray = create_rw_buffer(7 * num_rndstates * sizeof(cl_float4));
@@ -67,8 +64,9 @@ void Opencl_Module_Ran::fill_kernels()
 	cl_int clerr;
 	size_t ls, gs;
 	cl_uint num_groups;
-	this->get_work_sizes(init_kernel, this->get_device_type(), &ls, &gs, &num_groups);
-	cl_uint seed = get_parameters().get_host_seed() + 1 + device_rank; // +1 ensures that seed is not equal even if host and device seed are both 0
+	this->get_work_sizes(init_kernel, &ls, &gs, &num_groups);
+	// FIXME reenable device rank
+	cl_uint seed = get_parameters().get_host_seed() + 1;// + device_rank; // +1 ensures that seed is not equal even if host and device seed are both 0
 	if(seed > (10e9 / gs)) { // see ranluxcl source as to why
 		/// @todo upgrade to newer ranluxcl to avoid this restcition
 		throw Invalid_Parameters("Host seed is too large!", "<< 10e9", get_parameters().get_host_seed());
@@ -77,7 +75,7 @@ void Opencl_Module_Ran::fill_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(init_kernel, 1, sizeof(cl_mem), &clmem_rndarray);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	enqueueKernel(init_kernel, gs, ls);
+	get_device()->enqueue_kernel(init_kernel, gs, ls);
 	clerr = clFinish(get_queue());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
 	clerr = clReleaseKernel(init_kernel);
@@ -130,7 +128,7 @@ void Opencl_Module_Ran::copy_rndstate_from_device(nr3_state_dev* rndarray)
 }
 #endif // USE_PRNG_NR3
 
-int Opencl_Module_Ran::get_num_rndstates()
+int Opencl_Module_Ran::get_num_rndstates() const noexcept
 {
 	return num_rndstates;
 }
@@ -138,10 +136,4 @@ int Opencl_Module_Ran::get_num_rndstates()
 cl_mem* Opencl_Module_Ran::get_clmem_rndarray()
 {
 	return &clmem_rndarray;
-}
-
-void Opencl_Module_Ran::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
-{
-	Opencl_Module::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
-	return;
 }

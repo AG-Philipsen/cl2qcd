@@ -23,7 +23,7 @@ const meta::Inputparameters INPUT(2, PARAMS);
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type) : Gaugefield_hybrid(INPUT) {
+	Dummyfield(cl_device_type device_type, const hardware::System * system) : Gaugefield_hybrid(system) {
 		init(1, device_type);
 	};
 
@@ -34,7 +34,8 @@ public:
 
 BOOST_AUTO_TEST_CASE(CPU_cold)
 {
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU);
+	hardware::System system(INPUT);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system);
 	dummy.set_gaugefield_cold(dummy.get_sgf());
 	dummy.copy_gaugefield_to_all_tasks();
 
@@ -58,7 +59,8 @@ BOOST_AUTO_TEST_CASE(CPU_cold)
 
 BOOST_AUTO_TEST_CASE(CPU_hot)
 {
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU);
+	hardware::System system(INPUT);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system);
 	dummy.set_gaugefield_hot(dummy.get_sgf());
 	dummy.copy_gaugefield_to_all_tasks();
 
@@ -82,7 +84,8 @@ BOOST_AUTO_TEST_CASE(CPU_hot)
 
 BOOST_AUTO_TEST_CASE(GPU_cold)
 {
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	hardware::System system(INPUT);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system);
 	dummy.set_gaugefield_cold(dummy.get_sgf());
 	dummy.copy_gaugefield_to_all_tasks();
 
@@ -106,7 +109,8 @@ BOOST_AUTO_TEST_CASE(GPU_cold)
 
 BOOST_AUTO_TEST_CASE(GPU_hot)
 {
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU);
+	hardware::System system(INPUT);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system);
 	dummy.set_gaugefield_hot(dummy.get_sgf());
 	dummy.copy_gaugefield_to_all_tasks();
 

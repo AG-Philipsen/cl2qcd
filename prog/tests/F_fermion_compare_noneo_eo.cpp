@@ -18,8 +18,8 @@ class Device : public Opencl_Module_Hmc {
 	cl_kernel testKernel2;
 	meta::Counter counter1, counter2, counter3, counter4;
 public:
-	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module_Hmc(params, &counter1, &counter2, &counter3, &counter4) {
-		Opencl_Module_Hmc::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module_Hmc(params, device, &counter1, &counter2, &counter3, &counter4) {
+		Opencl_Module_Hmc::init(); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -34,19 +34,11 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-  Dummyfield(meta::Inputparameters inputfile) : Gaugefield_hybrid(inputfile) {
-    cl_device_type primary_device;
-    switch ( inputfile.get_use_gpu() ) {
-    case true :
-      primary_device = CL_DEVICE_TYPE_GPU;
-      break;
-    case false :
-      primary_device = CL_DEVICE_TYPE_CPU;
-      break;
-    }
-    init(1, primary_device);
-    meta::print_info_hmc(exec_name.c_str(), inputfile);
-  };
+	Dummyfield(const hardware::System * system) : Gaugefield_hybrid(system) {
+		auto inputfile = system->get_inputparameters();
+		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU);
+		meta::print_info_hmc(exec_name.c_str(), inputfile);
+	};
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
@@ -80,11 +72,10 @@ private:
 	spinor * sf_in4_eo;
 };
 
-
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0), 0);
+	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
 
 	fill_buffers();
 }
@@ -745,7 +736,7 @@ void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs
 	err = clSetKernelArg(testKernel, 5, sizeof(hmc_float), &kappa);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
-	enqueueKernel(testKernel, gs, ls);
+	get_device()->enqueue_kernel(testKernel, gs, ls);
 }
 
 void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls, hmc_float kappa)
@@ -762,7 +753,7 @@ void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int g
 	err = clSetKernelArg(testKernel2, 4, sizeof(hmc_float), &kappa);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
-	enqueueKernel(testKernel2, gs, ls);
+	get_device()->enqueue_kernel(testKernel2, gs, ls);
 }
 
 hmc_float Dummyfield::get_squarenorm_eo(int which)
@@ -775,7 +766,7 @@ hmc_float Dummyfield::get_squarenorm_eo(int which)
 	if(which == 4) static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out_eo, sqnorm);
 	// get stuff from device
 	hmc_float result;
-	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
+	cl_int err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << result;
 	return result;
@@ -795,13 +786,13 @@ hmc_float Dummyfield::get_squarenorm_noneo(int which)
 		tmp = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 		static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out_noneo, tmp);
 		hmc_float result;
-		err = clEnqueueReadBuffer(*queue, tmp, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
+		err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), tmp, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 		logger.info() << result;
 		return result;
 	}
 	// get stuff from device
 	hmc_float result;
-	cl_int err = clEnqueueReadBuffer(*queue, sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
+	cl_int err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << result;
 	return result;
@@ -827,11 +818,11 @@ void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
 void Dummyfield::runTestKernel(int evenodd)
 {
 	int gs = 0, ls = 0;
-	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
+	if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = meta::get_eoprec_spinorfieldsize(get_parameters());
 		ls = 64;
-	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = opencl_modules[0]->get_max_compute_units();
+	} else if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_CPU) {
+		gs = get_device_for_task(0)->get_num_compute_units();
 		ls = 1;
 	}
 	//interprete Y = (in1_eo, in2_eo) X = (in3_eo, in4_eo)
@@ -849,11 +840,11 @@ void Dummyfield::runTestKernel(int evenodd)
 void Dummyfield::runTestKernel2()
 {
 	int gs = 0, ls = 0;
-	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
+	if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = meta::get_spinorfieldsize(get_parameters());
 		ls = 64;
-	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = opencl_modules[0]->get_max_compute_units();
+	} else if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_CPU) {
+		gs = get_device_for_task(0)->get_num_compute_units();
 		ls = 1;
 	}
 	//CP: I only use out_eo here because there is some mistake with out_noneo. However, I will not try to find it...
@@ -864,11 +855,11 @@ void Dummyfield::runTestKernel2()
 void Dummyfield::runTestKernel2withconvertedfields()
 {
 	int gs = 0, ls = 0;
-	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
+	if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = meta::get_spinorfieldsize(get_parameters());
 		ls = 64;
-	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = opencl_modules[0]->get_max_compute_units();
+	} else if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_CPU) {
+		gs = get_device_for_task(0)->get_num_compute_units();
 		ls = 1;
 	}
 	Device * device = static_cast<Device*>(opencl_modules[0]);
@@ -877,34 +868,35 @@ void Dummyfield::runTestKernel2withconvertedfields()
 
 BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO )
 {
-  logger.info() << "Compare f_fermion in eo and noneo version";
+	logger.info() << "Compare f_fermion in eo and noneo version";
 
-  int param_expect = 4;
-  logger.info() << "expect parameters:";
-  logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
-  //get number of parameters
-  int num_par = boost::unit_test::framework::master_test_suite().argc;
-  if(num_par < param_expect){
-    logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
-    exit(-1);
-  }
+	int param_expect = 4;
+	logger.info() << "expect parameters:";
+	logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
+	//get number of parameters
+	int num_par = boost::unit_test::framework::master_test_suite().argc;
+	if(num_par < param_expect) {
+		logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
+		exit(-1);
+	}
 
-  //get input file that has been passed as an argument 
-  const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
-  logger.info() << "inputfile used: " << inputfile;
-  //get use_gpu = true/false that has been passed as an argument 
-  const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
-  logger.info() << "GPU usage: " << gpu_opt;
-  //get use_rec12 = true/false that has been passed as an argument 
-  const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
-  logger.info() << "rec12 usage: " << rec12_opt;
+	//get input file that has been passed as an argument
+	const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
+	logger.info() << "inputfile used: " << inputfile;
+	//get use_gpu = true/false that has been passed as an argument
+	const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
+	logger.info() << "GPU usage: " << gpu_opt;
+	//get use_rec12 = true/false that has been passed as an argument
+	const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
+	logger.info() << "rec12 usage: " << rec12_opt;
 
-  logger.info() << "Init device";
-  const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
-  meta::Inputparameters params(param_expect, _params_cpu);
-  Dummyfield cpu(params);
-  logger.info() << "gaugeobservables: ";
-  cpu.print_gaugeobservables_from_task(0, 0);
+	logger.info() << "Init device";
+	const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
+	meta::Inputparameters params(param_expect, _params_cpu);
+	hardware::System system(params);
+	Dummyfield cpu(&system);
+	logger.info() << "gaugeobservables: ";
+	cpu.print_gaugeobservables_from_task(0, 0);
 
 	logger.info() << "eo input:";
 	logger.info() << "|phi_even_1|^2:";
@@ -967,16 +959,16 @@ BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO )
 	logger.info() << "Compare non-eo and eo solution vectors entry by entry:";
 	cpu.verify_ae_vectors();
 	/*
-  logger.info() << "Choosing reference value and acceptance precision";
-  hmc_float ref_val = params.get_test_ref_value();
-  logger.info() << "reference value:\t" << ref_val;
-  hmc_float prec = params.get_solver_prec();  
-  logger.info() << "acceptance precision: " << prec;
+	logger.info() << "Choosing reference value and acceptance precision";
+	hmc_float ref_val = params.get_test_ref_value();
+	logger.info() << "reference value:\t" << ref_val;
+	hmc_float prec = params.get_solver_prec();
+	logger.info() << "acceptance precision: " << prec;
 
-  logger.info() << "Compare result to reference value";
-  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
-  logger.info() << "Done";
-  BOOST_MESSAGE("Test done");
+	logger.info() << "Compare result to reference value";
+	BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+	logger.info() << "Done";
+	BOOST_MESSAGE("Test done");
 	*/
 
 

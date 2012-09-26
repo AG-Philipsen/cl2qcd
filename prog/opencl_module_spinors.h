@@ -44,42 +44,42 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Spinors(const meta::Inputparameters& params);
+	Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device);
 
 	/**
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual void fill_collect_options(std::stringstream* collect_options);
+	virtual void fill_collect_options(std::stringstream* collect_options) override;
 
 	/**
 	 * Collect the buffers to generate for OpenCL.
 	 * Virtual method, allows to include more buffers in inherited classes.
 	 */
-	virtual void fill_buffers();
+	virtual void fill_buffers() override;
 
 	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
-	virtual void fill_kernels();
+	virtual void fill_kernels() override;
 
 	/**
 	 * Clear out the kernels,
 	 * Virtual method, allows to clear additional kernels in inherited classes.
 	 */
-	virtual void clear_kernels();
+	virtual void clear_kernels() override;
 
 	/**
 	 * Clear out the buffers,
 	 * Virtual method, allows to clear additional buffers in inherited classes.
 	 */
-	virtual void clear_buffers();
+	virtual void clear_buffers() override;
 
 	/**
 	 * Add specific work_size determination for this child class
 	 */
-	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
 
 	/////////////////////////////////////////
@@ -127,67 +127,19 @@ public:
 	 */
 	void copy_to_eoprec_spinorfield_buffer(cl_mem buf, const spinor * const source);
 
-#ifdef _PROFILING_
-
-	//BLAS
-	usetimer timer_set_spinorfield_cold;
-	usetimer timer_set_eoprec_spinorfield_cold;
-	usetimer timer_convert_from_eoprec;
-	usetimer timer_convert_to_eoprec;
-	usetimer timer_saxpy;
-	usetimer timer_sax;
-	usetimer timer_saxsbypz;
-	usetimer timer_set_zero_spinorfield;
-	usetimer timer_create_point_source;
-	usetimer timer_saxpy_eoprec;
-	usetimer timer_sax_eoprec;
-	usetimer timer_saxsbypz_eoprec;
-	usetimer timer_set_zero_spinorfield_eoprec;
-	usetimer timer_create_point_source_eoprec;
-
-	//Scalar Product
-	usetimer timer_scalar_product;
-	usetimer timer_scalar_product_reduction;
-	usetimer timer_global_squarenorm;
-	usetimer timer_global_squarenorm_reduction;
-	usetimer timer_scalar_product_eoprec;
-	usetimer timer_global_squarenorm_eoprec;
-
-	//Single
-	usetimer timer_ratio;
-	usetimer timer_product;
-
-	//Observables
-	usetimer timer_ps_correlator;
-
-	usetimer timer_convertSpinorfieldToSOA_eo;
-	usetimer timer_convertSpinorfieldFromSOA_eo;
-
-	//merged kernels
-	usetimer timer_saxpy_AND_squarenorm_eo;
-
-	/**
-	 * Return the timer connected to a specific kernel.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual usetimer* get_timer(const char * in);
-
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 */
-	void virtual print_profiling(std::string filename, int number);
-
-#endif
+	void virtual print_profiling(const std::string& filename, int number) override;
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual size_t get_read_write_size(const char * in);
+	virtual size_t get_read_write_size(const std::string& in) const override;
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -195,7 +147,7 @@ public:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual uint64_t get_flop_size(const char * in);
+	virtual uint64_t get_flop_size(const std::string& in) const override;
 
 
 protected:

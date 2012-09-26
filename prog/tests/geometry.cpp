@@ -16,8 +16,8 @@ class Device : public Opencl_Module {
 	cl_kernel testKernel;
 
 public:
-	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module(params) {
-		Opencl_Module::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
+		Opencl_Module::init(); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
@@ -31,7 +31,7 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type, const meta::Inputparameters& params) : Gaugefield_hybrid(params) {
+	Dummyfield(cl_device_type device_type, const hardware::System * system) : Gaugefield_hybrid(system) {
 
 		init(1, device_type);
 	};
@@ -51,7 +51,8 @@ BOOST_AUTO_TEST_CASE( GEOMETRY_CPU )
 {
 	const char* _params[] = {"foo", "--use_gpu=false"};
 	meta::Inputparameters params(2, _params);
-	Dummyfield dummy(CL_DEVICE_TYPE_CPU, params);
+	hardware::System system(params);
+	Dummyfield dummy(CL_DEVICE_TYPE_CPU, &system);
 	dummy.runTestKernel();
 }
 
@@ -59,14 +60,15 @@ BOOST_AUTO_TEST_CASE( GEOMETRY_GPU )
 {
 	const char* _params[] = {"foo", "--use_gpu=true"};
 	meta::Inputparameters params(2, _params);
-	Dummyfield dummy(CL_DEVICE_TYPE_GPU, params);
+	hardware::System system(params);
+	Dummyfield dummy(CL_DEVICE_TYPE_GPU, &system);
 	dummy.runTestKernel();
 }
 
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0), 0);
+	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
 
 	fill_buffers();
 }
@@ -103,17 +105,17 @@ void Device::clear_kernels()
 
 void Device::runTestKernel(int gs, int ls)
 {
-	enqueueKernel(testKernel, gs, ls);
+	get_device()->enqueue_kernel(testKernel, gs, ls);
 }
 
 void Dummyfield::runTestKernel()
 {
 	int gs, ls;
-	if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_GPU) {
+	if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_GPU) {
 		gs = meta::get_eoprec_spinorfieldsize(get_parameters());
 		ls = 64;
-	} else if(opencl_modules[0]->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = opencl_modules[0]->get_max_compute_units();
+	} else if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_CPU) {
+		gs = get_device_for_task(0)->get_num_compute_units();
 		ls = 1;
 	}
 	logger.info() << "test kernel with global_work_size: " << gs << " and local_work_size: " << ls;

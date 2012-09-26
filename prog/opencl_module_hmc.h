@@ -50,9 +50,9 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Hmc(const meta::Inputparameters& params, meta::Counter * inversions0, meta::Counter * inversions1,
+	Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device, meta::Counter * inversions0, meta::Counter * inversions1,
 	                  meta::Counter * inversions_mp0, meta::Counter * inversions_mp1)
-		: Opencl_Module_Fermions(params), gaugemomentum_buf_size(0),
+		: Opencl_Module_Fermions(params, device), gaugemomentum_buf_size(0),
 		  inversions0(inversions0), inversions1(inversions1), inversions_mp0(inversions_mp0), inversions_mp1(inversions_mp1) { }
 
 	// OpenCL specific methods needed for building/compiling the OpenCL program
@@ -60,27 +60,27 @@ public:
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual void fill_collect_options(std::stringstream* collect_options);
+	virtual void fill_collect_options(std::stringstream* collect_options) override;
 	/**
 	 * Collect the buffers to generate for OpenCL.
 	 * Virtual method, allows to include more buffers in inherited classes.
 	 */
-	virtual void fill_buffers();
+	virtual void fill_buffers() override;
 	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
-	virtual void fill_kernels();
+	virtual void fill_kernels() override;
 	/**
 	 * Clear out the kernels,
 	 * Virtual method, allows to clear additional kernels in inherited classes.
 	 */
-	virtual void clear_kernels();
+	virtual void clear_kernels() override;
 	/**
 	 * Clear out the buffers,
 	 * Virtual method, allows to clear additional buffers in inherited classes.
 	 */
-	virtual void clear_buffers();
+	virtual void clear_buffers() override;
 
 	/**
 	 * comutes work-sizes for a kernel
@@ -88,10 +88,9 @@ public:
 	 * @param ls local-work-size
 	 * @param gs global-work-size
 	 * @param num_groups number of work groups
-	 * @param dev_type type of device on which the kernel should be executed
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
-	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
 	////////////////////////////////////////////////////
 	//get members
@@ -103,7 +102,7 @@ public:
 	cl_mem get_clmem_phi_mp();
 	cl_mem get_clmem_phi_mp_eo();
 	cl_mem get_clmem_s_fermion_init();
-  	cl_mem get_clmem_s_fermion_mp_init();
+	cl_mem get_clmem_s_fermion_mp_init();
 
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
@@ -168,43 +167,19 @@ public:
 
 protected:
 
-#ifdef _PROFILING_
-
-	usetimer timer_generate_gaussian_spinorfield;
-	usetimer timer_generate_gaussian_spinorfield_eo;
-	usetimer timer_generate_gaussian_gaugemomenta;
-	usetimer timer_md_update_gaugefield;
-	usetimer timer_md_update_gaugemomenta;
-	usetimer timer_gauge_force;
-	usetimer timer_gauge_force_tlsym;
-	usetimer timer_fermion_force;
-	usetimer timer_fermion_force_eo;
-	usetimer timer_set_zero_gaugemomentum;
-	usetimer timer_gaugemomentum_squarenorm;
-	usetimer timer_stout_smear_fermion_force;
-
-	/**
-	 * Return the timer connected to a specific kernel.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual usetimer* get_timer(const char * in);
-
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 */
-	void virtual print_profiling(std::string filename, int number);
-
-#endif
+	void virtual print_profiling(const std::string& filename, int number) override;
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual size_t get_read_write_size(char * in);
+	virtual size_t get_read_write_size(const std::string& in) const override;
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -212,7 +187,7 @@ protected:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual uint64_t get_flop_size(const char * in);
+	virtual uint64_t get_flop_size(const std::string& in) const override;
 
 private:
 

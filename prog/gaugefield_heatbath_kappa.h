@@ -46,27 +46,27 @@ public:
 	 *
 	 * \param params The input parameters of the application
 	 */
-	Gaugefield_heatbath_kappa(const meta::Inputparameters& params)
-		: Gaugefield_hybrid(params) { };
+	Gaugefield_heatbath_kappa(const hardware::System * system)
+		: Gaugefield_hybrid(system) { };
 
 	//init functions
 	/**
 	 * Initialize tasks
 	 * Called by init()
 	 */
-	virtual void init_tasks();
+	virtual void init_tasks() override;
 
 	// proper finish
 	/**
 	 * Free variables
 	 * Called by finalize()
 	 */
-	virtual void delete_variables();
+	virtual void delete_variables() override;
 	/**
 	 * Free variables
 	 * Called by finalize()
 	 */
-	virtual void finalize_opencl();
+	virtual void finalize_opencl() override;
 
 	// do the real work
 	/**

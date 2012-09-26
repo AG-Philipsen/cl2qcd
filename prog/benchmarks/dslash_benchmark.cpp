@@ -45,22 +45,15 @@ int main(int argc, const char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		init_timer.reset();
-		Gaugefield_inverter gaugefield(parameters);
+		hardware::System system(parameters, true);
+		Gaugefield_inverter gaugefield(&system);
 
 		//one needs 2 task here
 		int numtasks = 2;
 		if(parameters.get_device_count() != numtasks )
 			logger.warn() << "Exactly 2 devices demanded by benchmark executable. All calculations performed on primary device.";
 
-		cl_device_type primary_device;
-		switch ( parameters.get_use_gpu() ) {
-			case true :
-				primary_device = CL_DEVICE_TYPE_GPU;
-				break;
-			case false :
-				primary_device = CL_DEVICE_TYPE_CPU;
-				break;
-		}
+		cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
 
 		logger.trace() << "Init gaugefield" ;
 		gaugefield.init(numtasks, primary_device);
@@ -132,10 +125,7 @@ int main(int argc, const char* argv[])
 			logger.warn() << "Could not open " << profiling_out;
 		}
 
-		//print only dslash-infos
-		const char * kernelName;
-		kernelName = "dslash_eo";
-		gaugefield.get_task_solver()->Opencl_Module::print_profiling(profiling_out, kernelName, (*gaugefield.get_task_solver()->get_timer(kernelName)).getTime(), (*gaugefield.get_task_solver()->get_timer(kernelName)).getNumMeas(), gaugefield.get_task_solver()->get_read_write_size(kernelName), gaugefield.get_task_solver()->get_flop_size(kernelName)) ;
+		gaugefield.get_task_solver()->print_profiling(profiling_out, 0) ;
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// free variables

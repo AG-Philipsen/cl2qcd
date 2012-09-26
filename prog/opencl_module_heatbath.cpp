@@ -79,7 +79,7 @@ void Opencl_Module_Heatbath::run_heatbath()
 
 	size_t global_work_size, ls;
 	cl_uint num_groups;
-	this->get_work_sizes(heatbath_even, this->get_device_type(), &ls, &global_work_size, &num_groups);
+	this->get_work_sizes(heatbath_even, &ls, &global_work_size, &num_groups);
 
 	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), &src);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -89,10 +89,10 @@ void Opencl_Module_Heatbath::run_heatbath()
 	for(cl_int i = 0; i < NDIM; i++) {
 		clerr = clSetKernelArg(heatbath_even, 1, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-		enqueueKernel(heatbath_even, global_work_size, ls);
+		get_device()->enqueue_kernel(heatbath_even, global_work_size, ls);
 	}
 
-	this->get_work_sizes(heatbath_odd, this->get_device_type(), &ls, &global_work_size, &num_groups);
+	this->get_work_sizes(heatbath_odd, &ls, &global_work_size, &num_groups);
 
 	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), &src);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -102,7 +102,7 @@ void Opencl_Module_Heatbath::run_heatbath()
 	for(cl_int i = 0; i < NDIM; i++) {
 		clerr = clSetKernelArg(heatbath_odd, 1, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-		enqueueKernel(heatbath_odd, global_work_size, ls);
+		get_device()->enqueue_kernel(heatbath_odd, global_work_size, ls);
 	}
 }
 
@@ -114,7 +114,7 @@ void Opencl_Module_Heatbath::run_overrelax()
 
 	size_t global_work_size, ls;
 	cl_uint num_groups;
-	this->get_work_sizes(overrelax_even, this->get_device_type(), &ls, &global_work_size, &num_groups);
+	this->get_work_sizes(overrelax_even, &ls, &global_work_size, &num_groups);
 
 	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), &src);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -124,10 +124,10 @@ void Opencl_Module_Heatbath::run_overrelax()
 	for(cl_int i = 0; i < NDIM; i++) {
 		clerr = clSetKernelArg(overrelax_even, 1, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-		enqueueKernel(overrelax_even, global_work_size, ls);
+		get_device()->enqueue_kernel(overrelax_even, global_work_size, ls);
 	}
 
-	this->get_work_sizes(overrelax_odd, this->get_device_type(), &ls, &global_work_size, &num_groups);
+	this->get_work_sizes(overrelax_odd, &ls, &global_work_size, &num_groups);
 
 	clerr = clSetKernelArg(overrelax_odd, 0, sizeof(cl_mem), &src);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -138,13 +138,13 @@ void Opencl_Module_Heatbath::run_overrelax()
 	for(cl_int i = 0; i < NDIM; i++) {
 		clerr = clSetKernelArg(overrelax_odd, 1, sizeof(cl_int), &i);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-		enqueueKernel(overrelax_odd, global_work_size, ls);
+		get_device()->enqueue_kernel(overrelax_odd, global_work_size, ls);
 	}
 }
 
-void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
+void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
-	Opencl_Module_Ran::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
+	Opencl_Module_Ran::get_work_sizes(kernel, ls, gs, num_groups);
 
 	//Query kernel name
 	string kernelname = get_kernel_name(kernel);
@@ -152,43 +152,18 @@ void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, cl_device_ty
 	//Query specific sizes for kernels if needed
 	//all of the following kernels are called with EnqueueKernel(gs), ls, num_groups are not needed!
 	if (kernelname.compare("heatbath_even") == 0 || kernelname.compare("heatbath_odd") == 0 || kernelname.compare("overrelax_even") == 0 || kernelname.compare("overrelax_odd") == 0) {
-		if( get_device_type() == CL_DEVICE_TYPE_GPU ) {
+		if( get_device()->get_device_type() == CL_DEVICE_TYPE_GPU ) {
 			*gs = std::min(meta::get_volspace(parameters) * parameters.get_ntime() / 2, (size_t) this->Opencl_Module_Ran::get_num_rndstates());
 		} else {
-			*gs = std::min(get_max_compute_units(), this->Opencl_Module_Ran::get_num_rndstates());
+			*gs = std::min(get_device()->get_num_compute_units(), static_cast<size_t>(this->Opencl_Module_Ran::get_num_rndstates()));
 		}
-		*ls = Opencl_Module::get_numthreads();
+		*ls = get_device()->get_preferred_local_thread_num();
 		*num_groups = *gs / *ls;
 	}
 	return;
 }
 
-#ifdef _PROFILING_
-usetimer* Opencl_Module_Heatbath::get_timer(const char * in)
-{
-	usetimer *noop = NULL;
-	noop = Opencl_Module_Ran::get_timer(in);
-	if(noop != NULL) return noop;
-	if (strcmp(in, "heatbath_even") == 0) {
-		return &this->timer_heatbath_even;
-	}
-	if (strcmp(in, "heatbath_odd") == 0) {
-		return &this->timer_heatbath_odd;
-	}
-	if (strcmp(in, "overrelax_even") == 0) {
-		return &this->timer_overrelax_even;
-	}
-	if (strcmp(in, "overrelax_odd") == 0) {
-		return &this->timer_overrelax_odd;
-	}
-	//if the kernelname has not matched, return NULL
-	else {
-		return NULL;
-	}
-}
-#endif
-
-size_t Opencl_Module_Heatbath::get_read_write_size(const char * in)
+size_t Opencl_Module_Heatbath::get_read_write_size(const std::string& in) const
 {
 	size_t result = Opencl_Module_Ran::get_read_write_size(in);
 	if (result != 0) return result;
@@ -204,14 +179,14 @@ size_t Opencl_Module_Heatbath::get_read_write_size(const char * in)
 	else
 		S = meta::get_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
-	if ( (strcmp(in, "heatbath_even") == 0 ) || (strcmp(in, "heatbath_odd") == 0) || (strcmp(in, "overrelax_even") == 0) || (strcmp(in, "overrelax_odd") == 0)) {
+	if ( (in == "heatbath_even" ) || (in == "heatbath_odd") || (in == "overrelax_even") || (in == "overrelax_odd")) {
 		//this kernel reads ingredients for 1 staple plus 1 su3matrix and writes 1 su3-matrix
 		return VOL4D / 2 * C * D * R * (6 * (NDIM - 1) + 1 + 1 );
 	}
 	return 0;
 }
 
-uint64_t Opencl_Module_Heatbath::get_flop_size(const char * in)
+uint64_t Opencl_Module_Heatbath::get_flop_size(const std::string& in) const
 {
 	uint64_t result = Opencl_Module_Ran::get_flop_size(in);
 	if (result != 0) return result;
@@ -223,31 +198,22 @@ uint64_t Opencl_Module_Heatbath::get_flop_size(const char * in)
 		S = meta::get_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
 	///@NOTE: I do not distinguish between su3 and 3x3 matrices. This is a difference if one use e.g. REC12, but here one wants to have the "netto" flops for comparability.
-	if ( (strcmp(in, "heatbath_even") == 0 ) || (strcmp(in, "heatbath_odd") == 0) ) {
+	if ( (in == "heatbath_even" ) || (in == "heatbath_odd") ) {
 		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2_ND-1 su3_add) plus NC*(2*su3_su3 80 flops for the su2 update)
 		return VOL4D / 2 * (4 * (NDIM - 1) * meta::get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * meta::get_flop_su3_su3() + 80));
 	}
-	if ( (strcmp(in, "overrelax_even") == 0) || (strcmp(in, "overrelax_odd") == 0)) {
+	if ( (in == "overrelax_even") || (in == "overrelax_odd")) {
 		//this kernel calculates 1 staple (= 4*ND-1 su3_su3 + 2_ND-1 su3_add) plus NC*(2*su3_su3 58 flops for the su2 update)
 		return VOL4D / 2 * (4 * (NDIM - 1) * meta::get_flop_su3_su3() + 2 * (NDIM - 1) * 18 + NC * (2 * meta::get_flop_su3_su3() + 58));
 	}
 	return 0;
 }
 
-#ifdef _PROFILING_
-
-void Opencl_Module_Heatbath::print_profiling(std::string filename, int number)
+void Opencl_Module_Heatbath::print_profiling(const std::string& filename, int number)
 {
 	Opencl_Module_Ran::print_profiling(filename, number);
-	const char * kernelName;
-	kernelName = "heatbath_even";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "heatbath_odd";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "overrelax_even";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
-	kernelName = "overrelax_odd";
-	Opencl_Module_Ran::print_profiling(filename, kernelName, (*this->get_timer(kernelName)).getTime(), (*this->get_timer(kernelName)).getNumMeas(), this->get_read_write_size(kernelName), this->get_flop_size(kernelName) );
+	Opencl_Module::print_profiling(filename, heatbath_even);
+	Opencl_Module::print_profiling(filename, heatbath_odd);
+	Opencl_Module::print_profiling(filename, overrelax_even);
+	Opencl_Module::print_profiling(filename, overrelax_odd);
 }
-
-#endif

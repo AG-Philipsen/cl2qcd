@@ -49,7 +49,7 @@ void Opencl_Module_Kappa::run_kappa_clover(const hmc_float beta)
 	size_t global_work_size;
 	cl_uint num_groups;
 
-	get_work_sizes(kappa_clover_gpu, Opencl_Module::get_device_type(), &local_work_size, &global_work_size, &num_groups);
+	get_work_sizes(kappa_clover_gpu, &local_work_size, &global_work_size, &num_groups);
 
 	if(clmem_kappa_clover == NULL) {
 		cout << "Create buffer for transport coefficient kappa_clover..." << endl;
@@ -71,7 +71,7 @@ void Opencl_Module_Kappa::run_kappa_clover(const hmc_float beta)
 	clerr = clSetKernelArg(kappa_clover_gpu, 2, sizeof(cl_mem), &clmem_kappa_clover_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clKernelArg", __FILE__, __LINE__);
 
-	enqueueKernel(kappa_clover_gpu, global_work_size, local_work_size);
+	get_device()->enqueue_kernel(kappa_clover_gpu, global_work_size, local_work_size);
 
 	// wait for results to have been read back
 	//don't do that anymore ;-)
@@ -116,12 +116,5 @@ void Opencl_Module_Kappa::clear_buffers()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	}
 
-	return;
-}
-
-
-void Opencl_Module_Kappa::get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups)
-{
-	Opencl_Module::get_work_sizes(kernel, dev_type, ls, gs, num_groups);
 	return;
 }

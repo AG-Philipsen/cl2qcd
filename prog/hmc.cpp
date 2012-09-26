@@ -30,22 +30,16 @@ int main(int argc, const char* argv[])
 
 		init_timer.reset();
 		hmc_observables obs;
-		Gaugefield_hmc gaugefield(parameters);
+
+		hardware::System system(parameters);
+		Gaugefield_hmc gaugefield(&system);
 
 		//use 1 task: the hmc-algorithm
 		int numtasks = 1;
 		if(parameters.get_device_count() == 2 )
 			logger.warn() << "Only 1 device demanded by input file. All calculations performed on primary device.";
 
-		cl_device_type primary_device;
-		switch ( parameters.get_use_gpu() ) {
-			case true :
-				primary_device = CL_DEVICE_TYPE_GPU;
-				break;
-			case false :
-				primary_device = CL_DEVICE_TYPE_CPU;
-				break;
-		}
+		cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
 
 		logger.trace() << "Init gaugefield" ;
 		gaugefield.init(numtasks, primary_device);

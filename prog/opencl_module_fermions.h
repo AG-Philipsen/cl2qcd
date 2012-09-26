@@ -63,58 +63,58 @@ public:
 class M : public Matrix_Function {
 public:
 	M(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
-	cl_ulong get_Flops() const;
-	cl_ulong get_Bytes() const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	cl_ulong get_Flops() const override;
+	cl_ulong get_Bytes() const override;
 };
 class Qplus : public Matrix_Function {
 public:
 	Qplus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
-	cl_ulong get_Flops() const;
-	cl_ulong get_Bytes() const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	cl_ulong get_Flops() const override;
+	cl_ulong get_Bytes() const override;
 };
 class Qminus : public Matrix_Function {
 public:
 	Qminus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
-	cl_ulong get_Flops() const;
-	cl_ulong get_Bytes() const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	cl_ulong get_Flops() const override;
+	cl_ulong get_Bytes() const override;
 };
 class QplusQminus : public Matrix_Function {
 public:
 	QplusQminus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
-	cl_ulong get_Flops() const;
-	cl_ulong get_Bytes() const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	cl_ulong get_Flops() const override;
+	cl_ulong get_Bytes() const override;
 };
 class Aee : public Matrix_Function {
 public:
 	Aee(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
-	cl_ulong get_Flops() const;
-	cl_ulong get_Bytes() const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	cl_ulong get_Flops() const override;
+	cl_ulong get_Bytes() const override;
 };
 class Qplus_eo : public Matrix_Function {
 public:
 	Qplus_eo(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
-	cl_ulong get_Flops() const;
-	cl_ulong get_Bytes() const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	cl_ulong get_Flops() const override;
+	cl_ulong get_Bytes() const override;
 };
 class Qminus_eo : public Matrix_Function {
 public:
 	Qminus_eo(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
-	cl_ulong get_Flops() const;
-	cl_ulong get_Bytes() const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	cl_ulong get_Flops() const override;
+	cl_ulong get_Bytes() const override;
 };
 class QplusQminus_eo : public Matrix_Function {
 public:
 	QplusQminus_eo(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const;
-	cl_ulong get_Flops() const;
-	cl_ulong get_Bytes() const;
+	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	cl_ulong get_Flops() const override;
+	cl_ulong get_Bytes() const override;
 };
 
 /**
@@ -132,8 +132,8 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Fermions(const meta::Inputparameters& params)
-		: Opencl_Module_Spinors(params) { }
+	Opencl_Module_Fermions(const meta::Inputparameters& params, hardware::Device * device)
+		: Opencl_Module_Spinors(params, device) { }
 
 
 	// OpenCL specific methods needed for building/compiling the OpenCL program
@@ -141,12 +141,12 @@ public:
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
-	virtual void fill_collect_options(std::stringstream* collect_options);
+	virtual void fill_collect_options(std::stringstream* collect_options) override;
 	/**
 	 * Collect the buffers to generate for OpenCL.
 	 * Virtual method, allows to include more buffers in inherited classes.
 	 */
-	virtual void fill_buffers();
+	virtual void fill_buffers() override;
 	/**
 	 * Collect the buffers related to the solver.
 	 */
@@ -155,17 +155,17 @@ public:
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
-	virtual void fill_kernels();
+	virtual void fill_kernels() override;
 	/**
 	 * Clear out the kernels,
 	 * Virtual method, allows to clear additional kernels in inherited classes.
 	 */
-	virtual void clear_kernels();
+	virtual void clear_kernels() override;
 	/**
 	 * Clear out the buffers,
 	 * Virtual method, allows to clear additional buffers in inherited classes.
 	 */
-	virtual void clear_buffers();
+	virtual void clear_buffers() override;
 	/**
 	 * Clear out the buffers related to the solver
 	 */
@@ -177,10 +177,9 @@ public:
 	 * @param ls local-work-size
 	 * @param gs global-work-size
 	 * @param num_groups number of work groups
-	 * @param dev_type type of device on which the kernel should be executed
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
-	virtual void get_work_sizes(const cl_kernel kernel, cl_device_type dev_type, size_t * ls, size_t * gs, cl_uint * num_groups);
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
 
 	//    fermionmatrix operations
@@ -260,47 +259,19 @@ public:
 
 	//protected:
 
-#ifdef _PROFILING_
-	//CP: if PROFILING is activated, one needs a timer for each kernel
-	//fermionmatrix
-	usetimer timer_M_wilson;
-	usetimer timer_gamma5;
-	usetimer timer_M_tm_plus;
-	usetimer timer_M_tm_minus;
-	usetimer timer_gamma5_eo;
-	usetimer timer_M_tm_sitediagonal;
-	usetimer timer_M_tm_inverse_sitediagonal;
-	usetimer timer_dslash_eo;
-	usetimer timer_M_tm_sitediagonal_minus;
-	usetimer timer_M_tm_inverse_sitediagonal_minus;
-	usetimer timer_dslash_AND_gamma5_eo;
-	usetimer timer_dslash_AND_M_tm_inverse_sitediagonal_eo;
-	usetimer timer_dslash_AND_M_tm_inverse_sitediagonal_minus_eo;
-	usetimer timer_M_tm_sitediagonal_AND_gamma5_eo;
-	usetimer timer_M_tm_sitediagonal_minus_AND_gamma5_eo;
-
-	/**
-	 * Return the timer connected to a specific kernel.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual usetimer* get_timer(const char * in);
-
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 */
-	void virtual print_profiling(std::string filename, int number);
-
-#endif
+	void virtual print_profiling(const std::string& filename, int number) override;
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual size_t get_read_write_size(const char * in);
+	virtual size_t get_read_write_size(const std::string& in) const override;
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -308,7 +279,7 @@ public:
 	 *
 	 * @param in Name of the kernel under consideration.
 	 */
-	virtual uint64_t get_flop_size(const char * in);
+	virtual uint64_t get_flop_size(const std::string& in) const override;
 
 private:
 	////////////////////////////////////

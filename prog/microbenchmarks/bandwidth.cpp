@@ -56,8 +56,8 @@ private:
 	template<typename T> void runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, cl_mem in, cl_mem out);
 
 public:
-	Device(cl_command_queue queue, const meta::Inputparameters& params, int maxcomp, std::string double_ext, unsigned int dev_rank) : Opencl_Module(params) {
-		Opencl_Module::init(queue, maxcomp, double_ext, dev_rank); /* init in body for proper this-pointer */
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
+		Opencl_Module::init(); /* init in body for proper this-pointer */
 	};
 	virtual void fill_kernels();
 	virtual void clear_kernels();
@@ -71,8 +71,8 @@ public:
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
-	Dummyfield(cl_device_type device_type, size_t maxMemSize)
-		: Gaugefield_hybrid(meta::Inputparameters(0, 0)), maxMemSize(maxMemSize) {
+	Dummyfield(const hardware::System * system, cl_device_type device_type, size_t maxMemSize)
+		: Gaugefield_hybrid(system), maxMemSize(maxMemSize) {
 		init(1, device_type);
 	};
 
@@ -135,6 +135,9 @@ int main(int argc, char** argv)
 		logger.error() << "You can either use one element per thread or define the global number of elements";
 	}
 
+	meta::Inputparameters params(0, 0);
+	hardware::System system(params, true);
+
 	if(vm.count("stepelements")) {
 		logger.info() << "Sweeping element count for fixed thread count.";
 		cl_ulong max_elements = vm["elements"].as<cl_ulong>();
@@ -149,7 +152,7 @@ int main(int argc, char** argv)
 		if(vm.count("single")) {
 			logger.fatal() << "Single element per thread mode has not been implemented in element count sweeping mod";
 		} else {
-			Dummyfield dev(CL_DEVICE_TYPE_GPU, max_elements * getTypeSize(copy_type));
+			Dummyfield dev(&system, CL_DEVICE_TYPE_GPU, max_elements * getTypeSize(copy_type));
 			size_t elements = 1;
 			dev.runKernel(copy_type, groups, threads, elements);
 			for(elements = step_elements; elements <= max_elements; elements += step_elements) {
@@ -171,7 +174,7 @@ int main(int argc, char** argv)
 		}
 		if(vm.count("single")) {
 			logger.info() << "Using a single element per thread";
-			Dummyfield dev(CL_DEVICE_TYPE_GPU, groups * max_threads * getTypeSize(copy_type));
+			Dummyfield dev(&system, CL_DEVICE_TYPE_GPU, groups * max_threads * getTypeSize(copy_type));
 			if(step_threads <= max_threads) {
 				size_t threads = 1;
 				dev.runKernel(copy_type, groups, threads, groups * threads);
@@ -182,7 +185,7 @@ int main(int argc, char** argv)
 		} else {
 			const cl_ulong elems = vm["elements"].as<cl_ulong>();
 			logger.info() << "Keeping number of elements fixed at " << elems;
-			Dummyfield dev(CL_DEVICE_TYPE_GPU, elems * getTypeSize(copy_type));
+			Dummyfield dev(&system, CL_DEVICE_TYPE_GPU, elems * getTypeSize(copy_type));
 			if(step_threads <= max_threads) {
 				size_t threads = 1;
 				dev.runKernel(copy_type, groups, threads, groups * threads);
@@ -198,14 +201,14 @@ int main(int argc, char** argv)
 
 		if(vm.count("single")) {
 			logger.info() << "Using a single element per thread";
-			Dummyfield dev(CL_DEVICE_TYPE_GPU, max_groups * threads * getTypeSize(copy_type));
+			Dummyfield dev(&system, CL_DEVICE_TYPE_GPU, max_groups * threads * getTypeSize(copy_type));
 			for(size_t groups = 1; groups <= max_groups; ++groups) {
 				dev.runKernel(copy_type, groups, threads, groups * threads);
 			}
 		} else {
 			const cl_ulong elems = vm["elements"].as<cl_ulong>();
 			logger.info() << "Keeping number of elements fixed at " << elems;
-			Dummyfield dev(CL_DEVICE_TYPE_GPU, elems * getTypeSize(copy_type));
+			Dummyfield dev(&system, CL_DEVICE_TYPE_GPU, elems * getTypeSize(copy_type));
 			for(size_t groups = 1; groups <= max_groups; ++groups) {
 				dev.runKernel(copy_type, groups, threads, elems);
 			}
@@ -386,7 +389,7 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 void Dummyfield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Device(queue[0], get_parameters(), get_max_compute_units(0), get_double_ext(0), 0);
+	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
 
 	fill_buffers();
 }

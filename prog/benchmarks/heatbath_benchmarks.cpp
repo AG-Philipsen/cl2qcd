@@ -7,11 +7,6 @@ namespace po = boost::program_options;
 
 int main(int argc, const char* argv[])
 {
-#ifndef _PROFILING_
-	logger.fatal() << "_PROFILING_ not defined, cannot perform benchmarks. Aborting...";
-	throw Print_Error_Message("_PROFILING_ not defined, cannot perform benchmarks. Aborting...");
-#endif
-
 //CP: This should be the same as the normal heatbath-executable
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -40,16 +35,11 @@ int main(int argc, const char* argv[])
 	init_timer.reset();
 	sourcefileparameters parameters_source;
 
-	Gaugefield_heatbath gaugefield(parameters);
+	hardware::System system(parameters, true);
+	Gaugefield_heatbath gaugefield(&system);
 
-	cl_device_type primary_device_type;
-	//check whether GPU should be used
-	if(parameters.get_use_gpu() == true) {
-		primary_device_type = CL_DEVICE_TYPE_GPU;
-	} else {
-		primary_device_type = CL_DEVICE_TYPE_CPU;
-	}
-	gaugefield.init(1, primary_device_type);
+	cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
+	gaugefield.init(1, primary_device);
 	logger.trace() << "Got gaugefield";
 	gaugefield.print_gaugeobservables(0);
 

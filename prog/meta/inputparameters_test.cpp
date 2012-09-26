@@ -22,6 +22,7 @@ void checkDefaults(const Inputparameters params)
 	BOOST_REQUIRE_EQUAL(params.get_selected_devices().size(), 0);
 	BOOST_REQUIRE_EQUAL(params.get_device_count(), 0);
 	BOOST_REQUIRE_EQUAL(params.get_use_gpu(), true);
+	BOOST_REQUIRE_EQUAL(params.get_use_cpu(), true);
 
 	BOOST_REQUIRE_EQUAL(params.get_use_aniso(), false);
 	BOOST_REQUIRE_EQUAL(params.get_use_chem_pot_re(), false);
@@ -147,6 +148,7 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_selected_devices().size(), 0);
 	BOOST_REQUIRE_EQUAL(params.get_device_count(), 1);
 	BOOST_REQUIRE_EQUAL(params.get_use_gpu(), false);
+	BOOST_REQUIRE_EQUAL(params.get_use_cpu(), false);
 
 	BOOST_REQUIRE_EQUAL(params.get_use_aniso(), true);
 	BOOST_REQUIRE_EQUAL(params.get_use_chem_pot_re(), true);
@@ -241,13 +243,15 @@ BOOST_AUTO_TEST_CASE(input_file2)
 
 BOOST_AUTO_TEST_CASE(command_line1)
 {
-	const char* _params[] = {"foo", "--use_aniso=1", "--use_mp=true", "--use_smearing=false", "--nspace=32", "--ntime=12"};
-	Inputparameters params(6, _params);
+	const char* _params[] = {"foo", "--use_aniso=1", "--use_mp=true", "--use_smearing=false", "--nspace=32", "--ntime=12", "--use_gpu=false", "--use_cpu=false"};
+	Inputparameters params(8, _params);
 	BOOST_REQUIRE_EQUAL(params.get_use_aniso(), true);
 	BOOST_REQUIRE_EQUAL(params.get_use_mp(), true);
 	BOOST_REQUIRE_EQUAL(params.get_use_smearing(), false);
 	BOOST_REQUIRE_EQUAL(params.get_nspace(), 32);
 	BOOST_REQUIRE_EQUAL(params.get_ntime(), 12);
+	BOOST_REQUIRE_EQUAL(params.get_use_gpu(), false);
+	BOOST_REQUIRE_EQUAL(params.get_use_cpu(), false);
 }
 
 BOOST_AUTO_TEST_CASE(command_line2)
