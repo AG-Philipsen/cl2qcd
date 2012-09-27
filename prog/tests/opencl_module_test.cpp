@@ -87,21 +87,89 @@ void test_rectangles(std::string inputfile)
   logger.info() << "Finalize device";
   cpu.finalize();
 
-  logger.info() << "Choosing reference value and acceptance precision";
   hmc_float ref_val = params.get_test_ref_value();
   logger.info() << "reference value:\t" << ref_val;
   hmc_float prec = params.get_solver_prec();
   logger.info() << "acceptance precision: " << prec;
   
-  logger.info() << "Compare result to reference value";
   BOOST_REQUIRE_CLOSE(cpu_rect, ref_val, prec);
   BOOST_MESSAGE("Test done");
+}
+
+void test_plaquette(std::string inputfile)
+{
+  std::string kernelName = "plaquette";
+  printKernelInfo(kernelName);
+  logger.info() << "Init device";
+  meta::Inputparameters params = create_parameters(inputfile);
+  hardware::System system(params);
+  TestGaugefield dummy(&system);
+  
+  // get reference solutions
+  hmc_float ref_plaq, ref_tplaq, ref_splaq;
+  ref_plaq = dummy.plaquette(&ref_tplaq, &ref_splaq);
+  
+  // get device colutions
+  hmc_float dev_plaq, dev_tplaq, dev_splaq;
+  hmc_complex dev_pol;
+  Opencl_Module * device = dummy.get_device();
+  device->gaugeobservables(&dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
+
+  logger.info() << "Finalize device";
+  dummy.finalize();
+
+  logger.info() << "reference value:\t" << "values obtained from host functionality";
+  hmc_float prec = params.get_solver_prec();
+  logger.info() << "acceptance precision: " << prec;
+  
+  // verify
+  BOOST_REQUIRE_CLOSE(ref_plaq,   dev_plaq,     prec);
+  BOOST_REQUIRE_CLOSE(ref_tplaq,  dev_tplaq,    prec);
+  BOOST_REQUIRE_CLOSE(ref_splaq,  dev_splaq,    prec);
+}
+
+void test_polyakov(std::string inputfile)
+{
+  std::string kernelName = "plaquette";
+  printKernelInfo(kernelName);
+  logger.info() << "Init device";
+  meta::Inputparameters params = create_parameters(inputfile);
+  hardware::System system(params);
+  TestGaugefield dummy(&system);
+  
+  // get reference solutions
+  hmc_complex ref_pol = dummy.polyakov();
+  
+  // get device colutions
+  hmc_float dev_plaq, dev_tplaq, dev_splaq;
+  hmc_complex dev_pol;
+  Opencl_Module * device = dummy.get_device();
+  device->gaugeobservables(&dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
+
+  logger.info() << "Finalize device";
+  dummy.finalize();
+
+  logger.info() << "reference value:\t" << "values obtained from host functionality";
+  hmc_float prec = params.get_solver_prec();
+  logger.info() << "acceptance precision: " << prec;
+  
+  // verify
+  BOOST_REQUIRE_CLOSE(ref_pol.re, dev_pol.re,   prec);
+  BOOST_REQUIRE_CLOSE(ref_pol.im, dev_pol.im,   prec);
 }
 
 BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_1 ){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+  test_plaquette( "/plaquette_input_1" );
+}
+
+BOOST_AUTO_TEST_CASE( PLAQUETTE_2 ){
+  test_plaquette( "/plaquette_input_2" );
+}
+
+BOOST_AUTO_TEST_CASE( PLAQUETTE_3 ){
+  test_plaquette( "/plaquette_input_3" );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -109,7 +177,15 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE ( POLYAKOV )
 
 BOOST_AUTO_TEST_CASE( POLYAKOV_1 ){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+  test_polyakov( "/polyakov_input_1" );
+}
+
+BOOST_AUTO_TEST_CASE( POLYAKOV_2){
+  test_polyakov( "/polyakov_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( POLYAKOV_3){
+  test_polyakov( "/polyakov_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
