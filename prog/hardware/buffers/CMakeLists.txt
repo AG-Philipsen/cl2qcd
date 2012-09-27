@@ -9,6 +9,7 @@
 add_library(buffers
 	buffer.cpp
 	prng_buffer.cpp
+	su3.cpp
 )
 
 #
@@ -17,3 +18,4 @@ add_library(buffers
 
 add_unit_test(hardware::buffers::Buffer buffer_test)
 add_unit_test(hardware::buffers::PRNGBuffer prng_buffer_test)
+add_unit_test(hardware::buffers::SU3 su3_test)

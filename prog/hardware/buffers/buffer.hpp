@@ -10,6 +10,10 @@
 #include "../device.hpp"
 
 namespace hardware {
+	/**
+	 * This namespace contains all buffers, physically representing fields
+	 * of specific data on the device.
+	 */
 	namespace buffers {
 	
 		/**
@@ -55,6 +59,11 @@ namespace hardware {
 			 * Get the buffer size in bytes
 			 */
 			size_t get_bytes() const noexcept;
+
+			/**
+			 * Get the device this buffer is located on
+			 */
+			hardware::Device * get_device() const noexcept;
 
 		private:
 			/**

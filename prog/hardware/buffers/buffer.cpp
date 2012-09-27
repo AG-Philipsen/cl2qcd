@@ -62,3 +62,8 @@ const cl_mem* hardware::buffers::Buffer::get_cl_buffer() const noexcept
 {
 	return &cl_buffer;
 }
+
+hardware::Device * hardware::buffers::Buffer::get_device() const noexcept
+{
+	return device;
+}

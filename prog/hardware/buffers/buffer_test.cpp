@@ -28,5 +28,6 @@ for(Device * device : devices) {
 		const cl_mem * tmp = dummy;
 		BOOST_REQUIRE(tmp);
 		BOOST_REQUIRE(*tmp);
+		BOOST_REQUIRE_EQUAL(device->get_id(), dummy.get_device()->get_id());
 	}
 }
