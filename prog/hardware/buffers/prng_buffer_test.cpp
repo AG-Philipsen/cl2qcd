@@ -54,9 +54,6 @@ for(Device * device : system.get_devices()) {
 
 		PRNGBuffer buffer(device);
 		int elems = buffer.get_elements();
-#ifdef USE_PRNG_RANLUX
-		elems *= 7;
-#endif
 		PRNGBuffer::prng_state_t * in = new PRNGBuffer::prng_state_t[elems];
 		// TODO fill with random data
 		buffer.load(in);
