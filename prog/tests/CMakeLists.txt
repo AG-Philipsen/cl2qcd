@@ -90,6 +90,16 @@ add_test(Rectangles_1_CPU_REC12 rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangl
 add_test(Rectangles_1_GPU       rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=true  --use_rec12=false)
 add_test(Rectangles_1_GPU_REC12 rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=true  --use_rec12=true)
 
+
+
+add_executable(opencl_module_test opencl_module_test.cpp)
+target_link_libraries(opencl_module_test
+	optimal
+	${Boost_LIBRARIES}
+)
+add_test(Opencl_module_CPU       opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+
+
 add_executable(f_gauge_tlsym F_gauge_tlsym_test.cpp)
 target_link_libraries(f_gauge_tlsym
 	optimal
