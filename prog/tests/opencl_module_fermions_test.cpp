@@ -26,6 +26,7 @@ public:
 	virtual void finalize_opencl();
 
 	cl_mem in, out;
+  cl_mem in_eo_even, in_eo_odd, out_eo;
 	cl_mem sqnorm;
   Opencl_Module_Fermions * get_device();
 private:
@@ -120,7 +121,6 @@ void TestGaugefield::fill_buffers()
 	BOOST_REQUIRE(sf_in);
 
 	size_t sf_buf_size = NUM_ELEMENTS_SF * sizeof(spinor);
-	logger.warn() << sf_buf_size;
 	//create buffer for sf on device (and copy sf_in to both for convenience)
 	in = clCreateBuffer(context, CL_MEM_READ_WRITE, sf_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
@@ -131,8 +131,25 @@ void TestGaugefield::fill_buffers()
 	err = clEnqueueWriteBuffer(device->get_queue(), out, CL_TRUE, 0, sf_buf_size, sf_in, 0, 0, NULL);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
+	if(get_parameters().get_use_eo() ) {
+	  size_t eo_buf_size = device->get_eoprec_spinorfield_buffer_size();
+	  in_eo_even = clCreateBuffer(context, CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
+	  BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	  in_eo_odd = clCreateBuffer(context, CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
+	  BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	  out_eo = clCreateBuffer(context, CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
+	  BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	  device->convert_to_eoprec_device(in_eo_even, in_eo_odd,in);
+	} else {
+	  in_eo_even = 0;
+	  in_eo_odd = 0;
+	  out_eo = 0;
+	}
+
 	//create buffer for squarenorm on device
 	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 }
 
 void TestGaugefield::clear_buffers()
@@ -140,6 +157,9 @@ void TestGaugefield::clear_buffers()
 	// don't invoke parent function as we don't require the original buffers
 	clReleaseMemObject(in);
 	clReleaseMemObject(out);
+	clReleaseMemObject(in_eo_even);
+	clReleaseMemObject(in_eo_odd);
+	clReleaseMemObject(out_eo);
 	clReleaseMemObject(sqnorm);
 
 	delete[] sf_in;
@@ -162,8 +182,8 @@ void test_m_tm_plus(std::string inputfile)
   cl_int err = CL_SUCCESS;
   Opencl_Module_Fermions * device = cpu.get_device();
   logger.info() << "|phi|^2:";
-  device->set_float_to_global_squarenorm_device(cpu.in, cpu.sqnorm);
   hmc_float cpu_back;
+  device->set_float_to_global_squarenorm_device(cpu.in, cpu.sqnorm);
   err = clEnqueueReadBuffer(device->get_queue(), cpu.sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
   BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
   logger.info() << cpu_back;
@@ -187,6 +207,48 @@ void test_m_tm_plus(std::string inputfile)
   BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
   BOOST_MESSAGE("Test done");
 }
+
+void test_dslash_eo(std::string inputfile){
+  std::string kernelName = "dslash_eo";
+  printKernelInfo(kernelName);
+  logger.info() << "Init device";
+  meta::Inputparameters params = create_parameters(inputfile);
+  hardware::System system(params);
+  TestGaugefield cpu(&system);
+  cl_int err = CL_SUCCESS;
+  Opencl_Module_Fermions * device = cpu.get_device();
+  logger.info() << "|phi|^2:";
+  hmc_float cpu_back;
+  device->set_float_to_global_squarenorm_eoprec_device(cpu.in_eo_even, cpu.sqnorm);
+  err = clEnqueueReadBuffer(device->get_queue(), cpu.sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
+  BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+  logger.info() << cpu_back;
+  
+  //switch according to "use_pointsource"
+  hmc_float cpu_res;
+  if(params.get_use_pointsource()) {
+    device->dslash_eo_device( cpu.in_eo_even, cpu.out_eo, device->get_gaugefield(), EVEN, params.get_kappa() );
+  } else {
+    device->dslash_eo_device( cpu.in_eo_even, cpu.out_eo, device->get_gaugefield(), ODD, params.get_kappa() );
+  }
+  device->set_float_to_global_squarenorm_eoprec_device(cpu.out_eo, cpu.sqnorm);
+  err = clEnqueueReadBuffer(device->get_queue(), cpu.sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
+  BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+  logger.info() << "result:";
+  logger.info() << cpu_res;
+  logger.info() << "Finalize device";
+  cpu.finalize();
+
+  logger.info() << "Choosing reference value and acceptance precision";
+  hmc_float ref_val = params.get_test_ref_value();
+  logger.info() << "reference value:\t" << ref_val;
+  hmc_float prec = params.get_solver_prec();
+  logger.info() << "acceptance precision: " << prec;
+  
+  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+  BOOST_MESSAGE("Test done");
+}
+
 
 BOOST_AUTO_TEST_SUITE( M_WILSON ) 
 
@@ -266,7 +328,19 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE(DSLASH_EO ) 
 
 BOOST_AUTO_TEST_CASE( DSLASH_EO_1){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+  test_dslash_eo("/dslash_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_2){
+  test_dslash_eo("/dslash_eo_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_3){
+  test_dslash_eo("/dslash_eo_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_4){
+  test_dslash_eo("/dslash_eo_input_4");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
