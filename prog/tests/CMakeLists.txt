@@ -53,13 +53,6 @@ target_link_libraries(gaugefield_convert
 )
 add_test(Gaugefield_Conversion gaugefield_convert)
 
-add_executable(gaugefield_observables gaugefield_observables.cpp)
-target_link_libraries(gaugefield_observables
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Gaugeobservables gaugefield_observables)
-
 add_executable(calc_staple Calc_staple_test.cpp)
 target_link_libraries(calc_staple
 	optimal
@@ -80,25 +73,15 @@ add_test(F_gauge_1_CPU_REC12 f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1
 add_test(F_gauge_1_GPU       f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=true  --use_rec12=false)
 add_test(F_gauge_1_GPU_REC12 f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=true  --use_rec12=true)
 
-add_executable(rectangles Rectangles_test.cpp)
-target_link_libraries(rectangles
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Rectangles_1_CPU       rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=false --use_rec12=false)
-add_test(Rectangles_1_CPU_REC12 rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=false --use_rec12=true)
-add_test(Rectangles_1_GPU       rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=true  --use_rec12=false)
-add_test(Rectangles_1_GPU_REC12 rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=true  --use_rec12=true)
-
-
-
 add_executable(opencl_module_test opencl_module_test.cpp)
 target_link_libraries(opencl_module_test
 	optimal
 	${Boost_LIBRARIES}
 )
 add_test(Opencl_module_CPU       opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
-
+add_test(Opencl_module_CPU_REC12 opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
+add_test(Opencl_module_GPU       opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+add_test(Opencl_module_GPU_REC12 opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
 add_executable(f_gauge_tlsym F_gauge_tlsym_test.cpp)
 target_link_libraries(f_gauge_tlsym
