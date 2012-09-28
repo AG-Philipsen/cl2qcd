@@ -7,11 +7,43 @@
 #include "scalar_buffer.hpp"
 #include "../system.hpp"
 #include "../../types.h"
+#include "../../meta/type_ops.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE hardware::buffers::ScalarBuffer
 #include <boost/test/unit_test.hpp>
+
+template<typename T> void fill(T* array, size_t num_elems)
+{
+	for(size_t i = 0; i < num_elems; i++) {
+		array[i] = i;
+	}
+}
+
+template<> void fill(hmc_complex* array, size_t num_elems)
+{
+	for(size_t i = 0; i < num_elems; i++) {
+		array[i] = {static_cast<hmc_float>(i), static_cast<hmc_float>(-i)};
+	}
+}
+
+template<> void fill(Matrixsu3* array, size_t num_elems)
+{
+	for(size_t i = 0; i < num_elems; i++) {
+		array[i] = {
+			{ static_cast<hmc_float>(i + 1), static_cast<hmc_float>(i - 1) },
+			{ static_cast<hmc_float>(i + 2), static_cast<hmc_float>(i - 2) },
+			{ static_cast<hmc_float>(i + 3), static_cast<hmc_float>(i - 3) },
+			{ static_cast<hmc_float>(i + 4), static_cast<hmc_float>(i - 4) },
+			{ static_cast<hmc_float>(i + 5), static_cast<hmc_float>(i - 5) },
+			{ static_cast<hmc_float>(i + 6), static_cast<hmc_float>(i - 6) },
+			{ static_cast<hmc_float>(i + 7), static_cast<hmc_float>(i - 7) },
+			{ static_cast<hmc_float>(i + 8), static_cast<hmc_float>(i - 8) },
+			{ static_cast<hmc_float>(i + 9), static_cast<hmc_float>(i - 9) }
+		};
+	}
+}
 
 template<typename T> void test(size_t elems, hardware::Device * device)
 {
@@ -24,6 +56,13 @@ template<typename T> void test(size_t elems, hardware::Device * device)
 	BOOST_REQUIRE(tmp);
 	BOOST_REQUIRE(*tmp);
 	BOOST_REQUIRE_EQUAL(device->get_id(), dummy.get_device()->get_id());
+
+	T* in = new T[elems];
+	T* out = new T[elems];
+	fill(in, elems);
+	dummy.load(in);
+	dummy.dump(out);
+	BOOST_CHECK_EQUAL_COLLECTIONS(in, in + elems, out, out + elems);
 }
 
 template<typename T> void test(bool requireDouble = false)
