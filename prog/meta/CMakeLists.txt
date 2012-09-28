@@ -26,3 +26,4 @@ configure_file(test_input_aliases test_input_aliases COPYONLY)
 
 add_unit_test(meta::Inputparameters inputparameters_test)
 add_unit_test(meta::ConfigFileNormalizer config_file_normalizer_test)
+add_unit_test(meta::TypeOps type_ops_test)
