@@ -553,14 +553,7 @@ void test_f_gauge(std::string inputfile)
   logger.info() << "Finalize device";
   cpu.finalize();
 
-  logger.info() << "Choosing reference value and acceptance precision";
-  hmc_float ref_val = params.get_test_ref_value();
-  logger.info() << "reference value:\t" << ref_val;
-  hmc_float prec = params.get_solver_prec();
-  logger.info() << "acceptance precision: " << prec;
-  
-  logger.info() << "Compare result to reference value";
-  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+  testFloatAgainstInputparameters(cpu_res, params);
   BOOST_MESSAGE("Test done");
 }
 
@@ -586,14 +579,7 @@ void test_f_gauge_tlsym(std::string inputfile)
   logger.info() << "Finalize device";
   cpu.finalize();
 
-  logger.info() << "Choosing reference value and acceptance precision";
-  hmc_float ref_val = params.get_test_ref_value();
-  logger.info() << "reference value:\t" << ref_val;
-  hmc_float prec = params.get_solver_prec();
-  logger.info() << "acceptance precision: " << prec;
-  
-  logger.info() << "Compare result to reference value";
-  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+  testFloatAgainstInputparameters(cpu_res, params);
   BOOST_MESSAGE("Test done");
 }
 
@@ -630,14 +616,7 @@ void test_f_fermion(std::string inputfile)
   logger.info() << "Finalize device";
   cpu.finalize();
 
-  logger.info() << "Choosing reference value and acceptance precision";
-  hmc_float ref_val = params.get_test_ref_value();
-  logger.info() << "reference value:\t" << ref_val;
-  hmc_float prec = params.get_solver_prec();
-  logger.info() << "acceptance precision: " << prec;
-  
-  logger.info() << "Compare result to reference value";
-  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+  testFloatAgainstInputparameters(cpu_res, params);
   BOOST_MESSAGE("Test done");
 }
 
@@ -703,15 +682,7 @@ void test_f_fermion_eo(std::string inputfile)
     logger.info() << cpu_res;
   }
   
-  logger.info() << "Choosing reference value and acceptance precision";
-  hmc_float ref_val = params.get_test_ref_value();
-  logger.info() << "reference value:\t" << ref_val;
-  hmc_float prec = params.get_solver_prec();
-  logger.info() << "acceptance precision: " << prec;
-  
-  logger.info() << "Compare result to reference value";
-  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
-  logger.info() << "Done";
+  testFloatAgainstInputparameters(cpu_res, params);
   BOOST_MESSAGE("Test done");
 
 }

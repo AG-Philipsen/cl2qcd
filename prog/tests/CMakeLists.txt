@@ -139,26 +139,6 @@ add_test(F_fermion_1_CPU_REC12 f_fermion ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_i
 add_test(F_fermion_1_GPU       f_fermion ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_input_1 --use_gpu=true  --use_rec12=false)
 add_test(F_fermion_1_GPU_REC12 f_fermion ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_input_1 --use_gpu=true  --use_rec12=true)
 
-add_executable(f_gauge F_gauge_test.cpp)
-target_link_libraries(f_gauge
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(F_gauge_1_CPU       f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=false --use_rec12=false)
-add_test(F_gauge_1_CPU_REC12 f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=false --use_rec12=true)
-add_test(F_gauge_1_GPU       f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=true  --use_rec12=false)
-add_test(F_gauge_1_GPU_REC12 f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=true  --use_rec12=true)
-
-add_executable(f_gauge_tlsym F_gauge_tlsym_test.cpp)
-target_link_libraries(f_gauge_tlsym
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(F_gauge_tlsym_1_CPU       f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=false --use_rec12=false)
-add_test(F_gauge_tlsym_1_CPU_REC12 f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=false --use_rec12=true)
-add_test(F_gauge_tlsym_1_GPU       f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=true  --use_rec12=false)
-add_test(F_gauge_tlsym_1_GPU_REC12 f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=true  --use_rec12=true)
-
 add_executable(f_fermion_eo F_fermion_eo_test.cpp)
 target_link_libraries(f_fermion_eo
 	optimal
