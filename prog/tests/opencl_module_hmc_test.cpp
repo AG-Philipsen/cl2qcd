@@ -26,23 +26,7 @@ public:
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
-  cl_mem in1, in2, in3, in4, out;
-  cl_mem in1_eo, in2_eo, in3_eo, in4_eo, out_eo;
-	cl_mem sqnorm;
-  Opencl_Module_Hmc * get_device();
-private:
-	void fill_buffers();
-	void clear_buffers();
-	spinor * sf_in;
-  spinor * sf_in1;
-  spinor * sf_in2;
-  spinor * sf_in1_eo;
-  spinor * sf_in2_eo;
-  spinor * sf_in3_eo;
-  spinor * sf_in4_eo;
-  spinor * sf_out;
-
-	ae * ae_out;
+	Opencl_Module_Hmc * get_device();
 };
 
 void TestGaugefield::init_tasks()
@@ -51,16 +35,17 @@ void TestGaugefield::init_tasks()
 	meta::Counter counter1, counter2, counter3, counter4;
 	opencl_modules[0] = new Opencl_Module_Hmc(get_parameters(), get_device_for_task(0), &counter1, &counter2, &counter3, &counter4);
 	opencl_modules[0]->init();
-
-	fill_buffers();
 }
 
 void TestGaugefield::finalize_opencl()
 {
-	clear_buffers();
 	Gaugefield_hybrid::finalize_opencl();
 }
 
+Opencl_Module_Hmc* TestGaugefield::get_device()
+{
+	return static_cast<Opencl_Module_Hmc*>(opencl_modules[0]);
+}
 
 void fill_sf_with_one(spinor * sf_in, int size)
 {
@@ -205,138 +190,6 @@ void fill_sf_with_random_eo(spinor * sf_in1, spinor * sf_in2, int size, int seed
 		sf_in2[i].e3.e2.im = prng_double();
 	}
 	return;
-}
-
-void TestGaugefield::fill_buffers()
-{
-	// don't invoke parent function as we don't require the original buffers
-	cl_int err;
-	cl_context context = opencl_modules[0]->get_context();
-	int NUM_ELEMENTS_SF = meta::get_spinorfieldsize(get_parameters());
-	int NUM_ELEMENTS_SF_EO =  meta::get_eoprec_spinorfieldsize(get_parameters());
-	int NUM_ELEMENTS_AE = meta::get_vol4d(get_parameters()) * NDIM * meta::get_su3algebrasize();
-
-	sf_in1 = new spinor[NUM_ELEMENTS_SF];
-	sf_in2 = new spinor[NUM_ELEMENTS_SF];
-
-	sf_in1_eo = new spinor[NUM_ELEMENTS_SF];
-	sf_in2_eo = new spinor[NUM_ELEMENTS_SF];
-	sf_in3_eo = new spinor[NUM_ELEMENTS_SF];
-	sf_in4_eo = new spinor[NUM_ELEMENTS_SF];
-
-	ae_out = new ae[NUM_ELEMENTS_AE];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(get_parameters().get_solver() == meta::Inputparameters::cg) {
-		fill_sf_with_one(sf_in1, NUM_ELEMENTS_SF);
-		fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
-	} else {
-		fill_sf_with_random(sf_in1, NUM_ELEMENTS_SF, 123456);
-		fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF, 789101);
-	}
-	BOOST_REQUIRE(sf_in1);
-	BOOST_REQUIRE(sf_in2);
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(get_parameters().get_solver() == meta::Inputparameters::cg) {
-		fill_sf_with_one(sf_in1_eo, NUM_ELEMENTS_SF_EO);
-		fill_sf_with_one(sf_in2_eo, NUM_ELEMENTS_SF_EO);
-		fill_sf_with_one(sf_in3_eo, NUM_ELEMENTS_SF_EO);
-		fill_sf_with_one(sf_in4_eo, NUM_ELEMENTS_SF_EO);
-	} else {
-		fill_sf_with_random_eo(sf_in1_eo, sf_in2_eo, NUM_ELEMENTS_SF_EO, 123456);
-		fill_sf_with_random_eo(sf_in3_eo, sf_in4_eo, NUM_ELEMENTS_SF_EO, 789101);
-	}
-	BOOST_REQUIRE(sf_in1_eo);
-	BOOST_REQUIRE(sf_in2_eo);
-	BOOST_REQUIRE(sf_in3_eo);
-	BOOST_REQUIRE(sf_in4_eo);
-
-	fill_with_zero(ae_out, NUM_ELEMENTS_AE);
-
-	size_t sf_buf_size = meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
-	//create buffer for sf on device (and copy sf_in to both for convenience)
-
-	Opencl_Module_Hmc * device = this->get_device();
-	size_t sf_eoprec_buffer_size = device->get_eoprec_spinorfield_buffer_size();
-
-	in1 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in2 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(device->get_queue(), in1, CL_TRUE, 0, sf_buf_size, sf_in1, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(device->get_queue(), in2, CL_TRUE, 0, sf_buf_size, sf_in2, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	out = clCreateBuffer(context, CL_MEM_READ_WRITE, device->get_gaugemomentum_buffer_size(), 0, &err);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(ae_out));
-	/*
-	if(get_parameters().get_use_eo() ) {
-	  size_t eo_buf_size = device->get_eoprec_spinorfield_buffer_size();
-	  in1_eo = clCreateBuffer(context, CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
-	  BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	  in2_eo = clCreateBuffer(context, CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
-	  BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	  out_eo = clCreateBuffer(context, CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
-	  BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	  device->convert_to_eoprec_device(in1_eo, in2_eo, in1);
-	} else {
-	  in1_eo = 0;
-	  in2_eo = 0;
-	  out_eo = 0;
-	}
-	*/
-	in1_eo = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in2_eo = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in3_eo = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in4_eo = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	err = clEnqueueWriteBuffer(device->get_queue(), in1_eo, CL_TRUE, 0, sf_eoprec_buffer_size, sf_in1_eo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(device->get_queue(), in2_eo, CL_TRUE, 0, sf_eoprec_buffer_size, sf_in2_eo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(device->get_queue(), in3_eo, CL_TRUE, 0, sf_eoprec_buffer_size, sf_in3_eo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(device->get_queue(), in4_eo, CL_TRUE, 0, sf_eoprec_buffer_size, sf_in4_eo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	//create buffer for squarenorm on device
-	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
-}
-
-void TestGaugefield::clear_buffers()
-{
-	// don't invoke parent function as we don't require the original buffers
-  	//clReleaseMemObject(in1);
-	//clReleaseMemObject(in2);
-	//clReleaseMemObject(out);
-	//clReleaseMemObject(in1_eo);
-	//clReleaseMemObject(in2_eo);
-	//clReleaseMemObject(in3_eo);
-	//clReleaseMemObject(in4_eo);
-	//clReleaseMemObject(out_eo);
-	//clReleaseMemObject(sqnorm);
-  /*
-	delete[] sf_in1;
-	delete[] sf_in2;
-	delete[] sf_in1_eo;
-	delete[] sf_in2_eo;
-	delete[] sf_in3_eo;
-	delete[] sf_in4_eo;
-	delete[] sf_out;
-	delete[] ae_out;
-  */
-}
-
-Opencl_Module_Hmc* TestGaugefield::get_device()
-{
-	return static_cast<Opencl_Module_Hmc*>(opencl_modules[0]);
 }
 
 void test_generate_gaussian_spinorfield(std::string inputfile)
@@ -528,13 +381,35 @@ void test_f_gauge(std::string inputfile)
   TestGaugefield cpu(&system);
   Opencl_Module_Hmc * device = cpu.get_device();
   cl_int err = CL_SUCCESS;
+	cl_mem out, sqnorm;
+	ae * gm_out;
+	
+	logger.info() << "create buffers";
+	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
+	gm_out = new ae[NUM_ELEMENTS_AE];
+	fill_with_zero(gm_out, NUM_ELEMENTS_AE);
+	BOOST_REQUIRE(gm_out);	
+	
+	size_t ae_buf_size = device->get_gaugemomentum_buffer_size();
+	out = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, ae_buf_size, 0, &err );
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(gm_out));
+	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
-  device->gauge_force_device( device->get_gaugefield(), cpu.out);
+	logger.info() << "|out|^2:";
+	device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+	hmc_float cpu_back;
+	clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	logger.info() << cpu_back;
+		
+  device->gauge_force_device( device->get_gaugefield(), out);
 
   logger.info() << "result:";
   hmc_float cpu_res;
-  device->set_float_to_gaugemomentum_squarenorm_device(cpu.out, cpu.sqnorm);
-  err = clEnqueueReadBuffer(device->get_queue(), cpu.sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
+  device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+  err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
   BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
   logger.info() << cpu_res;
   logger.info() << "Finalize device";
@@ -554,13 +429,35 @@ void test_f_gauge_tlsym(std::string inputfile)
   TestGaugefield cpu(&system);
   Opencl_Module_Hmc * device = cpu.get_device();
   cl_int err = CL_SUCCESS;
+	cl_mem out, sqnorm;
+	ae * gm_out;
+	
+	logger.info() << "create buffers";
+	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
+	gm_out = new ae[NUM_ELEMENTS_AE];
+	fill_with_zero(gm_out, NUM_ELEMENTS_AE);
+	BOOST_REQUIRE(gm_out);	
+	
+	size_t ae_buf_size = device->get_gaugemomentum_buffer_size();
+	out = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, ae_buf_size, 0, &err );
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(gm_out));
+	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
-  device->gauge_force_tlsym_device( device->get_gaugefield(), cpu.out);
+	logger.info() << "|out|^2:";
+	device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+	hmc_float cpu_back;
+	clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	logger.info() << cpu_back;
+	
+  device->gauge_force_tlsym_device( device->get_gaugefield(), out);
 
   logger.info() << "result:";
   hmc_float cpu_res;
-  device->set_float_to_gaugemomentum_squarenorm_device(cpu.out, cpu.sqnorm);
-  err = clEnqueueReadBuffer(device->get_queue(), cpu.sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
+  device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+  err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
   BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
   logger.info() << cpu_res;
   logger.info() << "Finalize device";
