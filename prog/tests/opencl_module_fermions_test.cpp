@@ -25,15 +25,7 @@ public:
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
-	cl_mem in, out;
-  cl_mem in_eo_even, in_eo_odd, out_eo;
-	cl_mem sqnorm;
   Opencl_Module_Fermions * get_device();
-private:
-	void fill_buffers();
-	void clear_buffers();
-	spinor * sf_in;
-	spinor * sf_out;
 };
 
 void TestGaugefield::init_tasks()
@@ -41,13 +33,10 @@ void TestGaugefield::init_tasks()
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 	opencl_modules[0] = new Opencl_Module_Fermions(get_parameters(), get_device_for_task(0));
 	opencl_modules[0]->init();
-
-	fill_buffers();
 }
 
 void TestGaugefield::finalize_opencl()
 {
-	clear_buffers();
 	Gaugefield_hybrid::finalize_opencl();
 }
 
@@ -103,69 +92,6 @@ void fill_sf_with_random(spinor * sf_in, int size)
 	return;
 }
 
-void TestGaugefield::fill_buffers()
-{
-	// don't invoke parent function as we don't require the original buffers
-	cl_int err;
-	cl_context context = opencl_modules[0]->get_context();
-	size_t NUM_ELEMENTS_SF =  meta::get_spinorfieldsize(get_parameters());
-
-	Opencl_Module_Fermions * device = this->get_device();
-
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_out = new spinor[NUM_ELEMENTS_SF];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(get_parameters().get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
-
-	size_t sf_buf_size = NUM_ELEMENTS_SF * sizeof(spinor);
-	//create buffer for sf on device (and copy sf_in to both for convenience)
-	in = clCreateBuffer(context, CL_MEM_READ_WRITE, sf_buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(device->get_queue(), in, CL_TRUE, 0, sf_buf_size, sf_in, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	out = clCreateBuffer(context, CL_MEM_READ_WRITE, sf_buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(device->get_queue(), out, CL_TRUE, 0, sf_buf_size, sf_in, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	if(get_parameters().get_use_eo() ) {
-	  size_t eo_buf_size = device->get_eoprec_spinorfield_buffer_size();
-	  in_eo_even = clCreateBuffer(context, CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
-	  BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	  in_eo_odd = clCreateBuffer(context, CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
-	  BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	  out_eo = clCreateBuffer(context, CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
-	  BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	  device->convert_to_eoprec_device(in_eo_even, in_eo_odd,in);
-	} else {
-	  in_eo_even = 0;
-	  in_eo_odd = 0;
-	  out_eo = 0;
-	}
-
-	//create buffer for squarenorm on device
-	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-}
-
-void TestGaugefield::clear_buffers()
-{
-	// don't invoke parent function as we don't require the original buffers
-	clReleaseMemObject(in);
-	clReleaseMemObject(out);
-	clReleaseMemObject(in_eo_even);
-	clReleaseMemObject(in_eo_odd);
-	clReleaseMemObject(out_eo);
-	clReleaseMemObject(sqnorm);
-
-	delete[] sf_in;
-	delete[] sf_out;
-}
-
 Opencl_Module_Fermions* TestGaugefield::get_device()
 {
 	return static_cast<Opencl_Module_Fermions*>(opencl_modules[0]);
@@ -181,30 +107,58 @@ void test_m_tm_plus(std::string inputfile)
   TestGaugefield cpu(&system);
   cl_int err = CL_SUCCESS;
   Opencl_Module_Fermions * device = cpu.get_device();
+	cl_mem in, out, sqnorm;
+	spinor * sf_in;
+	spinor * sf_out;
+	
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+	sf_out = new spinor[NUM_ELEMENTS_SF];
+	
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
+	BOOST_REQUIRE(sf_in);	
+	
+	size_t sf_buf_size = meta::get_spinorfieldsize(params) * sizeof(spinor);
+	in = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sf_buf_size, 0, &err );
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	err = clEnqueueWriteBuffer(device->get_queue(), in, CL_TRUE, 0, sf_buf_size, sf_in, 0, 0, NULL);
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	out = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sf_buf_size, 0, &err );
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	err = clEnqueueWriteBuffer(device->get_queue(), out, CL_TRUE, 0, sf_buf_size, sf_in, 0, 0, NULL);
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	
   logger.info() << "|phi|^2:";
   hmc_float cpu_back;
-  device->set_float_to_global_squarenorm_device(cpu.in, cpu.sqnorm);
-  err = clEnqueueReadBuffer(device->get_queue(), cpu.sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
+  device->set_float_to_global_squarenorm_device(in, sqnorm);
+  err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
   BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
   logger.info() << cpu_back;
   logger.info() << "Run kernel";
-  device->M_tm_plus_device(cpu.in, cpu.out,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+  device->M_tm_plus_device(in, out,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
   logger.info() << "result:";
   hmc_float cpu_res;
-  device->set_float_to_global_squarenorm_device(cpu.out, cpu.sqnorm);
-  err = clEnqueueReadBuffer(device->get_queue(), cpu.sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
+  device->set_float_to_global_squarenorm_device(out, sqnorm);
+  err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
   BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
   logger.info() << cpu_res;
   logger.info() << "Finalize device";
   cpu.finalize();
+	
+	logger.info() << "Clear buffers";
+	clReleaseMemObject(in);
+	clReleaseMemObject(out);
+	clReleaseMemObject(sqnorm);
+	delete[] sf_in;
+	delete[] sf_out;
   
-  logger.info() << "Choosing reference value and acceptance precision";
-  hmc_float ref_val = params.get_test_ref_value();
-  logger.info() << "reference value:\t" << ref_val;
-  hmc_float prec = params.get_solver_prec();
-  logger.info() << "acceptance precision: " << prec;
-  
-  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+	testFloatAgainstInputparameters(cpu_res, params);
   BOOST_MESSAGE("Test done");
 }
 
@@ -217,35 +171,76 @@ void test_dslash_eo(std::string inputfile){
   TestGaugefield cpu(&system);
   cl_int err = CL_SUCCESS;
   Opencl_Module_Fermions * device = cpu.get_device();
+	cl_mem in, out, sqnorm;
+  cl_mem in_eo_even, in_eo_odd, out_eo;
+	spinor * sf_in;
+	spinor * sf_out;
+	
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+	sf_out = new spinor[NUM_ELEMENTS_SF];
+	
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
+	BOOST_REQUIRE(sf_in);	
+	
+	size_t sf_buf_size = meta::get_spinorfieldsize(params) * sizeof(spinor);
+	in = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sf_buf_size, 0, &err );
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	err = clEnqueueWriteBuffer(device->get_queue(), in, CL_TRUE, 0, sf_buf_size, sf_in, 0, 0, NULL);
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	out = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sf_buf_size, 0, &err );
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	err = clEnqueueWriteBuffer(device->get_queue(), out, CL_TRUE, 0, sf_buf_size, sf_in, 0, 0, NULL);
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	
+	size_t eo_buf_size = device->get_eoprec_spinorfield_buffer_size();
+	in_eo_even = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	in_eo_odd = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	out_eo = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	device->convert_to_eoprec_device(in_eo_even, in_eo_odd,in);
+	
   logger.info() << "|phi|^2:";
   hmc_float cpu_back;
-  device->set_float_to_global_squarenorm_eoprec_device(cpu.in_eo_even, cpu.sqnorm);
-  err = clEnqueueReadBuffer(device->get_queue(), cpu.sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
+  device->set_float_to_global_squarenorm_eoprec_device(in_eo_even, sqnorm);
+  err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
   BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
   logger.info() << cpu_back;
   
   //switch according to "use_pointsource"
   hmc_float cpu_res;
   if(params.get_use_pointsource()) {
-    device->dslash_eo_device( cpu.in_eo_even, cpu.out_eo, device->get_gaugefield(), EVEN, params.get_kappa() );
+    device->dslash_eo_device( in_eo_even, out_eo, device->get_gaugefield(), EVEN, params.get_kappa() );
   } else {
-    device->dslash_eo_device( cpu.in_eo_even, cpu.out_eo, device->get_gaugefield(), ODD, params.get_kappa() );
+    device->dslash_eo_device( in_eo_even, out_eo, device->get_gaugefield(), ODD, params.get_kappa() );
   }
-  device->set_float_to_global_squarenorm_eoprec_device(cpu.out_eo, cpu.sqnorm);
-  err = clEnqueueReadBuffer(device->get_queue(), cpu.sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
+  device->set_float_to_global_squarenorm_eoprec_device(out_eo, sqnorm);
+  err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
   BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
   logger.info() << "result:";
   logger.info() << cpu_res;
   logger.info() << "Finalize device";
   cpu.finalize();
+	
+	logger.info() << "Clear buffers";
+	clReleaseMemObject(in);
+	clReleaseMemObject(out);
+	clReleaseMemObject(in_eo_even);
+	clReleaseMemObject(in_eo_odd);
+	clReleaseMemObject(out_eo);
+	clReleaseMemObject(sqnorm);
+	delete[] sf_in;
+	delete[] sf_out;	
 
-  logger.info() << "Choosing reference value and acceptance precision";
-  hmc_float ref_val = params.get_test_ref_value();
-  logger.info() << "reference value:\t" << ref_val;
-  hmc_float prec = params.get_solver_prec();
-  logger.info() << "acceptance precision: " << prec;
-  
-  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+	testFloatAgainstInputparameters(cpu_res, params);
   BOOST_MESSAGE("Test done");
 }
 
