@@ -5,7 +5,7 @@
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE F_fermion_test
+#define BOOST_TEST_MODULE OPENCL_MODULE_HMC
 #include <boost/test/unit_test.hpp>
 
 #include "test_util.h"
