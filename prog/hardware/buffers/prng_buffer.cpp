@@ -7,11 +7,7 @@
 #include "prng_buffer.hpp"
 
 hardware::buffers::PRNGBuffer::PRNGBuffer(size_t elems, Device * device)
-	: Buffer(elems *
-#ifdef USE_PRNG_RANLUX
-	         7 *
-#endif
-	         sizeof(prng_state_t), device), elems(elems)
+	: Buffer(elems * sizeof(prng_state_t), device), elems(elems)
 {
 	// already inited
 }
@@ -24,7 +20,7 @@ hardware::buffers::PRNGBuffer::PRNGBuffer(Device * device)
 
 size_t hardware::buffers::PRNGBuffer::get_elements() const noexcept
 {
-  return elems;
+	return elems;
 }
 
 size_t hardware::buffers::get_prng_buffer_size(const hardware::Device * device)

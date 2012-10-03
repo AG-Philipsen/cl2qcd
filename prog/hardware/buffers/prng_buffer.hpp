@@ -29,7 +29,8 @@ namespace hardware {
 #ifdef USE_PRNG_NR3
 			typedef nr3_state_dev prng_state_t;
 #elif defined(USE_PRNG_RANLUX)
-			typedef cl_float4 prng_state_t;
+			typedef cl_float4 prng_state_t[7];
+			static_assert(sizeof(prng_state_t) == 7 * sizeof(cl_float4), "PRNG state type mockup is of wrong size.");
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
