@@ -27,11 +27,6 @@ public:
 	virtual void finalize_opencl() override;
 
   Opencl_Module * get_device();
-
-private:
-	void fill_buffers();
-	void clear_buffers();
-	cl_mem rect_value;
 };
 
 void TestGaugefield::init_tasks()
@@ -40,8 +35,6 @@ void TestGaugefield::init_tasks()
 	//here we want to test Opencl_Module
 	opencl_modules[0] = new Opencl_Module(get_parameters(), get_device_for_task(0));
 	opencl_modules[0]->init();
-
-	fill_buffers();
 }
 
 Opencl_Module* TestGaugefield::get_device()
@@ -51,23 +44,9 @@ Opencl_Module* TestGaugefield::get_device()
 
 void TestGaugefield::finalize_opencl()
 {
-	clear_buffers();
 	Gaugefield_hybrid::finalize_opencl();
 }
 
-void TestGaugefield::fill_buffers()
-{
-	// don't invoke parent function as we don't require the original buffers
-	cl_int err;
-	cl_context context = opencl_modules[0]->get_context();
-	rect_value = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
-}
-
-void TestGaugefield::clear_buffers()
-{
-	// don't invoke parent function as we don't require the original buffers
-	clReleaseMemObject(rect_value);
-}
 
 void test_rectangles(std::string inputfile)
 {
@@ -77,22 +56,17 @@ void test_rectangles(std::string inputfile)
   meta::Inputparameters params = create_parameters(inputfile);
   hardware::System system(params);
   TestGaugefield cpu(&system);
-
+  Opencl_Module * device = cpu.get_device();
+	
   logger.info() << "calc rectangles value:";
   hmc_float cpu_rect;
-  Opencl_Module * device = cpu.get_device();
   device->gaugeobservables_rectangles(device->get_gaugefield(), &cpu_rect);
   logger.info() << cpu_rect;
  
   logger.info() << "Finalize device";
   cpu.finalize();
 
-  hmc_float ref_val = params.get_test_ref_value();
-  logger.info() << "reference value:\t" << ref_val;
-  hmc_float prec = params.get_solver_prec();
-  logger.info() << "acceptance precision: " << prec;
-  
-  BOOST_REQUIRE_CLOSE(cpu_rect, ref_val, prec);
+	testFloatAgainstInputparameters(cpu_rect, params);
   BOOST_MESSAGE("Test done");
 }
 
