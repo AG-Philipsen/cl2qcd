@@ -331,6 +331,74 @@ Opencl_Module_Hmc* TestGaugefield::get_device()
 	return static_cast<Opencl_Module_Hmc*>(opencl_modules[0]);
 }
 
+	cl_kernel generate_gaussian_spinorfield;
+	cl_kernel generate_gaussian_spinorfield_eo;
+	cl_kernel generate_gaussian_gaugemomenta;
+	cl_kernel md_update_gaugefield;
+	cl_kernel md_update_gaugemomenta;
+	cl_kernel gauge_force;
+	cl_kernel gauge_force_tlsym;
+	cl_kernel fermion_force;
+	cl_kernel fermion_force_eo;
+	cl_kernel stout_smear_fermion_force;
+	cl_kernel set_zero_gaugemomentum;
+	cl_kernel gaugemomentum_squarenorm;
+	cl_kernel gaugemomentum_convert_to_soa;
+	cl_kernel gaugemomentum_convert_from_soa;
+	
+	
+
+void test_generate_gaussian_spinorfield(std::string inputfile)
+{
+	
+}
+
+void test_generate_gaussian_spinorfield_eo(std::string inputfile)
+{
+	
+}
+
+void test_generate_gaussian_gaugemomenta(std::string inputfile)
+{
+	
+}
+
+void test_stout_smear_fermion_force(std::string inputfile)
+{
+	
+}
+
+void test_set_zero_gm(std::string inputfile)
+{
+	
+}
+
+void test_gm_squarenorm(std::string inputfile)
+{
+	
+}
+
+void test_gm_convert_to_soa(std::string inputfile)
+{
+	
+}
+
+void test_gm_convert_from_soa(std::string inputfile)
+{
+	
+}
+
+void test_gf_update(std::string inputfile)
+{
+
+}
+
+void test_f_update(std::string inputfile)
+{
+	
+}
+
+
 void test_f_gauge(std::string inputfile)
 {
   std::string kernelName = "f_fermion";
@@ -516,10 +584,83 @@ void test_f_fermion_eo(std::string inputfile)
 
 }
 
+BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_SPINORFIELD  )
+
+BOOST_AUTO_TEST_CASE( GENERATE_GAUSSIAN_SPINORFIELD_1 ){
+		BOOST_MESSAGE("NOT YET IMPLEMENTED!!");	
+  test_generate_gaussian_spinorfield("/generate_gaussian_spinorfield_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+	
+BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_SPINORFIELD_EO  )
+
+BOOST_AUTO_TEST_CASE( GENERATE_GAUSSIAN_SPINORFIELD_EO_1 ){
+		BOOST_MESSAGE("NOT YET IMPLEMENTED!!");	
+  test_generate_gaussian_spinorfield_eo("/generate_gaussian_spinorfield_eo_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_GAUGEMOMENTA  )
+
+BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_1 ){
+		BOOST_MESSAGE("NOT YET IMPLEMENTED!!");	
+  test_generate_gaussian_gaugemomenta("/generate_gaussian_gaugemomenta_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( STOUT_SMEAR_FERMION_FORCE )
+
+BOOST_AUTO_TEST_CASE(STOUT_SMEAR_FERMION_FORCE_1 ){
+		BOOST_MESSAGE("NOT YET IMPLEMENTED!!");	
+  test_stout_smear_fermion_force("/stout_smear_fermion_force_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( SET_ZERO_GAUGEMOMENTUM )
+
+BOOST_AUTO_TEST_CASE( SET_ZERO_GAUGEMOMENTUM_1 ){
+		BOOST_MESSAGE("NOT YET IMPLEMENTED!!");	
+  test_set_zero_gm("/set_zero_gaugemomentum_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( GM_CONVERT_TO_SOA )
+
+BOOST_AUTO_TEST_CASE( GM_CONVERT_TO_SOA_1 ){
+		BOOST_MESSAGE("NOT YET IMPLEMENTED!!");	
+  test_gm_convert_to_soa("/gm_convert_to_soa_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( GM_CONVERT_FROM_SOA )
+
+BOOST_AUTO_TEST_CASE( GM_CONVERT_FROM_SOA_1 ){
+		BOOST_MESSAGE("NOT YET IMPLEMENTED!!");	
+  test_gm_convert_from_soa("/gm_convert_from_soa_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( GM_SQUARENORM )
+
+BOOST_AUTO_TEST_CASE(GM_SQUARENORM_1  ){
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");	
+	test_gm_squarenorm("/gm_squarenorm_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 BOOST_AUTO_TEST_SUITE( GF_UPDATE )
 
 BOOST_AUTO_TEST_CASE( GF_UPDATE_1 ){
-  test_gf_update("/gf_update_input_1");
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");	
+	test_gf_update("/gf_update_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -527,11 +668,11 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE( F_UPDATE )
 
 BOOST_AUTO_TEST_CASE( F_UPDATE_1 ){
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");	
   test_f_update("/f_update_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-
 
 BOOST_AUTO_TEST_SUITE( F_GAUGE )
 
@@ -548,7 +689,6 @@ BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_1 ){
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-
 
 BOOST_AUTO_TEST_SUITE( F_FERMION ) 
 
