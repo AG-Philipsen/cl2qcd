@@ -305,16 +305,16 @@ void TestGaugefield::fill_buffers()
 void TestGaugefield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-	clReleaseMemObject(in1);
-	clReleaseMemObject(in2);
-	clReleaseMemObject(out);
-	clReleaseMemObject(in1_eo);
-	clReleaseMemObject(in2_eo);
-	clReleaseMemObject(in3_eo);
-	clReleaseMemObject(in4_eo);
-	clReleaseMemObject(out_eo);
-	clReleaseMemObject(sqnorm);
-
+  	//clReleaseMemObject(in1);
+	//clReleaseMemObject(in2);
+	//clReleaseMemObject(out);
+	//clReleaseMemObject(in1_eo);
+	//clReleaseMemObject(in2_eo);
+	//clReleaseMemObject(in3_eo);
+	//clReleaseMemObject(in4_eo);
+	//clReleaseMemObject(out_eo);
+	//clReleaseMemObject(sqnorm);
+  /*
 	delete[] sf_in1;
 	delete[] sf_in2;
 	delete[] sf_in1_eo;
@@ -323,12 +323,78 @@ void TestGaugefield::clear_buffers()
 	delete[] sf_in4_eo;
 	delete[] sf_out;
 	delete[] ae_out;
-
+  */
 }
 
 Opencl_Module_Hmc* TestGaugefield::get_device()
 {
 	return static_cast<Opencl_Module_Hmc*>(opencl_modules[0]);
+}
+
+void test_f_gauge(std::string inputfile)
+{
+  std::string kernelName = "f_fermion";
+  printKernelInfo(kernelName);
+  logger.info() << "Init device";
+  meta::Inputparameters params = create_parameters(inputfile);
+  hardware::System system(params);
+  TestGaugefield cpu(&system);
+  Opencl_Module_Hmc * device = cpu.get_device();
+  cl_int err = CL_SUCCESS;
+
+  device->gauge_force_device( device->get_gaugefield(), cpu.out);
+
+  logger.info() << "result:";
+  hmc_float cpu_res;
+  device->set_float_to_gaugemomentum_squarenorm_device(cpu.out, cpu.sqnorm);
+  err = clEnqueueReadBuffer(device->get_queue(), cpu.sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
+  BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+  logger.info() << cpu_res;
+  logger.info() << "Finalize device";
+  cpu.finalize();
+
+  logger.info() << "Choosing reference value and acceptance precision";
+  hmc_float ref_val = params.get_test_ref_value();
+  logger.info() << "reference value:\t" << ref_val;
+  hmc_float prec = params.get_solver_prec();
+  logger.info() << "acceptance precision: " << prec;
+  
+  logger.info() << "Compare result to reference value";
+  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+  BOOST_MESSAGE("Test done");
+}
+
+void test_f_gauge_tlsym(std::string inputfile)
+{
+  std::string kernelName = "f_fermion";
+  printKernelInfo(kernelName);
+  logger.info() << "Init device";
+  meta::Inputparameters params = create_parameters(inputfile);
+  hardware::System system(params);
+  TestGaugefield cpu(&system);
+  Opencl_Module_Hmc * device = cpu.get_device();
+  cl_int err = CL_SUCCESS;
+
+  device->gauge_force_tlsym_device( device->get_gaugefield(), cpu.out);
+
+  logger.info() << "result:";
+  hmc_float cpu_res;
+  device->set_float_to_gaugemomentum_squarenorm_device(cpu.out, cpu.sqnorm);
+  err = clEnqueueReadBuffer(device->get_queue(), cpu.sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
+  BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+  logger.info() << cpu_res;
+  logger.info() << "Finalize device";
+  cpu.finalize();
+
+  logger.info() << "Choosing reference value and acceptance precision";
+  hmc_float ref_val = params.get_test_ref_value();
+  logger.info() << "reference value:\t" << ref_val;
+  hmc_float prec = params.get_solver_prec();
+  logger.info() << "acceptance precision: " << prec;
+  
+  logger.info() << "Compare result to reference value";
+  BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+  BOOST_MESSAGE("Test done");
 }
 
 void test_f_fermion(std::string inputfile)
@@ -426,12 +492,10 @@ void test_f_fermion_eo(std::string inputfile)
     logger.info() << cpu_back4;
     logger.info() << "Run kernel";
     
-    
     int tmp = ODD;
     //this is then force(Y_odd, X_even) == force(in2, in3)
     device->fermion_force_eo_device(cpu.in2, cpu.in3, device->get_gaugefield(), cpu.out, tmp, params.get_kappa() );
-
-    
+   
     logger.info() << "|force (odd)|^2:";
     device->set_float_to_gaugemomentum_squarenorm_device(cpu.out, cpu.sqnorm);
     err = clEnqueueReadBuffer(device->get_queue(), cpu.sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
@@ -450,9 +514,41 @@ void test_f_fermion_eo(std::string inputfile)
   logger.info() << "Done";
   BOOST_MESSAGE("Test done");
 
-  
-  
 }
+
+BOOST_AUTO_TEST_SUITE( GF_UPDATE )
+
+BOOST_AUTO_TEST_CASE( GF_UPDATE_1 ){
+  test_gf_update("/gf_update_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( F_UPDATE )
+
+BOOST_AUTO_TEST_CASE( F_UPDATE_1 ){
+  test_f_update("/f_update_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_AUTO_TEST_SUITE( F_GAUGE )
+
+BOOST_AUTO_TEST_CASE( F_GAUGE_1 ){
+  test_f_gauge("/f_gauge_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( F_GAUGE_TLSYM )
+
+BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_1 ){
+  test_f_gauge_tlsym("/f_gauge_tlsym_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 
 BOOST_AUTO_TEST_SUITE( F_FERMION ) 
 
@@ -465,7 +561,7 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE( F_FERMION_EO ) 
 
 BOOST_AUTO_TEST_CASE( F_FERMION_EO_1 ){
-  test_f_fermion_eo("/f_fermion_eo_input_1");
+  //  test_f_fermion_eo("/f_fermion_eo_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
