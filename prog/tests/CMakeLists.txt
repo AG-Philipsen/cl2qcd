@@ -159,24 +159,6 @@ add_test(F_gauge_tlsym_1_CPU_REC12 f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_g
 add_test(F_gauge_tlsym_1_GPU       f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=true  --use_rec12=false)
 add_test(F_gauge_tlsym_1_GPU_REC12 f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=true  --use_rec12=true)
 
-add_executable(gf_update GF_update_test.cpp)
-target_link_libraries(gf_update
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Gf_update_1_CPU       gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=false --use_rec12=false)
-add_test(Gf_update_1_CPU_REC12 gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=false --use_rec12=true)
-add_test(Gf_update_1_GPU       gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=true  --use_rec12=false)
-add_test(Gf_update_1_GPU_REC12 gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=true  --use_rec12=true)
-
-add_executable(f_update F_update_test.cpp)
-target_link_libraries(f_update
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(F_update_1_CPU f_update ${CMAKE_CURRENT_SOURCE_DIR}/f_update_input_1  --use_gpu=false --use_rec12=false)
-add_test(F_update_1_GPU f_update ${CMAKE_CURRENT_SOURCE_DIR}/f_update_input_1  --use_gpu=true  --use_rec12=false)
-
 add_executable(f_fermion_eo F_fermion_eo_test.cpp)
 target_link_libraries(f_fermion_eo
 	optimal
