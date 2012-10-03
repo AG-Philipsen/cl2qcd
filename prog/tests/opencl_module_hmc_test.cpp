@@ -437,7 +437,7 @@ void test_gf_update(std::string inputfile)
 	logger.info() << cpu_back;
 	
 	logger.info() << "Run kernel";
-	hmc_float eps = 0.12;
+	hmc_float eps = params.get_tau();
 	device->md_update_gaugefield_device( in, device->get_gaugefield(), eps);
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables_from_task(0, 0);
@@ -510,7 +510,7 @@ void test_f_update(std::string inputfile)
 	logger.info() << cpu_back2;
 
 	logger.info() << "Run kernel";
-	hmc_float eps = 0.12;
+	hmc_float eps = params.get_tau();
 	device->md_update_gaugemomentum_device( in  , out, eps);
 	
 	device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
