@@ -1,11 +1,24 @@
+#define BOOST_FAILURE_WORKAROUND 1
+
 meta::Inputparameters create_parameters(std::string inputfile)
 {
+	std::string inputfile_location, gpu_opt , rec12_opt;
+	int num_par = 0;
+#if BOOST_FAILURE_WORKAROUND
+	//CP: this is a workaround in case the boost library is not able to pass arguments
+	//	in this case, always use standard args...
+	logger.warn() << "Passing of args with boost does not work! Use standard arguments:";
+	inputfile_location = "../../tests" + inputfile;
+	gpu_opt = "--use_gpu=false";
+	rec12_opt = "--use_rec12=false";
+	num_par = 4;
+	logger.warn() << inputfile_location << " " << gpu_opt << " " << rec12_opt;
+#else
   const int param_expect = 4;
   logger.info() << "expect parameters:";
   logger.info() << "\texec_name\tsource-dir\tgpu_usage\trec12_usage";
-  std::string inputfile_location, gpu_opt , rec12_opt;
   //get number of parameters                                                                                                                                                                                                                 
-  int num_par = boost::unit_test::framework::master_test_suite().argc;
+  num_par = boost::unit_test::framework::master_test_suite().argc;
   if(num_par < param_expect){
     logger.fatal() << "Got only " << num_par << " Inputparameters, expected " << param_expect << "! Use inputfile values instead!";
   } else if(num_par > param_expect){
@@ -53,7 +66,8 @@ meta::Inputparameters create_parameters(std::string inputfile)
     logger.info() << "rec12 usage: " << rec12_opt;
     break;
   }
-  const char* _params_cpu[] = {"foo", inputfile_location.c_str(), gpu_opt.c_str() , rec12_opt.c_str()};
+#endif
+	const char* _params_cpu[] = {"foo", inputfile_location.c_str(), gpu_opt.c_str() , rec12_opt.c_str()};
   meta::Inputparameters params(num_par, _params_cpu);
   return params;
 }
