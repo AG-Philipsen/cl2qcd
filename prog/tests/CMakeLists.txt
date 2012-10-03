@@ -10,6 +10,14 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
+add_executable(Boost_test boost_test.cpp)
+target_link_libraries(Boost_test
+	${Boost_LIBRARIES}
+)
+add_test(Boost_ARGC Boost_test --run_test=BOOST_ARGC1)
+add_test(Boost_ARGC Boost_test ${CMAKE_CURRENT_SOURCE_DIR} --run_test=BOOST_ARGC2)
+add_test(Boost_ARGV Boost_test --run_test=BOOST_ARGV)
+
 add_executable(openclCompiler opencl_compiler.cpp ../opencl_compiler.cpp ../logger.cpp ../exceptions.cpp)
 target_link_libraries(openclCompiler ${Boost_LIBRARIES} ${OPENCL_LIBRARIES} crypto einhard)
 add_test(OpenclCompiler openclCompiler)
@@ -110,15 +118,15 @@ add_test(M_tm_plus_compare_noneo_eo_1_CPU_REC12 m_tm_plus_compare_noneo_eo ${CMA
 add_test(M_tm_plus_compare_noneo_eo_1_GPU       m_tm_plus_compare_noneo_eo ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_compare_noneo_eo_input_1 --use_gpu=true --use_rec12=false)
 add_test(M_tm_plus_compare_noneo_eo_1_GPU_REC12 m_tm_plus_compare_noneo_eo ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_compare_noneo_eo_input_1 --use_gpu=true --use_rec12=true)
 
-add_executable(opencl_module_hmc_test opencl_module_hmc_test.cpp)
-target_link_libraries(opencl_module_hmc_test
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Opencl_module_hmc_CPU       opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
-add_test(Opencl_module_hmc_CPU_REC12 opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
-add_test(Opencl_module_hmc_GPU       opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
-add_test(Opencl_module_hmc_GPU_REC12 opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
+# add_executable(opencl_module_hmc_test opencl_module_hmc_test.cpp)
+# target_link_libraries(opencl_module_hmc_test
+# 	optimal
+# 	${Boost_LIBRARIES}
+# )
+# add_test(Opencl_module_hmc_CPU       opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+# add_test(Opencl_module_hmc_CPU_REC12 opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
+# add_test(Opencl_module_hmc_GPU       opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+# add_test(Opencl_module_hmc_GPU_REC12 opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
 add_executable(f_fermion F_fermion_test.cpp)
 target_link_libraries(f_fermion
