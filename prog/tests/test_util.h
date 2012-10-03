@@ -76,3 +76,15 @@ void printKernelInfo(std::string name)
 {
   logger.info() << "Test kernel\t\"" << name << "\"\tagainst reference value";
 }
+
+void testFloatAgainstInputparameters(hmc_float cpu_res, meta::Inputparameters params)
+{
+	logger.info() << "Choosing reference value and acceptance precision";
+	hmc_float ref_val = params.get_test_ref_value();
+	logger.info() << "reference value:\t" << ref_val;
+	hmc_float prec = params.get_solver_prec();
+	logger.info() << "acceptance precision: " << prec;
+
+	logger.info() << "Compare result to reference value";
+	BOOST_REQUIRE_CLOSE(cpu_res, ref_val, prec);
+}

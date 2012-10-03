@@ -90,6 +90,15 @@ void fill_with_one(hmc_float * sf_in, int size)
 	return;
 }
 
+void fill_with_random(hmc_float * sf_in, int size, int seed)
+{
+	prng_init(seed);
+	for(int i = 0; i < size; ++i) {
+		sf_in[i] = prng_double();
+	}
+	return;
+}
+
 ae make_ae(hmc_float e1, hmc_float e2, hmc_float e3, hmc_float e4,
            hmc_float e5, hmc_float e6, hmc_float e7, hmc_float e8)
 {
@@ -395,9 +404,79 @@ void test_gf_update(std::string inputfile)
 
 void test_f_update(std::string inputfile)
 {
-	
-}
+	std::string kernelName = "md_update_gaugemomenta";
+  printKernelInfo(kernelName);
 
+  logger.info() << "Init device";
+  meta::Inputparameters params = create_parameters(inputfile);
+  hardware::System system(params);
+  TestGaugefield cpu(&system);
+  Opencl_Module_Hmc * device = cpu.get_device();
+	cl_int err = CL_SUCCESS;
+	cl_mem in, out, sqnorm;
+	hmc_float * gm_in;
+	hmc_float * gm_out;
+	
+	logger.info() << "create buffers";
+	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
+	gm_in = new hmc_float[NUM_ELEMENTS_AE];
+	gm_out = new hmc_float[NUM_ELEMENTS_AE];	
+	
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) {
+		fill_with_one(gm_in, NUM_ELEMENTS_AE);
+		fill_with_one(gm_out, NUM_ELEMENTS_AE);
+	} else {
+		fill_with_random(gm_in, NUM_ELEMENTS_AE, 123456);
+		fill_with_random(gm_out, NUM_ELEMENTS_AE, 789101);
+	}
+	BOOST_REQUIRE(gm_in);
+	BOOST_REQUIRE(gm_out);	
+	
+	size_t ae_buf_size = device->get_gaugemomentum_buffer_size();
+	in = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE , ae_buf_size, 0, &err );
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	device->importGaugemomentumBuffer(in, reinterpret_cast<ae*>(gm_in));
+	out = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, ae_buf_size, 0, &err );
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(gm_out));
+	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	logger.info() << "|in|^2:";
+	device->set_float_to_gaugemomentum_squarenorm_device(in, sqnorm);
+	hmc_float cpu_back;
+	clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	logger.info() << cpu_back;
+	logger.info() << "|out|^2:";
+	device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+	hmc_float cpu_back2;
+	clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back2, 0, 0, 0);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	logger.info() << cpu_back2;
+
+	logger.info() << "Run kernel";
+	hmc_float eps = 0.12;
+	device->md_update_gaugemomentum_device( in  , out, eps);
+	
+	device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+	hmc_float cpu_res;
+	clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	logger.info() << "result:";
+	logger.info() << cpu_res;
+
+	logger.info() << "Free buffers";
+	clReleaseMemObject(in);
+	clReleaseMemObject(out);
+	clReleaseMemObject(sqnorm);
+	delete[] gm_in;
+	delete[] gm_out;
+	
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
 
 void test_f_gauge(std::string inputfile)
 {
