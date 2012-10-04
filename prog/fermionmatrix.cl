@@ -98,8 +98,8 @@ spinor dslash_local_0(__global spinorfield * in, __global Matrixsu3StorageType *
 	U = multiply_matrixsu3_by_real (U, MEXPCPR);
 #endif
 #ifdef _CP_IMAG_
-	hmc_complex cpi_tmp = {COSCPI, SINCPI};
-	U = multiply_matrixsu3_by_complex (U, cpi_tmp );
+	hmc_complex cpi_tmp2 = {COSCPI, SINCPI};
+	U = multiply_matrixsu3_by_complex (U, cpi_tmp2 );
 #endif
 	//in direction -mu, one has to take the complex-conjugated value of bc_tmp. this is done right here.
 	bc_tmp.re = kappa_in * TEMPORAL_RE;

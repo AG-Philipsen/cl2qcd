@@ -104,8 +104,8 @@ __kernel void fermion_force_eo(__global const Matrixsu3StorageType * const restr
 		U = multiply_matrixsu3_by_real (U, MEXPCPR);
 #endif
 #ifdef _CP_IMAG_
-		hmc_complex cpi_tmp = {COSCPI, SINCPI};
-		U = multiply_matrixsu3_by_complex (U, cpi_tmp );
+		hmc_complex cpi_tmp2 = {COSCPI, SINCPI};
+		U = multiply_matrixsu3_by_complex (U, cpi_tmp2 );
 #endif
 		///////////////////////////////////
 		// Calculate psi/phi = (1 + gamma_0) y
