@@ -83,6 +83,14 @@ int main(int argc, const char* argv[])
 //        gaugefield.synchronize(0);
 				gaugefield.save(iter);
 			}
+			//always save the config on the last iteration
+			if( iter == hmc_iter-1 ) {
+//        gaugefield.synchronize(0);
+			  std::string outputfile = "conf.save";
+			  logger.info() << "saving current gaugefield to file \"" << outputfile << "\"";
+			  gaugefield.save(outputfile);
+			}
+
 		}
 		logger.info() << "HMC done";
 		logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acc_rate, hmc_iter) << "%";
