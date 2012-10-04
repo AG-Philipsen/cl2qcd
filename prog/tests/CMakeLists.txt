@@ -14,9 +14,9 @@ add_executable(Boost_test boost_test.cpp)
 target_link_libraries(Boost_test
 	${Boost_LIBRARIES}
 )
-add_test(Boost_ARGC_1 Boost_test --run_test=BOOST_ARGC1)
-add_test(Boost_ARGC_2 Boost_test ${CMAKE_CURRENT_SOURCE_DIR} --run_test=BOOST_ARGC2)
-add_test(Boost_ARGV Boost_test --run_test=BOOST_ARGV)
+add_test(Boost_ARGC_1 Boost_test --run_test=BOOST_ARGC_1)
+add_test(Boost_ARGC_2 Boost_test ${CMAKE_CURRENT_SOURCE_DIR} --run_test=BOOST_ARGC_2)
+add_test(Boost_ARGV Boost_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false   --run_test=BOOST_ARGV )
 
 add_executable(openclCompiler opencl_compiler.cpp ../opencl_compiler.cpp ../logger.cpp ../exceptions.cpp)
 target_link_libraries(openclCompiler ${Boost_LIBRARIES} ${OPENCL_LIBRARIES} crypto einhard)
