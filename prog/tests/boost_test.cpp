@@ -4,11 +4,19 @@
 #define BOOST_TEST_MODULE staple_test
 #include <boost/test/unit_test.hpp>
 
+void printWorkaroundInfo(){
+	std::cout << "If this test fails, a workaround can be used that performs the test with std args." << std::endl;
+	std::cout << "To enable this, set" << std::endl;
+	std::cout << "\tBOOST_FAILURE_WORKAROUND" << std::endl;
+	std::cout << "to 1 in \"test_util.h\"" << std::endl;
+}
+
 BOOST_AUTO_TEST_CASE( BOOST_ARGC_1 )
 {
 	int param_expect = 1;
 	std::cout << "Testing getting args from boost master_test_suite..." << std::endl;
 	std::cout << "Getting number of arguments, this should be equal to " << param_expect << "!" << std::endl;
+	printWorkaroundInfo();
 	int num_par = 	boost::unit_test::framework::master_test_suite().argc;
 	BOOST_REQUIRE_EQUAL(num_par, param_expect);
 	BOOST_MESSAGE("Test done");
@@ -19,6 +27,7 @@ BOOST_AUTO_TEST_CASE( BOOST_ARGC_2 )
 	int param_expect = 2;
 	std::cout << "Testing getting args from boost master_test_suite..." << std::endl;
 	std::cout << "Getting number of arguments, this should be equal to " << param_expect << "!" << std::endl;
+	printWorkaroundInfo();
 	int num_par = 	boost::unit_test::framework::master_test_suite().argc;
 	BOOST_REQUIRE_EQUAL(num_par, param_expect);
 	BOOST_MESSAGE("Test done");
@@ -28,6 +37,7 @@ BOOST_AUTO_TEST_CASE( BOOST_ARGV )
 {
 	int param_expect = 4;
 	int num_par = 	boost::unit_test::framework::master_test_suite().argc;
+	printWorkaroundInfo();
 	BOOST_REQUIRE_EQUAL(param_expect, num_par);
 	if(num_par < param_expect){
 		std::cout << "Got only " << num_par << " Inputparameters, expected " << param_expect << "! Use inputfile values instead!"<< std::endl;

@@ -1,4 +1,9 @@
-#define BOOST_FAILURE_WORKAROUND 1
+#define BOOST_FAILURE_WORKAROUND 0
+
+//settings for workaround
+std::string use_gpu = "false";
+std::string use_rec12 = "false";
+std::string std_sourcedir = "../../tests";
 
 meta::Inputparameters create_parameters(std::string inputfile)
 {
@@ -8,9 +13,9 @@ meta::Inputparameters create_parameters(std::string inputfile)
 	//CP: this is a workaround in case the boost library is not able to pass arguments
 	//	in this case, always use standard args...
 	logger.warn() << "Passing of args with boost does not work! Use standard arguments:";
-	inputfile_location = "../../tests" + inputfile;
-	gpu_opt = "--use_gpu=false";
-	rec12_opt = "--use_rec12=false";
+	inputfile_location = std_sourcedir + inputfile;
+	gpu_opt = "--use_gpu=" + use_gpu;
+	rec12_opt = "--use_rec12=" + use_rec12;
 	num_par = 4;
 	logger.warn() << inputfile_location << " " << gpu_opt << " " << rec12_opt;
 #else
