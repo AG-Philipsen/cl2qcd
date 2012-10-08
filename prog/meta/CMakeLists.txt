@@ -12,6 +12,7 @@ add_library(meta
 	util_io.cpp
 	counter.cpp
 	config_file_normalizer.cpp
+	type_ops.cpp
 	../logger.cpp
 )
 add_dependencies(meta git_commit_id_header)
