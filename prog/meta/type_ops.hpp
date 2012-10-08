@@ -48,13 +48,13 @@ inline std::ostream& operator<<(std::ostream& os, const Matrixsu3& data)
 }
 
 
-template<typename T> inline void fill(T* array, size_t num_elems)
+template<typename T> inline void fill(T* array, size_t num_elems, int seed = 0)
 {
 	for(size_t i = 0; i < num_elems; i++) {
-		array[i] = i;
+		array[i] = i + seed;
 	}
 }
-template<> void fill(hmc_complex* array, size_t num_elems);
-template<> void fill(Matrixsu3* array, size_t num_elems);
+template<> void fill(hmc_complex* array, size_t num_elems, int seed);
+template<> void fill(Matrixsu3* array, size_t num_elems, int seed);
 
 #endif /* _META_TYPE_OPS */

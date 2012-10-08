@@ -28,7 +28,8 @@ template<typename T> void test(size_t elems, hardware::Device * device)
 
 	T* in = new T[elems];
 	T* out = new T[elems];
-	fill(in, elems);
+	fill(in, elems, 1);
+	fill(out, elems, 2);
 	dummy.load(in);
 	dummy.dump(out);
 	BOOST_CHECK_EQUAL_COLLECTIONS(in, in + elems, out, out + elems);

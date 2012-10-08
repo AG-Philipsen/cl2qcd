@@ -45,7 +45,8 @@ for(Device * device : system.get_devices()) {
 			BOOST_CHECK_THROW(dummy.load(buf), std::logic_error);
 			BOOST_CHECK_THROW(dummy.dump(buf), std::logic_error);
 		} else {
-			fill(buf, elems);
+			fill(buf, elems, 1);
+			fill(buf, elems, 2);
 			dummy.load(buf);
 			dummy.dump(buf2);
 			BOOST_CHECK_EQUAL_COLLECTIONS(buf, buf + elems, buf2, buf2 + elems);
