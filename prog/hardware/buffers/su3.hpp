@@ -14,7 +14,7 @@ namespace hardware {
 	namespace buffers {
 
 		/**
-		 * Check whether SU3 shoudl be stored SOA style on this device
+		 * Check whether SU3 should be stored SOA style on this device
 		 */
 		size_t check_SU3_for_SOA(hardware::Device * device);
 
@@ -45,8 +45,20 @@ namespace hardware {
 			SU3(const SU3&) = delete;
 			SU3() = delete;
 
+			/**
+			 * Load data from the given pointer into the buffer.
+			 *
+			 * This only works for AoS-Buffers. If the buffer is a SoA buffer
+			 * an std::logic_error will be thrown.
+			 */
 			void load(const Matrixsu3 *) const;
 
+			/**
+			 * Store data from the buffer into the given pointer.
+			 *
+			 * This only works for AoS-Buffers. If the buffer is a SoA buffer
+			 * an std::logic_error will be thrown.
+			 */
 			void dump(Matrixsu3 *) const;
 
 			/**
@@ -54,12 +66,22 @@ namespace hardware {
 			 */
 			size_t get_elements() const noexcept;
 
+			/**
+			 * Check whether this Buffer uses soa layout
+			 */
+			bool is_soa() const noexcept;
+
 		private:
 
 			/**
 			 * The size of the buffer in bytes.
 			 */
 			const size_t elems;
+
+			/**
+			 * Whether the data is stored in a soa fashion
+			 */
+			const bool soa;
 		};
 	}
 }

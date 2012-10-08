@@ -6,6 +6,8 @@
 
 #include "su3.hpp"
 
+#include <stdexcept>
+
 typedef hmc_complex soa_storage_t;
 const size_t soa_storage_lanes = 9;
 
@@ -13,7 +15,8 @@ static size_t calculate_su3_buffer_size(size_t elems, hardware::Device * device)
 
 hardware::buffers::SU3::SU3(size_t elems, hardware::Device * device)
 	: Buffer(calculate_su3_buffer_size(elems, device), device),
-	  elems(elems)
+	  elems(elems),
+	  soa(check_SU3_for_SOA(device))
 {
 	// nothing to do
 }
@@ -42,4 +45,27 @@ size_t hardware::buffers::get_SU3_buffer_stride(size_t elems, Device * device)
 size_t hardware::buffers::SU3::get_elements() const noexcept
 {
 	return elems;
+}
+
+bool hardware::buffers::SU3::is_soa() const noexcept
+{
+	return soa;
+}
+
+void hardware::buffers::SU3::load(const Matrixsu3 * ptr) const
+{
+	if(is_soa()) {
+		throw std::logic_error("Data cannot be loaded into SOA buffers.");
+	} else {
+		Buffer::load(ptr);
+	}
+}
+
+void hardware::buffers::SU3::dump(Matrixsu3 * ptr) const
+{
+	if(is_soa()) {
+		throw std::logic_error("Data cannot be dumped from SOA buffers.");
+	} else {
+		Buffer::dump(ptr);
+	}
 }
