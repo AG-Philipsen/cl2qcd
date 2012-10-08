@@ -30,9 +30,21 @@ template<typename T> void test(size_t elems, hardware::Device * device)
 	T* out = new T[elems];
 	fill(in, elems, 1);
 	fill(out, elems, 2);
+
 	dummy.load(in);
 	dummy.dump(out);
 	BOOST_CHECK_EQUAL_COLLECTIONS(in, in + elems, out, out + elems);
+
+	ScalarBuffer<T> dummy2(elems, device);
+	fill(in, elems, 3);
+	fill(out, elems, 4);
+	dummy.load(in);
+	copyData(&dummy2, &dummy);
+	dummy2.dump(out);
+	BOOST_CHECK_EQUAL_COLLECTIONS(in, in + elems, out, out + elems);
+
+	delete[] in;
+	delete[] out;
 }
 
 template<typename T> void test(bool requireDouble = false)

@@ -46,12 +46,39 @@ for(Device * device : system.get_devices()) {
 			BOOST_CHECK_THROW(dummy.dump(buf), std::logic_error);
 		} else {
 			fill(buf, elems, 1);
-			fill(buf, elems, 2);
+			fill(buf2, elems, 2);
 			dummy.load(buf);
 			dummy.dump(buf2);
 			BOOST_CHECK_EQUAL_COLLECTIONS(buf, buf + elems, buf2, buf2 + elems);
 		}
 		delete[] buf;
 		delete[] buf2;
+	}
+}
+
+BOOST_AUTO_TEST_CASE(copy)
+{
+	using namespace hardware;
+	using namespace hardware::buffers;
+
+	System system(meta::Inputparameters(0, 0));
+	const size_t elems = meta::get_vol4d(system.get_inputparameters()) * NDIM;
+for(Device * device : system.get_devices()) {
+		if(!check_SU3_for_SOA(device)) {
+			Matrixsu3* buf(new Matrixsu3[elems]);
+			Matrixsu3* buf2(new Matrixsu3[elems]);
+			SU3 dummy(elems, device);
+			SU3 dummy2(elems, device);
+
+			fill(buf, elems, 1);
+			fill(buf2, elems, 2);
+			dummy.load(buf);
+			copyData(&dummy2, &dummy);
+			dummy2.dump(buf2);
+			BOOST_CHECK_EQUAL_COLLECTIONS(buf, buf + elems, buf2, buf2 + elems);
+
+			delete[] buf;
+			delete[] buf2;
+		}
 	}
 }

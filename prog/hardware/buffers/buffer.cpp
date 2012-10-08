@@ -67,3 +67,15 @@ hardware::Device * hardware::buffers::Buffer::get_device() const noexcept
 {
 	return device;
 }
+
+void hardware::buffers::Buffer::copyData(const Buffer* orig) const
+{
+	if(this->bytes != orig->bytes) {
+		throw std::invalid_argument("The source and destination buffer must be of equal size!");
+	} else {
+		int err = clEnqueueCopyBuffer(device->get_queue(), orig->cl_buffer, this->cl_buffer, 0, 0, this->bytes, 0, 0, 0);
+		if(err) {
+			throw hardware::OpenclException(err, "clEnqueueCopyBuffer", __FILE__, __LINE__);
+		}
+	}
+}

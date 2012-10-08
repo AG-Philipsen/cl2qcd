@@ -9,13 +9,27 @@
 
 #include "../device.hpp"
 
+#include <stdexcept>
+#include "../system.hpp"
+
 namespace hardware {
 	/**
 	 * This namespace contains all buffers, physically representing fields
 	 * of specific data on the device.
 	 */
 	namespace buffers {
-	
+
+		/**
+		 * Copy buffer data
+		 *
+		 * A utility function to copy buffer contents.
+		 * This will throw an exception if the two buffers are not of equal size.
+		 *
+		 * \param dest The buffer to copy to
+		 * \param src  The buffer to copy from
+		 */
+		template<class T> inline void copyData(const T* dest, const T* orig);
+
 		/**
 		 * A generic OpenCL buffer.
 		 *
@@ -23,6 +37,8 @@ namespace hardware {
 		 * common RAII implementation for more specific buffer classes.
 		 */
 		class Buffer {
+
+			template<class T> friend void copyData(const T* dest, const T* orig);
 	
 		public:
 			/**
@@ -81,6 +97,14 @@ namespace hardware {
 			 */
 			Device * const device;
 
+			/**
+			 * Utility function to get the data from another buffer. Should only be used using
+			 * the copyData wrapper template to ensure proper type checking.
+			 *
+			 * Will thorw an invalid_argument exception if the source buffer is of a different size.
+			 */
+			void copyData(const Buffer* orig) const;
+
 		protected:
 			/**
 			 * Utility function for creation of custom load functions.
@@ -97,6 +121,11 @@ namespace hardware {
 			 */
 			void dump(void*) const;
 		};
+
+		template<class T> inline void copyData(const T* dest, const T* orig)
+		{
+			dest->copyData(orig);
+		}
 	}
 }
 
