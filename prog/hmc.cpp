@@ -79,13 +79,12 @@ int main(int argc, const char* argv[])
 				//        gaugefield.print_hmcobservables(obs, iter);
 			}
 			if( parameters.get_saveconfigs() == true && ( (iter + 1) % savefreq ) == 0 ) {
-				//CP: I dont think this is necessary at the moment...
-//        gaugefield.synchronize(0);
-				gaugefield.save(iter);
+			  gaugefield.synchronize(0);
+			  gaugefield.save(iter+1);
 			}
 			//always save the config on the last iteration
 			if( iter == hmc_iter-1 ) {
-//        gaugefield.synchronize(0);
+			  gaugefield.synchronize(0);
 			  std::string outputfile = "conf.save";
 			  logger.info() << "saving current gaugefield to file \"" << outputfile << "\"";
 			  gaugefield.save(outputfile);
