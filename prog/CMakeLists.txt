@@ -20,7 +20,7 @@ enable_testing()
 
 # make the compiler bitchy
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER MATCHES "/clang\\+\\+$")
-	set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wdisabled-optimization -std=c++0x")
+	set(CMAKE_CXX_FLAGS           "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wdisabled-optimization -std=c++11")
 	set(CMAKE_CXX_FLAGS_RELEASE   "-O4") # LTO on clang, gcc will fall back to O3
 	set(CMAKE_CXX_FLAGS_DEBUG     "-g -O0 -fno-reorder-blocks -fno-schedule-insns -fno-inline")
 	set(CMAKE_CXX_FLAGS_DEBUGFULL "-g3 -fno-linline")
