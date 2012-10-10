@@ -24,8 +24,8 @@ public:
 		finalize();
 	};
 
-	void runTestKernel2(cl_mem , cl_mem , cl_mem , cl_mem gf, int gs, int ls, hmc_float kappa, hmc_float);
-	void runTestKernel(cl_mem out, cl_mem in1, cl_mem gf, int gs, int ls, hmc_float kappa, hmc_float);
+	void runTestKernel2(cl_mem , cl_mem , cl_mem , const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float);
+	void runTestKernel(cl_mem out, cl_mem in1, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -840,7 +840,7 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
+void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
 {
 
 	//suppose in1 is the even, in2 the odd input vector
@@ -887,7 +887,7 @@ void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int g
 	clReleaseMemObject(tmp_eo);
 }
 
-void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
+void Device::runTestKernel(cl_mem out, cl_mem in1, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
 {
 	this->M_tm_plus_device(in1, out, gf, kappa , mubar );
 }

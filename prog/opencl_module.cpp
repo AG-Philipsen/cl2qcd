@@ -23,9 +23,6 @@ static void print_profiling(const std::string& filename, const std::string& kern
 
 void Opencl_Module::init()
 {
-	// get device
-	cl_device_id device_id = device->get_id();
-
 	logger.debug() << "Device is " << device->get_name();
 
 	cl_int clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ocl_context, NULL);
@@ -56,9 +53,9 @@ cl_context Opencl_Module::get_context()
 }
 
 
-cl_mem Opencl_Module::get_gaugefield()
+const hardware::buffers::SU3 * Opencl_Module::get_gaugefield()
 {
-	return gaugefield;
+	return &gaugefield;
 }
 
 const meta::Inputparameters& Opencl_Module::get_parameters() const noexcept
@@ -219,9 +216,6 @@ cl_mem Opencl_Module::create_chp_buffer(size_t size, void *host_pointer)
 
 void Opencl_Module::fill_buffers()
 {
-	logger.trace() << "Creating buffer for the gaugefield...";
-	gaugefield = create_rw_buffer(getGaugefieldBufferSize());
-
 	logger.trace() << "Create buffer for gaugeobservables...";
 	clmem_plaq = create_rw_buffer(sizeof(hmc_float));
 	clmem_splaq = create_rw_buffer(sizeof(hmc_float));
@@ -332,8 +326,6 @@ void Opencl_Module::clear_buffers()
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 	}
 
-	clReleaseMemObject(gaugefield);
-
 	logger.info() << "Maximum memory used (" << device->get_name() << "): " << max_allocated_bytes << " bytes";
 }
 
@@ -367,7 +359,7 @@ void Opencl_Module::get_buffer_from_device(cl_mem source, void * dest, size_t si
 	(*this->get_copy_to()).add();
 }
 
-void Opencl_Module::plaquette_device(cl_mem gf)
+void Opencl_Module::plaquette_device(const hardware::buffers::SU3 * gf)
 {
 	//query work-sizes for kernel
 	size_t ls, gs;
@@ -386,7 +378,7 @@ void Opencl_Module::plaquette_device(cl_mem gf)
 
 	//set arguments
 	// run local plaquette calculation and first part of reduction
-	int clerr = clSetKernelArg(plaquette, 0, sizeof(cl_mem), &gf);
+	int clerr = clSetKernelArg(plaquette, 0, sizeof(cl_mem), gf->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(plaquette, 1, sizeof(cl_mem), &clmem_plaq_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -394,11 +386,11 @@ void Opencl_Module::plaquette_device(cl_mem gf)
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(plaquette, 3, sizeof(cl_mem), &clmem_splaq_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(plaquette, 4, buf_loc_size_float, NULL);
+	clerr = clSetKernelArg(plaquette, 4, buf_loc_size_float, static_cast<void*>(nullptr));
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(plaquette, 5, buf_loc_size_float, NULL);
+	clerr = clSetKernelArg(plaquette, 5, buf_loc_size_float, static_cast<void*>(nullptr));
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(plaquette, 6, buf_loc_size_float, NULL);
+	clerr = clSetKernelArg(plaquette, 6, buf_loc_size_float, static_cast<void*>(nullptr));
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	device->enqueue_kernel(plaquette, gs, ls);
@@ -436,7 +428,7 @@ void Opencl_Module::plaquette_device(cl_mem gf)
 
 }
 
-void Opencl_Module::rectangles_device(cl_mem gf)
+void Opencl_Module::rectangles_device(const hardware::buffers::SU3 * gf)
 {
 	//query work-sizes for kernel
 	size_t ls, gs;
@@ -452,11 +444,11 @@ void Opencl_Module::rectangles_device(cl_mem gf)
 
 	//set arguments
 	// run local rectangles calculation and first part of reduction
-	int clerr = clSetKernelArg(rectangles, 0, sizeof(cl_mem), &gf);
+	int clerr = clSetKernelArg(rectangles, 0, sizeof(cl_mem), gf->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(rectangles, 1, sizeof(cl_mem), &clmem_rect_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(rectangles, 2, buf_loc_size_float, NULL);
+	clerr = clSetKernelArg(rectangles, 2, buf_loc_size_float, static_cast<void*>(nullptr));
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	device->enqueue_kernel(rectangles, gs, ls);
@@ -480,7 +472,7 @@ void Opencl_Module::rectangles_device(cl_mem gf)
 
 }
 
-void Opencl_Module::polyakov_device(cl_mem gf)
+void Opencl_Module::polyakov_device(const hardware::buffers::SU3 * gf)
 {
 	//query work-sizes for kernel
 	size_t ls, gs;
@@ -489,13 +481,13 @@ void Opencl_Module::polyakov_device(cl_mem gf)
 	int buf_loc_size_complex = sizeof(hmc_complex) * ls;
 
 	// local polyakov compuation and first part of reduction
-	int clerr = clSetKernelArg(polyakov, 0, sizeof(cl_mem), &gf);
+	int clerr = clSetKernelArg(polyakov, 0, sizeof(cl_mem), gf->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(polyakov, 1, sizeof(cl_mem), &clmem_polyakov_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(polyakov, 2, buf_loc_size_complex, NULL);
+	clerr = clSetKernelArg(polyakov, 2, buf_loc_size_complex, static_cast<void*>(nullptr));
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	device->enqueue_kernel(polyakov, gs, ls);
@@ -525,7 +517,7 @@ void Opencl_Module::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out
 	gaugeobservables(get_gaugefield(), plaq_out, tplaq_out, splaq_out, pol_out);
 }
 
-void Opencl_Module::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
+void Opencl_Module::gaugeobservables(const hardware::buffers::SU3 * gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
 {
 	//measure plaquette
 	plaquette_device(gf);
@@ -562,7 +554,7 @@ void Opencl_Module::gaugeobservables(cl_mem gf, hmc_float * plaq_out, hmc_float 
 	pol_out->im = pol.im;
 }
 
-void Opencl_Module::gaugeobservables_rectangles(cl_mem gf, hmc_float * rect_out)
+void Opencl_Module::gaugeobservables_rectangles(const hardware::buffers::SU3 * gf, hmc_float * rect_out)
 {
 	//measure plaquette
 	rectangles_device(gf);
@@ -589,17 +581,17 @@ TmpClKernel Opencl_Module::createKernel(const char * const kernel_name, const ch
 	return device->create_kernel(kernel_name, collect_options.str());
 }
 
-void Opencl_Module::stout_smear_device(cl_mem in, cl_mem out)
+void Opencl_Module::stout_smear_device(const hardware::buffers::SU3 * in, const hardware::buffers::SU3 * out)
 {
 	//query work-sizes for kernel
 	size_t ls, gs;
 	cl_uint num_groups;
 	this->get_work_sizes(stout_smear, &ls, &gs, &num_groups);
 
-	int clerr = clSetKernelArg(stout_smear, 0, sizeof(cl_mem), in);
+	int clerr = clSetKernelArg(stout_smear, 0, sizeof(cl_mem), in->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(stout_smear, 1, sizeof(cl_mem), out);
+	clerr = clSetKernelArg(stout_smear, 1, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	device->enqueue_kernel(stout_smear , gs, ls);
@@ -838,19 +830,14 @@ void Opencl_Module::print_copy_times(uint64_t totaltime)
 	return;
 }
 
-void Opencl_Module::smear_gaugefield(cl_mem gf, cl_mem * gf_intermediate)
+void Opencl_Module::smear_gaugefield(const hardware::buffers::SU3 * gf, const std::vector<const hardware::buffers::SU3*>& gf_intermediate)
 {
 	logger.debug() << "\t\tsave unsmeared gaugefield...";
-	const size_t gfsize = getGaugefieldBufferSize();
 	// TODO what if called before
 	// FIXME memory leak if not unsmeared
-	gf_unsmeared = create_rw_buffer(gfsize);
-	copy_buffer_on_device(gf, gf_unsmeared, gfsize);
-	bool save_inter;
-	if(gf_intermediate == NULL) save_inter = false;
-	else save_inter = true;
+	hardware::buffers::copyData(&gf_unsmeared, gf);
 	logger.debug() << "\t\tperform " << get_parameters().get_rho_iter() << " steps of stout-smearing to the gaugefield...";
-	if(save_inter == true) {
+	if(gf_intermediate.size() == get_parameters().get_rho_iter()) {
 		//the first step is applied to the original gf
 		stout_smear_device(gf, gf_intermediate[0]);
 		//perform rho_iter -2 intermediate steps
@@ -861,28 +848,22 @@ void Opencl_Module::smear_gaugefield(cl_mem gf, cl_mem * gf_intermediate)
 		stout_smear_device(gf_intermediate[get_parameters().get_rho_iter() - 1 ], gf);
 	} else {
 		//one needs a temporary gf to apply the smearing to
-		cl_mem gf_tmp;
-		gf_tmp = create_rw_buffer(gfsize);
+		hardware::buffers::SU3 gf_tmp(gf->get_elements(), device);
 		for(int i = 0; i < get_parameters().get_rho_iter(); i++) {
-			if(i / 2) stout_smear_device(gf, gf_tmp);
-			else stout_smear_device(gf_tmp, gf);
+			if(i / 2) stout_smear_device(gf, &gf_tmp);
+			else stout_smear_device(&gf_tmp, gf);
 		}
 		//if rho_iter is odd one has to copy ones more
-		if(get_parameters().get_rho_iter() / 2 == 1) copy_buffer_on_device(gf_tmp, gf, gfsize);
-		cl_int clerr = clReleaseMemObject(gf_tmp);
-		if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		if(get_parameters().get_rho_iter() / 2 == 1) {
+			hardware::buffers::copyData(gf, &gf_tmp);
+		}
 	}
-	return;
 }
 
-void Opencl_Module::unsmear_gaugefield(cl_mem gf)
+void Opencl_Module::unsmear_gaugefield(const hardware::buffers::SU3 * gf)
 {
 	logger.debug() << "\t\trestore unsmeared gaugefield...";
-	copy_buffer_on_device(gf_unsmeared, gf, getGaugefieldBufferSize());
-	cl_int clerr = clReleaseMemObject(gf_unsmeared);
-	// TODO what if called again?
-	if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	return;
+	hardware::buffers::copyData(gf, &gf_unsmeared);
 }
 
 cl_ulong Opencl_Module::calculateStride(const cl_ulong elems, const cl_ulong baseTypeSize)
@@ -906,78 +887,64 @@ cl_ulong Opencl_Module::calculateStride(const cl_ulong elems, const cl_ulong bas
 	return stride_elems;
 }
 
-size_t Opencl_Module::getGaugefieldBufferSize()
-{
-	if(gaugefield_bytes == 0) {
-		if(device->get_prefers_soa()) {
-			gaugefield_bytes = calculateStride(NDIM * meta::get_vol4d(get_parameters()), sizeof(hmc_complex)) * sizeof(Matrixsu3);
-		} else {
-			gaugefield_bytes = meta::get_vol4d(get_parameters()) * NDIM * sizeof(Matrixsu3);
-		}
-	}
-	return gaugefield_bytes;
-}
-
 void Opencl_Module::importGaugefield(const Matrixsu3 * const data)
 {
 	importGaugefield(get_gaugefield(), data);
 }
-void Opencl_Module::importGaugefield(cl_mem gaugefield, const Matrixsu3 * const data)
+void Opencl_Module::importGaugefield(const hardware::buffers::SU3 * gaugefield, const Matrixsu3 * const data)
 {
+	using namespace hardware::buffers;
+
 	logger.trace() << "Import gaugefield to device";
 	if(device->get_prefers_soa()) {
-		size_t aos_bytes = meta::get_vol4d(get_parameters()) * NDIM * sizeof(Matrixsu3);
-		cl_mem tmp = create_ro_buffer(aos_bytes);
-
-		cl_int clerr = clEnqueueWriteBuffer(get_queue(), tmp, CL_TRUE, 0, aos_bytes, data, 0, 0, 0);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
-		convertGaugefieldToSOA_device(gaugefield, tmp);
-
-		clerr = clReleaseMemObject(tmp);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		ScalarBuffer<Matrixsu3> tmp(gaugefield->get_elements(), device);
+		tmp.load(data);
+		convertGaugefieldToSOA_device(gaugefield, &tmp);
 	} else {
-		cl_int clerr = clEnqueueWriteBuffer(get_queue(), gaugefield, CL_TRUE, 0, getGaugefieldBufferSize(), data, 0, 0, 0);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
+		gaugefield->load(data);
 	}
 }
 
 void Opencl_Module::exportGaugefield(Matrixsu3 * const dest)
 {
+	using namespace hardware::buffers;
+
 	logger.trace() << "Exporting gaugefield from device";
 	if(device->get_prefers_soa()) {
-		size_t aos_bytes = meta::get_vol4d(get_parameters()) * NDIM * sizeof(Matrixsu3);
-		cl_mem tmp = create_wo_buffer(aos_bytes);
-
-		convertGaugefieldFromSOA_device(tmp, gaugefield);
-		cl_int clerr = clEnqueueReadBuffer(get_queue(), tmp, CL_TRUE, 0, aos_bytes, dest, 0, 0, 0);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
-
-		clerr = clReleaseMemObject(tmp);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
+		ScalarBuffer<Matrixsu3> tmp(gaugefield.get_elements(), device);
+		convertGaugefieldFromSOA_device(&tmp, &gaugefield);
+		tmp.dump(dest);
 	} else {
-		cl_int clerr = clEnqueueReadBuffer(get_queue(), get_gaugefield(), CL_TRUE, 0, getGaugefieldBufferSize(), dest, 0, 0, 0);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueReadBuffer", __FILE__, __LINE__);
+		gaugefield.dump(dest);
 	}
 }
 
-void Opencl_Module::convertGaugefieldToSOA_device(cl_mem out, cl_mem in)
+void Opencl_Module::convertGaugefieldToSOA_device(const hardware::buffers::SU3 * out, const hardware::buffers::ScalarBuffer<Matrixsu3> * in)
 {
+	if(!out->is_soa()) {
+		throw std::invalid_argument("Destination buffer must be a SOA buffer");
+	}
+
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(convertGaugefieldToSOA, &ls2, &gs2, &num_groups);
 
 	//set arguments
-	int clerr = clSetKernelArg(convertGaugefieldToSOA, 0, sizeof(cl_mem), &out);
+	int clerr = clSetKernelArg(convertGaugefieldToSOA, 0, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(convertGaugefieldToSOA, 1, sizeof(cl_mem), &in);
+	clerr = clSetKernelArg(convertGaugefieldToSOA, 1, sizeof(cl_mem), in->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	device->enqueue_kernel(convertGaugefieldToSOA, gs2, ls2);
 }
 
-void Opencl_Module::convertGaugefieldFromSOA_device(cl_mem out, cl_mem in)
+void Opencl_Module::convertGaugefieldFromSOA_device(const hardware::buffers::ScalarBuffer<Matrixsu3> * out, const hardware::buffers::SU3 * in)
 {
+	if(!in->is_soa()) {
+		throw std::invalid_argument("Source buffer must be a SOA buffer");
+	}
+
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(convertGaugefieldFromSOA, &ls2, &gs2, &num_groups);

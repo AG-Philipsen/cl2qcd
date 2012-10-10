@@ -64,9 +64,8 @@ int main(int argc, const char* argv[])
 		//init needed buffers again
 		//these are: 2 eoprec spinorfield, 1 gaugefield
 		size_t eoprec_spinorfield_buffer_size = gaugefield.get_task_solver()->get_eoprec_spinorfield_buffer_size();
-		cl_mem sf1, sf2, gf;
+		cl_mem sf1, sf2;
 
-		gf = gaugefield.get_task_solver()->create_rw_buffer(gaugefield.get_task_solver()->getGaugefieldBufferSize());
 		sf1 = gaugefield.get_task_solver()->create_rw_buffer(eoprec_spinorfield_buffer_size);
 		sf2 = gaugefield.get_task_solver()->create_rw_buffer(eoprec_spinorfield_buffer_size);
 
@@ -83,8 +82,8 @@ int main(int argc, const char* argv[])
 
 		logger.trace() << "Perform " << hmc_iter << "of dslash benchmarking (EVEN + ODD) for each step";
 		for(iter = 0; iter < hmc_iter; iter ++) {
-			gaugefield.get_task_solver()->dslash_eo_device(sf1, sf2, gf, EVEN);
-			gaugefield.get_task_solver()->dslash_eo_device(sf1, sf2, gf, ODD);
+			gaugefield.get_task_solver()->dslash_eo_device(sf1, sf2, gaugefield.get_task_solver()->get_gaugefield(), EVEN);
+			gaugefield.get_task_solver()->dslash_eo_device(sf1, sf2, gaugefield.get_task_solver()->get_gaugefield(), ODD);
 		}
 		logger.trace() << "dslash benchmarking done" ;
 		perform_timer.add();
@@ -98,8 +97,6 @@ int main(int argc, const char* argv[])
 		clerr = clReleaseMemObject(sf1);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 		clerr = clReleaseMemObject(sf2);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-		clerr = clReleaseMemObject(gf);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 
 		//CP: for the moment, init the buffers again in order that no segfault happens when freeing the already freed buffers

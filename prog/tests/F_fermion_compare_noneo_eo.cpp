@@ -25,8 +25,8 @@ public:
 		finalize();
 	};
 
-	void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, int evenodd, hmc_float kappa);
-	void runTestKernel2(cl_mem in1, cl_mem in2, cl_mem out, cl_mem gf, int gs, int ls, hmc_float kapppa);
+	void runTestKernel(cl_mem in1, cl_mem in2, cl_mem out, const hardware::buffers::SU3 * gf, int gs, int ls, int evenodd, hmc_float kappa);
+	void runTestKernel2(cl_mem in1, cl_mem in2, cl_mem out, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kapppa);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -715,7 +715,7 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls, int evenodd, hmc_float kappa)
+void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, const hardware::buffers::SU3 * gf, int gs, int ls, int evenodd, hmc_float kappa)
 {
 	cl_int err;
 	int eo;
@@ -723,7 +723,7 @@ void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs
 		eo = ODD;
 	else
 		eo = EVEN;
-	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &gf);
+	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), gf->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &in1);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
@@ -739,10 +739,10 @@ void Device::runTestKernel(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs
 	get_device()->enqueue_kernel(testKernel, gs, ls);
 }
 
-void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, cl_mem gf, int gs, int ls, hmc_float kappa)
+void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa)
 {
 	cl_int err;
-	err = clSetKernelArg(testKernel2, 0, sizeof(cl_mem), &gf);
+	err = clSetKernelArg(testKernel2, 0, sizeof(cl_mem), gf->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel2, 1, sizeof(cl_mem), &in1);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);

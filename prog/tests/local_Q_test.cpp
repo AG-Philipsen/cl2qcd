@@ -21,7 +21,7 @@ public:
 		finalize();
 	};
 
-	void runTestKernel(cl_mem gf, cl_mem out, int gs, int ls);
+	void runTestKernel(const hardware::buffers::SU3 * gf, cl_mem out, int gs, int ls);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -100,10 +100,10 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel(cl_mem gf, cl_mem out, int gs, int ls)
+void Device::runTestKernel(const hardware::buffers::SU3 * gf, cl_mem out, int gs, int ls)
 {
 	cl_int err;
-	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &gf);
+	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), gf->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &out );
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);

@@ -62,7 +62,7 @@ void Opencl_Module_Kappa::run_kappa_clover(const hmc_float beta)
 		clmem_kappa_clover_buf_glob = create_rw_buffer(global_buf_size_float);
 	}
 
-	clerr = clSetKernelArg(kappa_clover_gpu, 0, sizeof(cl_mem), get_gaugefield());
+	clerr = clSetKernelArg(kappa_clover_gpu, 0, sizeof(cl_mem), get_gaugefield()->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(kappa_clover_gpu, 1, sizeof(hmc_float), &beta);

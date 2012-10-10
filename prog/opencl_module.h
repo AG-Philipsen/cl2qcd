@@ -20,6 +20,9 @@
 #include "meta/inputparameters.hpp"
 #include "hardware/device.hpp"
 #include "opencl_compiler.hpp"
+#include "hardware/buffers/su3.hpp"
+#include "hardware/buffers/scalar_buffer.hpp"
+#include "meta/util.hpp"
 
 #include "exceptions.h"
 
@@ -32,6 +35,7 @@
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
 class Opencl_Module {
+
 public:
 	/**
 	 * Empty constructor.
@@ -39,7 +43,8 @@ public:
 	 * @param[in] params points to an instance of inputparameters
 	 */
 	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device)
-		: parameters(params), device(device), gaugefield_bytes(0),
+		: parameters(params), device(device), gaugefield(NDIM * meta::get_vol4d(params), device),
+		  gf_unsmeared(gaugefield.get_elements(), device),
 		  stout_smear(0), rectangles(0), rectangles_reduction(0) {};
 	/**
 	 * Destructor, calls finalize().
@@ -70,7 +75,7 @@ public:
 	 * Get a pointer to the gaugefield buffer
 	 * @return ocl_gaugefield OpenCL buffer with gaugefield
 	 */
-	cl_mem get_gaugefield();
+	const hardware::buffers::SU3 * get_gaugefield();
 	/**
 	 * Get a pointer to inputparameters
 	 * @return parameters
@@ -103,32 +108,32 @@ public:
 	 *
 	 * @todo Should not be public
 	 */
-	void gaugeobservables(cl_mem gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
+	void gaugeobservables(const hardware::buffers::SU3 * gf, hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol);
 	/**
 	 * Calculate rectangles of a specific gaugefield (on device).
 	 *
 	 * @param[in] gf gaugefield to measure on
 	 * @param[out] plaq Storage for result of rectangles calculation
 	 */
-	void gaugeobservables_rectangles(cl_mem gf, hmc_float * const rect);
+	void gaugeobservables_rectangles(const hardware::buffers::SU3 * gf, hmc_float * const rect);
 	/**
 	 * Calculate plaquette for a specific gaugefield (on device).
 	 *
 	 * @param[in] gf gaugefield to measure on
 	 */
-	void plaquette_device(cl_mem gf);
+	void plaquette_device(const hardware::buffers::SU3 * gf);
 	/**
 	 * Calculate rectangles for a specific gaugefield (on device).
 	 *
 	 * @param[in] gf gaugefield to measure on
 	 */
-	void rectangles_device(cl_mem gf);
+	void rectangles_device(const hardware::buffers::SU3 * gf);
 	/**
 	 * Calculate Polyakov loop for a specific gaugefield (on device).
 	 *
 	 * @param[in] gf gaugefield to measure on
 	 */
-	void polyakov_device(cl_mem gf);
+	void polyakov_device(const hardware::buffers::SU3 * gf);
 
 	// OpenCL specific methods needed for building/compiling the OpenCL program
 	/**
@@ -285,13 +290,13 @@ public:
 	/**
 	 * This applies stout smearing to a gaugefield
 	 */
-	void smear_gaugefield(cl_mem gf, cl_mem * gf_intermediate);
-	void stout_smear_device(cl_mem in, cl_mem out);
+	void smear_gaugefield(const hardware::buffers::SU3 * gf, const std::vector<const hardware::buffers::SU3 *>& gf_intermediate);
+	void stout_smear_device(const hardware::buffers::SU3 * in, const hardware::buffers::SU3 * out);
 
 	/**
 	 * This replaces the stout smeared gaugefield with the unsmeared one
 	 */
-	void unsmear_gaugefield(cl_mem gf);
+	void unsmear_gaugefield(const hardware::buffers::SU3 * gf);
 
 	usetimer * get_copy_to();
 	usetimer * get_copy_on();
@@ -325,7 +330,7 @@ public:
 	 *
 	 * @todo should not be public
 	 */
-	void importGaugefield(cl_mem gaugefield, const Matrixsu3 * const data);
+	void importGaugefield(const hardware::buffers::SU3 * gaugefield, const Matrixsu3 * const data);
 
 	/**
 	 * Export the gaugefield from the OpenCL buffer, that uses a device
@@ -335,15 +340,6 @@ public:
 	 * @param[out] dest The array to store the gaugefield in
 	 */
 	void exportGaugefield(Matrixsu3 * const dest);
-
-	/**
-	 * Get the size required to store a gaugefield in the device specific storage format.
-	 *
-	 * @return gaugefield size in bytes
-	 *
-	 * @todo should not be public
-	 */
-	size_t getGaugefieldBufferSize();
 
 protected:
 	/**
@@ -399,14 +395,8 @@ private:
 	hardware::Device * const device;
 
 	cl_context ocl_context;
-	/**
-	 * Gaugefield buffer size in bytes.
-	 *
-	 * To ensure proper initialization *ONLY* access via getGaugefieldBufferSize()!
-	 */
-	size_t gaugefield_bytes;
 
-	cl_mem gaugefield;
+	const hardware::buffers::SU3 gaugefield;
 
 	cl_mem clmem_plaq;
 	cl_mem clmem_plaq_buf_glob;
@@ -420,7 +410,7 @@ private:
 	cl_mem clmem_polyakov_buf_glob;
 
 	//this is used to save the unsmeared gaugefield if smearing is used
-	cl_mem gf_unsmeared;
+	const hardware::buffers::SU3 gf_unsmeared;
 
 	//since this is only applicated to the gaugefield, this should be here...
 	cl_kernel stout_smear;
@@ -458,8 +448,8 @@ private:
 	 */
 	cl_mem createBuffer(cl_mem_flags flags, size_t size, void * host_ptr);
 
-	void convertGaugefieldToSOA_device(cl_mem out, cl_mem in);
-	void convertGaugefieldFromSOA_device(cl_mem out, cl_mem in);
+	void convertGaugefieldToSOA_device(const hardware::buffers::SU3 * out, const hardware::buffers::ScalarBuffer<Matrixsu3> * in);
+	void convertGaugefieldFromSOA_device(const hardware::buffers::ScalarBuffer<Matrixsu3> * out, const hardware::buffers::SU3 * in);
 };
 
 #endif //OPENCLMODULEH

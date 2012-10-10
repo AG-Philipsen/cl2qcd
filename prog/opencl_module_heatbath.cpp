@@ -20,15 +20,6 @@ void Opencl_Module_Heatbath::fill_collect_options(stringstream* collect_options)
 	return;
 }
 
-
-void Opencl_Module_Heatbath::fill_buffers()
-{
-
-	Opencl_Module_Ran::fill_buffers();
-
-	return;
-}
-
 void Opencl_Module_Heatbath::fill_kernels()
 {
 	Opencl_Module_Ran::fill_kernels();
@@ -63,25 +54,17 @@ void Opencl_Module_Heatbath::clear_kernels()
 	return;
 }
 
-void Opencl_Module_Heatbath::clear_buffers()
-{
-	Opencl_Module_Ran::clear_buffers();
-
-
-	return;
-}
-
 void Opencl_Module_Heatbath::run_heatbath()
 {
 	cl_int clerr = CL_SUCCESS;
 
-	cl_mem src = get_gaugefield();
+	auto src = get_gaugefield();
 
 	size_t global_work_size, ls;
 	cl_uint num_groups;
 	this->get_work_sizes(heatbath_even, &ls, &global_work_size, &num_groups);
 
-	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), &src);
+	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), src->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(heatbath_even, 2, sizeof(cl_mem), get_prng_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -94,7 +77,7 @@ void Opencl_Module_Heatbath::run_heatbath()
 
 	this->get_work_sizes(heatbath_odd, &ls, &global_work_size, &num_groups);
 
-	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), &src);
+	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), src->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(heatbath_odd, 2, sizeof(cl_mem), get_prng_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -110,13 +93,13 @@ void Opencl_Module_Heatbath::run_overrelax()
 {
 	cl_int clerr = CL_SUCCESS;
 
-	cl_mem src = get_gaugefield();
+	auto src = get_gaugefield();
 
 	size_t global_work_size, ls;
 	cl_uint num_groups;
 	this->get_work_sizes(overrelax_even, &ls, &global_work_size, &num_groups);
 
-	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), &src);
+	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), src->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(overrelax_even, 2, sizeof(cl_mem), get_prng_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -129,7 +112,7 @@ void Opencl_Module_Heatbath::run_overrelax()
 
 	this->get_work_sizes(overrelax_odd, &ls, &global_work_size, &num_groups);
 
-	clerr = clSetKernelArg(overrelax_odd, 0, sizeof(cl_mem), &src);
+	clerr = clSetKernelArg(overrelax_odd, 0, sizeof(cl_mem), src->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(overrelax_odd, 2, sizeof(cl_mem), get_prng_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);

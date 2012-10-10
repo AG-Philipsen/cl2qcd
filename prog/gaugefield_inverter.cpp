@@ -101,7 +101,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 
 	//apply stout smearing if wanted
 	if(get_parameters().get_use_smearing() == true) {
-		solver->smear_gaugefield(solver->get_gaugefield(), NULL);
+		solver->smear_gaugefield(solver->get_gaugefield(), std::vector<const hardware::buffers::SU3 *>());
 	}
 
 	//for CG, one needs a hermitian matrix...

@@ -47,7 +47,7 @@ public:
 	/**
 	 * Invoke the matrix function.
 	 */
-	virtual void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const = 0;
+	virtual void operator() (cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const = 0;
 
 	/**
 	 * Get the net flops performed by this function.
@@ -63,56 +63,56 @@ public:
 class M : public Matrix_Function {
 public:
 	M(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	void operator() (cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class Qplus : public Matrix_Function {
 public:
 	Qplus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	void operator() (cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class Qminus : public Matrix_Function {
 public:
 	Qminus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	void operator() (cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class QplusQminus : public Matrix_Function {
 public:
 	QplusQminus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	void operator() (cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class Aee : public Matrix_Function {
 public:
 	Aee(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	void operator() (cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class Qplus_eo : public Matrix_Function {
 public:
 	Qplus_eo(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	void operator() (cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class Qminus_eo : public Matrix_Function {
 public:
 	Qminus_eo(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	void operator() (cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class QplusQminus_eo : public Matrix_Function {
 public:
 	QplusQminus_eo(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	void operator() (cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
@@ -185,55 +185,55 @@ public:
 	//    fermionmatrix operations
 	//    non-eo
 	//        compound
-	void M(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void Qplus(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void Qminus(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void QplusQminus(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void M(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void Qplus(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void Qminus(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void QplusQminus(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	//        explicit
-	void M_wilson_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF);
-	void M_tm_plus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void M_tm_minus_device(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void M_wilson_device(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF);
+	void M_tm_plus_device(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void M_tm_minus_device(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	void gamma5_device(cl_mem inout);
 	//    eo
 	//        compound
-	void Qplus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void Qminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void QplusQminus_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void Aee(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void Aee_minus(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void Qplus_eo(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void Qminus_eo(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void QplusQminus_eo(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void Aee(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void Aee_minus(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	//        explicit
 	void gamma5_eo_device(cl_mem inout);
 	void M_tm_inverse_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
 	void M_tm_sitediagonal_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
 	void M_tm_inverse_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
 	void M_tm_sitediagonal_minus_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
-	void dslash_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa = ARG_DEF);
+	void dslash_eo_device(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa = ARG_DEF);
 	//        merged
-	void Aee_AND_gamma5_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void Aee_minus_AND_gamma5_eo(cl_mem in, cl_mem out, cl_mem gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void dslash_AND_gamma5_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa = ARG_DEF);
-	void dslash_AND_M_tm_inverse_sitediagonal_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(cl_mem in, cl_mem out, cl_mem gf, int evenodd, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void Aee_AND_gamma5_eo(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void Aee_minus_AND_gamma5_eo(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void dslash_AND_gamma5_eo_device(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa = ARG_DEF);
+	void dslash_AND_M_tm_inverse_sitediagonal_eo_device(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(cl_mem in, cl_mem out, const hardware::buffers::SU3 * gf, int evenodd, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
         void M_tm_sitediagonal_AND_gamma5_eo_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
         void M_tm_sitediagonal_minus_AND_gamma5_eo_device(cl_mem in, cl_mem out, hmc_float mubar = ARG_DEF);
 
 	//    solver operations
 	//    non-eo
 	/// this calls the solver according to parameter settings using the fermionmatrix f
-	void solver(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, usetimer * solvertimer);
+	void solver(const Matrix_Function & f, cl_mem inout, cl_mem source, const hardware::buffers::SU3 * gf, usetimer * solvertimer);
 	/**
 	* the solvers return the number of iterations needed if it converged,
 	* -1 if it did not converge within cgmax
 	* -iter if the algorithm got stuck at some point
 	*/
 	/// this executes the bicgstab on the device, using the fermionmatrix f
-	int bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	int bicgstab(const Matrix_Function & f, cl_mem inout, cl_mem source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	/// this executes the cg on the device, using the fermionmatrix f
-	int cg(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	int cg(const Matrix_Function & f, cl_mem inout, cl_mem source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	//    eo
 	/// this executes the eo bicgstab on the device, using the fermionmatrix f
-	int bicgstab_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	int cg_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, cl_mem gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	int bicgstab_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	int cg_eo(const Matrix_Function & f, cl_mem inout, cl_mem source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 
 	/////////////////////////////////////////////////
 	//functions to get private variables

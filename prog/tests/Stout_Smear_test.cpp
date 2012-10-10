@@ -24,16 +24,18 @@ int iter = 1;
 class Device : public Opencl_Module {
 	cl_kernel testKernel;
 public:
-	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device), out(get_gaugefield()->get_elements(), device) {
 		Opencl_Module::init(); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
 	};
 
-	void runTestKernel(cl_mem gf, cl_mem out, int gs, int ls);
+	void runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::SU3 * out, int gs, int ls);
 	void fill_kernels();
 	void clear_kernels();
+
+	const hardware::buffers::SU3 out;
 };
 
 class Dummyfield : public Gaugefield_hybrid {
@@ -54,8 +56,6 @@ public:
 
 private:
 	void fill_buffers();
-	void clear_buffers();
-	cl_mem out;
 };
 
 void Dummyfield::init_tasks()
@@ -68,7 +68,6 @@ void Dummyfield::init_tasks()
 
 void Dummyfield::finalize_opencl()
 {
-	clear_buffers();
 	Gaugefield_hybrid::finalize_opencl();
 }
 
@@ -80,10 +79,8 @@ void Dummyfield::fill_buffers()
 
 	Device * device = static_cast<Device*>(opencl_modules[0]);
 
-	out = device->create_rw_buffer(device->getGaugefieldBufferSize());
-
 	//copy cold tmp gf to the device
-	device->importGaugefield(out, gf_tmp);
+	device->importGaugefield(&device->out, gf_tmp);
 
 	delete[] gf_tmp;
 
@@ -102,25 +99,18 @@ void Device::fill_kernels()
 	// in fact, the kernel has already been build in the above call!!
 	//  testKernel = createKernel("stout_smear") << basic_opencl_code  <<  "tests/operations_gaugemomentum.cl" << "stout_smear.cl";
 }
-
-void Dummyfield::clear_buffers()
-{
-	// don't invoke parent function as we don't require the original buffers
-	clReleaseMemObject(out);
-}
-
 void Device::clear_kernels()
 {
 	clReleaseKernel(testKernel);
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel(cl_mem gf, cl_mem out, int gs, int ls)
+void Device::runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::SU3 * out, int gs, int ls)
 {
 	cl_int err;
-	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), &gf);
+	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), gf->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &out);
+	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), out->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
 	get_device()->enqueue_kernel(testKernel, gs, ls);
@@ -131,7 +121,7 @@ void Dummyfield::runTestKernel()
 {
 	//CP: this currently causes a segfault!!!
 	Device * device = static_cast<Device*>(opencl_modules[0]);
-	static_cast<Device*>(opencl_modules[0])->stout_smear_device( device->get_gaugefield()  , out);
+	static_cast<Device*>(opencl_modules[0])->stout_smear_device( device->get_gaugefield()  , &device->out);
 
 	int gs = 0, ls = 0;
 	if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_GPU) {
@@ -158,7 +148,7 @@ void Dummyfield::get_gaugeobservables_from_task(int dummy, int ntask, hmc_float 
 {
 	dummy = 0;
 	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range", __FILE__, __LINE__);
-	opencl_modules[ntask]->gaugeobservables(out, plaq, tplaq, splaq, pol);
+	opencl_modules[ntask]->gaugeobservables(&static_cast<Device*>(opencl_modules[0])->out, plaq, tplaq, splaq, pol);
 }
 
 BOOST_AUTO_TEST_CASE( STOUT_SMEAR )

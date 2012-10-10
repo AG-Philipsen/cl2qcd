@@ -47,13 +47,12 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 	//reset the counters for the inversions
 	reset_inversion_counters();
 
-	size_t gfsize = get_task_hmc(0)->getGaugefieldBufferSize();
 	size_t gmsize = get_task_hmc(0)->get_gaugemomentum_buffer_size();
 
 	// copy u->u' p->p' for the integrator
 	// new_u is used in some debug code of the gaugemomentum-initialization. therefore we need to copy it before
 	// p is modified in the initialization, therefore we cannot copy it now
-	get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_gaugefield(), get_task_hmc(0)->get_clmem_new_u(), gfsize);
+	copyData(get_task_hmc(0)->get_new_u(), get_task_hmc(0)->get_gaugefield());
 
 	logger.debug() << "\tinit spinorfield and gaugemomentum" ;
 	this->init_gaugemomentum_spinorfield(solver_timer);
@@ -71,7 +70,7 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 
 	if((*obs).accept == 1) {
 		// perform the change nonprimed->primed !
-		get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_new_u(), get_task_hmc(0)->get_gaugefield(), gfsize);
+		copyData(get_task_hmc(0)->get_gaugefield(), get_task_hmc(0)->get_new_u());
 		get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_new_p(), get_task_hmc(0)->get_clmem_p(), gmsize);
 		logger.debug() << "\t\tnew configuration accepted" ;
 	} else {
@@ -179,24 +178,23 @@ void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer, hmc_float kappa
 	//NOTE: One needs only rho_iter -1 here since the last iteration is saved in gf...
 	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
 	//  or use the intermediate cl_mem obj gf_unsmeared. This is initialized in the smear_gaugefield function
-	cl_mem * smeared_gfs;
-	if(rho_iter > 0) smeared_gfs = new cl_mem [rho_iter - 1];
-	else smeared_gfs = NULL;
+	std::vector<const hardware::buffers::SU3*> smeared_gfs;
+	smeared_gfs.reserve(rho_iter);
 
 	if(get_parameters().get_use_smearing() == true) {
-		size_t gfsize = get_task_hmc(0)->getGaugefieldBufferSize();
-		for(int i = 0; i < rho_iter; i++)
-			smeared_gfs[i] = get_task_hmc(0)->create_rw_buffer(gfsize);
+		size_t gf_elems = get_task_hmc(0)->get_gaugefield()->get_elements();
+		for(int i = 0; i < rho_iter; i++) {
+			smeared_gfs.push_back(new hardware::buffers::SU3(gf_elems, get_task_hmc(0)->get_device()));
+		}
 		get_task_hmc(0)->smear_gaugefield(get_task_hmc(0)->get_gaugefield(), smeared_gfs);
 	}
 	get_task_hmc(0)->calc_fermion_force(solvertimer, kappa, mubar);
 	if(get_parameters().get_use_smearing() == true) {
 		get_task_hmc(0)->stout_smeared_fermion_force_device(smeared_gfs);
 		get_task_hmc(0)->unsmear_gaugefield(get_task_hmc(0)->get_gaugefield());
-		for(int i = 0; i < rho_iter; i++) {
-			cl_int clerr = clReleaseMemObject(smeared_gfs[i]);
-			if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-		}
+	}
+for(auto gf: smeared_gfs) {
+		delete gf;
 	}
 }
 
@@ -210,24 +208,23 @@ void Gaugefield_hmc::detratio_forces_call(usetimer * solvertimer)
 	//NOTE: One needs only rho_iter -1 here since the last iteration is saved in gf...
 	//NOTE: If the original gf is also needed in the force calculation, one has to add it here
 	//  or use the intermediate cl_mem obj gf_unsmeared. This is initialized in the smear_gaugefield function
-	cl_mem * smeared_gfs;
-	if(rho_iter > 0) smeared_gfs = new cl_mem [rho_iter - 1];
-	else smeared_gfs = NULL;
+	std::vector<const hardware::buffers::SU3*> smeared_gfs;
+	smeared_gfs.reserve(rho_iter);
 
 	if(get_parameters().get_use_smearing() == true) {
-		size_t gfsize = get_task_hmc(0)->getGaugefieldBufferSize();
-		for(int i = 0; i < rho_iter; i++)
-			smeared_gfs[i] = get_task_hmc(0)->create_rw_buffer(gfsize);
+		size_t gf_elems = get_task_hmc(0)->get_gaugefield()->get_elements();
+		for(int i = 0; i < rho_iter; i++) {
+			smeared_gfs.push_back(new hardware::buffers::SU3(gf_elems, get_task_hmc(0)->get_device()));
+		}
 		get_task_hmc(0)->smear_gaugefield(get_task_hmc(0)->get_gaugefield(), smeared_gfs);
 	}
 	get_task_hmc(0)->calc_fermion_force_detratio(solvertimer);
 	if(get_parameters().get_use_smearing() == true) {
 		get_task_hmc(0)->stout_smeared_fermion_force_device(smeared_gfs);
 		get_task_hmc(0)->unsmear_gaugefield(get_task_hmc(0)->get_gaugefield());
-		for(int i = 0; i < rho_iter; i++) {
-			cl_int clerr = clReleaseMemObject(smeared_gfs[i]);
-			if(clerr != CL_SUCCESS) Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-		}
+	}
+for(auto gf: smeared_gfs) {
+		delete gf;
 	}
 }
 

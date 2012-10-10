@@ -51,12 +51,6 @@ public:
 	virtual void fill_collect_options(std::stringstream* collect_options) override;
 
 	/**
-	 * Collect the buffers to generate for OpenCL.
-	 * Virtual method, allows to include more buffers in inherited classes.
-	 */
-	virtual void fill_buffers() override;
-
-	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
@@ -67,12 +61,6 @@ public:
 	 * Virtual method, allows to clear additional kernels in inherited classes.
 	 */
 	virtual void clear_kernels() override;
-
-	/**
-	 * Clear out the buffers,
-	 * Virtual method, allows to clear additional buffers in inherited classes.
-	 */
-	virtual void clear_buffers() override;
 
 	/**
 	 * Perform one heatbath step.
