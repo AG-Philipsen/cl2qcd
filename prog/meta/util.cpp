@@ -43,14 +43,6 @@ size_t meta::get_eoprec_spinorfieldsize(const Inputparameters& params)
 	return get_spinorfieldsize(params) / 2;
 }
 
-int meta::get_source_pos_spatial(const Inputparameters& params)
-{
-	int coord [4];
-	coord[1] = params.get_pointsource_x();
-	coord[2] = params.get_pointsource_y();
-	coord[3] = params.get_pointsource_z();
-	return get_nspace(coord, params);
-}
 size_t meta::get_float_size(const Inputparameters& params)
 {
 	return params.get_precision() / 8;

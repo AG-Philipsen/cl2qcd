@@ -24,7 +24,6 @@ namespace meta {
 	 * @deprecated should be done by the spinorfield class
 	 */
 	size_t get_eoprec_spinorfieldsize(const Inputparameters& params);
-	int get_source_pos_spatial(const Inputparameters& params);
 	size_t get_float_size(const Inputparameters& params);
 	size_t get_mat_size(const Inputparameters& params);
 	size_t get_plaq_norm(const Inputparameters& params);

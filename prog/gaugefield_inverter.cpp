@@ -308,7 +308,7 @@ void Gaugefield_inverter::create_sources()
 	if(get_parameters().get_use_pointsource() == true) {
 		logger.debug() << "start creating point-sources...";
 		for(int k = 0; k < 12; k++) {
-			get_task_correlator()->create_point_source_device(get_clmem_source(), k, meta::get_source_pos_spatial(get_parameters()), get_parameters().get_pointsource_t());
+			get_task_correlator()->create_point_source_device(get_clmem_source(), k, get_source_pos_spatial(get_parameters()), get_parameters().get_pointsource_t());
 			logger.debug() << "copy pointsource to host";
 			get_task_correlator()->get_buffer_from_device(get_clmem_source(), &source_buffer[k * meta::get_vol4d(get_parameters())], sfsize);
 		}

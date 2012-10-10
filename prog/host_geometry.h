@@ -57,4 +57,5 @@ size_t get_su3_idx_ildg_format(size_t n, size_t m, size_t x, size_t y, size_t z,
  */
 size_t get_link_idx_ildg_format(size_t x, size_t y, size_t z, size_t t, size_t mu, const meta::Inputparameters& parameters);
 
+int get_source_pos_spatial(const meta::Inputparameters& params);
 #endif /* _GEOMETRYH_ */
