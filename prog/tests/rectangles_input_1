@@ -1,9 +1,6 @@
 #input file 1 for rectangles_test
 
-# set startcondition to cold or hot to start with different gaugefield
-startcondition=continue
-sourcefile=conf.00200
-#startcondition=cold
+startcondition=cold
 
 NS=4
 NT=4
@@ -17,4 +14,4 @@ beta= 5.69
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=1103.2398401620
+test_ref_val=3072.0

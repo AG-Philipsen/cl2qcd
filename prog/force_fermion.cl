@@ -47,7 +47,7 @@ __kernel void fermion_force(__global const Matrixsu3StorageType * const restrict
 #endif
 #ifdef _  CP_IMAG_
 				hmc_complex cpi_tmp = {COSCPI, SINCPI};
-				U = multiply_matrixsu3_by_complex (U, cpi_tmp );
+				U = multiply_matrixsu3_by_complex (U, cpi_tmp);
 #endif
 				///////////////////////////////////
 				// Calculate psi/phi = (1 - gamma_0) plus/y
@@ -79,6 +79,18 @@ __kernel void fermion_force(__global const Matrixsu3StorageType * const restrict
 				y = get_spinor_from_field(Y, n, nn);
 				y = gamma5_local(y);
 				plus = get_spinor_from_field(X, n, t);
+				//if chemical potential is activated, U has to be multiplied by appropiate factor
+				//this is the same as at mu=0 in the imag. case, since U is taken to be U^+ later:
+				//  (exp(iq)U)^+ = exp(-iq)U^+
+				//as it should be
+				//in the real case, one has to take exp(q) -> exp(-q)
+#ifdef _CP_REAL_
+				U = multiply_matrixsu3_by_real (U, MEXPCPR);
+#endif
+#ifdef _CP_IMAG_
+				hmc_complex cpi_tmp2 = {COSCPI, SINCPI};
+				U = multiply_matrixsu3_by_complex (U, cpi_tmp2 );
+#endif
 				///////////////////////////////////
 				// Calculate psi/phi = (1 + gamma_0) y
 				// with 1 + gamma_0:

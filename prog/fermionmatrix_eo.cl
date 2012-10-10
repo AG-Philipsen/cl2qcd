@@ -207,8 +207,8 @@ spinor dslash_eoprec_unified_local(__global const spinorStorageType * const rest
 		U = multiply_matrixsu3_by_real (U, MEXPCPR);
 #endif
 #ifdef _CP_IMAG_
-		hmc_complex cpi_tmp = {COSCPI, SINCPI};
-		U = multiply_matrixsu3_by_complex (U, cpi_tmp );
+		hmc_complex cpi_tmp2 = {COSCPI, SINCPI};
+		U = multiply_matrixsu3_by_complex (U, cpi_tmp2 );
 #endif
 		///////////////////////////////////
 		// Calculate psi/phi = (1 + gamma_0) y

@@ -10,6 +10,14 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/conf.00200 conf.00200 COPYONLY )
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
+add_executable(Boost_test boost_test.cpp)
+target_link_libraries(Boost_test
+	${Boost_LIBRARIES}
+)
+add_test(Boost_ARGC_1 Boost_test --run_test=BOOST_ARGC_1)
+add_test(Boost_ARGC_2 Boost_test ${CMAKE_CURRENT_SOURCE_DIR} --run_test=BOOST_ARGC_2)
+add_test(Boost_ARGV Boost_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false   --run_test=BOOST_ARGV )
+
 add_executable(openclCompiler opencl_compiler.cpp ../opencl_compiler.cpp ../logger.cpp ../exceptions.cpp)
 target_link_libraries(openclCompiler ${Boost_LIBRARIES} ${OPENCL_LIBRARIES} crypto einhard)
 add_test(OpenclCompiler openclCompiler)
@@ -53,52 +61,16 @@ target_link_libraries(gaugefield_convert
 )
 add_test(Gaugefield_Conversion gaugefield_convert)
 
-add_executable(gaugefield_observables gaugefield_observables.cpp)
-target_link_libraries(gaugefield_observables
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Gaugeobservables gaugefield_observables)
-
 add_executable(calc_staple Calc_staple_test.cpp)
 target_link_libraries(calc_staple
 	optimal
 	${Boost_LIBRARIES}
 )
+
 add_test(Calc_staple_1_CPU       calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=false --use_rec12=false)
 add_test(Calc_staple_1_CPU_REC12 calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=false --use_rec12=true)
 add_test(Calc_staple_1_GPU       calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=true  --use_rec12=false)
 add_test(Calc_staple_1_GPU_REC12 calc_staple ${CMAKE_CURRENT_SOURCE_DIR}/staple_input_1 --use_gpu=true  --use_rec12=true)
-
-add_executable(f_gauge F_gauge_test.cpp)
-target_link_libraries(f_gauge
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(F_gauge_1_CPU       f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=false --use_rec12=false)
-add_test(F_gauge_1_CPU_REC12 f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=false --use_rec12=true)
-add_test(F_gauge_1_GPU       f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=true  --use_rec12=false)
-add_test(F_gauge_1_GPU_REC12 f_gauge ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_input_1 --use_gpu=true  --use_rec12=true)
-
-add_executable(rectangles Rectangles_test.cpp)
-target_link_libraries(rectangles
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Rectangles_1_CPU       rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=false --use_rec12=false)
-add_test(Rectangles_1_CPU_REC12 rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=false --use_rec12=true)
-add_test(Rectangles_1_GPU       rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=true  --use_rec12=false)
-add_test(Rectangles_1_GPU_REC12 rectangles  ${CMAKE_CURRENT_SOURCE_DIR}/rectangles_input_1 --use_gpu=true  --use_rec12=true)
-
-add_executable(f_gauge_tlsym F_gauge_tlsym_test.cpp)
-target_link_libraries(f_gauge_tlsym
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(F_gauge_tlsym_1_CPU       f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=false --use_rec12=false)
-add_test(F_gauge_tlsym_1_CPU_REC12 f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=false --use_rec12=true)
-add_test(F_gauge_tlsym_1_GPU       f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=true  --use_rec12=false)
-add_test(F_gauge_tlsym_1_GPU_REC12 f_gauge_tlsym ${CMAKE_CURRENT_SOURCE_DIR}/f_gauge_tlsym_input_1 --use_gpu=true  --use_rec12=true)
 
 add_executable(localQ local_Q_test.cpp)
 target_link_libraries(localQ
@@ -110,16 +82,6 @@ add_test(LocalQ_1_CPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 -
 add_test(LocalQ_1_GPU       localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true  --use_rec12=false)
 add_test(LocalQ_1_GPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true  --use_rec12=true)
 
-add_executable(gf_update GF_update_test.cpp)
-target_link_libraries(gf_update
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Gf_update_1_CPU       gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=false --use_rec12=false)
-add_test(Gf_update_1_CPU_REC12 gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=false --use_rec12=true)
-add_test(Gf_update_1_GPU       gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=true  --use_rec12=false)
-add_test(Gf_update_1_GPU_REC12 gf_update ${CMAKE_CURRENT_SOURCE_DIR}/gf_update_input_1 --use_gpu=true  --use_rec12=true)
-
 add_executable(stout_smear Stout_Smear_test.cpp)
 target_link_libraries(stout_smear
 	optimal
@@ -127,49 +89,25 @@ target_link_libraries(stout_smear
 )
 add_test(Stout_smear_1_CPU       stout_smear ${CMAKE_CURRENT_SOURCE_DIR}/stout_smear_input_1 --use_gpu=false --use_rec12=false)
 
-add_executable(f_update F_update_test.cpp)
-target_link_libraries(f_update
+add_executable(opencl_module_test opencl_module_test.cpp)
+target_link_libraries(opencl_module_test
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(F_update_1_CPU f_update ${CMAKE_CURRENT_SOURCE_DIR}/f_update_input_1  --use_gpu=false --use_rec12=false)
-add_test(F_update_1_GPU f_update ${CMAKE_CURRENT_SOURCE_DIR}/f_update_input_1  --use_gpu=true  --use_rec12=false)
+add_test(Opencl_module_CPU       opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(Opencl_module_CPU_REC12 opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
+add_test(Opencl_module_GPU       opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+add_test(Opencl_module_GPU_REC12 opencl_module_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
-add_executable(m_tm_plus M_tm_plus_test.cpp)
-target_link_libraries(m_tm_plus
+add_executable(opencl_module_fermions_test opencl_module_fermions_test.cpp)
+target_link_libraries(opencl_module_fermions_test
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(M_tm_plus_1_CPU       m_tm_plus  ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_input_1 --use_gpu=false --use_rec12=false)
-add_test(M_tm_plus_1_CPU_REC12 m_tm_plus  ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_input_1 --use_gpu=false --use_rec12=true)
-add_test(M_tm_plus_1_GPU       m_tm_plus  ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_input_1 --use_gpu=true  --use_rec12=false)
-add_test(M_tm_plus_1_GPU_REC12 m_tm_plus  ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_input_1 --use_gpu=true  --use_rec12=true)
-add_test(M_tm_plus_2_CPU       m_tm_plus  ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_input_2 --use_gpu=false --use_rec12=false)
-add_test(M_tm_plus_2_CPU_REC12 m_tm_plus  ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_input_2 --use_gpu=false --use_rec12=true)
-add_test(M_tm_plus_2_GPU       m_tm_plus  ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_input_2 --use_gpu=true  --use_rec12=false)
-add_test(M_tm_plus_2_GPU_REC12 m_tm_plus  ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_input_2 --use_gpu=true  --use_rec12=true)
-
-add_executable(dslash_eo dslash_eo_test.cpp)
-target_link_libraries(dslash_eo
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Dslash_eo_1_CPU       dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_1 --use_gpu=false --use_rec12=false)
-add_test(Dslash_eo_1_CPU_REC12 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_1 --use_gpu=false --use_rec12=true)
-add_test(Dslash_eo_1_GPU       dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_1 --use_gpu=true  --use_rec12=false)
-add_test(Dslash_eo_1_GPU_REC12 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_1 --use_gpu=true  --use_rec12=true)
-add_test(Dslash_eo_2_CPU       dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_2 --use_gpu=false --use_rec12=false)
-add_test(Dslash_eo_2_CPU_REC12 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_2 --use_gpu=false --use_rec12=true)
-add_test(Dslash_eo_2_GPU       dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_2 --use_gpu=true  --use_rec12=false)
-add_test(Dslash_eo_2_GPU_REC12 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_2 --use_gpu=true  --use_rec12=true)
-add_test(Dslash_eo_3_CPU       dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_3 --use_gpu=false --use_rec12=false)
-add_test(Dslash_eo_3_CPU_REC12 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_3 --use_gpu=false --use_rec12=true)
-add_test(Dslash_eo_3_GPU       dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_3 --use_gpu=true  --use_rec12=false)
-add_test(Dslash_eo_3_GPU_REC12 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_3 --use_gpu=true  --use_rec12=true)
-add_test(Dslash_eo_4_CPU       dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_4 --use_gpu=false --use_rec12=false)
-add_test(Dslash_eo_4_CPU_REC12 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_4 --use_gpu=false --use_rec12=true)
-add_test(Dslash_eo_4_GPU       dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_4 --use_gpu=true  --use_rec12=false)
-add_test(Dslash_eo_4_GPU_REC12 dslash_eo ${CMAKE_CURRENT_SOURCE_DIR}/dslash_eo_input_4 --use_gpu=true  --use_rec12=true)
+add_test(Opencl_module_fermions_CPU       opencl_module_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(Opencl_module_fermions_CPU_REC12 opencl_module_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
+add_test(Opencl_module_fermions_GPU       opencl_module_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+add_test(Opencl_module_fermions_GPU_REC12 opencl_module_fermions_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
 add_executable(m_tm_plus_compare_noneo_eo M_tm_plus_compare_noneo_eo.cpp)
 target_link_libraries(m_tm_plus_compare_noneo_eo
@@ -181,29 +119,15 @@ add_test(M_tm_plus_compare_noneo_eo_1_CPU_REC12 m_tm_plus_compare_noneo_eo ${CMA
 add_test(M_tm_plus_compare_noneo_eo_1_GPU       m_tm_plus_compare_noneo_eo ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_compare_noneo_eo_input_1 --use_gpu=true --use_rec12=false)
 add_test(M_tm_plus_compare_noneo_eo_1_GPU_REC12 m_tm_plus_compare_noneo_eo ${CMAKE_CURRENT_SOURCE_DIR}/m_tm_plus_compare_noneo_eo_input_1 --use_gpu=true --use_rec12=true)
 
-add_executable(f_fermion F_fermion_test.cpp)
-target_link_libraries(f_fermion
+add_executable(opencl_module_hmc_test opencl_module_hmc_test.cpp)
+target_link_libraries(opencl_module_hmc_test
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(F_fermion_1_CPU       f_fermion ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_input_1 --use_gpu=false --use_rec12=false)
-add_test(F_fermion_1_CPU_REC12 f_fermion ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_input_1 --use_gpu=false --use_rec12=true)
-add_test(F_fermion_1_GPU       f_fermion ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_input_1 --use_gpu=true  --use_rec12=false)
-add_test(F_fermion_1_GPU_REC12 f_fermion ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_input_1 --use_gpu=true  --use_rec12=true)
-
-add_executable(f_fermion_eo F_fermion_eo_test.cpp)
-target_link_libraries(f_fermion_eo
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(F_fermion_eo_1_CPU       f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_1 --use_gpu=false --use_rec12=false)
-add_test(F_fermion_eo_1_CPU_REC12 f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_1 --use_gpu=false --use_rec12=true)
-add_test(F_fermion_eo_1_GPU       f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_1 --use_gpu=true  --use_rec12=false)
-add_test(F_fermion_eo_1_GPU_REC12 f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_1 --use_gpu=true  --use_rec12=true)
-add_test(F_fermion_eo_2_CPU       f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_2 --use_gpu=false --use_rec12=false)
-add_test(F_fermion_eo_2_CPU_REC12 f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_2 --use_gpu=false --use_rec12=true)
-add_test(F_fermion_eo_2_GPU       f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_2 --use_gpu=true  --use_rec12=false)
-add_test(F_fermion_eo_2_GPU_REC12 f_fermion_eo ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_eo_input_2 --use_gpu=true  --use_rec12=true)
+add_test(Opencl_module_hmc_CPU       opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(Opencl_module_hmc_CPU_REC12 opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
+add_test(Opencl_module_hmc_GPU       opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+add_test(Opencl_module_hmc_GPU_REC12 opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
 add_executable(f_fermion_compare_noneo_eo F_fermion_compare_noneo_eo.cpp)
 target_link_libraries(f_fermion_compare_noneo_eo
