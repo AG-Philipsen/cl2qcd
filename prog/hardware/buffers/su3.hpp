@@ -86,5 +86,4 @@ namespace hardware {
 	}
 }
 
-#endif /* _HARDWARE_BUFFERS_PRNG_BUFFER_ */
-
+#endif /* _HARDWARE_BUFFERS_SU3_ */
