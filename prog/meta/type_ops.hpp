@@ -8,6 +8,7 @@
 #define _META_TYPE_OPS_
 
 #include "../types.h"
+#include "../types_fermions.h"
 
 #include <ostream>
 
@@ -47,6 +48,40 @@ inline std::ostream& operator<<(std::ostream& os, const Matrixsu3& data)
 	                 << data.e20 << ',' << data.e21 << ',' << data.e22 << '}';
 }
 
+inline bool operator==(const su3vec& left, const su3vec& right)
+{
+	return (
+			left.e0 == right.e0 && left.e1 == right.e1 && left.e2 == right.e2
+	);
+}
+inline bool operator!=(const su3vec& left, const su3vec& right)
+{
+	return (
+			left.e0 != right.e0 || left.e1 != right.e1 || left.e2 != right.e2
+	);
+}
+inline std::ostream& operator<<(std::ostream& os, const su3vec& data)
+{
+	return os << '{' << data.e0 << ',' << data.e1 << ',' << data.e2 << '}';
+}
+
+inline bool operator==(const spinor& left, const spinor& right)
+{
+	return (
+			left.e0 == right.e0 && left.e1 == right.e1 && left.e2 == right.e2 && left.e3 == right.e3
+	);
+}
+inline bool operator!=(const spinor& left, const spinor& right)
+{
+	return (
+			left.e0 != right.e0 || left.e1 != right.e1 || left.e2 != right.e2 || left.e3 != right.e3
+	);
+}
+inline std::ostream& operator<<(std::ostream& os, const spinor& data)
+{
+	return os << '{' << data.e0 << ',' << data.e1 << ',' << data.e2 << ',' << data.e3 << '}';
+}
+
 
 template<typename T> inline void fill(T* array, size_t num_elems, int seed = 0)
 {
@@ -56,5 +91,6 @@ template<typename T> inline void fill(T* array, size_t num_elems, int seed = 0)
 }
 template<> void fill(hmc_complex* array, size_t num_elems, int seed);
 template<> void fill(Matrixsu3* array, size_t num_elems, int seed);
+template<> void fill(spinor* array, size_t num_elems, int seed);
 
 #endif /* _META_TYPE_OPS */
