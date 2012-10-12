@@ -39,12 +39,6 @@ void Gaugefield_inverter::init_tasks()
 
 	opencl_modules[task_correlator] = new Opencl_Module_Correlator(get_parameters(), get_device_for_task(task_correlator));
 	get_task_correlator()->init();
-
-
-	int spinorfield_size = sizeof(spinor) * meta::get_spinorfieldsize(get_parameters());
-
-	clmem_corr = get_task_correlator()->create_rw_buffer(spinorfield_size * num_sources);
-	clmem_source = get_task_correlator()->create_rw_buffer(spinorfield_size);
 }
 
 void Gaugefield_inverter::delete_variables()
@@ -60,13 +54,6 @@ void Gaugefield_inverter::finalize_opencl()
 	}
 	Gaugefield_hybrid::finalize_opencl();
 
-	cl_int clerr = clReleaseMemObject(clmem_corr);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-
-	clerr = clReleaseMemObject(clmem_source);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-
-
 	logger.debug() << "free solution buffer";
 	delete [] solution_buffer;
 	logger.debug() << "free source buffer";
@@ -75,8 +62,7 @@ void Gaugefield_inverter::finalize_opencl()
 
 void Gaugefield_inverter::sync_solution_buffer()
 {
-	size_t sfsize = 12 * meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
-	get_task_correlator()->copy_buffer_to_device(solution_buffer, get_clmem_corr(), sfsize);
+	get_clmem_corr()->load(solution_buffer);
 }
 
 void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
@@ -92,12 +78,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 
 	Opencl_Module_Fermions * solver = get_task_solver();
 
-	//allocate host-memory for tmp-buffer
-	size_t sfsize = meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
-	spinor* sftmp = new spinor [meta::get_spinorfieldsize(get_parameters())];
-
-	int spinorfield_size = sizeof(spinor) * meta::get_spinorfieldsize(get_parameters());
-	cl_mem clmem_res = solver->create_rw_buffer(spinorfield_size);
+	hardware::buffers::ScalarBuffer<spinor> clmem_res(meta::get_spinorfieldsize(get_parameters()), solver->get_device());
 
 	//apply stout smearing if wanted
 	if(get_parameters().get_use_smearing() == true) {
@@ -110,32 +91,30 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 		//the call shoul be like this
 		//::QplusQminus_eo f_eo(solver);
 	}
-	::Aee f_eo(solver);
-	::M f_neo(solver);
-	Matrix_Function & f = (use_eo) ? static_cast<Matrix_Function &>(f_eo) : static_cast<Matrix_Function &>(f_neo);
 
 	for(int k = 0; k < num_sources; k++) {
 		//copy source from to device
 		//NOTE: this is a blocking call!
 		logger.debug() << "copy pointsource between devices";
-		solver->copy_buffer_to_device(&source_buffer[k * meta::get_vol4d(get_parameters())], get_clmem_source(), sfsize);
-
+		get_clmem_source()->load(&source_buffer[k * meta::get_vol4d(get_parameters())]);
 		logger.debug() << "calling solver..";
-		solver->solver(f, clmem_res, get_clmem_source(), solver->get_gaugefield(), solver_timer);
+		if(use_eo) {
+			::Aee f_eo(solver);
+			solver->solver(f_eo, &clmem_res, get_clmem_source(), solver->get_gaugefield(), solver_timer);
+		} else {
+			::M f_neo(solver);
+			solver->solver(f_neo, &clmem_res, get_clmem_source(), solver->get_gaugefield(), solver_timer);
+		}
 
 		//add solution to solution-buffer
 		//NOTE: this is a blocking call!
 		logger.debug() << "add solution...";
-		solver->get_buffer_from_device(clmem_res, &solution_buffer[k * meta::get_vol4d(get_parameters())], sfsize);
+		clmem_res.dump(&solution_buffer[k * meta::get_vol4d(get_parameters())]);
 	}
 
 	if(get_parameters().get_use_smearing() == true) {
 		solver->unsmear_gaugefield(solver->get_gaugefield());
 	}
-
-	delete [] sftmp;
-	cl_int clerr = clReleaseMemObject(clmem_res);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
 }
 
 void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
@@ -304,13 +283,12 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 void Gaugefield_inverter::create_sources()
 {
 	//create sources on the correlator-device and save them on the host
-	size_t sfsize = meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
 	if(get_parameters().get_use_pointsource() == true) {
 		logger.debug() << "start creating point-sources...";
 		for(int k = 0; k < 12; k++) {
 			get_task_correlator()->create_point_source_device(get_clmem_source(), k, get_source_pos_spatial(get_parameters()), get_parameters().get_pointsource_t());
 			logger.debug() << "copy pointsource to host";
-			get_task_correlator()->get_buffer_from_device(get_clmem_source(), &source_buffer[k * meta::get_vol4d(get_parameters())], sfsize);
+			get_clmem_source()->dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);
 		}
 	} else {
 		logger.debug() << "start creating stochastic-sources...";
@@ -318,18 +296,18 @@ void Gaugefield_inverter::create_sources()
 		for(int k = 0; k < num_sources; k++) {
 			get_task_correlator()->create_stochastic_source_device(get_clmem_source());
 			logger.debug() << "copy stochastic-source to host";
-			get_task_correlator()->get_buffer_from_device(get_clmem_source(), &source_buffer[k * meta::get_vol4d(get_parameters())], sfsize);
+			get_clmem_source()->dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);
 		}
 	}
 }
 
-cl_mem Gaugefield_inverter::get_clmem_corr()
+const hardware::buffers::ScalarBuffer<spinor> * Gaugefield_inverter::get_clmem_corr()
 {
-	return clmem_corr;
+	return &clmem_corr;
 }
 
 
-cl_mem Gaugefield_inverter::get_clmem_source()
+const hardware::buffers::ScalarBuffer<spinor> * Gaugefield_inverter::get_clmem_source()
 {
-	return clmem_source;
+	return &clmem_source;
 }

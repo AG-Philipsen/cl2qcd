@@ -45,7 +45,11 @@ public:
 	 * \param params The input parameters of the application
 	 */
 	Gaugefield_inverter(const hardware::System * system)
-		: Gaugefield_hybrid(system) { };
+		: Gaugefield_hybrid(system),
+		  clmem_source(meta::get_spinorfieldsize(system->get_inputparameters()), system->get_devices()[0]), // TODO init on proper device
+		  clmem_corr(meta::get_spinorfieldsize(system->get_inputparameters())
+					 * (system->get_inputparameters().get_use_pointsource() ? 12 : system->get_inputparameters().get_num_sources()), system->get_devices()[0])  // TODO init on proper device
+		{ };
 
 	/**
 	 * Initialize class.
@@ -96,15 +100,15 @@ public:
 
 	void create_sources();
 
-	cl_mem get_clmem_corr();
-	cl_mem get_clmem_source();
+	const hardware::buffers::ScalarBuffer<spinor> * get_clmem_corr();
+	const hardware::buffers::ScalarBuffer<spinor> * get_clmem_source();
 
 protected:
 
 private:
 
-	cl_mem clmem_corr;
-	cl_mem clmem_source;
+	const hardware::buffers::ScalarBuffer<spinor> clmem_corr;
+	const hardware::buffers::ScalarBuffer<spinor> clmem_source;
 
 	spinorfield* solution_buffer;
 	spinorfield* source_buffer;

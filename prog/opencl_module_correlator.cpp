@@ -25,14 +25,6 @@ void Opencl_Module_Correlator::fill_collect_options(stringstream* collect_option
 }
 
 
-void Opencl_Module_Correlator::fill_buffers()
-{
-
-	Opencl_Module_Spinors::fill_buffers();
-
-	return;
-}
-
 void Opencl_Module_Correlator::fill_kernels()
 {
 	Opencl_Module_Spinors::fill_kernels();
@@ -105,12 +97,6 @@ void Opencl_Module_Correlator::clear_kernels()
 	return;
 }
 
-void Opencl_Module_Correlator::clear_buffers()
-{
-	Opencl_Module_Spinors::clear_buffers();
-	return;
-}
-
 void Opencl_Module_Correlator::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module_Spinors::get_work_sizes(kernel, ls, gs, num_groups);
@@ -162,7 +148,7 @@ cl_kernel Opencl_Module_Correlator::get_correlator_kernel(string which)
 	return 0;
 }
 
-void Opencl_Module_Correlator::create_point_source_device(cl_mem inout, int i, int spacepos, int timepos)
+void Opencl_Module_Correlator::create_point_source_device(const hardware::buffers::ScalarBuffer<spinor> * inout, int i, int spacepos, int timepos)
 {
 	set_zero_spinorfield_device(inout);
 	//query work-sizes for kernel
@@ -170,7 +156,7 @@ void Opencl_Module_Correlator::create_point_source_device(cl_mem inout, int i, i
 	cl_uint num_groups;
 	this->get_work_sizes(create_point_source, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(create_point_source, 0, sizeof(cl_mem), &inout);
+	int clerr = clSetKernelArg(create_point_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(create_point_source, 1, sizeof(int), &i);
@@ -185,28 +171,28 @@ void Opencl_Module_Correlator::create_point_source_device(cl_mem inout, int i, i
 	get_device()->enqueue_kernel( create_point_source, gs2, ls2);
 }
 
-void Opencl_Module_Correlator::create_stochastic_source_device(cl_mem inout)
+void Opencl_Module_Correlator::create_stochastic_source_device(const hardware::buffers::ScalarBuffer<spinor> * inout)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(create_stochastic_source, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(create_stochastic_source, 0, sizeof(cl_mem), &inout);
+	int clerr = clSetKernelArg(create_stochastic_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	throw Opencl_Error(clerr, "stochastic source not yet implemented!!", __FILE__, __LINE__);
 	get_device()->enqueue_kernel( create_stochastic_source, gs2, ls2);
 }
 
-void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kernel, cl_mem in, cl_mem correlator)
+void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::ScalarBuffer<spinor> * in, cl_mem correlator)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
 	this->get_work_sizes(correlator_kernel, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(correlator_kernel, 0, sizeof(cl_mem), &in);
+	int clerr = clSetKernelArg(correlator_kernel, 0, sizeof(cl_mem), in->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(correlator_kernel, 1, sizeof(cl_mem), &correlator);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);

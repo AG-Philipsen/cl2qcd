@@ -47,8 +47,8 @@ public:
 	Opencl_Module_Correlator(const meta::Inputparameters& params, hardware::Device * device)
 		: Opencl_Module_Spinors(params, device),
 		  create_point_source(0), create_stochastic_source(0),
-		  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0),
-		  clmem_source(0), clmem_corr() { };
+		  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0)
+		  { };
 
 	// OpenCL specific methods needed for building/compiling the OpenCL program
 	/**
@@ -56,11 +56,6 @@ public:
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
 	virtual void fill_collect_options(std::stringstream* collect_options) override;
-	/**
-	 * Collect the buffers to generate for OpenCL.
-	 * Virtual method, allows to include more buffers in inherited classes.
-	 */
-	virtual void fill_buffers() override;
 	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
@@ -71,11 +66,6 @@ public:
 	 * Virtual method, allows to clear additional kernels in inherited classes.
 	 */
 	virtual void clear_kernels() override;
-	/**
-	 * Clear out the buffers,
-	 * Virtual method, allows to clear additional buffers in inherited classes.
-	 */
-	virtual void clear_buffers() override;
 
 	/**
 	 * comutes work-sizes for a kernel
@@ -87,11 +77,11 @@ public:
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
-	void create_point_source_device(cl_mem inout, int i, int spacepos, int timepos);
+	void create_point_source_device(const hardware::buffers::ScalarBuffer<spinor> * inout, int i, int spacepos, int timepos);
 
-	void create_stochastic_source_device(cl_mem inout);
+	void create_stochastic_source_device(const hardware::buffers::ScalarBuffer<spinor> * inout);
 
-	void correlator_device(const cl_kernel correlator_kernel, cl_mem in, cl_mem correlator);
+	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::ScalarBuffer<spinor> * in, cl_mem correlator);
 
 	/**
 	 * Get kernel for correlator indicated by which
@@ -103,7 +93,6 @@ public:
 	/////////////////////////////////////////////////
 	//functions to get private variables
 	cl_mem get_clmem_corr();
-	cl_mem get_clmem_source();
 
 	/**
 	 * Print the profiling information to a file.
@@ -147,10 +136,6 @@ private:
 	cl_kernel correlator_ax;
 	cl_kernel correlator_ay;
 	cl_kernel correlator_az;
-
-	cl_mem clmem_source;
-
-	cl_mem clmem_corr;
 
 protected:
 	ClSourcePackage basic_correlator_code;

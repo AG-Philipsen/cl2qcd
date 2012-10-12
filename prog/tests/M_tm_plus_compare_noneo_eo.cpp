@@ -24,8 +24,8 @@ public:
 		finalize();
 	};
 
-	void runTestKernel2(cl_mem , cl_mem , cl_mem , const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float);
-	void runTestKernel(cl_mem out, cl_mem in1, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float);
+	void runTestKernel2(const hardware::buffers::ScalarBuffer<spinor> * , const hardware::buffers::Spinor * , const hardware::buffers::Spinor * , const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float);
+	void runTestKernel(const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::ScalarBuffer<spinor> * in1, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -62,17 +62,19 @@ public:
 private:
 	void fill_buffers();
 	void clear_buffers();
-	cl_mem in_eo1, in_eo2, in_eo1_converted, in_eo2_converted, in_noneo, in_noneo_converted, out_eo;
-	cl_mem out_noneo, out_eo_converted, out_noneo_converted;
+	const hardware::buffers::Spinor * in_eo1, * in_eo2;
+	const hardware::buffers::Spinor * in_eo1_converted, * in_eo2_converted;
+	const hardware::buffers::ScalarBuffer<spinor> * in_noneo, * in_noneo_converted;
+	const hardware::buffers::ScalarBuffer<spinor> * out_noneo, * out_noneo_converted, * out_eo, * out_eo_converted;
 	spinor * sf_in_noneo;
 	spinor * sf_in_noneo_converted;
 	spinor * sf_out_noneo;
 	spinor * sf_out_noneo_converted;
 
-	spinor * sf_in1_eo;
-	spinor * sf_in1_eo_converted;
-	spinor * sf_in2_eo;
-	spinor * sf_in2_eo_converted;
+	spinor * sf_in_eo1;
+	spinor * sf_in_eo1_converted;
+	spinor * sf_in_eo2;
+	spinor * sf_in_eo2_converted;
 
 	spinor * sf_out1_eo;
 	spinor * sf_out1_eo_converted;
@@ -462,46 +464,22 @@ void Dummyfield::convert_to_eo(spinor * sf_noneo, spinor* eo1, spinor * eo2)
 
 void Dummyfield::reset_outfield_eo()
 {
-	size_t ae_buf_size = meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
-	int err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_eo, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	/*
-	size_t ae_buf_size = spinor_module->get_eoprec_spinorfield_buffer_size();
-	int err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_eo, CL_TRUE, 0, ae_buf_size, sf_out_eo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	*/
-	return;
+	out_eo->load(sf_out_eo);
 }
 
 void Dummyfield::reset_outfield_eo_converted()
 {
-	size_t ae_buf_size = meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
-	int err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_eo_converted, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	/*
-	size_t ae_buf_size = spinor_module->get_eoprec_spinorfield_buffer_size();
-	int err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_eo, CL_TRUE, 0, ae_buf_size, sf_out_eo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	*/
-	return;
+	out_eo_converted->load(sf_out_eo_converted);
 }
 
 void Dummyfield::reset_outfield_noneo()
 {
-	size_t ae_buf_size = meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
-	int err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_noneo, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	return;
+	out_noneo->load(sf_out_noneo);
 }
 
 void Dummyfield::reset_outfield_noneo_converted()
 {
-	size_t ae_buf_size = meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
-	int err = clEnqueueWriteBuffer(static_cast<Device*>(opencl_modules[0])->get_queue(), out_noneo_converted, CL_TRUE, 0, ae_buf_size, sf_out_noneo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	return;
+	out_noneo_converted->load(sf_out_noneo_converted);
 }
 
 bool compare_entries(hmc_complex in1, hmc_complex in2)
@@ -600,19 +578,9 @@ bool compare_vectors(spinor * in1, spinor * in2, int size)
 void Dummyfield::verify_converted_vectors()
 {
 	//copy vectors to host
-
-	size_t size_noneo = meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
-	Opencl_Module_Spinors * spinor_module = static_cast<Opencl_Module_Spinors*>(opencl_modules[0]);
-	size_t size_eo = spinor_module->get_eoprec_spinorfield_buffer_size();
-
-	cl_int err;
-	err = clEnqueueReadBuffer (spinor_module->get_queue(), in_noneo_converted , CL_TRUE, 0, size_noneo, sf_in_noneo_converted, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), in_eo1_converted, CL_TRUE, 0, size_eo, sf_in1_eo_converted, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), in_eo2_converted, CL_TRUE, 0, size_eo, sf_in2_eo_converted, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-
+	in_noneo_converted->dump(sf_in_noneo_converted);
+	in_eo1_converted->dump(sf_in_eo1_converted);
+	in_eo2_converted->dump(sf_in_eo2_converted);
 
 	bool result = true;
 	logger.info() << "\tcompare in_noneo with in_noneo_converted";
@@ -623,7 +591,7 @@ void Dummyfield::verify_converted_vectors()
 		BOOST_REQUIRE_EQUAL(1, 0);
 	}
 	logger.info() << "\tcompare in_eo1 with in_eo1_converted";
-	result = compare_vectors(sf_in1_eo, sf_in1_eo_converted, meta::get_eoprec_spinorfieldsize(get_parameters()));
+	result = compare_vectors(sf_in_eo1, sf_in_eo1_converted, meta::get_eoprec_spinorfieldsize(get_parameters()));
 	if(result) logger.info() << "\t\t...passed!";
 	else {
 		logger.info() << "\t\t...did not pass!";
@@ -631,7 +599,7 @@ void Dummyfield::verify_converted_vectors()
 	}
 
 	logger.info() << "\tcompare in_eo1 with in_eo2_converted";
-	result = compare_vectors(sf_in2_eo, sf_in2_eo_converted, meta::get_eoprec_spinorfieldsize(get_parameters()));
+	result = compare_vectors(sf_in_eo2, sf_in_eo2_converted, meta::get_eoprec_spinorfieldsize(get_parameters()));
 	if(result) logger.info() << "\t\t...passed!";
 	else {
 		logger.info() << "\t\t...did not pass!";
@@ -644,21 +612,10 @@ void Dummyfield::verify_converted_vectors()
 void Dummyfield::verify_output_vectors()
 {
 	//copy vectors to host
-
-	size_t size_noneo = meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
-	Opencl_Module_Spinors * spinor_module = static_cast<Opencl_Module_Spinors*>(opencl_modules[0]);
-	size_t size_eo = spinor_module->get_eoprec_spinorfield_buffer_size();
-
-	cl_int err;
-	err = clEnqueueReadBuffer (spinor_module->get_queue(), out_noneo , CL_TRUE, 0, size_noneo, sf_out_noneo, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clEnqueueReadBuffer (spinor_module->get_queue(), out_noneo_converted , CL_TRUE, 0, size_noneo, sf_out_noneo_converted, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clEnqueueReadBuffer (spinor_module->get_queue(), out_eo , CL_TRUE, 0, size_noneo, sf_out_eo, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clEnqueueReadBuffer (spinor_module->get_queue(), out_eo_converted , CL_TRUE, 0, size_noneo, sf_out_eo_converted, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-
+	out_noneo->dump(sf_out_noneo);
+	out_noneo_converted->dump(sf_out_noneo_converted);
+	out_eo->dump(sf_out_eo);
+	out_eo_converted->dump(sf_out_eo_converted);
 
 	bool result = true;
 	logger.info() << "\tcompare out_noneo with out_noneo_converted";
@@ -699,6 +656,8 @@ void Dummyfield::verify_output_vectors()
 
 void Dummyfield::fill_buffers()
 {
+	using namespace hardware::buffers;
+
 	// don't invoke parent function as we don't require the original buffers
 	cl_int err;
 	cl_context context = opencl_modules[0]->get_context();
@@ -708,14 +667,14 @@ void Dummyfield::fill_buffers()
 	NUM_ELEMENTS_SF_EO =  meta::get_eoprec_spinorfieldsize(get_parameters());
 	NUM_ELEMENTS_SF_NON_EO =  meta::get_spinorfieldsize(get_parameters());
 
-	sf_in1_eo = new spinor[NUM_ELEMENTS_SF_EO];
-	sf_in1_eo_converted = new spinor[NUM_ELEMENTS_SF_EO];
-	sf_in2_eo = new spinor[NUM_ELEMENTS_SF_EO];
-	sf_in2_eo_converted = new spinor[NUM_ELEMENTS_SF_EO];
+	sf_in_eo1 = new spinor[NUM_ELEMENTS_SF_EO];
+	sf_in_eo1_converted = new spinor[NUM_ELEMENTS_SF_EO];
+	sf_in_eo2 = new spinor[NUM_ELEMENTS_SF_EO];
+	sf_in_eo2_converted = new spinor[NUM_ELEMENTS_SF_EO];
 	sf_out2_eo = new spinor[NUM_ELEMENTS_SF_EO];
 
-	sf_in1_eo_converted = new spinor[NUM_ELEMENTS_SF_EO];
-	sf_in2_eo_converted = new spinor[NUM_ELEMENTS_SF_EO];
+	sf_in_eo1_converted = new spinor[NUM_ELEMENTS_SF_EO];
+	sf_in_eo2_converted = new spinor[NUM_ELEMENTS_SF_EO];
 
 	sf_out1_eo = new spinor[NUM_ELEMENTS_SF_EO];
 	sf_out2_eo = new spinor[NUM_ELEMENTS_SF_EO];
@@ -732,18 +691,18 @@ void Dummyfield::fill_buffers()
 
 	//use the variable use_cg to switch between cold and random input sf
 	if(get_parameters().get_solver() == meta::Inputparameters::cg) {
-		fill_eo_sf_with_specific_float(sf_in1_eo, sf_in2_eo, get_parameters());
+		fill_eo_sf_with_specific_float(sf_in_eo1, sf_in_eo2, get_parameters());
 		fill_noneo_sf_with_specific_float(sf_in_noneo, get_parameters());
 	} else {
-		fill_sf_with_random_eo(sf_in1_eo, sf_in2_eo, NUM_ELEMENTS_SF_EO, 123456);
+		fill_sf_with_random_eo(sf_in_eo1, sf_in_eo2, NUM_ELEMENTS_SF_EO, 123456);
 		fill_sf_with_random_noneo(sf_in_noneo, NUM_ELEMENTS_SF_NON_EO, 123456, get_parameters());
 	}
 
-	BOOST_REQUIRE(sf_in1_eo);
-	BOOST_REQUIRE(sf_in2_eo);
+	BOOST_REQUIRE(sf_in_eo1);
+	BOOST_REQUIRE(sf_in_eo2);
 	BOOST_REQUIRE(sf_in_noneo);
-	BOOST_REQUIRE(sf_in1_eo_converted);
-	BOOST_REQUIRE(sf_in2_eo_converted);
+	BOOST_REQUIRE(sf_in_eo1_converted);
+	BOOST_REQUIRE(sf_in_eo2_converted);
 	BOOST_REQUIRE(sf_in_noneo_converted);
 	fill_with_zero(sf_out_eo, NUM_ELEMENTS_SF_NON_EO);
 	fill_with_zero(sf_out_eo_converted, NUM_ELEMENTS_SF_NON_EO);
@@ -755,47 +714,29 @@ void Dummyfield::fill_buffers()
 	fill_with_zero(sf_out2_eo_converted, NUM_ELEMENTS_SF_EO);
 
 	//create buffers
-
-	size_t sf_buf_size_noneo;
-	sf_buf_size_noneo = meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
 	Opencl_Module_Spinors * spinor_module = static_cast<Opencl_Module_Spinors*>(opencl_modules[0]);
-	size_t sf_eoprec_buffer_size = spinor_module->get_eoprec_spinorfield_buffer_size();
 	//create buffer for sf on device (and copy sf_in to both for convenience)
-	in_eo1 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in_eo2 = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in_eo1_converted = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in_eo2_converted = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	out_eo = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size_noneo, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	out_eo_converted = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size_noneo, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	in_eo1 = new Spinor(meta::get_eoprec_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	in_eo2 = new Spinor(meta::get_eoprec_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	in_eo1_converted = new Spinor(meta::get_eoprec_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	in_eo2_converted = new Spinor(meta::get_eoprec_spinorfieldsize(get_parameters()), spinor_module->get_device());
 
-	in_noneo = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size_noneo, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in_noneo_converted = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size_noneo, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	out_noneo_converted = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size_noneo, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	out_noneo = clCreateBuffer(context, CL_MEM_READ_ONLY , sf_buf_size_noneo, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	in_noneo = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	in_noneo_converted = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
+
+	out_noneo = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	out_noneo_converted = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	out_eo = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	out_eo_converted = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
 
 	//copy content into buffers
 
-	spinor_module->copy_to_eoprec_spinorfield_buffer(in_eo1, sf_in1_eo);
-	spinor_module->copy_to_eoprec_spinorfield_buffer(in_eo2, sf_in2_eo);
+	spinor_module->copy_to_eoprec_spinorfield_buffer(in_eo1, sf_in_eo1);
+	spinor_module->copy_to_eoprec_spinorfield_buffer(in_eo2, sf_in_eo2);
 
-	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), out_eo, CL_TRUE, 0, sf_buf_size_noneo, sf_out_eo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), in_noneo, CL_TRUE, 0, sf_buf_size_noneo, sf_in_noneo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
-	err = clEnqueueWriteBuffer(static_cast<Device*>(spinor_module)->get_queue(), out_noneo, CL_TRUE, 0, sf_buf_size_noneo, sf_out_noneo, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	out_eo->load(sf_out_eo);
+	in_noneo->load(sf_in_noneo);
+	out_noneo->load(sf_out_noneo);
 
 	this->reset_outfield_noneo();
 
@@ -812,22 +753,22 @@ void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
-	clReleaseMemObject(in_eo1);
-	clReleaseMemObject(in_eo2);
-	clReleaseMemObject(in_eo1_converted);
-	clReleaseMemObject(in_eo2_converted);
-	clReleaseMemObject(out_eo);
+	delete in_eo1;
+	delete in_eo2;
+	delete in_eo1_converted;
+	delete in_eo2_converted;
+	delete out_eo;
 	clReleaseMemObject(sqnorm);
 
-	delete[] sf_in1_eo;
-	delete[] sf_in2_eo;
-	delete[] sf_in1_eo_converted;
-	delete[] sf_in2_eo_converted;
+	delete[] sf_in_eo1;
+	delete[] sf_in_eo2;
+	delete[] sf_in_eo1_converted;
+	delete[] sf_in_eo2_converted;
 	delete[] sf_out_eo;
 
-	clReleaseMemObject(in_noneo);
-	clReleaseMemObject(in_noneo_converted);
-	clReleaseMemObject(out_noneo);
+	delete in_noneo;
+	delete in_noneo_converted;
+	delete out_noneo;
 
 	delete[] sf_in_noneo;
 	delete[] sf_in_noneo_converted;
@@ -840,16 +781,16 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
+void Device::runTestKernel2(const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
 {
+	using namespace hardware::buffers;
 
 	//suppose in1 is the even, in2 the odd input vector
 	//create 3 buffers for intermediate results
-	size_t sf_eoprec_buffer_size = this->get_eoprec_spinorfield_buffer_size();
 	cl_int err;
-	cl_mem out_tmp_eo1 = clCreateBuffer(this->get_context(), CL_MEM_READ_WRITE , sf_eoprec_buffer_size, 0, &err );
-	cl_mem out_tmp_eo2 = clCreateBuffer(this->get_context(), CL_MEM_READ_WRITE , sf_eoprec_buffer_size, 0, &err );
-	cl_mem tmp_eo = clCreateBuffer(this->get_context(), CL_MEM_READ_WRITE , sf_eoprec_buffer_size, 0, &err );
+	const Spinor out_tmp_eo1(meta::get_eoprec_spinorfieldsize(get_parameters()), get_device());
+	const Spinor out_tmp_eo2(meta::get_eoprec_spinorfieldsize(get_parameters()), get_device());
+	const Spinor tmp_eo(meta::get_eoprec_spinorfieldsize(get_parameters()), get_device());
 
 	//create -1 on device
 	cl_mem minusone = clCreateBuffer(this->get_context(), CL_MEM_READ_WRITE , sizeof(hmc_complex), 0, &err );
@@ -860,34 +801,31 @@ void Device::runTestKernel2(cl_mem out, cl_mem in1, cl_mem in2, const hardware::
 
 
 	//now calc out_tmp_eo1 = (R_even in1 + D_eo in2)
-	this->set_zero_spinorfield_eoprec_device(tmp_eo);
-	this->set_zero_spinorfield_eoprec_device(out_tmp_eo1);
+	this->set_zero_spinorfield_eoprec_device(&tmp_eo);
+	this->set_zero_spinorfield_eoprec_device(&out_tmp_eo1);
 
-	this->dslash_eo_device(in2, out_tmp_eo1, gf, EO, kappa);
-	this->M_tm_sitediagonal_device(in1, tmp_eo, mubar);
+	this->dslash_eo_device(in2, &out_tmp_eo1, gf, EO, kappa);
+	this->M_tm_sitediagonal_device(in1, &tmp_eo, mubar);
 
-	this->saxpy_eoprec_device(out_tmp_eo1, tmp_eo, minusone, out_tmp_eo1);
+	this->saxpy_eoprec_device(&out_tmp_eo1, &tmp_eo, minusone, &out_tmp_eo1);
 
 	//now calc out_tmp_eo2 = ( R_odd in2 + D_oe in1)
-	this->set_zero_spinorfield_eoprec_device(tmp_eo);
-	this->set_zero_spinorfield_eoprec_device(out_tmp_eo2);
+	this->set_zero_spinorfield_eoprec_device(&tmp_eo);
+	this->set_zero_spinorfield_eoprec_device(&out_tmp_eo2);
 
-	this->dslash_eo_device(in1, out_tmp_eo2, gf, OE, kappa);
-	this->M_tm_sitediagonal_device(in2, tmp_eo, mubar);
+	this->dslash_eo_device(in1, &out_tmp_eo2, gf, OE, kappa);
+	this->M_tm_sitediagonal_device(in2, &tmp_eo, mubar);
 
-	this->saxpy_eoprec_device(out_tmp_eo2, tmp_eo, minusone, out_tmp_eo2);
+	this->saxpy_eoprec_device(&out_tmp_eo2, &tmp_eo, minusone, &out_tmp_eo2);
 
 	//now, both output vectors have to be converted back to noneo
-	this->convert_from_eoprec_device(out_tmp_eo1, out_tmp_eo2, out);
+	this->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, out);
 
 	clReleaseMemObject(sqnorm);
 	clReleaseMemObject(minusone);
-	clReleaseMemObject(out_tmp_eo1);
-	clReleaseMemObject(out_tmp_eo2);
-	clReleaseMemObject(tmp_eo);
 }
 
-void Device::runTestKernel(cl_mem out, cl_mem in1, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
+void Device::runTestKernel(const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::ScalarBuffer<spinor> * in1, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
 {
 	this->M_tm_plus_device(in1, out, gf, kappa , mubar );
 }

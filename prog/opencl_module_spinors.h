@@ -22,12 +22,11 @@
 #include "host_use_timer.h"
 #include "host_random.h"
 #include "opencl_compiler.hpp"
-
 #include "opencl_module.h"
 #include "opencl_module_ran.h"
-
+#include "hardware/buffers/scalar_buffer.hpp"
+#include "hardware/buffers/spinor.hpp"
 #include "exceptions.h"
-
 #include "types_fermions.h"
 
 /**
@@ -86,38 +85,31 @@ public:
 	// device operations
 
 	//    linear Algebra operations
-	void convert_from_eoprec_device(cl_mem in1, cl_mem in2, cl_mem out);
-	void convert_to_eoprec_device(cl_mem out1, cl_mem out2, cl_mem in);
+	void convert_from_eoprec_device(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::ScalarBuffer<spinor> * out);
+	void convert_to_eoprec_device(const hardware::buffers::Spinor * out1, const hardware::buffers::Spinor * out2, const hardware::buffers::ScalarBuffer<spinor> * in);
 
-	void set_complex_to_scalar_product_device(cl_mem a, cl_mem b, cl_mem out);
-	void set_complex_to_scalar_product_eoprec_device(cl_mem a, cl_mem b, cl_mem out);
+	void set_complex_to_scalar_product_device(const hardware::buffers::ScalarBuffer<spinor> * a, const hardware::buffers::ScalarBuffer<spinor> * b, cl_mem out);
+	void set_complex_to_scalar_product_eoprec_device(const hardware::buffers::Spinor * a, const hardware::buffers::Spinor * b, cl_mem out);
 	void set_complex_to_ratio_device(cl_mem a, cl_mem b, cl_mem out);
 	void set_complex_to_product_device(cl_mem a, cl_mem b, cl_mem out);
-	void set_float_to_global_squarenorm_device(cl_mem a, cl_mem out);
-	void set_float_to_global_squarenorm_eoprec_device(cl_mem a, cl_mem out);
-	void set_zero_spinorfield_device(cl_mem x);
-	void set_zero_spinorfield_eoprec_device(cl_mem x);
-	void saxpy_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out);
-	void sax_device(cl_mem x, cl_mem alpha, cl_mem out);
-	void saxsbypz_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out);
-	void saxpy_eoprec_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out);
-	void sax_eoprec_device(cl_mem x, cl_mem alpha, cl_mem out);
-	void saxsbypz_eoprec_device(cl_mem x, cl_mem y, cl_mem z, cl_mem alpha, cl_mem beta, cl_mem out);
-	void create_point_source_device(cl_mem inout, int i, int spacepos, int timepos);
-	void create_point_source_eoprec_device(cl_mem inout_even, cl_mem inout_odd, cl_mem gf, int i, int spacepos, int timepos);
-	void set_spinorfield_cold_device(cl_mem inout);
-	void set_eoprec_spinorfield_cold_device(cl_mem inout);
+	void set_float_to_global_squarenorm_device(const hardware::buffers::ScalarBuffer<spinor> * a, cl_mem out);
+	void set_float_to_global_squarenorm_eoprec_device(const hardware::buffers::Spinor * a, cl_mem out);
+	void set_zero_spinorfield_device(const hardware::buffers::ScalarBuffer<spinor> * x);
+	void set_zero_spinorfield_eoprec_device(const hardware::buffers::Spinor * x);
+	void saxpy_device(const hardware::buffers::ScalarBuffer<spinor> * x, const hardware::buffers::ScalarBuffer<spinor> * y, cl_mem alpha, const hardware::buffers::ScalarBuffer<spinor> * out);
+	void sax_device(const hardware::buffers::ScalarBuffer<spinor> * x, cl_mem alpha, const hardware::buffers::ScalarBuffer<spinor> * out);
+	void saxsbypz_device(const hardware::buffers::ScalarBuffer<spinor> * x, const hardware::buffers::ScalarBuffer<spinor> * y, const hardware::buffers::ScalarBuffer<spinor> * z, cl_mem alpha, cl_mem beta, const hardware::buffers::ScalarBuffer<spinor> * out);
+	void saxpy_eoprec_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, cl_mem alpha, const hardware::buffers::Spinor * out);
+	void sax_eoprec_device(const hardware::buffers::Spinor * x, cl_mem alpha, const hardware::buffers::Spinor * out);
+	void saxsbypz_eoprec_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hardware::buffers::Spinor * z, cl_mem alpha, cl_mem beta, const hardware::buffers::Spinor * out);
+	void create_point_source_device(const hardware::buffers::ScalarBuffer<spinor> * inout, int i, int spacepos, int timepos);
+	void create_point_source_eoprec_device(const hardware::buffers::Spinor * inout_even, const hardware::buffers::Spinor * inout_odd, cl_mem gf, int i, int spacepos, int timepos);
+	void set_spinorfield_cold_device(const hardware::buffers::ScalarBuffer<spinor> * inout);
+	void set_eoprec_spinorfield_cold_device(const hardware::buffers::Spinor * inout);
 
 	//    merged kernel calls
-	void saxpy_AND_squarenorm_eo_device(cl_mem x, cl_mem y, cl_mem alpha, cl_mem out, cl_mem sq_out);
+	void saxpy_AND_squarenorm_eo_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, cl_mem alpha, const hardware::buffers::Spinor * out, cl_mem sq_out);
 
-	/**
-	 * Query the size required for a buffer to contain an even-odd spinorfield
-	 * in the format used by the implementation.
-	 *
-	 * @return The buffer size in bytes
-	 */
-	size_t get_eoprec_spinorfield_buffer_size();
 	/**
 	 * Copy an even-odd preconditioned spinorfield to the given buffer.
 	 *
@@ -125,7 +117,7 @@ public:
 	 *            be filled with the spinorfield in an implementation chosen format.
 	 * @param source An array of spinors representing an even-odd field.
 	 */
-	void copy_to_eoprec_spinorfield_buffer(cl_mem buf, const spinor * const source);
+	void copy_to_eoprec_spinorfield_buffer(const hardware::buffers::Spinor * buf, const spinor * const source);
 
 	/**
 	 * Print the profiling information to a file.
@@ -192,10 +184,8 @@ private:
 	cl_kernel convertSpinorfieldToSOA_eo;
 	cl_kernel convertSpinorfieldFromSOA_eo;
 
-	size_t eoprec_spinorfield_buf_size;
-
-	void convertSpinorfieldToSOA_eo_device(cl_mem out, cl_mem in);
-	void convertSpinorfieldFromSOA_eo_device(cl_mem out, cl_mem in);
+	void convertSpinorfieldToSOA_eo_device(const hardware::buffers::Spinor * out, const hardware::buffers::ScalarBuffer<spinor> * in);
+	void convertSpinorfieldFromSOA_eo_device(const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::Spinor * in);
 };
 
 #endif //OPENCLMODULSPINORSH

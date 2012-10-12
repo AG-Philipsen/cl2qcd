@@ -469,6 +469,8 @@ void test_f_gauge_tlsym(std::string inputfile)
 
 void test_f_fermion(std::string inputfile)
 {
+	using namespace hardware::buffers;
+
 	std::string kernelName = "f_fermion";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
@@ -477,7 +479,7 @@ void test_f_fermion(std::string inputfile)
 	TestGaugefield cpu(&system);
 	Opencl_Module_Hmc * device = cpu.get_device();
 	cl_int err = CL_SUCCESS;
-	cl_mem in1, in2, out, sqnorm;
+	cl_mem out, sqnorm;
 	spinor * sf_in1;
 	spinor * sf_in2;
 	ae * ae_out;
@@ -505,34 +507,30 @@ void test_f_fermion(std::string inputfile)
 
 	size_t sf_buf_size = meta::get_spinorfieldsize(params) * sizeof(spinor);
 
-	in1 = clCreateBuffer(device->get_context(), CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in2 = clCreateBuffer(device->get_context(), CL_MEM_READ_ONLY , sf_buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(device->get_queue(), in1, CL_TRUE, 0, sf_buf_size, sf_in1, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	err = clEnqueueWriteBuffer(device->get_queue(), in2, CL_TRUE, 0, sf_buf_size, sf_in2, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	const ScalarBuffer<spinor> in1(NUM_ELEMENTS_SF, device->get_device());
+	const ScalarBuffer<spinor> in2(NUM_ELEMENTS_SF, device->get_device());
+	in1.load(sf_in1);
+	in2.load(sf_in2);
 	out = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, device->get_gaugemomentum_buffer_size(), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(ae_out));
+	device->importGaugemomentumBuffer(out, ae_out);
 	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	logger.info() << "|phi_1|^2:";
 	hmc_float cpu_back;
-	device->set_float_to_global_squarenorm_device(in1, sqnorm);
+	device->set_float_to_global_squarenorm_device(&in1, sqnorm);
 	err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << cpu_back;
 	logger.info() << "|phi_2|^2:";
 	hmc_float cpu_back2;
-	device->set_float_to_global_squarenorm_device(in2, sqnorm);
+	device->set_float_to_global_squarenorm_device(&in2, sqnorm);
 	err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back2, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << cpu_back2;
 	logger.info() << "Run kernel";
-	device->fermion_force_device( in1, in2, device->get_gaugefield()  , out, params.get_kappa());
+	device->fermion_force_device( &in1, &in2, device->get_gaugefield()  , out, params.get_kappa());
 	logger.info() << "result:";
 	hmc_float cpu_res;
 	device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
@@ -543,8 +541,6 @@ void test_f_fermion(std::string inputfile)
 	cpu.finalize();
 
 	logger.info() << "Clear buffers";
-	clReleaseMemObject(in1);
-	clReleaseMemObject(in2);
 	clReleaseMemObject(out);
 	clReleaseMemObject(sqnorm);
 	delete[] sf_in1;
@@ -557,6 +553,8 @@ void test_f_fermion(std::string inputfile)
 
 void test_f_fermion_eo(std::string inputfile)
 {
+	using namespace hardware::buffers;
+
 	std::string kernelName = "f_fermion_eo";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
@@ -565,7 +563,7 @@ void test_f_fermion_eo(std::string inputfile)
 	TestGaugefield cpu(&system);
 	Opencl_Module_Hmc * device = cpu.get_device();
 	cl_int err = CL_SUCCESS;
-	cl_mem in1, in2, in3, in4, out;
+	cl_mem out;
 	cl_mem sqnorm;
 	spinor * sf_in1;
 	spinor * sf_in2;
@@ -600,24 +598,19 @@ void test_f_fermion_eo(std::string inputfile)
 	BOOST_REQUIRE(sf_in4);
 	BOOST_REQUIRE(ae_out);
 
-	size_t sf_eoprec_buffer_size = device->get_eoprec_spinorfield_buffer_size();
-	in1 = clCreateBuffer(device->get_context(), CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in2 = clCreateBuffer(device->get_context(), CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in3 = clCreateBuffer(device->get_context(), CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	in4 = clCreateBuffer(device->get_context(), CL_MEM_READ_ONLY , sf_eoprec_buffer_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	const Spinor in1(NUM_ELEMENTS_SF, device->get_device());
+	const Spinor in2(NUM_ELEMENTS_SF, device->get_device());
+	const Spinor in3(NUM_ELEMENTS_SF, device->get_device());
+	const Spinor in4(NUM_ELEMENTS_SF, device->get_device());
 	out = clCreateBuffer(device->get_context(), CL_MEM_WRITE_ONLY, device->get_gaugemomentum_buffer_size(), 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	device->copy_to_eoprec_spinorfield_buffer(in1, sf_in1);
-	device->copy_to_eoprec_spinorfield_buffer(in2, sf_in2);
-	device->copy_to_eoprec_spinorfield_buffer(in3, sf_in3);
-	device->copy_to_eoprec_spinorfield_buffer(in4, sf_in4);
-	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(ae_out));
+	device->copy_to_eoprec_spinorfield_buffer(&in1, sf_in1);
+	device->copy_to_eoprec_spinorfield_buffer(&in2, sf_in2);
+	device->copy_to_eoprec_spinorfield_buffer(&in3, sf_in3);
+	device->copy_to_eoprec_spinorfield_buffer(&in4, sf_in4);
+	device->importGaugemomentumBuffer(out, ae_out);
 
 	//switch according to "use_pointsource"
 	hmc_float cpu_res, cpu_back, cpu_back2, cpu_back3, cpu_back4;
@@ -626,29 +619,29 @@ void test_f_fermion_eo(std::string inputfile)
 
 	if(params.get_use_pointsource()) {
 		logger.info() << "|phi_even_1|^2:";
-		device->set_float_to_global_squarenorm_eoprec_device(in1, sqnorm);
+		device->set_float_to_global_squarenorm_eoprec_device(&in1, sqnorm);
 		err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
 		BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 		logger.info() << cpu_back;
 		logger.info() << "|phi_even_2|^2:";
-		device->set_float_to_global_squarenorm_eoprec_device(in4, sqnorm);
+		device->set_float_to_global_squarenorm_eoprec_device(&in4, sqnorm);
 		err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back2, 0, 0, 0);
 		BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 		logger.info() << cpu_back2;
 		logger.info() << "Run kernel";
 		int tmp = EVEN;
 		//this is then force(Y_even, X_odd) == force(in1, in4)
-		device->fermion_force_eo_device(in1, in4, device->get_gaugefield(), out, tmp, params.get_kappa() );
+		device->fermion_force_eo_device(&in1, &in4, device->get_gaugefield(), out, tmp, params.get_kappa() );
 
 		logger.info() << "|force (even)|^2:";
 	} else {
 		logger.info() << "|phi_odd_1|^2:";
-		device->set_float_to_global_squarenorm_eoprec_device(in2, sqnorm);
+		device->set_float_to_global_squarenorm_eoprec_device(&in2, sqnorm);
 		err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back3, 0, 0, 0);
 		BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 		logger.info() << cpu_back3;
 		logger.info() << "|phi_odd_2|^2:";
-		device->set_float_to_global_squarenorm_eoprec_device(in3, sqnorm);
+		device->set_float_to_global_squarenorm_eoprec_device(&in3, sqnorm);
 		err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back4, 0, 0, 0);
 		BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 		logger.info() << cpu_back4;
@@ -656,7 +649,7 @@ void test_f_fermion_eo(std::string inputfile)
 
 		int tmp = ODD;
 		//this is then force(Y_odd, X_even) == force(in2, in3)
-		device->fermion_force_eo_device(in2, in3, device->get_gaugefield(), out, tmp, params.get_kappa() );
+		device->fermion_force_eo_device(&in2, &in3, device->get_gaugefield(), out, tmp, params.get_kappa() );
 		logger.info() << "|force (odd)|^2:";
 	}
 
@@ -668,10 +661,6 @@ void test_f_fermion_eo(std::string inputfile)
 	cpu.finalize();
 
 	logger.info() << "Clear buffers";
-	clReleaseMemObject(in1);
-	clReleaseMemObject(in2);
-	clReleaseMemObject(in3);
-	clReleaseMemObject(in4);
 	clReleaseMemObject(out);
 	clReleaseMemObject(sqnorm);
 

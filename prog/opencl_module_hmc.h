@@ -53,7 +53,14 @@ public:
 	Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device, meta::Counter * inversions0, meta::Counter * inversions1,
 	                  meta::Counter * inversions_mp0, meta::Counter * inversions_mp1)
 		: Opencl_Module_Fermions(params, device), new_u(get_gaugefield()->get_elements(), device), gaugemomentum_buf_size(0),
-		  inversions0(inversions0), inversions1(inversions1), inversions_mp0(inversions_mp0), inversions_mp1(inversions_mp1) { }
+		  inversions0(inversions0), inversions1(inversions1), inversions_mp0(inversions_mp0), inversions_mp1(inversions_mp1),
+		  clmem_phi_inv(meta::get_spinorfieldsize(params), device),
+		  clmem_phi_inv_eo(meta::get_eoprec_spinorfieldsize(params), device),
+		  clmem_phi(meta::get_spinorfieldsize(params), device),
+		  clmem_phi_mp(meta::get_spinorfieldsize(params), device),
+		  clmem_phi_eo(meta::get_eoprec_spinorfieldsize(params), device),
+		  clmem_phi_mp_eo(meta::get_eoprec_spinorfieldsize(params), device)
+		{ };
 
 	// OpenCL specific methods needed for building/compiling the OpenCL program
 	/**
@@ -97,10 +104,10 @@ public:
 	cl_mem get_clmem_p();
 	cl_mem get_clmem_new_p();
 	const hardware::buffers::SU3 * get_new_u();
-	cl_mem get_clmem_phi();
-	cl_mem get_clmem_phi_eo();
-	cl_mem get_clmem_phi_mp();
-	cl_mem get_clmem_phi_mp_eo();
+	const hardware::buffers::ScalarBuffer<spinor> * get_clmem_phi();
+	const hardware::buffers::Spinor * get_clmem_phi_eo();
+	const hardware::buffers::ScalarBuffer<spinor> * get_clmem_phi_mp();
+	const hardware::buffers::Spinor * get_clmem_phi_mp_eo();
 	cl_mem get_clmem_s_fermion_init();
 	cl_mem get_clmem_s_fermion_mp_init();
 
@@ -130,10 +137,10 @@ public:
 	void gauge_force_device(const hardware::buffers::SU3 * gf, cl_mem out);
 	void gauge_force_tlsym_device();
 	void gauge_force_tlsym_device(const hardware::buffers::SU3 * gf, cl_mem out);
-	void fermion_force_device(cl_mem Y, cl_mem X, hmc_float kappa = ARG_DEF);
-	void fermion_force_device(cl_mem Y, cl_mem X, const hardware::buffers::SU3 *, cl_mem, hmc_float kappa = ARG_DEF);
-	void fermion_force_eo_device(cl_mem Y, cl_mem X, int evenodd, hmc_float kappa = ARG_DEF);
-	void fermion_force_eo_device(cl_mem Y, cl_mem X, const hardware::buffers::SU3 *, cl_mem, int evenodd, hmc_float kappa = ARG_DEF);
+	void fermion_force_device(const hardware::buffers::ScalarBuffer<spinor> * Y, const hardware::buffers::ScalarBuffer<spinor> * X, hmc_float kappa = ARG_DEF);
+	void fermion_force_device(const hardware::buffers::ScalarBuffer<spinor> * Y, const hardware::buffers::ScalarBuffer<spinor> * X, const hardware::buffers::SU3 *, cl_mem, hmc_float kappa = ARG_DEF);
+	void fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, int evenodd, hmc_float kappa = ARG_DEF);
+	void fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, const hardware::buffers::SU3 *, cl_mem, int evenodd, hmc_float kappa = ARG_DEF);
 	void stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate);
 	hmc_float calc_s_fermion();
 	hmc_float calc_s_fermion_mp();
@@ -222,13 +229,13 @@ private:
 	//force field
 	cl_mem clmem_force;
 	//inverted spinorfield
-	cl_mem clmem_phi_inv;
-	cl_mem clmem_phi_inv_eo;
+	const hardware::buffers::ScalarBuffer<spinor> clmem_phi_inv;
+	const hardware::buffers::Spinor clmem_phi_inv_eo;
 	//D(gaussian spinorfield)
-	cl_mem clmem_phi;
-	cl_mem clmem_phi_mp;
-	cl_mem clmem_phi_eo;
-	cl_mem clmem_phi_mp_eo;
+	const hardware::buffers::ScalarBuffer<spinor> clmem_phi;
+	const hardware::buffers::ScalarBuffer<spinor> clmem_phi_mp;
+	const hardware::buffers::Spinor clmem_phi_eo;
+	const hardware::buffers::Spinor clmem_phi_mp_eo;
 
 	ClSourcePackage basic_hmc_code;
 
