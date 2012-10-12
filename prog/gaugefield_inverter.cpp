@@ -39,6 +39,10 @@ void Gaugefield_inverter::init_tasks()
 
 	opencl_modules[task_correlator] = new Opencl_Module_Correlator(get_parameters(), get_device_for_task(task_correlator));
 	get_task_correlator()->init();
+
+	clmem_corr = new hardware::buffers::ScalarBuffer<spinor>(num_sources * meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
+	clmem_source_solver = new hardware::buffers::ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), get_task_solver()->get_device());
+	clmem_source_corr = new hardware::buffers::ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
 }
 
 void Gaugefield_inverter::delete_variables()
@@ -48,6 +52,10 @@ void Gaugefield_inverter::delete_variables()
 
 void Gaugefield_inverter::finalize_opencl()
 {
+	delete clmem_source_solver;
+	delete clmem_source_corr;
+	delete clmem_corr;
+
 	/// @todo this must be generalized if more than one device is used for one task
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
 		opencl_modules[ntask]->finalize();
@@ -58,11 +66,6 @@ void Gaugefield_inverter::finalize_opencl()
 	delete [] solution_buffer;
 	logger.debug() << "free source buffer";
 	delete [] source_buffer;
-}
-
-void Gaugefield_inverter::sync_solution_buffer()
-{
-	get_clmem_corr()->load(solution_buffer);
 }
 
 void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
@@ -96,14 +99,14 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 		//copy source from to device
 		//NOTE: this is a blocking call!
 		logger.debug() << "copy pointsource between devices";
-		get_clmem_source()->load(&source_buffer[k * meta::get_vol4d(get_parameters())]);
+		get_clmem_source_solver()->load(&source_buffer[k * meta::get_vol4d(get_parameters())]);
 		logger.debug() << "calling solver..";
 		if(use_eo) {
 			::Aee f_eo(solver);
-			solver->solver(f_eo, &clmem_res, get_clmem_source(), solver->get_gaugefield(), solver_timer);
+			solver->solver(f_eo, &clmem_res, get_clmem_source_solver(), solver->get_gaugefield(), solver_timer);
 		} else {
 			::M f_neo(solver);
-			solver->solver(f_neo, &clmem_res, get_clmem_source(), solver->get_gaugefield(), solver_timer);
+			solver->solver(f_neo, &clmem_res, get_clmem_source_solver(), solver->get_gaugefield(), solver_timer);
 		}
 
 		//add solution to solution-buffer
@@ -122,7 +125,7 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 	using namespace std;
 
 	//for now, make sure clmem_corr is properly filled; maybe later we can increase performance a bit by playing with this...
-	sync_solution_buffer();
+	get_clmem_corr()->load(solution_buffer);
 
 	//suppose that the buffer on the device has been filled with the prior calculated solutions of the solver
 	logger.debug() << "start calculating correlators...";
@@ -286,28 +289,32 @@ void Gaugefield_inverter::create_sources()
 	if(get_parameters().get_use_pointsource() == true) {
 		logger.debug() << "start creating point-sources...";
 		for(int k = 0; k < 12; k++) {
-			get_task_correlator()->create_point_source_device(get_clmem_source(), k, get_source_pos_spatial(get_parameters()), get_parameters().get_pointsource_t());
+			get_task_correlator()->create_point_source_device(get_clmem_source_corr(), k, get_source_pos_spatial(get_parameters()), get_parameters().get_pointsource_t());
 			logger.debug() << "copy pointsource to host";
-			get_clmem_source()->dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);
+			get_clmem_source_corr()->dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);
 		}
 	} else {
 		logger.debug() << "start creating stochastic-sources...";
 		int num_sources = get_parameters().get_num_sources();
 		for(int k = 0; k < num_sources; k++) {
-			get_task_correlator()->create_stochastic_source_device(get_clmem_source());
+			get_task_correlator()->create_stochastic_source_device(get_clmem_source_corr());
 			logger.debug() << "copy stochastic-source to host";
-			get_clmem_source()->dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);
+			get_clmem_source_corr()->dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);
 		}
 	}
 }
 
 const hardware::buffers::ScalarBuffer<spinor> * Gaugefield_inverter::get_clmem_corr()
 {
-	return &clmem_corr;
+	return clmem_corr;
 }
 
-
-const hardware::buffers::ScalarBuffer<spinor> * Gaugefield_inverter::get_clmem_source()
+const hardware::buffers::ScalarBuffer<spinor> * Gaugefield_inverter::get_clmem_source_corr()
 {
-	return &clmem_source;
+	return clmem_source_corr;
+}
+
+const hardware::buffers::ScalarBuffer<spinor> * Gaugefield_inverter::get_clmem_source_solver()
+{
+	return clmem_source_solver;
 }

@@ -46,9 +46,9 @@ public:
 	 */
 	Gaugefield_inverter(const hardware::System * system)
 		: Gaugefield_hybrid(system),
-		  clmem_source(meta::get_spinorfieldsize(system->get_inputparameters()), system->get_devices()[0]), // TODO init on proper device
-		  clmem_corr(meta::get_spinorfieldsize(system->get_inputparameters())
-					 * (system->get_inputparameters().get_use_pointsource() ? 12 : system->get_inputparameters().get_num_sources()), system->get_devices()[0])  // TODO init on proper device
+		  clmem_source_solver(nullptr),
+		  clmem_source_corr(nullptr),
+		  clmem_corr(nullptr)
 		{ };
 
 	/**
@@ -96,19 +96,19 @@ public:
 	 */
 	Opencl_Module_Correlator* get_task_correlator();
 
-	void sync_solution_buffer();
-
 	void create_sources();
 
 	const hardware::buffers::ScalarBuffer<spinor> * get_clmem_corr();
-	const hardware::buffers::ScalarBuffer<spinor> * get_clmem_source();
+	const hardware::buffers::ScalarBuffer<spinor> * get_clmem_source_solver();
+	const hardware::buffers::ScalarBuffer<spinor> * get_clmem_source_corr();
 
 protected:
 
 private:
 
-	const hardware::buffers::ScalarBuffer<spinor> clmem_corr;
-	const hardware::buffers::ScalarBuffer<spinor> clmem_source;
+	const hardware::buffers::ScalarBuffer<spinor> * clmem_corr;
+	const hardware::buffers::ScalarBuffer<spinor> * clmem_source_solver;
+	const hardware::buffers::ScalarBuffer<spinor> * clmem_source_corr;
 
 	spinorfield* solution_buffer;
 	spinorfield* source_buffer;
