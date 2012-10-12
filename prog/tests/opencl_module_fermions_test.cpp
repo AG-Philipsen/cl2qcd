@@ -25,7 +25,7 @@ public:
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
-  Opencl_Module_Fermions * get_device();
+	Opencl_Module_Fermions * get_device();
 };
 
 void TestGaugefield::init_tasks()
@@ -99,29 +99,29 @@ Opencl_Module_Fermions* TestGaugefield::get_device()
 
 void test_m_tm_plus(std::string inputfile)
 {
-  std::string kernelName = "m_tm_plus";
-  printKernelInfo(kernelName);
-  logger.info() << "Init device";
-  meta::Inputparameters params = create_parameters(inputfile);
-  hardware::System system(params);
-  TestGaugefield cpu(&system);
-  cl_int err = CL_SUCCESS;
-  Opencl_Module_Fermions * device = cpu.get_device();
+	std::string kernelName = "m_tm_plus";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	Opencl_Module_Fermions * device = cpu.get_device();
 	cl_mem in, out, sqnorm;
 	spinor * sf_in;
 	spinor * sf_out;
-	
+
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_out = new spinor[NUM_ELEMENTS_SF];
-	
+
 	//use the variable use_cg to switch between cold and random input sf
 	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
 	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);	
-	
+	BOOST_REQUIRE(sf_in);
+
 	size_t sf_buf_size = meta::get_spinorfieldsize(params) * sizeof(spinor);
 	in = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sf_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
@@ -133,60 +133,61 @@ void test_m_tm_plus(std::string inputfile)
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	
-  logger.info() << "|phi|^2:";
-  hmc_float cpu_back;
-  device->set_float_to_global_squarenorm_device(in, sqnorm);
-  err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
-  BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-  logger.info() << cpu_back;
-  logger.info() << "Run kernel";
-  device->M_tm_plus_device(in, out,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
-  logger.info() << "result:";
-  hmc_float cpu_res;
-  device->set_float_to_global_squarenorm_device(out, sqnorm);
-  err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
-  BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-  logger.info() << cpu_res;
-  logger.info() << "Finalize device";
-  cpu.finalize();
-	
+
+	logger.info() << "|phi|^2:";
+	hmc_float cpu_back;
+	device->set_float_to_global_squarenorm_device(in, sqnorm);
+	err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	logger.info() << cpu_back;
+	logger.info() << "Run kernel";
+	device->M_tm_plus_device(in, out,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	device->set_float_to_global_squarenorm_device(out, sqnorm);
+	err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
 	logger.info() << "Clear buffers";
 	clReleaseMemObject(in);
 	clReleaseMemObject(out);
 	clReleaseMemObject(sqnorm);
 	delete[] sf_in;
 	delete[] sf_out;
-  
+
 	testFloatAgainstInputparameters(cpu_res, params);
-  BOOST_MESSAGE("Test done");
+	BOOST_MESSAGE("Test done");
 }
 
-void test_dslash_eo(std::string inputfile){
-  std::string kernelName = "dslash_eo";
-  printKernelInfo(kernelName);
-  logger.info() << "Init device";
-  meta::Inputparameters params = create_parameters(inputfile);
-  hardware::System system(params);
-  TestGaugefield cpu(&system);
-  cl_int err = CL_SUCCESS;
-  Opencl_Module_Fermions * device = cpu.get_device();
+void test_dslash_eo(std::string inputfile)
+{
+	std::string kernelName = "dslash_eo";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	Opencl_Module_Fermions * device = cpu.get_device();
 	cl_mem in, out, sqnorm;
-  cl_mem in_eo_even, in_eo_odd, out_eo;
+	cl_mem in_eo_even, in_eo_odd, out_eo;
 	spinor * sf_in;
 	spinor * sf_out;
-	
+
 	logger.info() << "Fill buffers...";
 	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
 
 	sf_in = new spinor[NUM_ELEMENTS_SF];
 	sf_out = new spinor[NUM_ELEMENTS_SF];
-	
+
 	//use the variable use_cg to switch between cold and random input sf
 	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
 	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);	
-	
+	BOOST_REQUIRE(sf_in);
+
 	size_t sf_buf_size = meta::get_spinorfieldsize(params) * sizeof(spinor);
 	in = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sf_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
@@ -198,7 +199,7 @@ void test_dslash_eo(std::string inputfile){
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	
+
 	size_t eo_buf_size = device->get_eoprec_spinorfield_buffer_size();
 	in_eo_even = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
@@ -206,30 +207,30 @@ void test_dslash_eo(std::string inputfile){
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	out_eo = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, eo_buf_size, 0, &err );
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	device->convert_to_eoprec_device(in_eo_even, in_eo_odd,in);
-	
-  logger.info() << "|phi|^2:";
-  hmc_float cpu_back;
-  device->set_float_to_global_squarenorm_eoprec_device(in_eo_even, sqnorm);
-  err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
-  BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-  logger.info() << cpu_back;
-  
-  //switch according to "use_pointsource"
-  hmc_float cpu_res;
-  if(params.get_use_pointsource()) {
-    device->dslash_eo_device( in_eo_even, out_eo, device->get_gaugefield(), EVEN, params.get_kappa() );
-  } else {
-    device->dslash_eo_device( in_eo_even, out_eo, device->get_gaugefield(), ODD, params.get_kappa() );
-  }
-  device->set_float_to_global_squarenorm_eoprec_device(out_eo, sqnorm);
-  err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
-  BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-  logger.info() << "result:";
-  logger.info() << cpu_res;
-  logger.info() << "Finalize device";
-  cpu.finalize();
-	
+	device->convert_to_eoprec_device(in_eo_even, in_eo_odd, in);
+
+	logger.info() << "|phi|^2:";
+	hmc_float cpu_back;
+	device->set_float_to_global_squarenorm_eoprec_device(in_eo_even, sqnorm);
+	err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	logger.info() << cpu_back;
+
+	//switch according to "use_pointsource"
+	hmc_float cpu_res;
+	if(params.get_use_pointsource()) {
+		device->dslash_eo_device( in_eo_even, out_eo, device->get_gaugefield(), EVEN, params.get_kappa() );
+	} else {
+		device->dslash_eo_device( in_eo_even, out_eo, device->get_gaugefield(), ODD, params.get_kappa() );
+	}
+	device->set_float_to_global_squarenorm_eoprec_device(out_eo, sqnorm);
+	err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
+	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	logger.info() << "result:";
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
 	logger.info() << "Clear buffers";
 	clReleaseMemObject(in);
 	clReleaseMemObject(out);
@@ -238,144 +239,163 @@ void test_dslash_eo(std::string inputfile){
 	clReleaseMemObject(out_eo);
 	clReleaseMemObject(sqnorm);
 	delete[] sf_in;
-	delete[] sf_out;	
+	delete[] sf_out;
 
 	testFloatAgainstInputparameters(cpu_res, params);
-  BOOST_MESSAGE("Test done");
+	BOOST_MESSAGE("Test done");
 }
 
 
-BOOST_AUTO_TEST_SUITE( M_WILSON ) 
+BOOST_AUTO_TEST_SUITE( M_WILSON )
 
-BOOST_AUTO_TEST_CASE( M_WILSON_1){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( M_TM_MINUS  ) 
-
-BOOST_AUTO_TEST_CASE( M_TM_MINUS_1 ){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+BOOST_AUTO_TEST_CASE( M_WILSON_1)
+{
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE( M_TM_PLUS ) 
+BOOST_AUTO_TEST_SUITE( M_TM_MINUS  )
 
-BOOST_AUTO_TEST_CASE( M_TM_PLUS_1 ){
-  test_m_tm_plus("/m_tm_plus_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( M_TM_PLUS_2 ){
-  test_m_tm_plus("/m_tm_plus_input_2");
-}
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( GAMMA5 ) 
-
-BOOST_AUTO_TEST_CASE( GAMMA5_1){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+BOOST_AUTO_TEST_CASE( M_TM_MINUS_1 )
+{
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE( GAMMA5_EO) 
+BOOST_AUTO_TEST_SUITE( M_TM_PLUS )
 
-BOOST_AUTO_TEST_CASE( GAMMA5_EO_1){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+BOOST_AUTO_TEST_CASE( M_TM_PLUS_1 )
+{
+	test_m_tm_plus("/m_tm_plus_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_PLUS_2 )
+{
+	test_m_tm_plus("/m_tm_plus_input_2");
+}
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( GAMMA5 )
+
+BOOST_AUTO_TEST_CASE( GAMMA5_1)
+{
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL ) 
+BOOST_AUTO_TEST_SUITE( GAMMA5_EO)
 
-BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL1_){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+BOOST_AUTO_TEST_CASE( GAMMA5_EO_1)
+{
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL ) 
+BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL )
 
-BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_1){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL1_)
+{
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_MINUS ) 
+BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL )
 
-BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_1){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_1)
+{
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL_MINUS) 
+BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_MINUS )
 
-BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_1 ){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_1)
+{
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(DSLASH_EO ) 
+BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL_MINUS)
 
-BOOST_AUTO_TEST_CASE( DSLASH_EO_1){
-  test_dslash_eo("/dslash_eo_input_1");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_2){
-  test_dslash_eo("/dslash_eo_input_2");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_3){
-  test_dslash_eo("/dslash_eo_input_3");
-}
-
-BOOST_AUTO_TEST_CASE( DSLASH_EO_4){
-  test_dslash_eo("/dslash_eo_input_4");
+BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_1 )
+{
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(DSLASH_AND_GAMMA5_EO ) 
+BOOST_AUTO_TEST_SUITE(DSLASH_EO )
 
-BOOST_AUTO_TEST_CASE( DSLASH_AND_GAMMA5_EO_1){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+BOOST_AUTO_TEST_CASE( DSLASH_EO_1)
+{
+	test_dslash_eo("/dslash_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_2)
+{
+	test_dslash_eo("/dslash_eo_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_3)
+{
+	test_dslash_eo("/dslash_eo_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_4)
+{
+	test_dslash_eo("/dslash_eo_input_4");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO ) 
+BOOST_AUTO_TEST_SUITE(DSLASH_AND_GAMMA5_EO )
 
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_1){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+BOOST_AUTO_TEST_CASE( DSLASH_AND_GAMMA5_EO_1)
+{
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO ) 
+BOOST_AUTO_TEST_SUITE(DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO )
 
-BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_1){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_1)
+{
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO ) 
+BOOST_AUTO_TEST_SUITE(DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO )
 
-BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO_1){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_1)
+{
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO ) 
+BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO )
 
-BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_1){
-  BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO_1)
+{
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO )
+
+BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_1)
+{
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
