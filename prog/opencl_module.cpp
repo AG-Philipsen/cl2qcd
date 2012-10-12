@@ -897,7 +897,7 @@ void Opencl_Module::importGaugefield(const hardware::buffers::SU3 * gaugefield, 
 
 	logger.trace() << "Import gaugefield to device";
 	if(device->get_prefers_soa()) {
-		ScalarBuffer<Matrixsu3> tmp(gaugefield->get_elements(), device);
+		Plain<Matrixsu3> tmp(gaugefield->get_elements(), device);
 		tmp.load(data);
 		convertGaugefieldToSOA_device(gaugefield, &tmp);
 	} else {
@@ -911,7 +911,7 @@ void Opencl_Module::exportGaugefield(Matrixsu3 * const dest)
 
 	logger.trace() << "Exporting gaugefield from device";
 	if(device->get_prefers_soa()) {
-		ScalarBuffer<Matrixsu3> tmp(gaugefield.get_elements(), device);
+		Plain<Matrixsu3> tmp(gaugefield.get_elements(), device);
 		convertGaugefieldFromSOA_device(&tmp, &gaugefield);
 		tmp.dump(dest);
 	} else {
@@ -919,7 +919,7 @@ void Opencl_Module::exportGaugefield(Matrixsu3 * const dest)
 	}
 }
 
-void Opencl_Module::convertGaugefieldToSOA_device(const hardware::buffers::SU3 * out, const hardware::buffers::ScalarBuffer<Matrixsu3> * in)
+void Opencl_Module::convertGaugefieldToSOA_device(const hardware::buffers::SU3 * out, const hardware::buffers::Plain<Matrixsu3> * in)
 {
 	if(!out->is_soa()) {
 		throw std::invalid_argument("Destination buffer must be a SOA buffer");
@@ -939,7 +939,7 @@ void Opencl_Module::convertGaugefieldToSOA_device(const hardware::buffers::SU3 *
 	device->enqueue_kernel(convertGaugefieldToSOA, gs2, ls2);
 }
 
-void Opencl_Module::convertGaugefieldFromSOA_device(const hardware::buffers::ScalarBuffer<Matrixsu3> * out, const hardware::buffers::SU3 * in)
+void Opencl_Module::convertGaugefieldFromSOA_device(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::SU3 * in)
 {
 	if(!in->is_soa()) {
 		throw std::invalid_argument("Source buffer must be a SOA buffer");

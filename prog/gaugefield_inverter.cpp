@@ -40,9 +40,9 @@ void Gaugefield_inverter::init_tasks()
 	opencl_modules[task_correlator] = new Opencl_Module_Correlator(get_parameters(), get_device_for_task(task_correlator));
 	get_task_correlator()->init();
 
-	clmem_corr = new hardware::buffers::ScalarBuffer<spinor>(num_sources * meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
-	clmem_source_solver = new hardware::buffers::ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), get_task_solver()->get_device());
-	clmem_source_corr = new hardware::buffers::ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
+	clmem_corr = new hardware::buffers::Plain<spinor>(num_sources * meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
+	clmem_source_solver = new hardware::buffers::Plain<spinor>(meta::get_spinorfieldsize(get_parameters()), get_task_solver()->get_device());
+	clmem_source_corr = new hardware::buffers::Plain<spinor>(meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
 }
 
 void Gaugefield_inverter::delete_variables()
@@ -81,7 +81,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 
 	Opencl_Module_Fermions * solver = get_task_solver();
 
-	hardware::buffers::ScalarBuffer<spinor> clmem_res(meta::get_spinorfieldsize(get_parameters()), solver->get_device());
+	hardware::buffers::Plain<spinor> clmem_res(meta::get_spinorfieldsize(get_parameters()), solver->get_device());
 
 	//apply stout smearing if wanted
 	if(get_parameters().get_use_smearing() == true) {
@@ -304,17 +304,17 @@ void Gaugefield_inverter::create_sources()
 	}
 }
 
-const hardware::buffers::ScalarBuffer<spinor> * Gaugefield_inverter::get_clmem_corr()
+const hardware::buffers::Plain<spinor> * Gaugefield_inverter::get_clmem_corr()
 {
 	return clmem_corr;
 }
 
-const hardware::buffers::ScalarBuffer<spinor> * Gaugefield_inverter::get_clmem_source_corr()
+const hardware::buffers::Plain<spinor> * Gaugefield_inverter::get_clmem_source_corr()
 {
 	return clmem_source_corr;
 }
 
-const hardware::buffers::ScalarBuffer<spinor> * Gaugefield_inverter::get_clmem_source_solver()
+const hardware::buffers::Plain<spinor> * Gaugefield_inverter::get_clmem_source_solver()
 {
 	return clmem_source_solver;
 }

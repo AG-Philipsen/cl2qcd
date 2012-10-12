@@ -13,7 +13,7 @@ using namespace std;
  * This is needed to be able to pass different fermionmatrices as
  *  arguments to class-functions.
  */
-void M::operator()(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
+void M::operator()(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
 {
 	that->M(in, out, gf, kappa, mubar);
 }
@@ -40,7 +40,7 @@ cl_ulong M::get_Bytes() const
 	}
 }
 
-void Qplus::operator()(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
+void Qplus::operator()(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
 {
 	that->Qplus(in, out, gf, kappa, mubar);
 }
@@ -77,7 +77,7 @@ cl_ulong Qplus::get_Bytes() const
 	return res;
 }
 
-void Qminus::operator()(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
+void Qminus::operator()(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
 {
 	that->Qminus(in, out, gf, kappa, mubar);
 }
@@ -114,7 +114,7 @@ cl_ulong Qminus::get_Bytes() const
 	return res;
 }
 
-void QplusQminus::operator()(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
+void QplusQminus::operator()(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
 {
 	that->QplusQminus(in, out, gf, kappa, mubar);
 }
@@ -603,7 +603,7 @@ void Opencl_Module_Fermions::get_work_sizes(const cl_kernel kernel, size_t * ls,
 
 
 //compound fermionmatrix-functions without eoprec
-void Opencl_Module_Fermions::M(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
+void Opencl_Module_Fermions::M(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
 {
 
 	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
@@ -614,7 +614,7 @@ void Opencl_Module_Fermions::M(const hardware::buffers::ScalarBuffer<spinor> * i
 	}
 }
 
-void Opencl_Module_Fermions::Qplus(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
+void Opencl_Module_Fermions::Qplus(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
 {
 	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 		//in the pure Wilson case there is just one fermionmatrix
@@ -625,7 +625,7 @@ void Opencl_Module_Fermions::Qplus(const hardware::buffers::ScalarBuffer<spinor>
 	gamma5_device(out);
 }
 
-void Opencl_Module_Fermions::Qminus(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
+void Opencl_Module_Fermions::Qminus(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
 {
 	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 		//in the pure Wilson case there is just one fermionmatrix
@@ -636,7 +636,7 @@ void Opencl_Module_Fermions::Qminus(const hardware::buffers::ScalarBuffer<spinor
 	gamma5_device(out);
 }
 
-void Opencl_Module_Fermions::QplusQminus(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
+void Opencl_Module_Fermions::QplusQminus(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
 {
 	/** @todo one could save one field here if an additional copying would be included in the end...
 	 * or the field should be created in here, local */
@@ -645,7 +645,7 @@ void Opencl_Module_Fermions::QplusQminus(const hardware::buffers::ScalarBuffer<s
 }
 
 //explicit fermionmatrix-kernel calling functions
-void Opencl_Module_Fermions::M_wilson_device(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa)
+void Opencl_Module_Fermions::M_wilson_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa)
 {
 	//get kappa
 	hmc_float kappa_tmp;
@@ -672,7 +672,7 @@ void Opencl_Module_Fermions::M_wilson_device(const hardware::buffers::ScalarBuff
 	get_device()->enqueue_kernel( M_wilson, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_plus_device(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
+void Opencl_Module_Fermions::M_tm_plus_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
 {
 	//get kappa
 	hmc_float kappa_tmp;
@@ -707,7 +707,7 @@ void Opencl_Module_Fermions::M_tm_plus_device(const hardware::buffers::ScalarBuf
 	get_device()->enqueue_kernel( M_tm_plus, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::M_tm_minus_device(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
+void Opencl_Module_Fermions::M_tm_minus_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa , hmc_float mubar )
 {
 	//get kappa
 	hmc_float kappa_tmp;
@@ -742,7 +742,7 @@ void Opencl_Module_Fermions::M_tm_minus_device(const hardware::buffers::ScalarBu
 	get_device()->enqueue_kernel( M_tm_minus, gs2, ls2);
 }
 
-void Opencl_Module_Fermions::gamma5_device(const hardware::buffers::ScalarBuffer<spinor> * inout)
+void Opencl_Module_Fermions::gamma5_device(const hardware::buffers::Plain<spinor> * inout)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -1230,7 +1230,7 @@ void Opencl_Module_Fermions::M_tm_sitediagonal_minus_device(const hardware::buff
 	get_device()->enqueue_kernel(M_tm_sitediagonal_minus , gs2, ls2);
 }
 
-int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, const hardware::buffers::ScalarBuffer<spinor> * inout, const hardware::buffers::ScalarBuffer<spinor> * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
+int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
 	if (get_parameters().get_solver() == meta::Inputparameters::bicgstab_save) {
@@ -1631,7 +1631,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 	}
 }
 
-int Opencl_Module_Fermions::cg(const Matrix_Function & f, const hardware::buffers::ScalarBuffer<spinor> * inout, const hardware::buffers::ScalarBuffer<spinor> * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
+int Opencl_Module_Fermions::cg(const Matrix_Function & f, const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
 	//CP: here I do not use clmem_rnhat anymore and saved one scalar_product (omega)
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
@@ -1788,7 +1788,7 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function_eo & f, const hardware::
 	return -1;
 }
 
-void Opencl_Module_Fermions::solver(const Matrix_Function_eo & f, const hardware::buffers::ScalarBuffer<spinor> * inout, const hardware::buffers::ScalarBuffer<spinor> * source, const hardware::buffers::SU3 * gf, usetimer * solvertimer)
+void Opencl_Module_Fermions::solver(const Matrix_Function_eo & f, const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, usetimer * solvertimer)
 {
 	/** This solves the sparse-matrix system
 	 *  A x = b
@@ -1867,7 +1867,7 @@ void Opencl_Module_Fermions::solver(const Matrix_Function_eo & f, const hardware
 	} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 }
 
-void Opencl_Module_Fermions::solver(const Matrix_Function & f, const hardware::buffers::ScalarBuffer<spinor> * inout, const hardware::buffers::ScalarBuffer<spinor> * source, const hardware::buffers::SU3 * gf, usetimer * solvertimer)
+void Opencl_Module_Fermions::solver(const Matrix_Function & f, const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, usetimer * solvertimer)
 {
 	/** This solves the sparse-matrix system
 	 *  A x = b
@@ -1900,17 +1900,17 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, const hardware::b
 	} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 }
 
-const hardware::buffers::ScalarBuffer<spinor> * Opencl_Module_Fermions::get_inout()
+const hardware::buffers::Plain<spinor> * Opencl_Module_Fermions::get_inout()
 {
 	return &clmem_inout;
 }
 
-const hardware::buffers::ScalarBuffer<spinor> * Opencl_Module_Fermions::get_source()
+const hardware::buffers::Plain<spinor> * Opencl_Module_Fermions::get_source()
 {
 	return &clmem_source;
 }
 
-const hardware::buffers::ScalarBuffer<spinor> * Opencl_Module_Fermions::get_tmp()
+const hardware::buffers::Plain<spinor> * Opencl_Module_Fermions::get_tmp()
 {
 	return &clmem_tmp;
 }
@@ -1950,7 +1950,7 @@ cl_mem Opencl_Module_Fermions::get_clmem_one()
 	return clmem_one;
 }
 
-hmc_float Opencl_Module_Fermions::print_info_inv_field(const hardware::buffers::ScalarBuffer<spinor> * in, bool eo, std::string msg)
+hmc_float Opencl_Module_Fermions::print_info_inv_field(const hardware::buffers::Plain<spinor> * in, bool eo, std::string msg)
 {
 	if(eo) {
 		throw std::logic_error("Even-odd fields should always be stored as hardware::buffers::Spinor");

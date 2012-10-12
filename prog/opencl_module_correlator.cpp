@@ -148,7 +148,7 @@ cl_kernel Opencl_Module_Correlator::get_correlator_kernel(string which)
 	return 0;
 }
 
-void Opencl_Module_Correlator::create_point_source_device(const hardware::buffers::ScalarBuffer<spinor> * inout, int i, int spacepos, int timepos)
+void Opencl_Module_Correlator::create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos)
 {
 	set_zero_spinorfield_device(inout);
 	//query work-sizes for kernel
@@ -171,7 +171,7 @@ void Opencl_Module_Correlator::create_point_source_device(const hardware::buffer
 	get_device()->enqueue_kernel( create_point_source, gs2, ls2);
 }
 
-void Opencl_Module_Correlator::create_stochastic_source_device(const hardware::buffers::ScalarBuffer<spinor> * inout)
+void Opencl_Module_Correlator::create_stochastic_source_device(const hardware::buffers::Plain<spinor> * inout)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -185,7 +185,7 @@ void Opencl_Module_Correlator::create_stochastic_source_device(const hardware::b
 	get_device()->enqueue_kernel( create_stochastic_source, gs2, ls2);
 }
 
-void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::ScalarBuffer<spinor> * in, cl_mem correlator)
+void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, cl_mem correlator)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;

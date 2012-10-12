@@ -186,7 +186,7 @@ const hardware::buffers::SU3 * Opencl_Module_Hmc::get_new_u()
 	return &new_u;
 }
 
-const hardware::buffers::ScalarBuffer<spinor> * Opencl_Module_Hmc::get_clmem_phi()
+const hardware::buffers::Plain<spinor> * Opencl_Module_Hmc::get_clmem_phi()
 {
 	return &clmem_phi;
 }
@@ -196,7 +196,7 @@ const hardware::buffers::Spinor * Opencl_Module_Hmc::get_clmem_phi_eo()
 	return &clmem_phi_eo;
 }
 
-const hardware::buffers::ScalarBuffer<spinor> * Opencl_Module_Hmc::get_clmem_phi_mp()
+const hardware::buffers::Plain<spinor> * Opencl_Module_Hmc::get_clmem_phi_mp()
 {
 	return &clmem_phi_mp;
 }
@@ -586,7 +586,7 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp(usetimer * solvertimer)
 		if(logger.beDebug()) print_info_inv_field(&clmem_phi_mp_eo, true, "\tinit field after update ");
 	} else {
 		//CP: Init tmp spinorfield
-		ScalarBuffer<spinor> sf_tmp(clmem_phi_inv.get_elements(), get_device());
+		Plain<spinor> sf_tmp(clmem_phi_inv.get_elements(), get_device());
 
 		//sf_tmp = Qplus(light_mass) phi_inv
 		Opencl_Module_Fermions::Qplus (&clmem_phi_inv, &sf_tmp , get_gaugefield());
@@ -755,7 +755,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 //		if(logger.beDebug() && debug_hard) {
 //			int spinorfield_size = sizeof(spinor) * get_spinorfieldsize(get_parameters());
 //			x_tmp = create_rw_buffer(spinorfield_size);
-//			const hardware::buffer::ScalarBuffer<spinor>
+//			const hardware::buffer::Plain<spinor>
 //			int eo_spinorfield_size = sizeof(spinor) * get_eoprec_spinorfieldsize(get_parameters());
 //			x_eo_tmp = create_rw_buffer(eo_spinorfield_size);
 //			x_eo_tmp2 = create_rw_buffer(eo_spinorfield_size);
@@ -1272,7 +1272,7 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer)
 		fermion_force_eo_device(get_tmp_eo_1(), get_inout_eo(), ODD, kappa2);
 	} else {
 		//CP: Init tmp spinorfield
-		hardware::buffers::ScalarBuffer<spinor> sf_tmp(clmem_phi.get_elements(), get_device());
+		hardware::buffers::Plain<spinor> sf_tmp(clmem_phi.get_elements(), get_device());
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 		//the source is now Q_2^+ phi = sf_tmp
 		Opencl_Module_Fermions::Qplus (this->get_clmem_phi(), &sf_tmp , get_gaugefield(), kappa2, mubar2);
@@ -1557,7 +1557,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion_mp()
 		}
 	} else {
 		//CP: Init tmp spinorfield
-		hardware::buffers::ScalarBuffer<spinor> sf_tmp(clmem_phi_mp.get_elements(), get_device());
+		hardware::buffers::Plain<spinor> sf_tmp(clmem_phi_mp.get_elements(), get_device());
 
 		//sf_eo_tmp = Qplus(light_mass) phi_mp
 		Opencl_Module_Fermions::Qplus (this->get_clmem_phi_mp(), &sf_tmp , get_gaugefield(), get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
@@ -2004,7 +2004,7 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device(const hardware::buffers::SU3 * 
 	get_device()->enqueue_kernel( gauge_force_tlsym , gs2, ls2);
 }
 
-void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::ScalarBuffer<spinor> * Y, const hardware::buffers::ScalarBuffer<spinor> * X, hmc_float kappa)
+void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, hmc_float kappa)
 {
 	//get kappa
 	hmc_float kappa_tmp;
@@ -2080,7 +2080,7 @@ void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::ScalarBuff
 
 }
 
-void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::ScalarBuffer<spinor> * Y, const hardware::buffers::ScalarBuffer<spinor> * X, const hardware::buffers::SU3 * gf, cl_mem out, hmc_float kappa)
+void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, const hardware::buffers::SU3 * gf, cl_mem out, hmc_float kappa)
 {
 	//get kappa
 	hmc_float kappa_tmp;

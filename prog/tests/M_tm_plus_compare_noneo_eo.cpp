@@ -24,8 +24,8 @@ public:
 		finalize();
 	};
 
-	void runTestKernel2(const hardware::buffers::ScalarBuffer<spinor> * , const hardware::buffers::Spinor * , const hardware::buffers::Spinor * , const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float);
-	void runTestKernel(const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::ScalarBuffer<spinor> * in1, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float);
+	void runTestKernel2(const hardware::buffers::Plain<spinor> * , const hardware::buffers::Spinor * , const hardware::buffers::Spinor * , const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float);
+	void runTestKernel(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -64,8 +64,8 @@ private:
 	void clear_buffers();
 	const hardware::buffers::Spinor * in_eo1, * in_eo2;
 	const hardware::buffers::Spinor * in_eo1_converted, * in_eo2_converted;
-	const hardware::buffers::ScalarBuffer<spinor> * in_noneo, * in_noneo_converted;
-	const hardware::buffers::ScalarBuffer<spinor> * out_noneo, * out_noneo_converted, * out_eo, * out_eo_converted;
+	const hardware::buffers::Plain<spinor> * in_noneo, * in_noneo_converted;
+	const hardware::buffers::Plain<spinor> * out_noneo, * out_noneo_converted, * out_eo, * out_eo_converted;
 	spinor * sf_in_noneo;
 	spinor * sf_in_noneo_converted;
 	spinor * sf_out_noneo;
@@ -721,13 +721,13 @@ void Dummyfield::fill_buffers()
 	in_eo1_converted = new Spinor(meta::get_eoprec_spinorfieldsize(get_parameters()), spinor_module->get_device());
 	in_eo2_converted = new Spinor(meta::get_eoprec_spinorfieldsize(get_parameters()), spinor_module->get_device());
 
-	in_noneo = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
-	in_noneo_converted = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	in_noneo = new Plain<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	in_noneo_converted = new Plain<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
 
-	out_noneo = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
-	out_noneo_converted = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
-	out_eo = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
-	out_eo_converted = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	out_noneo = new Plain<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	out_noneo_converted = new Plain<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	out_eo = new Plain<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	out_eo_converted = new Plain<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
 
 	//copy content into buffers
 
@@ -781,7 +781,7 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel2(const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
+void Device::runTestKernel2(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
 {
 	using namespace hardware::buffers;
 
@@ -825,7 +825,7 @@ void Device::runTestKernel2(const hardware::buffers::ScalarBuffer<spinor> * out,
 	clReleaseMemObject(minusone);
 }
 
-void Device::runTestKernel(const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::ScalarBuffer<spinor> * in1, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
+void Device::runTestKernel(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
 {
 	this->M_tm_plus_device(in1, out, gf, kappa , mubar );
 }

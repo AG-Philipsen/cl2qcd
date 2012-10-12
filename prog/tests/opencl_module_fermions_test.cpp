@@ -123,9 +123,9 @@ void test_m_tm_plus(std::string inputfile)
 	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
 	BOOST_REQUIRE(sf_in);
 
-	const ScalarBuffer<spinor> in(NUM_ELEMENTS_SF, device->get_device());
+	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
 	in.load(sf_in);
-	const ScalarBuffer<spinor> out(NUM_ELEMENTS_SF, device->get_device());
+	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
 	out.load(sf_in);
 	cl_mem sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
@@ -183,7 +183,7 @@ void test_dslash_eo(std::string inputfile)
 	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
 	BOOST_REQUIRE(sf_in);
 
-	const ScalarBuffer<spinor> in(NUM_ELEMENTS_SF, device->get_device());
+	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
 	in.load(sf_in);
 	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);

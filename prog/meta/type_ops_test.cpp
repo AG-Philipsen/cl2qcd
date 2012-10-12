@@ -8,7 +8,7 @@
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE hardware::buffers::ScalarBuffer
+#define BOOST_TEST_MODULE type_ops
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE(hmc_complex_ops)

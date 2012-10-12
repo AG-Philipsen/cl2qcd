@@ -47,7 +47,7 @@ public:
 	/**
 	 * Invoke the matrix function.
 	 */
-	virtual void operator() (const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const = 0;
+	virtual void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const = 0;
 
 	/**
 	 * Get the net flops performed by this function.
@@ -63,28 +63,28 @@ public:
 class M : public Matrix_Function {
 public:
 	M(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class Qplus : public Matrix_Function {
 public:
 	Qplus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class Qminus : public Matrix_Function {
 public:
 	Qminus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class QplusQminus : public Matrix_Function {
 public:
 	QplusQminus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
-	void operator() (const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+	void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
@@ -238,15 +238,15 @@ public:
 	//    fermionmatrix operations
 	//    non-eo
 	//        compound
-	void M(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void Qplus(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void Qminus(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void QplusQminus(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void M(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void Qplus(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void Qminus(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void QplusQminus(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	//        explicit
-	void M_wilson_device(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF);
-	void M_tm_plus_device(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void M_tm_minus_device(const hardware::buffers::ScalarBuffer<spinor> * in, const hardware::buffers::ScalarBuffer<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void gamma5_device(const hardware::buffers::ScalarBuffer<spinor> * inout);
+	void M_wilson_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF);
+	void M_tm_plus_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void M_tm_minus_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void gamma5_device(const hardware::buffers::Plain<spinor> * inout);
 	//    eo
 	//        compound
 	void Qplus_eo(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
@@ -273,28 +273,28 @@ public:
 	//    solver operations
 	//    non-eo
 	/// this calls the solver according to parameter settings using the fermionmatrix f
-	void solver(const Matrix_Function & f, const hardware::buffers::ScalarBuffer<spinor> * inout, const hardware::buffers::ScalarBuffer<spinor> * source, const hardware::buffers::SU3 * gf, usetimer * solvertimer);
+	void solver(const Matrix_Function & f, const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, usetimer * solvertimer);
 	/**
 	* the solvers return the number of iterations needed if it converged,
 	* -1 if it did not converge within cgmax
 	* -iter if the algorithm got stuck at some point
 	*/
 	/// this executes the bicgstab on the device, using the fermionmatrix f
-	int bicgstab(const Matrix_Function & f, const hardware::buffers::ScalarBuffer<spinor> * inout, const hardware::buffers::ScalarBuffer<spinor> * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	int bicgstab(const Matrix_Function & f, const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	/// this executes the cg on the device, using the fermionmatrix f
-	int cg(const Matrix_Function & f, const hardware::buffers::ScalarBuffer<spinor> * inout, const hardware::buffers::ScalarBuffer<spinor> * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	int cg(const Matrix_Function & f, const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	//    eo
 	/// this calls the solver according to parameter settings using the fermionmatrix f
-	void solver(const Matrix_Function_eo & f, const hardware::buffers::ScalarBuffer<spinor> * inout, const hardware::buffers::ScalarBuffer<spinor> * source, const hardware::buffers::SU3 * gf, usetimer * solvertimer);
+	void solver(const Matrix_Function_eo & f, const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, usetimer * solvertimer);
 	/// this executes the eo bicgstab on the device, using the fermionmatrix f
 	int bicgstab_eo(const Matrix_Function_eo & f, const hardware::buffers::Spinor * inout, const hardware::buffers::Spinor * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	int cg_eo(const Matrix_Function_eo & f, const hardware::buffers::Spinor * inout, const hardware::buffers::Spinor * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 
 	/////////////////////////////////////////////////
 	//functions to get private variables
-	const hardware::buffers::ScalarBuffer<spinor> * get_inout();
-	const hardware::buffers::ScalarBuffer<spinor> * get_source();
-	const hardware::buffers::ScalarBuffer<spinor> * get_tmp();
+	const hardware::buffers::Plain<spinor> * get_inout();
+	const hardware::buffers::Plain<spinor> * get_source();
+	const hardware::buffers::Plain<spinor> * get_tmp();
 
 	const hardware::buffers::Spinor * get_inout_eo();
 	const hardware::buffers::Spinor * get_tmp_eo_1();
@@ -310,7 +310,7 @@ public:
 	 * @param eo has to be set to true/false when evenodd is used/not used.
 	 * @param msg message to be printed right before before the actual squarenorm is printed
 	 */
-	hmc_float print_info_inv_field(const hardware::buffers::ScalarBuffer<spinor> * in, bool eo, std::string msg);
+	hmc_float print_info_inv_field(const hardware::buffers::Plain<spinor> * in, bool eo, std::string msg);
 
 	/**
 	 * This is used to print the squarenorm of an inverter-solution in debug-mode
@@ -363,17 +363,17 @@ private:
 	cl_kernel M_tm_sitediagonal_AND_gamma5_eo;
 	cl_kernel M_tm_sitediagonal_minus_AND_gamma5_eo;
 	//CP: variables for normal solver
-	const hardware::buffers::ScalarBuffer<spinor> clmem_inout;
-	const hardware::buffers::ScalarBuffer<spinor> clmem_source;
-	const hardware::buffers::ScalarBuffer<spinor> clmem_rn;
-	const hardware::buffers::ScalarBuffer<spinor> clmem_rhat;
-	const hardware::buffers::ScalarBuffer<spinor> clmem_v;
-	const hardware::buffers::ScalarBuffer<spinor> clmem_p;
-	const hardware::buffers::ScalarBuffer<spinor> clmem_s;
-	const hardware::buffers::ScalarBuffer<spinor> clmem_t;
-	const hardware::buffers::ScalarBuffer<spinor> clmem_aux;
+	const hardware::buffers::Plain<spinor> clmem_inout;
+	const hardware::buffers::Plain<spinor> clmem_source;
+	const hardware::buffers::Plain<spinor> clmem_rn;
+	const hardware::buffers::Plain<spinor> clmem_rhat;
+	const hardware::buffers::Plain<spinor> clmem_v;
+	const hardware::buffers::Plain<spinor> clmem_p;
+	const hardware::buffers::Plain<spinor> clmem_s;
+	const hardware::buffers::Plain<spinor> clmem_t;
+	const hardware::buffers::Plain<spinor> clmem_aux;
 	//this is needed in QplusQminus as a temporary field
-	const hardware::buffers::ScalarBuffer<spinor> clmem_tmp;
+	const hardware::buffers::Plain<spinor> clmem_tmp;
 
 	//CP: variables for eo solver
 	const hardware::buffers::Spinor clmem_inout_eo;

@@ -1,24 +1,24 @@
 /** @file
- * Testcases for the hardware::buffers::ScalarBuffer template
+ * Testcases for the hardware::buffers::Plain template
  *
  * (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
  */
 
-#include "scalar_buffer.hpp"
+#include "plain.hpp"
 #include "../system.hpp"
 #include "../../types.h"
 #include "../../meta/type_ops.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE hardware::buffers::ScalarBuffer
+#define BOOST_TEST_MODULE hardware::buffers::Plain
 #include <boost/test/unit_test.hpp>
 
 template<typename T> void test(size_t elems, hardware::Device * device)
 {
 	using namespace hardware::buffers;
 
-	ScalarBuffer<T> dummy(elems, device);
+	Plain<T> dummy(elems, device);
 	BOOST_REQUIRE_EQUAL(dummy.get_elements(), elems);
 	BOOST_REQUIRE_EQUAL(dummy.get_bytes(), elems * sizeof(T));
 	const cl_mem * tmp = dummy;
@@ -35,7 +35,7 @@ template<typename T> void test(size_t elems, hardware::Device * device)
 	dummy.dump(out);
 	BOOST_CHECK_EQUAL_COLLECTIONS(in, in + elems, out, out + elems);
 
-	ScalarBuffer<T> dummy2(elems, device);
+	Plain<T> dummy2(elems, device);
 	fill(in, elems, 3);
 	fill(out, elems, 4);
 	dummy.load(in);

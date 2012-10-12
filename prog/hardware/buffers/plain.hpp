@@ -1,5 +1,5 @@
 /** @file
- * Declaration of the hardware::buffers::ScalarBuffer template
+ * Declaration of the hardware::buffers::Plain template
  *
  * (c) 2012 Matthias Bach <bach@compeng.uni-frankfurt.de>
  */
@@ -21,7 +21,7 @@ namespace hardware {
 		 * A scalar-like type can be any type that should always be treated like a scalar, e.g. stored in a AoS fashion.
 		 * While this often should not be done for performance reasons it might be required for import/export code.
 		 */
-		template<typename T> class ScalarBuffer : public Buffer {
+		template<typename T> class Plain : public Buffer {
 
 		public:
 
@@ -31,7 +31,7 @@ namespace hardware {
 			 * \param elems The number of elements the buffer should contain
 			 * \param device The device on which to create the buffer
 			 */
-			ScalarBuffer(size_t elems, Device * device)
+			Plain(size_t elems, Device * device)
 				: Buffer(elems * sizeof(T), device), elements(elems) { };
 
 			/**

@@ -507,8 +507,8 @@ void test_f_fermion(std::string inputfile)
 
 	size_t sf_buf_size = meta::get_spinorfieldsize(params) * sizeof(spinor);
 
-	const ScalarBuffer<spinor> in1(NUM_ELEMENTS_SF, device->get_device());
-	const ScalarBuffer<spinor> in2(NUM_ELEMENTS_SF, device->get_device());
+	const Plain<spinor> in1(NUM_ELEMENTS_SF, device->get_device());
+	const Plain<spinor> in2(NUM_ELEMENTS_SF, device->get_device());
 	in1.load(sf_in1);
 	in2.load(sf_in2);
 	out = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, device->get_gaugemomentum_buffer_size(), 0, &err);

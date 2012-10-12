@@ -105,9 +105,9 @@ public:
 	cl_mem get_clmem_p();
 	cl_mem get_clmem_new_p();
 	const hardware::buffers::SU3 * get_new_u();
-	const hardware::buffers::ScalarBuffer<spinor> * get_clmem_phi();
+	const hardware::buffers::Plain<spinor> * get_clmem_phi();
 	const hardware::buffers::Spinor * get_clmem_phi_eo();
-	const hardware::buffers::ScalarBuffer<spinor> * get_clmem_phi_mp();
+	const hardware::buffers::Plain<spinor> * get_clmem_phi_mp();
 	const hardware::buffers::Spinor * get_clmem_phi_mp_eo();
 	cl_mem get_clmem_s_fermion_init();
 	cl_mem get_clmem_s_fermion_mp_init();
@@ -138,8 +138,8 @@ public:
 	void gauge_force_device(const hardware::buffers::SU3 * gf, cl_mem out);
 	void gauge_force_tlsym_device();
 	void gauge_force_tlsym_device(const hardware::buffers::SU3 * gf, cl_mem out);
-	void fermion_force_device(const hardware::buffers::ScalarBuffer<spinor> * Y, const hardware::buffers::ScalarBuffer<spinor> * X, hmc_float kappa = ARG_DEF);
-	void fermion_force_device(const hardware::buffers::ScalarBuffer<spinor> * Y, const hardware::buffers::ScalarBuffer<spinor> * X, const hardware::buffers::SU3 *, cl_mem, hmc_float kappa = ARG_DEF);
+	void fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, hmc_float kappa = ARG_DEF);
+	void fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, const hardware::buffers::SU3 *, cl_mem, hmc_float kappa = ARG_DEF);
 	void fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, int evenodd, hmc_float kappa = ARG_DEF);
 	void fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, const hardware::buffers::SU3 *, cl_mem, int evenodd, hmc_float kappa = ARG_DEF);
 	void stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate);
@@ -230,11 +230,11 @@ private:
 	//force field
 	cl_mem clmem_force;
 	//inverted spinorfield
-	const hardware::buffers::ScalarBuffer<spinor> clmem_phi_inv;
+	const hardware::buffers::Plain<spinor> clmem_phi_inv;
 	const hardware::buffers::Spinor clmem_phi_inv_eo;
 	//D(gaussian spinorfield)
-	const hardware::buffers::ScalarBuffer<spinor> clmem_phi;
-	const hardware::buffers::ScalarBuffer<spinor> clmem_phi_mp;
+	const hardware::buffers::Plain<spinor> clmem_phi;
+	const hardware::buffers::Plain<spinor> clmem_phi_mp;
 	const hardware::buffers::Spinor clmem_phi_eo;
 	const hardware::buffers::Spinor clmem_phi_mp_eo;
 

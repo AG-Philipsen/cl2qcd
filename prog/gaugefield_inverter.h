@@ -98,17 +98,17 @@ public:
 
 	void create_sources();
 
-	const hardware::buffers::ScalarBuffer<spinor> * get_clmem_corr();
-	const hardware::buffers::ScalarBuffer<spinor> * get_clmem_source_solver();
-	const hardware::buffers::ScalarBuffer<spinor> * get_clmem_source_corr();
+	const hardware::buffers::Plain<spinor> * get_clmem_corr();
+	const hardware::buffers::Plain<spinor> * get_clmem_source_solver();
+	const hardware::buffers::Plain<spinor> * get_clmem_source_corr();
 
 protected:
 
 private:
 
-	const hardware::buffers::ScalarBuffer<spinor> * clmem_corr;
-	const hardware::buffers::ScalarBuffer<spinor> * clmem_source_solver;
-	const hardware::buffers::ScalarBuffer<spinor> * clmem_source_corr;
+	const hardware::buffers::Plain<spinor> * clmem_corr;
+	const hardware::buffers::Plain<spinor> * clmem_source_solver;
+	const hardware::buffers::Plain<spinor> * clmem_source_corr;
 
 	spinorfield* solution_buffer;
 	spinorfield* source_buffer;

@@ -77,11 +77,11 @@ public:
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
-	void create_point_source_device(const hardware::buffers::ScalarBuffer<spinor> * inout, int i, int spacepos, int timepos);
+	void create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos);
 
-	void create_stochastic_source_device(const hardware::buffers::ScalarBuffer<spinor> * inout);
+	void create_stochastic_source_device(const hardware::buffers::Plain<spinor> * inout);
 
-	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::ScalarBuffer<spinor> * in, cl_mem correlator);
+	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, cl_mem correlator);
 
 	/**
 	 * Get kernel for correlator indicated by which

@@ -21,7 +21,7 @@
 #include "hardware/device.hpp"
 #include "opencl_compiler.hpp"
 #include "hardware/buffers/su3.hpp"
-#include "hardware/buffers/scalar_buffer.hpp"
+#include "hardware/buffers/plain.hpp"
 #include "meta/util.hpp"
 
 #include "exceptions.h"
@@ -448,8 +448,8 @@ private:
 	 */
 	cl_mem createBuffer(cl_mem_flags flags, size_t size, void * host_ptr);
 
-	void convertGaugefieldToSOA_device(const hardware::buffers::SU3 * out, const hardware::buffers::ScalarBuffer<Matrixsu3> * in);
-	void convertGaugefieldFromSOA_device(const hardware::buffers::ScalarBuffer<Matrixsu3> * out, const hardware::buffers::SU3 * in);
+	void convertGaugefieldToSOA_device(const hardware::buffers::SU3 * out, const hardware::buffers::Plain<Matrixsu3> * in);
+	void convertGaugefieldFromSOA_device(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::SU3 * in);
 };
 
 #endif //OPENCLMODULEH

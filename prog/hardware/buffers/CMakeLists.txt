@@ -20,5 +20,5 @@ add_library(buffers
 add_unit_test(hardware::buffers::Buffer buffer_test)
 add_unit_test(hardware::buffers::PRNGBuffer prng_buffer_test)
 add_unit_test(hardware::buffers::SU3 su3_test)
-add_unit_test(hardware::buffers::ScalarBuffer scalar_buffer_test)
+add_unit_test(hardware::buffers::Plain plain_test)
 add_unit_test(hardware::buffers::Spinor spinor_test)

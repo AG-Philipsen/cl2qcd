@@ -26,7 +26,7 @@ public:
 	};
 
 	void runTestKernel(cl_mem out, const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::SU3 * gf, int gs, int ls, int evenodd, hmc_float kappa);
-	void runTestKernel2(cl_mem out, const hardware::buffers::ScalarBuffer<spinor> * in1, const hardware::buffers::ScalarBuffer<spinor> * in2, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kapppa);
+	void runTestKernel2(cl_mem out, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kapppa);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -65,8 +65,8 @@ private:
 	void fill_buffers();
 	void clear_buffers();
 	const hardware::buffers::Spinor * in1_eo, * in2_eo, * in3_eo, * in4_eo;
-	const hardware::buffers::ScalarBuffer<spinor> * in1_noneo, * in2_noneo;
-	const hardware::buffers::ScalarBuffer<spinor> * in1_noneo_converted, * in2_noneo_converted;
+	const hardware::buffers::Plain<spinor> * in1_noneo, * in2_noneo;
+	const hardware::buffers::Plain<spinor> * in1_noneo_converted, * in2_noneo_converted;
 	cl_mem out_eo, out_noneo;
 	spinor * sf_in1_noneo;
 	spinor * sf_in2_noneo;
@@ -638,10 +638,10 @@ void Dummyfield::fill_buffers()
 	in2_eo = new Spinor(meta::get_eoprec_spinorfieldsize(get_parameters()), spinor_module->get_device());
 	in3_eo = new Spinor(meta::get_eoprec_spinorfieldsize(get_parameters()), spinor_module->get_device());
 	in4_eo = new Spinor(meta::get_eoprec_spinorfieldsize(get_parameters()), spinor_module->get_device());
-	in1_noneo = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
-	in2_noneo = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
-	in1_noneo_converted = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
-	in2_noneo_converted = new ScalarBuffer<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	in1_noneo = new Plain<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	in2_noneo = new Plain<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	in1_noneo_converted = new Plain<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
+	in2_noneo_converted = new Plain<spinor>(meta::get_spinorfieldsize(get_parameters()), spinor_module->get_device());
 
 	spinor_module->copy_to_eoprec_spinorfield_buffer(in1_eo, sf_in1_eo);
 	spinor_module->copy_to_eoprec_spinorfield_buffer(in2_eo, sf_in2_eo);
@@ -739,7 +739,7 @@ void Device::runTestKernel(cl_mem out, const hardware::buffers::Spinor * in1, co
 	get_device()->enqueue_kernel(testKernel, gs, ls);
 }
 
-void Device::runTestKernel2(cl_mem out, const hardware::buffers::ScalarBuffer<spinor> * in1, const hardware::buffers::ScalarBuffer<spinor> * in2, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa)
+void Device::runTestKernel2(cl_mem out, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa)
 {
 	cl_int err;
 	err = clSetKernelArg(testKernel2, 0, sizeof(cl_mem), gf->get_cl_buffer());
