@@ -163,13 +163,7 @@ public:
 	Opencl_Module_Fermions(const meta::Inputparameters& params, hardware::Device * device)
 		: Opencl_Module_Spinors(params, device),
 		  clmem_inout(meta::get_spinorfieldsize(params), device),
-		  clmem_tmp(meta::get_spinorfieldsize(params), device),
 		  clmem_source(meta::get_spinorfieldsize(params), device),
-		  clmem_inout_eo(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
-		  clmem_source_even(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
-		  clmem_source_odd(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
-		  clmem_tmp_eo_1(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
-		  clmem_tmp_eo_2(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo or no Twistedmass
 		  // TODO these are only used in a non-eoprec solver
 		  clmem_rn(meta::get_spinorfieldsize(params), device),
 		  clmem_rhat(meta::get_spinorfieldsize(params), device),
@@ -178,14 +172,20 @@ public:
 		  clmem_s(meta::get_spinorfieldsize(params), device),
 		  clmem_t(meta::get_spinorfieldsize(params), device),
 		  clmem_aux(meta::get_spinorfieldsize(params), device),
+		  clmem_tmp(meta::get_spinorfieldsize(params), device),
 		  //LZ only use the following if we want to apply even odd preconditioning
+		  clmem_inout_eo(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
+		  clmem_source_even(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
+		  clmem_source_odd(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
 		  clmem_rn_eo(meta::get_eoprec_spinorfieldsize(params), device),
 		  clmem_rhat_eo(meta::get_eoprec_spinorfieldsize(params), device),
 		  clmem_v_eo(meta::get_eoprec_spinorfieldsize(params), device),
 		  clmem_p_eo(meta::get_eoprec_spinorfieldsize(params), device),
 		  clmem_s_eo(meta::get_eoprec_spinorfieldsize(params), device),
 		  clmem_t_eo(meta::get_eoprec_spinorfieldsize(params), device),
-		  clmem_aux_eo(meta::get_eoprec_spinorfieldsize(params), device)
+		  clmem_aux_eo(meta::get_eoprec_spinorfieldsize(params), device),
+		  clmem_tmp_eo_1(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
+		  clmem_tmp_eo_2(meta::get_eoprec_spinorfieldsize(params), device) // TODO we don't need this if no eo or no Twistedmass
 		{ };
 
 

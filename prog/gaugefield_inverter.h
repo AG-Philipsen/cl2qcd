@@ -46,9 +46,9 @@ public:
 	 */
 	Gaugefield_inverter(const hardware::System * system)
 		: Gaugefield_hybrid(system),
+		  clmem_corr(nullptr),
 		  clmem_source_solver(nullptr),
-		  clmem_source_corr(nullptr),
-		  clmem_corr(nullptr)
+		  clmem_source_corr(nullptr)
 		{ };
 
 	/**

@@ -52,14 +52,15 @@ public:
 	 */
 	Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device, meta::Counter * inversions0, meta::Counter * inversions1,
 	                  meta::Counter * inversions_mp0, meta::Counter * inversions_mp1)
-		: Opencl_Module_Fermions(params, device), new_u(get_gaugefield()->get_elements(), device), gaugemomentum_buf_size(0),
-		  inversions0(inversions0), inversions1(inversions1), inversions_mp0(inversions_mp0), inversions_mp1(inversions_mp1),
+		: Opencl_Module_Fermions(params, device), new_u(get_gaugefield()->get_elements(), device),
 		  clmem_phi_inv(meta::get_spinorfieldsize(params), device),
 		  clmem_phi_inv_eo(meta::get_eoprec_spinorfieldsize(params), device),
 		  clmem_phi(meta::get_spinorfieldsize(params), device),
 		  clmem_phi_mp(meta::get_spinorfieldsize(params), device),
 		  clmem_phi_eo(meta::get_eoprec_spinorfieldsize(params), device),
-		  clmem_phi_mp_eo(meta::get_eoprec_spinorfieldsize(params), device)
+		  clmem_phi_mp_eo(meta::get_eoprec_spinorfieldsize(params), device),
+		  gaugemomentum_buf_size(0),
+		  inversions0(inversions0), inversions1(inversions1), inversions_mp0(inversions_mp0), inversions_mp1(inversions_mp1)
 		{ };
 
 	// OpenCL specific methods needed for building/compiling the OpenCL program
