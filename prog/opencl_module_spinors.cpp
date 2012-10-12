@@ -203,7 +203,7 @@ void Opencl_Module_Spinors::convert_from_eoprec_device(const hardware::buffers::
 		delete tmp1;
 	}
 	if(tmp2 != in2) {
-		delete tmp1;
+		delete tmp2;
 	}
 }
 
