@@ -11,6 +11,7 @@ add_library(buffers
 	prng_buffer.cpp
 	su3.cpp
 	spinor.cpp
+	gaugemomentum.cpp
 )
 
 #
@@ -22,3 +23,4 @@ add_unit_test(hardware::buffers::PRNGBuffer prng_buffer_test)
 add_unit_test(hardware::buffers::SU3 su3_test)
 add_unit_test(hardware::buffers::Plain plain_test)
 add_unit_test(hardware::buffers::Spinor spinor_test)
+add_unit_test(hardware::buffers::Gaugemomentum gaugemomentum_test)
