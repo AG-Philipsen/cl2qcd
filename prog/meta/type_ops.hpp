@@ -82,6 +82,22 @@ inline std::ostream& operator<<(std::ostream& os, const spinor& data)
 	return os << '{' << data.e0 << ',' << data.e1 << ',' << data.e2 << ',' << data.e3 << '}';
 }
 
+inline bool operator==(const ae& left, const ae& right)
+{
+	return (
+			left.e0 == right.e0 && left.e1 == right.e1 && left.e2 == right.e2 && left.e3 == right.e3 && left.e4 == right.e4 && left.e5 == right.e5 && left.e6 == right.e6 && left.e7 == right.e7
+	);
+}
+inline bool operator!=(const ae& left, const ae& right)
+{
+	return (
+			left.e0 != right.e0 || left.e1 != right.e1 || left.e2 != right.e2 || left.e3 != right.e3 || left.e4 != right.e4 || left.e5 != right.e5 || left.e6 != right.e6 || left.e7 != right.e7
+	);
+}
+inline std::ostream& operator<<(std::ostream& os, const ae& data)
+{
+	return os << '{' << data.e0 << ',' << data.e1 << ',' << data.e2 << ',' << data.e3 << ',' << data.e4 << ',' << data.e5 << ',' << data.e7 << '}';
+}
 
 template<typename T> inline void fill(T* array, size_t num_elems, int seed = 0)
 {
@@ -92,5 +108,6 @@ template<typename T> inline void fill(T* array, size_t num_elems, int seed = 0)
 template<> void fill(hmc_complex* array, size_t num_elems, int seed);
 template<> void fill(Matrixsu3* array, size_t num_elems, int seed);
 template<> void fill(spinor* array, size_t num_elems, int seed);
+template<> void fill(ae* array, size_t num_elems, int seed);
 
 #endif /* _META_TYPE_OPS */

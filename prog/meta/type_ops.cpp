@@ -54,3 +54,19 @@ template<> void fill(spinor* array, size_t num_elems, int seed)
 		};
 	}
 }
+
+template<> void fill(ae* array, size_t num_elems, int seed)
+{
+	for(size_t i = 0; i < num_elems; i++) {
+		array[i] = {
+			static_cast<hmc_float>(i + 1) + seed,
+			static_cast<hmc_float>(i - 1) + seed,
+			static_cast<hmc_float>(i + 2) + seed,
+			static_cast<hmc_float>(i - 2) + seed,
+			static_cast<hmc_float>(i + 3) + seed,
+			static_cast<hmc_float>(i - 3) + seed,
+			static_cast<hmc_float>(i + 4) + seed,
+			static_cast<hmc_float>(i - 4) + seed
+		};
+	}
+}
