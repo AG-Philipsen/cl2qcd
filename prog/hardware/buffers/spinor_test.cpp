@@ -82,4 +82,3 @@ for(Device * device : system.get_devices()) {
 		}
 	}
 }
-

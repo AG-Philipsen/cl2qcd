@@ -69,4 +69,3 @@ void hardware::buffers::Spinor::dump(spinor * ptr) const
 		Buffer::dump(ptr);
 	}
 }
-
