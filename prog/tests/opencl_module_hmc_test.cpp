@@ -243,7 +243,7 @@ void test_gf_update(std::string inputfile)
 	TestGaugefield cpu(&system);
 	Opencl_Module_Hmc * device = cpu.get_device();
 	cl_int err = CL_SUCCESS;
-	cl_mem in, sqnorm;
+	cl_mem sqnorm;
 	hmc_float * gm_in;
 
 	logger.info() << "create buffers";
@@ -258,15 +258,13 @@ void test_gf_update(std::string inputfile)
 	}
 	BOOST_REQUIRE(gm_in);
 
-	size_t ae_buf_size = device->get_gaugemomentum_buffer_size();
-	in = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE , ae_buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	device->importGaugemomentumBuffer(in, reinterpret_cast<ae*>(gm_in));
+	hardware::buffers::Gaugemomentum in(meta::get_vol4d(params) * NDIM, device->get_device());
+	device->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>(gm_in));
 	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	logger.info() << "|in|^2:";
-	device->set_float_to_gaugemomentum_squarenorm_device(in, sqnorm);
+	device->set_float_to_gaugemomentum_squarenorm_device(&in, sqnorm);
 	hmc_float cpu_back;
 	clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
@@ -274,7 +272,7 @@ void test_gf_update(std::string inputfile)
 
 	logger.info() << "Run kernel";
 	hmc_float eps = params.get_tau();
-	device->md_update_gaugefield_device( in, device->get_gaugefield(), eps);
+	device->md_update_gaugefield_device(&in, device->get_gaugefield(), eps);
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables_from_task(0, 0);
 
@@ -285,7 +283,6 @@ void test_gf_update(std::string inputfile)
 	cpu.finalize();
 
 	logger.info() << "Free buffers";
-	clReleaseMemObject(in);
 	clReleaseMemObject(sqnorm);
 	delete[] gm_in;
 
@@ -304,7 +301,7 @@ void test_f_update(std::string inputfile)
 	TestGaugefield cpu(&system);
 	Opencl_Module_Hmc * device = cpu.get_device();
 	cl_int err = CL_SUCCESS;
-	cl_mem in, out, sqnorm;
+	cl_mem sqnorm;
 	hmc_float * gm_in;
 	hmc_float * gm_out;
 
@@ -324,24 +321,21 @@ void test_f_update(std::string inputfile)
 	BOOST_REQUIRE(gm_in);
 	BOOST_REQUIRE(gm_out);
 
-	size_t ae_buf_size = device->get_gaugemomentum_buffer_size();
-	in = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE , ae_buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	device->importGaugemomentumBuffer(in, reinterpret_cast<ae*>(gm_in));
-	out = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, ae_buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(gm_out));
+	hardware::buffers::Gaugemomentum in(meta::get_vol4d(params) * NDIM, device->get_device());
+	device->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>(gm_in));
+	hardware::buffers::Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
+	device->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(gm_out));
 	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	logger.info() << "|in|^2:";
-	device->set_float_to_gaugemomentum_squarenorm_device(in, sqnorm);
+	device->set_float_to_gaugemomentum_squarenorm_device(&in, sqnorm);
 	hmc_float cpu_back;
 	clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << cpu_back;
 	logger.info() << "|out|^2:";
-	device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+	device->set_float_to_gaugemomentum_squarenorm_device(&out, sqnorm);
 	hmc_float cpu_back2;
 	clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back2, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
@@ -349,9 +343,9 @@ void test_f_update(std::string inputfile)
 
 	logger.info() << "Run kernel";
 	hmc_float eps = params.get_tau();
-	device->md_update_gaugemomentum_device( in  , out, eps);
+	device->md_update_gaugemomentum_device(&in, &out, eps);
 
-	device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+	device->set_float_to_gaugemomentum_squarenorm_device(&out, sqnorm);
 	hmc_float cpu_res;
 	clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
@@ -361,8 +355,6 @@ void test_f_update(std::string inputfile)
 	cpu.finalize();
 
 	logger.info() << "Free buffers";
-	clReleaseMemObject(in);
-	clReleaseMemObject(out);
 	clReleaseMemObject(sqnorm);
 	delete[] gm_in;
 	delete[] gm_out;
@@ -381,7 +373,7 @@ void test_f_gauge(std::string inputfile)
 	TestGaugefield cpu(&system);
 	Opencl_Module_Hmc * device = cpu.get_device();
 	cl_int err = CL_SUCCESS;
-	cl_mem out, sqnorm;
+	cl_mem sqnorm;
 	ae * gm_out;
 
 	logger.info() << "create buffers";
@@ -390,33 +382,34 @@ void test_f_gauge(std::string inputfile)
 	fill_with_zero(gm_out, NUM_ELEMENTS_AE);
 	BOOST_REQUIRE(gm_out);
 
-	size_t ae_buf_size = device->get_gaugemomentum_buffer_size();
-	out = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, ae_buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(gm_out));
+	hardware::buffers::Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
+	device->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(gm_out));
 	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	logger.info() << "|out|^2:";
-	device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+	device->set_float_to_gaugemomentum_squarenorm_device(&out, sqnorm);
 	hmc_float cpu_back;
 	clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << cpu_back;
 
-	device->gauge_force_device( device->get_gaugefield(), out);
+	device->gauge_force_device( device->get_gaugefield(), &out);
 
 	logger.info() << "result:";
 	hmc_float cpu_res;
-	device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+	device->set_float_to_gaugemomentum_squarenorm_device(&out, sqnorm);
 	err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << cpu_res;
-	logger.info() << "Finalize device";
-	cpu.finalize();
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
+
+	logger.info() << "Finalize device";
+	clReleaseMemObject(sqnorm);
+	delete[] gm_out;
+	cpu.finalize();
 }
 
 void test_f_gauge_tlsym(std::string inputfile)
@@ -429,7 +422,7 @@ void test_f_gauge_tlsym(std::string inputfile)
 	TestGaugefield cpu(&system);
 	Opencl_Module_Hmc * device = cpu.get_device();
 	cl_int err = CL_SUCCESS;
-	cl_mem out, sqnorm;
+	cl_mem sqnorm;
 	ae * gm_out;
 
 	logger.info() << "create buffers";
@@ -438,25 +431,23 @@ void test_f_gauge_tlsym(std::string inputfile)
 	fill_with_zero(gm_out, NUM_ELEMENTS_AE);
 	BOOST_REQUIRE(gm_out);
 
-	size_t ae_buf_size = device->get_gaugemomentum_buffer_size();
-	out = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, ae_buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	device->importGaugemomentumBuffer(out, reinterpret_cast<ae*>(gm_out));
+	hardware::buffers::Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
+	device->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(gm_out));
 	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	logger.info() << "|out|^2:";
-	device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+	device->set_float_to_gaugemomentum_squarenorm_device(&out, sqnorm);
 	hmc_float cpu_back;
 	clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << cpu_back;
 
-	device->gauge_force_tlsym_device( device->get_gaugefield(), out);
+	device->gauge_force_tlsym_device( device->get_gaugefield(), &out);
 
 	logger.info() << "result:";
 	hmc_float cpu_res;
-	device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+	device->set_float_to_gaugemomentum_squarenorm_device(&out, sqnorm);
 	err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << cpu_res;
@@ -465,6 +456,8 @@ void test_f_gauge_tlsym(std::string inputfile)
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
+
+	delete[] gm_out;
 }
 
 void test_f_fermion(std::string inputfile)
@@ -479,7 +472,7 @@ void test_f_fermion(std::string inputfile)
 	TestGaugefield cpu(&system);
 	Opencl_Module_Hmc * device = cpu.get_device();
 	cl_int err = CL_SUCCESS;
-	cl_mem out, sqnorm;
+	cl_mem sqnorm;
 	spinor * sf_in1;
 	spinor * sf_in2;
 	ae * ae_out;
@@ -511,9 +504,8 @@ void test_f_fermion(std::string inputfile)
 	const Plain<spinor> in2(NUM_ELEMENTS_SF, device->get_device());
 	in1.load(sf_in1);
 	in2.load(sf_in2);
-	out = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, device->get_gaugemomentum_buffer_size(), 0, &err);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	device->importGaugemomentumBuffer(out, ae_out);
+	Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
+	device->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(ae_out));
 	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
@@ -530,10 +522,10 @@ void test_f_fermion(std::string inputfile)
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << cpu_back2;
 	logger.info() << "Run kernel";
-	device->fermion_force_device( &in1, &in2, device->get_gaugefield()  , out, params.get_kappa());
+	device->fermion_force_device( &in1, &in2, device->get_gaugefield(), &out, params.get_kappa());
 	logger.info() << "result:";
 	hmc_float cpu_res;
-	device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+	device->set_float_to_gaugemomentum_squarenorm_device(&out, sqnorm);
 	err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << cpu_res;
@@ -541,7 +533,6 @@ void test_f_fermion(std::string inputfile)
 	cpu.finalize();
 
 	logger.info() << "Clear buffers";
-	clReleaseMemObject(out);
 	clReleaseMemObject(sqnorm);
 	delete[] sf_in1;
 	delete[] sf_in2;
@@ -563,7 +554,6 @@ void test_f_fermion_eo(std::string inputfile)
 	TestGaugefield cpu(&system);
 	Opencl_Module_Hmc * device = cpu.get_device();
 	cl_int err = CL_SUCCESS;
-	cl_mem out;
 	cl_mem sqnorm;
 	spinor * sf_in1;
 	spinor * sf_in2;
@@ -602,15 +592,14 @@ void test_f_fermion_eo(std::string inputfile)
 	const Spinor in2(NUM_ELEMENTS_SF, device->get_device());
 	const Spinor in3(NUM_ELEMENTS_SF, device->get_device());
 	const Spinor in4(NUM_ELEMENTS_SF, device->get_device());
-	out = clCreateBuffer(device->get_context(), CL_MEM_WRITE_ONLY, device->get_gaugemomentum_buffer_size(), 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
 	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	device->copy_to_eoprec_spinorfield_buffer(&in1, sf_in1);
 	device->copy_to_eoprec_spinorfield_buffer(&in2, sf_in2);
 	device->copy_to_eoprec_spinorfield_buffer(&in3, sf_in3);
 	device->copy_to_eoprec_spinorfield_buffer(&in4, sf_in4);
-	device->importGaugemomentumBuffer(out, ae_out);
+	device->importGaugemomentumBuffer(&out, ae_out);
 
 	//switch according to "use_pointsource"
 	hmc_float cpu_res, cpu_back, cpu_back2, cpu_back3, cpu_back4;
@@ -631,7 +620,7 @@ void test_f_fermion_eo(std::string inputfile)
 		logger.info() << "Run kernel";
 		int tmp = EVEN;
 		//this is then force(Y_even, X_odd) == force(in1, in4)
-		device->fermion_force_eo_device(&in1, &in4, device->get_gaugefield(), out, tmp, params.get_kappa() );
+		device->fermion_force_eo_device(&in1, &in4, device->get_gaugefield(), &out, tmp, params.get_kappa() );
 
 		logger.info() << "|force (even)|^2:";
 	} else {
@@ -649,11 +638,11 @@ void test_f_fermion_eo(std::string inputfile)
 
 		int tmp = ODD;
 		//this is then force(Y_odd, X_even) == force(in2, in3)
-		device->fermion_force_eo_device(&in2, &in3, device->get_gaugefield(), out, tmp, params.get_kappa() );
+		device->fermion_force_eo_device(&in2, &in3, device->get_gaugefield(), &out, tmp, params.get_kappa() );
 		logger.info() << "|force (odd)|^2:";
 	}
 
-	device->set_float_to_gaugemomentum_squarenorm_device(out, sqnorm);
+	device->set_float_to_gaugemomentum_squarenorm_device(&out, sqnorm);
 	err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	logger.info() << cpu_res;
@@ -661,7 +650,6 @@ void test_f_fermion_eo(std::string inputfile)
 	cpu.finalize();
 
 	logger.info() << "Clear buffers";
-	clReleaseMemObject(out);
 	clReleaseMemObject(sqnorm);
 
 	delete[] sf_in1;

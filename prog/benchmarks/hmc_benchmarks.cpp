@@ -68,7 +68,7 @@ int main(int argc, const char* argv[])
 	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
 	//copy u->u' p->p' for the integrator
 	hardware::buffers::copyData(gaugefield.get_task_hmc(0)->get_new_u(), gaugefield.get_task_hmc(0)->get_gaugefield());
-	gaugefield.get_task_hmc(0)->copy_buffer_on_device(gaugefield.get_task_hmc(0)->get_clmem_p(), gaugefield.get_task_hmc(0)->get_clmem_new_p(), gaugefield.get_task_hmc(0)->get_gaugemomentum_buffer_size());
+	hardware::buffers::copyData(gaugefield.get_task_hmc(0)->get_clmem_new_p(), gaugefield.get_task_hmc(0)->get_clmem_p());
 	logger.trace() << "Perform " << hmc_iter << "of benchmarking";
 	for(iter = 0; iter < hmc_iter; iter ++) {
 		//here, clmem_phi is inverted several times and stored in clmem_phi_inv

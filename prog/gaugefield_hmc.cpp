@@ -47,8 +47,6 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 	//reset the counters for the inversions
 	reset_inversion_counters();
 
-	size_t gmsize = get_task_hmc(0)->get_gaugemomentum_buffer_size();
-
 	// copy u->u' p->p' for the integrator
 	// new_u is used in some debug code of the gaugemomentum-initialization. therefore we need to copy it before
 	// p is modified in the initialization, therefore we cannot copy it now
@@ -58,7 +56,7 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 	this->init_gaugemomentum_spinorfield(solver_timer);
 
 	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
-	get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_p(), get_task_hmc(0)->get_clmem_new_p(), gmsize);
+	hardware::buffers::copyData(get_task_hmc(0)->get_clmem_new_p(), get_task_hmc(0)->get_clmem_p());
 
 	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
 	this->integrator(solver_timer);
@@ -71,7 +69,7 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 	if((*obs).accept == 1) {
 		// perform the change nonprimed->primed !
 		copyData(get_task_hmc(0)->get_gaugefield(), get_task_hmc(0)->get_new_u());
-		get_task_hmc(0)->copy_buffer_on_device(get_task_hmc(0)->get_clmem_new_p(), get_task_hmc(0)->get_clmem_p(), gmsize);
+		hardware::buffers::copyData(get_task_hmc(0)->get_clmem_p(), get_task_hmc(0)->get_clmem_new_p());
 		logger.debug() << "\t\tnew configuration accepted" ;
 	} else {
 		logger.debug() << "\t\tnew configuration rejected" ;

@@ -33,6 +33,7 @@
 #include "exceptions.h"
 
 #include "meta/counter.hpp"
+#include "hardware/buffers/gaugemomentum.hpp"
 
 /**
  * An OpenCL device
@@ -52,14 +53,17 @@ public:
 	 */
 	Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device, meta::Counter * inversions0, meta::Counter * inversions1,
 	                  meta::Counter * inversions_mp0, meta::Counter * inversions_mp1)
-		: Opencl_Module_Fermions(params, device), new_u(get_gaugefield()->get_elements(), device),
+		: Opencl_Module_Fermions(params, device),
+		  clmem_p(meta::get_vol4d(params) * NDIM, device),
+		  clmem_new_p(meta::get_vol4d(params) * NDIM, device),
+		  new_u(get_gaugefield()->get_elements(), device),
+		  clmem_force(meta::get_vol4d(params) * NDIM, device),
 		  clmem_phi_inv(meta::get_spinorfieldsize(params), device),
 		  clmem_phi_inv_eo(meta::get_eoprec_spinorfieldsize(params), device),
 		  clmem_phi(meta::get_spinorfieldsize(params), device),
 		  clmem_phi_mp(meta::get_spinorfieldsize(params), device),
 		  clmem_phi_eo(meta::get_eoprec_spinorfieldsize(params), device),
 		  clmem_phi_mp_eo(meta::get_eoprec_spinorfieldsize(params), device),
-		  gaugemomentum_buf_size(0),
 		  inversions0(inversions0), inversions1(inversions1), inversions_mp0(inversions_mp0), inversions_mp1(inversions_mp1)
 		{ };
 
@@ -102,8 +106,8 @@ public:
 
 	////////////////////////////////////////////////////
 	//get members
-	cl_mem get_clmem_p();
-	cl_mem get_clmem_new_p();
+	const hardware::buffers::Gaugemomentum * get_clmem_p();
+	const hardware::buffers::Gaugemomentum * get_clmem_new_p();
 	const hardware::buffers::SU3 * get_new_u();
 	const hardware::buffers::Plain<spinor> * get_clmem_phi();
 	const hardware::buffers::Spinor * get_clmem_phi_eo();
@@ -125,34 +129,27 @@ public:
 
 	///////////////////////////////////////////////////
 	//Methods on device
-	void set_float_to_gaugemomentum_squarenorm_device(cl_mem in, cl_mem out);
+	void set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * in, cl_mem out);
 	void generate_gaussian_gaugemomenta_device();
 	void generate_gaussian_spinorfield_device();
 	void generate_gaussian_spinorfield_eo_device();
 	void md_update_gaugemomentum_device(hmc_float eps);
-	void md_update_gaugemomentum_device(cl_mem, cl_mem, hmc_float eps);
+	void md_update_gaugemomentum_device(const hardware::buffers::Gaugemomentum *, const hardware::buffers::Gaugemomentum *, hmc_float eps);
 	void md_update_gaugefield_device(hmc_float eps);
-	void md_update_gaugefield_device(cl_mem, const hardware::buffers::SU3 *, hmc_float eps);
+	void md_update_gaugefield_device(const hardware::buffers::Gaugemomentum *, const hardware::buffers::SU3 *, hmc_float eps);
 	void set_zero_clmem_force_device();
+	void set_zero_gaugemomentum(const hardware::buffers::Gaugemomentum *);
 	void gauge_force_device();
-	void gauge_force_device(const hardware::buffers::SU3 * gf, cl_mem out);
+	void gauge_force_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out);
 	void gauge_force_tlsym_device();
-	void gauge_force_tlsym_device(const hardware::buffers::SU3 * gf, cl_mem out);
+	void gauge_force_tlsym_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out);
 	void fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, hmc_float kappa = ARG_DEF);
-	void fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, const hardware::buffers::SU3 *, cl_mem, hmc_float kappa = ARG_DEF);
+	void fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, const hardware::buffers::SU3 *, const hardware::buffers::Gaugemomentum *, hmc_float kappa = ARG_DEF);
 	void fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, int evenodd, hmc_float kappa = ARG_DEF);
-	void fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, const hardware::buffers::SU3 *, cl_mem, int evenodd, hmc_float kappa = ARG_DEF);
+	void fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, const hardware::buffers::SU3 *, const hardware::buffers::Gaugemomentum *, int evenodd, hmc_float kappa = ARG_DEF);
 	void stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate);
 	hmc_float calc_s_fermion();
 	hmc_float calc_s_fermion_mp();
-
-	/**
-	 * Query the size required for storage of a gaugemomentum buffer
-	 * in the format used by the implementation.
-	 *
-	 * @return The buffer size in bytes
-	 */
-	size_t get_gaugemomentum_buffer_size();
 
 	/**
 	 * Import data from the gaugemomenta array into the given buffer.
@@ -162,7 +159,7 @@ public:
 	 * @param[out] dest The buffer to write to in the device specific format
 	 * @param[in] data The data to write to the buffer
 	 */
-	void importGaugemomentumBuffer(const cl_mem dest, const ae * const data);
+	void importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data);
 	/**
 	 * Export data from the given buffer into a normal gaugemomentum array.
 	 *
@@ -171,7 +168,7 @@ public:
 	 * @param[out] dest An array that the buffer data can be written to.
 	 * @param[in] data A buffer containing the data in the device specific format.
 	 */
-	void exportGaugemomentumBuffer(ae * const dest, const cl_mem buf);
+	void exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf);
 
 protected:
 
@@ -210,7 +207,7 @@ private:
 	cl_kernel fermion_force;
 	cl_kernel fermion_force_eo;
 	cl_kernel stout_smear_fermion_force;
-	cl_kernel set_zero_gaugemomentum;
+	cl_kernel _set_zero_gaugemomentum;
 	cl_kernel gaugemomentum_squarenorm;
 	cl_kernel gaugemomentum_convert_to_soa;
 	cl_kernel gaugemomentum_convert_from_soa;
@@ -224,11 +221,11 @@ private:
 	cl_mem clmem_new_p2;
 	cl_mem clmem_s_fermion;
 	//new and old gaugemomentum, new gaugefield
-	cl_mem clmem_p;
-	cl_mem clmem_new_p;
+	const hardware::buffers::Gaugemomentum clmem_p;
+	const hardware::buffers::Gaugemomentum clmem_new_p;
 	const hardware::buffers::SU3 new_u;
 	//force field
-	cl_mem clmem_force;
+	const hardware::buffers::Gaugemomentum clmem_force;
 	//inverted spinorfield
 	const hardware::buffers::Plain<spinor> clmem_phi_inv;
 	const hardware::buffers::Spinor clmem_phi_inv_eo;
@@ -239,8 +236,6 @@ private:
 	const hardware::buffers::Spinor clmem_phi_mp_eo;
 
 	ClSourcePackage basic_hmc_code;
-
-	size_t gaugemomentum_buf_size;
 
 	meta::Counter * const inversions0;
 	meta::Counter * const inversions1;

@@ -25,8 +25,8 @@ public:
 		finalize();
 	};
 
-	void runTestKernel(cl_mem out, const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::SU3 * gf, int gs, int ls, int evenodd, hmc_float kappa);
-	void runTestKernel2(cl_mem out, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kapppa);
+	void runTestKernel(const hardware::buffers::Gaugemomentum * out, const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::SU3 * gf, int gs, int ls, int evenodd, hmc_float kappa);
+	void runTestKernel2(const hardware::buffers::Gaugemomentum * out, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kapppa);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -67,7 +67,7 @@ private:
 	const hardware::buffers::Spinor * in1_eo, * in2_eo, * in3_eo, * in4_eo;
 	const hardware::buffers::Plain<spinor> * in1_noneo, * in2_noneo;
 	const hardware::buffers::Plain<spinor> * in1_noneo_converted, * in2_noneo_converted;
-	cl_mem out_eo, out_noneo;
+	const hardware::buffers::Gaugemomentum * out_eo, * out_noneo;
 	spinor * sf_in1_noneo;
 	spinor * sf_in2_noneo;
 	spinor * sf_in1_noneo_converted;
@@ -631,9 +631,8 @@ void Dummyfield::fill_buffers()
 	fill_with_zero(sf_out_noneo, NUM_ELEMENTS_AE);
 
 	Device * spinor_module = static_cast<Device*>(opencl_modules[0]);
-	size_t ae_buf_size = spinor_module->get_gaugemomentum_buffer_size();
-	//create buffer for sf on device (and copy sf_in to both for convenience)
 
+	//create buffer for sf on device (and copy sf_in to both for convenience)
 	in1_eo = new Spinor(meta::get_eoprec_spinorfieldsize(get_parameters()), spinor_module->get_device());
 	in2_eo = new Spinor(meta::get_eoprec_spinorfieldsize(get_parameters()), spinor_module->get_device());
 	in3_eo = new Spinor(meta::get_eoprec_spinorfieldsize(get_parameters()), spinor_module->get_device());
@@ -648,8 +647,7 @@ void Dummyfield::fill_buffers()
 	spinor_module->copy_to_eoprec_spinorfield_buffer(in3_eo, sf_in3_eo);
 	spinor_module->copy_to_eoprec_spinorfield_buffer(in4_eo, sf_in4_eo);
 
-	out_eo = clCreateBuffer(context, CL_MEM_WRITE_ONLY, ae_buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	out_eo = new const hardware::buffers::Gaugemomentum(meta::get_vol4d(get_parameters()), spinor_module->get_device());
 	this->reset_outfield_eo();
 
 
@@ -661,7 +659,7 @@ void Dummyfield::fill_buffers()
 	in2_noneo->load(sf_in2_noneo);
 	in1_noneo_converted->load(sf_in1_noneo_converted);
 	in2_noneo_converted->load(sf_in2_noneo_converted);
-	out_noneo = clCreateBuffer(context, CL_MEM_WRITE_ONLY, ae_buf_size, 0, &err );
+	out_noneo = new const hardware::buffers::Gaugemomentum(meta::get_vol4d(get_parameters()), spinor_module->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 	spinor_module->importGaugemomentumBuffer(out_noneo, reinterpret_cast<ae*>(sf_out_noneo));
 
@@ -693,7 +691,7 @@ void Dummyfield::clear_buffers()
 	delete in1_noneo_converted;
 	delete in2_noneo_converted;
 
-	clReleaseMemObject(out_eo);
+	delete out_eo;
 	clReleaseMemObject(sqnorm);
 
 	delete[] sf_in1_eo;
@@ -702,7 +700,7 @@ void Dummyfield::clear_buffers()
 	delete[] sf_in4_eo;
 	delete[] sf_out_eo;
 
-	clReleaseMemObject(out_noneo);
+	delete out_noneo;
 
 	delete[] sf_in1_noneo;
 	delete[] sf_in2_noneo;
@@ -715,7 +713,7 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel(cl_mem out, const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::SU3 * gf, int gs, int ls, int evenodd, hmc_float kappa)
+void Device::runTestKernel(const hardware::buffers::Gaugemomentum * out, const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::SU3 * gf, int gs, int ls, int evenodd, hmc_float kappa)
 {
 	cl_int err;
 	int eo;
@@ -729,7 +727,7 @@ void Device::runTestKernel(cl_mem out, const hardware::buffers::Spinor * in1, co
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 2, sizeof(cl_mem), in2->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 3, sizeof(cl_mem), &out);
+	err = clSetKernelArg(testKernel, 3, sizeof(cl_mem), out->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel, 4, sizeof(int), &eo);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
@@ -739,7 +737,7 @@ void Device::runTestKernel(cl_mem out, const hardware::buffers::Spinor * in1, co
 	get_device()->enqueue_kernel(testKernel, gs, ls);
 }
 
-void Device::runTestKernel2(cl_mem out, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa)
+void Device::runTestKernel2(const hardware::buffers::Gaugemomentum * out, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::Plain<spinor> * in2, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa)
 {
 	cl_int err;
 	err = clSetKernelArg(testKernel2, 0, sizeof(cl_mem), gf->get_cl_buffer());
@@ -748,7 +746,7 @@ void Device::runTestKernel2(cl_mem out, const hardware::buffers::Plain<spinor> *
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel2, 2, sizeof(cl_mem), in2->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel2, 3, sizeof(cl_mem), &out);
+	err = clSetKernelArg(testKernel2, 3, sizeof(cl_mem), out->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(testKernel2, 4, sizeof(hmc_float), &kappa);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
