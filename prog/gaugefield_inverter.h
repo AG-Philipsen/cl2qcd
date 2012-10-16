@@ -49,7 +49,7 @@ public:
 		  clmem_corr(nullptr),
 		  clmem_source_solver(nullptr),
 		  clmem_source_corr(nullptr)
-		{ };
+	{ };
 
 	/**
 	 * Initialize class.
