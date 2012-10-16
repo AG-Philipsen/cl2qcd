@@ -1,5 +1,5 @@
 // out = alpha*x
-__kernel void sax(__global spinorfield* x, __global hmc_complex * alpha, __global spinorfield* out)
+__kernel void sax(__global const spinor * const restrict x, __global const hmc_complex * const restrict alpha, __global spinor * const restrict out)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);

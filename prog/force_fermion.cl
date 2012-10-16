@@ -2,7 +2,7 @@
  * @file kernel for the non-eo fermion force
  */
 
-__kernel void fermion_force(__global const Matrixsu3StorageType * const restrict field, __global const spinorfield * const restrict Y, __global const spinorfield * const restrict X, __global aeStorageType * const restrict out, const hmc_float kappa_in)
+__kernel void fermion_force(__global const Matrixsu3StorageType * const restrict field, __global const spinor * const restrict Y, __global const spinor * const restrict X, __global aeStorageType * const restrict out, const hmc_float kappa_in)
 {
 	for(dir_idx dir = 0; dir < NDIM; ++dir) {
 		PARALLEL_FOR(id_tmp, VOL4D) {

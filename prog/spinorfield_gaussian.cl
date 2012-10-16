@@ -1,4 +1,4 @@
-__kernel void generate_gaussian_spinorfield(__global spinorfield * out, __global rngStateStorageType * rngStates)
+__kernel void generate_gaussian_spinorfield(__global spinor * const restrict out, __global rngStateStorageType * const restrict rngStates)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);

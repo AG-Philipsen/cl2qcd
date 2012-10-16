@@ -110,8 +110,8 @@ private:
 	const hardware::buffers::Plain<spinor> * clmem_source_solver;
 	const hardware::buffers::Plain<spinor> * clmem_source_corr;
 
-	spinorfield* solution_buffer;
-	spinorfield* source_buffer;
+	spinor* solution_buffer;
+	spinor* source_buffer;
 
 	int task_solver;
 	int task_correlator;

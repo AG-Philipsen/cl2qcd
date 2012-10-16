@@ -3,7 +3,7 @@
 */
 
 // //this is the pseudoscalar pion correlator in z-direction from pointsources
-__kernel void correlator_ps_z(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_ps_z(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -47,7 +47,7 @@ __kernel void correlator_ps_z(__global spinorfield* phi, __global hmc_float * ou
 }
 
 // //this is the pseudoscalar pion correlator in t-direction from pointsources
-__kernel void correlator_ps_t(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_ps_t(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -89,7 +89,7 @@ __kernel void correlator_ps_t(__global spinorfield* phi, __global hmc_float * ou
 
 
 // //this is the scalar correlator in z-direction from pointsources
-__kernel void correlator_sc_z(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_sc_z(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -152,7 +152,7 @@ __kernel void correlator_sc_z(__global spinorfield* phi, __global hmc_float * ou
 }
 
 // //this is the scalar correlator in t-direction from pointsources
-__kernel void correlator_sc_t(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_sc_t(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -216,7 +216,7 @@ __kernel void correlator_sc_t(__global spinorfield* phi, __global hmc_float * ou
 
 
 // //this is the vector correlator in z-direction from pointsources (gamma4*gamma1)
-__kernel void correlator_vx_z(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_vx_z(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -311,7 +311,7 @@ __kernel void correlator_vx_z(__global spinorfield* phi, __global hmc_float * ou
 }
 
 // //this is the vector correlator in t-direction from pointsources (gamma4*gamma1)
-__kernel void correlator_vx_t(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_vx_t(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -406,7 +406,7 @@ __kernel void correlator_vx_t(__global spinorfield* phi, __global hmc_float * ou
 
 
 // //this is the vector correlator in z-direction from pointsources (gamma4*gamma2)
-__kernel void correlator_vy_z(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_vy_z(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -500,7 +500,7 @@ __kernel void correlator_vy_z(__global spinorfield* phi, __global hmc_float * ou
 }
 
 // //this is the vector correlator in t-direction from pointsources (gamma4*gamma2)
-__kernel void correlator_vy_t(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_vy_t(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -596,7 +596,7 @@ __kernel void correlator_vy_t(__global spinorfield* phi, __global hmc_float * ou
 
 
 // //this is the vector correlator in z-direction from pointsources (gamma4*gamma3)
-__kernel void correlator_vz_z(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_vz_z(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -659,7 +659,7 @@ __kernel void correlator_vz_z(__global spinorfield* phi, __global hmc_float * ou
 }
 
 // //this is the vector correlator in t-direction from pointsources (gamma4*gamma3)
-__kernel void correlator_vz_t(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_vz_t(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -725,7 +725,7 @@ __kernel void correlator_vz_t(__global spinorfield* phi, __global hmc_float * ou
 // axial vector correlators
 
 // //this is the axial vector correlator in z-direction from pointsources (gamma5*gamma4*gamma1)
-__kernel void correlator_ax_z(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_ax_z(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -819,7 +819,7 @@ __kernel void correlator_ax_z(__global spinorfield* phi, __global hmc_float * ou
 }
 
 // //this is the axial vector correlator in t-direction from pointsources (gamma5*gamma4*gamma1)
-__kernel void correlator_ax_t(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_ax_t(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -914,7 +914,7 @@ __kernel void correlator_ax_t(__global spinorfield* phi, __global hmc_float * ou
 
 
 // //this is the axial vector correlator in z-direction from pointsources (gamma5*gamma4*gamma2)
-__kernel void correlator_ay_z(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_ay_z(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -1008,7 +1008,7 @@ __kernel void correlator_ay_z(__global spinorfield* phi, __global hmc_float * ou
 }
 
 // //this is the axial vector correlator in t-direction from pointsources (gamma5*gamma4*gamma2)
-__kernel void correlator_ay_t(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_ay_t(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -1104,7 +1104,7 @@ __kernel void correlator_ay_t(__global spinorfield* phi, __global hmc_float * ou
 
 
 // //this is the axial vector correlator in z-direction from pointsources (gamma5*gamma4*gamma3)
-__kernel void correlator_az_z(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_az_z(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
@@ -1167,7 +1167,7 @@ __kernel void correlator_az_z(__global spinorfield* phi, __global hmc_float * ou
 }
 
 // //this is the axial vector correlator in t-direction from pointsources (gamma5*gamma4*gamma3)
-__kernel void correlator_az_t(__global spinorfield* phi, __global hmc_float * out)
+__kernel void correlator_az_t(__global const spinor * const restrict phi, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);

@@ -1,5 +1,5 @@
 //alpha*x + beta*y + z
-__kernel void saxsbypz(__global spinorfield* x, __global spinorfield* y, __global spinorfield* z, __global hmc_complex * alpha, __global hmc_complex * beta, __global spinorfield* out)
+__kernel void saxsbypz(__global const spinor * const restrict x, __global const spinor * const restrict y, __global const spinor * const restrict z, __global const hmc_complex * const restrict alpha, __global const hmc_complex * const restrict beta, __global spinor * const restrict out)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);

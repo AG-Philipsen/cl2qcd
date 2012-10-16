@@ -1,5 +1,5 @@
 //eoprec operations
-__kernel void convert_to_eoprec(__global spinor * const restrict even, __global spinor * const restrict odd, __global spinorfield const * const restrict in)
+__kernel void convert_to_eoprec(__global spinor * const restrict even, __global spinor * const restrict odd, __global spinor const * const restrict in)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);
@@ -13,7 +13,7 @@ __kernel void convert_to_eoprec(__global spinor * const restrict even, __global 
 	return;
 }
 
-__kernel void convert_from_eoprec(__global spinor const * const restrict even, __global spinor const * const restrict odd, __global spinorfield * const restrict out)
+__kernel void convert_from_eoprec(__global spinor const * const restrict even, __global spinor const * const restrict odd, __global spinor * const restrict out)
 {
 	int id = get_global_id(0);
 	int global_size = get_global_size(0);

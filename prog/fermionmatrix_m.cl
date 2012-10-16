@@ -2,7 +2,7 @@
  * @file M normal Wilson fermionmatrix
  */
 
-__kernel void M_wilson(__global spinorfield * in, __global Matrixsu3StorageType * field, __global spinorfield * out, hmc_float kappa_in)
+__kernel void M_wilson(__global const spinor * const restrict in, __global const Matrixsu3StorageType * const restrict field, __global spinor * const restrict out, hmc_float kappa_in)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);

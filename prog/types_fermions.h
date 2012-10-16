@@ -36,8 +36,6 @@ typedef struct {
 	su3vec e1;
 } halfspinor;
 
-typedef spinor spinorfield;
-
 /**
  * The type used for storing spinors on the device.
  */

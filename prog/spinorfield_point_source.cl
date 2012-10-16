@@ -1,4 +1,4 @@
-__kernel void create_point_source(__global spinorfield* b, int i, int spacepos, int timepos)
+__kernel void create_point_source(__global spinor * const restrict b, int i, int spacepos, int timepos)
 {
 	int id = get_global_id(0);
 	if(id == 0) {

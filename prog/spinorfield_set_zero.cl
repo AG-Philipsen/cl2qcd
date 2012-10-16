@@ -1,4 +1,4 @@
-__kernel void set_zero_spinorfield( __global spinorfield *x )
+__kernel void set_zero_spinorfield( __global spinor * const restrict x )
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);

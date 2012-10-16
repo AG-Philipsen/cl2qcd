@@ -1,4 +1,4 @@
-__kernel void gamma5(__global spinorfield *inout)
+__kernel void gamma5(__global spinor * const restrict inout)
 {
 	int local_size = get_local_size(0);
 	int global_size = get_global_size(0);
