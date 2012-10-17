@@ -23,7 +23,7 @@ hardware::buffers::Gaugemomentum::Gaugemomentum(size_t elems, hardware::Device *
 
 size_t hardware::buffers::check_Gaugemomentum_for_SOA(hardware::Device * device)
 {
-	return device->get_device_type() == CL_DEVICE_TYPE_GPU;
+	return device->get_prefers_soa();
 }
 
 static size_t calculate_gaugemomentum_buffer_size(size_t elems, hardware::Device * device)

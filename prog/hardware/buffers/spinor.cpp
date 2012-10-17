@@ -23,7 +23,7 @@ hardware::buffers::Spinor::Spinor(size_t elems, hardware::Device * device)
 
 size_t hardware::buffers::check_Spinor_for_SOA(hardware::Device * device)
 {
-	return device->get_device_type() == CL_DEVICE_TYPE_GPU;
+	return device->get_prefers_soa();
 }
 
 static size_t calculate_spinor_buffer_size(size_t elems, hardware::Device * device)
