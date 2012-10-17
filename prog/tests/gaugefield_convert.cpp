@@ -6,6 +6,7 @@
 #include "../opencl_module.h"
 #include "../gaugefield_hybrid.h"
 #include "../meta/util.hpp"
+#include "../meta/type_ops.hpp"
 
 extern std::string const version;
 std::string const version = "0.1";
@@ -104,9 +105,9 @@ void Dummyfield::finalize_opencl()
 
 void Dummyfield::fill_buffers()
 {
-	int NUM_ELEMENTS_AE = meta::get_vol4d(get_parameters()) * NDIM * meta::get_su3algebrasize();
-	in = new Matrixsu3[NUM_ELEMENTS_AE];
-	out = new Matrixsu3[NUM_ELEMENTS_AE];
+	size_t NUM_ELEMENTS = meta::get_vol4d(get_parameters()) * NDIM;
+	in = new Matrixsu3[NUM_ELEMENTS];
+	out = new Matrixsu3[NUM_ELEMENTS];
 }
 
 void Dummyfield::clear_buffers()
@@ -117,27 +118,8 @@ void Dummyfield::clear_buffers()
 
 void Dummyfield::verify()
 {
-	for(size_t i = 0; i < meta::get_vol4d(get_parameters()) * NDIM * meta::get_su3algebrasize(); ++i) {
-		BOOST_MESSAGE("Element " << i);
-		BOOST_REQUIRE_EQUAL(in[i].e00.re, out[i].e00.re);
-		BOOST_REQUIRE_EQUAL(in[i].e01.re, out[i].e01.re);
-		BOOST_REQUIRE_EQUAL(in[i].e02.re, out[i].e02.re);
-		BOOST_REQUIRE_EQUAL(in[i].e10.re, out[i].e10.re);
-		BOOST_REQUIRE_EQUAL(in[i].e11.re, out[i].e11.re);
-		BOOST_REQUIRE_EQUAL(in[i].e12.re, out[i].e12.re);
-		BOOST_REQUIRE_EQUAL(in[i].e20.re, out[i].e20.re);
-		BOOST_REQUIRE_EQUAL(in[i].e21.re, out[i].e21.re);
-		BOOST_REQUIRE_EQUAL(in[i].e22.re, out[i].e22.re);
-		BOOST_REQUIRE_EQUAL(in[i].e00.im, out[i].e00.im);
-		BOOST_REQUIRE_EQUAL(in[i].e01.im, out[i].e01.im);
-		BOOST_REQUIRE_EQUAL(in[i].e02.im, out[i].e02.im);
-		BOOST_REQUIRE_EQUAL(in[i].e10.im, out[i].e10.im);
-		BOOST_REQUIRE_EQUAL(in[i].e11.im, out[i].e11.im);
-		BOOST_REQUIRE_EQUAL(in[i].e12.im, out[i].e12.im);
-		BOOST_REQUIRE_EQUAL(in[i].e20.im, out[i].e20.im);
-		BOOST_REQUIRE_EQUAL(in[i].e21.im, out[i].e21.im);
-		BOOST_REQUIRE_EQUAL(in[i].e22.im, out[i].e22.im);
-	}
+	size_t NUM_ELEMENTS = meta::get_vol4d(get_parameters()) * NDIM;
+	BOOST_CHECK_EQUAL_COLLECTIONS(in, in + NUM_ELEMENTS, out, out + NUM_ELEMENTS);
 }
 
 void Dummyfield::send()
