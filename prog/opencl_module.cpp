@@ -950,10 +950,10 @@ void Opencl_Module::convertGaugefieldFromSOA_device(const hardware::buffers::Sca
 	this->get_work_sizes(convertGaugefieldFromSOA, &ls2, &gs2, &num_groups);
 
 	//set arguments
-	int clerr = clSetKernelArg(convertGaugefieldFromSOA, 0, sizeof(cl_mem), &out);
+	int clerr = clSetKernelArg(convertGaugefieldFromSOA, 0, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(convertGaugefieldFromSOA, 1, sizeof(cl_mem), &in);
+	clerr = clSetKernelArg(convertGaugefieldFromSOA, 1, sizeof(cl_mem), in->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	device->enqueue_kernel(convertGaugefieldFromSOA, gs2, ls2);
