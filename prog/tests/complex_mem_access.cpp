@@ -25,8 +25,8 @@ public:
 		finalize();
 	};
 
-	void runFillKernel(cl_mem out, hmc_complex value);
-	void runReadKernel(cl_mem out, cl_mem in);
+	void runFillKernel(const hardware::buffers::Plain<hmc_complex> * out, hmc_complex value);
+	void runReadKernel(const hardware::buffers::Plain<cl_float2> * out, const hardware::buffers::Plain<hmc_complex> * in);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -53,9 +53,9 @@ private:
 	void fill_buffers();
 	void clear_buffers();
 	hmc_complex * h_complex;
-	cl_mem d_complex;
-	cl_mem d_readComplex;
-	cl_mem d_float2;
+	hardware::buffers::Plain<hmc_complex> * d_complex;
+	hardware::buffers::Plain<hmc_complex> * d_readComplex;
+	hardware::buffers::Plain<cl_float2> * d_float2;
 };
 
 BOOST_AUTO_TEST_CASE( CPU )
@@ -113,13 +113,11 @@ void Dummyfield::fill_buffers()
 		hmc_complex tmp = { (hmc_float) i, (hmc_float) (meta::get_vol4d(get_parameters()) - i) };
 		h_complex[i] = tmp;
 	}
-	d_readComplex = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, meta::get_vol4d(get_parameters()) * sizeof(hmc_complex), h_complex, &err);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	d_float2 = clCreateBuffer(context, CL_MEM_WRITE_ONLY, meta::get_vol4d(get_parameters()) * sizeof(cl_float2), 0, &err);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
-	d_complex = clCreateBuffer(context, CL_MEM_WRITE_ONLY, meta::get_vol4d(get_parameters()) * sizeof(hmc_complex), 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	d_readComplex = new hardware::buffers::Plain<hmc_complex>(meta::get_vol4d(get_parameters()), opencl_modules[0]->get_device());
+	d_readComplex->load(h_complex);
+	d_float2 = new hardware::buffers::Plain<cl_float2>(meta::get_vol4d(get_parameters()), opencl_modules[0]->get_device());
+	d_complex = new hardware::buffers::Plain<hmc_complex>(meta::get_vol4d(get_parameters()), opencl_modules[0]->get_device());
 }
 
 void Device::fill_kernels()
@@ -134,9 +132,9 @@ void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
-	clReleaseMemObject(d_readComplex);
-	clReleaseMemObject(d_float2);
-	clReleaseMemObject(d_complex);
+	delete d_readComplex;
+	delete d_float2;
+	delete d_complex;
 
 	delete[] h_complex;
 }
@@ -147,22 +145,22 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runFillKernel(cl_mem out, hmc_complex value)
+void Device::runFillKernel(const hardware::buffers::Plain<hmc_complex> * out, hmc_complex value)
 {
 	cl_int err;
-	err = clSetKernelArg(fillComplex, 0, sizeof(cl_mem), &out);
+	err = clSetKernelArg(fillComplex, 0, sizeof(cl_mem), out->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(fillComplex, 1, sizeof(hmc_complex), &value);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	get_device()->enqueue_kernel(fillComplex, 1024);
 }
 
-void Device::runReadKernel(cl_mem out, cl_mem in)
+void Device::runReadKernel(const hardware::buffers::Plain<cl_float2> * out, const hardware::buffers::Plain<hmc_complex> * in)
 {
 	cl_int err;
-	err = clSetKernelArg(readComplex, 0, sizeof(cl_mem), &out);
+	err = clSetKernelArg(readComplex, 0, sizeof(cl_mem), out->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(readComplex, 1, sizeof(cl_mem), &in);
+	err = clSetKernelArg(readComplex, 1, sizeof(cl_mem), in->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	get_device()->enqueue_kernel(readComplex, 1024);
 }
@@ -177,8 +175,7 @@ void Dummyfield::verify(hmc_complex left, hmc_complex right)
 void Dummyfield::verifyFill(const hmc_complex value)
 {
 	// get stuff from device
-	cl_int err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), d_complex, CL_TRUE, 0, meta::get_vol4d(get_parameters()) * sizeof(hmc_complex), h_complex, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	d_complex->dump(h_complex);
 
 	for(int i = 0; i < meta::get_vol4d(get_parameters()); ++i) {
 		verify(value, h_complex[i]);
@@ -201,8 +198,7 @@ void Dummyfield::verifyRead()
 {
 	// get stuff from device
 	cl_float2 * h_float2 = new cl_float2[meta::get_vol4d(get_parameters())];
-	cl_int err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), d_float2, CL_TRUE, 0, meta::get_vol4d(get_parameters()) * sizeof(cl_float2), h_float2, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	d_float2->dump(h_float2);
 
 	for(int i = 0; i < meta::get_vol4d(get_parameters()); ++i) {
 		cl_float2 ref = {(cl_float) i, (cl_float) (meta::get_vol4d(get_parameters()) - i)};

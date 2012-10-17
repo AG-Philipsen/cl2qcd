@@ -44,6 +44,7 @@ public:
 	 */
 	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device)
 		: parameters(params), device(device), gaugefield(NDIM * meta::get_vol4d(params), device),
+		  plaq(1, device), splaq(1, device), tplaq(1, device), clmem_rect(1, device), clmem_polyakov(1, device),
 		  gf_unsmeared(gaugefield.get_elements(), device),
 		  stout_smear(0), rectangles(0), rectangles_reduction(0) {};
 	/**
@@ -398,16 +399,11 @@ private:
 
 	const hardware::buffers::SU3 gaugefield;
 
-	cl_mem clmem_plaq;
-	cl_mem clmem_plaq_buf_glob;
-	cl_mem clmem_splaq_buf_glob;
-	cl_mem clmem_tplaq_buf_glob;
-	cl_mem clmem_splaq;
-	cl_mem clmem_tplaq;
-	cl_mem clmem_rect;
-	cl_mem clmem_rect_buf_glob;
-	cl_mem clmem_polyakov;
-	cl_mem clmem_polyakov_buf_glob;
+	const hardware::buffers::Plain<hmc_float> plaq;
+	const hardware::buffers::Plain<hmc_float> splaq;
+	const hardware::buffers::Plain<hmc_float> tplaq;
+	const hardware::buffers::Plain<hmc_float> clmem_rect;
+	const hardware::buffers::Plain<hmc_complex> clmem_polyakov;
 
 	//this is used to save the unsmeared gaugefield if smearing is used
 	const hardware::buffers::SU3 gf_unsmeared;

@@ -42,18 +42,12 @@ public:
 	 * @param[in] params points to an instance of inputparameters
 	 */
 	Opencl_Module_Kappa(const meta::Inputparameters& params, hardware::Device * device)
-		: Opencl_Module(params, device) {};
+		: Opencl_Module(params, device), clmem_kappa_clover(1, device) {};
 	/**
 	 * Collect the compiler options for OpenCL.
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
 	virtual void fill_collect_options(std::stringstream* collect_options) override;
-
-	/**
-	 * Collect the buffers to generate for OpenCL.
-	 * Virtual method, allows to include more buffers in inherited classes.
-	 */
-	virtual void fill_buffers() override;
 
 	/**
 	 * Collect the kernels for OpenCL.
@@ -68,12 +62,6 @@ public:
 	virtual void clear_kernels() override;
 
 	/**
-	 * Clear out the buffers,
-	 * Virtual method, allows to clear additional buffers in inherited classes.
-	 */
-	virtual void clear_buffers() override;
-
-	/**
 	 * Run the calculation of kappa clover. No OpenCL barrier.
 	 * @TODO remove beta
 	 */
@@ -85,14 +73,9 @@ public:
 	 */
 	hmc_float get_kappa_clover();
 
-protected:
-
 private:
-	cl_mem clmem_kappa_clover;
-	cl_mem clmem_kappa_clover_buf_glob;
+	const hardware::buffers::Plain<hmc_float> clmem_kappa_clover;
 	cl_kernel kappa_clover_gpu;
-
-
 };
 
 #endif //OPENCLMODULEKAPPAH

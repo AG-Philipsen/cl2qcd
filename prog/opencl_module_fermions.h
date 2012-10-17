@@ -185,7 +185,18 @@ public:
 		  clmem_t_eo(meta::get_eoprec_spinorfieldsize(params), device),
 		  clmem_aux_eo(meta::get_eoprec_spinorfieldsize(params), device),
 		  clmem_tmp_eo_1(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
-		  clmem_tmp_eo_2(meta::get_eoprec_spinorfieldsize(params), device) // TODO we don't need this if no eo or no Twistedmass
+		  clmem_tmp_eo_2(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo or no Twistedmass
+		  clmem_rho(1,device),
+		  clmem_rho_next(1,device),
+		  clmem_alpha(1,device),
+		  clmem_omega(1,device),
+		  clmem_beta(1,device),
+		  clmem_tmp1(1,device),
+		  clmem_tmp2(1,device),
+		  clmem_one(1,device),
+		  clmem_minusone(1,device),
+		  clmem_resid(1,device),
+		  clmem_trueresid(1,device)
 		{ };
 
 
@@ -214,15 +225,6 @@ public:
 	 * Virtual method, allows to clear additional kernels in inherited classes.
 	 */
 	virtual void clear_kernels() override;
-	/**
-	 * Clear out the buffers,
-	 * Virtual method, allows to clear additional buffers in inherited classes.
-	 */
-	virtual void clear_buffers() override;
-	/**
-	 * Clear out the buffers related to the solver
-	 */
-	virtual void clear_solver_buffers();
 
 	/**
 	 * comutes work-sizes for a kernel
@@ -302,8 +304,8 @@ public:
 	const hardware::buffers::Spinor * get_source_even();
 	const hardware::buffers::Spinor * get_source_odd();
 
-	cl_mem get_clmem_minusone();
-	cl_mem get_clmem_one();
+	const hardware::buffers::Plain<hmc_complex> * get_clmem_minusone();
+	const hardware::buffers::Plain<hmc_complex> * get_clmem_one();
 
 	/**
 	 * This is used to print the squarenorm of an inverter-solution in debug-mode
@@ -389,18 +391,18 @@ private:
 	const hardware::buffers::Spinor clmem_tmp_eo_1;
 	const hardware::buffers::Spinor clmem_tmp_eo_2;
 
-	cl_mem clmem_rho;
-	cl_mem clmem_rho_next;
-	cl_mem clmem_alpha;
-	cl_mem clmem_omega;
-	cl_mem clmem_beta;
-	cl_mem clmem_tmp1;
-	cl_mem clmem_tmp2;
-	cl_mem clmem_one;
-	cl_mem clmem_minusone;
+	const hardware::buffers::Plain<hmc_complex> clmem_rho;
+	const hardware::buffers::Plain<hmc_complex> clmem_rho_next;
+	const hardware::buffers::Plain<hmc_complex> clmem_alpha;
+	const hardware::buffers::Plain<hmc_complex> clmem_omega;
+	const hardware::buffers::Plain<hmc_complex> clmem_beta;
+	const hardware::buffers::Plain<hmc_complex> clmem_tmp1;
+	const hardware::buffers::Plain<hmc_complex> clmem_tmp2;
+	const hardware::buffers::Plain<hmc_complex> clmem_one;
+	const hardware::buffers::Plain<hmc_complex> clmem_minusone;
 
-	cl_mem clmem_resid;
-	cl_mem clmem_trueresid;
+	const hardware::buffers::Plain<hmc_float> clmem_resid;
+	const hardware::buffers::Plain<hmc_float> clmem_trueresid;
 };
 
 #endif //OPENCLMODULEFERMIONSH

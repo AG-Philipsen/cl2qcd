@@ -21,7 +21,7 @@ public:
 		finalize();
 	};
 
-	void runTestKernel(const hardware::buffers::SU3 * gf, cl_mem out, int gs, int ls);
+	void runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, int gs, int ls);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -40,7 +40,7 @@ public:
 private:
 	void fill_buffers();
 	void clear_buffers();
-	cl_mem out;
+	const hardware::buffers::Plain<hmc_float> * out;
 	hmc_float * host_out;
 
 };
@@ -62,17 +62,12 @@ void Dummyfield::finalize_opencl()
 void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-	cl_int err;
-	cl_context context = opencl_modules[0]->get_context();
 	int NUM_ELEMENTS = meta::get_vol4d(get_parameters());
 
 	host_out = new hmc_float[NUM_ELEMENTS];
 	BOOST_REQUIRE(host_out);
 
-	size_t buf_size = NUM_ELEMENTS * sizeof(hmc_float);
-	out = clCreateBuffer(context, CL_MEM_READ_ONLY , buf_size, 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-
+	out = new hardware::buffers::Plain<hmc_float>(NUM_ELEMENTS, opencl_modules[0]->get_device());
 }
 
 void Device::fill_kernels()
@@ -90,7 +85,7 @@ void Device::fill_kernels()
 void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-	clReleaseMemObject(out);
+	delete out;
 	delete[] host_out;
 }
 
@@ -100,12 +95,12 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel(const hardware::buffers::SU3 * gf, cl_mem out, int gs, int ls)
+void Device::runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, int gs, int ls)
 {
 	cl_int err;
 	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), gf->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), &out );
+	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), out->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
 	get_device()->enqueue_kernel(testKernel, gs, ls);
@@ -125,13 +120,11 @@ hmc_float Dummyfield::runTestKernel()
 	Device * device = static_cast<Device*>(opencl_modules[0]);
 	device->runTestKernel(device->get_gaugefield(), out, gs, ls);
 
-	int NUM_ELEMENTS = meta::get_vol4d(get_parameters());
 	//copy the result of the kernel to host
-	size_t size = NUM_ELEMENTS * sizeof(hmc_float);
-	cl_int clerr = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), out, CL_TRUE, 0, size, host_out, 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueReadBuffer", __FILE__, __LINE__);
+	out->dump(host_out);
 
 	//sum up all elements in the result buffer
+	int NUM_ELEMENTS = meta::get_vol4d(get_parameters());
 	for(int i = 0; i < NUM_ELEMENTS; i++) {
 		res += host_out[i];
 	}

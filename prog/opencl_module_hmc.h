@@ -54,6 +54,11 @@ public:
 	Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device, meta::Counter * inversions0, meta::Counter * inversions1,
 	                  meta::Counter * inversions_mp0, meta::Counter * inversions_mp1)
 		: Opencl_Module_Fermions(params, device),
+		  clmem_s_fermion_init(1, device),
+		  clmem_s_fermion_mp_init(1, device),
+		  clmem_p2(1, device),
+		  clmem_new_p2(1, device),
+		  clmem_s_fermion(1, device),
 		  clmem_p(meta::get_vol4d(params) * NDIM, device),
 		  clmem_new_p(meta::get_vol4d(params) * NDIM, device),
 		  new_u(get_gaugefield()->get_elements(), device),
@@ -74,11 +79,6 @@ public:
 	 */
 	virtual void fill_collect_options(std::stringstream* collect_options) override;
 	/**
-	 * Collect the buffers to generate for OpenCL.
-	 * Virtual method, allows to include more buffers in inherited classes.
-	 */
-	virtual void fill_buffers() override;
-	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
@@ -88,11 +88,6 @@ public:
 	 * Virtual method, allows to clear additional kernels in inherited classes.
 	 */
 	virtual void clear_kernels() override;
-	/**
-	 * Clear out the buffers,
-	 * Virtual method, allows to clear additional buffers in inherited classes.
-	 */
-	virtual void clear_buffers() override;
 
 	/**
 	 * comutes work-sizes for a kernel
@@ -113,8 +108,8 @@ public:
 	const hardware::buffers::Spinor * get_clmem_phi_eo();
 	const hardware::buffers::Plain<spinor> * get_clmem_phi_mp();
 	const hardware::buffers::Spinor * get_clmem_phi_mp_eo();
-	cl_mem get_clmem_s_fermion_init();
-	cl_mem get_clmem_s_fermion_mp_init();
+	hardware::buffers::Plain<hmc_float> * get_clmem_s_fermion_init();
+	hardware::buffers::Plain<hmc_float> * get_clmem_s_fermion_mp_init();
 
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
@@ -122,14 +117,14 @@ public:
 	void md_update_spinorfield_mp(usetimer * solvertimer);
 	void generate_spinorfield_gaussian();
 	hmc_observables metropolis(hmc_float rnd, hmc_float beta);
-	void calc_spinorfield_init_energy(cl_mem dest);
+	void calc_spinorfield_init_energy(hardware::buffers::Plain<hmc_float> * dest);
 	void calc_gauge_force();
 	void calc_fermion_force(usetimer * solvertimer, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	void calc_fermion_force_detratio(usetimer * solvertimer);
 
 	///////////////////////////////////////////////////
 	//Methods on device
-	void set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * in, cl_mem out);
+	void set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::Plain<hmc_float> * out);
 	void generate_gaussian_gaugemomenta_device();
 	void generate_gaussian_spinorfield_device();
 	void generate_gaussian_spinorfield_eo_device();
@@ -214,12 +209,12 @@ private:
 
 	//variables
 	//initial energy of the (gaussian) spinorfield
-	cl_mem clmem_s_fermion_init;
-	cl_mem clmem_s_fermion_mp_init;
+	hardware::buffers::Plain<hmc_float> clmem_s_fermion_init;
+	hardware::buffers::Plain<hmc_float> clmem_s_fermion_mp_init;
 	//squarenorm temps
-	cl_mem clmem_p2;
-	cl_mem clmem_new_p2;
-	cl_mem clmem_s_fermion;
+	hardware::buffers::Plain<hmc_float> clmem_p2;
+	hardware::buffers::Plain<hmc_float> clmem_new_p2;
+	hardware::buffers::Plain<hmc_float> clmem_s_fermion;
 	//new and old gaugemomentum, new gaugefield
 	const hardware::buffers::Gaugemomentum clmem_p;
 	const hardware::buffers::Gaugemomentum clmem_new_p;

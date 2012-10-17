@@ -81,7 +81,7 @@ public:
 
 	void create_stochastic_source_device(const hardware::buffers::Plain<spinor> * inout);
 
-	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, cl_mem correlator);
+	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<hmc_float> * correlator);
 
 	/**
 	 * Get kernel for correlator indicated by which

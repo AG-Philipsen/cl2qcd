@@ -22,33 +22,6 @@ void Opencl_Module_Hmc::fill_collect_options(stringstream* collect_options)
 	return;
 }
 
-
-void Opencl_Module_Hmc::fill_buffers()
-{
-	using namespace hardware::buffers;
-
-	Opencl_Module_Fermions::fill_buffers();
-	///@todo CP: some of the above buffers are not used and can be deleted again!! especially in the eo-case
-
-	size_t gaugemomentum_elems = meta::get_vol4d(parameters) * NDIM;
-	int float_size = sizeof(hmc_float);
-	hmc_complex one = hmc_complex_one;
-	hmc_complex minusone = hmc_complex_minusone;
-
-	//init mem-objects
-
-	logger.trace() << "Create buffer for HMC...";
-	clmem_s_fermion_init = create_rw_buffer(float_size);
-	if(get_parameters().get_use_mp() ) {
-		clmem_s_fermion_mp_init = create_rw_buffer(float_size);
-	}
-	clmem_p2 = create_rw_buffer(float_size);
-	clmem_new_p2 = create_rw_buffer(float_size);
-	clmem_s_fermion = create_rw_buffer(float_size);
-
-	return;
-}
-
 void Opencl_Module_Hmc::fill_kernels()
 {
 	Opencl_Module_Fermions::fill_kernels();
@@ -125,25 +98,6 @@ void Opencl_Module_Hmc::clear_kernels()
 	return;
 }
 
-void Opencl_Module_Hmc::clear_buffers()
-{
-	Opencl_Module_Fermions::clear_buffers();
-
-	cl_uint clerr = CL_SUCCESS;
-
-	logger.debug() << "release HMC-variables.." ;
-	clerr = clReleaseMemObject(clmem_s_fermion_init);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	if(get_parameters().get_use_mp() ) {
-		clerr = clReleaseMemObject(clmem_s_fermion_mp_init);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	}
-	clerr = clReleaseMemObject(clmem_p2);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	clerr = clReleaseMemObject(clmem_new_p2);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-}
-
 void Opencl_Module_Hmc::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module_Fermions::get_work_sizes(kernel, ls, gs, num_groups);
@@ -198,14 +152,14 @@ const hardware::buffers::Spinor * Opencl_Module_Hmc::get_clmem_phi_mp_eo()
 	return &clmem_phi_mp_eo;
 }
 
-cl_mem Opencl_Module_Hmc::get_clmem_s_fermion_init()
+hardware::buffers::Plain<hmc_float> * Opencl_Module_Hmc::get_clmem_s_fermion_init()
 {
-	return clmem_s_fermion_init;
+	return &clmem_s_fermion_init;
 }
 
-cl_mem Opencl_Module_Hmc::get_clmem_s_fermion_mp_init()
+hardware::buffers::Plain<hmc_float> * Opencl_Module_Hmc::get_clmem_s_fermion_mp_init()
 {
-	return clmem_s_fermion_mp_init;
+	return &clmem_s_fermion_mp_init;
 }
 
 size_t Opencl_Module_Hmc::get_read_write_size(const std::string& in) const
@@ -386,13 +340,11 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device()
 	get_device()->enqueue_kernel( generate_gaussian_gaugemomenta , gs2, ls2);
 
 	if(logger.beDebug()) {
-		cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
+		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_p, force_tmp);
-		get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
+		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_p, &force_tmp);
+		force_tmp.dump(&resid);
 		logger.debug() <<  "\tgaussian gaugemomenta:\t" << resid;
-		int clerr = clReleaseMemObject(force_tmp);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		if(resid != resid) {
 			throw Print_Error_Message("calculation of gaussian gm gave nan! Aborting...", __FILE__, __LINE__);
 		}
@@ -474,13 +426,11 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_device()
 	get_device()->enqueue_kernel(generate_gaussian_spinorfield  , gs2, ls2);
 
 	if(logger.beDebug()) {
-		cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
+		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		this->set_float_to_global_squarenorm_device(&clmem_phi_inv, force_tmp);
-		get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
+		this->set_float_to_global_squarenorm_device(&clmem_phi_inv, &force_tmp);
+		force_tmp.dump(&resid);
 		logger.debug() <<  "\tinit gaussian spinorfield:\t" << resid;
-		int clerr = clReleaseMemObject(force_tmp);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		if(resid != resid) {
 			throw Print_Error_Message("calculation of gaussian spinorfield gave nan! Aborting...", __FILE__, __LINE__);
 		}
@@ -504,13 +454,11 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_eo_device()
 	get_device()->enqueue_kernel(generate_gaussian_spinorfield_eo, gs2, ls2);
 
 	if(logger.beDebug()) {
-		cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
+		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		this->set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, force_tmp);
-		get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
+		this->set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, &force_tmp);
+		force_tmp.dump(&resid);
 		logger.debug() <<  "\tinit gaussian spinorfield energy:\t" << resid;
-		int clerr = clReleaseMemObject(force_tmp);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		if(resid != resid) {
 			throw Print_Error_Message("calculation of gaussian spinorfield gave nan! Aborting...", __FILE__, __LINE__);
 		}
@@ -1487,12 +1435,12 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 	}
 	///@todo: this can be moved in the ifs above!!
 	if(get_parameters().get_use_eo() == true) {
-		set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, clmem_s_fermion);
+		set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, &clmem_s_fermion);
 	} else {
-		set_float_to_global_squarenorm_device(&clmem_phi_inv, clmem_s_fermion);
+		set_float_to_global_squarenorm_device(&clmem_phi_inv, &clmem_s_fermion);
 	}
 	hmc_float tmp;
-	get_buffer_from_device(clmem_s_fermion, &tmp, sizeof(hmc_float));
+	clmem_s_fermion.dump(&tmp);
 	return tmp;
 }
 
@@ -1598,12 +1546,12 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion_mp()
 	}
 	///@todo: this can be moved in the ifs above!!
 	if(get_parameters().get_use_eo() == true) {
-		set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, clmem_s_fermion);
+		set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, &clmem_s_fermion);
 	} else {
-		set_float_to_global_squarenorm_device(&clmem_phi_inv, clmem_s_fermion);
+		set_float_to_global_squarenorm_device(&clmem_phi_inv, &clmem_s_fermion);
 	}
 	hmc_float tmp;
-	get_buffer_from_device(clmem_s_fermion, &tmp, sizeof(hmc_float));
+	clmem_s_fermion.dump(&tmp);
 	return tmp;
 }
 
@@ -1649,10 +1597,10 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 
 	//Gaugemomentum-Part
 	hmc_float p2, new_p2;
-	set_float_to_gaugemomentum_squarenorm_device(&clmem_p, clmem_p2);
-	set_float_to_gaugemomentum_squarenorm_device(&clmem_new_p, clmem_new_p2);
-	Opencl_Module_Hmc::get_buffer_from_device(clmem_p2, &p2, sizeof(hmc_float));
-	Opencl_Module_Hmc::get_buffer_from_device(clmem_new_p2, &new_p2, sizeof(hmc_float));
+	set_float_to_gaugemomentum_squarenorm_device(&clmem_p, &clmem_p2);
+	set_float_to_gaugemomentum_squarenorm_device(&clmem_new_p, &clmem_new_p2);
+	clmem_p2.dump(&p2);
+	clmem_new_p2.dump(&new_p2);
 	//the energy is half the squarenorm
 	deltaH += 0.5 * (p2 - new_p2);
 
@@ -1664,7 +1612,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	if(! get_parameters().get_use_gauge_only() ) {
 		hmc_float spinor_energy_init, s_fermion_final;
 		//initial energy has been computed in the beginning...
-		Opencl_Module_Hmc::get_buffer_from_device(clmem_s_fermion_init, &spinor_energy_init, sizeof(hmc_float));
+		clmem_s_fermion_init.dump(&spinor_energy_init);
 		// sum_links phi*_i (M^+M)_ij^-1 phi_j
 		s_fermion_final = calc_s_fermion();
 		deltaH += spinor_energy_init - s_fermion_final;
@@ -1675,7 +1623,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 		if( get_parameters().get_use_mp() ) {
 			hmc_float spinor_energy_mp_init, s_fermion_mp_final;
 			//initial energy has been computed in the beginning...
-			Opencl_Module_Hmc::get_buffer_from_device(clmem_s_fermion_mp_init, &spinor_energy_mp_init, sizeof(hmc_float));
+			clmem_s_fermion_mp_init.dump(&spinor_energy_mp_init);
 			// sum_links phi*_i (M^+M)_ij^-1 phi_j
 			s_fermion_mp_final = calc_s_fermion_mp();
 			deltaH += spinor_energy_mp_init - s_fermion_mp_final;
@@ -1717,7 +1665,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	return tmp;
 }
 
-void Opencl_Module_Hmc::calc_spinorfield_init_energy(cl_mem dest)
+void Opencl_Module_Hmc::calc_spinorfield_init_energy(hardware::buffers::Plain<hmc_float> * dest)
 {
 	//Suppose the initial spinorfield is saved in phi_inv
 	//  it is created in generate_gaussian_spinorfield_device
@@ -1733,13 +1681,11 @@ void Opencl_Module_Hmc::md_update_gaugemomentum_device(hmc_float eps)
 	md_update_gaugemomentum_device(&clmem_force, &clmem_new_p, eps);
 
 	if(logger.beDebug()) {
-		cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
+		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_new_p, force_tmp);
-		get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
+		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_new_p, &force_tmp);
+		force_tmp.dump(&resid);
 		logger.debug() <<  "\tupdated gaugemomenta energy:\t" << resid;
-		int clerr = clReleaseMemObject(force_tmp);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		if(resid != resid) {
 			throw Print_Error_Message("calculation of gm gave nan! Aborting...", __FILE__, __LINE__);
 		}
@@ -1816,15 +1762,13 @@ void Opencl_Module_Hmc::gauge_force_device()
 	gauge_force_device(&new_u, &clmem_force);
 
 	if(logger.beDebug()) {
-		cl_mem gauge_force_tmp = create_rw_buffer(sizeof(hmc_float));
+		hardware::buffers::Plain<hmc_float> gauge_force_tmp(1, get_device());
 		hmc_float gauge_force_energy = 0.;
-		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, gauge_force_tmp);
-		get_buffer_from_device(gauge_force_tmp, &gauge_force_energy, sizeof(hmc_float));
+		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &gauge_force_tmp);
+		gauge_force_tmp.dump(&gauge_force_energy);
 
 		//logger.debug() <<  "\t\t\tgauge force:\t" << gauge_force_energy;
 
-		int clerr = clReleaseMemObject(gauge_force_tmp);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		if(gauge_force_energy != gauge_force_energy) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
 		}
@@ -1839,13 +1783,11 @@ void Opencl_Module_Hmc::gauge_force_device()
 		//re-calculate force
 		gauge_force_device(&new_u, &force2);
 
-		cl_mem check_force_tmp = create_rw_buffer(sizeof(hmc_float));
+		hardware::buffers::Plain<hmc_float> check_force_tmp(1, get_device());
 		hmc_float check_force_energy = 0.;
-		this->set_float_to_gaugemomentum_squarenorm_device(&force2, check_force_tmp);
-		get_buffer_from_device(check_force_tmp, &check_force_energy, sizeof(hmc_float));
+		this->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
+		check_force_tmp.dump(&check_force_energy);
 		//logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
-		int clerr = clReleaseMemObject(check_force_tmp);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		if(check_force_energy != check_force_energy) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
 		}
@@ -1875,15 +1817,13 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device()
 	gauge_force_tlsym_device(&new_u, &clmem_force);
 
 	if(logger.beDebug()) {
-		cl_mem gauge_force_tlsym_tmp = create_rw_buffer(sizeof(hmc_float));
+		hardware::buffers::Plain<hmc_float> gauge_force_tlsym_tmp(1, get_device());
 		hmc_float gauge_force_tlsym_energy = 0.;
-		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, gauge_force_tlsym_tmp);
-		get_buffer_from_device(gauge_force_tlsym_tmp, &gauge_force_tlsym_energy, sizeof(hmc_float));
+		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &gauge_force_tlsym_tmp);
+		gauge_force_tlsym_tmp.dump(&gauge_force_tlsym_energy);
 
 		logger.debug() <<  "\t\t\tgauge force tlsym:\t" << gauge_force_tlsym_energy;
 
-		int clerr = clReleaseMemObject(gauge_force_tlsym_tmp);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		if(gauge_force_tlsym_energy != gauge_force_tlsym_energy) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
 		}
@@ -1897,13 +1837,11 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device()
 
 		gauge_force_tlsym_device(&new_u, &force2);
 
-		cl_mem check_force_tmp = create_rw_buffer(sizeof(hmc_float));
+		hardware::buffers::Plain<hmc_float> check_force_tmp(1, get_device());
 		hmc_float check_force_energy = 0.;
-		this->set_float_to_gaugemomentum_squarenorm_device(&force2, check_force_tmp);
-		get_buffer_from_device(check_force_tmp, &check_force_energy, sizeof(hmc_float));
+		this->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
+		check_force_tmp.dump(&check_force_energy);
 		logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
-		int clerr = clReleaseMemObject(check_force_tmp);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		if(check_force_energy != check_force_energy) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
 		}
@@ -1929,16 +1867,16 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device(const hardware::buffers::SU3 * 
 
 void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, hmc_float kappa)
 {
+	using namespace hardware::buffers;
+
 	fermion_force_device(Y, X, &new_u, &clmem_force, kappa);
 
 	if(logger.beDebug()) {
-		cl_mem noneo_force_tmp = create_rw_buffer(sizeof(hmc_float));
+		Plain<hmc_float> noneo_force_tmp(1, get_device());
 		hmc_float noneo_force_energy = 0.;
-		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, noneo_force_tmp);
-		get_buffer_from_device(noneo_force_tmp, &noneo_force_energy, sizeof(hmc_float));
+		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &noneo_force_tmp);
+		noneo_force_tmp.dump(&noneo_force_energy);
 		//logger.debug() <<  "\t\t\tnon-eo force:\t" << noneo_force_energy;
-		int clerr = clReleaseMemObject(noneo_force_tmp);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		if(noneo_force_energy != noneo_force_energy) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
 		}
@@ -1953,13 +1891,11 @@ void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::Plain<spin
 		//re-calculate force
 		fermion_force_device(Y, X, &new_u, &force2, kappa);
 
-		cl_mem check_force_tmp = create_rw_buffer(sizeof(hmc_float));
+		Plain<hmc_float> check_force_tmp(1, get_device());
 		hmc_float check_force_energy = 0.;
-		this->set_float_to_gaugemomentum_squarenorm_device(&force2, check_force_tmp);
-		get_buffer_from_device(check_force_tmp, &check_force_energy, sizeof(hmc_float));
+		this->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
+		check_force_tmp.dump(&check_force_energy);
 		//logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
-		int clerr = clReleaseMemObject(check_force_tmp);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		if(check_force_energy != check_force_energy) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
 		}
@@ -2001,17 +1937,17 @@ void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::Plain<spin
 //the argument kappa is set to ARG_DEF as default
 void Opencl_Module_Hmc::fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, int evenodd, hmc_float kappa)
 {
+	using namespace hardware::buffers;
+
 	fermion_force_eo_device(Y, X, &new_u, &clmem_force, evenodd, kappa);
 
 	if(logger.beDebug()) {
-		cl_mem force_tmp = create_rw_buffer(sizeof(hmc_float));
+		Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, force_tmp);
-		get_buffer_from_device(force_tmp, &resid, sizeof(hmc_float));
+		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &force_tmp);
+		force_tmp.dump(&resid);
 		//logger.debug() <<  "\t\t\teoprec force:\t" << resid;
 
-		int clerr = clReleaseMemObject(force_tmp);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		if(resid != resid) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
 		}
@@ -2026,13 +1962,11 @@ void Opencl_Module_Hmc::fermion_force_eo_device(const hardware::buffers::Spinor 
 		//re-calculate force
 		fermion_force_eo_device(Y, X, &new_u, &force2, evenodd, kappa);
 
-		cl_mem check_force_tmp = create_rw_buffer(sizeof(hmc_float));
+		Plain<hmc_float> check_force_tmp(1, get_device());
 		hmc_float check_force_energy = 0.;
-		this->set_float_to_gaugemomentum_squarenorm_device(&force2, check_force_tmp);
-		get_buffer_from_device(check_force_tmp, &check_force_energy, sizeof(hmc_float));
+		this->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
+		check_force_tmp.dump(&check_force_energy);
 		//logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
-		int clerr = clReleaseMemObject(check_force_tmp);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
 		if(check_force_energy != check_force_energy) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
 		}
@@ -2083,7 +2017,7 @@ void Opencl_Module_Hmc::stout_smeared_fermion_force_device(std::vector<const har
 	//set arguments
 }
 
-void Opencl_Module_Hmc::set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * clmem_in, cl_mem out)
+void Opencl_Module_Hmc::set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * clmem_in, const hardware::buffers::Plain<hmc_float> * out)
 {
 	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
 	//query work-sizes for kernel
@@ -2091,24 +2025,21 @@ void Opencl_Module_Hmc::set_float_to_gaugemomentum_squarenorm_device(const hardw
 	cl_uint num_groups;
 	this->get_work_sizes(gaugemomentum_squarenorm, &ls2, &gs2, &num_groups);
 
-	int global_buf_size_float = sizeof(hmc_float) * num_groups;
-	cl_mem  clmem_global_squarenorm_buf_glob = create_rw_buffer(global_buf_size_float);
+	const hardware::buffers::Plain<hmc_float> clmem_global_squarenorm_buf_glob(num_groups, get_device());
 
 	int clerr = clSetKernelArg(gaugemomentum_squarenorm, 0, sizeof(cl_mem), clmem_in->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(gaugemomentum_squarenorm, 1, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
+	clerr = clSetKernelArg(gaugemomentum_squarenorm, 1, sizeof(cl_mem), clmem_global_squarenorm_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(gaugemomentum_squarenorm, 2, sizeof(hmc_float) * ls2, static_cast<void*>(nullptr));
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	get_device()->enqueue_kernel(gaugemomentum_squarenorm  , gs2, ls2);
+	get_device()->enqueue_kernel(gaugemomentum_squarenorm, gs2, ls2);
 
-	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), &clmem_global_squarenorm_buf_glob);
+	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), clmem_global_squarenorm_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), &out);
+	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	get_device()->enqueue_kernel(global_squarenorm_reduction, gs2, ls2);
-
-	clReleaseMemObject(clmem_global_squarenorm_buf_glob);
 }
 
 void Opencl_Module_Hmc::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data)

@@ -24,7 +24,7 @@ public:
 		finalize();
 	};
 
-	void runExtendKernel(cl_mem out, cl_mem in, cl_mem d_rand, cl_ulong elems);
+	void runExtendKernel(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::Plain<Matrixsu2> * in, const hardware::buffers::Plain<cl_int> * d_rand, cl_ulong elems);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -50,8 +50,9 @@ private:
 	Matrixsu2 * h_in;
 	Matrixsu3 * h_out;
 	cl_int * h_rand;
-	cl_mem in, out;
-	cl_mem d_rand;
+	hardware::buffers::Plain<Matrixsu2> * d_in;
+	hardware::buffers::Plain<Matrixsu3> * d_out;
+	hardware::buffers::Plain<cl_int> * d_rand;
 
 };
 
@@ -95,36 +96,33 @@ void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
-	cl_int err;
-
-	cl_context context = opencl_modules[0]->get_context();
+	hardware::Device * device = opencl_modules[0]->get_device();
 
 	h_in = new Matrixsu2[NUM_ELEMENTS];
+	BOOST_REQUIRE(h_in);
 	for(int i = 0; i < NUM_ELEMENTS; ++i) {
 		h_in[i].e00 = hmc_complex_zero;
 		h_in[i].e01 = hmc_complex_zero;
 		h_in[i].e10 = hmc_complex_zero;
 		h_in[i].e11 = hmc_complex_zero;
 	}
-	BOOST_REQUIRE(h_in);
 
-	in = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, NUM_ELEMENTS * sizeof(Matrixsu2), h_in, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	d_in = new hardware::buffers::Plain<Matrixsu2>(NUM_ELEMENTS, device);
+	d_in->load(h_in);
 
 	// for simplicity initialize input with 0
 
 	h_out = new Matrixsu3[NUM_ELEMENTS];
 	BOOST_REQUIRE(h_out);
-	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, NUM_ELEMENTS * sizeof(Matrixsu3), 0, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	d_out = new hardware::buffers::Plain<Matrixsu3>(NUM_ELEMENTS, device);
 
 	h_rand = new cl_int[NUM_ELEMENTS];
 	BOOST_REQUIRE(h_rand);
 	for(int i = 0; i < NUM_ELEMENTS; ++i) {
 		h_rand[i] = (i % 3) + 1; // high quality random numbers ;)
 	}
-	d_rand = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, NUM_ELEMENTS * sizeof(cl_int), h_rand, &err );
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	d_rand = new hardware::buffers::Plain<cl_int>(NUM_ELEMENTS, device);
+	d_rand->load(h_rand);
 }
 
 void Device::fill_kernels()
@@ -138,11 +136,13 @@ void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
-	clReleaseMemObject(in);
-	clReleaseMemObject(out);
+	delete d_in;
+	delete d_out;
+	delete d_rand;
 
 	delete[] h_in;
 	delete[] h_out;
+	delete[] h_rand;
 }
 
 void Device::clear_kernels()
@@ -151,14 +151,14 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runExtendKernel(cl_mem out, cl_mem in, cl_mem d_rand, cl_ulong elems)
+void Device::runExtendKernel(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::Plain<Matrixsu2> * in, const hardware::buffers::Plain<cl_int> * d_rand, cl_ulong elems)
 {
 	cl_int err;
-	err = clSetKernelArg(extendKernel, 0, sizeof(cl_mem), &out);
+	err = clSetKernelArg(extendKernel, 0, sizeof(cl_mem), out->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(extendKernel, 1, sizeof(cl_mem), &in);
+	err = clSetKernelArg(extendKernel, 1, sizeof(cl_mem), in->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(extendKernel, 2, sizeof(cl_mem), &d_rand);
+	err = clSetKernelArg(extendKernel, 2, sizeof(cl_mem), d_rand->get_cl_buffer());
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 	err = clSetKernelArg(extendKernel, 3, sizeof(cl_ulong), &elems);
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
@@ -175,8 +175,7 @@ void Dummyfield::verify(hmc_complex left, hmc_complex right)
 void Dummyfield::verify()
 {
 	// get stuff from device
-	cl_int err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), out, CL_TRUE, 0, NUM_ELEMENTS * sizeof(Matrixsu3), h_out, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	d_out->dump(h_out);
 
 	for(size_t i = 0; i < NUM_ELEMENTS; ++i) {
 		const int rand = h_rand[i];
@@ -196,5 +195,5 @@ void Dummyfield::verify()
 
 void Dummyfield::runExtendKernel()
 {
-	static_cast<Device*>(opencl_modules[0])->runExtendKernel(out, in, d_rand, NUM_ELEMENTS);
+	static_cast<Device*>(opencl_modules[0])->runExtendKernel(d_out, d_in, d_rand, NUM_ELEMENTS);
 }

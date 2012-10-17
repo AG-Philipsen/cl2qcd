@@ -216,21 +216,7 @@ cl_mem Opencl_Module::create_chp_buffer(size_t size, void *host_pointer)
 
 void Opencl_Module::fill_buffers()
 {
-	logger.trace() << "Create buffer for gaugeobservables...";
-	clmem_plaq = create_rw_buffer(sizeof(hmc_float));
-	clmem_splaq = create_rw_buffer(sizeof(hmc_float));
-	clmem_tplaq = create_rw_buffer(sizeof(hmc_float));
-	clmem_rect = create_rw_buffer(sizeof(hmc_float));
-	clmem_polyakov = create_rw_buffer(sizeof(hmc_complex));
-
-	// scratch buffers for gauge observable will be created on demand
-	clmem_plaq_buf_glob = 0;
-	clmem_tplaq_buf_glob = 0;
-	clmem_splaq_buf_glob = 0;
-	clmem_polyakov_buf_glob = 0;
-	clmem_rect_buf_glob = 0;
-
-	return;
+	// FIXME to be removed
 }
 
 void Opencl_Module::fill_kernels()
@@ -252,6 +238,11 @@ void Opencl_Module::fill_kernels()
 	}
 	convertGaugefieldToSOA = createKernel("convertGaugefieldToSOA") << basic_opencl_code << "gaugefield_convert.cl";
 	convertGaugefieldFromSOA = createKernel("convertGaugefieldFromSOA") << basic_opencl_code << "gaugefield_convert.cl";
+}
+
+void Opencl_Module::clear_buffers()
+{
+	logger.info() << "Maximum memory used (" << device->get_name() << "): " << max_allocated_bytes << " bytes";
 }
 
 void Opencl_Module::clear_kernels()
@@ -284,52 +275,6 @@ void Opencl_Module::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
-void Opencl_Module::clear_buffers()
-{
-	logger.trace() << "Clearing memory objects";
-
-	cl_int clerr = CL_SUCCESS;
-
-	clerr = clReleaseMemObject(clmem_plaq);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-
-	clerr = clReleaseMemObject(clmem_tplaq);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-
-	clerr = clReleaseMemObject(clmem_splaq);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-
-	clerr = clReleaseMemObject(clmem_rect);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-
-	clerr = clReleaseMemObject(clmem_polyakov);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-
-	if(clmem_plaq_buf_glob) {
-		clerr = clReleaseMemObject(clmem_plaq_buf_glob);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	}
-	if(clmem_tplaq_buf_glob) {
-		clerr = clReleaseMemObject(clmem_tplaq_buf_glob);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	}
-	if(clmem_splaq_buf_glob) {
-		clerr = clReleaseMemObject(clmem_splaq_buf_glob);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	}
-	if(clmem_rect_buf_glob) {
-		clerr = clReleaseMemObject(clmem_rect_buf_glob);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	}
-	if(clmem_polyakov_buf_glob) {
-		clerr = clReleaseMemObject(clmem_polyakov_buf_glob);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseMemObject", __FILE__, __LINE__);
-	}
-
-	logger.info() << "Maximum memory used (" << device->get_name() << "): " << max_allocated_bytes << " bytes";
-}
-
-
 void Opencl_Module::copy_buffer_on_device(cl_mem in, cl_mem out, size_t size)
 {
 	(*this->get_copy_on()).reset();
@@ -361,18 +306,16 @@ void Opencl_Module::get_buffer_from_device(cl_mem source, void * dest, size_t si
 
 void Opencl_Module::plaquette_device(const hardware::buffers::SU3 * gf)
 {
+	using namespace hardware::buffers;
+
 	//query work-sizes for kernel
 	size_t ls, gs;
 	cl_uint num_groups;
 	this->get_work_sizes(plaquette, &ls, &gs, &num_groups);
 
-	int global_buf_size_float = sizeof(hmc_float) * num_groups;
-	int global_buf_size_complex = sizeof(hmc_complex) * num_groups;
-
-	if( clmem_plaq_buf_glob == 0 ) clmem_plaq_buf_glob = create_rw_buffer(global_buf_size_float);
-	if( clmem_tplaq_buf_glob == 0 ) clmem_tplaq_buf_glob = create_rw_buffer(global_buf_size_float);
-	if( clmem_splaq_buf_glob == 0 ) clmem_splaq_buf_glob = create_rw_buffer(global_buf_size_float);
-	if( clmem_polyakov_buf_glob == 0 ) clmem_polyakov_buf_glob = create_rw_buffer(global_buf_size_complex);
+	const Plain<hmc_float> clmem_plaq_buf_glob(num_groups, device);
+	const Plain<hmc_float> clmem_tplaq_buf_glob(num_groups, device);
+	const Plain<hmc_float> clmem_splaq_buf_glob(num_groups, device);
 
 	int buf_loc_size_float = sizeof(hmc_float) * ls;
 
@@ -380,11 +323,11 @@ void Opencl_Module::plaquette_device(const hardware::buffers::SU3 * gf)
 	// run local plaquette calculation and first part of reduction
 	int clerr = clSetKernelArg(plaquette, 0, sizeof(cl_mem), gf->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(plaquette, 1, sizeof(cl_mem), &clmem_plaq_buf_glob);
+	clerr = clSetKernelArg(plaquette, 1, sizeof(cl_mem), clmem_plaq_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(plaquette, 2, sizeof(cl_mem), &clmem_tplaq_buf_glob);
+	clerr = clSetKernelArg(plaquette, 2, sizeof(cl_mem), clmem_tplaq_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(plaquette, 3, sizeof(cl_mem), &clmem_splaq_buf_glob);
+	clerr = clSetKernelArg(plaquette, 3, sizeof(cl_mem), clmem_splaq_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(plaquette, 4, buf_loc_size_float, static_cast<void*>(nullptr));
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -399,22 +342,22 @@ void Opencl_Module::plaquette_device(const hardware::buffers::SU3 * gf)
 
 	this->get_work_sizes(plaquette_reduction, &ls, &gs, &num_groups);
 
-	clerr = clSetKernelArg(plaquette_reduction, 0, sizeof(cl_mem), &clmem_plaq_buf_glob);
+	clerr = clSetKernelArg(plaquette_reduction, 0, sizeof(cl_mem), clmem_plaq_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(plaquette_reduction, 1, sizeof(cl_mem), &clmem_tplaq_buf_glob);
+	clerr = clSetKernelArg(plaquette_reduction, 1, sizeof(cl_mem), clmem_tplaq_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(plaquette_reduction, 2, sizeof(cl_mem), &clmem_splaq_buf_glob);
+	clerr = clSetKernelArg(plaquette_reduction, 2, sizeof(cl_mem), clmem_splaq_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(plaquette_reduction, 3, sizeof(cl_mem), &clmem_plaq);
+	clerr = clSetKernelArg(plaquette_reduction, 3, sizeof(cl_mem), plaq);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(plaquette_reduction, 4, sizeof(cl_mem), &clmem_tplaq);
+	clerr = clSetKernelArg(plaquette_reduction, 4, sizeof(cl_mem), tplaq);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(plaquette_reduction, 5, sizeof(cl_mem), &clmem_splaq);
+	clerr = clSetKernelArg(plaquette_reduction, 5, sizeof(cl_mem), splaq);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(plaquette_reduction, 6, sizeof(cl_uint), &num_groups);
@@ -425,7 +368,6 @@ void Opencl_Module::plaquette_device(const hardware::buffers::SU3 * gf)
 	ls = 1;
 	gs = 1;
 	device->enqueue_kernel(plaquette_reduction, gs, ls);
-
 }
 
 void Opencl_Module::rectangles_device(const hardware::buffers::SU3 * gf)
@@ -435,10 +377,7 @@ void Opencl_Module::rectangles_device(const hardware::buffers::SU3 * gf)
 	cl_uint num_groups;
 	this->get_work_sizes(rectangles, &ls, &gs, &num_groups);
 
-	int global_buf_size_float = sizeof(hmc_float) * num_groups;
-	int global_buf_size_complex = sizeof(hmc_complex) * num_groups;
-
-	if( clmem_rect_buf_glob == 0 ) clmem_rect_buf_glob = create_rw_buffer(global_buf_size_float);
+	const hardware::buffers::Plain<hmc_float> clmem_rect_buf_glob(num_groups, device);
 
 	int buf_loc_size_float = sizeof(hmc_float) * ls;
 
@@ -446,7 +385,7 @@ void Opencl_Module::rectangles_device(const hardware::buffers::SU3 * gf)
 	// run local rectangles calculation and first part of reduction
 	int clerr = clSetKernelArg(rectangles, 0, sizeof(cl_mem), gf->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(rectangles, 1, sizeof(cl_mem), &clmem_rect_buf_glob);
+	clerr = clSetKernelArg(rectangles, 1, sizeof(cl_mem), clmem_rect_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(rectangles, 2, buf_loc_size_float, static_cast<void*>(nullptr));
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -457,9 +396,9 @@ void Opencl_Module::rectangles_device(const hardware::buffers::SU3 * gf)
 
 	this->get_work_sizes(rectangles_reduction, &ls, &gs, &num_groups);
 
-	clerr = clSetKernelArg(rectangles_reduction, 0, sizeof(cl_mem), &clmem_rect_buf_glob);
+	clerr = clSetKernelArg(rectangles_reduction, 0, sizeof(cl_mem), clmem_rect_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(rectangles_reduction, 1, sizeof(cl_mem), &clmem_rect);
+	clerr = clSetKernelArg(rectangles_reduction, 1, sizeof(cl_mem), clmem_rect);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(rectangles_reduction, 2, sizeof(cl_uint), &num_groups);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -480,11 +419,13 @@ void Opencl_Module::polyakov_device(const hardware::buffers::SU3 * gf)
 	this->get_work_sizes(polyakov, &ls, &gs, &num_groups);
 	int buf_loc_size_complex = sizeof(hmc_complex) * ls;
 
+	const hardware::buffers::Plain<hmc_complex> clmem_polyakov_buf_glob(num_groups, device);
+
 	// local polyakov compuation and first part of reduction
 	int clerr = clSetKernelArg(polyakov, 0, sizeof(cl_mem), gf->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(polyakov, 1, sizeof(cl_mem), &clmem_polyakov_buf_glob);
+	clerr = clSetKernelArg(polyakov, 1, sizeof(cl_mem), clmem_polyakov_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(polyakov, 2, buf_loc_size_complex, static_cast<void*>(nullptr));
@@ -496,10 +437,10 @@ void Opencl_Module::polyakov_device(const hardware::buffers::SU3 * gf)
 
 	this->get_work_sizes(polyakov_reduction, &ls, &gs, &num_groups);
 
-	clerr = clSetKernelArg(polyakov_reduction, 0, sizeof(cl_mem), &clmem_polyakov_buf_glob);
+	clerr = clSetKernelArg(polyakov_reduction, 0, sizeof(cl_mem), clmem_polyakov_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(polyakov_reduction, 1, sizeof(cl_mem), &clmem_polyakov);
+	clerr = clSetKernelArg(polyakov_reduction, 1, sizeof(cl_mem), clmem_polyakov);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(polyakov_reduction, 2, sizeof(cl_uint), &num_groups);
@@ -523,21 +464,21 @@ void Opencl_Module::gaugeobservables(const hardware::buffers::SU3 * gf, hmc_floa
 	plaquette_device(gf);
 
 	//read out values
-	hmc_float plaq = 0.;
-	hmc_float splaq = 0.;
-	hmc_float tplaq = 0.;
+	hmc_float tmp_plaq = 0.;
+	hmc_float tmp_splaq = 0.;
+	hmc_float tmp_tplaq = 0.;
 	//NOTE: these are blocking calls!
-	get_buffer_from_device(clmem_plaq, &plaq, sizeof(hmc_float));
-	get_buffer_from_device(clmem_tplaq, &tplaq, sizeof(hmc_float));
-	get_buffer_from_device(clmem_splaq, &splaq, sizeof(hmc_float));
+	plaq.dump(&tmp_plaq);
+	splaq.dump(&tmp_splaq);
+	tplaq.dump(&tmp_tplaq);
 
-	tplaq /= static_cast<hmc_float> ( meta::get_tplaq_norm(get_parameters()) );
-	splaq /= static_cast<hmc_float> ( meta::get_splaq_norm(get_parameters()) );
-	plaq  /= static_cast<hmc_float> ( meta::get_plaq_norm(get_parameters()) );
+	tmp_tplaq /= static_cast<hmc_float>(meta::get_tplaq_norm(get_parameters()));
+	tmp_splaq /= static_cast<hmc_float>(meta::get_splaq_norm(get_parameters()));
+	tmp_plaq  /= static_cast<hmc_float>(meta::get_plaq_norm(get_parameters()));
 
-	(*plaq_out) = plaq;
-	(*splaq_out) = splaq;
-	(*tplaq_out) = tplaq;
+	(*plaq_out) = tmp_plaq;
+	(*splaq_out) = tmp_splaq;
+	(*tplaq_out) = tmp_tplaq;
 
 	//measure polyakovloop
 	polyakov_device(gf);
@@ -545,7 +486,7 @@ void Opencl_Module::gaugeobservables(const hardware::buffers::SU3 * gf, hmc_floa
 	//read out values
 	hmc_complex pol = hmc_complex_zero;
 	//NOTE: this is a blocking call!
-	get_buffer_from_device(clmem_polyakov, &pol, sizeof(hmc_complex));
+	clmem_polyakov.dump(&pol);
 
 	pol.re /= static_cast<hmc_float> ( meta::get_poly_norm(get_parameters()) );
 	pol.im /= static_cast<hmc_float> ( meta::get_poly_norm(get_parameters()) );
@@ -560,12 +501,9 @@ void Opencl_Module::gaugeobservables_rectangles(const hardware::buffers::SU3 * g
 	rectangles_device(gf);
 
 	//read out values
-	hmc_float rect = 0.;
 	//NOTE: these are blocking calls!
-	get_buffer_from_device(clmem_rect, &rect, sizeof(hmc_float));
-
+	clmem_rect.dump(rect_out);
 	//NOTE: the rectangle value has not been normalized since it is mostly used for the HMC where one needs the absolute value
-	(*rect_out) = rect;
 }
 
 TmpClKernel Opencl_Module::createKernel(const char * const kernel_name, const char * const build_opts)

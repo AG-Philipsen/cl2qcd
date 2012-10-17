@@ -185,7 +185,7 @@ void Opencl_Module_Correlator::create_stochastic_source_device(const hardware::b
 	get_device()->enqueue_kernel( create_stochastic_source, gs2, ls2);
 }
 
-void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, cl_mem correlator)
+void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<hmc_float> * correlator)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -194,7 +194,7 @@ void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kern
 	//set arguments
 	int clerr = clSetKernelArg(correlator_kernel, 0, sizeof(cl_mem), in->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(correlator_kernel, 1, sizeof(cl_mem), &correlator);
+	clerr = clSetKernelArg(correlator_kernel, 1, sizeof(cl_mem), correlator->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);

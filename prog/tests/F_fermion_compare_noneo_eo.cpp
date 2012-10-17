@@ -74,7 +74,7 @@ private:
 	spinor * sf_in2_noneo_converted;
 	hmc_float * sf_out_noneo;
 	hmc_float * sf_out_eo;
-	cl_mem sqnorm;
+	const hardware::buffers::Plain<hmc_float> * sqnorm;
 	spinor * sf_in1_eo;
 	spinor * sf_in2_eo;
 	spinor * sf_in3_eo;
@@ -582,8 +582,6 @@ void Dummyfield::fill_buffers()
 
 	// don't invoke parent function as we don't require the original buffers
 
-	cl_int err;
-
 	cl_context context = opencl_modules[0]->get_context();
 
 	int NUM_ELEMENTS_SF_EO;
@@ -647,7 +645,7 @@ void Dummyfield::fill_buffers()
 	spinor_module->copy_to_eoprec_spinorfield_buffer(in3_eo, sf_in3_eo);
 	spinor_module->copy_to_eoprec_spinorfield_buffer(in4_eo, sf_in4_eo);
 
-	out_eo = new const hardware::buffers::Gaugemomentum(meta::get_vol4d(get_parameters()), spinor_module->get_device());
+	out_eo = new const hardware::buffers::Gaugemomentum(meta::get_vol4d(get_parameters()) * NDIM, spinor_module->get_device());
 	this->reset_outfield_eo();
 
 
@@ -659,14 +657,13 @@ void Dummyfield::fill_buffers()
 	in2_noneo->load(sf_in2_noneo);
 	in1_noneo_converted->load(sf_in1_noneo_converted);
 	in2_noneo_converted->load(sf_in2_noneo_converted);
-	out_noneo = new const hardware::buffers::Gaugemomentum(meta::get_vol4d(get_parameters()), spinor_module->get_device());
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	out_noneo = new const hardware::buffers::Gaugemomentum(meta::get_vol4d(get_parameters()) * NDIM, spinor_module->get_device());
 	spinor_module->importGaugemomentumBuffer(out_noneo, reinterpret_cast<ae*>(sf_out_noneo));
 
 	this->reset_outfield_noneo();
 
 	//create buffer for squarenorm on device
-	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
+	sqnorm = new Plain<hmc_float>(1, spinor_module->get_device());
 }
 
 void Device::fill_kernels()
@@ -692,7 +689,7 @@ void Dummyfield::clear_buffers()
 	delete in2_noneo_converted;
 
 	delete out_eo;
-	clReleaseMemObject(sqnorm);
+	delete sqnorm;
 
 	delete[] sf_in1_eo;
 	delete[] sf_in2_eo;
@@ -764,8 +761,7 @@ hmc_float Dummyfield::get_squarenorm_eo(int which)
 	if(which == 4) static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out_eo, sqnorm);
 	// get stuff from device
 	hmc_float result;
-	cl_int err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	sqnorm->dump(&result);
 	logger.info() << result;
 	return result;
 }
@@ -778,20 +774,18 @@ hmc_float Dummyfield::get_squarenorm_noneo(int which)
 	if(which == 2) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1_noneo_converted, sqnorm);
 	if(which == 3) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2_noneo_converted, sqnorm);
 	if(which == 4) {
-		cl_mem tmp;
 		cl_int err;
 		cl_context context = opencl_modules[0]->get_context();
-		tmp = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
-		static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out_noneo, tmp);
+		hardware::buffers::Plain<hmc_float> tmp(1, opencl_modules[0]->get_device());
+		static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out_noneo, &tmp);
 		hmc_float result;
-		err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), tmp, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
+		tmp.dump(&result);
 		logger.info() << result;
 		return result;
 	}
 	// get stuff from device
 	hmc_float result;
-	cl_int err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	sqnorm->dump(&result);
 	logger.info() << result;
 	return result;
 }

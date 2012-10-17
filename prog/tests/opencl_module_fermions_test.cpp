@@ -127,28 +127,25 @@ void test_m_tm_plus(std::string inputfile)
 	in.load(sf_in);
 	const Plain<spinor> out(NUM_ELEMENTS_SF, device->get_device());
 	out.load(sf_in);
-	cl_mem sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
-	device->set_float_to_global_squarenorm_device(&in, sqnorm);
-	err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	device->set_float_to_global_squarenorm_device(&in, &sqnorm);
+	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
 	device->M_tm_plus_device(&in, &out,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
 	logger.info() << "result:";
 	hmc_float cpu_res;
-	device->set_float_to_global_squarenorm_device(&out, sqnorm);
-	err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	device->set_float_to_global_squarenorm_device(&out, &sqnorm);
+	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
 	logger.info() << "Finalize device";
 	cpu.finalize();
 
 	logger.info() << "Clear buffers";
-	clReleaseMemObject(sqnorm);
 	delete[] sf_in;
 	delete[] sf_out;
 
@@ -168,7 +165,6 @@ void test_dslash_eo(std::string inputfile)
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
 	Opencl_Module_Fermions * device = cpu.get_device();
-	cl_mem sqnorm;
 	spinor * sf_in;
 	spinor * sf_out;
 
@@ -185,8 +181,7 @@ void test_dslash_eo(std::string inputfile)
 
 	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
 	in.load(sf_in);
-	sqnorm = clCreateBuffer(device->get_context(), CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 
 	size_t NUM_ELEMENTS_SF_EO = meta::get_eoprec_spinorfieldsize(params);
 	const Spinor in_eo_even(NUM_ELEMENTS_SF_EO, device->get_device());
@@ -196,9 +191,8 @@ void test_dslash_eo(std::string inputfile)
 
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
-	device->set_float_to_global_squarenorm_eoprec_device(&in_eo_even, sqnorm);
-	err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_back, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	device->set_float_to_global_squarenorm_eoprec_device(&in_eo_even, &sqnorm);
+	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 
 	//switch according to "use_pointsource"
@@ -208,16 +202,14 @@ void test_dslash_eo(std::string inputfile)
 	} else {
 		device->dslash_eo_device( &in_eo_even, &out_eo, device->get_gaugefield(), ODD, params.get_kappa() );
 	}
-	device->set_float_to_global_squarenorm_eoprec_device(&out_eo, sqnorm);
-	err = clEnqueueReadBuffer(device->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &cpu_res, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	device->set_float_to_global_squarenorm_eoprec_device(&out_eo, &sqnorm);
+	sqnorm.dump(&cpu_res);
 	logger.info() << "result:";
 	logger.info() << cpu_res;
 	logger.info() << "Finalize device";
 	cpu.finalize();
 
 	logger.info() << "Clear buffers";
-	clReleaseMemObject(sqnorm);
 	delete[] sf_in;
 	delete[] sf_out;
 

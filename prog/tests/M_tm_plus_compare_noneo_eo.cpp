@@ -84,7 +84,7 @@ private:
 	spinor * sf_out_eo;
 	spinor * sf_out_eo_converted;
 
-	cl_mem sqnorm;
+	const hardware::buffers::Plain<hmc_float> * sqnorm;
 };
 
 void Dummyfield::init_tasks()
@@ -741,7 +741,7 @@ void Dummyfield::fill_buffers()
 	this->reset_outfield_noneo();
 
 	//create buffer for squarenorm on device
-	sqnorm = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(hmc_float), 0, &err);
+	sqnorm = new Plain<hmc_float>(1, spinor_module->get_device());
 }
 
 void Device::fill_kernels()
@@ -758,7 +758,7 @@ void Dummyfield::clear_buffers()
 	delete in_eo1_converted;
 	delete in_eo2_converted;
 	delete out_eo;
-	clReleaseMemObject(sqnorm);
+	delete sqnorm;
 
 	delete[] sf_in_eo1;
 	delete[] sf_in_eo2;
@@ -793,12 +793,9 @@ void Device::runTestKernel2(const hardware::buffers::Plain<spinor> * out, const 
 	const Spinor tmp_eo(meta::get_eoprec_spinorfieldsize(get_parameters()), get_device());
 
 	//create -1 on device
-	cl_mem minusone = clCreateBuffer(this->get_context(), CL_MEM_READ_WRITE , sizeof(hmc_complex), 0, &err );
 	hmc_complex minusone_tmp = { -1., 0.};
-	err = clEnqueueWriteBuffer(this->get_queue(), minusone, CL_TRUE, 0, sizeof(hmc_complex), &minusone_tmp, 0, 0, NULL);
-	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
-	cl_mem sqnorm = clCreateBuffer(get_context(), CL_MEM_READ_WRITE , sizeof(hmc_float), 0, &err );
-
+	hardware::buffers::Plain<hmc_complex> minusone(1, get_device());
+	minusone.load(&minusone_tmp);
 
 	//now calc out_tmp_eo1 = (R_even in1 + D_eo in2)
 	this->set_zero_spinorfield_eoprec_device(&tmp_eo);
@@ -807,7 +804,7 @@ void Device::runTestKernel2(const hardware::buffers::Plain<spinor> * out, const 
 	this->dslash_eo_device(in2, &out_tmp_eo1, gf, EO, kappa);
 	this->M_tm_sitediagonal_device(in1, &tmp_eo, mubar);
 
-	this->saxpy_eoprec_device(&out_tmp_eo1, &tmp_eo, minusone, &out_tmp_eo1);
+	this->saxpy_eoprec_device(&out_tmp_eo1, &tmp_eo, &minusone, &out_tmp_eo1);
 
 	//now calc out_tmp_eo2 = ( R_odd in2 + D_oe in1)
 	this->set_zero_spinorfield_eoprec_device(&tmp_eo);
@@ -816,13 +813,10 @@ void Device::runTestKernel2(const hardware::buffers::Plain<spinor> * out, const 
 	this->dslash_eo_device(in1, &out_tmp_eo2, gf, OE, kappa);
 	this->M_tm_sitediagonal_device(in2, &tmp_eo, mubar);
 
-	this->saxpy_eoprec_device(&out_tmp_eo2, &tmp_eo, minusone, &out_tmp_eo2);
+	this->saxpy_eoprec_device(&out_tmp_eo2, &tmp_eo, &minusone, &out_tmp_eo2);
 
 	//now, both output vectors have to be converted back to noneo
 	this->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, out);
-
-	clReleaseMemObject(sqnorm);
-	clReleaseMemObject(minusone);
 }
 
 void Device::runTestKernel(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
@@ -841,8 +835,7 @@ hmc_float Dummyfield::get_squarenorm_eo(int which)
 	if(which == 5) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(out_eo_converted, sqnorm);
 	// get stuff from device
 	hmc_float result;
-	cl_int err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	sqnorm->dump(&result);
 	logger.info() << result;
 	return result;
 }
@@ -856,8 +849,7 @@ hmc_float Dummyfield::get_squarenorm_noneo(int which)
 	if(which == 3) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(out_noneo_converted, sqnorm);
 	// get stuff from device
 	hmc_float result;
-	cl_int err = clEnqueueReadBuffer(opencl_modules[0]->get_queue(), sqnorm, CL_TRUE, 0, sizeof(hmc_float), &result, 0, 0, 0);
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
+	sqnorm->dump(&result);
 	logger.info() << result;
 	return result;
 }
