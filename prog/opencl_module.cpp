@@ -105,7 +105,7 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 		*collect_options << " -DRHO_ITER=" << get_parameters().get_rho_iter();
 	}
 	if(device->get_prefers_soa()) {
-		*collect_options << " -DGAUGEFIELD_STRIDE=" << calculateStride(meta::get_vol4d(get_parameters()) * NDIM, sizeof(hmc_complex));
+		*collect_options << " -DGAUGEFIELD_STRIDE=" << hardware::buffers::get_SU3_buffer_stride(meta::get_vol4d(get_parameters()) * NDIM, device);
 		*collect_options << " -D_USE_SOA_";
 	}
 	*collect_options << " -I" << SOURCEDIR;
