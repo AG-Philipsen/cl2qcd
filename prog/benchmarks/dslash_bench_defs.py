@@ -9,6 +9,9 @@ stdout = 1
 #save result file under a different name for backup
 backup = 1
 
+default_space_dims = [16, 24, 32, 48]
+default_time_dims = [4, 8, 12, 16, 20, 24, 28, 32]
+
 input_glob = """#global settings
 prec=64
 use_gpu=true
@@ -27,58 +30,11 @@ use_evenodd=yes
 #this controls hows many bencharking steps are performed
 #   NOTE: times 2, for each step EVEN and ODD is performed!!
 hmcsteps=5000
-"""
 
-#arrays for the different tests, this is not nice, but a quick workaround
-#the programm will perform tests with all members of this list if no input-file is given
-input_var1 = ["""
 #variable settings depending on test
-NS=16
-""",
-"""
-#variable settings depending on test
-NS=24
-""",
-"""
-#variable settings depending on test
-NS=32
-""",
-"""
-#variable settings depending on test
-NS=48
-"""
-]
+NS={0}
 
-input_var2 = ["""
 #variable settings depending on test
-NT=4
-""",
+NT={1}
+
 """
-#variable settings depending on test
-NT=8
-""",
-"""
-#variable settings depending on test
-NT=12
-""",
-"""
-#variable settings depending on test
-NT=16
-""",
-"""
-#variable settings depending on test
-NT=20
-""",
-"""
-#variable settings depending on test
-NT=24
-""",
-"""
-#variable settings depending on test
-NT=28
-""",
-"""
-#variable settings depending on test
-NT=32
-"""
-]
