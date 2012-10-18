@@ -70,6 +70,8 @@ hardware::Device * Opencl_Module::get_device() const noexcept
 
 void Opencl_Module::fill_collect_options(stringstream* collect_options)
 {
+	using namespace hardware::buffers;
+
 	*collect_options << "-D_INKERNEL_ -DNSPACE=" << get_parameters().get_nspace() << " -DNTIME=" << get_parameters().get_ntime() << " -DVOLSPACE=" << meta::get_volspace(get_parameters()) << " -DVOL4D=" << meta::get_vol4d(get_parameters());
 
 	//this is needed for hmc_ocl_su3matrix
@@ -105,8 +107,10 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 		*collect_options << " -DRHO_ITER=" << get_parameters().get_rho_iter();
 	}
 	if(device->get_prefers_soa()) {
-		*collect_options << " -DGAUGEFIELD_STRIDE=" << hardware::buffers::get_SU3_buffer_stride(meta::get_vol4d(get_parameters()) * NDIM, device);
 		*collect_options << " -D_USE_SOA_";
+	}
+	if(check_SU3_for_SOA(get_device())) {
+		*collect_options << " -DGAUGEFIELD_STRIDE=" << get_SU3_buffer_stride(meta::get_vol4d(get_parameters()) * NDIM, device);
 	}
 	*collect_options << " -I" << SOURCEDIR;
 
@@ -802,27 +806,6 @@ void Opencl_Module::unsmear_gaugefield(const hardware::buffers::SU3 * gf)
 {
 	logger.debug() << "\t\trestore unsmeared gaugefield...";
 	hardware::buffers::copyData(gf, &gf_unsmeared);
-}
-
-cl_ulong Opencl_Module::calculateStride(const cl_ulong elems, const cl_ulong baseTypeSize)
-{
-	// Align stride to (N * 16 + 8) KiB
-	// TODO this is optimal for AMD HD 5870, also adjust for others
-//	ulong stride_bytes = ((elems * baseTypeSize + 0x1FFF) & 0xFFFFFFFFFFFFC000L) | 0x2000;
-//	logger.debug() << "Elems: " << elems << " Base Type Size: " << baseTypeSize << " Stride bytes: " << stride_bytes;
-
-	// alternative alignment, 1K, but never 16K
-	cl_ulong stride_bytes = ((elems * baseTypeSize + 0x03FF) & 0xFFFFFFFFFFFFFC00L);
-	logger.debug() << "Elems: " << elems << " Base Type Size: " << baseTypeSize << " Stride bytes: " << stride_bytes;
-	if((stride_bytes & 0x3FFFL) == 0) { // 16 KiB
-		stride_bytes |= 0x400L; // + 1KiB
-		logger.warn() << "stride was aligned to 16 KiB – corrected!";
-	}
-
-	const cl_ulong stride_elems = stride_bytes / baseTypeSize;
-	stride_bytes = stride_elems * baseTypeSize;
-	logger.debug() << "Stride is " << stride_elems << " elems (" << stride_bytes << " bytes). Stride % 16k = " << stride_bytes % (16 * 1024);
-	return stride_elems;
 }
 
 void Opencl_Module::importGaugefield(const Matrixsu3 * const data)

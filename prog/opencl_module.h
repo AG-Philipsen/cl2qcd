@@ -363,15 +363,6 @@ protected:
 	const meta::Inputparameters& parameters;
 
 	/**
-	 * Calculate the proper stride for SOA storage.
-	 *
-	 * \param The number of elements in the array.
-	 * \param The size of the datatype used for the array.
-	 * \return The proper stride in elements of the storage array.
-	 */
-	cl_ulong calculateStride(const cl_ulong elems, const cl_ulong baseTypeSize);
-
-	/**
 	 * Print the profiling information for the given kernel to the given file.
 	 *
 	 * \param filename name of the file to print to
