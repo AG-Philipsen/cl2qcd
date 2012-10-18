@@ -6,8 +6,18 @@ import os
 import shutil
 import dslash_bench_defs
 from tempfile import NamedTemporaryFile
+import optparse # use old optparse, as LOEWE-CSC only has python 2.6
 
 def main():
+
+	parser = optparse.OptionParser()
+	parser.add_option('-s', '--nspace', action='append', type='int', help='Spacial extend of the lattice to use. Can be specified multiple times.')
+	parser.add_option('-t', '--ntime', action='append', type='int', help='Temporal extend of the lattice to use. Can be specified multiple times.')
+
+	(options, args) = parser.parse_args()
+
+	space_dims = options.nspace if options.nspace else dslash_bench_defs.default_space_dims
+	time_dims = options.ntime if options.ntime else dslash_bench_defs.default_time_dims
 
 	# some needed vars that are defined in the file dslash_bench_defs.py for convenience
 	input_glob = dslash_bench_defs.input_glob
@@ -27,8 +37,8 @@ def main():
 		
 	# performs as many tests as specified in the defs-file
 	if(switch == 0):
-		size1 = len(dslash_bench_defs.default_space_dims)
-		size2 = len(dslash_bench_defs.default_time_dims)
+		size1 = len(space_dims)
+		size2 = len(time_dims)
 	else :
 		size1 = 1
 		size2 = 1
@@ -46,7 +56,7 @@ def main():
 			else:
 				# open file "tmpaaaaaaaa", deleting whatever content was in it before
 				f = NamedTemporaryFile(delete=False);
-				f.write(input_glob.format(dslash_bench_defs.default_space_dims[iteration1], dslash_bench_defs.default_time_dims[iteration2]))
+				f.write(input_glob.format(space_dims[iteration1], time_dims[iteration2]))
 				f.close()
 				args = ['./' + executable] + [f.name]
 
