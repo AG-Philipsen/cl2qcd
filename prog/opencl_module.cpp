@@ -248,35 +248,6 @@ void Opencl_Module::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
-void Opencl_Module::copy_buffer_on_device(cl_mem in, cl_mem out, size_t size)
-{
-	(*this->get_copy_on()).reset();
-
-	int clerr = clEnqueueCopyBuffer(get_queue(), in, out, 0, 0, size , 0, 0, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueCopyBuffer", __FILE__, __LINE__);
-
-	(*this->get_copy_on()).add();
-}
-
-void Opencl_Module::copy_buffer_to_device(void * source, cl_mem dest, size_t size)
-{
-	(*this->get_copy_to()).reset();
-
-	int clerr = clEnqueueWriteBuffer(get_queue(), dest, CL_TRUE, 0, size, source, 0, 0, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueWriteBuffer", __FILE__, __LINE__);
-
-	(*this->get_copy_to()).add();
-}
-
-void Opencl_Module::get_buffer_from_device(cl_mem source, void * dest, size_t size)
-{
-	(*this->get_copy_to()).reset();
-	cl_int clerr = clEnqueueReadBuffer(get_queue(), source, CL_TRUE, 0, size, dest, 0, NULL, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clEnqueueReadBuffer", __FILE__, __LINE__);
-
-	(*this->get_copy_to()).add();
-}
-
 void Opencl_Module::plaquette_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * plaq, const hardware::buffers::Plain<hmc_float> * tplaq, const hardware::buffers::Plain<hmc_float> * splaq)
 {
 	using namespace hardware::buffers;
