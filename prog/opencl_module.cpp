@@ -415,7 +415,7 @@ void Opencl_Module::rectangles_device(const hardware::buffers::SU3 * gf)
 
 }
 
-void Opencl_Module::polyakov_device(const hardware::buffers::SU3 * gf)
+void Opencl_Module::polyakov_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_complex> * pol)
 {
 	//query work-sizes for kernel
 	size_t ls, gs;
@@ -444,7 +444,7 @@ void Opencl_Module::polyakov_device(const hardware::buffers::SU3 * gf)
 	clerr = clSetKernelArg(polyakov_reduction, 0, sizeof(cl_mem), clmem_polyakov_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(polyakov_reduction, 1, sizeof(cl_mem), clmem_polyakov);
+	clerr = clSetKernelArg(polyakov_reduction, 1, sizeof(cl_mem), pol->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(polyakov_reduction, 2, sizeof(cl_uint), &num_groups);
@@ -467,6 +467,7 @@ void Opencl_Module::gaugeobservables(const hardware::buffers::SU3 * gf, hmc_floa
 	const hardware::buffers::Plain<hmc_float> plaq(1, get_device());
 	const hardware::buffers::Plain<hmc_float> splaq(1, get_device());
 	const hardware::buffers::Plain<hmc_float> tplaq(1, get_device());
+	const hardware::buffers::Plain<hmc_complex> pol(1, get_device());
 
 	//measure plaquette
 	plaquette_device(gf, &plaq, &tplaq, &splaq);
@@ -489,18 +490,18 @@ void Opencl_Module::gaugeobservables(const hardware::buffers::SU3 * gf, hmc_floa
 	(*tplaq_out) = tmp_tplaq;
 
 	//measure polyakovloop
-	polyakov_device(gf);
+	polyakov_device(gf, &pol);
 
 	//read out values
-	hmc_complex pol = hmc_complex_zero;
+	hmc_complex tmp_pol = hmc_complex_zero;
 	//NOTE: this is a blocking call!
-	clmem_polyakov.dump(&pol);
+	pol.dump(&tmp_pol);
 
-	pol.re /= static_cast<hmc_float> ( meta::get_poly_norm(get_parameters()) );
-	pol.im /= static_cast<hmc_float> ( meta::get_poly_norm(get_parameters()) );
+	tmp_pol.re /= static_cast<hmc_float> ( meta::get_poly_norm(get_parameters()) );
+	tmp_pol.im /= static_cast<hmc_float> ( meta::get_poly_norm(get_parameters()) );
 
-	pol_out->re = pol.re;
-	pol_out->im = pol.im;
+	pol_out->re = tmp_pol.re;
+	pol_out->im = tmp_pol.im;
 }
 
 void Opencl_Module::gaugeobservables_rectangles(const hardware::buffers::SU3 * gf, hmc_float * rect_out)
