@@ -187,37 +187,6 @@ cl_mem Opencl_Module::createBuffer(cl_mem_flags flags, size_t size, void * host_
 	return tmp;
 }
 
-
-cl_mem Opencl_Module::create_rw_buffer(size_t size)
-{
-	return createBuffer(CL_MEM_READ_WRITE, size);
-}
-
-cl_mem Opencl_Module::create_wo_buffer(size_t size)
-{
-	return createBuffer(CL_MEM_WRITE_ONLY, size);
-}
-
-cl_mem Opencl_Module::create_ro_buffer(size_t size)
-{
-	return createBuffer(CL_MEM_READ_ONLY, size);
-}
-
-cl_mem Opencl_Module::create_uhp_buffer(size_t size, void *host_pointer)
-{
-	return createBuffer(CL_MEM_USE_HOST_PTR, size, host_pointer);
-}
-
-cl_mem Opencl_Module::create_ahp_buffer(size_t size)
-{
-	return createBuffer(CL_MEM_ALLOC_HOST_PTR, size);
-}
-
-cl_mem Opencl_Module::create_chp_buffer(size_t size, void *host_pointer)
-{
-	return createBuffer(CL_MEM_COPY_HOST_PTR, size, host_pointer);
-}
-
 void Opencl_Module::fill_buffers()
 {
 	// FIXME to be removed
