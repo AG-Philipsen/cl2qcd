@@ -10,14 +10,16 @@ using namespace std;
 
 void Opencl_Module_Hmc::fill_collect_options(stringstream* collect_options)
 {
+	using namespace hardware::buffers;
+
 	Opencl_Module_Fermions::fill_collect_options(collect_options);
 	*collect_options <<  " -DBETA=" << get_parameters().get_beta() << " -DGAUGEMOMENTASIZE=" << meta::get_vol4d(get_parameters()) * NDIM;
 	//in case of tlsym gauge action
 	if(meta::get_use_rectangles(get_parameters()) == true) {
 		*collect_options <<  " -DC0=" << meta::get_c0(get_parameters()) << " -DC1=" << meta::get_c1(get_parameters());
 	}
-	if(get_device()->get_prefers_soa()) {
-		*collect_options << " -DGAUGEMOMENTA_STRIDE=" << calculateStride(meta::get_vol4d(get_parameters()) * NDIM, sizeof(hmc_float));
+	if(check_Gaugemomentum_for_SOA(get_device())) {
+		*collect_options << " -DGAUGEMOMENTA_STRIDE=" << get_Gaugemomentum_buffer_stride(meta::get_vol4d(get_parameters()) * NDIM, get_device());
 	}
 	return;
 }
