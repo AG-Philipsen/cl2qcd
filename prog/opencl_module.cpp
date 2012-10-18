@@ -525,16 +525,6 @@ string Opencl_Module::get_kernel_name(const cl_kernel kernel) const
 	return kernel_name;
 }
 
-usetimer * Opencl_Module::get_copy_on()
-{
-	return &copy_on;
-}
-
-usetimer * Opencl_Module::get_copy_to()
-{
-	return &copy_to;
-}
-
 size_t Opencl_Module::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
@@ -691,32 +681,6 @@ void Opencl_Module::print_profiling(const std::string& filename, int number)
 	print_profiling(filename, stout_smear);
 	print_profiling(filename, convertGaugefieldToSOA);
 	print_profiling(filename, convertGaugefieldFromSOA);
-}
-
-void Opencl_Module::print_copy_times(uint64_t totaltime)
-{
-	//copy1 ^= copy_to_from_dev_time
-	//copy2 ^= copy_on_dev_time
-
-	uint64_t copy2_time = (this->copy_on).getTime();
-	uint64_t copy1_time = (this->copy_to).getTime();
-
-	int copy1_steps =  (this->copy_to).getNumMeas();
-	int copy2_steps =  (this->copy_on).getNumMeas();
-
-	uint64_t copy1_avgtime = divide(copy1_time, copy1_steps);
-	uint64_t copy2_avgtime = divide(copy2_time, copy2_steps);
-
-	logger.info() << "## *******************************************************************";
-	logger.info() << "## Copy-Times\t" << setfill(' ') << setw(12) << "total" << '\t' << setw(12) << "avg" << '\t' << setw(5) << "perc";
-	logger.info() << "## CpyTo:\t" << setfill(' ') << setw(12) << copy1_time << '\t' << setw(12) << copy1_avgtime << '\t' << fixed << setw(5) << setprecision(1) << percent(copy1_time, totaltime);
-	logger.info() << "## CpyOn:\t" << setfill(' ') << setw(12) << copy2_time << '\t' << setw(12) << copy2_avgtime << '\t' << fixed << setw(5) << setprecision(1) << percent(copy2_time, totaltime);
-	logger.info() << "## *******************************************************************";
-
-	logger.info() << "## No output of times to file implemented yet...";
-	/** @todo output to file is not implemented */
-	//See older files for example code
-	return;
 }
 
 void Opencl_Module::smear_gaugefield(const hardware::buffers::SU3 * gf, const std::vector<const hardware::buffers::SU3*>& gf_intermediate)

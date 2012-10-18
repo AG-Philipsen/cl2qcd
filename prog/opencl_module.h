@@ -218,14 +218,6 @@ public:
 	 */
 	void unsmear_gaugefield(const hardware::buffers::SU3 * gf);
 
-	usetimer * get_copy_to();
-	usetimer * get_copy_on();
-
-	/**
-	 * Prints the copy-to/from/on-device-times
-	 */
-	void print_copy_times(uint64_t totaltime);
-
 	/**
 	 * Internal bookeeping function. Only public so it can be called from
 	 * C-style callback functions.
@@ -323,12 +315,6 @@ private:
 	cl_kernel polyakov_reduction;
 	cl_kernel convertGaugefieldToSOA;
 	cl_kernel convertGaugefieldFromSOA;
-
-	//bunch of timers
-	//this is used to measure data-transfer to and from the device
-	usetimer copy_to;
-	//this is used to measure data-transfer on the device
-	usetimer copy_on;
 
 	// memory usage tracing
 	size_t allocated_bytes;

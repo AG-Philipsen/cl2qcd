@@ -102,10 +102,6 @@ int main(int argc, const char* argv[])
 		total_timer.add();
 		uint64_t totaltime = total_timer.getTime();
 		general_time_output(&total_timer, &init_timer, &perform_timer, &plaq_timer, &poly_timer);
-		//print times from the devices...
-		logger.info() << "## Device: HMC [0]";
-		(gaugefield.get_task_hmc(0))->print_copy_times(totaltime);
-		/// @todo add more than one device if used
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// free variables
