@@ -44,7 +44,7 @@ public:
 	 */
 	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device)
 		: parameters(params), device(device), gaugefield(NDIM * meta::get_vol4d(params), device),
-		  plaq(1, device), splaq(1, device), tplaq(1, device), clmem_rect(1, device), clmem_polyakov(1, device),
+		  clmem_rect(1, device), clmem_polyakov(1, device),
 		  gf_unsmeared(gaugefield.get_elements(), device),
 		  stout_smear(0), rectangles(0), rectangles_reduction(0) {};
 	/**
@@ -122,7 +122,7 @@ public:
 	 *
 	 * @param[in] gf gaugefield to measure on
 	 */
-	void plaquette_device(const hardware::buffers::SU3 * gf);
+	void plaquette_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * plaq, const hardware::buffers::Plain<hmc_float> * tplaq, const hardware::buffers::Plain<hmc_float> * splaq);
 	/**
 	 * Calculate rectangles for a specific gaugefield (on device).
 	 *
@@ -390,9 +390,6 @@ private:
 
 	const hardware::buffers::SU3 gaugefield;
 
-	const hardware::buffers::Plain<hmc_float> plaq;
-	const hardware::buffers::Plain<hmc_float> splaq;
-	const hardware::buffers::Plain<hmc_float> tplaq;
 	const hardware::buffers::Plain<hmc_float> clmem_rect;
 	const hardware::buffers::Plain<hmc_complex> clmem_polyakov;
 

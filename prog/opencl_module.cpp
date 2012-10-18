@@ -308,7 +308,7 @@ void Opencl_Module::get_buffer_from_device(cl_mem source, void * dest, size_t si
 	(*this->get_copy_to()).add();
 }
 
-void Opencl_Module::plaquette_device(const hardware::buffers::SU3 * gf)
+void Opencl_Module::plaquette_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * plaq, const hardware::buffers::Plain<hmc_float> * tplaq, const hardware::buffers::Plain<hmc_float> * splaq)
 {
 	using namespace hardware::buffers;
 
@@ -355,13 +355,13 @@ void Opencl_Module::plaquette_device(const hardware::buffers::SU3 * gf)
 	clerr = clSetKernelArg(plaquette_reduction, 2, sizeof(cl_mem), clmem_splaq_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(plaquette_reduction, 3, sizeof(cl_mem), plaq);
+	clerr = clSetKernelArg(plaquette_reduction, 3, sizeof(cl_mem), plaq->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(plaquette_reduction, 4, sizeof(cl_mem), tplaq);
+	clerr = clSetKernelArg(plaquette_reduction, 4, sizeof(cl_mem), tplaq->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(plaquette_reduction, 5, sizeof(cl_mem), splaq);
+	clerr = clSetKernelArg(plaquette_reduction, 5, sizeof(cl_mem), splaq->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(plaquette_reduction, 6, sizeof(cl_uint), &num_groups);
@@ -464,8 +464,12 @@ void Opencl_Module::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out
 
 void Opencl_Module::gaugeobservables(const hardware::buffers::SU3 * gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
 {
+	const hardware::buffers::Plain<hmc_float> plaq(1, get_device());
+	const hardware::buffers::Plain<hmc_float> splaq(1, get_device());
+	const hardware::buffers::Plain<hmc_float> tplaq(1, get_device());
+
 	//measure plaquette
-	plaquette_device(gf);
+	plaquette_device(gf, &plaq, &tplaq, &splaq);
 
 	//read out values
 	hmc_float tmp_plaq = 0.;
