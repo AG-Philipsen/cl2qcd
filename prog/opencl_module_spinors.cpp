@@ -11,10 +11,14 @@ using namespace std;
 
 void Opencl_Module_Spinors::fill_collect_options(stringstream* collect_options)
 {
+	using namespace hardware::buffers;
+
 	Opencl_Module_Ran::fill_collect_options(collect_options);
 	*collect_options << " -D_FERMIONS_"
 	                 << " -DSPINORFIELDSIZE=" << meta::get_spinorfieldsize(get_parameters()) << " -DEOPREC_SPINORFIELDSIZE=" << meta::get_eoprec_spinorfieldsize(get_parameters());
-	*collect_options << " -DEOPREC_SPINORFIELD_STRIDE=" << calculateStride(meta::get_eoprec_spinorfieldsize(get_parameters()), sizeof(hmc_complex));
+	if(check_Spinor_for_SOA(get_device())) {
+		*collect_options << " -DEOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(meta::get_eoprec_spinorfieldsize(get_parameters()), get_device());
+	}
 }
 
 
