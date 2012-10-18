@@ -286,11 +286,11 @@ static int get_cypress_stride_badness(size_t bytes, size_t lanes)
 	const size_t CRITICAL_STRIDE = 16 * 1024; // at this stride performance is worst
 	const size_t CRITICAL_STRIDE_RANGE = 768; // width of the critical stride
 
-	int badness = 0;
+	int badness = get_alignment_badness(bytes);
 	for(size_t hops = 1; hops < lanes; ++hops) {
 		size_t dist_to_critical = (bytes * hops) % CRITICAL_STRIDE;
 
-		if(dist_to_critical >= (CRITICAL_STRIDE - CRITICAL_STRIDE_RANGE) && dist_to_critical <= CRITICAL_STRIDE_RANGE) {
+		if(dist_to_critical >= (CRITICAL_STRIDE - CRITICAL_STRIDE_RANGE) || dist_to_critical <= CRITICAL_STRIDE_RANGE) {
 			++badness;
 		}
 	}
@@ -301,15 +301,18 @@ size_t hardware::Device::recommend_stride(size_t elems, size_t type_size, size_t
 {
 	size_t MAX_ADD_STRIDE = 8 * 1024; // never add more than 8 KiB per lane
 	if(name == std::string("Cypress") || name == std::string("Cayman")) {
+		logger.debug() << "Using cypress stride";
 		// apply advanced stride rules
 		for(size_t stride = elems; stride <= elems + MAX_ADD_STRIDE / type_size; ++stride) {
 			if(get_cypress_stride_badness(stride * type_size, lane_count) == 0) {
+				logger.debug() << "Return stride of " << stride << " elements, which is " << stride * type_size << " bytes.";
 				return stride;
 			}
 		}
 		throw OptimizationError();
 	} else {
 		// simply align to 256 Bytes
+		logger.debug() << "Using default stride";
 		for(size_t stride = elems; stride <= elems + MAX_ADD_STRIDE / type_size; ++stride) {
 			if(get_alignment_badness(stride * type_size) == 0) {
 				return stride;
