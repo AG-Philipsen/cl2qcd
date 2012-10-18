@@ -374,7 +374,7 @@ void Opencl_Module::plaquette_device(const hardware::buffers::SU3 * gf, const ha
 	device->enqueue_kernel(plaquette_reduction, gs, ls);
 }
 
-void Opencl_Module::rectangles_device(const hardware::buffers::SU3 * gf)
+void Opencl_Module::rectangles_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * rect)
 {
 	//query work-sizes for kernel
 	size_t ls, gs;
@@ -402,7 +402,7 @@ void Opencl_Module::rectangles_device(const hardware::buffers::SU3 * gf)
 
 	clerr = clSetKernelArg(rectangles_reduction, 0, sizeof(cl_mem), clmem_rect_buf_glob);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(rectangles_reduction, 1, sizeof(cl_mem), clmem_rect);
+	clerr = clSetKernelArg(rectangles_reduction, 1, sizeof(cl_mem), rect->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	clerr = clSetKernelArg(rectangles_reduction, 2, sizeof(cl_uint), &num_groups);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -506,12 +506,14 @@ void Opencl_Module::gaugeobservables(const hardware::buffers::SU3 * gf, hmc_floa
 
 void Opencl_Module::gaugeobservables_rectangles(const hardware::buffers::SU3 * gf, hmc_float * rect_out)
 {
+	const hardware::buffers::Plain<hmc_float> rect(1, device);
+
 	//measure plaquette
-	rectangles_device(gf);
+	rectangles_device(gf, &rect);
 
 	//read out values
 	//NOTE: these are blocking calls!
-	clmem_rect.dump(rect_out);
+	rect.dump(rect_out);
 	//NOTE: the rectangle value has not been normalized since it is mostly used for the HMC where one needs the absolute value
 }
 

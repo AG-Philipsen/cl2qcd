@@ -44,7 +44,6 @@ public:
 	 */
 	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device)
 		: parameters(params), device(device), gaugefield(NDIM * meta::get_vol4d(params), device),
-		  clmem_rect(1, device),
 		  gf_unsmeared(gaugefield.get_elements(), device),
 		  stout_smear(0), rectangles(0), rectangles_reduction(0) {};
 	/**
@@ -128,7 +127,7 @@ public:
 	 *
 	 * @param[in] gf gaugefield to measure on
 	 */
-	void rectangles_device(const hardware::buffers::SU3 * gf);
+	void rectangles_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> *);
 	/**
 	 * Calculate Polyakov loop for a specific gaugefield (on device).
 	 *
@@ -389,8 +388,6 @@ private:
 	cl_context ocl_context;
 
 	const hardware::buffers::SU3 gaugefield;
-
-	const hardware::buffers::Plain<hmc_float> clmem_rect;
 
 	//this is used to save the unsmeared gaugefield if smearing is used
 	const hardware::buffers::SU3 gf_unsmeared;
