@@ -686,9 +686,3 @@ hmc_complex Gaugefield_hybrid::polyakov()
 	return res;
 }
 
-Opencl_Module* Gaugefield_hybrid::get_task(int ntask)
-{
-  if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range", __FILE__, __LINE__);
-  //@todo: if more than one device is used, the element dev from the array must be called here!!
-  return (Opencl_Module*)opencl_modules[ntask];
-}

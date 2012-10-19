@@ -298,12 +298,6 @@ public:
 
 	void print_profiling(std::string filename);
 
-	/**
-	 * returns a basic OpenclModule
-	 * @param[in] ntask number of task
-	 */
-	Opencl_Module* get_task(int ntask);
-
 protected:
 	cl_device_type* devicetypes;
 	Opencl_Module ** opencl_modules;
