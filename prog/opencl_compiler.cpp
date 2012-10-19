@@ -14,8 +14,14 @@
 
 #define BOOST_FILESYSTEM_VERSION 3
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 namespace fs = boost::filesystem;
 /// @todo quite some of this code could be simplified by moving from pure fstream to boost::filesystem equivalents
+
+/**
+ * Get the path on which to store a binary with the given md5
+ */
+static fs::path get_binary_file_path(std::string md5);
 
 ClSourcePackage ClSourcePackage::operator <<(const std::string& file)
 {
@@ -554,10 +560,7 @@ void TmpClKernel::dumpBinary(cl_program program, std::string md5) const
 		throw Opencl_Error(clerr);
 	}
 
-	std::stringstream outfile_name;
-	outfile_name << md5 << ".elf";
-
-	std::ofstream outfile(outfile_name.str().c_str());
+	fs::ofstream outfile(get_binary_file_path(md5));
 	outfile.write(reinterpret_cast<char*>(program_binary), program_binary_bytes);
 	outfile.close();
 
@@ -569,11 +572,8 @@ void TmpClKernel::dumpBinary(cl_program program, std::string md5) const
 cl_program TmpClKernel::loadBinary(std::string md5) const
 {
 	/// @todo check whether any headers were modified
-	std::stringstream binaryfile_name;
-	binaryfile_name << md5 << ".elf";
-	std::string binaryfile_name_string = binaryfile_name.str();
-	logger.debug() << "Looking for cache file " << binaryfile_name_string;
-	fs::path binaryfile(binaryfile_name_string);
+	fs::path binaryfile = get_binary_file_path(md5);
+	logger.debug() << "Looking for cache file " << binaryfile;
 	if(!fs::exists(binaryfile)) {
 		return 0; // 0 is not a valid program object
 	}
@@ -590,8 +590,7 @@ cl_program TmpClKernel::loadBinary(std::string md5) const
 	}
 
 	// read binary from file
-	std::string bf = binaryfile.string();
-	std::ifstream inputfile(bf.c_str());
+	fs::ifstream inputfile(binaryfile);
 	if(!inputfile.is_open()) {
 		return 0; // 0 is not a valid program object
 	}
@@ -625,4 +624,10 @@ cl_program TmpClKernel::loadBinary(std::string md5) const
 	delete[] binary;
 
 	return program;
+}
+
+
+static fs::path get_binary_file_path(std::string md5)
+{
+	return md5 + ".elf";
 }
