@@ -275,15 +275,6 @@ protected:
 	 */
 	void print_profiling(const std::string& filename, const cl_kernel& kernel) const;
 
-public:
-
-	/**
-	 * Get the queue used by this module
-	 *
-	 * @deprecated queueing shoudl be done via device or buffes
-	 */
-	cl_command_queue get_queue() const noexcept;
-
 private:
 
 	/**

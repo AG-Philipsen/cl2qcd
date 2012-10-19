@@ -42,7 +42,6 @@ class OptimizationError {
  */
 class Device {
 
-	friend ::Opencl_Module; // during refactoring this needs access to the ocl-queue
 	friend hardware::buffers::Buffer;
 
 public:

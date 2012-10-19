@@ -715,8 +715,3 @@ void Opencl_Module::convertGaugefieldFromSOA_device(const hardware::buffers::Pla
 
 	device->enqueue_kernel(convertGaugefieldFromSOA, gs2, ls2);
 }
-
-cl_command_queue Opencl_Module::get_queue() const noexcept
-{
-	return device->get_queue();
-}
