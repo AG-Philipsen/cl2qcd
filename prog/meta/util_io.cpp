@@ -17,6 +17,8 @@ static void print_info_gauge(std::ostream* os, const meta::Inputparameters& para
 static void print_info_gauge(const meta::Inputparameters& params);
 static void print_info_integrator(int number, const meta::Inputparameters& params);
 static void print_info_integrator(std::ostream* os, int number, const meta::Inputparameters& params);
+static void print_info_configs_io(const meta::Inputparameters& params);
+static void print_info_configs_io(std::ostream * os, const meta::Inputparameters& params);
 
 static void print_info_global(const meta::Inputparameters& params)
 {
@@ -137,6 +139,7 @@ void meta::print_info_heatbath(const char* progname, const Inputparameters& para
 {
 	logger.info() << "## Starting heatbath program, executable name: " << progname;
 	print_info_global(params);
+	print_info_configs_io(params);
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Simulation parameters:";
 	logger.info() << "## beta           = " << params.get_beta();
@@ -148,10 +151,27 @@ void meta::print_info_heatbath(const char* progname, const Inputparameters& para
 	return;
 }
 
+void meta::print_info_gaugeobservables(const char* progname, std::ostream* os, const Inputparameters& params)
+{
+	*os  << "## Starting gaugeobservables program, executable name: " << progname << endl;
+	print_info_global(os, params);
+	print_info_configs_io(os, params);
+	return;
+}
+
+void meta::print_info_gaugeobservables(const char* progname, const Inputparameters& params)
+{
+	logger.info() << "## Starting gaugeobservables program, executable name: " << progname;
+	print_info_global(params);
+	print_info_configs_io(params);
+	return;
+}
+
 void meta::print_info_heatbath(const char* progname, std::ostream* os, const Inputparameters& params)
 {
 	*os  << "## Starting heatbath program, executable name: " << progname << endl;
 	print_info_global(os, params);
+	print_info_configs_io(os, params);
 	*os  << "## **********************************************************" << endl;
 	*os  << "## Simulation parameters:" << endl;
 	*os  << "## beta           = " << params.get_beta() << endl;
@@ -163,11 +183,11 @@ void meta::print_info_heatbath(const char* progname, std::ostream* os, const Inp
 	return;
 }
 
-
 void meta::print_info_tkkappa(const char* progname, std::ostream* os, const Inputparameters& params)
 {
 	*os << "## Starting tk_kappa program, " << progname << endl;
 	print_info_global(os, params);
+	print_info_configs_io(os, params);
 	*os  << "## **********************************************************" << endl;
 	*os  << "## Simulation parameters:" << endl;
 	*os  << "## beta           = " << params.get_beta() << endl;
@@ -184,6 +204,7 @@ void meta::print_info_tkkappa(const char* progname, const Inputparameters& param
 {
 	logger.info() << "## Starting tk_kappa program, " << progname ;
 	print_info_global(params);
+	print_info_configs_io(params);
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Simulation parameters:";
 	logger.info() << "## beta           = " << params.get_beta();
@@ -395,6 +416,7 @@ void meta::print_info_inverter(const char* progname, const Inputparameters& para
 {
 	logger.info() << "## Starting inverter program, executable name: " << progname;
 	print_info_global(params);
+	print_info_configs_io(params);
 	print_info_fermion(params);
 	logger.info() << "## **********************************************************";
 	return;
@@ -404,6 +426,7 @@ void meta::print_info_inverter(const char* progname, std::ostream* os, const Inp
 {
 	*os << "## Starting inverter program, executable name: " << progname << endl;
 	print_info_global(os, params);
+	print_info_configs_io(os, params);
 	print_info_fermion(os, params);
 	*os << "## **********************************************************" << endl;
 	return;
@@ -462,6 +485,7 @@ void meta::print_info_hmc(const char* progname, const Inputparameters& params)
 
 	logger.info() << "## Starting hmc program, executable name: " << progname ;
 	print_info_global(params);
+	print_info_configs_io(params);
 	print_info_fermion(params);
 	print_info_gauge(params);
 	logger.info() << "## **********************************************************";
@@ -523,6 +547,7 @@ void meta::print_info_hmc(const char* progname, std::ostream* os, const Inputpar
 {
 	*os << "## Starting hmc program, executable name: " << progname << endl;
 	print_info_global(os, params);
+	print_info_configs_io(os, params);
 	print_info_fermion(os, params);
 	print_info_gauge(os, params);
 	*os << "## **********************************************************" << endl;
@@ -580,3 +605,40 @@ void meta::print_info_hmc(const char* progname, std::ostream* os, const Inputpar
 	return;
 }
 
+static void print_info_configs_io(const meta::Inputparameters& params)
+{
+	using namespace meta;
+
+	logger.info() << "## **********************************************************";
+	logger.info() << "## CONFIGURATION NAMING PARAMETERS:";
+	logger.info() << "## DIGITS IN NAME:  " << params.get_config_number_digits();
+	logger.info() << "## NAME PREFIX:   " << params.get_config_prefix();
+	logger.info() << "## NAME POSTFIX:   " << params.get_config_postfix();
+	if(params.get_read_multiple_configs() == false) {
+		logger.info() << "## READ MULTIPLE CONFIGS: OFF";
+	} else {
+		logger.info() << "## READ MULTIPLE CONFIGS: ON";
+		logger.info() << "## START NR:  " << params.get_config_read_start();
+		logger.info() << "## END NR:   " << params.get_config_read_end();
+		logger.info() << "## INCREMENT:    " << params.get_config_read_incr();
+	}
+}
+
+static void print_info_configs_io(std::ostream * os, const meta::Inputparameters& params)
+{
+	using namespace meta;
+
+	*os << "## **********************************************************" << endl;
+	*os << "## CONFIGURATION NAMING PARAMETERS:" << endl;
+	*os << "## DIGITS IN NAME:  " << params.get_config_number_digits() << endl;
+	*os << "## NAME PREFIX:   " << params.get_config_prefix() << endl;
+	*os << "## NAME POSTFIX:   " << params.get_config_postfix() << endl;
+	if(params.get_read_multiple_configs() == false) {
+		*os << "## READ MULTIPLE CONFIGS: OFF" << endl;
+	} else {
+		*os << "## READ MULTIPLE CONFIGS: ON" << endl;
+		*os << "## START NR:  " << params.get_config_read_start() << endl;
+		*os << "## END NR:   " << params.get_config_read_end() << endl;
+		*os << "## INCREMENT:    " << params.get_config_read_incr() << endl;
+	}
+}

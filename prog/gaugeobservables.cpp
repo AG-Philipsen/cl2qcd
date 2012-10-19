@@ -1,40 +1,48 @@
-#include "hmc.h"
+#include "gaugeobservables.h"
 
 #include "meta/util.hpp"
 
 int main(int argc, const char* argv[])
 {
 	try {
-		meta::Inputparameters parameters(argc, argv);
+	  logger.info() << "This executable requires the following parameter value(s) to work properly:";
+	  logger.info() << "startcondition:\tcontinue";
+	  meta::Inputparameters parameters(argc, argv);
+
+	  //check settings
+	  if(parameters.get_startcondition() != meta::Inputparameters::start_from_source ){
+	    logger.fatal() << "Found wrong startcondition! Aborting..";
+	    throw Invalid_Parameters("Found wrong startcondition!", "continue", parameters.get_startcondition());
+	  }
+
 		switchLogLevel(parameters.get_log_level());
 
-		meta::print_info_hmc(argv[0], parameters);
+		meta::print_info_gaugeobservables(argv[0], parameters);
 
 		ofstream ofile;
-		ofile.open("hmc.log");
+		ofile.open("gaugeobservables.log");
 		if(ofile.is_open()) {
-			meta::print_info_hmc(argv[0], &ofile, parameters);
+			meta::print_info_gaugeobservables(argv[0], &ofile, parameters);
 			ofile.close();
 		} else {
-			logger.warn() << "Could not log file for hmc.";
+			logger.warn() << "Could not log file for gaugeobservables.";
 		}
 
 		//name of file to store gauge observables, print initial information
 		/** @todo think about what is a senseful filename*/
 		stringstream gaugeout_name;
-		gaugeout_name << "hmc_output";
+		gaugeout_name << "gaugeobservables.data";
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Initialization
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		init_timer.reset();
-		hmc_observables obs;
 
 		hardware::System system(parameters);
-		Gaugefield_hmc gaugefield(&system);
+		Gaugefield_hybrid gaugefield(&system);
 
-		//use 1 task: the hmc-algorithm
+		//use 1 task:
 		int numtasks = 1;
 		if(parameters.get_device_count() == 2 )
 			logger.warn() << "Only 1 device demanded by input file. All calculations performed on primary device.";
@@ -44,58 +52,45 @@ int main(int argc, const char* argv[])
 		logger.trace() << "Init gaugefield" ;
 		gaugefield.init(numtasks, primary_device);
 
-
-		logger.info() << "Gaugeobservables:";
-		gaugefield.print_gaugeobservables(0);
 		init_timer.add();
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// hmc
+		// gaugeobservables
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		perform_timer.reset();
-		/** @todo usage of solver_timer has to be checked. No output yet */
-		usetimer solver_timer;
 
-		//start from the iterationnumber from sourcefile
-		//NOTE: this is 0 in case of cold or hot start
-		int iter = gaugefield.get_parameters_source().trajectorynr_source;
-		int hmc_iter = iter + parameters.get_hmcsteps();
-		hmc_float acc_rate = 0.;
-		int writefreq = parameters.get_writefrequency();
-		int savefreq = parameters.get_savefrequency();
-		//This is the random-number generator for the metropolis-step
-		prng_init(parameters.get_host_seed());
+		int iter_end = parameters.get_config_read_end();
+		int iter_start = parameters.get_config_read_start();
+		int iter_incr = parameters.get_config_read_incr();
+		int iter = 0;
 
-		logger.info() << "perform HMC on device(s)... ";
+		logger.info() << "Measure gaugeobservables on device(s)... ";
 
-		//main hmc-loop
-		for(iter; iter < hmc_iter; iter ++) {
-			//generate new random-number for Metropolis step
-			hmc_float rnd_number = prng_double();
-			gaugefield.perform_hmc_step(&obs, iter, rnd_number, &solver_timer);
-			acc_rate += obs.accept;
-			if(parameters.get_print_to_screen() ) 
-			  gaugefield.print_hmcobservables(obs, iter);
-
-			if( ( (iter + 1) % writefreq ) == 0 ) {
-				gaugefield.print_hmcobservables(obs, iter, gaugeout_name.str());
-			}
-			if( parameters.get_saveconfigs() == true && ( (iter + 1) % savefreq ) == 0 ) {
-				gaugefield.synchronize(0);
-				gaugefield.save(iter + 1);
-			}
-			//always save the config on the last iteration
-			if( iter == hmc_iter - 1 ) {
-				gaugefield.synchronize(0);
-				std::string outputfile = "conf.save";
-				logger.info() << "saving current gaugefield to file \"" << outputfile << "\"";
-				gaugefield.save(outputfile);
-			}
+		if(parameters.get_read_multiple_configs()){
+		  //main loop
+		  for(iter = iter_start; iter < iter_end; iter+=iter_incr) {
+		    std::string config_name = gaugefield.create_configuration_name(iter);
+		    logger.info() << "Measure gaugeobservables of configuration: " << config_name;
+		    gaugefield.init_gaugefield(config_name.c_str());
+		    gaugefield.synchronize(0);
+		    if(parameters.get_print_to_screen() ){
+		      gaugefield.print_gaugeobservables(iter);
+		    }
+		    gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name.str());
+		  }
 		}
-		logger.info() << "HMC done";
-		logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acc_rate, hmc_iter) << "%";
-		perform_timer.add();
+		else{
+		  //in this case only the config from the initialization is taken into account
+		  logger.info() << "Measure gaugeobservables of configuration: " << parameters.get_sourcefile();
+		  //@todo: adjust the "iter" here to be the number from the sourcefile!!
+		  if(parameters.get_print_to_screen() ){
+		    gaugefield.print_gaugeobservables(iter);
+		  }
+		  gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name.str());
+		}
+		  logger.info() << "... done";
+		  perform_timer.add();
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Final Output

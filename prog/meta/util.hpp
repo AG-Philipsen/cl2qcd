@@ -41,6 +41,8 @@ namespace meta {
 	double get_xi_0(const Inputparameters& params);
 	size_t get_flop_spinor_spinor() noexcept;
 	size_t get_flop_spinor_sqnorm() noexcept;
+	void print_info_gaugeobservables(const char* progname, const Inputparameters& params);
+	void print_info_gaugeobservables(const char* progname, std::ostream* os, const Inputparameters& params);
 	void print_info_heatbath(const char* progname, const Inputparameters& params);
 	void print_info_heatbath(const char* progname, std::ostream* os, const Inputparameters& params);
 	void print_info_tkkappa(const char* progname, std::ostream* os, const Inputparameters& params);

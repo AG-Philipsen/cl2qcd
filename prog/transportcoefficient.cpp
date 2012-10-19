@@ -112,6 +112,9 @@ int main(int argc, const char* argv[])
 	} catch (Print_Error_Message& em) {
 		logger.fatal() << em.what();
 		exit(1);
+	} catch (Invalid_Parameters& es) {
+		logger.fatal() << es.what();
+		exit(1);
 	}
 
 	return 0;

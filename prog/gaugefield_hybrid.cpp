@@ -237,16 +237,20 @@ void Gaugefield_hybrid::finalize_opencl()
 
 }
 
-void Gaugefield_hybrid::init_gaugefield()
+void Gaugefield_hybrid::init_gaugefield(){
+  init_gaugefield(get_parameters().get_sourcefile().c_str() );
+}
+
+void Gaugefield_hybrid::init_gaugefield(const char* sourcefile)
 {
 	switch(get_parameters().get_startcondition()) {
 		case meta::Inputparameters::start_from_source: {
-			sourcefileparameters parameters_source;
 			//tmp hmc_gaugefield for filetransfer
 			hmc_float * gaugefield_tmp;
 			gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * parameters.get_ntime() * meta::get_volspace(parameters));
-			parameters_source.readsourcefile(get_parameters().get_sourcefile().c_str(), get_parameters().get_precision(), &gaugefield_tmp);
+			parameters_source.readsourcefile(sourcefile, get_parameters().get_precision(), &gaugefield_tmp);
 			copy_gaugefield_from_ildg_format(get_sgf(), gaugefield_tmp, parameters_source.num_entries_source);
+			check_sourcefileparameters();
 			free(gaugefield_tmp);
 		}
 		break;
@@ -344,6 +348,11 @@ const meta::Inputparameters & Gaugefield_hybrid::get_parameters ()
 	return  parameters;
 }
 
+const sourcefileparameters Gaugefield_hybrid::get_parameters_source ()
+{
+	return  parameters_source;
+}
+
 Matrixsu3 * Gaugefield_hybrid::get_sgf ()
 {
 	return sgf;
@@ -364,18 +373,23 @@ int Gaugefield_hybrid::get_num_devices()
 	return num_devices;
 }
 
+std::string Gaugefield_hybrid::create_configuration_name(int number)
+{
+  using namespace std;
+  stringstream strnumber;
+  strnumber.fill('0');
+  strnumber.width(parameters.get_config_number_digits());
+  strnumber << right << number;
+  stringstream outfilename;
+  outfilename << parameters.get_config_prefix() << strnumber.str() << parameters.get_config_postfix();
+  string outputfile = outfilename.str();
+  logger.info() << outputfile;
+  return outputfile;
+}
+
 void Gaugefield_hybrid::save(int number)
 {
-	using namespace std;
-
-	//LZ: generalize the following to larger numbers, if necessary...
-	stringstream strnumber;
-	strnumber.fill('0');
-	strnumber.width(5);
-	strnumber << right << number;
-	stringstream outfilename;
-	outfilename << "conf." << strnumber.str();
-	string outputfile = outfilename.str();
+  std::string outputfile = create_configuration_name(number); 
 	save(outputfile);
 }
 
@@ -463,7 +477,14 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask, st
 	gaugeout << iter;
 	gaugeout << "\t";
 	gaugeout.precision(15);
-	gaugeout << plaq << "\t" << tplaq << "\t" << splaq << "\t" << pol.re << "\t" << pol.im << "\t" << sqrt(pol.re * pol.re + pol.im * pol.im) << std::endl;
+	gaugeout << plaq << "\t" << tplaq << "\t" << splaq << "\t" << pol.re << "\t" << pol.im << "\t" << sqrt(pol.re * pol.re + pol.im * pol.im);
+	if(meta::get_use_rectangles(get_parameters()) ) {
+	  //print rectangle value
+	  hmc_float rect = 0.;
+	  opencl_modules[ntask]->gaugeobservables_rectangles(opencl_modules[ntask]->get_gaugefield(), &rect);
+	  gaugeout << "\t" << rect;
+	}
+	gaugeout  << std::endl;
 	gaugeout.close();
 }
 
@@ -653,7 +674,7 @@ hmc_float Gaugefield_hybrid::plaquette(hmc_float* tplaq, hmc_float* splaq)
 
 hmc_complex Gaugefield_hybrid::polyakov()
 {
-	hmc_complex res;
+  hmc_complex res;
 	res.re = 0;
 	res.im = 0;
 	for(int n = 0; n < meta::get_volspace(parameters); n++) {
@@ -669,3 +690,77 @@ hmc_complex Gaugefield_hybrid::polyakov()
 	return res;
 }
 
+void Gaugefield_hybrid::check_sourcefileparameters()
+{
+  logger.info() << "Checking sourcefile parameters against inputparameters...";
+  //checking major parameters
+  int tmp1, tmp2;
+  std::string testobj;
+  std::string msg = "Major parameters do not match: ";
+
+  testobj = msg + "NT";
+  tmp1 = parameters.get_ntime();
+  tmp2 = parameters_source.lt_source;
+  if(tmp1 != tmp2){
+    throw Invalid_Parameters(testobj , tmp1, tmp2);
+  }
+  testobj = msg + "NX";
+  tmp1 = parameters.get_nspace();
+  tmp2 = parameters_source.lx_source;
+  if(tmp1 != tmp2){
+    throw Invalid_Parameters(testobj , tmp1, tmp2);
+  }
+  testobj = msg + "NY";
+  tmp1 = parameters.get_nspace();
+  tmp2 = parameters_source.ly_source;
+  if(tmp1 != tmp2){
+    throw Invalid_Parameters(testobj , tmp1, tmp2);
+  }
+  testobj = msg + "NZ";
+  tmp1 = parameters.get_nspace();
+  tmp2 = parameters_source.lz_source;
+  if(tmp1 != tmp2){
+    throw Invalid_Parameters(testobj , tmp1, tmp2);
+  }
+  testobj = msg + "PRECISION";
+  tmp1 = parameters.get_precision();
+  tmp2 = parameters_source.prec_source;
+  if(tmp1 != tmp2){
+    throw Invalid_Parameters(testobj , tmp1, tmp2);
+  }
+
+  //checking minor parameters
+  msg = "Minor parameters do not match: ";
+  hmc_float float1, float2;
+  testobj = msg + "plaquette";
+  float1 = plaquette();
+  float2 = parameters_source.plaquettevalue_source;
+  if(float1 != float2){
+    logger.warn() << testobj;
+    logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
+  }
+  testobj = msg + "beta";
+  float1 = parameters.get_beta();
+  float2 = parameters_source.beta_source;
+  if(float1 != float2){
+    logger.warn() << testobj;
+    logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
+  }
+  testobj = msg + "kappa";
+  float1 = parameters.get_kappa();
+  float2 = parameters_source.kappa_source;
+  if(float1 != float2){
+    logger.warn() << testobj;
+    logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
+  }
+  testobj = msg + "mu";
+  float1 = parameters.get_mu();
+  float2 = parameters_source.mu_source;
+  if(float1 != float2){
+    logger.warn() << testobj;
+    logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
+  }
+
+  logger.info() << "...done";
+  return;
+}

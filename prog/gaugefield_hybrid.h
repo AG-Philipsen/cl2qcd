@@ -102,8 +102,15 @@ public:
 	// gaugefield specific methods
 	/**
 	 * Initializes the gaugefield, called by init()
+	 * calls init_gaugefield(sourcefile) with the name from inputparameters
 	 */
 	void init_gaugefield();
+	/**
+	 * Initializes the gaugefield, called by init()
+	 * @param name of gaugefield file
+	 */
+	void init_gaugefield(const char*);
+
 	/**
 	 * Initializing the gaugefield consisting of structs for a hot start
 	 * Not implemented yet, throws an exception
@@ -185,6 +192,11 @@ public:
 	hardware::Device* get_device_for_task(int ntask);
 
 	// output methods
+	/**
+	 * Create a name for a gaugefield configuration file
+	 * @param[in] number number of the file
+	 */
+	std::string create_configuration_name(int number);
 	/**
 	 * Save gaugefield to a file with name conf.number
 	 * @param[in] number number to be added to file name
@@ -286,6 +298,19 @@ public:
 
 	void print_profiling(std::string filename);
 
+	/**
+	 * Returns parameters read from sourcefile
+	 */
+	const sourcefileparameters get_parameters_source();
+
+	/**
+	 * This checks the parameters from a sourcefile
+	 * against the inputparameters.
+	 * It indicates if minor parameters mismatch
+	 * and throws an exception if major parameters do
+	 */
+	void check_sourcefileparameters();
+
 protected:
 	cl_device_type* devicetypes;
 	Opencl_Module ** opencl_modules;
@@ -299,6 +324,7 @@ private:
 
 	const hardware::System * system;
 	const meta::Inputparameters& parameters;
+	sourcefileparameters parameters_source;
 	Matrixsu3 * sgf;
 	int num_tasks;
 	int num_devices;
