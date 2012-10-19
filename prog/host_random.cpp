@@ -1,6 +1,8 @@
 #include "host_random.h"
 
 #include <cstdio>
+#include "logger.hpp"
+#include "exceptions.h"
 
 #ifdef USE_PRNG_RANLUX
 extern "C" {

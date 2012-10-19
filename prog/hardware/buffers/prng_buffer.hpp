@@ -9,6 +9,10 @@
 
 #include "buffer.hpp"
 
+#ifdef USE_PRNG_NR3
+#include "../../host_random.h"
+#endif
+
 namespace hardware {
 	namespace buffers {
 

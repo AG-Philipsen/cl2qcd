@@ -43,8 +43,9 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Ran(const meta::Inputparameters& params, hardware::Device * device)
-		: Opencl_Module(params, device), prng_buffer(device) {};
+	Opencl_Module_Ran(const meta::Inputparameters& params, hardware::Device * device);
+
+	virtual ~Opencl_Module_Ran();
 
 	/**
 	 * Collect the compiler options for OpenCL.
@@ -53,22 +54,10 @@ public:
 	virtual void fill_collect_options(std::stringstream* collect_options) override;
 
 	/**
-	 * Collect the buffers to generate for OpenCL.
-	 * Virtual method, allows to include more buffers in inherited classes.
-	 */
-	virtual void fill_buffers() override;
-
-	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
 	virtual void fill_kernels() override;
-
-	/**
-	 * Clear out the buffers,
-	 * Virtual method, allows to clear additional buffers in inherited classes.
-	 */
-	virtual void clear_buffers() override;
 
 	/**
 	 * Get cl_mem object rndarray

@@ -247,6 +247,8 @@ public:
 	 */
 	void exportGaugefield(Matrixsu3 * const dest);
 
+	const meta::Inputparameters& parameters;
+
 protected:
 	/**
 	 * A set of source files used by all kernels.
@@ -264,8 +266,6 @@ protected:
 	 * @param kernel_name The name of the kernel to create.
 	 */
 	TmpClKernel createKernel(const char * const kernel_name, const char * const build_opts = 0);
-
-	const meta::Inputparameters& parameters;
 
 	/**
 	 * Print the profiling information for the given kernel to the given file.

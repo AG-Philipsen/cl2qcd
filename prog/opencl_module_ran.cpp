@@ -20,31 +20,19 @@ void Opencl_Module_Ran::fill_collect_options(stringstream* collect_options)
 #endif // USE_PRNG_XXX
 }
 
-
-void Opencl_Module_Ran::fill_buffers()
-{
-
-	Opencl_Module::fill_buffers();
-
-#ifdef USE_PRNG_NR3
-	// Prepare random number arrays, for each task and device separately
-	const size_t num_rndstates = prng_buffer.get_elements();
-	rndarray = new nr3_state_dev[num_rndstates];
-	nr3_init_seeds(rndarray, "rand_seeds", num_rndstates);
-	prng_buffer.load(rndarray);
-#elif defined(USE_PRNG_RANLUX)
-	// kernels are not filled yet, so delay filling until kernel creation
-#else // USE_PRNG_XXX
-#error No implemented PRNG selected
-#endif // USE_PRNG_XXX
-}
-
 void Opencl_Module_Ran::fill_kernels()
 {
 	Opencl_Module::fill_kernels();
 
 #ifdef USE_PRNG_NR3
 	prng_code = ClSourcePackage() << "random.cl";
+
+	// Prepare random number arrays, for each task and device separately
+	const size_t num_rndstates = prng_buffer.get_elements();
+	rndarray = new nr3_state_dev[num_rndstates];
+	nr3_init_seeds(rndarray, "rand_seeds", num_rndstates);
+	prng_buffer.load(rndarray);
+
 #elif defined(USE_PRNG_RANLUX)
 	prng_code = ClSourcePackage() << "ranluxcl/ranluxcl.cl" << "random.cl";
 	cl_kernel init_kernel = createKernel("prng_ranlux_init") << basic_opencl_code << prng_code << "random_ranlux_init.cl";
@@ -71,19 +59,6 @@ void Opencl_Module_Ran::fill_kernels()
 #endif // USE_PRNG_XXX
 }
 
-void Opencl_Module_Ran::clear_buffers()
-{
-	Opencl_Module::clear_buffers();
-
-#ifdef USE_PRNG_NR3
-	delete [] rndarray;
-#elif defined(USE_PRNG_RANLUX)
-	// nothing to do
-#else // USE_PRNG_XXX
-#error No implemented PRNG selected
-#endif // USE_PRNG_XXX
-}
-
 #ifdef USE_PRNG_NR3
 void Opencl_Module_Ran::copy_rndstate_to_device(nr3_state_dev* rndarray) const
 {
@@ -99,4 +74,31 @@ void Opencl_Module_Ran::copy_rndstate_from_device(nr3_state_dev* rndarray) const
 const hardware::buffers::PRNGBuffer& Opencl_Module_Ran::get_prng_buffer() const noexcept
 {
 	return prng_buffer;
+}
+
+Opencl_Module_Ran::Opencl_Module_Ran(const meta::Inputparameters& params, hardware::Device * device)
+	: Opencl_Module(params, device), prng_buffer(device)
+{
+#ifdef USE_PRNG_NR3
+	// Prepare random number arrays, for each task and device separately
+	const size_t num_rndstates = prng_buffer.get_elements();
+	rndarray = new nr3_state_dev[num_rndstates];
+	nr3_init_seeds(rndarray, "rand_seeds", num_rndstates);
+	prng_buffer.load(rndarray);
+#elif defined(USE_PRNG_RANLUX)
+	/* nothing to do */
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
+}
+
+Opencl_Module_Ran::~Opencl_Module_Ran()
+{
+#ifdef USE_PRNG_NR3
+	delete [] rndarray;
+#elif defined(USE_PRNG_RANLUX)
+	/* nothing to do */
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
 }
