@@ -63,8 +63,7 @@ void Opencl_Module_Ran::fill_kernels()
 	clerr = clSetKernelArg(init_kernel, 1, sizeof(cl_mem), prng_buffer);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	get_device()->enqueue_kernel(init_kernel, gs, ls);
-	clerr = clFinish(get_queue());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clFinish", __FILE__, __LINE__);
+	get_device()->synchronize();
 	clerr = clReleaseKernel(init_kernel);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 #else // USE_PRNG_XXX
