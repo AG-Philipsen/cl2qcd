@@ -99,7 +99,6 @@ int main(int argc, const char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		total_timer.add();
-		uint64_t totaltime = total_timer.getTime();
 		general_time_output(&total_timer, &init_timer, &perform_timer, &plaq_timer, &poly_timer);
 
 		//CP: this is just a fist version and will go into an own file later

@@ -668,8 +668,6 @@ size_t Opencl_Module_Spinors::get_read_write_size(const std::string& in) const
 	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
 	size_t D = meta::get_float_size(parameters);
-	//this returns the number of entries in an su3-matrix
-	size_t R = meta::get_mat_size(parameters);
 	size_t S = meta::get_spinorfieldsize(get_parameters());
 	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers

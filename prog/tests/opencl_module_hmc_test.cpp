@@ -242,7 +242,6 @@ void test_gf_update(std::string inputfile)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	Opencl_Module_Hmc * device = cpu.get_device();
-	cl_int err = CL_SUCCESS;
 	hmc_float * gm_in;
 
 	logger.info() << "create buffers";
@@ -296,7 +295,6 @@ void test_f_update(std::string inputfile)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	Opencl_Module_Hmc * device = cpu.get_device();
-	cl_int err = CL_SUCCESS;
 	hmc_float * gm_in;
 	hmc_float * gm_out;
 
@@ -362,7 +360,6 @@ void test_f_gauge(std::string inputfile)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	Opencl_Module_Hmc * device = cpu.get_device();
-	cl_int err = CL_SUCCESS;
 	ae * gm_out;
 
 	logger.info() << "create buffers";
@@ -406,7 +403,6 @@ void test_f_gauge_tlsym(std::string inputfile)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	Opencl_Module_Hmc * device = cpu.get_device();
-	cl_int err = CL_SUCCESS;
 	ae * gm_out;
 
 	logger.info() << "create buffers";
@@ -452,7 +448,6 @@ void test_f_fermion(std::string inputfile)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	Opencl_Module_Hmc * device = cpu.get_device();
-	cl_int err = CL_SUCCESS;
 	spinor * sf_in1;
 	spinor * sf_in2;
 	ae * ae_out;
@@ -477,8 +472,6 @@ void test_f_fermion(std::string inputfile)
 	BOOST_REQUIRE(sf_in1);
 	BOOST_REQUIRE(sf_in2);
 	BOOST_REQUIRE(ae_out);
-
-	size_t sf_buf_size = meta::get_spinorfieldsize(params) * sizeof(spinor);
 
 	const Plain<spinor> in1(NUM_ELEMENTS_SF, device->get_device());
 	const Plain<spinor> in2(NUM_ELEMENTS_SF, device->get_device());
@@ -528,7 +521,6 @@ void test_f_fermion_eo(std::string inputfile)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	Opencl_Module_Hmc * device = cpu.get_device();
-	cl_int err = CL_SUCCESS;
 	spinor * sf_in1;
 	spinor * sf_in2;
 	spinor * sf_in3;

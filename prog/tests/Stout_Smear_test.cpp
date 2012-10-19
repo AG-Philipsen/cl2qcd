@@ -187,8 +187,6 @@ BOOST_AUTO_TEST_CASE( STOUT_SMEAR )
 
 	hmc_float plaq_cpu, tplaq_cpu, splaq_cpu;
 	hmc_complex pol_cpu;
-	hmc_float plaq_gpu, tplaq_gpu, splaq_gpu;
-	hmc_complex pol_gpu;
 
 	logger.info() << "gaugeobservables of in field before: ";
 	dummy.print_gaugeobservables_from_task(0, 0);

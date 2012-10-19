@@ -24,8 +24,8 @@ public:
 		finalize();
 	};
 
-	void runTestKernel2(const hardware::buffers::Plain<spinor> * , const hardware::buffers::Spinor * , const hardware::buffers::Spinor * , const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float);
-	void runTestKernel(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float);
+	void runTestKernel2(const hardware::buffers::Plain<spinor> * , const hardware::buffers::Spinor * , const hardware::buffers::Spinor * , const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float);
+	void runTestKernel(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float);
 	void fill_kernels();
 	void clear_kernels();
 };
@@ -778,13 +778,12 @@ void Device::clear_kernels()
 	Opencl_Module::clear_kernels();
 }
 
-void Device::runTestKernel2(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
+void Device::runTestKernel2(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar)
 {
 	using namespace hardware::buffers;
 
 	//suppose in1 is the even, in2 the odd input vector
 	//create 3 buffers for intermediate results
-	cl_int err;
 	const Spinor out_tmp_eo1(meta::get_eoprec_spinorfieldsize(get_parameters()), get_device());
 	const Spinor out_tmp_eo2(meta::get_eoprec_spinorfieldsize(get_parameters()), get_device());
 	const Spinor tmp_eo(meta::get_eoprec_spinorfieldsize(get_parameters()), get_device());
@@ -816,7 +815,7 @@ void Device::runTestKernel2(const hardware::buffers::Plain<spinor> * out, const 
 	this->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, out);
 }
 
-void Device::runTestKernel(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::SU3 * gf, int gs, int ls, hmc_float kappa, hmc_float mubar)
+void Device::runTestKernel(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar)
 {
 	this->M_tm_plus_device(in1, out, gf, kappa , mubar );
 }
@@ -877,59 +876,27 @@ void Dummyfield::verify(hmc_float cpu, hmc_float gpu)
 //this calls eo dslash and eo diagonal matrix on the two eo inputs and saves it in one noneo vector
 void Dummyfield::runTestKernel2()
 {
-	int gs = 0, ls = 0;
-	if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = meta::get_eoprec_spinorfieldsize(get_parameters());
-		ls = 64;
-	} else if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = get_device_for_task(0)->get_num_compute_units();
-		ls = 1;
-	}
 	Device * device = static_cast<Device*>(opencl_modules[0]);
-	device->runTestKernel2(out_eo, in_eo1, in_eo2, device->get_gaugefield(), gs, ls, get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
+	device->runTestKernel2(out_eo, in_eo1, in_eo2, device->get_gaugefield(), get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
 }
 
 void Dummyfield::runTestKernel2withconvertedfields()
 {
-	int gs = 0, ls = 0;
-	if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = meta::get_eoprec_spinorfieldsize(get_parameters());
-		ls = 64;
-	} else if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = get_device_for_task(0)->get_num_compute_units();
-		ls = 1;
-	}
 	Device * device = static_cast<Device*>(opencl_modules[0]);
-	device->runTestKernel2(out_eo_converted, in_eo1_converted, in_eo2_converted, device->get_gaugefield(), gs, ls, get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
+	device->runTestKernel2(out_eo_converted, in_eo1_converted, in_eo2_converted, device->get_gaugefield(), get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
 }
 
 //this calls the noneo fermionmatrix M_tm_plus
 void Dummyfield::runTestKernel()
 {
-	int gs = 0, ls = 0;
-	if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = meta::get_spinorfieldsize(get_parameters());
-		ls = 64;
-	} else if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = get_device_for_task(0)->get_num_compute_units();
-		ls = 1;
-	}
 	Device * device = static_cast<Device*>(opencl_modules[0]);
-	device->runTestKernel(out_noneo, in_noneo, device->get_gaugefield(), gs, ls, get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
+	device->runTestKernel(out_noneo, in_noneo, device->get_gaugefield(), get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
 }
 
 void Dummyfield::runTestKernelwithconvertedfields()
 {
-	int gs = 0, ls = 0;
-	if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = meta::get_spinorfieldsize(get_parameters());
-		ls = 64;
-	} else if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_CPU) {
-		gs = get_device_for_task(0)->get_num_compute_units();
-		ls = 1;
-	}
 	Device * device = static_cast<Device*>(opencl_modules[0]);
-	device->runTestKernel(out_noneo_converted, in_noneo_converted, device->get_gaugefield(), gs, ls, get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
+	device->runTestKernel(out_noneo_converted, in_noneo_converted, device->get_gaugefield(), get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
 }
 
 BOOST_AUTO_TEST_CASE( M_noneo_eo_test )

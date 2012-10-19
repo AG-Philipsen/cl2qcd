@@ -70,7 +70,7 @@ int main(int argc, const char* argv[])
 		logger.info() << "perform HMC on device(s)... ";
 
 		//main hmc-loop
-		for(iter; iter < hmc_iter; iter ++) {
+		for(; iter < hmc_iter; iter ++) {
 			//generate new random-number for Metropolis step
 			hmc_float rnd_number = prng_double();
 			gaugefield.perform_hmc_step(&obs, iter, rnd_number, &solver_timer);
@@ -102,7 +102,6 @@ int main(int argc, const char* argv[])
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		total_timer.add();
-		uint64_t totaltime = total_timer.getTime();
 		general_time_output(&total_timer, &init_timer, &perform_timer, &plaq_timer, &poly_timer);
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////

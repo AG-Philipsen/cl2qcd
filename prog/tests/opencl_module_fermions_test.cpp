@@ -163,7 +163,6 @@ void test_dslash_eo(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	cl_int err = CL_SUCCESS;
 	Opencl_Module_Fermions * device = cpu.get_device();
 	spinor * sf_in;
 	spinor * sf_out;
