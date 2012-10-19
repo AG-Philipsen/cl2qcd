@@ -18,8 +18,15 @@
 namespace fs = boost::filesystem;
 /// @todo quite some of this code could be simplified by moving from pure fstream to boost::filesystem equivalents
 
+const std::string CACHE_DIR_NAME = "OpTiMaL/ocl_cache";
+
 /**
  * Get the path on which to store a binary with the given md5
+ *
+ * This relies on boost to get the temporary directory, so boost methods
+ * for specifying the temporary directory can be used.
+ *
+ * All filles will be stored in the subdirectory given by CACHE_DIR_NAME.
  */
 static fs::path get_binary_file_path(std::string md5);
 
@@ -560,7 +567,9 @@ void TmpClKernel::dumpBinary(cl_program program, std::string md5) const
 		throw Opencl_Error(clerr);
 	}
 
-	fs::ofstream outfile(get_binary_file_path(md5));
+	fs::path binaryfile = get_binary_file_path(md5);
+	fs::create_directories(binaryfile.parent_path()); // make sure the directory exists, otherwise we cannot open the path for writing
+	fs::ofstream outfile(binaryfile);
 	outfile.write(reinterpret_cast<char*>(program_binary), program_binary_bytes);
 	outfile.close();
 
@@ -629,5 +638,7 @@ cl_program TmpClKernel::loadBinary(std::string md5) const
 
 static fs::path get_binary_file_path(std::string md5)
 {
-	return md5 + ".elf";
+	const fs::path cache_dir = CACHE_DIR_NAME;
+	const std::string file_name = md5 + ".elf";
+	return cache_dir / file_name;
 }
