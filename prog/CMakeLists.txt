@@ -160,6 +160,9 @@ add_modules(optimal
 target_link_libraries(optimal ${OPTIMAL_USED_LIBS})
 
 # The actual executables (frontends)
+add_executable(gaugeobservables gaugeobservables.cpp)
+target_link_libraries(gaugeobservables optimal)
+
 add_executable(heatbath heatbath.cpp)
 target_link_libraries(heatbath optimal)
 
