@@ -61,7 +61,6 @@ TmpClKernel::operator cl_kernel() const
 	char ** sources = new char *[ files.size() ];
 	size_t * source_sizes = new size_t[ files.size() ];
 
-	/// @todo seperate build for each device as otherwise cache is broken
 	std::string md5 = generateMD5();
 
 	cl_program program = loadBinary(md5);
