@@ -303,6 +303,14 @@ public:
 	 */
 	const sourcefileparameters get_parameters_source();
 
+	/**
+	 * This checks the parameters from a sourcefile
+	 * against the inputparameters.
+	 * It indicates if minor parameters mismatch
+	 * and throws an exception if major parameters do
+	 */
+	void check_sourcefileparameters();
+
 protected:
 	cl_device_type* devicetypes;
 	Opencl_Module ** opencl_modules;
