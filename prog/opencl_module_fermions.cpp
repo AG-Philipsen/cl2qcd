@@ -1319,7 +1319,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 		klepsydra::Monotonic timer;
 		if(logger.beInfo()) {
 			cl_event start_event;
-			clEnqueueMarker(get_queue(), &start_event);
+			get_device()->enqueue_marker(&start_event);
 			clSetEventCallback(start_event, CL_COMPLETE, resetTimerOnComplete, &timer);
 			clReleaseEvent(start_event);
 		}
@@ -1430,7 +1430,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 		klepsydra::Monotonic timer;
 		if(logger.beInfo()) {
 			cl_event start_event;
-			clEnqueueMarker(get_queue(), &start_event);
+			get_device()->enqueue_marker(&start_event);
 			clSetEventCallback(start_event, CL_COMPLETE, resetTimerOnComplete, &timer);
 			clReleaseEvent(start_event);
 		}
@@ -1481,10 +1481,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 			}
 			//v = A*p
 			f(&clmem_p_eo, &clmem_v_eo, gf, kappa, mubar);
-			clerr = clFlush(get_queue());
-			if(clerr) {
-				throw Opencl_Error(clerr, "Failed to flush command queue");
-			}
+			get_device()->flush();
 			//tmp1 = (rhat, v)
 			set_complex_to_scalar_product_eoprec_device(&clmem_rhat_eo, &clmem_v_eo, &clmem_tmp1);
 			//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
@@ -1527,10 +1524,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 			set_complex_to_product_device(&clmem_minusone, &clmem_tmp1, &clmem_tmp2);
 			//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
 			saxsbypz_eoprec_device(&clmem_p_eo, &clmem_v_eo, &clmem_rn_eo, &clmem_beta, &clmem_tmp2, &clmem_p_eo);
-			clerr = clFlush(get_queue());
-			if(clerr) {
-				throw Opencl_Error(clerr, "Failed to flush command queue");
-			}
+			get_device()->flush();
 			//rho_next = rho
 			hardware::buffers::copyData(&clmem_rho, &clmem_rho_next);
 		}
@@ -1605,7 +1599,7 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function_eo & f, const hardware::
 	klepsydra::Monotonic timer;
 	if(logger.beInfo()) {
 		cl_event start_event;
-		clEnqueueMarker(get_queue(), &start_event);
+		get_device()->enqueue_marker(&start_event);
 		clSetEventCallback(start_event, CL_COMPLETE, resetTimerOnComplete, &timer);
 		clReleaseEvent(start_event);
 	}
@@ -1760,7 +1754,7 @@ void Opencl_Module_Fermions::solver(const Matrix_Function_eo & f, const hardware
 	convert_from_eoprec_device(&clmem_inout_eo, &clmem_tmp_eo_1, inout);
 
 	if(get_parameters().get_profile_solver() ) {
-		clFinish(get_queue());
+		get_device()->synchronize();
 		(*solvertimer).add();
 	}
 
@@ -1793,7 +1787,7 @@ void Opencl_Module_Fermions::solver(const Matrix_Function & f, const hardware::b
 		converged = bicgstab(f, inout, source, gf, get_parameters().get_solver_prec());
 
 	if(get_parameters().get_profile_solver() ) {
-		clFinish(get_queue());
+		get_device()->synchronize();
 		(*solvertimer).add();
 	}
 
