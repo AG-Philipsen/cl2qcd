@@ -8,6 +8,8 @@
 #include <vector>
 #include <string>
 
+#include "../logger.hpp"
+
 /**
  * This namespace contains generic utility code required by the other packages.
  */
@@ -142,6 +144,15 @@ namespace meta {
 			bool get_use_merge_kernels_spinor() const noexcept;
 			bool get_use_rec12() const noexcept;
 
+	                //parameters to read in gauge configurations
+	  bool get_read_multiple_configs() const noexcept;
+	  int get_config_read_start() const noexcept;
+	  int get_config_read_end() const noexcept;
+	  int get_config_read_incr() const noexcept;
+	  int get_config_number_digits() const noexcept;
+	  std::string get_config_prefix() const noexcept;
+	  std::string get_config_postfix() const noexcept;
+
 			std::string get_log_level() const noexcept;
 
 		private:
@@ -228,7 +239,6 @@ namespace meta {
 			integrator integrator0;
 			integrator integrator1;
 			integrator integrator2;
-			//this is the optimal value...
 			double lambda0;
 			double lambda1;
 			double lambda2;
@@ -245,6 +255,15 @@ namespace meta {
 			bool use_merge_kernels_fermion;
 			bool use_merge_kernels_spinor;
 			bool use_rec12;
+
+	                //parameters to read in gauge configurations
+	  bool read_multiple_configs;
+	  int config_read_start;
+	  int config_read_end;
+	  int config_read_incr;
+	  int config_number_digits;
+	  std::string config_prefix;
+	  std::string config_postfix;
 
 			std::string log_level;
 	};

@@ -112,7 +112,6 @@ bool Inputparameters::get_print_to_screen() const noexcept
 {
 	return print_to_screen;
 }
-//This is obvious!!!
 uint32_t Inputparameters::get_host_seed() const noexcept
 {
 	return host_seed;
@@ -328,7 +327,6 @@ Inputparameters::integrator Inputparameters::get_integrator(size_t timescale) co
 			throw std::out_of_range("No such timescale");
 	}
 }
-//this is the optimal value...
 double Inputparameters::get_lambda(size_t timescale) const noexcept
 {
 	switch(timescale) {
@@ -384,8 +382,39 @@ bool Inputparameters::get_use_rec12() const noexcept
 	return use_rec12;
 }
 
+//parameters to read in gauge configurations
+bool Inputparameters::get_read_multiple_configs() const noexcept
+{
+	return read_multiple_configs;
+}
+int Inputparameters::get_config_read_start() const noexcept
+{
+  return config_read_start;
+}
+int Inputparameters::get_config_read_end() const noexcept
+{
+  return config_read_end;
+}
+int Inputparameters::get_config_read_incr() const noexcept
+{
+  return config_read_incr;
+}
+int Inputparameters::get_config_number_digits() const noexcept
+{
+  return config_number_digits;
+}
+std::string Inputparameters::get_config_prefix() const noexcept
+{
+  return config_prefix;
+}
+std::string Inputparameters::get_config_postfix() const noexcept
+{
+  return config_postfix;
+}
+
 Inputparameters::Inputparameters(int argc, const char** argv)
 {
+  logger.info() << "read in parameters...";
 	/**
 	 * First handle all the stuff that can only be done on the cmd-line.
 	 * We need that to get the option file.
@@ -421,7 +450,6 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("savefrequency", po::value<int>(&savefrequency)->default_value(100))
 	("sourcefile", po::value<std::string>(&sourcefile)->default_value("conf.00000"))
 	("print_to_screen", po::value<bool>(&print_to_screen)->default_value(false))
-	//This is obvious!!!
 	("host_seed", po::value<uint32_t>(&host_seed)->default_value(4815))
 
 	//gaugefield parameters
@@ -503,7 +531,16 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("use_merge_kernels_fermion", po::value<bool>(&use_merge_kernels_fermion)->default_value(false), "Use kernel merging for fermion kernels")
 	("use_rec12", po::value<bool>(&use_rec12)->default_value(false), "Use reconstruct 12 compression for SU3 matrices")
 
-	("log-level", po::value<std::string>(&log_level)->default_value("ALL"), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF");
+	("log-level", po::value<std::string>(&log_level)->default_value("ALL"), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF")
+
+	("read_multiple_configs", po::value<bool>(&read_multiple_configs)->default_value(false), "Read in more than one gaugefield configuration")
+	  ("config_read_start", po::value<int>(&config_read_start)->default_value(0), "Number to begin with when reading in more than one gaugefield configuration")
+	  ("config_number_digits", po::value<int>(&config_number_digits)->default_value(5), "Number of digits to name gaugefield configurations")
+	  ("config_read_end", po::value<int>(&config_read_end)->default_value(1), "Number to end with when reading in more than one gaugefield configuration")
+	  ("config_read_incr", po::value<int>(&config_read_incr)->default_value(1), "Increment for gaugefield configuration number when reading in more than one gaugefield configuration")
+	("config_prefix", po::value<std::string>(&config_prefix)->default_value("conf."), "Prefix for gaugefield configuration")
+	("config_postfix", po::value<std::string>(&config_postfix)->default_value(""), "Postfix for gaugefield configuration");
+
 
 	po::options_description desc;
 	desc.add(cmd_opts).add(config);
