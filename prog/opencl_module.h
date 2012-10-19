@@ -321,19 +321,6 @@ private:
 	size_t max_allocated_bytes;
 	size_t allocated_hostptr_bytes;
 
-	/**
-	 * Create an OpenCL buffer object with the given flags,
-	 * track memory usage and check errors.
-	 */
-	cl_mem createBuffer(cl_mem_flags flags, size_t size);
-
-	/**
-	 * Create an OpenCL buffer backed by host memory
-	 * with the given flags,
-	 * track memory usage and check errors.
-	 */
-	cl_mem createBuffer(cl_mem_flags flags, size_t size, void * host_ptr);
-
 	void convertGaugefieldToSOA_device(const hardware::buffers::SU3 * out, const hardware::buffers::Plain<Matrixsu3> * in);
 	void convertGaugefieldFromSOA_device(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::SU3 * in);
 };
