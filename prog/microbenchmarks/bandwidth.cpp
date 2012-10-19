@@ -339,33 +339,20 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 
 	size_t num_meas = 10;
 
-	cl_command_queue queue = get_queue();
-
-	clEnqueueNDRangeKernel(get_queue(), kernel, 1, 0, &total_threads, &local_threads, 0, 0, NULL);
-	err = clFinish(get_queue());
-	if(err) {
-		logger.fatal() << "Failed to execute kernel: " << err;
-		throw Opencl_Error(err);
-	}
+	hardware::Device * dev = get_device();
+	dev->enqueue_kernel(kernel, total_threads, local_threads);
+	dev->synchronize();
 	klepsydra::Monotonic timer;
-	cl_event events[10];
 	for(size_t i = 0; i < num_meas; ++i)
-		clEnqueueNDRangeKernel(get_queue(), kernel, 1, 0, &total_threads, &local_threads, 0, 0, &events[i]);
-	err = clFinish(queue);
+		dev->enqueue_kernel(kernel, total_threads, local_threads);
+	dev->synchronize();
 	int64_t kernelTime = timer.getTime() / num_meas;
 	if(err) {
 		logger.fatal() << "Failed to execute kernel: " << err;
 		throw Opencl_Error(err);
 	}
 
-	cl_ulong eventTime = 0;
-	for(size_t i = 0; i < num_meas; ++i) {
-		cl_ulong startTime, endTime;
-		clGetEventProfilingInfo(events[i], CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &startTime, 0);
-		clGetEventProfilingInfo(events[i], CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &endTime, 0);
-		eventTime += (endTime - startTime);
-	}
-	eventTime /= num_meas * 1000;
+	cl_ulong eventTime = dev->get_profiling_data(kernel).get_total_time() / num_meas;
 
 	// format is: #groups #threads per group #elements #copied memory in bytes #copy time in mus #bandwidth in megabytes
 	// FIXME sizeof can give broken results in case of aligned types (gross size not equal to net content size)
