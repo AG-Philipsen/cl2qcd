@@ -86,11 +86,6 @@ int main(int argc, const char* argv[])
 		total_timer.add();
 		uint64_t totaltime = total_timer.getTime();
 		general_time_output(&total_timer, &init_timer, &perform_timer, &plaq_timer, &poly_timer);
-		//print times from the devices...
-		logger.info() << "## Device: Solver";
-		(gaugefield.get_task_solver())->print_copy_times(totaltime);
-		logger.info() << "## Device: Correlator";
-		(gaugefield.get_task_correlator())->print_copy_times(totaltime);
 
 		if(parameters.get_profile_solver() ) {
 			string profiling_out;

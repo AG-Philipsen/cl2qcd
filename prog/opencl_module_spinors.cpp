@@ -918,7 +918,7 @@ void Opencl_Module_Spinors::copy_to_eoprec_spinorfield_buffer(const hardware::bu
 }
 
 Opencl_Module_Spinors::Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module_Ran(params, device)
+	: Opencl_Module_Ran(params, device), saxpy_AND_squarenorm_eo(0)
 {
 }
 

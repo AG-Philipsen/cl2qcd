@@ -44,7 +44,6 @@ public:
 	 */
 	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device)
 		: parameters(params), device(device), gaugefield(NDIM * meta::get_vol4d(params), device),
-		  plaq(1, device), splaq(1, device), tplaq(1, device), clmem_rect(1, device), clmem_polyakov(1, device),
 		  gf_unsmeared(gaugefield.get_elements(), device),
 		  stout_smear(0), rectangles(0), rectangles_reduction(0) {};
 	/**
@@ -122,19 +121,19 @@ public:
 	 *
 	 * @param[in] gf gaugefield to measure on
 	 */
-	void plaquette_device(const hardware::buffers::SU3 * gf);
+	void plaquette_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * plaq, const hardware::buffers::Plain<hmc_float> * tplaq, const hardware::buffers::Plain<hmc_float> * splaq);
 	/**
 	 * Calculate rectangles for a specific gaugefield (on device).
 	 *
 	 * @param[in] gf gaugefield to measure on
 	 */
-	void rectangles_device(const hardware::buffers::SU3 * gf);
+	void rectangles_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> *);
 	/**
 	 * Calculate Polyakov loop for a specific gaugefield (on device).
 	 *
 	 * @param[in] gf gaugefield to measure on
 	 */
-	void polyakov_device(const hardware::buffers::SU3 * gf);
+	void polyakov_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_complex> *);
 
 	// OpenCL specific methods needed for building/compiling the OpenCL program
 	/**
@@ -166,59 +165,6 @@ public:
 	 * Contains the list of kernel files after call to fill_kernels_file().
 	 */
 	std::vector<std::string> cl_kernels_file;
-
-	/**
-	 *  This calls
-	 *    clCreateBuffer(context, CL_MEM_READ_WRITE, size, 0, &clerr)
-	 *  and returns a pointer to a read-write cl_mem-object if clerr is HMC_SUCCESS
-	 *  @param size size of buffer
-	 */
-	cl_mem create_rw_buffer(size_t size);
-
-	/**
-	 *  This calls
-	 *    clCreateBuffer(context, CL_MEM_READ_ONLY, size, 0, &clerr)
-	 *  and returns a pointer to a read-only cl_mem-object if clerr is HMC_SUCCESS
-	 *  @param size size of buffer
-	 */
-	cl_mem create_wo_buffer(size_t size);
-
-	/**
-	 *  This calls
-	 *    clCreateBuffer(context, CL_MEM_WRITE_ONLY, size, 0, &clerr)
-	 *  and returns a pointer to a write-only cl_mem-object if clerr is HMC_SUCCESS
-	 *  @param size size of buffer
-	 */
-	cl_mem create_ro_buffer(size_t size);
-
-	/**
-	 *  This calls
-	 *    clCreateBuffer(context, CL_MEM_USE_HOST_PTR, size, host_pointer, &clerr);
-	 *  and returns a pointer to a cl_mem-object located on the host if clerr is HMC_SUCCESS
-	 *  @param size size of buffer
-	 *  @param host_pointer pointer to memory on host
-	 */
-	cl_mem create_uhp_buffer(size_t size, void *host_pointer);
-
-	/**
-	 *  This calls
-	 *    clCreateBuffer(context, CL_MEM_ALLOC_HOST_PTR, size, 0, &clerr);
-	 *  and returns a pointer to a cl_mem-object located on the host and allocats memory on the host
-	 *  if clerr is HMC_SUCCESS
-	 *  @param size size of buffer
-	 */
-	cl_mem create_ahp_buffer(size_t size);
-
-	/**
-	 *  This calls
-	 *    clCreateBuffer(context, CL_MEM_USE_HOST_PTR, size, host_pointer, &clerr);
-	 *  and returns a pointer to a cl_mem-object located on the device and
-	 *  then copies host-memory pointed to by host-pointer to the device
-	 *  if clerr is HMC_SUCCESS
-	 *  @param size size of buffer
-	 *  @param host_pointer pointer to memory on host
-	 */
-	cl_mem create_chp_buffer(size_t size, void *host_pointer);
 
 	/**
 	 * comutes work-sizes for a kernel
@@ -262,33 +208,6 @@ public:
 	virtual size_t get_read_write_size(const std::string& in) const;
 
 	/**
-	 * Copy content of a buffer to another buffer inside a queue using
-	 *     clEnqueueCopyBuffer(queue, in, out, 0, 0, size , 0, 0, NULL);
-	 * @param in source
-	 * @param out destination
-	 * @param size size of data (out must be equal or bigger than size)
-	 */
-	void copy_buffer_on_device(cl_mem in, cl_mem out, size_t size);
-	/**
-	 * Copy content of a buffer on host to a buffer on device inside a queue using
-	 *     clEnqueueWriteBuffer(queue, dest, CL_TRUE, 0, size, source, 0, 0, NULL);
-	 * This call is a blocking write.
-	 * @param source
-	 * @param dest
-	 * @param size size of data (out must be equal or bigger than size)
-	 */
-	void copy_buffer_to_device(void * source, cl_mem dest, size_t size);
-	/**
-	 * Copy content of a buffer on device to a buffer on host inside a queue using
-	 *    clEnqueueReadBuffer(queue, source, CL_TRUE, 0, size, dest, 0, NULL, NULL);
-	 * This call is a blocking read.
-	 * @param source
-	 * @param dest
-	 * @param size size of data (out must be equal or bigger than size)
-	 */
-	void get_buffer_from_device(cl_mem source, void * dest, size_t size);
-
-	/**
 	 * This applies stout smearing to a gaugefield
 	 */
 	void smear_gaugefield(const hardware::buffers::SU3 * gf, const std::vector<const hardware::buffers::SU3 *>& gf_intermediate);
@@ -298,14 +217,6 @@ public:
 	 * This replaces the stout smeared gaugefield with the unsmeared one
 	 */
 	void unsmear_gaugefield(const hardware::buffers::SU3 * gf);
-
-	usetimer * get_copy_to();
-	usetimer * get_copy_on();
-
-	/**
-	 * Prints the copy-to/from/on-device-times
-	 */
-	void print_copy_times(uint64_t totaltime);
 
 	/**
 	 * Internal bookeeping function. Only public so it can be called from
@@ -390,12 +301,6 @@ private:
 
 	const hardware::buffers::SU3 gaugefield;
 
-	const hardware::buffers::Plain<hmc_float> plaq;
-	const hardware::buffers::Plain<hmc_float> splaq;
-	const hardware::buffers::Plain<hmc_float> tplaq;
-	const hardware::buffers::Plain<hmc_float> clmem_rect;
-	const hardware::buffers::Plain<hmc_complex> clmem_polyakov;
-
 	//this is used to save the unsmeared gaugefield if smearing is used
 	const hardware::buffers::SU3 gf_unsmeared;
 
@@ -410,12 +315,6 @@ private:
 	cl_kernel polyakov_reduction;
 	cl_kernel convertGaugefieldToSOA;
 	cl_kernel convertGaugefieldFromSOA;
-
-	//bunch of timers
-	//this is used to measure data-transfer to and from the device
-	usetimer copy_to;
-	//this is used to measure data-transfer on the device
-	usetimer copy_on;
 
 	// memory usage tracing
 	size_t allocated_bytes;

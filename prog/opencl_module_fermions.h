@@ -162,6 +162,21 @@ public:
 	 */
 	Opencl_Module_Fermions(const meta::Inputparameters& params, hardware::Device * device)
 		: Opencl_Module_Spinors(params, device),
+		  M_wilson(0),
+		  gamma5(0),
+		  M_tm_plus(0),
+		  M_tm_minus(0),
+		  gamma5_eo(0),
+		  M_tm_sitediagonal(0),
+		  M_tm_inverse_sitediagonal(0),
+		  M_tm_sitediagonal_minus(0),
+		  M_tm_inverse_sitediagonal_minus(0),
+		  dslash_eo(0),
+		  dslash_AND_gamma5_eo(0),
+		  dslash_AND_M_tm_inverse_sitediagonal_eo(0),
+		  dslash_AND_M_tm_inverse_sitediagonal_minus_eo(0),
+		  M_tm_sitediagonal_AND_gamma5_eo(0),
+		  M_tm_sitediagonal_minus_AND_gamma5_eo(0),
 		  clmem_inout(meta::get_spinorfieldsize(params), device),
 		  clmem_source(meta::get_spinorfieldsize(params), device),
 		  // TODO these are only used in a non-eoprec solver

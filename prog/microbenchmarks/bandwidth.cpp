@@ -53,7 +53,7 @@ private:
 	cl_kernel spinorLocalKernel;
 	cl_kernel spinorSOApyKernel;
 
-	template<typename T> void runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, cl_mem in, cl_mem out);
+	template<typename T> void runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, const hardware::buffers::Plain<cl_char> * in, const hardware::buffers::Plain<cl_char> * out);
 
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
@@ -65,7 +65,7 @@ public:
 		finalize();
 	};
 
-	void runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out);
+	void runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems, const hardware::buffers::Plain<cl_char> * in, const hardware::buffers::Plain<cl_char> * out);
 };
 
 class Dummyfield : public Gaugefield_hybrid {
@@ -85,7 +85,7 @@ private:
 	void verify(hmc_complex, hmc_complex);
 	void fill_buffers();
 	void clear_buffers();
-	cl_mem in, out;
+	const hardware::buffers::Plain<cl_char> * in, * out;
 	size_t maxMemSize;
 };
 
@@ -224,10 +224,6 @@ void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 
-	cl_int err;
-
-	cl_context context = opencl_modules[0]->get_context();
-
 	// kernels might stride, always overallocate memory
 	// e.g. spinor might pad up to 24 * 8 KiB = 128 KiB -> 1 MiB should be save
 	size_t pad_buf = 1024 * 1024;
@@ -235,17 +231,8 @@ void Dummyfield::fill_buffers()
 
 	logger.info() << "Allocating buffers of " << allocMemSize << " bytes.";
 
-	in = clCreateBuffer(context, CL_MEM_READ_ONLY, allocMemSize, 0, &err );
-	if(err) {
-		logger.fatal() << "Unable to allocate memory on device";
-		throw Opencl_Error(err);
-	}
-
-	out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, allocMemSize, 0, &err );
-	if(err) {
-		logger.fatal() << "Unable to allocate memory on device";
-		throw Opencl_Error(err);
-	}
+	in = new hardware::buffers::Plain<cl_char>(allocMemSize, opencl_modules[0]->get_device());
+	out = new hardware::buffers::Plain<cl_char>(allocMemSize, opencl_modules[0]->get_device());
 }
 
 void Device::fill_kernels()
@@ -266,9 +253,8 @@ void Device::fill_kernels()
 void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-
-	clReleaseMemObject(in);
-	clReleaseMemObject(out);
+	delete in;
+	delete out;
 }
 
 void Device::clear_kernels()
@@ -287,7 +273,7 @@ void Device::clear_kernels()
 }
 
 
-void Device::runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_mem in, cl_mem out)
+void Device::runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems, const hardware::buffers::Plain<cl_char> * in, const hardware::buffers::Plain<cl_char> * out)
 {
 	switch(copy_type) {
 		case type_float:
@@ -322,7 +308,7 @@ void Device::runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_g
 	}
 }
 
-template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, cl_mem in, cl_mem out)
+template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, const hardware::buffers::Plain<cl_char> * in, const hardware::buffers::Plain<cl_char> * out)
 {
 	cl_int err = CL_SUCCESS;
 
@@ -330,12 +316,12 @@ template<typename T> void Device::runKernel(size_t groups, cl_ulong threads_per_
 	size_t local_threads = threads_per_group;
 	size_t total_threads = groups * local_threads;
 
-	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), &out);
+	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), out->get_cl_buffer());
 	if(err) {
 		logger.fatal() << "Failed to set kernel argument: " << err;
 		throw Opencl_Error(err);
 	}
-	err = clSetKernelArg(kernel, 1, sizeof(cl_mem), &in);
+	err = clSetKernelArg(kernel, 1, sizeof(cl_mem), in->get_cl_buffer());
 	if(err) {
 		logger.fatal() << "Failed to set kernel argument: " << err;
 		throw Opencl_Error(err);
