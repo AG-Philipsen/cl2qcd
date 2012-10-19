@@ -218,28 +218,28 @@ void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads, s
 	// otherwise the API will write back data into a no longer valid object
 	cl_event * const profiling_event_p = profiling_enabled ? &profiling_event : 0;
 
-	if(logger.beDebug() ){
-	  logger.debug() << "calling clEnqueueNDRangeKernel...";
-	  logger.debug() << "global_work_size: " << global_threads;
-	  logger.debug() << "local_work_size:  " << local_threads;
-	  
-	  size_t bytesInKernelName;
-	  if(clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName) == CL_SUCCESS) {
-	    char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
-	    if(clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL) == CL_SUCCESS) {
-	      logger.debug() << "Kernel: " << kernelName;
-	    } else {
-	      logger.error() << "Could not retrieve kernel name";
-	    }
-	    delete [] kernelName;
-	  } else {
-	    logger.error() << "Could not retrieve length of kernel name";
-	  }
+	if(logger.beDebug() ) {
+		logger.debug() << "calling clEnqueueNDRangeKernel...";
+		logger.debug() << "global_work_size: " << global_threads;
+		logger.debug() << "local_work_size:  " << local_threads;
+
+		size_t bytesInKernelName;
+		if(clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, 0, NULL, &bytesInKernelName) == CL_SUCCESS) {
+			char * kernelName = new char[bytesInKernelName]; // additional space for terminating 0 byte
+			if(clGetKernelInfo(kernel, CL_KERNEL_FUNCTION_NAME, bytesInKernelName, kernelName, NULL) == CL_SUCCESS) {
+				logger.debug() << "Kernel: " << kernelName;
+			} else {
+				logger.error() << "Could not retrieve kernel name";
+			}
+			delete [] kernelName;
+		} else {
+			logger.error() << "Could not retrieve length of kernel name";
+		}
 	}
 
 	// queue kernel
 	cl_int clerr = clEnqueueNDRangeKernel(command_queue, kernel, 1, 0, &global_threads, &local_threads, 0, 0, profiling_event_p);
-	
+
 	// check for errors
 	if(clerr != CL_SUCCESS) {
 		logger.fatal() << "clEnqueueNDRangeKernel failed, aborting...";
