@@ -368,45 +368,6 @@ void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
 	return;
 }
 
-
-void Opencl_Module_Fermions::fill_buffers()
-{
-	Opencl_Module_Spinors::fill_buffers();
-
-	int clerr = CL_SUCCESS;
-
-	int complex_size = sizeof(hmc_complex);
-	int float_size = sizeof(hmc_float);
-
-	//fill buffers with one and minusone
-	hmc_complex one = hmc_complex_one;
-	hmc_complex minusone = hmc_complex_minusone;
-	clmem_one.load(&one);
-	clmem_minusone.load(&minusone);
-
-	//fill buffers for solver
-	this->fill_solver_buffers();
-
-}
-
-void Opencl_Module_Fermions::fill_solver_buffers()
-{
-	int clerr = CL_SUCCESS;
-	int complex_size = sizeof(hmc_complex);
-	int float_size = sizeof(hmc_float);
-
-	logger.debug() << "create buffers for complex and real numbers";
-
-	logger.debug() << "write contents to some buffers";
-
-	hmc_float zero = 0.f;
-	clmem_resid.load(&zero);
-	clmem_trueresid.load(&zero);
-
-	logger.trace() << "init solver buffers done...";
-}
-
-
 void Opencl_Module_Fermions::fill_kernels()
 {
 	Opencl_Module_Spinors::fill_kernels();
@@ -1137,6 +1098,9 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, const hardware::
 {
 	using namespace hardware::buffers;
 
+	const Plain<hmc_float> clmem_resid(1, get_device());
+	const Plain<hmc_float> clmem_trueresid(1, get_device());
+
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
 	if (get_parameters().get_solver() == meta::Inputparameters::bicgstab_save) {
 		hmc_float resid;
@@ -1311,6 +1275,9 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, const hardware::
 int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hardware::buffers::Spinor * inout, const hardware::buffers::Spinor * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
 	using namespace hardware::buffers;
+
+	const Plain<hmc_float> clmem_resid(1, get_device());
+	const Plain<hmc_float> clmem_trueresid(1, get_device());
 
 	cl_int clerr = CL_SUCCESS;
 
@@ -1727,8 +1694,6 @@ void Opencl_Module_Fermions::solver(const Matrix_Function_eo & f, const hardware
 	///@todo this should go into a more general function
 	this->set_eoprec_spinorfield_cold_device(this->get_inout_eo());
 	logger.debug() << "start eoprec-inversion";
-	//make sure buffer are initialised
-	this->fill_solver_buffers();
 	//even solution
 	if(get_parameters().get_solver() == meta::Inputparameters::cg)
 		converged = cg_eo(f, &clmem_inout_eo, &clmem_source_even, gf, get_parameters().get_solver_prec());
@@ -2061,3 +2026,60 @@ void Opencl_Module_Fermions::print_profiling(const std::string& filename, int nu
 	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_AND_gamma5_eo);
 	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_minus_AND_gamma5_eo);
 }
+Opencl_Module_Fermions::Opencl_Module_Fermions(const meta::Inputparameters& params, hardware::Device * device)
+	: Opencl_Module_Spinors(params, device),
+	  M_wilson(0),
+	  gamma5(0),
+	  M_tm_plus(0),
+	  M_tm_minus(0),
+	  gamma5_eo(0),
+	  M_tm_sitediagonal(0),
+	  M_tm_inverse_sitediagonal(0),
+	  M_tm_sitediagonal_minus(0),
+	  M_tm_inverse_sitediagonal_minus(0),
+	  dslash_eo(0),
+	  dslash_AND_gamma5_eo(0),
+	  dslash_AND_M_tm_inverse_sitediagonal_eo(0),
+	  dslash_AND_M_tm_inverse_sitediagonal_minus_eo(0),
+	  M_tm_sitediagonal_AND_gamma5_eo(0),
+	  M_tm_sitediagonal_minus_AND_gamma5_eo(0),
+	  clmem_inout(meta::get_spinorfieldsize(params), device),
+	  clmem_source(meta::get_spinorfieldsize(params), device),
+	  // TODO these are only used in a non-eoprec solver
+	  clmem_rn(meta::get_spinorfieldsize(params), device),
+	  clmem_rhat(meta::get_spinorfieldsize(params), device),
+	  clmem_v(meta::get_spinorfieldsize(params), device),
+	  clmem_p(meta::get_spinorfieldsize(params), device),
+	  clmem_s(meta::get_spinorfieldsize(params), device),
+	  clmem_t(meta::get_spinorfieldsize(params), device),
+	  clmem_aux(meta::get_spinorfieldsize(params), device),
+	  clmem_tmp(meta::get_spinorfieldsize(params), device),
+	  //LZ only use the following if we want to apply even odd preconditioning
+	  clmem_inout_eo(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
+	  clmem_source_even(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
+	  clmem_source_odd(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
+	  clmem_rn_eo(meta::get_eoprec_spinorfieldsize(params), device),
+	  clmem_rhat_eo(meta::get_eoprec_spinorfieldsize(params), device),
+	  clmem_v_eo(meta::get_eoprec_spinorfieldsize(params), device),
+	  clmem_p_eo(meta::get_eoprec_spinorfieldsize(params), device),
+	  clmem_s_eo(meta::get_eoprec_spinorfieldsize(params), device),
+	  clmem_t_eo(meta::get_eoprec_spinorfieldsize(params), device),
+	  clmem_aux_eo(meta::get_eoprec_spinorfieldsize(params), device),
+	  clmem_tmp_eo_1(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
+	  clmem_tmp_eo_2(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo or no Twistedmass
+	  clmem_rho(1, device),
+	  clmem_rho_next(1, device),
+	  clmem_alpha(1, device),
+	  clmem_omega(1, device),
+	  clmem_beta(1, device),
+	  clmem_tmp1(1, device),
+	  clmem_tmp2(1, device),
+	  clmem_one(1, device),
+	  clmem_minusone(1, device)
+{
+	//fill buffers with one and minusone
+	hmc_complex one = hmc_complex_one;
+	hmc_complex minusone = hmc_complex_minusone;
+	clmem_one.load(&one);
+	clmem_minusone.load(&minusone);
+};

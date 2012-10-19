@@ -156,64 +156,11 @@ public:
 class Opencl_Module_Fermions : public Opencl_Module_Spinors {
 public:
 	/**
-	 * Empty constructor.
+	 * Default constructor.
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Fermions(const meta::Inputparameters& params, hardware::Device * device)
-		: Opencl_Module_Spinors(params, device),
-		  M_wilson(0),
-		  gamma5(0),
-		  M_tm_plus(0),
-		  M_tm_minus(0),
-		  gamma5_eo(0),
-		  M_tm_sitediagonal(0),
-		  M_tm_inverse_sitediagonal(0),
-		  M_tm_sitediagonal_minus(0),
-		  M_tm_inverse_sitediagonal_minus(0),
-		  dslash_eo(0),
-		  dslash_AND_gamma5_eo(0),
-		  dslash_AND_M_tm_inverse_sitediagonal_eo(0),
-		  dslash_AND_M_tm_inverse_sitediagonal_minus_eo(0),
-		  M_tm_sitediagonal_AND_gamma5_eo(0),
-		  M_tm_sitediagonal_minus_AND_gamma5_eo(0),
-		  clmem_inout(meta::get_spinorfieldsize(params), device),
-		  clmem_source(meta::get_spinorfieldsize(params), device),
-		  // TODO these are only used in a non-eoprec solver
-		  clmem_rn(meta::get_spinorfieldsize(params), device),
-		  clmem_rhat(meta::get_spinorfieldsize(params), device),
-		  clmem_v(meta::get_spinorfieldsize(params), device),
-		  clmem_p(meta::get_spinorfieldsize(params), device),
-		  clmem_s(meta::get_spinorfieldsize(params), device),
-		  clmem_t(meta::get_spinorfieldsize(params), device),
-		  clmem_aux(meta::get_spinorfieldsize(params), device),
-		  clmem_tmp(meta::get_spinorfieldsize(params), device),
-		  //LZ only use the following if we want to apply even odd preconditioning
-		  clmem_inout_eo(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
-		  clmem_source_even(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
-		  clmem_source_odd(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
-		  clmem_rn_eo(meta::get_eoprec_spinorfieldsize(params), device),
-		  clmem_rhat_eo(meta::get_eoprec_spinorfieldsize(params), device),
-		  clmem_v_eo(meta::get_eoprec_spinorfieldsize(params), device),
-		  clmem_p_eo(meta::get_eoprec_spinorfieldsize(params), device),
-		  clmem_s_eo(meta::get_eoprec_spinorfieldsize(params), device),
-		  clmem_t_eo(meta::get_eoprec_spinorfieldsize(params), device),
-		  clmem_aux_eo(meta::get_eoprec_spinorfieldsize(params), device),
-		  clmem_tmp_eo_1(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
-		  clmem_tmp_eo_2(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo or no Twistedmass
-		  clmem_rho(1,device),
-		  clmem_rho_next(1,device),
-		  clmem_alpha(1,device),
-		  clmem_omega(1,device),
-		  clmem_beta(1,device),
-		  clmem_tmp1(1,device),
-		  clmem_tmp2(1,device),
-		  clmem_one(1,device),
-		  clmem_minusone(1,device),
-		  clmem_resid(1,device),
-		  clmem_trueresid(1,device)
-		{ };
-
+	Opencl_Module_Fermions(const meta::Inputparameters& params, hardware::Device * device);
 
 	// OpenCL specific methods needed for building/compiling the OpenCL program
 	/**
@@ -221,15 +168,6 @@ public:
 	 * Virtual method, allows to include more options in inherited classes.
 	 */
 	virtual void fill_collect_options(std::stringstream* collect_options) override;
-	/**
-	 * Collect the buffers to generate for OpenCL.
-	 * Virtual method, allows to include more buffers in inherited classes.
-	 */
-	virtual void fill_buffers() override;
-	/**
-	 * Collect the buffers related to the solver.
-	 */
-	void fill_solver_buffers();
 	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
@@ -415,9 +353,6 @@ private:
 	const hardware::buffers::Plain<hmc_complex> clmem_tmp2;
 	const hardware::buffers::Plain<hmc_complex> clmem_one;
 	const hardware::buffers::Plain<hmc_complex> clmem_minusone;
-
-	const hardware::buffers::Plain<hmc_float> clmem_resid;
-	const hardware::buffers::Plain<hmc_float> clmem_trueresid;
 };
 
 #endif //OPENCLMODULEFERMIONSH
