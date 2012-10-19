@@ -28,12 +28,6 @@ void Opencl_Module::init()
 	cl_int clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ocl_context, NULL);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetCommandQueueInfo", __FILE__, __LINE__);
 
-	// initialize memory usage tracking
-	allocated_bytes = 0;
-	max_allocated_bytes = 0;
-	allocated_hostptr_bytes = 0;
-	logger.trace() << "Initial memory usage (" << device->get_name() << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes << " (Assuming stored gaugefield";
-
 	this->fill_buffers();
 	this->fill_kernels();
 }
@@ -128,32 +122,6 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 	return;
 }
 
-void Opencl_Module::markMemReleased(bool host, size_t size)
-{
-	if(host) {
-		allocated_hostptr_bytes -= size;
-	} else {
-		allocated_bytes -= size;
-	}
-	logger.trace() << "Memory usage (" << device->get_name() << "): " << allocated_bytes << " bytes - Maximum usage: " << max_allocated_bytes << " - Host backed memory: " << allocated_hostptr_bytes;
-}
-
-struct MemObjectReleaseInfo {
-	size_t bytes;
-	bool host;
-	Opencl_Module * module;
-
-	MemObjectReleaseInfo(size_t bytes, bool host, Opencl_Module * module)
-		: bytes(bytes), host(host), module(module) { };
-};
-
-void memObjectReleased(cl_mem, void * user_data)
-{
-	MemObjectReleaseInfo * release_info = static_cast<MemObjectReleaseInfo *>(user_data);
-	release_info->module->markMemReleased(release_info->host, release_info->bytes);
-	delete release_info;
-}
-
 void Opencl_Module::fill_buffers()
 {
 	// FIXME to be removed
@@ -182,7 +150,7 @@ void Opencl_Module::fill_kernels()
 
 void Opencl_Module::clear_buffers()
 {
-	logger.info() << "Maximum memory used (" << device->get_name() << "): " << max_allocated_bytes << " bytes";
+	// FIXME to be removed
 }
 
 void Opencl_Module::clear_kernels()
