@@ -659,9 +659,6 @@ void Dummyfield::fill_buffers()
 	using namespace hardware::buffers;
 
 	// don't invoke parent function as we don't require the original buffers
-	cl_int err;
-	cl_context context = opencl_modules[0]->get_context();
-
 	int NUM_ELEMENTS_SF_EO;
 	int NUM_ELEMENTS_SF_NON_EO;
 	NUM_ELEMENTS_SF_EO =  meta::get_eoprec_spinorfieldsize(get_parameters());

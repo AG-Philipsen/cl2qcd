@@ -67,7 +67,6 @@ void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
 	cl_int err;
-	cl_context context = opencl_modules[0]->get_context();
 	int NUM_ELEMENTS = meta::get_vol4d(get_parameters());
 	host_out = new hmc_float[NUM_ELEMENTS];
 	BOOST_REQUIRE(host_out);

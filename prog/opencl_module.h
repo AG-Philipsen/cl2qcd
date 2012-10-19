@@ -65,12 +65,6 @@ public:
 	 */
 	void init();
 
-	// set and get methods
-	/**
-	 * Get the context
-	 * @return cl_context
-	 */
-	cl_context get_context();
 	/**
 	 * Get a pointer to the gaugefield buffer
 	 * @return ocl_gaugefield OpenCL buffer with gaugefield
@@ -296,8 +290,6 @@ private:
 	 * The device used by this module
 	 */
 	hardware::Device * const device;
-
-	cl_context ocl_context;
 
 	const hardware::buffers::SU3 gaugefield;
 

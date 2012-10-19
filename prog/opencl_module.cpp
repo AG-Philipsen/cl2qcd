@@ -25,9 +25,6 @@ void Opencl_Module::init()
 {
 	logger.debug() << "Device is " << device->get_name();
 
-	cl_int clerr = clGetCommandQueueInfo(get_queue(), CL_QUEUE_CONTEXT, sizeof(cl_context), &ocl_context, NULL);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clGetCommandQueueInfo", __FILE__, __LINE__);
-
 	this->fill_buffers();
 	this->fill_kernels();
 }
@@ -39,13 +36,6 @@ void Opencl_Module::finalize()
 	this->clear_kernels();
 	return;
 }
-
-
-cl_context Opencl_Module::get_context()
-{
-	return ocl_context;
-}
-
 
 const hardware::buffers::SU3 * Opencl_Module::get_gaugefield()
 {

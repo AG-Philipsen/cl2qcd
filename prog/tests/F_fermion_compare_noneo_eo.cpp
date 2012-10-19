@@ -582,8 +582,6 @@ void Dummyfield::fill_buffers()
 
 	// don't invoke parent function as we don't require the original buffers
 
-	cl_context context = opencl_modules[0]->get_context();
-
 	int NUM_ELEMENTS_SF_EO;
 	int NUM_ELEMENTS_SF_NON_EO;
 	NUM_ELEMENTS_SF_EO =  meta::get_eoprec_spinorfieldsize(get_parameters());
@@ -774,8 +772,6 @@ hmc_float Dummyfield::get_squarenorm_noneo(int which)
 	if(which == 2) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in1_noneo_converted, sqnorm);
 	if(which == 3) static_cast<Device*>(opencl_modules[0])->set_float_to_global_squarenorm_device(in2_noneo_converted, sqnorm);
 	if(which == 4) {
-		cl_int err;
-		cl_context context = opencl_modules[0]->get_context();
 		hardware::buffers::Plain<hmc_float> tmp(1, opencl_modules[0]->get_device());
 		static_cast<Device*>(opencl_modules[0])->set_float_to_gaugemomentum_squarenorm_device(out_noneo, &tmp);
 		hmc_float result;
