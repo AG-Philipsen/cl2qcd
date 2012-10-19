@@ -298,6 +298,11 @@ public:
 
 	void print_profiling(std::string filename);
 
+	/**
+	 * Returns parameters read from sourcefile
+	 */
+	const sourcefileparameters get_parameters_source();
+
 protected:
 	cl_device_type* devicetypes;
 	Opencl_Module ** opencl_modules;
@@ -311,6 +316,7 @@ private:
 
 	const hardware::System * system;
 	const meta::Inputparameters& parameters;
+	sourcefileparameters parameters_source;
 	Matrixsu3 * sgf;
 	int num_tasks;
 	int num_devices;

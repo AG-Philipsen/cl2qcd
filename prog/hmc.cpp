@@ -57,8 +57,10 @@ int main(int argc, const char* argv[])
 		/** @todo usage of solver_timer has to be checked. No output yet */
 		usetimer solver_timer;
 
-		int hmc_iter = parameters.get_hmcsteps();
-		int iter;
+		//start from the iterationnumber from sourcefile
+		//NOTE: this is 0 in case of cold or hot start
+		int iter = gaugefield.get_parameters_source().trajectorynr_source;
+		int hmc_iter = iter + parameters.get_hmcsteps();
 		hmc_float acc_rate = 0.;
 		int writefreq = parameters.get_writefrequency();
 		int savefreq = parameters.get_savefrequency();
@@ -68,15 +70,16 @@ int main(int argc, const char* argv[])
 		logger.info() << "perform HMC on device(s)... ";
 
 		//main hmc-loop
-		for(iter = 0; iter < hmc_iter; iter ++) {
+		for(iter; iter < hmc_iter; iter ++) {
 			//generate new random-number for Metropolis step
 			hmc_float rnd_number = prng_double();
 			gaugefield.perform_hmc_step(&obs, iter, rnd_number, &solver_timer);
 			acc_rate += obs.accept;
+			if(parameters.get_print_to_screen() ) 
+			  gaugefield.print_hmcobservables(obs, iter);
+
 			if( ( (iter + 1) % writefreq ) == 0 ) {
 				gaugefield.print_hmcobservables(obs, iter, gaugeout_name.str());
-				//print (some info) to stdout if needed:
-				//        gaugefield.print_hmcobservables(obs, iter);
 			}
 			if( parameters.get_saveconfigs() == true && ( (iter + 1) % savefreq ) == 0 ) {
 				gaugefield.synchronize(0);
@@ -89,7 +92,6 @@ int main(int argc, const char* argv[])
 				logger.info() << "saving current gaugefield to file \"" << outputfile << "\"";
 				gaugefield.save(outputfile);
 			}
-
 		}
 		logger.info() << "HMC done";
 		logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acc_rate, hmc_iter) << "%";

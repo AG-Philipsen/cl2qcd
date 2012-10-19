@@ -245,7 +245,6 @@ void Gaugefield_hybrid::init_gaugefield(const char* sourcefile)
 {
 	switch(get_parameters().get_startcondition()) {
 		case meta::Inputparameters::start_from_source: {
-			sourcefileparameters parameters_source;
 			//tmp hmc_gaugefield for filetransfer
 			hmc_float * gaugefield_tmp;
 			gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * parameters.get_ntime() * meta::get_volspace(parameters));
@@ -346,6 +345,11 @@ int Gaugefield_hybrid::get_num_tasks ()
 const meta::Inputparameters & Gaugefield_hybrid::get_parameters ()
 {
 	return  parameters;
+}
+
+const sourcefileparameters Gaugefield_hybrid::get_parameters_source ()
+{
+	return  parameters_source;
 }
 
 Matrixsu3 * Gaugefield_hybrid::get_sgf ()
