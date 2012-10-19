@@ -102,8 +102,15 @@ public:
 	// gaugefield specific methods
 	/**
 	 * Initializes the gaugefield, called by init()
+	 * calls init_gaugefield(sourcefile) with the name from inputparameters
 	 */
 	void init_gaugefield();
+	/**
+	 * Initializes the gaugefield, called by init()
+	 * @param name of gaugefield file
+	 */
+	void init_gaugefield(const char*);
+
 	/**
 	 * Initializing the gaugefield consisting of structs for a hot start
 	 * Not implemented yet, throws an exception
@@ -185,6 +192,11 @@ public:
 	hardware::Device* get_device_for_task(int ntask);
 
 	// output methods
+	/**
+	 * Create a name for a gaugefield configuration file
+	 * @param[in] number number of the file
+	 */
+	std::string create_configuration_name(int number);
 	/**
 	 * Save gaugefield to a file with name conf.number
 	 * @param[in] number number to be added to file name
@@ -285,6 +297,12 @@ public:
 	void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source);
 
 	void print_profiling(std::string filename);
+
+	/**
+	 * returns a basic OpenclModule
+	 * @param[in] ntask number of task
+	 */
+	Opencl_Module* get_task(int ntask);
 
 protected:
 	cl_device_type* devicetypes;

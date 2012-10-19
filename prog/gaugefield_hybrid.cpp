@@ -237,7 +237,11 @@ void Gaugefield_hybrid::finalize_opencl()
 
 }
 
-void Gaugefield_hybrid::init_gaugefield()
+void Gaugefield_hybrid::init_gaugefield(){
+  init_gaugefield(get_parameters().get_sourcefile().c_str() );
+}
+
+void Gaugefield_hybrid::init_gaugefield(const char* sourcefile)
 {
 	switch(get_parameters().get_startcondition()) {
 		case meta::Inputparameters::start_from_source: {
@@ -245,7 +249,7 @@ void Gaugefield_hybrid::init_gaugefield()
 			//tmp hmc_gaugefield for filetransfer
 			hmc_float * gaugefield_tmp;
 			gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * parameters.get_ntime() * meta::get_volspace(parameters));
-			parameters_source.readsourcefile(get_parameters().get_sourcefile().c_str(), get_parameters().get_precision(), &gaugefield_tmp);
+			parameters_source.readsourcefile(sourcefile, get_parameters().get_precision(), &gaugefield_tmp);
 			copy_gaugefield_from_ildg_format(get_sgf(), gaugefield_tmp, parameters_source.num_entries_source);
 			free(gaugefield_tmp);
 		}
@@ -364,18 +368,23 @@ int Gaugefield_hybrid::get_num_devices()
 	return num_devices;
 }
 
+std::string Gaugefield_hybrid::create_configuration_name(int number)
+{
+  using namespace std;
+  stringstream strnumber;
+  strnumber.fill('0');
+  strnumber.width(parameters.get_config_number_digits());
+  strnumber << right << number;
+  stringstream outfilename;
+  outfilename << parameters.get_config_prefix() << strnumber.str() << parameters.get_config_postfix();
+  string outputfile = outfilename.str();
+  logger.info() << outputfile;
+  return outputfile;
+}
+
 void Gaugefield_hybrid::save(int number)
 {
-	using namespace std;
-
-	//LZ: generalize the following to larger numbers, if necessary...
-	stringstream strnumber;
-	strnumber.fill('0');
-	strnumber.width(5);
-	strnumber << right << number;
-	stringstream outfilename;
-	outfilename << "conf." << strnumber.str();
-	string outputfile = outfilename.str();
+  std::string outputfile = create_configuration_name(number); 
 	save(outputfile);
 }
 
@@ -463,7 +472,15 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask, st
 	gaugeout << iter;
 	gaugeout << "\t";
 	gaugeout.precision(15);
-	gaugeout << plaq << "\t" << tplaq << "\t" << splaq << "\t" << pol.re << "\t" << pol.im << "\t" << sqrt(pol.re * pol.re + pol.im * pol.im) << std::endl;
+	gaugeout << plaq << "\t" << tplaq << "\t" << splaq << "\t" << pol.re << "\t" << pol.im << "\t" << sqrt(pol.re * pol.re + pol.im * pol.im);
+	if(meta::get_use_rectangles(get_parameters()) ) {
+	  //print rectangle value
+	  hmc_float rect = 0.;
+	  //	  logger.info() << "adökljfajklsdfjksdafjklasdjlfjklsdafjöklasjk";
+	  opencl_modules[ntask]->gaugeobservables_rectangles(opencl_modules[ntask]->get_gaugefield(), &rect);
+	  gaugeout << "\t" << rect;
+	}
+	gaugeout  << std::endl;
 	gaugeout.close();
 }
 
@@ -669,3 +686,9 @@ hmc_complex Gaugefield_hybrid::polyakov()
 	return res;
 }
 
+Opencl_Module* Gaugefield_hybrid::get_task(int ntask)
+{
+  if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range", __FILE__, __LINE__);
+  //@todo: if more than one device is used, the element dev from the array must be called here!!
+  return (Opencl_Module*)opencl_modules[ntask];
+}
