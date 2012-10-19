@@ -732,6 +732,13 @@ void Gaugefield_hybrid::check_sourcefileparameters()
   //checking minor parameters
   msg = "Minor parameters do not match: ";
   hmc_float float1, float2;
+  testobj = msg + "plaquette";
+  float1 = plaquette();
+  float2 = parameters_source.plaquettevalue_source;
+  if(float1 != float2){
+    logger.warn() << testobj;
+    logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
+  }
   testobj = msg + "beta";
   float1 = parameters.get_beta();
   float2 = parameters_source.beta_source;
