@@ -5,16 +5,16 @@
 int main(int argc, const char* argv[])
 {
 	try {
-	  //@todo Debug this!
-	  /*
 	  logger.info() << "This executable requires the following parameter value(s) to work properly:";
 	  logger.info() << "startcondition:\tcontinue";
-	  logger.info() << "These will be parsed and possibly overwrite inputfile values!";
-	  std::string startcond_opt = "--startcondition=continue";
-	  const char* _params[] = {(const char*) argv,   startcond_opt.c_str()};
-	  meta::Inputparameters parameters( (int) argc+1, _params);
-	  */
 	  meta::Inputparameters parameters(argc, argv);
+
+	  //check settings
+	  if(parameters.get_startcondition() != meta::Inputparameters::start_from_source ){
+	    logger.fatal() << "Found wrong startcondition! Aborting..";
+	    throw Invalid_Parameters("Found wrong startcondition!", "continue", parameters.get_startcondition());
+	  }
+
 		switchLogLevel(parameters.get_log_level());
 
 		meta::print_info_gaugeobservables(argv[0], parameters);
