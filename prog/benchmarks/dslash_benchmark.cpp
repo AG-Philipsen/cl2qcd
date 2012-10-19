@@ -89,9 +89,6 @@ int main(int argc, const char* argv[])
 		// Final Output
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		//CP: for the moment, init the buffers again in order that no segfault happens when freeing the already freed buffers
-		gaugefield.get_task_solver()->fill_buffers();
-
 		total_timer.add();
 		uint64_t totaltime = total_timer.getTime();
 		general_time_output(&total_timer, &init_timer, &perform_timer, &plaq_timer, &poly_timer);

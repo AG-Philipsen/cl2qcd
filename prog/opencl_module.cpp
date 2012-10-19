@@ -25,14 +25,11 @@ void Opencl_Module::init()
 {
 	logger.debug() << "Device is " << device->get_name();
 
-	this->fill_buffers();
 	this->fill_kernels();
 }
 
 void Opencl_Module::finalize()
 {
-
-	this->clear_buffers();
 	this->clear_kernels();
 	return;
 }
@@ -112,11 +109,6 @@ void Opencl_Module::fill_collect_options(stringstream* collect_options)
 	return;
 }
 
-void Opencl_Module::fill_buffers()
-{
-	// FIXME to be removed
-}
-
 void Opencl_Module::fill_kernels()
 {
 	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
@@ -136,11 +128,6 @@ void Opencl_Module::fill_kernels()
 	}
 	convertGaugefieldToSOA = createKernel("convertGaugefieldToSOA") << basic_opencl_code << "gaugefield_convert.cl";
 	convertGaugefieldFromSOA = createKernel("convertGaugefieldFromSOA") << basic_opencl_code << "gaugefield_convert.cl";
-}
-
-void Opencl_Module::clear_buffers()
-{
-	// FIXME to be removed
 }
 
 void Opencl_Module::clear_kernels()
