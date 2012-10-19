@@ -275,6 +275,14 @@ void hardware::Device::enqueue_kernel(cl_kernel kernel, size_t global_threads, s
 	}
 }
 
+void hardware::Device::enqueue_marker(cl_event * event) const
+{
+	cl_int err = clEnqueueMarker(command_queue, event);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueMarker()", __FILE__, __LINE__);
+	}
+}
+
 static int get_alignment_badness(size_t bytes)
 {
 	// this is pretty generic for all GPUs
