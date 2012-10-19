@@ -332,6 +332,14 @@ bool hardware::Device::is_profiling_enabled() const noexcept
 	return profiling_enabled;
 }
 
+void hardware::Device::flush() const
+{
+	cl_int err = clFlush(command_queue);
+	if(err) {
+		throw hardware::OpenclException(err, "Failed when waiting for OpenCL device to finish.", __FILE__, __LINE__);
+	}
+}
+
 void hardware::Device::synchronize() const
 {
 	cl_int err = clFinish(command_queue);

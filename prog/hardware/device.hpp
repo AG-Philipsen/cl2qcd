@@ -154,6 +154,11 @@ public:
 	bool is_profiling_enabled() const noexcept;
 
 	/**
+	 * Make sure all commands have been sent to the device.
+	 */
+	void flush() const;
+
+	/**
 	 * Make sure all operations on this device are finished.
 	 */
 	void synchronize() const;
@@ -249,6 +254,7 @@ private:
 	 */
 	std::map<cl_kernel, ProfilingData> profiling_data;
 };
+
 }
 
 #endif /* _HARDWARE_DEVICE_HPP_ */
