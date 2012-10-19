@@ -114,7 +114,6 @@ void Device::runTestKernel(const hardware::buffers::SU3 * gf, const hardware::bu
 	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
 
 	get_device()->enqueue_kernel(testKernel, gs, ls);
-	clFinish(get_queue() );
 }
 
 void Dummyfield::runTestKernel()
