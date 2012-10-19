@@ -5,15 +5,15 @@
 int main(int argc, const char* argv[])
 {
 	try {
-	  logger.info() << "This executable requires the following parameter value(s) to work properly:";
-	  logger.info() << "startcondition:\tcontinue";
-	  meta::Inputparameters parameters(argc, argv);
+		logger.info() << "This executable requires the following parameter value(s) to work properly:";
+		logger.info() << "startcondition:\tcontinue";
+		meta::Inputparameters parameters(argc, argv);
 
-	  //check settings
-	  if(parameters.get_startcondition() != meta::Inputparameters::start_from_source ){
-	    logger.fatal() << "Found wrong startcondition! Aborting..";
-	    throw Invalid_Parameters("Found wrong startcondition!", "continue", parameters.get_startcondition());
-	  }
+		//check settings
+		if(parameters.get_startcondition() != meta::Inputparameters::start_from_source ) {
+			logger.fatal() << "Found wrong startcondition! Aborting..";
+			throw Invalid_Parameters("Found wrong startcondition!", "continue", parameters.get_startcondition());
+		}
 
 		switchLogLevel(parameters.get_log_level());
 
@@ -67,30 +67,29 @@ int main(int argc, const char* argv[])
 
 		logger.info() << "Measure gaugeobservables on device(s)... ";
 
-		if(parameters.get_read_multiple_configs()){
-		  //main loop
-		  for(iter = iter_start; iter < iter_end; iter+=iter_incr) {
-		    std::string config_name = gaugefield.create_configuration_name(iter);
-		    logger.info() << "Measure gaugeobservables of configuration: " << config_name;
-		    gaugefield.init_gaugefield(config_name.c_str());
-		    gaugefield.synchronize(0);
-		    if(parameters.get_print_to_screen() ){
-		      gaugefield.print_gaugeobservables(iter);
-		    }
-		    gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name.str());
-		  }
+		if(parameters.get_read_multiple_configs()) {
+			//main loop
+			for(iter = iter_start; iter < iter_end; iter += iter_incr) {
+				std::string config_name = gaugefield.create_configuration_name(iter);
+				logger.info() << "Measure gaugeobservables of configuration: " << config_name;
+				gaugefield.init_gaugefield(config_name.c_str());
+				gaugefield.synchronize(0);
+				if(parameters.get_print_to_screen() ) {
+					gaugefield.print_gaugeobservables(iter);
+				}
+				gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name.str());
+			}
+		} else {
+			//in this case only the config from the initialization is taken into account
+			logger.info() << "Measure gaugeobservables of configuration: " << parameters.get_sourcefile();
+			//@todo: adjust the "iter" here to be the number from the sourcefile!!
+			if(parameters.get_print_to_screen() ) {
+				gaugefield.print_gaugeobservables(iter);
+			}
+			gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name.str());
 		}
-		else{
-		  //in this case only the config from the initialization is taken into account
-		  logger.info() << "Measure gaugeobservables of configuration: " << parameters.get_sourcefile();
-		  //@todo: adjust the "iter" here to be the number from the sourcefile!!
-		  if(parameters.get_print_to_screen() ){
-		    gaugefield.print_gaugeobservables(iter);
-		  }
-		  gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name.str());
-		}
-		  logger.info() << "... done";
-		  perform_timer.add();
+		logger.info() << "... done";
+		perform_timer.add();
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Final Output

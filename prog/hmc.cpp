@@ -75,8 +75,8 @@ int main(int argc, const char* argv[])
 			hmc_float rnd_number = prng_double();
 			gaugefield.perform_hmc_step(&obs, iter, rnd_number, &solver_timer);
 			acc_rate += obs.accept;
-			if(parameters.get_print_to_screen() ) 
-			  gaugefield.print_hmcobservables(obs, iter);
+			if(parameters.get_print_to_screen() )
+				gaugefield.print_hmcobservables(obs, iter);
 
 			if( ( (iter + 1) % writefreq ) == 0 ) {
 				gaugefield.print_hmcobservables(obs, iter, gaugeout_name.str());

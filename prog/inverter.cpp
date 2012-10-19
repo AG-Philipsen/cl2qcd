@@ -68,37 +68,36 @@ int main(int argc, const char* argv[])
 
 		logger.info() << "Perform inversion(s) on device.." ;
 
-		if(parameters.get_read_multiple_configs()){
-		  int iter_end = parameters.get_config_read_end();
-		  int iter_start = parameters.get_config_read_start();
-		  int iter_incr = parameters.get_config_read_incr();
-		  int iter = 0;
+		if(parameters.get_read_multiple_configs()) {
+			int iter_end = parameters.get_config_read_end();
+			int iter_start = parameters.get_config_read_start();
+			int iter_incr = parameters.get_config_read_incr();
+			int iter = 0;
 
-		  //main loop
-		  for(iter = iter_start; iter < iter_end; iter+=iter_incr) {
-		    std::string config_name = gaugefield.create_configuration_name(iter);
-		    logger.info() << "Measure fermionic observables on configuration: " << config_name;
-		    gaugefield.init_gaugefield(config_name.c_str());
-		    gaugefield.synchronize(0);
-		    if(parameters.get_print_to_screen() ){
-		      gaugefield.print_gaugeobservables(iter);
-		    }
-		    gaugefield.create_sources();
-		    gaugefield.perform_inversion(&solver_timer);
-		    
-		    //flavour_doublet_correlators does a sync at the beginning
-		    gaugefield.flavour_doublet_correlators(corr_fn.str());
-		  }
-		}
-		else{
-		  logger.info() << "Gaugeobservables:";
-		  gaugefield.print_gaugeobservables(0);
+			//main loop
+			for(iter = iter_start; iter < iter_end; iter += iter_incr) {
+				std::string config_name = gaugefield.create_configuration_name(iter);
+				logger.info() << "Measure fermionic observables on configuration: " << config_name;
+				gaugefield.init_gaugefield(config_name.c_str());
+				gaugefield.synchronize(0);
+				if(parameters.get_print_to_screen() ) {
+					gaugefield.print_gaugeobservables(iter);
+				}
+				gaugefield.create_sources();
+				gaugefield.perform_inversion(&solver_timer);
 
-		  gaugefield.create_sources();
-		  gaugefield.perform_inversion(&solver_timer);
+				//flavour_doublet_correlators does a sync at the beginning
+				gaugefield.flavour_doublet_correlators(corr_fn.str());
+			}
+		} else {
+			logger.info() << "Gaugeobservables:";
+			gaugefield.print_gaugeobservables(0);
 
-		  //flavour_doublet_correlators does a sync at the beginning
-		  gaugefield.flavour_doublet_correlators(corr_fn.str());
+			gaugefield.create_sources();
+			gaugefield.perform_inversion(&solver_timer);
+
+			//flavour_doublet_correlators does a sync at the beginning
+			gaugefield.flavour_doublet_correlators(corr_fn.str());
 		}
 		logger.trace() << "Inversion done" ;
 		perform_timer.add();
