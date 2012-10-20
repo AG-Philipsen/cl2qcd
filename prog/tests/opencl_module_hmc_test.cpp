@@ -892,6 +892,16 @@ BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_1 )
 	test_f_gauge_tlsym("/f_gauge_tlsym_input_1");
 }
 
+BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_2 )
+{
+	test_f_gauge_tlsym("/f_gauge_tlsym_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( F_GAUGE_TLSYM_3 )
+{
+	test_f_gauge_tlsym("/f_gauge_tlsym_input_3");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( F_FERMION )
@@ -899,6 +909,21 @@ BOOST_AUTO_TEST_SUITE( F_FERMION )
 BOOST_AUTO_TEST_CASE( F_FERMION_1 )
 {
 	test_f_fermion("/f_fermion_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_2 )
+{
+	test_f_fermion("/f_fermion_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_3 )
+{
+	test_f_fermion("/f_fermion_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_4 )
+{
+	test_f_fermion("/f_fermion_input_4");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

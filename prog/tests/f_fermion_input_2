@@ -6,9 +6,9 @@ NS=4
 NT=4
 
 #with BICGSTAB, this set the init-spinorfield to random values
-solver=CG
+solver=BICGSTAB
 
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=12288
+test_ref_val=5737.258865101091

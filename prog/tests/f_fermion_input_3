@@ -1,5 +1,6 @@
 # set startcondition to cold or hot to start with different gaugefield
-startcondition=cold
+startcondition=continue
+sourcefile=conf.00200
 
 use_eo=false
 NS=4
@@ -11,4 +12,4 @@ solver=CG
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=12288
+test_ref_val=8211.9456533578705
