@@ -192,6 +192,18 @@ void fill_sf_with_random_eo(spinor * sf_in1, spinor * sf_in2, int size, int seed
 	return;
 }
 
+void test_build(std::string inputfile)
+{
+  logger.info() << "build opencl_module_hmc";
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	logger.info() << "Finalize device";
+	cpu.finalize();
+	BOOST_MESSAGE("Test done");
+}
+
 void test_generate_gaussian_spinorfield(std::string inputfile)
 {
 
@@ -703,6 +715,15 @@ void test_f_fermion_eo(std::string inputfile)
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
 }
+
+BOOST_AUTO_TEST_SUITE(BUILD)
+
+BOOST_AUTO_TEST_CASE( BUILD_1 )
+{
+  test_build("/opencl_module_hmc_build_input_1");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_SPINORFIELD  )
 
