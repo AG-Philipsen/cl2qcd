@@ -214,6 +214,49 @@ void test_stout_smear_fermion_force(std::string inputfile)
 
 void test_set_zero_gm(std::string inputfile)
 {
+	std::string kernelName = "set_zero_gm";
+	printKernelInfo(kernelName);
+
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	Opencl_Module_Hmc * device = cpu.get_device();
+	hmc_float * gm_in;
+
+	logger.info() << "create buffers";
+	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
+	gm_in = new hmc_float[NUM_ELEMENTS_AE];
+	fill_with_random(gm_in, NUM_ELEMENTS_AE, 123456);
+	BOOST_REQUIRE(gm_in);
+
+	hardware::buffers::Gaugemomentum in(meta::get_vol4d(params) * NDIM, device->get_device());
+	device->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>(gm_in));
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+
+	logger.info() << "|in|^2:";
+	device->set_float_to_gaugemomentum_squarenorm_device(&in, &sqnorm);
+	hmc_float cpu_back;
+	sqnorm.dump(&cpu_back);
+	logger.info() << cpu_back;
+
+	logger.info() << "Run kernel";
+	device->set_zero_gaugemomentum(&in);
+
+	logger.info() << "|out|^2:";
+	device->set_float_to_gaugemomentum_squarenorm_device(&in, &sqnorm);
+	hmc_float cpu_back2;
+	sqnorm.dump(&cpu_back2);
+	logger.info() << cpu_back2;
+
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	logger.info() << "Free buffers";
+	delete[] gm_in;
+
+	testFloatAgainstInputparameters(cpu_back2, params);
+	BOOST_MESSAGE("Test done");
 
 }
 
@@ -699,18 +742,6 @@ BOOST_AUTO_TEST_CASE(STOUT_SMEAR_FERMION_FORCE_1 )
 	test_stout_smear_fermion_force("/stout_smear_fermion_force_input_1");
 }
 
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( SET_ZERO_GAUGEMOMENTUM )
-
-BOOST_AUTO_TEST_CASE( SET_ZERO_GAUGEMOMENTUM_1 )
-{
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
-	test_set_zero_gm("/set_zero_gaugemomentum_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
 BOOST_AUTO_TEST_SUITE( GM_CONVERT_TO_SOA )
 
 BOOST_AUTO_TEST_CASE( GM_CONVERT_TO_SOA_1 )
@@ -767,6 +798,18 @@ BOOST_AUTO_TEST_CASE( GF_UPDATE_3 )
 BOOST_AUTO_TEST_CASE( GF_UPDATE_4 )
 {
 	test_gf_update("/gf_update_input_4");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE_END()
+
+BOOST_AUTO_TEST_SUITE( SET_ZERO_GM )
+
+BOOST_AUTO_TEST_CASE( SET_ZERO_GM_1 )
+{
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
+	test_set_zero_gm("/gm_set_zero_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
