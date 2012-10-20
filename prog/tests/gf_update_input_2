@@ -1,12 +1,11 @@
 # set startcondition to cold or hot to start with different gaugefield
-startcondition=continue
-sourcefile=conf.00200
+startcondition=cold
 
 NS=4
 NT=4
 
 #with BICGSTAB, this set the init-gm to random values
-solver=CG
+solver=BICGSTAB
 
 #this specifies the "eps" in the update
 tau=0.12
