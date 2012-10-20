@@ -808,7 +808,6 @@ BOOST_AUTO_TEST_SUITE( SET_ZERO_GM )
 
 BOOST_AUTO_TEST_CASE( SET_ZERO_GM_1 )
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
 	test_set_zero_gm("/gm_set_zero_input_1");
 }
 
@@ -818,9 +817,29 @@ BOOST_AUTO_TEST_SUITE( F_UPDATE )
 
 BOOST_AUTO_TEST_CASE( F_UPDATE_1 )
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
 	test_f_update("/f_update_input_1");
 }
+
+BOOST_AUTO_TEST_CASE( F_UPDATE_2 )
+{
+	test_f_update("/f_update_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( F_UPDATE_3 )
+{
+	test_f_update("/f_update_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( F_UPDATE_4 )
+{
+	test_f_update("/f_update_input_4");
+}
+
+BOOST_AUTO_TEST_CASE( F_UPDATE_5 )
+{
+	test_f_update("/f_update_input_5");
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
 
