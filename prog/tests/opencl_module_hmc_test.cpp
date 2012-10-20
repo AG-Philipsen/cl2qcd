@@ -878,6 +878,11 @@ BOOST_AUTO_TEST_CASE( F_GAUGE_1 )
 	test_f_gauge("/f_gauge_input_1");
 }
 
+BOOST_AUTO_TEST_CASE( F_GAUGE_2 )
+{
+	test_f_gauge("/f_gauge_input_2");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( F_GAUGE_TLSYM )
