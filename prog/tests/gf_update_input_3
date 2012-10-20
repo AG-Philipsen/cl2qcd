@@ -5,7 +5,7 @@ NS=4
 NT=4
 
 #with BICGSTAB, this set the init-gm to random values
-solver=CG
+solver=BICGSTAB
 
 #this specifies the "eps" in the update
 tau=0.12
