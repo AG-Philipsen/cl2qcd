@@ -1,6 +1,7 @@
-startcondition=cold
+startcondition=continue
+sourcefile=conf.00200
 
-kappa=0.
+kappa=0.15
 
 use_eo=true
 NS=4
@@ -16,4 +17,4 @@ use_pointsource=false
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=0.
+test_ref_val=2956.3004352088328

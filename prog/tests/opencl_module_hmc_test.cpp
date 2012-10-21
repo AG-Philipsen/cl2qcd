@@ -21,6 +21,7 @@ public:
 		auto inputfile = system->get_inputparameters();
 		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU);
 		meta::print_info_hmc("test program", inputfile);
+		print_gaugeobservables(0);
 	};
 
 	virtual void init_tasks();
@@ -938,6 +939,46 @@ BOOST_AUTO_TEST_CASE( F_FERMION_EO_1 )
 BOOST_AUTO_TEST_CASE( F_FERMION_EO_2 )
 {
 	test_f_fermion_eo("/f_fermion_eo_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_3 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_4 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_4");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_5 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_6 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_6");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_7 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_7");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_8 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_8");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_9 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_9");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_10 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_10");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
