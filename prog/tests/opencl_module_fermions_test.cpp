@@ -228,7 +228,7 @@ void test_gamma5(std::string inputfile)
 {
 	using namespace hardware::buffers;
 
-	std::string kernelName = "gamma5";;
+	std::string kernelName = "gamma5";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -275,6 +275,57 @@ void test_gamma5(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
+void test_gamma5_eo(std::string inputfile)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName = "gamma5_eo";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	Opencl_Module_Fermions * device = cpu.get_device();
+	spinor * sf_in;
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
+
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
+	BOOST_REQUIRE(sf_in);
+
+	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
+	in.load(sf_in);
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	logger.info() << "|phi|^2:";
+	hmc_float cpu_back;
+	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+
+	sqnorm.dump(&cpu_back);
+	logger.info() << cpu_back;
+	logger.info() << "Run kernel";
+	device->gamma5_eo_device(&in);
+	in.dump(sf_in);
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	cpu_res = calc_sf_sum(NUM_ELEMENTS_SF, sf_in);
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	logger.info() << "Clear buffers";
+	delete[] sf_in;
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
 
 void test_dslash_eo(std::string inputfile)
 {
@@ -464,7 +515,12 @@ BOOST_AUTO_TEST_SUITE( GAMMA5_EO)
 
 BOOST_AUTO_TEST_CASE( GAMMA5_EO_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+	test_gamma5_eo("/gamma5_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( GAMMA5_EO_2 )
+{
+	test_gamma5_eo("/gamma5_eo_input_2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
