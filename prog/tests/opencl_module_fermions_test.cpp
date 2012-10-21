@@ -117,7 +117,17 @@ void test_m_fermion(std::string inputfile, int switcher)
   //2: m_tm_minus (twisted mass, lower flavour)
 	using namespace hardware::buffers;
 
-	std::string kernelName = "m_tm_plus";
+	std::string kernelName;
+        if(switcher == 0){
+	  kernelName = "m_wilson";
+        } else if(switcher == 1){
+	  kernelName = "m_tm_plus";
+        } else if(switcher == 2){
+	  kernelName = "m_tm_minus";
+        }
+        else{
+          logger.fatal() << "wrong parameter in test_m_fermion";
+	}
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
