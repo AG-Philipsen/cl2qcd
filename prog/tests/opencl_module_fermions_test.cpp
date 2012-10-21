@@ -630,7 +630,17 @@ BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_MINUS )
 
 BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+	test_m_tm_sitediagonal_minus("/m_tm_sitediagonal_minus_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_2)
+{
+	test_m_tm_sitediagonal_minus("/m_tm_sitediagonal_minus_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_3)
+{
+	test_m_tm_sitediagonal_minus("/m_tm_sitediagonal_minus_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
