@@ -336,6 +336,11 @@ BOOST_AUTO_TEST_CASE( M_TM_PLUS_4 )
 	test_m_tm_plus("/m_tm_plus_input_4");
 }
 
+BOOST_AUTO_TEST_CASE( M_TM_PLUS_5 )
+{
+	test_m_tm_plus("/m_tm_plus_input_5");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( GAMMA5 )
