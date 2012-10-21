@@ -312,6 +312,26 @@ BOOST_AUTO_TEST_CASE( M_TM_MINUS_1 )
   test_m_tm_minus("/m_tm_minus_input_1");
 }
 
+BOOST_AUTO_TEST_CASE( M_TM_MINUS_2 )
+{
+  test_m_tm_minus("/m_tm_minus_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_MINUS_3 )
+{
+  test_m_tm_minus("/m_tm_minus_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_MINUS_4 )
+{
+  test_m_tm_minus("/m_tm_minus_input_4");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_MINUS_5 )
+{
+  test_m_tm_minus("/m_tm_minus_input_5");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( M_TM_PLUS )
