@@ -375,6 +375,7 @@ void test_m_tm_sitediagonal_plus_minus(std::string inputfile, bool switcher)
 	} else {
 		device->M_tm_sitediagonal_minus_device( &in, &out);
 	}
+	
 	device->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << "result:";
@@ -767,6 +768,36 @@ BOOST_AUTO_TEST_CASE( DSLASH_EO_3)
 BOOST_AUTO_TEST_CASE( DSLASH_EO_4)
 {
 	test_dslash_eo("/dslash_eo_input_4");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_5)
+{
+	test_dslash_eo("/dslash_eo_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_6)
+{
+	test_dslash_eo("/dslash_eo_input_6");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_7)
+{
+	test_dslash_eo("/dslash_eo_input_7");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_8)
+{
+	test_dslash_eo("/dslash_eo_input_8");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_9)
+{
+	test_dslash_eo("/dslash_eo_input_9");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_10)
+{
+	test_dslash_eo("/dslash_eo_input_10");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
