@@ -109,8 +109,12 @@ void test_build(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_m_tm_plus(std::string inputfile)
+void test_m_fermion(std::string inputfile, int switcher)
 {
+  //switcher switches between similar functions
+  //0: m_wilson (pure wilson)
+  //1: m_tm_plus (twisted mass, upper flavour)
+  //2: m_tm_minus (twisted mass, lower flavour)
 	using namespace hardware::buffers;
 
 	std::string kernelName = "m_tm_plus";
@@ -148,7 +152,16 @@ void test_m_tm_plus(std::string inputfile)
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
-	device->M_tm_plus_device(&in, &out,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	if(switcher == 0){
+	  device->M_wilson_device(&in, &out,  device->get_gaugefield(), params.get_kappa());
+	} else if(switcher == 1){
+	  device->M_tm_plus_device(&in, &out,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	} else if(switcher == 2){
+	  device->M_tm_minus_device(&in, &out,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	}
+	else{
+	  logger.fatal() << "wrong parameter in test_m_fermion";
+	}
 	logger.info() << "result:";
 	hmc_float cpu_res;
 	device->set_float_to_global_squarenorm_device(&out, &sqnorm);
@@ -163,6 +176,21 @@ void test_m_tm_plus(std::string inputfile)
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
+}
+
+void test_m_wilson(std::string inputfile)
+{
+  test_m_fermion(inputfile, 0);
+}
+
+void test_m_tm_plus(std::string inputfile)
+{
+  test_m_fermion(inputfile, 1);
+}
+
+void test_m_tm_minus(std::string inputfile)
+{
+  test_m_fermion(inputfile, 2);
 }
 
 void test_dslash_eo(std::string inputfile)
@@ -247,7 +275,32 @@ BOOST_AUTO_TEST_SUITE( M_WILSON )
 
 BOOST_AUTO_TEST_CASE( M_WILSON_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+  test_m_wilson("/m_wilson_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( M_WILSON_2)
+{
+  test_m_wilson("/m_wilson_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( M_WILSON_3)
+{
+  test_m_wilson("/m_wilson_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( M_WILSON_4)
+{
+  test_m_wilson("/m_wilson_input_4");
+}
+
+BOOST_AUTO_TEST_CASE( M_WILSON_5)
+{
+  test_m_wilson("/m_wilson_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( M_WILSON_6)
+{
+  test_m_wilson("/m_wilson_input_6");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -256,7 +309,7 @@ BOOST_AUTO_TEST_SUITE( M_TM_MINUS  )
 
 BOOST_AUTO_TEST_CASE( M_TM_MINUS_1 )
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+  test_m_tm_minus("/m_tm_minus_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -272,6 +325,17 @@ BOOST_AUTO_TEST_CASE( M_TM_PLUS_2 )
 {
 	test_m_tm_plus("/m_tm_plus_input_2");
 }
+
+BOOST_AUTO_TEST_CASE( M_TM_PLUS_3 )
+{
+	test_m_tm_plus("/m_tm_plus_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_PLUS_4 )
+{
+	test_m_tm_plus("/m_tm_plus_input_4");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( GAMMA5 )
