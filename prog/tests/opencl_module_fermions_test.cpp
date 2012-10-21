@@ -97,6 +97,18 @@ Opencl_Module_Fermions* TestGaugefield::get_device()
 	return static_cast<Opencl_Module_Fermions*>(opencl_modules[0]);
 }
 
+void test_build(std::string inputfile)
+{
+  logger.info() << "build opencl_module_hmc";
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	logger.info() << "Finalize device";
+	cpu.finalize();
+	BOOST_MESSAGE("Test done");
+}
+
 void test_m_tm_plus(std::string inputfile)
 {
 	using namespace hardware::buffers;
@@ -215,6 +227,20 @@ void test_dslash_eo(std::string inputfile)
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
 }
+
+BOOST_AUTO_TEST_SUITE(BUILD)
+
+BOOST_AUTO_TEST_CASE( BUILD_1 )
+{
+  test_build("/opencl_module_fermions_build_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( BUILD_2 )
+{
+  test_build("/opencl_module_fermions_build_input_2");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
 
 
 BOOST_AUTO_TEST_SUITE( M_WILSON )
