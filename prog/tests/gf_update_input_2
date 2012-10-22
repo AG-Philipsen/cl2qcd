@@ -5,14 +5,17 @@ NS=4
 NT=4
 
 #with BICGSTAB, this set the init-gm to random values
-solver=BICGSTAB
+solver=CG
+
+#the plaquette does not change with a cold input gm, but the polyakov loop does
+#checkable analytically
 
 #this specifies the "eps" in the update
-tau=0.12
+tau=.12
 
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=0.55622180943874355
+test_ref_val=1.
 
 

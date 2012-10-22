@@ -787,7 +787,6 @@ BOOST_AUTO_TEST_CASE(GF_UPDATE_1 )
 
 BOOST_AUTO_TEST_CASE( GF_UPDATE_2 )
 {
-  BOOST_MESSAGE("THIS TEST HAS TO BE INVESTIGATED!! IT COULD HINT TO AN ERROR IN THE FUNCTION!");
 	test_gf_update("/gf_update_input_2");
 }
 
@@ -800,11 +799,13 @@ BOOST_AUTO_TEST_CASE( GF_UPDATE_4 )
 {
 	test_gf_update("/gf_update_input_4");
 }
+
 BOOST_AUTO_TEST_CASE(GF_UPDATE_5 )
 {
   BOOST_MESSAGE("THIS TEST HAS TO BE INVESTIGATED!! IT COULD HINT TO AN ERROR IN THE FUNCTION!");
 	test_gf_update("/gf_update_input_5");
 }
+
 BOOST_AUTO_TEST_CASE(GF_UPDATE_6 )
 {
 	test_gf_update("/gf_update_input_6");
