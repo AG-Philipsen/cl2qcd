@@ -710,7 +710,10 @@ void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
-	device->M_tm_sitediagonal_AND_gamma5_eo_device(&in, &out, meta::get_mubar(params));
+	if(switcher)
+	  device->M_tm_sitediagonal_AND_gamma5_eo_device(&in, &out, meta::get_mubar(params));
+	else
+	  device->M_tm_sitediagonal_minus_AND_gamma5_eo_device(&in, &out, meta::get_mubar(params));
 	out.dump(sf_out);
 	logger.info() << "result:";
 	hmc_float cpu_res;
@@ -1087,7 +1090,17 @@ BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO )
 
 BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+	test_m_tm_sitediagonal_minus_and_gamma5_eo("/m_tm_sitediagonal_minus_and_gamma5_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_2)
+{
+	test_m_tm_sitediagonal_minus_and_gamma5_eo("/m_tm_sitediagonal_minus_and_gamma5_eo_input_2");
+}
+
+BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_3)
+{
+	test_m_tm_sitediagonal_minus_and_gamma5_eo("/m_tm_sitediagonal_minus_and_gamma5_eo_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
