@@ -617,24 +617,6 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
 	BOOST_REQUIRE(sf_in);
 
-	spinor * sf_in2;
-	size_t NUM_ELEMENTS_SF2 = meta::get_spinorfieldsize(params);
-	sf_in2 = new spinor[NUM_ELEMENTS_SF2];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF2);
-	else fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF2);
-	BOOST_REQUIRE(sf_in2);
-
-	const Plain<spinor> in2(NUM_ELEMENTS_SF2, device->get_device());
-	in2.load(sf_in2);
-
-	size_t NUM_ELEMENTS_SF_EO = meta::get_eoprec_spinorfieldsize(params);
-	const Spinor in_eo_even(NUM_ELEMENTS_SF_EO, device->get_device());
-	const Spinor in_eo_odd(NUM_ELEMENTS_SF_EO, device->get_device());
-	const Spinor out_eo(NUM_ELEMENTS_SF_EO, device->get_device());
-	device->convert_to_eoprec_device(&in_eo_even, &in_eo_odd, &in2);
-
 	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
 	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
 	in.load(sf_in);
@@ -645,14 +627,14 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
-	device->set_float_to_global_squarenorm_eoprec_device(&in_eo_even, &sqnorm);
+	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
 
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
 	if(params.get_use_pointsource()) {
 	  if(switcher)
-	    device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in_eo_even, &out, device->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
+	    device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, device->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
 	  else
 	    device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, device->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
 	} else {
@@ -663,9 +645,7 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	}
 	out.dump(sf_out);
 	logger.info() << "result:";
-	logger.info() <<  meta::get_mubar(params);
 	hmc_float cpu_res;
-	//	cpu_res = calc_sf_sum(NUM_ELEMENTS_SF, sf_out);
 	device->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
@@ -972,7 +952,21 @@ BOOST_AUTO_TEST_SUITE(DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO )
 BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_1)
 {
   test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_1");
-  //		test_dslash_eo("/dslash_eo_input_9");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_2)
+{
+  test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_3)
+{
+  test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_4)
+{
+  test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_4");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -981,7 +975,22 @@ BOOST_AUTO_TEST_SUITE(DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO )
 
 BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+  test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_2)
+{
+  test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_3)
+{
+  test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_4)
+{
+  test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_4");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
