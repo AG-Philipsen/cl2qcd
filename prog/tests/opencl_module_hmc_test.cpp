@@ -990,7 +990,15 @@ BOOST_AUTO_TEST_CASE( F_FERMION_EO_18 )
 	test_f_fermion_eo("/f_fermion_eo_input_18");
 }
 
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_19 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_19");
+}
 
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_20 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_20");
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
