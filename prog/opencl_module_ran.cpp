@@ -7,17 +7,26 @@
 
 using namespace std;
 
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
+
 void Opencl_Module_Ran::fill_collect_options(stringstream* collect_options)
 {
 	Opencl_Module::fill_collect_options(collect_options);
-	if(get_parameters().get_use_same_rnd_numbers() ) *collect_options <<  " -D_SAME_RND_NUMBERS_ ";
+	*collect_options << collect_build_options(get_device(), get_parameters());
+}
+
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
+{
+	std::ostringstream options;
+	if(params.get_use_same_rnd_numbers() ) options <<  " -D_SAME_RND_NUMBERS_ ";
 #ifdef USE_PRNG_NR3
-	*collect_options << " -DUSE_PRNG_NR3";
+	options << " -DUSE_PRNG_NR3";
 #elif defined(USE_PRNG_RANLUX)
-	*collect_options << " -DUSE_PRNG_RANLUX -DRANLUXCL_MAXWORKITEMS=" << prng_buffer.get_elements();
+	options << " -DUSE_PRNG_RANLUX -DRANLUXCL_MAXWORKITEMS=" << hardware::buffers::get_prng_buffer_size(device);
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
+	return options.str();
 }
 
 void Opencl_Module_Ran::fill_kernels()

@@ -8,13 +8,21 @@
 
 using namespace std;
 
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
+
 void Opencl_Module_Kappa::fill_collect_options(stringstream* collect_options)
 {
 	Opencl_Module::fill_collect_options(collect_options);
-	*collect_options <<  " -DBETA=" << get_parameters().get_beta();
-	*collect_options <<  " -DXI_0=" << meta::get_xi_0(get_parameters());
+	*collect_options << collect_build_options(get_device(), get_parameters());
+}
 
-	return;
+static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
+{
+	std::ostringstream options;
+	options <<  " -DBETA=" << params.get_beta();
+	options <<  " -DXI_0=" << meta::get_xi_0(params);
+
+	return options.str();
 }
 
 

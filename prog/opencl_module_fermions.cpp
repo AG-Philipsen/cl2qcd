@@ -8,6 +8,8 @@
 
 using namespace std;
 
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
+
 /**
  * What follows are functions that call opencl_fermions-class-functions.
  * This is needed to be able to pass different fermionmatrices as
@@ -342,30 +344,37 @@ void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
 {
 	Opencl_Module_Spinors::fill_collect_options(collect_options);
 
-	switch (get_parameters().get_fermact()) {
+	*collect_options << collect_build_options(get_device(), get_parameters());
+}
+
+static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
+{
+	std::ostringstream options;
+
+	switch (params.get_fermact()) {
 		case meta::Inputparameters::twistedmass :
-			*collect_options << " -D_TWISTEDMASS_";
+			options << " -D_TWISTEDMASS_";
 			break;
 		case meta::Inputparameters::clover :
-			*collect_options << " -D_CLOVER_";
+			options << " -D_CLOVER_";
 			break;
 	}
 
 	//CP: These are the BCs in spatial and temporal direction
-	hmc_float tmp_spatial = (get_parameters().get_theta_fermion_spatial() * PI) / ( (hmc_float) get_parameters().get_nspace());
-	hmc_float tmp_temporal = (get_parameters().get_theta_fermion_temporal() * PI) / ( (hmc_float) get_parameters().get_ntime());
+	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());
+	hmc_float tmp_temporal = (params.get_theta_fermion_temporal() * PI) / ( (hmc_float) params.get_ntime());
 	//BC: on the corners in each direction: exp(i theta) -> on each site exp(i theta*PI /LATEXTENSION) = cos(tmp2) + isin(tmp2)
-	*collect_options << " -DSPATIAL_RE=" << cos(tmp_spatial);
-	*collect_options << " -DMSPATIAL_RE=" << -cos(tmp_spatial);
-	*collect_options << " -DSPATIAL_IM=" << sin(tmp_spatial);
-	*collect_options << " -DMSPATIAL_IM=" << -sin(tmp_spatial);
+	options << " -DSPATIAL_RE=" << cos(tmp_spatial);
+	options << " -DMSPATIAL_RE=" << -cos(tmp_spatial);
+	options << " -DSPATIAL_IM=" << sin(tmp_spatial);
+	options << " -DMSPATIAL_IM=" << -sin(tmp_spatial);
 
-	*collect_options << " -DTEMPORAL_RE=" << cos(tmp_temporal);
-	*collect_options << " -DMTEMPORAL_RE=" << -cos(tmp_temporal);
-	*collect_options << " -DTEMPORAL_IM=" << sin(tmp_temporal);
-	*collect_options << " -DMTEMPORAL_IM=" << -sin(tmp_temporal);
+	options << " -DTEMPORAL_RE=" << cos(tmp_temporal);
+	options << " -DMTEMPORAL_RE=" << -cos(tmp_temporal);
+	options << " -DTEMPORAL_IM=" << sin(tmp_temporal);
+	options << " -DMTEMPORAL_IM=" << -sin(tmp_temporal);
 
-	return;
+	return options.str();
 }
 
 void Opencl_Module_Fermions::fill_kernels()

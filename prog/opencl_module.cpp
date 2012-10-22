@@ -9,6 +9,9 @@
 using namespace std;
 
 static void print_profile_header(const std::string& filename, int number);
+
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
+
 /**
  * Print the profiling information of a specific kernel to a file.
  *
@@ -51,62 +54,68 @@ hardware::Device * Opencl_Module::get_device() const noexcept
 
 void Opencl_Module::fill_collect_options(stringstream* collect_options)
 {
+	*collect_options << collect_build_options(device, get_parameters());
+}
+
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
+{
 	using namespace hardware::buffers;
 
-	*collect_options << "-D_INKERNEL_ -DNSPACE=" << get_parameters().get_nspace() << " -DNTIME=" << get_parameters().get_ntime() << " -DVOLSPACE=" << meta::get_volspace(get_parameters()) << " -DVOL4D=" << meta::get_vol4d(get_parameters());
+	std::ostringstream options;
+	options << "-D_INKERNEL_ -DNSPACE=" << params.get_nspace() << " -DNTIME=" << params.get_ntime() << " -DVOLSPACE=" << meta::get_volspace(params) << " -DVOL4D=" << meta::get_vol4d(params);
 
 	//this is needed for hmc_ocl_su3matrix
-	*collect_options << " -DSU3SIZE=" << NC*NC << " -DSTAPLEMATRIXSIZE=" << NC*NC;
+	options << " -DSU3SIZE=" << NC*NC << " -DSTAPLEMATRIXSIZE=" << NC*NC;
 
-	if(get_parameters().get_precision() == 64) {
-		*collect_options << " -D_USEDOUBLEPREC_";
+	if(params.get_precision() == 64) {
+		options << " -D_USEDOUBLEPREC_";
 		// TODO renable support for older AMD GPUs
 		//if( device_double_extension.empty() ) {
 		//  logger.warn() << "Warning: Undefined extension for use of double.";
 		//} else {
-		//  *collect_options << " -D_DEVICE_DOUBLE_EXTENSION_" << device_double_extension << "_";
+		//  options << " -D_DEVICE_DOUBLE_EXTENSION_" << device_double_extension << "_";
 		//}
-		*collect_options << " -D_DEVICE_DOUBLE_EXTENSION_KHR_";
+		options << " -D_DEVICE_DOUBLE_EXTENSION_KHR_";
 	}
 	if( device->get_device_type() == CL_DEVICE_TYPE_GPU )
-		*collect_options << " -D_USEGPU_";
-	if(get_parameters().get_use_chem_pot_re() == true) {
-		*collect_options << " -D_CP_REAL_";
-		*collect_options << " -DCPR=" << get_parameters().get_chem_pot_re();
-		*collect_options << " -DEXPCPR=" << exp(get_parameters().get_chem_pot_re() );
-		*collect_options << " -DMEXPCPR=" << exp(-1.*get_parameters().get_chem_pot_re() );
+		options << " -D_USEGPU_";
+	if(params.get_use_chem_pot_re() == true) {
+		options << " -D_CP_REAL_";
+		options << " -DCPR=" << params.get_chem_pot_re();
+		options << " -DEXPCPR=" << exp(params.get_chem_pot_re() );
+		options << " -DMEXPCPR=" << exp(-1.*params.get_chem_pot_re() );
 	}
-	if(get_parameters().get_use_chem_pot_im() == true) {
-		*collect_options << " -D_CP_IMAG_";
-		*collect_options << " -DCPI=" << get_parameters().get_chem_pot_im();
-		*collect_options << " -DCOSCPI=" << cos( get_parameters().get_chem_pot_im() );
-		*collect_options << " -DSINCPI=" << sin( get_parameters().get_chem_pot_im() );
+	if(params.get_use_chem_pot_im() == true) {
+		options << " -D_CP_IMAG_";
+		options << " -DCPI=" << params.get_chem_pot_im();
+		options << " -DCOSCPI=" << cos( params.get_chem_pot_im() );
+		options << " -DSINCPI=" << sin( params.get_chem_pot_im() );
 	}
-	if(get_parameters().get_use_smearing() == true) {
-		*collect_options << " -D_USE_SMEARING_";
-		*collect_options << " -DRHO=" << get_parameters().get_rho();
-		*collect_options << " -DRHO_ITER=" << get_parameters().get_rho_iter();
+	if(params.get_use_smearing() == true) {
+		options << " -D_USE_SMEARING_";
+		options << " -DRHO=" << params.get_rho();
+		options << " -DRHO_ITER=" << params.get_rho_iter();
 	}
 	if(device->get_prefers_soa()) {
-		*collect_options << " -D_USE_SOA_";
+		options << " -D_USE_SOA_";
 	}
-	if(check_SU3_for_SOA(get_device())) {
-		*collect_options << " -DGAUGEFIELD_STRIDE=" << get_SU3_buffer_stride(meta::get_vol4d(get_parameters()) * NDIM, device);
+	if(check_SU3_for_SOA(device)) {
+		options << " -DGAUGEFIELD_STRIDE=" << get_SU3_buffer_stride(meta::get_vol4d(params) * NDIM, device);
 	}
-	*collect_options << " -I" << SOURCEDIR;
+	options << " -I" << SOURCEDIR;
 
 	if(device->get_prefers_blocked_loops()) {
-		*collect_options << " -D_USE_BLOCKED_LOOPS_";
+		options << " -D_USE_BLOCKED_LOOPS_";
 	}
 
-	if(meta::get_use_rectangles(get_parameters()) == true) {
-		*collect_options <<  " -D_USE_RECT_" ;
+	if(meta::get_use_rectangles(params) == true) {
+		options <<  " -D_USE_RECT_" ;
 	}
-	if(get_parameters().get_use_rec12() == true) {
-		*collect_options <<  " -D_USE_REC12_" ;
+	if(params.get_use_rec12() == true) {
+		options <<  " -D_USE_REC12_" ;
 	}
 
-	return;
+	return options.str();
 }
 
 void Opencl_Module::fill_kernels()

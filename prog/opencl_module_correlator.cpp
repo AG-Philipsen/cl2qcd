@@ -8,20 +8,30 @@
 
 using namespace std;
 
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
+
 void Opencl_Module_Correlator::fill_collect_options(stringstream* collect_options)
 {
 	Opencl_Module_Spinors::fill_collect_options(collect_options);
+
+	*collect_options << collect_build_options(get_device(), get_parameters());
+}
+
+static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
+{
+	std::ostringstream options;
+
 	//CP: give kappa and its negative value
-	hmc_float kappa_tmp = get_parameters().get_kappa();
-	*collect_options << " -DKAPPA=" << kappa_tmp;
-	*collect_options << " -DMKAPPA=" << -kappa_tmp;
+	hmc_float kappa_tmp = params.get_kappa();
+	options << " -DKAPPA=" << kappa_tmp;
+	options << " -DMKAPPA=" << -kappa_tmp;
 
-	if(get_parameters().get_use_pointsource() == true)
-		*collect_options << " -DNUM_SOURCES=" << 12;
+	if(params.get_use_pointsource())
+		options << " -DNUM_SOURCES=" << 12;
 	else
-		*collect_options << " -DNUM_SOURCES=" << get_parameters().get_num_sources();
+		options << " -DNUM_SOURCES=" << params.get_num_sources();
 
-	return;
+	return options.str();
 }
 
 

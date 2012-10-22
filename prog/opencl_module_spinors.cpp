@@ -8,17 +8,26 @@
 
 using namespace std;
 
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
 
 void Opencl_Module_Spinors::fill_collect_options(stringstream* collect_options)
 {
+	Opencl_Module_Ran::fill_collect_options(collect_options);
+	*collect_options << collect_build_options(get_device(), get_parameters());
+}
+
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
+{
 	using namespace hardware::buffers;
 
-	Opencl_Module_Ran::fill_collect_options(collect_options);
-	*collect_options << " -D_FERMIONS_"
-	                 << " -DSPINORFIELDSIZE=" << meta::get_spinorfieldsize(get_parameters()) << " -DEOPREC_SPINORFIELDSIZE=" << meta::get_eoprec_spinorfieldsize(get_parameters());
-	if(check_Spinor_for_SOA(get_device())) {
-		*collect_options << " -DEOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(meta::get_eoprec_spinorfieldsize(get_parameters()), get_device());
+	std::ostringstream options;
+	options << " -D_FERMIONS_"
+	        << " -DSPINORFIELDSIZE=" << meta::get_spinorfieldsize(params) << " -DEOPREC_SPINORFIELDSIZE=" << meta::get_eoprec_spinorfieldsize(params);
+	if(check_Spinor_for_SOA(device)) {
+		options << " -DEOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(meta::get_eoprec_spinorfieldsize(params), device);
 	}
+
+	return options.str();
 }
 
 

@@ -8,20 +8,28 @@
 
 using namespace std;
 
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
+
 void Opencl_Module_Hmc::fill_collect_options(stringstream* collect_options)
+{
+	Opencl_Module_Fermions::fill_collect_options(collect_options);
+	*collect_options << collect_build_options(get_device(), get_parameters());
+}
+
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	using namespace hardware::buffers;
 
-	Opencl_Module_Fermions::fill_collect_options(collect_options);
-	*collect_options <<  " -DBETA=" << get_parameters().get_beta() << " -DGAUGEMOMENTASIZE=" << meta::get_vol4d(get_parameters()) * NDIM;
+	std::ostringstream options;
+	options <<  " -DBETA=" << params.get_beta() << " -DGAUGEMOMENTASIZE=" << meta::get_vol4d(params) * NDIM;
 	//in case of tlsym gauge action
-	if(meta::get_use_rectangles(get_parameters()) == true) {
-		*collect_options <<  " -DC0=" << meta::get_c0(get_parameters()) << " -DC1=" << meta::get_c1(get_parameters());
+	if(meta::get_use_rectangles(params) == true) {
+		options <<  " -DC0=" << meta::get_c0(params) << " -DC1=" << meta::get_c1(params);
 	}
-	if(check_Gaugemomentum_for_SOA(get_device())) {
-		*collect_options << " -DGAUGEMOMENTA_STRIDE=" << get_Gaugemomentum_buffer_stride(meta::get_vol4d(get_parameters()) * NDIM, get_device());
+	if(check_Gaugemomentum_for_SOA(device)) {
+		options << " -DGAUGEMOMENTA_STRIDE=" << get_Gaugemomentum_buffer_stride(meta::get_vol4d(params) * NDIM, device);
 	}
-	return;
+	return options.str();
 }
 
 void Opencl_Module_Hmc::fill_kernels()
