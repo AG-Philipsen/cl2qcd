@@ -74,11 +74,6 @@ public:
 
 	// OpenCL specific methods needed for building/compiling the OpenCL program
 	/**
-	 * Collect the compiler options for OpenCL.
-	 * Virtual method, allows to include more options in inherited classes.
-	 */
-	virtual void fill_collect_options(std::stringstream* collect_options) override;
-	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
@@ -189,6 +184,10 @@ protected:
 	 */
 	virtual uint64_t get_flop_size(const std::string& in) const override;
 
+protected:
+
+	ClSourcePackage basic_hmc_code;
+
 private:
 
 	//kernels
@@ -229,8 +228,6 @@ private:
 	const hardware::buffers::Plain<spinor> clmem_phi_mp;
 	const hardware::buffers::Spinor clmem_phi_eo;
 	const hardware::buffers::Spinor clmem_phi_mp_eo;
-
-	ClSourcePackage basic_hmc_code;
 
 	meta::Counter * const inversions0;
 	meta::Counter * const inversions1;

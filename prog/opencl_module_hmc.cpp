@@ -10,18 +10,12 @@ using namespace std;
 
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
 
-void Opencl_Module_Hmc::fill_collect_options(stringstream* collect_options)
-{
-	Opencl_Module_Fermions::fill_collect_options(collect_options);
-	*collect_options << collect_build_options(get_device(), get_parameters());
-}
-
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	using namespace hardware::buffers;
 
 	std::ostringstream options;
-	options <<  " -DBETA=" << params.get_beta() << " -DGAUGEMOMENTASIZE=" << meta::get_vol4d(params) * NDIM;
+	options <<  "-DBETA=" << params.get_beta() << " -DGAUGEMOMENTASIZE=" << meta::get_vol4d(params) * NDIM;
 	//in case of tlsym gauge action
 	if(meta::get_use_rectangles(params) == true) {
 		options <<  " -DC0=" << meta::get_c0(params) << " -DC1=" << meta::get_c1(params);
@@ -36,7 +30,7 @@ void Opencl_Module_Hmc::fill_kernels()
 {
 	Opencl_Module_Fermions::fill_kernels();
 
-	basic_hmc_code = basic_fermion_code << "types_hmc.h" << "operations_gaugemomentum.cl";
+	basic_hmc_code = Opencl_Module_Fermions::sources << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_hmc.h" << "operations_gaugemomentum.cl";
 
 	//init kernels for HMC
 	if(get_parameters().get_use_eo() == true) {

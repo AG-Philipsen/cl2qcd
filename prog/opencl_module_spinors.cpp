@@ -10,18 +10,12 @@ using namespace std;
 
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
 
-void Opencl_Module_Spinors::fill_collect_options(stringstream* collect_options)
-{
-	Opencl_Module_Ran::fill_collect_options(collect_options);
-	*collect_options << collect_build_options(get_device(), get_parameters());
-}
-
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	using namespace hardware::buffers;
 
 	std::ostringstream options;
-	options << " -D_FERMIONS_"
+	options << "-D_FERMIONS_"
 	        << " -DSPINORFIELDSIZE=" << meta::get_spinorfieldsize(params) << " -DEOPREC_SPINORFIELDSIZE=" << meta::get_eoprec_spinorfieldsize(params);
 	if(check_Spinor_for_SOA(device)) {
 		options << " -DEOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(meta::get_eoprec_spinorfieldsize(params), device);
@@ -35,7 +29,7 @@ void Opencl_Module_Spinors::fill_kernels()
 {
 	Opencl_Module_Ran::fill_kernels();
 
-	basic_fermion_code = basic_opencl_code << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
+	basic_fermion_code = basic_opencl_code << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	if(get_parameters().get_use_eo()) {
 		basic_fermion_code = basic_fermion_code << "operations_spinorfield_eo.cl";
 	}

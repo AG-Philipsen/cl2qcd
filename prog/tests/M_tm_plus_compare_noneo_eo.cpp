@@ -26,8 +26,6 @@ public:
 
 	void runTestKernel2(const hardware::buffers::Plain<spinor> * , const hardware::buffers::Spinor * , const hardware::buffers::Spinor * , const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float);
 	void runTestKernel(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Plain<spinor> * in1, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float);
-	void fill_kernels();
-	void clear_kernels();
 };
 
 class Dummyfield : public Gaugefield_hybrid {
@@ -741,11 +739,6 @@ void Dummyfield::fill_buffers()
 	sqnorm = new Plain<hmc_float>(1, spinor_module->get_device());
 }
 
-void Device::fill_kernels()
-{
-	Opencl_Module_Hmc::fill_kernels();
-}
-
 void Dummyfield::clear_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
@@ -771,11 +764,6 @@ void Dummyfield::clear_buffers()
 	delete[] sf_in_noneo_converted;
 	delete[] sf_out_noneo;
 	delete[] sf_out_noneo_converted;
-}
-
-void Device::clear_kernels()
-{
-	Opencl_Module::clear_kernels();
 }
 
 void Device::runTestKernel2(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar)

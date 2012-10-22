@@ -75,10 +75,6 @@ void Device::fill_kernels()
 	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
 	Opencl_Module::fill_kernels();
 
-	//to this end, one has to set the needed files by hand
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
-	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-
 	testKernel = createKernel("localQ_test") << basic_opencl_code  << "/tests/localQ_test.cl";
 }
 

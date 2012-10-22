@@ -107,7 +107,7 @@ TmpClKernel::operator cl_kernel() const
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clCreateProgramWithSource", __FILE__, __LINE__);
 	}
 
-	logger.trace() << "Building kernel " << kernel_name << " using these options: " << build_options;
+	logger.trace() << "Building kernel " << kernel_name << " using these options: \"" << build_options << "\"";
 
 	clerr = clBuildProgram(program, 1, &device, build_options.c_str(), 0, 0);
 	if(clerr != CL_SUCCESS && logger.beDebug()) {

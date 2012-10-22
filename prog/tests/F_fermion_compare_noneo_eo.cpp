@@ -668,9 +668,9 @@ void Device::fill_kernels()
 {
 	Opencl_Module_Hmc::fill_kernels();
 
-	testKernel = createKernel("fermion_force_eo") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion_eo.cl";
+	testKernel = createKernel("fermion_force_eo") << basic_hmc_code << "fermionmatrix.cl" << "force_fermion_eo.cl";
 
-	testKernel2 = createKernel("fermion_force") << basic_fermion_code << "types_hmc.h"  << "operations_gaugemomentum.cl" << "fermionmatrix.cl" << "force_fermion.cl";
+	testKernel2 = createKernel("fermion_force") << basic_hmc_code << "fermionmatrix.cl" << "force_fermion.cl";
 }
 
 void Dummyfield::clear_buffers()

@@ -52,11 +52,6 @@ hardware::Device * Opencl_Module::get_device() const noexcept
 	return device;
 }
 
-void Opencl_Module::fill_collect_options(stringstream* collect_options)
-{
-	*collect_options << collect_build_options(device, get_parameters());
-}
-
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	using namespace hardware::buffers;
@@ -120,7 +115,8 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 
 void Opencl_Module::fill_kernels()
 {
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
+	basic_opencl_code = ClSourcePackage(collect_build_options(device, get_parameters()))
+	                    << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
 	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
 
 	logger.debug() << "Create gaugeobservables kernels...";
@@ -378,17 +374,9 @@ void Opencl_Module::gaugeobservables_rectangles(const hardware::buffers::SU3 * g
 	//NOTE: the rectangle value has not been normalized since it is mostly used for the HMC where one needs the absolute value
 }
 
-TmpClKernel Opencl_Module::createKernel(const char * const kernel_name, const char * const build_opts)
+TmpClKernel Opencl_Module::createKernel(const char * const kernel_name, std::string build_opts)
 {
-	stringstream collect_options;
-	if(get_parameters().is_ocl_compiler_opt_disabled()) {
-		collect_options << "-cl-opt-disable ";
-	}
-	if(build_opts) {
-		collect_options << build_opts << ' ';
-	}
-	this->fill_collect_options(&collect_options);
-	return device->create_kernel(kernel_name, collect_options.str());
+	return device->create_kernel(kernel_name, build_opts);
 }
 
 void Opencl_Module::stout_smear_device(const hardware::buffers::SU3 * in, const hardware::buffers::SU3 * out)

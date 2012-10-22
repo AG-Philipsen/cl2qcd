@@ -131,11 +131,6 @@ public:
 
 	// OpenCL specific methods needed for building/compiling the OpenCL program
 	/**
-	 * Collect the compiler options for OpenCL.
-	 * Virtual method, allows to include more options in inherited classes.
-	 */
-	virtual void fill_collect_options(std::stringstream* collect_options);
-	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
@@ -255,7 +250,7 @@ protected:
 	 *
 	 * @param kernel_name The name of the kernel to create.
 	 */
-	TmpClKernel createKernel(const char * const kernel_name, const char * const build_opts = 0);
+	TmpClKernel createKernel(const char * const kernel_name, std::string build_opts = "");
 
 	/**
 	 * Print the profiling information for the given kernel to the given file.

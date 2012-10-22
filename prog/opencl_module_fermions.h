@@ -164,11 +164,6 @@ public:
 
 	// OpenCL specific methods needed for building/compiling the OpenCL program
 	/**
-	 * Collect the compiler options for OpenCL.
-	 * Virtual method, allows to include more options in inherited classes.
-	 */
-	virtual void fill_collect_options(std::stringstream* collect_options) override;
-	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
 	 */
@@ -353,6 +348,9 @@ private:
 	const hardware::buffers::Plain<hmc_complex> clmem_tmp2;
 	const hardware::buffers::Plain<hmc_complex> clmem_one;
 	const hardware::buffers::Plain<hmc_complex> clmem_minusone;
+
+protected:
+	ClSourcePackage sources;
 };
 
 #endif //OPENCLMODULEFERMIONSH

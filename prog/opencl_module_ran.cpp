@@ -9,20 +9,14 @@ using namespace std;
 
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
 
-void Opencl_Module_Ran::fill_collect_options(stringstream* collect_options)
-{
-	Opencl_Module::fill_collect_options(collect_options);
-	*collect_options << collect_build_options(get_device(), get_parameters());
-}
-
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	std::ostringstream options;
 	if(params.get_use_same_rnd_numbers() ) options <<  " -D_SAME_RND_NUMBERS_ ";
 #ifdef USE_PRNG_NR3
-	options << " -DUSE_PRNG_NR3";
+	options << "-DUSE_PRNG_NR3";
 #elif defined(USE_PRNG_RANLUX)
-	options << " -DUSE_PRNG_RANLUX -DRANLUXCL_MAXWORKITEMS=" << hardware::buffers::get_prng_buffer_size(device);
+	options << "-DUSE_PRNG_RANLUX -DRANLUXCL_MAXWORKITEMS=" << hardware::buffers::get_prng_buffer_size(device);
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
@@ -34,7 +28,7 @@ void Opencl_Module_Ran::fill_kernels()
 	Opencl_Module::fill_kernels();
 
 #ifdef USE_PRNG_NR3
-	prng_code = ClSourcePackage() << "random.cl";
+	prng_code = ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "random.cl";
 
 	// Prepare random number arrays, for each task and device separately
 	const size_t num_rndstates = prng_buffer.get_elements();
@@ -43,7 +37,7 @@ void Opencl_Module_Ran::fill_kernels()
 	prng_buffer.load(rndarray);
 
 #elif defined(USE_PRNG_RANLUX)
-	prng_code = ClSourcePackage() << "ranluxcl/ranluxcl.cl" << "random.cl";
+	prng_code = ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "ranluxcl/ranluxcl.cl" << "random.cl";
 	cl_kernel init_kernel = createKernel("prng_ranlux_init") << basic_opencl_code << prng_code << "random_ranlux_init.cl";
 	cl_int clerr;
 	size_t ls, gs;

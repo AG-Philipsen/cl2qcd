@@ -10,16 +10,10 @@ using namespace std;
 
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
 
-void Opencl_Module_Kappa::fill_collect_options(stringstream* collect_options)
-{
-	Opencl_Module::fill_collect_options(collect_options);
-	*collect_options << collect_build_options(get_device(), get_parameters());
-}
-
 static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
 {
 	std::ostringstream options;
-	options <<  " -DBETA=" << params.get_beta();
+	options <<  "-DBETA=" << params.get_beta();
 	options <<  " -DXI_0=" << meta::get_xi_0(params);
 
 	return options.str();
@@ -30,8 +24,10 @@ void Opencl_Module_Kappa::fill_kernels()
 {
 	Opencl_Module::fill_kernels();
 
+	ClSourcePackage sources = basic_opencl_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+
 	cout << "Create TK clover kernels..." << endl;
-	kappa_clover_gpu = createKernel("kappa_clover_gpu") << basic_opencl_code << "opencl_tk_kappa.cl";
+	kappa_clover_gpu = createKernel("kappa_clover_gpu") << sources << "opencl_tk_kappa.cl";
 }
 
 

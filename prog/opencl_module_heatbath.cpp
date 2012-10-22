@@ -10,17 +10,11 @@ using namespace std;
 
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
 
-void Opencl_Module_Heatbath::fill_collect_options(stringstream* collect_options)
-{
-	Opencl_Module_Ran::fill_collect_options(collect_options);
-	*collect_options << collect_build_options(get_device(), get_parameters());
-}
-
 static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
 {
 	std::ostringstream options;
 
-	options <<  " -DBETA=" << params.get_beta();
+	options <<  "-DBETA=" << params.get_beta();
 	if(params.get_use_aniso() == true) {
 		options << " -D_ANISO_";
 		options <<  " -DXI_0=" << meta::get_xi_0(params);
@@ -33,13 +27,15 @@ void Opencl_Module_Heatbath::fill_kernels()
 {
 	Opencl_Module_Ran::fill_kernels();
 
+	ClSourcePackage sources = basic_opencl_code << prng_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+
 	logger.debug() << "Create heatbath kernels...";
-	heatbath_even = createKernel("heatbath_even") << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_even.cl";
-	heatbath_odd = createKernel("heatbath_odd") << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_odd.cl";
+	heatbath_even = createKernel("heatbath_even") << sources << "operations_heatbath.cl" << "heatbath_even.cl";
+	heatbath_odd = createKernel("heatbath_odd") << sources << "operations_heatbath.cl" << "heatbath_odd.cl";
 
 	logger.debug() << "Create overrelax kernels...";
-	overrelax_even = createKernel("overrelax_even") << basic_opencl_code << prng_code << "operations_heatbath.cl" << "overrelax_even.cl";
-	overrelax_odd = createKernel("overrelax_odd") << basic_opencl_code << prng_code << "operations_heatbath.cl" << "overrelax_odd.cl";
+	overrelax_even = createKernel("overrelax_even") << sources << "operations_heatbath.cl" << "overrelax_even.cl";
+	overrelax_odd = createKernel("overrelax_odd") << sources << "operations_heatbath.cl" << "overrelax_odd.cl";
 }
 
 void Opencl_Module_Heatbath::clear_kernels()

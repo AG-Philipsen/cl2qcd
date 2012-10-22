@@ -43,11 +43,6 @@ public:
 	 */
 	Opencl_Module_Kappa(const meta::Inputparameters& params, hardware::Device * device)
 		: Opencl_Module(params, device), clmem_kappa_clover(1, device) {};
-	/**
-	 * Collect the compiler options for OpenCL.
-	 * Virtual method, allows to include more options in inherited classes.
-	 */
-	virtual void fill_collect_options(std::stringstream* collect_options) override;
 
 	/**
 	 * Collect the kernels for OpenCL.
