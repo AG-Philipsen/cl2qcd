@@ -5,4 +5,6 @@ use_eo=true
 fermact=wilson
 use_merge_kernels_fermion=true
 
+use_chem_pot_re=true
+use_chem_pot_im=true
 
