@@ -1,4 +1,3 @@
-# set startcondition to cold or hot to start with different gaugefield
 startcondition=continue
 sourcefile=conf.00200
 
@@ -13,9 +12,9 @@ solver=BICGSTAB
 
 #with pointsource one can switch between "EVEN" and "ODD" as parameter for the kernel
 # true = EVEN, false = ODD
-use_pointsource=true
+use_pointsource=false
 
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=1963.6136861770219
+test_ref_val=2123.979239383043

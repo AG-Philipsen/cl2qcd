@@ -619,8 +619,6 @@ void test_f_fermion_eo(std::string inputfile)
 	Opencl_Module_Hmc * device = cpu.get_device();
 	spinor * sf_in1;
 	spinor * sf_in2;
-	spinor * sf_in3;
-	spinor * sf_in4;
 	ae * ae_out;
 
 	logger.info() << "fill buffers";
@@ -629,76 +627,49 @@ void test_f_fermion_eo(std::string inputfile)
 
 	sf_in1 = new spinor[NUM_ELEMENTS_SF];
 	sf_in2 = new spinor[NUM_ELEMENTS_SF];
-	sf_in3 = new spinor[NUM_ELEMENTS_SF];
-	sf_in4 = new spinor[NUM_ELEMENTS_SF];
 	ae_out = new ae[NUM_ELEMENTS_AE];
 
 	//use the variable use_cg to switch between cold and random input sf
 	if(params.get_solver() == meta::Inputparameters::cg) {
 		fill_sf_with_one(sf_in1, NUM_ELEMENTS_SF);
 		fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF);
-		fill_sf_with_one(sf_in3, NUM_ELEMENTS_SF);
-		fill_sf_with_one(sf_in4, NUM_ELEMENTS_SF);
 	} else {
 		fill_sf_with_random_eo(sf_in1, sf_in2, NUM_ELEMENTS_SF, 123456);
-		fill_sf_with_random_eo(sf_in3, sf_in4, NUM_ELEMENTS_SF, 789101);
 	}
 	fill_with_zero(ae_out, NUM_ELEMENTS_AE);
 	BOOST_REQUIRE(sf_in1);
 	BOOST_REQUIRE(sf_in2);
-	BOOST_REQUIRE(sf_in3);
-	BOOST_REQUIRE(sf_in4);
 	BOOST_REQUIRE(ae_out);
 
 	const Spinor in1(NUM_ELEMENTS_SF, device->get_device());
 	const Spinor in2(NUM_ELEMENTS_SF, device->get_device());
-	const Spinor in3(NUM_ELEMENTS_SF, device->get_device());
-	const Spinor in4(NUM_ELEMENTS_SF, device->get_device());
 	Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	device->copy_to_eoprec_spinorfield_buffer(&in1, sf_in1);
 	device->copy_to_eoprec_spinorfield_buffer(&in2, sf_in2);
-	device->copy_to_eoprec_spinorfield_buffer(&in3, sf_in3);
-	device->copy_to_eoprec_spinorfield_buffer(&in4, sf_in4);
 	device->importGaugemomentumBuffer(&out, ae_out);
 
+
+	hmc_float cpu_res, cpu_back, cpu_back2;
+	logger.info() << "|in_1|^2:";
+	device->set_float_to_global_squarenorm_eoprec_device(&in1, &sqnorm);
+	sqnorm.dump(&cpu_back);
+	logger.info() << cpu_back;
+	logger.info() << "|in_2|^2:";
+	device->set_float_to_global_squarenorm_eoprec_device(&in2, &sqnorm);
+	sqnorm.dump(&cpu_back2);
+	logger.info() << cpu_back2;
+	logger.info() << "Run kernel";
+
 	//switch according to "use_pointsource"
-	hmc_float cpu_res, cpu_back, cpu_back2, cpu_back3, cpu_back4;
-	//interprete Y = (in1, in2) X = (in3, in4)
-	//Y_odd = in2, Y_even = in1, X_odd = in4, X_even = in3
-
 	if(params.get_use_pointsource()) {
-		logger.info() << "|phi_even_1|^2:";
-		device->set_float_to_global_squarenorm_eoprec_device(&in1, &sqnorm);
-		sqnorm.dump(&cpu_back);
-		logger.info() << cpu_back;
-		logger.info() << "|phi_even_2|^2:";
-		device->set_float_to_global_squarenorm_eoprec_device(&in4, &sqnorm);
-		sqnorm.dump(&cpu_back2);
-		logger.info() << cpu_back2;
-		logger.info() << "Run kernel";
 		int tmp = EVEN;
-		//this is then force(Y_even, X_odd) == force(in1, in4)
-		device->fermion_force_eo_device(&in1, &in4, device->get_gaugefield(), &out, tmp, params.get_kappa() );
-
-		logger.info() << "|force (even)|^2:";
+		device->fermion_force_eo_device(&in1, &in2, device->get_gaugefield(), &out, tmp, params.get_kappa() );
 	} else {
-		logger.info() << "|phi_odd_1|^2:";
-		device->set_float_to_global_squarenorm_eoprec_device(&in2, &sqnorm);
-		sqnorm.dump(&cpu_back3);
-		logger.info() << cpu_back3;
-		logger.info() << "|phi_odd_2|^2:";
-		device->set_float_to_global_squarenorm_eoprec_device(&in3, &sqnorm);
-		sqnorm.dump(&cpu_back4);
-		logger.info() << cpu_back4;
-		logger.info() << "Run kernel";
-
 		int tmp = ODD;
-		//this is then force(Y_odd, X_even) == force(in2, in3)
-		device->fermion_force_eo_device(&in2, &in3, device->get_gaugefield(), &out, tmp, params.get_kappa() );
-		logger.info() << "|force (odd)|^2:";
+		device->fermion_force_eo_device(&in1, &in2, device->get_gaugefield(), &out, tmp, params.get_kappa() );
 	}
-
+	logger.info() << "|force|^2:";
 	device->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
@@ -709,8 +680,6 @@ void test_f_fermion_eo(std::string inputfile)
 
 	delete[] sf_in1;
 	delete[] sf_in2;
-	delete[] sf_in3;
-	delete[] sf_in4;
 	delete[] ae_out;
 
 	testFloatAgainstInputparameters(cpu_res, params);
