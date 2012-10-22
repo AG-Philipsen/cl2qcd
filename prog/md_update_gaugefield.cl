@@ -23,6 +23,7 @@ __kernel void md_update_gaugefield(const hmc_float eps, __global const aeStorage
 			// an su3 algebra element has NC*NC-1 = 8 hmc_float entries
 			// &(p_in[index*8]) should point to the right position for the pos-th element of the long gaugemomentum vector p_in
 			tmp2 = build_su3matrix_by_exponentiation(getAe(p_in, index), eps);
+			tmp2 = project_su3(tmp2);
 			tmp = get_matrixsu3(u_inout, pos.space, pos.time, mu);
 			tmp2 = multiply_matrixsu3( tmp2, tmp);
 			put_matrixsu3(u_inout, tmp2, pos.space, pos.time, mu);
