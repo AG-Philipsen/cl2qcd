@@ -477,7 +477,6 @@ void test_m_tm_inverse_sitediagonal_minus(std::string inputfile)
 void test_dslash_eo(std::string inputfile)
 {
 	using namespace hardware::buffers;
-
 	std::string kernelName = "dslash_eo";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
@@ -489,25 +488,15 @@ void test_dslash_eo(std::string inputfile)
 	spinor * sf_out;
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
-
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_out = new spinor[NUM_ELEMENTS_SF];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
-
-	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
-	in.load(sf_in);
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
 	size_t NUM_ELEMENTS_SF_EO = meta::get_eoprec_spinorfieldsize(params);
+	spinor * sf_in_eo;
+	sf_in_eo = new spinor[NUM_ELEMENTS_SF_EO];
 	const Spinor in_eo_even(NUM_ELEMENTS_SF_EO, device->get_device());
-	const Spinor in_eo_odd(NUM_ELEMENTS_SF_EO, device->get_device());
 	const Spinor out_eo(NUM_ELEMENTS_SF_EO, device->get_device());
-	device->convert_to_eoprec_device(&in_eo_even, &in_eo_odd, &in);
+	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in_eo, NUM_ELEMENTS_SF_EO);
+	else fill_sf_with_random(sf_in_eo, NUM_ELEMENTS_SF_EO);
+	in_eo_even.load(sf_in_eo);
 
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
@@ -530,8 +519,7 @@ void test_dslash_eo(std::string inputfile)
 	cpu.finalize();
 
 	logger.info() << "Clear buffers";
-	delete[] sf_in;
-	delete[] sf_out;
+	delete[] sf_in_eo;
 
 	testFloatAgainstInputparameters(cpu_res, params);
 	BOOST_MESSAGE("Test done");
@@ -599,6 +587,106 @@ void test_dslash_and_gamma5_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
+void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switcher)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	if(switcher)
+	  kernelName = "dslash_AND_m_tm_inverse_sitediagonal";
+	else
+	  kernelName = "dslash_AND_m_tm_inverse_sitediagonal_minus";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	Opencl_Module_Fermions * device = cpu.get_device();
+	spinor * sf_in;
+	spinor * sf_out;
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
+
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+	sf_out = new spinor[NUM_ELEMENTS_SF];
+
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
+	BOOST_REQUIRE(sf_in);
+
+	spinor * sf_in2;
+	size_t NUM_ELEMENTS_SF2 = meta::get_spinorfieldsize(params);
+	sf_in2 = new spinor[NUM_ELEMENTS_SF2];
+
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in2, NUM_ELEMENTS_SF2);
+	else fill_sf_with_random(sf_in2, NUM_ELEMENTS_SF2);
+	BOOST_REQUIRE(sf_in2);
+
+	const Plain<spinor> in2(NUM_ELEMENTS_SF2, device->get_device());
+	in2.load(sf_in2);
+
+	size_t NUM_ELEMENTS_SF_EO = meta::get_eoprec_spinorfieldsize(params);
+	const Spinor in_eo_even(NUM_ELEMENTS_SF_EO, device->get_device());
+	const Spinor in_eo_odd(NUM_ELEMENTS_SF_EO, device->get_device());
+	const Spinor out_eo(NUM_ELEMENTS_SF_EO, device->get_device());
+	device->convert_to_eoprec_device(&in_eo_even, &in_eo_odd, &in2);
+
+	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
+	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
+	in.load(sf_in);
+	out.load(sf_in);
+
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	logger.info() << "|phi|^2:";
+	hmc_float cpu_back;
+	device->set_float_to_global_squarenorm_eoprec_device(&in_eo_even, &sqnorm);
+
+	sqnorm.dump(&cpu_back);
+	logger.info() << cpu_back;
+	logger.info() << "Run kernel";
+	if(params.get_use_pointsource()) {
+	  if(switcher)
+	    device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in_eo_even, &out, device->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
+	  else
+	    device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, device->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
+	} else {
+	  if(switcher)
+	    device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, device->get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
+	  else
+	    device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, device->get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
+	}
+	out.dump(sf_out);
+	logger.info() << "result:";
+	logger.info() <<  meta::get_mubar(params);
+	hmc_float cpu_res;
+	//	cpu_res = calc_sf_sum(NUM_ELEMENTS_SF, sf_out);
+	device->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
+	sqnorm.dump(&cpu_res);
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	logger.info() << "Clear buffers";
+	delete[] sf_in;
+	delete[] sf_out;
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
+void test_dslash_and_m_tm_inverse_sitediagonal(std::string inputfile){
+  test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(inputfile, true);
+}
+
+void test_dslash_and_m_tm_inverse_sitediagonal_minus(std::string inputfile){
+  test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(inputfile, false);
+}
 
 BOOST_AUTO_TEST_SUITE(BUILD)
 
@@ -883,7 +971,8 @@ BOOST_AUTO_TEST_SUITE(DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO )
 
 BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+  test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_1");
+  //		test_dslash_eo("/dslash_eo_input_9");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

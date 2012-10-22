@@ -2,8 +2,10 @@ use_eo=true
 NS=4
 NT=4
 
+kappa=0.5
+
 #this set the init-spinorfield to random values
-solver=BICGSTAB
+solver=CG
 startcondition=cold
 
 #with pointsource one can switch between "EVEN" and "ODD" as parameter for the kernel
@@ -13,4 +15,4 @@ use_pointsource=false
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=812.78344761473613
+test_ref_val=24576

@@ -13,4 +13,4 @@ use_pointsource=true
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=812.78344761473613
+test_ref_val=831.64595362383557
