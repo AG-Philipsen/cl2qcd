@@ -1003,6 +1003,56 @@ BOOST_AUTO_TEST_CASE( DSLASH_EO_10)
 	test_dslash_eo("/dslash_eo_input_10");
 }
 
+BOOST_AUTO_TEST_CASE( DSLASH_EO_11)
+{
+	test_dslash_eo("/dslash_eo_input_11");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_12)
+{
+	test_dslash_eo("/dslash_eo_input_12");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_13)
+{
+	test_dslash_eo("/dslash_eo_input_13");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_14)
+{
+	test_dslash_eo("/dslash_eo_input_14");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_15)
+{
+	test_dslash_eo("/dslash_eo_input_15");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_16)
+{
+	test_dslash_eo("/dslash_eo_input_16");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_17)
+{
+	test_dslash_eo("/dslash_eo_input_17");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_18)
+{
+	test_dslash_eo("/dslash_eo_input_18");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_19)
+{
+	test_dslash_eo("/dslash_eo_input_19");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_20)
+{
+	test_dslash_eo("/dslash_eo_input_20");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(DSLASH_AND_GAMMA5_EO )
