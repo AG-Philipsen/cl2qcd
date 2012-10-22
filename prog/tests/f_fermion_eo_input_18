@@ -1,21 +1,23 @@
 startcondition=continue
 sourcefile=conf.00200
 
-kappa=0.5
+kappa=0.15
 
 use_eo=true
 NS=4
 NT=4
 
 #with BICGSTAB, this set the init-spinorfield to random values
-solver=CG
+solver=BICGSTAB
 
 #with pointsource one can switch between "EVEN" and "ODD" as parameter for the kernel
 # true = EVEN, false = ODD
 use_pointsource=false
 
+use_chem_pot_im=true
+chem_pot_im=0.1234
+
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=32847.782613431482
-
+test_ref_val=2123.8310119861808

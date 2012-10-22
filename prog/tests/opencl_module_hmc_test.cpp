@@ -950,6 +950,48 @@ BOOST_AUTO_TEST_CASE( F_FERMION_EO_10 )
 	test_f_fermion_eo("/f_fermion_eo_input_10");
 }
 
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_11)
+{
+	test_f_fermion_eo("/f_fermion_eo_input_11");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_12 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_12");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_13)
+{
+	test_f_fermion_eo("/f_fermion_eo_input_13");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_14 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_14");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_15 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_15");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_16 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_16");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_17 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_17");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_EO_18 )
+{
+	test_f_fermion_eo("/f_fermion_eo_input_18");
+}
+
+
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
