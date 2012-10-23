@@ -37,12 +37,7 @@
  */
 class Opencl_Module_Heatbath : public Opencl_Module_Ran {
 public:
-	/**
-	 * Empty constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Opencl_Module_Heatbath(const meta::Inputparameters& params, hardware::Device * device);
+	friend hardware::Device;
 
 	virtual ~Opencl_Module_Heatbath();
 
@@ -63,6 +58,11 @@ public:
 
 
 private:
+	/**
+	 * @param[in] params points to an instance of inputparameters
+	 */
+	Opencl_Module_Heatbath(const meta::Inputparameters& params, hardware::Device * device);
+
 	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.

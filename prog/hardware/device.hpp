@@ -17,6 +17,7 @@
 #include "../meta/inputparameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "profiling_data.hpp"
+#include "../opencl_module_heatbath.h"
 #include "../opencl_module_kappa.h"
 
 namespace hardware {
@@ -172,7 +173,12 @@ public:
 	ProfilingData get_profiling_data(const cl_kernel& kernel) noexcept;
 
 	/**
-	 * Get access to the Kappa kernels on this device.
+	 * Get access to the heatbath kernels on this device.
+	 */
+	Opencl_Module_Heatbath * get_heatbath_code();
+
+	/**
+	 * Get access to the kappa kernels on this device.
 	 */
 	Opencl_Module_Kappa * get_kappa_code();
 
@@ -258,6 +264,12 @@ private:
 	 * Kernel profiling data
 	 */
 	std::map<cl_kernel, ProfilingData> profiling_data;
+
+	/**
+	 * Pointer to the heatbath code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Heatbath * heatbath_code;
 
 	/**
 	 * Pointer to the kappa code.

@@ -1,9 +1,7 @@
 #include "opencl_module_ran.h"
 
-#include <algorithm>
-#include <boost/regex.hpp>
-
 #include "logger.hpp"
+#include "hardware/device.hpp"
 
 using namespace std;
 

@@ -227,9 +227,8 @@ void Gaugefield_hybrid::delete_variables()
 
 	delete [] devicetypes;
 
-	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-		delete opencl_modules[ntask];
-	}
+	logger.warn() << "Not deleting OpenCL modules as this should be done by the device - this might cause memory leaking as long as not all OpenCL modules are managed via the device!";
+
 	delete [] opencl_modules;
 }
 

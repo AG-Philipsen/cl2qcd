@@ -28,7 +28,8 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 	  name(retrieve_device_name(device_id)),
 	  profiling_enabled(enable_profiling),
 	  profiling_data(),
-	  kappa_code(0)
+	  heatbath_code(nullptr),
+	  kappa_code(nullptr)
 {
 	logger.debug() << "Initializing " << retrieve_device_name(device_id);
 	bool available = retrieve_device_availability(device_id);
@@ -48,6 +49,9 @@ hardware::Device::~Device()
 {
 	if(kappa_code) {
 		delete kappa_code;
+	}
+	if(heatbath_code) {
+		delete heatbath_code;
 	}
 
 	clFinish(command_queue);
@@ -368,6 +372,14 @@ std::string hardware::Device::get_name() const noexcept
 
 hardware::ProfilingData hardware::Device::get_profiling_data(const cl_kernel& kernel) noexcept {
 	return profiling_data[kernel];
+}
+
+Opencl_Module_Heatbath * hardware::Device::get_heatbath_code()
+{
+	if(!heatbath_code) {
+		heatbath_code = new Opencl_Module_Heatbath(params, this);
+	}
+	return heatbath_code;
 }
 
 Opencl_Module_Kappa * hardware::Device::get_kappa_code()
