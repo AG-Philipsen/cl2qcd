@@ -53,6 +53,7 @@ namespace meta {
 	void print_info_hmc(const char* progname, std::ostream* os, const Inputparameters& params);
   std::string get_ferm_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
   std::string get_gauge_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
+  std::string get_hmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
 }
 
 #endif /* META_UTIL_ */

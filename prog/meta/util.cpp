@@ -168,3 +168,22 @@ std::string meta::get_gauge_obs_file_name(const Inputparameters& parameters, std
     }
   }
 }
+
+std::string meta::get_hmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
+{
+  if(parameters.get_hmc_obs_to_single_file() ){
+    return parameters.get_hmc_obs_prefix() +  parameters.get_hmc_obs_postfix();
+  } else {
+    switch ( parameters.get_startcondition() ) {
+    case meta::Inputparameters::start_from_source :
+      return  parameters.get_hmc_obs_prefix() + conf_name + parameters.get_hmc_obs_postfix();
+      break;
+    case meta::Inputparameters::hot_start :
+      return  parameters.get_hmc_obs_prefix() + "conf.hot" +   parameters.get_hmc_obs_postfix() ;
+      break;
+    case meta::Inputparameters::cold_start :
+      return  parameters.get_hmc_obs_prefix() + "conf.cold" + parameters.get_hmc_obs_postfix() ;
+      break;
+    }
+  }
+}

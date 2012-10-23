@@ -158,6 +158,9 @@ namespace meta {
 	  std::string get_gauge_obs_postfix() const noexcept;
 	  bool get_ferm_obs_to_single_file() const noexcept;
 	  bool get_gauge_obs_to_single_file() const noexcept;
+	  std::string get_hmc_obs_prefix() const noexcept;
+	  std::string get_hmc_obs_postfix() const noexcept;
+	  bool get_hmc_obs_to_single_file() const noexcept;
 
 			std::string get_log_level() const noexcept;
 
@@ -278,6 +281,9 @@ namespace meta {
 	  bool ferm_obs_to_single_file;
 	  std::string ferm_obs_prefix;
 	  std::string ferm_obs_postfix;
+	  bool hmc_obs_to_single_file;
+	  std::string hmc_obs_prefix;
+	  std::string hmc_obs_postfix;
 
 			std::string log_level;
 	};

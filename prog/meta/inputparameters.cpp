@@ -435,6 +435,18 @@ bool Inputparameters::get_gauge_obs_to_single_file() const noexcept
 {
 	return gauge_obs_to_single_file;
 }
+std::string Inputparameters::get_hmc_obs_prefix() const noexcept
+{
+  return hmc_obs_prefix;
+}
+std::string Inputparameters::get_hmc_obs_postfix() const noexcept
+{
+  return hmc_obs_postfix;
+}
+bool Inputparameters::get_hmc_obs_to_single_file() const noexcept
+{
+	return hmc_obs_to_single_file;
+}
 
 Inputparameters::Inputparameters(int argc, const char** argv)
 {
@@ -571,7 +583,10 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("gauge_obs_postfix", po::value<std::string>(&gauge_obs_postfix)->default_value(".dat"), "Postfix for gauge observables file")
 	("ferm_obs_to_single_file", po::value<bool>(&ferm_obs_to_single_file)->default_value(false), "Save fermionic observables to one single file")
 	("ferm_obs_prefix", po::value<std::string>(&ferm_obs_prefix)->default_value(""), "Prefix for fermionic observables file")
-	("ferm_obs_postfix", po::value<std::string>(&ferm_obs_postfix)->default_value("_correlators.dat"), "Postfix for fermionic observables file");
+	("ferm_obs_postfix", po::value<std::string>(&ferm_obs_postfix)->default_value("_correlators.dat"), "Postfix for fermionic observables file")
+	("hmc_obs_to_single_file", po::value<bool>(&hmc_obs_to_single_file)->default_value(true), "Save hmc observables to one single file")
+	("hmc_obs_prefix", po::value<std::string>(&hmc_obs_prefix)->default_value("hmc_output"), "Prefix for hmc observables file")
+	("hmc_obs_postfix", po::value<std::string>(&hmc_obs_postfix)->default_value(""), "Postfix for hmc observables file");
 
 	po::options_description desc;
 	desc.add(cmd_opts).add(config);
