@@ -165,12 +165,6 @@ public:
 	void unsmear_gaugefield(const hardware::buffers::SU3 * gf);
 
 	/**
-	 * Internal bookeeping function. Only public so it can be called from
-	 * C-style callback functions.
-	 */
-	void markMemReleased(bool host, size_t size);
-
-	/**
 	 * Import the gaugefield data into the OpenCL buffer using the device
 	 * specific storage format.
 	 *
