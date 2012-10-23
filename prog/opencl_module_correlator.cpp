@@ -8,67 +8,66 @@
 
 using namespace std;
 
-void Opencl_Module_Correlator::fill_collect_options(stringstream* collect_options)
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
+
+static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
 {
-	Opencl_Module_Spinors::fill_collect_options(collect_options);
+	std::ostringstream options;
+
 	//CP: give kappa and its negative value
-	hmc_float kappa_tmp = get_parameters().get_kappa();
-	*collect_options << " -DKAPPA=" << kappa_tmp;
-	*collect_options << " -DMKAPPA=" << -kappa_tmp;
+	hmc_float kappa_tmp = params.get_kappa();
+	options << "-DKAPPA=" << kappa_tmp;
+	options << " -DMKAPPA=" << -kappa_tmp;
 
-	if(get_parameters().get_use_pointsource() == true)
-		*collect_options << " -DNUM_SOURCES=" << 12;
+	if(params.get_use_pointsource())
+		options << " -DNUM_SOURCES=" << 12;
 	else
-		*collect_options << " -DNUM_SOURCES=" << get_parameters().get_num_sources();
+		options << " -DNUM_SOURCES=" << params.get_num_sources();
 
-	return;
+	return options.str();
 }
 
 
 void Opencl_Module_Correlator::fill_kernels()
 {
-	Opencl_Module_Spinors::fill_kernels();
-	basic_correlator_code = basic_fermion_code;
+	basic_correlator_code = basic_fermion_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 	logger.debug() << "Create correlator kernels...";
 
 	if(get_parameters().get_use_pointsource() == true)
-		create_point_source = createKernel("create_point_source") << basic_fermion_code << "spinorfield_point_source.cl";
+		create_point_source = createKernel("create_point_source") << basic_correlator_code << "spinorfield_point_source.cl";
 	else
-		create_stochastic_source = createKernel("create_stochastic_source") << basic_fermion_code << "spinorfield_stochastic_source.cl";
+		create_stochastic_source = createKernel("create_stochastic_source") << basic_correlator_code << "spinorfield_stochastic_source.cl";
 
 	switch (get_parameters().get_corr_dir()) {
 		case 0 :
-			correlator_ps = createKernel("correlator_ps_t") << basic_fermion_code << "fermionobservables.cl";
-			correlator_sc = createKernel("correlator_sc_t") << basic_fermion_code << "fermionobservables.cl";
-			correlator_vx = createKernel("correlator_vx_t") << basic_fermion_code << "fermionobservables.cl";
-			correlator_vy = createKernel("correlator_vy_t") << basic_fermion_code << "fermionobservables.cl";
-			correlator_vz = createKernel("correlator_vz_t") << basic_fermion_code << "fermionobservables.cl";
-			correlator_ax = createKernel("correlator_ax_t") << basic_fermion_code << "fermionobservables.cl";
-			correlator_ay = createKernel("correlator_ay_t") << basic_fermion_code << "fermionobservables.cl";
-			correlator_az = createKernel("correlator_az_t") << basic_fermion_code << "fermionobservables.cl";
+			correlator_ps = createKernel("correlator_ps_t") << basic_correlator_code << "fermionobservables.cl";
+			correlator_sc = createKernel("correlator_sc_t") << basic_correlator_code << "fermionobservables.cl";
+			correlator_vx = createKernel("correlator_vx_t") << basic_correlator_code << "fermionobservables.cl";
+			correlator_vy = createKernel("correlator_vy_t") << basic_correlator_code << "fermionobservables.cl";
+			correlator_vz = createKernel("correlator_vz_t") << basic_correlator_code << "fermionobservables.cl";
+			correlator_ax = createKernel("correlator_ax_t") << basic_correlator_code << "fermionobservables.cl";
+			correlator_ay = createKernel("correlator_ay_t") << basic_correlator_code << "fermionobservables.cl";
+			correlator_az = createKernel("correlator_az_t") << basic_correlator_code << "fermionobservables.cl";
 			break;
 		case 3 :
-			correlator_ps = createKernel("correlator_ps_z") << basic_fermion_code << "fermionobservables.cl";
-			correlator_sc = createKernel("correlator_sc_z") << basic_fermion_code << "fermionobservables.cl";
-			correlator_vx = createKernel("correlator_vx_z") << basic_fermion_code << "fermionobservables.cl";
-			correlator_vy = createKernel("correlator_vy_z") << basic_fermion_code << "fermionobservables.cl";
-			correlator_vz = createKernel("correlator_vz_z") << basic_fermion_code << "fermionobservables.cl";
-			correlator_ax = createKernel("correlator_ax_z") << basic_fermion_code << "fermionobservables.cl";
-			correlator_ay = createKernel("correlator_ay_z") << basic_fermion_code << "fermionobservables.cl";
-			correlator_az = createKernel("correlator_az_z") << basic_fermion_code << "fermionobservables.cl";
+			correlator_ps = createKernel("correlator_ps_z") << basic_correlator_code << "fermionobservables.cl";
+			correlator_sc = createKernel("correlator_sc_z") << basic_correlator_code << "fermionobservables.cl";
+			correlator_vx = createKernel("correlator_vx_z") << basic_correlator_code << "fermionobservables.cl";
+			correlator_vy = createKernel("correlator_vy_z") << basic_correlator_code << "fermionobservables.cl";
+			correlator_vz = createKernel("correlator_vz_z") << basic_correlator_code << "fermionobservables.cl";
+			correlator_ax = createKernel("correlator_ax_z") << basic_correlator_code << "fermionobservables.cl";
+			correlator_ay = createKernel("correlator_ay_z") << basic_correlator_code << "fermionobservables.cl";
+			correlator_az = createKernel("correlator_az_z") << basic_correlator_code << "fermionobservables.cl";
 			break;
 		default:
 			stringstream errmsg;
 			errmsg << "Could not create correlator kernel as correlator direction " << get_parameters().get_corr_dir() << " has not been implemented.";
 			throw Print_Error_Message(errmsg.str());
 	}
-
-	return;
 }
 
 void Opencl_Module_Correlator::clear_kernels()
 {
-	Opencl_Module_Spinors::clear_kernels();
 	int clerr = CL_SUCCESS;
 	clerr = clReleaseKernel(correlator_ps);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -94,7 +93,6 @@ void Opencl_Module_Correlator::clear_kernels()
 		clerr = clReleaseKernel(create_stochastic_source);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
-	return;
 }
 
 void Opencl_Module_Correlator::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
@@ -346,4 +344,17 @@ void Opencl_Module_Correlator::print_profiling(const std::string& filename, int 
 	Opencl_Module::print_profiling(filename, correlator_ax);
 	Opencl_Module::print_profiling(filename, correlator_ay);
 	Opencl_Module::print_profiling(filename, correlator_az);
+}
+
+Opencl_Module_Correlator::Opencl_Module_Correlator(const meta::Inputparameters& params, hardware::Device * device)
+	: Opencl_Module_Spinors(params, device),
+	  create_point_source(0), create_stochastic_source(0),
+	  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0)
+{
+	fill_kernels();
+}
+
+Opencl_Module_Correlator::~Opencl_Module_Correlator()
+{
+	clear_kernels();
 }

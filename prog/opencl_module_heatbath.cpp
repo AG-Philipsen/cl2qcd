@@ -8,35 +8,36 @@
 
 using namespace std;
 
-void Opencl_Module_Heatbath::fill_collect_options(stringstream* collect_options)
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
+
+static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
 {
-	Opencl_Module_Ran::fill_collect_options(collect_options);
-	*collect_options <<  " -DBETA=" << get_parameters().get_beta();
-	if(get_parameters().get_use_aniso() == true) {
-		*collect_options << " -D_ANISO_";
-		*collect_options <<  " -DXI_0=" << meta::get_xi_0(get_parameters());
+	std::ostringstream options;
+
+	options <<  "-DBETA=" << params.get_beta();
+	if(params.get_use_aniso() == true) {
+		options << " -D_ANISO_";
+		options <<  " -DXI_0=" << meta::get_xi_0(params);
 	}
 
-	return;
+	return options.str();
 }
 
 void Opencl_Module_Heatbath::fill_kernels()
 {
-	Opencl_Module_Ran::fill_kernels();
+	ClSourcePackage sources = basic_opencl_code << prng_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 
 	logger.debug() << "Create heatbath kernels...";
-	heatbath_even = createKernel("heatbath_even") << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_even.cl";
-	heatbath_odd = createKernel("heatbath_odd") << basic_opencl_code << prng_code << "operations_heatbath.cl" << "heatbath_odd.cl";
+	heatbath_even = createKernel("heatbath_even") << sources << "operations_heatbath.cl" << "heatbath_even.cl";
+	heatbath_odd = createKernel("heatbath_odd") << sources << "operations_heatbath.cl" << "heatbath_odd.cl";
 
 	logger.debug() << "Create overrelax kernels...";
-	overrelax_even = createKernel("overrelax_even") << basic_opencl_code << prng_code << "operations_heatbath.cl" << "overrelax_even.cl";
-	overrelax_odd = createKernel("overrelax_odd") << basic_opencl_code << prng_code << "operations_heatbath.cl" << "overrelax_odd.cl";
+	overrelax_even = createKernel("overrelax_even") << sources << "operations_heatbath.cl" << "overrelax_even.cl";
+	overrelax_odd = createKernel("overrelax_odd") << sources << "operations_heatbath.cl" << "overrelax_odd.cl";
 }
 
 void Opencl_Module_Heatbath::clear_kernels()
 {
-	Opencl_Module_Ran::clear_kernels();
-
 	cl_int clerr = CL_SUCCESS;
 
 	clerr = clReleaseKernel(heatbath_even);
@@ -50,8 +51,6 @@ void Opencl_Module_Heatbath::clear_kernels()
 
 	clerr = clReleaseKernel(overrelax_odd);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-
-	return;
 }
 
 void Opencl_Module_Heatbath::run_heatbath()
@@ -199,4 +198,15 @@ void Opencl_Module_Heatbath::print_profiling(const std::string& filename, int nu
 	Opencl_Module::print_profiling(filename, heatbath_odd);
 	Opencl_Module::print_profiling(filename, overrelax_even);
 	Opencl_Module::print_profiling(filename, overrelax_odd);
+}
+
+Opencl_Module_Heatbath::Opencl_Module_Heatbath(const meta::Inputparameters& params, hardware::Device * device)
+	: Opencl_Module_Ran(params, device)
+{
+	fill_kernels();
+}
+
+Opencl_Module_Heatbath::~Opencl_Module_Heatbath()
+{
+	clear_kernels();
 }

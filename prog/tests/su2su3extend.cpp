@@ -16,17 +16,17 @@ class Device : public Opencl_Module {
 
 	cl_kernel extendKernel;
 
+	void fill_kernels();
+	void clear_kernels();
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
-		Opencl_Module::init(); /* init in body for proper this-pointer */
+		fill_kernels();
 	};
 	~Device() {
-		finalize();
+		clear_kernels();
 	};
 
 	void runExtendKernel(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::Plain<Matrixsu2> * in, const hardware::buffers::Plain<cl_int> * d_rand, cl_ulong elems);
-	void fill_kernels();
-	void clear_kernels();
 };
 
 class Dummyfield : public Gaugefield_hybrid {
@@ -127,8 +127,6 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	Opencl_Module::fill_kernels();
-
 	extendKernel = createKernel("extendKernel") << basic_opencl_code << "tests/su2su3extend.cl";
 }
 
@@ -148,7 +146,6 @@ void Dummyfield::clear_buffers()
 void Device::clear_kernels()
 {
 	clReleaseKernel(extendKernel);
-	Opencl_Module::clear_kernels();
 }
 
 void Device::runExtendKernel(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::Plain<Matrixsu2> * in, const hardware::buffers::Plain<cl_int> * d_rand, cl_ulong elems)

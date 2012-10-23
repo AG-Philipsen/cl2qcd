@@ -15,17 +15,17 @@ class Device : public Opencl_Module {
 
 	cl_kernel testKernel;
 
+	void fill_kernels();
+	void clear_kernels();
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
-		Opencl_Module::init(); /* init in body for proper this-pointer */
+		fill_kernels();
 	};
 	~Device() {
-		finalize();
+		clear_kernels();
 	};
 
 	void runTestKernel(int gs, int ls);
-	void fill_kernels();
-	void clear_kernels();
 };
 
 class Dummyfield : public Gaugefield_hybrid {
@@ -86,11 +86,7 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
-	Opencl_Module::fill_kernels();
-
 	//to this end, one has to set the needed files by hand
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl";
 	testKernel = createKernel("geometry_test") << basic_opencl_code << "tests/geometry_test.cl";
 }
 

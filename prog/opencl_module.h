@@ -42,28 +42,11 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device)
-		: parameters(params), device(device), gaugefield(NDIM * meta::get_vol4d(params), device),
-		  gf_unsmeared(gaugefield.get_elements(), device),
-		  stout_smear(0), rectangles(0), rectangles_reduction(0) {};
+	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device);
 	/**
-	 * Destructor, calls finalize().
-	 *
+	 * Destructor.
 	 */
-	virtual ~Opencl_Module() {
-	}
-
-	/**
-	 * Free variables. Called by destructor.
-	 */
-	void finalize();
-
-	/**
-	 * Initialize everything. First method to be called.
-	 *
-	 * @deprecated To be replaced by a proper constructor
-	 */
-	void init();
+	virtual ~Opencl_Module();
 
 	/**
 	 * Get a pointer to the gaugefield buffer
@@ -128,27 +111,6 @@ public:
 	 * @param[in] gf gaugefield to measure on
 	 */
 	void polyakov_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_complex> *);
-
-	// OpenCL specific methods needed for building/compiling the OpenCL program
-	/**
-	 * Collect the compiler options for OpenCL.
-	 * Virtual method, allows to include more options in inherited classes.
-	 */
-	virtual void fill_collect_options(std::stringstream* collect_options);
-	/**
-	 * Collect the kernels for OpenCL.
-	 * Virtual method, allows to include more kernels in inherited classes.
-	 */
-	virtual void fill_kernels();
-	/**
-	 * Clear out the kernels,
-	 * Virtual method, allows to clear additional kernels in inherited classes.
-	 */
-	virtual void clear_kernels();
-	/**
-	 * Contains the list of kernel files after call to fill_kernels_file().
-	 */
-	std::vector<std::string> cl_kernels_file;
 
 	/**
 	 * comutes work-sizes for a kernel
@@ -255,7 +217,7 @@ protected:
 	 *
 	 * @param kernel_name The name of the kernel to create.
 	 */
-	TmpClKernel createKernel(const char * const kernel_name, const char * const build_opts = 0);
+	TmpClKernel createKernel(const char * const kernel_name, std::string build_opts = "");
 
 	/**
 	 * Print the profiling information for the given kernel to the given file.
@@ -291,6 +253,15 @@ private:
 
 	void convertGaugefieldToSOA_device(const hardware::buffers::SU3 * out, const hardware::buffers::Plain<Matrixsu3> * in);
 	void convertGaugefieldFromSOA_device(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::SU3 * in);
+
+	/**
+	 * Collect the kernels for OpenCL.
+	 */
+	void fill_kernels();
+	/**
+	 * Clear out the kernels,
+	 */
+	void clear_kernels();
 };
 
 #endif //OPENCLMODULEH

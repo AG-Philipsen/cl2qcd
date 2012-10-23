@@ -8,6 +8,8 @@
 
 using namespace std;
 
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
+
 /**
  * What follows are functions that call opencl_fermions-class-functions.
  * This is needed to be able to pass different fermionmatrices as
@@ -338,39 +340,39 @@ cl_ulong QplusQminus_eo::get_Bytes() const
 }
 
 
-void Opencl_Module_Fermions::fill_collect_options(stringstream* collect_options)
+static std::string collect_build_options(hardware::Device *, const meta::Inputparameters& params)
 {
-	Opencl_Module_Spinors::fill_collect_options(collect_options);
+	std::ostringstream options;
 
-	switch (get_parameters().get_fermact()) {
+	switch (params.get_fermact()) {
 		case meta::Inputparameters::twistedmass :
-			*collect_options << " -D_TWISTEDMASS_";
+			options << "-D_TWISTEDMASS_";
 			break;
 		case meta::Inputparameters::clover :
-			*collect_options << " -D_CLOVER_";
+			options << "-D_CLOVER_";
 			break;
 	}
 
 	//CP: These are the BCs in spatial and temporal direction
-	hmc_float tmp_spatial = (get_parameters().get_theta_fermion_spatial() * PI) / ( (hmc_float) get_parameters().get_nspace());
-	hmc_float tmp_temporal = (get_parameters().get_theta_fermion_temporal() * PI) / ( (hmc_float) get_parameters().get_ntime());
+	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());
+	hmc_float tmp_temporal = (params.get_theta_fermion_temporal() * PI) / ( (hmc_float) params.get_ntime());
 	//BC: on the corners in each direction: exp(i theta) -> on each site exp(i theta*PI /LATEXTENSION) = cos(tmp2) + isin(tmp2)
-	*collect_options << " -DSPATIAL_RE=" << cos(tmp_spatial);
-	*collect_options << " -DMSPATIAL_RE=" << -cos(tmp_spatial);
-	*collect_options << " -DSPATIAL_IM=" << sin(tmp_spatial);
-	*collect_options << " -DMSPATIAL_IM=" << -sin(tmp_spatial);
+	options << " -DSPATIAL_RE=" << cos(tmp_spatial);
+	options << " -DMSPATIAL_RE=" << -cos(tmp_spatial);
+	options << " -DSPATIAL_IM=" << sin(tmp_spatial);
+	options << " -DMSPATIAL_IM=" << -sin(tmp_spatial);
 
-	*collect_options << " -DTEMPORAL_RE=" << cos(tmp_temporal);
-	*collect_options << " -DMTEMPORAL_RE=" << -cos(tmp_temporal);
-	*collect_options << " -DTEMPORAL_IM=" << sin(tmp_temporal);
-	*collect_options << " -DMTEMPORAL_IM=" << -sin(tmp_temporal);
+	options << " -DTEMPORAL_RE=" << cos(tmp_temporal);
+	options << " -DMTEMPORAL_RE=" << -cos(tmp_temporal);
+	options << " -DTEMPORAL_IM=" << sin(tmp_temporal);
+	options << " -DMTEMPORAL_IM=" << -sin(tmp_temporal);
 
-	return;
+	return options.str();
 }
 
 void Opencl_Module_Fermions::fill_kernels()
 {
-	Opencl_Module_Spinors::fill_kernels();
+	sources = basic_fermion_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 
 	M_wilson = 0;
 	M_tm_plus = 0;
@@ -378,36 +380,36 @@ void Opencl_Module_Fermions::fill_kernels()
 
 	logger.debug() << "Create fermion kernels...";
 	if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
-		M_wilson = createKernel("M_wilson") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m.cl";
+		M_wilson = createKernel("M_wilson") << sources << "fermionmatrix.cl" << "fermionmatrix_m.cl";
 	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
-		M_tm_plus = createKernel("M_tm_plus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
-		M_tm_minus = createKernel("M_tm_minus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_m_tm_minus.cl";
+		M_tm_plus = createKernel("M_tm_plus") << sources << "fermionmatrix.cl" << "fermionmatrix_m_tm_plus.cl";
+		M_tm_minus = createKernel("M_tm_minus") << sources << "fermionmatrix.cl" << "fermionmatrix_m_tm_minus.cl";
 	} else if(get_parameters().get_fermact() == meta::Inputparameters::clover) {
 		throw Print_Error_Message("no kernels for CLOVER-discretization implemented yet, aborting... ", __FILE__, __LINE__);
 	} else {
 		throw Print_Error_Message("there was a problem with which fermion-discretization to use, aborting... ", __FILE__, __LINE__);
 	}
 
-	gamma5 = createKernel("gamma5") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_gamma5.cl";
+	gamma5 = createKernel("gamma5") << sources << "fermionmatrix.cl" << "fermionmatrix_gamma5.cl";
 
 
 	//Kernels needed if eoprec is used
 	if(get_parameters().get_use_eo() == true) {
 		if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
-			M_tm_sitediagonal = createKernel("M_tm_sitediagonal") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
-			M_tm_inverse_sitediagonal = createKernel("M_tm_inverse_sitediagonal") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
-			M_tm_sitediagonal_minus = createKernel("M_tm_sitediagonal_minus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
-			M_tm_inverse_sitediagonal_minus = createKernel("M_tm_inverse_sitediagonal_minus") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
+			M_tm_sitediagonal = createKernel("M_tm_sitediagonal") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
+			M_tm_inverse_sitediagonal = createKernel("M_tm_inverse_sitediagonal") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
+			M_tm_sitediagonal_minus = createKernel("M_tm_sitediagonal_minus") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
+			M_tm_inverse_sitediagonal_minus = createKernel("M_tm_inverse_sitediagonal_minus") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m.cl";
 		}
-		dslash_eo = createKernel("dslash_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
-		gamma5_eo = createKernel("gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
+		dslash_eo = createKernel("dslash_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash.cl";
+		gamma5_eo = createKernel("gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo_gamma5.cl";
 		//merged kernels
 		if (get_parameters().get_use_merge_kernels_fermion() == true) {
-			dslash_AND_gamma5_eo = createKernel("dslash_AND_gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_gamma5.cl";
-			dslash_AND_M_tm_inverse_sitediagonal_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal.cl";
-			dslash_AND_M_tm_inverse_sitediagonal_minus_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_minus_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal_minus.cl";
-			M_tm_sitediagonal_AND_gamma5_eo = createKernel("M_tm_sitediagonal_AND_gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
-			M_tm_sitediagonal_minus_AND_gamma5_eo = createKernel("M_tm_sitediagonal_minus_AND_gamma5_eo") << basic_fermion_code << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
+			dslash_AND_gamma5_eo = createKernel("dslash_AND_gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_gamma5.cl";
+			dslash_AND_M_tm_inverse_sitediagonal_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal.cl";
+			dslash_AND_M_tm_inverse_sitediagonal_minus_eo = createKernel("dslash_AND_M_tm_inverse_sitediagonal_minus_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_dslash_AND_M_tm_inverse_sitediagonal_minus.cl";
+			M_tm_sitediagonal_AND_gamma5_eo = createKernel("M_tm_sitediagonal_AND_gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
+			M_tm_sitediagonal_minus_AND_gamma5_eo = createKernel("M_tm_sitediagonal_minus_AND_gamma5_eo") << sources << "fermionmatrix.cl" << "fermionmatrix_eo.cl" << "fermionmatrix_eo_m_merged.cl";
 		}
 
 	}
@@ -418,8 +420,6 @@ void Opencl_Module_Fermions::fill_kernels()
 
 void Opencl_Module_Fermions::clear_kernels()
 {
-	Opencl_Module_Spinors::clear_kernels();
-
 	logger.trace() << "clearing fermion kernels...";
 	cl_uint clerr = CL_SUCCESS;
 
@@ -456,8 +456,6 @@ void Opencl_Module_Fermions::clear_kernels()
 			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		}
 	}
-
-	return;
 }
 
 void Opencl_Module_Fermions::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
@@ -2082,4 +2080,11 @@ Opencl_Module_Fermions::Opencl_Module_Fermions(const meta::Inputparameters& para
 	hmc_complex minusone = hmc_complex_minusone;
 	clmem_one.load(&one);
 	clmem_minusone.load(&minusone);
+
+	fill_kernels();
 };
+
+Opencl_Module_Fermions::~Opencl_Module_Fermions()
+{
+	clear_kernels();
+}

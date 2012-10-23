@@ -17,10 +17,10 @@ class Device : public Opencl_Module {
 	cl_kernel testKernel;
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
-		Opencl_Module::init(); /* init in body for proper this-pointer */
+		fill_kernels();
 	};
 	~Device() {
-		finalize();
+		clear_kernels();
 	};
 
 	void runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, int gs, int ls);
@@ -66,7 +66,6 @@ void Dummyfield::finalize_opencl()
 void Dummyfield::fill_buffers()
 {
 	// don't invoke parent function as we don't require the original buffers
-	cl_int err;
 	int NUM_ELEMENTS = meta::get_vol4d(get_parameters());
 	host_out = new hmc_float[NUM_ELEMENTS];
 	BOOST_REQUIRE(host_out);
@@ -76,7 +75,6 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	Opencl_Module::fill_kernels();
 	testKernel = createKernel("staple_test") << basic_opencl_code  << "/tests/staple_test.cl";
 }
 
@@ -90,7 +88,6 @@ void Dummyfield::clear_buffers()
 void Device::clear_kernels()
 {
 	clReleaseKernel(testKernel);
-	Opencl_Module::clear_kernels();
 }
 
 void Device::runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, int gs, int ls)

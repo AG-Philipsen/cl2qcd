@@ -43,24 +43,7 @@ public:
 	 * @param[in] params points to an instance of inputparameters
 	 */
 	Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device);
-
-	/**
-	 * Collect the compiler options for OpenCL.
-	 * Virtual method, allows to include more options in inherited classes.
-	 */
-	virtual void fill_collect_options(std::stringstream* collect_options) override;
-
-	/**
-	 * Collect the kernels for OpenCL.
-	 * Virtual method, allows to include more kernels in inherited classes.
-	 */
-	virtual void fill_kernels() override;
-
-	/**
-	 * Clear out the kernels,
-	 * Virtual method, allows to clear additional kernels in inherited classes.
-	 */
-	virtual void clear_kernels() override;
+	~Opencl_Module_Spinors();
 
 	/**
 	 * Add specific work_size determination for this child class
@@ -164,6 +147,15 @@ protected:
 	ClSourcePackage basic_fermion_code;
 
 private:
+	/**
+	 * Collect the kernels for OpenCL.
+	 */
+	void fill_kernels();
+
+	/**
+	 * Clear out the kernels,
+	 */
+	void clear_kernels();
 
 	cl_kernel convertSpinorfieldToSOA_eo;
 	cl_kernel convertSpinorfieldFromSOA_eo;

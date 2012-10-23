@@ -8,27 +8,27 @@
 
 using namespace std;
 
-void Opencl_Module_Hmc::fill_collect_options(stringstream* collect_options)
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
+
+static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	using namespace hardware::buffers;
 
-	Opencl_Module_Fermions::fill_collect_options(collect_options);
-	*collect_options <<  " -DBETA=" << get_parameters().get_beta() << " -DGAUGEMOMENTASIZE=" << meta::get_vol4d(get_parameters()) * NDIM;
+	std::ostringstream options;
+	options <<  "-DBETA=" << params.get_beta() << " -DGAUGEMOMENTASIZE=" << meta::get_vol4d(params) * NDIM;
 	//in case of tlsym gauge action
-	if(meta::get_use_rectangles(get_parameters()) == true) {
-		*collect_options <<  " -DC0=" << meta::get_c0(get_parameters()) << " -DC1=" << meta::get_c1(get_parameters());
+	if(meta::get_use_rectangles(params) == true) {
+		options <<  " -DC0=" << meta::get_c0(params) << " -DC1=" << meta::get_c1(params);
 	}
-	if(check_Gaugemomentum_for_SOA(get_device())) {
-		*collect_options << " -DGAUGEMOMENTA_STRIDE=" << get_Gaugemomentum_buffer_stride(meta::get_vol4d(get_parameters()) * NDIM, get_device());
+	if(check_Gaugemomentum_for_SOA(device)) {
+		options << " -DGAUGEMOMENTA_STRIDE=" << get_Gaugemomentum_buffer_stride(meta::get_vol4d(params) * NDIM, device);
 	}
-	return;
+	return options.str();
 }
 
 void Opencl_Module_Hmc::fill_kernels()
 {
-	Opencl_Module_Fermions::fill_kernels();
-
-	basic_hmc_code = basic_fermion_code << "types_hmc.h" << "operations_gaugemomentum.cl";
+	basic_hmc_code = Opencl_Module_Fermions::sources << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_hmc.h" << "operations_gaugemomentum.cl";
 
 	//init kernels for HMC
 	if(get_parameters().get_use_eo() == true) {
@@ -62,8 +62,6 @@ void Opencl_Module_Hmc::fill_kernels()
 
 void Opencl_Module_Hmc::clear_kernels()
 {
-	Opencl_Module_Fermions::clear_kernels();
-
 	cl_uint clerr = CL_SUCCESS;
 
 	logger.debug() << "release HMC-kernels.." ;
@@ -96,8 +94,6 @@ void Opencl_Module_Hmc::clear_kernels()
 		clerr = clReleaseKernel(stout_smear_fermion_force);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
-
-	return;
 }
 
 void Opencl_Module_Hmc::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
@@ -2083,4 +2079,32 @@ void Opencl_Module_Hmc::exportGaugemomentumBuffer(ae * const dest, const hardwar
 	} else {
 		buf->dump(dest);
 	}
+}
+
+Opencl_Module_Hmc::Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device, meta::Counter * inversions0, meta::Counter * inversions1,
+                                     meta::Counter * inversions_mp0, meta::Counter * inversions_mp1)
+	: Opencl_Module_Fermions(params, device),
+	  clmem_s_fermion_init(1, device),
+	  clmem_s_fermion_mp_init(1, device),
+	  clmem_p2(1, device),
+	  clmem_new_p2(1, device),
+	  clmem_s_fermion(1, device),
+	  clmem_p(meta::get_vol4d(params) * NDIM, device),
+	  clmem_new_p(meta::get_vol4d(params) * NDIM, device),
+	  new_u(get_gaugefield()->get_elements(), device),
+	  clmem_force(meta::get_vol4d(params) * NDIM, device),
+	  clmem_phi_inv(meta::get_spinorfieldsize(params), device),
+	  clmem_phi_inv_eo(meta::get_eoprec_spinorfieldsize(params), device),
+	  clmem_phi(meta::get_spinorfieldsize(params), device),
+	  clmem_phi_mp(meta::get_spinorfieldsize(params), device),
+	  clmem_phi_eo(meta::get_eoprec_spinorfieldsize(params), device),
+	  clmem_phi_mp_eo(meta::get_eoprec_spinorfieldsize(params), device),
+	  inversions0(inversions0), inversions1(inversions1), inversions_mp0(inversions_mp0), inversions_mp1(inversions_mp1)
+{
+	fill_kernels();
+}
+
+Opencl_Module_Hmc::~Opencl_Module_Hmc()
+{
+	clear_kernels();
 }

@@ -55,14 +55,15 @@ private:
 
 	template<typename T> void runKernel(size_t groups, cl_ulong threads_per_group, cl_ulong elems, cl_kernel kernel, const hardware::buffers::Plain<cl_char> * in, const hardware::buffers::Plain<cl_char> * out);
 
+	void fill_kernels();
+	void clear_kernels();
+
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
-		Opencl_Module::init(); /* init in body for proper this-pointer */
+		fill_kernels();
 	};
-	virtual void fill_kernels();
-	virtual void clear_kernels();
-	~Device() {
-		finalize();
+	virtual ~Device() {
+		clear_kernels();
 	};
 
 	void runKernel(copyType copy_type, size_t groups, cl_ulong threads_per_group, cl_ulong elems, const hardware::buffers::Plain<cl_char> * in, const hardware::buffers::Plain<cl_char> * out);
@@ -237,8 +238,6 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	Opencl_Module::fill_kernels();
-
 	floatKernel = createKernel("copyFloat") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 	su3Kernel = createKernel("copySU3") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 	su3SOAKernel = createKernel("copySU3SOA") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
@@ -259,8 +258,6 @@ void Dummyfield::clear_buffers()
 
 void Device::clear_kernels()
 {
-	// don't invoke parent function as we don't require the original kernels
-
 	clReleaseKernel(floatKernel);
 	clReleaseKernel(su3Kernel);
 	clReleaseKernel(su3SOAKernel);

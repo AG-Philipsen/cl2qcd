@@ -24,12 +24,8 @@ void Gaugefield_heatbath_kappa::init_tasks()
 
 	//LZ: right now, each task carries exactly one opencl device -> thus the below allocation with [1]. Could be generalized in future
 	opencl_modules[task_kappa] = new Opencl_Module_Kappa(get_parameters(), get_device_for_task(task_kappa));
-	get_task_kappa()->init();
 
 	opencl_modules[task_heatbath] = new Opencl_Module_Heatbath(get_parameters(), get_device_for_task(task_heatbath));
-	get_task_heatbath()->init();
-
-	return;
 }
 
 void Gaugefield_heatbath_kappa::perform_heatbath(int nheat, int nover)
@@ -100,14 +96,7 @@ void Gaugefield_heatbath_kappa::delete_variables()
 
 void Gaugefield_heatbath_kappa::finalize_opencl()
 {
-	/// @todo this must be generalized if more than one device is used for one task
-	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-		opencl_modules[ntask]->finalize();
-	}
-
 	Gaugefield_hybrid::finalize_opencl();
-
-	return;
 }
 
 
