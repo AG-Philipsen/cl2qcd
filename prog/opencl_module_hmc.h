@@ -47,42 +47,14 @@ class Opencl_Module_Hmc : public Opencl_Module_Fermions {
 public:
 
 	/**
-	 * Empty constructor.
+	 * Constructor.
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
 	Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device, meta::Counter * inversions0, meta::Counter * inversions1,
-	                  meta::Counter * inversions_mp0, meta::Counter * inversions_mp1)
-		: Opencl_Module_Fermions(params, device),
-		  clmem_s_fermion_init(1, device),
-		  clmem_s_fermion_mp_init(1, device),
-		  clmem_p2(1, device),
-		  clmem_new_p2(1, device),
-		  clmem_s_fermion(1, device),
-		  clmem_p(meta::get_vol4d(params) * NDIM, device),
-		  clmem_new_p(meta::get_vol4d(params) * NDIM, device),
-		  new_u(get_gaugefield()->get_elements(), device),
-		  clmem_force(meta::get_vol4d(params) * NDIM, device),
-		  clmem_phi_inv(meta::get_spinorfieldsize(params), device),
-		  clmem_phi_inv_eo(meta::get_eoprec_spinorfieldsize(params), device),
-		  clmem_phi(meta::get_spinorfieldsize(params), device),
-		  clmem_phi_mp(meta::get_spinorfieldsize(params), device),
-		  clmem_phi_eo(meta::get_eoprec_spinorfieldsize(params), device),
-		  clmem_phi_mp_eo(meta::get_eoprec_spinorfieldsize(params), device),
-		  inversions0(inversions0), inversions1(inversions1), inversions_mp0(inversions_mp0), inversions_mp1(inversions_mp1)
-		{ };
+	                  meta::Counter * inversions_mp0, meta::Counter * inversions_mp1);
 
-	// OpenCL specific methods needed for building/compiling the OpenCL program
-	/**
-	 * Collect the kernels for OpenCL.
-	 * Virtual method, allows to include more kernels in inherited classes.
-	 */
-	virtual void fill_kernels() override;
-	/**
-	 * Clear out the kernels,
-	 * Virtual method, allows to clear additional kernels in inherited classes.
-	 */
-	virtual void clear_kernels() override;
+	virtual ~Opencl_Module_Hmc();
 
 	/**
 	 * comutes work-sizes for a kernel
@@ -189,6 +161,14 @@ protected:
 	ClSourcePackage basic_hmc_code;
 
 private:
+	/**
+	 * Collect the kernels for OpenCL.
+	 */
+	void fill_kernels();
+	/**
+	 * Clear out the kernels,
+	 */
+	void clear_kernels();
 
 	//kernels
 	cl_kernel generate_gaussian_spinorfield;

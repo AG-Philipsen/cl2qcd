@@ -16,19 +16,21 @@ class Device : public Opencl_Module {
 	cl_kernel fillComplex;
 	cl_kernel readComplex;
 
+	void fill_kernels();
+	void clear_kernels();
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device)
 		: Opencl_Module(params, device) {
+		fill_kernels();
 		Opencl_Module::init(); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
+		clear_kernels();
 	};
 
 	void runFillKernel(const hardware::buffers::Plain<hmc_complex> * out, hmc_complex value);
 	void runReadKernel(const hardware::buffers::Plain<cl_float2> * out, const hardware::buffers::Plain<hmc_complex> * in);
-	void fill_kernels();
-	void clear_kernels();
 };
 
 class Dummyfield : public Gaugefield_hybrid {
@@ -118,8 +120,6 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	Opencl_Module::fill_kernels();
-
 	fillComplex = createKernel("fillComplex") << basic_opencl_code << "tests/complex_mem_access.cl";
 	readComplex = createKernel("readComplex") << basic_opencl_code << "tests/complex_mem_access.cl";
 }
@@ -138,7 +138,6 @@ void Dummyfield::clear_buffers()
 void Device::clear_kernels()
 {
 	clReleaseKernel(fillComplex);
-	Opencl_Module::clear_kernels();
 }
 
 void Device::runFillKernel(const hardware::buffers::Plain<hmc_complex> * out, hmc_complex value)

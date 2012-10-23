@@ -27,14 +27,10 @@ static void print_profiling(const std::string& filename, const std::string& kern
 void Opencl_Module::init()
 {
 	logger.debug() << "Device is " << device->get_name();
-
-	this->fill_kernels();
 }
 
 void Opencl_Module::finalize()
 {
-	this->clear_kernels();
-	return;
 }
 
 const hardware::buffers::SU3 * Opencl_Module::get_gaugefield()
@@ -699,3 +695,18 @@ void Opencl_Module::convertGaugefieldFromSOA_device(const hardware::buffers::Pla
 
 	device->enqueue_kernel(convertGaugefieldFromSOA, gs2, ls2);
 }
+
+Opencl_Module::Opencl_Module(const meta::Inputparameters& params, hardware::Device * device)
+	: parameters(params), device(device), gaugefield(NDIM * meta::get_vol4d(params), device),
+	  gf_unsmeared(gaugefield.get_elements(), device),
+	  stout_smear(0), rectangles(0), rectangles_reduction(0)
+{
+	fill_kernels();
+};
+
+
+Opencl_Module::~Opencl_Module()
+{
+	clear_kernels();
+}
+

@@ -42,17 +42,11 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device)
-		: parameters(params), device(device), gaugefield(NDIM * meta::get_vol4d(params), device),
-		  gf_unsmeared(gaugefield.get_elements(), device),
-		  stout_smear(0), rectangles(0), rectangles_reduction(0) {};
+	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device);
 	/**
-	 * Destructor, calls finalize().
-	 *
+	 * Destructor.
 	 */
-	virtual ~Opencl_Module() {
-	}
-
+	virtual ~Opencl_Module();
 	/**
 	 * Free variables. Called by destructor.
 	 */
@@ -128,18 +122,6 @@ public:
 	 * @param[in] gf gaugefield to measure on
 	 */
 	void polyakov_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_complex> *);
-
-	// OpenCL specific methods needed for building/compiling the OpenCL program
-	/**
-	 * Collect the kernels for OpenCL.
-	 * Virtual method, allows to include more kernels in inherited classes.
-	 */
-	virtual void fill_kernels();
-	/**
-	 * Clear out the kernels,
-	 * Virtual method, allows to clear additional kernels in inherited classes.
-	 */
-	virtual void clear_kernels();
 
 	/**
 	 * comutes work-sizes for a kernel
@@ -282,6 +264,15 @@ private:
 
 	void convertGaugefieldToSOA_device(const hardware::buffers::SU3 * out, const hardware::buffers::Plain<Matrixsu3> * in);
 	void convertGaugefieldFromSOA_device(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::SU3 * in);
+
+	/**
+	 * Collect the kernels for OpenCL.
+	 */
+	void fill_kernels();
+	/**
+	 * Clear out the kernels,
+	 */
+	void clear_kernels();
 };
 
 #endif //OPENCLMODULEH

@@ -25,8 +25,6 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 
 void Opencl_Module_Heatbath::fill_kernels()
 {
-	Opencl_Module_Ran::fill_kernels();
-
 	ClSourcePackage sources = basic_opencl_code << prng_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 
 	logger.debug() << "Create heatbath kernels...";
@@ -40,8 +38,6 @@ void Opencl_Module_Heatbath::fill_kernels()
 
 void Opencl_Module_Heatbath::clear_kernels()
 {
-	Opencl_Module_Ran::clear_kernels();
-
 	cl_int clerr = CL_SUCCESS;
 
 	clerr = clReleaseKernel(heatbath_even);
@@ -55,8 +51,6 @@ void Opencl_Module_Heatbath::clear_kernels()
 
 	clerr = clReleaseKernel(overrelax_odd);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-
-	return;
 }
 
 void Opencl_Module_Heatbath::run_heatbath()
@@ -204,4 +198,15 @@ void Opencl_Module_Heatbath::print_profiling(const std::string& filename, int nu
 	Opencl_Module::print_profiling(filename, heatbath_odd);
 	Opencl_Module::print_profiling(filename, overrelax_even);
 	Opencl_Module::print_profiling(filename, overrelax_odd);
+}
+
+Opencl_Module_Heatbath::Opencl_Module_Heatbath(const meta::Inputparameters& params, hardware::Device * device)
+	: Opencl_Module_Ran(params, device)
+{
+	fill_kernels();
+}
+
+Opencl_Module_Heatbath::~Opencl_Module_Heatbath()
+{
+	clear_kernels();
 }

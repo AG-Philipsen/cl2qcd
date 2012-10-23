@@ -12,17 +12,19 @@ std::string const version = "0.1";
 class Device : public Opencl_Module {
 
 	cl_kernel testKernel;
+	void fill_kernels();
+	void clear_kernels();
 
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
+		fill_kernels();
 		Opencl_Module::init(); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
+		clear_kernels();
 	};
 
-	void fill_kernels();
-	void clear_kernels();
 };
 
 const meta::Inputparameters INPUT(0, 0);
@@ -59,7 +61,6 @@ void Dummyfield::finalize_opencl()
 
 void Device::fill_kernels()
 {
-	Opencl_Module::fill_kernels();
 #ifdef _USEDOUBLEPREC_
 	logger.info() << "init saxsbypz kernels to see if the compiler does strange things...";
 	logger.info() << "\thmc_float = double";
@@ -75,7 +76,5 @@ void Device::fill_kernels()
 void Device::clear_kernels()
 {
 	clReleaseKernel(testKernel);
-
-	Opencl_Module::clear_kernels();
 }
 

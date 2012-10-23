@@ -162,17 +162,7 @@ public:
 	 */
 	Opencl_Module_Fermions(const meta::Inputparameters& params, hardware::Device * device);
 
-	// OpenCL specific methods needed for building/compiling the OpenCL program
-	/**
-	 * Collect the kernels for OpenCL.
-	 * Virtual method, allows to include more kernels in inherited classes.
-	 */
-	virtual void fill_kernels() override;
-	/**
-	 * Clear out the kernels,
-	 * Virtual method, allows to clear additional kernels in inherited classes.
-	 */
-	virtual void clear_kernels() override;
+	virtual ~Opencl_Module_Fermions();
 
 	/**
 	 * comutes work-sizes for a kernel
@@ -294,6 +284,17 @@ public:
 	virtual uint64_t get_flop_size(const std::string& in) const override;
 
 private:
+	/**
+	 * Collect the kernels for OpenCL.
+	 * Virtual method, allows to include more kernels in inherited classes.
+	 */
+	void fill_kernels();
+	/**
+	 * Clear out the kernels,
+	 * Virtual method, allows to clear additional kernels in inherited classes.
+	 */
+	void clear_kernels();
+
 	////////////////////////////////////
 	//kernels, sorted roughly by groups
 	//fermionmatrix

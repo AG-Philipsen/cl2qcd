@@ -23,17 +23,19 @@ int iter = 1;
 
 class Device : public Opencl_Module {
 	cl_kernel testKernel;
+	void fill_kernels();
+	void clear_kernels();
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device), out(get_gaugefield()->get_elements(), device) {
+		fill_kernels();
 		Opencl_Module::init(); /* init in body for proper this-pointer */
 	};
-	~Device() {
+	virtual ~Device() {
+		clear_kernels();
 		finalize();
 	};
 
 	void runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::SU3 * out, int gs, int ls);
-	void fill_kernels();
-	void clear_kernels();
 
 	const hardware::buffers::SU3 out;
 };
@@ -88,13 +90,6 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
-	Opencl_Module::fill_kernels();
-
-	//to this end, one has to set the needed files by hand
-	basic_opencl_code = ClSourcePackage() << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
-	                    << "operations_matrix_su3.cl" << "operations_matrix.cl" << "operations_gaugefield.cl";
-
 	//this has to be the same as in opencl_module
 	// in fact, the kernel has already been build in the above call!!
 	//  testKernel = createKernel("stout_smear") << basic_opencl_code  <<  "tests/operations_gaugemomentum.cl" << "stout_smear.cl";
@@ -102,7 +97,6 @@ void Device::fill_kernels()
 void Device::clear_kernels()
 {
 	clReleaseKernel(testKernel);
-	Opencl_Module::clear_kernels();
 }
 
 void Device::runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::SU3 * out, int gs, int ls)

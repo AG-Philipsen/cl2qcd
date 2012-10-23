@@ -42,20 +42,9 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Heatbath(const meta::Inputparameters& params, hardware::Device * device)
-		: Opencl_Module_Ran(params, device) {};
+	Opencl_Module_Heatbath(const meta::Inputparameters& params, hardware::Device * device);
 
-	/**
-	 * Collect the kernels for OpenCL.
-	 * Virtual method, allows to include more kernels in inherited classes.
-	 */
-	virtual void fill_kernels() override;
-
-	/**
-	 * Clear out the kernels,
-	 * Virtual method, allows to clear additional kernels in inherited classes.
-	 */
-	virtual void clear_kernels() override;
+	virtual ~Opencl_Module_Heatbath();
 
 	/**
 	 * Perform one heatbath step.
@@ -72,9 +61,19 @@ public:
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
-protected:
 
 private:
+	/**
+	 * Collect the kernels for OpenCL.
+	 * Virtual method, allows to include more kernels in inherited classes.
+	 */
+	void fill_kernels();
+
+	/**
+	 * Clear out the kernels,
+	 * Virtual method, allows to clear additional kernels in inherited classes.
+	 */
+	void clear_kernels();
 
 	cl_kernel heatbath_odd;
 	cl_kernel heatbath_even;

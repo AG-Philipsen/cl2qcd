@@ -372,8 +372,6 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 
 void Opencl_Module_Fermions::fill_kernels()
 {
-	Opencl_Module_Spinors::fill_kernels();
-
 	sources = basic_fermion_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 
 	M_wilson = 0;
@@ -422,8 +420,6 @@ void Opencl_Module_Fermions::fill_kernels()
 
 void Opencl_Module_Fermions::clear_kernels()
 {
-	Opencl_Module_Spinors::clear_kernels();
-
 	logger.trace() << "clearing fermion kernels...";
 	cl_uint clerr = CL_SUCCESS;
 
@@ -460,8 +456,6 @@ void Opencl_Module_Fermions::clear_kernels()
 			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		}
 	}
-
-	return;
 }
 
 void Opencl_Module_Fermions::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
@@ -2086,4 +2080,11 @@ Opencl_Module_Fermions::Opencl_Module_Fermions(const meta::Inputparameters& para
 	hmc_complex minusone = hmc_complex_minusone;
 	clmem_one.load(&one);
 	clmem_minusone.load(&minusone);
+
+	fill_kernels();
 };
+
+Opencl_Module_Fermions::~Opencl_Module_Fermions()
+{
+	clear_kernels();
+}

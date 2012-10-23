@@ -22,8 +22,6 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 
 void Opencl_Module_Kappa::fill_kernels()
 {
-	Opencl_Module::fill_kernels();
-
 	ClSourcePackage sources = basic_opencl_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 
 	cout << "Create TK clover kernels..." << endl;
@@ -73,10 +71,17 @@ hmc_float Opencl_Module_Kappa::get_kappa_clover()
 
 void Opencl_Module_Kappa::clear_kernels()
 {
-	Opencl_Module::clear_kernels();
-
 	cl_int clerr = clReleaseKernel(kappa_clover_gpu);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+}
 
-	return;
+Opencl_Module_Kappa::Opencl_Module_Kappa(const meta::Inputparameters& params, hardware::Device * device)
+	: Opencl_Module(params, device), clmem_kappa_clover(1, device)
+{
+	fill_kernels();
+}
+
+Opencl_Module_Kappa::~Opencl_Module_Kappa()
+{
+	clear_kernels();
 }

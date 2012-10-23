@@ -30,7 +30,6 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 
 void Opencl_Module_Correlator::fill_kernels()
 {
-	Opencl_Module_Spinors::fill_kernels();
 	basic_correlator_code = basic_fermion_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 	logger.debug() << "Create correlator kernels...";
 
@@ -69,7 +68,6 @@ void Opencl_Module_Correlator::fill_kernels()
 
 void Opencl_Module_Correlator::clear_kernels()
 {
-	Opencl_Module_Spinors::clear_kernels();
 	int clerr = CL_SUCCESS;
 	clerr = clReleaseKernel(correlator_ps);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -95,7 +93,6 @@ void Opencl_Module_Correlator::clear_kernels()
 		clerr = clReleaseKernel(create_stochastic_source);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
-	return;
 }
 
 void Opencl_Module_Correlator::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
@@ -347,4 +344,17 @@ void Opencl_Module_Correlator::print_profiling(const std::string& filename, int 
 	Opencl_Module::print_profiling(filename, correlator_ax);
 	Opencl_Module::print_profiling(filename, correlator_ay);
 	Opencl_Module::print_profiling(filename, correlator_az);
+}
+
+Opencl_Module_Correlator::Opencl_Module_Correlator(const meta::Inputparameters& params, hardware::Device * device)
+	: Opencl_Module_Spinors(params, device),
+	  create_point_source(0), create_stochastic_source(0),
+	  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0)
+{
+	fill_kernels();
+}
+
+Opencl_Module_Correlator::~Opencl_Module_Correlator()
+{
+	clear_kernels();
 }

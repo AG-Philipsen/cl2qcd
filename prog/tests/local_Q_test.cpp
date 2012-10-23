@@ -13,17 +13,19 @@ std::string const version = "0.1";
 class Device : public Opencl_Module {
 
 	cl_kernel testKernel;
+	void fill_kernels();
+	void clear_kernels();
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
+		fill_kernels();
 		Opencl_Module::init(); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		finalize();
+		clear_kernels();
 	};
 
 	void runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, int gs, int ls);
-	void fill_kernels();
-	void clear_kernels();
 };
 
 class Dummyfield : public Gaugefield_hybrid {
@@ -72,9 +74,6 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	//one only needs some kernels up to now. to save time during compiling they are put in here by hand
-	Opencl_Module::fill_kernels();
-
 	testKernel = createKernel("localQ_test") << basic_opencl_code  << "/tests/localQ_test.cl";
 }
 
@@ -88,7 +87,6 @@ void Dummyfield::clear_buffers()
 void Device::clear_kernels()
 {
 	clReleaseKernel(testKernel);
-	Opencl_Module::clear_kernels();
 }
 
 void Device::runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * out, int gs, int ls)

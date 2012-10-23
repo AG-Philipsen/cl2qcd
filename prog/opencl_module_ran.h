@@ -48,12 +48,6 @@ public:
 	virtual ~Opencl_Module_Ran();
 
 	/**
-	 * Collect the kernels for OpenCL.
-	 * Virtual method, allows to include more kernels in inherited classes.
-	 */
-	virtual void fill_kernels() override;
-
-	/**
 	 * Get cl_mem object rndarray
 	 * @return rndarray
 	 */

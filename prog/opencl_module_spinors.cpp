@@ -27,8 +27,6 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 
 void Opencl_Module_Spinors::fill_kernels()
 {
-	Opencl_Module_Ran::fill_kernels();
-
 	basic_fermion_code = basic_opencl_code << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	if(get_parameters().get_use_eo()) {
 		basic_fermion_code = basic_fermion_code << "operations_spinorfield_eo.cl";
@@ -64,14 +62,10 @@ void Opencl_Module_Spinors::fill_kernels()
 			saxpy_AND_squarenorm_eo = createKernel("saxpy_AND_squarenorm_eo") << basic_fermion_code << "spinorfield_eo_saxpy_AND_squarenorm.cl";
 		}
 	}
-
-	return;
 }
 
 void Opencl_Module_Spinors::clear_kernels()
 {
-	Opencl_Module_Ran::clear_kernels();
-
 	cl_int clerr = CL_SUCCESS;
 
 	clerr = clReleaseKernel(set_spinorfield_cold);
@@ -114,10 +108,6 @@ void Opencl_Module_Spinors::clear_kernels()
 		clerr = clReleaseKernel(convertSpinorfieldFromSOA_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
-
-
-
-	return;
 }
 
 
@@ -921,5 +911,10 @@ void Opencl_Module_Spinors::copy_to_eoprec_spinorfield_buffer(const hardware::bu
 Opencl_Module_Spinors::Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module_Ran(params, device), saxpy_AND_squarenorm_eo(0)
 {
+	fill_kernels();
 }
 
+Opencl_Module_Spinors::~Opencl_Module_Spinors()
+{
+	clear_kernels();
+}
