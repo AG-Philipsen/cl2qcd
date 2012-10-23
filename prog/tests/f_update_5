@@ -1,15 +1,14 @@
-# set startcondition to cold or hot to start with different gaugefield
-startcondition=continue
-sourcefile=conf.00200
-
-use_eo=false
 NS=4
 NT=4
+fermact=TWISTEDMASS
 
 #with BICGSTAB, this set the init-spinorfield to random values
 solver=BICGSTAB
 
+#this specifies the "eps" in the update
+tau=0.12
+
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=3637.2081456848077
+test_ref_val=3256.0065435087804

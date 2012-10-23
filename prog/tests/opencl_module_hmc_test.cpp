@@ -102,8 +102,8 @@ void fill_with_zero(ae * ae, int size)
 void fill_sf_with_random(spinor * sf_in, int size, int seed)
 {
 	//  Random rnd_loc(seed);
-	for(int i = 0; i < size; ++i) {
 		prng_init(seed);
+	for(int i = 0; i < size; ++i) {
 		sf_in[i].e0.e0.re = prng_double();
 		sf_in[i].e0.e1.re = prng_double();
 		sf_in[i].e0.e2.re = prng_double();
@@ -135,9 +135,8 @@ void fill_sf_with_random(spinor * sf_in, int size, int seed)
 
 void fill_sf_with_random_eo(spinor * sf_in1, spinor * sf_in2, int size, int seed)
 {
-	//  Random rnd_loc(seed);
+  prng_init(seed);
 	for(int i = 0; i < size; ++i) {
-		prng_init(seed);
 		sf_in1[i].e0.e0.re = prng_double();
 		sf_in1[i].e0.e1.re = prng_double();
 		sf_in1[i].e0.e2.re = prng_double();
@@ -1074,8 +1073,8 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 
 	out_eo.load(sf_out_eo);
 	out_noneo.load(sf_out_noneo);
-	in1_noneo.load(sf_in1_noneo);
-	in2_noneo.load(sf_in2_noneo);
+	//	in1_noneo.load(sf_in1_noneo);
+	//in2_noneo.load(sf_in2_noneo);
 	
 	//in case of rnd input, it is nontrivial to supply the same rnd vectors as eo and noneo input.
 	//therefore, simply convert the eo input back to noneo
@@ -1087,9 +1086,23 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	  in1_noneo.load(sf_in1_noneo);
 	  in2_noneo.load(sf_in2_noneo);
 	} else {
-	  //one can either convert to or from eoprec
+	  //one can either convert to or from eoprec, use use_pointsource for that
 	  //NOTE: there is machinery to compare vectors in the old executable
+	  if(params.get_use_pointsource()){
+	    in1_eo.load(sf_in1_eo);
+	    in2_eo.load(sf_in2_eo);
+	    device->convert_from_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
+	    in3_eo.load(sf_in3_eo);
+	    in4_eo.load(sf_in4_eo);
+	    device->convert_from_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
+	  }  else {
+	    in1_noneo.load(sf_in1_noneo);
+	    in2_noneo.load(sf_in2_noneo);
+	    device->convert_to_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
+	    device->convert_to_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
+	  }
 
+	  /*
 	  //this variant gives the same vectors but different force
 	  in1_eo.load(sf_in1_eo);
 	  in2_eo.load(sf_in2_eo);
@@ -1099,7 +1112,7 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	  device->convert_from_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
 	  in1_noneo.dump(sf_in1_noneo);
 	  in2_noneo.dump(sf_in2_noneo);
-	  
+	  */
 	  //this variant gives different vectors: 1 and 2 and 3 and 4 are the same, resp. Very strange!!
 	  /*
 	  device->convert_to_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
@@ -1194,6 +1207,16 @@ BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_3 )
 BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_4 )
 {
   test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_4");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_5 )
+{
+  test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_6 )
+{
+  test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_6");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
