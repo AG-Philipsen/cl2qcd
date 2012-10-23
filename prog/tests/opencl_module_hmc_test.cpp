@@ -1121,8 +1121,9 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	logger.info() << cpu_back_eo4;
 
 	logger.info() << "run eo force on EVEN and ODD sites...";
-	device->fermion_force_eo_device(&in1_eo, &in4_eo, device->get_gaugefield(), &out_eo, EVEN, params.get_kappa() );
-	device->fermion_force_eo_device(&in2_eo, &in3_eo, device->get_gaugefield(), &out_eo, ODD, params.get_kappa() );
+	device->fermion_force_eo_device(&in1_eo, &in4_eo, device->get_gaugefield(), &out_eo, ODD, params.get_kappa() );
+	device->fermion_force_eo_device(&in2_eo, &in3_eo, device->get_gaugefield(), &out_eo, EVEN, params.get_kappa() );
+
 	logger.info() << "|force_eo (even) + force_eo (odd)|^2:";
 	hmc_float cpu_res_eo;
 	device->set_float_to_gaugemomentum_squarenorm_device(&out_eo, &sqnorm);
