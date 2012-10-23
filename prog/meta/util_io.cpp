@@ -19,6 +19,10 @@ static void print_info_integrator(int number, const meta::Inputparameters& param
 static void print_info_integrator(std::ostream* os, int number, const meta::Inputparameters& params);
 static void print_info_configs_io(const meta::Inputparameters& params);
 static void print_info_configs_io(std::ostream * os, const meta::Inputparameters& params);
+static void print_info_observables_gauge_io(const meta::Inputparameters& params);
+static void print_info_observables_gauge_io(std::ostream * os, const meta::Inputparameters& params);
+static void print_info_observables_fermion_io(const meta::Inputparameters& params);
+static void print_info_observables_fermion_io(std::ostream * os, const meta::Inputparameters& params);
 
 static void print_info_global(const meta::Inputparameters& params)
 {
@@ -103,9 +107,9 @@ static void print_info_global(std::ostream* os, const meta::Inputparameters& par
 		*os << "## USE GPU: OFF"  << endl;
 	}
 	if(params.get_use_aniso() == true) {
-		*os << "## USE ANISOTROPY: ON";
+	  *os << "## USE ANISOTROPY: ON" << endl;
 	} else {
-		*os << "## USE ANISOTROPY: OFF";
+	  *os << "## USE ANISOTROPY: OFF" << endl;
 	}
 	*os  << "## Number of devices demanded for calculations: " << params.get_device_count()  << endl;
 	*os  << "## **********************************************************" << endl;
@@ -116,14 +120,14 @@ static void print_info_global(std::ostream* os, const meta::Inputparameters& par
 	switch(params.get_startcondition()) {
 		case Inputparameters::start_from_source: {
 			std::string sf = params.get_sourcefile();
-			*os << "## sourcefile = " << sf;
+			*os << "## sourcefile = " << sf << endl;;
 		}
 		break;
 		case Inputparameters::cold_start:
-			*os << "## cold start";
+		  *os << "## cold start" << endl;;
 			break;
 		case Inputparameters::hot_start:
-			*os << "## hot start";
+		  *os << "## hot start" << endl;;
 			break;
 	}
 	if(params.get_use_smearing() == true) {
@@ -140,6 +144,7 @@ void meta::print_info_heatbath(const char* progname, const Inputparameters& para
 	logger.info() << "## Starting heatbath program, executable name: " << progname;
 	print_info_global(params);
 	print_info_configs_io(params);
+	print_info_observables_gauge_io(params);
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Simulation parameters:";
 	logger.info() << "## beta           = " << params.get_beta();
@@ -172,6 +177,7 @@ void meta::print_info_heatbath(const char* progname, std::ostream* os, const Inp
 	*os  << "## Starting heatbath program, executable name: " << progname << endl;
 	print_info_global(os, params);
 	print_info_configs_io(os, params);
+	print_info_observables_gauge_io(os, params);
 	*os  << "## **********************************************************" << endl;
 	*os  << "## Simulation parameters:" << endl;
 	*os  << "## beta           = " << params.get_beta() << endl;
@@ -188,6 +194,7 @@ void meta::print_info_tkkappa(const char* progname, std::ostream* os, const Inpu
 	*os << "## Starting tk_kappa program, " << progname << endl;
 	print_info_global(os, params);
 	print_info_configs_io(os, params);
+	print_info_observables_gauge_io(os, params);
 	*os  << "## **********************************************************" << endl;
 	*os  << "## Simulation parameters:" << endl;
 	*os  << "## beta           = " << params.get_beta() << endl;
@@ -205,6 +212,7 @@ void meta::print_info_tkkappa(const char* progname, const Inputparameters& param
 	logger.info() << "## Starting tk_kappa program, " << progname ;
 	print_info_global(params);
 	print_info_configs_io(params);
+	print_info_observables_gauge_io(params);
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Simulation parameters:";
 	logger.info() << "## beta           = " << params.get_beta();
@@ -417,6 +425,7 @@ void meta::print_info_inverter(const char* progname, const Inputparameters& para
 	logger.info() << "## Starting inverter program, executable name: " << progname;
 	print_info_global(params);
 	print_info_configs_io(params);
+	print_info_observables_fermion_io(params);
 	print_info_fermion(params);
 	logger.info() << "## **********************************************************";
 	return;
@@ -427,6 +436,7 @@ void meta::print_info_inverter(const char* progname, std::ostream* os, const Inp
 	*os << "## Starting inverter program, executable name: " << progname << endl;
 	print_info_global(os, params);
 	print_info_configs_io(os, params);
+	print_info_observables_fermion_io(os, params);
 	print_info_fermion(os, params);
 	*os << "## **********************************************************" << endl;
 	return;
@@ -642,3 +652,64 @@ static void print_info_configs_io(std::ostream * os, const meta::Inputparameters
 		*os << "## INCREMENT:    " << params.get_config_read_incr() << endl;
 	}
 }
+
+static void print_info_observables_gauge_io(const meta::Inputparameters& params)
+{
+	using namespace meta;
+
+	logger.info() << "## **********************************************************";
+	logger.info() << "## GAUGE OBSERVABLES FILE NAMING PARAMETERS:";
+	logger.info() << "## NAME PREFIX:   " << params.get_gauge_obs_prefix();
+	logger.info() << "## NAME POSTFIX:   " << params.get_gauge_obs_postfix();
+	if(params.get_gauge_obs_to_single_file() == true) {
+		logger.info() << "## WRITE GAUGE OBSERVABLES TO SINGLE FILE";
+	} else {
+		logger.info() << "## WRITE GAUGE OBSERVABLES TO MULTIPLE FILES";
+	}
+}
+
+static void print_info_observables_gauge_io(std::ostream * os, const meta::Inputparameters& params)
+{
+	using namespace meta;
+
+	*os<< "## **********************************************************"<< endl;
+	*os<< "## GAUGE OBSERVABLES FILE NAMING PARAMETERS:"<< endl;
+	*os<< "## NAME PREFIX:   " << params.get_gauge_obs_prefix()<< endl;
+	*os<< "## NAME POSTFIX:   " << params.get_gauge_obs_postfix()<< endl;
+	if(params.get_gauge_obs_to_single_file() == true) {
+		*os<< "## WRITE GAUGE OBSERVABLES TO SINGLE FILE"<< endl;
+	} else {
+		*os<< "## WRITE GAUGE OBSERVABLES TO MULTIPLE FILES"<< endl;
+	}
+}
+
+static void print_info_observables_fermion_io(const meta::Inputparameters& params)
+{
+	using namespace meta;
+
+	logger.info() << "## **********************************************************";
+	logger.info() << "## FERMIONIC OBSERVABLES FILE NAMING PARAMETERS:";
+	logger.info() << "## NAME PREFIX:   " << params.get_ferm_obs_prefix();
+	logger.info() << "## NAME POSTFIX:   " << params.get_ferm_obs_postfix();
+	if(params.get_ferm_obs_to_single_file() == true) {
+		logger.info() << "## WRITE FERMION OBSERVABLES TO SINGLE FILE";
+	} else {
+		logger.info() << "## WRITE FERMION OBSERVABLES TO MULTIPLE FILES";
+	}
+}
+
+static void print_info_observables_fermion_io(std::ostream * os, const meta::Inputparameters& params)
+{
+	using namespace meta;
+
+	*os<< "## **********************************************************"<< endl;
+	*os<< "## FERMIONIC OBSERVABLES FILE NAMING PARAMETERS:"<< endl;
+	*os<< "## NAME PREFIX:   " << params.get_ferm_obs_prefix()<< endl;
+	*os<< "## NAME POSTFIX:   " << params.get_ferm_obs_postfix()<< endl;
+	if(params.get_ferm_obs_to_single_file() == true) {
+		*os<< "## WRITE FERMIONIC OBSERVABLES TO SINGLE FILE"<< endl;
+	} else {
+		*os<< "## WRITE FERMIONIC OBSERVABLES TO MULTIPLE FILES"<< endl;
+	}
+}
+
