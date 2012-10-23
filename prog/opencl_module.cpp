@@ -4,6 +4,7 @@
 
 #include "logger.hpp"
 #include "meta/util.hpp"
+#include "hardware/device.hpp"
 
 using namespace std;
 

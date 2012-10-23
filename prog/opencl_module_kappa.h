@@ -36,12 +36,8 @@
  */
 class Opencl_Module_Kappa : public Opencl_Module_Gaugefield {
 public:
-	/**
-	 * constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Opencl_Module_Kappa(const meta::Inputparameters& params, hardware::Device * device);
+	friend hardware::Device;
+
 	virtual ~Opencl_Module_Kappa();
 
 	/**
@@ -57,6 +53,13 @@ public:
 	hmc_float get_kappa_clover();
 
 private:
+	/**
+	 * Constructor, only to be used by hardware::device
+	 *
+	 * @param[in] params points to an instance of inputparameters
+	 */
+	Opencl_Module_Kappa(const meta::Inputparameters& params, hardware::Device * device);
+
 	/**
 	 * Collect the kernels for OpenCL.
 	 */

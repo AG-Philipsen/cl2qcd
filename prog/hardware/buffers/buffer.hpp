@@ -7,12 +7,19 @@
 #ifndef _HARDWARE_BUFFERS_BUFFER_
 #define _HARDWARE_BUFFERS_BUFFER_
 
-#include "../device.hpp"
+#ifdef __APPLE__
+#include <OpenCL/cl.h>
+#else
+#include <CL/cl.h>
+#endif
 
 #include <stdexcept>
-#include "../system.hpp"
 
 namespace hardware {
+
+	/* forward decleration of device to avoid cycles */
+	class Device;
+
 	/**
 	 * This namespace contains all buffers, physically representing fields
 	 * of specific data on the device.

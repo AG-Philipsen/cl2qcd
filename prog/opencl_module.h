@@ -8,8 +8,12 @@
 #include <string>
 
 #include "meta/inputparameters.hpp"
-#include "hardware/device.hpp"
 #include "opencl_compiler.hpp"
+
+// predeclaration as headers only use pointers and friend to this
+namespace hardware {
+	class Device;
+}
 
 /**
  * An OpenCL device

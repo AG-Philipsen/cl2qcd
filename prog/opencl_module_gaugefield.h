@@ -7,7 +7,6 @@
 #include "opencl_module.h"
 #include "types.h"
 #include "meta/inputparameters.hpp"
-#include "hardware/device.hpp"
 #include "opencl_compiler.hpp"
 #include "hardware/buffers/su3.hpp"
 #include "hardware/buffers/plain.hpp"

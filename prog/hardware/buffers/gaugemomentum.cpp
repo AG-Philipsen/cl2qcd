@@ -5,6 +5,7 @@
  */
 
 #include "gaugemomentum.hpp"
+#include "../device.hpp"
 
 #include <stdexcept>
 

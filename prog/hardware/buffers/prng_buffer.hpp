@@ -8,6 +8,7 @@
 #define _HARDWARE_BUFFERS_PRN_GBUFFER_
 
 #include "buffer.hpp"
+#include "../device.hpp"
 
 #ifdef USE_PRNG_NR3
 #include "../../host_random.h"

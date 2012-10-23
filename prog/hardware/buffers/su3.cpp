@@ -5,6 +5,7 @@
  */
 
 #include "su3.hpp"
+#include "../device.hpp"
 
 #include <stdexcept>
 

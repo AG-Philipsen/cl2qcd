@@ -17,11 +17,7 @@
 #include "../meta/inputparameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "profiling_data.hpp"
-
-/**
- * Forward dekleration of friends
- */
-class Opencl_Module;
+#include "../opencl_module_kappa.h"
 
 namespace hardware {
 
@@ -175,6 +171,11 @@ public:
 	 */
 	ProfilingData get_profiling_data(const cl_kernel& kernel) noexcept;
 
+	/**
+	 * Get access to the Kappa kernels on this device.
+	 */
+	Opencl_Module_Kappa * get_kappa_code();
+
 private:
 	/**
 	 * The OpenCL context to be used by this device.
@@ -257,6 +258,13 @@ private:
 	 * Kernel profiling data
 	 */
 	std::map<cl_kernel, ProfilingData> profiling_data;
+
+	/**
+	 * Pointer to the kappa code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Kappa * kappa_code;
+
 };
 
 }
