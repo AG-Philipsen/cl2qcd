@@ -1,0 +1,18 @@
+# set startcondition to cold or hot to start with different gaugefield
+startcondition=cold
+
+NS=4
+NT=4
+
+#with BICGSTAB, this set the init-gm to random values
+solver=BICGSTAB
+
+#this specifies the "eps" in the update
+tau=0.12
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=0.98724670708006379
+
+

@@ -96,11 +96,37 @@ Opencl_Module_Fermions* TestGaugefield::get_device()
 	return static_cast<Opencl_Module_Fermions*>(opencl_modules[0]);
 }
 
-void test_m_tm_plus(std::string inputfile)
+void test_build(std::string inputfile)
 {
+  logger.info() << "build opencl_module_hmc";
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	logger.info() << "Finalize device";
+	cpu.finalize();
+	BOOST_MESSAGE("Test done");
+}
+
+void test_m_fermion(std::string inputfile, int switcher)
+{
+  //switcher switches between similar functions
+  //0: m_wilson (pure wilson)
+  //1: m_tm_plus (twisted mass, upper flavour)
+  //2: m_tm_minus (twisted mass, lower flavour)
 	using namespace hardware::buffers;
 
-	std::string kernelName = "m_tm_plus";
+	std::string kernelName;
+        if(switcher == 0){
+	  kernelName = "m_wilson";
+        } else if(switcher == 1){
+	  kernelName = "m_tm_plus";
+        } else if(switcher == 2){
+	  kernelName = "m_tm_minus";
+        }
+        else{
+          logger.fatal() << "wrong parameter in test_m_fermion";
+	}
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
@@ -135,7 +161,16 @@ void test_m_tm_plus(std::string inputfile)
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
-	device->M_tm_plus_device(&in, &out,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	if(switcher == 0){
+	  device->M_wilson_device(&in, &out,  device->get_gaugefield(), params.get_kappa());
+	} else if(switcher == 1){
+	  device->M_tm_plus_device(&in, &out,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	} else if(switcher == 2){
+	  device->M_tm_minus_device(&in, &out,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	}
+	else{
+	  logger.fatal() << "wrong parameter in test_m_fermion";
+	}
 	logger.info() << "result:";
 	hmc_float cpu_res;
 	device->set_float_to_global_squarenorm_device(&out, &sqnorm);
@@ -152,10 +187,295 @@ void test_m_tm_plus(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
-void test_dslash_eo(std::string inputfile)
+void test_m_wilson(std::string inputfile)
+{
+  test_m_fermion(inputfile, 0);
+}
+
+void test_m_tm_plus(std::string inputfile)
+{
+  test_m_fermion(inputfile, 1);
+}
+
+void test_m_tm_minus(std::string inputfile)
+{
+  test_m_fermion(inputfile, 2);
+}
+
+hmc_float calc_sf_sum(size_t NUM_ELEMS, spinor * in){
+  hmc_float res = 0.;
+  for(int i = 0; i<NUM_ELEMS; i++){
+    spinor tmp = in[i];
+    res += 
+      tmp.e0.e0.re + tmp.e0.e0.im + 
+      tmp.e0.e1.re + tmp.e0.e1.im + 
+      tmp.e0.e2.re + tmp.e0.e2.im + 
+      tmp.e1.e0.re + tmp.e1.e0.im + 
+      tmp.e1.e1.re + tmp.e1.e1.im + 
+      tmp.e1.e2.re + tmp.e1.e2.im +
+      tmp.e2.e0.re + tmp.e2.e0.im + 
+      tmp.e2.e1.re + tmp.e2.e1.im + 
+      tmp.e3.e2.re + tmp.e2.e2.im + 
+      tmp.e3.e0.re + tmp.e3.e0.im + 
+      tmp.e3.e1.re + tmp.e3.e1.im + 
+      tmp.e3.e2.re + tmp.e3.e2.im ;
+  }
+  return res;
+}
+
+void test_gamma5(std::string inputfile)
 {
 	using namespace hardware::buffers;
 
+	std::string kernelName = "gamma5";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	Opencl_Module_Fermions * device = cpu.get_device();
+	spinor * sf_in;
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
+	BOOST_REQUIRE(sf_in);
+
+	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
+	in.load(sf_in);
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	logger.info() << "|phi|^2:";
+	hmc_float cpu_back;
+	device->set_float_to_global_squarenorm_device(&in, &sqnorm);
+	sqnorm.dump(&cpu_back);
+	logger.info() << cpu_back;
+	logger.info() << "Run kernel";
+	device->gamma5_device(&in);
+	in.dump(sf_in);
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	cpu_res = calc_sf_sum(NUM_ELEMENTS_SF, sf_in);
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	logger.info() << "Clear buffers";
+	delete[] sf_in;
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
+void test_gamma5_eo(std::string inputfile)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName = "gamma5_eo";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	Opencl_Module_Fermions * device = cpu.get_device();
+	spinor * sf_in;
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
+
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
+	BOOST_REQUIRE(sf_in);
+
+	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
+	in.load(sf_in);
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	logger.info() << "|phi|^2:";
+	hmc_float cpu_back;
+	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+
+	sqnorm.dump(&cpu_back);
+	logger.info() << cpu_back;
+	logger.info() << "Run kernel";
+	device->gamma5_eo_device(&in);
+	in.dump(sf_in);
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	cpu_res = calc_sf_sum(NUM_ELEMENTS_SF, sf_in);
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	logger.info() << "Clear buffers";
+	delete[] sf_in;
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
+void test_m_tm_sitediagonal_plus_minus(std::string inputfile, bool switcher)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	if(switcher)
+	  kernelName= "m_tm_sitediagonal";
+	else
+	  kernelName = "m_tm_sitediagonal_minus";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	Opencl_Module_Fermions * device = cpu.get_device();
+	spinor * sf_in;
+	spinor * sf_out;
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
+
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+	sf_out = new spinor[NUM_ELEMENTS_SF];
+
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
+	BOOST_REQUIRE(sf_in);
+
+	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
+	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
+	in.load(sf_in);
+	out.load(sf_in);
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+
+	logger.info() << "|phi|^2:";
+	hmc_float cpu_back;
+	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+	sqnorm.dump(&cpu_back);
+	logger.info() << cpu_back;
+
+	//switch according to "use_pointsource"
+	hmc_float cpu_res;
+	if(switcher) {
+		device->M_tm_sitediagonal_device( &in, &out);
+	} else {
+		device->M_tm_sitediagonal_minus_device( &in, &out);
+	}
+	
+	device->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
+	sqnorm.dump(&cpu_res);
+	logger.info() << "result:";
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	logger.info() << "Clear buffers";
+	delete[] sf_in;
+	delete[] sf_out;
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
+void test_m_tm_sitediagonal(std::string inputfile)
+{
+  test_m_tm_sitediagonal_plus_minus(inputfile, true);
+}
+
+void test_m_tm_sitediagonal_minus(std::string inputfile)
+{
+  test_m_tm_sitediagonal_plus_minus(inputfile, false);
+}
+
+void test_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switcher)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	if(switcher)
+	  kernelName= "m_tm_inverse_sitediagonal";
+	else
+	  kernelName = "m_tm_inverse_sitediagonal_minus";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	Opencl_Module_Fermions * device = cpu.get_device();
+	spinor * sf_in;
+	spinor * sf_out;
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
+
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+	sf_out = new spinor[NUM_ELEMENTS_SF];
+
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
+	BOOST_REQUIRE(sf_in);
+
+	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
+	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
+	in.load(sf_in);
+	out.load(sf_in);
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+
+	logger.info() << "|phi|^2:";
+	hmc_float cpu_back;
+	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+	sqnorm.dump(&cpu_back);
+	logger.info() << cpu_back;
+
+	//switch according to "use_pointsource"
+	hmc_float cpu_res;
+	if(switcher) {
+		device->M_tm_inverse_sitediagonal_device( &in, &out);
+	} else {
+		device->M_tm_inverse_sitediagonal_minus_device( &in, &out);
+	}
+	device->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
+	sqnorm.dump(&cpu_res);
+	logger.info() << "result:";
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	logger.info() << "Clear buffers";
+	delete[] sf_in;
+	delete[] sf_out;
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
+void test_m_tm_inverse_sitediagonal(std::string inputfile)
+{
+  test_m_tm_inverse_sitediagonal_plus_minus(inputfile, true);
+}
+
+void test_m_tm_inverse_sitediagonal_minus(std::string inputfile)
+{
+  test_m_tm_inverse_sitediagonal_plus_minus(inputfile, false);
+}
+
+void test_dslash_eo(std::string inputfile)
+{
+	using namespace hardware::buffers;
 	std::string kernelName = "dslash_eo";
 	printKernelInfo(kernelName);
 	logger.info() << "Init device";
@@ -167,25 +487,15 @@ void test_dslash_eo(std::string inputfile)
 	spinor * sf_out;
 
 	logger.info() << "Fill buffers...";
-	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
-
-	sf_in = new spinor[NUM_ELEMENTS_SF];
-	sf_out = new spinor[NUM_ELEMENTS_SF];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
-	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
-	BOOST_REQUIRE(sf_in);
-
-	const Plain<spinor> in(NUM_ELEMENTS_SF, device->get_device());
-	in.load(sf_in);
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
 	size_t NUM_ELEMENTS_SF_EO = meta::get_eoprec_spinorfieldsize(params);
+	spinor * sf_in_eo;
+	sf_in_eo = new spinor[NUM_ELEMENTS_SF_EO];
 	const Spinor in_eo_even(NUM_ELEMENTS_SF_EO, device->get_device());
-	const Spinor in_eo_odd(NUM_ELEMENTS_SF_EO, device->get_device());
 	const Spinor out_eo(NUM_ELEMENTS_SF_EO, device->get_device());
-	device->convert_to_eoprec_device(&in_eo_even, &in_eo_odd, &in);
+	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in_eo, NUM_ELEMENTS_SF_EO);
+	else fill_sf_with_random(sf_in_eo, NUM_ELEMENTS_SF_EO);
+	in_eo_even.load(sf_in_eo);
 
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
@@ -208,6 +518,67 @@ void test_dslash_eo(std::string inputfile)
 	cpu.finalize();
 
 	logger.info() << "Clear buffers";
+	delete[] sf_in_eo;
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
+void test_dslash_and_gamma5_eo(std::string inputfile)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName = "dslash_AND_gamma5_eo";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	Opencl_Module_Fermions * device = cpu.get_device();
+	spinor * sf_in;
+	spinor * sf_out;
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
+
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+	sf_out = new spinor[NUM_ELEMENTS_SF];
+
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
+	BOOST_REQUIRE(sf_in);
+
+	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
+	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
+	in.load(sf_in);
+	out.load(sf_in);
+
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	logger.info() << "|phi|^2:";
+	hmc_float cpu_back;
+	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+
+	sqnorm.dump(&cpu_back);
+	logger.info() << cpu_back;
+	logger.info() << "Run kernel";
+	if(params.get_use_pointsource()) {
+	  device->dslash_AND_gamma5_eo_device(&in, &out, device->get_gaugefield(), EVEN, params.get_kappa() );
+	} else {
+	  device->dslash_AND_gamma5_eo_device(&in, &out, device->get_gaugefield(), ODD, params.get_kappa() );
+	}
+	in.dump(sf_out);
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	cpu_res = calc_sf_sum(NUM_ELEMENTS_SF, sf_out);
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	logger.info() << "Clear buffers";
 	delete[] sf_in;
 	delete[] sf_out;
 
@@ -215,12 +586,204 @@ void test_dslash_eo(std::string inputfile)
 	BOOST_MESSAGE("Test done");
 }
 
+void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switcher)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	if(switcher)
+	  kernelName = "dslash_AND_m_tm_inverse_sitediagonal";
+	else
+	  kernelName = "dslash_AND_m_tm_inverse_sitediagonal_minus";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	Opencl_Module_Fermions * device = cpu.get_device();
+	spinor * sf_in;
+	spinor * sf_out;
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
+
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+	sf_out = new spinor[NUM_ELEMENTS_SF];
+
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
+	BOOST_REQUIRE(sf_in);
+
+	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
+	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
+	in.load(sf_in);
+	out.load(sf_in);
+
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	logger.info() << "|phi|^2:";
+	hmc_float cpu_back;
+	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+
+	sqnorm.dump(&cpu_back);
+	logger.info() << cpu_back;
+	logger.info() << "Run kernel";
+	if(params.get_use_pointsource()) {
+	  if(switcher)
+	    device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, device->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
+	  else
+	    device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, device->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
+	} else {
+	  if(switcher)
+	    device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, device->get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
+	  else
+	    device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, device->get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
+	}
+	out.dump(sf_out);
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	device->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
+	sqnorm.dump(&cpu_res);
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	logger.info() << "Clear buffers";
+	delete[] sf_in;
+	delete[] sf_out;
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
+void test_dslash_and_m_tm_inverse_sitediagonal(std::string inputfile){
+  test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(inputfile, true);
+}
+
+void test_dslash_and_m_tm_inverse_sitediagonal_minus(std::string inputfile){
+  test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(inputfile, false);
+}
+
+void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool switcher)
+{
+	using namespace hardware::buffers;
+
+	std::string kernelName;
+	if(switcher) kernelName = "m_tm_sitedigaonal_AND_gamma5_eo";
+	else kernelName = "m_tm_sitediagonal_minus_AND_gamma5_eo";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	Opencl_Module_Fermions * device = cpu.get_device();
+	spinor * sf_in;
+	spinor * sf_out;
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_eoprec_spinorfieldsize(params);
+
+	sf_in = new spinor[NUM_ELEMENTS_SF];
+	sf_out = new spinor[NUM_ELEMENTS_SF];
+
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) fill_sf_with_one(sf_in, NUM_ELEMENTS_SF);
+	else fill_sf_with_random(sf_in, NUM_ELEMENTS_SF);
+	BOOST_REQUIRE(sf_in);
+
+	const Spinor in(NUM_ELEMENTS_SF, device->get_device());
+	const Spinor out(NUM_ELEMENTS_SF, device->get_device());
+	in.load(sf_in);
+	out.load(sf_in);
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	logger.info() << "|phi|^2:";
+	hmc_float cpu_back;
+	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+
+	sqnorm.dump(&cpu_back);
+	logger.info() << cpu_back;
+	logger.info() << "Run kernel";
+	if(switcher)
+	  device->M_tm_sitediagonal_AND_gamma5_eo_device(&in, &out, meta::get_mubar(params));
+	else
+	  device->M_tm_sitediagonal_minus_AND_gamma5_eo_device(&in, &out, meta::get_mubar(params));
+	out.dump(sf_out);
+	logger.info() << "result:";
+	hmc_float cpu_res;
+	cpu_res = calc_sf_sum(NUM_ELEMENTS_SF, sf_out);
+	logger.info() << cpu_res;
+	logger.info() << "Finalize device";
+	cpu.finalize();
+
+	logger.info() << "Clear buffers";
+	delete[] sf_in;
+	delete[] sf_out;
+
+	testFloatAgainstInputparameters(cpu_res, params);
+	BOOST_MESSAGE("Test done");
+}
+
+void test_m_tm_sitediagonal_and_gamma5_eo(std::string inputfile)
+{
+  test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(inputfile, true);
+}
+
+void test_m_tm_sitediagonal_minus_and_gamma5_eo(std::string inputfile)
+{
+  test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(inputfile, false);
+}
+
+BOOST_AUTO_TEST_SUITE(BUILD)
+
+BOOST_AUTO_TEST_CASE( BUILD_1 )
+{
+  test_build("/opencl_module_fermions_build_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( BUILD_2 )
+{
+  test_build("/opencl_module_fermions_build_input_2");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
 
 BOOST_AUTO_TEST_SUITE( M_WILSON )
 
 BOOST_AUTO_TEST_CASE( M_WILSON_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+  test_m_wilson("/m_wilson_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( M_WILSON_2)
+{
+  test_m_wilson("/m_wilson_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( M_WILSON_3)
+{
+  test_m_wilson("/m_wilson_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( M_WILSON_4)
+{
+  test_m_wilson("/m_wilson_input_4");
+}
+
+BOOST_AUTO_TEST_CASE( M_WILSON_5)
+{
+  test_m_wilson("/m_wilson_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( M_WILSON_6)
+{
+  test_m_wilson("/m_wilson_input_6");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -229,7 +792,27 @@ BOOST_AUTO_TEST_SUITE( M_TM_MINUS  )
 
 BOOST_AUTO_TEST_CASE( M_TM_MINUS_1 )
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+  test_m_tm_minus("/m_tm_minus_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_MINUS_2 )
+{
+  test_m_tm_minus("/m_tm_minus_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_MINUS_3 )
+{
+  test_m_tm_minus("/m_tm_minus_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_MINUS_4 )
+{
+  test_m_tm_minus("/m_tm_minus_input_4");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_MINUS_5 )
+{
+  test_m_tm_minus("/m_tm_minus_input_5");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -245,13 +828,34 @@ BOOST_AUTO_TEST_CASE( M_TM_PLUS_2 )
 {
 	test_m_tm_plus("/m_tm_plus_input_2");
 }
+
+BOOST_AUTO_TEST_CASE( M_TM_PLUS_3 )
+{
+	test_m_tm_plus("/m_tm_plus_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_PLUS_4 )
+{
+	test_m_tm_plus("/m_tm_plus_input_4");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_PLUS_5 )
+{
+	test_m_tm_plus("/m_tm_plus_input_5");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( GAMMA5 )
 
 BOOST_AUTO_TEST_CASE( GAMMA5_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+	test_gamma5("/gamma5_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( GAMMA5_2 )
+{
+	test_gamma5("/gamma5_input_2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -260,16 +864,31 @@ BOOST_AUTO_TEST_SUITE( GAMMA5_EO)
 
 BOOST_AUTO_TEST_CASE( GAMMA5_EO_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+	test_gamma5_eo("/gamma5_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( GAMMA5_EO_2 )
+{
+	test_gamma5_eo("/gamma5_eo_input_2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL )
 
-BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL1_)
+BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+	test_m_tm_sitediagonal("/m_tm_sitediagonal_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_2)
+{
+	test_m_tm_sitediagonal("/m_tm_sitediagonal_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_3)
+{
+	test_m_tm_sitediagonal("/m_tm_sitediagonal_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -278,7 +897,17 @@ BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL )
 
 BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+    test_m_tm_inverse_sitediagonal("/m_tm_inverse_sitediagonal_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_2)
+{
+    test_m_tm_inverse_sitediagonal("/m_tm_inverse_sitediagonal_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_3)
+{
+    test_m_tm_inverse_sitediagonal("/m_tm_inverse_sitediagonal_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -287,16 +916,36 @@ BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_MINUS )
 
 BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+	test_m_tm_sitediagonal_minus("/m_tm_sitediagonal_minus_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_2)
+{
+	test_m_tm_sitediagonal_minus("/m_tm_sitediagonal_minus_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_SITEDIAGONAL_MINUS_3)
+{
+	test_m_tm_sitediagonal_minus("/m_tm_sitediagonal_minus_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( M_TM_INVERSE_SITEDIAGONAL_MINUS)
 
-BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_1 )
+BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+    test_m_tm_inverse_sitediagonal_minus("/m_tm_inverse_sitediagonal_minus_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_2)
+{
+    test_m_tm_inverse_sitediagonal_minus("/m_tm_inverse_sitediagonal_minus_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( M_TM_INVERSE_SITEDIAGONAL_MINUS_3)
+{
+    test_m_tm_inverse_sitediagonal_minus("/m_tm_inverse_sitediagonal_minus_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -323,13 +972,98 @@ BOOST_AUTO_TEST_CASE( DSLASH_EO_4)
 	test_dslash_eo("/dslash_eo_input_4");
 }
 
+BOOST_AUTO_TEST_CASE( DSLASH_EO_5)
+{
+	test_dslash_eo("/dslash_eo_input_5");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_6)
+{
+	test_dslash_eo("/dslash_eo_input_6");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_7)
+{
+	test_dslash_eo("/dslash_eo_input_7");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_8)
+{
+	test_dslash_eo("/dslash_eo_input_8");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_9)
+{
+	test_dslash_eo("/dslash_eo_input_9");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_10)
+{
+	test_dslash_eo("/dslash_eo_input_10");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_11)
+{
+	test_dslash_eo("/dslash_eo_input_11");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_12)
+{
+	test_dslash_eo("/dslash_eo_input_12");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_13)
+{
+	test_dslash_eo("/dslash_eo_input_13");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_14)
+{
+	test_dslash_eo("/dslash_eo_input_14");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_15)
+{
+	test_dslash_eo("/dslash_eo_input_15");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_16)
+{
+	test_dslash_eo("/dslash_eo_input_16");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_17)
+{
+	test_dslash_eo("/dslash_eo_input_17");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_18)
+{
+	test_dslash_eo("/dslash_eo_input_18");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_19)
+{
+	test_dslash_eo("/dslash_eo_input_19");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_EO_20)
+{
+	test_dslash_eo("/dslash_eo_input_20");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(DSLASH_AND_GAMMA5_EO )
 
 BOOST_AUTO_TEST_CASE( DSLASH_AND_GAMMA5_EO_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+	test_dslash_and_gamma5_eo("/dslash_and_gamma5_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_AND_GAMMA5_EO_2)
+{
+	test_dslash_and_gamma5_eo("/dslash_and_gamma5_eo_input_2");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -338,7 +1072,22 @@ BOOST_AUTO_TEST_SUITE(DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO )
 
 BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+  test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_2)
+{
+  test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_3)
+{
+  test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_EO_4)
+{
+  test_dslash_and_m_tm_inverse_sitediagonal("/dslash_and_m_tm_inverse_sitediagonal_input_4");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -347,7 +1096,22 @@ BOOST_AUTO_TEST_SUITE(DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO )
 
 BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+  test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_2)
+{
+  test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_3)
+{
+  test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( DSLASH_AND_M_TM_INVERSE_SITEDIAGONAL_MINUS_EO_4)
+{
+  test_dslash_and_m_tm_inverse_sitediagonal_minus("/dslash_and_m_tm_inverse_sitediagonal_minus_input_4");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -356,7 +1120,17 @@ BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO )
 
 BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+	test_m_tm_sitediagonal_and_gamma5_eo("/m_tm_sitediagonal_and_gamma5_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO_2)
+{
+	test_m_tm_sitediagonal_and_gamma5_eo("/m_tm_sitediagonal_and_gamma5_eo_input_2");
+}
+
+BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_AND_GAMMA5_EO_3)
+{
+	test_m_tm_sitediagonal_and_gamma5_eo("/m_tm_sitediagonal_and_gamma5_eo_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -365,7 +1139,17 @@ BOOST_AUTO_TEST_SUITE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO )
 
 BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_1)
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+	test_m_tm_sitediagonal_minus_and_gamma5_eo("/m_tm_sitediagonal_minus_and_gamma5_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_2)
+{
+	test_m_tm_sitediagonal_minus_and_gamma5_eo("/m_tm_sitediagonal_minus_and_gamma5_eo_input_2");
+}
+
+BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_3)
+{
+	test_m_tm_sitediagonal_minus_and_gamma5_eo("/m_tm_sitediagonal_minus_and_gamma5_eo_input_3");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -1,18 +1,18 @@
-#input file 1 for f_gauge_test
-
-# set startcondition to cold or hot to start with different gaugefield
-startcondition=continue
-sourcefile=conf.00200
-
-kappa=0.15
-mu=4.
-
 use_eo=true
 NS=4
 NT=4
-fermact=TWISTEDMASS
-#with BICGSTAB, this set the init-spinorfield to random values
+
+use_merge_kernels_fermion=true
+
+#BICGSTAB sets the init-spinorfield to random values
 solver=BICGSTAB
+startcondition=continue
+sourcefile=conf.00200
+
+# with mu = 0, this should be the same as test dslash_eo_input_9
+fermact=TWISTEDMASS
+kappa=0.125
+mu=0.
 
 #with pointsource one can switch between "EVEN" and "ODD" as parameter for the kernel
 # true = EVEN, false = ODD
@@ -21,4 +21,4 @@ use_pointsource=true
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=1963.6136861770219
+test_ref_val=261.3405414950912

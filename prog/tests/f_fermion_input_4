@@ -1,0 +1,15 @@
+# set startcondition to cold or hot to start with different gaugefield
+startcondition=continue
+sourcefile=conf.00200
+
+use_eo=false
+NS=4
+NT=4
+
+#with BICGSTAB, this set the init-spinorfield to random values
+solver=BICGSTAB
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=3597.428260549882

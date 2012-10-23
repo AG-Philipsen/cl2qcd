@@ -1,13 +1,12 @@
-#input file 1 for dslash_eo-test
-
 use_eo=true
 NS=4
 NT=4
-fermact=TWISTEDMASS
+
+kappa=0.5
+
 #this set the init-spinorfield to random values
-solver=BICGSTAB
-startcondition=continue
-sourcefile=conf.00200
+solver=CG
+startcondition=cold
 
 #with pointsource one can switch between "EVEN" and "ODD" as parameter for the kernel
 # true = EVEN, false = ODD
@@ -16,4 +15,4 @@ use_pointsource=false
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=247.71895237386025
+test_ref_val=24576

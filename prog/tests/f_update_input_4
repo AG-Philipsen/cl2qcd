@@ -1,0 +1,14 @@
+NS=4
+NT=4
+fermact=TWISTEDMASS
+
+#with BICGSTAB, this set the init-spinorfield to random values
+solver=CG
+
+#this specifies the "eps" in the update
+tau=0.12
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=10276.044799999996
