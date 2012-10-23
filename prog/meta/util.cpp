@@ -187,3 +187,18 @@ std::string meta::get_hmc_obs_file_name(const Inputparameters& parameters, std::
     }
   }
 }
+
+std::string meta::create_configuration_name(const Inputparameters& parameters, int number) noexcept
+{
+	using namespace std;
+	std::stringstream strnumber;
+	strnumber.fill('0');
+	strnumber.width(parameters.get_config_number_digits());
+	strnumber << right << number;
+	stringstream outfilename;
+	outfilename << parameters.get_config_prefix() << strnumber.str() << parameters.get_config_postfix();
+	string outputfile = outfilename.str();
+	logger.info() << outputfile;
+	return outputfile;
+}
+

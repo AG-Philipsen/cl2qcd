@@ -373,23 +373,9 @@ int Gaugefield_hybrid::get_num_devices()
 	return num_devices;
 }
 
-std::string Gaugefield_hybrid::create_configuration_name(int number)
-{
-	using namespace std;
-	stringstream strnumber;
-	strnumber.fill('0');
-	strnumber.width(parameters.get_config_number_digits());
-	strnumber << right << number;
-	stringstream outfilename;
-	outfilename << parameters.get_config_prefix() << strnumber.str() << parameters.get_config_postfix();
-	string outputfile = outfilename.str();
-	logger.info() << outputfile;
-	return outputfile;
-}
-
 void Gaugefield_hybrid::save(int number)
 {
-	std::string outputfile = create_configuration_name(number);
+  std::string outputfile = meta::create_configuration_name(get_parameters(), number);
 	save(outputfile);
 }
 

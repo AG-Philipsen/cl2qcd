@@ -62,7 +62,7 @@ int main(int argc, const char* argv[])
 
 			//main loop
 			for(iter = iter_start; iter < iter_end; iter += iter_incr) {
-				std::string config_name = gaugefield.create_configuration_name(iter);
+			  std::string config_name = meta::create_configuration_name(parameters, iter);
 				logger.info() << "Measure fermionic observables on configuration: " << config_name;
 				gaugefield.init_gaugefield(config_name.c_str());
 				gaugefield.synchronize(0);
