@@ -23,7 +23,7 @@
 #include "host_random.h"
 #include "opencl_compiler.hpp"
 
-#include "opencl_module.h"
+#include "opencl_module_gaugefield.h"
 
 #include "exceptions.h"
 
@@ -36,7 +36,7 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Ran : public Opencl_Module {
+class Opencl_Module_Ran : public Opencl_Module_Gaugefield {
 public:
 	/**
 	 * Empty constructor.

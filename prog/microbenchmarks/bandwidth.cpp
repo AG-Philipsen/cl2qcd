@@ -9,7 +9,7 @@
 #include <boost/program_options.hpp>
 
 #include "../host_random.h"
-#include "../opencl_module.h"
+#include "../opencl_module_gaugefield.h"
 #include "../gaugefield_hybrid.h"
 #include "../logger.hpp"
 #include "../exceptions.h"
@@ -40,7 +40,7 @@ enum copyType {
 
 size_t getTypeSize(copyType type);
 
-class Device : public Opencl_Module {
+class Device : public Opencl_Module_Gaugefield {
 
 private:
 	cl_kernel floatKernel;
@@ -59,7 +59,7 @@ private:
 	void clear_kernels();
 
 public:
-	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module_Gaugefield(params, device) {
 		fill_kernels();
 	};
 	virtual ~Device() {

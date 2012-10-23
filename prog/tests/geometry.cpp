@@ -11,14 +11,14 @@
 extern std::string const version;
 std::string const version = "0.1";
 
-class Device : public Opencl_Module {
+class Device : public Opencl_Module_Gaugefield {
 
 	cl_kernel testKernel;
 
 	void fill_kernels();
 	void clear_kernels();
 public:
-	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module_Gaugefield(params, device) {
 		fill_kernels();
 	};
 	~Device() {

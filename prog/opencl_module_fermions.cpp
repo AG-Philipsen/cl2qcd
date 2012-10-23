@@ -1843,9 +1843,9 @@ size_t Opencl_Module_Fermions::get_read_write_size(const std::string& in) const
 	size_t result = Opencl_Module_Spinors::get_read_write_size(in);
 	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
-	size_t D = meta::get_float_size(parameters);
+	size_t D = meta::get_float_size(get_parameters());
 	//this returns the number of entries in an su3-matrix
-	size_t R = meta::get_mat_size(parameters);
+	size_t R = meta::get_mat_size(get_parameters());
 	//this is the number of spinors in the system (or number of sites)
 	size_t S = meta::get_spinorfieldsize(get_parameters());
 	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
@@ -2005,7 +2005,7 @@ uint64_t Opencl_Module_Fermions::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-void Opencl_Module_Fermions::print_profiling(const std::string& filename, int number)
+void Opencl_Module_Fermions::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module_Spinors::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, M_wilson);

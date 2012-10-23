@@ -165,9 +165,9 @@ size_t Opencl_Module_Hmc::get_read_write_size(const std::string& in) const
 	size_t result = Opencl_Module_Fermions::get_read_write_size(in);
 	if (result != 0) return result;
 //Depending on the compile-options, one has different sizes...
-	size_t D = meta::get_float_size(parameters);
+	size_t D = meta::get_float_size(get_parameters());
 	//this returns the number of entries in an su3-matrix
-	size_t R = meta::get_mat_size(parameters);
+	size_t R = meta::get_mat_size(get_parameters());
 	//this is the number of spinors in the system (or number of sites)
 	size_t S = meta::get_spinorfieldsize(get_parameters());
 	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
@@ -243,7 +243,7 @@ uint64_t Opencl_Module_Hmc::get_flop_size(const std::string& in) const
 	//NOTE: 1 ae has NC*NC-1 = 8 real entries
 	uint64_t A = meta::get_su3algebrasize();
 	//this returns the number of entries in an su3-matrix
-	uint64_t R = meta::get_mat_size(parameters);
+	uint64_t R = meta::get_mat_size(get_parameters());
 	//this is the same as in the function above
 	if (in == "generate_gaussian_spinorfield") {
 		//this kernel performs 12 multiplications per site
@@ -302,7 +302,7 @@ uint64_t Opencl_Module_Hmc::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-void Opencl_Module_Hmc::print_profiling(const std::string& filename, int number)
+void Opencl_Module_Hmc::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module_Fermions::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, generate_gaussian_spinorfield);
@@ -350,7 +350,7 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device()
 			bool writeout = false;
 			if(writeout) {
 				//create buffer to store ae-field
-				int ae_num = meta::get_vol4d(parameters) * NDIM;
+				int ae_num = meta::get_vol4d(get_parameters()) * NDIM;
 
 				ae * ae_tmp = new ae[ae_num];
 
@@ -513,7 +513,7 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp(usetimer * solvertimer)
 		int converged = -1;
 		if(logger.beDebug()) print_info_inv_field(get_clmem_phi_mp_eo(), true, "\tinv. field before inversion ");
 		if(logger.beDebug()) print_info_inv_field(&sf_eo_tmp, true, "\tsource before inversion ");
-		converged = Opencl_Module_Fermions::bicgstab_eo(::Qplus_eo(this), this->get_clmem_phi_mp_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), meta::get_mubar_mp(parameters));
+		converged = Opencl_Module_Fermions::bicgstab_eo(::Qplus_eo(this), this->get_clmem_phi_mp_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
 		if (converged < 0) {
 			if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 			else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -542,7 +542,7 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp(usetimer * solvertimer)
 		int converged = -1;
 		if(logger.beDebug()) print_info_inv_field(get_clmem_phi_mp(), false, "\tinv. field before inversion ");
 		if(logger.beDebug()) print_info_inv_field(&sf_tmp, false, "\tsource before inversion ");
-		converged = Opencl_Module_Fermions::bicgstab(::Qplus(this), this->get_clmem_phi_mp(), &sf_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), get_mubar_mp(parameters));
+		converged = Opencl_Module_Fermions::bicgstab(::Qplus(this), this->get_clmem_phi_mp(), &sf_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), get_mubar_mp(get_parameters()));
 		if (converged < 0) {
 			if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 			else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1569,13 +1569,13 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	hmc_complex poly;
 	hmc_complex poly_new;
 	//In this call, the observables are calculated already with appropiate Weighting factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC)
-	Opencl_Module::gaugeobservables(get_gaugefield(), &plaq,  &tplaq, &splaq, &poly);
-	Opencl_Module::gaugeobservables(&new_u, &plaq_new,  &tplaq_new, &splaq_new, &poly_new);
+	Opencl_Module_Gaugefield::gaugeobservables(get_gaugefield(), &plaq,  &tplaq, &splaq, &poly);
+	Opencl_Module_Gaugefield::gaugeobservables(&new_u, &plaq_new,  &tplaq_new, &splaq_new, &poly_new);
 	//plaq has to be divided by the norm-factor to get s_gauge
 	hmc_float factor = 1. / (meta::get_plaq_norm(get_parameters()));
 	if(meta::get_use_rectangles(get_parameters()) == true) {
-		Opencl_Module::gaugeobservables_rectangles(get_gaugefield(), &rect);
-		Opencl_Module::gaugeobservables_rectangles(&new_u, &rect_new);
+		Opencl_Module_Gaugefield::gaugeobservables_rectangles(get_gaugefield(), &rect);
+		Opencl_Module_Gaugefield::gaugeobservables_rectangles(&new_u, &rect_new);
 		hmc_float c0 = meta::get_c0(get_parameters());
 		hmc_float c1 = meta::get_c1(get_parameters());
 		deltaH = - beta * ( c0 * (plaq - plaq_new) / factor + c1 * ( rect - rect_new )  );
@@ -2044,7 +2044,7 @@ void Opencl_Module_Hmc::importGaugemomentumBuffer(const hardware::buffers::Gauge
 {
 	cl_int clerr;
 	if(dest->is_soa()) {
-		hardware::buffers::Plain<ae> tmp(meta::get_vol4d(parameters) * NDIM, dest->get_device());
+		hardware::buffers::Plain<ae> tmp(meta::get_vol4d(get_parameters()) * NDIM, dest->get_device());
 		tmp.load(data);
 
 		size_t ls2, gs2;
@@ -2064,7 +2064,7 @@ void Opencl_Module_Hmc::exportGaugemomentumBuffer(ae * const dest, const hardwar
 {
 	cl_int clerr;
 	if(buf->is_soa()) {
-		hardware::buffers::Plain<ae> tmp(meta::get_vol4d(parameters) * NDIM, buf->get_device());
+		hardware::buffers::Plain<ae> tmp(meta::get_vol4d(get_parameters()) * NDIM, buf->get_device());
 
 		size_t ls2, gs2;
 		cl_uint num_groups;

@@ -660,7 +660,7 @@ size_t Opencl_Module_Spinors::get_read_write_size(const std::string& in) const
 	size_t result = Opencl_Module_Ran::get_read_write_size(in);
 	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
-	size_t D = meta::get_float_size(parameters);
+	size_t D = meta::get_float_size(get_parameters());
 	size_t S = meta::get_spinorfieldsize(get_parameters());
 	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers
@@ -871,7 +871,7 @@ uint64_t Opencl_Module_Spinors::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-void Opencl_Module_Spinors::print_profiling(const std::string& filename, int number)
+void Opencl_Module_Spinors::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module_Ran::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, set_spinorfield_cold);

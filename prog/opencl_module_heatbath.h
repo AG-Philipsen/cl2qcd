@@ -87,7 +87,7 @@ private:
 	 * @param filename Name of file where data is appended.
 	 * @param parameters inputparameters
 	 */
-	void virtual print_profiling(const std::string& filename, int number) override;
+	void virtual print_profiling(const std::string& filename, int number) const override;
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.

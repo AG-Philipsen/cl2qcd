@@ -12,11 +12,11 @@ extern std::string const version;
 std::string const version = "0.1";
 std::string const exec_name = "staple_test";
 
-class Device : public Opencl_Module {
+class Device : public Opencl_Module_Gaugefield {
 
 	cl_kernel testKernel;
 public:
-	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module_Gaugefield(params, device) {
 		fill_kernels();
 	};
 	~Device() {

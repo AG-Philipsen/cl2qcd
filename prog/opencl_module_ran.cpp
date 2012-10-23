@@ -41,7 +41,7 @@ const hardware::buffers::PRNGBuffer& Opencl_Module_Ran::get_prng_buffer() const 
 }
 
 Opencl_Module_Ran::Opencl_Module_Ran(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device), prng_buffer(device)
+	: Opencl_Module_Gaugefield(params, device), prng_buffer(device)
 {
 #ifdef USE_PRNG_NR3
 	// Prepare random number arrays, for each task and device separately

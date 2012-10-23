@@ -76,7 +76,7 @@ void Opencl_Module_Kappa::clear_kernels()
 }
 
 Opencl_Module_Kappa::Opencl_Module_Kappa(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device), clmem_kappa_clover(1, device)
+	: Opencl_Module_Gaugefield(params, device), clmem_kappa_clover(1, device)
 {
 	fill_kernels();
 }

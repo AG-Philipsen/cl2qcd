@@ -1,4 +1,4 @@
-#include "../opencl_module.h"
+#include "../opencl_module_gaugefield.h"
 #include "../gaugefield_hybrid.h"
 #include "../meta/util.hpp"
 
@@ -21,12 +21,12 @@ std::string const exec_name = "stout_smear_test";
 hmc_float rho = 0.01;
 int iter = 1;
 
-class Device : public Opencl_Module {
+class Device : public Opencl_Module_Gaugefield {
 	cl_kernel testKernel;
 	void fill_kernels();
 	void clear_kernels();
 public:
-	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device), out(get_gaugefield()->get_elements(), device) {
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module_Gaugefield(params, device), out(get_gaugefield()->get_elements(), device) {
 		fill_kernels();
 	};
 	virtual ~Device() {
@@ -131,7 +131,7 @@ void Dummyfield::runTestKernel()
 void Dummyfield::get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol)
 {
 	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range", __FILE__, __LINE__);
-	opencl_modules[ntask]->gaugeobservables(plaq, tplaq, splaq, pol);
+	static_cast<Opencl_Module_Gaugefield*>(opencl_modules[0])->gaugeobservables(plaq, tplaq, splaq, pol);
 }
 
 //this is just out of laziness, a copy of the function above
@@ -139,7 +139,7 @@ void Dummyfield::get_gaugeobservables_from_task(int dummy, int ntask, hmc_float 
 {
 	dummy = 0;
 	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range", __FILE__, __LINE__);
-	opencl_modules[ntask]->gaugeobservables(&static_cast<Device*>(opencl_modules[0])->out, plaq, tplaq, splaq, pol);
+	static_cast<Opencl_Module_Gaugefield*>(opencl_modules[0])->gaugeobservables(&static_cast<Device*>(opencl_modules[0])->out, plaq, tplaq, splaq, pol);
 }
 
 BOOST_AUTO_TEST_CASE( STOUT_SMEAR )
