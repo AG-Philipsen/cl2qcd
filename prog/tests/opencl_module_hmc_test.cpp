@@ -677,7 +677,6 @@ void test_f_fermion_eo(std::string inputfile)
 	cpu.finalize();
 
 	logger.info() << "Clear buffers";
-
 	delete[] sf_in1;
 	delete[] sf_in2;
 	delete[] ae_out;
@@ -1003,5 +1002,198 @@ BOOST_AUTO_TEST_CASE( F_FERMION_EO_20 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+void test_f_fermion_compare_noneo_eo(std::string inputfile)
+{
+	using namespace hardware::buffers;
 
+	std::string kernelName = "Compare f_fermion in eo and noneo version";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	Opencl_Module_Hmc * device = cpu.get_device();
 
+	spinor * sf_in1_noneo;
+	spinor * sf_in2_noneo;
+	ae * sf_out_noneo;
+	ae * sf_out_eo;
+	spinor * sf_in1_eo;
+	spinor * sf_in2_eo;
+	spinor * sf_in3_eo;
+	spinor * sf_in4_eo;
+
+	size_t NUM_ELEMENTS_SF_EO =  meta::get_eoprec_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF =  meta::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM;
+
+	sf_in1_eo = new spinor[NUM_ELEMENTS_SF_EO];
+	sf_in2_eo = new spinor[NUM_ELEMENTS_SF_EO];
+	sf_in3_eo = new spinor[NUM_ELEMENTS_SF_EO];
+	sf_in4_eo = new spinor[NUM_ELEMENTS_SF_EO];
+	sf_out_eo = new ae[NUM_ELEMENTS_AE];
+	sf_in1_noneo = new spinor[NUM_ELEMENTS_SF];
+	sf_in2_noneo = new spinor[NUM_ELEMENTS_SF];
+	sf_out_noneo = new ae[NUM_ELEMENTS_AE];
+
+	fill_with_zero(sf_out_eo, NUM_ELEMENTS_AE);
+	fill_with_zero(sf_out_noneo, NUM_ELEMENTS_AE);
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) {
+		fill_sf_with_one(sf_in1_eo, NUM_ELEMENTS_SF_EO);
+		fill_sf_with_one(sf_in2_eo, NUM_ELEMENTS_SF_EO);
+		fill_sf_with_one(sf_in3_eo, NUM_ELEMENTS_SF_EO);
+		fill_sf_with_one(sf_in4_eo, NUM_ELEMENTS_SF_EO);
+		fill_sf_with_one(sf_in1_noneo, NUM_ELEMENTS_SF);
+		fill_sf_with_one(sf_in2_noneo, NUM_ELEMENTS_SF);
+	} else {
+	  fill_sf_with_random_eo(sf_in1_eo, sf_in2_eo, NUM_ELEMENTS_SF_EO, 123456);
+	  fill_sf_with_random_eo(sf_in3_eo, sf_in4_eo, NUM_ELEMENTS_SF_EO, 789101);
+		fill_sf_with_random(sf_in1_noneo, NUM_ELEMENTS_SF, 123456);
+		fill_sf_with_random(sf_in2_noneo, NUM_ELEMENTS_SF, 789101);
+	}
+
+	BOOST_REQUIRE(sf_in1_eo);
+	BOOST_REQUIRE(sf_in2_eo);
+	BOOST_REQUIRE(sf_in3_eo);
+	BOOST_REQUIRE(sf_in4_eo);
+	BOOST_REQUIRE(sf_in1_noneo);
+	BOOST_REQUIRE(sf_in2_noneo);
+	BOOST_REQUIRE(sf_out_noneo);
+	BOOST_REQUIRE(sf_out_eo);
+
+	const Spinor in1_eo(NUM_ELEMENTS_SF_EO, device->get_device());
+	const Spinor in2_eo(NUM_ELEMENTS_SF_EO, device->get_device());
+	const Spinor in3_eo(NUM_ELEMENTS_SF_EO, device->get_device());
+	const Spinor in4_eo(NUM_ELEMENTS_SF_EO, device->get_device());
+	const Plain<spinor> in1_noneo(NUM_ELEMENTS_SF, device->get_device());
+	const Plain<spinor> in2_noneo(NUM_ELEMENTS_SF, device->get_device());
+	const Gaugemomentum out_noneo(NUM_ELEMENTS_AE, device->get_device());
+	const Gaugemomentum out_eo(NUM_ELEMENTS_AE, device->get_device());
+	const Plain<hmc_float> sqnorm(1, device->get_device());
+
+	out_eo.load(sf_out_eo);
+	out_noneo.load(sf_out_noneo);
+	in1_noneo.load(sf_in1_noneo);
+	in2_noneo.load(sf_in2_noneo);
+	
+	//in case of rnd input, it is nontrivial to supply the same rnd vectors as eo and noneo input.
+	//therefore, simply convert the eo input back to noneo
+	if(params.get_solver() == meta::Inputparameters::cg) {
+	  in1_eo.load(sf_in1_eo);
+	  in2_eo.load(sf_in2_eo);
+	  in3_eo.load(sf_in3_eo);
+	  in4_eo.load(sf_in4_eo);
+	  in1_noneo.load(sf_in1_noneo);
+	  in2_noneo.load(sf_in2_noneo);
+	} else {
+	  //one can either convert to or from eoprec
+	  //NOTE: there is machinery to compare vectors in the old executable
+
+	  //this variant gives the same vectors but different force
+	  in1_eo.load(sf_in1_eo);
+	  in2_eo.load(sf_in2_eo);
+	  in3_eo.load(sf_in3_eo);
+	  in4_eo.load(sf_in4_eo);
+	  device->convert_from_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
+	  device->convert_from_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
+	  in1_noneo.dump(sf_in1_noneo);
+	  in2_noneo.dump(sf_in2_noneo);
+	  
+	  //this variant gives different vectors: 1 and 2 and 3 and 4 are the same, resp. Very strange!!
+	  /*
+	  device->convert_to_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
+	  device->convert_to_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
+	  in1_eo.dump(sf_in1_eo);
+	  in2_eo.dump(sf_in2_eo);
+	  in3_eo.dump(sf_in3_eo);
+	  in4_eo.dump(sf_in4_eo);
+	  */
+	}
+
+	hmc_float cpu_back_eo, cpu_back_eo2, cpu_back_eo3, cpu_back_eo4;
+	logger.info() << "eo input:";
+	logger.info() << "|phi_even_1|^2:";
+	device->set_float_to_global_squarenorm_eoprec_device(&in1_eo, &sqnorm);
+	sqnorm.dump(&cpu_back_eo);
+	logger.info() << cpu_back_eo;
+	logger.info() << "|phi_even_2|^2:";
+	device->set_float_to_global_squarenorm_eoprec_device(&in2_eo, &sqnorm);
+	sqnorm.dump(&cpu_back_eo2);
+	logger.info() << cpu_back_eo2;
+	logger.info() << "|phi_odd_1|^2:";
+	device->set_float_to_global_squarenorm_eoprec_device(&in3_eo, &sqnorm);
+	sqnorm.dump(&cpu_back_eo3);
+	logger.info() << cpu_back_eo3;
+	logger.info() << "|phi_odd_2|^2:";
+	device->set_float_to_global_squarenorm_eoprec_device(&in4_eo, &sqnorm);
+ 	sqnorm.dump(&cpu_back_eo4);
+	logger.info() << cpu_back_eo4;
+
+	logger.info() << "run eo force on EVEN and ODD sites...";
+	device->fermion_force_eo_device(&in1_eo, &in4_eo, device->get_gaugefield(), &out_eo, EVEN, params.get_kappa() );
+	device->fermion_force_eo_device(&in2_eo, &in3_eo, device->get_gaugefield(), &out_eo, ODD, params.get_kappa() );
+	logger.info() << "|force_eo (even) + force_eo (odd)|^2:";
+	hmc_float cpu_res_eo;
+	device->set_float_to_gaugemomentum_squarenorm_device(&out_eo, &sqnorm);
+        sqnorm.dump(&cpu_res_eo);
+        logger.info() << cpu_res_eo;
+
+	logger.info() << "non-eo input:";
+	hmc_float cpu_back_noneo, cpu_back2_noneo;
+	logger.info() << "|phi_1|^2:";
+	device->set_float_to_global_squarenorm_device(&in1_noneo, &sqnorm);
+	sqnorm.dump(&cpu_back_noneo);
+	logger.info() << cpu_back_noneo;
+	logger.info() << "|phi_2|^2:";
+	device->set_float_to_global_squarenorm_device(&in2_noneo, &sqnorm);
+	sqnorm.dump(&cpu_back2_noneo);
+	logger.info() << cpu_back2_noneo;
+	logger.info() << "run noneo force with noneo input...";
+	device->fermion_force_device( &in1_noneo, &in2_noneo, device->get_gaugefield(), &out_noneo, params.get_kappa());
+	logger.info() << "|force_noneo|^2:";
+	hmc_float cpu_res_noneo;
+	device->set_float_to_gaugemomentum_squarenorm_device(&out_noneo, &sqnorm);
+        sqnorm.dump(&cpu_res_noneo);
+        logger.info() << cpu_res_noneo;
+
+	logger.info() << "Clear buffers";
+	delete[] sf_in1_eo;
+	delete[] sf_in2_eo;
+	delete[] sf_out_eo;
+	delete[] sf_in3_eo;
+	delete[] sf_in4_eo;
+	delete[] sf_out_noneo;
+	delete[] sf_in1_noneo;
+	delete[] sf_in2_noneo;
+
+	logger.info() << "Compare eo and non-eo results";
+	BOOST_REQUIRE_CLOSE(cpu_res_eo, cpu_res_noneo, params.get_solver_prec() );
+	testFloatAgainstInputparameters(cpu_res_eo, params);
+	testFloatAgainstInputparameters(cpu_res_noneo, params);
+        BOOST_MESSAGE("Test done");
+}
+
+BOOST_AUTO_TEST_SUITE( F_FERMION_COMPARE_NONEO_EO )
+
+BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_1 )
+{
+  test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_2 )
+{
+  test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_3 )
+{
+  test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_3");
+}
+
+BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_4 )
+{
+  test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_4");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
