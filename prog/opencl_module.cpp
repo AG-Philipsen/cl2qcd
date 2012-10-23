@@ -24,15 +24,6 @@ static std::string collect_build_options(hardware::Device * device, const meta::
  */
 static void print_profiling(const std::string& filename, const std::string& kernelName, const hardware::ProfilingData& data, size_t read_write_size, uint64_t flop_size, uint64_t sites);
 
-void Opencl_Module::init()
-{
-	logger.debug() << "Device is " << device->get_name();
-}
-
-void Opencl_Module::finalize()
-{
-}
-
 const hardware::buffers::SU3 * Opencl_Module::get_gaugefield()
 {
 	return &gaugefield;

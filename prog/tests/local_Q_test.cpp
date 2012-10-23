@@ -18,10 +18,8 @@ class Device : public Opencl_Module {
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
 		fill_kernels();
-		Opencl_Module::init(); /* init in body for proper this-pointer */
 	};
 	~Device() {
-		finalize();
 		clear_kernels();
 	};
 

@@ -28,11 +28,9 @@ class Device : public Opencl_Module {
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device), out(get_gaugefield()->get_elements(), device) {
 		fill_kernels();
-		Opencl_Module::init(); /* init in body for proper this-pointer */
 	};
 	virtual ~Device() {
 		clear_kernels();
-		finalize();
 	};
 
 	void runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::SU3 * out, int gs, int ls);

@@ -34,7 +34,6 @@ void TestGaugefield::init_tasks()
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 	//here we want to test Opencl_Module
 	opencl_modules[0] = new Opencl_Module(get_parameters(), get_device_for_task(0));
-	opencl_modules[0]->init();
 }
 
 Opencl_Module* TestGaugefield::get_device()

@@ -18,10 +18,8 @@ class Device : public Opencl_Module_Hmc {
 	meta::Counter counter1, counter2, counter3, counter4;
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module_Hmc(params, device, &counter1, &counter2, &counter3, &counter4) {
-		Opencl_Module_Hmc::init(); /* init in body for proper this-pointer */
 	};
 	~Device() {
-		finalize();
 	};
 
 	void runTestKernel2(const hardware::buffers::Plain<spinor> * , const hardware::buffers::Spinor * , const hardware::buffers::Spinor * , const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float);

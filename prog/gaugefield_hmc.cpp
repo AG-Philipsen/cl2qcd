@@ -15,7 +15,6 @@ void Gaugefield_hmc::init_tasks()
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 
 	opencl_modules[task_hmc] = new Opencl_Module_Hmc(get_parameters(), get_device_for_task(task_hmc), &inversions0, &inversions1, &inversions_mp0, &inversions_mp1);
-	get_task_hmc(0)->init();
 
 	return;
 }
@@ -28,11 +27,6 @@ void Gaugefield_hmc::delete_variables()
 
 void Gaugefield_hmc::finalize_opencl()
 {
-	/// @todo this must be generalized if more than one device is used for one task
-	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-		opencl_modules[ntask]->finalize();
-	}
-
 	Gaugefield_hybrid::finalize_opencl();
 	return;
 }

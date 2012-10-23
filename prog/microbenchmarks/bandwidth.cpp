@@ -61,7 +61,6 @@ private:
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
 		fill_kernels();
-		Opencl_Module::init(); /* init in body for proper this-pointer */
 	};
 	virtual ~Device() {
 		clear_kernels();

@@ -22,11 +22,9 @@ class Device : public Opencl_Module_Hmc {
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module_Hmc(params, device, &counter1, &counter2, &counter3, &counter4) {
 		fill_kernels();
-		Opencl_Module_Hmc::init(); /* init in body for proper this-pointer */
 	};
 	~Device() {
 		clear_kernels();
-		finalize();
 	};
 
 	void runTestKernel(const hardware::buffers::Gaugemomentum * out, const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::SU3 * gf, int gs, int ls, int evenodd, hmc_float kappa);

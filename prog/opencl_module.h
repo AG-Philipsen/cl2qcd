@@ -47,17 +47,6 @@ public:
 	 * Destructor.
 	 */
 	virtual ~Opencl_Module();
-	/**
-	 * Free variables. Called by destructor.
-	 */
-	void finalize();
-
-	/**
-	 * Initialize everything. First method to be called.
-	 *
-	 * @deprecated To be replaced by a proper constructor
-	 */
-	void init();
 
 	/**
 	 * Get a pointer to the gaugefield buffer
