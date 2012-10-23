@@ -129,13 +129,6 @@ add_test(Opencl_module_hmc_CPU_REC12 opencl_module_hmc_test ${CMAKE_CURRENT_SOUR
 add_test(Opencl_module_hmc_GPU       opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(Opencl_module_hmc_GPU_REC12 opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
-add_executable(f_fermion_compare_noneo_eo F_fermion_compare_noneo_eo.cpp)
-target_link_libraries(f_fermion_compare_noneo_eo
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(F_fermion_compare_noneo_eo_1_CPU f_fermion_compare_noneo_eo  ${CMAKE_CURRENT_SOURCE_DIR}/f_fermion_compare_input_1 --use_gpu=false --use_rec12=false)
-
 # ignore some tests
 configure_file(CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
 
