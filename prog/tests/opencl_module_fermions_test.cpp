@@ -59,9 +59,9 @@ void fill_sf_with_one(spinor * sf_in, int size)
 	return;
 }
 
-void fill_sf_with_random(spinor * sf_in, int size)
+void fill_sf_with_random(spinor * sf_in, int size, int seed)
 {
-	prng_init(123456);
+  prng_init(seed);
 	for(int i = 0; i < size; ++i) {
 		sf_in[i].e0.e0.re = prng_double();
 		sf_in[i].e0.e1.re = prng_double();
@@ -92,6 +92,11 @@ void fill_sf_with_random(spinor * sf_in, int size)
 	return;
 }
 
+void fill_sf_with_random(spinor * sf_in, int size)
+{
+  fill_sf_with_random(sf_in, size, 123456);
+}
+  
 Opencl_Module_Fermions* TestGaugefield::get_device()
 {
 	return static_cast<Opencl_Module_Fermions*>(opencl_modules[0]);
@@ -1155,3 +1160,194 @@ BOOST_AUTO_TEST_CASE(M_TM_SITEDIAGONAL_MINUS_AND_GAMMA5_EO_3)
 
 BOOST_AUTO_TEST_SUITE_END()
 
+void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
+{
+  //switcher switches between similar functions
+  //0: m_wilson (pure wilson)
+  //1: m_tm_plus (twisted mass, upper flavour)
+  //2: m_tm_minus (twisted mass, lower flavour)
+	using namespace hardware::buffers;
+
+	std::string kernelName = "Test equivalence of ";
+        if(switcher == 0){
+	  kernelName += "m_wilson";
+        } else if(switcher == 1){
+	  kernelName += "m_tm_plus";
+        } else if(switcher == 2){
+	  kernelName += "m_tm_minus";
+        }
+        else{
+          logger.fatal() << "wrong parameter in test_m_fermion";
+	}
+	kernelName += " in eo- and non-eo formulation";
+	printKernelInfo(kernelName);
+	logger.info() << "Init device";
+	meta::Inputparameters params = create_parameters(inputfile);
+	hardware::System system(params);
+	TestGaugefield cpu(&system);
+	cl_int err = CL_SUCCESS;
+	Opencl_Module_Fermions * device = cpu.get_device();
+	spinor * sf_in_noneo;
+	spinor * sf_out_noneo;
+	spinor * sf_in_eo1;
+	spinor * sf_in_eo2;
+	spinor * sf_out_eo;
+
+	logger.info() << "Fill buffers...";
+	size_t NUM_ELEMENTS_SF = meta::get_spinorfieldsize(params);
+	size_t NUM_ELEMENTS_SF_EO = meta::get_eoprec_spinorfieldsize(params);
+
+	sf_in_noneo = new spinor[NUM_ELEMENTS_SF];
+	sf_out_noneo = new spinor[NUM_ELEMENTS_SF];
+	sf_in_eo1 = new spinor[NUM_ELEMENTS_SF_EO];
+	sf_in_eo2 = new spinor[NUM_ELEMENTS_SF_EO];
+	sf_out_eo = new spinor[NUM_ELEMENTS_SF];
+
+	//use the variable use_cg to switch between cold and random input sf
+	if(params.get_solver() == meta::Inputparameters::cg) {
+	  fill_sf_with_one(sf_in_eo1, NUM_ELEMENTS_SF_EO);
+	  fill_sf_with_one(sf_in_eo2, NUM_ELEMENTS_SF_EO);
+	  fill_sf_with_one(sf_in_noneo, NUM_ELEMENTS_SF);
+	} else {
+	  fill_sf_with_random(sf_in_eo1, NUM_ELEMENTS_SF_EO, 123456);
+	  fill_sf_with_random(sf_in_eo2, NUM_ELEMENTS_SF_EO, 78910);
+	  fill_sf_with_random(sf_in_noneo, NUM_ELEMENTS_SF, 123456);
+	}
+	BOOST_REQUIRE(sf_in_eo1);
+	BOOST_REQUIRE(sf_in_eo2);
+	BOOST_REQUIRE(sf_in_noneo);
+	fill_sf_with_one(sf_out_noneo, NUM_ELEMENTS_SF);
+	fill_sf_with_one(sf_out_eo, NUM_ELEMENTS_SF);
+
+	const Spinor in_eo1(NUM_ELEMENTS_SF_EO, device->get_device());
+	const Spinor in_eo2(NUM_ELEMENTS_SF_EO, device->get_device());
+	const Plain<spinor> out_eo(NUM_ELEMENTS_SF, device->get_device());
+	const Plain<spinor> in_noneo(NUM_ELEMENTS_SF, device->get_device());
+	const Plain<spinor> out_noneo(NUM_ELEMENTS_SF, device->get_device());
+	//create 3 buffers for intermediate results
+	const Spinor out_tmp_eo1(NUM_ELEMENTS_SF_EO, device->get_device());
+	const Spinor out_tmp_eo2(NUM_ELEMENTS_SF_EO, device->get_device());
+	const Spinor tmp_eo(NUM_ELEMENTS_SF_EO, device->get_device());
+	in_eo1.load(sf_in_eo1);
+	in_eo2.load(sf_in_eo2);
+	out_eo.load(sf_out_eo);
+	in_noneo.load(sf_in_noneo);
+	out_noneo.load(sf_out_noneo);
+
+	if(params.get_solver() != meta::Inputparameters::cg) {
+	  //use use_pointsource to choose whether to copy the eo rnd vectors to noneo or vise versa
+	  if(params.get_use_pointsource())
+	    device->convert_from_eoprec_device(&in_eo1, &in_eo2, &in_noneo);
+	  else
+	    device->convert_to_eoprec_device(&in_eo1, &in_eo2, &in_noneo);
+	}
+
+	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
+	//create -1 on device
+	hmc_complex minusone_tmp = { -1., 0.};
+	hardware::buffers::Plain<hmc_complex> minusone(1, device->get_device());
+	minusone.load(&minusone_tmp);
+	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
+
+	logger.info() << "|phi_noneo|^2:";
+	hmc_float cpu_back_noneo;
+	device->set_float_to_global_squarenorm_device(&in_noneo, &sqnorm);
+	sqnorm.dump(&cpu_back_noneo);
+	logger.info() << cpu_back_noneo;
+	logger.info() << "Run kernel";
+	if(switcher == 0){
+	  device->M_wilson_device(&in_noneo, &out_noneo,  device->get_gaugefield(), params.get_kappa());
+	} else if(switcher == 1){
+	  device->M_tm_plus_device(&in_noneo, &out_noneo,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	} else if(switcher == 2){
+	  device->M_tm_minus_device(&in_noneo, &out_noneo,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	}
+	else{
+	  logger.fatal() << "wrong parameter in test_m_fermion";
+	}
+	logger.info() << "result:";
+	hmc_float cpu_res_noneo;
+	device->set_float_to_global_squarenorm_device(&out_noneo, &sqnorm);
+	sqnorm.dump(&cpu_res_noneo);
+	logger.info() << cpu_res_noneo;
+
+	logger.info() << "|phi_eo1|^2:";
+	hmc_float cpu_back_eo1;
+	device->set_float_to_global_squarenorm_eoprec_device(&in_eo1, &sqnorm);
+	sqnorm.dump(&cpu_back_eo1);
+	logger.info() << cpu_back_eo1;
+	logger.info() << "|phi_eo2|^2:";
+	hmc_float cpu_back_eo2;
+	device->set_float_to_global_squarenorm_eoprec_device(&in_eo2, &sqnorm);
+	sqnorm.dump(&cpu_back_eo2);
+	logger.info() << cpu_back_eo2;
+	logger.info() << "Run kernel";
+	if(switcher == 1){
+	  //suppose in1 is the even, in2 the odd input vector
+	  //now calc out_tmp_eo1 = (R_even in1 + D_eo in2)
+	  device->set_zero_spinorfield_eoprec_device(&tmp_eo);
+	  device->set_zero_spinorfield_eoprec_device(&out_tmp_eo1);
+	  
+	  device->dslash_eo_device(&in_eo2, &out_tmp_eo1, device->get_gaugefield(), EO, params.get_kappa());
+	  device->M_tm_sitediagonal_device(&in_eo1, &tmp_eo,  meta::get_mubar(params));
+
+	  device->saxpy_eoprec_device(&out_tmp_eo1, &tmp_eo, &minusone, &out_tmp_eo1);
+	  
+	  //now calc out_tmp_eo2 = ( R_odd in2 + D_oe in1)
+	  device->set_zero_spinorfield_eoprec_device(&tmp_eo);
+	  device->set_zero_spinorfield_eoprec_device(&out_tmp_eo2);
+	  
+	  device->dslash_eo_device(&in_eo1, &out_tmp_eo2, device->get_gaugefield(), OE, params.get_kappa());
+	  device->M_tm_sitediagonal_device(&in_eo2, &tmp_eo,  meta::get_mubar(params));
+	  
+	  device->saxpy_eoprec_device(&out_tmp_eo2, &tmp_eo, &minusone, &out_tmp_eo2);
+	  
+	  //now, both output vectors have to be converted back to noneo
+	  device->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, &out_eo);
+	}  
+	logger.info() << "result:";
+	hmc_float cpu_res_eo;
+	device->set_float_to_global_squarenorm_device(&out_eo, &sqnorm);
+	sqnorm.dump(&cpu_res_eo);
+	logger.info() << cpu_res_eo;
+  
+	logger.info() << "Finalize device";
+	cpu.finalize();
+	
+	logger.info() << "Clear buffers";
+	delete[] sf_in_noneo;
+	delete[] sf_out_noneo;
+	delete[] sf_in_eo1;
+	delete[] sf_in_eo2;
+	delete[] sf_out_eo;
+
+	logger.info() << "Compare eo and non-eo results";
+	BOOST_REQUIRE_CLOSE(cpu_res_eo, cpu_res_noneo, params.get_solver_prec() );
+	testFloatAgainstInputparameters(cpu_res_noneo, params);
+	testFloatAgainstInputparameters(cpu_res_eo, params);
+	BOOST_MESSAGE("Test done");
+}
+
+void test_m_tm_plus_compare_noneo_eo(std::string inputfile)
+{
+  test_m_fermion_compare_noneo_eo(inputfile, 1);
+}
+
+BOOST_AUTO_TEST_SUITE(M_TM_COMPARE_NONEO_EO )
+
+BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_1)
+{
+	test_m_tm_plus_compare_noneo_eo("/m_tm_compare_noneo_eo_input_1");
+}
+
+BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_2)
+{
+	test_m_tm_plus_compare_noneo_eo("/m_tm_compare_noneo_eo_input_2");
+}
+
+BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_3)
+{
+	test_m_tm_plus_compare_noneo_eo("/m_tm_compare_noneo_eo_input_3");
+}
+
+BOOST_AUTO_TEST_SUITE_END()
