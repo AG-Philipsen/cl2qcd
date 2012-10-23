@@ -7,7 +7,9 @@ use_eo=true
 
 NS=4
 NT=4
-fermact=TWISTEDMASS
+
+fermact=WILSON
+
 #with BICGSTAB, this set the init-spinorfield to random values
 solver=BICGSTAB
 #this controls the conversion from or to eoprec
@@ -16,4 +18,4 @@ use_pointsource=false
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=3683.4586499701882
+test_ref_val=751.13724345841456
