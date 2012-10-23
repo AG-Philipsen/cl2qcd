@@ -11,6 +11,7 @@ add_library(hardware
 	device.cpp
 	profiling_data.cpp
 )
+target_link_libraries(hardware optimal)
 add_modules(hardware
 	buffers
 )
