@@ -140,10 +140,6 @@ public:
 	 * Virtual method, allows to clear additional kernels in inherited classes.
 	 */
 	virtual void clear_kernels();
-	/**
-	 * Contains the list of kernel files after call to fill_kernels_file().
-	 */
-	std::vector<std::string> cl_kernels_file;
 
 	/**
 	 * comutes work-sizes for a kernel
