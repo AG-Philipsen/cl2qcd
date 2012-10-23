@@ -1402,6 +1402,16 @@ BOOST_AUTO_TEST_CASE(M_WILSON_COMPARE_NONEO_EO_3)
 	test_m_wilson_compare_noneo_eo("/m_wilson_compare_noneo_eo_input_3");
 }
 
+BOOST_AUTO_TEST_CASE(M_WILSON_COMPARE_NONEO_EO_4)
+{
+	test_m_wilson_compare_noneo_eo("/m_wilson_compare_noneo_eo_input_4");
+}
+
+BOOST_AUTO_TEST_CASE(M_WILSON_COMPARE_NONEO_EO_5)
+{
+	test_m_wilson_compare_noneo_eo("/m_wilson_compare_noneo_eo_input_5");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(M_TM_COMPARE_NONEO_EO )
@@ -1421,6 +1431,16 @@ BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_3)
 	test_m_tm_plus_compare_noneo_eo("/m_tm_compare_noneo_eo_input_3");
 }
 
+BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_4)
+{
+	test_m_tm_plus_compare_noneo_eo("/m_tm_compare_noneo_eo_input_4");
+}
+
+BOOST_AUTO_TEST_CASE(M_TM_COMPARE_NONEO_EO_5)
+{
+	test_m_tm_plus_compare_noneo_eo("/m_tm_compare_noneo_eo_input_5");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE(M_TM_MINUS_COMPARE_NONEO_EO )
@@ -1438,6 +1458,16 @@ BOOST_AUTO_TEST_CASE(M_TM_MINUS_COMPARE_NONEO_EO_2)
 BOOST_AUTO_TEST_CASE(M_TM_MINUS_COMPARE_NONEO_EO_3)
 {
 	test_m_tm_plus_compare_noneo_eo("/m_tm_minus_compare_noneo_eo_input_3");
+}
+
+BOOST_AUTO_TEST_CASE(M_TM_MINUS_COMPARE_NONEO_EO_4)
+{
+	test_m_tm_plus_compare_noneo_eo("/m_tm_minus_compare_noneo_eo_input_4");
+}
+
+BOOST_AUTO_TEST_CASE(M_TM_MINUS_COMPARE_NONEO_EO_5)
+{
+	test_m_tm_plus_compare_noneo_eo("/m_tm_minus_compare_noneo_eo_input_5");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
