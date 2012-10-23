@@ -28,11 +28,6 @@ int main(int argc, const char* argv[])
 			logger.warn() << "Could not log file for gaugeobservables.";
 		}
 
-		//name of file to store gauge observables, print initial information
-		/** @todo think about what is a senseful filename*/
-		stringstream gaugeout_name;
-		gaugeout_name << "gaugeobservables.data";
-
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Initialization
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -77,7 +72,8 @@ int main(int argc, const char* argv[])
 				if(parameters.get_print_to_screen() ) {
 					gaugefield.print_gaugeobservables(iter);
 				}
-				gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name.str());
+				std::string gaugeout_name = get_gauge_obs_file_name(parameters, config_name);
+				gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name);
 			}
 		} else {
 			//in this case only the config from the initialization is taken into account
@@ -86,7 +82,8 @@ int main(int argc, const char* argv[])
 			if(parameters.get_print_to_screen() ) {
 				gaugefield.print_gaugeobservables(iter);
 			}
-			gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name.str());
+			std::string gaugeout_name = get_gauge_obs_file_name(parameters, "");
+			gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name);
 		}
 		logger.info() << "... done";
 		perform_timer.add();

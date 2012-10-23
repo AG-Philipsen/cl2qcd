@@ -8,10 +8,6 @@ int main(int argc, const char* argv[])
 		meta::Inputparameters parameters(argc, argv);
 		switchLogLevel(parameters.get_log_level());
 
-		//name of file to store gauge observables
-		stringstream gaugeout_name;
-		gaugeout_name << "gaugeobservables_beta" << parameters.get_beta();
-
 		fstream logfile;
 		logfile.open("heatbath.log", std::ios::out | std::ios::app);
 		if(logfile.is_open()) {
@@ -57,7 +53,9 @@ int main(int argc, const char* argv[])
 		for(int i = 0; i < nsteps; i++) {
 			gaugefield.perform_tasks(overrelaxsteps);
 			if( ( (i + 1) % writefreq ) == 0 ) {
-				gaugefield.print_gaugeobservables_from_task(i, 0, gaugeout_name.str());
+			  //name of file to store gauge observables
+			  std::string gaugeout_name = meta::get_gauge_obs_file_name(parameters, "");
+			  gaugefield.print_gaugeobservables_from_task(i, 0, gaugeout_name);
 			}
 			if( parameters.get_saveconfigs() == true && ( (i + 1) % savefreq ) == 0 ) {
 				gaugefield.synchronize(0);
