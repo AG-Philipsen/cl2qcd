@@ -1073,8 +1073,6 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 
 	out_eo.load(sf_out_eo);
 	out_noneo.load(sf_out_noneo);
-	//	in1_noneo.load(sf_in1_noneo);
-	//in2_noneo.load(sf_in2_noneo);
 	
 	//in case of rnd input, it is nontrivial to supply the same rnd vectors as eo and noneo input.
 	//therefore, simply convert the eo input back to noneo
@@ -1101,27 +1099,6 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	    device->convert_to_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
 	    device->convert_to_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
 	  }
-
-	  /*
-	  //this variant gives the same vectors but different force
-	  in1_eo.load(sf_in1_eo);
-	  in2_eo.load(sf_in2_eo);
-	  in3_eo.load(sf_in3_eo);
-	  in4_eo.load(sf_in4_eo);
-	  device->convert_from_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
-	  device->convert_from_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
-	  in1_noneo.dump(sf_in1_noneo);
-	  in2_noneo.dump(sf_in2_noneo);
-	  */
-	  //this variant gives different vectors: 1 and 2 and 3 and 4 are the same, resp. Very strange!!
-	  /*
-	  device->convert_to_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
-	  device->convert_to_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
-	  in1_eo.dump(sf_in1_eo);
-	  in2_eo.dump(sf_in2_eo);
-	  in3_eo.dump(sf_in3_eo);
-	  in4_eo.dump(sf_in4_eo);
-	  */
 	}
 
 	hmc_float cpu_back_eo, cpu_back_eo2, cpu_back_eo3, cpu_back_eo4;
