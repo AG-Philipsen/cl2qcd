@@ -23,6 +23,8 @@ static void print_info_observables_gauge_io(const meta::Inputparameters& params)
 static void print_info_observables_gauge_io(std::ostream * os, const meta::Inputparameters& params);
 static void print_info_observables_fermion_io(const meta::Inputparameters& params);
 static void print_info_observables_fermion_io(std::ostream * os, const meta::Inputparameters& params);
+static void print_info_observables_hmc_io(const meta::Inputparameters& params);
+static void print_info_observables_hmc_io(std::ostream * os, const meta::Inputparameters& params);
 
 static void print_info_global(const meta::Inputparameters& params)
 {
@@ -496,6 +498,7 @@ void meta::print_info_hmc(const char* progname, const Inputparameters& params)
 	logger.info() << "## Starting hmc program, executable name: " << progname ;
 	print_info_global(params);
 	print_info_configs_io(params);
+	print_info_observables_hmc_io(params);
 	print_info_fermion(params);
 	print_info_gauge(params);
 	logger.info() << "## **********************************************************";
@@ -558,6 +561,7 @@ void meta::print_info_hmc(const char* progname, std::ostream* os, const Inputpar
 	*os << "## Starting hmc program, executable name: " << progname << endl;
 	print_info_global(os, params);
 	print_info_configs_io(os, params);
+	print_info_observables_hmc_io(os, params);
 	print_info_fermion(os, params);
 	print_info_gauge(os, params);
 	*os << "## **********************************************************" << endl;
@@ -710,6 +714,36 @@ static void print_info_observables_fermion_io(std::ostream * os, const meta::Inp
 		*os<< "## WRITE FERMIONIC OBSERVABLES TO SINGLE FILE"<< endl;
 	} else {
 		*os<< "## WRITE FERMIONIC OBSERVABLES TO MULTIPLE FILES"<< endl;
+	}
+}
+
+static void print_info_observables_hmc_io(const meta::Inputparameters& params)
+{
+	using namespace meta;
+
+	logger.info() << "## **********************************************************";
+	logger.info() << "## HMC OBSERVABLES FILE NAMING PARAMETERS:";
+	logger.info() << "## NAME PREFIX:   " << params.get_hmc_obs_prefix();
+	logger.info() << "## NAME POSTFIX:   " << params.get_hmc_obs_postfix();
+	if(params.get_hmc_obs_to_single_file() == true) {
+		logger.info() << "## WRITE HMC OBSERVABLES TO SINGLE FILE";
+	} else {
+		logger.info() << "## WRITE HMC OBSERVABLES TO MULTIPLE FILES";
+	}
+}
+
+static void print_info_observables_hmc_io(std::ostream * os, const meta::Inputparameters& params)
+{
+	using namespace meta;
+
+	*os<< "## **********************************************************"<< endl;
+	*os<< "## HMC OBSERVABLES FILE NAMING PARAMETERS:"<< endl;
+	*os<< "## NAME PREFIX:   " << params.get_hmc_obs_prefix()<< endl;
+	*os<< "## NAME POSTFIX:   " << params.get_hmc_obs_postfix()<< endl;
+	if(params.get_hmc_obs_to_single_file() == true) {
+		*os<< "## WRITE HMC OBSERVABLES TO SINGLE FILE"<< endl;
+	} else {
+		*os<< "## WRITE HMC OBSERVABLES TO MULTIPLE FILES"<< endl;
 	}
 }
 
