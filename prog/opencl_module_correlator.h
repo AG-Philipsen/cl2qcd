@@ -39,12 +39,7 @@
  */
 class Opencl_Module_Correlator : public Opencl_Module_Spinors {
 public:
-
-	/**
-	 * Default constructor, does nothing but make sure some pointer point to 0.
-	 *
-	 */
-	Opencl_Module_Correlator(const meta::Inputparameters& params, hardware::Device * device);
+	friend hardware::Device;
 
 	virtual ~Opencl_Module_Correlator();
 
@@ -99,6 +94,12 @@ public:
 	virtual uint64_t get_flop_size(const std::string& in) const override;
 
 private:
+	/**
+	 * Default constructor, does nothing but make sure some pointer point to 0.
+	 *
+	 */
+	Opencl_Module_Correlator(const meta::Inputparameters& params, hardware::Device * device);
+
 	/**
 	 * Collect the kernels for OpenCL.
 	 */

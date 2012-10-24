@@ -17,6 +17,7 @@
 #include "../meta/inputparameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "profiling_data.hpp"
+#include "../opencl_module_correlator.h"
 #include "../opencl_module_heatbath.h"
 #include "../opencl_module_kappa.h"
 
@@ -173,6 +174,11 @@ public:
 	ProfilingData get_profiling_data(const cl_kernel& kernel) noexcept;
 
 	/**
+	 * Get access to the correlator kernels on this device.
+	 */
+	Opencl_Module_Correlator * get_correlator_code();
+
+	/**
 	 * Get access to the heatbath kernels on this device.
 	 */
 	Opencl_Module_Heatbath * get_heatbath_code();
@@ -264,6 +270,12 @@ private:
 	 * Kernel profiling data
 	 */
 	std::map<cl_kernel, ProfilingData> profiling_data;
+
+	/**
+	 * Pointer to the correlator code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Correlator * correlator_code;
 
 	/**
 	 * Pointer to the heatbath code.

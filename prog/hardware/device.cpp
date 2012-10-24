@@ -28,6 +28,7 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 	  name(retrieve_device_name(device_id)),
 	  profiling_enabled(enable_profiling),
 	  profiling_data(),
+	  correlator_code(nullptr),
 	  heatbath_code(nullptr),
 	  kappa_code(nullptr)
 {
@@ -47,6 +48,9 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 
 hardware::Device::~Device()
 {
+	if(correlator_code) {
+		delete correlator_code;
+	}
 	if(kappa_code) {
 		delete kappa_code;
 	}
@@ -372,6 +376,14 @@ std::string hardware::Device::get_name() const noexcept
 
 hardware::ProfilingData hardware::Device::get_profiling_data(const cl_kernel& kernel) noexcept {
 	return profiling_data[kernel];
+}
+
+Opencl_Module_Correlator * hardware::Device::get_correlator_code()
+{
+	if(!correlator_code) {
+		correlator_code = new Opencl_Module_Correlator(params, this);
+	}
+	return correlator_code;
 }
 
 Opencl_Module_Heatbath * hardware::Device::get_heatbath_code()
