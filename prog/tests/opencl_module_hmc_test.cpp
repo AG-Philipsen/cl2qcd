@@ -100,7 +100,7 @@ void fill_with_zero(ae * ae, int size)
 void fill_sf_with_random(spinor * sf_in, int size, int seed)
 {
 	//  Random rnd_loc(seed);
-		prng_init(seed);
+	prng_init(seed);
 	for(int i = 0; i < size; ++i) {
 		sf_in[i].e0.e0.re = prng_double();
 		sf_in[i].e0.e1.re = prng_double();
@@ -133,7 +133,7 @@ void fill_sf_with_random(spinor * sf_in, int size, int seed)
 
 void fill_sf_with_random_eo(spinor * sf_in1, spinor * sf_in2, int size, int seed)
 {
-  prng_init(seed);
+	prng_init(seed);
 	for(int i = 0; i < size; ++i) {
 		sf_in1[i].e0.e0.re = prng_double();
 		sf_in1[i].e0.e1.re = prng_double();
@@ -192,7 +192,7 @@ void fill_sf_with_random_eo(spinor * sf_in1, spinor * sf_in2, int size, int seed
 
 void test_build(std::string inputfile)
 {
-  logger.info() << "build opencl_module_hmc";
+	logger.info() << "build opencl_module_hmc";
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
@@ -686,7 +686,7 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_CASE( BUILD_1 )
 {
-  test_build("/opencl_module_hmc_build_input_1");
+	test_build("/opencl_module_hmc_build_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -798,7 +798,7 @@ BOOST_AUTO_TEST_CASE( GF_UPDATE_4 )
 
 BOOST_AUTO_TEST_CASE(GF_UPDATE_5 )
 {
-  BOOST_MESSAGE("THIS TEST HAS TO BE INVESTIGATED!! IT COULD HINT TO AN ERROR IN THE FUNCTION!");
+	BOOST_MESSAGE("THIS TEST HAS TO BE INVESTIGATED!! IT COULD HINT TO AN ERROR IN THE FUNCTION!");
 	test_gf_update("/gf_update_input_5");
 }
 
@@ -1044,8 +1044,8 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 		fill_sf_with_one(sf_in1_noneo, NUM_ELEMENTS_SF);
 		fill_sf_with_one(sf_in2_noneo, NUM_ELEMENTS_SF);
 	} else {
-	  fill_sf_with_random_eo(sf_in1_eo, sf_in2_eo, NUM_ELEMENTS_SF_EO, 123456);
-	  fill_sf_with_random_eo(sf_in3_eo, sf_in4_eo, NUM_ELEMENTS_SF_EO, 789101);
+		fill_sf_with_random_eo(sf_in1_eo, sf_in2_eo, NUM_ELEMENTS_SF_EO, 123456);
+		fill_sf_with_random_eo(sf_in3_eo, sf_in4_eo, NUM_ELEMENTS_SF_EO, 789101);
 		fill_sf_with_random(sf_in1_noneo, NUM_ELEMENTS_SF, 123456);
 		fill_sf_with_random(sf_in2_noneo, NUM_ELEMENTS_SF, 789101);
 	}
@@ -1071,32 +1071,32 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 
 	out_eo.load(sf_out_eo);
 	out_noneo.load(sf_out_noneo);
-	
+
 	//in case of rnd input, it is nontrivial to supply the same rnd vectors as eo and noneo input.
 	//therefore, simply convert the eo input back to noneo
 	if(params.get_solver() == meta::Inputparameters::cg) {
-	  in1_eo.load(sf_in1_eo);
-	  in2_eo.load(sf_in2_eo);
-	  in3_eo.load(sf_in3_eo);
-	  in4_eo.load(sf_in4_eo);
-	  in1_noneo.load(sf_in1_noneo);
-	  in2_noneo.load(sf_in2_noneo);
+		in1_eo.load(sf_in1_eo);
+		in2_eo.load(sf_in2_eo);
+		in3_eo.load(sf_in3_eo);
+		in4_eo.load(sf_in4_eo);
+		in1_noneo.load(sf_in1_noneo);
+		in2_noneo.load(sf_in2_noneo);
 	} else {
-	  //one can either convert to or from eoprec, use use_pointsource for that
-	  //NOTE: there is machinery to compare vectors in the old executable
-	  if(params.get_use_pointsource()){
-	    in1_eo.load(sf_in1_eo);
-	    in2_eo.load(sf_in2_eo);
-	    device->convert_from_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
-	    in3_eo.load(sf_in3_eo);
-	    in4_eo.load(sf_in4_eo);
-	    device->convert_from_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
-	  }  else {
-	    in1_noneo.load(sf_in1_noneo);
-	    in2_noneo.load(sf_in2_noneo);
-	    device->convert_to_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
-	    device->convert_to_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
-	  }
+		//one can either convert to or from eoprec, use use_pointsource for that
+		//NOTE: there is machinery to compare vectors in the old executable
+		if(params.get_use_pointsource()) {
+			in1_eo.load(sf_in1_eo);
+			in2_eo.load(sf_in2_eo);
+			device->convert_from_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
+			in3_eo.load(sf_in3_eo);
+			in4_eo.load(sf_in4_eo);
+			device->convert_from_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
+		}  else {
+			in1_noneo.load(sf_in1_noneo);
+			in2_noneo.load(sf_in2_noneo);
+			device->convert_to_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
+			device->convert_to_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
+		}
 	}
 
 	hmc_float cpu_back_eo, cpu_back_eo2, cpu_back_eo3, cpu_back_eo4;
@@ -1115,7 +1115,7 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	logger.info() << cpu_back_eo3;
 	logger.info() << "|phi_odd_2|^2:";
 	device->set_float_to_global_squarenorm_eoprec_device(&in4_eo, &sqnorm);
- 	sqnorm.dump(&cpu_back_eo4);
+	sqnorm.dump(&cpu_back_eo4);
 	logger.info() << cpu_back_eo4;
 
 	logger.info() << "run eo force on EVEN and ODD sites...";
@@ -1125,8 +1125,8 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	logger.info() << "|force_eo (even) + force_eo (odd)|^2:";
 	hmc_float cpu_res_eo;
 	device->set_float_to_gaugemomentum_squarenorm_device(&out_eo, &sqnorm);
-        sqnorm.dump(&cpu_res_eo);
-        logger.info() << cpu_res_eo;
+	sqnorm.dump(&cpu_res_eo);
+	logger.info() << cpu_res_eo;
 
 	logger.info() << "non-eo input:";
 	hmc_float cpu_back_noneo, cpu_back2_noneo;
@@ -1143,8 +1143,8 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	logger.info() << "|force_noneo|^2:";
 	hmc_float cpu_res_noneo;
 	device->set_float_to_gaugemomentum_squarenorm_device(&out_noneo, &sqnorm);
-        sqnorm.dump(&cpu_res_noneo);
-        logger.info() << cpu_res_noneo;
+	sqnorm.dump(&cpu_res_noneo);
+	logger.info() << cpu_res_noneo;
 
 	logger.info() << "Clear buffers";
 	delete[] sf_in1_eo;
@@ -1160,39 +1160,39 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	BOOST_REQUIRE_CLOSE(cpu_res_eo, cpu_res_noneo, params.get_solver_prec() );
 	testFloatAgainstInputparameters(cpu_res_eo, params);
 	testFloatAgainstInputparameters(cpu_res_noneo, params);
-        BOOST_MESSAGE("Test done");
+	BOOST_MESSAGE("Test done");
 }
 
 BOOST_AUTO_TEST_SUITE( F_FERMION_COMPARE_NONEO_EO )
 
 BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_1 )
 {
-  test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_1");
+	test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_1");
 }
 
 BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_2 )
 {
-  test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_2");
+	test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_2");
 }
 
 BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_3 )
 {
-  test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_3");
+	test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_3");
 }
 
 BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_4 )
 {
-  test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_4");
+	test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_4");
 }
 
 BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_5 )
 {
-  test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_5");
+	test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_5");
 }
 
 BOOST_AUTO_TEST_CASE( F_FERMION_COMPARE_NONEO_EO_6 )
 {
-  test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_6");
+	test_f_fermion_compare_noneo_eo("/f_fermion_compare_noneo_eo_input_6");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
