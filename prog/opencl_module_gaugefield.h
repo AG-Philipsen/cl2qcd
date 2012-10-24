@@ -131,6 +131,11 @@ public:
 	 */
 	void exportGaugefield(Matrixsu3 * const dest);
 
+	/**
+	 * Get the code required to use the gaugefield from kernels.
+	 */
+	ClSourcePackage get_sources() const noexcept;
+
 protected:
 	/**
 	 * @param[in] params points to an instance of inputparameters
@@ -165,12 +170,12 @@ protected:
 	 */
 	virtual size_t get_read_write_size(const std::string& in) const override;
 
+private:
+
 	/**
 	 * A set of source files used by all kernels.
 	 */
 	ClSourcePackage basic_opencl_code;
-
-private:
 
 	const hardware::buffers::SU3 gaugefield;
 

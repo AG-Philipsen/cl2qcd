@@ -118,8 +118,8 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	fillComplex = createKernel("fillComplex") << basic_opencl_code << "tests/complex_mem_access.cl";
-	readComplex = createKernel("readComplex") << basic_opencl_code << "tests/complex_mem_access.cl";
+	fillComplex = createKernel("fillComplex") << get_device()->get_gaugefield_code()->get_sources() << "tests/complex_mem_access.cl";
+	readComplex = createKernel("readComplex") << get_device()->get_gaugefield_code()->get_sources() << "tests/complex_mem_access.cl";
 }
 
 void Dummyfield::clear_buffers()

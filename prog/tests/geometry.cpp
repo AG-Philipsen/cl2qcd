@@ -87,7 +87,7 @@ void Dummyfield::fill_buffers()
 void Device::fill_kernels()
 {
 	//to this end, one has to set the needed files by hand
-	testKernel = createKernel("geometry_test") << basic_opencl_code << "tests/geometry_test.cl";
+	testKernel = createKernel("geometry_test") << get_device()->get_gaugefield_code()->get_sources() << "tests/geometry_test.cl";
 }
 
 void Dummyfield::clear_buffers()

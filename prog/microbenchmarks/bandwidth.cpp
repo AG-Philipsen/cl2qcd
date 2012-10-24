@@ -238,6 +238,7 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
+	ClSourcePackage basic_opencl_code = get_device()->get_gaugefield_code()->get_sources();
 	floatKernel = createKernel("copyFloat") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 	su3Kernel = createKernel("copySU3") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 	su3SOAKernel = createKernel("copySU3SOA") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";

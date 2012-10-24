@@ -72,7 +72,7 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	testKernel = createKernel("localQ_test") << basic_opencl_code  << "/tests/localQ_test.cl";
+	testKernel = createKernel("localQ_test") << get_device()->get_gaugefield_code()->get_sources()  << "/tests/localQ_test.cl";
 }
 
 void Dummyfield::clear_buffers()

@@ -25,7 +25,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 
 void Opencl_Module_Spinors::fill_kernels()
 {
-	basic_fermion_code = basic_opencl_code << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
+	basic_fermion_code = get_device()->get_gaugefield_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	if(get_parameters().get_use_eo()) {
 		basic_fermion_code = basic_fermion_code << "operations_spinorfield_eo.cl";
 	}
@@ -40,8 +40,8 @@ void Opencl_Module_Spinors::fill_kernels()
 	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
 	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
 
-	ratio = createKernel("ratio") << basic_opencl_code << "complex_ratio.cl";
-	product = createKernel("product") << basic_opencl_code << "complex_product.cl";
+	ratio = createKernel("ratio") << get_device()->get_gaugefield_code()->get_sources() << "complex_ratio.cl";
+	product = createKernel("product") << get_device()->get_gaugefield_code()->get_sources() << "complex_product.cl";
 
 	if(get_parameters().get_use_eo() == true) {
 		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";

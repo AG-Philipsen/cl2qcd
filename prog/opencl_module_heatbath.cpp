@@ -23,7 +23,8 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 
 void Opencl_Module_Heatbath::fill_kernels()
 {
-	ClSourcePackage sources = basic_opencl_code << prng_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+	ClSourcePackage sources = get_device()->get_gaugefield_code()->get_sources()
+	                          << prng_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 
 	logger.debug() << "Create heatbath kernels...";
 	heatbath_even = createKernel("heatbath_even") << sources << "operations_heatbath.cl" << "heatbath_even.cl";

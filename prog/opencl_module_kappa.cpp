@@ -20,7 +20,7 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 
 void Opencl_Module_Kappa::fill_kernels()
 {
-	ClSourcePackage sources = basic_opencl_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+	ClSourcePackage sources = get_device()->get_gaugefield_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 
 	cout << "Create TK clover kernels..." << endl;
 	kappa_clover_gpu = createKernel("kappa_clover_gpu") << sources << "opencl_tk_kappa.cl";

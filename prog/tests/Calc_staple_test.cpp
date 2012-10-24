@@ -75,7 +75,7 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	testKernel = createKernel("staple_test") << basic_opencl_code  << "/tests/staple_test.cl";
+	testKernel = createKernel("staple_test") << get_device()->get_gaugefield_code()->get_sources() << "/tests/staple_test.cl";
 }
 
 void Dummyfield::clear_buffers()
