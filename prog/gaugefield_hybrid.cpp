@@ -205,7 +205,7 @@ void Gaugefield_hybrid::init_tasks()
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
 		//this is initialized with length 1, meaning one assumes one device per task
-		opencl_modules[ntask] = new Opencl_Module_Gaugefield(parameters, get_device_for_task(ntask));
+		opencl_modules[ntask] = get_device_for_task(ntask)->get_gaugefield_code();
 	}
 }
 

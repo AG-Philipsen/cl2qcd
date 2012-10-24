@@ -23,18 +23,10 @@ public:
 		logger.info() << "gaugeobservables: ";
 		this->print_gaugeobservables_from_task(0, 0);
 	};
-	virtual void init_tasks() override;
 	virtual void finalize_opencl() override;
 
 	Opencl_Module_Gaugefield * get_device();
 };
-
-void TestGaugefield::init_tasks()
-{
-	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	//here we want to test Opencl_Module
-	opencl_modules[0] = new Opencl_Module_Gaugefield(get_parameters(), get_device_for_task(0));
-}
 
 Opencl_Module_Gaugefield* TestGaugefield::get_device()
 {

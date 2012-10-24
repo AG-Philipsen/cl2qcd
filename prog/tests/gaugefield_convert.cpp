@@ -18,7 +18,6 @@ public:
 		init(1, device_type);
 	};
 
-	virtual void init_tasks();
 	virtual void finalize_opencl();
 
 	void verify();
@@ -86,14 +85,6 @@ BOOST_AUTO_TEST_CASE(GPU_hot)
 	dummy.recieve();
 
 	dummy.verify();
-}
-
-void Dummyfield::init_tasks()
-{
-	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Opencl_Module_Gaugefield(get_parameters(), get_device_for_task(0));
-
-	fill_buffers();
 }
 
 void Dummyfield::finalize_opencl()

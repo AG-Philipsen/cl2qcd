@@ -22,12 +22,8 @@
 class Opencl_Module_Gaugefield : public Opencl_Module {
 
 public:
-	/**
-	 * Empty constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Opencl_Module_Gaugefield(const meta::Inputparameters& params, hardware::Device * device);
+	friend hardware::Device;
+
 	/**
 	 * Destructor.
 	 */
@@ -136,6 +132,13 @@ public:
 	void exportGaugefield(Matrixsu3 * const dest);
 
 protected:
+	/**
+	 * @param[in] params points to an instance of inputparameters
+	 *
+	 * @deprecated should be private
+	 */
+	Opencl_Module_Gaugefield(const meta::Inputparameters& params, hardware::Device * device);
+
 	/**
 	 * comutes work-sizes for a kernel
 	 * @todo autotune

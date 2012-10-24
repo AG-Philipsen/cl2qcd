@@ -28,6 +28,7 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 	  name(retrieve_device_name(device_id)),
 	  profiling_enabled(enable_profiling),
 	  profiling_data(),
+	  gaugefield_code(nullptr),
 	  prng_code(nullptr),
 	  spinor_code(nullptr),
 	  fermion_code(nullptr),
@@ -72,6 +73,9 @@ hardware::Device::~Device()
 	}
 	if(prng_code) {
 		delete prng_code;
+	}
+	if(gaugefield_code) {
+		delete gaugefield_code;
 	}
 
 	clFinish(command_queue);
@@ -392,6 +396,14 @@ std::string hardware::Device::get_name() const noexcept
 
 hardware::ProfilingData hardware::Device::get_profiling_data(const cl_kernel& kernel) noexcept {
 	return profiling_data[kernel];
+}
+
+Opencl_Module_Gaugefield * hardware::Device::get_gaugefield_code()
+{
+	if(!gaugefield_code) {
+		gaugefield_code = new Opencl_Module_Gaugefield(params, this);
+	}
+	return gaugefield_code;
 }
 
 Opencl_Module_Ran * hardware::Device::get_prng_code()

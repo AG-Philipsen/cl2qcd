@@ -17,6 +17,7 @@
 #include "../meta/inputparameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "profiling_data.hpp"
+#include "../opencl_module_gaugefield.h"
 #include "../opencl_module_ran.h"
 #include "../opencl_module_spinors.h"
 #include "../opencl_module_fermions.h"
@@ -178,7 +179,12 @@ public:
 	ProfilingData get_profiling_data(const cl_kernel& kernel) noexcept;
 
 	/**
-	 * Get access to the spinor kernels on this device.
+	 * Get access to the gaugefield kernels on this device.
+	 */
+	Opencl_Module_Gaugefield * get_gaugefield_code();
+
+	/**
+	 * Get access to the prng kernels on this device.
 	 */
 	Opencl_Module_Ran * get_prng_code();
 
@@ -296,7 +302,13 @@ private:
 	std::map<cl_kernel, ProfilingData> profiling_data;
 
 	/**
-	 * Pointer to the spinor code.
+	 * Pointer to the gaugefield code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Gaugefield * gaugefield_code;
+
+	/**
+	 * Pointer to the prng code.
 	 * Initialized on demand.
 	 */
 	Opencl_Module_Ran * prng_code;
