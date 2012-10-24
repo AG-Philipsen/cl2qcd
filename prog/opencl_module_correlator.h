@@ -78,6 +78,7 @@ public:
 	 */
 	void virtual print_profiling(const std::string& filename, int number) const override;
 
+protected:
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
@@ -128,9 +129,7 @@ private:
 	cl_kernel correlator_ay;
 	cl_kernel correlator_az;
 
-protected:
 	ClSourcePackage basic_correlator_code;
-
 };
 
 #endif //OPENCLMODULECORRELATORH
