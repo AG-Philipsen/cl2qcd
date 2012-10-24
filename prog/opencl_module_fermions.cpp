@@ -1727,39 +1727,6 @@ void Opencl_Module_Fermions::solver(const Matrix_Function_eo & f, const hardware
 	} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 }
 
-void Opencl_Module_Fermions::solver(const Matrix_Function & f, const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, usetimer * solvertimer)
-{
-	/** This solves the sparse-matrix system
-	 *  A x = b
-	 *  with  x == inout
-	 *        A == f
-	 *        b == source
-	 * using a Krylov-Solver (BiCGStab or CG)
-	 */
-	int converged = -1;
-
-	if(get_parameters().get_profile_solver() ) (*solvertimer).reset();
-
-	//Trial solution
-	///@todo this should go into a more general function
-	this->set_spinorfield_cold_device(inout);
-
-	if(get_parameters().get_solver() == meta::Inputparameters::cg)
-		converged = cg(f, inout, source, gf, get_parameters().get_solver_prec());
-	else
-		converged = bicgstab(f, inout, source, gf, get_parameters().get_solver_prec());
-
-	if(get_parameters().get_profile_solver() ) {
-		get_device()->synchronize();
-		(*solvertimer).add();
-	}
-
-	if (converged < 0) {
-		if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
-		else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
-	} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-}
-
 const hardware::buffers::Plain<spinor> * Opencl_Module_Fermions::get_inout()
 {
 	return &clmem_inout;

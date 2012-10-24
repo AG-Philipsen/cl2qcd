@@ -211,9 +211,6 @@ public:
         void M_tm_sitediagonal_minus_AND_gamma5_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar = ARG_DEF);
 
 	//    solver operations
-	//    non-eo
-	/// this calls the solver according to parameter settings using the fermionmatrix f
-	void solver(const Matrix_Function & f, const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, usetimer * solvertimer);
 	/**
 	* the solvers return the number of iterations needed if it converged,
 	* -1 if it did not converge within cgmax
