@@ -14,7 +14,7 @@ void Gaugefield_hmc::init_tasks()
 
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 
-	opencl_modules[task_hmc] = new Opencl_Module_Hmc(get_parameters(), get_device_for_task(task_hmc), &inversions0, &inversions1, &inversions_mp0, &inversions_mp1);
+	opencl_modules[task_hmc] = new Opencl_Module_Hmc(get_parameters(), get_device_for_task(task_hmc));
 
 	return;
 }
@@ -37,9 +37,6 @@ void Gaugefield_hmc::finalize_opencl()
 void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* solver_timer)
 {
 	klepsydra::Monotonic step_timer;
-
-	//reset the counters for the inversions
-	reset_inversion_counters();
 
 	// copy u->u' p->p' for the integrator
 	// new_u is used in some debug code of the gaugemomentum-initialization. therefore we need to copy it before
@@ -594,11 +591,4 @@ void Gaugefield_hmc::init_gaugemomentum_spinorfield(usetimer * solvertimer)
 			get_task_hmc(0)->md_update_spinorfield(get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
 		}
 	}
-}
-
-void Gaugefield_hmc::reset_inversion_counters() noexcept {
-	inversions0.reset();
-	inversions1.reset();
-	inversions_mp0.reset();
-	inversions_mp1.reset();
 }

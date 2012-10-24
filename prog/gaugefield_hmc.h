@@ -134,14 +134,6 @@ protected:
 private:
 
 	int task_hmc;
-
-	meta::Counter inversions0;
-	meta::Counter inversions1;
-	meta::Counter inversions_mp0;
-	meta::Counter inversions_mp1;
-
-	void reset_inversion_counters() noexcept;
-
 };
 
 #endif /* _GAUGEFIELDHMCH_ */

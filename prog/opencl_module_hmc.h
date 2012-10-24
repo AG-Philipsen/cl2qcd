@@ -51,8 +51,7 @@ public:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device, meta::Counter * inversions0, meta::Counter * inversions1,
-	                  meta::Counter * inversions_mp0, meta::Counter * inversions_mp1);
+	Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device);
 
 	virtual ~Opencl_Module_Hmc();
 
@@ -208,11 +207,6 @@ private:
 	const hardware::buffers::Plain<spinor> clmem_phi_mp;
 	const hardware::buffers::Spinor clmem_phi_eo;
 	const hardware::buffers::Spinor clmem_phi_mp_eo;
-
-	meta::Counter * const inversions0;
-	meta::Counter * const inversions1;
-	meta::Counter * const inversions_mp0;
-	meta::Counter * const inversions_mp1;
 };
 
 #endif //OPENCLMODULEHMCH

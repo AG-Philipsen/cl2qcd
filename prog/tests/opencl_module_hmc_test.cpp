@@ -33,8 +33,7 @@ public:
 void TestGaugefield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	meta::Counter counter1, counter2, counter3, counter4;
-	opencl_modules[0] = new Opencl_Module_Hmc(get_parameters(), get_device_for_task(0), &counter1, &counter2, &counter3, &counter4);
+	opencl_modules[0] = new Opencl_Module_Hmc(get_parameters(), get_device_for_task(0));
 }
 
 void TestGaugefield::finalize_opencl()
