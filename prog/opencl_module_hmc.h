@@ -49,16 +49,6 @@ public:
 
 	virtual ~Opencl_Module_Hmc();
 
-	/**
-	 * comutes work-sizes for a kernel
-	 * @todo autotune
-	 * @param ls local-work-size
-	 * @param gs global-work-size
-	 * @param num_groups number of work groups
-	 * @param name name of the kernel for possible autotune-usage, not yet used!!
-	 */
-	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
-
 	////////////////////////////////////////////////////
 	//get members
 	const hardware::buffers::Gaugemomentum * get_clmem_p();
@@ -128,6 +118,16 @@ public:
 protected:
 
 	/**
+	 * comutes work-sizes for a kernel
+	 * @todo autotune
+	 * @param ls local-work-size
+	 * @param gs global-work-size
+	 * @param num_groups number of work groups
+	 * @param name name of the kernel for possible autotune-usage, not yet used!!
+	 */
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
+
+	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
@@ -149,10 +149,6 @@ protected:
 	 */
 	virtual uint64_t get_flop_size(const std::string& in) const override;
 
-protected:
-
-	ClSourcePackage basic_hmc_code;
-
 private:
 	/**
 	 * Constructor.
@@ -169,6 +165,8 @@ private:
 	 * Clear out the kernels,
 	 */
 	void clear_kernels();
+
+	ClSourcePackage basic_hmc_code;
 
 	//kernels
 	cl_kernel generate_gaussian_spinorfield;
