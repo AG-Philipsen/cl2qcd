@@ -62,6 +62,51 @@ void Gaugefield_inverter::finalize_opencl()
 	delete [] source_buffer;
 }
 
+void Gaugefield_inverter::invert_M_nf2_upperflavour(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, usetimer * solvertimer)
+{
+	/** This solves the sparse-matrix system
+	 *  A x = b
+	 *  with  x == inout
+	 *        A == f
+	 *        b == source
+	 * using a Krylov-Solver (BiCGStab or CG)
+	 */
+	int converged = -1;
+	Opencl_Module_Fermions * solver = get_task_solver();
+	if(get_parameters().get_profile_solver() ) (*solvertimer).reset();
+
+	//Trial solution
+	///@todo this should go into a more general function
+	solver->set_spinorfield_cold_device(inout);
+
+	if(get_parameters().get_solver() == meta::Inputparameters::cg) {
+	  //to use cg, one needs an hermitian matrix, which is QplusQminus
+	  //the source must now be gamma5 b, to obtain the desired solution in the end
+	  solver->gamma5_device(source);
+	  ::QplusQminus f_neo(solver);
+	  converged = solver->cg(f_neo, inout, source, gf, get_parameters().get_solver_prec());
+	  //now, calc Qminus inout to obtain x = A^⁻1 b
+	  //therefore, use source as an intermediate buffer
+	  solver->Qminus(inout, source, gf, get_parameters().get_kappa(), meta::get_mubar(get_parameters() ));
+	  //save the result to inout
+	  hardware::buffers::copyData(inout, source);
+	} else {
+	  ::M f_neo(solver);
+	  converged = solver->bicgstab(f_neo, inout, source, gf, get_parameters().get_solver_prec());
+	}
+
+	if(get_parameters().get_profile_solver() ) {
+		solver->get_device()->synchronize();
+		(*solvertimer).add();
+	}
+
+	if (converged < 0) {
+		if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
+		else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
+	} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
+}
+
+
 void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 {
 	int use_eo = get_parameters().get_use_eo();
@@ -82,13 +127,6 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 		solver->smear_gaugefield(solver->get_gaugefield(), std::vector<const hardware::buffers::SU3 *>());
 	}
 
-	//for CG, one needs a hermitian matrix...
-	if(get_parameters().get_solver() == meta::Inputparameters::cg) {
-		logger.fatal() << "CG usage requires a hermitian matrix. This is not implemented yet...";
-		//the call shoul be like this
-		//::QplusQminus_eo f_eo(solver);
-	}
-
 	for(int k = 0; k < num_sources; k++) {
 		//copy source from to device
 		//NOTE: this is a blocking call!
@@ -99,8 +137,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 			::Aee f_eo(solver);
 			solver->solver(f_eo, &clmem_res, get_clmem_source_solver(), solver->get_gaugefield(), solver_timer);
 		} else {
-			::M f_neo(solver);
-			solver->solver(f_neo, &clmem_res, get_clmem_source_solver(), solver->get_gaugefield(), solver_timer);
+		  invert_M_nf2_upperflavour( &clmem_res, get_clmem_source_solver(), solver->get_gaugefield(), solver_timer);
 		}
 
 		//add solution to solution-buffer
