@@ -27,14 +27,6 @@ class Opencl_Module {
 
 public:
 	/**
-	 * Empty constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device)
-		: parameters(params), device(device) { };
-
-	/**
 	 * Get a pointer to inputparameters
 	 * @return parameters
 	 */
@@ -55,6 +47,14 @@ public:
 	void virtual print_profiling(const std::string& filename, int number) const;
 
 protected:
+	/**
+	 * Protected constructor to keep this class abstract.
+	 *
+	 * @param[in] params points to an instance of inputparameters
+	 */
+	Opencl_Module(const meta::Inputparameters& params, hardware::Device * device)
+		: parameters(params), device(device) { };
+
 	/**
 	 * comutes work-sizes for a kernel
 	 * @todo autotune
