@@ -2086,3 +2086,8 @@ Opencl_Module_Fermions::~Opencl_Module_Fermions()
 {
 	clear_kernels();
 }
+
+ClSourcePackage Opencl_Module_Fermions::get_sources() const noexcept
+{
+	return sources;
+}

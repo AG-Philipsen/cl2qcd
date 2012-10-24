@@ -26,7 +26,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 
 void Opencl_Module_Hmc::fill_kernels()
 {
-	basic_hmc_code = Opencl_Module_Fermions::sources << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_hmc.h" << "operations_gaugemomentum.cl";
+	basic_hmc_code = get_device()->get_fermion_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_hmc.h" << "operations_gaugemomentum.cl";
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 
 	//init kernels for HMC

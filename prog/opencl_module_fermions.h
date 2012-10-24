@@ -159,16 +159,6 @@ public:
 
 	virtual ~Opencl_Module_Fermions();
 
-	/**
-	 * comutes work-sizes for a kernel
-	 * @todo autotune
-	 * @param ls local-work-size
-	 * @param gs global-work-size
-	 * @param num_groups number of work groups
-	 * @param name name of the kernel for possible autotune-usage, not yet used!!
-	 */
-	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
-
 
 	//    fermionmatrix operations
 	//    non-eo
@@ -254,8 +244,6 @@ public:
 	 */
 	hmc_float print_info_inv_field(const hardware::buffers::Spinor * in, bool eo, std::string msg);
 
-	//protected:
-
 	/**
 	 * Print the profiling information to a file.
 	 *
@@ -278,7 +266,19 @@ public:
 	 */
 	virtual uint64_t get_flop_size(const std::string& in) const override;
 
+	ClSourcePackage get_sources() const noexcept;
+
 protected:
+	/**
+	 * comutes work-sizes for a kernel
+	 * @todo autotune
+	 * @param ls local-work-size
+	 * @param gs global-work-size
+	 * @param num_groups number of work groups
+	 * @param name name of the kernel for possible autotune-usage, not yet used!!
+	 */
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
+
 	/**
 	 * Default constructor.
 	 *
@@ -355,7 +355,6 @@ private:
 	const hardware::buffers::Plain<hmc_complex> clmem_one;
 	const hardware::buffers::Plain<hmc_complex> clmem_minusone;
 
-protected:
 	ClSourcePackage sources;
 };
 
