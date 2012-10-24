@@ -14,7 +14,7 @@ void Gaugefield_hmc::init_tasks()
 
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 
-	opencl_modules[task_hmc] = new Opencl_Module_Hmc(get_parameters(), get_device_for_task(task_hmc));
+	opencl_modules[task_hmc] = get_device_for_task(task_hmc)->get_hmc_code();
 
 	return;
 }

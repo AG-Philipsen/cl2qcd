@@ -45,13 +45,7 @@
  */
 class Opencl_Module_Hmc : public Opencl_Module_Fermions {
 public:
-
-	/**
-	 * Constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device);
+	friend hardware::Device;
 
 	virtual ~Opencl_Module_Hmc();
 
@@ -160,6 +154,13 @@ protected:
 	ClSourcePackage basic_hmc_code;
 
 private:
+	/**
+	 * Constructor.
+	 *
+	 * @param[in] params points to an instance of inputparameters
+	 */
+	Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device);
+
 	/**
 	 * Collect the kernels for OpenCL.
 	 */
