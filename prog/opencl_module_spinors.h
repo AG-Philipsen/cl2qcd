@@ -41,12 +41,6 @@ public:
 
 	~Opencl_Module_Spinors();
 
-	/**
-	 * Add specific work_size determination for this child class
-	 */
-	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
-
-
 	/////////////////////////////////////////
 	// device operations
 
@@ -58,6 +52,7 @@ public:
 	void set_complex_to_scalar_product_eoprec_device(const hardware::buffers::Spinor * a, const hardware::buffers::Spinor * b, const hardware::buffers::Plain<hmc_complex> * out);
 	void set_complex_to_ratio_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out);
 	void set_complex_to_product_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out);
+	void global_squarenorm_reduction(const hardware::buffers::Plain<hmc_float> * out, const hardware::buffers::Plain<hmc_float> * tmp_buf);
 	void set_float_to_global_squarenorm_device(const hardware::buffers::Plain<spinor> * a, const hardware::buffers::Plain<hmc_float> * out);
 	void set_float_to_global_squarenorm_eoprec_device(const hardware::buffers::Spinor * a, const hardware::buffers::Plain<hmc_float> * out);
 	void set_zero_spinorfield_device(const hardware::buffers::Plain<spinor> * x);
@@ -92,6 +87,14 @@ public:
 	 */
 	void virtual print_profiling(const std::string& filename, int number) const override;
 
+	ClSourcePackage get_sources() const noexcept;
+
+protected:
+	/**
+	 * @fixme make private
+	 */
+	Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device);
+
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
@@ -107,9 +110,29 @@ public:
 	 */
 	virtual uint64_t get_flop_size(const std::string& in) const override;
 
-	ClSourcePackage get_sources() const noexcept;
+	/**
+	 * Add specific work_size determination for this child class
+	 */
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
-protected:
+private:
+	/**
+	 * Collect the kernels for OpenCL.
+	 */
+	void fill_kernels();
+
+	/**
+	 * Clear out the kernels,
+	 */
+	void clear_kernels();
+
+	cl_kernel convertSpinorfieldToSOA_eo;
+	cl_kernel convertSpinorfieldFromSOA_eo;
+
+	void convertSpinorfieldToSOA_eo_device(const hardware::buffers::Spinor * out, const hardware::buffers::Plain<spinor> * in);
+	void convertSpinorfieldFromSOA_eo_device(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Spinor * in);
+
+	ClSourcePackage basic_fermion_code;
 
 	//BLAS
 	cl_kernel set_spinorfield_cold;
@@ -130,7 +153,7 @@ protected:
 	cl_kernel scalar_product;
 	cl_kernel scalar_product_reduction;
 	cl_kernel global_squarenorm;
-	cl_kernel global_squarenorm_reduction;
+	cl_kernel _global_squarenorm_reduction;
 	cl_kernel scalar_product_eoprec;
 	cl_kernel global_squarenorm_eoprec;
 
@@ -140,31 +163,6 @@ protected:
 
 	//merged kernels
 	cl_kernel saxpy_AND_squarenorm_eo;
-
-protected:
-	/**
-	 * @fixme make private
-	 */
-	Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device);
-
-private:
-	/**
-	 * Collect the kernels for OpenCL.
-	 */
-	void fill_kernels();
-
-	/**
-	 * Clear out the kernels,
-	 */
-	void clear_kernels();
-
-	cl_kernel convertSpinorfieldToSOA_eo;
-	cl_kernel convertSpinorfieldFromSOA_eo;
-
-	void convertSpinorfieldToSOA_eo_device(const hardware::buffers::Spinor * out, const hardware::buffers::Plain<spinor> * in);
-	void convertSpinorfieldFromSOA_eo_device(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Spinor * in);
-
-	ClSourcePackage basic_fermion_code;
 };
 
 #endif //OPENCLMODULSPINORSH

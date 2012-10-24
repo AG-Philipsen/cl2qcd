@@ -1988,11 +1988,7 @@ void Opencl_Module_Hmc::set_float_to_gaugemomentum_squarenorm_device(const hardw
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	get_device()->enqueue_kernel(gaugemomentum_squarenorm, gs2, ls2);
 
-	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), clmem_global_squarenorm_buf_glob);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	get_device()->enqueue_kernel(global_squarenorm_reduction, gs2, ls2);
+	global_squarenorm_reduction(out, &clmem_global_squarenorm_buf_glob);
 }
 
 void Opencl_Module_Hmc::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data)

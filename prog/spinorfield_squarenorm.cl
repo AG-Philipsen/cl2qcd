@@ -53,15 +53,14 @@ __kernel void global_squarenorm(__global const spinor * const restrict x, __glob
 }
 
 
-__kernel void global_squarenorm_reduction(__global hmc_float* result_tmp, __global hmc_float* result)
+__kernel void global_squarenorm_reduction(__global hmc_float* dest, __global hmc_float* result_tmp, const uint elems)
 {
-	int id = get_global_id(0);
+	uint id = get_global_id(0);
+	hmc_float tmp = 0;
 	if(id == 0) {
-		for (int i = 1; i < get_num_groups(0); i++) {
-			result_tmp[0] += result_tmp[i];
+		for (uint i = 0; i < elems; i++) {
+			tmp += result_tmp[i];
 		}
-		(*result) = result_tmp[0];
+		*dest = tmp;
 	}
-
-	return;
 }
