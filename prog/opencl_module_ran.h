@@ -48,11 +48,7 @@ public:
 	 */
 	const hardware::buffers::PRNGBuffer& get_prng_buffer() const noexcept;
 
-protected:
-	/**
-	 * A set of sources required to use the PRNG.
-	 */
-	ClSourcePackage prng_code;
+	ClSourcePackage get_sources() const noexcept;
 
 protected:
 	/**
@@ -62,6 +58,11 @@ protected:
 	 */
 	Opencl_Module_Ran(const meta::Inputparameters& params, hardware::Device * device);
 private:
+
+	/**
+	 * A set of sources required to use the PRNG.
+	 */
+	ClSourcePackage prng_code;
 
 	const hardware::buffers::PRNGBuffer prng_buffer;
 
