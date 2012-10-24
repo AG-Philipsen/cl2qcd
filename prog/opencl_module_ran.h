@@ -38,12 +38,7 @@
  */
 class Opencl_Module_Ran : public Opencl_Module_Gaugefield {
 public:
-	/**
-	 * Empty constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Opencl_Module_Ran(const meta::Inputparameters& params, hardware::Device * device);
+	friend hardware::Device;
 
 	virtual ~Opencl_Module_Ran();
 
@@ -59,6 +54,13 @@ protected:
 	 */
 	ClSourcePackage prng_code;
 
+protected:
+	/**
+	 * @param[in] params points to an instance of inputparameters
+	 *
+	 * @fixme Needs to be private
+	 */
+	Opencl_Module_Ran(const meta::Inputparameters& params, hardware::Device * device);
 private:
 
 	const hardware::buffers::PRNGBuffer prng_buffer;

@@ -28,6 +28,7 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 	  name(retrieve_device_name(device_id)),
 	  profiling_enabled(enable_profiling),
 	  profiling_data(),
+	  prng_code(nullptr),
 	  spinor_code(nullptr),
 	  fermion_code(nullptr),
 	  hmc_code(nullptr),
@@ -68,6 +69,9 @@ hardware::Device::~Device()
 	}
 	if(spinor_code) {
 		delete spinor_code;
+	}
+	if(prng_code) {
+		delete prng_code;
 	}
 
 	clFinish(command_queue);
@@ -388,6 +392,14 @@ std::string hardware::Device::get_name() const noexcept
 
 hardware::ProfilingData hardware::Device::get_profiling_data(const cl_kernel& kernel) noexcept {
 	return profiling_data[kernel];
+}
+
+Opencl_Module_Ran * hardware::Device::get_prng_code()
+{
+	if(!prng_code) {
+		prng_code = new Opencl_Module_Ran(params, this);
+	}
+	return prng_code;
 }
 
 Opencl_Module_Spinors * hardware::Device::get_spinor_code()
