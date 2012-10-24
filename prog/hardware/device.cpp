@@ -28,6 +28,7 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 	  name(retrieve_device_name(device_id)),
 	  profiling_enabled(enable_profiling),
 	  profiling_data(),
+	  fermion_code(nullptr),
 	  hmc_code(nullptr),
 	  correlator_code(nullptr),
 	  heatbath_code(nullptr),
@@ -60,6 +61,9 @@ hardware::Device::~Device()
 	}
 	if(hmc_code) {
 		delete hmc_code;
+	}
+	if(fermion_code) {
+		delete fermion_code;
 	}
 
 	clFinish(command_queue);
@@ -380,6 +384,14 @@ std::string hardware::Device::get_name() const noexcept
 
 hardware::ProfilingData hardware::Device::get_profiling_data(const cl_kernel& kernel) noexcept {
 	return profiling_data[kernel];
+}
+
+Opencl_Module_Fermions * hardware::Device::get_fermion_code()
+{
+	if(!fermion_code) {
+		fermion_code = new Opencl_Module_Fermions(params, this);
+	}
+	return fermion_code;
 }
 
 Opencl_Module_Hmc * hardware::Device::get_hmc_code()

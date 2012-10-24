@@ -34,7 +34,7 @@ void Gaugefield_inverter::init_tasks()
 
 
 	//LZ: right now, each task carries exactly one opencl device -> thus the below allocation with [1]. Could be generalized in future
-	opencl_modules[task_solver] = new Opencl_Module_Fermions(get_parameters(), get_device_for_task(task_solver));
+	opencl_modules[task_solver] = get_device_for_task(task_solver)->get_fermion_code();
 
 	opencl_modules[task_correlator] = get_device_for_task(task_correlator)->get_correlator_code();
 

@@ -17,6 +17,7 @@
 #include "../meta/inputparameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "profiling_data.hpp"
+#include "../opencl_module_fermions.h"
 #include "../opencl_module_hmc.h"
 #include "../opencl_module_correlator.h"
 #include "../opencl_module_heatbath.h"
@@ -175,6 +176,11 @@ public:
 	ProfilingData get_profiling_data(const cl_kernel& kernel) noexcept;
 
 	/**
+	 * Get access to the fermion kernels on this device.
+	 */
+	Opencl_Module_Fermions * get_fermion_code();
+
+	/**
 	 * Get access to the hmc kernels on this device.
 	 */
 	Opencl_Module_Hmc * get_hmc_code();
@@ -276,6 +282,12 @@ private:
 	 * Kernel profiling data
 	 */
 	std::map<cl_kernel, ProfilingData> profiling_data;
+
+	/**
+	 * Pointer to the fermion code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Fermions * fermion_code;
 
 	/**
 	 * Pointer to the hmc code.

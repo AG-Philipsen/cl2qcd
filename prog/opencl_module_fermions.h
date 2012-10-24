@@ -155,12 +155,7 @@ public:
  */
 class Opencl_Module_Fermions : public Opencl_Module_Spinors {
 public:
-	/**
-	 * Default constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Opencl_Module_Fermions(const meta::Inputparameters& params, hardware::Device * device);
+	friend hardware::Device;
 
 	virtual ~Opencl_Module_Fermions();
 
@@ -282,6 +277,16 @@ public:
 	 * @param in Name of the kernel under consideration.
 	 */
 	virtual uint64_t get_flop_size(const std::string& in) const override;
+
+protected:
+	/**
+	 * Default constructor.
+	 *
+	 * @param[in] params points to an instance of inputparameters
+	 *
+	 * @fixme This should be private
+	 */
+	Opencl_Module_Fermions(const meta::Inputparameters& params, hardware::Device * device);
 
 private:
 	/**
