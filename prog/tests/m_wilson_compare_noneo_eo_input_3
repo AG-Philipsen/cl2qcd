@@ -1,17 +1,21 @@
-# set startcondition to cold or hot to start with different gaugefield
 startcondition=cold
 
+kappa=0.15
+mu=4.
+
 use_eo=true
+
 NS=4
 NT=4
 
-kappa=0.125
+fermact=WILSON
 
 #with BICGSTAB, this set the init-spinorfield to random values
 solver=BICGSTAB
-use_pointsource=true
+#this controls the conversion from or to eoprec
+use_pointsource=false
 
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=4666.5450743132797
+test_ref_val=751.13724345841456

@@ -19,20 +19,6 @@ int main(int argc, const char* argv[])
 			logger.warn() << "Could not open log file for inverter.";
 		}
 
-		//get name for file to which correlators are to be stored
-		stringstream corr_fn;
-		switch ( parameters.get_startcondition() ) {
-			case meta::Inputparameters::start_from_source :
-				corr_fn << parameters.get_sourcefile() << "_correlators.dat" ;
-				break;
-			case meta::Inputparameters::hot_start :
-				corr_fn << "conf.hot_correlators.dat" ;
-				break;
-			case meta::Inputparameters::cold_start :
-				corr_fn << "conf.cold_correlators.dat" ;
-				break;
-		}
-
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Initialization
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,7 +62,7 @@ int main(int argc, const char* argv[])
 
 			//main loop
 			for(iter = iter_start; iter < iter_end; iter += iter_incr) {
-				std::string config_name = gaugefield.create_configuration_name(iter);
+			  std::string config_name = meta::create_configuration_name(parameters, iter);
 				logger.info() << "Measure fermionic observables on configuration: " << config_name;
 				gaugefield.init_gaugefield(config_name.c_str());
 				gaugefield.synchronize(0);
@@ -86,8 +72,11 @@ int main(int argc, const char* argv[])
 				gaugefield.create_sources();
 				gaugefield.perform_inversion(&solver_timer);
 
+				//get name for file to which correlators are to be stored
+				std::string corr_fn = meta::get_ferm_obs_file_name(parameters, config_name);
+
 				//flavour_doublet_correlators does a sync at the beginning
-				gaugefield.flavour_doublet_correlators(corr_fn.str());
+				gaugefield.flavour_doublet_correlators(corr_fn);
 			}
 		} else {
 			logger.info() << "Gaugeobservables:";
@@ -96,8 +85,11 @@ int main(int argc, const char* argv[])
 			gaugefield.create_sources();
 			gaugefield.perform_inversion(&solver_timer);
 
+			//get name for file to which correlators are to be stored
+			std::string corr_fn = meta::get_ferm_obs_file_name(parameters, "");
+
 			//flavour_doublet_correlators does a sync at the beginning
-			gaugefield.flavour_doublet_correlators(corr_fn.str());
+			gaugefield.flavour_doublet_correlators(corr_fn);
 		}
 		logger.trace() << "Inversion done" ;
 		perform_timer.add();

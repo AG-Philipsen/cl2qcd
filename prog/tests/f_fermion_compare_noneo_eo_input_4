@@ -1,6 +1,5 @@
 # set startcondition to cold or hot to start with different gaugefield
-startcondition=continue
-sourcefile=conf.00200
+startcondition=cold
 
 use_eo=true
 NS=4
@@ -10,8 +9,9 @@ kappa=0.125
 
 #with BICGSTAB, this set the init-spinorfield to random values
 solver=BICGSTAB
+use_pointsource=false
 
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=8211.9456533578705
+test_ref_val=4643.4969993563036

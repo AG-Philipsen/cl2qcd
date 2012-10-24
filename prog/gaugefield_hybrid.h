@@ -193,11 +193,6 @@ public:
 
 	// output methods
 	/**
-	 * Create a name for a gaugefield configuration file
-	 * @param[in] number number of the file
-	 */
-	std::string create_configuration_name(int number);
-	/**
 	 * Save gaugefield to a file with name conf.number
 	 * @param[in] number number to be added to file name
 	 */

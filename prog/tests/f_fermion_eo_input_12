@@ -20,4 +20,4 @@ chem_pot_re=0.
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=2123.979239383043
+test_ref_val=1887.5470643578979

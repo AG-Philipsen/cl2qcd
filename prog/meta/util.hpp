@@ -9,6 +9,7 @@
 
 #include "../types.h"
 #include <iostream>
+#include <sstream>
 
 namespace meta {
 	size_t get_volspace(const Inputparameters&);
@@ -51,6 +52,10 @@ namespace meta {
 	void print_info_inverter(const char* progname, std::ostream* os, const Inputparameters& params);
 	void print_info_hmc(const char* progname, const Inputparameters& params);
 	void print_info_hmc(const char* progname, std::ostream* os, const Inputparameters& params);
+  std::string get_ferm_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
+  std::string get_gauge_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
+  std::string get_hmc_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept;
+  std::string create_configuration_name(const Inputparameters& parameters, int number) noexcept;
 }
 
 #endif /* META_UTIL_ */

@@ -2,21 +2,21 @@ startcondition=continue
 sourcefile=conf.00200
 
 kappa=0.15
+mu=4.
 
 use_eo=true
+
 NS=4
 NT=4
 
+fermact=WILSON
+
 #with BICGSTAB, this set the init-spinorfield to random values
 solver=BICGSTAB
-
-ThetaT=1.
-
-#with pointsource one can switch between "EVEN" and "ODD" as parameter for the kernel
-# true = EVEN, false = ODD
+#this controls the conversion from or to eoprec
 use_pointsource=true
 
 #this specifies the acceptance precision
 solver_prec=1e-8
 #reference value
-test_ref_val=1883.6332487874606
+test_ref_val=2816.4934452639404

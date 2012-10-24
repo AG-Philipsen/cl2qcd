@@ -411,6 +411,42 @@ std::string Inputparameters::get_config_postfix() const noexcept
 {
   return config_postfix;
 }
+std::string Inputparameters::get_ferm_obs_prefix() const noexcept
+{
+  return ferm_obs_prefix;
+}
+std::string Inputparameters::get_ferm_obs_postfix() const noexcept
+{
+  return ferm_obs_postfix;
+}
+std::string Inputparameters::get_gauge_obs_prefix() const noexcept
+{
+  return gauge_obs_prefix;
+}
+std::string Inputparameters::get_gauge_obs_postfix() const noexcept
+{
+  return gauge_obs_postfix;
+}
+bool Inputparameters::get_ferm_obs_to_single_file() const noexcept
+{
+	return ferm_obs_to_single_file;
+}
+bool Inputparameters::get_gauge_obs_to_single_file() const noexcept
+{
+	return gauge_obs_to_single_file;
+}
+std::string Inputparameters::get_hmc_obs_prefix() const noexcept
+{
+  return hmc_obs_prefix;
+}
+std::string Inputparameters::get_hmc_obs_postfix() const noexcept
+{
+  return hmc_obs_postfix;
+}
+bool Inputparameters::get_hmc_obs_to_single_file() const noexcept
+{
+	return hmc_obs_to_single_file;
+}
 
 Inputparameters::Inputparameters(int argc, const char** argv)
 {
@@ -535,12 +571,22 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 
 	("read_multiple_configs", po::value<bool>(&read_multiple_configs)->default_value(false), "Read in more than one gaugefield configuration")
 	  ("config_read_start", po::value<int>(&config_read_start)->default_value(0), "Number to begin with when reading in more than one gaugefield configuration")
-	  ("config_number_digits", po::value<int>(&config_number_digits)->default_value(5), "Number of digits to name gaugefield configurations")
 	  ("config_read_end", po::value<int>(&config_read_end)->default_value(1), "Number to end with when reading in more than one gaugefield configuration")
 	  ("config_read_incr", po::value<int>(&config_read_incr)->default_value(1), "Increment for gaugefield configuration number when reading in more than one gaugefield configuration")
+	  ("config_number_digits", po::value<int>(&config_number_digits)->default_value(5), "Number of digits to name gaugefield configurations")
 	("config_prefix", po::value<std::string>(&config_prefix)->default_value("conf."), "Prefix for gaugefield configuration")
-	("config_postfix", po::value<std::string>(&config_postfix)->default_value(""), "Postfix for gaugefield configuration");
+	("config_postfix", po::value<std::string>(&config_postfix)->default_value(""), "Postfix for gaugefield configuration")
 
+	  //parameters to write out observables
+	("gauge_obs_to_single_file", po::value<bool>(&gauge_obs_to_single_file)->default_value(true), "Save gauge observables to one single file")
+	("gauge_obs_prefix", po::value<std::string>(&gauge_obs_prefix)->default_value("gaugeObs"), "Prefix for gauge observables file")
+	("gauge_obs_postfix", po::value<std::string>(&gauge_obs_postfix)->default_value(".dat"), "Postfix for gauge observables file")
+	("ferm_obs_to_single_file", po::value<bool>(&ferm_obs_to_single_file)->default_value(false), "Save fermionic observables to one single file")
+	("ferm_obs_prefix", po::value<std::string>(&ferm_obs_prefix)->default_value(""), "Prefix for fermionic observables file")
+	("ferm_obs_postfix", po::value<std::string>(&ferm_obs_postfix)->default_value("_correlators.dat"), "Postfix for fermionic observables file")
+	("hmc_obs_to_single_file", po::value<bool>(&hmc_obs_to_single_file)->default_value(true), "Save hmc observables to one single file")
+	("hmc_obs_prefix", po::value<std::string>(&hmc_obs_prefix)->default_value("hmc_output"), "Prefix for hmc observables file")
+	("hmc_obs_postfix", po::value<std::string>(&hmc_obs_postfix)->default_value(""), "Postfix for hmc observables file");
 
 	po::options_description desc;
 	desc.add(cmd_opts).add(config);

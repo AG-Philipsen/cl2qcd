@@ -19,11 +19,6 @@ int main(int argc, const char* argv[])
 			logger.warn() << "Could not log file for hmc.";
 		}
 
-		//name of file to store gauge observables, print initial information
-		/** @todo think about what is a senseful filename*/
-		stringstream gaugeout_name;
-		gaugeout_name << "hmc_output";
-
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Initialization
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,7 +74,8 @@ int main(int argc, const char* argv[])
 				gaugefield.print_hmcobservables(obs, iter);
 
 			if( ( (iter + 1) % writefreq ) == 0 ) {
-				gaugefield.print_hmcobservables(obs, iter, gaugeout_name.str());
+			  std::string gaugeout_name = meta::get_hmc_obs_file_name(parameters, "");
+				gaugefield.print_hmcobservables(obs, iter, gaugeout_name);
 			}
 			if( parameters.get_saveconfigs() == true && ( (iter + 1) % savefreq ) == 0 ) {
 				gaugefield.synchronize(0);

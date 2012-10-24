@@ -10,10 +10,6 @@ int main(int argc, const char* argv[])
 
 		meta::print_info_tkkappa(argv[0], parameters);
 
-		//name of file to store gauge observables
-		stringstream gaugeout_name;
-		gaugeout_name << "gaugeobservables_beta" << parameters.get_beta();
-
 		fstream logfile;
 		logfile.open("tk_kappa_hybrid.log", std::ios::out | std::ios::app);
 		if(logfile.is_open()) {
@@ -53,8 +49,9 @@ int main(int argc, const char* argv[])
 		logger.info() << "Start hybrid heatbath and tk_kappa";
 		//first output is considered to be zeroth iteration
 		int iter = 0;
+		std::string gaugeout_name = get_gauge_obs_file_name(parameters, "");
 		gaugefield.print_gaugeobservables(iter);
-		gaugefield.print_gaugeobservables(iter, gaugeout_name.str());
+		gaugefield.print_gaugeobservables(iter, gaugeout_name);
 		iter++;
 
 		//first iteration: whether we want to do auto-timing
@@ -68,7 +65,7 @@ int main(int argc, const char* argv[])
 		gaugefield.print_gaugeobservables(iter);
 		//    gaugefield.print_gaugeobservables_from_task(iter,0);
 		//    gaugefield.print_gaugeobservables_from_task(iter,1);
-		gaugefield.print_gaugeobservables(iter, gaugeout_name.str());
+		gaugefield.print_gaugeobservables(iter, gaugeout_name);
 		gaugefield.print_kappa(iter, "kappa_clover.dat");
 
 		for(iter = 2; iter < parameters.get_heatbathsteps() / nheat_frequency; iter++) {
@@ -77,7 +74,7 @@ int main(int argc, const char* argv[])
 			gaugefield.print_gaugeobservables(iter);
 			//    gaugefield.print_gaugeobservables_from_task(iter,0);
 			//    gaugefield.print_gaugeobservables_from_task(iter,1);
-			gaugefield.print_gaugeobservables(iter, gaugeout_name.str());
+			gaugefield.print_gaugeobservables(iter, gaugeout_name);
 			gaugefield.print_kappa(iter, "kappa_clover.dat");
 		}
 

@@ -28,11 +28,6 @@ int main(int argc, const char* argv[])
 			logger.warn() << "Could not log file for gaugeobservables.";
 		}
 
-		//name of file to store gauge observables, print initial information
-		/** @todo think about what is a senseful filename*/
-		stringstream gaugeout_name;
-		gaugeout_name << "gaugeobservables.data";
-
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Initialization
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,14 +65,15 @@ int main(int argc, const char* argv[])
 		if(parameters.get_read_multiple_configs()) {
 			//main loop
 			for(iter = iter_start; iter < iter_end; iter += iter_incr) {
-				std::string config_name = gaugefield.create_configuration_name(iter);
+			  std::string config_name = meta::create_configuration_name(parameters, iter);
 				logger.info() << "Measure gaugeobservables of configuration: " << config_name;
 				gaugefield.init_gaugefield(config_name.c_str());
 				gaugefield.synchronize(0);
 				if(parameters.get_print_to_screen() ) {
 					gaugefield.print_gaugeobservables(iter);
 				}
-				gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name.str());
+				std::string gaugeout_name = get_gauge_obs_file_name(parameters, config_name);
+				gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name);
 			}
 		} else {
 			//in this case only the config from the initialization is taken into account
@@ -86,7 +82,8 @@ int main(int argc, const char* argv[])
 			if(parameters.get_print_to_screen() ) {
 				gaugefield.print_gaugeobservables(iter);
 			}
-			gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name.str());
+			std::string gaugeout_name = get_gauge_obs_file_name(parameters, "");
+			gaugefield.print_gaugeobservables_from_task(iter, 0, gaugeout_name);
 		}
 		logger.info() << "... done";
 		perform_timer.add();
