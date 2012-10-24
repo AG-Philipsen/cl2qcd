@@ -37,12 +37,8 @@
  */
 class Opencl_Module_Spinors : public Opencl_Module_Ran {
 public:
-	/**
-	 * Empty constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device);
+	friend hardware::Device;
+
 	~Opencl_Module_Spinors();
 
 	/**
@@ -145,6 +141,12 @@ protected:
 	cl_kernel saxpy_AND_squarenorm_eo;
 
 	ClSourcePackage basic_fermion_code;
+
+protected:
+	/**
+	 * @fixme make private
+	 */
+	Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device);
 
 private:
 	/**

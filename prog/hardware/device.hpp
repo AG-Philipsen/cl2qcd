@@ -17,6 +17,7 @@
 #include "../meta/inputparameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "profiling_data.hpp"
+#include "../opencl_module_spinors.h"
 #include "../opencl_module_fermions.h"
 #include "../opencl_module_hmc.h"
 #include "../opencl_module_correlator.h"
@@ -176,6 +177,11 @@ public:
 	ProfilingData get_profiling_data(const cl_kernel& kernel) noexcept;
 
 	/**
+	 * Get access to the spinor kernels on this device.
+	 */
+	Opencl_Module_Spinors * get_spinor_code();
+
+	/**
 	 * Get access to the fermion kernels on this device.
 	 */
 	Opencl_Module_Fermions * get_fermion_code();
@@ -282,6 +288,12 @@ private:
 	 * Kernel profiling data
 	 */
 	std::map<cl_kernel, ProfilingData> profiling_data;
+
+	/**
+	 * Pointer to the spinor code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Spinors * spinor_code;
 
 	/**
 	 * Pointer to the fermion code.
