@@ -182,23 +182,15 @@ void Gaugefield_inverter::invert_M_nf2_upperflavour(const hardware::buffers::Pla
 
 void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 {
-	int use_eo = get_parameters().get_use_eo();
-
 	//decide on type of sources
-	int num_sources;
-	if(get_parameters().get_use_pointsource() == true)
-		num_sources = 12;
-	else
-		num_sources = get_parameters().get_num_sources();
+  int num_sources = (get_parameters().get_use_pointsource() ) ? 12 : get_parameters().get_num_sources();
 
 	Opencl_Module_Fermions * solver = get_task_solver();
-
 	hardware::buffers::Plain<spinor> clmem_res(meta::get_spinorfieldsize(get_parameters()), solver->get_device());
 
 	//apply stout smearing if wanted
-	if(get_parameters().get_use_smearing() == true) {
+	if(get_parameters().get_use_smearing() == true)
 		solver->smear_gaugefield(solver->get_gaugefield(), std::vector<const hardware::buffers::SU3 *>());
-	}
 
 	for(int k = 0; k < num_sources; k++) {
 		//copy source from to device
@@ -207,16 +199,14 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 		get_clmem_source_solver()->load(&source_buffer[k * meta::get_vol4d(get_parameters())]);
 		logger.debug() << "calling solver..";
 		invert_M_nf2_upperflavour( &clmem_res, get_clmem_source_solver(), solver->get_gaugefield(), solver_timer);
-
 		//add solution to solution-buffer
 		//NOTE: this is a blocking call!
 		logger.debug() << "add solution...";
 		clmem_res.dump(&solution_buffer[k * meta::get_vol4d(get_parameters())]);
 	}
 
-	if(get_parameters().get_use_smearing() == true) {
+	if(get_parameters().get_use_smearing() == true) 
 		solver->unsmear_gaugefield(solver->get_gaugefield());
-	}
 }
 
 void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
