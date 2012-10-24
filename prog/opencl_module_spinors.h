@@ -107,6 +107,7 @@ public:
 	 */
 	virtual uint64_t get_flop_size(const std::string& in) const override;
 
+	ClSourcePackage get_sources() const noexcept;
 
 protected:
 
@@ -140,8 +141,6 @@ protected:
 	//merged kernels
 	cl_kernel saxpy_AND_squarenorm_eo;
 
-	ClSourcePackage basic_fermion_code;
-
 protected:
 	/**
 	 * @fixme make private
@@ -164,6 +163,8 @@ private:
 
 	void convertSpinorfieldToSOA_eo_device(const hardware::buffers::Spinor * out, const hardware::buffers::Plain<spinor> * in);
 	void convertSpinorfieldFromSOA_eo_device(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Spinor * in);
+
+	ClSourcePackage basic_fermion_code;
 };
 
 #endif //OPENCLMODULSPINORSH

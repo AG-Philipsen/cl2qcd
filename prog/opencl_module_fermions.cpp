@@ -370,7 +370,7 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 
 void Opencl_Module_Fermions::fill_kernels()
 {
-	sources = basic_fermion_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+	sources = get_device()->get_spinor_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 
 	M_wilson = 0;
 	M_tm_plus = 0;

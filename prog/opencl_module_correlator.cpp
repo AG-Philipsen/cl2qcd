@@ -28,7 +28,7 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 
 void Opencl_Module_Correlator::fill_kernels()
 {
-	basic_correlator_code = basic_fermion_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+	basic_correlator_code = get_device()->get_spinor_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 	logger.debug() << "Create correlator kernels...";
 
 	if(get_parameters().get_use_pointsource() == true)

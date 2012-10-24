@@ -916,3 +916,8 @@ Opencl_Module_Spinors::~Opencl_Module_Spinors()
 {
 	clear_kernels();
 }
+
+ClSourcePackage Opencl_Module_Spinors::get_sources() const noexcept
+{
+	return basic_fermion_code;
+}
