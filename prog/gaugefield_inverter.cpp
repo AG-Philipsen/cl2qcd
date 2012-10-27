@@ -315,23 +315,22 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 
 void Gaugefield_inverter::create_sources()
 {
-	//create sources on the correlator-device and save them on the host
-	if(get_parameters().get_use_pointsource() == true) {
-		logger.debug() << "start creating point-sources...";
-		for(int k = 0; k < get_parameters().get_num_sources(); k++) {
-		  get_task_correlator()->create_point_source_device(get_clmem_source_corr(), k, get_source_pos_spatial(get_parameters()), get_parameters().get_source_t());
-			logger.debug() << "copy pointsource to host";
-			get_clmem_source_corr()->dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);
-		}
-	} else {
-		logger.debug() << "start creating stochastic-sources...";
-		int num_sources = get_parameters().get_num_sources();
-		for(int k = 0; k < num_sources; k++) {
-			get_task_correlator()->create_stochastic_source_device(get_clmem_source_corr());
-			logger.debug() << "copy stochastic-source to host";
-			get_clmem_source_corr()->dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);
-		}
-	}
+  //create sources on the correlator-device and save them on the host
+  if(get_parameters().get_sourcetype() == meta::Inputparameters::sourcetypes::point) {
+    logger.debug() << "start creating point-sources...";
+    for(int k = 0; k < get_parameters().get_num_sources(); k++) {
+      get_task_correlator()->create_point_source_device(get_clmem_source_corr(), k, get_source_pos_spatial(get_parameters()), get_parameters().get_source_t());
+      logger.debug() << "copy pointsource to host";
+      get_clmem_source_corr()->dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);
+    }
+  } else {
+    logger.debug() << "start creating stochastic-sources...";
+    for(int k = 0; k < get_parameters().get_num_sources(); k++) {
+      get_task_correlator()->create_stochastic_source_device(get_clmem_source_corr());
+      logger.debug() << "copy stochastic-source to host";
+      get_clmem_source_corr()->dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);
+    }
+  }
 }
 
 const hardware::buffers::Plain<spinor> * Gaugefield_inverter::get_clmem_corr()
