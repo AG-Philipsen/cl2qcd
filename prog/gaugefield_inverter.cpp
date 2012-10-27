@@ -177,13 +177,13 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
   int num_sources = get_parameters().get_num_sources();
 
 	Opencl_Module_Fermions * solver = get_task_solver();
-	hardware::buffers::Plain<spinor> clmem_res(meta::get_spinorfieldsize(get_parameters()), solver->get_device());
+	const hardware::buffers::Plain<spinor> clmem_res(meta::get_spinorfieldsize(get_parameters()), solver->get_device());
+	const hardware::buffers::Plain<spinor> clmem_source(meta::get_spinorfieldsize(get_parameters()), solver->get_device());
 
 	//apply stout smearing if wanted
 	if(get_parameters().get_use_smearing() == true)
 		solver->smear_gaugefield(solver->get_gaugefield(), std::vector<const hardware::buffers::SU3 *>());
 
-	const hardware::buffers::Plain<spinor> clmem_source(meta::get_spinorfieldsize(get_parameters()), solver->get_device());
 	for(int k = 0; k < num_sources; k++) {
 		//copy source from to device
 		//NOTE: this is a blocking call!
