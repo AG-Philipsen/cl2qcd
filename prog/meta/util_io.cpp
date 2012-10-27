@@ -742,7 +742,7 @@ static void print_info_source(const meta::Inputparameters params)
     logger.info() << "##";
     if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point) {
 	logger.info() << "## Use pointsource for inversion" ;
-	logger.info() << "## Position (x,y,z,t): " << params.get_pointsource_x() << " " <<  params.get_pointsource_y() << " " <<  params.get_pointsource_z() << " " <<  params.get_pointsource_t();
+	logger.info() << "## Position (x,y,z,t): " << params.get_source_x() << " " <<  params.get_source_y() << " " <<  params.get_source_z() << " " <<  params.get_source_t();
     }
     else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::volume) {
       logger.info() << "## Use volume sources for inversion" ;
@@ -750,6 +750,7 @@ static void print_info_source(const meta::Inputparameters params)
 	}
     else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::timeslice) {
 	logger.info() << "## Use timeslice sources for inversion" ;
+	logger.info() << "## Use timeslice: " << params.get_source_t();
 	logger.info() << "## Number of sources: " << params.get_num_sources();
     }
     if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::one){
@@ -769,7 +770,7 @@ static void print_info_source(std::ostream * os, const meta::Inputparameters par
     *os<< "##" << endl;
     if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point) {
 	*os<< "## Use pointsource for inversion" << endl;
-	*os<< "## Position (x,y,z,t): " << params.get_pointsource_x() << " " <<  params.get_pointsource_y() << " " <<  params.get_pointsource_z() << " " <<  params.get_pointsource_t()<< endl;
+	*os<< "## Position (x,y,z,t): " << params.get_source_x() << " " <<  params.get_source_y() << " " <<  params.get_source_z() << " " <<  params.get_source_t()<< endl;
     }
     else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::volume) {
       *os<< "## Use volume sources for inversion" << endl;
@@ -778,6 +779,7 @@ static void print_info_source(std::ostream * os, const meta::Inputparameters par
     else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::timeslice) {
 	*os<< "## Use timeslice sources for inversion" << endl;
 	*os<< "## Number of sources: " << params.get_num_sources()<< endl;
+	*os << "## Number of sources: " << params.get_num_sources() << endl;
     }
     if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::one){
       *os<< "## fill sources with one"<< endl;

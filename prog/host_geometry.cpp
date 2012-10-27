@@ -44,8 +44,8 @@ size_t get_link_idx_ildg_format(size_t x, size_t y, size_t z, size_t t, size_t m
 int get_source_pos_spatial(const meta::Inputparameters& params)
 {
 	int coord [4];
-	coord[1] = params.get_pointsource_x();
-	coord[2] = params.get_pointsource_y();
-	coord[3] = params.get_pointsource_z();
+	coord[1] = params.get_source_x();
+	coord[2] = params.get_source_y();
+	coord[3] = params.get_source_z();
 	return get_nspace(coord, params);
 }

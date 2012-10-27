@@ -250,21 +250,21 @@ int Inputparameters::get_num_sources() const noexcept
 {
 	return num_sources;
 }
-int Inputparameters::get_pointsource_x() const noexcept
+int Inputparameters::get_source_x() const noexcept
 {
-	return pointsource_x;
+	return source_x;
 }
-int Inputparameters::get_pointsource_y() const noexcept
+int Inputparameters::get_source_y() const noexcept
 {
-	return pointsource_y;
+	return source_y;
 }
-int Inputparameters::get_pointsource_z() const noexcept
+int Inputparameters::get_source_z() const noexcept
 {
-	return pointsource_z;
+	return source_z;
 }
-int Inputparameters::get_pointsource_t() const noexcept
+int Inputparameters::get_source_t() const noexcept
 {
-	return pointsource_t;
+	return source_t;
 }
 
 double Inputparameters::get_solver_prec() const noexcept
@@ -542,10 +542,10 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	  ("sourcetype",  po::value<std::string>()->default_value("point"), "Type of source to use for inverter")
 	  ("sourcecontent",  po::value<std::string>()->default_value("one"), "Type of content to use with inverter sources")
 	("num_sources", po::value<int>(&num_sources)->default_value(12))
-	("pointsource_x", po::value<int>(&pointsource_x)->default_value(0))
-	("pointsource_y", po::value<int>(&pointsource_y)->default_value(0))
-	("pointsource_z", po::value<int>(&pointsource_z)->default_value(0))
-	("pointsource_t", po::value<int>(&pointsource_t)->default_value(0))
+	("source_x", po::value<int>(&source_x)->default_value(0))
+	("source_y", po::value<int>(&source_y)->default_value(0))
+	("source_z", po::value<int>(&source_z)->default_value(0))
+	("source_t", po::value<int>(&source_t)->default_value(0))
 #ifdef _USEDOUBLEPREC_
 	("solver_prec", po::value<double>(&solver_prec)->default_value(1e-23))
 	("force_prec", po::value<double>(&force_prec)->default_value(1e-12))

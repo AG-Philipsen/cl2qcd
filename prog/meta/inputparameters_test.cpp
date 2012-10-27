@@ -78,10 +78,10 @@ void checkDefaults(const Inputparameters params)
 	BOOST_REQUIRE_EQUAL(params.get_use_pointsource(), true);
 	BOOST_REQUIRE_EQUAL(params.get_use_gauge_only(), false);
 	BOOST_REQUIRE_EQUAL(params.get_num_sources(), 12);
-	BOOST_REQUIRE_EQUAL(params.get_pointsource_x(), 0);
-	BOOST_REQUIRE_EQUAL(params.get_pointsource_y(), 0);
-	BOOST_REQUIRE_EQUAL(params.get_pointsource_z(), 0);
-	BOOST_REQUIRE_EQUAL(params.get_pointsource_t(), 0);
+	BOOST_REQUIRE_EQUAL(params.get_source_x(), 0);
+	BOOST_REQUIRE_EQUAL(params.get_source_y(), 0);
+	BOOST_REQUIRE_EQUAL(params.get_source_z(), 0);
+	BOOST_REQUIRE_EQUAL(params.get_source_t(), 0);
 #ifdef _USEDOUBLEPREC_
 	BOOST_REQUIRE_EQUAL(params.get_solver_prec(), 1e-23);
 	BOOST_REQUIRE_EQUAL(params.get_force_prec(), 1e-12);
@@ -204,10 +204,10 @@ BOOST_AUTO_TEST_CASE(input_file2)
 	BOOST_REQUIRE_EQUAL(params.get_use_pointsource(), false);
 	BOOST_REQUIRE_EQUAL(params.get_use_gauge_only(), true);
 	BOOST_REQUIRE_EQUAL(params.get_num_sources(), 3);
-	BOOST_REQUIRE_EQUAL(params.get_pointsource_x(), 1);
-	BOOST_REQUIRE_EQUAL(params.get_pointsource_y(), 2);
-	BOOST_REQUIRE_EQUAL(params.get_pointsource_z(), 3);
-	BOOST_REQUIRE_EQUAL(params.get_pointsource_t(), 4);
+	BOOST_REQUIRE_EQUAL(params.get_source_x(), 1);
+	BOOST_REQUIRE_EQUAL(params.get_source_y(), 2);
+	BOOST_REQUIRE_EQUAL(params.get_source_z(), 3);
+	BOOST_REQUIRE_EQUAL(params.get_source_t(), 4);
 	BOOST_REQUIRE_EQUAL(params.get_solver_prec(), 1e-21);
 	BOOST_REQUIRE_EQUAL(params.get_force_prec(), 1e-16);
 	BOOST_REQUIRE_EQUAL(params.get_iter_refresh(), 105);

@@ -113,10 +113,10 @@ namespace meta {
 			bool get_use_pointsource() const noexcept;
 			bool get_use_gauge_only() const noexcept;
 			int get_num_sources() const noexcept;
-			int get_pointsource_x() const noexcept;
-			int get_pointsource_y() const noexcept;
-			int get_pointsource_z() const noexcept;
-			int get_pointsource_t() const noexcept;
+			int get_source_x() const noexcept;
+			int get_source_y() const noexcept;
+			int get_source_z() const noexcept;
+			int get_source_t() const noexcept;
 
 			double get_solver_prec() const noexcept;
 			double get_force_prec() const noexcept;
@@ -233,10 +233,10 @@ namespace meta {
 			bool use_pointsource;
 			bool use_gauge_only;
 			int num_sources;
-			int pointsource_x;
-			int pointsource_y;
-			int pointsource_z;
-			int pointsource_t;
+			int source_x;
+			int source_y;
+			int source_z;
+			int source_t;
 
 			double solver_prec;
 			double force_prec;
