@@ -29,8 +29,8 @@ namespace meta {
 			enum integrator { leapfrog = 1, twomn };
 			enum startcondition { cold_start = 1, hot_start, start_from_source };
 			enum solver { cg = 1, bicgstab, bicgstab_save };
-	  enum sourcetype {point = 1, volume, timeslice};
-	  enum sourcecontent {one = 1, z4, gaussian};
+	  enum sourcetypes {point = 1, volume, timeslice};
+	  enum sourcecontents {one = 1, z4, gaussian};
 
 			/**
 			 * The parsing of the input parameters aborted for some reason.
@@ -166,6 +166,10 @@ namespace meta {
 
 			std::string get_log_level() const noexcept;
 
+	  sourcetypes get_sourcetype() const noexcept;
+	  sourcecontents get_sourcecontent() const noexcept;
+
+
 		private:
 			size_t precision;
 
@@ -288,6 +292,9 @@ namespace meta {
 	  std::string hmc_obs_postfix;
 
 			std::string log_level;
+
+	  sourcetypes sourcetype;
+	  sourcecontents sourcecontent;
 	};
 }
 

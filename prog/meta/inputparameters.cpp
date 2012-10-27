@@ -447,7 +447,14 @@ bool Inputparameters::get_hmc_obs_to_single_file() const noexcept
 {
 	return hmc_obs_to_single_file;
 }
-
+Inputparameters::sourcetypes Inputparameters::get_sourcetype() const noexcept
+{
+  return sourcetype;
+}
+Inputparameters::sourcecontents Inputparameters::get_sourcecontent() const noexcept
+{
+  return sourcecontent;
+}
 Inputparameters::Inputparameters(int argc, const char** argv)
 {
   logger.info() << "read in parameters...";
@@ -524,6 +531,8 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("solver_mp", po::value<std::string>()->default_value("bicgstab"))
 	("use_pointsource", po::value<bool>(&use_pointsource)->default_value(true))
 	("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
+	  ("sourcetype",  po::value<std::string>()->default_value("point"), "Type of source to use for inverter")
+	  ("sourcecontent",  po::value<std::string>()->default_value("one"), "Type of content to use with inverter sources")
 	("num_sources", po::value<int>(&num_sources)->default_value(12))
 	("pointsource_x", po::value<int>(&pointsource_x)->default_value(0))
 	("pointsource_y", po::value<int>(&pointsource_y)->default_value(0))
