@@ -107,7 +107,6 @@ public:
 	void create_sources();
 
 	const hardware::buffers::Plain<spinor> * get_clmem_corr();
-	const hardware::buffers::Plain<spinor> * get_clmem_source_solver();
 	const hardware::buffers::Plain<spinor> * get_clmem_source_corr();
 
 protected:

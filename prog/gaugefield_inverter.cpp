@@ -32,7 +32,6 @@ void Gaugefield_inverter::init_tasks()
 	opencl_modules[task_correlator] = new Opencl_Module_Correlator(get_parameters(), get_device_for_task(task_correlator));
 
 	clmem_corr = new hardware::buffers::Plain<spinor>(get_parameters().get_num_sources() * meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
-	clmem_source_solver = new hardware::buffers::Plain<spinor>(meta::get_spinorfieldsize(get_parameters()), get_task_solver()->get_device());
 	clmem_source_corr = new hardware::buffers::Plain<spinor>(meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
 }
 
@@ -184,13 +183,14 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 	if(get_parameters().get_use_smearing() == true)
 		solver->smear_gaugefield(solver->get_gaugefield(), std::vector<const hardware::buffers::SU3 *>());
 
+	const hardware::buffers::Plain<spinor> clmem_source(meta::get_spinorfieldsize(get_parameters()), solver->get_device());
 	for(int k = 0; k < num_sources; k++) {
 		//copy source from to device
 		//NOTE: this is a blocking call!
 		logger.debug() << "copy pointsource between devices";
-		get_clmem_source_solver()->load(&source_buffer[k * meta::get_vol4d(get_parameters())]);
+		clmem_source.load(&source_buffer[k * meta::get_vol4d(get_parameters())]);
 		logger.debug() << "calling solver..";
-		invert_M_nf2_upperflavour( &clmem_res, get_clmem_source_solver(), solver->get_gaugefield(), solver_timer);
+		invert_M_nf2_upperflavour( &clmem_res, &clmem_source, solver->get_gaugefield(), solver_timer);
 		//add solution to solution-buffer
 		//NOTE: this is a blocking call!
 		logger.debug() << "add solution...";
@@ -342,9 +342,4 @@ const hardware::buffers::Plain<spinor> * Gaugefield_inverter::get_clmem_corr()
 const hardware::buffers::Plain<spinor> * Gaugefield_inverter::get_clmem_source_corr()
 {
 	return clmem_source_corr;
-}
-
-const hardware::buffers::Plain<spinor> * Gaugefield_inverter::get_clmem_source_solver()
-{
-	return clmem_source_solver;
 }
