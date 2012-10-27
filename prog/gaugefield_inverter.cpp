@@ -32,7 +32,6 @@ void Gaugefield_inverter::init_tasks()
 	opencl_modules[task_correlator] = new Opencl_Module_Correlator(get_parameters(), get_device_for_task(task_correlator));
 
 	clmem_corr = new hardware::buffers::Plain<spinor>(get_parameters().get_num_sources() * meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
-	clmem_source_corr = new hardware::buffers::Plain<spinor>(meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
 }
 
 void Gaugefield_inverter::delete_variables()
