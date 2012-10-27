@@ -224,7 +224,6 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 		of << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), t timelike distance, value (aggregate x y z)" << endl;
 	}
 
-
 	int num_corr_entries =  0;
 	switch (get_parameters().get_corr_dir()) {
 		case 0 :
@@ -275,13 +274,11 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 		of << scientific << setprecision(14) << "0 1\t" << j << "\t" << host_result_ps[j] << endl;
 	}
 
-
 	//the scalar (J=0, P=0)
 	result_sc.dump(host_result_sc);
 	for(int j = 0; j < num_corr_entries; j++) {
 		of << scientific << setprecision(14) << "0 0\t" << j << "\t" << host_result_sc[j] << endl;
 	}
-
 
 	//the vector (J=1, P=1)
 	result_vx.dump(host_result_vx);
@@ -291,7 +288,6 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 		of << scientific << setprecision(14) << "1 1\t" << j << "\t" << (host_result_vx[j] + host_result_vy[j] + host_result_vz[j]) / 3. << "\t" << host_result_vx[j] << "\t" << host_result_vy[j] << "\t" << host_result_vz[j] << endl;
 	}
 
-
 	//the axial vector (J=1, P=0)
 	result_ax.dump(host_result_ax);
 	result_ay.dump(host_result_ay);
@@ -299,7 +295,6 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 	for(int j = 0; j < num_corr_entries; j++) {
 		of << scientific << setprecision(14) << "1 0\t" << j << "\t" << (host_result_ax[j] + host_result_ay[j] + host_result_az[j]) / 3. << "\t" << host_result_ax[j] << "\t" << host_result_ay[j] << "\t" << host_result_az[j] << endl;
 	}
-
 
 	of << endl;
 	of.close();
@@ -337,9 +332,4 @@ void Gaugefield_inverter::create_sources()
 const hardware::buffers::Plain<spinor> * Gaugefield_inverter::get_clmem_corr()
 {
 	return clmem_corr;
-}
-
-const hardware::buffers::Plain<spinor> * Gaugefield_inverter::get_clmem_source_corr()
-{
-	return clmem_source_corr;
 }
