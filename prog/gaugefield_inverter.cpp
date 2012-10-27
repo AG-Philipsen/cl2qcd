@@ -16,22 +16,17 @@ Opencl_Module_Correlator* Gaugefield_inverter::get_task_correlator()
 void Gaugefield_inverter::init_tasks()
 {
 	//allocate host-memory for solution- and source-buffer
-  int num_sources = get_parameters().get_num_sources();
-
-	size_t bufsize = num_sources * meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
+  size_t bufsize = get_parameters().get_num_sources() * meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
 	logger.debug() << "allocate memory for solution-buffer on host of size " << bufsize / 1024. / 1024. / 1024. << " GByte";
-	solution_buffer = new spinor [num_sources * meta::get_spinorfieldsize(get_parameters())];
-	source_buffer = new spinor [num_sources * meta::get_spinorfieldsize(get_parameters())];
+	solution_buffer = new spinor [get_parameters().get_num_sources() *  meta::get_spinorfieldsize(get_parameters())];
+	source_buffer = new spinor [get_parameters().get_num_sources() * meta::get_spinorfieldsize(get_parameters())];
 
 	task_solver = 0;
 	task_correlator = 1;
 
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-
 	opencl_modules[task_solver] = new Opencl_Module_Fermions(get_parameters(), get_device_for_task(task_solver));
 	opencl_modules[task_correlator] = new Opencl_Module_Correlator(get_parameters(), get_device_for_task(task_correlator));
-
-	clmem_corr = new hardware::buffers::Plain<spinor>(get_parameters().get_num_sources() * meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
 }
 
 void Gaugefield_inverter::delete_variables()
@@ -41,10 +36,6 @@ void Gaugefield_inverter::delete_variables()
 
 void Gaugefield_inverter::finalize_opencl()
 {
-	delete clmem_source_solver;
-	delete clmem_source_corr;
-	delete clmem_corr;
-
 	Gaugefield_hybrid::finalize_opencl();
 
 	logger.debug() << "free solution buffer";
@@ -205,8 +196,10 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 	using namespace std;
 	using namespace hardware::buffers;
 
+	const hardware::buffers::Plain<spinor> clmem_corr(get_parameters().get_num_sources() * meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
+
 	//for now, make sure clmem_corr is properly filled; maybe later we can increase performance a bit by playing with this...
-	get_clmem_corr()->load(solution_buffer);
+	clmem_corr.load(solution_buffer);
 
 	//suppose that the buffer on the device has been filled with the prior calculated solutions of the solver
 	logger.debug() << "start calculating correlators...";
@@ -256,14 +249,14 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 	const Plain<hmc_float> result_az(num_corr_entries, get_task_correlator()->get_device());
 
 	logger.info() << "calculate correlators..." ;
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ps"), get_clmem_corr(), &result_ps);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("sc"), get_clmem_corr(), &result_sc);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vx"), get_clmem_corr(), &result_vx);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vy"), get_clmem_corr(), &result_vy);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vz"), get_clmem_corr(), &result_vz);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ax"), get_clmem_corr(), &result_ax);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ay"), get_clmem_corr(), &result_ay);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("az"), get_clmem_corr(), &result_az);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ps"), &clmem_corr, &result_ps);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("sc"), &clmem_corr, &result_sc);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vx"), &clmem_corr, &result_vx);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vy"), &clmem_corr, &result_vy);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vz"), &clmem_corr, &result_vz);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ax"), &clmem_corr, &result_ax);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ay"), &clmem_corr, &result_ay);
+	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("az"), &clmem_corr, &result_az);
 
 	//the pseudo-scalar (J=0, P=1)
 	logger.info() << "pseudo scalar correlator:" ;
@@ -326,9 +319,4 @@ void Gaugefield_inverter::create_sources()
       clmem_source.dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);
     }
   }
-}
-
-const hardware::buffers::Plain<spinor> * Gaugefield_inverter::get_clmem_corr()
-{
-	return clmem_corr;
 }
