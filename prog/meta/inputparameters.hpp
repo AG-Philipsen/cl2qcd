@@ -29,6 +29,8 @@ namespace meta {
 			enum integrator { leapfrog = 1, twomn };
 			enum startcondition { cold_start = 1, hot_start, start_from_source };
 			enum solver { cg = 1, bicgstab, bicgstab_save };
+	  enum sourcetype {point = 1, volume, timeslice};
+	  enum sourcecontent {one = 1, z4, gaussian};
 
 			/**
 			 * The parsing of the input parameters aborted for some reason.

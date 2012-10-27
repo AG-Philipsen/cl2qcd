@@ -20,7 +20,6 @@
 #define OE 0
 #define EO 1
 
-
 #define ARG_DEF -1
 
 /**
