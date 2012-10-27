@@ -25,6 +25,8 @@ static void print_info_observables_fermion_io(const meta::Inputparameters& param
 static void print_info_observables_fermion_io(std::ostream * os, const meta::Inputparameters& params);
 static void print_info_observables_hmc_io(const meta::Inputparameters& params);
 static void print_info_observables_hmc_io(std::ostream * os, const meta::Inputparameters& params);
+static void print_info_source(const meta::Inputparameters params);
+static void print_info_source(std::ostream * os, const meta::Inputparameters params);
 
 static void print_info_global(const meta::Inputparameters& params)
 {
@@ -270,14 +272,6 @@ static void print_info_fermion(const meta::Inputparameters& params)
 		logger.info() << "## Use even-odd preconditioning" ;
 	if(params.get_use_eo() == false)
 		logger.info() << "## Do NOT use even-odd preconditioning";
-	if(params.get_use_pointsource() == true) {
-		logger.info() << "## Use pointsource for inversion" ;
-		logger.info() << "## Position (x,y,z,t): " << params.get_pointsource_x() << " " <<  params.get_pointsource_y() << " " <<  params.get_pointsource_z() << " " <<  params.get_pointsource_t();
-	}
-	if(params.get_use_pointsource() == false) {
-		logger.info() << "## Use stochastic sources for inversion" ;
-		logger.info() << "## Number of sources: " << params.get_num_sources();
-	}
 	switch(params.get_solver()) {
 		case Inputparameters::cg:
 			logger.info() << "## Use CG-solver for inversions" ;
@@ -350,14 +344,6 @@ static void print_info_fermion(std::ostream * os, const meta::Inputparameters& p
 		*os  << "## Use even-odd preconditioning" << endl;
 	if(params.get_use_eo() == false)
 		*os  << "## Do NOT use even-odd preconditioning" << endl;
-	if(params.get_use_pointsource() == true) {
-		*os  << "## Use pointsource for inversion"  << endl;
-		logger.info() << "## Position (x,y,z,t): " << params.get_pointsource_x() << " " <<  params.get_pointsource_y() << " " <<  params.get_pointsource_z() << " " <<  params.get_pointsource_t();
-	}
-	if(params.get_use_pointsource() == false) {
-		*os  << "## Use stochastic sources for inversion"  << endl;
-		*os  << "## Number of sources: " << params.get_num_sources()  << endl;
-	}
 	switch(params.get_solver()) {
 		case Inputparameters::cg:
 			*os << "## Use CG-solver for inversions" ;
@@ -429,6 +415,7 @@ void meta::print_info_inverter(const char* progname, const Inputparameters& para
 	print_info_configs_io(params);
 	print_info_observables_fermion_io(params);
 	print_info_fermion(params);
+	print_info_source(params);
 	logger.info() << "## **********************************************************";
 	return;
 }
@@ -440,6 +427,7 @@ void meta::print_info_inverter(const char* progname, std::ostream* os, const Inp
 	print_info_configs_io(os, params);
 	print_info_observables_fermion_io(os, params);
 	print_info_fermion(os, params);
+	print_info_source(os, params);
 	*os << "## **********************************************************" << endl;
 	return;
 }
@@ -745,5 +733,59 @@ static void print_info_observables_hmc_io(std::ostream * os, const meta::Inputpa
 	} else {
 		*os<< "## WRITE HMC OBSERVABLES TO MULTIPLE FILES"<< endl;
 	}
+}
+
+static void print_info_source(const meta::Inputparameters params) 
+{
+    logger.info() << "## **********************************************************";
+    logger.info() << "## Source parameters:";
+    logger.info() << "##";
+    if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point) {
+	logger.info() << "## Use pointsource for inversion" ;
+	logger.info() << "## Position (x,y,z,t): " << params.get_pointsource_x() << " " <<  params.get_pointsource_y() << " " <<  params.get_pointsource_z() << " " <<  params.get_pointsource_t();
+    }
+    else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::volume) {
+      logger.info() << "## Use volume sources for inversion" ;
+	logger.info() << "## Number of sources: " << params.get_num_sources();
+	}
+    else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::timeslice) {
+	logger.info() << "## Use timeslice sources for inversion" ;
+	logger.info() << "## Number of sources: " << params.get_num_sources();
+    }
+    if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::one){
+      logger.info() << "## fill sources with one";
+    }  else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::z4){
+      logger.info() << "## fill sources with z4 noise";
+    }
+    else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::gaussian){
+      logger.info() << "## fill sources with gaussian noise";
+    }
+}
+
+static void print_info_source(std::ostream * os, const meta::Inputparameters params) 
+{
+    *os<< "## **********************************************************"<< endl;
+    *os<< "## Source parameters:"<< endl;
+    *os<< "##" << endl;
+    if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point) {
+	*os<< "## Use pointsource for inversion" << endl;
+	*os<< "## Position (x,y,z,t): " << params.get_pointsource_x() << " " <<  params.get_pointsource_y() << " " <<  params.get_pointsource_z() << " " <<  params.get_pointsource_t()<< endl;
+    }
+    else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::volume) {
+      *os<< "## Use volume sources for inversion" << endl;
+	*os<< "## Number of sources: " << params.get_num_sources()<< endl;
+	}
+    else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::timeslice) {
+	*os<< "## Use timeslice sources for inversion" << endl;
+	*os<< "## Number of sources: " << params.get_num_sources()<< endl;
+    }
+    if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::one){
+      *os<< "## fill sources with one"<< endl;
+    }  else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::z4){
+      *os<< "## fill sources with z4 noise"<< endl;
+    }
+    else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::gaussian){
+      *os<< "## fill sources with gaussian noise"<< endl;
+    }
 }
 

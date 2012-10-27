@@ -33,6 +33,14 @@ static Inputparameters::startcondition get_startcondition(std::string);
  */
 static Inputparameters::solver get_solver(std::string);
 /**
+ * Get the sourcetype given in string
+ */
+static Inputparameters::sourcetypes get_sourcetype(std::string s);
+/**
+ * Get the sourcecontent given in string.
+ */
+static Inputparameters::sourcecontents get_sourcecontent(std::string s);
+/**
  * Adds all alternative option names to the ConfigFileNormlizer instance
  */
 static void add_option_aliases(meta::ConfigFileNormalizer * const);
@@ -635,6 +643,8 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	integrator2 = ::get_integrator(vm["integrator2"].as<std::string>());
 	_solver = ::get_solver(vm["solver"].as<std::string>());
 	_solver_mp = ::get_solver(vm["solver_mp"].as<std::string>());
+	sourcetype = ::get_sourcetype(vm["sourcetype"].as<std::string>() );
+	sourcecontent = ::get_sourcecontent(vm["sourcecontent"].as<std::string>() );
 }
 
 static Inputparameters::action get_action(std::string s)
@@ -704,6 +714,38 @@ static Inputparameters::solver get_solver(std::string s)
 		return a;
 	} else {
 		std::cout << s << " is not a valid solver." << std::endl;
+		throw Inputparameters::parse_aborted();
+	}
+}
+static Inputparameters::sourcetypes get_sourcetype(std::string s)
+{
+	boost::algorithm::to_lower(s);
+	std::map<std::string, Inputparameters::sourcetypes> m;
+	m["point"] = Inputparameters::point;
+	m["volume"] = Inputparameters::volume;
+	m["timeslice"] = Inputparameters::timeslice;
+
+	Inputparameters::sourcetypes a = m[s];
+	if(a) { // map returns 0 if element is not found
+		return a;
+	} else {
+		std::cout << s << " is not a valid sourcetype." << std::endl;
+		throw Inputparameters::parse_aborted();
+	}
+}
+static Inputparameters::sourcecontents get_sourcecontent(std::string s)
+{
+	boost::algorithm::to_lower(s);
+	std::map<std::string, Inputparameters::sourcecontents> m;
+	m["one"] = Inputparameters::one;
+	m["z4"] = Inputparameters::z4;
+	m["gaussian"] = Inputparameters::gaussian;
+
+	Inputparameters::sourcecontents a = m[s];
+	if(a) { // map returns 0 if element is not found
+		return a;
+	} else {
+		std::cout << s << " is not a valid sourcecontent." << std::endl;
 		throw Inputparameters::parse_aborted();
 	}
 }
