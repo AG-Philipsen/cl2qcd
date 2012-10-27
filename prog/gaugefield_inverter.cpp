@@ -16,11 +16,7 @@ Opencl_Module_Correlator* Gaugefield_inverter::get_task_correlator()
 void Gaugefield_inverter::init_tasks()
 {
 	//allocate host-memory for solution- and source-buffer
-	int num_sources;
-	if(get_parameters().get_use_pointsource() == true)
-		num_sources = 12;
-	else
-		num_sources = get_parameters().get_num_sources();
+  int num_sources = (get_parameters().get_use_pointsource() ) ? 12 : get_parameters().get_num_sources();
 
 	size_t bufsize = num_sources * meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor);
 	logger.debug() << "allocate memory for solution-buffer on host of size " << bufsize / 1024. / 1024. / 1024. << " GByte";
@@ -32,10 +28,7 @@ void Gaugefield_inverter::init_tasks()
 
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 
-
-	//LZ: right now, each task carries exactly one opencl device -> thus the below allocation with [1]. Could be generalized in future
 	opencl_modules[task_solver] = new Opencl_Module_Fermions(get_parameters(), get_device_for_task(task_solver));
-
 	opencl_modules[task_correlator] = new Opencl_Module_Correlator(get_parameters(), get_device_for_task(task_correlator));
 
 	clmem_corr = new hardware::buffers::Plain<spinor>(num_sources * meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
@@ -182,7 +175,6 @@ void Gaugefield_inverter::invert_M_nf2_upperflavour(const hardware::buffers::Pla
 
 void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 {
-	//decide on type of sources
   int num_sources = (get_parameters().get_use_pointsource() ) ? 12 : get_parameters().get_num_sources();
 
 	Opencl_Module_Fermions * solver = get_task_solver();
@@ -327,7 +319,7 @@ void Gaugefield_inverter::create_sources()
 	if(get_parameters().get_use_pointsource() == true) {
 		logger.debug() << "start creating point-sources...";
 		for(int k = 0; k < 12; k++) {
-			get_task_correlator()->create_point_source_device(get_clmem_source_corr(), k, get_source_pos_spatial(get_parameters()), get_parameters().get_pointsource_t());
+			get_task_correlator()->create_point_source_device(get_clmem_source_corr(), k, get_source_pos_spatial(get_parameters()), get_parameters().get_source_t());
 			logger.debug() << "copy pointsource to host";
 			get_clmem_source_corr()->dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);
 		}
