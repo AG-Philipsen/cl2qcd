@@ -313,7 +313,7 @@ void Gaugefield_inverter::create_sources()
       get_task_correlator()->create_volume_source_device(&clmem_source);
     }  else if (get_parameters().get_sourcetype() == meta::Inputparameters::sourcetypes::timeslice) {
       logger.debug() << "start creating timeslice-source...";
-      get_task_correlator()->create_timeslice_source_device(&clmem_source);
+      get_task_correlator()->create_timeslice_source_device(&clmem_source, get_parameters().get_source_t());
     }
     logger.debug() << "copy source to host";
     clmem_source.dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);

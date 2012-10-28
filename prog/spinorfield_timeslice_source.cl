@@ -12,7 +12,7 @@ __kernel void create_timeslice_source(__global spinor * const restrict b, __glob
 	prng_loadState(&rnd, rngStates);
 
 	/** @todo What is the correct norm here? */
-	hmc_float sigma = 1. / ( VOL4D * 12. );
+	hmc_float sigma = 1. / ( VOLSPACE * 12. );
 	spinor out_tmp;
 
 	for(int id_tmp = id; id_tmp < VOLSPACE; id_tmp += global_size) {

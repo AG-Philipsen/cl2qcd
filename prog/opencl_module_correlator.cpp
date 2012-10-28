@@ -185,11 +185,13 @@ void Opencl_Module_Correlator::create_volume_source_device(const hardware::buffe
 	int clerr = clSetKernelArg(create_volume_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	throw Opencl_Error(clerr, "stochastic source not yet implemented!!", __FILE__, __LINE__);
+	clerr = clSetKernelArg(create_volume_source, 1, sizeof(cl_mem), get_prng_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
 	get_device()->enqueue_kernel( create_volume_source, gs2, ls2);
 }
 
-void Opencl_Module_Correlator::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout)
+void Opencl_Module_Correlator::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const int timeslice)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -199,7 +201,13 @@ void Opencl_Module_Correlator::create_timeslice_source_device(const hardware::bu
 	int clerr = clSetKernelArg(create_timeslice_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	throw Opencl_Error(clerr, "stochastic source not yet implemented!!", __FILE__, __LINE__);
+	clerr = clSetKernelArg(create_timeslice_source, 1, sizeof(cl_mem), get_prng_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	int tmp = timeslice;
+	clerr = clSetKernelArg(create_timeslice_source, 2, sizeof(int), &tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
 	get_device()->enqueue_kernel( create_timeslice_source, gs2, ls2);
 }
 

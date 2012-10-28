@@ -62,7 +62,7 @@ public:
 
 	void create_volume_source_device(const hardware::buffers::Plain<spinor> * inout);
 
-	void create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout);
+	void create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const int timeslice);
 
 	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<hmc_float> * correlator);
 
