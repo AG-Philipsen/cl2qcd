@@ -34,11 +34,11 @@ void Opencl_Module_Correlator::fill_kernels()
 	logger.debug() << "Create correlator kernels...";
 
 	if(get_parameters().get_sourcetype() == meta::Inputparameters::point)
-		create_point_source = createKernel("create_point_source") << basic_correlator_code << "spinorfield_point_source.cl";
+	  create_point_source = createKernel("create_point_source") << basic_correlator_code << prng_code << "spinorfield_point_source.cl";
 	else if (get_parameters().get_sourcetype() == meta::Inputparameters::volume)
-		create_volume_source = createKernel("create_volume_source") << basic_correlator_code << "spinorfield_volume_source.cl";
+	  create_volume_source = createKernel("create_volume_source") << basic_correlator_code << prng_code << "spinorfield_volume_source.cl";
 	else if (get_parameters().get_sourcetype() == meta::Inputparameters::timeslice)
-		create_timeslice_source = createKernel("create_timeslice_source") << basic_correlator_code << "spinorfield_timeslice_source.cl";
+	  create_timeslice_source = createKernel("create_timeslice_source") << basic_correlator_code << prng_code << "spinorfield_timeslice_source.cl";
 
 	switch (get_parameters().get_corr_dir()) {
 		case 0 :
