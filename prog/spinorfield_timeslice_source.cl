@@ -13,6 +13,7 @@ __kernel void create_timeslice_source(__global spinor * const restrict b, __glob
 
 	hmc_float sigma ;
 	spinor out_tmp;
+	hmc_complex tmp;
 
 	for(int id_tmp = id; id_tmp < VOLSPACE; id_tmp += global_size) {
 	  //CP: switch between source content
@@ -24,7 +25,6 @@ __kernel void create_timeslice_source(__global spinor * const restrict b, __glob
 	   
 	  case 2: //"z4"
 	    sigma = 1. / ( VOLSPACE * 24. );
-	    hmc_complex tmp;
 	    tmp = Z4_complex_number(&rnd);
 	    out_tmp.e0.e0.re = tmp.re;
 	    out_tmp.e0.e0.im = tmp.im;
@@ -59,6 +59,47 @@ __kernel void create_timeslice_source(__global spinor * const restrict b, __glob
 	    out_tmp.e3.e1.re = tmp.re;
 	    out_tmp.e3.e1.im = tmp.im;
 	    tmp = Z4_complex_number(&rnd);
+	    out_tmp.e3.e2.re = tmp.re;
+	    out_tmp.e3.e2.im = tmp.im;
+	    break;
+
+	  case 3: //"gaussian"
+	    /** @todo what is the norm here? */
+	    sigma = 1. / ( VOL4D * 24. );
+	    tmp = gaussianNormalPair(&rnd);
+	    out_tmp.e0.e0.re = tmp.re;
+	    out_tmp.e0.e0.im = tmp.im;
+	    tmp = gaussianNormalPair(&rnd);
+	    out_tmp.e0.e1.re = tmp.re;
+	    out_tmp.e0.e1.im = tmp.im;
+	    tmp = gaussianNormalPair(&rnd);
+	    out_tmp.e0.e2.re = tmp.re;
+	    out_tmp.e0.e2.im = tmp.im;
+	    tmp = gaussianNormalPair(&rnd);
+	    out_tmp.e1.e0.re = tmp.re;
+	    out_tmp.e1.e0.im = tmp.im;
+	    tmp = gaussianNormalPair(&rnd);
+	    out_tmp.e1.e1.re = tmp.re;
+	    out_tmp.e1.e1.im = tmp.im;
+	    tmp = gaussianNormalPair(&rnd);
+	    out_tmp.e1.e2.re = tmp.re;
+	    out_tmp.e1.e2.im = tmp.im;
+	    tmp = gaussianNormalPair(&rnd);
+	    out_tmp.e2.e0.re = tmp.re;
+	    out_tmp.e2.e0.im = tmp.im;
+	    tmp = gaussianNormalPair(&rnd);
+	    out_tmp.e2.e1.re = tmp.re;
+	    out_tmp.e2.e1.im = tmp.im;
+	    tmp = gaussianNormalPair(&rnd);
+	    out_tmp.e2.e2.re = tmp.re;
+	    out_tmp.e2.e2.im = tmp.im;
+	    tmp = gaussianNormalPair(&rnd);
+	    out_tmp.e3.e0.re = tmp.re;
+	    out_tmp.e3.e0.im = tmp.im;
+	    tmp = gaussianNormalPair(&rnd);
+	    out_tmp.e3.e1.re = tmp.re;
+	    out_tmp.e3.e1.im = tmp.im;
+	    tmp = gaussianNormalPair(&rnd);
 	    out_tmp.e3.e2.re = tmp.re;
 	    out_tmp.e3.e2.im = tmp.im;
 	    break;
