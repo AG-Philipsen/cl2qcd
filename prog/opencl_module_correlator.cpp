@@ -19,10 +19,7 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 	options << "-DKAPPA=" << kappa_tmp;
 	options << " -DMKAPPA=" << -kappa_tmp;
 
-	if(params.get_use_pointsource())
-		options << " -DNUM_SOURCES=" << 12;
-	else
-		options << " -DNUM_SOURCES=" << params.get_num_sources();
+	options << " -DNUM_SOURCES=" << params.get_num_sources();
 
 	return options.str();
 }
