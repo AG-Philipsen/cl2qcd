@@ -173,6 +173,18 @@ void Opencl_Module_Correlator::create_point_source_device(const hardware::buffer
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel( create_point_source, gs2, ls2);
+
+	if(logger.beDebug()) {
+	  hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
+	  hmc_float sqn;
+	  this->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+	  sqn_tmp.dump(&sqn);
+	  logger.debug() <<  "\t|source|^2:\t" << sqn;
+	  if(sqn != sqn) {
+	    throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
+	  }
+	}
+
 }
 
 void Opencl_Module_Correlator::create_volume_source_device(const hardware::buffers::Plain<spinor> * inout)
@@ -189,6 +201,17 @@ void Opencl_Module_Correlator::create_volume_source_device(const hardware::buffe
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel( create_volume_source, gs2, ls2);
+
+	if(logger.beDebug()) {
+	  hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
+	  hmc_float sqn;
+	  this->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+	  sqn_tmp.dump(&sqn);
+	  logger.debug() <<  "\t|source|^2:\t" << sqn;
+	  if(sqn != sqn) {
+	    throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
+	  }
+	}
 }
 
 void Opencl_Module_Correlator::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const int timeslice)
@@ -209,6 +232,17 @@ void Opencl_Module_Correlator::create_timeslice_source_device(const hardware::bu
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel( create_timeslice_source, gs2, ls2);
+
+	if(logger.beDebug()) {
+	  hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
+	  hmc_float sqn;
+	  this->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+	  sqn_tmp.dump(&sqn);
+	  logger.debug() <<  "\t|source|^2:\t" << sqn;
+	  if(sqn != sqn) {
+	    throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
+	  }
+	}
 }
 
 void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<hmc_float> * correlator)
