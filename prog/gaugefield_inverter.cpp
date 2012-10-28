@@ -196,13 +196,17 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 	using namespace std;
 	using namespace hardware::buffers;
 
+	logger.debug() << "init buffers for correlator calculation...";
 	const hardware::buffers::Plain<spinor> clmem_corr(get_parameters().get_num_sources() * meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
-
 	//for now, make sure clmem_corr is properly filled; maybe later we can increase performance a bit by playing with this...
 	clmem_corr.load(solution_buffer);
 
-	//suppose that the buffer on the device has been filled with the prior calculated solutions of the solver
-	logger.debug() << "start calculating correlators...";
+	//this buffer is only needed if sources other than pointsources have been used.
+	hardware::buffers::Plain<spinor> * clmem_sources;
+	if(get_parameters().get_sourcetype() != meta::Inputparameters::point ){
+	  clmem_sources = new hardware::buffers::Plain<spinor>(get_parameters().get_num_sources() * meta::get_vol4d(get_parameters()), get_task_correlator()->get_device());
+	  clmem_sources->load(source_buffer);
+	}
 
 	int num_corr_entries =  0;
 	switch (get_parameters().get_corr_dir()) {
@@ -268,6 +272,7 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 	  throw File_Exception(corr_fn);
 	}
 
+	// @todo One could also implement to write all results on screen if wanted
 	//the pseudo-scalar (J=0, P=1)
 	logger.info() << "pseudo scalar correlator:" ;
 	result_ps.dump(host_result_ps);
