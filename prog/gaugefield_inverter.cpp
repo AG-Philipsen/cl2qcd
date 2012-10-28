@@ -230,15 +230,6 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 			throw Print_Error_Message(errmsg.str());
 	}
 
-	hmc_float* host_result_ps = new hmc_float [num_corr_entries];
-	hmc_float* host_result_sc = new hmc_float [num_corr_entries];
-	hmc_float* host_result_vx = new hmc_float [num_corr_entries];
-	hmc_float* host_result_vy = new hmc_float [num_corr_entries];
-	hmc_float* host_result_vz = new hmc_float [num_corr_entries];
-	hmc_float* host_result_ax = new hmc_float [num_corr_entries];
-	hmc_float* host_result_ay = new hmc_float [num_corr_entries];
-	hmc_float* host_result_az = new hmc_float [num_corr_entries];
-
 	const Plain<hmc_float> result_ps(num_corr_entries, get_task_correlator()->get_device());
 	const Plain<hmc_float> result_sc(num_corr_entries, get_task_correlator()->get_device());
 	const Plain<hmc_float> result_vx(num_corr_entries, get_task_correlator()->get_device());
@@ -268,6 +259,16 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ay"), &clmem_corr, &result_ay);
 	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("az"), &clmem_corr, &result_az);
 	}
+
+	hmc_float* host_result_ps = new hmc_float [num_corr_entries];
+	hmc_float* host_result_sc = new hmc_float [num_corr_entries];
+	hmc_float* host_result_vx = new hmc_float [num_corr_entries];
+	hmc_float* host_result_vy = new hmc_float [num_corr_entries];
+	hmc_float* host_result_vz = new hmc_float [num_corr_entries];
+	hmc_float* host_result_ax = new hmc_float [num_corr_entries];
+	hmc_float* host_result_ay = new hmc_float [num_corr_entries];
+	hmc_float* host_result_az = new hmc_float [num_corr_entries];
+
 	//the pseudo-scalar (J=0, P=1)
 	logger.info() << "pseudo scalar correlator:" ;
 	result_ps.dump(host_result_ps);
