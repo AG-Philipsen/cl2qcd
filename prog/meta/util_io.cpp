@@ -761,6 +761,13 @@ static void print_info_source(const meta::Inputparameters params)
     else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::gaussian){
       logger.info() << "## fill sources with gaussian noise";
     }
+    if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_num_sources() != 12){
+      logger.fatal() << "## Pointsource with number of sources different than \"12\" is chosen. This is will not give the full point-to-all propagator!"; 
+      logger.fatal() << "## Number of sources: " << params.get_num_sources();
+    }
+    if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_sourcecontent() != meta::Inputparameters::sourcecontents::one){
+      logger.warn() << "## Pointsource with content different than \"one\" is chosen. This is not implemented yet and has no effect!"; 
+    }
 }
 
 static void print_info_source(std::ostream * os, const meta::Inputparameters params) 
@@ -778,7 +785,7 @@ static void print_info_source(std::ostream * os, const meta::Inputparameters par
 	}
     else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::timeslice) {
 	*os<< "## Use timeslice sources for inversion" << endl;
-	*os<< "## Number of sources: " << params.get_num_sources()<< endl;
+	*os << "## Use timeslice: " << params.get_source_t() << endl;
 	*os << "## Number of sources: " << params.get_num_sources() << endl;
     }
     if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::one){
@@ -788,6 +795,13 @@ static void print_info_source(std::ostream * os, const meta::Inputparameters par
     }
     else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::gaussian){
       *os<< "## fill sources with gaussian noise"<< endl;
+    }
+    if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_num_sources() != 12){
+      *os << "## Pointsource with number of sources different than \"12\" is chosen. This is will not give the full point-to-all propagator!" << endl;
+      *os << "## Number of sources: " << params.get_num_sources() << endl;
+    }
+    if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_sourcecontent() != meta::Inputparameters::sourcecontents::one){
+      *os << "## Pointsource with content different than \"one\" is chosen. This is not implemented yet and has no effect!" << endl; 
     }
 }
 
