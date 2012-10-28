@@ -33,10 +33,12 @@ void Opencl_Module_Correlator::fill_kernels()
 	basic_correlator_code = basic_fermion_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 	logger.debug() << "Create correlator kernels...";
 
-	if(get_parameters().get_use_pointsource() == true)
+	if(get_parameters().get_sourcetype() == meta::Inputparameters::point)
 		create_point_source = createKernel("create_point_source") << basic_correlator_code << "spinorfield_point_source.cl";
-	else
-		create_stochastic_source = createKernel("create_stochastic_source") << basic_correlator_code << "spinorfield_stochastic_source.cl";
+	else if (get_parameters().get_sourcetype() == meta::Inputparameters::volume)
+		create_volume_source = createKernel("create_volume_source") << basic_correlator_code << "spinorfield_volume_source.cl";
+	else if (get_parameters().get_sourcetype() == meta::Inputparameters::timeslice)
+		create_timeslice_source = createKernel("create_timeslice_source") << basic_correlator_code << "spinorfield_timeslice_source.cl";
 
 	switch (get_parameters().get_corr_dir()) {
 		case 0 :
@@ -89,8 +91,12 @@ void Opencl_Module_Correlator::clear_kernels()
 		clerr = clReleaseKernel(create_point_source);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
-	if(create_stochastic_source) {
-		clerr = clReleaseKernel(create_stochastic_source);
+	if(create_volume_source) {
+		clerr = clReleaseKernel(create_volume_source);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
+	if(create_timeslice_source) {
+		clerr = clReleaseKernel(create_timeslice_source);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 }
@@ -169,18 +175,32 @@ void Opencl_Module_Correlator::create_point_source_device(const hardware::buffer
 	get_device()->enqueue_kernel( create_point_source, gs2, ls2);
 }
 
-void Opencl_Module_Correlator::create_stochastic_source_device(const hardware::buffers::Plain<spinor> * inout)
+void Opencl_Module_Correlator::create_volume_source_device(const hardware::buffers::Plain<spinor> * inout)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(create_stochastic_source, &ls2, &gs2, &num_groups);
+	this->get_work_sizes(create_volume_source, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(create_stochastic_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
+	int clerr = clSetKernelArg(create_volume_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	throw Opencl_Error(clerr, "stochastic source not yet implemented!!", __FILE__, __LINE__);
-	get_device()->enqueue_kernel( create_stochastic_source, gs2, ls2);
+	get_device()->enqueue_kernel( create_volume_source, gs2, ls2);
+}
+
+void Opencl_Module_Correlator::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout)
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(create_timeslice_source, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(create_timeslice_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	throw Opencl_Error(clerr, "stochastic source not yet implemented!!", __FILE__, __LINE__);
+	get_device()->enqueue_kernel( create_timeslice_source, gs2, ls2);
 }
 
 void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<hmc_float> * correlator)
@@ -333,8 +353,11 @@ void Opencl_Module_Correlator::print_profiling(const std::string& filename, int 
 	if(create_point_source) {
 		Opencl_Module::print_profiling(filename, create_point_source);
 	}
-	if(create_stochastic_source) {
-		Opencl_Module::print_profiling(filename, create_stochastic_source);
+	if(create_volume_source) {
+		Opencl_Module::print_profiling(filename, create_volume_source);
+	}
+	if(create_timeslice_source) {
+		Opencl_Module::print_profiling(filename, create_timeslice_source);
 	}
 	Opencl_Module::print_profiling(filename, correlator_ps);
 	Opencl_Module::print_profiling(filename, correlator_sc);
@@ -348,7 +371,7 @@ void Opencl_Module_Correlator::print_profiling(const std::string& filename, int 
 
 Opencl_Module_Correlator::Opencl_Module_Correlator(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module_Spinors(params, device),
-	  create_point_source(0), create_stochastic_source(0),
+	  create_point_source(0), create_volume_source(0), create_timeslice_source(0),
 	  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0)
 {
 	fill_kernels();

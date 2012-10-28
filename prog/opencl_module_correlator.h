@@ -60,7 +60,9 @@ public:
 
 	void create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos);
 
-	void create_stochastic_source_device(const hardware::buffers::Plain<spinor> * inout);
+	void create_volume_source_device(const hardware::buffers::Plain<spinor> * inout);
+
+	void create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout);
 
 	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<hmc_float> * correlator);
 
@@ -112,7 +114,8 @@ private:
 	//kernels
 
 	cl_kernel create_point_source;
-	cl_kernel create_stochastic_source;
+	cl_kernel create_volume_source;
+	cl_kernel create_timeslice_source;
 
 	//Observables
 	//scalar correlators
