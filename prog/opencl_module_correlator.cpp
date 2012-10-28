@@ -21,6 +21,9 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 
 	options << " -DNUM_SOURCES=" << params.get_num_sources();
 
+	//CP: give content of sources as compile parameters
+	options << " -DSOURCE_CONTENT=" << params.get_sourcecontent();
+
 	return options.str();
 }
 
