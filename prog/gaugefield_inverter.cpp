@@ -242,14 +242,14 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ay"), &clmem_corr, &result_ay);
 	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("az"), &clmem_corr, &result_az);
 	} else {
-	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ps"), &clmem_corr, &result_ps);
-	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("sc"), &clmem_corr, &result_sc);
-	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vx"), &clmem_corr, &result_vx);
-	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vy"), &clmem_corr, &result_vy);
-	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vz"), &clmem_corr, &result_vz);
-	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ax"), &clmem_corr, &result_ax);
-	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ay"), &clmem_corr, &result_ay);
-	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("az"), &clmem_corr, &result_az);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ps"), &clmem_corr, clmem_sources, &result_ps);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("sc"), &clmem_corr, clmem_sources, &result_sc);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vx"), &clmem_corr, clmem_sources, &result_vx);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vy"), &clmem_corr, clmem_sources, &result_vy);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vz"), &clmem_corr, clmem_sources, &result_vz);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ax"), &clmem_corr, clmem_sources, &result_ax);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ay"), &clmem_corr, clmem_sources, &result_ay);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("az"), &clmem_corr, clmem_sources, &result_az);
 	}
 
 	hmc_float* host_result_ps = new hmc_float [num_corr_entries];
