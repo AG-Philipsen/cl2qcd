@@ -64,7 +64,12 @@ public:
 
 	void create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const int timeslice);
 
+	/**
+	 * Calculate specific correlator on device.
+	 * This function is overloaded depending on whether one needs the source for the calculation or not.
+	 */
 	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<hmc_float> * correlator);
+	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator);
 
 	/**
 	 * Get kernel for correlator indicated by which
