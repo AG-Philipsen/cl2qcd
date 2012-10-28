@@ -320,3 +320,53 @@ hmc_complex inline gaussianNormalPair(prng_state * const restrict rnd)
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
 }
+
+/**
+ * Get a Z(4) distributed complex random number
+ * Meaning it has entries +-1 in real and imaginary part
+ */
+hmc_complex inline Z4_complex_number(prng_state * const restrict rnd)
+{
+#ifdef USE_PRNG_NR3
+	hmc_complex tmp;
+	hmc_float u1_tmp;
+	hmc_float u2_tmp;
+#ifdef _USE_DOUBLE_PREC_
+		u1_tmp = nr3_double(rnd);
+		u2_tmp = nr3_double(rnd);
+#else
+		u1_tmp = nr3_float(rnd);
+		u2_tmp = nr3_float(rnd);
+#endif
+		//choose entries
+		if(u1_tmp > 0.5)
+		  tmp.re = 1.;
+		else
+		  tmp.re = -1.;
+		if(u2_tmp > 0.5)
+		  tmp.im = 1.;
+		else
+		  tmp.im = -1.;
+		return tmp;
+#elif defined(USE_PRNG_RANLUX)
+	// TODO update to current ranluxcl!
+	//double4 tmp = ranluxcl64norm(state);
+	//return (hmc_complex) {tmp.x, tmp.y};
+
+	// LEGEACY CODE
+	float4 rands = ranluxcl(rnd);
+	//just use the first 2 floats
+	hmc_complex tmp;
+	if(rands.x > 0.5)
+	  tmp.re = 1.;
+	else
+	  tmp.re = -1.;
+	if(rands.y > 0.5)
+	  tmp.im = 1.;
+	else
+	  tmp.im = -1.;
+	return tmp;
+#else // USE_PRNG_XXX
+#error No implemented PRNG selected
+#endif // USE_PRNG_XXX
+}
