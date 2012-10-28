@@ -189,6 +189,8 @@ void Opencl_Module_Correlator::create_point_source_device(const hardware::buffer
 
 void Opencl_Module_Correlator::create_volume_source_device(const hardware::buffers::Plain<spinor> * inout)
 {
+  set_zero_spinorfield_device(inout);
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -216,6 +218,8 @@ void Opencl_Module_Correlator::create_volume_source_device(const hardware::buffe
 
 void Opencl_Module_Correlator::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const int timeslice)
 {
+  set_zero_spinorfield_device(inout);
+
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
