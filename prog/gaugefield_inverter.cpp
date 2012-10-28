@@ -307,7 +307,9 @@ void Gaugefield_inverter::create_sources()
   for(int k = 0; k < get_parameters().get_num_sources(); k++) {
     if(get_parameters().get_sourcetype() == meta::Inputparameters::sourcetypes::point) {
       logger.debug() << "start creating point-source..."; 
-      get_task_correlator()->create_point_source_device(&clmem_source, k, get_source_pos_spatial(get_parameters()), get_parameters().get_source_t());
+      //CP: k has to be between 0..12 (corresponds to spin-color index)
+      int k_tmp = k%12;
+      get_task_correlator()->create_point_source_device(&clmem_source, k_tmp, get_source_pos_spatial(get_parameters()), get_parameters().get_source_t());
     } else if (get_parameters().get_sourcetype() == meta::Inputparameters::sourcetypes::volume) {
       logger.debug() << "start creating volume-source...";
       get_task_correlator()->create_volume_source_device(&clmem_source);
