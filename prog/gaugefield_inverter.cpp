@@ -204,18 +204,6 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 	//suppose that the buffer on the device has been filled with the prior calculated solutions of the solver
 	logger.debug() << "start calculating correlators...";
 
-	ofstream of;
-	of.open(corr_fn.c_str(), ios_base::app);
-	if( !of.is_open() ) throw File_Exception(corr_fn);
-	of << "# flavour doublet correlators" << endl;
-	if(get_parameters().get_corr_dir() == 3) {
-		of << "# format: J P z real complex"  << endl;
-		of << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), z spatial distance, value (aggregate x y z)" << endl;
-	} else {
-		of << "# format: J P t real complex"  << endl;
-		of << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), t timelike distance, value (aggregate x y z)" << endl;
-	}
-
 	int num_corr_entries =  0;
 	switch (get_parameters().get_corr_dir()) {
 		case 0 :
@@ -268,6 +256,14 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 	hmc_float* host_result_ax = new hmc_float [num_corr_entries];
 	hmc_float* host_result_ay = new hmc_float [num_corr_entries];
 	hmc_float* host_result_az = new hmc_float [num_corr_entries];
+
+	ofstream of;
+	of.open(corr_fn.c_str(), ios_base::app);
+	if(of.is_open()) {
+	  meta::print_info_flavour_doublet_correlators(&of, get_parameters());
+	} else {
+	  throw File_Exception(corr_fn);
+	}
 
 	//the pseudo-scalar (J=0, P=1)
 	logger.info() << "pseudo scalar correlator:" ;
