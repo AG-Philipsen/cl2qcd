@@ -805,11 +805,25 @@ static void print_info_source(std::ostream * os, const meta::Inputparameters par
     }
 }
 
+void meta::print_info_flavour_doublet_correlators(const meta::Inputparameters params)
+{
+	using namespace meta;
+	
+	logger.info() << "# flavour doublet correlators";
+	if(params.get_corr_dir() == 3) {
+	  logger.info() << "# format: J P z real complex"  ;
+	  logger.info() << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), z spatial distance, value (aggregate x y z)" ;
+	} else {
+	  logger.info() << "# format: J P t real complex"  ;
+	  logger.info() << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), t timelike distance, value (aggregate x y z)" ;
+	}
+}
+
 void meta::print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters params)
 {
 	using namespace meta;
 	
-	*os << "# flavour doublet correlators" << endl;
+	*os << "# flavour doublet correlators" << std::endl;
 	if(params.get_corr_dir() == 3) {
 	  *os << "# format: J P z real complex"  << std::endl;
 	  *os << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), z spatial distance, value (aggregate x y z)" << std::endl;

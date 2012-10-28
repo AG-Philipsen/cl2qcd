@@ -257,6 +257,9 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 	hmc_float* host_result_ay = new hmc_float [num_corr_entries];
 	hmc_float* host_result_az = new hmc_float [num_corr_entries];
 
+	if(get_parameters().get_print_to_screen() )
+	  meta::print_info_flavour_doublet_correlators(get_parameters());
+
 	ofstream of;
 	of.open(corr_fn.c_str(), ios_base::app);
 	if(of.is_open()) {
