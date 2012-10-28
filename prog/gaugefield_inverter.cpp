@@ -249,15 +249,25 @@ void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
 	const Plain<hmc_float> result_az(num_corr_entries, get_task_correlator()->get_device());
 
 	logger.info() << "calculate correlators..." ;
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ps"), &clmem_corr, &result_ps);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("sc"), &clmem_corr, &result_sc);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vx"), &clmem_corr, &result_vx);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vy"), &clmem_corr, &result_vy);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vz"), &clmem_corr, &result_vz);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ax"), &clmem_corr, &result_ax);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ay"), &clmem_corr, &result_ay);
-	get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("az"), &clmem_corr, &result_az);
-
+	if(get_parameters().get_sourcetype() == meta::Inputparameters::point){
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ps"), &clmem_corr, &result_ps);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("sc"), &clmem_corr, &result_sc);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vx"), &clmem_corr, &result_vx);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vy"), &clmem_corr, &result_vy);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vz"), &clmem_corr, &result_vz);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ax"), &clmem_corr, &result_ax);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ay"), &clmem_corr, &result_ay);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("az"), &clmem_corr, &result_az);
+	} else {
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ps"), &clmem_corr, &result_ps);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("sc"), &clmem_corr, &result_sc);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vx"), &clmem_corr, &result_vx);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vy"), &clmem_corr, &result_vy);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("vz"), &clmem_corr, &result_vz);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ax"), &clmem_corr, &result_ax);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("ay"), &clmem_corr, &result_ay);
+	  get_task_correlator()->correlator_device(get_task_correlator()->get_correlator_kernel("az"), &clmem_corr, &result_az);
+	}
 	//the pseudo-scalar (J=0, P=1)
 	logger.info() << "pseudo scalar correlator:" ;
 	result_ps.dump(host_result_ps);
