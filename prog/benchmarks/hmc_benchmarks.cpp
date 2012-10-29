@@ -67,7 +67,7 @@ int main(int argc, const char* argv[])
 
 	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
 	//copy u->u' p->p' for the integrator
-	hardware::buffers::copyData(gaugefield.get_task_hmc(0)->get_new_u(), gaugefield.get_task_hmc(0)->get_gaugefield());
+	hardware::buffers::copyData(gaugefield.get_task_hmc(0)->get_new_u(), gaugefield.get_task_hmc(0)->get_device()->get_gaugefield_code()->get_gaugefield());
 	hardware::buffers::copyData(gaugefield.get_task_hmc(0)->get_clmem_new_p(), gaugefield.get_task_hmc(0)->get_clmem_p());
 	logger.trace() << "Perform " << hmc_iter << "of benchmarking";
 	for(iter = 0; iter < hmc_iter; iter ++) {
@@ -76,7 +76,7 @@ int main(int argc, const char* argv[])
 		//metropolis step: afterwards, the updated config is again in gaugefield and p
 		logger.debug() << "\tperform Metropolis step: " ;
 		//this call calculates also the HMC-Observables
-		obs = gaugefield.get_task_hmc(0)->metropolis(rnd_number, gaugefield.get_parameters().get_beta());
+		obs = gaugefield.get_task_hmc(0)->metropolis(rnd_number, gaugefield.get_parameters().get_beta(), gaugefield.get_task_hmc(0)->get_device()->get_gaugefield_code()->get_gaugefield());
 		//CP: just reject the outcome of the metropolis step
 		logger.trace() << "\tfinished HMC trajectory " << iter ;
 	}

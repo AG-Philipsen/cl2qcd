@@ -353,6 +353,8 @@ void test_gf_update(std::string inputfile)
 	device->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>(gm_in));
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 
+	auto gf_code = device->get_device()->get_gaugefield_code();
+
 	logger.info() << "|in|^2:";
 	device->set_float_to_gaugemomentum_squarenorm_device(&in, &sqnorm);
 	hmc_float cpu_back;
@@ -361,13 +363,13 @@ void test_gf_update(std::string inputfile)
 
 	logger.info() << "Run kernel";
 	hmc_float eps = params.get_tau();
-	device->md_update_gaugefield_device(&in, device->get_gaugefield(), eps);
+	device->md_update_gaugefield_device(&in, gf_code->get_gaugefield(), eps);
 	logger.info() << "gaugeobservables: ";
 	cpu.print_gaugeobservables_from_task(0, 0);
 
 	hmc_float plaq_cpu, tplaq_cpu, splaq_cpu;
 	hmc_complex pol_cpu;
-	device->gaugeobservables(&plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
+	gf_code->gaugeobservables(&plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
 	logger.info() << "Finalize device";
 	cpu.finalize();
 
@@ -471,7 +473,7 @@ void test_f_gauge(std::string inputfile)
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 
-	device->gauge_force_device( device->get_gaugefield(), &out);
+	device->gauge_force_device( device->get_device()->get_gaugefield_code()->get_gaugefield(), &out);
 
 	logger.info() << "result:";
 	hmc_float cpu_res;
@@ -514,7 +516,7 @@ void test_f_gauge_tlsym(std::string inputfile)
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 
-	device->gauge_force_tlsym_device( device->get_gaugefield(), &out);
+	device->gauge_force_tlsym_device( device->get_device()->get_gaugefield_code()->get_gaugefield(), &out);
 
 	logger.info() << "result:";
 	hmc_float cpu_res;
@@ -574,18 +576,20 @@ void test_f_fermion(std::string inputfile)
 	device->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(ae_out));
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 
+	auto spinor_code = device->get_device()->get_spinor_code();
+
 	logger.info() << "|phi_1|^2:";
 	hmc_float cpu_back;
-	device->set_float_to_global_squarenorm_device(&in1, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_device(&in1, &sqnorm);
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "|phi_2|^2:";
 	hmc_float cpu_back2;
-	device->set_float_to_global_squarenorm_device(&in2, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_device(&in2, &sqnorm);
 	sqnorm.dump(&cpu_back2);
 	logger.info() << cpu_back2;
 	logger.info() << "Run kernel";
-	device->fermion_force_device( &in1, &in2, device->get_gaugefield(), &out, params.get_kappa());
+	device->fermion_force_device( &in1, &in2, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out, params.get_kappa());
 	logger.info() << "result:";
 	hmc_float cpu_res;
 	device->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
@@ -638,22 +642,24 @@ void test_f_fermion_eo(std::string inputfile)
 	BOOST_REQUIRE(sf_in2);
 	BOOST_REQUIRE(ae_out);
 
+	auto spinor_code = device->get_device()->get_spinor_code();
+
 	const Spinor in1(NUM_ELEMENTS_SF, device->get_device());
 	const Spinor in2(NUM_ELEMENTS_SF, device->get_device());
 	Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-	device->copy_to_eoprec_spinorfield_buffer(&in1, sf_in1);
-	device->copy_to_eoprec_spinorfield_buffer(&in2, sf_in2);
+	spinor_code->copy_to_eoprec_spinorfield_buffer(&in1, sf_in1);
+	spinor_code->copy_to_eoprec_spinorfield_buffer(&in2, sf_in2);
 	device->importGaugemomentumBuffer(&out, ae_out);
 
 
 	hmc_float cpu_res, cpu_back, cpu_back2;
 	logger.info() << "|in_1|^2:";
-	device->set_float_to_global_squarenorm_eoprec_device(&in1, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in1, &sqnorm);
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "|in_2|^2:";
-	device->set_float_to_global_squarenorm_eoprec_device(&in2, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in2, &sqnorm);
 	sqnorm.dump(&cpu_back2);
 	logger.info() << cpu_back2;
 	logger.info() << "Run kernel";
@@ -661,10 +667,10 @@ void test_f_fermion_eo(std::string inputfile)
 	//switch according to "use_pointsource"
 	if(params.get_use_pointsource()) {
 		int tmp = EVEN;
-		device->fermion_force_eo_device(&in1, &in2, device->get_gaugefield(), &out, tmp, params.get_kappa() );
+		device->fermion_force_eo_device(&in1, &in2, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out, tmp, params.get_kappa() );
 	} else {
 		int tmp = ODD;
-		device->fermion_force_eo_device(&in1, &in2, device->get_gaugefield(), &out, tmp, params.get_kappa() );
+		device->fermion_force_eo_device(&in1, &in2, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out, tmp, params.get_kappa() );
 	}
 	logger.info() << "|force|^2:";
 	device->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
@@ -1059,6 +1065,8 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	BOOST_REQUIRE(sf_out_noneo);
 	BOOST_REQUIRE(sf_out_eo);
 
+	auto spinor_code = device->get_device()->get_spinor_code();
+
 	const Spinor in1_eo(NUM_ELEMENTS_SF_EO, device->get_device());
 	const Spinor in2_eo(NUM_ELEMENTS_SF_EO, device->get_device());
 	const Spinor in3_eo(NUM_ELEMENTS_SF_EO, device->get_device());
@@ -1087,40 +1095,40 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 		if(params.get_use_pointsource()) {
 			in1_eo.load(sf_in1_eo);
 			in2_eo.load(sf_in2_eo);
-			device->convert_from_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
+			spinor_code->convert_from_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
 			in3_eo.load(sf_in3_eo);
 			in4_eo.load(sf_in4_eo);
-			device->convert_from_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
+			spinor_code->convert_from_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
 		}  else {
 			in1_noneo.load(sf_in1_noneo);
 			in2_noneo.load(sf_in2_noneo);
-			device->convert_to_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
-			device->convert_to_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
+			spinor_code->convert_to_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
+			spinor_code->convert_to_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
 		}
 	}
 
 	hmc_float cpu_back_eo, cpu_back_eo2, cpu_back_eo3, cpu_back_eo4;
 	logger.info() << "eo input:";
 	logger.info() << "|phi_even_1|^2:";
-	device->set_float_to_global_squarenorm_eoprec_device(&in1_eo, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in1_eo, &sqnorm);
 	sqnorm.dump(&cpu_back_eo);
 	logger.info() << cpu_back_eo;
 	logger.info() << "|phi_even_2|^2:";
-	device->set_float_to_global_squarenorm_eoprec_device(&in2_eo, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in2_eo, &sqnorm);
 	sqnorm.dump(&cpu_back_eo2);
 	logger.info() << cpu_back_eo2;
 	logger.info() << "|phi_odd_1|^2:";
-	device->set_float_to_global_squarenorm_eoprec_device(&in3_eo, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in3_eo, &sqnorm);
 	sqnorm.dump(&cpu_back_eo3);
 	logger.info() << cpu_back_eo3;
 	logger.info() << "|phi_odd_2|^2:";
-	device->set_float_to_global_squarenorm_eoprec_device(&in4_eo, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in4_eo, &sqnorm);
 	sqnorm.dump(&cpu_back_eo4);
 	logger.info() << cpu_back_eo4;
 
 	logger.info() << "run eo force on EVEN and ODD sites...";
-	device->fermion_force_eo_device(&in1_eo, &in4_eo, device->get_gaugefield(), &out_eo, ODD, params.get_kappa() );
-	device->fermion_force_eo_device(&in2_eo, &in3_eo, device->get_gaugefield(), &out_eo, EVEN, params.get_kappa() );
+	device->fermion_force_eo_device(&in1_eo, &in4_eo, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out_eo, ODD, params.get_kappa() );
+	device->fermion_force_eo_device(&in2_eo, &in3_eo, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out_eo, EVEN, params.get_kappa() );
 
 	logger.info() << "|force_eo (even) + force_eo (odd)|^2:";
 	hmc_float cpu_res_eo;
@@ -1131,15 +1139,15 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	logger.info() << "non-eo input:";
 	hmc_float cpu_back_noneo, cpu_back2_noneo;
 	logger.info() << "|phi_1|^2:";
-	device->set_float_to_global_squarenorm_device(&in1_noneo, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_device(&in1_noneo, &sqnorm);
 	sqnorm.dump(&cpu_back_noneo);
 	logger.info() << cpu_back_noneo;
 	logger.info() << "|phi_2|^2:";
-	device->set_float_to_global_squarenorm_device(&in2_noneo, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_device(&in2_noneo, &sqnorm);
 	sqnorm.dump(&cpu_back2_noneo);
 	logger.info() << cpu_back2_noneo;
 	logger.info() << "run noneo force with noneo input...";
-	device->fermion_force_device( &in1_noneo, &in2_noneo, device->get_gaugefield(), &out_noneo, params.get_kappa());
+	device->fermion_force_device( &in1_noneo, &in2_noneo, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out_noneo, params.get_kappa());
 	logger.info() << "|force_noneo|^2:";
 	hmc_float cpu_res_noneo;
 	device->set_float_to_gaugemomentum_squarenorm_device(&out_noneo, &sqnorm);

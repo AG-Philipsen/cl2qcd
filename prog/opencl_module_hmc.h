@@ -25,14 +25,15 @@
 #include "opencl_compiler.hpp"
 
 #include "opencl_module.h"
-#include "opencl_module_ran.h"
-#include "opencl_module_spinors.h"
-#include "opencl_module_fermions.h"
 #include "types_hmc.h"
 
 #include "exceptions.h"
 
 #include "meta/counter.hpp"
+#include "hardware/buffers/plain.hpp"
+#include "hardware/buffers/prng_buffer.hpp"
+#include "hardware/buffers/su3.hpp"
+#include "hardware/buffers/spinor.hpp"
 #include "hardware/buffers/gaugemomentum.hpp"
 
 /**
@@ -43,7 +44,7 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Hmc : public Opencl_Module_Fermions {
+class Opencl_Module_Hmc : public Opencl_Module {
 public:
 	friend hardware::Device;
 
@@ -63,21 +64,21 @@ public:
 
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
-	void md_update_spinorfield(hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void md_update_spinorfield_mp(usetimer * solvertimer);
-	void generate_spinorfield_gaussian();
-	hmc_observables metropolis(hmc_float rnd, hmc_float beta);
+	void md_update_spinorfield(const hardware::buffers::SU3 * gaugefield, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void md_update_spinorfield_mp(usetimer * solvertimer, const hardware::buffers::SU3 * gaugefield);
+	void generate_spinorfield_gaussian(const hardware::buffers::PRNGBuffer * prng);
+	hmc_observables metropolis(hmc_float rnd, hmc_float beta, const hardware::buffers::SU3 * gaugefield);
 	void calc_spinorfield_init_energy(hardware::buffers::Plain<hmc_float> * dest);
 	void calc_gauge_force();
 	void calc_fermion_force(usetimer * solvertimer, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void calc_fermion_force_detratio(usetimer * solvertimer);
+	void calc_fermion_force_detratio(usetimer * solvertimer, const hardware::buffers::SU3 * gaugefield);
 
 	///////////////////////////////////////////////////
 	//Methods on device
 	void set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::Plain<hmc_float> * out);
-	void generate_gaussian_gaugemomenta_device();
-	void generate_gaussian_spinorfield_device();
-	void generate_gaussian_spinorfield_eo_device();
+	void generate_gaussian_gaugemomenta_device(const hardware::buffers::PRNGBuffer * prng);
+	void generate_gaussian_spinorfield_device(const hardware::buffers::PRNGBuffer * prng);
+	void generate_gaussian_spinorfield_eo_device(const hardware::buffers::PRNGBuffer * prng);
 	void md_update_gaugemomentum_device(hmc_float eps);
 	void md_update_gaugemomentum_device(const hardware::buffers::Gaugemomentum *, const hardware::buffers::Gaugemomentum *, hmc_float eps);
 	void md_update_gaugefield_device(hmc_float eps);
@@ -94,7 +95,7 @@ public:
 	void fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, const hardware::buffers::SU3 *, const hardware::buffers::Gaugemomentum *, int evenodd, hmc_float kappa = ARG_DEF);
 	void stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate);
 	hmc_float calc_s_fermion();
-	hmc_float calc_s_fermion_mp();
+	hmc_float calc_s_fermion_mp(const hardware::buffers::SU3 * gaugefield);
 
 	/**
 	 * Import data from the gaugemomenta array into the given buffer.
