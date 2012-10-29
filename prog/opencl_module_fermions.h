@@ -4,31 +4,12 @@
 #ifndef _OPENCLMODULEFERMIONSH_
 #define _OPENCLMODULEFERMIONSH_
 
-#include <cmath>
-#include <cstdlib>
-#include <vector>
-#include <string>
-#include <fstream>
-#include <sstream>
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-
-#include "host_geometry.h"
-#include "host_operations_gaugefield.h"
-#include "globaldefs.h"
-#include "types.h"
-#include "types_fermions.h"
-#include "host_use_timer.h"
-#include "opencl_compiler.hpp"
-
 #include "opencl_module.h"
-#include "opencl_module_ran.h"
-#include "opencl_module_spinors.h"
 
-#include "exceptions.h"
+#include "hardware/buffers/plain.hpp"
+#include "hardware/buffers/su3.hpp"
+#include "hardware/buffers/spinor.hpp"
+#include "host_use_timer.h"
 
 class Opencl_Module_Fermions;
 
@@ -153,7 +134,7 @@ public:
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Fermions : public Opencl_Module_Spinors {
+class Opencl_Module_Fermions : public Opencl_Module {
 public:
 	friend hardware::Device;
 

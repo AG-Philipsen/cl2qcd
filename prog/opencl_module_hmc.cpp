@@ -1636,14 +1636,14 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta, con
 
 void Opencl_Module_Hmc::calc_spinorfield_init_energy(hardware::buffers::Plain<hmc_float> * dest)
 {
-	auto fermion_code = get_device()->get_fermion_code();
+	auto spinor_code = get_device()->get_spinor_code();
 
 	//Suppose the initial spinorfield is saved in phi_inv
 	//  it is created in generate_gaussian_spinorfield_device
 	if(get_parameters().get_use_eo() == true) {
-		fermion_code->set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, dest);
+		spinor_code->set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, dest);
 	} else {
-		fermion_code->set_float_to_global_squarenorm_device(&clmem_phi_inv, dest);
+		spinor_code->set_float_to_global_squarenorm_device(&clmem_phi_inv, dest);
 	}
 }
 

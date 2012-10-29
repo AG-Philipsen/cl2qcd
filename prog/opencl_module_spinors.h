@@ -89,11 +89,13 @@ public:
 
 	ClSourcePackage get_sources() const noexcept;
 
-protected:
 	/**
-	 * @fixme make private
+	 * Return amount of Floating point operations performed by a specific kernel per call.
+	 * NOTE: this is meant to be the "netto" amount in order to be comparable.
+	 *
+	 * @param in Name of the kernel under consideration.
 	 */
-	Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device);
+	virtual uint64_t get_flop_size(const std::string& in) const override;
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
@@ -102,13 +104,11 @@ protected:
 	 */
 	virtual size_t get_read_write_size(const std::string& in) const override;
 
+protected:
 	/**
-	 * Return amount of Floating point operations performed by a specific kernel per call.
-	 * NOTE: this is meant to be the "netto" amount in order to be comparable.
-	 *
-	 * @param in Name of the kernel under consideration.
+	 * @fixme make private
 	 */
-	virtual uint64_t get_flop_size(const std::string& in) const override;
+	Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device);
 
 	/**
 	 * Add specific work_size determination for this child class

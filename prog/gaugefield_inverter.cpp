@@ -74,12 +74,13 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 		num_sources = get_parameters().get_num_sources();
 
 	Opencl_Module_Fermions * solver = get_task_solver();
+	auto gf_code = solver->get_device()->get_gaugefield_code();
 
 	hardware::buffers::Plain<spinor> clmem_res(meta::get_spinorfieldsize(get_parameters()), solver->get_device());
 
 	//apply stout smearing if wanted
 	if(get_parameters().get_use_smearing() == true) {
-		solver->smear_gaugefield(solver->get_gaugefield(), std::vector<const hardware::buffers::SU3 *>());
+		gf_code->smear_gaugefield(gf_code->get_gaugefield(), std::vector<const hardware::buffers::SU3 *>());
 	}
 
 	//for CG, one needs a hermitian matrix...
@@ -97,10 +98,10 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 		logger.debug() << "calling solver..";
 		if(use_eo) {
 			::Aee f_eo(solver);
-			solver->solver(f_eo, &clmem_res, get_clmem_source_solver(), solver->get_gaugefield(), solver_timer);
+			solver->solver(f_eo, &clmem_res, get_clmem_source_solver(), gf_code->get_gaugefield(), solver_timer);
 		} else {
 			::M f_neo(solver);
-			solver->solver(f_neo, &clmem_res, get_clmem_source_solver(), solver->get_gaugefield(), solver_timer);
+			solver->solver(f_neo, &clmem_res, get_clmem_source_solver(), gf_code->get_gaugefield(), solver_timer);
 		}
 
 		//add solution to solution-buffer
@@ -110,7 +111,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 	}
 
 	if(get_parameters().get_use_smearing() == true) {
-		solver->unsmear_gaugefield(solver->get_gaugefield());
+		gf_code->unsmear_gaugefield(gf_code->get_gaugefield());
 	}
 }
 

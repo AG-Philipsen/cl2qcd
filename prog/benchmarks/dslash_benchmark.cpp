@@ -76,11 +76,12 @@ int main(int argc, const char* argv[])
 
 		int hmc_iter = parameters.get_hmcsteps();
 		int iter;
+		auto gf_buffer = gaugefield.get_task_solver()->get_device()->get_gaugefield_code()->get_gaugefield();
 
 		logger.trace() << "Perform " << hmc_iter << "of dslash benchmarking (EVEN + ODD) for each step";
 		for(iter = 0; iter < hmc_iter; iter ++) {
-			gaugefield.get_task_solver()->dslash_eo_device(&sf1, &sf2, gaugefield.get_task_solver()->get_gaugefield(), EVEN);
-			gaugefield.get_task_solver()->dslash_eo_device(&sf1, &sf2, gaugefield.get_task_solver()->get_gaugefield(), ODD);
+			gaugefield.get_task_solver()->dslash_eo_device(&sf1, &sf2, gf_buffer, EVEN);
+			gaugefield.get_task_solver()->dslash_eo_device(&sf1, &sf2, gf_buffer, ODD);
 		}
 		logger.trace() << "dslash benchmarking done" ;
 		perform_timer.add();
