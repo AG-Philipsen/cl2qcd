@@ -27,7 +27,7 @@ void Opencl_Module_Kappa::fill_kernels()
 }
 
 
-void Opencl_Module_Kappa::run_kappa_clover(const hmc_float beta)
+void Opencl_Module_Kappa::run_kappa_clover(const hardware::buffers::SU3 * gaugefield, const hmc_float beta)
 {
 	//variables
 	cl_int clerr = CL_SUCCESS;
@@ -40,7 +40,7 @@ void Opencl_Module_Kappa::run_kappa_clover(const hmc_float beta)
 
 	hardware::buffers::Plain<hmc_float> clmem_kappa_clover_buf_glob(num_groups, get_device());
 
-	clerr = clSetKernelArg(kappa_clover_gpu, 0, sizeof(cl_mem), get_gaugefield()->get_cl_buffer());
+	clerr = clSetKernelArg(kappa_clover_gpu, 0, sizeof(cl_mem), gaugefield->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(kappa_clover_gpu, 1, sizeof(hmc_float), &beta);
@@ -55,9 +55,6 @@ void Opencl_Module_Kappa::run_kappa_clover(const hmc_float beta)
 	//don't do that anymore ;-)
 	//  clFinish(queue);
 	//  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
-
-	return;
-
 }
 
 hmc_float Opencl_Module_Kappa::get_kappa_clover()
@@ -74,7 +71,7 @@ void Opencl_Module_Kappa::clear_kernels()
 }
 
 Opencl_Module_Kappa::Opencl_Module_Kappa(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module_Gaugefield(params, device), clmem_kappa_clover(1, device)
+	: Opencl_Module(params, device), clmem_kappa_clover(1, device)
 {
 	fill_kernels();
 }

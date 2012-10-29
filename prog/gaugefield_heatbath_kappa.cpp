@@ -50,9 +50,7 @@ void Gaugefield_heatbath_kappa::perform_tasks(int nheat, int nover)
 			get_task_heatbath()->run_overrelax();
 	}
 
-	get_task_kappa()->run_kappa_clover(get_parameters().get_beta());
-
-	return;
+	get_task_kappa()->run_kappa_clover(get_device_for_task(task_kappa)->get_gaugefield_code()->get_gaugefield(), get_parameters().get_beta());
 }
 
 void Gaugefield_heatbath_kappa::perform_tasks(int nheat, int nover, int* nheat_optimal)
@@ -72,7 +70,7 @@ void Gaugefield_heatbath_kappa::perform_tasks(int nheat, int nover, int* nheat_o
 	time_for_heatbath = timer.getTime() / nheat;
 
 	timer.reset();
-	get_task_kappa()->run_kappa_clover(get_parameters().get_beta());
+	get_task_kappa()->run_kappa_clover(get_device_for_task(task_kappa)->get_gaugefield_code()->get_gaugefield(), get_parameters().get_beta());
 	timer.add();
 	time_for_kappa = timer.getTime();
 

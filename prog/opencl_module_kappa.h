@@ -34,7 +34,7 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Kappa : public Opencl_Module_Gaugefield {
+class Opencl_Module_Kappa : public Opencl_Module {
 public:
 	friend hardware::Device;
 
@@ -44,13 +44,30 @@ public:
 	 * Run the calculation of kappa clover. No OpenCL barrier.
 	 * @TODO remove beta
 	 */
-	void run_kappa_clover(const hmc_float beta);
+	void run_kappa_clover(const hardware::buffers::SU3 * gaugefield, const hmc_float beta);
 
 	/**
 	 * Copy kappa_clover from device to host and return it
 	 * @return kappa_clover
 	 */
 	hmc_float get_kappa_clover();
+
+protected:
+	/**
+	 * Return amount of Floating point operations performed by a specific kernel per call.
+	 * NOTE: this is meant to be the "netto" amount in order to be comparable.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual uint64_t get_flop_size(const std::string&) const { return 0; };
+
+	/**
+	 * Return amount of bytes read and written by a specific kernel per call.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual size_t get_read_write_size(const std::string&) const { return 0; };
+
 
 private:
 	/**
