@@ -24,7 +24,8 @@
 #include "opencl_compiler.hpp"
 
 #include "opencl_module.h"
-#include "opencl_module_ran.h"
+#include "hardware/buffers/su3.hpp"
+#include "hardware/buffers/prng_buffer.hpp"
 
 #include "exceptions.h"
 
@@ -35,7 +36,7 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Heatbath : public Opencl_Module_Ran {
+class Opencl_Module_Heatbath : public Opencl_Module {
 public:
 	friend hardware::Device;
 
@@ -44,12 +45,12 @@ public:
 	/**
 	 * Perform one heatbath step.
 	 */
-	void run_heatbath();
+	void run_heatbath(const hardware::buffers::SU3 * gaugefield, const hardware::buffers::PRNGBuffer * prng) const;
 
 	/**
 	 * Perform one overrelaxation step.
 	 */
-	void run_overrelax();
+	void run_overrelax(const hardware::buffers::SU3 * gaugefield, const hardware::buffers::PRNGBuffer * prng) const;
 
 	/**
 	 * Add specific work_size determination for this child class

@@ -53,19 +53,17 @@ void Opencl_Module_Heatbath::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
-void Opencl_Module_Heatbath::run_heatbath()
+void Opencl_Module_Heatbath::run_heatbath(const hardware::buffers::SU3 * gaugefield, const hardware::buffers::PRNGBuffer * prng) const
 {
 	cl_int clerr = CL_SUCCESS;
-
-	auto src = get_gaugefield();
 
 	size_t global_work_size, ls;
 	cl_uint num_groups;
 	this->get_work_sizes(heatbath_even, &ls, &global_work_size, &num_groups);
 
-	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), src->get_cl_buffer());
+	clerr = clSetKernelArg(heatbath_even, 0, sizeof(cl_mem), gaugefield->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(heatbath_even, 2, sizeof(cl_mem), get_prng_buffer());
+	clerr = clSetKernelArg(heatbath_even, 2, sizeof(cl_mem), prng->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	for(cl_int i = 0; i < NDIM; i++) {
@@ -76,9 +74,9 @@ void Opencl_Module_Heatbath::run_heatbath()
 
 	this->get_work_sizes(heatbath_odd, &ls, &global_work_size, &num_groups);
 
-	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), src->get_cl_buffer());
+	clerr = clSetKernelArg(heatbath_odd, 0, sizeof(cl_mem), gaugefield->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(heatbath_odd, 2, sizeof(cl_mem), get_prng_buffer());
+	clerr = clSetKernelArg(heatbath_odd, 2, sizeof(cl_mem), prng->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	for(cl_int i = 0; i < NDIM; i++) {
@@ -88,19 +86,17 @@ void Opencl_Module_Heatbath::run_heatbath()
 	}
 }
 
-void Opencl_Module_Heatbath::run_overrelax()
+void Opencl_Module_Heatbath::run_overrelax(const hardware::buffers::SU3 * gaugefield, const hardware::buffers::PRNGBuffer * prng) const
 {
 	cl_int clerr = CL_SUCCESS;
-
-	auto src = get_gaugefield();
 
 	size_t global_work_size, ls;
 	cl_uint num_groups;
 	this->get_work_sizes(overrelax_even, &ls, &global_work_size, &num_groups);
 
-	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), src->get_cl_buffer());
+	clerr = clSetKernelArg(overrelax_even, 0, sizeof(cl_mem), gaugefield->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(overrelax_even, 2, sizeof(cl_mem), get_prng_buffer());
+	clerr = clSetKernelArg(overrelax_even, 2, sizeof(cl_mem), prng->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	for(cl_int i = 0; i < NDIM; i++) {
@@ -111,9 +107,9 @@ void Opencl_Module_Heatbath::run_overrelax()
 
 	this->get_work_sizes(overrelax_odd, &ls, &global_work_size, &num_groups);
 
-	clerr = clSetKernelArg(overrelax_odd, 0, sizeof(cl_mem), src->get_cl_buffer());
+	clerr = clSetKernelArg(overrelax_odd, 0, sizeof(cl_mem), gaugefield->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(overrelax_odd, 2, sizeof(cl_mem), get_prng_buffer());
+	clerr = clSetKernelArg(overrelax_odd, 2, sizeof(cl_mem), prng->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -126,7 +122,7 @@ void Opencl_Module_Heatbath::run_overrelax()
 
 void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
-	Opencl_Module_Ran::get_work_sizes(kernel, ls, gs, num_groups);
+	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 
 	//Query kernel name
 	string kernelname = get_kernel_name(kernel);
@@ -135,9 +131,9 @@ void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, size_t * ls,
 	//all of the following kernels are called with EnqueueKernel(gs), ls, num_groups are not needed!
 	if (kernelname.compare("heatbath_even") == 0 || kernelname.compare("heatbath_odd") == 0 || kernelname.compare("overrelax_even") == 0 || kernelname.compare("overrelax_odd") == 0) {
 		if( get_device()->get_device_type() == CL_DEVICE_TYPE_GPU ) {
-			*gs = std::min(meta::get_volspace(get_parameters()) * get_parameters().get_ntime() / 2, get_prng_buffer().get_elements());
+			*gs = std::min(meta::get_volspace(get_parameters()) * get_parameters().get_ntime() / 2, hardware::buffers::get_prng_buffer_size(get_device()));
 		} else {
-			*gs = std::min(get_device()->get_num_compute_units(), get_prng_buffer().get_elements());
+			*gs = std::min(get_device()->get_num_compute_units(), hardware::buffers::get_prng_buffer_size(get_device()));
 		}
 		*ls = get_device()->get_preferred_local_thread_num();
 		*num_groups = *gs / *ls;
@@ -147,8 +143,6 @@ void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, size_t * ls,
 
 size_t Opencl_Module_Heatbath::get_read_write_size(const std::string& in) const
 {
-	size_t result = Opencl_Module_Ran::get_read_write_size(in);
-	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
 	size_t D = meta::get_float_size(get_parameters());
 	size_t R = meta::get_mat_size(get_parameters());
@@ -170,8 +164,6 @@ size_t Opencl_Module_Heatbath::get_read_write_size(const std::string& in) const
 
 uint64_t Opencl_Module_Heatbath::get_flop_size(const std::string& in) const
 {
-	uint64_t result = Opencl_Module_Ran::get_flop_size(in);
-	if (result != 0) return result;
 	const size_t VOL4D = meta::get_vol4d(get_parameters());
 	uint64_t S;
 	if(get_parameters().get_use_eo() == 1)
@@ -193,7 +185,7 @@ uint64_t Opencl_Module_Heatbath::get_flop_size(const std::string& in) const
 
 void Opencl_Module_Heatbath::print_profiling(const std::string& filename, int number) const
 {
-	Opencl_Module_Ran::print_profiling(filename, number);
+	Opencl_Module::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, heatbath_even);
 	Opencl_Module::print_profiling(filename, heatbath_odd);
 	Opencl_Module::print_profiling(filename, overrelax_even);
@@ -201,7 +193,7 @@ void Opencl_Module_Heatbath::print_profiling(const std::string& filename, int nu
 }
 
 Opencl_Module_Heatbath::Opencl_Module_Heatbath(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module_Ran(params, device)
+	: Opencl_Module(params, device)
 {
 	fill_kernels();
 }
