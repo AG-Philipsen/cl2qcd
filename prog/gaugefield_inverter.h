@@ -71,6 +71,14 @@ public:
 	 */
 	virtual void finalize_opencl() override;
 
+	/**
+	 * Invert fermionmatrix M corresponding to the upper flavour in Nf=2 LQCD.
+	 * @param[in, out] inout spinorfield with initial guess and solution
+	 * @param[in] source source to invert on
+	 * @param[in] gf gaugefield configuration to invert on
+	 * @param[in] solvertimer measures time needed for the inversion
+	 */
+	void invert_M_nf2_upperflavour(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, usetimer * solvertimer);
 
 	// the real job:
 	/**

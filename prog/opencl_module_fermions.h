@@ -177,9 +177,6 @@ public:
         void M_tm_sitediagonal_minus_AND_gamma5_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, hmc_float mubar = ARG_DEF);
 
 	//    solver operations
-	//    non-eo
-	/// this calls the solver according to parameter settings using the fermionmatrix f
-	void solver(const Matrix_Function & f, const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, usetimer * solvertimer);
 	/**
 	* the solvers return the number of iterations needed if it converged,
 	* -1 if it did not converge within cgmax
@@ -190,8 +187,6 @@ public:
 	/// this executes the cg on the device, using the fermionmatrix f
 	int cg(const Matrix_Function & f, const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	//    eo
-	/// this calls the solver according to parameter settings using the fermionmatrix f
-	void solver(const Matrix_Function_eo & f, const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, usetimer * solvertimer);
 	/// this executes the eo bicgstab on the device, using the fermionmatrix f
 	int bicgstab_eo(const Matrix_Function_eo & f, const hardware::buffers::Spinor * inout, const hardware::buffers::Spinor * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	int cg_eo(const Matrix_Function_eo & f, const hardware::buffers::Spinor * inout, const hardware::buffers::Spinor * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);

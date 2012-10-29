@@ -62,16 +62,130 @@ void Gaugefield_inverter::finalize_opencl()
 	delete [] source_buffer;
 }
 
+void Gaugefield_inverter::invert_M_nf2_upperflavour(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, usetimer * solvertimer)
+{
+	/** This solves the sparse-matrix system
+	 *  A x = b
+	 *  with  x == inout
+	 *        A == f
+	 *        b == source
+	 * using a Krylov-Solver (BiCGStab or CG)
+	 */
+	int converged = -1;
+	Opencl_Module_Fermions * solver = get_task_solver();
+	auto spinor_code = solver->get_device()->get_spinor_code();
+
+	if(get_parameters().get_profile_solver() ) (*solvertimer).reset();
+
+	if( !get_parameters().get_use_eo() ){
+	  //noneo case
+	  //Trial solution
+	  ///@todo this should go into a more general function
+	  spinor_code->set_spinorfield_cold_device(inout);
+	  if(get_parameters().get_solver() == meta::Inputparameters::cg) {
+	    //to use cg, one needs an hermitian matrix, which is QplusQminus
+	    //the source must now be gamma5 b, to obtain the desired solution in the end
+	    solver->gamma5_device(source);
+	    ::QplusQminus f_neo(solver);
+	    converged = solver->cg(f_neo, inout, source, gf, get_parameters().get_solver_prec());
+	    //now, calc Qminus inout to obtain x = A^⁻1 b
+	    //therefore, use source as an intermediate buffer
+	    solver->Qminus(inout, source, gf, get_parameters().get_kappa(), meta::get_mubar(get_parameters() ));
+	    //save the result to inout
+	    hardware::buffers::copyData(inout, source);
+	  } else {
+	    ::M f_neo(solver);
+	    converged = solver->bicgstab(f_neo, inout, source, gf, get_parameters().get_solver_prec());
+	  }
+	}
+	else{
+	  /**
+	   * If even-odd-preconditioning is used, the inversion is split up
+	   * into even and odd parts using Schur decomposition, assigning the
+	   * non-trivial inversion to the even sites (see DeGran/DeTar p 174ff).
+	   */
+	  //init some helping buffers
+	  const hardware::buffers::Spinor clmem_source_even  (meta::get_eoprec_spinorfieldsize(get_parameters()), solver->get_device());
+	  const hardware::buffers::Spinor clmem_source_odd  (meta::get_eoprec_spinorfieldsize(get_parameters()), solver->get_device());
+	  const hardware::buffers::Spinor clmem_tmp_eo_1  (meta::get_eoprec_spinorfieldsize(get_parameters()), solver->get_device());
+	  const hardware::buffers::Spinor clmem_tmp_eo_2  (meta::get_eoprec_spinorfieldsize(get_parameters()), solver->get_device());
+	  const hardware::buffers::Plain<hmc_complex> clmem_one (1, solver->get_device());
+	  hmc_complex one = hmc_complex_one;
+	  clmem_one.load(&one);
+	  
+	  //convert source and input-vector to eoprec-format
+	  spinor_code->convert_to_eoprec_device(&clmem_source_even, &clmem_source_odd, source);
+	  //prepare sources
+	  /**
+	   * This changes the even source according to (with A = M + D):
+	   *  b_e = b_e - D_eo M_inv b_o
+	   */
+	  
+	  if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
+	    //in this case, the diagonal matrix is just 1 and falls away.
+	    solver->dslash_eo_device(&clmem_source_odd, &clmem_tmp_eo_1, gf, EVEN);
+	    spinor_code->saxpy_eoprec_device(&clmem_source_even, &clmem_tmp_eo_1, &clmem_one, &clmem_source_even);
+	  } else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
+	    solver->M_tm_inverse_sitediagonal_device(&clmem_source_odd, &clmem_tmp_eo_1);
+	    solver->dslash_eo_device(&clmem_tmp_eo_1, &clmem_tmp_eo_2, gf, EVEN);
+	    spinor_code->saxpy_eoprec_device(&clmem_source_even, &clmem_tmp_eo_2, &clmem_one, &clmem_source_even);
+	  }
+	  
+	  //Trial solution
+	  ///@todo this should go into a more general function
+	  spinor_code->set_eoprec_spinorfield_cold_device(solver->get_inout_eo());
+	  logger.debug() << "start eoprec-inversion";
+	  //even solution
+	  if(get_parameters().get_solver() == meta::Inputparameters::cg){
+	    //to use cg, one needs an hermitian matrix, which is QplusQminus
+	    //the source must now be gamma5 b, to obtain the desired solution in the end
+	    solver->gamma5_eo_device(&clmem_source_even);
+	    ::QplusQminus_eo f_eo(solver);
+	    converged = solver->cg_eo(f_eo, solver->get_inout_eo(), &clmem_source_even, gf, get_parameters().get_solver_prec());
+	    //now, calc Qminus inout to obtain x = A^⁻1 b
+	    //therefore, use source as an intermediate buffer
+	    solver->Qminus_eo(solver->get_inout_eo(), &clmem_source_even, gf, get_parameters().get_kappa(), meta::get_mubar(get_parameters() ));
+	    //save the result to inout
+	    hardware::buffers::copyData(solver->get_inout_eo(), &clmem_source_even);
+	  } else{
+	    ::Aee f_eo(solver);
+	    converged = solver->bicgstab_eo(f_eo, solver->get_inout_eo(), &clmem_source_even, gf, get_parameters().get_solver_prec());
+	  }
+	  
+	  //odd solution
+	  /** The odd solution is obtained from the even one according to:
+	   *  x_o = M_inv D x_e - M_inv b_o
+	   */
+	  if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
+	    //in this case, the diagonal matrix is just 1 and falls away.
+	    solver->dslash_eo_device(solver->get_inout_eo(), &clmem_tmp_eo_1, gf, ODD);
+	    spinor_code->saxpy_eoprec_device(&clmem_tmp_eo_1, &clmem_source_odd, &clmem_one, &clmem_tmp_eo_1);
+	  } else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
+	    solver->dslash_eo_device(solver->get_inout_eo(), &clmem_tmp_eo_2, gf, ODD);
+	    solver->M_tm_inverse_sitediagonal_device(&clmem_tmp_eo_2, &clmem_tmp_eo_1);
+	    solver->M_tm_inverse_sitediagonal_device(&clmem_source_odd, &clmem_tmp_eo_2);
+	    spinor_code->saxpy_eoprec_device(&clmem_tmp_eo_1, &clmem_tmp_eo_2, &clmem_one, &clmem_tmp_eo_1);
+	  }
+	  //CP: whole solution
+	  //CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eo_1
+	  spinor_code->convert_from_eoprec_device(solver->get_inout_eo(), &clmem_tmp_eo_1, inout);
+	}
+
+	if(get_parameters().get_profile_solver() ) {
+		solver->get_device()->synchronize();
+		(*solvertimer).add();
+	}
+
+	if (converged < 0) {
+		if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
+		else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
+	} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
+}
+
 void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 {
-	int use_eo = get_parameters().get_use_eo();
-
 	//decide on type of sources
-	int num_sources;
-	if(get_parameters().get_use_pointsource() == true)
-		num_sources = 12;
-	else
-		num_sources = get_parameters().get_num_sources();
+  int num_sources = (get_parameters().get_use_pointsource() ) ? 12 : get_parameters().get_num_sources();
 
 	Opencl_Module_Fermions * solver = get_task_solver();
 	auto gf_code = solver->get_device()->get_gaugefield_code();
@@ -79,16 +193,8 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 	hardware::buffers::Plain<spinor> clmem_res(meta::get_spinorfieldsize(get_parameters()), solver->get_device());
 
 	//apply stout smearing if wanted
-	if(get_parameters().get_use_smearing() == true) {
+	if(get_parameters().get_use_smearing() == true)
 		gf_code->smear_gaugefield(gf_code->get_gaugefield(), std::vector<const hardware::buffers::SU3 *>());
-	}
-
-	//for CG, one needs a hermitian matrix...
-	if(get_parameters().get_solver() == meta::Inputparameters::cg) {
-		logger.fatal() << "CG usage requires a hermitian matrix. This is not implemented yet...";
-		//the call shoul be like this
-		//::QplusQminus_eo f_eo(solver);
-	}
 
 	for(int k = 0; k < num_sources; k++) {
 		//copy source from to device
@@ -96,23 +202,15 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 		logger.debug() << "copy pointsource between devices";
 		get_clmem_source_solver()->load(&source_buffer[k * meta::get_vol4d(get_parameters())]);
 		logger.debug() << "calling solver..";
-		if(use_eo) {
-			::Aee f_eo(solver);
-			solver->solver(f_eo, &clmem_res, get_clmem_source_solver(), gf_code->get_gaugefield(), solver_timer);
-		} else {
-			::M f_neo(solver);
-			solver->solver(f_neo, &clmem_res, get_clmem_source_solver(), gf_code->get_gaugefield(), solver_timer);
-		}
-
+		invert_M_nf2_upperflavour( &clmem_res, get_clmem_source_solver(), gf_code->get_gaugefield(), solver_timer);
 		//add solution to solution-buffer
 		//NOTE: this is a blocking call!
 		logger.debug() << "add solution...";
 		clmem_res.dump(&solution_buffer[k * meta::get_vol4d(get_parameters())]);
 	}
 
-	if(get_parameters().get_use_smearing() == true) {
+	if(get_parameters().get_use_smearing() == true) 
 		gf_code->unsmear_gaugefield(gf_code->get_gaugefield());
-	}
 }
 
 void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)
