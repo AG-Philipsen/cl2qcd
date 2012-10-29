@@ -2,7 +2,59 @@
  @file fermion-observables: correlators calculated from stochastic sources
 */
 
-// //this is the pseudoscalar pion correlator in z-direction from pointsources
+/**
+ * For stochastic sources one has:
+ * D_u^-1(x,y)_(a,b) = 1/R Phi^r(x)_(a) * ( Xi^r(y)_(b) )^dagger
+ * with a,b : colour-Dirac indices
+ * with x,y : space-time indices
+ * with r : index of source
+ */
+
+/**
+ * Nf2 Pseudoscalar Correlator (Pion):
+ * C(x,y)_(a,b) = <Pi^+(x)_a Pi^-(y)_b> = <u(x)_a gamma5 d^bar(x)_a u^bar(y)_b gamma5 d(y)_b >
+ *              = <u(x)_a u^bar(y)_b gamma5 d^bar(x)_a d(y)_b gamma5 >
+ *              = <D_u^-1(x,y)_(a,b) gamma5 D_d^-1(y,x)_(b,a) gamma5 >
+ *              = <D_u^-1(x,y)_(a,b) (D_u^-1(x,y)_(a,b) )^dagger >
+ *              = <|D_u^-1(x,y)_(a,b)|^2>
+ */
+
+/**
+ * Nf2 Pion Norm:
+ * |Pi|^2 = Sum_{x,y,a,b} C(x,y)_(a,b) = Sum_{x,y,a,b} <|D_u^-1(x,y)_(a,b)|^2>
+ *        = 
+ */
+
+/**
+ * This is the pseudoscalar pion correlator in z-direction:
+ * C(z) = Sum_{x,y,t,a,b} <|D_u^-1( x(z), y(z) )_(a,b)|^2>
+ *      = Sum_{x,y,t,a,b,r} 1/R <| Phi^r(x)_(a) * ( Xi^r(y)_(b) )^dagger  |^2>
+ */
+
+inline hmc_float complex_squarenorm(const hmc_complex a)
+{
+  hmc_float res;
+  res = a.re * a.re + a.im * a.im;
+  return res;
+}
+
+void load_spinor_to_complex_array(spinor in, hmc_complex * out)
+{
+  out[0] = in.e0.e0;
+  out[1] = in.e0.e1;
+  out[2] = in.e0.e2;
+  out[3] = in.e1.e0;
+  out[4] = in.e1.e1;
+  out[5] = in.e1.e2;
+  out[6] = in.e2.e0;
+  out[7] = in.e2.e1;
+  out[8] = in.e2.e2;
+  out[9] = in.e3.e0;
+  out[10] = in.e3.e1;
+  out[11] = in.e3.e2;
+}
+
+
 __kernel void correlator_ps_z(__global const spinor * const restrict phi, __global const spinor * const restrict b, __global hmc_float * const restrict out)
 {
 	int local_size = get_local_size(0);
@@ -14,25 +66,50 @@ __kernel void correlator_ps_z(__global const spinor * const restrict phi, __glob
 
 	//suppose that there are NSPACE threads (one for each entry of the correlator)
 	for(int id_tmp = id; id_tmp < NSPACE; id_tmp += global_size) {
-		hmc_float correlator = 0.;
-		uint3 coord;
-		coord.z = id_tmp;
-		for(int k = 0; k < NUM_SOURCES; k++) {
-			for(int t = 0; t < NTIME; t++) {
-				for(coord.x = 0; coord.x < NSPACE; coord.x++) {
-					for(coord.y = 0; coord.y < NSPACE; coord.y++) {
-						int nspace = get_nspace(coord);
-						spinor tmp = phi[get_global_pos(nspace, t) + VOL4D * k];
-						correlator += spinor_squarenorm(tmp);
-					}
-				}
+	  hmc_float correlator = 0.;
+	  uint3 coord;
+	  uint3 coord2;
+	  //loop over first coordinate
+	  coord.z = id_tmp;
+	  for(int k = 0; k < NUM_SOURCES; k++) {
+	    for(int t    = 0; t <        NTIME;  t++) {
+	      for(coord.x  = 0; coord.x <  NSPACE; coord.x++) {
+		for(coord.y  = 0; coord.y <  NSPACE; coord.y++) {
+		  int nspace = get_nspace(coord);
+		  spinor phi_tmp = phi[get_global_pos(nspace, t) + VOL4D * k];
+		  hmc_complex phi_arr[12];
+		  load_spinor_to_complex_array(phi_tmp, phi_arr);
+		  //loop over second coordinate
+		  for(int t2   = 0; t2 <       NTIME;  t2++) {
+		    for(coord2.x = 0; coord2.x < NSPACE; coord2.x++) {
+		      for(coord2.y = 0; coord2.y < NSPACE; coord2.y++) {
+			for(coord2.z = 0; coord2.z < NSPACE; coord2.z++) {
+			  //coord2.z =z;// coord.z;//(z+coord.z)%NSPACE;
+			  int nspace2 = get_nspace(coord2);
+			  spinor b_tmp = b[get_global_pos(nspace2, t2) + VOL4D * k];
+			  hmc_complex b_arr[12];			  
+			  load_spinor_to_complex_array(b_tmp, b_arr);
+			  hmc_complex Dminus;
+			  //loop over spin-colour indices
+			  for(int a = 0; a<12; a++){
+			    for(int b = 0; b<12; b++){
+			      Dminus =  complexmult(phi_arr[a], complexconj(b_arr[b]));
+			      correlator += complex_squarenorm(Dminus);
+			    }
+			  }
 			}
+		      }
+		    }
+		  }
 		}
-		//now, this should finally be the correct normalisation for the physical fields
-		//one factor of 2*kappa per field and we construct the correlator from a multiplication of two fields phi
-
-		hmc_float fac = NSPACE * NSPACE * NTIME;
-		out[id_tmp] = 2. * KAPPA * 2.* KAPPA * correlator / fac;
+	      }
+	    }
+	  }
+	  //now, this should finally be the correct normalisation for the physical fields
+	  //one factor of 2*kappa per field and we construct the correlator from a multiplication of two fields phi
+	  
+	  hmc_float fac = NSPACE * NSPACE * NTIME;
+	  out[id_tmp] = 2. * KAPPA * 2.* KAPPA * correlator / fac;
 	}
 
 
