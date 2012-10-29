@@ -301,7 +301,7 @@ void Gaugefield_hybrid::copy_gaugefield_to_task(int ntask)
 		logger.warn() << "Index out of range, copy_gaugefield_to_device does nothing.";
 		return;
 	}
-	static_cast<Opencl_Module_Gaugefield*>(opencl_modules[ntask])->importGaugefield(get_sgf());
+	get_device_for_task(ntask)->get_gaugefield_code()->importGaugefield(get_sgf());
 }
 
 void Gaugefield_hybrid::synchronize(int ntask_reference)
@@ -325,7 +325,7 @@ void Gaugefield_hybrid::copy_gaugefield_from_task(int ntask)
 		logger.warn() << "Index out of range, copy_gaugefield_from_device does nothing.";
 		return;
 	}
-	static_cast<Opencl_Module_Gaugefield*>(opencl_modules[ntask])->exportGaugefield(get_sgf());
+	get_device_for_task(ntask)->get_gaugefield_code()->exportGaugefield(get_sgf());
 }
 
 hardware::Device* Gaugefield_hybrid::get_device_for_task(int ntask)
@@ -445,7 +445,7 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask)
 	hmc_float tplaq = 0;
 	hmc_float splaq = 0;
 	hmc_complex pol;
-	static_cast<Opencl_Module_Gaugefield*>(opencl_modules[ntask])->gaugeobservables(&plaq, &tplaq, &splaq, &pol);
+	get_device_for_task(ntask)->get_gaugefield_code()->gaugeobservables(&plaq, &tplaq, &splaq, &pol);
 	logger.info() << iter << '\t' << plaq << '\t' << tplaq << '\t' << splaq << '\t' << pol.re << '\t' << pol.im << '\t' << sqrt(pol.re * pol.re + pol.im * pol.im);
 }
 
@@ -456,7 +456,7 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask, st
 	hmc_float tplaq = 0;
 	hmc_float splaq = 0;
 	hmc_complex pol;
-	static_cast<Opencl_Module_Gaugefield*>(opencl_modules[ntask])->gaugeobservables(&plaq, &tplaq, &splaq, &pol);
+	get_device_for_task(ntask)->get_gaugefield_code()->gaugeobservables(&plaq, &tplaq, &splaq, &pol);
 	std::fstream gaugeout;
 	gaugeout.open(filename.c_str(), std::ios::out | std::ios::app);
 	if(!gaugeout.is_open()) throw File_Exception(filename);
@@ -468,7 +468,7 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask, st
 	if(meta::get_use_rectangles(get_parameters()) ) {
 		//print rectangle value
 		hmc_float rect = 0.;
-		static_cast<Opencl_Module_Gaugefield*>(opencl_modules[ntask])->gaugeobservables_rectangles(static_cast<Opencl_Module_Gaugefield*>(opencl_modules[ntask])->get_gaugefield(), &rect);
+		get_device_for_task(ntask)->get_gaugefield_code()->gaugeobservables_rectangles(get_device_for_task(ntask)->get_gaugefield_code()->get_gaugefield(), &rect);
 		gaugeout << "\t" << rect;
 	}
 	gaugeout  << std::endl;
