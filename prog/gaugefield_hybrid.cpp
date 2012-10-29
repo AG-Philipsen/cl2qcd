@@ -376,7 +376,7 @@ int Gaugefield_hybrid::get_num_devices()
 
 void Gaugefield_hybrid::save(int number)
 {
-  std::string outputfile = meta::create_configuration_name(get_parameters(), number);
+	std::string outputfile = meta::create_configuration_name(get_parameters(), number);
 	save(outputfile);
 }
 
