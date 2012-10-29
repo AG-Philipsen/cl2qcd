@@ -111,7 +111,7 @@ void Opencl_Module_Spinors::clear_kernels()
 
 void Opencl_Module_Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
-	Opencl_Module_Ran::get_work_sizes(kernel, ls, gs, num_groups);
+	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 
 	//Query specific sizes for kernels if needed
 	string kernelname = get_kernel_name(kernel);
@@ -125,9 +125,6 @@ void Opencl_Module_Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls, 
 		*gs = 1;
 		*num_groups = 1;
 	}
-
-
-	return;
 }
 
 void Opencl_Module_Spinors::convert_from_eoprec_device(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::Plain<spinor> * out)
@@ -661,8 +658,6 @@ void Opencl_Module_Spinors::saxpy_AND_squarenorm_eo_device(const hardware::buffe
 
 size_t Opencl_Module_Spinors::get_read_write_size(const std::string& in) const
 {
-	size_t result = Opencl_Module_Ran::get_read_write_size(in);
-	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
 	size_t D = meta::get_float_size(get_parameters());
 	size_t S = meta::get_spinorfieldsize(get_parameters());
@@ -783,8 +778,6 @@ size_t Opencl_Module_Spinors::get_read_write_size(const std::string& in) const
 
 uint64_t Opencl_Module_Spinors::get_flop_size(const std::string& in) const
 {
-	uint64_t result = Opencl_Module_Ran::get_flop_size(in);
-	if (result != 0) return result;
 	uint64_t S = meta::get_spinorfieldsize(get_parameters());
 	uint64_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
@@ -877,7 +870,7 @@ uint64_t Opencl_Module_Spinors::get_flop_size(const std::string& in) const
 
 void Opencl_Module_Spinors::print_profiling(const std::string& filename, int number) const
 {
-	Opencl_Module_Ran::print_profiling(filename, number);
+	Opencl_Module::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, set_spinorfield_cold);
 	Opencl_Module::print_profiling(filename, set_eoprec_spinorfield_cold);
 	Opencl_Module::print_profiling(filename, convert_from_eoprec);
@@ -913,7 +906,7 @@ void Opencl_Module_Spinors::copy_to_eoprec_spinorfield_buffer(const hardware::bu
 }
 
 Opencl_Module_Spinors::Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module_Ran(params, device), saxpy_AND_squarenorm_eo(0)
+	: Opencl_Module(params, device), saxpy_AND_squarenorm_eo(0)
 {
 	fill_kernels();
 }

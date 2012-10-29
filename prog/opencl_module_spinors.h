@@ -4,29 +4,10 @@
 #ifndef _OPENCLMODULSPINORSH_
 #define _OPENCLMODULSPINORSH_
 
-#include <cstdlib>
-#include <vector>
-#include <string>
-#include <fstream>
-#include <sstream>
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-
-#include "host_geometry.h"
-#include "host_operations_gaugefield.h"
-#include "globaldefs.h"
-#include "types.h"
-#include "host_use_timer.h"
-#include "host_random.h"
-#include "opencl_compiler.hpp"
 #include "opencl_module.h"
-#include "opencl_module_ran.h"
+
+#include "hardware/buffers/plain.hpp"
 #include "hardware/buffers/spinor.hpp"
-#include "exceptions.h"
-#include "types_fermions.h"
 
 /**
  * An OpenCL device
@@ -35,11 +16,11 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Spinors : public Opencl_Module_Ran {
+class Opencl_Module_Spinors : public Opencl_Module {
 public:
 	friend hardware::Device;
 
-	~Opencl_Module_Spinors();
+	virtual ~Opencl_Module_Spinors();
 
 	/////////////////////////////////////////
 	// device operations
