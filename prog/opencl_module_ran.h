@@ -4,28 +4,7 @@
 #ifndef _OPENCLMODULERANH_
 #define _OPENCLMODULERANH_
 
-#include <cstdlib>
-#include <vector>
-#include <string>
-#include <fstream>
-#include <sstream>
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-
-#include "host_geometry.h"
-#include "host_operations_gaugefield.h"
-#include "globaldefs.h"
-#include "types.h"
-#include "host_use_timer.h"
-#include "host_random.h"
-#include "opencl_compiler.hpp"
-
-#include "opencl_module_gaugefield.h"
-
-#include "exceptions.h"
+#include "opencl_module.h"
 
 #include "hardware/buffers/prng_buffer.hpp"
 
@@ -36,7 +15,7 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Ran : public Opencl_Module_Gaugefield {
+class Opencl_Module_Ran : public Opencl_Module {
 public:
 	friend hardware::Device;
 
@@ -57,6 +36,22 @@ protected:
 	 * @fixme Needs to be private
 	 */
 	Opencl_Module_Ran(const meta::Inputparameters& params, hardware::Device * device);
+
+	/**
+	 * Return amount of Floating point operations performed by a specific kernel per call.
+	 * NOTE: this is meant to be the "netto" amount in order to be comparable.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual uint64_t get_flop_size(const std::string&) const { return 0; };
+
+	/**
+	 * Return amount of bytes read and written by a specific kernel per call.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual size_t get_read_write_size(const std::string&) const { return 0; };
+
 private:
 
 	/**
