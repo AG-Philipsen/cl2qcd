@@ -4,30 +4,10 @@
 #ifndef _OPENCLMODULECORRELATORH_
 #define _OPENCLMODULECORRELATORH_
 
-#include <cmath>
-#include <cstdlib>
-#include <vector>
-#include <string>
-#include <fstream>
-#include <sstream>
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-
-#include "host_geometry.h"
-#include "host_operations_gaugefield.h"
-#include "globaldefs.h"
-#include "types.h"
-#include "host_use_timer.h"
-#include "opencl_compiler.hpp"
-
 #include "opencl_module.h"
-#include "opencl_module_ran.h"
-#include "opencl_module_spinors.h"
 
-#include "exceptions.h"
+#include "hardware/buffers/plain.hpp"
+#include "types_fermions.h"
 
 /**
  * An OpenCL device

@@ -260,16 +260,14 @@ protected:
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
+private:
 	/**
 	 * Default constructor.
 	 *
 	 * @param[in] params points to an instance of inputparameters
-	 *
-	 * @fixme This should be private
 	 */
 	Opencl_Module_Fermions(const meta::Inputparameters& params, hardware::Device * device);
 
-private:
 	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.

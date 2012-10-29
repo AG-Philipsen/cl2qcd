@@ -40,7 +40,7 @@ enum copyType {
 
 size_t getTypeSize(copyType type);
 
-class Device : public Opencl_Module_Gaugefield {
+class Device : public Opencl_Module {
 
 private:
 	cl_kernel floatKernel;
@@ -58,8 +58,16 @@ private:
 	void fill_kernels();
 	void clear_kernels();
 
+protected:
+	virtual size_t get_read_write_size(const std::string&) const {
+		return 0;
+	};
+	virtual uint64_t get_flop_size(const std::string&) const {
+		return 0;
+	};
+
 public:
-	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module_Gaugefield(params, device) {
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
 		fill_kernels();
 	};
 	virtual ~Device() {

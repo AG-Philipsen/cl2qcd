@@ -1303,8 +1303,6 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 
 	auto spinor_code = get_device()->get_spinor_code();
 
-	cl_int clerr = CL_SUCCESS;
-
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
 	if (get_parameters().get_solver() == meta::Inputparameters::bicgstab_save) {
 		klepsydra::Monotonic timer;

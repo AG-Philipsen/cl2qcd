@@ -92,7 +92,7 @@ Opencl_Module_Ran::~Opencl_Module_Ran()
 #endif // USE_PRNG_XXX
 }
 
-ClSourcePackage Opencl_Module_Ran::get_sources() const
+ClSourcePackage Opencl_Module_Ran::get_sources() const noexcept
 {
 	return prng_code;
 }

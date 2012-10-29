@@ -138,13 +138,6 @@ public:
 
 protected:
 	/**
-	 * @param[in] params points to an instance of inputparameters
-	 *
-	 * @deprecated should be private
-	 */
-	Opencl_Module_Gaugefield(const meta::Inputparameters& params, hardware::Device * device);
-
-	/**
 	 * comutes work-sizes for a kernel
 	 * @todo autotune
 	 * @param ls local-work-size
@@ -171,6 +164,10 @@ protected:
 	virtual size_t get_read_write_size(const std::string& in) const override;
 
 private:
+	/**
+	 * @param[in] params points to an instance of inputparameters
+	 */
+	Opencl_Module_Gaugefield(const meta::Inputparameters& params, hardware::Device * device);
 
 	/**
 	 * A set of source files used by all kernels.

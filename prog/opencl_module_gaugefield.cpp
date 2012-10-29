@@ -584,7 +584,7 @@ Opencl_Module_Gaugefield::~Opencl_Module_Gaugefield()
 	clear_kernels();
 }
 
-ClSourcePackage Opencl_Module_Gaugefield::get_sources() const
+ClSourcePackage Opencl_Module_Gaugefield::get_sources() const noexcept
 {
 	return basic_opencl_code;
 }

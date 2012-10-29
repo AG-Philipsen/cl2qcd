@@ -1,4 +1,4 @@
-#include "../opencl_module_fermions.h"
+#include "../opencl_module.h"
 #include "../gaugefield_hybrid.h"
 
 #include "../meta/util.hpp"
@@ -11,14 +11,22 @@
 extern std::string const version;
 std::string const version = "0.1";
 
-class Device : public Opencl_Module_Gaugefield {
+class Device : public Opencl_Module {
 
 	cl_kernel testKernel;
 
 	void fill_kernels();
 	void clear_kernels();
+protected:
+	virtual size_t get_read_write_size(const std::string&) const {
+		return 0;
+	};
+	virtual uint64_t get_flop_size(const std::string&) const {
+		return 0;
+	};
+
 public:
-	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module_Gaugefield(params, device) {
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
 		fill_kernels();
 	};
 	~Device() {

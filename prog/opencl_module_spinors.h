@@ -87,16 +87,13 @@ public:
 
 protected:
 	/**
-	 * @fixme make private
-	 */
-	Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device);
-
-	/**
 	 * Add specific work_size determination for this child class
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
 private:
+	Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device);
+
 	/**
 	 * Collect the kernels for OpenCL.
 	 */

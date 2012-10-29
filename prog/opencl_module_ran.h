@@ -31,13 +31,6 @@ public:
 
 protected:
 	/**
-	 * @param[in] params points to an instance of inputparameters
-	 *
-	 * @fixme Needs to be private
-	 */
-	Opencl_Module_Ran(const meta::Inputparameters& params, hardware::Device * device);
-
-	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
 	 * NOTE: this is meant to be the "netto" amount in order to be comparable.
 	 *
@@ -53,6 +46,11 @@ protected:
 	virtual size_t get_read_write_size(const std::string&) const { return 0; };
 
 private:
+
+	/**
+	 * @param[in] params points to an instance of inputparameters
+	 */
+	Opencl_Module_Ran(const meta::Inputparameters& params, hardware::Device * device);
 
 	/**
 	 * A set of sources required to use the PRNG.
