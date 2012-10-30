@@ -25,8 +25,8 @@ void Gaugefield_inverter::init_tasks()
 	task_correlator = 1;
 
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[task_solver] = new Opencl_Module_Fermions(get_parameters(), get_device_for_task(task_solver));
-	opencl_modules[task_correlator] = new Opencl_Module_Correlator(get_parameters(), get_device_for_task(task_correlator));
+	opencl_modules[task_solver] = get_device_for_task(task_solver)->get_fermion_code();
+	opencl_modules[task_correlator] = get_device_for_task(task_correlator)->get_correlator_code();
 }
 
 void Gaugefield_inverter::delete_variables()
@@ -55,13 +55,15 @@ void Gaugefield_inverter::invert_M_nf2_upperflavour(const hardware::buffers::Pla
 	 */
 	int converged = -1;
 	Opencl_Module_Fermions * solver = get_task_solver();
+	auto spinor_code = solver->get_device()->get_spinor_code();
+
 	if(get_parameters().get_profile_solver() ) (*solvertimer).reset();
 
 	if( !get_parameters().get_use_eo() ){
 	  //noneo case
 	  //Trial solution
 	  ///@todo this should go into a more general function
-	  solver->set_spinorfield_cold_device(inout);
+	  spinor_code->set_spinorfield_cold_device(inout);
 	  if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 	    //to use cg, one needs an hermitian matrix, which is QplusQminus
 	    //the source must now be gamma5 b, to obtain the desired solution in the end
@@ -94,7 +96,7 @@ void Gaugefield_inverter::invert_M_nf2_upperflavour(const hardware::buffers::Pla
 	  clmem_one.load(&one);
 	  
 	  //convert source and input-vector to eoprec-format
-	  solver->convert_to_eoprec_device(&clmem_source_even, &clmem_source_odd, source);
+	  spinor_code->convert_to_eoprec_device(&clmem_source_even, &clmem_source_odd, source);
 	  //prepare sources
 	  /**
 	   * This changes the even source according to (with A = M + D):
@@ -104,16 +106,16 @@ void Gaugefield_inverter::invert_M_nf2_upperflavour(const hardware::buffers::Pla
 	  if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 	    //in this case, the diagonal matrix is just 1 and falls away.
 	    solver->dslash_eo_device(&clmem_source_odd, &clmem_tmp_eo_1, gf, EVEN);
-	    solver->saxpy_eoprec_device(&clmem_source_even, &clmem_tmp_eo_1, &clmem_one, &clmem_source_even);
+	    spinor_code->saxpy_eoprec_device(&clmem_source_even, &clmem_tmp_eo_1, &clmem_one, &clmem_source_even);
 	  } else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
 	    solver->M_tm_inverse_sitediagonal_device(&clmem_source_odd, &clmem_tmp_eo_1);
 	    solver->dslash_eo_device(&clmem_tmp_eo_1, &clmem_tmp_eo_2, gf, EVEN);
-	    solver->saxpy_eoprec_device(&clmem_source_even, &clmem_tmp_eo_2, &clmem_one, &clmem_source_even);
+	    spinor_code->saxpy_eoprec_device(&clmem_source_even, &clmem_tmp_eo_2, &clmem_one, &clmem_source_even);
 	  }
 	  
 	  //Trial solution
 	  ///@todo this should go into a more general function
-	  solver->set_eoprec_spinorfield_cold_device(solver->get_inout_eo());
+	  spinor_code->set_eoprec_spinorfield_cold_device(solver->get_inout_eo());
 	  logger.debug() << "start eoprec-inversion";
 	  //even solution
 	  if(get_parameters().get_solver() == meta::Inputparameters::cg){
@@ -139,16 +141,16 @@ void Gaugefield_inverter::invert_M_nf2_upperflavour(const hardware::buffers::Pla
 	  if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 	    //in this case, the diagonal matrix is just 1 and falls away.
 	    solver->dslash_eo_device(solver->get_inout_eo(), &clmem_tmp_eo_1, gf, ODD);
-	    solver->saxpy_eoprec_device(&clmem_tmp_eo_1, &clmem_source_odd, &clmem_one, &clmem_tmp_eo_1);
+	    spinor_code->saxpy_eoprec_device(&clmem_tmp_eo_1, &clmem_source_odd, &clmem_one, &clmem_tmp_eo_1);
 	  } else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
 	    solver->dslash_eo_device(solver->get_inout_eo(), &clmem_tmp_eo_2, gf, ODD);
 	    solver->M_tm_inverse_sitediagonal_device(&clmem_tmp_eo_2, &clmem_tmp_eo_1);
 	    solver->M_tm_inverse_sitediagonal_device(&clmem_source_odd, &clmem_tmp_eo_2);
-	    solver->saxpy_eoprec_device(&clmem_tmp_eo_1, &clmem_tmp_eo_2, &clmem_one, &clmem_tmp_eo_1);
+	    spinor_code->saxpy_eoprec_device(&clmem_tmp_eo_1, &clmem_tmp_eo_2, &clmem_one, &clmem_tmp_eo_1);
 	  }
 	  //CP: whole solution
 	  //CP: suppose the even sol is saved in inout_eoprec, the odd one in clmem_tmp_eo_1
-	  solver->convert_from_eoprec_device(solver->get_inout_eo(), &clmem_tmp_eo_1, inout);
+	  spinor_code->convert_from_eoprec_device(solver->get_inout_eo(), &clmem_tmp_eo_1, inout);
 	}
 
 	if(get_parameters().get_profile_solver() ) {
@@ -169,10 +171,11 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 	Opencl_Module_Fermions * solver = get_task_solver();
 	const hardware::buffers::Plain<spinor> clmem_res(meta::get_spinorfieldsize(get_parameters()), solver->get_device());
 	const hardware::buffers::Plain<spinor> clmem_source(meta::get_spinorfieldsize(get_parameters()), solver->get_device());
+	auto gf_code = solver->get_device()->get_gaugefield_code();
 
 	//apply stout smearing if wanted
 	if(get_parameters().get_use_smearing() == true)
-		solver->smear_gaugefield(solver->get_gaugefield(), std::vector<const hardware::buffers::SU3 *>());
+		gf_code->smear_gaugefield(gf_code->get_gaugefield(), std::vector<const hardware::buffers::SU3 *>());
 
 	for(int k = 0; k < num_sources; k++) {
 		//copy source from to device
@@ -180,7 +183,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 		logger.debug() << "copy pointsource between devices";
 		clmem_source.load(&source_buffer[k * meta::get_vol4d(get_parameters())]);
 		logger.debug() << "calling solver..";
-		invert_M_nf2_upperflavour( &clmem_res, &clmem_source, solver->get_gaugefield(), solver_timer);
+		invert_M_nf2_upperflavour( &clmem_res, &clmem_source, gf_code->get_gaugefield(), solver_timer);
 		//add solution to solution-buffer
 		//NOTE: this is a blocking call!
 		logger.debug() << "add solution...";
@@ -188,7 +191,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 	}
 
 	if(get_parameters().get_use_smearing() == true) 
-		solver->unsmear_gaugefield(solver->get_gaugefield());
+		gf_code->unsmear_gaugefield(gf_code->get_gaugefield());
 }
 
 void Gaugefield_inverter::flavour_doublet_correlators(std::string corr_fn)

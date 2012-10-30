@@ -1,10 +1,8 @@
 #include "opencl_module_correlator.h"
 
-#include <algorithm>
-#include <boost/regex.hpp>
-
 #include "logger.hpp"
 #include "meta/util.hpp"
+#include "hardware/device.hpp"
 
 using namespace std;
 
@@ -30,7 +28,7 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 
 void Opencl_Module_Correlator::fill_kernels()
 {
-	basic_correlator_code = basic_fermion_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+	basic_correlator_code = get_device()->get_spinor_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 	logger.debug() << "Create correlator kernels...";
 
 	if(get_parameters().get_sourcetype() == meta::Inputparameters::point)
@@ -135,7 +133,7 @@ void Opencl_Module_Correlator::clear_kernels()
 
 void Opencl_Module_Correlator::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
-	Opencl_Module_Spinors::get_work_sizes(kernel, ls, gs, num_groups);
+	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 
 	//LZ: should be valid for all kernels for correlators, i.e. for names that look like correlator_??_?
 	string kernelname = get_kernel_name(kernel);
@@ -186,7 +184,7 @@ cl_kernel Opencl_Module_Correlator::get_correlator_kernel(string which)
 
 void Opencl_Module_Correlator::create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos)
 {
-	set_zero_spinorfield_device(inout);
+	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -315,12 +313,10 @@ void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kern
 
 size_t Opencl_Module_Correlator::get_read_write_size(const std::string& in) const
 {
-	size_t result = Opencl_Module_Spinors::get_read_write_size(in);
-	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
-	size_t D = meta::get_float_size(parameters);
+	size_t D = meta::get_float_size(get_parameters());
 	//this returns the number of entries in an su3-matrix
-	size_t R = meta::get_mat_size(parameters);
+	size_t R = meta::get_mat_size(get_parameters());
 	size_t S = meta::get_spinorfieldsize(get_parameters());
 	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers
@@ -403,8 +399,6 @@ size_t Opencl_Module_Correlator::get_read_write_size(const std::string& in) cons
 
 uint64_t Opencl_Module_Correlator::get_flop_size(const std::string& in) const
 {
-	uint64_t result = Opencl_Module_Spinors::get_flop_size(in);
-	if (result != 0) return result;
 	size_t S = meta::get_spinorfieldsize(get_parameters());
 	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
@@ -442,9 +436,9 @@ uint64_t Opencl_Module_Correlator::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-void Opencl_Module_Correlator::print_profiling(const std::string& filename, int number)
+void Opencl_Module_Correlator::print_profiling(const std::string& filename, int number) const
 {
-	Opencl_Module_Spinors::print_profiling(filename, number);
+	Opencl_Module::print_profiling(filename, number);
 	if(create_point_source) {
 		Opencl_Module::print_profiling(filename, create_point_source);
 	}
@@ -465,7 +459,7 @@ void Opencl_Module_Correlator::print_profiling(const std::string& filename, int 
 }
 
 Opencl_Module_Correlator::Opencl_Module_Correlator(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module_Spinors(params, device),
+	: Opencl_Module(params, device),
 	  create_point_source(0), create_volume_source(0), create_timeslice_source(0),
 	  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0)
 {

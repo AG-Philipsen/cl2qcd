@@ -3,7 +3,7 @@
 #define BOOST_TEST_MODULE gaugefield_convert
 #include <boost/test/unit_test.hpp>
 
-#include "../opencl_module.h"
+#include "../opencl_module_gaugefield.h"
 #include "../gaugefield_hybrid.h"
 #include "../meta/util.hpp"
 #include "../meta/type_ops.hpp"
@@ -18,7 +18,6 @@ public:
 		init(1, device_type);
 	};
 
-	virtual void init_tasks();
 	virtual void finalize_opencl();
 
 	void verify();
@@ -88,14 +87,6 @@ BOOST_AUTO_TEST_CASE(GPU_hot)
 	dummy.verify();
 }
 
-void Dummyfield::init_tasks()
-{
-	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Opencl_Module(get_parameters(), get_device_for_task(0));
-
-	fill_buffers();
-}
-
 void Dummyfield::finalize_opencl()
 {
 	clear_buffers();
@@ -123,10 +114,10 @@ void Dummyfield::verify()
 
 void Dummyfield::send()
 {
-	opencl_modules[0]->importGaugefield(in);
+	static_cast<Opencl_Module_Gaugefield*>(opencl_modules[0])->importGaugefield(in);
 }
 
 void Dummyfield::recieve()
 {
-	opencl_modules[0]->exportGaugefield(out);
+	static_cast<Opencl_Module_Gaugefield*>(opencl_modules[0])->exportGaugefield(out);
 }

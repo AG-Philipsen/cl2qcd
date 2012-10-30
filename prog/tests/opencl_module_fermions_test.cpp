@@ -31,7 +31,7 @@ public:
 void TestGaugefield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = new Opencl_Module_Fermions(get_parameters(), get_device_for_task(0));
+	opencl_modules[0] = get_device_for_task(0)->get_fermion_code();
 }
 
 void TestGaugefield::finalize_opencl()
@@ -160,25 +160,28 @@ void test_m_fermion(std::string inputfile, int switcher)
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
+	auto spinor_code = device->get_device()->get_spinor_code();
+	auto gf_code = device->get_device()->get_gaugefield_code();
+
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
-	device->set_float_to_global_squarenorm_device(&in, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_device(&in, &sqnorm);
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
 	if(switcher == 0){
-	  device->M_wilson_device(&in, &out,  device->get_gaugefield(), params.get_kappa());
+	  device->M_wilson_device(&in, &out,  gf_code->get_gaugefield(), params.get_kappa());
 	} else if(switcher == 1){
-	  device->M_tm_plus_device(&in, &out,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	  device->M_tm_plus_device(&in, &out,  gf_code->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
 	} else if(switcher == 2){
-	  device->M_tm_minus_device(&in, &out,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	  device->M_tm_minus_device(&in, &out,  gf_code->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
 	}
 	else{
 	  logger.fatal() << "wrong parameter in test_m_fermion";
 	}
 	logger.info() << "result:";
 	hmc_float cpu_res;
-	device->set_float_to_global_squarenorm_device(&out, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
 	logger.info() << "Finalize device";
@@ -257,9 +260,11 @@ void test_gamma5(std::string inputfile)
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
+	auto spinor_code = device->get_device()->get_spinor_code();
+
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
-	device->set_float_to_global_squarenorm_device(&in, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_device(&in, &sqnorm);
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
@@ -308,9 +313,11 @@ void test_gamma5_eo(std::string inputfile)
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
+	auto spinor_code = device->get_device()->get_spinor_code();
+
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
-	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
 
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
@@ -366,9 +373,11 @@ void test_m_tm_sitediagonal_plus_minus(std::string inputfile, bool switcher)
 	out.load(sf_in);
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 
+	auto spinor_code = device->get_device()->get_spinor_code();
+
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
-	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 
@@ -380,7 +389,7 @@ void test_m_tm_sitediagonal_plus_minus(std::string inputfile, bool switcher)
 		device->M_tm_sitediagonal_minus_device( &in, &out);
 	}
 	
-	device->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << "result:";
 	logger.info() << cpu_res;
@@ -440,9 +449,11 @@ void test_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switc
 	out.load(sf_in);
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 
+	auto spinor_code = device->get_device()->get_spinor_code();
+
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
-	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 
@@ -453,7 +464,7 @@ void test_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switc
 	} else {
 		device->M_tm_inverse_sitediagonal_minus_device( &in, &out);
 	}
-	device->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << "result:";
 	logger.info() << cpu_res;
@@ -488,8 +499,6 @@ void test_dslash_eo(std::string inputfile)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	Opencl_Module_Fermions * device = cpu.get_device();
-	spinor * sf_in;
-	spinor * sf_out;
 
 	logger.info() << "Fill buffers...";
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
@@ -502,20 +511,23 @@ void test_dslash_eo(std::string inputfile)
 	else fill_sf_with_random(sf_in_eo, NUM_ELEMENTS_SF_EO);
 	in_eo_even.load(sf_in_eo);
 
+	auto spinor_code = device->get_device()->get_spinor_code();
+	auto gf_code = device->get_device()->get_gaugefield_code();
+
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
-	device->set_float_to_global_squarenorm_eoprec_device(&in_eo_even, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in_eo_even, &sqnorm);
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 
 	//switch according to "use_pointsource"
 	hmc_float cpu_res;
 	if(params.get_use_pointsource()) {
-		device->dslash_eo_device( &in_eo_even, &out_eo, device->get_gaugefield(), EVEN, params.get_kappa() );
+		device->dslash_eo_device( &in_eo_even, &out_eo, gf_code->get_gaugefield(), EVEN, params.get_kappa() );
 	} else {
-		device->dslash_eo_device( &in_eo_even, &out_eo, device->get_gaugefield(), ODD, params.get_kappa() );
+		device->dslash_eo_device( &in_eo_even, &out_eo, gf_code->get_gaugefield(), ODD, params.get_kappa() );
 	}
-	device->set_float_to_global_squarenorm_eoprec_device(&out_eo, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out_eo, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << "result:";
 	logger.info() << cpu_res;
@@ -563,17 +575,20 @@ void test_dslash_and_gamma5_eo(std::string inputfile)
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
+	auto spinor_code = device->get_device()->get_spinor_code();
+	auto gf_code = device->get_device()->get_gaugefield_code();
+
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
-	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
 
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
 	if(params.get_use_pointsource()) {
-	  device->dslash_AND_gamma5_eo_device(&in, &out, device->get_gaugefield(), EVEN, params.get_kappa() );
+	  device->dslash_AND_gamma5_eo_device(&in, &out, gf_code->get_gaugefield(), EVEN, params.get_kappa() );
 	} else {
-	  device->dslash_AND_gamma5_eo_device(&in, &out, device->get_gaugefield(), ODD, params.get_kappa() );
+	  device->dslash_AND_gamma5_eo_device(&in, &out, gf_code->get_gaugefield(), ODD, params.get_kappa() );
 	}
 	in.dump(sf_out);
 	logger.info() << "result:";
@@ -629,28 +644,31 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
+	auto spinor_code = device->get_device()->get_spinor_code();
+	auto gf_code = device->get_device()->get_gaugefield_code();
+
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
-	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
 
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "Run kernel";
 	if(params.get_use_pointsource()) {
 	  if(switcher)
-	    device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, device->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
+	    device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, gf_code->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
 	  else
-	    device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, device->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
+	    device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, gf_code->get_gaugefield(), EVEN, params.get_kappa(), meta::get_mubar(params));
 	} else {
 	  if(switcher)
-	    device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, device->get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
+	    device->dslash_AND_M_tm_inverse_sitediagonal_eo_device(&in, &out, gf_code->get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
 	  else
-	    device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, device->get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
+	    device->dslash_AND_M_tm_inverse_sitediagonal_minus_eo_device(&in, &out, gf_code->get_gaugefield(), ODD, params.get_kappa(), meta::get_mubar(params));
 	}
 	out.dump(sf_out);
 	logger.info() << "result:";
 	hmc_float cpu_res;
-	device->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
 	logger.info() << "Finalize device";
@@ -707,9 +725,11 @@ void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	BOOST_REQUIRE_EQUAL(err, CL_SUCCESS);
 
+	auto spinor_code = device->get_device()->get_spinor_code();
+
 	logger.info() << "|phi|^2:";
 	hmc_float cpu_back;
-	device->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in, &sqnorm);
 
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
@@ -1233,12 +1253,15 @@ void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 	in_noneo.load(sf_in_noneo);
 	out_noneo.load(sf_out_noneo);
 
+	auto spinor_code = device->get_device()->get_spinor_code();
+	auto gf_code = device->get_device()->get_gaugefield_code();
+
 	if(params.get_solver() != meta::Inputparameters::cg) {
 	  //use use_pointsource to choose whether to copy the eo rnd vectors to noneo or vise versa
 	  if(params.get_use_pointsource())
-	    device->convert_from_eoprec_device(&in_eo1, &in_eo2, &in_noneo);
+	    spinor_code->convert_from_eoprec_device(&in_eo1, &in_eo2, &in_noneo);
 	  else
-	    device->convert_to_eoprec_device(&in_eo1, &in_eo2, &in_noneo);
+	    spinor_code->convert_to_eoprec_device(&in_eo1, &in_eo2, &in_noneo);
 	}
 
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
@@ -1250,105 +1273,105 @@ void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 
 	logger.info() << "|phi_noneo|^2:";
 	hmc_float cpu_back_noneo;
-	device->set_float_to_global_squarenorm_device(&in_noneo, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_device(&in_noneo, &sqnorm);
 	sqnorm.dump(&cpu_back_noneo);
 	logger.info() << cpu_back_noneo;
 	logger.info() << "Run kernel";
 	if(switcher == 0){
-	  device->M_wilson_device(&in_noneo, &out_noneo,  device->get_gaugefield(), params.get_kappa());
+	  device->M_wilson_device(&in_noneo, &out_noneo,  gf_code->get_gaugefield(), params.get_kappa());
 	} else if(switcher == 1){
-	  device->M_tm_plus_device(&in_noneo, &out_noneo,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	  device->M_tm_plus_device(&in_noneo, &out_noneo,  gf_code->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
 	} else if(switcher == 2){
-	  device->M_tm_minus_device(&in_noneo, &out_noneo,  device->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
+	  device->M_tm_minus_device(&in_noneo, &out_noneo,  gf_code->get_gaugefield(), params.get_kappa(), meta::get_mubar(params));
 	}
 	else{
 	  logger.fatal() << "wrong parameter in test_m_fermion";
 	}
 	logger.info() << "result:";
 	hmc_float cpu_res_noneo;
-	device->set_float_to_global_squarenorm_device(&out_noneo, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_device(&out_noneo, &sqnorm);
 	sqnorm.dump(&cpu_res_noneo);
 	logger.info() << cpu_res_noneo;
 
 	logger.info() << "|phi_eo1|^2:";
 	hmc_float cpu_back_eo1;
-	device->set_float_to_global_squarenorm_eoprec_device(&in_eo1, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in_eo1, &sqnorm);
 	sqnorm.dump(&cpu_back_eo1);
 	logger.info() << cpu_back_eo1;
 	logger.info() << "|phi_eo2|^2:";
 	hmc_float cpu_back_eo2;
-	device->set_float_to_global_squarenorm_eoprec_device(&in_eo2, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(&in_eo2, &sqnorm);
 	sqnorm.dump(&cpu_back_eo2);
 	logger.info() << cpu_back_eo2;
 	logger.info() << "Run kernel";
 	if(switcher == 0){
 	  //suppose in1 is the even, in2 the odd input vector
 	  //now calc out_tmp_eo1 = (1 in1 + D_eo in2)
-	  device->set_zero_spinorfield_eoprec_device(&tmp_eo);
-	  device->set_zero_spinorfield_eoprec_device(&out_tmp_eo1);
+	  spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
+	  spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo1);
 	  
-	  device->dslash_eo_device(&in_eo2, &out_tmp_eo1, device->get_gaugefield(), EO, params.get_kappa());
+	  device->dslash_eo_device(&in_eo2, &out_tmp_eo1, gf_code->get_gaugefield(), EO, params.get_kappa());
 
-	  device->saxpy_eoprec_device(&out_tmp_eo1, &in_eo1, &minusone, &out_tmp_eo1);
+	  spinor_code->saxpy_eoprec_device(&out_tmp_eo1, &in_eo1, &minusone, &out_tmp_eo1);
 	  
 	  //now calc out_tmp_eo2 = ( 1 in2 + D_oe in1)
-	  device->set_zero_spinorfield_eoprec_device(&tmp_eo);
-	  device->set_zero_spinorfield_eoprec_device(&out_tmp_eo2);
+	  spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
+	  spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo2);
 	  
-	  device->dslash_eo_device(&in_eo1, &out_tmp_eo2, device->get_gaugefield(), OE, params.get_kappa());
+	  device->dslash_eo_device(&in_eo1, &out_tmp_eo2, gf_code->get_gaugefield(), OE, params.get_kappa());
 	  
-	  device->saxpy_eoprec_device(&out_tmp_eo2, &in_eo2, &minusone, &out_tmp_eo2);
+	  spinor_code->saxpy_eoprec_device(&out_tmp_eo2, &in_eo2, &minusone, &out_tmp_eo2);
 	  
 	  //now, both output vectors have to be converted back to noneo
-	  device->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, &out_eo);
+	  spinor_code->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, &out_eo);
 	} else if(switcher == 1){
 	  //suppose in1 is the even, in2 the odd input vector
 	  //now calc out_tmp_eo1 = (R_even in1 + D_eo in2)
-	  device->set_zero_spinorfield_eoprec_device(&tmp_eo);
-	  device->set_zero_spinorfield_eoprec_device(&out_tmp_eo1);
+	  spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
+	  spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo1);
 	  
-	  device->dslash_eo_device(&in_eo2, &out_tmp_eo1, device->get_gaugefield(), EO, params.get_kappa());
+	  device->dslash_eo_device(&in_eo2, &out_tmp_eo1, gf_code->get_gaugefield(), EO, params.get_kappa());
 	  device->M_tm_sitediagonal_device(&in_eo1, &tmp_eo,  meta::get_mubar(params));
 
-	  device->saxpy_eoprec_device(&out_tmp_eo1, &tmp_eo, &minusone, &out_tmp_eo1);
+	  spinor_code->saxpy_eoprec_device(&out_tmp_eo1, &tmp_eo, &minusone, &out_tmp_eo1);
 	  
 	  //now calc out_tmp_eo2 = ( R_odd in2 + D_oe in1)
-	  device->set_zero_spinorfield_eoprec_device(&tmp_eo);
-	  device->set_zero_spinorfield_eoprec_device(&out_tmp_eo2);
+	  spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
+	  spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo2);
 	  
-	  device->dslash_eo_device(&in_eo1, &out_tmp_eo2, device->get_gaugefield(), OE, params.get_kappa());
+	  device->dslash_eo_device(&in_eo1, &out_tmp_eo2, gf_code->get_gaugefield(), OE, params.get_kappa());
 	  device->M_tm_sitediagonal_device(&in_eo2, &tmp_eo,  meta::get_mubar(params));
 	  
-	  device->saxpy_eoprec_device(&out_tmp_eo2, &tmp_eo, &minusone, &out_tmp_eo2);
+	  spinor_code->saxpy_eoprec_device(&out_tmp_eo2, &tmp_eo, &minusone, &out_tmp_eo2);
 	  
 	  //now, both output vectors have to be converted back to noneo
-	  device->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, &out_eo);
+	  spinor_code->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, &out_eo);
 	} else if(switcher == 2){
 	  //suppose in1 is the even, in2 the odd input vector
 	  //now calc out_tmp_eo1 = (R_even in1 + D_eo in2)
-	  device->set_zero_spinorfield_eoprec_device(&tmp_eo);
-	  device->set_zero_spinorfield_eoprec_device(&out_tmp_eo1);
+	  spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
+	  spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo1);
 	  
-	  device->dslash_eo_device(&in_eo2, &out_tmp_eo1, device->get_gaugefield(), EO, params.get_kappa());
+	  device->dslash_eo_device(&in_eo2, &out_tmp_eo1, gf_code->get_gaugefield(), EO, params.get_kappa());
 	  device->M_tm_sitediagonal_minus_device(&in_eo1, &tmp_eo,  meta::get_mubar(params));
 
-	  device->saxpy_eoprec_device(&out_tmp_eo1, &tmp_eo, &minusone, &out_tmp_eo1);
+	  spinor_code->saxpy_eoprec_device(&out_tmp_eo1, &tmp_eo, &minusone, &out_tmp_eo1);
 	  
 	  //now calc out_tmp_eo2 = ( R_odd in2 + D_oe in1)
-	  device->set_zero_spinorfield_eoprec_device(&tmp_eo);
-	  device->set_zero_spinorfield_eoprec_device(&out_tmp_eo2);
+	  spinor_code->set_zero_spinorfield_eoprec_device(&tmp_eo);
+	  spinor_code->set_zero_spinorfield_eoprec_device(&out_tmp_eo2);
 	  
-	  device->dslash_eo_device(&in_eo1, &out_tmp_eo2, device->get_gaugefield(), OE, params.get_kappa());
+	  device->dslash_eo_device(&in_eo1, &out_tmp_eo2, gf_code->get_gaugefield(), OE, params.get_kappa());
 	  device->M_tm_sitediagonal_minus_device(&in_eo2, &tmp_eo,  meta::get_mubar(params));
 	  
-	  device->saxpy_eoprec_device(&out_tmp_eo2, &tmp_eo, &minusone, &out_tmp_eo2);
+	  spinor_code->saxpy_eoprec_device(&out_tmp_eo2, &tmp_eo, &minusone, &out_tmp_eo2);
 	  
 	  //now, both output vectors have to be converted back to noneo
-	  device->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, &out_eo);
+	  spinor_code->convert_from_eoprec_device(&out_tmp_eo1, &out_tmp_eo2, &out_eo);
 	}  
 	logger.info() << "result:";
 	hmc_float cpu_res_eo;
-	device->set_float_to_global_squarenorm_device(&out_eo, &sqnorm);
+	spinor_code->set_float_to_global_squarenorm_device(&out_eo, &sqnorm);
 	sqnorm.dump(&cpu_res_eo);
 	logger.info() << cpu_res_eo;
   

@@ -1,10 +1,8 @@
 #include "opencl_module_hmc.h"
 
-#include <algorithm>
-#include <boost/regex.hpp>
-
 #include "logger.hpp"
 #include "meta/util.hpp"
+#include "hardware/device.hpp"
 
 using namespace std;
 
@@ -28,7 +26,8 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 
 void Opencl_Module_Hmc::fill_kernels()
 {
-	basic_hmc_code = Opencl_Module_Fermions::sources << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_hmc.h" << "operations_gaugemomentum.cl";
+	basic_hmc_code = get_device()->get_fermion_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_hmc.h" << "operations_gaugemomentum.cl";
+	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 
 	//init kernels for HMC
 	if(get_parameters().get_use_eo() == true) {
@@ -98,14 +97,14 @@ void Opencl_Module_Hmc::clear_kernels()
 
 void Opencl_Module_Hmc::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
-	Opencl_Module_Fermions::get_work_sizes(kernel, ls, gs, num_groups);
+	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 
 	// kernels that use random numbers must not exceed the size of the random state array
 	if(kernel == generate_gaussian_gaugemomenta
 	   || kernel == generate_gaussian_spinorfield
 	   || kernel == generate_gaussian_spinorfield_eo) {
-		if(*gs > get_prng_buffer().get_elements()) {
-			*gs = get_prng_buffer().get_elements();
+		if(*gs > hardware::buffers::get_prng_buffer_size(get_device())) {
+			*gs = hardware::buffers::get_prng_buffer_size(get_device());
 		}
 	}
 
@@ -162,12 +161,10 @@ hardware::buffers::Plain<hmc_float> * Opencl_Module_Hmc::get_clmem_s_fermion_mp_
 
 size_t Opencl_Module_Hmc::get_read_write_size(const std::string& in) const
 {
-	size_t result = Opencl_Module_Fermions::get_read_write_size(in);
-	if (result != 0) return result;
 //Depending on the compile-options, one has different sizes...
-	size_t D = meta::get_float_size(parameters);
+	size_t D = meta::get_float_size(get_parameters());
 	//this returns the number of entries in an su3-matrix
-	size_t R = meta::get_mat_size(parameters);
+	size_t R = meta::get_mat_size(get_parameters());
 	//this is the number of spinors in the system (or number of sites)
 	size_t S = meta::get_spinorfieldsize(get_parameters());
 	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
@@ -233,8 +230,6 @@ size_t Opencl_Module_Hmc::get_read_write_size(const std::string& in) const
 
 uint64_t Opencl_Module_Hmc::get_flop_size(const std::string& in) const
 {
-	uint64_t result = Opencl_Module_Fermions::get_flop_size(in);
-	if (result != 0) return result;
 	//this is the number of spinors in the system (or number of sites)
 	size_t S = meta::get_spinorfieldsize(get_parameters());
 	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
@@ -243,7 +238,7 @@ uint64_t Opencl_Module_Hmc::get_flop_size(const std::string& in) const
 	//NOTE: 1 ae has NC*NC-1 = 8 real entries
 	uint64_t A = meta::get_su3algebrasize();
 	//this returns the number of entries in an su3-matrix
-	uint64_t R = meta::get_mat_size(parameters);
+	uint64_t R = meta::get_mat_size(get_parameters());
 	//this is the same as in the function above
 	if (in == "generate_gaussian_spinorfield") {
 		//this kernel performs 12 multiplications per site
@@ -302,9 +297,9 @@ uint64_t Opencl_Module_Hmc::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-void Opencl_Module_Hmc::print_profiling(const std::string& filename, int number)
+void Opencl_Module_Hmc::print_profiling(const std::string& filename, int number) const
 {
-	Opencl_Module_Fermions::print_profiling(filename, number);
+	Opencl_Module::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, generate_gaussian_spinorfield);
 	Opencl_Module::print_profiling(filename, generate_gaussian_spinorfield_eo);
 	Opencl_Module::print_profiling(filename, generate_gaussian_gaugemomenta);
@@ -322,7 +317,7 @@ void Opencl_Module_Hmc::print_profiling(const std::string& filename, int number)
 ////////////////////////////////////////////////////
 //Methods needed for the HMC-algorithm
 
-void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device()
+void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device(const hardware::buffers::PRNGBuffer * prng)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -332,7 +327,7 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device()
 	int clerr = clSetKernelArg(generate_gaussian_gaugemomenta, 0, sizeof(cl_mem), clmem_p);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(generate_gaussian_gaugemomenta, 1, sizeof(cl_mem), get_prng_buffer());
+	clerr = clSetKernelArg(generate_gaussian_gaugemomenta, 1, sizeof(cl_mem), prng->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel( generate_gaussian_gaugemomenta , gs2, ls2);
@@ -350,7 +345,7 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device()
 			bool writeout = false;
 			if(writeout) {
 				//create buffer to store ae-field
-				int ae_num = meta::get_vol4d(parameters) * NDIM;
+				int ae_num = meta::get_vol4d(get_parameters()) * NDIM;
 
 				ae * ae_tmp = new ae[ae_num];
 
@@ -397,17 +392,17 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device()
 
 }
 
-void Opencl_Module_Hmc::generate_spinorfield_gaussian()
+void Opencl_Module_Hmc::generate_spinorfield_gaussian(const hardware::buffers::PRNGBuffer * prng)
 {
 	if(get_parameters().get_use_eo() == true) {
-		this->generate_gaussian_spinorfield_eo_device();
+		this->generate_gaussian_spinorfield_eo_device(prng);
 	} else {
-		this->generate_gaussian_spinorfield_device();
+		this->generate_gaussian_spinorfield_device(prng);
 	}
 	return;
 }
 
-void Opencl_Module_Hmc::generate_gaussian_spinorfield_device()
+void Opencl_Module_Hmc::generate_gaussian_spinorfield_device(const hardware::buffers::PRNGBuffer * prng)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -418,7 +413,7 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_device()
 	int clerr = clSetKernelArg(generate_gaussian_spinorfield, 0, sizeof(cl_mem), clmem_phi_inv);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(generate_gaussian_spinorfield, 1, sizeof(cl_mem), get_prng_buffer());
+	clerr = clSetKernelArg(generate_gaussian_spinorfield, 1, sizeof(cl_mem), prng->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(generate_gaussian_spinorfield  , gs2, ls2);
@@ -426,7 +421,7 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_device()
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		this->set_float_to_global_squarenorm_device(&clmem_phi_inv, &force_tmp);
+		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(&clmem_phi_inv, &force_tmp);
 		force_tmp.dump(&resid);
 		logger.debug() <<  "\tinit gaussian spinorfield:\t" << resid;
 		if(resid != resid) {
@@ -435,7 +430,7 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_device()
 	}
 }
 
-void Opencl_Module_Hmc::generate_gaussian_spinorfield_eo_device()
+void Opencl_Module_Hmc::generate_gaussian_spinorfield_eo_device(const hardware::buffers::PRNGBuffer * prng)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -446,7 +441,7 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_eo_device()
 	int clerr = clSetKernelArg(generate_gaussian_spinorfield_eo, 0, sizeof(cl_mem), clmem_phi_inv_eo);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(generate_gaussian_spinorfield_eo, 1, sizeof(cl_mem), get_prng_buffer());
+	clerr = clSetKernelArg(generate_gaussian_spinorfield_eo, 1, sizeof(cl_mem), prng->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(generate_gaussian_spinorfield_eo, gs2, ls2);
@@ -454,7 +449,7 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_eo_device()
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		this->set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, &force_tmp);
+		get_device()->get_spinor_code()->set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, &force_tmp);
 		force_tmp.dump(&resid);
 		logger.debug() <<  "\tinit gaussian spinorfield energy:\t" << resid;
 		if(resid != resid) {
@@ -469,23 +464,28 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_eo_device()
 
 }
 
-void Opencl_Module_Hmc::md_update_spinorfield(hmc_float kappa, hmc_float mubar)
+void Opencl_Module_Hmc::md_update_spinorfield(const hardware::buffers::SU3 * gaugefield, hmc_float kappa, hmc_float mubar)
 {
+	auto fermion_code = get_device()->get_fermion_code();
+
 	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//  which then has to be the source of the inversion
 	if(get_parameters().get_use_eo() == true) {
-		Opencl_Module_Fermions::Qplus_eo (&clmem_phi_inv_eo, &clmem_phi_eo , get_gaugefield(), kappa, mubar);
-		if(logger.beDebug()) print_info_inv_field(&clmem_phi_eo, true, "\tinit field after update ");
+		fermion_code->Qplus_eo (&clmem_phi_inv_eo, &clmem_phi_eo , gaugefield, kappa, mubar);
+		if(logger.beDebug()) fermion_code->print_info_inv_field(&clmem_phi_eo, true, "\tinit field after update ");
 	} else {
-		Opencl_Module_Fermions::Qplus(&clmem_phi_inv, &clmem_phi , get_gaugefield(), kappa, mubar);
-		if(logger.beDebug()) print_info_inv_field(&clmem_phi, false, "\tinit field after update ");
+		fermion_code->Qplus(&clmem_phi_inv, &clmem_phi , gaugefield, kappa, mubar);
+		if(logger.beDebug()) fermion_code->print_info_inv_field(&clmem_phi, false, "\tinit field after update ");
 	}
 }
 
-void Opencl_Module_Hmc::md_update_spinorfield_mp(usetimer * solvertimer)
+void Opencl_Module_Hmc::md_update_spinorfield_mp(usetimer * solvertimer, const hardware::buffers::SU3 * gaugefield)
 {
 	using namespace hardware::buffers;
+
+	auto fermion_code = get_device()->get_fermion_code();
+	auto spinor_code = get_device()->get_spinor_code();
 
 	///@todo solvertimer is not used here yet...
 	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
@@ -497,7 +497,7 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp(usetimer * solvertimer)
 		Spinor sf_eo_tmp(clmem_phi_inv_eo.get_elements(), get_device());
 
 		//sf_eo_tmp = Qplus_eo(light_mass) phi_inv_eo
-		Opencl_Module_Fermions::Qplus_eo (&clmem_phi_inv_eo, &sf_eo_tmp , get_gaugefield());
+		fermion_code->Qplus_eo (&clmem_phi_inv_eo, &sf_eo_tmp , gaugefield);
 
 		//Now one needs ( Qplus_eo )^-1 (heavy_mass) using sf_eo_tmp as source to get phi_mp_eo
 		//use always bicgstab here
@@ -506,28 +506,26 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp(usetimer * solvertimer)
 		/** @todo at the moment, we can only put in a cold spinorfield
 		 * or a point-source spinorfield as trial-solution
 		 */
-		set_zero_spinorfield_eoprec_device(get_clmem_phi_mp_eo());
+		spinor_code->set_zero_spinorfield_eoprec_device(get_clmem_phi_mp_eo());
 
-		gamma5_eo_device(get_clmem_phi_mp_eo());
+		fermion_code->gamma5_eo_device(get_clmem_phi_mp_eo());
 
 		int converged = -1;
-		if(logger.beDebug()) print_info_inv_field(get_clmem_phi_mp_eo(), true, "\tinv. field before inversion ");
-		if(logger.beDebug()) print_info_inv_field(&sf_eo_tmp, true, "\tsource before inversion ");
-		converged = Opencl_Module_Fermions::bicgstab_eo(::Qplus_eo(this), this->get_clmem_phi_mp_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), meta::get_mubar_mp(parameters));
+		if(logger.beDebug()) fermion_code->print_info_inv_field(get_clmem_phi_mp_eo(), true, "\tinv. field before inversion ");
+		if(logger.beDebug()) fermion_code->print_info_inv_field(&sf_eo_tmp, true, "\tsource before inversion ");
+		converged = fermion_code->bicgstab_eo(::Qplus_eo(fermion_code), this->get_clmem_phi_mp_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
 		if (converged < 0) {
 			if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 			else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 		} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-		if(logger.beDebug()) print_info_inv_field(get_clmem_phi_mp_eo(), true, "\tinv. field after inversion ");
-		//add number of inverter iterations to counter
-		*inversions0 += abs(converged);
-		if(logger.beDebug()) print_info_inv_field(&clmem_phi_mp_eo, true, "\tinit field after update ");
+		if(logger.beDebug()) fermion_code->print_info_inv_field(get_clmem_phi_mp_eo(), true, "\tinv. field after inversion ");
+		if(logger.beDebug()) fermion_code->print_info_inv_field(&clmem_phi_mp_eo, true, "\tinit field after update ");
 	} else {
 		//CP: Init tmp spinorfield
 		Plain<spinor> sf_tmp(clmem_phi_inv.get_elements(), get_device());
 
 		//sf_tmp = Qplus(light_mass) phi_inv
-		Opencl_Module_Fermions::Qplus (&clmem_phi_inv, &sf_tmp , get_gaugefield());
+		fermion_code->Qplus (&clmem_phi_inv, &sf_tmp , gaugefield);
 
 		//Now one needs ( Qplus )^-1 (heavy_mass) using sf_tmp as source to get phi_mp
 		//use always bicgstab here
@@ -536,27 +534,28 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp(usetimer * solvertimer)
 		/** @todo at the moment, we can only put in a cold spinorfield
 		 * or a point-source spinorfield as trial-solution
 		 */
-		set_zero_spinorfield_device(get_clmem_phi_mp());
-		gamma5_device(get_clmem_phi_mp());
+		spinor_code->set_zero_spinorfield_device(get_clmem_phi_mp());
+		fermion_code->gamma5_device(get_clmem_phi_mp());
 
 		int converged = -1;
-		if(logger.beDebug()) print_info_inv_field(get_clmem_phi_mp(), false, "\tinv. field before inversion ");
-		if(logger.beDebug()) print_info_inv_field(&sf_tmp, false, "\tsource before inversion ");
-		converged = Opencl_Module_Fermions::bicgstab(::Qplus(this), this->get_clmem_phi_mp(), &sf_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), get_mubar_mp(parameters));
+		if(logger.beDebug()) fermion_code->print_info_inv_field(get_clmem_phi_mp(), false, "\tinv. field before inversion ");
+		if(logger.beDebug()) fermion_code->print_info_inv_field(&sf_tmp, false, "\tsource before inversion ");
+		converged = fermion_code->bicgstab(::Qplus(fermion_code), this->get_clmem_phi_mp(), &sf_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), get_mubar_mp(get_parameters()));
 		if (converged < 0) {
 			if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 			else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 		} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-		if(logger.beDebug()) print_info_inv_field(get_clmem_phi_mp(), false, "\tinv. field after inversion ");
-		//add number of inverter iterations to counter
-		*inversions0 += abs(converged);
-		if(logger.beDebug()) print_info_inv_field(&clmem_phi_mp, false, "\tinit field after update ");
+		if(logger.beDebug()) fermion_code->print_info_inv_field(get_clmem_phi_mp(), false, "\tinv. field after inversion ");
+		if(logger.beDebug()) fermion_code->print_info_inv_field(&clmem_phi_mp, false, "\tinit field after update ");
 	}
 }
 
 //this function takes to args kappa and mubar because one has to use it with different masses when mass-prec is used and when not
 void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kappa, hmc_float mubar)
 {
+	auto fermion_code = get_device()->get_fermion_code();
+	auto spinor_code = get_device()->get_spinor_code();
+
 	int converged = -1;
 	if(get_parameters().get_use_eo() == true) {
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
@@ -575,24 +574,22 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 			/**
 			 * Trial solution for the spinorfield
 			 */
-			set_eoprec_spinorfield_cold_device(get_inout_eo());
+			spinor_code->set_eoprec_spinorfield_cold_device(fermion_code->get_inout_eo());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::cg_eo(::QplusQminus_eo(this), this->get_inout_eo(), this->get_clmem_phi_eo(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\t\t\tinv. field before inversion ");
+			converged = fermion_code->cg_eo(::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), this->get_clmem_phi_eo(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			//add number of inverter iterations to counter
-			*inversions1 += abs(converged);
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field after inversion ");
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\t\t\tinv. field after inversion ");
 
 			/**
 			 * Y_even is now just
 			 *  Y_even = (Qminus_eo) X_even = (Qminus_eo) (Qplusminus_eo)^-1 psi =
 			 *    = (Qplus_eo)^-1 psi
 			 */
-			Opencl_Module_Fermions::Qminus_eo(this->get_inout_eo(), &clmem_phi_inv_eo, &new_u, kappa, mubar);
+			fermion_code->Qminus_eo(fermion_code->get_inout_eo(), &clmem_phi_inv_eo, &new_u, kappa, mubar);
 		} else {
 			///@todo if wanted, solvertimer has to be used here..
 			//logger.debug() << "\t\tcalc fermion force ingredients using bicgstab with eo.";
@@ -612,22 +609,20 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 			/**
 			 * Trial solution for the spinorfield
 			 */
-			set_zero_spinorfield_eoprec_device(get_inout_eo());
-			gamma5_eo_device(get_inout_eo());
+			spinor_code->set_zero_spinorfield_eoprec_device(fermion_code->get_inout_eo());
+			fermion_code->gamma5_eo_device(fermion_code->get_inout_eo());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field before inversion ");
-			if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eo(), true, "\t\t\tsource before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab_eo(::Qplus_eo(this), this->get_inout_eo(), this->get_clmem_phi_eo(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\t\t\tinv. field before inversion ");
+			if(logger.beDebug()) fermion_code->print_info_inv_field(get_clmem_phi_eo(), true, "\t\t\tsource before inversion ");
+			converged = fermion_code->bicgstab_eo(::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), this->get_clmem_phi_eo(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions1 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\t\t\tinv. field after inversion ");
 
 			//store this result in clmem_phi_inv
-			hardware::buffers::copyData(&clmem_phi_inv_eo, get_inout_eo());
+			hardware::buffers::copyData(&clmem_phi_inv_eo, fermion_code->get_inout_eo());
 
 			/**
 			 * Now, one has to calculate
@@ -640,21 +635,19 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 
 			//logger.debug() << "\t\tcalc X_even...";
 			//copy former solution to clmem_source
-			hardware::buffers::copyData(get_source_even(), get_inout_eo());
+			hardware::buffers::copyData(fermion_code->get_source_even(), fermion_code->get_inout_eo());
 
 			//this sets clmem_inout cold as trial-solution
-			set_eoprec_spinorfield_cold_device(get_inout_eo());
+			spinor_code->set_eoprec_spinorfield_cold_device(fermion_code->get_inout_eo());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field before inversion ");
-			if(logger.beDebug()) print_info_inv_field(get_source_even(), true, "\t\t\tsource before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab_eo(::Qminus_eo(this), get_inout_eo(), get_source_even(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\t\t\tinv. field before inversion ");
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_source_even(), true, "\t\t\tsource before inversion ");
+			converged = fermion_code->bicgstab_eo(::Qminus_eo(fermion_code), fermion_code->get_inout_eo(), fermion_code->get_source_even(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions1 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\t\t\tinv. field after inversion ");
 		}
 		/**
 		 * At this point, one has calculated X_odd and Y_odd.
@@ -673,12 +666,12 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_inout, since
 		//  this is used as a default in the force-function.
 		if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
-			dslash_eo_device(get_inout_eo(), get_tmp_eo_1(), &new_u, ODD, kappa);
-			sax_eoprec_device(get_tmp_eo_1(), get_clmem_minusone(), get_tmp_eo_1());
+			fermion_code->dslash_eo_device(fermion_code->get_inout_eo(), fermion_code->get_tmp_eo_1(), &new_u, ODD, kappa);
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_1(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
-			dslash_eo_device(get_inout_eo(), get_tmp_eo_1(), &new_u, ODD, kappa);
-			M_tm_inverse_sitediagonal_minus_device(get_tmp_eo_1(), get_tmp_eo_2(), mubar);
-			sax_eoprec_device(get_tmp_eo_2(), get_clmem_minusone(), get_tmp_eo_1());
+			fermion_code->dslash_eo_device(fermion_code->get_inout_eo(), fermion_code->get_tmp_eo_1(), &new_u, ODD, kappa);
+			fermion_code->M_tm_inverse_sitediagonal_minus_device(fermion_code->get_tmp_eo_1(), fermion_code->get_tmp_eo_2(), mubar);
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		}
 
 		/**
@@ -712,23 +705,23 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 
 		//logger.debug() << "\t\tcalc eo fermion_force F(Y_even, X_odd)...";
 		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, clmem_tmp_eo_1)
-		fermion_force_eo_device(&clmem_phi_inv_eo,  get_tmp_eo_1(), EVEN, kappa);
+		fermion_force_eo_device(&clmem_phi_inv_eo,  fermion_code->get_tmp_eo_1(), EVEN, kappa);
 
 		//calculate Y_odd
 		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
 		//  this is used as a default in the force-function.
 		if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
-			dslash_eo_device(&clmem_phi_inv_eo, get_tmp_eo_1(), &new_u, ODD, kappa);
-			sax_eoprec_device(get_tmp_eo_1(), get_clmem_minusone(), get_tmp_eo_1());
+			fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), &new_u, ODD, kappa);
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_1(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
-			dslash_eo_device(&clmem_phi_inv_eo, get_tmp_eo_1(), &new_u, ODD, kappa);
-			M_tm_inverse_sitediagonal_device(get_tmp_eo_1(), get_tmp_eo_2(), mubar);
-			sax_eoprec_device(get_tmp_eo_2(), get_clmem_minusone(), get_tmp_eo_1());
+			fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), &new_u, ODD, kappa);
+			fermion_code->M_tm_inverse_sitediagonal_device(fermion_code->get_tmp_eo_1(), fermion_code->get_tmp_eo_2(), mubar);
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		}
 
 		//logger.debug() << "\t\tcalc eoprec fermion_force F(Y_odd, X_even)...";
 		//Calc F(Y_odd, X_even) = F(clmem_tmp_eo_1, clmem_inout_eo)
-		fermion_force_eo_device(get_tmp_eo_1(), get_inout_eo(), ODD, kappa);
+		fermion_force_eo_device(fermion_code->get_tmp_eo_1(), fermion_code->get_inout_eo(), ODD, kappa);
 
 // will break on SOA devices
 //		if(logger.beDebug() && debug_hard) {
@@ -928,25 +921,23 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 			/**
 			 * Trial solution for the spinorfield
 			 */
-			set_spinorfield_cold_device(get_inout());
+			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field before inversion ");
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			converged = Opencl_Module_Fermions::cg(::QplusQminus(this), this->get_inout(), this->get_clmem_phi(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->cg(::QplusQminus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions1 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field after inversion ");
 
 			/**
 			 * Y is now just
 			 *  Y = (Qminus) X = (Qminus) (Qplusminus)^-1 psi =
 			 *    = (Qplus)^-1 psi
 			 */
-			Opencl_Module_Fermions::Qminus(this->get_inout(), &clmem_phi_inv, &new_u, kappa, mubar);
+			fermion_code->Qminus(fermion_code->get_inout(), &clmem_phi_inv, &new_u, kappa, mubar);
 
 		} else  {
 			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab without eo";
@@ -966,21 +957,19 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 			/**
 			 * Trial solution for the spinorfield
 			 */
-			set_spinorfield_cold_device(get_inout());
+			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field before inversion ");
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			converged = Opencl_Module_Fermions::bicgstab(::Qplus(this), this->get_inout(), this->get_clmem_phi(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->bicgstab(::Qplus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions1 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field after inversion ");
 
 			//store this result in clmem_phi_inv
-			hardware::buffers::copyData(&clmem_phi_inv, get_inout());
+			hardware::buffers::copyData(&clmem_phi_inv, fermion_code->get_inout());
 
 			/**
 			 * Now, one has to calculate
@@ -992,34 +981,35 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 			 */
 
 			//copy former solution to clmem_source
-			hardware::buffers::copyData(get_source(), get_inout());
+			hardware::buffers::copyData(fermion_code->get_source(), fermion_code->get_inout());
 			logger.debug() << "\t\t\tstart solver";
 
 			//this sets clmem_inout cold as trial-solution
-			set_spinorfield_cold_device(get_inout());
+			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab(::Qminus(this), get_inout(), get_source(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
+			converged = fermion_code->bicgstab(::Qminus(fermion_code), fermion_code->get_inout(), fermion_code->get_source(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions1 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field after inversion ");
 
 		}
 		if(logger.beDebug()) {
-			print_info_inv_field(&clmem_phi_inv, false, "\tY ");
-			print_info_inv_field(get_inout(), false, "\tX ");
+			fermion_code->print_info_inv_field(&clmem_phi_inv, false, "\tY ");
+			fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tX ");
 		}
 		logger.debug() << "\t\tcalc fermion_force...";
-		fermion_force_device(&clmem_phi_inv, get_inout(), kappa);
+		fermion_force_device(&clmem_phi_inv, fermion_code->get_inout(), kappa);
 	}
 }
 
-void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer)
+void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer, const hardware::buffers::SU3 * gaugefield)
 {
+	auto fermion_code = get_device()->get_fermion_code();
+	auto spinor_code = get_device()->get_spinor_code();
+
 	/**
 	 * For detratio = det(kappa, mubar) / det(kappa2, mubar2) = det(Q_1^+Q_1^-) / det(Q_2^+Q_2^-)
 	 * the force has almost the same ingredients as in the above case:
@@ -1041,7 +1031,7 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer)
 		//CP: Init tmp spinorfield
 		hardware::buffers::Spinor sf_eo_tmp(clmem_phi_eo.get_elements(), get_device());
 		//the source is now Q_2^+ phi = sf_eo_tmp
-		Opencl_Module_Fermions::Qplus_eo (this->get_clmem_phi_eo(), &sf_eo_tmp , get_gaugefield(), kappa2, mubar2);
+		fermion_code->Qplus_eo (get_clmem_phi_eo(), &sf_eo_tmp , gaugefield, kappa2, mubar2);
 		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			/**
 			 * The first inversion calculates
@@ -1057,24 +1047,22 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer)
 			/**
 			 * Trial solution for the spinorfield
 			 */
-			set_eoprec_spinorfield_cold_device(get_inout_eo());
+			spinor_code->set_eoprec_spinorfield_cold_device(fermion_code->get_inout_eo());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::cg_eo(::QplusQminus_eo(this), this->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\t\t\tinv. field before inversion ");
+			converged = fermion_code->cg_eo(::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			//add number of inverter iterations to counter
-			*inversions1 += abs(converged);
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field after inversion ");
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\t\t\tinv. field after inversion ");
 
 			/**
 			 * Y_even is now just
 			 *  Y_even = (Qminus_eo) X_even = (Qminus_eo) (Qplusminus_eo)^-1 sf_eo_tmp =
 			 *    = (Qplus_eo)^-1 Q_2^+ psi
 			 */
-			Opencl_Module_Fermions::Qminus_eo(this->get_inout_eo(), &clmem_phi_inv_eo, &new_u, kappa, mubar);
+			fermion_code->Qminus_eo(fermion_code->get_inout_eo(), &clmem_phi_inv_eo, &new_u, kappa, mubar);
 		} else {
 			///@todo if wanted, solvertimer has to be used here..
 			//logger.debug() << "\t\tcalc fermion force ingredients using bicgstab with eo.";
@@ -1093,22 +1081,20 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer)
 			/**
 			 * Trial solution for the spinorfield
 			 */
-			set_zero_spinorfield_eoprec_device(get_inout_eo());
-			gamma5_eo_device(get_inout_eo());
+			spinor_code->set_zero_spinorfield_eoprec_device(fermion_code->get_inout_eo());
+			fermion_code->gamma5_eo_device(fermion_code->get_inout_eo());
 
-			//if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field before inversion ");
+			//if(logger.beDebug()) fermion_code->print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field before inversion ");
 			//if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eo(), true, "\t\t\tsource before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab_eo(::Qplus_eo(this), this->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->bicgstab_eo(::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			//if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions1 += abs(converged);
 
 			//store this result in clmem_phi_inv
-			hardware::buffers::copyData(&clmem_phi_inv_eo, get_inout_eo());
+			hardware::buffers::copyData(&clmem_phi_inv_eo, fermion_code->get_inout_eo());
 
 			/**
 			 * Now, one has to calculate
@@ -1119,21 +1105,19 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer)
 
 			//logger.debug() << "\t\tcalc X_even...";
 			//copy former solution to clmem_source
-			hardware::buffers::copyData(get_source_even(), get_inout_eo());
+			hardware::buffers::copyData(fermion_code->get_source_even(), fermion_code->get_inout_eo());
 
 			//this sets clmem_inout cold as trial-solution
-			set_eoprec_spinorfield_cold_device(get_inout_eo());
+			spinor_code->set_eoprec_spinorfield_cold_device(fermion_code->get_inout_eo());
 
 			//if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field before inversion ");
 			//if(logger.beDebug()) print_info_inv_field(get_source_even(), true, "\t\t\tsource before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab_eo(::Qminus_eo(this), get_inout_eo(), get_source_even(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->bicgstab_eo(::Qminus_eo(fermion_code), fermion_code->get_inout_eo(), fermion_code->get_source_even(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			//if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions1 += abs(converged);
 		}
 		/**
 		 * At this point, one has to calculate X_odd and Y_odd.
@@ -1152,33 +1136,33 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer)
 		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_inout, since
 		//  this is used as a default in the force-function.
 		if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
-			dslash_eo_device(get_inout_eo(), get_tmp_eo_1(), &new_u, ODD);
-			sax_eoprec_device(get_tmp_eo_1(), get_clmem_minusone(), get_tmp_eo_1());
+			fermion_code->dslash_eo_device(fermion_code->get_inout_eo(), fermion_code->get_tmp_eo_1(), &new_u, ODD);
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_1(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
-			dslash_eo_device(get_inout_eo(), get_tmp_eo_1(), &new_u, ODD);
-			M_tm_inverse_sitediagonal_minus_device(get_tmp_eo_1(), get_tmp_eo_2());
-			sax_eoprec_device(get_tmp_eo_2(), get_clmem_minusone(), get_tmp_eo_1());
+			fermion_code->dslash_eo_device(fermion_code->get_inout_eo(), fermion_code->get_tmp_eo_1(), &new_u, ODD);
+			fermion_code->M_tm_inverse_sitediagonal_minus_device(fermion_code->get_tmp_eo_1(), fermion_code->get_tmp_eo_2());
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		}
 
 		//logger.debug() << "\t\tcalc eo fermion_force F(Y_even, X_odd)...";
 		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, clmem_tmp_eo_1)
-		fermion_force_eo_device(&clmem_phi_inv_eo,  get_tmp_eo_1(), EVEN, kappa);
+		fermion_force_eo_device(&clmem_phi_inv_eo,  fermion_code->get_tmp_eo_1(), EVEN, kappa);
 
 		//calculate Y_odd
 		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
 		//  this is used as a default in the force-function.
 		if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
-			dslash_eo_device(&clmem_phi_inv_eo, get_tmp_eo_1(), &new_u, ODD);
-			sax_eoprec_device(get_tmp_eo_1(), get_clmem_minusone(), get_tmp_eo_1());
+			fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), &new_u, ODD);
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_1(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
-			dslash_eo_device(&clmem_phi_inv_eo, get_tmp_eo_1(), &new_u, ODD);
-			M_tm_inverse_sitediagonal_device(get_tmp_eo_1(), get_tmp_eo_2());
-			sax_eoprec_device(get_tmp_eo_2(), get_clmem_minusone(), get_tmp_eo_1());
+			fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), &new_u, ODD);
+			fermion_code->M_tm_inverse_sitediagonal_device(fermion_code->get_tmp_eo_1(), fermion_code->get_tmp_eo_2());
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		}
 
 		//logger.debug() << "\t\tcalc eoprec fermion_force F(Y_odd, X_even)...";
 		//Calc F(Y_odd, X_even) = F(clmem_tmp_eo_1, clmem_inout_eo)
-		fermion_force_eo_device(get_tmp_eo_1(), get_inout_eo(), ODD, kappa);
+		fermion_force_eo_device(fermion_code->get_tmp_eo_1(), fermion_code->get_inout_eo(), ODD, kappa);
 
 		/**
 		 *Now, one has the additional term - phi^+ deriv(Q_2) X
@@ -1186,34 +1170,34 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer)
 		 */
 
 		//Y is not needed anymore, therefore use clmem_phi_inv_eo to store -phi
-		sax_eoprec_device(get_clmem_phi_eo(), get_clmem_minusone(), &clmem_phi_inv_eo);
+		spinor_code->sax_eoprec_device(get_clmem_phi_eo(), fermion_code->get_clmem_minusone(), &clmem_phi_inv_eo);
 
 		//logger.debug() << "\t\tcalc eo fermion_force F(Y_even, X_odd)...";
 		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, clmem_tmp_eo_1)
-		fermion_force_eo_device(&clmem_phi_inv_eo,  get_tmp_eo_1(), EVEN, kappa2);
+		fermion_force_eo_device(&clmem_phi_inv_eo,  fermion_code->get_tmp_eo_1(), EVEN, kappa2);
 
 		//calculate phi_odd
 		//this works in the same way as with Y above, since -phi_even is saved in the same buffer as Y_even
 		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
 		//  this is used as a default in the force-function.
 		if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
-			dslash_eo_device(&clmem_phi_inv_eo, get_tmp_eo_1(), &new_u, ODD);
-			sax_eoprec_device(get_tmp_eo_1(), get_clmem_minusone(), get_tmp_eo_1());
+			fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), &new_u, ODD);
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_1(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
-			dslash_eo_device(&clmem_phi_inv_eo, get_tmp_eo_1(), &new_u, ODD);
-			M_tm_inverse_sitediagonal_device(get_tmp_eo_1(), get_tmp_eo_2());
-			sax_eoprec_device(get_tmp_eo_2(), get_clmem_minusone(), get_tmp_eo_1());
+			fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), &new_u, ODD);
+			fermion_code->M_tm_inverse_sitediagonal_device(fermion_code->get_tmp_eo_1(), fermion_code->get_tmp_eo_2());
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		}
 
 		//logger.debug() << "\t\tcalc eoprec fermion_force F(Y_odd, X_even)...";
 		//Calc F(Y_odd, X_even) = F(clmem_tmp_eo_1, clmem_inout_eo)
-		fermion_force_eo_device(get_tmp_eo_1(), get_inout_eo(), ODD, kappa2);
+		fermion_force_eo_device(fermion_code->get_tmp_eo_1(), fermion_code->get_inout_eo(), ODD, kappa2);
 	} else {
 		//CP: Init tmp spinorfield
 		hardware::buffers::Plain<spinor> sf_tmp(clmem_phi.get_elements(), get_device());
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 		//the source is now Q_2^+ phi = sf_tmp
-		Opencl_Module_Fermions::Qplus (this->get_clmem_phi(), &sf_tmp , get_gaugefield(), kappa2, mubar2);
+		fermion_code->Qplus (get_clmem_phi(), &sf_tmp , gaugefield, kappa2, mubar2);
 		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			/**
 			 * The first inversion calculates
@@ -1229,25 +1213,23 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer)
 			/**
 			 * Trial solution for the spinorfield
 			 */
-			set_spinorfield_cold_device(get_inout());
+			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field before inversion ");
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			converged = Opencl_Module_Fermions::cg(::QplusQminus(this), this->get_inout(), &sf_tmp, &new_u, get_parameters().get_force_prec());
+			converged = fermion_code->cg(::QplusQminus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_force_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions1 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field after inversion ");
 
 			/**
 			 * Y is now just
 			 *  Y = (Qminus) X = (Qminus) (Qplusminus)^-1 sf_tmp =
 			 *    = (Qplus)^-1 sf_tmp
 			 */
-			Opencl_Module_Fermions::Qminus(this->get_inout(), &clmem_phi_inv, &new_u);
+			fermion_code->Qminus(fermion_code->get_inout(), &clmem_phi_inv, &new_u);
 
 		} else  {
 			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab without eo";
@@ -1267,21 +1249,19 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer)
 			/**
 			 * Trial solution for the spinorfield
 			 */
-			set_spinorfield_cold_device(get_inout());
+			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field before inversion ");
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			converged = Opencl_Module_Fermions::bicgstab(::Qplus(this), this->get_inout(), &sf_tmp, &new_u, get_parameters().get_force_prec());
+			converged = fermion_code->bicgstab(::Qplus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_force_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions1 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field after inversion ");
 
 			//store this result in clmem_phi_inv
-			hardware::buffers::copyData(&clmem_phi_inv, get_inout());
+			hardware::buffers::copyData(&clmem_phi_inv, fermion_code->get_inout());
 
 			/**
 			 * Now, one has to calculate
@@ -1293,29 +1273,27 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer)
 			 */
 
 			//copy former solution to clmem_source
-			hardware::buffers::copyData(get_source(), get_inout());
+			hardware::buffers::copyData(fermion_code->get_source(), fermion_code->get_inout());
 			logger.debug() << "\t\t\tstart solver";
 
 			//this sets clmem_inout cold as trial-solution
-			set_spinorfield_cold_device(get_inout());
+			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab(::Qminus(this), get_inout(), get_source(), &new_u, get_parameters().get_force_prec());
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
+			converged = fermion_code->bicgstab(::Qminus(fermion_code), fermion_code->get_inout(), fermion_code->get_source(), &new_u, get_parameters().get_force_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions1 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field after inversion ");
 
 		}
 		if(logger.beDebug()) {
-			print_info_inv_field(&clmem_phi_inv, false, "\tY ");
-			print_info_inv_field(get_inout(), false, "\tX ");
+			fermion_code->print_info_inv_field(&clmem_phi_inv, false, "\tY ");
+			fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tX ");
 		}
 		logger.debug() << "\t\tcalc fermion_force...";
-		fermion_force_device(&clmem_phi_inv, get_inout(), kappa);
+		fermion_force_device(&clmem_phi_inv, fermion_code->get_inout(), kappa);
 
 		/**
 		 *Now, one has the additional term - phi^+ deriv(Q_2) X
@@ -1323,9 +1301,9 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer)
 		 */
 
 		//Y is not needed anymore, therefore use clmem_phi_inv_eo to store -phi
-		sax_device(get_clmem_phi(), get_clmem_minusone(), &clmem_phi_inv);
+		spinor_code->sax_device(get_clmem_phi(), fermion_code->get_clmem_minusone(), &clmem_phi_inv);
 
-		fermion_force_device(&clmem_phi_inv, get_inout(), kappa2);
+		fermion_force_device(&clmem_phi_inv, fermion_code->get_inout(), kappa2);
 	}
 }
 
@@ -1341,6 +1319,9 @@ void Opencl_Module_Hmc::calc_gauge_force()
 
 hmc_float Opencl_Module_Hmc::calc_s_fermion()
 {
+	auto fermion_code = get_device()->get_fermion_code();
+	auto spinor_code = get_device()->get_spinor_code();
+
 	logger.debug() << "calc final fermion energy...";
 	//this function essentially performs the same steps as in the force-calculation, but with higher precision.
 	//  therefore, comments are deleted here...
@@ -1351,41 +1332,37 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			logger.debug() << "\t\t\tstart solver";
 
-			set_eoprec_spinorfield_cold_device(get_inout_eo());
+			spinor_code->set_eoprec_spinorfield_cold_device(fermion_code->get_inout_eo());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::cg_eo(::QplusQminus_eo(this), this->get_inout_eo(), this->get_clmem_phi_eo(), &new_u, get_parameters().get_solver_prec());
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field before inversion ");
+			converged = fermion_code->cg_eo(::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), get_clmem_phi_eo(), &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions0 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field after inversion ");
 
-			Opencl_Module_Fermions::Qminus_eo(this->get_inout_eo(), &clmem_phi_inv_eo, &new_u);
+			fermion_code->Qminus_eo(fermion_code->get_inout_eo(), &clmem_phi_inv_eo, &new_u);
 		} else {
 			logger.debug() << "\t\t\tstart solver";
 
 			/** @todo at the moment, we can only put in a cold spinorfield
 			  * or a point-source spinorfield as trial-solution
 			  */
-			set_zero_spinorfield_eoprec_device(get_inout_eo());
-			gamma5_eo_device(get_inout_eo());
+			spinor_code->set_zero_spinorfield_eoprec_device(fermion_code->get_inout_eo());
+			fermion_code->gamma5_eo_device(fermion_code->get_inout_eo());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\tinv. field before inversion ");
-			if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eo(), true, "\tsource before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab_eo(::Qplus_eo(this), this->get_inout_eo(), this->get_clmem_phi_eo(), &new_u, get_parameters().get_solver_prec());
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field before inversion ");
+			if(logger.beDebug()) fermion_code->print_info_inv_field(get_clmem_phi_eo(), true, "\tsource before inversion ");
+			converged = fermion_code->bicgstab_eo(::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), get_clmem_phi_eo(), &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions0 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field after inversion ");
 
 			//store this result in clmem_phi_inv
-			hardware::buffers::copyData(&clmem_phi_inv_eo, get_inout_eo());
+			hardware::buffers::copyData(&clmem_phi_inv_eo, fermion_code->get_inout_eo());
 		}
 	} else {
 		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
@@ -1394,19 +1371,17 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 			/** @todo at the moment, we can only put in a cold spinorfield
 			  * or a point-source spinorfield as trial-solution
 			  */
-			set_spinorfield_cold_device(get_inout());
+			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::cg(::QplusQminus(this), this->get_inout(), this->get_clmem_phi(), &new_u, get_parameters().get_solver_prec());
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
+			converged = fermion_code->cg(::QplusQminus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions0 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field after inversion ");
 
-			Opencl_Module_Fermions::Qminus(this->get_inout(), &clmem_phi_inv, &new_u);
+			fermion_code->Qminus(fermion_code->get_inout(), &clmem_phi_inv, &new_u);
 
 		} else  {
 
@@ -1415,35 +1390,36 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 			/** @todo at the moment, we can only put in a cold spinorfield
 			  * or a point-source spinorfield as trial-solution
 			  */
-			set_spinorfield_cold_device(get_inout());
+			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab(::Qplus(this), this->get_inout(), this->get_clmem_phi(), &new_u, get_parameters().get_solver_prec());
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
+			converged = fermion_code->bicgstab(::Qplus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions0 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field after inversion ");
 
 			//store this result in clmem_phi_inv
-			hardware::buffers::copyData(&clmem_phi_inv, get_inout());
+			hardware::buffers::copyData(&clmem_phi_inv, fermion_code->get_inout());
 		}
 	}
 	///@todo: this can be moved in the ifs above!!
 	if(get_parameters().get_use_eo() == true) {
-		set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, &clmem_s_fermion);
+		get_device()->get_spinor_code()->set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, &clmem_s_fermion);
 	} else {
-		set_float_to_global_squarenorm_device(&clmem_phi_inv, &clmem_s_fermion);
+		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(&clmem_phi_inv, &clmem_s_fermion);
 	}
 	hmc_float tmp;
 	clmem_s_fermion.dump(&tmp);
 	return tmp;
 }
 
-hmc_float Opencl_Module_Hmc::calc_s_fermion_mp()
+hmc_float Opencl_Module_Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * gaugefield)
 {
+	auto fermion_code = get_device()->get_fermion_code();
+	auto spinor_code = get_device()->get_spinor_code();
+
 	logger.debug() << "calc final fermion energy...";
 	//this function essentially performs the same steps as in the non mass-prec case, however, one has to apply one more matrix multiplication
 	//  therefore, comments are deleted here...
@@ -1454,70 +1430,64 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion_mp()
 		hardware::buffers::Spinor sf_eo_tmp(clmem_phi_mp_eo.get_elements(), get_device());
 
 		//sf_eo_tmp = Qplus_eo(heavy_mass) phi_mp_eo
-		Opencl_Module_Fermions::Qplus_eo (this->get_clmem_phi_mp_eo(), &sf_eo_tmp , get_gaugefield(), get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
+		fermion_code->Qplus_eo (get_clmem_phi_mp_eo(), &sf_eo_tmp , gaugefield, get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
 		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			logger.debug() << "\t\t\tstart solver";
-			set_eoprec_spinorfield_cold_device(get_inout_eo());
+			spinor_code->set_eoprec_spinorfield_cold_device(fermion_code->get_inout_eo());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::cg_eo(::QplusQminus_eo(this), this->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec());
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field before inversion ");
+			converged = fermion_code->cg_eo(::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions0 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field after inversion ");
 
-			Opencl_Module_Fermions::Qminus_eo(this->get_inout_eo(), &clmem_phi_inv_eo, &new_u);
+			fermion_code->Qminus_eo(fermion_code->get_inout_eo(), &clmem_phi_inv_eo, &new_u);
 		} else {
 			logger.debug() << "\t\t\tstart solver";
 
 			/** @todo at the moment, we can only put in a cold spinorfield
 			 * or a point-source spinorfield as trial-solution
 			 */
-			set_zero_spinorfield_eoprec_device(get_inout_eo());
-			gamma5_eo_device(get_inout_eo());
+			spinor_code->set_zero_spinorfield_eoprec_device(fermion_code->get_inout_eo());
+			fermion_code->gamma5_eo_device(fermion_code->get_inout_eo());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\tinv. field before inversion ");
-			if(logger.beDebug()) print_info_inv_field(&sf_eo_tmp, true, "\tsource before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab_eo(::Qplus_eo(this), this->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec());
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field before inversion ");
+			if(logger.beDebug()) fermion_code->print_info_inv_field(&sf_eo_tmp, true, "\tsource before inversion ");
+			converged = fermion_code->bicgstab_eo(::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions0 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field after inversion ");
 
 			//store this result in clmem_phi_inv
-			hardware::buffers::copyData(&clmem_phi_inv_eo, get_inout_eo());
+			hardware::buffers::copyData(&clmem_phi_inv_eo, fermion_code->get_inout_eo());
 		}
 	} else {
 		//CP: Init tmp spinorfield
 		hardware::buffers::Plain<spinor> sf_tmp(clmem_phi_mp.get_elements(), get_device());
 
 		//sf_eo_tmp = Qplus(light_mass) phi_mp
-		Opencl_Module_Fermions::Qplus (this->get_clmem_phi_mp(), &sf_tmp , get_gaugefield(), get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
+		fermion_code->Qplus (get_clmem_phi_mp(), &sf_tmp , gaugefield, get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
 		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			logger.debug() << "\t\t\tstart solver";
 
 			/** @todo at the moment, we can only put in a cold spinorfield
 			 * or a point-source spinorfield as trial-solution
 			 */
-			set_spinorfield_cold_device(get_inout());
+			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::cg(::QplusQminus(this), this->get_inout(), &sf_tmp, &new_u, get_parameters().get_solver_prec());
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
+			converged = fermion_code->cg(::QplusQminus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions0 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field after inversion ");
 
-			Opencl_Module_Fermions::Qminus(this->get_inout(), &clmem_phi_inv, &new_u);
+			fermion_code->Qminus(fermion_code->get_inout(), &clmem_phi_inv, &new_u);
 
 		} else  {
 
@@ -1526,35 +1496,36 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion_mp()
 			/** @todo at the moment, we can only put in a cold spinorfield
 			 * or a point-source spinorfield as trial-solution
 			 */
-			set_spinorfield_cold_device(get_inout());
+			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field before inversion ");
-			converged = Opencl_Module_Fermions::bicgstab(::Qplus(this), this->get_inout(), &sf_tmp, &new_u, get_parameters().get_solver_prec());
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
+			converged = fermion_code->bicgstab(::Qplus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
-			if(logger.beDebug()) print_info_inv_field(get_inout(), false, "\tinv. field after inversion ");
-			//add number of inverter iterations to counter
-			*inversions0 += abs(converged);
+			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field after inversion ");
 
 			//store this result in clmem_phi_inv
-			hardware::buffers::copyData(&clmem_phi_inv, get_inout());
+			hardware::buffers::copyData(&clmem_phi_inv, fermion_code->get_inout());
 		}
 	}
 	///@todo: this can be moved in the ifs above!!
 	if(get_parameters().get_use_eo() == true) {
-		set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, &clmem_s_fermion);
+		get_device()->get_spinor_code()->set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, &clmem_s_fermion);
 	} else {
-		set_float_to_global_squarenorm_device(&clmem_phi_inv, &clmem_s_fermion);
+		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(&clmem_phi_inv, &clmem_s_fermion);
 	}
 	hmc_float tmp;
 	clmem_s_fermion.dump(&tmp);
 	return tmp;
 }
 
-hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
+hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta, const hardware::buffers::SU3 * gaugefield)
 {
+	auto gf_code = get_device()->get_gaugefield_code();
+	auto fermion_code = get_device()->get_fermion_code();
+
 	//Calc Hamiltonian
 	logger.debug() << "Calculate Hamiltonian";
 	hmc_float deltaH = 0.;
@@ -1569,13 +1540,13 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 	hmc_complex poly;
 	hmc_complex poly_new;
 	//In this call, the observables are calculated already with appropiate Weighting factor of 2.0/(VOL4D*NDIM*(NDIM-1)*NC)
-	Opencl_Module::gaugeobservables(get_gaugefield(), &plaq,  &tplaq, &splaq, &poly);
-	Opencl_Module::gaugeobservables(&new_u, &plaq_new,  &tplaq_new, &splaq_new, &poly_new);
+	gf_code->gaugeobservables(gaugefield, &plaq,  &tplaq, &splaq, &poly);
+	gf_code->gaugeobservables(&new_u, &plaq_new,  &tplaq_new, &splaq_new, &poly_new);
 	//plaq has to be divided by the norm-factor to get s_gauge
 	hmc_float factor = 1. / (meta::get_plaq_norm(get_parameters()));
 	if(meta::get_use_rectangles(get_parameters()) == true) {
-		Opencl_Module::gaugeobservables_rectangles(get_gaugefield(), &rect);
-		Opencl_Module::gaugeobservables_rectangles(&new_u, &rect_new);
+		gf_code->gaugeobservables_rectangles(gaugefield, &rect);
+		gf_code->gaugeobservables_rectangles(&new_u, &rect_new);
 		hmc_float c0 = meta::get_c0(get_parameters());
 		hmc_float c1 = meta::get_c1(get_parameters());
 		deltaH = - beta * ( c0 * (plaq - plaq_new) / factor + c1 * ( rect - rect_new )  );
@@ -1623,7 +1594,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 			//initial energy has been computed in the beginning...
 			clmem_s_fermion_mp_init.dump(&spinor_energy_mp_init);
 			// sum_links phi*_i (M^+M)_ij^-1 phi_j
-			s_fermion_mp_final = calc_s_fermion_mp();
+			s_fermion_mp_final = calc_s_fermion_mp(gaugefield);
 			deltaH += spinor_energy_mp_init - s_fermion_mp_final;
 
 			logger.debug() << "\tS_ferm_mp(old field) = " << setprecision(10) <<  spinor_energy_mp_init;
@@ -1665,12 +1636,14 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta)
 
 void Opencl_Module_Hmc::calc_spinorfield_init_energy(hardware::buffers::Plain<hmc_float> * dest)
 {
+	auto spinor_code = get_device()->get_spinor_code();
+
 	//Suppose the initial spinorfield is saved in phi_inv
 	//  it is created in generate_gaussian_spinorfield_device
 	if(get_parameters().get_use_eo() == true) {
-		Opencl_Module_Fermions::set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, dest);
+		spinor_code->set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, dest);
 	} else {
-		Opencl_Module_Fermions::set_float_to_global_squarenorm_device(&clmem_phi_inv, dest);
+		spinor_code->set_float_to_global_squarenorm_device(&clmem_phi_inv, dest);
 	}
 }
 
@@ -1681,7 +1654,7 @@ void Opencl_Module_Hmc::md_update_gaugemomentum_device(hmc_float eps)
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_new_p, &force_tmp);
+		set_float_to_gaugemomentum_squarenorm_device(&clmem_new_p, &force_tmp);
 		force_tmp.dump(&resid);
 		logger.debug() <<  "\tupdated gaugemomenta energy:\t" << resid;
 		if(resid != resid) {
@@ -1762,7 +1735,7 @@ void Opencl_Module_Hmc::gauge_force_device()
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> gauge_force_tmp(1, get_device());
 		hmc_float gauge_force_energy = 0.;
-		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &gauge_force_tmp);
+		set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &gauge_force_tmp);
 		gauge_force_tmp.dump(&gauge_force_energy);
 
 		//logger.debug() <<  "\t\t\tgauge force:\t" << gauge_force_energy;
@@ -1783,7 +1756,7 @@ void Opencl_Module_Hmc::gauge_force_device()
 
 		hardware::buffers::Plain<hmc_float> check_force_tmp(1, get_device());
 		hmc_float check_force_energy = 0.;
-		this->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
+		set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
 		check_force_tmp.dump(&check_force_energy);
 		//logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
 		if(check_force_energy != check_force_energy) {
@@ -1817,7 +1790,7 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device()
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> gauge_force_tlsym_tmp(1, get_device());
 		hmc_float gauge_force_tlsym_energy = 0.;
-		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &gauge_force_tlsym_tmp);
+		set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &gauge_force_tlsym_tmp);
 		gauge_force_tlsym_tmp.dump(&gauge_force_tlsym_energy);
 
 		logger.debug() <<  "\t\t\tgauge force tlsym:\t" << gauge_force_tlsym_energy;
@@ -1837,7 +1810,7 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device()
 
 		hardware::buffers::Plain<hmc_float> check_force_tmp(1, get_device());
 		hmc_float check_force_energy = 0.;
-		this->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
+		set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
 		check_force_tmp.dump(&check_force_energy);
 		logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
 		if(check_force_energy != check_force_energy) {
@@ -1872,7 +1845,7 @@ void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::Plain<spin
 	if(logger.beDebug()) {
 		Plain<hmc_float> noneo_force_tmp(1, get_device());
 		hmc_float noneo_force_energy = 0.;
-		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &noneo_force_tmp);
+		set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &noneo_force_tmp);
 		noneo_force_tmp.dump(&noneo_force_energy);
 		//logger.debug() <<  "\t\t\tnon-eo force:\t" << noneo_force_energy;
 		if(noneo_force_energy != noneo_force_energy) {
@@ -1891,7 +1864,7 @@ void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::Plain<spin
 
 		Plain<hmc_float> check_force_tmp(1, get_device());
 		hmc_float check_force_energy = 0.;
-		this->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
+		set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
 		check_force_tmp.dump(&check_force_energy);
 		//logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
 		if(check_force_energy != check_force_energy) {
@@ -1942,7 +1915,7 @@ void Opencl_Module_Hmc::fermion_force_eo_device(const hardware::buffers::Spinor 
 	if(logger.beDebug()) {
 		Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &force_tmp);
+		set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &force_tmp);
 		force_tmp.dump(&resid);
 		//logger.debug() <<  "\t\t\teoprec force:\t" << resid;
 
@@ -1962,7 +1935,7 @@ void Opencl_Module_Hmc::fermion_force_eo_device(const hardware::buffers::Spinor 
 
 		Plain<hmc_float> check_force_tmp(1, get_device());
 		hmc_float check_force_energy = 0.;
-		this->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
+		set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
 		check_force_tmp.dump(&check_force_energy);
 		//logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
 		if(check_force_energy != check_force_energy) {
@@ -2017,6 +1990,8 @@ void Opencl_Module_Hmc::stout_smeared_fermion_force_device(std::vector<const har
 
 void Opencl_Module_Hmc::set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * clmem_in, const hardware::buffers::Plain<hmc_float> * out)
 {
+	auto spinor_code = get_device()->get_spinor_code();
+
 	//__kernel void gaugemomentum_squarenorm(__global ae * in, __global hmc_float * out){
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -2033,18 +2008,14 @@ void Opencl_Module_Hmc::set_float_to_gaugemomentum_squarenorm_device(const hardw
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 	get_device()->enqueue_kernel(gaugemomentum_squarenorm, gs2, ls2);
 
-	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), clmem_global_squarenorm_buf_glob);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	get_device()->enqueue_kernel(global_squarenorm_reduction, gs2, ls2);
+	spinor_code->global_squarenorm_reduction(out, &clmem_global_squarenorm_buf_glob);
 }
 
 void Opencl_Module_Hmc::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data)
 {
 	cl_int clerr;
 	if(dest->is_soa()) {
-		hardware::buffers::Plain<ae> tmp(meta::get_vol4d(parameters) * NDIM, dest->get_device());
+		hardware::buffers::Plain<ae> tmp(meta::get_vol4d(get_parameters()) * NDIM, dest->get_device());
 		tmp.load(data);
 
 		size_t ls2, gs2;
@@ -2064,7 +2035,7 @@ void Opencl_Module_Hmc::exportGaugemomentumBuffer(ae * const dest, const hardwar
 {
 	cl_int clerr;
 	if(buf->is_soa()) {
-		hardware::buffers::Plain<ae> tmp(meta::get_vol4d(parameters) * NDIM, buf->get_device());
+		hardware::buffers::Plain<ae> tmp(meta::get_vol4d(get_parameters()) * NDIM, buf->get_device());
 
 		size_t ls2, gs2;
 		cl_uint num_groups;
@@ -2081,9 +2052,8 @@ void Opencl_Module_Hmc::exportGaugemomentumBuffer(ae * const dest, const hardwar
 	}
 }
 
-Opencl_Module_Hmc::Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device, meta::Counter * inversions0, meta::Counter * inversions1,
-                                     meta::Counter * inversions_mp0, meta::Counter * inversions_mp1)
-	: Opencl_Module_Fermions(params, device),
+Opencl_Module_Hmc::Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device)
+	: Opencl_Module(params, device),
 	  clmem_s_fermion_init(1, device),
 	  clmem_s_fermion_mp_init(1, device),
 	  clmem_p2(1, device),
@@ -2091,15 +2061,14 @@ Opencl_Module_Hmc::Opencl_Module_Hmc(const meta::Inputparameters& params, hardwa
 	  clmem_s_fermion(1, device),
 	  clmem_p(meta::get_vol4d(params) * NDIM, device),
 	  clmem_new_p(meta::get_vol4d(params) * NDIM, device),
-	  new_u(get_gaugefield()->get_elements(), device),
+	  new_u(device->get_gaugefield_code()->get_gaugefield()->get_elements(), device),
 	  clmem_force(meta::get_vol4d(params) * NDIM, device),
 	  clmem_phi_inv(meta::get_spinorfieldsize(params), device),
 	  clmem_phi_inv_eo(meta::get_eoprec_spinorfieldsize(params), device),
 	  clmem_phi(meta::get_spinorfieldsize(params), device),
 	  clmem_phi_mp(meta::get_spinorfieldsize(params), device),
 	  clmem_phi_eo(meta::get_eoprec_spinorfieldsize(params), device),
-	  clmem_phi_mp_eo(meta::get_eoprec_spinorfieldsize(params), device),
-	  inversions0(inversions0), inversions1(inversions1), inversions_mp0(inversions_mp0), inversions_mp1(inversions_mp1)
+	  clmem_phi_mp_eo(meta::get_eoprec_spinorfieldsize(params), device)
 {
 	fill_kernels();
 }

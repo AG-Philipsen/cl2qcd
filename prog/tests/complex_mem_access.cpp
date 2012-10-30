@@ -1,4 +1,4 @@
-#include "../opencl_module_spinors.h"
+#include "../opencl_module.h"
 #include "../gaugefield_hybrid.h"
 
 #include "../meta/util.hpp"
@@ -18,6 +18,14 @@ class Device : public Opencl_Module {
 
 	void fill_kernels();
 	void clear_kernels();
+protected:
+	virtual size_t get_read_write_size(const std::string&) const {
+		return 0;
+	};
+	virtual uint64_t get_flop_size(const std::string&) const {
+		return 0;
+	};
+
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device)
 		: Opencl_Module(params, device) {
@@ -118,8 +126,8 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	fillComplex = createKernel("fillComplex") << basic_opencl_code << "tests/complex_mem_access.cl";
-	readComplex = createKernel("readComplex") << basic_opencl_code << "tests/complex_mem_access.cl";
+	fillComplex = createKernel("fillComplex") << get_device()->get_gaugefield_code()->get_sources() << "tests/complex_mem_access.cl";
+	readComplex = createKernel("readComplex") << get_device()->get_gaugefield_code()->get_sources() << "tests/complex_mem_access.cl";
 }
 
 void Dummyfield::clear_buffers()

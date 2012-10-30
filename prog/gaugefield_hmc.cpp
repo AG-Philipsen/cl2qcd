@@ -14,7 +14,7 @@ void Gaugefield_hmc::init_tasks()
 
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 
-	opencl_modules[task_hmc] = new Opencl_Module_Hmc(get_parameters(), get_device_for_task(task_hmc), &inversions0, &inversions1, &inversions_mp0, &inversions_mp1);
+	opencl_modules[task_hmc] = get_device_for_task(task_hmc)->get_hmc_code();
 
 	return;
 }
@@ -38,13 +38,12 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 {
 	klepsydra::Monotonic step_timer;
 
-	//reset the counters for the inversions
-	reset_inversion_counters();
+	auto gf_code = get_device_for_task(task_hmc)->get_gaugefield_code();
 
 	// copy u->u' p->p' for the integrator
 	// new_u is used in some debug code of the gaugemomentum-initialization. therefore we need to copy it before
 	// p is modified in the initialization, therefore we cannot copy it now
-	copyData(get_task_hmc(0)->get_new_u(), get_task_hmc(0)->get_gaugefield());
+	copyData(get_task_hmc(0)->get_new_u(), gf_code->get_gaugefield());
 
 	logger.debug() << "\tinit spinorfield and gaugemomentum" ;
 	this->init_gaugemomentum_spinorfield(solver_timer);
@@ -58,11 +57,11 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
 	logger.debug() << "\tperform Metropolis step: " ;
 	//this call calculates also the HMC-Observables
-	*obs = get_task_hmc(0)->metropolis(rnd_number, get_parameters().get_beta());
+	*obs = get_task_hmc(0)->metropolis(rnd_number, get_parameters().get_beta(), gf_code->get_gaugefield());
 
 	if((*obs).accept == 1) {
 		// perform the change nonprimed->primed !
-		copyData(get_task_hmc(0)->get_gaugefield(), get_task_hmc(0)->get_new_u());
+		copyData(gf_code->get_gaugefield(), get_task_hmc(0)->get_new_u());
 		hardware::buffers::copyData(get_task_hmc(0)->get_clmem_p(), get_task_hmc(0)->get_clmem_new_p());
 		logger.debug() << "\t\tnew configuration accepted" ;
 	} else {
@@ -163,6 +162,8 @@ void Gaugefield_hmc::md_update_gaugemomentum_detratio(hmc_float eps, usetimer * 
 
 void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer, hmc_float kappa, hmc_float mubar)
 {
+	auto gf_code = get_device_for_task(task_hmc)->get_gaugefield_code();
+
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
 	int rho_iter = get_parameters().get_rho_iter();
@@ -174,16 +175,16 @@ void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer, hmc_float kappa
 	smeared_gfs.reserve(rho_iter);
 
 	if(get_parameters().get_use_smearing() == true) {
-		size_t gf_elems = get_task_hmc(0)->get_gaugefield()->get_elements();
+		size_t gf_elems = gf_code->get_gaugefield()->get_elements();
 		for(int i = 0; i < rho_iter; i++) {
-			smeared_gfs.push_back(new hardware::buffers::SU3(gf_elems, get_task_hmc(0)->get_device()));
+			smeared_gfs.push_back(new hardware::buffers::SU3(gf_elems, gf_code->get_device()));
 		}
-		get_task_hmc(0)->smear_gaugefield(get_task_hmc(0)->get_gaugefield(), smeared_gfs);
+		gf_code->smear_gaugefield(gf_code->get_gaugefield(), smeared_gfs);
 	}
 	get_task_hmc(0)->calc_fermion_force(solvertimer, kappa, mubar);
 	if(get_parameters().get_use_smearing() == true) {
 		get_task_hmc(0)->stout_smeared_fermion_force_device(smeared_gfs);
-		get_task_hmc(0)->unsmear_gaugefield(get_task_hmc(0)->get_gaugefield());
+		gf_code->unsmear_gaugefield(gf_code->get_gaugefield());
 	}
 for(auto gf: smeared_gfs) {
 		delete gf;
@@ -193,6 +194,9 @@ for(auto gf: smeared_gfs) {
 void Gaugefield_hmc::detratio_forces_call(usetimer * solvertimer)
 {
 	logger.info() << "det ratio force call...";
+
+	auto gf_code = get_device_for_task(task_hmc)->get_gaugefield_code();
+
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
 	int rho_iter = get_parameters().get_rho_iter();
@@ -204,16 +208,16 @@ void Gaugefield_hmc::detratio_forces_call(usetimer * solvertimer)
 	smeared_gfs.reserve(rho_iter);
 
 	if(get_parameters().get_use_smearing() == true) {
-		size_t gf_elems = get_task_hmc(0)->get_gaugefield()->get_elements();
+		size_t gf_elems = gf_code->get_gaugefield()->get_elements();
 		for(int i = 0; i < rho_iter; i++) {
-			smeared_gfs.push_back(new hardware::buffers::SU3(gf_elems, get_task_hmc(0)->get_device()));
+			smeared_gfs.push_back(new hardware::buffers::SU3(gf_elems, gf_code->get_device()));
 		}
-		get_task_hmc(0)->smear_gaugefield(get_task_hmc(0)->get_gaugefield(), smeared_gfs);
+		gf_code->smear_gaugefield(gf_code->get_gaugefield(), smeared_gfs);
 	}
-	get_task_hmc(0)->calc_fermion_force_detratio(solvertimer);
+	get_task_hmc(0)->calc_fermion_force_detratio(solvertimer, gf_code->get_gaugefield());
 	if(get_parameters().get_use_smearing() == true) {
 		get_task_hmc(0)->stout_smeared_fermion_force_device(smeared_gfs);
-		get_task_hmc(0)->unsmear_gaugefield(get_task_hmc(0)->get_gaugefield());
+		gf_code->unsmear_gaugefield(gf_code->get_gaugefield());
 	}
 for(auto gf: smeared_gfs) {
 		delete gf;
@@ -574,31 +578,27 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 
 void Gaugefield_hmc::init_gaugemomentum_spinorfield(usetimer * solvertimer)
 {
+	auto gaugefield = get_device_for_task(task_hmc)->get_gaugefield_code()->get_gaugefield();
+	auto prng = &get_device_for_task(task_hmc)->get_prng_code()->get_prng_buffer();
+
 	//init gauge_momenta, saved in clmem_p
-	get_task_hmc(0)->generate_gaussian_gaugemomenta_device();
+	get_task_hmc(0)->generate_gaussian_gaugemomenta_device(prng);
 	if(! get_parameters().get_use_gauge_only() ) {
 		//init/update spinorfield phi
-		get_task_hmc(0)->generate_spinorfield_gaussian();
+		get_task_hmc(0)->generate_spinorfield_gaussian(prng);
 		//calc init energy for spinorfield
 		get_task_hmc(0)->calc_spinorfield_init_energy(get_task_hmc(0)->get_clmem_s_fermion_init());
 		if(get_parameters().get_use_mp() ) {
 			//update spinorfield with heavy mass: det(kappa_mp, mu_mp)
-			get_task_hmc(0)->md_update_spinorfield(get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
-			get_task_hmc(0)->generate_spinorfield_gaussian();
+			get_task_hmc(0)->md_update_spinorfield(gaugefield, get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
+			get_task_hmc(0)->generate_spinorfield_gaussian(prng);
 			//calc init energy for mass-prec spinorfield (this is the same as for the spinorfield above)
 			get_task_hmc(0)->calc_spinorfield_init_energy(get_task_hmc(0)->get_clmem_s_fermion_mp_init());
 			//update detratio spinorfield: det(kappa, mu) / det(kappa_mp, mu_mp)
-			get_task_hmc(0)->md_update_spinorfield_mp(solvertimer);
+			get_task_hmc(0)->md_update_spinorfield_mp(solvertimer, gaugefield);
 		} else {
 			//update spinorfield: det(kappa, mu)
-			get_task_hmc(0)->md_update_spinorfield(get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
+			get_task_hmc(0)->md_update_spinorfield(gaugefield, get_parameters().get_kappa(), meta::get_mubar(get_parameters()));
 		}
 	}
-}
-
-void Gaugefield_hmc::reset_inversion_counters() noexcept {
-	inversions0.reset();
-	inversions1.reset();
-	inversions_mp0.reset();
-	inversions_mp1.reset();
 }

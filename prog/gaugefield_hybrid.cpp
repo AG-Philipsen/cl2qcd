@@ -1,5 +1,7 @@
 #include "gaugefield_hybrid.h"
 
+#include "opencl_module_gaugefield.h"
+
 #include "meta/util.hpp"
 
 void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type)
@@ -203,7 +205,7 @@ void Gaugefield_hybrid::init_tasks()
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
 		//this is initialized with length 1, meaning one assumes one device per task
-		opencl_modules[ntask] = new Opencl_Module(parameters, get_device_for_task(ntask));
+		opencl_modules[ntask] = get_device_for_task(ntask)->get_gaugefield_code();
 	}
 }
 
@@ -225,9 +227,8 @@ void Gaugefield_hybrid::delete_variables()
 
 	delete [] devicetypes;
 
-	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-		delete opencl_modules[ntask];
-	}
+	logger.warn() << "Not deleting OpenCL modules as this should be done by the device - this might cause memory leaking as long as not all OpenCL modules are managed via the device!";
+
 	delete [] opencl_modules;
 }
 
@@ -300,7 +301,7 @@ void Gaugefield_hybrid::copy_gaugefield_to_task(int ntask)
 		logger.warn() << "Index out of range, copy_gaugefield_to_device does nothing.";
 		return;
 	}
-	opencl_modules[ntask]->importGaugefield(get_sgf());
+	get_device_for_task(ntask)->get_gaugefield_code()->importGaugefield(get_sgf());
 }
 
 void Gaugefield_hybrid::synchronize(int ntask_reference)
@@ -324,7 +325,7 @@ void Gaugefield_hybrid::copy_gaugefield_from_task(int ntask)
 		logger.warn() << "Index out of range, copy_gaugefield_from_device does nothing.";
 		return;
 	}
-	opencl_modules[ntask]->exportGaugefield(get_sgf());
+	get_device_for_task(ntask)->get_gaugefield_code()->exportGaugefield(get_sgf());
 }
 
 hardware::Device* Gaugefield_hybrid::get_device_for_task(int ntask)
@@ -375,7 +376,7 @@ int Gaugefield_hybrid::get_num_devices()
 
 void Gaugefield_hybrid::save(int number)
 {
-  std::string outputfile = meta::create_configuration_name(get_parameters(), number);
+	std::string outputfile = meta::create_configuration_name(get_parameters(), number);
 	save(outputfile);
 }
 
@@ -444,7 +445,7 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask)
 	hmc_float tplaq = 0;
 	hmc_float splaq = 0;
 	hmc_complex pol;
-	opencl_modules[ntask]->gaugeobservables(&plaq, &tplaq, &splaq, &pol);
+	get_device_for_task(ntask)->get_gaugefield_code()->gaugeobservables(&plaq, &tplaq, &splaq, &pol);
 	logger.info() << iter << '\t' << plaq << '\t' << tplaq << '\t' << splaq << '\t' << pol.re << '\t' << pol.im << '\t' << sqrt(pol.re * pol.re + pol.im * pol.im);
 }
 
@@ -455,7 +456,7 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask, st
 	hmc_float tplaq = 0;
 	hmc_float splaq = 0;
 	hmc_complex pol;
-	opencl_modules[ntask]->gaugeobservables(&plaq, &tplaq, &splaq, &pol);
+	get_device_for_task(ntask)->get_gaugefield_code()->gaugeobservables(&plaq, &tplaq, &splaq, &pol);
 	std::fstream gaugeout;
 	gaugeout.open(filename.c_str(), std::ios::out | std::ios::app);
 	if(!gaugeout.is_open()) throw File_Exception(filename);
@@ -467,7 +468,7 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask, st
 	if(meta::get_use_rectangles(get_parameters()) ) {
 		//print rectangle value
 		hmc_float rect = 0.;
-		opencl_modules[ntask]->gaugeobservables_rectangles(opencl_modules[ntask]->get_gaugefield(), &rect);
+		get_device_for_task(ntask)->get_gaugefield_code()->gaugeobservables_rectangles(get_device_for_task(ntask)->get_gaugefield_code()->get_gaugefield(), &rect);
 		gaugeout << "\t" << rect;
 	}
 	gaugeout  << std::endl;

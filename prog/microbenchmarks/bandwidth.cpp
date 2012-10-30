@@ -9,7 +9,7 @@
 #include <boost/program_options.hpp>
 
 #include "../host_random.h"
-#include "../opencl_module.h"
+#include "../opencl_module_gaugefield.h"
 #include "../gaugefield_hybrid.h"
 #include "../logger.hpp"
 #include "../exceptions.h"
@@ -57,6 +57,14 @@ private:
 
 	void fill_kernels();
 	void clear_kernels();
+
+protected:
+	virtual size_t get_read_write_size(const std::string&) const {
+		return 0;
+	};
+	virtual uint64_t get_flop_size(const std::string&) const {
+		return 0;
+	};
 
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
@@ -238,6 +246,7 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
+	ClSourcePackage basic_opencl_code = get_device()->get_gaugefield_code()->get_sources();
 	floatKernel = createKernel("copyFloat") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 	su3Kernel = createKernel("copySU3") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";
 	su3SOAKernel = createKernel("copySU3SOA") << basic_opencl_code << "types_fermions.h" << "microbenchmarks/bandwidth.cl";

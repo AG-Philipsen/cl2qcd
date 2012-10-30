@@ -6,6 +6,8 @@
 
 #include "prng_buffer.hpp"
 
+#include "../device.hpp"
+
 hardware::buffers::PRNGBuffer::PRNGBuffer(size_t elems, Device * device)
 	: Buffer(elems * sizeof(prng_state_t), device), elems(elems)
 {

@@ -132,6 +132,7 @@ set_abs_paths(OPTIMAL_FILES
 	host_writegaugefield.cpp
 	opencl_compiler.cpp
 	opencl_module.cpp
+	opencl_module_gaugefield.cpp
 	opencl_module_correlator.cpp
 	opencl_module_fermions.cpp
 	opencl_module_hmc.cpp

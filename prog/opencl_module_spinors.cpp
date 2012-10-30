@@ -1,10 +1,8 @@
 #include "opencl_module_spinors.h"
 
-#include <algorithm>
-#include <boost/regex.hpp>
-
 #include "logger.hpp"
 #include "meta/util.hpp"
+#include "hardware/device.hpp"
 
 using namespace std;
 
@@ -27,7 +25,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 
 void Opencl_Module_Spinors::fill_kernels()
 {
-	basic_fermion_code = basic_opencl_code << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
+	basic_fermion_code = get_device()->get_gaugefield_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	if(get_parameters().get_use_eo()) {
 		basic_fermion_code = basic_fermion_code << "operations_spinorfield_eo.cl";
 	}
@@ -40,10 +38,10 @@ void Opencl_Module_Spinors::fill_kernels()
 	scalar_product_reduction = createKernel("scalar_product_reduction") << basic_fermion_code << "spinorfield_scalar_product.cl";
 	set_zero_spinorfield = createKernel("set_zero_spinorfield") << basic_fermion_code << "spinorfield_set_zero.cl";
 	global_squarenorm = createKernel("global_squarenorm") << basic_fermion_code << "spinorfield_squarenorm.cl";
-	global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
+	_global_squarenorm_reduction = createKernel("global_squarenorm_reduction") << basic_fermion_code << "spinorfield_squarenorm.cl";
 
-	ratio = createKernel("ratio") << basic_opencl_code << "complex_ratio.cl";
-	product = createKernel("product") << basic_opencl_code << "complex_product.cl";
+	ratio = createKernel("ratio") << get_device()->get_gaugefield_code()->get_sources() << "complex_ratio.cl";
+	product = createKernel("product") << get_device()->get_gaugefield_code()->get_sources() << "complex_product.cl";
 
 	if(get_parameters().get_use_eo() == true) {
 		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
@@ -86,7 +84,7 @@ void Opencl_Module_Spinors::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(global_squarenorm);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(global_squarenorm_reduction);
+	clerr = clReleaseKernel(_global_squarenorm_reduction);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(ratio);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -113,7 +111,7 @@ void Opencl_Module_Spinors::clear_kernels()
 
 void Opencl_Module_Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
-	Opencl_Module_Ran::get_work_sizes(kernel, ls, gs, num_groups);
+	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 
 	//Query specific sizes for kernels if needed
 	string kernelname = get_kernel_name(kernel);
@@ -127,9 +125,6 @@ void Opencl_Module_Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls, 
 		*gs = 1;
 		*num_groups = 1;
 	}
-
-
-	return;
 }
 
 void Opencl_Module_Spinors::convert_from_eoprec_device(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::Plain<spinor> * out)
@@ -490,6 +485,22 @@ void Opencl_Module_Spinors::set_complex_to_product_device(const hardware::buffer
 	get_device()->enqueue_kernel(product, gs2, ls2);
 }
 
+
+void Opencl_Module_Spinors::global_squarenorm_reduction(const hardware::buffers::Plain<hmc_float> * out, const hardware::buffers::Plain<hmc_float> * tmp_buf)
+{
+	cl_int clerr = clSetKernelArg(_global_squarenorm_reduction, 0, sizeof(cl_mem), out->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(_global_squarenorm_reduction, 1, sizeof(cl_mem), tmp_buf->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	cl_uint elems = tmp_buf->get_elements();
+	clerr = clSetKernelArg(_global_squarenorm_reduction, 2, sizeof(cl_uint), &elems);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(_global_squarenorm_reduction, 1, 1);
+}
+
 void Opencl_Module_Spinors::set_float_to_global_squarenorm_device(const hardware::buffers::Plain<spinor> * a, const hardware::buffers::Plain<hmc_float> * out)
 {
 	//query work-sizes for kernel
@@ -512,13 +523,7 @@ void Opencl_Module_Spinors::set_float_to_global_squarenorm_device(const hardware
 
 	get_device()->enqueue_kernel(global_squarenorm , gs2, ls2);
 
-	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel( global_squarenorm_reduction, gs2, ls2);
+	global_squarenorm_reduction(out, &tmp);
 }
 
 void Opencl_Module_Spinors::set_float_to_global_squarenorm_eoprec_device(const hardware::buffers::Spinor * a, const hardware::buffers::Plain<hmc_float> * out)
@@ -542,14 +547,7 @@ void Opencl_Module_Spinors::set_float_to_global_squarenorm_eoprec_device(const h
 
 	get_device()->enqueue_kernel( global_squarenorm_eoprec, gs2, ls2);
 
-
-	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel( global_squarenorm_reduction, gs2, ls2);
+	global_squarenorm_reduction(out, &tmp);
 }
 
 void Opencl_Module_Spinors::set_zero_spinorfield_device(const hardware::buffers::Plain<spinor> * x)
@@ -645,22 +643,23 @@ void Opencl_Module_Spinors::saxpy_AND_squarenorm_eo_device(const hardware::buffe
 
 	get_device()->enqueue_kernel( saxpy_AND_squarenorm_eo, gs2, ls2);
 
-	//perform reduction
-	clerr = clSetKernelArg(global_squarenorm_reduction, 0, sizeof(cl_mem), tmp);
+	clerr = clSetKernelArg(_global_squarenorm_reduction, 0, sizeof(cl_mem), sq_out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(global_squarenorm_reduction, 1, sizeof(cl_mem), sq_out->get_cl_buffer());
+	clerr = clSetKernelArg(_global_squarenorm_reduction, 1, sizeof(cl_mem), tmp);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel( global_squarenorm_reduction, gs2, ls2);
+	cl_uint elems = tmp.get_elements();
+	clerr = clSetKernelArg(_global_squarenorm_reduction, 2, sizeof(cl_uint), &elems);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(_global_squarenorm_reduction, 1, 1);
 }
 
 size_t Opencl_Module_Spinors::get_read_write_size(const std::string& in) const
 {
-	size_t result = Opencl_Module_Ran::get_read_write_size(in);
-	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
-	size_t D = meta::get_float_size(parameters);
+	size_t D = meta::get_float_size(get_parameters());
 	size_t S = meta::get_spinorfieldsize(get_parameters());
 	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	//factor for complex numbers
@@ -779,8 +778,6 @@ size_t Opencl_Module_Spinors::get_read_write_size(const std::string& in) const
 
 uint64_t Opencl_Module_Spinors::get_flop_size(const std::string& in) const
 {
-	uint64_t result = Opencl_Module_Ran::get_flop_size(in);
-	if (result != 0) return result;
 	uint64_t S = meta::get_spinorfieldsize(get_parameters());
 	uint64_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
@@ -871,9 +868,9 @@ uint64_t Opencl_Module_Spinors::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-void Opencl_Module_Spinors::print_profiling(const std::string& filename, int number)
+void Opencl_Module_Spinors::print_profiling(const std::string& filename, int number) const
 {
-	Opencl_Module_Ran::print_profiling(filename, number);
+	Opencl_Module::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, set_spinorfield_cold);
 	Opencl_Module::print_profiling(filename, set_eoprec_spinorfield_cold);
 	Opencl_Module::print_profiling(filename, convert_from_eoprec);
@@ -889,7 +886,7 @@ void Opencl_Module_Spinors::print_profiling(const std::string& filename, int num
 	Opencl_Module::print_profiling(filename, scalar_product);
 	Opencl_Module::print_profiling(filename, scalar_product_reduction);
 	Opencl_Module::print_profiling(filename, global_squarenorm);
-	Opencl_Module::print_profiling(filename, global_squarenorm_reduction);
+	Opencl_Module::print_profiling(filename, _global_squarenorm_reduction);
 	Opencl_Module::print_profiling(filename, scalar_product_eoprec);
 	Opencl_Module::print_profiling(filename, global_squarenorm_eoprec);
 	Opencl_Module::print_profiling(filename, ratio);
@@ -909,7 +906,7 @@ void Opencl_Module_Spinors::copy_to_eoprec_spinorfield_buffer(const hardware::bu
 }
 
 Opencl_Module_Spinors::Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module_Ran(params, device), saxpy_AND_squarenorm_eo(0)
+	: Opencl_Module(params, device), saxpy_AND_squarenorm_eo(0)
 {
 	fill_kernels();
 }
@@ -917,4 +914,9 @@ Opencl_Module_Spinors::Opencl_Module_Spinors(const meta::Inputparameters& params
 Opencl_Module_Spinors::~Opencl_Module_Spinors()
 {
 	clear_kernels();
+}
+
+ClSourcePackage Opencl_Module_Spinors::get_sources() const noexcept
+{
+	return basic_fermion_code;
 }

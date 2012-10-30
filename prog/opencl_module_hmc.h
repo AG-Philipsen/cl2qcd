@@ -25,14 +25,15 @@
 #include "opencl_compiler.hpp"
 
 #include "opencl_module.h"
-#include "opencl_module_ran.h"
-#include "opencl_module_spinors.h"
-#include "opencl_module_fermions.h"
 #include "types_hmc.h"
 
 #include "exceptions.h"
 
 #include "meta/counter.hpp"
+#include "hardware/buffers/plain.hpp"
+#include "hardware/buffers/prng_buffer.hpp"
+#include "hardware/buffers/su3.hpp"
+#include "hardware/buffers/spinor.hpp"
 #include "hardware/buffers/gaugemomentum.hpp"
 
 /**
@@ -43,28 +44,11 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Hmc : public Opencl_Module_Fermions {
+class Opencl_Module_Hmc : public Opencl_Module {
 public:
-
-	/**
-	 * Constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device, meta::Counter * inversions0, meta::Counter * inversions1,
-	                  meta::Counter * inversions_mp0, meta::Counter * inversions_mp1);
+	friend hardware::Device;
 
 	virtual ~Opencl_Module_Hmc();
-
-	/**
-	 * comutes work-sizes for a kernel
-	 * @todo autotune
-	 * @param ls local-work-size
-	 * @param gs global-work-size
-	 * @param num_groups number of work groups
-	 * @param name name of the kernel for possible autotune-usage, not yet used!!
-	 */
-	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
 	////////////////////////////////////////////////////
 	//get members
@@ -80,21 +64,21 @@ public:
 
 	////////////////////////////////////////////////////
 	//Methods needed for the HMC-algorithm
-	void md_update_spinorfield(hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void md_update_spinorfield_mp(usetimer * solvertimer);
-	void generate_spinorfield_gaussian();
-	hmc_observables metropolis(hmc_float rnd, hmc_float beta);
+	void md_update_spinorfield(const hardware::buffers::SU3 * gaugefield, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
+	void md_update_spinorfield_mp(usetimer * solvertimer, const hardware::buffers::SU3 * gaugefield);
+	void generate_spinorfield_gaussian(const hardware::buffers::PRNGBuffer * prng);
+	hmc_observables metropolis(hmc_float rnd, hmc_float beta, const hardware::buffers::SU3 * gaugefield);
 	void calc_spinorfield_init_energy(hardware::buffers::Plain<hmc_float> * dest);
 	void calc_gauge_force();
 	void calc_fermion_force(usetimer * solvertimer, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
-	void calc_fermion_force_detratio(usetimer * solvertimer);
+	void calc_fermion_force_detratio(usetimer * solvertimer, const hardware::buffers::SU3 * gaugefield);
 
 	///////////////////////////////////////////////////
 	//Methods on device
 	void set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::Plain<hmc_float> * out);
-	void generate_gaussian_gaugemomenta_device();
-	void generate_gaussian_spinorfield_device();
-	void generate_gaussian_spinorfield_eo_device();
+	void generate_gaussian_gaugemomenta_device(const hardware::buffers::PRNGBuffer * prng);
+	void generate_gaussian_spinorfield_device(const hardware::buffers::PRNGBuffer * prng);
+	void generate_gaussian_spinorfield_eo_device(const hardware::buffers::PRNGBuffer * prng);
 	void md_update_gaugemomentum_device(hmc_float eps);
 	void md_update_gaugemomentum_device(const hardware::buffers::Gaugemomentum *, const hardware::buffers::Gaugemomentum *, hmc_float eps);
 	void md_update_gaugefield_device(hmc_float eps);
@@ -111,7 +95,7 @@ public:
 	void fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, const hardware::buffers::SU3 *, const hardware::buffers::Gaugemomentum *, int evenodd, hmc_float kappa = ARG_DEF);
 	void stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate);
 	hmc_float calc_s_fermion();
-	hmc_float calc_s_fermion_mp();
+	hmc_float calc_s_fermion_mp(const hardware::buffers::SU3 * gaugefield);
 
 	/**
 	 * Import data from the gaugemomenta array into the given buffer.
@@ -135,11 +119,21 @@ public:
 protected:
 
 	/**
+	 * comutes work-sizes for a kernel
+	 * @todo autotune
+	 * @param ls local-work-size
+	 * @param gs global-work-size
+	 * @param num_groups number of work groups
+	 * @param name name of the kernel for possible autotune-usage, not yet used!!
+	 */
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
+
+	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 */
-	void virtual print_profiling(const std::string& filename, int number) override;
+	void virtual print_profiling(const std::string& filename, int number) const override;
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
@@ -156,11 +150,14 @@ protected:
 	 */
 	virtual uint64_t get_flop_size(const std::string& in) const override;
 
-protected:
-
-	ClSourcePackage basic_hmc_code;
-
 private:
+	/**
+	 * Constructor.
+	 *
+	 * @param[in] params points to an instance of inputparameters
+	 */
+	Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device);
+
 	/**
 	 * Collect the kernels for OpenCL.
 	 */
@@ -169,6 +166,8 @@ private:
 	 * Clear out the kernels,
 	 */
 	void clear_kernels();
+
+	ClSourcePackage basic_hmc_code;
 
 	//kernels
 	cl_kernel generate_gaussian_spinorfield;
@@ -208,11 +207,6 @@ private:
 	const hardware::buffers::Plain<spinor> clmem_phi_mp;
 	const hardware::buffers::Spinor clmem_phi_eo;
 	const hardware::buffers::Spinor clmem_phi_mp_eo;
-
-	meta::Counter * const inversions0;
-	meta::Counter * const inversions1;
-	meta::Counter * const inversions_mp0;
-	meta::Counter * const inversions_mp1;
 };
 
 #endif //OPENCLMODULEHMCH

@@ -23,18 +23,21 @@ void Gaugefield_heatbath_kappa::init_tasks()
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
 
 	//LZ: right now, each task carries exactly one opencl device -> thus the below allocation with [1]. Could be generalized in future
-	opencl_modules[task_kappa] = new Opencl_Module_Kappa(get_parameters(), get_device_for_task(task_kappa));
+	opencl_modules[task_kappa] = get_device_for_task(task_kappa)->get_kappa_code();
 
-	opencl_modules[task_heatbath] = new Opencl_Module_Heatbath(get_parameters(), get_device_for_task(task_heatbath));
+	opencl_modules[task_heatbath] = get_device_for_task(task_heatbath)->get_heatbath_code();
 }
 
 void Gaugefield_heatbath_kappa::perform_heatbath(int nheat, int nover)
 {
 
+	auto gf = get_device_for_task(task_heatbath)->get_gaugefield_code()->get_gaugefield();
+	auto prng = &get_device_for_task(task_heatbath)->get_prng_code()->get_prng_buffer();
+
 	for(int iter = 0; iter < nheat; iter++) {
-		get_task_heatbath()->run_heatbath();
+		get_task_heatbath()->run_heatbath(gf, prng);
 		for(int iter_over = 0; iter_over < nover; iter_over++)
-			get_task_heatbath()->run_overrelax();
+			get_task_heatbath()->run_overrelax(gf, prng);
 	}
 
 	return;
@@ -43,20 +46,22 @@ void Gaugefield_heatbath_kappa::perform_heatbath(int nheat, int nover)
 
 void Gaugefield_heatbath_kappa::perform_tasks(int nheat, int nover)
 {
+	auto gf = get_device_for_task(task_heatbath)->get_gaugefield_code()->get_gaugefield();
+	auto prng = &get_device_for_task(task_heatbath)->get_prng_code()->get_prng_buffer();
 
 	for(int iter = 0; iter < nheat; iter++) {
-		get_task_heatbath()->run_heatbath();
+		get_task_heatbath()->run_heatbath(gf, prng);
 		for(int iter_over = 0; iter_over < nover; iter_over++)
-			get_task_heatbath()->run_overrelax();
+			get_task_heatbath()->run_overrelax(gf, prng);
 	}
 
-	get_task_kappa()->run_kappa_clover(get_parameters().get_beta());
-
-	return;
+	get_task_kappa()->run_kappa_clover(get_device_for_task(task_kappa)->get_gaugefield_code()->get_gaugefield(), get_parameters().get_beta());
 }
 
 void Gaugefield_heatbath_kappa::perform_tasks(int nheat, int nover, int* nheat_optimal)
 {
+	auto gf = get_device_for_task(task_heatbath)->get_gaugefield_code()->get_gaugefield();
+	auto prng = &get_device_for_task(task_heatbath)->get_prng_code()->get_prng_buffer();
 
 	uint64_t time_for_heatbath;
 	uint64_t time_for_kappa;
@@ -64,15 +69,15 @@ void Gaugefield_heatbath_kappa::perform_tasks(int nheat, int nover, int* nheat_o
 	usetimer timer;
 	timer.reset();
 	for(int iter = 0; iter < nheat; iter++) {
-		get_task_heatbath()->run_heatbath();
+		get_task_heatbath()->run_heatbath(gf, prng);
 		for(int iter_over = 0; iter_over < nover; iter_over++)
-			get_task_heatbath()->run_overrelax();
+			get_task_heatbath()->run_overrelax(gf, prng);
 	}
 	timer.add();
 	time_for_heatbath = timer.getTime() / nheat;
 
 	timer.reset();
-	get_task_kappa()->run_kappa_clover(get_parameters().get_beta());
+	get_task_kappa()->run_kappa_clover(get_device_for_task(task_kappa)->get_gaugefield_code()->get_gaugefield(), get_parameters().get_beta());
 	timer.add();
 	time_for_kappa = timer.getTime();
 

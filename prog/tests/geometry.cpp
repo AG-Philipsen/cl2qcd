@@ -1,4 +1,4 @@
-#include "../opencl_module_fermions.h"
+#include "../opencl_module.h"
 #include "../gaugefield_hybrid.h"
 
 #include "../meta/util.hpp"
@@ -17,6 +17,14 @@ class Device : public Opencl_Module {
 
 	void fill_kernels();
 	void clear_kernels();
+protected:
+	virtual size_t get_read_write_size(const std::string&) const {
+		return 0;
+	};
+	virtual uint64_t get_flop_size(const std::string&) const {
+		return 0;
+	};
+
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
 		fill_kernels();
@@ -87,7 +95,7 @@ void Dummyfield::fill_buffers()
 void Device::fill_kernels()
 {
 	//to this end, one has to set the needed files by hand
-	testKernel = createKernel("geometry_test") << basic_opencl_code << "tests/geometry_test.cl";
+	testKernel = createKernel("geometry_test") << get_device()->get_gaugefield_code()->get_sources() << "tests/geometry_test.cl";
 }
 
 void Dummyfield::clear_buffers()

@@ -4,29 +4,10 @@
 #ifndef _OPENCLMODULSPINORSH_
 #define _OPENCLMODULSPINORSH_
 
-#include <cstdlib>
-#include <vector>
-#include <string>
-#include <fstream>
-#include <sstream>
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-
-#include "host_geometry.h"
-#include "host_operations_gaugefield.h"
-#include "globaldefs.h"
-#include "types.h"
-#include "host_use_timer.h"
-#include "host_random.h"
-#include "opencl_compiler.hpp"
 #include "opencl_module.h"
-#include "opencl_module_ran.h"
+
+#include "hardware/buffers/plain.hpp"
 #include "hardware/buffers/spinor.hpp"
-#include "exceptions.h"
-#include "types_fermions.h"
 
 /**
  * An OpenCL device
@@ -35,21 +16,11 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Spinors : public Opencl_Module_Ran {
+class Opencl_Module_Spinors : public Opencl_Module {
 public:
-	/**
-	 * Empty constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device);
-	~Opencl_Module_Spinors();
+	friend hardware::Device;
 
-	/**
-	 * Add specific work_size determination for this child class
-	 */
-	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
-
+	virtual ~Opencl_Module_Spinors();
 
 	/////////////////////////////////////////
 	// device operations
@@ -62,6 +33,7 @@ public:
 	void set_complex_to_scalar_product_eoprec_device(const hardware::buffers::Spinor * a, const hardware::buffers::Spinor * b, const hardware::buffers::Plain<hmc_complex> * out);
 	void set_complex_to_ratio_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out);
 	void set_complex_to_product_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out);
+	void global_squarenorm_reduction(const hardware::buffers::Plain<hmc_float> * out, const hardware::buffers::Plain<hmc_float> * tmp_buf);
 	void set_float_to_global_squarenorm_device(const hardware::buffers::Plain<spinor> * a, const hardware::buffers::Plain<hmc_float> * out);
 	void set_float_to_global_squarenorm_eoprec_device(const hardware::buffers::Spinor * a, const hardware::buffers::Plain<hmc_float> * out);
 	void set_zero_spinorfield_device(const hardware::buffers::Plain<spinor> * x);
@@ -94,14 +66,9 @@ public:
 	 *
 	 * @param filename Name of file where data is appended.
 	 */
-	void virtual print_profiling(const std::string& filename, int number) override;
+	void virtual print_profiling(const std::string& filename, int number) const override;
 
-	/**
-	 * Return amount of bytes read and written by a specific kernel per call.
-	 *
-	 * @param in Name of the kernel under consideration.
-	 */
-	virtual size_t get_read_write_size(const std::string& in) const override;
+	ClSourcePackage get_sources() const noexcept;
 
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -111,8 +78,39 @@ public:
 	 */
 	virtual uint64_t get_flop_size(const std::string& in) const override;
 
+	/**
+	 * Return amount of bytes read and written by a specific kernel per call.
+	 *
+	 * @param in Name of the kernel under consideration.
+	 */
+	virtual size_t get_read_write_size(const std::string& in) const override;
 
 protected:
+	/**
+	 * Add specific work_size determination for this child class
+	 */
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
+
+private:
+	Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device);
+
+	/**
+	 * Collect the kernels for OpenCL.
+	 */
+	void fill_kernels();
+
+	/**
+	 * Clear out the kernels,
+	 */
+	void clear_kernels();
+
+	cl_kernel convertSpinorfieldToSOA_eo;
+	cl_kernel convertSpinorfieldFromSOA_eo;
+
+	void convertSpinorfieldToSOA_eo_device(const hardware::buffers::Spinor * out, const hardware::buffers::Plain<spinor> * in);
+	void convertSpinorfieldFromSOA_eo_device(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Spinor * in);
+
+	ClSourcePackage basic_fermion_code;
 
 	//BLAS
 	cl_kernel set_spinorfield_cold;
@@ -133,7 +131,7 @@ protected:
 	cl_kernel scalar_product;
 	cl_kernel scalar_product_reduction;
 	cl_kernel global_squarenorm;
-	cl_kernel global_squarenorm_reduction;
+	cl_kernel _global_squarenorm_reduction;
 	cl_kernel scalar_product_eoprec;
 	cl_kernel global_squarenorm_eoprec;
 
@@ -143,25 +141,6 @@ protected:
 
 	//merged kernels
 	cl_kernel saxpy_AND_squarenorm_eo;
-
-	ClSourcePackage basic_fermion_code;
-
-private:
-	/**
-	 * Collect the kernels for OpenCL.
-	 */
-	void fill_kernels();
-
-	/**
-	 * Clear out the kernels,
-	 */
-	void clear_kernels();
-
-	cl_kernel convertSpinorfieldToSOA_eo;
-	cl_kernel convertSpinorfieldFromSOA_eo;
-
-	void convertSpinorfieldToSOA_eo_device(const hardware::buffers::Spinor * out, const hardware::buffers::Plain<spinor> * in);
-	void convertSpinorfieldFromSOA_eo_device(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Spinor * in);
 };
 
 #endif //OPENCLMODULSPINORSH

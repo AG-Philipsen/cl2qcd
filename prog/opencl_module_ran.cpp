@@ -1,9 +1,7 @@
 #include "opencl_module_ran.h"
 
-#include <algorithm>
-#include <boost/regex.hpp>
-
 #include "logger.hpp"
+#include "hardware/device.hpp"
 
 using namespace std;
 
@@ -59,7 +57,7 @@ Opencl_Module_Ran::Opencl_Module_Ran(const meta::Inputparameters& params, hardwa
 	prng_buffer.load(rndarray);
 #elif defined(USE_PRNG_RANLUX)
 	prng_code = ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "ranluxcl/ranluxcl.cl" << "random.cl";
-	cl_kernel init_kernel = createKernel("prng_ranlux_init") << basic_opencl_code << prng_code << "random_ranlux_init.cl";
+	cl_kernel init_kernel = createKernel("prng_ranlux_init") << get_device()->get_gaugefield_code()->get_sources() << prng_code << "random_ranlux_init.cl";
 	cl_int clerr;
 	size_t ls, gs;
 	cl_uint num_groups;
@@ -92,4 +90,9 @@ Opencl_Module_Ran::~Opencl_Module_Ran()
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
+}
+
+ClSourcePackage Opencl_Module_Ran::get_sources() const noexcept
+{
+	return prng_code;
 }

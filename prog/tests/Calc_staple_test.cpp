@@ -1,4 +1,5 @@
-#include "../opencl_module_hmc.h"
+#include "../opencl_module.h"
+#include "../opencl_module_gaugefield.h"
 #include "../gaugefield_hybrid.h"
 
 #include "../meta/util.hpp"
@@ -15,6 +16,13 @@ std::string const exec_name = "staple_test";
 class Device : public Opencl_Module {
 
 	cl_kernel testKernel;
+protected:
+	virtual size_t get_read_write_size(const std::string&) const {
+		return 0;
+	};
+	virtual uint64_t get_flop_size(const std::string&) const {
+		return 0;
+	};
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
 		fill_kernels();
@@ -75,7 +83,7 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	testKernel = createKernel("staple_test") << basic_opencl_code  << "/tests/staple_test.cl";
+	testKernel = createKernel("staple_test") << get_device()->get_gaugefield_code()->get_sources() << "/tests/staple_test.cl";
 }
 
 void Dummyfield::clear_buffers()
@@ -113,7 +121,7 @@ hmc_float Dummyfield::runTestKernel()
 		ls = 1;
 	}
 	Device * device = static_cast<Device*>(opencl_modules[0]);
-	device->runTestKernel(device->get_gaugefield(), out, gs, ls);
+	device->runTestKernel(device->get_device()->get_gaugefield_code()->get_gaugefield(), out, gs, ls);
 
 	int NUM_ELEMENTS = meta::get_vol4d(get_parameters());
 	//copy the result of the kernel to host

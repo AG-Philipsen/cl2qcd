@@ -1,4 +1,4 @@
-#include "../opencl_module.h"
+#include "../opencl_module_gaugefield.h"
 #include "../gaugefield_hybrid.h"
 
 // use the boost test framework
@@ -18,6 +18,13 @@ class Device : public Opencl_Module {
 
 	void fill_kernels();
 	void clear_kernels();
+protected:
+	virtual size_t get_read_write_size(const std::string&) const {
+		return 0;
+	};
+	virtual uint64_t get_flop_size(const std::string&) const {
+		return 0;
+	};
 public:
 	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device) {
 		fill_kernels();
@@ -127,7 +134,7 @@ void Dummyfield::fill_buffers()
 
 void Device::fill_kernels()
 {
-	extendKernel = createKernel("extendKernel") << basic_opencl_code << "tests/su2su3extend.cl";
+	extendKernel = createKernel("extendKernel") << get_device()->get_gaugefield_code()->get_sources() << "tests/su2su3extend.cl";
 }
 
 void Dummyfield::clear_buffers()

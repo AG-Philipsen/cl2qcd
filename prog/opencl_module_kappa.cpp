@@ -1,10 +1,8 @@
 #include "opencl_module_kappa.h"
 
-#include <algorithm>
-#include <boost/regex.hpp>
-
 #include "logger.hpp"
 #include "meta/util.hpp"
+#include "hardware/device.hpp"
 
 using namespace std;
 
@@ -22,14 +20,14 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 
 void Opencl_Module_Kappa::fill_kernels()
 {
-	ClSourcePackage sources = basic_opencl_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+	ClSourcePackage sources = get_device()->get_gaugefield_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 
 	cout << "Create TK clover kernels..." << endl;
 	kappa_clover_gpu = createKernel("kappa_clover_gpu") << sources << "opencl_tk_kappa.cl";
 }
 
 
-void Opencl_Module_Kappa::run_kappa_clover(const hmc_float beta)
+void Opencl_Module_Kappa::run_kappa_clover(const hardware::buffers::SU3 * gaugefield, const hmc_float beta)
 {
 	//variables
 	cl_int clerr = CL_SUCCESS;
@@ -42,7 +40,7 @@ void Opencl_Module_Kappa::run_kappa_clover(const hmc_float beta)
 
 	hardware::buffers::Plain<hmc_float> clmem_kappa_clover_buf_glob(num_groups, get_device());
 
-	clerr = clSetKernelArg(kappa_clover_gpu, 0, sizeof(cl_mem), get_gaugefield()->get_cl_buffer());
+	clerr = clSetKernelArg(kappa_clover_gpu, 0, sizeof(cl_mem), gaugefield->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(kappa_clover_gpu, 1, sizeof(hmc_float), &beta);
@@ -57,9 +55,6 @@ void Opencl_Module_Kappa::run_kappa_clover(const hmc_float beta)
 	//don't do that anymore ;-)
 	//  clFinish(queue);
 	//  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
-
-	return;
-
 }
 
 hmc_float Opencl_Module_Kappa::get_kappa_clover()

@@ -1,10 +1,8 @@
 #include "opencl_module_fermions.h"
 
-#include <algorithm>
-#include <boost/regex.hpp>
-
 #include "logger.hpp"
 #include "meta/util.hpp"
+#include "hardware/device.hpp"
 
 using namespace std;
 
@@ -161,17 +159,19 @@ void Aee::operator()(const hardware::buffers::Spinor * in, const hardware::buffe
 }
 cl_ulong Aee::get_Flops() const
 {
+	auto spinor_code = that->get_device()->get_spinor_code();
+
 	cl_ulong res;
 	switch(that->get_parameters().get_fermact()) {
 		case meta::Inputparameters::wilson:
 			res = 2 * that->get_flop_size("dslash_eo");
-			res += that->get_flop_size("saxpy_eoprec");
+			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
 		case meta::Inputparameters::twistedmass:
 			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("M_tm_inverse_sitediagonal");
 			res += that->get_flop_size("M_tm_sitediagonal");
-			res += that->get_flop_size("saxpy_eoprec");
+			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
@@ -180,17 +180,19 @@ cl_ulong Aee::get_Flops() const
 }
 cl_ulong Aee::get_Bytes() const
 {
+	auto spinor_code = that->get_device()->get_spinor_code();
+
 	cl_ulong res;
 	switch(that->get_parameters().get_fermact()) {
 		case meta::Inputparameters::wilson:
 			res = 2 * that->get_read_write_size("dslash_eo");
-			res += that->get_read_write_size("saxpy_eoprec");
+			res += spinor_code->get_read_write_size("saxpy_eoprec");
 			break;
 		case meta::Inputparameters::twistedmass:
 			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("M_tm_inverse_sitediagonal");
 			res += that->get_read_write_size("M_tm_sitediagonal");
-			res += that->get_read_write_size("saxpy_eoprec");
+			res += spinor_code->get_read_write_size("saxpy_eoprec");
 			break;
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
@@ -204,17 +206,19 @@ void Qplus_eo::operator()(const hardware::buffers::Spinor * in, const hardware::
 }
 cl_ulong Qplus_eo::get_Flops() const
 {
+	auto spinor_code = that->get_device()->get_spinor_code();
+
 	cl_ulong res;
 	switch(that->get_parameters().get_fermact()) {
 		case meta::Inputparameters::wilson:
 			res = 2 * that->get_flop_size("dslash_eo");
-			res += that->get_flop_size("saxpy_eoprec");
+			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
 		case meta::Inputparameters::twistedmass:
 			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("M_tm_inverse_sitediagonal");
 			res += that->get_flop_size("M_tm_sitediagonal");
-			res += that->get_flop_size("saxpy_eoprec");
+			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
@@ -224,17 +228,19 @@ cl_ulong Qplus_eo::get_Flops() const
 }
 cl_ulong Qplus_eo::get_Bytes() const
 {
+	auto spinor_code = that->get_device()->get_spinor_code();
+
 	cl_ulong res;
 	switch(that->get_parameters().get_fermact()) {
 		case meta::Inputparameters::wilson:
 			res = 2 * that->get_read_write_size("dslash_eo");
-			res += that->get_read_write_size("saxpy_eoprec");
+			res += spinor_code->get_read_write_size("saxpy_eoprec");
 			break;
 		case meta::Inputparameters::twistedmass:
 			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("M_tm_inverse_sitediagonal");
 			res += that->get_read_write_size("M_tm_sitediagonal");
-			res += that->get_read_write_size("saxpy_eoprec");
+			res += spinor_code->get_read_write_size("saxpy_eoprec");
 			break;
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
@@ -249,17 +255,19 @@ void Qminus_eo::operator()(const hardware::buffers::Spinor * in, const hardware:
 }
 cl_ulong Qminus_eo::get_Flops() const
 {
+	auto spinor_code = that->get_device()->get_spinor_code();
+
 	cl_ulong res;
 	switch(that->get_parameters().get_fermact()) {
 		case meta::Inputparameters::wilson:
 			res = 2 * that->get_flop_size("dslash_eo");
-			res += that->get_flop_size("saxpy_eoprec");
+			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
 		case meta::Inputparameters::twistedmass:
 			res = 2 * that->get_flop_size("dslash_eo");
 			res += that->get_flop_size("M_tm_inverse_sitediagonal_minus");
 			res += that->get_flop_size("M_tm_sitediagonal_minus");
-			res += that->get_flop_size("saxpy_eoprec");
+			res += spinor_code->get_flop_size("saxpy_eoprec");
 			break;
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
@@ -269,17 +277,19 @@ cl_ulong Qminus_eo::get_Flops() const
 }
 cl_ulong Qminus_eo::get_Bytes() const
 {
+	auto spinor_code = that->get_device()->get_spinor_code();
+
 	cl_ulong res;
 	switch(that->get_parameters().get_fermact()) {
 		case meta::Inputparameters::wilson:
 			res = 2 * that->get_read_write_size("dslash_eo");
-			res += that->get_read_write_size("saxpy_eoprec");
+			res += spinor_code->get_read_write_size("saxpy_eoprec");
 			break;
 		case meta::Inputparameters::twistedmass:
 			res = 2 * that->get_read_write_size("dslash_eo");
 			res += that->get_read_write_size("M_tm_inverse_sitediagonal_minus");
 			res += that->get_read_write_size("M_tm_sitediagonal_minus");
-			res += that->get_read_write_size("saxpy_eoprec");
+			res += spinor_code->get_read_write_size("saxpy_eoprec");
 			break;
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
@@ -294,11 +304,13 @@ void QplusQminus_eo::operator()(const hardware::buffers::Spinor * in, const hard
 }
 cl_ulong QplusQminus_eo::get_Flops() const
 {
+	auto spinor_code = that->get_device()->get_spinor_code();
+
 	cl_ulong res;
 	switch(that->get_parameters().get_fermact()) {
 		case meta::Inputparameters::wilson:
 			res = 2 * that->get_flop_size("dslash_eo");
-			res += that->get_flop_size("saxpy_eoprec");
+			res += spinor_code->get_flop_size("saxpy_eoprec");
 			res *= 2;
 			break;
 		case meta::Inputparameters::twistedmass:
@@ -307,7 +319,7 @@ cl_ulong QplusQminus_eo::get_Flops() const
 			res += that->get_flop_size("M_tm_sitediagonal");
 			res += that->get_flop_size("M_tm_inverse_sitediagonal_minus");
 			res += that->get_flop_size("M_tm_sitediagonal_minus");
-			res += 2 * that->get_flop_size("saxpy_eoprec");
+			res += 2 * spinor_code->get_flop_size("saxpy_eoprec");
 			break;
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
@@ -317,11 +329,13 @@ cl_ulong QplusQminus_eo::get_Flops() const
 }
 cl_ulong QplusQminus_eo::get_Bytes() const
 {
+	auto spinor_code = that->get_device()->get_spinor_code();
+
 	cl_ulong res;
 	switch(that->get_parameters().get_fermact()) {
 		case meta::Inputparameters::wilson:
 			res = 2 * that->get_read_write_size("dslash_eo");
-			res += that->get_read_write_size("saxpy_eoprec");
+			res += spinor_code->get_read_write_size("saxpy_eoprec");
 			res *= 2;
 			break;
 		case meta::Inputparameters::twistedmass:
@@ -330,7 +344,7 @@ cl_ulong QplusQminus_eo::get_Bytes() const
 			res += that->get_read_write_size("M_tm_sitediagonal");
 			res += that->get_read_write_size("M_tm_inverse_sitediagonal_minus");
 			res += that->get_read_write_size("M_tm_sitediagonal_minus");
-			res += 2 * that->get_read_write_size("saxpy_eoprec");
+			res += 2 * spinor_code->get_read_write_size("saxpy_eoprec");
 			break;
 		default:
 			throw Invalid_Parameters("Unkown fermion action!", "wilson or meta::Inputparameters::twistedmass", that->get_parameters().get_fermact());
@@ -372,7 +386,7 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 
 void Opencl_Module_Fermions::fill_kernels()
 {
-	sources = basic_fermion_code << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+	sources = get_device()->get_spinor_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 
 	M_wilson = 0;
 	M_tm_plus = 0;
@@ -460,7 +474,7 @@ void Opencl_Module_Fermions::clear_kernels()
 
 void Opencl_Module_Fermions::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
-	Opencl_Module_Spinors::get_work_sizes(kernel, ls, gs, num_groups);
+	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 }
 
 
@@ -623,6 +637,8 @@ void Opencl_Module_Fermions::Aee(const hardware::buffers::Spinor * in, const har
 	int even = EVEN;
 	int odd = ODD;
 
+	auto spinor_code = get_device()->get_spinor_code();
+
 	/**
 	 * This is the even-odd preconditioned fermion matrix with the
 	 * non-trivial inversion on the even sites (see DeGran/DeTar p. 174).
@@ -635,13 +651,13 @@ void Opencl_Module_Fermions::Aee(const hardware::buffers::Spinor * in, const har
 		//in this case, the diagonal matrix is just 1 and falls away.
 		dslash_eo_device(in, &clmem_tmp_eo_1, gf, odd, kappa);
 		dslash_eo_device(&clmem_tmp_eo_1, out, gf, even, kappa);
-		saxpy_eoprec_device(out, in, &clmem_one, out);
+		spinor_code->saxpy_eoprec_device(out, in, &clmem_one, out);
 	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
 		dslash_eo_device(in, &clmem_tmp_eo_1, gf, odd, kappa);
 		M_tm_inverse_sitediagonal_device(&clmem_tmp_eo_1, &clmem_tmp_eo_2, mubar);
 		dslash_eo_device(&clmem_tmp_eo_2, out, gf, even, kappa);
 		M_tm_sitediagonal_device(in, &clmem_tmp_eo_1, mubar);
-		saxpy_eoprec_device(out, &clmem_tmp_eo_1, &clmem_one, out);
+		spinor_code->saxpy_eoprec_device(out, &clmem_tmp_eo_1, &clmem_one, out);
 	}
 }
 
@@ -654,6 +670,8 @@ void Opencl_Module_Fermions::Aee_minus(const hardware::buffers::Spinor * in, con
 {
 	int even = EVEN;
 	int odd = ODD;
+
+	auto spinor_code = get_device()->get_spinor_code();
 
 	/**
 	 * This is the even-odd preconditioned fermion matrix with the
@@ -669,13 +687,13 @@ void Opencl_Module_Fermions::Aee_minus(const hardware::buffers::Spinor * in, con
 		//in this case, the diagonal matrix is just 1 and falls away.
 		dslash_eo_device(in, &clmem_tmp_eo_1, gf, odd, kappa);
 		dslash_eo_device(&clmem_tmp_eo_1, out, gf, even, kappa);
-		saxpy_eoprec_device(out, in, &clmem_one, out);
+		spinor_code->saxpy_eoprec_device(out, in, &clmem_one, out);
 	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
 		dslash_eo_device(in, &clmem_tmp_eo_1, gf, odd, kappa);
 		M_tm_inverse_sitediagonal_minus_device(&clmem_tmp_eo_1, &clmem_tmp_eo_2, mubar);
 		dslash_eo_device(&clmem_tmp_eo_2, out, gf, even, kappa);
 		M_tm_sitediagonal_minus_device(in, &clmem_tmp_eo_1, mubar);
-		saxpy_eoprec_device(out, &clmem_tmp_eo_1, &clmem_one, out);
+		spinor_code->saxpy_eoprec_device(out, &clmem_tmp_eo_1, &clmem_one, out);
 	}
 }
 
@@ -684,6 +702,8 @@ void Opencl_Module_Fermions::Aee_AND_gamma5_eo(const hardware::buffers::Spinor *
 {
 	int even = EVEN;
 	int odd = ODD;
+
+	auto spinor_code = get_device()->get_spinor_code();
 
 	/**
 	 * This is the even-odd preconditioned fermion matrix with the
@@ -699,7 +719,7 @@ void Opencl_Module_Fermions::Aee_AND_gamma5_eo(const hardware::buffers::Spinor *
 		logger.warn() << "No merged kernels implemented for pure Wilson case!";
 		dslash_eo_device(in, &clmem_tmp_eo_1, gf, odd, kappa);
 		dslash_eo_device(&clmem_tmp_eo_1, out, gf, even, kappa);
-		saxpy_eoprec_device(out, in, &clmem_one, out);
+		spinor_code->saxpy_eoprec_device(out, in, &clmem_one, out);
 		gamma5_eo_device(out);
 	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
 		/*
@@ -717,7 +737,7 @@ void Opencl_Module_Fermions::Aee_AND_gamma5_eo(const hardware::buffers::Spinor *
 		gamma5_eo_device(&clmem_tmp_eo_1);
 		*/
 		M_tm_sitediagonal_AND_gamma5_eo_device(in, &clmem_tmp_eo_1, mubar);
-		saxpy_eoprec_device(out, &clmem_tmp_eo_1, &clmem_one, out);
+		spinor_code->saxpy_eoprec_device(out, &clmem_tmp_eo_1, &clmem_one, out);
 	}
 }
 
@@ -730,6 +750,8 @@ void Opencl_Module_Fermions::Aee_minus_AND_gamma5_eo(const hardware::buffers::Sp
 {
 	int even = EVEN;
 	int odd = ODD;
+
+	auto spinor_code = get_device()->get_spinor_code();
 
 	/**
 	 * This is the even-odd preconditioned fermion matrix with the
@@ -745,7 +767,7 @@ void Opencl_Module_Fermions::Aee_minus_AND_gamma5_eo(const hardware::buffers::Sp
 		logger.warn() << "No merged kernels implemented for pure Wilson case!";
 		dslash_eo_device(in, &clmem_tmp_eo_1, gf, odd, kappa);
 		dslash_eo_device(&clmem_tmp_eo_1, out, gf, even, kappa);
-		saxpy_eoprec_device(out, in, &clmem_one, out);
+		spinor_code->saxpy_eoprec_device(out, in, &clmem_one, out);
 		gamma5_eo_device(out);
 	} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
 		/*
@@ -763,7 +785,7 @@ void Opencl_Module_Fermions::Aee_minus_AND_gamma5_eo(const hardware::buffers::Sp
 		gamma5_eo_device(&clmem_tmp_eo_1);
 		*/
 		M_tm_sitediagonal_minus_AND_gamma5_eo_device(in, &clmem_tmp_eo_1, mubar);
-		saxpy_eoprec_device(out, &clmem_tmp_eo_1, &clmem_one, out);
+		spinor_code->saxpy_eoprec_device(out, &clmem_tmp_eo_1, &clmem_one, out);
 	}
 }
 
@@ -1099,16 +1121,18 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, const hardware::
 	const Plain<hmc_float> clmem_resid(1, get_device());
 	const Plain<hmc_float> clmem_trueresid(1, get_device());
 
+	auto spinor_code = get_device()->get_spinor_code();
+
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
 	if (get_parameters().get_solver() == meta::Inputparameters::bicgstab_save) {
 		hmc_float resid;
 		for(int iter = 0; iter < get_parameters().get_cgmax(); iter++) {
 			if(iter % get_parameters().get_iter_refresh() == 0) {
-				set_zero_spinorfield_device(&clmem_v);
-				set_zero_spinorfield_device(&clmem_p);
+				spinor_code->set_zero_spinorfield_device(&clmem_v);
+				spinor_code->set_zero_spinorfield_device(&clmem_p);
 				//initial r_n
 				f(inout, &clmem_rn, gf, kappa, mubar);
-				saxpy_device(&clmem_rn, source, &clmem_one, &clmem_rn);
+				spinor_code->saxpy_device(&clmem_rn, source, &clmem_one, &clmem_rn);
 				//rhat = r_n
 				hardware::buffers::copyData(&clmem_rhat, &clmem_rn);
 				//set some constants to 1
@@ -1117,7 +1141,7 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, const hardware::
 				copyData(&clmem_rho, &clmem_one);
 			}
 			//rho_next = (rhat, rn)
-			set_complex_to_scalar_product_device(&clmem_rhat, &clmem_rn, &clmem_rho_next);
+			spinor_code->set_complex_to_scalar_product_device(&clmem_rhat, &clmem_rn, &clmem_rho_next);
 			//check if algorithm is stuck
 			hmc_complex check;
 			clmem_rho_next.dump(&check);
@@ -1128,44 +1152,44 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, const hardware::
 				return -iter;
 			}
 			//tmp1 = rho_next/rho = (rhat, rn)/..
-			set_complex_to_ratio_device(&clmem_rho_next, &clmem_rho, &clmem_tmp1);
+			spinor_code->set_complex_to_ratio_device(&clmem_rho_next, &clmem_rho, &clmem_tmp1);
 			//rho_next = rho
 			copyData(&clmem_rho, &clmem_rho_next);
 			//tmp2 = alpha/omega = ...
-			set_complex_to_ratio_device(&clmem_alpha, &clmem_omega, &clmem_tmp2);
+			spinor_code->set_complex_to_ratio_device(&clmem_alpha, &clmem_omega, &clmem_tmp2);
 			//beta = tmp1*tmp2
-			set_complex_to_product_device(&clmem_tmp1, &clmem_tmp2, &clmem_beta);
+			spinor_code->set_complex_to_product_device(&clmem_tmp1, &clmem_tmp2, &clmem_beta);
 
 			//tmp1 = beta*omega
-			set_complex_to_product_device(&clmem_beta, &clmem_omega, &clmem_tmp1);
+			spinor_code->set_complex_to_product_device(&clmem_beta, &clmem_omega, &clmem_tmp1);
 			//tmp2 = -tmp1
-			set_complex_to_product_device(&clmem_minusone, &clmem_tmp1, &clmem_tmp2);
+			spinor_code->set_complex_to_product_device(&clmem_minusone, &clmem_tmp1, &clmem_tmp2);
 			//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
-			saxsbypz_device(&clmem_p, &clmem_v, &clmem_rn, &clmem_beta, &clmem_tmp2, &clmem_p);
+			spinor_code->saxsbypz_device(&clmem_p, &clmem_v, &clmem_rn, &clmem_beta, &clmem_tmp2, &clmem_p);
 
 			//v = A*p
 			f(&clmem_p, &clmem_v, gf, kappa, mubar);
 			//tmp1 = (rhat, v)
-			set_complex_to_scalar_product_device(&clmem_rhat, &clmem_v, &clmem_tmp1);
+			spinor_code->set_complex_to_scalar_product_device(&clmem_rhat, &clmem_v, &clmem_tmp1);
 			//alpha = rho/tmp1 = (..)/(rhat, v)
-			set_complex_to_ratio_device (&clmem_rho, &clmem_tmp1, &clmem_alpha);
+			spinor_code->set_complex_to_ratio_device (&clmem_rho, &clmem_tmp1, &clmem_alpha);
 			//s = - alpha * v - r_n
-			saxpy_device(&clmem_v, &clmem_rn, &clmem_alpha, &clmem_s);
+			spinor_code->saxpy_device(&clmem_v, &clmem_rn, &clmem_alpha, &clmem_s);
 			//t = A s
 			f(&clmem_s, &clmem_t, gf, kappa, mubar);
 			//tmp1 = (t, s)
-			set_complex_to_scalar_product_device(&clmem_t, &clmem_s, &clmem_tmp1);
+			spinor_code->set_complex_to_scalar_product_device(&clmem_t, &clmem_s, &clmem_tmp1);
 			//!!CP: this can also be global_squarenorm, but one needs a complex number here
 			//tmp2 = (t,t)
-			set_complex_to_scalar_product_device(&clmem_t, &clmem_t, &clmem_tmp2);
+			spinor_code->set_complex_to_scalar_product_device(&clmem_t, &clmem_t, &clmem_tmp2);
 			//omega = tmp1/tmp2 = (t,s)/(t,t)
-			set_complex_to_ratio_device(&clmem_tmp1, &clmem_tmp2, &clmem_omega);
+			spinor_code->set_complex_to_ratio_device(&clmem_tmp1, &clmem_tmp2, &clmem_omega);
 			//r_n = - omega*t - s
-			saxpy_device(&clmem_t, &clmem_s, &clmem_omega, &clmem_rn);
+			spinor_code->saxpy_device(&clmem_t, &clmem_s, &clmem_omega, &clmem_rn);
 			//inout = alpha*p + omega * s + inout
-			saxsbypz_device(&clmem_p, &clmem_s, inout, &clmem_alpha, &clmem_omega, inout);
+			spinor_code->saxsbypz_device(&clmem_p, &clmem_s, inout, &clmem_alpha, &clmem_omega, inout);
 			//resid = (rn,rn)
-			set_float_to_global_squarenorm_device(&clmem_rn, &clmem_resid);
+			spinor_code->set_float_to_global_squarenorm_device(&clmem_rn, &clmem_resid);
 			clmem_resid.dump(&resid);
 
 			logger.debug() << "resid: " << resid;
@@ -1178,9 +1202,9 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, const hardware::
 				//aux = A inout
 				f(inout, &clmem_aux, gf, kappa, mubar);
 				//aux = -aux + source
-				saxpy_device(&clmem_aux, source, &clmem_one, &clmem_aux);
+				spinor_code->saxpy_device(&clmem_aux, source, &clmem_one, &clmem_aux);
 				//trueresid = (aux, aux)
-				set_float_to_global_squarenorm_device(&clmem_aux, &clmem_trueresid);
+				spinor_code->set_float_to_global_squarenorm_device(&clmem_aux, &clmem_trueresid);
 				hmc_float trueresid;
 				clmem_trueresid.dump(&trueresid);
 				logger.debug() << "\tsolver converged! true resid:\t" << trueresid;
@@ -1198,16 +1222,16 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, const hardware::
 			if(iter % get_parameters().get_iter_refresh() == 0) {
 				//initial r_n, saved in p
 				f(inout, &clmem_rn, gf, kappa, mubar);
-				saxpy_device(&clmem_rn, source, &clmem_one, &clmem_p);
+				spinor_code->saxpy_device(&clmem_rn, source, &clmem_one, &clmem_p);
 				//rhat = p
 				hardware::buffers::copyData(&clmem_rhat, &clmem_p);
 				//r_n = p
 				hardware::buffers::copyData(&clmem_rn, &clmem_p);
 				//rho = (rhat, rn)
-				set_complex_to_scalar_product_device(&clmem_rhat, &clmem_rn, &clmem_rho);
+				spinor_code->set_complex_to_scalar_product_device(&clmem_rhat, &clmem_rn, &clmem_rho);
 			}
 			//resid = (rn,rn)
-			set_float_to_global_squarenorm_device(&clmem_rn, &clmem_resid);
+			spinor_code->set_float_to_global_squarenorm_device(&clmem_rn, &clmem_resid);
 			clmem_resid.dump(&resid);
 			//test if resid is NAN
 			if(resid != resid) {
@@ -1220,26 +1244,26 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, const hardware::
 			//v = A*p
 			f(&clmem_p, &clmem_v, gf, kappa, mubar);
 			//tmp1 = (rhat, v)
-			set_complex_to_scalar_product_device(&clmem_rhat, &clmem_v, &clmem_tmp1);
+			spinor_code->set_complex_to_scalar_product_device(&clmem_rhat, &clmem_v, &clmem_tmp1);
 			//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
-			set_complex_to_ratio_device (&clmem_rho, &clmem_tmp1, &clmem_alpha);
+			spinor_code->set_complex_to_ratio_device (&clmem_rho, &clmem_tmp1, &clmem_alpha);
 			//s = - alpha * v - r_n
-			saxpy_device(&clmem_v, &clmem_rn, &clmem_alpha, &clmem_s);
+			spinor_code->saxpy_device(&clmem_v, &clmem_rn, &clmem_alpha, &clmem_s);
 			//t = A s
 			f(&clmem_s, &clmem_t, gf, kappa, mubar);
 			//tmp1 = (t, s)
-			set_complex_to_scalar_product_device(&clmem_t, &clmem_s, &clmem_tmp1);
+			spinor_code->set_complex_to_scalar_product_device(&clmem_t, &clmem_s, &clmem_tmp1);
 			//!!CP: this can also be global_squarenorm, but one needs a complex number here
 			//tmp2 = (t,t)
-			set_complex_to_scalar_product_device(&clmem_t, &clmem_t, &clmem_tmp2);
+			spinor_code->set_complex_to_scalar_product_device(&clmem_t, &clmem_t, &clmem_tmp2);
 			//omega = tmp1/tmp2 = (t,s)/(t,t)
-			set_complex_to_ratio_device(&clmem_tmp1, &clmem_tmp2, &clmem_omega);
+			spinor_code->set_complex_to_ratio_device(&clmem_tmp1, &clmem_tmp2, &clmem_omega);
 			//inout = alpha*p + omega * s + inout
-			saxsbypz_device(&clmem_p, &clmem_s, inout, &clmem_alpha, &clmem_omega, inout);
+			spinor_code->saxsbypz_device(&clmem_p, &clmem_s, inout, &clmem_alpha, &clmem_omega, inout);
 			//r_n = - omega*t - s
-			saxpy_device(&clmem_t, &clmem_s, &clmem_omega, &clmem_rn);
+			spinor_code->saxpy_device(&clmem_t, &clmem_s, &clmem_omega, &clmem_rn);
 			//rho_next = (rhat, rn)
-			set_complex_to_scalar_product_device(&clmem_rhat, &clmem_rn, &clmem_rho_next);
+			spinor_code->set_complex_to_scalar_product_device(&clmem_rhat, &clmem_rn, &clmem_rho_next);
 			//check if algorithm is stuck
 			hmc_complex check;
 			clmem_rho_next.dump(&check);
@@ -1250,17 +1274,17 @@ int Opencl_Module_Fermions::bicgstab(const Matrix_Function & f, const hardware::
 				return -iter;
 			}
 			//tmp1 = rho_next/rho = (rhat, rn)/..
-			set_complex_to_ratio_device(&clmem_rho_next, &clmem_rho, &clmem_tmp1);
+			spinor_code->set_complex_to_ratio_device(&clmem_rho_next, &clmem_rho, &clmem_tmp1);
 			//tmp2 = alpha/omega = ...
-			set_complex_to_ratio_device(&clmem_alpha, &clmem_omega, &clmem_tmp2);
+			spinor_code->set_complex_to_ratio_device(&clmem_alpha, &clmem_omega, &clmem_tmp2);
 			//beta = tmp1*tmp2 = alpha*rho_next / (omega*rho)
-			set_complex_to_product_device(&clmem_tmp1, &clmem_tmp2, &clmem_beta);
+			spinor_code->set_complex_to_product_device(&clmem_tmp1, &clmem_tmp2, &clmem_beta);
 			//tmp1 = beta*omega = alpha* rho_next / rho
-			set_complex_to_product_device(&clmem_beta, &clmem_omega, &clmem_tmp1);
+			spinor_code->set_complex_to_product_device(&clmem_beta, &clmem_omega, &clmem_tmp1);
 			//tmp2 = -tmp1
-			set_complex_to_product_device(&clmem_minusone, &clmem_tmp1, &clmem_tmp2);
+			spinor_code->set_complex_to_product_device(&clmem_minusone, &clmem_tmp1, &clmem_tmp2);
 			//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
-			saxsbypz_device(&clmem_p, &clmem_v, &clmem_rn, &clmem_beta, &clmem_tmp2, &clmem_p);
+			spinor_code->saxsbypz_device(&clmem_p, &clmem_v, &clmem_rn, &clmem_beta, &clmem_tmp2, &clmem_p);
 			//rho_next = rho
 			copyData(&clmem_rho, &clmem_rho_next);
 		}
@@ -1277,7 +1301,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 	const Plain<hmc_float> clmem_resid(1, get_device());
 	const Plain<hmc_float> clmem_trueresid(1, get_device());
 
-	cl_int clerr = CL_SUCCESS;
+	auto spinor_code = get_device()->get_spinor_code();
 
 	//"save" version, with comments. this is called if "bicgstab_save" is choosen.
 	if (get_parameters().get_solver() == meta::Inputparameters::bicgstab_save) {
@@ -1295,12 +1319,12 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 		int cgmax = get_parameters().get_cgmax();
 		for(int iter = 0; iter < cgmax; iter++) {
 			if(iter % get_parameters().get_iter_refresh() == 0) {
-				set_zero_spinorfield_eoprec_device(&clmem_v_eo);
-				set_zero_spinorfield_eoprec_device(&clmem_p_eo);
+				spinor_code->set_zero_spinorfield_eoprec_device(&clmem_v_eo);
+				spinor_code->set_zero_spinorfield_eoprec_device(&clmem_p_eo);
 
 				f(inout, &clmem_rn_eo, gf, kappa, mubar);
 
-				saxpy_eoprec_device(&clmem_rn_eo, source, &clmem_one, &clmem_rn_eo);
+				spinor_code->saxpy_eoprec_device(&clmem_rn_eo, source, &clmem_one, &clmem_rn_eo);
 
 				hardware::buffers::copyData(&clmem_rhat_eo, &clmem_rn_eo);
 
@@ -1308,7 +1332,7 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 				copyData(&clmem_omega, &clmem_one);
 				copyData(&clmem_rho, &clmem_one);
 			}
-			set_complex_to_scalar_product_eoprec_device(&clmem_rhat_eo, &clmem_rn_eo, &clmem_rho_next);
+			spinor_code->set_complex_to_scalar_product_eoprec_device(&clmem_rhat_eo, &clmem_rn_eo, &clmem_rho_next);
 			//check if algorithm is stuck
 			hmc_complex check;
 			clmem_rho_next.dump(&check);
@@ -1317,34 +1341,34 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 				logger.fatal() << "\t\t\tsolver stuck at resid:\t" << resid;
 				return -iter;
 			}
-			set_complex_to_ratio_device(&clmem_rho_next, &clmem_rho, &clmem_tmp1);
+			spinor_code->set_complex_to_ratio_device(&clmem_rho_next, &clmem_rho, &clmem_tmp1);
 			hardware::buffers::copyData(&clmem_rho, &clmem_rho_next);
-			set_complex_to_ratio_device(&clmem_alpha, &clmem_omega, &clmem_tmp2);
-			set_complex_to_product_device(&clmem_tmp1, &clmem_tmp2, &clmem_beta);
+			spinor_code->set_complex_to_ratio_device(&clmem_alpha, &clmem_omega, &clmem_tmp2);
+			spinor_code->set_complex_to_product_device(&clmem_tmp1, &clmem_tmp2, &clmem_beta);
 
-			set_complex_to_product_device(&clmem_beta, &clmem_omega, &clmem_tmp1);
-			set_complex_to_product_device(&clmem_minusone, &clmem_tmp1, &clmem_tmp2);
-			saxsbypz_eoprec_device(&clmem_p_eo, &clmem_v_eo, &clmem_rn_eo, &clmem_beta, &clmem_tmp2, &clmem_p_eo);
+			spinor_code->set_complex_to_product_device(&clmem_beta, &clmem_omega, &clmem_tmp1);
+			spinor_code->set_complex_to_product_device(&clmem_minusone, &clmem_tmp1, &clmem_tmp2);
+			spinor_code->saxsbypz_eoprec_device(&clmem_p_eo, &clmem_v_eo, &clmem_rn_eo, &clmem_beta, &clmem_tmp2, &clmem_p_eo);
 
 			f(&clmem_p_eo, &clmem_v_eo, gf, kappa, mubar);
 
-			set_complex_to_scalar_product_eoprec_device(&clmem_rhat_eo, &clmem_v_eo, &clmem_tmp1);
-			set_complex_to_ratio_device (&clmem_rho, &clmem_tmp1, &clmem_alpha);
+			spinor_code->set_complex_to_scalar_product_eoprec_device(&clmem_rhat_eo, &clmem_v_eo, &clmem_tmp1);
+			spinor_code->set_complex_to_ratio_device (&clmem_rho, &clmem_tmp1, &clmem_alpha);
 
-			saxpy_eoprec_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_s_eo);
+			spinor_code->saxpy_eoprec_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_s_eo);
 
 			f(&clmem_s_eo, &clmem_t_eo, gf, kappa, mubar);
 
-			set_complex_to_scalar_product_eoprec_device(&clmem_t_eo, &clmem_s_eo, &clmem_tmp1);
+			spinor_code->set_complex_to_scalar_product_eoprec_device(&clmem_t_eo, &clmem_s_eo, &clmem_tmp1);
 			//!!CP: can this also be global_squarenorm??
-			set_complex_to_scalar_product_eoprec_device(&clmem_t_eo, &clmem_t_eo, &clmem_tmp2);
-			set_complex_to_ratio_device(&clmem_tmp1, &clmem_tmp2, &clmem_omega);
+			spinor_code->set_complex_to_scalar_product_eoprec_device(&clmem_t_eo, &clmem_t_eo, &clmem_tmp2);
+			spinor_code->set_complex_to_ratio_device(&clmem_tmp1, &clmem_tmp2, &clmem_omega);
 
-			saxpy_eoprec_device(&clmem_t_eo, &clmem_s_eo, &clmem_omega, &clmem_rn_eo);
+			spinor_code->saxpy_eoprec_device(&clmem_t_eo, &clmem_s_eo, &clmem_omega, &clmem_rn_eo);
 
-			saxsbypz_eoprec_device(&clmem_p_eo, &clmem_s_eo, inout, &clmem_alpha, &clmem_omega, inout);
+			spinor_code->saxsbypz_eoprec_device(&clmem_p_eo, &clmem_s_eo, inout, &clmem_alpha, &clmem_omega, inout);
 
-			set_float_to_global_squarenorm_eoprec_device(&clmem_rn_eo, &clmem_resid);
+			spinor_code->set_float_to_global_squarenorm_eoprec_device(&clmem_rn_eo, &clmem_resid);
 			clmem_resid.dump(&resid);
 
 			logger.debug() << "resid: " << resid;
@@ -1357,9 +1381,9 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 				++retests;
 
 				f(inout, &clmem_aux_eo, gf, kappa, mubar);
-				saxpy_eoprec_device(&clmem_aux_eo, source, &clmem_one, &clmem_aux_eo);
+				spinor_code->saxpy_eoprec_device(&clmem_aux_eo, source, &clmem_one, &clmem_aux_eo);
 
-				set_float_to_global_squarenorm_eoprec_device(&clmem_aux_eo, &clmem_trueresid);
+				spinor_code->set_float_to_global_squarenorm_eoprec_device(&clmem_aux_eo, &clmem_trueresid);
 				clmem_trueresid.dump(&trueresid);
 				logger.debug() << "\ttrueresiduum:\t" << trueresid;
 				if(trueresid < prec) {
@@ -1372,12 +1396,12 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 						unsigned refreshs = iter / get_parameters().get_iter_refresh() + 1;
 						cl_ulong mf_flops = f.get_Flops();
 
-						cl_ulong total_flops = 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 3 * get_flop_size("product") + 2 * get_flop_size("saxsbypz_eoprec") + 2 * mf_flops + 2 * get_flop_size("saxpy_eoprec") + get_flop_size("global_squarenorm_eoprec");
+						cl_ulong total_flops = 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 3 * get_flop_size("product") + 2 * spinor_code->get_flop_size("saxsbypz_eoprec") + 2 * mf_flops + 2 * spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("global_squarenorm_eoprec");
 						total_flops *= iter;
 
-						total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec"));
+						total_flops += refreshs * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec"));
 
-						total_flops += retests * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("global_squarenorm_eoprec"));
+						total_flops += retests * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("global_squarenorm_eoprec"));
 
 						// report performanc
 						logger.info() << "BiCGstab_save completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
@@ -1403,16 +1427,16 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 			if(iter % get_parameters().get_iter_refresh() == 0) {
 				//initial r_n, saved in p
 				f(inout, &clmem_rn_eo, gf, kappa, mubar);
-				saxpy_eoprec_device(&clmem_rn_eo, source, &clmem_one, &clmem_p_eo);
+				spinor_code->saxpy_eoprec_device(&clmem_rn_eo, source, &clmem_one, &clmem_p_eo);
 				//rhat = p
 				hardware::buffers::copyData(&clmem_rhat_eo, &clmem_p_eo);
 				//r_n = p
 				hardware::buffers::copyData(&clmem_rn_eo, &clmem_p_eo);
 				//rho = (rhat, rn)
-				set_complex_to_scalar_product_eoprec_device(&clmem_rhat_eo, &clmem_rn_eo, &clmem_rho);
+				spinor_code->set_complex_to_scalar_product_eoprec_device(&clmem_rhat_eo, &clmem_rn_eo, &clmem_rho);
 			}
 			//resid = (rn,rn)
-			set_float_to_global_squarenorm_eoprec_device(&clmem_rn_eo, &clmem_resid);
+			spinor_code->set_float_to_global_squarenorm_eoprec_device(&clmem_rn_eo, &clmem_resid);
 			hmc_float resid;
 			clmem_resid.dump(&resid);
 
@@ -1432,10 +1456,10 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 					unsigned refreshs = iter / get_parameters().get_iter_refresh() + 1;
 					cl_ulong mf_flops = f.get_Flops();
 
-					cl_ulong total_flops = get_flop_size("global_squarenorm_eoprec") + 2 * mf_flops + 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 2 * get_flop_size("saxpy_eoprec") + 2 * get_flop_size("saxsbypz_eoprec") + 3 * get_flop_size("product");
+					cl_ulong total_flops = get_flop_size("global_squarenorm_eoprec") + 2 * mf_flops + 4 * get_flop_size("scalar_product_eoprec") + 4 * get_flop_size("ratio") + 2 * spinor_code->get_flop_size("saxpy_eoprec") + 2 * spinor_code->get_flop_size("saxsbypz_eoprec") + 3 * get_flop_size("product");
 					total_flops *= iter;
 
-					total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
+					total_flops += refreshs * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
 
 					// report performanc
 					logger.info() << "BiCGstab completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
@@ -1448,26 +1472,26 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 			f(&clmem_p_eo, &clmem_v_eo, gf, kappa, mubar);
 			get_device()->flush();
 			//tmp1 = (rhat, v)
-			set_complex_to_scalar_product_eoprec_device(&clmem_rhat_eo, &clmem_v_eo, &clmem_tmp1);
+			spinor_code->set_complex_to_scalar_product_eoprec_device(&clmem_rhat_eo, &clmem_v_eo, &clmem_tmp1);
 			//alpha = rho/tmp1 = (rhat, rn)/(rhat, v)
-			set_complex_to_ratio_device (&clmem_rho, &clmem_tmp1, &clmem_alpha);
+			spinor_code->set_complex_to_ratio_device (&clmem_rho, &clmem_tmp1, &clmem_alpha);
 			//s = - alpha * v - r_n
-			saxpy_eoprec_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_s_eo);
+			spinor_code->saxpy_eoprec_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_s_eo);
 			//t = A s
 			f(&clmem_s_eo, &clmem_t_eo, gf, kappa, mubar);
 			//tmp1 = (t, s)
-			set_complex_to_scalar_product_eoprec_device(&clmem_t_eo, &clmem_s_eo, &clmem_tmp1);
+			spinor_code->set_complex_to_scalar_product_eoprec_device(&clmem_t_eo, &clmem_s_eo, &clmem_tmp1);
 			//!!CP: this can also be global_squarenorm, but one needs a complex number here
 			//tmp2 = (t,t)
-			set_complex_to_scalar_product_eoprec_device(&clmem_t_eo, &clmem_t_eo, &clmem_tmp2);
+			spinor_code->set_complex_to_scalar_product_eoprec_device(&clmem_t_eo, &clmem_t_eo, &clmem_tmp2);
 			//omega = tmp1/tmp2 = (t,s)/(t,t)
-			set_complex_to_ratio_device(&clmem_tmp1, &clmem_tmp2, &clmem_omega);
+			spinor_code->set_complex_to_ratio_device(&clmem_tmp1, &clmem_tmp2, &clmem_omega);
 			//inout = alpha*p + omega * s + inout
-			saxsbypz_eoprec_device(&clmem_p_eo, &clmem_s_eo, inout, &clmem_alpha, &clmem_omega, inout);
+			spinor_code->saxsbypz_eoprec_device(&clmem_p_eo, &clmem_s_eo, inout, &clmem_alpha, &clmem_omega, inout);
 			//r_n = - omega*t - s
-			saxpy_eoprec_device(&clmem_t_eo, &clmem_s_eo, &clmem_omega, &clmem_rn_eo);
+			spinor_code->saxpy_eoprec_device(&clmem_t_eo, &clmem_s_eo, &clmem_omega, &clmem_rn_eo);
 			//rho_next = (rhat, rn)
-			set_complex_to_scalar_product_eoprec_device(&clmem_rhat_eo, &clmem_rn_eo, &clmem_rho_next);
+			spinor_code->set_complex_to_scalar_product_eoprec_device(&clmem_rhat_eo, &clmem_rn_eo, &clmem_rho_next);
 			//check if algorithm is stuck
 			hmc_complex check;
 			clmem_rho_next.dump(&check);
@@ -1478,17 +1502,17 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 			}
 
 			//tmp1 = rho_next/rho = (rhat, rn)/..
-			set_complex_to_ratio_device(&clmem_rho_next, &clmem_rho, &clmem_tmp1);
+			spinor_code->set_complex_to_ratio_device(&clmem_rho_next, &clmem_rho, &clmem_tmp1);
 			//tmp2 = alpha/omega = ...
-			set_complex_to_ratio_device(&clmem_alpha, &clmem_omega, &clmem_tmp2);
+			spinor_code->set_complex_to_ratio_device(&clmem_alpha, &clmem_omega, &clmem_tmp2);
 			//beta = tmp1*tmp2 = alpha*rho_next / (omega*rho)
-			set_complex_to_product_device(&clmem_tmp1, &clmem_tmp2, &clmem_beta);
+			spinor_code->set_complex_to_product_device(&clmem_tmp1, &clmem_tmp2, &clmem_beta);
 			//tmp1 = beta*omega = alpha* rho_next / rho
-			set_complex_to_product_device(&clmem_beta, &clmem_omega, &clmem_tmp1);
+			spinor_code->set_complex_to_product_device(&clmem_beta, &clmem_omega, &clmem_tmp1);
 			//tmp2 = -tmp1
-			set_complex_to_product_device(&clmem_minusone, &clmem_tmp1, &clmem_tmp2);
+			spinor_code->set_complex_to_product_device(&clmem_minusone, &clmem_tmp1, &clmem_tmp2);
 			//p = beta*p + tmp2*v + r_n = beta*p - beta*omega*v + r_n
-			saxsbypz_eoprec_device(&clmem_p_eo, &clmem_v_eo, &clmem_rn_eo, &clmem_beta, &clmem_tmp2, &clmem_p_eo);
+			spinor_code->saxsbypz_eoprec_device(&clmem_p_eo, &clmem_v_eo, &clmem_rn_eo, &clmem_beta, &clmem_tmp2, &clmem_p_eo);
 			get_device()->flush();
 			//rho_next = rho
 			hardware::buffers::copyData(&clmem_rho, &clmem_rho_next);
@@ -1499,6 +1523,8 @@ int Opencl_Module_Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hard
 
 int Opencl_Module_Fermions::cg(const Matrix_Function & f, const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
+	auto spinor_code = get_device()->get_spinor_code();
+
 	//CP: here I do not use clmem_rnhat anymore and saved one scalar_product (omega)
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
 	for(int iter = 0; iter < get_parameters().get_cgmax(); iter ++) {
@@ -1506,11 +1532,11 @@ int Opencl_Module_Fermions::cg(const Matrix_Function & f, const hardware::buffer
 			//rn = A*inout
 			f(inout, &clmem_rn, gf, kappa, mubar);
 			//rn = source - A*inout
-			saxpy_device(&clmem_rn, source, &clmem_one, &clmem_rn);
+			spinor_code->saxpy_device(&clmem_rn, source, &clmem_one, &clmem_rn);
 			//p = rn
 			hardware::buffers::copyData(&clmem_p, &clmem_rn);
 			//omega = (rn,rn)
-			set_complex_to_scalar_product_device(&clmem_rn, &clmem_rn, &clmem_omega);
+			spinor_code->set_complex_to_scalar_product_device(&clmem_rn, &clmem_rn, &clmem_omega);
 		} else {
 			//update omega
 			hardware::buffers::copyData(&clmem_omega, &clmem_rho_next);
@@ -1518,18 +1544,18 @@ int Opencl_Module_Fermions::cg(const Matrix_Function & f, const hardware::buffer
 		//v = A pn
 		f(&clmem_p, &clmem_v, gf, kappa, mubar);
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
-		set_complex_to_scalar_product_device(&clmem_p, &clmem_v, &clmem_rho);
-		set_complex_to_ratio_device(&clmem_omega, &clmem_rho, &clmem_alpha);
-		set_complex_to_product_device(&clmem_alpha, &clmem_minusone, &clmem_tmp1);
+		spinor_code->set_complex_to_scalar_product_device(&clmem_p, &clmem_v, &clmem_rho);
+		spinor_code->set_complex_to_ratio_device(&clmem_omega, &clmem_rho, &clmem_alpha);
+		spinor_code->set_complex_to_product_device(&clmem_alpha, &clmem_minusone, &clmem_tmp1);
 
 		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
-		saxpy_device(&clmem_p, inout, &clmem_tmp1, inout);
+		spinor_code->saxpy_device(&clmem_p, inout, &clmem_tmp1, inout);
 		//rn+1 = rn - alpha*v -> rhat
-		saxpy_device(&clmem_v, &clmem_rn, &clmem_alpha, &clmem_rn);
+		spinor_code->saxpy_device(&clmem_v, &clmem_rn, &clmem_alpha, &clmem_rn);
 
 		//calc residuum
 		//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
-		set_complex_to_scalar_product_device(&clmem_rn, &clmem_rn, &clmem_rho_next);
+		spinor_code->set_complex_to_scalar_product_device(&clmem_rn, &clmem_rn, &clmem_rho_next);
 		hmc_complex tmp;
 		clmem_rho_next.dump(&tmp);
 		hmc_float resid = tmp.re;
@@ -1547,18 +1573,20 @@ int Opencl_Module_Fermions::cg(const Matrix_Function & f, const hardware::buffer
 			return iter;
 
 		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
-		set_complex_to_scalar_product_device(&clmem_rn, &clmem_rn, &clmem_rho_next);
-		set_complex_to_ratio_device(&clmem_rho_next, &clmem_omega, &clmem_beta);
+		spinor_code->set_complex_to_scalar_product_device(&clmem_rn, &clmem_rn, &clmem_rho_next);
+		spinor_code->set_complex_to_ratio_device(&clmem_rho_next, &clmem_omega, &clmem_beta);
 
 		//pn+1 = rn+1 + beta*pn
-		set_complex_to_product_device(&clmem_beta, &clmem_minusone, &clmem_tmp2);
-		saxpy_device(&clmem_p, &clmem_rn, &clmem_tmp2, &clmem_p);
+		spinor_code->set_complex_to_product_device(&clmem_beta, &clmem_minusone, &clmem_tmp2);
+		spinor_code->saxpy_device(&clmem_p, &clmem_rn, &clmem_tmp2, &clmem_p);
 	}
 	return -1;
 }
 
 int Opencl_Module_Fermions::cg_eo(const Matrix_Function_eo & f, const hardware::buffers::Spinor * inout, const hardware::buffers::Spinor * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
+	auto spinor_code = get_device()->get_spinor_code();
+
 	//this corresponds to the above function
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
 	klepsydra::Monotonic timer;
@@ -1573,11 +1601,11 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function_eo & f, const hardware::
 			//rn = A*inout
 			f(inout, &clmem_rn_eo, gf, kappa, mubar);
 			//rn = source - A*inout
-			saxpy_eoprec_device(&clmem_rn_eo, source, &clmem_one, &clmem_rn_eo);
+			spinor_code->saxpy_eoprec_device(&clmem_rn_eo, source, &clmem_one, &clmem_rn_eo);
 			//p = rn
 			hardware::buffers::copyData(&clmem_p_eo, &clmem_rn_eo);
 			//omega = (rn,rn)
-			set_complex_to_scalar_product_eoprec_device(&clmem_rn_eo, &clmem_rn_eo, &clmem_omega);
+			spinor_code->set_complex_to_scalar_product_eoprec_device(&clmem_rn_eo, &clmem_rn_eo, &clmem_omega);
 		} else {
 			//update omega
 			hardware::buffers::copyData(&clmem_omega, &clmem_rho_next);
@@ -1586,27 +1614,27 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function_eo & f, const hardware::
 		f(&clmem_p_eo, &clmem_v_eo, gf, kappa, mubar);
 
 		//alpha = (rn, rn)/(pn, Apn) --> alpha = omega/rho
-		set_complex_to_scalar_product_eoprec_device(&clmem_p_eo, &clmem_v_eo, &clmem_rho);
-		set_complex_to_ratio_device(&clmem_omega, &clmem_rho, &clmem_alpha);
-		set_complex_to_product_device(&clmem_alpha, &clmem_minusone, &clmem_tmp1);
+		spinor_code->set_complex_to_scalar_product_eoprec_device(&clmem_p_eo, &clmem_v_eo, &clmem_rho);
+		spinor_code->set_complex_to_ratio_device(&clmem_omega, &clmem_rho, &clmem_alpha);
+		spinor_code->set_complex_to_product_device(&clmem_alpha, &clmem_minusone, &clmem_tmp1);
 
 		//xn+1 = xn + alpha*p = xn - tmp1*p = xn - (-tmp1)*p
-		saxpy_eoprec_device(&clmem_p_eo, inout, &clmem_tmp1, inout);
+		spinor_code->saxpy_eoprec_device(&clmem_p_eo, inout, &clmem_tmp1, inout);
 		//switch between original version and kernel merged one
 		if(get_parameters().get_use_merge_kernels_spinor() == false) {
 			//rn+1 = rn - alpha*v -> rhat
-			saxpy_eoprec_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_rn_eo);
+			spinor_code->saxpy_eoprec_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_rn_eo);
 
 			//calc residuum
 			//NOTE: for beta one needs a complex number at the moment, therefore, this is done with "rho_next" instead of "resid"
-			set_complex_to_scalar_product_eoprec_device(&clmem_rn_eo, &clmem_rn_eo, &clmem_rho_next);
+			spinor_code->set_complex_to_scalar_product_eoprec_device(&clmem_rn_eo, &clmem_rn_eo, &clmem_rho_next);
 		} else {
 			//merge two calls:
 			//rn+1 = rn - alpha*v -> rhat
 			//and
 			//rho_next = |rhat|^2
 			//rho_next is a complex number, set its imag to zero
-			saxpy_AND_squarenorm_eo_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_rn_eo, &clmem_rho_next);
+			spinor_code->saxpy_AND_squarenorm_eo_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_rn_eo, &clmem_rho_next);
 		}
 		hmc_complex tmp;
 		clmem_rho_next.dump(&tmp);
@@ -1631,10 +1659,10 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function_eo & f, const hardware::
 				unsigned refreshs = iter / get_parameters().get_iter_refresh() + 1;
 				cl_ulong mf_flops = f.get_Flops();
 
-				cl_ulong total_flops = mf_flops + 3 * get_flop_size("scalar_product_eoprec") + 2 * get_flop_size("ratio") + 2 * get_flop_size("product") + 3 * get_flop_size("saxpy_eoprec");
+				cl_ulong total_flops = mf_flops + 3 * get_flop_size("scalar_product_eoprec") + 2 * get_flop_size("ratio") + 2 * get_flop_size("product") + 3 * spinor_code->get_flop_size("saxpy_eoprec");
 				total_flops *= iter;
 
-				total_flops += refreshs * (mf_flops + get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
+				total_flops += refreshs * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
 
 				// report performanc
 				logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
@@ -1644,11 +1672,11 @@ int Opencl_Module_Fermions::cg_eo(const Matrix_Function_eo & f, const hardware::
 		}
 
 		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
-		set_complex_to_ratio_device(&clmem_rho_next, &clmem_omega, &clmem_beta);
+		spinor_code->set_complex_to_ratio_device(&clmem_rho_next, &clmem_omega, &clmem_beta);
 
 		//pn+1 = rn+1 + beta*pn
-		set_complex_to_product_device(&clmem_beta, &clmem_minusone, &clmem_tmp2);
-		saxpy_eoprec_device(&clmem_p_eo, &clmem_rn_eo, &clmem_tmp2, &clmem_p_eo);
+		spinor_code->set_complex_to_product_device(&clmem_beta, &clmem_minusone, &clmem_tmp2);
+		spinor_code->saxpy_eoprec_device(&clmem_p_eo, &clmem_rn_eo, &clmem_tmp2, &clmem_p_eo);
 	}
 	return -1;
 }
@@ -1705,12 +1733,14 @@ const hardware::buffers::Plain<hmc_complex> * Opencl_Module_Fermions::get_clmem_
 
 hmc_float Opencl_Module_Fermions::print_info_inv_field(const hardware::buffers::Plain<spinor> * in, bool eo, std::string msg)
 {
+	auto spinor_code = get_device()->get_spinor_code();
+
 	if(eo) {
 		throw std::logic_error("Even-odd fields should always be stored as hardware::buffers::Spinor");
 	}
 	hardware::buffers::Plain<hmc_float> clmem_sqnorm_tmp(1, get_device());
 	hmc_float tmp;
-	set_float_to_global_squarenorm_device(in, &clmem_sqnorm_tmp);
+	spinor_code->set_float_to_global_squarenorm_device(in, &clmem_sqnorm_tmp);
 	clmem_sqnorm_tmp.dump(&tmp);
 	cout.precision(10);
 	logger.debug() << std::scientific << msg << tmp;
@@ -1719,12 +1749,14 @@ hmc_float Opencl_Module_Fermions::print_info_inv_field(const hardware::buffers::
 
 hmc_float Opencl_Module_Fermions::print_info_inv_field(const hardware::buffers::Spinor * in, bool eo, std::string msg)
 {
+	auto spinor_code = get_device()->get_spinor_code();
+
 	if(!eo) {
 		throw std::logic_error("hardware::buffers::Spinor fields are assumed to always be even-odd format");
 	}
 	hardware::buffers::Plain<hmc_float> clmem_sqnorm_tmp(1, get_device());
 	hmc_float tmp;
-	set_float_to_global_squarenorm_eoprec_device(in, &clmem_sqnorm_tmp);
+	spinor_code->set_float_to_global_squarenorm_eoprec_device(in, &clmem_sqnorm_tmp);
 	clmem_sqnorm_tmp.dump(&tmp);
 	cout.precision(10);
 	logger.debug() << std::scientific << msg << tmp;
@@ -1733,12 +1765,10 @@ hmc_float Opencl_Module_Fermions::print_info_inv_field(const hardware::buffers::
 
 size_t Opencl_Module_Fermions::get_read_write_size(const std::string& in) const
 {
-	size_t result = Opencl_Module_Spinors::get_read_write_size(in);
-	if (result != 0) return result;
 	//Depending on the compile-options, one has different sizes...
-	size_t D = meta::get_float_size(parameters);
+	size_t D = meta::get_float_size(get_parameters());
 	//this returns the number of entries in an su3-matrix
-	size_t R = meta::get_mat_size(parameters);
+	size_t R = meta::get_mat_size(get_parameters());
 	//this is the number of spinors in the system (or number of sites)
 	size_t S = meta::get_spinorfieldsize(get_parameters());
 	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
@@ -1835,8 +1865,6 @@ static int flop_dslash_per_site(const meta::Inputparameters & parameters)
 
 uint64_t Opencl_Module_Fermions::get_flop_size(const std::string& in) const
 {
-	uint64_t result = Opencl_Module_Spinors::get_flop_size(in);
-	if (result != 0) return result;
 	size_t S = meta::get_spinorfieldsize(get_parameters());
 	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	if (in == "M_wilson") {
@@ -1898,9 +1926,9 @@ uint64_t Opencl_Module_Fermions::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-void Opencl_Module_Fermions::print_profiling(const std::string& filename, int number)
+void Opencl_Module_Fermions::print_profiling(const std::string& filename, int number) const
 {
-	Opencl_Module_Spinors::print_profiling(filename, number);
+	Opencl_Module::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, M_wilson);
 	Opencl_Module::print_profiling(filename, gamma5);
 	Opencl_Module::print_profiling(filename, M_tm_plus);
@@ -1918,7 +1946,7 @@ void Opencl_Module_Fermions::print_profiling(const std::string& filename, int nu
 	Opencl_Module::print_profiling(filename, M_tm_sitediagonal_minus_AND_gamma5_eo);
 }
 Opencl_Module_Fermions::Opencl_Module_Fermions(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module_Spinors(params, device),
+	: Opencl_Module(params, device),
 	  M_wilson(0),
 	  gamma5(0),
 	  M_tm_plus(0),
@@ -1980,4 +2008,9 @@ Opencl_Module_Fermions::Opencl_Module_Fermions(const meta::Inputparameters& para
 Opencl_Module_Fermions::~Opencl_Module_Fermions()
 {
 	clear_kernels();
+}
+
+ClSourcePackage Opencl_Module_Fermions::get_sources() const noexcept
+{
+	return sources;
 }

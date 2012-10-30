@@ -17,11 +17,14 @@
 #include "../meta/inputparameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "profiling_data.hpp"
-
-/**
- * Forward dekleration of friends
- */
-class Opencl_Module;
+#include "../opencl_module_gaugefield.h"
+#include "../opencl_module_ran.h"
+#include "../opencl_module_spinors.h"
+#include "../opencl_module_fermions.h"
+#include "../opencl_module_hmc.h"
+#include "../opencl_module_correlator.h"
+#include "../opencl_module_heatbath.h"
+#include "../opencl_module_kappa.h"
 
 namespace hardware {
 
@@ -175,6 +178,46 @@ public:
 	 */
 	ProfilingData get_profiling_data(const cl_kernel& kernel) noexcept;
 
+	/**
+	 * Get access to the gaugefield kernels on this device.
+	 */
+	Opencl_Module_Gaugefield * get_gaugefield_code();
+
+	/**
+	 * Get access to the prng kernels on this device.
+	 */
+	Opencl_Module_Ran * get_prng_code();
+
+	/**
+	 * Get access to the spinor kernels on this device.
+	 */
+	Opencl_Module_Spinors * get_spinor_code();
+
+	/**
+	 * Get access to the fermion kernels on this device.
+	 */
+	Opencl_Module_Fermions * get_fermion_code();
+
+	/**
+	 * Get access to the hmc kernels on this device.
+	 */
+	Opencl_Module_Hmc * get_hmc_code();
+
+	/**
+	 * Get access to the correlator kernels on this device.
+	 */
+	Opencl_Module_Correlator * get_correlator_code();
+
+	/**
+	 * Get access to the heatbath kernels on this device.
+	 */
+	Opencl_Module_Heatbath * get_heatbath_code();
+
+	/**
+	 * Get access to the kappa kernels on this device.
+	 */
+	Opencl_Module_Kappa * get_kappa_code();
+
 private:
 	/**
 	 * The OpenCL context to be used by this device.
@@ -257,6 +300,55 @@ private:
 	 * Kernel profiling data
 	 */
 	std::map<cl_kernel, ProfilingData> profiling_data;
+
+	/**
+	 * Pointer to the gaugefield code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Gaugefield * gaugefield_code;
+
+	/**
+	 * Pointer to the prng code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Ran * prng_code;
+
+	/**
+	 * Pointer to the spinor code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Spinors * spinor_code;
+
+	/**
+	 * Pointer to the fermion code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Fermions * fermion_code;
+
+	/**
+	 * Pointer to the hmc code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Hmc * hmc_code;
+
+	/**
+	 * Pointer to the correlator code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Correlator * correlator_code;
+
+	/**
+	 * Pointer to the heatbath code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Heatbath * heatbath_code;
+
+	/**
+	 * Pointer to the kappa code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Kappa * kappa_code;
+
 };
 
 }

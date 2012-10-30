@@ -23,22 +23,14 @@ public:
 		logger.info() << "gaugeobservables: ";
 		this->print_gaugeobservables_from_task(0, 0);
 	};
-	virtual void init_tasks() override;
 	virtual void finalize_opencl() override;
 
-	Opencl_Module * get_device();
+	Opencl_Module_Gaugefield * get_device();
 };
 
-void TestGaugefield::init_tasks()
+Opencl_Module_Gaugefield* TestGaugefield::get_device()
 {
-	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	//here we want to test Opencl_Module
-	opencl_modules[0] = new Opencl_Module(get_parameters(), get_device_for_task(0));
-}
-
-Opencl_Module* TestGaugefield::get_device()
-{
-	return static_cast<Opencl_Module*>(opencl_modules[0]);
+	return static_cast<Opencl_Module_Gaugefield*>(opencl_modules[0]);
 }
 
 void TestGaugefield::finalize_opencl()
@@ -55,7 +47,7 @@ void test_rectangles(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module * device = cpu.get_device();
+	Opencl_Module_Gaugefield * device = cpu.get_device();
 
 	logger.info() << "calc rectangles value:";
 	hmc_float cpu_rect;
@@ -85,7 +77,7 @@ void test_plaquette(std::string inputfile)
 	// get device colutions
 	hmc_float dev_plaq, dev_tplaq, dev_splaq;
 	hmc_complex dev_pol;
-	Opencl_Module * device = dummy.get_device();
+	Opencl_Module_Gaugefield * device = dummy.get_device();
 	device->gaugeobservables(&dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
 
 	logger.info() << "Finalize device";
@@ -116,7 +108,7 @@ void test_polyakov(std::string inputfile)
 	// get device colutions
 	hmc_float dev_plaq, dev_tplaq, dev_splaq;
 	hmc_complex dev_pol;
-	Opencl_Module * device = dummy.get_device();
+	Opencl_Module_Gaugefield * device = dummy.get_device();
 	device->gaugeobservables(&dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
 
 	logger.info() << "Finalize device";

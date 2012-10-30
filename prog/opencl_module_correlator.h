@@ -4,30 +4,10 @@
 #ifndef _OPENCLMODULECORRELATORH_
 #define _OPENCLMODULECORRELATORH_
 
-#include <cmath>
-#include <cstdlib>
-#include <vector>
-#include <string>
-#include <fstream>
-#include <sstream>
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-
-#include "host_geometry.h"
-#include "host_operations_gaugefield.h"
-#include "globaldefs.h"
-#include "types.h"
-#include "host_use_timer.h"
-#include "opencl_compiler.hpp"
-
 #include "opencl_module.h"
-#include "opencl_module_ran.h"
-#include "opencl_module_spinors.h"
 
-#include "exceptions.h"
+#include "hardware/buffers/plain.hpp"
+#include "types_fermions.h"
 
 /**
  * An OpenCL device
@@ -37,26 +17,11 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Correlator : public Opencl_Module_Spinors {
+class Opencl_Module_Correlator : public Opencl_Module {
 public:
-
-	/**
-	 * Default constructor, does nothing but make sure some pointer point to 0.
-	 *
-	 */
-	Opencl_Module_Correlator(const meta::Inputparameters& params, hardware::Device * device);
+	friend hardware::Device;
 
 	virtual ~Opencl_Module_Correlator();
-
-	/**
-	 * comutes work-sizes for a kernel
-	 * @todo autotune
-	 * @param ls local-work-size
-	 * @param gs global-work-size
-	 * @param num_groups number of work groups
-	 * @param name name of the kernel for possible autotune-usage, not yet used!!
-	 */
-	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
 	void create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos);
 
@@ -88,8 +53,9 @@ public:
 	 * @param filename Name of file where data is appended.
 	 * @param number task-id
 	 */
-	void virtual print_profiling(const std::string& filename, int number) override;
+	void virtual print_profiling(const std::string& filename, int number) const override;
 
+protected:
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
 	 *
@@ -105,7 +71,23 @@ public:
 	 */
 	virtual uint64_t get_flop_size(const std::string& in) const override;
 
+	/**
+	 * comutes work-sizes for a kernel
+	 * @todo autotune
+	 * @param ls local-work-size
+	 * @param gs global-work-size
+	 * @param num_groups number of work groups
+	 * @param name name of the kernel for possible autotune-usage, not yet used!!
+	 */
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
+
 private:
+	/**
+	 * Default constructor, does nothing but make sure some pointer point to 0.
+	 *
+	 */
+	Opencl_Module_Correlator(const meta::Inputparameters& params, hardware::Device * device);
+
 	/**
 	 * Collect the kernels for OpenCL.
 	 */
@@ -135,9 +117,7 @@ private:
 	cl_kernel correlator_ay;
 	cl_kernel correlator_az;
 
-protected:
 	ClSourcePackage basic_correlator_code;
-
 };
 
 #endif //OPENCLMODULECORRELATORH

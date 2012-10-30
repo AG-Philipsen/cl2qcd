@@ -5,6 +5,7 @@
  */
 
 #include "spinor.hpp"
+#include "../device.hpp"
 
 #include <stdexcept>
 

@@ -1,4 +1,4 @@
-#include "../opencl_module.h"
+#include "../opencl_module_gaugefield.h"
 #include "../gaugefield_hybrid.h"
 #include "../meta/util.hpp"
 
@@ -22,18 +22,16 @@ hmc_float rho = 0.01;
 int iter = 1;
 
 class Device : public Opencl_Module {
-	cl_kernel testKernel;
-	void fill_kernels();
-	void clear_kernels();
+protected:
+	virtual size_t get_read_write_size(const std::string&) const {
+		return 0;
+	};
+	virtual uint64_t get_flop_size(const std::string&) const {
+		return 0;
+	};
 public:
-	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device), out(get_gaugefield()->get_elements(), device) {
-		fill_kernels();
+	Device(const meta::Inputparameters& params, hardware::Device * device) : Opencl_Module(params, device), out(get_device()->get_gaugefield_code()->get_gaugefield()->get_elements(), device) {
 	};
-	virtual ~Device() {
-		clear_kernels();
-	};
-
-	void runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::SU3 * out, int gs, int ls);
 
 	const hardware::buffers::SU3 out;
 };
@@ -73,65 +71,23 @@ void Dummyfield::finalize_opencl()
 
 void Dummyfield::fill_buffers()
 {
-	Matrixsu3 *  gf_tmp  = new Matrixsu3[get_num_gaugefield_elems()];
-	//fill tmp gf with ones
-	set_gaugefield_cold(gf_tmp);
-
-	Device * device = static_cast<Device*>(opencl_modules[0]);
-
-	//copy cold tmp gf to the device
-	device->importGaugefield(&device->out, gf_tmp);
-
-	delete[] gf_tmp;
-
-}
-
-void Device::fill_kernels()
-{
-	//this has to be the same as in opencl_module
-	// in fact, the kernel has already been build in the above call!!
-	//  testKernel = createKernel("stout_smear") << basic_opencl_code  <<  "tests/operations_gaugemomentum.cl" << "stout_smear.cl";
-}
-void Device::clear_kernels()
-{
-	clReleaseKernel(testKernel);
-}
-
-void Device::runTestKernel(const hardware::buffers::SU3 * gf, const hardware::buffers::SU3 * out, int gs, int ls)
-{
-	cl_int err;
-	err = clSetKernelArg(testKernel, 0, sizeof(cl_mem), gf->get_cl_buffer());
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-	err = clSetKernelArg(testKernel, 1, sizeof(cl_mem), out->get_cl_buffer());
-	BOOST_REQUIRE_EQUAL(CL_SUCCESS, err);
-
-	get_device()->enqueue_kernel(testKernel, gs, ls);
+	set_gaugefield_cold(get_sgf());
+	copy_gaugefield_to_task(0);
 }
 
 void Dummyfield::runTestKernel()
 {
+	Device* device = static_cast<Device*>(opencl_modules[0]);
 	//CP: this currently causes a segfault!!!
-	Device * device = static_cast<Device*>(opencl_modules[0]);
-	static_cast<Device*>(opencl_modules[0])->stout_smear_device( device->get_gaugefield()  , &device->out);
-
-	int gs = 0, ls = 0;
-	if(get_device_for_task(0)->get_device_type() == CL_DEVICE_TYPE_GPU) {
-		gs = meta::get_vol4d(get_parameters());
-		ls = 64;
-	} else {
-		gs = get_device_for_task(0)->get_num_compute_units();
-		ls = 1;
-	}
-	//  Device * device = static_cast<Device*>(opencl_modules[0]);
-	//  device->runTestKernel(device->get_gaugefield(), out, gs, ls);
-
-	return;
+	auto gf_code = get_device_for_task(0)->get_gaugefield_code();
+	gf_code->stout_smear_device( gf_code->get_gaugefield(), &device->out);
 }
 
 void Dummyfield::get_gaugeobservables_from_task(int ntask, hmc_float * plaq, hmc_float * tplaq, hmc_float * splaq, hmc_complex * pol)
 {
 	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range", __FILE__, __LINE__);
-	opencl_modules[ntask]->gaugeobservables(plaq, tplaq, splaq, pol);
+	auto gf_code = get_device_for_task(ntask)->get_gaugefield_code();
+	gf_code->gaugeobservables(plaq, tplaq, splaq, pol);
 }
 
 //this is just out of laziness, a copy of the function above
@@ -139,7 +95,8 @@ void Dummyfield::get_gaugeobservables_from_task(int dummy, int ntask, hmc_float 
 {
 	dummy = 0;
 	if( ntask < 0 || ntask > get_num_tasks() ) throw Print_Error_Message("devicetypes index out of range", __FILE__, __LINE__);
-	opencl_modules[ntask]->gaugeobservables(&static_cast<Device*>(opencl_modules[0])->out, plaq, tplaq, splaq, pol);
+	auto gf_code = get_device_for_task(dummy)->get_gaugefield_code();
+	gf_code->gaugeobservables(&static_cast<Device*>(opencl_modules[0])->out, plaq, tplaq, splaq, pol);
 }
 
 BOOST_AUTO_TEST_CASE( STOUT_SMEAR )

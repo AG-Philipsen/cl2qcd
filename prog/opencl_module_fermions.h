@@ -4,31 +4,12 @@
 #ifndef _OPENCLMODULEFERMIONSH_
 #define _OPENCLMODULEFERMIONSH_
 
-#include <cmath>
-#include <cstdlib>
-#include <vector>
-#include <string>
-#include <fstream>
-#include <sstream>
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-
-#include "host_geometry.h"
-#include "host_operations_gaugefield.h"
-#include "globaldefs.h"
-#include "types.h"
-#include "types_fermions.h"
-#include "host_use_timer.h"
-#include "opencl_compiler.hpp"
-
 #include "opencl_module.h"
-#include "opencl_module_ran.h"
-#include "opencl_module_spinors.h"
 
-#include "exceptions.h"
+#include "hardware/buffers/plain.hpp"
+#include "hardware/buffers/su3.hpp"
+#include "hardware/buffers/spinor.hpp"
+#include "host_use_timer.h"
 
 class Opencl_Module_Fermions;
 
@@ -153,26 +134,11 @@ public:
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Fermions : public Opencl_Module_Spinors {
+class Opencl_Module_Fermions : public Opencl_Module {
 public:
-	/**
-	 * Default constructor.
-	 *
-	 * @param[in] params points to an instance of inputparameters
-	 */
-	Opencl_Module_Fermions(const meta::Inputparameters& params, hardware::Device * device);
+	friend hardware::Device;
 
 	virtual ~Opencl_Module_Fermions();
-
-	/**
-	 * comutes work-sizes for a kernel
-	 * @todo autotune
-	 * @param ls local-work-size
-	 * @param gs global-work-size
-	 * @param num_groups number of work groups
-	 * @param name name of the kernel for possible autotune-usage, not yet used!!
-	 */
-	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
 
 	//    fermionmatrix operations
@@ -254,14 +220,12 @@ public:
 	 */
 	hmc_float print_info_inv_field(const hardware::buffers::Spinor * in, bool eo, std::string msg);
 
-	//protected:
-
 	/**
 	 * Print the profiling information to a file.
 	 *
 	 * @param filename Name of file where data is appended.
 	 */
-	void virtual print_profiling(const std::string& filename, int number) override;
+	void virtual print_profiling(const std::string& filename, int number) const override;
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
@@ -278,7 +242,27 @@ public:
 	 */
 	virtual uint64_t get_flop_size(const std::string& in) const override;
 
+	ClSourcePackage get_sources() const noexcept;
+
+protected:
+	/**
+	 * comutes work-sizes for a kernel
+	 * @todo autotune
+	 * @param ls local-work-size
+	 * @param gs global-work-size
+	 * @param num_groups number of work groups
+	 * @param name name of the kernel for possible autotune-usage, not yet used!!
+	 */
+	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
+
 private:
+	/**
+	 * Default constructor.
+	 *
+	 * @param[in] params points to an instance of inputparameters
+	 */
+	Opencl_Module_Fermions(const meta::Inputparameters& params, hardware::Device * device);
+
 	/**
 	 * Collect the kernels for OpenCL.
 	 * Virtual method, allows to include more kernels in inherited classes.
@@ -345,7 +329,6 @@ private:
 	const hardware::buffers::Plain<hmc_complex> clmem_one;
 	const hardware::buffers::Plain<hmc_complex> clmem_minusone;
 
-protected:
 	ClSourcePackage sources;
 };
 
