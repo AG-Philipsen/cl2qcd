@@ -39,8 +39,8 @@ void Opencl_Module_Correlator::fill_kernels()
 	  create_volume_source = createKernel("create_volume_source") << basic_correlator_code << prng_code << "spinorfield_volume_source.cl";
 	else if (get_parameters().get_sourcetype() == meta::Inputparameters::timeslice)
 	  create_timeslice_source = createKernel("create_timeslice_source") << basic_correlator_code << prng_code << "spinorfield_timeslice_source.cl";
-	else if (get_parameters().get_sourcetype() == meta::Inputparameters::timeslice)
-	  create_zslice_source = createKernel("create_zslice_source") << basic_correlator_code << prng_code << "spinorfield_timeslice_source.cl";
+	else if (get_parameters().get_sourcetype() == meta::Inputparameters::zslice)
+	  create_zslice_source = createKernel("create_zslice_source") << basic_correlator_code << prng_code << "spinorfield_zslice_source.cl";
 
 	//CP: If a pointsource is chosen, the correlators have a particular simple form. 
 	if(get_parameters().get_sourcetype() == meta::Inputparameters::point){
@@ -295,6 +295,7 @@ void Opencl_Module_Correlator::create_zslice_source_device(const hardware::buffe
 	cl_uint num_groups;
 	this->get_work_sizes(create_zslice_source, &ls2, &gs2, &num_groups);
 	//set arguments
+
 	int clerr = clSetKernelArg(create_zslice_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
@@ -366,7 +367,13 @@ size_t Opencl_Module_Correlator::get_read_write_size(const std::string& in) cons
 	if (in == "create_point_source") {
 		return 1000000000000000000000000;
 	}
-	if (in == "create_stochastic_source") {
+	if (in == "create_volume_source") {
+		return 1000000000000000000000000;
+	}
+	if (in == "create_timeslice_source") {
+		return 1000000000000000000000000;
+	}
+	if (in == "create_zslice_source") {
 		return 1000000000000000000000000;
 	}
 	if (in == "correlator_ps_z" ) {
@@ -445,7 +452,13 @@ uint64_t Opencl_Module_Correlator::get_flop_size(const std::string& in) const
 	if (in == "create_point_source") {
 		return 1000000000000000000000000;
 	}
-	if (in == "create_stochastic_source") {
+	if (in == "create_volume_source") {
+		return 1000000000000000000000000;
+	}
+	if (in == "create_timeslice_source") {
+		return 1000000000000000000000000;
+	}
+	if (in == "create_zslice_source") {
 		return 1000000000000000000000000;
 	}
 	if (in == "correlator_ps_z" ) {
@@ -488,7 +501,10 @@ void Opencl_Module_Correlator::print_profiling(const std::string& filename, int 
 	if(create_timeslice_source) {
 		Opencl_Module::print_profiling(filename, create_timeslice_source);
 	}
-	Opencl_Module::print_profiling(filename, correlator_ps);
+	if(create_zslice_source) {
+		Opencl_Module::print_profiling(filename, create_zslice_source);
+	}
+ 	Opencl_Module::print_profiling(filename, correlator_ps);
 	Opencl_Module::print_profiling(filename, correlator_sc);
 	Opencl_Module::print_profiling(filename, correlator_vx);
 	Opencl_Module::print_profiling(filename, correlator_vy);
