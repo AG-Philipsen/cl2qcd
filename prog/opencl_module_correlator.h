@@ -30,6 +30,8 @@ public:
 
 	void create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int timeslice);
 
+	void create_zslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int zslice);
+
 	/**
 	 * Calculate specific correlator on device.
 	 * This function is overloaded depending on whether one needs the source for the calculation or not.
@@ -104,6 +106,7 @@ private:
 	cl_kernel create_point_source;
 	cl_kernel create_volume_source;
 	cl_kernel create_timeslice_source;
+	cl_kernel create_zslice_source;
 
 	//Observables
 	//scalar correlators

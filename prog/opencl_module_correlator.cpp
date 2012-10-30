@@ -39,6 +39,8 @@ void Opencl_Module_Correlator::fill_kernels()
 	  create_volume_source = createKernel("create_volume_source") << basic_correlator_code << prng_code << "spinorfield_volume_source.cl";
 	else if (get_parameters().get_sourcetype() == meta::Inputparameters::timeslice)
 	  create_timeslice_source = createKernel("create_timeslice_source") << basic_correlator_code << prng_code << "spinorfield_timeslice_source.cl";
+	else if (get_parameters().get_sourcetype() == meta::Inputparameters::timeslice)
+	  create_zslice_source = createKernel("create_zslice_source") << basic_correlator_code << prng_code << "spinorfield_timeslice_source.cl";
 
 	//CP: If a pointsource is chosen, the correlators have a particular simple form. 
 	if(get_parameters().get_sourcetype() == meta::Inputparameters::point){
@@ -129,6 +131,10 @@ void Opencl_Module_Correlator::clear_kernels()
 	}
 	if(create_timeslice_source) {
 		clerr = clReleaseKernel(create_timeslice_source);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
+	if(create_zslice_source) {
+		clerr = clReleaseKernel(create_zslice_source);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 }
@@ -267,6 +273,39 @@ void Opencl_Module_Correlator::create_timeslice_source_device(const hardware::bu
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel( create_timeslice_source, gs2, ls2);
+
+	if(logger.beDebug()) {
+	  hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
+	  hmc_float sqn;
+	  get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+	  sqn_tmp.dump(&sqn);
+	  logger.debug() <<  "\t|source|^2:\t" << sqn;
+	  if(sqn != sqn) {
+	    throw Print_Error_Message("calculation of source gave nan! Aborting...", __FILE__, __LINE__);
+	  }
+	}
+}
+
+void Opencl_Module_Correlator::create_zslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int zslice)
+{
+  get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
+
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(create_zslice_source, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(create_zslice_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(create_zslice_source, 1, sizeof(cl_mem), prng->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	int tmp = zslice;
+	clerr = clSetKernelArg(create_zslice_source, 2, sizeof(int), &tmp);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel( create_zslice_source, gs2, ls2);
 
 	if(logger.beDebug()) {
 	  hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
@@ -461,7 +500,7 @@ void Opencl_Module_Correlator::print_profiling(const std::string& filename, int 
 
 Opencl_Module_Correlator::Opencl_Module_Correlator(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device),
-	  create_point_source(0), create_volume_source(0), create_timeslice_source(0),
+	  create_point_source(0), create_volume_source(0), create_timeslice_source(0), create_zslice_source(0),
 	  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0)
 {
 	fill_kernels();
