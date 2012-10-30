@@ -7,6 +7,7 @@
 #include "opencl_module.h"
 
 #include "hardware/buffers/plain.hpp"
+#include "hardware/buffers/prng_buffer.hpp"
 #include "types_fermions.h"
 
 /**
@@ -25,9 +26,9 @@ public:
 
 	void create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos);
 
-	void create_volume_source_device(const hardware::buffers::Plain<spinor> * inout);
+	void create_volume_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng);
 
-	void create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const int timeslice);
+	void create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int timeslice);
 
 	/**
 	 * Calculate specific correlator on device.

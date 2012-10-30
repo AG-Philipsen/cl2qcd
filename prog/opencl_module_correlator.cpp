@@ -29,6 +29,8 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 void Opencl_Module_Correlator::fill_kernels()
 {
 	basic_correlator_code = get_device()->get_spinor_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
+	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
+
 	logger.debug() << "Create correlator kernels...";
 
 	if(get_parameters().get_sourcetype() == meta::Inputparameters::point)
@@ -207,7 +209,7 @@ void Opencl_Module_Correlator::create_point_source_device(const hardware::buffer
 	if(logger.beDebug()) {
 	  hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
 	  hmc_float sqn;
-	  this->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+	  get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
 	  sqn_tmp.dump(&sqn);
 	  logger.debug() <<  "\t|source|^2:\t" << sqn;
 	  if(sqn != sqn) {
@@ -217,10 +219,9 @@ void Opencl_Module_Correlator::create_point_source_device(const hardware::buffer
 
 }
 
-void Opencl_Module_Correlator::create_volume_source_device(const hardware::buffers::Plain<spinor> * inout)
+void Opencl_Module_Correlator::create_volume_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng)
 {
-  set_zero_spinorfield_device(inout);
-
+  get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -229,7 +230,7 @@ void Opencl_Module_Correlator::create_volume_source_device(const hardware::buffe
 	int clerr = clSetKernelArg(create_volume_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(create_volume_source, 1, sizeof(cl_mem), get_prng_buffer());
+	clerr = clSetKernelArg(create_volume_source, 1, sizeof(cl_mem), prng->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel( create_volume_source, gs2, ls2);
@@ -237,7 +238,7 @@ void Opencl_Module_Correlator::create_volume_source_device(const hardware::buffe
 	if(logger.beDebug()) {
 	  hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
 	  hmc_float sqn;
-	  this->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+	  get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
 	  sqn_tmp.dump(&sqn);
 	  logger.debug() <<  "\t|source|^2:\t" << sqn;
 	  if(sqn != sqn) {
@@ -246,9 +247,9 @@ void Opencl_Module_Correlator::create_volume_source_device(const hardware::buffe
 	}
 }
 
-void Opencl_Module_Correlator::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const int timeslice)
+void Opencl_Module_Correlator::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int timeslice)
 {
-  set_zero_spinorfield_device(inout);
+  get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -258,7 +259,7 @@ void Opencl_Module_Correlator::create_timeslice_source_device(const hardware::bu
 	int clerr = clSetKernelArg(create_timeslice_source, 0, sizeof(cl_mem), inout->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(create_timeslice_source, 1, sizeof(cl_mem), get_prng_buffer());
+	clerr = clSetKernelArg(create_timeslice_source, 1, sizeof(cl_mem), prng->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	int tmp = timeslice;
@@ -270,7 +271,7 @@ void Opencl_Module_Correlator::create_timeslice_source_device(const hardware::bu
 	if(logger.beDebug()) {
 	  hardware::buffers::Plain<hmc_float> sqn_tmp(1, get_device());
 	  hmc_float sqn;
-	  this->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
+	  get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(inout, &sqn_tmp);
 	  sqn_tmp.dump(&sqn);
 	  logger.debug() <<  "\t|source|^2:\t" << sqn;
 	  if(sqn != sqn) {

@@ -322,6 +322,8 @@ void Gaugefield_inverter::create_sources()
 {
   //create sources on the correlator-device and save them on the host
   const hardware::buffers::Plain<spinor> clmem_source(meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
+  auto prng = &get_device_for_task(task_correlator)->get_prng_code()->get_prng_buffer();
+
   for(int k = 0; k < get_parameters().get_num_sources(); k++) {
     if(get_parameters().get_sourcetype() == meta::Inputparameters::sourcetypes::point) {
       logger.debug() << "start creating point-source..."; 
@@ -330,10 +332,10 @@ void Gaugefield_inverter::create_sources()
       get_task_correlator()->create_point_source_device(&clmem_source, k_tmp, get_source_pos_spatial(get_parameters()), get_parameters().get_source_t());
     } else if (get_parameters().get_sourcetype() == meta::Inputparameters::sourcetypes::volume) {
       logger.debug() << "start creating volume-source...";
-      get_task_correlator()->create_volume_source_device(&clmem_source);
+      get_task_correlator()->create_volume_source_device(&clmem_source, prng);
     }  else if (get_parameters().get_sourcetype() == meta::Inputparameters::sourcetypes::timeslice) {
       logger.debug() << "start creating timeslice-source...";
-      get_task_correlator()->create_timeslice_source_device(&clmem_source, get_parameters().get_source_t());
+      get_task_correlator()->create_timeslice_source_device(&clmem_source, prng, get_parameters().get_source_t());
     }
     logger.debug() << "copy source to host";
     clmem_source.dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);
