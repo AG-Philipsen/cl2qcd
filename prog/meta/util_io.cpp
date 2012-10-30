@@ -755,7 +755,7 @@ static void print_info_source(const meta::Inputparameters params)
     }
     else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::zslice) {
 	logger.info() << "## Use zslice sources for inversion" ;
-	logger.info() << "## Use zslice: " << params.get_source_t();
+	logger.info() << "## Use zslice: " << params.get_source_z();
 	logger.info() << "## Number of sources: " << params.get_num_sources();
     }
     if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::one){

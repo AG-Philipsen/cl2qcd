@@ -336,6 +336,9 @@ void Gaugefield_inverter::create_sources()
     }  else if (get_parameters().get_sourcetype() == meta::Inputparameters::sourcetypes::timeslice) {
       logger.debug() << "start creating timeslice-source...";
       get_task_correlator()->create_timeslice_source_device(&clmem_source, prng, get_parameters().get_source_t());
+    }  else if (get_parameters().get_sourcetype() == meta::Inputparameters::sourcetypes::zslice) {
+      logger.debug() << "start creating zslice-source...";
+      get_task_correlator()->create_zslice_source_device(&clmem_source, prng, get_parameters().get_source_z());
     }
     logger.debug() << "copy source to host";
     clmem_source.dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);
