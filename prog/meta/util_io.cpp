@@ -612,17 +612,17 @@ static void print_info_configs_io(const meta::Inputparameters& params)
 	using namespace meta;
 
 	logger.info() << "## **********************************************************";
-	logger.info() << "## CONFIGURATION NAMING PARAMETERS:";
-	logger.info() << "## DIGITS IN NAME:  " << params.get_config_number_digits();
-	logger.info() << "## NAME PREFIX:   " << params.get_config_prefix();
-	logger.info() << "## NAME POSTFIX:   " << params.get_config_postfix();
+	logger.info() << "## configuration naming parameters:";
+	logger.info() << "## digits in name:  " << params.get_config_number_digits();
+	logger.info() << "## name prefix:   " << params.get_config_prefix();
+	logger.info() << "## name postfix:   " << params.get_config_postfix();
 	if(params.get_read_multiple_configs() == false) {
-		logger.info() << "## READ MULTIPLE CONFIGS: OFF";
+		logger.info() << "## read multiple configs: off";
 	} else {
-		logger.info() << "## READ MULTIPLE CONFIGS: ON";
-		logger.info() << "## START NR:  " << params.get_config_read_start();
-		logger.info() << "## END NR:   " << params.get_config_read_end();
-		logger.info() << "## INCREMENT:    " << params.get_config_read_incr();
+		logger.info() << "## read multiple configs: on";
+		logger.info() << "## start nr:  " << params.get_config_read_start();
+		logger.info() << "## end nr:   " << params.get_config_read_end();
+		logger.info() << "## increment:    " << params.get_config_read_incr();
 	}
 }
 
@@ -631,17 +631,17 @@ static void print_info_configs_io(std::ostream * os, const meta::Inputparameters
 	using namespace meta;
 
 	*os << "## **********************************************************" << endl;
-	*os << "## CONFIGURATION NAMING PARAMETERS:" << endl;
-	*os << "## DIGITS IN NAME:  " << params.get_config_number_digits() << endl;
-	*os << "## NAME PREFIX:   " << params.get_config_prefix() << endl;
-	*os << "## NAME POSTFIX:   " << params.get_config_postfix() << endl;
+	*os << "## configuration naming parameters:" << endl;
+	*os << "## digits in name:  " << params.get_config_number_digits() << endl;
+	*os << "## name prefix:   " << params.get_config_prefix() << endl;
+	*os << "## name postfix:   " << params.get_config_postfix() << endl;
 	if(params.get_read_multiple_configs() == false) {
-		*os << "## READ MULTIPLE CONFIGS: OFF" << endl;
+		*os << "## read multiple configs: off" << endl;
 	} else {
-		*os << "## READ MULTIPLE CONFIGS: ON" << endl;
-		*os << "## START NR:  " << params.get_config_read_start() << endl;
-		*os << "## END NR:   " << params.get_config_read_end() << endl;
-		*os << "## INCREMENT:    " << params.get_config_read_incr() << endl;
+		*os << "## read multiple configs: on" << endl;
+		*os << "## start nr:  " << params.get_config_read_start() << endl;
+		*os << "## end nr:   " << params.get_config_read_end() << endl;
+		*os << "## increment:    " << params.get_config_read_incr() << endl;
 	}
 }
 
@@ -650,13 +650,13 @@ static void print_info_observables_gauge_io(const meta::Inputparameters& params)
 	using namespace meta;
 
 	logger.info() << "## **********************************************************";
-	logger.info() << "## GAUGE OBSERVABLES FILE NAMING PARAMETERS:";
-	logger.info() << "## NAME PREFIX:   " << params.get_gauge_obs_prefix();
-	logger.info() << "## NAME POSTFIX:   " << params.get_gauge_obs_postfix();
+	logger.info() << "## gauge observables file naming parameters:";
+	logger.info() << "## name prefix:   " << params.get_gauge_obs_prefix();
+	logger.info() << "## name postfix:   " << params.get_gauge_obs_postfix();
 	if(params.get_gauge_obs_to_single_file() == true) {
-		logger.info() << "## WRITE GAUGE OBSERVABLES TO SINGLE FILE";
+		logger.info() << "## write gauge observables to single file";
 	} else {
-		logger.info() << "## WRITE GAUGE OBSERVABLES TO MULTIPLE FILES";
+		logger.info() << "## write gauge observables to multiple files";
 	}
 }
 
@@ -665,13 +665,13 @@ static void print_info_observables_gauge_io(std::ostream * os, const meta::Input
 	using namespace meta;
 
 	*os<< "## **********************************************************"<< endl;
-	*os<< "## GAUGE OBSERVABLES FILE NAMING PARAMETERS:"<< endl;
-	*os<< "## NAME PREFIX:   " << params.get_gauge_obs_prefix()<< endl;
-	*os<< "## NAME POSTFIX:   " << params.get_gauge_obs_postfix()<< endl;
+	*os<< "## gauge observables file naming parameters:"<< endl;
+	*os<< "## name prefix:   " << params.get_gauge_obs_prefix()<< endl;
+	*os<< "## name postfix:   " << params.get_gauge_obs_postfix()<< endl;
 	if(params.get_gauge_obs_to_single_file() == true) {
-		*os<< "## WRITE GAUGE OBSERVABLES TO SINGLE FILE"<< endl;
+		*os<< "## write gauge observables to single file"<< endl;
 	} else {
-		*os<< "## WRITE GAUGE OBSERVABLES TO MULTIPLE FILES"<< endl;
+		*os<< "## write gauge observables to multiple files"<< endl;
 	}
 }
 
@@ -680,31 +680,31 @@ static void print_info_observables_fermion_io(const meta::Inputparameters& param
 	using namespace meta;
 
 	logger.info() << "## **********************************************************";
-	logger.info() << "## FERMIONIC OBSERVABLES FILE NAMING PARAMETERS:";
+	logger.info() << "## fermionic observables file naming parameters:";
 	if (params.get_measure_correlators() == true) {
-	  logger.info() << "## CORRELATORS NAME PREFIX:   " << params.get_ferm_obs_corr_prefix();
-	  logger.info() << "## CORRELATORS NAME POSTFIX:   " << params.get_ferm_obs_corr_postfix();
+	  logger.info() << "## correlators name prefix:   " << params.get_ferm_obs_corr_prefix();
+	  logger.info() << "## correlators name postfix:   " << params.get_ferm_obs_corr_postfix();
 	}
 	if (params.get_measure_pbp() == true) {
-	  logger.info() << "## CHIRAL CONDENSATE NAME PREFIX:   " << params.get_ferm_obs_pbp_prefix();
-	  logger.info() << "## CHIRAL CONDENSATE NAME POSTFIX:   " << params.get_ferm_obs_pbp_postfix();
-	  if(params.get_pbp_version() == Inputparameters::pbp_version::std )
-	    logger.info() << "## MEASURE CHIRAL CONDENSATE IN standard VERSION";
-	  if(params.get_pbp_version() == Inputparameters::pbp_version::tm_one_end_trick ){
-	    logger.info() << "## MEASURE CHIRAL CONDENSATE IN twisted-mass one end trick VERSION";
-	    if(params.get_fermact() != Inputparameters::twistedmass)
-	      logger.fatal() << "## Using the one end trick without twisted-mass action!";
+	  logger.info() << "## chiral condensate name prefix:   " << params.get_ferm_obs_pbp_prefix();
+	  logger.info() << "## chiral condensate name postfix:   " << params.get_ferm_obs_pbp_postfix();
+	  if(params.get_pbp_version() == inputparameters::pbp_version::std )
+	    logger.info() << "## measure chiral condensate in standard version";
+	  if(params.get_pbp_version() == inputparameters::pbp_version::tm_one_end_trick ){
+	    logger.info() << "## measure chiral condensate in twisted-mass one end trick version";
+	    if(params.get_fermact() != inputparameters::twistedmass)
+	      logger.fatal() << "## using the one end trick without twisted-mass action!";
 	    }
-	  if(params.get_sourcetype() == Inputparameters::point)
-	    logger.warn() << "## Calculating chiral condensate without stochastic estimators!";
+	  if(params.get_sourcetype() == inputparameters::point)
+	    logger.warn() << "## calculating chiral condensate without stochastic estimators!";
 	}
 	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )){
-	  logger.info() << "## DO NOT MEASURE FERMIONIC OBSERVABLES!";
+	  logger.info() << "## do not measure fermionic observables!";
 	}
 	if(params.get_ferm_obs_to_single_file() == true) {
-	  logger.info() << "## WRITE FERMION OBSERVABLES TO SINGLE FILE";
+	  logger.info() << "## write fermion observables to single file";
 	} else {
-	  logger.info() << "## WRITE FERMION OBSERVABLES TO MULTIPLE FILES";
+	  logger.info() << "## write fermion observables to multiple files";
 	}
 }
 
@@ -713,31 +713,31 @@ static void print_info_observables_fermion_io(std::ostream * os, const meta::Inp
 	using namespace meta;
 
 	*os<< "## **********************************************************"<< endl;
-	*os<< "## FERMIONIC OBSERVABLES FILE NAMING PARAMETERS:"<< endl;
+	*os<< "## fermionic observables file naming parameters:"<< endl;
 	if (params.get_measure_correlators() == true) {
-	  *os<< "## CORRELATORS NAME PREFIX:   " << params.get_ferm_obs_corr_prefix()<< endl;
-	  *os<< "## CORRELATORS NAME POSTFIX:   " << params.get_ferm_obs_corr_postfix()<< endl;
+	  *os<< "## correlators name prefix:   " << params.get_ferm_obs_corr_prefix()<< endl;
+	  *os<< "## correlators name postfix:   " << params.get_ferm_obs_corr_postfix()<< endl;
 	}
 	if (params.get_measure_pbp() == true) {
-	  *os<< "## CHIRAL CONDENSATE NAME PREFIX:   " << params.get_ferm_obs_pbp_prefix()<< endl;
-	  *os<< "## CHIRAL CONDENSATE NAME POSTFIX:   " << params.get_ferm_obs_pbp_postfix()<< endl;
-	  if(params.get_pbp_version() == Inputparameters::pbp_version::std )
-	    *os << "## MEASURE CHIRAL CONDENSATE IN standard VERSION" << endl;
-	  if(params.get_pbp_version() == Inputparameters::pbp_version::tm_one_end_trick ){
-	    *os << "## MEASURE CHIRAL CONDENSATE IN twisted-mass one end trick VERSION" << endl;
-	    if(params.get_fermact() != Inputparameters::twistedmass)
-	      *os << "## Using the one end trick without twisted-mass action!" << endl;
+	  *os<< "## chiral condensate name prefix:   " << params.get_ferm_obs_pbp_prefix()<< endl;
+	  *os<< "## chiral condensate name postfix:   " << params.get_ferm_obs_pbp_postfix()<< endl;
+	  if(params.get_pbp_version() == inputparameters::pbp_version::std )
+	    *os << "## measure chiral condensate in standard version" << endl;
+	  if(params.get_pbp_version() == inputparameters::pbp_version::tm_one_end_trick ){
+	    *os << "## measure chiral condensate in twisted-mass one end trick version" << endl;
+	    if(params.get_fermact() != inputparameters::twistedmass)
+	      *os << "## using the one end trick without twisted-mass action!" << endl;
 	    }
-	  if(params.get_sourcetype() == Inputparameters::point)
-	    *os << "## Calculating chiral condensate without stochastic estimators!" << endl;
+	  if(params.get_sourcetype() == inputparameters::point)
+	    *os << "## calculating chiral condensate without stochastic estimators!" << endl;
 	}
 	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )){
-	  *os<< "## DO NOT MEASURE FERMIONIC OBSERVABLES!"<< endl;
+	  *os<< "## do not measure fermionic observables!"<< endl;
 	}
 	if(params.get_ferm_obs_to_single_file() == true) {
-		*os<< "## WRITE FERMIONIC OBSERVABLES TO SINGLE FILE"<< endl;
+		*os<< "## write fermionic observables to single file"<< endl;
 	} else {
-		*os<< "## WRITE FERMIONIC OBSERVABLES TO MULTIPLE FILES"<< endl;
+		*os<< "## write fermionic observables to multiple files"<< endl;
 	}
 }
 
@@ -746,28 +746,28 @@ static void print_info_observables_hmc_io(const meta::Inputparameters& params)
 	using namespace meta;
 
 	logger.info() << "## **********************************************************";
-	logger.info() << "## HMC OBSERVABLES FILE NAMING PARAMETERS:";
-	logger.info() << "## NAME PREFIX:   " << params.get_hmc_obs_prefix();
-	logger.info() << "## NAME POSTFIX:   " << params.get_hmc_obs_postfix();
+	logger.info() << "## hmc observables file naming parameters:";
+	logger.info() << "## name prefix:   " << params.get_hmc_obs_prefix();
+	logger.info() << "## name postfix:   " << params.get_hmc_obs_postfix();
 	if(params.get_hmc_obs_to_single_file() == true) {
-		logger.info() << "## WRITE HMC OBSERVABLES TO SINGLE FILE";
+		logger.info() << "## write hmc observables to single file";
 	} else {
-		logger.info() << "## WRITE HMC OBSERVABLES TO MULTIPLE FILES";
+		logger.info() << "## write hmc observables to multiple files";
 	}
 }
 
-static void print_info_observables_hmc_io(std::ostream * os, const meta::Inputparameters& params)
+static void print_info_observables_hmc_io(std::ostream * os, const meta::inputparameters& params)
 {
 	using namespace meta;
 
 	*os<< "## **********************************************************"<< endl;
-	*os<< "## HMC OBSERVABLES FILE NAMING PARAMETERS:"<< endl;
-	*os<< "## NAME PREFIX:   " << params.get_hmc_obs_prefix()<< endl;
-	*os<< "## NAME POSTFIX:   " << params.get_hmc_obs_postfix()<< endl;
+	*os<< "## hmc observables file naming parameters:"<< endl;
+	*os<< "## name prefix:   " << params.get_hmc_obs_prefix()<< endl;
+	*os<< "## name postfix:   " << params.get_hmc_obs_postfix()<< endl;
 	if(params.get_hmc_obs_to_single_file() == true) {
-		*os<< "## WRITE HMC OBSERVABLES TO SINGLE FILE"<< endl;
+		*os<< "## write hmc observables to single file"<< endl;
 	} else {
-		*os<< "## WRITE HMC OBSERVABLES TO MULTIPLE FILES"<< endl;
+		*os<< "## write hmc observables to multiple files"<< endl;
 	}
 }
 
