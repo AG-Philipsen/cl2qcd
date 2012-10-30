@@ -327,6 +327,7 @@ hmc_complex inline gaussianNormalPair(prng_state * const restrict rnd)
  */
 hmc_complex inline Z4_complex_number(prng_state * const restrict rnd)
 {
+	hmc_float norm = 1./sqrt(2.);
 #ifdef USE_PRNG_NR3
 	hmc_complex tmp;
 	hmc_float u1_tmp;
@@ -358,13 +359,13 @@ hmc_complex inline Z4_complex_number(prng_state * const restrict rnd)
 	//just use the first 2 floats
 	hmc_complex tmp;
 	if(rands.x > 0.5)
-	  tmp.re = 1.;
+	  tmp.re = norm;
 	else
-	  tmp.re = -1.;
+	  tmp.re = -norm;
 	if(rands.y > 0.5)
-	  tmp.im = 1.;
+	  tmp.im = norm;
 	else
-	  tmp.im = -1.;
+	  tmp.im = -norm;
 	return tmp;
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected

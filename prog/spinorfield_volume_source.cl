@@ -11,8 +11,6 @@ __kernel void create_volume_source(__global spinor * const restrict b, __global 
 	prng_state rnd;
 	prng_loadState(&rnd, rngStates);
 
-	/** @todo What is the correct norm here? */
-	hmc_float sigma = 1. / ( VOL4D * 12. );
 	spinor out_tmp;
 	hmc_complex tmp;
 
@@ -22,12 +20,10 @@ __kernel void create_volume_source(__global spinor * const restrict b, __global 
 	  //CP: switch between source content
 	  switch(SOURCE_CONTENT){
 	  case 1:  //"one"
-	    sigma = 1. / ( VOLSPACE * 12. );
 	    out_tmp = set_spinor_cold();
 	    break;
 	   
 	  case 2: //"z4"
-	    sigma = 1. / ( VOLSPACE * 24. );
 	    tmp = Z4_complex_number(&rnd);
 	    out_tmp.e0.e0.re = tmp.re;
 	    out_tmp.e0.e0.im = tmp.im;
@@ -68,7 +64,7 @@ __kernel void create_volume_source(__global spinor * const restrict b, __global 
 
 	  case 3: //"gaussian"
 	    /** @todo what is the norm here? */
-	    sigma = 1. / ( VOL4D * 24. );
+	    hmc_float sigma = 0.5;
 	    tmp = gaussianNormalPair(&rnd);
 	    out_tmp.e0.e0.re = tmp.re;
 	    out_tmp.e0.e0.im = tmp.im;
@@ -105,14 +101,14 @@ __kernel void create_volume_source(__global spinor * const restrict b, __global 
 	    tmp = gaussianNormalPair(&rnd);
 	    out_tmp.e3.e2.re = tmp.re;
 	    out_tmp.e3.e2.im = tmp.im;
+	    //multiply by sigma
+	    out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));	  
 	    break;
 	    
 	  default:
 	    if(id == 0) printf("Problem occured in source kernel: Selected sourcecontent not implemented! Fill with zero...\n");
 	    out_tmp = set_spinor_zero();
 	  }
-	  //multiply by sigma
-	  out_tmp = real_multiply_spinor(out_tmp, sqrt(sigma));	  
 	  put_spinor_to_field(out_tmp, b, pos.space, pos.time);
 	}
 
