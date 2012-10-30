@@ -344,3 +344,22 @@ void Gaugefield_inverter::create_sources()
     clmem_source.dump(&source_buffer[k * meta::get_vol4d(get_parameters())]);
   }
 }
+
+void Gaugefield_inverter::flavour_doublet_chiral_condensate(std::string pbp_fn){
+	using namespace std;
+	using namespace hardware::buffers;
+
+	logger.debug() << "init buffers for chiral condensate calculation...";
+	const hardware::buffers::Plain<spinor> clmem_corr(get_parameters().get_num_sources() * meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
+	//for now, make sure clmem_corr is properly filled; maybe later we can increase performance a bit by playing with this...
+	clmem_corr.load(solution_buffer);
+
+	//this buffer is only needed if sources other than pointsources have been used.
+	hardware::buffers::Plain<spinor> * clmem_sources;
+	if(get_parameters().get_sourcetype() != meta::Inputparameters::point ){
+	  clmem_sources = new hardware::buffers::Plain<spinor>(get_parameters().get_num_sources() * meta::get_vol4d(get_parameters()), get_task_correlator()->get_device());
+	  clmem_sources->load(source_buffer);
+	}
+	
+
+}

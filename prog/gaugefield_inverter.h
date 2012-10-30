@@ -93,6 +93,12 @@ public:
 	 */
 	void flavour_doublet_correlators(std::string corr_fn);
 
+	/**
+	 * Calculate 2 flavour chiral condesate from private solution_buffer and store it to a file
+	 * @param[in] corr_fn filename
+	 */
+	void flavour_doublet_chiral_condensate(std::string pbp_fn);
+
 	// get methods
 	/**
 	 * Returns a pointer to solver task

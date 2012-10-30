@@ -78,6 +78,11 @@ int main(int argc, const char* argv[])
 				  //flavour_doublet_correlators does a sync at the beginning
 				  gaugefield.flavour_doublet_correlators(corr_fn);
 				}
+				if(parameters.get_measure_pbp() ){
+				  //get name for file to which pbp is to be stored
+				  std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, config_name);
+				  gaugefield.flavour_doublet_chiral_condensate(pbp_fn);
+				}
 			}
 		} else {
 			logger.info() << "Gaugeobservables:";
@@ -91,6 +96,11 @@ int main(int argc, const char* argv[])
 			  std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, "");
 			  //flavour_doublet_correlators does a sync at the beginning
 			  gaugefield.flavour_doublet_correlators(corr_fn);
+			}
+			if(parameters.get_measure_pbp() ){
+			  //get name for file to which pbp is to be stored
+			  std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, "");
+			  gaugefield.flavour_doublet_chiral_condensate(pbp_fn);
 			}
 		}
 		logger.trace() << "Inversion done" ;
