@@ -131,20 +131,39 @@ size_t meta::get_flop_spinor_sqnorm() noexcept {
 	return NDIM * NC * get_flop_complex_mult() * 0.5 + (NC * NDIM - 1);
 }
 
-std::string meta::get_ferm_obs_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
+std::string meta::get_ferm_obs_pbp_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
 {
   if(parameters.get_ferm_obs_to_single_file() ){
-    return parameters.get_ferm_obs_prefix() +  parameters.get_ferm_obs_postfix();
+    return parameters.get_ferm_obs_pbp_prefix() +  parameters.get_ferm_obs_pbp_postfix();
   } else {
     switch ( parameters.get_startcondition() ) {
     case meta::Inputparameters::start_from_source :
-      return  parameters.get_ferm_obs_prefix() + conf_name + parameters.get_ferm_obs_postfix();
+      return  parameters.get_ferm_obs_pbp_prefix() + conf_name + parameters.get_ferm_obs_pbp_postfix();
       break;
     case meta::Inputparameters::hot_start :
-      return  parameters.get_ferm_obs_prefix() + "conf.hot" +   parameters.get_ferm_obs_postfix() ;
+      return  parameters.get_ferm_obs_pbp_prefix() + "conf.hot" +   parameters.get_ferm_obs_pbp_postfix() ;
       break;
     case meta::Inputparameters::cold_start :
-      return  parameters.get_ferm_obs_prefix() + "conf.cold" + parameters.get_ferm_obs_postfix() ;
+      return  parameters.get_ferm_obs_pbp_prefix() + "conf.cold" + parameters.get_ferm_obs_pbp_postfix() ;
+      break;
+    }
+  }
+}
+
+std::string meta::get_ferm_obs_corr_file_name(const Inputparameters& parameters, std::string conf_name) noexcept
+{
+  if(parameters.get_ferm_obs_to_single_file() ){
+    return parameters.get_ferm_obs_corr_prefix() +  parameters.get_ferm_obs_corr_postfix();
+  } else {
+    switch ( parameters.get_startcondition() ) {
+    case meta::Inputparameters::start_from_source :
+      return  parameters.get_ferm_obs_corr_prefix() + conf_name + parameters.get_ferm_obs_corr_postfix();
+      break;
+    case meta::Inputparameters::hot_start :
+      return  parameters.get_ferm_obs_corr_prefix() + "conf.hot" +   parameters.get_ferm_obs_corr_postfix() ;
+      break;
+    case meta::Inputparameters::cold_start :
+      return  parameters.get_ferm_obs_corr_prefix() + "conf.cold" + parameters.get_ferm_obs_corr_postfix() ;
       break;
     }
   }

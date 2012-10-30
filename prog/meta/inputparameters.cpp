@@ -419,13 +419,21 @@ std::string Inputparameters::get_config_postfix() const noexcept
 {
   return config_postfix;
 }
-std::string Inputparameters::get_ferm_obs_prefix() const noexcept
+std::string Inputparameters::get_ferm_obs_corr_prefix() const noexcept
 {
-  return ferm_obs_prefix;
+  return ferm_obs_corr_prefix;
 }
-std::string Inputparameters::get_ferm_obs_postfix() const noexcept
+std::string Inputparameters::get_ferm_obs_corr_postfix() const noexcept
 {
-  return ferm_obs_postfix;
+  return ferm_obs_corr_postfix;
+}
+std::string Inputparameters::get_ferm_obs_pbp_prefix() const noexcept
+{
+  return ferm_obs_pbp_prefix;
+}
+std::string Inputparameters::get_ferm_obs_pbp_postfix() const noexcept
+{
+  return ferm_obs_pbp_postfix;
 }
 std::string Inputparameters::get_gauge_obs_prefix() const noexcept
 {
@@ -463,6 +471,15 @@ Inputparameters::sourcecontents Inputparameters::get_sourcecontent() const noexc
 {
   return sourcecontent;
 }
+bool Inputparameters::get_measure_correlators() const noexcept
+{
+	return measure_correlators;
+}
+bool Inputparameters::get_measure_pbp() const noexcept
+{
+	return measure_pbp;
+}
+
 Inputparameters::Inputparameters(int argc, const char** argv)
 {
   logger.info() << "read in parameters...";
@@ -599,11 +616,17 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("gauge_obs_prefix", po::value<std::string>(&gauge_obs_prefix)->default_value("gaugeObs"), "Prefix for gauge observables file")
 	("gauge_obs_postfix", po::value<std::string>(&gauge_obs_postfix)->default_value(".dat"), "Postfix for gauge observables file")
 	("ferm_obs_to_single_file", po::value<bool>(&ferm_obs_to_single_file)->default_value(false), "Save fermionic observables to one single file")
-	("ferm_obs_prefix", po::value<std::string>(&ferm_obs_prefix)->default_value(""), "Prefix for fermionic observables file")
-	("ferm_obs_postfix", po::value<std::string>(&ferm_obs_postfix)->default_value("_correlators.dat"), "Postfix for fermionic observables file")
+	("ferm_obs_corr_prefix", po::value<std::string>(&ferm_obs_corr_prefix)->default_value(""), "Prefix for fermionic observables (correlators) file")
+	("ferm_obs_corr_postfix", po::value<std::string>(&ferm_obs_corr_postfix)->default_value("_correlators.dat"), "Postfix for fermionic observables (correlators) file")
+	("ferm_obs_pbp_prefix", po::value<std::string>(&ferm_obs_pbp_prefix)->default_value(""), "Prefix for fermionic observables (chiral condensate) file")
+	("ferm_obs_pbp_postfix", po::value<std::string>(&ferm_obs_pbp_postfix)->default_value("_pbp.dat"), "Postfix for fermionic observables (chiral condensate) file")
 	("hmc_obs_to_single_file", po::value<bool>(&hmc_obs_to_single_file)->default_value(true), "Save hmc observables to one single file")
 	("hmc_obs_prefix", po::value<std::string>(&hmc_obs_prefix)->default_value("hmc_output"), "Prefix for hmc observables file")
-	("hmc_obs_postfix", po::value<std::string>(&hmc_obs_postfix)->default_value(""), "Postfix for hmc observables file");
+	("hmc_obs_postfix", po::value<std::string>(&hmc_obs_postfix)->default_value(""), "Postfix for hmc observables file")
+
+	("measure_correlators", po::value<bool>(&measure_correlators)->default_value(true), "Measure fermionic correlators")
+	  ("measure_pbp", po::value<bool>(&measure_pbp)->default_value(false), "Measure chiral condensate");
+
 
 	po::options_description desc;
 	desc.add(cmd_opts).add(config);

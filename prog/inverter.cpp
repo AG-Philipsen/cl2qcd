@@ -72,11 +72,12 @@ int main(int argc, const char* argv[])
 				gaugefield.create_sources();
 				gaugefield.perform_inversion(&solver_timer);
 
-				//get name for file to which correlators are to be stored
-				std::string corr_fn = meta::get_ferm_obs_file_name(parameters, config_name);
-
-				//flavour_doublet_correlators does a sync at the beginning
-				gaugefield.flavour_doublet_correlators(corr_fn);
+				if(parameters.get_measure_correlators() ){
+				  //get name for file to which correlators are to be stored
+				  std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, config_name);
+				  //flavour_doublet_correlators does a sync at the beginning
+				  gaugefield.flavour_doublet_correlators(corr_fn);
+				}
 			}
 		} else {
 			logger.info() << "Gaugeobservables:";
@@ -85,11 +86,12 @@ int main(int argc, const char* argv[])
 			gaugefield.create_sources();
 			gaugefield.perform_inversion(&solver_timer);
 
-			//get name for file to which correlators are to be stored
-			std::string corr_fn = meta::get_ferm_obs_file_name(parameters, "");
-
-			//flavour_doublet_correlators does a sync at the beginning
-			gaugefield.flavour_doublet_correlators(corr_fn);
+			if(parameters.get_measure_correlators() ){
+			  //get name for file to which correlators are to be stored
+			  std::string corr_fn = meta::get_ferm_obs_corr_file_name(parameters, "");
+			  //flavour_doublet_correlators does a sync at the beginning
+			  gaugefield.flavour_doublet_correlators(corr_fn);
+			}
 		}
 		logger.trace() << "Inversion done" ;
 		perform_timer.add();

@@ -154,8 +154,10 @@ namespace meta {
 	  int get_config_number_digits() const noexcept;
 	  std::string get_config_prefix() const noexcept;
 	  std::string get_config_postfix() const noexcept;
-	  std::string get_ferm_obs_prefix() const noexcept;
-	  std::string get_ferm_obs_postfix() const noexcept;
+	  std::string get_ferm_obs_corr_prefix() const noexcept;
+	  std::string get_ferm_obs_corr_postfix() const noexcept;
+	  std::string get_ferm_obs_pbp_prefix() const noexcept;
+	  std::string get_ferm_obs_pbp_postfix() const noexcept;
 	  std::string get_gauge_obs_prefix() const noexcept;
 	  std::string get_gauge_obs_postfix() const noexcept;
 	  bool get_ferm_obs_to_single_file() const noexcept;
@@ -163,6 +165,8 @@ namespace meta {
 	  std::string get_hmc_obs_prefix() const noexcept;
 	  std::string get_hmc_obs_postfix() const noexcept;
 	  bool get_hmc_obs_to_single_file() const noexcept;
+	  bool get_measure_correlators() const noexcept;
+	  bool get_measure_pbp() const noexcept;
 
 			std::string get_log_level() const noexcept;
 
@@ -285,11 +289,16 @@ namespace meta {
 	  std::string gauge_obs_prefix;
 	  std::string gauge_obs_postfix;
 	  bool ferm_obs_to_single_file;
-	  std::string ferm_obs_prefix;
-	  std::string ferm_obs_postfix;
+	  std::string ferm_obs_corr_prefix;
+	  std::string ferm_obs_corr_postfix;
+	  std::string ferm_obs_pbp_prefix;
+	  std::string ferm_obs_pbp_postfix;
 	  bool hmc_obs_to_single_file;
 	  std::string hmc_obs_prefix;
 	  std::string hmc_obs_postfix;
+
+	  bool measure_correlators;
+	  bool measure_pbp;
 
 			std::string log_level;
 

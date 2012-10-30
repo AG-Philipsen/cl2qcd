@@ -681,12 +681,21 @@ static void print_info_observables_fermion_io(const meta::Inputparameters& param
 
 	logger.info() << "## **********************************************************";
 	logger.info() << "## FERMIONIC OBSERVABLES FILE NAMING PARAMETERS:";
-	logger.info() << "## NAME PREFIX:   " << params.get_ferm_obs_prefix();
-	logger.info() << "## NAME POSTFIX:   " << params.get_ferm_obs_postfix();
+	if (params.get_measure_correlators() == true) {
+	  logger.info() << "## CORRELATORS NAME PREFIX:   " << params.get_ferm_obs_corr_prefix();
+	  logger.info() << "## CORRELATORS NAME POSTFIX:   " << params.get_ferm_obs_corr_postfix();
+	}
+	if (params.get_measure_pbp() == true) {
+	  logger.info() << "## CHIRAL CONDENSATE NAME PREFIX:   " << params.get_ferm_obs_pbp_prefix();
+	  logger.info() << "## CHIRAL CONDENSATE NAME POSTFIX:   " << params.get_ferm_obs_pbp_postfix();
+	}
+	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )){
+	  logger.info() << "## DO NOT MEASURE FERMIONIC OBSERVABLES!";
+	}
 	if(params.get_ferm_obs_to_single_file() == true) {
-		logger.info() << "## WRITE FERMION OBSERVABLES TO SINGLE FILE";
+	  logger.info() << "## WRITE FERMION OBSERVABLES TO SINGLE FILE";
 	} else {
-		logger.info() << "## WRITE FERMION OBSERVABLES TO MULTIPLE FILES";
+	  logger.info() << "## WRITE FERMION OBSERVABLES TO MULTIPLE FILES";
 	}
 }
 
@@ -696,8 +705,17 @@ static void print_info_observables_fermion_io(std::ostream * os, const meta::Inp
 
 	*os<< "## **********************************************************"<< endl;
 	*os<< "## FERMIONIC OBSERVABLES FILE NAMING PARAMETERS:"<< endl;
-	*os<< "## NAME PREFIX:   " << params.get_ferm_obs_prefix()<< endl;
-	*os<< "## NAME POSTFIX:   " << params.get_ferm_obs_postfix()<< endl;
+	if (params.get_measure_correlators() == true) {
+	  *os<< "## CORRELATORS NAME PREFIX:   " << params.get_ferm_obs_corr_prefix()<< endl;
+	  *os<< "## CORRELATORS NAME POSTFIX:   " << params.get_ferm_obs_corr_postfix()<< endl;
+	}
+	if (params.get_measure_pbp() == true) {
+	  *os<< "## CHIRAL CONDENSATE NAME PREFIX:   " << params.get_ferm_obs_pbp_prefix()<< endl;
+	  *os<< "## CHIRAL CONDENSATE NAME POSTFIX:   " << params.get_ferm_obs_pbp_postfix()<< endl;
+	}
+	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )){
+	  *os<< "## DO NOT MEASURE FERMIONIC OBSERVABLES!"<< endl;
+	}
 	if(params.get_ferm_obs_to_single_file() == true) {
 		*os<< "## WRITE FERMIONIC OBSERVABLES TO SINGLE FILE"<< endl;
 	} else {
