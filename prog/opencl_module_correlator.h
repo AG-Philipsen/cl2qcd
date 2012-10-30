@@ -40,6 +40,11 @@ public:
 	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator);
 
 	/**
+	 * Calculate chiral condensate <psibar psi> on device.
+	 */
+	void pbp_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator);
+
+	/**
 	 * Get kernel for correlator indicated by which
 	 * @param[in] which string that identifies the correlator (ps or sc, vx, vy, vz, ax, ay, az)
 	 * @return correlator_kernel
@@ -120,6 +125,8 @@ private:
 	cl_kernel correlator_ax;
 	cl_kernel correlator_ay;
 	cl_kernel correlator_az;
+	//chiral condensate
+	cl_kernel pbp;
 
 	ClSourcePackage basic_correlator_code;
 };
