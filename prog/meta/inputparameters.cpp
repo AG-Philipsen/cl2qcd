@@ -724,6 +724,7 @@ static Inputparameters::sourcetypes get_sourcetype(std::string s)
 	m["point"] = Inputparameters::point;
 	m["volume"] = Inputparameters::volume;
 	m["timeslice"] = Inputparameters::timeslice;
+	m["zslice"] = Inputparameters::zslice;
 
 	Inputparameters::sourcetypes a = m[s];
 	if(a) { // map returns 0 if element is not found

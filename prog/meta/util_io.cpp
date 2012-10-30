@@ -753,6 +753,11 @@ static void print_info_source(const meta::Inputparameters params)
 	logger.info() << "## Use timeslice: " << params.get_source_t();
 	logger.info() << "## Number of sources: " << params.get_num_sources();
     }
+    else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::zslice) {
+	logger.info() << "## Use zslice sources for inversion" ;
+	logger.info() << "## Use zslice: " << params.get_source_t();
+	logger.info() << "## Number of sources: " << params.get_num_sources();
+    }
     if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::one){
       logger.info() << "## fill sources with one";
     }  else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::z4){
@@ -786,6 +791,11 @@ static void print_info_source(std::ostream * os, const meta::Inputparameters par
     else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::timeslice) {
 	*os<< "## Use timeslice sources for inversion" << endl;
 	*os << "## Use timeslice: " << params.get_source_t() << endl;
+	*os << "## Number of sources: " << params.get_num_sources() << endl;
+    }
+    else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::zslice) {
+	*os<< "## Use zslice sources for inversion" << endl;
+	*os << "## Use zslice: " << params.get_source_z() << endl;
 	*os << "## Number of sources: " << params.get_num_sources() << endl;
     }
     if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::one){
