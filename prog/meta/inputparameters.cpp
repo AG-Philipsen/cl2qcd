@@ -37,6 +37,10 @@ static Inputparameters::solver get_solver(std::string);
  */
 static Inputparameters::sourcetypes get_sourcetype(std::string s);
 /**
+ * Get the pbp_version given in string.
+ */
+static Inputparameters::pbp_version get_pbp_version(std::string s);
+/**
  * Get the sourcecontent given in string.
  */
 static Inputparameters::sourcecontents get_sourcecontent(std::string s);
@@ -479,6 +483,10 @@ bool Inputparameters::get_measure_pbp() const noexcept
 {
 	return measure_pbp;
 }
+Inputparameters::pbp_version Inputparameters::get_pbp_version() const noexcept
+{
+  return pbp_version_;
+}
 
 Inputparameters::Inputparameters(int argc, const char** argv)
 {
@@ -625,7 +633,9 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("hmc_obs_postfix", po::value<std::string>(&hmc_obs_postfix)->default_value(""), "Postfix for hmc observables file")
 
 	("measure_correlators", po::value<bool>(&measure_correlators)->default_value(true), "Measure fermionic correlators")
-	  ("measure_pbp", po::value<bool>(&measure_pbp)->default_value(false), "Measure chiral condensate");
+	  ("measure_pbp", po::value<bool>(&measure_pbp)->default_value(false), "Measure chiral condensate")
+
+	  ("pbp_version",  po::value<std::string>()->default_value("zerot"), "Version of chiral condensate");
 
 
 	po::options_description desc;
@@ -668,6 +678,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	_solver_mp = ::get_solver(vm["solver_mp"].as<std::string>());
 	sourcetype = ::get_sourcetype(vm["sourcetype"].as<std::string>() );
 	sourcecontent = ::get_sourcecontent(vm["sourcecontent"].as<std::string>() );
+	pbp_version_ = ::get_pbp_version(vm["pbp_version"].as<std::string>() );
 }
 
 static Inputparameters::action get_action(std::string s)
@@ -770,6 +781,21 @@ static Inputparameters::sourcecontents get_sourcecontent(std::string s)
 		return a;
 	} else {
 		std::cout << s << " is not a valid sourcecontent." << std::endl;
+		throw Inputparameters::parse_aborted();
+	}
+}
+static Inputparameters::pbp_version get_pbp_version(std::string s)
+{
+	boost::algorithm::to_lower(s);
+	std::map<std::string, Inputparameters::pbp_version> m;
+	m["zerot"] = Inputparameters::zerot;
+	m["fint"] = Inputparameters::fint;
+
+	Inputparameters::pbp_version a = m[s];
+	if(a) { // map returns 0 if element is not found
+		return a;
+	} else {
+		std::cout << s << " is not a valid pvp_version." << std::endl;
 		throw Inputparameters::parse_aborted();
 	}
 }

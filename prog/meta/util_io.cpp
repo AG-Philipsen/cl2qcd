@@ -688,6 +688,10 @@ static void print_info_observables_fermion_io(const meta::Inputparameters& param
 	if (params.get_measure_pbp() == true) {
 	  logger.info() << "## CHIRAL CONDENSATE NAME PREFIX:   " << params.get_ferm_obs_pbp_prefix();
 	  logger.info() << "## CHIRAL CONDENSATE NAME POSTFIX:   " << params.get_ferm_obs_pbp_postfix();
+	  if(params.get_pbp_version() == Inputparameters::pbp_version::zerot )
+	    logger.info() << "## MEASURE CHIRAL CONDENSATE IN ZERO T VERSION";
+	  if(params.get_pbp_version() == Inputparameters::pbp_version::fint )
+	    logger.info() << "## MEASURE CHIRAL CONDENSATE IN FINITE T VERSION";
 	}
 	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )){
 	  logger.info() << "## DO NOT MEASURE FERMIONIC OBSERVABLES!";
@@ -712,6 +716,10 @@ static void print_info_observables_fermion_io(std::ostream * os, const meta::Inp
 	if (params.get_measure_pbp() == true) {
 	  *os<< "## CHIRAL CONDENSATE NAME PREFIX:   " << params.get_ferm_obs_pbp_prefix()<< endl;
 	  *os<< "## CHIRAL CONDENSATE NAME POSTFIX:   " << params.get_ferm_obs_pbp_postfix()<< endl;
+	  if(params.get_pbp_version() == Inputparameters::pbp_version::zerot )
+	    *os << "## MEASURE CHIRAL CONDENSATE IN ZERO T VERSION" << endl;
+	  if(params.get_pbp_version() == Inputparameters::pbp_version::fint )
+	    *os << "## MEASURE CHIRAL CONDENSATE IN FINITE T VERSION" << endl;
 	}
 	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )){
 	  *os<< "## DO NOT MEASURE FERMIONIC OBSERVABLES!"<< endl;

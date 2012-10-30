@@ -31,6 +31,7 @@ namespace meta {
 			enum solver { cg = 1, bicgstab, bicgstab_save };
 	  enum sourcetypes {point = 1, volume, timeslice, zslice};
 	  enum sourcecontents {one = 1, z4, gaussian};
+	  enum pbp_version {zerot = 1, fint};
 
 			/**
 			 * The parsing of the input parameters aborted for some reason.
@@ -172,7 +173,7 @@ namespace meta {
 
 	  sourcetypes get_sourcetype() const noexcept;
 	  sourcecontents get_sourcecontent() const noexcept;
-
+	  pbp_version get_pbp_version() const noexcept;
 
 		private:
 			size_t precision;
@@ -304,6 +305,8 @@ namespace meta {
 
 	  sourcetypes sourcetype;
 	  sourcecontents sourcecontent;
+
+	  pbp_version pbp_version_;
 	};
 }
 
