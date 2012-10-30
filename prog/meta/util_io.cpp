@@ -688,10 +688,15 @@ static void print_info_observables_fermion_io(const meta::Inputparameters& param
 	if (params.get_measure_pbp() == true) {
 	  logger.info() << "## CHIRAL CONDENSATE NAME PREFIX:   " << params.get_ferm_obs_pbp_prefix();
 	  logger.info() << "## CHIRAL CONDENSATE NAME POSTFIX:   " << params.get_ferm_obs_pbp_postfix();
-	  if(params.get_pbp_version() == Inputparameters::pbp_version::zerot )
-	    logger.info() << "## MEASURE CHIRAL CONDENSATE IN ZERO T VERSION";
-	  if(params.get_pbp_version() == Inputparameters::pbp_version::fint )
-	    logger.info() << "## MEASURE CHIRAL CONDENSATE IN FINITE T VERSION";
+	  if(params.get_pbp_version() == Inputparameters::pbp_version::std )
+	    logger.info() << "## MEASURE CHIRAL CONDENSATE IN standard VERSION";
+	  if(params.get_pbp_version() == Inputparameters::pbp_version::tm_one_end_trick ){
+	    logger.info() << "## MEASURE CHIRAL CONDENSATE IN twisted-mass one end trick VERSION";
+	    if(params.get_fermact() != Inputparameters::twistedmass)
+	      logger.fatal() << "## Using the one end trick without twisted-mass action!";
+	    }
+	  if(params.get_sourcetype() == Inputparameters::point)
+	    logger.warn() << "## Calculating chiral condensate without stochastic estimators!";
 	}
 	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )){
 	  logger.info() << "## DO NOT MEASURE FERMIONIC OBSERVABLES!";
@@ -716,10 +721,15 @@ static void print_info_observables_fermion_io(std::ostream * os, const meta::Inp
 	if (params.get_measure_pbp() == true) {
 	  *os<< "## CHIRAL CONDENSATE NAME PREFIX:   " << params.get_ferm_obs_pbp_prefix()<< endl;
 	  *os<< "## CHIRAL CONDENSATE NAME POSTFIX:   " << params.get_ferm_obs_pbp_postfix()<< endl;
-	  if(params.get_pbp_version() == Inputparameters::pbp_version::zerot )
-	    *os << "## MEASURE CHIRAL CONDENSATE IN ZERO T VERSION" << endl;
-	  if(params.get_pbp_version() == Inputparameters::pbp_version::fint )
-	    *os << "## MEASURE CHIRAL CONDENSATE IN FINITE T VERSION" << endl;
+	  if(params.get_pbp_version() == Inputparameters::pbp_version::std )
+	    *os << "## MEASURE CHIRAL CONDENSATE IN standard VERSION" << endl;
+	  if(params.get_pbp_version() == Inputparameters::pbp_version::tm_one_end_trick ){
+	    *os << "## MEASURE CHIRAL CONDENSATE IN twisted-mass one end trick VERSION" << endl;
+	    if(params.get_fermact() != Inputparameters::twistedmass)
+	      *os << "## Using the one end trick without twisted-mass action!" << endl;
+	    }
+	  if(params.get_sourcetype() == Inputparameters::point)
+	    *os << "## Calculating chiral condensate without stochastic estimators!" << endl;
 	}
 	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )){
 	  *os<< "## DO NOT MEASURE FERMIONIC OBSERVABLES!"<< endl;

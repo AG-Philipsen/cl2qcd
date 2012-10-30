@@ -635,7 +635,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("measure_correlators", po::value<bool>(&measure_correlators)->default_value(true), "Measure fermionic correlators")
 	  ("measure_pbp", po::value<bool>(&measure_pbp)->default_value(false), "Measure chiral condensate")
 
-	  ("pbp_version",  po::value<std::string>()->default_value("zerot"), "Version of chiral condensate");
+	  ("pbp_version",  po::value<std::string>()->default_value("std"), "Version of chiral condensate");
 
 
 	po::options_description desc;
@@ -788,8 +788,8 @@ static Inputparameters::pbp_version get_pbp_version(std::string s)
 {
 	boost::algorithm::to_lower(s);
 	std::map<std::string, Inputparameters::pbp_version> m;
-	m["zerot"] = Inputparameters::zerot;
-	m["fint"] = Inputparameters::fint;
+	m["std"] = Inputparameters::std;
+	m["tm_one_end_trick"] = Inputparameters::tm_one_end_trick;
 
 	Inputparameters::pbp_version a = m[s];
 	if(a) { // map returns 0 if element is not found

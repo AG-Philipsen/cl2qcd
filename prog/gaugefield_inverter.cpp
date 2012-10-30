@@ -363,11 +363,11 @@ void Gaugefield_inverter::flavour_doublet_chiral_condensate(std::string pbp_fn){
 
 	const Plain<hmc_float> result_pbp(1, get_task_correlator()->get_device());
 
-	if(get_parameters().get_pbp_version() == meta::Inputparameters::zerot){
-	  get_task_correlator()->pbp_zeroT_device(&clmem_corr, clmem_sources, &result_pbp);	
+	if(get_parameters().get_pbp_version() == meta::Inputparameters::std){
+	  get_task_correlator()->pbp_std_device(&clmem_corr, clmem_sources, &result_pbp);	
 	}
-	if(get_parameters().get_pbp_version() == meta::Inputparameters::fint){
-	  get_task_correlator()->pbp_finT_device(&clmem_corr, clmem_sources, &result_pbp);	
+	if(get_parameters().get_pbp_version() == meta::Inputparameters::tm_one_end_trick){
+	  get_task_correlator()->pbp_tm_one_end_trick_device(&clmem_corr, clmem_sources, &result_pbp);	
 	}
 	hmc_float host_result_pbp;
 	result_pbp.dump(&host_result_pbp);

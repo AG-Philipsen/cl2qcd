@@ -103,8 +103,8 @@ void Opencl_Module_Correlator::fill_kernels()
 	  }
 	}
 	if(get_parameters().get_measure_pbp() ){
-	  pbp_zeroT = createKernel("pbp_zeroT") << basic_correlator_code << "fermionobservables_pbp.cl";
-	  pbp_finT = createKernel("pbp_finT") << basic_correlator_code << "fermionobservables_pbp.cl";
+	  pbp_std = createKernel("pbp_std") << basic_correlator_code << "fermionobservables_pbp.cl";
+	  pbp_tm_one_end = createKernel("pbp_tm_one_end") << basic_correlator_code << "fermionobservables_pbp.cl";
 	}
 }
 
@@ -143,12 +143,12 @@ void Opencl_Module_Correlator::clear_kernels()
 		clerr = clReleaseKernel(create_zslice_source);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
-	if(pbp_zeroT) {
-		clerr = clReleaseKernel(pbp_zeroT);
+	if(pbp_std) {
+		clerr = clReleaseKernel(pbp_std);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
-	if(pbp_finT) {
-		clerr = clReleaseKernel(pbp_finT);
+	if(pbp_tm_one_end) {
+		clerr = clReleaseKernel(pbp_tm_one_end);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 }
@@ -366,38 +366,38 @@ void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kern
 	get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
 }
 
-void Opencl_Module_Correlator::pbp_zeroT_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator)
+void Opencl_Module_Correlator::pbp_std_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(pbp_zeroT, &ls2, &gs2, &num_groups);
+	this->get_work_sizes(pbp_std, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(pbp_zeroT, 0, sizeof(cl_mem), in->get_cl_buffer());
+	int clerr = clSetKernelArg(pbp_std, 0, sizeof(cl_mem), in->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(pbp_zeroT, 1, sizeof(cl_mem), source->get_cl_buffer());
+	clerr = clSetKernelArg(pbp_std, 1, sizeof(cl_mem), source->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(pbp_zeroT, 2, sizeof(cl_mem), correlator->get_cl_buffer());
+	clerr = clSetKernelArg(pbp_std, 2, sizeof(cl_mem), correlator->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel(pbp_zeroT , gs2, ls2);
+	get_device()->enqueue_kernel(pbp_std , gs2, ls2);
 }
 
-void Opencl_Module_Correlator::pbp_finT_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator)
+void Opencl_Module_Correlator::pbp_tm_one_end_trick_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
-	this->get_work_sizes(pbp_finT, &ls2, &gs2, &num_groups);
+	this->get_work_sizes(pbp_tm_one_end, &ls2, &gs2, &num_groups);
 	//set arguments
-	int clerr = clSetKernelArg(pbp_finT, 0, sizeof(cl_mem), in->get_cl_buffer());
+	int clerr = clSetKernelArg(pbp_tm_one_end, 0, sizeof(cl_mem), in->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(pbp_finT, 1, sizeof(cl_mem), source->get_cl_buffer());
+	clerr = clSetKernelArg(pbp_tm_one_end, 1, sizeof(cl_mem), source->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(pbp_finT, 2, sizeof(cl_mem), correlator->get_cl_buffer());
+	clerr = clSetKernelArg(pbp_tm_one_end, 2, sizeof(cl_mem), correlator->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel(pbp_finT , gs2, ls2);
+	get_device()->enqueue_kernel(pbp_tm_one_end , gs2, ls2);
 }
 
 size_t Opencl_Module_Correlator::get_read_write_size(const std::string& in) const
@@ -424,10 +424,10 @@ size_t Opencl_Module_Correlator::get_read_write_size(const std::string& in) cons
 	if (in == "create_zslice_source") {
 		return 1000000000000000000000000;
 	}
-	if (in == "pbp_zeroT") {
+	if (in == "pbp_std") {
 		return 1000000000000000000000000;
 	}
-	if (in == "pbp_finT") {
+	if (in == "pbp_tm_one_end") {
 		return 1000000000000000000000000;
 	}
 	if (in == "correlator_ps_z" ) {
@@ -539,10 +539,10 @@ uint64_t Opencl_Module_Correlator::get_flop_size(const std::string& in) const
 	if (in == "correlator_az_z") {
 		return 1000000000000000000000000;
 	}
-	if (in == "pbp_zeroT") {
+	if (in == "pbp_std") {
 	  return 1000000000000000000000000000;
 	}
-	if (in == "pbp_finT") {
+	if (in == "pbp_tm_one_end") {
 	  return 1000000000000000000000000000;
 	}
 
@@ -580,16 +580,16 @@ void Opencl_Module_Correlator::print_profiling(const std::string& filename, int 
 	  Opencl_Module::print_profiling(filename, correlator_ay);
 	if(correlator_az)
 	  Opencl_Module::print_profiling(filename, correlator_az);
-	if(pbp_zeroT)
-	  Opencl_Module::print_profiling(filename, pbp_zeroT);
-	if(pbp_finT)
-	  Opencl_Module::print_profiling(filename, pbp_finT);
+	if(pbp_std)
+	  Opencl_Module::print_profiling(filename, pbp_std);
+	if(pbp_tm_one_end)
+	  Opencl_Module::print_profiling(filename, pbp_tm_one_end);
 }
 
 Opencl_Module_Correlator::Opencl_Module_Correlator(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device),
 	  create_point_source(0), create_volume_source(0), create_timeslice_source(0), create_zslice_source(0),
-	  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0), pbp_zeroT(0), pbp_finT(0)
+	  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0), pbp_std(0), pbp_tm_one_end(0)
 {
 	fill_kernels();
 }

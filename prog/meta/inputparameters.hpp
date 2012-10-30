@@ -31,7 +31,7 @@ namespace meta {
 			enum solver { cg = 1, bicgstab, bicgstab_save };
 	  enum sourcetypes {point = 1, volume, timeslice, zslice};
 	  enum sourcecontents {one = 1, z4, gaussian};
-	  enum pbp_version {zerot = 1, fint};
+	  enum pbp_version {std = 1, tm_one_end_trick};
 
 			/**
 			 * The parsing of the input parameters aborted for some reason.

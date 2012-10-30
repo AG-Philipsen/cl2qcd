@@ -40,14 +40,14 @@ public:
 	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator);
 
 	/**
-	 * Calculate chiral condensate <psibar psi> in the zero T version on device.
+	 * Calculate chiral condensate <psibar psi> in the standard version on device.
 	 */
-	void pbp_zeroT_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator);
+	void pbp_std_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator);
 
 	/**
-	 * Calculate chiral condensate <psibar psi> in the finite T version on device.
+	 * Calculate chiral condensate <psibar psi> in the twisted-mass one end trick version on device.
 	 */
-	void pbp_finT_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator);
+	void pbp_tm_one_end_trick_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator);
 
 	/**
 	 * Get kernel for correlator indicated by which
@@ -131,8 +131,8 @@ private:
 	cl_kernel correlator_ay;
 	cl_kernel correlator_az;
 	//chiral condensate
-	cl_kernel pbp_zeroT;
-	cl_kernel pbp_finT;
+	cl_kernel pbp_std;
+	cl_kernel pbp_tm_one_end;
 
 	ClSourcePackage basic_correlator_code;
 };
