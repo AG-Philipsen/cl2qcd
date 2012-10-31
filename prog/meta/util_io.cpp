@@ -111,9 +111,9 @@ static void print_info_global(std::ostream* os, const meta::Inputparameters& par
 		*os << "## USE GPU: OFF"  << endl;
 	}
 	if(params.get_use_aniso() == true) {
-	  *os << "## USE ANISOTROPY: ON" << endl;
+		*os << "## USE ANISOTROPY: ON" << endl;
 	} else {
-	  *os << "## USE ANISOTROPY: OFF" << endl;
+		*os << "## USE ANISOTROPY: OFF" << endl;
 	}
 	*os  << "## Number of devices demanded for calculations: " << params.get_device_count()  << endl;
 	*os  << "## **********************************************************" << endl;
@@ -128,10 +128,10 @@ static void print_info_global(std::ostream* os, const meta::Inputparameters& par
 		}
 		break;
 		case Inputparameters::cold_start:
-		  *os << "## cold start" << endl;;
+			*os << "## cold start" << endl;;
 			break;
 		case Inputparameters::hot_start:
-		  *os << "## hot start" << endl;;
+			*os << "## hot start" << endl;;
 			break;
 	}
 	if(params.get_use_smearing() == true) {
@@ -664,14 +664,14 @@ static void print_info_observables_gauge_io(std::ostream * os, const meta::Input
 {
 	using namespace meta;
 
-	*os<< "## **********************************************************"<< endl;
-	*os<< "## gauge observables file naming parameters:"<< endl;
-	*os<< "## name prefix:   " << params.get_gauge_obs_prefix()<< endl;
-	*os<< "## name postfix:   " << params.get_gauge_obs_postfix()<< endl;
+	*os << "## **********************************************************" << endl;
+	*os << "## gauge observables file naming parameters:" << endl;
+	*os << "## name prefix:   " << params.get_gauge_obs_prefix() << endl;
+	*os << "## name postfix:   " << params.get_gauge_obs_postfix() << endl;
 	if(params.get_gauge_obs_to_single_file() == true) {
-		*os<< "## write gauge observables to single file"<< endl;
+		*os << "## write gauge observables to single file" << endl;
 	} else {
-		*os<< "## write gauge observables to multiple files"<< endl;
+		*os << "## write gauge observables to multiple files" << endl;
 	}
 }
 
@@ -682,29 +682,29 @@ static void print_info_observables_fermion_io(const meta::Inputparameters& param
 	logger.info() << "## **********************************************************";
 	logger.info() << "## fermionic observables file naming parameters:";
 	if (params.get_measure_correlators() == true) {
-	  logger.info() << "## correlators name prefix:   " << params.get_ferm_obs_corr_prefix();
-	  logger.info() << "## correlators name postfix:   " << params.get_ferm_obs_corr_postfix();
+		logger.info() << "## correlators name prefix:   " << params.get_ferm_obs_corr_prefix();
+		logger.info() << "## correlators name postfix:   " << params.get_ferm_obs_corr_postfix();
 	}
 	if (params.get_measure_pbp() == true) {
-	  logger.info() << "## chiral condensate name prefix:   " << params.get_ferm_obs_pbp_prefix();
-	  logger.info() << "## chiral condensate name postfix:   " << params.get_ferm_obs_pbp_postfix();
-	  if(params.get_pbp_version() == Inputparameters::pbp_version::std )
-	    logger.info() << "## measure chiral condensate in standard version";
-	  if(params.get_pbp_version() == Inputparameters::pbp_version::tm_one_end_trick ){
-	    logger.info() << "## measure chiral condensate in twisted-mass one end trick version";
-	    if(params.get_fermact() != Inputparameters::twistedmass)
-	      logger.fatal() << "## using the one end trick without twisted-mass action!";
-	    }
-	  if(params.get_sourcetype() == Inputparameters::point)
-	    logger.warn() << "## calculating chiral condensate without stochastic estimators!";
+		logger.info() << "## chiral condensate name prefix:   " << params.get_ferm_obs_pbp_prefix();
+		logger.info() << "## chiral condensate name postfix:   " << params.get_ferm_obs_pbp_postfix();
+		if(params.get_pbp_version() == Inputparameters::pbp_version::std )
+			logger.info() << "## measure chiral condensate in standard version";
+		if(params.get_pbp_version() == Inputparameters::pbp_version::tm_one_end_trick ) {
+			logger.info() << "## measure chiral condensate in twisted-mass one end trick version";
+			if(params.get_fermact() != Inputparameters::twistedmass)
+				logger.fatal() << "## using the one end trick without twisted-mass action!";
+		}
+		if(params.get_sourcetype() == Inputparameters::point)
+			logger.warn() << "## calculating chiral condensate without stochastic estimators!";
 	}
-	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )){
-	  logger.info() << "## do not measure fermionic observables!";
+	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )) {
+		logger.info() << "## do not measure fermionic observables!";
 	}
 	if(params.get_ferm_obs_to_single_file() == true) {
-	  logger.info() << "## write fermion observables to single file";
+		logger.info() << "## write fermion observables to single file";
 	} else {
-	  logger.info() << "## write fermion observables to multiple files";
+		logger.info() << "## write fermion observables to multiple files";
 	}
 }
 
@@ -712,32 +712,32 @@ static void print_info_observables_fermion_io(std::ostream * os, const meta::Inp
 {
 	using namespace meta;
 
-	*os<< "## **********************************************************"<< endl;
-	*os<< "## fermionic observables file naming parameters:"<< endl;
+	*os << "## **********************************************************" << endl;
+	*os << "## fermionic observables file naming parameters:" << endl;
 	if (params.get_measure_correlators() == true) {
-	  *os<< "## correlators name prefix:   " << params.get_ferm_obs_corr_prefix()<< endl;
-	  *os<< "## correlators name postfix:   " << params.get_ferm_obs_corr_postfix()<< endl;
+		*os << "## correlators name prefix:   " << params.get_ferm_obs_corr_prefix() << endl;
+		*os << "## correlators name postfix:   " << params.get_ferm_obs_corr_postfix() << endl;
 	}
 	if (params.get_measure_pbp() == true) {
-	  *os<< "## chiral condensate name prefix:   " << params.get_ferm_obs_pbp_prefix()<< endl;
-	  *os<< "## chiral condensate name postfix:   " << params.get_ferm_obs_pbp_postfix()<< endl;
-	  if(params.get_pbp_version() == Inputparameters::pbp_version::std )
-	    *os << "## measure chiral condensate in standard version" << endl;
-	  if(params.get_pbp_version() == Inputparameters::pbp_version::tm_one_end_trick ){
-	    *os << "## measure chiral condensate in twisted-mass one end trick version" << endl;
-	    if(params.get_fermact() != Inputparameters::twistedmass)
-	      *os << "## using the one end trick without twisted-mass action!" << endl;
-	    }
-	  if(params.get_sourcetype() == Inputparameters::point)
-	    *os << "## calculating chiral condensate without stochastic estimators!" << endl;
+		*os << "## chiral condensate name prefix:   " << params.get_ferm_obs_pbp_prefix() << endl;
+		*os << "## chiral condensate name postfix:   " << params.get_ferm_obs_pbp_postfix() << endl;
+		if(params.get_pbp_version() == Inputparameters::pbp_version::std )
+			*os << "## measure chiral condensate in standard version" << endl;
+		if(params.get_pbp_version() == Inputparameters::pbp_version::tm_one_end_trick ) {
+			*os << "## measure chiral condensate in twisted-mass one end trick version" << endl;
+			if(params.get_fermact() != Inputparameters::twistedmass)
+				*os << "## using the one end trick without twisted-mass action!" << endl;
+		}
+		if(params.get_sourcetype() == Inputparameters::point)
+			*os << "## calculating chiral condensate without stochastic estimators!" << endl;
 	}
-	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )){
-	  *os<< "## do not measure fermionic observables!"<< endl;
+	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )) {
+		*os << "## do not measure fermionic observables!" << endl;
 	}
 	if(params.get_ferm_obs_to_single_file() == true) {
-		*os<< "## write fermionic observables to single file"<< endl;
+		*os << "## write fermionic observables to single file" << endl;
 	} else {
-		*os<< "## write fermionic observables to multiple files"<< endl;
+		*os << "## write fermionic observables to multiple files" << endl;
 	}
 }
 
@@ -760,121 +760,113 @@ static void print_info_observables_hmc_io(std::ostream * os, const meta::Inputpa
 {
 	using namespace meta;
 
-	*os<< "## **********************************************************"<< endl;
-	*os<< "## hmc observables file naming parameters:"<< endl;
-	*os<< "## name prefix:   " << params.get_hmc_obs_prefix()<< endl;
-	*os<< "## name postfix:   " << params.get_hmc_obs_postfix()<< endl;
+	*os << "## **********************************************************" << endl;
+	*os << "## hmc observables file naming parameters:" << endl;
+	*os << "## name prefix:   " << params.get_hmc_obs_prefix() << endl;
+	*os << "## name postfix:   " << params.get_hmc_obs_postfix() << endl;
 	if(params.get_hmc_obs_to_single_file() == true) {
-		*os<< "## write hmc observables to single file"<< endl;
+		*os << "## write hmc observables to single file" << endl;
 	} else {
-		*os<< "## write hmc observables to multiple files"<< endl;
+		*os << "## write hmc observables to multiple files" << endl;
 	}
 }
 
-static void print_info_source(const meta::Inputparameters params) 
+static void print_info_source(const meta::Inputparameters params)
 {
-    logger.info() << "## **********************************************************";
-    logger.info() << "## Source parameters:";
-    logger.info() << "##";
-    if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point) {
-	logger.info() << "## Use pointsource for inversion" ;
-	logger.info() << "## Position (x,y,z,t): " << params.get_source_x() << " " <<  params.get_source_y() << " " <<  params.get_source_z() << " " <<  params.get_source_t();
-    }
-    else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::volume) {
-      logger.info() << "## Use volume sources for inversion" ;
-	logger.info() << "## Number of sources: " << params.get_num_sources();
+	logger.info() << "## **********************************************************";
+	logger.info() << "## Source parameters:";
+	logger.info() << "##";
+	if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point) {
+		logger.info() << "## Use pointsource for inversion" ;
+		logger.info() << "## Position (x,y,z,t): " << params.get_source_x() << " " <<  params.get_source_y() << " " <<  params.get_source_z() << " " <<  params.get_source_t();
+	} else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::volume) {
+		logger.info() << "## Use volume sources for inversion" ;
+		logger.info() << "## Number of sources: " << params.get_num_sources();
+	} else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::timeslice) {
+		logger.info() << "## Use timeslice sources for inversion" ;
+		logger.info() << "## Use timeslice: " << params.get_source_t();
+		logger.info() << "## Number of sources: " << params.get_num_sources();
+	} else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::zslice) {
+		logger.info() << "## Use zslice sources for inversion" ;
+		logger.info() << "## Use zslice: " << params.get_source_z();
+		logger.info() << "## Number of sources: " << params.get_num_sources();
 	}
-    else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::timeslice) {
-	logger.info() << "## Use timeslice sources for inversion" ;
-	logger.info() << "## Use timeslice: " << params.get_source_t();
-	logger.info() << "## Number of sources: " << params.get_num_sources();
-    }
-    else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::zslice) {
-	logger.info() << "## Use zslice sources for inversion" ;
-	logger.info() << "## Use zslice: " << params.get_source_z();
-	logger.info() << "## Number of sources: " << params.get_num_sources();
-    }
-    if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::one){
-      logger.info() << "## fill sources with one";
-    }  else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::z4){
-      logger.info() << "## fill sources with z4 noise";
-    }
-    else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::gaussian){
-      logger.info() << "## fill sources with gaussian noise";
-    }
-    if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_num_sources() != 12){
-      logger.fatal() << "## Pointsource with number of sources different than \"12\" is chosen. This is will not give the full point-to-all propagator!"; 
-      logger.fatal() << "## Number of sources: " << params.get_num_sources();
-    }
-    if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_sourcecontent() != meta::Inputparameters::sourcecontents::one){
-      logger.warn() << "## Pointsource with content different than \"one\" is chosen. This is not implemented yet and has no effect!"; 
-    }
+	if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::one) {
+		logger.info() << "## fill sources with one";
+	}  else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::z4) {
+		logger.info() << "## fill sources with z4 noise";
+	} else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::gaussian) {
+		logger.info() << "## fill sources with gaussian noise";
+	}
+	if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_num_sources() != 12) {
+		logger.fatal() << "## Pointsource with number of sources different than \"12\" is chosen. This is will not give the full point-to-all propagator!";
+		logger.fatal() << "## Number of sources: " << params.get_num_sources();
+	}
+	if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_sourcecontent() != meta::Inputparameters::sourcecontents::one) {
+		logger.warn() << "## Pointsource with content different than \"one\" is chosen. This is not implemented yet and has no effect!";
+	}
 }
 
-static void print_info_source(std::ostream * os, const meta::Inputparameters params) 
+static void print_info_source(std::ostream * os, const meta::Inputparameters params)
 {
-    *os<< "## **********************************************************"<< endl;
-    *os<< "## Source parameters:"<< endl;
-    *os<< "##" << endl;
-    if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point) {
-	*os<< "## Use pointsource for inversion" << endl;
-	*os<< "## Position (x,y,z,t): " << params.get_source_x() << " " <<  params.get_source_y() << " " <<  params.get_source_z() << " " <<  params.get_source_t()<< endl;
-    }
-    else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::volume) {
-      *os<< "## Use volume sources for inversion" << endl;
-	*os<< "## Number of sources: " << params.get_num_sources()<< endl;
+	*os << "## **********************************************************" << endl;
+	*os << "## Source parameters:" << endl;
+	*os << "##" << endl;
+	if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point) {
+		*os << "## Use pointsource for inversion" << endl;
+		*os << "## Position (x,y,z,t): " << params.get_source_x() << " " <<  params.get_source_y() << " " <<  params.get_source_z() << " " <<  params.get_source_t() << endl;
+	} else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::volume) {
+		*os << "## Use volume sources for inversion" << endl;
+		*os << "## Number of sources: " << params.get_num_sources() << endl;
+	} else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::timeslice) {
+		*os << "## Use timeslice sources for inversion" << endl;
+		*os << "## Use timeslice: " << params.get_source_t() << endl;
+		*os << "## Number of sources: " << params.get_num_sources() << endl;
+	} else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::zslice) {
+		*os << "## Use zslice sources for inversion" << endl;
+		*os << "## Use zslice: " << params.get_source_z() << endl;
+		*os << "## Number of sources: " << params.get_num_sources() << endl;
 	}
-    else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::timeslice) {
-	*os<< "## Use timeslice sources for inversion" << endl;
-	*os << "## Use timeslice: " << params.get_source_t() << endl;
-	*os << "## Number of sources: " << params.get_num_sources() << endl;
-    }
-    else if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::zslice) {
-	*os<< "## Use zslice sources for inversion" << endl;
-	*os << "## Use zslice: " << params.get_source_z() << endl;
-	*os << "## Number of sources: " << params.get_num_sources() << endl;
-    }
-    if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::one){
-      *os<< "## fill sources with one"<< endl;
-    }  else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::z4){
-      *os<< "## fill sources with z4 noise"<< endl;
-    }
-    else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::gaussian){
-      *os<< "## fill sources with gaussian noise"<< endl;
-    }
-    if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_num_sources() != 12){
-      *os << "## Pointsource with number of sources different than \"12\" is chosen. This is will not give the full point-to-all propagator!" << endl;
-      *os << "## Number of sources: " << params.get_num_sources() << endl;
-    }
-    if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_sourcecontent() != meta::Inputparameters::sourcecontents::one){
-      *os << "## Pointsource with content different than \"one\" is chosen. This is not implemented yet and has no effect!" << endl; 
-    }
+	if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::one) {
+		*os << "## fill sources with one" << endl;
+	}  else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::z4) {
+		*os << "## fill sources with z4 noise" << endl;
+	} else if(params.get_sourcecontent() == meta::Inputparameters::sourcecontents::gaussian) {
+		*os << "## fill sources with gaussian noise" << endl;
+	}
+	if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_num_sources() != 12) {
+		*os << "## Pointsource with number of sources different than \"12\" is chosen. This is will not give the full point-to-all propagator!" << endl;
+		*os << "## Number of sources: " << params.get_num_sources() << endl;
+	}
+	if(params.get_sourcetype() == meta::Inputparameters::sourcetypes::point && params.get_sourcecontent() != meta::Inputparameters::sourcecontents::one) {
+		*os << "## Pointsource with content different than \"one\" is chosen. This is not implemented yet and has no effect!" << endl;
+	}
 }
 
 void meta::print_info_flavour_doublet_correlators(const meta::Inputparameters params)
 {
 	using namespace meta;
-	
+
 	logger.info() << "# flavour doublet correlators";
 	if(params.get_corr_dir() == 3) {
-	  logger.info() << "# format: J P z real complex"  ;
-	  logger.info() << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), z spatial distance, value (aggregate x y z)" ;
+		logger.info() << "# format: J P z real complex"  ;
+		logger.info() << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), z spatial distance, value (aggregate x y z)" ;
 	} else {
-	  logger.info() << "# format: J P t real complex"  ;
-	  logger.info() << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), t timelike distance, value (aggregate x y z)" ;
+		logger.info() << "# format: J P t real complex"  ;
+		logger.info() << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), t timelike distance, value (aggregate x y z)" ;
 	}
 }
 
 void meta::print_info_flavour_doublet_correlators(std::ostream * os, const meta::Inputparameters params)
 {
 	using namespace meta;
-	
+
 	*os << "# flavour doublet correlators" << std::endl;
 	if(params.get_corr_dir() == 3) {
-	  *os << "# format: J P z real complex"  << std::endl;
-	  *os << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), z spatial distance, value (aggregate x y z)" << std::endl;
+		*os << "# format: J P z real complex"  << std::endl;
+		*os << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), z spatial distance, value (aggregate x y z)" << std::endl;
 	} else {
-	  *os << "# format: J P t real complex"  << std::endl;
-	  *os << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), t timelike distance, value (aggregate x y z)" << std::endl;
+		*os << "# format: J P t real complex"  << std::endl;
+		*os << "# (J = Spin (0 or 1), P = Parity (0 positive, 1 negative), t timelike distance, value (aggregate x y z)" << std::endl;
 	}
 }
