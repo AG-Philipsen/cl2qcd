@@ -688,14 +688,14 @@ static void print_info_observables_fermion_io(const meta::Inputparameters& param
 	if (params.get_measure_pbp() == true) {
 	  logger.info() << "## chiral condensate name prefix:   " << params.get_ferm_obs_pbp_prefix();
 	  logger.info() << "## chiral condensate name postfix:   " << params.get_ferm_obs_pbp_postfix();
-	  if(params.get_pbp_version() == inputparameters::pbp_version::std )
+	  if(params.get_pbp_version() == Inputparameters::pbp_version::std )
 	    logger.info() << "## measure chiral condensate in standard version";
-	  if(params.get_pbp_version() == inputparameters::pbp_version::tm_one_end_trick ){
+	  if(params.get_pbp_version() == Inputparameters::pbp_version::tm_one_end_trick ){
 	    logger.info() << "## measure chiral condensate in twisted-mass one end trick version";
-	    if(params.get_fermact() != inputparameters::twistedmass)
+	    if(params.get_fermact() != Inputparameters::twistedmass)
 	      logger.fatal() << "## using the one end trick without twisted-mass action!";
 	    }
-	  if(params.get_sourcetype() == inputparameters::point)
+	  if(params.get_sourcetype() == Inputparameters::point)
 	    logger.warn() << "## calculating chiral condensate without stochastic estimators!";
 	}
 	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )){
@@ -721,14 +721,14 @@ static void print_info_observables_fermion_io(std::ostream * os, const meta::Inp
 	if (params.get_measure_pbp() == true) {
 	  *os<< "## chiral condensate name prefix:   " << params.get_ferm_obs_pbp_prefix()<< endl;
 	  *os<< "## chiral condensate name postfix:   " << params.get_ferm_obs_pbp_postfix()<< endl;
-	  if(params.get_pbp_version() == inputparameters::pbp_version::std )
+	  if(params.get_pbp_version() == Inputparameters::pbp_version::std )
 	    *os << "## measure chiral condensate in standard version" << endl;
-	  if(params.get_pbp_version() == inputparameters::pbp_version::tm_one_end_trick ){
+	  if(params.get_pbp_version() == Inputparameters::pbp_version::tm_one_end_trick ){
 	    *os << "## measure chiral condensate in twisted-mass one end trick version" << endl;
-	    if(params.get_fermact() != inputparameters::twistedmass)
+	    if(params.get_fermact() != Inputparameters::twistedmass)
 	      *os << "## using the one end trick without twisted-mass action!" << endl;
 	    }
-	  if(params.get_sourcetype() == inputparameters::point)
+	  if(params.get_sourcetype() == Inputparameters::point)
 	    *os << "## calculating chiral condensate without stochastic estimators!" << endl;
 	}
 	if (params.get_measure_pbp() == false && (params.get_measure_correlators() == false )){
@@ -756,7 +756,7 @@ static void print_info_observables_hmc_io(const meta::Inputparameters& params)
 	}
 }
 
-static void print_info_observables_hmc_io(std::ostream * os, const meta::inputparameters& params)
+static void print_info_observables_hmc_io(std::ostream * os, const meta::Inputparameters& params)
 {
 	using namespace meta;
 
