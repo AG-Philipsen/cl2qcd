@@ -157,6 +157,7 @@ add_library(optimal ${OPTIMAL_FILES})
 add_modules(optimal
 	hardware
 	meta
+	physics
 )
 target_link_libraries(optimal ${OPTIMAL_USED_LIBS})
 
