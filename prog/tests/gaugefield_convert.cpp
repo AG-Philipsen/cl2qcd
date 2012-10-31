@@ -16,9 +16,10 @@ class Dummyfield : public Gaugefield_hybrid {
 public:
 	Dummyfield(cl_device_type device_type, const hardware::System * system) : Gaugefield_hybrid(system) {
 		init(1, device_type);
+		fill_buffers();
 	};
 
-	virtual void finalize_opencl();
+	virtual void finalize_opencl() override;
 
 	void verify();
 
