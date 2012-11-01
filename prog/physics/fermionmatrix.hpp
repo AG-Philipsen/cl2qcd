@@ -23,8 +23,15 @@ namespace physics {
       Opencl_Module * that;
 
       Fermionmatrix_basic(Opencl_Module * that) : that(that) { };
+      
+    private:
+      bool is_hermitian;
 
     public:
+      /**
+       * Get if the matrix is hermitian
+       */
+      bool get_is_hermitian() const noexcept;
       /**
        * Get the net flops performed by this function.
        */
