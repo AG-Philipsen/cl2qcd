@@ -29,7 +29,7 @@ namespace physics {
       class Solver {
 	
       public:
-	Solver(hmc_float prec, int _max_iter) : acc_prec(prec), max_iter(_max_iter), iter(0) {};
+	Solver(hmc_float prec, int _max_iter, int _iter_refresh) : acc_prec(prec), iter_max(_max_iter), iter_refresh(_iter_refresh), iter(0) {};
 	
 	virtual ~Solver();
 	
@@ -44,6 +44,7 @@ namespace physics {
 	hmc_float get_prec() const noexcept;
 	int get_iter();
 	int get_iter_max() const noexcept;
+	int get_iter_refresh() const noexcept;
 	
       private:
 	/**
@@ -59,7 +60,12 @@ namespace physics {
 	/**
 	 * Maximal number of iterations
 	 */
-	const int max_iter;
+	const int iter_max;
+
+	/**
+	 * Number of iterations where the solution guess is refreshed
+	 */
+	const int iter_refresh;
 	
       protected:
       };
@@ -68,7 +74,7 @@ namespace physics {
        */
       class Solver_noneo : public Solver{
       public:
-	Solver_noneo(physics::fermionmatrix::Fermionmatrix & _f, cl_mem _x, cl_mem _b, cl_mem _gf, hmc_float prec, int max_iter) : Solver(prec, max_iter), x(_x), b(_b), gf(_gf), f(_f) {};
+	Solver_noneo(physics::fermionmatrix::Fermionmatrix & _f, cl_mem _x, cl_mem _b, cl_mem _gf, hmc_float prec, int max_iter, int iter_refresh) : Solver(prec, max_iter, iter_refresh), x(_x), b(_b), gf(_gf), f(_f) {};
 	/**
 	 * Access to private members
 	 */
