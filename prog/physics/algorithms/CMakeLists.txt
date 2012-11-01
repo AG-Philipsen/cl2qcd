@@ -7,6 +7,7 @@
 #
 
 add_library(algorithms
+	solver.cpp
 )
 
 #
