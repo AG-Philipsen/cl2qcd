@@ -28,7 +28,7 @@ def main():
 		return subject.returncode
 
 	# Read the output file and check whether the plaquette in the last line matches the reference
-	for line in open('gaugeobservables_beta6'):
+	for line in open('gaugeObs.dat'):
 		pass
 	actual = float(line.split()[1])
 	if not compareFloat(actual, refval, tolerance):
