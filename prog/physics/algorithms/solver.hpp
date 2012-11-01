@@ -34,17 +34,17 @@ namespace physics {
 	virtual ~Solver();
 	
 	/**
-	 * Solve the system
-	 */
-	virtual int solve();
-	
-	/**
 	 * Access to private members
 	 */
 	hmc_float get_prec() const noexcept;
 	int get_iter();
 	int get_iter_max() const noexcept;
 	int get_iter_refresh() const noexcept;
+
+	/**
+	 * Solve the system
+	 */
+	virtual bool solve();
 	
       private:
 	/**
@@ -114,6 +114,29 @@ namespace physics {
 	const hardware::buffers::Spinor * b;
 	const hardware::buffers::SU3 * gf;
 	const physics::fermionmatrix::Fermionmatrix_eo & f;
+      };
+      /**
+       * The Conjugate Gradient (CG) solver
+       */
+      class Cg : public Solver_noneo{
+	Cg(const physics::fermionmatrix::Fermionmatrix & _f, const hardware::buffers::Plain<spinor> * _x, const hardware::buffers::Plain<spinor> * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh)
+	  : Solver_noneo(_f, _x, _b, _gf, prec, max_iter, iter_refresh) {};
+      };
+      class Cg_eo : public Solver_eo{
+	Cg_eo(const physics::fermionmatrix::Fermionmatrix_eo & _f, const hardware::buffers::Spinor * _x, const hardware::buffers::Spinor * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh)
+	  : Solver_eo(_f, _x, _b, _gf, prec, max_iter, iter_refresh) {};
+      };
+      /**
+       * The Biconjugate Gradient Stabilized (BiCGStab) solver
+       */
+      class Bicgstab : public Solver_noneo{
+	Bicgstab(const physics::fermionmatrix::Fermionmatrix & _f, const hardware::buffers::Plain<spinor> * _x, const hardware::buffers::Plain<spinor> * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh)
+	  : Solver_noneo(_f, _x, _b, _gf, prec, max_iter, iter_refresh) {};
+      public:
+      };
+      class Bicgstab_eo : public Solver_eo{
+	Bicgstab_eo(const physics::fermionmatrix::Fermionmatrix_eo & _f, const hardware::buffers::Spinor * _x, const hardware::buffers::Spinor * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh)
+	  : Solver_eo(_f, _x, _b, _gf, prec, max_iter, iter_refresh) {};
       };
     }
   }
