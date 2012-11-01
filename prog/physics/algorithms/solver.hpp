@@ -8,11 +8,10 @@
 #define _PHYSICS_ALGORITHMS_
 
 #include "../../hardware/device.hpp"
-
 #include <stdexcept>
 #include "../../hardware/system.hpp"
-
 #include "../fermionmatrix.hpp"
+#include "../../logger.hpp"
 
 namespace physics {
   namespace algorithms {
@@ -44,7 +43,7 @@ namespace physics {
 	/**
 	 * Solve the system
 	 */
-	virtual bool solve();
+	virtual bool solve() const;
 	
       private:
 	/**
@@ -83,7 +82,7 @@ namespace physics {
 	hardware::buffers::Plain<spinor> * get_b() const noexcept;
 	hardware::buffers::SU3 * get_gf() const noexcept;
 	physics::fermionmatrix::Fermionmatrix * get_M() const noexcept;
-      private:
+      protected:
 	/**
 	 * The ingredients to the linear system to be solved
 	 */
@@ -106,7 +105,7 @@ namespace physics {
 	hardware::buffers::Spinor * get_b() const noexcept;
 	hardware::buffers::SU3 * get_gf() const noexcept;
 	physics::fermionmatrix::Fermionmatrix * get_M() const noexcept;
-      private:
+      protected:
 	/**
 	 * The ingredients to the linear system to be solved
 	 */
@@ -123,8 +122,10 @@ namespace physics {
 	  : Solver_noneo(_f, _x, _b, _gf, prec, max_iter, iter_refresh) {};
       };
       class Cg_eo : public Solver_eo{
+      public:
 	Cg_eo(const physics::fermionmatrix::Fermionmatrix_eo & _f, const hardware::buffers::Spinor * _x, const hardware::buffers::Spinor * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh)
 	  : Solver_eo(_f, _x, _b, _gf, prec, max_iter, iter_refresh) {};
+	bool solve() const override;
       };
       /**
        * The Biconjugate Gradient Stabilized (BiCGStab) solver
