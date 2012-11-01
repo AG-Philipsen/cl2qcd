@@ -18,18 +18,13 @@ namespace physics {
     /**
      * A generic fermion matrix
      */
-    class Fermionmatrix {
+    class Fermionmatrix_basic {
     protected:
       Opencl_Module * that;
 
-      Fermionmatrix(Opencl_Module * that) : that(that) { };
+      Fermionmatrix_basic(Opencl_Module * that) : that(that) { };
 
     public:
-      /**
-       * Invoke the matrix function.
-       */
-      virtual void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const = 0;
-      
       /**
        * Get the net flops performed by this function.
        */
@@ -40,30 +35,29 @@ namespace physics {
        */
       virtual cl_ulong get_Bytes() const = 0;
     };
+    class Fermionmatrix : public Fermionmatrix_basic{
+    protected:
+      Fermionmatrix(Opencl_Module * that) : Fermionmatrix_basic(that) { };
+
+    public:
+      /**
+       * Invoke the matrix function.
+       */
+      virtual void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const = 0;
+      
+    };
     /**
      * A generic fermion matrix (with even-odd preconditioning)
      */
-    class Fermionmatrix_eo {
+    class Fermionmatrix_eo : public Fermionmatrix_basic{
     protected:
-      Opencl_Module * that;
-      
-      Fermionmatrix_eo(Opencl_Module * that) : that(that) { };
+      Fermionmatrix_eo(Opencl_Module * that) : Fermionmatrix_basic(that) { };
       
     public:
       /**
        * Invoke the matrix function.
        */
       virtual void operator() (const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const = 0;
-      
-      /**
-       * Get the net flops performed by this function.
-       */
-      virtual cl_ulong get_Flops() const = 0;
-      
-      /**
-       * Get the net bytes read / written by this function.
-       */
-      virtual cl_ulong get_Bytes() const = 0;
     };
     
     /**
