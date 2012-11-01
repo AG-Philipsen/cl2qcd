@@ -1077,27 +1077,28 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	const Gaugemomentum out_eo(NUM_ELEMENTS_AE, device->get_device());
 	const Plain<hmc_float> sqnorm(1, device->get_device());
 
-	out_eo.load(sf_out_eo);
-	out_noneo.load(sf_out_noneo);
+	device->importGaugemomentumBuffer(&out_eo, sf_out_eo);
+	device->importGaugemomentumBuffer(&out_noneo, sf_out_noneo);
 
 	//in case of rnd input, it is nontrivial to supply the same rnd vectors as eo and noneo input.
 	//therefore, simply convert the eo input back to noneo
 	if(params.get_solver() == meta::Inputparameters::cg) {
-		in1_eo.load(sf_in1_eo);
-		in2_eo.load(sf_in2_eo);
-		in3_eo.load(sf_in3_eo);
-		in4_eo.load(sf_in4_eo);
+		spinor_code->copy_to_eoprec_spinorfield_buffer(&in1_eo, sf_in1_eo);
+		spinor_code->copy_to_eoprec_spinorfield_buffer(&in2_eo, sf_in2_eo);
+		spinor_code->copy_to_eoprec_spinorfield_buffer(&in3_eo, sf_in3_eo);
+		spinor_code->copy_to_eoprec_spinorfield_buffer(&in4_eo, sf_in4_eo);
 		in1_noneo.load(sf_in1_noneo);
 		in2_noneo.load(sf_in2_noneo);
 	} else {
 		//one can either convert to or from eoprec, use use_pointsource for that
 		//NOTE: there is machinery to compare vectors in the old executable
 		if(params.get_use_pointsource()) {
-			in1_eo.load(sf_in1_eo);
-			in2_eo.load(sf_in2_eo);
+			spinor_code->copy_to_eoprec_spinorfield_buffer(&in1_eo, sf_in1_eo);
+			spinor_code->copy_to_eoprec_spinorfield_buffer(&in2_eo, sf_in2_eo);
 			spinor_code->convert_from_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
-			in3_eo.load(sf_in3_eo);
-			in4_eo.load(sf_in4_eo);
+
+			spinor_code->copy_to_eoprec_spinorfield_buffer(&in3_eo, sf_in3_eo);
+			spinor_code->copy_to_eoprec_spinorfield_buffer(&in4_eo, sf_in4_eo);
 			spinor_code->convert_from_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
 		}  else {
 			in1_noneo.load(sf_in1_noneo);
