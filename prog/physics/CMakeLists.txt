@@ -8,10 +8,11 @@
 
 add_library(physics
 	prng.cpp
+	fermionmatrix.cpp
 )
 add_modules(physics
 	lattices
-#	algorithms
+	algorithms
 )
 
 #
