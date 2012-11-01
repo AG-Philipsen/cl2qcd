@@ -45,7 +45,7 @@ namespace physics {
 	 */
 	virtual bool solve() const;
 	
-      private:
+      protected:
 	/**
 	 * The acceptance precision for the solve
 	 */
@@ -65,8 +65,6 @@ namespace physics {
 	 * Number of iterations where the solution guess is refreshed
 	 */
 	const int iter_refresh;
-	
-      protected:
       };
       /**
        * A Solver to solve system without even-odd preconditioning
@@ -96,8 +94,8 @@ namespace physics {
        */
       class Solver_eo : public Solver{
       public:
-	Solver_eo(const physics::fermionmatrix::Fermionmatrix_eo & _f, const hardware::buffers::Spinor * _x, const hardware::buffers::Spinor * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh)
-	  : Solver(prec, max_iter, iter_refresh), x(_x), b(_b), gf(_gf), f(_f) {};
+	Solver_eo(const physics::fermionmatrix::Fermionmatrix_eo & _f, const hardware::buffers::Spinor * _x, const hardware::buffers::Spinor * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh, bool merge)
+	  : Solver(prec, max_iter, iter_refresh), x(_x), b(_b), gf(_gf), f(_f), merge_kernels(merge){};
 	/**
 	 * Access to private members
 	 */
@@ -113,6 +111,11 @@ namespace physics {
 	const hardware::buffers::Spinor * b;
 	const hardware::buffers::SU3 * gf;
 	const physics::fermionmatrix::Fermionmatrix_eo & f;
+
+	/**
+	 * It can be advantageous to merge kernels
+	 */
+	bool merge_kernels;
       };
       /**
        * The Conjugate Gradient (CG) solver
@@ -123,9 +126,36 @@ namespace physics {
       };
       class Cg_eo : public Solver_eo{
       public:
-	Cg_eo(const physics::fermionmatrix::Fermionmatrix_eo & _f, const hardware::buffers::Spinor * _x, const hardware::buffers::Spinor * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh)
-	  : Solver_eo(_f, _x, _b, _gf, prec, max_iter, iter_refresh) {};
+	Cg_eo(const physics::fermionmatrix::Fermionmatrix_eo & _f, const hardware::buffers::Spinor * _x, const hardware::buffers::Spinor * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh, bool merge, 
+		      const hardware::buffers::Spinor * _rn,
+		      const hardware::buffers::Spinor * _p,
+		      const hardware::buffers::Spinor * _v,
+		      const hardware::buffers::Plain<hmc_complex> * _rho,
+		      const hardware::buffers::Plain<hmc_complex> * _rho_next ,
+		      const hardware::buffers::Plain<hmc_complex> * _alpha,
+		      const hardware::buffers::Plain<hmc_complex> * _beta,
+		      const hardware::buffers::Plain<hmc_complex> * _omega,
+		      const hardware::buffers::Plain<hmc_complex> * _one,
+		      const hardware::buffers::Plain<hmc_complex> * _minusone,
+		      const hardware::buffers::Plain<hmc_complex> * _tmp2,
+		      const hardware::buffers::Plain<hmc_complex> * _tmp1
+	      )
+	  : Solver_eo(_f, _x, _b, _gf, prec, max_iter, iter_refresh, merge), 
+	    rn(_rn), p(_p), v(_v), rho(_rho), rho_next(_rho_next), alpha(_alpha), beta(_beta), omega(_omega), one(_one), minusone(_minusone), tmp2(_tmp2), tmp1(_tmp1) {};
 	bool solve() const override;
+      private:
+	const hardware::buffers::Spinor * rn;
+	const hardware::buffers::Spinor * p;
+	const hardware::buffers::Spinor * v;
+	const hardware::buffers::Plain<hmc_complex> * rho;
+	const hardware::buffers::Plain<hmc_complex> * rho_next;
+	const hardware::buffers::Plain<hmc_complex> * alpha;
+	const hardware::buffers::Plain<hmc_complex> * beta;
+	const hardware::buffers::Plain<hmc_complex> * omega;
+	const hardware::buffers::Plain<hmc_complex> * one;
+	const hardware::buffers::Plain<hmc_complex> * minusone;
+	const hardware::buffers::Plain<hmc_complex> * tmp2;
+	const hardware::buffers::Plain<hmc_complex> * tmp1;
       };
       /**
        * The Biconjugate Gradient Stabilized (BiCGStab) solver
@@ -136,8 +166,8 @@ namespace physics {
       public:
       };
       class Bicgstab_eo : public Solver_eo{
-	Bicgstab_eo(const physics::fermionmatrix::Fermionmatrix_eo & _f, const hardware::buffers::Spinor * _x, const hardware::buffers::Spinor * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh)
-	  : Solver_eo(_f, _x, _b, _gf, prec, max_iter, iter_refresh) {};
+	Bicgstab_eo(const physics::fermionmatrix::Fermionmatrix_eo & _f, const hardware::buffers::Spinor * _x, const hardware::buffers::Spinor * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh, bool merge)
+	  : Solver_eo(_f, _x, _b, _gf, prec, max_iter, iter_refresh, merge) {};
       };
     }
   }
