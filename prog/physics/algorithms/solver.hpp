@@ -74,21 +74,22 @@ namespace physics {
        */
       class Solver_noneo : public Solver{
       public:
-	Solver_noneo(physics::fermionmatrix::Fermionmatrix & _f, cl_mem _x, cl_mem _b, cl_mem _gf, hmc_float prec, int max_iter, int iter_refresh) : Solver(prec, max_iter, iter_refresh), x(_x), b(_b), gf(_gf), f(_f) {};
+	Solver_noneo(const physics::fermionmatrix::Fermionmatrix & _f, const hardware::buffers::Plain<spinor> * _x, const hardware::buffers::Plain<spinor> * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh, hmc_float kappa, hmc_float mubar)
+	  : Solver(prec, max_iter, iter_refresh), x(_x), b(_b), gf(_gf), f(_f) {};
 	/**
 	 * Access to private members
 	 */
-	cl_mem get_x() const noexcept;
-	cl_mem get_b() const noexcept;
-	cl_mem get_gf() const noexcept;
+	hardware::buffers::Plain<spinor> * get_x() const noexcept;
+	hardware::buffers::Plain<spinor> * get_b() const noexcept;
+	hardware::buffers::SU3 * get_gf() const noexcept;
 	physics::fermionmatrix::Fermionmatrix * get_M() const noexcept;
       private:
 	/**
 	 * The ingredients to the linear system to be solved
 	 */
-	const cl_mem x;
-	const cl_mem b;
-	const cl_mem gf;
+	const hardware::buffers::Plain<spinor> * x;
+	const hardware::buffers::Plain<spinor> * b;
+	const hardware::buffers::SU3 * gf;
 	const physics::fermionmatrix::Fermionmatrix & f;
       };
       /**
