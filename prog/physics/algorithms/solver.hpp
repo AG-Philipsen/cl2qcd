@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include "../../hardware/system.hpp"
 
-#include "../Fermionmatrix.hpp"
+#include "../fermionmatrix.hpp"
 
 namespace physics {
   namespace algorithms {
@@ -29,7 +29,7 @@ namespace physics {
       class Solver {
 	
       public:
-	Solver(Fermionmatrix & M, cl_mem x, cl_mem b, cl_mem gf, hmc_float prec, int max_iter, hardware::Device device);
+	Solver(physics::fermionmatrix::Fermionmatrix & M, cl_mem x, cl_mem b, cl_mem gf, hmc_float prec, int max_iter, hardware::Device device);
 	
 	virtual ~Solver();
 	
@@ -45,7 +45,7 @@ namespace physics {
 	cl_mem get_x() const noexcept;
 	cl_mem get_b() const noexcept;
 	cl_mem get_gf() const noexcept;
-	Matrix_Function * get_M() const noexcept;
+	physics::fermionmatrix::Fermionmatrix * get_M() const noexcept;
 	hmc_float get_prec() const noexcept;
 	int get_iter();
 	int get_iter_max() const noexcept;
@@ -62,7 +62,7 @@ namespace physics {
 	const cl_mem x;
 	const cl_mem b;
 	const cl_mem gf;
-	const Fermionmatrix & M;
+	const physics::fermionmatrix::Fermionmatrix & M;
 	
 	/**
 	 * The acceptance precision for the solve
