@@ -22,10 +22,19 @@ namespace physics {
     protected:
       Opencl_Module_Fermions * that;
 
-      Fermionmatrix_basic(Opencl_Module_Fermions * that, bool herm) : that(that), is_hermitian(herm) { };
-      
-      bool is_hermitian;
+      Fermionmatrix_basic(Opencl_Module_Fermions * that, bool herm, hmc_float _kappa = ARG_DEF, hmc_float _mubar = ARG_DEF) : that(that), is_hermitian(herm), kappa(_kappa), mubar(_mubar) { };
 
+      /**
+       * Shows if matrix is hermitian
+       */
+      bool is_hermitian;
+      
+      /**
+       * parameters kappa and mubar
+       */
+      hmc_float kappa;
+      hmc_float mubar;
+      
     public:
       /**
        * Get if the matrix is hermitian
@@ -43,13 +52,13 @@ namespace physics {
     };
     class Fermionmatrix : public Fermionmatrix_basic{
     protected:
-      Fermionmatrix(Opencl_Module_Fermions * that, bool herm) : Fermionmatrix_basic(that, herm) { };
+      Fermionmatrix(Opencl_Module_Fermions * that, bool herm, hmc_float _kappa, hmc_float _mubar) : Fermionmatrix_basic(that, herm, _kappa, _mubar) { };
 
     public:
       /**
        * Invoke the matrix function.
        */
-      virtual void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const = 0;
+      virtual void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf) const = 0;
       
     };
     /**
@@ -57,13 +66,13 @@ namespace physics {
      */
     class Fermionmatrix_eo : public Fermionmatrix_basic{
     protected:
-      Fermionmatrix_eo(Opencl_Module_Fermions * that, bool herm) : Fermionmatrix_basic(that, herm) { };
+      Fermionmatrix_eo(Opencl_Module_Fermions * that, bool herm, hmc_float _kappa, hmc_float _mubar) : Fermionmatrix_basic(that, herm, _kappa, _mubar) { };
       
     public:
       /**
        * Invoke the matrix function.
        */
-      virtual void operator() (const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const = 0;
+      virtual void operator() (const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf) const = 0;
     };
     
     /**
@@ -71,29 +80,29 @@ namespace physics {
      */
     class M : public Fermionmatrix {
     public:
-      M(Opencl_Module_Fermions * that) : Fermionmatrix(that, false) {  };
-      void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+      M(Opencl_Module_Fermions * that, hmc_float _kappa, hmc_float _mubar) : Fermionmatrix(that, false, _kappa, _mubar) {  };
+      void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf) const override;
       cl_ulong get_Flops() const override;
       cl_ulong get_Bytes() const override;
     };
     class Qplus : public Fermionmatrix {
     public:
-      Qplus(Opencl_Module_Fermions * that) : Fermionmatrix(that, false) { };
-      void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+      Qplus(Opencl_Module_Fermions * that, hmc_float _kappa, hmc_float _mubar) : Fermionmatrix(that, false, _kappa, _mubar) { };
+      void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf) const override;
       cl_ulong get_Flops() const override;
       cl_ulong get_Bytes() const override;
     };
     class Qminus : public Fermionmatrix {
     public:
-      Qminus(Opencl_Module_Fermions * that) : Fermionmatrix(that, false) { };
-      void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+      Qminus(Opencl_Module_Fermions * that, hmc_float _kappa, hmc_float _mubar) : Fermionmatrix(that, false, _kappa, _mubar) { };
+      void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf) const override;
       cl_ulong get_Flops() const override;
       cl_ulong get_Bytes() const override;
     };
     class QplusQminus : public Fermionmatrix {
     public:
-      QplusQminus(Opencl_Module_Fermions * that) : Fermionmatrix(that, true) { };
-      void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+      QplusQminus(Opencl_Module_Fermions * that, hmc_float _kappa, hmc_float _mubar) : Fermionmatrix(that, true, _kappa, _mubar) { };
+      void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf) const override;
       cl_ulong get_Flops() const override;
       cl_ulong get_Bytes() const override;
     };
@@ -102,29 +111,29 @@ namespace physics {
      */
     class Aee : public Fermionmatrix_eo {
     public:
-      Aee(Opencl_Module_Fermions * that) : Fermionmatrix_eo(that, false) { };
-	void operator() (const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+      Aee(Opencl_Module_Fermions * that, hmc_float _kappa, hmc_float _mubar) : Fermionmatrix_eo(that, false, _kappa, _mubar) { };
+	void operator() (const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
     };
     class Qplus_eo : public Fermionmatrix_eo {
     public:
-      Qplus_eo(Opencl_Module_Fermions * that) : Fermionmatrix_eo(that, false) { };
-      void operator() (const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+      Qplus_eo(Opencl_Module_Fermions * that, hmc_float _kappa, hmc_float _mubar) : Fermionmatrix_eo(that, false, _kappa, _mubar) { };
+      void operator() (const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf) const override;
       cl_ulong get_Flops() const override;
       cl_ulong get_Bytes() const override;
     };
     class Qminus_eo : public Fermionmatrix_eo {
     public:
-      Qminus_eo(Opencl_Module_Fermions * that) : Fermionmatrix_eo(that, false) { };
-      void operator() (const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+      Qminus_eo(Opencl_Module_Fermions * that, hmc_float _kappa, hmc_float _mubar) : Fermionmatrix_eo(that, false, _kappa, _mubar) { };
+      void operator() (const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf) const override;
       cl_ulong get_Flops() const override;
       cl_ulong get_Bytes() const override;
     };
     class QplusQminus_eo : public Fermionmatrix_eo {
     public:
-      QplusQminus_eo(Opencl_Module_Fermions * that) : Fermionmatrix_eo(that, true) { };
-      void operator() (const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
+      QplusQminus_eo(Opencl_Module_Fermions * that, hmc_float _kappa, hmc_float _mubar) : Fermionmatrix_eo(that, true, _kappa, _mubar) { };
+      void operator() (const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf) const override;
       cl_ulong get_Flops() const override;
       cl_ulong get_Bytes() const override;
     };
