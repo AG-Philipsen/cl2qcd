@@ -8,7 +8,7 @@
 #include "../hardware/buffers/spinor.hpp"
 #include "../host_use_timer.h"
 
-
+#include "../hardware/device.hpp"
 /**
  * this is the definition of the class "Fermionmatrix"
  */
