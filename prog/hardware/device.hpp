@@ -179,6 +179,14 @@ public:
 	ProfilingData get_profiling_data(const cl_kernel& kernel) noexcept;
 
 	/**
+	 * Print the profiling information of kernels run on this device.
+	 *
+	 * \param filename The file to write the profiling information to
+	 * \param id The id to identify this device by
+	 */
+	void print_profiling(std::string filename, int id);
+
+	/**
 	 * Get access to the gaugefield kernels on this device.
 	 */
 	Opencl_Module_Gaugefield * get_gaugefield_code();

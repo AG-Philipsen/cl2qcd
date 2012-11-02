@@ -461,3 +461,31 @@ Opencl_Module_Kappa * hardware::Device::get_kappa_code()
 	}
 	return kappa_code;
 }
+
+void hardware::Device::print_profiling(std::string filename, int id)
+{
+	if(kappa_code) {
+		kappa_code->print_profiling(filename, id);
+	}
+	if(heatbath_code) {
+		heatbath_code->print_profiling(filename, id);
+	}
+	if(correlator_code) {
+		correlator_code->print_profiling(filename, id);
+	}
+	if(hmc_code) {
+		hmc_code->print_profiling(filename, id);
+	}
+	if(fermion_code) {
+		fermion_code->print_profiling(filename, id);
+	}
+	if(spinor_code) {
+		spinor_code->print_profiling(filename, id);
+	}
+	if(prng_code) {
+		prng_code->print_profiling(filename, id);
+	}
+	if(gaugefield_code) {
+		gaugefield_code->print_profiling(filename, id);
+	}
+}

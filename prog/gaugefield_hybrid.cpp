@@ -477,9 +477,8 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask, st
 
 void Gaugefield_hybrid::print_profiling(std::string filename)
 {
-	for(int ntask = 0; ntask < get_num_tasks(); ntask++) {
-		//this is initialized with length 1, meaning one assumes one device per task
-		opencl_modules[ntask]->print_profiling(filename, ntask);
+	for(int i = 0; i < num_devices; ++i) {
+		devices[i]->print_profiling(filename, i);
 	}
 }
 
