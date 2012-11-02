@@ -12,10 +12,10 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 {
 	std::ostringstream options;
 
-	options <<  "-DBETA=" << params.get_beta();
+	options <<  "-D BETA=" << params.get_beta();
 	if(params.get_use_aniso() == true) {
-		options << " -D_ANISO_";
-		options <<  " -DXI_0=" << meta::get_xi_0(params);
+		options << " -D _ANISO_";
+		options <<  " -D XI_0=" << meta::get_xi_0(params);
 	}
 
 	return options.str();
