@@ -9,7 +9,7 @@ bool physics::fermionmatrix::Fermionmatrix_basic::get_is_hermitian() const noexc
   return is_hermitian;
 }
 
-void physics::fermionmatrix::M::operator()(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
+void physics::fermionmatrix::M::operator()(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf) const
 {
   	that->M(in, out, gf, kappa, mubar);
 }
@@ -36,7 +36,7 @@ cl_ulong physics::fermionmatrix::M::get_Bytes() const
 	}
 }
 
-void physics::fermionmatrix::Qplus::operator()(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
+void physics::fermionmatrix::Qplus::operator()(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf) const
 {
 	that->Qplus(in, out, gf, kappa, mubar);
 }
@@ -73,7 +73,7 @@ cl_ulong physics::fermionmatrix::Qplus::get_Bytes() const
 	return res;
 }
 
-void physics::fermionmatrix::Qminus::operator()(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
+void physics::fermionmatrix::Qminus::operator()(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf) const
 {
 	that->Qminus(in, out, gf, kappa, mubar);
 }
@@ -110,7 +110,7 @@ cl_ulong physics::fermionmatrix::Qminus::get_Bytes() const
 	return res;
 }
 
-void physics::fermionmatrix::QplusQminus::operator()(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
+void physics::fermionmatrix::QplusQminus::operator()(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf) const
 {
 	that->QplusQminus(in, out, gf, kappa, mubar);
 }
@@ -149,7 +149,7 @@ cl_ulong physics::fermionmatrix::QplusQminus::get_Bytes() const
 	return res;
 }
 
-void physics::fermionmatrix::Aee::operator()(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
+void physics::fermionmatrix::Aee::operator()(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf) const
 {
 	that->Aee(in, out, gf, kappa, mubar);
 }
@@ -196,7 +196,7 @@ cl_ulong physics::fermionmatrix::Aee::get_Bytes() const
 	return res;
 }
 
-void physics::fermionmatrix::Qplus_eo::operator()(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
+void physics::fermionmatrix::Qplus_eo::operator()(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf) const
 {
 	that->Qplus_eo(in, out, gf, kappa, mubar);
 }
@@ -245,7 +245,7 @@ cl_ulong physics::fermionmatrix::Qplus_eo::get_Bytes() const
 	return res;
 }
 
-void physics::fermionmatrix::Qminus_eo::operator()(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
+void physics::fermionmatrix::Qminus_eo::operator()(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf) const
 {
 	that->Qminus_eo(in, out, gf, kappa, mubar);
 }
@@ -294,7 +294,7 @@ cl_ulong physics::fermionmatrix::Qminus_eo::get_Bytes() const
 	return res;
 }
 
-void physics::fermionmatrix::QplusQminus_eo::operator()(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa, hmc_float mubar) const
+void physics::fermionmatrix::QplusQminus_eo::operator()(const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf) const
 {
 	that->QplusQminus_eo(in, out, gf, kappa, mubar);
 }
