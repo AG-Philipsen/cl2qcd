@@ -10,6 +10,7 @@
 #include <fstream>
 #include <boost/regex.hpp>
 #include <cstring>
+#include <boost/algorithm/string.hpp>
 #include "crypto/md5.h"
 
 #define BOOST_FILESYSTEM_VERSION 3
@@ -642,3 +643,12 @@ static fs::path get_binary_file_path(std::string md5)
 	const std::string file_name = md5 + ".elf";
 	return cache_dir / file_name;
 }
+
+TmpClKernel::TmpClKernel(const std::string kernel_name, const std::string build_options,
+                         const cl_context context, cl_device_id device,
+                         const std::vector<std::string> files)
+	: kernel_name(kernel_name), build_options(boost::trim_copy(build_options)), context(context),
+	  device(device), files(files) { };
+
+ClSourcePackage::ClSourcePackage(const std::vector<std::string>& files, const std::string& options)
+	: files(files), options(boost::trim_copy(options)) {};
