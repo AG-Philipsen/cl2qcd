@@ -33,12 +33,11 @@ hmc_float physics::algorithms::solver::Solver::get_prec() const noexcept
 
 bool physics::algorithms::solver::Cg_eo::solve() const
 {
-	auto spinor_code = get_device()->get_spinor_code();
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
 	klepsydra::Monotonic timer;
 	if(logger.beInfo()) {
 		cl_event start_event;
-		get_device()->enqueue_marker(&start_event);
+		spinor_code->get_device()->enqueue_marker(&start_event);
 		clSetEventCallback(start_event, CL_COMPLETE, resetTimerOnComplete, &timer);
 		clReleaseEvent(start_event);
 	}
@@ -106,10 +105,10 @@ bool physics::algorithms::solver::Cg_eo::solve() const
 				unsigned refreshs = iter / iter_refresh + 1;
 				cl_ulong mf_flops = f.get_Flops();
 
-				cl_ulong total_flops = mf_flops + 3 * get_flop_size("scalar_product_eoprec") + 2 * get_flop_size("ratio") + 2 * get_flop_size("product") + 3 * spinor_code->get_flop_size("saxpy_eoprec");
+				cl_ulong total_flops = mf_flops + 3 * spinor_code->get_flop_size("scalar_product_eoprec") + 2 * spinor_code->get_flop_size("ratio") + 2 * spinor_code->get_flop_size("product") + 3 * spinor_code->get_flop_size("saxpy_eoprec");
 				total_flops *= iter;
 
-				total_flops += refreshs * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
+				total_flops += refreshs * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec") + spinor_code->get_flop_size("scalar_product_eoprec"));
 
 				// report performanc
 				logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";

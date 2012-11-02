@@ -28,7 +28,7 @@ namespace physics {
       class Solver {
 	
       public:
-	Solver(hmc_float prec, int _max_iter, int _iter_refresh) : acc_prec(prec), iter_max(_max_iter), iter_refresh(_iter_refresh), iter(0) {};
+	Solver(hmc_float prec, int _max_iter, int _iter_refresh) : acc_prec(prec), iter(0), iter_max(_max_iter), iter_refresh(_iter_refresh) {};
 	
 	virtual ~Solver();
 	
@@ -46,6 +46,11 @@ namespace physics {
 	virtual bool solve() const;
 	
       protected:
+	/**
+	 * The Opencl module to carry out the spinor kernels
+	 */
+	Opencl_Module_Spinors * spinor_code;
+
 	/**
 	 * The acceptance precision for the solve
 	 */
