@@ -1,7 +1,5 @@
 #include "gaugefield_hybrid.h"
 
-#include "opencl_module_gaugefield.h"
-
 #include "meta/util.hpp"
 
 void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type)

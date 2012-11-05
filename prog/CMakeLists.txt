@@ -131,15 +131,6 @@ set_abs_paths(OPTIMAL_FILES
 	host_use_timer.cpp
 	host_writegaugefield.cpp
 	opencl_compiler.cpp
-	opencl_module.cpp
-	opencl_module_gaugefield.cpp
-	opencl_module_correlator.cpp
-	opencl_module_fermions.cpp
-	opencl_module_hmc.cpp
-	opencl_module_heatbath.cpp
-	opencl_module_kappa.cpp
-	opencl_module_ran.cpp
-	opencl_module_spinors.cpp
 )
 set(OPTIMAL_USED_LIBS
 	${OPENCL_LIBRARIES}

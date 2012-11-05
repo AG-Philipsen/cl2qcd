@@ -1,40 +1,21 @@
 /** @file
  * Basic OpenCL functionality
  */
-#ifndef _OPENCLMODULEHMCH_
-#define _OPENCLMODULEHMCH_
+#ifndef _HARDWARE_CODE_HMC_
+#define _HARDWARE_CODE_HMC_
 
-#include <cmath>
-#include <cstdlib>
-#include <vector>
-#include <string>
-#include <fstream>
-#include <sstream>
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
+#include "../../host_use_timer.h"
+#include "opencl_module.hpp"
+#include "../../types.h"
+#include "../../types_fermions.h"
+#include "../../types_hmc.h"
 
-#include "host_geometry.h"
-#include "host_operations_gaugefield.h"
-#include "globaldefs.h"
-#include "types.h"
-#include "types_fermions.h"
-#include "host_use_timer.h"
-#include "opencl_compiler.hpp"
-
-#include "opencl_module.h"
-#include "types_hmc.h"
-
-#include "exceptions.h"
-
-#include "meta/counter.hpp"
-#include "hardware/buffers/plain.hpp"
-#include "hardware/buffers/prng_buffer.hpp"
-#include "hardware/buffers/su3.hpp"
-#include "hardware/buffers/spinor.hpp"
-#include "hardware/buffers/gaugemomentum.hpp"
+#include "../../meta/counter.hpp"
+#include "../hardware/buffers/plain.hpp"
+#include "../hardware/buffers/prng_buffer.hpp"
+#include "../hardware/buffers/su3.hpp"
+#include "../hardware/buffers/spinor.hpp"
+#include "../hardware/buffers/gaugemomentum.hpp"
 
 /**
  * An OpenCL device
@@ -209,4 +190,4 @@ private:
 	const hardware::buffers::Spinor clmem_phi_mp_eo;
 };
 
-#endif //OPENCLMODULEHMCH
+#endif // _HARDWARE_CODE_HMC_

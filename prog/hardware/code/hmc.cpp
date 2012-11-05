@@ -1,8 +1,9 @@
-#include "opencl_module_hmc.h"
+#include "hmc.hpp"
 
-#include "logger.hpp"
-#include "meta/util.hpp"
-#include "hardware/device.hpp"
+#include "../../logger.hpp"
+#include "../../meta/util.hpp"
+#include "../device.hpp"
+#include <fstream>
 
 using namespace std;
 

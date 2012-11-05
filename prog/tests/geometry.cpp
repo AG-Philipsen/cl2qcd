@@ -1,4 +1,3 @@
-#include "../opencl_module.h"
 #include "../gaugefield_hybrid.h"
 
 #include "../meta/util.hpp"

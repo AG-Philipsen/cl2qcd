@@ -1,7 +1,7 @@
-#include "opencl_module_ran.h"
+#include "prng.hpp"
 
-#include "logger.hpp"
-#include "hardware/device.hpp"
+#include "../../logger.hpp"
+#include "../device.hpp"
 
 using namespace std;
 

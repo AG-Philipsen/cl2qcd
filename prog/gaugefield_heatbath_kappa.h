@@ -26,10 +26,6 @@
 
 #include "exceptions.h"
 #include "gaugefield_hybrid.h"
-#include "opencl_module.h"
-#include "opencl_module_ran.h"
-#include "opencl_module_heatbath.h"
-#include "opencl_module_kappa.h"
 
 #include "logger.hpp"
 

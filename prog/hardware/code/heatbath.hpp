@@ -1,34 +1,14 @@
 /** @file
  * Heatbath for OpenCL
  */
-#ifndef _OPENCLMODULEHEATBATHH_
-#define _OPENCLMODULEHEATBATHH_
+#ifndef _HARDWARE_CODE_HEATBATH_
+#define _HARDWARE_CODE_HEATBATH_
 
-#include <cstdlib>
-#include <vector>
-#include <string>
-#include <fstream>
-#include <sstream>
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-
-#include "host_geometry.h"
-#include "host_operations_gaugefield.h"
-#include "globaldefs.h"
-#include "types.h"
-#include "host_use_timer.h"
-#include "host_random.h"
-#include "opencl_compiler.hpp"
-
-#include "opencl_module.h"
-#include "hardware/buffers/su3.hpp"
-#include "hardware/buffers/prng_buffer.hpp"
-
-#include "exceptions.h"
-
+#include "opencl_module.hpp"
+#include "../../types.h"
+#include "../../meta/inputparameters.hpp"
+#include "../buffers/su3.hpp"
+#include "../buffers/prng_buffer.hpp"
 /**
  * An OpenCL device
  *
@@ -108,4 +88,4 @@ private:
 
 };
 
-#endif //OPENCLMODULEHEATBATHH
+#endif // _HARDWARE_CODE_HEATBATH_

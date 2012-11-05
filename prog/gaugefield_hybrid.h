@@ -22,7 +22,6 @@
 #include "host_use_timer.h"
 
 #include "exceptions.h"
-#include "opencl_module.h"
 
 #include "logger.hpp"
 

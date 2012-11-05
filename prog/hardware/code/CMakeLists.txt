@@ -7,6 +7,15 @@
 #
 
 add_library(code
+		opencl_module.cpp
+		gaugefield.cpp
+		prng.cpp
+		heatbath.cpp
+		kappa.cpp
+		correlator.cpp
+		spinors.cpp
+		fermions.cpp
+		hmc.cpp
 )
 
 #

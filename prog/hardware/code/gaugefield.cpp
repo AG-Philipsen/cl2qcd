@@ -1,10 +1,10 @@
-#include "opencl_module_gaugefield.h"
+#include "gaugefield.hpp"
 
 #include <cmath>
 
-#include "logger.hpp"
-#include "meta/util.hpp"
-#include "hardware/device.hpp"
+#include "../../logger.hpp"
+#include "../../meta/util.hpp"
+#include "../device.hpp"
 
 using namespace std;
 

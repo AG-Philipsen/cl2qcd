@@ -1,31 +1,14 @@
 /** @file
  * Heatbath for OpenCL
  */
-#ifndef _OPENCLMODULEKAPPAH_
-#define _OPENCLMODULEKAPPAH_
+#ifndef _HARDWARE_CODE_KAPPA_
+#define _HARDWARE_CODE_KAPPA_
 
-#include <cstdlib>
-#include <vector>
-#include <string>
-#include <fstream>
-#include <sstream>
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
+#include "../../types.h"
 
-#include "host_geometry.h"
-#include "host_operations_gaugefield.h"
-#include "globaldefs.h"
-#include "types.h"
-#include "host_use_timer.h"
-#include "host_random.h"
-#include "opencl_compiler.hpp"
-
-#include "opencl_module_gaugefield.h"
-
-#include "exceptions.h"
+#include "opencl_module.hpp"
+#include "../buffers/plain.hpp"
+#include "../buffers/su3.hpp"
 
 /**
  * An OpenCL device
@@ -91,4 +74,4 @@ private:
 	cl_kernel kappa_clover_gpu;
 };
 
-#endif //OPENCLMODULEKAPPAH
+#endif // _HARDWARE_CODE_KAPPA_

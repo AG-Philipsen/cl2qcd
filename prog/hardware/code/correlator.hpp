@@ -1,14 +1,15 @@
 /** @file
  * Basic OpenCL functionality
  */
-#ifndef _OPENCLMODULECORRELATORH_
-#define _OPENCLMODULECORRELATORH_
 
-#include "opencl_module.h"
+#ifndef _HARDWARE_CODE_CORRELATOR_
+#define _HARDWARE_CODE_CORRELATOR_
 
-#include "hardware/buffers/plain.hpp"
-#include "hardware/buffers/prng_buffer.hpp"
-#include "types_fermions.h"
+#include "opencl_module.hpp"
+
+#include "../buffers/plain.hpp"
+#include "../buffers/prng_buffer.hpp"
+#include "../../types_fermions.h"
 
 /**
  * An OpenCL device
@@ -137,4 +138,4 @@ private:
 	ClSourcePackage basic_correlator_code;
 };
 
-#endif //OPENCLMODULECORRELATORH
+#endif // _HARDWARE_CODE_CORRELATOR_

@@ -1,12 +1,12 @@
 /** @file
  * Heatbath for OpenCL
  */
-#ifndef _OPENCLMODULERANH_
-#define _OPENCLMODULERANH_
+#ifndef _HARDWARE_CODE_PRNG_
+#define _HARDWARE_CODE_PRNG_
 
-#include "opencl_module.h"
+#include "opencl_module.hpp"
 
-#include "hardware/buffers/prng_buffer.hpp"
+#include "../buffers/prng_buffer.hpp"
 
 /**
  * An OpenCL device
@@ -83,4 +83,4 @@ private:
 #endif // USE_PRNG_NR3
 };
 
-#endif //OPENCLMODULERANH
+#endif // _HARDWARE_CODE_PRNG_

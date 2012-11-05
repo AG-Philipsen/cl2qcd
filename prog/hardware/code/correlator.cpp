@@ -1,8 +1,8 @@
-#include "opencl_module_correlator.h"
+#include "correlator.hpp"
 
-#include "logger.hpp"
-#include "meta/util.hpp"
-#include "hardware/device.hpp"
+#include "../../logger.hpp"
+#include "../../meta/util.hpp"
+#include "../device.hpp"
 
 using namespace std;
 

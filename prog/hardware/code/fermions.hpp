@@ -1,15 +1,16 @@
 /** @file
  * Basic OpenCL functionality
  */
-#ifndef _OPENCLMODULEFERMIONSH_
-#define _OPENCLMODULEFERMIONSH_
 
-#include "opencl_module.h"
+#ifndef _HARDWARE_CODE_FERMIONS_
+#define _HARDWARE_CODE_FERMIONS_
 
-#include "hardware/buffers/plain.hpp"
-#include "hardware/buffers/su3.hpp"
-#include "hardware/buffers/spinor.hpp"
-#include "host_use_timer.h"
+#include "opencl_module.hpp"
+
+#include "../buffers/plain.hpp"
+#include "../buffers/su3.hpp"
+#include "../buffers/spinor.hpp"
+#include "../../host_use_timer.h"
 
 class Opencl_Module_Fermions;
 
@@ -332,4 +333,4 @@ private:
 	ClSourcePackage sources;
 };
 
-#endif //OPENCLMODULEFERMIONSH
+#endif // _HARDWARE_CODE_FERMIONS_

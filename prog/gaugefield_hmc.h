@@ -25,7 +25,6 @@
 #endif
 
 #include "exceptions.h"
-#include "opencl_module_hmc.h"
 #include "gaugefield_hybrid.h"
 #include "types_hmc.h"
 

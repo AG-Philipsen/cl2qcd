@@ -3,7 +3,6 @@
 #define BOOST_TEST_MODULE gaugefield_convert
 #include <boost/test/unit_test.hpp>
 
-#include "../opencl_module_gaugefield.h"
 #include "../gaugefield_hybrid.h"
 #include "../meta/util.hpp"
 #include "../meta/type_ops.hpp"

@@ -1,4 +1,3 @@
-#include "../opencl_module.h"
 #include "../gaugefield_hybrid.h"
 
 // use the boost test framework

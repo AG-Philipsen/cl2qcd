@@ -1,15 +1,14 @@
 /** @file
  * Opencl code working on the gaugefield.
  */
-#ifndef _OPENCL_MODULE_GAUGEFIELD_H_
-#define _OPENCL_MODULE_GAUGEFIELD_H_
+#ifndef _HARDWARE_CODE_GAUGEFIELD_
+#define _HARDWARE_CODE_GAUGEFIELD_
 
-#include "opencl_module.h"
-#include "types.h"
-#include "meta/inputparameters.hpp"
-#include "opencl_compiler.hpp"
-#include "hardware/buffers/su3.hpp"
-#include "hardware/buffers/plain.hpp"
+#include "opencl_module.hpp"
+#include "../../types.h"
+#include "../../meta/inputparameters.hpp"
+#include "../buffers/su3.hpp"
+#include "../buffers/plain.hpp"
 
 /**
  * An OpenCL device
@@ -204,4 +203,4 @@ private:
 	void clear_kernels();
 };
 
-#endif /* _OPENCL_MODULE_GAUGEFIELD_H_ */
+#endif /* _HARDWARE_CODE_GAUGEFIELD_ */

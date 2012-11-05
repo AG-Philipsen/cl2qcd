@@ -24,13 +24,7 @@
 #include <CL/cl.h>
 #endif
 
-#include "exceptions.h"
-#include "opencl_module.h"
-#include "opencl_module_fermions.h"
-#include "opencl_module_correlator.h"
 #include "gaugefield_hybrid.h"
-
-#include "logger.hpp"
 
 /**
  * Class for the gaugefield. Includes initialization, device management for multiple devices. Performs calculation of correlators.

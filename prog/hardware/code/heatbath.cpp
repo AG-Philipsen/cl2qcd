@@ -1,8 +1,8 @@
-#include "opencl_module_heatbath.h"
+#include "heatbath.hpp"
 
-#include "logger.hpp"
-#include "meta/util.hpp"
-#include "hardware/device.hpp"
+#include "../../logger.hpp"
+#include "../../meta/util.hpp"
+#include "../device.hpp"
 
 using namespace std;
 

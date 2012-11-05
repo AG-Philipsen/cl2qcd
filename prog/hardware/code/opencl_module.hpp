@@ -2,13 +2,14 @@
  * Functionality common to all Opencl_Modules
  * Basically just a utility for keeping the device and input parameters references as well as some profiling utilities.
  */
-#ifndef _OPENCLMODULEH_
-#define _OPENCLMODULEH_
+
+#ifndef _HARDWARE_CODE_OPENCLMODULE_
+#define _HARDWARE_CODE_OPENCLMODULE_
 
 #include <string>
 
-#include "meta/inputparameters.hpp"
-#include "opencl_compiler.hpp"
+#include "../../meta/inputparameters.hpp"
+#include "../../opencl_compiler.hpp"
 
 // predeclaration as headers only use pointers and friend to this
 namespace hardware {

@@ -14,6 +14,7 @@ add_library(hardware
 target_link_libraries(hardware optimal)
 add_modules(hardware
 	buffers
+	code
 )
 
 #

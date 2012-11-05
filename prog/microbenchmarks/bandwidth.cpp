@@ -9,7 +9,7 @@
 #include <boost/program_options.hpp>
 
 #include "../host_random.h"
-#include "../opencl_module_gaugefield.h"
+#include "../hardware/code/gaugefield.hpp"
 #include "../gaugefield_hybrid.h"
 #include "../logger.hpp"
 #include "../exceptions.h"

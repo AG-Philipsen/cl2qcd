@@ -17,14 +17,14 @@
 #include "../meta/inputparameters.hpp"
 #include "../opencl_compiler.hpp"
 #include "profiling_data.hpp"
-#include "../opencl_module_gaugefield.h"
-#include "../opencl_module_ran.h"
-#include "../opencl_module_spinors.h"
-#include "../opencl_module_fermions.h"
-#include "../opencl_module_hmc.h"
-#include "../opencl_module_correlator.h"
-#include "../opencl_module_heatbath.h"
-#include "../opencl_module_kappa.h"
+#include "code/gaugefield.hpp"
+#include "code/prng.hpp"
+#include "code/spinors.hpp"
+#include "code/fermions.hpp"
+#include "code/hmc.hpp"
+#include "code/correlator.hpp"
+#include "code/heatbath.hpp"
+#include "code/kappa.hpp"
 
 namespace hardware {
 

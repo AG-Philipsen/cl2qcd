@@ -1,13 +1,13 @@
 /** @file
  * Heatbath for OpenCL
  */
-#ifndef _OPENCLMODULSPINORSH_
-#define _OPENCLMODULSPINORSH_
+#ifndef _HARDWARE_CODE_SPINORS_
+#define _HARDWARE_CODE_SPINORS_
 
-#include "opencl_module.h"
+#include "opencl_module.hpp"
 
-#include "hardware/buffers/plain.hpp"
-#include "hardware/buffers/spinor.hpp"
+#include "../buffers/plain.hpp"
+#include "../buffers/spinor.hpp"
 
 /**
  * An OpenCL device
@@ -143,4 +143,4 @@ private:
 	cl_kernel saxpy_AND_squarenorm_eo;
 };
 
-#endif //OPENCLMODULSPINORSH
+#endif // _HARDWARE_CODE_SPINORS_
