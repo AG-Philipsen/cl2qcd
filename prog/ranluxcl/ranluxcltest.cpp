@@ -534,11 +534,11 @@ int main(int argc, char *argv[])
 	std::string BuildLog;
 	std::string FileName = SOURCEDIR "/ranluxcl/ranluxcltest_kernels.cl";
 
-	BuildOptions += "-I" SOURCEDIR "/ranluxcl"; //Search for include files in current directory
+	BuildOptions += "-I " SOURCEDIR "/ranluxcl"; //Search for include files in current directory
 
 	//Used to get exact same sequence as original implementation (for correctness check). Should generally
 	//NOT be set in other programs, to ensure parallel generators aren't in initially correlated states.
-	BuildOptions += " -D RANLUXCL_NO_WARMUP ";
+	BuildOptions += " -D RANLUXCL_NO_WARMUP";
 
 	//Set luxury value. If this is not defined the highest (4) is used by default.
 	BuildOptions += " -D RANLUXCL_LUX=" + to_string(lux);
