@@ -10,11 +10,11 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	std::ostringstream options;
-	if(params.get_use_same_rnd_numbers() ) options <<  " -D_SAME_RND_NUMBERS_ ";
+	if(params.get_use_same_rnd_numbers() ) options <<  " -D _SAME_RND_NUMBERS_ ";
 #ifdef USE_PRNG_NR3
-	options << "-DUSE_PRNG_NR3";
+	options << "-D USE_PRNG_NR3";
 #elif defined(USE_PRNG_RANLUX)
-	options << "-DUSE_PRNG_RANLUX -DRANLUXCL_MAXWORKITEMS=" << hardware::buffers::get_prng_buffer_size(device);
+	options << "-D USE_PRNG_RANLUX -D RANLUXCL_MAXWORKITEMS=" << hardware::buffers::get_prng_buffer_size(device);
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX

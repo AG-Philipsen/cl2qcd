@@ -13,13 +13,13 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	using namespace hardware::buffers;
 
 	std::ostringstream options;
-	options <<  "-DBETA=" << params.get_beta() << " -DGAUGEMOMENTASIZE=" << meta::get_vol4d(params) * NDIM;
+	options <<  "-D BETA=" << params.get_beta() << " -D GAUGEMOMENTASIZE=" << meta::get_vol4d(params) * NDIM;
 	//in case of tlsym gauge action
 	if(meta::get_use_rectangles(params) == true) {
-		options <<  " -DC0=" << meta::get_c0(params) << " -DC1=" << meta::get_c1(params);
+		options <<  " -D C0=" << meta::get_c0(params) << " -D C1=" << meta::get_c1(params);
 	}
 	if(check_Gaugemomentum_for_SOA(device)) {
-		options << " -DGAUGEMOMENTA_STRIDE=" << get_Gaugemomentum_buffer_stride(meta::get_vol4d(params) * NDIM, device);
+		options << " -D GAUGEMOMENTA_STRIDE=" << get_Gaugemomentum_buffer_stride(meta::get_vol4d(params) * NDIM, device);
 	}
 	return options.str();
 }

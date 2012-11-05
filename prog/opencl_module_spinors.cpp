@@ -13,10 +13,10 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	using namespace hardware::buffers;
 
 	std::ostringstream options;
-	options << "-D_FERMIONS_"
-	        << " -DSPINORFIELDSIZE=" << meta::get_spinorfieldsize(params) << " -DEOPREC_SPINORFIELDSIZE=" << meta::get_eoprec_spinorfieldsize(params);
+	options << "-D _FERMIONS_"
+	        << " -D SPINORFIELDSIZE=" << meta::get_spinorfieldsize(params) << " -D EOPREC_SPINORFIELDSIZE=" << meta::get_eoprec_spinorfieldsize(params);
 	if(check_Spinor_for_SOA(device)) {
-		options << " -DEOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(meta::get_eoprec_spinorfieldsize(params), device);
+		options << " -D EOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(meta::get_eoprec_spinorfieldsize(params), device);
 	}
 
 	return options.str();
