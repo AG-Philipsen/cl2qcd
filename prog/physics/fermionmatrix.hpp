@@ -1,7 +1,7 @@
 #ifndef _FERMIONMATRIXH_
 #define _FERMIONMATRIXH_
 
-#include "../opencl_module_fermions.h"
+#include "../hardware/code/fermions.hpp"
 
 #include "../hardware/buffers/plain.hpp"
 #include "../hardware/buffers/su3.hpp"

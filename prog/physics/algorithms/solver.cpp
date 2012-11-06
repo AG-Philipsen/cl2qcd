@@ -9,8 +9,6 @@
 #include "../../hardware/system.hpp"
 #include "../../logger.hpp"
 
-#include "solver.hpp"
-
 int physics::algorithms::solver::Solver::get_iter_max() const noexcept
 {
 	return iter_max;
