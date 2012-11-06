@@ -13,22 +13,22 @@
 
 int physics::algorithms::solver::Solver::get_iter_max() const noexcept
 {
-  return iter_max;
+	return iter_max;
 }
 
 int physics::algorithms::solver::Solver::get_iter_refresh() const noexcept
 {
-  return iter_refresh;
+	return iter_refresh;
 }
 
-int physics::algorithms::solver::Solver::get_iter() 
+int physics::algorithms::solver::Solver::get_iter()
 {
-  return iter;
+	return iter;
 }
 
 hmc_float physics::algorithms::solver::Solver::get_prec() const noexcept
 {
-  return acc_prec;
+	return acc_prec;
 }
 
 bool physics::algorithms::solver::Cg_eo::solve() const
@@ -45,7 +45,7 @@ bool physics::algorithms::solver::Cg_eo::solve() const
 	for(iter = 0; iter < iter_max; iter ++) {
 		if(iter % iter_refresh == 0) {
 			//rn = A*inout
-		        f(x, rn, gf);
+			f(x, rn, gf);
 			//rn = source - A*inout
 			spinor_code->saxpy_eoprec_device(rn, b, one, rn);
 			//p = rn

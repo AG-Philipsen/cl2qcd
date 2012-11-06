@@ -14,24 +14,24 @@
 #include "../../logger.hpp"
 
 namespace physics {
-  namespace algorithms {
-    /**
-     * this namespace contains methods to solve linear systems like
-     * A * x = b
-     * for x
-     */
-    namespace solver{
-      
-      /**
-       * A generic Solver.
-       */
-      class Solver {
-	
-      public:
+namespace algorithms {
+/**
+ * this namespace contains methods to solve linear systems like
+ * A * x = b
+ * for x
+ */
+namespace solver {
+
+/**
+ * A generic Solver.
+ */
+class Solver {
+
+public:
 	Solver(hmc_float prec, int _max_iter, int _iter_refresh, Opencl_Module_Spinors * _spinor_code) : spinor_code(_spinor_code), acc_prec(prec), iter(0), iter_max(_max_iter), iter_refresh(_iter_refresh) {};
-	
+
 	virtual ~Solver();
-	
+
 	/**
 	 * Access to private members
 	 */
@@ -44,8 +44,8 @@ namespace physics {
 	 * Solve the system
 	 */
 	virtual bool solve() const;
-	
-      protected:
+
+protected:
 	/**
 	 * The Opencl module to carry out the spinor kernels
 	 */
@@ -55,12 +55,12 @@ namespace physics {
 	 * The acceptance precision for the solve
 	 */
 	const hmc_float acc_prec;
-	
+
 	/**
 	 * Counter for the iterations during the solver
 	 */
 	int iter;
-	
+
 	/**
 	 * Maximal number of iterations
 	 */
@@ -70,14 +70,14 @@ namespace physics {
 	 * Number of iterations where the solution guess is refreshed
 	 */
 	const int iter_refresh;
-      };
-      /**
-       * A Solver to solve system without even-odd preconditioning
-       */
-      class Solver_noneo : public Solver{
-      public:
+};
+/**
+ * A Solver to solve system without even-odd preconditioning
+ */
+class Solver_noneo : public Solver {
+public:
 	Solver_noneo(const physics::fermionmatrix::Fermionmatrix & _f, const hardware::buffers::Plain<spinor> * _x, const hardware::buffers::Plain<spinor> * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh, Opencl_Module_Spinors * _spinor_code)
-	  : Solver(prec, max_iter, iter_refresh, _spinor_code), x(_x), b(_b), gf(_gf), f(_f) {};
+		: Solver(prec, max_iter, iter_refresh, _spinor_code), x(_x), b(_b), gf(_gf), f(_f) {};
 	/**
 	 * Access to private members
 	 */
@@ -85,7 +85,7 @@ namespace physics {
 	hardware::buffers::Plain<spinor> * get_b() const noexcept;
 	hardware::buffers::SU3 * get_gf() const noexcept;
 	physics::fermionmatrix::Fermionmatrix * get_M() const noexcept;
-      protected:
+protected:
 	/**
 	 * The ingredients to the linear system to be solved
 	 */
@@ -93,14 +93,14 @@ namespace physics {
 	const hardware::buffers::Plain<spinor> * b;
 	const hardware::buffers::SU3 * gf;
 	const physics::fermionmatrix::Fermionmatrix & f;
-      };
-      /**
-       * A Solver to solve system using even-odd preconditioning
-       */
-      class Solver_eo : public Solver{
-      public:
+};
+/**
+ * A Solver to solve system using even-odd preconditioning
+ */
+class Solver_eo : public Solver {
+public:
 	Solver_eo(const physics::fermionmatrix::Fermionmatrix_eo & _f, const hardware::buffers::Spinor * _x, const hardware::buffers::Spinor * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh, Opencl_Module_Spinors * _spinor_code, bool merge)
-	  : Solver(prec, max_iter, iter_refresh, _spinor_code), x(_x), b(_b), gf(_gf), f(_f), merge_kernels(merge){};
+		: Solver(prec, max_iter, iter_refresh, _spinor_code), x(_x), b(_b), gf(_gf), f(_f), merge_kernels(merge) {};
 	/**
 	 * Access to private members
 	 */
@@ -108,7 +108,7 @@ namespace physics {
 	hardware::buffers::Spinor * get_b() const noexcept;
 	hardware::buffers::SU3 * get_gf() const noexcept;
 	physics::fermionmatrix::Fermionmatrix * get_M() const noexcept;
-      protected:
+protected:
 	/**
 	 * The ingredients to the linear system to be solved
 	 */
@@ -121,34 +121,34 @@ namespace physics {
 	 * It can be advantageous to merge kernels
 	 */
 	bool merge_kernels;
-      };
-      /**
-       * The Conjugate Gradient (CG) solver
-       */
-      class Cg : public Solver_noneo{
+};
+/**
+ * The Conjugate Gradient (CG) solver
+ */
+class Cg : public Solver_noneo {
 	Cg(const physics::fermionmatrix::Fermionmatrix & _f, const hardware::buffers::Plain<spinor> * _x, const hardware::buffers::Plain<spinor> * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh, Opencl_Module_Spinors * _spinor_code)
-	  : Solver_noneo(_f, _x, _b, _gf, prec, max_iter, iter_refresh, _spinor_code) {};
-      };
-      class Cg_eo : public Solver_eo{
-      public:
-	Cg_eo(const physics::fermionmatrix::Fermionmatrix_eo & _f, const hardware::buffers::Spinor * _x, const hardware::buffers::Spinor * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh, Opencl_Module_Spinors * _spinor_code, bool merge, 
-		      const hardware::buffers::Spinor * _rn,
-		      const hardware::buffers::Spinor * _p,
-		      const hardware::buffers::Spinor * _v,
-		      const hardware::buffers::Plain<hmc_complex> * _rho,
-		      const hardware::buffers::Plain<hmc_complex> * _rho_next ,
-		      const hardware::buffers::Plain<hmc_complex> * _alpha,
-		      const hardware::buffers::Plain<hmc_complex> * _beta,
-		      const hardware::buffers::Plain<hmc_complex> * _omega,
-		      const hardware::buffers::Plain<hmc_complex> * _one,
-		      const hardware::buffers::Plain<hmc_complex> * _minusone,
-		      const hardware::buffers::Plain<hmc_complex> * _tmp2,
-		      const hardware::buffers::Plain<hmc_complex> * _tmp1
-	      )
-	  : Solver_eo(_f, _x, _b, _gf, prec, max_iter, iter_refresh, _spinor_code, merge), 
-	    rn(_rn), p(_p), v(_v), rho(_rho), rho_next(_rho_next), alpha(_alpha), beta(_beta), omega(_omega), one(_one), minusone(_minusone), tmp2(_tmp2), tmp1(_tmp1) {};
+		: Solver_noneo(_f, _x, _b, _gf, prec, max_iter, iter_refresh, _spinor_code) {};
+};
+class Cg_eo : public Solver_eo {
+public:
+	Cg_eo(const physics::fermionmatrix::Fermionmatrix_eo & _f, const hardware::buffers::Spinor * _x, const hardware::buffers::Spinor * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh, Opencl_Module_Spinors * _spinor_code, bool merge,
+	      const hardware::buffers::Spinor * _rn,
+	      const hardware::buffers::Spinor * _p,
+	      const hardware::buffers::Spinor * _v,
+	      const hardware::buffers::Plain<hmc_complex> * _rho,
+	      const hardware::buffers::Plain<hmc_complex> * _rho_next ,
+	      const hardware::buffers::Plain<hmc_complex> * _alpha,
+	      const hardware::buffers::Plain<hmc_complex> * _beta,
+	      const hardware::buffers::Plain<hmc_complex> * _omega,
+	      const hardware::buffers::Plain<hmc_complex> * _one,
+	      const hardware::buffers::Plain<hmc_complex> * _minusone,
+	      const hardware::buffers::Plain<hmc_complex> * _tmp2,
+	      const hardware::buffers::Plain<hmc_complex> * _tmp1
+	     )
+		: Solver_eo(_f, _x, _b, _gf, prec, max_iter, iter_refresh, _spinor_code, merge),
+		  rn(_rn), p(_p), v(_v), rho(_rho), rho_next(_rho_next), alpha(_alpha), beta(_beta), omega(_omega), one(_one), minusone(_minusone), tmp2(_tmp2), tmp1(_tmp1) {};
 	bool solve() const override;
-      private:
+private:
 	const hardware::buffers::Spinor * rn;
 	const hardware::buffers::Spinor * p;
 	const hardware::buffers::Spinor * v;
@@ -161,20 +161,20 @@ namespace physics {
 	const hardware::buffers::Plain<hmc_complex> * minusone;
 	const hardware::buffers::Plain<hmc_complex> * tmp2;
 	const hardware::buffers::Plain<hmc_complex> * tmp1;
-      };
-      /**
-       * The Biconjugate Gradient Stabilized (BiCGStab) solver
-       */
-      class Bicgstab : public Solver_noneo{
+};
+/**
+ * The Biconjugate Gradient Stabilized (BiCGStab) solver
+ */
+class Bicgstab : public Solver_noneo {
 	Bicgstab(const physics::fermionmatrix::Fermionmatrix & _f, const hardware::buffers::Plain<spinor> * _x, const hardware::buffers::Plain<spinor> * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh, Opencl_Module_Spinors * _spinor_code)
-	  : Solver_noneo(_f, _x, _b, _gf, prec, max_iter, iter_refresh, _spinor_code) {};
-      public:
-      };
-      class Bicgstab_eo : public Solver_eo{
+		: Solver_noneo(_f, _x, _b, _gf, prec, max_iter, iter_refresh, _spinor_code) {};
+public:
+};
+class Bicgstab_eo : public Solver_eo {
 	Bicgstab_eo(const physics::fermionmatrix::Fermionmatrix_eo & _f, const hardware::buffers::Spinor * _x, const hardware::buffers::Spinor * _b, const hardware::buffers::SU3 * _gf, hmc_float prec, int max_iter, int iter_refresh, Opencl_Module_Spinors * _spinor_code, bool merge)
-	  : Solver_eo(_f, _x, _b, _gf, prec, max_iter, iter_refresh, _spinor_code, merge) {};
-      };
-    }
-  }
-}  
+		: Solver_eo(_f, _x, _b, _gf, prec, max_iter, iter_refresh, _spinor_code, merge) {};
+};
+}
+}
+}
 #endif /* _PHYSICS_ALGORITHMS_ */

@@ -6,12 +6,12 @@
 
 bool physics::fermionmatrix::Fermionmatrix_basic::get_is_hermitian() const noexcept
 {
-  return is_hermitian;
+	return is_hermitian;
 }
 
 void physics::fermionmatrix::M::operator()(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf) const
 {
-  	that->M(in, out, gf, kappa, mubar);
+	that->M(in, out, gf, kappa, mubar);
 }
 cl_ulong physics::fermionmatrix::M::get_Flops() const
 {
@@ -155,7 +155,7 @@ void physics::fermionmatrix::Aee::operator()(const hardware::buffers::Spinor * i
 }
 cl_ulong physics::fermionmatrix::Aee::get_Flops() const
 {
-  	auto spinor_code = that->get_device()->get_spinor_code();
+	auto spinor_code = that->get_device()->get_spinor_code();
 
 	cl_ulong res;
 	switch(that->get_parameters().get_fermact()) {
