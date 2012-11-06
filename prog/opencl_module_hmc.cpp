@@ -161,7 +161,7 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp(usetimer * solvertimer, const h
 		fermion_code->Qplus_eo (&clmem_phi_inv_eo, &sf_eo_tmp , gaugefield);
 
 		//Now one needs ( Qplus_eo )^-1 (heavy_mass) using sf_eo_tmp as source to get phi_mp_eo
-		//use always bicgstab here
+		///@todo Do not always use bicgstab here
 		logger.debug() << "\t\t\tstart solver";
 
 		/** @todo at the moment, we can only put in a cold spinorfield
@@ -333,36 +333,6 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 			fermion_code->M_tm_inverse_sitediagonal_minus_device(fermion_code->get_tmp_eo_1(), fermion_code->get_tmp_eo_2(), mubar);
 			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		}
-
-		/**
-		 * If needed, this gives additional debug informations
-		 */
-// hard debugging ist not SOA safe in the shown vesion!
-//		bool debug_hard = false;
-//		cl_mem x_tmp, y_tmp;
-//		cl_mem x_eo_tmp, x_eo_tmp2, y_eo_tmp, y_eo_tmp2;
-
-// will break on SOA devices
-//		if(logger.beDebug() && debug_hard) {
-//			int spinorfield_size = sizeof(spinor) * get_spinorfieldsize(get_parameters());
-//			x_tmp = create_rw_buffer(spinorfield_size);
-//			const hardware::buffers::Plain<spinor>
-//			int eo_spinorfield_size = sizeof(spinor) * get_eoprec_spinorfieldsize(get_parameters());
-//			x_eo_tmp = create_rw_buffer(eo_spinorfield_size);
-//			x_eo_tmp2 = create_rw_buffer(eo_spinorfield_size);
-//
-//			this->convert_from_eoprec_device(get_inout_eo(), get_tmp_eo_1(), x_tmp);
-//			print_info_inv_field(get_inout_eo(), true, "\t\t\t\tX_even ");
-//			print_info_inv_field(get_tmp_eo_1(), true, "\t\t\t\tX_odd ");
-//			print_info_inv_field(x_tmp, false, "\t\t\t\tX = (X_even, X_odd) ");
-//
-//			//save x_even and x_odd temporarily
-//			copy_buffer_on_device(get_inout_eo(), x_eo_tmp, eo_spinorfield_size);
-//			copy_buffer_on_device(get_tmp_eo_1(), x_eo_tmp2, eo_spinorfield_size);
-//			print_info_inv_field(x_eo_tmp, true, "\t\t\tx_even:\t");
-//			print_info_inv_field(x_eo_tmp2, true, "\t\t\tx_odd:\t");
-//		}
-
 		//logger.debug() << "\t\tcalc eo fermion_force F(Y_even, X_odd)...";
 		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, clmem_tmp_eo_1)
 		fermion_force_eo_device(&clmem_phi_inv_eo,  fermion_code->get_tmp_eo_1(), EVEN, kappa);
@@ -382,188 +352,6 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 		//logger.debug() << "\t\tcalc eoprec fermion_force F(Y_odd, X_even)...";
 		//Calc F(Y_odd, X_even) = F(clmem_tmp_eo_1, clmem_inout_eo)
 		fermion_force_eo_device(fermion_code->get_tmp_eo_1(), fermion_code->get_inout_eo(), ODD, kappa);
-
-// will break on SOA devices
-//		if(logger.beDebug() && debug_hard) {
-//			int spinorfield_size = sizeof(spinor) * get_spinorfieldsize(get_parameters());
-//			y_tmp = create_rw_buffer(spinorfield_size);
-//			int eo_spinorfield_size = sizeof(spinor) * get_eoprec_spinorfieldsize(get_parameters());
-//			y_eo_tmp = create_rw_buffer(eo_spinorfield_size);
-//			y_eo_tmp2 = create_rw_buffer(eo_spinorfield_size);
-//			//tmp field for differences
-//			cl_mem sf_diff = create_rw_buffer(eo_spinorfield_size);
-//
-//			this->convert_from_eoprec_device(&clmem_phi_inv_eo, get_tmp_eo_1(), y_tmp);
-//			print_info_inv_field(&clmem_phi_inv_eo, true, "\t\t\t\tY_even ");
-//			print_info_inv_field(get_tmp_eo_1(), true, "\t\t\t\tY_odd ");
-//			print_info_inv_field(y_tmp, false, "\t\t\t\tY = (Y_even, Yodd) ");
-//
-//			//save y_even and y_odd temporarily
-//			copy_buffer_on_device(&clmem_phi_inv_eo, y_eo_tmp, eo_spinorfield_size);
-//			copy_buffer_on_device(get_tmp_eo_1(), y_eo_tmp2, eo_spinorfield_size);
-//			print_info_inv_field(y_eo_tmp, true, "\t\t\ty_even:\t");
-//			print_info_inv_field(y_eo_tmp2, true, "\t\t\ty_odd:\t");
-//
-//			hmc_float compare_to_non_eo_diff;
-//			hmc_complex compare_to_non_eo_scal;
-//			hmc_complex scalprod;
-//			cl_mem scal_tmp = create_rw_buffer(sizeof(hmc_complex));
-//
-//			logger.debug() << "\t\t\tperform some tests on eo force ingredients:";
-//			//calculate scalar product
-//			this->set_complex_to_scalar_product_eoprec_device(x_eo_tmp, x_eo_tmp2, scal_tmp);
-//			get_buffer_from_device(scal_tmp, &scalprod, sizeof(hmc_complex));
-//			logger.debug() << std::scientific << "\t\t\t(x_even, x_odd):\t" << scalprod.re << "\t" << scalprod.im;
-//			//calculate difference
-//			this->saxpy_eoprec_device(x_eo_tmp2, x_eo_tmp, get_clmem_one(), sf_diff);
-//			print_info_inv_field(sf_diff, true, "\t\t\t(x_even - x_odd):\t");
-//
-//			//calculate scalar product
-//			this->set_complex_to_scalar_product_eoprec_device(y_eo_tmp, y_eo_tmp2, scal_tmp);
-//			get_buffer_from_device(scal_tmp, &scalprod, sizeof(hmc_complex));
-//			logger.debug() << std::scientific << "\t\t\t(y_even, y_odd):\t" << scalprod.re << "\t" << scalprod.im;
-//			//calculate difference
-//			this->saxpy_eoprec_device(y_eo_tmp2, y_eo_tmp, get_clmem_one(), sf_diff);
-//			print_info_inv_field(sf_diff, true, "\t\t\t(y_even - y_odd):\t");
-//
-//			//calculate scalar product
-//			this->set_complex_to_scalar_product_eoprec_device(x_eo_tmp, y_eo_tmp2, scal_tmp);
-//			get_buffer_from_device(scal_tmp, &scalprod, sizeof(hmc_complex));
-//			logger.debug() << std::scientific << "\t\t\t(x_even, y_odd):\t" << scalprod.re << "\t" << scalprod.im;
-//			//calculate difference
-//			this->saxpy_eoprec_device(y_eo_tmp2, x_eo_tmp, get_clmem_one(), sf_diff);
-//			print_info_inv_field(sf_diff, true, "\t\t\t(x_even - y_odd):\t");
-//
-//			//calculate scalar product
-//			this->set_complex_to_scalar_product_eoprec_device(y_eo_tmp, x_eo_tmp2, scal_tmp);
-//			get_buffer_from_device(scal_tmp, &scalprod, sizeof(hmc_complex));
-//			logger.debug() << std::scientific << "\t\t\t(y_even, x_odd):\t" << scalprod.re << "\t" << scalprod.im;
-//			//calculate difference
-//			this->saxpy_eoprec_device(x_eo_tmp2, y_eo_tmp, get_clmem_one(), sf_diff);
-//			print_info_inv_field(sf_diff, true, "\t\t\t(y_even - x_odd):\t");
-//
-//			//calculate scalar product
-//			this->set_complex_to_scalar_product_eoprec_device(x_eo_tmp, y_eo_tmp, scal_tmp);
-//			get_buffer_from_device(scal_tmp, &scalprod, sizeof(hmc_complex));
-//			logger.debug() << std::scientific << "\t\t\t(x_even, y_even):\t" << scalprod.re << "\t" << scalprod.im;
-//
-//			compare_to_non_eo_scal.re = scalprod.re;
-//			compare_to_non_eo_scal.im = scalprod.im;
-//
-//			//calculate difference
-//			this->saxpy_eoprec_device(x_eo_tmp, y_eo_tmp, get_clmem_one(), sf_diff);
-//			compare_to_non_eo_diff = print_info_inv_field(sf_diff, true, "\t\t\t(y_even - x_even):\t");
-//
-//			//calculate scalar product
-//			this->set_complex_to_scalar_product_eoprec_device(x_eo_tmp2, y_eo_tmp2, scal_tmp);
-//			get_buffer_from_device(scal_tmp, &scalprod, sizeof(hmc_complex));
-//			logger.debug() << std::scientific << "\t\t\t(x_even, y_odd):\t" << scalprod.re << "\t" << scalprod.im;
-//			//calculate difference
-//			this->saxpy_eoprec_device(x_eo_tmp2, y_eo_tmp2, get_clmem_one(), sf_diff);
-//			compare_to_non_eo_diff += print_info_inv_field(sf_diff, true, "\t\t\t(x_odd - y_odd):\t");
-//
-//			compare_to_non_eo_scal.re += scalprod.re;
-//			compare_to_non_eo_scal.im += scalprod.im;
-//
-//			logger.debug() << "\t\t\tnon-eo result should be:";
-//			logger.debug() << std::scientific <<  "\t\t\t(x,y):\t" << compare_to_non_eo_scal.re << " " << compare_to_non_eo_scal.im;
-//			logger.debug() << std::scientific << "\t\t\t(x-y):\t" << compare_to_non_eo_diff ;
-//
-//			int clerr = clReleaseMemObject(scal_tmp);
-//			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-//			clerr = clReleaseMemObject(sf_diff);
-//			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-//
-//		}
-
-//		if(logger.beDebug() && debug_hard) {
-//			logger.debug() << "\t\t\tperform checks on eo force:";
-//			logger.debug() << "\t\t\tF(x_e, x_o):";
-//			this->set_zero_clmem_force_device();
-//			fermion_force_eo_device(x_eo_tmp, x_eo_tmp2, EVEN, kappa);
-//			logger.debug() << "\t\t\tF(x_e, y_o):";
-//			this->set_zero_clmem_force_device();
-//			fermion_force_eo_device(x_eo_tmp, y_eo_tmp2, EVEN, kappa);
-//			logger.debug() << "\t\t\tF(x_e, y_e):";
-//			this->set_zero_clmem_force_device();
-//			fermion_force_eo_device(x_eo_tmp, y_eo_tmp, ODD, kappa);
-//			logger.debug() << "\t\t\tF(y_e, y_o):";
-//			this->set_zero_clmem_force_device();
-//			fermion_force_eo_device(y_eo_tmp, y_eo_tmp2, EVEN, kappa);
-//			logger.debug() << "\t\t\tF(y_e, x_o):";
-//			this->set_zero_clmem_force_device();
-//			fermion_force_eo_device(y_eo_tmp, x_eo_tmp2, EVEN, kappa);
-//			logger.debug() << "\t\t\tF(y_e, x_e):";
-//			this->set_zero_clmem_force_device();
-//			fermion_force_eo_device(y_eo_tmp, x_eo_tmp, ODD, kappa);
-//			logger.debug() << "\t\t\tF(x_o, x_e):";
-//			this->set_zero_clmem_force_device();
-//			fermion_force_eo_device(x_eo_tmp2, x_eo_tmp, ODD, kappa);
-//			logger.debug() << "\t\t\tF(x_o, y_e):";
-//			this->set_zero_clmem_force_device();
-//			fermion_force_eo_device(x_eo_tmp2, y_eo_tmp, ODD, kappa);
-//			logger.debug() << "\t\t\tF(x_o, y_o):";
-//			this->set_zero_clmem_force_device();
-//			fermion_force_eo_device(x_eo_tmp2, y_eo_tmp2, EVEN, kappa);
-//			logger.debug() << "\t\t\tF(y_o, x_e):";
-//			this->set_zero_clmem_force_device();
-//			fermion_force_eo_device(y_eo_tmp2, x_eo_tmp, ODD, kappa);
-//			logger.debug() << "\t\t\tF(y_o, x_o):";
-//			this->set_zero_clmem_force_device();
-//			fermion_force_eo_device(y_eo_tmp2, x_eo_tmp2, EVEN, kappa);
-//			logger.debug() << "\t\t\tF(y_o, y_e):";
-//			this->set_zero_clmem_force_device();
-//			fermion_force_eo_device(y_eo_tmp2, y_eo_tmp, ODD, kappa);
-//			this->set_zero_clmem_force_device();
-//		}
-
-//		if(logger.beDebug() && debug_hard) {
-//			//free fields from hard debugging
-//			int clerr = clReleaseMemObject(y_eo_tmp);
-//			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-//			clerr = clReleaseMemObject(y_eo_tmp2);
-//			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-//			clerr = clReleaseMemObject(x_eo_tmp);
-//			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-//			//clerr = clReleaseMemObject(x_eo_tmp2);
-//			if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clMemObject", __FILE__, __LINE__);
-//		}
-
-//		if(logger.beDebug() && debug_hard) {
-//			int clerr = CL_SUCCESS;
-//			hmc_complex scalprod;
-//			logger.debug() << "\t\t\tperform some tests on non-eo force ingredients:";
-//			print_info_inv_field(x_tmp, false, "\t\t\tx:\t");
-//			print_info_inv_field(y_tmp, false, "\t\t\ty:\t");
-//
-//			//calculate scalar product
-//			cl_mem scal_tmp = create_rw_buffer(sizeof(hmc_complex));
-//			this->set_complex_to_scalar_product_device(x_tmp, y_tmp, scal_tmp);
-//			get_buffer_from_device(scal_tmp, &scalprod, sizeof(hmc_complex));
-//			logger.debug() << std::scientific << "\t\t\t(x,y):\t" << scalprod.re << "\t" << scalprod.im;
-//			clerr = clReleaseMemObject(scal_tmp);
-//
-//			//calculate difference
-//			this->saxpy_device(y_tmp, x_tmp, get_clmem_one(), get_inout());
-//			print_info_inv_field(get_inout(), false, "\t\t\t(y-x):\t");
-//
-//			//calculate non-eo force
-//			this->set_zero_clmem_force_device();
-//			copy_buffer_on_device(x_tmp, &clmem_phi_inv, meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor));
-//			copy_buffer_on_device(y_tmp, get_inout(), meta::get_spinorfieldsize(get_parameters()) * sizeof(spinor));
-//
-//			print_info_inv_field(&clmem_phi_inv, false, "\t\t\tx before:\t");
-//			print_info_inv_field(get_inout(), false, "\t\t\ty before:\t");
-//
-//			fermion_force_device(&clmem_phi_inv, get_inout(), kappa);
-//
-//			print_info_inv_field(&clmem_phi_inv, false, "\t\t\tx after:\t");
-//			print_info_inv_field(get_inout(), false, "\t\t\ty after:\t");
-//
-//			//free fields
-//			clerr = clReleaseMemObject(x_tmp);
-//			clerr = clReleaseMemObject(y_tmp);
-//		}
 	} else {
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
@@ -732,8 +520,8 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer, cons
 			 * out of
 			 * Qplus_eo phi = psi
 			 */
-			//logger.debug() << "\t\tcalc Y_even...";
-			//logger.debug() << "\t\t\tstart solver";
+			logger.debug() << "\t\tcalc Y_even...";
+			logger.debug() << "\t\t\tstart solver";
 
 			/** @todo at the moment, we can only put in a cold spinorfield
 			 * or a point-source spinorfield as trial-solution
@@ -763,7 +551,7 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer, cons
 			 * Qminus_eo clmem_inout_eo = clmem_phi_inv_eo
 			 */
 
-			//logger.debug() << "\t\tcalc X_even...";
+			logger.debug() << "\t\tcalc X_even...";
 			//copy former solution to clmem_source
 			hardware::buffers::copyData(fermion_code->get_source_even(), fermion_code->get_inout_eo());
 
