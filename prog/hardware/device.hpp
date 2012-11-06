@@ -199,7 +199,7 @@ public:
 	/**
 	 * Get access to the spinor kernels on this device.
 	 */
-	Opencl_Module_Spinors * get_spinor_code();
+	hardware::code::Spinors * get_spinor_code();
 
 	/**
 	 * Get access to the fermion kernels on this device.
@@ -325,7 +325,7 @@ private:
 	 * Pointer to the spinor code.
 	 * Initialized on demand.
 	 */
-	Opencl_Module_Spinors * spinor_code;
+	hardware::code::Spinors * spinor_code;
 
 	/**
 	 * Pointer to the fermion code.

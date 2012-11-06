@@ -414,10 +414,10 @@ hardware::code::PRNG * hardware::Device::get_prng_code()
 	return prng_code;
 }
 
-Opencl_Module_Spinors * hardware::Device::get_spinor_code()
+hardware::code::Spinors * hardware::Device::get_spinor_code()
 {
 	if(!spinor_code) {
-		spinor_code = new Opencl_Module_Spinors(params, this);
+		spinor_code = new hardware::code::Spinors(params, this);
 	}
 	return spinor_code;
 }

@@ -23,7 +23,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 }
 
 
-void Opencl_Module_Spinors::fill_kernels()
+void hardware::code::Spinors::fill_kernels()
 {
 	basic_fermion_code = get_device()->get_gaugefield_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
 	if(get_parameters().get_use_eo()) {
@@ -62,7 +62,7 @@ void Opencl_Module_Spinors::fill_kernels()
 	}
 }
 
-void Opencl_Module_Spinors::clear_kernels()
+void hardware::code::Spinors::clear_kernels()
 {
 	cl_int clerr = CL_SUCCESS;
 
@@ -109,7 +109,7 @@ void Opencl_Module_Spinors::clear_kernels()
 }
 
 
-void Opencl_Module_Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
+void hardware::code::Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 
@@ -127,7 +127,7 @@ void Opencl_Module_Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls, 
 	}
 }
 
-void Opencl_Module_Spinors::convert_from_eoprec_device(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::Plain<spinor> * out)
+void hardware::code::Spinors::convert_from_eoprec_device(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::Plain<spinor> * out)
 {
 	using namespace hardware::buffers;
 
@@ -171,7 +171,7 @@ void Opencl_Module_Spinors::convert_from_eoprec_device(const hardware::buffers::
 	}
 }
 
-void Opencl_Module_Spinors::convert_to_eoprec_device(const hardware::buffers::Spinor * out1, const hardware::buffers::Spinor * out2, const hardware::buffers::Plain<spinor> * in)
+void hardware::code::Spinors::convert_to_eoprec_device(const hardware::buffers::Spinor * out1, const hardware::buffers::Spinor * out2, const hardware::buffers::Plain<spinor> * in)
 {
 	using namespace hardware::buffers;
 
@@ -214,7 +214,7 @@ void Opencl_Module_Spinors::convert_to_eoprec_device(const hardware::buffers::Sp
 }
 
 //BLAS-functions
-void Opencl_Module_Spinors::saxpy_device(const hardware::buffers::Plain<spinor> * x, const hardware::buffers::Plain<spinor> * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<spinor> * out)
+void hardware::code::Spinors::saxpy_device(const hardware::buffers::Plain<spinor> * x, const hardware::buffers::Plain<spinor> * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<spinor> * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -236,7 +236,7 @@ void Opencl_Module_Spinors::saxpy_device(const hardware::buffers::Plain<spinor> 
 	get_device()->enqueue_kernel(saxpy , gs2, ls2);
 }
 
-void Opencl_Module_Spinors::sax_device(const hardware::buffers::Plain<spinor> * x, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<spinor> * out)
+void hardware::code::Spinors::sax_device(const hardware::buffers::Plain<spinor> * x, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<spinor> * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -255,7 +255,7 @@ void Opencl_Module_Spinors::sax_device(const hardware::buffers::Plain<spinor> * 
 	get_device()->enqueue_kernel(sax , gs2, ls2);
 }
 
-void Opencl_Module_Spinors::set_spinorfield_cold_device(const hardware::buffers::Plain<spinor> * inout)
+void hardware::code::Spinors::set_spinorfield_cold_device(const hardware::buffers::Plain<spinor> * inout)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -268,7 +268,7 @@ void Opencl_Module_Spinors::set_spinorfield_cold_device(const hardware::buffers:
 	get_device()->enqueue_kernel(set_spinorfield_cold , gs2, ls2);
 }
 
-void Opencl_Module_Spinors::set_eoprec_spinorfield_cold_device(const hardware::buffers::Spinor * inout)
+void hardware::code::Spinors::set_eoprec_spinorfield_cold_device(const hardware::buffers::Spinor * inout)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -281,7 +281,7 @@ void Opencl_Module_Spinors::set_eoprec_spinorfield_cold_device(const hardware::b
 	get_device()->enqueue_kernel(set_eoprec_spinorfield_cold , gs2, ls2);
 }
 
-void Opencl_Module_Spinors::saxpy_eoprec_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Spinor * out)
+void hardware::code::Spinors::saxpy_eoprec_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Spinor * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -303,7 +303,7 @@ void Opencl_Module_Spinors::saxpy_eoprec_device(const hardware::buffers::Spinor 
 	get_device()->enqueue_kernel( saxpy_eoprec, gs2, ls2);
 }
 
-void Opencl_Module_Spinors::sax_eoprec_device(const hardware::buffers::Spinor * x, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Spinor * out)
+void hardware::code::Spinors::sax_eoprec_device(const hardware::buffers::Spinor * x, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Spinor * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -322,7 +322,7 @@ void Opencl_Module_Spinors::sax_eoprec_device(const hardware::buffers::Spinor * 
 	get_device()->enqueue_kernel( sax_eoprec, gs2, ls2);
 }
 
-void Opencl_Module_Spinors::saxsbypz_device(const hardware::buffers::Plain<spinor> * x, const hardware::buffers::Plain<spinor> * y, const hardware::buffers::Plain<spinor> * z, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<hmc_complex> * beta, const hardware::buffers::Plain<spinor> * out)
+void hardware::code::Spinors::saxsbypz_device(const hardware::buffers::Plain<spinor> * x, const hardware::buffers::Plain<spinor> * y, const hardware::buffers::Plain<spinor> * z, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<hmc_complex> * beta, const hardware::buffers::Plain<spinor> * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -350,7 +350,7 @@ void Opencl_Module_Spinors::saxsbypz_device(const hardware::buffers::Plain<spino
 	get_device()->enqueue_kernel(saxsbypz, gs2, ls2);
 }
 
-void Opencl_Module_Spinors::saxsbypz_eoprec_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hardware::buffers::Spinor * z, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<hmc_complex> * beta, const hardware::buffers::Spinor * out)
+void hardware::code::Spinors::saxsbypz_eoprec_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hardware::buffers::Spinor * z, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Plain<hmc_complex> * beta, const hardware::buffers::Spinor * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -378,7 +378,7 @@ void Opencl_Module_Spinors::saxsbypz_eoprec_device(const hardware::buffers::Spin
 	get_device()->enqueue_kernel(saxsbypz_eoprec, gs2, ls2);
 }
 
-void Opencl_Module_Spinors::set_complex_to_scalar_product_device(const hardware::buffers::Plain<spinor> * a, const hardware::buffers::Plain<spinor> * b, const hardware::buffers::Plain<hmc_complex> * out)
+void hardware::code::Spinors::set_complex_to_scalar_product_device(const hardware::buffers::Plain<spinor> * a, const hardware::buffers::Plain<spinor> * b, const hardware::buffers::Plain<hmc_complex> * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -412,7 +412,7 @@ void Opencl_Module_Spinors::set_complex_to_scalar_product_device(const hardware:
 	get_device()->enqueue_kernel( scalar_product_reduction, gs2, ls2);
 }
 
-void Opencl_Module_Spinors::set_complex_to_scalar_product_eoprec_device(const hardware::buffers::Spinor * a, const hardware::buffers::Spinor * b, const hardware::buffers::Plain<hmc_complex> * out)
+void hardware::code::Spinors::set_complex_to_scalar_product_eoprec_device(const hardware::buffers::Spinor * a, const hardware::buffers::Spinor * b, const hardware::buffers::Plain<hmc_complex> * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -447,7 +447,7 @@ void Opencl_Module_Spinors::set_complex_to_scalar_product_eoprec_device(const ha
 }
 
 
-void Opencl_Module_Spinors::set_complex_to_ratio_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out)
+void hardware::code::Spinors::set_complex_to_ratio_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -466,7 +466,7 @@ void Opencl_Module_Spinors::set_complex_to_ratio_device(const hardware::buffers:
 	get_device()->enqueue_kernel(ratio, gs2, ls2);
 }
 
-void Opencl_Module_Spinors::set_complex_to_product_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out)
+void hardware::code::Spinors::set_complex_to_product_device(const hardware::buffers::Plain<hmc_complex> * a, const hardware::buffers::Plain<hmc_complex> * b, const hardware::buffers::Plain<hmc_complex> * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -486,7 +486,7 @@ void Opencl_Module_Spinors::set_complex_to_product_device(const hardware::buffer
 }
 
 
-void Opencl_Module_Spinors::global_squarenorm_reduction(const hardware::buffers::Plain<hmc_float> * out, const hardware::buffers::Plain<hmc_float> * tmp_buf)
+void hardware::code::Spinors::global_squarenorm_reduction(const hardware::buffers::Plain<hmc_float> * out, const hardware::buffers::Plain<hmc_float> * tmp_buf)
 {
 	cl_int clerr = clSetKernelArg(_global_squarenorm_reduction, 0, sizeof(cl_mem), out->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
@@ -501,7 +501,7 @@ void Opencl_Module_Spinors::global_squarenorm_reduction(const hardware::buffers:
 	get_device()->enqueue_kernel(_global_squarenorm_reduction, 1, 1);
 }
 
-void Opencl_Module_Spinors::set_float_to_global_squarenorm_device(const hardware::buffers::Plain<spinor> * a, const hardware::buffers::Plain<hmc_float> * out)
+void hardware::code::Spinors::set_float_to_global_squarenorm_device(const hardware::buffers::Plain<spinor> * a, const hardware::buffers::Plain<hmc_float> * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -526,7 +526,7 @@ void Opencl_Module_Spinors::set_float_to_global_squarenorm_device(const hardware
 	global_squarenorm_reduction(out, &tmp);
 }
 
-void Opencl_Module_Spinors::set_float_to_global_squarenorm_eoprec_device(const hardware::buffers::Spinor * a, const hardware::buffers::Plain<hmc_float> * out)
+void hardware::code::Spinors::set_float_to_global_squarenorm_eoprec_device(const hardware::buffers::Spinor * a, const hardware::buffers::Plain<hmc_float> * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -550,7 +550,7 @@ void Opencl_Module_Spinors::set_float_to_global_squarenorm_eoprec_device(const h
 	global_squarenorm_reduction(out, &tmp);
 }
 
-void Opencl_Module_Spinors::set_zero_spinorfield_device(const hardware::buffers::Plain<spinor> * x)
+void hardware::code::Spinors::set_zero_spinorfield_device(const hardware::buffers::Plain<spinor> * x)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -563,7 +563,7 @@ void Opencl_Module_Spinors::set_zero_spinorfield_device(const hardware::buffers:
 	get_device()->enqueue_kernel(set_zero_spinorfield , gs2, ls2);
 }
 
-void Opencl_Module_Spinors::set_zero_spinorfield_eoprec_device(const hardware::buffers::Spinor * x)
+void hardware::code::Spinors::set_zero_spinorfield_eoprec_device(const hardware::buffers::Spinor * x)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -576,7 +576,7 @@ void Opencl_Module_Spinors::set_zero_spinorfield_eoprec_device(const hardware::b
 	get_device()->enqueue_kernel( set_zero_spinorfield_eoprec, gs2, ls2);
 }
 
-void Opencl_Module_Spinors::convertSpinorfieldToSOA_eo_device(const hardware::buffers::Spinor * out, const hardware::buffers::Plain<spinor> * in)
+void hardware::code::Spinors::convertSpinorfieldToSOA_eo_device(const hardware::buffers::Spinor * out, const hardware::buffers::Plain<spinor> * in)
 {
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -592,7 +592,7 @@ void Opencl_Module_Spinors::convertSpinorfieldToSOA_eo_device(const hardware::bu
 	get_device()->enqueue_kernel(convertSpinorfieldToSOA_eo, gs2, ls2);
 }
 
-void Opencl_Module_Spinors::convertSpinorfieldFromSOA_eo_device(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Spinor * in)
+void hardware::code::Spinors::convertSpinorfieldFromSOA_eo_device(const hardware::buffers::Plain<spinor> * out, const hardware::buffers::Spinor * in)
 {
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -609,7 +609,7 @@ void Opencl_Module_Spinors::convertSpinorfieldFromSOA_eo_device(const hardware::
 }
 
 // merged kernel calls
-void Opencl_Module_Spinors::saxpy_AND_squarenorm_eo_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Spinor * out, const hardware::buffers::Plain<hmc_complex> * sq_out)
+void hardware::code::Spinors::saxpy_AND_squarenorm_eo_device(const hardware::buffers::Spinor * x, const hardware::buffers::Spinor * y, const hardware::buffers::Plain<hmc_complex> * alpha, const hardware::buffers::Spinor * out, const hardware::buffers::Plain<hmc_complex> * sq_out)
 {
 	hmc_complex zero = {0.f, 0.f};
 	sq_out->load(&zero);
@@ -656,7 +656,7 @@ void Opencl_Module_Spinors::saxpy_AND_squarenorm_eo_device(const hardware::buffe
 	get_device()->enqueue_kernel(_global_squarenorm_reduction, 1, 1);
 }
 
-size_t Opencl_Module_Spinors::get_read_write_size(const std::string& in) const
+size_t hardware::code::Spinors::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
 	size_t D = meta::get_float_size(get_parameters());
@@ -776,7 +776,7 @@ size_t Opencl_Module_Spinors::get_read_write_size(const std::string& in) const
 	return 0;
 }
 
-uint64_t Opencl_Module_Spinors::get_flop_size(const std::string& in) const
+uint64_t hardware::code::Spinors::get_flop_size(const std::string& in) const
 {
 	uint64_t S = meta::get_spinorfieldsize(get_parameters());
 	uint64_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
@@ -868,7 +868,7 @@ uint64_t Opencl_Module_Spinors::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-void Opencl_Module_Spinors::print_profiling(const std::string& filename, int number) const
+void hardware::code::Spinors::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, set_spinorfield_cold);
@@ -896,7 +896,7 @@ void Opencl_Module_Spinors::print_profiling(const std::string& filename, int num
 	Opencl_Module::print_profiling(filename, saxpy_AND_squarenorm_eo);
 }
 
-void Opencl_Module_Spinors::copy_to_eoprec_spinorfield_buffer(const hardware::buffers::Spinor * buf, const spinor * const source)
+void hardware::code::Spinors::copy_to_eoprec_spinorfield_buffer(const hardware::buffers::Spinor * buf, const spinor * const source)
 {
 	using namespace hardware::buffers;
 
@@ -905,18 +905,18 @@ void Opencl_Module_Spinors::copy_to_eoprec_spinorfield_buffer(const hardware::bu
 	convertSpinorfieldToSOA_eo_device(buf, &tmp);
 }
 
-Opencl_Module_Spinors::Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device)
+hardware::code::Spinors::Spinors(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device), saxpy_AND_squarenorm_eo(0)
 {
 	fill_kernels();
 }
 
-Opencl_Module_Spinors::~Opencl_Module_Spinors()
+hardware::code::Spinors::~Spinors()
 {
 	clear_kernels();
 }
 
-ClSourcePackage Opencl_Module_Spinors::get_sources() const noexcept
+ClSourcePackage hardware::code::Spinors::get_sources() const noexcept
 {
 	return basic_fermion_code;
 }
