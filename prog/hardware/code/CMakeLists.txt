@@ -17,6 +17,13 @@ add_library(code
 		fermions.cpp
 		hmc.cpp
 )
+target_link_libraries(code
+		meta
+		buffers
+		klepsydra
+		optimal # todo remove me!
+		einhard
+)
 
 #
 # Definition of tets
