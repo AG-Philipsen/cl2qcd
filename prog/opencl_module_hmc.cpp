@@ -1445,6 +1445,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta, con
 {
 	auto gf_code = get_device()->get_gaugefield_code();
 	auto fermion_code = get_device()->get_fermion_code();
+	auto gm_code = get_device()->get_gaugemomentum_code();
 
 	//Calc Hamiltonian
 	logger.debug() << "Calculate Hamiltonian";
@@ -1486,8 +1487,8 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta, con
 
 	//Gaugemomentum-Part
 	hmc_float p2, new_p2;
-	set_float_to_gaugemomentum_squarenorm_device(&clmem_p, &clmem_p2);
-	set_float_to_gaugemomentum_squarenorm_device(&clmem_new_p, &clmem_new_p2);
+	gm_code->set_float_to_gaugemomentum_squarenorm_device(&clmem_p, &clmem_p2);
+	gm_code->set_float_to_gaugemomentum_squarenorm_device(&clmem_new_p, &clmem_new_p2);
 	clmem_p2.dump(&p2);
 	clmem_new_p2.dump(&new_p2);
 	//the energy is half the squarenorm
@@ -1572,9 +1573,10 @@ void Opencl_Module_Hmc::md_update_gaugemomentum_device(hmc_float eps)
 	md_update_gaugemomentum_device(&clmem_force, &clmem_new_p, eps);
 
 	if(logger.beDebug()) {
+	  auto gm_code = get_device()->get_gaugemomentum_code();
 		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
 		hmc_float resid;
-		set_float_to_gaugemomentum_squarenorm_device(&clmem_new_p, &force_tmp);
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(&clmem_new_p, &force_tmp);
 		force_tmp.dump(&resid);
 		logger.debug() <<  "\tupdated gaugemomenta energy:\t" << resid;
 		if(resid != resid) {
@@ -1631,7 +1633,8 @@ void Opencl_Module_Hmc::md_update_gaugefield_device(const hardware::buffers::Gau
 
 void Opencl_Module_Hmc::set_zero_clmem_force_device()
 {
-	set_zero_gaugemomentum(&clmem_force);
+  auto gm_code = get_device()->get_gaugemomentum_code();
+	gm_code->set_zero_gaugemomentum(&clmem_force);
 }
 
 void Opencl_Module_Hmc::set_zero_gaugemomentum(const hardware::buffers::Gaugemomentum * buf)
@@ -1653,12 +1656,13 @@ void Opencl_Module_Hmc::gauge_force_device()
 	gauge_force_device(&new_u, &clmem_force);
 
 	if(logger.beDebug()) {
+	  	  auto gm_code = get_device()->get_gaugemomentum_code();
 		hardware::buffers::Plain<hmc_float> gauge_force_tmp(1, get_device());
 		hmc_float gauge_force_energy = 0.;
-		set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &gauge_force_tmp);
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &gauge_force_tmp);
 		gauge_force_tmp.dump(&gauge_force_energy);
 
-		//logger.debug() <<  "\t\t\tgauge force:\t" << gauge_force_energy;
+		logger.debug() <<  "\t\t\tgauge force:\t" << gauge_force_energy;
 
 		if(gauge_force_energy != gauge_force_energy) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
@@ -1668,15 +1672,16 @@ void Opencl_Module_Hmc::gauge_force_device()
 	//recalculate force with local buffer to get only this contribution to the force vector
 	if(logger.beDebug()) {
 		const hardware::buffers::Gaugemomentum force2(clmem_force.get_elements(), clmem_force.get_device());
+		auto gm_code = get_device()->get_gaugemomentum_code();
 		//init new buffer to zero
-		set_zero_gaugemomentum(&force2);
+		gm_code->set_zero_gaugemomentum(&force2);
 
 		//re-calculate force
 		gauge_force_device(&new_u, &force2);
 
 		hardware::buffers::Plain<hmc_float> check_force_tmp(1, get_device());
 		hmc_float check_force_energy = 0.;
-		set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
 		check_force_tmp.dump(&check_force_energy);
 		//logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
 		if(check_force_energy != check_force_energy) {
@@ -1709,8 +1714,9 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device()
 
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> gauge_force_tlsym_tmp(1, get_device());
+		auto gm_code = get_device()->get_gaugemomentum_code();
 		hmc_float gauge_force_tlsym_energy = 0.;
-		set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &gauge_force_tlsym_tmp);
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &gauge_force_tlsym_tmp);
 		gauge_force_tlsym_tmp.dump(&gauge_force_tlsym_energy);
 
 		logger.debug() <<  "\t\t\tgauge force tlsym:\t" << gauge_force_tlsym_energy;
@@ -1723,14 +1729,15 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device()
 	//recalculate force with local buffer to get only this contribution to the force vector
 	if(logger.beDebug()) {
 		const hardware::buffers::Gaugemomentum force2(clmem_force.get_elements(), clmem_force.get_device());
+		auto gm_code = get_device()->get_gaugemomentum_code();
 		//init new buffer to zero
-		set_zero_gaugemomentum(&force2);
+		gm_code->set_zero_gaugemomentum(&force2);
 
 		gauge_force_tlsym_device(&new_u, &force2);
 
 		hardware::buffers::Plain<hmc_float> check_force_tmp(1, get_device());
 		hmc_float check_force_energy = 0.;
-		set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
 		check_force_tmp.dump(&check_force_energy);
 		logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
 		if(check_force_energy != check_force_energy) {
@@ -1764,8 +1771,9 @@ void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::Plain<spin
 
 	if(logger.beDebug()) {
 		Plain<hmc_float> noneo_force_tmp(1, get_device());
+		auto gm_code = get_device()->get_gaugemomentum_code();
 		hmc_float noneo_force_energy = 0.;
-		set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &noneo_force_tmp);
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &noneo_force_tmp);
 		noneo_force_tmp.dump(&noneo_force_energy);
 		//logger.debug() <<  "\t\t\tnon-eo force:\t" << noneo_force_energy;
 		if(noneo_force_energy != noneo_force_energy) {
@@ -1776,15 +1784,16 @@ void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::Plain<spin
 	//recalculate force with local buffer to get only this contribution to the force vector
 	if(logger.beDebug()) {
 		const hardware::buffers::Gaugemomentum force2(clmem_force.get_elements(), clmem_force.get_device());
+		auto gm_code = get_device()->get_gaugemomentum_code();
 		//init new buffer to zero
-		set_zero_gaugemomentum(&force2);
+		gm_code->set_zero_gaugemomentum(&force2);
 
 		//re-calculate force
 		fermion_force_device(Y, X, &new_u, &force2, kappa);
 
 		Plain<hmc_float> check_force_tmp(1, get_device());
 		hmc_float check_force_energy = 0.;
-		set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
 		check_force_tmp.dump(&check_force_energy);
 		//logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
 		if(check_force_energy != check_force_energy) {
@@ -1834,8 +1843,9 @@ void Opencl_Module_Hmc::fermion_force_eo_device(const hardware::buffers::Spinor 
 
 	if(logger.beDebug()) {
 		Plain<hmc_float> force_tmp(1, get_device());
+		auto gm_code = get_device()->get_gaugemomentum_code();
 		hmc_float resid;
-		set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &force_tmp);
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &force_tmp);
 		force_tmp.dump(&resid);
 		//logger.debug() <<  "\t\t\teoprec force:\t" << resid;
 
@@ -1847,15 +1857,16 @@ void Opencl_Module_Hmc::fermion_force_eo_device(const hardware::buffers::Spinor 
 	//recalculate force with local buffer, giving only this contribution to the force
 	if(logger.beDebug()) {
 		const hardware::buffers::Gaugemomentum force2(clmem_force.get_elements(), clmem_force.get_device());
+		auto gm_code = get_device()->get_gaugemomentum_code();
 		//init new buffer to zero
-		set_zero_gaugemomentum(&force2);
+		gm_code->set_zero_gaugemomentum(&force2);
 
 		//re-calculate force
 		fermion_force_eo_device(Y, X, &new_u, &force2, evenodd, kappa);
 
 		Plain<hmc_float> check_force_tmp(1, get_device());
 		hmc_float check_force_energy = 0.;
-		set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
 		check_force_tmp.dump(&check_force_energy);
 		//logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
 		if(check_force_energy != check_force_energy) {
