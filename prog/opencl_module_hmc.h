@@ -77,16 +77,11 @@ public:
 
 	///////////////////////////////////////////////////
 	//Methods on device
-	void set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::Plain<hmc_float> * out);
-	//void generate_gaussian_gaugemomenta_device(const hardware::buffers::PRNGBuffer * prng);
-	//void generate_gaussian_spinorfield_device(const hardware::buffers::PRNGBuffer * prng);
-	void generate_gaussian_spinorfield_eo_device(const hardware::buffers::PRNGBuffer * prng);
 	void md_update_gaugemomentum_device(hmc_float eps);
 	void md_update_gaugemomentum_device(const hardware::buffers::Gaugemomentum *, const hardware::buffers::Gaugemomentum *, hmc_float eps);
 	void md_update_gaugefield_device(hmc_float eps);
 	void md_update_gaugefield_device(const hardware::buffers::Gaugemomentum *, const hardware::buffers::SU3 *, hmc_float eps);
 	void set_zero_clmem_force_device();
-	void set_zero_gaugemomentum(const hardware::buffers::Gaugemomentum *);
 	void gauge_force_device();
 	void gauge_force_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out);
 	void gauge_force_tlsym_device();
@@ -98,25 +93,6 @@ public:
 	void stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate);
 	hmc_float calc_s_fermion();
 	hmc_float calc_s_fermion_mp(const hardware::buffers::SU3 * gaugefield);
-
-	/**
-	 * Import data from the gaugemomenta array into the given buffer.
-	 *
-	 * The data in the buffer will be stored in the device specific format.
-	 *
-	 * @param[out] dest The buffer to write to in the device specific format
-	 * @param[in] data The data to write to the buffer
-	 */
-	void importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data);
-	/**
-	 * Export data from the given buffer into a normal gaugemomentum array.
-	 *
-	 * The data in the buffer is assumed to be in the device specific format.
-	 *
-	 * @param[out] dest An array that the buffer data can be written to.
-	 * @param[in] data A buffer containing the data in the device specific format.
-	 */
-	void exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf);
 
 protected:
 
@@ -172,9 +148,6 @@ private:
 	ClSourcePackage basic_hmc_code;
 
 	//kernels
-	//cl_kernel generate_gaussian_spinorfield;
-	cl_kernel generate_gaussian_spinorfield_eo;
-	cl_kernel generate_gaussian_gaugemomenta;
 	cl_kernel md_update_gaugefield;
 	cl_kernel md_update_gaugemomenta;
 	cl_kernel gauge_force;
@@ -182,10 +155,6 @@ private:
 	cl_kernel fermion_force;
 	cl_kernel fermion_force_eo;
 	cl_kernel stout_smear_fermion_force;
-	cl_kernel _set_zero_gaugemomentum;
-	cl_kernel gaugemomentum_squarenorm;
-	cl_kernel gaugemomentum_convert_to_soa;
-	cl_kernel gaugemomentum_convert_from_soa;
 
 	//variables
 	//initial energy of the (gaussian) spinorfield
