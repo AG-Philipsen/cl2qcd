@@ -94,7 +94,7 @@ protected:
 	 * @todo autotune
 	 * @param ls local-work-size
 	 * @param gs global-work-size
-2	 * @param num_groups number of work groups
+	 * @param num_groups number of work groups
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
@@ -137,17 +137,6 @@ private:
 	 * Clear out the kernels,
 	 */
 	void clear_kernels();
-
-	ClSourcePackage basic_hmc_code;
-
-	//kernels
-	cl_kernel md_update_gaugefield;
-	cl_kernel md_update_gaugemomenta;
-	cl_kernel gauge_force;
-	cl_kernel gauge_force_tlsym;
-	cl_kernel fermion_force;
-	cl_kernel fermion_force_eo;
-	cl_kernel stout_smear_fermion_force;
 
 	//variables
 	//initial energy of the (gaussian) spinorfield
