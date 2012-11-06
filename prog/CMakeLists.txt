@@ -136,6 +136,7 @@ set_abs_paths(OPTIMAL_FILES
 	opencl_module_correlator.cpp
 	opencl_module_fermions.cpp
 	opencl_module_gaugemomentum.cpp
+	opencl_module_molecular_dynamics.cpp
 	opencl_module_hmc.cpp
 	opencl_module_heatbath.cpp
 	opencl_module_kappa.cpp
