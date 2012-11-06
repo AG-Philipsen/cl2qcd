@@ -189,7 +189,7 @@ public:
 	/**
 	 * Get access to the gaugefield kernels on this device.
 	 */
-	Opencl_Module_Gaugefield * get_gaugefield_code();
+	hardware::code::Gaugefield * get_gaugefield_code();
 
 	/**
 	 * Get access to the prng kernels on this device.
@@ -313,7 +313,7 @@ private:
 	 * Pointer to the gaugefield code.
 	 * Initialized on demand.
 	 */
-	Opencl_Module_Gaugefield * gaugefield_code;
+	hardware::code::Gaugefield * gaugefield_code;
 
 	/**
 	 * Pointer to the prng code.

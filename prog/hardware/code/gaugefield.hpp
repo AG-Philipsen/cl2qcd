@@ -10,6 +10,10 @@
 #include "../buffers/su3.hpp"
 #include "../buffers/plain.hpp"
 
+namespace hardware {
+
+namespace code {
+
 /**
  * An OpenCL device
  *
@@ -18,7 +22,7 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Gaugefield : public hardware::code::Opencl_Module {
+class Gaugefield : public Opencl_Module {
 
 public:
 	friend hardware::Device;
@@ -26,7 +30,7 @@ public:
 	/**
 	 * Destructor.
 	 */
-	virtual ~Opencl_Module_Gaugefield();
+	virtual ~Gaugefield();
 
 	/**
 	 * Get a pointer to the gaugefield buffer
@@ -175,7 +179,7 @@ private:
 	/**
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Gaugefield(const meta::Inputparameters& params, hardware::Device * device);
+	Gaugefield(const meta::Inputparameters& params, hardware::Device * device);
 
 	/**
 	 * A set of source files used by all kernels.
@@ -211,5 +215,9 @@ private:
 	 */
 	void clear_kernels();
 };
+
+}
+
+}
 
 #endif /* _HARDWARE_CODE_GAUGEFIELD_ */

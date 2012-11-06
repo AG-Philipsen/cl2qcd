@@ -398,10 +398,10 @@ hardware::ProfilingData hardware::Device::get_profiling_data(const cl_kernel& ke
 	return profiling_data[kernel];
 }
 
-Opencl_Module_Gaugefield * hardware::Device::get_gaugefield_code()
+hardware::code::Gaugefield * hardware::Device::get_gaugefield_code()
 {
 	if(!gaugefield_code) {
-		gaugefield_code = new Opencl_Module_Gaugefield(params, this);
+		gaugefield_code = new hardware::code::Gaugefield(params, this);
 	}
 	return gaugefield_code;
 }

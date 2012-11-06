@@ -111,10 +111,10 @@ void Dummyfield::verify()
 
 void Dummyfield::send()
 {
-	static_cast<Opencl_Module_Gaugefield*>(opencl_modules[0])->importGaugefield(in);
+	static_cast<hardware::code::Gaugefield*>(opencl_modules[0])->importGaugefield(in);
 }
 
 void Dummyfield::recieve()
 {
-	static_cast<Opencl_Module_Gaugefield*>(opencl_modules[0])->exportGaugefield(out);
+	static_cast<hardware::code::Gaugefield*>(opencl_modules[0])->exportGaugefield(out);
 }

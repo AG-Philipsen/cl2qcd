@@ -21,12 +21,12 @@ public:
 	};
 	virtual void finalize_opencl() override;
 
-	Opencl_Module_Gaugefield * get_device();
+	hardware::code::Gaugefield * get_device();
 };
 
-Opencl_Module_Gaugefield* TestGaugefield::get_device()
+hardware::code::Gaugefield* TestGaugefield::get_device()
 {
-	return static_cast<Opencl_Module_Gaugefield*>(opencl_modules[0]);
+	return static_cast<hardware::code::Gaugefield*>(opencl_modules[0]);
 }
 
 void TestGaugefield::finalize_opencl()
@@ -43,7 +43,7 @@ void test_rectangles(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Gaugefield * device = cpu.get_device();
+	hardware::code::Gaugefield * device = cpu.get_device();
 
 	logger.info() << "calc rectangles value:";
 	hmc_float cpu_rect;
@@ -73,7 +73,7 @@ void test_plaquette(std::string inputfile)
 	// get device colutions
 	hmc_float dev_plaq, dev_tplaq, dev_splaq;
 	hmc_complex dev_pol;
-	Opencl_Module_Gaugefield * device = dummy.get_device();
+	hardware::code::Gaugefield * device = dummy.get_device();
 	device->gaugeobservables(&dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
 
 	logger.info() << "Finalize device";
@@ -104,7 +104,7 @@ void test_polyakov(std::string inputfile)
 	// get device colutions
 	hmc_float dev_plaq, dev_tplaq, dev_splaq;
 	hmc_complex dev_pol;
-	Opencl_Module_Gaugefield * device = dummy.get_device();
+	hardware::code::Gaugefield * device = dummy.get_device();
 	device->gaugeobservables(&dev_plaq, &dev_tplaq, &dev_splaq, &dev_pol);
 
 	logger.info() << "Finalize device";

@@ -10,7 +10,7 @@ using namespace std;
 
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
 
-const hardware::buffers::SU3 * Opencl_Module_Gaugefield::get_gaugefield()
+const hardware::buffers::SU3 * hardware::code::Gaugefield::get_gaugefield()
 {
 	return &gaugefield;
 }
@@ -76,7 +76,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	return options.str();
 }
 
-void Opencl_Module_Gaugefield::fill_kernels()
+void hardware::code::Gaugefield::fill_kernels()
 {
 	basic_opencl_code = ClSourcePackage(collect_build_options(get_device(), get_parameters()))
 	                    << "opencl_header.cl" << "operations_geometry.cl" << "operations_complex.cl"
@@ -98,7 +98,7 @@ void Opencl_Module_Gaugefield::fill_kernels()
 	convertGaugefieldFromSOA = createKernel("convertGaugefieldFromSOA") << basic_opencl_code << "gaugefield_convert.cl";
 }
 
-void Opencl_Module_Gaugefield::clear_kernels()
+void hardware::code::Gaugefield::clear_kernels()
 {
 	logger.trace() << "Clearing kernels";
 
@@ -128,7 +128,7 @@ void Opencl_Module_Gaugefield::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
-void Opencl_Module_Gaugefield::plaquette_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * plaq, const hardware::buffers::Plain<hmc_float> * tplaq, const hardware::buffers::Plain<hmc_float> * splaq)
+void hardware::code::Gaugefield::plaquette_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * plaq, const hardware::buffers::Plain<hmc_float> * tplaq, const hardware::buffers::Plain<hmc_float> * splaq)
 {
 	using namespace hardware::buffers;
 
@@ -194,7 +194,7 @@ void Opencl_Module_Gaugefield::plaquette_device(const hardware::buffers::SU3 * g
 	get_device()->enqueue_kernel(plaquette_reduction, gs, ls);
 }
 
-void Opencl_Module_Gaugefield::rectangles_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * rect)
+void hardware::code::Gaugefield::rectangles_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_float> * rect)
 {
 	//query work-sizes for kernel
 	size_t ls, gs;
@@ -235,7 +235,7 @@ void Opencl_Module_Gaugefield::rectangles_device(const hardware::buffers::SU3 * 
 
 }
 
-void Opencl_Module_Gaugefield::polyakov_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_complex> * pol)
+void hardware::code::Gaugefield::polyakov_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Plain<hmc_complex> * pol)
 {
 	//query work-sizes for kernel
 	size_t ls, gs;
@@ -277,12 +277,12 @@ void Opencl_Module_Gaugefield::polyakov_device(const hardware::buffers::SU3 * gf
 
 }
 
-void Opencl_Module_Gaugefield::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
+void hardware::code::Gaugefield::gaugeobservables(hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
 {
 	gaugeobservables(get_gaugefield(), plaq_out, tplaq_out, splaq_out, pol_out);
 }
 
-void Opencl_Module_Gaugefield::gaugeobservables(const hardware::buffers::SU3 * gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
+void hardware::code::Gaugefield::gaugeobservables(const hardware::buffers::SU3 * gf, hmc_float * plaq_out, hmc_float * tplaq_out, hmc_float * splaq_out, hmc_complex * pol_out)
 {
 	const hardware::buffers::Plain<hmc_float> plaq(1, get_device());
 	const hardware::buffers::Plain<hmc_float> splaq(1, get_device());
@@ -324,7 +324,7 @@ void Opencl_Module_Gaugefield::gaugeobservables(const hardware::buffers::SU3 * g
 	pol_out->im = tmp_pol.im;
 }
 
-void Opencl_Module_Gaugefield::gaugeobservables_rectangles(const hardware::buffers::SU3 * gf, hmc_float * rect_out)
+void hardware::code::Gaugefield::gaugeobservables_rectangles(const hardware::buffers::SU3 * gf, hmc_float * rect_out)
 {
 	const hardware::buffers::Plain<hmc_float> rect(1, get_device());
 
@@ -337,7 +337,7 @@ void Opencl_Module_Gaugefield::gaugeobservables_rectangles(const hardware::buffe
 	//NOTE: the rectangle value has not been normalized since it is mostly used for the HMC where one needs the absolute value
 }
 
-void Opencl_Module_Gaugefield::stout_smear_device(const hardware::buffers::SU3 * in, const hardware::buffers::SU3 * out)
+void hardware::code::Gaugefield::stout_smear_device(const hardware::buffers::SU3 * in, const hardware::buffers::SU3 * out)
 {
 	//query work-sizes for kernel
 	size_t ls, gs;
@@ -355,12 +355,12 @@ void Opencl_Module_Gaugefield::stout_smear_device(const hardware::buffers::SU3 *
 	return;
 }
 
-void Opencl_Module_Gaugefield::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
+void hardware::code::Gaugefield::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 }
 
-size_t Opencl_Module_Gaugefield::get_read_write_size(const std::string& in) const
+size_t hardware::code::Gaugefield::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
 	size_t D = meta::get_float_size(get_parameters());
@@ -419,7 +419,7 @@ size_t Opencl_Module_Gaugefield::get_read_write_size(const std::string& in) cons
 	return 0;
 }
 
-uint64_t Opencl_Module_Gaugefield::get_flop_size(const std::string& in) const
+uint64_t hardware::code::Gaugefield::get_flop_size(const std::string& in) const
 {
 	const size_t VOL4D = meta::get_vol4d(get_parameters());
 	const size_t VOLSPACE = meta::get_volspace(get_parameters());
@@ -449,7 +449,7 @@ uint64_t Opencl_Module_Gaugefield::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-void Opencl_Module_Gaugefield::print_profiling(const std::string& filename, int number) const
+void hardware::code::Gaugefield::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, polyakov);
@@ -462,7 +462,7 @@ void Opencl_Module_Gaugefield::print_profiling(const std::string& filename, int 
 	Opencl_Module::print_profiling(filename, convertGaugefieldFromSOA);
 }
 
-void Opencl_Module_Gaugefield::smear_gaugefield(const hardware::buffers::SU3 * gf, const std::vector<const hardware::buffers::SU3*>& gf_intermediate)
+void hardware::code::Gaugefield::smear_gaugefield(const hardware::buffers::SU3 * gf, const std::vector<const hardware::buffers::SU3*>& gf_intermediate)
 {
 	logger.debug() << "\t\tsave unsmeared gaugefield...";
 	// TODO what if called before
@@ -492,17 +492,17 @@ void Opencl_Module_Gaugefield::smear_gaugefield(const hardware::buffers::SU3 * g
 	}
 }
 
-void Opencl_Module_Gaugefield::unsmear_gaugefield(const hardware::buffers::SU3 * gf)
+void hardware::code::Gaugefield::unsmear_gaugefield(const hardware::buffers::SU3 * gf)
 {
 	logger.debug() << "\t\trestore unsmeared gaugefield...";
 	hardware::buffers::copyData(gf, &gf_unsmeared);
 }
 
-void Opencl_Module_Gaugefield::importGaugefield(const Matrixsu3 * const data)
+void hardware::code::Gaugefield::importGaugefield(const Matrixsu3 * const data)
 {
 	importGaugefield(get_gaugefield(), data);
 }
-void Opencl_Module_Gaugefield::importGaugefield(const hardware::buffers::SU3 * gaugefield, const Matrixsu3 * const data)
+void hardware::code::Gaugefield::importGaugefield(const hardware::buffers::SU3 * gaugefield, const Matrixsu3 * const data)
 {
 	using namespace hardware::buffers;
 
@@ -516,12 +516,12 @@ void Opencl_Module_Gaugefield::importGaugefield(const hardware::buffers::SU3 * g
 	}
 }
 
-void Opencl_Module_Gaugefield::exportGaugefield(Matrixsu3 * const dest)
+void hardware::code::Gaugefield::exportGaugefield(Matrixsu3 * const dest)
 {
 	exportGaugefield(dest, &gaugefield);
 }
 
-void Opencl_Module_Gaugefield::exportGaugefield(Matrixsu3 * const dest, const hardware::buffers::SU3 * gaugefield)
+void hardware::code::Gaugefield::exportGaugefield(Matrixsu3 * const dest, const hardware::buffers::SU3 * gaugefield)
 {
 	using namespace hardware::buffers;
 
@@ -535,7 +535,7 @@ void Opencl_Module_Gaugefield::exportGaugefield(Matrixsu3 * const dest, const ha
 	}
 }
 
-void Opencl_Module_Gaugefield::convertGaugefieldToSOA_device(const hardware::buffers::SU3 * out, const hardware::buffers::Plain<Matrixsu3> * in)
+void hardware::code::Gaugefield::convertGaugefieldToSOA_device(const hardware::buffers::SU3 * out, const hardware::buffers::Plain<Matrixsu3> * in)
 {
 	if(!out->is_soa()) {
 		throw std::invalid_argument("Destination buffer must be a SOA buffer");
@@ -555,7 +555,7 @@ void Opencl_Module_Gaugefield::convertGaugefieldToSOA_device(const hardware::buf
 	get_device()->enqueue_kernel(convertGaugefieldToSOA, gs2, ls2);
 }
 
-void Opencl_Module_Gaugefield::convertGaugefieldFromSOA_device(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::SU3 * in)
+void hardware::code::Gaugefield::convertGaugefieldFromSOA_device(const hardware::buffers::Plain<Matrixsu3> * out, const hardware::buffers::SU3 * in)
 {
 	if(!in->is_soa()) {
 		throw std::invalid_argument("Source buffer must be a SOA buffer");
@@ -575,7 +575,7 @@ void Opencl_Module_Gaugefield::convertGaugefieldFromSOA_device(const hardware::b
 	get_device()->enqueue_kernel(convertGaugefieldFromSOA, gs2, ls2);
 }
 
-Opencl_Module_Gaugefield::Opencl_Module_Gaugefield(const meta::Inputparameters& params, hardware::Device * device)
+hardware::code::Gaugefield::Gaugefield(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device), gaugefield(NDIM * meta::get_vol4d(params), device),
 	  gf_unsmeared(gaugefield.get_elements(), device),
 	  stout_smear(0), rectangles(0), rectangles_reduction(0)
@@ -584,12 +584,12 @@ Opencl_Module_Gaugefield::Opencl_Module_Gaugefield(const meta::Inputparameters& 
 };
 
 
-Opencl_Module_Gaugefield::~Opencl_Module_Gaugefield()
+hardware::code::Gaugefield::~Gaugefield()
 {
 	clear_kernels();
 }
 
-ClSourcePackage Opencl_Module_Gaugefield::get_sources() const noexcept
+ClSourcePackage hardware::code::Gaugefield::get_sources() const noexcept
 {
 	return basic_opencl_code;
 }
