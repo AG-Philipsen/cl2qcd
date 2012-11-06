@@ -35,7 +35,6 @@ void Opencl_Module_Hmc::fill_kernels()
 	} 
 	fermion_force = createKernel("fermion_force") << basic_hmc_code << "fermionmatrix.cl" << "force_fermion.cl";
 	_set_zero_gaugemomentum = createKernel("set_zero_gaugemomentum") << basic_hmc_code <<  "gaugemomentum_zero.cl";
-	generate_gaussian_gaugemomenta = createKernel("generate_gaussian_gaugemomenta") << basic_hmc_code << prng_code << "gaugemomentum_gaussian.cl";
 	md_update_gaugefield = createKernel("md_update_gaugefield") << basic_hmc_code << "md_update_gaugefield.cl";
 	md_update_gaugemomenta = createKernel("md_update_gaugemomenta") << basic_hmc_code  << "md_update_gaugemomenta.cl";
 	gauge_force = createKernel("gauge_force") << basic_hmc_code  << "force_gauge.cl";
@@ -68,8 +67,6 @@ void Opencl_Module_Hmc::clear_kernels()
 		clerr = clReleaseKernel(fermion_force);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
-	clerr = clReleaseKernel(generate_gaussian_gaugemomenta);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(md_update_gaugefield);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(md_update_gaugemomenta);
@@ -91,14 +88,6 @@ void Opencl_Module_Hmc::clear_kernels()
 void Opencl_Module_Hmc::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
-
-	// kernels that use random numbers must not exceed the size of the random state array
-	if(kernel == generate_gaussian_gaugemomenta){
-		if(*gs > hardware::buffers::get_prng_buffer_size(get_device())) {
-			*gs = hardware::buffers::get_prng_buffer_size(get_device());
-		}
-	}
-
 	return;
 }
 
@@ -177,10 +166,6 @@ size_t Opencl_Module_Hmc::get_read_write_size(const std::string& in) const
 	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
 	//NOTE: 1 ae has NC*NC-1 = 8 real entries
 	int A = meta::get_su3algebrasize();
-	if (in == "generate_gaussian_gaugemomenta") {
-		//this kernel writes 1 ae
-		return (A) * D * G;
-	}
 	if (in == "md_update_gaugefield") {
 		//this kernel reads 1 ae and 1 su3 matrix and writes 1 su3 matrix for every link
 		return (A + (1 + 1) * R * C) * D * G;
@@ -233,11 +218,6 @@ uint64_t Opencl_Module_Hmc::get_flop_size(const std::string& in) const
 	//this returns the number of entries in an su3-matrix
 	uint64_t R = meta::get_mat_size(get_parameters());
 	//this is the same as in the function above
-	if (in == "generate_gaussian_gaugemomenta") {
-		//this kernel performs 0 multiplications per site
-		///@todo ? I did not count the gaussian normal pair production, which is very complicated...
-		return 0;
-	}
 	if (in == "md_update_gaugefield") {
 		//this kernel performs one exp(i ae) ( = 327 flops + 1 su3 mult ) and 1 su3 mult per link
 		return (meta::get_flop_su3_su3() * ( 1 + 1)  + 327 ) * G;
@@ -283,7 +263,6 @@ uint64_t Opencl_Module_Hmc::get_flop_size(const std::string& in) const
 void Opencl_Module_Hmc::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
-	Opencl_Module::print_profiling(filename, generate_gaussian_gaugemomenta);
 	Opencl_Module::print_profiling(filename, md_update_gaugefield);
 	Opencl_Module::print_profiling(filename, md_update_gaugemomenta);
 	Opencl_Module::print_profiling(filename, gauge_force);
@@ -297,82 +276,6 @@ void Opencl_Module_Hmc::print_profiling(const std::string& filename, int number)
 
 ////////////////////////////////////////////////////
 //Methods needed for the HMC-algorithm
-
-void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device(const hardware::buffers::PRNGBuffer * prng)
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(generate_gaussian_gaugemomenta, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(generate_gaussian_gaugemomenta, 0, sizeof(cl_mem), clmem_p);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(generate_gaussian_gaugemomenta, 1, sizeof(cl_mem), prng->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel( generate_gaussian_gaugemomenta , gs2, ls2);
-
-	if(logger.beDebug()) {
-		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
-		hmc_float resid;
-		this->set_float_to_gaugemomentum_squarenorm_device(&clmem_p, &force_tmp);
-		force_tmp.dump(&resid);
-		logger.debug() <<  "\tgaussian gaugemomenta:\t" << resid;
-		if(resid != resid) {
-			throw Print_Error_Message("calculation of gaussian gm gave nan! Aborting...", __FILE__, __LINE__);
-		}
-		if(resid == INFINITY) {
-			bool writeout = false;
-			if(writeout) {
-				//create buffer to store ae-field
-				int ae_num = meta::get_vol4d(get_parameters()) * NDIM;
-
-				ae * ae_tmp = new ae[ae_num];
-
-				//get buffer from device
-				cout << "copy buffer to host" << endl;
-				exportGaugemomentumBuffer(ae_tmp, &clmem_p);
-
-				//write out to file
-				ofstream out("clmem_p_at_inf");
-				if(!out) {
-					cout << "Cannot open file.\n";
-				}
-				for(int i = 0; i < ae_num; i++) {
-					out << i << "\t" << ae_tmp[i].e0 << endl;
-					out << i << "\t" << ae_tmp[i].e1 << endl;
-					out << i << "\t" << ae_tmp[i].e2 << endl;
-					out << i << "\t" << ae_tmp[i].e3 << endl;
-					out << i << "\t" << ae_tmp[i].e4 << endl;
-					out << i << "\t" << ae_tmp[i].e5 << endl;
-					out << i << "\t" << ae_tmp[i].e6 << endl;
-					out << i << "\t" << ae_tmp[i].e7 << endl;
-				}
-				out.close();
-
-				//calc sqnorm of ae_tmp
-				hmc_float sqnorm = 0.;
-				for(int i = 0; i < ae_num; i++) {
-					sqnorm += ae_tmp[i].e0 * ae_tmp[i].e0;
-					sqnorm += ae_tmp[i].e1 * ae_tmp[i].e1;
-					sqnorm += ae_tmp[i].e2 * ae_tmp[i].e2;
-					sqnorm += ae_tmp[i].e3 * ae_tmp[i].e3;
-					sqnorm += ae_tmp[i].e4 * ae_tmp[i].e4;
-					sqnorm += ae_tmp[i].e5 * ae_tmp[i].e5;
-					sqnorm += ae_tmp[i].e6 * ae_tmp[i].e6;
-					sqnorm += ae_tmp[i].e7 * ae_tmp[i].e7;
-				}
-				cout << "sqnrom: " << sqnorm << endl;
-				free(ae_tmp);
-			}
-			throw Print_Error_Message("calculation of gaussian gm gave inf! Aborting...", __FILE__, __LINE__);
-		}
-
-	}
-
-}
-
 void Opencl_Module_Hmc::generate_spinorfield_gaussian(const hardware::buffers::PRNGBuffer * prng)
 {
   auto spinor_code = get_device()->get_spinor_code();

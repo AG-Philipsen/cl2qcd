@@ -580,12 +580,13 @@ void Gaugefield_hmc::init_gaugemomentum_spinorfield(usetimer * solvertimer)
 {
 	auto gaugefield = get_device_for_task(task_hmc)->get_gaugefield_code()->get_gaugefield();
 	auto prng = &get_device_for_task(task_hmc)->get_prng_code()->get_prng_buffer();
+	auto gm_code = get_device_for_task(task_hmc)->get_gaugemomentum_code();
 
 	//init gauge_momenta, saved in clmem_p
-	get_task_hmc(0)->generate_gaussian_gaugemomenta_device(prng);
+	gm_code->generate_gaussian_gaugemomenta_device(get_task_hmc(0)->get_clmem_p(), prng);
 	if(! get_parameters().get_use_gauge_only() ) {
 		//init/update spinorfield phi
-		get_task_hmc(0)->generate_spinorfield_gaussian(prng);
+	  get_task_hmc(0)->generate_spinorfield_gaussian(prng);
 		//calc init energy for spinorfield
 		get_task_hmc(0)->calc_spinorfield_init_energy(get_task_hmc(0)->get_clmem_s_fermion_init());
 		if(get_parameters().get_use_mp() ) {

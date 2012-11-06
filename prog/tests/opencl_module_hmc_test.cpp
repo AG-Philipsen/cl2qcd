@@ -212,11 +212,6 @@ void test_generate_gaussian_spinorfield_eo(std::string inputfile)
 
 }
 
-void test_generate_gaussian_gaugemomenta(std::string inputfile)
-{
-
-}
-
 void test_stout_smear_fermion_force(std::string inputfile)
 {
 
@@ -719,16 +714,6 @@ BOOST_AUTO_TEST_CASE( GENERATE_GAUSSIAN_SPINORFIELD_EO_1 )
 {
 	BOOST_MESSAGE("NOT YET IMPLEMENTED!! TO BE MOVED INTO SPINOR TEST!!");
 	test_generate_gaussian_spinorfield_eo("/generate_gaussian_spinorfield_eo_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_GAUGEMOMENTA  )
-
-BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_1 )
-{
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
-	test_generate_gaussian_gaugemomenta("/generate_gaussian_gaugemomenta_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -78,7 +78,7 @@ public:
 	///////////////////////////////////////////////////
 	//Methods on device
 	void set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::Plain<hmc_float> * out);
-	void generate_gaussian_gaugemomenta_device(const hardware::buffers::PRNGBuffer * prng);
+	//void generate_gaussian_gaugemomenta_device(const hardware::buffers::PRNGBuffer * prng);
 	//void generate_gaussian_spinorfield_device(const hardware::buffers::PRNGBuffer * prng);
 	void generate_gaussian_spinorfield_eo_device(const hardware::buffers::PRNGBuffer * prng);
 	void md_update_gaugemomentum_device(hmc_float eps);
