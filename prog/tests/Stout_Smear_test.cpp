@@ -18,7 +18,7 @@ std::string const exec_name = "stout_smear_test";
 hmc_float rho = 0.01;
 int iter = 1;
 
-class Device : public Opencl_Module {
+class Device : public hardware::code::Opencl_Module {
 protected:
 	virtual size_t get_read_write_size(const std::string&) const {
 		return 0;
@@ -55,7 +55,7 @@ private:
 
 void Dummyfield::init_tasks()
 {
-	opencl_modules = new Opencl_Module* [get_num_tasks()];
+	opencl_modules = new hardware::code::Opencl_Module* [get_num_tasks()];
 	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
 
 	fill_buffers();

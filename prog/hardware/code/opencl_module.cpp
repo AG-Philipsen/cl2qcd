@@ -22,22 +22,22 @@ static void print_profile_header(const std::string& filename, int number);
  */
 static void print_profiling(const std::string& filename, const std::string& kernelName, const hardware::ProfilingData& data, size_t read_write_size, uint64_t flop_size, uint64_t sites);
 
-const meta::Inputparameters& Opencl_Module::get_parameters() const noexcept
+const meta::Inputparameters& hardware::code::Opencl_Module::get_parameters() const noexcept
 {
 	return parameters;
 }
 
-hardware::Device * Opencl_Module::get_device() const noexcept
+hardware::Device * hardware::code::Opencl_Module::get_device() const noexcept
 {
 	return device;
 }
 
-TmpClKernel Opencl_Module::createKernel(const char * const kernel_name, std::string build_opts) const
+TmpClKernel hardware::code::Opencl_Module::createKernel(const char * const kernel_name, std::string build_opts) const
 {
 	return device->create_kernel(kernel_name, build_opts);
 }
 
-void Opencl_Module::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
+void hardware::code::Opencl_Module::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	//Query kernel name
 	string kernelname = get_kernel_name(kernel);
@@ -54,7 +54,7 @@ void Opencl_Module::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t *
 	*num_groups = num_groups_tmp;
 }
 
-string Opencl_Module::get_kernel_name(const cl_kernel kernel) const
+string hardware::code::Opencl_Module::get_kernel_name(const cl_kernel kernel) const
 {
 	int clerr;
 	size_t bytesInKernelName;
@@ -115,7 +115,7 @@ static void print_profile_header(const std::string& filename, int number)
 	return;
 }
 
-void Opencl_Module::print_profiling(const std::string& filename, const cl_kernel& kernel) const
+void hardware::code::Opencl_Module::print_profiling(const std::string& filename, const cl_kernel& kernel) const
 {
 	// only print info if kernel has been initialized
 	if(kernel) {
@@ -125,7 +125,7 @@ void Opencl_Module::print_profiling(const std::string& filename, const cl_kernel
 	}
 }
 
-void Opencl_Module::print_profiling(const std::string& filename, int number) const
+void hardware::code::Opencl_Module::print_profiling(const std::string& filename, int number) const
 {
 	logger.trace() << "Printing Profiling-information to file \"" << filename << "\"";
 	print_profile_header(filename, number);

@@ -8,7 +8,7 @@
 #define NUM_ELEMENTS 1024
 #define LOCAL_SIZE 128
 
-class Device : public Opencl_Module {
+class Device : public hardware::code::Opencl_Module {
 
 	cl_kernel extendKernel;
 
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE( GPU )
 
 void Dummyfield::init_tasks()
 {
-	opencl_modules = new Opencl_Module* [get_num_tasks()];
+	opencl_modules = new hardware::code::Opencl_Module* [get_num_tasks()];
 	opencl_modules[0] = new Device(get_parameters(), get_device_for_task(0));
 
 	fill_buffers();

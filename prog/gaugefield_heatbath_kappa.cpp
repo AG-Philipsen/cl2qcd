@@ -20,7 +20,7 @@ void Gaugefield_heatbath_kappa::init_tasks()
 	if (get_num_devices() != 2)
 		logger.warn() << "Calculation of transport coefficients has not been tested for " << get_num_devices() ;
 
-	opencl_modules = new Opencl_Module* [get_num_tasks()];
+	opencl_modules = new hardware::code::Opencl_Module* [get_num_tasks()];
 
 	//LZ: right now, each task carries exactly one opencl device -> thus the below allocation with [1]. Could be generalized in future
 	opencl_modules[task_kappa] = get_device_for_task(task_kappa)->get_kappa_code();

@@ -299,7 +299,7 @@ public:
 
 protected:
 	cl_device_type* devicetypes;
-	Opencl_Module ** opencl_modules;
+	hardware::code::Opencl_Module ** opencl_modules;
 
 private:
 	/**

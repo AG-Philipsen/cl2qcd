@@ -13,7 +13,7 @@ void Gaugefield_heatbath::init_tasks()
 	task_heatbath = 0;
 
 	//this must be a pointer in general, since most likely not every entry in the array is of the same size
-	opencl_modules = new Opencl_Module* [get_num_tasks()];
+	opencl_modules = new hardware::code::Opencl_Module* [get_num_tasks()];
 
 	opencl_modules[task_heatbath] = get_device_for_task(task_heatbath)->get_heatbath_code();
 }

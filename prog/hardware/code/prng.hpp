@@ -15,7 +15,7 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Ran : public Opencl_Module {
+class Opencl_Module_Ran : public hardware::code::Opencl_Module {
 public:
 	friend hardware::Device;
 

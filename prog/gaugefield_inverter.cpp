@@ -24,7 +24,7 @@ void Gaugefield_inverter::init_tasks()
 	task_solver = 0;
 	task_correlator = 1;
 
-	opencl_modules = new Opencl_Module* [get_num_tasks()];
+	opencl_modules = new hardware::code::Opencl_Module* [get_num_tasks()];
 	opencl_modules[task_solver] = get_device_for_task(task_solver)->get_fermion_code();
 	opencl_modules[task_correlator] = get_device_for_task(task_correlator)->get_correlator_code();
 }

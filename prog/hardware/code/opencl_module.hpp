@@ -14,7 +14,8 @@
 // predeclaration as headers only use pointers and friend to this
 namespace hardware {
 	class Device;
-}
+
+namespace code {
 
 /**
  * An OpenCL device
@@ -121,5 +122,9 @@ private:
 	 */
 	hardware::Device * const device;
 };
+
+}
+
+}
 
 #endif //OPENCLMODULEH

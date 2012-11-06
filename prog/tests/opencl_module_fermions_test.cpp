@@ -26,7 +26,7 @@ public:
 
 void TestGaugefield::init_tasks()
 {
-	opencl_modules = new Opencl_Module* [get_num_tasks()];
+	opencl_modules = new hardware::code::Opencl_Module* [get_num_tasks()];
 	opencl_modules[0] = get_device_for_task(0)->get_fermion_code();
 }
 
