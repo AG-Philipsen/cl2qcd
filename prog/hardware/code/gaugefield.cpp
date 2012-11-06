@@ -518,15 +518,20 @@ void Opencl_Module_Gaugefield::importGaugefield(const hardware::buffers::SU3 * g
 
 void Opencl_Module_Gaugefield::exportGaugefield(Matrixsu3 * const dest)
 {
+	exportGaugefield(dest, &gaugefield);
+}
+
+void Opencl_Module_Gaugefield::exportGaugefield(Matrixsu3 * const dest, const hardware::buffers::SU3 * gaugefield)
+{
 	using namespace hardware::buffers;
 
 	logger.trace() << "Exporting gaugefield from get_device()";
 	if(get_device()->get_prefers_soa()) {
-		Plain<Matrixsu3> tmp(gaugefield.get_elements(), get_device());
-		convertGaugefieldFromSOA_device(&tmp, &gaugefield);
+		Plain<Matrixsu3> tmp(gaugefield->get_elements(), get_device());
+		convertGaugefieldFromSOA_device(&tmp, gaugefield);
 		tmp.dump(dest);
 	} else {
-		gaugefield.dump(dest);
+		gaugefield->dump(dest);
 	}
 }
 

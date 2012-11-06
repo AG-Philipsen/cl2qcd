@@ -131,6 +131,15 @@ public:
 	void exportGaugefield(Matrixsu3 * const dest);
 
 	/**
+	 * Export the gaugefield from the OpenCL buffer, that uses a device
+	 * specific storage format, into the given pointer using the generic
+	 * storage format.
+	 *
+	 * @param[out] dest The array to store the gaugefield in
+	 */
+	void exportGaugefield(Matrixsu3 * const dest, const hardware::buffers::SU3 * gaugefield);
+
+	/**
 	 * Get the code required to use the gaugefield from kernels.
 	 */
 	ClSourcePackage get_sources() const noexcept;

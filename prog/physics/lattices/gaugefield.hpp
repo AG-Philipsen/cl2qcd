@@ -50,6 +50,11 @@ namespace physics {
 			 */
 			void save(std::string outputfile);
 
+			/**
+			 * Return plaquette value
+			 */
+			hmc_float plaquette();
+
 		private:
 			hardware::System const& system;
 			physics::PRNG const& prng;
