@@ -71,7 +71,7 @@ public:
 	/**
 	 * Returns a pointer to heatbath task
 	 */
-	Opencl_Module_Heatbath* get_task_heatbath();
+	hardware::code::Heatbath* get_task_heatbath();
 
 private:
 

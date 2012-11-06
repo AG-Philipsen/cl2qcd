@@ -1,9 +1,9 @@
 #include "gaugefield_heatbath_kappa.h"
 
 
-Opencl_Module_Heatbath* Gaugefield_heatbath_kappa::get_task_heatbath()
+hardware::code::Heatbath* Gaugefield_heatbath_kappa::get_task_heatbath()
 {
-	return (Opencl_Module_Heatbath*)opencl_modules[task_heatbath];
+	return (hardware::code::Heatbath*)opencl_modules[task_heatbath];
 }
 
 Opencl_Module_Kappa* Gaugefield_heatbath_kappa::get_task_kappa()

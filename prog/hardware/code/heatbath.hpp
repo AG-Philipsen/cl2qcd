@@ -9,6 +9,11 @@
 #include "../../meta/inputparameters.hpp"
 #include "../buffers/su3.hpp"
 #include "../buffers/prng_buffer.hpp"
+
+namespace hardware {
+
+namespace code {
+
 /**
  * An OpenCL device
  *
@@ -16,11 +21,11 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Heatbath : public hardware::code::Opencl_Module {
+class Heatbath : public hardware::code::Opencl_Module {
 public:
 	friend hardware::Device;
 
-	virtual ~Opencl_Module_Heatbath();
+	virtual ~Heatbath();
 
 	/**
 	 * Perform one heatbath step.
@@ -42,7 +47,7 @@ private:
 	/**
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Heatbath(const meta::Inputparameters& params, hardware::Device * device);
+	Heatbath(const meta::Inputparameters& params, hardware::Device * device);
 
 	/**
 	 * Collect the kernels for OpenCL.
@@ -87,5 +92,9 @@ private:
 
 
 };
+
+}
+
+}
 
 #endif // _HARDWARE_CODE_HEATBATH_

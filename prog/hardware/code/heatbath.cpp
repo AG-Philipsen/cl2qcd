@@ -21,7 +21,7 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 	return options.str();
 }
 
-void Opencl_Module_Heatbath::fill_kernels()
+void hardware::code::Heatbath::fill_kernels()
 {
 	ClSourcePackage sources = get_device()->get_gaugefield_code()->get_sources()
 	                          << get_device()->get_prng_code()->get_sources()
@@ -36,7 +36,7 @@ void Opencl_Module_Heatbath::fill_kernels()
 	overrelax_odd = createKernel("overrelax_odd") << sources << "operations_heatbath.cl" << "overrelax_odd.cl";
 }
 
-void Opencl_Module_Heatbath::clear_kernels()
+void hardware::code::Heatbath::clear_kernels()
 {
 	cl_int clerr = CL_SUCCESS;
 
@@ -53,7 +53,7 @@ void Opencl_Module_Heatbath::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
-void Opencl_Module_Heatbath::run_heatbath(const hardware::buffers::SU3 * gaugefield, const hardware::buffers::PRNGBuffer * prng) const
+void hardware::code::Heatbath::run_heatbath(const hardware::buffers::SU3 * gaugefield, const hardware::buffers::PRNGBuffer * prng) const
 {
 	cl_int clerr = CL_SUCCESS;
 
@@ -86,7 +86,7 @@ void Opencl_Module_Heatbath::run_heatbath(const hardware::buffers::SU3 * gaugefi
 	}
 }
 
-void Opencl_Module_Heatbath::run_overrelax(const hardware::buffers::SU3 * gaugefield, const hardware::buffers::PRNGBuffer * prng) const
+void hardware::code::Heatbath::run_overrelax(const hardware::buffers::SU3 * gaugefield, const hardware::buffers::PRNGBuffer * prng) const
 {
 	cl_int clerr = CL_SUCCESS;
 
@@ -120,7 +120,7 @@ void Opencl_Module_Heatbath::run_overrelax(const hardware::buffers::SU3 * gaugef
 	}
 }
 
-void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
+void hardware::code::Heatbath::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 
@@ -141,7 +141,7 @@ void Opencl_Module_Heatbath::get_work_sizes(const cl_kernel kernel, size_t * ls,
 	return;
 }
 
-size_t Opencl_Module_Heatbath::get_read_write_size(const std::string& in) const
+size_t hardware::code::Heatbath::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
 	size_t D = meta::get_float_size(get_parameters());
@@ -162,7 +162,7 @@ size_t Opencl_Module_Heatbath::get_read_write_size(const std::string& in) const
 	return 0;
 }
 
-uint64_t Opencl_Module_Heatbath::get_flop_size(const std::string& in) const
+uint64_t hardware::code::Heatbath::get_flop_size(const std::string& in) const
 {
 	const size_t VOL4D = meta::get_vol4d(get_parameters());
 	uint64_t S;
@@ -183,7 +183,7 @@ uint64_t Opencl_Module_Heatbath::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-void Opencl_Module_Heatbath::print_profiling(const std::string& filename, int number) const
+void hardware::code::Heatbath::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, heatbath_even);
@@ -192,13 +192,13 @@ void Opencl_Module_Heatbath::print_profiling(const std::string& filename, int nu
 	Opencl_Module::print_profiling(filename, overrelax_odd);
 }
 
-Opencl_Module_Heatbath::Opencl_Module_Heatbath(const meta::Inputparameters& params, hardware::Device * device)
+hardware::code::Heatbath::Heatbath(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device)
 {
 	fill_kernels();
 }
 
-Opencl_Module_Heatbath::~Opencl_Module_Heatbath()
+hardware::code::Heatbath::~Heatbath()
 {
 	clear_kernels();
 }

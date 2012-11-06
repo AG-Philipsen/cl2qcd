@@ -446,10 +446,10 @@ hardware::code::Correlator * hardware::Device::get_correlator_code()
 	return correlator_code;
 }
 
-Opencl_Module_Heatbath * hardware::Device::get_heatbath_code()
+hardware::code::Heatbath * hardware::Device::get_heatbath_code()
 {
 	if(!heatbath_code) {
-		heatbath_code = new Opencl_Module_Heatbath(params, this);
+		heatbath_code = new hardware::code::Heatbath(params, this);
 	}
 	return heatbath_code;
 }

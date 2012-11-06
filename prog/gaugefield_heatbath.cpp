@@ -1,8 +1,8 @@
 #include "gaugefield_heatbath.h"
 
-Opencl_Module_Heatbath* Gaugefield_heatbath::get_task_heatbath()
+hardware::code::Heatbath* Gaugefield_heatbath::get_task_heatbath()
 {
-	return (Opencl_Module_Heatbath*)opencl_modules[task_heatbath];
+	return (hardware::code::Heatbath*)opencl_modules[task_heatbath];
 }
 
 void Gaugefield_heatbath::init_tasks()

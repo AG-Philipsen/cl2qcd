@@ -219,7 +219,7 @@ public:
 	/**
 	 * Get access to the heatbath kernels on this device.
 	 */
-	Opencl_Module_Heatbath * get_heatbath_code();
+	hardware::code::Heatbath * get_heatbath_code();
 
 	/**
 	 * Get access to the kappa kernels on this device.
@@ -349,7 +349,7 @@ private:
 	 * Pointer to the heatbath code.
 	 * Initialized on demand.
 	 */
-	Opencl_Module_Heatbath * heatbath_code;
+	hardware::code::Heatbath * heatbath_code;
 
 	/**
 	 * Pointer to the kappa code.
