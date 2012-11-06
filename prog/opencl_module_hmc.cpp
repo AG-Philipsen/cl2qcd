@@ -31,11 +31,8 @@ void Opencl_Module_Hmc::fill_kernels()
 
 	//init kernels for HMC
 	if(get_parameters().get_use_eo() == true) {
-		generate_gaussian_spinorfield_eo = createKernel("generate_gaussian_spinorfield_eo") << basic_hmc_code << prng_code << "spinorfield_eo_gaussian.cl";
 		fermion_force_eo = createKernel("fermion_force_eo") << basic_hmc_code << "fermionmatrix.cl" << "force_fermion_eo.cl";
-	} else {
-		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_hmc_code << prng_code << "spinorfield_gaussian.cl";
-	}
+	} 
 	fermion_force = createKernel("fermion_force") << basic_hmc_code << "fermionmatrix.cl" << "force_fermion.cl";
 	_set_zero_gaugemomentum = createKernel("set_zero_gaugemomentum") << basic_hmc_code <<  "gaugemomentum_zero.cl";
 	generate_gaussian_gaugemomenta = createKernel("generate_gaussian_gaugemomenta") << basic_hmc_code << prng_code << "gaugemomentum_gaussian.cl";
@@ -65,13 +62,9 @@ void Opencl_Module_Hmc::clear_kernels()
 
 	logger.debug() << "release HMC-kernels.." ;
 	if(get_parameters().get_use_eo() == true) {
-		clerr = clReleaseKernel(generate_gaussian_spinorfield_eo);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(fermion_force_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	} else {
-		clerr = clReleaseKernel(generate_gaussian_spinorfield);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 		clerr = clReleaseKernel(fermion_force);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
@@ -100,9 +93,7 @@ void Opencl_Module_Hmc::get_work_sizes(const cl_kernel kernel, size_t * ls, size
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 
 	// kernels that use random numbers must not exceed the size of the random state array
-	if(kernel == generate_gaussian_gaugemomenta
-	   || kernel == generate_gaussian_spinorfield
-	   || kernel == generate_gaussian_spinorfield_eo) {
+	if(kernel == generate_gaussian_gaugemomenta){
 		if(*gs > hardware::buffers::get_prng_buffer_size(get_device())) {
 			*gs = hardware::buffers::get_prng_buffer_size(get_device());
 		}
@@ -134,9 +125,19 @@ const hardware::buffers::Plain<spinor> * Opencl_Module_Hmc::get_clmem_phi()
 	return &clmem_phi;
 }
 
+const hardware::buffers::Plain<spinor> * Opencl_Module_Hmc::get_clmem_phi_inv()
+{
+	return &clmem_phi_inv;
+}
+
 const hardware::buffers::Spinor * Opencl_Module_Hmc::get_clmem_phi_eo()
 {
 	return &clmem_phi_eo;
+}
+
+const hardware::buffers::Spinor * Opencl_Module_Hmc::get_clmem_phi_inv_eo()
+{
+	return &clmem_phi_inv_eo;
 }
 
 const hardware::buffers::Plain<spinor> * Opencl_Module_Hmc::get_clmem_phi_mp()
@@ -176,14 +177,6 @@ size_t Opencl_Module_Hmc::get_read_write_size(const std::string& in) const
 	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
 	//NOTE: 1 ae has NC*NC-1 = 8 real entries
 	int A = meta::get_su3algebrasize();
-	if (in == "generate_gaussian_spinorfield") {
-		//this kernel writes 1 spinor
-		return ( 12 * C ) * D * S;
-	}
-	if (in == "generate_gaussian_spinorfield_eo") {
-		//this kernel writes 1 spinor
-		return ( 12 * C ) * D * Seo;
-	}
 	if (in == "generate_gaussian_gaugemomenta") {
 		//this kernel writes 1 ae
 		return (A) * D * G;
@@ -240,16 +233,6 @@ uint64_t Opencl_Module_Hmc::get_flop_size(const std::string& in) const
 	//this returns the number of entries in an su3-matrix
 	uint64_t R = meta::get_mat_size(get_parameters());
 	//this is the same as in the function above
-	if (in == "generate_gaussian_spinorfield") {
-		//this kernel performs 12 multiplications per site
-		///@todo ? I did not count the gaussian normal pair production, which is very complicated...
-		return 12 * S;
-	}
-	if (in == "generate_gaussian_spinorfield_eo") {
-		//this kernel performs 12 multiplications per site
-		///@todo ? I did not count the gaussian normal pair production, which is very complicated...
-		return 12 * Seo;
-	}
 	if (in == "generate_gaussian_gaugemomenta") {
 		//this kernel performs 0 multiplications per site
 		///@todo ? I did not count the gaussian normal pair production, which is very complicated...
@@ -300,8 +283,6 @@ uint64_t Opencl_Module_Hmc::get_flop_size(const std::string& in) const
 void Opencl_Module_Hmc::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
-	Opencl_Module::print_profiling(filename, generate_gaussian_spinorfield);
-	Opencl_Module::print_profiling(filename, generate_gaussian_spinorfield_eo);
 	Opencl_Module::print_profiling(filename, generate_gaussian_gaugemomenta);
 	Opencl_Module::print_profiling(filename, md_update_gaugefield);
 	Opencl_Module::print_profiling(filename, md_update_gaugemomenta);
@@ -394,74 +375,13 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device(const hardware::bu
 
 void Opencl_Module_Hmc::generate_spinorfield_gaussian(const hardware::buffers::PRNGBuffer * prng)
 {
+  auto spinor_code = get_device()->get_spinor_code();
 	if(get_parameters().get_use_eo() == true) {
-		this->generate_gaussian_spinorfield_eo_device(prng);
+	  spinor_code->generate_gaussian_spinorfield_eo_device(get_clmem_phi_inv_eo(), prng);
 	} else {
-		this->generate_gaussian_spinorfield_device(prng);
+	  spinor_code->generate_gaussian_spinorfield_device(get_clmem_phi_inv(), prng);
 	}
 	return;
-}
-
-void Opencl_Module_Hmc::generate_gaussian_spinorfield_device(const hardware::buffers::PRNGBuffer * prng)
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(generate_gaussian_spinorfield, &ls2, &gs2, &num_groups);
-	//set arguments
-	//this is always applied to clmem_phi_inv, which can be done since the gaussian field is only needed in the beginning
-	int clerr = clSetKernelArg(generate_gaussian_spinorfield, 0, sizeof(cl_mem), clmem_phi_inv);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(generate_gaussian_spinorfield, 1, sizeof(cl_mem), prng->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel(generate_gaussian_spinorfield  , gs2, ls2);
-
-	if(logger.beDebug()) {
-		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
-		hmc_float resid;
-		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(&clmem_phi_inv, &force_tmp);
-		force_tmp.dump(&resid);
-		logger.debug() <<  "\tinit gaussian spinorfield:\t" << resid;
-		if(resid != resid) {
-			throw Print_Error_Message("calculation of gaussian spinorfield gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-}
-
-void Opencl_Module_Hmc::generate_gaussian_spinorfield_eo_device(const hardware::buffers::PRNGBuffer * prng)
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(generate_gaussian_spinorfield_eo, &ls2, &gs2, &num_groups);
-	//set arguments
-	//this is always applied to clmem_phi_inv_eoporec, which can be done since the gaussian field is only needed in the beginning
-	int clerr = clSetKernelArg(generate_gaussian_spinorfield_eo, 0, sizeof(cl_mem), clmem_phi_inv_eo);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(generate_gaussian_spinorfield_eo, 1, sizeof(cl_mem), prng->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel(generate_gaussian_spinorfield_eo, gs2, ls2);
-
-	if(logger.beDebug()) {
-		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
-		hmc_float resid;
-		get_device()->get_spinor_code()->set_float_to_global_squarenorm_eoprec_device(&clmem_phi_inv_eo, &force_tmp);
-		force_tmp.dump(&resid);
-		logger.debug() <<  "\tinit gaussian spinorfield energy:\t" << resid;
-		if(resid != resid) {
-			throw Print_Error_Message("calculation of gaussian spinorfield gave nan! Aborting...", __FILE__, __LINE__);
-		}
-		logger.debug() << "\t\tforce calculated from gaussian spinorfield:";
-		this->set_zero_clmem_force_device();
-		fermion_force_eo_device(&clmem_phi_inv_eo,  &clmem_phi_inv_eo, EVEN);
-		fermion_force_eo_device(&clmem_phi_inv_eo,  &clmem_phi_inv_eo, ODD);
-		this->set_zero_clmem_force_device();
-	}
-
 }
 
 void Opencl_Module_Hmc::md_update_spinorfield(const hardware::buffers::SU3 * gaugefield, hmc_float kappa, hmc_float mubar)

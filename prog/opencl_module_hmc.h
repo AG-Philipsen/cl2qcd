@@ -56,7 +56,9 @@ public:
 	const hardware::buffers::Gaugemomentum * get_clmem_new_p();
 	const hardware::buffers::SU3 * get_new_u();
 	const hardware::buffers::Plain<spinor> * get_clmem_phi();
+	const hardware::buffers::Plain<spinor> * get_clmem_phi_inv();
 	const hardware::buffers::Spinor * get_clmem_phi_eo();
+	const hardware::buffers::Spinor * get_clmem_phi_inv_eo();
 	const hardware::buffers::Plain<spinor> * get_clmem_phi_mp();
 	const hardware::buffers::Spinor * get_clmem_phi_mp_eo();
 	hardware::buffers::Plain<hmc_float> * get_clmem_s_fermion_init();
@@ -77,7 +79,7 @@ public:
 	//Methods on device
 	void set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::Plain<hmc_float> * out);
 	void generate_gaussian_gaugemomenta_device(const hardware::buffers::PRNGBuffer * prng);
-	void generate_gaussian_spinorfield_device(const hardware::buffers::PRNGBuffer * prng);
+	//void generate_gaussian_spinorfield_device(const hardware::buffers::PRNGBuffer * prng);
 	void generate_gaussian_spinorfield_eo_device(const hardware::buffers::PRNGBuffer * prng);
 	void md_update_gaugemomentum_device(hmc_float eps);
 	void md_update_gaugemomentum_device(const hardware::buffers::Gaugemomentum *, const hardware::buffers::Gaugemomentum *, hmc_float eps);
@@ -170,7 +172,7 @@ private:
 	ClSourcePackage basic_hmc_code;
 
 	//kernels
-	cl_kernel generate_gaussian_spinorfield;
+	//cl_kernel generate_gaussian_spinorfield;
 	cl_kernel generate_gaussian_spinorfield_eo;
 	cl_kernel generate_gaussian_gaugemomenta;
 	cl_kernel md_update_gaugefield;
