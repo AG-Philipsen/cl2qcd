@@ -8,6 +8,7 @@
 #include "../../logger.hpp"
 #include "../../host_operations_gaugefield.h"
 #include "../../host_writegaugefield.h"
+#include "../../host_readgauge.h"
 #include <cassert>
 
 /**
@@ -25,6 +26,7 @@ static void set_cold(Matrixsu3 * field, size_t elems);
 static void set_hot(Matrixsu3 * field, physics::PRNG& prng, size_t elems);
 static void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters);
 static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check, const meta::Inputparameters& parameters);
+static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float, sourcefileparameters& parameters_source);
 
 physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng, bool hot)
 	: system(system), prng(prng), buffers(allocate_buffers(system))
@@ -34,6 +36,30 @@ physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRN
 	} else {
 		set_cold(buffers);
 	}
+}
+
+physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng, std::string ildgfile)
+	: system(system), prng(prng), buffers(allocate_buffers(system))
+{
+	assert(buffers.size() == 1);
+
+	auto parameters = system.get_inputparameters();
+	hmc_float * gf_ildg = new hmc_float[NDIM * NC * NC * parameters.get_ntime() * meta::get_volspace(parameters)];
+	Matrixsu3 * gf_host = new Matrixsu3[buffers[0]->get_elements()];
+
+	sourcefileparameters parameters_source;
+	parameters_source.readsourcefile(parameters.get_sourcefile().c_str(), parameters.get_precision(), &gf_ildg);
+	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries_source, parameters);
+
+	auto device = buffers[0]->get_device();
+	device->get_gaugefield_code()->importGaugefield(buffers[0], gf_host);
+	device->synchronize();
+
+	delete[] gf_ildg;
+	delete[] gf_host;
+
+	hmc_float plaq = plaquette();
+	check_sourcefileparameters(parameters, plaq, parameters_source);
 }
 
 static  std::vector<const hardware::buffers::SU3 *> allocate_buffers(hardware::System& system)
@@ -253,4 +279,79 @@ hmc_float physics::lattices::Gaugefield::plaquette()
 	plaq_dev.dump(&plaq_host);
 	device->synchronize();
 	return plaq_host;
+}
+
+static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float plaquette, sourcefileparameters& parameters_source)
+{
+	logger.info() << "Checking sourcefile parameters against inputparameters...";
+	//checking major parameters
+	int tmp1, tmp2;
+	std::string testobj;
+	std::string msg = "Major parameters do not match: ";
+
+	testobj = msg + "NT";
+	tmp1 = parameters.get_ntime();
+	tmp2 = parameters_source.lt_source;
+	if(tmp1 != tmp2) {
+		throw Invalid_Parameters(testobj , tmp1, tmp2);
+	}
+	testobj = msg + "NX";
+	tmp1 = parameters.get_nspace();
+	tmp2 = parameters_source.lx_source;
+	if(tmp1 != tmp2) {
+		throw Invalid_Parameters(testobj , tmp1, tmp2);
+	}
+	testobj = msg + "NY";
+	tmp1 = parameters.get_nspace();
+	tmp2 = parameters_source.ly_source;
+	if(tmp1 != tmp2) {
+		throw Invalid_Parameters(testobj , tmp1, tmp2);
+	}
+	testobj = msg + "NZ";
+	tmp1 = parameters.get_nspace();
+	tmp2 = parameters_source.lz_source;
+	if(tmp1 != tmp2) {
+		throw Invalid_Parameters(testobj , tmp1, tmp2);
+	}
+	testobj = msg + "PRECISION";
+	tmp1 = parameters.get_precision();
+	tmp2 = parameters_source.prec_source;
+	if(tmp1 != tmp2) {
+		throw Invalid_Parameters(testobj , tmp1, tmp2);
+	}
+
+	//checking minor parameters
+	msg = "Minor parameters do not match: ";
+	hmc_float float1, float2;
+	testobj = msg + "plaquette";
+	float1 = plaquette;
+	float2 = parameters_source.plaquettevalue_source;
+	if(float1 != float2) {
+		logger.warn() << testobj;
+		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
+	}
+	testobj = msg + "beta";
+	float1 = parameters.get_beta();
+	float2 = parameters_source.beta_source;
+	if(float1 != float2) {
+		logger.warn() << testobj;
+		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
+	}
+	testobj = msg + "kappa";
+	float1 = parameters.get_kappa();
+	float2 = parameters_source.kappa_source;
+	if(float1 != float2) {
+		logger.warn() << testobj;
+		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
+	}
+	testobj = msg + "mu";
+	float1 = parameters.get_mu();
+	float2 = parameters_source.mu_source;
+	if(float1 != float2) {
+		logger.warn() << testobj;
+		logger.warn() << "\tExpected: " << float1 << "\tFound: " << float2;
+	}
+
+	logger.info() << "...done";
+	return;
 }
