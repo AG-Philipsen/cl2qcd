@@ -27,13 +27,13 @@ protected:
 	/**
 	 * Shows if matrix is hermitian
 	 */
-	bool is_hermitian;
+	const bool is_hermitian;
 
 	/**
 	 * parameters kappa and mubar
 	 */
-	hmc_float kappa;
-	hmc_float mubar;
+	const hmc_float kappa;
+	const hmc_float mubar;
 
 public:
 	/**
