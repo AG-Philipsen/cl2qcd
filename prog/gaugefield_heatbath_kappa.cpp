@@ -6,9 +6,9 @@ hardware::code::Heatbath* Gaugefield_heatbath_kappa::get_task_heatbath()
 	return (hardware::code::Heatbath*)opencl_modules[task_heatbath];
 }
 
-Opencl_Module_Kappa* Gaugefield_heatbath_kappa::get_task_kappa()
+hardware::code::Kappa* Gaugefield_heatbath_kappa::get_task_kappa()
 {
-	return (Opencl_Module_Kappa*)opencl_modules[task_kappa];
+	return (hardware::code::Kappa*)opencl_modules[task_kappa];
 }
 
 void Gaugefield_heatbath_kappa::init_tasks()

@@ -104,7 +104,7 @@ public:
 	/**
 	 * Returns a pointer to kappa task
 	 */
-	Opencl_Module_Kappa* get_task_kappa();
+	hardware::code::Kappa* get_task_kappa();
 
 private:
 

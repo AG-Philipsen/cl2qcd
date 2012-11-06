@@ -454,10 +454,10 @@ hardware::code::Heatbath * hardware::Device::get_heatbath_code()
 	return heatbath_code;
 }
 
-Opencl_Module_Kappa * hardware::Device::get_kappa_code()
+hardware::code::Kappa * hardware::Device::get_kappa_code()
 {
 	if(!kappa_code) {
-		kappa_code = new Opencl_Module_Kappa(params, this);
+		kappa_code = new hardware::code::Kappa(params, this);
 	}
 	return kappa_code;
 }

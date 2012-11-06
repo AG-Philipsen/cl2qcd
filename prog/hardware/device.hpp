@@ -224,7 +224,7 @@ public:
 	/**
 	 * Get access to the kappa kernels on this device.
 	 */
-	Opencl_Module_Kappa * get_kappa_code();
+	hardware::code::Kappa * get_kappa_code();
 
 private:
 	/**
@@ -355,7 +355,7 @@ private:
 	 * Pointer to the kappa code.
 	 * Initialized on demand.
 	 */
-	Opencl_Module_Kappa * kappa_code;
+	hardware::code::Kappa * kappa_code;
 
 };
 

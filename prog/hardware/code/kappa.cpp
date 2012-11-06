@@ -18,7 +18,7 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 }
 
 
-void Opencl_Module_Kappa::fill_kernels()
+void hardware::code::Kappa::fill_kernels()
 {
 	ClSourcePackage sources = get_device()->get_gaugefield_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 
@@ -27,7 +27,7 @@ void Opencl_Module_Kappa::fill_kernels()
 }
 
 
-void Opencl_Module_Kappa::run_kappa_clover(const hardware::buffers::SU3 * gaugefield, const hmc_float beta)
+void hardware::code::Kappa::run_kappa_clover(const hardware::buffers::SU3 * gaugefield, const hmc_float beta)
 {
 	//variables
 	cl_int clerr = CL_SUCCESS;
@@ -57,26 +57,26 @@ void Opencl_Module_Kappa::run_kappa_clover(const hardware::buffers::SU3 * gaugef
 	//  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
 }
 
-hmc_float Opencl_Module_Kappa::get_kappa_clover()
+hmc_float hardware::code::Kappa::get_kappa_clover()
 {
 	hmc_float kappa_clover;
 	clmem_kappa_clover.dump(&kappa_clover);
 	return kappa_clover;
 }
 
-void Opencl_Module_Kappa::clear_kernels()
+void hardware::code::Kappa::clear_kernels()
 {
 	cl_int clerr = clReleaseKernel(kappa_clover_gpu);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
-Opencl_Module_Kappa::Opencl_Module_Kappa(const meta::Inputparameters& params, hardware::Device * device)
+hardware::code::Kappa::Kappa(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device), clmem_kappa_clover(1, device)
 {
 	fill_kernels();
 }
 
-Opencl_Module_Kappa::~Opencl_Module_Kappa()
+hardware::code::Kappa::~Kappa()
 {
 	clear_kernels();
 }

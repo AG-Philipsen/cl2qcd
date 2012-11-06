@@ -10,6 +10,10 @@
 #include "../buffers/plain.hpp"
 #include "../buffers/su3.hpp"
 
+namespace hardware {
+
+namespace code {
+
 /**
  * An OpenCL device
  *
@@ -17,11 +21,11 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Kappa : public hardware::code::Opencl_Module {
+class Kappa : public Opencl_Module {
 public:
 	friend hardware::Device;
 
-	virtual ~Opencl_Module_Kappa();
+	virtual ~Kappa();
 
 	/**
 	 * Run the calculation of kappa clover. No OpenCL barrier.
@@ -58,7 +62,7 @@ private:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Kappa(const meta::Inputparameters& params, hardware::Device * device);
+	Kappa(const meta::Inputparameters& params, hardware::Device * device);
 
 	/**
 	 * Collect the kernels for OpenCL.
@@ -73,5 +77,9 @@ private:
 	const hardware::buffers::Plain<hmc_float> clmem_kappa_clover;
 	cl_kernel kappa_clover_gpu;
 };
+
+}
+
+}
 
 #endif // _HARDWARE_CODE_KAPPA_
