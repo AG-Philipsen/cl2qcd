@@ -1,11 +1,11 @@
-#include "../opencl_module_hmc.h"
+#include "../opencl_module_molecular_dynamics.h"
 #include "../gaugefield_hybrid.h"
 
 #include "../meta/util.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE OPENCL_MODULE_HMC
+#define BOOST_TEST_MODULE OPENCL_MODULE_MOLECULAR_DYNAMICS
 #include <boost/test/unit_test.hpp>
 
 #include "test_util.h"
@@ -27,13 +27,13 @@ public:
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
-	Opencl_Module_Hmc * get_device();
+	Opencl_Module_Molecular_Dynamics * get_device();
 };
 
 void TestGaugefield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = get_device_for_task(0)->get_hmc_code();
+	opencl_modules[0] = get_device_for_task(0)->get_molecular_dynamics_code();
 }
 
 void TestGaugefield::finalize_opencl()
@@ -41,9 +41,9 @@ void TestGaugefield::finalize_opencl()
 	Gaugefield_hybrid::finalize_opencl();
 }
 
-Opencl_Module_Hmc* TestGaugefield::get_device()
+Opencl_Module_Molecular_Dynamics* TestGaugefield::get_device()
 {
-	return static_cast<Opencl_Module_Hmc*>(opencl_modules[0]);
+	return static_cast<Opencl_Module_Molecular_Dynamics*>(opencl_modules[0]);
 }
 
 void fill_sf_with_one(spinor * sf_in, int size)
@@ -192,7 +192,7 @@ void fill_sf_with_random_eo(spinor * sf_in1, spinor * sf_in2, int size, int seed
 
 void test_build(std::string inputfile)
 {
-	logger.info() << "build opencl_module_hmc";
+	logger.info() << "build opencl_module_molecular_dynamics";
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
@@ -226,7 +226,7 @@ void test_gf_update(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
+	Opencl_Module_Molecular_Dynamics * device = cpu.get_device();
 	hmc_float * gm_in;
 
 	logger.info() << "create buffers";
@@ -282,7 +282,7 @@ void test_f_update(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
+	Opencl_Module_Molecular_Dynamics * device = cpu.get_device();
 	hmc_float * gm_in;
 	hmc_float * gm_out;
 	auto gm_code = device->get_device()->get_gaugemomentum_code();
@@ -348,7 +348,7 @@ void test_f_gauge(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
+	Opencl_Module_Molecular_Dynamics * device = cpu.get_device();
 	ae * gm_out;
 	auto gm_code = device->get_device()->get_gaugemomentum_code();
 
@@ -361,15 +361,15 @@ void test_f_gauge(std::string inputfile)
 	hardware::buffers::Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
 	gm_code->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(gm_out));
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
+	
 	logger.info() << "|out|^2:";
 	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
 	hmc_float cpu_back;
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
-
+	
 	device->gauge_force_device( device->get_device()->get_gaugefield_code()->get_gaugefield(), &out);
-
+	
 	logger.info() << "result:";
 	hmc_float cpu_res;
 	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
@@ -392,7 +392,7 @@ void test_f_gauge_tlsym(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
+	Opencl_Module_Molecular_Dynamics * device = cpu.get_device();
 	ae * gm_out;
 	auto gm_code = device->get_device()->get_gaugemomentum_code();
 
@@ -438,7 +438,7 @@ void test_f_fermion(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
+	Opencl_Module_Molecular_Dynamics * device = cpu.get_device();
 	spinor * sf_in1;
 	spinor * sf_in2;
 	ae * ae_out;
@@ -514,7 +514,7 @@ void test_f_fermion_eo(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
+	Opencl_Module_Molecular_Dynamics * device = cpu.get_device();
 	spinor * sf_in1;
 	spinor * sf_in2;
 	ae * ae_out;
@@ -590,7 +590,7 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_CASE( BUILD_1 )
 {
-	test_build("/opencl_module_hmc_build_input_1");
+	test_build("/opencl_module_molecular_dynamics_build_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -860,7 +860,7 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
+	Opencl_Module_Molecular_Dynamics * device = cpu.get_device();
 
 	spinor * sf_in1_noneo;
 	spinor * sf_in2_noneo;

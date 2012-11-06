@@ -119,15 +119,15 @@ add_test(Opencl_module_gaugemomentum_CPU_REC12 opencl_module_gaugemomentum_test 
 add_test(Opencl_module_gaugemomentum_GPU       opencl_module_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
 add_test(Opencl_module_gaugemomentum_GPU_REC12 opencl_module_gaugemomentum_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
-add_executable(opencl_module_hmc_test opencl_module_hmc_test.cpp)
-target_link_libraries(opencl_module_hmc_test
+add_executable(opencl_module_molecular_dynamics_test opencl_module_molecular_dynamics_test.cpp)
+target_link_libraries(opencl_module_molecular_dynamics_test
 	optimal
 	${Boost_LIBRARIES}
 )
-add_test(Opencl_module_hmc_CPU       opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
-add_test(Opencl_module_hmc_CPU_REC12 opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
-add_test(Opencl_module_hmc_GPU       opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
-add_test(Opencl_module_hmc_GPU_REC12 opencl_module_hmc_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
+add_test(Opencl_module_molecular_dynamics_CPU       opencl_module_molecular_dynamics_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=false)
+add_test(Opencl_module_molecular_dynamics_CPU_REC12 opencl_module_molecular_dynamics_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=false --use_rec12=true)
+add_test(Opencl_module_molecular_dynamics_GPU       opencl_module_molecular_dynamics_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=false)
+add_test(Opencl_module_molecular_dynamics_GPU_REC12 opencl_module_molecular_dynamics_test ${CMAKE_CURRENT_SOURCE_DIR} --use_gpu=true --use_rec12=true)
 
 # ignore some tests
 configure_file(CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake @ONLY)
