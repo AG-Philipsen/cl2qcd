@@ -514,7 +514,7 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp(usetimer * solvertimer, const h
 		int converged = -1;
 		if(logger.beDebug()) fermion_code->print_info_inv_field(get_clmem_phi_mp_eo(), true, "\tinv. field before inversion ");
 		if(logger.beDebug()) fermion_code->print_info_inv_field(&sf_eo_tmp, true, "\tsource before inversion ");
-		converged = fermion_code->bicgstab_eo(::Qplus_eo(fermion_code), this->get_clmem_phi_mp_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
+		converged = fermion_code->bicgstab_eo(hardware::code::Qplus_eo(fermion_code), this->get_clmem_phi_mp_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), meta::get_mubar_mp(get_parameters()));
 		if (converged < 0) {
 			if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 			else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -541,7 +541,7 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp(usetimer * solvertimer, const h
 		int converged = -1;
 		if(logger.beDebug()) fermion_code->print_info_inv_field(get_clmem_phi_mp(), false, "\tinv. field before inversion ");
 		if(logger.beDebug()) fermion_code->print_info_inv_field(&sf_tmp, false, "\tsource before inversion ");
-		converged = fermion_code->bicgstab(::Qplus(fermion_code), this->get_clmem_phi_mp(), &sf_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), get_mubar_mp(get_parameters()));
+		converged = fermion_code->bicgstab(hardware::code::Qplus(fermion_code), this->get_clmem_phi_mp(), &sf_tmp, &new_u, get_parameters().get_solver_prec(), get_parameters().get_kappa_mp(), get_mubar_mp(get_parameters()));
 		if (converged < 0) {
 			if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 			else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -578,7 +578,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 			spinor_code->set_eoprec_spinorfield_cold_device(fermion_code->get_inout_eo());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\t\t\tinv. field before inversion ");
-			converged = fermion_code->cg_eo(::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), this->get_clmem_phi_eo(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->cg_eo(hardware::code::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), this->get_clmem_phi_eo(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -615,7 +615,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\t\t\tinv. field before inversion ");
 			if(logger.beDebug()) fermion_code->print_info_inv_field(get_clmem_phi_eo(), true, "\t\t\tsource before inversion ");
-			converged = fermion_code->bicgstab_eo(::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), this->get_clmem_phi_eo(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->bicgstab_eo(hardware::code::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), this->get_clmem_phi_eo(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -643,7 +643,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\t\t\tinv. field before inversion ");
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_source_even(), true, "\t\t\tsource before inversion ");
-			converged = fermion_code->bicgstab_eo(::Qminus_eo(fermion_code), fermion_code->get_inout_eo(), fermion_code->get_source_even(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->bicgstab_eo(hardware::code::Qminus_eo(fermion_code), fermion_code->get_inout_eo(), fermion_code->get_source_even(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -926,7 +926,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			converged = fermion_code->cg(::QplusQminus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->cg(hardware::code::QplusQminus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -962,7 +962,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			converged = fermion_code->bicgstab(::Qplus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->bicgstab(hardware::code::Qplus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -989,7 +989,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
-			converged = fermion_code->bicgstab(::Qminus(fermion_code), fermion_code->get_inout(), fermion_code->get_source(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->bicgstab(hardware::code::Qminus(fermion_code), fermion_code->get_inout(), fermion_code->get_source(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1051,7 +1051,7 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer, cons
 			spinor_code->set_eoprec_spinorfield_cold_device(fermion_code->get_inout_eo());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\t\t\tinv. field before inversion ");
-			converged = fermion_code->cg_eo(::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->cg_eo(hardware::code::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1087,7 +1087,7 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer, cons
 
 			//if(logger.beDebug()) fermion_code->print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field before inversion ");
 			//if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eo(), true, "\t\t\tsource before inversion ");
-			converged = fermion_code->bicgstab_eo(::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->bicgstab_eo(hardware::code::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1113,7 +1113,7 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer, cons
 
 			//if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field before inversion ");
 			//if(logger.beDebug()) print_info_inv_field(get_source_even(), true, "\t\t\tsource before inversion ");
-			converged = fermion_code->bicgstab_eo(::Qminus_eo(fermion_code), fermion_code->get_inout_eo(), fermion_code->get_source_even(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->bicgstab_eo(hardware::code::Qminus_eo(fermion_code), fermion_code->get_inout_eo(), fermion_code->get_source_even(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1218,7 +1218,7 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer, cons
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			converged = fermion_code->cg(::QplusQminus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_force_prec());
+			converged = fermion_code->cg(hardware::code::QplusQminus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_force_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1254,7 +1254,7 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer, cons
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			converged = fermion_code->bicgstab(::Qplus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_force_prec());
+			converged = fermion_code->bicgstab(hardware::code::Qplus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_force_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1281,7 +1281,7 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer, cons
 			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
-			converged = fermion_code->bicgstab(::Qminus(fermion_code), fermion_code->get_inout(), fermion_code->get_source(), &new_u, get_parameters().get_force_prec());
+			converged = fermion_code->bicgstab(hardware::code::Qminus(fermion_code), fermion_code->get_inout(), fermion_code->get_source(), &new_u, get_parameters().get_force_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1336,7 +1336,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 			spinor_code->set_eoprec_spinorfield_cold_device(fermion_code->get_inout_eo());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field before inversion ");
-			converged = fermion_code->cg_eo(::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), get_clmem_phi_eo(), &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->cg_eo(hardware::code::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), get_clmem_phi_eo(), &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1355,7 +1355,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field before inversion ");
 			if(logger.beDebug()) fermion_code->print_info_inv_field(get_clmem_phi_eo(), true, "\tsource before inversion ");
-			converged = fermion_code->bicgstab_eo(::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), get_clmem_phi_eo(), &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->bicgstab_eo(hardware::code::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), get_clmem_phi_eo(), &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1375,7 +1375,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
-			converged = fermion_code->cg(::QplusQminus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->cg(hardware::code::QplusQminus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1394,7 +1394,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
-			converged = fermion_code->bicgstab(::Qplus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->bicgstab(hardware::code::Qplus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1437,7 +1437,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * ga
 			spinor_code->set_eoprec_spinorfield_cold_device(fermion_code->get_inout_eo());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field before inversion ");
-			converged = fermion_code->cg_eo(::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->cg_eo(hardware::code::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1456,7 +1456,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * ga
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field before inversion ");
 			if(logger.beDebug()) fermion_code->print_info_inv_field(&sf_eo_tmp, true, "\tsource before inversion ");
-			converged = fermion_code->bicgstab_eo(::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->bicgstab_eo(hardware::code::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1481,7 +1481,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * ga
 			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
-			converged = fermion_code->cg(::QplusQminus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->cg(hardware::code::QplusQminus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -1500,7 +1500,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * ga
 			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
-			converged = fermion_code->bicgstab(::Qplus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->bicgstab(hardware::code::Qplus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";

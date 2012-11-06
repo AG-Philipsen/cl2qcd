@@ -422,10 +422,10 @@ Opencl_Module_Spinors * hardware::Device::get_spinor_code()
 	return spinor_code;
 }
 
-Opencl_Module_Fermions * hardware::Device::get_fermion_code()
+hardware::code::Fermions * hardware::Device::get_fermion_code()
 {
 	if(!fermion_code) {
-		fermion_code = new Opencl_Module_Fermions(params, this);
+		fermion_code = new hardware::code::Fermions(params, this);
 	}
 	return fermion_code;
 }

@@ -21,7 +21,7 @@ public:
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
-	Opencl_Module_Fermions * get_device();
+	hardware::code::Fermions * get_device();
 };
 
 void TestGaugefield::init_tasks()
@@ -92,9 +92,9 @@ void fill_sf_with_random(spinor * sf_in, int size)
   fill_sf_with_random(sf_in, size, 123456);
 }
   
-Opencl_Module_Fermions* TestGaugefield::get_device()
+hardware::code::Fermions* TestGaugefield::get_device()
 {
-	return static_cast<Opencl_Module_Fermions*>(opencl_modules[0]);
+	return static_cast<hardware::code::Fermions*>(opencl_modules[0]);
 }
 
 void test_build(std::string inputfile)
@@ -134,7 +134,7 @@ void test_m_fermion(std::string inputfile, int switcher)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
-	Opencl_Module_Fermions * device = cpu.get_device();
+	hardware::code::Fermions * device = cpu.get_device();
 	spinor * sf_in;
 	spinor * sf_out;
 
@@ -238,7 +238,7 @@ void test_gamma5(std::string inputfile)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
-	Opencl_Module_Fermions * device = cpu.get_device();
+	hardware::code::Fermions * device = cpu.get_device();
 	spinor * sf_in;
 
 	logger.info() << "Fill buffers...";
@@ -291,7 +291,7 @@ void test_gamma5_eo(std::string inputfile)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
-	Opencl_Module_Fermions * device = cpu.get_device();
+	hardware::code::Fermions * device = cpu.get_device();
 	spinor * sf_in;
 
 	logger.info() << "Fill buffers...";
@@ -348,7 +348,7 @@ void test_m_tm_sitediagonal_plus_minus(std::string inputfile, bool switcher)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Fermions * device = cpu.get_device();
+	hardware::code::Fermions * device = cpu.get_device();
 	spinor * sf_in;
 	spinor * sf_out;
 
@@ -424,7 +424,7 @@ void test_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile, bool switc
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Fermions * device = cpu.get_device();
+	hardware::code::Fermions * device = cpu.get_device();
 	spinor * sf_in;
 	spinor * sf_out;
 
@@ -494,7 +494,7 @@ void test_dslash_eo(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Fermions * device = cpu.get_device();
+	hardware::code::Fermions * device = cpu.get_device();
 
 	logger.info() << "Fill buffers...";
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
@@ -548,7 +548,7 @@ void test_dslash_and_gamma5_eo(std::string inputfile)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
-	Opencl_Module_Fermions * device = cpu.get_device();
+	hardware::code::Fermions * device = cpu.get_device();
 	spinor * sf_in;
 	spinor * sf_out;
 
@@ -617,7 +617,7 @@ void test_dslash_and_m_tm_inverse_sitediagonal_plus_minus(std::string inputfile,
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
-	Opencl_Module_Fermions * device = cpu.get_device();
+	hardware::code::Fermions * device = cpu.get_device();
 	spinor * sf_in;
 	spinor * sf_out;
 
@@ -699,7 +699,7 @@ void test_m_tm_sitediagonal_plus_minus_and_gamma5_eo(std::string inputfile, bool
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
-	Opencl_Module_Fermions * device = cpu.get_device();
+	hardware::code::Fermions * device = cpu.get_device();
 	spinor * sf_in;
 	spinor * sf_out;
 
@@ -1201,7 +1201,7 @@ void test_m_fermion_compare_noneo_eo(std::string inputfile, int switcher)
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
 	cl_int err = CL_SUCCESS;
-	Opencl_Module_Fermions * device = cpu.get_device();
+	hardware::code::Fermions * device = cpu.get_device();
 	spinor * sf_in_noneo;
 	spinor * sf_out_noneo;
 	spinor * sf_in_eo1;

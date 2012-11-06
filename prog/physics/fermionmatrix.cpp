@@ -77,7 +77,7 @@ void physics::fermionmatrix::Qminus::operator()(const hardware::buffers::Plain<s
 {
 	that->Qminus(in, out, gf, kappa, mubar);
 }
-cl_ulong Qminus::get_Flops() const
+cl_ulong physics::fermionmatrix::Qminus::get_Flops() const
 {
 	cl_ulong res;
 	switch(that->get_parameters().get_fermact()) {
@@ -114,7 +114,7 @@ void physics::fermionmatrix::QplusQminus::operator()(const hardware::buffers::Pl
 {
 	that->QplusQminus(in, out, gf, kappa, mubar);
 }
-cl_ulong QplusQminus::get_Flops() const
+cl_ulong physics::fermionmatrix::QplusQminus::get_Flops() const
 {
 	cl_ulong res;
 	switch(that->get_parameters().get_fermact()) {

@@ -97,7 +97,7 @@ public:
 	/**
 	 * Returns a pointer to solver task
 	 */
-	Opencl_Module_Fermions* get_task_solver();
+	hardware::code::Fermions* get_task_solver();
 
 	/**
 	 * Returns a pointer to correlator task

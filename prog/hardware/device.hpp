@@ -204,7 +204,7 @@ public:
 	/**
 	 * Get access to the fermion kernels on this device.
 	 */
-	Opencl_Module_Fermions * get_fermion_code();
+	hardware::code::Fermions * get_fermion_code();
 
 	/**
 	 * Get access to the hmc kernels on this device.
@@ -331,7 +331,7 @@ private:
 	 * Pointer to the fermion code.
 	 * Initialized on demand.
 	 */
-	Opencl_Module_Fermions * fermion_code;
+	hardware::code::Fermions * fermion_code;
 
 	/**
 	 * Pointer to the hmc code.

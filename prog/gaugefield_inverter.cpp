@@ -3,9 +3,9 @@
 #include "meta/util.hpp"
 
 
-Opencl_Module_Fermions* Gaugefield_inverter::get_task_solver()
+hardware::code::Fermions* Gaugefield_inverter::get_task_solver()
 {
-	return (Opencl_Module_Fermions*)opencl_modules[task_solver];
+	return (hardware::code::Fermions*)opencl_modules[task_solver];
 }
 
 hardware::code::Correlator* Gaugefield_inverter::get_task_correlator()
@@ -54,7 +54,7 @@ void Gaugefield_inverter::invert_M_nf2_upperflavour(const hardware::buffers::Pla
 	 * using a Krylov-Solver (BiCGStab or CG)
 	 */
 	int converged = -1;
-	Opencl_Module_Fermions * solver = get_task_solver();
+	hardware::code::Fermions * solver = get_task_solver();
 	auto spinor_code = solver->get_device()->get_spinor_code();
 
 	if(get_parameters().get_profile_solver() ) (*solvertimer).reset();
@@ -68,7 +68,7 @@ void Gaugefield_inverter::invert_M_nf2_upperflavour(const hardware::buffers::Pla
 	    //to use cg, one needs an hermitian matrix, which is QplusQminus
 	    //the source must now be gamma5 b, to obtain the desired solution in the end
 	    solver->gamma5_device(source);
-	    ::QplusQminus f_neo(solver);
+		hardware::code::QplusQminus f_neo(solver);
 	    converged = solver->cg(f_neo, inout, source, gf, get_parameters().get_solver_prec());
 	    //now, calc Qminus inout to obtain x = A^⁻1 b
 	    //therefore, use source as an intermediate buffer
@@ -76,7 +76,7 @@ void Gaugefield_inverter::invert_M_nf2_upperflavour(const hardware::buffers::Pla
 	    //save the result to inout
 	    hardware::buffers::copyData(inout, source);
 	  } else {
-	    ::M f_neo(solver);
+	    hardware::code::M f_neo(solver);
 	    converged = solver->bicgstab(f_neo, inout, source, gf, get_parameters().get_solver_prec());
 	  }
 	}
@@ -122,7 +122,7 @@ void Gaugefield_inverter::invert_M_nf2_upperflavour(const hardware::buffers::Pla
 	    //to use cg, one needs an hermitian matrix, which is QplusQminus
 	    //the source must now be gamma5 b, to obtain the desired solution in the end
 	    solver->gamma5_eo_device(&clmem_source_even);
-	    ::QplusQminus_eo f_eo(solver);
+	    hardware::code::QplusQminus_eo f_eo(solver);
 	    converged = solver->cg_eo(f_eo, solver->get_inout_eo(), &clmem_source_even, gf, get_parameters().get_solver_prec());
 	    //now, calc Qminus inout to obtain x = A^⁻1 b
 	    //therefore, use source as an intermediate buffer
@@ -130,7 +130,7 @@ void Gaugefield_inverter::invert_M_nf2_upperflavour(const hardware::buffers::Pla
 	    //save the result to inout
 	    hardware::buffers::copyData(solver->get_inout_eo(), &clmem_source_even);
 	  } else{
-	    ::Aee f_eo(solver);
+	    hardware::code::Aee f_eo(solver);
 	    converged = solver->bicgstab_eo(f_eo, solver->get_inout_eo(), &clmem_source_even, gf, get_parameters().get_solver_prec());
 	  }
 	  
@@ -168,7 +168,7 @@ void Gaugefield_inverter::perform_inversion(usetimer* solver_timer)
 {
   int num_sources = get_parameters().get_num_sources();
 
-	Opencl_Module_Fermions * solver = get_task_solver();
+	hardware::code::Fermions * solver = get_task_solver();
 	const hardware::buffers::Plain<spinor> clmem_res(meta::get_spinorfieldsize(get_parameters()), solver->get_device());
 	const hardware::buffers::Plain<spinor> clmem_source(meta::get_spinorfieldsize(get_parameters()), solver->get_device());
 	auto gf_code = solver->get_device()->get_gaugefield_code();

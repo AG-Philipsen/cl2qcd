@@ -12,7 +12,11 @@
 #include "../buffers/spinor.hpp"
 #include "../../host_use_timer.h"
 
-class Opencl_Module_Fermions;
+namespace hardware {
+
+namespace code {
+
+class Fermions;
 
 /**
  * this is a workaround to be able to pass a (fermionmatrix-)function, which are methods in this class,
@@ -21,9 +25,9 @@ class Opencl_Module_Fermions;
  */
 class Matrix_Function {
 protected:
-	Opencl_Module_Fermions * that;
+	hardware::code::Fermions * that;
 
-	Matrix_Function(Opencl_Module_Fermions * that) : that(that) { };
+	Matrix_Function(hardware::code::Fermions * that) : that(that) { };
 
 public:
 	/**
@@ -44,28 +48,28 @@ public:
 
 class M : public Matrix_Function {
 public:
-	M(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	M(hardware::code::Fermions * that) : Matrix_Function(that) { };
 	void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class Qplus : public Matrix_Function {
 public:
-	Qplus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	Qplus(hardware::code::Fermions * that) : Matrix_Function(that) { };
 	void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class Qminus : public Matrix_Function {
 public:
-	Qminus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	Qminus(hardware::code::Fermions * that) : Matrix_Function(that) { };
 	void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class QplusQminus : public Matrix_Function {
 public:
-	QplusQminus(Opencl_Module_Fermions * that) : Matrix_Function(that) { };
+	QplusQminus(hardware::code::Fermions * that) : Matrix_Function(that) { };
 	void operator() (const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
@@ -77,9 +81,9 @@ public:
  */
 class Matrix_Function_eo {
 protected:
-	Opencl_Module_Fermions * that;
+	hardware::code::Fermions * that;
 
-	Matrix_Function_eo(Opencl_Module_Fermions * that) : that(that) { };
+	Matrix_Function_eo(hardware::code::Fermions * that) : that(that) { };
 
 public:
 	/**
@@ -100,28 +104,28 @@ public:
 
 class Aee : public Matrix_Function_eo {
 public:
-	Aee(Opencl_Module_Fermions * that) : Matrix_Function_eo(that) { };
+	Aee(hardware::code::Fermions * that) : Matrix_Function_eo(that) { };
 	void operator() (const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class Qplus_eo : public Matrix_Function_eo {
 public:
-	Qplus_eo(Opencl_Module_Fermions * that) : Matrix_Function_eo(that) { };
+	Qplus_eo(hardware::code::Fermions * that) : Matrix_Function_eo(that) { };
 	void operator() (const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class Qminus_eo : public Matrix_Function_eo {
 public:
-	Qminus_eo(Opencl_Module_Fermions * that) : Matrix_Function_eo(that) { };
+	Qminus_eo(hardware::code::Fermions * that) : Matrix_Function_eo(that) { };
 	void operator() (const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
 };
 class QplusQminus_eo : public Matrix_Function_eo {
 public:
-	QplusQminus_eo(Opencl_Module_Fermions * that) : Matrix_Function_eo(that) { };
+	QplusQminus_eo(hardware::code::Fermions * that) : Matrix_Function_eo(that) { };
 	void operator() (const hardware::buffers::Spinor * in, const hardware::buffers::Spinor * out, const hardware::buffers::SU3 * gf, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF) const override;
 	cl_ulong get_Flops() const override;
 	cl_ulong get_Bytes() const override;
@@ -135,11 +139,11 @@ public:
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Fermions : public hardware::code::Opencl_Module {
+class Fermions : public hardware::code::Opencl_Module {
 public:
 	friend hardware::Device;
 
-	virtual ~Opencl_Module_Fermions();
+	virtual ~Fermions();
 
 
 	//    fermionmatrix operations
@@ -262,7 +266,7 @@ private:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Fermions(const meta::Inputparameters& params, hardware::Device * device);
+	Fermions(const meta::Inputparameters& params, hardware::Device * device);
 
 	/**
 	 * Collect the kernels for OpenCL.
@@ -332,5 +336,9 @@ private:
 
 	ClSourcePackage sources;
 };
+
+}
+
+}
 
 #endif // _HARDWARE_CODE_FERMIONS_
