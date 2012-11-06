@@ -9,6 +9,10 @@
 add_library(lattices
 	gaugefield.cpp
 )
+target_link_libraries(lattices
+	hardware
+	physics
+)
 
 #
 # Definition of tets

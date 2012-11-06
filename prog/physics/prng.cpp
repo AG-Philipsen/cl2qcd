@@ -33,3 +33,8 @@ for(hardware::Device * device : system.get_devices()) {
 		buffers.push_back(buffer);
 	}
 }
+
+const std::vector<const hardware::buffers::PRNGBuffer*> physics::PRNG::get_buffers()
+{
+	return buffers;
+}

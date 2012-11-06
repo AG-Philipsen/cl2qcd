@@ -13,18 +13,12 @@
  */
 namespace physics {
 
-	namespace lattices {
-		class Gaugefield;
-	}
-
 	/**
 	 * The PRNG PRNG for host and device.
 	 *
 	 * WARNING: Must only be used as a singleton!
 	 */
 	class PRNG {
-		friend physics::lattices::Gaugefield;
-
 		public:
 			/**
 			 * Initialize the ranlux instance
@@ -44,6 +38,11 @@ namespace physics {
 			 * Get random numbers
 			 */
 			double get_double() noexcept;
+
+			/**
+			 * Get the buffers containing the random state on the device.
+			 */
+			const std::vector<const hardware::buffers::PRNGBuffer*> get_buffers();
 
 		private:
 			/**
