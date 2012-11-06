@@ -57,25 +57,8 @@ Opencl_Module_Ran::Opencl_Module_Ran(const meta::Inputparameters& params, hardwa
 	prng_buffer.load(rndarray);
 #elif defined(USE_PRNG_RANLUX)
 	prng_code = ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "ranluxcl/ranluxcl.cl" << "random.cl";
-	cl_kernel init_kernel = createKernel("prng_ranlux_init") << get_device()->get_gaugefield_code()->get_sources() << prng_code << "random_ranlux_init.cl";
-	cl_int clerr;
-	size_t ls, gs;
-	cl_uint num_groups;
-	this->get_work_sizes(init_kernel, &ls, &gs, &num_groups);
-	// FIXME reenable device rank
-	cl_uint seed = get_parameters().get_host_seed() + 1;// + device_rank; // +1 ensures that seed is not equal even if host and device seed are both 0
-	if(seed > (10e9 / gs)) { // see ranluxcl source as to why
-		/// @todo upgrade to newer ranluxcl to avoid this restcition
-		throw Invalid_Parameters("Host seed is too large!", "<< 10e9", get_parameters().get_host_seed());
-	}
-	clerr = clSetKernelArg(init_kernel, 0, sizeof(cl_uint), &seed);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(init_kernel, 1, sizeof(cl_mem), prng_buffer);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	get_device()->enqueue_kernel(init_kernel, gs, ls);
-	get_device()->synchronize();
-	clerr = clReleaseKernel(init_kernel);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	init_kernel = createKernel("prng_ranlux_init") << get_device()->get_gaugefield_code()->get_sources() << prng_code << "random_ranlux_init.cl";
+	initialize(&prng_buffer, get_parameters().get_host_seed() + 1);
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
@@ -86,7 +69,8 @@ Opencl_Module_Ran::~Opencl_Module_Ran()
 #ifdef USE_PRNG_NR3
 	delete [] rndarray;
 #elif defined(USE_PRNG_RANLUX)
-	/* nothing to do */
+	cl_int clerr = clReleaseKernel(init_kernel);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX
@@ -96,3 +80,22 @@ ClSourcePackage Opencl_Module_Ran::get_sources() const noexcept
 {
 	return prng_code;
 }
+
+#ifdef USE_PRNG_RANLUX
+void Opencl_Module_Ran::initialize(const hardware::buffers::PRNGBuffer * buffer, cl_uint seed)
+{
+	cl_int clerr;
+	size_t ls, gs;
+	cl_uint num_groups;
+	this->get_work_sizes(init_kernel, &ls, &gs, &num_groups);
+	if(seed > (10e9 / gs)) { // see ranluxcl source as to why
+		/// @todo upgrade to newer ranluxcl to avoid this restcition
+		throw Invalid_Parameters("Host seed is too large!", "<< 10e9", get_parameters().get_host_seed());
+	}
+	clerr = clSetKernelArg(init_kernel, 0, sizeof(cl_uint), &seed);
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	clerr = clSetKernelArg(init_kernel, 1, sizeof(cl_mem), buffer->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	get_device()->enqueue_kernel(init_kernel, gs, ls);
+}
+#endif /* USE_PRNG_RANLUX */

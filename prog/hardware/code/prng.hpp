@@ -29,6 +29,13 @@ public:
 
 	ClSourcePackage get_sources() const noexcept;
 
+#ifdef USE_PRNG_RANLUX
+	/**
+	 * Initialize the state of the PRNG with the given seed.
+	 */
+	void initialize(const hardware::buffers::PRNGBuffer * buffer, cl_uint seed);
+#endif /* USE_PRNG_RANLUX */
+
 protected:
 	/**
 	 * Return amount of Floating point operations performed by a specific kernel per call.
@@ -80,7 +87,9 @@ private:
 
 	nr3_state_dev* rndarray;
 	size_t sizeof_rndarray;
-#endif // USE_PRNG_NR3
+#elif defined(USE_PRNG_RANLUX)
+	cl_kernel init_kernel;
+#endif // USE_PRNG_???
 };
 
 #endif // _HARDWARE_CODE_PRNG_

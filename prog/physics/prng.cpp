@@ -18,18 +18,18 @@ for(const hardware::buffers::PRNGBuffer * buffer : buffers) {
 physics::PRNG::PRNG(const hardware::System& system) :
 	system(system)
 {
-//	using hardware::buffers::PRNGBuffer;
-//
-//	// initialize host prng
-//	uint32_t seed = system.get_inputparameters().get_host_seed();
-//	prng_init(seed);
-//
-//	// initialize devices
-//for(hardware::Device * device : system.get_devices()) {
-//		// create a buffer for each device
-//		const PRNGBuffer * buffer = new PRNGBuffer(device);
-//		const hardware::code::PRNG& code = device->get_prng();
-//		code.initialize(buffer, ++seed);
-//		buffers.push_back(buffer);
-//	}
+	using hardware::buffers::PRNGBuffer;
+
+	// initialize host prng
+	uint32_t seed = system.get_inputparameters().get_host_seed();
+	prng_init(seed);
+
+	// initialize devices
+for(hardware::Device * device : system.get_devices()) {
+		// create a buffer for each device
+		const PRNGBuffer * buffer = new PRNGBuffer(device);
+		auto code = device->get_prng_code();
+		code->initialize(buffer, ++seed);
+		buffers.push_back(buffer);
+	}
 }
