@@ -181,9 +181,11 @@ size_t Opencl_Module_Hmc::get_read_write_size(const std::string& in) const
 		//this kernel reads 16 spinors, 8 su3matrices and writes 1 ae per site
 		return (C * 12 * (16) + C * 8 * R + 8 * A) * D * Seo;
 	}
+	/*
 	if (in == "stout_smear_fermion_force") {
 		return 10000000000000000000;
 	}
+	*/
 	return 0;
 }
 
@@ -349,7 +351,6 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 {
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
-
 	int converged = -1;
 	if(get_parameters().get_use_eo() == true) {
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
@@ -1444,65 +1445,14 @@ void Opencl_Module_Hmc::calc_spinorfield_init_energy(hardware::buffers::Plain<hm
 
 void Opencl_Module_Hmc::md_update_gaugemomentum_device(hmc_float eps)
 {
-	md_update_gaugemomentum_device(&clmem_force, &clmem_new_p, eps);
-
-	if(logger.beDebug()) {
-	  auto gm_code = get_device()->get_gaugemomentum_code();
-		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
-		hmc_float resid;
-		gm_code->set_float_to_gaugemomentum_squarenorm_device(&clmem_new_p, &force_tmp);
-		force_tmp.dump(&resid);
-		logger.debug() <<  "\tupdated gaugemomenta energy:\t" << resid;
-		if(resid != resid) {
-			throw Print_Error_Message("calculation of gm gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-}
-
-void Opencl_Module_Hmc::md_update_gaugemomentum_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::Gaugemomentum * out, hmc_float eps)
-{
-	//__kernel void md_update_gaugemomenta(hmc_float eps, __global ae * p_inout, __global ae* force_in){
-	hmc_float tmp = eps;
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(md_update_gaugemomenta, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(md_update_gaugemomenta, 0, sizeof(hmc_float), &tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(md_update_gaugemomenta, 1, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(md_update_gaugemomenta, 2, sizeof(cl_mem), in->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel(md_update_gaugemomenta , gs2, ls2);
+	auto mol_dyn_code = get_device()->get_molecular_dynamics_code();
+	mol_dyn_code->md_update_gaugemomentum_device(&clmem_force, &clmem_new_p, eps);
 }
 
 void Opencl_Module_Hmc::md_update_gaugefield_device(hmc_float eps)
 {
-	md_update_gaugefield_device(&clmem_new_p, &new_u, eps);
-}
-
-void Opencl_Module_Hmc::md_update_gaugefield_device(const hardware::buffers::Gaugemomentum * gm_in, const hardware::buffers::SU3 * gf_out, hmc_float eps)
-{
-	// __kernel void md_update_gaugefield(hmc_float eps, __global ae * p_in, __global ocl_s_gaugefield * u_inout){
-	hmc_float tmp = eps;
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(md_update_gaugefield, &ls2, &gs2, &num_groups);
-	//set arguments
-	//this is always applied to clmem_force
-	int clerr = clSetKernelArg(md_update_gaugefield, 0, sizeof(hmc_float), &tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(md_update_gaugefield, 1, sizeof(cl_mem), gm_in->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(md_update_gaugefield, 2, sizeof(cl_mem), gf_out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel( md_update_gaugefield , gs2, ls2);
+	auto mol_dyn_code = get_device()->get_molecular_dynamics_code();
+	mol_dyn_code->md_update_gaugefield_device(&clmem_new_p, &new_u, eps);
 }
 
 void Opencl_Module_Hmc::set_zero_clmem_force_device()
@@ -1510,287 +1460,30 @@ void Opencl_Module_Hmc::set_zero_clmem_force_device()
   auto gm_code = get_device()->get_gaugemomentum_code();
 	gm_code->set_zero_gaugemomentum(&clmem_force);
 }
-/*
-void Opencl_Module_Hmc::set_zero_gaugemomentum(const hardware::buffers::Gaugemomentum * buf)
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(_set_zero_gaugemomentum, &ls2, &gs2, &num_groups);
-	//set arguments
-	//this is always applied to clmem_force
-	int clerr = clSetKernelArg(_set_zero_gaugemomentum, 0, sizeof(cl_mem), buf->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	get_device()->enqueue_kernel(_set_zero_gaugemomentum , gs2, ls2);
-}
-*/
 void Opencl_Module_Hmc::gauge_force_device()
 {
-	gauge_force_device(&new_u, &clmem_force);
-
-	if(logger.beDebug()) {
-	  	  auto gm_code = get_device()->get_gaugemomentum_code();
-		hardware::buffers::Plain<hmc_float> gauge_force_tmp(1, get_device());
-		hmc_float gauge_force_energy = 0.;
-		gm_code->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &gauge_force_tmp);
-		gauge_force_tmp.dump(&gauge_force_energy);
-
-		logger.debug() <<  "\t\t\tgauge force:\t" << gauge_force_energy;
-
-		if(gauge_force_energy != gauge_force_energy) {
-			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-
-	//recalculate force with local buffer to get only this contribution to the force vector
-	if(logger.beDebug()) {
-		const hardware::buffers::Gaugemomentum force2(clmem_force.get_elements(), clmem_force.get_device());
-		auto gm_code = get_device()->get_gaugemomentum_code();
-		//init new buffer to zero
-		gm_code->set_zero_gaugemomentum(&force2);
-
-		//re-calculate force
-		gauge_force_device(&new_u, &force2);
-
-		hardware::buffers::Plain<hmc_float> check_force_tmp(1, get_device());
-		hmc_float check_force_energy = 0.;
-		gm_code->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
-		check_force_tmp.dump(&check_force_energy);
-		//logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
-		if(check_force_energy != check_force_energy) {
-			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-
+	auto mol_dyn_code = get_device()->get_molecular_dynamics_code();
+	mol_dyn_code->gauge_force_device(&new_u, &clmem_force);
 }
-
-void Opencl_Module_Hmc::gauge_force_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out)
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(gauge_force, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(gauge_force, 0, sizeof(cl_mem), gf->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(gauge_force, 1, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel( gauge_force , gs2, ls2);
-}
-
-
 void Opencl_Module_Hmc::gauge_force_tlsym_device()
 {
-	gauge_force_tlsym_device(&new_u, &clmem_force);
-
-	if(logger.beDebug()) {
-		hardware::buffers::Plain<hmc_float> gauge_force_tlsym_tmp(1, get_device());
-		auto gm_code = get_device()->get_gaugemomentum_code();
-		hmc_float gauge_force_tlsym_energy = 0.;
-		gm_code->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &gauge_force_tlsym_tmp);
-		gauge_force_tlsym_tmp.dump(&gauge_force_tlsym_energy);
-
-		logger.debug() <<  "\t\t\tgauge force tlsym:\t" << gauge_force_tlsym_energy;
-
-		if(gauge_force_tlsym_energy != gauge_force_tlsym_energy) {
-			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-
-	//recalculate force with local buffer to get only this contribution to the force vector
-	if(logger.beDebug()) {
-		const hardware::buffers::Gaugemomentum force2(clmem_force.get_elements(), clmem_force.get_device());
-		auto gm_code = get_device()->get_gaugemomentum_code();
-		//init new buffer to zero
-		gm_code->set_zero_gaugemomentum(&force2);
-
-		gauge_force_tlsym_device(&new_u, &force2);
-
-		hardware::buffers::Plain<hmc_float> check_force_tmp(1, get_device());
-		hmc_float check_force_energy = 0.;
-		gm_code->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
-		check_force_tmp.dump(&check_force_energy);
-		logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
-		if(check_force_energy != check_force_energy) {
-			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-
+	auto mol_dyn_code = get_device()->get_molecular_dynamics_code();
+	mol_dyn_code->gauge_force_tlsym_device(&new_u, &clmem_force);
 }
-
-void Opencl_Module_Hmc::gauge_force_tlsym_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out)
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(gauge_force_tlsym, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(gauge_force_tlsym, 0, sizeof(cl_mem), gf->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(gauge_force_tlsym, 1, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel( gauge_force_tlsym , gs2, ls2);
-}
-
 void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, hmc_float kappa)
 {
 	using namespace hardware::buffers;
-
-	fermion_force_device(Y, X, &new_u, &clmem_force, kappa);
-
-	if(logger.beDebug()) {
-		Plain<hmc_float> noneo_force_tmp(1, get_device());
-		auto gm_code = get_device()->get_gaugemomentum_code();
-		hmc_float noneo_force_energy = 0.;
-		gm_code->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &noneo_force_tmp);
-		noneo_force_tmp.dump(&noneo_force_energy);
-		//logger.debug() <<  "\t\t\tnon-eo force:\t" << noneo_force_energy;
-		if(noneo_force_energy != noneo_force_energy) {
-			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-
-	//recalculate force with local buffer to get only this contribution to the force vector
-	if(logger.beDebug()) {
-		const hardware::buffers::Gaugemomentum force2(clmem_force.get_elements(), clmem_force.get_device());
-		auto gm_code = get_device()->get_gaugemomentum_code();
-		//init new buffer to zero
-		gm_code->set_zero_gaugemomentum(&force2);
-
-		//re-calculate force
-		fermion_force_device(Y, X, &new_u, &force2, kappa);
-
-		Plain<hmc_float> check_force_tmp(1, get_device());
-		hmc_float check_force_energy = 0.;
-		gm_code->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
-		check_force_tmp.dump(&check_force_energy);
-		//logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
-		if(check_force_energy != check_force_energy) {
-			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-
-}
-
-void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out, hmc_float kappa)
-{
-	//get kappa
-	hmc_float kappa_tmp;
-	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
-	else kappa_tmp = kappa;
-
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(fermion_force, &ls2, &gs2, &num_groups);
-	//set arguments
-	//fermion_force(field, Y, X, out);
-	int clerr = clSetKernelArg(fermion_force, 0, sizeof(cl_mem), gf->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(fermion_force, 1, sizeof(cl_mem), Y->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(fermion_force, 2, sizeof(cl_mem), X->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(fermion_force, 3, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(fermion_force, 4, sizeof(hmc_float), &kappa_tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel( fermion_force , gs2, ls2);
+	auto mol_dyn_code = get_device()->get_molecular_dynamics_code();
+	mol_dyn_code->fermion_force_device(Y, X, &new_u, &clmem_force, kappa);
 }
 
 //the argument kappa is set to ARG_DEF as default
 void Opencl_Module_Hmc::fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, int evenodd, hmc_float kappa)
 {
 	using namespace hardware::buffers;
-
-	fermion_force_eo_device(Y, X, &new_u, &clmem_force, evenodd, kappa);
-
-	if(logger.beDebug()) {
-		Plain<hmc_float> force_tmp(1, get_device());
-		auto gm_code = get_device()->get_gaugemomentum_code();
-		hmc_float resid;
-		gm_code->set_float_to_gaugemomentum_squarenorm_device(&clmem_force, &force_tmp);
-		force_tmp.dump(&resid);
-		//logger.debug() <<  "\t\t\teoprec force:\t" << resid;
-
-		if(resid != resid) {
-			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-
-	//recalculate force with local buffer, giving only this contribution to the force
-	if(logger.beDebug()) {
-		const hardware::buffers::Gaugemomentum force2(clmem_force.get_elements(), clmem_force.get_device());
-		auto gm_code = get_device()->get_gaugemomentum_code();
-		//init new buffer to zero
-		gm_code->set_zero_gaugemomentum(&force2);
-
-		//re-calculate force
-		fermion_force_eo_device(Y, X, &new_u, &force2, evenodd, kappa);
-
-		Plain<hmc_float> check_force_tmp(1, get_device());
-		hmc_float check_force_energy = 0.;
-		gm_code->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
-		check_force_tmp.dump(&check_force_energy);
-		//logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
-		if(check_force_energy != check_force_energy) {
-			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-}
-
-//the argument kappa is set to ARG_DEF as default
-void Opencl_Module_Hmc::fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out, int evenodd, hmc_float kappa)
-{
-	//get kappa
-	hmc_float kappa_tmp;
-	if(kappa == ARG_DEF) kappa_tmp = get_parameters().get_kappa();
-	else kappa_tmp = kappa;
-
-	//fermion_force(field, Y, X, out);
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(fermion_force_eo, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(fermion_force_eo, 0, sizeof(cl_mem), gf->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(fermion_force_eo, 1, sizeof(cl_mem), Y->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(fermion_force_eo, 2, sizeof(cl_mem), X->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(fermion_force_eo, 3, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(fermion_force_eo, 4, sizeof(int), &evenodd);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	clerr = clSetKernelArg(fermion_force_eo, 5, sizeof(hmc_float), &kappa_tmp);
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel( fermion_force_eo , gs2, ls2);
-}
-
-void Opencl_Module_Hmc::stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate)
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(stout_smear_fermion_force, &ls2, &gs2, &num_groups);
-	//set arguments
+	auto mol_dyn_code = get_device()->get_molecular_dynamics_code();
+	mol_dyn_code->fermion_force_eo_device(Y, X, &new_u, &clmem_force, evenodd, kappa);
 }
 
 Opencl_Module_Hmc::Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device)

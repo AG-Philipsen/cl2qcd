@@ -78,19 +78,12 @@ public:
 	///////////////////////////////////////////////////
 	//Methods on device
 	void md_update_gaugemomentum_device(hmc_float eps);
-	void md_update_gaugemomentum_device(const hardware::buffers::Gaugemomentum *, const hardware::buffers::Gaugemomentum *, hmc_float eps);
 	void md_update_gaugefield_device(hmc_float eps);
-	void md_update_gaugefield_device(const hardware::buffers::Gaugemomentum *, const hardware::buffers::SU3 *, hmc_float eps);
 	void set_zero_clmem_force_device();
 	void gauge_force_device();
-	void gauge_force_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out);
 	void gauge_force_tlsym_device();
-	void gauge_force_tlsym_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out);
 	void fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, hmc_float kappa = ARG_DEF);
-	void fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, const hardware::buffers::SU3 *, const hardware::buffers::Gaugemomentum *, hmc_float kappa = ARG_DEF);
 	void fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, int evenodd, hmc_float kappa = ARG_DEF);
-	void fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, const hardware::buffers::SU3 *, const hardware::buffers::Gaugemomentum *, int evenodd, hmc_float kappa = ARG_DEF);
-	void stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate);
 	hmc_float calc_s_fermion();
 	hmc_float calc_s_fermion_mp(const hardware::buffers::SU3 * gaugefield);
 
@@ -101,7 +94,7 @@ protected:
 	 * @todo autotune
 	 * @param ls local-work-size
 	 * @param gs global-work-size
-	 * @param num_groups number of work groups
+2	 * @param num_groups number of work groups
 	 * @param name name of the kernel for possible autotune-usage, not yet used!!
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
