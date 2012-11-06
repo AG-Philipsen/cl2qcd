@@ -7,8 +7,6 @@
 #define BOOST_TEST_MODULE staple_test
 #include <boost/test/unit_test.hpp>
 
-extern std::string const version;
-std::string const version = "0.1";
 std::string const exec_name = "staple_test";
 
 class Device : public Opencl_Module {

@@ -9,9 +9,6 @@
 //some functionality
 #include "test_util.h"
 
-extern std::string const version;
-std::string const version = "0.1";
-
 class TestGaugefield : public Gaugefield_hybrid {
 
 public:

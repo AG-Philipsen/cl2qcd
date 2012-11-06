@@ -8,9 +8,6 @@
 #define NUM_ELEMENTS 1024
 #define LOCAL_SIZE 128
 
-extern std::string const version;
-std::string const version = "0.1";
-
 class Device : public Opencl_Module {
 
 	cl_kernel extendKernel;

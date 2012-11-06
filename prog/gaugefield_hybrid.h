@@ -25,14 +25,6 @@
 
 #include "logger.hpp"
 
-
-/**
- * Version number.
- *
- * @deprecated move this into some specific header or so
- */
-extern std::string const version;
-
 /**
  * Class for the gaugefield. Includes initialization, device management for multiple devices.
  *

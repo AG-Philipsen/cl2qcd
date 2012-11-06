@@ -5,9 +5,6 @@
 #define BOOST_TEST_MODULE SU2 SU3 Extend
 #include <boost/test/unit_test.hpp>
 
-extern std::string const version;
-std::string const version = "0.1";
-
 class Device : public Opencl_Module {
 
 	cl_kernel testKernel;

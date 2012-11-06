@@ -10,6 +10,5 @@
 
 //should only be included in main prog
 #include "gaugefield_hybrid.h"
-string const version = "0.1b";
 
 #endif /* _GAUGEOBSERVABLESH_ */

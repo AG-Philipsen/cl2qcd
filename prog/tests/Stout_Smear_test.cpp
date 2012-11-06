@@ -6,8 +6,6 @@
 #define BOOST_TEST_MODULE stout_smear_test
 #include <boost/test/unit_test.hpp>
 
-extern std::string const version;
-std::string const version = "0.1";
 std::string const exec_name = "stout_smear_test";
 
 #define CLX_CHECK_CLOSE(left, right, precision) \

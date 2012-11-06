@@ -9,6 +9,5 @@
 #include "general_header.h"
 
 #include "gaugefield_heatbath.h"
-string const version = "0.1b";
 
 #endif /* _HEATBATH_ */

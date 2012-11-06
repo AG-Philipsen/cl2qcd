@@ -7,9 +7,6 @@
 #include "../meta/util.hpp"
 #include "../meta/type_ops.hpp"
 
-extern std::string const version;
-std::string const version = "0.1";
-
 class Dummyfield : public Gaugefield_hybrid {
 
 public:
