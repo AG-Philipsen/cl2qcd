@@ -194,7 +194,7 @@ public:
 	/**
 	 * Get access to the prng kernels on this device.
 	 */
-	Opencl_Module_Ran * get_prng_code();
+	hardware::code::PRNG * get_prng_code();
 
 	/**
 	 * Get access to the spinor kernels on this device.
@@ -319,7 +319,7 @@ private:
 	 * Pointer to the prng code.
 	 * Initialized on demand.
 	 */
-	Opencl_Module_Ran * prng_code;
+	hardware::code::PRNG * prng_code;
 
 	/**
 	 * Pointer to the spinor code.

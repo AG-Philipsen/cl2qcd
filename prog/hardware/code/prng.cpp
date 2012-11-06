@@ -22,23 +22,23 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 }
 
 #ifdef USE_PRNG_NR3
-void Opencl_Module_Ran::copy_rndstate_to_device(nr3_state_dev* rndarray) const
+void hardware::code::PRNG::copy_rndstate_to_device(nr3_state_dev* rndarray) const
 {
 	prng_buffer.load(rndarray);
 }
 
-void Opencl_Module_Ran::copy_rndstate_from_device(nr3_state_dev* rndarray) const
+void hardware::code::PRNG::copy_rndstate_from_device(nr3_state_dev* rndarray) const
 {
 	prng_buffer.dump(rndarray);
 }
 #endif // USE_PRNG_NR3
 
-const hardware::buffers::PRNGBuffer& Opencl_Module_Ran::get_prng_buffer() const noexcept
+const hardware::buffers::PRNGBuffer& hardware::code::PRNG::get_prng_buffer() const noexcept
 {
 	return prng_buffer;
 }
 
-Opencl_Module_Ran::Opencl_Module_Ran(const meta::Inputparameters& params, hardware::Device * device)
+hardware::code::PRNG::PRNG(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device), prng_buffer(device)
 {
 #ifdef USE_PRNG_NR3
@@ -64,7 +64,7 @@ Opencl_Module_Ran::Opencl_Module_Ran(const meta::Inputparameters& params, hardwa
 #endif // USE_PRNG_XXX
 }
 
-Opencl_Module_Ran::~Opencl_Module_Ran()
+hardware::code::PRNG::~PRNG()
 {
 #ifdef USE_PRNG_NR3
 	delete [] rndarray;
@@ -76,13 +76,13 @@ Opencl_Module_Ran::~Opencl_Module_Ran()
 #endif // USE_PRNG_XXX
 }
 
-ClSourcePackage Opencl_Module_Ran::get_sources() const noexcept
+ClSourcePackage hardware::code::PRNG::get_sources() const noexcept
 {
 	return prng_code;
 }
 
 #ifdef USE_PRNG_RANLUX
-void Opencl_Module_Ran::initialize(const hardware::buffers::PRNGBuffer * buffer, cl_uint seed)
+void hardware::code::PRNG::initialize(const hardware::buffers::PRNGBuffer * buffer, cl_uint seed)
 {
 	cl_int clerr;
 	size_t ls, gs;

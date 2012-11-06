@@ -406,10 +406,10 @@ hardware::code::Gaugefield * hardware::Device::get_gaugefield_code()
 	return gaugefield_code;
 }
 
-Opencl_Module_Ran * hardware::Device::get_prng_code()
+hardware::code::PRNG * hardware::Device::get_prng_code()
 {
 	if(!prng_code) {
-		prng_code = new Opencl_Module_Ran(params, this);
+		prng_code = new hardware::code::PRNG(params, this);
 	}
 	return prng_code;
 }

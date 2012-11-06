@@ -8,6 +8,10 @@
 
 #include "../buffers/prng_buffer.hpp"
 
+namespace hardware {
+
+namespace code {
+
 /**
  * An OpenCL device
  *
@@ -15,11 +19,11 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Ran : public hardware::code::Opencl_Module {
+class PRNG : public Opencl_Module {
 public:
 	friend hardware::Device;
 
-	virtual ~Opencl_Module_Ran();
+	virtual ~PRNG();
 
 	/**
 	 * Get cl_mem object rndarray
@@ -57,7 +61,7 @@ private:
 	/**
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Ran(const meta::Inputparameters& params, hardware::Device * device);
+	PRNG(const meta::Inputparameters& params, hardware::Device * device);
 
 	/**
 	 * A set of sources required to use the PRNG.
@@ -91,5 +95,9 @@ private:
 	cl_kernel init_kernel;
 #endif // USE_PRNG_???
 };
+
+}
+
+}
 
 #endif // _HARDWARE_CODE_PRNG_
