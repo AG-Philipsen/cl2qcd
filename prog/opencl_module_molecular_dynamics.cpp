@@ -26,23 +26,23 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 
 void Opencl_Module_Molecular_Dynamics::fill_kernels()
 {
-	basic_hmc_code = get_device()->get_fermion_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_hmc.h" << "operations_gaugemomentum.cl";
+	basic_molecular_dynamics_code = get_device()->get_fermion_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_hmc.h" << "operations_gaugemomentum.cl";
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 
 	//init kernels for HMC
 	if(get_parameters().get_use_eo() == true) {
-		fermion_force_eo = createKernel("fermion_force_eo") << basic_hmc_code << "fermionmatrix.cl" << "force_fermion_eo.cl";
+		fermion_force_eo = createKernel("fermion_force_eo") << basic_molecular_dynamics_code << "fermionmatrix.cl" << "force_fermion_eo.cl";
 	} 
-	fermion_force = createKernel("fermion_force") << basic_hmc_code << "fermionmatrix.cl" << "force_fermion.cl";
-	md_update_gaugefield = createKernel("md_update_gaugefield") << basic_hmc_code << "md_update_gaugefield.cl";
-	md_update_gaugemomenta = createKernel("md_update_gaugemomenta") << basic_hmc_code  << "md_update_gaugemomenta.cl";
-	gauge_force = createKernel("gauge_force") << basic_hmc_code  << "force_gauge.cl";
+	fermion_force = createKernel("fermion_force") << basic_molecular_dynamics_code << "fermionmatrix.cl" << "force_fermion.cl";
+	md_update_gaugefield = createKernel("md_update_gaugefield") << basic_molecular_dynamics_code << "md_update_gaugefield.cl";
+	md_update_gaugemomenta = createKernel("md_update_gaugemomenta") << basic_molecular_dynamics_code  << "md_update_gaugemomenta.cl";
+	gauge_force = createKernel("gauge_force") << basic_molecular_dynamics_code  << "force_gauge.cl";
 	if(meta::get_use_rectangles(get_parameters()) == true) {
 		//at the time of writing this kernel, the OpenCL compiler crashed the kernel using optimizations
-		gauge_force_tlsym = createKernel("gauge_force_tlsym") << basic_hmc_code << "force_gauge_tlsym.cl";
+		gauge_force_tlsym = createKernel("gauge_force_tlsym") << basic_molecular_dynamics_code << "force_gauge_tlsym.cl";
 	}
 	if(get_parameters().get_use_smearing() == true) {
-		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_hmc_code << "force_fermion_stout_smear.cl";
+		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_molecular_dynamics_code << "force_fermion_stout_smear.cl";
 	}
 }
 
@@ -50,7 +50,7 @@ void Opencl_Module_Molecular_Dynamics::clear_kernels()
 {
 	cl_uint clerr = CL_SUCCESS;
 
-	logger.debug() << "release HMC-kernels.." ;
+	logger.debug() << "release molecular dynamics kernels.." ;
 	if(get_parameters().get_use_eo() == true) {
 		clerr = clReleaseKernel(fermion_force_eo);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -258,25 +258,6 @@ void Opencl_Module_Molecular_Dynamics::gauge_force_device(const hardware::buffer
 		}
 	}
 
-	//recalculate force with local buffer to get only this contribution to the force vector
-	if(logger.beDebug()) {
-		const hardware::buffers::Gaugemomentum force2(out->get_elements(), out->get_device());
-		auto gm_code = get_device()->get_gaugemomentum_code();
-		//init new buffer to zero
-		gm_code->set_zero_gaugemomentum(&force2);
-
-		//re-calculate force
-		gauge_force_device(gf, &force2);
-
-		hardware::buffers::Plain<hmc_float> check_force_tmp(1, get_device());
-		hmc_float check_force_energy = 0.;
-		gm_code->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
-		check_force_tmp.dump(&check_force_energy);
-		logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
-		if(check_force_energy != check_force_energy) {
-			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
 }
 
 void Opencl_Module_Molecular_Dynamics::gauge_force_tlsym_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out)
@@ -304,25 +285,6 @@ void Opencl_Module_Molecular_Dynamics::gauge_force_tlsym_device(const hardware::
 		logger.debug() <<  "\t\t\tgauge force tlsym:\t" << gauge_force_tlsym_energy;
 
 		if(gauge_force_tlsym_energy != gauge_force_tlsym_energy) {
-			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-
-	//recalculate force with local buffer to get only this contribution to the force vector
-	if(logger.beDebug()) {
-		const hardware::buffers::Gaugemomentum force2(out->get_elements(), out->get_device());
-		auto gm_code = get_device()->get_gaugemomentum_code();
-		//init new buffer to zero
-		gm_code->set_zero_gaugemomentum(&force2);
-
-		gauge_force_tlsym_device(gf, &force2);
-
-		hardware::buffers::Plain<hmc_float> check_force_tmp(1, get_device());
-		hmc_float check_force_energy = 0.;
-		gm_code->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
-		check_force_tmp.dump(&check_force_energy);
-		logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
-		if(check_force_energy != check_force_energy) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
 		}
 	}
@@ -368,26 +330,6 @@ void Opencl_Module_Molecular_Dynamics::fermion_force_device(const hardware::buff
 		noneo_force_tmp.dump(&noneo_force_energy);
 		logger.debug() <<  "\t\t\tnon-eo force:\t" << noneo_force_energy;
 		if(noneo_force_energy != noneo_force_energy) {
-			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-
-	//recalculate force with local buffer to get only this contribution to the force vector
-	if(logger.beDebug()) {
-		const hardware::buffers::Gaugemomentum force2(out->get_elements(), out->get_device());
-		auto gm_code = get_device()->get_gaugemomentum_code();
-		//init new buffer to zero
-		gm_code->set_zero_gaugemomentum(&force2);
-
-		//re-calculate force
-		fermion_force_device(Y, X, gf, &force2, kappa);
-
-		Plain<hmc_float> check_force_tmp(1, get_device());
-		hmc_float check_force_energy = 0.;
-		gm_code->set_float_to_gaugemomentum_squarenorm_device(&force2, &check_force_tmp);
-		check_force_tmp.dump(&check_force_energy);
-		logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
-		if(check_force_energy != check_force_energy) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
 		}
 	}
@@ -438,25 +380,6 @@ void Opencl_Module_Molecular_Dynamics::fermion_force_eo_device(const hardware::b
 		logger.debug() <<  "\t\t\teoprec force:\t" << resid;
 
 		if(resid != resid) {
-			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
-		}
-	}
-	//recalculate force with local buffer, giving only this contribution to the force
-	if(logger.beDebug()) {
-		const hardware::buffers::Gaugemomentum force2(out->get_elements(), out->get_device());
-		auto gm_code = get_device()->get_gaugemomentum_code();
-		//init new buffer to zero
-		gm_code->set_zero_gaugemomentum(&force2);
-
-		//re-calculate force
-		fermion_force_eo_device(Y, X, gf, &force2, evenodd, kappa);
-
-		Plain<hmc_float> check_force_tmp(1, get_device());
-		hmc_float check_force_energy = 0.;
-		gm_code->set_float_to_gaugemomentum_squarenorm_device(out, &check_force_tmp);
-		check_force_tmp.dump(&check_force_energy);
-		logger.debug() <<  "\t\t\t\tforce contribution:\t" << check_force_energy;
-		if(check_force_energy != check_force_energy) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
 		}
 	}

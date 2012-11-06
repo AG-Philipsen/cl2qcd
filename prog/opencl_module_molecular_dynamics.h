@@ -114,7 +114,7 @@ private:
 	 */
 	void clear_kernels();
 
-	ClSourcePackage basic_hmc_code;
+	ClSourcePackage basic_molecular_dynamics_code;
 
 	//kernels
 	cl_kernel md_update_gaugefield;
