@@ -48,7 +48,7 @@ physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRN
 	Matrixsu3 * gf_host = new Matrixsu3[buffers[0]->get_elements()];
 
 	sourcefileparameters parameters_source;
-	parameters_source.readsourcefile(parameters.get_sourcefile().c_str(), parameters.get_precision(), &gf_ildg);
+	parameters_source.readsourcefile(ildgfile.c_str(), parameters.get_precision(), &gf_ildg);
 	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries_source, parameters);
 
 	auto device = buffers[0]->get_device();
