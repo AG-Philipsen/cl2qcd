@@ -22,6 +22,7 @@
 #include "../opencl_module_spinors.h"
 #include "../opencl_module_fermions.h"
 #include "../opencl_module_gaugemomentum.h"
+#include "../opencl_module_molecular_dynamics.h"
 #include "../opencl_module_hmc.h"
 #include "../opencl_module_correlator.h"
 #include "../opencl_module_heatbath.h"
@@ -205,6 +206,11 @@ public:
 	Opencl_Module_Gaugemomentum * get_gaugemomentum_code();
 
 	/**
+	 * Get access to the molecular dynamics kernels on this device.
+	 */
+	Opencl_Module_Molecular_Dynamics * get_molecular_dynamics_code();
+
+	/**
 	 * Get access to the hmc kernels on this device.
 	 */
 	Opencl_Module_Hmc * get_hmc_code();
@@ -336,6 +342,12 @@ private:
 	 * Initialized on demand.
 	 */
 	Opencl_Module_Gaugemomentum * gaugemomentum_code;
+
+  	/**
+	 * Pointer to the molecular dynamics code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Molecular_Dynamics * molecular_dynamics_code;
 
 	/**
 	 * Pointer to the hmc code.
