@@ -32,6 +32,7 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 	  prng_code(nullptr),
 	  spinor_code(nullptr),
 	  fermion_code(nullptr),
+	  gaugemomentum_code(nullptr),
 	  hmc_code(nullptr),
 	  correlator_code(nullptr),
 	  heatbath_code(nullptr),
@@ -61,6 +62,9 @@ hardware::Device::~Device()
 	}
 	if(correlator_code) {
 		delete correlator_code;
+	}
+	if(gaugemomentum_code) {
+		delete gaugemomentum_code;
 	}
 	if(hmc_code) {
 		delete hmc_code;
@@ -428,6 +432,14 @@ Opencl_Module_Fermions * hardware::Device::get_fermion_code()
 		fermion_code = new Opencl_Module_Fermions(params, this);
 	}
 	return fermion_code;
+}
+
+Opencl_Module_Gaugemomentum * hardware::Device::get_gaugemomentum_code()
+{
+	if(!gaugemomentum_code) {
+		gaugemomentum_code = new Opencl_Module_Gaugemomentum(params, this);
+	}
+	return gaugemomentum_code;
 }
 
 Opencl_Module_Hmc * hardware::Device::get_hmc_code()
