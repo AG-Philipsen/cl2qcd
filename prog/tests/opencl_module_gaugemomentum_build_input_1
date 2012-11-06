@@ -1,0 +1,14 @@
+NS=4
+NT=4
+
+use_eo=true
+#this sets use_rectangles=true
+gaugeact=tlsym
+use_smearing=true
+
+#this specifies the acceptance precision
+solver_prec=1e-8
+#reference value
+test_ref_val=0.98724670708006379
+
+
