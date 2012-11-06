@@ -438,10 +438,10 @@ Opencl_Module_Hmc * hardware::Device::get_hmc_code()
 	return hmc_code;
 }
 
-Opencl_Module_Correlator * hardware::Device::get_correlator_code()
+hardware::code::Correlator * hardware::Device::get_correlator_code()
 {
 	if(!correlator_code) {
-		correlator_code = new Opencl_Module_Correlator(params, this);
+		correlator_code = new hardware::code::Correlator(params, this);
 	}
 	return correlator_code;
 }

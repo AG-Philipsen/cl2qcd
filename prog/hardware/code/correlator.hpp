@@ -11,6 +11,10 @@
 #include "../buffers/prng_buffer.hpp"
 #include "../../types_fermions.h"
 
+namespace hardware {
+
+namespace code {
+
 /**
  * An OpenCL device
  *
@@ -19,11 +23,11 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Correlator : public hardware::code::Opencl_Module {
+class Correlator : public Opencl_Module {
 public:
 	friend hardware::Device;
 
-	virtual ~Opencl_Module_Correlator();
+	virtual ~Correlator();
 
 	void create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos);
 
@@ -100,7 +104,7 @@ private:
 	 * Default constructor, does nothing but make sure some pointer point to 0.
 	 *
 	 */
-	Opencl_Module_Correlator(const meta::Inputparameters& params, hardware::Device * device);
+	Correlator(const meta::Inputparameters& params, hardware::Device * device);
 
 	/**
 	 * Collect the kernels for OpenCL.
@@ -137,5 +141,9 @@ private:
 
 	ClSourcePackage basic_correlator_code;
 };
+
+}
+
+}
 
 #endif // _HARDWARE_CODE_CORRELATOR_

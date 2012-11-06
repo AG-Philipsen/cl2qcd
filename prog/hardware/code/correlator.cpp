@@ -26,7 +26,7 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 }
 
 
-void Opencl_Module_Correlator::fill_kernels()
+void hardware::code::Correlator::fill_kernels()
 {
 	basic_correlator_code = get_device()->get_spinor_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters()));
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
@@ -108,7 +108,7 @@ void Opencl_Module_Correlator::fill_kernels()
 	}
 }
 
-void Opencl_Module_Correlator::clear_kernels()
+void hardware::code::Correlator::clear_kernels()
 {
 	int clerr = CL_SUCCESS;
 	clerr = clReleaseKernel(correlator_ps);
@@ -153,7 +153,7 @@ void Opencl_Module_Correlator::clear_kernels()
 	}
 }
 
-void Opencl_Module_Correlator::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
+void hardware::code::Correlator::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 
@@ -174,7 +174,7 @@ void Opencl_Module_Correlator::get_work_sizes(const cl_kernel kernel, size_t * l
 	return;
 }
 
-cl_kernel Opencl_Module_Correlator::get_correlator_kernel(string which)
+cl_kernel hardware::code::Correlator::get_correlator_kernel(string which)
 {
 	if( which.compare("ps") == 0 ) {
 		return correlator_ps;
@@ -204,7 +204,7 @@ cl_kernel Opencl_Module_Correlator::get_correlator_kernel(string which)
 	return 0;
 }
 
-void Opencl_Module_Correlator::create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos)
+void hardware::code::Correlator::create_point_source_device(const hardware::buffers::Plain<spinor> * inout, int i, int spacepos, int timepos)
 {
 	get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 	//query work-sizes for kernel
@@ -239,7 +239,7 @@ void Opencl_Module_Correlator::create_point_source_device(const hardware::buffer
 
 }
 
-void Opencl_Module_Correlator::create_volume_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng)
+void hardware::code::Correlator::create_volume_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng)
 {
   get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 	//query work-sizes for kernel
@@ -267,7 +267,7 @@ void Opencl_Module_Correlator::create_volume_source_device(const hardware::buffe
 	}
 }
 
-void Opencl_Module_Correlator::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int timeslice)
+void hardware::code::Correlator::create_timeslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int timeslice)
 {
   get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 
@@ -300,7 +300,7 @@ void Opencl_Module_Correlator::create_timeslice_source_device(const hardware::bu
 	}
 }
 
-void Opencl_Module_Correlator::create_zslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int zslice)
+void hardware::code::Correlator::create_zslice_source_device(const hardware::buffers::Plain<spinor> * inout, const hardware::buffers::PRNGBuffer * prng, const int zslice)
 {
   get_device()->get_spinor_code()->set_zero_spinorfield_device(inout);
 
@@ -334,7 +334,7 @@ void Opencl_Module_Correlator::create_zslice_source_device(const hardware::buffe
 	}
 }
 
-void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<hmc_float> * correlator)
+void hardware::code::Correlator::correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<hmc_float> * correlator)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -349,7 +349,7 @@ void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kern
 	get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
 }
 
-void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator)
+void hardware::code::Correlator::correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -366,7 +366,7 @@ void Opencl_Module_Correlator::correlator_device(const cl_kernel correlator_kern
 	get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
 }
 
-void Opencl_Module_Correlator::pbp_std_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator)
+void hardware::code::Correlator::pbp_std_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -383,7 +383,7 @@ void Opencl_Module_Correlator::pbp_std_device(const hardware::buffers::Plain<spi
 	get_device()->enqueue_kernel(pbp_std , gs2, ls2);
 }
 
-void Opencl_Module_Correlator::pbp_tm_one_end_trick_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator)
+void hardware::code::Correlator::pbp_tm_one_end_trick_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -400,7 +400,7 @@ void Opencl_Module_Correlator::pbp_tm_one_end_trick_device(const hardware::buffe
 	get_device()->enqueue_kernel(pbp_tm_one_end , gs2, ls2);
 }
 
-size_t Opencl_Module_Correlator::get_read_write_size(const std::string& in) const
+size_t hardware::code::Correlator::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
 	size_t D = meta::get_float_size(get_parameters());
@@ -498,7 +498,7 @@ size_t Opencl_Module_Correlator::get_read_write_size(const std::string& in) cons
 	return 0;
 }
 
-uint64_t Opencl_Module_Correlator::get_flop_size(const std::string& in) const
+uint64_t hardware::code::Correlator::get_flop_size(const std::string& in) const
 {
 	size_t S = meta::get_spinorfieldsize(get_parameters());
 	size_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
@@ -549,7 +549,7 @@ uint64_t Opencl_Module_Correlator::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-void Opencl_Module_Correlator::print_profiling(const std::string& filename, int number) const
+void hardware::code::Correlator::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
 	if(create_point_source) {
@@ -586,7 +586,7 @@ void Opencl_Module_Correlator::print_profiling(const std::string& filename, int 
 	  Opencl_Module::print_profiling(filename, pbp_tm_one_end);
 }
 
-Opencl_Module_Correlator::Opencl_Module_Correlator(const meta::Inputparameters& params, hardware::Device * device)
+hardware::code::Correlator::Correlator(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device),
 	  create_point_source(0), create_volume_source(0), create_timeslice_source(0), create_zslice_source(0),
 	  correlator_ps(0), correlator_sc(0), correlator_vx(0), correlator_vy(0), correlator_vz(0), correlator_ax(0), correlator_ay(0), correlator_az(0), pbp_std(0), pbp_tm_one_end(0)
@@ -594,7 +594,7 @@ Opencl_Module_Correlator::Opencl_Module_Correlator(const meta::Inputparameters& 
 	fill_kernels();
 }
 
-Opencl_Module_Correlator::~Opencl_Module_Correlator()
+hardware::code::Correlator::~Correlator()
 {
 	clear_kernels();
 }

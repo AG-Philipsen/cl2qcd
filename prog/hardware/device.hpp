@@ -214,7 +214,7 @@ public:
 	/**
 	 * Get access to the correlator kernels on this device.
 	 */
-	Opencl_Module_Correlator * get_correlator_code();
+	hardware::code::Correlator * get_correlator_code();
 
 	/**
 	 * Get access to the heatbath kernels on this device.
@@ -343,7 +343,7 @@ private:
 	 * Pointer to the correlator code.
 	 * Initialized on demand.
 	 */
-	Opencl_Module_Correlator * correlator_code;
+	hardware::code::Correlator * correlator_code;
 
 	/**
 	 * Pointer to the heatbath code.

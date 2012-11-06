@@ -102,7 +102,7 @@ public:
 	/**
 	 * Returns a pointer to correlator task
 	 */
-	Opencl_Module_Correlator* get_task_correlator();
+	hardware::code::Correlator* get_task_correlator();
 
 	void create_sources();
 

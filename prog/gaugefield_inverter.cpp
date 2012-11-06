@@ -8,9 +8,9 @@ Opencl_Module_Fermions* Gaugefield_inverter::get_task_solver()
 	return (Opencl_Module_Fermions*)opencl_modules[task_solver];
 }
 
-Opencl_Module_Correlator* Gaugefield_inverter::get_task_correlator()
+hardware::code::Correlator* Gaugefield_inverter::get_task_correlator()
 {
-	return (Opencl_Module_Correlator*)opencl_modules[task_correlator];
+	return (hardware::code::Correlator*)opencl_modules[task_correlator];
 }
 
 void Gaugefield_inverter::init_tasks()
