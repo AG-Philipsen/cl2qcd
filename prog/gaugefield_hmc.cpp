@@ -163,6 +163,7 @@ void Gaugefield_hmc::md_update_gaugemomentum_detratio(hmc_float eps, usetimer * 
 void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer, hmc_float kappa, hmc_float mubar)
 {
 	auto gf_code = get_device_for_task(task_hmc)->get_gaugefield_code();
+	auto mol_dyn_code = get_device_for_task(task_hmc)->get_molecular_dynamics_code();
 
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
@@ -183,7 +184,7 @@ void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer, hmc_float kappa
 	}
 	get_task_hmc(0)->calc_fermion_force(solvertimer, kappa, mubar);
 	if(get_parameters().get_use_smearing() == true) {
-		get_task_hmc(0)->stout_smeared_fermion_force_device(smeared_gfs);
+		mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
 		gf_code->unsmear_gaugefield(gf_code->get_gaugefield());
 	}
 for(auto gf: smeared_gfs) {
@@ -196,6 +197,7 @@ void Gaugefield_hmc::detratio_forces_call(usetimer * solvertimer)
 	logger.info() << "det ratio force call...";
 
 	auto gf_code = get_device_for_task(task_hmc)->get_gaugefield_code();
+	auto mol_dyn_code = get_device_for_task(task_hmc)->get_molecular_dynamics_code();
 
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
@@ -216,7 +218,7 @@ void Gaugefield_hmc::detratio_forces_call(usetimer * solvertimer)
 	}
 	get_task_hmc(0)->calc_fermion_force_detratio(solvertimer, gf_code->get_gaugefield());
 	if(get_parameters().get_use_smearing() == true) {
-		get_task_hmc(0)->stout_smeared_fermion_force_device(smeared_gfs);
+		mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
 		gf_code->unsmear_gaugefield(gf_code->get_gaugefield());
 	}
 for(auto gf: smeared_gfs) {
@@ -580,12 +582,13 @@ void Gaugefield_hmc::init_gaugemomentum_spinorfield(usetimer * solvertimer)
 {
 	auto gaugefield = get_device_for_task(task_hmc)->get_gaugefield_code()->get_gaugefield();
 	auto prng = &get_device_for_task(task_hmc)->get_prng_code()->get_prng_buffer();
+	auto gm_code = get_device_for_task(task_hmc)->get_gaugemomentum_code();
 
 	//init gauge_momenta, saved in clmem_p
-	get_task_hmc(0)->generate_gaussian_gaugemomenta_device(prng);
+	gm_code->generate_gaussian_gaugemomenta_device(get_task_hmc(0)->get_clmem_p(), prng);
 	if(! get_parameters().get_use_gauge_only() ) {
 		//init/update spinorfield phi
-		get_task_hmc(0)->generate_spinorfield_gaussian(prng);
+	  get_task_hmc(0)->generate_spinorfield_gaussian(prng);
 		//calc init energy for spinorfield
 		get_task_hmc(0)->calc_spinorfield_init_energy(get_task_hmc(0)->get_clmem_s_fermion_init());
 		if(get_parameters().get_use_mp() ) {

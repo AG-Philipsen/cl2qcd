@@ -14,13 +14,13 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 
 	//CP: give kappa and its negative value
 	hmc_float kappa_tmp = params.get_kappa();
-	options << "-DKAPPA=" << kappa_tmp;
-	options << " -DMKAPPA=" << -kappa_tmp;
+	options << "-D KAPPA=" << kappa_tmp;
+	options << " -D MKAPPA=" << -kappa_tmp;
 
-	options << " -DNUM_SOURCES=" << params.get_num_sources();
+	options << " -D NUM_SOURCES=" << params.get_num_sources();
 
 	//CP: give content of sources as compile parameters
-	options << " -DSOURCE_CONTENT=" << params.get_sourcecontent();
+	options << " -D SOURCE_CONTENT=" << params.get_sourcecontent();
 
 	return options.str();
 }

@@ -13,10 +13,10 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	using namespace hardware::buffers;
 
 	std::ostringstream options;
-	options << "-D_FERMIONS_"
-	        << " -DSPINORFIELDSIZE=" << meta::get_spinorfieldsize(params) << " -DEOPREC_SPINORFIELDSIZE=" << meta::get_eoprec_spinorfieldsize(params);
+	options << "-D _FERMIONS_"
+	        << " -D SPINORFIELDSIZE=" << meta::get_spinorfieldsize(params) << " -D EOPREC_SPINORFIELDSIZE=" << meta::get_eoprec_spinorfieldsize(params);
 	if(check_Spinor_for_SOA(device)) {
-		options << " -DEOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(meta::get_eoprec_spinorfieldsize(params), device);
+		options << " -D EOPREC_SPINORFIELD_STRIDE=" << get_Spinor_buffer_stride(meta::get_eoprec_spinorfieldsize(params), device);
 	}
 
 	return options.str();
@@ -26,10 +26,16 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 void Opencl_Module_Spinors::fill_kernels()
 {
 	basic_fermion_code = get_device()->get_gaugefield_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_fermions.h" << "operations_su3vec.cl" << "operations_spinor.cl" << "spinorfield.cl";
+	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
 	if(get_parameters().get_use_eo()) {
 		basic_fermion_code = basic_fermion_code << "operations_spinorfield_eo.cl";
 	}
 
+	if(get_parameters().get_use_eo() == true) {
+		generate_gaussian_spinorfield_eo = createKernel("generate_gaussian_spinorfield_eo") << basic_fermion_code << prng_code << "spinorfield_eo_gaussian.cl";
+	} else {
+		generate_gaussian_spinorfield = createKernel("generate_gaussian_spinorfield") << basic_fermion_code << prng_code << "spinorfield_gaussian.cl";
+	}
 	set_spinorfield_cold = createKernel("set_spinorfield_cold") << basic_fermion_code << "spinorfield_cold.cl";
 	saxpy = createKernel("saxpy") << basic_fermion_code << "spinorfield_saxpy.cl";
 	sax = createKernel("sax") << basic_fermion_code << "spinorfield_sax.cl";
@@ -65,6 +71,14 @@ void Opencl_Module_Spinors::fill_kernels()
 void Opencl_Module_Spinors::clear_kernels()
 {
 	cl_int clerr = CL_SUCCESS;
+
+	if(get_parameters().get_use_eo() == true) {
+		clerr = clReleaseKernel(generate_gaussian_spinorfield_eo);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	} else {
+		clerr = clReleaseKernel(generate_gaussian_spinorfield);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
 
 	clerr = clReleaseKernel(set_spinorfield_cold);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
@@ -112,6 +126,14 @@ void Opencl_Module_Spinors::clear_kernels()
 void Opencl_Module_Spinors::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
+
+	// kernels that use random numbers must not exceed the size of the random state array
+	if(kernel == generate_gaussian_spinorfield
+	   || kernel == generate_gaussian_spinorfield_eo) {
+		if(*gs > hardware::buffers::get_prng_buffer_size(get_device())) {
+			*gs = hardware::buffers::get_prng_buffer_size(get_device());
+		}
+	}
 
 	//Query specific sizes for kernels if needed
 	string kernelname = get_kernel_name(kernel);
@@ -666,6 +688,14 @@ size_t Opencl_Module_Spinors::get_read_write_size(const std::string& in) const
 	int C = 2;
 	//this is the same as in the function above
 	//NOTE: 1 spinor has NC*NDIM = 12 complex entries
+	if (in == "generate_gaussian_spinorfield") {
+		//this kernel writes 1 spinor
+		return ( 12 * C ) * D * S;
+	}
+	if (in == "generate_gaussian_spinorfield_eo") {
+		//this kernel writes 1 spinor
+		return ( 12 * C ) * D * Seo;
+	}
 	if (in == "set_spinorfield_cold") {
 		//this kernel writes 1 spinor
 		return C * 12 * D * S;
@@ -781,6 +811,16 @@ uint64_t Opencl_Module_Spinors::get_flop_size(const std::string& in) const
 	uint64_t S = meta::get_spinorfieldsize(get_parameters());
 	uint64_t Seo = meta::get_eoprec_spinorfieldsize(get_parameters());
 	//this is the same as in the function above
+	if (in == "generate_gaussian_spinorfield") {
+		//this kernel performs 12 multiplications per site
+		///@todo ? I did not count the gaussian normal pair production, which is very complicated...
+		return 12 * S;
+	}
+	if (in == "generate_gaussian_spinorfield_eo") {
+		//this kernel performs 12 multiplications per site
+		///@todo ? I did not count the gaussian normal pair production, which is very complicated...
+		return 12 * Seo;
+	}
 	if (in == "set_spinorfield_cold") {
 		//this kernel performs 1. / sqrt((12.f * VOL4D)) and real_multiply_spinor for each site
 		return S * ( 3 + 24);
@@ -894,6 +934,8 @@ void Opencl_Module_Spinors::print_profiling(const std::string& filename, int num
 	Opencl_Module::print_profiling(filename, convertSpinorfieldToSOA_eo);
 	Opencl_Module::print_profiling(filename, convertSpinorfieldFromSOA_eo);
 	Opencl_Module::print_profiling(filename, saxpy_AND_squarenorm_eo);
+	Opencl_Module::print_profiling(filename, generate_gaussian_spinorfield);
+	Opencl_Module::print_profiling(filename, generate_gaussian_spinorfield_eo);
 }
 
 void Opencl_Module_Spinors::copy_to_eoprec_spinorfield_buffer(const hardware::buffers::Spinor * buf, const spinor * const source)
@@ -906,7 +948,7 @@ void Opencl_Module_Spinors::copy_to_eoprec_spinorfield_buffer(const hardware::bu
 }
 
 Opencl_Module_Spinors::Opencl_Module_Spinors(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device), saxpy_AND_squarenorm_eo(0)
+  : Opencl_Module(params, device), saxpy_AND_squarenorm_eo(0), generate_gaussian_spinorfield(0), generate_gaussian_spinorfield_eo(0)
 {
 	fill_kernels();
 }
@@ -920,3 +962,59 @@ ClSourcePackage Opencl_Module_Spinors::get_sources() const noexcept
 {
 	return basic_fermion_code;
 }
+
+void Opencl_Module_Spinors::generate_gaussian_spinorfield_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::PRNGBuffer * prng)
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(generate_gaussian_spinorfield, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(generate_gaussian_spinorfield, 0, sizeof(cl_mem), in->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(generate_gaussian_spinorfield, 1, sizeof(cl_mem), prng->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(generate_gaussian_spinorfield  , gs2, ls2);
+
+	if(logger.beDebug()) {
+		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
+		hmc_float resid;
+		get_device()->get_spinor_code()->set_float_to_global_squarenorm_device(in, &force_tmp);
+		force_tmp.dump(&resid);
+		logger.debug() <<  "\tinit gaussian spinorfield:\t" << resid;
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of gaussian spinorfield gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
+}
+
+void Opencl_Module_Spinors::generate_gaussian_spinorfield_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::PRNGBuffer * prng)
+{
+	//query work-sizes for kernel
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(generate_gaussian_spinorfield_eo, &ls2, &gs2, &num_groups);
+	//set arguments
+	int clerr = clSetKernelArg(generate_gaussian_spinorfield_eo, 0, sizeof(cl_mem), in->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	clerr = clSetKernelArg(generate_gaussian_spinorfield_eo, 1, sizeof(cl_mem), prng->get_cl_buffer());
+	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+	get_device()->enqueue_kernel(generate_gaussian_spinorfield_eo, gs2, ls2);
+
+	if(logger.beDebug()) {
+		hardware::buffers::Plain<hmc_float> force_tmp(1, get_device());
+		hmc_float resid;
+		get_device()->get_spinor_code()->set_float_to_global_squarenorm_eoprec_device(in, &force_tmp);
+		force_tmp.dump(&resid);
+		logger.debug() <<  "\tinit gaussian spinorfield energy:\t" << resid;
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of gaussian spinorfield gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
+
+}
+

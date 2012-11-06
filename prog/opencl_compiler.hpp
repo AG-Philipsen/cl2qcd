@@ -23,16 +23,6 @@ class ClSourcePackage {
 
 public:
 	/**
-	 * Create an empty package with the given options
-	 */
-	ClSourcePackage(const std::string& options = std::string()) : files(std::vector<std::string>()), options(options) {};
-
-	/**
-	 * Copy constructor
-	 */
-	ClSourcePackage(const ClSourcePackage& src) : files(src.files), options(src.options) {};
-
-	/**
 	 * Create a package based from an array of filenames and potentially
 	 * another package
 	 *
@@ -40,7 +30,17 @@ public:
 	 * @param num How many filenames.
 	 * @param base Optionally a package to base this package on.
 	 */
-	ClSourcePackage(const std::vector<std::string>& files, const std::string& options) : files(files), options(options) {};
+	ClSourcePackage(const std::vector<std::string>& files, const std::string& options);
+
+	/**
+	 * Create an empty package with the given options
+	 */
+	ClSourcePackage(const std::string& options = std::string()) : ClSourcePackage(std::vector<std::string>(), options) {};
+
+	/**
+	 * Copy constructor
+	 */
+	ClSourcePackage(const ClSourcePackage& src) : ClSourcePackage(src.files, src.options) {};
 
 	/**
 	 * Add another source file to the list of sources.
@@ -90,9 +90,7 @@ public:
 	 */
 	TmpClKernel(const std::string kernel_name, const std::string build_options,
 	            const cl_context context, cl_device_id device,
-	            const std::vector<std::string> files = std::vector<std::string>())
-		: kernel_name(kernel_name), build_options(build_options), context(context),
-		  device(device), files(files) { };
+	            const std::vector<std::string> files = std::vector<std::string>());
 
 	/**
 	 * Conversion operator to a real OpenCL kernel object, will trigger build.

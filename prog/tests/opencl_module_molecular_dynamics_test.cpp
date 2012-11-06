@@ -1,11 +1,11 @@
-#include "../opencl_module_hmc.h"
+#include "../opencl_module_molecular_dynamics.h"
 #include "../gaugefield_hybrid.h"
 
 #include "../meta/util.hpp"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE OPENCL_MODULE_HMC
+#define BOOST_TEST_MODULE OPENCL_MODULE_MOLECULAR_DYNAMICS
 #include <boost/test/unit_test.hpp>
 
 #include "test_util.h"
@@ -27,13 +27,13 @@ public:
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
-	Opencl_Module_Hmc * get_device();
+	Opencl_Module_Molecular_Dynamics * get_device();
 };
 
 void TestGaugefield::init_tasks()
 {
 	opencl_modules = new Opencl_Module* [get_num_tasks()];
-	opencl_modules[0] = get_device_for_task(0)->get_hmc_code();
+	opencl_modules[0] = get_device_for_task(0)->get_molecular_dynamics_code();
 }
 
 void TestGaugefield::finalize_opencl()
@@ -41,9 +41,9 @@ void TestGaugefield::finalize_opencl()
 	Gaugefield_hybrid::finalize_opencl();
 }
 
-Opencl_Module_Hmc* TestGaugefield::get_device()
+Opencl_Module_Molecular_Dynamics* TestGaugefield::get_device()
 {
-	return static_cast<Opencl_Module_Hmc*>(opencl_modules[0]);
+	return static_cast<Opencl_Module_Molecular_Dynamics*>(opencl_modules[0]);
 }
 
 void fill_sf_with_one(spinor * sf_in, int size)
@@ -192,7 +192,7 @@ void fill_sf_with_random_eo(spinor * sf_in1, spinor * sf_in2, int size, int seed
 
 void test_build(std::string inputfile)
 {
-	logger.info() << "build opencl_module_hmc";
+	logger.info() << "build opencl_module_molecular_dynamics";
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
@@ -212,115 +212,7 @@ void test_generate_gaussian_spinorfield_eo(std::string inputfile)
 
 }
 
-void test_generate_gaussian_gaugemomenta(std::string inputfile)
-{
-
-}
-
 void test_stout_smear_fermion_force(std::string inputfile)
-{
-
-}
-
-void test_set_zero_gm(std::string inputfile)
-{
-	std::string kernelName = "set_zero_gm";
-	printKernelInfo(kernelName);
-
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
-	hmc_float * gm_in;
-
-	logger.info() << "create buffers";
-	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
-	gm_in = new hmc_float[NUM_ELEMENTS_AE];
-	fill_with_random(gm_in, NUM_ELEMENTS_AE, 123456);
-	BOOST_REQUIRE(gm_in);
-
-	hardware::buffers::Gaugemomentum in(meta::get_vol4d(params) * NDIM, device->get_device());
-	device->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>(gm_in));
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
-	logger.info() << "|in|^2:";
-	device->set_float_to_gaugemomentum_squarenorm_device(&in, &sqnorm);
-	hmc_float cpu_back;
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-
-	logger.info() << "Run kernel";
-	device->set_zero_gaugemomentum(&in);
-
-	logger.info() << "|out|^2:";
-	device->set_float_to_gaugemomentum_squarenorm_device(&in, &sqnorm);
-	hmc_float cpu_back2;
-	sqnorm.dump(&cpu_back2);
-	logger.info() << cpu_back2;
-
-	logger.info() << "Finalize device";
-	cpu.finalize();
-
-	logger.info() << "Free buffers";
-	delete[] gm_in;
-
-	testFloatAgainstInputparameters(cpu_back2, params);
-	BOOST_MESSAGE("Test done");
-
-}
-
-void test_gm_squarenorm(std::string inputfile)
-{
-	std::string kernelName = "gaugemomenta squarenorm";
-	printKernelInfo(kernelName);
-
-	logger.info() << "Init device";
-	meta::Inputparameters params = create_parameters(inputfile);
-	hardware::System system(params);
-	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
-	hmc_float * gm_in;
-
-	logger.info() << "create buffers";
-	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
-	gm_in = new hmc_float[NUM_ELEMENTS_AE];
-
-	//use the variable use_cg to switch between cold and random input sf
-	if(params.get_solver() == meta::Inputparameters::cg) {
-		fill_with_one(gm_in, NUM_ELEMENTS_AE);
-	} else {
-		fill_with_random(gm_in, NUM_ELEMENTS_AE, 123456);
-	}
-	BOOST_REQUIRE(gm_in);
-
-	hardware::buffers::Gaugemomentum in(meta::get_vol4d(params) * NDIM, device->get_device());
-	device->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>(gm_in));
-	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
-	logger.info() << "Run kernel";
-	logger.info() << "|in|^2:";
-	device->set_float_to_gaugemomentum_squarenorm_device(&in, &sqnorm);
-	hmc_float cpu_back;
-	sqnorm.dump(&cpu_back);
-	logger.info() << cpu_back;
-
-	logger.info() << "Finalize device";
-	cpu.finalize();
-
-	logger.info() << "Free buffers";
-	delete[] gm_in;
-
-	testFloatAgainstInputparameters(cpu_back, params);
-	BOOST_MESSAGE("Test done");
-}
-
-void test_gm_convert_to_soa(std::string inputfile)
-{
-
-}
-
-void test_gm_convert_from_soa(std::string inputfile)
 {
 
 }
@@ -334,7 +226,7 @@ void test_gf_update(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
+	Opencl_Module_Molecular_Dynamics * device = cpu.get_device();
 	hmc_float * gm_in;
 
 	logger.info() << "create buffers";
@@ -348,15 +240,16 @@ void test_gf_update(std::string inputfile)
 		fill_with_random(gm_in, NUM_ELEMENTS_AE, 123456);
 	}
 	BOOST_REQUIRE(gm_in);
+	auto gf_code = device->get_device()->get_gaugefield_code();
+	auto gm_code = device->get_device()->get_gaugemomentum_code();
 
 	hardware::buffers::Gaugemomentum in(meta::get_vol4d(params) * NDIM, device->get_device());
-	device->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>(gm_in));
+	gm_code->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>(gm_in));
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 
-	auto gf_code = device->get_device()->get_gaugefield_code();
-
 	logger.info() << "|in|^2:";
-	device->set_float_to_gaugemomentum_squarenorm_device(&in, &sqnorm);
+
+	gm_code->set_float_to_gaugemomentum_squarenorm_device(&in, &sqnorm);
 	hmc_float cpu_back;
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
@@ -389,9 +282,10 @@ void test_f_update(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
+	Opencl_Module_Molecular_Dynamics * device = cpu.get_device();
 	hmc_float * gm_in;
 	hmc_float * gm_out;
+	auto gm_code = device->get_device()->get_gaugemomentum_code();
 
 	logger.info() << "create buffers";
 	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
@@ -410,18 +304,18 @@ void test_f_update(std::string inputfile)
 	BOOST_REQUIRE(gm_out);
 
 	hardware::buffers::Gaugemomentum in(meta::get_vol4d(params) * NDIM, device->get_device());
-	device->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>(gm_in));
+	gm_code->importGaugemomentumBuffer(&in, reinterpret_cast<ae*>(gm_in));
 	hardware::buffers::Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
-	device->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(gm_out));
+	gm_code->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(gm_out));
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 
 	logger.info() << "|in|^2:";
-	device->set_float_to_gaugemomentum_squarenorm_device(&in, &sqnorm);
+	gm_code->set_float_to_gaugemomentum_squarenorm_device(&in, &sqnorm);
 	hmc_float cpu_back;
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
 	logger.info() << "|out|^2:";
-	device->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
+	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
 	hmc_float cpu_back2;
 	sqnorm.dump(&cpu_back2);
 	logger.info() << cpu_back2;
@@ -430,7 +324,7 @@ void test_f_update(std::string inputfile)
 	hmc_float eps = params.get_tau();
 	device->md_update_gaugemomentum_device(&in, &out, eps);
 
-	device->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
+	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
 	hmc_float cpu_res;
 	sqnorm.dump(&cpu_res);
 	logger.info() << "result:";
@@ -454,8 +348,9 @@ void test_f_gauge(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
+	Opencl_Module_Molecular_Dynamics * device = cpu.get_device();
 	ae * gm_out;
+	auto gm_code = device->get_device()->get_gaugemomentum_code();
 
 	logger.info() << "create buffers";
 	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
@@ -464,20 +359,20 @@ void test_f_gauge(std::string inputfile)
 	BOOST_REQUIRE(gm_out);
 
 	hardware::buffers::Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
-	device->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(gm_out));
+	gm_code->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(gm_out));
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
+	
 	logger.info() << "|out|^2:";
-	device->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
+	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
 	hmc_float cpu_back;
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
-
+	
 	device->gauge_force_device( device->get_device()->get_gaugefield_code()->get_gaugefield(), &out);
-
+	
 	logger.info() << "result:";
 	hmc_float cpu_res;
-	device->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
+	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
 
@@ -497,8 +392,9 @@ void test_f_gauge_tlsym(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
+	Opencl_Module_Molecular_Dynamics * device = cpu.get_device();
 	ae * gm_out;
+	auto gm_code = device->get_device()->get_gaugemomentum_code();
 
 	logger.info() << "create buffers";
 	size_t NUM_ELEMENTS_AE = meta::get_vol4d(params) * NDIM * meta::get_su3algebrasize();
@@ -507,11 +403,11 @@ void test_f_gauge_tlsym(std::string inputfile)
 	BOOST_REQUIRE(gm_out);
 
 	hardware::buffers::Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
-	device->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(gm_out));
+	gm_code->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(gm_out));
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 
 	logger.info() << "|out|^2:";
-	device->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
+	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
 	hmc_float cpu_back;
 	sqnorm.dump(&cpu_back);
 	logger.info() << cpu_back;
@@ -520,7 +416,7 @@ void test_f_gauge_tlsym(std::string inputfile)
 
 	logger.info() << "result:";
 	hmc_float cpu_res;
-	device->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
+	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
 	logger.info() << "Finalize device";
@@ -542,7 +438,7 @@ void test_f_fermion(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
+	Opencl_Module_Molecular_Dynamics * device = cpu.get_device();
 	spinor * sf_in1;
 	spinor * sf_in2;
 	ae * ae_out;
@@ -568,15 +464,16 @@ void test_f_fermion(std::string inputfile)
 	BOOST_REQUIRE(sf_in2);
 	BOOST_REQUIRE(ae_out);
 
+	auto spinor_code = device->get_device()->get_spinor_code();
+	auto gm_code = device->get_device()->get_gaugemomentum_code();
+
 	const Plain<spinor> in1(NUM_ELEMENTS_SF, device->get_device());
 	const Plain<spinor> in2(NUM_ELEMENTS_SF, device->get_device());
 	in1.load(sf_in1);
 	in2.load(sf_in2);
 	Gaugemomentum out(meta::get_vol4d(params) * NDIM, device->get_device());
-	device->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(ae_out));
+	gm_code->importGaugemomentumBuffer(&out, reinterpret_cast<ae*>(ae_out));
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
-
-	auto spinor_code = device->get_device()->get_spinor_code();
 
 	logger.info() << "|phi_1|^2:";
 	hmc_float cpu_back;
@@ -592,7 +489,7 @@ void test_f_fermion(std::string inputfile)
 	device->fermion_force_device( &in1, &in2, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out, params.get_kappa());
 	logger.info() << "result:";
 	hmc_float cpu_res;
-	device->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
+	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
 	logger.info() << "Finalize device";
@@ -617,7 +514,7 @@ void test_f_fermion_eo(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
+	Opencl_Module_Molecular_Dynamics * device = cpu.get_device();
 	spinor * sf_in1;
 	spinor * sf_in2;
 	ae * ae_out;
@@ -643,6 +540,7 @@ void test_f_fermion_eo(std::string inputfile)
 	BOOST_REQUIRE(ae_out);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
+	auto gm_code = device->get_device()->get_gaugemomentum_code();
 
 	const Spinor in1(NUM_ELEMENTS_SF, device->get_device());
 	const Spinor in2(NUM_ELEMENTS_SF, device->get_device());
@@ -650,7 +548,7 @@ void test_f_fermion_eo(std::string inputfile)
 	hardware::buffers::Plain<hmc_float> sqnorm(1, device->get_device());
 	spinor_code->copy_to_eoprec_spinorfield_buffer(&in1, sf_in1);
 	spinor_code->copy_to_eoprec_spinorfield_buffer(&in2, sf_in2);
-	device->importGaugemomentumBuffer(&out, ae_out);
+	gm_code->importGaugemomentumBuffer(&out, ae_out);
 
 
 	hmc_float cpu_res, cpu_back, cpu_back2;
@@ -673,7 +571,7 @@ void test_f_fermion_eo(std::string inputfile)
 		device->fermion_force_eo_device(&in1, &in2, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out, tmp, params.get_kappa() );
 	}
 	logger.info() << "|force|^2:";
-	device->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
+	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out, &sqnorm);
 	sqnorm.dump(&cpu_res);
 	logger.info() << cpu_res;
 	logger.info() << "Finalize device";
@@ -692,7 +590,7 @@ BOOST_AUTO_TEST_SUITE(BUILD)
 
 BOOST_AUTO_TEST_CASE( BUILD_1 )
 {
-	test_build("/opencl_module_hmc_build_input_1");
+	test_build("/opencl_module_molecular_dynamics_build_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -701,7 +599,7 @@ BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_SPINORFIELD  )
 
 BOOST_AUTO_TEST_CASE( GENERATE_GAUSSIAN_SPINORFIELD_1 )
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!! TO BE MOVED INTO SPINOR TEST!!");
 	test_generate_gaussian_spinorfield("/generate_gaussian_spinorfield_input_1");
 }
 
@@ -711,18 +609,8 @@ BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_SPINORFIELD_EO  )
 
 BOOST_AUTO_TEST_CASE( GENERATE_GAUSSIAN_SPINORFIELD_EO_1 )
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
+	BOOST_MESSAGE("NOT YET IMPLEMENTED!! TO BE MOVED INTO SPINOR TEST!!");
 	test_generate_gaussian_spinorfield_eo("/generate_gaussian_spinorfield_eo_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE(GENERATE_GAUSSIAN_GAUGEMOMENTA  )
-
-BOOST_AUTO_TEST_CASE(GENERATE_GAUSSIAN_GAUGEMOMENTA_1 )
-{
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
-	test_generate_gaussian_gaugemomenta("/generate_gaussian_gaugemomenta_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -733,49 +621,6 @@ BOOST_AUTO_TEST_CASE(STOUT_SMEAR_FERMION_FORCE_1 )
 {
 	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
 	test_stout_smear_fermion_force("/stout_smear_fermion_force_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( GM_CONVERT_TO_SOA )
-
-BOOST_AUTO_TEST_CASE( GM_CONVERT_TO_SOA_1 )
-{
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
-	test_gm_convert_to_soa("/gm_convert_to_soa_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( GM_CONVERT_FROM_SOA )
-
-BOOST_AUTO_TEST_CASE( GM_CONVERT_FROM_SOA_1 )
-{
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!!");
-	test_gm_convert_from_soa("/gm_convert_from_soa_input_1");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( GM_SQUARENORM )
-
-BOOST_AUTO_TEST_CASE(GM_SQUARENORM_1  )
-{
-	test_gm_squarenorm("/gm_squarenorm_input_1");
-}
-
-BOOST_AUTO_TEST_CASE(GM_SQUARENORM_2  )
-{
-	test_gm_squarenorm("/gm_squarenorm_input_2");
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_SUITE( SET_ZERO_GM )
-
-BOOST_AUTO_TEST_CASE( SET_ZERO_GM_1 )
-{
-	test_set_zero_gm("/gm_set_zero_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -1015,7 +860,7 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Hmc * device = cpu.get_device();
+	Opencl_Module_Molecular_Dynamics * device = cpu.get_device();
 
 	spinor * sf_in1_noneo;
 	spinor * sf_in2_noneo;
@@ -1066,6 +911,7 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	BOOST_REQUIRE(sf_out_eo);
 
 	auto spinor_code = device->get_device()->get_spinor_code();
+	auto gm_code = device->get_device()->get_gaugemomentum_code();
 
 	const Spinor in1_eo(NUM_ELEMENTS_SF_EO, device->get_device());
 	const Spinor in2_eo(NUM_ELEMENTS_SF_EO, device->get_device());
@@ -1077,27 +923,28 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	const Gaugemomentum out_eo(NUM_ELEMENTS_AE, device->get_device());
 	const Plain<hmc_float> sqnorm(1, device->get_device());
 
-	out_eo.load(sf_out_eo);
-	out_noneo.load(sf_out_noneo);
+	gm_code->importGaugemomentumBuffer(&out_eo, sf_out_eo);
+	gm_code->importGaugemomentumBuffer(&out_noneo, sf_out_noneo);
 
 	//in case of rnd input, it is nontrivial to supply the same rnd vectors as eo and noneo input.
 	//therefore, simply convert the eo input back to noneo
 	if(params.get_solver() == meta::Inputparameters::cg) {
-		in1_eo.load(sf_in1_eo);
-		in2_eo.load(sf_in2_eo);
-		in3_eo.load(sf_in3_eo);
-		in4_eo.load(sf_in4_eo);
+		spinor_code->copy_to_eoprec_spinorfield_buffer(&in1_eo, sf_in1_eo);
+		spinor_code->copy_to_eoprec_spinorfield_buffer(&in2_eo, sf_in2_eo);
+		spinor_code->copy_to_eoprec_spinorfield_buffer(&in3_eo, sf_in3_eo);
+		spinor_code->copy_to_eoprec_spinorfield_buffer(&in4_eo, sf_in4_eo);
 		in1_noneo.load(sf_in1_noneo);
 		in2_noneo.load(sf_in2_noneo);
 	} else {
 		//one can either convert to or from eoprec, use use_pointsource for that
 		//NOTE: there is machinery to compare vectors in the old executable
 		if(params.get_use_pointsource()) {
-			in1_eo.load(sf_in1_eo);
-			in2_eo.load(sf_in2_eo);
+			spinor_code->copy_to_eoprec_spinorfield_buffer(&in1_eo, sf_in1_eo);
+			spinor_code->copy_to_eoprec_spinorfield_buffer(&in2_eo, sf_in2_eo);
 			spinor_code->convert_from_eoprec_device(&in1_eo, &in2_eo, &in1_noneo);
-			in3_eo.load(sf_in3_eo);
-			in4_eo.load(sf_in4_eo);
+
+			spinor_code->copy_to_eoprec_spinorfield_buffer(&in3_eo, sf_in3_eo);
+			spinor_code->copy_to_eoprec_spinorfield_buffer(&in4_eo, sf_in4_eo);
 			spinor_code->convert_from_eoprec_device(&in3_eo, &in4_eo, &in2_noneo);
 		}  else {
 			in1_noneo.load(sf_in1_noneo);
@@ -1132,7 +979,7 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 
 	logger.info() << "|force_eo (even) + force_eo (odd)|^2:";
 	hmc_float cpu_res_eo;
-	device->set_float_to_gaugemomentum_squarenorm_device(&out_eo, &sqnorm);
+	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out_eo, &sqnorm);
 	sqnorm.dump(&cpu_res_eo);
 	logger.info() << cpu_res_eo;
 
@@ -1150,7 +997,7 @@ void test_f_fermion_compare_noneo_eo(std::string inputfile)
 	device->fermion_force_device( &in1_noneo, &in2_noneo, device->get_device()->get_gaugefield_code()->get_gaugefield(), &out_noneo, params.get_kappa());
 	logger.info() << "|force_noneo|^2:";
 	hmc_float cpu_res_noneo;
-	device->set_float_to_gaugemomentum_squarenorm_device(&out_noneo, &sqnorm);
+	gm_code->set_float_to_gaugemomentum_squarenorm_device(&out_noneo, &sqnorm);
 	sqnorm.dump(&cpu_res_noneo);
 	logger.info() << cpu_res_noneo;
 

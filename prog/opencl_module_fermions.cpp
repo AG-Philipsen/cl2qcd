@@ -360,10 +360,10 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 
 	switch (params.get_fermact()) {
 		case meta::Inputparameters::twistedmass :
-			options << "-D_TWISTEDMASS_";
+			options << "-D _TWISTEDMASS_";
 			break;
 		case meta::Inputparameters::clover :
-			options << "-D_CLOVER_";
+			options << "-D _CLOVER_";
 			break;
 	}
 
@@ -371,15 +371,15 @@ static std::string collect_build_options(hardware::Device *, const meta::Inputpa
 	hmc_float tmp_spatial = (params.get_theta_fermion_spatial() * PI) / ( (hmc_float) params.get_nspace());
 	hmc_float tmp_temporal = (params.get_theta_fermion_temporal() * PI) / ( (hmc_float) params.get_ntime());
 	//BC: on the corners in each direction: exp(i theta) -> on each site exp(i theta*PI /LATEXTENSION) = cos(tmp2) + isin(tmp2)
-	options << " -DSPATIAL_RE=" << cos(tmp_spatial);
-	options << " -DMSPATIAL_RE=" << -cos(tmp_spatial);
-	options << " -DSPATIAL_IM=" << sin(tmp_spatial);
-	options << " -DMSPATIAL_IM=" << -sin(tmp_spatial);
+	options << " -D SPATIAL_RE=" << cos(tmp_spatial);
+	options << " -D MSPATIAL_RE=" << -cos(tmp_spatial);
+	options << " -D SPATIAL_IM=" << sin(tmp_spatial);
+	options << " -D MSPATIAL_IM=" << -sin(tmp_spatial);
 
-	options << " -DTEMPORAL_RE=" << cos(tmp_temporal);
-	options << " -DMTEMPORAL_RE=" << -cos(tmp_temporal);
-	options << " -DTEMPORAL_IM=" << sin(tmp_temporal);
-	options << " -DMTEMPORAL_IM=" << -sin(tmp_temporal);
+	options << " -D TEMPORAL_RE=" << cos(tmp_temporal);
+	options << " -D MTEMPORAL_RE=" << -cos(tmp_temporal);
+	options << " -D TEMPORAL_IM=" << sin(tmp_temporal);
+	options << " -D MTEMPORAL_IM=" << -sin(tmp_temporal);
 
 	return options.str();
 }

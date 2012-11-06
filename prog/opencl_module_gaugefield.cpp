@@ -20,57 +20,57 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	using namespace hardware::buffers;
 
 	std::ostringstream options;
-	options << "-D_INKERNEL_ -DNSPACE=" << params.get_nspace() << " -DNTIME=" << params.get_ntime() << " -DVOLSPACE=" << meta::get_volspace(params) << " -DVOL4D=" << meta::get_vol4d(params);
+	options << "-D _INKERNEL_ -D NSPACE=" << params.get_nspace() << " -D NTIME=" << params.get_ntime() << " -D VOLSPACE=" << meta::get_volspace(params) << " -D VOL4D=" << meta::get_vol4d(params);
 
 	//this is needed for hmc_ocl_su3matrix
-	options << " -DSU3SIZE=" << NC*NC << " -DSTAPLEMATRIXSIZE=" << NC*NC;
+	options << " -D SU3SIZE=" << NC*NC << " -D STAPLEMATRIXSIZE=" << NC*NC;
 
 	if(params.get_precision() == 64) {
-		options << " -D_USEDOUBLEPREC_";
+		options << " -D _USEDOUBLEPREC_";
 		// TODO renable support for older AMD GPUs
 		//if( device_double_extension.empty() ) {
 		//  logger.warn() << "Warning: Undefined extension for use of double.";
 		//} else {
-		//  options << " -D_DEVICE_DOUBLE_EXTENSION_" << device_double_extension << "_";
+		//  options << " -D _DEVICE_DOUBLE_EXTENSION_" << device_double_extension << "_";
 		//}
-		options << " -D_DEVICE_DOUBLE_EXTENSION_KHR_";
+		options << " -D _DEVICE_DOUBLE_EXTENSION_KHR_";
 	}
 	if( device->get_device_type() == CL_DEVICE_TYPE_GPU )
-		options << " -D_USEGPU_";
+		options << " -D _USEGPU_";
 	if(params.get_use_chem_pot_re() == true) {
-		options << " -D_CP_REAL_";
-		options << " -DCPR=" << params.get_chem_pot_re();
-		options << " -DEXPCPR=" << exp(params.get_chem_pot_re() );
-		options << " -DMEXPCPR=" << exp(-1.*params.get_chem_pot_re() );
+		options << " -D _CP_REAL_";
+		options << " -D CPR=" << params.get_chem_pot_re();
+		options << " -D EXPCPR=" << exp(params.get_chem_pot_re() );
+		options << " -D MEXPCPR=" << exp(-1.*params.get_chem_pot_re() );
 	}
 	if(params.get_use_chem_pot_im() == true) {
-		options << " -D_CP_IMAG_";
-		options << " -DCPI=" << params.get_chem_pot_im();
-		options << " -DCOSCPI=" << cos( params.get_chem_pot_im() );
-		options << " -DSINCPI=" << sin( params.get_chem_pot_im() );
+		options << " -D _CP_IMAG_";
+		options << " -D CPI=" << params.get_chem_pot_im();
+		options << " -D COSCPI=" << cos( params.get_chem_pot_im() );
+		options << " -D SINCPI=" << sin( params.get_chem_pot_im() );
 	}
 	if(params.get_use_smearing() == true) {
-		options << " -D_USE_SMEARING_";
-		options << " -DRHO=" << params.get_rho();
-		options << " -DRHO_ITER=" << params.get_rho_iter();
+		options << " -D _USE_SMEARING_";
+		options << " -D RHO=" << params.get_rho();
+		options << " -D RHO_ITER=" << params.get_rho_iter();
 	}
 	if(device->get_prefers_soa()) {
-		options << " -D_USE_SOA_";
+		options << " -D _USE_SOA_";
 	}
 	if(check_SU3_for_SOA(device)) {
-		options << " -DGAUGEFIELD_STRIDE=" << get_SU3_buffer_stride(meta::get_vol4d(params) * NDIM, device);
+		options << " -D GAUGEFIELD_STRIDE=" << get_SU3_buffer_stride(meta::get_vol4d(params) * NDIM, device);
 	}
-	options << " -I" << SOURCEDIR;
+	options << " -I " << SOURCEDIR;
 
 	if(device->get_prefers_blocked_loops()) {
-		options << " -D_USE_BLOCKED_LOOPS_";
+		options << " -D _USE_BLOCKED_LOOPS_";
 	}
 
 	if(meta::get_use_rectangles(params) == true) {
-		options <<  " -D_USE_RECT_" ;
+		options <<  " -D _USE_RECT_" ;
 	}
 	if(params.get_use_rec12() == true) {
-		options <<  " -D_USE_REC12_" ;
+		options <<  " -D _USE_REC12_" ;
 	}
 
 	return options.str();
