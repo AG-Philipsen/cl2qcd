@@ -126,7 +126,7 @@ public:
 	 * Returns a pointer to solver task
 	 * @param[in] dev Number of the device one wants to choose
 	 */
-	Opencl_Module_Hmc* get_task_hmc(int dev);
+	hardware::code::Hmc* get_task_hmc(int dev);
 
 protected:
 

@@ -209,7 +209,7 @@ public:
 	/**
 	 * Get access to the hmc kernels on this device.
 	 */
-	Opencl_Module_Hmc * get_hmc_code();
+	hardware::code::Hmc * get_hmc_code();
 
 	/**
 	 * Get access to the correlator kernels on this device.
@@ -337,7 +337,7 @@ private:
 	 * Pointer to the hmc code.
 	 * Initialized on demand.
 	 */
-	Opencl_Module_Hmc * hmc_code;
+	hardware::code::Hmc * hmc_code;
 
 	/**
 	 * Pointer to the correlator code.

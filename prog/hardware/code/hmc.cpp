@@ -25,7 +25,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	return options.str();
 }
 
-void Opencl_Module_Hmc::fill_kernels()
+void hardware::code::Hmc::fill_kernels()
 {
 	basic_hmc_code = get_device()->get_fermion_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_hmc.h" << "operations_gaugemomentum.cl";
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
@@ -60,7 +60,7 @@ void Opencl_Module_Hmc::fill_kernels()
 	}
 }
 
-void Opencl_Module_Hmc::clear_kernels()
+void hardware::code::Hmc::clear_kernels()
 {
 	cl_uint clerr = CL_SUCCESS;
 
@@ -96,7 +96,7 @@ void Opencl_Module_Hmc::clear_kernels()
 	}
 }
 
-void Opencl_Module_Hmc::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
+void hardware::code::Hmc::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 
@@ -115,52 +115,52 @@ void Opencl_Module_Hmc::get_work_sizes(const cl_kernel kernel, size_t * ls, size
 ////////////////////////////////////////////////////
 //Access to members
 
-const hardware::buffers::Gaugemomentum * Opencl_Module_Hmc::get_clmem_p()
+const hardware::buffers::Gaugemomentum * hardware::code::Hmc::get_clmem_p()
 {
 	return &clmem_p;
 }
 
-const hardware::buffers::Gaugemomentum * Opencl_Module_Hmc::get_clmem_new_p()
+const hardware::buffers::Gaugemomentum * hardware::code::Hmc::get_clmem_new_p()
 {
 	return &clmem_new_p;
 }
 
-const hardware::buffers::SU3 * Opencl_Module_Hmc::get_new_u()
+const hardware::buffers::SU3 * hardware::code::Hmc::get_new_u()
 {
 	return &new_u;
 }
 
-const hardware::buffers::Plain<spinor> * Opencl_Module_Hmc::get_clmem_phi()
+const hardware::buffers::Plain<spinor> * hardware::code::Hmc::get_clmem_phi()
 {
 	return &clmem_phi;
 }
 
-const hardware::buffers::Spinor * Opencl_Module_Hmc::get_clmem_phi_eo()
+const hardware::buffers::Spinor * hardware::code::Hmc::get_clmem_phi_eo()
 {
 	return &clmem_phi_eo;
 }
 
-const hardware::buffers::Plain<spinor> * Opencl_Module_Hmc::get_clmem_phi_mp()
+const hardware::buffers::Plain<spinor> * hardware::code::Hmc::get_clmem_phi_mp()
 {
 	return &clmem_phi_mp;
 }
 
-const hardware::buffers::Spinor * Opencl_Module_Hmc::get_clmem_phi_mp_eo()
+const hardware::buffers::Spinor * hardware::code::Hmc::get_clmem_phi_mp_eo()
 {
 	return &clmem_phi_mp_eo;
 }
 
-hardware::buffers::Plain<hmc_float> * Opencl_Module_Hmc::get_clmem_s_fermion_init()
+hardware::buffers::Plain<hmc_float> * hardware::code::Hmc::get_clmem_s_fermion_init()
 {
 	return &clmem_s_fermion_init;
 }
 
-hardware::buffers::Plain<hmc_float> * Opencl_Module_Hmc::get_clmem_s_fermion_mp_init()
+hardware::buffers::Plain<hmc_float> * hardware::code::Hmc::get_clmem_s_fermion_mp_init()
 {
 	return &clmem_s_fermion_mp_init;
 }
 
-size_t Opencl_Module_Hmc::get_read_write_size(const std::string& in) const
+size_t hardware::code::Hmc::get_read_write_size(const std::string& in) const
 {
 //Depending on the compile-options, one has different sizes...
 	size_t D = meta::get_float_size(get_parameters());
@@ -229,7 +229,7 @@ size_t Opencl_Module_Hmc::get_read_write_size(const std::string& in) const
 	return 0;
 }
 
-uint64_t Opencl_Module_Hmc::get_flop_size(const std::string& in) const
+uint64_t hardware::code::Hmc::get_flop_size(const std::string& in) const
 {
 	//this is the number of spinors in the system (or number of sites)
 	size_t S = meta::get_spinorfieldsize(get_parameters());
@@ -298,7 +298,7 @@ uint64_t Opencl_Module_Hmc::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-void Opencl_Module_Hmc::print_profiling(const std::string& filename, int number) const
+void hardware::code::Hmc::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, generate_gaussian_spinorfield);
@@ -318,7 +318,7 @@ void Opencl_Module_Hmc::print_profiling(const std::string& filename, int number)
 ////////////////////////////////////////////////////
 //Methods needed for the HMC-algorithm
 
-void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device(const hardware::buffers::PRNGBuffer * prng)
+void hardware::code::Hmc::generate_gaussian_gaugemomenta_device(const hardware::buffers::PRNGBuffer * prng)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -393,7 +393,7 @@ void Opencl_Module_Hmc::generate_gaussian_gaugemomenta_device(const hardware::bu
 
 }
 
-void Opencl_Module_Hmc::generate_spinorfield_gaussian(const hardware::buffers::PRNGBuffer * prng)
+void hardware::code::Hmc::generate_spinorfield_gaussian(const hardware::buffers::PRNGBuffer * prng)
 {
 	if(get_parameters().get_use_eo() == true) {
 		this->generate_gaussian_spinorfield_eo_device(prng);
@@ -403,7 +403,7 @@ void Opencl_Module_Hmc::generate_spinorfield_gaussian(const hardware::buffers::P
 	return;
 }
 
-void Opencl_Module_Hmc::generate_gaussian_spinorfield_device(const hardware::buffers::PRNGBuffer * prng)
+void hardware::code::Hmc::generate_gaussian_spinorfield_device(const hardware::buffers::PRNGBuffer * prng)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -431,7 +431,7 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_device(const hardware::buf
 	}
 }
 
-void Opencl_Module_Hmc::generate_gaussian_spinorfield_eo_device(const hardware::buffers::PRNGBuffer * prng)
+void hardware::code::Hmc::generate_gaussian_spinorfield_eo_device(const hardware::buffers::PRNGBuffer * prng)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -465,7 +465,7 @@ void Opencl_Module_Hmc::generate_gaussian_spinorfield_eo_device(const hardware::
 
 }
 
-void Opencl_Module_Hmc::md_update_spinorfield(const hardware::buffers::SU3 * gaugefield, hmc_float kappa, hmc_float mubar)
+void hardware::code::Hmc::md_update_spinorfield(const hardware::buffers::SU3 * gaugefield, hmc_float kappa, hmc_float mubar)
 {
 	auto fermion_code = get_device()->get_fermion_code();
 
@@ -481,7 +481,7 @@ void Opencl_Module_Hmc::md_update_spinorfield(const hardware::buffers::SU3 * gau
 	}
 }
 
-void Opencl_Module_Hmc::md_update_spinorfield_mp(usetimer * solvertimer, const hardware::buffers::SU3 * gaugefield)
+void hardware::code::Hmc::md_update_spinorfield_mp(usetimer * solvertimer, const hardware::buffers::SU3 * gaugefield)
 {
 	using namespace hardware::buffers;
 
@@ -552,7 +552,7 @@ void Opencl_Module_Hmc::md_update_spinorfield_mp(usetimer * solvertimer, const h
 }
 
 //this function takes to args kappa and mubar because one has to use it with different masses when mass-prec is used and when not
-void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kappa, hmc_float mubar)
+void hardware::code::Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kappa, hmc_float mubar)
 {
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
@@ -1006,7 +1006,7 @@ void Opencl_Module_Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kap
 	}
 }
 
-void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer, const hardware::buffers::SU3 * gaugefield)
+void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, const hardware::buffers::SU3 * gaugefield)
 {
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
@@ -1308,7 +1308,7 @@ void Opencl_Module_Hmc::calc_fermion_force_detratio(usetimer * solvertimer, cons
 	}
 }
 
-void Opencl_Module_Hmc::calc_gauge_force()
+void hardware::code::Hmc::calc_gauge_force()
 {
 	logger.debug() << "\t\tcalc gauge_force...";
 	gauge_force_device();
@@ -1318,7 +1318,7 @@ void Opencl_Module_Hmc::calc_gauge_force()
 	}
 }
 
-hmc_float Opencl_Module_Hmc::calc_s_fermion()
+hmc_float hardware::code::Hmc::calc_s_fermion()
 {
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
@@ -1416,7 +1416,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion()
 	return tmp;
 }
 
-hmc_float Opencl_Module_Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * gaugefield)
+hmc_float hardware::code::Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * gaugefield)
 {
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
@@ -1522,7 +1522,7 @@ hmc_float Opencl_Module_Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * ga
 	return tmp;
 }
 
-hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta, const hardware::buffers::SU3 * gaugefield)
+hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, const hardware::buffers::SU3 * gaugefield)
 {
 	auto gf_code = get_device()->get_gaugefield_code();
 	auto fermion_code = get_device()->get_fermion_code();
@@ -1635,7 +1635,7 @@ hmc_observables Opencl_Module_Hmc::metropolis(hmc_float rnd, hmc_float beta, con
 	return tmp;
 }
 
-void Opencl_Module_Hmc::calc_spinorfield_init_energy(hardware::buffers::Plain<hmc_float> * dest)
+void hardware::code::Hmc::calc_spinorfield_init_energy(hardware::buffers::Plain<hmc_float> * dest)
 {
 	auto spinor_code = get_device()->get_spinor_code();
 
@@ -1648,7 +1648,7 @@ void Opencl_Module_Hmc::calc_spinorfield_init_energy(hardware::buffers::Plain<hm
 	}
 }
 
-void Opencl_Module_Hmc::md_update_gaugemomentum_device(hmc_float eps)
+void hardware::code::Hmc::md_update_gaugemomentum_device(hmc_float eps)
 {
 	md_update_gaugemomentum_device(&clmem_force, &clmem_new_p, eps);
 
@@ -1664,7 +1664,7 @@ void Opencl_Module_Hmc::md_update_gaugemomentum_device(hmc_float eps)
 	}
 }
 
-void Opencl_Module_Hmc::md_update_gaugemomentum_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::Gaugemomentum * out, hmc_float eps)
+void hardware::code::Hmc::md_update_gaugemomentum_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::Gaugemomentum * out, hmc_float eps)
 {
 	//__kernel void md_update_gaugemomenta(hmc_float eps, __global ae * p_inout, __global ae* force_in){
 	hmc_float tmp = eps;
@@ -1683,12 +1683,12 @@ void Opencl_Module_Hmc::md_update_gaugemomentum_device(const hardware::buffers::
 	get_device()->enqueue_kernel(md_update_gaugemomenta , gs2, ls2);
 }
 
-void Opencl_Module_Hmc::md_update_gaugefield_device(hmc_float eps)
+void hardware::code::Hmc::md_update_gaugefield_device(hmc_float eps)
 {
 	md_update_gaugefield_device(&clmem_new_p, &new_u, eps);
 }
 
-void Opencl_Module_Hmc::md_update_gaugefield_device(const hardware::buffers::Gaugemomentum * gm_in, const hardware::buffers::SU3 * gf_out, hmc_float eps)
+void hardware::code::Hmc::md_update_gaugefield_device(const hardware::buffers::Gaugemomentum * gm_in, const hardware::buffers::SU3 * gf_out, hmc_float eps)
 {
 	// __kernel void md_update_gaugefield(hmc_float eps, __global ae * p_in, __global ocl_s_gaugefield * u_inout){
 	hmc_float tmp = eps;
@@ -1710,12 +1710,12 @@ void Opencl_Module_Hmc::md_update_gaugefield_device(const hardware::buffers::Gau
 	get_device()->enqueue_kernel( md_update_gaugefield , gs2, ls2);
 }
 
-void Opencl_Module_Hmc::set_zero_clmem_force_device()
+void hardware::code::Hmc::set_zero_clmem_force_device()
 {
 	set_zero_gaugemomentum(&clmem_force);
 }
 
-void Opencl_Module_Hmc::set_zero_gaugemomentum(const hardware::buffers::Gaugemomentum * buf)
+void hardware::code::Hmc::set_zero_gaugemomentum(const hardware::buffers::Gaugemomentum * buf)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -1729,7 +1729,7 @@ void Opencl_Module_Hmc::set_zero_gaugemomentum(const hardware::buffers::Gaugemom
 	get_device()->enqueue_kernel(_set_zero_gaugemomentum , gs2, ls2);
 }
 
-void Opencl_Module_Hmc::gauge_force_device()
+void hardware::code::Hmc::gauge_force_device()
 {
 	gauge_force_device(&new_u, &clmem_force);
 
@@ -1767,7 +1767,7 @@ void Opencl_Module_Hmc::gauge_force_device()
 
 }
 
-void Opencl_Module_Hmc::gauge_force_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out)
+void hardware::code::Hmc::gauge_force_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -1784,7 +1784,7 @@ void Opencl_Module_Hmc::gauge_force_device(const hardware::buffers::SU3 * gf, co
 }
 
 
-void Opencl_Module_Hmc::gauge_force_tlsym_device()
+void hardware::code::Hmc::gauge_force_tlsym_device()
 {
 	gauge_force_tlsym_device(&new_u, &clmem_force);
 
@@ -1821,7 +1821,7 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device()
 
 }
 
-void Opencl_Module_Hmc::gauge_force_tlsym_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out)
+void hardware::code::Hmc::gauge_force_tlsym_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -1837,7 +1837,7 @@ void Opencl_Module_Hmc::gauge_force_tlsym_device(const hardware::buffers::SU3 * 
 	get_device()->enqueue_kernel( gauge_force_tlsym , gs2, ls2);
 }
 
-void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, hmc_float kappa)
+void hardware::code::Hmc::fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, hmc_float kappa)
 {
 	using namespace hardware::buffers;
 
@@ -1875,7 +1875,7 @@ void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::Plain<spin
 
 }
 
-void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out, hmc_float kappa)
+void hardware::code::Hmc::fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out, hmc_float kappa)
 {
 	//get kappa
 	hmc_float kappa_tmp;
@@ -1907,7 +1907,7 @@ void Opencl_Module_Hmc::fermion_force_device(const hardware::buffers::Plain<spin
 }
 
 //the argument kappa is set to ARG_DEF as default
-void Opencl_Module_Hmc::fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, int evenodd, hmc_float kappa)
+void hardware::code::Hmc::fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, int evenodd, hmc_float kappa)
 {
 	using namespace hardware::buffers;
 
@@ -1946,7 +1946,7 @@ void Opencl_Module_Hmc::fermion_force_eo_device(const hardware::buffers::Spinor 
 }
 
 //the argument kappa is set to ARG_DEF as default
-void Opencl_Module_Hmc::fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out, int evenodd, hmc_float kappa)
+void hardware::code::Hmc::fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out, int evenodd, hmc_float kappa)
 {
 	//get kappa
 	hmc_float kappa_tmp;
@@ -1980,7 +1980,7 @@ void Opencl_Module_Hmc::fermion_force_eo_device(const hardware::buffers::Spinor 
 	get_device()->enqueue_kernel( fermion_force_eo , gs2, ls2);
 }
 
-void Opencl_Module_Hmc::stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate)
+void hardware::code::Hmc::stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -1989,7 +1989,7 @@ void Opencl_Module_Hmc::stout_smeared_fermion_force_device(std::vector<const har
 	//set arguments
 }
 
-void Opencl_Module_Hmc::set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * clmem_in, const hardware::buffers::Plain<hmc_float> * out)
+void hardware::code::Hmc::set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * clmem_in, const hardware::buffers::Plain<hmc_float> * out)
 {
 	auto spinor_code = get_device()->get_spinor_code();
 
@@ -2012,7 +2012,7 @@ void Opencl_Module_Hmc::set_float_to_gaugemomentum_squarenorm_device(const hardw
 	spinor_code->global_squarenorm_reduction(out, &clmem_global_squarenorm_buf_glob);
 }
 
-void Opencl_Module_Hmc::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data)
+void hardware::code::Hmc::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data)
 {
 	cl_int clerr;
 	if(dest->is_soa()) {
@@ -2032,7 +2032,7 @@ void Opencl_Module_Hmc::importGaugemomentumBuffer(const hardware::buffers::Gauge
 	}
 }
 
-void Opencl_Module_Hmc::exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf)
+void hardware::code::Hmc::exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf)
 {
 	cl_int clerr;
 	if(buf->is_soa()) {
@@ -2053,7 +2053,7 @@ void Opencl_Module_Hmc::exportGaugemomentumBuffer(ae * const dest, const hardwar
 	}
 }
 
-Opencl_Module_Hmc::Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device)
+hardware::code::Hmc::Hmc(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device),
 	  clmem_s_fermion_init(1, device),
 	  clmem_s_fermion_mp_init(1, device),
@@ -2074,7 +2074,7 @@ Opencl_Module_Hmc::Opencl_Module_Hmc(const meta::Inputparameters& params, hardwa
 	fill_kernels();
 }
 
-Opencl_Module_Hmc::~Opencl_Module_Hmc()
+hardware::code::Hmc::~Hmc()
 {
 	clear_kernels();
 }

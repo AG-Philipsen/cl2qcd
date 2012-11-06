@@ -17,6 +17,10 @@
 #include "../hardware/buffers/spinor.hpp"
 #include "../hardware/buffers/gaugemomentum.hpp"
 
+namespace hardware {
+
+namespace code {
+
 /**
  * An OpenCL device
  *
@@ -25,11 +29,11 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Hmc : public hardware::code::Opencl_Module {
+class Hmc : public Opencl_Module {
 public:
 	friend hardware::Device;
 
-	virtual ~Opencl_Module_Hmc();
+	virtual ~Hmc();
 
 	////////////////////////////////////////////////////
 	//get members
@@ -137,7 +141,7 @@ private:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Hmc(const meta::Inputparameters& params, hardware::Device * device);
+	Hmc(const meta::Inputparameters& params, hardware::Device * device);
 
 	/**
 	 * Collect the kernels for OpenCL.
@@ -189,5 +193,9 @@ private:
 	const hardware::buffers::Spinor clmem_phi_eo;
 	const hardware::buffers::Spinor clmem_phi_mp_eo;
 };
+
+}
+
+}
 
 #endif // _HARDWARE_CODE_HMC_

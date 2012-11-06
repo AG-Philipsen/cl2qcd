@@ -430,10 +430,10 @@ hardware::code::Fermions * hardware::Device::get_fermion_code()
 	return fermion_code;
 }
 
-Opencl_Module_Hmc * hardware::Device::get_hmc_code()
+hardware::code::Hmc * hardware::Device::get_hmc_code()
 {
 	if(!hmc_code) {
-		hmc_code = new Opencl_Module_Hmc(params, this);
+		hmc_code = new hardware::code::Hmc(params, this);
 	}
 	return hmc_code;
 }

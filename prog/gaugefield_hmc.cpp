@@ -2,10 +2,10 @@
 
 #include "meta/util.hpp"
 
-Opencl_Module_Hmc* Gaugefield_hmc::get_task_hmc(int dev)
+hardware::code::Hmc* Gaugefield_hmc::get_task_hmc(int dev)
 {
 	//@todo: if more than one device is used, the element dev from the array must be called here!!
-	return (Opencl_Module_Hmc*)opencl_modules[dev];
+	return (hardware::code::Hmc*)opencl_modules[dev];
 }
 
 void Gaugefield_hmc::init_tasks()
