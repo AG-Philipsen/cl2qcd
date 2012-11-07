@@ -1,10 +1,17 @@
 #include "heatbath.h"
 
 #include "meta/util.hpp"
+#include "physics/prng.hpp"
+#include "physics/lattices/gaugefield.hpp"
+#include "physics/algorithms/heatbath.hpp"
 
 int main(int argc, const char* argv[])
 {
 	try {
+		using namespace physics;
+		using namespace physics::lattices;
+		using physics::algorithms::heatbath;
+
 		meta::Inputparameters parameters(argc, argv);
 		switchLogLevel(parameters.get_log_level());
 
@@ -24,12 +31,11 @@ int main(int argc, const char* argv[])
 		init_timer.reset();
 
 		hardware::System system(parameters);
-		Gaugefield_heatbath gaugefield(&system);
 
-		cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
-		gaugefield.init(1, primary_device);
-		logger.trace() << "initial gaugeobservables: ";
-		gaugefield.print_gaugeobservables(0);
+		PRNG prng(system);
+		Gaugefield gaugefield(system, prng);
+
+		print_gaugeobservables(gaugefield, 0);
 
 		init_timer.add();
 
@@ -41,7 +47,7 @@ int main(int argc, const char* argv[])
 
 		logger.trace() << "Start thermalization" ;
 		int ntherm = parameters.get_thermalizationsteps();
-		for(int iter = 0; iter < ntherm; iter++) gaugefield.perform_tasks(0);
+		for(int iter = 0; iter < ntherm; iter++) heatbath(gaugefield, prng);
 
 		int nsteps = parameters.get_heatbathsteps();
 		int overrelaxsteps = parameters.get_overrelaxsteps();
@@ -51,19 +57,17 @@ int main(int argc, const char* argv[])
 		logger.info() << "Start heatbath";
 
 		for(int i = 0; i < nsteps; i++) {
-			gaugefield.perform_tasks(overrelaxsteps);
+			heatbath(gaugefield, prng, overrelaxsteps);
 			if( ( (i + 1) % writefreq ) == 0 ) {
-			  //name of file to store gauge observables
-			  std::string gaugeout_name = meta::get_gauge_obs_file_name(parameters, "");
-			  gaugefield.print_gaugeobservables_from_task(i, 0, gaugeout_name);
+				//name of file to store gauge observables
+				std::string gaugeout_name = meta::get_gauge_obs_file_name(parameters, "");
+				print_gaugeobservables(gaugefield, i, gaugeout_name);
 			}
 			if( parameters.get_saveconfigs() == true && ( (i + 1) % savefreq ) == 0 ) {
-				gaugefield.synchronize(0);
 				gaugefield.save(i);
 			}
 		}
 
-		gaugefield.synchronize(0);
 		gaugefield.save(nsteps);
 		logger.trace() << "heatbath done";
 		perform_timer.add();
@@ -74,13 +78,6 @@ int main(int argc, const char* argv[])
 
 		total_timer.add();
 		general_time_output(&total_timer, &init_timer, &perform_timer, &plaq_timer, &poly_timer);
-
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// free variables
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		gaugefield.finalize();
-
 
 	} //try
 	//exceptions from Opencl classes
