@@ -131,6 +131,8 @@ set_abs_paths(OPTIMAL_FILES
 	host_use_timer.cpp
 	host_writegaugefield.cpp
 	opencl_compiler.cpp
+	opencl_module_gaugemomentum.cpp
+	opencl_module_molecular_dynamics.cpp
 )
 set(OPTIMAL_USED_LIBS
 	${OPENCL_LIBRARIES}

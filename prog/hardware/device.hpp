@@ -25,6 +25,8 @@
 #include "code/correlator.hpp"
 #include "code/heatbath.hpp"
 #include "code/kappa.hpp"
+#include "../opencl_module_gaugemomentum.h"
+#include "../opencl_module_molecular_dynamics.h"
 
 namespace hardware {
 
@@ -200,6 +202,16 @@ public:
 	hardware::code::Fermions * get_fermion_code();
 
 	/**
+	 * Get access to the gaugemomentum kernels on this device.
+	 */
+	Opencl_Module_Gaugemomentum * get_gaugemomentum_code();
+
+	/**
+	 * Get access to the molecular dynamics kernels on this device.
+	 */
+	Opencl_Module_Molecular_Dynamics * get_molecular_dynamics_code();
+
+	/**
 	 * Get access to the hmc kernels on this device.
 	 */
 	hardware::code::Hmc * get_hmc_code();
@@ -325,6 +337,18 @@ private:
 	 * Initialized on demand.
 	 */
 	hardware::code::Fermions * fermion_code;
+
+	/**
+	 * Pointer to the gaugemomentum code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Gaugemomentum * gaugemomentum_code;
+
+  	/**
+	 * Pointer to the molecular dynamics code.
+	 * Initialized on demand.
+	 */
+	Opencl_Module_Molecular_Dynamics * molecular_dynamics_code;
 
 	/**
 	 * Pointer to the hmc code.

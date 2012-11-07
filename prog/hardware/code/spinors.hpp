@@ -8,6 +8,7 @@
 
 #include "../buffers/plain.hpp"
 #include "../buffers/spinor.hpp"
+#include "../buffers/prng_buffer.hpp"
 
 namespace hardware {
 
@@ -28,6 +29,8 @@ public:
 
 	/////////////////////////////////////////
 	// device operations
+	void generate_gaussian_spinorfield_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::PRNGBuffer * prng);
+	void generate_gaussian_spinorfield_eo_device(const hardware::buffers::Spinor * in, const hardware::buffers::PRNGBuffer * prng);
 
 	//    linear Algebra operations
 	void convert_from_eoprec_device(const hardware::buffers::Spinor * in1, const hardware::buffers::Spinor * in2, const hardware::buffers::Plain<spinor> * out);
@@ -138,6 +141,9 @@ private:
 	cl_kernel _global_squarenorm_reduction;
 	cl_kernel scalar_product_eoprec;
 	cl_kernel global_squarenorm_eoprec;
+
+	cl_kernel generate_gaussian_spinorfield;
+	cl_kernel generate_gaussian_spinorfield_eo;
 
 	//Single
 	cl_kernel ratio;
