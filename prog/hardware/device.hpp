@@ -46,6 +46,7 @@ class OptimizationError {
 class Device {
 
 	friend hardware::buffers::Buffer;
+	friend void print_profiling(Device *, const std::string&, int);
 
 public:
 	/**
@@ -177,14 +178,6 @@ public:
 	 * \return Profiling data for the given kernel on this device
 	 */
 	ProfilingData get_profiling_data(const cl_kernel& kernel) noexcept;
-
-	/**
-	 * Print the profiling information of kernels run on this device.
-	 *
-	 * \param filename The file to write the profiling information to
-	 * \param id The id to identify this device by
-	 */
-	void print_profiling(std::string filename, int id);
 
 	/**
 	 * Get access to the gaugefield kernels on this device.
@@ -359,6 +352,14 @@ private:
 
 };
 
+	/**
+	 * Print the profiling information of kernels run on the given device.
+	 *
+	 * \param device The device the kernels ran on
+	 * \param filename The file to write the profiling information to
+	 * \param id The id to identify this device by
+	 */
+	void print_profiling(Device * device, const std::string& filename, int id);
 }
 
 #endif /* _HARDWARE_DEVICE_HPP_ */

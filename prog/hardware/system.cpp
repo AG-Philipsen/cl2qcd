@@ -129,3 +129,16 @@ hardware::System::operator const cl_context&() const noexcept
 {
 	return context;
 }
+
+void hardware::print_profiling(const System& system, const std::string& filename)
+{
+	auto devices = system.get_devices();
+	for(size_t i = 0; i < devices.size(); ++i) {
+		print_profiling(devices[i], filename, i);
+	}
+}
+
+void hardware::print_profiling(const System * system, const std::string& filename)
+{
+	print_profiling(*system, filename);
+}

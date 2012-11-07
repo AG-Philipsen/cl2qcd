@@ -104,6 +104,21 @@ namespace hardware {
 		cl_platform_id platform;
 	};
 
+	/**
+	 * Print the profiling information of kernels on this system on any device.
+	 *
+	 * \param system The system of which to print the profiling info
+	 * \param filename The file to write the profiling information to
+	 */
+	void print_profiling(const System& system, const std::string& filename);
+
+	/**
+	 * Print the profiling information of kernels on this system on any device.
+	 *
+	 * \param system The system of which to print the profiling info
+	 * \param filename The file to write the profiling information to
+	 */
+	void print_profiling(const System* system, const std::string& filename);
 }
 
 #endif /* _HARDWARE_SYSTEM_HPP_ */

@@ -462,30 +462,30 @@ hardware::code::Kappa * hardware::Device::get_kappa_code()
 	return kappa_code;
 }
 
-void hardware::Device::print_profiling(std::string filename, int id)
+void hardware::print_profiling(Device * device, const std::string& filename, int id)
 {
-	if(kappa_code) {
-		kappa_code->print_profiling(filename, id);
+	if(device->kappa_code) {
+		device->kappa_code->print_profiling(filename, id);
 	}
-	if(heatbath_code) {
-		heatbath_code->print_profiling(filename, id);
+	if(device->heatbath_code) {
+		device->heatbath_code->print_profiling(filename, id);
 	}
-	if(correlator_code) {
-		correlator_code->print_profiling(filename, id);
+	if(device->correlator_code) {
+		device->correlator_code->print_profiling(filename, id);
 	}
-	if(hmc_code) {
-		hmc_code->print_profiling(filename, id);
+	if(device->hmc_code) {
+		device->hmc_code->print_profiling(filename, id);
 	}
-	if(fermion_code) {
-		fermion_code->print_profiling(filename, id);
+	if(device->fermion_code) {
+		device->fermion_code->print_profiling(filename, id);
 	}
-	if(spinor_code) {
-		spinor_code->print_profiling(filename, id);
+	if(device->spinor_code) {
+		device->spinor_code->print_profiling(filename, id);
 	}
-	if(prng_code) {
-		prng_code->print_profiling(filename, id);
+	if(device->prng_code) {
+		device->prng_code->print_profiling(filename, id);
 	}
-	if(gaugefield_code) {
-		gaugefield_code->print_profiling(filename, id);
+	if(device->gaugefield_code) {
+		device->gaugefield_code->print_profiling(filename, id);
 	}
 }
