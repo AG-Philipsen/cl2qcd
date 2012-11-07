@@ -1,6 +1,11 @@
 #include "../heatbath.h"
 
 #include "../meta/util.hpp"
+#include "../physics/prng.hpp"
+#include "../physics/lattices/gaugefield.hpp"
+#include "../physics/algorithms/heatbath.hpp"
+
+#include "../meta/util.hpp"
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
@@ -9,6 +14,9 @@ int main(int argc, const char* argv[])
 {
 //CP: This should be the same as the normal heatbath-executable
 /////////////////////////////////////////////////////////////////////////////////////////
+	using namespace physics;
+	using namespace physics::lattices;
+	using physics::algorithms::heatbath;
 
 	meta::Inputparameters parameters(argc, argv);
 	switchLogLevel(parameters.get_log_level());
@@ -36,12 +44,11 @@ int main(int argc, const char* argv[])
 	sourcefileparameters parameters_source;
 
 	hardware::System system(parameters, true);
-	Gaugefield_heatbath gaugefield(&system);
 
-	cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
-	gaugefield.init(1, primary_device);
-	logger.trace() << "Got gaugefield";
-	gaugefield.print_gaugeobservables(0);
+	PRNG prng(system);
+	Gaugefield gaugefield(system, prng);
+
+	print_gaugeobservables(gaugefield, 0);
 
 	init_timer.add();
 
@@ -58,9 +65,8 @@ int main(int argc, const char* argv[])
 	logger.info() << "Perform " << nsteps << "of benchmarking";
 
 	for(int i = 0; i < nsteps; i++) {
-		gaugefield.perform_tasks(parameters.get_overrelaxsteps());
-		gaugefield.synchronize(0);
-		gaugefield.print_gaugeobservables_from_task(i, 0, gaugeout_name.str());
+		heatbath(gaugefield, prng, parameters.get_overrelaxsteps());
+		print_gaugeobservables(gaugefield, i, gaugeout_name.str());
 	}
 	logger.trace() << "heatbath-benchmarking done";
 	perform_timer.add();
@@ -85,13 +91,8 @@ int main(int argc, const char* argv[])
 	} else {
 		logger.warn() << "Could not open " << profiling_out;
 	}
-	gaugefield.print_profiling(profiling_out);
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// free variables
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	gaugefield.finalize();
+	print_profiling(system, profiling_out);
 
 	return 0;
 }

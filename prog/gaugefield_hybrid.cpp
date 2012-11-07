@@ -476,9 +476,7 @@ void Gaugefield_hybrid::print_gaugeobservables_from_task(int iter, int ntask, st
 
 void Gaugefield_hybrid::print_profiling(std::string filename)
 {
-	for(int i = 0; i < num_devices; ++i) {
-		devices[i]->print_profiling(filename, i);
-	}
+	hardware::print_profiling(system, filename);
 }
 
 void Gaugefield_hybrid::set_to_gaugefield(Matrixsu3 * field, const size_t mu, const size_t x, const size_t t, const Matrixsu3 val)
