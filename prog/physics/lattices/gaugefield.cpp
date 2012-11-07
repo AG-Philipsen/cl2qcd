@@ -386,12 +386,6 @@ void physics::lattices::Gaugefield::gaugeobservables(hmc_float * const plaq, hmc
 	gf_dev->get_device()->get_gaugefield_code()->gaugeobservables(gf_dev, plaq, tplaq, splaq, pol);
 }
 
-/**
- * Calculate rectangles of this gaugefield
- *
- * @param[in] gf gaugefield to measure on
- * @param[out] plaq Storage for result of rectangles calculation
- */
 hmc_float physics::lattices::Gaugefield::rectangles() const
 {
 	assert(buffers.size() == 1);
@@ -414,4 +408,9 @@ void physics::lattices::print_gaugeobservables(const physics::lattices::Gaugefie
 	gf.gaugeobservables(&plaq, &tplaq, &splaq, &pol);
 
 	logger.info() << iter << '\t' << plaq << '\t' << tplaq << '\t' << splaq << '\t' << pol.re << '\t' << pol.im << '\t' << sqrt(pol.re * pol.re + pol.im * pol.im);
+}
+
+const std::vector<const hardware::buffers::SU3 *> physics::lattices::Gaugefield::get_buffers() const noexcept
+{
+	return buffers;
 }

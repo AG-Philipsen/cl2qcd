@@ -78,6 +78,11 @@ namespace physics {
 			 */
 			hmc_float rectangles() const;
 
+			/**
+			 * Get the buffers containing the gaugefield state on the devices.
+			 */
+			const std::vector<const hardware::buffers::SU3 *> get_buffers() const noexcept;
+
 		private:
 			hardware::System const& system;
 			physics::PRNG const& prng;
