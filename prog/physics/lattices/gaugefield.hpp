@@ -23,6 +23,11 @@ namespace physics {
 
 		public:
 			/**
+			 * Construct a gaugefield based on the input-files of the system
+			 */
+			Gaugefield(hardware::System&, physics::PRNG&);
+
+			/**
 			 * Construct a gaugefield based on the given ILDG file.
 			 */
 			Gaugefield(hardware::System&, physics::PRNG&, std::string);
@@ -30,7 +35,7 @@ namespace physics {
 			/**
 			 * Construct a gaugefield that has been initialized hot or cold
 			 */
-			Gaugefield(hardware::System&, physics::PRNG&, bool hot = false);
+			Gaugefield(hardware::System&, physics::PRNG&, bool hot);
 
 			/*
 			 * Gaugefields cannot be copied
@@ -59,6 +64,11 @@ namespace physics {
 			hardware::System const& system;
 			physics::PRNG const& prng;
 			const std::vector<const hardware::buffers::SU3 *> buffers;
+
+			/**
+			 * Utility function for construction.
+			 */
+			void fill_from_ildg(std::string);
 		};
 	}
 }

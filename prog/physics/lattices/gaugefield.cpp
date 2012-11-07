@@ -28,6 +28,23 @@ static void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source_
 static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check, const meta::Inputparameters& parameters);
 static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float, sourcefileparameters& parameters_source);
 
+physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng)
+	: system(system), prng(prng), buffers(allocate_buffers(system))
+{
+	auto parameters = system.get_inputparameters();
+	switch(parameters.get_startcondition()) {
+		case meta::Inputparameters::start_from_source:
+			fill_from_ildg(parameters.get_sourcefile());
+			break;
+		case meta::Inputparameters::cold_start:
+			set_cold(buffers);
+			break;
+		case meta::Inputparameters::hot_start:
+			set_hot(buffers, prng);
+			break;
+	}
+}
+
 physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng, bool hot)
 	: system(system), prng(prng), buffers(allocate_buffers(system))
 {
@@ -40,6 +57,11 @@ physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRN
 
 physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng, std::string ildgfile)
 	: system(system), prng(prng), buffers(allocate_buffers(system))
+{
+	fill_from_ildg(ildgfile);
+}
+
+void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
 {
 	assert(buffers.size() == 1);
 
