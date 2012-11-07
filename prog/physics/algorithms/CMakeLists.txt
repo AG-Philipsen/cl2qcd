@@ -8,6 +8,11 @@
 
 add_library(algorithms
 	solver.cpp
+	heatbath.cpp
+)
+target_link_libraries(algorithms
+		lattices
+		physics
 )
 
 #
