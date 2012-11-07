@@ -42,7 +42,7 @@ namespace physics {
 			/**
 			 * Get the buffers containing the random state on the device.
 			 */
-			const std::vector<const hardware::buffers::PRNGBuffer*> get_buffers();
+			const std::vector<const hardware::buffers::PRNGBuffer*> get_buffers() const noexcept;
 
 		private:
 			/**

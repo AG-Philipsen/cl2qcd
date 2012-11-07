@@ -34,7 +34,7 @@ for(hardware::Device * device : system.get_devices()) {
 	}
 }
 
-const std::vector<const hardware::buffers::PRNGBuffer*> physics::PRNG::get_buffers()
+const std::vector<const hardware::buffers::PRNGBuffer*> physics::PRNG::get_buffers() const noexcept
 {
 	return buffers;
 }
