@@ -98,6 +98,11 @@ namespace physics {
 		 * Print the gaugeobservables of the given gaugefield as info output.
 		 */
 		void print_gaugeobservables(const physics::lattices::Gaugefield& gf, int iter);
+
+		/**
+		 * Print the gaugeobservables of the given gaugefield to the given file
+		 */
+		void print_gaugeobservables(const physics::lattices::Gaugefield& gf, int iter, const std::string& filename);
 	}
 }
 

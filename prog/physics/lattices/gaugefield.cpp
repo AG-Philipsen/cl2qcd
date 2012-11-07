@@ -410,6 +410,25 @@ void physics::lattices::print_gaugeobservables(const physics::lattices::Gaugefie
 	logger.info() << iter << '\t' << plaq << '\t' << tplaq << '\t' << splaq << '\t' << pol.re << '\t' << pol.im << '\t' << sqrt(pol.re * pol.re + pol.im * pol.im);
 }
 
+void physics::lattices::print_gaugeobservables(const physics::lattices::Gaugefield& gf, int iter, const std::string& filename)
+{
+	hmc_float plaq;
+	hmc_float tplaq;
+	hmc_float splaq;
+	hmc_complex pol;
+
+	gf.gaugeobservables(&plaq, &tplaq, &splaq, &pol);
+
+	std::ofstream gaugeout(filename.c_str(), std::ios::app);
+	if(!gaugeout.is_open()) throw File_Exception(filename);
+	gaugeout.width(8);
+	gaugeout << iter;
+	gaugeout << "\t";
+	gaugeout.precision(15);
+	gaugeout << plaq << "\t" << tplaq << "\t" << splaq << "\t" << pol.re << "\t" << pol.im << "\t" << sqrt(pol.re * pol.re + pol.im * pol.im) << std::endl;
+	gaugeout.close();
+}
+
 const std::vector<const hardware::buffers::SU3 *> physics::lattices::Gaugefield::get_buffers() const noexcept
 {
 	return buffers;
