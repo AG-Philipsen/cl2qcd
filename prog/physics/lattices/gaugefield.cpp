@@ -285,7 +285,7 @@ static void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source_
 	}
 }
 
-hmc_float physics::lattices::Gaugefield::plaquette()
+hmc_float physics::lattices::Gaugefield::plaquette() const
 {
 	assert(buffers.size() == 1);
 
@@ -376,4 +376,42 @@ static void check_sourcefileparameters(const meta::Inputparameters& parameters, 
 
 	logger.info() << "...done";
 	return;
+}
+
+void physics::lattices::Gaugefield::gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol) const
+{
+	assert(buffers.size() == 1);
+
+	auto gf_dev = buffers[0];
+	gf_dev->get_device()->get_gaugefield_code()->gaugeobservables(gf_dev, plaq, tplaq, splaq, pol);
+}
+
+/**
+ * Calculate rectangles of this gaugefield
+ *
+ * @param[in] gf gaugefield to measure on
+ * @param[out] plaq Storage for result of rectangles calculation
+ */
+hmc_float physics::lattices::Gaugefield::rectangles() const
+{
+	assert(buffers.size() == 1);
+
+	hmc_float rect;
+
+	auto gf_dev = buffers[0];
+	gf_dev->get_device()->get_gaugefield_code()->gaugeobservables_rectangles(gf_dev, &rect);
+
+	return rect;
+}
+
+void physics::lattices::print_gaugeobservables(const physics::lattices::Gaugefield& gf, int iter)
+{
+	hmc_float plaq;
+	hmc_float tplaq;
+	hmc_float splaq;
+	hmc_complex pol;
+
+	gf.gaugeobservables(&plaq, &tplaq, &splaq, &pol);
+
+	logger.info() << iter << '\t' << plaq << '\t' << tplaq << '\t' << splaq << '\t' << pol.re << '\t' << pol.im << '\t' << sqrt(pol.re * pol.re + pol.im * pol.im);
 }

@@ -58,7 +58,25 @@ namespace physics {
 			/**
 			 * Return plaquette value
 			 */
-			hmc_float plaquette();
+			hmc_float plaquette() const;
+
+			/**
+			 * Calculate plaquette and polyakov of this gaugefield.
+			 *
+			 * @param[out] plaq Storage for result of plaquette calculation
+			 * @param[out] tplaq Storage for result of plaquette calculation
+			 * @param[out] splaq Storage for result of plaquette calculation
+			 * @param[out] pol Storage for result of polyakov calculation
+			 */
+			void gaugeobservables(hmc_float * const plaq, hmc_float * const tplaq, hmc_float * const splaq, hmc_complex * const pol) const;
+
+			/**
+			 * Calculate rectangles of this gaugefield
+			 *
+			 * @param[in] gf gaugefield to measure on
+			 * @param[out] plaq Storage for result of rectangles calculation
+			 */
+			hmc_float rectangles() const;
 
 		private:
 			hardware::System const& system;
@@ -70,6 +88,11 @@ namespace physics {
 			 */
 			void fill_from_ildg(std::string);
 		};
+
+		/**
+		 * Print the gaugeobservables of the given gaugefield as info output.
+		 */
+		void print_gaugeobservables(const physics::lattices::Gaugefield& gf, int iter);
 	}
 }
 
