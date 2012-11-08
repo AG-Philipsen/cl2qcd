@@ -13,6 +13,7 @@ def main():
 	parser = optparse.OptionParser()
 	parser.add_option('-s', '--nspace', action='append', type='int', help='Spacial extend of the lattice to use. Can be specified multiple times.')
 	parser.add_option('-t', '--ntime', action='append', type='int', help='Temporal extend of the lattice to use. Can be specified multiple times.')
+	parser.add_option('-d', '--device', type=int, help='The device to benchmark.')
 
 	(options, args) = parser.parse_args()
 
@@ -58,7 +59,10 @@ def main():
 				f = NamedTemporaryFile(delete=False);
 				f.write(input_glob.format(space_dims[iteration1], time_dims[iteration2]))
 				f.close()
-				args = ['./' + executable] + [f.name]
+				args = ['./' + executable] + [f.name] 
+
+			if options.device != None:
+				args += ['--device={0}'.format(options.device)]
 
 			# run the prog
 			if(stdout):
