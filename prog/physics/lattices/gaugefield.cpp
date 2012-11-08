@@ -135,7 +135,7 @@ void set_cold(Matrixsu3 * field, size_t elems)
 void set_hot(Matrixsu3 * field, physics::PRNG& prng, size_t elems)
 {
 	for(size_t i = 0; i < elems; ++i) {
-		field[i] = random_matrixsu3();
+		field[i] = random_matrixsu3(prng);
 	}
 }
 
