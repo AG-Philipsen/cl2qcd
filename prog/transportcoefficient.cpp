@@ -1,9 +1,21 @@
 #include "transportcoefficient.h"
 
 #include "meta/util.hpp"
+#include "physics/prng.hpp"
+#include "physics/lattices/gaugefield.hpp"
+#include "physics/algorithms/heatbath.hpp"
+#include "physics/algorithms/kappa_clover.hpp"
+#include <fstream>
+
+static void print_kappa(hmc_float kappa, int iter, std::string filename);
 
 int main(int argc, const char* argv[])
 {
+	using physics::PRNG;
+	using physics::lattices::Gaugefield;
+	using physics::algorithms::heatbath;
+	using physics::algorithms::kappa_clover;
+
 	try {
 		meta::Inputparameters parameters(argc, argv);
 		switchLogLevel(parameters.get_log_level());
@@ -26,13 +38,8 @@ int main(int argc, const char* argv[])
 		init_timer.reset();
 
 		hardware::System system(parameters);
-		Gaugefield_heatbath_kappa gaugefield(&system);
-		int numtasks = 2;
-
-		// this is the device type for the heatbath
-		cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
-
-		gaugefield.init(numtasks, primary_device);
+		PRNG prng(system);
+		Gaugefield gaugefield(system, prng);
 
 		init_timer.add();
 
@@ -44,14 +51,16 @@ int main(int argc, const char* argv[])
 
 		logger.trace() << "Start thermalization" ;
 		int ntherm = parameters.get_thermalizationsteps();
-		if(ntherm > 0) gaugefield.perform_heatbath(ntherm, 0);
+		for(int i = 0; i < ntherm; i++) {
+			heatbath(gaugefield, prng);
+		}
 
 		logger.info() << "Start hybrid heatbath and tk_kappa";
 		//first output is considered to be zeroth iteration
 		int iter = 0;
 		std::string gaugeout_name = get_gauge_obs_file_name(parameters, "");
-		gaugefield.print_gaugeobservables(iter);
-		gaugefield.print_gaugeobservables(iter, gaugeout_name);
+		print_gaugeobservables(gaugefield, iter);
+		print_gaugeobservables(gaugefield, iter, gaugeout_name);
 		iter++;
 
 		//first iteration: whether we want to do auto-timing
@@ -59,23 +68,23 @@ int main(int argc, const char* argv[])
 //		if(parameters.get_use_autotuning() == true) {
 //			gaugefield.perform_tasks(parameters.get_writefrequency(), parameters.get_overrelaxsteps(), &nheat_frequency);
 //		} else {
-		gaugefield.perform_tasks(nheat_frequency, parameters.get_overrelaxsteps());
+		for(int iter = 0; iter < nheat_frequency; iter++) {
+			heatbath(gaugefield, prng, parameters.get_overrelaxsteps());
+		}
+		hmc_float kappa = kappa_clover(gaugefield, parameters.get_beta());
 //		}
-		gaugefield.synchronize(0);
-		gaugefield.print_gaugeobservables(iter);
-		//    gaugefield.print_gaugeobservables_from_task(iter,0);
-		//    gaugefield.print_gaugeobservables_from_task(iter,1);
-		gaugefield.print_gaugeobservables(iter, gaugeout_name);
-		gaugefield.print_kappa(iter, "kappa_clover.dat");
+		print_gaugeobservables(gaugefield, iter);
+		print_gaugeobservables(gaugefield, iter, gaugeout_name);
+		print_kappa(kappa, iter, "kappa_clover.dat");
 
 		for(iter = 2; iter < parameters.get_heatbathsteps() / nheat_frequency; iter++) {
-			gaugefield.perform_tasks(parameters.get_writefrequency(), parameters.get_overrelaxsteps());
-			gaugefield.synchronize(0);
-			gaugefield.print_gaugeobservables(iter);
-			//    gaugefield.print_gaugeobservables_from_task(iter,0);
-			//    gaugefield.print_gaugeobservables_from_task(iter,1);
-			gaugefield.print_gaugeobservables(iter, gaugeout_name);
-			gaugefield.print_kappa(iter, "kappa_clover.dat");
+			for(int iter = 0; iter < nheat_frequency; iter++) {
+				heatbath(gaugefield, prng, parameters.get_overrelaxsteps());
+			}
+			kappa = kappa_clover(gaugefield, parameters.get_beta());
+			print_gaugeobservables(gaugefield, iter);
+			print_gaugeobservables(gaugefield, iter, gaugeout_name);
+			print_kappa(kappa, iter, "kappa_clover.dat");
 		}
 
 		gaugefield.save("conf.save");
@@ -88,14 +97,6 @@ int main(int argc, const char* argv[])
 
 		total_timer.add();
 		general_time_output(&total_timer, &init_timer, &perform_timer, &plaq_timer, &poly_timer);
-
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// free variables
-		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		gaugefield.finalize();
-
-
 	} //try
 	//exceptions from Opencl classes
 	catch (Opencl_Error& e) {
@@ -114,5 +115,17 @@ int main(int argc, const char* argv[])
 	}
 
 	return 0;
+}
 
+static void print_kappa(hmc_float kappa, int iter, std::string filename)
+{
+	std::ofstream outfile(filename.c_str(), std::ios::app);
+	if(!outfile.is_open()) throw File_Exception(filename);
+	outfile.width(8);
+	outfile << iter;
+	outfile << "\t";
+	outfile.precision(15);
+	outfile << kappa << std::endl;
+	outfile.close();
+	return;
 }

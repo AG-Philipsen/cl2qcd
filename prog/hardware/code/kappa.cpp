@@ -26,8 +26,7 @@ void hardware::code::Kappa::fill_kernels()
 	kappa_clover_gpu = createKernel("kappa_clover_gpu") << sources << "opencl_tk_kappa.cl";
 }
 
-
-void hardware::code::Kappa::run_kappa_clover(const hardware::buffers::SU3 * gaugefield, const hmc_float beta)
+void hardware::code::Kappa::run_kappa_clover(const hardware::buffers::Plain<hmc_float> * kappa, const hardware::buffers::SU3 * gaugefield, const hmc_float beta)
 {
 	//variables
 	cl_int clerr = CL_SUCCESS;
@@ -51,10 +50,12 @@ void hardware::code::Kappa::run_kappa_clover(const hardware::buffers::SU3 * gaug
 
 	get_device()->enqueue_kernel(kappa_clover_gpu, global_work_size, local_work_size);
 
-	// wait for results to have been read back
-	//don't do that anymore ;-)
-	//  clFinish(queue);
-	//  if(clerr != CL_SUCCESS) throw Opencl_Error(clerr,"clFinish",__FILE__,__LINE__);
+	// @fixme
+}
+
+void hardware::code::Kappa::run_kappa_clover(const hardware::buffers::SU3 * gaugefield, const hmc_float beta)
+{
+	run_kappa_clover(&clmem_kappa_clover, gaugefield, beta);
 }
 
 hmc_float hardware::code::Kappa::get_kappa_clover()
