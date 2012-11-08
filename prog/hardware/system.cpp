@@ -58,14 +58,29 @@ hardware::System::System(const meta::Inputparameters& params, bool enable_profil
 		throw OpenclException(err, "clGetContextInfo", __FILE__, __LINE__);
 	}
 
-	for(cl_uint i = 0; i < num_devices; ++i) {
-		Device * dev = new Device(context, device_ids[i], params, enable_profiling);
+	// check whether the user requested certain devices
+	auto selection = params.get_selected_devices();
+	if(selection.empty()) {
+		// use all
+		for(cl_uint i = 0; i < num_devices; ++i) {
+			Device * dev = new Device(context, device_ids[i], params, enable_profiling);
 #ifdef _USEDOUBLEPREC_
-		if(!dev->is_double_supported()) {
-			continue;
-		}
+			if(!dev->is_double_supported()) {
+				continue;
+			}
 #endif
-		devices.push_back(dev);
+			devices.push_back(dev);
+		}
+	} else {
+for(int i: selection) {
+			Device * dev = new Device(context, device_ids[i], params, enable_profiling);
+#ifdef _USEDOUBLEPREC_
+			if(!dev->is_double_supported()) {
+				throw std::invalid_argument("Selected device does not support double precision.");
+			}
+#endif
+			devices.push_back(dev);
+		}
 	}
 
 	delete[] device_ids;
