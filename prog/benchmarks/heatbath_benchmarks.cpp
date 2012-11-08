@@ -41,7 +41,6 @@ int main(int argc, const char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	init_timer.reset();
-	sourcefileparameters parameters_source;
 
 	hardware::System system(parameters, true);
 
