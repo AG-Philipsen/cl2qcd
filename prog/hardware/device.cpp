@@ -435,18 +435,18 @@ hardware::code::Fermions * hardware::Device::get_fermion_code()
 	return fermion_code;
 }
 
-Opencl_Module_Gaugemomentum * hardware::Device::get_gaugemomentum_code()
+hardware::code::Gaugemomentum * hardware::Device::get_gaugemomentum_code()
 {
 	if(!gaugemomentum_code) {
-		gaugemomentum_code = new Opencl_Module_Gaugemomentum(params, this);
+		gaugemomentum_code = new hardware::code::Gaugemomentum(params, this);
 	}
 	return gaugemomentum_code;
 }
 
-Opencl_Module_Molecular_Dynamics * hardware::Device::get_molecular_dynamics_code()
+hardware::code::Molecular_Dynamics * hardware::Device::get_molecular_dynamics_code()
 {
 	if(!molecular_dynamics_code) {
-		molecular_dynamics_code = new Opencl_Module_Molecular_Dynamics(params, this);
+		molecular_dynamics_code = new hardware::code::Molecular_Dynamics(params, this);
 	}
 	return molecular_dynamics_code;
 }

@@ -1,21 +1,21 @@
-#include "opencl_module_gaugemomentum.h"
+#include "gaugemomentum.hpp"
 
-#include "logger.hpp"
-#include "meta/util.hpp"
-#include "hardware/device.hpp"
+#include "../logger.hpp"
+#include "../meta/util.hpp"
+#include "../device.hpp"
 #include <fstream>
 
 using namespace std;
 
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
 
-Opencl_Module_Gaugemomentum::Opencl_Module_Gaugemomentum(const meta::Inputparameters& params, hardware::Device * device)
+hardware::code::Gaugemomentum::Gaugemomentum(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device)
 {
 	fill_kernels();
 }
 
-Opencl_Module_Gaugemomentum::~Opencl_Module_Gaugemomentum()
+hardware::code::Gaugemomentum::~Gaugemomentum()
 {
 	clear_kernels();
 }
@@ -36,7 +36,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	return options.str();
 }
 
-void Opencl_Module_Gaugemomentum::fill_kernels()
+void hardware::code::Gaugemomentum::fill_kernels()
 {
 	basic_gaugemomentum_code = get_device()->get_fermion_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_hmc.h" << "operations_gaugemomentum.cl";
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
@@ -53,7 +53,7 @@ void Opencl_Module_Gaugemomentum::fill_kernels()
 	}
 }
 
-void Opencl_Module_Gaugemomentum::clear_kernels()
+void hardware::code::Gaugemomentum::clear_kernels()
 {
 	cl_uint clerr = CL_SUCCESS;
 	///@todo some kernels are missing here
@@ -64,7 +64,7 @@ void Opencl_Module_Gaugemomentum::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 }
 
-void Opencl_Module_Gaugemomentum::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
+void hardware::code::Gaugemomentum::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 
@@ -78,7 +78,7 @@ void Opencl_Module_Gaugemomentum::get_work_sizes(const cl_kernel kernel, size_t 
 	return;
 }
 
-size_t Opencl_Module_Gaugemomentum::get_read_write_size(const std::string& in) const
+size_t hardware::code::Gaugemomentum::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
 	size_t D = meta::get_float_size(get_parameters());
@@ -108,7 +108,7 @@ size_t Opencl_Module_Gaugemomentum::get_read_write_size(const std::string& in) c
 	return 0;
 }
 
-uint64_t Opencl_Module_Gaugemomentum::get_flop_size(const std::string& in) const
+uint64_t hardware::code::Gaugemomentum::get_flop_size(const std::string& in) const
 {
 	//this is the number of links in the system (and of gaugemomenta)
 	uint64_t G = meta::get_vol4d(get_parameters()) * NDIM;
@@ -136,7 +136,7 @@ uint64_t Opencl_Module_Gaugemomentum::get_flop_size(const std::string& in) const
 	return 0;
 }
 
-void Opencl_Module_Gaugemomentum::print_profiling(const std::string& filename, int number) const
+void hardware::code::Gaugemomentum::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, generate_gaussian_gaugemomenta);
@@ -149,7 +149,7 @@ void Opencl_Module_Gaugemomentum::print_profiling(const std::string& filename, i
 /////////////////////////////////////////////////
 // Methods on device
 
-void Opencl_Module_Gaugemomentum::generate_gaussian_gaugemomenta_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::PRNGBuffer * prng)
+void hardware::code::Gaugemomentum::generate_gaussian_gaugemomenta_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::PRNGBuffer * prng)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -224,7 +224,7 @@ void Opencl_Module_Gaugemomentum::generate_gaussian_gaugemomenta_device(const ha
 
 }
 
-void Opencl_Module_Gaugemomentum::set_zero_gaugemomentum(const hardware::buffers::Gaugemomentum * buf)
+void hardware::code::Gaugemomentum::set_zero_gaugemomentum(const hardware::buffers::Gaugemomentum * buf)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -239,7 +239,7 @@ void Opencl_Module_Gaugemomentum::set_zero_gaugemomentum(const hardware::buffers
 }
 
 
-void Opencl_Module_Gaugemomentum::set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * clmem_in, const hardware::buffers::Plain<hmc_float> * out)
+void hardware::code::Gaugemomentum::set_float_to_gaugemomentum_squarenorm_device(const hardware::buffers::Gaugemomentum * clmem_in, const hardware::buffers::Plain<hmc_float> * out)
 {
 	auto spinor_code = get_device()->get_spinor_code();
 
@@ -262,7 +262,7 @@ void Opencl_Module_Gaugemomentum::set_float_to_gaugemomentum_squarenorm_device(c
 	spinor_code->global_squarenorm_reduction(out, &clmem_global_squarenorm_buf_glob);
 }
 
-void Opencl_Module_Gaugemomentum::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data)
+void hardware::code::Gaugemomentum::importGaugemomentumBuffer(const hardware::buffers::Gaugemomentum * dest, const ae * const data)
 {
 	cl_int clerr;
 	if(dest->is_soa()) {
@@ -282,7 +282,7 @@ void Opencl_Module_Gaugemomentum::importGaugemomentumBuffer(const hardware::buff
 	}
 }
 
-void Opencl_Module_Gaugemomentum::exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf)
+void hardware::code::Gaugemomentum::exportGaugemomentumBuffer(ae * const dest, const hardware::buffers::Gaugemomentum * buf)
 {
 	cl_int clerr;
 	if(buf->is_soa()) {

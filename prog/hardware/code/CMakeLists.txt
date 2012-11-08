@@ -16,6 +16,8 @@ add_library(code
 		spinors.cpp
 		fermions.cpp
 		hmc.cpp
+		gaugemomentum.cpp
+		molecular_dynamics.cpp
 )
 target_link_libraries(code
 		meta

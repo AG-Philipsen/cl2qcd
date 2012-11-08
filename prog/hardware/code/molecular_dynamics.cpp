@@ -1,8 +1,8 @@
-#include "opencl_module_molecular_dynamics.h"
+#include "molecular_dynamics.hpp"
 
-#include "logger.hpp"
-#include "meta/util.hpp"
-#include "hardware/device.hpp"
+#include "../../logger.hpp"
+#include "../../meta/util.hpp"
+#include "../device.hpp"
 
 using namespace std;
 
@@ -24,7 +24,7 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	return options.str();
 }
 
-void Opencl_Module_Molecular_Dynamics::fill_kernels()
+void hardware::code::Molecular_Dynamics::fill_kernels()
 {
 	basic_molecular_dynamics_code = get_device()->get_fermion_code()->get_sources() << ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "types_hmc.h" << "operations_gaugemomentum.cl";
 	ClSourcePackage prng_code = get_device()->get_prng_code()->get_sources();
@@ -46,7 +46,7 @@ void Opencl_Module_Molecular_Dynamics::fill_kernels()
 	}
 }
 
-void Opencl_Module_Molecular_Dynamics::clear_kernels()
+void hardware::code::Molecular_Dynamics::clear_kernels()
 {
 	cl_uint clerr = CL_SUCCESS;
 
@@ -74,14 +74,14 @@ void Opencl_Module_Molecular_Dynamics::clear_kernels()
 	}
 }
 
-void Opencl_Module_Molecular_Dynamics::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
+void hardware::code::Molecular_Dynamics::get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const
 {
 	Opencl_Module::get_work_sizes(kernel, ls, gs, num_groups);
 	return;
 }
 
 
-size_t Opencl_Module_Molecular_Dynamics::get_read_write_size(const std::string& in) const
+size_t hardware::code::Molecular_Dynamics::get_read_write_size(const std::string& in) const
 {
 //Depending on the compile-options, one has different sizes...
 	size_t D = meta::get_float_size(get_parameters());
@@ -130,7 +130,7 @@ size_t Opencl_Module_Molecular_Dynamics::get_read_write_size(const std::string& 
 	return 0;
 }
 
-uint64_t Opencl_Module_Molecular_Dynamics::get_flop_size(const std::string& in) const
+uint64_t hardware::code::Molecular_Dynamics::get_flop_size(const std::string& in) const
 {
 	//this is the number of spinors in the system (or number of sites)
 	size_t S = meta::get_spinorfieldsize(get_parameters());
@@ -176,7 +176,7 @@ uint64_t Opencl_Module_Molecular_Dynamics::get_flop_size(const std::string& in) 
 	return 0;
 }
 
-void Opencl_Module_Molecular_Dynamics::print_profiling(const std::string& filename, int number) const
+void hardware::code::Molecular_Dynamics::print_profiling(const std::string& filename, int number) const
 {
 	Opencl_Module::print_profiling(filename, number);
 	Opencl_Module::print_profiling(filename, md_update_gaugefield);
@@ -188,7 +188,7 @@ void Opencl_Module_Molecular_Dynamics::print_profiling(const std::string& filena
 	Opencl_Module::print_profiling(filename, stout_smear_fermion_force);
 }
 
-void Opencl_Module_Molecular_Dynamics::md_update_gaugemomentum_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::Gaugemomentum * out, hmc_float eps)
+void hardware::code::Molecular_Dynamics::md_update_gaugemomentum_device(const hardware::buffers::Gaugemomentum * in, const hardware::buffers::Gaugemomentum * out, hmc_float eps)
 {
 	//__kernel void md_update_gaugemomenta(hmc_float eps, __global ae * p_inout, __global ae* force_in){
 	hmc_float tmp = eps;
@@ -207,7 +207,7 @@ void Opencl_Module_Molecular_Dynamics::md_update_gaugemomentum_device(const hard
 	get_device()->enqueue_kernel(md_update_gaugemomenta , gs2, ls2);
 }
 
-void Opencl_Module_Molecular_Dynamics::md_update_gaugefield_device(const hardware::buffers::Gaugemomentum * gm_in, const hardware::buffers::SU3 * gf_out, hmc_float eps)
+void hardware::code::Molecular_Dynamics::md_update_gaugefield_device(const hardware::buffers::Gaugemomentum * gm_in, const hardware::buffers::SU3 * gf_out, hmc_float eps)
 {
 	// __kernel void md_update_gaugefield(hmc_float eps, __global ae * p_in, __global ocl_s_gaugefield * u_inout){
 	hmc_float tmp = eps;
@@ -229,7 +229,7 @@ void Opencl_Module_Molecular_Dynamics::md_update_gaugefield_device(const hardwar
 	get_device()->enqueue_kernel( md_update_gaugefield , gs2, ls2);
 }
 
-void Opencl_Module_Molecular_Dynamics::gauge_force_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out)
+void hardware::code::Molecular_Dynamics::gauge_force_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -260,7 +260,7 @@ void Opencl_Module_Molecular_Dynamics::gauge_force_device(const hardware::buffer
 
 }
 
-void Opencl_Module_Molecular_Dynamics::gauge_force_tlsym_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out)
+void hardware::code::Molecular_Dynamics::gauge_force_tlsym_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -290,7 +290,7 @@ void Opencl_Module_Molecular_Dynamics::gauge_force_tlsym_device(const hardware::
 	}
 }
 
-void Opencl_Module_Molecular_Dynamics::fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out, hmc_float kappa)
+void hardware::code::Molecular_Dynamics::fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out, hmc_float kappa)
 {
 	using namespace hardware::buffers;
 
@@ -336,7 +336,7 @@ void Opencl_Module_Molecular_Dynamics::fermion_force_device(const hardware::buff
 }
 
 //the argument kappa is set to ARG_DEF as default
-void Opencl_Module_Molecular_Dynamics::fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out, int evenodd, hmc_float kappa)
+void hardware::code::Molecular_Dynamics::fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out, int evenodd, hmc_float kappa)
 {
 	using namespace hardware::buffers;
 
@@ -385,7 +385,7 @@ void Opencl_Module_Molecular_Dynamics::fermion_force_eo_device(const hardware::b
 	}
 }
 
-void Opencl_Module_Molecular_Dynamics::stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate)
+void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std::vector<const hardware::buffers::SU3 *>& gf_intermediate)
 {
 	//query work-sizes for kernel
 	size_t ls2, gs2;
@@ -394,14 +394,14 @@ void Opencl_Module_Molecular_Dynamics::stout_smeared_fermion_force_device(std::v
 	//set arguments
 }
 
-Opencl_Module_Molecular_Dynamics::Opencl_Module_Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device)
+hardware::code::Molecular_Dynamics::Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device)
 	: Opencl_Module(params, device), md_update_gaugefield (0), md_update_gaugemomenta (0), gauge_force (0), gauge_force_tlsym (0), fermion_force (0), fermion_force_eo(0), stout_smear_fermion_force(0)
 
 {
 	fill_kernels();
 }
 
-Opencl_Module_Molecular_Dynamics::~Opencl_Module_Molecular_Dynamics()
+hardware::code::Molecular_Dynamics::~Molecular_Dynamics()
 {
 	clear_kernels();
 }

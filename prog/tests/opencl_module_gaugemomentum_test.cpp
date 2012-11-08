@@ -1,4 +1,3 @@
-#include "../opencl_module_gaugemomentum.h"
 #include "../gaugefield_hybrid.h"
 
 #include "../meta/util.hpp"
@@ -26,7 +25,7 @@ public:
 	virtual void init_tasks();
 	virtual void finalize_opencl();
 
-	Opencl_Module_Gaugemomentum * get_device();
+	hardware::code::Gaugemomentum * get_device();
 };
 
 void TestGaugefield::init_tasks()
@@ -40,9 +39,9 @@ void TestGaugefield::finalize_opencl()
 	Gaugefield_hybrid::finalize_opencl();
 }
 
-Opencl_Module_Gaugemomentum* TestGaugefield::get_device()
+hardware::code::Gaugemomentum* TestGaugefield::get_device()
 {
-	return static_cast<Opencl_Module_Gaugemomentum*>(opencl_modules[0]);
+	return static_cast<hardware::code::Gaugemomentum*>(opencl_modules[0]);
 }
 
 void fill_with_one(hmc_float * sf_in, int size)
@@ -103,7 +102,7 @@ void test_set_zero_gm(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Gaugemomentum * device = cpu.get_device();
+	hardware::code::Gaugemomentum * device = cpu.get_device();
 	hmc_float * gm_in;
 
 	logger.info() << "create buffers";
@@ -151,7 +150,7 @@ void test_gm_squarenorm(std::string inputfile)
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	TestGaugefield cpu(&system);
-	Opencl_Module_Gaugemomentum * device = cpu.get_device();
+	hardware::code::Gaugemomentum * device = cpu.get_device();
 	hmc_float * gm_in;
 
 	logger.info() << "create buffers";

@@ -1,13 +1,17 @@
 /** @file
  * Basic OpenCL functionality
  */
-#ifndef _OPENCLMODULEGAUGEMOMENTUMH_
-#define _OPENCLMODULEGAUGEMOMENTUMH_
+#ifndef _HARDWARE_CODE_GAUGEMOMENTUM_
+#define _HARDWARE_CODE_GAUGEMOMENTUM_
 
-#include "hardware/code/opencl_module.hpp"
-#include "hardware/buffers/plain.hpp"
-#include "hardware/buffers/prng_buffer.hpp"
-#include "hardware/buffers/gaugemomentum.hpp"
+#include "opencl_module.hpp"
+#include "../buffers/plain.hpp"
+#include "../buffers/prng_buffer.hpp"
+#include "../buffers/gaugemomentum.hpp"
+
+namespace hardware {
+
+namespace code {
 
 /**
  * An OpenCL device
@@ -17,11 +21,11 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Gaugemomentum : public hardware::code::Opencl_Module {
+class Gaugemomentum : public Opencl_Module {
 public:
 	friend hardware::Device;
 
-	virtual ~Opencl_Module_Gaugemomentum();
+	virtual ~Gaugemomentum();
 
 	///////////////////////////////////////////////////
 	//Methods on device
@@ -87,7 +91,7 @@ private:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Gaugemomentum(const meta::Inputparameters& params, hardware::Device * device);
+	Gaugemomentum(const meta::Inputparameters& params, hardware::Device * device);
 
 	/**
 	 * Collect the kernels for OpenCL.
@@ -108,4 +112,8 @@ private:
 	cl_kernel gaugemomentum_convert_from_soa;
 };
 
-#endif //OPENCLMODULEGAUGEMOMENTUMH
+}
+
+}
+
+#endif // _HARDWARE_CODE_GAUGEMOMENTUM_

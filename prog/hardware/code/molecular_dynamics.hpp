@@ -1,15 +1,19 @@
 /** @file
  * Basic OpenCL functionality
  */
-#ifndef _OPENCLMODULEMOLECULARDYNAMICSH_
-#define _OPENCLMODULEMOLECULARDYNAMICSH_
+#ifndef _HARDWARE_CODE_MOLECULAR_DYNAMICS_
+#define _HARDWARE_CODE_MOLECULAR_DYNAMICS_
 
-#include "hardware/code/opencl_module.hpp"
-#include "hardware/buffers/plain.hpp"
-#include "hardware/buffers/prng_buffer.hpp"
-#include "hardware/buffers/su3.hpp"
-#include "hardware/buffers/spinor.hpp"
-#include "hardware/buffers/gaugemomentum.hpp"
+#include "opencl_module.hpp"
+#include "../buffers/plain.hpp"
+#include "../buffers/prng_buffer.hpp"
+#include "../buffers/su3.hpp"
+#include "../buffers/spinor.hpp"
+#include "../buffers/gaugemomentum.hpp"
+
+namespace hardware {
+
+namespace code {
 
 /**
  * An OpenCL device
@@ -19,11 +23,11 @@
  *
  * @todo Everything is public to faciliate inheritance. Actually, more parts should be private.
  */
-class Opencl_Module_Molecular_Dynamics : public hardware::code::Opencl_Module {
+class Molecular_Dynamics : public Opencl_Module {
 public:
 	friend hardware::Device;
 
-	virtual ~Opencl_Module_Molecular_Dynamics();
+	virtual ~Molecular_Dynamics();
 
 	///////////////////////////////////////////////////
 	//Methods on device
@@ -78,7 +82,7 @@ private:
 	 *
 	 * @param[in] params points to an instance of inputparameters
 	 */
-	Opencl_Module_Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device);
+	Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device);
 
 	/**
 	 * Collect the kernels for OpenCL.
@@ -101,4 +105,8 @@ private:
 	cl_kernel stout_smear_fermion_force;
 };
 
-#endif //OPENCLMODULEMOLECULARDYNAMICSH
+}
+
+}
+
+#endif // _HARDWARE_CODE_MOLECULAR_DYNAMICS_
