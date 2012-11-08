@@ -111,42 +111,52 @@ TmpClKernel::operator cl_kernel() const
 	logger.trace() << "Building kernel " << kernel_name << " using these options: \"" << build_options << "\"";
 
 	clerr = clBuildProgram(program, 1, &device, build_options.c_str(), 0, 0);
-	if(clerr != CL_SUCCESS && logger.beDebug()) {
-		logger.error() << "... failed with error " << clerr << ", but look at BuildLog and abort then.";
-	}
+	if(logger.beDebug()) {
+		cl_int failed = clerr;
+		if(clerr != CL_SUCCESS) {
+			logger.error() << "... failed with error " << clerr << ", but look at BuildLog and abort then.";
 
-	logger.trace() << "Finished building program";
-
-	// get build result
-	size_t logSize;
-	clerr |= clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);
-	if(logSize > 1 && logger.beDebug()) { // 0-terminated -> always at least one byte
-		logger.debug() << "Build Log:";
-		char* log = new char[logSize];
-		clerr |= clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
-		logger.debug() << log;
-		delete [] log;
-	}
-	if(clerr != CL_SUCCESS) {
-		logger.fatal() << "... failed, aborting.";
-
-		// dump program source
-		size_t sourceSize;
-		clerr = clGetProgramInfo(program, CL_PROGRAM_SOURCE, 0, NULL, &sourceSize);
-		if(!clerr && sourceSize > 1 && logger.beDebug()) { // 0-terminated -> always at least one byte
-			char* source = new char[sourceSize];
-			clerr = clGetProgramInfo(program, CL_PROGRAM_SOURCE, sourceSize, source, &sourceSize);
-			if(!clerr) {
-				char const * const FILENAME = "broken_source.cl";
-				std::ofstream srcFile(FILENAME);
-				srcFile << source;
-				srcFile.close();
-				logger.debug() << "Dumped broken source to " << FILENAME;
+			// dump program source
+			size_t sourceSize;
+			clerr = clGetProgramInfo(program, CL_PROGRAM_SOURCE, 0, NULL, &sourceSize);
+			if(!clerr && sourceSize > 1) { // 0-terminated -> always at least one byte
+				char* source = new char[sourceSize];
+				clerr = clGetProgramInfo(program, CL_PROGRAM_SOURCE, sourceSize, source, &sourceSize);
+				if(!clerr) {
+					char const * const FILENAME = "broken_source.cl";
+					std::ofstream srcFile(FILENAME);
+					srcFile << source;
+					srcFile.close();
+					logger.debug() << "Dumped broken source to " << FILENAME;
+				}
+				delete[] source;
 			}
-			delete[] source;
 		}
 
-		throw Opencl_Error(clerr, "clGetProgramBuildInfo", __FILE__, __LINE__);
+		logger.trace() << "Finished building program";
+
+		// get build result
+		size_t logSize;
+		clerr = clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);
+		if(!clerr && logSize > 1) { // 0-terminated -> always at least one byte
+			logger.debug() << "Build Log:";
+			char* log = new char[logSize];
+			clerr = clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, logSize, log, NULL);
+			logger.debug() << log;
+			delete [] log;
+		}
+		if(clerr) {
+			throw Opencl_Error(clerr, "clGetProgramBuildInfo", __FILE__, __LINE__);
+		}
+
+		if(failed) {
+			clerr = failed;
+		}
+	}
+	if(clerr) {
+		logger.fatal() << "... failed, aborting.";
+
+		throw Opencl_Error(clerr, "clBuildProgram", __FILE__, __LINE__);
 	}
 
 	// store built binary to working directory
@@ -648,7 +658,7 @@ TmpClKernel::TmpClKernel(const std::string kernel_name, const std::string build_
                          const cl_context context, cl_device_id device,
                          const std::vector<std::string> files)
 	: kernel_name(kernel_name), build_options(boost::trim_copy(build_options)), context(context),
-	  device(device), files(files) { };
+	  device(device), files(files) { }
 
 ClSourcePackage::ClSourcePackage(const std::vector<std::string>& files, const std::string& options)
-	: files(files), options(boost::trim_copy(options)) {};
+	: files(files), options(boost::trim_copy(options)) {}
