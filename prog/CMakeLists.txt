@@ -119,8 +119,6 @@ set_property(GLOBAL PROPERTY DOC_SOURCE_DIRS
 # Definition of the core application
 set_abs_paths(OPTIMAL_FILES
 	exceptions.cpp
-	gaugefield_heatbath.cpp
-	gaugefield_heatbath_kappa.cpp
 	gaugefield_hmc.cpp
 	gaugefield_hybrid.cpp
 	gaugefield_inverter.cpp
