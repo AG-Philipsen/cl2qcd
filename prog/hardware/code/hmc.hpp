@@ -69,13 +69,14 @@ public:
 	hmc_float calc_s_fermion();
 	hmc_float calc_s_fermion_mp(const hardware::buffers::SU3 * gaugefield);
 
+	void virtual print_profiling(const std::string& filename, int number) const override;
+
 protected:
 
 	/**
 	 * These functions can be removed once this module is turned into a different object
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
-	void virtual print_profiling(const std::string& filename, int number) const override;
 	virtual size_t get_read_write_size(const std::string& in) const override;
 	virtual uint64_t get_flop_size(const std::string& in) const override;
 

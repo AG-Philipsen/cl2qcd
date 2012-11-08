@@ -42,6 +42,13 @@ public:
 	 */
 	virtual void get_work_sizes(const cl_kernel kernel, size_t * ls, size_t * gs, cl_uint * num_groups) const override;
 
+	/**
+	 * Print the profiling information to a file.
+	 *
+	 * @param filename Name of file where data is appended.
+	 * @param parameters inputparameters
+	 */
+	void virtual print_profiling(const std::string& filename, int number) const override;
 
 private:
 	/**
@@ -66,14 +73,6 @@ private:
 	cl_kernel overrelax_odd;
 	cl_kernel overrelax_even;
 
-
-	/**
-	 * Print the profiling information to a file.
-	 *
-	 * @param filename Name of file where data is appended.
-	 * @param parameters inputparameters
-	 */
-	void virtual print_profiling(const std::string& filename, int number) const override;
 
 	/**
 	 * Return amount of bytes read and written by a specific kernel per call.
