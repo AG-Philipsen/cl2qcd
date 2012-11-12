@@ -11,11 +11,11 @@
 #include "../../types_hmc.h"
 
 #include "../../meta/counter.hpp"
-#include "../hardware/buffers/plain.hpp"
-#include "../hardware/buffers/prng_buffer.hpp"
-#include "../hardware/buffers/su3.hpp"
-#include "../hardware/buffers/spinor.hpp"
-#include "../hardware/buffers/gaugemomentum.hpp"
+#include "../buffers/plain.hpp"
+#include "../buffers/prng_buffer.hpp"
+#include "../buffers/su3.hpp"
+#include "../buffers/spinor.hpp"
+#include "../buffers/gaugemomentum.hpp"
 
 namespace hardware {
 
