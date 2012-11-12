@@ -81,7 +81,7 @@ int main(int argc, const char* argv[])
 				if(parameters.get_measure_pbp() ){
 				  //get name for file to which pbp is to be stored
 				  std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, config_name);
-				  gaugefield.flavour_doublet_chiral_condensate(pbp_fn);
+				  gaugefield.flavour_doublet_chiral_condensate(pbp_fn, iter);
 				}
 			}
 		} else {
@@ -100,7 +100,7 @@ int main(int argc, const char* argv[])
 			if(parameters.get_measure_pbp() ){
 			  //get name for file to which pbp is to be stored
 			  std::string pbp_fn = meta::get_ferm_obs_pbp_file_name(parameters, "");
-			  gaugefield.flavour_doublet_chiral_condensate(pbp_fn);
+			  gaugefield.flavour_doublet_chiral_condensate(pbp_fn, 0);
 			}
 		}
 		logger.trace() << "Inversion done" ;

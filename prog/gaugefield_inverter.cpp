@@ -345,7 +345,7 @@ void Gaugefield_inverter::create_sources()
   }
 }
 
-void Gaugefield_inverter::flavour_doublet_chiral_condensate(std::string pbp_fn){
+void Gaugefield_inverter::flavour_doublet_chiral_condensate(std::string pbp_fn, int number){
 	using namespace std;
 	using namespace hardware::buffers;
 
@@ -429,17 +429,16 @@ void Gaugefield_inverter::flavour_doublet_chiral_condensate(std::string pbp_fn){
 	  host_result.im *= norm;
 
 	}
+
+	// Output
 	ofstream of;
 	of.open(pbp_fn.c_str(), ios_base::app);
 	if(!of.is_open()) {
 	  throw File_Exception(pbp_fn);
 	}
-
-	// @todo One could also implement to write all results on screen if wanted
-	//the pseudo-scalar (J=0, P=1)
 	logger.info() << "chiral condensate:" ;
-	logger.info() << scientific << setprecision(14) << host_result.re << "\t" << host_result.im;
-	of << scientific << setprecision(14) << host_result.re << "\t" << host_result.im << endl;
+	logger.info() << number << "\t" << scientific << setprecision(14) << host_result.re << "\t" << host_result.im;
+	of << number << "\t" << scientific << setprecision(14) << host_result.re << "\t" << host_result.im << endl;
 
 
 }
