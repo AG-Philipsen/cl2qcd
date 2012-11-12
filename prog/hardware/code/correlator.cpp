@@ -102,10 +102,6 @@ void hardware::code::Correlator::fill_kernels()
 	    }
 	  }
 	}
-	if(get_parameters().get_measure_pbp() ){
-	  pbp_std = createKernel("pbp_std") << basic_correlator_code << "fermionobservables_pbp.cl";
-	  pbp_tm_one_end = createKernel("pbp_tm_one_end") << basic_correlator_code << "fermionobservables_pbp.cl";
-	}
 }
 
 void hardware::code::Correlator::clear_kernels()
@@ -141,14 +137,6 @@ void hardware::code::Correlator::clear_kernels()
 	}
 	if(create_zslice_source) {
 		clerr = clReleaseKernel(create_zslice_source);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	}
-	if(pbp_std) {
-		clerr = clReleaseKernel(pbp_std);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	}
-	if(pbp_tm_one_end) {
-		clerr = clReleaseKernel(pbp_tm_one_end);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 }
