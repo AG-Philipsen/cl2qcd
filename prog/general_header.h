@@ -5,32 +5,11 @@
 #ifndef _GENERALHEADERH_
 #define _GENERALHEADERH_
 
-#include <cstdlib>
-#include <cmath>
-#include <cstdio>
-#include <string>
-#include <vector>
-#include <iostream>
 #include <fstream>
 
-#include "globaldefs.h"
 #include "types.h"
-#include "host_readgauge.h"
 #include "host_use_timer.h"
-#include "host_random.h"
-
 #include "exceptions.h"
-
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-
-#ifdef _OPENMP
-# include <omp.h>
-#endif
-
 #include "logger.hpp"
 
 using namespace std;

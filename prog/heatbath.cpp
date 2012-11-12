@@ -1,4 +1,4 @@
-#include "heatbath.h"
+#include "general_header.h"
 
 #include "meta/util.hpp"
 #include "physics/prng.hpp"

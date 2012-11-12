@@ -56,6 +56,9 @@ namespace physics {
 			const hardware::System& system;
 	};
 
+	void gaussianComplexVector(hmc_complex * vector, int length, hmc_float sigma, physics::PRNG& prng);
+	void gaussianNormalPair(hmc_float * z1, hmc_float * z2, physics::PRNG& prng);
+	Matrixsu3 random_matrixsu3(physics::PRNG& prng);
 }
 
 #endif /* _PHYSICS_PRNG_ */

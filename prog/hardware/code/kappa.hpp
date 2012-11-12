@@ -31,6 +31,11 @@ public:
 	 * Run the calculation of kappa clover. No OpenCL barrier.
 	 * @TODO remove beta
 	 */
+	void run_kappa_clover(const hardware::buffers::Plain<hmc_float> * kappa, const hardware::buffers::SU3 * gaugefield, const hmc_float beta);
+	/**
+	 * Run the calculation of kappa clover. No OpenCL barrier.
+	 * @TODO remove beta
+	 */
 	void run_kappa_clover(const hardware::buffers::SU3 * gaugefield, const hmc_float beta);
 
 	/**

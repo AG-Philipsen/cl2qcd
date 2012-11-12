@@ -9,6 +9,7 @@
 add_library(algorithms
 	solver.cpp
 	heatbath.cpp
+	kappa_clover.cpp
 )
 target_link_libraries(algorithms
 		lattices

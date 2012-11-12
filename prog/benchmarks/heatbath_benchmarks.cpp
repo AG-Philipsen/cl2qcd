@@ -1,4 +1,4 @@
-#include "../heatbath.h"
+#include "../general_header.h"
 
 #include "../meta/util.hpp"
 #include "../physics/prng.hpp"
@@ -41,7 +41,6 @@ int main(int argc, const char* argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	init_timer.reset();
-	sourcefileparameters parameters_source;
 
 	hardware::System system(parameters, true);
 
