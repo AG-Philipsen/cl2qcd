@@ -376,11 +376,11 @@ int Gaugefield_hybrid::get_num_devices()
 void Gaugefield_hybrid::save(int number)
 {
 	std::string outputfile = meta::create_configuration_name(get_parameters(), number);
-	save(outputfile);
+	save(outputfile, number);
 }
 
 
-void Gaugefield_hybrid::save(std::string outputfile)
+void Gaugefield_hybrid::save(std::string outputfile, int _number)
 {
 	const size_t NTIME = parameters.get_ntime();
 	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(parameters) * NTIME;
@@ -393,7 +393,7 @@ void Gaugefield_hybrid::save(std::string outputfile)
 
 	hmc_float plaq = plaquette();
 
-	int number = 0;
+	int number = _number;
 
 	const size_t NSPACE = parameters.get_nspace();
 

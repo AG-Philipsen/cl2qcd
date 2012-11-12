@@ -1,7 +1,7 @@
 #include "gaugemomentum.hpp"
 
-#include "../logger.hpp"
-#include "../meta/util.hpp"
+#include "../../logger.hpp"
+#include "../../meta/util.hpp"
 #include "../device.hpp"
 #include <fstream>
 

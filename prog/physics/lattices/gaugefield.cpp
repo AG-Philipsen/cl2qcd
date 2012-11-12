@@ -3,7 +3,7 @@
  */
 
 #include "gaugefield.hpp"
-#include "../meta/version.hpp"
+#include "../../meta/version.hpp"
 #include "../../meta/util.hpp"
 #include "../../logger.hpp"
 #include "../../host_operations_gaugefield.h"
