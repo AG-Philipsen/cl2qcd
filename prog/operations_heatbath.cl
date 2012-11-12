@@ -67,7 +67,9 @@ void inline perform_heatbath(__global Matrixsu3StorageType * const restrict gaug
 
 	int3 order = prng_123(rnd);
 
+#ifdef _USEGPU_
 #pragma unroll 1
+#endif
 	for(int i = 0; i < NC; i++) {
 		int order_i = (i == 0) ? order.x : ((i == 1) ? order.y : order.z);
 
