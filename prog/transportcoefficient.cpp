@@ -78,7 +78,7 @@ int main(int argc, const char* argv[])
 			gaugefield.print_kappa(iter, "kappa_clover.dat");
 		}
 
-		gaugefield.save("conf.save");
+		gaugefield.save("conf.save", iter);
 		logger.trace() << "... done";
 		perform_timer.add();
 
