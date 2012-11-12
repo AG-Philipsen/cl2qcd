@@ -192,7 +192,7 @@ public:
 	 * Save gaugefield to a file with given name
 	 * @param[in] outputfile name of file
 	 */
-	void save(std::string outputfile);
+	void save(std::string outputfile, int number);
 	/**
 	 * Return plaquette value (calculated from host gaugefield)
 	 */

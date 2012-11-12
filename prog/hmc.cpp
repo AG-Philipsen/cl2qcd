@@ -86,7 +86,7 @@ int main(int argc, const char* argv[])
 				gaugefield.synchronize(0);
 				std::string outputfile = "conf.save";
 				logger.info() << "saving current gaugefield to file \"" << outputfile << "\"";
-				gaugefield.save(outputfile);
+				gaugefield.save(outputfile, iter+1);
 			}
 		}
 		logger.info() << "HMC done";
