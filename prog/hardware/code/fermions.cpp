@@ -1585,6 +1585,9 @@ int hardware::code::Fermions::cg(const Matrix_Function & f, const hardware::buff
 
 int hardware::code::Fermions::cg_eo(const Matrix_Function_eo & f, const hardware::buffers::Spinor * inout, const hardware::buffers::Spinor * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
+	/// @todo make configurable from outside
+	const int RESID_CHECK_FREQUENCY = 10;
+
 	auto spinor_code = get_device()->get_spinor_code();
 
 	//this corresponds to the above function
@@ -1636,39 +1639,41 @@ int hardware::code::Fermions::cg_eo(const Matrix_Function_eo & f, const hardware
 			//rho_next is a complex number, set its imag to zero
 			spinor_code->saxpy_AND_squarenorm_eo_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_rn_eo, &clmem_rho_next);
 		}
-		hmc_complex tmp;
-		clmem_rho_next.dump(&tmp);
-		hmc_float resid = tmp.re;
-		//this is the orig. call
-		//set_float_to_global_squarenorm_device(&clmem_rn, clmem_resid);
-		//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+		if(iter && iter % RESID_CHECK_FREQUENCY == 0) {
+			hmc_complex tmp;
+			clmem_rho_next.dump(&tmp);
+			hmc_float resid = tmp.re;
+			//this is the orig. call
+			//set_float_to_global_squarenorm_device(&clmem_rn, clmem_resid);
+			//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
 
-		logger.debug() << "resid: " << resid;
-		//test if resid is NAN
-		if(resid != resid) {
-			logger.fatal() << "\tNAN occured in cg_eo!";
-			return -iter;
-		}
-		if(resid < prec) {
-			// report on performance
-			if(logger.beInfo()) {
-				// we are always synchroneous here, as we had to recieve the residium from the device
-				uint64_t duration = timer.getTime();
-
-				// calculate flops
-				unsigned refreshs = iter / get_parameters().get_iter_refresh() + 1;
-				cl_ulong mf_flops = f.get_Flops();
-
-				cl_ulong total_flops = mf_flops + 3 * get_flop_size("scalar_product_eoprec") + 2 * get_flop_size("ratio") + 2 * get_flop_size("product") + 3 * spinor_code->get_flop_size("saxpy_eoprec");
-				total_flops *= iter;
-
-				total_flops += refreshs * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
-
-				// report performanc
-				logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+			logger.debug() << "resid: " << resid;
+			//test if resid is NAN
+			if(resid != resid) {
+				logger.fatal() << "\tNAN occured in cg_eo!";
+				return -iter;
 			}
+			if(resid < prec) {
+				// report on performance
+				if(logger.beInfo()) {
+					// we are always synchroneous here, as we had to recieve the residium from the device
+					uint64_t duration = timer.getTime();
 
-			return iter;
+					// calculate flops
+					unsigned refreshs = iter / get_parameters().get_iter_refresh() + 1;
+					cl_ulong mf_flops = f.get_Flops();
+
+					cl_ulong total_flops = mf_flops + 3 * get_flop_size("scalar_product_eoprec") + 2 * get_flop_size("ratio") + 2 * get_flop_size("product") + 3 * spinor_code->get_flop_size("saxpy_eoprec");
+					total_flops *= iter;
+
+					total_flops += refreshs * (mf_flops + spinor_code->get_flop_size("saxpy_eoprec") + get_flop_size("scalar_product_eoprec"));
+
+					// report performanc
+					logger.info() << "CG completed in " << duration / 1000 << " ms @ " << (total_flops / duration / 1000.f) << " Gflops. Performed " << iter << " iterations";
+				}
+
+				return iter;
+			}
 		}
 
 		//beta = (rn+1, rn+1)/(rn, rn) --> alpha = rho_next/omega
