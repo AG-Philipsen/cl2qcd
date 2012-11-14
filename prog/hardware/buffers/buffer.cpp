@@ -73,9 +73,20 @@ void hardware::buffers::Buffer::copyData(const Buffer* orig) const
 	if(this->bytes != orig->bytes) {
 		throw std::invalid_argument("The source and destination buffer must be of equal size!");
 	} else {
-		int err = clEnqueueCopyBuffer(device->get_queue(), orig->cl_buffer, this->cl_buffer, 0, 0, this->bytes, 0, 0, 0);
-		if(err) {
-			throw hardware::OpenclException(err, "clEnqueueCopyBuffer", __FILE__, __LINE__);
+		/*
+		 * Now we have to play with the device a little.
+		 * It seems on AMD hardware the buffer copy thing either pretty much sucks or I am using it wrong.
+		 */
+		const std::string dev_name = device->get_name();
+		if(this->bytes == 16 && (dev_name == "Cypress" || dev_name == "Cayman")) {
+			logger.debug() << "Using an OpenCL kernel to copy 16 bytes on " << dev_name << '.';
+			device->get_buffer_code()->copy_16_bytes(this, orig);
+		} else {
+			logger.debug() << "Using default OpenCL buffer copy method for " << this->bytes << " bytes on " << dev_name << '.';
+			int err = clEnqueueCopyBuffer(device->get_queue(), orig->cl_buffer, this->cl_buffer, 0, 0, this->bytes, 0, 0, 0);
+			if(err) {
+				throw hardware::OpenclException(err, "clEnqueueCopyBuffer", __FILE__, __LINE__);
+			}
 		}
 	}
 }
