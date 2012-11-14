@@ -175,6 +175,8 @@ public:
 	sourcecontents get_sourcecontent() const noexcept;
 	pbp_version get_pbp_version() const noexcept;
 
+	int get_cg_iteration_block_size() const noexcept;
+
 private:
 	size_t precision;
 
@@ -307,6 +309,8 @@ private:
 	sourcecontents sourcecontent;
 
 	pbp_version pbp_version_;
+
+	int cg_iteration_block_size;
 };
 }
 

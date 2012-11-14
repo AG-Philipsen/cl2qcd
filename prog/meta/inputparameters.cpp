@@ -487,6 +487,10 @@ Inputparameters::pbp_version Inputparameters::get_pbp_version() const noexcept
 {
   return pbp_version_;
 }
+int Inputparameters::get_cg_iteration_block_size() const noexcept
+{
+  return cg_iteration_block_size;
+}
 
 Inputparameters::Inputparameters(int argc, const char** argv)
 {
@@ -635,7 +639,9 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("measure_correlators", po::value<bool>(&measure_correlators)->default_value(true), "Measure fermionic correlators")
 	("measure_pbp", po::value<bool>(&measure_pbp)->default_value(false), "Measure chiral condensate")
 
-	("pbp_version",  po::value<std::string>()->default_value("std"), "Version of chiral condensate");
+	("pbp_version",  po::value<std::string>()->default_value("std"), "Version of chiral condensate")
+
+	("cg_iteration_block_size", po::value<int>(&cg_iteration_block_size)->default_value(10), "CG will check the residual only every N iterations");
 
 
 	po::options_description desc;

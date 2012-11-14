@@ -1586,7 +1586,7 @@ int hardware::code::Fermions::cg(const Matrix_Function & f, const hardware::buff
 int hardware::code::Fermions::cg_eo(const Matrix_Function_eo & f, const hardware::buffers::Spinor * inout, const hardware::buffers::Spinor * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
 {
 	/// @todo make configurable from outside
-	const int RESID_CHECK_FREQUENCY = 10;
+	const int RESID_CHECK_FREQUENCY = get_parameters().get_cg_iteration_block_size();
 
 	auto spinor_code = get_device()->get_spinor_code();
 
