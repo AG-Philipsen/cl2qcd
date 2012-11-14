@@ -154,7 +154,7 @@ void hardware::code::Spinors::convert_from_eoprec_device(const hardware::buffers
 {
 	using namespace hardware::buffers;
 
-	const Buffer * tmp1, * tmp2;
+	const hardware::buffers::Buffer * tmp1, * tmp2;
 	if(in1->is_soa()) {
 		Plain<spinor> * tmp = new Plain<spinor>(in1->get_elements(), get_device());
 		convertSpinorfieldFromSOA_eo_device(tmp, in1);
@@ -198,7 +198,7 @@ void hardware::code::Spinors::convert_to_eoprec_device(const hardware::buffers::
 {
 	using namespace hardware::buffers;
 
-	const Buffer * tmp1, * tmp2;
+	const hardware::buffers::Buffer * tmp1, * tmp2;
 	if(out1->is_soa()) {
 		tmp1 = new Plain<spinor>(out1->get_elements(), get_device());
 	} else {
@@ -442,7 +442,7 @@ void hardware::code::Spinors::set_complex_to_scalar_product_eoprec_device(const 
 	cl_uint num_groups;
 	this->get_work_sizes(scalar_product_eoprec, &ls2, &gs2, &num_groups);
 
-	assert(scalar_product_buf.get_elements() == num_groups);
+	assert(scalar_product_buf->get_elements() == num_groups);
 
 	//set arguments
 	int clerr = clSetKernelArg(scalar_product_eoprec, 0, sizeof(cl_mem), a->get_cl_buffer());
