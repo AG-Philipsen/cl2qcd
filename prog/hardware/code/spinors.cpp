@@ -3,6 +3,7 @@
 #include "../../logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
+#include <cassert>
 
 using namespace std;
 
@@ -441,7 +442,7 @@ void hardware::code::Spinors::set_complex_to_scalar_product_eoprec_device(const 
 	cl_uint num_groups;
 	this->get_work_sizes(scalar_product_eoprec, &ls2, &gs2, &num_groups);
 
-	hardware::buffers::Plain<hmc_complex> tmp(num_groups, get_device());
+	assert(scalar_product_buf.get_elements() == num_groups);
 
 	//set arguments
 	int clerr = clSetKernelArg(scalar_product_eoprec, 0, sizeof(cl_mem), a->get_cl_buffer());
@@ -450,7 +451,7 @@ void hardware::code::Spinors::set_complex_to_scalar_product_eoprec_device(const 
 	clerr = clSetKernelArg(scalar_product_eoprec, 1, sizeof(cl_mem), b->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(scalar_product_eoprec, 2, sizeof(cl_mem), tmp);
+	clerr = clSetKernelArg(scalar_product_eoprec, 2, sizeof(cl_mem), scalar_product_buf->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product_eoprec, 3, sizeof(hmc_complex) * ls2, static_cast<void*>(nullptr));
@@ -459,7 +460,7 @@ void hardware::code::Spinors::set_complex_to_scalar_product_eoprec_device(const 
 	get_device()->enqueue_kernel( scalar_product_eoprec, gs2, ls2);
 
 
-	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), tmp);
+	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), scalar_product_buf->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product_reduction, 1, sizeof(cl_mem), out->get_cl_buffer());
@@ -951,10 +952,16 @@ hardware::code::Spinors::Spinors(const meta::Inputparameters& params, hardware::
 	: Opencl_Module(params, device), saxpy_AND_squarenorm_eo(0), generate_gaussian_spinorfield(0), generate_gaussian_spinorfield_eo(0)
 {
 	fill_kernels();
+
+	size_t ls2, gs2;
+	cl_uint num_groups;
+	this->get_work_sizes(scalar_product_eoprec, &ls2, &gs2, &num_groups);
+	scalar_product_buf = new hardware::buffers::Plain<hmc_complex>(num_groups, get_device());
 }
 
 hardware::code::Spinors::~Spinors()
 {
+	delete scalar_product_buf;
 	clear_kernels();
 }
 
