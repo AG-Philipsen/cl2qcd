@@ -51,353 +51,353 @@ static void add_option_aliases(meta::ConfigFileNormalizer * const);
 
 size_t Inputparameters::get_precision() const noexcept
 {
-	return precision;
+  return precision;
 }
 
 const std::vector<int> Inputparameters::get_selected_devices() const noexcept
 {
-	return selected_devices;
+  return selected_devices;
 }
 int Inputparameters::get_device_count() const noexcept
 {
-	return device_count;
+  return device_count;
 }
 bool Inputparameters::get_use_gpu() const noexcept
 {
-	return use_gpu;
+  return use_gpu;
 }
 bool Inputparameters::get_use_cpu() const noexcept
 {
-	return use_cpu;
+  return use_cpu;
 }
 
 bool Inputparameters::get_use_aniso() const noexcept
 {
-	return use_aniso;
+  return use_aniso;
 }
 bool Inputparameters::get_use_chem_pot_re() const noexcept
 {
-	return use_chem_pot_re;
+  return use_chem_pot_re;
 }
 bool Inputparameters::get_use_chem_pot_im() const noexcept
 {
-	return use_chem_pot_im;
+  return use_chem_pot_im;
 }
 bool Inputparameters::get_use_smearing() const noexcept
 {
-	return use_smearing;
+  return use_smearing;
 }
 bool Inputparameters::get_use_mp() const noexcept
 {
-	return use_mp;
+  return use_mp;
 }
 int Inputparameters::get_nspace() const noexcept
 {
-	return nspace;
+  return nspace;
 }
 int Inputparameters::get_ntime() const noexcept
 {
-	return ntime;
+  return ntime;
 }
 
 Inputparameters::startcondition Inputparameters::get_startcondition() const noexcept
 {
-	return _startcondition;
+  return _startcondition;
 }
 bool Inputparameters::get_saveconfigs() const noexcept
 {
-	return saveconfigs;
+  return saveconfigs;
 }
 int Inputparameters::get_writefrequency() const noexcept
 {
-	return writefrequency;
+  return writefrequency;
 }
 int Inputparameters::get_savefrequency() const noexcept
 {
-	return savefrequency;
+  return savefrequency;
 }
 std::string Inputparameters::get_sourcefile() const noexcept
 {
-	return sourcefile;
+  return sourcefile;
 }
 bool Inputparameters::get_print_to_screen() const noexcept
 {
-	return print_to_screen;
+  return print_to_screen;
 }
 uint32_t Inputparameters::get_host_seed() const noexcept
 {
-	return host_seed;
+  return host_seed;
 }
 
 //gaugefield parameters
 double Inputparameters::get_beta() const noexcept
 {
-	return beta;
+  return beta;
 }
 double Inputparameters::get_rho() const noexcept
 {
-	return rho;
+  return rho;
 }
 int Inputparameters::get_rho_iter() const noexcept
 {
-	return rho_iter;
+  return rho_iter;
 }
 Inputparameters::action Inputparameters::get_gaugeact() const noexcept
 {
-	return gaugeact;
+  return gaugeact;
 }
 
 //heatbath parameters
 int Inputparameters::get_thermalizationsteps() const noexcept
 {
-	return thermalizationsteps;
+  return thermalizationsteps;
 }
 int Inputparameters::get_heatbathsteps() const noexcept
 {
-	return heatbathsteps;
+  return heatbathsteps;
 }
 int Inputparameters::get_overrelaxsteps() const noexcept
 {
-	return overrelaxsteps;
+  return overrelaxsteps;
 }
 int Inputparameters::get_xi() const noexcept
 {
-	return xi;
+  return xi;
 }
 
 //fermionic parameters
 Inputparameters::action Inputparameters::get_fermact() const noexcept
 {
-	return fermact;
+  return fermact;
 }
 Inputparameters::action Inputparameters::get_fermact_mp() const noexcept
 {
-	return fermact_mp;
+  return fermact_mp;
 }
 double Inputparameters::get_kappa() const noexcept
 {
-	return kappa;
+  return kappa;
 }
 double Inputparameters::get_mu() const noexcept
 {
-	return mu;
+  return mu;
 }
 double Inputparameters::get_csw() const noexcept
 {
-	return csw;
+  return csw;
 }
 int Inputparameters::get_iter0() const noexcept
 {
-	return iter0;
+  return iter0;
 }
 int Inputparameters::get_iter1() const noexcept
 {
-	return iter1;
+  return iter1;
 }
 double Inputparameters::get_kappa_mp() const noexcept
 {
-	return kappa_mp;
+  return kappa_mp;
 }
 double Inputparameters::get_mu_mp() const noexcept
 {
-	return mu_mp;
+  return mu_mp;
 }
 double Inputparameters::get_csw_mp() const noexcept
 {
-	return csw_mp;
+  return csw_mp;
 }
 int Inputparameters::get_iter0_mp() const noexcept
 {
-	return iter0_mp;
+  return iter0_mp;
 }
 int Inputparameters::get_iter1_mp() const noexcept
 {
-	return iter1_mp;
+  return iter1_mp;
 }
 int Inputparameters::get_cgmax() const noexcept
 {
-	return cgmax;
+  return cgmax;
 }
 int Inputparameters::get_cgmax_mp() const noexcept
 {
-	return cgmax_mp;
+  return cgmax_mp;
 }
 double Inputparameters::get_theta_fermion_spatial() const noexcept
 {
-	return theta_fermion_spatial;
+  return theta_fermion_spatial;
 }
 double Inputparameters::get_theta_fermion_temporal() const noexcept
 {
-	return theta_fermion_temporal;
+  return theta_fermion_temporal;
 }
 double Inputparameters::get_chem_pot_re() const noexcept
 {
-	return chem_pot_re;
+  return chem_pot_re;
 }
 double Inputparameters::get_chem_pot_im() const noexcept
 {
-	return chem_pot_im;
+  return chem_pot_im;
 }
 bool Inputparameters::get_use_eo() const noexcept
 {
-	return use_eo;
+  return use_eo;
 }
 bool Inputparameters::get_use_pointsource() const noexcept
 {
-	return use_pointsource;
+  return use_pointsource;
 }
 bool Inputparameters::get_use_gauge_only() const noexcept
 {
-	return use_gauge_only;
+  return use_gauge_only;
 }
 int Inputparameters::get_num_sources() const noexcept
 {
-	return num_sources;
+  return num_sources;
 }
 int Inputparameters::get_source_x() const noexcept
 {
-	return source_x;
+  return source_x;
 }
 int Inputparameters::get_source_y() const noexcept
 {
-	return source_y;
+  return source_y;
 }
 int Inputparameters::get_source_z() const noexcept
 {
-	return source_z;
+  return source_z;
 }
 int Inputparameters::get_source_t() const noexcept
 {
-	return source_t;
+  return source_t;
 }
 
 double Inputparameters::get_solver_prec() const noexcept
 {
-	return solver_prec;
+  return solver_prec;
 }
 double Inputparameters::get_force_prec() const noexcept
 {
-	return force_prec;
+  return force_prec;
 }
 int Inputparameters::get_iter_refresh() const noexcept
 {
-	return iter_refresh;
+  return iter_refresh;
 }
 int Inputparameters::get_iter_refresh_mp() const noexcept
 {
-	return iter_refresh_mp;
+  return iter_refresh_mp;
 }
 Inputparameters::solver Inputparameters::get_solver() const noexcept
 {
-	return _solver;
+  return _solver;
 }
 Inputparameters::solver Inputparameters::get_solver_mp() const noexcept
 {
-	return _solver_mp;
+  return _solver_mp;
 }
 
 //HMC specific parameters
 double Inputparameters::get_tau() const noexcept
 {
-	return tau;
+  return tau;
 }
 bool Inputparameters::get_reversibility_check() const noexcept
 {
-	return reversibility_check;
+  return reversibility_check;
 }
 int Inputparameters::get_integrationsteps(size_t timescale) const noexcept
 {
-	switch(timescale) {
-		case 0:
-			return integrationsteps0;
-		case 1:
-			return integrationsteps1;
-		case 2:
-			return integrationsteps2;
-		default:
-			throw std::out_of_range("No such timescale");
-	}
+switch(timescale) {
+case 0:
+return integrationsteps0;
+case 1:
+return integrationsteps1;
+case 2:
+return integrationsteps2;
+default:
+throw std::out_of_range("No such timescale");
+}
 }
 int Inputparameters::get_hmcsteps() const noexcept
 {
-	return hmcsteps;
+  return hmcsteps;
 }
 int Inputparameters::get_num_timescales() const noexcept
 {
-	return num_timescales;
+  return num_timescales;
 }
 Inputparameters::integrator Inputparameters::get_integrator(size_t timescale) const noexcept
 {
-	switch(timescale) {
-		case 0:
-			return integrator0;
-		case 1:
-			return integrator1;
-		case 2:
-			return integrator2;
-		default:
-			throw std::out_of_range("No such timescale");
-	}
+switch(timescale) {
+case 0:
+return integrator0;
+case 1:
+return integrator1;
+case 2:
+return integrator2;
+default:
+throw std::out_of_range("No such timescale");
+}
 }
 double Inputparameters::get_lambda(size_t timescale) const noexcept
 {
-	switch(timescale) {
-		case 0:
-			return lambda0;
-		case 1:
-			return lambda1;
-		case 2:
-			return lambda2;
-		default:
-			throw std::out_of_range("No such timescale");
-	}
+switch(timescale) {
+case 0:
+return lambda0;
+case 1:
+return lambda1;
+case 2:
+return lambda2;
+default:
+throw std::out_of_range("No such timescale");
+}
 }
 
 //direction for the correlator
 int Inputparameters::get_corr_dir() const noexcept
 {
-	return corr_dir;
+  return corr_dir;
 }
 
 bool Inputparameters::get_use_same_rnd_numbers() const noexcept
 {
-	return use_same_rnd_numbers;
+  return use_same_rnd_numbers;
 }
 bool Inputparameters::get_profile_solver() const noexcept
 {
-	return profile_solver;
+  return profile_solver;
 }
 
 bool Inputparameters::is_ocl_compiler_opt_disabled() const noexcept
 {
-	return ocl_compiler_opt_disabled;
+  return ocl_compiler_opt_disabled;
 }
 double Inputparameters::get_test_ref_value() const noexcept
 {
-	return test_ref_value;
+  return test_ref_value;
 }
 
 std::string Inputparameters::get_log_level() const noexcept
 {
-	return log_level;
+  return log_level;
 }
 bool Inputparameters::get_use_merge_kernels_fermion() const noexcept
 {
-	return use_merge_kernels_fermion;
+  return use_merge_kernels_fermion;
 }
 bool Inputparameters::get_use_merge_kernels_spinor() const noexcept
 {
-	return use_merge_kernels_spinor;
+  return use_merge_kernels_spinor;
 }
 bool Inputparameters::get_use_rec12() const noexcept
 {
-	return use_rec12;
+  return use_rec12;
 }
 
 //parameters to read in gauge configurations
 bool Inputparameters::get_read_multiple_configs() const noexcept
 {
-	return read_multiple_configs;
+  return read_multiple_configs;
 }
 int Inputparameters::get_config_read_start() const noexcept
 {
@@ -449,11 +449,11 @@ std::string Inputparameters::get_gauge_obs_postfix() const noexcept
 }
 bool Inputparameters::get_ferm_obs_to_single_file() const noexcept
 {
-	return ferm_obs_to_single_file;
+  return ferm_obs_to_single_file;
 }
 bool Inputparameters::get_gauge_obs_to_single_file() const noexcept
 {
-	return gauge_obs_to_single_file;
+  return gauge_obs_to_single_file;
 }
 std::string Inputparameters::get_hmc_obs_prefix() const noexcept
 {
@@ -465,7 +465,7 @@ std::string Inputparameters::get_hmc_obs_postfix() const noexcept
 }
 bool Inputparameters::get_hmc_obs_to_single_file() const noexcept
 {
-	return hmc_obs_to_single_file;
+  return hmc_obs_to_single_file;
 }
 Inputparameters::sourcetypes Inputparameters::get_sourcetype() const noexcept
 {
@@ -477,11 +477,11 @@ Inputparameters::sourcecontents Inputparameters::get_sourcecontent() const noexc
 }
 bool Inputparameters::get_measure_correlators() const noexcept
 {
-	return measure_correlators;
+  return measure_correlators;
 }
 bool Inputparameters::get_measure_pbp() const noexcept
 {
-	return measure_pbp;
+  return measure_pbp;
 }
 Inputparameters::pbp_version Inputparameters::get_pbp_version() const noexcept
 {
@@ -490,7 +490,7 @@ Inputparameters::pbp_version Inputparameters::get_pbp_version() const noexcept
 
 Inputparameters::Inputparameters(int argc, const char** argv)
 {
-  logger.info() << "read in parameters...";
+	logger.info() << "read in parameters...";
 	/**
 	 * First handle all the stuff that can only be done on the cmd-line.
 	 * We need that to get the option file.
@@ -564,8 +564,8 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("solver_mp", po::value<std::string>()->default_value("bicgstab"))
 	("use_pointsource", po::value<bool>(&use_pointsource)->default_value(true))
 	("use_gauge_only", po::value<bool>(&use_gauge_only)->default_value(false))
-	  ("sourcetype",  po::value<std::string>()->default_value("point"), "Type of source to use for inverter")
-	  ("sourcecontent",  po::value<std::string>()->default_value("one"), "Type of content to use with inverter sources")
+	("sourcetype",  po::value<std::string>()->default_value("point"), "Type of source to use for inverter")
+	("sourcecontent",  po::value<std::string>()->default_value("one"), "Type of content to use with inverter sources")
 	("num_sources", po::value<int>(&num_sources)->default_value(12))
 	("source_x", po::value<int>(&source_x)->default_value(0))
 	("source_y", po::value<int>(&source_y)->default_value(0))
@@ -612,14 +612,14 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("log-level", po::value<std::string>(&log_level)->default_value("ALL"), "Minimum output log level: ALL TRACE DEBUG INFO WARN ERROR FATAL OFF")
 
 	("read_multiple_configs", po::value<bool>(&read_multiple_configs)->default_value(false), "Read in more than one gaugefield configuration")
-	  ("config_read_start", po::value<int>(&config_read_start)->default_value(0), "Number to begin with when reading in more than one gaugefield configuration")
-	  ("config_read_end", po::value<int>(&config_read_end)->default_value(1), "Number to end with when reading in more than one gaugefield configuration")
-	  ("config_read_incr", po::value<int>(&config_read_incr)->default_value(1), "Increment for gaugefield configuration number when reading in more than one gaugefield configuration")
-	  ("config_number_digits", po::value<int>(&config_number_digits)->default_value(5), "Number of digits to name gaugefield configurations")
+	("config_read_start", po::value<int>(&config_read_start)->default_value(0), "Number to begin with when reading in more than one gaugefield configuration")
+	("config_read_end", po::value<int>(&config_read_end)->default_value(1), "Number to end with when reading in more than one gaugefield configuration")
+	("config_read_incr", po::value<int>(&config_read_incr)->default_value(1), "Increment for gaugefield configuration number when reading in more than one gaugefield configuration")
+	("config_number_digits", po::value<int>(&config_number_digits)->default_value(5), "Number of digits to name gaugefield configurations")
 	("config_prefix", po::value<std::string>(&config_prefix)->default_value("conf."), "Prefix for gaugefield configuration")
 	("config_postfix", po::value<std::string>(&config_postfix)->default_value(""), "Postfix for gaugefield configuration")
 
-	  //parameters to write out observables
+	//parameters to write out observables
 	("gauge_obs_to_single_file", po::value<bool>(&gauge_obs_to_single_file)->default_value(true), "Save gauge observables to one single file")
 	("gauge_obs_prefix", po::value<std::string>(&gauge_obs_prefix)->default_value("gaugeObs"), "Prefix for gauge observables file")
 	("gauge_obs_postfix", po::value<std::string>(&gauge_obs_postfix)->default_value(".dat"), "Postfix for gauge observables file")
@@ -633,9 +633,9 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("hmc_obs_postfix", po::value<std::string>(&hmc_obs_postfix)->default_value(""), "Postfix for hmc observables file")
 
 	("measure_correlators", po::value<bool>(&measure_correlators)->default_value(true), "Measure fermionic correlators")
-	  ("measure_pbp", po::value<bool>(&measure_pbp)->default_value(false), "Measure chiral condensate")
+	("measure_pbp", po::value<bool>(&measure_pbp)->default_value(false), "Measure chiral condensate")
 
-	  ("pbp_version",  po::value<std::string>()->default_value("std"), "Version of chiral condensate");
+	("pbp_version",  po::value<std::string>()->default_value("std"), "Version of chiral condensate");
 
 
 	po::options_description desc;
