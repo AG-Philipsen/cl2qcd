@@ -119,6 +119,42 @@ void test_polyakov(std::string inputfile)
 	BOOST_REQUIRE_CLOSE(ref_pol.im, dev_pol.im,   prec);
 }
 
+void test_stout_smear(std::string inputfile)
+{
+  std::string kernelName = "stout_smear";
+  printKernelInfo(kernelName);
+  logger.info() << "Init device";
+  meta::Inputparameters params = create_parameters(inputfile);
+  hardware::System system(params);
+
+  TestGaugefield dummy2(&system);
+  hardware::code::Gaugefield * device = dummy2.get_device();
+  auto gf_code = device->get_device()->get_gaugefield_code();
+  //out buffer                                                                                                                                                                
+  const hardware::buffers::SU3 out(device->get_gaugefield()->get_elements(), device->get_device());
+  hmc_float plaq_cpu, tplaq_cpu, splaq_cpu;
+  hmc_complex pol_cpu;
+
+  logger.info() << "gaugeobservables of in field before: ";
+  dummy2.print_gaugeobservables_from_task(0,0);
+  logger.info() << "gaugeobservables of out field before: ";
+  gf_code->gaugeobservables(&out , &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
+  logger.info() << "plaq: " << plaq_cpu << "\t" << tplaq_cpu  << "\t" << splaq_cpu  << "\t" << pol_cpu.re  << "\t" << pol_cpu.im ;
+
+  gf_code->stout_smear_device( gf_code->get_gaugefield(), &out);
+
+  logger.info() << "gaugeobservables of in field after: ";
+  dummy2.print_gaugeobservables_from_task(0, 0);
+  logger.info() << "gaugeobservables of out field after: ";
+
+  gf_code->gaugeobservables(&out , &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
+  logger.info() << "plaq: " << plaq_cpu << "\t" << tplaq_cpu  << "\t" << splaq_cpu  << "\t" << pol_cpu.re  << "\t" << pol_cpu.im ;
+
+  testFloatAgainstInputparameters(plaq_cpu, params);
+  BOOST_MESSAGE("Test done");
+
+}
+
 BOOST_AUTO_TEST_SUITE ( PLAQUETTE )
 
 BOOST_AUTO_TEST_CASE( PLAQUETTE_1 )
@@ -179,7 +215,7 @@ BOOST_AUTO_TEST_SUITE ( STOUT_SMEAR )
 
 BOOST_AUTO_TEST_CASE( STOUT_SMEAR_1 )
 {
-	BOOST_MESSAGE("NOT YET IMPLEMENTED!");
+        test_stout_smear("/stout_smear_input_1");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
