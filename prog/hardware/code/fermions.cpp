@@ -4,6 +4,8 @@
 #include "../../meta/util.hpp"
 #include "../device.hpp"
 
+#include <cassert>
+
 using namespace std;
 
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
@@ -816,7 +818,8 @@ void hardware::code::Fermions::QplusQminus_eo(const hardware::buffers::Spinor * 
 {
 	//CP: this should be an eoprec-sized field. However, this induces problems in the CG algorithm!!!
 	//MB: This is because of padding, the eoprec buffer size shoulw always be queried from Opencl_Module_Spinor
-	hardware::buffers::Spinor sf_eo_tmp(in->get_elements(), get_device());
+	/// @todo use a buffer from a pool
+	assert(sf_eo_tmp.get_elements() == in->get_elements());
 
 	Qminus_eo(in, &sf_eo_tmp, gf, kappa, mubar);
 	Qplus_eo(&sf_eo_tmp, out, gf, kappa, mubar);
@@ -2006,6 +2009,7 @@ hardware::code::Fermions::Fermions(const meta::Inputparameters& params, hardware
 	  clmem_aux_eo(meta::get_eoprec_spinorfieldsize(params), device),
 	  clmem_tmp_eo_1(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo
 	  clmem_tmp_eo_2(meta::get_eoprec_spinorfieldsize(params), device), // TODO we don't need this if no eo or no Twistedmass
+	  sf_eo_tmp(meta::get_eoprec_spinorfieldsize(params), device), // we only need this wen using the QplusQminus
 	  clmem_rho(1, device),
 	  clmem_rho_next(1, device),
 	  clmem_alpha(1, device),

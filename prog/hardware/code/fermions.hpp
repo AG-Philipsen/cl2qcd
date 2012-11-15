@@ -323,6 +323,7 @@ private:
 	const hardware::buffers::Spinor clmem_aux_eo;
 	const hardware::buffers::Spinor clmem_tmp_eo_1;
 	const hardware::buffers::Spinor clmem_tmp_eo_2;
+	const hardware::buffers::Spinor sf_eo_tmp;
 
 	const hardware::buffers::Plain<hmc_complex> clmem_rho;
 	const hardware::buffers::Plain<hmc_complex> clmem_rho_next;
