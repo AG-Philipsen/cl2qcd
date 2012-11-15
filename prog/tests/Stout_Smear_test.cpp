@@ -139,7 +139,6 @@ BOOST_AUTO_TEST_CASE( STOUT_SMEAR )
 	logger.info() << "Init device";
 	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
-	//Dummyfield dummy(&system);
 
 	TestGaugefield dummy2(&system);
 	hardware::code::Gaugefield * device = dummy2.get_device();
@@ -151,37 +150,19 @@ BOOST_AUTO_TEST_CASE( STOUT_SMEAR )
 
 	logger.info() << "gaugeobservables of in field before: ";
 	dummy2.print_gaugeobservables_from_task(0,0);
-	//dummy.print_gaugeobservables_from_task(0, 0);
 	logger.info() << "gaugeobservables of out field before: ";
-	//dummy.get_gaugeobservables_from_task(0, 0, &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
-	//logger.info() << "plaq: " << plaq_cpu << "\t" << tplaq_cpu  << "\t" << splaq_cpu  << "\t" << pol_cpu.re  << "\t" << pol_cpu.im ;
         gf_code->gaugeobservables(&out , &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
 	logger.info() << "plaq: " << plaq_cpu << "\t" << tplaq_cpu  << "\t" << splaq_cpu  << "\t" << pol_cpu.re  << "\t" << pol_cpu.im ;
 
-	//dummy.runTestKernel();
 	gf_code->stout_smear_device( gf_code->get_gaugefield(), &out);
 
 	logger.info() << "gaugeobservables of in field after: ";
-	//dummy.print_gaugeobservables_from_task(0, 0);
 	dummy2.print_gaugeobservables_from_task(0, 0);
 	logger.info() << "gaugeobservables of out field after: ";
-	//dummy.get_gaugeobservables_from_task(0, 0, &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
-	//logger.info() << "plaq: " << plaq_cpu << "\t" << tplaq_cpu  << "\t" << splaq_cpu  << "\t" << pol_cpu.re  << "\t" << pol_cpu.im ;
 
         gf_code->gaugeobservables(&out , &plaq_cpu, &tplaq_cpu, &splaq_cpu, &pol_cpu);
 	logger.info() << "plaq: " << plaq_cpu << "\t" << tplaq_cpu  << "\t" << splaq_cpu  << "\t" << pol_cpu.re  << "\t" << pol_cpu.im ;
 
-	/*
-	logger.info() << "Choosing reference value and acceptance precision";
-	hmc_float ref_val = params.get_test_ref_value();
-	logger.info() << "reference value:\t" << ref_val;
-	hmc_float prec = params.get_solver_prec();
-	logger.info() << "acceptance precision: " << prec;
-	
-	logger.info() << "Compare result to reference value";
-	BOOST_REQUIRE_CLOSE(plaq_cpu, ref_val, prec);
-	logger.info() << "Done";
-	*/
         testFloatAgainstInputparameters(plaq_cpu, params);
         BOOST_MESSAGE("Test done");
 	BOOST_MESSAGE("Test done");
