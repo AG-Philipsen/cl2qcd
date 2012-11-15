@@ -144,10 +144,11 @@ set(OPTIMAL_USED_LIBS
 )
 
 add_library(optimal ${OPTIMAL_FILES})
+target_link_libraries(optimal buffers)
 # add all modules
 add_modules(optimal
-	hardware
 	meta
+	hardware
 	physics
 )
 target_link_libraries(optimal ${OPTIMAL_USED_LIBS})

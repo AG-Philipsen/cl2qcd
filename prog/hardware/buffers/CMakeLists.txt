@@ -16,6 +16,7 @@ add_library(buffers
 target_link_libraries(buffers
 	hardware
 	code
+	optimal
 )
 
 #

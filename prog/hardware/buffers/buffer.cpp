@@ -44,7 +44,7 @@ size_t hardware::buffers::Buffer::get_bytes() const noexcept
 
 void hardware::buffers::Buffer::load(const void * array) const
 {
-	cl_int err = clEnqueueWriteBuffer(*device, cl_buffer, CL_TRUE, 0, bytes, array, 0, 0, 0);
+	cl_int err = clEnqueueWriteBuffer(*device, cl_buffer, CL_TRUE, 0, bytes, array, 0, nullptr, nullptr);
 	if(err) {
 		throw hardware::OpenclException(err, "clEnqueueWriteBuffer", __FILE__, __LINE__);
 	}
@@ -52,10 +52,26 @@ void hardware::buffers::Buffer::load(const void * array) const
 
 void hardware::buffers::Buffer::dump(void * array) const
 {
-	cl_int err = clEnqueueReadBuffer(*device, cl_buffer, CL_TRUE, 0, bytes, array, 0, 0, 0);
+	cl_int err = clEnqueueReadBuffer(*device, cl_buffer, CL_TRUE, 0, bytes, array, 0, nullptr, nullptr);
 	if(err) {
 		throw hardware::OpenclException(err, "clEnqueueReadBuffer", __FILE__, __LINE__);
 	}
+}
+
+hardware::SynchronizationEvent hardware::buffers::Buffer::dump_async(void * array) const
+{
+	cl_event event_cl;
+	cl_int err = clEnqueueReadBuffer(*device, cl_buffer, CL_FALSE, 0, bytes, array, 0, nullptr, &event_cl);
+	if(err) {
+		throw hardware::OpenclException(err, "clEnqueueReadBuffer", __FILE__, __LINE__);
+	}
+
+	const hardware::SynchronizationEvent event(event_cl);
+	err = clReleaseEvent(event_cl);
+	if(err) {
+		throw hardware::OpenclException(err, "clReleaseEvent", __FILE__, __LINE__);
+	}
+	return event;
 }
 
 const cl_mem* hardware::buffers::Buffer::get_cl_buffer() const noexcept

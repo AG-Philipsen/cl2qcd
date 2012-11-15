@@ -14,6 +14,7 @@
 #endif
 
 #include <stdexcept>
+#include "../synchronization_event.hpp"
 
 namespace hardware {
 
@@ -127,6 +128,16 @@ namespace hardware {
 			 * Stores the whole buffer into the given pointer
 			 */
 			void dump(void*) const;
+
+			/**
+			 * Utility function for creation of custom dump functions.
+			 *
+			 * Stores the whole buffer into the given pointer
+			 *
+			 * The value must not be used until the returned SynchronizationEvent
+			 * returns true on is_finished().
+			 */
+			hardware::SynchronizationEvent dump_async(void * array) const;
 		};
 
 		template<class T> inline void copyData(const T* dest, const T* orig)
