@@ -218,6 +218,16 @@ BOOST_AUTO_TEST_CASE( STOUT_SMEAR_1 )
         test_stout_smear("/stout_smear_input_1");
 }
 
+BOOST_AUTO_TEST_CASE( STOUT_SMEAR_2 )
+{
+        test_stout_smear("/stout_smear_input_2");
+}
+
+BOOST_AUTO_TEST_CASE( STOUT_SMEAR_3 )
+{
+        test_stout_smear("/stout_smear_input_3");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE ( RECTANGLES )

@@ -82,13 +82,6 @@ add_test(LocalQ_1_CPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 -
 add_test(LocalQ_1_GPU       localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true  --use_rec12=false)
 add_test(LocalQ_1_GPU_REC12 localQ ${CMAKE_CURRENT_SOURCE_DIR}/local_Q_input_1 --use_gpu=true  --use_rec12=true)
 
-add_executable(stout_smear Stout_Smear_test.cpp)
-target_link_libraries(stout_smear
-	optimal
-	${Boost_LIBRARIES}
-)
-add_test(Stout_smear_1_CPU       stout_smear ${CMAKE_CURRENT_SOURCE_DIR}/stout_smear_input_1 --use_gpu=false --use_rec12=false)
-
 add_executable(opencl_module_test opencl_module_test.cpp)
 target_link_libraries(opencl_module_test
 	optimal
