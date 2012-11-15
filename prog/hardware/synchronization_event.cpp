@@ -19,11 +19,33 @@ hardware::SynchronizationEvent::SynchronizationEvent(const cl_event& event)
 hardware::SynchronizationEvent::SynchronizationEvent(const hardware::SynchronizationEvent& other)
 	: SynchronizationEvent(other.event) { }
 
-hardware::SynchronizationEvent::~SynchronizationEvent()
+hardware::SynchronizationEvent::SynchronizationEvent()
+	: event(0) { }
+
+hardware::SynchronizationEvent& hardware::SynchronizationEvent::operator=(const hardware::SynchronizationEvent& other)
 {
-	cl_int err = clReleaseEvent(event);
+	if(event) {
+		cl_int err = clReleaseEvent(event);
+		if(err) {
+			throw OpenclException(err, "clRetainEvent", __FILE__, __LINE__);
+		}
+	}
+
+	event = other.event;
+
+	cl_int err = clRetainEvent(event);
 	if(err) {
 		throw OpenclException(err, "clRetainEvent", __FILE__, __LINE__);
+	}
+}
+
+hardware::SynchronizationEvent::~SynchronizationEvent()
+{
+	if(event) {
+		cl_int err = clReleaseEvent(event);
+		if(err) {
+			throw OpenclException(err, "clRetainEvent", __FILE__, __LINE__);
+		}
 	}
 }
 

@@ -1587,8 +1587,12 @@ int hardware::code::Fermions::cg_eo(const Matrix_Function_eo & f, const hardware
 {
 	/// @todo make configurable from outside
 	const int RESID_CHECK_FREQUENCY = get_parameters().get_cg_iteration_block_size();
+	const bool USE_ASYNC_COPY = get_parameters().get_cg_use_async_copy();
 
 	auto spinor_code = get_device()->get_spinor_code();
+
+	hardware::SynchronizationEvent resid_event;
+	hmc_complex resid_rho;
 
 	//this corresponds to the above function
 	//NOTE: here, most of the complex numbers may also be just hmc_floats. However, for this one would need some add. functions...
@@ -1639,13 +1643,24 @@ int hardware::code::Fermions::cg_eo(const Matrix_Function_eo & f, const hardware
 			//rho_next is a complex number, set its imag to zero
 			spinor_code->saxpy_AND_squarenorm_eo_device(&clmem_v_eo, &clmem_rn_eo, &clmem_alpha, &clmem_rn_eo, &clmem_rho_next);
 		}
-		if(iter && iter % RESID_CHECK_FREQUENCY == 0) {
-			hmc_complex tmp;
-			clmem_rho_next.dump(&tmp);
-			hmc_float resid = tmp.re;
-			//this is the orig. call
-			//set_float_to_global_squarenorm_device(&clmem_rn, clmem_resid);
-			//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+		if(iter % RESID_CHECK_FREQUENCY == 0) {
+			hmc_float resid;
+			if(USE_ASYNC_COPY) {
+				if(iter) {
+					resid_event.wait();
+					resid = resid_rho.re;
+				} else {
+					// first iteration
+					resid = prec;
+				}
+				resid_event = clmem_rho_next.dump_async(&resid_rho);
+			} else {
+				clmem_rho_next.dump(&resid_rho);
+				resid = resid_rho.re;
+				//this is the orig. call
+				//set_float_to_global_squarenorm_device(&clmem_rn, clmem_resid);
+				//get_buffer_from_device(clmem_resid, &resid, sizeof(hmc_float));
+			}
 
 			logger.debug() << "resid: " << resid;
 			//test if resid is NAN

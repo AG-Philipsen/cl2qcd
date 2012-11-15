@@ -176,6 +176,7 @@ public:
 	pbp_version get_pbp_version() const noexcept;
 
 	int get_cg_iteration_block_size() const noexcept;
+	bool get_cg_use_async_copy() const noexcept;
 
 private:
 	size_t precision;
@@ -311,6 +312,7 @@ private:
 	pbp_version pbp_version_;
 
 	int cg_iteration_block_size;
+	bool cg_use_async_copy;
 };
 }
 

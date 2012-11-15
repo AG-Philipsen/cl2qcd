@@ -491,6 +491,10 @@ int Inputparameters::get_cg_iteration_block_size() const noexcept
 {
   return cg_iteration_block_size;
 }
+bool Inputparameters::get_cg_use_async_copy() const noexcept
+{
+  return cg_use_async_copy;
+}
 
 Inputparameters::Inputparameters(int argc, const char** argv)
 {
@@ -641,7 +645,8 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 
 	("pbp_version",  po::value<std::string>()->default_value("std"), "Version of chiral condensate")
 
-	("cg_iteration_block_size", po::value<int>(&cg_iteration_block_size)->default_value(10), "CG will check the residual only every N iterations");
+	("cg_iteration_block_size", po::value<int>(&cg_iteration_block_size)->default_value(10), "CG will check the residual only every N iterations")
+	("cg_use_async_copy", po::value<bool>(&cg_use_async_copy)->default_value(false), "CG will use residual of iteration N - block_size for termination condition.");
 
 
 	po::options_description desc;

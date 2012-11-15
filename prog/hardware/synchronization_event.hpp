@@ -40,9 +40,9 @@ class SynchronizationEvent {
 	~SynchronizationEvent();
 
 	// make sure the event is aquired when copying
-	SynchronizationEvent& operator=(const SynchronizationEvent&) = delete;
+	SynchronizationEvent& operator=(const SynchronizationEvent&);
 	SynchronizationEvent(const SynchronizationEvent&);
-	SynchronizationEvent() = delete; // default constructor does not make sense
+	SynchronizationEvent();
 
 	/**
 	 * Check whether the event has finished.
@@ -63,7 +63,7 @@ class SynchronizationEvent {
 	/**
 	 * Reference to the wrapped OpenCL event.
 	 */
-	const cl_event event;
+	cl_event event;
 };
 
 }
