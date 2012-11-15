@@ -6,6 +6,9 @@
 #define BOOST_TEST_MODULE stout_smear_test
 #include <boost/test/unit_test.hpp>
 
+//some functionality                                                                                             
+#include "test_util.h"
+
 std::string const exec_name = "stout_smear_test";
 
 #define CLX_CHECK_CLOSE(left, right, precision) \
@@ -98,38 +101,15 @@ void Dummyfield::get_gaugeobservables_from_task(int dummy, int ntask, hmc_float 
 
 BOOST_AUTO_TEST_CASE( STOUT_SMEAR )
 {
-	logger.info() << "Test kernel";
-	logger.info() << "\tstout_smear";
-	logger.info() << "against reference value";
 
-	logger.fatal() << "A segfault appears when the kernel is called using the proper module fct! Exit..";
-	BOOST_REQUIRE_EQUAL(1., 0.);
-
-	int param_expect = 4;
-	logger.info() << "expect parameters:";
-	logger.info() << "\texec_name\tinputfile\tgpu_usage\trec12_usage";
-	//get number of parameters
-	int num_par = boost::unit_test::framework::master_test_suite().argc;
-	if(num_par < param_expect) {
-		logger.fatal() << "need more inputparameters! Got only " << num_par << ", expected " << param_expect << "! Aborting...";
-		exit(-1);
-	}
-
-	//get input file that has been passed as an argument
-	const char*  inputfile =  boost::unit_test::framework::master_test_suite().argv[1];
-	logger.info() << "inputfile used: " << inputfile;
-	//get use_gpu = true/false that has been passed as an argument
-	const char*  gpu_opt =  boost::unit_test::framework::master_test_suite().argv[2];
-	logger.info() << "GPU usage: " << gpu_opt;
-	//get use_rec12 = true/false that has been passed as an argument
-	const char* rec12_opt =  boost::unit_test::framework::master_test_suite().argv[3];
-	logger.info() << "rec12 usage: " << rec12_opt;
-
+  std::string inputfile = "/stout_smear_input_1";
+	std::string kernelName = "stout_smear";
+        printKernelInfo(kernelName);
 	logger.info() << "Init device";
-	const char* _params_cpu[] = {"foo", inputfile, gpu_opt, rec12_opt};
-	meta::Inputparameters params(param_expect, _params_cpu);
+	meta::Inputparameters params = create_parameters(inputfile);
 	hardware::System system(params);
 	Dummyfield dummy(&system);
+
 
 	hmc_float plaq_cpu, tplaq_cpu, splaq_cpu;
 	hmc_complex pol_cpu;
