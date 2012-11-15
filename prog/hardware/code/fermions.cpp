@@ -1672,6 +1672,10 @@ int hardware::code::Fermions::cg_eo(const Matrix_Function_eo & f, const hardware
 				return -iter;
 			}
 			if(resid < prec) {
+				if(USE_ASYNC_COPY) {
+					// make sure everything using our event is completed
+					resid_event.wait();
+				}
 				// report on performance
 				if(logger.beInfo()) {
 					// we are always synchroneous here, as we had to recieve the residium from the device
