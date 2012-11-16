@@ -142,10 +142,10 @@ void set_hot(Matrixsu3 * field, physics::PRNG& prng, size_t elems)
 void physics::lattices::Gaugefield::save(int number)
 {
 	std::string outputfile = meta::create_configuration_name(system.get_inputparameters(), number);
-	save(outputfile);
+	save(outputfile, number);
 }
 
-void physics::lattices::Gaugefield::save(std::string outputfile)
+void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 {
 	assert(buffers.size() == 1);
 
@@ -170,8 +170,6 @@ void physics::lattices::Gaugefield::save(std::string outputfile)
 	}
 
 	hmc_float plaq = plaquette();
-
-	int number = 0;
 
 	const size_t NSPACE = parameters.get_nspace();
 

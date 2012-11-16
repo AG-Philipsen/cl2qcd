@@ -46,14 +46,15 @@ namespace physics {
 
 			/**
 			 * Save gaugefield to a file with name conf.number
-			 * @param[in] number number to be added to file name
+			 * @param[in] number The trajectory number to be stored in the file
 			 */
 			void save(int number);
 			/**
 			 * Save gaugefield to a file with given name
 			 * @param[in] outputfile name of file
+			 * @param[in] number The trajectory number to be stored in the file
 			 */
-			void save(std::string outputfile);
+			void save(std::string outputfile, int number);
 
 			/**
 			 * Return plaquette value
