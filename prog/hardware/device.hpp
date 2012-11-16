@@ -27,6 +27,7 @@
 #include "code/kappa.hpp"
 #include "code/gaugemomentum.hpp"
 #include "code/molecular_dynamics.hpp"
+#include "code/buffer.hpp"
 
 namespace hardware {
 
@@ -231,6 +232,13 @@ public:
 	 */
 	hardware::code::Kappa * get_kappa_code();
 
+	/**
+	 * Get access to the buffer kernels on this device.
+	 *
+	 * TODO technicall this should only be used by stuff in the buffers package
+	 */
+	hardware::code::Buffer * get_buffer_code();
+
 private:
 	/**
 	 * The OpenCL context to be used by this device.
@@ -373,6 +381,12 @@ private:
 	 * Initialized on demand.
 	 */
 	hardware::code::Kappa * kappa_code;
+
+	/**
+	 * Pointer to the buffer code
+	 * Initialized on demand.
+	 */
+	hardware::code::Buffer * buffer_code;
 
 };
 

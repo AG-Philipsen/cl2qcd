@@ -43,6 +43,11 @@ template<typename T> void test(size_t elems, hardware::Device * device)
 	dummy2.dump(out);
 	BOOST_CHECK_EQUAL_COLLECTIONS(in, in + elems, out, out + elems);
 
+	fill(out, elems, 5);
+	hardware::SynchronizationEvent event = dummy2.dump_async(out);
+	event.wait();
+	BOOST_CHECK_EQUAL_COLLECTIONS(in, in + elems, out, out + elems);
+
 	delete[] in;
 	delete[] out;
 }

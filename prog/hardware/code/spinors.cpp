@@ -3,6 +3,7 @@
 #include "../../logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
+#include <cassert>
 
 using namespace std;
 
@@ -49,7 +50,7 @@ void hardware::code::Spinors::fill_kernels()
 	ratio = createKernel("ratio") << get_device()->get_gaugefield_code()->get_sources() << "complex_ratio.cl";
 	product = createKernel("product") << get_device()->get_gaugefield_code()->get_sources() << "complex_product.cl";
 
-	if(get_parameters().get_use_eo() == true) {
+	if(get_parameters().get_use_eo() ) {
 		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		convert_to_eoprec = createKernel("convert_to_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		set_eoprec_spinorfield_cold = createKernel("set_eoprec_spinorfield_cold") << basic_fermion_code << "spinorfield_eo_cold.cl";
@@ -153,7 +154,7 @@ void hardware::code::Spinors::convert_from_eoprec_device(const hardware::buffers
 {
 	using namespace hardware::buffers;
 
-	const Buffer * tmp1, * tmp2;
+	const hardware::buffers::Buffer * tmp1, * tmp2;
 	if(in1->is_soa()) {
 		Plain<spinor> * tmp = new Plain<spinor>(in1->get_elements(), get_device());
 		convertSpinorfieldFromSOA_eo_device(tmp, in1);
@@ -197,7 +198,7 @@ void hardware::code::Spinors::convert_to_eoprec_device(const hardware::buffers::
 {
 	using namespace hardware::buffers;
 
-	const Buffer * tmp1, * tmp2;
+	const hardware::buffers::Buffer * tmp1, * tmp2;
 	if(out1->is_soa()) {
 		tmp1 = new Plain<spinor>(out1->get_elements(), get_device());
 	} else {
@@ -441,7 +442,7 @@ void hardware::code::Spinors::set_complex_to_scalar_product_eoprec_device(const 
 	cl_uint num_groups;
 	this->get_work_sizes(scalar_product_eoprec, &ls2, &gs2, &num_groups);
 
-	hardware::buffers::Plain<hmc_complex> tmp(num_groups, get_device());
+	assert(scalar_product_buf->get_elements() == num_groups);
 
 	//set arguments
 	int clerr = clSetKernelArg(scalar_product_eoprec, 0, sizeof(cl_mem), a->get_cl_buffer());
@@ -450,7 +451,7 @@ void hardware::code::Spinors::set_complex_to_scalar_product_eoprec_device(const 
 	clerr = clSetKernelArg(scalar_product_eoprec, 1, sizeof(cl_mem), b->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
-	clerr = clSetKernelArg(scalar_product_eoprec, 2, sizeof(cl_mem), tmp);
+	clerr = clSetKernelArg(scalar_product_eoprec, 2, sizeof(cl_mem), scalar_product_buf->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product_eoprec, 3, sizeof(hmc_complex) * ls2, static_cast<void*>(nullptr));
@@ -459,7 +460,7 @@ void hardware::code::Spinors::set_complex_to_scalar_product_eoprec_device(const 
 	get_device()->enqueue_kernel( scalar_product_eoprec, gs2, ls2);
 
 
-	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), tmp);
+	clerr = clSetKernelArg(scalar_product_reduction, 0, sizeof(cl_mem), scalar_product_buf->get_cl_buffer());
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	clerr = clSetKernelArg(scalar_product_reduction, 1, sizeof(cl_mem), out->get_cl_buffer());
@@ -951,10 +952,22 @@ hardware::code::Spinors::Spinors(const meta::Inputparameters& params, hardware::
 	: Opencl_Module(params, device), saxpy_AND_squarenorm_eo(0), generate_gaussian_spinorfield(0), generate_gaussian_spinorfield_eo(0)
 {
 	fill_kernels();
+
+	if(params.get_use_eo() ) {
+		size_t foo1, foo2;
+		cl_uint groups;
+		this->get_work_sizes(scalar_product_eoprec, &foo1, &foo2, &groups);
+		scalar_product_buf = new hardware::buffers::Plain<hmc_complex>(groups, get_device());
+	} else {
+		scalar_product_buf = nullptr;
+	}
 }
 
 hardware::code::Spinors::~Spinors()
 {
+	if(scalar_product_buf) {
+		delete scalar_product_buf;
+	}
 	clear_kernels();
 }
 

@@ -52,6 +52,17 @@ namespace hardware {
 			}
 
 			/**
+			 * Stores the whole buffer into the given pointer
+			 *
+			 * The value must not be used until the returned SynchronizationEvent
+			 * returns true on is_finished().
+			 */
+			hardware::SynchronizationEvent dump_async(T * ptr) const
+			{
+				return Buffer::dump_async(ptr);
+			}
+
+			/**
 			 * Get the size of the buffer in elements
 			 */
 			inline size_t get_elements() const noexcept

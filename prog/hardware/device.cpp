@@ -37,7 +37,8 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 	  hmc_code(nullptr),
 	  correlator_code(nullptr),
 	  heatbath_code(nullptr),
-	  kappa_code(nullptr)
+	  kappa_code(nullptr),
+	  buffer_code(nullptr)
 {
 	logger.debug() << "Initializing " << retrieve_device_name(device_id);
 	bool available = retrieve_device_availability(device_id);
@@ -55,6 +56,9 @@ hardware::Device::Device(cl_context context, cl_device_id device_id, const meta:
 
 hardware::Device::~Device()
 {
+	if(buffer_code) {
+		delete buffer_code;
+	}
 	if(kappa_code) {
 		delete kappa_code;
 	}
@@ -483,6 +487,14 @@ hardware::code::Kappa * hardware::Device::get_kappa_code()
 	return kappa_code;
 }
 
+hardware::code::Buffer * hardware::Device::get_buffer_code()
+{
+	if(!buffer_code) {
+		buffer_code = new hardware::code::Buffer(params, this);
+	}
+	return buffer_code;
+}
+
 void hardware::print_profiling(Device * device, const std::string& filename, int id)
 {
 	if(device->kappa_code) {
@@ -508,5 +520,8 @@ void hardware::print_profiling(Device * device, const std::string& filename, int
 	}
 	if(device->gaugefield_code) {
 		device->gaugefield_code->print_profiling(filename, id);
+	}
+	if(device->buffer_code) {
+		device->buffer_code->print_profiling(filename, id);
 	}
 }

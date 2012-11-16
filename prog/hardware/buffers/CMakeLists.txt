@@ -13,6 +13,11 @@ add_library(buffers
 	spinor.cpp
 	gaugemomentum.cpp
 )
+target_link_libraries(buffers
+	hardware
+	code
+	optimal
+)
 
 #
 # Definition of tets

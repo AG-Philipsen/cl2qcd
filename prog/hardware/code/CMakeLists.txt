@@ -18,6 +18,7 @@ add_library(code
 		hmc.cpp
 		gaugemomentum.cpp
 		molecular_dynamics.cpp
+		buffer.cpp
 )
 target_link_libraries(code
 		meta
