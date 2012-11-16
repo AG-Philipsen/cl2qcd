@@ -50,7 +50,7 @@ void hardware::code::Spinors::fill_kernels()
 	ratio = createKernel("ratio") << get_device()->get_gaugefield_code()->get_sources() << "complex_ratio.cl";
 	product = createKernel("product") << get_device()->get_gaugefield_code()->get_sources() << "complex_product.cl";
 
-	if(get_parameters().get_use_eo() == true) {
+	if(get_parameters().get_use_eo() ) {
 		convert_from_eoprec = createKernel("convert_from_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		convert_to_eoprec = createKernel("convert_to_eoprec") << basic_fermion_code << "spinorfield_eo_convert.cl";
 		set_eoprec_spinorfield_cold = createKernel("set_eoprec_spinorfield_cold") << basic_fermion_code << "spinorfield_eo_cold.cl";
@@ -953,15 +953,21 @@ hardware::code::Spinors::Spinors(const meta::Inputparameters& params, hardware::
 {
 	fill_kernels();
 
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(scalar_product_eoprec, &ls2, &gs2, &num_groups);
-	scalar_product_buf = new hardware::buffers::Plain<hmc_complex>(num_groups, get_device());
+	if(params.get_use_eo() ) {
+		size_t foo1, foo2;
+		cl_uint groups;
+		this->get_work_sizes(scalar_product_eoprec, &foo1, &foo2, &groups);
+		scalar_product_buf = new hardware::buffers::Plain<hmc_complex>(groups, get_device());
+	} else {
+		scalar_product_buf = nullptr;
+	}
 }
 
 hardware::code::Spinors::~Spinors()
 {
-	delete scalar_product_buf;
+	if(scalar_product_buf) {
+		delete scalar_product_buf;
+	}
 	clear_kernels();
 }
 
