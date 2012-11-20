@@ -251,10 +251,36 @@ void Gaugefield_hmc::integrator(usetimer * solvertimer)
 			exit(1);
 		}
 	}
+	//CP: check if one of the integrationsteps is 0. This would lead to a divison by zero!
+	logger.info() << get_parameters().get_num_timescales();
+	switch(get_parameters().get_num_timescales() ) {
+	case 1:
+	  if( get_parameters().get_integrationsteps(0) == 0 ) {
+	    logger.fatal() << "Number of integrationsteps cannot be zero! Check settings!\nAborting...";
+	    exit(1);
+	  }
+	  break;
+	case 2:
+	  if( get_parameters().get_integrationsteps(0) == 0 || get_parameters().get_integrationsteps(1) == 0) {
+	    logger.info() << "here";
+            logger.fatal() << "Number of integrationsteps cannot be zero! Check settings!\nAborting...";
+            exit(1);
+          }
+	  break;
+	case 3:
+	  if( get_parameters().get_integrationsteps(0) == 0 || get_parameters().get_integrationsteps(1) == 0 || get_parameters().get_integrationsteps(2) == 0 ) {
+	    logger.info() << "here";
+	    logger.info() << "here";
+            logger.fatal() << "Number of integrationsteps cannot be zero! Check settings!\nAborting...";
+            exit(1);
+          }
+	  break;
+	}
+	//CP: actual integrator calling
 	switch(get_parameters().get_integrator(0)) {
-		case meta::Inputparameters::leapfrog:
-			this->leapfrog(solvertimer);
-			break;
+	        case meta::Inputparameters::leapfrog:
+		  this->leapfrog(solvertimer);
+		  break;
 		case meta::Inputparameters::twomn:
 			this->twomn(solvertimer);
 			break;
