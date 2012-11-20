@@ -373,21 +373,21 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 			if(l == 0) md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer, kappa_tmp, mubar_tmp);
 			//now, n0 steps "more" are performed for the gauge-part
 			for(int j = 0; j < n0; j++) {
-				if(l == 0) md_update_gaugemomentum_gauge(deltaTau0_half);
+				if(l == 0 && j == 0) md_update_gaugemomentum_gauge(deltaTau0_half);
 				md_update_gaugefield(deltaTau0);
-				if(l == n1 - 1 && j == n0 - 1 && n1 == 1) md_update_gaugemomentum_gauge(deltaTau0_half);
+				if(j == n0 - 1 && l == n1 - 1 && n2 == 1) md_update_gaugemomentum_gauge(deltaTau0_half);
 				else md_update_gaugemomentum_gauge(deltaTau0);
 			}
 			if(l == n1 - 1 && n2 == 1) md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer, kappa_tmp, mubar_tmp);
 			else md_update_gaugemomentum_fermion(deltaTau1, solvertimer);
 		}
 		if(n2 > 1) logger.debug() << "HMC:\t\t\tperform " << n2 - 1 << " intermediate steps " ;
-		for(int k = 1; k < n1; k++) {
+		for(int k = 1; k < n2; k++) {
 			md_update_gaugemomentum_detratio(deltaTau2, solvertimer);
 			for(int l = 0; l < n1; l++) {
 				for(int j = 0; j < n0; j++) {
 					md_update_gaugefield(deltaTau0);
-					if(k == n1 - 1 && j == n0 - 1 && l == n1 - 1) md_update_gaugemomentum_gauge(deltaTau0_half);
+					if(j == n0 - 1 && l == n1 - 1 &&  k == n2 - 1) md_update_gaugemomentum_gauge(deltaTau0_half);
 					else md_update_gaugemomentum_gauge(deltaTau0);
 				}
 				if(l == n1 - 1 && k == n2 - 1) md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer, kappa_tmp, mubar_tmp);
