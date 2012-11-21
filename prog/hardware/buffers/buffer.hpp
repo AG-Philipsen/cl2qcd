@@ -89,6 +89,11 @@ namespace hardware {
 			 */
 			hardware::Device * get_device() const noexcept;
 
+			/**
+			 * Set all bytes of this buffer to zero.
+			 */
+			void clear() const;
+
 		private:
 			/**
 			 * The size of the buffer in bytes.
