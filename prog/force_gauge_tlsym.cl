@@ -9,9 +9,6 @@ inline void gauge_force_tlsym_per_link(__global const Matrixsu3StorageType * con
 		update_gaugemomentum(out_tmp, factor , global_link_pos, out);
 }
 
-#ifdef _USEGPU_
-__attribute__((reqd_work_group_size(128, 1, 1)))
-#endif
 __kernel void gauge_force_tlsym(__global const Matrixsu3StorageType * const restrict field, __global aeStorageType * const restrict out)
 {
 #ifndef _USE_RECT_
@@ -22,15 +19,13 @@ __kernel void gauge_force_tlsym(__global const Matrixsu3StorageType * const rest
 	//tlSym improved Gauge force is factor*Im(i Tr(T_i U V))
 	//   with T_i being the SU3-Generator in i-th direction and V the staplematrix
 	//   and the factor being 0 (for standard Wilson-action) and -c1 * beta / NC (for tlSym)
-	PARALLEL_FOR(id_tmp, VOL4D / 2 * NDIM) {
+	PARALLEL_FOR(id_tmp, VOL4D * NDIM) {
 		//calc link-pos and mu out of the index
 		//NOTE: this is not necessarily equal to the geometric  conventions, one just needs a one-to-one correspondence between thread-id and (n,t,mu) here
-		int2 pos_tmp;
-		pos_tmp.x = id_tmp % (VOL4D / 2);
-		pos_tmp.y = id_tmp / (VOL4D / 2);
-		st_index pos = get_even_site(pos_tmp.x);
-		gauge_force_tlsym_per_link(field, out, pos, pos_tmp.y);
-		pos = get_odd_site(pos_tmp.x);
-		gauge_force_tlsym_per_link(field, out, pos, pos_tmp.y);
+		const int pos_tmp = id_tmp % VOL4D;
+		const int dir     = id_tmp / VOL4D;
+
+		const st_index pos = (pos_tmp % 2 == 0) ? get_even_site(pos_tmp / 2) : get_odd_site(pos_tmp / 2);
+		gauge_force_tlsym_per_link(field, out, pos, dir);
 	}
 }
