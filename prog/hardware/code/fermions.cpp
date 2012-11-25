@@ -1219,7 +1219,9 @@ int hardware::code::Fermions::bicgstab(const Matrix_Function & f, const hardware
 	}
 	//version with different structure than "save" one, similar to tmlqcd. This should be the default bicgstab.
 	//  In particular this version does not perform the check if the "real" residuum is sufficiently small!
-	else if (get_parameters().get_solver() == meta::Inputparameters::bicgstab) {
+	//NOTE: I commented out the if, since one runs into trouble if one uses CG in the HMC. Then, no bicgstab type is chosen, however, one still uses it "hardcoded".
+	//      Then one gets a fatal, which is not really meaningful. In this way, it is like in the eo case.
+	else /*if (get_parameters().get_solver() == meta::Inputparameters::bicgstab)*/ { 
 		hmc_float resid;
 		for(int iter = 0; iter < get_parameters().get_cgmax(); iter++) {
 			if(iter % get_parameters().get_iter_refresh() == 0) {
@@ -1293,8 +1295,6 @@ int hardware::code::Fermions::bicgstab(const Matrix_Function & f, const hardware
 		}
 		return -1;
 	}
-	logger.fatal() << "This line should never be reached! Program logic is inconsistent!";
-	throw std::logic_error("Somebody goofed up - the solver you selected is not implemented.");
 }
 
 int hardware::code::Fermions::bicgstab_eo(const Matrix_Function_eo & f, const hardware::buffers::Spinor * inout, const hardware::buffers::Spinor * source, const hardware::buffers::SU3 * gf, hmc_float prec, hmc_float kappa, hmc_float mubar)
