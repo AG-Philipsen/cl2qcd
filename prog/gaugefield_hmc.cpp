@@ -167,6 +167,7 @@ void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer, hmc_float kappa
 
 	auto gf_code = get_device_for_task(task_hmc)->get_gaugefield_code();
 	auto mol_dyn_code = get_device_for_task(task_hmc)->get_molecular_dynamics_code();
+	auto hmc_code = get_device_for_task(task_hmc)->get_hmc_code();
 
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
@@ -183,12 +184,12 @@ void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer, hmc_float kappa
 		for(int i = 0; i < rho_iter; i++) {
 			smeared_gfs.push_back(new hardware::buffers::SU3(gf_elems, gf_code->get_device()));
 		}
-		gf_code->smear_gaugefield(gf_code->get_gaugefield(), smeared_gfs);
+		gf_code->smear_gaugefield(hmc_code->get_new_u(), smeared_gfs);
 	}
 	get_task_hmc(0)->calc_fermion_force(solvertimer, kappa, mubar);
 	if(get_parameters().get_use_smearing() == true) {
 		mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
-		gf_code->unsmear_gaugefield(gf_code->get_gaugefield());
+		gf_code->unsmear_gaugefield(hmc_code->get_new_u());
 	}
 for(auto gf: smeared_gfs) {
 		delete gf;
@@ -201,6 +202,7 @@ void Gaugefield_hmc::detratio_forces_call(usetimer * solvertimer)
 
 	auto gf_code = get_device_for_task(task_hmc)->get_gaugefield_code();
 	auto mol_dyn_code = get_device_for_task(task_hmc)->get_molecular_dynamics_code();
+	auto hmc_code = get_device_for_task(task_hmc)->get_hmc_code();
 
 	//in case of stout-smearing we need every intermediate field for the force calculation
 	//NOTE: if smearing is not used, this is just 0
@@ -217,12 +219,12 @@ void Gaugefield_hmc::detratio_forces_call(usetimer * solvertimer)
 		for(int i = 0; i < rho_iter; i++) {
 			smeared_gfs.push_back(new hardware::buffers::SU3(gf_elems, gf_code->get_device()));
 		}
-		gf_code->smear_gaugefield(gf_code->get_gaugefield(), smeared_gfs);
+		gf_code->smear_gaugefield(hmc_code->get_new_u(), smeared_gfs);
 	}
-	get_task_hmc(0)->calc_fermion_force_detratio(solvertimer, gf_code->get_gaugefield());
+	get_task_hmc(0)->calc_fermion_force_detratio(solvertimer, hmc_code->get_new_u());
 	if(get_parameters().get_use_smearing() == true) {
 		mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
-		gf_code->unsmear_gaugefield(gf_code->get_gaugefield());
+		gf_code->unsmear_gaugefield(hmc_code->get_new_u());
 	}
 for(auto gf: smeared_gfs) {
 		delete gf;
