@@ -757,7 +757,7 @@ void hardware::code::Hmc::calc_gauge_force()
 	}
 }
 
-hmc_float hardware::code::Hmc::calc_s_fermion()
+hmc_float hardware::code::Hmc::calc_s_fermion(const hardware::buffers::SU3 * gaugefield, hmc_float kappa, hmc_float mubar)
 {
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
@@ -1024,7 +1024,7 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 		//initial energy has been computed in the beginning...
 		clmem_s_fermion_init.dump(&spinor_energy_init);
 		// sum_links phi*_i (M^+M)_ij^-1 phi_j
-		s_fermion_final = calc_s_fermion();
+		s_fermion_final = calc_s_fermion(&new_u);
 		deltaH += spinor_energy_init - s_fermion_final;
 
 		logger.debug() << "HMC:\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
