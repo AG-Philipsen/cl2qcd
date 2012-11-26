@@ -106,3 +106,19 @@ void hardware::buffers::Buffer::copyData(const Buffer* orig) const
 		}
 	}
 }
+
+void hardware::buffers::Buffer::clear() const
+{
+	if(sizeof(hmc_complex_zero) % bytes) {
+		cl_char foo = 0;
+		cl_int err = clEnqueueFillBuffer(*device, cl_buffer, &foo, sizeof(foo), 0, bytes, 0, nullptr, nullptr);
+		if(err) {
+			throw hardware::OpenclException(err, "clEnqueueFillBuffer", __FILE__, __LINE__);
+		}
+	} else {
+		cl_int err = clEnqueueFillBuffer(*device, cl_buffer, &hmc_complex_zero, sizeof(hmc_complex_zero), 0, bytes, 0, nullptr, nullptr);
+		if(err) {
+			throw hardware::OpenclException(err, "clEnqueueFillBuffer", __FILE__, __LINE__);
+		}
+	}
+}

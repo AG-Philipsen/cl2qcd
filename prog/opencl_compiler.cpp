@@ -352,7 +352,7 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel) const
 		std::fstream isafile;
 		isafile.open(filename.c_str());
 		if(!isafile.is_open()) {
-			logger.debug() << "Could not find ISA file under traditional name. Trying new name (Catalyst 12.4 and up).";
+			logger.trace() << "Could not find ISA file under traditional name. Trying new name (Catalyst 12.4 and up).";
 			std::stringstream tmp;
 			tmp << "\\.\\/_temp_\\d+_" << device_name << '_' << kernelName << "\\.isa";
 			boost::regex file_pattern(tmp.str(), boost::regex::icase);
@@ -384,44 +384,89 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel) const
 		std::string isa( isabytes );
 		delete[] isabytes;
 
-		unsigned int scratch_regs, gp_regs, static_local_bytes;
-
 		boost::smatch what;
 
 		// get scratch registers
+		// starting with the Tahiti GPUs the format of the data changed,
+		// we now also use the scratch register usage field as in indicator
+		// for the file format
 		boost::regex exScratch( "^MaxScratchRegsNeeded\\s*=\\s*(\\d*)$" );
 		if( boost::regex_search( isa, what, exScratch ) ) {
+			unsigned int scratch_regs = 0, gp_regs = 0, static_local_bytes = 0;
+
 			logger.trace() << what[0];
 			std::istringstream tmp( what[1] );
 			tmp >> scratch_regs;
+
+			// get GP registers
+			boost::regex exGPR( "^SQ_PGM_RESOURCES:NUM_GPRS\\s*=\\s*(\\d*)$" );
+			if( boost::regex_search( isa, what, exGPR ) ) {
+				logger.trace() << what[0];
+				std::istringstream tmp( what[1] );
+				tmp >> gp_regs;
+			} else {
+				logger.error() << "GPR usage section not found!";
+			}
+
+			// get GP registers
+			boost::regex exStatic( "^SQ_LDS_ALLOC:SIZE\\s*=\\s*(0x\\d*)$" );
+			if( boost::regex_search( isa, what, exStatic ) ) {
+				logger.trace() << what[0];
+				std::istringstream tmp( what[1] );
+				tmp >> std::hex >> static_local_bytes;
+				static_local_bytes *= 4; // value in file is in units of floats
+			} else {
+				logger.error() << "Static local memory allocation section not found!";
+			}
+
+			logger.debug() << "Kernel: " << kernelName << " - " << gp_regs << " GPRs, " << scratch_regs << " scratch registers, "
+			               << static_local_bytes << " bytes statically allocated local memory";
 		} else {
-			logger.error() << "Scratch register usage section not found!";
+			unsigned int scratch_regs = 0, sgp_regs = 0, vgp_regs = 0, static_local_bytes = 0;
+
+			boost::regex exScratch( "^ScratchSize\\s*=\\s*(\\d*)\\s*;\\s*$" );
+			if( boost::regex_search( isa, what, exScratch ) ) {
+				logger.trace() << what[0];
+				std::istringstream tmp( what[1] );
+				tmp >> scratch_regs;
+			} else {
+				logger.error() << "Scratch register usage section not found!";
+			}
+
+			// get GP registers
+			boost::regex exSGPR( "^NumSgprs\\s*=\\s*(\\d*)\\s*;\\s*$" );
+			if( boost::regex_search( isa, what, exSGPR ) ) {
+				logger.trace() << what[0];
+				std::istringstream tmp( what[1] );
+				tmp >> sgp_regs;
+			} else {
+				logger.error() << "sGPR usage section not found!";
+			}
+
+			// get GP registers
+			boost::regex exVGPR( "^NumVgprs\\s*=\\s*(\\d*)\\s*;\\s*$" );
+			if( boost::regex_search( isa, what, exVGPR ) ) {
+				logger.trace() << what[0];
+				std::istringstream tmp( what[1] );
+				tmp >> vgp_regs;
+			} else {
+				logger.error() << "vGPR usage section not found!";
+			}
+
+			// get GP registers
+			boost::regex exStatic( "^COMPUTE_PGM_RSRC2:LDS_SIZE\s*=\s*(\d*)\s*$" );
+			if( boost::regex_search( isa, what, exStatic ) ) {
+				logger.trace() << what[0];
+				std::istringstream tmp( what[1] );
+				tmp >> static_local_bytes;
+				static_local_bytes *= 4 * 64; // value in file is in units of floats
+			} else {
+				logger.trace() << "Static local memory allocation section not found. This is expected if no local memory is statically allocated.";
+			}
+
+			logger.debug() << "Kernel: " << kernelName << " - " << sgp_regs << " sGPRs, " << vgp_regs << " vGPRs, " << scratch_regs << " scratch registers, "
+			               << static_local_bytes << " bytes statically allocated local memory";
 		}
-
-		// get GP registers
-		boost::regex exGPR( "^SQ_PGM_RESOURCES:NUM_GPRS\\s*=\\s*(\\d*)$" );
-		if( boost::regex_search( isa, what, exGPR ) ) {
-			logger.trace() << what[0];
-			std::istringstream tmp( what[1] );
-			tmp >> gp_regs;
-		} else {
-			logger.error() << "GPR usage section not found!";
-		}
-
-		// get GP registers
-		boost::regex exStatic( "^SQ_LDS_ALLOC:SIZE\\s*=\\s*(0x\\d*)$" );
-		if( boost::regex_search( isa, what, exStatic ) ) {
-			logger.trace() << what[0];
-			std::istringstream tmp( what[1] );
-			tmp >> std::hex >> static_local_bytes;
-			static_local_bytes *= 4; // value in file is in units of floats
-		} else {
-			logger.error() << "Static local memory allocation section not found!";
-		}
-
-		logger.debug() << "Kernel: " << kernelName << " - " << gp_regs << " GPRs, " << scratch_regs << " scratch registers, "
-		               << static_local_bytes << " bytes statically allocated local memory";
-
 		delete[] device_name;
 	} else {
 		logger.trace() << "No AMD-GPU -> not scanning for kernel resource requirements";
