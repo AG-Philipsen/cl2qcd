@@ -22,10 +22,9 @@ __kernel void gauge_force_tlsym(__global const Matrixsu3StorageType * const rest
 	PARALLEL_FOR(id_tmp, VOL4D * NDIM) {
 		//calc link-pos and mu out of the index
 		//NOTE: this is not necessarily equal to the geometric  conventions, one just needs a one-to-one correspondence between thread-id and (n,t,mu) here
-		const int pos_tmp = id_tmp % VOL4D;
-		const int dir     = id_tmp / VOL4D;
-
-		const st_index pos = (pos_tmp % 2 == 0) ? get_even_site(pos_tmp / 2) : get_odd_site(pos_tmp / 2);
+		const size_t pos_tmp = id_tmp % VOL4D;
+		const size_t dir     = id_tmp / VOL4D;
+		const st_index pos = (pos_tmp >= VOL4D / 2) ? get_even_site(pos_tmp - (VOL4D / 2)) : get_odd_site(pos_tmp);
 		gauge_force_tlsym_per_link(field, out, pos, dir);
 	}
 }
