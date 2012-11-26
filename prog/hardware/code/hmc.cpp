@@ -473,7 +473,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		//CP: Init tmp spinorfield
 		hardware::buffers::Spinor sf_eo_tmp(clmem_phi_eo.get_elements(), get_device());
 		//the source is now Q_2^+ phi = sf_eo_tmp
-		fermion_code->Qplus_eo (get_clmem_phi_eo(), &sf_eo_tmp , gaugefield, kappa2, mubar2);
+		fermion_code->Qplus_eo (get_clmem_phi_mp_eo(), &sf_eo_tmp , gaugefield, kappa2, mubar2);
 		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			/**
 			 * The first inversion calculates
@@ -611,7 +611,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		 */
 
 		//Y is not needed anymore, therefore use clmem_phi_inv_eo to store -phi
-		spinor_code->sax_eoprec_device(get_clmem_phi_eo(), fermion_code->get_clmem_minusone(), &clmem_phi_inv_eo);
+		spinor_code->sax_eoprec_device(get_clmem_phi_mp_eo(), fermion_code->get_clmem_minusone(), &clmem_phi_inv_eo);
 
 		//logger.debug() << "\t\tcalc eo fermion_force F(Y_even, X_odd)...";
 		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, sf_eo_tmp)
@@ -637,7 +637,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		hardware::buffers::Plain<spinor> sf_tmp(clmem_phi.get_elements(), get_device());
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 		//the source is now Q_2^+ phi = sf_tmp
-		fermion_code->Qplus (get_clmem_phi(), &sf_tmp , gaugefield, kappa2, mubar2);
+		fermion_code->Qplus (get_clmem_phi_mp(), &sf_tmp , gaugefield, kappa2, mubar2);
 		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			/**
 			 * The first inversion calculates
@@ -741,7 +741,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		 */
 
 		//Y is not needed anymore, therefore use clmem_phi_inv_eo to store -phi
-		spinor_code->sax_device(get_clmem_phi(), fermion_code->get_clmem_minusone(), &clmem_phi_inv);
+		spinor_code->sax_device(get_clmem_phi_mp(), fermion_code->get_clmem_minusone(), &clmem_phi_inv);
 
 		fermion_force_device(&clmem_phi_inv, fermion_code->get_inout(), kappa2);
 	}
