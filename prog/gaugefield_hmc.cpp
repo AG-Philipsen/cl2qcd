@@ -278,8 +278,8 @@ void Gaugefield_hmc::integrator(usetimer * solvertimer)
 	//CP: check if 2 ts are used with mass-preconditioning or 3 ts without mass-preconditioning. In these cases the program does not behave well defined, since this is all
 	//    hardcoded
 	///@todo This will not be needed if the integration is restructured!
-	if ( (  get_parameters().get_num_timescales() == 3 || get_parameters().get_use_mp() == false  ) ||
-	     (  get_parameters().get_num_timescales() == 2 || get_parameters().get_use_mp() == true  ) ){
+	if ( (  get_parameters().get_num_timescales() == 3 && get_parameters().get_use_mp() == false  ) ||
+	     (  get_parameters().get_num_timescales() == 2 && get_parameters().get_use_mp() == true  ) ){
 	  logger.fatal() << "Setting for mass-preconditioning and number of timescales do not fit!\nUse either mass-preconditioning and 3 timescales or no mass-preonditioning and 2 timescales!\nAborting...";
 	  exit(1);
 	}
