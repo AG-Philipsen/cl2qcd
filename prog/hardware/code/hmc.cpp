@@ -571,29 +571,27 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		 */
 
 		/** @fixme below usages of dslash should work, but only because we use bicgstab above
-		proper implementation needs to make sure this is always the case */
+		proper implementation needs to make sure this is always the case 
+		CP: tmp1 and tmp2 are initialized independently of bicgstab as far as I know! */
 
 		///@NOTE the following calculations could also go in a new function for convenience
 		//calculate X_odd
-		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_inout, since
-		//  this is used as a default in the force-function.
+		//therefore, sf_eo_tmp is used as intermediate state. 
 		if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 			fermion_code->dslash_eo_device(fermion_code->get_inout_eo(), fermion_code->get_tmp_eo_1(), gaugefield, ODD);
-			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_1(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_1(), fermion_code->get_clmem_minusone(), &sf_eo_tmp);
 		} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
 			fermion_code->dslash_eo_device(fermion_code->get_inout_eo(), fermion_code->get_tmp_eo_1(), gaugefield, ODD);
 			fermion_code->M_tm_inverse_sitediagonal_minus_device(fermion_code->get_tmp_eo_1(), fermion_code->get_tmp_eo_2());
-			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), &sf_eo_tmp);
 		}
 
 		//logger.debug() << "\t\tcalc eo fermion_force F(Y_even, X_odd)...";
-		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, clmem_tmp_eo_1)
+		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, sf_eo_tmp)
+		fermion_force_eo_device(&clmem_phi_inv_eo,  &sf_eo_tmp, EVEN, kappa);
 
-		fermion_force_eo_device(&clmem_phi_inv_eo,  fermion_code->get_tmp_eo_1(), EVEN, kappa);
-		logger.info() << "FORCE";
 		//calculate Y_odd
-		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
-		//  this is used as a default in the force-function.
+		//therefore, clmem_tmp_eo_1 is used as intermediate state. 
 		if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
 			fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), gaugefield, ODD);
 			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_1(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
@@ -605,7 +603,6 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 
 		//logger.debug() << "\t\tcalc eoprec fermion_force F(Y_odd, X_even)...";
 		//Calc F(Y_odd, X_even) = F(clmem_tmp_eo_1, clmem_inout_eo)
-		logger.info() << "FORCE";
 		fermion_force_eo_device(fermion_code->get_tmp_eo_1(), fermion_code->get_inout_eo(), ODD, kappa);
 
 		/**
@@ -617,26 +614,23 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		spinor_code->sax_eoprec_device(get_clmem_phi_eo(), fermion_code->get_clmem_minusone(), &clmem_phi_inv_eo);
 
 		//logger.debug() << "\t\tcalc eo fermion_force F(Y_even, X_odd)...";
-		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, clmem_tmp_eo_1)
-		logger.info() << "FORCE";
-		fermion_force_eo_device(&clmem_phi_inv_eo,  fermion_code->get_tmp_eo_1(), EVEN, kappa2);
+		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, sf_eo_tmp)
+		fermion_force_eo_device(&clmem_phi_inv_eo,  &sf_eo_tmp, EVEN, kappa2);
 
 		//calculate phi_odd
 		//this works in the same way as with Y above, since -phi_even is saved in the same buffer as Y_even
-		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
-		//  this is used as a default in the force-function.
+		//therefore, clmem_tmp_eo_1 is used as intermediate state. 
 		if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
-			fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), gaugefield, ODD);
+		  fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), gaugefield, ODD, kappa2);
 			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_1(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
-			fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), gaugefield, ODD);
-			fermion_code->M_tm_inverse_sitediagonal_device(fermion_code->get_tmp_eo_1(), fermion_code->get_tmp_eo_2());
-			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
+		  fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), gaugefield, ODD, kappa2);
+		  fermion_code->M_tm_inverse_sitediagonal_device(fermion_code->get_tmp_eo_1(), fermion_code->get_tmp_eo_2(), mubar2);
+		  spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		}
 
 		//logger.debug() << "\t\tcalc eoprec fermion_force F(Y_odd, X_even)...";
 		//Calc F(Y_odd, X_even) = F(clmem_tmp_eo_1, clmem_inout_eo)
-		logger.info() << "FORCE";
 		fermion_force_eo_device(fermion_code->get_tmp_eo_1(), fermion_code->get_inout_eo(), ODD, kappa2);
 	} else {
 		//CP: Init tmp spinorfield
@@ -1134,5 +1128,6 @@ void hardware::code::Hmc::fermion_force_eo_device(const hardware::buffers::Spino
 {
 	using namespace hardware::buffers;
 	auto mol_dyn_code = get_device()->get_molecular_dynamics_code();
+
 	mol_dyn_code->fermion_force_eo_device(Y, X, &new_u, &clmem_force, evenodd, kappa);
 }
