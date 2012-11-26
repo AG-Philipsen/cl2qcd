@@ -454,7 +454,7 @@ void TmpClKernel::printResourceRequirements(const cl_kernel kernel) const
 			}
 
 			// get GP registers
-			boost::regex exStatic( "^COMPUTE_PGM_RSRC2:LDS_SIZE\s*=\s*(\d*)\s*$" );
+			boost::regex exStatic( "^COMPUTE_PGM_RSRC2:LDS_SIZE\\s*=\\s*(\\d*)\\s*$" );
 			if( boost::regex_search( isa, what, exStatic ) ) {
 				logger.trace() << what[0];
 				std::istringstream tmp( what[1] );
