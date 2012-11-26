@@ -1020,27 +1020,45 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 
 	//Fermion-Part:
 	if(! get_parameters().get_use_gauge_only() ) {
-		hmc_float spinor_energy_init, s_fermion_final;
-		//initial energy has been computed in the beginning...
-		clmem_s_fermion_init.dump(&spinor_energy_init);
-		// sum_links phi*_i (M^+M)_ij^-1 phi_j
-		s_fermion_final = calc_s_fermion(&new_u);
-		deltaH += spinor_energy_init - s_fermion_final;
-
-		logger.debug() << "HMC:\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
-		logger.debug() << "HMC:\tS_ferm(new field) = " << setprecision(10) << s_fermion_final;
-		logger.info() <<  "HMC:\tdeltaS_ferm = " << spinor_energy_init - s_fermion_final;
 		if( get_parameters().get_use_mp() ) {
-			hmc_float spinor_energy_mp_init, s_fermion_mp_final;
-			//initial energy has been computed in the beginning...
-			clmem_s_fermion_mp_init.dump(&spinor_energy_mp_init);
-			// sum_links phi*_i (M^+M)_ij^-1 phi_j
-			s_fermion_mp_final = calc_s_fermion_mp(&new_u);
-			deltaH += spinor_energy_mp_init - s_fermion_mp_final;
+		  //in this case one has contributions from det(m_light/m_heavy) and det(m_heavy)
+		  // det(m_heavy)
+		  hmc_float spinor_energy_init, s_fermion_final;
+		  //initial energy has been computed in the beginning...
+		  clmem_s_fermion_init.dump(&spinor_energy_init);
+		  // sum_links phi*_i (M^+M)_ij^-1 phi_j
+		  s_fermion_final = calc_s_fermion(&new_u);
+		  deltaH += spinor_energy_init - s_fermion_final;
 
-			logger.debug() << "HMC:\tS_ferm_mp(old field) = " << setprecision(10) <<  spinor_energy_mp_init;
-			logger.debug() << "HMC:\tS_ferm_mp(new field) = " << setprecision(10) << s_fermion_mp_final;
-			logger.info() <<  "HMC:\tdeltaS_ferm_mp = " << spinor_energy_mp_init - s_fermion_mp_final;
+		  logger.debug() << "HMC:\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
+		  logger.debug() << "HMC:\tS_ferm(new field) = " << setprecision(10) << s_fermion_final;
+		  logger.info() <<  "HMC:\tdeltaS_ferm = " << spinor_energy_init - s_fermion_final;
+
+		  // det(m_light/m_heavy)
+		  hmc_float spinor_energy_mp_init, s_fermion_mp_final;
+		  //initial energy has been computed in the beginning...
+		  clmem_s_fermion_mp_init.dump(&spinor_energy_mp_init);
+		  // sum_links phi*_i (M^+M)_ij^-1 phi_j
+		  s_fermion_mp_final = calc_s_fermion_mp(&new_u);
+		  deltaH += spinor_energy_mp_init - s_fermion_mp_final;
+		  
+		  logger.debug() << "HMC:\tS_ferm_mp(old field) = " << setprecision(10) <<  spinor_energy_mp_init;
+		  logger.debug() << "HMC:\tS_ferm_mp(new field) = " << setprecision(10) << s_fermion_mp_final;
+		  logger.info() <<  "HMC:\tdeltaS_ferm_mp = " << spinor_energy_mp_init - s_fermion_mp_final;
+		}
+		else {
+		  //in this case one has contributions from det(m_light)
+		  // det(m_light)
+		  hmc_float spinor_energy_init, s_fermion_final;
+		  //initial energy has been computed in the beginning...
+		  clmem_s_fermion_init.dump(&spinor_energy_init);
+		  // sum_links phi*_i (M^+M)_ij^-1 phi_j
+		  s_fermion_final = calc_s_fermion(&new_u);
+		  deltaH += spinor_energy_init - s_fermion_final;
+
+		  logger.debug() << "HMC:\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
+		  logger.debug() << "HMC:\tS_ferm(new field) = " << setprecision(10) << s_fermion_final;
+		  logger.info() <<  "HMC:\tdeltaS_ferm = " << spinor_energy_init - s_fermion_final;
 		}
 	}
 	//Metropolis-Part
