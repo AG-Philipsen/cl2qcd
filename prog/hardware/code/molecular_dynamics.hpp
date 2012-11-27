@@ -8,6 +8,7 @@
 #include "../buffers/plain.hpp"
 #include "../buffers/prng_buffer.hpp"
 #include "../buffers/su3.hpp"
+#include "../buffers/3x3.hpp"
 #include "../buffers/spinor.hpp"
 #include "../buffers/gaugemomentum.hpp"
 
@@ -103,6 +104,15 @@ private:
 	cl_kernel fermion_force;
 	cl_kernel fermion_force_eo;
 	cl_kernel stout_smear_fermion_force;
+
+	cl_kernel gauge_force_tlsym_1;
+	cl_kernel gauge_force_tlsym_2;
+	cl_kernel gauge_force_tlsym_3;
+	cl_kernel gauge_force_tlsym_4;
+	cl_kernel gauge_force_tlsym_5;
+	cl_kernel gauge_force_tlsym_6;
+
+	const hardware::buffers::Matrix3x3 * gauge_force_tlsym_tmp;
 };
 
 }
