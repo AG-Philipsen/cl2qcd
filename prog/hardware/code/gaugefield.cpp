@@ -5,6 +5,7 @@
 #include "../../logger.hpp"
 #include "../../meta/util.hpp"
 #include "../device.hpp"
+#include "../buffers/3x3.hpp"
 
 using namespace std;
 
@@ -59,6 +60,9 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	}
 	if(check_SU3_for_SOA(device)) {
 		options << " -D GAUGEFIELD_STRIDE=" << get_SU3_buffer_stride(meta::get_vol4d(params) * NDIM, device);
+	}
+	if(check_Matrix3x3_for_SOA(device)) {
+		options << " -D GAUGEFIELD_3X3_STRIDE=" << get_Matrix3x3_buffer_stride(meta::get_vol4d(params) * NDIM, device);
 	}
 	options << " -I " << SOURCEDIR;
 
@@ -581,7 +585,7 @@ hardware::code::Gaugefield::Gaugefield(const meta::Inputparameters& params, hard
 	  stout_smear(0), rectangles(0), rectangles_reduction(0)
 {
 	fill_kernels();
-};
+}
 
 
 hardware::code::Gaugefield::~Gaugefield()

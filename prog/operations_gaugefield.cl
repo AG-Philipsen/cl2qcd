@@ -72,6 +72,54 @@ inline void put_matrixsu3(__global Matrixsu3StorageType  * const restrict field,
 	putSU3(field, idx, in);
 }
 
+inline Matrix3x3 get3x3(__global const Matrix3x3StorageType * const restrict in, const uint idx)
+{
+#ifdef _USE_SOA_
+	return (Matrix3x3) {
+		in[0 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[1 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[2 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[3 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[4 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[5 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[6 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[7 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[8 * GAUGEFIELD_3X3_STRIDE + idx]
+	};
+#else  // _USE_SOA_
+	//printf("%i\n", idx);
+	return in[idx];
+#endif
+}
+
+inline void put3x3(__global Matrix3x3StorageType * const restrict out, const uint idx, const Matrix3x3 val)
+{
+#ifdef _USE_SOA_
+	out[0 * GAUGEFIELD_3X3_STRIDE + idx] = val.e00;
+	out[1 * GAUGEFIELD_3X3_STRIDE + idx] = val.e01;
+	out[2 * GAUGEFIELD_3X3_STRIDE + idx] = val.e02;
+	out[3 * GAUGEFIELD_3X3_STRIDE + idx] = val.e10;
+	out[4 * GAUGEFIELD_3X3_STRIDE + idx] = val.e11;
+	out[5 * GAUGEFIELD_3X3_STRIDE + idx] = val.e12;
+	out[6 * GAUGEFIELD_3X3_STRIDE + idx] = val.e20;
+	out[7 * GAUGEFIELD_3X3_STRIDE + idx] = val.e21;
+	out[8 * GAUGEFIELD_3X3_STRIDE + idx] = val.e22;
+#else
+	out[idx] = val;
+#endif
+}
+
+inline Matrix3x3 get_matrix3x3(__global const Matrix3x3StorageType * const restrict field, const int spacepos, const int timepos, const int mu)
+{
+	uint idx = get_global_link_pos(mu, spacepos, timepos);
+	return get3x3(field, idx);
+}
+
+inline void put_matrix3x3(__global Matrix3x3StorageType  * const restrict field, const Matrix3x3 in, const int spacepos, const int timepos, const int mu)
+{
+	uint idx = get_global_link_pos(mu, spacepos, timepos);
+	put3x3(field, idx, in);
+}
 inline Matrixsu3 project_su3(const Matrixsu3 U)
 {
 

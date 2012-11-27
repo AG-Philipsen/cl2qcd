@@ -124,7 +124,25 @@ struct Matrixsu3 {
 	hmc_complex e21;
 	hmc_complex e22;
 };
+struct Matrix3x3 {
+	hmc_complex e00;
+	hmc_complex e01;
+	hmc_complex e02;
+	hmc_complex e10;
+	hmc_complex e11;
+	hmc_complex e12;
+	hmc_complex e20;
+	hmc_complex e21;
+	hmc_complex e22;
+};
 #endif // ifdef _INKERNEL_
+
+
+#ifdef _USE_SOA_
+typedef hmc_complex Matrix3x3StorageType;
+#else
+typedef Matrix3x3 Matrix3x3StorageType;
+#endif
 
 #ifdef _USE_SOA_
 typedef hmc_complex Matrixsu3StorageType;
