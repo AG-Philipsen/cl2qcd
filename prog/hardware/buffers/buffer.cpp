@@ -107,6 +107,7 @@ void hardware::buffers::Buffer::copyData(const Buffer* orig) const
 	}
 }
 
+#ifdef CL_VERSION_1_2
 void hardware::buffers::Buffer::clear() const
 {
 	if(sizeof(hmc_complex_zero) % bytes) {
@@ -122,3 +123,4 @@ void hardware::buffers::Buffer::clear() const
 		}
 	}
 }
+#endif
