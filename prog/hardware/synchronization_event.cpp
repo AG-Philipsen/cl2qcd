@@ -37,6 +37,7 @@ hardware::SynchronizationEvent& hardware::SynchronizationEvent::operator=(const 
 	if(err) {
 		throw OpenclException(err, "clRetainEvent", __FILE__, __LINE__);
 	}
+	return *this;
 }
 
 hardware::SynchronizationEvent::~SynchronizationEvent()
