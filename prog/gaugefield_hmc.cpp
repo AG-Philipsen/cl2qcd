@@ -130,33 +130,70 @@ void Gaugefield_hmc::md_update_gaugemomentum(hmc_float eps, usetimer * solvertim
 {
 	get_task_hmc(0)->set_zero_clmem_force_device();
 	calc_total_force(solvertimer);
+	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
 	return;
 }
 
 void Gaugefield_hmc::md_update_gaugemomentum_gauge(hmc_float eps)
 {
-	logger.debug() << "HMC:\tupdate gauge with " << eps;
 	get_task_hmc(0)->set_zero_clmem_force_device();
 	get_task_hmc(0)->calc_gauge_force();
+	if(logger.beDebug()) {
+	  hardware::buffers::Plain<hmc_float> force_tmp(1, get_task_hmc(0)->get_device());
+		auto gm_code = get_task_hmc(0)->get_device()->get_gaugemomentum_code();
+		hmc_float resid;
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(get_task_hmc(0)->get_clmem_force(), &force_tmp);
+		force_tmp.dump(&resid);
+		logger.debug() <<  "\tHMC [UP]:\tFORCE [GAUGE]:\t" << resid;
+
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
+	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
 	return;
 }
 
 void Gaugefield_hmc::md_update_gaugemomentum_fermion(hmc_float eps, usetimer * solvertimer, hmc_float kappa, hmc_float mubar)
 {
-	logger.debug() << "HMC:\tupdate fermion with " << eps;
 	get_task_hmc(0)->set_zero_clmem_force_device();
 	this->fermion_forces_call(solvertimer, kappa, mubar);
+	if(logger.beDebug()) {
+	  hardware::buffers::Plain<hmc_float> force_tmp(1, get_task_hmc(0)->get_device());
+		auto gm_code = get_task_hmc(0)->get_device()->get_gaugemomentum_code();
+		hmc_float resid;
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(get_task_hmc(0)->get_clmem_force(), &force_tmp);
+		force_tmp.dump(&resid);
+		logger.debug() <<  "\tHMC [UP]:\tFORCE [DET]:\t" << resid;
+
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
+	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
 	return;
 }
 
 void Gaugefield_hmc::md_update_gaugemomentum_detratio(hmc_float eps, usetimer * solvertimer)
 {
-	logger.debug() << "HMC:\tupdate detratio with " << eps;
 	get_task_hmc(0)->set_zero_clmem_force_device();
 	this->detratio_forces_call(solvertimer);
+	if(logger.beDebug()) {
+	  hardware::buffers::Plain<hmc_float> force_tmp(1, get_task_hmc(0)->get_device());
+		auto gm_code = get_task_hmc(0)->get_device()->get_gaugemomentum_code();
+		hmc_float resid;
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(get_task_hmc(0)->get_clmem_force(), &force_tmp);
+		force_tmp.dump(&resid);
+		logger.debug() <<  "\tHMC [UP]:\tFORCE [DETRAT]:\t" << resid;
+
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
+	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
 	return;
 }
@@ -233,7 +270,7 @@ for(auto gf: smeared_gfs) {
 
 void Gaugefield_hmc::md_update_gaugefield(hmc_float eps)
 {
-	logger.debug() << "HMC:\tupdate gf with " << eps;
+  logger.debug() << "\tHMC [UP]:\tupdate GF [" << eps <<"]";
 	get_task_hmc(0)->md_update_gaugefield_device(eps);
 	return;
 }
@@ -387,7 +424,7 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 				else md_update_gaugemomentum_gauge(deltaTau0);
 			}
 			if(l == n1 - 1 && n2 == 1) md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer, kappa_tmp, mubar_tmp);
-			else md_update_gaugemomentum_fermion(deltaTau1, solvertimer);
+			else md_update_gaugemomentum_fermion(deltaTau1, solvertimer, kappa_tmp, mubar_tmp);
 		}
 		if(n2 > 1) logger.debug() << "HMC:\t\t\tperform " << n2 - 1 << " intermediate steps " ;
 		for(int k = 1; k < n2; k++) {
