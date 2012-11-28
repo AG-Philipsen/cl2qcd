@@ -8,6 +8,8 @@ using namespace std;
 
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params);
 
+static bool use_multipass_gauge_force_tlsym(hardware::Device * device);
+
 static std::string collect_build_options(hardware::Device * device, const meta::Inputparameters& params)
 {
 	using namespace hardware::buffers;
@@ -22,6 +24,11 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 		options << " -D GAUGEMOMENTA_STRIDE=" << get_Gaugemomentum_buffer_stride(meta::get_vol4d(params) * NDIM, device);
 	}
 	return options.str();
+}
+
+static bool use_multipass_gauge_force_tlsym(hardware::Device * device)
+{
+	return (device->get_name() == "Tahiti");
 }
 
 void hardware::code::Molecular_Dynamics::fill_kernels()
@@ -39,7 +46,23 @@ void hardware::code::Molecular_Dynamics::fill_kernels()
 	gauge_force = createKernel("gauge_force") << basic_molecular_dynamics_code  << "force_gauge.cl";
 	if(meta::get_use_rectangles(get_parameters()) == true) {
 		//at the time of writing this kernel, the OpenCL compiler crashed the kernel using optimizations
-		gauge_force_tlsym = createKernel("gauge_force_tlsym") << basic_molecular_dynamics_code << "force_gauge_tlsym.cl";
+		if(gauge_force_tlsym_tmp) {
+			gauge_force_tlsym = 0;
+			gauge_force_tlsym_1 = createKernel("gauge_force_tlsym_multipass1_tpe") << basic_molecular_dynamics_code << "force_gauge_tlsym.cl";
+			gauge_force_tlsym_2 = createKernel("gauge_force_tlsym_multipass2_tpe") << basic_molecular_dynamics_code << "force_gauge_tlsym.cl";
+			gauge_force_tlsym_3 = createKernel("gauge_force_tlsym_multipass3_tpe") << basic_molecular_dynamics_code << "force_gauge_tlsym.cl";
+			gauge_force_tlsym_4 = createKernel("gauge_force_tlsym_multipass4_tpe") << basic_molecular_dynamics_code << "force_gauge_tlsym.cl";
+			gauge_force_tlsym_5 = createKernel("gauge_force_tlsym_multipass5_tpe") << basic_molecular_dynamics_code << "force_gauge_tlsym.cl";
+			gauge_force_tlsym_6 = createKernel("gauge_force_tlsym_multipass6_tpe") << basic_molecular_dynamics_code << "force_gauge_tlsym.cl";
+		} else {
+			gauge_force_tlsym = createKernel("gauge_force_tlsym") << basic_molecular_dynamics_code << "force_gauge_tlsym.cl";
+			gauge_force_tlsym_1 = 0;
+			gauge_force_tlsym_2 = 0;
+			gauge_force_tlsym_3 = 0;
+			gauge_force_tlsym_4 = 0;
+			gauge_force_tlsym_5 = 0;
+			gauge_force_tlsym_6 = 0;
+		}
 	}
 	if(get_parameters().get_use_smearing() == true) {
 		stout_smear_fermion_force = createKernel("stout_smear_fermion_force") << basic_molecular_dynamics_code << "force_fermion_stout_smear.cl";
@@ -64,8 +87,32 @@ void hardware::code::Molecular_Dynamics::clear_kernels()
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	clerr = clReleaseKernel(gauge_force);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	if(meta::get_use_rectangles(get_parameters()) == true) {
+	if(gauge_force_tlsym) {
 		clerr = clReleaseKernel(gauge_force_tlsym);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
+	if(gauge_force_tlsym_1) {
+		clerr = clReleaseKernel(gauge_force_tlsym_1);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
+	if(gauge_force_tlsym_2) {
+		clerr = clReleaseKernel(gauge_force_tlsym_2);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
+	if(gauge_force_tlsym_3) {
+		clerr = clReleaseKernel(gauge_force_tlsym_3);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
+	if(gauge_force_tlsym_4) {
+		clerr = clReleaseKernel(gauge_force_tlsym_4);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
+	if(gauge_force_tlsym_5) {
+		clerr = clReleaseKernel(gauge_force_tlsym_5);
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
+	}
+	if(gauge_force_tlsym_6) {
+		clerr = clReleaseKernel(gauge_force_tlsym_6);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 	if(get_parameters().get_use_smearing() == true) {
@@ -183,6 +230,12 @@ void hardware::code::Molecular_Dynamics::print_profiling(const std::string& file
 	Opencl_Module::print_profiling(filename, md_update_gaugemomenta);
 	Opencl_Module::print_profiling(filename, gauge_force);
 	Opencl_Module::print_profiling(filename, gauge_force_tlsym);
+	Opencl_Module::print_profiling(filename, gauge_force_tlsym_1);
+	Opencl_Module::print_profiling(filename, gauge_force_tlsym_2);
+	Opencl_Module::print_profiling(filename, gauge_force_tlsym_3);
+	Opencl_Module::print_profiling(filename, gauge_force_tlsym_4);
+	Opencl_Module::print_profiling(filename, gauge_force_tlsym_5);
+	Opencl_Module::print_profiling(filename, gauge_force_tlsym_6);
 	Opencl_Module::print_profiling(filename, fermion_force);
 	Opencl_Module::print_profiling(filename, fermion_force_eo);
 	Opencl_Module::print_profiling(filename, stout_smear_fermion_force);
@@ -262,18 +315,69 @@ void hardware::code::Molecular_Dynamics::gauge_force_device(const hardware::buff
 
 void hardware::code::Molecular_Dynamics::gauge_force_tlsym_device(const hardware::buffers::SU3 * gf, const hardware::buffers::Gaugemomentum * out)
 {
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(gauge_force_tlsym, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(gauge_force_tlsym, 0, sizeof(cl_mem), gf->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+	if(gauge_force_tlsym_tmp) {
+		// run multipass
+		size_t foo, ls; cl_uint bla;
+		size_t global_size = gauge_force_tlsym_tmp->get_elements();
 
-	clerr = clSetKernelArg(gauge_force_tlsym, 1, sizeof(cl_mem), out->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		this->get_work_sizes(gauge_force_tlsym_1, &ls, &foo, &bla);
+		int clerr = clSetKernelArg(gauge_force_tlsym_1, 0, sizeof(cl_mem), gf->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		clerr = clSetKernelArg(gauge_force_tlsym_1, 1, sizeof(cl_mem), gauge_force_tlsym_tmp->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		get_device()->enqueue_kernel(gauge_force_tlsym_1, global_size, ls);
 
-	get_device()->enqueue_kernel( gauge_force_tlsym , gs2, ls2);
+		this->get_work_sizes(gauge_force_tlsym_2, &ls, &foo, &bla);
+		clerr = clSetKernelArg(gauge_force_tlsym_2, 0, sizeof(cl_mem), gf->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		clerr = clSetKernelArg(gauge_force_tlsym_2, 1, sizeof(cl_mem), gauge_force_tlsym_tmp->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		get_device()->enqueue_kernel(gauge_force_tlsym_2, global_size, ls);
+
+		this->get_work_sizes(gauge_force_tlsym_3, &ls, &foo, &bla);
+		clerr = clSetKernelArg(gauge_force_tlsym_3, 0, sizeof(cl_mem), gf->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		clerr = clSetKernelArg(gauge_force_tlsym_3, 1, sizeof(cl_mem), gauge_force_tlsym_tmp->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		get_device()->enqueue_kernel(gauge_force_tlsym_3, global_size, ls);
+
+		this->get_work_sizes(gauge_force_tlsym_4, &ls, &foo, &bla);
+		clerr = clSetKernelArg(gauge_force_tlsym_4, 0, sizeof(cl_mem), gf->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		clerr = clSetKernelArg(gauge_force_tlsym_4, 1, sizeof(cl_mem), gauge_force_tlsym_tmp->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		get_device()->enqueue_kernel(gauge_force_tlsym_4, global_size, ls);
+
+		this->get_work_sizes(gauge_force_tlsym_5, &ls, &foo, &bla);
+		clerr = clSetKernelArg(gauge_force_tlsym_5, 0, sizeof(cl_mem), gf->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		clerr = clSetKernelArg(gauge_force_tlsym_5, 1, sizeof(cl_mem), gauge_force_tlsym_tmp->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		get_device()->enqueue_kernel(gauge_force_tlsym_5, global_size, ls);
+
+		this->get_work_sizes(gauge_force_tlsym_6, &ls, &foo, &bla);
+		clerr = clSetKernelArg(gauge_force_tlsym_6, 0, sizeof(cl_mem), gf->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		clerr = clSetKernelArg(gauge_force_tlsym_6, 1, sizeof(cl_mem), out->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		clerr = clSetKernelArg(gauge_force_tlsym_6, 2, sizeof(cl_mem), gauge_force_tlsym_tmp->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+		get_device()->enqueue_kernel(gauge_force_tlsym_6, global_size, ls);
+
+	} else {
+		//query work-sizes for kernel
+		size_t ls2, gs2;
+		cl_uint num_groups;
+		this->get_work_sizes(gauge_force_tlsym, &ls2, &gs2, &num_groups);
+		//set arguments
+		int clerr = clSetKernelArg(gauge_force_tlsym, 0, sizeof(cl_mem), gf->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+		clerr = clSetKernelArg(gauge_force_tlsym, 1, sizeof(cl_mem), out->get_cl_buffer());
+		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
+
+		get_device()->enqueue_kernel( gauge_force_tlsym , gs2, ls2);
+	}
 
 	if(logger.beDebug()) {
 		hardware::buffers::Plain<hmc_float> gauge_force_tlsym_tmp(1, get_device());
@@ -396,8 +500,8 @@ void hardware::code::Molecular_Dynamics::stout_smeared_fermion_force_device(std:
 }
 
 hardware::code::Molecular_Dynamics::Molecular_Dynamics(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device), md_update_gaugefield (0), md_update_gaugemomenta (0), gauge_force (0), gauge_force_tlsym (0), fermion_force (0), fermion_force_eo(0), stout_smear_fermion_force(0)
-
+	: Opencl_Module(params, device), md_update_gaugefield (0), md_update_gaugemomenta (0), gauge_force (0), gauge_force_tlsym (0), fermion_force (0), fermion_force_eo(0), stout_smear_fermion_force(0),
+	  gauge_force_tlsym_tmp(use_multipass_gauge_force_tlsym(device) ? new hardware::buffers::Matrix3x3(NDIM * meta::get_vol4d(params), device) : 0)
 {
 	fill_kernels();
 }
@@ -405,4 +509,8 @@ hardware::code::Molecular_Dynamics::Molecular_Dynamics(const meta::Inputparamete
 hardware::code::Molecular_Dynamics::~Molecular_Dynamics()
 {
 	clear_kernels();
+
+	if(gauge_force_tlsym_tmp) {
+		delete gauge_force_tlsym_tmp;
+	}
 }

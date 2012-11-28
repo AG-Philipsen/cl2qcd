@@ -72,6 +72,54 @@ inline void put_matrixsu3(__global Matrixsu3StorageType  * const restrict field,
 	putSU3(field, idx, in);
 }
 
+inline Matrix3x3 get3x3(__global const Matrix3x3StorageType * const restrict in, const uint idx)
+{
+#ifdef _USE_SOA_
+	return (Matrix3x3) {
+		in[0 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[1 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[2 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[3 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[4 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[5 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[6 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[7 * GAUGEFIELD_3X3_STRIDE + idx],
+		   in[8 * GAUGEFIELD_3X3_STRIDE + idx]
+	};
+#else  // _USE_SOA_
+	//printf("%i\n", idx);
+	return in[idx];
+#endif
+}
+
+inline void put3x3(__global Matrix3x3StorageType * const restrict out, const uint idx, const Matrix3x3 val)
+{
+#ifdef _USE_SOA_
+	out[0 * GAUGEFIELD_3X3_STRIDE + idx] = val.e00;
+	out[1 * GAUGEFIELD_3X3_STRIDE + idx] = val.e01;
+	out[2 * GAUGEFIELD_3X3_STRIDE + idx] = val.e02;
+	out[3 * GAUGEFIELD_3X3_STRIDE + idx] = val.e10;
+	out[4 * GAUGEFIELD_3X3_STRIDE + idx] = val.e11;
+	out[5 * GAUGEFIELD_3X3_STRIDE + idx] = val.e12;
+	out[6 * GAUGEFIELD_3X3_STRIDE + idx] = val.e20;
+	out[7 * GAUGEFIELD_3X3_STRIDE + idx] = val.e21;
+	out[8 * GAUGEFIELD_3X3_STRIDE + idx] = val.e22;
+#else
+	out[idx] = val;
+#endif
+}
+
+inline Matrix3x3 get_matrix3x3(__global const Matrix3x3StorageType * const restrict field, const int spacepos, const int timepos, const int mu)
+{
+	uint idx = get_global_link_pos(mu, spacepos, timepos);
+	return get3x3(field, idx);
+}
+
+inline void put_matrix3x3(__global Matrix3x3StorageType  * const restrict field, const Matrix3x3 in, const int spacepos, const int timepos, const int mu)
+{
+	uint idx = get_global_link_pos(mu, spacepos, timepos);
+	put3x3(field, idx, in);
+}
 inline Matrixsu3 project_su3(const Matrixsu3 U)
 {
 
@@ -502,12 +550,11 @@ inline void local_staple(Matrix3x3 * const restrict aggregate, __global const Ma
  *  6.  U_nu(x) * U_mu(x + nu) * U_mu(x + nu + mu) * Udagger_nu(x + mu + mu) * Udagger_mu(x + mu)
  *  ^+  U_mu(x + mu)  U_nu(x + mu + mu) Udagger_mu(x + nu + mu) Udagger_mu(x + nu) Udagger_nu(x)
  */
-inline Matrix3x3 local_rectangles_staple(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
+inline Matrix3x3 local_rectangles_staple_1(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
 {
 	int4 pos;
 	int4 pos2;
-	Matrix3x3 out = zero_matrix3x3();
-	Matrixsu3 tmp = zero_matrixsu3();
+	Matrixsu3 tmp;
 
 	//first ingredient
 	//1.  U_nu(x + mu) * U_nu(x + mu + nu) * Udagger_mu(x + nu + nu) * Udagger_nu(x + nu) * Udagger_nu(x)
@@ -550,7 +597,14 @@ inline Matrix3x3 local_rectangles_staple(__global const Matrixsu3StorageType * c
 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos.w, pos.z, nu) );
 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, n, t, nu) );
 
-	out = matrix_su3to3x3(tmp);
+	return matrix_su3to3x3(tmp);
+}
+
+inline Matrix3x3 local_rectangles_staple_2(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
+{
+	int4 pos;
+	int4 pos2;
+	Matrixsu3 tmp;
 
 	//second ingredient
 	//2.  U_mu(x + mu) * Udagger_nu(x - nu + mu + mu) Udagger_mu(x - nu + mu) Udagger_mu(x - nu) * U_nu(x - nu)
@@ -593,7 +647,14 @@ inline Matrix3x3 local_rectangles_staple(__global const Matrixsu3StorageType * c
 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos.w, pos.z, mu) );
 	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.w, pos.z, nu) );
 
-	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
+	return matrix_su3to3x3(tmp);
+}
+
+inline Matrix3x3 local_rectangles_staple_3(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
+{
+	int4 pos;
+	int4 pos2;
+	Matrixsu3 tmp;
 
 	//3. Udagger_nu(x - nu + mu) * Udagger_mu(x - nu) * Udagger_mu(x - mu - nu) * U_nu(x - mu - nu) * U_mu(x - mu)
 	//(x, y) = i - mu (call the site idx "x" "i" for now)
@@ -634,8 +695,14 @@ inline Matrix3x3 local_rectangles_staple(__global const Matrixsu3StorageType * c
 	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos2.y, pos2.x, nu) );
 	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.y, pos.x, mu) );
 
-	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
+	return matrix_su3to3x3(tmp);
+}
 
+inline Matrix3x3 local_rectangles_staple_4(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
+{
+	int4 pos;
+	int4 pos2;
+	Matrixsu3 tmp;
 
 	//4. Udagger_nu(x - nu + mu) * Udagger_nu(x - nu - nu + mu) * Udagger_mu(x - nu - nu) * Ud_nu(x - nu - nu) * U_nu(x - nu)
 	//(x, y) = i - nu (call the site idx "x" "i" for now)
@@ -676,7 +743,14 @@ inline Matrix3x3 local_rectangles_staple(__global const Matrixsu3StorageType * c
 	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.w, pos.z, nu) );
 	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.y, pos.x, nu) );
 
-	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
+	return matrix_su3to3x3(tmp);
+}
+
+inline Matrix3x3 local_rectangles_staple_5(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
+{
+	int4 pos;
+	int4 pos2;
+	Matrixsu3 tmp;
 
 	//5.    U_nu(x + mu) * Udagger_mu(x + nu) * Udagger_mu(x - mu + nu) * Udagger_nu(x - mu) * U_mu(x - mu)
 	//(x, y) = i - mu (call the site idx "x" "i" for now)
@@ -717,7 +791,14 @@ inline Matrix3x3 local_rectangles_staple(__global const Matrixsu3StorageType * c
 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos.y, pos.x, nu) );
 	tmp = multiply_matrixsu3(tmp, get_matrixsu3(field, pos.y, pos.x, mu) );
 
-	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
+	return matrix_su3to3x3(tmp);
+}
+
+inline Matrix3x3 local_rectangles_staple_6(__global const Matrixsu3StorageType * const restrict field, const int n, const int t, const int mu, const int nu )
+{
+	int4 pos;
+	int4 pos2;
+	Matrixsu3 tmp;
 
 	//6.  U_mu(x + mu)  U_nu(x + mu + mu) Udagger_mu(x + nu + mu) Udagger_mu(x + nu) Udagger_nu(x)
 	//(x, y) = i + mu (call the site idx "x" "i" for now)
@@ -758,9 +839,7 @@ inline Matrix3x3 local_rectangles_staple(__global const Matrixsu3StorageType * c
 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, pos.w, pos.z, mu) );
 	tmp = multiply_matrixsu3_dagger(tmp, get_matrixsu3(field, n, t, nu) );
 
-	out = add_matrix3x3 (out, matrix_su3to3x3(tmp) );
-
-	return out;
+	return matrix_su3to3x3(tmp);
 }
 
 inline Matrix3x3 calc_staple(__global const Matrixsu3StorageType * const restrict field, const int pos, const int t, const int mu_in)
@@ -813,7 +892,12 @@ inline Matrix3x3 calc_rectangles_staple(__global const Matrixsu3StorageType * co
 #endif
 	for(int i = 0; i < NDIM - 1 ; i++) {
 		int nu = (mu_in + i + 1) % NDIM;
-		staple = add_matrix3x3(staple,  local_rectangles_staple(field, pos, t, mu_in, nu ));
+		staple = add_matrix3x3(staple, local_rectangles_staple_1(field, pos, t, mu_in, nu ));
+		staple = add_matrix3x3(staple, local_rectangles_staple_2(field, pos, t, mu_in, nu ));
+		staple = add_matrix3x3(staple, local_rectangles_staple_3(field, pos, t, mu_in, nu ));
+		staple = add_matrix3x3(staple, local_rectangles_staple_4(field, pos, t, mu_in, nu ));
+		staple = add_matrix3x3(staple, local_rectangles_staple_5(field, pos, t, mu_in, nu ));
+		staple = add_matrix3x3(staple, local_rectangles_staple_6(field, pos, t, mu_in, nu ));
 	}
 
 	return staple;
