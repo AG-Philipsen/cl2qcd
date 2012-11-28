@@ -45,16 +45,6 @@ public:
 	void correlator_device(const cl_kernel correlator_kernel, const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator);
 
 	/**
-	 * Calculate chiral condensate <psibar psi> in the standard version on device.
-	 */
-	void pbp_std_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator);
-
-	/**
-	 * Calculate chiral condensate <psibar psi> in the twisted-mass one end trick version on device.
-	 */
-	void pbp_tm_one_end_trick_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator);
-
-	/**
 	 * Get kernel for correlator indicated by which
 	 * @param[in] which string that identifies the correlator (ps or sc, vx, vy, vz, ax, ay, az)
 	 * @return correlator_kernel

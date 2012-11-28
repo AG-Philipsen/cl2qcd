@@ -12,6 +12,12 @@ add_library(buffers
 	su3.cpp
 	spinor.cpp
 	gaugemomentum.cpp
+	3x3.cpp
+)
+target_link_libraries(buffers
+	hardware
+	code
+	optimal
 )
 
 #
@@ -24,3 +30,4 @@ add_unit_test(hardware::buffers::SU3 su3_test)
 add_unit_test(hardware::buffers::Plain plain_test)
 add_unit_test(hardware::buffers::Spinor spinor_test)
 add_unit_test(hardware::buffers::Gaugemomentum gaugemomentum_test)
+add_unit_test(hardware::buffers::Matrix3x3 3x3_test)

@@ -346,13 +346,13 @@ static void print_info_fermion(std::ostream * os, const meta::Inputparameters& p
 		*os  << "## Do NOT use even-odd preconditioning" << endl;
 	switch(params.get_solver()) {
 		case Inputparameters::cg:
-			*os << "## Use CG-solver for inversions" ;
+		  *os << "## Use CG-solver for inversions" << endl;
 			break;
 		case Inputparameters::bicgstab:
-			*os << "## Use BiCGStab for inversions";
+		  *os << "## Use BiCGStab for inversions" << endl;
 			break;
 		case Inputparameters::bicgstab_save:
-			*os << "## Use BiCGStab-SAVE for inversions";
+		  *os << "## Use BiCGStab-SAVE for inversions" << endl;
 			break;
 	}
 	*os << "## cgmax  = " << params.get_cgmax() << endl;
@@ -583,20 +583,20 @@ void meta::print_info_hmc(const char* progname, std::ostream* os, const Inputpar
 			*os << "## mu_mp     = " << params.get_mu_mp()  << '\n';
 		}
 		if(params.get_fermact_mp() == Inputparameters::clover) {
-			*os <<  "## mp action: clover Wilson";
+		  *os <<  "## mp action: clover Wilson" << endl;
 			*os << "## kappa_mp  = " << params.get_kappa_mp()  << '\n';
 			*os << "## csw_mp   = " << params.get_csw_mp()  << '\n';
 		}
 		*os << "##"  << endl;
 		switch(params.get_solver_mp()) {
 			case Inputparameters::cg:
-				*os << "## Use CG-solver for mp inversions" ;
+			  *os << "## Use CG-solver for mp inversions" << endl;
 				break;
 			case Inputparameters::bicgstab:
-				*os << "## Use BiCGStab for mp inversions";
+			  *os << "## Use BiCGStab for mp inversions" << endl;
 				break;
 			case Inputparameters::bicgstab_save:
-				*os << "## Use BiCGStab-SAVE for mp inversions";
+			  *os << "## Use BiCGStab-SAVE for mp inversions" << endl;
 				break;
 		}
 		*os << "## cgmax_mp  = " << params.get_cgmax_mp()  << '\n';

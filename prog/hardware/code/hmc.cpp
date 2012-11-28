@@ -206,6 +206,7 @@ void hardware::code::Hmc::md_update_spinorfield_mp(usetimer * solvertimer, const
 //this function takes to args kappa and mubar because one has to use it with different masses when mass-prec is used and when not
 void hardware::code::Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float kappa, hmc_float mubar)
 {
+	logger.debug() << "\t\tcalc fermion_force...";
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
 	int converged = -1;
@@ -447,6 +448,7 @@ void hardware::code::Hmc::calc_fermion_force(usetimer * solvertimer, hmc_float k
 
 void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, const hardware::buffers::SU3 * gaugefield)
 {
+	logger.debug() << "\t\tcalc fermion_force_detratio...";
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
 
@@ -471,7 +473,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		//CP: Init tmp spinorfield
 		hardware::buffers::Spinor sf_eo_tmp(clmem_phi_eo.get_elements(), get_device());
 		//the source is now Q_2^+ phi = sf_eo_tmp
-		fermion_code->Qplus_eo (get_clmem_phi_eo(), &sf_eo_tmp , gaugefield, kappa2, mubar2);
+		fermion_code->Qplus_eo (get_clmem_phi_mp_eo(), &sf_eo_tmp , gaugefield, kappa2, mubar2);
 		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			/**
 			 * The first inversion calculates
@@ -490,7 +492,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 			spinor_code->set_eoprec_spinorfield_cold_device(fermion_code->get_inout_eo());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\t\t\tinv. field before inversion ");
-			converged = fermion_code->cg_eo(hardware::code::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->cg_eo(hardware::code::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, gaugefield, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -502,7 +504,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 			 *  Y_even = (Qminus_eo) X_even = (Qminus_eo) (Qplusminus_eo)^-1 sf_eo_tmp =
 			 *    = (Qplus_eo)^-1 Q_2^+ psi
 			 */
-			fermion_code->Qminus_eo(fermion_code->get_inout_eo(), &clmem_phi_inv_eo, &new_u, kappa, mubar);
+			fermion_code->Qminus_eo(fermion_code->get_inout_eo(), &clmem_phi_inv_eo, gaugefield, kappa, mubar);
 		} else {
 			///@todo if wanted, solvertimer has to be used here..
 			//logger.debug() << "\t\tcalc fermion force ingredients using bicgstab with eo.";
@@ -526,7 +528,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 
 			//if(logger.beDebug()) fermion_code->print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field before inversion ");
 			//if(logger.beDebug()) print_info_inv_field(get_clmem_phi_eo(), true, "\t\t\tsource before inversion ");
-			converged = fermion_code->bicgstab_eo(hardware::code::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->bicgstab_eo(hardware::code::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, gaugefield, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -552,7 +554,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 
 			//if(logger.beDebug()) print_info_inv_field(get_inout_eo(), true, "\t\t\tinv. field before inversion ");
 			//if(logger.beDebug()) print_info_inv_field(get_source_even(), true, "\t\t\tsource before inversion ");
-			converged = fermion_code->bicgstab_eo(hardware::code::Qminus_eo(fermion_code), fermion_code->get_inout_eo(), fermion_code->get_source_even(), &new_u, get_parameters().get_force_prec(), kappa, mubar);
+			converged = fermion_code->bicgstab_eo(hardware::code::Qminus_eo(fermion_code), fermion_code->get_inout_eo(), fermion_code->get_source_even(), gaugefield, get_parameters().get_force_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -569,33 +571,32 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		 */
 
 		/** @fixme below usages of dslash should work, but only because we use bicgstab above
-		proper implementation needs to make sure this is always the case */
+		proper implementation needs to make sure this is always the case 
+		CP: tmp1 and tmp2 are initialized independently of bicgstab as far as I know! */
 
 		///@NOTE the following calculations could also go in a new function for convenience
 		//calculate X_odd
-		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_inout, since
-		//  this is used as a default in the force-function.
+		//therefore, sf_eo_tmp is used as intermediate state. 
 		if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
-			fermion_code->dslash_eo_device(fermion_code->get_inout_eo(), fermion_code->get_tmp_eo_1(), &new_u, ODD);
-			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_1(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
+			fermion_code->dslash_eo_device(fermion_code->get_inout_eo(), fermion_code->get_tmp_eo_1(), gaugefield, ODD);
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_1(), fermion_code->get_clmem_minusone(), &sf_eo_tmp);
 		} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
-			fermion_code->dslash_eo_device(fermion_code->get_inout_eo(), fermion_code->get_tmp_eo_1(), &new_u, ODD);
+			fermion_code->dslash_eo_device(fermion_code->get_inout_eo(), fermion_code->get_tmp_eo_1(), gaugefield, ODD);
 			fermion_code->M_tm_inverse_sitediagonal_minus_device(fermion_code->get_tmp_eo_1(), fermion_code->get_tmp_eo_2());
-			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), &sf_eo_tmp);
 		}
 
 		//logger.debug() << "\t\tcalc eo fermion_force F(Y_even, X_odd)...";
-		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, clmem_tmp_eo_1)
-		fermion_force_eo_device(&clmem_phi_inv_eo,  fermion_code->get_tmp_eo_1(), EVEN, kappa);
+		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, sf_eo_tmp)
+		fermion_force_eo_device(&clmem_phi_inv_eo,  &sf_eo_tmp, EVEN, kappa);
 
 		//calculate Y_odd
-		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
-		//  this is used as a default in the force-function.
+		//therefore, clmem_tmp_eo_1 is used as intermediate state. 
 		if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
-			fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), &new_u, ODD);
+			fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), gaugefield, ODD);
 			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_1(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
-			fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), &new_u, ODD);
+			fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), gaugefield, ODD);
 			fermion_code->M_tm_inverse_sitediagonal_device(fermion_code->get_tmp_eo_1(), fermion_code->get_tmp_eo_2());
 			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		}
@@ -610,23 +611,22 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		 */
 
 		//Y is not needed anymore, therefore use clmem_phi_inv_eo to store -phi
-		spinor_code->sax_eoprec_device(get_clmem_phi_eo(), fermion_code->get_clmem_minusone(), &clmem_phi_inv_eo);
+		spinor_code->sax_eoprec_device(get_clmem_phi_mp_eo(), fermion_code->get_clmem_minusone(), &clmem_phi_inv_eo);
 
 		//logger.debug() << "\t\tcalc eo fermion_force F(Y_even, X_odd)...";
-		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, clmem_tmp_eo_1)
-		fermion_force_eo_device(&clmem_phi_inv_eo,  fermion_code->get_tmp_eo_1(), EVEN, kappa2);
+		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, sf_eo_tmp)
+		fermion_force_eo_device(&clmem_phi_inv_eo,  &sf_eo_tmp, EVEN, kappa2);
 
 		//calculate phi_odd
 		//this works in the same way as with Y above, since -phi_even is saved in the same buffer as Y_even
-		//therefore, clmem_tmp_eo_1 is used as intermediate state. The result is saved in clmem_phi_inv, since
-		//  this is used as a default in the force-function.
+		//therefore, clmem_tmp_eo_1 is used as intermediate state. 
 		if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
-			fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), &new_u, ODD);
+		  fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), gaugefield, ODD, kappa2);
 			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_1(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
-			fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), &new_u, ODD);
-			fermion_code->M_tm_inverse_sitediagonal_device(fermion_code->get_tmp_eo_1(), fermion_code->get_tmp_eo_2());
-			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
+		  fermion_code->dslash_eo_device(&clmem_phi_inv_eo, fermion_code->get_tmp_eo_1(), gaugefield, ODD, kappa2);
+		  fermion_code->M_tm_inverse_sitediagonal_device(fermion_code->get_tmp_eo_1(), fermion_code->get_tmp_eo_2(), mubar2);
+		  spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), fermion_code->get_tmp_eo_1());
 		}
 
 		//logger.debug() << "\t\tcalc eoprec fermion_force F(Y_odd, X_even)...";
@@ -637,7 +637,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		hardware::buffers::Plain<spinor> sf_tmp(clmem_phi.get_elements(), get_device());
 		//the source is already set, it is Dpsi, where psi is the initial gaussian spinorfield
 		//the source is now Q_2^+ phi = sf_tmp
-		fermion_code->Qplus (get_clmem_phi(), &sf_tmp , gaugefield, kappa2, mubar2);
+		fermion_code->Qplus (get_clmem_phi_mp(), &sf_tmp , gaugefield, kappa2, mubar2);
 		if(get_parameters().get_solver() == meta::Inputparameters::cg) {
 			/**
 			 * The first inversion calculates
@@ -657,7 +657,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			converged = fermion_code->cg(hardware::code::QplusQminus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_force_prec());
+			converged = fermion_code->cg(hardware::code::QplusQminus(fermion_code), fermion_code->get_inout(), &sf_tmp, gaugefield, get_parameters().get_force_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -669,7 +669,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 			 *  Y = (Qminus) X = (Qminus) (Qplusminus)^-1 sf_tmp =
 			 *    = (Qplus)^-1 sf_tmp
 			 */
-			fermion_code->Qminus(fermion_code->get_inout(), &clmem_phi_inv, &new_u);
+			fermion_code->Qminus(fermion_code->get_inout(), &clmem_phi_inv, gaugefield);
 
 		} else  {
 			logger.debug() << "\t\tcalc fermion force ingredients using bicgstab without eo";
@@ -693,7 +693,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
 			//here, the "normal" solver can be used since the inversion is of the same structure as in the inverter
-			converged = fermion_code->bicgstab(hardware::code::Qplus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_force_prec());
+			converged = fermion_code->bicgstab(hardware::code::Qplus(fermion_code), fermion_code->get_inout(), &sf_tmp, gaugefield, get_parameters().get_force_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -720,7 +720,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
-			converged = fermion_code->bicgstab(hardware::code::Qminus(fermion_code), fermion_code->get_inout(), fermion_code->get_source(), &new_u, get_parameters().get_force_prec());
+			converged = fermion_code->bicgstab(hardware::code::Qminus(fermion_code), fermion_code->get_inout(), fermion_code->get_source(), gaugefield, get_parameters().get_force_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -741,7 +741,7 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		 */
 
 		//Y is not needed anymore, therefore use clmem_phi_inv_eo to store -phi
-		spinor_code->sax_device(get_clmem_phi(), fermion_code->get_clmem_minusone(), &clmem_phi_inv);
+		spinor_code->sax_device(get_clmem_phi_mp(), fermion_code->get_clmem_minusone(), &clmem_phi_inv);
 
 		fermion_force_device(&clmem_phi_inv, fermion_code->get_inout(), kappa2);
 	}
@@ -757,12 +757,12 @@ void hardware::code::Hmc::calc_gauge_force()
 	}
 }
 
-hmc_float hardware::code::Hmc::calc_s_fermion()
+hmc_float hardware::code::Hmc::calc_s_fermion(const hardware::buffers::SU3 * gaugefield, hmc_float kappa, hmc_float mubar)
 {
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
 
-	logger.debug() << "calc final fermion energy...";
+	logger.debug() << "HMC:\tcalc final fermion energy...";
 	//this function essentially performs the same steps as in the force-calculation, but with higher precision.
 	//  therefore, comments are deleted here...
 	//  Furthermore, in the bicgstab-case, the second inversions are not needed
@@ -775,14 +775,14 @@ hmc_float hardware::code::Hmc::calc_s_fermion()
 			spinor_code->set_eoprec_spinorfield_cold_device(fermion_code->get_inout_eo());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field before inversion ");
-			converged = fermion_code->cg_eo(hardware::code::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), get_clmem_phi_eo(), &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->cg_eo(hardware::code::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), get_clmem_phi_eo(), &new_u, get_parameters().get_solver_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field after inversion ");
 
-			fermion_code->Qminus_eo(fermion_code->get_inout_eo(), &clmem_phi_inv_eo, &new_u);
+			fermion_code->Qminus_eo(fermion_code->get_inout_eo(), &clmem_phi_inv_eo, &new_u, kappa, mubar);
 		} else {
 			logger.debug() << "\t\t\tstart solver";
 
@@ -794,7 +794,7 @@ hmc_float hardware::code::Hmc::calc_s_fermion()
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field before inversion ");
 			if(logger.beDebug()) fermion_code->print_info_inv_field(get_clmem_phi_eo(), true, "\tsource before inversion ");
-			converged = fermion_code->bicgstab_eo(hardware::code::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), get_clmem_phi_eo(), &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->bicgstab_eo(hardware::code::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), get_clmem_phi_eo(), &new_u, get_parameters().get_solver_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -814,14 +814,14 @@ hmc_float hardware::code::Hmc::calc_s_fermion()
 			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
-			converged = fermion_code->cg(hardware::code::QplusQminus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->cg(hardware::code::QplusQminus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_solver_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field after inversion ");
 
-			fermion_code->Qminus(fermion_code->get_inout(), &clmem_phi_inv, &new_u);
+			fermion_code->Qminus(fermion_code->get_inout(), &clmem_phi_inv, &new_u, kappa, mubar);
 
 		} else  {
 
@@ -833,7 +833,7 @@ hmc_float hardware::code::Hmc::calc_s_fermion()
 			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
-			converged = fermion_code->bicgstab(hardware::code::Qplus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->bicgstab(hardware::code::Qplus(fermion_code), fermion_code->get_inout(), get_clmem_phi(), &new_u, get_parameters().get_solver_prec(), kappa, mubar);
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -860,7 +860,7 @@ hmc_float hardware::code::Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * 
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
 
-	logger.debug() << "calc final fermion energy...";
+	logger.debug() << "HMC:\tcalc final fermion energy...";
 	//this function essentially performs the same steps as in the non mass-prec case, however, one has to apply one more matrix multiplication
 	//  therefore, comments are deleted here...
 	//  Furthermore, in the bicgstab-case, the second inversions are not needed
@@ -876,14 +876,14 @@ hmc_float hardware::code::Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * 
 			spinor_code->set_eoprec_spinorfield_cold_device(fermion_code->get_inout_eo());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field before inversion ");
-			converged = fermion_code->cg_eo(hardware::code::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->cg_eo(hardware::code::QplusQminus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, gaugefield, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field after inversion ");
 
-			fermion_code->Qminus_eo(fermion_code->get_inout_eo(), &clmem_phi_inv_eo, &new_u);
+			fermion_code->Qminus_eo(fermion_code->get_inout_eo(), &clmem_phi_inv_eo, gaugefield);
 		} else {
 			logger.debug() << "\t\t\tstart solver";
 
@@ -895,7 +895,7 @@ hmc_float hardware::code::Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * 
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout_eo(), true, "\tinv. field before inversion ");
 			if(logger.beDebug()) fermion_code->print_info_inv_field(&sf_eo_tmp, true, "\tsource before inversion ");
-			converged = fermion_code->bicgstab_eo(hardware::code::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->bicgstab_eo(hardware::code::Qplus_eo(fermion_code), fermion_code->get_inout_eo(), &sf_eo_tmp, gaugefield, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -920,14 +920,14 @@ hmc_float hardware::code::Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * 
 			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
-			converged = fermion_code->cg(hardware::code::QplusQminus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->cg(hardware::code::QplusQminus(fermion_code), fermion_code->get_inout(), &sf_tmp, gaugefield, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
 			} else logger.debug() << "\t\t\tsolver solved in " << converged << " iterations!";
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field after inversion ");
 
-			fermion_code->Qminus(fermion_code->get_inout(), &clmem_phi_inv, &new_u);
+			fermion_code->Qminus(fermion_code->get_inout(), &clmem_phi_inv, gaugefield);
 
 		} else  {
 
@@ -939,7 +939,7 @@ hmc_float hardware::code::Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * 
 			spinor_code->set_spinorfield_cold_device(fermion_code->get_inout());
 
 			if(logger.beDebug()) fermion_code->print_info_inv_field(fermion_code->get_inout(), false, "\tinv. field before inversion ");
-			converged = fermion_code->bicgstab(hardware::code::Qplus(fermion_code), fermion_code->get_inout(), &sf_tmp, &new_u, get_parameters().get_solver_prec());
+			converged = fermion_code->bicgstab(hardware::code::Qplus(fermion_code), fermion_code->get_inout(), &sf_tmp, gaugefield, get_parameters().get_solver_prec());
 			if (converged < 0) {
 				if(converged == -1) logger.fatal() << "\t\t\tsolver did not solve!!";
 				else logger.fatal() << "\t\t\tsolver got stuck after " << abs(converged) << " iterations!!";
@@ -968,7 +968,7 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 	auto gm_code = get_device()->get_gaugemomentum_code();
 
 	//Calc Hamiltonian
-	logger.debug() << "Calculate Hamiltonian";
+	logger.debug() << "HMC:\tCalculate Hamiltonian";
 	hmc_float deltaH = 0.;
 	hmc_float s_old = 0.;
 	hmc_float s_new = 0.;
@@ -1001,9 +1001,9 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 		s_new = -(plaq_new) * beta / factor;
 	}
 
-	logger.debug() << "\tS_gauge(old field) = " << setprecision(10) << s_old;
-	logger.debug() << "\tS_gauge(new field) = " << setprecision(10) << s_new;
-	logger.info() << "\tdeltaS_gauge = " << setprecision(10) << deltaH;
+	logger.debug() << "HMC:\tS_gauge(old field) = " << setprecision(10) << s_old;
+	logger.debug() << "HMC:\tS_gauge(new field) = " << setprecision(10) << s_new;
+	logger.info()  << "HMC:\tdeltaS_gauge = " << setprecision(10) << deltaH;
 
 	//Gaugemomentum-Part
 	hmc_float p2, new_p2;
@@ -1014,33 +1014,51 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 	//the energy is half the squarenorm
 	deltaH += 0.5 * (p2 - new_p2);
 
-	logger.debug() << "\tS_gaugemom(old field) = " << setprecision(10) << 0.5 * p2;
-	logger.debug() << "\tS_gaugemom(new field) = " << setprecision(10) << 0.5 * new_p2;
-	logger.info() << "\tdeltaS_gaugemom = " << setprecision(10) << 0.5 * (p2 - new_p2);
+	logger.debug() << "HMC:\tS_gaugemom(old field) = " << setprecision(10) << 0.5 * p2;
+	logger.debug() << "HMC:\tS_gaugemom(new field) = " << setprecision(10) << 0.5 * new_p2;
+	logger.info()  << "HMC:\tdeltaS_gaugemom = " << setprecision(10) << 0.5 * (p2 - new_p2);
 
 	//Fermion-Part:
 	if(! get_parameters().get_use_gauge_only() ) {
-		hmc_float spinor_energy_init, s_fermion_final;
-		//initial energy has been computed in the beginning...
-		clmem_s_fermion_init.dump(&spinor_energy_init);
-		// sum_links phi*_i (M^+M)_ij^-1 phi_j
-		s_fermion_final = calc_s_fermion();
-		deltaH += spinor_energy_init - s_fermion_final;
-
-		logger.debug() << "\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
-		logger.debug() << "\tS_ferm(new field) = " << setprecision(10) << s_fermion_final;
-		logger.info() << "\tdeltaS_ferm = " << spinor_energy_init - s_fermion_final;
 		if( get_parameters().get_use_mp() ) {
-			hmc_float spinor_energy_mp_init, s_fermion_mp_final;
-			//initial energy has been computed in the beginning...
-			clmem_s_fermion_mp_init.dump(&spinor_energy_mp_init);
-			// sum_links phi*_i (M^+M)_ij^-1 phi_j
-			s_fermion_mp_final = calc_s_fermion_mp(gaugefield);
-			deltaH += spinor_energy_mp_init - s_fermion_mp_final;
+		  //in this case one has contributions from det(m_light/m_heavy) and det(m_heavy)
+		  // det(m_heavy)
+		  hmc_float spinor_energy_init, s_fermion_final;
+		  //initial energy has been computed in the beginning...
+		  clmem_s_fermion_init.dump(&spinor_energy_init);
+		  // sum_links phi*_i (M^+M(heavy))_ij^-1 phi_j
+		  s_fermion_final = calc_s_fermion(&new_u, get_parameters().get_kappa_mp(),  meta::get_mubar_mp(get_parameters()));
+		  deltaH += spinor_energy_init - s_fermion_final;
 
-			logger.debug() << "\tS_ferm_mp(old field) = " << setprecision(10) <<  spinor_energy_mp_init;
-			logger.debug() << "\tS_ferm_mp(new field) = " << setprecision(10) << s_fermion_mp_final;
-			logger.info() << "\tdeltaS_ferm_mp = " << spinor_energy_init - s_fermion_mp_final;
+		  logger.debug() << "HMC:\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
+		  logger.debug() << "HMC:\tS_ferm(new field) = " << setprecision(10) << s_fermion_final;
+		  logger.info() <<  "HMC:\tdeltaS_ferm = " << spinor_energy_init - s_fermion_final;
+
+		  // det(m_light/m_heavy)
+		  hmc_float spinor_energy_mp_init, s_fermion_mp_final;
+		  //initial energy has been computed in the beginning...
+		  clmem_s_fermion_mp_init.dump(&spinor_energy_mp_init);
+		  // sum_links phi*_i (M^+M(light) / M^+M(heavy)_ij^-1 phi_j
+		  s_fermion_mp_final = calc_s_fermion_mp(&new_u);
+		  deltaH += spinor_energy_mp_init - s_fermion_mp_final;
+		  
+		  logger.debug() << "HMC:\tS_ferm_mp(old field) = " << setprecision(10) <<  spinor_energy_mp_init;
+		  logger.debug() << "HMC:\tS_ferm_mp(new field) = " << setprecision(10) << s_fermion_mp_final;
+		  logger.info() <<  "HMC:\tdeltaS_ferm_mp = " << spinor_energy_mp_init - s_fermion_mp_final;
+		}
+		else {
+		  //in this case one has contributions from det(m_light)
+		  // det(m_light)
+		  hmc_float spinor_energy_init, s_fermion_final;
+		  //initial energy has been computed in the beginning...
+		  clmem_s_fermion_init.dump(&spinor_energy_init);
+		  // sum_links phi*_i (M^+M)_ij^-1 phi_j
+		  s_fermion_final = calc_s_fermion(&new_u);
+		  deltaH += spinor_energy_init - s_fermion_final;
+
+		  logger.debug() << "HMC:\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
+		  logger.debug() << "HMC:\tS_ferm(new field) = " << setprecision(10) << s_fermion_final;
+		  logger.info() <<  "HMC:\tdeltaS_ferm = " << spinor_energy_init - s_fermion_final;
 		}
 	}
 	//Metropolis-Part
@@ -1050,7 +1068,7 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 	} else {
 		compare_prob = 1.0;
 	}
-	logger.info() << "\tdeltaH = " << deltaH << "\tAcc-Prop = " << compare_prob;
+	logger.info() << "HMC:\tdeltaH = " << deltaH << "\tAcc-Prop = " << compare_prob;
 	hmc_observables tmp;
 	if(rnd <= compare_prob) {
 		tmp.accept = 1;
@@ -1128,5 +1146,6 @@ void hardware::code::Hmc::fermion_force_eo_device(const hardware::buffers::Spino
 {
 	using namespace hardware::buffers;
 	auto mol_dyn_code = get_device()->get_molecular_dynamics_code();
+
 	mol_dyn_code->fermion_force_eo_device(Y, X, &new_u, &clmem_force, evenodd, kappa);
 }

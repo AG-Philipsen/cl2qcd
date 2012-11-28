@@ -90,8 +90,9 @@ public:
 	/**
 	 * Calculate 2 flavour chiral condesate from private solution_buffer and store it to a file
 	 * @param[in] corr_fn filename
+	 * @param[in] number number of gaugefield configuration
 	 */
-	void flavour_doublet_chiral_condensate(std::string pbp_fn);
+	void flavour_doublet_chiral_condensate(std::string pbp_fn, int number);
 
 	// get methods
 	/**

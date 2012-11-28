@@ -10,6 +10,7 @@ add_library(hardware
 	system.cpp
 	device.cpp
 	profiling_data.cpp
+	synchronization_event.cpp
 )
 target_link_libraries(hardware optimal)
 add_modules(hardware
@@ -24,3 +25,4 @@ add_modules(hardware
 add_unit_test(hardware::System system_test)
 add_unit_test(hardware::Device device_test)
 add_unit_test(hardware::ProfilingData profiling_data_test)
+add_unit_test(hardware::SynchronizationEvent synchronization_event_test)

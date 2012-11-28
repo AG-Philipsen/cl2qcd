@@ -151,6 +151,11 @@ private:
 
 	//merged kernels
 	cl_kernel saxpy_AND_squarenorm_eo;
+
+	/**
+	 * @todo usage of this buffer is dangerous and should probably be semaphored
+	 */
+	const hardware::buffers::Plain<hmc_complex> * scalar_product_buf;
 };
 
 }

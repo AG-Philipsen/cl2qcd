@@ -345,30 +345,101 @@ void Gaugefield_inverter::create_sources()
   }
 }
 
-void Gaugefield_inverter::flavour_doublet_chiral_condensate(std::string pbp_fn){
+void Gaugefield_inverter::flavour_doublet_chiral_condensate(std::string pbp_fn, int number){
 	using namespace std;
 	using namespace hardware::buffers;
 
-	logger.debug() << "init buffers for chiral condensate calculation...";
-	const hardware::buffers::Plain<spinor> clmem_corr(get_parameters().get_num_sources() * meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
-	//for now, make sure clmem_corr is properly filled; maybe later we can increase performance a bit by playing with this...
-	clmem_corr.load(solution_buffer);
-
-	//this buffer is only needed if sources other than pointsources have been used.
-	hardware::buffers::Plain<spinor> * clmem_sources;
-	if(get_parameters().get_sourcetype() != meta::Inputparameters::point ){
-	  clmem_sources = new hardware::buffers::Plain<spinor>(get_parameters().get_num_sources() * meta::get_vol4d(get_parameters()), get_task_correlator()->get_device());
-	  clmem_sources->load(source_buffer);
-	}
-
-	const Plain<hmc_float> result_pbp(1, get_task_correlator()->get_device());
-
+	hmc_complex host_result = {0., 0.};
 	if(get_parameters().get_pbp_version() == meta::Inputparameters::std){
-	  get_task_correlator()->pbp_std_device(&clmem_corr, clmem_sources, &result_pbp);	
+	  /**
+	   * In the pure Wilson case one can evaluate <pbp> with stochastic estimators according to:
+	   * <pbp> = <ubu + dbd> = 2<ubu> = 2 Tr_(space, colour, dirac) ( D^-1 )
+	   auto spinor_code = solver->get_device()->get_spinor_code(); *       = lim_r->inf 2/r (Xi_r, Phi_r)
+	   * where the estimators satisfy
+	   * D^-1(x,y)_(a,b, A,B) = lim_r->inf Phi_r(x)_a,A (Xi_r(y)_b,B)^dagger
+	   * and Phi fulfills
+	   * D Phi = Xi
+	   * (X,Y) denotes the normal scalar product
+	   * In the twisted-mass case one can evaluate <pbp> with stochastic estimators similar to the pure wilson case.
+	   * However, one first has to switch to the twisted basis:
+	   * <pbp> -> <chibar i gamma_5 tau_3 chi>
+	   *       = <ub i gamma_5 u> - <db i gamma_5 d>
+	   *       = Tr( i gamma_5 (D^-1_u - D^-1_d ) )
+	   *       = Tr( i gamma_5 (D^-1_u - gamma_5 D^-1_u^dagger gamma_5) )
+	   *       = Tr( i gamma_5 (D^-1_u -  D^-1_u^dagger ) )
+	   *       = 2 Im Tr ( gamma_5 D^-1_u)
+	   *       = lim_r->inf 2/r  (gamma_5 Xi_r, Phi_r)
+	   * NOTE: The basic difference compared to the pure Wilson case is only the gamma_5 and that one takes the imaginary part!
+	   */
+	  auto spinor_code = get_task_solver()->get_device()->get_spinor_code();
+	  auto fermion_code = get_task_solver()->get_device()->get_fermion_code();
+	  // Need 2 spinors at once..
+	  logger.debug() << "init buffers for chiral condensate calculation...";
+	  const hardware::buffers::Plain<spinor> clmem_phi(meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
+	  const hardware::buffers::Plain<spinor> clmem_xi(meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
+	  const Plain<hmc_complex> result_pbp2(1, get_task_correlator()->get_device());
+	  for(int i = 0; i < get_parameters().get_num_sources(); i++){
+	    clmem_phi.load(&solution_buffer[i* meta::get_spinorfieldsize(get_parameters())]);
+	    clmem_xi.load(&source_buffer[i* meta::get_spinorfieldsize(get_parameters())]);
+	    if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass){
+	      fermion_code->gamma5_device(&clmem_xi);
+	    }
+	    spinor_code->set_complex_to_scalar_product_device(&clmem_xi, &clmem_phi, &result_pbp2);
+	    hmc_complex host_tmp;
+	    result_pbp2.dump(&host_tmp);
+	    if(get_parameters().get_fermact() == meta::Inputparameters::wilson){
+	      host_result.re += host_tmp.re;
+              host_result.im += host_tmp.im;
+	    }
+	    else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass){
+	      //NOTE: Here I just swap the assignments
+	      host_result.re += host_tmp.im;
+	      host_result.im += host_tmp.re;
+	    }
+	  }
+	  //Normalization: The 2/r from above plus 1/VOL4D
+	  hmc_float norm = 2./get_parameters().get_num_sources() / meta::get_vol4d(get_parameters());
+	  host_result.re *= norm;
+	  host_result.im *= norm;
 	}
-	if(get_parameters().get_pbp_version() == meta::Inputparameters::tm_one_end_trick){
-	  get_task_correlator()->pbp_tm_one_end_trick_device(&clmem_corr, clmem_sources, &result_pbp);	
+	if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass && get_parameters().get_pbp_version() == meta::Inputparameters::tm_one_end_trick ){
+	  /**
+	   * For twisted-mass fermions one can also employ the one-end trick, which origins from
+	   * D_d - D_u = - 4 i kappa amu gamma_5 <-> D^-1_u - D^-1_d = - 4 i kappa amu gamma_5 (D^-1_u)^dagger D^-1_u
+	   * With this, the chiral condensate is:
+	   * <pbp> = ... = Tr( i gamma_5 (D^-1_u - D^-1_d ) )
+	   *       = - 4 kappa amu lim_r->inf 1/R (Phi_r, Phi_r)
+	   * NOTE: Here one only needs Phi...
+	   */
+	  auto spinor_code = get_task_solver()->get_device()->get_spinor_code();
+	  logger.debug() << "init buffers for chiral condensate calculation...";
+	  const hardware::buffers::Plain<spinor> clmem_phi(meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
+	  const Plain<hmc_float> result_pbp2(1, get_task_correlator()->get_device());
+	  for(int i = 0; i < get_parameters().get_num_sources(); i++){
+	    clmem_phi.load(&solution_buffer[i* meta::get_spinorfieldsize(get_parameters())]);
+	    spinor_code->set_float_to_global_squarenorm_device(&clmem_phi, &result_pbp2);
+	    hmc_float host_tmp;
+	    result_pbp2.dump(&host_tmp);
+	    host_result.re += host_tmp;
+	    host_result.im += 0;
+	  }
+	  //Normalization: The 1/r from above plus 1/VOL4D and the additional factor - 4 kappa amu ( = 2 mubar )
+	  hmc_float norm = 1./get_parameters().get_num_sources() / meta::get_vol4d(get_parameters()) * (-2.) * meta::get_mubar(get_parameters() );
+	  host_result.re *= norm;
+	  host_result.im *= norm;
+
 	}
-	hmc_float host_result_pbp;
-	result_pbp.dump(&host_result_pbp);
+
+	// Output
+	ofstream of;
+	of.open(pbp_fn.c_str(), ios_base::app);
+	if(!of.is_open()) {
+	  throw File_Exception(pbp_fn);
+	}
+	logger.info() << "chiral condensate:" ;
+	logger.info() << number << "\t" << scientific << setprecision(14) << host_result.re << "\t" << host_result.im;
+	of << number << "\t" << scientific << setprecision(14) << host_result.re << "\t" << host_result.im << endl;
+
+
 }
+

@@ -66,7 +66,7 @@ public:
 	void gauge_force_tlsym_device();
 	void fermion_force_device(const hardware::buffers::Plain<spinor> * Y, const hardware::buffers::Plain<spinor> * X, hmc_float kappa = ARG_DEF);
 	void fermion_force_eo_device(const hardware::buffers::Spinor * Y, const hardware::buffers::Spinor * X, int evenodd, hmc_float kappa = ARG_DEF);
-	hmc_float calc_s_fermion();
+  hmc_float calc_s_fermion(const hardware::buffers::SU3 * gaugefield, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	hmc_float calc_s_fermion_mp(const hardware::buffers::SU3 * gaugefield);
 
 	void virtual print_profiling(const std::string& filename, int number) const override;

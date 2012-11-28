@@ -226,6 +226,9 @@ void hardware::code::Gaugemomentum::generate_gaussian_gaugemomenta_device(const 
 
 void hardware::code::Gaugemomentum::set_zero_gaugemomentum(const hardware::buffers::Gaugemomentum * buf)
 {
+#ifdef CL_VERSION_1_2
+	buf->clear();
+#else
 	//query work-sizes for kernel
 	size_t ls2, gs2;
 	cl_uint num_groups;
@@ -236,6 +239,7 @@ void hardware::code::Gaugemomentum::set_zero_gaugemomentum(const hardware::buffe
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
 
 	get_device()->enqueue_kernel(_set_zero_gaugemomentum , gs2, ls2);
+#endif
 }
 
 

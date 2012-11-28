@@ -102,10 +102,6 @@ void hardware::code::Correlator::fill_kernels()
 	    }
 	  }
 	}
-	if(get_parameters().get_measure_pbp() ){
-	  pbp_std = createKernel("pbp_std") << basic_correlator_code << "fermionobservables_pbp.cl";
-	  pbp_tm_one_end = createKernel("pbp_tm_one_end") << basic_correlator_code << "fermionobservables_pbp.cl";
-	}
 }
 
 void hardware::code::Correlator::clear_kernels()
@@ -141,14 +137,6 @@ void hardware::code::Correlator::clear_kernels()
 	}
 	if(create_zslice_source) {
 		clerr = clReleaseKernel(create_zslice_source);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	}
-	if(pbp_std) {
-		clerr = clReleaseKernel(pbp_std);
-		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	}
-	if(pbp_tm_one_end) {
-		clerr = clReleaseKernel(pbp_tm_one_end);
 		if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	}
 }
@@ -366,40 +354,6 @@ void hardware::code::Correlator::correlator_device(const cl_kernel correlator_ke
 	get_device()->enqueue_kernel(correlator_kernel , gs2, ls2);
 }
 
-void hardware::code::Correlator::pbp_std_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator)
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(pbp_std, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(pbp_std, 0, sizeof(cl_mem), in->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(pbp_std, 1, sizeof(cl_mem), source->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(pbp_std, 2, sizeof(cl_mem), correlator->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel(pbp_std , gs2, ls2);
-}
-
-void hardware::code::Correlator::pbp_tm_one_end_trick_device(const hardware::buffers::Plain<spinor> * in, const hardware::buffers::Plain<spinor> * source, const hardware::buffers::Plain<hmc_float> * correlator)
-{
-	//query work-sizes for kernel
-	size_t ls2, gs2;
-	cl_uint num_groups;
-	this->get_work_sizes(pbp_tm_one_end, &ls2, &gs2, &num_groups);
-	//set arguments
-	int clerr = clSetKernelArg(pbp_tm_one_end, 0, sizeof(cl_mem), in->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(pbp_tm_one_end, 1, sizeof(cl_mem), source->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-	clerr = clSetKernelArg(pbp_tm_one_end, 2, sizeof(cl_mem), correlator->get_cl_buffer());
-	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clSetKernelArg", __FILE__, __LINE__);
-
-	get_device()->enqueue_kernel(pbp_tm_one_end , gs2, ls2);
-}
-
 size_t hardware::code::Correlator::get_read_write_size(const std::string& in) const
 {
 	//Depending on the compile-options, one has different sizes...
@@ -422,12 +376,6 @@ size_t hardware::code::Correlator::get_read_write_size(const std::string& in) co
 		return 1000000000000000000000000;
 	}
 	if (in == "create_zslice_source") {
-		return 1000000000000000000000000;
-	}
-	if (in == "pbp_std") {
-		return 1000000000000000000000000;
-	}
-	if (in == "pbp_tm_one_end") {
 		return 1000000000000000000000000;
 	}
 	if (in == "correlator_ps_z" ) {
@@ -539,12 +487,6 @@ uint64_t hardware::code::Correlator::get_flop_size(const std::string& in) const
 	if (in == "correlator_az_z") {
 		return 1000000000000000000000000;
 	}
-	if (in == "pbp_std") {
-	  return 1000000000000000000000000000;
-	}
-	if (in == "pbp_tm_one_end") {
-	  return 1000000000000000000000000000;
-	}
 
 	return 0;
 }
@@ -580,10 +522,6 @@ void hardware::code::Correlator::print_profiling(const std::string& filename, in
 	  Opencl_Module::print_profiling(filename, correlator_ay);
 	if(correlator_az)
 	  Opencl_Module::print_profiling(filename, correlator_az);
-	if(pbp_std)
-	  Opencl_Module::print_profiling(filename, pbp_std);
-	if(pbp_tm_one_end)
-	  Opencl_Module::print_profiling(filename, pbp_tm_one_end);
 }
 
 hardware::code::Correlator::Correlator(const meta::Inputparameters& params, hardware::Device * device)
