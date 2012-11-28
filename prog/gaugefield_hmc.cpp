@@ -264,20 +264,26 @@ void Gaugefield_hmc::integrator(usetimer * solvertimer)
 	  break;
 	case 2:
 	  if( get_parameters().get_integrationsteps(0) == 0 || get_parameters().get_integrationsteps(1) == 0) {
-	    logger.info() << "here";
             logger.fatal() << "Number of integrationsteps cannot be zero! Check settings!\nAborting...";
             exit(1);
           }
 	  break;
 	case 3:
 	  if( get_parameters().get_integrationsteps(0) == 0 || get_parameters().get_integrationsteps(1) == 0 || get_parameters().get_integrationsteps(2) == 0 ) {
-	    logger.info() << "here";
-	    logger.info() << "here";
             logger.fatal() << "Number of integrationsteps cannot be zero! Check settings!\nAborting...";
             exit(1);
           }
 	  break;
 	}
+	//CP: check if 2 ts are used with mass-preconditioning or 3 ts without mass-preconditioning. In these cases the program does not behave well defined, since this is all
+	//    hardcoded
+	///@todo This will not be needed if the integration is restructured!
+	if ( (  get_parameters().get_num_timescales() == 3 && get_parameters().get_use_mp() == false  ) ||
+	     (  get_parameters().get_num_timescales() == 2 && get_parameters().get_use_mp() == true  ) ){
+	  logger.fatal() << "Setting for mass-preconditioning and number of timescales do not fit!\nUse either mass-preconditioning and 3 timescales or no mass-preonditioning and 2 timescales!\nAborting...";
+	  exit(1);
+	}
+
 	//CP: actual integrator calling
 	switch(get_parameters().get_integrator(0)) {
 	        case meta::Inputparameters::leapfrog:
