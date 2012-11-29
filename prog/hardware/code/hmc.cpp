@@ -125,7 +125,6 @@ void hardware::code::Hmc::generate_spinorfield_gaussian(const hardware::buffers:
 void hardware::code::Hmc::md_update_spinorfield(const hardware::buffers::SU3 * gaugefield, hmc_float kappa, hmc_float mubar)
 {
 	auto fermion_code = get_device()->get_fermion_code();
-
 	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//  which then has to be the source of the inversion
@@ -141,10 +140,8 @@ void hardware::code::Hmc::md_update_spinorfield(const hardware::buffers::SU3 * g
 void hardware::code::Hmc::md_update_spinorfield_mp(usetimer * solvertimer, const hardware::buffers::SU3 * gaugefield)
 {
 	using namespace hardware::buffers;
-
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
-
 	///@todo solvertimer is not used here yet...
 	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
@@ -765,10 +762,8 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 
 void hardware::code::Hmc::calc_gauge_force()
 {
-	logger.debug() << "\t\tcalc gauge_force...";
 	gauge_force_device();
 	if(meta::get_use_rectangles(get_parameters()) == true) {
-		logger.debug() << "\t\tcalc rect gauge_force...";
 		gauge_force_tlsym_device();
 	}
 }
@@ -1042,7 +1037,6 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 		  hmc_float spinor_energy_init, s_fermion_final;
 		  //initial energy has been computed in the beginning...
 		  clmem_s_fermion_init.dump(&spinor_energy_init);
-		  // sum_links phi*_i (M^+M(heavy))_ij^-1 phi_j
 		  s_fermion_final = calc_s_fermion(&new_u, get_parameters().get_kappa_mp(),  meta::get_mubar_mp(get_parameters()));
 		  deltaH += spinor_energy_init - s_fermion_final;
 
@@ -1054,7 +1048,6 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 		  hmc_float spinor_energy_mp_init, s_fermion_mp_final;
 		  //initial energy has been computed in the beginning...
 		  clmem_s_fermion_mp_init.dump(&spinor_energy_mp_init);
-		  // sum_links phi*_i (M^+M(light) / M^+M(heavy)_ij^-1 phi_j
 		  s_fermion_mp_final = calc_s_fermion_mp(&new_u);
 		  deltaH += spinor_energy_mp_init - s_fermion_mp_final;
 		  
@@ -1068,7 +1061,6 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 		  hmc_float spinor_energy_init, s_fermion_final;
 		  //initial energy has been computed in the beginning...
 		  clmem_s_fermion_init.dump(&spinor_energy_init);
-		  // sum_links phi*_i (M^+M)_ij^-1 phi_j
 		  s_fermion_final = calc_s_fermion(&new_u);
 		  deltaH += spinor_energy_init - s_fermion_final;
 
@@ -1113,7 +1105,6 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 void hardware::code::Hmc::calc_spinorfield_init_energy(hardware::buffers::Plain<hmc_float> * dest)
 {
 	auto spinor_code = get_device()->get_spinor_code();
-
 	//Suppose the initial spinorfield is saved in phi_inv
 	//  it is created in generate_gaussian_spinorfield_device
 	if(get_parameters().get_use_eo() == true) {
