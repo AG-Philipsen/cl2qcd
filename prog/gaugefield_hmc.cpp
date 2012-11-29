@@ -68,7 +68,7 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 	} else {
 		logger.info() << "\tHMC [MET]:\tnew configuration rejected" ;
 	}
-	logger.info() << "\tHMC:\tfinished HMC trajectory " << iter ;
+	logger.info() << "\tHMC:\tfinished trajectory " << iter ;
 	logger.info() << "\tHMC:\tstep duration (ms): " << step_timer.getTime() / 1e3f;
 
 	return;
@@ -77,7 +77,6 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::string filename)
 {
 	hmc_float exp_deltaH = exp(obs.deltaH);
-	logger.trace() << "Observables: " << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq << "\t" << obs.poly.re << "\t" << obs.poly.im <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept ;
 	std::fstream hmcout;
 	hmcout.open(filename.c_str(), std::ios::out | std::ios::app);
 	if(!hmcout.is_open()) throw File_Exception(filename);
@@ -101,6 +100,9 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::st
 	}
 	hmcout << std::endl;
 	hmcout.close();
+
+	//print to screen
+	this->print_hmcobservables(obs, iter);
 	return;
 }
 
@@ -109,10 +111,9 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter)
 	using namespace std;
 
 	hmc_float exp_deltaH = exp(obs.deltaH);
-	//  logger.info() << setw(8) << setfill(' ') << iter << "\t" << setprecision(15) << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq << "\t" << obs.poly.re << "\t" << obs.poly.im << "\t" << sqrt(obs.poly.re * obs.poly.re + obs.poly.im * obs.poly.im) <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept;
 
 	//short version of output, all obs are collected in the output file anyways...
-	logger.info() << setw(8) << setfill(' ') << iter << "\t" << setprecision(15) << obs.plaq << "\t" << obs.poly.re << "\t" << obs.poly.im << "\t" <<  exp_deltaH;
+	logger.info() << "\tHMC [OBS]:\t" << iter << setw(8) << setfill(' ') << "\t" << setprecision(15) << obs.plaq << "\t" << obs.poly.re << "\t" << obs.poly.im;
 
 	return;
 }
@@ -200,8 +201,6 @@ void Gaugefield_hmc::md_update_gaugemomentum_detratio(hmc_float eps, usetimer * 
 
 void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer, hmc_float kappa, hmc_float mubar)
 {
-	logger.info() << "fermion force call...";
-
 	auto gf_code = get_device_for_task(task_hmc)->get_gaugefield_code();
 	auto mol_dyn_code = get_device_for_task(task_hmc)->get_molecular_dynamics_code();
 	auto hmc_code = get_device_for_task(task_hmc)->get_hmc_code();
@@ -235,8 +234,6 @@ for(auto gf: smeared_gfs) {
 
 void Gaugefield_hmc::detratio_forces_call(usetimer * solvertimer)
 {
-	logger.info() << "det ratio force call...";
-
 	auto gf_code = get_device_for_task(task_hmc)->get_gaugefield_code();
 	auto mol_dyn_code = get_device_for_task(task_hmc)->get_molecular_dynamics_code();
 	auto hmc_code = get_device_for_task(task_hmc)->get_hmc_code();
