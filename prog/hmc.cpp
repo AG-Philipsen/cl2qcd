@@ -90,7 +90,7 @@ int main(int argc, const char* argv[])
 			}
 		}
 		logger.info() << "HMC done";
-		logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acc_rate, hmc_iter) << "%";
+		logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acc_rate, parameters.get_hmcsteps()) << "%";
 		perform_timer.add();
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
