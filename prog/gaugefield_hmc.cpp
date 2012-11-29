@@ -80,11 +80,11 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::st
 	std::fstream hmcout;
 	hmcout.open(filename.c_str(), std::ios::out | std::ios::app);
 	if(!hmcout.is_open()) throw File_Exception(filename);
+	hmcout << iter << "\t";
 	hmcout.width(8);
-	hmcout << iter;
 	hmcout.precision(15);
 	//print plaquette (plaq, tplaq, splaq)
-	hmcout << "\t" << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq;
+	hmcout << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq;
 	//print polyakov loop (re, im, abs)
 	hmcout << "\t" << obs.poly.re << "\t" << obs.poly.im << "\t" << sqrt(obs.poly.re * obs.poly.re + obs.poly.im * obs.poly.im);
 	//print deltaH, exp(deltaH), acceptance-propability, accept (yes or no)
@@ -108,10 +108,7 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::st
 
 void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter)
 {
-	using namespace std;
-
-	hmc_float exp_deltaH = exp(obs.deltaH);
-
+        using namespace std;
 	//short version of output, all obs are collected in the output file anyways...
 	logger.info() << "\tHMC [OBS]:\t" << iter << setw(8) << setfill(' ') << "\t" << setprecision(15) << obs.plaq << "\t" << obs.poly.re << "\t" << obs.poly.im;
 
