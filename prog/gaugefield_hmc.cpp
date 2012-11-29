@@ -37,12 +37,12 @@ void Gaugefield_hmc::finalize_opencl()
 void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* solver_timer)
 {
 	klepsydra::Monotonic step_timer;
-
 	auto gf_code = get_device_for_task(task_hmc)->get_gaugefield_code();
 
 	// copy u->u' p->p' for the integrator
 	// new_u is used in some debug code of the gaugemomentum-initialization. therefore we need to copy it before
 	// p is modified in the initialization, therefore we cannot copy it now
+	// CP @todo: moving this below the init fct modifies the result of the HMC step!!
 	copyData(get_task_hmc(0)->get_new_u(), gf_code->get_gaugefield());
 
 	logger.trace() << "\tHMC:\tinit spinorfield and gaugemomentum" ;
@@ -111,17 +111,16 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter)
         using namespace std;
 	//short version of output, all obs are collected in the output file anyways...
 	logger.info() << "\tHMC [OBS]:\t" << iter << setw(8) << setfill(' ') << "\t" << setprecision(15) << obs.plaq << "\t" << obs.poly.re << "\t" << obs.poly.im;
-
 	return;
 }
 
 void Gaugefield_hmc::calc_total_force(usetimer * solvertimer)
 {
-	//CP: make sure that the output field is set to zero
 	get_task_hmc(0)->set_zero_clmem_force_device();
 	if(!get_parameters().get_use_gauge_only() )
 		this->fermion_forces_call(solvertimer);
 	get_task_hmc(0)->calc_gauge_force();
+	return;
 }
 
 void Gaugefield_hmc::md_update_gaugemomentum(hmc_float eps, usetimer * solvertimer)
@@ -224,7 +223,7 @@ void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer, hmc_float kappa
 		mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
 		gf_code->unsmear_gaugefield(hmc_code->get_new_u());
 	}
-for(auto gf: smeared_gfs) {
+	for(auto gf: smeared_gfs) {
 		delete gf;
 	}
 }
@@ -257,14 +256,14 @@ void Gaugefield_hmc::detratio_forces_call(usetimer * solvertimer)
 		mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
 		gf_code->unsmear_gaugefield(hmc_code->get_new_u());
 	}
-for(auto gf: smeared_gfs) {
+	for(auto gf: smeared_gfs) {
 		delete gf;
 	}
 }
 
 void Gaugefield_hmc::md_update_gaugefield(hmc_float eps)
 {
-  logger.debug() << "\tHMC [UP]:\tupdate GF [" << eps <<"]";
+        logger.debug() << "\tHMC [UP]:\tupdate GF [" << eps <<"]";
 	get_task_hmc(0)->md_update_gaugefield_device(eps);
 	return;
 }
