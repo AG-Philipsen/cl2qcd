@@ -619,7 +619,7 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		}
 		md_update_gaugemomentum_detratio(lambda2_times_deltaTau2, solvertimer);
 	} else
-		Print_Error_Message("More than 3 timescales is not implemented yet. Aborting...");
+		Print_Error_Message("\tHMC [INT]:\tMore than 3 timescales is not implemented yet. Aborting...");
 	logger.debug() << "\tHMC [INT]:\tfinished 2MN";
 }
 
