@@ -778,7 +778,7 @@ hmc_float hardware::code::Hmc::calc_s_fermion(const hardware::buffers::SU3 * gau
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
 
-	logger.debug() << "HMC:\tcalc final fermion energy...";
+	logger.trace() << "\tHMC [DH]:\tcalc final fermion energy...";
 	//this function essentially performs the same steps as in the force-calculation, but with higher precision.
 	//  therefore, comments are deleted here...
 	//  Furthermore, in the bicgstab-case, the second inversions are not needed
@@ -876,7 +876,7 @@ hmc_float hardware::code::Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * 
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
 
-	logger.debug() << "HMC:\tcalc final fermion energy...";
+	logger.trace() << "\tHMC [DH]:\tcalc final fermion energy...";
 	//this function essentially performs the same steps as in the non mass-prec case, however, one has to apply one more matrix multiplication
 	//  therefore, comments are deleted here...
 	//  Furthermore, in the bicgstab-case, the second inversions are not needed
@@ -984,7 +984,7 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 	auto gm_code = get_device()->get_gaugemomentum_code();
 
 	//Calc Hamiltonian
-	logger.debug() << "HMC:\tCalculate Hamiltonian";
+	logger.trace() << "\tHMC [DH]:\tCalculate Hamiltonian";
 	hmc_float deltaH = 0.;
 	hmc_float s_old = 0.;
 	hmc_float s_new = 0.;
@@ -1085,7 +1085,7 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 		compare_prob = 1.0;
 	}
 	logger.info() << "\tHMC [DH]:\tdH:\t\t" << deltaH;
-	logger.info() << "\tHMC:\tAcc-Prop:\t" << compare_prob;
+	logger.info() << "\tHMC [MET]:\tAcc-Prop:\t" << compare_prob;
 	hmc_observables tmp;
 	if(rnd <= compare_prob) {
 		tmp.accept = 1;
