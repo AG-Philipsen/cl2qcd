@@ -107,21 +107,29 @@ void hardware::code::Correlator::fill_kernels()
 void hardware::code::Correlator::clear_kernels()
 {
 	int clerr = CL_SUCCESS;
-	clerr = clReleaseKernel(correlator_ps);
+	if(correlator_ps)
+	  clerr = clReleaseKernel(correlator_ps);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(correlator_sc);
+	if(correlator_sc)
+	  clerr = clReleaseKernel(correlator_sc);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(correlator_vx);
+	if(correlator_vx)
+	  clerr = clReleaseKernel(correlator_vx);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(correlator_vy);
+	if(correlator_vy)
+	  clerr = clReleaseKernel(correlator_vy);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(correlator_vz);
+	if(correlator_vz)
+	  clerr = clReleaseKernel(correlator_vz);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(correlator_ax);
+	if(correlator_ax)
+	  clerr = clReleaseKernel(correlator_ax);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(correlator_ay);
+	if(correlator_ay)
+	  clerr = clReleaseKernel(correlator_ay);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
-	clerr = clReleaseKernel(correlator_az);
+	if(correlator_az)
+	  clerr = clReleaseKernel(correlator_az);
 	if(clerr != CL_SUCCESS) throw Opencl_Error(clerr, "clReleaseKernel", __FILE__, __LINE__);
 	if(create_point_source) {
 		clerr = clReleaseKernel(create_point_source);
