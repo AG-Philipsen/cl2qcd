@@ -45,18 +45,18 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 	// p is modified in the initialization, therefore we cannot copy it now
 	copyData(get_task_hmc(0)->get_new_u(), gf_code->get_gaugefield());
 
-	logger.debug() << "HMC:\t\tinit spinorfield and gaugemomentum" ;
+	logger.trace() << "\tHMC:\tinit spinorfield and gaugemomentum" ;
 	this->init_gaugemomentum_spinorfield(solver_timer);
 
-	logger.debug() << "HMC:\t\tupdate gaugefield and gaugemomentum" ;
+	logger.trace() << "\tHMC:\tupdate gaugefield and gaugemomentum" ;
 	hardware::buffers::copyData(get_task_hmc(0)->get_clmem_new_p(), get_task_hmc(0)->get_clmem_p());
 
 	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
-	logger.debug() << "HMC:\t\tcall integrator" ;
+	logger.trace() << "\tHMC:\tcall integrator" ;
 	this->integrator(solver_timer);
 
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
-	logger.debug() << "HMC:\t\tperform Metropolis step: " ;
+	logger.trace() << "\tHMC [MET]:\tperform Metropolis step: ";
 	//this call calculates also the HMC-Observables
 	*obs = get_task_hmc(0)->metropolis(rnd_number, get_parameters().get_beta(), gf_code->get_gaugefield());
 
@@ -64,12 +64,12 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 		// perform the change nonprimed->primed !
 		copyData(gf_code->get_gaugefield(), get_task_hmc(0)->get_new_u());
 		hardware::buffers::copyData(get_task_hmc(0)->get_clmem_p(), get_task_hmc(0)->get_clmem_new_p());
-		logger.debug() << "HMC:\t\t\tnew configuration accepted" ;
+		logger.info() << "\tHMC [MET]:\tnew configuration accepted" ;
 	} else {
-		logger.debug() << "HMC:\t\t\tnew configuration rejected" ;
+		logger.info() << "\tHMC [MET]:\tnew configuration rejected" ;
 	}
-	logger.trace() << "\tfinished HMC trajectory " << iter ;
-	logger.info() << "HMC step duration (ms): " << step_timer.getTime() / 1e3f;
+	logger.info() << "\tHMC:\tfinished HMC trajectory " << iter ;
+	logger.info() << "\tHMC:\tstep duration (ms): " << step_timer.getTime() / 1e3f;
 
 	return;
 }
