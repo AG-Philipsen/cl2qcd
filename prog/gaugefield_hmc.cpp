@@ -37,26 +37,26 @@ void Gaugefield_hmc::finalize_opencl()
 void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* solver_timer)
 {
 	klepsydra::Monotonic step_timer;
-
 	auto gf_code = get_device_for_task(task_hmc)->get_gaugefield_code();
 
 	// copy u->u' p->p' for the integrator
 	// new_u is used in some debug code of the gaugemomentum-initialization. therefore we need to copy it before
 	// p is modified in the initialization, therefore we cannot copy it now
+	// CP @todo: moving this below the init fct modifies the result of the HMC step!!
 	copyData(get_task_hmc(0)->get_new_u(), gf_code->get_gaugefield());
 
-	logger.debug() << "HMC:\t\tinit spinorfield and gaugemomentum" ;
+	logger.trace() << "\tHMC:\tinit spinorfield and gaugemomentum" ;
 	this->init_gaugemomentum_spinorfield(solver_timer);
 
-	logger.debug() << "HMC:\t\tupdate gaugefield and gaugemomentum" ;
+	logger.trace() << "\tHMC:\tupdate gaugefield and gaugemomentum" ;
 	hardware::buffers::copyData(get_task_hmc(0)->get_clmem_new_p(), get_task_hmc(0)->get_clmem_p());
 
 	//here, clmem_phi is inverted several times and stored in clmem_phi_inv
-	logger.debug() << "HMC:\t\tcall integrator" ;
+	logger.trace() << "\tHMC:\tcall integrator" ;
 	this->integrator(solver_timer);
 
 	//metropolis step: afterwards, the updated config is again in gaugefield and p
-	logger.debug() << "HMC:\t\tperform Metropolis step: " ;
+	logger.trace() << "\tHMC [MET]:\tperform Metropolis step: ";
 	//this call calculates also the HMC-Observables
 	*obs = get_task_hmc(0)->metropolis(rnd_number, get_parameters().get_beta(), gf_code->get_gaugefield());
 
@@ -64,12 +64,12 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 		// perform the change nonprimed->primed !
 		copyData(gf_code->get_gaugefield(), get_task_hmc(0)->get_new_u());
 		hardware::buffers::copyData(get_task_hmc(0)->get_clmem_p(), get_task_hmc(0)->get_clmem_new_p());
-		logger.debug() << "HMC:\t\t\tnew configuration accepted" ;
+		logger.info() << "\tHMC [MET]:\tnew configuration accepted" ;
 	} else {
-		logger.debug() << "HMC:\t\t\tnew configuration rejected" ;
+		logger.info() << "\tHMC [MET]:\tnew configuration rejected" ;
 	}
-	logger.trace() << "\tfinished HMC trajectory " << iter ;
-	logger.info() << "HMC step duration (ms): " << step_timer.getTime() / 1e3f;
+	logger.info() << "\tHMC:\tfinished trajectory " << iter ;
+	logger.info() << "\tHMC:\tstep duration (ms): " << step_timer.getTime() / 1e3f;
 
 	return;
 }
@@ -77,15 +77,14 @@ void Gaugefield_hmc::perform_hmc_step(hmc_observables *obs, int iter, hmc_float 
 void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::string filename)
 {
 	hmc_float exp_deltaH = exp(obs.deltaH);
-	logger.trace() << "Observables: " << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq << "\t" << obs.poly.re << "\t" << obs.poly.im <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept ;
 	std::fstream hmcout;
 	hmcout.open(filename.c_str(), std::ios::out | std::ios::app);
 	if(!hmcout.is_open()) throw File_Exception(filename);
+	hmcout << iter << "\t";
 	hmcout.width(8);
-	hmcout << iter;
 	hmcout.precision(15);
 	//print plaquette (plaq, tplaq, splaq)
-	hmcout << "\t" << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq;
+	hmcout << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq;
 	//print polyakov loop (re, im, abs)
 	hmcout << "\t" << obs.poly.re << "\t" << obs.poly.im << "\t" << sqrt(obs.poly.re * obs.poly.re + obs.poly.im * obs.poly.im);
 	//print deltaH, exp(deltaH), acceptance-propability, accept (yes or no)
@@ -101,70 +100,103 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::st
 	}
 	hmcout << std::endl;
 	hmcout.close();
+
+	//print to screen
+	this->print_hmcobservables(obs, iter);
 	return;
 }
 
 void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter)
 {
-	using namespace std;
-
-	hmc_float exp_deltaH = exp(obs.deltaH);
-	//  logger.info() << setw(8) << setfill(' ') << iter << "\t" << setprecision(15) << obs.plaq << "\t" << obs.tplaq << "\t" << obs.splaq << "\t" << obs.poly.re << "\t" << obs.poly.im << "\t" << sqrt(obs.poly.re * obs.poly.re + obs.poly.im * obs.poly.im) <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept;
-
+        using namespace std;
 	//short version of output, all obs are collected in the output file anyways...
-	logger.info() << setw(8) << setfill(' ') << iter << "\t" << setprecision(15) << obs.plaq << "\t" << obs.poly.re << "\t" << obs.poly.im << "\t" <<  exp_deltaH;
-
+	logger.info() << "\tHMC [OBS]:\t" << iter << setw(8) << setfill(' ') << "\t" << setprecision(15) << obs.plaq << "\t" << obs.poly.re << "\t" << obs.poly.im;
 	return;
 }
 
 void Gaugefield_hmc::calc_total_force(usetimer * solvertimer)
 {
-	//CP: make sure that the output field is set to zero
 	get_task_hmc(0)->set_zero_clmem_force_device();
 	if(!get_parameters().get_use_gauge_only() )
 		this->fermion_forces_call(solvertimer);
 	get_task_hmc(0)->calc_gauge_force();
+	return;
 }
 
 void Gaugefield_hmc::md_update_gaugemomentum(hmc_float eps, usetimer * solvertimer)
 {
 	get_task_hmc(0)->set_zero_clmem_force_device();
 	calc_total_force(solvertimer);
+	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
 	return;
 }
 
 void Gaugefield_hmc::md_update_gaugemomentum_gauge(hmc_float eps)
 {
-	logger.debug() << "HMC:\tupdate gauge with " << eps;
 	get_task_hmc(0)->set_zero_clmem_force_device();
 	get_task_hmc(0)->calc_gauge_force();
+	if(logger.beDebug()) {
+	  hardware::buffers::Plain<hmc_float> force_tmp(1, get_task_hmc(0)->get_device());
+		auto gm_code = get_task_hmc(0)->get_device()->get_gaugemomentum_code();
+		hmc_float resid;
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(get_task_hmc(0)->get_clmem_force(), &force_tmp);
+		force_tmp.dump(&resid);
+		logger.debug() <<  "\tHMC [UP]:\tFORCE [GAUGE]:\t" << resid;
+
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
+	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
 	return;
 }
 
 void Gaugefield_hmc::md_update_gaugemomentum_fermion(hmc_float eps, usetimer * solvertimer, hmc_float kappa, hmc_float mubar)
 {
-	logger.debug() << "HMC:\tupdate fermion with " << eps;
 	get_task_hmc(0)->set_zero_clmem_force_device();
 	this->fermion_forces_call(solvertimer, kappa, mubar);
+	if(logger.beDebug()) {
+	  hardware::buffers::Plain<hmc_float> force_tmp(1, get_task_hmc(0)->get_device());
+		auto gm_code = get_task_hmc(0)->get_device()->get_gaugemomentum_code();
+		hmc_float resid;
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(get_task_hmc(0)->get_clmem_force(), &force_tmp);
+		force_tmp.dump(&resid);
+		logger.debug() <<  "\tHMC [UP]:\tFORCE [DET]:\t" << resid;
+
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
+	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
 	return;
 }
 
 void Gaugefield_hmc::md_update_gaugemomentum_detratio(hmc_float eps, usetimer * solvertimer)
 {
-	logger.debug() << "HMC:\tupdate detratio with " << eps;
 	get_task_hmc(0)->set_zero_clmem_force_device();
 	this->detratio_forces_call(solvertimer);
+	if(logger.beDebug()) {
+	  hardware::buffers::Plain<hmc_float> force_tmp(1, get_task_hmc(0)->get_device());
+		auto gm_code = get_task_hmc(0)->get_device()->get_gaugemomentum_code();
+		hmc_float resid;
+		gm_code->set_float_to_gaugemomentum_squarenorm_device(get_task_hmc(0)->get_clmem_force(), &force_tmp);
+		force_tmp.dump(&resid);
+		logger.debug() <<  "\tHMC [UP]:\tFORCE [DETRAT]:\t" << resid;
+
+		if(resid != resid) {
+			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
+		}
+	}
+	logger.debug() << "\tHMC [UP]:\tupdate GM [" << eps << "]";
 	get_task_hmc(0)->md_update_gaugemomentum_device(-1.*eps);
 	return;
 }
 
 void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer, hmc_float kappa, hmc_float mubar)
 {
-	logger.info() << "fermion force call...";
-
 	auto gf_code = get_device_for_task(task_hmc)->get_gaugefield_code();
 	auto mol_dyn_code = get_device_for_task(task_hmc)->get_molecular_dynamics_code();
 	auto hmc_code = get_device_for_task(task_hmc)->get_hmc_code();
@@ -191,15 +223,13 @@ void Gaugefield_hmc::fermion_forces_call(usetimer * solvertimer, hmc_float kappa
 		mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
 		gf_code->unsmear_gaugefield(hmc_code->get_new_u());
 	}
-for(auto gf: smeared_gfs) {
+	for(auto gf: smeared_gfs) {
 		delete gf;
 	}
 }
 
 void Gaugefield_hmc::detratio_forces_call(usetimer * solvertimer)
 {
-	logger.info() << "det ratio force call...";
-
 	auto gf_code = get_device_for_task(task_hmc)->get_gaugefield_code();
 	auto mol_dyn_code = get_device_for_task(task_hmc)->get_molecular_dynamics_code();
 	auto hmc_code = get_device_for_task(task_hmc)->get_hmc_code();
@@ -226,14 +256,14 @@ void Gaugefield_hmc::detratio_forces_call(usetimer * solvertimer)
 		mol_dyn_code->stout_smeared_fermion_force_device(smeared_gfs);
 		gf_code->unsmear_gaugefield(hmc_code->get_new_u());
 	}
-for(auto gf: smeared_gfs) {
+	for(auto gf: smeared_gfs) {
 		delete gf;
 	}
 }
 
 void Gaugefield_hmc::md_update_gaugefield(hmc_float eps)
 {
-	logger.debug() << "HMC:\tupdate gf with " << eps;
+        logger.debug() << "\tHMC [UP]:\tupdate GF [" << eps <<"]";
 	get_task_hmc(0)->md_update_gaugefield_device(eps);
 	return;
 }
@@ -243,13 +273,13 @@ void Gaugefield_hmc::integrator(usetimer * solvertimer)
 	//CP: at the moment, one can only use the same type of integrator if one uses more then one timescale...
 	if (get_parameters().get_num_timescales() == 2) {
 		if(( get_parameters().get_integrator(0) != get_parameters().get_integrator(1)  )) {
-			logger.fatal() << "Different timescales must use the same integrator up to now!\nAborting...";
+			logger.fatal() << "\tHMC [INT]:\tDifferent timescales must use the same integrator up to now!\nAborting...";
 			exit(1);
 		}
 	}
 	if (get_parameters().get_num_timescales() == 3) {
 		if(( get_parameters().get_integrator(0) != get_parameters().get_integrator(1) || get_parameters().get_integrator(0) != get_parameters().get_integrator(2) )) {
-			logger.fatal() << "Different timescales must use the same integrator up to now!\nAborting...";
+			logger.fatal() << "\tHMC [INT]:\tDifferent timescales must use the same integrator up to now!\nAborting...";
 			exit(1);
 		}
 	}
@@ -258,19 +288,19 @@ void Gaugefield_hmc::integrator(usetimer * solvertimer)
 	switch(get_parameters().get_num_timescales() ) {
 	case 1:
 	  if( get_parameters().get_integrationsteps(0) == 0 ) {
-	    logger.fatal() << "Number of integrationsteps cannot be zero! Check settings!\nAborting...";
+	    logger.fatal() << "\tHMC [INT]:\tNumber of integrationsteps cannot be zero! Check settings!\nAborting...";
 	    exit(1);
 	  }
 	  break;
 	case 2:
 	  if( get_parameters().get_integrationsteps(0) == 0 || get_parameters().get_integrationsteps(1) == 0) {
-            logger.fatal() << "Number of integrationsteps cannot be zero! Check settings!\nAborting...";
+            logger.fatal() << "\tHMC [INT]:\tNumber of integrationsteps cannot be zero! Check settings!\nAborting...";
             exit(1);
           }
 	  break;
 	case 3:
 	  if( get_parameters().get_integrationsteps(0) == 0 || get_parameters().get_integrationsteps(1) == 0 || get_parameters().get_integrationsteps(2) == 0 ) {
-            logger.fatal() << "Number of integrationsteps cannot be zero! Check settings!\nAborting...";
+            logger.fatal() << "\tHMC [INT]:\tNumber of integrationsteps cannot be zero! Check settings!\nAborting...";
             exit(1);
           }
 	  break;
@@ -280,7 +310,7 @@ void Gaugefield_hmc::integrator(usetimer * solvertimer)
 	///@todo This will not be needed if the integration is restructured!
 	if ( (  get_parameters().get_num_timescales() == 3 && get_parameters().get_use_mp() == false  ) ||
 	     (  get_parameters().get_num_timescales() == 2 && get_parameters().get_use_mp() == true  ) ){
-	  logger.fatal() << "Setting for mass-preconditioning and number of timescales do not fit!\nUse either mass-preconditioning and 3 timescales or no mass-preonditioning and 2 timescales!\nAborting...";
+	  logger.fatal() << "\tHMC [INT]:\tSetting for mass-preconditioning and number of timescales do not fit!\nUse either mass-preconditioning and 3 timescales or no mass-preonditioning and 2 timescales!\nAborting...";
 	  exit(1);
 	}
 
@@ -298,27 +328,21 @@ void Gaugefield_hmc::integrator(usetimer * solvertimer)
 
 void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 {
+  logger.trace() << "\tHMC [INT]:\tstart leapfrog...";
 	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already when this function is called the first time
-
 	if(get_parameters().get_num_timescales() == 1) {
-		logger.debug() << "HMC:\t\t\tstarting leapfrog...";
 		int n0 = get_parameters().get_integrationsteps(0);
 		hmc_float deltaTau0 = get_parameters().get_tau() / ((hmc_float) n0);
 		hmc_float deltaTau0_half = 0.5 * deltaTau0;
 
-		logger.debug() << "HMC:\t\t\tinitial step:";
 		md_update_gaugemomentum(deltaTau0_half, solvertimer);
-		if(n0 > 1) logger.debug() << "HMC:\t\t\tperform " << n0 - 1 << " intermediate steps " ;
 		for(int k = 1; k < n0; k++) {
 			md_update_gaugefield(deltaTau0);
 			md_update_gaugemomentum(deltaTau0, solvertimer);
 		}
-		logger.debug() << "HMC:\t\t\tfinal step" ;
 		md_update_gaugefield(deltaTau0);
 		md_update_gaugemomentum(deltaTau0_half, solvertimer);
-		logger.debug() << "HMC:\t\t\t...finished leapfrog";
 	} else if (get_parameters().get_num_timescales() == 2) {
-		logger.debug() << "HMC:\tstart leapfrog with 2 timescales..";
 		//this uses 2 timescales (more is not implemented yet): timescale0 for the gauge-part, timescale1 for the fermion part
 		//this is done after hep-lat/0209037. See also hep-lat/0506011v2 for a more advanced version
 		int n0 = get_parameters().get_integrationsteps(0);
@@ -328,7 +352,6 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 		hmc_float deltaTau0_half = 0.5 * deltaTau0;
 		hmc_float deltaTau1_half = 0.5 * deltaTau1;
 
-		logger.debug() << "HMC:\t\t\tinitial step:";
 		//this corresponds to V_s2(deltaTau/2)
 		md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer);
 		//now, m steps "more" are performed for the gauge-part
@@ -340,7 +363,6 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 			if(l == n0 - 1 && n1 == 1) md_update_gaugemomentum_gauge(deltaTau0_half);
 			else md_update_gaugemomentum_gauge(deltaTau0);
 		}
-		if(n1 > 1) logger.debug() << "HMC:\t\t\tperform " << n1 - 1 << " intermediate steps " ;
 		for(int k = 1; k < n1; k++) {
 			//this corresponds to V_s2(deltaTau)
 			md_update_gaugemomentum_fermion(deltaTau1, solvertimer);
@@ -353,12 +375,9 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 				else md_update_gaugemomentum_gauge(deltaTau0);
 			}
 		}
-		logger.debug() << "HMC:\t\t\tfinal step" ;
 		//this corresponds to the missing V_s2(deltaTau/2)
 		md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer);
-		logger.debug() << "HMC:\t\t\tfinished leapfrog";
 	} else if (get_parameters().get_num_timescales() == 3) {
-		logger.debug() << "HMC:\tstart leapfrog with 3 timescales..";
 		//just like with 2 timescales...
 		int n0 = get_parameters().get_integrationsteps(0);
 		int n1 = get_parameters().get_integrationsteps(1);
@@ -374,7 +393,6 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 		hmc_float kappa_tmp = get_parameters().get_kappa_mp();
 		hmc_float mubar_tmp = meta::get_mubar_mp(get_parameters());
 
-		logger.debug() << "HMC:\t\t\tinitial step:";
 		md_update_gaugemomentum_detratio(deltaTau2_half, solvertimer);
 		//now, n1 steps "more" are performed for the fermion-part
 		for(int l = 0; l < n1; l++) {
@@ -387,9 +405,9 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 				else md_update_gaugemomentum_gauge(deltaTau0);
 			}
 			if(l == n1 - 1 && n2 == 1) md_update_gaugemomentum_fermion(deltaTau1_half, solvertimer, kappa_tmp, mubar_tmp);
-			else md_update_gaugemomentum_fermion(deltaTau1, solvertimer);
+			else md_update_gaugemomentum_fermion(deltaTau1, solvertimer, kappa_tmp, mubar_tmp);
 		}
-		if(n2 > 1) logger.debug() << "HMC:\t\t\tperform " << n2 - 1 << " intermediate steps " ;
+		//perform n2 - 1 intermediate steps
 		for(int k = 1; k < n2; k++) {
 			md_update_gaugemomentum_detratio(deltaTau2, solvertimer);
 			for(int l = 0; l < n1; l++) {
@@ -402,18 +420,17 @@ void Gaugefield_hmc::leapfrog(usetimer * solvertimer)
 				else md_update_gaugemomentum_fermion(deltaTau1, solvertimer, kappa_tmp, mubar_tmp);
 			}
 		}
-		logger.debug() << "HMC:\t\t\tfinal step" ;
 		md_update_gaugemomentum_detratio(deltaTau2_half, solvertimer);
-		logger.debug() << "HMC:\t\t\tfinished leapfrog";
 	} else
-		Print_Error_Message("More than 3 timescales is not implemented yet. Aborting...");
+		Print_Error_Message("\tHMC [INT]:\tMore than 3 timescales is not implemented yet. Aborting...");
+	logger.trace() << "\tHMC [INT]:\t...finished leapfrog";		
 }
 
 void Gaugefield_hmc::twomn(usetimer * solvertimer)
 {
+  logger.trace() << "\tHMC [INT]\tstarting 2MN...";
 	//it is assumed that the new gaugefield and gaugemomentum have been set to the old ones already
 	if(get_parameters().get_num_timescales() == 1) {
-		logger.debug() << "HMC:\t\t\tstarting 2MN...";
 		int n0 = get_parameters().get_integrationsteps(0);
 		hmc_float deltaTau0 = get_parameters().get_tau() / ((hmc_float) n0);
 		hmc_float deltaTau0_half = 0.5 * deltaTau0;
@@ -421,22 +438,18 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 		hmc_float one_minus_2_lambda = 1. - 2.*get_parameters().get_lambda(0);
 		hmc_float one_minus_2_lambda_times_deltaTau0 = one_minus_2_lambda * deltaTau0;
 
-		logger.debug() << "HMC:\t\t\tinitial step:";
 		md_update_gaugemomentum(lambda_times_deltaTau0, solvertimer);
 		md_update_gaugefield(deltaTau0_half);
 		md_update_gaugemomentum(one_minus_2_lambda_times_deltaTau0, solvertimer);
 		md_update_gaugefield(deltaTau0_half);
 
-		if(n0 > 1) logger.debug() << "HMC:\t\t\tperform " << n0 - 1 << " intermediate steps " ;
 		for(int k = 1; k < n0; k++) {
 			md_update_gaugemomentum(2.*lambda_times_deltaTau0, solvertimer);
 			md_update_gaugefield(deltaTau0_half);
 			md_update_gaugemomentum(one_minus_2_lambda_times_deltaTau0, solvertimer);
 			md_update_gaugefield(deltaTau0_half);
 		}
-		logger.debug() << "HMC:\t\t\tfinal step" ;
 		md_update_gaugemomentum(lambda_times_deltaTau0, solvertimer);
-		logger.debug() << "HMC:\t\t\tfinished 2MN";
 	} else if (get_parameters().get_num_timescales() == 2) {
 		//this is done after hep-lat/0209037. See also hep-lat/0506011v2 for a more advanced version
 		int n0 = get_parameters().get_integrationsteps(0);
@@ -478,7 +491,6 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 			else md_update_gaugemomentum_gauge(2.*lambda0_times_deltaTau0);
 		}
 		//the last V_s2(lambda*deltaTau) can be pulled into the intermediate steps
-		if(n1 > 1) logger.debug() << "HMC:\t\t\tperform " << n1 - 1 << " intermediate steps " ;
 		for(int k = 1; k < n1; k++) {
 			//this corresponds to V_s2(deltaTau)
 			md_update_gaugemomentum_fermion(2.*lambda1_times_deltaTau1, solvertimer);
@@ -499,10 +511,8 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 				else md_update_gaugemomentum_gauge(2.*lambda0_times_deltaTau0);
 			}
 		}
-		logger.debug() << "HMC:\t\t\tfinal step" ;
 		//this corresponds to the missing V_s2(lambda*deltaTau)
 		md_update_gaugemomentum_fermion(lambda1_times_deltaTau1, solvertimer);
-		logger.debug() << "HMC:\t\t\tfinished 2MN";
 	} else if (get_parameters().get_num_timescales() == 3) {
 		//just like with 2 timescales...
 		int n0 = get_parameters().get_integrationsteps(0);
@@ -568,7 +578,6 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 			if(l == n1 - 1 && n2 == 1) md_update_gaugemomentum_fermion(lambda1_times_deltaTau1, solvertimer, kappa, mubar);
 			else md_update_gaugemomentum_fermion(2.*lambda1_times_deltaTau1, solvertimer, kappa, mubar);
 		}
-		if(n2 > 1) logger.debug() << "HMC:\t\t\tperform " << n2 - 1 << " intermediate steps " ;
 		for(int k = 1; k < n2; k++) {
 			//this corresponds to V_s2(deltaTau)
 			md_update_gaugemomentum_detratio(2.*lambda2_times_deltaTau2, solvertimer);
@@ -608,11 +617,10 @@ void Gaugefield_hmc::twomn(usetimer * solvertimer)
 				else md_update_gaugemomentum_fermion(2.*lambda1_times_deltaTau1, solvertimer, kappa, mubar);
 			}
 		}
-		logger.debug() << "HMC:\t\t\tfinal step" ;
 		md_update_gaugemomentum_detratio(lambda2_times_deltaTau2, solvertimer);
-		logger.debug() << "HMC:\t\t\tfinished 2MN";
 	} else
-		Print_Error_Message("More than 3 timescales is not implemented yet. Aborting...");
+		Print_Error_Message("\tHMC [INT]:\tMore than 3 timescales is not implemented yet. Aborting...");
+	logger.debug() << "\tHMC [INT]:\tfinished 2MN";
 }
 
 void Gaugefield_hmc::init_gaugemomentum_spinorfield(usetimer * solvertimer)

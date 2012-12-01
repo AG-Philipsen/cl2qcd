@@ -60,6 +60,11 @@ const hardware::buffers::Gaugemomentum * hardware::code::Hmc::get_clmem_new_p()
 	return &clmem_new_p;
 }
 
+const hardware::buffers::Gaugemomentum * hardware::code::Hmc::get_clmem_force()
+{
+	return &clmem_force;
+}
+
 const hardware::buffers::SU3 * hardware::code::Hmc::get_new_u()
 {
 	return &new_u;
@@ -120,7 +125,6 @@ void hardware::code::Hmc::generate_spinorfield_gaussian(const hardware::buffers:
 void hardware::code::Hmc::md_update_spinorfield(const hardware::buffers::SU3 * gaugefield, hmc_float kappa, hmc_float mubar)
 {
 	auto fermion_code = get_device()->get_fermion_code();
-
 	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
 	//  which then has to be the source of the inversion
@@ -136,10 +140,8 @@ void hardware::code::Hmc::md_update_spinorfield(const hardware::buffers::SU3 * g
 void hardware::code::Hmc::md_update_spinorfield_mp(usetimer * solvertimer, const hardware::buffers::SU3 * gaugefield)
 {
 	using namespace hardware::buffers;
-
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
-
 	///@todo solvertimer is not used here yet...
 	//suppose the initial gaussian field is saved in clmem_phi_inv (see above).
 	//  then the "phi" = Dpsi from the algorithm is stored in clmem_phi
@@ -613,6 +615,17 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 		//Y is not needed anymore, therefore use clmem_phi_inv_eo to store -phi
 		spinor_code->sax_eoprec_device(get_clmem_phi_mp_eo(), fermion_code->get_clmem_minusone(), &clmem_phi_inv_eo);
 
+		//(re-) calculate X_odd (with other masses)
+		//therefore, sf_eo_tmp is used as intermediate state. 
+		if(get_parameters().get_fermact() == meta::Inputparameters::wilson) {
+		  fermion_code->dslash_eo_device(fermion_code->get_inout_eo(), fermion_code->get_tmp_eo_1(), gaugefield, ODD, kappa2);
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_1(), fermion_code->get_clmem_minusone(), &sf_eo_tmp);
+		} else if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass) {
+		  fermion_code->dslash_eo_device(fermion_code->get_inout_eo(), fermion_code->get_tmp_eo_1(), gaugefield, ODD, kappa2);
+		  fermion_code->M_tm_inverse_sitediagonal_minus_device(fermion_code->get_tmp_eo_1(), fermion_code->get_tmp_eo_2(), mubar2);
+			spinor_code->sax_eoprec_device(fermion_code->get_tmp_eo_2(), fermion_code->get_clmem_minusone(), &sf_eo_tmp);
+		}
+
 		//logger.debug() << "\t\tcalc eo fermion_force F(Y_even, X_odd)...";
 		//Calc F(Y_even, X_odd) = F(clmem_phi_inv_eo, sf_eo_tmp)
 		fermion_force_eo_device(&clmem_phi_inv_eo,  &sf_eo_tmp, EVEN, kappa2);
@@ -749,10 +762,8 @@ void hardware::code::Hmc::calc_fermion_force_detratio(usetimer * solvertimer, co
 
 void hardware::code::Hmc::calc_gauge_force()
 {
-	logger.debug() << "\t\tcalc gauge_force...";
 	gauge_force_device();
 	if(meta::get_use_rectangles(get_parameters()) == true) {
-		logger.debug() << "\t\tcalc rect gauge_force...";
 		gauge_force_tlsym_device();
 	}
 }
@@ -762,7 +773,7 @@ hmc_float hardware::code::Hmc::calc_s_fermion(const hardware::buffers::SU3 * gau
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
 
-	logger.debug() << "HMC:\tcalc final fermion energy...";
+	logger.trace() << "\tHMC [DH]:\tcalc final fermion energy...";
 	//this function essentially performs the same steps as in the force-calculation, but with higher precision.
 	//  therefore, comments are deleted here...
 	//  Furthermore, in the bicgstab-case, the second inversions are not needed
@@ -860,7 +871,7 @@ hmc_float hardware::code::Hmc::calc_s_fermion_mp(const hardware::buffers::SU3 * 
 	auto fermion_code = get_device()->get_fermion_code();
 	auto spinor_code = get_device()->get_spinor_code();
 
-	logger.debug() << "HMC:\tcalc final fermion energy...";
+	logger.trace() << "\tHMC [DH]:\tcalc final fermion energy...";
 	//this function essentially performs the same steps as in the non mass-prec case, however, one has to apply one more matrix multiplication
 	//  therefore, comments are deleted here...
 	//  Furthermore, in the bicgstab-case, the second inversions are not needed
@@ -968,7 +979,7 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 	auto gm_code = get_device()->get_gaugemomentum_code();
 
 	//Calc Hamiltonian
-	logger.debug() << "HMC:\tCalculate Hamiltonian";
+	logger.trace() << "\tHMC [DH]:\tCalculate Hamiltonian";
 	hmc_float deltaH = 0.;
 	hmc_float s_old = 0.;
 	hmc_float s_new = 0.;
@@ -1001,9 +1012,9 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 		s_new = -(plaq_new) * beta / factor;
 	}
 
-	logger.debug() << "HMC:\tS_gauge(old field) = " << setprecision(10) << s_old;
-	logger.debug() << "HMC:\tS_gauge(new field) = " << setprecision(10) << s_new;
-	logger.info()  << "HMC:\tdeltaS_gauge = " << setprecision(10) << deltaH;
+	logger.debug() << "\tHMC [DH]:\tS[GF]_0:\t" << setprecision(10) << s_old;
+	logger.debug() << "\tHMC [DH]:\tS[GF]_1:\t" << setprecision(10) << s_new;
+	logger.info()  << "\tHMC [DH]:\tdS[GF]: \t" << setprecision(10) << deltaH;
 
 	//Gaugemomentum-Part
 	hmc_float p2, new_p2;
@@ -1014,9 +1025,9 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 	//the energy is half the squarenorm
 	deltaH += 0.5 * (p2 - new_p2);
 
-	logger.debug() << "HMC:\tS_gaugemom(old field) = " << setprecision(10) << 0.5 * p2;
-	logger.debug() << "HMC:\tS_gaugemom(new field) = " << setprecision(10) << 0.5 * new_p2;
-	logger.info()  << "HMC:\tdeltaS_gaugemom = " << setprecision(10) << 0.5 * (p2 - new_p2);
+	logger.debug() << "\tHMC [DH]:\tS[GM]_0:\t" << setprecision(10) << 0.5 * p2;
+	logger.debug() << "\tHMC [DH]:\tS[GM]_1:\t" << setprecision(10) << 0.5 * new_p2;
+	logger.info()  << "\tHMC [DH]:\tdS[GM]: \t" << setprecision(10) << 0.5 * (p2 - new_p2);
 
 	//Fermion-Part:
 	if(! get_parameters().get_use_gauge_only() ) {
@@ -1026,25 +1037,23 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 		  hmc_float spinor_energy_init, s_fermion_final;
 		  //initial energy has been computed in the beginning...
 		  clmem_s_fermion_init.dump(&spinor_energy_init);
-		  // sum_links phi*_i (M^+M(heavy))_ij^-1 phi_j
 		  s_fermion_final = calc_s_fermion(&new_u, get_parameters().get_kappa_mp(),  meta::get_mubar_mp(get_parameters()));
 		  deltaH += spinor_energy_init - s_fermion_final;
 
-		  logger.debug() << "HMC:\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
-		  logger.debug() << "HMC:\tS_ferm(new field) = " << setprecision(10) << s_fermion_final;
-		  logger.info() <<  "HMC:\tdeltaS_ferm = " << spinor_energy_init - s_fermion_final;
+		  logger.debug() << "\tHMC [DH]:\tS[DET]_0:\t" << setprecision(10) <<  spinor_energy_init;
+		  logger.debug() << "\tHMC [DH]:\tS[DET]_1:\t" << setprecision(10) << s_fermion_final;
+		  logger.info() <<  "\tHMC [DH]:\tdS[DET]:\t" << spinor_energy_init - s_fermion_final;
 
 		  // det(m_light/m_heavy)
 		  hmc_float spinor_energy_mp_init, s_fermion_mp_final;
 		  //initial energy has been computed in the beginning...
 		  clmem_s_fermion_mp_init.dump(&spinor_energy_mp_init);
-		  // sum_links phi*_i (M^+M(light) / M^+M(heavy)_ij^-1 phi_j
 		  s_fermion_mp_final = calc_s_fermion_mp(&new_u);
 		  deltaH += spinor_energy_mp_init - s_fermion_mp_final;
 		  
-		  logger.debug() << "HMC:\tS_ferm_mp(old field) = " << setprecision(10) <<  spinor_energy_mp_init;
-		  logger.debug() << "HMC:\tS_ferm_mp(new field) = " << setprecision(10) << s_fermion_mp_final;
-		  logger.info() <<  "HMC:\tdeltaS_ferm_mp = " << spinor_energy_mp_init - s_fermion_mp_final;
+		  logger.debug() << "\tHMC [DH]:\tS[DETRAT]_0\t" << setprecision(10) <<  spinor_energy_mp_init;
+		  logger.debug() << "\tHMC [DH]:\tS[DETRAT]_1:\t" << setprecision(10) << s_fermion_mp_final;
+		  logger.info() <<  "\tHMC [DH]:\tdS[DETRAT]:\t" << spinor_energy_mp_init - s_fermion_mp_final;
 		}
 		else {
 		  //in this case one has contributions from det(m_light)
@@ -1052,13 +1061,12 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 		  hmc_float spinor_energy_init, s_fermion_final;
 		  //initial energy has been computed in the beginning...
 		  clmem_s_fermion_init.dump(&spinor_energy_init);
-		  // sum_links phi*_i (M^+M)_ij^-1 phi_j
 		  s_fermion_final = calc_s_fermion(&new_u);
 		  deltaH += spinor_energy_init - s_fermion_final;
 
-		  logger.debug() << "HMC:\tS_ferm(old field) = " << setprecision(10) <<  spinor_energy_init;
-		  logger.debug() << "HMC:\tS_ferm(new field) = " << setprecision(10) << s_fermion_final;
-		  logger.info() <<  "HMC:\tdeltaS_ferm = " << spinor_energy_init - s_fermion_final;
+		  logger.debug() << "\tHMC [DH]:\tS[DET]_0:\t" << setprecision(10) <<  spinor_energy_init;
+		  logger.debug() << "\tHMC [DH]:\tS[DET]_1:\t" << setprecision(10) << s_fermion_final;
+		  logger.info() <<  "\tHMC [DH]:\tdS[DET]: \t" << spinor_energy_init - s_fermion_final;
 		}
 	}
 	//Metropolis-Part
@@ -1068,7 +1076,8 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 	} else {
 		compare_prob = 1.0;
 	}
-	logger.info() << "HMC:\tdeltaH = " << deltaH << "\tAcc-Prop = " << compare_prob;
+	logger.info() << "\tHMC [DH]:\tdH:\t\t" << deltaH;
+	logger.info() << "\tHMC [MET]:\tAcc-Prop:\t" << compare_prob;
 	hmc_observables tmp;
 	if(rnd <= compare_prob) {
 		tmp.accept = 1;
@@ -1096,7 +1105,6 @@ hmc_observables hardware::code::Hmc::metropolis(hmc_float rnd, hmc_float beta, c
 void hardware::code::Hmc::calc_spinorfield_init_energy(hardware::buffers::Plain<hmc_float> * dest)
 {
 	auto spinor_code = get_device()->get_spinor_code();
-
 	//Suppose the initial spinorfield is saved in phi_inv
 	//  it is created in generate_gaussian_spinorfield_device
 	if(get_parameters().get_use_eo() == true) {

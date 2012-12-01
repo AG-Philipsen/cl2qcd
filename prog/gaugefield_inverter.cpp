@@ -371,16 +371,18 @@ void Gaugefield_inverter::flavour_doublet_chiral_condensate(std::string pbp_fn, 
 	   *       = lim_r->inf 2/r  (gamma_5 Xi_r, Phi_r)
 	   * NOTE: The basic difference compared to the pure Wilson case is only the gamma_5 and that one takes the imaginary part!
 	   */
-	  auto spinor_code = get_task_solver()->get_device()->get_spinor_code();
-	  auto fermion_code = get_task_solver()->get_device()->get_fermion_code();
+	  auto spinor_code = get_task_correlator()->get_device()->get_spinor_code();
+	  auto fermion_code = get_task_correlator()->get_device()->get_fermion_code();
 	  // Need 2 spinors at once..
 	  logger.debug() << "init buffers for chiral condensate calculation...";
 	  const hardware::buffers::Plain<spinor> clmem_phi(meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
 	  const hardware::buffers::Plain<spinor> clmem_xi(meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
 	  const Plain<hmc_complex> result_pbp2(1, get_task_correlator()->get_device());
+	  result_pbp2.load(&host_result);
 	  for(int i = 0; i < get_parameters().get_num_sources(); i++){
 	    clmem_phi.load(&solution_buffer[i* meta::get_spinorfieldsize(get_parameters())]);
 	    clmem_xi.load(&source_buffer[i* meta::get_spinorfieldsize(get_parameters())]);
+
 	    if(get_parameters().get_fermact() == meta::Inputparameters::twistedmass){
 	      fermion_code->gamma5_device(&clmem_xi);
 	    }
@@ -411,7 +413,7 @@ void Gaugefield_inverter::flavour_doublet_chiral_condensate(std::string pbp_fn, 
 	   *       = - 4 kappa amu lim_r->inf 1/R (Phi_r, Phi_r)
 	   * NOTE: Here one only needs Phi...
 	   */
-	  auto spinor_code = get_task_solver()->get_device()->get_spinor_code();
+	  auto spinor_code = get_task_correlator()->get_device()->get_spinor_code();
 	  logger.debug() << "init buffers for chiral condensate calculation...";
 	  const hardware::buffers::Plain<spinor> clmem_phi(meta::get_spinorfieldsize(get_parameters()), get_task_correlator()->get_device());
 	  const Plain<hmc_float> result_pbp2(1, get_task_correlator()->get_device());

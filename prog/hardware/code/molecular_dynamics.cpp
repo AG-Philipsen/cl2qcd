@@ -304,7 +304,7 @@ void hardware::code::Molecular_Dynamics::gauge_force_device(const hardware::buff
 		gm_code->set_float_to_gaugemomentum_squarenorm_device(out, &gauge_force_tmp);
 		gauge_force_tmp.dump(&gauge_force_energy);
 
-		logger.debug() <<  "\t\t\tgauge force:\t" << gauge_force_energy;
+		logger.debug() <<  "\t\t\tFORCE [GAUGE]:\t" << gauge_force_energy;
 
 		if(gauge_force_energy != gauge_force_energy) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
@@ -386,7 +386,7 @@ void hardware::code::Molecular_Dynamics::gauge_force_tlsym_device(const hardware
 		gm_code->set_float_to_gaugemomentum_squarenorm_device(out, &gauge_force_tlsym_tmp);
 		gauge_force_tlsym_tmp.dump(&gauge_force_tlsym_energy);
 
-		logger.debug() <<  "\t\t\tgauge force tlsym:\t" << gauge_force_tlsym_energy;
+		logger.debug() <<  "\t\t\tFORCE [TLSYM]:\t" << gauge_force_tlsym_energy;
 
 		if(gauge_force_tlsym_energy != gauge_force_tlsym_energy) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
@@ -432,7 +432,8 @@ void hardware::code::Molecular_Dynamics::fermion_force_device(const hardware::bu
 		hmc_float noneo_force_energy = 0.;
 		gm_code->set_float_to_gaugemomentum_squarenorm_device(out, &noneo_force_tmp);
 		noneo_force_tmp.dump(&noneo_force_energy);
-		logger.debug() <<  "\t\t\tnon-eo force:\t" << noneo_force_energy;
+		logger.debug() <<  "\t\t\tFORCE [DET] (noneo):\t" << noneo_force_energy;
+
 		if(noneo_force_energy != noneo_force_energy) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);
 		}
@@ -481,7 +482,7 @@ void hardware::code::Molecular_Dynamics::fermion_force_eo_device(const hardware:
 		hmc_float resid;
 		gm_code->set_float_to_gaugemomentum_squarenorm_device(out, &force_tmp);
 		force_tmp.dump(&resid);
-		logger.debug() <<  "\t\t\teoprec force:\t" << resid;
+		logger.debug() <<  "\t\t\tFORCE [DET]:\t" << resid;
 
 		if(resid != resid) {
 			throw Print_Error_Message("calculation of force gave nan! Aborting...", __FILE__, __LINE__);

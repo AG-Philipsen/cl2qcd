@@ -39,6 +39,7 @@ public:
 	//get members
 	const hardware::buffers::Gaugemomentum * get_clmem_p();
 	const hardware::buffers::Gaugemomentum * get_clmem_new_p();
+	const hardware::buffers::Gaugemomentum * get_clmem_force();
 	const hardware::buffers::SU3 * get_new_u();
 	const hardware::buffers::Plain<spinor> * get_clmem_phi();
 	const hardware::buffers::Plain<spinor> * get_clmem_phi_inv();

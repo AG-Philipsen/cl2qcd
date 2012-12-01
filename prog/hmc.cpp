@@ -70,13 +70,13 @@ int main(int argc, const char* argv[])
 			hmc_float rnd_number = prng_double();
 			gaugefield.perform_hmc_step(&obs, iter, rnd_number, &solver_timer);
 			acc_rate += obs.accept;
-			if(parameters.get_print_to_screen() )
-				gaugefield.print_hmcobservables(obs, iter);
-
 			if( ( (iter + 1) % writefreq ) == 0 ) {
 			  std::string gaugeout_name = meta::get_hmc_obs_file_name(parameters, "");
 				gaugefield.print_hmcobservables(obs, iter, gaugeout_name);
 			}
+			else if(parameters.get_print_to_screen() )
+				gaugefield.print_hmcobservables(obs, iter);
+
 			if( parameters.get_saveconfigs() == true && ( (iter + 1) % savefreq ) == 0 ) {
 				gaugefield.synchronize(0);
 				gaugefield.save(iter + 1);
@@ -90,7 +90,7 @@ int main(int argc, const char* argv[])
 			}
 		}
 		logger.info() << "HMC done";
-		logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acc_rate, hmc_iter) << "%";
+		logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acc_rate, parameters.get_hmcsteps()) << "%";
 		perform_timer.add();
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////
