@@ -11,7 +11,7 @@ linestyles = ['r.', 'b.', 'r*', 'b*', 'g.', 'k.', 'r,', 'b,', 'g,', 'k,', 'g*', 
 
 FileData = namedtuple('FileData', ['label', 'runs', 'xpos'])
 
-def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title=False, maxSize=None, legend_pos = None):
+def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title=False, maxSize=None, legend_pos = None, offset_lines = False):
 
 	filedatas = []
 
@@ -69,22 +69,32 @@ def main(datafiles, filelabels, kernelpattern, output=None, metric='both', title
 	lines = []
 	labels = []
 	linestyle = 0
+
+	if offset_lines:
+		offset_per_line = (min_delta / 2)
+		offset = - int(len(filedatas) / 2) * offset_per_line / 2
+	else:
+		offset_per_line = 0
+		offset = 0
+
 	for data in filedatas:
+		xpos = [pos + offset for pos in data.xpos]
 		if metric == 'gflops':
-			lines.append(ax1.plot(data.xpos, data.runs[:,3], linestyles[linestyle], markersize=15))
+			lines.append(ax1.plot(xpos, data.runs[:,3], linestyles[linestyle], markersize=15))
 			labels.append(data.label)
 			linestyle += 1
 		elif metric == 'gbytes':
-			lines.append(ax1.plot(data.xpos, data.runs[:,2], linestyles[linestyle], markersize=15))
+			lines.append(ax1.plot(xpos, data.runs[:,2], linestyles[linestyle], markersize=15))
 			labels.append(data.label)
 			linestyle += 1
 		else:
-			lines.append(ax1.plot(data.xpos, data.runs[:,2], linestyles[linestyle], markersize=15))
+			lines.append(ax1.plot(xpos, data.runs[:,2], linestyles[linestyle], markersize=15))
 			labels.append(data.label + ' Bandwidth')
 			linestyle += 1
-			lines.append(ax2.plot(data.xpos, data.runs[:,3], linestyles[linestyle], markersize=15))
+			lines.append(ax2.plot(xpos, data.runs[:,3], linestyles[linestyle], markersize=15))
 			labels.append(data.label + ' Gflops')
 			linestyle += 1
+		offset += offset_per_line
 
 	if title:
 		ax1.set_title(title)
