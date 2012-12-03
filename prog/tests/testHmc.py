@@ -40,22 +40,17 @@ def main():
 		return subject.returncode
 
 	#now the value of interest is in the 2nd row of "hmc_output"
-	os.system('awk \'{print $2}\' hmc_output > hmc_test_tmp')
-	candidate = open('./hmc_test_tmp', 'r')
+	candidate = open('hmc_output')
 
 	#get reference value, this is given in the first line of the reference file
 	refval = float(reference.readline())
-	val = float(candidate.readline())
+	val = float(candidate.readline().split()[2])
 	candidate.close()
 	reference.close()
 
 	if not compareFloat(val, refval, tolerance):
 		print "Invalid Result! Expected: %f  Real: %f (at %.1f %% tolerance)" % (refval, val, tolerance)
 		return 127
-
-	# rm tmp files
-        os.system('rm -f hmc_hmc_test_tmp')
-
 
 	# no check failed
 	return 0
