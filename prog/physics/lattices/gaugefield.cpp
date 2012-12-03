@@ -84,7 +84,7 @@ void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
 	check_sourcefileparameters(parameters, plaq, parameters_source);
 }
 
-static  std::vector<const hardware::buffers::SU3 *> allocate_buffers(hardware::System& system)
+static std::vector<const hardware::buffers::SU3 *> allocate_buffers(hardware::System& system)
 {
 	using hardware::buffers::SU3;
 
