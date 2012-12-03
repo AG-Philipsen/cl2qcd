@@ -37,6 +37,11 @@ namespace physics {
 			 */
 			Gaugefield(hardware::System&, physics::PRNG&, bool hot);
 
+			/**
+			 * Release resources
+			 */
+			~Gaugefield();
+
 			/*
 			 * Gaugefields cannot be copied
 			 */

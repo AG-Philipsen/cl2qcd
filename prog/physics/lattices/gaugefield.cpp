@@ -95,6 +95,13 @@ static  std::vector<const hardware::buffers::SU3 *> allocate_buffers(hardware::S
 	return buffers;
 }
 
+physics::lattices::Gaugefield::~Gaugefield()
+{
+for(auto buffer: buffers) {
+		delete buffer;
+	}
+}
+
 static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, physics::PRNG& prng)
 {
 	using hardware::Device;
