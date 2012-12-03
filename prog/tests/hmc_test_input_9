@@ -25,6 +25,7 @@ solver=bicgstab
 
 #HMC-parameters
 hmcsteps=1
+use_mp=true
 num_timescales=3
 tau=0.01
 integrator0=2MN
