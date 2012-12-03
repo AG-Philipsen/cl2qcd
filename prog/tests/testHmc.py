@@ -44,7 +44,7 @@ def main():
 
 	#get reference value, this is given in the first line of the reference file
 	refval = float(reference.readline())
-	val = float(candidate.readline().split()[2])
+	val = float(candidate.readline().split()[1])
 	candidate.close()
 	reference.close()
 
