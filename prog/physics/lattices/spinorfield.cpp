@@ -30,3 +30,22 @@ for(auto buffer: buffers) {
 		delete buffer;
 	}
 }
+
+const std::vector<const physics::lattices::Spinorfield *> physics::lattices::create_spinorfields(hardware::System& system, const size_t n)
+{
+	std::vector<const Spinorfield *> fields;
+	fields.reserve(n);
+
+	for(size_t i = 0; i < n; ++i) {
+		fields.push_back(new Spinorfield(system));
+	}
+
+	return fields;
+}
+
+void physics::lattices::release_spinorfields(const std::vector<const physics::lattices::Spinorfield *> fields)
+{
+for(auto field: fields) {
+		delete field;
+	}
+}

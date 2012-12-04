@@ -48,6 +48,20 @@ namespace physics {
 			hardware::System const& system;
 			const std::vector<const hardware::buffers::Plain<spinor> *> buffers;
 		};
+
+	/**
+	 * Create n spinorfields.
+	 *
+	 * \param n The number of spinorfields to create
+	 */
+	const std::vector<const Spinorfield *> create_spinorfields(hardware::System& system, const size_t n)
+;
+
+	/**
+	 * Release the given spinorfields
+	 */
+	void release_spinorfields(const std::vector<const Spinorfield *> fields);
+
 	}
 }
 

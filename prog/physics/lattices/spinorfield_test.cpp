@@ -33,8 +33,20 @@ BOOST_AUTO_TEST_CASE(save)
 	const char * _params[] = {"foo"};
 	meta::Inputparameters params(1, _params);
 	hardware::System system(params);
-	physics::PRNG prng(system);
 
 	Spinorfield sf(system);
 	BOOST_ERROR("not implemented");
+}
+
+BOOST_AUTO_TEST_CASE(fields)
+{
+	using namespace physics::lattices;
+
+	const char * _params[] = {"foo"};
+	meta::Inputparameters params(1, _params);
+	hardware::System system(params);
+
+	auto fields = create_spinorfields(system, 2);
+
+	release_spinorfields(fields);
 }
