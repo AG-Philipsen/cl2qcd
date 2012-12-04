@@ -19,3 +19,4 @@ tau=0.5
 gaugeact=wilson
 puregauge=true
 
+use_same_rnd_numbers=true
