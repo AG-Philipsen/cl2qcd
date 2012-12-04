@@ -27,11 +27,6 @@ int main(int argc, const char* argv[])
 		hardware::System system(parameters);
 		Gaugefield_inverter gaugefield(&system);
 
-		//use 2 devices: one for solver, one for correlator
-		int numtasks = 2;
-		if(parameters.get_device_count() != 2 )
-			logger.warn() << "Only 1 device demanded by input file. All calculations performed on primary device.";
-
 		cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
 
 		logger.trace() << "Init gaugefield" ;
