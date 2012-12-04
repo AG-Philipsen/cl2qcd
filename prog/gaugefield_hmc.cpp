@@ -90,9 +90,15 @@ void Gaugefield_hmc::print_hmcobservables(hmc_observables obs, int iter, std::st
 	//print deltaH, exp(deltaH), acceptance-propability, accept (yes or no)
 	hmcout <<  "\t" << obs.deltaH << "\t" << exp_deltaH << "\t" << obs.prob << "\t" << obs.accept;
 	//print number of iterations used in inversions with full and force precision
-	hmcout << "\t" << get_parameters().get_iter0() << "\t" << get_parameters().get_iter1();
+	/** 
+	 * @todo: The counters should be implemented once the solver class is used!"
+	 * until then, only write "0"!
+	 */
+	int iter0 = 0;
+	int iter1 = 0;
+	hmcout << "\t" << iter0 << "\t" << iter1;
 	if(get_parameters().get_use_mp() ) {
-		hmcout << "\t" << get_parameters().get_iter0_mp() << "\t" << get_parameters().get_iter1_mp();
+		hmcout << "\t" << iter0 << "\t" << iter1;
 	}
 	if(meta::get_use_rectangles(get_parameters()) ) {
 		//print rectangle value
