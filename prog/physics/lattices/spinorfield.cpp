@@ -49,3 +49,8 @@ for(auto field: fields) {
 		delete field;
 	}
 }
+
+const std::vector<const hardware::buffers::Plain<spinor> *> physics::lattices::Spinorfield::get_buffers() const noexcept
+{
+	return buffers;
+}

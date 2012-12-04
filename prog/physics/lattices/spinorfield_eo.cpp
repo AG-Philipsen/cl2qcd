@@ -30,3 +30,8 @@ for(auto buffer: buffers) {
 		delete buffer;
 	}
 }
+
+const std::vector<const hardware::buffers::Spinor *> physics::lattices::Spinorfield_eo::get_buffers() const noexcept
+{
+	return buffers;
+}

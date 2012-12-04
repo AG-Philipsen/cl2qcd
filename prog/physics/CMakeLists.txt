@@ -9,6 +9,7 @@
 add_library(physics
 	prng.cpp
 	fermionmatrix.cpp
+	sources.cpp
 )
 add_modules(physics
 	lattices
@@ -20,3 +21,4 @@ add_modules(physics
 #
 
 add_unit_test(physics::PRNG prng_test)
+add_unit_test(physics::<sources> sources_test)
