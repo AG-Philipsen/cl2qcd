@@ -94,13 +94,9 @@ public:
 	double get_kappa() const noexcept;
 	double get_mu() const noexcept;
 	double get_csw() const noexcept;
-	int get_iter0() const noexcept;
-	int get_iter1() const noexcept;
 	double get_kappa_mp() const noexcept;
 	double get_mu_mp() const noexcept;
 	double get_csw_mp() const noexcept;
-	int get_iter0_mp() const noexcept;
-	int get_iter1_mp() const noexcept;
 	int get_cgmax() const noexcept;
 	int get_cgmax_mp() const noexcept;
 	double get_theta_fermion_spatial() const noexcept;
@@ -221,13 +217,9 @@ private:
 	double kappa;
 	double mu;
 	double csw;
-	int iter0;
-	int iter1;
 	double kappa_mp;
 	double mu_mp;
 	double csw_mp;
-	int iter0_mp;
-	int iter1_mp;
 	int cgmax;
 	int cgmax_mp;
 	double theta_fermion_spatial;
