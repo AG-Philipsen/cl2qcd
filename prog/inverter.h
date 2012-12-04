@@ -34,7 +34,7 @@ void print_solver_profiling(std::string filename)
 	out << "\t" << time_total << "\t" << calls_total << "\t" << avg_time << std::endl;
 	out << "## **********************************************************" << endl;
 	out.close();
-	
+
 	logger.info() << "## **********************************************************";
 	logger.info() << "## Solver Times [mus]:\ttime\tcalls\tavg" ;
 	logger.info() << "##\t" << time_total << "\t" << calls_total << "\t" << avg_time;
