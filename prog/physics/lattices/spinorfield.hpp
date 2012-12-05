@@ -2,8 +2,8 @@
  * Declaration of the physics::lattices::Spinorfield class
  */
 
-#ifndef _PHYSICS_LATTICES_GAUGEFIELD_
-#define _PHYSICS_LATTICES_GAUGEFIELD_
+#ifndef _PHYSICS_LATTICES_SPINORFIELD_
+#define _PHYSICS_LATTICES_SPINORFIELD_
 
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/plain.hpp"
@@ -65,4 +65,4 @@ namespace physics {
 	}
 }
 
-#endif /*_PHYSICS_LATTICES_GAUGEFIELD_ */
+#endif /*_PHYSICS_LATTICES_SPINORFIELD_ */

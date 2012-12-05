@@ -2,8 +2,8 @@
  * Declaration of the physics::lattices::Spinorfield_eo class
  */
 
-#ifndef _PHYSICS_LATTICES_GAUGEFIELD_
-#define _PHYSICS_LATTICES_GAUGEFIELD_
+#ifndef _PHYSICS_LATTICES_SPINORFIELD_EO_
+#define _PHYSICS_LATTICES_SPINORFIELD_EO_
 
 #include "../../hardware/system.hpp"
 #include "../../hardware/buffers/spinor.hpp"
@@ -51,4 +51,4 @@ namespace physics {
 	}
 }
 
-#endif /*_PHYSICS_LATTICES_GAUGEFIELD_ */
+#endif /*_PHYSICS_LATTICES_SPINORFIELD_EO_ */
