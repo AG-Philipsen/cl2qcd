@@ -75,6 +75,7 @@ public:
 	bool get_print_to_screen() const noexcept;
 	//This is obvious!!!
 	uint32_t get_host_seed() const noexcept;
+	std::string get_initial_prng_state() const noexcept;
 
 	//gaugefield parameters
 	double get_beta() const noexcept;
@@ -198,6 +199,7 @@ private:
 	bool print_to_screen;
 	//This is obvious!!!
 	uint32_t host_seed;
+	std::string initial_prng_state;
 
 	//gaugefield parameters
 	double beta;

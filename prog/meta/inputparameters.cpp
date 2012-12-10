@@ -128,6 +128,10 @@ uint32_t Inputparameters::get_host_seed() const noexcept
 {
   return host_seed;
 }
+std::string Inputparameters::get_initial_prng_state() const noexcept
+{
+  return initial_prng_state;
+}
 
 //gaugefield parameters
 double Inputparameters::get_beta() const noexcept
@@ -519,6 +523,7 @@ Inputparameters::Inputparameters(int argc, const char** argv)
 	("sourcefile", po::value<std::string>(&sourcefile)->default_value("conf.00000"))
 	("print_to_screen", po::value<bool>(&print_to_screen)->default_value(false))
 	("host_seed", po::value<uint32_t>(&host_seed)->default_value(4815))
+	("initial_prng_state", po::value<std::string>(&initial_prng_state)->default_value(""))
 
 	//gaugefield parameters
 	("beta", po::value<double>(&beta)->default_value(4.0))

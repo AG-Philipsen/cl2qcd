@@ -44,6 +44,13 @@ namespace physics {
 			 */
 			const std::vector<const hardware::buffers::PRNGBuffer*> get_buffers() const noexcept;
 
+			/**
+			 * Store the current PRNG state to a file of the given name.
+			 *
+			 * \param filename The name of the file to store the random state in
+			 */
+			void store(const std::string filename) const;
+
 		private:
 			/**
 			 * Reference to the PRNG Buffers used on each device

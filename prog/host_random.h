@@ -29,6 +29,12 @@ void prng_init(uint32_t seed);
  */
 double prng_double();
 
+int prng_size();
+
+void prng_get(int* buf);
+
+void prng_set(int* buf);
+
 #ifdef USE_PRNG_NR3
 /** Storage type for state of the device random number generator */
 typedef cl_ulong4 nr3_state_dev;
