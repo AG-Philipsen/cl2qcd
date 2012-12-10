@@ -86,6 +86,9 @@ int main(int argc, const char* argv[])
 				std::string outputfile = "conf.save";
 				logger.info() << "saving current gaugefield to file \"" << outputfile << "\"";
 				gaugefield.save(outputfile, iter+1);
+				outputfile = "prng.save";
+				logger.info() << "saving current prng state to \"" << outputfile << "\"";
+				prng.store(outputfile);
 			}
 		}
 		logger.info() << "HMC done";
