@@ -25,12 +25,6 @@ public:
 
 	virtual ~PRNG();
 
-	/**
-	 * Get cl_mem object rndarray
-	 * @return rndarray
-	 */
-	const hardware::buffers::PRNGBuffer& get_prng_buffer() const noexcept;
-
 	ClSourcePackage get_sources() const noexcept;
 
 #ifdef USE_PRNG_RANLUX
@@ -67,8 +61,6 @@ private:
 	 * A set of sources required to use the PRNG.
 	 */
 	ClSourcePackage prng_code;
-
-	const hardware::buffers::PRNGBuffer prng_buffer;
 
 #ifdef USE_PRNG_NR3
 	/**

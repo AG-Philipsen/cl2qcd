@@ -3,7 +3,7 @@
 #include "meta/version.hpp"
 #include "meta/util.hpp"
 
-void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type)
+void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type, physics::PRNG& prng)
 {
 
 	logger.trace() << "Initialize gaugefield";
@@ -14,7 +14,7 @@ void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type)
 
 	//allocate memory for private gaugefield on host and initialize (cold start, read in, future: hot start)
 	sgf = new Matrixsu3[get_num_gaugefield_elems()];
-	init_gaugefield();
+	init_gaugefield(prng);
 
 	init_devicetypearray(primary_device_type);
 	init_opencl();
@@ -236,12 +236,12 @@ void Gaugefield_hybrid::finalize_opencl()
 
 }
 
-void Gaugefield_hybrid::init_gaugefield()
+void Gaugefield_hybrid::init_gaugefield(physics::PRNG& prng)
 {
-	init_gaugefield(get_parameters().get_sourcefile().c_str() );
+	init_gaugefield(get_parameters().get_sourcefile().c_str(), prng);
 }
 
-void Gaugefield_hybrid::init_gaugefield(const char* sourcefile)
+void Gaugefield_hybrid::init_gaugefield(const char* sourcefile, physics::PRNG& prng)
 {
 	switch(get_parameters().get_startcondition()) {
 		case meta::Inputparameters::start_from_source: {
@@ -258,7 +258,7 @@ void Gaugefield_hybrid::init_gaugefield(const char* sourcefile)
 			set_gaugefield_cold(get_sgf());
 			break;
 		case meta::Inputparameters::hot_start:
-			set_gaugefield_hot(get_sgf());
+			set_gaugefield_hot(get_sgf(), prng);
 			break;
 	}
 }
@@ -275,12 +275,12 @@ void Gaugefield_hybrid::set_gaugefield_cold(Matrixsu3 * field)
 	}
 }
 
-void Gaugefield_hybrid::set_gaugefield_hot(Matrixsu3 * field)
+void Gaugefield_hybrid::set_gaugefield_hot(Matrixsu3 * field, physics::PRNG& prng)
 {
 	for(int t = 0; t < parameters.get_ntime(); t++) {
 		for(size_t n = 0; n < meta::get_volspace(parameters); n++) {
 			for(int mu = 0; mu < NDIM; mu++) {
-				const Matrixsu3 tmp = random_matrixsu3();
+				const Matrixsu3 tmp = physics::random_matrixsu3(prng);
 				set_to_gaugefield(field, mu, n, t, tmp);
 			}
 		}

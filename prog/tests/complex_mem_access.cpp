@@ -39,8 +39,8 @@ class Dummyfield : public Gaugefield_hybrid {
 
 public:
 	Dummyfield(cl_device_type device_type, const hardware::System * system)
-		: Gaugefield_hybrid(system) {
-		init(1, device_type);
+		: Gaugefield_hybrid(system), prng(*system) {
+		init(1, device_type, prng);
 	};
 
 	virtual void init_tasks();
@@ -60,6 +60,7 @@ private:
 	hardware::buffers::Plain<hmc_complex> * d_complex;
 	hardware::buffers::Plain<hmc_complex> * d_readComplex;
 	hardware::buffers::Plain<cl_float2> * d_float2;
+	physics::PRNG prng;
 };
 
 BOOST_AUTO_TEST_CASE( CPU )

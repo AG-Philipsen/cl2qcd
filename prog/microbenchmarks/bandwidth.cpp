@@ -78,8 +78,8 @@ class Dummyfield : public Gaugefield_hybrid {
 
 public:
 	Dummyfield(const hardware::System * system, cl_device_type device_type, size_t maxMemSize)
-		: Gaugefield_hybrid(system), maxMemSize(maxMemSize) {
-		init(1, device_type);
+		: Gaugefield_hybrid(system), maxMemSize(maxMemSize), prng(*system) {
+		init(1, device_type, prng);
 	};
 
 	virtual void init_tasks();
@@ -93,6 +93,7 @@ private:
 	void clear_buffers();
 	const hardware::buffers::Plain<cl_char> * in, * out;
 	size_t maxMemSize;
+	physics::PRNG prng;
 };
 
 int main(int argc, char** argv)

@@ -1,5 +1,6 @@
 #include "../gaugefield_hybrid.h"
 #include "../meta/util.hpp"
+#include "../host_random.h"
 
 // use the boost test framework
 #define BOOST_TEST_DYN_LINK
@@ -12,9 +13,9 @@
 class TestGaugefield : public Gaugefield_hybrid {
 
 public:
-	TestGaugefield(const hardware::System * system) : Gaugefield_hybrid(system) {
+	TestGaugefield(const hardware::System * system) : Gaugefield_hybrid(system), prng(*system) {
 		auto inputfile = system->get_inputparameters();
-		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU);
+		init(1, inputfile.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU, prng);
 		meta::print_info_hmc("test program", inputfile);
 	};
 
@@ -22,6 +23,9 @@ public:
 	virtual void finalize_opencl();
 
 	hardware::code::Fermions * get_device();
+
+private:
+	physics::PRNG prng;
 };
 
 void TestGaugefield::init_tasks()
@@ -56,7 +60,7 @@ void fill_sf_with_one(spinor * sf_in, int size)
 
 void fill_sf_with_random(spinor * sf_in, int size, int seed)
 {
-  prng_init(seed);
+	prng_init(seed);
 	for(int i = 0; i < size; ++i) {
 		sf_in[i].e0.e0.re = prng_double();
 		sf_in[i].e0.e1.re = prng_double();

@@ -25,6 +25,7 @@ int main(int argc, const char* argv[])
 
 		init_timer.reset();
 		hardware::System system(parameters);
+		physics::PRNG prng(system);
 		Gaugefield_inverter gaugefield(&system);
 
 		//use 2 devices: one for solver, one for correlator
@@ -40,7 +41,7 @@ int main(int argc, const char* argv[])
 		}
 
 		logger.trace() << "Init gaugefield" ;
-		gaugefield.init(numtasks, primary_device);
+		gaugefield.init(numtasks, primary_device, prng);
 
 		init_timer.add();
 
@@ -64,12 +65,12 @@ int main(int argc, const char* argv[])
 			for(iter = iter_start; iter < iter_end; iter += iter_incr) {
 			  std::string config_name = meta::create_configuration_name(parameters, iter);
 				logger.info() << "Measure fermionic observables on configuration: " << config_name;
-				gaugefield.init_gaugefield(config_name.c_str());
+				gaugefield.init_gaugefield(config_name.c_str(), prng);
 				gaugefield.synchronize(0);
 				if(parameters.get_print_to_screen() ) {
 					gaugefield.print_gaugeobservables(iter);
 				}
-				gaugefield.create_sources();
+				gaugefield.create_sources(prng);
 				gaugefield.perform_inversion(&solver_timer);
 
 				if(parameters.get_measure_correlators() ){
@@ -88,7 +89,7 @@ int main(int argc, const char* argv[])
 			logger.info() << "Gaugeobservables:";
 			gaugefield.print_gaugeobservables(0);
 
-			gaugefield.create_sources();
+			gaugefield.create_sources(prng);
 			gaugefield.perform_inversion(&solver_timer);
 
 			if(parameters.get_measure_correlators() ){

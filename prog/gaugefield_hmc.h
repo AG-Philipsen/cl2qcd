@@ -28,6 +28,8 @@
 #include "gaugefield_hybrid.h"
 #include "types_hmc.h"
 
+#include "physics/prng.hpp"
+
 #include "logger.hpp"
 
 
@@ -72,7 +74,7 @@ public:
 	 * Perform the inversion and store result to solution_buffer
 	 * @param[in,out] solver_timer
 	 */
-	void perform_hmc_step(hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* solver_timer);
+	void perform_hmc_step(hmc_observables *obs, int iter, hmc_float rnd_number, usetimer* solver_timer, const physics::PRNG& prng);
 
 	void print_hmcobservables(hmc_observables obs, int iter, std::string filename);
 	void print_hmcobservables(hmc_observables obs, int iter);
@@ -82,7 +84,7 @@ public:
 	void md_update_gaugemomentum_fermion(hmc_float eps, usetimer * solvertimer, hmc_float kappa = ARG_DEF, hmc_float mubar = ARG_DEF);
 	void md_update_gaugemomentum_detratio(hmc_float eps, usetimer * solvertimer);
 	void md_update_gaugefield(hmc_float eps);
-	void init_gaugemomentum_spinorfield(usetimer * solvertimer);
+	void init_gaugemomentum_spinorfield(usetimer * solvertimer, const physics::PRNG& prng);
 
 	/**
 	 * See hep-lat/0505020 for more infos on integrators.

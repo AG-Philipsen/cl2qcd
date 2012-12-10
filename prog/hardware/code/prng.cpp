@@ -21,44 +21,27 @@ static std::string collect_build_options(hardware::Device * device, const meta::
 	return options.str();
 }
 
-#ifdef USE_PRNG_NR3
-void hardware::code::PRNG::copy_rndstate_to_device(nr3_state_dev* rndarray) const
-{
-	prng_buffer.load(rndarray);
-}
-
-void hardware::code::PRNG::copy_rndstate_from_device(nr3_state_dev* rndarray) const
-{
-	prng_buffer.dump(rndarray);
-}
-#endif // USE_PRNG_NR3
-
-const hardware::buffers::PRNGBuffer& hardware::code::PRNG::get_prng_buffer() const noexcept
-{
-	return prng_buffer;
-}
-
 hardware::code::PRNG::PRNG(const meta::Inputparameters& params, hardware::Device * device)
-	: Opencl_Module(params, device), prng_buffer(device)
+	: Opencl_Module(params, device)
 {
 #ifdef USE_PRNG_NR3
-	// Prepare random number arrays, for each task and device separately
-	const size_t num_rndstates = prng_buffer.get_elements();
-	rndarray = new nr3_state_dev[num_rndstates];
-	nr3_init_seeds(rndarray, "rand_seeds", num_rndstates);
-	prng_buffer.load(rndarray);
-
-	prng_code = ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "random.cl";
-
-	// Prepare random number arrays, for each task and device separately
-	const size_t num_rndstates = prng_buffer.get_elements();
-	rndarray = new nr3_state_dev[num_rndstates];
-	nr3_init_seeds(rndarray, "rand_seeds", num_rndstates);
-	prng_buffer.load(rndarray);
+#error
+//	// Prepare random number arrays, for each task and device separately
+//	const size_t num_rndstates = prng_buffer.get_elements();
+//	rndarray = new nr3_state_dev[num_rndstates];
+//	nr3_init_seeds(rndarray, "rand_seeds", num_rndstates);
+//	prng_buffer.load(rndarray);
+//
+//	prng_code = ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "random.cl";
+//
+//	// Prepare random number arrays, for each task and device separately
+//	const size_t num_rndstates = prng_buffer.get_elements();
+//	rndarray = new nr3_state_dev[num_rndstates];
+//	nr3_init_seeds(rndarray, "rand_seeds", num_rndstates);
+//	prng_buffer.load(rndarray);
 #elif defined(USE_PRNG_RANLUX)
 	prng_code = ClSourcePackage(collect_build_options(get_device(), get_parameters())) << "ranluxcl/ranluxcl.cl" << "random.cl";
 	init_kernel = createKernel("prng_ranlux_init") << get_device()->get_gaugefield_code()->get_sources() << prng_code << "random_ranlux_init.cl";
-	initialize(&prng_buffer, get_parameters().get_host_seed() + 1);
 #else // USE_PRNG_XXX
 #error No implemented PRNG selected
 #endif // USE_PRNG_XXX

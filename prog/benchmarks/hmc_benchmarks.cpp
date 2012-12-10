@@ -37,13 +37,14 @@ int main(int argc, const char* argv[])
 	//hmc_observables obs;
 
 	hardware::System system(parameters, true);
+	physics::PRNG prng(system);
 	Gaugefield_hmc gaugefield(&system);
 
 	int numtasks = 1;
 	cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
 
 	logger.trace() << "init gaugefield" ;
-	gaugefield.init(numtasks, primary_device);
+	gaugefield.init(numtasks, primary_device, prng);
 	logger.trace() << "initial gaugeobservables:";
 	gaugefield.print_gaugeobservables(0);
 	init_timer.add();
@@ -57,13 +58,12 @@ int main(int argc, const char* argv[])
 	int hmc_iter = parameters.get_hmcsteps();
 	int iter;
 	//This is the random-number generator for the metropolis-step
-	prng_init(parameters.get_host_seed());
-	hmc_float rnd_number = prng_double();
+	hmc_float rnd_number = prng.get_double();
 	usetimer solver_timer;
 	hmc_observables obs;
 
 	logger.debug() << "\tinit spinorfield and gaugemomentum" ;
-	gaugefield.init_gaugemomentum_spinorfield(&solver_timer);
+	gaugefield.init_gaugemomentum_spinorfield(&solver_timer, prng);
 
 	logger.debug() << "\tupdate gaugefield and gaugemomentum" ;
 	//copy u->u' p->p' for the integrator
