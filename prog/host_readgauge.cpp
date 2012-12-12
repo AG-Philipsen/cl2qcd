@@ -3,6 +3,8 @@
 #include "exceptions.h"
 
 #include "logger.hpp"
+#include <sstream>
+#include "checksum.h"
 
 
 extern "C" {
@@ -44,12 +46,12 @@ void trim(char * buff);
 
 void get_XML_info_simple(xmlTextReaderPtr reader, int numbers[6], char * field);
 
-void get_XML_infos(const char * filename, int * prec, int * lx, int * ly, int * lz, int *lt, int * flavours, char * field_out );
+void get_XML_infos(const char * buffer, int size, const char* filename, int * prec, int * lx, int * ly, int * lz, int *lt, int * flavours, char * field_out );
 
 // get XML Infos: file to be read + parameters
 void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries,
                     int * flavours, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
-                    char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, int * fermion);
+                    char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, int * fermion, Checksum * checksum);
 
 void read_binary_data_single(char * file, float * numArray, int num_entries, int filelength );
 
@@ -64,6 +66,9 @@ void read_tmlqcd_file(char * file,
                       hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
                       char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver, int * time_solver, char * hmcversion_solver, char * date_solver,
                       hmc_float * array, int * hmc_prec);
+
+Checksum get_checksum(const char * buffer, int size, const char * filename);
+
 //CP:
 //changed some things for C++
 //   char tmp[len2-len1-3] to "tmp = new char[len2-len1-3; .... free(tmp);" and so forth
@@ -307,14 +312,14 @@ void get_XML_info_simple(xmlTextReaderPtr reader, int numbers[6], char * field)
 	xmlFree(name);
 }
 
-void get_XML_infos(const char * filename, int * prec, int * lx, int * ly, int * lz, int *lt, int * flavours, char * field_out )
+void get_XML_infos(const char * buffer, int size, const char * filename, int * prec, int * lx, int * ly, int * lz, int *lt, int * flavours, char * field_out )
 {
 	xmlTextReaderPtr reader;
 	int ret;
 	int tmpArray[6];
 	char field[100];
 
-	reader = xmlNewTextReaderFilename(filename);
+	reader = xmlReaderForMemory(buffer, size, filename, nullptr, 0);
 	if (reader != NULL) {
 		ret = xmlTextReaderRead(reader);
 		while (ret == 1) {
@@ -333,6 +338,56 @@ void get_XML_infos(const char * filename, int * prec, int * lx, int * ly, int * 
 	return;
 }
 
+Checksum get_checksum(const char * buffer, int size, const char * filename)
+{
+	uint32_t suma, sumb;
+
+	xmlTextReaderPtr reader = xmlReaderForMemory(buffer, size, filename, nullptr, 0);
+	if(reader == nullptr) {
+		throw File_Exception(filename);
+	}
+
+	int xml_state = xmlTextReaderRead(reader);
+	while(xml_state == 1) {
+		std::stringstream name_buf;
+		xmlChar* name_xml = xmlTextReaderName(reader);
+		name_buf << name_xml;
+		free(name_xml);
+		std::string name = name_buf.str();
+
+
+		if("suma" == name) {
+			xmlTextReaderRead(reader);
+			xmlChar * value = xmlTextReaderValue(reader);
+			if(value != nullptr) {
+				std::stringstream tmp;
+				tmp << value;
+				tmp >> std::hex >> suma;
+				free(value);
+			}
+			xmlTextReaderRead(reader);
+		}
+		if("sumb" == name) {
+			xmlTextReaderRead(reader);
+			xmlChar * value = xmlTextReaderValue(reader);
+			if(value != nullptr) {
+				std::stringstream tmp;
+				tmp << value;
+				tmp >> std::hex >> sumb;
+				free(value);
+			}
+			xmlTextReaderRead(reader);
+		}
+
+		xml_state = xmlTextReaderRead(reader);
+	}
+	if(xml_state) {
+		logger.warn() << filename << ": failed to parse";
+	}
+	xmlFreeTextReader(reader);
+
+	return Checksum(suma, sumb);
+}
 
 // read in binary file and save it as readable file
 // since tmLQCD always saves data with BigEndian one has to be careful
@@ -340,11 +395,10 @@ void get_XML_infos(const char * filename, int * prec, int * lx, int * ly, int * 
 // get XML Infos: file to be read + parameters
 void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries,
                     int * flavours, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
-                    char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, int * fermion)
+                    char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, int * fermion, Checksum * checksum)
 {
 	FILE *fp;
 	int MB_flag, ME_flag, msg, rec, status, first, switcher = 0;
-	char *lime_type;
 	size_t bytes_pad;
 	n_uint64_t nbytes;
 
@@ -375,11 +429,11 @@ void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, i
 		rec++;
 		//read header data
 		nbytes    = limeReaderBytes(r);
-		lime_type = limeReaderType(r);
+		std::string lime_type(limeReaderType(r));
 		bytes_pad = limeReaderPadBytes(r);
 		MB_flag   = limeReaderMBFlag(r);
 		ME_flag   = limeReaderMEFlag(r);
-		if(strcmp (lime_types[0], lime_type) == 0 ) {
+		if("propagator-type" == lime_type) {
 			if (switcher == 0) {
 				logger.info() << "\tfile contains fermion informations" ;
 				switcher ++;
@@ -389,7 +443,7 @@ void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, i
 			}
 		}
 		//!!read the inverter-infos for FIRST fermion infos only!!
-		if(strcmp (lime_types[2], lime_type) == 0 && switcher == 1 ) {
+		if("inverter-info" == lime_type && switcher == 1) {
 			logger.trace() << "\tfound inverter-infos as lime_type " << lime_type ;
 			*fermion = *fermion + 1;
 			//!!create tmporary file to read in data, this can be done better
@@ -412,7 +466,7 @@ void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, i
 			remove(tmp_file_name);
 		}
 		//!!read XLF info, only FIRST fermion is read!!
-		if(strcmp (lime_types[1], lime_type) == 0 && switcher < 2 ) {
+		if("xlf-info" == lime_type && switcher < 2) {
 			logger.trace() << "\tfound XLF-infos as lime_type " << lime_type;
 			//!!create tmporary file to read in data, this can be done better
 			FILE * tmp;
@@ -435,25 +489,16 @@ void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, i
 			remove(tmp_file_name);
 		}
 		//!!read ildg format (gauge fields) or etmc-propagator-format (fermions), only FIRST fermion is read!!
-		if(  (strcmp (lime_types[4], lime_type) == 0 || strcmp (lime_types[7], lime_type) == 0)  && switcher < 2 ) {
+		if(("etmc-propagator-format" == lime_type || "ildg-format" == lime_type) && switcher < 2 ) {
 			logger.trace() << "\tfound XML-infos as lime_type" << lime_type;
 			//!!create tmporary file to read in data, this can be done better
-			FILE * tmp;
-			const char tmp_file_name[] = "tmpfilenamethree";
-			tmp = fopen(tmp_file_name, "w");
-
-			if(tmp == NULL) {
-				throw Print_Error_Message("\t\terror in creating tmp file\n");
-			}
 			char * buffer = new char[nbytes + 1];
-			int error = limeReaderReadData (buffer, &nbytes, r);
+			int error = limeReaderReadData(buffer, &nbytes, r);
 			if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
-			fwrite(buffer, 1, nbytes, tmp);
-			fclose(tmp);
+
+			get_XML_infos(buffer, nbytes, file, prec, lx, ly, lz, lt, flavours, field_out );
 			delete[] buffer;
 			buffer = 0;
-
-			get_XML_infos(tmp_file_name, prec, lx, ly, lz, lt, flavours, field_out );
 			logger.trace() << "\tsuccesfully read XMLInfos";
 
 			// different sizes for fermions or gauge fields
@@ -466,7 +511,14 @@ void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, i
 			} else {
 				throw Print_Error_Message("\tError in read_meta_infos()");
 			}
-			remove(tmp_file_name);
+		}
+		if("scidac-checksum" == lime_type) {
+			char * buffer = new char[nbytes + 1];
+			int error = limeReaderReadData (buffer, &nbytes, r);
+			if(error != 0) throw Print_Error_Message("Something went wrong...", __FILE__, __LINE__);
+			buffer[nbytes] = 0;
+			*checksum = get_checksum(buffer, nbytes, file);
+			delete[] buffer;
 		}
 	}
 	limeDestroyReader(r);
@@ -750,10 +802,12 @@ void read_tmlqcd_file(const char * file,
 	}
 	fclose(checker);
 
+	Checksum file_checksum;
+
 	logger.info() << "\tMetadata:" ;
 	read_meta_data(file, lx, ly, lz, lt, prec, field_out, num_entries, flavours, plaquettevalue, trajectorynr,
 	               beta, kappa, mu, c2_rec, time, hmcversion, mubar, epsilonbar, date,
-	               solvertype, epssq, noiter, kappa_solver, mu_solver, time_solver, hmcversion_solver, date_solver, &fermion);
+	               solvertype, epssq, noiter, kappa_solver, mu_solver, time_solver, hmcversion_solver, date_solver, &fermion, &file_checksum);
 	logger.trace() << "\treading XML-file gave:";
 	logger.info() << "\t\tfield type:\t" << field_out ;
 	logger.info() << "\t\tprecision:\t" << *prec ;
@@ -785,6 +839,7 @@ void read_tmlqcd_file(const char * file,
 		logger.info() << "\t\thmc-ver_solver:\t" << hmcversion_solver;
 		logger.info() << "\t\tdate_solver:\t" << date_solver;
 	}
+	logger.debug() << "\tfile-checksum:\t" << file_checksum;
 
 	if(*hmc_prec != *prec) {
 		throw Print_Error_Message("\nthe precision of hmc and sourcefile do not match, will not read data!!!", __FILE__, __LINE__);
