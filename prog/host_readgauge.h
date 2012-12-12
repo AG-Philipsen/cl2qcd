@@ -44,10 +44,10 @@ void extrInfo_int(const char * in1, int len1, int len2, int * dest);
 void extrInfo_char(const char * in1, int len1, int len2, char * dest);
 
 void get_XLF_infos(char * filename, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu,
-                        hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date );
+                   hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date );
 
 void get_inverter_infos(char * filename, char * solver, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,
-                             int * time, char * hmcversion, char * date );
+                        int * time, char * hmcversion, char * date );
 
 // http://xmlsoft.org/xmlreader.html
 // compile with gcc ReadXML.c $(xml2-config --cflags) -Wall $(xml2-config --libs)
@@ -60,8 +60,8 @@ void get_XML_infos(const char * filename, int * prec, int * lx, int * ly, int * 
 
 // get XML Infos: file to be read + parameters
 void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries,
-                         int * flavours, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
-                         char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, int * fermion);
+                    int * flavours, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
+                    char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, int * fermion);
 
 void read_binary_data_single(char * file, float * numArray, int num_entries, int filelength );
 
@@ -72,10 +72,10 @@ void read_binary_data_double(char * file, double * numArray, int num_entries, in
 void read_data_double(const char * file, double * num_array_double, int num_entries);
 
 void read_tmlqcd_file(char * file,
-                           int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries, int * flavours,
-                           hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
-                           char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver, int * time_solver, char * hmcversion_solver, char * date_solver,
-                           hmc_float * array, int * hmc_prec);
+                      int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries, int * flavours,
+                      hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
+                      char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver, int * time_solver, char * hmcversion_solver, char * date_solver,
+                      hmc_float * array, int * hmc_prec);
 
 /**
  * Parser class for a stored gaugefield.

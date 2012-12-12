@@ -20,10 +20,10 @@ void make_binary_data_single(hmc_float * array, char * out, const int array_size
 	if(!ENDIAN) {
 		logger.debug() << "The ENDIANNESS of the system is little, bytes must be reversed";
 		for (size_t i = 0; i < num_entries; i += 4) {
-			out[i]   = buf_tmp[i+3];
-			out[i+1] = buf_tmp[i+2];
-			out[i+2] = buf_tmp[i+1];
-			out[i+3] = buf_tmp[i];
+			out[i]   = buf_tmp[i + 3];
+			out[i + 1] = buf_tmp[i + 2];
+			out[i + 2] = buf_tmp[i + 1];
+			out[i + 3] = buf_tmp[i];
 		}
 	} else {
 		logger.debug() << "The ENDIANNESS of the system is big, bytes must not be reversed";
@@ -50,14 +50,14 @@ void make_binary_data_double(hmc_float * array, char * out, const int array_size
 	if(!ENDIAN) {
 		logger.debug() << "The ENDIANNESS of the system is little, bytes must be reversed";
 		for (size_t i = 0; i < num_entries; i += 8) {
-			out[i]   = buf_tmp[i+7];
-			out[i+1] = buf_tmp[i+6];
-			out[i+2] = buf_tmp[i+5];
-			out[i+3] = buf_tmp[i+4];
-			out[i+4] = buf_tmp[i+3];
-			out[i+5] = buf_tmp[i+2];
-			out[i+6] = buf_tmp[i+1];
-			out[i+7] = buf_tmp[i];
+			out[i]   = buf_tmp[i + 7];
+			out[i + 1] = buf_tmp[i + 6];
+			out[i + 2] = buf_tmp[i + 5];
+			out[i + 3] = buf_tmp[i + 4];
+			out[i + 4] = buf_tmp[i + 3];
+			out[i + 5] = buf_tmp[i + 2];
+			out[i + 6] = buf_tmp[i + 1];
+			out[i + 7] = buf_tmp[i];
 		}
 	} else {
 		logger.debug() << "The ENDIANNESS of the system is big, bytes must not be reversed";
@@ -107,7 +107,7 @@ void write_gaugefield (
 		make_binary_data_double(array, binary_data, array_size, num_entries);
 	} else if (prec == 32) {
 		make_binary_data_single(array, binary_data, array_size, num_entries);
-	} else throw Print_Error_Message("STDERR",__FILE__,__LINE__);
+	} else throw Print_Error_Message("STDERR", __FILE__, __LINE__);
 
 	length_ildg_binary_data = num_entries;
 
