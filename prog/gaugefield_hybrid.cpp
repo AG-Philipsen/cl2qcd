@@ -2,8 +2,10 @@
 
 #include "meta/version.hpp"
 #include "meta/util.hpp"
+#include <cassert>
 
 static hmc_float make_float_from_big_endian(const char* in);
+static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
 
 void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type, physics::PRNG& prng)
 {
@@ -249,8 +251,17 @@ void Gaugefield_hybrid::init_gaugefield(const char* sourcefile, physics::PRNG& p
 		case meta::Inputparameters::start_from_source: {
 			//tmp hmc_gaugefield for filetransfer
 			char * gaugefield_tmp;
-			gaugefield_tmp;
 			parameters_source.readsourcefile(sourcefile, get_parameters().get_precision(), &gaugefield_tmp);
+
+			Checksum checksum = calculate_ildg_checksum(gaugefield_tmp, parameters_source.num_entries_source * sizeof(hmc_float), parameters);
+			logger.debug() << "Calculated Checksum: " << checksum;
+			if(checksum != parameters_source.checksum) {
+				logger.error() << "Checksum of data does not match checksum given in file.";
+				logger.error() << "Calculated Checksum: " << checksum;
+				logger.error() << "Embedded Checksum:   " << parameters_source.checksum;
+				throw File_Exception(sourcefile);
+			}
+
 			copy_gaugefield_from_ildg_format(get_sgf(), gaugefield_tmp, parameters_source.num_entries_source);
 			check_sourcefileparameters();
 			delete gaugefield_tmp;
@@ -761,4 +772,34 @@ static hmc_float make_float_from_big_endian(const char* in)
 		val.b[i] = in[sizeof(hmc_float) - 1 - i];
 	}
 	return val.f;
+}
+
+static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters)
+{
+	const size_t elem_size = 4 * sizeof(Matrixsu3);
+	if(nbytes % elem_size) {
+		logger.error() << "Buffer does not contain a gaugefield!";
+		throw Invalid_Parameters("Buffer size not match possible gaugefield size", 0, nbytes % elem_size);
+	}
+
+	const size_t NT = inputparameters.get_ntime();
+	const size_t NS = inputparameters.get_nspace();
+
+	Checksum checksum;
+
+	size_t offset = 0;
+	for(uint32_t t = 0; t < NT; ++t) {
+		for(uint32_t z = 0; z < NS; ++z) {
+			for(uint32_t y = 0; y < NS; ++y) {
+				for(uint32_t x = 0; x < NS; ++x) {
+					assert(offset < nbytes);
+					uint32_t rank = ((t * NS + z) * NS + y) * NS + x;
+					checksum.accumulate(&buf[offset], elem_size, rank);
+					offset += elem_size;
+				}
+			}
+		}
+	}
+
+	return checksum;
 }

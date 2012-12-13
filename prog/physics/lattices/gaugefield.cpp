@@ -448,7 +448,6 @@ const std::vector<const hardware::buffers::SU3 *> physics::lattices::Gaugefield:
 
 static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters)
 {
-	logger.debug() << nbytes;
 	const size_t elem_size = 4 * sizeof(Matrixsu3);
 	if(nbytes % elem_size) {
 		logger.error() << "Buffer does not contain a gaugefield!";
