@@ -17,6 +17,7 @@ extern "C" {
 //this is for htons
 #include <arpa/inet.h>
 }
+#include <cassert>
 
 #define ENDIAN (htons(1) == 1)
 
@@ -57,7 +58,7 @@ void read_binary_data_single(char * file, float * numArray, int num_entries, int
 
 void read_data_single(const char * file, float * num_array_single, int num_entries);
 
-void read_binary_data_double(char * file, double * numArray, int num_entries, int filelength );
+void read_binary_data_double(const char * buffer, double * numArray, int nbytes);
 
 void read_data_double(const char * file, double * num_array_double, int num_entries);
 
@@ -651,42 +652,48 @@ void read_data_single(const char * file, float * num_array_single, int num_entri
 	return;
 }
 
-void read_binary_data_double(const char * file, double * numArray, int num_entries, int filelength )
+Checksum calc_checksum_double_su3(const char * buf, size_t nbytes)
 {
-	logger.trace() << "\treading binary file " << file << "...";
-	int i, length = sizeof(double);
-
-	// open file and get length
-	FILE * in;
-	in  = fopen(file, "r+b");
-	// get length of file to check input
-	fseek(in, 0L, SEEK_END);
-	int filelength_check = ftell(in);
-	fseek(in, 0L, SEEK_SET);
-	logger.debug() << "\tlength of file:\t\t" << filelength_check;
-	int num_entries_check = filelength_check / length;
-	logger.debug() << "\tnumber of entries:\t" << num_entries_check;
-	if (filelength_check != filelength && num_entries_check != num_entries) {
-		throw Print_Error_Message("\twrong filelength or number of entries!!");
+	logger.debug() << nbytes;
+	size_t elem_size = 4 * sizeof(Matrixsu3);
+	if(nbytes % elem_size) {
+		logger.error() << "Buffer does not contain a gaugefield!";
+		throw Invalid_Parameters("Buffer size not match possible gaugefield size", 0, nbytes % elem_size);
 	}
+
+	Checksum checksum;
+	// assume this has 16^4
+	const size_t NS = 32;
+	const size_t NT = 12;
+	assert(nbytes == elem_size * 12 * 32 * 32 * 32);
+	size_t offset = 0;
+	for(uint32_t t = 0; t < NT; ++t) {
+		for(uint32_t z = 0; z < NS; ++z) {
+			for(uint32_t y = 0; y < NS; ++y) {
+				for(uint32_t x = 0; x < NS; ++x) {
+					assert(offset < nbytes);
+					uint32_t rank = ((t * NS + z) * NS + y) * NS + x;
+					checksum.accumulate(&buf[offset], elem_size, rank);
+					offset += elem_size;
+				}
+			}
+		}
+	}
+	return checksum;
+}
+
+void read_binary_data_double(const char * buf, double * numArray, int nbytes)
+{
+	int i, length = sizeof(double);
 
 	// read in bytes from file
 	//char buf[filelength], buf2[filelength];
-	char * buf;
-	char * buf2;
-	buf = (char*) malloc(filelength * sizeof(char));
-	buf2 = (char*) malloc(filelength * sizeof(char));
-	int cter = 0;
-	while(cter < filelength) {
-		buf[cter] = fgetc(in);
-		cter++;
-	}
-	fclose(in);
 
 	//if endian is little, all floats must be reversed
 	if(!ENDIAN) {
 		logger.debug() << "\tThe ENDIANNESS of the system is little, bytes must be reversed";
-		for (i = 0; i < filelength; i += length) {
+		char * buf2 = reinterpret_cast<char*>(numArray);
+		for (i = 0; i < nbytes; i += length) {
 			buf2[i] = buf[i + 7];
 			buf2[i + 1] = buf[i + 6];
 			buf2[i + 2] = buf[i + 5];
@@ -699,16 +706,8 @@ void read_binary_data_double(const char * file, double * numArray, int num_entri
 
 	} else {
 		logger.debug() << "\tThe ENDIANNESS of the system is big, bytes must not be reversed";
-		for (i = 0; i < filelength; i++) {
-			buf2[i] = buf[i];
-		}
+		memcpy(numArray, buf, nbytes);
 	}
-
-	// convert buf2 to doubles
-	for(i = 0; i < num_entries; i++) {
-		numArray[i] = *((double*) &buf2[i * length]);
-	}
-	return;
 }
 
 //LZ removed last, unused parameter char* field_out
@@ -754,26 +753,13 @@ void read_data_double(const char * file, double * num_array_double, int num_entr
 		//!! read data only for the FIRST entry!!
 		if( (strcmp (lime_types[5], lime_type) == 0 || strcmp (lime_types[8], lime_type) == 0 ) && cter < 1) {
 			cter ++;
-			int filelength = nbytes;
-			//!!create tmporary file to read in data
-			//!!this has to be changed
-			FILE * tmp;
-			const char tmp_file_name[] = "tmpfilenamefive";
-			tmp = fopen(tmp_file_name, "w");
-			if(tmp == NULL) {
-				throw Print_Error_Message("\terror in creating tmp file");
-			}
 			//this cant be "char buffer [nbytes];" because this can be too big
-			char * buffer;
-			int buffersize = nbytes * sizeof(char);
-			buffer = (char*) malloc(buffersize);
+			char * buffer = new char[nbytes];
 			limeReaderReadData ((void*) buffer, (n_uint64_t *) &nbytes, r);
-			fwrite(buffer, sizeof(char), nbytes, tmp);
-			fclose(tmp);
-			free(buffer);
-
-			read_binary_data_double(tmp_file_name, num_array_double, num_entries, filelength );
-			remove(tmp_file_name);
+			Checksum checksum = calc_checksum_double_su3(buffer, nbytes);
+			logger.debug() << "Calculated checksum: " << checksum;
+			read_binary_data_double(buffer, num_array_double, nbytes);
+			delete[] buffer;
 		}
 	}
 

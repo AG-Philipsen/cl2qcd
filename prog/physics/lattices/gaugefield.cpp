@@ -10,6 +10,7 @@
 #include "../../host_writegaugefield.h"
 #include "../../host_readgauge.h"
 #include <cassert>
+#include "../../checksum.h"
 
 /**
  * Version number.
@@ -27,6 +28,9 @@ static void set_hot(Matrixsu3 * field, physics::PRNG& prng, size_t elems);
 static void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters);
 static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check, const meta::Inputparameters& parameters);
 static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float, sourcefileparameters& parameters_source);
+static Checksum calculate_tmlqcdlike_checksum(Matrixsu3 * gf_host, const meta::Inputparameters& inputparameters);
+static void fill_big_endian_site(char * site, Matrixsu3* gf_host, size_t x, size_t y, size_t z, size_t t, const meta::Inputparameters& paramters);
+static void make_big_endian(char* out, const char* in, size_t buf_size, size_t type_size);
 
 physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng)
 	: system(system), prng(prng), buffers(allocate_buffers(system))
@@ -72,6 +76,10 @@ void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
 	sourcefileparameters parameters_source;
 	parameters_source.readsourcefile(ildgfile.c_str(), parameters.get_precision(), &gf_ildg);
 	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries_source, parameters);
+
+	Checksum checksum = calculate_tmlqcdlike_checksum(gf_host, parameters);
+	logger.debug() << "Calculated Checksum: " << checksum;
+	// TODO compare checksums
 
 	auto device = buffers[0]->get_device();
 	device->get_gaugefield_code()->importGaugefield(buffers[0], gf_host);
@@ -430,4 +438,65 @@ void physics::lattices::print_gaugeobservables(const physics::lattices::Gaugefie
 const std::vector<const hardware::buffers::SU3 *> physics::lattices::Gaugefield::get_buffers() const noexcept
 {
 	return buffers;
+}
+
+static Checksum calculate_tmlqcdlike_checksum(Matrixsu3 * gf_host, const meta::Inputparameters& inputparameters)
+{
+	Checksum checksum;
+
+	const size_t NT = inputparameters.get_ntime();
+	const size_t NS = inputparameters.get_nspace();
+	for(size_t t = 0; t < NT; ++t) {
+		for(size_t z = 0; z < NS; ++z) {
+			for(size_t y = 0; y < NS; ++y) {
+				for(size_t x = 0; x < NS; ++x) {
+
+					// create big endian site
+					const size_t site_size = 4 * sizeof(Matrixsu3);
+					char site[site_size];
+					fill_big_endian_site(site, gf_host, x, y, z, t, inputparameters);
+
+					uint32_t rank = ((t * NS + z) * NS + y) * NS + x;
+
+					checksum.accumulate(site, site_size, rank);
+				}
+			}
+		}
+	}
+
+	return checksum;
+}
+
+static void fill_big_endian_site(char * site, Matrixsu3* gf_host, size_t x, size_t y, size_t z, size_t t, const meta::Inputparameters& parameters)
+{
+	const size_t site_size = 4 * sizeof(Matrixsu3);
+	union {
+		char bytes[site_size];
+		Matrixsu3 su3s[4];
+	} site_u;
+
+	int coord[4];
+	coord[0] = t;
+	coord[1] = z;
+	coord[2] = y;
+	coord[3] = x;
+	int spacepos = get_nspace(coord, parameters);
+	for(size_t l = 0; l < 4; ++l) {
+		site_u.su3s[l] = gf_host[get_global_link_pos((l + 1) % NDIM, spacepos, t, parameters)];
+	}
+
+	make_big_endian(site, site_u.bytes, site_size, sizeof(hmc_float));
+}
+
+static void make_big_endian(char* out, const char* in, size_t buf_size, size_t type_size)
+{
+	if(buf_size % type_size) {
+		throw Invalid_Parameters("Buffer size is not a multiple of type size. Found remaining bytes.", 0, buf_size % type_size);
+	}
+
+	for(size_t offset = 0; offset < buf_size; offset += type_size) {
+		for(size_t byte = 0; byte < type_size; ++byte) {
+			out[offset + byte] = in[offset + type_size - byte - 1];
+		}
+	}
 }
