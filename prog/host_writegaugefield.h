@@ -30,20 +30,6 @@ extern "C" {
 #define ENDIAN (htons(1) == 1)
 
 /**
- * Store the gaugefield for hmc_float being single precision.
- *
- * @todo Merge this with make_binary_data_double into an automagic function
- */
-void make_binary_data_single(hmc_float * array, char * out, const int array_size, const int num_entries);
-
-/**
- * Stores the gaugefield for hmc_float being double precision
- *
- * @todo Merge this with make_binary_data_single into an automagic function
- */
-void make_binary_data_double(hmc_float * array, char * out, const int array_size, const int num_entries);
-
-/**
  * Write the gaugefield to a file
  *
  * \param array The float array representing the gaugefield.
@@ -52,7 +38,7 @@ void make_binary_data_double(hmc_float * array, char * out, const int array_size
  * \todo complete documentation
  */
 void write_gaugefield (
-  hmc_float * array, int array_size,
+  char * binary_data, n_uint64_t num_bytes,
   int lx, int ly, int lz, int lt, int prec, int trajectorynr, hmc_float plaquettevalue, hmc_float beta, hmc_float kappa, hmc_float mu, hmc_float c2_rec, hmc_float epsilonbar, hmc_float mubar,
   const char * hmc_version, const char * filename);
 

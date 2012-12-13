@@ -281,7 +281,7 @@ public:
 	* @param[in] source The gaugefield in the internal representation
 	* @todo Replace hmc_gaugefield type by s_gaugefield type (LZ)
 	*/
-	void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source);
+	void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source);
 
 	void print_profiling(std::string filename);
 

@@ -25,11 +25,12 @@ static void set_hot(std::vector<const hardware::buffers::SU3 *> buffers, physics
 static void set_cold(std::vector<const hardware::buffers::SU3 *> buffers);
 static void set_cold(Matrixsu3 * field, size_t elems);
 static void set_hot(Matrixsu3 * field, physics::PRNG& prng, size_t elems);
-static void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters);
+static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters);
 static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const meta::Inputparameters& parameters);
 static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float, sourcefileparameters& parameters_source);
 static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
 static hmc_float make_float_from_big_endian(const char* in);
+static void make_big_endian_from_float(char* out, const hmc_float in);
 
 physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng)
 	: system(system), prng(prng), buffers(allocate_buffers(system))
@@ -165,8 +166,8 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 
 	auto parameters = system.get_inputparameters();
 	const size_t NTIME = parameters.get_ntime();
-	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(parameters) * NTIME;
-	hmc_float * gaugefield_buf = new hmc_float[gaugefield_buf_size];
+	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(parameters) * NTIME * sizeof(hmc_float);
+	char * gaugefield_buf = new char[gaugefield_buf_size];
 
 	//these are not yet used...
 	hmc_float c2_rec = 0, epsilonbar = 0, mubar = 0;
@@ -187,7 +188,7 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 
 	const size_t NSPACE = parameters.get_nspace();
 
-	write_gaugefield ( gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NTIME, parameters.get_precision(), number, plaq, parameters.get_beta(), parameters.get_kappa(), parameters.get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
+	write_gaugefield (gaugefield_buf, gaugefield_buf_size, NSPACE, NSPACE, NSPACE, NTIME, parameters.get_precision(), number, plaq, parameters.get_beta(), parameters.get_kappa(), parameters.get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
 
 	delete[] gaugefield_buf;
 }
@@ -254,7 +255,7 @@ static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaug
 	}
 }
 
-static void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters)
+static void copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters)
 {
 	const size_t NSPACE = parameters.get_nspace();
 	for (int t = 0; t < parameters.get_ntime(); t++) {
@@ -286,8 +287,8 @@ static void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source_
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
 								size_t pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters);
-								dest[pos]     = destElem[m][n].re;
-								dest[pos + 1] = destElem[m][n].im;
+								make_big_endian_from_float(&dest[pos * sizeof(hmc_float)], destElem[m][n].re);
+								make_big_endian_from_float(&dest[(pos + 1) * sizeof(hmc_float)], destElem[m][n].im);
 							}
 						}
 					}
@@ -487,4 +488,18 @@ static hmc_float make_float_from_big_endian(const char* in)
 		val.b[i] = in[sizeof(hmc_float) - 1 - i];
 	}
 	return val.f;
+}
+
+static void make_big_endian_from_float(char* out, const hmc_float in)
+{
+	union {
+		char b[sizeof(hmc_float)];
+		hmc_float f;
+	} val;
+
+	val.f = in;
+
+	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
+		out[i] = val.b[sizeof(hmc_float) - 1 - i];
+	}
 }

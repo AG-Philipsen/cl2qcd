@@ -6,6 +6,7 @@
 
 static hmc_float make_float_from_big_endian(const char* in);
 static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters);
+static void make_big_endian_from_float(char* out, const hmc_float in);
 
 void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type, physics::PRNG& prng)
 {
@@ -396,8 +397,8 @@ void Gaugefield_hybrid::save(int number)
 void Gaugefield_hybrid::save(std::string outputfile, int _number)
 {
 	const size_t NTIME = parameters.get_ntime();
-	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(parameters) * NTIME;
-	hmc_float * gaugefield_buf = new hmc_float[gaugefield_buf_size];
+	const size_t gaugefield_buf_size = 2 * NC * NC * NDIM * meta::get_volspace(parameters) * NTIME * sizeof(hmc_float);
+	char * gaugefield_buf = new char[gaugefield_buf_size];
 
 	//these are not yet used...
 	hmc_float c2_rec = 0, epsilonbar = 0, mubar = 0;
@@ -410,7 +411,7 @@ void Gaugefield_hybrid::save(std::string outputfile, int _number)
 
 	const size_t NSPACE = parameters.get_nspace();
 
-	write_gaugefield ( gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NTIME, get_parameters().get_precision(), number, plaq, get_parameters().get_beta(), get_parameters().get_kappa(), get_parameters().get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
+	write_gaugefield(gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NTIME, get_parameters().get_precision(), number, plaq, get_parameters().get_beta(), get_parameters().get_kappa(), get_parameters().get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
 
 	delete[] gaugefield_buf;
 }
@@ -572,7 +573,7 @@ void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield,
 	return;
 }
 
-void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source_in)
+void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(char * dest, Matrixsu3 * source_in)
 {
 	const size_t NSPACE = parameters.get_nspace();
 	for (int t = 0; t < parameters.get_ntime(); t++) {
@@ -604,8 +605,8 @@ void Gaugefield_hybrid::copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixs
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
 								size_t pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters);
-								dest[pos]     = destElem[m][n].re;
-								dest[pos + 1] = destElem[m][n].im;
+								make_big_endian_from_float(&dest[pos * sizeof(hmc_float)], destElem[m][n].re);
+								make_big_endian_from_float(&dest[(pos + 1) * sizeof(hmc_float)], destElem[m][n].im);
 							}
 						}
 					}
@@ -802,4 +803,18 @@ static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const m
 	}
 
 	return checksum;
+}
+
+static void make_big_endian_from_float(char* out, const hmc_float in)
+{
+	union {
+		char b[sizeof(hmc_float)];
+		hmc_float f;
+	} val;
+
+	val.f = in;
+
+	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
+		out[i] = val.b[sizeof(hmc_float) - 1 - i];
+	}
 }
