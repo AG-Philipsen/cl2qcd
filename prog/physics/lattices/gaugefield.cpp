@@ -70,9 +70,9 @@ void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
 	assert(buffers.size() == 1);
 
 	auto parameters = system.get_inputparameters();
-	hmc_float * gf_ildg = new hmc_float[NDIM * NC * NC * parameters.get_ntime() * meta::get_volspace(parameters)];
 	Matrixsu3 * gf_host = new Matrixsu3[buffers[0]->get_elements()];
 
+	hmc_float * gf_ildg; // filled by readsourcefile
 	sourcefileparameters parameters_source;
 	parameters_source.readsourcefile(ildgfile.c_str(), parameters.get_precision(), &gf_ildg);
 	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries_source, parameters);

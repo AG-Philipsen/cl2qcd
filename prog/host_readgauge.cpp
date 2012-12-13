@@ -832,41 +832,17 @@ void read_tmlqcd_file(const char * file,
 	} else {
 		logger.trace() << "reading data..";
 		//!!note: the read-routines were not changed, the array is just set to the values of the num_array`s
-		if (*prec == 32) {
-			logger.trace() << "\tfound data in single precision";
-			float * num_array_single;
-			num_array_single = (float*) malloc(*num_entries * sizeof(float));
-			read_data_single(file, num_array_single, *num_entries);
-			logger.trace() << "\tsuccesfully read in data";
-
-			*array = (hmc_float*) malloc(*num_entries * sizeof(hmc_float));
-			int i;
-			for (i = 0; i < *num_entries; i++) {
-				(*array)[i] = num_array_single[i];
-			}
-			free(num_array_single);
-		} else if (*prec == 64) {
-			logger.trace() << "\tfound data in double precision";
-			double * num_array_double;
-			num_array_double = (double*) malloc(*num_entries * sizeof(double));
-			read_data_double(file, num_array_double, *num_entries);
-			logger.trace() << "\tsuccesfully read in data";
-
-			*array = (hmc_float*) malloc(*num_entries * sizeof(hmc_float));
-			int i;
-			for (i = 0; i < *num_entries; i++) {
-				(*array)[i] = num_array_double[i];
-			}
-
-			free(num_array_double);
-		} else {
-			throw Print_Error_Message("\tcould not determine precision of data\n\n");
-		}
-		logger.trace() << "\nsuccesfully read tmlqcd-file " << file;
-		logger.info() << "*************************************************************" ;
-		logger.info() << " ";
-		return;
+		*array = new hmc_float[*num_entries];
+#ifdef _USEDOUBLEPREC_
+		read_data_double(file, *array, *num_entries);
+#else
+		read_data_single(file, *array, *num_entries);
+#endif
+		logger.trace() << "\tsuccesfully read in data";
 	}
+	logger.trace() << "\nsuccesfully read tmlqcd-file " << file;
+	logger.info() << "*************************************************************" ;
+	logger.info() << " ";
 }
 
 
@@ -913,19 +889,11 @@ void sourcefileparameters::readsourcefile(const char * file, int precision, hmc_
 	//CP
 	//this was done because i am lazy
 	prec_tmp = precision;
-	hmc_float * array_tmp;
-
 	read_tmlqcd_file( file,
 	                  &lx, &ly, &lz, &lt, &prec, field_out, &num_entries, &flavours,
 	                  &plaquettevalue, &trajectorynr, &beta, &kappa, &mu, &c2_rec, &time, hmcversion, &mubar, &epsilonbar, date,
 	                  solvertype, &epssq, &noiter, &kappa_solver, &mu_solver, &time_solver, hmcversion_solver, date_solver,
-	                  &array_tmp, &prec_tmp);
-
-	/** @bug Isn't array already allocated? -> memory leak, and why copy */
-	*array = (hmc_float*) malloc(num_entries * sizeof(hmc_float));
-	for (int i = 0; i < num_entries; i++) (*array)[i] = array_tmp[i];
-
-	free(array_tmp);
+	                  array, &prec_tmp);
 
 	//set the source parameters
 	val_assign_source(&lx_source, lx);

@@ -247,11 +247,11 @@ void Gaugefield_hybrid::init_gaugefield(const char* sourcefile, physics::PRNG& p
 		case meta::Inputparameters::start_from_source: {
 			//tmp hmc_gaugefield for filetransfer
 			hmc_float * gaugefield_tmp;
-			gaugefield_tmp = (hmc_float*) malloc(sizeof(hmc_float) * NDIM * NC * NC * parameters.get_ntime() * meta::get_volspace(parameters));
+			gaugefield_tmp;
 			parameters_source.readsourcefile(sourcefile, get_parameters().get_precision(), &gaugefield_tmp);
 			copy_gaugefield_from_ildg_format(get_sgf(), gaugefield_tmp, parameters_source.num_entries_source);
 			check_sourcefileparameters();
-			free(gaugefield_tmp);
+			delete gaugefield_tmp;
 		}
 		break;
 		case meta::Inputparameters::cold_start:

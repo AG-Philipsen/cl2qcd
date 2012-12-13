@@ -24,7 +24,7 @@ public:
 	 * @param[in] precision The precision expected for the gaugefield.
 	 * @param[out] array    The loaded gaugefield
 	 */
-	void readsourcefile(const char * file, int precision, hmc_float ** array);
+	void readsourcefile(const char * file, int precision, hmc_float ** data);
 	void set_defaults();
 	void val_assign_source(int * out, int in);
 	void val_assign_source(hmc_float * out, hmc_float in);
