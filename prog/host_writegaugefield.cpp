@@ -3,9 +3,10 @@
 #include <assert.h>
 
 #include "logger.hpp"
+#include <sstream>
 
 void write_gaugefield (
-  char * binary_data, n_uint64_t num_bytes,
+  char * binary_data, n_uint64_t num_bytes, Checksum checksum,
   int lx, int ly, int lz, int lt, int prec, int trajectorynr, hmc_float plaquettevalue, hmc_float beta, hmc_float kappa, hmc_float mu, hmc_float c2_rec, hmc_float epsilonbar, hmc_float mubar,
   const char * hmc_version, const char * filename)
 {
@@ -84,8 +85,16 @@ void write_gaugefield (
 	length_xlf_info = strlen(xlf_info);
 
 	//write scidac checksum, this is stubb
-	const char scidac_checksum [] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<scidacChecksum>\n  <version>1.0</version>\n  <suma>46b62a47</suma>\n  <sumb>1a24b4ac</sumb>\n</scidacChecksum>";
-	length_scidac_checksum = strlen(scidac_checksum);
+	std::string scidac_checksum;
+	{
+		std::ostringstream tmp;
+		tmp << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<scidacChecksum>\n<version>1.0</version>\n";
+		tmp << "<suma>" << std::hex << checksum.get_suma() << "</suma>\n";
+		tmp << "<sumb>" << std::hex << checksum.get_sumb() << "</sumb>\n";
+		tmp << "</scidacChecksum>";
+		scidac_checksum = tmp.str();
+	}
+	length_scidac_checksum = scidac_checksum.length();
 
 	//write ildg_format to string, should look like this:
 	/*
@@ -152,7 +161,7 @@ void write_gaugefield (
 	header_scidac_checksum = limeCreateHeader(MB_flag, ME_flag, (char*) types[3], length_scidac_checksum);
 	limeWriteRecordHeader(header_scidac_checksum, writer);
 	limeDestroyHeader(header_scidac_checksum);
-	limeWriteRecordData( (void*) scidac_checksum, &length_scidac_checksum, writer);
+	limeWriteRecordData(const_cast<char*>(scidac_checksum.c_str()), &length_scidac_checksum, writer);
 	logger.debug() << "  scidac-checksum written";
 
 	//closing

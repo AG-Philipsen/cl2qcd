@@ -411,7 +411,9 @@ void Gaugefield_hybrid::save(std::string outputfile, int _number)
 
 	const size_t NSPACE = parameters.get_nspace();
 
-	write_gaugefield(gaugefield_buf, gaugefield_buf_size , NSPACE, NSPACE, NSPACE, NTIME, get_parameters().get_precision(), number, plaq, get_parameters().get_beta(), get_parameters().get_kappa(), get_parameters().get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
+	const Checksum checksum = calculate_ildg_checksum(gaugefield_buf, gaugefield_buf_size, parameters);
+
+	write_gaugefield(gaugefield_buf, gaugefield_buf_size, checksum, NSPACE, NSPACE, NSPACE, NTIME, get_parameters().get_precision(), number, plaq, get_parameters().get_beta(), get_parameters().get_kappa(), get_parameters().get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
 
 	delete[] gaugefield_buf;
 }

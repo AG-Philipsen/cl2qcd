@@ -188,7 +188,9 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 
 	const size_t NSPACE = parameters.get_nspace();
 
-	write_gaugefield (gaugefield_buf, gaugefield_buf_size, NSPACE, NSPACE, NSPACE, NTIME, parameters.get_precision(), number, plaq, parameters.get_beta(), parameters.get_kappa(), parameters.get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
+	const Checksum checksum = calculate_ildg_checksum(gaugefield_buf, gaugefield_buf_size, parameters);
+
+	write_gaugefield(gaugefield_buf, gaugefield_buf_size, checksum, NSPACE, NSPACE, NSPACE, NTIME, parameters.get_precision(), number, plaq, parameters.get_beta(), parameters.get_kappa(), parameters.get_mu(), c2_rec, epsilonbar, mubar, version.c_str(), outputfile.c_str());
 
 	delete[] gaugefield_buf;
 }
@@ -450,13 +452,14 @@ const std::vector<const hardware::buffers::SU3 *> physics::lattices::Gaugefield:
 static Checksum calculate_ildg_checksum(const char * buf, size_t nbytes, const meta::Inputparameters& inputparameters)
 {
 	const size_t elem_size = 4 * sizeof(Matrixsu3);
-	if(nbytes % elem_size) {
-		logger.error() << "Buffer does not contain a gaugefield!";
-		throw Invalid_Parameters("Buffer size not match possible gaugefield size", 0, nbytes % elem_size);
-	}
 
 	const size_t NT = inputparameters.get_ntime();
 	const size_t NS = inputparameters.get_nspace();
+
+	if(nbytes != (NT * NS * NS * NS * elem_size)) {
+		logger.error() << "Buffer does not contain a gaugefield!";
+		throw Invalid_Parameters("Buffer size not match possible gaugefield size", (NT * NS * NS * NS * elem_size), nbytes);
+	}
 
 	Checksum checksum;
 
