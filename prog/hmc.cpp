@@ -76,8 +76,17 @@ int main(int argc, const char* argv[])
 				gaugefield.print_hmcobservables(obs, iter);
 
 			if( parameters.get_saveconfigs() == true && ( (iter + 1) % savefreq ) == 0 ) {
+				// save gaugefield
 				gaugefield.synchronize(0);
 				gaugefield.save(iter + 1);
+
+				// save prng
+				std::ostringstream prng_file_name;
+				prng_file_name << "prng.";
+				prng_file_name.fill('0');
+				prng_file_name.width(parameters.get_config_number_digits());
+				prng_file_name << iter;
+				prng.store(prng_file_name.str());
 			}
 		}
 
