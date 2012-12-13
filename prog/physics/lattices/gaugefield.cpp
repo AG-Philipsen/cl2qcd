@@ -26,11 +26,12 @@ static void set_cold(std::vector<const hardware::buffers::SU3 *> buffers);
 static void set_cold(Matrixsu3 * field, size_t elems);
 static void set_hot(Matrixsu3 * field, physics::PRNG& prng, size_t elems);
 static void copy_gaugefield_to_ildg_format(hmc_float * dest, Matrixsu3 * source_in, const meta::Inputparameters& parameters);
-static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check, const meta::Inputparameters& parameters);
+static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const meta::Inputparameters& parameters);
 static void check_sourcefileparameters(const meta::Inputparameters& parameters, const hmc_float, sourcefileparameters& parameters_source);
 static Checksum calculate_tmlqcdlike_checksum(Matrixsu3 * gf_host, const meta::Inputparameters& inputparameters);
 static void fill_big_endian_site(char * site, Matrixsu3* gf_host, size_t x, size_t y, size_t z, size_t t, const meta::Inputparameters& paramters);
 static void make_big_endian(char* out, const char* in, size_t buf_size, size_t type_size);
+static hmc_float make_float_from_big_endian(const char* in);
 
 physics::lattices::Gaugefield::Gaugefield(hardware::System& system, physics::PRNG& prng)
 	: system(system), prng(prng), buffers(allocate_buffers(system))
@@ -72,7 +73,7 @@ void physics::lattices::Gaugefield::fill_from_ildg(std::string ildgfile)
 	auto parameters = system.get_inputparameters();
 	Matrixsu3 * gf_host = new Matrixsu3[buffers[0]->get_elements()];
 
-	hmc_float * gf_ildg; // filled by readsourcefile
+	char * gf_ildg; // filled by readsourcefile
 	sourcefileparameters parameters_source;
 	parameters_source.readsourcefile(ildgfile.c_str(), parameters.get_precision(), &gf_ildg);
 	copy_gaugefield_from_ildg_format(gf_host, gf_ildg, parameters_source.num_entries_source, parameters);
@@ -186,7 +187,7 @@ void physics::lattices::Gaugefield::save(std::string outputfile, int number)
 	delete[] gaugefield_buf;
 }
 
-static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check, const meta::Inputparameters& parameters)
+static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check, const meta::Inputparameters& parameters)
 {
 	//little check if arrays are big enough
 	if (meta::get_vol4d(parameters) *NDIM * NC * NC * 2 != check) {
@@ -206,9 +207,9 @@ static void copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float *
 						hmc_complex tmp [NC][NC];
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
-								int pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters);
-								tmp[m][n].re = gaugefield_tmp[pos];
-								tmp[m][n].im = gaugefield_tmp[pos + 1];
+								size_t pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters);
+								tmp[m][n].re = make_float_from_big_endian(&gaugefield_tmp[pos * sizeof(hmc_float)]);
+								tmp[m][n].im = make_float_from_big_endian(&gaugefield_tmp[(pos + 1) * sizeof(hmc_float)]);
 								cter++;
 							}
 						}
@@ -499,4 +500,17 @@ static void make_big_endian(char* out, const char* in, size_t buf_size, size_t t
 			out[offset + byte] = in[offset + type_size - byte - 1];
 		}
 	}
+}
+
+static hmc_float make_float_from_big_endian(const char* in)
+{
+	union {
+		char b[sizeof(hmc_float)];
+		hmc_float f;
+	} val;
+
+	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
+		val.b[i] = in[sizeof(hmc_float) - 1 - i];
+	}
+	return val.f;
 }

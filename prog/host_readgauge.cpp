@@ -54,13 +54,7 @@ void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, i
                     int * flavours, hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
                     char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver,  int * time_solver, char * hmcversion_solver, char * date_solver, int * fermion, Checksum * checksum);
 
-void read_binary_data_single(char * file, float * numArray, int num_entries, int filelength );
-
-void read_data_single(const char * file, float * num_array_single, int num_entries);
-
-void read_binary_data_double(const char * buffer, double * numArray, int nbytes);
-
-void read_data_double(const char * file, double * num_array_double, int num_entries);
+void read_data(const char * file, char * data, size_t bytes);
 
 void read_tmlqcd_file(char * file,
                       int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries, int * flavours,
@@ -527,131 +521,6 @@ void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, i
 	return;
 }
 
-void read_binary_data_single(const char * file, float * numArray, int num_entries, int filelength )
-{
-	logger.trace() << "\treading binary file " << file << "...";
-	int length = sizeof(float), i;
-
-	// open file and get length
-	FILE * in;
-	in  = fopen(file, "r+b");
-	// get length of file to check input
-	fseek(in, 0L, SEEK_END);
-	int filelength_check = ftell(in);
-	fseek(in, 0L, SEEK_SET);
-	logger.debug() << "\tlength of file:\t\t" << filelength_check;
-	int num_entries_check = filelength_check / length;
-	logger.debug() << "\tnumber of entries:\t" << num_entries_check;
-	if (filelength_check != filelength && num_entries_check != num_entries) {
-		throw Print_Error_Message("\twrong filelength or number of entries!!\n");
-	}
-
-	// read in bytes from file
-	//char buf[filelength], buf2[filelength];
-	char * buf;
-	char * buf2;
-	buf = (char*) malloc(filelength * sizeof(char));
-	buf2 = (char*) malloc(filelength * sizeof(char));
-	int cter = 0;
-	while(cter < filelength) {
-		buf[cter] = fgetc(in);
-		cter++;
-	}
-	fclose(in);
-
-	//if endian is little, all floats must be reversed
-	if(!ENDIAN) {
-		logger.debug() << "\tThe ENDIANNESS of the system is little, bytes must be reversed";
-		for (i = 0; i < filelength; i += length) {
-			buf2[i] = buf[i + 3];
-			buf2[i + 1] = buf[i + 2];
-			buf2[i + 2] = buf[i + 1];
-			buf2[i + 3] = buf[i];
-		}
-	} else {
-		logger.debug() << "\tThe ENDIANNESS of the system is big, bytes must not be reversed";
-		for (i = 0; i < filelength; i++) {
-			buf2[i] = buf[i];
-		}
-	}
-	// convert buf2 to floats
-	for(i = 0; i < num_entries; i++) {
-		numArray[i] = *((float*) &buf2[i * length]);
-	}
-	return;
-}
-
-//LZ: removed unused parameter: field_out
-//int read_data_single(char * file, float * num_array_single, int num_entries, char * field_out)
-void read_data_single(const char * file, float * num_array_single, int num_entries)
-{
-	FILE *fp;
-	int MB_flag, ME_flag, msg, rec, status, first, cter = 0;
-	char *lime_type;
-	size_t bytes_pad;
-	n_uint64_t nbytes;
-
-	//possible lime_types
-	const char * lime_types[] = {
-		"propagator-type", "xlf-info", " inverter-info", "gauge-scidac-checksum-copy", "etmc-propagator-format",
-		"scidac-binary-data", "scidac-checksum", "ildg-format", "ildg-binary-data"
-	};
-
-	//read lime file
-	fp = fopen (file, "r");
-	LimeReader *r;
-	r = limeCreateReader(fp);
-	first = 1;
-	msg = 0;
-	while( (status = limeReaderNextRecord(r)) != LIME_EOF ) {
-		if( status != LIME_SUCCESS ) {
-			char errmsg[256];
-			sprintf(errmsg, "limeReaderNextRecord returned status = %d\n", status);
-			throw Print_Error_Message(errmsg);
-		}
-		if (MB_flag == 1 || first) {
-			first = 0;
-			rec = 0;
-			msg++;
-		}
-		rec++;
-		//read header data
-		nbytes    = limeReaderBytes(r);
-		lime_type = limeReaderType(r);
-		bytes_pad = limeReaderPadBytes(r);
-		MB_flag   = limeReaderMBFlag(r);
-		ME_flag   = limeReaderMEFlag(r);
-		//!! read data only for the FIRST entry!!
-		if( (strcmp (lime_types[5], lime_type) == 0 || strcmp (lime_types[8], lime_type) == 0 ) && cter < 1) {
-			cter ++;
-			int filelength = nbytes;
-			//!!create tmporary file to read in data
-			//!!this has to be changed
-			FILE * tmp;
-			const char tmp_file_name[] = "tmpfilenamefour";
-			tmp = fopen(tmp_file_name, "w");
-			if(tmp == NULL) {
-				throw Print_Error_Message("\terror in creating tmp file\n");
-			}
-			//this cant be "char buffer [nbytes];" because this can be too big
-			char * buffer;
-			int buffersize = nbytes * sizeof(char);
-			buffer = (char*) malloc(buffersize);
-			limeReaderReadData ((void*) buffer, (n_uint64_t *) &nbytes, r);
-			fwrite(buffer, sizeof(char), nbytes, tmp);
-			fclose(tmp);
-			free(buffer);
-
-			read_binary_data_single(tmp_file_name, num_array_single, num_entries, filelength );
-
-			remove(tmp_file_name);
-		}
-	}
-	limeDestroyReader(r);
-	fclose(fp);
-	return;
-}
-
 Checksum calc_checksum_double_su3(const char * buf, size_t nbytes)
 {
 	logger.debug() << nbytes;
@@ -682,36 +551,8 @@ Checksum calc_checksum_double_su3(const char * buf, size_t nbytes)
 	return checksum;
 }
 
-void read_binary_data_double(const char * buf, double * numArray, int nbytes)
-{
-	int i, length = sizeof(double);
-
-	// read in bytes from file
-	//char buf[filelength], buf2[filelength];
-
-	//if endian is little, all floats must be reversed
-	if(!ENDIAN) {
-		logger.debug() << "\tThe ENDIANNESS of the system is little, bytes must be reversed";
-		char * buf2 = reinterpret_cast<char*>(numArray);
-		for (i = 0; i < nbytes; i += length) {
-			buf2[i] = buf[i + 7];
-			buf2[i + 1] = buf[i + 6];
-			buf2[i + 2] = buf[i + 5];
-			buf2[i + 3] = buf[i + 4];
-			buf2[i + 4] = buf[i + 3];
-			buf2[i + 5] = buf[i + 2];
-			buf2[i + 6] = buf[i + 1];
-			buf2[i + 7] = buf[i];
-		}
-
-	} else {
-		logger.debug() << "\tThe ENDIANNESS of the system is big, bytes must not be reversed";
-		memcpy(numArray, buf, nbytes);
-	}
-}
-
 //LZ removed last, unused parameter char* field_out
-void read_data_double(const char * file, double * num_array_double, int num_entries)
+void read_data(const char * file, char * data, size_t bytes)
 {
 	FILE *fp;
 	int MB_flag, ME_flag, msg, rec, status, first, cter = 0;
@@ -752,27 +593,25 @@ void read_data_double(const char * file, double * num_array_double, int num_entr
 		ME_flag   = limeReaderMEFlag(r);
 		//!! read data only for the FIRST entry!!
 		if( (strcmp (lime_types[5], lime_type) == 0 || strcmp (lime_types[8], lime_type) == 0 ) && cter < 1) {
+			if(nbytes != bytes) {
+				throw Invalid_Parameters("Binary data does not have expected size.", bytes, nbytes);
+			}
 			cter ++;
-			//this cant be "char buffer [nbytes];" because this can be too big
-			char * buffer = new char[nbytes];
-			limeReaderReadData ((void*) buffer, (n_uint64_t *) &nbytes, r);
-			Checksum checksum = calc_checksum_double_su3(buffer, nbytes);
+			limeReaderReadData(data, &nbytes, r);
+			Checksum checksum = calc_checksum_double_su3(data, nbytes);
 			logger.debug() << "Calculated checksum: " << checksum;
-			read_binary_data_double(buffer, num_array_double, nbytes);
-			delete[] buffer;
 		}
 	}
 
 	limeDestroyReader(r);
 	fclose(fp);
-	return;
 }
 
 void read_tmlqcd_file(const char * file,
                       int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries, int * flavours,
                       hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
                       char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver, int * time_solver, char * hmcversion_solver, char * date_solver,
-                      hmc_float ** array, int * hmc_prec)
+                      char ** array, int * hmc_prec)
 {
 
 	int fermion = 0;
@@ -832,12 +671,9 @@ void read_tmlqcd_file(const char * file,
 	} else {
 		logger.trace() << "reading data..";
 		//!!note: the read-routines were not changed, the array is just set to the values of the num_array`s
-		*array = new hmc_float[*num_entries];
-#ifdef _USEDOUBLEPREC_
-		read_data_double(file, *array, *num_entries);
-#else
-		read_data_single(file, *array, *num_entries);
-#endif
+		size_t datasize = *num_entries * sizeof(hmc_float);
+		*array = new char[datasize];
+		read_data(file, *array, datasize);
 		logger.trace() << "\tsuccesfully read in data";
 	}
 	logger.trace() << "\nsuccesfully read tmlqcd-file " << file;
@@ -873,7 +709,7 @@ void sourcefileparameters::set_defaults()
 }
 
 
-void sourcefileparameters::readsourcefile(const char * file, int precision, hmc_float ** array)
+void sourcefileparameters::readsourcefile(const char * file, int precision, char ** array)
 {
 
 	int lx, ly, lz, lt, prec, num_entries, flavours, trajectorynr, time, time_solver, noiter;

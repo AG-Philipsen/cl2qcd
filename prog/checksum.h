@@ -56,6 +56,7 @@ private:
 
 inline std::ostream& operator<<(std::ostream& out, const Checksum& sum) noexcept {
 	out << "SumA: " << std::hex << sum.get_suma() << ", SumB: " << std::hex << sum.get_sumb();
+	return out;
 }
 
 #endif /* _CHECKSUM_H_ */

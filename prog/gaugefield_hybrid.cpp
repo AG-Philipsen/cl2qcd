@@ -3,6 +3,8 @@
 #include "meta/version.hpp"
 #include "meta/util.hpp"
 
+static hmc_float make_float_from_big_endian(const char* in);
+
 void Gaugefield_hybrid::init(int numtasks, cl_device_type primary_device_type, physics::PRNG& prng)
 {
 
@@ -246,7 +248,7 @@ void Gaugefield_hybrid::init_gaugefield(const char* sourcefile, physics::PRNG& p
 	switch(get_parameters().get_startcondition()) {
 		case meta::Inputparameters::start_from_source: {
 			//tmp hmc_gaugefield for filetransfer
-			hmc_float * gaugefield_tmp;
+			char * gaugefield_tmp;
 			gaugefield_tmp;
 			parameters_source.readsourcefile(sourcefile, get_parameters().get_precision(), &gaugefield_tmp);
 			copy_gaugefield_from_ildg_format(get_sgf(), gaugefield_tmp, parameters_source.num_entries_source);
@@ -495,7 +497,7 @@ size_t Gaugefield_hybrid::get_num_gaugefield_elems() const
 	return NDIM * meta::get_volspace(parameters) * parameters.get_ntime();
 }
 
-void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, hmc_float * gaugefield_tmp, int check)
+void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield, char * gaugefield_tmp, int check)
 {
 	//little check if arrays are big enough
 	if (meta::get_vol4d(parameters) *NDIM * NC * NC * 2 != check) {
@@ -516,8 +518,8 @@ void Gaugefield_hybrid::copy_gaugefield_from_ildg_format(Matrixsu3 * gaugefield,
 						for (int m = 0; m < NC; m++) {
 							for (int n = 0; n < NC; n++) {
 								int pos = get_su3_idx_ildg_format(n, m, x, y, z, t, l, parameters);
-								tmp[m][n].re = gaugefield_tmp[pos];
-								tmp[m][n].im = gaugefield_tmp[pos + 1];
+								tmp[m][n].re = make_float_from_big_endian(&gaugefield_tmp[pos * sizeof(hmc_float)]);
+								tmp[m][n].im = make_float_from_big_endian(&gaugefield_tmp[(pos + 1) * sizeof(hmc_float)]);
 								cter++;
 							}
 						}
@@ -746,4 +748,17 @@ void Gaugefield_hybrid::check_sourcefileparameters()
 
 	logger.info() << "...done";
 	return;
+}
+
+static hmc_float make_float_from_big_endian(const char* in)
+{
+	union {
+		char b[sizeof(hmc_float)];
+		hmc_float f;
+	} val;
+
+	for(size_t i = 0; i < sizeof(hmc_float); ++i) {
+		val.b[i] = in[sizeof(hmc_float) - 1 - i];
+	}
+	return val.f;
 }
