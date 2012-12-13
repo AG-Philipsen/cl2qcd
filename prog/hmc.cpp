@@ -70,27 +70,26 @@ int main(int argc, const char* argv[])
 			gaugefield.perform_hmc_step(&obs, iter, rnd_number, &solver_timer, prng);
 			acc_rate += obs.accept;
 			if( ( (iter + 1) % writefreq ) == 0 ) {
-			  std::string gaugeout_name = meta::get_hmc_obs_file_name(parameters, "");
+				std::string gaugeout_name = meta::get_hmc_obs_file_name(parameters, "");
 				gaugefield.print_hmcobservables(obs, iter, gaugeout_name);
-			}
-			else if(parameters.get_print_to_screen() )
+			} else if(parameters.get_print_to_screen() )
 				gaugefield.print_hmcobservables(obs, iter);
 
 			if( parameters.get_saveconfigs() == true && ( (iter + 1) % savefreq ) == 0 ) {
 				gaugefield.synchronize(0);
 				gaugefield.save(iter + 1);
 			}
-			//always save the config on the last iteration
-			if( iter == hmc_iter - 1 ) {
-				gaugefield.synchronize(0);
-				std::string outputfile = "conf.save";
-				logger.info() << "saving current gaugefield to file \"" << outputfile << "\"";
-				gaugefield.save(outputfile, iter+1);
-				outputfile = "prng.save";
-				logger.info() << "saving current prng state to \"" << outputfile << "\"";
-				prng.store(outputfile);
-			}
 		}
+
+		//always save the config on the last iteration
+		gaugefield.synchronize(0);
+		std::string outputfile = "conf.save";
+		logger.info() << "saving current gaugefield to file \"" << outputfile << "\"";
+		gaugefield.save(outputfile, iter + 1);
+		outputfile = "prng.save";
+		logger.info() << "saving current prng state to \"" << outputfile << "\"";
+		prng.store(outputfile);
+
 		logger.info() << "HMC done";
 		logger.info() << "Acceptance rate: " << fixed <<  setprecision(1) << percent(acc_rate, parameters.get_hmcsteps()) << "%";
 		perform_timer.add();

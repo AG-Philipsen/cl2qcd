@@ -3,76 +3,10 @@
 #include <assert.h>
 
 #include "logger.hpp"
-
-void make_binary_data_single(hmc_float * array, char * out, const int array_size, const size_t num_entries)
-{
-	assert( num_entries == 4u * static_cast<size_t>(array_size) );
-	logger.trace() << "allocating buffer";
-	char * buf_tmp = new char[num_entries];
-	logger.trace() << "allocated buffer";
-
-	//save the array in a char-array, suppose it is one big array of array_size entries
-	float * buf_float = reinterpret_cast<float*>( buf_tmp );
-	for(int i = 0; i < array_size; i++)
-		buf_float[i] = static_cast<float>( array[i] );
-
-	//suppose the buffer out has exactly the right size as given by array_size
-	if(!ENDIAN) {
-		logger.debug() << "The ENDIANNESS of the system is little, bytes must be reversed";
-		for (size_t i = 0; i < num_entries; i += 4) {
-			out[i]   = buf_tmp[i + 3];
-			out[i + 1] = buf_tmp[i + 2];
-			out[i + 2] = buf_tmp[i + 1];
-			out[i + 3] = buf_tmp[i];
-		}
-	} else {
-		logger.debug() << "The ENDIANNESS of the system is big, bytes must not be reversed";
-		for (size_t i = 0; i < num_entries; i++) {
-			out[i] = buf_tmp[i];
-		}
-	}
-
-	delete [] buf_tmp;
-	return;
-}
-
-void make_binary_data_double(hmc_float * array, char * out, const int array_size, const size_t num_entries)
-{
-	assert( num_entries == 8u * static_cast<size_t>(array_size) );
-	char * buf_tmp = new char[num_entries];
-
-	//save the array in a char-array, suppose the array is one big array of array_size entries
-	double * buf_double = reinterpret_cast<double*>( buf_tmp );
-	for(int i = 0; i < array_size; i++)
-		buf_double[i] = static_cast<double>( array[i] );
-
-	//suppose the buffer out has exactly the right size as given by array_size
-	if(!ENDIAN) {
-		logger.debug() << "The ENDIANNESS of the system is little, bytes must be reversed";
-		for (size_t i = 0; i < num_entries; i += 8) {
-			out[i]   = buf_tmp[i + 7];
-			out[i + 1] = buf_tmp[i + 6];
-			out[i + 2] = buf_tmp[i + 5];
-			out[i + 3] = buf_tmp[i + 4];
-			out[i + 4] = buf_tmp[i + 3];
-			out[i + 5] = buf_tmp[i + 2];
-			out[i + 6] = buf_tmp[i + 1];
-			out[i + 7] = buf_tmp[i];
-		}
-	} else {
-		logger.debug() << "The ENDIANNESS of the system is big, bytes must not be reversed";
-		for (size_t i = 0; i < num_entries; i++) {
-			out[i] = buf_tmp[i];
-		}
-	}
-
-	delete[] buf_tmp;
-	return;
-}
-
+#include <sstream>
 
 void write_gaugefield (
-  hmc_float * array, int array_size,
+  char * binary_data, n_uint64_t num_bytes, Checksum checksum,
   int lx, int ly, int lz, int lt, int prec, int trajectorynr, hmc_float plaquettevalue, hmc_float beta, hmc_float kappa, hmc_float mu, hmc_float c2_rec, hmc_float epsilonbar, hmc_float mubar,
   const char * hmc_version, const char * filename)
 {
@@ -84,7 +18,7 @@ void write_gaugefield (
 	outputfile = fopen(filename, "w");
 	int MB_flag;
 	int ME_flag;
-	n_uint64_t length_xlf_info = 0, length_ildg_format = 0, length_scidac_checksum = 0, length_ildg_binary_data = 0;
+	n_uint64_t length_xlf_info = 0, length_ildg_format = 0, length_scidac_checksum = 0;
 	LimeRecordHeader * header_ildg_format, *header_scidac_checksum, * header_ildg_binary_data, * header_xlf_info;
 
 	//set values
@@ -98,19 +32,11 @@ void write_gaugefield (
 	// TODO replace this whole block by something templated
 	//get binary data
 	//here it must not be assumed that the argument prec and sizeof(hmc_float) are the same!!
-	size_t num_entries = (prec / 8) * array_size;
-	logger.debug() << "  num_entries = " << num_entries;
-	char * binary_data = new char[num_entries];
+	logger.debug() << "  num_bytes = " << num_bytes;
 
-	// TODO make sure the ildg_gaugefield is never padded
-	if(prec == 64) {
-		make_binary_data_double(array, binary_data, array_size, num_entries);
-	} else if (prec == 32) {
-		make_binary_data_single(array, binary_data, array_size, num_entries);
-	} else throw Print_Error_Message("STDERR", __FILE__, __LINE__);
-
-	length_ildg_binary_data = num_entries;
-
+	if(sizeof(hmc_float) * 8 != prec) {
+		throw Invalid_Parameters("Precision does not match executables.", sizeof(hmc_float) * 8, prec);
+	}
 
 	//write xlf-info to string, should look like this
 	/*
@@ -159,8 +85,16 @@ void write_gaugefield (
 	length_xlf_info = strlen(xlf_info);
 
 	//write scidac checksum, this is stubb
-	const char scidac_checksum [] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<scidacChecksum>\n  <version>1.0</version>\n  <suma>46b62a47</suma>\n  <sumb>1a24b4ac</sumb>\n</scidacChecksum>";
-	length_scidac_checksum = strlen(scidac_checksum);
+	std::string scidac_checksum;
+	{
+		std::ostringstream tmp;
+		tmp << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<scidacChecksum>\n<version>1.0</version>\n";
+		tmp << "<suma>" << std::hex << checksum.get_suma() << "</suma>\n";
+		tmp << "<sumb>" << std::hex << checksum.get_sumb() << "</sumb>\n";
+		tmp << "</scidacChecksum>";
+		scidac_checksum = tmp.str();
+	}
+	length_scidac_checksum = scidac_checksum.length();
 
 	//write ildg_format to string, should look like this:
 	/*
@@ -216,10 +150,10 @@ void write_gaugefield (
 
 	//binary data
 	ME_flag = 3;
-	header_ildg_binary_data = limeCreateHeader(MB_flag, ME_flag, (char*) types[2], length_ildg_binary_data);
+	header_ildg_binary_data = limeCreateHeader(MB_flag, ME_flag, (char*) types[2], num_bytes);
 	limeWriteRecordHeader(header_ildg_binary_data, writer);
 	limeDestroyHeader(header_ildg_binary_data);
-	limeWriteRecordData(binary_data, &length_ildg_binary_data, writer);
+	limeWriteRecordData(binary_data, &num_bytes, writer);
 	logger.debug() << "  ildg_binary_data written";
 
 	//scidac-checksum
@@ -227,14 +161,11 @@ void write_gaugefield (
 	header_scidac_checksum = limeCreateHeader(MB_flag, ME_flag, (char*) types[3], length_scidac_checksum);
 	limeWriteRecordHeader(header_scidac_checksum, writer);
 	limeDestroyHeader(header_scidac_checksum);
-	limeWriteRecordData( (void*) scidac_checksum, &length_scidac_checksum, writer);
+	limeWriteRecordData(const_cast<char*>(scidac_checksum.c_str()), &length_scidac_checksum, writer);
 	logger.debug() << "  scidac-checksum written";
 
 	//closing
 	fclose(outputfile);
 	limeDestroyWriter(writer);
-	logger.info() << "  " << (float) ( (float) (length_xlf_info + length_ildg_format + length_ildg_binary_data + length_scidac_checksum) / 1024 / 1024 ) << " MBytes were written to the lime file " << filename;
-
-	delete[] binary_data;
-	return;
+	logger.info() << "  " << (float) ( (float) (length_xlf_info + length_ildg_format + num_bytes + length_scidac_checksum) / 1024 / 1024 ) << " MBytes were written to the lime file " << filename;
 }
