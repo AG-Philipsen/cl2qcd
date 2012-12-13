@@ -6,6 +6,7 @@
 #define _READGAUGEH_
 
 #include "types.h"
+#include "checksum.h"
 
 /**
  * Parser class for a stored gaugefield.
@@ -38,6 +39,7 @@ public:
 	char solvertype_source[50];
 	char hmcversion_solver_source[50];
 	char date_solver_source[50];
+	Checksum checksum;
 };
 
 #endif /* _READGAUGEH_ */

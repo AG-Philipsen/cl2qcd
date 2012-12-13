@@ -8,6 +8,7 @@
 #include "types.h"
 
 #include <boost/crc.hpp>
+#include <ostream>
 
 class Checksum {
 
@@ -48,6 +49,13 @@ public:
 		sumb ^= work<<rank31 | work>>(32-rank31);
 	}
 
+	bool operator==(const Checksum& other) {
+		return suma == other.suma && sumb == other.sumb;
+	}
+
+	bool operator!=(const Checksum& other) {
+		return suma != other.suma || sumb != other.sumb;
+	}
 
 private:
 	uint32_t suma;

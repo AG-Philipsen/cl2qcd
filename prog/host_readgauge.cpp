@@ -60,7 +60,7 @@ void read_tmlqcd_file(char * file,
                       int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries, int * flavours,
                       hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
                       char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver, int * time_solver, char * hmcversion_solver, char * date_solver,
-                      hmc_float * array, int * hmc_prec);
+                      hmc_float * array, int * hmc_prec, Checksum * checksum);
 
 Checksum get_checksum(const char * buffer, int size, const char * filename);
 
@@ -521,36 +521,6 @@ void read_meta_data(const char * file, int * lx, int * ly, int * lz, int * lt, i
 	return;
 }
 
-Checksum calc_checksum_double_su3(const char * buf, size_t nbytes)
-{
-	logger.debug() << nbytes;
-	size_t elem_size = 4 * sizeof(Matrixsu3);
-	if(nbytes % elem_size) {
-		logger.error() << "Buffer does not contain a gaugefield!";
-		throw Invalid_Parameters("Buffer size not match possible gaugefield size", 0, nbytes % elem_size);
-	}
-
-	Checksum checksum;
-	// assume this has 16^4
-	const size_t NS = 32;
-	const size_t NT = 12;
-	assert(nbytes == elem_size * 12 * 32 * 32 * 32);
-	size_t offset = 0;
-	for(uint32_t t = 0; t < NT; ++t) {
-		for(uint32_t z = 0; z < NS; ++z) {
-			for(uint32_t y = 0; y < NS; ++y) {
-				for(uint32_t x = 0; x < NS; ++x) {
-					assert(offset < nbytes);
-					uint32_t rank = ((t * NS + z) * NS + y) * NS + x;
-					checksum.accumulate(&buf[offset], elem_size, rank);
-					offset += elem_size;
-				}
-			}
-		}
-	}
-	return checksum;
-}
-
 //LZ removed last, unused parameter char* field_out
 void read_data(const char * file, char * data, size_t bytes)
 {
@@ -598,8 +568,6 @@ void read_data(const char * file, char * data, size_t bytes)
 			}
 			cter ++;
 			limeReaderReadData(data, &nbytes, r);
-			Checksum checksum = calc_checksum_double_su3(data, nbytes);
-			logger.debug() << "Calculated checksum: " << checksum;
 		}
 	}
 
@@ -611,7 +579,7 @@ void read_tmlqcd_file(const char * file,
                       int * lx, int * ly, int * lz, int * lt, int * prec, char * field_out, int * num_entries, int * flavours,
                       hmc_float * plaquettevalue, int * trajectorynr, hmc_float * beta, hmc_float * kappa, hmc_float * mu, hmc_float * c2_rec, int * time, char * hmcversion, hmc_float * mubar, hmc_float * epsilonbar, char * date,
                       char * solvertype, hmc_float * epssq, int * noiter, hmc_float * kappa_solver, hmc_float * mu_solver, int * time_solver, char * hmcversion_solver, char * date_solver,
-                      char ** array, int * hmc_prec)
+                      char ** array, int * hmc_prec, Checksum * checksum)
 {
 
 	int fermion = 0;
@@ -627,12 +595,10 @@ void read_tmlqcd_file(const char * file,
 	}
 	fclose(checker);
 
-	Checksum file_checksum;
-
 	logger.info() << "\tMetadata:" ;
 	read_meta_data(file, lx, ly, lz, lt, prec, field_out, num_entries, flavours, plaquettevalue, trajectorynr,
 	               beta, kappa, mu, c2_rec, time, hmcversion, mubar, epsilonbar, date,
-	               solvertype, epssq, noiter, kappa_solver, mu_solver, time_solver, hmcversion_solver, date_solver, &fermion, &file_checksum);
+	               solvertype, epssq, noiter, kappa_solver, mu_solver, time_solver, hmcversion_solver, date_solver, &fermion, checksum);
 	logger.trace() << "\treading XML-file gave:";
 	logger.info() << "\t\tfield type:\t" << field_out ;
 	logger.info() << "\t\tprecision:\t" << *prec ;
@@ -664,7 +630,7 @@ void read_tmlqcd_file(const char * file,
 		logger.info() << "\t\thmc-ver_solver:\t" << hmcversion_solver;
 		logger.info() << "\t\tdate_solver:\t" << date_solver;
 	}
-	logger.debug() << "\tfile-checksum:\t" << file_checksum;
+	logger.debug() << "\tfile-checksum:\t" << *checksum;
 
 	if(*hmc_prec != *prec) {
 		throw Print_Error_Message("\nthe precision of hmc and sourcefile do not match, will not read data!!!", __FILE__, __LINE__);
@@ -729,7 +695,7 @@ void sourcefileparameters::readsourcefile(const char * file, int precision, char
 	                  &lx, &ly, &lz, &lt, &prec, field_out, &num_entries, &flavours,
 	                  &plaquettevalue, &trajectorynr, &beta, &kappa, &mu, &c2_rec, &time, hmcversion, &mubar, &epsilonbar, date,
 	                  solvertype, &epssq, &noiter, &kappa_solver, &mu_solver, &time_solver, hmcversion_solver, date_solver,
-	                  array, &prec_tmp);
+	                  array, &prec_tmp, &checksum);
 
 	//set the source parameters
 	val_assign_source(&lx_source, lx);
