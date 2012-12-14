@@ -78,12 +78,11 @@ TmpClKernel::operator cl_kernel() const
 
 	if(!program) {
 		program = loadSources();
+		buildProgram(program);
+		dumpBinary(program, md5);
+	} else {
+		buildProgram(program);
 	}
-
-	buildProgram(program);
-
-	// store built binary to working directory
-	dumpBinary(program, md5);
 
 	// extract kernel
 	cl_kernel kernel = clCreateKernel(program, kernel_name.c_str(), &clerr);
