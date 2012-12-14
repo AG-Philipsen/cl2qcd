@@ -19,6 +19,11 @@
 namespace fs = boost::filesystem;
 /// @todo quite some of this code could be simplified by moving from pure fstream to boost::filesystem equivalents
 
+#include <boost/interprocess/sync/file_lock.hpp>
+#include <boost/interprocess/sync/sharable_lock.hpp>
+#include <boost/interprocess/sync/scoped_lock.hpp>
+namespace ip = boost::interprocess;
+
 const fs::path CACHE_DIR_NAME = "OpTiMaL/ocl_cache";
 
 const fs::path sourceDir(SOURCEDIR);
@@ -32,6 +37,12 @@ const fs::path sourceDir(SOURCEDIR);
  * All filles will be stored in the subdirectory given by CACHE_DIR_NAME.
  */
 static fs::path get_binary_file_path(std::string md5);
+/**
+ * Get the lock for the binary file of the given md5.
+ *
+ * The lock might be stored in an extra file next to the binary.
+ */
+static ip::file_lock get_lock_file(std::string md5);
 
 ClSourcePackage ClSourcePackage::operator <<(const std::string& file)
 {
@@ -68,18 +79,38 @@ const std::string ClSourcePackage::getOptions() const
 
 TmpClKernel::operator cl_kernel() const
 {
+	using namespace ip;
+
 	cl_int clerr;
 
 	logger.trace() << "Collecting sources to build the program for the " << kernel_name << " kernel";
 
 	std::string md5 = generateMD5();
 
-	cl_program program = loadBinary(md5);
+	cl_program program;
 
+	// Us the lock to ensure that the binary is not read and written at the same time
+	file_lock lock_file = get_lock_file(md5);
+	{
+		sharable_lock<file_lock> lock_shared(lock_file);
+		program = loadBinary(md5);
+	}
 	if(!program) {
-		program = loadSources();
-		buildProgram(program);
-		dumpBinary(program, md5);
+		// yes, at this exact point the file is not locked. someone might create a working binary while we are waiting
+		// we need a write lock while we write to the file.
+		// also scopy reading of source and building into this
+		// once we got the lock first check whether maybe someone else build a working binary in the meantime
+		scoped_lock<file_lock> lock_exclusive(lock_file);
+		program = loadBinary(md5);
+		if(program) {
+			// yeah, easy way out
+			buildProgram(program);
+		} else {
+			// build and write (the writing is why we need the exclusive lock
+			program = loadSources();
+			buildProgram(program);
+			dumpBinary(program, md5);
+		}
 	} else {
 		buildProgram(program);
 	}
@@ -716,4 +747,18 @@ void TmpClKernel::buildProgram(cl_program program) const
 
 		throw Opencl_Error(clerr, "clBuildProgram", __FILE__, __LINE__);
 	}
+}
+
+static ip::file_lock get_lock_file(std::string md5)
+{
+	using namespace fs;
+
+	path lock_file_path = get_binary_file_path(md5).replace_extension("lock");
+	std::string lock_file_name = lock_file_path.string();
+	logger.debug() << "Using lock file " << lock_file_name;
+	if(!exists(lock_file_path)) {
+		create_directories(lock_file_path.parent_path());
+		ofstream dummy(lock_file_path);
+	}
+	return ip::file_lock(lock_file_name.c_str());
 }
