@@ -24,7 +24,7 @@ namespace fs = boost::filesystem;
 #include <boost/interprocess/sync/scoped_lock.hpp>
 namespace ip = boost::interprocess;
 
-const fs::path CACHE_DIR_NAME = "OpTiMaL/ocl_cache";
+const std::string CACHE_DIR_NAME("OpTiMaL/ocl_cache");
 
 const fs::path sourceDir(SOURCEDIR);
 
@@ -681,7 +681,15 @@ cl_program TmpClKernel::loadSources() const
 
 static fs::path get_binary_file_path(std::string md5)
 {
-	const fs::path cache_dir = fs::temp_directory_path() / CACHE_DIR_NAME;
+	static std::string user_name;
+	if(user_name.empty()) {
+		char* _user_name = getenv("USER");
+		if(!_user_name) {
+			throw Print_Error_Message("Failed to get user name", __FILE__, __LINE__);
+		}
+		user_name = _user_name;
+	}
+	const fs::path cache_dir = fs::temp_directory_path() / (user_name + '-' + CACHE_DIR_NAME);
 	const std::string file_name = md5 + ".elf";
 	return cache_dir / file_name;
 }
