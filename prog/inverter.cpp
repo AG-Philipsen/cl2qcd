@@ -31,7 +31,7 @@ int main(int argc, const char* argv[])
 		cl_device_type primary_device = parameters.get_use_gpu() ? CL_DEVICE_TYPE_GPU : CL_DEVICE_TYPE_CPU;
 
 		logger.trace() << "Init gaugefield" ;
-		gaugefield.init(numtasks, primary_device, prng);
+		gaugefield.init(2, primary_device, prng);
 
 		init_timer.add();
 
